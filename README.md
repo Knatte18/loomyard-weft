@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-14 14:16 UTC; every age below is as of then.
+Rendered 2026-10-14 14:17 UTC; every age below is as of then.
 
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
@@ -17,7 +17,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | **tender: hub-wide pause, resume, revive and stale-binary restart**<br>• A tender module holds hub-wide pause, resume, revive and stale-binary restart, and a pause no longer consumes a call deadline | [`tender`](design-tender.md) | loom | Plan-Bouncer | 1d | 1d | shuttle, reed, batten, shed, orch, loom |
+| 1 | **tender: hub-wide pause, resume, revive and stale-binary restart**<br>• A tender module holds hub-wide pause, resume, revive and stale-binary restart, and a pause no longer consumes a call deadline | [`tender`](design-tender.md) | loom | Plan-Burler-Review | 1d | 1d | shuttle, reed, batten, shed, orch, loom |
 
 ### Ready
 
