@@ -154,3 +154,14 @@ Twill's judge step has only "fix or reject with a one-line reason" (`contracts/s
 Giving twill's judge step Burler's two-sided weighing, with cited evidence, is a bench of its own (operator, 2026-10-14): the critical fixer as an arm against today's judge step, with and without fork0, graded on findings and on the final plan.
 
 Ideas from the bench agent, untested: merge two lenses (for instance `test-economy` into `row-reachability`), have forks batch their reads into one or two calls, and cut the writer's `validate-plan` rounds (the writer is about $4 of $5.6 per plan).
+
+## Fixer bench, after and fork0 against today's judge and a critical fixer (2026-10-14)
+
+Eight runs, a 2x2 of writer timing (after, fork0) and judge (today's, a critical fixer modelled on Burler's), on `intake-bugs-1012` and `run-window-bugs`, one run per arm per reference; graded in `docs/research/twill-fixer-bench.md`.
+- Cost per plan: after+today $7.66, after+critical $8.60, fork0+today $7.21, fork0+critical $6.72.
+- The critical fixer turned down no real finding (today's judge turned down two), and all its disputes and its own fixes were right.
+- The judges are level on final-plan quality: each made 2 wrong dispositions, and the key score is within one or two items.
+- fork0 lenses found more real MEDIUM-or-above findings (23 against 7), but fork0 plans repeated slightly more key problems (after 7 R / 4 P, fork0 8 R / 5 P), so lens sharpness is not shown.
+- Shared lens blind spot: branches with no test row reaching them (KI2, KI4, KW4-type) were flagged by no lens in any arm, so no judge could fix them.
+
+A further bench, after against fork0 with the critical fixer in both, three references, one run each, was started on 2026-10-14 (operator).
