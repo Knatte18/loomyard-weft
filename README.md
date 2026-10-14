@@ -17,19 +17,16 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | **Overview window tidy, seat names, Seats replaces SingleLLMProducer**<br>• Overview window log/checklist and bounce naming, seat names, and one MultiLLMProducer in place of SingleLLMProducer | [`overview-seats`](design-overview-seats.md) | loom | blocked · Webster | 3d | 2h | reed, shed, loom, burler |
-| 2 | **Twill fork0: blind lens review, strict critical fixer, branch-coverage lens**<br>• Plan-Write: fork0 writes the plan, the master spawns blind lens forks and judges as a strict Burler-style fixer; new branch-coverage lens | [`twill-fork0`](design-twill-fork0.md) | loom | paused · Plan-Write | 2d | 57m | loom, stencil, burler |
-| 3 | **Plan delete-order check reports a reference the deleting card itself rewrites**<br>• deleteOrderFindings must skip a reference inside an Edit region of the deleting card or an earlier card; it blocks overview-seats at Webster | [`delete-order-own-edit`](design-delete-order-own-edit.md) | darn | Darn-Burler-Review | 22m | 22m | webster, loom |
+| 1 | **Terminal window, VS Code seed and VS Code open as shed producers with config flags**<br>• OpenWindow, SeedIDE and OpenIDE producers as batten rows after Worktree-Create, each switched by a batten.yaml flag | [`seed-vscode-config`](design-seed-vscode-config.md) | darn | Worktree-Create | 1d | 35m | ide, batten, shed |
+| 2 | **Overview window tidy, seat names, Seats replaces SingleLLMProducer**<br>• Overview window log/checklist and bounce naming, seat names, and one MultiLLMProducer in place of SingleLLMProducer | [`overview-seats`](design-overview-seats.md) | loom | blocked · Webster | 3d | 2h | reed, shed, loom, burler |
+| 3 | **Twill fork0: blind lens review, strict critical fixer, branch-coverage lens**<br>• Plan-Write: fork0 writes the plan, the master spawns blind lens forks and judges as a strict Burler-style fixer; new branch-coverage lens | [`twill-fork0`](design-twill-fork0.md) | loom | paused · Plan-Write | 2d | 57m | loom, stencil, burler |
+| 4 | **Plan delete-order check reports a reference the deleting card itself rewrites**<br>• deleteOrderFindings must skip a reference inside an Edit region of the deleting card or an earlier card; it blocks overview-seats at Webster | [`delete-order-own-edit`](design-delete-order-own-edit.md) | darn | Darn-Burler-Review | 22m | 22m | webster, loom |
 
 ### Ready
 
 Waits on nothing open; can start now.
 
-#### Normal priority
-
-| # | Task | Slug | Recipe | After | Age | Revised | Labels |
-| --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | **Terminal window, VS Code seed and VS Code open as shed producers with config flags**<br>• OpenWindow, SeedIDE and OpenIDE producers as batten rows after Worktree-Create, each switched by a batten.yaml flag | [`seed-vscode-config`](design-seed-vscode-config.md) | darn |  | 1d | 35m | ide, batten, shed |
+_None._
 
 ### Layer A
 
@@ -51,7 +48,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Note | Slug | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| 1 | **lyx config --set stores an invalid model value instead of refusing it** | [`config-set-validate`](design-config-set-validate.md) | 39m | 38m | config |
+| 1 | **lyx config --set stores an invalid model value instead of refusing it** | [`config-set-validate`](design-config-set-validate.md) | 39m | 39m | config |
 
 ### Enhancements
 
