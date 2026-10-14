@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-14 16:19 UTC; every age below is as of then.
+Rendered 2026-10-14 16:20 UTC; every age below is as of then.
 
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
@@ -17,7 +17,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | **Darn: a decision record for mid-run scope corrections, and PR-Align**<br>• Darn has no decision record, so a mid-run scope correction never reaches its review; and no PR-Align row, so every darn PR waits for the orch at PR-Gate | [`claimed-scope-edit`](design-claimed-scope-edit.md) | loom | Describe | 1d | 1d | board, loom, burler |
+| 1 | **Darn: a decision record for mid-run scope corrections, and PR-Align**<br>• Darn has no decision record, so a mid-run scope correction never reaches its review; and no PR-Align row, so every darn PR waits for the orch at PR-Gate | [`claimed-scope-edit`](design-claimed-scope-edit.md) | loom | Merge-In | 1d | 1d | board, loom, burler |
 | 2 | **Plan and Webster checks out of step with the code a plan changes** | [`plan-gate-gaps`](design-plan-gate-gaps.md) | loom | Merge-In | 2d | 1h | webster, loom, quarry |
 
 ### Ready
@@ -46,10 +46,10 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 3 | **twill fixer bench pair twb-fx-ib**<br>• Bench pair for twill-fork-timing, Plan-Write critical-fixer 2x2; torn down after the run | [`twb-fx-ib`](design-twb-fx-ib.md) | 1h | 1h |  |
 | 4 | **twill fixer bench pair twb-fx-ic**<br>• Bench pair for twill-fork-timing, Plan-Write critical-fixer 2x2; torn down after the run | [`twb-fx-ic`](design-twb-fx-ic.md) | 1h | 1h |  |
 | 5 | **twill fixer bench pair twb-fx-id**<br>• Bench pair for twill-fork-timing, Plan-Write critical-fixer 2x2; torn down after the run | [`twb-fx-id`](design-twb-fx-id.md) | 1h | 1h |  |
-| 6 | **twill fixer bench pair twb-fx-wa**<br>• Bench pair for twill-fork-timing, Plan-Write critical-fixer 2x2; torn down after the run | [`twb-fx-wa`](design-twb-fx-wa.md) | 59m | 59m |  |
+| 6 | **twill fixer bench pair twb-fx-wa**<br>• Bench pair for twill-fork-timing, Plan-Write critical-fixer 2x2; torn down after the run | [`twb-fx-wa`](design-twb-fx-wa.md) | 1h | 1h |  |
 | 7 | **twill fixer bench pair twb-fx-wb**<br>• Bench pair for twill-fork-timing, Plan-Write critical-fixer 2x2; torn down after the run | [`twb-fx-wb`](design-twb-fx-wb.md) | 59m | 59m |  |
 | 8 | **twill fixer bench pair twb-fx-wc**<br>• Bench pair for twill-fork-timing, Plan-Write critical-fixer 2x2; torn down after the run | [`twb-fx-wc`](design-twb-fx-wc.md) | 59m | 59m |  |
-| 9 | **twill fixer bench pair twb-fx-wd**<br>• Bench pair for twill-fork-timing, Plan-Write critical-fixer 2x2; torn down after the run | [`twb-fx-wd`](design-twb-fx-wd.md) | 58m | 58m |  |
+| 9 | **twill fixer bench pair twb-fx-wd**<br>• Bench pair for twill-fork-timing, Plan-Write critical-fixer 2x2; torn down after the run | [`twb-fx-wd`](design-twb-fx-wd.md) | 59m | 59m |  |
 | 10 | **Codex CLI as a second shuttle engine: hands-on spike, then codexengine**<br>• Codex CLI as a second engine to offload Claude tokens: short hands-on tests first, then a codexengine for single-session roles | [`codex-engine`](design-codex-engine.md) | 10d | 1d | shuttle |
 | 11 | **finalize: the discrepancy-document conflict shape**<br>• Divergences that cannot be a git conflict get a precomputed document for the resolving agent instead of markers | [`finalize-discrepancy-doc`](design-finalize-discrepancy-doc.md) | 10d | 9d | fabric, loom |
 | 12 | **shedrecipe: capability declaration instead of manual seam-threading**<br>• A producer declares what it needs and the registry wires it, instead of a hand-threaded Env passthrough field per layer | [`shedrecipe-capabilities`](design-shedrecipe-capabilities.md) | 10d |  | shed |
