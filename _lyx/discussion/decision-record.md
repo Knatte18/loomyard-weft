@@ -162,6 +162,12 @@ Decision: A single darn run can skip its Darn-Review perch (zero review rounds) 
 
 Rationale: The operator wants small darn tasks run with no review round at all, decided per task; a hub-wide switch changes every darn run. Seen 2026-10-14 on tokencount-fork-output, which could not skip its perch.
 
+### Added after Discussion (operator, 2026-10-14): Every perch, loom and darn, can be set to zero rounds per run
+
+Decision: Every review perch in loom (Discussion-Review, Plan-Review, Webster-Review, Merge-Review) and darn (Darn-Review) takes a bounce budget of 0, meaning the perch runs no review round and the run goes past it, settable per run through the board entry's run_settings as well as hub-wide. Today a per-perch key at 0 means 'take review_max_bounces'; that inherit meaning moves to an absent key, so 0 always means zero rounds. This extends the previous added decision (darn per-run off switch) to all perches and both recipes, with one shape for both.
+
+Rationale: The operator wants darn and loom configured the same way and wants to switch off any perch for a given task, for example a small task that needs no Plan-Review or Merge-Review.
+
 ## Constraints
 
 - `PATTERN-config-layers`: categories stay declared in each module's `ConfigSpec`, built through D1's package, and `skip_review` is classified in the same change; only `configengine` reads layers.
