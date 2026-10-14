@@ -126,4 +126,10 @@ Open: today it only judges and the driver acts; a helper that fixes things (dele
 
 ## Arbiter and parent double notice (seen 2026-10-13/14)
 
-TAIL
+When a review segment circles or hits its hard cap, the escalation goes to the arbiter first.
+The parent (the hub orch) also gets a notice while the arbiter is still deciding.
+Seen in the runs `logging-cleanup` and `tender`.
+
+The orch must check the round's `round-N-circling-decision.md` and `lyx loom status` before acting, and does nothing if a decision is already written.
+
+The parent should be notified only on the arbiter's `hand-on` or when its spawns are spent.
