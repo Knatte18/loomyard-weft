@@ -803,6 +803,24 @@
       "body": "## Ask (operator, 2026-10-14)\n\nThe operator wants the orch's context size easy to see, in the prime's overview window beside the batten runs.\n\n## Today\n\n- The prime's overview window runs `lyx batten overview` (`internal/battencli/overview.go`), one line per batten run in flight.\n- The orch's context size is read by the distill watcher (`internal/orchengine/watcher.go`, `ContextTokens` in `internal/shuttleengine/claudeengine/usage.go`) and stored as `LastContextTokens` in the orch state (`internal/orchengine/state.go`).\n- It is shown only by `lyx orch status` (`context_tokens`, `soft_threshold_tokens`, `threshold_tokens`); no pane or statusline shows it.\n\n## Sketch\n\n- The batten overview gains a line for the orch: context tokens against the soft and hard thresholds, plus the watcher's phase and cycle count, read from the orch state file it already sits beside (files only, as the overview reads today).\n- Dependency direction to check: batten's overview reading orch state may cross a layer; if so, the orch line comes from a provider the orch module registers, or the runs strand runs a composed view.\n",
       "created": "2026-10-14T18:34:51Z",
       "revised": "2026-10-14T18:34:51Z"
+    },
+    {
+      "id": 512,
+      "slug": "config-set-validate",
+      "title": "lyx config --set stores an invalid model value instead of refusing it",
+      "kind": "note",
+      "labels": [
+        "bug"
+      ],
+      "issues": [
+        620
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Imported from [issue #620](https://github.com/Knatte18/loomyard/issues/620).\n\n## Seen\n\nAfter `config-set-round-list` landed (`4780af4c`), `lyx config loom --layer local --set 'plan=[\"opus[medium]\", \"sonnet[high]\"]'` reports `ok: true` and writes `plan: '[\"opus[medium]\", \"sonnet[high]\"]'`, a quoted string, to the layer.\n`plan` is a single-model key, not a per-round key, so the value is invalid.\nNothing catches it at write time: the next reader fails, e.g. `lyx loom validate-plan` logs `loom config key \"plan\": modelspec: whitespace character ' ' at position 16`.\nA run started on that layer would fail at load.\n\nPer-round keys work: `plan_review` and `fix` with quoted list entries are stored as real YAML lists, and `webster_fix=[opus, sonnet]` too.\n\n## Expected\n\n`lyx config --set` validates the resulting layer the way the module's loader does, and refuses a value its loader would reject, naming the key.\nAt least: a list given to a key that takes one model spec is refused, not stored as a quoted string.\n\n## Workaround\n\nNone needed; the bad value was written only to a test local layer and removed.\n",
+      "created": "2026-10-14T18:38:14Z",
+      "revised": "2026-10-14T18:38:14Z"
     }
   ]
 }

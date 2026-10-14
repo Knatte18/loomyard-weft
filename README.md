@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-14 18:36 UTC; every age below is as of then.
+Rendered 2026-10-14 18:38 UTC; every age below is as of then.
 
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
@@ -28,7 +28,7 @@ Waits on nothing open; can start now.
 
 | # | Task | Slug | Recipe | After | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | **Twill fork0: blind lens review, strict critical fixer, branch-coverage lens**<br>• Plan-Write: fork0 writes the plan, the master spawns blind lens forks and judges as a strict Burler-style fixer; new branch-coverage lens | [`twill-fork0`](design-twill-fork0.md) | loom |  | 2d | 16m | loom, stencil, burler |
+| 1 | **Twill fork0: blind lens review, strict critical fixer, branch-coverage lens**<br>• Plan-Write: fork0 writes the plan, the master spawns blind lens forks and judges as a strict Burler-style fixer; new branch-coverage lens | [`twill-fork0`](design-twill-fork0.md) | loom |  | 2d | 18m | loom, stencil, burler |
 
 ### Layer A
 
@@ -38,7 +38,7 @@ Waits only on Running or Ready entries.
 
 | # | Task | Slug | Recipe | After | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | **Go driver and tackler in shed, for every FSM-driven run**<br>• Move the Go driver and tackler from loomcli into shed so darn, batten and every recipe get them; module config overrides model and budgets | [`shed-tackler`](design-shed-tackler.md) | loom | `perch-budget-arbiter`, `overview-seats` | 40m | 35m | shed, loom, batten |
+| 1 | **Go driver and tackler in shed, for every FSM-driven run**<br>• Move the Go driver and tackler from loomcli into shed so darn, batten and every recipe get them; module config overrides model and budgets | [`shed-tackler`](design-shed-tackler.md) | loom | `perch-budget-arbiter`, `overview-seats` | 42m | 36m | shed, loom, batten |
 
 ### Layer B
 
@@ -48,11 +48,19 @@ Starts when every entry it names under After is done.
 
 | # | Task | Slug | Recipe | After | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | **Terminal window, VS Code seed and VS Code open as shed producers with config flags**<br>• OpenWindow, SeedIDE and OpenIDE producers as batten rows after Worktree-Create, each switched by a batten.yaml flag | [`seed-vscode-config`](design-seed-vscode-config.md) | darn | `perch-budget-arbiter`, `shed-tackler` | 1d | 8m | ide, batten, shed |
+| 1 | **Terminal window, VS Code seed and VS Code open as shed producers with config flags**<br>• OpenWindow, SeedIDE and OpenIDE producers as batten rows after Worktree-Create, each switched by a batten.yaml flag | [`seed-vscode-config`](design-seed-vscode-config.md) | darn | `perch-budget-arbiter`, `shed-tackler` | 1d | 10m | ide, batten, shed |
 
 ## Notes
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
+
+### Bugs
+
+#### Normal priority
+
+| # | Note | Slug | Age | Revised | Labels |
+| --- | --- | --- | --- | --- | --- |
+| 1 | **lyx config --set stores an invalid model value instead of refusing it** | [`config-set-validate`](design-config-set-validate.md) | 0m | 0m |  |
 
 ### Enhancements
 
@@ -78,7 +86,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 11 | **Tune the Burler lens fan prompts**<br>• Revisit the parked lens fan with lens and fork prompts that overlap less, measured against solo on the fan-lab fixtures | [`fan-prompt-tuning`](design-fan-prompt-tuning.md) | 1d | 1d | burler, stencil |
 | 12 | **Verification protocol for a .NET repo: slow-suite tier, numerical-baseline capture/compare, verify timeouts and logs** | [`dotnet-verify-protocol`](design-dotnet-verify-protocol.md) | 3h | 3h | loom, webster, config |
 | 13 | **Run verbs in one shared namespace, not under lyx loom**<br>• lyx loom decision/status/goto/approve act on darn runs too; move recipe-neutral run verbs to one shared namespace | [`run-verbs-shared`](design-run-verbs-shared.md) | 1h | 1h | shed, loom |
-| 14 | **Show the orch context size in the prime overview window**<br>• The prime overview window shows the orch session context tokens against its thresholds beside the batten runs | [`orch-context-overview`](design-orch-context-overview.md) | 1m | 1m | orch, batten |
+| 14 | **Show the orch context size in the prime overview window**<br>• The prime overview window shows the orch session context tokens against its thresholds beside the batten runs | [`orch-context-overview`](design-orch-context-overview.md) | 3m | 3m | orch, batten |
 
 #### Low priority
 
