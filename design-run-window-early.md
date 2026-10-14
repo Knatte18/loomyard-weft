@@ -1,6 +1,6 @@
 # Run window opens as soon as the worktree exists
 
-`run-window-early` · Task · enhancement, batten, reed, fabric · running · Merge-In
+`run-window-early` · Task · enhancement, batten, reed, fabric · running · Publish
 
 ## Seen (operator, 2026-10-14)
 
