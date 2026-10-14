@@ -329,7 +329,7 @@
       }
     }
   ],
-  "currentBatch": 0,
+  "currentBatch": 10,
   "masterStrand": "5d5412f02fafe30d78f8f33fb0631227",
   "masterSessionId": "a9da6aec-5f1a-4cba-a1a7-37417a148270",
   "batches": {
@@ -373,6 +373,29 @@
       "bracketTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-claimed-scope-edit/a9da6aec-5f1a-4cba-a1a7-37417a148270/subagents/agent-a5ed13d6f0ca313dc.jsonl"
       ]
+    },
+    "10": {
+      "slug": "darn-review-scope",
+      "cards": [
+        "10-darn-review-scope",
+        "11-alignment-pr-gate-measure",
+        "12-darn-pr-align-wiring",
+        "13-darn-recipe-rows",
+        "14-orch-correction-guidance"
+      ],
+      "cardHashes": {
+        "10-darn-review-scope": "9e7e5367d893ed09bb459ff4f1249bd3d56d5d15ca0413dd479a746e75c16581",
+        "11-alignment-pr-gate-measure": "373e3024d3d56e0112500aca0d5bc0e9de713a02ecca8a91c0934bfb71be272c",
+        "12-darn-pr-align-wiring": "fe229894bfb85631cf6254bcb2963d7719b42765c2365be26b661ce3afb5fc59",
+        "13-darn-recipe-rows": "3f6b6341095ef50b28b2d783ee212ce368c7b5ab786174e160f7995259dd39c6",
+        "14-orch-correction-guidance": "aad1bc72c5070ff652364fad5d9ebe6f3da6336303dd9e7826bf8e4c8201dfc2"
+      },
+      "startSha": "ab6cffd0a58b25f400df9a7d80685e41f21a8af5",
+      "kind": "fork",
+      "spawnedAt": "2026-10-14T16:02:13Z",
+      "sessionId": "a9da6aec-5f1a-4cba-a1a7-37417a148270",
+      "terminal": false,
+      "status": ""
     },
     "6": {
       "slug": "validate-discussion-darn",
