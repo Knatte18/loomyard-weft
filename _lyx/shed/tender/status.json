@@ -1,12 +1,12 @@
 {
   "current_producer": "Webster",
-  "state": "running",
-  "error": "",
+  "state": "blocked",
+  "error": "batch 07-proc-process-listing: record-batch and then recover-batch both refused with batch_failed; the done-check says plan handles for cards 8-10 (internal/pausecli#resumeCmd, #pauseCmd, #statusCmd, internal/pauseengine#SessionStatus, #Revive and others) still do not resolve, and the recovery ended with 'way forward: lyx webster recover-batch 07'",
   "pause_requested": false,
   "activity": {
     "now": "Webster",
-    "last": "Batchifier → done",
-    "wait": ""
+    "last": "Webster → stuck",
+    "wait": "batch 07-proc-process-listing: record-batch and then recover-batch both refused with batch_failed; the done-check says plan handles for cards 8-10 (internal/pausecli#resumeCmd, #pauseCmd, #statusCmd, internal/pauseengine#SessionStatus, #Revive and others) still do not resolve, and the recovery ended with 'way forward: lyx webster recover-batch 07'"
   },
   "history": [
     {
@@ -213,6 +213,12 @@
       "outcome": "done",
       "output": "",
       "at": "2026-10-14T14:45:18Z"
+    },
+    {
+      "producer": "Webster",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-14T15:07:50Z"
     }
   ],
   "product": {
