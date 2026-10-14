@@ -1,6 +1,6 @@
 # tokencount under-counts fork output tokens
 
-`tokencount-fork-output` · Task · bug
+`tokencount-fork-output` · Task · bug · running · Worktree-Create
 
 ## Seen (`twill-fork-timing` bench, 2026-10-13)
 
