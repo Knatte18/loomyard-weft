@@ -1,6 +1,30 @@
-# Arbiter spawns only on stops that need it
+# Perch budgets and stops: darn budget per run like loom, arbiter only when needed
 
-`arbiter-when` · Note · enhancement, loom, shed
+`perch-budget-arbiter` · Task · enhancement, config, loom, shed
+
+These two notes are one task because both concern how a review perch's budget and stops are configured and settled in shed.
+
+## Darn review budget overridable per run (darn-run-budget)
+
+## Problem
+
+Darn's `review_max_bounces` and `review_hard_max_bounces` are `CategoryGuard` keys (`internal/darnengine/config.go`), so `internal/configengine/layers.go` refuses them in a `.local` override and a board entry's `run_settings` cannot set them for one darn run.
+The only way to change a darn run's review budget is hub-wide, in the hub's `darn.yaml`, which changes every darn run.
+Loom's `review_max_bounces` is category none (minimum 1), so a loom run takes a per-run budget through `run_settings`, and loom has a separate guard key, `skip_merge_review`, for switching a perch off.
+
+Darn guards the budget keys because `review_max_bounces: 0` skips Darn-Review and Describe: the budget key and the off switch are the same key.
+
+Seen on 2026-10-14 with `tokencount-fork-output`: the operator wanted no review round on a small darn run, which no per-run setting allows, and `lyx loom goto` cannot move a run past a review row.
+
+## Direction
+
+The operator finds the difference wrong: darn and loom are both shed recipes and should read their config the same way.
+
+- Darn's budget keys become ordinary keys like loom's, overridable per run through `run_settings`, with a minimum of 1.
+- Switching the Darn review perch off becomes its own guard key, like loom's `skip_merge_review`, so the guard stays on the off switch and not on the budget.
+- Check whether darn and loom can share one config shape for perch budgets and off switches, so the two cannot drift apart again.
+
+## Arbiter spawns only on stops that need it (arbiter-when)
 
 The arbiter (`lyx loom arbiter`, `opus[high]`, cold start) settles a stop the run's driver cannot.
 On 2026-10-12 it spawned five times across three runs, and none of the five stops needed it.
@@ -99,3 +123,7 @@ The arbiter is not loom-specific at heart: a cold agent given a stop, an instruc
 Today only its verb (`lyx loom arbiter`), its stencil wording and its eligibility list tie it to loom.
 The operator sees it becoming a general "we do not know what to do here, something is wrong, call a general helper" for any shed run, batten included, and is still thinking about it.
 Open: today it only judges and the driver acts; a helper that fixes things (deleting stray lock files, say) must act itself, bounded by the allowed actions in its instruction.
+
+## Arbiter and parent double notice (seen 2026-10-13/14)
+
+TAIL
