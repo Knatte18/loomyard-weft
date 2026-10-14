@@ -18,7 +18,7 @@ Held by a run; its scope is locked until the run ends.
 | # | Task | Slug | Recipe | At | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | 1 | **Darn: a decision record for mid-run scope corrections, and PR-Align**<br>• Darn has no decision record, so a mid-run scope correction never reaches its review; and no PR-Align row, so every darn PR waits for the orch at PR-Gate | [`claimed-scope-edit`](design-claimed-scope-edit.md) | loom | Merge-In | 1d | 1d | board, loom, burler |
-| 2 | **Plan and Webster checks out of step with the code a plan changes** | [`plan-gate-gaps`](design-plan-gate-gaps.md) | loom | Merge-Bouncer | 2d | 1h | webster, loom, quarry |
+| 2 | **Plan and Webster checks out of step with the code a plan changes** | [`plan-gate-gaps`](design-plan-gate-gaps.md) | loom | Merge-Burler-Review | 2d | 1h | webster, loom, quarry |
 
 ### Ready
 
