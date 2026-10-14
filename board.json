@@ -880,6 +880,22 @@
       "body": "Temporary bench pair for board note twill-fork-timing, Plan-Write fork0 bench. Plan-Write only, from a frozen decision record.",
       "created": "2026-10-14T16:50:10Z",
       "revised": "2026-10-14T16:50:10Z"
+    },
+    {
+      "id": 499,
+      "slug": "twb-f2-pa",
+      "title": "twill fork0 bench pair twb-f2-pa",
+      "kind": "note",
+      "labels": [
+        "enhancement"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "Bench pair for twill-fork-timing, Plan-Write fork0 against after, both with the critical fixer",
+      "body": "Temporary bench pair for board note twill-fork-timing, Plan-Write fork0 bench. Plan-Write only, from a frozen decision record.",
+      "created": "2026-10-14T16:50:14Z",
+      "revised": "2026-10-14T16:50:14Z"
     }
   ]
 }
