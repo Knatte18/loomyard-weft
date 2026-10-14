@@ -11,10 +11,10 @@
 - `cmd/lyx/testdata/test-budget.yaml`
 
 **Create:**
-- `plan:internal/shuttleengine/claudeengine#steerSleepDeny` -> `const steerSleepDeny = ""`
-- `plan:internal/shuttleengine/claudeengine#noticeSleepDeny` -> `const noticeSleepDeny = ""`
-- `plan:internal/shuttleengine/claudeengine#sleepCommandPattern` -> `const sleepCommandPattern = ""`
-- `plan:internal/shuttleengine/claudeengine#TestSleepDenyHook_DeniesMachineSleepVerbsOnly` -> `func TestSleepDenyHook_DeniesMachineSleepVerbsOnly(t *testing.T)`
+- `internal/shuttleengine/claudeengine#steerSleepDeny`
+- `internal/shuttleengine/claudeengine#noticeSleepDeny`
+- `internal/shuttleengine/claudeengine#sleepCommandPattern`
+- `internal/shuttleengine/claudeengine#TestSleepDenyHook_DeniesMachineSleepVerbsOnly`
 
 **Uses:**
 - `internal/shuttleengine/claudeengine#commandPositionPattern`

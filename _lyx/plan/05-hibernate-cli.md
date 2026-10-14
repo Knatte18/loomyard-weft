@@ -7,24 +7,24 @@
 - `internal/hibernatecli/spawn.go`
 - `internal/hibernatecli/testmain_test.go`
 - `internal/hibernatecli/cli_integration_test.go`
-- `plan:internal/lyxdirs#HibernateDirName` -> `const HibernateDirName = "hibernate"`
-- `plan:internal/hibernatecli#Command` -> `func Command() *cobra.Command`
-- `plan:internal/hibernatecli#requestCmd` -> `func requestCmd() *cobra.Command`
-- `plan:internal/hibernatecli#cancelCmd` -> `func cancelCmd() *cobra.Command`
-- `plan:internal/hibernatecli#statusCmd` -> `func statusCmd() *cobra.Command`
-- `plan:internal/hibernatecli#watchCmd` -> `func watchCmd() *cobra.Command`
-- `plan:internal/hibernatecli#RunCLI` -> `func RunCLI(out io.Writer, args []string) int`
-- `plan:internal/hibernatecli#RunCLIIn` -> `func RunCLIIn(cwd string, out io.Writer, args []string) int`
-- `plan:internal/hibernatecli#requestFileName` -> `const requestFileName = "request.json"`
-- `plan:internal/hibernatecli#watchLogFileName` -> `const watchLogFileName = "watch.log"`
-- `plan:internal/hibernatecli#hibernateDir` -> `func hibernateDir(location *lyxcwd.Location) string`
-- `plan:internal/hibernatecli#hubDeps` -> `func hubDeps(location *lyxcwd.Location) (hibernateengine.Deps, error)`
-- `plan:internal/hibernatecli#landLockHeld` -> `func landLockHeld(path string) (bool, error)`
-- `plan:internal/hibernatecli#readRunStatus` -> `func readRunStatus(prime *lyxcwd.Location, slug string) (hibernateengine.RunStatus, bool, error)`
-- `plan:internal/hibernatecli#spawnDaemon` -> `func spawnDaemon(anchor, logPath string) (int, string, error)`
-- `plan:internal/hibernatecli#runHibernate` -> `func runHibernate() error`
-- `plan:internal/hibernatecli#killDaemon` -> `func killDaemon(pid int) error`
-- `plan:internal/hibernatecli#TestHibernateVerbs_WireTheHub` -> `func TestHibernateVerbs_WireTheHub(t *testing.T)`
+- `internal/lyxdirs#HibernateDirName`
+- `internal/hibernatecli#Command`
+- `internal/hibernatecli#requestCmd`
+- `internal/hibernatecli#cancelCmd`
+- `internal/hibernatecli#statusCmd`
+- `internal/hibernatecli#watchCmd`
+- `internal/hibernatecli#RunCLI`
+- `internal/hibernatecli#RunCLIIn`
+- `internal/hibernatecli#requestFileName`
+- `internal/hibernatecli#watchLogFileName`
+- `internal/hibernatecli#hibernateDir`
+- `internal/hibernatecli#hubDeps`
+- `internal/hibernatecli#landLockHeld`
+- `internal/hibernatecli#readRunStatus`
+- `internal/hibernatecli#spawnDaemon`
+- `internal/hibernatecli#runHibernate`
+- `internal/hibernatecli#killDaemon`
+- `internal/hibernatecli#TestHibernateVerbs_WireTheHub`
 
 **Edit:**
 - `cmd/lyx#newRoot`

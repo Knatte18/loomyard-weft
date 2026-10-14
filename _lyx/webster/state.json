@@ -1,14 +1,14 @@
 {
   "runGuid": "1265f7bf1e6e5ee26d000664d5ce7e99",
-  "planFingerprint": "38eb794826f39b415ba205cf648ac847e61c393c803ed7526601971c1062a5a7",
+  "planFingerprint": "737f004b211ef3fac119d1b04ea446c44e1af7edd5d3623745ec95607e1019b0",
   "planFileHashes": {
     "00-overview.md": "9a80905ddc1a7adcaf91e1452bf4dbf799b698180299056f7ff3691e4a70a252",
     "01-tender-lift-entry.md": "e2868057487ffc1e22fc54ae214c8d00ef16c95d4af81fa4cf8771eba5514256",
     "02-tendercli-export-hubdeps.md": "c22c69db8e7cf046a9af73f0213f5f9fd34e5cc5e085f16f3a5a6e22ac39ae30",
     "03-hibernate-engine-verbs.md": "171b67a09378c93d40ed07f36692585838ed1cbd7cd9e225a43c43d86d8a9f4e",
     "04-hibernate-engine-watch.md": "d3af0cc7ed2cff4c3e72c9ebaf3960ab4b6c0ceaa5ced2132e8d5c508cc97964",
-    "05-hibernate-cli.md": "86b653a66efea6afb8f86d351201b1cbb913fc04713f27bfdee0d902c80b458a",
-    "06-sleep-deny.md": "9caacf1e4aabdfb863411e3f560616f57030e08470791f3bce750a5b7b16d04c",
+    "05-hibernate-cli.md": "8409594b49990c6689c3dc529dfbdbceba568bd93eb1659af97ddf90385368f7",
+    "06-sleep-deny.md": "f5b7d6eabab3fc3f974378e2e876fb52296bfe860244e186272148f14e1f07fe",
     "07-shortcuts-p-r.md": "fd10d318c6bafcf06b486c6f8f0544f9fa0cc5d4df807edce22f8c2f408f430b",
     "08-orch-role-hibernate.md": "ed3b2c88375e35c52ea1dba359e55d5abec6dad74a462845d4507318410cd980"
   },
@@ -198,7 +198,7 @@
       }
     }
   ],
-  "currentBatch": 5,
+  "currentBatch": 0,
   "masterStrand": "840887492a0b450daf6d63008e525a0d",
   "masterSessionId": "6fd58a27-eabb-41d9-ac7c-d76f447481ee",
   "batches": {
@@ -256,8 +256,8 @@
         "08-orch-role-hibernate"
       ],
       "cardHashes": {
-        "05-hibernate-cli": "86b653a66efea6afb8f86d351201b1cbb913fc04713f27bfdee0d902c80b458a",
-        "06-sleep-deny": "9caacf1e4aabdfb863411e3f560616f57030e08470791f3bce750a5b7b16d04c",
+        "05-hibernate-cli": "8409594b49990c6689c3dc529dfbdbceba568bd93eb1659af97ddf90385368f7",
+        "06-sleep-deny": "f5b7d6eabab3fc3f974378e2e876fb52296bfe860244e186272148f14e1f07fe",
         "07-shortcuts-p-r": "fd10d318c6bafcf06b486c6f8f0544f9fa0cc5d4df807edce22f8c2f408f430b",
         "08-orch-role-hibernate": "ed3b2c88375e35c52ea1dba359e55d5abec6dad74a462845d4507318410cd980"
       },
@@ -265,11 +265,31 @@
       "kind": "fork",
       "spawnedAt": "2026-10-14T17:46:50Z",
       "sessionId": "6fd58a27-eabb-41d9-ac7c-d76f447481ee",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "05-hibernate-cli",
+        "status": "done",
+        "head_sha": "7a9ad9f0fd328ce26b3a1b633fb4fa428d5595ec",
+        "deviations": [
+          "internal/hibernatecli/cli.go",
+          "internal/hibernatecli/cli_integration_test.go",
+          "internal/hibernatecli/testmain_test.go"
+        ]
+      },
+      "cardShas": [
+        "7a9ad9f0fd328ce26b3a1b633fb4fa428d5595ec"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-hibernate-trigger/6fd58a27-eabb-41d9-ac7c-d76f447481ee/subagents/agent-a631bbbba6fac0938.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-hibernate-trigger/6fd58a27-eabb-41d9-ac7c-d76f447481ee/subagents/agent-a631bbbba6fac0938.jsonl"
+      ]
     }
   },
   "seenForkTranscripts": [
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-hibernate-trigger/6fd58a27-eabb-41d9-ac7c-d76f447481ee/subagents/agent-aafbc567865cafce7.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-hibernate-trigger/6fd58a27-eabb-41d9-ac7c-d76f447481ee/subagents/agent-aafbc567865cafce7.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-hibernate-trigger/6fd58a27-eabb-41d9-ac7c-d76f447481ee/subagents/agent-a631bbbba6fac0938.jsonl"
   ]
 }
