@@ -63,7 +63,9 @@ Bound: this wait has no deadline, since the operator cancels a request whose run
 The `Added` callback records the entry as `Owned` (`EntryRef{Scope, Caller, PausedAt}` from the entry) under the request lock before the grace, so `Cancel` mid-pause finds it; it writes `Owned` whatever the phase, and is called only when the pause adds an entry.
 A report with `AlreadyPaused` records no owned entry, so neither the daemon nor `Cancel` lifts that pause.
 A report with `ResumedDuringGrace` ends the request `cancelled` with the reason `the pause was lifted before the hibernate`.
-A `Pause` error ends the request `failed` with the error, lifts the owned entry and queues one notice.
+The `Added` callback keeps the `EntryRef` it builds in a variable of `Watch` before it calls `updateRequest`, so a failed write of `Owned` still leaves the daemon holding its entry, as card 1's `Added` contract provides.
+A `Pause` error ends the request `failed` with the error, lifts the owned entry and queues one notice; when the request records no `Owned` entry but the callback kept one, that kept `EntryRef` is lifted through `Lift` instead, so the notice reads that its pause was lifted.
+The lift and the notice run even when the `failed` write itself fails, and `Watch` then returns that write error.
 
 **Confirming.**
 `advance(PhaseConfirming)`, then readings: one right after the pause, then up to `confirmRereads` re-reads, each after `Sleep(confirmInterval)`.
@@ -99,7 +101,7 @@ Both are one line and never start with `/`, the notice queue's own rules.
 - the operator resuming the owned entry the same way, a first reading withheld by a busy session and the entry resumed from `onSleep`: phase `cancelled`, no `Hibernate` call;
 - the pre-call check, two sub-rows through `onStatus` on the call after the confirmed reading: the owned entry resumed, and the request cancelled through `Cancel`; each ends with no `Hibernate` call, the first `cancelled` by the daemon and the second left `cancelled` by `Cancel` with `Watch` writing nothing more;
 - a pause report with `ResumedDuringGrace`: phase `cancelled`, no reading and no `Hibernate` call;
-- a `Pause` error: phase `failed` with the error, the owned entry recorded through `Added` lifted, one failure notice;
+- a `Pause` error: phase `failed` with the error, the owned entry recorded through `Added` lifted, one failure notice; and a sub-row whose `onPause` hook replaces the request file with a directory of the same name, so the `Added` write fails: `Watch` returns an error, the hub entry is gone from the pause record's live list, and the one failure notice says its pause was lifted;
 - sessions listed reading `idle-stalled`, `idle-fresh`, `asking` and `dead`, an external caller running `Watch`: confirmed at the first reading;
 - a `TenderStatus` error at the first reading, clearing at the second: no `Hibernate` before the second reading, one after it;
 - withholding, one sub-row each for a pair session reading `busy`, a session reading `busy` with cause background work, a session reading `unknown`, the orch (a prime session) reading `busy`, a first-reading `StillBusy` strand, a first-reading `Refused` session, a net op in flight and the land lock held: no `Hibernate` call while the condition holds, and one after it clears, at the first reading where it is gone;
@@ -111,7 +113,7 @@ Both are one line and never start with `/`, the notice queue's own rules.
 - `--after <slug>` already `done`, and already `running` at `Worktree-Teardown`, two sub-rows: each fires on the first reading;
 - `--after <slug>` reading `blocked` at `Run-Shed`: phase stays `waiting` with the halt reason, read from the file by an `onSleep` hook that then cancels the request through `Cancel`, after which `Watch` returns with no pause;
 - `--after <slug>` whose status goes missing while waiting: phase `failed` with the reason, no pause;
-- `--after-all` with one run reading `running` and then `done`, plus one `blocked` run: fires once the first reads `done`; with no runs it fires at once;
+- `--after-all` with one run reading `running` and then `done`, plus one `blocked` run: fires once the first reads `done`; with no runs it fires at once; and a sub-row listing, beside one run reading `done`, a slug whose status the missing-slug switch reports as not found: it fires on the first reading and the request does not end `failed`;
 - with no request, with a terminal one and with a request whose daemon pid is another's: no pause, no `Hibernate`, and the file absent or byte-for-byte unchanged;
 - an agent caller and a non-Linux GOOS are refused, with no pause.
 
