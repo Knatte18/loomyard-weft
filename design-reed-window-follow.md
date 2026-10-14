@@ -15,7 +15,7 @@ Nothing moves an attached client when a later strand spawns.
 The operator remarked that the LLM Driver is to be dropped anyway, replaced by Go plus a spawnable watcher (see `orch-split` and the Go driver with the tackler behind it).
 With no Driver window, the window would no longer stick there, but a client attached before a spawn still needs to follow the newest agent window.
 
-## Open
+## Scope (operator, 2026-10-14)
 
-- Whether reed moves attached clients to a new strand's window on spawn, and when that should not happen (the operator has picked a window by hand).
-- Whether this waits for the Driver to go, or is fixed in reed now.
+Fixed in reed now, without waiting for the Driver to go.
+When a new agent strand spawns, reed moves each attached client to the new strand's window, but only a client that is on the previous newest agent window (or on the Driver window); a client the operator has moved to another window by hand stays where it is.
