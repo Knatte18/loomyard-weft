@@ -1,0 +1,227 @@
+{
+  "runGuid": "1265f7bf1e6e5ee26d000664d5ce7e99",
+  "planFingerprint": "74ec41464dedaea84e732cfd76bdc9d388062555be39f44bce7177f10c1194a4",
+  "planFileHashes": {
+    "00-overview.md": "9a80905ddc1a7adcaf91e1452bf4dbf799b698180299056f7ff3691e4a70a252",
+    "01-tender-lift-entry.md": "06974f5ec0da72d019388d11e7cff05ab77c4528e3b4fa535a162359e8a37cb9",
+    "02-tendercli-export-hubdeps.md": "6dd1470fa97947057f00886866d34d318b6af9804b3e6e263b90faaad732c72e",
+    "03-hibernate-engine-verbs.md": "ee78862601cee51016eeaf893a73463a9973ab664822132c3d83063738a326ea",
+    "04-hibernate-engine-watch.md": "985b0a4eec6bcd6d4d958e6dd0d9ef38e61ecd9b366eb41dbcbc78cdee3c92b5",
+    "05-hibernate-cli.md": "6830d2730b39a610aff83ed143b35f3fe107fe2e17d6c17f9ded50d4d582dc2a",
+    "06-sleep-deny.md": "9caacf1e4aabdfb863411e3f560616f57030e08470791f3bce750a5b7b16d04c",
+    "07-shortcuts-p-r.md": "fd10d318c6bafcf06b486c6f8f0544f9fa0cc5d4df807edce22f8c2f408f430b",
+    "08-orch-role-hibernate.md": "ed3b2c88375e35c52ea1dba359e55d5abec6dad74a462845d4507318410cd980"
+  },
+  "planOverviewFrameHash": "593c798f4847c0246c95d7301acf1ab6682c004f85ad119e06b9adb19e35b753",
+  "partition": [
+    {
+      "cards": [
+        "01-tender-lift-entry",
+        "02-tendercli-export-hubdeps",
+        "03-hibernate-engine-verbs",
+        "04-hibernate-engine-watch"
+      ],
+      "profile": "cautious",
+      "estimate": 241360,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 1,
+        "startup": 54484,
+        "read_union": 31008,
+        "cards": [
+          {
+            "card": 1,
+            "card_text": 504,
+            "reads": {
+              "file:internal/tenderengine/doc.go": 888,
+              "package:internal/tenderengine": 2000,
+              "tests:internal/tenderengine": 2000
+            },
+            "messages": 55.5,
+            "written": 17154
+          },
+          {
+            "card": 2,
+            "card_text": 144,
+            "reads": {
+              "package:internal/tendercli": 2000,
+              "tests:internal/tendercli": 2000
+            },
+            "messages": 7.5,
+            "written": 2394
+          },
+          {
+            "card": 3,
+            "card_text": 1608,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1788,
+              "package:cmd/lyx/testdata": 2000,
+              "package:internal/hibernateengine": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:internal/hibernateengine": 2000
+            },
+            "messages": 270,
+            "written": 82608
+          },
+          {
+            "card": 4,
+            "card_text": 1512,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1788,
+              "file:pattern/PATTERN-daemon-wakeups.md": 564,
+              "package:cmd/lyx": 2000,
+              "package:cmd/lyx/testdata": 2000,
+              "package:internal/hibernateengine": 2000,
+              "package:pattern": 2000,
+              "tests:cmd/lyx": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:internal/hibernateengine": 2000,
+              "tests:pattern": 2000
+            },
+            "messages": 174,
+            "written": 53712
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "05-hibernate-cli",
+        "06-sleep-deny",
+        "07-shortcuts-p-r",
+        "08-orch-role-hibernate"
+      ],
+      "profile": "cautious",
+      "estimate": 262432,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 2,
+        "startup": 61484,
+        "read_union": 71804,
+        "cards": [
+          {
+            "card": 5,
+            "card_text": 1224,
+            "reads": {
+              "file:cmd/lyx/seamsignature_test.go": 900,
+              "file:cmd/lyx/testdata/test-budget.yaml": 1788,
+              "file:contracts/specs/refusal-spec.md": 5400,
+              "file:docs/overview.md": 9024,
+              "package:cmd/lyx": 2000,
+              "package:cmd/lyx/testdata": 2000,
+              "package:contracts/specs": 2000,
+              "package:docs": 2000,
+              "package:internal/hibernatecli": 2000,
+              "package:internal/lyxdirs": 2000,
+              "tests:cmd/lyx": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:contracts/specs": 2000,
+              "tests:docs": 2000,
+              "tests:internal/hibernatecli": 2000,
+              "tests:internal/lyxdirs": 2000
+            },
+            "messages": 237,
+            "written": 72324
+          },
+          {
+            "card": 6,
+            "card_text": 588,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1788,
+              "file:internal/shuttleengine/claudeengine/hookcmd_integration_test.go": 5148,
+              "file:pattern/PATTERN-no-denied-recovery.md": 252,
+              "package:cmd/lyx": 2000,
+              "package:cmd/lyx/testdata": 2000,
+              "package:internal/shuttleengine/claudeengine": 2000,
+              "package:pattern": 2000,
+              "tests:cmd/lyx": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:internal/shuttleengine/claudeengine": 2000,
+              "tests:pattern": 2000
+            },
+            "messages": 115,
+            "written": 35088
+          },
+          {
+            "card": 7,
+            "card_text": 252,
+            "reads": {
+              "file:docs/overview.md": 9024,
+              "file:internal/shortcutcli/doc.go": 444,
+              "file:internal/shortcutcli/shortcuts.yaml": 120,
+              "package:cmd/lyx": 2000,
+              "package:docs": 2000,
+              "package:internal/shortcutcli": 2000,
+              "tests:cmd/lyx": 2000,
+              "tests:docs": 2000,
+              "tests:internal/shortcutcli": 2000
+            },
+            "messages": 55,
+            "written": 16752
+          },
+          {
+            "card": 8,
+            "card_text": 180,
+            "reads": {
+              "file:contracts/stencils/orch/orch-template-role.md": 2484,
+              "package:contracts/stencils": 2000,
+              "package:contracts/stencils/orch": 2000,
+              "tests:contracts/stencils": 2000,
+              "tests:contracts/stencils/orch": 2000
+            },
+            "messages": 16,
+            "written": 4980
+          }
+        ]
+      }
+    }
+  ],
+  "currentBatch": 1,
+  "masterStrand": "840887492a0b450daf6d63008e525a0d",
+  "masterSessionId": "6fd58a27-eabb-41d9-ac7c-d76f447481ee",
+  "batches": {
+    "1": {
+      "slug": "tender-lift-entry",
+      "cards": [
+        "01-tender-lift-entry",
+        "02-tendercli-export-hubdeps",
+        "03-hibernate-engine-verbs",
+        "04-hibernate-engine-watch"
+      ],
+      "cardHashes": {
+        "01-tender-lift-entry": "06974f5ec0da72d019388d11e7cff05ab77c4528e3b4fa535a162359e8a37cb9",
+        "02-tendercli-export-hubdeps": "6dd1470fa97947057f00886866d34d318b6af9804b3e6e263b90faaad732c72e",
+        "03-hibernate-engine-verbs": "ee78862601cee51016eeaf893a73463a9973ab664822132c3d83063738a326ea",
+        "04-hibernate-engine-watch": "985b0a4eec6bcd6d4d958e6dd0d9ef38e61ecd9b366eb41dbcbc78cdee3c92b5"
+      },
+      "startSha": "d4824a3d68de466ba3db5015cf6212f7d41126f7",
+      "kind": "fork",
+      "spawnedAt": "2026-10-14T17:35:40Z",
+      "sessionId": "6fd58a27-eabb-41d9-ac7c-d76f447481ee",
+      "terminal": false,
+      "status": ""
+    }
+  }
+}
