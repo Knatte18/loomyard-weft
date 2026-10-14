@@ -1,6 +1,6 @@
 # tender: hub-wide pause, resume, revive and stale-binary restart
 
-`tender` · Task · enhancement, bug, shuttle, reed, batten, shed, orch, loom · running · Describe
+`tender` · Task · enhancement, bug, shuttle, reed, batten, shed, orch, loom · running · Merge-In
 
 ## Idea (operator, 2026-10-13)
 
