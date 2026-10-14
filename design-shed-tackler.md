@@ -13,7 +13,8 @@ Batten steps its own shed run in Go but spawns no tackler: an unexpected stop th
 
 Any FSM can go wrong, so every shed-driven process needs the tackler, not only loom: darn, batten, and any later recipe.
 The tackler, and the Go driver it sits behind, belong in shed as code.
-A module's own config can override the tackler's model and budgets, the way loom's keys do today.
+Shed's own config holds the default tackler model and budgets.
+A module's own config can override them, the way loom's keys do today.
 
 ## Related
 
