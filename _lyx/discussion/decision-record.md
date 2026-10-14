@@ -168,6 +168,12 @@ Decision: Every review perch in loom (Discussion-Review, Plan-Review, Webster-Re
 
 Rationale: The operator wants darn and loom configured the same way and wants to switch off any perch for a given task, for example a small task that needs no Plan-Review or Merge-Review.
 
+### Added after Discussion (operator, 2026-10-14): Perch budgets carry no guard
+
+Decision: No perch budget or perch off switch, in loom or darn, is a guard key: each is an ordinary key, settable to 0 in any layer, the run's local layer included. darn's review_max_bounces and review_hard_max_bounces lose CategoryGuard, and no new guard key is added for switching a perch off.
+
+Rationale: Zero rounds is a normal setting. The guard only protects against a run's own agent switching off its review by editing the local config; an agent doing that is behaving wrongly, and that is to be fixed in the agent, not prevented by config categories (operator).
+
 ## Constraints
 
 - `PATTERN-config-layers`: categories stay declared in each module's `ConfigSpec`, built through D1's package, and `skip_review` is classified in the same change; only `configengine` reads layers.
