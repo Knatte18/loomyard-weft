@@ -65,6 +65,14 @@ Rationale: in-process tests must never fork the test binary, and their assertion
 - A pair whose first detached push fails stays local-only until its next commit or sync; another machine cannot adopt it meanwhile.
 - A run resumed from a status file written by an older binary finds its once-marker under the same name, so no duplicate window opens.
 
+<!-- lyx:carry-over Darn-Review -->
+- Darn-Review, round 1: converged; each finding below was fixed or disputed by the round's fixer, and no fresh reviewer has seen the result; the fixer report says which.
+  Review: _lyx/reviews/darn/round-1-review.md; fixer report: _lyx/reviews/darn/round-1-fixer-report.md.
+  - batten-create-and-seed-push-spawns-unasserted (class scope, severity MEDIUM, open in rounds 1)
+  - fabric-add-bypasses-spawnpairpush (class consistency, severity MEDIUM, open in rounds 1)
+  - fabric-add-envelope-and-spawnpairpush-untested (class scope, severity MEDIUM, open in rounds 1)
+<!-- /lyx:carry-over Darn-Review -->
+
 ## Acceptance criteria
 
 - `--window`: the terminal open happens in the Worktree-Create row after a successful create or an already-complete pair, and at most once per run with the Run-Shed row's open.
