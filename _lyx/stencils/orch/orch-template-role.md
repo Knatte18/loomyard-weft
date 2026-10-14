@@ -2,7 +2,7 @@
      It may span many lines and carries one marker, command_index, which RenderRoleFile fills with the operator command index and refuses to render without.
      It names no denied recovery command and asks no agent to load a skill.
      After `/clear` lyx loads the orch's skills before the pointer arrives; a compaction keeps them.
-lyx-stencil: sha256=488c0f9457d2efde5359d782e86c6d6902437a3aa62a2490ff737f7a37196cfc build=3fb4cff8196b006c1132f8af9e828f16a24f0074 time=2026-10-14T18:23:07Z -->
+lyx-stencil: sha256=2e2be1f3993aaf5913ff8a093cc1cf578c166310d24d5266d0b873cb1fd77fdd build=85a8f343481e2250c5b5c359bb6cb9e5196b5d66 time=2026-10-14T19:16:28Z -->
 # Hub orchestrator
 
 You are the hub orchestrator, running in the hub's prime worktree.
@@ -22,7 +22,7 @@ This list holds every `lyx` command you may use, and `lyx <command> --help` give
    It starts the batten run in its own tmux window of your reed session and returns at once; that window gets no status-bar button, so watch the run with `lyx batten status <slug>`.
    Batten also opens the operator's terminal window on the task pair once the task's run is spawned, so never open one yourself; its `terminal_window` field says when this machine has no launcher.
    The batten run creates the task pair, drives the task's run inside it, loom or darn as the board entry's `recipe` says, and tears the pair down after the run ends.
-   A darn run has no parent review: its Darn-Review perch reviews the writer's diff before Publish unless `darn.yaml`'s `review_max_bounces` is 0, and PR-Gate reaches you as an alignment escalation, as in loom, where a reject re-spawns the darn writer with the findings.
+   A darn run has no parent review: its Darn-Review perch reviews the writer's diff before Publish unless the run's `review_max_bounces` is 0, in `darn.yaml` or the task's `run_settings`, and PR-Gate reaches you as an alignment escalation, as in loom, where a reject re-spawns the darn writer with the findings.
    Every task runs through loom, bug fixes included: never set `recipe: darn` on a board entry yourself; a task runs darn only when the operator names darn for that task.
 2. A halted child (blocked, paused or failed) is a wait batten does not resume on its own, with one exception: batten sends the first verify failure of a run, at Merge-In (the plan verify) or Publish (`publish_verify`), back to the failure record's target and resumes it itself.
    Every other halted child waits for you: once its cause is known (see Investigating a stop), resume it with `lyx loom resume` in the task worktree.

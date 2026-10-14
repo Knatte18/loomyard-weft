@@ -11,7 +11,7 @@
      and {{.parent_notify}} the parent-notification rule, whichever of the shed-template-driver-notify stencils fits the run.
      The body is recipe-blind: it names no recipe, no state-directory path and no recipe-owned command, which arrive only through the markers.
      Refusal text and its ways forward live in contracts/specs/refusal-spec.md and are pointed at, never restated.
-lyx-stencil: sha256=4aefdd7b2af90f6fc56fd80786f70fc9167142c61a156747b918375001c05317 build=694f68f90b1ec5f4a1a8cd003683916244bd983b time=2026-10-12T07:26:05Z -->
+lyx-stencil: sha256=ce6184018faffdacbdda53eb378e851f9312ba0fba0acb89da005c6836168d28 build=85a8f343481e2250c5b5c359bb6cb9e5196b5d66 time=2026-10-14T19:16:28Z -->
 
 # Driver for run `{{.run_id}}`
 
@@ -62,6 +62,7 @@ A `blocked` stop goes to `## Arbiter` first, and is handed back only when the ar
 `awaiting` is handed back the same way, as a planned hand-off with the envelope's `reason`: the run waits on a person by design, so the report words it as a hand-off and never as a failure,
 and nothing is repaired.
 An `awaiting` envelope that carries a non-empty `parent_notice` goes to `## Arbiter` first, and is then relayed to the parent as `## Notifying the parent` describes.
+The `parent_notice` is relayed only after the arbiter command hands on, refuses, times out or returns a malformed verdict, and never after a `resume`.
 An `awaiting` envelope without one keeps the hand-off above.
 A run halted at the gate re-runs only the gate on resume,
 so a fix committed by hand outside the run is pushed by the operator before `approve`, or goes through `reject` instead.
@@ -78,7 +79,8 @@ The error envelope carries `kind`, one of six values, plus `transient`, `trace_f
 - No `kind` (an unseeded run-id, an unsupported verb): always escalate with the refusal text verbatim, after the fork has read its trace for the report.
   Never re-seed, and no `lyx` verb fixes either.
 
-Go already re-steps a transient failure once inside the loop, so a transient `kind` that reaches you has failed twice at the same producer: take it to `## Arbiter`, and hand it back when the arbiter hands on.
+Go already re-steps a transient failure once inside the loop, so a transient `kind` that reaches you has failed twice at the same producer: spawn the one fork below under the repair cap, as for a `producer` error.
+It reaches `## Arbiter` only when the fork's action is an escalation.
 
 At an `error` or `interrupted` stop you spawn exactly one fork of yourself, never a named or other subagent, and you read no trace yourself.
 Hand the fork the envelope and the stop report path `{{.report_path}}`.
@@ -93,7 +95,7 @@ You re-launch the loop on your own in exactly these cases, a closed list:
 
 - the fork's action is a re-launch;
 - the arbiter's verdict is `resume`, whose envelope carries the `relaunch` line to run; this is allowed over a spent repair cap, and for this case it reverses the rule that a `blocked` stop is never repaired;
-- `lyx shed status`'s `last_step.binary_changed` is true at an eligible stop, which is a `blocked` stop, an escalated `producer`, `bootstrap`, `unseeded` or `interrupted` error, or a transient stop that failed twice;
+- `lyx shed status`'s `last_step.binary_changed` is true at an eligible stop, which is a `blocked` stop or an escalated `producer`, `bootstrap`, `unseeded`, `interrupted` or transient error;
   the guide's binary watch states the watch and the clean-tree guard that gate it.
 
 Never re-launch over an `awaiting`, `paused` or `busy` stop, an `ownership` stop, a no-kind refusal, or an `interrupted` stop under `interrupt_policy: handback`.
@@ -107,18 +109,20 @@ Run it as one background job from the session's own cwd, with the stop envelope'
 Run it at exactly these stops, and never run it at any other:
 
 - a `blocked` stop;
-- an `awaiting` stop whose envelope carries a non-empty `parent_notice`;
-- an `error` or `interrupted` stop, after the fork's action is an escalation;
-- a transient stop that failed twice.
+- an `awaiting` stop whose envelope carries a non-empty `parent_notice`, whatever row it stops at;
+- an `error` or `interrupted` stop, after the fork's action is an escalation, a transient one included.
 
 Never run it at an error stop whose fork named a repair verb or a re-launch.
+The arbiter command decides whether the stop is eligible, so you never judge eligibility yourself, and a refused call spawns nothing.
 
 Act on its envelope:
 
 - `verdict: resume`: run the envelope's `relaunch` line at once as the loop's background job.
   The re-launch's stop is handled like any other stop.
 - An error envelope from that re-launch carrying `arbiter_attempt`: take the hand-on path below, with the verdict path.
-- `verdict: hand-on`, a refusal from the arbiter command other than a wake re-run's, or the job's observed exit without an envelope: write the stop report with the arbiter's `reason`, `question` and `verdict_path` when present, or the refusal verbatim, then park and notify the parent exactly as before, the parent notice relayed verbatim at an `awaiting` stop.
+- `verdict: hand-on` or the job's observed exit without an envelope: write the stop report with the arbiter's `reason`, `question` and `verdict_path` when present, then park and notify the parent exactly as before, the parent notice relayed verbatim at an `awaiting` stop.
+- A refusal from the arbiter command other than a wake re-run's, at an `awaiting` stop, is the planned hand-off: write the refusal into the stop report with no claim of failure, relay the `parent_notice` verbatim and park.
+- A refusal from the arbiter command other than a wake re-run's, at any other stop, takes that stop's existing handling under `## Stopping on a non-running state` or `## Error and interrupted stops`.
 
 On a wake that finds the session unparked with no loop job and no arbiter job running, re-run the arbiter command only when your own last action for the current stop was running it and its job ended without an envelope you hold, as after a compaction or a driver revive mid-arbiter; never on the wake of the loop job's own exit.
 The re-run spawns nothing for a stop already arbitrated and returns that attempt's verdict.

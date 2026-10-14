@@ -8,7 +8,7 @@
      {{.parent_directive}} the no-parent variant of the shared parent directive rendered by internal/parentdirective,
      and {{.edit_directive}} the shared edit directive rendered by internal/editdirective.
      The body is recipe-blind: it names no recipe and no row, which arrive only through the stop envelope and the files it points at.
-lyx-stencil: sha256=d254b7c715c4bbd743b8fc98354d8b3353408c1ee23afd266f99ab07b1a4342a build=30385e1ae3cd25497f9b9d6d2a9848ce19516dad time=2026-10-13T10:42:56Z -->
+lyx-stencil: sha256=8391001de47df47898ae6ab10576b6ea12974cd7d565f4308fff6185fc47cb75 build=85a8f343481e2250c5b5c359bb6cb9e5196b5d66 time=2026-10-14T19:16:28Z -->
 
 # Arbiter for run `{{.run_id}}`
 
@@ -65,7 +65,6 @@ Hand on when the call needs an operator decision that neither the board entry no
   What a ledger entry's `design-wrong` and `mechanical` tags mean is the judge stencil's, which the brief names.
   - `hard-cap`: read the open design-wrong findings against the code; accept when a finding is wrong or the fix in place answers it, otherwise hand on.
   - `circling`: accept when the returned finding is wrong; continue when the fix is converging and the round is below the hard cap; otherwise hand on.
-  - `budget`: settle from the review, ledger and verdict files as for `circling`, or hand on.
 - At an error stop you have no repair verbs.
   You may judge a plain re-launch safe, name a goto target, or hand on.
 - A `resume` at a review escalation needs its circling decision recorded first.
