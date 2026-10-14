@@ -14,7 +14,7 @@ The trace of that start:
 
 ## Direction (operator, 2026-10-14)
 
-Open the window as soon as the worktree exists, running attach at once; `lyx reed attach` boots the reed session itself when it does not exist yet (operator).
+Start Konsole with `lyx reed attach` in the pair as soon as the warp worktree is up, before the pushes, the weft seed and the inner shed spawn; `lyx reed attach` boots the reed session itself when it does not exist yet (operator).
 
 ## Open
 
