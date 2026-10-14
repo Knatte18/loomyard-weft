@@ -1,11 +1,11 @@
 {
-  "current_producer": "Describe",
+  "current_producer": "Merge-In",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Describe",
-    "last": "Darn-Bouncer → done",
+    "now": "Merge-In",
+    "last": "Describe → done",
     "wait": ""
   },
   "history": [
@@ -69,6 +69,13 @@
       "outcome": "done",
       "output": "/home/knatte/Code/loomyard-LYXHUB/delete-order-own-edit/_lyx/reviews/darn/round-2-bouncer-ledger.md",
       "at": "2026-10-14T19:22:46Z"
+    },
+    {
+      "producer": "Describe",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYXHUB/delete-order-own-edit/_lyx/landing/summary.md",
+      "at": "2026-10-14T19:23:26Z",
+      "gate_attempts": 0
     }
   ],
   "product": {
