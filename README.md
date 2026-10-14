@@ -19,16 +19,13 @@ Held by a run; its scope is locked until the run ends.
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | 1 | **tender: hub-wide pause, resume, revive and stale-binary restart**<br>• A tender module holds hub-wide pause, resume, revive and stale-binary restart, and a pause no longer consumes a call deadline | [`tender`](design-tender.md) | loom | Webster-Burler-Review | 1d | 1d | shuttle, reed, batten, shed, orch, loom |
 | 2 | **Darn: a decision record for mid-run scope corrections, and PR-Align**<br>• Darn has no decision record, so a mid-run scope correction never reaches its review; and no PR-Align row, so every darn PR waits for the orch at PR-Gate | [`claimed-scope-edit`](design-claimed-scope-edit.md) | loom | Plan-Write | 1d | 1d | board, loom, burler |
+| 3 | **Plan and Webster checks out of step with the code a plan changes** | [`plan-gate-gaps`](design-plan-gate-gaps.md) | loom | Worktree-Create | 2d | 0m | webster, loom, quarry |
 
 ### Ready
 
 Waits on nothing open; can start now.
 
-#### Normal priority
-
-| # | Task | Slug | Recipe | After | Age | Revised | Labels |
-| --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | **Plan and Webster checks out of step with the code a plan changes** | [`plan-gate-gaps`](design-plan-gate-gaps.md) | loom |  | 2d | 0m | webster, loom, quarry |
+_None._
 
 ## Notes
 
