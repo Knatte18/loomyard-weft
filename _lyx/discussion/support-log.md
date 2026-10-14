@@ -60,7 +60,7 @@ Every fork returned a report.
 - **Plan-Review or `validate-plan` flags a rename after use.** It pushes the work onto the plan writer, who would reorder or split cards by hand to get what the batchifier can do mechanically.
 - **Run `./cmd/lyx` in each batch gate.** Catches the break a batch late instead of at the card, and covers only `cmd/lyx` while guard tests live in other packages too.
 - **A plan-time check for symbols pinned by name.** Needs per-test knowledge of what each scan pins; the guard step catches the same break generically for seconds per card.
-- **Refuse begin-batch on a guard-scan error.** Stalls the batch on a test-file fault the plan-level verify already reaches.
+- **Refuse begin-batch on a `GuardScanError`.** Stalls the batch on a test-file fault the plan-level verify already reaches.
 
 ## Review rounds
 
@@ -73,5 +73,5 @@ _No rounds yet._
 - Q3 (resolved, auto-pick): Run all of `./cmd/lyx` or only marked guard tests? — Marked guard tests, reusing impactset's scan, since guards also live outside `cmd/lyx`.
 - Q4 (resolved, auto-pick): Nested-module guard tests? — Root module only (A3).
 - Q5 (resolved, auto-pick): Guard-scan failure behaviour? — Render a prompt line, no refusal (D3).
-- Q7 (resolved, auto-pick, lens review): How does webster list the root module's package directories for the guard scan? — A directory walk skipping nested modules, so no `go list` spawns at every begin-batch.
 - Q6 (resolved, auto-pick): Should a by-hand batch accept verb be built? — No; the board's scope list does not ask for it and D1 removes the case that needed it.
+- Q7 (resolved, auto-pick, lens review): How does webster list the root module's package directories for the guard scan? — A directory walk skipping nested modules, so no `go list` spawns at every begin-batch.
