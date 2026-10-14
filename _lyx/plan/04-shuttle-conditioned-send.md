@@ -4,6 +4,7 @@
 - `internal/shuttleengine#sendContext`
 - `internal/shuttleengine#sendVerified`
 - `internal/shuttleengine#clearUnlandedText`
+- `internal/shuttleengine#clearableBoxEngine.ParseSessionSignals`
 - `internal/shuttleengine/doc.go`
 - `cmd/lyx/testdata/test-budget.yaml`
 
@@ -41,8 +42,10 @@ It refuses at once:
   and operator activity in the pane, asked last.
 It never clears a stray character and never closes the picker.
 
-`typeVerified` is the typing half of `sendVerified`, cut out with no change: the paste path, or the typing, appearance and submit path, with their windows.
-`sendVerified` becomes `awaitIdleSession` followed by `typeVerified`, so every existing send behaves as today.
+`typeVerified` is the typing half of `sendVerified`, cut out with no change but one: the paste path, or the typing, appearance and submit path, with their windows.
+The `retryLanded` check stays out of the cut:
+`sendVerified` becomes `awaitIdleSession`, then `retryLanded` on the paste path, then `typeVerified`, so every existing send behaves as today.
+`Runner.SendConditioned` therefore never consults `pending-send.json`, and a line an earlier unlanded send left pending is pasted again instead of counted as landed.
 `clearUnlandedText` skips its clear when `sc.keepUnlanded` is set, returning not landed with the note "the unlanded text was left in the input box".
 A conditioned send that does not land therefore fails with `ErrSubmissionNotLanded` and leaves its text in the box.
 
@@ -67,8 +70,14 @@ Rows:
 - draft: the box holds `half a thought`; a `*SessionBusyError` with `Draft` true, no key sent and the box unchanged.
 - lone stray character: the box holds `x`; the same refusal, and no clear key sent.
 - operator active: `ActiveQueue` reads active; a `*SessionBusyError`, nothing typed.
+- no input box: the pane shows no input box; a `*SessionBusyError`, nothing typed, and the clock where it was.
 - rewind picker: the capture shows `REWIND-PICKER`; an error wrapping `ErrRewindPickerOpen`, with no key sent.
 - not landed: `swallowEnterUntil` past the window; `ErrSubmissionNotLanded`, and the box still holds the sent text, with no clear key sent.
+- pending record from an earlier send, over a `pasteEngine`: `pending-send.json` holds the same text with a `START` past its offset, then the events file reads `START` and `APIERR`; the line goes out through `PasteSubmit`, not typed, and the result is `turnStarted` as scripted.
+  The paste path is the one production's engine takes, so this row also pins that it is taken.
+
+`clearableBoxEngine.ParseSessionSignals` (`run_test.go`) gains the case `trimmed == "APIERR"`, mapped to a signal of kind `SessionSignalAPIErrorTurnEnd`.
+A `pasteEngine` embeds `clearableBoxEngine` through `tuiEngine`, so without the case it drops `APIERR`, reads the events file as an unmatched turn start and refuses the pending-record row with `ErrSendConditionUnmet` before pasting.
 Each refusal row asserts the fake clock advanced zero.
 
 `test-budget.yaml`'s `internal/shuttleengine` row rises from 171 to 172.

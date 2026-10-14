@@ -46,7 +46,10 @@ Rows:
 - idle phase, no pause record: the check runs once per tick that returned not done;
 - a non-idle phase, `PhaseHandoffRequested`, saved before `Run`: the check never runs;
 - a live hub entry in the told record, handled by the watcher or not yet: the check never runs;
-- a live slug entry only: the check runs, since no hub entry is live.
+- a live slug entry only: the check runs, since no hub entry is live;
+- an unreadable pause record, a directory in place of the file at the told `RecordPath`: the check never runs.
+- a state file that turns unreadable after the tick's last save: idle phase with one queued notice, and the `fakeSession`'s `onSend` hook replaces the state file with a directory while the tick delivers the notice.
+  A clean notice send saves no state after it, so the tick succeeds and only `restartSafe`'s re-read fails; the check never runs, and the following ticks fail on `LoadState`, so `Run` returns that error at the consecutive-failure cap.
 
 `test-budget.yaml`'s `internal/orchengine` row rises from 142 to 143.
 

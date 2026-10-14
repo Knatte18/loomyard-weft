@@ -33,6 +33,8 @@ Each pair moves with `git mv` first, per the plan's rename mechanic, followed by
 - the import of `internal/pauseengine` in `tendercli` and every `pauseengine.` qualifier there;
 - `tendercli`'s log messages, which start `pausecli:`, now start `tendercli:`.
   Error texts keep their `pause:` prefix, which names the verb, and the shortcut spellings `lyx pause` and `lyx resume`.
+- `tenderengine`'s error texts in `pause.go` that start `pauseengine:`, `errEntryGone` and `errOwnedElsewhere`, now start `tenderengine:`;
+  a grep for the old prefix in tests found no assertion on them.
 `InstallNetworkGate` moves with the CLI package, and `newRoot`'s pre-run calls `tendercli.InstallNetworkGate`; its module list mounts `tendercli.Command()`.
 `seamsignature_test.go` lists `tendercli.RunCLI` and `tendercli.RunCLIIn` in place of the `pausecli` ones.
 `test-budget.yaml` replaces the rows `internal/pausecli: 4` and `internal/pauseengine: 5` with `internal/tendercli: 4` and `internal/tenderengine: 5`, sorted in place.

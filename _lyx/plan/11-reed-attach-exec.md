@@ -32,6 +32,7 @@ Bound: nothing runs after the attach in that process, so `reed attach` must be t
 `prime`, which already has `reed attach` last, keeps passing.
 
 `reedcli/doc.go` states that `attach` execs tmux on Unix and keeps a child on Windows.
+`attachCmd`'s `Long` says attach replaces itself with `tmux attach-session` on Unix and runs it as a child on Windows, and keeps the rest of its text.
 
 `TestSmokeLifecycle`'s `AttachRendersInsideHarnessPane` subtest, `tmux` tier, reads the harness pane's `#{pane_current_command}` once the marker shows and asserts it reads `tmux`.
 With a lyx parent left waiting, it reads the lyx binary's name.

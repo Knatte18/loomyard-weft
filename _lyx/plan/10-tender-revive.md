@@ -81,7 +81,7 @@ It refuses a slug with no pair, naming the slugs that have one, as `pause` does,
 - `OrchStrand` from `orchengine.LoadState(orchcli.PrimePaths(prime)).Strand`;
 - `QueueOrchRevive` as `orchengine.QueueConditionalNotice(orchcli.PrimePaths(prime), line, orchengine.NoticeCondition{State: shuttleengine.SessionIdleStalled, Cause: shuttleengine.SessionCauseAPIError}, time.Now())`.
 
-`refusal-spec.md`'s pause section gains the rows "revive: unknown slug" and "revive: agent outside its own pair", with the way forward the refusals carry, and its caller row names revive.
+`refusal-spec.md`'s pause section gains the row "revive: unknown slug", with the way forward the refusal carries, and its existing caller row, "pause or resume: agent outside its own pair", names revive in its title, trigger and way forward.
 `docs/overview.md`'s tender bullet, `pausecli/doc.go` and `pauseengine/doc.go`, in a "Revive" section, describe the verb, its lock hold and its bound.
 `SANDBOX-CORE-SUITE.md`'s S12 asks whether `lyx tender revive` with nothing stalled prints an empty report and succeeds.
 
