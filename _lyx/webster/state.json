@@ -253,7 +253,7 @@
       }
     }
   ],
-  "currentBatch": 0,
+  "currentBatch": 6,
   "masterStrand": "0ebaec76d4e637709e2a161221754a9d",
   "masterSessionId": "f8d50f22-6cb4-4c18-9279-b0e0ecc1c6d4",
   "batches": {
@@ -305,6 +305,29 @@
       "bracketTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-perch-budget-arbiter/f8d50f22-6cb4-4c18-9279-b0e0ecc1c6d4/subagents/agent-a5c2c36e1efc386ad.jsonl"
       ]
+    },
+    "6": {
+      "slug": "pending-escalation-cause",
+      "cards": [
+        "06-pending-escalation-cause",
+        "07-arbiter-eligibility-package",
+        "08-arbiter-hold-reading",
+        "09-batten-eligible-stop-hold",
+        "10-driver-stencil-arbiter-flow"
+      ],
+      "cardHashes": {
+        "06-pending-escalation-cause": "fa9bff95c9bcea02e56891e4f52f356efd85daaac1f13dd4faf1143fe308662f",
+        "07-arbiter-eligibility-package": "554e3ee0bb858cdb558a047d28ec78a63aab17d17cbaa989f2b387ace28d1d44",
+        "08-arbiter-hold-reading": "d24c434b662082d9fe67b9eb7309fcfd11a470cfe6a75b3e5c254bf335fd700e",
+        "09-batten-eligible-stop-hold": "9aff583b101e80d99caaa130b273ef3164b2c60ad32d62c4d2e86ff10dfee162",
+        "10-driver-stencil-arbiter-flow": "4aa38091bf90a2dd0e7ac16dd3ba9b1139a524315bf409fb4e3c880be9de2df4"
+      },
+      "startSha": "7d81c69ede89a29c3e73ba279359bacb7ab775b5",
+      "kind": "fork",
+      "spawnedAt": "2026-10-14T18:46:37Z",
+      "sessionId": "f8d50f22-6cb4-4c18-9279-b0e0ecc1c6d4",
+      "terminal": false,
+      "status": ""
     }
   },
   "seenForkTranscripts": [
