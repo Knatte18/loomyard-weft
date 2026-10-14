@@ -25,19 +25,15 @@ Held by a run; its scope is locked until the run ends.
 
 Waits on nothing open; can start now.
 
-_None._
+#### Normal priority
+
+| # | Task | Slug | Recipe | After | Age | Revised | Labels |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| 1 | **tokencount under-counts fork output tokens**<br>• tokencount keeps the first transcript line per message id, which in subagent transcripts carries partial output_tokens; fork costs come out low | [`tokencount-fork-output`](design-tokencount-fork-output.md) | loom |  | 1d | 1d |  |
 
 ## Notes
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
-
-### Bugs
-
-#### Normal priority
-
-| # | Note | Slug | Age | Revised | Labels |
-| --- | --- | --- | --- | --- | --- |
-| 1 | **tokencount under-counts fork output tokens**<br>• tokencount keeps the first transcript line per message id, which in subagent transcripts carries partial output_tokens; fork costs come out low | [`tokencount-fork-output`](design-tokencount-fork-output.md) | 1d | 1d |  |
 
 ### Enhancements
 
