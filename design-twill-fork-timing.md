@@ -165,3 +165,22 @@ Eight runs, a 2x2 of writer timing (after, fork0) and judge (today's, a critical
 - Shared lens blind spot: branches with no test row reaching them (KI2, KI4, KW4-type); no lens in any run flagged KI2 or KI4, every window plan repeats KW4 at least in part, and no judge can fix what no lens reports.
 
 A further bench, after against fork0 with the critical fixer in both, three references, one run each, was started on 2026-10-14 (operator).
+
+## Fork0 bench, after against fork0, both with the critical fixer (2026-10-14)
+
+Six runs on `intake-bugs-1012`, `run-window-bugs` and `plan-gaps` (new key KP1–KP13), one per arm per reference; report `docs/research/twill-fork0-bench.md`.
+- Cost level ($7.25 after, $7.45 fork0 a plan); fork0 finished first on every reference; fork0 lenses again found more real findings (58 against 41, 20 against 11 at MEDIUM or above), the third bench in a row, with no wrong findings.
+- Key level (8 repeated or partly repeated per arm), so the earlier gap looks like writer variance; the critical fixer made one wrong disposition in 106; KI5, KW4 and KP3 are blind spots shared by every lens.
+
+## Rationale bench, fork0 with a rationale file against fork0 (2026-10-14)
+
+Three runs of arm r (fork0 also writes a rationale file the master reads only after the lens forks return), against the fork0 bench's arm f; report `docs/research/twill-rationale-bench.md`.
+- Cost level ($7.61 against $7.45 a plan); the blindness held; the rationale was cited in 2 of 60 dispositions, both right, and changed no outcome.
+- Key slightly worse (10 against 8), all from fork0's writing, which the rationale cannot reach; no case for the rationale file.
+
+## Outcome (operator, 2026-10-14)
+
+Build fork0: the master explores, fork0 writes the plan files, and the master reads the plan without fork0's reasoning, spawns the lens forks, and judges and fixes as a strict critical fixer; the Burler-style fixer prompt is essential.
+No rationale file.
+One extra lens for the shared blind spot: branches with no test row that reaches them.
+Recorded in `docs/research/twill-rationale-bench.md`, "Outcome (operator, 2026-10-14)".
