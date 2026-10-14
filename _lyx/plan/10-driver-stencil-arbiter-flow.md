@@ -1,4 +1,4 @@
-# Card 9 — LLM driver stencil: fork before arbiter, the verb decides, no relay after a resume
+# Card 10 — LLM driver stencil: fork before arbiter, the verb decides, no relay after a resume
 
 **Edit:**
 - `contracts/stencils/shed/shed-template-driver.md`
@@ -29,4 +29,4 @@ and a `mustNot` of "a transient stop that failed twice." (D7: a twice-failed tra
 
 **ImpactSummary:** the LLM driver stencil's arbiter section and its transient rule change wording, pinned by five new claims in the existing stencil claims table.
 
-**Commit:** 9: driver stencil: fork before arbiter, the verb decides eligibility, no relay after a resume
+**Commit:** 10: driver stencil: fork before arbiter, the verb decides eligibility, no relay after a resume

@@ -1,6 +1,6 @@
 ---
 format: 5
-approved: false
+approved: true
 language: go
 ---
 
@@ -16,13 +16,14 @@ The decision record's "Added after Discussion" entries override D2, D3, D4 and t
 
 1 — reviewbudget-package — a stdlib-and-configengine leaf declaring the review budget key family, its categories, cap resolution, layer routes and bound checks
 2 — zero-round-perch-routing — a perch budget of 0 stamps zero_rounds on its Bouncer, which settles at once; the merge-review route switch goes
-3 — loom-config-zero-rounds — loom.yaml's budgets move onto reviewbudget with null inheriting and 0 meaning zero rounds, skip_merge_review retired and migrated
-4 — darn-config-per-run-budget — darn's budget keys lose the guard, become settable per run and refuse by layer
-5 — pending-escalation-cause — shedadapters reads a pending escalation's cause
-6 — arbiter-eligibility-package — one eligibility function in arbiterstop; an awaiting stop is eligible only at a hard-cap or circling escalation
-7 — arbiter-hold-reading — arbiterstop reads the facts batten's eligible-stop hold decides on
-8 — batten-eligible-stop-hold — batten holds an eligible stop's notice until the arbiter hands on, and measures the report wait from the hold's end
-9 — driver-stencil-arbiter-flow — the LLM driver sends a twice-failed transient to its fork first, lets the verb decide eligibility and relays no notice after a resume
+3 — yamlengine-null-leaf-set — yamlengine --set gives a scalar the tag its own text resolves to when the text or the leaf is null
+4 — loom-config-zero-rounds — loom.yaml's budgets move onto reviewbudget with null inheriting and 0 meaning zero rounds, skip_merge_review retired and migrated
+5 — darn-config-per-run-budget — darn's budget keys lose the guard, become settable per run and refuse by layer
+6 — pending-escalation-cause — shedadapters reads a pending escalation's cause
+7 — arbiter-eligibility-package — one eligibility function in arbiterstop; an awaiting stop is eligible only at a hard-cap or circling escalation
+8 — arbiter-hold-reading — arbiterstop reads the facts batten's eligible-stop hold decides on
+9 — batten-eligible-stop-hold — batten holds an eligible stop's notice until the arbiter hands on, and measures the report wait from the hold's end
+10 — driver-stencil-arbiter-flow — the LLM driver sends a twice-failed transient to its fork first, lets the verb decide eligibility and relays no notice after a resume
 
 ## Shared Decisions
 

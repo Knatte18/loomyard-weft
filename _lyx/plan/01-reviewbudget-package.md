@@ -33,7 +33,7 @@
 **Intent:**
 D1: one declarer of the review budget key family that loom and darn config both build on, so the two recipes cannot drift apart.
 Production code lives in `internal/reviewbudget/reviewbudget.go` and imports only the standard library and `internal/configengine`, the closed set the decision record's constraint fixes; it declares no `ConfigTemplate`, so the configreg registration oracle ignores it.
-Nothing calls it yet: cards 3 and 4 move loom and darn onto it.
+Nothing calls it yet: cards 4 and 5 move loom and darn onto it.
 
 What it declares:
 
@@ -58,7 +58,7 @@ What it declares:
   then, for each perch in `Perches` order, or for the run-wide pair alone when `Perches` is empty, a resolved hard cap below its resolved soft cap: `resolved hard cap <h> is below "<softKey>"'s resolved soft cap <s>`, ending instead `; way forward: raise the hard cap: <Route of hardKey>, or lower the soft cap: <Route of softKey>, then run "lyx loom resume"`.
   A `Route` error is returned as is.
 - `CheckLocal(set, perches)` checks the family's budget keys present in `set`, a local-layer document its caller decoded into a map, and leaves every other key alone: `RunSoftKey` below 0, a per-perch soft key below 0, `RunHardKey` below 1 and a per-perch hard key below 0 are each refused with `key "<key>": must be at least <bound>, got <v>; correct the task's run_settings with "lyx board upsert"`.
-  A per-perch soft key whose value is nil (a YAML null) passes; any budget key whose value is neither an `int` nor nil is refused with `key "<key>": must be an integer`.
+  A nil value (a YAML null) passes only for a per-perch soft key (`SoftKey(p)`), the one key a null gives a meaning; a nil `RunSoftKey`, `RunHardKey` or per-perch hard key, and any budget key whose value is neither an `int` nor nil, is refused with `key "<key>": must be an integer`.
   Every refusal is marked `configengine.ErrInvalid`.
 
 Tests, unit tier, `t.Parallel`:
@@ -66,7 +66,7 @@ Tests, unit tier, `t.Parallel`:
 It reaches each refusal above with its prefix and its route by layer: a local hard cap names `--layer local` and `lyx board upsert`, a worktree one `lyx config <module> --set` in the task worktree, a default one the prime command of each spec kind.
 It reaches the hard-below-soft refusal with the soft cap from the local layer, naming both the local and the hub route, and a clean set returning nil.
 Each row also asserts the `Resolve` result for its perch: a nil own soft cap resolving to the run-wide value and key, and an own 0 resolving to 0 under the perch's own key.
-`TestCheckLocal` is a table: each bound refused naming key and bound, a null per-perch soft key and a run-wide 0 accepted, a non-budget key ignored, a string value refused, every refusal matching `configengine.ErrInvalid`.
+`TestCheckLocal` is a table: each bound refused naming key and bound, a null per-perch soft key and a run-wide 0 accepted, a non-budget key ignored, a string value and a null `review_max_bounces` each refused as not an integer, every refusal matching `configengine.ErrInvalid`.
 `TestLeafInvariant_AllowlistOnly` calls `scankit.AssertImportAllowlistNoStale` on `internal/reviewbudget` with `internal/configengine` alone.
 `TestMain` runs through `tmuxkit.Main` as every package's does.
 

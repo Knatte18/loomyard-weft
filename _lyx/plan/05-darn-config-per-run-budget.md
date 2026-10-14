@@ -1,4 +1,4 @@
-# Card 4 — darn config on the shared budget family, budget settable per run
+# Card 5 — darn config on the shared budget family, budget settable per run
 
 **Edit:**
 - `internal/darnengine#Config`
@@ -47,13 +47,14 @@ What it lets through: a guard comes off both keys, so a task can switch off its 
 - `LoadConfig` replaces its two hard-cap refusals with `reviewbudget.CheckResolved(dirs, spec, reviewbudget.Values{RunSoft: cfg.ReviewMaxBounces, RunHard: cfg.ReviewHardMaxBounces})`, which adds `review_max_bounces` below 0 and words every refusal by the layer its value comes from: a value from the local layer names `lyx config darn --layer local --set` in the task worktree and `lyx board upsert`, a hub value `lyx config darn --set` from the prime.
   The hard-below-soft check now applies at a soft cap of 0 as well, where any hard cap of at least 1 passes, so the "while that is above 0" exemption goes.
   `hardCapSetCommand` and `softCapSetCommand` are deleted with it; `LoadConfig` was their one reader.
-- `ValidateLocalValues` decodes a local-layer document into a `map[string]any`, refusing one that does not parse marked `configengine.ErrInvalid`, and returns `reviewbudget.CheckLocal(set, nil)`.
+- `ValidateLocalValues` decodes a local-layer document into a `map[string]any` and returns `reviewbudget.CheckLocal(set, nil)`.
+  Its caller has already run `configengine.ValidateLocal` over the same bytes, so a decode failure is a fail-loud guard that wraps the decode error marked `configengine.ErrInvalid`, with no refusal-spec row and no test row.
 - `Config`'s `ReviewMaxBounces` comment and `template.yaml`'s two budget comments say the keys are settable per run through `run_settings`, 0 runs neither Darn-Review nor Describe, and the hard cap is at least 1 and not below the budget.
 - `doc.go` says the same, and that a budget refusal names the command for the layer its value came from.
 
 `internal/configreg`: `Modules`' darn entry gains `CheckValues: darnengine.ValidateLocalValues`, so a darn `run_settings` budget below its bound is refused at `lyx board upsert` and Seed-Child.
 
-`internal/loomcli`: `perchHardCap`'s darn branch already names its route through `reviewbudget.Route` since card 3, so a hard cap from the run's local layer, which this card admits, names the local route with no code change there.
+`internal/loomcli`: `perchHardCap`'s darn branch already names its route through `reviewbudget.Route` since card 4, so a hard cap from the run's local layer, which this card admits, names the local route with no code change there.
 
 `contracts/specs/refusal-spec.md`: the build-time row "darn.yaml: review_max_bounces below 0", `loomrecipe`'s `checkDarnReviewBudget`, stays as it is; a load-time row "darn.yaml: review_max_bounces below 0 at load" is added, and the "review_hard_max_bounces below 1" and "hard cap below soft cap" rows say their way forward is by layer, each naming `lyx config darn --layer local --set` and `lyx board upsert` for a value from the local layer and `lyx config darn --set` from the prime for the hub file.
 `contracts/stencils/orch/orch-template-role.md`'s run-loop line says the Darn-Review perch runs unless the run's `review_max_bounces` is 0, in `darn.yaml` or the task's `run_settings`.
@@ -70,4 +71,4 @@ Its local-override loop keeps the `verify` refusal and replaces the `review_hard
 
 **ImpactSummary:** darn.yaml's two budget keys become ordinary per-run keys checked through reviewbudget at load and at upsert, and darn's hard-cap way forward follows the layer; darn's routing and wiring are unchanged.
 
-**Commit:** 4: darn config: review budget settable per run, refusals by layer
+**Commit:** 5: darn config: review budget settable per run, refusals by layer

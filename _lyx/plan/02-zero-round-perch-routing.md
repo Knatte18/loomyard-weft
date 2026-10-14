@@ -39,7 +39,7 @@
 - `internal/loomrecipe#NewDarn`
 
 **Intent:**
-The routing half of the record's "Zero-round perch: the Bouncer settles at once" entry, ahead of the config change in card 3: a review perch whose resolved budget is 0 keeps its writer → Bouncer route, and its Bouncer settles approved at once with no review round, running its approve and commit seams.
+The routing half of the record's "Zero-round perch: the Bouncer settles at once" entry, ahead of the config change in card 4: a review perch whose resolved budget is 0 keeps its writer → Bouncer route, and its Bouncer settles approved at once with no review round, running its approve and commit seams.
 A budget of 0 now means zero rounds, and an absent per-perch entry, not a 0 one, takes the run-wide budget.
 
 `internal/loomrecipe`:
@@ -49,9 +49,10 @@ A budget of 0 now means zero rounds, and an absent per-perch entry, not a 0 one,
 - `applyReviewBudget` gives a segment's rows the Bouncer's `rowMaxBounces` entry whenever the map holds one, 0 included, and `fallback` only when it holds none; a negative entry is still refused naming the row.
   `NewDarn` and `DarnRouting` call it with a nil map and a positive budget, so darn is unchanged.
 - `stampZeroRounds` resolves each review segment's Bouncer budget the same way and, for each one at 0, sets `zero_rounds: true` in that Bouncer row's parsed `Config` map, as `applyVerifyAttempts` stamps the verify gate's attempts.
-  `New` computes the segments before the build and calls it on the parsed recipe before `shedbuild.NewShedFrom`; `Routing` builds no engine and does not call it, since the projection carries the 0 as `MaxBounces` already.
+  `New` computes the segments before the build and calls it on the parsed recipe before `shedbuild.NewShedFrom`; `Routing` builds no engine and does not call it: a zero-round segment's rows carry `MaxBounces` 0, which the progress projection reads as `shedengine`'s inherited budget, so status progress shows the shed's or engine's default bounce budget for a perch at 0, a display gap only, since a zero-round Bouncer never bounces.
 - `applyMergeReviewOff` is deleted with its two calls, and `Routing` loses its `mergeReviewOff` argument: a Merge-Review at 0 runs Merge-In → Merge-Bouncer → Publish with the Bouncer settling at once, which replaces routing Merge-In's Done to Publish.
 - `doc.go` and the `New` and `Routing` doc comments say: an entry present in the per-perch map wins, 0 included, and a 0 budget stamps `zero_rounds` on the perch's Bouncer row; the paragraph on the run-wide value refused below 1 says below 0.
+  The `Routing` doc's claim that the projection never reports the engine default for a review row gains its exception: a zero-round segment's rows carry `MaxBounces` 0, which the progress projection reads as `shedengine`'s inherited budget.
 
 `internal/shedrecipe`:
 
@@ -61,7 +62,7 @@ A budget of 0 now means zero rounds, and an absent per-perch entry, not a 0 one,
   The doc comment lists the key, and says the recipe declares it on no row: loomrecipe stamps it.
 - `TestBouncerEntry_SkipSeam` gains two subtests: `ZeroRoundsApprovesAtOnce`, a row over `minimalBouncerConfig` with `zero_rounds: true`, `approve_seam: plan`, `commit_seam: plan` and `skip_seam: rework-exempt`, and `env.SkipPlanReview` answering false, whose `Call` returns Done with `env.ApprovePlan` and `env.CommitPlan` each called once and no shuttle start; and `NonBooleanZeroRoundsFails`, whose construction error names `zero_rounds`.
 
-`internal/loomcli`, which keeps loom.yaml's present meaning until card 3 changes it:
+`internal/loomcli`, which keeps loom.yaml's present meaning until card 4 changes it:
 
 - `perchMaxBounces` puts a perch's entry in the map only when its loom.yaml key is above 0, since 0 still means inherit there, and puts `Merge-Bouncer: 0` when `cfg.SkipMergeReview` is true.
 - `loomCLI.wire` drops the `MergeReviewOff` field and the third `loomrecipe.Routing` argument in its `SegmentBounces` closure; `loomCLI.reviewBudget` drops its skip result, and `loomCLI.recipeRouting` calls `loomrecipe.Routing(budget, rowBudgets)`.
@@ -81,6 +82,6 @@ Tests in `internal/loomrecipe/reviewbudget_test.go`:
 - `newEscalationShed`, `TestEscalation_PerchBudgetOneWithAutoAccept` and `TestRouting_ProgressAt` drop the third `Routing` argument and change nothing else.
 - `TestReviewBudget_NegativeRefused`, renamed from `TestReviewBudget_BelowOneRefused`, asserts `Routing(-1, nil)` and `New` with `ReviewMaxBounces` -1 refuse naming `ReviewMaxBounces`, `Routing(0, nil)` passes, and a negative per-perch entry is refused naming its row.
 
-**ImpactSummary:** the loom recipe builder, its routing projection and the Bouncer registry entry gain zero-round perches and lose the merge-review route switch; loomcli's wiring adapts so loom.yaml keeps its present meaning until card 3.
+**ImpactSummary:** the loom recipe builder, its routing projection and the Bouncer registry entry gain zero-round perches and lose the merge-review route switch; loomcli's wiring adapts so loom.yaml keeps its present meaning until card 4.
 
 **Commit:** 2: loomrecipe: a perch at budget 0 settles in its Bouncer at once

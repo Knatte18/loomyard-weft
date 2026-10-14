@@ -1,4 +1,4 @@
-# Card 8 — batten holds an arbiter-eligible stop's notice until the arbiter has handed on
+# Card 9 — batten holds an arbiter-eligible stop's notice until the arbiter has handed on
 
 **Edit:**
 - `internal/battenshed#InnerRunDeps`
@@ -66,7 +66,7 @@ This closes the incident windows the record names (before the driver writes the 
 Tests:
 `noticeHarness` gains `arbiterStop ChildArbiterStop` and `arbiterStopErr error`, and `noticeHarness.producer` wires `ArbiterStop` to them.
 `TestNotice_EligibleStopHold` is a table run with fake clocks, each row leaving running into a `blocked` stop, or an `awaiting` one with a parent notice and the watched marker held, with an eligible, on reading, a 30 minute timeout and spawns left unless the row says otherwise. Its rows:
-- the incident shape: with the driver alive, no report and the clock past `noticeReportWait`, no notice goes while there is no arbiter marker yet, while `ArbiterInFlight` reports a marker whose strand is not alive, and while the attempt exists with no marker and no hand-on;
+- the incident shape: with the driver alive, no report and the clock past `noticeReportWait`, no notice goes while there is no arbiter marker yet, while `ArbiterInFlight` reports a marker whose strand is not alive, while the attempt exists with no marker and no hand-on, and while the arbiter marker is gone and the attempt's envelope carries `resume` with no `AppliedAt`, until `AppliedAt` or the backstop;
 - a tackler-led attempt whose deadline lies past `since` plus the timeout plus `noticeReportWait`: no notice at that point, and a notice once its deadline plus `noticeReportWait` passes;
 - a park marker written after `since` sends the blocked stop's notice at once with its report;
 - a hand-on attempt more than `noticeReportWait` after the stop, with no park marker, at a watched awaiting stop: no notice until `noticeReportWait` after `HandOnAt`; and with a park marker written after the hand-on, no notice until `noticeRelayWait` after the marker with no decision record;
@@ -85,4 +85,4 @@ Tests:
 
 **ImpactSummary:** batten's state-changed notice gains a hold for arbiter-eligible blocked and awaiting stops, read through a new InnerRunDeps seam that battencli wires to arbiterstop; the report wait is measured from the hold's end; stops the hold never covers keep today's timing.
 
-**Commit:** 8: batten: hold an arbiter-eligible stop's notice until the arbiter hands on
+**Commit:** 9: batten: hold an arbiter-eligible stop's notice until the arbiter hands on

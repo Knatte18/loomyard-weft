@@ -1,4 +1,4 @@
-# Card 6 — one arbiter eligibility function; awaiting narrows to hard-cap and circling
+# Card 7 — one arbiter eligibility function; awaiting narrows to hard-cap and circling
 
 **Create:**
 - `internal/arbiterstop/doc.go`
@@ -44,7 +44,7 @@
 - `internal/loomcli#TestDecideDrive`
 
 **Intent:**
-D5, with D6 unchanged: one Go function answers the arbiter verb's whole `awaiting` and `blocked` eligibility for the verb, the Go driver's `EscalationPending` fact and, from card 8, batten's hold, so the three cannot disagree.
+D5, with D6 unchanged: one Go function answers the arbiter verb's whole `awaiting` and `blocked` eligibility for the verb, the Go driver's `EscalationPending` fact and, from card 9, batten's hold, so the three cannot disagree.
 It lives in a new package, `internal/arbiterstop`, because batten must call it and `internal/battencli` cannot import `internal/loomcli`: that would link tree-sitter into battencli's test binary, which `cmd/lyx`'s tree-sitter link guard refuses.
 The package's production file `internal/arbiterstop/arbiterstop.go` imports `loomrecipe`, `loomshed`, `loomengine`, `shedadapters`, `shedverbs`, `shedengine`, `battenshed`, `verifytree`, `fabricengine` and `lyxcwd`, none of which links tree-sitter or imports `arbiterstop` back.
 
@@ -83,4 +83,4 @@ The refusal texts and the brief path are the verb rows' to pin.
 
 **ImpactSummary:** the arbiter eligibility rule moves out of loomcli into a package batten can import, narrows the awaiting case to hard-cap and circling causes, and the verb, the Go driver's escalation fact, the arbiter stencil and the refusal spec follow it.
 
-**Commit:** 6: arbiterstop: one eligibility rule; a budget escalation goes to the parent
+**Commit:** 7: arbiterstop: one eligibility rule; a budget escalation goes to the parent
