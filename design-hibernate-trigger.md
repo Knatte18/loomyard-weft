@@ -1,6 +1,6 @@
 # Hibernate the machine on a trigger, such as a task landing
 
-`hibernate-trigger` · Task · feature, batten · running · Discussion-Burler-Fix
+`hibernate-trigger` · Task · feature, batten · running · Discussion-Bouncer
 
 ## Seen (2026-10-13)
 
