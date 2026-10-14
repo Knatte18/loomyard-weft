@@ -8,7 +8,7 @@
 - `internal/testkit/envkit#nilLegal`
 
 **Uses:**
-- `plan:internal/loomshed#NewDarnDiscussionGate`
+- `internal/loomshed#NewDarnDiscussionGate`
 - `internal/loomshed#NewDiscussionGate`
 
 **Intent:** Let the existing `discussion` gate name resolve to the darn gate on a darn run, so the Darn-Write row gains the same gate entry Discussion-Write carries (D4) without a second gate name.

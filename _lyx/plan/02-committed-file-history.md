@@ -1,7 +1,7 @@
 # Card 2 — committed-file-history
 
 **Create:**
-- `plan:internal/fabricengine#CommittedAnchoredFileHistory` -> `func CommittedAnchoredFileHistory(l *lyxcwd.Location, relPath string) ([][]byte, error)`
+- `internal/fabricengine#CommittedAnchoredFileHistory`
 
 **Edit:**
 - `internal/fabricengine_test#TestCommittedAnchoredFile`

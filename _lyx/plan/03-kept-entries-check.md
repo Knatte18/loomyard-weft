@@ -1,9 +1,9 @@
 # Card 3 — kept-entries-check
 
 **Create:**
-- `plan:internal/discussionparser#CheckAddedDecisionsKept` -> `func CheckAddedDecisionsKept(record []byte, versions [][]byte) []Finding`
-- `plan:internal/discussionparser#checkAddedDecisionDropped` -> `const checkAddedDecisionDropped = "added-decision-dropped"`
-- `plan:internal/discussionparser#TestCheckAddedDecisionsKept` -> `func TestCheckAddedDecisionsKept(t *testing.T)`
+- `internal/discussionparser#CheckAddedDecisionsKept`
+- `internal/discussionparser#checkAddedDecisionDropped`
+- `internal/discussionparser#TestCheckAddedDecisionsKept`
 
 **Edit:**
 - `internal/discussionparser/doc.go`

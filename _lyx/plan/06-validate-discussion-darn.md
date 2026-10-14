@@ -16,9 +16,9 @@
 - `docs/overview.md`
 
 **Uses:**
-- `plan:internal/fabricengine#CommittedAnchoredFileHistory`
-- `plan:internal/loomshed#ValidateDarnDiscussion`
-- `plan:internal/loomshed#NewDarnDiscussionGate`
+- `internal/fabricengine#CommittedAnchoredFileHistory`
+- `internal/loomshed#ValidateDarnDiscussion`
+- `internal/loomshed#NewDarnDiscussionGate`
 - `internal/loomcli#commitDiscussion`
 - `internal/loomengine#DiscussionDecisionRecordRel`
 

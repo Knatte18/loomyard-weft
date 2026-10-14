@@ -20,7 +20,7 @@
 
 **Uses:**
 - `plan:internal/loomcli#discussionHistory`
-- `plan:internal/discussionparser#CheckAddedDecisionsKept`
+- `internal/discussionparser#CheckAddedDecisionsKept`
 - `internal/discussionparser#ParseAddedDecisions`
 - `internal/fabricengine#CommittedAnchoredFile`
 - `internal/loomcli#addedDecisionHeading`

@@ -1,8 +1,8 @@
 # Card 4 — darn-discussion-gate
 
 **Create:**
-- `plan:internal/loomshed#ValidateDarnDiscussion` -> `func ValidateDarnDiscussion(decisionRecordPath, supportLogPath string, history func() ([][]byte, error)) ([]discussionparser.Finding, error)`
-- `plan:internal/loomshed#NewDarnDiscussionGate` -> `func NewDarnDiscussionGate(decisionRecordPath, supportLogPath string, history func() ([][]byte, error), commit func() error) shuttleengine.Gate`
+- `internal/loomshed#ValidateDarnDiscussion`
+- `internal/loomshed#NewDarnDiscussionGate`
 
 **Edit:**
 - `internal/loomshed#TestNewDiscussionGate`
@@ -11,7 +11,7 @@
 - `internal/loomshed#NewDiscussionGate`
 - `internal/loomshed#formatDiscussionFindings`
 - `internal/discussionparser#Validate`
-- `plan:internal/discussionparser#CheckAddedDecisionsKept`
+- `internal/discussionparser#CheckAddedDecisionsKept`
 
 **Intent:** Build the darn run's discussion check and gate (D4): the existing section check, then the history check, and a commit of the two files once both pass.
 

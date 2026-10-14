@@ -2,7 +2,7 @@
 
 **Create:**
 - `contracts/specs/loom-discussion-spec.md`
-- `plan:contracts/specs#LoomDiscussionSpec` -> `var LoomDiscussionSpec []byte`
+- `contracts/specs#LoomDiscussionSpec`
 
 **Edit:**
 - `contracts/specs#entries`
