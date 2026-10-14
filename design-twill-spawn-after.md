@@ -1,6 +1,6 @@
 # Twill: spawn lens forks after the files are written
 
-`twill-spawn-after` · Task · enhancement, loom, stencil · running · Publish
+`twill-spawn-after` · Task · enhancement, loom, stencil · running · PR-Gate
 
 ## Decided (operator, 2026-10-13)
 
