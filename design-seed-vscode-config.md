@@ -1,6 +1,6 @@
 # Terminal window, VS Code seed and VS Code open as shed producers with config flags
 
-`seed-vscode-config` · Task · enhancement, ide, batten, shed · running · Darn-Bouncer
+`seed-vscode-config` · Task · enhancement, ide, batten, shed · running · Darn-Burler-Review
 
 ## Goal (operator, 2026-10-14)
 
