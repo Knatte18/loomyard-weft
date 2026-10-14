@@ -1,0 +1,23 @@
+# Lens review
+
+Every lens fork returned a report.
+The rationale (`.scratch/fork0-rationale.md`) was read after all four returned; no disposition below draws on it except where marked.
+
+- criteria-coverage, MEDIUM, command index omits role-audience verbs: fixed as proposed; card 4 gives the three verbs `clihelp.AudienceOperator`, since `lyx help index` defaults to operator (`internal/helpcli/cli.go:103`) and `RenderIndex` lists only the requested audience (`internal/clihelp/index.go:24`), and `TestRenumberCmds` gains a row asserting `RenderIndex(Command(), AudienceOperator)` names the three verbs; rationale: the rationale's "audience role" choice was weighed and overruled by the code read.
+- criteria-coverage, MEDIUM, restore-partial way forward unreached at the verb: fixed as proposed; `TestRenumberCmds` gains a `restore-renumber` write-back failure row asserting the transient way forward and the journal kept.
+- criteria-coverage, MEDIUM, unparseable-plan refusal unreached at the verb: fixed as proposed; `TestRenumberCmds` gains a row with an overview lacking `## Card Index`; the heading-mismatch input stays in card 1's rows, since it reaches the same `ErrPlanInconsistent` way forward the orphan-file verb row already reaches.
+- criteria-coverage, MEDIUM, remove never shown to leave `archive-*/` and `round-<N>/prior-generation/` untouched: fixed as proposed; `TestRemoveCard` gains the row.
+- criteria-coverage, MEDIUM, overview frame bytes unasserted: fixed as proposed; the middle insert and remove rows use an overview with framing and a `## verify:` section and assert `OverviewWithoutCardIndex` equal before and after; card 1's Uses names it.
+- criteria-coverage MEDIUM and row-reachability MEDIUM (merged), persistent injected fault also fails the reversal at the Card Index rewrite and journal removal rows: fixed as proposed; card 1 states the fault is one-shot, failing only the first matching call, and the reversal-failure row fails every later `WriteFile` explicitly.
+- criteria-coverage, LOW, lease covered for `insert-card` only: fixed as proposed; the lease check is one row per verb (merged with test-economy LOW 1 and the two hook findings below).
+- criteria-coverage, LOW, stale `.tmp` journal untested: fixed as proposed; `TestInsertCard` gains a stale-`.tmp` row and card 2's no-journal refusal names a `.tmp`-only input.
+- criteria-coverage, LOW, `ErrInvalidCardIntent` inputs unnamed: fixed as proposed; card 1 names empty, whitespace-only, `\n` and `\r` inputs.
+- forced-edits, LOW, `verbUsesLightweightWiring` doc comment lists the verb set: fixed as proposed; card 4's Intent updates the comment.
+- forced-edits, LOW, `resolveRunID` doc and `arm.go` header say `args[0]` is the run-id: fixed differently; the proposal listed the file self glyph `internal/loomcli/arm.go`, but the card already lists `internal/loomcli#loomCLI.resolveRunID`, a member of that file, and a file beside its own member is refused by `redundant-file-target`; card 4's Intent instead names both comments to update.
+- forced-edits LOW and row-reachability LOW (merged), the lease hook on `Rename` observes only the journal placement, before apply: fixed as proposed; the hook moves to `renumberOps.Remove` on the journal path, each verb's last step, one row per verb.
+- row-reachability, MEDIUM, path-outside journal rows cannot build a journal without its JSON keys: fixed as proposed; card 1 fixes the journal shape (`files` mapping base names to bytes, `created` array of base names), and cards 2 and 4 write the path-outside journals in that shape.
+- row-reachability, LOW, verb out-of-range row input `0` hits the non-positive refusal first: fixed as proposed; card 4's row uses an insert at the last card plus two.
+- row-reachability, LOW, `first_card: 5` row range ambiguous: fixed as proposed; the row inserts at 6 into a three-card plan from 5 and asserts 5..8.
+- test-economy, LOW, `TestRenumberCmds_HoldStateMutationLease` should be a row: fixed as proposed; it is dropped and its check is the per-verb lease rows of `TestRenumberCmds`, and `internal/loomcli`'s budget raise drops from two to one.
+- test-economy, LOW, loomcli rows re-assert planparser's byte-identical outcomes: fixed as proposed; `TestRenumberCmds` asserts plan bytes only on loomcli-owned refusals (begun card, bad card number), and the reversal row no longer re-asserts restored bytes.
+- test-economy, LOW, card 2's first row re-reaches the journal-present refusal: fixed as proposed; the refusal assertions are dropped from that row and `ErrRenumberJournalPresent` from card 2's Uses; the verb-level journal-present way forward after a reversal failure stays in card 4's row.
