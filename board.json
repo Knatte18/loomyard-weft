@@ -869,7 +869,7 @@
       "id": 508,
       "slug": "shed-tackler",
       "title": "Go driver and tackler in shed, for every FSM-driven run",
-      "kind": "note",
+      "kind": "task",
       "labels": [
         "enhancement",
         "shed",

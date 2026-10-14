@@ -1,6 +1,6 @@
 # Go driver and tackler in shed, for every FSM-driven run
 
-`shed-tackler` · Note · enhancement, shed, loom, batten
+`shed-tackler` · Task · enhancement, shed, loom, batten
 
 ## Seen (2026-10-14)
 
