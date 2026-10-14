@@ -1,11 +1,11 @@
 {
-  "current_producer": "Plan-Burler-Fix",
+  "current_producer": "Plan-Bouncer",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Plan-Burler-Fix",
-    "last": "Plan-Burler-Review → bounced to Plan-Burler-Fix",
+    "now": "Plan-Bouncer",
+    "last": "Plan-Burler-Fix → bounced to Plan-Bouncer",
     "wait": ""
   },
   "history": [
@@ -192,6 +192,14 @@
       "outcome": "stuck",
       "output": "/home/knatte/Code/loomyard-LYXHUB/tender/_lyx/reviews/plan/round-3-review.md",
       "at": "2026-10-14T14:43:14Z",
+      "budget_exempt": true
+    },
+    {
+      "producer": "Plan-Burler-Fix",
+      "outcome": "stuck",
+      "output": "/home/knatte/Code/loomyard-LYXHUB/tender/_lyx/reviews/plan/round-3-review.md",
+      "at": "2026-10-14T14:44:22Z",
+      "gate_attempts": 0,
       "budget_exempt": true
     }
   ],
