@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-14 17:35 UTC; every age below is as of then.
+Rendered 2026-10-14 17:36 UTC; every age below is as of then.
 
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
@@ -19,8 +19,8 @@ Held by a run; its scope is locked until the run ends.
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | 1 | **Hibernate the machine on a trigger, such as a task landing**<br>• Let the operator trigger a hibernate through lyx, for instance once a task is done | [`hibernate-trigger`](design-hibernate-trigger.md) | loom | Webster | 3h | 1h | batten |
 | 2 | **Overview window tidy, seat names, Seats replaces SingleLLMProducer**<br>• Overview window log/checklist and bounce naming, seat names, and one MultiLLMProducer in place of SingleLLMProducer | [`overview-seats`](design-overview-seats.md) | loom | Plan-Write | 3d | 1h | reed, shed, loom, burler |
-| 3 | **Perch budgets and stops: darn budget per run like loom, arbiter only when needed**<br>• Darn review budget overridable per run like loom, with its own off switch; arbiter spawns only on stops that need it. | [`perch-budget-arbiter`](design-perch-budget-arbiter.md) | loom | Discussion-Burler-Fix | 2d | 32m | config, loom, shed |
-| 4 | **Run window opens as soon as the worktree exists**<br>• batten --window waits about 20 s (sync pushes, inner shed spawn) before Konsole opens; open it at once with attach | [`run-window-early`](design-run-window-early.md) | darn | Darn-Write | 24m | 17m | batten, reed, fabric |
+| 3 | **Perch budgets and stops: darn budget per run like loom, arbiter only when needed**<br>• Darn review budget overridable per run like loom, with its own off switch; arbiter spawns only on stops that need it. | [`perch-budget-arbiter`](design-perch-budget-arbiter.md) | loom | Discussion-Bouncer | 2d | 32m | config, loom, shed |
+| 4 | **Run window opens as soon as the worktree exists**<br>• batten --window waits about 20 s (sync pushes, inner shed spawn) before Konsole opens; open it at once with attach | [`run-window-early`](design-run-window-early.md) | darn | Darn-Write | 25m | 18m | batten, reed, fabric |
 
 ### Ready
 
@@ -38,7 +38,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Note | Slug | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| 1 | **Run window does not follow the newest agent window, sticks on Driver**<br>• An attached run window stays on the Driver window while later agents spawn; reed selects a window only at attach | [`reed-window-follow`](design-reed-window-follow.md) | 42m | 42m | reed |
+| 1 | **Run window does not follow the newest agent window, sticks on Driver**<br>• An attached run window stays on the Driver window while later agents spawn; reed selects a window only at attach | [`reed-window-follow`](design-reed-window-follow.md) | 43m | 43m | reed |
 
 ### Enhancements
 
@@ -65,7 +65,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 12 | **Tune the Burler lens fan prompts**<br>• Revisit the parked lens fan with lens and fork prompts that overlap less, measured against solo on the fan-lab fixtures | [`fan-prompt-tuning`](design-fan-prompt-tuning.md) | 1d | 1d | burler, stencil |
 | 13 | **Seed the VS Code config of each pair when it is made**<br>• Write the title-bar color and .vscode config that lyx ide spawn writes when a pair is made, so code . gives the same | [`seed-vscode-config`](design-seed-vscode-config.md) | 1d | 1d | ide, batten |
 | 14 | **Verification protocol for a .NET repo: slow-suite tier, numerical-baseline capture/compare, verify timeouts and logs** | [`dotnet-verify-protocol`](design-dotnet-verify-protocol.md) | 2h | 2h | loom, webster, config |
-| 15 | **Run verbs in one shared namespace, not under lyx loom**<br>• lyx loom decision/status/goto/approve act on darn runs too; move recipe-neutral run verbs to one shared namespace | [`run-verbs-shared`](design-run-verbs-shared.md) | 11m | 10m | shed, loom |
+| 15 | **Run verbs in one shared namespace, not under lyx loom**<br>• lyx loom decision/status/goto/approve act on darn runs too; move recipe-neutral run verbs to one shared namespace | [`run-verbs-shared`](design-run-verbs-shared.md) | 12m | 11m | shed, loom |
 
 #### Low priority
 
