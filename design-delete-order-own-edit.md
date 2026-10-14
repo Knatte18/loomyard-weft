@@ -1,6 +1,6 @@
 # Plan delete-order check reports a reference the deleting card itself rewrites
 
-`delete-order-own-edit` · Task · bug, webster, loom · running · Darn-Write
+`delete-order-own-edit` · Task · bug, webster, loom · running · Darn-Bouncer
 
 ## Seen
 
