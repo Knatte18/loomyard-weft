@@ -743,7 +743,7 @@
       "id": 480,
       "slug": "hibernate-trigger",
       "title": "Hibernate the machine on a trigger, such as a task landing",
-      "kind": "note",
+      "kind": "task",
       "labels": [
         "feature",
         "batten"
