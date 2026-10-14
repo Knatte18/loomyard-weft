@@ -1,12 +1,13 @@
 {
   "current_producer": "Discussion-Bouncer",
-  "state": "running",
-  "error": "",
+  "state": "awaiting",
+  "error": "bouncer Discussion-Bouncer: round 4 escalated to the parent (cause: hard-cap); brief at /home/knatte/Code/loomyard-LYXHUB/perch-budget-arbiter/_lyx/reviews/discussion/round-4-escalation.md; the round is at or past the perch's hard cap, so it can only be accepted: decide with `lyx loom circling accept perch-budget-arbiter`, then run `lyx loom resume` in the task worktree to resume",
+  "parent_notice": "Review segment of task `perch-budget-arbiter` needs a decision: review the brief at `/home/knatte/Code/loomyard-LYXHUB/perch-budget-arbiter/_lyx/reviews/discussion/round-4-escalation.md` with a one-shot fork.",
   "pause_requested": false,
   "activity": {
     "now": "Discussion-Bouncer",
-    "last": "Discussion-Burler-Fix → bounced to Discussion-Bouncer",
-    "wait": ""
+    "last": "Discussion-Bouncer → awaiting",
+    "wait": "bouncer Discussion-Bouncer: round 4 escalated to the parent (cause: hard-cap); brief at /home/knatte/Code/loomyard-LYXHUB/perch-budget-arbiter/_lyx/reviews/discussion/round-4-escalation.md; the round is at or past the perch's hard cap, so it can only be accepted: decide with `lyx loom circling accept perch-budget-arbiter`, then run `lyx loom resume` in the task worktree to resume"
   },
   "history": [
     {
@@ -113,6 +114,12 @@
       "at": "2026-10-14T17:41:10Z",
       "gate_attempts": 0,
       "budget_exempt": true
+    },
+    {
+      "producer": "Discussion-Bouncer",
+      "outcome": "awaiting",
+      "output": "/home/knatte/Code/loomyard-LYXHUB/perch-budget-arbiter/_lyx/reviews/discussion/round-4-bouncer-ledger.md",
+      "at": "2026-10-14T17:41:58Z"
     }
   ],
   "product": {
