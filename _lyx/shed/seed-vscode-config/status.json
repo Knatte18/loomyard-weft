@@ -1,12 +1,13 @@
 {
   "current_producer": "PR-Gate",
-  "state": "running",
-  "error": "",
+  "state": "awaiting",
+  "error": "alignment report /home/knatte/Code/loomyard-LYXHUB/seed-vscode-config/_lyx/shed/seed-vscode-config/alignment/pr-gate/attempt-1/report-9238d63f2e44ec1e.md did not settle this pull request - Board scope item 2 of seed-vscode-config places the three rows right after Worktree-Create, but the diff places them after Seed-Child, so that a task's run_settings, written into the pair's local layer by Seed-Child, can set batten.yaml's flags as scope item 3 requires. The decision record's Darn-Review carry-over (row-placement-departs-from-board-entry) leaves this open. Does the parent record the after-Seed-Child placement as an amendment of scope item 2, which costs the window opening a few seconds later than \"as soon as the pair exists\", or refuse it and require the rows directly after Worktree-Create with another way to honour per-task flags?; the pull request awaits review; run `lyx loom approve` to land it or `lyx loom reject` to send findings to rework: https://github.com/Knatte18/loomyard/pull/623",
+  "parent_notice": "alignment report /home/knatte/Code/loomyard-LYXHUB/seed-vscode-config/_lyx/shed/seed-vscode-config/alignment/pr-gate/attempt-1/report-9238d63f2e44ec1e.md did not settle this pull request - Board scope item 2 of seed-vscode-config places the three rows right after Worktree-Create, but the diff places them after Seed-Child, so that a task's run_settings, written into the pair's local layer by Seed-Child, can set batten.yaml's flags as scope item 3 requires. The decision record's Darn-Review carry-over (row-placement-departs-from-board-entry) leaves this open. Does the parent record the after-Seed-Child placement as an amendment of scope item 2, which costs the window opening a few seconds later than \"as soon as the pair exists\", or refuse it and require the rows directly after Worktree-Create with another way to honour per-task flags?",
   "pause_requested": false,
   "activity": {
     "now": "PR-Gate",
-    "last": "PR-Align → done",
-    "wait": ""
+    "last": "PR-Gate → awaiting",
+    "wait": "alignment report /home/knatte/Code/loomyard-LYXHUB/seed-vscode-config/_lyx/shed/seed-vscode-config/alignment/pr-gate/attempt-1/report-9238d63f2e44ec1e.md did not settle this pull request - Board scope item 2 of seed-vscode-config places the three rows right after Worktree-Create, but the diff places them after Seed-Child, so that a task's run_settings, written into the pair's local layer by Seed-Child, can set batten.yaml's flags as scope item 3 requires. The decision record's Darn-Review carry-over (row-placement-departs-from-board-entry) leaves this open. Does the parent record the after-Seed-Child placement as an amendment of scope item 2, which costs the window opening a few seconds later than \"as soon as the pair exists\", or refuse it and require the rows directly after Worktree-Create with another way to honour per-task flags?; the pull request awaits review; run `lyx loom approve` to land it or `lyx loom reject` to send findings to rework: https://github.com/Knatte18/loomyard/pull/623"
   },
   "history": [
     {
@@ -73,6 +74,12 @@
       "outcome": "done",
       "output": "",
       "at": "2026-10-14T19:42:06Z"
+    },
+    {
+      "producer": "PR-Gate",
+      "outcome": "awaiting",
+      "output": "",
+      "at": "2026-10-14T19:42:19Z"
     }
   ],
   "product": {
