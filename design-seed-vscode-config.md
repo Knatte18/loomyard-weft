@@ -2,7 +2,7 @@
 
 `seed-vscode-config` · Task · enhancement, ide, batten, shed
 
-Depends on: [`perch-budget-arbiter`](design-perch-budget-arbiter.md), [`shed-tackler`](design-shed-tackler.md)
+Depends on: [`perch-budget-arbiter`](design-perch-budget-arbiter.md)
 
 ## Goal (operator, 2026-10-14)
 
