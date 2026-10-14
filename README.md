@@ -19,7 +19,7 @@ Held by a run; its scope is locked until the run ends.
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | 1 | **tender: hub-wide pause, resume, revive and stale-binary restart**<br>• A tender module holds hub-wide pause, resume, revive and stale-binary restart, and a pause no longer consumes a call deadline | [`tender`](design-tender.md) | loom | Webster | 1d | 1d | shuttle, reed, batten, shed, orch, loom |
 | 2 | **Darn: a decision record for mid-run scope corrections, and PR-Align**<br>• Darn has no decision record, so a mid-run scope correction never reaches its review; and no PR-Align row, so every darn PR waits for the orch at PR-Gate | [`claimed-scope-edit`](design-claimed-scope-edit.md) | loom | Discussion-Burler-Fix | 1d | 1d | board, loom, burler |
-| 3 | **Twill: spawn lens forks after the files are written**<br>• Discussion-Write and Plan-Write spawn their lens forks once the files are written and checked; forks review what they inherited, no ready-marker wait | [`twill-spawn-after`](design-twill-spawn-after.md) | darn | Merge-In | 21m | 16m | loom, stencil |
+| 3 | **Twill: spawn lens forks after the files are written**<br>• Discussion-Write and Plan-Write spawn their lens forks once the files are written and checked; forks review what they inherited, no ready-marker wait | [`twill-spawn-after`](design-twill-spawn-after.md) | darn | Publish | 21m | 16m | loom, stencil |
 
 ### Ready
 
