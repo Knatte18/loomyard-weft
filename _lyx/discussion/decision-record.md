@@ -208,6 +208,12 @@ Rationale: the hub runs `discussion_producer: twill` with `discussion_advisors: 
   - goto-entry-has-no-round (class consistency, severity MEDIUM, open in rounds 2)
 <!-- /lyx:carry-over Discussion-Review -->
 
+<!-- lyx:carry-over Plan-Review -->
+- Plan-Review, round 2: converged; each finding below was fixed or disputed by the round's fixer, and no fresh reviewer has seen the result; the fixer report says which.
+  Review: _lyx/reviews/plan/round-2-review.md; fixer report: _lyx/reviews/plan/round-2-fixer-report.md.
+  - card17-single-llm-comment-sites-missed (class scope, severity MEDIUM, open in rounds 2)
+<!-- /lyx:carry-over Plan-Review -->
+
 ## Acceptance criteria
 
 - A frame for a run part-way through Discussion-Review shows each recipe row once: finished rows with their log lines under them, the Discussion-Review block with rounds 1..n in run order, and every later row as a bare `[ ]` line.
