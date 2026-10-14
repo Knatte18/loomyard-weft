@@ -1,6 +1,6 @@
 # Hibernate the machine on a trigger, such as a task landing
 
-`hibernate-trigger` · Task · feature, batten
+`hibernate-trigger` · Task · feature, batten · running · Worktree-Create
 
 ## Seen (2026-10-13)
 
