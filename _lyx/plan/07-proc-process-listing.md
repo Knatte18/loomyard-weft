@@ -7,8 +7,8 @@
 - `internal/proc/proc_windows.go`
 
 **Create:**
-- `plan:internal/proc#Process` -> `type Process struct`
-- `plan:internal/proc#ListProcesses` -> `func ListProcesses() ([]Process, error)`
+- `internal/proc#Process`
+- `internal/proc#ListProcesses`
 - `internal/proc/process.go`
 
 **Intent:**

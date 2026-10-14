@@ -8,7 +8,7 @@
 - `cmd/lyx#TestShortcuts_FileAndRootListing`
 
 **Create:**
-- `plan:internal/reedcli#handOver` -> `func handOver(tmux string, args []string) (exitCode int, err error)`
+- `internal/reedcli#handOver`
 - `internal/reedcli/attach_unix.go`
 - `internal/reedcli/attach_windows.go`
 

@@ -1,6 +1,6 @@
 {
   "runGuid": "536c546e8bfeed4b8edb7ceecbc98003",
-  "planFingerprint": "0c00664199e0b58d957d5cd31e705dba88f39ee7d159c9bcbbacb433bd5e4c49",
+  "planFingerprint": "660a05f4e531c342c0963948f6d1a6bb14259bd1a2ff66d1334358226695ac51",
   "planFileHashes": {
     "00-overview.md": "78cdc52679e80a7805a018d5e3525ffded09b0169d5f5fc6de50ebba91f725b8",
     "01-pauserecord-network-held.md": "28f97329e709280faae540010a6c0a7b5146b5a4fa8a918381b30eaf1e6e683c",
@@ -9,11 +9,11 @@
     "04-shuttle-conditioned-send.md": "04129336f1fcb8af8a45597e7c2e53c8e5999ca45bc48cab76f4f744447f32ce",
     "05-orch-conditional-notice.md": "63719fafbe05009e1301d6162e68d035f31fd52c06d8505c4110c27ca4947234",
     "06-orch-watch-binary-reexec.md": "c46af52082be654d6c9715e78343cabf7888d8f3a9691811ea89f17450df1165",
-    "07-proc-process-listing.md": "80d5cee8cacf9a94892faf8de463c0771f93df616bdc8015adea8fb5838b0b96",
-    "08-tender-command.md": "1141dbc1c653f59965c1518bdc5e4dfb48dfd71d121da2e533b0a71e3f24c7e0",
-    "09-tender-status.md": "a6d6ff8d8935b98084292e1efb579127722a0cc5daf8861b5b8fc5127e379427",
-    "10-tender-revive.md": "51b934f6a3f0c4e063ae23a4a5b5062bc75828af427e801b322299c4c6a804df",
-    "11-reed-attach-exec.md": "1c3740f818b430c2a2da41c64aa466c4de609e2c986859d1f33936acda6712ef",
+    "07-proc-process-listing.md": "9c1132d4be18f58d29541b889527386fb9bf193e4053c0da10138a2f94647124",
+    "08-tender-command.md": "c7cf345aa598d9ffe0e52eba2f9f742f703bb72f519b36ca858eaa3fc493728f",
+    "09-tender-status.md": "fa8cb984ce78aa9fd3d684664de5c10d847bd7beeaf6b265b76d7ed31ead7a55",
+    "10-tender-revive.md": "1fd008761577e56817adc08a2885cf1d7a3227fc3e72b71bb0dce315ade6e6e2",
+    "11-reed-attach-exec.md": "08de3fa450acbf482d7a9acf53a7ec5911190d62cdecc32200fd118c2286dded",
     "12-tender-rename.md": "c2bff1470cfe6fb059f23925316010fdecbf22ec786ebc931f05c9d3249a7ef1"
   },
   "planOverviewFrameHash": "e97536f9ff550a383e897e57d53acf909eb3a292f946a8a376142b03aea1b0dc",
@@ -305,7 +305,7 @@
       }
     }
   ],
-  "currentBatch": 7,
+  "currentBatch": 0,
   "masterStrand": "23a4bb74edcfbdb706bf0e2561ade084",
   "masterSessionId": "fff1bc68-1efd-4160-94c5-e650970e31f3",
   "batches": {
@@ -365,18 +365,54 @@
         "12-tender-rename"
       ],
       "cardHashes": {
-        "07-proc-process-listing": "80d5cee8cacf9a94892faf8de463c0771f93df616bdc8015adea8fb5838b0b96",
-        "08-tender-command": "1141dbc1c653f59965c1518bdc5e4dfb48dfd71d121da2e533b0a71e3f24c7e0",
-        "09-tender-status": "a6d6ff8d8935b98084292e1efb579127722a0cc5daf8861b5b8fc5127e379427",
-        "10-tender-revive": "51b934f6a3f0c4e063ae23a4a5b5062bc75828af427e801b322299c4c6a804df",
-        "11-reed-attach-exec": "1c3740f818b430c2a2da41c64aa466c4de609e2c986859d1f33936acda6712ef",
+        "07-proc-process-listing": "9c1132d4be18f58d29541b889527386fb9bf193e4053c0da10138a2f94647124",
+        "08-tender-command": "c7cf345aa598d9ffe0e52eba2f9f742f703bb72f519b36ca858eaa3fc493728f",
+        "09-tender-status": "fa8cb984ce78aa9fd3d684664de5c10d847bd7beeaf6b265b76d7ed31ead7a55",
+        "10-tender-revive": "1fd008761577e56817adc08a2885cf1d7a3227fc3e72b71bb0dce315ade6e6e2",
+        "11-reed-attach-exec": "08de3fa450acbf482d7a9acf53a7ec5911190d62cdecc32200fd118c2286dded",
         "12-tender-rename": "c2bff1470cfe6fb059f23925316010fdecbf22ec786ebc931f05c9d3249a7ef1"
       },
       "startSha": "3c5699680211f4f2b9f924e3bf7d9230265ecdf6",
       "kind": "recovery",
       "spawnedAt": "2026-10-14T15:11:07Z",
-      "terminal": false,
-      "status": "",
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "07-proc-process-listing",
+        "status": "done",
+        "head_sha": "5348618b43261dbfdac31795c5e8fda821e0adc3",
+        "deviations": [
+          "internal/pausecli/cli.go",
+          "internal/pausecli/cli_test.go",
+          "internal/pausecli/deps.go",
+          "internal/pausecli/deps_test.go",
+          "internal/pausecli/gate.go",
+          "internal/pausecli/testmain_test.go",
+          "internal/pauseengine/pause.go",
+          "internal/pauseengine/pause_test.go",
+          "internal/pauseengine/report.go",
+          "internal/pauseengine/resume.go",
+          "internal/pauseengine/resume_test.go",
+          "internal/pauseengine/testmain_test.go",
+          "internal/reedcli/attach.go",
+          "internal/shortcutcli/shortcut_test.go",
+          "internal/tendercli/cli.go",
+          "internal/tendercli/cli_test.go",
+          "internal/tendercli/deps.go",
+          "internal/tendercli/deps_test.go",
+          "internal/tendercli/gate.go",
+          "internal/tendercli/testmain_test.go",
+          "internal/tenderengine/pause.go",
+          "internal/tenderengine/pause_test.go",
+          "internal/tenderengine/report.go",
+          "internal/tenderengine/resume.go",
+          "internal/tenderengine/resume_test.go",
+          "internal/tenderengine/testmain_test.go"
+        ]
+      },
+      "cardShas": [
+        "5348618b43261dbfdac31795c5e8fda821e0adc3"
+      ],
       "forkTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-tender/7dcad885-e3f1-4e52-b765-afe7ef72c656/subagents/agent-a42938ef9f1cbc904.jsonl"
       ],
