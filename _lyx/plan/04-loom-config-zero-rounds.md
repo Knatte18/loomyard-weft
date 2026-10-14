@@ -29,16 +29,16 @@
 - `internal/loomengine#CapRoute`
 
 **Create:**
-- `plan:internal/loomengine#reviewPerches` -> `var reviewPerches = []Perch{PerchDiscussion, PerchPlan, PerchWebster, PerchMerge}`
-- `plan:internal/loomengine#TestMigrateConfig` -> `func TestMigrateConfig(t *testing.T)`
+- `internal/loomengine#reviewPerches`
+- `internal/loomengine#TestMigrateConfig`
 
 **Uses:**
-- `plan:internal/reviewbudget#Categories`
-- `plan:internal/reviewbudget#Resolve`
-- `plan:internal/reviewbudget#Route`
-- `plan:internal/reviewbudget#CheckResolved`
-- `plan:internal/reviewbudget#CheckLocal`
-- `plan:internal/reviewbudget#Values`
+- `internal/reviewbudget#Categories`
+- `internal/reviewbudget#Resolve`
+- `internal/reviewbudget#Route`
+- `internal/reviewbudget#CheckResolved`
+- `internal/reviewbudget#CheckLocal`
+- `internal/reviewbudget#Values`
 
 **Intent:**
 The loom half of D1 and D2 as the record's added entries settle them: loom.yaml's budget keys come from `internal/reviewbudget`, every per-perch budget takes 0 as zero rounds and null as "take `review_max_bounces`", the run-wide `review_max_bounces` accepts 0, `skip_merge_review` is retired for `merge_max_bounces: 0`, and a `run_settings` budget below its bound is refused at `lyx board upsert`.

@@ -22,13 +22,13 @@
 - `internal/darnengine#softCapSetCommand`
 
 **Create:**
-- `plan:internal/darnengine#ValidateLocalValues` -> `func ValidateLocalValues(document []byte) error`
+- `internal/darnengine#ValidateLocalValues`
 
 **Uses:**
-- `plan:internal/reviewbudget#Categories`
-- `plan:internal/reviewbudget#Route`
-- `plan:internal/reviewbudget#CheckResolved`
-- `plan:internal/reviewbudget#CheckLocal`
+- `internal/reviewbudget#Categories`
+- `internal/reviewbudget#Route`
+- `internal/reviewbudget#CheckResolved`
+- `internal/reviewbudget#CheckLocal`
 - `internal/loomrecipe#DarnRouting`
 - `internal/loomcli#loomCLI.wireDarn`
 - `internal/loomcli#loomCLI.darnReviewBudget`

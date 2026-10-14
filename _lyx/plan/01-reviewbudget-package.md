@@ -2,25 +2,25 @@
 
 **Create:**
 - `internal/reviewbudget/doc.go`
-- `plan:internal/reviewbudget#RunSoftKey` -> `const RunSoftKey = "review_max_bounces"`
-- `plan:internal/reviewbudget#RunHardKey` -> `const RunHardKey = "review_hard_max_bounces"`
-- `plan:internal/reviewbudget#SoftKey` -> `func SoftKey(perch string) string`
-- `plan:internal/reviewbudget#HardKey` -> `func HardKey(perch string) string`
-- `plan:internal/reviewbudget#AutoAcceptKey` -> `func AutoAcceptKey(perch string) string`
-- `plan:internal/reviewbudget#Categories` -> `func Categories(perches []string) map[string]configengine.Category`
-- `plan:internal/reviewbudget#Caps` -> `type Caps struct`
-- `plan:internal/reviewbudget#Resolve` -> `func Resolve(perch string, runSoft, runHard int, ownSoft *int, ownHard int) Caps`
-- `plan:internal/reviewbudget#Values` -> `type Values struct`
-- `plan:internal/reviewbudget#Route` -> `func Route(dirs configengine.Dirs, spec configengine.Spec, key string) (string, error)`
-- `plan:internal/reviewbudget#CheckResolved` -> `func CheckResolved(dirs configengine.Dirs, spec configengine.Spec, values Values) error`
-- `plan:internal/reviewbudget#CheckLocal` -> `func CheckLocal(set map[string]any, perches []string) error`
+- `internal/reviewbudget#RunSoftKey`
+- `internal/reviewbudget#RunHardKey`
+- `internal/reviewbudget#SoftKey`
+- `internal/reviewbudget#HardKey`
+- `internal/reviewbudget#AutoAcceptKey`
+- `internal/reviewbudget#Categories`
+- `internal/reviewbudget#Caps`
+- `internal/reviewbudget#Resolve`
+- `internal/reviewbudget#Values`
+- `internal/reviewbudget#Route`
+- `internal/reviewbudget#CheckResolved`
+- `internal/reviewbudget#CheckLocal`
 - `internal/reviewbudget/reviewbudget_test.go`
-- `plan:internal/reviewbudget#TestCheckResolved` -> `func TestCheckResolved(t *testing.T)`
-- `plan:internal/reviewbudget#TestCheckLocal` -> `func TestCheckLocal(t *testing.T)`
+- `internal/reviewbudget#TestCheckResolved`
+- `internal/reviewbudget#TestCheckLocal`
 - `internal/reviewbudget/leaf_enforcement_test.go`
-- `plan:internal/reviewbudget#TestLeafInvariant_AllowlistOnly` -> `func TestLeafInvariant_AllowlistOnly(t *testing.T)`
+- `internal/reviewbudget#TestLeafInvariant_AllowlistOnly`
 - `internal/reviewbudget/testmain_test.go`
-- `plan:internal/reviewbudget#TestMain` -> `func TestMain(m *testing.M)`
+- `internal/reviewbudget#TestMain`
 
 **Edit:**
 - `pattern/PATTERN-leaf-packages.md`

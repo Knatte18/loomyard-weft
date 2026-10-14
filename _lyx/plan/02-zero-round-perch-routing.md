@@ -27,11 +27,11 @@
 - `internal/loomrecipe#applyMergeReviewOff`
 
 **Rename:**
-- `internal/loomrecipe#TestMergeReviewOff_RoutesMergeInToPublish` -> `plan:internal/loomrecipe#TestZeroBudget_BouncerSettlesAtOnce`
-- `internal/loomrecipe#TestReviewBudget_BelowOneRefused` -> `plan:internal/loomrecipe#TestReviewBudget_NegativeRefused`
+- `internal/loomrecipe#TestMergeReviewOff_RoutesMergeInToPublish` -> `internal/loomrecipe#TestZeroBudget_BouncerSettlesAtOnce`
+- `internal/loomrecipe#TestReviewBudget_BelowOneRefused` -> `internal/loomrecipe#TestReviewBudget_NegativeRefused`
 
 **Create:**
-- `plan:internal/loomrecipe#stampZeroRounds` -> `func stampZeroRounds(recipe *shedbuild.Recipe, segments map[string]string, fallback int, rowMaxBounces map[string]int)`
+- `internal/loomrecipe#stampZeroRounds`
 
 **Uses:**
 - `internal/loomrecipe#reviewSegments`

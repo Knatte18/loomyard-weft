@@ -1,13 +1,13 @@
 {
   "runGuid": "fe878a4d6fbda04e3b073f41127102b5",
-  "planFingerprint": "f9d299a8f5f71fbe36bdd51081470b71c6557ee2c40da0bd24812e7d358bcc74",
+  "planFingerprint": "e1fdd2b9b0db2c2fd83e3013a389bf3c899d1a679c09dbf34c24da3fc8d5614c",
   "planFileHashes": {
     "00-overview.md": "4428790939f6e737232974f8740adda1bd282eb2eba10c120e452ed6ed89163b",
-    "01-reviewbudget-package.md": "b21f4270658295594f955ad12b5a03975a7b85a661db926da18ef50a1d406a89",
-    "02-zero-round-perch-routing.md": "798ba7a4ad979f5cc120b4ff6749d69c142005217ce888f69e57e6cd99c28135",
+    "01-reviewbudget-package.md": "bec61ebf0cf4ed734f27b2280d2cfc8a559f922d99420ecacd2b4470a550fb7c",
+    "02-zero-round-perch-routing.md": "0db0226f7eb9d2aa652a72a171470a38f3317973c93ce203f2c4d9e1afe474f8",
     "03-yamlengine-null-leaf-set.md": "169ccc0a5a9b8c313b1592ba5e65e226356b82d555fc698a354b12548197a898",
-    "04-loom-config-zero-rounds.md": "9ef55cee682cc06e5d484776c82ca1b4aada9c36c16c507fd3c3a8821196e2e1",
-    "05-darn-config-per-run-budget.md": "57df0b3483f1f4e414bf1eef2484654f6bd0f729cb0714fa91010d1172638dbb",
+    "04-loom-config-zero-rounds.md": "761facf4ed80bf1beb607897488bd5b5dda32cfeeafd3a0062a92644737ae2ed",
+    "05-darn-config-per-run-budget.md": "bd5efab196bd2c03c846aeb5f0e9113ec465dc6e9fbb9fae447f4fc175f869e3",
     "06-pending-escalation-cause.md": "fa9bff95c9bcea02e56891e4f52f356efd85daaac1f13dd4faf1143fe308662f",
     "07-arbiter-eligibility-package.md": "554e3ee0bb858cdb558a047d28ec78a63aab17d17cbaa989f2b387ace28d1d44",
     "08-arbiter-hold-reading.md": "d24c434b662082d9fe67b9eb7309fcfd11a470cfe6a75b3e5c254bf335fd700e",
@@ -253,7 +253,7 @@
       }
     }
   ],
-  "currentBatch": 1,
+  "currentBatch": 0,
   "masterStrand": "0ebaec76d4e637709e2a161221754a9d",
   "masterSessionId": "f8d50f22-6cb4-4c18-9279-b0e0ecc1c6d4",
   "batches": {
@@ -267,18 +267,47 @@
         "05-darn-config-per-run-budget"
       ],
       "cardHashes": {
-        "01-reviewbudget-package": "b21f4270658295594f955ad12b5a03975a7b85a661db926da18ef50a1d406a89",
-        "02-zero-round-perch-routing": "798ba7a4ad979f5cc120b4ff6749d69c142005217ce888f69e57e6cd99c28135",
+        "01-reviewbudget-package": "bec61ebf0cf4ed734f27b2280d2cfc8a559f922d99420ecacd2b4470a550fb7c",
+        "02-zero-round-perch-routing": "0db0226f7eb9d2aa652a72a171470a38f3317973c93ce203f2c4d9e1afe474f8",
         "03-yamlengine-null-leaf-set": "169ccc0a5a9b8c313b1592ba5e65e226356b82d555fc698a354b12548197a898",
-        "04-loom-config-zero-rounds": "9ef55cee682cc06e5d484776c82ca1b4aada9c36c16c507fd3c3a8821196e2e1",
-        "05-darn-config-per-run-budget": "57df0b3483f1f4e414bf1eef2484654f6bd0f729cb0714fa91010d1172638dbb"
+        "04-loom-config-zero-rounds": "761facf4ed80bf1beb607897488bd5b5dda32cfeeafd3a0062a92644737ae2ed",
+        "05-darn-config-per-run-budget": "bd5efab196bd2c03c846aeb5f0e9113ec465dc6e9fbb9fae447f4fc175f869e3"
       },
       "startSha": "a9adc8c1c8c2e16a1d9b0765d5883a8d05154215",
       "kind": "fork",
       "spawnedAt": "2026-10-14T18:34:23Z",
       "sessionId": "f8d50f22-6cb4-4c18-9279-b0e0ecc1c6d4",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "01-reviewbudget-package",
+        "status": "done",
+        "head_sha": "7d81c69ede89a29c3e73ba279359bacb7ab775b5",
+        "deviations": [
+          "internal/loomcli/wiring_darn_test.go",
+          "internal/loomengine/caps.go",
+          "internal/loomengine/config.go",
+          "internal/loomengine/config_test.go",
+          "internal/loomrecipe/loomrecipe.go",
+          "internal/loomrecipe/reviewbudget_test.go",
+          "internal/reviewbudget/reviewbudget_test.go",
+          "internal/yamlengine/layers_test.go",
+          "internal/yamlengine/set.go",
+          "internal/yamlengine/set_test.go"
+        ]
+      },
+      "cardShas": [
+        "7d81c69ede89a29c3e73ba279359bacb7ab775b5"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-perch-budget-arbiter/f8d50f22-6cb4-4c18-9279-b0e0ecc1c6d4/subagents/agent-a5c2c36e1efc386ad.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-perch-budget-arbiter/f8d50f22-6cb4-4c18-9279-b0e0ecc1c6d4/subagents/agent-a5c2c36e1efc386ad.jsonl"
+      ]
     }
-  }
+  },
+  "seenForkTranscripts": [
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-perch-budget-arbiter/f8d50f22-6cb4-4c18-9279-b0e0ecc1c6d4/subagents/agent-a5c2c36e1efc386ad.jsonl"
+  ]
 }
