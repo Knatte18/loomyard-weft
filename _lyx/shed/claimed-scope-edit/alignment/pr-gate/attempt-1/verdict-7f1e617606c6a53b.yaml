@@ -1,0 +1,9 @@
+verdict: approve
+reason: >-
+  The diff at ebc1cd185 delivers the board entry's two goals within the record's scope and breaks none of D1-D11.
+  Darn gets a decision record that a parent's decision add can amend and that Darn-Review, Describe and alignment read.
+  Darn also gets a PR-Align row between Publish and PR-Gate.
+  Both carried-over MEDIUM risks were fixed in the record and plan.
+  No parent commits are listed, and the peer overlaps are text-only (refusal-spec rows) or unknown; this run, at row 22, lands first.
+question: ""
+superseded: []
