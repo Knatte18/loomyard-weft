@@ -8,11 +8,11 @@
      Every marker below is a top-level {{.X}} substitution;
      stencil.FillOptional requires the four original markers non-empty and there are no {{if}}/{{range}} conditionals anywhere in this file (a required marker inside a conditional branch would render silently blank when present-but-empty — see internal/stencil/stencil.go). pattern_directive and friction_directive are the two optional markers: each is filled via stencil.FillOptional and renders as nothing when its own tier is inactive (PATTERN for pattern_directive, Tier 2 for friction_directive).
      parent_directive is a third optional marker, rendered by internal/parentdirective.
-     twill_directive and twill_write_scope are two more optional markers, rendered by internal/twilldirective through internal/loomengine;
-     each sits on the line that would otherwise be blank, so an empty value leaves the blank line and the prompt's bytes unchanged.
+     twill_directive is a fourth optional marker, rendered by internal/twilldirective through internal/loomengine;
+     it sits on the line that would otherwise be blank, so an empty value leaves the blank line and the prompt's bytes unchanged.
      edit_directive is a required marker, rendered unconditionally by internal/editdirective.
      The literal `{` / `}` characters around {{.slug}} in the board-read example below are ordinary JSON punctuation, not template syntax — only `{{` begins a template action.
-lyx-stencil: sha256=c3dbad6fe3e49ae59057747d4675df0da5ef40353cce634b12a1d2efabc42f52 build=414d8b713a9cb4a85bd49c3a8e9b733cfb38e7b5 time=2026-10-11T19:08:33Z -->
+lyx-stencil: sha256=4db08c62095c507a7c25dd6e7afb87be185b6e89732f3ddd4c15f673184b8fb9 build=f0e753ba29984e3c11be82352ce56df0d51b33f1 time=2026-10-14T15:02:07Z -->
 
 # Discussion — interview, then write the decision record
 
@@ -165,7 +165,7 @@ You are a **design** agent. The only files you create or modify in this session 
 
 - `{{.decision_record_path}}`
 - `{{.support_log_path}}`
-{{.twill_write_scope}}
+
 Two narrow carve-outs apply, each only when the gate's message asks for it:
 
 - running `lyx loom review delivered` when a delivery prompt asks;
