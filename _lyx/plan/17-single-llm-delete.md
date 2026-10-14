@@ -1,9 +1,9 @@
 # Card 17 — single-llm-delete
 
 **Create:**
-- `plan:internal/shedadapters#TestMultiLLMProducer_MapsTheLeadResult` -> `func TestMultiLLMProducer_MapsTheLeadResult(t *testing.T)`
-- `plan:internal/loomcli#TestSmokeLeadSeat_HarvestsAFinishedRunWithReedStateGone` -> `func TestSmokeLeadSeat_HarvestsAFinishedRunWithReedStateGone(t *testing.T)`
-- `plan:internal/loomcli#TestSmokeLeadSeat_RerunRemovesTheSupersededStrand` -> `func TestSmokeLeadSeat_RerunRemovesTheSupersededStrand(t *testing.T)`
+- `internal/shedadapters#TestMultiLLMProducer_MapsTheLeadResult`
+- `internal/loomcli#TestSmokeLeadSeat_HarvestsAFinishedRunWithReedStateGone`
+- `internal/loomcli#TestSmokeLeadSeat_RerunRemovesTheSupersededStrand`
 
 **Delete:**
 - `internal/shedadapters#SingleLLMProducer`
