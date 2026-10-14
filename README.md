@@ -25,7 +25,11 @@ Held by a run; its scope is locked until the run ends.
 
 Waits on nothing open; can start now.
 
-_None._
+#### Normal priority
+
+| # | Task | Slug | Recipe | After | Age | Revised | Labels |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| 1 | **lyx config --set writes a per-round model list as a string**<br>• --set on review/fix model keys stores a flow list as a quoted string; it must write a real list or refuse | [`config-set-round-list`](design-config-set-round-list.md) | darn |  | 5m | 0m | config |
 
 ### Layer A
 
@@ -40,14 +44,6 @@ Waits only on Running or Ready entries.
 ## Notes
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
-
-### Bugs
-
-#### Normal priority
-
-| # | Note | Slug | Age | Revised | Labels |
-| --- | --- | --- | --- | --- | --- |
-| 1 | **lyx config --set writes a per-round model list as a string**<br>• --set on review/fix model keys stores a flow list as a quoted string; it must write a real list or refuse | [`config-set-round-list`](design-config-set-round-list.md) | 5m | 5m | config |
 
 ### Enhancements
 
