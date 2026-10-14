@@ -1,11 +1,11 @@
 {
-  "current_producer": "Darn-Write",
+  "current_producer": "Darn-Bouncer",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Darn-Write",
-    "last": "Preflight → done",
+    "now": "Darn-Bouncer",
+    "last": "Darn-Write → done",
     "wait": ""
   },
   "history": [
@@ -14,6 +14,13 @@
       "outcome": "done",
       "output": "",
       "at": "2026-10-14T19:11:42Z"
+    },
+    {
+      "producer": "Darn-Write",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYXHUB/delete-order-own-edit/_lyx/landing/summary.md",
+      "at": "2026-10-14T19:16:14Z",
+      "gate_attempts": 0
     }
   ],
   "product": {
