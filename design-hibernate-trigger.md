@@ -1,6 +1,6 @@
 # Hibernate the machine on a trigger, such as a task landing
 
-`hibernate-trigger` · Task · feature, batten · running · PR-Gate
+`hibernate-trigger` · Task · feature, batten · running · Finalize
 
 ## Seen (2026-10-13)
 
