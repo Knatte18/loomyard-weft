@@ -8,8 +8,6 @@
 **Edit:**
 - `internal/batcher#costBatcher.Batch`
 - `internal/batcher_test#TestCostBatchifier_Limits`
-- `internal/batcher#TestIdentityBatcher_Batch`
-- `internal/websterengine_test#TestExecutionBatches`
 - `internal/batcher/doc.go`
 - `contracts/specs/loom-plan-spec.md`
 
@@ -20,8 +18,6 @@
 - `internal/planglyph#DoneChecks`
 - `internal/testkit/plankit#Repo`
 - `internal/websterengine#renderBatchGate`
-- `internal/websterengine_test#partitionPlan`
-- `internal/websterengine_test#batchIDs`
 
 **Intent:**
 Decision D1: card B never shares a batch with an earlier, distinct card A when one of B's Rename old sides or Delete targets covers one of A's targets.
@@ -52,10 +48,7 @@ add `groupCard` to `internal/batcher/cost_test.go`, a card with the given number
 - card 1 creates the unmappable handle `plan:nohash` and card 2 deletes `plan:nohash`; sizes `[2]`;
 - card 1 edits `internal/b/b.go#` and card 2 renames `internal/a/a.go#` -> `internal/n/a.go#`, covering nothing earlier; sizes `[2]`.
 
-Add a row to `TestIdentityBatcher_Batch` whose cards are the tender-batch-07 shape above, built with target groups, and which still yields one batch per card in order.
-
-`TestExecutionBatches` gains an optional `plan` field, nil meaning `partitionPlan()`, a two-card plan (`Language: "go"`, card 1 slug `a` creating `plan:internal/a#Foo`, card 2 slug `b` renaming `internal/a/a.go#` -> `internal/n/a.go#`) and a row over a two-card plan (`Language: "go"`, card 1 slug `a` creating `plan:internal/a#Foo`, card 2 slug `b` renaming `internal/a/a.go#` -> `internal/n/a.go#`) with `batcher.NewCost("cautious", batcher.CostParams{Budget: 1, MaxCards: 5})` active:
-with a state whose recorded partition holds both cards in one batch (built with `websterengine.RecordPartition` before the table, profile `size` and estimate 7) the grouping stays `01-a+02-b` with that profile and estimate, the resume that keeps a pre-change partition.
+The identity batchifier and `ExecutionBatches`' recorded-partition path are unchanged and keep their existing tests: `TestIdentityBatcher_Batch`'s `threeCards` row and `TestExecutionBatches`' row "a recorded partition is kept when the size source changes between calls".
 
 `TestRenameBoundary_BatchesCheckAndGateTheirOwnTree`, in `internal/websterengine/cardgate_test.go`, runs the tender-batch-07 shape end to end:
 the cost batchifier with an unlimited budget over `batcher.DiskSizes` of the first tree partitions it into `[1 2]` and `[3]`;

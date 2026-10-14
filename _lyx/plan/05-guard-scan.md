@@ -27,6 +27,7 @@ The zero value renders no guard step.
 - Otherwise it walks the worktree with `filepath.WalkDir` and collects each directory that directly holds a `_test.go` file, recording every `.go` file it holds.
   It skips, below the root, a directory named `testdata` or `vendor`, a directory whose name begins with `_` or `.`, and a directory holding a `go.mod`, with its whole subtree, as `go list ./...` does, so no file under them is scanned.
 - A walk error, a directory or entry it cannot read, is returned wrapped with the path it names: `webster: walk the worktree for guard tests: <path>: <error>`.
+  The walk also opens and closes each `_test.go` file it collects, and a failed open is returned the same way, so an unreadable test file is D3's read error and never reaches `FindGuardTests`, whose parse failure would otherwise make it a `GuardScanError`; `impactset`'s classification, and so the round gate's error policy, stays unchanged.
   This is not a test-file fault, and a later card turns it into begin-batch's and recover-batch's refusal.
 - It passes the collected directories to `impactset.FindGuardTests`.
   A `GuardScanError` (`impactset.IsGuardScanError`) is kept in `scanErr` with `names` empty, and no error is returned, so the render goes on without a guard step.
@@ -42,7 +43,8 @@ Card 6's guard rows reuse it.
 - a root `go.mod`, marked tests in `internal/a` (two files, one non-test `.go` file beside them) and at the root: both directories with their sorted names and every `.go` file;
 - marked tests under `testdata/x`, `vendor/x`, `_skip/x`, `.hidden/x` and `nested/x` beside a `nested/go.mod`, each also holding a misplaced marker so a scan would fail: none appears and `scanErr` stays nil;
 - a misplaced `//lyx:guard` marker in `internal/a/a_test.go`: `scanErr` set with `File` `internal/a/a_test.go`, nil error;
-- an unreadable directory (mode `0o000`, restored in `t.Cleanup`; the row is skipped on Windows and as root, as `rebaseline_test.go` does): an error naming that directory's path, and no `scanErr`.
+- a root `go.mod` and an unreadable directory (mode `0o000`, restored in `t.Cleanup`; the row is skipped on Windows and as root, as `rebaseline_test.go` does): an error naming that directory's path, and no `scanErr`;
+- a root `go.mod` and a `_test.go` file with mode `0o000`, restored and skipped the same way: an error naming that file's path, and no `scanErr`.
 
 The package's `test-budget.yaml` row has room for this test beside card 2's.
 
