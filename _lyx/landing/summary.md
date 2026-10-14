@@ -1,28 +1,36 @@
-# reed: a viewer on the newest agent or Driver window follows a new agent
+# reed: an attached run window follows the newest agent window
 
-An attached run window stuck on the Driver window while later agents spawned in windows of their own.
-Reed picked the window only at attach, and a new own-window strand took the viewer only from the overview or from an all-dead agent window.
+An attached run window used to stay on the Driver window while later agents spawned in windows of their own, because reed chose a window only at attach.
+When a new own-window strand spawns, reed now moves the viewer to the new window if the viewer is on the previous newest live agent window or on a Driver window.
+A viewer the operator moved to any other window by hand stays where it is.
 
 ## What changes
 
-`newAgentWindowSelected` in `internal/reedengine/ownwindow.go` now also selects a new agent window when the session's current window is either of these:
+`newAgentWindowSelected` in `internal/reedengine/ownwindow.go` takes the session's windows as well as its panes.
+Besides a Focus strand, the overview and an all-dead agent window, which already passed the viewer on, it now also takes the viewer from:
 
-- the relevant window as listed before the new one opens (`relevantWindow`): the highest-index agent window holding a live pane, where attach and every automatic switch put the viewer;
-- a window holding a live pane of an own-window strand whose role matches `agentname.RoleDriver`, so a viewer still parked on the Driver follows the run even once a newer agent is live.
+- the relevant window as listed before the new window opens, the highest-index agent window holding a live pane;
+- a window holding a live own-window pane of a strand whose role matches `agentname.RoleDriver`, found by the new `driverWindows`.
 
-A viewer on an older live agent window or on the shell is still never moved, so a window the operator picked by hand keeps them.
-Focus strands, the overview and all-dead agent windows behave as before, and a selected window still carries no `@lyx_unseen`.
-`newAgentWindowTakesViewerLocked` now lists the session's windows as well as its panes; a failed listing keeps the viewer, logged at Warn.
+An older live agent window and the shell keep the viewer, as before.
+`newAgentWindowTakesViewerLocked` lists the session's windows for this, and a failed listing keeps the viewer where it is, as the existing reads do.
+
+The focus-rule paragraph of `internal/reedengine/doc.go` is updated to match.
 
 ## Design decisions
 
-- The switch stays one session-wide `select-window`: every client attached to a reed session shares its current window, so it moves each attached client.
-- The Driver is found by the bound strand's role through `internal/agentname`, never by window name, and only an own-window driver counts, so a driver placed in the strands' window never pulls a viewer off the shell.
-- A strand joining an existing shared group window opens no window and switches nothing, as before.
-- Replacing the viewed agent now lands the viewer on the replacement: the removal falls back to the newest live agent, and the replacement then takes the viewer from there.
+- The switch stays one session-wide `select-window` decided from the session's current window. Every client of a reed session shares its current window, so it moves each attached client.
+- The driver role is matched only through `internal/agentname`, and only that role is singled out, so no other role widens the rule.
+- The rule reads reed state, window ids, strand roles and pane liveness only, never `@lyx_unseen`, `@lyx_hidden` or a wait mark.
+- An operator who picks the newest agent window by hand cannot be told apart from one who stayed there, and is moved.
+- Replacing the viewed agent now lands the viewer on the replacement's window when the removal falls back to the newest live agent. The tmux-tier replace subtest's expectation changes with it.
 
-## Tests and docs
+Out of scope: attach's own window selection, the removal and reconcile switches, a strand joining an existing shared window by a split, and dropping the LLM Driver.
 
-- `TestNewAgentWindowSelected` pins the rule over a table of current windows; the `internal/reedengine` row in `cmd/lyx/testdata/test-budget.yaml` rises by one for it.
-- `TestWindowOrder_RealTmux` gains a subtest for following from the newest agent and from the Driver, keeps the viewer on an older agent instead of the newest one, and its replace subtest now expects the replacement's window.
-- The focus-rule paragraph in `internal/reedengine/doc.go` states the widened rule.
+## Tests
+
+- `TestNewAgentWindowSelected` is a unit table over the viewer's window, including the driver window, an older live agent window and the shell.
+- The tmux-tier focus subtests in `windoworder_integration_test.go` are extended for the newest-agent, driver, older-agent and replace cases.
+- `internal/reedengine` is raised by one in `cmd/lyx/testdata/test-budget.yaml`.
+
+Not run by hand: `lyx gate test --tags tmux ./internal/reedengine` against a live run window, watching it follow a spawn.
