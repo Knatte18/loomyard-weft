@@ -14,9 +14,8 @@ The trace of that start:
 
 ## Direction (operator, 2026-10-14)
 
-Open the window as soon as the worktree exists, running attach at once.
+Open the window as soon as the worktree exists, running attach at once; `lyx reed attach` boots the reed session itself when it does not exist yet (operator).
 
 ## Open
 
-- `lyx reed attach` requires the reed session to exist, so the window's command must boot it first (`lyx reed up`, then attach), or attach must wait for the session.
 - Whether the add's pushes can go async like `fabric sync`, or be coalesced into one push per side; a push failure today rolls the add back, so an async push needs another failure path.
