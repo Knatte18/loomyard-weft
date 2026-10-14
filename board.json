@@ -794,22 +794,6 @@
       "revised": "2026-10-14T17:24:42Z"
     },
     {
-      "id": 505,
-      "slug": "twb-f3-ir",
-      "title": "twill rationale bench pair twb-f3-ir",
-      "kind": "note",
-      "labels": [
-        "enhancement"
-      ],
-      "issues": [],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "Bench pair for twill-fork-timing, Plan-Write fork0 with a rationale file, against the fork0 arm",
-      "body": "Temporary bench pair for board note twill-fork-timing, Plan-Write fork0 + rationale bench. Plan-Write only, from a frozen decision record.",
-      "created": "2026-10-14T17:43:14Z",
-      "revised": "2026-10-14T17:43:14Z"
-    },
-    {
       "id": 506,
       "slug": "twb-f3-wr",
       "title": "twill rationale bench pair twb-f3-wr",
