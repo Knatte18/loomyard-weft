@@ -2,6 +2,8 @@
 
 `shed-tackler` · Task · enhancement, shed, loom, batten
 
+Depends on: [`perch-budget-arbiter`](design-perch-budget-arbiter.md), [`overview-seats`](design-overview-seats.md)
+
 ## Seen (2026-10-14)
 
 The Go driver and the tackler landed in `1c812c1f8` for loom runs only.
