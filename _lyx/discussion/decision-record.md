@@ -56,6 +56,13 @@ A row whose flag is off passes straight on to the next row.
 - A plain `lyx batten run` now opens a desktop window by default where today only `--window` did; a headless machine only logs that no launcher exists.
 - Tooling outside battencli's tests that drives a real batten run past `Seed-Child` on a desktop machine opens a window unless its config sets `open_window: false`.
 
+<!-- lyx:carry-over Darn-Review -->
+- Darn-Review, round 1: converged; each finding below was fixed or disputed by the round's fixer, and no fresh reviewer has seen the result; the fixer report says which.
+  Review: _lyx/reviews/darn/round-1-review.md; fixer report: _lyx/reviews/darn/round-1-fixer-report.md.
+  - row-placement-departs-from-board-entry (class decision, severity MEDIUM, open in rounds 1)
+  - stale-batten-paragraph-overview (class consistency, severity MEDIUM, open in rounds 1)
+<!-- /lyx:carry-over Darn-Review -->
+
 ## Acceptance criteria
 
 - A switched row whose flag is false reports Done without calling its action.
