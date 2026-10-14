@@ -1,11 +1,11 @@
 {
-  "current_producer": "Discussion-Bouncer",
+  "current_producer": "Discussion-Burler-Review",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Discussion-Bouncer",
-    "last": "Discussion-Burler-Fix → bounced to Discussion-Bouncer",
+    "now": "Discussion-Burler-Review",
+    "last": "Discussion-Bouncer → bounced to Discussion-Burler-Review",
     "wait": ""
   },
   "history": [
@@ -48,6 +48,12 @@
       "at": "2026-10-14T15:31:37Z",
       "gate_attempts": 0,
       "budget_exempt": true
+    },
+    {
+      "producer": "Discussion-Bouncer",
+      "outcome": "stuck",
+      "output": "/home/knatte/Code/loomyard-LYXHUB/plan-gate-gaps/_lyx/reviews/discussion/round-1-bouncer-ledger.md",
+      "at": "2026-10-14T15:32:05Z"
     }
   ],
   "product": {
