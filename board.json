@@ -846,7 +846,7 @@
       "id": 514,
       "slug": "delete-order-own-edit",
       "title": "Plan delete-order check reports a reference the deleting card itself rewrites",
-      "kind": "note",
+      "kind": "task",
       "labels": [
         "bug",
         "webster",
