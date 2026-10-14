@@ -1,30 +1,30 @@
-# Delete-before-reference skips code the deleting or an earlier card edits
+# planglyph: delete-order skips references the deleting card rewrites
 
-The delete-before-reference check reported a reference to a deleted member whenever a later card's Edit region held it, even when the deleting card, or a card before it, edits that same code first.
-That blocked `overview-seats` at Webster: card 18 deletes `internal/loomengine#PlanSpec` and edits `TestPlanTable`, which removes the call, yet card 19's Edit region over the same test made begin-batch refuse with `plan_drifted`.
+The delete-before-reference check no longer reports a reference to a deleted member when an Edit target of the deleting card, or of a card numbered before it, covers the line that holds the reference.
+That card rewrites the code before the later card runs, so the reference is gone by then.
 
-## What changed
+Before, `deleteOrderFindings` asked only whether a later card's Edit region held the reference.
+A reference added after Plan-Write by an earlier batch, such as a temporary parity test the deleting card itself edits away, blocked begin-batch with `plan_drifted` and no override.
+This is what blocks `overview-seats`.
 
-- `deleteOrderFindings` (`internal/planglyph/deleteorder.go`) skips a reference line that an Edit region of the deleting card, or of any card numbered before it, also holds.
-  A line only a later card's region holds is still reported as before.
-  Both callers share this function, so the plan-gate path (`callerCoverageFindings`) and the scan-only `LaterDeleteReferences` path agree.
-- `LaterDeleteReferences` now builds Edit regions from the deleting cards as well as the later ones, each card once.
-  Webster's begin-batch passes the batch's own cards as deleting and every unbegun card as later, so the deleting card's own regions were never built before.
-- `editRegion.holds` replaces the containment test that `laterEditRegions` spelled inline, since the new lookup needs it too.
-- The `internal/planglyph` doc entry for delete-before-reference states the exemption.
+## Design
 
-## Design decisions
+- The exemption lives in `deleteOrderFindings` (`internal/planglyph/deleteorder.go`).
+  Both callers share it, the plan-gate `callerCoverageFindings` and the scan-only `LaterDeleteReferences`, so the two paths agree.
+  It takes a second region list, `allRegions`, used only for the exemption; findings are still named from the later cards' `regions`.
+- A line is exempt only when a region of a card numbered at or below the deleting card holds it.
+  A line only a later card's region holds is still reported, and the finding wording is unchanged.
+- `LaterDeleteReferences` now also builds regions for the deleting cards, since its webster begin-batch caller passes the batch's own cards as `deleting` and they otherwise get no regions.
+  Those regions are dropped from the reporting list afterwards.
+  The early return when no later card has an Edit target stays.
+- `editRegion.holds` factors out the line-in-region test that `laterEditRegions` also uses.
+- The quoted-import arm (`laterImportFindings`, for a package self glyph Delete) keeps no such exemption.
+  `doc.go` states this.
 
-- The exemption sits in `deleteOrderFindings` rather than in `laterEditRegions`, because `insideLaterEditRegion` builds on the latter for the caller-uncovered hand-off and must keep its meaning.
-  A line skipped at the plan gate stays covered for caller-uncovered, since a deleted member already admits its own card's and earlier cards' targets.
-- `laterImportFindings`, the quoted-import arm for a deleted package, keeps no such exemption; the doc entry says so.
-- A done earlier card is not consulted: the caller does not pass it, and the tree the check reads already holds its edit.
+## To check
 
-## Risk
-
-Resolving the deleting cards' Edit member targets means an unreadable answer for one of them now raises a glyph-rejected finding at begin-batch where it did not before.
-
-## Tests
-
-- `TestLaterDeleteReferences` gains rows: a reference the deleting card's own Edit covers is not reported, one an earlier card's Edit covers is not reported, and one only a later card covers is still reported beside the deleting card's own Edit.
-- `TestGlyphChain_CallerCoverage`'s row that pinned the old report for a reference the deleting card's own Edit covers now expects no finding.
+- Building regions for the deleting cards resolves their Edit member targets too.
+  An Edit target of a deleting card whose answer is unreadable now raises a `glyph-rejected` finding at begin-batch where it did not before.
+- Tests are new rows in the `TestLaterDeleteReferences` table: the deleting card's own region, an earlier card's region, and a reference only a later card covers.
+  `lyx gate test ./internal/planglyph` was the targeted run; the full `./...` and `--tags integration` tiers were not run.
+- After landing, resume `overview-seats` with `lyx loom resume` in its pair.
