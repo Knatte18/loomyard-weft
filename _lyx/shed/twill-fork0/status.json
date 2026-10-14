@@ -1,9 +1,8 @@
 {
   "current_producer": "Plan-Write",
-  "state": "running",
+  "state": "paused",
   "error": "",
   "pause_requested": false,
-  "pause_before": "Plan-Write",
   "activity": {
     "now": "Plan-Write",
     "last": "Discussion-Bouncer → done",
