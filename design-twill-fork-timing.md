@@ -146,4 +146,11 @@ All 111 lens findings of the six runs graded real, wrong or noise against the co
 - Fixing decides the final plan: both J1 regressions came from a fixer following a half-right test-economy suggestion, in blind arms.
 - Caveats: one grader, one reference, two runs per arm; real against noise is a judgement call.
 
+## A critical fixer (operator, 2026-10-14)
+
+The fixer that judges the lens findings (the writer, or the master in the fork0 arm) must do a far more critical job, as Burler's fixers do: in the fork0 arm it fixes blind to the reasoning, and both J1 regressions came from a fixer following a half-right suggestion.
+Burler's fix step (`contracts/stencils/burler/burler-step-fix.md`) weighs each finding twice, its premise and the change its `fix` proposes, and gives one of three dispositions with cited evidence: dispute (premise false, or every fix worse), fix with its own change (the proposed change is wrong, another resolves the premise), or fix as proposed.
+Twill's judge step has only "fix or reject with a one-line reason" (`contracts/stencils/twill/twill-directive.md`, step 6, and the hosts' rejection rules).
+Giving twill's judge step Burler's two-sided weighing, with cited evidence, helps every arm and needs no bench to start.
+
 Ideas from the bench agent, untested: merge two lenses (for instance `test-economy` into `row-reachability`), have forks batch their reads into one or two calls, and cut the writer's `validate-plan` rounds (the writer is about $4 of $5.6 per plan).
