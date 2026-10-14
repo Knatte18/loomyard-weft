@@ -1,8 +1,8 @@
 # Card 6 — Every card gate ends with the root module's guard tests
 
 **Create:**
-- `plan:internal/websterengine#guardTests.step` -> `func (g guardTests) step(plan *planparser.Plan, cards []planparser.Card, index int) (step string, length int)`
-- `plan:internal/websterengine#guardNotice` -> `func guardNotice(plan *planparser.Plan, cards []planparser.Card, planDirDisplay, stencilsDir string, guards guardTests, tooLong int) (string, error)`
+- `internal/websterengine#guardTests.step`
+- `internal/websterengine#guardNotice`
 
 **Edit:**
 - `internal/websterengine#cardGateCommand` -> `func cardGateCommand(plan *planparser.Plan, cards []planparser.Card, index int, worktree string, guards guardTests) (steps []string, guardTooLong int)`
@@ -21,15 +21,15 @@
 - `contracts/specs/loom-plan-spec.md`
 
 **Uses:**
-- `plan:internal/websterengine#guardTests`
-- `plan:internal/websterengine#scanGuardTests`
-- `plan:internal/impactset#MaxCommandLength`
-- `plan:internal/planparser#RefCovers`
-- `plan:contracts/stencils#WebsterFragmentGuardScanError`
-- `plan:contracts/stencils#WebsterFragmentGuardTooLong`
-- `plan:contracts/stencils#WebsterFragmentGuardFix`
+- `internal/websterengine#guardTests`
+- `internal/websterengine#scanGuardTests`
+- `internal/impactset#MaxCommandLength`
+- `internal/planparser#RefCovers`
+- `contracts/stencils#WebsterFragmentGuardScanError`
+- `contracts/stencils#WebsterFragmentGuardTooLong`
+- `contracts/stencils#WebsterFragmentGuardFix`
 - `internal/websterengine#packageArg`
-- `plan:internal/websterengine#writeGuardFixture`
+- `internal/websterengine#writeGuardFixture`
 - `internal/websterengine_test#newBeginFixture`
 - `internal/websterengine_test#newRecoverFixture`
 - `internal/websterengine_test#writeWorktreeFile`

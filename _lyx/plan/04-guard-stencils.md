@@ -4,9 +4,9 @@
 - `contracts/stencils/webster/webster-fragment-guard-scan-error.md`
 - `contracts/stencils/webster/webster-fragment-guard-too-long.md`
 - `contracts/stencils/webster/webster-fragment-guard-fix.md`
-- `plan:contracts/stencils#WebsterFragmentGuardScanError` -> `var WebsterFragmentGuardScanError []byte`
-- `plan:contracts/stencils#WebsterFragmentGuardTooLong` -> `var WebsterFragmentGuardTooLong []byte`
-- `plan:contracts/stencils#WebsterFragmentGuardFix` -> `var WebsterFragmentGuardFix []byte`
+- `contracts/stencils#WebsterFragmentGuardScanError`
+- `contracts/stencils#WebsterFragmentGuardTooLong`
+- `contracts/stencils#WebsterFragmentGuardFix`
 
 **Edit:**
 - `contracts/stencils#entries`

@@ -1,14 +1,14 @@
 {
   "runGuid": "b6fbf8e43fea7e6385f61087c886dbfb",
-  "planFingerprint": "9b8ae523301ebccb7fe03636f15805f48813542f523dff2c29aa8e9ac014e26a",
+  "planFingerprint": "039366e8ad53f120f2d3f607da36ddad7b87fd9b9e584f4135665e38c4d9bc62",
   "planFileHashes": {
     "00-overview.md": "612afd309253c2cf57cb276bfcbc0818a1e3d51d973cab2df562bfe81270243c",
-    "01-ref-covers.md": "af4dcc76d7f8efd915d9c48cdb906170d782234f296cea2480f09c0223a8fe50",
-    "02-rename-batch-boundary.md": "280775a3094997bcbb0ad08e3dfe263776ab34aadfe14ffcdbfb2ee3aa1a0c18",
-    "03-export-guard-scan.md": "b26fb36b15d5fa8e9a6dabcf314aff9a01dfe0ed90051ee247d344ccf96a9b13",
-    "04-guard-stencils.md": "5432c16fd0602cc41fb08832a70a5438009202ba4756134864f67b346277e685",
-    "05-guard-scan.md": "a5efccc066bbec8a32817c2f8abcd7eb3a2b6effacd380d1c0ae6eec2550b8fb",
-    "06-guard-step.md": "efc29c9a9dd87e801a9aa0b21224232fac48a9b74f306b6c3b8a1ffefadea83d"
+    "01-ref-covers.md": "59f8a4050a6db92a90685de6ee3685a068dedee741f7d7200117a2cf5c1667a1",
+    "02-rename-batch-boundary.md": "8ed1f1a2f10d622365ddbf9be235320f76476dab2d607abc4f429308fd5b3c47",
+    "03-export-guard-scan.md": "a59cdbd1990250818ccf84587d95102ca3b4cf67dc17648b809bd04a81dbff5c",
+    "04-guard-stencils.md": "286590de7fe60ad56e26897d318399c6e933c1c3f4840dce684e269f47094f5b",
+    "05-guard-scan.md": "ab40af6b7b0e6c1d99ab6eeb4911ff3b9fb7d69e262b0e86b180fb56cdf8a97b",
+    "06-guard-step.md": "e73659de069845521e1d85eca5a00c66bd51f92472aece8e9c7b8ae8d6f1482b"
   },
   "planOverviewFrameHash": "d3df3d0732504a1044ed60553c35b5ee7ee48d3d7f629869004c95173b74d8a9",
   "partition": [
@@ -126,7 +126,7 @@
       }
     }
   ],
-  "currentBatch": 1,
+  "currentBatch": 0,
   "masterStrand": "fe21edc84ca3c90570c1b40f2ee8e786",
   "masterSessionId": "b746a668-0eef-478d-a3a3-e99b72c9047f",
   "batches": {
@@ -141,19 +141,44 @@
         "06-guard-step"
       ],
       "cardHashes": {
-        "01-ref-covers": "af4dcc76d7f8efd915d9c48cdb906170d782234f296cea2480f09c0223a8fe50",
-        "02-rename-batch-boundary": "280775a3094997bcbb0ad08e3dfe263776ab34aadfe14ffcdbfb2ee3aa1a0c18",
-        "03-export-guard-scan": "b26fb36b15d5fa8e9a6dabcf314aff9a01dfe0ed90051ee247d344ccf96a9b13",
-        "04-guard-stencils": "5432c16fd0602cc41fb08832a70a5438009202ba4756134864f67b346277e685",
-        "05-guard-scan": "a5efccc066bbec8a32817c2f8abcd7eb3a2b6effacd380d1c0ae6eec2550b8fb",
-        "06-guard-step": "efc29c9a9dd87e801a9aa0b21224232fac48a9b74f306b6c3b8a1ffefadea83d"
+        "01-ref-covers": "59f8a4050a6db92a90685de6ee3685a068dedee741f7d7200117a2cf5c1667a1",
+        "02-rename-batch-boundary": "8ed1f1a2f10d622365ddbf9be235320f76476dab2d607abc4f429308fd5b3c47",
+        "03-export-guard-scan": "a59cdbd1990250818ccf84587d95102ca3b4cf67dc17648b809bd04a81dbff5c",
+        "04-guard-stencils": "286590de7fe60ad56e26897d318399c6e933c1c3f4840dce684e269f47094f5b",
+        "05-guard-scan": "ab40af6b7b0e6c1d99ab6eeb4911ff3b9fb7d69e262b0e86b180fb56cdf8a97b",
+        "06-guard-step": "e73659de069845521e1d85eca5a00c66bd51f92472aece8e9c7b8ae8d6f1482b"
       },
       "startSha": "f0e753ba29984e3c11be82352ce56df0d51b33f1",
       "kind": "fork",
       "spawnedAt": "2026-10-14T16:00:36Z",
       "sessionId": "b746a668-0eef-478d-a3a3-e99b72c9047f",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "01-ref-covers",
+        "status": "done",
+        "head_sha": "61f63c6ad1eebe5e47a58a554fcb572fa8737e8e",
+        "deviations": [
+          "internal/batcher/boundary.go",
+          "internal/batcher/cost_test.go",
+          "internal/planparser/targetdirs.go",
+          "internal/websterengine/beginbatch_test.go",
+          "internal/websterengine/guardstep.go",
+          "internal/websterengine/guardstep_test.go"
+        ]
+      },
+      "cardShas": [
+        "61f63c6ad1eebe5e47a58a554fcb572fa8737e8e"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-plan-gate-gaps/b746a668-0eef-478d-a3a3-e99b72c9047f/subagents/agent-a4ff4c05a3e60b571.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-plan-gate-gaps/b746a668-0eef-478d-a3a3-e99b72c9047f/subagents/agent-a4ff4c05a3e60b571.jsonl"
+      ]
     }
-  }
+  },
+  "seenForkTranscripts": [
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-plan-gate-gaps/b746a668-0eef-478d-a3a3-e99b72c9047f/subagents/agent-a4ff4c05a3e60b571.jsonl"
+  ]
 }

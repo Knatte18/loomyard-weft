@@ -1,13 +1,13 @@
 # Card 5 — Webster scans the root module for guard tests
 
 **Create:**
-- `plan:internal/websterengine#guardTests` -> `type guardTests struct`
-- `plan:internal/websterengine#scanGuardTests` -> `func scanGuardTests(worktree string) (guardTests, error)`
+- `internal/websterengine#guardTests`
+- `internal/websterengine#scanGuardTests`
 - `internal/websterengine/guardstep_test.go`
-- `plan:internal/websterengine#writeGuardFixture` -> `func writeGuardFixture(t *testing.T, root string, files map[string]string)`
+- `internal/websterengine#writeGuardFixture`
 
 **Uses:**
-- `plan:internal/impactset#FindGuardTests`
+- `internal/impactset#FindGuardTests`
 - `internal/impactset#GuardScanError`
 - `internal/impactset#IsGuardScanError`
 

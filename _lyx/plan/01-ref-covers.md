@@ -1,8 +1,8 @@
 # Card 1 — planparser decides when one ref covers another
 
 **Create:**
-- `plan:internal/planparser#RefCovers` -> `func RefCovers(plan *Plan, cover, target string) bool`
-- `plan:internal/planparser_test#TestRefCovers` -> `func TestRefCovers(t *testing.T)`
+- `internal/planparser#RefCovers`
+- `internal/planparser_test#TestRefCovers`
 
 **Edit:**
 - `cmd/lyx/testdata/test-budget.yaml`

@@ -1,9 +1,9 @@
 # Card 2 — A rename or delete of an earlier card's target starts a new batch
 
 **Create:**
-- `plan:internal/batcher#renameBoundaries` -> `func renameBoundaries(plan *planparser.Plan, cards []planparser.Card) []int`
-- `plan:internal/batcher_test#groupCard` -> `func groupCard(number int, groups ...planparser.TargetGroup) planparser.Card`
-- `plan:internal/websterengine#TestRenameBoundary_BatchesCheckAndGateTheirOwnTree` -> `func TestRenameBoundary_BatchesCheckAndGateTheirOwnTree(t *testing.T)`
+- `internal/batcher#renameBoundaries`
+- `internal/batcher_test#groupCard`
+- `internal/websterengine#TestRenameBoundary_BatchesCheckAndGateTheirOwnTree`
 
 **Edit:**
 - `internal/batcher#costBatcher.Batch`
@@ -12,7 +12,7 @@
 - `contracts/specs/loom-plan-spec.md`
 
 **Uses:**
-- `plan:internal/planparser#RefCovers`
+- `internal/planparser#RefCovers`
 - `internal/batcher#NewCost`
 - `internal/batcher#DiskSizes`
 - `internal/planglyph#DoneChecks`

@@ -1,8 +1,8 @@
 # Card 3 — Export impactset's guard scan and command limit
 
 **Rename:**
-- `internal/impactset#findGuardTests` -> `plan:internal/impactset#FindGuardTests`
-- `internal/impactset#maxCommandLength` -> `plan:internal/impactset#MaxCommandLength`
+- `internal/impactset#findGuardTests` -> `internal/impactset#FindGuardTests`
+- `internal/impactset#maxCommandLength` -> `internal/impactset#MaxCommandLength`
 
 **Edit:**
 - `internal/impactset#GuardScanError`
