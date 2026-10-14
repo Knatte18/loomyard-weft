@@ -1,0 +1,12 @@
+verdict: approve
+reason: >-
+  PR 614 at 23b6dc289 does what the board entry's three scope points and the decision record's D1-D4 ask, with docs and tests in the same change.
+  D1: a rename or delete of an earlier card's target starts a new batch, decided through planparser.RefCovers and called by the cost batchifier.
+  D2: every card gate ends with a guard step over the root module's //lyx:guard tests, dropped for a package emptied by that card or an earlier one.
+  D3: a guard scan error or an over-long step renders a prompt line instead, and a walk read error refuses with a refusal-spec row.
+  D4: the fork stencil carries the instruction to fix outside the card.
+  The carried-over open risks are addressed.
+  The only peer overlap, claimed-scope-edit, is text-only: refusal-spec rows, claims_test, the stencils registry and the shared test budget.
+  This run is at row 22 against the peer's row 17, so it lands first, and there are no parent commits.
+question: ""
+superseded: []
