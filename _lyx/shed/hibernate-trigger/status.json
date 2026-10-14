@@ -1,12 +1,13 @@
 {
   "current_producer": "PR-Gate",
-  "state": "running",
-  "error": "",
+  "state": "awaiting",
+  "error": "alignment report /home/knatte/Code/loomyard-LYXHUB/hibernate-trigger/_lyx/shed/hibernate-trigger/alignment/pr-gate/attempt-1/report-bd1f35665fe30d48.md did not settle this pull request - The board entry hibernate-trigger says that whether to add the p and r shortcuts, and under which names, is the operator's call. Decision 12 in _lyx/discussion/decision-record.md auto-picks p: [tender, pause] and r: [tender, resume] for parent review to confirm, and no confirmation is recorded. Does the operator confirm p and r as built, or should they be withdrawn before PR-Gate?; the pull request awaits review; run `lyx loom approve` to land it or `lyx loom reject` to send findings to rework: https://github.com/Knatte18/loomyard/pull/618",
+  "parent_notice": "alignment report /home/knatte/Code/loomyard-LYXHUB/hibernate-trigger/_lyx/shed/hibernate-trigger/alignment/pr-gate/attempt-1/report-bd1f35665fe30d48.md did not settle this pull request - The board entry hibernate-trigger says that whether to add the p and r shortcuts, and under which names, is the operator's call. Decision 12 in _lyx/discussion/decision-record.md auto-picks p: [tender, pause] and r: [tender, resume] for parent review to confirm, and no confirmation is recorded. Does the operator confirm p and r as built, or should they be withdrawn before PR-Gate?",
   "pause_requested": false,
   "activity": {
     "now": "PR-Gate",
-    "last": "PR-Align → done",
-    "wait": ""
+    "last": "PR-Gate → awaiting",
+    "wait": "alignment report /home/knatte/Code/loomyard-LYXHUB/hibernate-trigger/_lyx/shed/hibernate-trigger/alignment/pr-gate/attempt-1/report-bd1f35665fe30d48.md did not settle this pull request - The board entry hibernate-trigger says that whether to add the p and r shortcuts, and under which names, is the operator's call. Decision 12 in _lyx/discussion/decision-record.md auto-picks p: [tender, pause] and r: [tender, resume] for parent review to confirm, and no confirmation is recorded. Does the operator confirm p and r as built, or should they be withdrawn before PR-Gate?; the pull request awaits review; run `lyx loom approve` to land it or `lyx loom reject` to send findings to rework: https://github.com/Knatte18/loomyard/pull/618"
   },
   "history": [
     {
@@ -198,6 +199,12 @@
       "outcome": "done",
       "output": "",
       "at": "2026-10-14T18:13:07Z"
+    },
+    {
+      "producer": "PR-Gate",
+      "outcome": "awaiting",
+      "output": "",
+      "at": "2026-10-14T18:13:20Z"
     }
   ],
   "product": {
