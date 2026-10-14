@@ -1,6 +1,6 @@
 {
   "runGuid": "72954bbc75060e0845127daa537d6305",
-  "planFingerprint": "a0d4962d60e7372e522fe08154756dab2a7a1e3ed4a44aa0c023277446f421fb",
+  "planFingerprint": "6d1a48f4f7894c2e6e41f10ea6cf73c81640885082d605b9a20844ebb2a9a39a",
   "planFileHashes": {
     "00-overview.md": "968040f042ffcc935693c9d45b1c010a9a8e19ecb272d0cfa159f8add3d5d7dd",
     "01-discussion-spec.md": "397f38c545e0df4ab242bdab754c74171759b01369a19eac2cd1ce85b2d94981",
@@ -8,8 +8,8 @@
     "03-kept-entries-check.md": "4da9e895ff65b34de2debe140f5963ff5c03a8350c3e9b5dd42b9855b4db84ba",
     "04-darn-discussion-gate.md": "4ab1d7ba8e70e649404976a37753d9457a5e1d0f3c8bf79b99c4de41e8340bc4",
     "05-gate-resolver-darn.md": "037025412f8e0ea3df7dff9a1d454c11fd09dac07fa2e18fe0422e0f38a73840",
-    "06-validate-discussion-darn.md": "c389c638c56c93bf737745ab2f677cf472942738cfd200847f7594df2ec36d0c",
-    "07-decision-add-darn.md": "a49c7eb53dd4024ee9c147e2963172f69f529e6b033b9e113d7d865252e99785",
+    "06-validate-discussion-darn.md": "3fc1cbb717ac43e5140580c3287a990fa6da85c8e531f5335a449948a554697a",
+    "07-decision-add-darn.md": "f285e13ee98010d8a626c91980b566170b06a8d56dd940604bd4b2699ca4063e",
     "08-darn-writer-record.md": "8dd6ff21dfa5bcea9eb765df48f7c98d6b463a4a9b18187ff1876bc2acf99eeb",
     "09-darn-describe-record.md": "88b3617f4ae7c25d76790745235399de46916fb514eda7857a6b88d86aac6e9b",
     "10-darn-review-scope.md": "9e7e5367d893ed09bb459ff4f1249bd3d56d5d15ca0413dd479a746e75c16581",
@@ -329,7 +329,7 @@
       }
     }
   ],
-  "currentBatch": 6,
+  "currentBatch": 0,
   "masterStrand": "5d5412f02fafe30d78f8f33fb0631227",
   "masterSessionId": "a9da6aec-5f1a-4cba-a1a7-37417a148270",
   "batches": {
@@ -383,8 +383,8 @@
         "09-darn-describe-record"
       ],
       "cardHashes": {
-        "06-validate-discussion-darn": "c389c638c56c93bf737745ab2f677cf472942738cfd200847f7594df2ec36d0c",
-        "07-decision-add-darn": "a49c7eb53dd4024ee9c147e2963172f69f529e6b033b9e113d7d865252e99785",
+        "06-validate-discussion-darn": "3fc1cbb717ac43e5140580c3287a990fa6da85c8e531f5335a449948a554697a",
+        "07-decision-add-darn": "f285e13ee98010d8a626c91980b566170b06a8d56dd940604bd4b2699ca4063e",
         "08-darn-writer-record": "8dd6ff21dfa5bcea9eb765df48f7c98d6b463a4a9b18187ff1876bc2acf99eeb",
         "09-darn-describe-record": "88b3617f4ae7c25d76790745235399de46916fb514eda7857a6b88d86aac6e9b"
       },
@@ -392,11 +392,31 @@
       "kind": "fork",
       "spawnedAt": "2026-10-14T15:56:02Z",
       "sessionId": "a9da6aec-5f1a-4cba-a1a7-37417a148270",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "06-validate-discussion-darn",
+        "status": "done",
+        "head_sha": "ab6cffd0a58b25f400df9a7d80685e41f21a8af5",
+        "deviations": [
+          "internal/loomcli/decision.go",
+          "internal/loomcli/decision_test.go",
+          "internal/loomcli/validate_test.go"
+        ]
+      },
+      "cardShas": [
+        "ab6cffd0a58b25f400df9a7d80685e41f21a8af5"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-claimed-scope-edit/a9da6aec-5f1a-4cba-a1a7-37417a148270/subagents/agent-a9c90ae39e516f636.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-claimed-scope-edit/a9da6aec-5f1a-4cba-a1a7-37417a148270/subagents/agent-a9c90ae39e516f636.jsonl"
+      ]
     }
   },
   "seenForkTranscripts": [
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-claimed-scope-edit/a9da6aec-5f1a-4cba-a1a7-37417a148270/subagents/agent-a5ed13d6f0ca313dc.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-claimed-scope-edit/a9da6aec-5f1a-4cba-a1a7-37417a148270/subagents/agent-a5ed13d6f0ca313dc.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-claimed-scope-edit/a9da6aec-5f1a-4cba-a1a7-37417a148270/subagents/agent-a9c90ae39e516f636.jsonl"
   ]
 }

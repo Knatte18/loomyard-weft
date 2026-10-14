@@ -1,9 +1,9 @@
 # Card 7 — decision-add-darn
 
 **Create:**
-- `plan:internal/loomcli#decisionWayDarnWriter` -> `const decisionWayDarnWriter = "way forward: <the text the Intent gives>"`
-- `plan:internal/loomcli#decisionWayEntryLost` -> `const decisionWayEntryLost = "way forward: <the text the Intent gives>"`
-- `plan:internal/loomcli#checkDarnRecord` -> `func checkDarnRecord(deps decisionDeps) (string, error)`
+- `internal/loomcli#decisionWayDarnWriter`
+- `internal/loomcli#decisionWayEntryLost`
+- `internal/loomcli#checkDarnRecord`
 
 **Edit:**
 - `internal/loomcli#decisionWayNoRecord`
@@ -19,7 +19,7 @@
 - `docs/overview.md`
 
 **Uses:**
-- `plan:internal/loomcli#discussionHistory`
+- `internal/loomcli#discussionHistory`
 - `internal/discussionparser#CheckAddedDecisionsKept`
 - `internal/discussionparser#ParseAddedDecisions`
 - `internal/fabricengine#CommittedAnchoredFile`

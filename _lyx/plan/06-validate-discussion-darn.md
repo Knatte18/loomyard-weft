@@ -1,7 +1,7 @@
 # Card 6 — validate-discussion-darn
 
 **Create:**
-- `plan:internal/loomcli#discussionHistory` -> `func discussionHistory(location *lyxcwd.Location) func() ([][]byte, error)`
+- `internal/loomcli#discussionHistory`
 
 **Edit:**
 - `internal/loomcli#loomCLI.validateDiscussionCmd`
