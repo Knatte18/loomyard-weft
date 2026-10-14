@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-14 16:38 UTC; every age below is as of then.
+Rendered 2026-10-14 16:41 UTC; every age below is as of then.
 
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
@@ -17,7 +17,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | **Darn: a decision record for mid-run scope corrections, and PR-Align**<br>• Darn has no decision record, so a mid-run scope correction never reaches its review; and no PR-Align row, so every darn PR waits for the orch at PR-Gate | [`claimed-scope-edit`](design-claimed-scope-edit.md) | loom | Webster-Burler-Fix | 1d | 1d | board, loom, burler |
+| 1 | **Darn: a decision record for mid-run scope corrections, and PR-Align**<br>• Darn has no decision record, so a mid-run scope correction never reaches its review; and no PR-Align row, so every darn PR waits for the orch at PR-Gate | [`claimed-scope-edit`](design-claimed-scope-edit.md) | loom | Webster-Bouncer | 1d | 1d | board, loom, burler |
 
 ### Ready
 
@@ -27,8 +27,8 @@ Waits on nothing open; can start now.
 
 | # | Task | Slug | Recipe | After | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | **Hibernate the machine on a trigger, such as a task landing**<br>• Let the operator trigger a hibernate through lyx, for instance once a task is done | [`hibernate-trigger`](design-hibernate-trigger.md) | loom |  | 2h | 9m | batten |
-| 2 | **Overview window tidy, seat names, Seats replaces SingleLLMProducer**<br>• Overview window log/checklist and bounce naming, seat names, and one MultiLLMProducer in place of SingleLLMProducer | [`overview-seats`](design-overview-seats.md) | loom |  | 3d | 10m | reed, shed, loom, burler |
+| 1 | **Hibernate the machine on a trigger, such as a task landing**<br>• Let the operator trigger a hibernate through lyx, for instance once a task is done | [`hibernate-trigger`](design-hibernate-trigger.md) | loom |  | 2h | 12m | batten |
+| 2 | **Overview window tidy, seat names, Seats replaces SingleLLMProducer**<br>• Overview window log/checklist and bounce naming, seat names, and one MultiLLMProducer in place of SingleLLMProducer | [`overview-seats`](design-overview-seats.md) | loom |  | 3d | 12m | reed, shed, loom, burler |
 
 ## Notes
 
@@ -60,7 +60,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 13 | **Tune the Burler lens fan prompts**<br>• Revisit the parked lens fan with lens and fork prompts that overlap less, measured against solo on the fan-lab fixtures | [`fan-prompt-tuning`](design-fan-prompt-tuning.md) | 1d | 1d | burler, stencil |
 | 14 | **Seed the VS Code config of each pair when it is made**<br>• Write the title-bar color and .vscode config that lyx ide spawn writes when a pair is made, so code . gives the same | [`seed-vscode-config`](design-seed-vscode-config.md) | 1d | 1d | ide, batten |
 | 15 | **Verification protocol for a .NET repo: slow-suite tier, numerical-baseline capture/compare, verify timeouts and logs** | [`dotnet-verify-protocol`](design-dotnet-verify-protocol.md) | 1h | 1h | loom, webster, config |
-| 16 | **Darn review budget overridable per run, with a separate off switch for the perch**<br>• Darn budget keys are guard keys, so no per-run budget; make them plain keys like loom and add a guard off switch | [`darn-run-budget`](design-darn-run-budget.md) | 10m | 10m | config, shed |
+| 16 | **Darn review budget overridable per run, with a separate off switch for the perch**<br>• Darn budget keys are guard keys, so no per-run budget; make them plain keys like loom and add a guard off switch | [`darn-run-budget`](design-darn-run-budget.md) | 12m | 12m | config, shed |
 
 #### Low priority
 
