@@ -48,7 +48,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | # | Note | Slug | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | 2 | **twill fixer bench pair twb-fx-ia**<br>• Bench pair for twill-fork-timing, Plan-Write critical-fixer 2x2; torn down after the run | [`twb-fx-ia`](design-twb-fx-ia.md) | 2m | 2m |  |
-| 3 | **twill fixer bench pair twb-fx-ib**<br>• Bench pair for twill-fork-timing, Plan-Write critical-fixer 2x2; torn down after the run | [`twb-fx-ib`](design-twb-fx-ib.md) | 1m | 1m |  |
+| 3 | **twill fixer bench pair twb-fx-ib**<br>• Bench pair for twill-fork-timing, Plan-Write critical-fixer 2x2; torn down after the run | [`twb-fx-ib`](design-twb-fx-ib.md) | 2m | 2m |  |
 | 4 | **twill fixer bench pair twb-fx-ic**<br>• Bench pair for twill-fork-timing, Plan-Write critical-fixer 2x2; torn down after the run | [`twb-fx-ic`](design-twb-fx-ic.md) | 1m | 1m |  |
 | 5 | **twill fixer bench pair twb-fx-id**<br>• Bench pair for twill-fork-timing, Plan-Write critical-fixer 2x2; torn down after the run | [`twb-fx-id`](design-twb-fx-id.md) | 1m | 1m |  |
 | 6 | **Codex CLI as a second shuttle engine: hands-on spike, then codexengine**<br>• Codex CLI as a second engine to offload Claude tokens: short hands-on tests first, then a codexengine for single-session roles | [`codex-engine`](design-codex-engine.md) | 10d | 1d | shuttle |
