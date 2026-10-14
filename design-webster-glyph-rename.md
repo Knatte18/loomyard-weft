@@ -9,6 +9,8 @@ Card 12, the plan's last card in the same batch, renamed those packages to `tend
 All 21 rejected glyphs resolve under the new package names (checked by the recovery strand with `lyx quarry resolve`).
 The recovery strand found the work complete at `5348618b4` and could not clear the rejection; there is no verb to accept a batch by hand.
 
+The batch's gate command had the same flaw: it named `./internal/pausecli` and `./internal/pauseengine`, which no longer existed after card 12, so `lyx gate test` refused it and recovery ran the gate over the packages that exist by hand.
+
 ## The bug
 
 Webster's glyph check resolves every card's glyphs against the batch's final HEAD, so a plan whose later card renames or moves what an earlier card's glyphs name fails the check though the work is right.
