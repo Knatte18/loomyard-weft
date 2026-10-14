@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-14 15:58 UTC; every age below is as of then.
+Rendered 2026-10-14 15:59 UTC; every age below is as of then.
 
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
@@ -18,7 +18,7 @@ Held by a run; its scope is locked until the run ends.
 | # | Task | Slug | Recipe | At | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | 1 | **Darn: a decision record for mid-run scope corrections, and PR-Align**<br>• Darn has no decision record, so a mid-run scope correction never reaches its review; and no PR-Align row, so every darn PR waits for the orch at PR-Gate | [`claimed-scope-edit`](design-claimed-scope-edit.md) | loom | Webster | 1d | 1d | board, loom, burler |
-| 2 | **Plan and Webster checks out of step with the code a plan changes** | [`plan-gate-gaps`](design-plan-gate-gaps.md) | loom | Plan-Burler-Fix | 2d | 42m | webster, loom, quarry |
+| 2 | **Plan and Webster checks out of step with the code a plan changes** | [`plan-gate-gaps`](design-plan-gate-gaps.md) | loom | Plan-Bouncer | 2d | 43m | webster, loom, quarry |
 
 ### Ready
 
@@ -42,14 +42,14 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Note | Slug | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| 2 | **twill fixer bench pair twb-fx-ia**<br>• Bench pair for twill-fork-timing, Plan-Write critical-fixer 2x2; torn down after the run | [`twb-fx-ia`](design-twb-fx-ia.md) | 41m | 41m |  |
-| 3 | **twill fixer bench pair twb-fx-ib**<br>• Bench pair for twill-fork-timing, Plan-Write critical-fixer 2x2; torn down after the run | [`twb-fx-ib`](design-twb-fx-ib.md) | 40m | 40m |  |
-| 4 | **twill fixer bench pair twb-fx-ic**<br>• Bench pair for twill-fork-timing, Plan-Write critical-fixer 2x2; torn down after the run | [`twb-fx-ic`](design-twb-fx-ic.md) | 40m | 40m |  |
-| 5 | **twill fixer bench pair twb-fx-id**<br>• Bench pair for twill-fork-timing, Plan-Write critical-fixer 2x2; torn down after the run | [`twb-fx-id`](design-twb-fx-id.md) | 40m | 40m |  |
-| 6 | **twill fixer bench pair twb-fx-wa**<br>• Bench pair for twill-fork-timing, Plan-Write critical-fixer 2x2; torn down after the run | [`twb-fx-wa`](design-twb-fx-wa.md) | 38m | 38m |  |
-| 7 | **twill fixer bench pair twb-fx-wb**<br>• Bench pair for twill-fork-timing, Plan-Write critical-fixer 2x2; torn down after the run | [`twb-fx-wb`](design-twb-fx-wb.md) | 37m | 37m |  |
-| 8 | **twill fixer bench pair twb-fx-wc**<br>• Bench pair for twill-fork-timing, Plan-Write critical-fixer 2x2; torn down after the run | [`twb-fx-wc`](design-twb-fx-wc.md) | 37m | 37m |  |
-| 9 | **twill fixer bench pair twb-fx-wd**<br>• Bench pair for twill-fork-timing, Plan-Write critical-fixer 2x2; torn down after the run | [`twb-fx-wd`](design-twb-fx-wd.md) | 37m | 37m |  |
+| 2 | **twill fixer bench pair twb-fx-ia**<br>• Bench pair for twill-fork-timing, Plan-Write critical-fixer 2x2; torn down after the run | [`twb-fx-ia`](design-twb-fx-ia.md) | 42m | 42m |  |
+| 3 | **twill fixer bench pair twb-fx-ib**<br>• Bench pair for twill-fork-timing, Plan-Write critical-fixer 2x2; torn down after the run | [`twb-fx-ib`](design-twb-fx-ib.md) | 42m | 42m |  |
+| 4 | **twill fixer bench pair twb-fx-ic**<br>• Bench pair for twill-fork-timing, Plan-Write critical-fixer 2x2; torn down after the run | [`twb-fx-ic`](design-twb-fx-ic.md) | 41m | 41m |  |
+| 5 | **twill fixer bench pair twb-fx-id**<br>• Bench pair for twill-fork-timing, Plan-Write critical-fixer 2x2; torn down after the run | [`twb-fx-id`](design-twb-fx-id.md) | 41m | 41m |  |
+| 6 | **twill fixer bench pair twb-fx-wa**<br>• Bench pair for twill-fork-timing, Plan-Write critical-fixer 2x2; torn down after the run | [`twb-fx-wa`](design-twb-fx-wa.md) | 39m | 39m |  |
+| 7 | **twill fixer bench pair twb-fx-wb**<br>• Bench pair for twill-fork-timing, Plan-Write critical-fixer 2x2; torn down after the run | [`twb-fx-wb`](design-twb-fx-wb.md) | 39m | 39m |  |
+| 8 | **twill fixer bench pair twb-fx-wc**<br>• Bench pair for twill-fork-timing, Plan-Write critical-fixer 2x2; torn down after the run | [`twb-fx-wc`](design-twb-fx-wc.md) | 38m | 38m |  |
+| 9 | **twill fixer bench pair twb-fx-wd**<br>• Bench pair for twill-fork-timing, Plan-Write critical-fixer 2x2; torn down after the run | [`twb-fx-wd`](design-twb-fx-wd.md) | 38m | 38m |  |
 | 10 | **Codex CLI as a second shuttle engine: hands-on spike, then codexengine**<br>• Codex CLI as a second engine to offload Claude tokens: short hands-on tests first, then a codexengine for single-session roles | [`codex-engine`](design-codex-engine.md) | 10d | 1d | shuttle |
 | 11 | **finalize: the discrepancy-document conflict shape**<br>• Divergences that cannot be a git conflict get a precomputed document for the resolving agent instead of markers | [`finalize-discrepancy-doc`](design-finalize-discrepancy-doc.md) | 10d | 9d | fabric, loom |
 | 12 | **shedrecipe: capability declaration instead of manual seam-threading**<br>• A producer declares what it needs and the registry wires it, instead of a hand-threaded Env passthrough field per layer | [`shedrecipe-capabilities`](design-shedrecipe-capabilities.md) | 10d |  | shed |
@@ -66,7 +66,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 23 | **Seed the VS Code config of each pair when it is made**<br>• Write the title-bar color and .vscode config that lyx ide spawn writes when a pair is made, so code . gives the same | [`seed-vscode-config`](design-seed-vscode-config.md) | 1d | 1d | ide, batten |
 | 24 | **Overview window: one combined log and checklist, no stuck for a bounce**<br>• A bounce reads stuck, finished rows show in both log and checklist, paused time counts as row time | [`overview-window-tidy`](design-overview-window-tidy.md) | 1h | 1h | reed, shed, loom |
 | 25 | **Seat names: none for a lone seat, operator-chosen names for several, no chair**<br>• burler-review-chair shows chair even with one seat; let the operator name seats | [`seat-names`](design-seat-names.md) | 1h | 1h | shed, burler, reed |
-| 26 | **Verification protocol for a .NET repo: slow-suite tier, numerical-baseline capture/compare, verify timeouts and logs** | [`dotnet-verify-protocol`](design-dotnet-verify-protocol.md) | 54m | 54m | loom, webster, config |
+| 26 | **Verification protocol for a .NET repo: slow-suite tier, numerical-baseline capture/compare, verify timeouts and logs** | [`dotnet-verify-protocol`](design-dotnet-verify-protocol.md) | 55m | 55m | loom, webster, config |
 
 #### Low priority
 
@@ -126,5 +126,5 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | # | Note | Slug | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | 2 | **Re-measure the test suite weight on a quiet machine**<br>• The test-suite-weight before and after numbers were taken under load; rerun the report Regenerate section on an idle machine for a fair wall-time comparison | `suite-weight-quiet-rerun` | 4d | 1d |  |
-| 3 | **Twill: spawn lens forks before or after writing**<br>• A/B the twill spawn point, Discussion first: forks spawned before writing re-read the output as fresh cache writes, once per fork | [`twill-fork-timing`](design-twill-fork-timing.md) | 1d | 49m | loom, stencil |
+| 3 | **Twill: spawn lens forks before or after writing**<br>• A/B the twill spawn point, Discussion first: forks spawned before writing re-read the output as fresh cache writes, once per fork | [`twill-fork-timing`](design-twill-fork-timing.md) | 1d | 50m | loom, stencil |
 | 4 | **Lighter test rules for small changes**<br>• Tests that pin stencil wording make small prompt changes large; pin only what must hold, measured first | [`lighter-test-rules`](design-lighter-test-rules.md) | 1d | 1d | stencil |
