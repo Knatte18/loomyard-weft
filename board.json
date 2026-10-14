@@ -844,6 +844,25 @@
       "body": "## Seen (2026-10-14, `tender`'s overview window)\n\n- The window shows a log (one line per attempt, with time, outcome and file) and below it a checklist (one line per recipe row, `[x]`, `[\u003e]`, `[ ]`, with total time and attempt count).\n  A finished row so stands twice, and the operator read it as a duplicate.\n- Plan-Bouncer showed `22h18m`: the pause and the overnight hibernate count as the row's time, though the row itself took 0 minutes.\n- Bouncer and Burler rows that bounce to the next round read `stuck`.\n\n## Wanted (operator, 2026-10-14)\n\n- No `stuck` for a bounce: the state machine is not stuck, a bounce is part of the normal flow; `stuck` would mean something sits fast.\n  Rename the outcome where it is shown (and consider the name in the shed recipe's `OnStuck` too), for instance `bounced`.\n- Make it clear which part is the log and which the checklist, or drop finished rows from the checklist since the log holds them.\n\n## Idea (operator, 2026-10-14)\n\nOne combined view instead of two parts: the checklist in recipe order, and under each row its log lines (time, outcome, file) fill in as the row runs.\nRows still to run stay as bare `[ ]` lines, so the view shows both what happened and what is left.\n\n## To consider\n\n- Paused time (`lyx pause`, hibernate) should not count as a row's time.\n",
       "created": "2026-10-14T14:20:49Z",
       "revised": "2026-10-14T14:22:58Z"
+    },
+    {
+      "id": 482,
+      "slug": "seat-names",
+      "title": "Seat names: none for a lone seat, operator-chosen names for several, no chair",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "shed",
+        "burler",
+        "reed"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "burler-review-chair shows chair even with one seat; let the operator name seats",
+      "body": "## Seen (2026-10-14)\n\nDiscussion and every Burler round run through the seat engine (`internal/seatengine`), even with one agent.\nA seat's name is fixed: `seatengine.RoleChair` (`chair`) for the leading seat and `advisor-\u003cn\u003e` for the others (`Seat.Name` in `internal/seatengine/table.go`).\nThe name goes into the strand and role names the operator sees, such as `burler-review-chair` and `burler-fix-chair` (`internal/burlerengine/doc.go`), even in a round with one seat.\nA recipe's MultiLLM row has a `name` key per seat, but the engine expects `chair` and `advisor-\u003cn\u003e`.\n\n## Wanted (operator, 2026-10-14)\n\n- A lone seat carries no seat name: the role reads `burler-review`, not `burler-review-chair`.\n- With two or more seats, the operator names each seat in the recipe or config, and that name is what the windows, strands and overview show.\n- `chair` is not a name to show the operator.\n\n## To check\n\n- Where `chair` and `advisor-\u003cn\u003e` are load-bearing: stencils (`seat-directive-chair`, the `advisor_names` marker), strand names, reed window names, and any lookup by role.\n- Whether the leading seat is marked by its place in the table or by a flag, once the name is free.\n",
+      "created": "2026-10-14T14:27:21Z",
+      "revised": "2026-10-14T14:27:21Z"
     }
   ]
 }
