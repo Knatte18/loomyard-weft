@@ -794,38 +794,6 @@
       "revised": "2026-10-14T17:24:42Z"
     },
     {
-      "id": 506,
-      "slug": "twb-f3-wr",
-      "title": "twill rationale bench pair twb-f3-wr",
-      "kind": "note",
-      "labels": [
-        "enhancement"
-      ],
-      "issues": [],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "Bench pair for twill-fork-timing, Plan-Write fork0 with a rationale file, against the fork0 arm",
-      "body": "Temporary bench pair for board note twill-fork-timing, Plan-Write fork0 + rationale bench. Plan-Write only, from a frozen decision record.",
-      "created": "2026-10-14T17:43:27Z",
-      "revised": "2026-10-14T17:43:27Z"
-    },
-    {
-      "id": 507,
-      "slug": "twb-f3-pr",
-      "title": "twill rationale bench pair twb-f3-pr",
-      "kind": "note",
-      "labels": [
-        "enhancement"
-      ],
-      "issues": [],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "Bench pair for twill-fork-timing, Plan-Write fork0 with a rationale file, against the fork0 arm",
-      "body": "Temporary bench pair for board note twill-fork-timing, Plan-Write fork0 + rationale bench. Plan-Write only, from a frozen decision record.",
-      "created": "2026-10-14T17:43:32Z",
-      "revised": "2026-10-14T17:43:32Z"
-    },
-    {
       "id": 508,
       "slug": "shed-tackler",
       "title": "Go driver and tackler in shed, for every FSM-driven run",
