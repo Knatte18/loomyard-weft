@@ -1,6 +1,6 @@
 # Run window does not follow the newest agent window, sticks on Driver
 
-`reed-window-follow` · Task · bug, reed · running · Publish
+`reed-window-follow` · Task · bug, reed · running · PR-Align
 
 ## Seen (operator, 2026-10-14)
 
