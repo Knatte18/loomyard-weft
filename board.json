@@ -792,7 +792,7 @@
       "isolated": false,
       "brief": "batten --window waits about 20 s (sync pushes, inner shed spawn) before Konsole opens; open it at once with attach",
       "body": "## Seen (operator, 2026-10-14)\n\n`lyx batten run perch-budget-arbiter --window` took about 20 s from start to the Konsole window, and the operator finds that far too slow.\nThe trace of that start:\n\n- 19:03:20.6: both worktrees, branches, links and launchers created, under 0.1 s in all.\n- 19:03:20.6 to 19:03:27.8: three pushes to GitHub, about 1.8 s each, plus a weft commit; `fabricengine` add pushes the warp and weft branches synchronously (`internal/fabricengine/add.go`, steps 11 and 12), and batten pushes the weft again after its own commit.\n  Only `lyx fabric sync` pushes async.\n- 19:03:29.5 to 19:03:39.4: batten waits for the inner shed run to spawn, and only then spawns the terminal window.\n\n## Direction (operator, 2026-10-14)\n\nStart Konsole with `lyx reed attach` in the pair as soon as the warp worktree is up, before the pushes, the weft seed and the inner shed spawn; `lyx reed attach` boots the reed session itself when it does not exist yet (operator).\n\n## Scope\n\nThis task moves the window's start only; the pushes stay as they are.\n\n## Out of scope, for a later note\n\n- Whether the add's pushes can go async like `fabric sync`, or be coalesced into one push per side; a push failure today rolls the add back, so an async push needs another failure path.\n",
-      "status": "running · Finalize",
+      "status": "done",
       "created": "2026-10-14T17:10:47Z",
       "revised": "2026-10-14T17:17:59Z"
     },
