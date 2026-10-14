@@ -1,0 +1,19 @@
+# Lens review
+
+Every fork returned a report.
+
+- criteria-coverage, MEDIUM, D4 doc-comment criterion argued without a test: fixed as proposed; card 2 adds a subtest to `TestPushWithRetry_RetriesOnlyRetryableRefusalsUpToTheBound` that parses `pushretry.go` and asserts `PushWithRetry`'s doc names the `! [remote rejected] main -> main (failed)` refusal and the race.
+- criteria-coverage, MEDIUM, D6 "envelope naming each refused file" reached by no multi-refusal row: fixed as proposed; card 4 adds a row naming `notes.txt` and an unparsable `.go` file and asserting `refused` lists both in argument order.
+- criteria-coverage, LOW, D7 absent-target branch reached by no row: fixed differently; the proposal was a row for the branch, but no fixture can make git exit nonzero, unregister the worktree and delete its whole directory, so the row cannot be built; card 8 instead drops the separate branch, sending an absent target through the same gated leftover call, whose contained removal is the existing idempotent no-op (records nothing, returns nil), so no untested branch remains.
+- criteria-coverage, LOW, D3 nil-`Sleep` `Run` never driven with a resize: fixed as proposed; card 3 adds the subtest "ARunWithNoSleepSeamIsWokenByAResize", forty unchanged polls with `Resized` filled each poll, failing if `Run` has not returned within thirty seconds.
+- test-economy, LOW, card 7's "first load turn rides the launch line" row repeats coverage: fixed as proposed; the row is dropped, since `Runner.start` passes `launch.Cmd` through unchanged (`internal/shuttleengine/run.go`, the `AddStrand` call) and `TestPrepare_SkillsDeferPromptPointer` pins the launch argument against the real engine.
+- forced-edits, MEDIUM, D7's executor skipped `PATTERN-fabric-destruction-chokepoint`'s four-check pipeline: fixed differently; the proposal was to amend the pattern's background and `doc.go`:725 as a stated exception, which would weaken a binding constraint; card 8 instead keeps the pipeline, adding the ownership predicate `ownedRemovedWorktreeLeftover` (target equals the path git was asked to remove and is no longer registered), carrying D7's ownership proof, with `dirtinessNA` and `checkPathRequest` run first in `removeLeftoverWorktreeDir`.
+- forced-edits, LOW, `destructiveGuardRecordingExecutors` lacks the new executor: fixed as proposed; card 8 edits `cmd/lyx#destructiveGuardRecordingExecutors` with the `removeLeftoverWorktreeDir` row.
+- forced-edits, LOW, `doc.go`:473 and `refusePrimeSlug`'s comment go false: fixed as proposed; card 8 rewords the `Remove` paragraph's absolute claim and edits `internal/fabricengine#refusePrimeSlug`'s doc.
+- forced-edits, LOW, `Spec.Segment` doc goes stale: fixed as proposed; card 7 edits `internal/shuttleengine#Spec`'s field doc.
+- forced-edits, LOW, `hookStateSkillEngine` doc goes stale: fixed as proposed; card 7 edits its doc comment.
+- forced-edits, LOW, `RemoveWarpWorktreeDirForTest` doc says re-export: fixed as proposed; card 8's Intent rewords it as a wrapper.
+- row-reachability, MEDIUM, Windows sharing-violation row's untracked file is refused by `RemoveRefusal` before git (`internal/fabricengine/remove.go:550-560`): fixed as proposed; every row of card 8's test commits its planted file before `Remove`, the Windows row then holding it open.
+- row-reachability, MEDIUM, external test cannot name unexported `leftoverRetryDelay`: fixed as proposed; card 8 adds `LeftoverRetryDelayForTest` to `export_test.go`.
+- row-reachability, LOW, `## verify:` compiles no Windows-only file: fixed as proposed; the overview adds `GOOS=windows go vet`, untagged and `-tags integration`, over `./internal/fabricengine/` and `./internal/statuspane/`, which ran clean on the current tree.
+- row-reachability, LOW, card 3's new row omitted `wantWaits` and `wantReports`: fixed as proposed; the row states `[1s, 1s]` and `[3, 1]`.
