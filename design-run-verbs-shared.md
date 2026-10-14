@@ -11,11 +11,12 @@ The same holds for the other run verbs the orch uses on darn runs: `lyx loom sta
 ## Direction (operator, 2026-10-14)
 
 Darn and loom are both shed recipes and are to be handled the same way.
-Verbs that act on any run move to one shared namespace (such as `lyx shed ...` or `lyx run ...`), and `lyx loom` keeps only what is loom's own.
+Verbs that act on any run move to one shared namespace, and `lyx loom` keeps only what is loom's own.
+Not `lyx shed`: shed is only the FSM and knows nothing about decisions, reviews or approvals (operator).
 
 ## Open
 
-- The shared namespace's name.
+- The shared namespace's name, and which module owns it: the layer above shed that both recipes share (decision record, parent review, approve and reject) has no module of its own today; `internal/loomcli` serves darn runs too.
 - Which verbs are recipe-neutral and which are loom's own.
 - Every stencil, way-forward text and doc that names `lyx loom <verb>` for a darn run changes with it.
 - Relates to `perch-budget-arbiter`, which gives darn and loom one config shape for review budgets.
