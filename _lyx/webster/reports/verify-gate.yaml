@@ -1,0 +1,8 @@
+attempt: 1
+cap: 3
+failures:
+    - id: github.com/Knatte18/loomyard/cmd/lyx.TestDriverStencil_IsRecipeBlind
+      kind: test
+      package: github.com/Knatte18/loomyard/cmd/lyx
+      tail: '    driverstencil_test.go:75: shed-template-driver.md:111 names loom row PR-Gate; the stencil must stay recipe-blind: "- an `awaiting` stop whose envelope carries a non-empty `parent_notice`, PR-Gate''s included;"'
+log_path: /home/knatte/Code/loomyard-LYXHUB/perch-budget-arbiter/.lyx/verify/verify-2.log
