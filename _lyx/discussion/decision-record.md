@@ -36,6 +36,12 @@ A row whose flag is off passes straight on to the next row.
 - **Tests never open a desktop window or VS Code.**
   Rationale: battencli's seams for the window and the VS Code launch are injectable, and its test mains refuse them, as `spawnPairPush` already is.
 
+### Added after Discussion (parent, 2026-10-14): Side-action rows after Seed-Child
+
+Decision: OpenWindow, SeedIDE and OpenIDE run right after Seed-Child, not right after Worktree-Create; this amends board scope item 2.
+
+Rationale: Seed-Child writes the task's run_settings into the pair's local layer, so only rows after it can honour per-task batten.yaml flags (scope item 3). Seed-Child follows Worktree-Create within seconds, so the window still opens as the pair comes up.
+
 ## Constraints
 
 - `PATTERN-told-geometry`: `shedadapters`, `shedrecipe` and `battenshed` take every path and seam from the caller; only battencli resolves locations.
