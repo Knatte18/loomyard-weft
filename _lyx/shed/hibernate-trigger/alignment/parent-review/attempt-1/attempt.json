@@ -1,0 +1,16 @@
+{
+  "number": 1,
+  "key": "round-1",
+  "point": "parent-review",
+  "token": "4bd735aaa93c1bc6",
+  "spawned_at": "2026-10-14T18:55:05.544411181+02:00",
+  "deadline": "2026-10-14T19:15:05.544411181+02:00",
+  "strand_guid": "",
+  "snapshot": "cb2b27cbc4c28d400c957795ec71cb02ae6e86ebefa5e0e370e348241d32db6d",
+  "pr_number": 0,
+  "head_sha": "",
+  "closed": true,
+  "closed_reason": "alignment: compose the prompt: alignment: prompt: fill stencil \"loom-template-alignment\": stencil: unfilled top-level marker(s): pr_gate_measure",
+  "applied": "",
+  "notified": false
+}
