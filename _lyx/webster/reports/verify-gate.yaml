@@ -1,0 +1,8 @@
+attempt: 1
+cap: 3
+failures:
+    - id: github.com/Knatte18/loomyard/cmd/lyx.TestGofmt_ModuleFilesAreFormatted
+      kind: test
+      package: github.com/Knatte18/loomyard/cmd/lyx
+      tail: '    gofmt_test.go:80: internal/planparser/targetdirs.go:149: not gofmt-formatted; current "\treturn targetDir == coverScope ||strings.HasPrefix(targetDir, coverScope+\"/\")", formatted "\treturn targetDir == coverScope || strings.HasPrefix(targetDir, coverScope+\"/\")"; edit the file to match the formatted line'
+log_path: /home/knatte/Code/loomyard-LYXHUB/plan-gate-gaps/.lyx/verify/verify-2.log
