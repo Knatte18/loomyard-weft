@@ -1,0 +1,4 @@
+verdict: approve
+reason: The diff implements all three fix points of the board entry and nothing beyond them. deleteOrderFindings skips a reference that an Edit region of the deleting card or an earlier card holds, on both the plan-gate and the scan-only path. TestLaterDeleteReferences pins both the exemption and the reference that is still reported. doc.go states the rule. The one open risk names no parent correction, and no peer run or parent commit overlaps internal/planglyph.
+question: ""
+superseded: []
