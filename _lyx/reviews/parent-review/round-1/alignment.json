@@ -1,0 +1,8 @@
+{
+  "attempt": "/home/knatte/Code/loomyard-LYXHUB/twill-fork0/_lyx/shed/twill-fork0/alignment/parent-review/attempt-1",
+  "strand": "052674b11c4dafc3468c0871f8f36dc1",
+  "spawned_at": "2026-10-14T20:48:26.290367406+02:00",
+  "state": "fallback",
+  "report": "/home/knatte/Code/loomyard-LYXHUB/twill-fork0/_lyx/shed/twill-fork0/alignment/parent-review/attempt-1/report-cfdf54960e72648b.md",
+  "reason": "a decision was recorded for this task while the alignment agent ran"
+}
