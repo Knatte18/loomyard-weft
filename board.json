@@ -969,7 +969,7 @@
       "isolated": false,
       "brief": "Bench pair for twill-fork-timing, Plan-Write critical-fixer 2x2; torn down after the run",
       "body": "Temporary bench pair for board note twill-fork-timing, Plan-Write critical-fixer 2x2 bench. Plan-Write only, from a frozen decision record.",
-      "status": "running · Discussion-Write",
+      "status": "paused · Plan-Bouncer",
       "created": "2026-10-14T15:20:24Z",
       "revised": "2026-10-14T15:20:24Z"
     },

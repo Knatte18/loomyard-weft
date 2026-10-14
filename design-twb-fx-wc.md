@@ -1,5 +1,5 @@
 # twill fixer bench pair twb-fx-wc
 
-`twb-fx-wc` · Note · enhancement · running · Discussion-Write
+`twb-fx-wc` · Note · enhancement · paused · Plan-Bouncer
 
 Temporary bench pair for board note twill-fork-timing, Plan-Write critical-fixer 2x2 bench. Plan-Write only, from a frozen decision record.
