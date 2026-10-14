@@ -174,6 +174,12 @@ Decision: No perch budget or perch off switch, in loom or darn, is a guard key: 
 
 Rationale: Zero rounds is a normal setting. The guard only protects against a run's own agent switching off its review by editing the local config; an agent doing that is behaving wrongly, and that is to be fixed in the agent, not prevented by config categories (operator).
 
+### Added after Discussion (parent, 2026-10-14): Zero-round perches: settled design
+
+Decision: (1) skip_review is dropped; darn's review_max_bounces: 0 (category none, settable per run) is darn's off switch; D3, D4's skip_review migration, D4's PrepareRunSettings reorder and the acceptance criteria on skip_review, its migration and the refusal of {"darn":{"review_max_bounces":0}} go; darn's minimum becomes 0. (2) Loom's run-wide review_max_bounces also accepts 0, meaning every perch without its own key runs zero rounds; the criterion refusing {"loom":{"review_max_bounces":0}} goes. (3) Inherit is expressed by a null template value (for example discussion_max_bounces: ~, read as *int); null means inherit, 0 means zero rounds. (4) loom's Migrate hook rewrites an existing <perch>_max_bounces: 0 to null in hub and worktree files; a run_settings 0 always has the new meaning. (5) skip_merge_review is retired; merge_max_bounces: 0 replaces it, and skip_merge_review: true migrates to merge_max_bounces: 0. (6) A perch at 0 routes its writer row's Done straight to the row after the perch, as Merge-Review's skip does today; darn at 0 also skips Describe, as today. (7) The hard-cap keys are unchanged: 0 still means inherit. (8) Bound: a task can switch off any review, Discussion-Review included, through its own run_settings or local layer, with no hub guard; this is accepted.
+
+Rationale: The operator wants one shape for darn and loom, zero rounds settable on every perch per run, and no guard on these keys: zero rounds is a normal setting, and an agent misusing it is fixed in the agent.
+
 ## Constraints
 
 - `PATTERN-config-layers`: categories stay declared in each module's `ConfigSpec`, built through D1's package, and `skip_review` is classified in the same change; only `configengine` reads layers.
