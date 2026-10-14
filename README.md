@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-14 18:04 UTC; every age below is as of then.
+Rendered 2026-10-14 18:05 UTC; every age below is as of then.
 
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
@@ -35,7 +35,7 @@ Waits only on Running or Ready entries.
 
 | # | Task | Slug | Recipe | After | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | **Go driver and tackler in shed, for every FSM-driven run**<br>• Move the Go driver and tackler from loomcli into shed so darn, batten and every recipe get them; module config overrides model and budgets | [`shed-tackler`](design-shed-tackler.md) | loom | `perch-budget-arbiter`, `overview-seats` | 8m | 3m | shed, loom, batten |
+| 1 | **Go driver and tackler in shed, for every FSM-driven run**<br>• Move the Go driver and tackler from loomcli into shed so darn, batten and every recipe get them; module config overrides model and budgets | [`shed-tackler`](design-shed-tackler.md) | loom | `perch-budget-arbiter`, `overview-seats` | 9m | 3m | shed, loom, batten |
 
 ## Notes
 
@@ -53,9 +53,9 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Note | Slug | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| 2 | **twill rationale bench pair twb-f3-ir**<br>• Bench pair for twill-fork-timing, Plan-Write fork0 with a rationale file, against the fork0 arm | [`twb-f3-ir`](design-twb-f3-ir.md) | 21m | 21m |  |
-| 3 | **twill rationale bench pair twb-f3-wr**<br>• Bench pair for twill-fork-timing, Plan-Write fork0 with a rationale file, against the fork0 arm | [`twb-f3-wr`](design-twb-f3-wr.md) | 21m | 21m |  |
-| 4 | **twill rationale bench pair twb-f3-pr**<br>• Bench pair for twill-fork-timing, Plan-Write fork0 with a rationale file, against the fork0 arm | [`twb-f3-pr`](design-twb-f3-pr.md) | 21m | 21m |  |
+| 2 | **twill rationale bench pair twb-f3-ir**<br>• Bench pair for twill-fork-timing, Plan-Write fork0 with a rationale file, against the fork0 arm | [`twb-f3-ir`](design-twb-f3-ir.md) | 22m | 22m |  |
+| 3 | **twill rationale bench pair twb-f3-wr**<br>• Bench pair for twill-fork-timing, Plan-Write fork0 with a rationale file, against the fork0 arm | [`twb-f3-wr`](design-twb-f3-wr.md) | 22m | 22m |  |
+| 4 | **twill rationale bench pair twb-f3-pr**<br>• Bench pair for twill-fork-timing, Plan-Write fork0 with a rationale file, against the fork0 arm | [`twb-f3-pr`](design-twb-f3-pr.md) | 22m | 22m |  |
 | 5 | **Codex CLI as a second shuttle engine: hands-on spike, then codexengine**<br>• Codex CLI as a second engine to offload Claude tokens: short hands-on tests first, then a codexengine for single-session roles | [`codex-engine`](design-codex-engine.md) | 11d | 1d | shuttle |
 | 6 | **finalize: the discrepancy-document conflict shape**<br>• Divergences that cannot be a git conflict get a precomputed document for the resolving agent instead of markers | [`finalize-discrepancy-doc`](design-finalize-discrepancy-doc.md) | 10d | 9d | fabric, loom |
 | 7 | **shedrecipe: capability declaration instead of manual seam-threading**<br>• A producer declares what it needs and the registry wires it, instead of a hand-threaded Env passthrough field per layer | [`shedrecipe-capabilities`](design-shedrecipe-capabilities.md) | 10d |  | shed |
@@ -130,11 +130,3 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 2 | **Re-measure the test suite weight on a quiet machine**<br>• The test-suite-weight before and after numbers were taken under load; rerun the report Regenerate section on an idle machine for a fair wall-time comparison | `suite-weight-quiet-rerun` | 4d | 1d |  |
 | 3 | **Twill: spawn lens forks before or after writing**<br>• A/B the twill spawn point, Discussion first: forks spawned before writing re-read the output as fresh cache writes, once per fork | [`twill-fork-timing`](design-twill-fork-timing.md) | 1d | 1h | loom, stencil |
 | 4 | **Lighter test rules for small changes**<br>• Tests that pin stencil wording make small prompt changes large; pin only what must hold, measured first | [`lighter-test-rules`](design-lighter-test-rules.md) | 1d | 1d | stencil |
-
-## Done
-
-Finished, awaiting `lyx board prune --apply`.
-
-| # | Entry | Slug | Age | Revised | Labels |
-| --- | --- | --- | --- | --- | --- |
-| 1 | **Run window opens as soon as the worktree exists**<br>• batten --window waits about 20 s (sync pushes, inner shed spawn) before Konsole opens; open it at once with attach | [`run-window-early`](design-run-window-early.md) | 53m | 46m | batten, reed, fabric |
