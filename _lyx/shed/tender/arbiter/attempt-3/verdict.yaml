@@ -1,0 +1,28 @@
+verdict: hand-on
+reason: >-
+  Blocked stop at Webster (step 8 of 17), batch 07-proc-process-listing, which holds cards 7 to 12.
+  The fork committed all six cards (HEAD 5348618b4, report status OK), but record-batch 07 and recover-batch 07 both refused with batch_failed on unresolved plan handles for cards 8 to 10.
+  The cause is card 12's rename landing in the same batch, which no recovery or goto can fix.
+  Cards 8 to 10 Create and Rename into internal/pausecli and internal/pauseengine (08-tender-command.md lines 17-21, 09-tender-status.md lines 19-25, 10-tender-revive.md lines 22-25).
+  Card 12 then renames both packages to internal/tendercli and internal/tenderengine, and its intent says each earlier card targets glyphs that resolve at that card's own time.
+  planglyph.DoneChecks (internal/planglyph/donecheck.go) resolves every card's Create and Rename-new targets against the batch-end tree and does not apply a later card's rename in the same batch.
+  So the pausecli and pauseengine handles cannot resolve, while the work they name is present:
+  tendercli has pauseCmd, resumeCmd, statusCmd and reviveCmd (cli.go:79, 155, 214, 277), and tenderengine has SessionStatus (resume.go:53) and Revive (resume.go:239).
+  The done-check refuses on every record or recover of this batch, so a plain re-launch would refuse the same way.
+  A goto back to Plan-Write or the Batchifier would re-plan or re-partition while the work is already committed.
+  That goto would have to retarget cards 8 to 10 or reshape card 12, a plan rewrite whose drift handling against a non-terminal batch is not established.
+  Changing the done-check to apply in-batch renames is a webster engine change outside this task's scope.
+  Neither the board entry, the decision record nor the support log records a choice between these routes.
+  The webster summary also relays the fork's report that TestTierPurity_UntaggedTestsSpawnNothing fails on time.Sleep calls in batch-01 files (internal/githubclient/githubclient_test.go:677, internal/selfreportengine/inbox_test.go:100); I did not check this, and the plan-level verify gate would meet it.
+  The named driver report drive-report-20261013-165832-338a.md does not exist; the drive-reports directory is empty.
+verbs: []
+question: >-
+  Batch 07 of run tender cannot pass webster's done-check.
+  Card 12 renames internal/pausecli and internal/pauseengine to tendercli and tenderengine in the same batch as cards 8 to 10, whose plan handles name the old packages.
+  planglyph.DoneChecks resolves those handles against the post-rename tree, so record-batch and recover-batch refuse every time, though the symbols exist under the new names at HEAD 5348618b4.
+  Which route should the run take?
+  (a) Fix DoneChecks in a separate change so it applies a later card's in-batch rename to earlier cards' targets, then re-launch.
+  (b) Go back to Plan-Write to retarget cards 8 to 10 at the final package names; re-batching alone does not help, since card 12's rename is already committed.
+  (c) Mark batch 07 done through an operator override of the done-check, if one exists.
+  Separately, the fork reports that TestTierPurity_UntaggedTestsSpawnNothing fails on time.Sleep in githubclient_test.go:677 and inbox_test.go:100, both from batch 01.
+  Should that be fixed in this task before the verify gate?

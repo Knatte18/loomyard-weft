@@ -1,0 +1,15 @@
+{
+  "number": 3,
+  "stop_key": {
+    "current_producer": "Webster",
+    "history_length": 31,
+    "state": "blocked"
+  },
+  "pause_before": "",
+  "pause_after": "",
+  "spawned_at": "2026-10-14T17:08:05.983881063+02:00",
+  "deadline": "2026-10-14T17:38:05.983881063+02:00",
+  "strand_guid": "78cb2cfe6ef248960088bd5388d601de",
+  "envelope_path": "/home/knatte/Code/loomyard-LYXHUB/tender/.lyx/shed/tender/steps/d80d08ba07f74fdf.json",
+  "report_path": "/home/knatte/Code/loomyard-LYXHUB/tender/_lyx/shed/tender/drive-reports/drive-report-20261013-165832-338a.md"
+}
