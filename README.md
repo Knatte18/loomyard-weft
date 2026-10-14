@@ -21,7 +21,7 @@ Held by a run; its scope is locked until the run ends.
 | 2 | **Overview window tidy, seat names, Seats replaces SingleLLMProducer**<br>• Overview window log/checklist and bounce naming, seat names, and one MultiLLMProducer in place of SingleLLMProducer | [`overview-seats`](design-overview-seats.md) | loom | Plan-Burler-Fix | 3d | 1h | reed, shed, loom, burler |
 | 3 | **Run window does not follow the newest agent window, sticks on Driver**<br>• An attached run window stays on the Driver window while later agents spawn; reed selects a window only at attach | [`reed-window-follow`](design-reed-window-follow.md) | darn | Publish | 1h | 12m | reed |
 | 4 | **Perch budgets and stops: darn budget per run like loom, arbiter only when needed**<br>• Darn review budget overridable per run like loom, with its own off switch; arbiter spawns only on stops that need it. | [`perch-budget-arbiter`](design-perch-budget-arbiter.md) | loom | Plan-Write | 2d | 53m | config, loom, shed |
-| 5 | **Run window opens as soon as the worktree exists**<br>• batten --window waits about 20 s (sync pushes, inner shed spawn) before Konsole opens; open it at once with attach | [`run-window-early`](design-run-window-early.md) | darn | Darn-Burler-Fix | 45m | 38m | batten, reed, fabric |
+| 5 | **Run window opens as soon as the worktree exists**<br>• batten --window waits about 20 s (sync pushes, inner shed spawn) before Konsole opens; open it at once with attach | [`run-window-early`](design-run-window-early.md) | darn | Darn-Bouncer | 45m | 38m | batten, reed, fabric |
 
 ### Ready
 
@@ -45,7 +45,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Note | Slug | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| 2 | **twill rationale bench pair twb-f3-ir**<br>• Bench pair for twill-fork-timing, Plan-Write fork0 with a rationale file, against the fork0 arm | [`twb-f3-ir`](design-twb-f3-ir.md) | 12m | 12m |  |
+| 2 | **twill rationale bench pair twb-f3-ir**<br>• Bench pair for twill-fork-timing, Plan-Write fork0 with a rationale file, against the fork0 arm | [`twb-f3-ir`](design-twb-f3-ir.md) | 13m | 13m |  |
 | 3 | **twill rationale bench pair twb-f3-wr**<br>• Bench pair for twill-fork-timing, Plan-Write fork0 with a rationale file, against the fork0 arm | [`twb-f3-wr`](design-twb-f3-wr.md) | 12m | 12m |  |
 | 4 | **twill rationale bench pair twb-f3-pr**<br>• Bench pair for twill-fork-timing, Plan-Write fork0 with a rationale file, against the fork0 arm | [`twb-f3-pr`](design-twb-f3-pr.md) | 12m | 12m |  |
 | 5 | **Codex CLI as a second shuttle engine: hands-on spike, then codexengine**<br>• Codex CLI as a second engine to offload Claude tokens: short hands-on tests first, then a codexengine for single-session roles | [`codex-engine`](design-codex-engine.md) | 11d | 1d | shuttle |
