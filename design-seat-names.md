@@ -15,6 +15,11 @@ A recipe's MultiLLM row has a `name` key per seat, but the engine expects `chair
 - With two or more seats, the operator names each seat in the recipe or config, and that name is what the windows, strands and overview show.
 - `chair` is not a name to show the operator.
 
+## To consider (operator, 2026-10-14)
+
+A name that shows which round a session belongs to, since `burler-review-chair` does not say which round it is.
+The operator notes this may matter less now that the overview window shows the rounds.
+
 ## To check
 
 - Where `chair` and `advisor-<n>` are load-bearing: stencils (`seat-directive-chair`, the `advisor_names` marker), strand names, reed window names, and any lookup by role.
