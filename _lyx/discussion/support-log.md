@@ -94,6 +94,7 @@ Every fork returned a report.
 - A round number in strand names: the overview now shows rounds, and reed already numbers names a live strand holds.
 - A parallel `discussion_advisor_names` list beside the model list: two lists that must stay aligned.
 - One `discussion_lenses` value under the existing `discussion_fan` key: `discussion_fan` already turns on the Discussion-Review perch's fan, a different thing.
+- Keeping `discussion_advisors` category none: with `discussion_producer` gone, a local override or a board task's `run_settings` could start any number of advisor seats, a reach the retired guard key denied and nothing in the task asks for; a guard key keeps today's reach, and the bench's pair configs are worktree files, which may set it.
 - Keeping `SingleLLMProducer` for the one-seat rows: two producers is what the task removes.
 - An LLM bench of N=0 against solo in this task: see Turn 7.
 
