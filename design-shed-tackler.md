@@ -2,7 +2,7 @@
 
 `shed-tackler` · Task · enhancement, shed, loom, batten
 
-Depends on: [`perch-budget-arbiter`](design-perch-budget-arbiter.md), [`overview-seats`](design-overview-seats.md), [`seed-vscode-config`](design-seed-vscode-config.md)
+Depends on: [`overview-seats`](design-overview-seats.md), [`seed-vscode-config`](design-seed-vscode-config.md)
 
 ## Seen (2026-10-14)
 

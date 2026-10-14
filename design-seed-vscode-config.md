@@ -2,8 +2,6 @@
 
 `seed-vscode-config` · Task · enhancement, ide, batten, shed
 
-Depends on: [`perch-budget-arbiter`](design-perch-budget-arbiter.md)
-
 ## Goal (operator, 2026-10-14)
 
 Opening the run's terminal window, seeding a pair's VS Code config and opening VS Code become three ordinary shed producers, each its own row in batten's recipe and each switched on or off by a config flag.
