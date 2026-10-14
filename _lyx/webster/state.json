@@ -1,13 +1,13 @@
 {
   "runGuid": "1265f7bf1e6e5ee26d000664d5ce7e99",
-  "planFingerprint": "74ec41464dedaea84e732cfd76bdc9d388062555be39f44bce7177f10c1194a4",
+  "planFingerprint": "38eb794826f39b415ba205cf648ac847e61c393c803ed7526601971c1062a5a7",
   "planFileHashes": {
     "00-overview.md": "9a80905ddc1a7adcaf91e1452bf4dbf799b698180299056f7ff3691e4a70a252",
-    "01-tender-lift-entry.md": "06974f5ec0da72d019388d11e7cff05ab77c4528e3b4fa535a162359e8a37cb9",
-    "02-tendercli-export-hubdeps.md": "6dd1470fa97947057f00886866d34d318b6af9804b3e6e263b90faaad732c72e",
-    "03-hibernate-engine-verbs.md": "ee78862601cee51016eeaf893a73463a9973ab664822132c3d83063738a326ea",
-    "04-hibernate-engine-watch.md": "985b0a4eec6bcd6d4d958e6dd0d9ef38e61ecd9b366eb41dbcbc78cdee3c92b5",
-    "05-hibernate-cli.md": "6830d2730b39a610aff83ed143b35f3fe107fe2e17d6c17f9ded50d4d582dc2a",
+    "01-tender-lift-entry.md": "e2868057487ffc1e22fc54ae214c8d00ef16c95d4af81fa4cf8771eba5514256",
+    "02-tendercli-export-hubdeps.md": "c22c69db8e7cf046a9af73f0213f5f9fd34e5cc5e085f16f3a5a6e22ac39ae30",
+    "03-hibernate-engine-verbs.md": "171b67a09378c93d40ed07f36692585838ed1cbd7cd9e225a43c43d86d8a9f4e",
+    "04-hibernate-engine-watch.md": "d3af0cc7ed2cff4c3e72c9ebaf3960ab4b6c0ceaa5ced2132e8d5c508cc97964",
+    "05-hibernate-cli.md": "86b653a66efea6afb8f86d351201b1cbb913fc04713f27bfdee0d902c80b458a",
     "06-sleep-deny.md": "9caacf1e4aabdfb863411e3f560616f57030e08470791f3bce750a5b7b16d04c",
     "07-shortcuts-p-r.md": "fd10d318c6bafcf06b486c6f8f0544f9fa0cc5d4df807edce22f8c2f408f430b",
     "08-orch-role-hibernate.md": "ed3b2c88375e35c52ea1dba359e55d5abec6dad74a462845d4507318410cd980"
@@ -198,7 +198,7 @@
       }
     }
   ],
-  "currentBatch": 1,
+  "currentBatch": 0,
   "masterStrand": "840887492a0b450daf6d63008e525a0d",
   "masterSessionId": "6fd58a27-eabb-41d9-ac7c-d76f447481ee",
   "batches": {
@@ -211,17 +211,44 @@
         "04-hibernate-engine-watch"
       ],
       "cardHashes": {
-        "01-tender-lift-entry": "06974f5ec0da72d019388d11e7cff05ab77c4528e3b4fa535a162359e8a37cb9",
-        "02-tendercli-export-hubdeps": "6dd1470fa97947057f00886866d34d318b6af9804b3e6e263b90faaad732c72e",
-        "03-hibernate-engine-verbs": "ee78862601cee51016eeaf893a73463a9973ab664822132c3d83063738a326ea",
-        "04-hibernate-engine-watch": "985b0a4eec6bcd6d4d958e6dd0d9ef38e61ecd9b366eb41dbcbc78cdee3c92b5"
+        "01-tender-lift-entry": "e2868057487ffc1e22fc54ae214c8d00ef16c95d4af81fa4cf8771eba5514256",
+        "02-tendercli-export-hubdeps": "c22c69db8e7cf046a9af73f0213f5f9fd34e5cc5e085f16f3a5a6e22ac39ae30",
+        "03-hibernate-engine-verbs": "171b67a09378c93d40ed07f36692585838ed1cbd7cd9e225a43c43d86d8a9f4e",
+        "04-hibernate-engine-watch": "d3af0cc7ed2cff4c3e72c9ebaf3960ab4b6c0ceaa5ced2132e8d5c508cc97964"
       },
       "startSha": "d4824a3d68de466ba3db5015cf6212f7d41126f7",
       "kind": "fork",
       "spawnedAt": "2026-10-14T17:35:40Z",
       "sessionId": "6fd58a27-eabb-41d9-ac7c-d76f447481ee",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "01-tender-lift-entry",
+        "status": "done",
+        "head_sha": "61e42da0db5e5733ee5dafd583b9d3689a104f99",
+        "deviations": [
+          "internal/hibernateengine/request.go",
+          "internal/hibernateengine/testmain_test.go",
+          "internal/hibernateengine/verbs.go",
+          "internal/hibernateengine/verbs_test.go",
+          "internal/hibernateengine/watch.go",
+          "internal/hibernateengine/watch_test.go",
+          "internal/hibernateengine/world_test.go",
+          "internal/tendercli/cli.go"
+        ]
+      },
+      "cardShas": [
+        "61e42da0db5e5733ee5dafd583b9d3689a104f99"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-hibernate-trigger/6fd58a27-eabb-41d9-ac7c-d76f447481ee/subagents/agent-aafbc567865cafce7.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-hibernate-trigger/6fd58a27-eabb-41d9-ac7c-d76f447481ee/subagents/agent-aafbc567865cafce7.jsonl"
+      ]
     }
-  }
+  },
+  "seenForkTranscripts": [
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-hibernate-trigger/6fd58a27-eabb-41d9-ac7c-d76f447481ee/subagents/agent-aafbc567865cafce7.jsonl"
+  ]
 }

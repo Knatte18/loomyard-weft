@@ -35,15 +35,15 @@
 - `contracts/specs/refusal-spec.md`
 
 **Uses:**
-- `plan:internal/tendercli#HubDeps`
-- `plan:internal/hibernateengine#Submit`
-- `plan:internal/hibernateengine#SubmitRequest`
-- `plan:internal/hibernateengine#Cancel`
-- `plan:internal/hibernateengine#Status`
-- `plan:internal/hibernateengine#Watch`
-- `plan:internal/hibernateengine#Deps`
-- `plan:internal/hibernateengine#RunStatus`
-- `plan:internal/hibernateengine#PauseCaller`
+- `internal/tendercli#HubDeps`
+- `internal/hibernateengine#Submit`
+- `internal/hibernateengine#SubmitRequest`
+- `internal/hibernateengine#Cancel`
+- `internal/hibernateengine#Status`
+- `internal/hibernateengine#Watch`
+- `internal/hibernateengine#Deps`
+- `internal/hibernateengine#RunStatus`
+- `internal/hibernateengine#PauseCaller`
 - `internal/orchcli#NotifyPrime`
 - `internal/shedrun#StatusFile`
 - `internal/shedrun#StatusLock`

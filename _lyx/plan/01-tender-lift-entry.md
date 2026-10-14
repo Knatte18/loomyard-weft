@@ -9,9 +9,9 @@
 - `internal/tenderengine/doc.go`
 
 **Create:**
-- `plan:internal/tenderengine#EntryRef` -> `type EntryRef struct`
-- `plan:internal/tenderengine#Lift` -> `func Lift(deps Deps, ref EntryRef) (ResumeReport, error)`
-- `plan:internal/tenderengine#liftEntries` -> `func liftEntries(deps Deps, pick func(record *pauserecord.Record) ([]pauserecord.Entry, error)) (ResumeReport, error)`
+- `internal/tenderengine#EntryRef`
+- `internal/tenderengine#Lift`
+- `internal/tenderengine#liftEntries`
 
 **Intent:**
 Give the pause engine the two hooks the hibernate daemon needs: a lift of one pause entry by its identity, and a callback that tells a pause's caller the entry it just added.

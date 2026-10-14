@@ -3,22 +3,22 @@
 **Create:**
 - `internal/hibernateengine/watch.go`
 - `internal/hibernateengine/watch_test.go`
-- `plan:internal/hibernateengine#Watch` -> `func Watch(deps Deps) (Request, error)`
-- `plan:internal/hibernateengine#waitForTrigger` -> `func waitForTrigger(deps Deps, r Request) (Request, bool, error)`
-- `plan:internal/hibernateengine#triggerReading` -> `func triggerReading(deps Deps, r Request) (fire bool, reason string, err error)`
-- `plan:internal/hibernateengine#landFinished` -> `func landFinished(s RunStatus) bool`
-- `plan:internal/hibernateengine#confirmed` -> `func confirmed(status tenderengine.StatusReport, landLockHeld bool) (ok bool, hubEntry bool, reason string)`
-- `plan:internal/hibernateengine#awaitWake` -> `func awaitWake(deps Deps) (woke bool, err error)`
-- `plan:internal/hibernateengine#advance` -> `func advance(deps Deps, phase Phase, reason string) (Request, bool, error)`
-- `plan:internal/hibernateengine#finish` -> `func finish(deps Deps, r Request, phase Phase, reason string) (Request, error)`
-- `plan:internal/hibernateengine#pauseGrace` -> `const pauseGrace = 10 * time.Second`
-- `plan:internal/hibernateengine#confirmInterval` -> `const confirmInterval = 5 * time.Second`
-- `plan:internal/hibernateengine#confirmRereads` -> `const confirmRereads = 120`
-- `plan:internal/hibernateengine#wakeWindow` -> `const wakeWindow = 5 * time.Minute`
-- `plan:internal/hibernateengine#wakePoll` -> `const wakePoll = time.Second`
-- `plan:internal/hibernateengine#triggerPollBase` -> `const triggerPollBase = time.Second`
-- `plan:internal/hibernateengine#triggerPollCeiling` -> `const triggerPollCeiling = 30 * time.Second`
-- `plan:internal/hibernateengine#TestWatch` -> `func TestWatch(t *testing.T)`
+- `internal/hibernateengine#Watch`
+- `internal/hibernateengine#waitForTrigger`
+- `internal/hibernateengine#triggerReading`
+- `internal/hibernateengine#landFinished`
+- `internal/hibernateengine#confirmed`
+- `internal/hibernateengine#awaitWake`
+- `internal/hibernateengine#advance`
+- `internal/hibernateengine#finish`
+- `internal/hibernateengine#pauseGrace`
+- `internal/hibernateengine#confirmInterval`
+- `internal/hibernateengine#confirmRereads`
+- `internal/hibernateengine#wakeWindow`
+- `internal/hibernateengine#wakePoll`
+- `internal/hibernateengine#triggerPollBase`
+- `internal/hibernateengine#triggerPollCeiling`
+- `internal/hibernateengine#TestWatch`
 
 **Edit:**
 - `internal/hibernateengine/doc.go`
@@ -27,13 +27,13 @@
 - `cmd/lyx/testdata/test-budget.yaml`
 
 **Uses:**
-- `plan:internal/hibernateengine#fakeWorld`
-- `plan:internal/hibernateengine#newFakeWorld`
-- `plan:internal/hibernateengine#fakeWorld.deps`
-- `plan:internal/hibernateengine#Deps`
-- `plan:internal/hibernateengine#Request`
-- `plan:internal/hibernateengine#updateRequest`
-- `plan:internal/hibernateengine#liftOwned`
+- `internal/hibernateengine#fakeWorld`
+- `internal/hibernateengine#newFakeWorld`
+- `internal/hibernateengine#fakeWorld.deps`
+- `internal/hibernateengine#Deps`
+- `internal/hibernateengine#Request`
+- `internal/hibernateengine#updateRequest`
+- `internal/hibernateengine#liftOwned`
 - `internal/battenrecipe#NameWorktreeTeardown`
 - `internal/pauserecord#SleepWatch`
 

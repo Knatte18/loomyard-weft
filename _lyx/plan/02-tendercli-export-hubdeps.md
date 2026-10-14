@@ -1,7 +1,7 @@
 # Card 2 — tendercli-export-hubdeps
 
 **Rename:**
-- `internal/tendercli#hubDeps` -> `plan:internal/tendercli#HubDeps`
+- `internal/tendercli#hubDeps` -> `internal/tendercli#HubDeps`
 
 **Intent:**
 Export the hub wiring of the pause engine so `internal/hibernatecli` (card 5) fills `tenderengine.Deps` the same way `lyx pause` does, instead of re-deriving the shuttle-backed pairs, the prime, the network operation and parent lock readers and the orch probes.

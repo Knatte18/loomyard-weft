@@ -7,50 +7,50 @@
 - `internal/hibernateengine/testmain_test.go`
 - `internal/hibernateengine/world_test.go`
 - `internal/hibernateengine/verbs_test.go`
-- `plan:internal/hibernateengine#Trigger` -> `type Trigger string`
-- `plan:internal/hibernateengine#TriggerNow` -> `const TriggerNow Trigger = "now"`
-- `plan:internal/hibernateengine#TriggerAfter` -> `const TriggerAfter Trigger = "after"`
-- `plan:internal/hibernateengine#TriggerAfterAll` -> `const TriggerAfterAll Trigger = "after-all"`
-- `plan:internal/hibernateengine#Phase` -> `type Phase string`
-- `plan:internal/hibernateengine#PhaseWaiting` -> `const PhaseWaiting Phase = "waiting"`
-- `plan:internal/hibernateengine#PhasePausing` -> `const PhasePausing Phase = "pausing"`
-- `plan:internal/hibernateengine#PhaseConfirming` -> `const PhaseConfirming Phase = "confirming"`
-- `plan:internal/hibernateengine#PhaseHibernating` -> `const PhaseHibernating Phase = "hibernating"`
-- `plan:internal/hibernateengine#PhaseResuming` -> `const PhaseResuming Phase = "resuming"`
-- `plan:internal/hibernateengine#PhaseDone` -> `const PhaseDone Phase = "done"`
-- `plan:internal/hibernateengine#PhaseFailed` -> `const PhaseFailed Phase = "failed"`
-- `plan:internal/hibernateengine#PhaseCancelled` -> `const PhaseCancelled Phase = "cancelled"`
-- `plan:internal/hibernateengine#PauseCaller` -> `const PauseCaller = "hibernate"`
-- `plan:internal/hibernateengine#Request` -> `type Request struct`
-- `plan:internal/hibernateengine#Request.Terminal` -> `func (r Request) Terminal() bool`
-- `plan:internal/hibernateengine#RunStatus` -> `type RunStatus struct`
-- `plan:internal/hibernateengine#Deps` -> `type Deps struct`
-- `plan:internal/hibernateengine#errUnchanged` -> `var errUnchanged = errors.New("hibernateengine: the request is unchanged")`
-- `plan:internal/hibernateengine#readRequest` -> `func readRequest(path string) (Request, bool, error)`
-- `plan:internal/hibernateengine#updateRequest` -> `func updateRequest(path string, mutate func(cur Request, found bool) (Request, error)) error`
-- `plan:internal/hibernateengine#daemonLive` -> `func daemonLive(deps Deps, r Request) bool`
-- `plan:internal/hibernateengine#refuseCaller` -> `func refuseCaller(strand string) error`
-- `plan:internal/hibernateengine#refusePlatform` -> `func refusePlatform(goos string) error`
-- `plan:internal/hibernateengine#liftOwned` -> `func liftOwned(deps Deps, r Request) (*tenderengine.ResumeReport, error)`
-- `plan:internal/hibernateengine#SubmitRequest` -> `type SubmitRequest struct`
-- `plan:internal/hibernateengine#Submit` -> `func Submit(deps Deps, req SubmitRequest) (Request, error)`
-- `plan:internal/hibernateengine#CancelReport` -> `type CancelReport struct`
-- `plan:internal/hibernateengine#Cancel` -> `func Cancel(deps Deps) (CancelReport, error)`
-- `plan:internal/hibernateengine#StatusReport` -> `type StatusReport struct`
-- `plan:internal/hibernateengine#Status` -> `func Status(deps Deps) (StatusReport, error)`
-- `plan:internal/hibernateengine#fakeWorld` -> `type fakeWorld struct`
-- `plan:internal/hibernateengine#newFakeWorld` -> `func newFakeWorld(t *testing.T) *fakeWorld`
-- `plan:internal/hibernateengine#fakeWorld.deps` -> `func (w *fakeWorld) deps() Deps`
-- `plan:internal/hibernateengine#TestSubmit` -> `func TestSubmit(t *testing.T)`
-- `plan:internal/hibernateengine#TestCancel` -> `func TestCancel(t *testing.T)`
-- `plan:internal/hibernateengine#TestStatus` -> `func TestStatus(t *testing.T)`
+- `internal/hibernateengine#Trigger`
+- `internal/hibernateengine#TriggerNow`
+- `internal/hibernateengine#TriggerAfter`
+- `internal/hibernateengine#TriggerAfterAll`
+- `internal/hibernateengine#Phase`
+- `internal/hibernateengine#PhaseWaiting`
+- `internal/hibernateengine#PhasePausing`
+- `internal/hibernateengine#PhaseConfirming`
+- `internal/hibernateengine#PhaseHibernating`
+- `internal/hibernateengine#PhaseResuming`
+- `internal/hibernateengine#PhaseDone`
+- `internal/hibernateengine#PhaseFailed`
+- `internal/hibernateengine#PhaseCancelled`
+- `internal/hibernateengine#PauseCaller`
+- `internal/hibernateengine#Request`
+- `internal/hibernateengine#Request.Terminal`
+- `internal/hibernateengine#RunStatus`
+- `internal/hibernateengine#Deps`
+- `internal/hibernateengine#errUnchanged`
+- `internal/hibernateengine#readRequest`
+- `internal/hibernateengine#updateRequest`
+- `internal/hibernateengine#daemonLive`
+- `internal/hibernateengine#refuseCaller`
+- `internal/hibernateengine#refusePlatform`
+- `internal/hibernateengine#liftOwned`
+- `internal/hibernateengine#SubmitRequest`
+- `internal/hibernateengine#Submit`
+- `internal/hibernateengine#CancelReport`
+- `internal/hibernateengine#Cancel`
+- `internal/hibernateengine#StatusReport`
+- `internal/hibernateengine#Status`
+- `internal/hibernateengine#fakeWorld`
+- `internal/hibernateengine#newFakeWorld`
+- `internal/hibernateengine#fakeWorld.deps`
+- `internal/hibernateengine#TestSubmit`
+- `internal/hibernateengine#TestCancel`
+- `internal/hibernateengine#TestStatus`
 
 **Edit:**
 - `cmd/lyx/testdata/test-budget.yaml`
 
 **Uses:**
-- `plan:internal/tenderengine#Lift`
-- `plan:internal/tenderengine#EntryRef`
+- `internal/tenderengine#Lift`
+- `internal/tenderengine#EntryRef`
 - `internal/tenderengine#PauseRequest`
 
 **Intent:**
