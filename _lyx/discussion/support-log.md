@@ -14,12 +14,12 @@ The session ran autonomously: no operator answered, so every call below is an au
    - board-fit + goal-scope BLOCKING, orch stencil contradicts D5/D6/D9 and is out of Scope: fixed, D11 and a Scope line added.
    - board-fit + goal-scope MEDIUM, `orch-split` overlap unnamed: fixed, Open risks line.
    - board-fit LOW, `twill-spawn-after` overlap wider: rejected, the existing Open risk covers it and the landing order needs no record change.
-   - board-fit + leanness LOW, `CLAUDE.md` edit may change nothing: fixed, Constraint reworded to "stays recipe-neutral".
+   - board-fit + leanness LOW, `CLAUDE.md` edit may change nothing: fixed, the CLAUDE.md Constraint dropped.
    - board-fit LOW, `discussion-premise-cites` would also gate darn's record: rejected, no conflict today; that entry decides its own reach.
    - scenarios BLOCKING, the writer's own record would grade its own diff: fixed, D7 now lets only `Added after Discussion` entries override the board body and treats the writer's sections as a claim; the narrowing of the entry's wording is stated in D7.
    - scenarios BLOCKING + premises MEDIUM + pattern-fit MEDIUM, carry-over halts a record-less in-flight run: fixed, A4 now restarts in-flight darn runs (the recipe's own policy), the record-less fallbacks in D7 and D9 are dropped, and the halt is an Open risk.
    - pattern-fit MEDIUM + premises LOW, no sanctioned path for the writer to commit `_lyx/discussion/`: fixed, D4 has Go commit both files at the gate's pass; D3 says the writer commits neither.
-   - scenarios MEDIUM + pattern-fit LOW, `decision add` racing the writer's commit or a half-written support log: fixed, D5 drops the uncommitted-record check and relies on the verb's existing post-append check and commit-failure refusal, both stated.
+   - scenarios MEDIUM + pattern-fit LOW, `decision add` racing the writer's commit or a half-written support log: fixed, D5 drops the uncommitted-record check and relies on the verb's existing post-append check and commit-failure refusal, both stated; later reversed: D5 refuses a record not yet committed or differing from its committed copy (see Rejected alternatives).
    - scenarios MEDIUM, partial record after a writer death: fixed, D3 rewrites the files when absent or invalid; acceptance line added.
    - scenarios MEDIUM, correction the parent never records: fixed, D6 names it in the change description; acceptance line added.
    - scenarios MEDIUM, missing acceptance scenarios: fixed for respawn, writer death, snapshot escalation and invalid append; the halted-Darn-Write case is covered by the post-append check.
@@ -45,7 +45,7 @@ The session ran autonomously: no operator answered, so every call below is an au
 - Give darn its own `darn.yaml` alignment keys: two switches for one landing route, and darn already reads loom.yaml for its perch models.
 - A record-less fallback for in-flight darn runs (board-only review, PR-Align deferring to the parent): new branches for a handful of runs the recipe's policy already restarts.
 - The darn writer commits its own record: no stencil gives an agent a sanctioned path to commit `_lyx`, and loom has Go commit it.
-- Refuse `decision add` during Darn-Write until the record is committed: the existing post-append check already refuses a partial record, and the extra check needed a git read.
+- Rely on the post-append discussion check alone to bound appends during Darn-Write: it checks section presence, not that the writer has finished, so a later writer overwrite drops the entry; D5's committed-copy check costs a git read but is a real bound once D4 commits at the writer's first clean validation.
 - Make the whole darn record authoritative over the board body, as the entry worded it: the writer's own unreviewed reading would become the review's answer key.
 
 ## Review rounds
@@ -63,6 +63,6 @@ _No rounds yet._
 - Q7 (auto-pick): Carry-over for Darn-Review? Yes (D8), so PR-Align sees the perch's open findings.
 - Q8 (auto-pick): Which config governs darn's PR-Align? loom.yaml's alignment keys (D9, A2).
 - Q9 (auto-pick, revised after the lens review): In-flight darn runs with no record? Restarted, not migrated (A4).
-- Q10 (auto-pick): Who commits the darn record? Go, at the `discussion` gate's pass (D4).
+- Q10 (auto-pick): Who commits the darn record? Go, at the writer's first clean `validate-discussion`, with the `discussion` gate as the check (D4, revised in review round 1).
 - Q11 (auto-pick): Which parts of the darn record override the board body? Only `Added after Discussion` entries (D7).
 - Q12 (auto-pick): Does the orch stencil change? Yes (D11).
