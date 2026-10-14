@@ -1,11 +1,11 @@
 {
-  "current_producer": "Webster-Burler-Fix",
+  "current_producer": "Webster-Bouncer",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Webster-Burler-Fix",
-    "last": "Webster-Burler-Review → bounced to Webster-Burler-Fix",
+    "now": "Webster-Bouncer",
+    "last": "Webster-Burler-Fix → bounced to Webster-Bouncer",
     "wait": ""
   },
   "history": [
@@ -204,6 +204,13 @@
       "outcome": "stuck",
       "output": "/home/knatte/Code/loomyard-LYXHUB/perch-budget-arbiter/_lyx/reviews/webster/round-1-review.md",
       "at": "2026-10-14T19:03:18Z",
+      "budget_exempt": true
+    },
+    {
+      "producer": "Webster-Burler-Fix",
+      "outcome": "stuck",
+      "output": "/home/knatte/Code/loomyard-LYXHUB/perch-budget-arbiter/_lyx/reviews/webster/round-1-review.md",
+      "at": "2026-10-14T19:03:42Z",
       "budget_exempt": true
     }
   ],
