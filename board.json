@@ -830,6 +830,22 @@
       "body": "## Seen (operator, 2026-10-14)\n\nSince `0850f76e` a darn run has a decision record, and `lyx loom decision add` works on it.\nThe operator finds it absurd that a `loom` command acts on something that is not a loom run.\nThe same holds for the other run verbs the orch uses on darn runs: `lyx loom status`, `goto`, `resume`, `approve`, `reject`, `start`, `review approve`.\n\n## Direction (operator, 2026-10-14)\n\nDarn and loom are both shed recipes and are to be handled the same way.\nVerbs that act on any run move to one shared namespace, and `lyx loom` keeps only what is loom's own.\nNot `lyx shed`: shed is only the FSM and knows nothing about decisions, reviews or approvals (operator).\nFor now the verbs stay under `lyx loom` (operator, 2026-10-14).\n\n## Open\n\n- The shared namespace's name, and which module owns it: the layer above shed that both recipes share (decision record, parent review, approve and reject) has no module of its own today; `internal/loomcli` serves darn runs too.\n- Which verbs are recipe-neutral and which are loom's own.\n- Every stencil, way-forward text and doc that names `lyx loom \u003cverb\u003e` for a darn run changes with it.\n- Relates to `perch-budget-arbiter`, which gives darn and loom one config shape for review budgets.\n",
       "created": "2026-10-14T17:23:45Z",
       "revised": "2026-10-14T17:24:42Z"
+    },
+    {
+      "id": 505,
+      "slug": "twb-f3-ir",
+      "title": "twill rationale bench pair twb-f3-ir",
+      "kind": "note",
+      "labels": [
+        "enhancement"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "Bench pair for twill-fork-timing, Plan-Write fork0 with a rationale file, against the fork0 arm",
+      "body": "Temporary bench pair for board note twill-fork-timing, Plan-Write fork0 + rationale bench. Plan-Write only, from a frozen decision record.",
+      "created": "2026-10-14T17:43:14Z",
+      "revised": "2026-10-14T17:43:14Z"
     }
   ]
 }
