@@ -20,7 +20,7 @@ Held by a run; its scope is locked until the run ends.
 | 1 | **Overview window tidy, seat names, Seats replaces SingleLLMProducer**<br>• Overview window log/checklist and bounce naming, seat names, and one MultiLLMProducer in place of SingleLLMProducer | [`overview-seats`](design-overview-seats.md) | loom | blocked · Webster | 3d | 2h | reed, shed, loom, burler |
 | 2 | **Perch budgets and stops: darn budget per run like loom, arbiter only when needed**<br>• Darn review budget overridable per run like loom, with its own off switch; arbiter spawns only on stops that need it. | [`perch-budget-arbiter`](design-perch-budget-arbiter.md) | loom | Merge-Burler-Fix | 2d | 2h | config, loom, shed |
 | 3 | **Twill fork0: blind lens review, strict critical fixer, branch-coverage lens**<br>• Plan-Write: fork0 writes the plan, the master spawns blind lens forks and judges as a strict Burler-style fixer; new branch-coverage lens | [`twill-fork0`](design-twill-fork0.md) | loom | paused · Plan-Write | 2d | 51m | loom, stencil, burler |
-| 4 | **Plan delete-order check reports a reference the deleting card itself rewrites**<br>• deleteOrderFindings must skip a reference inside an Edit region of the deleting card or an earlier card; it blocks overview-seats at Webster | [`delete-order-own-edit`](design-delete-order-own-edit.md) | darn | Worktree-Create | 16m | 16m | webster, loom |
+| 4 | **Plan delete-order check reports a reference the deleting card itself rewrites**<br>• deleteOrderFindings must skip a reference inside an Edit region of the deleting card or an earlier card; it blocks overview-seats at Webster | [`delete-order-own-edit`](design-delete-order-own-edit.md) | darn | Darn-Write | 16m | 16m | webster, loom |
 
 ### Ready
 
