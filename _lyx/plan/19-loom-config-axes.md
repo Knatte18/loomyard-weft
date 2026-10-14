@@ -6,6 +6,8 @@
 - `plan:internal/loomengine#DiscussionAdvisorList.UnmarshalYAML` -> `func (l *DiscussionAdvisorList) UnmarshalYAML(node *yaml.Node) error`
 - `plan:internal/loomengine#validateDiscussionAdvisors` -> `func validateDiscussionAdvisors(advisors DiscussionAdvisorList, reg modelspec.Registry) error`
 - `plan:internal/loomengine#TestMigrateConfig` -> `func TestMigrateConfig(t *testing.T)`
+- `plan:internal/loomengine#planLensDirective` -> `func planLensDirective(layout *lyxcwd.Location, dirs configengine.Dirs, stencilsDir, fan string) (string, error)`
+- `plan:internal/loomengine#discussionLensDirective` -> `func discussionLensDirective(layout *lyxcwd.Location, dirs configengine.Dirs, stencilsDir, fan string) (string, error)`
 
 **Delete:**
 - `internal/loomengine#DiscussionProducerSingle`
@@ -16,6 +18,8 @@
 - `internal/loomengine#twillFan`
 - `internal/loomengine#twillPlanFan`
 - `internal/loomengine#validateAdvisorSpecs`
+- `internal/loomengine#planTwillDirective`
+- `internal/loomengine#discussionTwillDirective`
 
 **Edit:**
 - `internal/loomengine#Config`
@@ -25,9 +29,7 @@
 - `internal/loomengine#MigrateConfig`
 - `internal/loomengine#advisorWayForward`
 - `internal/loomengine/template.yaml`
-- `internal/loomengine#twillLenses`
-- `internal/loomengine#planTwillDirective`
-- `internal/loomengine#discussionTwillDirective`
+- `internal/loomengine#twillLenses` -> `func twillLenses(dirs configengine.Dirs, fan, key string) ([]twilldirective.Lens, error)`
 - `internal/loomengine#DiscussionAdvisorNotes` -> `func DiscussionAdvisorNotes(l *lyxcwd.Location, name string) string`
 - `internal/loomengine#DiscussionTable`
 - `plan:internal/loomengine#PlanTable`
@@ -67,7 +69,9 @@ Load (`LoadConfig`):
 Table build:
 - `DiscussionTable` builds one advisor per `cfg.DiscussionAdvisors` entry, whatever else is set, named by the entry's `name` (no `advisor-<n>` name is formed any more) and writing `DiscussionAdvisorNotes(layout, name)`, now `_lyx/discussion/advisor-<name>.md`, so no name takes a lead output's path; the lead forks when `cfg.DiscussionLenses` is set, reading that fan, and the advisors never fork (D8). Advisors with lenses on is the bench's round-4 combination.
 - `PlanTable`'s lead forks when `cfg.PlanLenses` is set, reading that fan.
-- `twillLenses`, `discussionTwillDirective` and `planTwillDirective` take the fan name and its key; a name with no fan, or a fan with no lenses, in `burler.yaml` (whose fans fall back per name to the embedded template) is refused at table build naming the key, the fan and `burler.yaml`, with the way forward "define the fan and its lenses in burler.yaml, or set the key to \"\" to turn the lens forks off"; an unreadable `burler.yaml` is refused naming the key.
+- `twillLenses` takes the fan name and its key in place of the spawning row.
+  `discussionLensDirective` and `planLensDirective` replace `discussionTwillDirective` and `planTwillDirective` with the same bodies, taking the fan name and passing `twillLenses` their own key, `discussion_lenses` or `plan_lenses`; the old pair goes rather than being re-signed, since their remaining callers sit in `DiscussionSpec` and `PlanSpec`, which card 18 deletes.
+  A name with no fan, or a fan with no lenses, in `burler.yaml` (whose fans fall back per name to the embedded template) is refused at table build naming the key, the fan and `burler.yaml`, with the way forward "define the fan and its lenses in burler.yaml, or set the key to \"\" to turn the lens forks off"; an unreadable `burler.yaml` is refused naming the key.
 - `planWriteGateSpec`'s comment names `plan_lenses`.
 
 `MigrateConfig` (reached from `hubreconcile.Ensure` through the module's `Migrate` hook, PATTERN-binary-change-reconcile) keeps the `step_idle_timeout_min` floor and rewrites one present document, a report line per rewrite:
@@ -86,7 +90,7 @@ Tests:
 - `TestLoadConfig_Loads`: the template loads no advisors and empty lens keys; named advisors and set lens keys load; `templateConfig` and the producer rows follow the fields.
 - `TestLoadConfig_Refuses`: a string advisor entry naming the way forward, a blank, duplicate and numeric name, an unresolvable model, and a non-sequence value; the unknown-producer rows go.
 - `TestModules_EveryTemplateKeyClassified` lists `discussion_advisors`, `discussion_lenses` and `plan_lenses` among loom's guard keys and drops the producer keys; `TestModules_LocalLayerRefusals` refuses `discussion_advisors` and `discussion_lenses` in a local layer; `stepRunSettings`' closed-key row sets `discussion_advisors` in `run_settings` and wants it refused by name.
-- `TestDiscussionTable` and `discussionTableConfig` build from named advisors and `discussion_lenses`: advisors with lenses on fork from the lead only (no advisor sets `ForkSubagents` or carries the twill directive), the advisors' strands read `discussion-<name>` and their notes `advisor-<name>.md`, the template config builds a lone lead with no fork; `TestDiscussionTable_Refuses` and `TestPlanTable` gain a lens key naming a missing fan and a fan with no lenses; `TestDiscussionPaths` reads a named notes path.
+- `TestDiscussionTable` and `discussionTableConfig` build from named advisors and `discussion_lenses`: advisors with lenses on fork from the lead only (no advisor sets `ForkSubagents` or carries the twill directive), the advisors' strands read `discussion-<name>` and their notes `advisor-<name>.md`, the template config builds a lone lead with no fork; `TestDiscussionTable_Refuses` and `TestPlanTable` gain a lens key naming a missing fan and a fan with no lenses, and their unparsable-`burler.yaml` rows set the lens key and expect the key's name in the error; `TestDiscussionPaths` reads a named notes path.
 - `TestWire_DiscussionTableEvaluatesToExpectedShape` seeds named advisors and lens keys; `TestNewParentReviewConfig_KeepAliveInterval`'s rows drop the producer field.
 
 **ImpactSummary:** Retires two loom.yaml keys and reshapes a third for every hub through the reconcile migration; every reader of the old keys is in loomengine, its tests and the two config-registry tests listed here.

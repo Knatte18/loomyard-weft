@@ -83,7 +83,7 @@
 **Intent:** D6: the table's first seat is the lead, which carries no seat name and whose strand role is the role prefix alone; every later seat carries a name its table builder takes from the recipe or config.
 
 In `internal/seatengine`:
-- No code reads `RoleChair`, `RoleAdvisor` or `AdvisorName` any more: no seat is named `chair` and no name is formed as `advisor-<n>`. Card 20 deletes the three once no later card edits code that names them.
+- No code reads `RoleChair` or `RoleAdvisor` any more, and no seat is named `chair`. `DiscussionTable` still forms its placeholder advisor names `advisor-<n>` with `seatengine.AdvisorName`, its last production reader until card 19. Card 20 deletes the three once no later card edits code that names them.
 - The lead is the seat whose `Name` is empty, which `Table.Validate` pins to the first seat; the engine keeps calling it the chair internally (`Table.Chair` returns `Seats[0]`, or the zero seat for an empty table), and every `seat.Name == RoleChair` test becomes a test for the lead.
 - `SeatRole(prefix, name)` returns the prefix alone for an empty name and `prefix-name` otherwise, so every strand role is still formed through it (PATTERN-agent-name) and reed forms the strand name once; `strandNames`, `seatSpec` and `Table.validateRoles` call it for every seat, the lead included, and `strandNames` keys the lead under "".
 - `ValidateSeatName` is the seat-name rule: a non-empty name that itself passes `agentname.ValidateRole` (a letter first), so a later seat's formed role never reads as reed's numbered form of the lead's role (`agentname.MatchesRole`); D7's config check reuses it.

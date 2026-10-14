@@ -9,8 +9,8 @@
 - `internal/loomcli#loomCLI.checklistPoll`
 - `internal/loomcli#loomCLI.checklistCmd`
 - `internal/loomcli#checklistVisit`
-- `internal/loomcli#checklistVisitsOf`
-- `internal/loomcli#stuckEntry`
+- `internal/loomcli#checklistVisitsOf` -> `func checklistVisitsOf(status shedengine.Status, startedAt string, now time.Time) (visits map[string]checklistVisits, order []string, history []checklistVisit)`
+- `internal/loomcli#stuckEntry` -> `func stuckEntry(producer string, atMinute int, routedTo string) shedengine.HistoryEntry`
 - `internal/loomcli#TestRenderChecklist`
 - `internal/loomcli/doc.go`
 - `//docs/overview.md`
@@ -39,6 +39,8 @@ Outcome words, decided in `checklistVisitsOf`, which fills a new `row` field on 
 - An `awaiting` entry reads `escalated`.
 - Every other outcome reads as its stored value; the open visit reads `running`.
 Only the checklist shows these words; the status file, `lyx loom status` and the batten overview are unchanged.
+
+`checklistVisitsOf` also returns every visit in history order, each carrying its `row` field, as a third result beside the per-row map and the first-visit row order; the unreadable-recipe list walks that result.
 
 The `checklist` verb's `Long` help, the checklist paragraph of `internal/loomcli/doc.go` and the `lyx loom checklist` mention in `docs/overview.md`'s loom bootstrap paragraph describe the combined frame: recipe rows in order with their visit lines under them, then the state and wait lines.
 

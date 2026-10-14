@@ -19,7 +19,7 @@
 A review segment is a recipe `segment` holding a row whose `RecipeRow.Bouncer` is true; a segment without one, such as `PR-Review`, keeps rendering its rows as card 4's per-row lines.
 `renderChecklist` draws each review segment as one block at the place of its first row, through `checklistReviewBlock`, and skips the segment's other rows in the recipe loop.
 
-`checklistVisitsOf` records, beside each row's visits, every visit in history order with its row, its history index and its outcome, and now also records a goto entry as a zero-time line (outcome `goto`) that counts as no visit and adds no time, as today; card 4's per-row lines keep leaving goto entries out.
+`checklistVisitsOf` adds to each visit of the history-order list card 4 returns its history index and whether it is a goto, and now also records a goto entry in that list as a zero-time line (outcome `goto`) that counts as no visit and adds no time, as today; card 4's per-row lines keep leaving goto entries out.
 `checklistVisit` gains the fields this needs: `index` (the history index, -1 for the open visit) and `isGoto`.
 
 The block, top to bottom:
@@ -38,7 +38,7 @@ Placing the segment's history lines, walking them in history order:
 - The open visit of a segment row joins the round a waiting bounced Bouncer line opens (the round after the last), or else the round in progress, or else stands before round 1.
 
 The checklist reads round numbers only through `shedadapters.OutputRound` (card 3), never by a parse of its own.
-With the recipe unreadable, card 4's history-order list stands unchanged.
+With the recipe unreadable, card 4's frame skips the goto lines this card adds to the history-order list, so it still shows only the visit lines D1 names.
 
 The review-segment rows of `TestRenderChecklist` build their recipe as `loomrecipe.RecipeRow` values holding a review segment (a Bouncer, a review and a fix row) and a `PR-Review`-like segment with no Bouncer row, and their outputs as `round-<n>-review.md` and `round-<n>-fixer-report.md` paths.
 New rows of `TestRenderChecklist`:
