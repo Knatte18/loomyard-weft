@@ -1,6 +1,6 @@
 # lyx config --set writes a per-round model list as a string
 
-`config-set-round-list` · Task · bug, config · running · Publish
+`config-set-round-list` · Task · bug, config · running · PR-Align
 
 ## Seen (2026-10-14)
 
