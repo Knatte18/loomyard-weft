@@ -1,6 +1,6 @@
 # Plan and Webster checks out of step with the code a plan changes
 
-`plan-gate-gaps` · Task · bug, webster, loom, quarry · running · Discussion-Bouncer
+`plan-gate-gaps` · Task · bug, webster, loom, quarry · running · Plan-Write
 
 ## From `webster-glyph-rename`
 
