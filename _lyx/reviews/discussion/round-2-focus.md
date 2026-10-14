@@ -1,0 +1,9 @@
+---
+round: 2
+focus:
+  - "D7 in _lyx/discussion/decision-record.md: settle whether the retry for the Directory-not-empty teardown failure sits on the failure that occurs. When git worktree remove exits nonzero on a refilled directory, git has already dropped the worktree registration and left the directory; removeWarpWorktreeDir in internal/fabricengine/remove.go then reaches the branch that returns the not-a-linked-worktree error, because isRegisteredLinkedWorktree reads the live worktree list. Check that D7 places the bounded retry at that branch, states the ownership proof that replaces the registered-linked-worktree check, states how the not-empty failure is recognized, states per OS which error value counts as not-empty, and that its acceptance criterion starts from git worktree remove failing, not from the contained removal failing."
+  - "D1 and its first acceptance criterion in _lyx/discussion/decision-record.md: settle whether every signal D1 accepts as launch readiness is one claudeengine records and an engine parser produces. The recorded hooks listed in internal/shuttleengine/claudeengine/doc.go are Stop, UserPromptSubmit, StopFailure, Notification, SessionEnd, SessionStart, PermissionRequest and, in an interactive run only, the AskUserQuestion record; EventKind has no tool kind beyond EventAsk. Check D1 either limits the proof to signals in that set or adds a Decision recording a new hook and parser kind with its bound."
+  - "D2 in _lyx/discussion/decision-record.md: it moves the first skill-load turn from the verified send onto the launch line. Settle whether D2 states which guard that bypasses and what bounds a launch-carried turn that never starts or never ends, including when the skill-load timeout starts now that no send marks it."
+---
+
+Focus targets the places where the Decisions are most likely still wrong; the rest of the pair is reviewed on the rubric alone.
