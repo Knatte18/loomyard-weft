@@ -18,7 +18,7 @@ Held by a run; its scope is locked until the run ends.
 | # | Task | Slug | Recipe | At | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | 1 | **Hibernate the machine on a trigger, such as a task landing**<br>• Let the operator trigger a hibernate through lyx, for instance once a task is done | [`hibernate-trigger`](design-hibernate-trigger.md) | loom | Merge-In | 3h | 1h | batten |
-| 2 | **Overview window tidy, seat names, Seats replaces SingleLLMProducer**<br>• Overview window log/checklist and bounce naming, seat names, and one MultiLLMProducer in place of SingleLLMProducer | [`overview-seats`](design-overview-seats.md) | loom | Plan-Bouncer | 3d | 1h | reed, shed, loom, burler |
+| 2 | **Overview window tidy, seat names, Seats replaces SingleLLMProducer**<br>• Overview window log/checklist and bounce naming, seat names, and one MultiLLMProducer in place of SingleLLMProducer | [`overview-seats`](design-overview-seats.md) | loom | Batchifier | 3d | 1h | reed, shed, loom, burler |
 | 3 | **Perch budgets and stops: darn budget per run like loom, arbiter only when needed**<br>• Darn review budget overridable per run like loom, with its own off switch; arbiter spawns only on stops that need it. | [`perch-budget-arbiter`](design-perch-budget-arbiter.md) | loom | Plan-Write | 2d | 1h | config, loom, shed |
 | 4 | **Run window opens as soon as the worktree exists**<br>• batten --window waits about 20 s (sync pushes, inner shed spawn) before Konsole opens; open it at once with attach | [`run-window-early`](design-run-window-early.md) | darn | PR-Gate | 53m | 46m | batten, reed, fabric |
 
@@ -36,7 +36,7 @@ Waits only on Running or Ready entries.
 
 | # | Task | Slug | Recipe | After | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | **Go driver and tackler in shed, for every FSM-driven run**<br>• Move the Go driver and tackler from loomcli into shed so darn, batten and every recipe get them; module config overrides model and budgets | [`shed-tackler`](design-shed-tackler.md) | loom | `perch-budget-arbiter`, `overview-seats` | 7m | 2m | shed, loom, batten |
+| 1 | **Go driver and tackler in shed, for every FSM-driven run**<br>• Move the Go driver and tackler from loomcli into shed so darn, batten and every recipe get them; module config overrides model and budgets | [`shed-tackler`](design-shed-tackler.md) | loom | `perch-budget-arbiter`, `overview-seats` | 8m | 2m | shed, loom, batten |
 
 ## Notes
 
@@ -54,7 +54,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Note | Slug | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| 2 | **twill rationale bench pair twb-f3-ir**<br>• Bench pair for twill-fork-timing, Plan-Write fork0 with a rationale file, against the fork0 arm | [`twb-f3-ir`](design-twb-f3-ir.md) | 20m | 20m |  |
+| 2 | **twill rationale bench pair twb-f3-ir**<br>• Bench pair for twill-fork-timing, Plan-Write fork0 with a rationale file, against the fork0 arm | [`twb-f3-ir`](design-twb-f3-ir.md) | 21m | 21m |  |
 | 3 | **twill rationale bench pair twb-f3-wr**<br>• Bench pair for twill-fork-timing, Plan-Write fork0 with a rationale file, against the fork0 arm | [`twb-f3-wr`](design-twb-f3-wr.md) | 20m | 20m |  |
 | 4 | **twill rationale bench pair twb-f3-pr**<br>• Bench pair for twill-fork-timing, Plan-Write fork0 with a rationale file, against the fork0 arm | [`twb-f3-pr`](design-twb-f3-pr.md) | 20m | 20m |  |
 | 5 | **Codex CLI as a second shuttle engine: hands-on spike, then codexengine**<br>• Codex CLI as a second engine to offload Claude tokens: short hands-on tests first, then a codexengine for single-session roles | [`codex-engine`](design-codex-engine.md) | 11d | 1d | shuttle |
