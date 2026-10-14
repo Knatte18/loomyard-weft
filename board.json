@@ -709,7 +709,7 @@
       "isolated": false,
       "brief": "tokencount keeps the first transcript line per message id, which in subagent transcripts carries partial output_tokens; fork costs come out low",
       "body": "## Seen (`twill-fork-timing` bench, 2026-10-13)\n\ntokencount under-counts subagent (fork) output tokens.\nIt keeps the first transcript line of each message id, and in a subagent transcript that first line carries a partial `output_tokens` (6 on a thinking block against 4,546 on the message's final line).\nWriter (main session) figures match exactly; fork figures come out low: one bench run's forks $1.49 by tokencount against $2.09 counted from each message's last line, another $1.15 against $1.62.\nDetail in the bench report's Deviations (`docs/research/twill-fork-timing-bench.md`).\n\n## Affected\n\nEvery cost figure for forks taken with tokencount is low: the twill benches' fork costs, `docs/research/token-usage-by-role.md` and the estimates in `model-downgrade` that rest on it.\n",
-      "status": "running · Describe",
+      "status": "running · Merge-In",
       "created": "2026-10-13T09:21:53Z",
       "revised": "2026-10-14T15:18:22Z"
     },
