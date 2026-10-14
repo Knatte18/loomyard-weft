@@ -1,28 +1,45 @@
-# config --set writes a per-round model list as a list
+# lyx config --set writes a per-round model list as a list
 
-`lyx config loom --set 'plan_review=["opus[medium]","sonnet[high]"]'` wrote `plan_review` as a quoted string, not a list.
-Loom's per-round model keys (`review`, `fix`, `fan_review`, `discussion_advisors` and each segment's `*_review` and `*_fix`) take one model-spec or a per-round list.
-`--set` chose the written shape from the key's current node, so a key holding a scalar always got a string, and a key holding a list refused a scalar.
+`lyx config <module> --set` on a key that takes one model-spec or a per-round list kept the template's string type.
+`lyx config loom --set 'plan_review=["opus[medium]","sonnet[high]"]'` wrote a quoted string, which is not a valid model-spec, and the operator had to revert it in an editor.
+`--set` now writes the shape the value spells, so a per-round model change needs no editor session.
 
-## What changes
+## Behaviour
 
-- `internal/yamlengine`: `SetValues` and `SetSparse` treat a key that is itself a declared open-map path, and whose current value is a scalar or a list rather than a mapping, as taking either shape.
-  A value whose first non-blank character is `[` is parsed as a YAML flow list of scalars and written as a list; any other value is written as a string.
-  The replaced node's comments are kept.
-  A bracketed value that does not parse, or parses to anything but a list of scalars, is refused with an error naming the key and the quoted-entry form, and nothing is written.
-- Loom already declares these keys through `loomengine.ConfigOpenMaps`, so no registry or spec field is added.
-  Mapping-valued open maps such as board's `labels` are unaffected: `P.<name>` keeps its entry behaviour and `P` itself stays outside the set path.
-- `internal/configcli/doc.go`, `internal/yamlengine/doc.go` and the config entry in `docs/overview.md` describe the new form, and `lyx config --help` gives one example.
-  To keep the help under its length cap, the open-map caveats (removing an entry, a list-shaped map) left the help; the package doc already states them.
+- A key that is itself a declared open-map path whose template value is not a mapping takes either shape.
+  In loom these are `review`, `fix`, `fan_review` and each segment's `*_review` and `*_fix`.
+- A value whose first non-blank character is `[` is parsed as a YAML flow list of scalars and written as a list.
+  Any other value is written as a string scalar.
+- A bracketed value that is not a flow list of scalars is refused with an error naming the key and the quoted form, and nothing is written.
+  This covers unquoted bracketed entries such as `[opus[medium], sonnet[high]]`, nested lists, and text after the closing bracket.
+- The deciding shape is the value's spelling, not the current node's, so `--set plan_review=opus[high]` replaces a list with a scalar, and `--set 'review=[]'` writes an empty list.
+- The replaced node keeps its comments.
+- `P.<name>` entries and mapping-valued open maps such as board's `labels` behave as before.
 
 ## Design decisions
 
-- The shape follows the value's spelling, not the key's current shape, so `--set` can move a key from a scalar to a list and back.
-  No model-spec starts with `[`, so the rule never misreads a scalar.
-- The unquoted form `[opus[medium], sonnet[high]]` is refused, not accepted: YAML forbids `[` and `]` in an unquoted flow-list entry, and a lyx-specific list grammar for a handful of keys was not worth a second parser.
-  The refusal names the quoted form as the way forward.
-- `--set` does not check model-spec grammar; loom's load-time validation and the local layer's `CheckValues` stay the checks.
+- The change is in `internal/yamlengine`'s `SetValues` and `SetSparse`, so it reaches the full base layer and the sparse worktree and local layers alike.
+  `configengine` is untouched.
+- Whether a path takes the new branch is decided from the template's own value for P, read before `carryOpenMaps` runs.
+  Deciding from the carried file value would let `--set labels=x` overwrite a list-shaped `labels` under a mapping-declared open map.
+- No new registry field: loom already declares these keys in `loomengine.ConfigOpenMaps`.
+- Model-spec grammar is not checked on write; loom's load-time validation and the local layer's `CheckValues` stay the checks.
+- Risk: a hand-written value starting with `[`, meant as a literal string at such a key, is now parsed as a list.
+  No current key takes such a string, and no model-spec starts with `[`.
+
+## Docs
+
+`lyx config --help`, `internal/configcli/doc.go`, the open-map section of `internal/yamlengine/doc.go` and `docs/overview.md` describe the new form.
+The help text no longer says a list-shaped open-map value must be rewritten in an editor first.
 
 ## Tests
 
-`TestSetValues`, `TestSetValues_Refusals` and `TestSetSparse` gain rows for a quoted flow list, a list key taking a scalar, the empty list, the unquoted bracketed refusal and a nested-list refusal, on both the full and the sparse write paths.
+The `SetValues` and `SetSparse` table tests gained rows for the quoted flow list, the scalar-to-list and list-to-scalar moves, the unquoted bracketed refusal, trailing text after the bracket, and a list-shaped `labels` under a mapping-declared open map.
+The empty-list and nested-list rows are on the `SetValues` table.
+`lyx gate test ./...` and `lyx gate test --tags integration ./...` were not run as part of this description.
+
+## Check by hand
+
+- `lyx config board --set labels=x` with `labels` stored as a list in the file: it must still be refused, with the file unchanged (`internal/yamlengine/set.go`, `scalarOrListOpenMapPaths`).
+- `lyx config loom --set 'plan_review=["a"] trailing'`: it must be refused, with nothing written (`internal/yamlengine/set.go`, `scalarOrListNode`).
+- `internal/yamlengine/layers_test.go`: `TestSetSparse` has no empty-list or nested-list row; confirm the shared `scalarOrListNode` coverage in `TestSetValues` is enough.
