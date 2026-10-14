@@ -18,7 +18,7 @@ Held by a run; its scope is locked until the run ends.
 | # | Task | Slug | Recipe | At | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | 1 | **Overview window tidy, seat names, Seats replaces SingleLLMProducer**<br>• Overview window log/checklist and bounce naming, seat names, and one MultiLLMProducer in place of SingleLLMProducer | [`overview-seats`](design-overview-seats.md) | loom | blocked · Webster | 3d | 2h | reed, shed, loom, burler |
-| 2 | **Perch budgets and stops: darn budget per run like loom, arbiter only when needed**<br>• Darn review budget overridable per run like loom, with its own off switch; arbiter spawns only on stops that need it. | [`perch-budget-arbiter`](design-perch-budget-arbiter.md) | loom | Merge-Bouncer | 2d | 2h | config, loom, shed |
+| 2 | **Perch budgets and stops: darn budget per run like loom, arbiter only when needed**<br>• Darn review budget overridable per run like loom, with its own off switch; arbiter spawns only on stops that need it. | [`perch-budget-arbiter`](design-perch-budget-arbiter.md) | loom | Publish | 2d | 2h | config, loom, shed |
 | 3 | **Twill fork0: blind lens review, strict critical fixer, branch-coverage lens**<br>• Plan-Write: fork0 writes the plan, the master spawns blind lens forks and judges as a strict Burler-style fixer; new branch-coverage lens | [`twill-fork0`](design-twill-fork0.md) | loom | paused · Plan-Write | 2d | 52m | loom, stencil, burler |
 | 4 | **Plan delete-order check reports a reference the deleting card itself rewrites**<br>• deleteOrderFindings must skip a reference inside an Edit region of the deleting card or an earlier card; it blocks overview-seats at Webster | [`delete-order-own-edit`](design-delete-order-own-edit.md) | darn | Darn-Write | 17m | 17m | webster, loom |
 
@@ -58,7 +58,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Note | Slug | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| 1 | **lyx config --set stores an invalid model value instead of refusing it** | [`config-set-validate`](design-config-set-validate.md) | 34m | 33m | config |
+| 1 | **lyx config --set stores an invalid model value instead of refusing it** | [`config-set-validate`](design-config-set-validate.md) | 34m | 34m | config |
 
 ### Enhancements
 
