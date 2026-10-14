@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-14 18:22 UTC; every age below is as of then.
+Rendered 2026-10-14 18:23 UTC; every age below is as of then.
 
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
@@ -17,10 +17,9 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | **Hibernate the machine on a trigger, such as a task landing**<br>• Let the operator trigger a hibernate through lyx, for instance once a task is done | [`hibernate-trigger`](design-hibernate-trigger.md) | loom | Finalize | 4h | 1h | batten |
-| 2 | **Overview window tidy, seat names, Seats replaces SingleLLMProducer**<br>• Overview window log/checklist and bounce naming, seat names, and one MultiLLMProducer in place of SingleLLMProducer | [`overview-seats`](design-overview-seats.md) | loom | Webster | 3d | 1h | reed, shed, loom, burler |
-| 3 | **Perch budgets and stops: darn budget per run like loom, arbiter only when needed**<br>• Darn review budget overridable per run like loom, with its own off switch; arbiter spawns only on stops that need it. | [`perch-budget-arbiter`](design-perch-budget-arbiter.md) | loom | Plan-Burler-Review | 2d | 1h | config, loom, shed |
-| 4 | **lyx config --set writes a per-round model list as a string**<br>• --set on review/fix model keys stores a flow list as a quoted string; it must write a real list or refuse | [`config-set-round-list`](design-config-set-round-list.md) | darn | Darn-Write | 10m | 4m | config |
+| 1 | **Overview window tidy, seat names, Seats replaces SingleLLMProducer**<br>• Overview window log/checklist and bounce naming, seat names, and one MultiLLMProducer in place of SingleLLMProducer | [`overview-seats`](design-overview-seats.md) | loom | Webster | 3d | 1h | reed, shed, loom, burler |
+| 2 | **Perch budgets and stops: darn budget per run like loom, arbiter only when needed**<br>• Darn review budget overridable per run like loom, with its own off switch; arbiter spawns only on stops that need it. | [`perch-budget-arbiter`](design-perch-budget-arbiter.md) | loom | Plan-Burler-Review | 2d | 1h | config, loom, shed |
+| 3 | **lyx config --set writes a per-round model list as a string**<br>• --set on review/fix model keys stores a flow list as a quoted string; it must write a real list or refuse | [`config-set-round-list`](design-config-set-round-list.md) | darn | Darn-Write | 10m | 5m | config |
 
 ### Ready
 
@@ -130,3 +129,11 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | --- | --- | --- | --- | --- | --- |
 | 2 | **Re-measure the test suite weight on a quiet machine**<br>• The test-suite-weight before and after numbers were taken under load; rerun the report Regenerate section on an idle machine for a fair wall-time comparison | `suite-weight-quiet-rerun` | 4d | 1d |  |
 | 3 | **Lighter test rules for small changes**<br>• Tests that pin stencil wording make small prompt changes large; pin only what must hold, measured first | [`lighter-test-rules`](design-lighter-test-rules.md) | 1d | 1d | stencil |
+
+## Done
+
+Finished, awaiting `lyx board prune --apply`.
+
+| # | Entry | Slug | Age | Revised | Labels |
+| --- | --- | --- | --- | --- | --- |
+| 1 | **Hibernate the machine on a trigger, such as a task landing**<br>• Let the operator trigger a hibernate through lyx, for instance once a task is done | [`hibernate-trigger`](design-hibernate-trigger.md) | 4h | 1h | batten |
