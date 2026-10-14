@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-14 17:09 UTC; every age below is as of then.
+Rendered 2026-10-14 17:10 UTC; every age below is as of then.
 
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
@@ -52,7 +52,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | # | Note | Slug | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | 2 | **twill fork0 bench pair twb-f2-ia**<br>• Bench pair for twill-fork-timing, Plan-Write fork0 against after, both with the critical fixer | [`twb-f2-ia`](design-twb-f2-ia.md) | 20m | 20m |  |
-| 3 | **twill fork0 bench pair twb-f2-if**<br>• Bench pair for twill-fork-timing, Plan-Write fork0 against after, both with the critical fixer | [`twb-f2-if`](design-twb-f2-if.md) | 19m | 19m |  |
+| 3 | **twill fork0 bench pair twb-f2-if**<br>• Bench pair for twill-fork-timing, Plan-Write fork0 against after, both with the critical fixer | [`twb-f2-if`](design-twb-f2-if.md) | 20m | 20m |  |
 | 4 | **twill fork0 bench pair twb-f2-wa**<br>• Bench pair for twill-fork-timing, Plan-Write fork0 against after, both with the critical fixer | [`twb-f2-wa`](design-twb-f2-wa.md) | 19m | 19m |  |
 | 5 | **twill fork0 bench pair twb-f2-wf**<br>• Bench pair for twill-fork-timing, Plan-Write fork0 against after, both with the critical fixer | [`twb-f2-wf`](design-twb-f2-wf.md) | 19m | 19m |  |
 | 6 | **twill fork0 bench pair twb-f2-pa**<br>• Bench pair for twill-fork-timing, Plan-Write fork0 against after, both with the critical fixer | [`twb-f2-pa`](design-twb-f2-pa.md) | 19m | 19m |  |
