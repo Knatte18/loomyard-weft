@@ -1,0 +1,8 @@
+verdict: approve
+reason: >-
+  The diff widens newAgentWindowSelected so a new agent window takes the viewer from the newest live agent window and from the Driver window, while a viewer on an older live agent window or the shell stays, exactly the operator's scope in board entry 501, with unit and tmux-tier tests and the doc.go focus paragraph updated.
+  Nothing beyond the entry is changed and no point is left out.
+  The one open risk (replace lands the viewer on the replacement) follows from the entry's rule and names no parent correction.
+  No peer conflicts: hibernate-trigger shares only test-budget.yaml, and run-window-early is complementary; this run (row 22) lands first.
+question: ""
+superseded: []
