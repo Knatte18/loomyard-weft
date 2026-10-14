@@ -1,12 +1,12 @@
 # Card 11 — discussion-write-seats
 
 **Create:**
-- `plan:internal/loomrecipe#writeLoomOutputs` -> `func writeLoomOutputs(planDir string, writeOutputs bool, role string, outputs []string) error`
-- `plan:internal/loomrecipe#countSeatRole` -> `func countSeatRole(seats *shedfake.SeatRunner, prefix string) int`
-- `plan:internal/loomcli#scriptedSeats` -> `type scriptedSeats struct`
-- `plan:internal/loomcli#scriptedSeats.Probe` -> `func (s *scriptedSeats) Probe(table seatengine.Table) (seatengine.LiveTable, error)`
-- `plan:internal/loomcli#scriptedSeats.Resume` -> `func (s *scriptedSeats) Resume(table seatengine.Table, live seatengine.LiveTable) (seatengine.Result, error)`
-- `plan:internal/loomcli#scriptedSeats.Run` -> `func (s *scriptedSeats) Run(table seatengine.Table) (seatengine.Result, error)`
+- `internal/loomrecipe#writeLoomOutputs`
+- `internal/loomrecipe#countSeatRole`
+- `internal/loomcli#scriptedSeats`
+- `internal/loomcli#scriptedSeats.Probe`
+- `internal/loomcli#scriptedSeats.Resume`
+- `internal/loomcli#scriptedSeats.Run`
 
 **Edit:**
 - `internal/loomengine#DiscussionTable` -> `func DiscussionTable(layout *lyxcwd.Location, dirs configengine.Dirs, stencilsDir string, cfg Config, reg modelspec.Registry, slug string) (seatengine.Table, error)`

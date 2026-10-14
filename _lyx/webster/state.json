@@ -1,6 +1,6 @@
 {
   "runGuid": "50dde7a59fc8df99eb2686fde35c19df",
-  "planFingerprint": "11985f05ecce511f4ff55f04dd7c2119ef0b833c59ff1ce72bc2f5d48c5504f1",
+  "planFingerprint": "f5c2ff571f54c9fdea11eb5c5aaa54db3993d3b8a9f32cb528dd610f3e3559ec",
   "planFileHashes": {
     "00-overview.md": "42e322575ccdd0a5890994f90bf399708d6a4af309219028a4a1eda7bcb9d6cd",
     "01-shed-bounce-routed-to.md": "6b28c27ae1cfaa2fca6622946da3e7cef200f41e351bf644462000a5ace298e3",
@@ -13,7 +13,7 @@
     "08-seat-lead-naming.md": "1e7dffec6341b589a0ac9c4ba4fad80a3a15d0ca08d16cf341cd5a7a12f3d690",
     "09-seat-lead-amendment.md": "e5895ce81f5d04aea211ae55237f79059a1ea9e9b7fa475cfe3c67f009cf965f",
     "10-multillm-amendment.md": "9b619bc50518c08661ea4509350b21284c7410ef322a2d7e377197f91ece8acf",
-    "11-discussion-write-seats.md": "4ba381292c8a0bccc4010d92e3f2762e64c839ef99f4b4f2fd76b93de37a749a",
+    "11-discussion-write-seats.md": "c8cf6f9622de71c79ff054c19451e5544bb4edbcef028eaa31752c97391e69d5",
     "12-plan-write-seats.md": "a73f128f87ff1d746fdbc9f6a3a7de7ef8d93fe0924fb22817b5f365f7ced423",
     "13-pr-rework-seats.md": "70b86902f3f9f10a4ae0cb0fcbfd840ec929ba539bd636c13c86daa31e81569c",
     "14-describe-seats.md": "86f9d40a8f3df0ddf0b5932a5538b34af601c38761dd8e82d9b93fae2f94380b",
@@ -578,7 +578,7 @@
       }
     }
   ],
-  "currentBatch": 11,
+  "currentBatch": 0,
   "masterStrand": "8658427a8147d936d244a19ba3d56491",
   "masterSessionId": "f89f830f-dc11-4772-8b04-5e5563696e53",
   "batches": {
@@ -632,14 +632,39 @@
         "11-discussion-write-seats"
       ],
       "cardHashes": {
-        "11-discussion-write-seats": "4ba381292c8a0bccc4010d92e3f2762e64c839ef99f4b4f2fd76b93de37a749a"
+        "11-discussion-write-seats": "c8cf6f9622de71c79ff054c19451e5544bb4edbcef028eaa31752c97391e69d5"
       },
       "startSha": "5af3f0ee496dab35b3bbe8496506eca520915f11",
       "kind": "fork",
       "spawnedAt": "2026-10-14T18:26:09Z",
       "sessionId": "f89f830f-dc11-4772-8b04-5e5563696e53",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "11-discussion-write-seats",
+        "status": "done",
+        "head_sha": "4789360dcdfc6a9dae99716dfb8a012d694ecdce",
+        "deviations": [
+          "internal/loomengine/discussiontable_test.go",
+          "internal/loomrecipe/fixture_test.go",
+          "internal/loomrecipe/resume_test.go",
+          "internal/loomrecipe/sequence_test.go",
+          "internal/loomrecipe/shape_test.go",
+          "internal/shedrecipe/entries_discussionseats.go",
+          "internal/shedrecipe/entries_discussionseats_test.go",
+          "internal/shedrecipe/entries_discussionwrite_test.go",
+          "internal/shedrecipe/fixture_test.go"
+        ]
+      },
+      "cardShas": [
+        "4789360dcdfc6a9dae99716dfb8a012d694ecdce"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-overview-seats/f89f830f-dc11-4772-8b04-5e5563696e53/subagents/agent-ab55823d16eaf07ee.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-overview-seats/f89f830f-dc11-4772-8b04-5e5563696e53/subagents/agent-ab55823d16eaf07ee.jsonl"
+      ]
     },
     "7": {
       "slug": "checklist-pause-net-time",
@@ -688,6 +713,7 @@
   },
   "seenForkTranscripts": [
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-overview-seats/f89f830f-dc11-4772-8b04-5e5563696e53/subagents/agent-aa1c7f80a754a0e6d.jsonl",
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-overview-seats/f89f830f-dc11-4772-8b04-5e5563696e53/subagents/agent-afb622a27158d58e5.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-overview-seats/f89f830f-dc11-4772-8b04-5e5563696e53/subagents/agent-afb622a27158d58e5.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-overview-seats/f89f830f-dc11-4772-8b04-5e5563696e53/subagents/agent-ab55823d16eaf07ee.jsonl"
   ]
 }
