@@ -23,3 +23,13 @@ The flag asks for a pause (as `lyx pause`) on every instance, and once the pause
 - Who fires it: batten after Land (and its deploy), so nothing is mid-write.
 - Before hibernating: no run mid-turn and no Land in flight; the hub's runs are paused or idle, as the operator already hibernates with runs live.
 - Platform: `systemctl hibernate` on Linux, the only platform the operator runs lyx on; elsewhere the verb says it is unsupported.
+
+## Pause and resume shortcuts
+
+Add short shortcuts for pausing and resuming to `internal/shortcutcli/shortcuts.yaml`, next to the existing `lyx a` shortcut.
+The file maps a shortcut name, mounted as `lyx <name>`, to one argv (a list of words) or a list of argvs run in order; a shortcut names lyx words only, and is added only by a commit to this file.
+It holds `attach` and `a` (both `[reed, attach]`), `prime` (`[[orch, start], [reed, attach]]`), and, since the `tender` task, `pause` (`[tender, pause]`) and `resume` (`[tender, resume]`).
+So `lyx pause` and `lyx resume` are already shortcuts; what this section adds is a one-letter or short form beside them, the way `a` sits beside `attach`.
+
+Proposed names, for the operator to confirm: `p` for `[tender, pause]` and `r` for `[tender, resume]`.
+Whether to add them at all, and which names, is the operator's call.
