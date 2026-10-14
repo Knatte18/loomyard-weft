@@ -174,6 +174,13 @@ None.
   - d5-revive-sends-keys (class design, severity MEDIUM, open in rounds 4)
 <!-- /lyx:carry-over Discussion-Review -->
 
+<!-- lyx:carry-over Plan-Review -->
+- Plan-Review, round 3: converged; each finding below was fixed or disputed by the round's fixer, and no fresh reviewer has seen the result; the fixer report says which.
+  Review: _lyx/reviews/plan/round-3-review.md; fixer report: _lyx/reviews/plan/round-3-fixer-report.md.
+  - held-page-row-page1-30ms-slack (class design, severity MEDIUM, open in rounds 3)
+  - paste-row-unreachable-apierr-parser (class consistency, severity MEDIUM, open in rounds 3)
+<!-- /lyx:carry-over Plan-Review -->
+
 ## Acceptance criteria
 
 - `lyx tender pause`, `resume`, `revive` and `status` exist; `lyx pause` and `lyx resume` run them with slug and flags forwarded; `lyx --help` lists no top-level `pause` or `resume` module.
