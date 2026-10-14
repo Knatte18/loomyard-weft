@@ -1,8 +1,8 @@
 # Card 13 — pr-rework-seats
 
 **Create:**
-- `plan:internal/loomengine#ReworkTable` -> `func ReworkTable(layout *lyxcwd.Location, stencilsDir, specsDir string, cfg Config, reg modelspec.Registry, firstCard int, priorPlanDir string) (seatengine.Table, error)`
-- `plan:internal/loomengine#TestReworkTable` -> `func TestReworkTable(t *testing.T)`
+- `internal/loomengine#ReworkTable`
+- `internal/loomengine#TestReworkTable`
 
 **Delete:**
 - `internal/loomengine#TestReworkSpec`

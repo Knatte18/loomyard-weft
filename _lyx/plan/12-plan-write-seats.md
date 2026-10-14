@@ -1,8 +1,8 @@
 # Card 12 — plan-write-seats
 
 **Create:**
-- `plan:internal/loomengine#PlanTable` -> `func PlanTable(layout *lyxcwd.Location, dirs configengine.Dirs, stencilsDir, specsDir string, cfg Config, reg modelspec.Registry) (seatengine.Table, error)`
-- `plan:internal/loomengine#TestPlanTable` -> `func TestPlanTable(t *testing.T)`
+- `internal/loomengine#PlanTable`
+- `internal/loomengine#TestPlanTable`
 
 **Delete:**
 - `internal/loomengine#TestPlanSpec`

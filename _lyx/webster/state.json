@@ -1,6 +1,6 @@
 {
   "runGuid": "50dde7a59fc8df99eb2686fde35c19df",
-  "planFingerprint": "f5c2ff571f54c9fdea11eb5c5aaa54db3993d3b8a9f32cb528dd610f3e3559ec",
+  "planFingerprint": "af569db22d0444fa03352bef62046cba8cc0c14902a40dc76a18d1aa14ddebeb",
   "planFileHashes": {
     "00-overview.md": "42e322575ccdd0a5890994f90bf399708d6a4af309219028a4a1eda7bcb9d6cd",
     "01-shed-bounce-routed-to.md": "6b28c27ae1cfaa2fca6622946da3e7cef200f41e351bf644462000a5ace298e3",
@@ -14,14 +14,14 @@
     "09-seat-lead-amendment.md": "e5895ce81f5d04aea211ae55237f79059a1ea9e9b7fa475cfe3c67f009cf965f",
     "10-multillm-amendment.md": "9b619bc50518c08661ea4509350b21284c7410ef322a2d7e377197f91ece8acf",
     "11-discussion-write-seats.md": "c8cf6f9622de71c79ff054c19451e5544bb4edbcef028eaa31752c97391e69d5",
-    "12-plan-write-seats.md": "a73f128f87ff1d746fdbc9f6a3a7de7ef8d93fe0924fb22817b5f365f7ced423",
-    "13-pr-rework-seats.md": "70b86902f3f9f10a4ae0cb0fcbfd840ec929ba539bd636c13c86daa31e81569c",
-    "14-describe-seats.md": "86f9d40a8f3df0ddf0b5932a5538b34af601c38761dd8e82d9b93fae2f94380b",
-    "15-darn-write-seats.md": "f4b44ced822e1e315147962ccb1303d719ea1febf437cbc844aa3e0bcd405c0e",
+    "12-plan-write-seats.md": "0f9136f17055d3a4263fe3fb3864f149376439b040f422522ed2916181367009",
+    "13-pr-rework-seats.md": "bdff829fd4908a1fe8e52aca35fac1da160636fc1f13cee8a701d8cf9d450d6a",
+    "14-describe-seats.md": "eceafff59f2ab07041944d56ddaa9e48da9f1c11f439fe20ac827c5ace96244a",
+    "15-darn-write-seats.md": "ed07b6bcce3c92a679d162eadfe43431eb0b2aaf4406f3420fb15acbcc919d99",
     "16-shuttle-seam-move.md": "96907039700f173d30834436afe2f38a3864b7ca897b46edd26dd128c455ced4",
     "17-single-llm-delete.md": "6c17fe7e23132843f30604b8a7a5746108aa6a00ea3aa69b4cf773dcc211f280",
-    "18-retired-builders-delete.md": "550b08281dfd2976711e6f96a56a8e93e8a7e1539d9c19c318a30e49da540055",
-    "19-loom-config-axes.md": "fc90175dd7d3ff61ee08e03248621fe950f27bebed842c837a0a0ff40554fe13",
+    "18-retired-builders-delete.md": "923871f377b45d6adfee1d3bdadd245da41113261c6d38941b17da835e3e9c8a",
+    "19-loom-config-axes.md": "377d805254e4e5cfdd7b841044128eaca5c0ce9dac0be74eec00f05a01236649",
     "20-seat-names-delete.md": "aeb21299dce1f12ae807c6686f8be7beee81ab3a614b7132809787daf5758caa"
   },
   "planOverviewFrameHash": "aa849accb9677141386aef407200fe635533949f11a7ddbcabf2f914802e80e1",
@@ -578,7 +578,7 @@
       }
     }
   ],
-  "currentBatch": 12,
+  "currentBatch": 0,
   "masterStrand": "8658427a8147d936d244a19ba3d56491",
   "masterSessionId": "f89f830f-dc11-4772-8b04-5e5563696e53",
   "batches": {
@@ -676,18 +676,51 @@
         "16-shuttle-seam-move"
       ],
       "cardHashes": {
-        "12-plan-write-seats": "a73f128f87ff1d746fdbc9f6a3a7de7ef8d93fe0924fb22817b5f365f7ced423",
-        "13-pr-rework-seats": "70b86902f3f9f10a4ae0cb0fcbfd840ec929ba539bd636c13c86daa31e81569c",
-        "14-describe-seats": "86f9d40a8f3df0ddf0b5932a5538b34af601c38761dd8e82d9b93fae2f94380b",
-        "15-darn-write-seats": "f4b44ced822e1e315147962ccb1303d719ea1febf437cbc844aa3e0bcd405c0e",
+        "12-plan-write-seats": "0f9136f17055d3a4263fe3fb3864f149376439b040f422522ed2916181367009",
+        "13-pr-rework-seats": "bdff829fd4908a1fe8e52aca35fac1da160636fc1f13cee8a701d8cf9d450d6a",
+        "14-describe-seats": "eceafff59f2ab07041944d56ddaa9e48da9f1c11f439fe20ac827c5ace96244a",
+        "15-darn-write-seats": "ed07b6bcce3c92a679d162eadfe43431eb0b2aaf4406f3420fb15acbcc919d99",
         "16-shuttle-seam-move": "96907039700f173d30834436afe2f38a3864b7ca897b46edd26dd128c455ced4"
       },
       "startSha": "4789360dcdfc6a9dae99716dfb8a012d694ecdce",
       "kind": "fork",
       "spawnedAt": "2026-10-14T18:35:09Z",
       "sessionId": "f89f830f-dc11-4772-8b04-5e5563696e53",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "12-plan-write-seats",
+        "status": "done",
+        "head_sha": "374efea4fff12746a4b666c6cb4a68763d637f85",
+        "deviations": [
+          "contracts/specs/shed-recipe-spec.md",
+          "contracts/stencils/darn/darn-template-write.md",
+          "contracts/stencils/landing/landing-template-describe-darn.md",
+          "contracts/stencils/landing/landing-template-describe.md",
+          "contracts/stencils/loom/loom-template-plan.md",
+          "contracts/stencils/loom/loom-template-rework.md",
+          "internal/darnengine/spec_test.go",
+          "internal/landingshed/describe_test.go",
+          "internal/landingshed/seam_enforcement_test.go",
+          "internal/loomengine/plan.go",
+          "internal/loomengine/plan_test.go",
+          "internal/loomrecipe/fixture_test.go",
+          "internal/shedadapters/shuttle.go",
+          "internal/shedbuild/build_engines_test.go",
+          "internal/shedrecipe/entries_planwrite_test.go",
+          "internal/shedrecipe/entries_prrework_test.go",
+          "internal/shedrecipe/fixture_test.go"
+        ]
+      },
+      "cardShas": [
+        "374efea4fff12746a4b666c6cb4a68763d637f85"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-overview-seats/f89f830f-dc11-4772-8b04-5e5563696e53/subagents/agent-aa703fbe9ddb4b8fd.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-overview-seats/f89f830f-dc11-4772-8b04-5e5563696e53/subagents/agent-aa703fbe9ddb4b8fd.jsonl"
+      ]
     },
     "7": {
       "slug": "checklist-pause-net-time",
@@ -737,6 +770,7 @@
   "seenForkTranscripts": [
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-overview-seats/f89f830f-dc11-4772-8b04-5e5563696e53/subagents/agent-aa1c7f80a754a0e6d.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-overview-seats/f89f830f-dc11-4772-8b04-5e5563696e53/subagents/agent-afb622a27158d58e5.jsonl",
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-overview-seats/f89f830f-dc11-4772-8b04-5e5563696e53/subagents/agent-ab55823d16eaf07ee.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-overview-seats/f89f830f-dc11-4772-8b04-5e5563696e53/subagents/agent-ab55823d16eaf07ee.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-overview-seats/f89f830f-dc11-4772-8b04-5e5563696e53/subagents/agent-aa703fbe9ddb4b8fd.jsonl"
   ]
 }

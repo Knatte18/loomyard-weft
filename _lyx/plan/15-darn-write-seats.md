@@ -1,7 +1,7 @@
 # Card 15 — darn-write-seats
 
 **Create:**
-- `plan:internal/darnengine#DarnTable` -> `func DarnTable(in DarnInputs, cfg Config, reg modelspec.Registry) (seatengine.Table, error)`
+- `internal/darnengine#DarnTable`
 
 **Edit:**
 - `internal/darnengine/doc.go`

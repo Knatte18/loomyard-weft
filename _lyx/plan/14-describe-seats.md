@@ -1,9 +1,9 @@
 # Card 14 — describe-seats
 
 **Create:**
-- `plan:internal/landingshed#DescribeTable` -> `func DescribeTable(in DescribeInputs, cfg Config, reg modelspec.Registry) (seatengine.Table, error)`
-- `plan:internal/landingshed#DarnDescribeTable` -> `func DarnDescribeTable(in DarnDescribeInputs, cfg Config, reg modelspec.Registry) (seatengine.Table, error)`
-- `plan:internal/landingshed#describeSessionTable` -> `func describeSessionTable(stencilName, descriptionPath string, markers map[string]string, cfg Config, reg modelspec.Registry) (seatengine.Table, error)`
+- `internal/landingshed#DescribeTable`
+- `internal/landingshed#DarnDescribeTable`
+- `internal/landingshed#describeSessionTable`
 
 **Edit:**
 - `internal/landingshed#newDescribeInputs`

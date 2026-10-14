@@ -19,8 +19,8 @@
 - `internal/loomcli#loomCLI.wireDarn`
 - `internal/loomcli#loomCLI.wire`
 - `internal/loomengine#TestDiscussionTable`
-- `plan:internal/loomengine#TestPlanTable`
-- `plan:internal/loomengine#TestReworkTable`
+- `internal/loomengine#TestPlanTable`
+- `internal/loomengine#TestReworkTable`
 - `internal/landingshed#TestDescribeSpec_ComposesSpec`
 - `internal/landingshed#TestDarnDescribeSpec`
 - `internal/darnengine#TestDarnSpec`

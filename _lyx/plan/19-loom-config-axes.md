@@ -32,7 +32,7 @@
 - `internal/loomengine#twillLenses` -> `func twillLenses(dirs configengine.Dirs, fan, key string) ([]twilldirective.Lens, error)`
 - `internal/loomengine#DiscussionAdvisorNotes` -> `func DiscussionAdvisorNotes(l *lyxcwd.Location, name string) string`
 - `internal/loomengine#DiscussionTable`
-- `plan:internal/loomengine#PlanTable`
+- `internal/loomengine#PlanTable`
 - `internal/loomengine#templateConfig`
 - `internal/loomengine#TestLoadConfig_Loads`
 - `internal/loomengine#TestLoadConfig_Refuses`
@@ -40,7 +40,7 @@
 - `internal/loomengine#discussionTableConfig`
 - `internal/loomengine#TestDiscussionTable`
 - `internal/loomengine#TestDiscussionTable_Refuses`
-- `plan:internal/loomengine#TestPlanTable`
+- `internal/loomengine#TestPlanTable`
 - `internal/shedrecipe#planWriteGateSpec`
 - `internal/loomcli#TestWire_DiscussionTableEvaluatesToExpectedShape`
 - `internal/loomcli#TestNewParentReviewConfig_KeepAliveInterval`
