@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-14 14:35 UTC; every age below is as of then.
+Rendered 2026-10-14 14:37 UTC; every age below is as of then.
 
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
@@ -17,7 +17,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | **tender: hub-wide pause, resume, revive and stale-binary restart**<br>• A tender module holds hub-wide pause, resume, revive and stale-binary restart, and a pause no longer consumes a call deadline | [`tender`](design-tender.md) | loom | Plan-Burler-Fix | 1d | 1d | shuttle, reed, batten, shed, orch, loom |
+| 1 | **tender: hub-wide pause, resume, revive and stale-binary restart**<br>• A tender module holds hub-wide pause, resume, revive and stale-binary restart, and a pause no longer consumes a call deadline | [`tender`](design-tender.md) | loom | Plan-Bouncer | 1d | 1d | shuttle, reed, batten, shed, orch, loom |
 
 ### Ready
 
@@ -27,7 +27,7 @@ Waits on nothing open; can start now.
 
 | # | Task | Slug | Recipe | After | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | **Twill: spawn lens forks after the files are written**<br>• Discussion-Write and Plan-Write spawn their lens forks once the files are written and checked; forks review what they inherited, no ready-marker wait | [`twill-spawn-after`](design-twill-spawn-after.md) | loom |  | 0m | 0m | loom, stencil |
+| 1 | **Twill: spawn lens forks after the files are written**<br>• Discussion-Write and Plan-Write spawn their lens forks once the files are written and checked; forks review what they inherited, no ready-marker wait | [`twill-spawn-after`](design-twill-spawn-after.md) | loom |  | 1m | 1m | loom, stencil |
 
 ## Notes
 
@@ -69,8 +69,8 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 13 | **Make shuttle and lyx neutral to the LLM provider**<br>• Engine registry, engine in run.json, no Claude names in the core, usage readers behind the engine | [`llm-agnostic-engine`](design-llm-agnostic-engine.md) | 1d | 1d | shuttle, config, stencil |
 | 14 | **Tune the Burler lens fan prompts**<br>• Revisit the parked lens fan with lens and fork prompts that overlap less, measured against solo on the fan-lab fixtures | [`fan-prompt-tuning`](design-fan-prompt-tuning.md) | 1d | 1d | burler, stencil |
 | 15 | **Seed the VS Code config of each pair when it is made**<br>• Write the title-bar color and .vscode config that lyx ide spawn writes when a pair is made, so code . gives the same | [`seed-vscode-config`](design-seed-vscode-config.md) | 1d | 1d | ide, batten |
-| 16 | **Overview window: one combined log and checklist, no stuck for a bounce**<br>• A bounce reads stuck, finished rows show in both log and checklist, paused time counts as row time | [`overview-window-tidy`](design-overview-window-tidy.md) | 15m | 2m | reed, shed, loom |
-| 17 | **Seat names: none for a lone seat, operator-chosen names for several, no chair**<br>• burler-review-chair shows chair even with one seat; let the operator name seats | [`seat-names`](design-seat-names.md) | 8m | 5m | shed, burler, reed |
+| 16 | **Overview window: one combined log and checklist, no stuck for a bounce**<br>• A bounce reads stuck, finished rows show in both log and checklist, paused time counts as row time | [`overview-window-tidy`](design-overview-window-tidy.md) | 17m | 4m | reed, shed, loom |
+| 17 | **Seat names: none for a lone seat, operator-chosen names for several, no chair**<br>• burler-review-chair shows chair even with one seat; let the operator name seats | [`seat-names`](design-seat-names.md) | 10m | 7m | shed, burler, reed |
 
 #### Low priority
 
@@ -109,7 +109,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 15 | **Interactive board view: a regenerated HTML file and a phone-friendly README**<br>• board.html rendered with README on every write; a VS Code task opens it in the browser; collapsible README for the GitHub app | [`board-viewer`](design-board-viewer.md) | 9d | 8d | board, ide, orch |
 | 16 | **Spawn audit log: every process lyx starts is recorded and traceable**<br>• One recorded launch path and a hub-wide spawn log with owner, argv and resource use, plus a sampler and a summary verb, so a process storm can be traced after a crash | [`spawn-audit-log`](design-spawn-audit-log.md) | 5d | 2d | reed, shuttle, config |
 | 17 | **lyx orch start --continue resumes the last orch session**<br>• lyx orch records its session id so a reboot resumes the same orch conversation instead of a fresh one. | [`orch-continue`](design-orch-continue.md) | 2d |  | orch |
-| 18 | **Hibernate the machine on a trigger, such as a task landing**<br>• Let the operator trigger a hibernate through lyx, for instance once a task is done | [`hibernate-trigger`](design-hibernate-trigger.md) | 20m | 19m | batten |
+| 18 | **Hibernate the machine on a trigger, such as a task landing**<br>• Let the operator trigger a hibernate through lyx, for instance once a task is done | [`hibernate-trigger`](design-hibernate-trigger.md) | 22m | 21m | batten |
 
 #### Low priority
 
