@@ -1,0 +1,15 @@
+{
+  "number": 1,
+  "stop_key": {
+    "current_producer": "Webster",
+    "history_length": 20,
+    "state": "blocked"
+  },
+  "pause_before": "",
+  "pause_after": "",
+  "spawned_at": "2026-10-14T20:52:13.078781224+02:00",
+  "deadline": "2026-10-14T21:22:13.078781224+02:00",
+  "strand_guid": "ddee93d579bef8e18d29d1fe8b044030",
+  "envelope_path": "/home/knatte/Code/loomyard-LYXHUB/overview-seats/.lyx/shed/overview-seats/steps/efb82da6ec3fb3db.json",
+  "report_path": "/home/knatte/Code/loomyard-LYXHUB/overview-seats/_lyx/shed/overview-seats/drive-reports/drive-report-20261014-184845-e13d.md"
+}

@@ -1,0 +1,12 @@
+{
+  "verdict": "hand-on",
+  "reason": "Webster is blocked at begin-batch 17 by planglyph's delete-before-reference check: card 18 deletes internal/loomengine#PlanSpec while internal/loomengine/plan_test.go:79, inside TestPlanTable, still calls it, and card 19 lists TestPlanTable under Edit. The finding does not describe a real ordering fault. Card 18 also lists TestPlanTable under Edit, and its Intent drops the PlanSpec parity comparison from that test, so the call is gone before card 19 runs. deleteOrderFindings (internal/planglyph/deleteorder.go) checks only whether a later card's Edit region holds the reference. It does not exempt a reference that sits in a region the deleting card edits itself. The plan's suggested fix, moving the delete after card 19, does not work as written: card 19 deletes planTwillDirective and discussionTwillDirective on the premise that card 18 has already deleted their only callers, PlanSpec and DiscussionSpec. Clearing the stop therefore needs either a plan edit with \"lyx webster rebaseline\" or a fix to the check on main. An arbiter can do neither. No goto target clears it either: re-running Webster meets the same refusal, and Plan-Write would rewrite a plan whose cards 1 to 16 are already committed. No decision record or support-log entry settles which route to take.",
+  "question": "Webster's begin-batch 17 is refused by a delete-before-reference finding that looks false: card 18 deletes PlanSpec but also edits TestPlanTable, the only holder of the reference (plan_test.go:79), before card 19 edits it. Which route should clear it? (a) Fix internal/planglyph/deleteorder.go on main so a reference inside an Edit region of the deleting card, or of an earlier card, is not reported, then deploy and re-launch Webster. (b) Edit the plan, for example by folding card 18's TestPlanTable rewrite into a form the check accepts or by merging cards 18 and 19, then run \"lyx webster rebaseline --card NN\" for each edited card and re-launch Webster.",
+  "goto": "",
+  "verbs": [],
+  "cause": "",
+  "attempt": 1,
+  "attempt_dir": "/home/knatte/Code/loomyard-LYXHUB/overview-seats/_lyx/shed/overview-seats/arbiter/attempt-1",
+  "verdict_path": "/home/knatte/Code/loomyard-LYXHUB/overview-seats/_lyx/shed/overview-seats/arbiter/attempt-1/verdict.yaml",
+  "relaunch": ""
+}
