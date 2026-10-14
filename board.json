@@ -778,39 +778,6 @@
       "revised": "2026-10-14T15:03:28Z"
     },
     {
-      "id": 485,
-      "slug": "twb-fx-ia",
-      "title": "twill fixer bench pair twb-fx-ia",
-      "kind": "note",
-      "labels": [
-        "enhancement"
-      ],
-      "issues": [],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "Bench pair for twill-fork-timing, Plan-Write critical-fixer 2x2; torn down after the run",
-      "body": "Temporary bench pair for board note twill-fork-timing, Plan-Write critical-fixer 2x2 bench. Plan-Write only, from a frozen decision record.",
-      "created": "2026-10-14T15:17:10Z",
-      "revised": "2026-10-14T15:17:10Z"
-    },
-    {
-      "id": 486,
-      "slug": "twb-fx-ib",
-      "title": "twill fixer bench pair twb-fx-ib",
-      "kind": "note",
-      "labels": [
-        "enhancement"
-      ],
-      "issues": [],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "Bench pair for twill-fork-timing, Plan-Write critical-fixer 2x2; torn down after the run",
-      "body": "Temporary bench pair for board note twill-fork-timing, Plan-Write critical-fixer 2x2 bench. Plan-Write only, from a frozen decision record.",
-      "status": "paused · Plan-Bouncer",
-      "created": "2026-10-14T15:17:20Z",
-      "revised": "2026-10-14T15:17:20Z"
-    },
-    {
       "id": 487,
       "slug": "twb-fx-ic",
       "title": "twill fixer bench pair twb-fx-ic",
