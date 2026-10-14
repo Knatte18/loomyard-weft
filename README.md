@@ -19,7 +19,7 @@ Held by a run; its scope is locked until the run ends.
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | 1 | **Overview window tidy, seat names, Seats replaces SingleLLMProducer**<br>• Overview window log/checklist and bounce naming, seat names, and one MultiLLMProducer in place of SingleLLMProducer | [`overview-seats`](design-overview-seats.md) | loom | blocked · Webster | 3d | 2h | reed, shed, loom, burler |
 | 2 | **Twill fork0: blind lens review, strict critical fixer, branch-coverage lens**<br>• Plan-Write: fork0 writes the plan, the master spawns blind lens forks and judges as a strict Burler-style fixer; new branch-coverage lens | [`twill-fork0`](design-twill-fork0.md) | loom | paused · Plan-Write | 2d | 56m | loom, stencil, burler |
-| 3 | **Plan delete-order check reports a reference the deleting card itself rewrites**<br>• deleteOrderFindings must skip a reference inside an Edit region of the deleting card or an earlier card; it blocks overview-seats at Webster | [`delete-order-own-edit`](design-delete-order-own-edit.md) | darn | Darn-Bouncer | 21m | 21m | webster, loom |
+| 3 | **Plan delete-order check reports a reference the deleting card itself rewrites**<br>• deleteOrderFindings must skip a reference inside an Edit region of the deleting card or an earlier card; it blocks overview-seats at Webster | [`delete-order-own-edit`](design-delete-order-own-edit.md) | darn | Darn-Burler-Review | 21m | 21m | webster, loom |
 
 ### Ready
 
