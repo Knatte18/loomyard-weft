@@ -830,7 +830,7 @@
       "isolated": false,
       "brief": "Bench pair for twill-fork-timing, Plan-Write fork0 against after, both with the critical fixer",
       "body": "Temporary bench pair for board note twill-fork-timing, Plan-Write fork0 bench. Plan-Write only, from a frozen decision record.",
-      "status": "running · Loom-Preflight",
+      "status": "running · Discussion-Write",
       "created": "2026-10-14T16:49:54Z",
       "revised": "2026-10-14T16:49:54Z"
     },
