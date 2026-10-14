@@ -835,15 +835,16 @@
       "labels": [
         "enhancement",
         "reed",
-        "shed"
+        "shed",
+        "loom"
       ],
       "issues": [],
       "depends_on": [],
       "isolated": false,
       "brief": "A bounce reads stuck, finished rows show in both log and checklist, paused time counts as row time",
-      "body": "## Seen (2026-10-14, `tender`'s overview window)\n\n- The window shows a log (one line per attempt, with time, outcome and file) and below it a checklist (one line per recipe row, `[x]`, `[\u003e]`, `[ ]`, with total time and attempt count).\n  A finished row so stands twice, and the operator read it as a duplicate.\n- Plan-Bouncer showed `22h18m`: the pause and the overnight hibernate count as the row's time, though the row itself took 0 minutes.\n- Bouncer and Burler rows that bounce to the next round read `stuck`.\n\n## Wanted (operator, 2026-10-14)\n\n- No `stuck` for a bounce: the state machine is not stuck, a bounce is part of the normal flow; `stuck` would mean something sits fast.\n  Rename the outcome where it is shown (and consider the name in the shed recipe's `OnStuck` too), for instance `bounced`.\n- Make it clear which part is the log and which the checklist, or drop finished rows from the checklist since the log holds them.\n\n## Idea (operator, 2026-10-14)\n\nOne combined view instead of two parts: the checklist in recipe order, and under each row its log lines (time, outcome, file) fill in as the row runs.\nRows still to run stay as bare `[ ]` lines, so the view shows both what happened and what is left.\n\n## To consider\n\n- Paused time (`lyx pause`, hibernate) should not count as a row's time.\n",
+      "body": "## Seen (2026-10-14, `tender`'s overview window)\n\n- The window shows a log (one line per attempt, with time, outcome and file) and below it a checklist (one line per recipe row, `[x]`, `[\u003e]`, `[ ]`, with total time and attempt count).\n  A finished row so stands twice, and the operator read it as a duplicate.\n- Plan-Bouncer showed `22h18m`: the pause and the overnight hibernate count as the row's time, though the row itself took 0 minutes.\n- Bouncer and Burler rows that bounce to the next round read `stuck`.\n\n## Wanted (operator, 2026-10-14)\n\n- No `stuck` for a bounce: the state machine is not stuck, a bounce is part of the normal flow; `stuck` would mean something sits fast.\n  Rename the outcome where it is shown (and consider the name in the shed recipe's `OnStuck` too), for instance `bounced`.\n- Make it clear which part is the log and which the checklist, or drop finished rows from the checklist since the log holds them.\n\n## Idea (operator, 2026-10-14)\n\nOne combined view instead of two parts: the checklist in recipe order, and under each row its log lines (time, outcome, file) fill in as the row runs.\nRows still to run stay as bare `[ ]` lines, so the view shows both what happened and what is left.\n\n## Seen as well (operator, 2026-10-14)\n\n- The log groups lines by recipe row, so Discussion-Bouncer's seven lines stand before all Burler-Review and Burler-Fix lines, though the three rows took turns, round by round (bouncer, review, fix, bouncer, ...).\n  The order the run took is lost, and the log is hard to follow.\n- The arbiter is not in the log at all: round 3's circling escalation and its `continue` decision do not show.\n\nA view that fits both: within a review segment, lines grouped by round (round 1: bouncer, review, fix; round 2: ...), with the arbiter's spawn and decision shown in the round it decided.\nThis refines the combined view below: a segment's rows fill in round by round, not row by row.\n\n## To consider\n\n- Paused time (`lyx pause`, hibernate) should not count as a row's time.\n",
       "created": "2026-10-14T14:20:49Z",
-      "revised": "2026-10-14T14:22:58Z"
+      "revised": "2026-10-14T14:33:34Z"
     },
     {
       "id": 482,
