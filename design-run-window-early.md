@@ -1,6 +1,6 @@
 # Run window opens as soon as the worktree exists
 
-`run-window-early` · Task · enhancement, batten, reed, fabric · running · Darn-Burler-Review
+`run-window-early` · Task · enhancement, batten, reed, fabric · running · Darn-Burler-Fix
 
 ## Seen (operator, 2026-10-14)
 
