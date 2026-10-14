@@ -883,6 +883,25 @@
       "status": "paused · Plan-Bouncer",
       "created": "2026-10-14T17:43:32Z",
       "revised": "2026-10-14T17:43:32Z"
+    },
+    {
+      "id": 508,
+      "slug": "shed-tackler",
+      "title": "Go driver and tackler in shed, for every FSM-driven run",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "shed",
+        "loom",
+        "batten"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "Move the Go driver and tackler from loomcli into shed so darn, batten and every recipe get them; module config overrides model and budgets",
+      "body": "## Seen (2026-10-14)\n\nThe Go driver and the tackler landed in `1c812c1f8` for loom runs only.\nTheir code is in `internal/loomcli` (`drive.go`, `tackler.go`), and the keys `driver_kind`, `tackler`, `tackler_timeout_min` and `tackler_max_spawns` are loom config.\nDarn has no `driver_kind`, so a darn run always has an LLM driver.\nBatten steps its own shed run in Go but spawns no tackler: an unexpected stop there goes straight to the orch, and batten only reads whether a loom child's tackler or arbiter is in flight to hold its notice.\n\n## Wanted (operator, 2026-10-14)\n\nAny FSM can go wrong, so every shed-driven process needs the tackler, not only loom: darn, batten, and any later recipe.\nThe tackler, and the Go driver it sits behind, belong in shed as code.\nA module's own config can override the tackler's model and budgets, the way loom's keys do today.\n\n## Related\n\n`orch-split` (its \"Was `go-driven-shed`\" section) wants the same LLM involvement at every level; this note is the shed part of that.\n",
+      "created": "2026-10-14T17:56:13Z",
+      "revised": "2026-10-14T17:56:13Z"
     }
   ]
 }
