@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-14 15:01 UTC; every age below is as of then.
+Rendered 2026-10-14 15:02 UTC; every age below is as of then.
 
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
@@ -19,7 +19,6 @@ Held by a run; its scope is locked until the run ends.
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | 1 | **tender: hub-wide pause, resume, revive and stale-binary restart**<br>• A tender module holds hub-wide pause, resume, revive and stale-binary restart, and a pause no longer consumes a call deadline | [`tender`](design-tender.md) | loom | Webster | 1d | 1d | shuttle, reed, batten, shed, orch, loom |
 | 2 | **Darn: a decision record for mid-run scope corrections, and PR-Align**<br>• Darn has no decision record, so a mid-run scope correction never reaches its review; and no PR-Align row, so every darn PR waits for the orch at PR-Gate | [`claimed-scope-edit`](design-claimed-scope-edit.md) | loom | Discussion-Burler-Review | 1d | 1d | board, loom, burler |
-| 3 | **Twill: spawn lens forks after the files are written**<br>• Discussion-Write and Plan-Write spawn their lens forks once the files are written and checked; forks review what they inherited, no ready-marker wait | [`twill-spawn-after`](design-twill-spawn-after.md) | darn | Finalize | 25m | 20m | loom, stencil |
 
 ### Ready
 
@@ -129,3 +128,11 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 2 | **Re-measure the test suite weight on a quiet machine**<br>• The test-suite-weight before and after numbers were taken under load; rerun the report Regenerate section on an idle machine for a fair wall-time comparison | `suite-weight-quiet-rerun` | 4d | 1d |  |
 | 3 | **Twill: spawn lens forks before or after writing**<br>• A/B the twill spawn point, Discussion first: forks spawned before writing re-read the output as fresh cache writes, once per fork | [`twill-fork-timing`](design-twill-fork-timing.md) | 1d | 8m | loom, stencil |
 | 4 | **Lighter test rules for small changes**<br>• Tests that pin stencil wording make small prompt changes large; pin only what must hold, measured first | [`lighter-test-rules`](design-lighter-test-rules.md) | 1d | 1d | stencil |
+
+## Done
+
+Finished, awaiting `lyx board prune --apply`.
+
+| # | Entry | Slug | Age | Revised | Labels |
+| --- | --- | --- | --- | --- | --- |
+| 1 | **Twill: spawn lens forks after the files are written**<br>• Discussion-Write and Plan-Write spawn their lens forks once the files are written and checked; forks review what they inherited, no ready-marker wait | [`twill-spawn-after`](design-twill-spawn-after.md) | 26m | 20m | loom, stencil |
