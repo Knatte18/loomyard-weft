@@ -30,6 +30,14 @@ _None._
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
 
+### Bugs
+
+#### Normal priority
+
+| # | Note | Slug | Age | Revised | Labels |
+| --- | --- | --- | --- | --- | --- |
+| 1 | **Run window does not follow the newest agent window, sticks on Driver**<br>• An attached run window stays on the Driver window while later agents spawn; reed selects a window only at attach | [`reed-window-follow`](design-reed-window-follow.md) | 0m | 0m | reed |
+
 ### Enhancements
 
 #### High priority
