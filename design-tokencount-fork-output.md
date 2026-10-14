@@ -1,6 +1,6 @@
 # tokencount under-counts fork output tokens
 
-`tokencount-fork-output` · Task · bug · paused · Darn-Burler-Fix
+`tokencount-fork-output` · Task · bug · running · Darn-Burler-Fix
 
 ## Seen (`twill-fork-timing` bench, 2026-10-13)
 
