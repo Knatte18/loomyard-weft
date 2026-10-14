@@ -17,3 +17,12 @@ fix:
     model: sonnet
     effort: medium
     tokens_known: false
+judge:
+    - model: sonnet
+      effort: medium
+      start: 2026-10-14T19:22:27Z
+      end: 2026-10-14T21:22:46.106977826+02:00
+      wall_seconds: 19.106977826
+      tokens_known: true
+      fresh_tokens: 28000
+      cache_read_tokens: 151492
