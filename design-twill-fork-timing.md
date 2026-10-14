@@ -162,6 +162,6 @@ Eight runs, a 2x2 of writer timing (after, fork0) and judge (today's, a critical
 - The critical fixer turned down no real finding (today's judge turned down two), and all its disputes and its own fixes were right.
 - The judges are level on final-plan quality: each made 2 wrong dispositions, and the key score is within one or two items.
 - fork0 lenses found more real MEDIUM-or-above findings (23 against 7), but fork0 plans repeated slightly more key problems (after 7 R / 4 P, fork0 8 R / 5 P), so lens sharpness is not shown.
-- Shared lens blind spot: branches with no test row reaching them (KI2, KI4, KW4-type) were flagged by no lens in any arm, so no judge could fix them.
+- Shared lens blind spot: branches with no test row reaching them (KI2, KI4, KW4-type); no lens in any run flagged KI2 or KI4, every window plan repeats KW4 at least in part, and no judge can fix what no lens reports.
 
 A further bench, after against fork0 with the critical fixer in both, three references, one run each, was started on 2026-10-14 (operator).
