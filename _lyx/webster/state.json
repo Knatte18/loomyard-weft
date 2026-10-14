@@ -1,6 +1,6 @@
 {
   "runGuid": "536c546e8bfeed4b8edb7ceecbc98003",
-  "planFingerprint": "7a7bee72442c4035a2922c49ad6a15df76b60bff29fe9761195a79c332ce3329",
+  "planFingerprint": "0c00664199e0b58d957d5cd31e705dba88f39ee7d159c9bcbbacb433bd5e4c49",
   "planFileHashes": {
     "00-overview.md": "78cdc52679e80a7805a018d5e3525ffded09b0169d5f5fc6de50ebba91f725b8",
     "01-pauserecord-network-held.md": "28f97329e709280faae540010a6c0a7b5146b5a4fa8a918381b30eaf1e6e683c",
@@ -10,9 +10,9 @@
     "05-orch-conditional-notice.md": "63719fafbe05009e1301d6162e68d035f31fd52c06d8505c4110c27ca4947234",
     "06-orch-watch-binary-reexec.md": "c46af52082be654d6c9715e78343cabf7888d8f3a9691811ea89f17450df1165",
     "07-proc-process-listing.md": "80d5cee8cacf9a94892faf8de463c0771f93df616bdc8015adea8fb5838b0b96",
-    "08-tender-command.md": "adae94db43d6ca896bbb3c4c5c9f6d43d99369c92bcf779a0f755269a0691622",
-    "09-tender-status.md": "1ccb9980901304ff8b438ae8606108910c0aa3f1a658609008f1547dba0a8ef6",
-    "10-tender-revive.md": "367c9bb2cb6eb9a4016ab8d9d3e62cdfe1b953807ac301a010cc380336c5d4f3",
+    "08-tender-command.md": "1141dbc1c653f59965c1518bdc5e4dfb48dfd71d121da2e533b0a71e3f24c7e0",
+    "09-tender-status.md": "a6d6ff8d8935b98084292e1efb579127722a0cc5daf8861b5b8fc5127e379427",
+    "10-tender-revive.md": "51b934f6a3f0c4e063ae23a4a5b5062bc75828af427e801b322299c4c6a804df",
     "11-reed-attach-exec.md": "1c3740f818b430c2a2da41c64aa466c4de609e2c986859d1f33936acda6712ef",
     "12-tender-rename.md": "c2bff1470cfe6fb059f23925316010fdecbf22ec786ebc931f05c9d3249a7ef1"
   },
@@ -366,9 +366,9 @@
       ],
       "cardHashes": {
         "07-proc-process-listing": "80d5cee8cacf9a94892faf8de463c0771f93df616bdc8015adea8fb5838b0b96",
-        "08-tender-command": "adae94db43d6ca896bbb3c4c5c9f6d43d99369c92bcf779a0f755269a0691622",
-        "09-tender-status": "1ccb9980901304ff8b438ae8606108910c0aa3f1a658609008f1547dba0a8ef6",
-        "10-tender-revive": "367c9bb2cb6eb9a4016ab8d9d3e62cdfe1b953807ac301a010cc380336c5d4f3",
+        "08-tender-command": "1141dbc1c653f59965c1518bdc5e4dfb48dfd71d121da2e533b0a71e3f24c7e0",
+        "09-tender-status": "a6d6ff8d8935b98084292e1efb579127722a0cc5daf8861b5b8fc5127e379427",
+        "10-tender-revive": "51b934f6a3f0c4e063ae23a4a5b5062bc75828af427e801b322299c4c6a804df",
         "11-reed-attach-exec": "1c3740f818b430c2a2da41c64aa466c4de609e2c986859d1f33936acda6712ef",
         "12-tender-rename": "c2bff1470cfe6fb059f23925316010fdecbf22ec786ebc931f05c9d3249a7ef1"
       },

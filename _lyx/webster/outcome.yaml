@@ -1,0 +1,3 @@
+outcome: stuck
+stuck_reason: "batch 07-proc-process-listing: record-batch and then recover-batch both refused with batch_failed; the done-check says plan handles for cards 8-10 (internal/pausecli#resumeCmd, #pauseCmd, #statusCmd, internal/pauseengine#SessionStatus, #Revive and others) still do not resolve, and the recovery ended with 'way forward: lyx webster recover-batch 07'"
+batches_done: 1

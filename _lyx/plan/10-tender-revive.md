@@ -19,17 +19,17 @@
 - `cmd/lyx/testdata/test-budget.yaml`
 
 **Create:**
-- `plan:internal/pauseengine#ReviveLine` -> `const ReviveLine = "[lyx] Your last turn stopped on an API error. Carry on where you stopped: rerun the tool call that failed. If nothing was cut, end your turn."`
-- `plan:internal/pauseengine#ReviveRequest` -> `type ReviveRequest struct`
-- `plan:internal/pauseengine#ReviveReport` -> `type ReviveReport struct`
-- `plan:internal/pauseengine#OrchRevive` -> `type OrchRevive struct`
-- `plan:internal/pauseengine#Revive` -> `func Revive(deps Deps, req ReviveRequest) (ReviveReport, error)`
-- `plan:internal/pauseengine#reviveSession` -> `func reviveSession(deps Deps, s session, report *ReviveReport) error`
-- `plan:internal/pauseengine#reviveOrch` -> `func reviveOrch(deps Deps, record pauserecord.Record) (*OrchRevive, error)`
-- `plan:internal/pauseengine#fakePair.SendConditioned` -> `func (p *fakePair) SendConditioned(guid, text string, want shuttleengine.SendCondition) (bool, error)`
-- `plan:internal/pauseengine#TestRevive` -> `func TestRevive(t *testing.T)`
-- `plan:internal/pausecli#reviveCmd` -> `func reviveCmd() *cobra.Command`
-- `plan:internal/pausecli#shuttlePair.SendConditioned` -> `func (p shuttlePair) SendConditioned(guid, text string, want shuttleengine.SendCondition) (bool, error)`
+- `plan:internal/tenderengine#ReviveLine` -> `const ReviveLine = "[lyx] Your last turn stopped on an API error. Carry on where you stopped: rerun the tool call that failed. If nothing was cut, end your turn."`
+- `plan:internal/tenderengine#ReviveRequest` -> `type ReviveRequest struct`
+- `plan:internal/tenderengine#ReviveReport` -> `type ReviveReport struct`
+- `plan:internal/tenderengine#OrchRevive` -> `type OrchRevive struct`
+- `plan:internal/tenderengine#Revive` -> `func Revive(deps Deps, req ReviveRequest) (ReviveReport, error)`
+- `plan:internal/tenderengine#reviveSession` -> `func reviveSession(deps Deps, s session, report *ReviveReport) error`
+- `plan:internal/tenderengine#reviveOrch` -> `func reviveOrch(deps Deps, record pauserecord.Record) (*OrchRevive, error)`
+- `plan:internal/tenderengine#fakePair.SendConditioned` -> `func (p *fakePair) SendConditioned(guid, text string, want shuttleengine.SendCondition) (bool, error)`
+- `plan:internal/tenderengine#TestRevive` -> `func TestRevive(t *testing.T)`
+- `plan:internal/tendercli#reviveCmd` -> `func reviveCmd() *cobra.Command`
+- `plan:internal/tendercli#shuttlePair.SendConditioned` -> `func (p shuttlePair) SendConditioned(guid, text string, want shuttleengine.SendCondition) (bool, error)`
 
 **Intent:**
 `lyx tender revive [<slug>]` gives one fixed carry-on line to each session stalled on an API error, the case a network outage without a machine sleep leaves behind (D5).

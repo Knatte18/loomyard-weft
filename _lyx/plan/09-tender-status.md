@@ -16,15 +16,15 @@
 - `docs/overview.md`
 
 **Rename:**
-- `internal/pausecli#shuttlePair.state` -> `plan:internal/pausecli#shuttlePair.State`
+- `internal/pausecli#shuttlePair.state` -> `plan:internal/tendercli#shuttlePair.State`
 
 **Create:**
-- `plan:internal/pauseengine#SessionStatus` -> `type SessionStatus struct`
-- `plan:internal/pauseengine#StaleReport` -> `type StaleReport struct`
-- `plan:internal/pauseengine#StaleProcess` -> `type StaleProcess struct`
-- `plan:internal/pauseengine#sessionStatuses` -> `func sessionStatuses(deps Deps, record pauserecord.Record) ([]SessionStatus, error)`
-- `plan:internal/pauseengine#staleProcesses` -> `func staleProcesses(processes []proc.Process, hubPath, executable string) []StaleProcess`
-- `plan:internal/pauseengine#fakePair.State` -> `func (p *fakePair) State(guid string) (shuttleengine.SessionState, error)`
+- `plan:internal/tenderengine#SessionStatus` -> `type SessionStatus struct`
+- `plan:internal/tenderengine#StaleReport` -> `type StaleReport struct`
+- `plan:internal/tenderengine#StaleProcess` -> `type StaleProcess struct`
+- `plan:internal/tenderengine#sessionStatuses` -> `func sessionStatuses(deps Deps, record pauserecord.Record) ([]SessionStatus, error)`
+- `plan:internal/tenderengine#staleProcesses` -> `func staleProcesses(processes []proc.Process, hubPath, executable string) []StaleProcess`
+- `plan:internal/tenderengine#fakePair.State` -> `func (p *fakePair) State(guid string) (shuttleengine.SessionState, error)`
 
 **Intent:**
 `lyx tender status` becomes the one read-only view of what runs, waits, stalls or runs stale in the hub (D3, D7).

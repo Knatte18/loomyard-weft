@@ -14,11 +14,11 @@
 - `pattern/PATTERN-cli-cobra.md`
 
 **Rename:**
-- `internal/pausecli#ResumeCommand` -> `plan:internal/pausecli#resumeCmd`
+- `internal/pausecli#ResumeCommand` -> `plan:internal/tendercli#resumeCmd`
 
 **Create:**
-- `plan:internal/pausecli#pauseCmd` -> `func pauseCmd() *cobra.Command`
-- `plan:internal/pausecli#statusCmd` -> `func statusCmd() *cobra.Command`
+- `plan:internal/tendercli#pauseCmd` -> `func pauseCmd() *cobra.Command`
+- `plan:internal/tendercli#statusCmd` -> `func statusCmd() *cobra.Command`
 
 **Intent:**
 The pause module becomes the `tender` module's one cobra subtree, with `lyx pause` and `lyx resume` kept as shortcuts (D1, D2, D3, D4).
