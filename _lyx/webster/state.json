@@ -1,6 +1,6 @@
 {
   "runGuid": "72954bbc75060e0845127daa537d6305",
-  "planFingerprint": "6d1a48f4f7894c2e6e41f10ea6cf73c81640885082d605b9a20844ebb2a9a39a",
+  "planFingerprint": "91c15b1cd0313a90d5ece77be2c847d7c1b851995f4e2bf5583578c4c4e214e9",
   "planFileHashes": {
     "00-overview.md": "968040f042ffcc935693c9d45b1c010a9a8e19ecb272d0cfa159f8add3d5d7dd",
     "01-discussion-spec.md": "397f38c545e0df4ab242bdab754c74171759b01369a19eac2cd1ce85b2d94981",
@@ -13,8 +13,8 @@
     "08-darn-writer-record.md": "8dd6ff21dfa5bcea9eb765df48f7c98d6b463a4a9b18187ff1876bc2acf99eeb",
     "09-darn-describe-record.md": "88b3617f4ae7c25d76790745235399de46916fb514eda7857a6b88d86aac6e9b",
     "10-darn-review-scope.md": "9e7e5367d893ed09bb459ff4f1249bd3d56d5d15ca0413dd479a746e75c16581",
-    "11-alignment-pr-gate-measure.md": "373e3024d3d56e0112500aca0d5bc0e9de713a02ecca8a91c0934bfb71be272c",
-    "12-darn-pr-align-wiring.md": "fe229894bfb85631cf6254bcb2963d7719b42765c2365be26b661ce3afb5fc59",
+    "11-alignment-pr-gate-measure.md": "437f1d88c193e0c61ba8a453bca77a4f4d118cfb325567f6ecdced0b9a952fe6",
+    "12-darn-pr-align-wiring.md": "1b94c2a282bed17670995d8f4bb2c97df5fe3e92c27f32b2644b09c12e5e5d1d",
     "13-darn-recipe-rows.md": "3f6b6341095ef50b28b2d783ee212ce368c7b5ab786174e160f7995259dd39c6",
     "14-orch-correction-guidance.md": "aad1bc72c5070ff652364fad5d9ebe6f3da6336303dd9e7826bf8e4c8201dfc2"
   },
@@ -329,7 +329,7 @@
       }
     }
   ],
-  "currentBatch": 10,
+  "currentBatch": 0,
   "masterStrand": "5d5412f02fafe30d78f8f33fb0631227",
   "masterSessionId": "a9da6aec-5f1a-4cba-a1a7-37417a148270",
   "batches": {
@@ -385,8 +385,8 @@
       ],
       "cardHashes": {
         "10-darn-review-scope": "9e7e5367d893ed09bb459ff4f1249bd3d56d5d15ca0413dd479a746e75c16581",
-        "11-alignment-pr-gate-measure": "373e3024d3d56e0112500aca0d5bc0e9de713a02ecca8a91c0934bfb71be272c",
-        "12-darn-pr-align-wiring": "fe229894bfb85631cf6254bcb2963d7719b42765c2365be26b661ce3afb5fc59",
+        "11-alignment-pr-gate-measure": "437f1d88c193e0c61ba8a453bca77a4f4d118cfb325567f6ecdced0b9a952fe6",
+        "12-darn-pr-align-wiring": "1b94c2a282bed17670995d8f4bb2c97df5fe3e92c27f32b2644b09c12e5e5d1d",
         "13-darn-recipe-rows": "3f6b6341095ef50b28b2d783ee212ce368c7b5ab786174e160f7995259dd39c6",
         "14-orch-correction-guidance": "aad1bc72c5070ff652364fad5d9ebe6f3da6336303dd9e7826bf8e4c8201dfc2"
       },
@@ -394,8 +394,22 @@
       "kind": "fork",
       "spawnedAt": "2026-10-14T16:02:13Z",
       "sessionId": "a9da6aec-5f1a-4cba-a1a7-37417a148270",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "10-darn-review-scope",
+        "status": "done",
+        "head_sha": "04de13f3cb47337a83790e8a6b43fac344756a1f"
+      },
+      "cardShas": [
+        "04de13f3cb47337a83790e8a6b43fac344756a1f"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-claimed-scope-edit/a9da6aec-5f1a-4cba-a1a7-37417a148270/subagents/agent-ae9d3bc65245d6e7d.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-claimed-scope-edit/a9da6aec-5f1a-4cba-a1a7-37417a148270/subagents/agent-ae9d3bc65245d6e7d.jsonl"
+      ]
     },
     "6": {
       "slug": "validate-discussion-darn",
@@ -440,6 +454,7 @@
   },
   "seenForkTranscripts": [
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-claimed-scope-edit/a9da6aec-5f1a-4cba-a1a7-37417a148270/subagents/agent-a5ed13d6f0ca313dc.jsonl",
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-claimed-scope-edit/a9da6aec-5f1a-4cba-a1a7-37417a148270/subagents/agent-a9c90ae39e516f636.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-claimed-scope-edit/a9da6aec-5f1a-4cba-a1a7-37417a148270/subagents/agent-a9c90ae39e516f636.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-claimed-scope-edit/a9da6aec-5f1a-4cba-a1a7-37417a148270/subagents/agent-ae9d3bc65245d6e7d.jsonl"
   ]
 }

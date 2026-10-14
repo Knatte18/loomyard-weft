@@ -14,8 +14,8 @@
 - `internal/loomcli/doc.go`
 
 **Uses:**
-- `plan:internal/alignment#MeasureLoom`
-- `plan:internal/alignment#MeasureDarn`
+- `internal/alignment#MeasureLoom`
+- `internal/alignment#MeasureDarn`
 - `internal/loomengine#DiscussionDecisionRecord`
 - `internal/loomengine#DiscussionSupportLog`
 - `internal/discussionparser#AppendDecision`

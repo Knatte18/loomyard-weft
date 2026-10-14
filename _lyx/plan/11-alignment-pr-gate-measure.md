@@ -3,11 +3,11 @@
 **Create:**
 - `contracts/stencils/loom/loom-fragment-pr-gate-loom.md`
 - `contracts/stencils/loom/loom-fragment-pr-gate-darn.md`
-- `plan:contracts/stencils#LoomFragmentPRGateLoom` -> `var LoomFragmentPRGateLoom []byte`
-- `plan:contracts/stencils#LoomFragmentPRGateDarn` -> `var LoomFragmentPRGateDarn []byte`
-- `plan:internal/alignment#MeasureLoom` -> `const MeasureLoom = "loom-fragment-pr-gate-loom"`
-- `plan:internal/alignment#MeasureDarn` -> `const MeasureDarn = "loom-fragment-pr-gate-darn"`
-- `plan:internal/alignment#readMeasure` -> `func readMeasure(stencilsDir, name string) (string, error)`
+- `contracts/stencils#LoomFragmentPRGateLoom`
+- `contracts/stencils#LoomFragmentPRGateDarn`
+- `internal/alignment#MeasureLoom`
+- `internal/alignment#MeasureDarn`
+- `internal/alignment#readMeasure`
 
 **Edit:**
 - `contracts/stencils#entries`
