@@ -578,7 +578,7 @@
       }
     }
   ],
-  "currentBatch": 0,
+  "currentBatch": 12,
   "masterStrand": "8658427a8147d936d244a19ba3d56491",
   "masterSessionId": "f89f830f-dc11-4772-8b04-5e5563696e53",
   "batches": {
@@ -665,6 +665,29 @@
       "bracketTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-overview-seats/f89f830f-dc11-4772-8b04-5e5563696e53/subagents/agent-ab55823d16eaf07ee.jsonl"
       ]
+    },
+    "12": {
+      "slug": "plan-write-seats",
+      "cards": [
+        "12-plan-write-seats",
+        "13-pr-rework-seats",
+        "14-describe-seats",
+        "15-darn-write-seats",
+        "16-shuttle-seam-move"
+      ],
+      "cardHashes": {
+        "12-plan-write-seats": "a73f128f87ff1d746fdbc9f6a3a7de7ef8d93fe0924fb22817b5f365f7ced423",
+        "13-pr-rework-seats": "70b86902f3f9f10a4ae0cb0fcbfd840ec929ba539bd636c13c86daa31e81569c",
+        "14-describe-seats": "86f9d40a8f3df0ddf0b5932a5538b34af601c38761dd8e82d9b93fae2f94380b",
+        "15-darn-write-seats": "f4b44ced822e1e315147962ccb1303d719ea1febf437cbc844aa3e0bcd405c0e",
+        "16-shuttle-seam-move": "96907039700f173d30834436afe2f38a3864b7ca897b46edd26dd128c455ced4"
+      },
+      "startSha": "4789360dcdfc6a9dae99716dfb8a012d694ecdce",
+      "kind": "fork",
+      "spawnedAt": "2026-10-14T18:35:09Z",
+      "sessionId": "f89f830f-dc11-4772-8b04-5e5563696e53",
+      "terminal": false,
+      "status": ""
     },
     "7": {
       "slug": "checklist-pause-net-time",
