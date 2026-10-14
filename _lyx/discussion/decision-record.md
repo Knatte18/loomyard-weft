@@ -118,6 +118,12 @@ Out:
 13. **Sandbox coverage.**
     The `hibernate` module is excluded from the sandbox suite with the reason that its daemon hibernates the host (`PATTERN-sandbox-coverage`).
 
+### Added after Discussion (operator, 2026-10-14): Shortcuts p and r confirmed
+
+Decision: Keep p: [tender, pause] and r: [tender, resume] in internal/shortcutcli/shortcuts.yaml as built (Decision 12): lyx p and lyx r are aliases of lyx pause and lyx resume.
+
+Rationale: The operator confirmed the auto-picked names at PR-Gate.
+
 ## Constraints
 
 - `PATTERN-guarded-interrupt`, `PATTERN-pane-text-injection`: the daemon sends nothing to a pane itself.
