@@ -1,5 +1,18 @@
 round: 1
 fan: ""
+review:
+    model: opus
+    effort: medium
+    start: 2026-10-14T17:26:34Z
+    end: 2026-10-14T19:33:30.104022101+02:00
+    wall_seconds: 416.104022101
+    tokens_known: true
+    fresh_tokens: 217207
+    cache_read_tokens: 8068927
+    forks: 0
+    fork_fresh_tokens: 0
+    fork_cache_read_tokens: 0
+    fork_fresh_share: 0
 seed:
     - model: sonnet
       effort: medium
