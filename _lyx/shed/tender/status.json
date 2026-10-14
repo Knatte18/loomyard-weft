@@ -1,12 +1,12 @@
 {
   "current_producer": "Publish",
-  "state": "running",
-  "error": "",
+  "state": "blocked",
+  "error": "publish_verify failed after merging parent branch \"main\" (exit code 1); output: /home/knatte/Code/loomyard-LYXHUB/tender/.lyx/verify/verify-7.log; way forward: run \"lyx loom goto --to Webster-Burler-Review\", then \"lyx loom resume\", in the task worktree; the Webster-Review round reads the Publish failure record and its gate runs the failing tests",
   "pause_requested": false,
   "activity": {
     "now": "Publish",
-    "last": "Merge-Bouncer → done",
-    "wait": ""
+    "last": "Publish → stuck",
+    "wait": "publish_verify failed after merging parent branch \"main\" (exit code 1); output: /home/knatte/Code/loomyard-LYXHUB/tender/.lyx/verify/verify-7.log; way forward: run \"lyx loom goto --to Webster-Burler-Review\", then \"lyx loom resume\", in the task worktree; the Webster-Review round reads the Publish failure record and its gate runs the failing tests"
   },
   "history": [
     {
@@ -291,6 +291,12 @@
       "outcome": "done",
       "output": "/home/knatte/Code/loomyard-LYXHUB/tender/_lyx/reviews/merge/round-1-bouncer-ledger.md",
       "at": "2026-10-14T15:24:48Z"
+    },
+    {
+      "producer": "Publish",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-14T15:27:04Z"
     }
   ],
   "product": {
