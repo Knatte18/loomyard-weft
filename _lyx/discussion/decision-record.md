@@ -66,17 +66,30 @@ Rationale: this is the benched arm f (`docs/research/twill-fork0-bench.md`), who
 ### D3. fork0 when something goes wrong
 
 Plan-Write's one output file is the overview, and under `PATTERN-completion-signal` a run whose output files exist counts as finished however its session ended.
-fork0 writes the overview before the master reads, self-checks and runs the lens review, so the paths are:
+fork0 writes the overview before the master reads, self-checks and runs the lens review.
+A session that ends comes back one of two ways: shuttle respawns a fresh session, or reed resumes the same conversation through the strand's `ResumeCmd` (`--resume` on the same session id, as after a hibernate), which keeps the conversation and loses every fork it had spawned; a gated run's strand carries no done-when list, so reed resumes it even when the overview exists.
+The paths are:
 
 - fork0 returns and the overview is missing, or the self-check fails: the master completes or fixes the plan itself per the host's format steps and self-check; it spawns no second fork0.
-- The master's session ends before the overview exists: shuttle respawns a fresh session, whose plan-directory rotation archives the partial card files as today; the new master runs the whole procedure from Step 1, fork0 included.
-- The master's session ends after the overview exists: the run counts as finished, and the gate re-prompts on `lens-review-missing` or on its plan findings.
+- The master's session ends before the overview exists and shuttle respawns a fresh session: its plan-directory rotation archives the partial card files as today; the new master runs the whole procedure from Step 1, fork0 included.
+- A master resumed in the same conversation while its fork0 call was in flight has lost fork0 and spawns no second one: it reads every plan file on disk in full, completes the plan itself per the host's format steps and self-check as in the first path, then runs the lens review once.
+- A master resumed in the same conversation before its fork0 call runs the procedure on from the first step it had not finished, fork0 included, since the bound still allows it one fork0.
+- A master resumed in the same conversation after fork0 returned and before its lens spawn call spawns no second fork0: it finishes D2 step 4 (reading the plan files in full and the self-check) if that is unfinished, then runs the lens review once.
+- A master resumed in the same conversation at or after its lens spawn call has lost every lens fork it spawned and never spawns again: it resumes at the first step from judging the findings onward that it had not finished, with the findings it already holds, and records that the lens review was cut short, naming each fork that had not returned as no report.
+- The master's session ends after the overview exists: the run counts as finished.
+  If the session is still live, the gate re-prompts it on `lens-review-missing` or on its plan findings.
+  If it is no longer live, shuttle's liveness finalize evaluates the gate once over the files as they stand, with no re-prompt, so a run with no recorded lens review fails `lens-review-missing` instead of passing; a later resume of that session takes the matching resumed path above.
 - A re-prompted master (a gate re-prompt or a parent-review reject) spawns no fork0 and edits the plan itself.
   If it has not yet read the plan per D2 step 4, it does that first.
   If it has not yet made its lens spawn call, it runs the lens review once; otherwise it spawns no lens forks.
   This re-prompt rule is host-neutral and holds at Discussion-Write too, where the same window exists between the record's write and the lens review.
 
-Bound: each master session spawns fork0 at most once and lens forks at most once; a respawned session counts as a new master, as a respawned writer does today.
+Bound: each master session spawns fork0 at most once and lens forks at most once; a respawned session counts as a new master, as a respawned writer does today, and a resumed one does not.
+
+These paths replace the twill directive's two relaunch paragraphs ("relaunched after its process died before its Agent call" and "at or after its Agent call"), which key on a single Agent call that fork0 makes ambiguous: the writer-fork part of D4 renders them in place of those paragraphs.
+The re-prompt rule also replaces the directive's sentence "A gate re-prompt, a parent-review reject or a later turn of the same session never spawns forks again." at every host, Discussion-Write included, so no rendered prompt carries it.
+A reed resume of the same conversation is governed by the resumed paths above or, at a host with no writer fork, by the two relaunch paragraphs, never by that sentence.
+A host that asks for no writer fork, Discussion-Write among them, makes one Agent call and keeps the two paragraphs as they are.
 
 Rationale: the overview-last rule and the completion signal already decide which path a run takes, so no new state is needed; without the re-prompt rule, a session that ended between fork0 and the lens spawn would pass the gate with a lens review that ran no fork.
 
@@ -105,7 +118,10 @@ The directive's step 4 ("Judge every finding with the same skepticism … {{.rej
 - Give it exactly one of three dispositions, decided in this order; severity decides how a finding is reported, not whether it is weighed.
   - **Dispute**, on one of two grounds: `premise false` (the premise is false against what was read), or `every fix worse` (the premise holds, but every change that addresses it makes the reviewed files worse).
     One sound change means the finding is fixed, not disputed.
-    The evidence is cited text opened in this session (a `path:line` or glyph, a `PATTERN` entry, a test or caller the change would break, or the self-check's output) and what it shows against the finding.
+    The evidence is cited text opened in this session, of the host's evidence kinds, and what it shows against the finding.
+    The kinds arrive as a host value, like the governing input.
+    At Plan-Write they are a `path:line` or glyph, a `PATTERN` entry, a test or caller the change would break, or the self-check's output.
+    At Discussion-Write they are the board entry, the discussion spec, the rubric, a `PATTERN` entry, the self-check's output, or a coarse code read within the writer's Step 2 bound, with no `path:line` required.
     Severity, size, cost, taste, and disagreement with the rubric or `PATTERN` never justify a dispute.
     A finding not refuted from what was read is not disputed.
     Keeping a waiver, a deferral or an unplanned test against a finding is a dispute and needs the same evidence.
@@ -162,20 +178,29 @@ Rationale: the miss (J6 in `docs/research/twill-plan-bench.md`) is a card depart
 
 ## Open risks
 
-- fork0 leaves the master without the writer's reasoning when it fixes findings; the benches saw no harm at Plan-Write, but no bench measured the critical judge at Discussion-Write.
+- fork0 leaves the master without the writer's reasoning when it fixes findings; the benches saw no harm at Plan-Write, but no bench measured the critical judge at Discussion-Write, nor whether its design-level evidence kinds (D6), bounded by the writer's Step 2 ban on exact signatures and `file:line` citations, let it refute a finding as often as the code-level kinds do at Plan-Write.
 - A hub `burler.yaml` that overrides the `twill-plan` fan keeps its own lens list and misses `branch-coverage` until it is edited; the prime hub overrides no twill fan today.
 - If Plan-Write starts before `overview-seats` lands, the plan meets today's keys and hosts and conflicts with that task's cards on the twill hosts and their tests.
+
+<!-- lyx:carry-over Discussion-Review -->
+- Discussion-Review, round 3: converged; each finding below was fixed or disputed by the round's fixer, and no fresh reviewer has seen the result; the fixer report says which.
+  Review: _lyx/reviews/discussion/round-3-review.md; fixer report: _lyx/reviews/discussion/round-3-fixer-report.md.
+  - d3-reprompt-contradicts-directive-sentence (class design, severity MEDIUM, open in rounds 3)
+<!-- /lyx:carry-over Discussion-Review -->
 
 ## Acceptance criteria
 
 - With Plan-Write's lens forks on, the rendered Plan-Write prompt carries:
   - the fork0 procedure (explore without designing, read the rubric once, spawn fork0, read the finished plan in full, self-check) and fork0's prompt;
-  - each failure path of D3 as its own rule: fork0 returns an incomplete plan, the session ends before the overview exists, the session ends after it, and a re-prompted master that has not made its lens spawn call;
+  - each failure path of D3 as its own rule: fork0 returns an incomplete plan, the session ends before the overview exists and is respawned, a master resumed before its fork0 call, a master resumed while fork0 was in flight, a master resumed after fork0 returned and before its lens spawn call, a master resumed at or after its lens spawn call, the session ends after the overview exists (live and no longer live), and a re-prompted master, which spawns no fork0, reads the plan per D2 step 4 first if it has not, runs the lens review once if it has not made its lens spawn call, and spawns no lens forks if it has;
+  - D3's paths in place of the directive's two Agent-call relaunch paragraphs, which it does not carry;
+  - no copy of the directive's sentence that a gate re-prompt, a parent-review reject or a later turn of the same session never spawns forks again;
   - the critical-fixer judge step with its three dispositions and the step 5 record line;
   - the host-neutral fork boilerplate of D5;
   - `branch-coverage` among its lenses.
 - With Plan-Write's lens forks off, the rendered Plan-Write prompt carries no twill text, as `overview-seats` leaves it.
-- With Discussion-Write's lens forks on, with and without advisors, the rendered lead prompt carries the critical-fixer judge step, the D5 boilerplate and the re-prompt rule, and no fork0 part; no advisor prompt carries any of it.
+- With Discussion-Write's lens forks on, with and without advisors, the rendered lead prompt carries the critical-fixer judge step, the D5 boilerplate, the re-prompt rule and the directive's two relaunch paragraphs, and neither a fork0 part nor the directive's sentence that a gate re-prompt, a parent-review reject or a later turn of the same session never spawns forks again; no advisor prompt carries any of it.
+- The rendered judge step names each host's dispute evidence kinds from D6: at Plan-Write the code-level kinds, at Discussion-Write the board entry, the discussion spec, the rubric, a `PATTERN` entry, the self-check's output and a coarse code read, with no `path:line` required.
 - The directive renderer fails with an error naming the marker when a required host value is empty, the writer-fork values included when a host asks for a writer fork.
 - The twill stencils carry no host-specific name, the writer-fork part included.
 - The resolved `twill-plan` fan lists `criteria-coverage`, `branch-coverage`, `row-reachability`, `forced-edits` and `test-economy`; `forced-edits` carries the registration sentence and `criteria-coverage` the operand sentence.
