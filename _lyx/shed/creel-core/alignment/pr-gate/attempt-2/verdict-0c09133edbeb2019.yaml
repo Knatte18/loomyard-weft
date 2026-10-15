@@ -1,0 +1,9 @@
+verdict: approve
+reason: >-
+  The run matches the creel-core goal and decisions D1-D20.
+  Attempt 1's D8 deviation is fixed by card 17: read, read --from and read --all now return the sets the board names, pinned by TestStore_Mail and TestDaemon_Protocol.
+  The merged engine-registry change agrees with D17 (a record-less strand uses the set's default engine).
+  No peer's design conflicts; creel-core (row 22) lands first, and engine-config-seams and engine-model-choice take its changes at Merge-In.
+  The D20 board-body cut is still owed at landing.
+question: ""
+superseded: []
