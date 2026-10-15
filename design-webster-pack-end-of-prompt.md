@@ -13,7 +13,7 @@ The end-of-prompt variant of the fork prompt: the one-turn read instruction and 
 It sits behind a `webster.yaml` switch, like `kickstart_pack`, so it can be compared against today's layout on real runs and turned off again.
 
 Operator decision (2026-10-15): build it behind a switch and measure it on ordinary runs rather than with a replay bench.
-The switch is on in the hub default once landed.
+Orch's call, not the operator's: the switch is on in the hub default once landed, so ordinary runs measure it.
 
 ## Measuring afterwards
 
