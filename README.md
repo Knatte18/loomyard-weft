@@ -25,7 +25,12 @@ Held by a run; its scope is locked until the run ends.
 
 Waits on nothing open; can start now.
 
-_None._
+#### Normal priority
+
+| # | Task | Slug | Recipe | After | Age | Revised | Labels |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| 1 | **Show the orch context size in the prime overview window**<br>• The prime overview window shows the orch session context tokens against its thresholds beside the batten runs | [`orch-context-overview`](design-orch-context-overview.md) | loom |  | 15h | 15h | orch, batten |
+| 2 | **Spawned code roles load the hub language skills**<br>• Darn, Webster, Burler and merge sessions write Go without scribe:golang-* skills; the hub config should name its language skills | [`role-language-skills`](design-role-language-skills.md) | loom |  | 14h | 14h | config, shuttle |
 
 ### Layer A
 
@@ -73,21 +78,19 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 10 | **Tune the Burler lens fan prompts**<br>• Revisit the parked lens fan with lens and fork prompts that overlap less, measured against solo on the fan-lab fixtures | [`fan-prompt-tuning`](design-fan-prompt-tuning.md) | 2d | 2d | burler, stencil |
 | 11 | **Verification protocol for a .NET repo: slow-suite tier, numerical-baseline capture/compare, verify timeouts and logs** | [`dotnet-verify-protocol`](design-dotnet-verify-protocol.md) | 18h | 18h | loom, webster, config |
 | 12 | **Run verbs in one shared namespace, not under lyx loom**<br>• lyx loom decision/status/goto/approve act on darn runs too; move recipe-neutral run verbs to one shared namespace | [`run-verbs-shared`](design-run-verbs-shared.md) | 16h | 16h | shed, loom |
-| 13 | **Show the orch context size in the prime overview window**<br>• The prime overview window shows the orch session context tokens against its thresholds beside the batten runs | [`orch-context-overview`](design-orch-context-overview.md) | 15h | 15h | orch, batten |
-| 14 | **Clearer loom model key names, one per step**<br>• Model keys like fix name the role they set, and every review segment gets its own reviewer and fixer key | [`loom-model-key-names`](design-loom-model-key-names.md) | 14h | 14h | config, loom |
-| 15 | **Spawned code roles load the hub language skills**<br>• Darn, Webster, Burler and merge sessions write Go without scribe:golang-* skills; the hub config should name its language skills | [`role-language-skills`](design-role-language-skills.md) | 14h | 14h | config, shuttle |
-| 16 | **Fork the Burler fixer from the reviewer session**<br>• The fixer re-reads the context the reviewer just read; fork it from the reviewer to reuse the cache | [`burler-fixer-fork`](design-burler-fixer-fork.md) | 3h | 3h | burler |
-| 17 | **The arbiter in shed for every shed run, batten included**<br>• The batten Go driver has a tackler but no arbiter; move the arbiter and its keys into shed beside the tackler | [`shed-arbiter-all`](design-shed-arbiter-all.md) | 1h | 1h | shed, batten, loom, config |
-| 18 | **Plan cards name added tests by Create handle, never a plain test-file path**<br>• Drop the Edit exception for a test file the card only adds tests to; the Create plan handle carries the file | [`plan-test-file-path`](design-plan-test-file-path.md) | 39m | 39m | loom, stencil |
-| 19 | **Paste cited code into a review rounds context**<br>• Reviewers edit nothing and review a fixed commit, so code pasted at round start cannot go stale; measure it against todays reviewer | [`review-inline-code`](design-review-inline-code.md) | 9m | 8m | burler, stencil |
+| 13 | **Clearer loom model key names, one per step**<br>• Model keys like fix name the role they set, and every review segment gets its own reviewer and fixer key | [`loom-model-key-names`](design-loom-model-key-names.md) | 14h | 14h | config, loom |
+| 14 | **Fork the Burler fixer from the reviewer session**<br>• The fixer re-reads the context the reviewer just read; fork it from the reviewer to reuse the cache | [`burler-fixer-fork`](design-burler-fixer-fork.md) | 3h | 3h | burler |
+| 15 | **The arbiter in shed for every shed run, batten included**<br>• The batten Go driver has a tackler but no arbiter; move the arbiter and its keys into shed beside the tackler | [`shed-arbiter-all`](design-shed-arbiter-all.md) | 1h | 1h | shed, batten, loom, config |
+| 16 | **Plan cards name added tests by Create handle, never a plain test-file path**<br>• Drop the Edit exception for a test file the card only adds tests to; the Create plan handle carries the file | [`plan-test-file-path`](design-plan-test-file-path.md) | 39m | 39m | loom, stencil |
+| 17 | **Paste cited code into a review rounds context**<br>• Reviewers edit nothing and review a fixed commit, so code pasted at round start cannot go stale; measure it against todays reviewer | [`review-inline-code`](design-review-inline-code.md) | 9m | 8m | burler, stencil |
 
 #### Low priority
 
 | # | Note | Slug | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| 20 | **Fabric's Windows path behaviour verified on a Windows host**<br>• Unverified after six hardening rounds; needs a Windows host, not design; take it only if Windows becomes relevant | [`fabric-windows`](design-fabric-windows.md) | 11d | 5d | fabric |
-| 21 | **warp-visibility: CLAUDE.local.md invisible in the Fabric repo's git history**<br>• Expose CLAUDE.local.md by symlink so nothing lyx-related shows in the Fabric repo's history; the constraints half is out of date | [`warp-visibility`](design-warp-visibility.md) | 10d |  | ide, fabric |
-| 22 | **Windows verify timeout kills the whole process tree**<br>• On Windows the verifytree timeout kills only the shell, not the process tree it started | [`verify-watchdog`](design-verify-watchdog.md) | 7d | 2d | shed |
+| 18 | **Fabric's Windows path behaviour verified on a Windows host**<br>• Unverified after six hardening rounds; needs a Windows host, not design; take it only if Windows becomes relevant | [`fabric-windows`](design-fabric-windows.md) | 11d | 5d | fabric |
+| 19 | **warp-visibility: CLAUDE.local.md invisible in the Fabric repo's git history**<br>• Expose CLAUDE.local.md by symlink so nothing lyx-related shows in the Fabric repo's history; the constraints half is out of date | [`warp-visibility`](design-warp-visibility.md) | 10d |  | ide, fabric |
+| 20 | **Windows verify timeout kills the whole process tree**<br>• On Windows the verifytree timeout kills only the shell, not the process tree it started | [`verify-watchdog`](design-verify-watchdog.md) | 7d | 2d | shed |
 
 ### Features
 
