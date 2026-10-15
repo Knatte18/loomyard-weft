@@ -308,7 +308,7 @@
       }
     }
   ],
-  "currentBatch": 1,
+  "currentBatch": 0,
   "masterStrand": "9b5d66aec3da73a49c887c9db722ae35",
   "masterSessionId": "4bda0955-d804-438f-978f-3ec2ff46fb8f",
   "batches": {
@@ -328,8 +328,27 @@
       "kind": "fork",
       "spawnedAt": "2026-10-15T12:27:13Z",
       "sessionId": "4bda0955-d804-438f-978f-3ec2ff46fb8f",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "failed",
+      "digest": {
+        "batch": "01-durfmt",
+        "status": "failed",
+        "head_sha": "43a93ff51278dce7416658743d186faf0df42e56",
+        "reasons": [
+          "batch 01-durfmt holds cards 1-durfmt, 2-sleepjournal, 3-settle-records-shedrun",
+          "create-not-done/2-sleepjournal[blocking]: Create target \"plan:internal/sleepjournal#TestParse\" still does not resolve: looked up \"internal/sleepjournal#TestParse\", quarry answered not_found (the unit exists and the member is missing)",
+          "create-not-done/3-settle-records-shedrun[blocking]: Create target \"plan:internal/shedrun#TestParseSettleRecords\" still does not resolve: looked up \"internal/shedrun#TestParseSettleRecords\", quarry answered not_found (the unit exists and the member is missing)"
+        ]
+      },
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-report-timing/4bda0955-d804-438f-978f-3ec2ff46fb8f/subagents/agent-a410985c520cdf01d.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-report-timing/4bda0955-d804-438f-978f-3ec2ff46fb8f/subagents/agent-a410985c520cdf01d.jsonl"
+      ]
     }
-  }
+  },
+  "seenForkTranscripts": [
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-report-timing/4bda0955-d804-438f-978f-3ec2ff46fb8f/subagents/agent-a410985c520cdf01d.jsonl"
+  ]
 }
