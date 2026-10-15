@@ -104,7 +104,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 14 | **Module labels from what a task touches, not only what it is about**<br>• Half the landings that changed the shuttle core lacked the shuttle label; derive or check module labels from the plan and the diff | [`labels-from-diff`](design-labels-from-diff.md) | 3h | 3h | board, loom |
 | 15 | **Start one task per overlapping group at a newly-ready start**<br>• When a landing makes several overlapping tasks ready at once, batten starts one per group and names the rest in its notice | [`batten-ready-overlap`](design-batten-ready-overlap.md) | 1h | 1h | batten |
 | 16 | **lyx shuttle open cannot choose the permission mode**<br>• An interactive session opened by lyx shuttle open always prompts for permissions; there is no flag or config for bypass | [`shuttle-open-permission`](design-shuttle-open-permission.md) | 1h | 1h | shuttle |
-| 17 | **A research step between Discussion and Plan that settles what is relevant**<br>• A separate agent reads the approved Discussion and the code and hands Plan-Write a compact record of what is relevant, so the plan lead and its forks start from a small context | [`plan-research-step`](design-plan-research-step.md) | 4m | 4m | loom, stencil |
+| 17 | **Discussion hands Plan a list of the relevant code**<br>• A separate agent reads the approved Discussion and the code and hands Plan-Write a compact record of what is relevant, so the plan lead and its forks start from a small context | [`plan-research-step`](design-plan-research-step.md) | 5m | 0m | loom, stencil |
 
 #### Low priority
 

@@ -1,4 +1,4 @@
-# A research step between Discussion and Plan that settles what is relevant
+# Discussion hands Plan a list of the relevant code
 
 `plan-research-step` · Note · enhancement, loom, stencil
 
@@ -21,3 +21,13 @@ An alternative: a separate agent between Discussion and Plan does the research a
 - The research agent can run on a cheaper model, and its own exploration context is dropped when it ends.
 - Risk: the plan writer re-explores anyway, or the record misses something and the plan goes wrong; measure with tokencount and plan review findings before and after.
 - Related notes: `fan-master-preread`, `review-inline-code`.
+
+## Discussion so far (2026-10-15)
+
+- Orch: model price matters little here, since nearly all tokens are cache reads (tokencount estimates about $2.7 per weighted million for the Opus plan lead against $2.0 for the Sonnet Webster forks); the gain comes from a smaller context, and a separate research agent adds a handoff that may lose understanding.
+- Orch proposal, not decided: no new role; the Discussion writer, which already reads the relevant code, writes a separate file beside its discussion (for example `relevant.md`) listing the files and members it found relevant, in plain code names with one line of why each, not glyphs; the discussion prose stays free of glyphs.
+  Plan-Write starts by reading that list and may read more.
+  Discussion-Review does not review the list as design, so the review does not grow.
+  Measure the plan lead peak context and the Plan cost with tokencount over a few runs before and after.
+- Operator view, not a decision: the Discussion agent has already looked at everything relevant, so the list records what it read and found relevant, with no extra search for Plan.
+- Operator: discuss further before this becomes a task.
