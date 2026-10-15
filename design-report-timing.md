@@ -14,6 +14,10 @@ The operator wants it as a tool, not an LLM job.
   Fewer orch wakes alone can hide that load moved to the arbiter; the stop count itself shows whether runs converge.
   Check whether `lyx report convergence` already counts arbiter and alignment outcomes, and share its record reading.
 
+## Operator decision (2026-10-15): seconds, not only minutes
+
+Every duration the report prints carries seconds, not whole minutes only, the way the run status pane shows them since `run-pane-timing`.
+
 ## How the 2026-10-12 agent computed it
 
 - Landed runs from the `archive/<slug>/*` tags in the records repository, runs in flight from `<slug>-weft`; each run's start from the hub `Seed-Child` row.
