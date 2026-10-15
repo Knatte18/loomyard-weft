@@ -1,0 +1,8 @@
+verdict: reject
+reason: >-
+  Scope deviation: the change breaks D8. D8 and its acceptance criterion say read, read --from and read --all return the sets the board names
+  (read: the oldest unread message plus every other unread message from the same sender; read --all: every unread message).
+  Store.Read follows plan card 7 instead: plain read returns every unread message from every sender, and read --all adds read messages still retained.
+  The overlap with engine-registry (shuttle Send/Interrupt lookup, PATTERN-pane-text-injection, PATTERN.md headroom lines) is consistent in design;
+  creel-core (row 22) lands first and engine-registry (row 17) takes its changes at Merge-In.
+question: ""
