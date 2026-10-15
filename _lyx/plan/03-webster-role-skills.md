@@ -10,7 +10,7 @@
 - `internal/websterengine_test#TestRecoverSpawnOrAttach`
 
 **Uses:**
-- `plan:internal/languageconfig#AppendSkills`
+- `internal/languageconfig#AppendSkills`
 
 **Intent:**
 The Webster master and recovery strand load the told language list after `roleSkills` (D4).

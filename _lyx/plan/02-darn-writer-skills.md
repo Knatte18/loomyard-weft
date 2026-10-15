@@ -7,7 +7,7 @@
 - `internal/darnengine#TestDarnSpec`
 
 **Uses:**
-- `plan:internal/languageconfig#AppendSkills`
+- `internal/languageconfig#AppendSkills`
 
 **Intent:**
 The darn writer gains `scribe:testing` (D6) and loads the told language list after its own (D4).

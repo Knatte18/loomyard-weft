@@ -1,9 +1,9 @@
 # Card 5 — loom-wiring
 
 **Create:**
-- `plan:internal/loomcli#TestWire_LanguageSkills` -> `func TestWire_LanguageSkills(t *testing.T)`
-- `plan:internal/loomcli#loomCLI.wireLanding` -> `func (c *loomCLI) wireLanding() error`
-- `plan:internal/loomcli#TestWireLanding_TellsLanguageSkills` -> `func TestWireLanding_TellsLanguageSkills(t *testing.T)`
+- `internal/loomcli#TestWire_LanguageSkills`
+- `internal/loomcli#loomCLI.wireLanding`
+- `internal/loomcli#TestWireLanding_TellsLanguageSkills`
 
 **Edit:**
 - `internal/loomcli#loomCLI`
@@ -14,7 +14,7 @@
 - `contracts/specs/refusal-spec.md`
 
 **Uses:**
-- `plan:internal/languageconfig#Load`
+- `internal/languageconfig#Load`
 - `internal/darnengine#DarnInputs`
 - `internal/websterengine#RunDeps`
 - `internal/landingshed#Deps`

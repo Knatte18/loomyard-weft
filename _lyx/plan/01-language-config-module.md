@@ -7,11 +7,11 @@
 - `internal/languageconfig/config.go`
 - `internal/languageconfig/config_test.go`
 - `internal/languageconfig/testmain_test.go`
-- `plan:internal/languageconfig#ConfigTemplate` -> `func ConfigTemplate() string`
-- `plan:internal/languageconfig#ConfigSpec` -> `func ConfigSpec() configengine.Spec`
-- `plan:internal/languageconfig#ErrUnusable` -> `var ErrUnusable = errors.New("language config unusable")`
-- `plan:internal/languageconfig#Load` -> `func Load(dirs configengine.Dirs) ([]string, error)`
-- `plan:internal/languageconfig#AppendSkills` -> `func AppendSkills(own, language []string) []string`
+- `internal/languageconfig#ConfigTemplate`
+- `internal/languageconfig#ConfigSpec`
+- `internal/languageconfig#ErrUnusable`
+- `internal/languageconfig#Load`
+- `internal/languageconfig#AppendSkills`
 
 **Edit:**
 - `internal/configreg#Modules`

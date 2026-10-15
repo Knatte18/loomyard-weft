@@ -1,15 +1,15 @@
 {
   "runGuid": "0634b471948e5397b3b2b9cd5b9b7d48",
-  "planFingerprint": "6b305c8fed613c31c483ce3d99900c5fc6c4cd1b0e2a7621ccacc114ba8f407b",
+  "planFingerprint": "4b9f3966a29f4970a0f38ba60adb6478ab80a70d15a1cab982947a42f4142556",
   "planFileHashes": {
     "00-overview.md": "121a83f8d979c5a42cabf6b640a4ef2579d4a7a88da8d7e77c841b7e2cc60021",
-    "01-language-config-module.md": "d595a2ee31438f6f53b190b3cdd797b5f66cbf150752ab48b4ba83e217a2d8fd",
-    "02-darn-writer-skills.md": "2316f386321bac18728b2838aed7c07bf0ef7b124941c90d3e139c52e4141f93",
-    "03-webster-role-skills.md": "be79f3d4845c48e52af7574e641084bc1cdf49c0ad45b07259729fc0c2f95591",
-    "04-conflict-session-skills.md": "39fd9495088a257fb6d9feda3b058bbc274eac0643c3f589d592fa9373b88b1e",
-    "05-loom-wiring.md": "7c32b5cc6edcc7b8f3990905ba2228584600c0003a2876cfc894ce846cb5af61",
-    "06-webster-wiring.md": "f8fab1938fbb4a979edbbf3d3661f855ea065a0cd0e5ddf63666d7d67b3fe9bb",
-    "07-burler-seat-skills.md": "5ec1e357464cabb008a22266586c4476d93917a81d2612222aae30aabedd7051",
+    "01-language-config-module.md": "bb8acbc96e6b96739065f7fbd77ed3ce8a607f802357ef813987d72571569c44",
+    "02-darn-writer-skills.md": "032a31b84e539b274b6a11a40501e0278b7b7567a34fb9a5f84a630ad21ed8a0",
+    "03-webster-role-skills.md": "134b99a6faf0903253b7ea13a215a469da24427876480b7d2931c5d13231442a",
+    "04-conflict-session-skills.md": "42a0e891f03d06213728d2a3981539fad49f75926616becf817752adda0f0216",
+    "05-loom-wiring.md": "eba408ae3a7cb936918cdd8c77b519535803a5a8d6cc6fc76017348829eb253e",
+    "06-webster-wiring.md": "5eed7256d17db6d741a1b6782d73e95c8d9e309326f2f1f3117eb3bb509f8281",
+    "07-burler-seat-skills.md": "2cf4599243c852fe18caa828482be8427d7115a8fb64b33ee5cef75c7991ad4d",
     "08-burler-profile-key.md": "37dedfdc0419ae89b32be66c147cad2bb31ad7db98d3869d75d51d6099bd8d0f",
     "09-recipe-code-rounds.md": "f9107dad6086ceeae01dedb122cf432cad2b48d26c36af5e2414464c501e358e"
   },
@@ -208,7 +208,7 @@
       }
     }
   ],
-  "currentBatch": 1,
+  "currentBatch": 0,
   "masterStrand": "4055370d3477c0c9065480d91a80d796",
   "masterSessionId": "43646314-f3b4-45bf-ac33-38ebc27cce71",
   "batches": {
@@ -222,18 +222,42 @@
         "05-loom-wiring"
       ],
       "cardHashes": {
-        "01-language-config-module": "d595a2ee31438f6f53b190b3cdd797b5f66cbf150752ab48b4ba83e217a2d8fd",
-        "02-darn-writer-skills": "2316f386321bac18728b2838aed7c07bf0ef7b124941c90d3e139c52e4141f93",
-        "03-webster-role-skills": "be79f3d4845c48e52af7574e641084bc1cdf49c0ad45b07259729fc0c2f95591",
-        "04-conflict-session-skills": "39fd9495088a257fb6d9feda3b058bbc274eac0643c3f589d592fa9373b88b1e",
-        "05-loom-wiring": "7c32b5cc6edcc7b8f3990905ba2228584600c0003a2876cfc894ce846cb5af61"
+        "01-language-config-module": "bb8acbc96e6b96739065f7fbd77ed3ce8a607f802357ef813987d72571569c44",
+        "02-darn-writer-skills": "032a31b84e539b274b6a11a40501e0278b7b7567a34fb9a5f84a630ad21ed8a0",
+        "03-webster-role-skills": "134b99a6faf0903253b7ea13a215a469da24427876480b7d2931c5d13231442a",
+        "04-conflict-session-skills": "42a0e891f03d06213728d2a3981539fad49f75926616becf817752adda0f0216",
+        "05-loom-wiring": "eba408ae3a7cb936918cdd8c77b519535803a5a8d6cc6fc76017348829eb253e"
       },
       "startSha": "b1d1638ad89988a82e4db9a55cc8e78acef511f5",
       "kind": "fork",
       "spawnedAt": "2026-10-15T10:35:01Z",
       "sessionId": "43646314-f3b4-45bf-ac33-38ebc27cce71",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "01-language-config-module",
+        "status": "done",
+        "head_sha": "a800ea2bdebc3cf77e9d6e1c6de46d1e8c96f410",
+        "deviations": [
+          "cmd/lyx/configstrictness_test.go",
+          "internal/languageconfig/config.go",
+          "internal/languageconfig/config_test.go",
+          "internal/languageconfig/template.go",
+          "internal/languageconfig/testmain_test.go"
+        ]
+      },
+      "cardShas": [
+        "a800ea2bdebc3cf77e9d6e1c6de46d1e8c96f410"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-role-language-skills/43646314-f3b4-45bf-ac33-38ebc27cce71/subagents/agent-a26c9a5c62f27de64.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-role-language-skills/43646314-f3b4-45bf-ac33-38ebc27cce71/subagents/agent-a26c9a5c62f27de64.jsonl"
+      ]
     }
-  }
+  },
+  "seenForkTranscripts": [
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-role-language-skills/43646314-f3b4-45bf-ac33-38ebc27cce71/subagents/agent-a26c9a5c62f27de64.jsonl"
+  ]
 }

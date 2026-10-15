@@ -1,7 +1,7 @@
 # Card 4 — conflict-session-skills
 
 **Create:**
-- `plan:internal/landingshed_test#TestMergeIn_ConflictSessionLoadsLanguageSkills` -> `func TestMergeIn_ConflictSessionLoadsLanguageSkills(t *testing.T)`
+- `internal/landingshed_test#TestMergeIn_ConflictSessionLoadsLanguageSkills`
 
 **Edit:**
 - `internal/mergeresolve#Deps`
@@ -25,7 +25,7 @@
 - `internal/loomcli#TestLandingDeps_VerifyCommandReadsPlanAtCallTime`
 
 **Uses:**
-- `plan:internal/languageconfig#AppendSkills`
+- `internal/languageconfig#AppendSkills`
 
 **Intent:**
 The merge conflict session loads the told language list after `conflictSkills`, at Merge-In and at Finalize (D4).

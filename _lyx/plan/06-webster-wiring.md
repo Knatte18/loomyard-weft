@@ -15,8 +15,8 @@
 - `contracts/specs/refusal-spec.md`
 
 **Uses:**
-- `plan:internal/languageconfig#Load`
-- `plan:internal/languageconfig#ErrUnusable`
+- `internal/languageconfig#Load`
+- `internal/languageconfig#ErrUnusable`
 - `internal/websterengine#RunDeps`
 - `internal/websterengine#RecoverDeps`
 

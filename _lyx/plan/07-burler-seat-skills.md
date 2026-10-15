@@ -36,8 +36,8 @@
 - `internal/burlercli#TestWire_SelectsModeAndWiresItsFields`
 
 **Uses:**
-- `plan:internal/languageconfig#AppendSkills`
-- `plan:internal/languageconfig#Load`
+- `internal/languageconfig#AppendSkills`
+- `internal/languageconfig#Load`
 
 **Intent:**
 A Burler half whose profile marks a code round loads the told language list after `burlerSkills` on every seat; any other half loads `burlerSkills` alone (D5).
