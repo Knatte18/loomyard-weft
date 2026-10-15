@@ -27,6 +27,16 @@ Waits on nothing open; can start now.
 
 _None._
 
+### Layer A
+
+Waits only on Running or Ready entries.
+
+#### Normal priority
+
+| # | Task | Slug | Recipe | After | Age | Revised | Labels |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| 1 | **Run status pane: seconds, Burler round totals, gate time and gate rework**<br>• Per-run status pane shows seconds, a total per Burler round, and each gate with its time and the rework it caused | [`run-pane-timing`](design-run-pane-timing.md) | darn | `shed-tackler` | 0m | 0m | loom, burler |
+
 ## Notes
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
