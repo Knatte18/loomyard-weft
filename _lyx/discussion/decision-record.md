@@ -71,6 +71,12 @@ The pack already lists a card's `plan:` handles beside its resolved entries, and
 Rationale: nothing in the fork's path depended on the plain test-file path beyond a whole-file read; D2 replaces it for a card that meets D2's condition, and a card that does not gives the fork no placement signal (Open risks).
 `webster-deviations-list` will later reword the fork's deviation rule against `ScopeGuard`; nothing here constrains it.
 
+### Added after Discussion (parent, 2026-10-15): Gate ways forward and Plan-Review rubric follow the test-file refusal
+
+Decision: Accept all three lens-review additions: (1) caller-uncovered's way forward names only the member glyph when the referencing file is a _test.go file; (2) redundant-file-target's way forward gets the same carve-out for a _test.go file; (3) drop the Plan-Review rubric sentence asking reviewers to flag an Edit card that lists only a test-file path, and its claim in contracts/stencils/claims_test.go.
+
+Rationale: Each is a direct consequence of the task's own refusal: a way forward that offers a path the gate now refuses, or a rubric line asking reviewers to flag what the gate now blocks, contradicts the change. No new scope.
+
 ## Constraints
 
 - `PATTERN-sole-parsers`, `PATTERN-ref-shape-registry` and `PATTERN-glyph-conversion-chokepoint`, as D4 applies them.
