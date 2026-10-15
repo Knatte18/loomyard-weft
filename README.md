@@ -19,7 +19,7 @@ Held by a run; its scope is locked until the run ends.
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | 1 | **Engine-owned config, one neutral guardrail table, provider-blind reed**<br>• claude.yaml owned by claudeengine, a neutral shell-guard table each engine renders as hooks, reed strands tagged by provider | [`engine-config-seams`](design-engine-config-seams.md) | loom | Webster-Burler-Review | 5h | 5h | shuttle, claude, config, reed |
 | 2 | **Every role spec carries its resolved engine**<br>• Role specs take engine, model and effort from the model alias through one shared ModelChoice; Claude-only roles declare their needs | [`engine-model-choice`](design-engine-model-choice.md) | loom | Plan-Burler-Fix | 5h | 5h | shuttle, loom, webster, burler, shed |
-| 3 | **Discussion hands Plan a list of the relevant code**<br>• The Discussion writer writes relevant.md listing the files and members it read and found relevant; Plan-Write reads it first, so its context starts smaller | [`discussion-relevant-list`](design-discussion-relevant-list.md) | loom | Webster-Burler-Fix | 2h | 1h | loom, stencil |
+| 3 | **Discussion hands Plan a list of the relevant code**<br>• The Discussion writer writes relevant.md listing the files and members it read and found relevant; Plan-Write reads it first, so its context starts smaller | [`discussion-relevant-list`](design-discussion-relevant-list.md) | loom | Webster-Bouncer | 2h | 1h | loom, stencil |
 
 ### Ready
 
@@ -56,7 +56,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 2 | **Re-measure the test suite weight on a quiet machine**<br>• The test-suite-weight before and after numbers were taken under load; rerun the report Regenerate section on an idle machine for a fair wall-time comparison | `suite-weight-quiet-rerun` | 5d | 2d |  |
 | 3 | **Bench fork0 and the strict critical fixer on twill Discussion-Write**<br>• Arms: twill as is, with the strict critical fixer, and fork0 plus the critical fixer, graded against Discussion-Review keys | [`twill-discussion-fork0-bench`](design-twill-discussion-fork0-bench.md) | 10h | 10h | loom, burler, stencil |
 | 4 | **Prototype reed status buttons in a throwaway tmux server**<br>• A fresh agent tries the menu button, follow toggle and extra button line by hand before reed-status-buttons becomes a task | [`reed-status-buttons-prototype`](design-reed-status-buttons-prototype.md) | 6h | 6h | reed |
-| 5 | **Audit creel stage 1 in a closed sandbox hub**<br>• End-to-end and hands-on testing of lyx creel as it is, in a sandbox hub with its own tmux server; defects become issues | [`creel-test`](design-creel-test.md) | 7m | 5m | creel |
+| 5 | **Audit creel stage 1 in a closed sandbox hub**<br>• End-to-end and hands-on testing of lyx creel as it is, in a sandbox hub with its own tmux server; defects become issues | [`creel-test`](design-creel-test.md) | 8m | 5m | creel |
 
 ### Bugs
 
