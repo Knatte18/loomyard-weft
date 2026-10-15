@@ -2,8 +2,6 @@
 
 `refusal-route-config-empty` · Task · bug, webster, loom, config
 
-Depends on: [`shed-tackler`](design-shed-tackler.md)
-
 Two small bugs in one run, bundled on the operator's word (2026-10-15) to save a run's overhead, though they touch different packages.
 
 # Part 1: begin-batch refusal route (issue #625, webster and loom)

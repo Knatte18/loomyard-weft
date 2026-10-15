@@ -2,8 +2,6 @@
 
 `run-pane-timing` · Task · enhancement, loom, burler, shed, reed
 
-Depends on: [`shed-tackler`](design-shed-tackler.md)
-
 ## Seen
 
 The per-run status pane (the checklist each run's window shows, rendered through `internal/statuspane` and `internal/loomcli/checklist.go`) gives each row's time in whole minutes (`statuspane.FormatMinutes`).

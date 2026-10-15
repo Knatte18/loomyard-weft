@@ -641,26 +641,6 @@
       "revised": "2026-10-14T17:24:42Z"
     },
     {
-      "id": 508,
-      "slug": "shed-tackler",
-      "title": "Go driver and tackler in shed, for every FSM-driven run",
-      "kind": "task",
-      "labels": [
-        "enhancement",
-        "shed",
-        "loom",
-        "batten"
-      ],
-      "issues": [],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "Move the Go driver and tackler from loomcli into shed so darn, batten and every recipe get them; module config overrides model and budgets",
-      "body": "## Seen (2026-10-14)\n\nThe Go driver and the tackler landed in `1c812c1f8` for loom runs only.\nTheir code is in `internal/loomcli` (`drive.go`, `tackler.go`), and the keys `driver_kind`, `tackler`, `tackler_timeout_min` and `tackler_max_spawns` are loom config.\nDarn has no `driver_kind`, so a darn run always has an LLM driver.\nBatten steps its own shed run in Go but spawns no tackler: an unexpected stop there goes straight to the orch, and batten only reads whether a loom child's tackler or arbiter is in flight to hold its notice.\n\n## Wanted (operator, 2026-10-14)\n\nAny FSM can go wrong, so every shed-driven process needs the tackler, not only loom: darn, batten, and any later recipe.\nThe tackler, and the Go driver it sits behind, belong in shed as code.\nShed's own config holds the default tackler model and budgets.\nA module's own config can override them, the way loom's keys do today.\n\n## Order (operator, 2026-10-14)\n\nThe Go driver and tackler are not tried on a live run until they are moved into shed; the first live test runs on the shed version.\n\n## How the tackler is told what to do today\n\n`internal/loomcli/tacklerprompt.go` fills the stencil `contracts/stencils/loom/loom-template-tackler.md` with paths and types it in as the whole launch prompt.\nThe tackler reads the shed stop envelope, the Go driver's stop report and log, the stop step's trace copy and stderr, the child traces, and any read-only `lyx` command or file in the worktree; it writes only the verdict file (`resume`, `hand-back`, `escalate`) and, on an escalate, the case brief for the arbiter.\nThe stencil is already recipe-blind: the recipe and row arrive only through the envelope.\nIts loom-specific parts are its name, the driver log path and the arbiter hand-off.\nA shed version can keep one stencil for every FSM, with an optional module-filled marker, such as a short description of the recipe, for context the envelope does not give.\n\n## Stencil points to weigh (orch read, 2026-10-14; no agent review yet)\n\n- It has never run on a live run (`driver_kind` is set nowhere); only Go tests exercise it.\n- It gives no examples of the stops it receives (transient errors, `producer`, `bootstrap`, `unseeded`); a short list of how each typically looks and its usual verdict would help a small model.\n- It sets no reading bound: the child traces can be large for Haiku; reading the envelope and stop report first and traces only when needed would help.\n- Being recipe-blind, it lacks context on what the recipe does; see the optional module marker above.\n\n## Related\n\n`orch-split` (its \"Was `go-driven-shed`\" section) wants the same LLM involvement at every level; this note is the shed part of that.\n",
-      "status": "done",
-      "created": "2026-10-14T17:56:13Z",
-      "revised": "2026-10-14T18:44:01Z"
-    },
-    {
       "id": 511,
       "slug": "orch-context-overview",
       "title": "Show the orch context size in the prime overview window",
@@ -766,9 +746,7 @@
       ],
       "issues": [],
       "recipe": "loom",
-      "depends_on": [
-        "shed-tackler"
-      ],
+      "depends_on": [],
       "isolated": false,
       "brief": "Per-run status pane shows seconds, a total per Burler round, and each gate with its time and the rework it caused",
       "body": "## Seen\n\nThe per-run status pane (the checklist each run's window shows, rendered through `internal/statuspane` and `internal/loomcli/checklist.go`) gives each row's time in whole minutes (`statuspane.FormatMinutes`).\nA Burler review round shows its parts (review seats, fix) each with its own time, but no total for the round.\nGate refusals, and the rework they cause, do not show at all.\n\n## Wanted\n\nOperator's requests (2026-10-15), each in scope:\n\n1. Show seconds as well as minutes for each row's time.\n2. Give each Burler round a total time for the round, beside the time of each part.\n3. Show the gates in the pane, with the time each gate took, and how much time went to rework because a gate refused (the rerun of the producer the gate sent back).\n4. Number the pane's entries, for every shed-driven run (loom, darn, batten and any later recipe), not only loom.\n   A shed recipe has a fixed list of rows, so each row gets its number.\n   A perch (a Bouncer row with its Burler rounds) is one row of the recipe and so takes one number; its bounces are rounds within that entry, not new numbers.\n5. Give every spawned session a name that says which segment it serves.\n   Today the Bouncer and Burler sessions of Discussion, Plan and Webster carry the same names (for example strand `ly:twill-fork0:bouncer-seed`), so they cannot be told apart.\n   The segment goes into the name both in the pane and in the reed strand and window names the operator switches between with Alt+Up/Down.\n\nItems 4 and 5 were added by the operator on 2026-10-15.\n\nIf item 3 cannot be read from the records a run keeps today, the writer says what is missing in the PR description and ships items 1 and 2 with as much of item 3 as the records allow.\n",
@@ -866,9 +844,7 @@
         625,
         632
       ],
-      "depends_on": [
-        "shed-tackler"
-      ],
+      "depends_on": [],
       "isolated": false,
       "brief": "Two small bugs: a delete-before-reference refusal is mislabelled plan_drifted and halts for a human; bare lyx config with no TTY saves an empty layer",
       "body": "Two small bugs in one run, bundled on the operator's word (2026-10-15) to save a run's overhead, though they touch different packages.\n\n# Part 1: begin-batch refusal route (issue #625, webster and loom)\n\n## What happened\n\nA task's run passed Plan-Bouncer (done) and Batchifier (done), then Webster's `lyx webster begin-batch 17` refused with `plan_drifted`.\nThe blocking finding was `delete-before-reference/18-retired-builders-delete[blocking]`: a card deletes a symbol that a later card still references in its Edit code.\n`begin-batch 17` was refused twice with the identical finding, and the run halted `blocked` at Webster with anomaly `escalation-to-human`.\n\n## Correction (orch, 2026-10-15)\n\nIn `overview-seats` the plan was not malformed: the reference was a temporary parity test that card 12's batch added after Plan-Write, inside a region card 18 itself rewrites, so the finding was a false positive of the check, fixed by `delete-order-own-edit` (landed 2026-10-14).\n\n## What to do\n\n- The refusal is labelled `plan_drifted` even when the plan did not drift from the tree but was malformed at authoring: distinguish the two in the refusal's classification, so the label names the right cause.\n- A real `delete-before-reference` refusal at `begin-batch` has no route back to a plan-editing agent and halts for a human, though its text already names the way forward (move the delete to a later card, `lyx webster rebaseline --card NN`, then `begin-batch` again).\n  Route it to a plan-fix step, or let Webster or the driver take that way, instead of halting.\n- Consider running the `delete-before-reference` check at Plan-Bouncer or Batchifier time, so an ordering defect is fixed by the plan reviewers.\n\nProvenance: task `overview-seats`.\n\n# Part 2: bare `lyx config \u003cmodule\u003e` writes an empty layer (issue #632, config)\n\nSeen (2026-10-15): a Discussion-Write agent in pair `webster-pack-end-of-prompt` ran `lyx config webster` with no arguments, expecting a read.\nIt replied `edited and synced _lyx/config/webster.yaml` and left a 0-byte `_lyx/config/webster.yaml` in the pair's worktree layer (behind the weft symlink, so `git status` shows nothing).\nThe bare form opens an editor; with no interactive terminal the editor exits at once and lyx saves the empty buffer as the layer.\n\nWorkaround: the orch never runs `lyx config` without `--set` or `--print`.\n\nExpected: with no TTY, a bare `lyx config \u003cmodule\u003e` refuses (or prints) and never writes; an empty editor result is never saved over a layer.\n",
