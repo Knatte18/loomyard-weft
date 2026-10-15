@@ -1,0 +1,252 @@
+{
+  "runGuid": "ecaf672ebfae331d18aab7462735c491",
+  "planFingerprint": "af949273cc216ece5b838d85f6f8c5e84426b3bc2f6eb3e78fc6e833ffe74b4b",
+  "planFileHashes": {
+    "00-overview.md": "320e49b0e72f53b30b046fbd81c2f8bc7406965dd32ae1985a8a56fc91323d51",
+    "01-neutral-transcript-types.md": "397bae8238fb51032778ba79a0eaa68c78ab8f47acfe34ff3c8b26b037113658",
+    "02-claude-transcript-reader.md": "88011ebd661c82696a89598dd428bfa9eceb70427f099ceb0b5fcf8e1f516b8a",
+    "03-claude-pricing.md": "ccfca49b19c82c628e4abcefebde579f884e91b5ab9825ac116b73030216a6a7",
+    "04-offline-record-readers.md": "d9605da4a865f7ab6ffe59279feb071ecbc1b32c65de33f012f2bcece2775554",
+    "05-tokencount-reads-through-engines.md": "ced279fc7ae5ffa6e4e97d85984ba96e1d38d53133937d444e9dd94452fc262e",
+    "06-calibration-engine-instruction-files.md": "cf26048122a2667b8f75bf595677ffdae498f082a86c0c902ec6fb6b6c14b3c5"
+  },
+  "planOverviewFrameHash": "5d458a32b9aa26ce950499e514336fcb87714360f66533fff56b9b82e89238b4",
+  "partition": [
+    {
+      "cards": [
+        "01-neutral-transcript-types"
+      ],
+      "profile": "cautious",
+      "estimate": 106178,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 1,
+        "startup": 54400,
+        "read_union": 9916,
+        "cards": [
+          {
+            "card": 1,
+            "card_text": 612,
+            "reads": {
+              "file:internal/shuttleengine/doc.go": 5304,
+              "package:internal/shuttleengine": 2000,
+              "tests:internal/shuttleengine": 2000
+            },
+            "messages": 137.5,
+            "written": 41862
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "02-claude-transcript-reader"
+      ],
+      "profile": "cautious",
+      "estimate": 164986,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 2,
+        "startup": 61400,
+        "read_union": 33284,
+        "cards": [
+          {
+            "card": 2,
+            "card_text": 1152,
+            "reads": {
+              "file:internal/shuttleengine/claudeengine/doc.go": 2496,
+              "file:internal/shuttleengine/claudeengine/usage.go": 4548,
+              "file:internal/testkit/shuttlefake/shuttlefake.go": 5088,
+              "package:internal/shuttleengine/claudeengine": 2000,
+              "package:internal/shuttleengine/claudeengine/testdata/tokencount-run": 2000,
+              "package:internal/shuttleengine/claudeengine/testdata/tokencount-run/a-webster/subagents": 2000,
+              "package:internal/shuttleengine/claudeengine/testdata/tokencount-run/b/subagents": 2000,
+              "package:internal/testkit/shuttlefake": 2000,
+              "tests:internal/shuttleengine/claudeengine": 2000,
+              "tests:internal/shuttleengine/claudeengine/testdata/tokencount-run": 2000,
+              "tests:internal/shuttleengine/claudeengine/testdata/tokencount-run/a-webster/subagents": 2000,
+              "tests:internal/shuttleengine/claudeengine/testdata/tokencount-run/b/subagents": 2000,
+              "tests:internal/testkit/shuttlefake": 2000
+            },
+            "messages": 230.5,
+            "written": 70302
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "03-claude-pricing",
+        "04-offline-record-readers"
+      ],
+      "profile": "cautious",
+      "estimate": 141220,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 3,
+        "startup": 68400,
+        "read_union": 21772,
+        "cards": [
+          {
+            "card": 3,
+            "card_text": 324,
+            "reads": {
+              "file:internal/shuttleengine/claudeengine/doc.go": 2496,
+              "package:internal/shuttleengine/claudeengine": 2000,
+              "tests:internal/shuttleengine/claudeengine": 2000
+            },
+            "messages": 47.5,
+            "written": 14574
+          },
+          {
+            "card": 4,
+            "card_text": 624,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1944,
+              "file:internal/shuttleengines/doc.go": 228,
+              "file:pattern/PATTERN-shuttle-provider-seam.md": 156,
+              "package:cmd/lyx/testdata": 2000,
+              "package:internal/shuttleengines": 2000,
+              "package:pattern": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:internal/shuttleengines": 2000,
+              "tests:pattern": 2000
+            },
+            "messages": 119.5,
+            "written": 36474
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "05-tokencount-reads-through-engines"
+      ],
+      "profile": "cautious",
+      "estimate": 214898,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 4,
+        "startup": 75400,
+        "read_union": 10996,
+        "cards": [
+          {
+            "card": 5,
+            "card_text": 1752,
+            "reads": {
+              "file:tools/tokencount/cost.go": 1152,
+              "file:tools/tokencount/main.go": 4092,
+              "package:tools/tokencount": 2000,
+              "tests:tools/tokencount": 2000
+            },
+            "messages": 422.5,
+            "written": 128502
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "06-calibration-engine-instruction-files"
+      ],
+      "profile": "cautious",
+      "estimate": 128466,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 5,
+        "startup": 82400,
+        "read_union": 8704,
+        "cards": [
+          {
+            "card": 6,
+            "card_text": 612,
+            "reads": {
+              "file:tools/tokencount/main.go": 4092,
+              "package:tools/tokencount": 2000,
+              "tests:tools/tokencount": 2000
+            },
+            "messages": 122.5,
+            "written": 37362
+          }
+        ]
+      }
+    }
+  ],
+  "currentBatch": 1,
+  "masterStrand": "6663f878ba822536d57a7a2129de5d0d",
+  "masterSessionId": "0e0fa5e8-1a38-4aaf-805f-707af076ee34",
+  "masterEngine": "claude",
+  "batches": {
+    "1": {
+      "slug": "neutral-transcript-types",
+      "cards": [
+        "01-neutral-transcript-types"
+      ],
+      "cardHashes": {
+        "01-neutral-transcript-types": "397bae8238fb51032778ba79a0eaa68c78ab8f47acfe34ff3c8b26b037113658"
+      },
+      "startSha": "ba571035a79b5761d9f043f4599c9f60cbc85945",
+      "kind": "fork",
+      "spawnedAt": "2026-10-15T17:23:58Z",
+      "sessionId": "0e0fa5e8-1a38-4aaf-805f-707af076ee34",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
+    }
+  }
+}
