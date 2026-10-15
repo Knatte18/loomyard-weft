@@ -638,7 +638,7 @@
       }
     }
   ],
-  "currentBatch": 7,
+  "currentBatch": 0,
   "masterStrand": "8dcfa8fbb9190a5d1380349627be79ef",
   "masterSessionId": "18713a0e-05ad-4256-81d3-7852940edfc6",
   "batches": {
@@ -807,8 +807,25 @@
       "kind": "fork",
       "spawnedAt": "2026-10-15T16:24:57Z",
       "sessionId": "18713a0e-05ad-4256-81d3-7852940edfc6",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "07-webster-roles-record-engines",
+        "status": "done",
+        "head_sha": "fab2b84a2da5c9e6d494ed5c92792dbfa05e1951",
+        "deviations": [
+          "internal/websterengine/state_test.go"
+        ]
+      },
+      "cardShas": [
+        "fab2b84a2da5c9e6d494ed5c92792dbfa05e1951"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-engine-model-choice/18713a0e-05ad-4256-81d3-7852940edfc6/subagents/agent-a50683ac43603be80.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-engine-model-choice/18713a0e-05ad-4256-81d3-7852940edfc6/subagents/agent-a50683ac43603be80.jsonl"
+      ]
     }
   },
   "seenForkTranscripts": [
@@ -816,6 +833,7 @@
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-engine-model-choice/18713a0e-05ad-4256-81d3-7852940edfc6/subagents/agent-ac34cd2821b5916a7.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-engine-model-choice/18713a0e-05ad-4256-81d3-7852940edfc6/subagents/agent-a797c8f038c3219ca.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-engine-model-choice/18713a0e-05ad-4256-81d3-7852940edfc6/subagents/agent-a96115decb990758f.jsonl",
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-engine-model-choice/18713a0e-05ad-4256-81d3-7852940edfc6/subagents/agent-a3742d20c9d49fbad.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-engine-model-choice/18713a0e-05ad-4256-81d3-7852940edfc6/subagents/agent-a3742d20c9d49fbad.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-engine-model-choice/18713a0e-05ad-4256-81d3-7852940edfc6/subagents/agent-a50683ac43603be80.jsonl"
   ]
 }
