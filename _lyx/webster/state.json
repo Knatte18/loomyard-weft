@@ -1,0 +1,91 @@
+{
+  "runGuid": "addb885b24abeea8845c020d9d7ffcb6",
+  "planFingerprint": "3ba6b942a1f73013731405652b45ee6109582680bf3872c7048f3bb6ebc0ee42",
+  "planFileHashes": {
+    "00-overview.md": "086406837a2feaa84743042174f4307e9b68292d81663c3a352e9a172484be96",
+    "01-engine-siblings.md": "010087347798eb603c7c719b4281774d95653c3b4cab0649981e5704b3f10b67",
+    "02-cli-sibling-notice.md": "fcb83cb9a32939f7d3f2b53cad66b54ac652222db7df846b8e279f9adf9f6c48"
+  },
+  "planOverviewFrameHash": "d595e4299c566cee8484fee098db7fbe434327b73c71a131d8e5b10633ec75d1",
+  "partition": [
+    {
+      "cards": [
+        "01-engine-siblings",
+        "02-cli-sibling-notice"
+      ],
+      "profile": "cautious",
+      "estimate": 138710,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 1,
+        "startup": 54268,
+        "read_union": 23752,
+        "cards": [
+          {
+            "card": 1,
+            "card_text": 1044,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1872,
+              "file:internal/boardengine/doc.go": 1884,
+              "package:cmd/lyx/testdata": 2000,
+              "package:internal/boardcli": 2000,
+              "package:internal/boardengine": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:internal/boardcli": 2000,
+              "tests:internal/boardengine": 2000
+            },
+            "messages": 128,
+            "written": 39444
+          },
+          {
+            "card": 2,
+            "card_text": 696,
+            "reads": {
+              "file:internal/boardcli/doc.go": 696,
+              "file:plugins/ly/skills/board/SKILL.md": 1560,
+              "package:internal/boardcli": 2000,
+              "package:plugins/ly/skills/board": 2000,
+              "tests:internal/boardcli": 2000,
+              "tests:plugins/ly/skills/board": 2000
+            },
+            "messages": 68.5,
+            "written": 21246
+          }
+        ]
+      }
+    }
+  ],
+  "currentBatch": 1,
+  "masterStrand": "1cd145994e7cfa30debdc906d7ad1b11",
+  "masterSessionId": "2e425719-ea22-46d2-9f29-a96d5c9e2808",
+  "batches": {
+    "1": {
+      "slug": "engine-siblings",
+      "cards": [
+        "01-engine-siblings",
+        "02-cli-sibling-notice"
+      ],
+      "cardHashes": {
+        "01-engine-siblings": "010087347798eb603c7c719b4281774d95653c3b4cab0649981e5704b3f10b67",
+        "02-cli-sibling-notice": "fcb83cb9a32939f7d3f2b53cad66b54ac652222db7df846b8e279f9adf9f6c48"
+      },
+      "startSha": "25acb5b7c5737f8f9a5382dbdae01efaca8a19ff",
+      "kind": "fork",
+      "spawnedAt": "2026-10-15T13:22:33Z",
+      "sessionId": "2e425719-ea22-46d2-9f29-a96d5c9e2808",
+      "terminal": false,
+      "status": ""
+    }
+  }
+}
