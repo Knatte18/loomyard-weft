@@ -46,6 +46,14 @@ The fan is already benched and parked (`docs/research/lens-fan-lab-phase1.md`, "
 Every perch runs solo today (`discussion_fan` and `plan_fan` empty), so the bench here compares solo models per round, not fan against solo.
 Risk to measure: round 1 finds the most, so a weak first round pushes findings to later rounds with less budget left.
 
+## Operator views (2026-10-15)
+
+- Discussion is where to invest: a watertight Discussion saves the most later (operator's experience from Millhouse); the plan matters less. Discussion-Review stays on Opus for its first rounds.
+- The operator thinks `sonnet[high]` can review from round 3.
+- The Bouncer judge's inputs, the review and fix reports, should be written plainly enough that Haiku can judge them: deciding whether the loop converges or circles should not need a large model.
+- Two Burler rounds are too few to judge circling from.
+- The operator approved a bench of the Webster-Bouncer judge on Haiku.
+
 ## Code items
 
 - Fork the fixer from the reviewer's session so it does not read the context again (part of the $1.9 per run in `.scratch/burler-cost-breakdown.md`); skipping the fixer on an empty review is already built (`internal/burlerengine/fix.go`).
