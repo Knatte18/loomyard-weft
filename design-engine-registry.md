@@ -1,6 +1,6 @@
 # Engine registry: engine per run, one constructor, narrower Engine interface
 
-`engine-registry` · Task · enhancement, shuttle, config, loom, webster, burler, orch, batten · running · Merge-Bouncer
+`engine-registry` · Task · enhancement, shuttle, config, loom, webster, burler, orch, batten · running · Publish
 
 ## Goal
 
