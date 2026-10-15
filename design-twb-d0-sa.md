@@ -1,6 +1,6 @@
 # Darn: a decision record for mid-run scope corrections, and PR-Align
 
-`twb-d0-sa` · Note · bug · paused · Discussion-Bouncer
+`twb-d0-sa` · Note · bug
 
 ## Seen (2026-10-13, `webster-pack-last`)
 
