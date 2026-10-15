@@ -47,7 +47,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | # | Note | Slug | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | 1 | **Plan-Bouncer and Batchifier pass a plan that webster begin-batch then refuses with delete-before-reference** | [`plan-drift-refusal-route`](design-plan-drift-refusal-route.md) | 1h | 1h | webster, loom |
-| 2 | **config: bare lyx config <module> from an agent writes an empty layer file** | [`config-bare-empty-write`](design-config-bare-empty-write.md) | 0m | 0m |  |
+| 2 | **config: bare lyx config <module> from an agent writes an empty layer file** | [`config-bare-empty-write`](design-config-bare-empty-write.md) | 0m | 0m | config |
 
 #### Low priority
 

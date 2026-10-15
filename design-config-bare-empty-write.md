@@ -1,6 +1,6 @@
 # config: bare lyx config <module> from an agent writes an empty layer file
 
-`config-bare-empty-write` · Note · bug
+`config-bare-empty-write` · Note · bug, config
 
 Imported from [issue #632](https://github.com/Knatte18/loomyard/issues/632).
 
