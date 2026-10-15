@@ -2,7 +2,7 @@
 
 `engine-model-choice` · Task · enhancement, shuttle, loom, webster, burler, shed
 
-Depends on: [`engine-registry`](design-engine-registry.md), [`role-language-skills`](design-role-language-skills.md)
+Depends on: [`engine-registry`](design-engine-registry.md)
 
 ## Goal
 
