@@ -1,10 +1,10 @@
 # Card 6 — engine-loads-claude-config
 
 **Create:**
-- `plan:internal/shuttleengine/claudeengine#engineWith` -> `func engineWith(t testing.TB, claude Config) *Claude`
-- `plan:internal/shuttleengine/claudeengine#loadConfigOrRefuse` -> `func loadConfigOrRefuse(dirs configengine.Dirs) (Config, error)`
-- `plan:internal/shuttleengine/claudeengine#engineWithInvalidConfig` -> `func engineWithInvalidConfig(t testing.TB) *Claude`
-- `plan:internal/loomcli#claudeConfigWithBinary` -> `func claudeConfigWithBinary(binary string) string`
+- `internal/shuttleengine/claudeengine#engineWith`
+- `internal/shuttleengine/claudeengine#loadConfigOrRefuse`
+- `internal/shuttleengine/claudeengine#engineWithInvalidConfig`
+- `internal/loomcli#claudeConfigWithBinary`
 
 **Edit:**
 - `internal/shuttleengine/claudeengine#Claude`
