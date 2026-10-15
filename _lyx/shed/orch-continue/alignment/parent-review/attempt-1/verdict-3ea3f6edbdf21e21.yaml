@@ -1,0 +1,11 @@
+verdict: approve
+reason: >-
+  The design records the orch strand's current provider session id in orch state and adds an explicit
+  `lyx orch start --continue` that resumes it through the adopt path, which is what the board entry asks;
+  the entry offers the flag or the default as alternatives and D1 picks the flag.
+  The guards, status line and envelope hint serve the entry's stated pain and take no work from another entry.
+  The only peer, creel-stage1-fixes, overlaps in internal/shuttleengine at different places with different
+  behaviour (text-only); it is at row 7 against this run's row 3, so it lands first and orch-continue takes
+  its changes at Merge-In.
+question: ""
+superseded: []
