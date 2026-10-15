@@ -158,6 +158,12 @@ The plan rubric stays unchanged.
 
 Rationale: the miss (J6 in `docs/research/twill-plan-bench.md`) is a card departing from what the record names, which is `criteria-coverage`'s fidelity check; the lens reaches every twill plan, where the rubric's extra text would also land in every Plan-Review round.
 
+### Added after Discussion (operator, 2026-10-15): Critical fixer tone stays at Discussion-Write
+
+Decision: The strict critical-judge fixer text applies at Discussion-Write as well as Plan-Write, as the parent review's auto-pick already says; fork0 stays off Discussion-Write.
+
+Rationale: The Discussion fork0 bench (2026-10-15) found today's twill cheapest and the critical fixer no better at Discussion, but the operator wants the fixer's critical tone at Discussion regardless.
+
 ## Constraints
 
 - `PATTERN-stencil-ownership`: fork0's text and the judge text live in stencils read through `stencilstore`; host values stay short phrases, not procedure text.
