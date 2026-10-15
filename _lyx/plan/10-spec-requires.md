@@ -8,10 +8,10 @@
 - `cmd/lyx/testdata/test-budget.yaml`
 
 **Create:**
-- `plan:internal/shuttleengine#ErrRequirementsUnmet` -> `var ErrRequirementsUnmet = errors.New("shuttle: the engine does not meet the run's requirements")`
-- `plan:internal/shuttleengine#knownRequirement` -> `func knownRequirement(req Requirement) bool`
-- `plan:internal/shuttleengine#requiredOf` -> `func requiredOf(listed []Requirement, forks bool) []Requirement`
-- `plan:internal/shuttleengine#unmetRequirements` -> `func unmetRequirements(engines EngineSet, engineName string, engine Engine, required []Requirement) error`
+- `internal/shuttleengine#ErrRequirementsUnmet`
+- `internal/shuttleengine#knownRequirement`
+- `internal/shuttleengine#requiredOf`
+- `internal/shuttleengine#unmetRequirements`
 - `internal/shuttleengine/requires_test.go`
 
 **Intent:** Add `Spec.Requires`, the closed list of what a run requires of its engine, checked at `Start` and at attach (D8).

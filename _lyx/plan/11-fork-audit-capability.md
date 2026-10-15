@@ -5,8 +5,8 @@
 - `internal/shuttleengine#Engine.AuditForksIncremental`
 
 **Create:**
-- `plan:internal/websterengine#AuditEngine` -> `type AuditEngine interface`
-- `plan:internal/websterengine#AuditEngineFrom` -> `func AuditEngineFrom(engines shuttleengine.EngineSet) (AuditEngine, error)`
+- `internal/websterengine#AuditEngine`
+- `internal/websterengine#AuditEngineFrom`
 - `internal/websterengine/auditengine_test.go`
 
 **Edit:**
