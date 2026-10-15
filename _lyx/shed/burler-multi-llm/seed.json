@@ -1,8 +1,0 @@
-{
-  "recipe": "batten",
-  "driver": "go",
-  "params": {
-    "child_driver": "llm"
-  },
-  "started_at": "2026-10-11T11:04:32Z"
-}
