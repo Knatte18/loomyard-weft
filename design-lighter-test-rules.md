@@ -2,8 +2,6 @@
 
 `lighter-test-rules` · Task · enhancement, stencil, webster, burler, loom
 
-Depends on: [`plan-test-file-path`](design-plan-test-file-path.md)
-
 ## Idea (operator, 2026-10-13)
 
 The project's test and doc rules make small changes large.
