@@ -1,6 +1,8 @@
 # Plan cards name added tests by Create handle, never a plain test-file path
 
-`plan-test-file-path` · Note · enhancement, loom, stencil
+`plan-test-file-path` · Task · enhancement, loom, stencil
+
+Depends on: [`kickstart-per-card`](design-kickstart-per-card.md)
 
 ## Seen
 

@@ -419,25 +419,6 @@
       "revised": "2026-10-12T13:52:02Z"
     },
     {
-      "id": 377,
-      "slug": "discussion-premise-cites",
-      "title": "Discussion premises cite the glyph they rest on; the gate resolves them",
-      "kind": "note",
-      "labels": [
-        "enhancement",
-        "loom",
-        "quarry",
-        "stencil"
-      ],
-      "issues": [],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "## Seen (Discussion bench, 2026-10-11)\n\nAcross the Discussion bench arms, most reference findings a draft repeated were reading errors: the code said otherwise and neither the writer nor any twill fork opened it (`classifyDeadlineExpiry`, `contractFileStatus`, `ownTrackedPaths`, go/build's GOOS rules).\nTwill opus[medium] missed 4 reference findings, 3 of them reading errors; solo opus[high] missed 7, 5 of them reading errors.\nTwill forks inherit the writer's reading, so they share its gaps.\nNo role is made to read, and nothing checks that a stated premise rests on code someone opened.\n\n## Idea\n\n- Every factual premise in the decision record about today's code names the symbol it rests on, as a glyph.\n- The Discussion gate (`lyx loom validate-discussion`) resolves each named glyph with `lyx quarry resolve` and flags a premise with no glyph or with one that does not resolve.\n- Reading cannot be forced, but a cited premise is checkable, and a premise like \"`rusageStats` is split into per-OS files\" fails when the cited files do not exist.\n\n## Open\n\n- Which sections of the record count as premises, so the rule does not reach design text.\n- Whether the gate refuses or only warns.\n\n## Operator decision (2026-10-15)\n\nThe Discussion writer does prose exploration and does not use quarry or glyphs; glyphs come in only at Plan.\nSo the idea above, glyph cites in the decision record resolved by the Discussion gate, conflicts with that decision as written.\nWhat stays open is the finding itself: Discussion premises about today's code rest on reading nobody checks.\n",
-      "created": "2026-10-11T12:56:59Z",
-      "revised": "2026-10-15T06:46:26Z"
-    },
-    {
       "id": 396,
       "slug": "orch-split",
       "title": "Split the orch into a run driver and a conversational orch",
@@ -763,19 +744,27 @@
       "id": 543,
       "slug": "plan-test-file-path",
       "title": "Plan cards name added tests by Create handle, never a plain test-file path",
-      "kind": "note",
+      "kind": "task",
       "labels": [
         "enhancement",
         "loom",
         "stencil"
       ],
       "issues": [],
-      "depends_on": [],
+      "depends_on": [
+        "kickstart-per-card"
+      ],
       "isolated": false,
       "brief": "Drop the Edit exception for a test file the card only adds tests to; the Create plan handle carries the file",
       "body": "## Seen\n\n`contracts/stencils/loom/loom-template-plan.md` lets a card's `**Edit:**` list a plain test-file path \"for a test file the card adds tests to without changing an existing member\".\nThe same stencil already makes each new test function in an existing file a `**Create:**` declaration with a `plan:` handle, so the plain path only repeats where those new tests go.\nNo recorded reason for keeping both was found; the rule came in with `78a2b1f14` and was tightened in `c279a38ba`.\nThe 2026-10-15 pack audit (`.scratch/glyph-audit-3/`, to be committed under `docs/research/`) found that edits to files with no pack span were mostly md, yaml and test files, which this exception and the non-Go exception allow.\n\n## Operator view, not a decision (2026-10-15)\n\nTest files should not be an exception to glyph references.\n\n## Idea\n\n- Drop the plain test-file path from `**Edit:**`: a card that adds tests to an existing file lists them only as `**Create:**` declarations with `plan:` handles, and the declaration carries the file.\n- Have the plan gate refuse a plain `_test.go` path under `**Edit:**`, naming the way forward, and update `loom-plan-spec.md` and the stencil together.\n- Check that Webster's kick-start pack and the fork prompt still tell the fork which file the new tests go in.\n",
       "created": "2026-10-15T08:55:29Z",
-      "revised": "2026-10-15T08:55:29Z"
+      "revised": "2026-10-15T11:44:59Z",
+      "run_settings": {
+        "loom": {
+          "review_hard_max_bounces": 3,
+          "review_max_bounces": 2
+        }
+      }
     },
     {
       "id": 544,
@@ -1005,7 +994,7 @@
       "id": 555,
       "slug": "orch-color-on-reexec",
       "title": "Orch color retyped after every deploy",
-      "kind": "note",
+      "kind": "task",
       "labels": [
         "bug",
         "orch"
@@ -1016,6 +1005,7 @@
       "isolated": false,
       "brief": "The watcher retypes /color into the orch pane after each self-exec on a new binary, minutes later and on an already colored session",
       "body": "## Seen\n\nThe orch pane gets `/color blue` typed long after a distill, often minutes later and mid-work.\nAn orch agent traced it on 2026-10-15: the reload color itself lands 0.5 to 1.2 s after each compaction ends (once held 2m29s by the operator typing in the pane, which is the intended guard).\nThe late colors are extra ones: every deploy changes the `lyx` binary, `selfexec.Check` re-execs the watcher in place (`internal/selfexec/selfexec.go`), and the fresh process's first tick runs `initCursor` in `internal/orchengine/watcher.go`, which sets `colorPending = true` unconditionally.\n`typeStartColor` then types the color on the first idle tick, so it arrives once the orch's running turn ends.\n17 such colors were typed from 2026-10-14 18:36Z to 2026-10-15 11:05Z, each one on a session already colored.\n`typeStartColor` writes no typed-injection log line, unlike the reload step, so these never show in the watcher log.\n\n## Idea\n\nRe-type the color only when something can have reset it: persist in the watcher `State` the strand and session start the color was last typed for, and set `colorPending` in `initCursor` only when they differ.\nA re-exec on the same session then types nothing; a new session still gets its color.\nLog the start color like the reload steps do.\n",
+      "status": "running · Worktree-Create",
       "created": "2026-10-15T11:18:30Z",
       "revised": "2026-10-15T11:44:59Z",
       "run_settings": {
