@@ -14,3 +14,8 @@ Each entry carries the file and line and a one-line plain restatement.
 The agent flags the entries that look doubtful (state assumed stable while other agents edit it, inherited context, duplicated or conflicting rules across stencils) but decides nothing.
 The orch shows the operator the list in short batches to confirm or reject; each rejected assumption becomes a note.
 The findings go under `docs/research/` through a fresh agent.
+
+## Status 2026-10-15
+
+The audit pass is done and archived in `docs/research/stencil-intent-audit-2026-10-15/`: `catalogue.md` lists every assumption per stencil, `findings.md` the flagged entries F0 to F17, and `README.md` says how to resume.
+The review with the operator has not started: no entry is confirmed or rejected, and no finding note is filed yet.
