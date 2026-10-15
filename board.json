@@ -735,7 +735,7 @@
       "isolated": false,
       "brief": "Drop the Edit exception for a test file the card only adds tests to; the Create plan handle carries the file",
       "body": "## Seen\n\n`contracts/stencils/loom/loom-template-plan.md` lets a card's `**Edit:**` list a plain test-file path \"for a test file the card adds tests to without changing an existing member\".\nThe same stencil already makes each new test function in an existing file a `**Create:**` declaration with a `plan:` handle, so the plain path only repeats where those new tests go.\nNo recorded reason for keeping both was found; the rule came in with `78a2b1f14` and was tightened in `c279a38ba`.\nThe 2026-10-15 pack audit (`.scratch/glyph-audit-3/`, to be committed under `docs/research/`) found that edits to files with no pack span were mostly md, yaml and test files, which this exception and the non-Go exception allow.\n\n## Operator view, not a decision (2026-10-15)\n\nTest files should not be an exception to glyph references.\n\n## Idea\n\n- Drop the plain test-file path from `**Edit:**`: a card that adds tests to an existing file lists them only as `**Create:**` declarations with `plan:` handles, and the declaration carries the file.\n- Have the plan gate refuse a plain `_test.go` path under `**Edit:**`, naming the way forward, and update `loom-plan-spec.md` and the stencil together.\n- Check that Webster's kick-start pack and the fork prompt still tell the fork which file the new tests go in.\n",
-      "status": "running · Worktree-Create",
+      "status": "running · Loom-Preflight",
       "created": "2026-10-15T08:55:29Z",
       "revised": "2026-10-15T12:07:23Z",
       "run_settings": {
