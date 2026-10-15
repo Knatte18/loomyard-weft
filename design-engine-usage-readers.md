@@ -1,6 +1,6 @@
 # Usage and cost read through the engine
 
-`engine-usage-readers` · Task · enhancement, shuttle, claude · running · PR-Align
+`engine-usage-readers` · Task · enhancement, shuttle, claude · running · PR-Gate
 
 ## Goal
 
