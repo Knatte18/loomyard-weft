@@ -1,6 +1,6 @@
 # creel: read does not show that a message was returned by a removed holder
 
-`creel-read-returned-mark` · Note · bug
+`creel-read-returned-mark` · Note · bug, creel
 
 Imported from [issue #663](https://github.com/Knatte18/loomyard/issues/663).
 

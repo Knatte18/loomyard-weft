@@ -45,7 +45,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 2 | **Re-measure the test suite weight on a quiet machine**<br>• The test-suite-weight before and after numbers were taken under load; rerun the report Regenerate section on an idle machine for a fair wall-time comparison | `suite-weight-quiet-rerun` | 5d | 2d |  |
 | 3 | **Bench fork0 and the strict critical fixer on twill Discussion-Write**<br>• Arms: twill as is, with the strict critical fixer, and fork0 plus the critical fixer, graded against Discussion-Review keys | [`twill-discussion-fork0-bench`](design-twill-discussion-fork0-bench.md) | 11h | 11h | loom, burler, stencil |
 | 4 | **Prototype reed status buttons in a throwaway tmux server**<br>• A fresh agent tries the menu button, follow toggle and extra button line by hand before reed-status-buttons becomes a task | [`reed-status-buttons-prototype`](design-reed-status-buttons-prototype.md) | 7h | 7h | reed |
-| 5 | **Audit creel stage 1 in a closed sandbox hub**<br>• End-to-end and hands-on testing of lyx creel as it is, in a sandbox hub with its own tmux server; defects become issues | [`creel-test`](design-creel-test.md) | 38m | 36m | creel |
+| 5 | **Audit creel stage 1 in a closed sandbox hub**<br>• End-to-end and hands-on testing of lyx creel as it is, in a sandbox hub with its own tmux server; defects become issues | [`creel-test`](design-creel-test.md) | 39m | 36m | creel |
 
 ### Bugs
 
@@ -61,13 +61,14 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 6 | **creel: read marks mail read even when writing it out failed** | [`creel-read-ack-on-write-error`](design-creel-read-ack-on-write-error.md) | 0m | 0m | creel |
 | 7 | **creel: a daemon that fails to start leaves verbs with only 'no daemon answers'** | [`creel-daemon-start-error`](design-creel-daemon-start-error.md) | 0m | 0m | creel |
 | 8 | **creel: a new inject is charged TTL from before it was posted** | [`creel-inject-ttl-before-post`](design-creel-inject-ttl-before-post.md) | 0m | 0m | creel |
-| 9 | **creel: read does not show that a message was returned by a removed holder** | [`creel-read-returned-mark`](design-creel-read-returned-mark.md) | 0m | 0m |  |
+| 9 | **creel: read does not show that a message was returned by a removed holder** | [`creel-read-returned-mark`](design-creel-read-returned-mark.md) | 0m | 0m | creel |
+| 10 | **creel: log, inject help, sender field and release output inconsistencies** | [`creel-output-inconsistencies`](design-creel-output-inconsistencies.md) | 0m | 0m |  |
 
 #### Low priority
 
 | # | Note | Slug | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| 10 | **A hub pause leaves background forks and shells running, so hibernate never confirms**<br>• Pause interrupts turns but not background forks or shells; sessions read busy and hibernate confirmation fails | [`pause-background-work`](design-pause-background-work.md) | 20h | 10h | shuttle, webster |
+| 11 | **A hub pause leaves background forks and shells running, so hibernate never confirms**<br>• Pause interrupts turns but not background forks or shells; sessions read busy and hibernate confirmation fails | [`pause-background-work`](design-pause-background-work.md) | 20h | 10h | shuttle, webster |
 
 ### Enhancements
 
