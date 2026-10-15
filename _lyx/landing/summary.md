@@ -1,43 +1,41 @@
-# reed: re-pin stale navigation bindings on a running server
+# reed: re-pin stale navigation bindings at the first op of a new build
 
-Fixes #646.
+A deployed `lyx` now re-pins reed's root-table navigation bindings and the follow jump line on an already-running tmux server at its first reed op.
+Before, `pinBindingsLocked` ran only at boot and in the attach pre-flight, so a server booted by an older build kept its old Alt+Up/Alt+Down bindings.
+Those bindings do not write `@lyx_follow off`, and an unset `@lyx_follow` reads as on, so each new agent window pulled the viewer back.
+The only fix was to run `lyx reed attach` once in any pair.
 
-reed pinned its root-table navigation bindings (Alt+Up/Down/Left/Right, Alt+z and the status-bar click) only at server boot and in the attach pre-flight.
-A deploy therefore left a running tmux server holding the previous build's bindings until someone ran `lyx reed attach`.
-After the follow change landed, the old Alt+Up/Down bindings did not write `@lyx_follow off`, so each new agent window pulled the viewer back.
+Closes #646
 
-## What changes
+## Design
 
-- `pinBindingsLocked` (`internal/reedengine/bindings.go`) now stamps the server-global user option `@lyx_bindings_build` with the pinning build's VCS commit time (RFC 3339 UTC) and revision label, ahead of the `bind-key` calls.
-  A binary with no VCS stamp unsets the option.
-- `withOpLock` (`internal/reedengine/lock.go`) calls the new `repinStaleBindingsLocked` after taking the lock and before the op's step.
-  It reads the stamp with one `display-message` and calls `pinBindingsLocked` when `bindingsStale` reports the stamp stale.
-  Every reed verb that goes through the blocking op lock is covered, including strand add, window open and status.
-- `bindingsStale` is the pure rule.
-  An absent or unparseable stamp is stale.
-  The running build's own stamp is not stale, and neither is the stamp of a build with a later commit time.
-  Any other build's stamp is stale.
-  A running binary with no VCS stamp never re-pins and never reads the stamp.
-- The `Engine` carries its build identity as a field, filled from `buildvcs.Running()` in `New`.
+- `pinBindingsLocked` ends by writing a server-global option, `@lyx_bindings_build`, holding the pinning build's VCS commit time (RFC 3339 UTC) and revision label.
+  A binary with no VCS stamp unsets the option instead.
+- `withOpLock` reads the option after taking the op lock and before the op's step, and calls `pinBindingsLocked` when `bindingsStale` says so.
+  One site covers every blocking reed verb: strand add, window open, status and the rest.
+- `bindingsStale` is a pure function.
+  An absent or unparseable stamp is stale, and the running build's own stamp is not.
+  Another build's stamp is stale unless its commit time is after the running build's.
+- A newer build wins.
+  A long-lived process of an older `lyx`, such as a run's driver started before the deploy, cannot pin stale bindings back over a newer build's.
+- A binary with no VCS stamp, such as a test binary or `go run`, never re-pins and leaves a running server alone.
+- A failed stamp read, as with no server running, is logged at Debug, skips the check and does not fail the op.
+- The running identity is an `Engine` field filled by `buildvcs.Running()` in `New`, so package tests can set a stamped identity directly.
 
-Follow's default is unchanged: an unset `@lyx_follow` still reads on.
+Follow's default is unchanged: an unset `@lyx_follow` still reads as on.
 
-## Design decisions
+## Known bounds
 
-- **A newer build wins.** Compared to re-pinning on any difference, ordering builds by commit time stops a long-lived process of an older `lyx` from restoring its stale bindings over a newer build's. A run's driver started before the deploy is one such process.
-- **One site, the op lock.** All blocking reed ops pass through `withOpLock`, so no verb needs its own call. The watchdog's try-lock re-apply and the name-repair loop run on a tick and stay off this path.
-- **A failed read is quiet.** With no server up, the stamp read fails; it is logged at Debug and the op runs unchanged. A fresh boot pins the bindings anyway.
-- **Bindings only.** The global status-bar options that `pinGeometryOptionsLocked` sets still refresh only at boot and attach.
+- Two builds with the same commit time, such as a dirty dev build and the clean build of its commit, can re-pin over each other while both run reed ops.
+- The global status-bar options still refresh only at boot and attach, so a deploy that changes only the status-bar format shows the old bar until the next attach.
+- The watchdog's try-lock re-apply and the name-repair loop do not re-pin.
 
-## Risks
+## Tests and docs
 
-- A deploy that changes only the global status-bar format still needs an attach to show it.
-- Two builds with the same commit time, such as a dirty dev build and the clean build of its commit, re-pin over each other while both run reed ops.
+- A table test covers the stale rule.
+- Tests against the scripted fake tmux pin that `pinBindingsLocked` writes or unsets the stamp, that an op on a server stamped by an older build re-pins before its step, that a server stamped by the running build gets no `bind-key`, and that a failed read still runs the step.
+- The `reedengine` package doc and the `bindings.go` header describe the re-pin, and `cmd/lyx/testdata/test-budget.yaml` is raised for the new tests.
 
-## Tests
+## Check by hand
 
-- `TestBindingsBuildStamp` (`internal/reedengine/bindings_test.go`) covers three things: the stale rule as a table, the stamp the pin writes for a stamped and an unstamped build, and `withOpLock` against the scripted fake tmux. The fake-tmux rows check that an older or absent stamp re-pins before the step, and that the running build's stamp, a newer build's stamp, a failed read and an unstamped binary issue no `bind-key`.
-- The existing `set-option` counts in `TestPinGeometryOptionsLocked` and `TestAttachArgv_PreflightOnAKnownGoodSession` now include the stamp unset.
-- `internal/reedengine`'s row in `cmd/lyx/testdata/test-budget.yaml` rises by one for the new top-level test.
-
-The package doc (`internal/reedengine/doc.go`) and `bindings.go`'s file header now describe the stamp and the re-pin.
+Not run: deploy a new `lyx` over a live reed server and confirm that Alt+Up/Alt+Down switch windows after the first reed op, without an attach.
