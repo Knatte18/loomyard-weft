@@ -753,26 +753,6 @@
       "revised": "2026-10-15T05:18:09Z"
     },
     {
-      "id": 528,
-      "slug": "plan-drift-refusal-route",
-      "title": "Plan-Bouncer and Batchifier pass a plan that webster begin-batch then refuses with delete-before-reference",
-      "kind": "note",
-      "labels": [
-        "bug",
-        "webster",
-        "loom"
-      ],
-      "issues": [
-        625
-      ],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "Imported from [issue #625](https://github.com/Knatte18/loomyard/issues/625).\n\n## What happened\n\nA task's run passed Plan-Bouncer (done) and Batchifier (done), then Webster's `lyx webster begin-batch 17` refused with `plan_drifted`.\nThe blocking finding was `delete-before-reference/18-retired-builders-delete[blocking]`: a card deletes a symbol that a later card still references in its Edit code.\n`begin-batch 17` was refused twice with the identical finding, and the run halted `blocked` at Webster with anomaly `escalation-to-human`.\n\n## Why it is abnormal\n\n- The `delete-before-reference` check is a pure plan-ordering check, yet it only fires at `begin-batch`, after the whole Discussion and Plan review pipeline and the Batchifier have accepted the plan.\n  Plan-Bouncer and Plan-Burler should have caught it, or the Batchifier should have refused to batch the plan.\n- The refusal is labelled `plan_drifted`, but the plan did not drift from the tree between planning and batching; it was malformed from the start.\n  The label points an operator at the wrong cause.\n- The refusal text already names the way forward (move the delete to a later card, `lyx webster rebaseline --card NN`, then `begin-batch` again), but nothing routes that back to a plan-editing agent.\n  The run escalated to the human after roughly 45 minutes of Webster time.\n\n## What to do\n\n- Run the `delete-before-reference` finding (or the whole plan re-resolution) at Plan-Bouncer or Batchifier time, so an ordering defect is fixed by the plan reviewers.\n- Distinguish a plan malformed at authoring from true drift in the refusal's classification.\n- Consider letting Webster or the driver route a `delete-before-reference` refusal to a plan-fix step instead of halting for a human.\n\nProvenance: task `overview-seats`; notes `loom-halt.md`, `webster-refusal-begin-batch.md`, `webster-refusal-begin-batch-2.md`.\n\n## Correction (orch, 2026-10-15)\n\nIn `overview-seats` the plan was not malformed: the reference was a temporary parity test that card 12's batch added after Plan-Write, inside a region card 18 itself rewrites, so the finding was a false positive of the check, fixed by `delete-order-own-edit` (landed 2026-10-14).\nWhat stays valid here: the `plan_drifted` label names the wrong cause, and a real `delete-before-reference` refusal at `begin-batch` has no route back to a plan-editing agent and halts for a human.\n\n",
-      "created": "2026-10-15T05:33:07Z",
-      "revised": "2026-10-15T05:33:16Z"
-    },
-    {
       "id": 530,
       "slug": "run-pane-timing",
       "title": "Run status pane: numbered rows, seconds, round totals, gate time; segment-named sessions",
@@ -817,25 +797,6 @@
       "body": "## Seen\n\nCarried over from the removed note `model-downgrade` (2026-10-15).\nEach Burler fixer is a fresh session that reads the whole context the reviewer just read, part of the $1.9 per run in the Burler cost breakdown.\nSkipping the fixer on an empty review is already built (`internal/burlerengine/fix.go`).\n\n## Idea\n\nFork the fixer from the reviewer's session, so it inherits the reviewer's cache prefix instead of reading the context again.\nA fork inherits the reviewer's model, so this rules out a separate fixer model for a forked fixer.\n\n## Other open items from `model-downgrade`\n\n- Plan and Discussion fixers to `sonnet[medium]`: estimated about $4 over six runs, not benched.\n- Fan on or off per round (fan in round 1, solo after) does not exist and needs code.\n- A per-batch Webster model (a cheap model only for mechanical cards) needs code in `internal/websterengine`.\n",
       "created": "2026-10-15T06:06:10Z",
       "revised": "2026-10-15T06:06:10Z"
-    },
-    {
-      "id": 535,
-      "slug": "config-bare-empty-write",
-      "title": "config: bare lyx config \u003cmodule\u003e from an agent writes an empty layer file",
-      "kind": "note",
-      "labels": [
-        "bug",
-        "config"
-      ],
-      "issues": [
-        632
-      ],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "Imported from [issue #632](https://github.com/Knatte18/loomyard/issues/632).\n\nSeen (2026-10-15): a Discussion-Write agent in pair webster-pack-end-of-prompt ran 'lyx config webster' with no arguments, expecting a read. It replied 'edited and synced _lyx/config/webster.yaml' and left a 0-byte _lyx/config/webster.yaml in the pair's worktree layer (behind the weft symlink, so git status shows nothing). The bare form opens an editor; with no interactive terminal the editor exits at once and lyx saves the empty buffer as the layer. Workaround: the orch never runs lyx config without --set or --print. Expected: with no TTY, a bare 'lyx config \u003cmodule\u003e' refuses (or prints) and never writes; an empty editor result is never saved over a layer.",
-      "created": "2026-10-15T06:48:49Z",
-      "revised": "2026-10-15T06:48:51Z"
     },
     {
       "id": 537,
@@ -889,6 +850,36 @@
       "body": "## Idea\n\ntmux status lines support clickable ranges (`#[range=user|\u003cname\u003e]` with a `MouseDown1Status` binding), and reed already uses them for its window buttons.\nThe same mechanism can carry action buttons that run a command when clicked.\n\nExamples the operator named on 2026-10-15:\n\n- open the pair in VS Code (`lyx ide spawn \u003cslug\u003e`),\n- `lyx orch distill` and `lyx orch refresh` for the orch session,\n- the follow toggle of note `viewer-off-shell`,\n- \"and much else\".\n\n## Operator view, not a decision (2026-10-15)\n\nThe button set must be highly and easily configurable, not a fixed list in code.\n\n## Open design points\n\n- Where the set lives: presumably reed's module config, with a hub default and per-session overrides (the orch session needs other buttons than a task pair).\n- What a button entry holds: a label, the command, and which sessions show it.\n- How a command runs: `run-shell` in the pair's worktree, with its output and failure visible somewhere.\n- Whether the follow toggle is a built-in entry in the same set.\n\n## Placement: options discussed on 2026-10-15, none chosen\n\nReed's status bar today has two lines: line 0 holds the window buttons (overview, agents, shell), line 1 the session buttons and the time.\nThe action buttons must not mix with the window buttons.\nThe operator worries that a separate line next to the others invites misclicks, above all on actions that cannot be undone, such as `lyx orch distill` and `lyx orch refresh`.\n\n1. One menu button (my recommendation, the orch's call, not the operator's): a single button with a distinct look opens a tmux `display-menu` holding the configured actions.\n   A misclick only opens the menu.\n   The follow toggle, which is harmless to click, can sit beside it as a button of its own.\n2. A third status line of action buttons, with `confirm-before` on the destructive ones.\n   It is quicker to use, but each misclick costs a dismissal.\n3. The right side of line 1, before the time: no extra row, but cramped with many sessions and buttons.\n\n## Operator view, not a decision (2026-10-15)\n\nPrototype the placement and the menu by hand in a separate throwaway tmux server, never in a live reed session, before this becomes a task.\n",
       "created": "2026-10-15T08:03:46Z",
       "revised": "2026-10-15T08:08:23Z"
+    },
+    {
+      "id": 541,
+      "slug": "refusal-route-config-empty",
+      "title": "Begin-batch refusal route and label; bare lyx config writes an empty layer",
+      "kind": "task",
+      "labels": [
+        "bug",
+        "webster",
+        "loom",
+        "config"
+      ],
+      "issues": [
+        625,
+        632
+      ],
+      "depends_on": [
+        "shed-tackler"
+      ],
+      "isolated": false,
+      "brief": "Two small bugs: a delete-before-reference refusal is mislabelled plan_drifted and halts for a human; bare lyx config with no TTY saves an empty layer",
+      "body": "Two small bugs in one run, bundled on the operator's word (2026-10-15) to save a run's overhead, though they touch different packages.\n\n# Part 1: begin-batch refusal route (issue #625, webster and loom)\n\n## What happened\n\nA task's run passed Plan-Bouncer (done) and Batchifier (done), then Webster's `lyx webster begin-batch 17` refused with `plan_drifted`.\nThe blocking finding was `delete-before-reference/18-retired-builders-delete[blocking]`: a card deletes a symbol that a later card still references in its Edit code.\n`begin-batch 17` was refused twice with the identical finding, and the run halted `blocked` at Webster with anomaly `escalation-to-human`.\n\n## Correction (orch, 2026-10-15)\n\nIn `overview-seats` the plan was not malformed: the reference was a temporary parity test that card 12's batch added after Plan-Write, inside a region card 18 itself rewrites, so the finding was a false positive of the check, fixed by `delete-order-own-edit` (landed 2026-10-14).\n\n## What to do\n\n- The refusal is labelled `plan_drifted` even when the plan did not drift from the tree but was malformed at authoring: distinguish the two in the refusal's classification, so the label names the right cause.\n- A real `delete-before-reference` refusal at `begin-batch` has no route back to a plan-editing agent and halts for a human, though its text already names the way forward (move the delete to a later card, `lyx webster rebaseline --card NN`, then `begin-batch` again).\n  Route it to a plan-fix step, or let Webster or the driver take that way, instead of halting.\n- Consider running the `delete-before-reference` check at Plan-Bouncer or Batchifier time, so an ordering defect is fixed by the plan reviewers.\n\nProvenance: task `overview-seats`.\n\n# Part 2: bare `lyx config \u003cmodule\u003e` writes an empty layer (issue #632, config)\n\nSeen (2026-10-15): a Discussion-Write agent in pair `webster-pack-end-of-prompt` ran `lyx config webster` with no arguments, expecting a read.\nIt replied `edited and synced _lyx/config/webster.yaml` and left a 0-byte `_lyx/config/webster.yaml` in the pair's worktree layer (behind the weft symlink, so `git status` shows nothing).\nThe bare form opens an editor; with no interactive terminal the editor exits at once and lyx saves the empty buffer as the layer.\n\nWorkaround: the orch never runs `lyx config` without `--set` or `--print`.\n\nExpected: with no TTY, a bare `lyx config \u003cmodule\u003e` refuses (or prints) and never writes; an empty editor result is never saved over a layer.\n",
+      "created": "2026-10-15T05:33:07Z",
+      "revised": "2026-10-15T08:11:00Z",
+      "run_settings": {
+        "loom": {
+          "review_hard_max_bounces": 3,
+          "review_max_bounces": 2
+        }
+      }
     }
   ]
 }
