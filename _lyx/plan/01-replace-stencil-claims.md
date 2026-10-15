@@ -4,10 +4,10 @@
 - `contracts/stencils/claims_test.go`
 
 **Create:**
-- `plan:contracts/stencils#TestStencils_NameGoValues` -> `func TestStencils_NameGoValues(t *testing.T)`
-- `plan:contracts/stencils#TestTwillStencils_HostNeutral` -> `func TestTwillStencils_HostNeutral(t *testing.T)`
-- `plan:contracts/stencils#TestStencils_MarkerPositions` -> `func TestStencils_MarkerPositions(t *testing.T)`
-- `plan:contracts/stencils#headingSection` -> `func headingSection(text, heading string) (string, bool)`
+- `contracts/stencils#TestStencils_NameGoValues`
+- `contracts/stencils#TestTwillStencils_HostNeutral`
+- `contracts/stencils#TestStencils_MarkerPositions`
+- `contracts/stencils#headingSection`
 
 **Edit:**
 - `contracts/stencils#TestStencils_TopLevelMarkers`

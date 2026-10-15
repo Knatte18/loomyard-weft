@@ -1,9 +1,9 @@
 {
   "runGuid": "f563ea8bb180f22fa1f933414146165f",
-  "planFingerprint": "144f45cb4161afdd19358749d6dcfe52c1c30d68bc4f69e1bcba5673d8fce053",
+  "planFingerprint": "f225203109a48e5be244bfacd0172d739673999fa5a24399d3cad9652a4aba5f",
   "planFileHashes": {
     "00-overview.md": "16a9035396d5e8c81321e81b42f45f4685d30e4667caca4a268d1c63b35517f1",
-    "01-replace-stencil-claims.md": "a28eae968b3425b016ef091549ed495ab896bbb644a88df822cba45269b9ada8",
+    "01-replace-stencil-claims.md": "39f86ccb6b79e63efe49beaddb32242ab28dd348a1442d1c3c76cdfc8761b9a4",
     "02-webster-template-tests.md": "8c732a6a0ce18928d927fd03b495eea54351dc6a1a27f6570cf9d1940fb57c70",
     "03-burler-prompt-tests.md": "71b6d8f143c7ecce02ad3bab3993596b80cfd4c143b3a591df2efb70b976a40c",
     "04-treadle-template-tests.md": "cc1a6b3b03431da06a78791acb3467887410802aa1e08a4bd379a34b0d0d95d9",
@@ -210,7 +210,7 @@
       }
     }
   ],
-  "currentBatch": 1,
+  "currentBatch": 0,
   "masterStrand": "61783571fc7a72646c7e82d2e3c2e5b2",
   "masterSessionId": "882225e9-2a89-4521-9764-61f243c588d9",
   "batches": {
@@ -222,7 +222,7 @@
         "03-burler-prompt-tests"
       ],
       "cardHashes": {
-        "01-replace-stencil-claims": "a28eae968b3425b016ef091549ed495ab896bbb644a88df822cba45269b9ada8",
+        "01-replace-stencil-claims": "39f86ccb6b79e63efe49beaddb32242ab28dd348a1442d1c3c76cdfc8761b9a4",
         "02-webster-template-tests": "8c732a6a0ce18928d927fd03b495eea54351dc6a1a27f6570cf9d1940fb57c70",
         "03-burler-prompt-tests": "71b6d8f143c7ecce02ad3bab3993596b80cfd4c143b3a591df2efb70b976a40c"
       },
@@ -230,8 +230,29 @@
       "kind": "fork",
       "spawnedAt": "2026-10-15T14:50:52Z",
       "sessionId": "882225e9-2a89-4521-9764-61f243c588d9",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "01-replace-stencil-claims",
+        "status": "done",
+        "head_sha": "a03bec83cd5695d9ba63bbe9d3d63b816faa4cb6",
+        "deviations": [
+          "contracts/stencils/claims_test.go",
+          "contracts/stencils/govalues_test.go"
+        ]
+      },
+      "cardShas": [
+        "a03bec83cd5695d9ba63bbe9d3d63b816faa4cb6"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-lighter-test-rules/882225e9-2a89-4521-9764-61f243c588d9/subagents/agent-a19b9ce354272f345.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-lighter-test-rules/882225e9-2a89-4521-9764-61f243c588d9/subagents/agent-a19b9ce354272f345.jsonl"
+      ]
     }
-  }
+  },
+  "seenForkTranscripts": [
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-lighter-test-rules/882225e9-2a89-4521-9764-61f243c588d9/subagents/agent-a19b9ce354272f345.jsonl"
+  ]
 }
