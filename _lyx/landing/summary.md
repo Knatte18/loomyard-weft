@@ -1,47 +1,45 @@
-# Twill: fork0 plan writer, critical-fixer judge, branch-coverage lens
+# Twill: fork0 plan writer, critical judge, branch-coverage lens
 
-Plan-Write with lens forks on now runs the fork0 flow the benches settled on (`docs/research/twill-rationale-bench.md`, "Outcome").
-The Plan-Write session explores, then spawns one fork, fork0, which writes the plan and passes `lyx loom validate-plan`.
-The session reads the finished plan without fork0's reasoning and spawns the lens forks, so the lenses hold the exploration and the plan but not the writer's reasoning.
-It then judges their findings as a strict critical fixer.
-At level cost, fork0's lenses found more real findings than the old writer-then-lenses flow, with no loss of precision.
+Plan-Write with its lens forks on now runs the design the twill benches settled on.
+The Plan-Write lead explores and reads the rubric, then spawns one fork, fork0, which writes every card file and the overview and runs `lyx loom validate-plan`.
+The lead reads the finished plan in full, without fork0's reasoning, and spawns the lens forks from its own session.
+The lenses therefore hold the exploration and the plan but never the writer's reasoning, and the lead judges their findings itself.
+`docs/research/twill-fork0-bench.md` and `docs/research/twill-fixer-bench.md` hold the evidence.
 
 ## What changes
 
-- **fork0 at Plan-Write.**
-  The flow replaces the old after-flow outright; no key or flag selects the old one.
-  The procedure, its failure paths and fork0's prompt are host-neutral stencil text in the new `contracts/stencils/twill/twill-writer-fork.md`, rendered by `internal/twilldirective` as an optional part that only a host asking for a writer fork fills.
-  Discussion-Write asks for none, so its rendered directive carries no fork0 text.
-- **Critical-fixer judge step, at both hosts.**
-  The directive's judge step now gives each finding one of three dispositions: dispute (`premise false` or `every fix worse`), fix with your own change, or fix as proposed.
-  A dispute needs cited evidence opened in the session; the lens-review record carries one line per finding with its lens, severity and disposition.
-  The text follows `contracts/stencils/burler/burler-step-fix.md`, without Burler's write-surface deferral.
-  The host's governing input and its dispute evidence kinds arrive as host values: the decision record and code-level kinds at Plan-Write, the board entry and design-level kinds (no `path:line` required) at Discussion-Write.
-  The `rejection_rule` host value and Plan-Write's rejection-rule constant are retired.
-- **Failure paths.**
-  A new `twill-relaunch.md` part renders the paths for a respawned or resumed master in place of the two Agent-call relaunch paragraphs, which fork0 makes ambiguous.
-  A re-prompted master (gate re-prompt or parent-review reject) spawns no fork0, edits the plan itself, and runs the lens review once only if it has not yet made its lens spawn call.
-  The re-prompt rule replaces the sentence that a re-prompt never spawns forks again, at both hosts.
-  The Discussion-Write directive keeps its two relaunch paragraphs.
-- **`twill-plan` fan** (`internal/burlerengine/template.yaml`).
+- **fork0 flow at Plan-Write.**
+  It replaces the old writer-then-forks flow whenever `plan_lenses` names a fan; no key selects the old flow.
+  Discussion-Write is unchanged and spawns no writer fork.
+- **Critical-fixer judge at Plan-Write only.**
+  Each finding is weighed twice, its premise and the change it proposes, and gets one of three dispositions: dispute (`premise false` or `every fix worse`, with cited evidence), fix with the judge's own change, or fix as proposed.
+  The record lists one line per finding with lens, severity and disposition.
+  Discussion-Write keeps today's plain fix-or-reject judge.
+- **`twill-plan` fan.**
   New `branch-coverage` lens after `criteria-coverage`: every branch and exit the cards' Intents introduce, named by the record or not, must be reached by a planned test row.
-  `forced-edits` gains a sentence making a registration in a table or list, such as a guard table, a forced edit.
-  `criteria-coverage` gains a sentence checking that each path, comparison or default uses the operand the record names, not a near one such as the wrong parent directory.
-- Docs: the `twilldirective` package doc, `docs/overview.md`'s twill lines and the `plan_lenses` comment in `internal/loomengine/template.yaml` describe the fork0 flow and the critical judge.
+  `forced-edits` gains a sentence that a new type, function or executor needing registration in a table or list is a forced edit.
+  `criteria-coverage` gains a sentence to check that a path, comparison or default uses the operand the record names, not a near one such as the wrong parent directory.
 
-## Design decisions to know
+## Design decisions
 
-- With lens forks off, the rendered prompt is unchanged.
-- fork0 is bounded to one spawn per master session, as the lens forks are.
-  A fork0 that returns without a complete plan is finished by the master, not respawned.
-- The Plan-Write gate is unchanged: a run with lens forks on still requires a recorded `lens-review.md`, and a missing one fails `lens-review-missing`.
-- The twill stencils stay host-neutral under `hostNeutralClaims`; the claims and markers tests (`contracts/stencils/claims_test.go`, `markers_test.go`) are extended, not multiplied.
-- The plan rubric is unchanged; the wrong-operand check lives in `criteria-coverage` so it does not land in every Plan-Review round.
-- Not built: fork0 at Discussion-Write, a fork0 rationale file, and any mechanical check on the lens review's content.
+- The twill directive in `internal/twilldirective` gains parts, all host-neutral stencils read through `stencilstore`: `twill-writer-fork` (the fork0 procedure, its failure paths and fork0's prompt), `twill-relaunch`, and one of `twill-judge-critical` or `twill-judge-plain`, chosen per host.
+  Host-specific nouns arrive as host values; the renderer errors naming the marker when a required one is empty.
+- The failure paths for a session that ends or is resumed are written out as separate rules, using the overview-last completion signal rather than new state.
+  Each master session spawns fork0 at most once and lens forks at most once.
+  A re-prompted master spawns no fork0 and edits the plan itself.
+  This replaces the old "never spawns forks again" sentence at both hosts.
+- The fork boilerplate no longer says the writer wrote the files; it says they were written and passed the self-check, which holds for both hosts.
+- With lens forks off, the rendered prompt is unchanged, and the Plan-Write gate still requires a recorded `lens-review.md`.
+- The `rejection_rule` host value is retired, and the directive's closed marker list in `contracts/stencils/markers_test.go` changes with it.
+
+## Docs and tests
+
+The `twilldirective` package doc, `docs/overview.md` and the `plan_lenses` comment in `internal/loomengine/template.yaml` describe the new flow.
+Claims, markers, directive and fan tests are extended for the new parts, host-neutrality, the judge split, and the fan's lens list.
 
 ## To check by hand
 
-- The critical-fixer judge now applies at Discussion-Write, though the benches measured Plan-Write only.
-  Check whether its design-level evidence kinds, bounded by the writer's Step 2 ban on exact signatures and `file:line` citations, let the judge refute a finding as often as the code-level kinds do at Plan-Write.
-- A hub `burler.yaml` that overrides the `twill-plan` fan keeps its own lens list and misses `branch-coverage` until edited; the prime hub overrides no twill fan today.
-- No end-to-end Plan-Write run with a live fork0 was made here, and none of the resume paths (master resumed in flight, before or after fork0, at or after the lens spawn) ran against a real reed resume; only the rendered prompts and the gate are pinned by tests.
+- A hub `burler.yaml` that overrides the `twill-plan` fan keeps its own lens list and misses `branch-coverage` until edited.
+- Only Plan-Write was benched with fork0 and the critical judge; the Discussion-Write plain-judge text is unchanged.
+- No real Plan-Write run with fork0 was observed end to end, including the resume and re-prompt paths; run one with lens forks on and check that `lens-review.md` is recorded and the gate passes.
+- Read the `Directive` renderer changes in `internal/twilldirective/twilldirective.go`, which fill exactly one judge part into a single judge marker.
