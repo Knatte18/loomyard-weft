@@ -17,7 +17,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | **Webster fork deviations list mixes in its own target files**<br>• The implementer stencil asks a fork to compare its edits against the glyph union and also tells it not to, so deviations lists files that house its own target glyphs | [`webster-deviations-list`](design-webster-deviations-list.md) | loom | Merge-Bouncer | 6h | 35m | webster, stencil |
+| 1 | **Webster fork deviations list mixes in its own target files**<br>• The implementer stencil asks a fork to compare its edits against the glyph union and also tells it not to, so deviations lists files that house its own target glyphs | [`webster-deviations-list`](design-webster-deviations-list.md) | loom | Merge-Burler-Review | 6h | 36m | webster, stencil |
 
 ### Ready
 
