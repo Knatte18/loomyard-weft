@@ -1,0 +1,7 @@
+verdict: approve
+reason: >-
+  The design covers every point of the board entry: a hub-wide language config naming the skills with no hard-coded language,
+  each code-writing and code-reviewing role appending them, and scribe:testing for the darn writer.
+  It takes no work from another entry. The overlaps with run-pane-timing and refusal-route-config-empty touch the same files
+  at different places with different behaviour, and both of those runs land first.
+question: ""
