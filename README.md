@@ -17,7 +17,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | **reed: intact launch lines under parallel launches, --focus=false never takes focus**<br>• Parallel shuttle launches corrupt the typed launch line, and --focus=false windows still steal focus | [`reed-launch-fixes`](design-reed-launch-fixes.md) | darn | Darn-Bouncer | 20m | 13m | reed, shuttle |
+| 1 | **reed: intact launch lines under parallel launches, --focus=false never takes focus**<br>• Parallel shuttle launches corrupt the typed launch line, and --focus=false windows still steal focus | [`reed-launch-fixes`](design-reed-launch-fixes.md) | darn | Describe | 20m | 13m | reed, shuttle |
 
 #### Normal priority
 
@@ -40,7 +40,7 @@ Waits only on Running or Ready entries.
 
 | # | Task | Slug | Recipe | After | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | **Run status pane: numbered rows, seconds, round totals, gate time; segment-named sessions**<br>• Per-run status pane shows seconds, a total per Burler round, and each gate with its time and the rework it caused | [`run-pane-timing`](design-run-pane-timing.md) | darn | `shed-tackler`, `reed-launch-fixes` | 23m | 8m | loom, burler, shed, reed |
+| 1 | **Run status pane: numbered rows, seconds, round totals, gate time; segment-named sessions**<br>• Per-run status pane shows seconds, a total per Burler round, and each gate with its time and the rework it caused | [`run-pane-timing`](design-run-pane-timing.md) | darn | `shed-tackler`, `reed-launch-fixes` | 23m | 9m | loom, burler, shed, reed |
 
 ## Notes
 
@@ -77,7 +77,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 9 | **Make shuttle and lyx neutral to the LLM provider**<br>• Engine registry, engine in run.json, no Claude names in the core, usage readers behind the engine | [`llm-agnostic-engine`](design-llm-agnostic-engine.md) | 1d | 1d | shuttle, config, stencil |
 | 10 | **Tune the Burler lens fan prompts**<br>• Revisit the parked lens fan with lens and fork prompts that overlap less, measured against solo on the fan-lab fixtures | [`fan-prompt-tuning`](design-fan-prompt-tuning.md) | 1d | 1d | burler, stencil |
 | 11 | **Verification protocol for a .NET repo: slow-suite tier, numerical-baseline capture/compare, verify timeouts and logs** | [`dotnet-verify-protocol`](design-dotnet-verify-protocol.md) | 15h | 15h | loom, webster, config |
-| 12 | **Run verbs in one shared namespace, not under lyx loom**<br>• lyx loom decision/status/goto/approve act on darn runs too; move recipe-neutral run verbs to one shared namespace | [`run-verbs-shared`](design-run-verbs-shared.md) | 12h | 12h | shed, loom |
+| 12 | **Run verbs in one shared namespace, not under lyx loom**<br>• lyx loom decision/status/goto/approve act on darn runs too; move recipe-neutral run verbs to one shared namespace | [`run-verbs-shared`](design-run-verbs-shared.md) | 13h | 12h | shed, loom |
 | 13 | **Show the orch context size in the prime overview window**<br>• The prime overview window shows the orch session context tokens against its thresholds beside the batten runs | [`orch-context-overview`](design-orch-context-overview.md) | 11h | 11h | orch, batten |
 | 14 | **Clearer loom model key names, one per step**<br>• Model keys like fix name the role they set, and every review segment gets its own reviewer and fixer key | [`loom-model-key-names`](design-loom-model-key-names.md) | 11h | 11h | config, loom |
 | 15 | **Spawned code roles load the hub language skills**<br>• Darn, Webster, Burler and merge sessions write Go without scribe:golang-* skills; the hub config should name its language skills | [`role-language-skills`](design-role-language-skills.md) | 11h | 11h | config, shuttle |
