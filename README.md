@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-15 14:45 UTC; every age below is as of then.
+Rendered 2026-10-15 14:46 UTC; every age below is as of then.
 
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
@@ -20,7 +20,7 @@ Held by a run; its scope is locked until the run ends.
 | 1 | **Lighter test rules for small changes**<br>• Tests that pin stencil wording make small prompt changes large; pin only what must hold, measured first | [`lighter-test-rules`](design-lighter-test-rules.md) | loom | Plan-Burler-Review | 2d | 2h | stencil, webster, burler, loom |
 | 2 | **Engine-owned config, one neutral guardrail table, provider-blind reed**<br>• claude.yaml owned by claudeengine, a neutral shell-guard table each engine renders as hooks, reed strands tagged by provider | [`engine-config-seams`](design-engine-config-seams.md) | loom | Plan-Write | 4h | 4h | shuttle, claude, config, reed |
 | 3 | **Every role spec carries its resolved engine**<br>• Role specs take engine, model and effort from the model alias through one shared ModelChoice; Claude-only roles declare their needs | [`engine-model-choice`](design-engine-model-choice.md) | loom | Discussion-Bouncer | 4h | 4h | shuttle, loom, webster, burler, shed |
-| 4 | **creel stage 1: the one way to reach an agent, standalone**<br>• The creel daemon, queues, journal and verbs, delivering through shuttle, built and tested before any module sends through it | [`creel-core`](design-creel-core.md) | loom | Merge-Burler-Fix | 13d | 3h | creel, reed, shuttle |
+| 4 | **creel stage 1: the one way to reach an agent, standalone**<br>• The creel daemon, queues, journal and verbs, delivering through shuttle, built and tested before any module sends through it | [`creel-core`](design-creel-core.md) | loom | Merge-Bouncer | 13d | 3h | creel, reed, shuttle |
 
 ### Ready
 
@@ -37,7 +37,7 @@ Waits only on Running or Ready entries.
 | # | Task | Slug | Recipe | After | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | 1 | **Usage and cost read through the engine**<br>• tokencount reads each run through its engine, with prices per engine, instead of reading Claude transcripts directly | [`engine-usage-readers`](design-engine-usage-readers.md) | loom | `engine-config-seams` | 4h | 4h | shuttle, claude |
-| 2 | **Discussion hands Plan a list of the relevant code**<br>• The Discussion writer writes relevant.md listing the files and members it read and found relevant; Plan-Write reads it first, so its context starts smaller | [`discussion-relevant-list`](design-discussion-relevant-list.md) | loom | `lighter-test-rules` | 47m | 30m | loom, stencil |
+| 2 | **Discussion hands Plan a list of the relevant code**<br>• The Discussion writer writes relevant.md listing the files and members it read and found relevant; Plan-Write reads it first, so its context starts smaller | [`discussion-relevant-list`](design-discussion-relevant-list.md) | loom | `lighter-test-rules` | 48m | 31m | loom, stencil |
 
 ## Notes
 
