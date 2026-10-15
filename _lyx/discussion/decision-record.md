@@ -164,6 +164,12 @@ Decision: The strict critical-judge fixer text applies at Discussion-Write as we
 
 Rationale: The Discussion fork0 bench (2026-10-15) found today's twill cheapest and the critical fixer no better at Discussion, but the operator wants the fixer's critical tone at Discussion regardless.
 
+### Added after Discussion (operator, 2026-10-15): Critical fixer only at Plan-Write
+
+Decision: Supersedes 'Critical fixer tone stays at Discussion-Write': the strict critical-judge fixer text applies at Plan-Write only. Discussion-Write keeps today's twill fixer steps unchanged, and fork0 stays off Discussion-Write.
+
+Rationale: The Discussion fork0 bench (2026-10-15) found the critical fixer disputed nothing at Discussion, fixed noise today's fixer rightly rejects, twice added a key defect, and cost more; today's twill was best there.
+
 ## Constraints
 
 - `PATTERN-stencil-ownership`: fork0's text and the judge text live in stencils read through `stencilstore`; host values stay short phrases, not procedure text.
