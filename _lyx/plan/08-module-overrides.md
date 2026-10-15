@@ -1,17 +1,17 @@
 # Card 8 — module-overrides
 
 **Create:**
-- `plan:internal/loomengine#Config.ShedOverride` -> `func (c Config) ShedOverride() sheddriver.Override`
-- `plan:internal/loomengine#RecipeOverride` -> `func RecipeOverride(dirs configengine.Dirs, recipe string) (sheddriver.Override, error)`
-- `plan:internal/loomengine#TestRecipeOverride` -> `func TestRecipeOverride(t *testing.T)`
-- `plan:internal/darnengine#Config.ShedOverride` -> `func (c Config) ShedOverride() sheddriver.Override`
-- `plan:internal/battenshed#Config.ShedOverride` -> `func (c Config) ShedOverride() sheddriver.Override`
-- `plan:internal/battenshed#ValidateLocalValues` -> `func ValidateLocalValues(document []byte) error`
-- `plan:internal/battenshed#TestLoadConfig` -> `func TestLoadConfig(t *testing.T)`
-- `plan:internal/loomcli#tacklerFor` -> `func tacklerFor(dirs configengine.Dirs, recipe string, reg modelspec.Registry) (sheddriver.TacklerSettings, string, error)`
-- `plan:internal/loomcli#TestTacklerFor` -> `func TestTacklerFor(t *testing.T)`
-- `plan:internal/battencli#childDriverKind` -> `func childDriverKind(dirs configengine.Dirs, recipe string) (string, error)`
-- `plan:internal/battencli#TestChildDriverKind` -> `func TestChildDriverKind(t *testing.T)`
+- `internal/loomengine#Config.ShedOverride`
+- `internal/loomengine#RecipeOverride`
+- `internal/loomengine#TestRecipeOverride`
+- `internal/darnengine#Config.ShedOverride`
+- `internal/battenshed#Config.ShedOverride`
+- `internal/battenshed#ValidateLocalValues`
+- `internal/battenshed#TestLoadConfig`
+- `internal/loomcli#tacklerFor`
+- `internal/loomcli#TestTacklerFor`
+- `internal/battencli#childDriverKind`
+- `internal/battencli#TestChildDriverKind`
 
 **Delete:**
 - `internal/loomengine#ResolveTackler`

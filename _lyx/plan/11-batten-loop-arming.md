@@ -1,8 +1,8 @@
 # Card 11 — batten-loop-arming
 
 **Create:**
-- `plan:internal/battencli#battenLoopSpec` -> `func battenLoopSpec(location *lyxcwd.Location, slug string) shedverbs.LoopSpec`
-- `plan:internal/battencli#battenInterruptPolicy` -> `func battenInterruptPolicy(row string) string`
+- `internal/battencli#battenLoopSpec`
+- `internal/battencli#battenInterruptPolicy`
 
 **Edit:**
 - `internal/battencli#battenCLI.specFor`

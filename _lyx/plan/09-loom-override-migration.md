@@ -1,8 +1,8 @@
 # Card 9 — loom-override-migration
 
 **Create:**
-- `plan:internal/loomengine#migrateShedOverrides` -> `func migrateShedOverrides(document []byte) ([]byte, []string, error)`
-- `plan:internal/loomengine#TestMigrateConfig_ShedOverrides` -> `func TestMigrateConfig_ShedOverrides(t *testing.T)`
+- `internal/loomengine#migrateShedOverrides`
+- `internal/loomengine#TestMigrateConfig_ShedOverrides`
 
 **Edit:**
 - `internal/loomengine#MigrateConfig`

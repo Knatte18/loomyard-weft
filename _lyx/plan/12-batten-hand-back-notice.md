@@ -1,8 +1,8 @@
 # Card 12 — batten-hand-back-notice
 
 **Create:**
-- `plan:internal/battenshed#HandBackNotice` -> `func HandBackNotice(ctx context.Context, deps RowNoticeDeps, slug, scratchDir, producer string, historyLen int, line string) bool`
-- `plan:internal/battenshed#TestHandBackNotice` -> `func TestHandBackNotice(t *testing.T)`
+- `internal/battenshed#HandBackNotice`
+- `internal/battenshed#TestHandBackNotice`
 
 **Uses:**
 - `internal/battenshed#rowNotifier.send`

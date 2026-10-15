@@ -2,19 +2,19 @@
 
 **Create:**
 - `internal/sheddriver/template.yaml`
-- `plan:internal/sheddriver#ConfigTemplate` -> `func ConfigTemplate() string`
-- `plan:internal/sheddriver#Config` -> `type Config struct`
-- `plan:internal/sheddriver#ConfigSpec` -> `func ConfigSpec() configengine.Spec`
-- `plan:internal/sheddriver#LoadConfig` -> `func LoadConfig(dirs configengine.Dirs) (Config, error)`
-- `plan:internal/sheddriver#ValidateLocalValues` -> `func ValidateLocalValues(document []byte) error`
-- `plan:internal/sheddriver#Override` -> `type Override struct`
-- `plan:internal/sheddriver#CheckOverride` -> `func CheckOverride(module string, o Override) error`
-- `plan:internal/sheddriver#CheckLocalOverride` -> `func CheckLocalOverride(module string, document []byte) error`
-- `plan:internal/sheddriver#ResolveDriverKind` -> `func ResolveDriverKind(cfg Config, o Override) string`
-- `plan:internal/sheddriver#ResolveTackler` -> `func ResolveTackler(cfg Config, o Override, reg modelspec.Registry) (TacklerSettings, error)`
-- `plan:internal/sheddriver#TestLoadConfig` -> `func TestLoadConfig(t *testing.T)`
-- `plan:internal/sheddriver#TestCheckOverride` -> `func TestCheckOverride(t *testing.T)`
-- `plan:internal/sheddriver#TestResolveTackler` -> `func TestResolveTackler(t *testing.T)`
+- `internal/sheddriver#ConfigTemplate`
+- `internal/sheddriver#Config`
+- `internal/sheddriver#ConfigSpec`
+- `internal/sheddriver#LoadConfig`
+- `internal/sheddriver#ValidateLocalValues`
+- `internal/sheddriver#Override`
+- `internal/sheddriver#CheckOverride`
+- `internal/sheddriver#CheckLocalOverride`
+- `internal/sheddriver#ResolveDriverKind`
+- `internal/sheddriver#ResolveTackler`
+- `internal/sheddriver#TestLoadConfig`
+- `internal/sheddriver#TestCheckOverride`
+- `internal/sheddriver#TestResolveTackler`
 
 **Edit:**
 - `internal/configreg#Modules`

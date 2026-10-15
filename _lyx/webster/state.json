@@ -1,6 +1,6 @@
 {
   "runGuid": "65068fb4a0035d8a33ba8bd22558c241",
-  "planFingerprint": "5b0e85998c8f549d9e0cb27c81563e1eba4dd33de5ac0217147999ff9d9102bb",
+  "planFingerprint": "f547e3011271940e135b31e68c5969a9c936cac88b9c313f7cdef5834005d8bc",
   "planFileHashes": {
     "00-overview.md": "dad976c121536ad9d32c0e5d1936dc77ad3d5bd5eba0a6e134c0ae4c9cdbf2a2",
     "01-interrupt-policy-words.md": "f8d8e99ff723899bd9bf96fc78b12a69ba4b527def2f4c274fd0aaacf46fdd85",
@@ -9,12 +9,12 @@
     "04-tackler-call-to-sheddriver.md": "6a9e68f64dce6df3bad7e1a364532fb68808b9eb24409fac128209023b6288f5",
     "05-drive-verb-split.md": "4aa963120205a7385428de1fae45a7f51a9ac98bbcef59e0d1a600a9584cc8b3",
     "06-driver-loop-to-sheddriver.md": "e7dc7cb0e7d065f26ea469b17ec89c7b3f6dea8520a6d79046a85612a61b568c",
-    "07-shed-config-module.md": "5f61243d6904008d621cc9a5835abb87b2b62d7fe5266881118ae0df756d8e1c",
-    "08-module-overrides.md": "0fa7bd43b26a51b229c4f3750db6a122e0b7f6520e2917201266681e0a830b4a",
-    "09-loom-override-migration.md": "606eaf94c2f4f8418d8f1db7b15f05de5185b4ff4bdb91797691974719213f6c",
+    "07-shed-config-module.md": "41ae190eb5e3ad056364444aeb938ae76a9078d330bf1777e37bcc106f43e9ef",
+    "08-module-overrides.md": "e60b6788d62f0fc1be7e44dca9c3a92ebdf43406dc39303b8c36d30d5001f600",
+    "09-loom-override-migration.md": "3dd2d5910987750c9b8b4c22015906b1e800838566e8cf153323d0f7273e054a",
     "10-shed-driver-pattern.md": "d77c27796b0133ca2ddba864171f8d7d68e3b10edb6662e37db48678c89856b3",
-    "11-batten-loop-arming.md": "eac69029069fbdcf26b99aeebb0f3e8f83150aaa27c88a53e899e6d4ded89617",
-    "12-batten-hand-back-notice.md": "eabdc946c4247244d07b25d53aaa045df96cb7a260511711c0314c547ba4f4c2",
+    "11-batten-loop-arming.md": "fb00c4d6d63b5d6f3395824fa6dd721e47b9ed7b5c74dfd370857f5fce83301c",
+    "12-batten-hand-back-notice.md": "9d36f7290e69f57d3e0b27d3d816872e6a9fbf9d1c2d8699d7f4f5b1da5aa020",
     "13-batten-drives-its-run.md": "87fda3bbc0afc464ff10fbf323285bcaa9513a2ec458375ec38122f278265e4e",
     "14-driver-docs.md": "ff904464fd433c5276840cac5d0706c6d910a9489f8d4fe2f38ad1d34b4d1016"
   },
@@ -422,7 +422,7 @@
       }
     }
   ],
-  "currentBatch": 7,
+  "currentBatch": 0,
   "masterStrand": "05836e1fa6d8d140857a550caa8fce04",
   "masterSessionId": "fe51066b-538a-477c-b9a6-3c2526af3fa8",
   "batches": {
@@ -563,23 +563,52 @@
         "12-batten-hand-back-notice"
       ],
       "cardHashes": {
-        "07-shed-config-module": "5f61243d6904008d621cc9a5835abb87b2b62d7fe5266881118ae0df756d8e1c",
-        "08-module-overrides": "0fa7bd43b26a51b229c4f3750db6a122e0b7f6520e2917201266681e0a830b4a",
-        "09-loom-override-migration": "606eaf94c2f4f8418d8f1db7b15f05de5185b4ff4bdb91797691974719213f6c",
+        "07-shed-config-module": "41ae190eb5e3ad056364444aeb938ae76a9078d330bf1777e37bcc106f43e9ef",
+        "08-module-overrides": "e60b6788d62f0fc1be7e44dca9c3a92ebdf43406dc39303b8c36d30d5001f600",
+        "09-loom-override-migration": "3dd2d5910987750c9b8b4c22015906b1e800838566e8cf153323d0f7273e054a",
         "10-shed-driver-pattern": "d77c27796b0133ca2ddba864171f8d7d68e3b10edb6662e37db48678c89856b3",
-        "11-batten-loop-arming": "eac69029069fbdcf26b99aeebb0f3e8f83150aaa27c88a53e899e6d4ded89617",
-        "12-batten-hand-back-notice": "eabdc946c4247244d07b25d53aaa045df96cb7a260511711c0314c547ba4f4c2"
+        "11-batten-loop-arming": "fb00c4d6d63b5d6f3395824fa6dd721e47b9ed7b5c74dfd370857f5fce83301c",
+        "12-batten-hand-back-notice": "9d36f7290e69f57d3e0b27d3d816872e6a9fbf9d1c2d8699d7f4f5b1da5aa020"
       },
       "startSha": "87006b9dc421b9fe40832d2cf1146b9859233dbc",
       "kind": "fork",
       "spawnedAt": "2026-10-15T07:37:26Z",
       "sessionId": "fe51066b-538a-477c-b9a6-3c2526af3fa8",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "07-shed-config-module",
+        "status": "done",
+        "head_sha": "63d7c20db29045632ae00fe0b2bc72c4feeec573",
+        "deviations": [
+          "cmd/lyx/configstrictness_test.go",
+          "internal/battencli/arm.go",
+          "internal/battencli/arm_seed_test.go",
+          "internal/battencli/cli.go",
+          "internal/battenshed/config_test.go",
+          "internal/battenshed/rownotice.go",
+          "internal/battenshed/seamchild.go",
+          "internal/configreg/configreg_test.go",
+          "internal/loomengine/config.go",
+          "internal/sheddriver/config.go",
+          "internal/sheddriver/config_test.go",
+          "internal/sheddriver/seam_enforcement_test.go"
+        ]
+      },
+      "cardShas": [
+        "63d7c20db29045632ae00fe0b2bc72c4feeec573"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-shed-tackler/fe51066b-538a-477c-b9a6-3c2526af3fa8/subagents/agent-ad9d98a1b5736ce0a.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-shed-tackler/fe51066b-538a-477c-b9a6-3c2526af3fa8/subagents/agent-ad9d98a1b5736ce0a.jsonl"
+      ]
     }
   },
   "seenForkTranscripts": [
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-shed-tackler/fe51066b-538a-477c-b9a6-3c2526af3fa8/subagents/agent-ab8474bee4dcd0df4.jsonl",
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-shed-tackler/fe51066b-538a-477c-b9a6-3c2526af3fa8/subagents/agent-a9bb7c4a85fd7af13.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-shed-tackler/fe51066b-538a-477c-b9a6-3c2526af3fa8/subagents/agent-a9bb7c4a85fd7af13.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-shed-tackler/fe51066b-538a-477c-b9a6-3c2526af3fa8/subagents/agent-ad9d98a1b5736ce0a.jsonl"
   ]
 }
