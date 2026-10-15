@@ -13,7 +13,7 @@
 - `internal/loomcli/doc.go`
 
 **Uses:**
-- `plan:internal/statuspane#FormatSeconds`
+- `internal/statuspane#FormatSeconds`
 
 **Intent:**
 The checklist draws every closed span to the second and every time that includes the open visit in whole minutes (D1), and each review round shows its total (D2).

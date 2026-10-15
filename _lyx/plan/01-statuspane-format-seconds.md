@@ -1,7 +1,7 @@
 # Card 1 — statuspane-format-seconds
 
 **Create:**
-- `plan:internal/statuspane#FormatSeconds` -> `func FormatSeconds(d time.Duration) string`
+- `internal/statuspane#FormatSeconds`
 
 **Edit:**
 - `internal/statuspane#TestFormatMinutes`

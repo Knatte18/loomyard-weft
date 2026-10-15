@@ -15,8 +15,8 @@
 - `internal/loomcli/doc.go`
 
 **Uses:**
-- `plan:internal/shedengine#GateSpan`
-- `plan:internal/shedengine#GateSpanKindRework`
+- `internal/shedengine#GateSpan`
+- `internal/shedengine#GateSpanKindRework`
 
 **Intent:**
 Under a visit line whose history entry carries gate spans, the checklist draws one line per gate entry with a span (D6): `gate <name> <gate time>`, then ` refused <n> rework <rework time>` when that entry re-prompted.

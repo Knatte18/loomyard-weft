@@ -1,10 +1,10 @@
 # Card 3 — history-gate-spans
 
 **Create:**
-- `plan:internal/shedengine#GateSpan` -> `type GateSpan struct`
-- `plan:internal/shedengine#GateSpanKindGate` -> `const GateSpanKindGate = "gate"`
-- `plan:internal/shedengine#GateSpanKindHeld` -> `const GateSpanKindHeld = "held"`
-- `plan:internal/shedengine#GateSpanKindRework` -> `const GateSpanKindRework = "rework"`
+- `internal/shedengine#GateSpan`
+- `internal/shedengine#GateSpanKindGate`
+- `internal/shedengine#GateSpanKindHeld`
+- `internal/shedengine#GateSpanKindRework`
 
 **Edit:**
 - `internal/shedengine#HistoryEntry`

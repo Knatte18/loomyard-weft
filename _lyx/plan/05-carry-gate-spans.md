@@ -1,7 +1,7 @@
 # Card 5 — carry-gate-spans
 
 **Create:**
-- `plan:internal/shedadapters#gateSpansOf` -> `func gateSpansOf(gate *shuttleengine.GateOutcome) []shedengine.GateSpan`
+- `internal/shedadapters#gateSpansOf`
 
 **Edit:**
 - `internal/shedadapters#MultiLLMProducer.mapOutcome`

@@ -1,14 +1,14 @@
 # Card 2 — shuttle-gate-spans
 
 **Create:**
-- `plan:internal/shuttleengine#GateSpanKind` -> `type GateSpanKind string`
-- `plan:internal/shuttleengine#GateSpanGate` -> `const GateSpanGate GateSpanKind = "gate"`
-- `plan:internal/shuttleengine#GateSpanHeld` -> `const GateSpanHeld GateSpanKind = "held"`
-- `plan:internal/shuttleengine#GateSpanRework` -> `const GateSpanRework GateSpanKind = "rework"`
-- `plan:internal/shuttleengine#GateSpan` -> `type GateSpan struct`
-- `plan:internal/shuttleengine#Run.endReworkSpans` -> `func (run *Run) endReworkSpans(at time.Time)`
-- `plan:internal/shuttleengine#Run.closeGateSpans` -> `func (run *Run) closeGateSpans(at time.Time)`
-- `plan:internal/shuttleengine#spanKinds` -> `func spanKinds(spans []GateSpan) []GateSpanKind`
+- `internal/shuttleengine#GateSpanKind`
+- `internal/shuttleengine#GateSpanGate`
+- `internal/shuttleengine#GateSpanHeld`
+- `internal/shuttleengine#GateSpanRework`
+- `internal/shuttleengine#GateSpan`
+- `internal/shuttleengine#Run.endReworkSpans`
+- `internal/shuttleengine#Run.closeGateSpans`
+- `internal/shuttleengine#spanKinds`
 
 **Edit:**
 - `internal/shuttleengine#GateEntryOutcome`

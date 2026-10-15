@@ -1,18 +1,18 @@
 {
   "runGuid": "f1c74abc7490b8b81cfff49061d5fd23",
-  "planFingerprint": "fe427e0f9c47d6669a0e84dd7e0c5c862a669b1f2b1d0038fa458410bd4da04c",
+  "planFingerprint": "f38858faca6485a5c488f90a62ea9a33f3ae8f46e7dcea264b4a0b14993d14eb",
   "planFileHashes": {
     "00-overview.md": "cb46a96ca2c748b9a7e3be95f4eb0aa975885accfc6438566f29e57e0adc4bee",
-    "01-statuspane-format-seconds.md": "f1ea59383796426b29280ef90b844a578b0513c5a0aba7cc8f20d4692c563301",
-    "02-shuttle-gate-spans.md": "f2b8a0e2e5c6b29dfde42580d2232b66b8ad9fb3a5ab3fbef32182556ee03b40",
-    "03-history-gate-spans.md": "2fc22ad0a04d72c928ac0902143b4ba3c7f18eb217dc7c3ad31f41bd6622a164",
+    "01-statuspane-format-seconds.md": "aa00f6b85a416f2471ba7caa9d0ec7ac86efd5a747ea0f8dad0ea9d23e4dd6b7",
+    "02-shuttle-gate-spans.md": "f30119b015b9f13709efaaf3facc9c6a02eb268ad67ac0e3d312e909b70d9a72",
+    "03-history-gate-spans.md": "c677690582b8a9cbae0806ef2085fc1248a7136868762a65051c3538e757cbde",
     "04-surface-gate-outcomes.md": "5d58491aea572d0c974a90c3afe28ed281d4cbf781e0d697a7f912140440caee",
-    "05-carry-gate-spans.md": "c6bce7d46a4b48cec111327a624e5492819798b222ff7eb57aadf0d1cbdc2e94",
+    "05-carry-gate-spans.md": "c5f6009ff79f475555578a52dad3753d8ce0e8a471b3c7d2f67af65f274fcd52",
     "06-prrework-carry-gate.md": "e3e61c0e5a5b9d4043e0077a8c7a903e1d47db845c9cf1d1d960f70b352d9f4f",
     "07-recipe-entry-numbers.md": "74ce1686b2e3536906c1bad2dfa9c917aa3955e3749a8548cb0b5c8346aa913c",
-    "08-checklist-seconds-round-totals.md": "1b71aa84ea0ac8f76116a7ee09f56f1aa82a5123d3da97b39345b36e7dd5d81b",
+    "08-checklist-seconds-round-totals.md": "a5ead4944efae620cb7b774d529eccf58b4eb19e014ee0998a96650fe15d2596",
     "09-checklist-entry-numbers.md": "ef5caf8d97c2ffea60710766107a69c934ef3b8d90cfba7b6a015ff586c94cac",
-    "10-checklist-gate-lines.md": "488a2358f50db750f0793e5b542d7690fb7badb628945f7eff66b16287cbe80c",
+    "10-checklist-gate-lines.md": "2ee23cc23f15720cb5203e696613d2328288e81b97ef33135f29f4100cc1bbe4",
     "11-checklist-gate-rework.md": "c380c99de2abde37b7de92d63a6c49820191a9407057a2cd040e406c52880425",
     "12-overview-entry-numbers.md": "f6838dd41e0e68d592b031ae99327460e58013a56668d83ddabd7e138388b005",
     "13-role-prefix-config.md": "8befc5a9d67bfffd6bdee3dda37e8f07d88e9416d831d3979cd29700f219aa1b",
@@ -284,7 +284,7 @@
       }
     }
   ],
-  "currentBatch": 1,
+  "currentBatch": 0,
   "masterStrand": "5869ee916a60ab850c7742f87fa34560",
   "masterSessionId": "6b68c927-cf8b-4e65-84e0-b3ee7c61d58a",
   "batches": {
@@ -298,18 +298,58 @@
         "05-carry-gate-spans"
       ],
       "cardHashes": {
-        "01-statuspane-format-seconds": "f1ea59383796426b29280ef90b844a578b0513c5a0aba7cc8f20d4692c563301",
-        "02-shuttle-gate-spans": "f2b8a0e2e5c6b29dfde42580d2232b66b8ad9fb3a5ab3fbef32182556ee03b40",
-        "03-history-gate-spans": "2fc22ad0a04d72c928ac0902143b4ba3c7f18eb217dc7c3ad31f41bd6622a164",
+        "01-statuspane-format-seconds": "aa00f6b85a416f2471ba7caa9d0ec7ac86efd5a747ea0f8dad0ea9d23e4dd6b7",
+        "02-shuttle-gate-spans": "f30119b015b9f13709efaaf3facc9c6a02eb268ad67ac0e3d312e909b70d9a72",
+        "03-history-gate-spans": "c677690582b8a9cbae0806ef2085fc1248a7136868762a65051c3538e757cbde",
         "04-surface-gate-outcomes": "5d58491aea572d0c974a90c3afe28ed281d4cbf781e0d697a7f912140440caee",
-        "05-carry-gate-spans": "c6bce7d46a4b48cec111327a624e5492819798b222ff7eb57aadf0d1cbdc2e94"
+        "05-carry-gate-spans": "c5f6009ff79f475555578a52dad3753d8ce0e8a471b3c7d2f67af65f274fcd52"
       },
       "startSha": "a52467411aceba2e6a891a6de0a3c494ad0359d4",
       "kind": "fork",
       "spawnedAt": "2026-10-15T09:12:48Z",
       "sessionId": "6b68c927-cf8b-4e65-84e0-b3ee7c61d58a",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "01-statuspane-format-seconds",
+        "status": "done",
+        "head_sha": "5e63687a50745939513464f75a43d208dbe5c6b4",
+        "deviations": [
+          "internal/landingshed/commitstatus_test.go",
+          "internal/loomcli/handoffvoucher_test.go",
+          "internal/loomshed/batchifier_test.go",
+          "internal/loomshed/discussionwrite_test.go",
+          "internal/loomshed/frictionreflect_test.go",
+          "internal/loomshed/planwrite_test.go",
+          "internal/loomshed/stub_test.go",
+          "internal/shedadapters/attachprobe_test.go",
+          "internal/shedadapters/bouncer_clear_test.go",
+          "internal/shedadapters/bouncer_commit_test.go",
+          "internal/shedadapters/bouncer_escalation_test.go",
+          "internal/shedadapters/bouncer_replay_test.go",
+          "internal/shedadapters/bouncer_seed_test.go",
+          "internal/shedadapters/bouncer_skip_test.go",
+          "internal/shedadapters/bouncer_verdict_test.go",
+          "internal/shedadapters/gateattempts.go",
+          "internal/shedadapters/webster_test.go",
+          "internal/shedengine/reroute_test.go",
+          "internal/shedengine/run_pause_test.go",
+          "internal/shuttleengine/gate.go",
+          "internal/shuttleengine/waitshadow_test.go"
+        ]
+      },
+      "cardShas": [
+        "5e63687a50745939513464f75a43d208dbe5c6b4"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-run-pane-timing/6b68c927-cf8b-4e65-84e0-b3ee7c61d58a/subagents/agent-a9c06cc5bedcbc2ab.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-run-pane-timing/6b68c927-cf8b-4e65-84e0-b3ee7c61d58a/subagents/agent-a9c06cc5bedcbc2ab.jsonl"
+      ]
     }
-  }
+  },
+  "seenForkTranscripts": [
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-run-pane-timing/6b68c927-cf8b-4e65-84e0-b3ee7c61d58a/subagents/agent-a9c06cc5bedcbc2ab.jsonl"
+  ]
 }
