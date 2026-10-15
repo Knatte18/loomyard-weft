@@ -638,7 +638,7 @@
       }
     }
   ],
-  "currentBatch": 0,
+  "currentBatch": 2,
   "masterStrand": "8dcfa8fbb9190a5d1380349627be79ef",
   "masterSessionId": "18713a0e-05ad-4256-81d3-7852940edfc6",
   "batches": {
@@ -673,6 +673,21 @@
       "bracketTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-engine-model-choice/18713a0e-05ad-4256-81d3-7852940edfc6/subagents/agent-a4da54ac37d19c241.jsonl"
       ]
+    },
+    "2": {
+      "slug": "seat-model-choice",
+      "cards": [
+        "02-seat-model-choice"
+      ],
+      "cardHashes": {
+        "02-seat-model-choice": "7d2ddbc79e48121a29994caaf7eb68ca93405eb5a325555765aa71381413bb2f"
+      },
+      "startSha": "88478912eed327f997e1118ab9904c5f65b0dccd",
+      "kind": "fork",
+      "spawnedAt": "2026-10-15T16:11:23Z",
+      "sessionId": "18713a0e-05ad-4256-81d3-7852940edfc6",
+      "terminal": false,
+      "status": ""
     }
   },
   "seenForkTranscripts": [
