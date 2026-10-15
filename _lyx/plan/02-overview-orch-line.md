@@ -39,9 +39,9 @@ Draw one orch line first in the prime's overview frame (D1, D4), with every new 
 
 The orch state read (D2).
 `orchStatePoll` holds `State orchengine.State`, `Found bool` and `Unreadable bool`, the orch counterpart of `statuspane.StatusPoll`.
-`orchStateCache.Poll` follows `statuspane.StatusCache.Poll`'s contract over `paths.StatePath`: it stats the file; an absent file resets the cache and returns the zero poll; a modification time equal to the last good decode's returns the cached state without reading; otherwise it calls `orchengine.PeekState(paths)`.
-A failed stat, a `PeekState` error (a read or decode failure) is a failure through `orchStateCache.fail`: the first failure in a row returns the last good state (`Found` false when there was none), and a second failure in a row, or a later poll at the same failed modification time, returns `Unreadable`; the next good decode clears the count.
-`PeekState` reporting not found after a successful stat (the file removed in between) reads as absent; it is a race guard no deterministic input reaches, so it takes no test row.
+`orchStateCache.Poll` follows `statuspane.StatusCache.Poll`'s contract over `paths.StatePath`: it stats the file; a modification time equal to the last good decode's returns the cached state without reading; otherwise it calls `orchengine.PeekState(paths)`.
+A stat that fails with `os.ErrNotExist` is not a failure: `Poll` then calls `PeekState` as for a changed modification time, and `PeekState`'s not-found result is the one absent branch, which resets the cache and returns the zero poll; frames 1 and 12 of `TestOverviewSource_DrawsTheOrchLine` reach it, and a file removed between stat and read takes the same branch.
+Any other failed stat, and a `PeekState` error (a read or decode failure), is a failure through `orchStateCache.fail`: the first failure in a row returns the last good state (`Found` false when there was none), and a second failure in a row, or a later poll at the same failed modification time, returns `Unreadable`; the next good decode clears the count.
 `fail` logs the error at Debug (`PATTERN-log-levels`), as the overview's other per-frame failures do.
 The cache takes no lock and creates nothing, since `PeekState` does neither.
 
@@ -62,7 +62,7 @@ The line is not padded into the run columns.
 `battenCLI.overviewCmd` calls `loadOverviewThresholds(location)` after the prime refusal and passes the result to `newOverviewSource`.
 Its `Short` becomes `draw the orch's context and the runs in flight in a pane (run by the prime's runs strand)`, and its `Long` names the orch line first: the orch session's context reading against the soft and hard thresholds, its cycle phase and cycle count, then one line per batten run in flight; no test asserts the old wording (grepped).
 `internal/orchengine/doc.go`'s `start` bullet says the overview window shows the orch's context line above the runs in flight.
-The comments that describe the overview as runs only name the orch line too: `overview.go`'s file header, the doc comments of `renderOverview` (its "no run to show renders the one line" sentence holds only with no orch line), `overviewSource`, `overviewSource.frame` and `battenCLI.overviewCmd`, and `internal/battencli/cli.go`'s package-doc sentence on `lyx batten overview`.
+The comments that describe the overview as runs only name the orch line too: `overview.go`'s file header, the doc comments of `renderOverview` (its "no run to show renders the one line" sentence holds only with no orch line), `overviewSource`, `overviewSource.frame` and `battenCLI.overviewCmd`, and `internal/battencli/cli.go`'s package-doc paragraph on `lyx batten overview`, where the orch line comes first (tokens against the soft and hard thresholds, phase, cycle count, `watcher down`, no line when the state file is absent, `orch  state unreadable` on the two-strike rule), and the closing sentence `It only reads the run records and the status files, without their locks` also names the orch state file and the orch config loaded once at start.
 
 Tests.
 `TestRenderOverview` gains `orch orchStatePoll` and `thresholds overviewThresholds` fields, zero in every existing row, so those rows keep their frames with no orch line (acceptance: no state, parent's frame).
@@ -71,7 +71,7 @@ New rows, with thresholds `{Soft: 300000, Hard: 400000, Known: true}` unless sta
 - a state with `LastContextKnown` false and phase `compacting`: `orch  - / soft 300k / hard 400k  compacting  cycles 0`;
 - 999 known tokens: `orch  999 / soft 300k / hard 400k  idle  cycles 0`;
 - 1000 known tokens: `orch  1k / soft 300k / hard 400k  idle  cycles 0`;
-- a state with `WatcherExit` set: the line ends `  watcher down`;
+- a state with 212500 known tokens, phase idle, cycle count 3 and `WatcherExit` set: `orch  212k / soft 300k / hard 400k  idle  cycles 3  watcher down`;
 - unknown thresholds: `orch  212k / soft - / hard -  idle  cycles 3`;
 - an `Unreadable` poll above a run: `orch  state unreadable`, then the run line.
 `TestOverviewSource_ReadsThePrimesRunsFromDisk` passes the zero `overviewThresholds{}` to `newOverviewSource`; it writes no orch state, so its frames are unchanged.
@@ -83,10 +83,12 @@ New rows, with thresholds `{Soft: 300000, Hard: 400000, Known: true}` unless sta
 5. `{not json` at a new modification time: the last good orch line still draws (first failure);
 6. the same file again: `orch  state unreadable`, then `no runs in flight` (a repeat of the failed modification time);
 7. a good state with `WatcherExit` set, at a new modification time: the line ends `  watcher down`;
-8. `{not json` at a new modification time: the `watcher down` line still draws (the good decode cleared the count);
-9. after every frame so far, `StateLockPath` does not exist (no lock taken or created);
+8. `{not json` at a new modification time: the `watcher down` line still draws (the good decode cleared the count).
+
+No frame so far created `StateLockPath` (no lock taken or created).
+
 10. the orch `Dir` removed and a regular file written at its path, so the stat fails with no modification time: `orch  state unreadable` (a second failure in a row, at no repeated modification time);
-11. that file removed and a good state written again, then a regular file written where the prime's runs directory belongs, `filepath.Dir(filepath.Dir(shedrun.SeedFile(prime, "x")))`: the orch line, then `runs unreadable`;
+11. that file removed and the good state (212500 known tokens, idle, 3 cycles) written again at a new modification time, then a regular file written where the prime's runs directory belongs, `filepath.Dir(filepath.Dir(shedrun.SeedFile(prime, "x")))`: first line `orch  212k / soft 300k / hard 400k  idle  cycles 3`, then `runs unreadable`;
 12. the state file removed: `runs unreadable` alone.
 `TestLoadOverviewThresholds` is table-driven over a `locationkit.Location` prime: no `orch.yaml` returns the template's `{300000, 400000, true}` and logs no Warn; an `orch.yaml` at `configengine.ConfigFile(prime.AnchorPath(), "orch")` holding `cycle_mode: bogus` returns the zero value, unknown, and logs one Warn line, captured with `logcapture.Capture`.
 It does not call `t.Parallel`, since `logcapture` redirects the process-global logger.
