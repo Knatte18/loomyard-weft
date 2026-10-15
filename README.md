@@ -44,7 +44,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 6 | **Darn: a decision record for mid-run scope corrections, and PR-Align**<br>• Darn has no decision record, so a mid-run scope correction never reaches its review; and no PR-Align row, so every darn PR waits for the orch at PR-Gate | [`twb-d0-sf`](design-twb-d0-sf.md) | 9m | 9m |  |
 | 7 | **lyx config --set stores an invalid model value instead of refusing it** | [`config-set-validate`](design-config-set-validate.md) | 10h | 10h | config |
 | 8 | **A hub pause leaves background forks and shells running, so hibernate never confirms**<br>• Pause interrupts turns but not background forks or shells; sessions read busy and hibernate confirmation fails | [`pause-background-work`](design-pause-background-work.md) | 9h | 5m | shuttle, webster |
-| 9 | **Plan-Bouncer and Batchifier pass a plan that webster begin-batch then refuses with delete-before-reference** | [`plan-drift-refusal-route`](design-plan-drift-refusal-route.md) | 3m | 2m | webster, loom |
+| 9 | **Plan-Bouncer and Batchifier pass a plan that webster begin-batch then refuses with delete-before-reference** | [`plan-drift-refusal-route`](design-plan-drift-refusal-route.md) | 3m | 3m | webster, loom |
 
 ### Enhancements
 
@@ -73,7 +73,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 14 | **Show the orch context size in the prime overview window**<br>• The prime overview window shows the orch session context tokens against its thresholds beside the batten runs | [`orch-context-overview`](design-orch-context-overview.md) | 11h | 11h | orch, batten |
 | 15 | **Clearer loom model key names, one per step**<br>• Model keys like fix name the role they set, and every review segment gets its own reviewer and fixer key | [`loom-model-key-names`](design-loom-model-key-names.md) | 10h | 10h | config, loom |
 | 16 | **Spawned code roles load the hub language skills**<br>• Darn, Webster, Burler and merge sessions write Go without scribe:golang-* skills; the hub config should name its language skills | [`role-language-skills`](design-role-language-skills.md) | 10h | 10h | config, shuttle |
-| 17 | **tokencount splits Burler roles across the overview-seats rename**<br>• After overview-seats renamed Burler seat roles, tokencount per-role tables may list old and new names as separate roles across runs | [`tokencount-role-rename`](design-tokencount-role-rename.md) | 4m | 4m | burler |
+| 17 | **tokencount splits Burler roles across the overview-seats rename**<br>• After overview-seats renamed Burler seat roles, tokencount per-role tables may list old and new names as separate roles across runs | [`tokencount-role-rename`](design-tokencount-role-rename.md) | 5m | 5m | burler |
 
 #### Low priority
 
@@ -111,13 +111,12 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 15 | **Interactive board view: a regenerated HTML file and a phone-friendly README**<br>• board.html rendered with README on every write; a VS Code task opens it in the browser; collapsible README for the GitHub app | [`board-viewer`](design-board-viewer.md) | 10d | 9d | board, ide, orch |
 | 16 | **Spawn audit log: every process lyx starts is recorded and traceable**<br>• One recorded launch path and a hub-wide spawn log with owner, argv and resource use, plus a sampler and a summary verb, so a process storm can be traced after a crash | [`spawn-audit-log`](design-spawn-audit-log.md) | 6d | 2d | reed, shuttle, config |
 | 17 | **lyx orch start --continue resumes the last orch session**<br>• lyx orch records its session id so a reboot resumes the same orch conversation instead of a fresh one. | [`orch-continue`](design-orch-continue.md) | 3d |  | orch |
-| 18 | **Hibernate the machine on a trigger, such as a task landing**<br>• Let the operator trigger a hibernate through lyx, for instance once a task is done | [`twb-d0-hf`](design-twb-d0-hf.md) | 9m | 9m |  |
 
 #### Low priority
 
 | # | Note | Slug | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| 19 | **Scoped build and test for C# hubs on Windows**<br>• Verify gates in a .NET hub build and test only the projects a card touches, since a scanned Windows machine makes every build slow. | [`dotnet-scoped-verify`](design-dotnet-scoped-verify.md) | 2d | 2d | shed, webster |
+| 18 | **Scoped build and test for C# hubs on Windows**<br>• Verify gates in a .NET hub build and test only the projects a card touches, since a scanned Windows machine makes every build slow. | [`dotnet-scoped-verify`](design-dotnet-scoped-verify.md) | 2d | 2d | shed, webster |
 
 ### Audits
 
@@ -133,4 +132,4 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | --- | --- | --- | --- | --- | --- |
 | 2 | **Re-measure the test suite weight on a quiet machine**<br>• The test-suite-weight before and after numbers were taken under load; rerun the report Regenerate section on an idle machine for a fair wall-time comparison | `suite-weight-quiet-rerun` | 4d | 1d |  |
 | 3 | **Lighter test rules for small changes**<br>• Tests that pin stencil wording make small prompt changes large; pin only what must hold, measured first | [`lighter-test-rules`](design-lighter-test-rules.md) | 1d | 1d | stencil |
-| 4 | **Bench fork0 and the strict critical fixer on twill Discussion-Write**<br>• Arms: twill as is, with the strict critical fixer, and fork0 plus the critical fixer, graded against Discussion-Review keys | [`twill-discussion-fork0-bench`](design-twill-discussion-fork0-bench.md) | 17m | 17m | loom, burler, stencil |
+| 4 | **Bench fork0 and the strict critical fixer on twill Discussion-Write**<br>• Arms: twill as is, with the strict critical fixer, and fork0 plus the critical fixer, graded against Discussion-Review keys | [`twill-discussion-fork0-bench`](design-twill-discussion-fork0-bench.md) | 18m | 18m | loom, burler, stencil |
