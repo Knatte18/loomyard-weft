@@ -1,6 +1,6 @@
 # creel: a new inject is charged TTL from before it was posted
 
-`creel-inject-ttl-before-post` · Note · bug
+`creel-inject-ttl-before-post` · Note · bug, creel
 
 Imported from [issue #662](https://github.com/Knatte18/loomyard/issues/662).
 

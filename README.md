@@ -60,7 +60,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 5 | **creel: inject --interrupt stalls behind the prompt Claude restores into the input box** | [`creel-interrupt-restored-prompt`](design-creel-interrupt-restored-prompt.md) | 0m | 0m | creel, shuttle, claude |
 | 6 | **creel: read marks mail read even when writing it out failed** | [`creel-read-ack-on-write-error`](design-creel-read-ack-on-write-error.md) | 0m | 0m | creel |
 | 7 | **creel: a daemon that fails to start leaves verbs with only 'no daemon answers'** | [`creel-daemon-start-error`](design-creel-daemon-start-error.md) | 0m | 0m | creel |
-| 8 | **creel: a new inject is charged TTL from before it was posted** | [`creel-inject-ttl-before-post`](design-creel-inject-ttl-before-post.md) | 0m | 0m |  |
+| 8 | **creel: a new inject is charged TTL from before it was posted** | [`creel-inject-ttl-before-post`](design-creel-inject-ttl-before-post.md) | 0m | 0m | creel |
 
 #### Low priority
 
