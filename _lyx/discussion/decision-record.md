@@ -43,7 +43,10 @@ Decision: reed gains one engine operation that sets `@lyx_follow` on and selects
 Loom's shared start bootstrap calls it once per `lyx loom start` entry, after `ensureStatusStrand`, whichever of keep, replace or add that took.
 No strand add, replace or resume turns follow on by itself, and the orch's `runs` overview never does.
 Rationale: a reused pair's next run keeps or replaces its `loom-status` strand rather than adding it, so only the bootstrap marks every run start; darn runs share that bootstrap.
-Bound: a re-entrant `lyx loom start` on a live run turns follow on again and may move a viewer who turned it off; a start is an explicit start of the run, so that is the board's "follow is on when a run starts".
+Bound: every `lyx loom start` entry re-arms follow and may move a viewer who turned it off: a fresh run, a re-entrant start on a live run, and a resume of a parked run, which the orch, batten's Run-Shed or an approve or reject follow-up runs with no operator action.
+The re-arm on a resume through `lyx loom start` is accepted, since it is the run's entry verb, and an operator who stopped following is moved back to it, as at its start.
+The bound is the entry itself: no other loom verb, and no reed operation but D2's and D8's, turns follow on.
+`lyx loom resume`, which wakes a parked driver without bringing reed up and never switches a client, leaves the follow state as it is; only a resume that enters through `lyx loom start` re-arms follow.
 
 ### D3 — A new agent window takes the viewer exactly when follow is on
 
@@ -53,7 +56,7 @@ Opening a window never changes the follow state; the selected window still carri
 Agent windows opening back to back each take the viewer in turn, so it ends on the last one.
 Rationale: follow is on by default and only a manual binding turns it off, so a viewer resting on the shell by default now follows, while one the operator moved by hand does not; where the viewer happens to be no longer decides.
 Bound: with follow on, a viewer on the shell or an older agent window is moved, which the current doc forbids; the bound is the follow state itself.
-The `Focus` override ignores follow; its only users are the orch strand at `lyx orch start` and `lyx reed add --focus`, neither a run in a task pair.
+The `Focus` override ignores follow: a strand spawned with an explicit focus flag (`lyx orch start`'s orch strand, `lyx reed add --focus`, `lyx shuttle run --focus`, which an agent may run inside a task pair) takes the viewer whatever the follow state.
 
 ### D4 — Attach selects the relevant window by follow state
 
@@ -61,7 +64,7 @@ Decision: with follow on, attach appends `; select-window -t <relevant window>` 
 Attach never changes the follow state.
 With no relevant window yet, attach selects nothing and follow stays on, so D2 or D3 moves the viewer once the run opens its overview or an agent.
 Rationale: this is the reported bug's cause: Open-Window attaches before the overview exists, and a second attached client (VS Code's attach chain) suppressed the select.
-Every client of a session shares its current window, so a select with follow on moves only clients that are following anyway.
+Bound: every client of a session shares its current window, so with follow on an attach moves every attached client to the relevant window, including one that reached its window by a change outside reed's bindings (D5's bound); with follow off it moves none while another client is attached.
 
 ### D5 — Reed's manual window-change bindings turn follow off
 
@@ -79,6 +82,7 @@ Rationale: a window that ends must move its viewer somewhere, and that is not an
 
 Decision: `status-format[1]`, the session-buttons line, gets one `range=user|follow` button right of the session buttons and left of the time, labelled `follow`, lit while `@lyx_follow` is not `off` and dim while it is.
 A left click on it toggles: from on it sets off and changes no window; from off it sets on and runs, through `run-shell -b`, the D8 verb.
+When the D8 verb's command cannot be composed (the socket path, the tmux path or the `lyx` binary unresolved), a click from off only sets `@lyx_follow` on in tmux and selects no window, and the failure is logged at Warn as for the session-switch keys; the next agent window then takes the viewer.
 Rationale: the board keeps action buttons apart from the window buttons on line 0, and the session line needs no new status row.
 The placement is the one this task ships; note `reed-status-buttons-prototype` and note `reed-status-buttons` may move the button when they settle the button set's layout.
 
@@ -118,19 +122,28 @@ Decision: no Windows-specific behavior: a psmux without `bind-key` or `run-shell
 
 - An automatic switch races an operator's manual one by at most one switch; a binding's off write landing after reed's read of on lets one more automatic move through.
 
+<!-- lyx:carry-over Discussion-Review -->
+- Discussion-Review, round 2: converged; each finding below was fixed or disputed by the round's fixer, and no fresh reviewer has seen the result; the fixer report says which.
+  Review: _lyx/reviews/discussion/round-2-review.md; fixer report: _lyx/reviews/discussion/round-2-fixer-report.md.
+  - loom-resume-verb-not-in-or-out-of-d2-rearm (class decision, severity MEDIUM, open in rounds 2)
+<!-- /lyx:carry-over Discussion-Review -->
+
 ## Acceptance criteria
 
 - A session attached before any overview or agent exists, viewer on the shell: the run's start selects the overview, and each later agent window selects that window.
 - The same with a second client attached before the run starts: both clients end on the overview, then on each newest agent.
+- With follow on, an overview present and a first client on the shell, a second attach selects the overview and moves the first client there; with follow off, the same second attach selects nothing and leaves the first client on the shell.
 - A second run in a reused pair, whose `loom-status` strand is kept or replaced, with follow off: the start turns follow on and selects the relevant window.
+- A parked run resumed by `lyx loom start` with follow off: the resume turns follow on and selects the relevant window.
+- A halted run woken by `lyx loom resume` with follow off leaves follow off and moves no viewer.
 - Alt+Up, Alt+Down and a click on a window, shell or strand button, the current window's included, set `@lyx_follow` off; a later agent window then leaves the viewer where it is, the shell included.
 - Alt+z, Alt+Left/Right and a session-button click leave `@lyx_follow` unchanged.
 - The follow button renders lit with follow on and dim with it off; a click from on sets off and changes no window; a click from off sets on and selects the newest live agent window, else the overview, else no window.
 - `lyx reed follow` against a session with no agent and no overview window sets follow on and selects nothing; against an unknown session it fails with an error envelope; a session name that needs quoting reaches it intact.
 - A `Focus` strand takes the viewer with follow off; a `KeepViewer` strand never takes it with follow on.
 - A session booted by an older lyx (`@lyx_follow` unset) follows; a failed read of the option moves no viewer.
-- An ending viewed window still moves its viewer to the relevant window with follow on and off, and leaves the follow state unchanged.
-- Adding, replacing or resuming an overview strand outside the start bootstrap, the orch's `runs` included, changes neither the follow state nor the viewer's window.
+- An ending viewed window still moves its viewer as today, with follow on and off - to the relevant window, or to the new overview window when the overview strand is replaced - and leaves the follow state unchanged.
+- Adding, replacing or resuming an overview strand outside the start bootstrap, the orch's `runs` included, changes no follow state and moves no viewer except D6's move off a window that ends.
 
 ## Notes for the plan writer
 
