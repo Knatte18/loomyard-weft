@@ -6,7 +6,7 @@
 
 **Intent:** Carry D2 and D5's Discussion-review part.
 
-In `loom-template-discussion.md`, add to the design rules (Step 3's paragraph closing "Design the full scope now." is the natural home) a sentence stating that no decision asks the run to change this task's own board entry's body or scope, through `lyx board` or otherwise, because the run's board lock refuses such a change.
+In `loom-template-discussion.md`, add to the design rules (Step 3's closing paragraph, the one holding "**Design the full scope now.**" and its no-MVP and YAGNI sentences, is the natural home) a sentence stating that no decision asks the run to change this task's own board entry's body or scope, through `lyx board` or otherwise, because the run's board lock refuses such a change.
 State the bound in the same place: the landing's status write, a `run_settings` write, a decision to file or change another board entry and a change to the board module's code are outside the rule.
 The chair stencil includes this stencil whole and gets the rule with no copy; the advisor stencil stays unchanged.
 
