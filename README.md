@@ -42,8 +42,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 3 | **Plan and Webster checks out of step with the code a plan changes** | [`twb-d0-gf`](design-twb-d0-gf.md) | 17m | 17m |  |
 | 4 | **Darn: a decision record for mid-run scope corrections, and PR-Align**<br>• Darn has no decision record, so a mid-run scope correction never reaches its review; and no PR-Align row, so every darn PR waits for the orch at PR-Gate | [`twb-d0-sf`](design-twb-d0-sf.md) | 17m | 17m |  |
 | 5 | **A hub pause leaves background forks and shells running, so hibernate never confirms**<br>• Pause interrupts turns but not background forks or shells; sessions read busy and hibernate confirmation fails | [`pause-background-work`](design-pause-background-work.md) | 9h | 13m | shuttle, webster |
-| 6 | **Plan and Webster checks out of step with the code a plan changes** | [`twb-d0-gc`](design-twb-d0-gc.md) | 17m | 17m |  |
-| 7 | **Plan-Bouncer and Batchifier pass a plan that webster begin-batch then refuses with delete-before-reference** | [`plan-drift-refusal-route`](design-plan-drift-refusal-route.md) | 11m | 11m | webster, loom |
+| 6 | **Plan-Bouncer and Batchifier pass a plan that webster begin-batch then refuses with delete-before-reference** | [`plan-drift-refusal-route`](design-plan-drift-refusal-route.md) | 11m | 11m | webster, loom |
 
 ### Enhancements
 
