@@ -1,0 +1,6 @@
+verdict: approve
+reason: >-
+  The design draws the orch line the board entry asks for (tokens against soft and hard thresholds, phase, cycle count, read from files only) and settles the entry's layering question; the one extra cell, watcher down, serves the goal.
+  The only overlapping peer, run-pane-timing, numbers the run lines' stage cell in the same overview file, a different behaviour with no contradicting decision; it is at row 12 against this run's row 3, so it lands first.
+question: ""
+superseded: []
