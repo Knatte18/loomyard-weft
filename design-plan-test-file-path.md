@@ -1,6 +1,6 @@
 # Plan cards name added tests by Create handle, never a plain test-file path
 
-`plan-test-file-path` · Task · enhancement, loom, stencil · running · Merge-In
+`plan-test-file-path` · Task · enhancement, loom, stencil · running · Merge-Bouncer
 
 ## Seen
 
