@@ -1,4 +1,4 @@
-# Webster master reads no code, only the plan
+# Webster master reads only what every fork shares, never source code
 
 `webster-master-no-code` · Note · bug, webster, stencil
 
@@ -9,9 +9,11 @@ The 2026-10-12 and 2026-10-13 pack audits (`docs/research/glyph-audit-2026-10-12
 
 ## Operator decision (2026-10-15)
 
-The master must not read code.
-Webster rewrites the code, so what the master read goes stale for each fork after the first batch, and every fork inherits those stale reads.
-The master reads only the plan and drives the loop; each fork reads the code its own card needs, fresh, when the card starts.
+A serious bug: Webster was never meant to work this way.
+The master reads only what is common to every fork and stable during the run: the plan, `CLAUDE.md`, `PATTERN.md` and the like.
+It reads no source code: Webster rewrites the code, so nothing else is stable during the run, and every fork after the first would inherit stale reads.
+Each fork reads the code its own card needs, fresh, when the card starts.
+The up-front codebase read has stood in the master template since at least 2026-07-27 (`d89a56232`).
 
 ## Idea
 
