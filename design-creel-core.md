@@ -1,6 +1,6 @@
 # creel stage 1: the one way to reach an agent, standalone
 
-`creel-core` · Task · feature, reed, shuttle
+`creel-core` · Task · feature, creel, reed, shuttle
 
 Depends on: [`engine-registry`](design-engine-registry.md)
 
