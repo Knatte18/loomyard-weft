@@ -638,7 +638,7 @@
       }
     }
   ],
-  "currentBatch": 0,
+  "currentBatch": 5,
   "masterStrand": "8dcfa8fbb9190a5d1380349627be79ef",
   "masterSessionId": "18713a0e-05ad-4256-81d3-7852940edfc6",
   "batches": {
@@ -760,6 +760,23 @@
       "bracketTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-engine-model-choice/18713a0e-05ad-4256-81d3-7852940edfc6/subagents/agent-a96115decb990758f.jsonl"
       ]
+    },
+    "5": {
+      "slug": "treadle-model-choice",
+      "cards": [
+        "05-treadle-model-choice",
+        "06-round-usage-engine"
+      ],
+      "cardHashes": {
+        "05-treadle-model-choice": "2a3289c6bc676d660f2358dbb3877eb512a2431660e679a3ea0ffec69066e02e",
+        "06-round-usage-engine": "c41b5755474d43be1cfb376fbfdfb09ba5929769bdd3c885fc8f3fba6740e755"
+      },
+      "startSha": "a1e4139815a2d646a520f23213c48e3a446b7e0d",
+      "kind": "fork",
+      "spawnedAt": "2026-10-15T16:21:49Z",
+      "sessionId": "18713a0e-05ad-4256-81d3-7852940edfc6",
+      "terminal": false,
+      "status": ""
     }
   },
   "seenForkTranscripts": [
