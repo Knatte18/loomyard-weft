@@ -422,7 +422,7 @@
       }
     }
   ],
-  "currentBatch": 0,
+  "currentBatch": 13,
   "masterStrand": "05836e1fa6d8d140857a550caa8fce04",
   "masterSessionId": "fe51066b-538a-477c-b9a6-3c2526af3fa8",
   "batches": {
@@ -489,6 +489,23 @@
       "bracketTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-shed-tackler/fe51066b-538a-477c-b9a6-3c2526af3fa8/subagents/agent-ab8474bee4dcd0df4.jsonl"
       ]
+    },
+    "13": {
+      "slug": "batten-drives-its-run",
+      "cards": [
+        "13-batten-drives-its-run",
+        "14-driver-docs"
+      ],
+      "cardHashes": {
+        "13-batten-drives-its-run": "87fda3bbc0afc464ff10fbf323285bcaa9513a2ec458375ec38122f278265e4e",
+        "14-driver-docs": "ff904464fd433c5276840cac5d0706c6d910a9489f8d4fe2f38ad1d34b4d1016"
+      },
+      "startSha": "63d7c20db29045632ae00fe0b2bc72c4feeec573",
+      "kind": "fork",
+      "spawnedAt": "2026-10-15T07:51:03Z",
+      "sessionId": "fe51066b-538a-477c-b9a6-3c2526af3fa8",
+      "terminal": false,
+      "status": ""
     },
     "4": {
       "slug": "tackler-call-to-sheddriver",
