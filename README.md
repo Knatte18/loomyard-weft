@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-15 14:12 UTC; every age below is as of then.
+Rendered 2026-10-15 14:13 UTC; every age below is as of then.
 
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
@@ -18,7 +18,7 @@ Held by a run; its scope is locked until the run ends.
 | # | Task | Slug | Recipe | At | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | 1 | **Lighter test rules for small changes**<br>• Tests that pin stencil wording make small prompt changes large; pin only what must hold, measured first | [`lighter-test-rules`](design-lighter-test-rules.md) | loom | Discussion-Burler-Review | 2d | 2h | stencil, webster, burler, loom |
-| 2 | **Engine registry: engine per run, one constructor, narrower Engine interface**<br>• Shuttle picks the engine per spec from a registry and records it per run, so a second engine plugs in at one place | [`engine-registry`](design-engine-registry.md) | loom | Merge-Burler-Review | 2d | 3h | shuttle, config, loom, webster, burler, orch, batten |
+| 2 | **Engine registry: engine per run, one constructor, narrower Engine interface**<br>• Shuttle picks the engine per spec from a registry and records it per run, so a second engine plugs in at one place | [`engine-registry`](design-engine-registry.md) | loom | Merge-Burler-Fix | 2d | 3h | shuttle, config, loom, webster, burler, orch, batten |
 | 3 | **creel stage 1: the one way to reach an agent, standalone**<br>• The creel daemon, queues, journal and verbs, delivering through shuttle, built and tested before any module sends through it | [`creel-core`](design-creel-core.md) | loom | Plan-Burler-Review | 13d | 2h | creel, reed, shuttle |
 
 ### Ready
@@ -104,7 +104,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 14 | **Module labels from what a task touches, not only what it is about**<br>• Half the landings that changed the shuttle core lacked the shuttle label; derive or check module labels from the plan and the diff | [`labels-from-diff`](design-labels-from-diff.md) | 3h | 3h | board, loom |
 | 15 | **Start one task per overlapping group at a newly-ready start**<br>• When a landing makes several overlapping tasks ready at once, batten starts one per group and names the rest in its notice | [`batten-ready-overlap`](design-batten-ready-overlap.md) | 1h | 1h | batten |
 | 16 | **lyx shuttle open cannot choose the permission mode**<br>• An interactive session opened by lyx shuttle open always prompts for permissions; there is no flag or config for bypass | [`shuttle-open-permission`](design-shuttle-open-permission.md) | 1h | 1h | shuttle |
-| 17 | **Discussion hands Plan a list of the relevant code**<br>• A separate agent reads the approved Discussion and the code and hands Plan-Write a compact record of what is relevant, so the plan lead and its forks start from a small context | [`plan-research-step`](design-plan-research-step.md) | 15m | 10m | loom, stencil |
+| 17 | **Discussion hands Plan a list of the relevant code**<br>• A separate agent reads the approved Discussion and the code and hands Plan-Write a compact record of what is relevant, so the plan lead and its forks start from a small context | [`plan-research-step`](design-plan-research-step.md) | 16m | 11m | loom, stencil |
 
 #### Low priority
 
