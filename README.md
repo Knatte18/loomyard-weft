@@ -48,7 +48,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | --- | --- | --- | --- | --- | --- |
 | 1 | **Plan-Bouncer and Batchifier pass a plan that webster begin-batch then refuses with delete-before-reference** | [`plan-drift-refusal-route`](design-plan-drift-refusal-route.md) | 2h | 2h | webster, loom |
 | 2 | **config: bare lyx config <module> from an agent writes an empty layer file** | [`config-bare-empty-write`](design-config-bare-empty-write.md) | 1h | 1h | config |
-| 3 | **batten Seed-IDE writes the interactive VS Code chain into a driven pair, so opening it in VS Code starts a bare claude** | [`seed-ide-interactive-chain`](design-seed-ide-interactive-chain.md) | 0m | 0m |  |
+| 3 | **batten Seed-IDE writes the interactive VS Code chain into a driven pair, so opening it in VS Code starts a bare claude** | [`seed-ide-interactive-chain`](design-seed-ide-interactive-chain.md) | 0m | 0m | ide, batten |
 
 #### Low priority
 
