@@ -1,18 +1,18 @@
 # Card 5 — tokencount-reads-through-engines
 
 **Create:**
-- `plan:tools/tokencount#ReadSet` -> `type ReadSet map[string]shuttleengine.RecordReads`
-- `plan:tools/tokencount#ReadSet.engines` -> `func (reads ReadSet) engines() (readable, unreadable []string)`
-- `plan:tools/tokencount#locatedSession` -> `type locatedSession struct`
-- `plan:tools/tokencount#locateSessions` -> `func locateSessions(reads ReadSet, worktree string) ([]locatedSession, error)`
-- `plan:tools/tokencount#readLocated` -> `func readLocated(reads ReadSet, s locatedSession) (shuttleengine.SessionRead, error)`
-- `plan:tools/tokencount#usageOf` -> `func usageOf(u shuttleengine.MessageUsage) Usage`
-- `plan:tools/tokencount#fakeTranscripts` -> `type fakeTranscripts struct`
-- `plan:tools/tokencount#fakeTranscripts.LocateSessions` -> `func (f fakeTranscripts) LocateSessions(worktree string) ([]shuttleengine.LocatedSession, error)`
-- `plan:tools/tokencount#fakeTranscripts.ReadSession` -> `func (f fakeTranscripts) ReadSession(s shuttleengine.LocatedSession) (shuttleengine.SessionRead, error)`
-- `plan:tools/tokencount#fakePricer` -> `type fakePricer map[string]float64`
-- `plan:tools/tokencount#fakePricer.PriceMessage` -> `func (p fakePricer) PriceMessage(model string, u shuttleengine.MessageUsage) (float64, bool)`
-- `plan:tools/tokencount#oneEngine` -> `func oneEngine(worktree string, sessions ...shuttleengine.SessionRead) ReadSet`
+- `tools/tokencount#ReadSet`
+- `tools/tokencount#ReadSet.engines`
+- `tools/tokencount#locatedSession`
+- `tools/tokencount#locateSessions`
+- `tools/tokencount#readLocated`
+- `tools/tokencount#usageOf`
+- `tools/tokencount#fakeTranscripts`
+- `tools/tokencount#fakeTranscripts.LocateSessions`
+- `tools/tokencount#fakeTranscripts.ReadSession`
+- `tools/tokencount#fakePricer`
+- `tools/tokencount#fakePricer.PriceMessage`
+- `tools/tokencount#oneEngine`
 
 **Edit:**
 - `tools/tokencount/main.go`

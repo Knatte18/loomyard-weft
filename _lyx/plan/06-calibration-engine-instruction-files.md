@@ -24,8 +24,8 @@
 
 **Uses:**
 - `tools/tokencount#fileAtBase`
-- `plan:tools/tokencount#ReadSet`
-- `plan:tools/tokencount#oneEngine`
+- `tools/tokencount#ReadSet`
+- `tools/tokencount#oneEngine`
 - `internal/shuttleengine#RecordReads`
 - `internal/shuttleengine#InstructionFileLister`
 
