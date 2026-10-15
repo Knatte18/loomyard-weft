@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-15 06:23 UTC; every age below is as of then.
+Rendered 2026-10-15 06:24 UTC; every age below is as of then.
 
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
@@ -40,7 +40,7 @@ Waits only on Running or Ready entries.
 
 | # | Task | Slug | Recipe | After | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | **Run status pane: numbered rows, seconds, round totals, gate time; segment-named sessions**<br>• Per-run status pane shows seconds, a total per Burler round, and each gate with its time and the rework it caused | [`run-pane-timing`](design-run-pane-timing.md) | darn | `shed-tackler`, `reed-launch-fixes` | 23m | 9m | loom, burler, shed, reed |
+| 1 | **Run status pane: numbered rows, seconds, round totals, gate time; segment-named sessions**<br>• Per-run status pane shows seconds, a total per Burler round, and each gate with its time and the rework it caused | [`run-pane-timing`](design-run-pane-timing.md) | loom | `shed-tackler`, `reed-launch-fixes` | 24m | 0m | loom, burler, shed, reed |
 
 ## Notes
 
