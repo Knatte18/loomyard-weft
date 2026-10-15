@@ -1,0 +1,8 @@
+verdict: approve
+reason: >-
+  The diff moves the Go driver and the tackler into internal/sheddriver, adds the shed config module with per-module overrides and the one-time loom migration,
+  drives loom and darn through lyx loom drive and batten through the same body, and ships the recipe-neutral tackler stencil and PATTERN-shed-driver.
+  This matches the board entry's goal and decisions D1 to D9, and every out-of-scope item stays untouched.
+  lyx loom peers lists no peer runs and no parent commits, so nothing overlaps.
+question: ""
+superseded: []
