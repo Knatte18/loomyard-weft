@@ -43,8 +43,16 @@ Build option 1: stencil tests pin only what must hold (markers, file paths, orde
 
 It is odd to have mechanical tests for stencils at all.
 
+## Operator decision (2026-10-15, later): drop wording claims entirely
+
+This supersedes the option 1 wording above where they differ.
+Stencil tests come in three kinds:
+
+1. Marker sets and Fill round-trips: the Go code fills fields such as `{{.outcome_path}}`, and a missing or misspelled marker breaks a run. They stay.
+2. PATTERN scans over stencils (`PATTERN-parent-directive`, `PATTERN-edit-directive`, `PATTERN-no-denied-recovery` and the like) and the registry tests: rules across all stencils, not prose. They stay.
+3. Wording claims (`contracts/stencils/claims_test.go`, and the `must`/`mustNot`/`wantPrompt`-style prose assertions in template and prompt tests): they go entirely, the protected claims that cite a provenance included; review guards prompt wording instead.
+
 ## Open for the Discussion
 
-- `contracts/stencils/claims_test.go` marks a claim that cites a provenance (crucible round, finding, sabotage proof, live observation) as protected and never dropped; whether such claims stay, shrink to a marker, or go is open.
-- The orch's reading, not discussed: the PATTERN scans over stencils (`PATTERN-parent-directive`, `PATTERN-edit-directive`, `PATTERN-no-denied-recovery`) check structure and rules, not prose, and stay; marker sets, Fill round-trips and the registry tests stay.
-- Where the rule that asks for a test per stencil change is written (stencils, PATTERN, CLAUDE.md), so it changes with the tests.
+- Where the rule that asks for a test per stencil change is written (stencils, PATTERN, CLAUDE.md, the plan stencil), so it changes with the tests.
+- Where a prose assertion in a template or prompt test is in fact a marker or structure check of kind 1 or 2, it stays.
