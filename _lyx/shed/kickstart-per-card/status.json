@@ -1,12 +1,12 @@
 {
-  "current_producer": "Discussion-Bouncer",
+  "current_producer": "Discussion-Burler-Review",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "pause_before": "Plan-Write",
   "activity": {
-    "now": "Discussion-Bouncer",
-    "last": "Discussion-Write → done",
+    "now": "Discussion-Burler-Review",
+    "last": "Discussion-Bouncer → bounced to Discussion-Burler-Review",
     "wait": ""
   },
   "history": [
@@ -28,6 +28,13 @@
       "output": "/home/knatte/Code/loomyard-LYXHUB/kickstart-per-card/_lyx/discussion/decision-record.md",
       "at": "2026-10-15T09:54:01Z",
       "gate_attempts": 1
+    },
+    {
+      "producer": "Discussion-Bouncer",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-15T09:54:39Z",
+      "routed_to": "Discussion-Burler-Review"
     }
   ],
   "product": {
