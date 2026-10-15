@@ -1,6 +1,6 @@
 # Begin-batch refusal route and label; bare lyx config writes an empty layer
 
-`refusal-route-config-empty` · Task · bug, webster, loom, config · running · Plan-Bouncer
+`refusal-route-config-empty` · Task · bug, webster, loom, config · running · Batchifier
 
 Two small bugs in one run, bundled on the operator's word (2026-10-15) to save a run's overhead, though they touch different packages.
 
