@@ -1,0 +1,4 @@
+verdict: approve
+reason: The design covers every point of the board entry (driver and tackler moved into a shed-layer package, darn, batten and later recipes armed through seams, shed.yaml defaults with module overrides, no live go default before the move, the stencil points) and stays inside it; it agrees with run-verbs-shared, orch-split and loom-model-key-names, and overlaps with the twb-d0-s* darn runs and config-set-validate are wiring-level with no conflicting decision.
+question: ""
+superseded: []
