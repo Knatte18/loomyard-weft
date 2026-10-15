@@ -54,7 +54,7 @@
 - `cmd/lyx/testdata/test-budget.yaml`
 
 **Create:**
-- `plan:internal/shuttlecli#TestOpenCmd_ModelAliasEngine` -> `func TestOpenCmd_ModelAliasEngine(t *testing.T)`
+- `internal/shuttlecli#TestOpenCmd_ModelAliasEngine`
 
 **Intent:**
 D1 and the shuttle half of D4.
