@@ -1,6 +1,6 @@
 # Spawned code roles load the hub language skills
 
-`role-language-skills` · Task · enhancement, config, shuttle · running · PR-Align
+`role-language-skills` · Task · enhancement, config, shuttle · running · PR-Gate
 
 ## Seen (operator, 2026-10-14)
 
