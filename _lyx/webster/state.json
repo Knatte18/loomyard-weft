@@ -308,7 +308,7 @@
       }
     }
   ],
-  "currentBatch": 0,
+  "currentBatch": 4,
   "masterStrand": "9b5d66aec3da73a49c887c9db722ae35",
   "masterSessionId": "4bda0955-d804-438f-978f-3ec2ff46fb8f",
   "batches": {
@@ -362,6 +362,29 @@
         "55e6f129-ef7b-4c66-8173-61b8f02afb4d"
       ],
       "recoveryStartSha": "43a93ff51278dce7416658743d186faf0df42e56"
+    },
+    "4": {
+      "slug": "caller-label",
+      "cards": [
+        "04-caller-label",
+        "05-history-caller-field",
+        "06-caller-label-wiring",
+        "07-pair-branch-snapshot",
+        "08-timing-spans-phases"
+      ],
+      "cardHashes": {
+        "04-caller-label": "87c57f0d93b7e8ad875cbbfbef0f67aa9fe899a516debde360e3a8df4e2dcac9",
+        "05-history-caller-field": "63c468f964b83d7c4fbc7783c1c43cfe2fb3a342618b5e1fe64e5adb0d0ba9d5",
+        "06-caller-label-wiring": "c7edd16d675240584d9cb6b877b5f5d71ae2aa7ce8a7fb1633d0cfa527537bb2",
+        "07-pair-branch-snapshot": "e4f728da40f49d1f6c6f52945f7453984d93c2909be912559683ae07260c75f9",
+        "08-timing-spans-phases": "8054dfeb782267623600251bfcc4c9c71890a62693a28666d690196534e661de"
+      },
+      "startSha": "b66a229c9e410627a345c3836c13be27b9e16146",
+      "kind": "fork",
+      "spawnedAt": "2026-10-15T12:34:41Z",
+      "sessionId": "4bda0955-d804-438f-978f-3ec2ff46fb8f",
+      "terminal": false,
+      "status": ""
     }
   },
   "seenForkTranscripts": [
