@@ -2,10 +2,8 @@
      RenderForkPrompt reads it through stencilstore for a fork without a kick-start pack, and RenderRecoveryPrompt for every recovery prompt;
      the text, with this banner and the trailing newline stripped, fills the required fresh_read marker of webster-body-implementer.
      It carries no marker.
-lyx-stencil: sha256=884e520cc85c52f99c023de86fdec682912d198852db531e616c467a63381f03 build=1135939906fcdddd4cfdcf1bd7b46ad7ace09268 time=2026-10-12T11:39:01Z -->
+lyx-stencil: sha256=124da29d309d8da6b9a2f82a7373eb29a3b9de5ebc940b0a8b471f1f851a94fe build=6757288004041b031c36d78ed8c1c444fa9a7202 time=2026-10-15T13:02:41Z -->
 
-Inherited context can be stale.
-A file you looked at during orientation — your own, or one Master read before forking you — is not necessarily the version on disk right now: a prior batch's own card commits may have changed it since.
-Before you edit anything, re-read — in THIS turn — every card file this section points you at, plus every file that card's own target list and `Uses:` list name.
-Only your own reads, taken now, are current;
-content you merely inherited is not.
+No code reaches you from Master: the plan and the repo's rules you hold stay current for this run, except a rules file a card of this run targets, which you read fresh like code.
+Only your own reads of code, taken in this batch, are current.
+Before you edit anything, read — in THIS turn — every card file this section points you at, plus every file that card's own target list and `Uses:` list name.

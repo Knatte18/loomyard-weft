@@ -2,12 +2,10 @@
      RenderForkPrompt reads it through stencilstore when begin-batch built a kick-start pack and kickstart_pack_per_card is true in a hub run;
      the text, with this banner and the trailing newline stripped, fills the required fresh_read marker of webster-body-implementer.
      It carries no marker.
-lyx-stencil: sha256=1673c9dbb4b809eef5ad048ccdfd6dd3731a9dd8fc6f1f295d7d2946756e1f22 build=aa925bdcc554c36ec01aa7bf6e12311dae8ba9cc time=2026-10-15T12:10:13Z -->
+lyx-stencil: sha256=f515171ff93a32c2eac2bceac64655949363c1ca5bbe1781e23c44ba40726687 build=6757288004041b031c36d78ed8c1c444fa9a7202 time=2026-10-15T13:02:41Z -->
 
-Inherited context can be stale.
-A file you looked at during orientation — your own, or one Master read before forking you — is not necessarily the version on disk right now: a prior batch's own card commits may have changed it since.
-Only your own reads, taken now, are current;
-content you merely inherited is not.
+No code reaches you from Master: the plan and the repo's rules you hold stay current for this run, except a rules file a card of this run targets, which you read fresh like code.
+Only your own reads of code, taken in this batch, are current.
 Your first work turn reads in parallel every card file the card list below points at, and nothing else: they are the batch's whole plan, and they hold no code.
 What you read before each card's first edit is set out in that card's step 1.
 Change a file you have already edited in this batch only with the Edit tool, never by rewriting it whole with the Write tool from content read before that edit.

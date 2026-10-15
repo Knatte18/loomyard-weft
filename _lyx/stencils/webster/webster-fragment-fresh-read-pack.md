@@ -2,11 +2,9 @@
      RenderForkPrompt reads it through stencilstore when begin-batch built a kick-start pack file;
      the text, with this banner and the trailing newline stripped, fills the required fresh_read marker of webster-body-implementer.
      It carries no marker.
-lyx-stencil: sha256=4d438b1cdde3d56c554068c5ea81c16740b74c458359ca5b9839cd2f8cd6181d build=1e39afc10eb44299d7bb150adf86bcb6bf84a8a8 time=2026-10-13T14:42:47Z -->
+lyx-stencil: sha256=0be0284c5b775b48f9ea7cf2221321f48eb95403353ddb544a0862880df4cdca build=6757288004041b031c36d78ed8c1c444fa9a7202 time=2026-10-15T13:02:41Z -->
 
-Inherited context can be stale.
-A file you looked at during orientation — your own, or one Master read before forking you — is not necessarily the version on disk right now: a prior batch's own card commits may have changed it since.
-Only your own reads, taken now, are current;
-content you merely inherited is not.
+No code reaches you from Master: the plan and the repo's rules you hold stay current for this run, except a rules file a card of this run targets, which you read fresh like code.
+Only your own reads of code, taken in this batch, are current.
 What you read before any edit, and in which turn, is set out by the kick-start pack file the last line of this prompt names.
 Change a file you have already edited in this batch only with the Edit tool, never by rewriting it whole with the Write tool from content read before that edit.

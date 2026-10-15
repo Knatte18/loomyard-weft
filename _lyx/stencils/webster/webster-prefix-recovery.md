@@ -1,11 +1,11 @@
 <!-- This is the cold-start recovery prefix, composed with webster-body-implementer.md
      by RenderRecoveryPrompt (render.go) via internal/stencil, then written to a prompt file under _lyx/webster/prompts/ and handed to the SEPARATE, cold recovery-strand process recover-batch spawns when a fork reports stuck or writes no report — see the fork-context-hygiene Shared Decision.
-     Unlike a fork prefix, this strand inherits NOTHING from Master's session: no codebase orientation, no plan framing, no constraints.
+     Unlike a fork prefix, this strand inherits NOTHING from Master's session: no plan framing, no constraints, and no code, which no fork inherits either.
      It must earn its own orientation before the shared implementer body runs.
      Its markers are {{.pattern_directive}}, {{.friction_directive}}, {{.failure_digest}} and {{.uncommitted_paths}}, all optional (filled via stencil.FillOptional); the first two render as nothing when their own tier is inactive, failure_digest renders as `none` when the batch was not failed, and uncommitted_paths renders as `none` on a clean worktree.
      parent_directive is a fourth optional marker, rendered by internal/parentdirective.
      edit_directive is a required marker, rendered unconditionally by internal/editdirective.
-lyx-stencil: sha256=71e400eaa1e7cfa2546b3851539ba7b5f11b5b1fa161bb04ad40cd65a372801f -->
+lyx-stencil: sha256=2a9b02a22426e6b4b84ace1c2f1f20cae55a3f18c1fb72debd7286fbc33b2a77 build=6757288004041b031c36d78ed8c1c444fa9a7202 time=2026-10-15T13:02:41Z -->
 
 # Webster cold recovery implementer — starting COLD, inheriting nothing
 
@@ -22,9 +22,11 @@ This prompt is deliberately full, not thin, because it is your whole starting po
 Before implementing your card(s), do the following, in order:
 
 1. Read `_lyx/plan/00-overview.md` in full: the task framing, the Card Index, `## Shared Decisions`, `## Rename mechanic`, and `## verify:`.
-2. Orient to the codebase: read what your card(s) need, plus whatever the plan's decisions and any PATTERN entries above point you at — not a gratuitous full-repo tour.
+2. Read the `pattern/` background files the constraints section above points at, when that section is present, choosing those that touch what your card(s) will change.
 
-Do this BEFORE the card instructions below — they assume you already hold this orientation, exactly like an in-session fork already holds it from Master.
+The code your card(s) need you read per card, as the card steps below say, not as an up-front orientation step.
+
+Do this BEFORE the card instructions below: it gives you what an in-session fork inherits from Master, the plan's framing and the repo's rules, and no code.
 
 ## You are the RECOVERY IMPLEMENTER, not the driver — never run `lyx webster`
 
