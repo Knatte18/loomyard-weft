@@ -267,6 +267,13 @@ The sandbox suite exercises creel (`PATTERN-sandbox-coverage`).
   - waiting-verbs-unbounded (class design, severity MEDIUM, open in rounds 2)
 <!-- /lyx:carry-over Discussion-Review -->
 
+<!-- lyx:carry-over Plan-Review -->
+- Plan-Review, round 3: converged; each finding below was fixed or disputed by the round's fixer, and no fresh reviewer has seen the result; the fixer report says which.
+  Review: _lyx/reviews/plan/round-3-review.md; fixer report: _lyx/reviews/plan/round-3-fixer-report.md.
+  - idle-paused-errors-unhandled (class scope, severity MEDIUM, open in rounds 3)
+  - reply-does-not-wake-scheduler (class scope, severity MEDIUM, open in rounds 3)
+<!-- /lyx:carry-over Plan-Review -->
+
 ## Acceptance criteria
 
 - A post to a live idle fake strand is stored, acknowledged with its id, and reminded once; a busy receiver is reminded at its next idle edge; a reminder turn ending unread backs off and a new message resets the backoff.
