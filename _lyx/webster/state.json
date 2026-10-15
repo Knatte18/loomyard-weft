@@ -227,7 +227,7 @@
       }
     }
   ],
-  "currentBatch": 0,
+  "currentBatch": 3,
   "masterStrand": "6663f878ba822536d57a7a2129de5d0d",
   "masterSessionId": "0e0fa5e8-1a38-4aaf-805f-707af076ee34",
   "masterEngine": "claude",
@@ -301,6 +301,24 @@
       "bracketTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-engine-usage-readers/0e0fa5e8-1a38-4aaf-805f-707af076ee34/subagents/agent-ada3fa7a5ba5ff0bb.jsonl"
       ]
+    },
+    "3": {
+      "slug": "claude-pricing",
+      "cards": [
+        "03-claude-pricing",
+        "04-offline-record-readers"
+      ],
+      "cardHashes": {
+        "03-claude-pricing": "7aceabe7c6ed4c059c6318f619d629a863bd3bc3994405b11c36d8c0582a91f3",
+        "04-offline-record-readers": "72c56438d26cafcb1160e92b1214e699a40ef948a9c246cf07395ad6366c2090"
+      },
+      "startSha": "18f5d69b819a3ed4f07160f6c8ac9171ddca0809",
+      "kind": "fork",
+      "spawnedAt": "2026-10-15T17:31:21Z",
+      "sessionId": "0e0fa5e8-1a38-4aaf-805f-707af076ee34",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
     }
   },
   "seenForkTranscripts": [
