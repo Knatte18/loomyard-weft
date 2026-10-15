@@ -1,6 +1,6 @@
 # Codex CLI as a second shuttle engine: hands-on spike, then codexengine
 
-`codex-engine` · Note · enhancement, shuttle
+`codex-engine` · Note · enhancement, shuttle, codex
 
 Codex CLI is the candidate second engine for shuttle, to offload Claude token use.
 The operator has never used Codex, so short hands-on tests come first, then a minimal `codexengine`.
