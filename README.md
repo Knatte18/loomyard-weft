@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-15 11:52 UTC; every age below is as of then.
+Rendered 2026-10-15 11:53 UTC; every age below is as of then.
 
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
@@ -17,11 +17,11 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | **lyx report timing: phase minutes, parent waits and agent spawns from run records**<br>• A mechanical per-run and per-day time report beside lyx report convergence, including stops by who settled them. | [`report-timing`](design-report-timing.md) | loom | awaiting · Discussion-Bouncer | 2d | 25m | shed, orch |
+| 1 | **lyx report timing: phase minutes, parent waits and agent spawns from run records**<br>• A mechanical per-run and per-day time report beside lyx report convergence, including stops by who settled them. | [`report-timing`](design-report-timing.md) | loom | Discussion-Bouncer | 2d | 26m | shed, orch |
 | 2 | **Run window stays on shell: follow the overview and newest agent from run start**<br>• A viewer attached before any overview or agent window exists rests on shell and never follows the run | [`viewer-off-shell`](design-viewer-off-shell.md) | loom | Plan-Write | 3h | 25m | reed, batten |
 | 3 | **Kick-start pack per card, read when the card starts**<br>• Forks read about a quarter of a batch-wide pack; hand each card its own pack as everything it needs to begin | [`kickstart-per-card`](design-kickstart-per-card.md) | loom | Webster | 2h | 2h | webster, stencil |
-| 4 | **creel stage 1: the one way to reach an agent, standalone**<br>• The creel daemon, queues, journal and verbs, delivering through shuttle, built and tested before any module sends through it | [`creel-core`](design-creel-core.md) | loom | Discussion-Bouncer | 13d | 18m | creel, reed, shuttle |
-| 5 | **Orch color retyped after every deploy**<br>• The watcher retypes /color into the orch pane after each self-exec on a new binary, minutes later and on an already colored session | [`orch-color-on-reexec`](design-orch-color-on-reexec.md) | darn | Merge-In | 34m | 7m | orch |
+| 4 | **creel stage 1: the one way to reach an agent, standalone**<br>• The creel daemon, queues, journal and verbs, delivering through shuttle, built and tested before any module sends through it | [`creel-core`](design-creel-core.md) | loom | Discussion-Bouncer | 13d | 19m | creel, reed, shuttle |
+| 5 | **Orch color retyped after every deploy**<br>• The watcher retypes /color into the orch pane after each self-exec on a new binary, minutes later and on an already colored session | [`orch-color-on-reexec`](design-orch-color-on-reexec.md) | darn | Merge-In | 34m | 8m | orch |
 
 ### Ready
 
@@ -38,7 +38,7 @@ Waits only on Running or Ready entries.
 | # | Task | Slug | Recipe | After | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | 1 | **Lighter test rules for small changes**<br>• Tests that pin stencil wording make small prompt changes large; pin only what must hold, measured first | [`lighter-test-rules`](design-lighter-test-rules.md) | loom | `kickstart-per-card` | 1d | 2h | stencil, webster, burler, loom |
-| 2 | **Plan cards name added tests by Create handle, never a plain test-file path**<br>• Drop the Edit exception for a test file the card only adds tests to; the Create plan handle carries the file | [`plan-test-file-path`](design-plan-test-file-path.md) | loom | `kickstart-per-card` | 2h | 7m | loom, stencil |
+| 2 | **Plan cards name added tests by Create handle, never a plain test-file path**<br>• Drop the Edit exception for a test file the card only adds tests to; the Create plan handle carries the file | [`plan-test-file-path`](design-plan-test-file-path.md) | loom | `kickstart-per-card` | 2h | 8m | loom, stencil |
 | 3 | **Engine registry: engine per run, one constructor, narrower Engine interface**<br>• Shuttle picks the engine per spec from a registry and records it per run, so a second engine plugs in at one place | [`engine-registry`](design-engine-registry.md) | loom | `kickstart-per-card` | 2d | 1h | shuttle, config, loom, webster, burler, orch, batten |
 
 ### Layer B
