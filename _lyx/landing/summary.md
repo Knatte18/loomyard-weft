@@ -1,44 +1,45 @@
-# creel stage 1: per-hub message daemon with post, inject and read
+# creel stage 1: per-hub message daemon with delivery through shuttle
 
-Adds `lyx creel`, the one way to reach an agent from a terminal, a Go program or another agent.
-No module sends through it yet; the operator tries it by hand, and the notice and agent wiring follows as separate tasks once creel has proven itself.
+Adds `lyx creel`, the one way to reach an agent from a terminal, a Go program or another agent, built standalone.
+No other module sends through it yet; the operator tries it from a terminal.
+The wiring of the orch watcher, batten, the parent-review gate and drivers (`creel-notices`, `creel-agents`) follows on the operator's word.
 
 ## What changes
 
-- `internal/creelengine` is the engine: an append-only JSONL journal of one file per UTC day with the pool folded from it, 7-day retention that carries unread mail, queued injects and live holds forward, a per-receiver delivery scheduler, holds, privilege rules, the removed-holder sweep, a Unix-socket daemon and a Go client.
-- `internal/creelcli` is the `lyx creel` subtree: `post` (`--reply`, `--wait-reply`, `--timeout`), `inject` (`--interrupt`, `--ttl`, `--wait`), `interrupt`, `forward`, `read` (`--from`, `--all`, `--wait`), `inbox`, `log`, `hold`, `release` and a hidden `daemon` verb.
-  It also holds the delivery adapter over shuttle and reed's persisted state.
-- One daemon per hub, started by any verb that finds it down, guarded by a lock file.
-  It exits when its binary is replaced and never on idle.
-- Mail is pulled: `post` stores, and the daemon types one reminder line at the receiver's idle edge, with a backoff from 5 minutes to 1 hour after an unanswered reminder.
-- Shuttle's idle check, verified send and guarded interrupt now work on a live reed strand with no shuttle run record, so a hand-added `lyx reed add --cmd claude` strand is deliverable.
-- `agentname` gains program-sender (`ly:BATTEN`) and `EXTERNAL` names; `selfexec`, `proc`, reed status and `hubgeom` gain what the daemon needs (replaced-binary detection, parent pid, pane pid, creel geometry).
-- Docs: the whole creel design is in `internal/creelengine/doc.go`, the overview's module table gains creel, and the sandbox shuttle suite exercises it.
-- PATTERN: new `PATTERN-creel-store` with an import scan that fails a `creelengine` import of `reedengine` or a concrete shuttle engine; `PATTERN-agent-name`, `PATTERN-lyx-temp-root`, `PATTERN-pane-text-injection`, `PATTERN-daemon-wakeups` and `PATTERN-told-geometry` gain matching lines.
+- New `internal/creelengine`: a per-hub daemon with a message pool folded from an append-only JSONL journal (one file per UTC day, 7-day retention that carries unread mail, queued injects and live holds forward), a socket protocol, a Go client and a delivery scheduler.
+  The daemon is hidden (`lyx creel daemon`), started by any verb that finds it down, and exits when its binary is replaced.
+- New `internal/creelcli`: the `lyx creel` subtree with `post` (`--reply`, `--wait-reply`, `--timeout`), `inject` (`--interrupt`, `--ttl`, `--wait`, `--timeout`), `interrupt`, `forward`, `read` (`--from`, `--all`, `--wait`, `--timeout`), `inbox`, `log`, `hold` and `release`.
+  It also holds the delivery adapter over shuttle, reed's persisted state and `pauserecord`.
+- Mail is pulled: `post` stores, and the daemon types one reminder line when the receiver is idle, backing off from 5 minutes to 1 hour after a reminder turn that ends unread.
+  Injects are typed ahead of reminders, expire by TTL counted only while the receiver is live and unpaused, and an unlanded inject is journaled as unconfirmed and never retyped.
+- `internal/shuttleengine`: idle check, verified send and guarded interrupt now work on a live reed strand with no shuttle run record, so a hand-added `lyx reed add --cmd claude` strand is reachable.
+- `internal/agentname`: upper-case program-sender names and `EXTERNAL`.
+- Supporting changes: `selfexec` replaced-binary detection, a parent-pid reader in `internal/proc`, the pane pid in reed status, `hubgeom` creel geometry, a `creelfake` test kit, `PATTERN-creel-store` with an import scan, updated PATTERN backgrounds, `docs/overview.md`, sandbox scenarios and test-budget rows.
+  The whole creel design, including the parts stages 2 and 3 build, is in `internal/creelengine/doc.go`.
 
-## Design decisions to review
+## Design decisions to know
 
-- `creelengine` is told paths and a `Delivery` seam and imports neither reed nor a shuttle engine; the CLI implements the seam.
-- The socket is `<lyxtemp root>/creel-<shortname>-<hash of hub path>.sock`, not the board's `$XDG_RUNTIME_DIR` example: that variable is often unset on WSL and Windows, and a shortname alone collides between two hubs of one repo.
-- Sender identity on Linux comes from the peer's process ancestry against the strands' pane processes, so a strand that drops `LYX_STRAND_NAME` is still itself.
-  Off Linux it is the environment alone, and a process detached from its pane can pass as EXTERNAL or claim a program-sender name, either privileged.
-  A program-sender claim from a non-orch strand pane is refused.
-- Only privileged senders (EXTERNAL, program senders, orch strands) inject or interrupt into another strand; others are pointed at `post`.
-- Creel never types into an orch strand in this stage; mail to one is stored and its reminders show as withheld.
-- An inject has a TTL (10 minutes default, 1 hour at most) counted only while the receiver is live and unpaused, and persisted so a restart keeps it.
-  An inject whose send does not land is journaled as unconfirmed and never retyped, since a retry could run a command twice.
-- `read` marks messages read only when the client acknowledges it wrote them, so a client that dies mid-read leaves them unread.
-- The reminder backoff departs from the board's "repeats each time the receiver goes idle" for the one idle edge after creel's own unanswered reminder.
-- `read` follows the decision record's wording rather than the board's "oldest unread plus the same sender"; check this against what you expect.
-- A record-less send in shuttle takes a pane-only readiness reading, confirms landing by the pane and keeps no pending-send record.
+- The socket is `<lyxtemp root>/creel-<shortname>-<hash>.sock`, with a hash of the hub path, not the board's `$XDG_RUNTIME_DIR/lyx/creel-<shortname>.sock`: `XDG_RUNTIME_DIR` is unset on Windows and often under WSL, and the shortname alone collides between two hubs of one repo.
+- On Linux the sender is derived from the peer's process ancestry against the strands' pane processes, not from the environment alone.
+  A `LYX_STRAND_NAME` that disagrees is refused, and an unreadable state refuses rather than resolving to EXTERNAL.
+  Off Linux identity is the environment, so a confused agent can pass as EXTERNAL or claim a program-sender name; on every platform a process detached from its pane can.
+  Privileged senders (EXTERNAL, program senders, orch strands) type arbitrary single-line text into any pane at its next idle.
+- Program senders are upper case (`ly:BATTEN`), superseding the board's lower-case example.
+- Creel never types into an orch strand in stage 1 (`PATTERN-orch-pane-single-writer` is unchanged); mail to an orch is stored, and its reminders are shown as withheld.
+- Reminders back off after their own unanswered turn, a departure from the board's "repeats each time the receiver goes idle".
+- `read` marks messages read only when the client acks that it wrote them out; a connection that drops without the ack leaves them unread.
+- Shuttle's record-less send confirms landing by the pane alone and keeps no pending-send record; `PATTERN-pane-text-injection` gains a bullet for it.
+  `engine-registry` touches the same `Send`/`Interrupt` lookup, so whichever lands second adapts.
+- Constants in `creelengine` replace a `creel.yaml`: retention, TTLs, backoffs and caps.
 
 ## To check by hand
 
-- The tmux-tier and llm-tier smoke tests (`TestSmokeCreelFakeProviderPane`, `TestSmokeCreelClaudeStrand`) are compiled and vetted but have never run; run them with `lyx gate test --tags` for their tiers.
-- The plan-level verify and the integration tier were not run in the session that built this; run `lyx gate test ./...` and `lyx gate test --tags integration ./...` before landing.
-- The `creel-core` board entry's body still carries the full design; cut it to a pointer at `internal/creelengine/doc.go`, since `lyx board upsert` refused the edit while the run held the entry.
-- The EXTERNAL sender name was formed outside `agentname` and the last commit moves it through `agentname.FormatProgram`; confirm no other site forms a sender name by hand.
-- Idle and paused errors in the delivery worker: confirm that an error from the idle or pause probe is neither dropped nor treated as idle.
-- A reply posted to a waiting holder: confirm `post --reply` wakes the delivery scheduler for its receiver.
-- Windows: AF_UNIX sockets need Windows 10 1803 or later and creel is the first socket server in the code; that path is unverified.
-- `engine-registry` runs in parallel and touches the same shuttle `Send` and `Interrupt` lookup; whichever lands second adapts.
+- `TestSmokeCreelFakeProviderPane` (tmux tier) and `TestSmokeCreelClaudeStrand` (llm tier) were compiled and vetted but have never run.
+  Run both before relying on end-to-end delivery.
+- The `creel-core` board entry's body is still the full design; `lyx board upsert` refused to edit it during the run.
+  Cut it to a pointer at `internal/creelengine/doc.go` after landing.
+- `read` sets and `inbox` in `internal/creelengine/verbs.go` (`Store.Read`): confirm plain `read` (oldest unread plus every other unread from its sender), `read --from` and `read --all` match the board's sets, and that the `inbox` sequence in the plan-review finding `read-sets-inbox-sequence-ambiguous` reads right.
+- Native Windows is unverified: AF_UNIX sockets need Windows 10 1803 or later, and creel is the first socket server in the code.
+- The delimiting of subjects in reminder lines lowers but does not remove the prompt-injection risk of sender-written text typed into a pane.
+- Reading every worktree's reed state per sweep grows with the hub's pairs; it runs only while unread mail exists.
+- `lyx gate test ./...` and `lyx gate test --tags integration ./...` were not confirmed by the run records read for this description.
