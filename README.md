@@ -9,32 +9,16 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 Concrete and claimable; only a task can run.
 
-### Running
-
-Held by a run; its scope is locked until the run ends.
-
-#### Normal priority
-
-| # | Task | Slug | Recipe | At | Age | Revised | Labels |
-| --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | **Go driver and tackler in shed, for every FSM-driven run**<br>• Move the Go driver and tackler from loomcli into shed so darn, batten and every recipe get them; module config overrides model and budgets | [`shed-tackler`](design-shed-tackler.md) | loom | Finalize | 14h | 13h | shed, loom, batten |
-
 ### Ready
 
 Waits on nothing open; can start now.
-
-_None._
-
-### Layer A
-
-Waits only on Running or Ready entries.
 
 #### Normal priority
 
 | # | Task | Slug | Recipe | After | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | **Run status pane: numbered rows, seconds, round totals, gate time; segment-named sessions**<br>• Per-run status pane shows seconds, a total per Burler round, and each gate with its time and the rework it caused | [`run-pane-timing`](design-run-pane-timing.md) | loom | `shed-tackler` | 2h | 1h | loom, burler, shed, reed |
-| 2 | **Begin-batch refusal route and label; bare lyx config writes an empty layer**<br>• Two small bugs: a delete-before-reference refusal is mislabelled plan_drifted and halts for a human; bare lyx config with no TTY saves an empty layer | [`refusal-route-config-empty`](design-refusal-route-config-empty.md) | loom | `shed-tackler` | 2h | 5m | webster, loom, config |
+| 1 | **Run status pane: numbered rows, seconds, round totals, gate time; segment-named sessions**<br>• Per-run status pane shows seconds, a total per Burler round, and each gate with its time and the rework it caused | [`run-pane-timing`](design-run-pane-timing.md) | loom |  | 2h | 1h | loom, burler, shed, reed |
+| 2 | **Begin-batch refusal route and label; bare lyx config writes an empty layer**<br>• Two small bugs: a delete-before-reference refusal is mislabelled plan_drifted and halts for a human; bare lyx config with no TTY saves an empty layer | [`refusal-route-config-empty`](design-refusal-route-config-empty.md) | loom |  | 2h | 5m | webster, loom, config |
 
 ## Notes
 
@@ -46,7 +30,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Note | Slug | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| 1 | **Run window stays on shell: follow the overview and newest agent from run start**<br>• A viewer attached before any overview or agent window exists rests on shell and never follows the run | [`viewer-off-shell`](design-viewer-off-shell.md) | 16m | 12m | reed, batten |
+| 1 | **Run window stays on shell: follow the overview and newest agent from run start**<br>• A viewer attached before any overview or agent window exists rests on shell and never follows the run | [`viewer-off-shell`](design-viewer-off-shell.md) | 17m | 12m | reed, batten |
 
 #### Low priority
 
@@ -114,7 +98,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 15 | **Interactive board view: a regenerated HTML file and a phone-friendly README**<br>• board.html rendered with README on every write; a VS Code task opens it in the browser; collapsible README for the GitHub app | [`board-viewer`](design-board-viewer.md) | 10d | 9d | board, ide, orch |
 | 16 | **Spawn audit log: every process lyx starts is recorded and traceable**<br>• One recorded launch path and a hub-wide spawn log with owner, argv and resource use, plus a sampler and a summary verb, so a process storm can be traced after a crash | [`spawn-audit-log`](design-spawn-audit-log.md) | 6d | 2d | reed, shuttle, config |
 | 17 | **lyx orch start --continue resumes the last orch session**<br>• lyx orch records its session id so a reboot resumes the same orch conversation instead of a fresh one. | [`orch-continue`](design-orch-continue.md) | 3d |  | orch |
-| 18 | **Configurable action buttons on the reed status bar**<br>• Clickable status-bar buttons that run configured commands: VS Code, orch distill/refresh, the follow toggle and more | [`reed-status-buttons`](design-reed-status-buttons.md) | 12m | 7m | reed, config |
+| 18 | **Configurable action buttons on the reed status bar**<br>• Clickable status-bar buttons that run configured commands: VS Code, orch distill/refresh, the follow toggle and more | [`reed-status-buttons`](design-reed-status-buttons.md) | 12m | 8m | reed, config |
 
 #### Low priority
 
@@ -137,3 +121,11 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 2 | **Re-measure the test suite weight on a quiet machine**<br>• The test-suite-weight before and after numbers were taken under load; rerun the report Regenerate section on an idle machine for a fair wall-time comparison | `suite-weight-quiet-rerun` | 4d | 1d |  |
 | 3 | **Lighter test rules for small changes**<br>• Tests that pin stencil wording make small prompt changes large; pin only what must hold, measured first | [`lighter-test-rules`](design-lighter-test-rules.md) | 1d | 1d | stencil |
 | 4 | **Bench fork0 and the strict critical fixer on twill Discussion-Write**<br>• Arms: twill as is, with the strict critical fixer, and fork0 plus the critical fixer, graded against Discussion-Review keys | [`twill-discussion-fork0-bench`](design-twill-discussion-fork0-bench.md) | 2h | 2h | loom, burler, stencil |
+
+## Done
+
+Finished, awaiting `lyx board prune --apply`.
+
+| # | Entry | Slug | Age | Revised | Labels |
+| --- | --- | --- | --- | --- | --- |
+| 1 | **Go driver and tackler in shed, for every FSM-driven run**<br>• Move the Go driver and tackler from loomcli into shed so darn, batten and every recipe get them; module config overrides model and budgets | [`shed-tackler`](design-shed-tackler.md) | 14h | 13h | shed, loom, batten |
