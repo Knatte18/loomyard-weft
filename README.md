@@ -27,11 +27,7 @@ Held by a run; its scope is locked until the run ends.
 
 Waits on nothing open; can start now.
 
-#### Normal priority
-
-| # | Task | Slug | Recipe | After | Age | Revised | Labels |
-| --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | **Webster master reads only what every fork shares, never source code**<br>• The master template tells the master to read the codebase once up front for its forks to inherit, but forks rewrite the code, so every later fork inherits stale reads | [`webster-master-no-code`](design-webster-master-no-code.md) | loom |  | 2m | 1m | webster, stencil |
+_None._
 
 ### Layer A
 
@@ -44,6 +40,7 @@ Waits only on Running or Ready entries.
 | 1 | **Lighter test rules for small changes**<br>• Tests that pin stencil wording make small prompt changes large; pin only what must hold, measured first | [`lighter-test-rules`](design-lighter-test-rules.md) | loom | `kickstart-per-card` | 1d | 2h | stencil, webster, burler, loom |
 | 2 | **Plan cards name added tests by Create handle, never a plain test-file path**<br>• Drop the Edit exception for a test file the card only adds tests to; the Create plan handle carries the file | [`plan-test-file-path`](design-plan-test-file-path.md) | loom | `kickstart-per-card` | 3h | 11m | loom, stencil |
 | 3 | **Engine registry: engine per run, one constructor, narrower Engine interface**<br>• Shuttle picks the engine per spec from a registry and records it per run, so a second engine plugs in at one place | [`engine-registry`](design-engine-registry.md) | loom | `kickstart-per-card` | 2d | 1h | shuttle, config, loom, webster, burler, orch, batten |
+| 4 | **Webster master reads only what every fork shares, never source code**<br>• The master template tells the master to read the codebase once up front for its forks to inherit, but forks rewrite the code, so every later fork inherits stale reads | [`webster-master-no-code`](design-webster-master-no-code.md) | loom | `kickstart-per-card` | 2m | 0m | webster, stencil |
 
 ### Layer B
 

@@ -1024,12 +1024,20 @@
         "stencil"
       ],
       "issues": [],
-      "depends_on": [],
+      "depends_on": [
+        "kickstart-per-card"
+      ],
       "isolated": false,
       "brief": "The master template tells the master to read the codebase once up front for its forks to inherit, but forks rewrite the code, so every later fork inherits stale reads",
       "body": "## Seen\n\n`contracts/stencils/webster/webster-template-master.md` tells the master to read the codebase structure and conventions and the plan overview once, up front, so that every implementer fork inherits what it read with no cold orientation.\nThe 2026-10-12 and 2026-10-13 pack audits (`docs/research/glyph-audit-2026-10-12`, `-10-13`) found forks explore only about 6 calls before their first edit, because they inherit that orientation.\n\n## Operator decision (2026-10-15)\n\nA serious bug: Webster was never meant to work this way.\nThe master reads only what is common to every fork and stable during the run: the plan, `CLAUDE.md`, `PATTERN.md` and the like.\nIt reads no source code: Webster rewrites the code, so nothing else is stable during the run, and every fork after the first would inherit stale reads.\nEach fork reads the code its own card needs, fresh, when the card starts.\nThe up-front codebase read has stood in the master template since at least 2026-07-27 (`d89a56232`).\n\n## Idea\n\nRewrite the master orientation to the plan only (`00-overview.md`, the Card Index, Shared Decisions) and drop the inherit-my-reads framing from the master template and the fork prefix.\nThe per-card pack of `kickstart-per-card` then becomes the fork read set rather than an extra on top of inherited reads.\nRe-measure fork exploration with `tools/forkaudit` afterwards: forks will explore more by construction, so compare total reads and stale-read edits, not calls before the first edit.",
       "created": "2026-10-15T11:54:00Z",
-      "revised": "2026-10-15T11:55:20Z"
+      "revised": "2026-10-15T11:56:32Z",
+      "run_settings": {
+        "loom": {
+          "review_hard_max_bounces": 3,
+          "review_max_bounces": 2
+        }
+      }
     }
   ]
 }

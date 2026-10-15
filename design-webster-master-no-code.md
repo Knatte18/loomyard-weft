@@ -2,6 +2,8 @@
 
 `webster-master-no-code` · Task · bug, webster, stencil
 
+Depends on: [`kickstart-per-card`](design-kickstart-per-card.md)
+
 ## Seen
 
 `contracts/stencils/webster/webster-template-master.md` tells the master to read the codebase structure and conventions and the plan overview once, up front, so that every implementer fork inherits what it read with no cold orientation.
