@@ -410,7 +410,7 @@
       }
     }
   ],
-  "currentBatch": 12,
+  "currentBatch": 0,
   "masterStrand": "87bd97fb3bbe3275f0db3a4a7cbc0e65",
   "masterSessionId": "c5cbea7c-c568-4b94-8644-fd4d87837b85",
   "batches": {
@@ -485,8 +485,29 @@
       "kind": "fork",
       "spawnedAt": "2026-10-15T13:50:42Z",
       "sessionId": "c5cbea7c-c568-4b94-8644-fd4d87837b85",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "12-orch-resume-context",
+        "status": "done",
+        "head_sha": "10a31f0187010ef9aeb6ef4b18cb3dc09121ee74",
+        "deviations": [
+          "internal/shuttleengine/claudeengine/modelswitch_test.go",
+          "internal/shuttleengine/claudeengine/startup.go",
+          "internal/shuttleengine/engine.go",
+          "internal/shuttleengine/seam_enforcement_test.go",
+          "pattern/PATTERN-pane-text-injection.md"
+        ]
+      },
+      "cardShas": [
+        "10a31f0187010ef9aeb6ef4b18cb3dc09121ee74"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-engine-registry/c5cbea7c-c568-4b94-8644-fd4d87837b85/subagents/agent-ae24fbfbb229e53b3.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-engine-registry/c5cbea7c-c568-4b94-8644-fd4d87837b85/subagents/agent-ae24fbfbb229e53b3.jsonl"
+      ]
     },
     "7": {
       "slug": "runner-engine-set",
@@ -573,6 +594,7 @@
   "seenForkTranscripts": [
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-engine-registry/c5cbea7c-c568-4b94-8644-fd4d87837b85/subagents/agent-a6af537fa899021f0.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-engine-registry/c5cbea7c-c568-4b94-8644-fd4d87837b85/subagents/agent-a3fc6a0350144ad30.jsonl",
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-engine-registry/c5cbea7c-c568-4b94-8644-fd4d87837b85/subagents/agent-a1f06c668dcc5330d.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-engine-registry/c5cbea7c-c568-4b94-8644-fd4d87837b85/subagents/agent-a1f06c668dcc5330d.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-engine-registry/c5cbea7c-c568-4b94-8644-fd4d87837b85/subagents/agent-ae24fbfbb229e53b3.jsonl"
   ]
 }
