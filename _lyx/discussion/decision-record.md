@@ -214,6 +214,12 @@ Rationale: the hub runs `discussion_producer: twill` with `discussion_advisors: 
   - card17-single-llm-comment-sites-missed (class scope, severity MEDIUM, open in rounds 2)
 <!-- /lyx:carry-over Plan-Review -->
 
+<!-- lyx:carry-over Merge-Review -->
+- Merge-Review, round 1: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
+  Review: _lyx/reviews/merge/round-1-review.md; fixer report: _lyx/reviews/merge/round-1-fixer-report.md.
+  - scalar-or-list-set-refuses-advisor-mappings (class design, severity MEDIUM, open in rounds 1)
+<!-- /lyx:carry-over Merge-Review -->
+
 ## Acceptance criteria
 
 - A frame for a run part-way through Discussion-Review shows each recipe row once: finished rows with their log lines under them, the Discussion-Review block with rounds 1..n in run order, and every later row as a bare `[ ]` line.
