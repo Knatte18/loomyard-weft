@@ -946,7 +946,7 @@
       "id": 552,
       "slug": "creel-notices",
       "title": "creel stage 2: orch and batten notices through creel",
-      "kind": "task",
+      "kind": "note",
       "labels": [
         "feature",
         "creel",
@@ -954,6 +954,7 @@
         "batten"
       ],
       "issues": [],
+      "priority": "high",
       "depends_on": [],
       "isolated": false,
       "brief": "The orch watcher and batten notices and injects go through creel; the watcher keeps only its cycle logic",
@@ -965,7 +966,7 @@
       "id": 553,
       "slug": "creel-agents",
       "title": "creel stage 3: agents message through creel, not SendMessage",
-      "kind": "task",
+      "kind": "note",
       "labels": [
         "feature",
         "creel",
@@ -974,15 +975,13 @@
         "stencil"
       ],
       "issues": [],
-      "depends_on": [
-        "creel-notices",
-        "engine-config-seams"
-      ],
+      "priority": "high",
+      "depends_on": [],
       "isolated": false,
       "brief": "Parent asks, parent review, stop reports and shuttle send go through creel, so a non-Claude engine can take a role with a parent",
       "body": "## Goal\n\nCreel stage 3: agents reach their parent and each other through creel, not Claude Code's `SendMessage`, so a non-Claude engine can take a role that has a parent.\nThe design is in `creel-core`'s body until that task lands, then in the creel package's `doc.go`.\n\n## Operator decision (2026-10-15)\n\nCreel is a prerequisite for Codex; the Codex-readiness plan's interim `neutral-parent-asks` is dropped in favour of this stage.\n\n## Scope (stage 3 of the creel design, plus the Codex-readiness findings)\n\n- The parent-review gate (`internal/parentreview/gate.go`, which today prompts Discussion-Write to `SendMessage` the parent) posts itself.\n- Drivers' stop reports post instead of duplicating batten's notices over `SendMessage`.\n- `lyx shuttle send` and `lyx shuttle interrupt` move behind creel.\n- The parent directive (`contracts/stencils/parent/parent-directive-parent.md`), rendered for every role with a parent, says to ask through creel, not \"by `SendMessage`\".\n- `shuttleengine/hold.go`'s hold notice names creel, not `SendMessage`.\n- The other stencils that name `SendMessage` (`seat-directive-{chair,advisor}`, `shed-template-driver-notify{,-watched}.md`, `loom-template-parent-review-delivery.md`, the orch role) move to creel where the Discussion finds it fits; what stays Claude-only is declared through `Spec.Requires`.\n\n## Risk to check in Discussion\n\nThe hold notice goes to the prime orch (`orchcli.NotifyPrime`), while the parent directive names `parent_name`, which may be a loom driver strand: check per recipe that a question reaches the session that answers it.\n\n## Operator decision (2026-10-15): no auto-start\n\nThis stage replaces paths that work today, so it starts only on the operator's word once creel has proven itself, never on a newly-ready auto-start.\n",
       "created": "2026-10-15T10:16:44Z",
-      "revised": "2026-10-15T11:34:21Z"
+      "revised": "2026-10-15T11:36:35Z"
     },
     {
       "id": 554,
