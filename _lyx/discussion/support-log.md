@@ -65,3 +65,5 @@ _No rounds yet._
 - Q8 — What is the "added" baseline for `merge`? Auto-pick: the union of the target's and the removed entries' stored lists (D1).
 - Q9 — Does a done dependency trigger? Auto-pick: no (D1).
 - Q10 — Fix the skill paragraph's missing line break? Auto-pick: yes, in the same edit (D5).
+- Q11 — Does an abandoned sibling count? Auto-pick: no, a newly-ready start never starts it (D1).
+- Q12 — Does a written task left `done` get siblings? Auto-pick: no, so the relation stays symmetric in a batch (D1).
