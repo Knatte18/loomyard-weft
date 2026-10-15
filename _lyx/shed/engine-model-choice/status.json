@@ -54,6 +54,22 @@
       "at": "2026-10-15T14:47:27Z",
       "budget_exempt": true,
       "routed_to": "Run-Shed"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "child running → awaiting at Discussion-Bouncer",
+      "at": "2026-10-15T14:54:52Z",
+      "budget_exempt": true,
+      "routed_to": "Run-Shed"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "child awaiting → running at Discussion-Bouncer",
+      "at": "2026-10-15T14:56:08Z",
+      "budget_exempt": true,
+      "routed_to": "Run-Shed"
     }
   ]
 }
