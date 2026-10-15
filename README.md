@@ -13,23 +13,25 @@ Concrete and claimable; only a task can run.
 
 Held by a run; its scope is locked until the run ends.
 
+#### High priority
+
+| # | Task | Slug | Recipe | At | Age | Revised | Labels |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| 1 | **reed: intact launch lines under parallel launches, --focus=false never takes focus**<br>• Parallel shuttle launches corrupt the typed launch line, and --focus=false windows still steal focus | [`reed-launch-fixes`](design-reed-launch-fixes.md) | darn | Worktree-Create | 7m | 0m | reed, shuttle |
+
 #### Normal priority
 
 | # | Task | Slug | Recipe | At | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | **Go driver and tackler in shed, for every FSM-driven run**<br>• Move the Go driver and tackler from loomcli into shed so darn, batten and every recipe get them; module config overrides model and budgets | [`shed-tackler`](design-shed-tackler.md) | loom | Plan-Write | 12h | 11h | shed, loom, batten |
-| 2 | **Twill fork0: blind lens review, strict critical fixer, branch-coverage lens**<br>• Plan-Write: fork0 writes the plan, the master spawns blind lens forks and judges as a strict Burler-style fixer; new branch-coverage lens | [`twill-fork0`](design-twill-fork0.md) | loom | PR-Align | 2d | 11h | loom, stencil, burler |
-| 3 | **tokencount: subtract hibernation, share by active time, map renamed Burler roles**<br>• tokencount counts hibernation as session time and splits Burler roles across the overview-seats rename | [`tokencount-fixes`](design-tokencount-fixes.md) | darn | Merge-In | 39m | 20m | burler |
+| 2 | **Go driver and tackler in shed, for every FSM-driven run**<br>• Move the Go driver and tackler from loomcli into shed so darn, batten and every recipe get them; module config overrides model and budgets | [`shed-tackler`](design-shed-tackler.md) | loom | Plan-Write | 12h | 11h | shed, loom, batten |
+| 3 | **Twill fork0: blind lens review, strict critical fixer, branch-coverage lens**<br>• Plan-Write: fork0 writes the plan, the master spawns blind lens forks and judges as a strict Burler-style fixer; new branch-coverage lens | [`twill-fork0`](design-twill-fork0.md) | loom | PR-Align | 2d | 11h | loom, stencil, burler |
+| 4 | **tokencount: subtract hibernation, share by active time, map renamed Burler roles**<br>• tokencount counts hibernation as session time and splits Burler roles across the overview-seats rename | [`tokencount-fixes`](design-tokencount-fixes.md) | darn | Merge-In | 39m | 20m | burler |
 
 ### Ready
 
 Waits on nothing open; can start now.
 
-#### High priority
-
-| # | Task | Slug | Recipe | After | Age | Revised | Labels |
-| --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | **reed: intact launch lines under parallel launches, --focus=false never takes focus**<br>• Parallel shuttle launches corrupt the typed launch line, and --focus=false windows still steal focus | [`reed-launch-fixes`](design-reed-launch-fixes.md) | darn |  | 7m | 0m | reed, shuttle |
+_None._
 
 ### Layer A
 
