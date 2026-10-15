@@ -41,7 +41,7 @@ Six lens forks returned reports; all findings judged, duplicates merged.
 - goal-scope — D1's pattern rationale is wrong, the pattern does not forbid a file-reading pane's redraw: fixed, rationale is now the scrollback wipe, and D1 states it narrows item 1 for the running row.
 - goal-scope — roles outside review segments left out with an unchecked claim (arbiter, conflict, treadle): fixed, Out states the reason (one row or stop at a time, the checklist names the row); not extended, since the board's complaint is the identical review-segment names.
 - goal-scope — "in the pane" redefined against the board's usage: fixed, the assumption now states the checklist already names segment rows.
-- goal-scope — child number in batten's stage cell ambiguous: fixed, D4 uses the dotted `4.7` form.
+- goal-scope — child number in batten's stage cell ambiguous: fixed, D4 uses the dotted `6.5` form.
 - goal-scope — persistence is scope creep: fixed with the persistence finding above.
 - pattern-fit — role names in stencils, docs and a claims test: fixed, D8 puts them in scope.
 - pattern-fit — `role_prefix` must be accepted by each row's decoder, not only `shedbuild`: fixed in D8; the PATTERN-sole-parsers line removed.
