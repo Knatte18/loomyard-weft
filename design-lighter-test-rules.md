@@ -1,6 +1,6 @@
 # Lighter test rules for small changes
 
-`lighter-test-rules` · Task · enhancement, stencil, webster, burler, loom · running · Webster-Burler-Review
+`lighter-test-rules` · Task · enhancement, stencil, webster, burler, loom · running · Webster-Burler-Fix
 
 ## Idea (operator, 2026-10-13)
 
