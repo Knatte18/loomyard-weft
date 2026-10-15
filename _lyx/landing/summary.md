@@ -1,36 +1,41 @@
-# tokencount: drop machine sleep, active-time shares, map -chair roles
+# tokencount: skip machine sleep, share by active time, map -chair roles
+
+`tools/tokencount` counted machine sleep as session time, ranked the Producers share by elapsed time, and split a Burler role across the overview-seats rename.
+One parked `tender` Plan-Bouncer session spanned 22h20m, of which 22h18m was the machine hibernating, and it took 50.5% of the All-runs Producers table.
+Roles recorded before the rename (`burler-review-chair`) and after it (`burler-review`) landed in separate rows.
 
 ## What changes
 
-**Machine sleep is no time at all.**
-`tools/tokencount` reads the machine's suspends and hibernates once per invocation from the systemd journal (`journalctl -t systemd-sleep -o json`).
-Each sleep runs from systemd-sleep's `Performing sleep operation '<op>'...` entry to the next `System returned from sleep operation '<op>'.` entry of the same operation and boot.
-`RunTally.subtractSleeps` cuts the sleeps out of every working interval, the run's and each role's, and the span, the idle row and each Producers row's elapsed and idle count awake time only.
-Each run's section names the sleep left out of its span, "All runs" names the sum, and the report header says where the sleeps came from or why none were left out: `journalctl` not on `PATH`, failing, or holding no sleep, as on Windows.
-A new `-no-sleep` flag reads no journal and counts sleep as time.
-
-**Producers share by active time.**
-The Producers table gains an `active` column, elapsed minus idle.
-The share is a row's active time over the table's summed active time, and rows are ordered by active time, then by name, so a row parked through a long wait no longer tops the table.
-
-**Pre-rename lead roles.**
-`roleOf` drops a trailing `-chair` after the `-N` suffix, so `burler-review-chair`, `burler-fix-chair` and `discussion-chair` count under `burler-review`, `burler-fix` and `discussion`, and a report spanning the overview-seats rename sums each role once.
-Advisor roles read `<prefix>-advisor` on both sides of the rename and need no mapping.
-
-Over the last ten full loom runs on the operator's host, the `tender` run loses 22h12m of hibernation, and the All-runs Plan-Bouncer row falls from 50.5% to 1.6%, 29m51s elapsed.
-
-The package doc in `tools/tokencount/main.go` describes the sleep source, the active-time share and the role mapping.
-`tools/tokencount`'s test budget rises by one for `TestParseSleepJournal`.
+- **Sleep is subtracted from every time figure.**
+  Each working interval loses the parts a sleep covers, so the span, each Producers row's elapsed and every idle figure count awake time only.
+  The report prints the sleep subtracted per run, and over all runs only when sleep was subtracted.
+- **The Producers share is by active time.**
+  A row's active time is its elapsed minus its idle, printed as its own column.
+  The share is the row's active time over the table's summed active time, and rows are ordered by active time, longest first, then by name.
+- **A pre-rename lead role maps onto its new name.**
+  A role ending in `-chair` counts under the role with that suffix dropped, so `burler-review-chair` counts as `burler-review` and `discussion-chair` as `discussion`.
+  Advisor roles need no mapping.
+- The package doc in `main.go` carries the new design.
 
 ## Design decisions
 
-- The journal is the sleep source because lyx persists no sleep: `pauserecord.SleepWatch` lives in memory, only while a lyx process waits.
-- A missing or failing journal is a header line, not an error, so a report still runs where there is no systemd.
-- `-no-sleep` was added while coding: the integration test calls `run` and would otherwise read the host's real journal; it passes `-no-sleep` to stay hermetic.
-- The `-chair` mapping is a suffix rule, not a list of names, because the generic MultiLLM recipe row formed `<prefix>-chair` for any recipe-defined prefix.
-  A seat an operator names `chair` after the rename also folds into its table's lead role.
+- **Sleeps come from the systemd journal.**
+  `sleep.go` reads `journalctl -t systemd-sleep -o json` once per invocation.
+  It pairs each `Performing sleep operation '<op>'...` line with the next `System returned from sleep operation '<op>'.` line of the same boot into one interval.
+  lyx records no sleep durably, and the journal holds every suspend and hibernate with start and end.
+- **A missing journal is a note, not an error.**
+  With `journalctl` absent, failing or holding no such lines, nothing is subtracted and the report header says why.
+  The report then counts sleep as before, as it does on Windows.
+- **Journal parsing is separate from outcome mapping**, so both are unit-tested without a real journal.
+- A seat an operator names `chair` after the rename also folds into its table's lead role.
+
+## Limits
+
+- A machine powered off, not suspended, during a run is still counted as time, since the journal records no sleep operation for it.
+- A journal whose retention dropped the run's window subtracts nothing for that window; the per-run sleep figure reads zero.
 
 ## To check by hand
 
-- A machine powered off, rather than suspended or hibernated, during a run still counts as time, since the journal records no sleep operation for it.
-- A journal whose retention no longer covers a run's window leaves nothing out for it; the run's section then prints no sleep line.
+- Run `tools/tokencount/tokencount.sh -last 10` on the Linux host and confirm the `tender` Plan-Bouncer row no longer tops the All-runs Producers table.
+- Run it with `journalctl` off `PATH` and confirm the header names why no sleep was subtracted.
+- Run it over runs on both sides of the rename and confirm each Burler and discussion role has one row.
