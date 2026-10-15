@@ -74,6 +74,7 @@ All six forks returned.
 - Add the delete-before-reference check at Batchifier: it would check the same tree the plan gates already checked.
 - Leave the stop to the Go driver's tackler (`internal/sheddriver`): a cold tackler would rediscover what the refusal already names, and the plan edit belongs to the Plan-Review ring with its gate.
 - Do not reroute `plan_defect` at all: the repeat check already halts a gate/dispatch disagreement after one review, and a real authoring defect the gate missed is still a plan edit.
+- Write the last-routed file at `Plan-Burler-Review`'s entry, so only a conflict a plan review saw counts as routed: `BurlerReviewProducer` serves every review segment and would need a plan-only hook, and a capped conflict's way forward is the same hand edit either way, so the adapter keeps the write and D3 states the capped case.
 - Config: print the file instead of refusing when there is no terminal: a refusal naming `--print` makes the caller's intent explicit and avoids a silent mode switch.
 - Config: treat an unchanged file as abort too: not asked for; an unchanged non-empty file writes nothing harmful.
 
@@ -84,7 +85,7 @@ _No rounds yet._
 ## Question ledger
 
 - Q1 (resolved, auto-pick): begin-batch's class is `plan_conflict` with cause `plan_defect` or `tree_moved`. Rationale: the fingerprint has already matched, so the plan did not drift; the begun-batch test is cheap and splits the two board cases.
-- Q2 (resolved, auto-pick): routing rests on a conflict record begin-batch writes, removed at Run entry and on a successful begin-batch. Rationale: Go-written, bounded to one Webster call.
+- Q2 (resolved, auto-pick): routing rests on a conflict record begin-batch writes, removed at Run entry once Run holds run.lock and as every begin-batch's first step. Rationale: Go-written, bounded to one Webster call.
 - Q3 (resolved, auto-pick): Webster `on_reroute: Plan-Burler-Review`, plan reviewer instructions name the record. Rationale: existing ring with a mechanical gate; reroute cap bounds loops.
 - Q4 (resolved, auto-pick): no new delete-before-reference check at Plan-Bouncer or Batchifier. Rationale: plan gates already run it.
 - Q5 (resolved, auto-pick): stdin-only terminal guard on every `lyx config` editor path. Rationale: agents' shells have no terminal on stdin.
