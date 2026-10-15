@@ -56,6 +56,7 @@ Callers of the re-signed methods: `storeVerbs` discards the new result for now (
 `TestWriteSiblings`, in a new file `internal/boardengine/siblings_test.go` of package `boardengine_test` with its own header, is one table-driven unit test against a temp board with `SkipGit`, no git spawned, `t.Parallel`, with its own `Config` whose `Labels` hold two module labels (`board`, `cli`) beside `testTypes`.
 It is a new top-level test rather than rows of `TestSetDeps`, `TestUpsertTasksBatch` or `TestMergeTasks` because those run on `boardengine.NewStore("")`, and the siblings come back only from the `Board` methods, through `boardCriticalSection`.
 Every seeded entry, X, Y, Z, A, B, C, D and E, is a `"kind":"task"` carrying the type label `bug`, plus the module labels a row names, so no seed hits a note refusal.
+The one exception is the note N of the note refused row, seeded as a `"kind":"note"` carrying `bug`, which set-deps then gives `depends_on` [D].
 Each row seeds entries, runs one write and asserts the exact returned `[]Sibling` and, on success, the stored `depends_on`:
 - `set-deps` adding D to X, Y open on D sharing `board`: one sibling {X, Y, [D], [board]}, and X stores [D].
 - the same through `UpsertTaskSiblings` with `depends_on` and through `MergeTasks` whose upsert carries `depends_on`; the batch row below covers `UpsertTasksBatch`.
@@ -75,7 +76,7 @@ Each row seeds entries, runs one write and asserts the exact returned `[]Sibling
 - `MergeTasks` removing Y and upserting X with `depends_on` [D]: none.
 - `MergeTasks` removing A, which waited on D, and upserting new B with `depends_on` [D], while C waits on D and shares `board` with B: none.
 - set-deps X to [D, D]: one sibling whose `Deps` is [D].
-- refused writes, each with a would-be sibling Y open on D sharing `board`: set-deps giving a note `depends_on` and set-deps naming an unknown dependency, refused inside `fn`, assert a non-nil error and nil siblings; set-deps adding D to an X whose status is `running · Webster`, refused by `checkRunLocks` after `fn` has computed the set, asserts `errors.Is(err, ErrRunLocked)` and nil siblings.
+- refused writes, each with a would-be sibling Y open on D sharing `board`: set-deps giving the note N `depends_on` [D] and set-deps naming an unknown dependency, refused inside `fn`, assert a non-nil error and nil siblings; set-deps adding D to an X whose status is `running · Webster`, refused by `checkRunLocks` after `fn` has computed the set, asserts `errors.Is(err, ErrRunLocked)` and nil siblings.
   The error text and the rollback stay pinned by `TestValidateDependencyGraph`, `TestKindDependencyRules`, `TestSetDeps` and `TestRunLock`, so these rows assert neither.
 
 The new top-level test raises `internal/boardengine`'s row in `cmd/lyx/testdata/test-budget.yaml` by one.
