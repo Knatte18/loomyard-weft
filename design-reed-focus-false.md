@@ -1,6 +1,6 @@
 # reed: shuttle run --focus=false windows still take focus
 
-`reed-focus-false` · Note · bug
+`reed-focus-false` · Note · bug, reed, shuttle
 
 Imported from [issue #628](https://github.com/Knatte18/loomyard/issues/628).
 

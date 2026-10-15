@@ -49,8 +49,8 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | --- | --- | --- | --- | --- | --- |
 | 1 | **A hub pause leaves background forks and shells running, so hibernate never confirms**<br>• Pause interrupts turns but not background forks or shells; sessions read busy and hibernate confirmation fails | [`pause-background-work`](design-pause-background-work.md) | 10h | 32m | shuttle, webster |
 | 2 | **Plan-Bouncer and Batchifier pass a plan that webster begin-batch then refuses with delete-before-reference** | [`plan-drift-refusal-route`](design-plan-drift-refusal-route.md) | 30m | 29m | webster, loom |
-| 3 | **reed: parallel window launches corrupt the launch line** | [`reed-launch-race`](design-reed-launch-race.md) | 0m | 0m |  |
-| 4 | **reed: shuttle run --focus=false windows still take focus** | [`reed-focus-false`](design-reed-focus-false.md) | 0m | 0m |  |
+| 3 | **reed: parallel window launches corrupt the launch line** | [`reed-launch-race`](design-reed-launch-race.md) | 0m | 0m | reed |
+| 4 | **reed: shuttle run --focus=false windows still take focus** | [`reed-focus-false`](design-reed-focus-false.md) | 0m | 0m | reed, shuttle |
 
 ### Enhancements
 

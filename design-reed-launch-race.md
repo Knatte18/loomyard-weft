@@ -1,6 +1,6 @@
 # reed: parallel window launches corrupt the launch line
 
-`reed-launch-race` · Note · bug
+`reed-launch-race` · Note · bug, reed
 
 Imported from [issue #627](https://github.com/Knatte18/loomyard/issues/627).
 
