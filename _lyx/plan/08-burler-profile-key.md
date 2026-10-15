@@ -15,10 +15,12 @@
 
 **Intent:**
 The recipe profile key `language-skills` and `lyx burler run`'s profile YAML key of the same name set `burlerengine.Profile.LanguageSkills` (D5).
+The key lets a recipe row or a `lyx burler run` profile give every seat of a half the hub's language list after `burlerSkills`; it is bounded by D5, since it only adds skills to the seats' load turn and changes no rubric, lens, fan or gate, and by the list itself, a Guard key of the hub's `language.yaml` that a pair cannot set, and an absent key keeps today's `burlerSkills`.
 
 `burlerRoundProfile` and `burlerFixProfile` each read `configBool(cfg, "language-skills", false)`, add `"language-skills"` to their `configRejectUnknown` key list, and set `LanguageSkills` on the profile they return.
 `configBool` already refuses a non-boolean value with an error naming the key, so a recipe row with `language-skills: "yes"` fails construction naming `language-skills`.
 The fix-row doc comment on `burlerFixProfile` names its third recognised key.
+`burlerRoundProfile`'s doc comment states eight recognised keys with `language-skills` among them, and that seven of the eight key names duplicate `internal/burlercli`'s `profileYAML`.
 
 `profileYAML` gains `LanguageSkills yaml.Node` under the tag `language-skills`, and `decodeProfile` maps it: an absent key is false, a `!!bool` scalar decodes to its value, and any other node fails with `burler: profile YAML: key "language-skills" must be a boolean`, since `yaml.v3`'s own decode error names a line and a type but not the key.
 `runCmd`'s `Long` example profile gains the line `language-skills: false  # true loads the hub's language skills after burler's own on both seats`.

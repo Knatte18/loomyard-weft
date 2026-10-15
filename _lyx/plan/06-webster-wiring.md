@@ -10,6 +10,7 @@
 - `internal/webstercli#websterCLI.runDeps`
 - `internal/webstercli#websterCLI.recoverBatchCmd`
 - `internal/webstercli#configLoadError`
+- `internal/websterengine/doc.go`
 - `internal/webstercli#TestWire_StandaloneMode`
 - `contracts/specs/refusal-spec.md`
 
@@ -34,7 +35,9 @@ Its doc comment names the new case.
 Being invalid, the refusal carries `config_invalid: true` and Master stops the run on it.
 
 What the new load can refuse: every hub-mode `lyx webster` verb now refuses on a hub `language.yaml` that is present but unusable; an absent file resolves the empty list and never refuses (D3).
-`contracts/specs/refusal-spec.md`'s webster row "config file content invalid" adds `language.yaml` to the files whose prologue load it names, its trigger naming a `skills` value that is not a list of strings or an entry that is empty or carries surrounding whitespace, and its way forward adds, quoting the message: for `language.yaml`, fix it with "lyx config language" from the prime, then re-run the verb.
+`contracts/specs/refusal-spec.md`'s webster row "config file content invalid" adds `language.yaml` to the files whose prologue load it names, its trigger naming a `skills` value that is not a list of strings, an entry that is empty or carries surrounding whitespace, or a worktree local override file that holds `skills`, which the Guard classification refuses, and its way forward adds, quoting the message: for `language.yaml`, fix it with "lyx config language" from the prime, then re-run the verb.
+The webster row "config file unreadable" names `language.yaml` in its trigger beside `batcher.yaml` and `webster.yaml`; its class (transient) and way forward (re-run the verb) stay as they are.
+The "A broken config stops Master" section of `internal/websterengine/doc.go` names `language.yaml` beside `webster.yaml` and `batcher.yaml`: a present file with unusable content refuses with `config_invalid: true` and stops Master, an unreadable one refuses transient.
 
 `TestWireHub_LanguageSkills` (in `internal/webstercli/wiring_test.go`, over `hubLocation`, writing `<BoardDir>/_lyx/config/language.yaml` under `fabricengine.BoardDir(hub)`) is table-driven.
 Writing that file creates the board dir, so every other module `wireHub` loads resolves from an absent board default file: `shuttle`, `reed`, `webster` and `batcher` degrade to their templates, `loom` only warns, and `modelspec.LoadRegistry` with no layer file returns its builtins, so `wire` reaches the `language` load in every row.
