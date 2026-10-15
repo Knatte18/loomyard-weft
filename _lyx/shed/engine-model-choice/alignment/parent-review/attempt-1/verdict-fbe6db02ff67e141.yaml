@@ -1,0 +1,8 @@
+verdict: approve
+reason: >-
+  The design covers every Scope point of the board entry (D1-D5, D7) and keeps its Out items out.
+  D6 follows from the goal, and engine-registry's landing commit 88ea645bb assigns D8 to this task.
+  No work is taken from creel-agents or engine-usage-readers.
+  The overlaps with engine-config-seams (tie at row 3), creel-core (row 12, lands first) and lighter-test-rules (row 7, lands first) are text-only, with no conflicting behaviour or PATTERN entry.
+question: ""
+superseded: []
