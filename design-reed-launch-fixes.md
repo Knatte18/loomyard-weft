@@ -1,6 +1,6 @@
 # reed: intact launch lines under parallel launches, --focus=false never takes focus
 
-`reed-launch-fixes` · Task · bug, reed, shuttle · running · Describe
+`reed-launch-fixes` · Task · bug, reed, shuttle · running · Merge-In
 
 Imported from [issue #627](https://github.com/Knatte18/loomyard/issues/627) and [issue #628](https://github.com/Knatte18/loomyard/issues/628).
 
