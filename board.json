@@ -849,6 +849,22 @@
       "body": "Imported from [issue #625](https://github.com/Knatte18/loomyard/issues/625).\n\n## What happened\n\nA task's run passed Plan-Bouncer (done) and Batchifier (done), then Webster's `lyx webster begin-batch 17` refused with `plan_drifted`.\nThe blocking finding was `delete-before-reference/18-retired-builders-delete[blocking]`: a card deletes a symbol that a later card still references in its Edit code.\n`begin-batch 17` was refused twice with the identical finding, and the run halted `blocked` at Webster with anomaly `escalation-to-human`.\n\n## Why it is abnormal\n\n- The `delete-before-reference` check is a pure plan-ordering check, yet it only fires at `begin-batch`, after the whole Discussion and Plan review pipeline and the Batchifier have accepted the plan.\n  Plan-Bouncer and Plan-Burler should have caught it, or the Batchifier should have refused to batch the plan.\n- The refusal is labelled `plan_drifted`, but the plan did not drift from the tree between planning and batching; it was malformed from the start.\n  The label points an operator at the wrong cause.\n- The refusal text already names the way forward (move the delete to a later card, `lyx webster rebaseline --card NN`, then `begin-batch` again), but nothing routes that back to a plan-editing agent.\n  The run escalated to the human after roughly 45 minutes of Webster time.\n\n## What to do\n\n- Run the `delete-before-reference` finding (or the whole plan re-resolution) at Plan-Bouncer or Batchifier time, so an ordering defect is fixed by the plan reviewers.\n- Distinguish a plan malformed at authoring from true drift in the refusal's classification.\n- Consider letting Webster or the driver route a `delete-before-reference` refusal to a plan-fix step instead of halting for a human.\n\nProvenance: task `overview-seats`; notes `loom-halt.md`, `webster-refusal-begin-batch.md`, `webster-refusal-begin-batch-2.md`.\n\n## Correction (orch, 2026-10-15)\n\nIn `overview-seats` the plan was not malformed: the reference was a temporary parity test that card 12's batch added after Plan-Write, inside a region card 18 itself rewrites, so the finding was a false positive of the check, fixed by `delete-order-own-edit` (landed 2026-10-14).\nWhat stays valid here: the `plan_drifted` label names the wrong cause, and a real `delete-before-reference` refusal at `begin-batch` has no route back to a plan-editing agent and halts for a human.\n\n",
       "created": "2026-10-15T05:33:07Z",
       "revised": "2026-10-15T05:33:16Z"
+    },
+    {
+      "id": 529,
+      "slug": "tokencount-active-time",
+      "title": "tokencount counts hibernation and idle time in producer shares",
+      "kind": "note",
+      "labels": [
+        "bug"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "Producer share counts a session parked over a hibernation as working time; subtract sleep gaps and rank share by active time",
+      "body": "## Seen\n\nIn `tools/tokencount/tokencount.sh -last 10` (2026-10-15), the All-runs Producers table put Plan-Bouncer at 50.5% share.\nAll of it came from one run, `tender`: one Plan-Bouncer session spanned 22h20m, of which 22h18m was idle, most likely the machine hibernating overnight while the run waited at a stop.\nIn every other run Plan-Bouncer took 1–8 minutes.\n\n## Idea\n\n- Subtract hibernation from every elapsed and idle figure: a wall-clock gap where the machine was asleep is no time at all, not idle time.\n- Rank the `share` column by active time (elapsed minus idle), not by elapsed, so a parked session cannot dominate the table.\n\nOperator view, not a decision: hibernation times must be subtracted.\n",
+      "created": "2026-10-15T05:47:55Z",
+      "revised": "2026-10-15T05:47:55Z"
     }
   ]
 }
