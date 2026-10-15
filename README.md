@@ -22,7 +22,7 @@ Held by a run; its scope is locked until the run ends.
 | 3 | **Engine registry: engine per run, one constructor, narrower Engine interface**<br>• Shuttle picks the engine per spec from a registry and records it per run, so a second engine plugs in at one place | [`engine-registry`](design-engine-registry.md) | loom | Webster | 2d | 3h | shuttle, config, loom, webster, burler, orch, batten |
 | 4 | **creel stage 1: the one way to reach an agent, standalone**<br>• The creel daemon, queues, journal and verbs, delivering through shuttle, built and tested before any module sends through it | [`creel-core`](design-creel-core.md) | loom | Webster | 13d | 1h | creel, reed, shuttle |
 | 5 | **Warn on overlap between tasks that wait on the same entry**<br>• set-deps and upsert warn when a new depends_on makes a task a sibling of one sharing a module label; the ly:board skill gains the sibling check rule | [`sibling-overlap-check`](design-sibling-overlap-check.md) | loom | Webster | 1h | 57m | board |
-| 6 | **Reed key bindings stay stale on a running tmux server after a deploy** | [`reed-bindings-repin`](design-reed-bindings-repin.md) | darn | Darn-Bouncer | 14m | 13m | reed |
+| 6 | **Reed key bindings stay stale on a running tmux server after a deploy** | [`reed-bindings-repin`](design-reed-bindings-repin.md) | darn | Describe | 14m | 13m | reed |
 
 ### Ready
 
