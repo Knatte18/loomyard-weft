@@ -87,6 +87,7 @@
 - `plan:internal/shuttleengine#SessionRead`
 - `plan:internal/shuttleengine#LocatedSession`
 - `plan:internal/shuttleengine#MessageUsage`
+- `plan:internal/testkit/shuttlefake#TokencountRunReads`
 
 **Intent:** tokencount reads every session, fork and orch transcript through the engine that recorded it (D1, D2), prices through that engine (D4), and deletes its Claude parser, its projects-root resolution, its `-projects` flag and its price table.
 Of the engine packages it imports only `shuttleengine` and `shuttleengines` (`PATTERN-shuttle-provider-seam`), and every lyx-format rule stays here: role from strand name, card pointer lines, the begin-batch envelope, the orch's run attribution, the time-bound cutoff and cross-transcript dedupe.
@@ -123,7 +124,7 @@ Tests, all over `fakeTranscripts` (sessions keyed by worktree, `SessionRead`s ke
 The helpers returning lines now return `TranscriptEntry` values with the neutral fields set directly (`stamped` takes whether the entry ends its turn, `userAt` starts one); `writeLines` and `jsonString` are deleted with their last callers.
 Test models are neutral names (`model-a`, `model-b`) priced by `fakePricer` at round fake rates, so no list price or Claude model id stays in tokencount's tests; `orch_test.go`'s file comment and the Opus price comment in `TestCountOrch` say the input is fake reads and the prices are the fake's, and `time_integration_test.go`'s file comment says `-no-cutoff` counts every located session.
 - `TestRunTimeByRole` keeps its working-interval rows over entries whose turn flags are set; the "interrupt marker under the cap" and "compact summary after its command" rows are dropped, since with the flags set directly they reach what the tool-result rows already reach, and card 2's `TestReadSession` pins how Claude sets those flags.
-- `TestCountRun` takes its main fixture from `internal/shuttleengine/claudeengine/testdata/tokencount-run/reads.json`, card 2's golden of the Claude reader's output, decoded into `[]shuttleengine.SessionRead` and served by `fakeTranscripts`, and keeps today's figures over it: role usage, `Duplicates` of 3 (the reads' `Repeats`), `BaseSHA`, forks with cards, start and peak context; this is the tokencount half of the fixture-reproduction criterion.
+- `TestCountRun` takes its main fixture from `shuttlefake.TokencountRunReads()`, card 2's golden of the Claude reader's output, served by `fakeTranscripts`, and keeps today's figures over it: role usage, `Duplicates` of 3 (the reads' `Repeats`), `BaseSHA`, forks with cards, start and peak context; this is the tokencount half of the fixture-reproduction criterion.
   Its other runs are hand-built neutral reads and keep their figures: Merriam starts with their three `NoStart` reasons, the bound leaving out an early session with its fork and a session with no timestamped entry, and a begin-batch result entry with a zero `At` that does not set `BaseSHA`.
   It adds: a key repeated across two sessions of one engine counting once and adding one to `Duplicates`; a second engine on the same worktree whose session is counted beside the first's, with the same message key under each engine counted twice; an engine with no session there beside one with sessions counting the latter.
 - `TestCountRunWithoutSessions` becomes a table of `CountRun` and `CountOrch` failures, each asserting the error names its subject: no session from any engine names the engines asked; a locator error names the engine and worktree, through `CountRun` and through `CountOrch`; a read error names the session and engine, through both; a read answering `fs.ErrNotExist` (a session vanished after locating) names the session and satisfies `errors.Is(err, fs.ErrNotExist)`.
@@ -138,7 +139,7 @@ Test models are neutral names (`model-a`, `model-b`) priced by `fakePricer` at r
 
 No new top-level test is added, so the package stays within its budget row.
 
-**ImpactSummary:** every re-signed or deleted member is package-private to `tools/tokencount` and its callers are in this card; `run`'s only production caller is `main`, and nothing outside the package imports it.
+**ImpactSummary:** every re-signed or deleted member is package-private to `tools/tokencount` and its callers are in this card, the two re-signed through their file targets included: `messageCost` becomes `func messageCost(pricer shuttleengine.MessagePricer, model string, u shuttleengine.MessageUsage) Cost`, called by `countFile`, `readTranscript` and `TestEstimatedCost`, and `run` becomes `func run(args []string, stdout io.Writer, reads ReadSet) error`, called by `main`, `TestRunRefuses`, `TestRunReadsArchivedShedStatus` and `TestCalibrateGitBackedMatchesInMemory`; nothing outside the package imports either.
 
 **Verify:** ! grep -rnE 'input_tokens|cache_creation|cache_read|customTitle|tool_use_id|tool_result|"tool_use"|isSidechain|isCompactSummary|stop_reason|uuid|\.claude|ephemeral_1h|claude-(opus|sonnet|haiku|fable)' tools/tokencount
 
