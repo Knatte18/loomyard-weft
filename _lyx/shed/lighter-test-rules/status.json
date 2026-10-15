@@ -1,11 +1,11 @@
 {
-  "current_producer": "Merge-Bouncer",
+  "current_producer": "Merge-Burler-Review",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Merge-Bouncer",
-    "last": "Merge-In → done",
+    "now": "Merge-Burler-Review",
+    "last": "Merge-Bouncer → bounced to Merge-Burler-Review",
     "wait": ""
   },
   "history": [
@@ -382,6 +382,13 @@
       "outcome": "done",
       "output": "",
       "at": "2026-10-15T15:09:09Z"
+    },
+    {
+      "producer": "Merge-Bouncer",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-15T15:09:45Z",
+      "routed_to": "Merge-Burler-Review"
     }
   ],
   "product": {
