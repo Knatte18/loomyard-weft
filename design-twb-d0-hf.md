@@ -1,6 +1,6 @@
 # Hibernate the machine on a trigger, such as a task landing
 
-`twb-d0-hf` · Note · feature · running · Loom-Preflight
+`twb-d0-hf` · Note · feature · running · Discussion-Write
 
 ## Seen (2026-10-13)
 
