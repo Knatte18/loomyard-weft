@@ -1,6 +1,6 @@
 # Reed key bindings stay stale on a running tmux server after a deploy
 
-`reed-bindings-repin` · Task · bug, reed · running · Darn-Write
+`reed-bindings-repin` · Task · bug, reed · running · Darn-Bouncer
 
 Imported from [issue #646](https://github.com/Knatte18/loomyard/issues/646).
 
