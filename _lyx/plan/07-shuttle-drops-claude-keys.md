@@ -1,9 +1,9 @@
 # Card 7 — shuttle-drops-claude-keys
 
 **Create:**
-- `plan:internal/shuttleengine#renameDenyPython` -> `func renameDenyPython(existing []byte) ([]byte, string, error)`
-- `plan:internal/shuttleengine_test#TestLoadConfig_RetiredClaudeKeys` -> `func TestLoadConfig_RetiredClaudeKeys(t *testing.T)`
-- `plan:internal/shuttleengine_test#TestMigrateConfig_RenamesDenyPython` -> `func TestMigrateConfig_RenamesDenyPython(t *testing.T)`
+- `internal/shuttleengine#renameDenyPython`
+- `internal/shuttleengine_test#TestLoadConfig_RetiredClaudeKeys`
+- `internal/shuttleengine_test#TestMigrateConfig_RenamesDenyPython`
 
 **Delete:**
 - `internal/shuttleengine#ConfigOpenMaps`
