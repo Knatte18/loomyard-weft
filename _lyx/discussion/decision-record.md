@@ -137,6 +137,12 @@ The Describe row is the one scheduled reader of this record whose output outlive
   - verify-skips-tools-sandbox-package (class scope, severity MEDIUM, open in rounds 1)
 <!-- /lyx:carry-over Plan-Review -->
 
+<!-- lyx:carry-over Webster-Review -->
+- Webster-Review, round 1: converged; each finding below was fixed or disputed by the round's fixer, and no fresh reviewer has seen the result; the fixer report says which.
+  Review: _lyx/reviews/webster/round-1-review.md; fixer report: _lyx/reviews/webster/round-1-fixer-report.md.
+  - orientation-licenses-reading-all-state-files (class consistency, severity MEDIUM, open in rounds 1)
+<!-- /lyx:carry-over Webster-Review -->
+
 ## Acceptance criteria
 
 - The rendered master prompt tells the Master to read `00-overview.md` and the rules, and contains no instruction to read the codebase, its structure or its conventions, and no claim that forks inherit Master's code reads.
