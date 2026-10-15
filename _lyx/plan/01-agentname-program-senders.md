@@ -1,10 +1,10 @@
 # Card 1 — agentname-program-senders
 
 **Create:**
-- `plan:internal/agentname#External` -> `const External = "EXTERNAL"`
-- `plan:internal/agentname#FormatProgram` -> `func FormatProgram(shortname, name string) (string, error)`
-- `plan:internal/agentname#ParseProgram` -> `func ParseProgram(full string) (shortname, name string, err error)`
-- `plan:internal/agentname#IsProgram` -> `func IsProgram(full string) bool`
+- `internal/agentname#External`
+- `internal/agentname#FormatProgram`
+- `internal/agentname#ParseProgram`
+- `internal/agentname#IsProgram`
 
 **Edit:**
 - `internal/agentname#TestFormatParseRoundTrip`

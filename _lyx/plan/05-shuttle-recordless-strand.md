@@ -17,8 +17,8 @@
 - `//pattern/PATTERN-pane-text-injection.md`
 
 **Create:**
-- `plan:internal/shuttleengine#ErrNoRunRecord` -> `var ErrNoRunRecord = errors.New("shuttle: no run record names the strand")`
-- `plan:internal/shuttleengine#Runner.recordlessSendContext` -> `func (r *Runner) recordlessSendContext(guid string) sendContext`
+- `internal/shuttleengine#ErrNoRunRecord`
+- `internal/shuttleengine#Runner.recordlessSendContext`
 
 **Intent:** Make shuttle's verified send and guarded interrupt work on a live reed strand that has no shuttle run record (D17), the path creel delivers through to a hand-added strand.
 `findRunByStrand` wraps `ErrNoRunRecord` in its clean not-found answers (no run root, or every run.json read and none names the guid); its answer when some run directories could not be read does not wrap it, since that guid may name a live recorded run whose run.json is damaged.

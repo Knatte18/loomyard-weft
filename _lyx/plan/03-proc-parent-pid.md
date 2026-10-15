@@ -1,7 +1,7 @@
 # Card 3 — proc-parent-pid
 
 **Create:**
-- `plan:internal/proc#ParentPID` -> `func ParentPID(pid int) (int, bool)`
+- `internal/proc#ParentPID`
 
 **Edit:**
 - `internal/proc#TestProcessTreeReads`

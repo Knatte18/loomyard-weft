@@ -7,10 +7,10 @@
 - `internal/creelengine/fold.go`
 - `internal/creelengine/journal_test.go`
 - `internal/creelengine/testmain_test.go`
-- `plan:internal/creelengine#Geometry` -> `type Geometry struct`
-- `plan:internal/creelengine#SocketName` -> `func SocketName(shortname, hubPath string) string`
-- `plan:internal/creelengine#Clock` -> `type Clock interface`
-- `plan:internal/creelengine#Message` -> `type Message struct`
+- `internal/creelengine#Geometry`
+- `internal/creelengine#SocketName`
+- `internal/creelengine#Clock`
+- `internal/creelengine#Message`
 
 **Edit:**
 - `//cmd/lyx/testdata/test-budget.yaml`

@@ -1,14 +1,14 @@
 {
   "runGuid": "59f32fa4ce8f07ac4302baa96d787bec",
-  "planFingerprint": "f166723003028891beefb6b4473503d3ce6e8a5181406a07fdc23f260164340c",
+  "planFingerprint": "c0939099d58bf71b3c83192a10f973fc54d1c22242bd7422907e0c4b90c70d27",
   "planFileHashes": {
     "00-overview.md": "353db3c7e75d05a65e0aad3d66b43170d0378b2ec9658afe62d256558a7312b4",
-    "01-agentname-program-senders.md": "07530e30f94eabd2d52a72d51b496f847dff78349c2c8541eb7cb3e5b53a1c29",
-    "02-selfexec-replaced.md": "c73661823561251a4150bf00b3690fe07e3bfb9fa6ef1979593c7157d1604020",
-    "03-proc-parent-pid.md": "578956b0c87536c5bd09588a9048f0010787f2f78e531cb197c89d6c24ac9f3c",
+    "01-agentname-program-senders.md": "729500cb67bf27c868014b0cc6673b8113fd1a6584b394ce11b9857738429127",
+    "02-selfexec-replaced.md": "f6b01e419d05f49d85d57ec3a18f471cfc0faadbaf85086b7528e16f1ca211f7",
+    "03-proc-parent-pid.md": "81621ef0b3441d11616c00b95af8be8b8175e4801ce005123f017a630e3f2612",
     "04-reed-status-pane-pid.md": "b3d3c7880c341d6a575134bb76c55f6747f424bf77878cc9a9b0bfe664834ffc",
-    "05-shuttle-recordless-strand.md": "0309d78e2f7e51dc173feb058b3f3268a1eed1ab90d13a642c3eb09a394921b9",
-    "06-creelengine-journal.md": "566c5909569b091c3741769299871eefe40eaf7bb78c51921109028bb30cebea",
+    "05-shuttle-recordless-strand.md": "25db175584beb26e06a084b9a49ae2ca58861e08748b9f04c89e058129565a35",
+    "06-creelengine-journal.md": "a109a03c4705ec9a568d62370ac47f3939713c2ab4506021accfd9d8da5d0bc5",
     "07-creelengine-pool-verbs.md": "69142cf534337f47f3b33f3b315b472675533d291614124c6b13cc7917fc24b5",
     "08-creelengine-identity.md": "fb31b9bfaba36492c5cb173e150937dab72c6a47f3fc0e0fa643500dc5bdff31",
     "09-creelengine-delivery.md": "12dede0c4a0b3b85a86fa1775406cd4e7e3da2b2717ed241205d7a485c55d370",
@@ -341,7 +341,7 @@
       }
     }
   ],
-  "currentBatch": 1,
+  "currentBatch": 0,
   "masterStrand": "19e432caef90e94f900d46639b05a8fa",
   "masterSessionId": "087ffc57-feef-4893-8162-2e42d2cfed42",
   "batches": {
@@ -356,19 +356,49 @@
         "06-creelengine-journal"
       ],
       "cardHashes": {
-        "01-agentname-program-senders": "07530e30f94eabd2d52a72d51b496f847dff78349c2c8541eb7cb3e5b53a1c29",
-        "02-selfexec-replaced": "c73661823561251a4150bf00b3690fe07e3bfb9fa6ef1979593c7157d1604020",
-        "03-proc-parent-pid": "578956b0c87536c5bd09588a9048f0010787f2f78e531cb197c89d6c24ac9f3c",
+        "01-agentname-program-senders": "729500cb67bf27c868014b0cc6673b8113fd1a6584b394ce11b9857738429127",
+        "02-selfexec-replaced": "f6b01e419d05f49d85d57ec3a18f471cfc0faadbaf85086b7528e16f1ca211f7",
+        "03-proc-parent-pid": "81621ef0b3441d11616c00b95af8be8b8175e4801ce005123f017a630e3f2612",
         "04-reed-status-pane-pid": "b3d3c7880c341d6a575134bb76c55f6747f424bf77878cc9a9b0bfe664834ffc",
-        "05-shuttle-recordless-strand": "0309d78e2f7e51dc173feb058b3f3268a1eed1ab90d13a642c3eb09a394921b9",
-        "06-creelengine-journal": "566c5909569b091c3741769299871eefe40eaf7bb78c51921109028bb30cebea"
+        "05-shuttle-recordless-strand": "25db175584beb26e06a084b9a49ae2ca58861e08748b9f04c89e058129565a35",
+        "06-creelengine-journal": "a109a03c4705ec9a568d62370ac47f3939713c2ab4506021accfd9d8da5d0bc5"
       },
       "startSha": "4ebb73ff31750a9d92e5164a690a072bcbda1b13",
       "kind": "fork",
       "spawnedAt": "2026-10-15T12:43:35Z",
       "sessionId": "087ffc57-feef-4893-8162-2e42d2cfed42",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "01-agentname-program-senders",
+        "status": "done",
+        "head_sha": "a4a5f4d569f0e1baa3b1b93cc8f8bd38ecf4cb84",
+        "deviations": [
+          "internal/agentname/agentname.go",
+          "internal/creelengine/fold.go",
+          "internal/creelengine/geometry.go",
+          "internal/creelengine/journal.go",
+          "internal/creelengine/journal_test.go",
+          "internal/creelengine/testmain_test.go",
+          "internal/selfexec/selfexec.go",
+          "internal/shuttleengine/readiness.go",
+          "internal/shuttleengine/run.go",
+          "internal/shuttleengine/run_test.go",
+          "internal/shuttleengine/rundir.go"
+        ]
+      },
+      "cardShas": [
+        "a4a5f4d569f0e1baa3b1b93cc8f8bd38ecf4cb84"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-creel-core/087ffc57-feef-4893-8162-2e42d2cfed42/subagents/agent-a482863979053a5df.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-creel-core/087ffc57-feef-4893-8162-2e42d2cfed42/subagents/agent-a482863979053a5df.jsonl"
+      ]
     }
-  }
+  },
+  "seenForkTranscripts": [
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-creel-core/087ffc57-feef-4893-8162-2e42d2cfed42/subagents/agent-a482863979053a5df.jsonl"
+  ]
 }

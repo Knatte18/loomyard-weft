@@ -1,7 +1,7 @@
 # Card 2 — selfexec-replaced
 
 **Create:**
-- `plan:internal/selfexec#Watcher.Replaced` -> `func (w *Watcher) Replaced() bool`
+- `internal/selfexec#Watcher.Replaced`
 
 **Edit:**
 - `internal/selfexec#Watcher.Check`
