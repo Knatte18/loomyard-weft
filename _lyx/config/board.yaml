@@ -23,3 +23,4 @@ labels:
     orch: the hub orchestrator session
     creel: the message layer every agent, program and operator uses to reach an agent
     claude: the Claude Code engine, shuttleengine/claudeengine and its config
+    codex: the Codex CLI engine and its config
