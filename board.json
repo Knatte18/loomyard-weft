@@ -927,6 +927,24 @@
       "body": "Imported from [issue #658](https://github.com/Knatte18/loomyard/issues/658).\n\nFound by the creel stage 1 audit (board note `creel-test`), in a sandbox hub, with `lyx` built from `main` at e131c7625.\n\n## What was seen\n\nCreel delivers nothing into a strand whose pane reed has collapsed, and says nothing about why.\nReed stacks hand-added strands of one worktree in one window; every strand but the bottom one collapses to `collapsed_rows` (3 rows).\nA 3-row Claude pane cannot draw its input box, so shuttle's idle probe answers not idle with `TooShort` set.\nCreel's delivery adapter (`internal/creelcli/delivery.go`) drops `TooShort`, and the scheduler simply keeps probing.\nMail is never reminded, and an inject sits until its TTL runs out and is journaled `expired`, because the TTL runs while the strand is live and unpaused.\nThe orch watcher, by contrast, records `orch pane too short for the idle probe; resize or use the larger client`.\n\n## Steps\n\n1. In a sandbox hub add three strands to the prime: `lyx reed add --role bob --cmd claude`, then `--role carol --cmd bash`, then `--role dave --cmd bash`.\n2. bob's pane is now 220x3 (`tmux list-panes`).\n3. `lyx creel inject --wait --timeout 120s ctest:bob \"Reply INJECTED\"`: times out (exit 4); bob's pane shows nothing.\n4. The journal shows `aged` records every minute and, ten minutes later, `expired` for that inject.\n\n## Expected\n\nEither creel can deliver into a collapsed strand (for example by having reed or shuttle make the pane tall enough for the send), or the stall is surfaced: a `lyx creel inject --wait` / `log` / `inbox` line that names the short pane as the reason, so a sender is not left guessing.\n",
       "created": "2026-10-15T16:35:10Z",
       "revised": "2026-10-15T16:35:12Z"
+    },
+    {
+      "id": 567,
+      "slug": "creel-interrupt-restored-prompt",
+      "title": "creel: inject --interrupt stalls behind the prompt Claude restores into the input box",
+      "kind": "note",
+      "labels": [
+        "bug"
+      ],
+      "issues": [
+        659
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Imported from [issue #659](https://github.com/Knatte18/loomyard/issues/659).\n\nFound by the creel stage 1 audit (board note `creel-test`), in a sandbox hub, with `lyx` built from `main` at e131c7625.\n\n## What was seen\n\n`lyx creel inject --interrupt` does not deliver its line in the common case.\nWhen Claude Code is interrupted early in a turn (here 4 to 9 seconds in, still thinking), it puts the interrupted prompt back into the input box.\nCreel's next idle probe then reads a draft in the box and answers busy, so the head-queued inject waits until someone clears the box or its TTL expires.\n`lyx creel interrupt` leaves the strand in the same state: every later reminder and inject is held behind the restored prompt.\n\n## Steps\n\n1. In a sandbox hub, a Claude strand `ctest:eve` in its own window, idle.\n2. `lyx creel inject --wait ctest:eve \"Without using any tool, write a 700-word essay about mountains.\"` (outcome injected).\n3. Nine seconds later: `lyx creel inject --interrupt --wait --timeout 40s ctest:eve \"Reply STOPPED2.\"`.\n4. The journal shows `interrupted` and the inject `posted`; the call times out (exit 4).\n5. The pane shows the essay prompt back in the input box; nothing more is typed.\n6. Clearing the box by hand (C-u) lets the queued inject go at the next probe.\n\n## Expected\n\n`inject --interrupt` stops the turn and then types its line, as its help example `\"stop and run the tests\" --interrupt --wait` promises.\nFor example, the guarded interrupt (or the inject path after it) clears a box that holds exactly the interrupted prompt, or creel treats that restored text as its own to clear before typing.\n",
+      "created": "2026-10-15T16:35:13Z",
+      "revised": "2026-10-15T16:35:13Z"
     }
   ]
 }
