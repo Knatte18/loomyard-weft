@@ -1,6 +1,6 @@
 # Overview window tidy, seat names, Seats replaces SingleLLMProducer
 
-`overview-seats` · Task · enhancement, reed, shed, loom, burler · running · PR-Align
+`overview-seats` · Task · enhancement, reed, shed, loom, burler · running · PR-Gate
 
 This is one task because the three notes all touch the seat/producer layer and how runs are shown in the overview window.
 Each note's content is kept under its own heading below.
