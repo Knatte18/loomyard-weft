@@ -1,10 +1,10 @@
 readme: ${env:LYX_README:-README.md} # readme page file name; relative to board dir
 design_prefix: ${env:LYX_DESIGN_PREFIX:-design-} # prefix for design-doc files
 types: # type labels with their descriptions: a note carries exactly one, a task one or more
+    audit: a measurement, bench or study run by an orch agent, never a loom task
     bug: lyx does something wrong
     enhancement: something lyx already does gets cheaper, clearer or sturdier, with no new capability
     feature: lyx gains something it cannot do today
-    audit: a measurement, bench or study run by an orch agent, never a loom task
 labels:
     board: the task tracker, lyx board
     config: config files under _lyx/config and their loading
