@@ -1,0 +1,8 @@
+verdict: approve
+reason: >-
+  The diff delivers all five board items (seconds, round totals, gate spans and rework, recipe entry numbers, segment-prefixed review roles) as decisions D1 to D8 record them, with nothing outside the recorded scope.
+  The carried-over review findings were fixed.
+  The overlaps with orch-context-overview (battencli overview) and role-language-skills (Burler recipe rows and profile) touch the same files but change different behaviours.
+  No parent commits are listed, and this run (row 22) lands before every peer.
+question: ""
+superseded: []
