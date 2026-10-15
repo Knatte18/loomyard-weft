@@ -128,6 +128,15 @@ Decision: no Windows-specific behavior: a psmux without `bind-key` or `run-shell
   - loom-resume-verb-not-in-or-out-of-d2-rearm (class decision, severity MEDIUM, open in rounds 2)
 <!-- /lyx:carry-over Discussion-Review -->
 
+<!-- lyx:carry-over Plan-Review -->
+- Plan-Review, round 2: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
+  Review: _lyx/reviews/plan/round-2-review.md; fixer report: _lyx/reviews/plan/round-2-fixer-report.md.
+  - card2-failed-client-listing-and-stale-attachargv-doc (class scope, severity BLOCKING, open in rounds 1, 2)
+  - card3-realtmux-later-attaches-not-waited-for (class consistency, severity MEDIUM, open in rounds 1, 2)
+  - card6-live-fallback-row-tests-unreachable-state (class scope, severity MEDIUM, open in rounds 1, 2)
+  - card6-weird-named-session-click-lacks-status-line (class scope, severity MEDIUM, open in rounds 2)
+<!-- /lyx:carry-over Plan-Review -->
+
 ## Acceptance criteria
 
 - A session attached before any overview or agent exists, viewer on the shell: the run's start selects the overview, and each later agent window selects that window.
