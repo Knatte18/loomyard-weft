@@ -1,6 +1,6 @@
 {
   "runGuid": "ecaf672ebfae331d18aab7462735c491",
-  "planFingerprint": "dc3b175597ce4fedfd0f522cb4a2c48f4d88e81f3fabac665378a59ddcb5c007",
+  "planFingerprint": "e2fd57e8e5abd1dbb4fab34ad9b2c45d7ab686abdb1d5015d6a175ca75314787",
   "planFileHashes": {
     "00-overview.md": "320e49b0e72f53b30b046fbd81c2f8bc7406965dd32ae1985a8a56fc91323d51",
     "01-neutral-transcript-types.md": "edbf8df946601ccc6d2731e85afbf7acd108c0771ff370d1ed5b62b64accc14e",
@@ -8,7 +8,7 @@
     "03-claude-pricing.md": "fd55d00bc575a963c51893dc49c474642a5c8da567b3642db0151e7b41c4990e",
     "04-offline-record-readers.md": "8358dd31d2883c1d8ac857c33d3c8f781e15ec5fed5390fd8de1564913544a48",
     "05-tokencount-reads-through-engines.md": "8c11dca8533395d763476060fe12eef54915aa61063372835c07bd6d353d52bc",
-    "06-calibration-engine-instruction-files.md": "b2706d70af1c1efa634ba04a0f05a8ff0a8440f3ee4a527918a72ada1ac710e3"
+    "06-calibration-engine-instruction-files.md": "274f2823eb390cbcf62cafc0f75c998cb2ae14be331ab9d28e7ee6e5ed7a3b09"
   },
   "planOverviewFrameHash": "5d458a32b9aa26ce950499e514336fcb87714360f66533fff56b9b82e89238b4",
   "partition": [
@@ -227,7 +227,7 @@
       }
     }
   ],
-  "currentBatch": 6,
+  "currentBatch": 0,
   "masterStrand": "6663f878ba822536d57a7a2129de5d0d",
   "masterSessionId": "0e0fa5e8-1a38-4aaf-805f-707af076ee34",
   "masterEngine": "claude",
@@ -376,21 +376,41 @@
         "06-calibration-engine-instruction-files"
       ],
       "cardHashes": {
-        "06-calibration-engine-instruction-files": "b2706d70af1c1efa634ba04a0f05a8ff0a8440f3ee4a527918a72ada1ac710e3"
+        "06-calibration-engine-instruction-files": "274f2823eb390cbcf62cafc0f75c998cb2ae14be331ab9d28e7ee6e5ed7a3b09"
       },
       "startSha": "a9df3858d1a452317629dc31935835c3e00788f2",
       "kind": "fork",
       "spawnedAt": "2026-10-15T17:43:48Z",
       "sessionId": "0e0fa5e8-1a38-4aaf-805f-707af076ee34",
       "engine": "claude",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "06-calibration-engine-instruction-files",
+        "status": "done",
+        "head_sha": "2b6e5d5be69f6fa70541e64659297bb3d250eabb",
+        "deviations": [
+          "tools/tokencount/calibrate_test.go",
+          "tools/tokencount/count_test.go",
+          "tools/tokencount/main.go"
+        ]
+      },
+      "cardShas": [
+        "2b6e5d5be69f6fa70541e64659297bb3d250eabb"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-engine-usage-readers/0e0fa5e8-1a38-4aaf-805f-707af076ee34/subagents/agent-a37e09222ada2d525.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-engine-usage-readers/0e0fa5e8-1a38-4aaf-805f-707af076ee34/subagents/agent-a37e09222ada2d525.jsonl"
+      ]
     }
   },
   "seenForkTranscripts": [
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-engine-usage-readers/0e0fa5e8-1a38-4aaf-805f-707af076ee34/subagents/agent-ab039c89228676596.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-engine-usage-readers/0e0fa5e8-1a38-4aaf-805f-707af076ee34/subagents/agent-ada3fa7a5ba5ff0bb.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-engine-usage-readers/0e0fa5e8-1a38-4aaf-805f-707af076ee34/subagents/agent-aa4cda297de9a957b.jsonl",
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-engine-usage-readers/0e0fa5e8-1a38-4aaf-805f-707af076ee34/subagents/agent-ab8a3666332f5c2b7.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-engine-usage-readers/0e0fa5e8-1a38-4aaf-805f-707af076ee34/subagents/agent-ab8a3666332f5c2b7.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-engine-usage-readers/0e0fa5e8-1a38-4aaf-805f-707af076ee34/subagents/agent-a37e09222ada2d525.jsonl"
   ]
 }

@@ -1,9 +1,9 @@
 # Card 6 — calibration-engine-instruction-files
 
 **Create:**
-- `plan:tools/tokencount#websterInstructionFiles` -> `func websterInstructionFiles(reads ReadSet, run RunTally) []string`
-- `plan:tools/tokencount#fakeInstructions` -> `type fakeInstructions []string`
-- `plan:tools/tokencount#fakeInstructions.InstructionFiles` -> `func (f fakeInstructions) InstructionFiles() []string`
+- `tools/tokencount#websterInstructionFiles`
+- `tools/tokencount#fakeInstructions`
+- `tools/tokencount#fakeInstructions.InstructionFiles`
 
 **Edit:**
 - `tools/tokencount/main.go`
