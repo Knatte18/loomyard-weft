@@ -18,7 +18,7 @@ Held by a run; its scope is locked until the run ends.
 | # | Task | Slug | Recipe | At | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | 1 | **Go driver and tackler in shed, for every FSM-driven run**<br>• Move the Go driver and tackler from loomcli into shed so darn, batten and every recipe get them; module config overrides model and budgets | [`shed-tackler`](design-shed-tackler.md) | loom | Webster | 13h | 13h | shed, loom, batten |
-| 2 | **Webster fork prompt: switch between the pack-file layout and the inline layout**<br>• A webster.yaml switch selecting today's pack-file layout or the inline layout the 2026-10-13 audit measured, logged per batch | [`webster-pack-layout-switch`](design-webster-pack-layout-switch.md) | loom | Merge-Bouncer | 1h | 44m | webster, stencil |
+| 2 | **Webster fork prompt: switch between the pack-file layout and the inline layout**<br>• A webster.yaml switch selecting today's pack-file layout or the inline layout the 2026-10-13 audit measured, logged per batch | [`webster-pack-layout-switch`](design-webster-pack-layout-switch.md) | loom | Publish | 1h | 44m | webster, stencil |
 
 ### Ready
 
@@ -48,7 +48,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | --- | --- | --- | --- | --- | --- |
 | 1 | **Plan-Bouncer and Batchifier pass a plan that webster begin-batch then refuses with delete-before-reference** | [`plan-drift-refusal-route`](design-plan-drift-refusal-route.md) | 2h | 2h | webster, loom |
 | 2 | **config: bare lyx config <module> from an agent writes an empty layer file** | [`config-bare-empty-write`](design-config-bare-empty-write.md) | 1h | 1h | config |
-| 3 | **batten Seed-IDE writes the interactive VS Code chain into a driven pair, so opening it in VS Code starts a bare claude** | [`seed-ide-interactive-chain`](design-seed-ide-interactive-chain.md) | 0m | 0m | ide, batten |
+| 3 | **batten Seed-IDE writes the interactive VS Code chain into a driven pair, so opening it in VS Code starts a bare claude** | [`seed-ide-interactive-chain`](design-seed-ide-interactive-chain.md) | 1m | 0m | ide, batten |
 
 #### Low priority
 
