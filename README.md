@@ -78,11 +78,17 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 ### Bugs
 
+#### Normal priority
+
+| # | Note | Slug | Age | Revised | Labels |
+| --- | --- | --- | --- | --- | --- |
+| 1 | **Webster fork deviations list mixes in its own target files**<br>• The implementer stencil asks a fork to compare its edits against the glyph union and also tells it not to, so deviations lists files that house its own target glyphs | [`webster-deviations-list`](design-webster-deviations-list.md) | 0m | 0m | webster, stencil |
+
 #### Low priority
 
 | # | Note | Slug | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| 1 | **A hub pause leaves background forks and shells running, so hibernate never confirms**<br>• Pause interrupts turns but not background forks or shells; sessions read busy and hibernate confirmation fails | [`pause-background-work`](design-pause-background-work.md) | 15h | 5h | shuttle, webster |
+| 2 | **A hub pause leaves background forks and shells running, so hibernate never confirms**<br>• Pause interrupts turns but not background forks or shells; sessions read busy and hibernate confirmation fails | [`pause-background-work`](design-pause-background-work.md) | 15h | 5h | shuttle, webster |
 
 ### Enhancements
 
