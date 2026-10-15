@@ -40,7 +40,7 @@ All six forks returned.
 - pattern-fit: the `--set` step may fail on an absent hub file — fixed: hub-wide reconcile seeds it (`hubreconcile` with `SeedDefaults`), noted in Open risks.
 - pattern-fit, leanness: the `PATTERN-tolerant-records` line was padding — fixed: cut.
 - scenarios: duplicates inside the list and surrounding whitespace — fixed (D3, D4, criteria).
-- scenarios: a misspelled skill costs a retry turn — fixed: Open risks.
+- scenarios: a misspelled skill is skipped with only a logged warning, so its rules silently never reach the role — fixed: Open risks.
 - scenarios: resume scenario — fixed: one line in Notes, since no D4 role resumes.
 - leanness: rejected alternatives in the D1, D3, D4 and D5 rationales — fixed: cut.
 - leanness: the auto-mode assumptions restated the decisions — fixed: they point at decision numbers.
