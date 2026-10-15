@@ -45,8 +45,8 @@ Build variant 1 above, overview first and code per card, with each card's spans 
 Put it behind a `webster.yaml` switch beside `kickstart_pack_file`, so it can be measured against today's layout; the begin-batch `webster: kickstart pack` trace line records which layout a batch used.
 Variant 2 (span code inside the pack file) is not part of this task.
 
-## Operator decision (2026-10-15): no code in the pack, and read before edit
+## Operator decision (2026-10-15): no code in the pack
 
 Variant 2 is rejected, not deferred: code pasted into a pack goes stale fast.
-A Webster fork must never edit code it has not read itself first, through its own read of the current tree; the operator marked this as very important for Webster.
+It would also save no reads: Claude Code refuses an Edit on a file the agent has not read itself in the session, so a fork must Read every file it edits whatever the pack holds.
 The pack points at code and never stands in for reading it.
