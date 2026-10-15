@@ -1,0 +1,10 @@
+{
+  "delivered_at": "2026-10-15T07:41:11.091323393+02:00",
+  "failed_reason": "",
+  "prompts": 1,
+  "last_prompt_at": "2026-10-15T07:41:04.51258797+02:00",
+  "waiting_notifies": 0,
+  "cap_warned": false,
+  "pings": 0,
+  "last_ping_at": "0001-01-01T00:00:00Z"
+}
