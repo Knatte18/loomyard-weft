@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-15 18:17 UTC; every age below is as of then.
+Rendered 2026-10-15 18:23 UTC; every age below is as of then.
 
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
@@ -17,7 +17,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | **Fix the creel stage 1 audit defects and add its sandbox scenarios**<br>• Eight creel defects from the audit (#657-#664) plus sandbox scenarios C1-C13 | [`creel-stage1-fixes`](design-creel-stage1-fixes.md) | loom | Discussion-Write | 1h | 1h | creel, shuttle, reed, claude |
+| 1 | **Fix the creel stage 1 audit defects and add its sandbox scenarios**<br>• Eight creel defects from the audit (#657-#664) plus sandbox scenarios C1-C13 | [`creel-stage1-fixes`](design-creel-stage1-fixes.md) | loom | Discussion-Bouncer | 1h | 1h | creel, shuttle, reed, claude |
 
 ### Ready
 
@@ -42,8 +42,8 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | # | Note | Slug | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | 2 | **Re-measure the test suite weight on a quiet machine**<br>• The test-suite-weight before and after numbers were taken under load; rerun the report Regenerate section on an idle machine for a fair wall-time comparison | `suite-weight-quiet-rerun` | 5d | 2d |  |
-| 3 | **Prototype reed status buttons in a throwaway tmux server**<br>• A fresh agent tries the menu button, follow toggle and extra button line by hand before reed-status-buttons becomes a task | [`reed-status-buttons-prototype`](design-reed-status-buttons-prototype.md) | 8h | 8h | reed |
-| 4 | **Classify Plan lens and review findings to make the Plan writer get it right first**<br>• Find what Plan lenses and Plan-Burler-Review keep catching, and stop each recurring class at the writer | [`plan-writer-finding-classes`](design-plan-writer-finding-classes.md) | 4m | 4m | loom, burler, stencil |
+| 3 | **Prototype reed status buttons in a throwaway tmux server**<br>• A fresh agent tries the menu button, follow toggle and extra button line by hand before reed-status-buttons becomes a task | [`reed-status-buttons-prototype`](design-reed-status-buttons-prototype.md) | 9h | 9h | reed |
+| 4 | **Classify Plan lens and review findings to make the Plan writer get it right first**<br>• Find what Plan lenses and Plan-Burler-Review keep catching, and stop each recurring class at the writer | [`plan-writer-finding-classes`](design-plan-writer-finding-classes.md) | 10m | 10m | loom, burler, stencil |
 
 ### Bugs
 
