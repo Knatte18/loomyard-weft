@@ -1,0 +1,7 @@
+verdict: approve
+reason: >-
+  The design covers every point of the board entry's goal and the operator's follow-toggle decision (run start, newest agent from the shell, manual bindings turning follow off, the button turning it on and jumping, the attach-with-a-second-client cause) and leaves the configurable button set to note reed-status-buttons as the orch call requires.
+  The click-to-turn-off addition is named as deliberate and ruled out by nothing.
+  The only peer overlap is text-only (kickstart-per-card in internal/loomcli, which lands first); report-timing does not overlap, and no parent commits are listed.
+question: ""
+superseded: []
