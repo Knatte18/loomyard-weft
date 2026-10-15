@@ -4,9 +4,9 @@
 - `contracts/stencils/webster/webster-fragment-fresh-read-pack-inline.md`
 - `contracts/stencils/webster/webster-fragment-locate-pack-inline.md`
 - `contracts/stencils/webster/webster-fragment-pack-section-inline.md`
-- `plan:contracts/stencils#WebsterFragmentFreshReadPackInline` -> `var WebsterFragmentFreshReadPackInline []byte`
-- `plan:contracts/stencils#WebsterFragmentLocatePackInline` -> `var WebsterFragmentLocatePackInline []byte`
-- `plan:contracts/stencils#WebsterFragmentPackSectionInline` -> `var WebsterFragmentPackSectionInline []byte`
+- `contracts/stencils#WebsterFragmentFreshReadPackInline`
+- `contracts/stencils#WebsterFragmentLocatePackInline`
+- `contracts/stencils#WebsterFragmentPackSectionInline`
 
 **Edit:**
 - `contracts/stencils#entries`
