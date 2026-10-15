@@ -274,6 +274,12 @@ The sandbox suite exercises creel (`PATTERN-sandbox-coverage`).
   - reply-does-not-wake-scheduler (class scope, severity MEDIUM, open in rounds 3)
 <!-- /lyx:carry-over Plan-Review -->
 
+<!-- lyx:carry-over Webster-Review -->
+- Webster-Review, round 1: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
+  Review: _lyx/reviews/webster/round-1-review.md; fixer report: _lyx/reviews/webster/round-1-fixer-report.md.
+  - external-sender-name-formed-outside-agentname (class design, severity BLOCKING, open in rounds 1)
+<!-- /lyx:carry-over Webster-Review -->
+
 ## Acceptance criteria
 
 - A post to a live idle fake strand is stored, acknowledged with its id, and reminded once; a busy receiver is reminded at its next idle edge; a reminder turn ending unread backs off and a new message resets the backoff.
