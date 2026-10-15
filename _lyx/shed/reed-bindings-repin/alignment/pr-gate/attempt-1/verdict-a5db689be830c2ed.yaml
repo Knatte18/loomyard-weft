@@ -1,0 +1,7 @@
+verdict: approve
+reason: >-
+  The diff stamps the server with the pinning build and re-pins stale navigation bindings under the op lock before every reed op's step, which is what the board entry asks, and leaves follow's default as it is.
+  It has no scope deviation, and the carried-over open risks name no unrecorded parent correction.
+  The overlaps with engine-registry (reedengine/doc.go at another paragraph) and creel-core (the reedengine package) are text-only; this run, at row 22, lands first.
+question: ""
+superseded: []
