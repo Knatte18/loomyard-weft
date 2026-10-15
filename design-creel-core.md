@@ -1,6 +1,21 @@
-# creel: the one way to reach an agent
+# creel stage 1: the one way to reach an agent, standalone
 
-`creel` · Note · feature, reed
+`creel-core` · Task · feature, reed, shuttle
+
+Depends on: [`engine-registry`](design-engine-registry.md)
+
+## This task: stage 1
+
+Build stage 1 of the design below: creel alone, the daemon, the queues, the journal, every verb, and delivery through shuttle gated on the receiver being idle, tested against fake panes and in the tmux tier; no other module sends through it yet.
+Stages 2 and 3 are the tasks `creel-notices` and `creel-agents`.
+When this lands, the design moves into the creel package's `doc.go`, which those tasks then read.
+
+## Operator decision (2026-10-15)
+
+Creel is a prerequisite for Codex: agents reach their parent and each other through creel, not Claude Code's `SendMessage`.
+Creel delivers through shuttle, so its idle check and send go through the engine registry of task `engine-registry` and work for any engine.
+
+## Design
 
 Creel is the one module anything uses to reach an agent: a Go program, another agent or the operator in a terminal.
 Every agent in lyx runs through shuttle and lives in a reed strand, so every agent has an address (`agent-naming`'s `<shortname>:<slug>:<role>`).
