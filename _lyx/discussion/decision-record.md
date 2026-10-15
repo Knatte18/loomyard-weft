@@ -197,6 +197,13 @@ The empty-tag mapping keeps today's repair of long-lived strands, the orch above
   It ends at the first walk, which any loom, batten or orch start verb triggers, or at `lyx config reconcile --apply`.
 - A board entry's run settings naming the old keys is moved only when the task is next seeded, through `PrepareRunSettings`; the board JSON itself keeps the old spelling.
 
+<!-- lyx:carry-over Plan-Review -->
+- Plan-Review, round 1: converged; each finding below was fixed or disputed by the round's fixer, and no fresh reviewer has seen the result; the fixer report says which.
+  Review: _lyx/reviews/plan/round-1-review.md; fixer report: _lyx/reviews/plan/round-1-fixer-report.md.
+  - card2-drops-per-row-guardrail-comments (class scope, severity MEDIUM, open in rounds 1)
+  - testchecktexts-steer-linebreak-mismatch (class consistency, severity MEDIUM, open in rounds 1)
+<!-- /lyx:carry-over Plan-Review -->
+
 ## Acceptance criteria
 
 - `claude.yaml` loads through `claudeengine.LoadConfig`: template on an absent base, a repo default and a worktree file stacked, a local file holding a TTL key accepted, and a local `binary`, `deny_agent_tool` or `deny_ask_user_question` refused naming the file and key.
