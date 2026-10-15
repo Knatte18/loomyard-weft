@@ -1,0 +1,12 @@
+verdict: approve
+reason: >-
+  The diff carries out D1 to D8 within the board entry's scope.
+  Spec embeds ModelChoice, and every resolver maps through NewModelChoice, guarded by PATTERN-model-choice-mapping and its scan.
+  The carriers take ModelChoice, Result and round usage record the engine, and the Claude-only roles declare Requires.
+  Webster records and reads each session's engine and checks role engines before any state mutation.
+  MerriamBase takes the engine's instruction files, and the Requires refusals have their rows.
+  The orch, key renames and codex stay out.
+  The carried-over review risks are addressed in the code.
+  Peers engine-usage-readers (row 9) and card-own-entry-edit (row 5) overlap without conflicting designs; this run (row 22) lands first.
+question: ""
+superseded: []
