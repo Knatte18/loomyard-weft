@@ -881,6 +881,24 @@
           "review_max_bounces": 2
         }
       }
+    },
+    {
+      "id": 539,
+      "slug": "viewer-off-shell",
+      "title": "Run window stays on shell: follow the overview and newest agent from run start",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "reed",
+        "batten"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "A viewer attached before any overview or agent window exists rests on shell and never follows the run",
+      "body": "## Seen\n\nOn 2026-10-15 the operator's run window for the darn run `seed-ide-interactive-chain` sat on the `shell` window for the whole run.\nIt never moved to the overview (`loom-status`) or to the driver and `darn` agent windows as they spawned.\nThe same complaint has come up before: window auto-switching during runs is still unreliable.\n\n## Why, by the documented rules\n\nThe focus rules in `internal/reedengine/doc.go` say that no automatic switch moves a viewer off the shell.\nBatten's Open-Window row attaches the Konsole window right after Seed-Child, before the run has spawned its overview or any agent.\nAttach selects `relevantWindow`, which is none at that moment, so the viewer stays on `shell`.\nAfter that, the overview window is never selected, and a new agent window is selected only from the overview, a dead agent window, the relevant window or a driver window.\nA viewer that landed on the shell by default is treated like one the operator moved there by hand, so it never follows the run.\nA second possible cause: VS Code's folderOpen task chain also runs `lyx reed attach` (issue #633, task `seed-ide-interactive-chain`), and attach appends no `select-window` when another client is already attached.\n\n## Wanted (operator)\n\nWhen a run starts, the operator's window goes to the overview.\nAs the run spawns agents, it moves to the newest agent.\nThe shell is never where the window rests when a run starts.\n\n## Idea\n\nTell \"on the shell because nothing else existed at attach\" apart from \"moved to the shell by hand\".\nFor example, an attach that found no relevant window marks the viewer as not placed, and the first overview or agent window to open selects it.\n",
+      "created": "2026-10-15T07:59:29Z",
+      "revised": "2026-10-15T07:59:29Z"
     }
   ]
 }
