@@ -941,6 +941,24 @@
       "body": "## Goal\n\nTry the placement options of note `reed-status-buttons` by hand before that note becomes a task.\n\n## Operator decision (2026-10-15)\n\nA fresh agent builds the prototype, but not now: it starts when the operator says so.\n\n## Scope\n\n- A separate throwaway tmux server (its own `-L` socket), never reed's server and never the prime's session `loomyard`.\n- A status bar shaped like reed's two lines, with:\n  - one menu button that opens a `display-menu` of sample actions (option 1 in `reed-status-buttons`),\n  - a follow toggle button (note `viewer-off-shell`),\n  - a third line of action buttons, the destructive ones behind `confirm-before` (option 2).\n- The sample actions only echo or display a message; none runs a real `lyx` verb.\n- The agent opens the server in a Konsole window for the operator to click through, and tears the server down when the operator is done.\n- The tmux config used goes into git under `docs/research/` through a docs-only commit, so the chosen layout can seed the task.\n",
       "created": "2026-10-15T09:21:25Z",
       "revised": "2026-10-15T09:21:25Z"
+    },
+    {
+      "id": 546,
+      "slug": "review-inline-code",
+      "title": "Paste cited code into a review rounds context",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "burler",
+        "stencil"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "Reviewers edit nothing and review a fixed commit, so code pasted at round start cannot go stale; measure it against todays reviewer",
+      "body": "## Seen\n\nNote `kickstart-per-card` rejects pasting span code into a Webster fork's pack: the code goes stale as earlier cards edit the files, and Claude Code refuses an Edit on a file the agent has not read itself, so an implementer must read every file it edits anyway.\nNeither reason holds for a reviewer: it edits nothing, and it reviews a fixed commit, so code pasted at the round's start cannot drift during the round.\n\n## Operator view, not a decision (2026-10-15)\n\nFor reviewers it may be different: they could get the code the target cites pasted in, instead of reading it themselves.\n\n## Earlier data\n\nNote `fan-master-preread` records one hand-built try on solo `opus[medium]` Discussion review (2026-10-10, one run on the `webster-replan-state` fixture): a body dump of the 35 cited symbols, about 20k tokens in a file read first, cost about the same as a kick-start pack of spans and missed the BLOCKING finding the span pack found.\nOne run per arm is too few to decide anything.\n\n## Idea\n\nGive a review round, Webster-Review or Merge-Review first, since their target is a diff at a fixed commit, the bodies of the symbols the target changes or cites, rendered by lyx at round start, and measure finding quality and cost against today's reviewer.\n",
+      "created": "2026-10-15T09:25:10Z",
+      "revised": "2026-10-15T09:25:10Z"
     }
   ]
 }
