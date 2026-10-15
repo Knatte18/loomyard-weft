@@ -8,6 +8,7 @@ Markdown is out of its scope: a `.md` location is a per-item rejection.
 
 Use in Loomyard once it lands, building on the kick-start pack:
 this waits for task `plan-glyph-tuning`, which builds the Webster pack behind a config switch, and for its with/without measurement to show the pack helps (operator, 2026-10-11).
+Operator decision 2026-10-15: this waits on the `tools/forkaudit` measurement of the per-card pack (landed with `kickstart-per-card`), taken after 4-5 Webster runs on it and again after `webster-master-no-code` lands, since that changes what forks inherit.
 
 - Verify failures (`go test` failure lines, `go vet`, compile errors) give the recovery agent or fixer a pack of the failing members.
 - Comment-lint findings and Webster audit findings carry glyphs instead of lines.
