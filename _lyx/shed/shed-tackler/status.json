@@ -1,11 +1,11 @@
 {
-  "current_producer": "Plan-Write",
+  "current_producer": "Plan-Bouncer",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Plan-Write",
-    "last": "Discussion-Bouncer → done",
+    "now": "Plan-Bouncer",
+    "last": "Plan-Write → done",
     "wait": ""
   },
   "history": [
@@ -106,6 +106,13 @@
       "outcome": "done",
       "output": "/home/knatte/Code/loomyard-LYXHUB/shed-tackler/_lyx/reviews/discussion/round-3-bouncer-ledger.md",
       "at": "2026-10-15T06:00:32Z"
+    },
+    {
+      "producer": "Plan-Write",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYXHUB/shed-tackler/_lyx/plan/00-overview.md",
+      "at": "2026-10-15T06:40:37Z",
+      "gate_attempts": 0
     }
   ],
   "product": {
