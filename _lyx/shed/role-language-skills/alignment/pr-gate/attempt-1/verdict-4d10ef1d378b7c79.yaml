@@ -1,0 +1,7 @@
+verdict: approve
+reason: >-
+  The diff covers the board entry's goal and decisions D1 through D7 with nothing outside them.
+  Plan-Review's carried-over finding is resolved in the diff.
+  The only peer, kickstart-per-card (row 7, against own_row 22), changes different behaviour with at most text overlap, so this run lands first.
+question: ""
+superseded: []
