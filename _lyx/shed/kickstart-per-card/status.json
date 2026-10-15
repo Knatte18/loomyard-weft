@@ -5,7 +5,7 @@
   "pause_requested": false,
   "activity": {
     "now": "Run-Shed",
-    "last": "Open-IDE → done",
+    "last": "Run-Shed → bounced to Run-Shed",
     "wait": ""
   },
   "history": [
@@ -38,6 +38,14 @@
       "outcome": "done",
       "output": "",
       "at": "2026-10-15T09:44:22Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "child running → paused at Plan-Write",
+      "at": "2026-10-15T10:11:06Z",
+      "budget_exempt": true,
+      "routed_to": "Run-Shed"
     }
   ]
 }
