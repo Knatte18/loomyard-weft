@@ -308,7 +308,7 @@
       }
     }
   ],
-  "currentBatch": 0,
+  "currentBatch": 9,
   "masterStrand": "9b5d66aec3da73a49c887c9db722ae35",
   "masterSessionId": "4bda0955-d804-438f-978f-3ec2ff46fb8f",
   "batches": {
@@ -408,6 +408,27 @@
       "bracketTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-report-timing/4bda0955-d804-438f-978f-3ec2ff46fb8f/subagents/agent-a899d1a18aee49df8.jsonl"
       ]
+    },
+    "9": {
+      "slug": "timing-waits-attempts",
+      "cards": [
+        "09-timing-waits-attempts",
+        "10-timing-stops-settlers",
+        "11-timing-markdown",
+        "12-report-timing-verb"
+      ],
+      "cardHashes": {
+        "09-timing-waits-attempts": "0c50024e81e38666694f6386e50fd5e632af83deee298bc2bfbd32f2716737ac",
+        "10-timing-stops-settlers": "cf8dcaddf96b114a0593b3984b8b03d02dd03367aa536f00062095d06a626110",
+        "11-timing-markdown": "92352fa24a69dcec83c5627b3fe43507c369cced0aa22da28178592aaf82b3d6",
+        "12-report-timing-verb": "bd41e931b5b6911e2375911b752e136cc70f893087347ea36a6af097f8df5bb7"
+      },
+      "startSha": "611a64d362a3baf02558057284bc642aeb025608",
+      "kind": "fork",
+      "spawnedAt": "2026-10-15T12:52:48Z",
+      "sessionId": "4bda0955-d804-438f-978f-3ec2ff46fb8f",
+      "terminal": false,
+      "status": ""
     }
   },
   "seenForkTranscripts": [
