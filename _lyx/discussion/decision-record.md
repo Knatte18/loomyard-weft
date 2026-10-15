@@ -14,6 +14,7 @@ In:
 - Two optional report sections behind flags: pack correctness at batch start, and plan glyph use.
 - Go `_test.go` files in `tools/forkaudit/` that run the script against fixtures, and their row in `cmd/lyx/testdata/test-budget.yaml`.
   The board's shell-and-jq rule covers the tool; the gate tests are Go because `lyx gate test` runs Go tests.
+- `PATTERN.md`: the `PATTERN-lyxdirs-single-declarer` line admits the script's literals (Constraints).
 
 Out:
 
@@ -30,10 +31,20 @@ Out:
 `tools/forkaudit/forkaudit.sh` is the entry point; the jq filters sit beside it as `.jq` files and are found relative to the script, not the caller's cwd.
 Like `tools/tokencount/tokencount.sh`, it resolves the repo root as two levels above its own directory.
 It writes its report to `.scratch/fork-audit.md` under the repo root by default and prints the path; `--out <path>` overrides it.
-Intermediate files (fork list, per-fork records, pack-check rows) go to `.scratch/fork-audit/` under the repo root by default, cleared at the start of each run and kept after it for drill-down; `--work <dir>` overrides that one directory and nothing else.
+Intermediate files (fork list, per-fork records, pack-check rows) go to `.scratch/fork-audit/` under the repo root by default, kept after the run for drill-down; `--work <dir>` overrides that one directory and nothing else.
+The work directory's clearing is bounded:
+- the tool marks a work directory it creates or adopts with a `.forkaudit-work` marker file;
+- at the start of a run it clears only a directory that is empty or holds that marker, and deletes inside it only its own named intermediate files and subdirectories, never anything else;
+- it exits 1 naming `--work`, deleting nothing, when the directory is non-empty without the marker, when it equals the repo root, the hub or `--out`'s directory or is an ancestor of any of them, or when `--out` lies inside it.
+  All these comparisons use canonical paths (`realpath -m`: symlinks and `..` resolved, a not-yet-existing path resolved through its nearest existing ancestor).
+  If a comparison is ever wrong, the marker rule is the bound, because a directory without the marker is never cleared.
 The report is written to a temporary name beside `--out` and moved into place only on success, so a failed run leaves the previous report intact.
+`--out` names a file: an existing directory at `--out` exits 1 naming `--out`, writing nothing; an existing file there is replaced.
+The report write reaches exactly two paths: the file named by `--out`, and one temporary file created with `mktemp` in `--out`'s directory, so it never takes the name of an existing sibling, and removed on failure.
+Nothing outside `--work` is otherwise created, replaced or deleted.
+`--out` is not checked against tracked or foreign files; its bound is the explicit flag and the caller's own permissions, as with a shell redirect.
 One run at a time per work directory is the supported use; two concurrent runs need distinct `--out` and `--work`.
-It needs `bash`, `jq`, `git`, `find`, `awk` and GNU `date`, and exits 1 with a message naming a missing command or an unwritable `--out` or `--work`.
+It needs `bash`, `jq`, `git`, `find`, `awk`, `mktemp`, `realpath` and GNU `date`, and exits 1 with a message naming a missing command or an unwritable `--out` or `--work`.
 The script's header comment is the tool's design doc, as `tokencount.sh`'s is, since a package with only test files has no `doc.go` (`PATTERN-documentation-lifecycle`).
 
 Rationale: the board fixes shell and jq; one fixed output path matches the existing tool launchers; kept intermediates replace the per-fork tables the research directories kept by hand; `--work` lets tests run without touching the worktree's `.scratch/`.
@@ -42,8 +53,9 @@ Rationale: the board fixes shell and jq; one fixed output path matches the exist
 
 - `--since <date>` with optional `--until <date>` selects fork transcripts by modification time, as the 2026-10-15 `find -newermt` did.
 - `--runs <name>[,<name>...]` selects forks whose project directory belongs to those worktrees (the run's slug, the worktree's directory name).
+  A run name matches only the project directory whose name equals the hub's encoded path, `-` and the run name, exactly; a name that is a prefix of another run's never matches that run.
 - `--projects <dir>` (default `~/.claude/projects`), `--hub <dir>` (default the repo root's parent), `--records <dir>` and `--code <dir>` (D7) override discovery paths.
-- Exit 2 with usage text on: neither or both of `--since` and `--runs`; `--until` without `--since`; `--until` earlier than `--since`; an unparsable date; an empty `--runs` list; a run name holding anything but letters, digits, `-`, `_` and `.`; an unknown flag or a flag missing its value.
+- Exit 2 with usage text on: neither or both of `--since` and `--runs`; `--until` without `--since`; `--until` earlier than `--since`; an unparsable date; an empty `--runs` list; a run name holding anything but lowercase letters, digits and `-`, the slug character set, which Claude Code's directory encoding leaves unchanged; an unknown flag or a flag missing its value.
 - The report lists each `--runs` name that matched no project directory, so a typo is not mistaken for an empty run.
 
 Discovery is the 2026-10-15 pipeline, generalized from its hard-coded paths: project directories whose name is the hub path in Claude Code's encoding followed by `-`, their `*/subagents/agent-*.jsonl` files, prefiltered on the `# Webster implementer job` heading, then kept only when the transcript's first tool call reads a Webster prompt file, as `extract-pf.jq` decides.
@@ -67,7 +79,8 @@ The markers live in one table at the head of the extractor, so a new layout adds
 The begin-batch `webster: kickstart pack` trace line's `pack_layout` field holds `file`, `inline` or `none` and cannot tell `raf` from `inline`, so it is a cross-check, never an override:
 
 - Trace `file` agrees with arm `file`, trace `inline` with `raf` or `inline`, trace `none` with `none`; any other pairing is a disagreement, listed per fork in the report.
-- A trace value outside those three, on a fork whose prompt is `unknown`, makes that value the fork's arm, so a new layout is measured as its own arm even before its marker row exists.
+- A trace value outside those three, on a fork whose prompt is `unknown`, makes the fork's arm `trace:<value>`, so a new layout is measured as its own arm even before its marker row exists and never merges with a prompt-classified arm.
+  This holds only when the value matches `[a-z0-9_-]+` and is not one of the marker table's arm names; any other value leaves the fork `unknown` and is listed once in the samples section as an unrecognized trace value.
 - The join needs the fork's worktree and batch: the worktree is the one whose `.lyx/logs/` holds the trace file, the batch comes from D7's batch resolution.
   Of several lines for one batch (a resumed begin-batch), the last one before the fork's first transcript line counts.
 - With no trace file, an unresolved batch, or a records repo that is absent and not required (D7), the fork has no cross-check; the samples section counts per arm how many forks were cross-checked.
@@ -109,7 +122,7 @@ A markdown report with:
 
 A metric a fork does not have (no edit, so nothing "before the first edit"; a pack with no spans, so no span share; arm `none`, so no pack metric) leaves that fork out of that metric's median and pooled value, and the cell shows its own sample size where it differs from the arm's fork count, or `n/a` when none remain.
 An arm with no forks is left out of the tables and named once in the samples section; zero forks in total yields a report that says so, and exit 0.
-Rows sort by arm, then project, then start time, so two runs over the same input give identical reports apart from the generation-time line.
+Rows sort by arm, then project, then start time, then agent id, so two runs over the same input give identical reports apart from the generation-time line.
 
 Rationale: the board asks for medians and pooled values per card with sample sizes per arm; the layout follows the 2026-10-15 `report.md` tables.
 
@@ -124,7 +137,8 @@ Rationale: the board lists plan glyph use as an optional section; finding the we
 
 ### D7 — Optional section: pack correctness at batch start (`--pack-check`)
 
-- Batch resolution: for each fork, the records repo's history of `_lyx/webster/state.json` is searched for the batch whose `spawnedAt` is 1 to 6 seconds before the fork's first transcript line, giving batch number, cards and `startSha`, as `resolve-batches.sh` did.
+- Batch resolution: for each fork, the history of `_lyx/webster/state.json` on the fork's own run's refs is searched for the batch whose `spawnedAt` is 1 to 6 seconds before the fork's first transcript line, giving batch number, cards and `startSha`, as `resolve-batches.sh` did.
+  The refs are the records branch `<run>-weft`, local or under `origin/`, and the tags `archive/<run>/*`, where `<run>` is the fork's project run name from D2; a match outside those refs is not used, so a concurrent run's batch spawned in the same window never resolves.
   It runs when `--pack-check` or `--plan` is given, or when a trace file exists for the fork's worktree.
 - Every span entry of the fork's pack is checked against the file at `startSha` in the code repo, classed `correct` (the entry's signature text lies inside the span), `correct-decl` (a declaration of the name lies inside it), `stale` (found elsewhere in the file, with the line shift), `wrong` (file present, name absent), `nofile` (file absent at `startSha`) or `notree` (batch unresolved or `startSha` not in the code repo).
 - The declaration rule is Go-only; a span in a non-`.go` file gets the signature-text check alone and, failing it, the class `unchecked` instead of `wrong`.
@@ -132,7 +146,7 @@ Rationale: the board lists plan glyph use as an optional section; finding the we
 - The section reports per arm: counts per class, pooled and per fork, and the missed-file counts split by existed-at-start.
 - Default paths: `--code` is the repo root, which shares the hub's object store with every pair, so a pair's `startSha` resolves there; `--records` is the repo root's weft sibling `<repo root>-weft`, whose store's `git log --all` sees every pair's records branch and `archive/<slug>/*` tag.
   This is a shell simplification of what `fabricengine.RecordsWorktree` resolves for `tools/tokencount`.
-- A missing `--records` or `--code` directory exits 1, naming the flag that sets it, when `--pack-check` or `--plan` is given; without them, a missing records repo only disables the D3 cross-check and the header says so.
+- A missing `--code` directory exits 1, naming `--code`, under `--pack-check`; a missing `--records` directory exits 1, naming `--records`, under `--pack-check` or `--plan`; without either flag, a missing records repo only disables the D3 cross-check and the header says so.
 - The 2026-10-15 negative control (packs checked against another batch's tree) is not a mode of the tool.
 
 Rationale: the board lists pack correctness against the batch's start tree; the negative control was a one-time check of the checker.
@@ -151,8 +165,8 @@ Rationale: `lyx gate test --tags integration ./...` then exercises the tool like
 
 ## Constraints
 
-- `PATTERN-lyxdirs-single-declarer`: the script spells `_lyx/webster/state.json`, `_lyx/plan/` and `.lyx/logs` because it reads run records and worktree logs and cannot import `internal/lyxdirs`.
-  This is a named departure for this one shell tool; the literals sit once, in a variable block at the script's head.
+- `PATTERN-lyxdirs-single-declarer`: the script spells `_lyx/webster/state.json`, `_lyx/plan/` and `.lyx/logs` because it reads run records and worktree logs, and the literals sit once, in a variable block at the script's head.
+  The task amends that entry's line in `PATTERN.md`, in the same commit as the script, to read: "Naming `_lyx` or `.lyx` in a Go path: only `internal/lyxdirs` declares those literals, and no other Go production file spells them; a shell tool under `tools/` that cannot import it spells each literal once, in a variable block at the script's head."
   The `-weft` suffix it spells departs in the same way from `internal/weftname`'s single-declarer convention, which is not a PATTERN entry.
 - Git is read-only: `log`, `show`, `ls-tree`, `cat-file` only (`PATTERN-fabric-git` exempts code outside the binary and read-only verbs).
 - The script never calls `git rev-parse --show-toplevel` and writes nothing to a system temp directory.
@@ -179,21 +193,24 @@ Rationale: `lyx gate test --tags integration ./...` then exercises the tool like
 
 - `forkaudit.sh --since <date>` over fixtures with one fork per arm reports each arm with its fork, run and card counts, and the medians of D5.
 - `--runs <slug>` keeps only that run's forks; a `--runs` name with no project directory is listed in the header.
-- Each invalid input of D2 exits 2 with usage; a missing `jq` or an unwritable `--out` exits 1 naming it.
+- Each invalid input of D2 exits 2 with usage; a missing `jq` or an unwritable `--out` exits 1 naming it; an `--out` naming an existing directory exits 1 naming `--out`.
 - A subagent transcript without the Webster heading, or whose first tool call reads no prompt file, is not a fork.
 - A fork transcript with a truncated last line is kept, and the dropped line is counted in the header.
 - Zero matching forks: a report saying so, exit 0.
 - An arm with no forks is absent from the tables and named in the samples section.
 - A fork with no edit, and a pack with no spans, are left out of the metrics they lack, with the per-cell sample size shown.
-- A prompt matching no marker is classed `unknown`; with a trace value outside `file`, `inline` and `none`, the fork's arm is that value.
+- A prompt matching no marker is classed `unknown`; with a trace value outside `file`, `inline` and `none`, the fork's arm is `trace:<value>`; a trace value of `raf`, and one holding `|`, leave the fork `unknown` and are listed as unrecognized trace values.
 - A `raf` fork with trace `inline` counts as agreeing; a `file` fork with trace `inline` is listed as a disagreement and keeps arm `file`.
 - Two trace lines for one batch: the last one before the fork's start is used.
+- A records fixture with two runs whose batches share a `spawnedAt` resolves each fork to its own run's batch.
 - A fork whose batch does not resolve gets no cross-check and, under `--pack-check`, spans classed `notree`.
 - Pack opened, its turn, spans reached before the first edit and in the first work turn, first-turn parallelism, calls before the first edit and edits to files with no span match hand-computed values for a fixture fork.
 - `--pack-check` classes fixture spans as `correct`, `correct-decl`, `stale`, `wrong`, `nofile`, `notree` and `unchecked`, and lists a missed file with its existed-at-start value.
 - `--plan` counts glyphs, `plan:` handles, bare files and bare directories per card for a fixture plan, picks the session with the most card writes as plan writer, reports its quarry calls, greps and reads, and gives a run with no plan-writer session its one line.
-- A missing `--records` directory exits 1 naming `--records` under `--pack-check`; without `--pack-check` and `--plan`, the run succeeds with no cross-check and the header says so.
-- A failed run leaves an existing report at `--out` unchanged.
+- A missing `--records` directory exits 1 naming `--records` under `--pack-check`; `--plan` without a `--code` directory succeeds; without `--pack-check` and `--plan`, the run succeeds with no cross-check and the header says so.
+- A failed run leaves an existing report at `--out` unchanged, and leaves no temporary file beside `--out`.
+- A non-empty `--work` without the `.forkaudit-work` marker, and a `--work` holding `--out`, each exit 1 naming `--work` and delete nothing; an unwritable `--work` exits 1 naming it.
+- A `--work` given as a symlink to the repo root, and one spelled with `..` to reach `--out`'s directory, each exit 1 naming `--work` and delete nothing.
 - Two runs over the same fixtures produce identical reports apart from the generation-time line.
 - `docs/research/glyph-audit-2026-10-13/` and `docs/research/glyph-audit-2026-10-15/` are unchanged.
 
