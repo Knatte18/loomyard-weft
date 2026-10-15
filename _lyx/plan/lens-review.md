@@ -1,0 +1,31 @@
+# Lens review
+
+Every lens fork returned a report.
+
+- criteria-coverage, BLOCKING, card 5's forks-without-fork-audit refusal unreachable while `Engine` still declares the audit methods: fixed as proposed; the guard and its `TestNew` row moved to card 11, which lists `plan:internal/shuttleengines#build` and `shuttleengines_test.go`.
+- criteria-coverage MEDIUM and forced-edits LOW (merged), docs split from their code into card 15: fixed as proposed for the docs; each `doc.go` paragraph moved into the card that lands its behavior (cards 3, 6, 7, 8, 10, 11, 14), the overview's tree and shuttle row into card 5, and card 15 was removed with `lyx loom remove-card`. The PATTERN half is disputed, premise false: D13 (`_lyx/discussion/decision-record.md:189-194`) names the widened scan as the code the amended entry lands with, and card 14 lands the entry and that scan together.
+- criteria-coverage, MEDIUM, D3's absent-key load and hub reconcile untested: the absent-key half fixed as proposed, a `TestLoadConfig_EngineKey` row loading a file without the `engine:` line. The reconcile half is disputed, every fix worse: reconcile adds any missing template key generically, and `internal/configcli/reconcile_integration_test.go:100` already asserts the per-module `added` keys, so a per-key row repeats it against `PATTERN-test-economy`.
+- criteria-coverage, MEDIUM, card 9's Warn log on a failed settle unasserted: fixed as proposed; the orch and tender rows assert the captured Warn line naming the strand.
+- criteria-coverage LOW and branch-coverage MEDIUM (merged), `SessionIdle`'s record and no-record branches unreached on a non-default engine: fixed as proposed; card 8 rows for `SessionIdle` through `b` and through `a` on a strand with no record.
+- criteria-coverage, LOW, the webster refusal's way forward wrong under the loom Webster row: fixed as proposed; the text and the refusal-spec row add "or under the Webster row re-step the row".
+- criteria-coverage, LOW, no test pins the absence of `ModelSwitchSequence` and the audit methods: disputed, every fix worse: their absence from `Engine` is enforced by compilation of every implementer, and a test pinning a deleted name pins history, not public-surface behavior (`PATTERN-test-economy`, `PATTERN.md`'s Testing entry).
+- branch-coverage, MEDIUM, attach over a record naming an unregistered engine unreached: fixed as proposed; card 8's record-naming-`c` row includes an `Attach`.
+- branch-coverage, MEDIUM, the per-method lookup refusals beyond Send and Interrupt unreached: fixed as proposed; the record-naming-`c` row covers every engine-consulting method of the after-`Start` row.
+- branch-coverage, MEDIUM, card 9's not-a-strand exits and `CompactedSince` through `b` unreached: fixed as proposed.
+- branch-coverage, MEDIUM, attach with an unknown requirement unreached: fixed as proposed; a card 10 row.
+- branch-coverage, LOW, the `none` branch and the spec-only `ForkSubagents` attach unreached: fixed as proposed; two card 10 rows.
+- branch-coverage, LOW, the readers' engine-key episode recovery unreached: fixed as proposed; card 6's skip row reads the run again after its record names a registered engine.
+- branch-coverage, LOW, `NewDetachedRunner`'s unresolvable default and `newParentReviewConfig`'s lookup error unreached: fixed as proposed; rows in `TestNewDetachedRunner_RefusesUnusableToldPaths` and `TestNewParentReviewConfig_KeepAliveInterval`.
+- branch-coverage, LOW, resume-context's unresolvable default unreached: fixed as proposed; a card 12 row.
+- branch-coverage, LOW, the Webster wiring sites have no wiring-level row: disputed, every fix worse: `websterCLI.wireHub` (`internal/webstercli/wiring.go:113`) takes a resolved hub location and loads every config from the fabric, so a wiring row needs a hub fixture at the integration tier for a branch that only returns `AuditEngineFrom`'s error, which `TestAuditEngineFrom` reaches at unit tier (`PATTERN-test-speed`).
+- branch-coverage, LOW, `Open` on a non-default engine without `SessionOpener` unreached: fixed as proposed; a card 8 row.
+- row-reachability, MEDIUM, card 9's `ContextTokens`/`ClassifySkillLoad` rows unreachable over plain `fakeEngine`s: fixed differently; instead of naming the existing capability fakes, card 8 declares `dispatchEngine` in `enginedispatch_test.go`, embedding `*fakeEngine`, implementing the capabilities and recording consults per engine, since `skillFakeEngine` and `idleEngine` each lack the other's capabilities and neither records which instance answered.
+- row-reachability, MEDIUM, card 8's `SessionState` and `Inject` rows leave no engine-specific trace: fixed as proposed through the same `dispatchEngine` (per-engine consult record, distinct interrupt keys).
+- row-reachability, LOW, "distinct capture reading" not scriptable per engine: fixed as proposed; rows assert on the per-engine consult record.
+- row-reachability LOW and forced-edits MEDIUM (merged), `TestPendingFindingsText` and `TestAcceptPendingAudit_ContractFiles` fixtures typed `shuttleengine.Engine` stop compiling: fixed as proposed; card 11 lists both as glyphs and retypes the fixture results to `ForkAuditor`.
+- row-reachability, LOW, the new fork-audit row repeats `TestRun_Wait_ForkAuditFailure_KeepsTheClassifiedOutcome`: fixed as proposed; the row joins that test.
+- row-reachability, LOW, `StopStepRuns` row vacuous without a step tie: fixed as proposed; the record is seeded with the told `StepTie`.
+- forced-edits, LOW, `internal/reedengine/doc.go:239` still says cliwire fills the seam: fixed as proposed in card 5.
+- forced-edits, LOW, `claudeengine/audit.go:27,33` and `recordbatch_test.go:5` name `Engine.AuditForks*`: fixed as proposed in card 11.
+- forced-edits, LOW, `startup.go`'s header edited with only a member listed: fixed differently; the proposed file-beside-member pair is refused by `redundant-file-target` (validate-plan output), so card 13 lists `startup.go` whole and drops the member glyph.
+- test-economy, LOW, the template-default row duplicates `TestLoadConfig_TemplateDefaultsResolve`: fixed as proposed; the `Engine` assertion joins that test (glyph `internal/shuttleengine_test#TestLoadConfig_TemplateDefaultsResolve`), and `TestLoadConfig_EngineKey`'s handle moved to the `shuttleengine_test` package its file declares.
