@@ -18,7 +18,7 @@ Held by a run; its scope is locked until the run ends.
 | # | Task | Slug | Recipe | At | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | 1 | **Run status pane: numbered rows, seconds, round totals, gate time; segment-named sessions**<br>• Per-run status pane shows seconds, a total per Burler round, and each gate with its time and the rework it caused | [`run-pane-timing`](design-run-pane-timing.md) | loom | Webster | 3h | 3h | loom, burler, shed, reed |
-| 2 | **Webster fork read audit as a tool under tools/**<br>• Move the 2026-10-13 fork read audit jq scripts out of scratch into a repeatable tools/ script | [`glyph-audit-tool`](design-glyph-audit-tool.md) | loom | Discussion-Bouncer | 1h | 14m | webster |
+| 2 | **Webster fork read audit as a tool under tools/**<br>• Move the 2026-10-13 fork read audit jq scripts out of scratch into a repeatable tools/ script | [`glyph-audit-tool`](design-glyph-audit-tool.md) | loom | Discussion-Burler-Review | 1h | 15m | webster |
 | 3 | **Begin-batch refusal route and label; bare lyx config writes an empty layer**<br>• Two small bugs: a delete-before-reference refusal is mislabelled plan_drifted and halts for a human; bare lyx config with no TTY saves an empty layer | [`refusal-route-config-empty`](design-refusal-route-config-empty.md) | loom | Webster | 3h | 1h | webster, loom, config |
 
 ### Ready
@@ -35,7 +35,7 @@ Waits only on Running or Ready entries.
 
 | # | Task | Slug | Recipe | After | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | **Kick-start pack per card, read when the card starts**<br>• Forks read about a quarter of a batch-wide pack; hand each card its own pack as everything it needs to begin | [`kickstart-per-card`](design-kickstart-per-card.md) | loom | `refusal-route-config-empty` | 29m | 2m | webster, stencil |
+| 1 | **Kick-start pack per card, read when the card starts**<br>• Forks read about a quarter of a batch-wide pack; hand each card its own pack as everything it needs to begin | [`kickstart-per-card`](design-kickstart-per-card.md) | loom | `refusal-route-config-empty` | 30m | 2m | webster, stencil |
 
 ## Notes
 
@@ -78,7 +78,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 15 | **Spawned code roles load the hub language skills**<br>• Darn, Webster, Burler and merge sessions write Go without scribe:golang-* skills; the hub config should name its language skills | [`role-language-skills`](design-role-language-skills.md) | 14h | 14h | config, shuttle |
 | 16 | **Fork the Burler fixer from the reviewer session**<br>• The fixer re-reads the context the reviewer just read; fork it from the reviewer to reuse the cache | [`burler-fixer-fork`](design-burler-fixer-fork.md) | 3h | 3h | burler |
 | 17 | **The arbiter in shed for every shed run, batten included**<br>• The batten Go driver has a tackler but no arbiter; move the arbiter and its keys into shed beside the tackler | [`shed-arbiter-all`](design-shed-arbiter-all.md) | 55m | 52m | shed, batten, loom, config |
-| 18 | **Plan cards name added tests by Create handle, never a plain test-file path**<br>• Drop the Edit exception for a test file the card only adds tests to; the Create plan handle carries the file | [`plan-test-file-path`](design-plan-test-file-path.md) | 30m | 30m | loom, stencil |
+| 18 | **Plan cards name added tests by Create handle, never a plain test-file path**<br>• Drop the Edit exception for a test file the card only adds tests to; the Create plan handle carries the file | [`plan-test-file-path`](design-plan-test-file-path.md) | 31m | 31m | loom, stencil |
 | 19 | **Paste cited code into a review rounds context**<br>• Reviewers edit nothing and review a fixed commit, so code pasted at round start cannot go stale; measure it against todays reviewer | [`review-inline-code`](design-review-inline-code.md) | 1m | 0m | burler, stencil |
 
 #### Low priority
