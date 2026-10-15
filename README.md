@@ -17,14 +17,14 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | **reed: intact launch lines under parallel launches, --focus=false never takes focus**<br>• Parallel shuttle launches corrupt the typed launch line, and --focus=false windows still steal focus | [`reed-launch-fixes`](design-reed-launch-fixes.md) | darn | Darn-Write | 8m | 0m | reed, shuttle |
+| 1 | **reed: intact launch lines under parallel launches, --focus=false never takes focus**<br>• Parallel shuttle launches corrupt the typed launch line, and --focus=false windows still steal focus | [`reed-launch-fixes`](design-reed-launch-fixes.md) | darn | Darn-Write | 8m | 1m | reed, shuttle |
 
 #### Normal priority
 
 | # | Task | Slug | Recipe | At | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | 2 | **Go driver and tackler in shed, for every FSM-driven run**<br>• Move the Go driver and tackler from loomcli into shed so darn, batten and every recipe get them; module config overrides model and budgets | [`shed-tackler`](design-shed-tackler.md) | loom | Plan-Write | 12h | 11h | shed, loom, batten |
-| 3 | **Twill fork0: blind lens review, strict critical fixer, branch-coverage lens**<br>• Plan-Write: fork0 writes the plan, the master spawns blind lens forks and judges as a strict Burler-style fixer; new branch-coverage lens | [`twill-fork0`](design-twill-fork0.md) | loom | PR-Gate | 2d | 11h | loom, stencil, burler |
+| 3 | **Twill fork0: blind lens review, strict critical fixer, branch-coverage lens**<br>• Plan-Write: fork0 writes the plan, the master spawns blind lens forks and judges as a strict Burler-style fixer; new branch-coverage lens | [`twill-fork0`](design-twill-fork0.md) | loom | PR-Rework | 2d | 11h | loom, stencil, burler |
 | 4 | **tokencount: subtract hibernation, share by active time, map renamed Burler roles**<br>• tokencount counts hibernation as session time and splits Burler roles across the overview-seats rename | [`tokencount-fixes`](design-tokencount-fixes.md) | darn | Merge-In | 40m | 21m | burler |
 
 ### Ready
@@ -59,7 +59,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Note | Slug | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| 2 | **A hub pause leaves background forks and shells running, so hibernate never confirms**<br>• Pause interrupts turns but not background forks or shells; sessions read busy and hibernate confirmation fails | [`pause-background-work`](design-pause-background-work.md) | 10h | 0m | shuttle, webster |
+| 2 | **A hub pause leaves background forks and shells running, so hibernate never confirms**<br>• Pause interrupts turns but not background forks or shells; sessions read busy and hibernate confirmation fails | [`pause-background-work`](design-pause-background-work.md) | 10h | 1m | shuttle, webster |
 
 ### Enhancements
 
