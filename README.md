@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-15 15:55 UTC; every age below is as of then.
+Rendered 2026-10-15 15:56 UTC; every age below is as of then.
 
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
@@ -25,7 +25,11 @@ Held by a run; its scope is locked until the run ends.
 
 Waits on nothing open; can start now.
 
-_None._
+#### Normal priority
+
+| # | Task | Slug | Recipe | After | Age | Revised | Labels |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| 1 | **Test creel stage 1 in a closed sandbox hub**<br>• End-to-end and hands-on testing of lyx creel in a sandbox hub with its own tmux server, fixing what it finds | [`creel-test`](design-creel-test.md) | loom |  | 0m | 0m | creel, reed, shuttle |
 
 ### Layer A
 
@@ -47,7 +51,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Note | Slug | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| 1 | **Audit every stencil for design assumptions the operator never meant**<br>• List each claim a stencil makes about how its role works, so the operator can confirm or reject it, after the Webster master code-read bug | [`stencil-intent-audit`](design-stencil-intent-audit.md) | 3h | 2h | stencil |
+| 1 | **Audit every stencil for design assumptions the operator never meant**<br>• List each claim a stencil makes about how its role works, so the operator can confirm or reject it, after the Webster master code-read bug | [`stencil-intent-audit`](design-stencil-intent-audit.md) | 3h | 3h | stencil |
 
 #### Normal priority
 
