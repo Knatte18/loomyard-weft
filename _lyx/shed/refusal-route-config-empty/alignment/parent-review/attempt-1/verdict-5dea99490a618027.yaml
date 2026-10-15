@@ -1,0 +1,8 @@
+verdict: approve
+reason: >-
+  The design covers every point of the board entry: the plan_conflict class with a cause, the loom reroute to Plan-Burler-Review, a reasoned decline of the optional earlier check, the no-terminal refusal on lyx config, and no empty editor result saved.
+  It adds no work that belongs to another entry.
+  Its only overlap is with peer run-pane-timing, which shares loom-recipe.yaml and shedadapters/webster.go at different keys and arms with no conflicting decision.
+  Both runs are on row 3, a tie.
+question: ""
+superseded: []
