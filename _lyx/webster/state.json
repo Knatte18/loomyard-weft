@@ -518,7 +518,7 @@
       }
     }
   ],
-  "currentBatch": 0,
+  "currentBatch": 8,
   "masterStrand": "d2803100d37c969fd246e0e363103c5b",
   "masterSessionId": "6f6ada06-2c95-4aa6-a77f-74e1252cb5bb",
   "batches": {
@@ -692,6 +692,21 @@
       "bracketTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-engine-config-seams/6f6ada06-2c95-4aa6-a77f-74e1252cb5bb/subagents/agent-a000ec77ed9fde294.jsonl"
       ]
+    },
+    "8": {
+      "slug": "config-key-move",
+      "cards": [
+        "08-config-key-move"
+      ],
+      "cardHashes": {
+        "08-config-key-move": "76a0cf5452e3abc56052c1bc2e80ebab6246f5e2fa87a2704973f47dd0603a3b"
+      },
+      "startSha": "b8a7d29561e4b1225035a5dae3cc53356353f5fa",
+      "kind": "fork",
+      "spawnedAt": "2026-10-15T15:45:34Z",
+      "sessionId": "6f6ada06-2c95-4aa6-a77f-74e1252cb5bb",
+      "terminal": false,
+      "status": ""
     }
   },
   "seenForkTranscripts": [
