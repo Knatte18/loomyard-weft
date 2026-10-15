@@ -92,7 +92,7 @@
       }
     }
   ],
-  "currentBatch": 1,
+  "currentBatch": 0,
   "masterStrand": "095f2f56d0a83d1476cedb5ec7f90747",
   "masterSessionId": "bdd02286-e2f7-4b70-b3b1-6c9a1f638c22",
   "masterEngine": "claude",
@@ -116,8 +116,25 @@
       "spawnedAt": "2026-10-15T17:39:58Z",
       "sessionId": "bdd02286-e2f7-4b70-b3b1-6c9a1f638c22",
       "engine": "claude",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "01-doc-lifecycle-wording",
+        "status": "done",
+        "head_sha": "3f6cd1c5d3d0b4ea20b3e996c4600dd519e3a212"
+      },
+      "cardShas": [
+        "3f6cd1c5d3d0b4ea20b3e996c4600dd519e3a212"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-card-own-entry-edit/bdd02286-e2f7-4b70-b3b1-6c9a1f638c22/subagents/agent-ad5b94a9d3b928b63.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-card-own-entry-edit/bdd02286-e2f7-4b70-b3b1-6c9a1f638c22/subagents/agent-ad5b94a9d3b928b63.jsonl"
+      ]
     }
-  }
+  },
+  "seenForkTranscripts": [
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-card-own-entry-edit/bdd02286-e2f7-4b70-b3b1-6c9a1f638c22/subagents/agent-ad5b94a9d3b928b63.jsonl"
+  ]
 }
