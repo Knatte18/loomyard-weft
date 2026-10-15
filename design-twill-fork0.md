@@ -1,6 +1,6 @@
 # Twill fork0: blind lens review, strict critical fixer, branch-coverage lens
 
-`twill-fork0` · Task · enhancement, loom, stencil, burler · running · PR-Rework
+`twill-fork0` · Task · enhancement, loom, stencil, burler · running · Plan-Bouncer
 
 ## Goal
 
