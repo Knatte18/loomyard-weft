@@ -1,6 +1,6 @@
 # Run status pane: numbered rows, seconds, round totals, gate time; segment-named sessions
 
-`run-pane-timing` · Task · enhancement, loom, burler, shed, reed · running · Plan-Bouncer
+`run-pane-timing` · Task · enhancement, loom, burler, shed, reed · running · Plan-Burler-Review
 
 ## Seen
 
