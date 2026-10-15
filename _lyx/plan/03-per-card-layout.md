@@ -6,16 +6,16 @@
 - `contracts/stencils/webster/webster-fragment-locate-pack-card.md`
 - `contracts/stencils/webster/webster-fragment-pack-start-card.md`
 - `contracts/stencils/webster/webster-fragment-card-pack-allowed.md`
-- `plan:contracts/stencils#WebsterFragmentFreshReadPackCard` -> `var WebsterFragmentFreshReadPackCard []byte`
-- `plan:contracts/stencils#WebsterFragmentCardReadPackCard` -> `var WebsterFragmentCardReadPackCard []byte`
-- `plan:contracts/stencils#WebsterFragmentLocatePackCard` -> `var WebsterFragmentLocatePackCard []byte`
-- `plan:contracts/stencils#WebsterFragmentPackStartCard` -> `var WebsterFragmentPackStartCard []byte`
-- `plan:contracts/stencils#WebsterFragmentCardPackAllowed` -> `var WebsterFragmentCardPackAllowed []byte`
-- `plan:internal/websterengine#PackLayout` -> `type PackLayout string`
-- `plan:internal/websterengine#PackLayoutFile` -> `const PackLayoutFile PackLayout = "file"`
-- `plan:internal/websterengine#PackLayoutInline` -> `const PackLayoutInline PackLayout = "inline"`
-- `plan:internal/websterengine#PackLayoutCard` -> `const PackLayoutCard PackLayout = "card"`
-- `plan:internal/websterengine#packLayoutOf` -> `func packLayoutOf(cfg Config, geom Geometry) PackLayout`
+- `contracts/stencils#WebsterFragmentFreshReadPackCard`
+- `contracts/stencils#WebsterFragmentCardReadPackCard`
+- `contracts/stencils#WebsterFragmentLocatePackCard`
+- `contracts/stencils#WebsterFragmentPackStartCard`
+- `contracts/stencils#WebsterFragmentCardPackAllowed`
+- `internal/websterengine#PackLayout`
+- `internal/websterengine#PackLayoutFile`
+- `internal/websterengine#PackLayoutInline`
+- `internal/websterengine#PackLayoutCard`
+- `internal/websterengine#packLayoutOf`
 
 **Edit:**
 - `contracts/stencils/webster/webster-body-implementer.md`

@@ -2,7 +2,7 @@
 
 **Create:**
 - `tools/forkaudit/testdata/fork-card.jsonl`
-- `plan:tools/forkaudit#cardPackLine` -> `func cardPackLine(start time.Time, after time.Duration) string`
+- `tools/forkaudit#cardPackLine`
 
 **Edit:**
 - `tools/forkaudit/extract.jq`

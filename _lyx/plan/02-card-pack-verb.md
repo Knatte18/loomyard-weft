@@ -1,8 +1,8 @@
 # Card 2 — card-pack-verb
 
 **Create:**
-- `plan:internal/websterengine#CardPackMarkdown` -> `func CardPackMarkdown(index planindex.Index, planDir, worktreeRoot, stencilsDir string, number int) ([]byte, error)`
-- `plan:internal/loomcli#loomCLI.cardPackCmd` -> `func (c *loomCLI) cardPackCmd() *cobra.Command`
+- `internal/websterengine#CardPackMarkdown`
+- `internal/loomcli#loomCLI.cardPackCmd`
 - `internal/loomcli/cardpack_test.go`
 
 **Edit:**

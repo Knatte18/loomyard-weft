@@ -1,12 +1,12 @@
 {
   "runGuid": "1d94acaafe5c923f9e126adf25a3ed1c",
-  "planFingerprint": "96be81ed05080d5dc00e432b3b8d2531a439601981925ff815c6bfd1cf9ae027",
+  "planFingerprint": "74958a02ec2f6abd3669e17dd28d39c660e1f23b78ed40d31eab6089666236b7",
   "planFileHashes": {
     "00-overview.md": "42f584c4a4149210fe6a09d9c4bc2c1aa099a8005978cc25cea353e55c7d2c97",
     "01-per-card-switch.md": "942348c10794b8147011d31453c6cbb87482485082233c49124ad5e8b037e3db",
-    "02-card-pack-verb.md": "ca9f2adbd6a949311dcb3b62f92e1e54d1a93f0e0356a75cb6f983b6073c773f",
-    "03-per-card-layout.md": "f3e326de8c1952debb32639fc9b224bbfc33911487c12bd1f586f2d5d205a1f3",
-    "04-forkaudit-card-arm.md": "31475a80b734ad0aa9045b8444844614d6f3bcaa6ee0084998c8aa1765d620d5"
+    "02-card-pack-verb.md": "60603fdd3056c99233b08e36bebd7d3ebbc44f220b8b81422eb70bba80435270",
+    "03-per-card-layout.md": "315543c000e7f18382b447eb5fce1f8557ddc40d19b35fc94d0bcc41046ad749",
+    "04-forkaudit-card-arm.md": "d753cfa57701ab82c6c1910686b81cfaa1cc15e9895984c47ba7333d127fdd5e"
   },
   "planOverviewFrameHash": "912302b37bc4f6b091990042a587ddd8c1f1acd9e456163e75643216a6da34a9",
   "partition": [
@@ -121,7 +121,7 @@
       }
     }
   ],
-  "currentBatch": 1,
+  "currentBatch": 0,
   "masterStrand": "d90eaf1144326f81da37e6156278388b",
   "masterSessionId": "e7f5396f-b928-4bc7-a937-5001284d84be",
   "batches": {
@@ -135,16 +135,38 @@
       ],
       "cardHashes": {
         "01-per-card-switch": "942348c10794b8147011d31453c6cbb87482485082233c49124ad5e8b037e3db",
-        "02-card-pack-verb": "ca9f2adbd6a949311dcb3b62f92e1e54d1a93f0e0356a75cb6f983b6073c773f",
-        "03-per-card-layout": "f3e326de8c1952debb32639fc9b224bbfc33911487c12bd1f586f2d5d205a1f3",
-        "04-forkaudit-card-arm": "31475a80b734ad0aa9045b8444844614d6f3bcaa6ee0084998c8aa1765d620d5"
+        "02-card-pack-verb": "60603fdd3056c99233b08e36bebd7d3ebbc44f220b8b81422eb70bba80435270",
+        "03-per-card-layout": "315543c000e7f18382b447eb5fce1f8557ddc40d19b35fc94d0bcc41046ad749",
+        "04-forkaudit-card-arm": "d753cfa57701ab82c6c1910686b81cfaa1cc15e9895984c47ba7333d127fdd5e"
       },
       "startSha": "5e7adbbe20777365eb1da34cf6592f99e61ec71b",
       "kind": "fork",
       "spawnedAt": "2026-10-15T11:41:37Z",
       "sessionId": "e7f5396f-b928-4bc7-a937-5001284d84be",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "01-per-card-switch",
+        "status": "done",
+        "head_sha": "5f14a3ee248c5915f6728929388fd0cb57ce79ea",
+        "deviations": [
+          "internal/loomcli/cardpack_test.go",
+          "internal/websterengine/cardpack.go",
+          "tools/forkaudit/forkaudit_integration_test.go"
+        ]
+      },
+      "cardShas": [
+        "5f14a3ee248c5915f6728929388fd0cb57ce79ea"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-kickstart-per-card/e7f5396f-b928-4bc7-a937-5001284d84be/subagents/agent-a017273f9d58cf97a.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-kickstart-per-card/e7f5396f-b928-4bc7-a937-5001284d84be/subagents/agent-a017273f9d58cf97a.jsonl"
+      ]
     }
-  }
+  },
+  "seenForkTranscripts": [
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-kickstart-per-card/e7f5396f-b928-4bc7-a937-5001284d84be/subagents/agent-a017273f9d58cf97a.jsonl"
+  ]
 }
