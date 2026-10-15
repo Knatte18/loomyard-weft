@@ -1,8 +1,8 @@
 # Card 13 — Master and the loom driver declare their requirements
 
 **Create:**
-- `plan:internal/websterengine_test#realMasterStarter` -> `type realMasterStarter struct`
-- `plan:internal/websterengine_test#realMasterStarter.StartMaster` -> `func (s realMasterStarter) StartMaster(spec shuttleengine.Spec, gate shuttleengine.GateSpec) (websterengine.MasterHandle, error)`
+- `internal/websterengine_test#realMasterStarter`
+- `internal/websterengine_test#realMasterStarter.StartMaster`
 
 **Uses:**
 - `internal/loomcli#runnerDriverStarter`
