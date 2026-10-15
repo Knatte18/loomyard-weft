@@ -23,6 +23,7 @@ Findings that shaped the design: the batch pack is already one `CardPack` per ca
 - Q7 begin-batch under the per-card layout. Recommended: still resolve the batch for the empty rule and counts; write no pack file.
 - Q8 trace. Recommended: `pack_layout=card` plus one `webster: card pack` line per call.
 - Q9 closing section. Recommended: a `## Start here` section naming the first step; kept although the audit saw no parallelism gain from it in the file layout, since the per-card layout's first step (read every card file) is short and the end of the prompt is still what the fork acts on first.
+  The per-card arm keeps a closing `## Start here` section that the audit found gave the file layout no first-turn gain, so a difference between arms is not attributable to the per-card fetch alone.
 - Per-card reads may raise turns per card, since the fork reads in several smaller parallel turns instead of one; that is what the measurement is for (moved here from Open risks).
 
 ### Turn 4 — lens review
@@ -61,12 +62,20 @@ Six forks (premises, goal-scope, board-fit, pattern-fit, scenarios, leanness); a
 - Binding `plan:` handles at card start: handles bind at record-batch, and the creating fork already holds the member it wrote.
 - `lyx webster card-pack`: forks are refused every `lyx webster` command by the claudeengine hook.
 - Narrowing that fork deny to exempt `card-pack`: weakens a deadlock guard and contradicts the fork prefix and Master template, where `lyx loom` needs no guard change.
+- D7, teaching `tools/forkaudit` the per-card layout in this task: Merge-In runs after Webster in `contracts/recipes/loom-recipe.yaml`, so `glyph-audit-tool` cannot reach this run's Plan-Write, and the run lock refuses a `depends_on` change on a running entry.
+  The card arm moves to a follow-up task (Scope Out); its marker row goes ahead of the `file` row because the per-card prompt also carries a `## Start here` heading, and without it every per-card fork is counted in the file arm, merging the two arms the measurement compares.
 
 ## Review rounds
 
 ### Parent review, round 1
 
 - F1 (BLOCKING, decision): the audit tool's per-card support was out of scope, against `glyph-audit-tool`'s rule that a task adding a pack layout adds its `tools/forkaudit` marker row, and the per-card `## Start here` would class per-card forks as `file`. Fixed: Scope In names the work, new D7 adds a `card` marker row matching `lyx loom card-pack` ahead of the `file` row, the `card` trace value, and a span source from the `card-pack` tool results with the `webster: card pack` lines as cross-check; an acceptance criterion covers it; the Open risks bullet now names the dependency on `glyph-audit-tool` landing first. The span source is the tool results rather than the trace lines alone, since the trace lines carry counts, not spans.
+
+### Burler review, round 2
+
+- F1 (BLOCKING, design): D7 could not reach this run's Plan-Write and its `depends_on` hold existed only in prose. Fixed: D7, its Scope In bullet and its acceptance criterion removed; Scope Out names the card arm as a follow-up task depending on both `glyph-audit-tool` and this task; Open risks keeps only the interim `file` classification; Rejected alternatives records why.
+- F2 (MEDIUM, consistency): D3's Bound understated what the verb writes. Fixed: the Bound names the logger's durable sink, the trace file and header, the Info and Warn lines and the exit sweep.
+- F3 (LOW, consistency): D4's sandbox marker sat after `lyx quarry resolve` and deferred its text. Fixed: the marker sits after `lyx loom lint-pattern`, before `and`, with its fill pinned.
 
 ## Question ledger
 
