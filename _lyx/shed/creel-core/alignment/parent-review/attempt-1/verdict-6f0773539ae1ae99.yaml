@@ -1,0 +1,9 @@
+verdict: approve
+reason: >-
+  The design covers stage 1 as the creel-core entry asks: the daemon, the pool and journal, every verb, holds, pause,
+  and delivery through shuttle gated on idle, tested with fake panes, in the tmux tier and on a hand-added strand.
+  It moves the design into doc.go and leaves module wiring to creel-notices and creel-agents.
+  The departures it records (socket path, program-sender case, reminder backoff) are design details within the entry's direction.
+  No run in flight or parent commit overlaps it.
+question: ""
+superseded: []
