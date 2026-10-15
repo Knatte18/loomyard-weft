@@ -9,4 +9,7 @@ Seen (2026-10-15): in the running pair shed-tackler, the reed shell window held 
 ## Operator decision (2026-10-15)
 
 The folderOpen task chain goes out of the VS Code seeding: it is no longer needed, since runs are watched in their own terminal window, and above all `reed add claude` must not run from inside VS Code.
-Open for the task's scope: whether this covers only batten's Seed-IDE or also `lyx ide spawn`, which writes the same interactive chain (`internal/ideengine/spawn.go`).
+There is one VS Code seeding, shared by every caller; no duplicated seeding code.
+Checked: `ideengine.Spawn` (`lyx ide spawn`) and `ideengine.SeedTask` (batten's Seed-IDE) already share `writeInteractiveConfig`, so the change lands in that one path; `vscode.TaskChainAttachOnly` has no caller.
+
+Operator view, not a decision: a shortcut in VS Code for `lyx a` (`lyx reed attach`) is welcome, run on demand rather than on folder open.
