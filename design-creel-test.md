@@ -1,13 +1,13 @@
-# Test creel stage 1 in a closed sandbox hub
+# Audit creel stage 1 in a closed sandbox hub
 
-`creel-test` · Task · enhancement, creel, reed, shuttle
+`creel-test` · Note · audit, creel
 
 ## Goal
 
 Test creel stage 1 (`internal/creelengine`, `internal/creelcli`, `lyx creel`, landed in `993ff3fc5`) thoroughly, in a closed environment, before anything that works today is switched over to it (`creel-notices`, `creel-agents`).
-Fix the defects the testing finds, on this task's branch.
+This is an audit of what is there, not a code task: it changes no code in lyx.
 
-Operator decision 2026-10-15: creel is tested in its own task, in its own worktree, in a closed environment.
+Operator decision 2026-10-15: creel is tested as an audit run by an orch agent, in its own worktree, in a closed environment.
 Operator decision 2026-10-15 (earlier): build a working creel first, in parallel, tested thoroughly before anything that works today is switched over.
 
 ## Closed environment
@@ -37,9 +37,9 @@ Operator decision 2026-10-15 (earlier): build a working creel first, in parallel
 
 ## Output
 
-- A creel sandbox suite (scenarios with Watch and Verdict, in the `tools/sandbox` format) that can be re-run, beside the existing S9 scenario.
-- Automated tests for every defect found, and its fix.
-- A test report in the PR description: each scenario with OK / WARN / FAIL.
+- A test report: each check with OK / WARN / FAIL and what was seen, committed docs-only under `docs/research/`.
+- Each defect filed as a GitHub issue with `lyx selfreport create`, then taken onto the board.
+- Scenarios worth re-running are listed in the report as proposals for a creel sandbox suite; writing that suite is a later task.
 
 ## Out of scope
 
