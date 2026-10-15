@@ -751,7 +751,7 @@
       "isolated": false,
       "brief": "The implementer stencil asks a fork to compare its edits against the glyph union and also tells it not to, so deviations lists files that house its own target glyphs",
       "body": "## Seen\n\nRecorded in note `glyph-use-audit` (removed 2026-10-15): a Webster fork deviations list mixed in files that probably house its batch own target glyphs, because the implementer stencil asks it to compare against the glyph union and also tells it not to.\n\n## Idea\n\nGive the stencil one rule for what counts as a deviation, matching what `ScopeGuard` checks, and check it again after `kickstart-per-card` lands, since that task rewrites the fork prompt.\n\n## Operator decision (2026-10-15)\n\nFix it now, as a small task: `kickstart-per-card` has landed, so check the implementer prompt as it stands today and give it the one deviation rule that matches `ScopeGuard`.",
-      "status": "running · Discussion-Burler-Fix",
+      "status": "running · Discussion-Bouncer",
       "created": "2026-10-15T11:46:18Z",
       "revised": "2026-10-15T17:35:30Z",
       "run_settings": {
