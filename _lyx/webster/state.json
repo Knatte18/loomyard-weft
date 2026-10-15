@@ -210,7 +210,7 @@
       }
     }
   ],
-  "currentBatch": 0,
+  "currentBatch": 7,
   "masterStrand": "61783571fc7a72646c7e82d2e3c2e5b2",
   "masterSessionId": "882225e9-2a89-4521-9764-61f243c588d9",
   "batches": {
@@ -286,6 +286,23 @@
       "bracketTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-lighter-test-rules/882225e9-2a89-4521-9764-61f243c588d9/subagents/agent-aa61383d16c856a4c.jsonl"
       ]
+    },
+    "7": {
+      "slug": "directive-tests",
+      "cards": [
+        "07-directive-tests",
+        "08-coverage-rule-text"
+      ],
+      "cardHashes": {
+        "07-directive-tests": "cec7f13c7fc592ac67451efd5243d45d9a2e05b3c19555164d6d0ce08d86ba1c",
+        "08-coverage-rule-text": "a37cc96e2170f21cf44d40c6f6c6809c85d3e96b70c7f55488af2b167cbac1c6"
+      },
+      "startSha": "3906dc2d3e4c25a12f48c7a13d46d51215cfdc3e",
+      "kind": "fork",
+      "spawnedAt": "2026-10-15T14:58:27Z",
+      "sessionId": "882225e9-2a89-4521-9764-61f243c588d9",
+      "terminal": false,
+      "status": ""
     }
   },
   "seenForkTranscripts": [
