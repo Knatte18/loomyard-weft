@@ -1,11 +1,11 @@
 {
-  "current_producer": "Webster",
+  "current_producer": "Webster-Bouncer",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Webster",
-    "last": "Batchifier → done",
+    "now": "Webster-Bouncer",
+    "last": "Webster → done",
     "wait": ""
   },
   "history": [
@@ -181,6 +181,21 @@
       "outcome": "done",
       "output": "",
       "at": "2026-10-15T10:09:23Z"
+    },
+    {
+      "producer": "Webster",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYXHUB/glyph-audit-tool/_lyx/webster/summary.md",
+      "at": "2026-10-15T10:40:21Z",
+      "gate_attempts": 0,
+      "gate_spans": [
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-10-15T10:38:34.179857124Z",
+          "end": "2026-10-15T10:40:20.506985835Z"
+        }
+      ]
     }
   ],
   "product": {
