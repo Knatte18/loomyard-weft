@@ -38,6 +38,9 @@ The bound: it guards a caller with no terminal, such as an agent's shell; a call
 Callers re-signed in this card: every `dispatch` call in `TestPrint`, `TestDispatchSet`, `TestDispatchHubWideBoard`, `TestDispatchLayers`, `TestConfigOverRealHub` and `TestConfigReconcileInGitRepo` passes `true`, except the new rows below;
 `runMenuWith` takes the terminal answer and passes it to `menu`;
 `Command`'s RunE passes `cmd.InOrStdin()` to `runConfig`.
+`TestConfigOverRealHub`'s subtest "hub-wide write guard: the menu from a task pair is refused naming the prime" drives `Command()` over a `strings.Reader`, so it would now meet the no-terminal refusal before any listing.
+It is rewritten to call `menu` directly with `terminal` true, over `dirsOf` of the code worktree's Location from `lyxcwd.Resolve`, with `dirs.hubWriteGuard` set to `realHubWriteGuard` of that Location, the board choice as input, a never-called editor and no sync or commit.
+It keeps its assertions: exit 1, a listing naming `board`, an error naming `prime worktree`, and the hub `board.yaml` unchanged, so `menu`'s hub-write guard keeps its only coverage.
 
 Tests (the package is at its test budget, so every test is a row):
 `TestDispatchLayers` gains a `noTerminal` row field passed as `!noTerminal`, and three rows.

@@ -17,7 +17,8 @@ a file `EditPath` scaffolded is removed, a pre-existing file is written back to 
 A comment-only result is not empty and saves as before.
 Every caller inherits it: `Edit` on every layer, and `configcli`'s hub-wide staging copy, whose `editHubWide` already removes the staging file and reports `aborted: <path> unchanged` with no commit on `ErrAborted`; `editOne` and `editLocal` already report their `aborted: ... unchanged` refusal and run no sync.
 The bound: a layer can no longer be emptied through the editor; removing the file stays the way to clear a sparse layer.
-`ErrAborted`'s comment says a pre-existing file is put back to its previous bytes.
+`ErrAborted`'s comment scopes the restore to the empty-result abort: on an empty or whitespace-only result a pre-existing file is put back to its previous bytes and a scaffolded file is removed.
+It keeps the other abort paths described truly: a scaffolded file is removed and a pre-existing file keeps what the editor left.
 `internal/configengine/doc.go`'s `Edit` paragraph and `internal/configcli/doc.go`'s editor paragraph state the empty-result abort.
 
 Tests (both packages are at their test budget, so every test is a row):
@@ -26,7 +27,8 @@ new rows: an empty write over a pre-existing file aborts and restores `original`
 an invalid write, then an empty one, over a pre-existing file aborts and restores `original`, not the invalid bytes the loop's second pass read, so a restore from the per-pass bytes fails it;
 a whitespace-only write over a template scaffold aborts and removes the file;
 a comment-only write (`# nothing yet\n`) over a pre-existing file saves.
-`Edit`'s local branch returns `EditPath`'s error before its own restore, so the pre-existing-file row is its coverage, and `editOne`'s and `editLocal`'s `ErrAborted` arm is already reached by `TestEditOne`'s editor-failure row.
+`Edit`'s local branch returns `EditPath`'s error before its own restore, so the pre-existing-file row is its coverage, and `editOne`'s `ErrAborted` arm is already reached by `TestEditOne`'s editor-failure row;
+`editLocal`'s `ErrAborted` arm stays uncovered, since this card does not change its reporting.
 `TestDispatchHubWideBoard` gains "an empty editor result commits nothing and leaves the hub file": an editor writing whitespace only exits 1 naming `aborted`, zero commits, the board file equal to `seeded`, and no staging file left.
 
 **ImpactSummary:** One branch added inside `EditPath`, reached by `Edit`'s every layer and `editHubWide`'s staging copy; callers already map `ErrAborted`, so no caller changes, and the one existing row that saved an empty scaffold flips to an abort.
