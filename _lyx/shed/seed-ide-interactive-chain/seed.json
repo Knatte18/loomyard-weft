@@ -1,0 +1,8 @@
+{
+  "recipe": "darn",
+  "driver": "llm",
+  "params": {
+    "parent": "main"
+  },
+  "started_at": "2026-10-15T07:54:53Z"
+}
