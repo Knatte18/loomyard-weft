@@ -1,0 +1,11 @@
+---
+round: 1
+focus:
+  - "internal/battencli/overview.go against the parent's `loomrecipe.EntryNumbers` and `Rows` (`internal/loomrecipe/names.go`): does the task's `overviewEntryNumber`/`overviewStage`/`overviewChildStage` use the parent's numbering contract as written (segment collapsing, rows absent from the result, the batten recipe now accepted by `Rows`), and does the stage cell still match what the parent's status pane draws for the same row?"
+  - "The task's per-poll cost against the parent's change: `overviewEntryNumber` calls `loomrecipe.Rows` on every line draw while the pane polls each second, and `resolveChildRecipe` reads a child seed through the parent's pair resolution. Does the result stay lockless and write-free as the `frame` doc and the task's lockless `PeekState` change promise, and do the parent's recipe edits (new `role_prefix` and `on_reroute` keys in `contracts/recipes/loom-recipe.yaml`) parse through `Rows` without changing row order or segment membership?"
+  - "Column and refresh invariants in `internal/battencli/cli.go` and `overview.go`: the stage cell now carries an entry-number prefix on top of the task's orch context line, and the parent changed `internal/statuspane` (`pane.go`). Does the render still hold its widths and the 'every time renders in whole minutes' back-off claim, and does the doc comment in `cli.go` describe both sides' lines accurately?"
+  - "Test economy in `internal/battencli/overview_test.go`: the parent rewrote `TestRenderOverview` cases with `Recipe`/`ChildRecipe` and the task added orch-line tests. Is any merged test now redundant with another (name the covering test), and is any interaction behavior uncovered, such as an orch line above runs whose stage cells carry entry numbers, or `resolveChildRecipe` caching when the seed is absent?"
+  - "`cmd/lyx/testdata/test-budget.yaml`: the parent raised `internal/loomrecipe`; does the merged `internal/battencli` count match the budget row after both sides' test additions, and does the merge leave the file consistent?"
+---
+
+Seed focus drawn from the overlap list (`internal/battencli` and the budget file) and the parent's `loomrecipe`/`statuspane` changes the overlapping code calls.
