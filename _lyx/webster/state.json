@@ -341,7 +341,7 @@
       }
     }
   ],
-  "currentBatch": 0,
+  "currentBatch": 7,
   "masterStrand": "19e432caef90e94f900d46639b05a8fa",
   "masterSessionId": "087ffc57-feef-4893-8162-2e42d2cfed42",
   "batches": {
@@ -396,6 +396,29 @@
       "bracketTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-creel-core/087ffc57-feef-4893-8162-2e42d2cfed42/subagents/agent-a482863979053a5df.jsonl"
       ]
+    },
+    "7": {
+      "slug": "creelengine-pool-verbs",
+      "cards": [
+        "07-creelengine-pool-verbs",
+        "08-creelengine-identity",
+        "09-creelengine-delivery",
+        "10-creelengine-daemon",
+        "11-creel-store-pattern"
+      ],
+      "cardHashes": {
+        "07-creelengine-pool-verbs": "69142cf534337f47f3b33f3b315b472675533d291614124c6b13cc7917fc24b5",
+        "08-creelengine-identity": "fb31b9bfaba36492c5cb173e150937dab72c6a47f3fc0e0fa643500dc5bdff31",
+        "09-creelengine-delivery": "12dede0c4a0b3b85a86fa1775406cd4e7e3da2b2717ed241205d7a485c55d370",
+        "10-creelengine-daemon": "33b9a58bd127edc5b09e54e128faa4f81d450b5ef834f623ec5f031d26e3febb",
+        "11-creel-store-pattern": "d7e624a4fc051642a389aa788924e7ef496ba7c2f3e823966bb0ed0816ec995e"
+      },
+      "startSha": "a4a5f4d569f0e1baa3b1b93cc8f8bd38ecf4cb84",
+      "kind": "fork",
+      "spawnedAt": "2026-10-15T12:55:20Z",
+      "sessionId": "087ffc57-feef-4893-8162-2e42d2cfed42",
+      "terminal": false,
+      "status": ""
     }
   },
   "seenForkTranscripts": [
