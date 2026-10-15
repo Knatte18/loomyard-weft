@@ -1,6 +1,6 @@
 # Run status pane: numbered rows, seconds, round totals, gate time; segment-named sessions
 
-`run-pane-timing` · Task · enhancement, loom, burler, shed, reed · running · PR-Align
+`run-pane-timing` · Task · enhancement, loom, burler, shed, reed · running · PR-Gate
 
 ## Seen
 
