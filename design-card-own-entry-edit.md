@@ -1,6 +1,6 @@
 # Card can require a board-entry edit that the running task's own board lock refuses
 
-`card-own-entry-edit` · Task · bug, loom, stencil · running · Batchifier
+`card-own-entry-edit` · Task · bug, loom, stencil · running · Webster
 
 Imported from [issue #653](https://github.com/Knatte18/loomyard/issues/653).
 
