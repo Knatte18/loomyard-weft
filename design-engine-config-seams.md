@@ -1,6 +1,6 @@
 # Engine-owned config, one neutral guardrail table, provider-blind reed
 
-`engine-config-seams` · Task · enhancement, shuttle, claude, config, reed · running · Discussion-Write
+`engine-config-seams` · Task · enhancement, shuttle, claude, config, reed · running · Discussion-Bouncer
 
 ## Goal
 
