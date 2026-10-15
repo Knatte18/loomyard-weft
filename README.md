@@ -17,14 +17,14 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | **reed: intact launch lines under parallel launches, --focus=false never takes focus**<br>• Parallel shuttle launches corrupt the typed launch line, and --focus=false windows still steal focus | [`reed-launch-fixes`](design-reed-launch-fixes.md) | darn | Publish | 24m | 16m | reed, shuttle |
+| 1 | **reed: intact launch lines under parallel launches, --focus=false never takes focus**<br>• Parallel shuttle launches corrupt the typed launch line, and --focus=false windows still steal focus | [`reed-launch-fixes`](design-reed-launch-fixes.md) | darn | Publish | 24m | 17m | reed, shuttle |
 
 #### Normal priority
 
 | # | Task | Slug | Recipe | At | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | 2 | **Go driver and tackler in shed, for every FSM-driven run**<br>• Move the Go driver and tackler from loomcli into shed so darn, batten and every recipe get them; module config overrides model and budgets | [`shed-tackler`](design-shed-tackler.md) | loom | Plan-Write | 12h | 11h | shed, loom, batten |
-| 3 | **Twill fork0: blind lens review, strict critical fixer, branch-coverage lens**<br>• Plan-Write: fork0 writes the plan, the master spawns blind lens forks and judges as a strict Burler-style fixer; new branch-coverage lens | [`twill-fork0`](design-twill-fork0.md) | loom | Webster-Burler-Fix | 2d | 12h | loom, stencil, burler |
+| 3 | **Twill fork0: blind lens review, strict critical fixer, branch-coverage lens**<br>• Plan-Write: fork0 writes the plan, the master spawns blind lens forks and judges as a strict Burler-style fixer; new branch-coverage lens | [`twill-fork0`](design-twill-fork0.md) | loom | Webster-Bouncer | 2d | 12h | loom, stencil, burler |
 
 ### Ready
 
@@ -52,13 +52,13 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Note | Slug | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| 1 | **Plan-Bouncer and Batchifier pass a plan that webster begin-batch then refuses with delete-before-reference** | [`plan-drift-refusal-route`](design-plan-drift-refusal-route.md) | 54m | 53m | webster, loom |
+| 1 | **Plan-Bouncer and Batchifier pass a plan that webster begin-batch then refuses with delete-before-reference** | [`plan-drift-refusal-route`](design-plan-drift-refusal-route.md) | 54m | 54m | webster, loom |
 
 #### Low priority
 
 | # | Note | Slug | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| 2 | **A hub pause leaves background forks and shells running, so hibernate never confirms**<br>• Pause interrupts turns but not background forks or shells; sessions read busy and hibernate confirmation fails | [`pause-background-work`](design-pause-background-work.md) | 10h | 16m | shuttle, webster |
+| 2 | **A hub pause leaves background forks and shells running, so hibernate never confirms**<br>• Pause interrupts turns but not background forks or shells; sessions read busy and hibernate confirmation fails | [`pause-background-work`](design-pause-background-work.md) | 10h | 17m | shuttle, webster |
 
 ### Enhancements
 
@@ -67,7 +67,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | # | Note | Slug | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | 1 | **Codex CLI as a second shuttle engine: hands-on spike, then codexengine**<br>• Codex CLI as a second engine to offload Claude tokens: short hands-on tests first, then a codexengine for single-session roles | [`codex-engine`](design-codex-engine.md) | 11d | 1d | shuttle |
-| 2 | **finalize: the discrepancy-document conflict shape**<br>• Divergences that cannot be a git conflict get a precomputed document for the resolving agent instead of markers | [`finalize-discrepancy-doc`](design-finalize-discrepancy-doc.md) | 10d | 9d | fabric, loom |
+| 2 | **finalize: the discrepancy-document conflict shape**<br>• Divergences that cannot be a git conflict get a precomputed document for the resolving agent instead of markers | [`finalize-discrepancy-doc`](design-finalize-discrepancy-doc.md) | 10d | 10d | fabric, loom |
 | 3 | **shedrecipe: capability declaration instead of manual seam-threading**<br>• A producer declares what it needs and the registry wires it, instead of a hand-threaded Env passthrough field per layer | [`shedrecipe-capabilities`](design-shedrecipe-capabilities.md) | 10d |  | shed |
 | 4 | **Discussion stage has no sanctioned path to land a repository edit ahead of Plan**<br>• Discussion has no sanctioned path to commit a PATTERN edit ahead of Plan | [`discussion-lands-invariant`](design-discussion-lands-invariant.md) | 9d | 9d | loom |
 | 5 | **Kick-start packs from tool locations through quarry Enclose**<br>• Turn file:line locations from verify failures, lint and audits into member glyphs with quarry enclose, then into a kick-start pack | [`enclose-kickstart`](design-enclose-kickstart.md) | 7d | 3d | quarry |
