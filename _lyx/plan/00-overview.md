@@ -1,6 +1,6 @@
 ---
 format: 5
-approved: false
+approved: true
 language: go
 ---
 
@@ -15,8 +15,8 @@ The cards build the set and its config key first, then the registry, then move t
 1 — engine-set — add EngineSet with its lookup and the shuttlefake set helper
 2 — engine-config-key — add shuttle.yaml's engine: key, refusing an empty value
 3 — engine-capabilities — declare Requirement and the optional capabilities, implemented by Claude
-4 — model-choice — add ModelChoice and export modelspec's engine names
-5 — shuttleengines-registry — add the registry package and move SessionNamer into it
+4 — model-choice — add ModelChoice
+5 — shuttleengines-registry — add the registry package, export modelspec's engine names and move SessionNamer into it
 6 — cross-run-readers — dispatch the three readers per run record through the set
 7 — runner-engine-set — make the Runner constructors take the set at every call site
 8 — per-run-engine — resolve Start's and Open's engine by spec and every other operation's by record

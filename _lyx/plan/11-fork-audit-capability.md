@@ -72,7 +72,7 @@ Webster takes the capability wherever it takes an `Engine` for audits:
 - The eight audit helpers take `shuttleengine.ForkAuditor`; their in-package callers pass the same values they pass today, which satisfy it.
   `TestPendingFindingsText` and `TestAcceptPendingAudit_ContractFiles` hold fixture funcs whose result type is `shuttleengine.Engine`, which no longer satisfies `ForkAuditor`; their result type becomes `shuttleengine.ForkAuditor`.
 - `AuditEngineFrom(engines)` resolves the set's default engine and asserts both interfaces.
-  A default that does not resolve returns the lookup's error.
+  A default that does not resolve returns the lookup's error, a fail-loud wiring guard with no per-row test: `shuttleengines.New` refuses a `cfg.Engine` naming no registered engine (card 5's `build`), so no production input reaches it, and card 1's `TestEngineSet_Lookup` already pins the lookup's error.
   An engine without fork audit is a webster refusal: `webster: shuttle.yaml's engine: "<name>" cannot audit forks, which webster needs; way forward: set engine: in shuttle.yaml to an engine with fork support, then re-run the verb, or under the Webster row re-step the row`.
   The input that reaches it is a `shuttle.yaml` whose `engine:` names a registered engine without `ForkAuditor`; `shuttleengines.New` already refuses an unregistered name, and no engine registered today lacks the capability.
 
@@ -83,7 +83,7 @@ Both wirings that hand Webster its engine assert it through `AuditEngineFrom` an
 
 Tests:
 - `TestRun_Wait_ForkAuditFailure_KeepsTheClassifiedOutcome` gains a row beside its audit-error row: a `ForkSubagents` record over a runner whose engine is `struct{ Engine }` wrapping a `fakeEngine`, which hides its audit methods, finalizes done with the error naming the engine, a nil `ForkAudit` and its run directory kept.
-- `auditengine_test.go` (package `websterengine_test`) adds `TestAuditEngineFrom`, table-driven over `shuttlefake.EngineSet`: a `*shuttlefake.Engine` comes back as the `AuditEngine`; `struct{ shuttleengine.Engine }` wrapping one is refused with the exact refusal text naming `fake` and the way forward; a set whose default is unregistered returns an error wrapping `shuttleengine.ErrEngineNotRegistered`.
+- `auditengine_test.go` (package `websterengine_test`) adds `TestAuditEngineFrom`, table-driven over `shuttlefake.EngineSet`: a `*shuttlefake.Engine` comes back as the `AuditEngine`; `struct{ shuttleengine.Engine }` wrapping one is refused with the exact refusal text naming `fake` and the way forward.
 Raise `internal/websterengine` in `test-budget.yaml` from 202 to 203.
 
 **ImpactSummary:** Drops two methods from the Engine interface; the fork audit's shuttle caller, the registry's forks guard, eight websterengine helpers with their callers and two test fixtures, four deps structs, both Webster wirings, one shedfake placeholder, two Claude doc comments and one refusal row follow.

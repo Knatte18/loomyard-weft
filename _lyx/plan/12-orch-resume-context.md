@@ -11,12 +11,12 @@
 It renders the resume text first, as today, then:
 a default that does not resolve, or an engine without the capability, fails the verb with the JSON error envelope and writes no delivery mark, the verb's existing failure path, so the watcher types the pointer instead;
 the capability error reads `orch: the engine "<name>" cannot render session-start hook context`.
+The unresolved default is a fail-loud wiring guard with no per-row test: `shuttleengines.New` refuses a `cfg.Engine` naming no registered engine (card 5's `build`), so no production input reaches it, and card 1's `TestEngineSet_Lookup` already pins the lookup's error.
 Otherwise it writes `ResumeContext(text)`'s bytes as today.
 `internal/orchcli/resumecontext.go` no longer imports `claudeengine`, and with it no production file outside `internal/shuttleengines` and the engine's own directory imports a concrete engine.
 The orch stays Claude-only (`engine-model-choice` scope), so this changes nothing for the shipped engine.
 
 Tests: `newTestCLI` sets `engines` to `shuttleengine.NewEngineSet("claude", ...)` over `claudeengine.New()`, so the existing rows render through the Claude capability unchanged.
-`TestResumeContext_PrintsHookJSONPerPhaseAndFailsWithoutMark` gains a row whose receiver's `engines` is `shuttlefake.EngineSet(&shuttlefake.Engine{})`, an engine without the capability: exit 1, an error envelope naming `fake`, and no resume mark;
-and a row whose `engines` is `shuttleengine.NewEngineSet("missing", ...)` over `claudeengine.New()` registered as `claude`, a default that does not resolve: exit 1, an error envelope wrapping `ErrEngineNotRegistered`'s text, and no resume mark.
+`TestResumeContext_PrintsHookJSONPerPhaseAndFailsWithoutMark` gains a row whose receiver's `engines` is `shuttlefake.EngineSet(&shuttlefake.Engine{})`, an engine without the capability: exit 1, an error envelope naming `fake`, and no resume mark.
 
 **ImpactSummary:** One orchcli verb body and its test fixture; the hook output for the Claude engine is byte-identical.

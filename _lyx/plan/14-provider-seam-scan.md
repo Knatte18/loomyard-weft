@@ -1,7 +1,7 @@
 # Card 14 — provider-seam-scan
 
 **Edit:**
-- `internal/shuttleengine#TestProviderSeamImportRule`
+- `internal/shuttleengine/seam_enforcement_test.go`
 - `PATTERN.md`
 - `pattern/PATTERN-shuttle-provider-seam.md`
 - `internal/shuttleengine/doc.go`
@@ -14,6 +14,7 @@ A file violates the rule when it imports a package under `github.com/Knatte18/lo
 Test files are out of scope and keep importing `claudeengine` directly.
 The scan body becomes a helper over a base directory, and the test is table-driven over it: a temp tree whose `internal/x/x.go` imports `internal/shuttleengine/claudeengine` reports that file; a temp tree whose import sits in `internal/shuttleengine/claudeengine/a.go` or `internal/shuttleengines/b.go` reports none; and the real module reports none, with `scankit.RequireFloor` on the files scanned.
 Its `//testtiming:keep` reason becomes: scans every production file's imports for a concrete engine package outside its own directory and the registry, which no other test reads.
+The file header states the module-wide rule: only `internal/shuttleengines` and an engine's own directory import a concrete engine.
 The per-package allowlist scans in `cliwire` and `orchengine` stay as they are, `cliwire`'s already shrunk by card 5.
 
 `PATTERN.md`'s entry becomes, under the 320-rune cap:

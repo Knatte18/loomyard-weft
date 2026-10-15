@@ -7,6 +7,7 @@
 - `plan:internal/shuttleengines#New` -> `func New(cfg shuttleengine.Config) (shuttleengine.EngineSet, error)`
 - `plan:internal/shuttleengines#build` -> `func build(cfg shuttleengine.Config, constructors map[string]constructor) (shuttleengine.EngineSet, error)`
 - `plan:internal/shuttleengines#Names` -> `func Names() []string`
+- `plan:internal/modelspec#EngineNames` -> `func EngineNames() []string`
 - `plan:internal/shuttleengines#SessionNamer` -> `func SessionNamer() reedengine.SessionNamer`
 - `internal/shuttleengines/shuttleengines_test.go`
 - `internal/shuttleengines/seam_enforcement_test.go`
@@ -31,6 +32,7 @@
 It refuses, before returning a set, a `cfg.Engine` that names no registered engine, whichever config layer set it: `shuttle: shuttle.yaml's engine: "<name>" names no registered engine; registered engines: <sorted names>; way forward: set engine: in shuttle.yaml to one of them`.
 D8's refusal of an engine that declares forks without fork audit lands in card 11, since every `Engine` satisfies `ForkAuditor` until card 11 drops the audit methods from it.
 `Names` returns the registry's names, sorted.
+In `internal/modelspec/modelspec.go`, `EngineNames` returns a sorted copy of `knownEngines`' keys, so a caller cannot change the closed set, and `modelspec` gains no import, so its leaf allowlist is untouched (D12).
 `SessionNamer` moves here from `cliwire` with its doc comment and keeps returning `claudeengine.New()` until `engine-config-seams` makes it per provider.
 The package is told its `Config` and never imports `internal/lyxcwd` (`PATTERN-told-geometry`).
 
@@ -48,6 +50,8 @@ its shuttle row names `internal/shuttleengines` among its packages, and its "Cla
 `shuttleengines_test.go` (package `shuttleengines`) adds:
 - `TestNew`, table-driven: the template config builds a set whose default resolves to a `*claudeengine.Claude` and whose `Names` are `[claude]`; a `Config{Engine: "bogus"}` is refused with an error naming `bogus`, the registered engines and `engine:` in `shuttle.yaml`; a config loaded by `shuttleengine.LoadConfig` over a temp anchor whose local layer file, `configengine.LocalFile(anchor, "shuttle")`, holds `engine: bogus` is refused the same way.
 - `TestNames_EqualModelspecEngineNames`: `Names()` equals `modelspec.EngineNames()` (D12).
+  It then overwrites the first element of the slice `modelspec.EngineNames()` returned and asserts a fresh `modelspec.EngineNames()` still equals `Names()`, pinning that a caller gets a copy of the closed set.
+  Sort order cannot be pinned while `claude` is the only registered name.
 
 `seam_enforcement_test.go` adds `TestToldGeometryInvariant_AllowlistOnly`, which runs `scankit.AssertImportAllowlistNoStale` over `internal/shuttleengines` with the allowlist `internal/shuttleengine`, `internal/shuttleengine/claudeengine` and `internal/reedengine`, the shape `internal/reportengine`'s seam test has.
 Add the row `internal/shuttleengines: 3` to `test-budget.yaml`, in its sorted place after `internal/shuttleengine/claudeengine`.
