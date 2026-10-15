@@ -34,3 +34,9 @@ A per-session follow state, shown as a clickable button on the reed status bar:
 - Clicking the button turns follow back on and jumps to the newest agent window, else the overview.
 
 The button is one entry in the configurable button set of note `reed-status-buttons`.
+
+## Orch call (2026-10-15), not an operator decision
+
+The operator started this task before the `reed-status-buttons` prototype.
+This task builds the follow state, its rules above and the one follow button on the reed status bar.
+The configurable button set stays with `reed-status-buttons`, which later takes the follow button into its set.
