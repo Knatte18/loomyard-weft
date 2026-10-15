@@ -1,6 +1,6 @@
 # Webster fork read audit as a tool under tools/
 
-`glyph-audit-tool` · Task · enhancement, webster · running · PR-Gate
+`glyph-audit-tool` · Task · enhancement, webster · awaiting · PR-Gate
 
 ## Seen
 
