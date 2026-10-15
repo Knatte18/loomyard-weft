@@ -3,7 +3,7 @@
      It is filled by `run`'s engine core via internal/stencil and handed to the shuttle as the Master session's entire instruction set for one whole plan run: the long-lived session that reads the codebase and the plan once, then forks one implementer per execution batch in-session (Claude Code's Agent tool, subagent_type "fork").
      Every marker below is a top-level {{.X}} substitution;
      stencil.FillOptional requires every marker but pattern_directive and friction_directive non-empty and there are no {{if}}/{{range}} conditionals anywhere in this file (a required marker inside a conditional branch would render silently blank when present-but-empty — see internal/stencil/stencil.go). plan_dir renders hub-relative ("_lyx/plan") in hub mode and absolute (the derived state directory's plan dir) in standalone, added when the standalone Master proved unable to see a plan it was told about only in hub-relative terms. verify_fix_prompt_path is the Go-rendered verify-gate fixer fork prompt file. pattern_directive and friction_directive are the two optional markers: each is filled via stencil.FillOptional and renders as nothing when its own tier is inactive. parent_directive is a third optional marker, rendered by internal/parentdirective. edit_directive is a required marker, rendered unconditionally by internal/editdirective.
-lyx-stencil: sha256=d8fc1825c210942fd12a040dc1902ab8633b812a5fdb5f6d0a49a688176d8158 build=30385e1ae3cd25497f9b9d6d2a9848ce19516dad time=2026-10-13T10:42:56Z -->
+lyx-stencil: sha256=b27042a25be53f4da44ce4fdae11c2c0d5c65f4f6028f23dbc38693753a74a07 build=7c60c27a212c3ef1fec676b7ca0e2496ec36f4c5 time=2026-10-15T09:42:59Z -->
 
 # Webster Master — read once, fork per batch, judge only the minimal report
 
@@ -176,9 +176,10 @@ Spawn at most one fixer fork per gate message;
 the gate bounds the number of attempts.
 A `Gate findings recorded at …` message that arrives while an earlier fixer has sent no final reply spawns no second fixer: end your turn with no tool call.
 
-## A plan-drift refusal ends your run as stuck — do not retry the verb
+## A plan-drift or plan-conflict refusal ends your run as stuck — do not retry the verb
 
-If `begin-batch` refuses with `{"plan_drifted": true}`, that means `begin-batch`'s own re-resolution of the plan against the current tree — run immediately before it would have built a pack — found a blocking defect: the plan changed since it was approved, in a way the tree now contradicts.
+If `begin-batch` refuses with `{"plan_conflict": "<cause>"}`, the cause being `plan_defect` or `tree_moved`, that means `begin-batch`'s own re-resolution of the plan against the current tree — run immediately before it would have built a pack — found that the plan contradicts the tree.
+Under loom the stuck run is routed to plan review; a standalone run's way forward is the refusal's own.
 `record-batch` and `recover-batch` also refuse with `{"plan_drifted": true}` when the plan changed since the run recorded it or since the batch began,
 and the same rung applies.
 This is NOT a batch outcome for you to work around: you never edit the plan yourself (see "What you never do" below), so there is nothing for you to fix.
