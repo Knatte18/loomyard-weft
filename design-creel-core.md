@@ -1,6 +1,6 @@
 # creel stage 1: the one way to reach an agent, standalone
 
-`creel-core` · Task · feature, creel, reed, shuttle · running · Loom-Preflight
+`creel-core` · Task · feature, creel, reed, shuttle · running · Discussion-Write
 
 ## This task: stage 1
 
