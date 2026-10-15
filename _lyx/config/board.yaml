@@ -22,3 +22,4 @@ labels:
     shed: the phase machine, its recipes and drivers
     orch: the hub orchestrator session
     creel: the message layer every agent, program and operator uses to reach an agent
+    claude: the Claude Code engine, shuttleengine/claudeengine and its config
