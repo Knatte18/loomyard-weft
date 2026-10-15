@@ -1,4 +1,4 @@
-<!-- lyx-stencil: sha256=786550240e251e22c3c33116a859034321b994579d5bf60e97c76b26d34d7c12 build=d4824a3d68de466ba3db5015cf6212f7d41126f7 time=2026-10-14T16:27:00Z -->
+<!-- lyx-stencil: sha256=bb7b49986f86ee9679e72ec1b1cc319f136dc9cd75608273a29c4a071b6ad1ee build=da58615cdfa6ed3e9c60550f0a82bc85f0215d84 time=2026-10-15T07:54:26Z -->
 
 # Webster implementer job — read your cards, implement, commit, report
 
@@ -50,7 +50,7 @@ For EACH card file listed above, in the order listed:
    A non-zero exit fails the card exactly like the gate in step 3 — there is no separate "deferred verify" concept;
    every card's gate (the steps above, plus its own `verify:` when it declares one) is checked right after that card's own commit, never bundled into a later card.
 
-If any card's gate fails, or a test the card broke fails, and you cannot fix it within your self-fix bound (see next section), stop and report `status: FAILED` — do not continue to a later card on top of a broken one.
+If any card's gate fails, or a test the card broke fails, and you cannot fix it within your self-fix bound (see next section), stop and report `status: FAILED` — do not continue to a later card on top of a broken one.{{.kickstart_pack_inline}}
 
 ## The sandbox rule
 
