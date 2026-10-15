@@ -1,0 +1,9 @@
+verdict: approve
+reason: >-
+  The design gives the implementer body one deviation rule matching ScopeGuard, as the board entry asks,
+  fixes ScopeGuard where the entry's bug now lives since the guard builds the deviation list,
+  and points the plan spec's stale comparison at the guard;
+  F12 and Weaver's deviation handling stay with their own notes,
+  and neither peer run, engine-usage-readers or card-own-entry-edit, changes the same files or behaviour.
+question: ""
+superseded: []
