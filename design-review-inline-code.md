@@ -27,3 +27,20 @@ Code pasted into its context does not count as read the way its own Read calls d
 
 Possible answer (the orch's idea, not discussed): label each pasted block with its file and line range, and open the paste with a list of every file and range it holds, so the reviewer checks that list before a read.
 The `fan-master-preread` lab used the same kind of reading manifest for forks; whether reviewers follow it is untested.
+
+## A glyph pack for reviewers (from note `glyph-use-audit`, 2026-10-15)
+
+The Burler side of the kick-start pack, issue #228: a pack of the reviewed glyphs injected once before the reviewer's explore phase, so every lens fork inherits it (the operator's architecture correction on #228).
+Measured basis from before: quarry's `results/2026-09-06-kickstart` (`bench/loomyard-eval/ladder/results/2026-09-06-kickstart/conclusion.md`, commit `d2e492d`).
+The Webster pack audits (`docs/research/glyph-audit-2026-10-12`, `-10-13`, `-10-15`) found too little gain to build it yet: forks read about 20 % less but explore as much.
+Take it up only if the per-card pack of task `kickstart-per-card` shows a clear gain when measured with `tools/forkaudit`.
+
+### The pack is the read set (was note pack-is-the-read-set)
+
+Seen in fan-lab 2026-10-10: a solo `opus[medium]` reviewer given a kick-start pack ("read all listed spans first") read the pack and then explored about 20 more tool calls, so the pack came on top of exploration instead of replacing it.
+Neither the prompt nor the ladder card said to stay with the pack.
+
+The reviewer prompt would say the pack is the read set:
+- the reviewer reads the pack's spans and treats them as read;
+- any read beyond them needs a named gap (a caller or spawned process one hop out), within a small tool-call budget;
+- the reviewer ends with one line per extra read saying why the pack lacked it (the fork rule from `fan-master-preread` variant D).
