@@ -1,15 +1,15 @@
-<!-- lyx-stencil: sha256=1bc6c33254e10745ee5406f92be8fa76a5429319e1754ffd2af7d590c0d28f15 build=0850f76e44d4328c27ab16d0bea13c08c7e0eb8e time=2026-10-14T16:52:39Z -->
+<!-- lyx-stencil: sha256=fc878e747ddffb6250cf3d0486dbd789ec696918733666cbd9b9c309c50238ce build=530c339e901d20b7ea6c5103c207ac92e6d7265c time=2026-10-15T16:12:28Z -->
 
-# Discussion spec — the decision record and the support log
+# Discussion spec — the decision record, the support log and the relevant list
 
-> **Status: Contract — pinned.** This doc pins the format of the two files a design step writes: the decision record and the support log.
+> **Status: Contract — pinned.** This doc pins the format of the three files a design step writes: the decision record, the support log and the relevant list.
 > Durable reference doc — kept, not deleted on landing.
 > `internal/discussionparser` checks the format.
 
 ## The decision record
 
-The decision record is the plan writer's sole input;
-it never reads anything else out of the discussion directory.
+The decision record is the plan writer's design input, and `relevant.md` is its code head start;
+the plan writer reads nothing else from the discussion directory.
 It carries these H2 sections, in this exact order, and no others besides the optional eighth:
 
 1. `## Goal`
@@ -19,8 +19,8 @@ It carries these H2 sections, in this exact order, and no others besides the opt
 5. `## Auto-mode assumptions`
 6. `## Open risks`
 7. `## Acceptance criteria`
-8. `## Notes for the plan writer` (optional — a non-exhaustive head start for the plan writer, never a completeness requirement;
-   the plan writer explores the codebase itself)
+8. `## Notes for the plan writer` (optional — design hints for the plan writer, never a completeness requirement;
+   a hint may name the symbol it is about)
 
 No frontmatter: no `format:` field, no `approved:` field.
 
@@ -55,3 +55,29 @@ It carries these H2 sections, in this exact order:
 3. `## Review rounds` — seeded with the header and a single line reading `_No rounds yet._`;
    the review appends round entries here later.
 4. `## Question ledger` — every open and resolved question, including any self-picks made under autonomous mode.
+
+## The relevant list
+
+`relevant.md` is the third file in `_lyx/discussion/`, beside the decision record and the support log.
+It lists the files, and the members in them, that the writer read and found relevant, each with one line of why.
+The list of code the writer read belongs here, never in the decision record.
+
+Loom's Discussion-Write lead alone writes the file; a darn writer does not.
+The writer records only what it already read and never searches further to fill the list.
+The list is a head start for the plan writer, never a completeness claim: the plan writer explores the codebase itself.
+
+The format is a markdown bullet list, optionally under one H1 title:
+
+- Each top-level bullet opens with one backticked worktree-relative file path.
+- The path is followed by backticked member names in that file, in plain Go spelling and unqualified (`PlanTable`, `Config.Validate`), wherever the writer read specific members.
+- Then comes ` — ` (space, em dash, space) and one line saying why the file is relevant.
+- No glyphs, signatures, `file:line` citations or code excerpts.
+- No nested bullets and no other non-blank line.
+
+An example entry:
+
+```markdown
+- `internal/x/y.go` `PlanTable`, `Config.Validate` — builds the table the new column joins
+```
+
+`internal/discussionparser` checks a present list; a missing list is never a finding.
