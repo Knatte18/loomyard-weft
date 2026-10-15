@@ -3,12 +3,12 @@
 **Create:**
 - `contracts/stencils/twill/twill-judge-critical.md`
 - `contracts/stencils/twill/twill-judge-plain.md`
-- `plan:contracts/stencils#TwillJudgeCritical` -> `var TwillJudgeCritical []byte`
-- `plan:contracts/stencils#TwillJudgePlain` -> `var TwillJudgePlain []byte`
-- `plan:internal/twilldirective#CriticalJudge` -> `type CriticalJudge struct`
-- `plan:internal/twilldirective#criticalJudgeStencil` -> `const criticalJudgeStencil = "twill-judge-critical"`
-- `plan:internal/twilldirective#plainJudgeStencil` -> `const plainJudgeStencil = "twill-judge-plain"`
-- `plan:internal/twilldirective#filledCriticalJudge` -> `func filledCriticalJudge() *CriticalJudge`
+- `contracts/stencils#TwillJudgeCritical`
+- `contracts/stencils#TwillJudgePlain`
+- `internal/twilldirective#CriticalJudge`
+- `internal/twilldirective#criticalJudgeStencil`
+- `internal/twilldirective#plainJudgeStencil`
+- `internal/twilldirective#filledCriticalJudge`
 
 **Edit:**
 - `contracts/stencils/twill/twill-directive.md`
