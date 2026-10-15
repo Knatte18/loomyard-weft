@@ -17,7 +17,9 @@ Each card then says: read this card's kick-start pack first; it is, to begin wit
 
 ## Idea
 
-- Split the pack by card and hand each card's part to the fork when it starts that card, not all at batch start.
+- Today's pack is one file per batch, `<batch>-pack.md`, already sectioned under each card's path; only the instruction makes it batch-wide.
+  The cheapest form is therefore a new fragment text behind the switch: "before card N's first edit, read card N's section of the pack in one parallel turn", with no change to the pack file.
+  The heavier form splits the pack into one file per card and hands each to the fork when it starts that card.
 - Replace the read-all-first instruction with a per-card one: before the card's first edit, read its whole pack in one parallel turn.
 - Frame the card pack as complete for a start, so the fork reads further only when the card needs it.
 - Combine with putting the span code itself into the pack (separate idea from the same audit), so a card's pack is one read.
