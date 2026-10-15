@@ -1,12 +1,11 @@
 {
-  "current_producer": "Discussion-Bouncer",
+  "current_producer": "Discussion-Burler-Review",
   "state": "running",
   "error": "",
-  "pending_by": "shed",
   "pause_requested": false,
   "activity": {
-    "now": "Discussion-Bouncer",
-    "last": "Discussion-Bouncer → awaiting",
+    "now": "Discussion-Burler-Review",
+    "last": "Discussion-Bouncer → bounced to Discussion-Burler-Review",
     "wait": ""
   },
   "history": [
@@ -190,6 +189,15 @@
       "outcome": "awaiting",
       "output": "/home/knatte/Code/loomyard-LYXHUB/engine-model-choice/_lyx/reviews/discussion/round-3-bouncer-ledger.md",
       "at": "2026-10-15T14:46:18Z"
+    },
+    {
+      "producer": "Discussion-Bouncer",
+      "outcome": "stuck",
+      "output": "/home/knatte/Code/loomyard-LYXHUB/engine-model-choice/_lyx/reviews/discussion/round-3-bouncer-ledger.md",
+      "at": "2026-10-15T14:47:35Z",
+      "budget_exempt": true,
+      "routed_to": "Discussion-Burler-Review",
+      "by": "shed"
     }
   ],
   "product": {
