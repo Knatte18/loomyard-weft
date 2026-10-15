@@ -1,13 +1,13 @@
 # Card 2 — sleepjournal
 
 **Create:**
-- `plan:internal/sleepjournal#Interval` -> `type Interval struct`
-- `plan:internal/sleepjournal#Args` -> `func Args() []string`
-- `plan:internal/sleepjournal#Parse` -> `func Parse(data []byte) ([]Interval, error)`
-- `plan:internal/sleepjournal#Read` -> `func Read(out []byte, runErr error) ([]Interval, string)`
-- `plan:internal/sleepjournal#TestParse` -> `func TestParse(t *testing.T)`
-- `plan:internal/sleepjournal#TestLeafInvariant_StandardLibraryOnly` -> `func TestLeafInvariant_StandardLibraryOnly(t *testing.T)`
-- `plan:tools/tokencount#TestSleepsFromJournal` -> `func TestSleepsFromJournal(t *testing.T)`
+- `internal/sleepjournal#Interval`
+- `internal/sleepjournal#Args`
+- `internal/sleepjournal#Parse`
+- `internal/sleepjournal#Read`
+- `internal/sleepjournal#TestParse`
+- `internal/sleepjournal#TestLeafInvariant_StandardLibraryOnly`
+- `tools/tokencount#TestSleepsFromJournal`
 - `internal/sleepjournal/doc.go`
 - `internal/sleepjournal/testmain_test.go`
 

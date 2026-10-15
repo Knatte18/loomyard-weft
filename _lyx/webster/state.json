@@ -1,11 +1,11 @@
 {
   "runGuid": "84d72273839dcd706e2e56031904ba2f",
-  "planFingerprint": "5485205ca4fbdd7983fba4fa221432c056fc05abcf9b562e9f052c833042fc15",
+  "planFingerprint": "4e8f440fdd0a22e867c7f6abf0e7776a7cee4f221c31561c4c4168accd9c9ab6",
   "planFileHashes": {
     "00-overview.md": "9c694fb533885df6fd044b3372867519483108cef436ce2d9f625e066f7a6b4b",
-    "01-durfmt.md": "3c01c2ef9d2defe824f614355311000b8db23c2ba41d96c3ad5556901f1d9353",
-    "02-sleepjournal.md": "510c3b1c49f3be13011654189741ceb25c666121e4ea42962781e418b08875d6",
-    "03-settle-records-shedrun.md": "36f469fd7e3d8506577a6583c5cd033b7956c9c13a0fcea0ed228596b6842699",
+    "01-durfmt.md": "6c9ba6c4067053b3c9b40048d1a3511824aea5f2baa0c9239d754df24450b094",
+    "02-sleepjournal.md": "112670d3e7e9649cf7500ca1d5eb754b23b5688d087aace0125065003867c166",
+    "03-settle-records-shedrun.md": "e26b14d62bdeaadc1501302635b04428979db898f76646ee8fecb7cedb600503",
     "04-caller-label.md": "87c57f0d93b7e8ad875cbbfbef0f67aa9fe899a516debde360e3a8df4e2dcac9",
     "05-history-caller-field.md": "63c468f964b83d7c4fbc7783c1c43cfe2fb3a342618b5e1fe64e5adb0d0ba9d5",
     "06-caller-label-wiring.md": "c7edd16d675240584d9cb6b877b5f5d71ae2aa7ce8a7fb1633d0cfa527537bb2",
@@ -308,7 +308,7 @@
       }
     }
   ],
-  "currentBatch": 1,
+  "currentBatch": 0,
   "masterStrand": "9b5d66aec3da73a49c887c9db722ae35",
   "masterSessionId": "4bda0955-d804-438f-978f-3ec2ff46fb8f",
   "batches": {
@@ -320,15 +320,36 @@
         "03-settle-records-shedrun"
       ],
       "cardHashes": {
-        "01-durfmt": "3c01c2ef9d2defe824f614355311000b8db23c2ba41d96c3ad5556901f1d9353",
-        "02-sleepjournal": "510c3b1c49f3be13011654189741ceb25c666121e4ea42962781e418b08875d6",
-        "03-settle-records-shedrun": "36f469fd7e3d8506577a6583c5cd033b7956c9c13a0fcea0ed228596b6842699"
+        "01-durfmt": "6c9ba6c4067053b3c9b40048d1a3511824aea5f2baa0c9239d754df24450b094",
+        "02-sleepjournal": "112670d3e7e9649cf7500ca1d5eb754b23b5688d087aace0125065003867c166",
+        "03-settle-records-shedrun": "e26b14d62bdeaadc1501302635b04428979db898f76646ee8fecb7cedb600503"
       },
       "startSha": "4ebb73ff31750a9d92e5164a690a072bcbda1b13",
       "kind": "recovery",
       "spawnedAt": "2026-10-15T12:32:45Z",
-      "terminal": false,
-      "status": "",
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "01-durfmt",
+        "status": "done",
+        "head_sha": "b66a229c9e410627a345c3836c13be27b9e16146",
+        "deviations": [
+          "internal/arbiterstop/holdreading.go",
+          "internal/arbiterstop/holdreading_test.go",
+          "internal/battencli/drive.go",
+          "internal/battencli/publishretry_test.go",
+          "internal/durfmt/testmain_test.go",
+          "internal/loomcli/drivewiring.go",
+          "internal/sheddriver/drive.go",
+          "internal/sheddriver/driverules.go",
+          "internal/sleepjournal/sleepjournal.go",
+          "internal/sleepjournal/testmain_test.go",
+          "tools/tokencount/sleep.go"
+        ]
+      },
+      "cardShas": [
+        "b66a229c9e410627a345c3836c13be27b9e16146"
+      ],
       "forkTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-report-timing/4bda0955-d804-438f-978f-3ec2ff46fb8f/subagents/agent-a410985c520cdf01d.jsonl"
       ],

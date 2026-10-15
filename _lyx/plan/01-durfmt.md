@@ -1,10 +1,10 @@
 # Card 1 — durfmt
 
 **Create:**
-- `plan:internal/durfmt#FormatMinutes` -> `func FormatMinutes(d time.Duration) string`
-- `plan:internal/durfmt#FormatSeconds` -> `func FormatSeconds(d time.Duration) string`
-- `plan:internal/durfmt#TestFormat` -> `func TestFormat(t *testing.T)`
-- `plan:internal/durfmt#TestLeafInvariant_StandardLibraryOnly` -> `func TestLeafInvariant_StandardLibraryOnly(t *testing.T)`
+- `internal/durfmt#FormatMinutes`
+- `internal/durfmt#FormatSeconds`
+- `internal/durfmt#TestFormat`
+- `internal/durfmt#TestLeafInvariant_StandardLibraryOnly`
 - `internal/durfmt/doc.go`
 - `internal/durfmt/testmain_test.go`
 

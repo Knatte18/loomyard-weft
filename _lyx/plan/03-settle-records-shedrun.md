@@ -1,22 +1,22 @@
 # Card 3 — settle-records-shedrun
 
 **Create:**
-- `plan:internal/shedrun#StopKey` -> `type StopKey struct`
-- `plan:internal/shedrun#SettleRecord` -> `type SettleRecord struct`
-- `plan:internal/shedrun#SettlerGoRule` -> `const SettlerGoRule = "go-rule"`
-- `plan:internal/shedrun#SettlerTackler` -> `const SettlerTackler = "tackler"`
-- `plan:internal/shedrun#SettlerArbiter` -> `const SettlerArbiter = "arbiter"`
-- `plan:internal/shedrun#SettlerParent` -> `const SettlerParent = "parent"`
-- `plan:internal/shedrun#SettleRestep` -> `const SettleRestep = "restep"`
-- `plan:internal/shedrun#SettleVerifyRetry` -> `const SettleVerifyRetry = "verify-retry"`
-- `plan:internal/shedrun#SettleHandOver` -> `const SettleHandOver = "hand-over"`
-- `plan:internal/shedrun#SettleSpawn` -> `const SettleSpawn = "spawn"`
-- `plan:internal/shedrun#SettleHandBack` -> `const SettleHandBack = "hand-back"`
-- `plan:internal/shedrun#SettleBusyExit` -> `const SettleBusyExit = "busy-exit"`
-- `plan:internal/shedrun#SettleRunningExit` -> `const SettleRunningExit = "running-exit"`
-- `plan:internal/shedrun#SettleMoved` -> `const SettleMoved = "moved"`
-- `plan:internal/shedrun#ParseSettleRecords` -> `func ParseSettleRecords(data []byte) ([]SettleRecord, []error)`
-- `plan:internal/shedrun#TestParseSettleRecords` -> `func TestParseSettleRecords(t *testing.T)`
+- `internal/shedrun#StopKey`
+- `internal/shedrun#SettleRecord`
+- `internal/shedrun#SettlerGoRule`
+- `internal/shedrun#SettlerTackler`
+- `internal/shedrun#SettlerArbiter`
+- `internal/shedrun#SettlerParent`
+- `internal/shedrun#SettleRestep`
+- `internal/shedrun#SettleVerifyRetry`
+- `internal/shedrun#SettleHandOver`
+- `internal/shedrun#SettleSpawn`
+- `internal/shedrun#SettleHandBack`
+- `internal/shedrun#SettleBusyExit`
+- `internal/shedrun#SettleRunningExit`
+- `internal/shedrun#SettleMoved`
+- `internal/shedrun#ParseSettleRecords`
+- `internal/shedrun#TestParseSettleRecords`
 - `internal/shedrun/settle_test.go`
 
 **Delete:**
