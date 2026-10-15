@@ -14,7 +14,6 @@ Out:
 - The measurement itself: re-running the audit scripts once runs have gone through each layout (board entry, "Not part of this task").
 - Any change to the pack's content, to `kickstart_pack`'s meaning, to the pack-off prompt, to the recovery prompt or to the verify-fix prompt.
 - Editing any hub's own `webster.yaml`: a layer lacking the new key takes the template default.
-- Cleaning up a `<batch>-pack.md` left by an earlier begin-batch of the same batch; the pack-off path leaves one today the same way, and no prompt names it.
 
 ## Decisions
 
@@ -63,6 +62,7 @@ Rationale: this follows the existing per-mode fragment pattern (`-plain`/`-pack`
 `RenderForkPrompt` gains the layout as an input, from `deps.Config.KickstartPackFile` at its begin-batch call site.
 For the inline layout it returns a nil `packFile` and the pack inside the prompt, so begin-batch writes no `<batch>-pack.md`.
 The empty-pack rule from `1e39afc10` (no resolved or unresolved entry on any card builds no pack and logs `empty`) holds in both layouts, since it is decided in `buildKickstartPack` before the layout matters.
+A `<batch>-pack.md` an earlier file-layout begin-batch of the same batch wrote stays on disk; the inline prompt never names it, as the pack-off prompt never does today, so the fork has no route to it.
 
 Rationale: the layout is a render concern, and the existing nil-`packFile` path already tells begin-batch not to write the file.
 
@@ -97,7 +97,8 @@ Rationale: the audit greps these lines per batch; one key with a value on every 
 - With `kickstart_pack_file: false` and a non-empty pack:
   - no `<batch>-pack.md` is written;
   - the prompt has no `## Start here` section;
-  - its FRESH-READ, locate step and `## Kick-start pack` section text equal the pack-on fragment bodies at `1e39afc10^`, each banner stripped;
+  - each new inline fragment's body, banner stripped, equals the matching pack-on fragment body at `1e39afc10^`, banner stripped;
+  - the prompt's FRESH-READ, locate step and `## Kick-start pack` section equal those bodies with their markers filled (`specs_dir` with the deployed specs directory, `pack_cards` with the per-card subsections);
   - the `## Kick-start pack` section, with its per-card subsections, sits between the per-card closing paragraph and `## The sandbox rule`.
 - Pack off, language-none, an empty pack and the recovery prompt render the bytes they do today under either value of `kickstart_pack_file`.
 - The `webster: kickstart pack` line carries `pack_layout=file`, `pack_layout=inline` or `pack_layout=none` after `unresolved`, as D5 says.
