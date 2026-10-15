@@ -83,7 +83,19 @@ Every lens returned a report.
 
 ## Review rounds
 
-_No rounds yet._
+### Round 2
+
+- F1 M — the attach `Requires` check read `forks` from the attaching spec, not the record that decides the audit: fixed in D4; D7 now fails `Wait` over a fork-authorized record whose engine lacks fork audit; acceptance extended.
+- F2 M — an attach refusal named the alias way forward, which cannot clear it: fixed in D8 with `lyx reed remove <strand guid>` then a re-step, the way forward `attach.go` already gives for a failed superseded-strand removal; a finished run is harvested without the check (Q12).
+- F3 L — Webster's default-engine bound omitted a changed `engine:` default: fixed in D7's bound and R4, handed to `codex-engine`.
+- F4 L — `InterruptSettle`'s failure behaviour was open: fixed in D4; an error that the callers log, then wait the longest settle they resolved (Q13).
+
+### Round 3
+
+- F1 M — D8's attach way forward claimed the next probe answers not found at once, but `attach.go` errors on an untracked record younger than twice `startup_timeout_s`: fixed in D8; the way forward re-steps once the record is older than that, and the acceptance bullet asserts the refusal names the wait.
+- F2 M — D8 skipped a refusal-spec row without a reason: fixed in D8 with the unreachability reason, and R5 hands the loom rows to `engine-model-choice` and `codex-engine`.
+- F3 L — D4's attach bullet omitted the finished-run exemption: fixed with an exception clause pointing at D8.
+- F4 N — Webster's audit-engine conditions were split between D7's bound and R4: fixed; D7's bound states every condition and R4 names only the owners.
 
 ## Question ledger
 
@@ -98,3 +110,5 @@ _No rounds yet._
 - Q9 PATTERN change form — resolved, auto-pick: amend the existing entry (D13).
 - Q10 attach mismatch between the spec's engine and the recorded engine — resolved, auto-pick: the record wins and the mismatch is logged (D4).
 - Q11 the Webster fork-audit refusal's way forward — resolved, auto-pick: a webster refusal row pointing at `shuttle.yaml`'s `engine:` (D7).
+- Q12 an attach refusal over a finished run — resolved, auto-pick: harvested without the `Requires` check, since its harvest drives no further turn (D8).
+- Q13 an unresolvable `InterruptSettle` — resolved, auto-pick: an error the callers log at Warn, then the longest settle they resolved; alternative: a zero settle logged at Warn (D4).
