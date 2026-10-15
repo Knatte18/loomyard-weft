@@ -1,0 +1,7 @@
+verdict: approve
+reason: >-
+  The design covers the entry's goal and Idea: the Master reads only the plan overview and the repo's rules (D1), the inherit framing leaves the master template, fork prefix and the stencils that repeat the claim (D2-D5), docs follow (D6), and the forkaudit re-measure is carried past landing (D8).
+  It duplicates no other entry; stencil-intent-audit, webster-deviations-list and plan-test-file-path are left out explicitly.
+  Peer overlap is text-only (engine-registry on websterengine and docs/overview.md, tie at row 3; creel-core on the overview module table, lands first).
+question: ""
+superseded: []
