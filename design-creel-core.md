@@ -2,8 +2,6 @@
 
 `creel-core` · Task · feature, creel, reed, shuttle
 
-Depends on: [`engine-registry`](design-engine-registry.md)
-
 ## This task: stage 1
 
 Build stage 1 of the design below: creel alone, the daemon, the queues, the journal, every verb, and delivery through shuttle gated on the receiver being idle, tested against fake panes and in the tmux tier; no other module sends through it yet.
