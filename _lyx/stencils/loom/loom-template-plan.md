@@ -8,7 +8,7 @@
      twill_directive is a fourth optional marker, rendered by internal/twilldirective through internal/loomengine;
      it sits on the line that would otherwise be blank, so an empty value leaves the blank line and the prompt's bytes unchanged.
      edit_directive is a required marker, rendered unconditionally by internal/editdirective.
-lyx-stencil: sha256=9db1c505718348cad35990aa65b3a0e7cbca9d3489994baf5bd380eb4d69d853 build=e131c76252f7cabe5faa92e9ffe42c53040fad26 time=2026-10-15T15:14:46Z -->
+lyx-stencil: sha256=b0406b1c31ba8171c9a22fc362c028bc811ec5ecb7f614248f5fcfefc57c2f9f build=530c339e901d20b7ea6c5103c207ac92e6d7265c time=2026-10-15T16:12:28Z -->
 
 # Plan — read the decision record, write a plan-format flat-card plan
 
@@ -22,8 +22,12 @@ You never interview, never ask, and have no review logic of your own.
 ## Step 1 — Read the decision record
 
 Read `{{.decision_record_path}}`.
-This is your **sole** input — never read the support log or the board.
+This is your only source of design and scope — never read the support log or the board.
 If the file is missing or empty, STOP and report that rather than inventing scope.
+
+Then read `{{.relevant_path}}` if it exists.
+It lists the files and members the Discussion read and found relevant, as a head start for Step 2: it never adds scope, and `{{.specs_dir}}/loom/loom-discussion-spec.md` defines its format.
+A missing list is not an error; explore as Step 2 says.
 
 An entry between `<!-- lyx:carry-over … -->` marker lines in `## Open risks` lists review findings the closing round's fixer fixed or disputed, unseen by a fresh reviewer; the entry's fixer report says which.
 Check each one against the code while you explore, and never plan an entry as scope.
@@ -35,7 +39,7 @@ With no parent recorded, stop and report the addition instead of planning on it.
 
 ## Step 2 — Explore the codebase
 
-Before planning, read the relevant parts of the codebase: check recent commits, and follow existing patterns and any PATTERN entries in this prompt rather than inventing new ones.
+Before planning, start from the code the relevant list names, then read the other relevant parts of the codebase: check recent commits, and follow existing patterns and any PATTERN entries in this prompt rather than inventing new ones.
 
 ### Look up glyphs with `lyx quarry` — never spell one from memory
 
