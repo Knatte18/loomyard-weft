@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-15 17:49 UTC; every age below is as of then.
+Rendered 2026-10-15 17:50 UTC; every age below is as of then.
 
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
@@ -19,7 +19,7 @@ Held by a run; its scope is locked until the run ends.
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | 1 | **Usage and cost read through the engine**<br>• tokencount reads each run through its engine, with prices per engine, instead of reading Claude transcripts directly | [`engine-usage-readers`](design-engine-usage-readers.md) | loom | Webster-Burler-Review | 7h | 7h | shuttle, claude |
 | 2 | **Webster fork deviations list mixes in its own target files**<br>• The implementer stencil asks a fork to compare its edits against the glyph union and also tells it not to, so deviations lists files that house its own target glyphs | [`webster-deviations-list`](design-webster-deviations-list.md) | loom | Plan-Write | 6h | 14m | webster, stencil |
-| 3 | **Card can require a board-entry edit that the running task's own board lock refuses** | [`card-own-entry-edit`](design-card-own-entry-edit.md) | loom | Merge-Bouncer | 2h | 37m | loom, stencil |
+| 3 | **Card can require a board-entry edit that the running task's own board lock refuses** | [`card-own-entry-edit`](design-card-own-entry-edit.md) | loom | Merge-Burler-Review | 2h | 37m | loom, stencil |
 
 ### Ready
 
