@@ -1,0 +1,157 @@
+{
+  "runGuid": "a4327c04dd0ad524ee890c9e2c56013a",
+  "planFingerprint": "90c6334c780e71eda723f224b7fbe3bfa7ca51abbdbd9b83d97ecabfe8171501",
+  "planFileHashes": {
+    "00-overview.md": "5bd30065662e0ae8f1e72efb8b6c0407fb7d6d7e0bd9e4376e75e1b83aa1109f",
+    "01-follow-state-focus.md": "6e1490f74791edf038a421f5223a303a6a114220af1c96d333318c46b675e06a",
+    "02-attach-follow.md": "a884bcc2ce9d947f265d2a0e86e2487340d22ab1e76a2af7add1d22b78440403",
+    "03-follow-run-op.md": "818daaaaa9290063decc0d4ee5da2f0a1071ad6760524476822620818f891e46",
+    "04-loom-start-follows.md": "9ea00dd7c613a0d4a4f71c27c4ff9b9d44d5c1f236055b4b6abf0c2dbae0cdee",
+    "05-reed-follow-verb.md": "5173628ed621cb88c6adb1d83f0fa04216ffd5fb9b14a3215fb99fe8db628a7e",
+    "06-follow-bindings-button.md": "1259742d7b57185695141e4763932939a07219d176fb5dbdfb8e16ab76d0195a"
+  },
+  "planOverviewFrameHash": "3ec3cd6a068e4fea1b924988a9506742eecaf1ecb2a8a85f6d2b32a98ad348c0",
+  "partition": [
+    {
+      "cards": [
+        "01-follow-state-focus",
+        "02-attach-follow",
+        "03-follow-run-op",
+        "04-loom-start-follows",
+        "05-reed-follow-verb",
+        "06-follow-bindings-button"
+      ],
+      "profile": "cautious",
+      "estimate": 315970,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 1,
+        "startup": 54340,
+        "read_union": 44856,
+        "cards": [
+          {
+            "card": 1,
+            "card_text": 732,
+            "reads": {
+              "file:internal/reedengine/doc.go": 11916,
+              "package:internal/reedengine": 2000,
+              "tests:internal/reedengine": 2000
+            },
+            "messages": 118.5,
+            "written": 36282
+          },
+          {
+            "card": 2,
+            "card_text": 480,
+            "reads": {
+              "file:internal/reedengine/doc.go": 11916,
+              "package:internal/reedengine": 2000,
+              "tests:internal/reedengine": 2000
+            },
+            "messages": 72.5,
+            "written": 22230
+          },
+          {
+            "card": 3,
+            "card_text": 528,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1872,
+              "file:internal/reedengine/doc.go": 11916,
+              "package:cmd/lyx/testdata": 2000,
+              "package:internal/reedengine": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:internal/reedengine": 2000
+            },
+            "messages": 72.5,
+            "written": 22278
+          },
+          {
+            "card": 4,
+            "card_text": 432,
+            "reads": {
+              "file:internal/loomcli/doc.go": 2664,
+              "package:internal/loomcli": 2000,
+              "tests:internal/loomcli": 2000
+            },
+            "messages": 80,
+            "written": 24432
+          },
+          {
+            "card": 5,
+            "card_text": 780,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1872,
+              "file:internal/reedcli/doc.go": 264,
+              "file:internal/reedengine/doc.go": 11916,
+              "package:cmd/lyx": 2000,
+              "package:cmd/lyx/testdata": 2000,
+              "package:internal/reedcli": 2000,
+              "package:internal/reedengine": 2000,
+              "tests:cmd/lyx": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:internal/reedcli": 2000,
+              "tests:internal/reedengine": 2000
+            },
+            "messages": 201.5,
+            "written": 61230
+          },
+          {
+            "card": 6,
+            "card_text": 972,
+            "reads": {
+              "file:internal/reedengine/doc.go": 11916,
+              "file:pattern/PATTERN-pane-binary-resolution.md": 216,
+              "package:internal/reedengine": 2000,
+              "package:pattern": 2000,
+              "tests:internal/reedengine": 2000,
+              "tests:pattern": 2000
+            },
+            "messages": 164.5,
+            "written": 50322
+          }
+        ]
+      }
+    }
+  ],
+  "currentBatch": 1,
+  "masterStrand": "27ca166cd12741f74bda72a1212a1665",
+  "masterSessionId": "25dd2a62-43c2-4ead-9d64-9fb9d321e903",
+  "batches": {
+    "1": {
+      "slug": "follow-state-focus",
+      "cards": [
+        "01-follow-state-focus",
+        "02-attach-follow",
+        "03-follow-run-op",
+        "04-loom-start-follows",
+        "05-reed-follow-verb",
+        "06-follow-bindings-button"
+      ],
+      "cardHashes": {
+        "01-follow-state-focus": "6e1490f74791edf038a421f5223a303a6a114220af1c96d333318c46b675e06a",
+        "02-attach-follow": "a884bcc2ce9d947f265d2a0e86e2487340d22ab1e76a2af7add1d22b78440403",
+        "03-follow-run-op": "818daaaaa9290063decc0d4ee5da2f0a1071ad6760524476822620818f891e46",
+        "04-loom-start-follows": "9ea00dd7c613a0d4a4f71c27c4ff9b9d44d5c1f236055b4b6abf0c2dbae0cdee",
+        "05-reed-follow-verb": "5173628ed621cb88c6adb1d83f0fa04216ffd5fb9b14a3215fb99fe8db628a7e",
+        "06-follow-bindings-button": "1259742d7b57185695141e4763932939a07219d176fb5dbdfb8e16ab76d0195a"
+      },
+      "startSha": "4ebb73ff31750a9d92e5164a690a072bcbda1b13",
+      "kind": "fork",
+      "spawnedAt": "2026-10-15T12:20:07Z",
+      "sessionId": "25dd2a62-43c2-4ead-9d64-9fb9d321e903",
+      "terminal": false,
+      "status": ""
+    }
+  }
+}
