@@ -1,0 +1,15 @@
+{
+  "number": 1,
+  "stop_key": {
+    "current_producer": "Discussion-Bouncer",
+    "history_length": 13,
+    "state": "awaiting"
+  },
+  "pause_before": "",
+  "pause_after": "",
+  "spawned_at": "2026-10-15T16:22:30.156169366+02:00",
+  "deadline": "2026-10-15T16:52:30.156169366+02:00",
+  "strand_guid": "82ceb4dd5fb12ab4f546e583af0a9974",
+  "envelope_path": "/home/knatte/Code/loomyard-LYXHUB/lighter-test-rules/_lyx/shed/lighter-test-rules/drive-reports/drive-envelope-20261015-162230-4eef.json",
+  "report_path": "/home/knatte/Code/loomyard-LYXHUB/lighter-test-rules/_lyx/shed/lighter-test-rules/drive-reports/drive-report-20261015-162230-7bf6.md"
+}

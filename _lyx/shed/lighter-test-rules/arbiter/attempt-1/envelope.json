@@ -1,0 +1,14 @@
+{
+  "verdict": "resume",
+  "reason": "Hard-cap escalation at Discussion-Bouncer round 3, so accept is the only option. The two open design-wrong findings are answered by the round-3 fix now in the decision record. F1 (d4-bound-overstates-coverage): D4's Rationale now lists the webster_auto_accept route and the hard-cap route, and its bound sentence carries the auto-accept and hard-cap exceptions. The code backs both: internal/loomengine/config.go and template.yaml declare webster_auto_accept, webster_hard_max_bounces of 0 takes review_hard_max_bounces, and internal/darnengine/template.yaml says a round at or past review_hard_max_bounces is never continued. F2 (marker-placement-between-d1-d2): D2 now sends a marker-naming row with no position, for a stencil no other test reads in its real file, to TestStencils_TopLevelMarkers, and names landing-template-describe-darn.md. The code backs this: internal/landingshed/describe_test.go writes darnStencilFixture instead of the real stencil, and markers_test.go has no row for that stencil. The fixer also applied the mechanical findings F3 and F4 as proposed, and disputed or deferred none. Nothing is left open that needs an operator decision or widens scope.",
+  "question": "",
+  "goto": "",
+  "verbs": [
+    "lyx loom circling accept lighter-test-rules"
+  ],
+  "cause": "",
+  "attempt": 1,
+  "attempt_dir": "/home/knatte/Code/loomyard-LYXHUB/lighter-test-rules/_lyx/shed/lighter-test-rules/arbiter/attempt-1",
+  "verdict_path": "/home/knatte/Code/loomyard-LYXHUB/lighter-test-rules/_lyx/shed/lighter-test-rules/arbiter/attempt-1/verdict.yaml",
+  "relaunch": "lyx shed step lighter-test-rules --until-stop --arbiter-attempt 1"
+}
