@@ -1,0 +1,7 @@
+verdict: approve
+reason: >-
+  D1 to D5 cover every goal point of the board entry (the switch beside kickstart_pack with today's layout as default, the inline layout with no pack file, and the layout on the kick-start pack trace line) and keep the measurement out as the entry says.
+  D2's use of 1e39afc10^ instead of the entry's 113593990 cite follows the entry's own description of the measured layout and the glyph-use-audit note, so it is no scope deviation.
+  No peer run or parent commit overlaps.
+question: ""
+superseded: []
