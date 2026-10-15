@@ -18,7 +18,6 @@ Held by a run; its scope is locked until the run ends.
 | # | Task | Slug | Recipe | At | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | 1 | **Go driver and tackler in shed, for every FSM-driven run**<br>• Move the Go driver and tackler from loomcli into shed so darn, batten and every recipe get them; module config overrides model and budgets | [`shed-tackler`](design-shed-tackler.md) | loom | Webster | 13h | 13h | shed, loom, batten |
-| 2 | **Webster fork prompt: switch between the pack-file layout and the inline layout**<br>• A webster.yaml switch selecting today's pack-file layout or the inline layout the 2026-10-13 audit measured, logged per batch | [`webster-pack-layout-switch`](design-webster-pack-layout-switch.md) | loom | Finalize | 1h | 47m | webster, stencil |
 
 ### Ready
 
@@ -78,7 +77,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 14 | **Clearer loom model key names, one per step**<br>• Model keys like fix name the role they set, and every review segment gets its own reviewer and fixer key | [`loom-model-key-names`](design-loom-model-key-names.md) | 13h | 13h | config, loom |
 | 15 | **Spawned code roles load the hub language skills**<br>• Darn, Webster, Burler and merge sessions write Go without scribe:golang-* skills; the hub config should name its language skills | [`role-language-skills`](design-role-language-skills.md) | 12h | 12h | config, shuttle |
 | 16 | **Fork the Burler fixer from the reviewer session**<br>• The fixer re-reads the context the reviewer just read; fork it from the reviewer to reuse the cache | [`burler-fixer-fork`](design-burler-fixer-fork.md) | 1h | 1h | burler |
-| 17 | **Webster fork read audit as a tool under tools/**<br>• Move the 2026-10-13 fork read audit jq scripts out of scratch into a repeatable tools/ script | [`glyph-audit-tool`](design-glyph-audit-tool.md) | 7m | 5m | webster |
+| 17 | **Webster fork read audit as a tool under tools/**<br>• Move the 2026-10-13 fork read audit jq scripts out of scratch into a repeatable tools/ script | [`glyph-audit-tool`](design-glyph-audit-tool.md) | 7m | 6m | webster |
 
 #### Low priority
 
@@ -138,3 +137,11 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 2 | **Re-measure the test suite weight on a quiet machine**<br>• The test-suite-weight before and after numbers were taken under load; rerun the report Regenerate section on an idle machine for a fair wall-time comparison | `suite-weight-quiet-rerun` | 4d | 1d |  |
 | 3 | **Lighter test rules for small changes**<br>• Tests that pin stencil wording make small prompt changes large; pin only what must hold, measured first | [`lighter-test-rules`](design-lighter-test-rules.md) | 1d | 1d | stencil |
 | 4 | **Bench fork0 and the strict critical fixer on twill Discussion-Write**<br>• Arms: twill as is, with the strict critical fixer, and fork0 plus the critical fixer, graded against Discussion-Review keys | [`twill-discussion-fork0-bench`](design-twill-discussion-fork0-bench.md) | 2h | 2h | loom, burler, stencil |
+
+## Done
+
+Finished, awaiting `lyx board prune --apply`.
+
+| # | Entry | Slug | Age | Revised | Labels |
+| --- | --- | --- | --- | --- | --- |
+| 1 | **Webster fork prompt: switch between the pack-file layout and the inline layout**<br>• A webster.yaml switch selecting today's pack-file layout or the inline layout the 2026-10-13 audit measured, logged per batch | [`webster-pack-layout-switch`](design-webster-pack-layout-switch.md) | 1h | 48m | webster, stencil |
