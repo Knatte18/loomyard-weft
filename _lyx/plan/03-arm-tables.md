@@ -2,7 +2,7 @@
 
 **Edit:**
 - `tools/forkaudit/report.jq`
-- `plan:tools/forkaudit#TestForkauditReport`
+- `tools/forkaudit#TestForkauditReport`
 
 **Uses:**
 - `docs/research/glyph-audit-2026-10-15/stats-pf.jq`

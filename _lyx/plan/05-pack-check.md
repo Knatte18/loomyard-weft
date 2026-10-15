@@ -3,12 +3,12 @@
 **Create:**
 - `tools/forkaudit/pack-entries.jq`
 - `tools/forkaudit/touched-files.jq`
-- `plan:tools/forkaudit#TestForkauditPackCheck` -> `func TestForkauditPackCheck(t *testing.T)`
+- `tools/forkaudit#TestForkauditPackCheck`
 
 **Edit:**
 - `tools/forkaudit/forkaudit.sh`
 - `tools/forkaudit/report.jq`
-- `plan:tools/forkaudit#TestForkauditRefusals`
+- `tools/forkaudit#TestForkauditRefusals`
 - `cmd/lyx/testdata/test-budget.yaml`
 
 **Uses:**

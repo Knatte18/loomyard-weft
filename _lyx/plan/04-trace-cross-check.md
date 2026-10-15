@@ -1,17 +1,17 @@
 # Card 4 — trace-cross-check
 
 **Create:**
-- `plan:tools/forkaudit#recordsRepo` -> `func recordsRepo(t *testing.T, runs []recordsRun) string`
-- `plan:tools/forkaudit#recordsRun` -> `type recordsRun struct`
-- `plan:tools/forkaudit#batchFixture` -> `type batchFixture struct`
-- `plan:tools/forkaudit#TestForkauditTraceCrossCheck` -> `func TestForkauditTraceCrossCheck(t *testing.T)`
+- `tools/forkaudit#recordsRepo`
+- `tools/forkaudit#recordsRun`
+- `tools/forkaudit#batchFixture`
+- `tools/forkaudit#TestForkauditTraceCrossCheck`
 
 **Edit:**
 - `tools/forkaudit/forkaudit.sh`
 - `tools/forkaudit/extract.jq`
 - `tools/forkaudit/report.jq`
-- `plan:tools/forkaudit#runForkaudit`
-- `plan:tools/forkaudit#TestForkauditReport`
+- `tools/forkaudit#runForkaudit`
+- `tools/forkaudit#TestForkauditReport`
 - `cmd/lyx/testdata/test-budget.yaml`
 
 **Uses:**

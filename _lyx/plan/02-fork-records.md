@@ -12,13 +12,13 @@
 - `tools/forkaudit/testdata/not-webster.jsonl`
 - `tools/forkaudit/testdata/no-prompt-read.jsonl`
 - `tools/forkaudit/testdata/other-prompt.jsonl`
-- `plan:tools/forkaudit#forkFixture` -> `type forkFixture struct`
-- `plan:tools/forkaudit#placeForks` -> `func placeForks(t *testing.T, projects, hub string, forks []forkFixture)`
+- `tools/forkaudit#forkFixture`
+- `tools/forkaudit#placeForks`
 
 **Edit:**
 - `tools/forkaudit/forkaudit.sh`
-- `plan:tools/forkaudit#TestForkauditRefusals`
-- `plan:tools/forkaudit#TestForkauditReport`
+- `tools/forkaudit#TestForkauditRefusals`
+- `tools/forkaudit#TestForkauditReport`
 
 **Uses:**
 - `docs/research/glyph-audit-2026-10-15/extract-pf.jq`

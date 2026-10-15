@@ -5,16 +5,16 @@
 - `tools/forkaudit/testdata/plan-writer-main.jsonl`
 - `tools/forkaudit/testdata/plan-writer-minor.jsonl`
 - `tools/forkaudit/testdata/plan-writer-tie.jsonl`
-- `plan:tools/forkaudit#TestForkauditPlanSection` -> `func TestForkauditPlanSection(t *testing.T)`
+- `tools/forkaudit#TestForkauditPlanSection`
 
 **Edit:**
 - `tools/forkaudit/forkaudit.sh`
 - `tools/forkaudit/report.jq`
-- `plan:tools/forkaudit#forkFixture`
-- `plan:tools/forkaudit#placeForks`
-- `plan:tools/forkaudit#recordsRepo`
-- `plan:tools/forkaudit#TestForkauditReport`
-- `plan:tools/forkaudit#TestForkauditRefusals`
+- `tools/forkaudit#forkFixture`
+- `tools/forkaudit#placeForks`
+- `tools/forkaudit#recordsRepo`
+- `tools/forkaudit#TestForkauditReport`
+- `tools/forkaudit#TestForkauditRefusals`
 - `cmd/lyx/testdata/test-budget.yaml`
 
 **Uses:**

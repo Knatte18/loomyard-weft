@@ -1,14 +1,14 @@
 {
   "runGuid": "e7954b2db7ca7049f155346444afbc94",
-  "planFingerprint": "05425f988920365ccfde783698fc9c432c41ad24b7f39b651bea0afe630b4098",
+  "planFingerprint": "b092c19bb8e7195bf0ac3fb9957812d1987e92de93aa73c0871977b5d531fee6",
   "planFileHashes": {
     "00-overview.md": "4cf76797668c20c733e8b12142919bcc440c2499190b4f9b530a7c31f29e7838",
-    "01-cli-and-output.md": "9b7afd5710b61d7c147f12d7c49836620d0396a454986308fb6d6610f97a027d",
-    "02-fork-records.md": "ddb476da07d2cb57f034447e25ff5a05ee3f51b3f4579b423032a2bef926aa59",
-    "03-arm-tables.md": "ceca21d6d35d7ffd1061d10d46459c2bf1d2fb78036a823a67e5d53baecd0158",
-    "04-trace-cross-check.md": "021573ad01768f43b14ae7500b5358a7480893af0894fd7009d03a9c4e023c4e",
-    "05-pack-check.md": "815ac3ef0752a01cf47722536224d9f64a6bf7ea65824b5496462bee3dffc628",
-    "06-plan-glyph-use.md": "11a2297674e136a363785486f700ce9873d574c0e71974a80a2c8fd4249e02a1"
+    "01-cli-and-output.md": "4e80aa0f11e6c90826465191eda47b966116608abf67c12d2990c933b57a797f",
+    "02-fork-records.md": "b41894e672122373441678b0742bf6249b4def6cbedc70cd5f365502cd095dd6",
+    "03-arm-tables.md": "de51c580187ac35e10bbe36250d9428e29e8815e2f836cb96791f61235fdecc2",
+    "04-trace-cross-check.md": "c215ff81d38f928c4f40910cc19efa5620691a62af8c1069a564b096595aa0e0",
+    "05-pack-check.md": "77ee8ee5ae7246228fec804d66ac7319d2d13fba69f86c05721277c8bfa7a94c",
+    "06-plan-glyph-use.md": "bc0dcf3caa53c1643761f7d18e1e921f408ce92a1b9799393eaf86f0811e09ba"
   },
   "planOverviewFrameHash": "fbf048f80dfee8b6d775cb8b2eb2fe86729bd870140f61be41546f7fbcc5b152",
   "partition": [
@@ -141,7 +141,7 @@
       }
     }
   ],
-  "currentBatch": 1,
+  "currentBatch": 0,
   "masterStrand": "25601c35ac1c2d722346207c7d890c5b",
   "masterSessionId": "2e0516be-b2a5-4e05-8d25-887fec6b7a84",
   "batches": {
@@ -156,19 +156,39 @@
         "06-plan-glyph-use"
       ],
       "cardHashes": {
-        "01-cli-and-output": "9b7afd5710b61d7c147f12d7c49836620d0396a454986308fb6d6610f97a027d",
-        "02-fork-records": "ddb476da07d2cb57f034447e25ff5a05ee3f51b3f4579b423032a2bef926aa59",
-        "03-arm-tables": "ceca21d6d35d7ffd1061d10d46459c2bf1d2fb78036a823a67e5d53baecd0158",
-        "04-trace-cross-check": "021573ad01768f43b14ae7500b5358a7480893af0894fd7009d03a9c4e023c4e",
-        "05-pack-check": "815ac3ef0752a01cf47722536224d9f64a6bf7ea65824b5496462bee3dffc628",
-        "06-plan-glyph-use": "11a2297674e136a363785486f700ce9873d574c0e71974a80a2c8fd4249e02a1"
+        "01-cli-and-output": "4e80aa0f11e6c90826465191eda47b966116608abf67c12d2990c933b57a797f",
+        "02-fork-records": "b41894e672122373441678b0742bf6249b4def6cbedc70cd5f365502cd095dd6",
+        "03-arm-tables": "de51c580187ac35e10bbe36250d9428e29e8815e2f836cb96791f61235fdecc2",
+        "04-trace-cross-check": "c215ff81d38f928c4f40910cc19efa5620691a62af8c1069a564b096595aa0e0",
+        "05-pack-check": "77ee8ee5ae7246228fec804d66ac7319d2d13fba69f86c05721277c8bfa7a94c",
+        "06-plan-glyph-use": "bc0dcf3caa53c1643761f7d18e1e921f408ce92a1b9799393eaf86f0811e09ba"
       },
       "startSha": "b1d1638ad89988a82e4db9a55cc8e78acef511f5",
       "kind": "fork",
       "spawnedAt": "2026-10-15T10:09:56Z",
       "sessionId": "2e0516be-b2a5-4e05-8d25-887fec6b7a84",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "01-cli-and-output",
+        "status": "done",
+        "head_sha": "161d3839550703ec05607f45fcb9048edcdcbb58",
+        "deviations": [
+          "tools/forkaudit/forkaudit_integration_test.go"
+        ]
+      },
+      "cardShas": [
+        "161d3839550703ec05607f45fcb9048edcdcbb58"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-glyph-audit-tool/2e0516be-b2a5-4e05-8d25-887fec6b7a84/subagents/agent-aa9133682b207417b.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-glyph-audit-tool/2e0516be-b2a5-4e05-8d25-887fec6b7a84/subagents/agent-aa9133682b207417b.jsonl"
+      ]
     }
-  }
+  },
+  "seenForkTranscripts": [
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-glyph-audit-tool/2e0516be-b2a5-4e05-8d25-887fec6b7a84/subagents/agent-aa9133682b207417b.jsonl"
+  ]
 }

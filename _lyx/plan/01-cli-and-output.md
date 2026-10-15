@@ -4,10 +4,10 @@
 - `tools/forkaudit/forkaudit.sh`
 - `tools/forkaudit/testmain_test.go`
 - `tools/forkaudit/forkaudit_integration_test.go`
-- `plan:tools/forkaudit#TestMain` -> `func TestMain(m *testing.M)`
-- `plan:tools/forkaudit#runForkaudit` -> `func runForkaudit(t *testing.T, env []string, args ...string) (stdout, stderr string, exit int)`
-- `plan:tools/forkaudit#TestForkauditRefusals` -> `func TestForkauditRefusals(t *testing.T)`
-- `plan:tools/forkaudit#TestForkauditReport` -> `func TestForkauditReport(t *testing.T)`
+- `tools/forkaudit#TestMain`
+- `tools/forkaudit#runForkaudit`
+- `tools/forkaudit#TestForkauditRefusals`
+- `tools/forkaudit#TestForkauditReport`
 
 **Edit:**
 - `PATTERN.md`
