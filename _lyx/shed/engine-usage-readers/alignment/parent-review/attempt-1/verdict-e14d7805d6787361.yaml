@@ -1,0 +1,7 @@
+verdict: approve
+reason: >-
+  The design covers every Scope point of the board entry (neutral usage record and locator, tokencount reading through engines with its parser deleted, prices per engine, calibration's instruction files) and keeps report-timing out.
+  Its one addition, D7's header line, is declared and stays inside the goal.
+  The overlap with engine-model-choice (MerriamBase instruction files, round-N-usage.yaml, shuttleengine and claudeengine files) has mirrored, non-conflicting decisions; engine-model-choice is further along (row 12 against 3) and lands first.
+question: ""
+superseded: []
