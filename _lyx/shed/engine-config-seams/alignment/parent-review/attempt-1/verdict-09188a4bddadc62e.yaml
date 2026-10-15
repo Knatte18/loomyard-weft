@@ -1,0 +1,7 @@
+verdict: approve
+reason: >-
+  The decision record covers every scope point of the board entry (claude.yaml in claudeengine, deny_python neutral with the old keys moved,
+  the shellguard table rendered by claudeengine and read by the no-denied-recovery test, engine-declared scrub keys, opaque provider tags with per-provider namers)
+  and leaves Codex, timing overrides, usage reading and role engines to their own entries.
+  Overlaps with creel-core and engine-model-choice are construction-site and package-level changes that both sides already agree to adapt at the second landing, with no conflicting decision.
+question: ""
