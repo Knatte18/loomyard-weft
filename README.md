@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-15 18:12 UTC; every age below is as of then.
+Rendered 2026-10-15 18:13 UTC; every age below is as of then.
 
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
@@ -17,7 +17,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | **Webster fork deviations list mixes in its own target files**<br>• The implementer stencil asks a fork to compare its edits against the glyph union and also tells it not to, so deviations lists files that house its own target glyphs | [`webster-deviations-list`](design-webster-deviations-list.md) | loom | Merge-Burler-Fix | 6h | 37m | webster, stencil |
+| 1 | **Webster fork deviations list mixes in its own target files**<br>• The implementer stencil asks a fork to compare its edits against the glyph union and also tells it not to, so deviations lists files that house its own target glyphs | [`webster-deviations-list`](design-webster-deviations-list.md) | loom | Merge-Bouncer | 6h | 37m | webster, stencil |
 
 ### Ready
 
