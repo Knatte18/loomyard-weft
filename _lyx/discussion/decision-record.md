@@ -149,6 +149,13 @@ Shuttle's attach matches on output files, not the role, so a session spawned und
   - earlier-entries-regate-spans-during-hold (class design, severity MEDIUM, open in rounds 2)
 <!-- /lyx:carry-over Discussion-Review -->
 
+<!-- lyx:carry-over Plan-Review -->
+- Plan-Review, round 1: converged; each finding below was fixed or disputed by the round's fixer, and no fresh reviewer has seen the result; the fixer report says which.
+  Review: _lyx/reviews/plan/round-1-review.md; fixer report: _lyx/reviews/plan/round-1-fixer-report.md.
+  - card13-probe-assertion-unreached (class scope, severity MEDIUM, open in rounds 1)
+  - card2-finalize-span-order (class consistency, severity MEDIUM, open in rounds 1)
+<!-- /lyx:carry-over Plan-Review -->
+
 ## Acceptance criteria
 
 - A frame with closed visits shows seconds (`45s`, `12m05s`, `1h05m12s`), and a frame whose only change is the open visit's next second is byte-identical to the previous frame.
