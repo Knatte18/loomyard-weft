@@ -1,6 +1,6 @@
 # Webster master reads only what every fork shares, never source code
 
-`webster-master-no-code` · Task · bug, webster, stencil · running · Merge-Bouncer
+`webster-master-no-code` · Task · bug, webster, stencil · running · Publish
 
 ## Seen
 
