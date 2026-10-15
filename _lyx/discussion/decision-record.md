@@ -14,7 +14,6 @@ In:
 - A new read-only verb, `lyx loom card-pack <card>`, that renders one card's pack against the current worktree.
 - Per-card variants of the fork prompt's pack-related text: the FRESH-READ rule, step 1 of each card, the locate step, and a closing `## Start here` section.
 - A `card` value for `pack_layout` on the begin-batch trace line, and one `webster: card pack` trace line per `card-pack` call, an addition beyond the board entry so the audit can see each fetch.
-- Teaching `tools/forkaudit` the per-card layout (D7), taken from the landed `glyph-audit-tool` tool at Merge-In.
 
 Out:
 
@@ -23,6 +22,9 @@ Out:
 - The recovery prompt: it still never takes a pack.
 - Running the measurement.
 - The Burler side of the kick-start pack (note `glyph-use-audit`) and pack sources from tool locations (note `enclose-kickstart`).
+- The audit tool of `glyph-audit-tool` learns the per-card layout, telling a per-card fork from a file-layout fork by its prompt and by the `pack_layout=card` trace value, and reading spans from the `lyx loom card-pack` tool results with the card pack trace lines as the cross-check.
+  The prompt check for the per-card layout runs before the file-layout check.
+  It is a follow-up board task, filed by the orch, whose `depends_on` names both `glyph-audit-tool` and `kickstart-per-card`, since a task that depends on both can start only once both have landed.
 
 ## Decisions
 
@@ -54,7 +56,11 @@ A glyph-less language or a card with no member glyph prints the empty-card line.
 A quarry failure prints the degraded pack `KickstartPack` returns, every glyph unresolved with the error, exit 0, with a Warn log.
 It refuses, with the standard failure envelope, an argument that is not a card number, a card number the plan does not hold, a missing plan directory and a plan that does not parse.
 Each refusal's way forward is the prompt's fallback: locate the card's glyphs with `lyx quarry resolve` or a grep; each gets its `contracts/specs/refusal-spec.md` row and a test (`PATTERN-refusal-way-forward`).
-Bound: it writes no file, mutates no state and holds no lock, so it adds no route around any gate.
+Bound: beyond its stdout, it writes only through `internal/logger`, as every lyx verb that logs does: the process's own trace file under the anchor's `.lyx/logs` with its header, the `webster: card pack` Info line and, on a quarry failure, the Warn, followed by the exit retention sweep over that directory.
+The Info line goes only to the trace file.
+The Warn also prints to stderr, because the logger's stderr half admits Warn at its default threshold, so the fork's tool result carries that line beside the markdown on stdout.
+A refusal exits non-zero, which opens the trace file with its header and leaves no Info line in it.
+It mutates no webster, plan or tracked state and holds no lock, so it adds no route around any gate.
 `plan:` handles stay unresolved, as in the batch pack, since handles bind at record-batch.
 
 Rationale: `lyx webster` is closed to forks: the claudeengine hook `steerWebsterForkDeny` refuses every `lyx webster` command from a fork, and the fork prefix and Master template tell a fork never to run one.
@@ -63,7 +69,7 @@ One renderer keeps the pack's format identical across layouts, and plain markdow
 
 ### D4: Per-card prompt text in new fragments; file and inline bytes unchanged
 
-Decision: the per-card layout fills the body's existing markers from new fragments, each registered in `contracts/stencils/stencils.go` and `.gitattributes` like the others:
+Decision: the per-card layout fills the body's existing markers plus one new optional marker from new fragments, each registered in `contracts/stencils/stencils.go` and `.gitattributes` like the others:
 
 - `fresh_read`: inherited context can be stale; the first work turn reads every card file in one parallel turn; each card's reading is set out in its step 1; the Edit-only rule.
 - `card_read`: before the card's first edit, run `lyx loom card-pack <N>` for this card, then read every span it lists in one parallel turn, each with the Read tool's `offset` and `limit`, then read whole the existing target and `Uses:` files no span covers and locate and read every unresolved member glyph that is not a `plan:` handle; the card file is the card's instruction.
@@ -71,7 +77,7 @@ Decision: the per-card layout fills the body's existing markers from new fragmen
 - `kickstart_pack` (the end-of-prompt marker): a `## Start here` section saying to read every card file now in one parallel turn, then begin the first card at its step 1.
 
 The `kickstart_pack_inline` marker stays empty.
-The sandbox rule's list of always-allowed commands gains `lyx loom card-pack`.
+The sandbox paragraph of `webster-body-implementer.md` gains one new optional marker directly after `` `lyx loom lint-pattern` ``, before the word `and`, filled with a comma, a space and `` `lyx loom card-pack` `` in backticks only under the per-card layout, so that list reads lint-comments, lint-pattern, card-pack and quarry resolve, and empty in the file, inline, pack-off and recovery prompts, so their bytes stay unchanged.
 The file layout, the inline layout, the pack-off prompt and the recovery prompt render the bytes they do today.
 
 Rationale: one fragment per marker is how both existing layouts are built, and leaving the other layouts' bytes alone keeps the comparison arms stable.
@@ -88,19 +94,9 @@ Rationale: the empty rule must hold in every layout, and the counts keep the tra
 
 ### D6: One trace line per `card-pack` call
 
-Decision: each `card-pack` call logs one Info line, `webster: card pack`, with keys card, resolved and unresolved, the same distinct-ref counting as the batch line.
+Decision: each `card-pack` call that renders a pack logs one Info line, `webster: card pack`, with keys card, resolved and unresolved, the same distinct-ref counting as the batch line.
 
 Rationale: the audit needs to see whether and when each card's pack was fetched; the batch line alone says only which layout a batch ran.
-
-### D7: `tools/forkaudit` learns the per-card layout
-
-Decision: `tools/forkaudit`, built by task `glyph-audit-tool` and taken into this task at Merge-In, gains a `card` arm:
-
-- a prompt marker row matching `lyx loom card-pack`, checked ahead of the `file` row, since the per-card prompt also carries a `## Start here` heading;
-- `card` as a known `pack_layout` trace value that agrees with arm `card`;
-- a span source for `card` forks: the spans each `lyx loom card-pack` tool result in the fork transcript lists, with the `webster: card pack` trace lines as the cross-check of which cards fetched a pack.
-
-Rationale: `glyph-audit-tool`'s record makes a task that adds a pack layout add its marker row to `tools/forkaudit` in the same task, and without the row ahead of `file` every per-card fork would be counted in the file arm, merging the two arms the measurement compares.
 
 ## Constraints
 
@@ -126,8 +122,7 @@ Rationale: `glyph-audit-tool`'s record makes a task that adds a pack layout add 
 
 - Default on changes every run's fork prompt on the next deploy, and a run already in Webster switches layout at its next begin-batch, so one run can mix layouts; the audit must classify per batch, which the begin-batch line's `batch` key allows.
   A broken `card-pack` call degrades each card to the quarry or grep locate path rather than stopping the batch.
-- D7 depends on task `glyph-audit-tool` landing `tools/forkaudit` before this run's Plan-Write; the parent holds this run before Plan-Write if it has not.
-- The per-card arm keeps a closing `## Start here` section that the audit found gave the file layout no first-turn gain, so a difference between arms is not attributable to the per-card fetch alone.
+- Until the audit tool learns the per-card layout, every per-card fork classifies as a file-layout fork, with a trace disagreement.
 - Task `lighter-test-rules` (Ready) will relax wording tests; this task's tests follow today's rules, and whichever lands second adapts.
 
 ## Acceptance criteria
@@ -143,8 +138,7 @@ Rationale: `glyph-audit-tool`'s record makes a task that adds a pack layout add 
 - `card-pack` on a card with no member glyph, and under a glyph-less language, prints the empty-card line, exit 0.
 - `card-pack` with quarry unavailable prints every glyph unresolved with the error, exit 0.
 - `card-pack` refuses a non-numeric argument, an unknown card number, a missing plan directory and a plan that does not parse, each with the way forward of its refusal-spec row.
-- `card-pack` logs one `webster: card pack` Info line with card, resolved and unresolved.
-- `tools/forkaudit` classes a per-card fork as `card`, not `file`, takes its spans from its `lyx loom card-pack` results, and counts trace `card` as agreeing with arm `card`.
+- `card-pack` logs one `webster: card pack` Info line with card, resolved and unresolved when it renders a pack, and a refusal logs no card pack Info line.
 - `kickstart_pack_per_card` defaults to `true` from the template, and `lyx config webster --set kickstart_pack_per_card=false` round-trips.
 
 ## Notes for the plan writer
