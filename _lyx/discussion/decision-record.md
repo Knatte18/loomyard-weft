@@ -121,6 +121,12 @@ What bounds the hatch is the template comment and the operator's per-hub choice;
 - Each listed skill adds to every code role's context on every spawn, and a misspelled one is skipped at once with a logged warning, so its rules never reach the role and nothing else signals it.
 - `burler-fixer-fork` plans to fork the fixer from the reviewer, which would inherit the reviewer's language skills; that design decides whether the fix rows keep `language-skills`.
 
+<!-- lyx:carry-over Plan-Review -->
+- Plan-Review, round 2: converged; each finding below was fixed or disputed by the round's fixer, and no fresh reviewer has seen the result; the fixer report says which.
+  Review: _lyx/reviews/plan/round-2-review.md; fixer report: _lyx/reviews/plan/round-2-fixer-report.md.
+  - card6-unreadable-row-and-master-stop-doc-stale (class consistency, severity MEDIUM, open in rounds 2)
+<!-- /lyx:carry-over Plan-Review -->
+
 ## Acceptance criteria
 
 - The `language` module is registered `HubWide` in alphabetical order, `skills` is classified Guard, and writing `skills` to the local layer is refused.
