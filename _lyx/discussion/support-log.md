@@ -71,7 +71,24 @@ All six forks returned.
 
 ## Review rounds
 
-_No rounds yet._
+### Round 1
+
+Every finding fixed as proposed; F4's ref set also admits the `origin/<run>-weft` copy, since the records store holds remote-tracking records branches.
+
+- F1, BLOCKING, `--work` clearing unbounded: D1 bounds it by a `.forkaudit-work` marker and refuses roots, the hub and `--out`'s directory; criterion added.
+- F2, BLOCKING, `_lyx` literals depart from PATTERN without amending it: Constraints now require the `PATTERN-lyxdirs-single-declarer` amendment; `PATTERN.md` added to Scope In.
+- F3, MEDIUM, trace value as arm unbounded: D3 names such arms `trace:<value>` and admits only `[a-z0-9_-]+` values that are not marker arm names; criterion extended.
+- F4, MEDIUM, batch resolution can pick another run's batch: D7 searches only the fork's run's records branch and archive tags; criterion added.
+- F5, LOW, `--runs` matching and character set: D2 states exact matching and restricts names to the slug character set.
+- F6, LOW, `--code` required under `--plan`: D7 requires `--code` only under `--pack-check`; criterion extended.
+- F7, NIT, sort tie: D5 sorts by agent id last.
+
+### Round 2
+
+Approved with two findings, both fixed as proposed.
+
+- F1, MEDIUM, the planned amendment called the script's head block the one non-Go site spelling `_lyx` or `.lyx`: premise checked, since tracked non-Go files such as `contracts/recipes/loom-recipe.yaml`, `internal/fabricengine/template.yaml` and the specs under `contracts/specs/` already spell `_lyx/`; the Constraint now admits a shell tool under `tools/` that spells each literal once in a head variable block.
+- F2, LOW, `--out` overwrite unbounded: D1 refuses an existing directory at `--out` and states that an existing file is replaced; criterion extended.
 
 ## Question ledger
 
@@ -82,5 +99,5 @@ _No rounds yet._
 - Q5 Pack correctness — resolved, auto-pick: port with the Go-only declaration rule, `unchecked` for other languages, no negative control.
 - Q6 Plan glyph use — resolved, auto-pick: port per run in the report; the writer is the session with the most card writes.
 - Q7 Tests — resolved, auto-pick: Go integration tests with the standard `TestMain`, temp `--out` and `--work`, skip on Windows, fail without `jq`, test-budget row.
-- Q8 PATTERN fit — resolved, auto-pick: lyxdirs departure named in Constraints; fabric-git and provider seam not bound.
+- Q8 PATTERN fit — resolved, auto-pick: the `PATTERN-lyxdirs-single-declarer` line amended to admit the script's literals (round 1, F2); fabric-git and provider seam not bound.
 - Q9 Records repo default — resolved, auto-pick: repo root's `-weft` sibling; the premises fork confirmed pair worktrees share the hub stores, so `git log --all` sees every pair's records.
