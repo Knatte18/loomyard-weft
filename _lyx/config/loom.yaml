@@ -1,1 +1,1 @@
-{}
+{discussion: 'opus[medium]', discussion_producer: twill, parent_review_wait_min: 2, alignment_timeout_min: 1, skip_alignment: true}
