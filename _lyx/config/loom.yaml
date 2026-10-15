@@ -5,7 +5,7 @@ discussion_advisors: [] # model-specs of the advisors a seats chair consults, on
 discussion_lenses: twill-discussion # fan name from burler.yaml that has the Discussion-Write lead fork itself once per lens to review its record before it finishes; empty, the default, turns the forks off; this names the writer's lens fan, not the discussion_fan of the Discussion-Review perch
 plan: opus[medium] # model-spec for the plan-phase producer agent (see contracts/specs/llm-model-spec.md)
 plan_timeout_min: 120 # minutes the plan agent's shuttle run is allowed to run (a shorter ceiling than the discussion run)
-plan_lenses: twill-plan # fan name from burler.yaml that has the Plan-Write lead fork itself once per lens to review its plan before it finishes; empty, the default, turns the forks off; this names the writer's lens fan, not the plan_fan of the Plan-Review perch
+plan_lenses: twill-plan # fan name from burler.yaml that has the Plan-Write lead explore, have one fork write the plan, then fork itself once per lens of the fan to review it before it finishes; empty, the default, turns the forks off; this names the writer's lens fan, not the plan_fan of the Plan-Review perch
 review: opus[medium] # model-spec for the review-segment producers (see contracts/specs/llm-model-spec.md)
 fix: opus[medium] # model-spec for the fixer of every review segment round (see contracts/specs/llm-model-spec.md); a YAML list sets one model per round, with the last entry for every later round
 discussion_review: ["opus[medium]", "opus[medium]", "sonnet[high]"] # model-spec for the Discussion-Review reviewer; empty takes the run-wide review list, a set value (one model-spec, or a per-round list whose last entry serves every later round) replaces it for this segment
@@ -33,10 +33,10 @@ driver: haiku[medium] # model-spec for the model that runs an llm-driven run's l
 arbiter: opus[high] # model-spec for the arbiter, the cold agent a run's driver asks to settle a stop it cannot (see contracts/specs/llm-model-spec.md); empty takes opus[high]
 arbiter_timeout_min: 30 # minutes one arbiter spawn is allowed to run; 0 takes 30
 arbiter_max_spawns: 3 # arbiter spawns a run may use; 0 turns the arbiter off, so every eligible stop escalates to the run's parent as without it
-driver_kind: llm # the driver a task's loom run is seeded with when nothing typed one: llm or go; a seeded run keeps its recorded driver
-tackler: haiku # model-spec for the tackler, the cold agent a Go driver asks to settle a stop its rules do not (see contracts/specs/llm-model-spec.md); empty takes haiku
-tackler_timeout_min: 10 # minutes one tackler spawn is allowed to run; 0 takes 10
-tackler_max_spawns: 4 # tackler spawns a run may use; 0 turns the tackler off, so every stop it would take hands back
+driver_kind: "" # overrides shed.yaml's driver_kind for a loom run, llm or go; empty inherits shed.yaml; a seeded run keeps its recorded driver
+tackler: "" # overrides shed.yaml's tackler model-spec for a loom run (see contracts/specs/llm-model-spec.md); empty inherits shed.yaml
+tackler_timeout_min: 0 # overrides shed.yaml's tackler_timeout_min for a loom run; 0 inherits shed.yaml
+tackler_max_spawns: ~ # overrides shed.yaml's tackler_max_spawns for a loom run; null inherits shed.yaml, and a set 0 turns the tackler off for loom
 alignment: opus[high] # model-spec for the alignment agent, the cold agent that settles a parent review or a PR-Gate itself unless it finds an overlap or a question it cannot settle (see contracts/specs/llm-model-spec.md); empty takes opus[high]
 alignment_timeout_min: 20 # minutes one alignment spawn is allowed to run; 0 takes 20, and the resolved value must stay below parent_review_wait_min
 skip_alignment: false # true sends parent review and PR-Gate to the run's parent exactly as before the alignment agent
