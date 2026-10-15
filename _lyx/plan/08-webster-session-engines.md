@@ -5,9 +5,9 @@
 - `internal/websterengine/auditengine_test.go`
 
 **Create:**
-- `plan:internal/websterengine#AuditEngines` -> `type AuditEngines interface`
-- `plan:internal/websterengine#sessionAuditEngine` -> `func sessionAuditEngine(engines AuditEngines, session, recorded string) (AuditEngine, error)`
-- `plan:internal/websterengine#recordedSession` -> `type recordedSession struct`
+- `internal/websterengine#AuditEngines`
+- `internal/websterengine#sessionAuditEngine`
+- `internal/websterengine#recordedSession`
 
 **Edit:**
 - `internal/websterengine#AuditEngine`
