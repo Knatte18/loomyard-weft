@@ -284,7 +284,7 @@
       }
     }
   ],
-  "currentBatch": 0,
+  "currentBatch": 12,
   "masterStrand": "5869ee916a60ab850c7742f87fa34560",
   "masterSessionId": "6b68c927-cf8b-4e65-84e0-b3ee7c61d58a",
   "batches": {
@@ -347,6 +347,25 @@
       "bracketTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-run-pane-timing/6b68c927-cf8b-4e65-84e0-b3ee7c61d58a/subagents/agent-a9c06cc5bedcbc2ab.jsonl"
       ]
+    },
+    "12": {
+      "slug": "overview-entry-numbers",
+      "cards": [
+        "12-overview-entry-numbers",
+        "13-role-prefix-config",
+        "14-recipe-role-prefixes"
+      ],
+      "cardHashes": {
+        "12-overview-entry-numbers": "c5a8403644972c7998aa85803236d9a4152c02db21dde0bb295693766084a6c8",
+        "13-role-prefix-config": "8befc5a9d67bfffd6bdee3dda37e8f07d88e9416d831d3979cd29700f219aa1b",
+        "14-recipe-role-prefixes": "d9707035d4e04d4eabff515cb96b344538ec6e6da440b7047759dd2dcd76c0b7"
+      },
+      "startSha": "eefaaff151abcc42ed9f8bb10da9e998c04082d5",
+      "kind": "fork",
+      "spawnedAt": "2026-10-15T09:36:17Z",
+      "sessionId": "6b68c927-cf8b-4e65-84e0-b3ee7c61d58a",
+      "terminal": false,
+      "status": ""
     },
     "6": {
       "slug": "prrework-carry-gate",
