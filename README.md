@@ -18,16 +18,13 @@ Held by a run; its scope is locked until the run ends.
 | # | Task | Slug | Recipe | At | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | 1 | **Go driver and tackler in shed, for every FSM-driven run**<br>• Move the Go driver and tackler from loomcli into shed so darn, batten and every recipe get them; module config overrides model and budgets | [`shed-tackler`](design-shed-tackler.md) | loom | Plan-Burler-Review | 12h | 12h | shed, loom, batten |
+| 2 | **Webster fork prompt: read instruction and kick-start pack at the end, behind a switch**<br>• Move the one-turn read instruction and the kick-start pack to the end of the implementer fork prompt, switchable, to cut serial first-turn reads | [`webster-pack-end-of-prompt`](design-webster-pack-end-of-prompt.md) | loom | Worktree-Create | 0m | 0m | webster, stencil |
 
 ### Ready
 
 Waits on nothing open; can start now.
 
-#### Normal priority
-
-| # | Task | Slug | Recipe | After | Age | Revised | Labels |
-| --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | **Webster fork prompt: read instruction and kick-start pack at the end, behind a switch**<br>• Move the one-turn read instruction and the kick-start pack to the end of the implementer fork prompt, switchable, to cut serial first-turn reads | [`webster-pack-end-of-prompt`](design-webster-pack-end-of-prompt.md) | loom |  | 0m | 0m | webster, stencil |
+_None._
 
 ### Layer A
 
