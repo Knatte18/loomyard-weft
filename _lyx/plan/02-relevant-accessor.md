@@ -1,7 +1,7 @@
 # Card 2 — Declare the relevant list's path
 
 **Create:**
-- `plan:internal/loomengine#DiscussionRelevant` -> `func DiscussionRelevant(l *lyxcwd.Location) string`
+- `internal/loomengine#DiscussionRelevant`
 
 **Edit:**
 - `internal/loomengine#DiscussionDecisionRecord`

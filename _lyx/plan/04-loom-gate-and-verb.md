@@ -1,7 +1,7 @@
 # Card 4 — Run the relevant check in the loom discussion gate and validate-discussion
 
 **Create:**
-- `plan:internal/loomshed#ValidateLoomDiscussion` -> `func ValidateLoomDiscussion(decisionRecordPath, supportLogPath, relevantPath string) ([]discussionparser.Finding, error)`
+- `internal/loomshed#ValidateLoomDiscussion`
 
 **Edit:**
 - `internal/loomshed#NewDiscussionGate` -> `func NewDiscussionGate(decisionRecordPath, supportLogPath, relevantPath string) shuttleengine.Gate`
@@ -26,9 +26,9 @@
 - `internal/loomshed#TestDiscussionGate_FailureSurfacesItsFindings`
 
 **Uses:**
-- `plan:internal/discussionparser#CheckRelevant`
+- `internal/discussionparser#CheckRelevant`
 - `internal/discussionparser#Validate`
-- `plan:internal/loomengine#DiscussionRelevant`
+- `internal/loomengine#DiscussionRelevant`
 - `internal/loomshed#writeDiscussionFixture`
 - `internal/loomshed#validDecisionRecord`
 - `internal/loomcli#darnRecordFixture`

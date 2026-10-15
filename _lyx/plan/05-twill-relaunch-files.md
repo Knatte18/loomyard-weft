@@ -13,7 +13,7 @@
 - `internal/loomengine#TestDiscussionTable`
 
 **Uses:**
-- `plan:internal/loomengine#DiscussionRelevant`
+- `internal/loomengine#DiscussionRelevant`
 - `internal/loomengine#DiscussionDecisionRecord`
 - `internal/loomengine#DiscussionSupportLog`
 

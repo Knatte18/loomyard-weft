@@ -6,7 +6,7 @@
 - `contracts/stencils/loom/loom-template-discussion.md`
 
 **Uses:**
-- `plan:internal/loomengine#DiscussionRelevant`
+- `internal/loomengine#DiscussionRelevant`
 
 **Intent:**
 Per D1, `relevant.md` becomes a required Discussion-Write output.

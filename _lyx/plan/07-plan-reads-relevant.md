@@ -6,7 +6,7 @@
 - `contracts/stencils/loom/loom-template-plan.md`
 
 **Uses:**
-- `plan:internal/loomengine#DiscussionRelevant`
+- `internal/loomengine#DiscussionRelevant`
 
 **Intent:**
 Per D4, Plan-Write reads the decision record, then `relevant.md` when it exists, then the code the list names that the plan needs, then explores further as needed.

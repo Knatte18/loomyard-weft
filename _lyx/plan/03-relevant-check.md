@@ -1,8 +1,8 @@
 # Card 3 — Check a present relevant list is well-formed
 
 **Create:**
-- `plan:internal/discussionparser#CheckRelevant` -> `func CheckRelevant(relevantPath string) ([]Finding, error)`
-- `plan:internal/discussionparser#TestCheckRelevant` -> `func TestCheckRelevant(t *testing.T)`
+- `internal/discussionparser#CheckRelevant`
+- `internal/discussionparser#TestCheckRelevant`
 
 **Edit:**
 - `internal/discussionparser#Validate`
