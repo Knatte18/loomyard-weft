@@ -1,0 +1,78 @@
+{
+  "runGuid": "7ef9829a90bf355a163215d16b0d9517",
+  "planFingerprint": "375b7829bfa89b6f0650b1a614f4d54b3168e752cccfe9e698ec38d2a9aafdcf",
+  "planFileHashes": {
+    "00-overview.md": "88c2ea3958b60ec244707a31c2a2470ae9087cebc60426e9dc75ee7234e71475",
+    "04-judge-parts.md": "f55efb1a6f1b4d5f21fa26f5acf4ada99a34639b97c12a4e9c6a002f9cf98734"
+  },
+  "planOverviewFrameHash": "b4779cb8cc0c13a02fed47f70ffe708c041b414ea4a995a514a9bc55bbbe0143",
+  "partition": [
+    {
+      "cards": [
+        "04-judge-parts"
+      ],
+      "profile": "cautious",
+      "estimate": 135024,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 1,
+        "startup": 54340,
+        "read_union": 31292,
+        "cards": [
+          {
+            "card": 4,
+            "card_text": 1092,
+            "reads": {
+              "file:contracts/stencils/twill/twill-directive.md": 612,
+              "file:docs/overview.md": 9300,
+              "file:internal/twilldirective/doc.go": 288,
+              "package:contracts/stencils": 2000,
+              "package:contracts/stencils/twill": 2000,
+              "package:docs": 2000,
+              "package:internal/loomengine": 2000,
+              "package:internal/twilldirective": 2000,
+              "tests:contracts/stencils": 2000,
+              "tests:contracts/stencils/twill": 2000,
+              "tests:docs": 2000,
+              "tests:internal/loomengine": 2000,
+              "tests:internal/twilldirective": 2000
+            },
+            "messages": 161,
+            "written": 49392
+          }
+        ]
+      }
+    }
+  ],
+  "currentBatch": 4,
+  "masterStrand": "a61216794eb2924c68704a9ed69d9ca0",
+  "masterSessionId": "2d56225d-534b-4e24-a5a0-7b2656fe1f7c",
+  "batches": {
+    "4": {
+      "slug": "judge-parts",
+      "cards": [
+        "04-judge-parts"
+      ],
+      "cardHashes": {
+        "04-judge-parts": "f55efb1a6f1b4d5f21fa26f5acf4ada99a34639b97c12a4e9c6a002f9cf98734"
+      },
+      "startSha": "4712107f305b366417f01f95f576fd7677f41ff9",
+      "kind": "fork",
+      "spawnedAt": "2026-10-15T06:21:10Z",
+      "sessionId": "2d56225d-534b-4e24-a5a0-7b2656fe1f7c",
+      "terminal": false,
+      "status": ""
+    }
+  }
+}
