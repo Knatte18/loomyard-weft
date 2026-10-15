@@ -1,0 +1,374 @@
+{
+  "runGuid": "59f32fa4ce8f07ac4302baa96d787bec",
+  "planFingerprint": "f166723003028891beefb6b4473503d3ce6e8a5181406a07fdc23f260164340c",
+  "planFileHashes": {
+    "00-overview.md": "353db3c7e75d05a65e0aad3d66b43170d0378b2ec9658afe62d256558a7312b4",
+    "01-agentname-program-senders.md": "07530e30f94eabd2d52a72d51b496f847dff78349c2c8541eb7cb3e5b53a1c29",
+    "02-selfexec-replaced.md": "c73661823561251a4150bf00b3690fe07e3bfb9fa6ef1979593c7157d1604020",
+    "03-proc-parent-pid.md": "578956b0c87536c5bd09588a9048f0010787f2f78e531cb197c89d6c24ac9f3c",
+    "04-reed-status-pane-pid.md": "b3d3c7880c341d6a575134bb76c55f6747f424bf77878cc9a9b0bfe664834ffc",
+    "05-shuttle-recordless-strand.md": "0309d78e2f7e51dc173feb058b3f3268a1eed1ab90d13a642c3eb09a394921b9",
+    "06-creelengine-journal.md": "566c5909569b091c3741769299871eefe40eaf7bb78c51921109028bb30cebea",
+    "07-creelengine-pool-verbs.md": "69142cf534337f47f3b33f3b315b472675533d291614124c6b13cc7917fc24b5",
+    "08-creelengine-identity.md": "fb31b9bfaba36492c5cb173e150937dab72c6a47f3fc0e0fa643500dc5bdff31",
+    "09-creelengine-delivery.md": "12dede0c4a0b3b85a86fa1775406cd4e7e3da2b2717ed241205d7a485c55d370",
+    "10-creelengine-daemon.md": "33b9a58bd127edc5b09e54e128faa4f81d450b5ef834f623ec5f031d26e3febb",
+    "11-creel-store-pattern.md": "d7e624a4fc051642a389aa788924e7ef496ba7c2f3e823966bb0ed0816ec995e",
+    "12-hubgeom-creel-geometry.md": "f27bf5dc00f55376b5d6f059a72d55dd7ce425f8afc3075255adb8d36900083e",
+    "13-creelcli-delivery-adapter.md": "70131a227a07e75b03df8556aad3ae523a18f4e2c691247a0a2a456cbfacb0be",
+    "14-creelcli-verbs.md": "2e9611c73521ef3549e7657f88cac9a2331e2359c89ded6481d54fcc4f5f1f4c",
+    "15-creelcli-smoke.md": "8d5445bffa367702a6b1e9d9aba2df0e517a201e9ea373f73b84788860217f6a",
+    "16-creel-docs.md": "3d343944c6be8dc4c5bab611d29029f94332657e0b2e8e7891704829d166021d"
+  },
+  "planOverviewFrameHash": "192c9ebb6ab3e882b98745e3d120b6500c389695a187a9306afa1cfafa3ceda6",
+  "partition": [
+    {
+      "cards": [
+        "01-agentname-program-senders",
+        "02-selfexec-replaced",
+        "03-proc-parent-pid",
+        "04-reed-status-pane-pid",
+        "05-shuttle-recordless-strand",
+        "06-creelengine-journal"
+      ],
+      "profile": "cautious",
+      "estimate": 191326,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 1,
+        "startup": 54472,
+        "read_union": 40116,
+        "cards": [
+          {
+            "card": 1,
+            "card_text": 300,
+            "reads": {
+              "file:pattern/PATTERN-agent-name.md": 204,
+              "package:internal/agentname": 2000,
+              "package:pattern": 2000,
+              "tests:internal/agentname": 2000,
+              "tests:pattern": 2000
+            },
+            "messages": 43.5,
+            "written": 13350
+          },
+          {
+            "card": 2,
+            "card_text": 192,
+            "reads": {
+              "package:internal/selfexec": 2000,
+              "tests:internal/selfexec": 2000
+            },
+            "messages": 19.5,
+            "written": 6042
+          },
+          {
+            "card": 3,
+            "card_text": 168,
+            "reads": {
+              "package:internal/proc": 2000,
+              "tests:internal/proc": 2000
+            },
+            "messages": 15.5,
+            "written": 4818
+          },
+          {
+            "card": 4,
+            "card_text": 156,
+            "reads": {
+              "package:internal/reedengine": 2000,
+              "tests:internal/reedengine": 2000
+            },
+            "messages": 54.5,
+            "written": 16506
+          },
+          {
+            "card": 5,
+            "card_text": 504,
+            "reads": {
+              "file:pattern/PATTERN-pane-text-injection.md": 252,
+              "package:internal/shuttlecli": 2000,
+              "package:internal/shuttleengine": 2000,
+              "package:pattern": 2000,
+              "tests:internal/shuttlecli": 2000,
+              "tests:internal/shuttleengine": 2000,
+              "tests:pattern": 2000
+            },
+            "messages": 117.5,
+            "written": 35754
+          },
+          {
+            "card": 6,
+            "card_text": 468,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1872,
+              "package:cmd/lyx/testdata": 2000,
+              "package:internal/creelengine": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:internal/creelengine": 2000
+            },
+            "messages": 66,
+            "written": 20268
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "07-creelengine-pool-verbs",
+        "08-creelengine-identity",
+        "09-creelengine-delivery",
+        "10-creelengine-daemon",
+        "11-creel-store-pattern"
+      ],
+      "profile": "cautious",
+      "estimate": 191660,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 2,
+        "startup": 61472,
+        "read_union": 30660,
+        "cards": [
+          {
+            "card": 7,
+            "card_text": 624,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1872,
+              "package:cmd/lyx/testdata": 2000,
+              "package:internal/creelengine": 2000,
+              "package:internal/testkit/creelfake": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:internal/creelengine": 2000,
+              "tests:internal/testkit/creelfake": 2000
+            },
+            "messages": 72,
+            "written": 22224
+          },
+          {
+            "card": 8,
+            "card_text": 348,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1872,
+              "package:cmd/lyx/testdata": 2000,
+              "package:internal/creelengine": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:internal/creelengine": 2000
+            },
+            "messages": 36,
+            "written": 11148
+          },
+          {
+            "card": 9,
+            "card_text": 492,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1872,
+              "file:pattern/PATTERN-daemon-wakeups.md": 576,
+              "package:cmd/lyx": 2000,
+              "package:cmd/lyx/testdata": 2000,
+              "package:internal/creelengine": 2000,
+              "package:pattern": 2000,
+              "tests:cmd/lyx": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:internal/creelengine": 2000,
+              "tests:pattern": 2000
+            },
+            "messages": 72,
+            "written": 22092
+          },
+          {
+            "card": 10,
+            "card_text": 516,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1872,
+              "file:pattern/PATTERN-daemon-wakeups.md": 576,
+              "file:pattern/PATTERN-lyx-temp-root.md": 228,
+              "package:cmd/lyx": 2000,
+              "package:cmd/lyx/testdata": 2000,
+              "package:internal/creelengine": 2000,
+              "package:pattern": 2000,
+              "tests:cmd/lyx": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:internal/creelengine": 2000,
+              "tests:pattern": 2000
+            },
+            "messages": 108,
+            "written": 32916
+          },
+          {
+            "card": 11,
+            "card_text": 348,
+            "reads": {
+              "file:PATTERN.md": 1380,
+              "file:cmd/lyx/testdata/test-budget.yaml": 1872,
+              "file:pattern/PATTERN-told-geometry.md": 276,
+              "package:.": 2000,
+              "package:cmd/lyx/testdata": 2000,
+              "package:internal/creelengine": 2000,
+              "package:pattern": 2000,
+              "tests:.": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:internal/creelengine": 2000,
+              "tests:pattern": 2000
+            },
+            "messages": 36,
+            "written": 11148
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "12-hubgeom-creel-geometry",
+        "13-creelcli-delivery-adapter",
+        "14-creelcli-verbs",
+        "15-creelcli-smoke",
+        "16-creel-docs"
+      ],
+      "profile": "cautious",
+      "estimate": 179390,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 3,
+        "startup": 68472,
+        "read_union": 48104,
+        "cards": [
+          {
+            "card": 12,
+            "card_text": 228,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1872,
+              "package:cmd/lyx/testdata": 2000,
+              "package:internal/hubgeom": 2000,
+              "package:internal/lyxdirs": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:internal/hubgeom": 2000,
+              "tests:internal/lyxdirs": 2000
+            },
+            "messages": 33.5,
+            "written": 10278
+          },
+          {
+            "card": 13,
+            "card_text": 360,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1872,
+              "package:cmd/lyx/testdata": 2000,
+              "package:internal/creelcli": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:internal/creelcli": 2000
+            },
+            "messages": 42,
+            "written": 12960
+          },
+          {
+            "card": 14,
+            "card_text": 528,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1872,
+              "file:tools/sandbox/SANDBOX-SHUTTLE-SUITE.md": 3372,
+              "package:cmd/lyx": 2000,
+              "package:cmd/lyx/testdata": 2000,
+              "package:internal/creelcli": 2000,
+              "package:tools/sandbox": 2000,
+              "tests:cmd/lyx": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:internal/creelcli": 2000,
+              "tests:tools/sandbox": 2000
+            },
+            "messages": 87,
+            "written": 26628
+          },
+          {
+            "card": 15,
+            "card_text": 216,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1872,
+              "package:cmd/lyx/testdata": 2000,
+              "package:internal/creelcli": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:internal/creelcli": 2000
+            },
+            "messages": 30,
+            "written": 9216
+          },
+          {
+            "card": 16,
+            "card_text": 132,
+            "reads": {
+              "file:docs/overview.md": 9396,
+              "package:docs": 2000,
+              "package:internal/creelengine": 2000,
+              "tests:docs": 2000,
+              "tests:internal/creelengine": 2000
+            },
+            "messages": 12,
+            "written": 3732
+          }
+        ]
+      }
+    }
+  ],
+  "currentBatch": 1,
+  "masterStrand": "19e432caef90e94f900d46639b05a8fa",
+  "masterSessionId": "087ffc57-feef-4893-8162-2e42d2cfed42",
+  "batches": {
+    "1": {
+      "slug": "agentname-program-senders",
+      "cards": [
+        "01-agentname-program-senders",
+        "02-selfexec-replaced",
+        "03-proc-parent-pid",
+        "04-reed-status-pane-pid",
+        "05-shuttle-recordless-strand",
+        "06-creelengine-journal"
+      ],
+      "cardHashes": {
+        "01-agentname-program-senders": "07530e30f94eabd2d52a72d51b496f847dff78349c2c8541eb7cb3e5b53a1c29",
+        "02-selfexec-replaced": "c73661823561251a4150bf00b3690fe07e3bfb9fa6ef1979593c7157d1604020",
+        "03-proc-parent-pid": "578956b0c87536c5bd09588a9048f0010787f2f78e531cb197c89d6c24ac9f3c",
+        "04-reed-status-pane-pid": "b3d3c7880c341d6a575134bb76c55f6747f424bf77878cc9a9b0bfe664834ffc",
+        "05-shuttle-recordless-strand": "0309d78e2f7e51dc173feb058b3f3268a1eed1ab90d13a642c3eb09a394921b9",
+        "06-creelengine-journal": "566c5909569b091c3741769299871eefe40eaf7bb78c51921109028bb30cebea"
+      },
+      "startSha": "4ebb73ff31750a9d92e5164a690a072bcbda1b13",
+      "kind": "fork",
+      "spawnedAt": "2026-10-15T12:43:35Z",
+      "sessionId": "087ffc57-feef-4893-8162-2e42d2cfed42",
+      "terminal": false,
+      "status": ""
+    }
+  }
+}
