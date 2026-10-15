@@ -1,0 +1,14 @@
+{
+  "verdict": "resume",
+  "reason": "Hard-cap escalation at Discussion-Bouncer round 3. The two open design-wrong findings are answered by the round-3 fix now in the decision record. F1 (settle-record-to-stop-join-unstated): the Stops by settler Decision now matches a loom-file record by producer and state and the greatest history length whose last counted entry is stamped at or before batten's change. That rule handles a restep before batten's observation, and the Decision also covers note-only stops and empty producers. It holds against the code: `sheddriver.StopKeyOf` records `len(st.History)` at the halt, so the key's last counted entry is the halting entry, and `battenshed.StateChange.At` is batten's observation time. F2 (batten-file-record-matches-no-stop): the fixer took the review's first option. A batten-row halt is now a stop counted apart from convergence's halts, and batten-file records match it by producer, state and the position of its own entry, so these records no longer fall under the matches-no-stop finding. The remaining open findings (F3 to F6) are mechanical, and the fixer report shows each one applied in the record. The segment is accepted unconverged, which is the only option at the hard cap.",
+  "question": "",
+  "goto": "",
+  "verbs": [
+    "lyx loom circling accept report-timing"
+  ],
+  "cause": "",
+  "attempt": 1,
+  "attempt_dir": "/home/knatte/Code/loomyard-LYXHUB/report-timing/_lyx/shed/report-timing/arbiter/attempt-1",
+  "verdict_path": "/home/knatte/Code/loomyard-LYXHUB/report-timing/_lyx/shed/report-timing/arbiter/attempt-1/verdict.yaml",
+  "relaunch": "lyx shed step report-timing --until-stop --arbiter-attempt 1"
+}
