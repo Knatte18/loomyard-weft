@@ -1,6 +1,6 @@
 # creel stage 1: the one way to reach an agent, standalone
 
-`creel-core` · Task · feature, creel, reed, shuttle · running · PR-Gate
+`creel-core` · Task · feature, creel, reed, shuttle · running · Finalize
 
 ## This task: stage 1
 
