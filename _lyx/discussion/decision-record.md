@@ -87,6 +87,12 @@ The darn-review line accepts a step left out through D4's route once the record 
   - d4-darn-omission-self-contradiction (class consistency, severity MEDIUM, open in rounds 3)
 <!-- /lyx:carry-over Discussion-Review -->
 
+<!-- lyx:carry-over Plan-Review -->
+- Plan-Review, round 1: converged; each finding below was fixed or disputed by the round's fixer, and no fresh reviewer has seen the result; the fixer report says which.
+  Review: _lyx/reviews/plan/round-1-review.md; fixer report: _lyx/reviews/plan/round-1-fixer-report.md.
+  - darn-review-evidence-clause-conflates-requested-step (class consistency, severity MEDIUM, open in rounds 1)
+<!-- /lyx:carry-over Plan-Review -->
+
 ## Acceptance criteria
 
 - `CLAUDE.md` and `docs/overview.md` no longer say or imply that a design moves out of, or is cut from, the task's own board entry, and say the entry is left to the landing and prune.
