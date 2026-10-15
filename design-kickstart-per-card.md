@@ -31,6 +31,8 @@ Against it: forks did not do it in the audit; code read in turn 2 is carried and
 Two variants to measure against today's layout behind the switch:
 
 1. Overview first, code per card (the orch's recommendation): at batch start the fork gets every card's intent and glyph list, no code, to plan the batch; it reads a card's spans when it starts that card.
+   Those spans must be resolved fresh at card start, since an earlier card's edits shift line numbers: Claude Code's Edit matches by text and is unaffected, but Read takes line offsets that do not follow edits.
+   So the card's pack comes from one call at card start (`lyx quarry resolve` over the card's glyphs, or a new `lyx webster` verb that renders the card's pack against the current tree), and the fork reads its spans in one parallel turn.
 2. All at once as today, but with the span code inside the pack file, so it is one read instead of about 37 and gets done; the context is as heavy as today's intended read.
 - Keep the layout behind the `webster.yaml` switch, as `kickstart_pack_file` is today, so it can be measured against the current layout with the audit scripts.
 - History: `113593990` had a per-card pack inline without a read rule (arm `mid` in the 2026-10-13 audit, 9 forks); this differs in giving each card its pack when that card starts.
