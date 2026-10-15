@@ -1,0 +1,91 @@
+{
+  "runGuid": "a3bffb57e97eac2b0ef2dbf6f6de0ba2",
+  "planFingerprint": "be65fffa3b46dac642bf2783a5e3f52b927997d04f82b00978127c013440905c",
+  "planFileHashes": {
+    "00-overview.md": "7256cd4507eac768f268fc7ae49dd116b3d45e9ae24d42e804e8b21ccaca6061",
+    "01-orch-state-peek.md": "3b55d644995d656e24df2e95fee6fa6bdcf2775af42af75925607e0fae4beb44",
+    "02-overview-orch-line.md": "fda0bb8f0da7347e5575fc4f6000730d8299962c0369af11737eb6b1f28dcbbe"
+  },
+  "planOverviewFrameHash": "9a670587200f0cbab241c00fc33f010aa04585b863280d5f66b7c3ff04a01a05",
+  "partition": [
+    {
+      "cards": [
+        "01-orch-state-peek",
+        "02-overview-orch-line"
+      ],
+      "profile": "cautious",
+      "estimate": 139756,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 1,
+        "startup": 54292,
+        "read_union": 26268,
+        "cards": [
+          {
+            "card": 1,
+            "card_text": 408,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1848,
+              "package:cmd/lyx/testdata": 2000,
+              "package:internal/orchengine": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:internal/orchengine": 2000
+            },
+            "messages": 26.5,
+            "written": 8358
+          },
+          {
+            "card": 2,
+            "card_text": 1188,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1848,
+              "file:internal/battencli/cli.go": 5712,
+              "file:internal/orchengine/doc.go": 5112,
+              "package:cmd/lyx/testdata": 2000,
+              "package:internal/battencli": 2000,
+              "package:internal/orchengine": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:internal/battencli": 2000,
+              "tests:internal/orchengine": 2000
+            },
+            "messages": 165.5,
+            "written": 50838
+          }
+        ]
+      }
+    }
+  ],
+  "currentBatch": 1,
+  "masterStrand": "4b259718ca8d3c1cdb511cbfa9be6436",
+  "masterSessionId": "ceb073db-c725-47f8-b466-5e1b19811aec",
+  "batches": {
+    "1": {
+      "slug": "orch-state-peek",
+      "cards": [
+        "01-orch-state-peek",
+        "02-overview-orch-line"
+      ],
+      "cardHashes": {
+        "01-orch-state-peek": "3b55d644995d656e24df2e95fee6fa6bdcf2775af42af75925607e0fae4beb44",
+        "02-overview-orch-line": "fda0bb8f0da7347e5575fc4f6000730d8299962c0369af11737eb6b1f28dcbbe"
+      },
+      "startSha": "b1d1638ad89988a82e4db9a55cc8e78acef511f5",
+      "kind": "fork",
+      "spawnedAt": "2026-10-15T09:59:16Z",
+      "sessionId": "ceb073db-c725-47f8-b466-5e1b19811aec",
+      "terminal": false,
+      "status": ""
+    }
+  }
+}
