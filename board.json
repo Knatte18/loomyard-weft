@@ -1050,6 +1050,23 @@
       "body": "Split from `sibling-overlap-check` on 2026-10-15; the operator decided only the board warning and skill rule there.\n\n## Idea\n\nWhen a landing makes several tasks ready at once, batten starts one task per group of overlapping tasks (shared module labels, later the paths of note `labels-from-diff`) and leaves the rest for the orch, naming the overlap in the notice.",
       "created": "2026-10-15T12:28:05Z",
       "revised": "2026-10-15T12:28:05Z"
+    },
+    {
+      "id": 561,
+      "slug": "shuttle-open-permission",
+      "title": "lyx shuttle open cannot choose the permission mode",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "shuttle"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "An interactive session opened by lyx shuttle open always prompts for permissions; there is no flag or config for bypass",
+      "body": "## Seen\n\nOn 2026-10-15 the orch opened a dedicated Opus session for the operator with `lyx shuttle open --role stencil-audit`.\nIt came up in prompt mode, since an interactive run resolves an empty `PermissionMode` to prompt (`claudeengine.validatePermissionMode`), and `shuttle open` has no way to set it.\nThe operator wanted bypass permissions; the orch removed the strand and started a plain `claude --dangerously-skip-permissions` through `lyx reed add`, which then registered under a generic session name (`loomyard-13`) instead of `ly:stencil-audit`.\n\n## Idea\n\n`lyx shuttle open` takes a `--permission-mode` flag (bypass or prompt), or a config default, so an operator session opens in bypass with its lyx strand name.",
+      "created": "2026-10-15T12:31:11Z",
+      "revised": "2026-10-15T12:31:11Z"
     }
   ]
 }
