@@ -1,13 +1,13 @@
 # Card 19 — loom-config-axes
 
 **Create:**
-- `plan:internal/loomengine#DiscussionAdvisor` -> `type DiscussionAdvisor struct`
-- `plan:internal/loomengine#DiscussionAdvisorList` -> `type DiscussionAdvisorList []DiscussionAdvisor`
-- `plan:internal/loomengine#DiscussionAdvisorList.UnmarshalYAML` -> `func (l *DiscussionAdvisorList) UnmarshalYAML(node *yaml.Node) error`
-- `plan:internal/loomengine#validateDiscussionAdvisors` -> `func validateDiscussionAdvisors(advisors DiscussionAdvisorList, reg modelspec.Registry) error`
-- `plan:internal/loomengine#TestMigrateConfig` -> `func TestMigrateConfig(t *testing.T)`
-- `plan:internal/loomengine#planLensDirective` -> `func planLensDirective(layout *lyxcwd.Location, dirs configengine.Dirs, stencilsDir, fan string) (string, error)`
-- `plan:internal/loomengine#discussionLensDirective` -> `func discussionLensDirective(layout *lyxcwd.Location, dirs configengine.Dirs, stencilsDir, fan string) (string, error)`
+- `internal/loomengine#DiscussionAdvisor`
+- `internal/loomengine#DiscussionAdvisorList`
+- `internal/loomengine#DiscussionAdvisorList.UnmarshalYAML`
+- `internal/loomengine#validateDiscussionAdvisors`
+- `internal/loomengine#TestMigrateConfig`
+- `internal/loomengine#planLensDirective`
+- `internal/loomengine#discussionLensDirective`
 
 **Delete:**
 - `internal/loomengine#DiscussionProducerSingle`
