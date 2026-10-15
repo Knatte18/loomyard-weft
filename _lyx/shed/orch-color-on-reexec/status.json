@@ -1,11 +1,11 @@
 {
-  "current_producer": "Darn-Write",
+  "current_producer": "Darn-Bouncer",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Darn-Write",
-    "last": "Preflight → done",
+    "now": "Darn-Bouncer",
+    "last": "Darn-Write → done",
     "wait": ""
   },
   "history": [
@@ -14,6 +14,33 @@
       "outcome": "done",
       "output": "",
       "at": "2026-10-15T11:45:33Z"
+    },
+    {
+      "producer": "Darn-Write",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYXHUB/orch-color-on-reexec/_lyx/landing/summary.md",
+      "at": "2026-10-15T11:50:13Z",
+      "gate_attempts": 0,
+      "gate_spans": [
+        {
+          "gate": "discussion",
+          "kind": "gate",
+          "start": "2026-10-15T11:48:33.906582301Z",
+          "end": "2026-10-15T11:48:38.184298354Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-10-15T11:48:38.232735522Z",
+          "end": "2026-10-15T11:50:12.849986793Z"
+        },
+        {
+          "gate": "description",
+          "kind": "gate",
+          "start": "2026-10-15T11:50:12.895312096Z",
+          "end": "2026-10-15T11:50:12.895361509Z"
+        }
+      ]
     }
   ],
   "product": {
