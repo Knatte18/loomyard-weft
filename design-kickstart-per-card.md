@@ -1,6 +1,6 @@
 # Kick-start pack per card, read when the card starts
 
-`kickstart-per-card` · Task · enhancement, webster, stencil · running · Webster-Burler-Fix
+`kickstart-per-card` · Task · enhancement, webster, stencil · running · Webster-Bouncer
 
 ## Seen
 
