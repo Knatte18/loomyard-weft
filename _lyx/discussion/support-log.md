@@ -67,7 +67,15 @@ Every fork returned a report.
 
 ## Review rounds
 
-_No rounds yet._
+### Round 1 — APPROVED, six findings, all fixed
+
+- F1 (MEDIUM): D2's bound treated every `lyx loom start` as an explicit run start, missing the agent-driven resume — fixed: D2's bound names fresh run, re-entry and resume, accepts the re-arm on resume, and an acceptance row pins it.
+  Narrowing to a start that seeds a new run was rejected: a resume is the same run continuing, and following it is the default the goal sets.
+- F2 (MEDIUM): no acceptance row failed without D4 — fixed: a second-attach row with an overview present, follow on and off.
+- F3 (LOW): the overview-replace row contradicted D6 — fixed: the row excepts D6's move.
+- F4 (LOW): D4's bound ignored D5's outside-binding changes — fixed: D4 states what the select moves.
+- F5 (LOW): D3 missed `lyx shuttle run --focus` — fixed: D3 bounds the override by the explicit focus flag.
+- F6 (LOW): D7 left the unresolvable-path click open — fixed: a click from off then only sets the option and logs at Warn.
 
 ## Question ledger
 
