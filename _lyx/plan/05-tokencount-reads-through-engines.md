@@ -78,7 +78,7 @@
 - `tools/tokencount#fullLoomRun`
 - `tools/tokencount#finishedRuns`
 - `tools/tokencount#fakeArchiveTrees`
-- `plan:internal/shuttleengines#RecordReaders`
+- `internal/shuttleengines#RecordReaders`
 - `internal/shuttleengine#RecordReads`
 - `internal/shuttleengine#TranscriptReader`
 - `internal/shuttleengine#MessagePricer`

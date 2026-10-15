@@ -1,20 +1,20 @@
 # Card 4 — offline-record-readers
 
 **Create:**
-- `plan:internal/shuttleengines#RecordReaders` -> `func RecordReaders() map[string]shuttleengine.RecordReads`
-- `plan:internal/shuttleengines#readsOf` -> `func readsOf(engines map[string]shuttleengine.Engine) map[string]shuttleengine.RecordReads`
-- `plan:internal/shuttleengines#transcriptsAdapter` -> `type transcriptsAdapter struct`
-- `plan:internal/shuttleengines#transcriptsAdapter.LocateSessions` -> `func (a transcriptsAdapter) LocateSessions(worktree string) ([]shuttleengine.LocatedSession, error)`
-- `plan:internal/shuttleengines#transcriptsAdapter.ReadSession` -> `func (a transcriptsAdapter) ReadSession(s shuttleengine.LocatedSession) (shuttleengine.SessionRead, error)`
-- `plan:internal/shuttleengines#pricerAdapter` -> `type pricerAdapter struct`
-- `plan:internal/shuttleengines#pricerAdapter.PriceMessage` -> `func (a pricerAdapter) PriceMessage(model string, u shuttleengine.MessageUsage) (float64, bool)`
-- `plan:internal/shuttleengines#instructionsAdapter` -> `type instructionsAdapter struct`
-- `plan:internal/shuttleengines#instructionsAdapter.InstructionFiles` -> `func (a instructionsAdapter) InstructionFiles() []string`
-- `plan:internal/shuttleengines#TestRecordReaders` -> `func TestRecordReaders(t *testing.T)`
-- `plan:internal/shuttleengines#readingEngine` -> `type readingEngine struct`
-- `plan:internal/shuttleengines#readingEngine.LocateSessions` -> `func (readingEngine) LocateSessions(worktree string) ([]shuttleengine.LocatedSession, error)`
-- `plan:internal/shuttleengines#readingEngine.ReadSession` -> `func (readingEngine) ReadSession(s shuttleengine.LocatedSession) (shuttleengine.SessionRead, error)`
-- `plan:internal/shuttleengines#readingEngine.PriceMessage` -> `func (readingEngine) PriceMessage(model string, u shuttleengine.MessageUsage) (float64, bool)`
+- `internal/shuttleengines#RecordReaders`
+- `internal/shuttleengines#readsOf`
+- `internal/shuttleengines#transcriptsAdapter`
+- `internal/shuttleengines#transcriptsAdapter.LocateSessions`
+- `internal/shuttleengines#transcriptsAdapter.ReadSession`
+- `internal/shuttleengines#pricerAdapter`
+- `internal/shuttleengines#pricerAdapter.PriceMessage`
+- `internal/shuttleengines#instructionsAdapter`
+- `internal/shuttleengines#instructionsAdapter.InstructionFiles`
+- `internal/shuttleengines#TestRecordReaders`
+- `internal/shuttleengines#readingEngine`
+- `internal/shuttleengines#readingEngine.LocateSessions`
+- `internal/shuttleengines#readingEngine.ReadSession`
+- `internal/shuttleengines#readingEngine.PriceMessage`
 
 **Edit:**
 - `internal/shuttleengines/doc.go`

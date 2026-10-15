@@ -1,10 +1,10 @@
 # Card 3 — claude-pricing
 
 **Create:**
-- `plan:internal/shuttleengine/claudeengine#modelPrice` -> `type modelPrice struct`
-- `plan:internal/shuttleengine/claudeengine#prices` -> `var prices map[string]modelPrice`
-- `plan:internal/shuttleengine/claudeengine#Claude.PriceMessage` -> `func (c *Claude) PriceMessage(model string, u shuttleengine.MessageUsage) (float64, bool)`
-- `plan:internal/shuttleengine/claudeengine#TestPriceMessage` -> `func TestPriceMessage(t *testing.T)`
+- `internal/shuttleengine/claudeengine#modelPrice`
+- `internal/shuttleengine/claudeengine#prices`
+- `internal/shuttleengine/claudeengine#Claude.PriceMessage`
+- `internal/shuttleengine/claudeengine#TestPriceMessage`
 
 **Edit:**
 - `internal/shuttleengine/claudeengine/doc.go`
