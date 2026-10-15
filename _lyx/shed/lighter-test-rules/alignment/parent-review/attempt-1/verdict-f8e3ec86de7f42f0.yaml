@@ -1,0 +1,7 @@
+verdict: approve
+reason: >-
+  The design covers the board entry's goal and operator decisions (drop wording claims entirely, keep markers, Fill round-trips, PATTERN scans and registry, review guards wording)
+  and answers both open items (where the per-stencil-change test rule lives, and which prose assertions are structure checks) with no work belonging to another entry.
+  Neither peer run (engine-registry, creel-core) changes a file or behaviour this design changes, and no parent commit is listed.
+question: ""
+superseded: []
