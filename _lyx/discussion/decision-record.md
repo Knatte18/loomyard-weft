@@ -10,7 +10,7 @@ A later `codexengine` makes its sessions countable by implementing the same opti
 
 In:
 
-- A neutral transcript-reading capability in `shuttleengine`: a locator that lists the sessions an engine recorded under a worktree path, with each session's forks, and a reader that yields a session's entries as neutral records.
+- A neutral transcript-reading capability in `shuttleengine`: a locator that lists the sessions an engine recorded under a worktree path, with each session's forks and last-modified time, and a reader that yields a session's entries as neutral records.
 - A neutral per-message usage record in `shuttleengine`, carried on those entries.
 - A pricing capability in `shuttleengine`; the Claude price table moves from `tools/tokencount/cost.go` into `claudeengine`.
 - `claudeengine` implements the locator, the reader and pricing, and its existing `SessionUsage` shares the one Claude transcript usage parse with the new reader.
@@ -25,13 +25,17 @@ Out:
 - Token totals in `lyx report timing`: the board entry's Out names it as later work, and no board entry for it exists yet.
 - `websterengine.MerriamBase`'s live instruction-file read, which `engine-model-choice` owns.
 - A `codexengine`, Codex prices or Codex transcript parsing (`codex-engine`).
-- Changing what the report measures: for an all-Claude run set its tables, columns, figures, weight formula, attribution rules and calibration output stay as they are, bar the D7 header line, which prints only when an engine is unreadable.
+- Changing what the report measures: for an all-Claude run set its tables, columns, figures, weight formula, attribution rules and calibration output stay as they are, bar three wording changes.
+  The D7 header line prints only when an engine is unreadable.
+  The `-no-cutoff` header line, and the flag's help text, say every located session of each slug counts, in place of every transcript in each slug's project directory, a Claude layout term.
+  The default run selection's no-runs error names the engines asked in place of the projects directory (D10).
+  A named run's no-sessions error names the engines asked in place of the project directory (D7).
 
 ## Decisions
 
 ### D1 — Sessions are found per worktree path, by every registered engine
 
-Decision: The locator capability takes a worktree path and returns the sessions that engine recorded there, each with its fork sessions.
+Decision: The locator capability takes a worktree path and returns the sessions that engine recorded there, each with its fork sessions and the last-modified time of its own record, its forks' left out.
 tokencount asks every registered engine that implements it, for each counted worktree (each run's `<hub>/<slug>`, and the prime for the orch), and reads each session through the engine that located it.
 "Each run's engine" is realised per session: a run whose roles ran on different engines is the union of each engine's sessions.
 
@@ -40,7 +44,8 @@ Per-session reading follows from `engine-model-choice`, which lets roles of one 
 
 ### D2 — The reader yields neutral entries; tokencount keeps every lyx-format rule
 
-Decision: The reader yields, per session, its name (the strand name lyx set on it), its count of collapsed repeat records, and its entries in recorded order.
+Decision: The reader yields, per session, its name (the strand name lyx set on it), its repeat count, and its entries in recorded order.
+The repeat count is the streamed records it collapsed into their message's last record plus, in a fork, every line of a replayed parent message it skipped.
 An entry carries its timestamp, whether it is a user or an assistant entry, whether it starts or ends a turn, a message key and the model, its usage when it is the message's final record, its user texts, its tool calls classed as shell, file read or other with the command or path, its tool results with the call they answer and their text, and the prompt path when the entry is the engine's own launch line.
 The message key is the provider's message id, or, for a message without one, a key the engine makes unique per message (Claude's line uuid, as tokencount keys it today).
 Every provider rule that decides those fields stays in the engine: Claude's streamed-message last-line-wins rule, sidechain handling, interrupt and local-command markers, compaction summaries, custom-title lines, the launch-line wording, the fork transcript layout.
@@ -77,7 +82,8 @@ Rationale: The board entry's "Seen" names the two copies as a duplication to end
 ### D6 — An offline read set from the registry
 
 Decision: `internal/shuttleengines` gains a constructor returning, per registered engine name, that engine's read capabilities only (locator and reader, pricing, instruction files), built with a zero shuttle config as `SessionNamers` builds engines.
-It exposes no `Engine`, so nothing reached through it can start, open, send to or stop a run.
+Each capability value in the set is a small adapter in `shuttleengines` that forwards to the engine it holds in an unexported field, so its dynamic type is the adapter and no type assertion on it recovers an `Engine` that can start, open, send to or stop a run.
+The adapters are one per capability, not one per engine.
 tokencount takes that set through a seam in its entry point, and its tests inject a test-local fake with neutral entries and never write a provider's transcript format.
 Claude's locator resolves its projects root as `claudeengine` already does (from `HOME`), and the parsing and locating internals take the root as a parameter, so Claude-format tests run parallel on a temporary root and one test covers the `HOME` default.
 The `-projects` flag is deleted; its only users are tokencount's own integration tests, which move to the injected fake.
@@ -87,9 +93,10 @@ Rationale: `PATTERN-shuttle-provider-seam` lets only `shuttleengines` construct 
 ### D7 — Failures stay loud in tokencount; absence is not a failure
 
 Decision: An engine whose root does not exist, or that recorded no session under a worktree, contributes nothing.
-A run with no session from any engine fails with the existing "no sessions" error, naming the engines asked.
-A locator error other than absence, and a located session whose transcript exists but cannot be read, fail the count with an error naming it.
-A session whose transcript vanishes between locate and read (a `/clear`, a teardown) counts as absent.
+A named run with no session from any engine fails with the existing "no sessions" error, naming the engines asked; the default selection skips such a run instead (D10).
+A locator error other than absence, and a located session whose transcript cannot be read, fail the count with an error naming it.
+A located session whose transcript vanished before it was read is unreadable and fails the count the same way.
+Its one cause is the provider expiring old transcripts while the count runs; a rerun no longer locates the session and counts without it, so no located session is ever left out of a count that succeeds.
 Malformed or half-written entries (a live session's last line) are skipped by the engine reader, as the current parser skips them.
 When a registered engine lacks the locator capability, the report header names it on one line, since its sessions, if any, are not counted.
 
@@ -107,6 +114,17 @@ Rationale: This is the board entry's "Calibration reads the engine's instruction
 Decision: The "All runs" total line's count of repeated transcript lines skipped sums each session's collapsed repeat count from the reader (D2) and tokencount's cross-transcript repeats, so it counts what it counts today.
 
 Rationale: The figure exists in the report today, and D2 moves half of what feeds it into the engine.
+
+### D10 — The default selection ranks finished runs by located-session recency
+
+Decision: With no slugs named, the candidates are the slugs with an archive tag in the weft repository, the prime left out, each located at `<hub>/<slug>` through every engine's locator.
+A candidate's recency is the newest last-modified time among its located sessions (D1), so ranking reads no transcript; for Claude that time is the main transcript file's modification time, the key `recentRuns` uses today.
+A candidate with no located session is skipped, never the D7 "no sessions" error, so a finished slug whose transcripts the provider has expired does not fail the default report; a locator error still fails it.
+The -last most recent full loom runs are counted, and the skipped not-full-loom runs are named as today.
+When no full loom run is found, the error names the hub and the engines asked, not a projects directory.
+
+Rationale: Today's candidates are the hub's project directories under the Claude projects root, which leaves tokencount with the root (Scope).
+The archive tags already gate today's candidates, so drawing candidates from them and ranking by the same file time selects the runs today's code selects.
 
 ## Constraints
 
@@ -131,10 +149,12 @@ Rationale: The figure exists in the report today, and D2 moves half of what feed
 
 - `tools/tokencount` contains no Claude transcript field name, no `.claude` path and no price figure; `cost.go`'s table lives in `claudeengine`; the provider-seam import scan passes.
 - For a fixture set of Claude transcripts, the Claude reader yields entries from which tokencount reproduces today's role tokens, cost, working time, repeated-lines figure, fork cards, fork start and peak context, begin-batch base and Merriam start.
-- Claude reader scenarios: a message streamed over several lines yields its usage once, from its last line, and counts its earlier lines as repeats; two id-less messages both count; a fork transcript's replayed parent message is skipped in the fork; the latest custom title names the session; interrupt markers, local-command output and compaction summaries set the turn flags as today; the launch line yields its prompt path; a malformed or half-written line is skipped; a missing subagents directory is zero forks; a missing projects root is no sessions.
+- Claude reader scenarios: a message streamed over several lines yields its usage once, from its last line, and counts its earlier lines as repeats; two id-less messages both count; a fork transcript's replayed parent message is skipped in the fork and counts each of its lines in the fork's repeat count; the latest custom title names the session; interrupt markers, local-command output and compaction summaries set the turn flags as today; the launch line yields its prompt path; a malformed or half-written line is skipped; a missing subagents directory is zero forks; a missing projects root is no sessions.
 - Claude pricing scenarios: one-hour and five-minute cache writes priced separately; Haiku 5.5 above 100K prompt tokens priced on its long card; an unknown model is unpriced; a zero-usage message costs nothing and is never unpriced.
 - `SessionUsage` returns the same readings as before for the existing fixtures, id-less lines included.
-- tokencount over a fake read set: sessions from two engines on one worktree are both counted; one engine with no sessions beside one with sessions counts the latter; a message key repeated across transcripts of one engine counts once; an engine without pricing makes its messages unpriced; an engine without the locator is named in the header; a run with no sessions from any engine refuses; a locator error or an unreadable located session fails the count naming it; a session vanished after locating is absent.
+- tokencount over a fake read set: sessions from two engines on one worktree are both counted; one engine with no sessions beside one with sessions counts the latter; a message key repeated across transcripts of one engine counts once; an engine without pricing makes its messages unpriced; an engine without the locator is named in the header; a named run with no sessions from any engine refuses; a locator error or an unreadable located session fails the count naming it; a session vanished after locating fails the count naming it.
+- The default selection over a fake read set counts the -last most recently changed full loom runs, ranked by the locator's last-modified times, and skips a finished slug with no located session.
+- The offline read set's capability values do not type-assert to `shuttleengine.Engine`.
 - The time-bound cutoff leaves out a session whose earliest user or assistant entry precedes the bound, and one with no such entry, and `-no-cutoff` counts both.
 - Calibration uses the instruction-file names of the Webster session's engine, read at the base commit; an absent file adds nothing.
 
