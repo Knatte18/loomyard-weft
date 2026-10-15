@@ -60,6 +60,9 @@ Autonomous mode: no operator turns; each topic below was settled by auto-pick af
 - Let tokencount degrade to unknown like `SessionUsage`: a silent undercount in an operator cost report; `SessionUsage` degrades because shuttle must not fail a run on a report-only read, which tokencount does not share.
 - Reword the repeated-lines figure to count cross-transcript repeats only: changes a figure the report shows today.
 - Replace `UsageReader` with the new reader: it serves a run's finalize with different failure rules.
+- Count vanished sessions per run and name the count in the run's section: adds a report line and a code path for a rare race that a rerun resolves; failing like an unreadable session drops nothing silently.
+- Document the offline read set as read-only by contract: the adapters give the bound by type at the cost of one small forwarding type per capability.
+- Rank default candidates by their last entry's timestamp: reads every finished slug's transcripts in full, and can select different runs from today's file-time key.
 
 ## Review rounds
 
@@ -75,3 +78,6 @@ _No rounds yet._
 - Q6 (auto-pick): Calibration's instruction files? The Webster session engine's list at the base commit, D8. Resolved.
 - Q7 (auto-pick): the repeated-lines figure once the engine collapses streamed lines? The reader reports its collapsed count and the figure keeps its meaning, D9. Resolved.
 - Q8 (auto-pick): what the offline set exposes? Read capabilities only, D6. Resolved.
+- Q9 (auto-pick, review round 1): how the default selection finds and ranks runs without the projects root? Archive-tag slugs located through every engine, ranked by the locator's last-modified times, a slug with no session skipped, D10. Resolved.
+- Q10 (auto-pick, review round 1): a session vanished between locate and read? Fails the count like an unreadable one, D7. Resolved.
+- Q11 (auto-pick, review round 1): how the offline set's read-only bound holds? Per-capability adapters whose dynamic type is not the engine, D6. Resolved.
