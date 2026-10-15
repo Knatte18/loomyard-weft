@@ -1,6 +1,6 @@
 # creel stage 2: orch and batten notices through creel
 
-`creel-notices` · Task · feature, orch, batten
+`creel-notices` · Task · feature, creel, orch, batten
 
 Depends on: [`creel-core`](design-creel-core.md)
 

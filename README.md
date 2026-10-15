@@ -59,7 +59,7 @@ Starts when every entry it names under After is done.
 | # | Task | Slug | Recipe | After | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | 1 | **Usage and cost read through the engine**<br>• tokencount reads each run through its engine, with prices per engine, instead of reading Claude transcripts directly | [`engine-usage-readers`](design-engine-usage-readers.md) | loom | `engine-registry`, `engine-config-seams` | 4m | 4m | shuttle |
-| 2 | **creel stage 2: orch and batten notices through creel**<br>• The orch watcher and batten notices and injects go through creel; the watcher keeps only its cycle logic | [`creel-notices`](design-creel-notices.md) | loom | `creel-core` | 4m | 4m | orch, batten |
+| 2 | **creel stage 2: orch and batten notices through creel**<br>• The orch watcher and batten notices and injects go through creel; the watcher keeps only its cycle logic | [`creel-notices`](design-creel-notices.md) | loom | `creel-core` | 4m | 0m | creel, orch, batten |
 
 ### Layer D
 
@@ -69,7 +69,7 @@ Starts when every entry it names under After is done.
 
 | # | Task | Slug | Recipe | After | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | **creel stage 3: agents message through creel, not SendMessage**<br>• Parent asks, parent review, stop reports and shuttle send go through creel, so a non-Claude engine can take a role with a parent | [`creel-agents`](design-creel-agents.md) | loom | `creel-notices`, `engine-config-seams` | 4m | 4m | shuttle, loom, stencil |
+| 1 | **creel stage 3: agents message through creel, not SendMessage**<br>• Parent asks, parent review, stop reports and shuttle send go through creel, so a non-Claude engine can take a role with a parent | [`creel-agents`](design-creel-agents.md) | loom | `creel-notices`, `engine-config-seams` | 4m | 0m | creel, shuttle, loom, stencil |
 
 ## Notes
 
