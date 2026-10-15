@@ -1,6 +1,6 @@
 # Orch color retyped after every deploy
 
-`orch-color-on-reexec` · Task · bug, orch · running · Publish
+`orch-color-on-reexec` · Task · bug, orch · running · PR-Align
 
 ## Seen
 
