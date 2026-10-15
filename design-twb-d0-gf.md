@@ -1,6 +1,6 @@
 # Plan and Webster checks out of step with the code a plan changes
 
-`twb-d0-gf` · Note · bug · paused · Discussion-Bouncer
+`twb-d0-gf` · Note · bug
 
 ## From `webster-glyph-rename`
 
