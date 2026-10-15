@@ -731,9 +731,7 @@
         "stencil"
       ],
       "issues": [],
-      "depends_on": [
-        "webster-master-no-code"
-      ],
+      "depends_on": [],
       "isolated": false,
       "brief": "Drop the Edit exception for a test file the card only adds tests to; the Create plan handle carries the file",
       "body": "## Seen\n\n`contracts/stencils/loom/loom-template-plan.md` lets a card's `**Edit:**` list a plain test-file path \"for a test file the card adds tests to without changing an existing member\".\nThe same stencil already makes each new test function in an existing file a `**Create:**` declaration with a `plan:` handle, so the plain path only repeats where those new tests go.\nNo recorded reason for keeping both was found; the rule came in with `78a2b1f14` and was tightened in `c279a38ba`.\nThe 2026-10-15 pack audit (`.scratch/glyph-audit-3/`, to be committed under `docs/research/`) found that edits to files with no pack span were mostly md, yaml and test files, which this exception and the non-Go exception allow.\n\n## Operator view, not a decision (2026-10-15)\n\nTest files should not be an exception to glyph references.\n\n## Idea\n\n- Drop the plain test-file path from `**Edit:**`: a card that adds tests to an existing file lists them only as `**Create:**` declarations with `plan:` handles, and the declaration carries the file.\n- Have the plan gate refuse a plain `_test.go` path under `**Edit:**`, naming the way forward, and update `loom-plan-spec.md` and the stencil together.\n- Check that Webster's kick-start pack and the fork prompt still tell the fork which file the new tests go in.\n",
@@ -967,31 +965,6 @@
       "body": "## Seen\n\nRecorded in note `glyph-use-audit` (removed 2026-10-15): a Webster fork deviations list mixed in files that probably house its batch own target glyphs, because the implementer stencil asks it to compare against the glyph union and also tells it not to.\n\n## Idea\n\nGive the stencil one rule for what counts as a deviation, matching what `ScopeGuard` checks, and check it again after `kickstart-per-card` lands, since that task rewrites the fork prompt.",
       "created": "2026-10-15T11:46:18Z",
       "revised": "2026-10-15T11:46:18Z"
-    },
-    {
-      "id": 557,
-      "slug": "webster-master-no-code",
-      "title": "Webster master reads only what every fork shares, never source code",
-      "kind": "task",
-      "labels": [
-        "bug",
-        "webster",
-        "stencil"
-      ],
-      "issues": [],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "The master template tells the master to read the codebase once up front for its forks to inherit, but forks rewrite the code, so every later fork inherits stale reads",
-      "body": "## Seen\n\n`contracts/stencils/webster/webster-template-master.md` tells the master to read the codebase structure and conventions and the plan overview once, up front, so that every implementer fork inherits what it read with no cold orientation.\nThe 2026-10-12 and 2026-10-13 pack audits (`docs/research/glyph-audit-2026-10-12`, `-10-13`) found forks explore only about 6 calls before their first edit, because they inherit that orientation.\n\n## Operator decision (2026-10-15)\n\nA serious bug: Webster was never meant to work this way.\nThe master reads only what is common to every fork and stable during the run: the plan, `CLAUDE.md`, `PATTERN.md` and the like.\nIt reads no source code: Webster rewrites the code, so nothing else is stable during the run, and every fork after the first would inherit stale reads.\nEach fork reads the code its own card needs, fresh, when the card starts.\nThe up-front codebase read has stood in the master template since at least 2026-07-27 (`d89a56232`).\n\n## Idea\n\nRewrite the master orientation to the plan only (`00-overview.md`, the Card Index, Shared Decisions) and drop the inherit-my-reads framing from the master template and the fork prefix.\nThe per-card pack of `kickstart-per-card` then becomes the fork read set rather than an extra on top of inherited reads.\nRe-measure fork exploration with `tools/forkaudit` afterwards: forks will explore more by construction, so compare total reads and stale-read edits, not calls before the first edit.",
-      "status": "done",
-      "created": "2026-10-15T11:54:00Z",
-      "revised": "2026-10-15T11:56:32Z",
-      "run_settings": {
-        "loom": {
-          "review_hard_max_bounces": 3,
-          "review_max_bounces": 2
-        }
-      }
     },
     {
       "id": 558,

@@ -2,8 +2,6 @@
 
 `plan-test-file-path` · Task · enhancement, loom, stencil
 
-Depends on: [`webster-master-no-code`](design-webster-master-no-code.md)
-
 ## Seen
 
 `contracts/stencils/loom/loom-template-plan.md` lets a card's `**Edit:**` list a plain test-file path "for a test file the card adds tests to without changing an existing member".
