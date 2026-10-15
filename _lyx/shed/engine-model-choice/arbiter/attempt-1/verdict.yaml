@@ -1,0 +1,10 @@
+verdict: resume
+reason: >-
+  Circling escalation at Discussion-Review round 3, below the perch's hard cap of 4 (review_hard_max_bounces: 4, discussion_hard_max_bounces: 0 in the hub's loom.yaml).
+  The returned finding d6-wiring-check-verb-placement is not wrong: webstercli's and loomcli's wiring run once per invocation for every verb, so round 2's fix named verbs without a true check site.
+  The fix is converging: every finding in round 3 is in D6, the round-3 fixer adopted each review fix as proposed with nothing disputed or deferred, and decision-record.md D6 now puts the check at the spawn sites (websterengine.Run before StartMaster at runlevel.go:713, recover-batch's spawn branch before recoverSpawn at recoverbatch.go:513).
+  D6 also names State and BatchState as the home of the engine keys and carries recoveryEngines forward through the begin-batch re-begin record (beginbatch.go:667-691) and the recover-batch respawn record (recoverbatch.go:351-381).
+  F3 and F4 are answered with matching acceptance criteria and an Open risk.
+  Round 4 runs at the hard cap and cannot be continued again, so this continue costs at most one round.
+verbs:
+  - lyx loom circling continue engine-model-choice
