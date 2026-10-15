@@ -1,6 +1,6 @@
 # creel: log, inject help, sender field and release output inconsistencies
 
-`creel-output-inconsistencies` · Note · bug
+`creel-output-inconsistencies` · Note · bug, creel
 
 Imported from [issue #664](https://github.com/Knatte18/loomyard/issues/664).
 

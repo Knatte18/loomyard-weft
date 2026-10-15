@@ -1031,7 +1031,8 @@
       "title": "creel: log, inject help, sender field and release output inconsistencies",
       "kind": "note",
       "labels": [
-        "bug"
+        "bug",
+        "creel"
       ],
       "issues": [
         664
@@ -1041,7 +1042,7 @@
       "brief": "",
       "body": "Imported from [issue #664](https://github.com/Knatte18/loomyard/issues/664).\n\nFound by the creel stage 1 audit (board note `creel-test`), in a sandbox hub, with `lyx` built from `main` at e131c7625.\nThree small output and help inconsistencies in `lyx creel`, filed together.\n\n1. `lyx creel log` prints each `reminded` event with `\"id\":0` and without the message ids, although the journal record carries them (`\"unread\":[22]`) and the backoff `step`.\n   A reader of the log cannot tell which messages a reminder named.\n2. `lyx creel inject --help` says \"Only the orch, a program and an external caller may inject; any other strand posts instead.\"\n   The design (`internal/creelengine/doc.go`) and the code let any strand inject into its own pane, and `lyx creel inject ctest:dave \"self inject\"` run from dave's pane is accepted.\n3. The waiting verbs print an empty sender: `lyx creel inject --wait` and `lyx creel post --wait-reply` print `\"sender\":\"\"`, where the plain verbs print `\"sender\":\"ctest:EXTERNAL\"`.\n\nAlso seen: `lyx creel release \u003cunknown name\u003e` answers `{\"ok\":true,\"released\":false}` instead of naming the strands that exist, as `hold` does.\n\n## Expected\n\nThe log shows the reminded ids (and step), the inject help matches the privilege rule, the sender is printed the same way by every verb, and `release` refuses an unknown receiver like the other verbs.\n",
       "created": "2026-10-15T16:35:27Z",
-      "revised": "2026-10-15T16:35:27Z"
+      "revised": "2026-10-15T16:35:29Z"
     }
   ]
 }
