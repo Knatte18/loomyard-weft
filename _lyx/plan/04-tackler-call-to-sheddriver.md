@@ -71,7 +71,7 @@
 - `internal/loomcli#loomCLI.goDriverDepsFor`
 - `internal/loomcli/drive.go`
 - `internal/loomcli/drive_test.go`
-- `internal/loomcli#arbiterFake.Start`
+- `internal/loomcli#arbiterFake.Start` -> `func (f *arbiterFake) Start(spec shuttleengine.Spec) (sheddriver.AgentRun, error)`
 - `internal/loomcli#TestArbiterVerb_Rerun`
 - `internal/loomcli#TestArbiterVerb_VerdictOutcomes`
 - `internal/loomcli#TestConsumeArbiterAttempt`
@@ -103,6 +103,7 @@ In loomcli the arbiter's deps, call and wiring take `sheddriver.AgentShuttle`, `
 
 The recipe seams on the tackler call:
 - `TacklerDeps` gains `Recipe`, the one-line recipe description the arming module tells, and `GotoRoutedFrom`, whether a `resume` may name the row the halting history entry was routed from as well as the current row.
+- `TacklerDeps.Snapshot` is optional: `settleFresh` records an empty `WorktreeSnapshot` on the attempt when it is nil, so a recipe that keeps no tamper comparison wires none (D4).
 - `resumePrecondition` allows the current row always and the routed-from row only under `GotoRoutedFrom`; a goto naming any other row reads as today's precondition hand-back with cause `precondition`, so a batten tackler naming the routed-from row hands back (D2, D4).
 - loom's `goDriverDepsFor` tells `GotoRoutedFrom: true`, today's rule, and `Recipe` from the run's recipe: the new `darnTacklerRecipe` for `shedrun.RecipeDarn`, else `loomTacklerRecipe`.
   Each is one line naming the recipe and what its run does, for example "loom: a phased task run (discussion, plan, webster's coded batches, reviews, landing)".
@@ -129,10 +130,12 @@ The stencil (D7):
 - The write rule stays: write the verdict file and, on an `escalate`, the case brief, and nothing else.
 
 Tests:
-- `TestTacklerPrompt` gains rows: one asserts the rendered body names no "arbiter", carries the stop-kind list and the reading order, and has a write rule naming only the verdict and case-brief paths; three more render loom's, darn's and a batten recipe line and assert each line is filled.
+- `TestTacklerPrompt` gains rows: one asserts the rendered body names no "arbiter", carries the stop-kind list and the reading order, and has a write rule naming only the verdict and case-brief paths; one more renders a told recipe line and asserts the line is filled under "The run".
+  Card 8's `TestTacklerFor` pins the loom and darn lines and card 13's `TestBattenDriverDeps` pins `Tackler.Recipe` for batten, so the acceptance criterion's three recipes stay covered.
   It also asserts that a `GotoRows` of the halted row alone is the only goto row the prompt names, and that an empty recipe or goto value is refused naming the marker.
 - `TestTacklerCall_VerdictOutcomes` gains rows: a `resume` naming the routed-from row hands back with cause `precondition` when `GotoRoutedFrom` is false, and is accepted when it is true; a fresh spawn's prompt file names the routed-from row only under `GotoRoutedFrom`.
   `tacklerFixture` gains a `gotoRoutedFrom` field defaulting to true in `newTacklerFixture`, so the existing rows that resume to `Plan-Write` keep their outcome.
+- `TestTacklerCall_SpawnPath` gains a row whose fixture leaves `Snapshot` nil: the spawn succeeds and the recorded attempt carries an empty snapshot.
 - `wordingClaims`' tackler entry moves to `shed-template-tackler.md` and asserts: present, `{{.recipe}}`, `{{.goto_rows}}`, `transient`, `producer`, `bootstrap`, `unseeded`, `interrupted`, `blocked` and the reading order's "only when"; absent, "arbiter" and today's moving verbs.
 `cmd/lyx/testdata/test-budget.yaml`'s `internal/sheddriver` row rises from 3 to 9 for the six moved tests.
 

@@ -15,6 +15,8 @@ Arm batten's `--until-stop` loop and its per-row interrupt policy (D4, D2), so `
 
 - `battenLoopSpec` builds the `shedverbs.LoopSpec` of batten's own run: the lock, pid file, log, envelope, job name, delivered marker and stop files from `shedrun`'s loop constructors over the prime location and the slug, the trace listing through `logger.TraceFilesFor(logger.TraceDir(), ...)`, and the executable from `os.Executable`, as loom's `loopSpecFor` builds them.
   It leaves `IdleTimeout` zero and `Activity` nil: Run-Shed waits idle by design, so the watchdog stays disarmed (D4).
+  A wedged batten step is never killed by the loop, as today's in-process generic run body kills none either.
+  It is bounded by the operator's `lyx batten pause <slug>` at the next producer boundary or by ending the detached loop job; the interrupted rule then applies to the killed step under its row's policy below, a re-step under the repair cap at Run-Shed and a hand-back at any other row.
 - `battenInterruptPolicy` answers `shedverbs.InterruptPolicyReinvoke` for `battenrecipe.NameRunShed`, whose wait reattaches to the child run, and `shedverbs.InterruptPolicyHandback` for every other row name, the empty one included.
   So an interrupted Run-Shed step re-steps under the repair cap and an interrupted step at any other row hands back (D2).
 - `specFor` sets `Hooks.InterruptPolicyFor` to `battenInterruptPolicy` for every verb, so `status` and `step` report the policy, and sets `Loop` from `battenLoopSpec` when the receiver has a location.

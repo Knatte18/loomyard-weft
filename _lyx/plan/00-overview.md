@@ -1,6 +1,6 @@
 ---
 format: 5
-approved: false
+approved: true
 language: go
 ---
 
@@ -54,7 +54,7 @@ The module templates ship these inherit values.
 ### Decision: test-budget-rows
 
 Each card that adds or moves top-level tests into a package raises that package's row in `cmd/lyx/testdata/test-budget.yaml` in the same card.
-`internal/sheddriver` goes 3, 9, 15, 19, 20 across cards 2, 4, 6, 7 and 10, and `internal/battencli` goes 80 and 81 across cards 3 and 8, card 13 replacing the test it deletes.
+`internal/sheddriver` goes 3, 9, 15, 18, 19 across cards 2, 4, 6, 7 and 10, and `internal/battencli` goes 80 and 81 across cards 3 and 8, card 13 replacing the test it deletes.
 
 ## verify:
 

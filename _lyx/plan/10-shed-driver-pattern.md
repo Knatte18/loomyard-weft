@@ -39,6 +39,6 @@ Each kept clause stays true against its background; when `lyx loom lint-pattern`
 - that batten's InnerRun wait, which polls a child run it does not step, is outside it.
 
 `pattern/PATTERN-told-geometry.md` adds `sheddriver` to its bound-packages list.
-`cmd/lyx/testdata/test-budget.yaml`'s `internal/sheddriver` row rises from 19 to 20.
+`cmd/lyx/testdata/test-budget.yaml`'s `internal/sheddriver` row rises from 18 to 19.
 
 **ImpactSummary:** one PATTERN entry added and three shortened, one background added and one extended, and a new seam test; no production code changes.

@@ -78,6 +78,8 @@ Module keys:
   loom's `validateDriverKind` and `validateTacklerKnobs` are deleted for it.
   `battenshed.ValidateLocalValues` is new and `configreg.Modules` registers it as batten's `CheckValues`.
   A `driver_kind` in a task's batten `run_settings` or local `batten.yaml` is refused by `configengine.ValidateLocal`, which refuses a key batten's template lacks.
+  The base layer keeps keys the template lacks, so `battenshed.LoadConfig` also refuses a resolved document holding a `driver_kind` key, naming `batten config key "driver_kind"`, the reason (batten's own driver is always `go`) and the way forward (remove the key from `batten.yaml`).
+  `refusal-spec.md`'s shed section gains that row, "config: driver_kind in batten.yaml", class correctness halt, beside the batten run rows.
   `battenshed` imports `sheddriver` for the override type and the checks, so `battenshedAllowedImports` admits it; `sheddriver` imports no `lyxcwd`, so the told-geometry membership holds.
 - `loomengine.RecipeOverride` loads the override of a run's recipe from a task worktree's config layers: `darn.yaml` through `darnengine.LoadConfig` for `shedrun.RecipeDarn`, and `loom.yaml` through `LoadConfig` for `shedrun.RecipeLoom` and the empty recipe.
   It is the one picker both seeding sites and loom's drive wiring use, so loom's choice never leaks into a darn run (D6).
@@ -105,7 +107,7 @@ Tests:
 - `TestChildDriverKind` over temp config layers: a darn recipe with `darn.yaml` `driver_kind: go` and `loom.yaml` `llm` resolves `go`, the loom recipe resolves `llm`, and empty overrides with `shed.yaml` `go` resolve `go`.
 - `templateConfig` and `TestLoadConfig_Loads` take the inherit values and a `tackler_max_spawns: 0` row read as a set 0; `TestLoadConfig_Refuses` keeps its four rows on the new messages, which still carry "llm or go", "must not be negative", "0 for the 10 minute default" and "0 to turn the tackler off".
 - darn's `TestLoadConfig` gains rows: the template's override is all-inherit, set values are read, a local `tackler_max_spawns: 0` is read as a set 0, and each invalid value is refused naming `darn config key`.
-- `TestLoadConfig` in battenshed: the template's three keys inherit; set values are read; a negative `tackler_max_spawns` is refused naming `batten config key`; a local-layer `batten.yaml` holding `driver_kind: go` is refused naming the key, since `configengine.ValidateLocal` refuses a key the template lacks in the local layer (`internal/configengine/layers.go:170`), the layer a task's `run_settings` writes.
+- `TestLoadConfig` in battenshed: the template's three keys inherit; set values are read; a negative `tackler_max_spawns` is refused naming `batten config key`; a local-layer `batten.yaml` holding `driver_kind: go` is refused naming the key, since `configengine.ValidateLocal` refuses a key the template lacks in the local layer (`internal/configengine/layers.go:170`), the layer a task's `run_settings` writes; a base-layer `batten.yaml` holding `driver_kind: go` is refused by `LoadConfig` naming the key.
 - The Seed-Child test records and asserts the recipe `ChildDriver` received, the board's type or `loom` for an empty one.
 - `TestPrepareRunSettings` gains rows: a darn `tackler_max_spawns: 0` from `run_settings` becomes a `darn` document; a batten `driver_kind` is refused naming the key; a darn `tackler_max_spawns: -1` is refused through darn's `CheckValues`.
 

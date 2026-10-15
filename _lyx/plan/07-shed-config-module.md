@@ -14,7 +14,6 @@
 - `plan:internal/sheddriver#ResolveTackler` -> `func ResolveTackler(cfg Config, o Override, reg modelspec.Registry) (TacklerSettings, error)`
 - `plan:internal/sheddriver#TestLoadConfig` -> `func TestLoadConfig(t *testing.T)`
 - `plan:internal/sheddriver#TestCheckOverride` -> `func TestCheckOverride(t *testing.T)`
-- `plan:internal/sheddriver#TestResolveDriverKind` -> `func TestResolveDriverKind(t *testing.T)`
 - `plan:internal/sheddriver#TestResolveTackler` -> `func TestResolveTackler(t *testing.T)`
 
 **Edit:**
@@ -45,10 +44,11 @@ Nothing reads it for a run yet; card 8 switches the seeding and arming sites ove
 Tests:
 - `TestLoadConfig`: no base layer anywhere reads the template defaults (llm, haiku, 10, 4); a base `shed.yaml` value and a local override are each read; one invalid value (`driver_kind: fast`) is refused naming `shed config key`, which proves the load runs `CheckOverride`, whose own test holds the per-value matrix.
 - `TestCheckOverride`: rows for empty, `llm` and `go` driver kinds passing, each invalid value refused naming the module it was told, a nil spawn budget passing, and `CheckLocalOverride` refusing a local `tackler_max_spawns: -1` with `ErrInvalid` while a `null` passes.
-- `TestResolveDriverKind`: override set wins; empty override takes `shed.yaml`'s; both empty takes `llm`.
-- `TestResolveTackler`: empty override inherits every `shed.yaml` value; a set override wins on each key; an override `tackler_max_spawns: 0` gives 0 while `shed.yaml` says 4; an override timeout 0 takes `shed.yaml`'s, and a `shed.yaml` 0 takes 10 minutes; an unresolvable spec is refused naming `tackler`.
+- `TestResolveTackler` pins both resolvers in one table, as the loomengine test it replaces does.
+  `ResolveDriverKind` rows: override set wins; empty override takes `shed.yaml`'s; both empty takes `llm`.
+  `ResolveTackler` rows: empty override inherits every `shed.yaml` value; a set override wins on each key; an override `tackler_max_spawns: 0` gives 0 while `shed.yaml` says 4; an override timeout 0 takes `shed.yaml`'s, and a `shed.yaml` 0 takes 10 minutes; an unresolvable spec is refused naming `tackler`.
 - `TestPrepareRunSettings` gains a row carrying `shed` `tackler_max_spawns` from `run_settings` into a `shed` document, and one refusing `shed` `tackler_max_spawns: -1` through its `CheckValues`.
 
-`cmd/lyx/testdata/test-budget.yaml`'s `internal/sheddriver` row rises from 15 to 19.
+`cmd/lyx/testdata/test-budget.yaml`'s `internal/sheddriver` row rises from 15 to 18.
 
 **ImpactSummary:** one new config module registered in configreg with its run-settings test table extended; no reader switches in this card.

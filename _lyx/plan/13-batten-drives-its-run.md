@@ -4,7 +4,7 @@
 - `plan:internal/sheddriver#ReportFileName` -> `func ReportFileName(now time.Time, suffix string) string`
 - `plan:internal/sheddriver#EnvelopeFileName` -> `func EnvelopeFileName(now time.Time, suffix string) string`
 - `plan:internal/battencli#battenCLI.driveRun` -> `func (c *battenCLI) driveRun(cmd *cobra.Command) error`
-- `plan:internal/battencli#battenCLI.driverDepsFor` -> `func (c *battenCLI) driverDepsFor(release func() error) (sheddriver.Deps, error)`
+- `plan:internal/battencli#battenCLI.driverDepsFor` -> `func (c *battenCLI) driverDepsFor() (sheddriver.Deps, error)`
 - `plan:internal/battencli#battenRunEnvelope` -> `func battenRunEnvelope(exit sheddriver.Exit, st shedengine.Status, found bool, abandonedSession, busyMessage string) (map[string]any, error)`
 - `plan:internal/battencli#battenTacklerRecipe` -> `const battenTacklerRecipe = "batten"`
 - `plan:internal/battencli#battenDriveRefusal` -> `const battenDriveRefusal = "battencli: a batten driver already drives this run"`
@@ -31,6 +31,7 @@
 - `internal/loomcli#driverReportPath`
 - `internal/loomcli#driveEnvelopePath`
 - `pattern/PATTERN-shed-verb-set.md`
+- `contracts/specs/refusal-spec.md`
 
 **Intent:**
 `lyx batten run <slug>` runs `sheddriver`'s body in-process over its own run instead of the generic `run` body, so an unexpected batten stop meets the rule table and the tackler before the orch (D4).
@@ -40,7 +41,9 @@ The run verb:
 - `Command` keeps `--window` as today and points the plain run at `driveRun`.
 - `driveRun` first runs batten's existing pre-run (`battenPreRun`: the pause-coverage refusal, the done-slug refusal and the fresh-status seed), then `sheddriver.DriveVerb` over `battenDriveLock`, which names `shedrun.DriverLock(location, slug)`, the stale park marker and resume report, `battenDriveRefusal` (ending "; way forward: `lyx batten status <slug>` shows the run, and the live batten driver settles it") and the retry clause "re-run lyx batten run <slug>".
   The process holds the driver lock for its life, so a second `lyx batten run` for the slug is refused (D4).
-- Inside the lock it runs `sheddriver.Run` over `driverDepsFor`, then builds the envelope with `battenRunEnvelope` from the `Exit`, the status as it then reads, and `readAbandonedSession` over the run's scratch directory.
+  `refusal-spec.md`'s shed section gains the row for that refusal, titled "batten run: a batten driver already drives the run": a second `lyx batten run <slug>` finds the driver lock held by a live batten driver, class transient, way forward `lyx batten status <slug>` shows the run and the live batten driver settles it.
+  A second run while the first holds `shedrun.DriverLock` for the slug reaches it, and a `TestRunCmd_HeldRunLockRefusesNamingTheLockPath` row that holds the driver lock instead of the run lock asserts the envelope carries `battenDriveRefusal`.
+- Inside the lock it runs `sheddriver.Run` over `driverDepsFor`, ignoring the `release` that `sheddriver.DriveVerb` hands its callback, since batten wires no hand-over seam; then it builds the envelope with `battenRunEnvelope` from the `Exit`, the status as it then reads, and `readAbandonedSession` over the run's scratch directory.
 - `battenRunEnvelope` keeps today's run envelope: `outcome` (the state of a done, blocked, paused or awaiting run), `halted_producer`, `reason` and `history_length`, plus `abandonedSession` when the teardown row recorded one.
   It returns an error carrying the status error for a failed run, and today's `RunBusyMessage` for `ExitBusy` and `ExitRunningElsewhere`.
   So a new-build run that meets an old-build batten process holding the run lock exits as busy, leaving that process to finish on its own build, and a rerun after it exited resumes at the recorded row (D4).
@@ -52,7 +55,11 @@ It reads no config and builds no runner itself: the shed and batten configs, the
 - `Step` is `shedverbs.RunUntilStop` over the receiver's spec with argv `batten step <slug>` and the loop card 11 armed, unless the receiver's new `untilStop` override is set.
   A rerun after the process died while a detached step still runs adopts that step through the loop's waiter, since `runUntilStop` follows a live loop instead of spawning (D4).
 - `Goto` is `shedverbs.RunGoto` over the spec, so `battenPreGoto` applies.
-  The status, run-lock, pause and pause-hold reads are batten's own; the settle path is `shedrun.SettleRecords(location, slug)`, and the friction directory is empty.
+  `ReadStatus` is `state.ReadJSONNoMkdir[shedengine.Status]` over `c.shedPaths.StatusPath` and `c.shedPaths.StatusLockPath`.
+  `RunLockHeld` is a `lock.TryAcquireWriteLock` probe of `c.shedPaths.LockPath` that releases at once, as `battenPreStepUnmarked` does.
+  `Pause` is `hubgeom.PauseGeometry(c.location)` and `pauserecord.ReadCoverage` for the slug, as `refuseCovered` does.
+  `PauseHold` is `pauserecord.WaitUncovered` over the same geometry and slug, which battencli does not have today.
+  The settle path is `shedrun.SettleRecords(location, slug)`, and the friction directory is empty.
   Saved envelopes and stop reports land in `shedrun.DriveReportsDir(location, slug)`, named by the new `sheddriver.ReportFileName` and `EnvelopeFileName`, which hold the `drive-report-<timestamp>-<4-hex>.md` and `drive-envelope-...json` patterns loom's `driverReportPath` and `driveEnvelopePath` now delegate to.
 - `HandBack.Notify` sends through card 12's `battenshed.HandBackNotice` over `rowNotices(location, slug)`, with the stop's row and history length, and declines a paused stop, since a pause is the operator's own act (D4).
   `OrchRecorded` reads the prime's orch state (`orchStrandRecorded`).
@@ -74,11 +81,14 @@ It reads no config and builds no runner itself: the shed and batten configs, the
 
 Tests:
 - `newFakeReceiver` sets `untilStop` to `inProcessUntilStop`, which steps the receiver's shed in-process until it stops and renders the loop envelope the driver parses (`ok`, `state`, `reason`, and `loop` with `current_producer`, `history_length` and `state`), and the `kind: busy` error envelope for `shedengine.ErrShedBusy`.
-  The four `TestRunCmd_*` tests keep their assertions over the driver body, and so pin `battenRunEnvelope`'s done, blocked and paused envelopes, `abandonedSession` present and absent, and the busy message.
+  The four `TestRunCmd_*` tests keep their assertions over the driver body, and with the paused row below pin `battenRunEnvelope`'s done and paused envelopes, `abandonedSession` present and absent, and the busy message.
+  A blocked stop reaches the `Tackler` closure, which loads real config and a runner, so no run test drives one.
+  `TestRunCmd_ResumeDispositions` gains a row whose seeded status carries a `pause_after` naming the first row: the in-process step stops paused, the driver hands back with no tackler, and the envelope's outcome is paused with `ok` true.
   `TestRunCmd_ResumeDispositions` gains a failed-status row whose run ends in an error envelope carrying the status error, and `TestRunCmd_HeldRunLockRefusesNamingTheLockPath` gains a row where the in-process step reports the run running elsewhere, which also ends in the busy message.
   The abandoned-session test's fake shutdown no longer sets a receiver field, since the teardown row's record file carries the value.
 - `TestBattenDriverDeps`, over a hand-populated receiver with a temp prime location:
   - nil `Arbiter`, `Verify`, `Watched`, `HandOver`, `Tamper`, `CommitRecords` and `WriteFrictionNote`;
+  - every required `Deps` seam card 6 lists is non-nil: `Step`, `Goto`, `ReadStatus`, `RunLockHeld`, `SaveEnvelope`, `NewReportPath`, `Pause`, `PauseHold`, `Tackler`, `ConsumeTackler`, `OpenAttempts`, `Now` and the hand-back's `Notify`, `OrchRecorded` and `Park`, since a nil `PauseHold` panics only at the first re-step or tackler spawn and no run test reaches it;
   - `Tackler.Recipe` is `battenTacklerRecipe` and `GotoRoutedFrom` is false;
   - the settle, tackler, marker and report paths are `shedrun`'s for the prime and slug;
   - `battenDriveLock` names `shedrun.DriverLock` for the prime and slug, the park marker and resume report as stale files, and `battenDriveRefusal`;

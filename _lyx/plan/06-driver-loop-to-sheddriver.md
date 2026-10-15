@@ -49,12 +49,14 @@ The boundary forces these edits, and no others:
 - Log lines and errors say `sheddriver: drive:` for `loom: drive:`.
 - `Deps` keeps today's required seams: run id, `Step`, `Goto`, `ReadStatus`, `RunLockHeld`, `SaveEnvelope`, `SettlePath`, `FrictionDir`, `NewReportPath`, `Pause`, `PauseHold`, `HandBack`, `Tackler`, `ConsumeTackler`, `OpenAttempts` and `Now`.
   `CommitRecords` and `WriteFrictionNote` become optional: nil commits nothing at a done stop and writes no `go-driver-paused` note.
-- `HandBackDeps` holds `Notify func(stop Stop, line string) (sent bool, err error)`, `OrchRecorded`, `Park func(reportPath string) error` and `Now`.
+- `HandBackDeps` holds `Notify func(stop Stop, line string) (sent bool, err error)` and the required seams `OrchRecorded`, `Park func(reportPath string) error` and `Now`, so an unwired `Park` is a wiring fault like any other required seam.
   The hand-back composes the same notices as today; a notice the recipe declines (sent false, nil error) reads "not sent, the recipe sends none at this stop:" in the report's messages, beside today's sent, failed and not-queued lines.
-  After the report is written, a hand-back that parks calls `Park`; nil parks nothing, and an error (the marker could not be written) is the hand-back's error, as the marker check is today.
+  After the report is written, a hand-back that parks calls `Park`, and an error (the marker could not be written) is the hand-back's error, as the marker check is today.
 - The optional groups, each nil-safe in the facts and the actions:
-  - `Arbiter *ArbiterSeam` holds `EscalationPending` and `Judge func(envelopePath, reportPath, caseBriefPath string) (ArbiterOutcome, error)`, where `ArbiterOutcome` carries what the driver reads off loom's arbiter envelope (resume or not, reason, question, goto, cause, attempt, attempt directory, verdict path).
-    With none, `EscalationPending` reads false, and an arbiter action hands back, with the rule "no arbiter is wired: hand back" and today's awaiting relay.
+  - `Arbiter *ArbiterSeam` holds `EscalationPending` and `Judge func(envelopePath, reportPath, caseBriefPath string) (ArbiterOutcome, error)`, where `ArbiterOutcome` carries what the driver reads off loom's arbiter envelope (resume or not, reason, question, goto, cause, attempt, attempt directory, verdict path), plus a `Verdict` string and a `Role` string that loom's wiring copies from `loomengine.ArbiterEnvelope.Verdict` and `loomengine.ArbiterRole`.
+    The moved `arbitrate` fills the arbiter attempt note's `Role` and `Verdict` from them and tests `Resume` for the resume branch, so `internal/sheddriver` names neither `loomengine.ArbiterRole` nor `loomengine.ArbiterVerdictResume`, and the stop report's attempt lines stay byte-identical to today's.
+    It also holds `AttemptEnvelope func(attemptDir string) (envelopePath string, err error)`, which `resumeOpenAttempt` calls for the arbiter directory `OpenAttempts` returns when the tackler attempt yielded no envelope path, so the restart read of an open arbiter attempt leaves no `loomengine` import behind.
+    With none, `EscalationPending` reads false, an open arbiter directory is ignored and the driver steps, and an arbiter action hands back, with the rule "no arbiter is wired: hand back" and today's awaiting relay.
     A tackler `escalate` with none hands back with a question naming the case brief path, "The tackler escalated this stop and no stronger agent is wired; read its case brief at <path>, decide the stop yourself and report the choice in the stop report.", so the parent notice names the brief (D2).
   - `Verify *VerifySeam` holds `Halt func() (matches bool, target string, err error)`, read at a blocked stop, and an optional `RetrySpentElsewhere func() (bool, error)`, ORed with the settle records' `GoVerifyRetrySpent` as today's batten read is.
     With none, a verify halt never matches, so the verify-goto and watched-verify rows never fire.
@@ -62,14 +64,14 @@ The boundary forces these edits, and no others:
   - `HandOver *HandOverSeam` holds `OnDiskBuild`, `BuildChanged`, `DirtyPaths`, `ReleaseLock`, `Executable` and `SpawnSuccessor`.
     With none the driver reads no build, `BuildChanged` and `HandedOver` stay false, and the hand-over row never fires.
   - `Tamper *TamperSeam` holds `Snapshot` and `AttemptSnapshot`.
-    With none the tackler's verdict is acted on without the worktree comparison; `TacklerDeps.Snapshot` is likewise optional, nil recording an empty snapshot.
+    With none the tackler's verdict is acted on without the worktree comparison; `TacklerDeps.Snapshot` has been optional since card 4, so a recipe that wires no tamper seam may also leave it nil.
   These seams only remove rows or agents from the table: a stop a removed row would have caught meets the later rows unchanged, so it ends in the tackler under its spawn budget, a re-step under the repair cap, or a hand-back, and no unwired seam adds a resume path (D2's bound).
 - `NewestTacklerAttempt` returns the newest attempt directory recorded for a key under a tackler directory and whether it carries the applied mark, the tackler half of loom's `newestAttemptsFor`, which now calls it; a recipe without an arbiter wires `OpenAttempts` from it alone.
 - `DriveVerb` takes a `DriveLock` naming the lock path, the stale files, the busy refusal and the transient retry clause the recipe's messages end with; loom tells `driveRefusal` and "re-run lyx loom drive or lyx loom start", so loom's messages are byte-identical.
   Its `run` returns the success envelope's fields, so a recipe whose verb prints its own envelope (batten, card 13) reuses the lock handling; loom's `driveCmd` returns `{"drove": true}`, today's envelope.
 
 In loomcli, `internal/loomcli/drivewiring.go` (which holds `driveCmd` since card 5, `goDriverDepsFor`, `writeDrivePausedNote` and `newestAttemptsFor`) is the one file that changes: `driveCmd` calls `sheddriver.DriveVerb` and `sheddriver.Run`, and `goDriverDepsFor` fills `sheddriver.Deps` with every group, keeping loom's behaviour.
-`Arbiter` wraps `arbiterstop.EscalationEligible` and `newArbiterCall`, mapping `loomengine.ArbiterEnvelope` onto `ArbiterOutcome`.
+`Arbiter` wraps `arbiterstop.EscalationEligible` and `newArbiterCall`, mapping `loomengine.ArbiterEnvelope` onto `ArbiterOutcome`, and fills `AttemptEnvelope` from `loomengine.ReadArbiterAttempt`'s `EnvelopePath`.
 `Verify` computes `battenshed.RecordMatchesHalt` over the Publish failure record, the HEAD and the status at `loomshed.NameMergeIn` and `loomshed.NamePublish`, and its `RetrySpentElsewhere` reads the batten-watched marker and `battenshed.PublishRetrySpent`.
 `HandOver`, `Tamper` and `Watched` keep their closures.
 `HandBack.Notify` sends through `orchcli.NotifyPrime`, ignoring the stop.
@@ -80,7 +82,10 @@ The moved tests adapt to the seams: `TestGoDriver_Settle`'s harness fills the op
 The harness's `Park` writes the report path into its marker file, as `commitAndPark` did, so every `wantParked` row keeps its assertion, and its `Snapshot` and `AttemptSnapshot` fakes append `snapshot` to the recorded calls.
 Its table gains `noArbiter`, `noVerify`, `noHandOver`, `noTamper` and `noCommit` fields, each leaving its group or seam nil for the row.
 The report renders an empty `FrictionDir` as `none`, as the tackler prompt renders an absent path; a hand-back row with `FrictionDir` empty asserts "Friction directory: none".
-`TestGoDriver_Settle` gains rows for the unwired seams, each asserting its calls, settle actions and report:
+`TestGoDriver_Settle` gains a row pinning the arbiter restart read after the move: the restarted run's status is awaiting at the escalation producer, `Arbiter.EscalationPending` reads true, `OpenAttempts` returns an arbiter directory and no tackler directory, and `AttemptEnvelope` is scripted to return the saved stop envelope's path.
+The row asserts the calls are `AttemptEnvelope` and then the arbiter, with no step before them.
+A blocked restart fixture reaches the arbiter only through an applied tackler attempt, which already has its row and reads the envelope from the tackler attempt, so it never reaches `AttemptEnvelope`.
+It also gains rows for the unwired seams, each asserting its calls, settle actions and report:
 - no arbiter: a returned tackler resume (`OpenAttempts` reporting applied) hands back with no arbiter call;
 - no arbiter: a tackler `escalate` hands back and the stop report's question names the case brief path;
 - no hand-over seam: a blocked stop whose last step ran another build goes to the tackler, with no successor spawned;
