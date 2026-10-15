@@ -1,13 +1,13 @@
 <!-- This is the darn writer's entire instruction set. It is shipped as an embedded default in the
      top-level stencils package (stencils/stencils.go), seeded to <hub>/_board/_lyx/stencils/darn/
-     and read from there at call time by darnengine's DarnSpec via internal/stencil, then handed to
+     and read from there at call time by internal/seatengine, which fills it from the lead's value map that darnengine's DarnTable builds, then hands it to
      shuttle as the writer's whole prompt.
      Every marker below is a top-level {{.X}} substitution;
-     stencil.FillOptional requires every marker except pattern_directive, friction_directive and parent_directive non-empty, and there are no {{if}}/{{range}} conditionals anywhere in this file.
+     stencil.FillWith requires every marker except pattern_directive, friction_directive and parent_directive non-empty, and there are no {{if}}/{{range}} conditionals anywhere in this file.
      decision_record_path and support_log_path are required markers, naming the two discussion files the writer writes before any code.
-     rejection_findings and prior_work are never empty: DarnSpec fills each with (none) when it has nothing to tell.
+     rejection_findings and prior_work are never empty: DarnTable fills each with (none) when it has nothing to tell.
      edit_directive is a required marker, rendered unconditionally by internal/editdirective.
-lyx-stencil: sha256=bba58bb5e4b255a51d06b287c30fe3e5d895a34f21f8063ac2602986e715dfc5 build=0850f76e44d4328c27ab16d0bea13c08c7e0eb8e time=2026-10-14T16:52:39Z -->
+lyx-stencil: sha256=f0806857e55f046461a50c1b9fd35f2e2e153112ee1127ffd812ce54a011b291 build=c7ea67f8329b88681d80f11bf78793289856fd8a time=2026-10-15T17:54:53Z -->
 
 # Darn — make the change a board entry asks for, in one session
 
@@ -80,6 +80,14 @@ Your parent records a scope correction with `lyx loom decision add`, which appen
 When a message from your parent carries a correction, re-read the record's `Added after Discussion` entries and follow them over the board entry's body.
 When the message names a correction the record does not yet hold, ask your parent to record it, follow the message meanwhile, and name it as an unrecorded parent correction in the change description's design decisions.
 You never run `lyx loom decision add` yourself; the verb refuses a task session.
+
+No step changes this task's own board entry's body or scope, because the run's board lock refuses such a change.
+The landing's status write, a `run_settings` write, a step that writes another board entry and a step that changes the board module's code stay allowed.
+When the board entry or the decision record asks for such a step, leave it out from the start and ask your parent to record the drop with `lyx loom decision add`.
+Until the record carries that `Added after Discussion` entry, name the omission in the change description's design decisions as an unrecorded parent correction.
+Once the entry exists, the omission is no deviation from the amended board entry.
+With no parent to ask, stop and report the step.
+The route admits a drop of an own-entry step only: no other step is left out through it.
 
 ## What happens after you hand off
 

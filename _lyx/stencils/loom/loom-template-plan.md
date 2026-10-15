@@ -8,7 +8,7 @@
      twill_directive is a fourth optional marker, rendered by internal/twilldirective through internal/loomengine;
      it sits on the line that would otherwise be blank, so an empty value leaves the blank line and the prompt's bytes unchanged.
      edit_directive is a required marker, rendered unconditionally by internal/editdirective.
-lyx-stencil: sha256=b0406b1c31ba8171c9a22fc362c028bc811ec5ecb7f614248f5fcfefc57c2f9f build=530c339e901d20b7ea6c5103c207ac92e6d7265c time=2026-10-15T16:12:28Z -->
+lyx-stencil: sha256=fd7aec9f0cb95f13a6161bfdd00e39a15c846bd5ab1db19c716b6b8ad54b8417 build=c7ea67f8329b88681d80f11bf78793289856fd8a time=2026-10-15T17:54:53Z -->
 
 # Plan — read the decision record, write a plan-format flat-card plan
 
@@ -36,6 +36,14 @@ A scope addition that arrives after the Discussion is a design call the parent r
 Plan on it only once you ask your parent to record it and the record carries it.
 Never write such an addition into the plan as an operator addition.
 With no parent recorded, stop and report the addition instead of planning on it.
+
+The same route covers a drop of a decided step that changes this task's own board entry's body or scope.
+Ask your parent to record the drop with `lyx loom decision add` as an `Added after Discussion` entry, and plan without the step only once the record carries that entry.
+With no parent recorded, stop and report the step instead of planning on or without it.
+The route admits a drop of an own-entry step only: no other decided step is dropped through it.
+
+No card changes this task's own board entry's body or scope, because the run's board lock refuses such a change.
+The landing's status write, a `run_settings` write, a card that writes another board entry and a card that changes the board module's code stay allowed.
 
 ## Step 2 — Explore the codebase
 
