@@ -1,0 +1,16 @@
+verdict: escalate
+reason: >-
+  The diff covers every goal point of glyph-audit-tool and breaks no recorded decision. Plan-Review's two carried-over
+  findings (filters spelling directory roots, the per-call records path) are fixed in the code. But this run's
+  Constraint, which the diff also writes into tools/forkaudit/extract.jq and the forkaudit.sh header, says a task that
+  adds a pack layout adds its forkaudit marker row in the same task. The peer kickstart-per-card (row 7; this run is row
+  22 and lands first) records the opposite in its Scope Out: a follow-up task depending on both does it. That follow-up
+  is not on the board. This run's Open risk also wrongly says per-card forks become their own arm. They class as file,
+  because the per-card prompt ends with ## Start here.
+question: >-
+  glyph-audit-tool and kickstart-per-card record contradictory decisions on who teaches tools/forkaudit the per-card
+  layout. glyph-audit-tool's Constraints (and the rule at tools/forkaudit/extract.jq:10) say kickstart-per-card adds its
+  marker row in the same task. kickstart-per-card's Scope Out says a follow-up task, filed by the orch and depending on
+  both, does it. Which holds? Either kickstart-per-card takes the marker row (prompt check before the file row) into its
+  scope, or glyph-audit-tool rewords that rule, corrects its Open risk to say per-card forks class as file until the
+  follow-up lands, and the orch files the follow-up.
