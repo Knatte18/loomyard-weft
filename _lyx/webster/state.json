@@ -1,0 +1,335 @@
+{
+  "runGuid": "84d72273839dcd706e2e56031904ba2f",
+  "planFingerprint": "5485205ca4fbdd7983fba4fa221432c056fc05abcf9b562e9f052c833042fc15",
+  "planFileHashes": {
+    "00-overview.md": "9c694fb533885df6fd044b3372867519483108cef436ce2d9f625e066f7a6b4b",
+    "01-durfmt.md": "3c01c2ef9d2defe824f614355311000b8db23c2ba41d96c3ad5556901f1d9353",
+    "02-sleepjournal.md": "510c3b1c49f3be13011654189741ceb25c666121e4ea42962781e418b08875d6",
+    "03-settle-records-shedrun.md": "36f469fd7e3d8506577a6583c5cd033b7956c9c13a0fcea0ed228596b6842699",
+    "04-caller-label.md": "87c57f0d93b7e8ad875cbbfbef0f67aa9fe899a516debde360e3a8df4e2dcac9",
+    "05-history-caller-field.md": "63c468f964b83d7c4fbc7783c1c43cfe2fb3a342618b5e1fe64e5adb0d0ba9d5",
+    "06-caller-label-wiring.md": "c7edd16d675240584d9cb6b877b5f5d71ae2aa7ce8a7fb1633d0cfa527537bb2",
+    "07-pair-branch-snapshot.md": "e4f728da40f49d1f6c6f52945f7453984d93c2909be912559683ae07260c75f9",
+    "08-timing-spans-phases.md": "8054dfeb782267623600251bfcc4c9c71890a62693a28666d690196534e661de",
+    "09-timing-waits-attempts.md": "eb585a9c5a7fb83ce8303aab497c5ee072647088f2132c9a39c1760e8a79b993",
+    "10-timing-stops-settlers.md": "bb483e431aa344c42d50072f3227b447ecbba9ee4bebf04b637d8783cfe6f703",
+    "11-timing-markdown.md": "92352fa24a69dcec83c5627b3fe43507c369cced0aa22da28178592aaf82b3d6",
+    "12-report-timing-verb.md": "bd41e931b5b6911e2375911b752e136cc70f893087347ea36a6af097f8df5bb7"
+  },
+  "planOverviewFrameHash": "5229de4ca1d29cf78fe98df6265581a88767c83d359aceb3a7f4fab749e2b1dd",
+  "partition": [
+    {
+      "cards": [
+        "01-durfmt",
+        "02-sleepjournal",
+        "03-settle-records-shedrun"
+      ],
+      "profile": "cautious",
+      "estimate": 347074,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 1,
+        "startup": 54496,
+        "read_union": 97836,
+        "cards": [
+          {
+            "card": 1,
+            "card_text": 504,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1872,
+              "file:docs/overview.md": 9396,
+              "file:internal/statuspane/doc.go": 264,
+              "file:pattern/PATTERN-leaf-packages.md": 948,
+              "package:cmd/lyx/testdata": 2000,
+              "package:docs": 2000,
+              "package:internal/battencli": 2000,
+              "package:internal/durfmt": 2000,
+              "package:internal/loomcli": 2000,
+              "package:internal/statuspane": 2000,
+              "package:pattern": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:docs": 2000,
+              "tests:internal/battencli": 2000,
+              "tests:internal/durfmt": 2000,
+              "tests:internal/loomcli": 2000,
+              "tests:internal/statuspane": 2000,
+              "tests:pattern": 2000
+            },
+            "messages": 153,
+            "written": 46404
+          },
+          {
+            "card": 2,
+            "card_text": 588,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1872,
+              "file:docs/overview.md": 9396,
+              "file:pattern/PATTERN-leaf-packages.md": 948,
+              "file:tools/tokencount/main.go": 4092,
+              "package:cmd/lyx/testdata": 2000,
+              "package:docs": 2000,
+              "package:internal/sleepjournal": 2000,
+              "package:pattern": 2000,
+              "package:tools/tokencount": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:docs": 2000,
+              "tests:internal/sleepjournal": 2000,
+              "tests:pattern": 2000,
+              "tests:tools/tokencount": 2000
+            },
+            "messages": 130.5,
+            "written": 39738
+          },
+          {
+            "card": 3,
+            "card_text": 900,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1872,
+              "file:internal/arbiterstop/holdreading.go": 1608,
+              "file:internal/arbiterstop/holdreading_test.go": 2976,
+              "file:internal/battencli/drive.go": 3912,
+              "file:internal/battencli/publishretry_test.go": 948,
+              "file:internal/loomcli/drivewiring.go": 6216,
+              "file:internal/sheddriver/doc.go": 1020,
+              "file:internal/sheddriver/drive.go": 11076,
+              "file:internal/sheddriver/driverules.go": 2904,
+              "file:internal/shedrun/doc.go": 612,
+              "package:cmd/lyx/testdata": 2000,
+              "package:internal/arbiterstop": 2000,
+              "package:internal/battencli": 2000,
+              "package:internal/loomcli": 2000,
+              "package:internal/sheddriver": 2000,
+              "package:internal/shedrun": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:internal/arbiterstop": 2000,
+              "tests:internal/battencli": 2000,
+              "tests:internal/loomcli": 2000,
+              "tests:internal/sheddriver": 2000,
+              "tests:internal/shedrun": 2000
+            },
+            "messages": 359,
+            "written": 108600
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "04-caller-label",
+        "05-history-caller-field",
+        "06-caller-label-wiring",
+        "07-pair-branch-snapshot",
+        "08-timing-spans-phases"
+      ],
+      "profile": "cautious",
+      "estimate": 320138,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 2,
+        "startup": 61496,
+        "read_union": 51372,
+        "cards": [
+          {
+            "card": 4,
+            "card_text": 288,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1872,
+              "package:cmd/lyx/testdata": 2000,
+              "package:internal/agentname": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:internal/agentname": 2000
+            },
+            "messages": 25.5,
+            "written": 7938
+          },
+          {
+            "card": 5,
+            "card_text": 636,
+            "reads": {
+              "file:internal/shedengine/doc.go": 1776,
+              "package:internal/shedengine": 2000,
+              "tests:internal/shedengine": 2000
+            },
+            "messages": 108,
+            "written": 33036
+          },
+          {
+            "card": 6,
+            "card_text": 948,
+            "reads": {
+              "file:contracts/specs/refusal-spec.md": 5784,
+              "file:internal/shedverbs/doc.go": 1284,
+              "package:contracts/specs": 2000,
+              "package:internal/battencli": 2000,
+              "package:internal/loomcli": 2000,
+              "package:internal/shedverbs": 2000,
+              "tests:contracts/specs": 2000,
+              "tests:internal/battencli": 2000,
+              "tests:internal/loomcli": 2000,
+              "tests:internal/shedverbs": 2000
+            },
+            "messages": 250.5,
+            "written": 76098
+          },
+          {
+            "card": 7,
+            "card_text": 324,
+            "reads": {
+              "package:internal/gitrepo": 2000,
+              "package:internal/reportengine": 2000,
+              "tests:internal/gitrepo": 2000,
+              "tests:internal/reportengine": 2000
+            },
+            "messages": 45.5,
+            "written": 13974
+          },
+          {
+            "card": 8,
+            "card_text": 1224,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1872,
+              "file:internal/reportengine/doc.go": 1236,
+              "package:cmd/lyx/testdata": 2000,
+              "package:internal/reportengine": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:internal/reportengine": 2000
+            },
+            "messages": 250,
+            "written": 76224
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "09-timing-waits-attempts",
+        "10-timing-stops-settlers",
+        "11-timing-markdown",
+        "12-report-timing-verb"
+      ],
+      "profile": "cautious",
+      "estimate": 251498,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 3,
+        "startup": 68496,
+        "read_union": 40292,
+        "cards": [
+          {
+            "card": 9,
+            "card_text": 660,
+            "reads": {
+              "file:internal/reportengine/doc.go": 1236,
+              "package:internal/reportengine": 2000,
+              "tests:internal/reportengine": 2000
+            },
+            "messages": 112,
+            "written": 34260
+          },
+          {
+            "card": 10,
+            "card_text": 900,
+            "reads": {
+              "file:internal/reportengine/doc.go": 1236,
+              "package:internal/reportengine": 2000,
+              "tests:internal/reportengine": 2000
+            },
+            "messages": 166,
+            "written": 50700
+          },
+          {
+            "card": 11,
+            "card_text": 408,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1872,
+              "file:internal/reportengine/doc.go": 1236,
+              "package:cmd/lyx/testdata": 2000,
+              "package:internal/reportengine": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:internal/reportengine": 2000
+            },
+            "messages": 64,
+            "written": 19608
+          },
+          {
+            "card": 12,
+            "card_text": 792,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1872,
+              "file:docs/overview.md": 9396,
+              "file:internal/reportcli/doc.go": 300,
+              "file:tools/sandbox/SANDBOX-CORE-SUITE.md": 4728,
+              "package:cmd/lyx/testdata": 2000,
+              "package:docs": 2000,
+              "package:internal/reportcli": 2000,
+              "package:tools/sandbox": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:docs": 2000,
+              "tests:internal/reportcli": 2000,
+              "tests:tools/sandbox": 2000
+            },
+            "messages": 124.5,
+            "written": 38142
+          }
+        ]
+      }
+    }
+  ],
+  "currentBatch": 1,
+  "masterStrand": "9b5d66aec3da73a49c887c9db722ae35",
+  "masterSessionId": "4bda0955-d804-438f-978f-3ec2ff46fb8f",
+  "batches": {
+    "1": {
+      "slug": "durfmt",
+      "cards": [
+        "01-durfmt",
+        "02-sleepjournal",
+        "03-settle-records-shedrun"
+      ],
+      "cardHashes": {
+        "01-durfmt": "3c01c2ef9d2defe824f614355311000b8db23c2ba41d96c3ad5556901f1d9353",
+        "02-sleepjournal": "510c3b1c49f3be13011654189741ceb25c666121e4ea42962781e418b08875d6",
+        "03-settle-records-shedrun": "36f469fd7e3d8506577a6583c5cd033b7956c9c13a0fcea0ed228596b6842699"
+      },
+      "startSha": "4ebb73ff31750a9d92e5164a690a072bcbda1b13",
+      "kind": "fork",
+      "spawnedAt": "2026-10-15T12:27:13Z",
+      "sessionId": "4bda0955-d804-438f-978f-3ec2ff46fb8f",
+      "terminal": false,
+      "status": ""
+    }
+  }
+}
