@@ -1,6 +1,6 @@
 # tokencount: subtract hibernation, share by active time, map renamed Burler roles
 
-`tokencount-fixes` · Note · bug, burler
+`tokencount-fixes` · Task · bug, burler
 
 ## Scope
 

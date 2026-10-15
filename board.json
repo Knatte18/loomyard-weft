@@ -837,7 +837,7 @@
       "id": 529,
       "slug": "tokencount-fixes",
       "title": "tokencount: subtract hibernation, share by active time, map renamed Burler roles",
-      "kind": "note",
+      "kind": "task",
       "labels": [
         "bug",
         "burler"

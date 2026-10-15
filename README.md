@@ -25,7 +25,11 @@ Held by a run; its scope is locked until the run ends.
 
 Waits on nothing open; can start now.
 
-_None._
+#### Normal priority
+
+| # | Task | Slug | Recipe | After | Age | Revised | Labels |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| 1 | **tokencount: subtract hibernation, share by active time, map renamed Burler roles**<br>• tokencount counts hibernation as session time and splits Burler roles across the overview-seats rename | [`tokencount-fixes`](design-tokencount-fixes.md) | darn |  | 18m | 0m | burler |
 
 ## Notes
 
@@ -39,7 +43,6 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | --- | --- | --- | --- | --- | --- |
 | 1 | **A hub pause leaves background forks and shells running, so hibernate never confirms**<br>• Pause interrupts turns but not background forks or shells; sessions read busy and hibernate confirmation fails | [`pause-background-work`](design-pause-background-work.md) | 9h | 18m | shuttle, webster |
 | 2 | **Plan-Bouncer and Batchifier pass a plan that webster begin-batch then refuses with delete-before-reference** | [`plan-drift-refusal-route`](design-plan-drift-refusal-route.md) | 16m | 16m | webster, loom |
-| 3 | **tokencount: subtract hibernation, share by active time, map renamed Burler roles**<br>• tokencount counts hibernation as session time and splits Burler roles across the overview-seats rename | [`tokencount-fixes`](design-tokencount-fixes.md) | 18m | 0m | burler |
 
 ### Enhancements
 
