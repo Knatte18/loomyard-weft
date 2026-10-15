@@ -1,11 +1,11 @@
 {
-  "current_producer": "Publish",
+  "current_producer": "PR-Align",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Publish",
-    "last": "Merge-Bouncer → done",
+    "now": "PR-Align",
+    "last": "Publish → done",
     "wait": ""
   },
   "history": [
@@ -250,6 +250,12 @@
       "outcome": "done",
       "output": "/home/knatte/Code/loomyard-LYXHUB/shed-tackler/_lyx/reviews/merge/round-1-bouncer-ledger.md",
       "at": "2026-10-15T08:13:03Z"
+    },
+    {
+      "producer": "Publish",
+      "outcome": "done",
+      "output": "",
+      "at": "2026-10-15T08:14:43Z"
     }
   ],
   "product": {
