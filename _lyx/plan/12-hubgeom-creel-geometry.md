@@ -2,9 +2,9 @@
 
 **Create:**
 - `internal/hubgeom/creelgeom.go`
-- `plan:internal/lyxdirs#CreelDirName` -> `const CreelDirName = "creel"`
-- `plan:internal/hubgeom#CreelGeometry` -> `func CreelGeometry(hubPath, tempRoot string) (creelengine.Geometry, error)`
-- `plan:internal/hubgeom#TestCreelGeometry` -> `func TestCreelGeometry(t *testing.T)`
+- `internal/lyxdirs#CreelDirName`
+- `internal/hubgeom#CreelGeometry`
+- `internal/hubgeom#TestCreelGeometry`
 
 **Edit:**
 - `//cmd/lyx/testdata/test-budget.yaml`

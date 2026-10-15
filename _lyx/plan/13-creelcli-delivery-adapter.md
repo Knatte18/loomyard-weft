@@ -4,9 +4,9 @@
 - `internal/creelcli/delivery.go`
 - `internal/creelcli/delivery_test.go`
 - `internal/creelcli/testmain_test.go`
-- `plan:internal/creelcli#hubDelivery` -> `type hubDelivery struct`
-- `plan:internal/creelcli#worktreeOps` -> `type worktreeOps interface`
-- `plan:internal/creelcli#newHubDelivery` -> `func newHubDelivery(hubPath string, engineFor func(shuttleengine.Config) shuttleengine.Engine) *hubDelivery`
+- `internal/creelcli#hubDelivery`
+- `internal/creelcli#worktreeOps`
+- `internal/creelcli#newHubDelivery`
 
 **Edit:**
 - `//cmd/lyx/testdata/test-budget.yaml`

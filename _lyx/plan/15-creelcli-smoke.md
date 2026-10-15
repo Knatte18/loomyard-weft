@@ -3,8 +3,8 @@
 **Create:**
 - `internal/creelcli/smoke_tmux_test.go`
 - `internal/creelcli/smoke_llm_test.go`
-- `plan:internal/creelcli#TestSmokeCreelFakeProviderPane` -> `func TestSmokeCreelFakeProviderPane(t *testing.T)`
-- `plan:internal/creelcli#TestSmokeCreelClaudeStrand` -> `func TestSmokeCreelClaudeStrand(t *testing.T)`
+- `internal/creelcli#TestSmokeCreelFakeProviderPane`
+- `internal/creelcli#TestSmokeCreelClaudeStrand`
 
 **Edit:**
 - `//cmd/lyx/testdata/test-budget.yaml`

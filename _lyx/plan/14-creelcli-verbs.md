@@ -5,9 +5,9 @@
 - `internal/creelcli/cli.go`
 - `internal/creelcli/spawn.go`
 - `internal/creelcli/cli_test.go`
-- `plan:internal/creelcli#Command` -> `func Command() *cobra.Command`
-- `plan:internal/creelcli#RunCLI` -> `func RunCLI(out io.Writer, args []string) int`
-- `plan:internal/creelcli#RunCLIIn` -> `func RunCLIIn(cwd string, out io.Writer, args []string) int`
+- `internal/creelcli#Command`
+- `internal/creelcli#RunCLI`
+- `internal/creelcli#RunCLIIn`
 
 **Edit:**
 - `cmd/lyx#newRoot`
