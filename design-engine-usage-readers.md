@@ -1,6 +1,6 @@
 # Usage and cost read through the engine
 
-`engine-usage-readers` · Task · enhancement, shuttle, claude · running · Describe
+`engine-usage-readers` · Task · enhancement, shuttle, claude · running · Merge-In
 
 ## Goal
 
