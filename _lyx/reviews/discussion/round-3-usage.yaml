@@ -13,3 +13,12 @@ review:
     fork_fresh_tokens: 0
     fork_cache_read_tokens: 0
     fork_fresh_share: 0
+fix:
+    model: opus
+    effort: medium
+    start: 2026-10-15T08:44:51Z
+    end: 2026-10-15T10:45:39.492869589+02:00
+    wall_seconds: 48.492869589
+    tokens_known: true
+    fresh_tokens: 46511
+    cache_read_tokens: 413605
