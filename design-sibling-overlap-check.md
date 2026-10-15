@@ -1,6 +1,6 @@
 # Warn on overlap between tasks that wait on the same entry
 
-`sibling-overlap-check` · Task · enhancement, board · running · Plan-Bouncer
+`sibling-overlap-check` · Task · enhancement, board · running · Plan-Burler-Review
 
 ## Seen
 
