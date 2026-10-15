@@ -1,0 +1,8 @@
+verdict: approve
+reason: >-
+  The design covers the board entry's two parts: the warning on a new depends_on that makes a task a sibling of one sharing a module label, with the write still succeeding, and the sibling rule in the ly:board skill.
+  It keeps path-based overlap and batten's per-group start out, as the entry rules.
+  Extending the warning to upsert-batch and merge applies the entry's goal to every route that writes depends_on, and no other entry claims that work.
+  No peer run or parent commit changes the board engine, the board CLI or the ly:board skill; the only shared file is the bookkeeping file cmd/lyx/testdata/test-budget.yaml.
+question: ""
+superseded: []
