@@ -1,6 +1,6 @@
 # Webster fork prompt: read instruction and kick-start pack at the end, behind a switch
 
-`webster-pack-end-of-prompt` · Task · enhancement, webster, stencil · running · Loom-Preflight
+`webster-pack-end-of-prompt` · Task · enhancement, webster, stencil · running · Discussion-Write
 
 ## Seen (audit after read-all-first, 2026-10-13; board note `glyph-use-audit`)
 
