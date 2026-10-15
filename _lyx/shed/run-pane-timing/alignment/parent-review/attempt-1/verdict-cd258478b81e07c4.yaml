@@ -1,0 +1,8 @@
+verdict: approve
+reason: >-
+  The design covers all five board items: seconds on closed spans (D1), round totals (D2), gate time and rework from a new shuttle record (D5-D7), numbers per recipe entry for loom, darn and batten (D3, D4), and segment-prefixed Bouncer and Burler roles (D8).
+  The two narrowings are stated and explained in the record, which also decides them: the running row stays in minutes, and single-holder roles stay unprefixed.
+  No other board entry is duplicated or contradicted.
+  The one peer, refusal-route-config-empty, touches loom-recipe.yaml and the Webster adapter at different places and does not conflict; it is at row 4 against this run's row 3, so it lands first.
+question: ""
+superseded: []
