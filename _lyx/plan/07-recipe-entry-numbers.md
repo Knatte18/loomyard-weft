@@ -1,8 +1,8 @@
 # Card 7 — recipe-entry-numbers
 
 **Create:**
-- `plan:internal/loomrecipe#EntryNumbers` -> `func EntryNumbers(rows []RecipeRow) map[string]int`
-- `plan:internal/loomrecipe#TestEntryNumbers` -> `func TestEntryNumbers(t *testing.T)`
+- `internal/loomrecipe#EntryNumbers`
+- `internal/loomrecipe#TestEntryNumbers`
 
 **Edit:**
 - `internal/loomrecipe#Rows`

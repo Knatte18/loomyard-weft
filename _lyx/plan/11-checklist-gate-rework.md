@@ -1,8 +1,8 @@
 # Card 11 — checklist-gate-rework
 
 **Create:**
-- `plan:internal/loomcli#checklistReworkSet` -> `type checklistReworkSet struct`
-- `plan:internal/loomcli#checklistRework` -> `func checklistRework(history []checklistVisit, perched map[string]bool) checklistReworkSet`
+- `internal/loomcli#checklistReworkSet`
+- `internal/loomcli#checklistRework`
 
 **Edit:**
 - `internal/loomcli#renderChecklist`

@@ -1,7 +1,7 @@
 # Card 10 — checklist-gate-lines
 
 **Create:**
-- `plan:internal/loomcli#checklistGateLines` -> `func checklistGateLines(spans []shedengine.GateSpan, paused []pauserecord.Interval) []string`
+- `internal/loomcli#checklistGateLines`
 
 **Edit:**
 - `internal/loomcli#checklistVisit`

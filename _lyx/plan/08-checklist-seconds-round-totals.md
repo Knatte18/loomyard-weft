@@ -1,7 +1,7 @@
 # Card 8 — checklist-seconds-round-totals
 
 **Create:**
-- `plan:internal/loomcli#secondMark` -> `func secondMark(seconds int) string`
+- `internal/loomcli#secondMark`
 
 **Edit:**
 - `internal/loomcli#renderChecklist`

@@ -7,7 +7,7 @@
 - `internal/loomcli/doc.go`
 
 **Uses:**
-- `plan:internal/loomrecipe#EntryNumbers`
+- `internal/loomrecipe#EntryNumbers`
 
 **Intent:**
 The checklist numbers its entries in recipe order, after the box (D3): `[x] 3. Discussion-Write 4m12s`.

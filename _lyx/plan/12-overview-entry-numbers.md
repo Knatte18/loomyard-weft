@@ -18,7 +18,7 @@
 - `docs/overview.md`
 
 **Uses:**
-- `plan:internal/loomrecipe#EntryNumbers`
+- `internal/loomrecipe#EntryNumbers`
 
 **Intent:**
 The prime runs overview, the one pane a batten run has, prefixes the stage cell with the stage's entry number (D4).
