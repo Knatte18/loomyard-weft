@@ -1,6 +1,6 @@
 ## Goal
 
-Webster's Master reads only what every fork shares and what stays stable for the whole run: the plan's `00-overview.md`, the repo's rules when PATTERN is active (`PATTERN.md`, inlined by the pattern directive, and the `pattern/` background files it points at) and what Claude Code already loads (`CLAUDE.md`).
+Webster's Master reads only what every fork shares and what stays stable for the whole run: the plan's `00-overview.md`, the repo's rules when PATTERN is active (`PATTERN.md`, inlined by the pattern directive, and the `pattern/` background files it points at that touch what the forks will do) and what Claude Code already loads (`CLAUDE.md`).
 It reads no source code, tests or other docs, because the forks rewrite them and every fork after the first would inherit stale reads.
 Each implementer fork reads the code its own cards need, fresh, when the card starts; no stencil tells a fork it inherited code.
 
@@ -31,6 +31,7 @@ Out:
 ### D1 — Master's read set
 
 **Decision:** The Master reads `{{.plan_dir}}/00-overview.md` once (task framing, Card Index, `## Shared Decisions`, `## Rename mechanic`, `## verify:`), and the `pattern/` background files the constraints section above it points at, when that section is present.
+With card files banned, the Master applies that section's filter (what the forks will do) from `00-overview.md`'s Card Index and `## Shared Decisions` alone.
 The template has no conditionals, so the wording names the rules through the constraints section and reads as vacuous when the pattern directive renders empty.
 It reads no card file and no source, test or doc file outside the plan directory and those `pattern/` files, and runs no grep or quarry over the code.
 The only other file it reads is the gate findings file a `Gate findings recorded at …` message names.
@@ -51,15 +52,16 @@ The loop-instruction warning stays true and backs the `steerWebsterForkDeny` hoo
 
 ### D3 — FRESH-READ fragments
 
-**Decision:** In the three live FRESH-READ fragments, the sentences "Inherited context can be stale. A file you looked at during orientation — your own, or one Master read before forking you — …" are replaced by wording that says no code reaches the fork from Master, and that only the fork's own reads, taken in this batch, are current.
-The rest of each fragment (what to read before the first edit, the Edit-only rule after an edit) is unchanged.
-The wording must also hold for the cold recovery strand, which renders `webster-fragment-fresh-read-plain.md` too and inherits nothing.
+**Decision:** In each of the three live FRESH-READ fragments, three spans are replaced: the sentence "Inherited context can be stale.", the sentence "A file you looked at during orientation — your own, or one Master read before forking you — is not necessarily the version on disk right now: …", and the sentence pair "Only your own reads, taken now, are current; content you merely inherited is not."
+One replacement statement covers all three: no code reaches you from Master, the plan and rules you hold stay current, except a rules file a card of this run targets, which you read fresh like code, and only your own reads of code taken in this batch are current.
+In `webster-fragment-fresh-read-plain.md` the verb "re-read" becomes "read", so the text holds for the cold recovery strand, which renders that fragment too and inherits nothing.
+Every other sentence of each fragment is unchanged, apart from the plain fragment's re-read to read.
 **Rationale:** "One Master read before forking you" presumes Master read code; after D1 it never does.
 The per-card layout of `kickstart-per-card` then becomes the fork's whole code read set, as the board entry intends.
 
 ### D4 — Recovery prefix
 
-**Decision:** The recovery prefix's orientation reads `_lyx/plan/00-overview.md` and the `pattern/` background files the plan's decisions and its cards touch, the same set the Master reads.
+**Decision:** The recovery prefix's orientation reads `_lyx/plan/00-overview.md` and the `pattern/` background files the recovery prompt's own constraints section points at: the implementer directive's set, filtered by what the strand is about to change.
 The code its cards need it reads per card, as the shared implementer body says, not as an up-front orientation step.
 The closing line "they assume you already hold this orientation, exactly like an in-session fork already holds it from Master" is reworded to say the recovery strand now holds what a fork inherits.
 **Rationale:** That closing line claims an in-session fork holds a codebase orientation from Master, which D1 makes false.
@@ -81,9 +83,19 @@ The closing line "they assume you already hold this orientation, exactly like an
 
 ### D8 — Re-measurement hand-off
 
-**Decision:** The task's summary, which becomes the landing commit message, names the post-landing check: `tools/forkaudit` over Webster runs made after deploy, comparing per-fork total reads and failed Edit calls (the stale-read proxy) against the 2026-10-12, -13 and -15 audits, and not calls before the first edit.
-It also names the Master's own reads in those runs as the compliance check for D1.
-**Rationale:** The board entry asks for the re-measure "afterwards"; it needs runs on the deployed binary, so no card can run it, and the summary carries the request past the board entry's close.
+**Decision:** No card implements D8.
+The carrier is the change description: this Decision is a check to run by hand after landing, and the Describe row, which runs in every loom run and reads this record whole, lists it under what to check or run by hand, so it reaches the pull request body and the landing commit's message on main.
+The check: `tools/forkaudit` over the first Webster runs made on a binary deployed from this task's landing commit, comparing per-fork total reads and failed Edit calls (the stale-read proxy) against the 2026-10-12, -13 and -15 audits, and not calls before the first edit, plus the Master's own reads in those runs as the compliance check for D1.
+Forks explore more by construction, so a rise in per-fork reads is expected and is not a regression.
+A board note for the check has kind `note` and label `audit`, as `suite-weight-quiet-rerun` has, names this task's slug, and is due at those first runs.
+What the carrier can lose: the description reaches an actor only at PR-Gate.
+When the orch reviews the pull request, its board policy puts the check on the board as such a note;
+a run the alignment agent approves lands with no orch turn, so the check then survives only in the landing commit's message, read by no scheduled step.
+The carrier depends on no parent, so a run with no recorded parent carries it the same way.
+**Rationale:** The board entry asks for the re-measure "afterwards"; it needs runs on the deployed binary, so no card can run it.
+The task summary cannot carry it: the Master writes `summary.md` strictly from batch digests, so no plan or card text reaches it.
+No session of this run that reads the record may write the board, and none is told to message `ly:orch` about it, so neither can file the note.
+The Describe row is the one scheduled reader of this record whose output outlives the run.
 
 ## Constraints
 
@@ -99,22 +111,30 @@ It also names the Master's own reads in those runs as the compliance check for D
 
 ## Auto-mode assumptions
 
-- The Master keeps reading the `pattern/` background files the orchestrator pattern directive points at; the operator's "PATTERN.md and the like" covers them.
 - The inline-layout fragment stays untouched (its banner's baseline rule wins over uniform wording).
 
 ## Open risks
 
 - A plan whose cards edit `PATTERN.md`, a `pattern/` file or `CLAUDE.md` leaves the Master's copy stale for later forks.
   The bound: a card that edits such a file names it as a target, so the fork that edits it reads it fresh, and a later fork that only obeys the changed rule gets it through the plan's `## Shared Decisions`.
-- The Master may still read code despite the prompt; only the post-landing check of D8 shows whether it complies.
+- The Master may still read code despite the prompt, and would hand those reads to later forks as stale context.
+  The bound: under D3's fresh-read rule each fork reads every file it edits itself before the first edit, so a stray Master read costs context, not correctness.
+  The post-landing check of D8 detects it.
 - A Webster run in flight at deploy mixes the two designs, since stencils are read at call time: a Master that read code under the old template forks under the new fork prompt, or a resumed Master gets the new template.
   The fresh-read rule makes forks read their own files either way, so the mix costs accuracy of wording, not correctness.
+
+<!-- lyx:carry-over Discussion-Review -->
+- Discussion-Review, round 3: converged; each finding below was fixed or disputed by the round's fixer, and no fresh reviewer has seen the result; the fixer report says which.
+  Review: _lyx/reviews/discussion/round-3-review.md; fixer report: _lyx/reviews/discussion/round-3-fixer-report.md.
+  - d8-carrier-task-summary-false-premise (class decision, severity MEDIUM, open in rounds 1, 2, 3)
+  - d8-writer-orch-edge-unbounded (class design, severity MEDIUM, open in rounds 3)
+<!-- /lyx:carry-over Discussion-Review -->
 
 ## Acceptance criteria
 
 - The rendered master prompt tells the Master to read `00-overview.md` and the rules, and contains no instruction to read the codebase, its structure or its conventions, and no claim that forks inherit Master's code reads.
 - The rendered master prompt forbids reading any file outside the plan directory, the `pattern/` background files and a named gate findings file, and names the stale-inherited-read reason.
-- The master prompt rendered with an empty `pattern_directive` (no `PATTERN.md`) tells the Master to read nothing but the plan and a named findings file.
+- The master prompt rendered with an empty `pattern_directive` (no `PATTERN.md`) contains no constraints section, and every mention of the `pattern/` background files in it is conditioned on that section being present; it names no read beyond the plan directory and a named gate findings file.
 - The rendered fork prompt in the per-card, file and pack-off layouts says no code reaches the fork from Master, and no fork prompt says the fork inherits a codebase orientation.
 - The rendered recovery prompt orients from `00-overview.md` and the rules, reads code per card, and its fresh-read rule holds for a session that inherited nothing.
 - The rendered verify-fix prompt says the inherited context holds no code.
