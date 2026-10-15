@@ -17,7 +17,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | **Run status pane: numbered rows, seconds, round totals, gate time; segment-named sessions**<br>• Per-run status pane shows seconds, a total per Burler round, and each gate with its time and the rework it caused | [`run-pane-timing`](design-run-pane-timing.md) | loom | Plan-Write | 3h | 2h | loom, burler, shed, reed |
+| 1 | **Run status pane: numbered rows, seconds, round totals, gate time; segment-named sessions**<br>• Per-run status pane shows seconds, a total per Burler round, and each gate with its time and the rework it caused | [`run-pane-timing`](design-run-pane-timing.md) | loom | Plan-Bouncer | 3h | 2h | loom, burler, shed, reed |
 | 2 | **Begin-batch refusal route and label; bare lyx config writes an empty layer**<br>• Two small bugs: a delete-before-reference refusal is mislabelled plan_drifted and halts for a human; bare lyx config with no TTY saves an empty layer | [`refusal-route-config-empty`](design-refusal-route-config-empty.md) | loom | Plan-Burler-Review | 3h | 50m | webster, loom, config |
 
 ### Ready
@@ -69,7 +69,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 17 | **Webster fork read audit as a tool under tools/**<br>• Move the 2026-10-13 fork read audit jq scripts out of scratch into a repeatable tools/ script | [`glyph-audit-tool`](design-glyph-audit-tool.md) | 1h | 1h | webster |
 | 18 | **The arbiter in shed for every shed run, batten included**<br>• The batten Go driver has a tackler but no arbiter; move the arbiter and its keys into shed beside the tackler | [`shed-arbiter-all`](design-shed-arbiter-all.md) | 30m | 27m | shed, batten, loom, config |
 | 19 | **Plan cards name added tests by Create handle, never a plain test-file path**<br>• Drop the Edit exception for a test file the card only adds tests to; the Create plan handle carries the file | [`plan-test-file-path`](design-plan-test-file-path.md) | 6m | 6m | loom, stencil |
-| 20 | **Kick-start pack per card, read when the card starts**<br>• Forks read about a quarter of a batch-wide pack; hand each card its own pack as everything it needs to begin | [`kickstart-per-card`](design-kickstart-per-card.md) | 4m | 0m | webster, stencil |
+| 20 | **Kick-start pack per card, read when the card starts**<br>• Forks read about a quarter of a batch-wide pack; hand each card its own pack as everything it needs to begin | [`kickstart-per-card`](design-kickstart-per-card.md) | 5m | 0m | webster, stencil |
 
 #### Low priority
 
