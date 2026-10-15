@@ -85,6 +85,7 @@ Create `internal/shellguard`, the one neutral table of every guard lyx installs 
   The two character sets move from `claudeengine`'s `steerTextForbiddenChars` and `noticeTextForbiddenChars` into `forbiddenSteerChars` and `forbiddenNoticeChars`; `claudeengine` keeps its own two for its Claude rows.
 
 The Move group relocates the pattern, steer and notice constants with their comments unchanged into `internal/shellguard/rows.go`, the file `Rows` lives in.
+Each shell row's comment on its `standingDenies` entry in `settings.go` moves unchanged onto that row's entry in `Rows`: python's guardrail paragraph (what the pattern lets through and falsely denies), the raw-go and in-place-edit `Installed for every run` lines with their guardrail sentence, computed-rm's paragraph (the dialog it pre-empts, what it falsely denies and lets through) and machine-sleep's lines; only the sentence saying that ending with `; true` guarantees exit 0, which describes Claude's command shape, goes onto `renderShellGuard`.
 `steerRawGoDeny` and `noticeRawGoDeny` are deleted because `Rows` builds the raw-go text from `foreground`.
 `shellguard` imports the standard library, `internal/agentname` and `internal/gateslot` only, the last two for the three environment-variable names `rawGoCommandPattern` names; `TestLeafInvariant_AllowlistOnly` pins that set with `scankit.AssertImportAllowlist`.
 
@@ -99,7 +100,7 @@ In `claudeengine`:
 
 The five pattern tables of `hookcmd_integration_test.go` move into one table-driven `TestRows_PatternsDenyAndAllow` in `shellguard`, in an `integration`-tagged file, keeping every row: each row names the guard by `Name`, a Bash command and whether it is denied, and `payloadDenied` encodes the PreToolUse payload as the deleted `preToolUseOutput` did and reports denied when every pattern of the row matches under a real `grep -Eq` run through `sh`, so each pattern denies and allows the same commands as before.
 `TestMain` runs the package's tests under `tmuxkit.Main` after `gitkit.HermeticGitEnv()`, as `claudeengine`'s does, since the package now carries an `integration` file that spawns processes.
-`TestCheckTexts` plants a row with a quote, a backslash and a line break in its steer and in its notice and asserts `checkTexts` refuses each naming the row; the shipped rows passing is already pinned by `init` at package load.
+`TestCheckTexts` plants a row with a single quote, a double quote and a backslash in its steer, and with those three plus a line break in its notice, and asserts `checkTexts` refuses each naming the row; the shipped rows passing is already pinned by `init` at package load.
 `hookcmd_integration_test.go` keeps only the recording-hook test and its helpers, so its header comment is rewritten to say the file runs the recording hooks alone, the deny pattern tables now living in `shellguard`.
 `TestStandingDenies_RenderEveryShellGuardRow` asserts every `shellguard.Rows(bashForegroundPhrase)` row has exactly one `standingDenies` entry with matcher `Bash`, its steer and notice, and the command shape above for its pattern count, in table order after the Claude rows (D6's pin that every row is rendered).
 The tests that named the moved steer and notice constants look them up through `shellRow`, which returns the `shellguard.Rows(bashForegroundPhrase)` row with that name and fails the test when none has it.

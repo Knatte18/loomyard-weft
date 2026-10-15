@@ -27,9 +27,6 @@
 - `pattern/PATTERN-config-strictness.md`
 - `pattern/PATTERN-shuttle-provider-seam.md`
 
-**Uses:**
-- `internal/configreg#checkLoad`
-
 **Intent:**
 Declare `claude.yaml`, a layered config module owned and loaded by `claudeengine` (D1), and register it in `configreg` through `internal/shuttleengines` so `configreg` stays engine-blind (D2).
 No code reads the module yet; card 6 switches the engine onto it.
