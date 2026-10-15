@@ -133,6 +133,12 @@ Rationale: one place for the code list keeps the decision record lean and avoids
   - relevant-path-wire-assignment-untested (class scope, severity MEDIUM, open in rounds 1)
 <!-- /lyx:carry-over Plan-Review -->
 
+<!-- lyx:carry-over Webster-Review -->
+- Webster-Review, round 1: converged; each finding below was fixed or disputed by the round's fixer, and no fresh reviewer has seen the result; the fixer report says which.
+  Review: _lyx/reviews/webster/round-1-review.md; fixer report: _lyx/reviews/webster/round-1-fixer-report.md.
+  - relevantpath-guard-untested (class scope, severity MEDIUM, open in rounds 1)
+<!-- /lyx:carry-over Webster-Review -->
+
 ## Acceptance criteria
 
 - A loom Discussion-Write lead seat lists `relevant.md` among its outputs.
