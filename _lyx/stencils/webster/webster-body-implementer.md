@@ -1,4 +1,4 @@
-<!-- lyx-stencil: sha256=97df8133d91a29f96d7a965570b14798a429f00a1cff7a2201e3578138ae1336 build=aa925bdcc554c36ec01aa7bf6e12311dae8ba9cc time=2026-10-15T12:10:13Z -->
+<!-- lyx-stencil: sha256=4fa626ea924a5fb204f254504306ba53ff6b2e82bfbe3fbf3cf6d0a8065480f6 build=493c62b710455b6f0fcf8f6b2814c8d9812c8118 time=2026-10-15T18:16:45Z -->
 
 # Webster implementer job — read your cards, implement, commit, report
 
@@ -28,6 +28,11 @@ For EACH card file listed above, in the order listed:
 
 1. {{.card_read}}
 2. A card names its targets under its own type label(s) and what it reads under `**Uses:**`; see `{{.specs_dir}}/loom/loom-plan-spec.md` for the full grammar. Make exactly the changes the card describes, in exactly the targets its type labels name.
+   A deviation is a change outside the batch's card targets as the scope guard counts them: a member target covers that member, a file target every member of that file, a package target every member of the files directly in its directory, and a rename is inside when either its old or its new name is a target.
+   `**Uses:**` entries add no coverage, so a change to a member a card only reads is a deviation unless a target of some card in the batch covers it.
+   Three deviations are sanctioned, each within its bound: the guard-step fix in step 3, only in a file the guard step's failure names; the scan-error fix the guard-fix line in the card gate names, only in that file and under the card it names; and a fix to a failure the card caused, under the bounded self-fix section's two-pronged test and its attempt cap.
+   No other change outside the targets is made.
+   The scope guard records every deviation, sanctioned ones included; you list, compare and report none, and a deviation alone never makes the report `FAILED`.
 {{.locate}}
 3. Run each step of the card's gate from the list below, in order, each as its own foreground Bash call under the gate rule in your system prompt.
    A failure here is the card's own gate — fix it before moving on;
@@ -38,7 +43,7 @@ For EACH card file listed above, in the order listed:
    A card gate's guard step, the `lyx gate test --tags integration … -- -run` step over the repository's `//lyx:guard` tests, can fail on a file the card does not list, such as the pinned set in a `cmd/lyx` test.
    Fix it under the card's commit.
    Fix the code that broke the guard where that is the right fix, and change a pinned set or an allowlist only when the pin itself must move.
-   Change only a file the guard step's failure names this way; every other deviation rule stands.
+   Change only a file the guard step's failure names this way, the first sanctioned deviation in step 2's rule.
 
 4. Commit the card to the repo — normal dev git, run from your working directory — never any `_lyx` path.
    One commit per card is the norm.
