@@ -1,0 +1,9 @@
+verdict: approve
+reason: >-
+  The diff builds fork0 at Plan-Write, the host-neutral re-prompt rule and fork boilerplate at both hosts,
+  and the branch-coverage, forced-edits and criteria-coverage lens changes, as the goal and decisions D1 to D9 say.
+  Card 4 restricts the critical-fixer judge to Plan-Write, so Discussion-Write renders main's judge steps and rejection rule unchanged,
+  as the record's superseding entry "Critical fixer only at Plan-Write" decides; this resolves attempt 1's reject.
+  The only peer, shed-tackler, touches none of this run's behaviour, and no parent commit is listed.
+question: ""
+superseded: []
