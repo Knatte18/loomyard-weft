@@ -1,6 +1,6 @@
 # Webster fork read audit as a tool under tools/
 
-`glyph-audit-tool` · Task · enhancement, webster · running · Loom-Preflight
+`glyph-audit-tool` · Task · enhancement, webster · running · Discussion-Write
 
 ## Seen
 
