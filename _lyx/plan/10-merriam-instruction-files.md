@@ -1,7 +1,7 @@
 # Card 10 — MerriamBase counts the instruction files Master's engine names
 
 **Create:**
-- `plan:internal/websterengine#MasterInstructionFiles` -> `func MasterInstructionFiles(engines AuditEngines, master shuttleengine.ModelChoice) func() ([]string, error)`
+- `internal/websterengine#MasterInstructionFiles`
 
 **Edit:**
 - `internal/websterengine#MerriamBase` -> `func MerriamBase(geom Geometry, instructionFiles []string) (batcher.StartBase, error)`
