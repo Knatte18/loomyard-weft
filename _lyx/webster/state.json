@@ -1,0 +1,118 @@
+{
+  "runGuid": "18bc7599f3afe3fd8ac479fda8fc03e5",
+  "planFingerprint": "376bc5bbebae53d26fd476f435f521025392964055caa29db7d48a042b9b288c",
+  "planFileHashes": {
+    "00-overview.md": "05bf8413fb9ceeb86af62939093d7ce8c7d89dcddfce0ccfe37076d9d8fd86bc",
+    "01-planparser-ref-member.md": "c2a7e07e094f41a8e6e39e85ffe35357061288a73d9c6283844b6d4d9f0b2e26",
+    "02-scope-guard-file-package-cover.md": "0c90cf7d0cc28707b67176d000d2ee13bc4c5ee95b775bfa5750fbd9137c0057",
+    "03-implementer-deviation-rule.md": "8f0e3c405bf6dd8c08f0ae8a8cb40e0a570743befe112735e1139756d61e71b7",
+    "04-plan-spec-scope-guard-pointer.md": "63e7b8df0a3e478468ee0b8798555ae21b10ccf5e1aad2ab8bcdf092e576b3ff"
+  },
+  "planOverviewFrameHash": "e88c3dae9f4cf696446b6e8932016795d92fdad946a14d7aa2071a4503096238",
+  "partition": [
+    {
+      "cards": [
+        "01-planparser-ref-member",
+        "02-scope-guard-file-package-cover",
+        "03-implementer-deviation-rule",
+        "04-plan-spec-scope-guard-pointer"
+      ],
+      "profile": "cautious",
+      "estimate": 127926,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 1,
+        "startup": 54448,
+        "read_union": 34856,
+        "cards": [
+          {
+            "card": 1,
+            "card_text": 480,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1944,
+              "package:cmd/lyx/testdata": 2000,
+              "package:internal/planparser": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:internal/planparser": 2000
+            },
+            "messages": 43.5,
+            "written": 13530
+          },
+          {
+            "card": 2,
+            "card_text": 888,
+            "reads": {
+              "file:internal/planglyph/doc.go": 1332,
+              "package:internal/planglyph": 2000,
+              "tests:internal/planglyph": 2000
+            },
+            "messages": 64,
+            "written": 20088
+          },
+          {
+            "card": 3,
+            "card_text": 312,
+            "reads": {
+              "file:contracts/stencils/webster/webster-body-implementer.md": 1296,
+              "file:contracts/stencils/webster/webster-fragment-guard-fix.md": 72,
+              "package:contracts/stencils/webster": 2000,
+              "tests:contracts/stencils/webster": 2000
+            },
+            "messages": 8,
+            "written": 2712
+          },
+          {
+            "card": 4,
+            "card_text": 192,
+            "reads": {
+              "file:contracts/specs/loom-plan-spec.md": 8340,
+              "package:contracts/specs": 2000,
+              "tests:contracts/specs": 2000
+            },
+            "messages": 7,
+            "written": 2292
+          }
+        ]
+      }
+    }
+  ],
+  "currentBatch": 1,
+  "masterStrand": "e0e30eaf73ecdd1bb34e51098c98f8df",
+  "masterSessionId": "6575fbdb-247c-44c2-b42c-2042731dbfcf",
+  "masterEngine": "claude",
+  "batches": {
+    "1": {
+      "slug": "planparser-ref-member",
+      "cards": [
+        "01-planparser-ref-member",
+        "02-scope-guard-file-package-cover",
+        "03-implementer-deviation-rule",
+        "04-plan-spec-scope-guard-pointer"
+      ],
+      "cardHashes": {
+        "01-planparser-ref-member": "c2a7e07e094f41a8e6e39e85ffe35357061288a73d9c6283844b6d4d9f0b2e26",
+        "02-scope-guard-file-package-cover": "0c90cf7d0cc28707b67176d000d2ee13bc4c5ee95b775bfa5750fbd9137c0057",
+        "03-implementer-deviation-rule": "8f0e3c405bf6dd8c08f0ae8a8cb40e0a570743befe112735e1139756d61e71b7",
+        "04-plan-spec-scope-guard-pointer": "63e7b8df0a3e478468ee0b8798555ae21b10ccf5e1aad2ab8bcdf092e576b3ff"
+      },
+      "startSha": "371df45692b0454f7a5f21250dc40709b3d60dbc",
+      "kind": "fork",
+      "spawnedAt": "2026-10-15T17:59:30Z",
+      "sessionId": "6575fbdb-247c-44c2-b42c-2042731dbfcf",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
+    }
+  }
+}
