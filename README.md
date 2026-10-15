@@ -18,9 +18,9 @@ Held by a run; its scope is locked until the run ends.
 | # | Task | Slug | Recipe | At | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | 1 | **Lighter test rules for small changes**<br>• Tests that pin stencil wording make small prompt changes large; pin only what must hold, measured first | [`lighter-test-rules`](design-lighter-test-rules.md) | loom | Plan-Write | 2d | 2h | stencil, webster, burler, loom |
-| 2 | **Engine-owned config, one neutral guardrail table, provider-blind reed**<br>• claude.yaml owned by claudeengine, a neutral shell-guard table each engine renders as hooks, reed strands tagged by provider | [`engine-config-seams`](design-engine-config-seams.md) | loom | Discussion-Write | 4h | 3h | shuttle, claude, config, reed |
+| 2 | **Engine-owned config, one neutral guardrail table, provider-blind reed**<br>• claude.yaml owned by claudeengine, a neutral shell-guard table each engine renders as hooks, reed strands tagged by provider | [`engine-config-seams`](design-engine-config-seams.md) | loom | Discussion-Write | 4h | 4h | shuttle, claude, config, reed |
 | 3 | **Every role spec carries its resolved engine**<br>• Role specs take engine, model and effort from the model alias through one shared ModelChoice; Claude-only roles declare their needs | [`engine-model-choice`](design-engine-model-choice.md) | loom | Discussion-Write | 4h | 4h | shuttle, loom, webster, burler, shed |
-| 4 | **creel stage 1: the one way to reach an agent, standalone**<br>• The creel daemon, queues, journal and verbs, delivering through shuttle, built and tested before any module sends through it | [`creel-core`](design-creel-core.md) | loom | Plan-Bouncer | 13d | 2h | creel, reed, shuttle |
+| 4 | **creel stage 1: the one way to reach an agent, standalone**<br>• The creel daemon, queues, journal and verbs, delivering through shuttle, built and tested before any module sends through it | [`creel-core`](design-creel-core.md) | loom | Batchifier | 13d | 2h | creel, reed, shuttle |
 
 ### Ready
 
@@ -36,8 +36,8 @@ Waits only on Running or Ready entries.
 
 | # | Task | Slug | Recipe | After | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | **Usage and cost read through the engine**<br>• tokencount reads each run through its engine, with prices per engine, instead of reading Claude transcripts directly | [`engine-usage-readers`](design-engine-usage-readers.md) | loom | `engine-config-seams` | 4h | 3h | shuttle, claude |
-| 2 | **Discussion hands Plan a list of the relevant code**<br>• The Discussion writer writes relevant.md listing the files and members it read and found relevant; Plan-Write reads it first, so its context starts smaller | [`discussion-relevant-list`](design-discussion-relevant-list.md) | loom | `lighter-test-rules` | 27m | 9m | loom, stencil |
+| 1 | **Usage and cost read through the engine**<br>• tokencount reads each run through its engine, with prices per engine, instead of reading Claude transcripts directly | [`engine-usage-readers`](design-engine-usage-readers.md) | loom | `engine-config-seams` | 4h | 4h | shuttle, claude |
+| 2 | **Discussion hands Plan a list of the relevant code**<br>• The Discussion writer writes relevant.md listing the files and members it read and found relevant; Plan-Write reads it first, so its context starts smaller | [`discussion-relevant-list`](design-discussion-relevant-list.md) | loom | `lighter-test-rules` | 28m | 10m | loom, stencil |
 
 ## Notes
 
@@ -79,7 +79,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Note | Slug | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| 1 | **Codex CLI as a second shuttle engine: hands-on spike, then codexengine**<br>• Codex CLI as a second engine to offload Claude tokens: short hands-on tests first, then a codexengine for single-session roles | [`codex-engine`](design-codex-engine.md) | 11d | 3h | shuttle, codex |
+| 1 | **Codex CLI as a second shuttle engine: hands-on spike, then codexengine**<br>• Codex CLI as a second engine to offload Claude tokens: short hands-on tests first, then a codexengine for single-session roles | [`codex-engine`](design-codex-engine.md) | 11d | 4h | shuttle, codex |
 | 2 | **finalize: the discrepancy-document conflict shape**<br>• Divergences that cannot be a git conflict get a precomputed document for the resolving agent instead of markers | [`finalize-discrepancy-doc`](design-finalize-discrepancy-doc.md) | 11d | 10d | fabric, loom |
 | 3 | **shedrecipe: capability declaration instead of manual seam-threading**<br>• A producer declares what it needs and the registry wires it, instead of a hand-threaded Env passthrough field per layer | [`shedrecipe-capabilities`](design-shedrecipe-capabilities.md) | 11d |  | shed |
 | 4 | **Discussion stage has no sanctioned path to land a repository edit ahead of Plan**<br>• Discussion has no sanctioned path to commit a PATTERN edit ahead of Plan | [`discussion-lands-invariant`](design-discussion-lands-invariant.md) | 9d | 9d | loom |
