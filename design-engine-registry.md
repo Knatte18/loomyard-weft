@@ -2,7 +2,7 @@
 
 `engine-registry` · Task · enhancement, shuttle, config, loom, webster, burler, orch, batten
 
-Depends on: [`orch-context-overview`](design-orch-context-overview.md), [`kickstart-per-card`](design-kickstart-per-card.md)
+Depends on: [`kickstart-per-card`](design-kickstart-per-card.md)
 
 ## Goal
 
