@@ -1,13 +1,12 @@
 {
   "current_producer": "PR-Gate",
-  "state": "awaiting",
-  "error": "alignment report /home/knatte/Code/loomyard-LYXHUB/glyph-audit-tool/_lyx/shed/glyph-audit-tool/alignment/pr-gate/attempt-1/report-9f9b80c194bfc943.md did not settle this pull request - glyph-audit-tool and kickstart-per-card record contradictory decisions on who teaches tools/forkaudit the per-card layout. glyph-audit-tool's Constraints (and the rule at tools/forkaudit/extract.jq:10) say kickstart-per-card adds its marker row in the same task. kickstart-per-card's Scope Out says a follow-up task, filed by the orch and depending on both, does it. Which holds? Either kickstart-per-card takes the marker row (prompt check before the file row) into its scope, or glyph-audit-tool rewords that rule, corrects its Open risk to say per-card forks class as file until the follow-up lands, and the orch files the follow-up.; the pull request awaits review; run `lyx loom approve` to land it or `lyx loom reject` to send findings to rework: https://github.com/Knatte18/loomyard/pull/640",
-  "parent_notice": "alignment report /home/knatte/Code/loomyard-LYXHUB/glyph-audit-tool/_lyx/shed/glyph-audit-tool/alignment/pr-gate/attempt-1/report-9f9b80c194bfc943.md did not settle this pull request - glyph-audit-tool and kickstart-per-card record contradictory decisions on who teaches tools/forkaudit the per-card layout. glyph-audit-tool's Constraints (and the rule at tools/forkaudit/extract.jq:10) say kickstart-per-card adds its marker row in the same task. kickstart-per-card's Scope Out says a follow-up task, filed by the orch and depending on both, does it. Which holds? Either kickstart-per-card takes the marker row (prompt check before the file row) into its scope, or glyph-audit-tool rewords that rule, corrects its Open risk to say per-card forks class as file until the follow-up lands, and the orch files the follow-up.",
+  "state": "running",
+  "error": "",
   "pause_requested": false,
   "activity": {
     "now": "PR-Gate",
     "last": "PR-Gate → awaiting",
-    "wait": "alignment report /home/knatte/Code/loomyard-LYXHUB/glyph-audit-tool/_lyx/shed/glyph-audit-tool/alignment/pr-gate/attempt-1/report-9f9b80c194bfc943.md did not settle this pull request - glyph-audit-tool and kickstart-per-card record contradictory decisions on who teaches tools/forkaudit the per-card layout. glyph-audit-tool's Constraints (and the rule at tools/forkaudit/extract.jq:10) say kickstart-per-card adds its marker row in the same task. kickstart-per-card's Scope Out says a follow-up task, filed by the orch and depending on both, does it. Which holds? Either kickstart-per-card takes the marker row (prompt check before the file row) into its scope, or glyph-audit-tool rewords that rule, corrects its Open risk to say per-card forks class as file until the follow-up lands, and the orch files the follow-up.; the pull request awaits review; run `lyx loom approve` to land it or `lyx loom reject` to send findings to rework: https://github.com/Knatte18/loomyard/pull/640"
+    "wait": ""
   },
   "history": [
     {
