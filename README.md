@@ -17,7 +17,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | **Spawned code roles load the hub language skills**<br>• Darn, Webster, Burler and merge sessions write Go without scribe:golang-* skills; the hub config should name its language skills | [`role-language-skills`](design-role-language-skills.md) | loom | PR-Gate | 15h | 15h | config, shuttle |
+| 1 | **Spawned code roles load the hub language skills**<br>• Darn, Webster, Burler and merge sessions write Go without scribe:golang-* skills; the hub config should name its language skills | [`role-language-skills`](design-role-language-skills.md) | loom | Finalize | 15h | 15h | config, shuttle |
 | 2 | **Kick-start pack per card, read when the card starts**<br>• Forks read about a quarter of a batch-wide pack; hand each card its own pack as everything it needs to begin | [`kickstart-per-card`](design-kickstart-per-card.md) | loom | Plan-Write | 2h | 1h | webster, stencil |
 
 ### Ready
@@ -47,7 +47,7 @@ Starts when every entry it names under After is done.
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | 1 | **Engine-owned config, one neutral guardrail table, provider-blind reed**<br>• claude.yaml owned by claudeengine, a neutral shell-guard table each engine renders as hooks, reed strands tagged by provider | [`engine-config-seams`](design-engine-config-seams.md) | loom | `engine-registry` | 47m | 39m | shuttle, claude, config, reed |
 | 2 | **Every role spec carries its resolved engine**<br>• Role specs take engine, model and effort from the model alias through one shared ModelChoice; Claude-only roles declare their needs | [`engine-model-choice`](design-engine-model-choice.md) | loom | `engine-registry`, `role-language-skills` | 47m | 47m | shuttle, loom, webster, burler, shed |
-| 3 | **creel stage 1: the one way to reach an agent, standalone**<br>• The creel daemon, queues, journal and verbs, delivering through shuttle, built and tested before any module sends through it | [`creel-core`](design-creel-core.md) | loom | `engine-registry` | 13d | 42m | creel, reed, shuttle |
+| 3 | **creel stage 1: the one way to reach an agent, standalone**<br>• The creel daemon, queues, journal and verbs, delivering through shuttle, built and tested before any module sends through it | [`creel-core`](design-creel-core.md) | loom | `engine-registry` | 13d | 43m | creel, reed, shuttle |
 
 ### Layer C
 
@@ -58,7 +58,7 @@ Starts when every entry it names under After is done.
 | # | Task | Slug | Recipe | After | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | 1 | **Usage and cost read through the engine**<br>• tokencount reads each run through its engine, with prices per engine, instead of reading Claude transcripts directly | [`engine-usage-readers`](design-engine-usage-readers.md) | loom | `engine-registry`, `engine-config-seams` | 47m | 39m | shuttle, claude |
-| 2 | **creel stage 2: orch and batten notices through creel**<br>• The orch watcher and batten notices and injects go through creel; the watcher keeps only its cycle logic | [`creel-notices`](design-creel-notices.md) | loom | `creel-core` | 47m | 42m | creel, orch, batten |
+| 2 | **creel stage 2: orch and batten notices through creel**<br>• The orch watcher and batten notices and injects go through creel; the watcher keeps only its cycle logic | [`creel-notices`](design-creel-notices.md) | loom | `creel-core` | 47m | 43m | creel, orch, batten |
 
 ### Layer D
 
@@ -68,7 +68,7 @@ Starts when every entry it names under After is done.
 
 | # | Task | Slug | Recipe | After | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | **creel stage 3: agents message through creel, not SendMessage**<br>• Parent asks, parent review, stop reports and shuttle send go through creel, so a non-Claude engine can take a role with a parent | [`creel-agents`](design-creel-agents.md) | loom | `creel-notices`, `engine-config-seams` | 47m | 42m | creel, shuttle, loom, stencil |
+| 1 | **creel stage 3: agents message through creel, not SendMessage**<br>• Parent asks, parent review, stop reports and shuttle send go through creel, so a non-Claude engine can take a role with a parent | [`creel-agents`](design-creel-agents.md) | loom | `creel-notices`, `engine-config-seams` | 47m | 43m | creel, shuttle, loom, stencil |
 
 ## Notes
 
@@ -126,7 +126,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 14 | **The arbiter in shed for every shed run, batten included**<br>• The batten Go driver has a tackler but no arbiter; move the arbiter and its keys into shed beside the tackler | [`shed-arbiter-all`](design-shed-arbiter-all.md) | 2h | 2h | shed, batten, loom, config |
 | 15 | **Plan cards name added tests by Create handle, never a plain test-file path**<br>• Drop the Edit exception for a test file the card only adds tests to; the Create plan handle carries the file | [`plan-test-file-path`](design-plan-test-file-path.md) | 2h | 2h | loom, stencil |
 | 16 | **Paste cited code into a review rounds context**<br>• Reviewers edit nothing and review a fixed commit, so code pasted at round start cannot go stale; measure it against todays reviewer | [`review-inline-code`](design-review-inline-code.md) | 1h | 1h | burler, stencil |
-| 17 | **Module labels from what a task touches, not only what it is about**<br>• Half the landings that changed the shuttle core lacked the shuttle label; derive or check module labels from the plan and the diff | [`labels-from-diff`](design-labels-from-diff.md) | 29m | 29m | board, loom |
+| 17 | **Module labels from what a task touches, not only what it is about**<br>• Half the landings that changed the shuttle core lacked the shuttle label; derive or check module labels from the plan and the diff | [`labels-from-diff`](design-labels-from-diff.md) | 30m | 30m | board, loom |
 
 #### Low priority
 
