@@ -1,6 +1,6 @@
 # Lighter test rules for small changes
 
-`lighter-test-rules` · Note · audit, stencil
+`lighter-test-rules` · Note · enhancement, stencil, webster, burler, loom
 
 ## Idea (operator, 2026-10-13)
 
@@ -32,3 +32,17 @@ Wording tests were: every `_test.go` under `contracts/stencils/`, every `*templa
   Examples: `793c6a8ee` 20 stencil, 73 wording-test, 0 code; `1e39afc10` (`webster-pack-last`) 41 stencil, 96 wording-test, 91 code; `da58615cd` 54 stencil, 204 wording-test, 137 code.
 - In tasks that also change much code the share falls to 5-20%.
 - Uncertain: the regex over-counts a few lines that only mention a prompt and misses assertions in other idioms; the `contracts/stencils` test files also hold marker and registry tests, counted as wording; renames count as full delete plus add.
+
+## Operator decision (2026-10-15)
+
+Build option 1: stencil tests pin only what must hold (markers, file paths, order, and the presence of load-bearing rules), not the wording of sentences.
+
+## Operator view, not a decision (2026-10-15)
+
+It is odd to have mechanical tests for stencils at all.
+
+## Open for the Discussion
+
+- `contracts/stencils/claims_test.go` marks a claim that cites a provenance (crucible round, finding, sabotage proof, live observation) as protected and never dropped; whether such claims stay, shrink to a marker, or go is open.
+- The orch's reading, not discussed: the PATTERN scans over stencils (`PATTERN-parent-directive`, `PATTERN-edit-directive`, `PATTERN-no-denied-recovery`) check structure and rules, not prose, and stay; marker sets, Fill round-trips and the registry tests stay.
+- Where the rule that asks for a test per stencil change is written (stencils, PATTERN, CLAUDE.md), so it changes with the tests.
