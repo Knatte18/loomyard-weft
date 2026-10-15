@@ -1,6 +1,6 @@
 # Discussion hands Plan a list of the relevant code
 
-`discussion-relevant-list` · Task · enhancement, loom, stencil · running · Describe
+`discussion-relevant-list` · Task · enhancement, loom, stencil · running · Merge-In
 
 ## Seen
 
