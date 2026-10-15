@@ -23,7 +23,14 @@ When a run starts, the operator's window goes to the overview.
 As the run spawns agents, it moves to the newest agent.
 The shell is never where the window rests when a run starts.
 
-## Idea
+## Operator decision (2026-10-15): a follow toggle
 
-Tell "on the shell because nothing else existed at attach" apart from "moved to the shell by hand".
-For example, an attach that found no relevant window marks the viewer as not placed, and the first overview or agent window to open selects it.
+A per-session follow state, shown as a clickable button on the reed status bar:
+
+- Follow is on when a run starts: the viewer goes to the overview, then to each newest agent window, from the shell too.
+- Any window change the operator makes by hand (a status-bar click, Alt+Up/Down) turns follow off, and the button shows it off.
+  Reed owns those bindings, so it can tell a manual switch from its own.
+  A viewer the operator moved deliberately, for example to the shell, is then never disturbed.
+- Clicking the button turns follow back on and jumps to the newest agent window, else the overview.
+
+The button is one entry in the configurable button set of note `reed-status-buttons`.
