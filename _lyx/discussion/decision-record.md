@@ -92,6 +92,12 @@ Rationale: Each is a direct consequence of the task's own refusal: a way forward
 ## Open risks
 
 - A fork may put a new test in a new file of the package instead of beside its neighbours; D2's `**Uses:**` rule mitigates this only where the plan writer follows it, and review sees the result.
+
+<!-- lyx:carry-over Plan-Review -->
+- Plan-Review, round 1: converged; each finding below was fixed or disputed by the round's fixer, and no fresh reviewer has seen the result; the fixer report says which.
+  Review: _lyx/reviews/plan/round-1-review.md; fixer report: _lyx/reviews/plan/round-1-fixer-report.md.
+  - stencil-caller-rule-offers-test-file (class scope, severity MEDIUM, open in rounds 1)
+<!-- /lyx:carry-over Plan-Review -->
 ## Acceptance criteria
 
 - `lyx loom validate-plan` reports `edit-test-file` for a card whose `**Edit:**` lists a `_test.go` file, with a detail naming the way forward of D5.
