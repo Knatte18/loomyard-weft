@@ -14,6 +14,8 @@
 - `internal/testkit/envkit#FullEnv`
 - `internal/loomcli#loomCLI.wire`
 - `internal/loomcli#loomCLI.wireLightweight`
+- `internal/loomcli#TestWire_DefaultConfig`
+- `internal/loomcli#TestWireLightweight_FillsThePathsWithoutLoadingAnyConfig`
 - `internal/loomcli#loomCLI.validateDiscussionCmd`
 - `internal/loomcli#decisionRecordFixture`
 - `internal/loomcli#TestValidateDiscussionCmd`
@@ -63,9 +65,10 @@ Tests:
   A new subtest writes a record missing `## Goal`, a support log and a `relevant.md` holding one stray paragraph line, and asserts `Passed` is false and `Findings` carries `discussion-section-missing` before the stray-line check name, so `CheckRelevant` runs after `Validate`'s findings and its findings follow them.
   The `AdvisorNotesAreNotRead` comment says the gate reads the decision record, the support log and the relevant list, never an advisor's notes.
 - `TestDiscussionGate_FailureSurfacesItsFindings`, `TestSmokeGate_RepromptsThroughARealPaneAndFixesTheArtifact` and `TestSmokeParentReview_NoticeReachesTheWriterPaneAndApproveLetsTheRunThrough` pass a `relevant.md` path beside their support log, never written; their assertions are unchanged.
-- `TestValidateDiscussionCmd` gains two rows: `Findings_RelevantMalformed`, a clean record and support log with a `relevant.md` holding one stray paragraph line, exits 1 with findings containing the stray-line check name;
+- `TestWire_DefaultConfig` and `TestWireLightweight_FillsThePathsWithoutLoadingAnyConfig` each gain one assertion, beside their existing `SupportLogPath` assertion, that `c.env.RelevantPath` equals `loomengine.DiscussionRelevant(location)` (`loc` in `TestWire_DefaultConfig`).
+- `TestValidateDiscussionCmd` gains three rows: `Findings_RelevantMalformed`, a clean record and support log with a `relevant.md` holding one stray paragraph line, exits 1 with findings containing the stray-line check name;
   `Darn_MalformedRelevantIgnored`, `darnRecordFixture` over a clean record with the same malformed `relevant.md` written to the fixture's `RelevantPath`, exits 0, ok, and commits once;
-  and `IOFault_RelevantIsDirectory`, a clean record and support log with `relevant.md` created as a directory, exits 1 through the error envelope, with no findings key, and its message contains `relevant.md`.
+  and `IOFault_RelevantIsDirectory`, a clean record and support log with `relevant.md` created as a directory, exits 1 through the error envelope, with no findings key, and its message contains `loom: validate discussion: `, the new prefix, which the old `loom: validate discussion record <path>: ` prefix does not contain; the relevant path itself comes from the wrapped read error.
   Its `//testtiming:keep` reason adds the malformed relevant list, its darn disposition and the unreadable relevant list.
 - `TestGateParity_DiscussionGate` passes `c.env.RelevantPath` to `NewDiscussionGate` and gains two cases: `Stuck_RelevantMalformed`, the stray-line `relevant.md` (verdict stuck), and `Error_RelevantIsDirectory`, a clean record and support log with `relevant.md` created as a directory (verdict error), so the gate returns `CheckRelevant`'s read error rather than failing as a defect.
 
