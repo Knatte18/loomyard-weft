@@ -1,35 +1,35 @@
 # Card 4 — tackler-call-to-sheddriver
 
 **Create:**
-- `plan:internal/sheddriver#AgentRun` -> `type AgentRun interface`
-- `plan:internal/sheddriver#AgentShuttle` -> `type AgentShuttle interface`
-- `plan:internal/sheddriver#RunnerShuttle` -> `type RunnerShuttle struct`
-- `plan:internal/sheddriver#RunnerShuttle.Start` -> `func (s RunnerShuttle) Start(spec shuttleengine.Spec) (AgentRun, error)`
-- `plan:internal/sheddriver#RunnerShuttle.AttachIfLive` -> `func (s RunnerShuttle) AttachIfLive(spec shuttleengine.Spec) (shuttleengine.Result, bool, error)`
-- `plan:internal/sheddriver#RunnerShuttle.StopStrand` -> `func (s RunnerShuttle) StopStrand(guid string) error`
-- `plan:internal/sheddriver#CauseTimeout` -> `const CauseTimeout = "timeout"`
-- `plan:internal/sheddriver#CauseDied` -> `const CauseDied = "died"`
-- `plan:internal/sheddriver#CauseMissing` -> `const CauseMissing = "missing"`
-- `plan:internal/sheddriver#CauseUnparseable` -> `const CauseUnparseable = "unparseable"`
-- `plan:internal/sheddriver#CausePrecondition` -> `const CausePrecondition = "precondition"`
-- `plan:internal/sheddriver#HandBackWayForward` -> `const HandBackWayForward = "way forward: report the stop to the run's parent in the stop report"`
-- `plan:internal/sheddriver#AdmitRelaunch` -> `func AdmitRelaunch(current shedengine.Status, key StopKey, pauseBefore, pauseAfter, target, actor string) (inEffect bool, refusal string)`
-- `plan:internal/sheddriver#verdictInEffect` -> `func verdictInEffect(current shedengine.Status, key StopKey, target string) bool`
-- `plan:internal/sheddriver#TacklerDeps` -> `type TacklerDeps struct`
-- `plan:internal/sheddriver#TacklerInput` -> `type TacklerInput struct`
-- `plan:internal/sheddriver#TacklerCall` -> `type TacklerCall struct`
-- `plan:internal/sheddriver#NewTacklerCall` -> `func NewTacklerCall(deps TacklerDeps, in TacklerInput) (*TacklerCall, error)`
-- `plan:internal/sheddriver#TacklerCall.Settle` -> `func (c *TacklerCall) Settle() (TacklerEnvelope, error)`
-- `plan:internal/sheddriver#ErrTacklerUnavailable` -> `var ErrTacklerUnavailable = errors.New("tackler unavailable")`
-- `plan:internal/sheddriver#ErrTacklerResumeReturned` -> `var ErrTacklerResumeReturned = errors.New("tackler resume returned")`
-- `plan:internal/sheddriver#ConsumeTacklerAttempt` -> `func ConsumeTacklerAttempt(attemptDir string, base shedengine.RelaunchRequest) error`
-- `plan:internal/sheddriver#TacklerPromptInput` -> `type TacklerPromptInput struct`
-- `plan:internal/sheddriver#agentFake` -> `type agentFake struct`
-- `plan:internal/sheddriver#agentFakeRun` -> `type agentFakeRun struct`
+- `internal/sheddriver#AgentRun`
+- `internal/sheddriver#AgentShuttle`
+- `internal/sheddriver#RunnerShuttle`
+- `internal/sheddriver#RunnerShuttle.Start`
+- `internal/sheddriver#RunnerShuttle.AttachIfLive`
+- `internal/sheddriver#RunnerShuttle.StopStrand`
+- `internal/sheddriver#CauseTimeout`
+- `internal/sheddriver#CauseDied`
+- `internal/sheddriver#CauseMissing`
+- `internal/sheddriver#CauseUnparseable`
+- `internal/sheddriver#CausePrecondition`
+- `internal/sheddriver#HandBackWayForward`
+- `internal/sheddriver#AdmitRelaunch`
+- `internal/sheddriver#verdictInEffect`
+- `internal/sheddriver#TacklerDeps`
+- `internal/sheddriver#TacklerInput`
+- `internal/sheddriver#TacklerCall`
+- `internal/sheddriver#NewTacklerCall`
+- `internal/sheddriver#TacklerCall.Settle`
+- `internal/sheddriver#ErrTacklerUnavailable`
+- `internal/sheddriver#ErrTacklerResumeReturned`
+- `internal/sheddriver#ConsumeTacklerAttempt`
+- `internal/sheddriver#TacklerPromptInput`
+- `internal/sheddriver#agentFake`
+- `internal/sheddriver#agentFakeRun`
 - `contracts/stencils/shed/shed-template-tackler.md`
-- `plan:contracts/stencils#ShedTemplateTackler` -> `var ShedTemplateTackler []byte`
-- `plan:internal/loomcli#loomTacklerRecipe` -> `const loomTacklerRecipe = "loom"`
-- `plan:internal/loomcli#darnTacklerRecipe` -> `const darnTacklerRecipe = "darn"`
+- `contracts/stencils#ShedTemplateTackler`
+- `internal/loomcli#loomTacklerRecipe`
+- `internal/loomcli#darnTacklerRecipe`
 
 **Move:**
 - `internal/loomcli/tackler.go`

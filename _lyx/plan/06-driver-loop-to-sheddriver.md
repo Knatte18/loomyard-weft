@@ -1,27 +1,27 @@
 # Card 6 — driver-loop-to-sheddriver
 
 **Create:**
-- `plan:internal/sheddriver#Deps` -> `type Deps struct`
-- `plan:internal/sheddriver#Run` -> `func Run(ctx context.Context, deps Deps) (Exit, error)`
-- `plan:internal/sheddriver#Exit` -> `type Exit string`
-- `plan:internal/sheddriver#ExitDone` -> `const ExitDone Exit = "done"`
-- `plan:internal/sheddriver#ExitHandBack` -> `const ExitHandBack Exit = "hand-back"`
-- `plan:internal/sheddriver#ExitHandOver` -> `const ExitHandOver Exit = "hand-over"`
-- `plan:internal/sheddriver#ExitBusy` -> `const ExitBusy Exit = "busy"`
-- `plan:internal/sheddriver#ExitRunningElsewhere` -> `const ExitRunningElsewhere Exit = "running-elsewhere"`
-- `plan:internal/sheddriver#DriveLock` -> `type DriveLock struct`
-- `plan:internal/sheddriver#DriveVerb` -> `func DriveVerb(out io.Writer, lock DriveLock, run func(release func() error) (map[string]any, error)) int`
-- `plan:internal/sheddriver#Stop` -> `type Stop struct`
-- `plan:internal/sheddriver#Stop.Key` -> `func (s Stop) Key() StopKey`
-- `plan:internal/sheddriver#HandBackDeps` -> `type HandBackDeps struct`
-- `plan:internal/sheddriver#ArbiterSeam` -> `type ArbiterSeam struct`
-- `plan:internal/sheddriver#ArbiterOutcome` -> `type ArbiterOutcome struct`
-- `plan:internal/sheddriver#VerifySeam` -> `type VerifySeam struct`
-- `plan:internal/sheddriver#HandOverSeam` -> `type HandOverSeam struct`
-- `plan:internal/sheddriver#TamperSeam` -> `type TamperSeam struct`
-- `plan:internal/sheddriver#NewestTacklerAttempt` -> `func NewestTacklerAttempt(tacklerDir string, key StopKey) (dir string, applied bool, err error)`
-- `plan:internal/loomcli#loomPark` -> `func loomPark(commit commitStatusDeps, markerPath string) func(reportPath string) error`
-- `plan:internal/loomcli#TestLoomPark` -> `func TestLoomPark(t *testing.T)`
+- `internal/sheddriver#Deps`
+- `internal/sheddriver#Run`
+- `internal/sheddriver#Exit`
+- `internal/sheddriver#ExitDone`
+- `internal/sheddriver#ExitHandBack`
+- `internal/sheddriver#ExitHandOver`
+- `internal/sheddriver#ExitBusy`
+- `internal/sheddriver#ExitRunningElsewhere`
+- `internal/sheddriver#DriveLock`
+- `internal/sheddriver#DriveVerb`
+- `internal/sheddriver#Stop`
+- `internal/sheddriver#Stop.Key`
+- `internal/sheddriver#HandBackDeps`
+- `internal/sheddriver#ArbiterSeam`
+- `internal/sheddriver#ArbiterOutcome`
+- `internal/sheddriver#VerifySeam`
+- `internal/sheddriver#HandOverSeam`
+- `internal/sheddriver#TamperSeam`
+- `internal/sheddriver#NewestTacklerAttempt`
+- `internal/loomcli#loomPark`
+- `internal/loomcli#TestLoomPark`
 
 **Move:**
 - `internal/loomcli/drive.go`

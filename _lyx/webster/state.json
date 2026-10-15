@@ -1,14 +1,14 @@
 {
   "runGuid": "65068fb4a0035d8a33ba8bd22558c241",
-  "planFingerprint": "7d2a09822b6b3d3a82efbfe8b5d85398b7c8325760d2072068a53891c661153b",
+  "planFingerprint": "5b0e85998c8f549d9e0cb27c81563e1eba4dd33de5ac0217147999ff9d9102bb",
   "planFileHashes": {
     "00-overview.md": "dad976c121536ad9d32c0e5d1936dc77ad3d5bd5eba0a6e134c0ae4c9cdbf2a2",
     "01-interrupt-policy-words.md": "f8d8e99ff723899bd9bf96fc78b12a69ba4b527def2f4c274fd0aaacf46fdd85",
     "02-sheddriver-records.md": "69b1926a7adff48d106fd3cc1b2df14a1126189384ead21067ec09b4e0a6904a",
     "03-settle-records-per-run.md": "df64660d5ca77554784c3ca6247118c0263a95d752dc47783cedeab66d12ae05",
-    "04-tackler-call-to-sheddriver.md": "885e77bfd94f68786f05915f36b6112a426a5dee697b100c7eadd59c261fb826",
+    "04-tackler-call-to-sheddriver.md": "6a9e68f64dce6df3bad7e1a364532fb68808b9eb24409fac128209023b6288f5",
     "05-drive-verb-split.md": "4aa963120205a7385428de1fae45a7f51a9ac98bbcef59e0d1a600a9584cc8b3",
-    "06-driver-loop-to-sheddriver.md": "c4cfb07431272918d9332d7200ea30a5156d4a7afd0ce00c5c985ca96b064032",
+    "06-driver-loop-to-sheddriver.md": "e7dc7cb0e7d065f26ea469b17ec89c7b3f6dea8520a6d79046a85612a61b568c",
     "07-shed-config-module.md": "5f61243d6904008d621cc9a5835abb87b2b62d7fe5266881118ae0df756d8e1c",
     "08-module-overrides.md": "0fa7bd43b26a51b229c4f3750db6a122e0b7f6520e2917201266681e0a830b4a",
     "09-loom-override-migration.md": "606eaf94c2f4f8418d8f1db7b15f05de5185b4ff4bdb91797691974719213f6c",
@@ -422,7 +422,7 @@
       }
     }
   ],
-  "currentBatch": 4,
+  "currentBatch": 0,
   "masterStrand": "05836e1fa6d8d140857a550caa8fce04",
   "masterSessionId": "fe51066b-538a-477c-b9a6-3c2526af3fa8",
   "batches": {
@@ -498,19 +498,63 @@
         "06-driver-loop-to-sheddriver"
       ],
       "cardHashes": {
-        "04-tackler-call-to-sheddriver": "885e77bfd94f68786f05915f36b6112a426a5dee697b100c7eadd59c261fb826",
+        "04-tackler-call-to-sheddriver": "6a9e68f64dce6df3bad7e1a364532fb68808b9eb24409fac128209023b6288f5",
         "05-drive-verb-split": "4aa963120205a7385428de1fae45a7f51a9ac98bbcef59e0d1a600a9584cc8b3",
-        "06-driver-loop-to-sheddriver": "c4cfb07431272918d9332d7200ea30a5156d4a7afd0ce00c5c985ca96b064032"
+        "06-driver-loop-to-sheddriver": "e7dc7cb0e7d065f26ea469b17ec89c7b3f6dea8520a6d79046a85612a61b568c"
       },
       "startSha": "932c294f4da65c510a8ca447db39ad9ea1f889c8",
       "kind": "fork",
       "spawnedAt": "2026-10-15T07:21:20Z",
       "sessionId": "fe51066b-538a-477c-b9a6-3c2526af3fa8",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "04-tackler-call-to-sheddriver",
+        "status": "done",
+        "head_sha": "87006b9dc421b9fe40832d2cf1146b9859233dbc",
+        "deviations": [
+          "internal/loomcli/arbiter.go",
+          "internal/loomcli/arbiter_test.go",
+          "internal/loomcli/drive.go",
+          "internal/loomcli/drive_test.go",
+          "internal/loomcli/drivehandback.go",
+          "internal/loomcli/drivehandback_test.go",
+          "internal/loomcli/driverules.go",
+          "internal/loomcli/driverules_test.go",
+          "internal/loomcli/drivewiring.go",
+          "internal/loomcli/tackler.go",
+          "internal/loomcli/tackler_test.go",
+          "internal/loomcli/tacklerconsume.go",
+          "internal/loomcli/tacklerconsume_test.go",
+          "internal/loomcli/tacklerprompt.go",
+          "internal/loomcli/tacklerprompt_test.go",
+          "internal/sheddriver/agentshuttle.go",
+          "internal/sheddriver/drive.go",
+          "internal/sheddriver/drive_test.go",
+          "internal/sheddriver/drivehandback.go",
+          "internal/sheddriver/drivehandback_test.go",
+          "internal/sheddriver/driverules.go",
+          "internal/sheddriver/driverules_test.go",
+          "internal/sheddriver/tackler.go",
+          "internal/sheddriver/tackler_test.go",
+          "internal/sheddriver/tacklerconsume_test.go",
+          "internal/sheddriver/tacklerprompt.go",
+          "internal/sheddriver/tacklerprompt_test.go"
+        ]
+      },
+      "cardShas": [
+        "87006b9dc421b9fe40832d2cf1146b9859233dbc"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-shed-tackler/fe51066b-538a-477c-b9a6-3c2526af3fa8/subagents/agent-a9bb7c4a85fd7af13.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-shed-tackler/fe51066b-538a-477c-b9a6-3c2526af3fa8/subagents/agent-a9bb7c4a85fd7af13.jsonl"
+      ]
     }
   },
   "seenForkTranscripts": [
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-shed-tackler/fe51066b-538a-477c-b9a6-3c2526af3fa8/subagents/agent-ab8474bee4dcd0df4.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-shed-tackler/fe51066b-538a-477c-b9a6-3c2526af3fa8/subagents/agent-ab8474bee4dcd0df4.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-shed-tackler/fe51066b-538a-477c-b9a6-3c2526af3fa8/subagents/agent-a9bb7c4a85fd7af13.jsonl"
   ]
 }
