@@ -878,6 +878,24 @@
       "body": "## Seen\n\nThe Webster fork read audit of 2026-10-13 (board note `glyph-use-audit`) ran on jq scripts: `extract2.jq` pulls per-fork rows from Webster implementer fork transcripts (pack parsing, edits, first-turn reads), `stats-base.jq`, `stats2.jq` and `stats3.jq` aggregate them, and by-hand steps build `files.txt`, `table.tsv` and `turns.tsv`.\nSince `290c773d0` the scripts, the report and a README with the re-run recipe sit in `docs/research/glyph-audit-2026-10-13/`.\nThe README names the steps that were never recorded: how `files.txt` was built, the exact `extract2.jq` invocation, the script that produced `turns.tsv`, and the commands behind the pack-quality figures.\n\nOperator view (2026-10-15), not a decision: scripts like these must be kept in the repository, not in scratch.\n\n## Idea\n\nA repeatable tool under `tools/`, like `tools/tokencount/tokencount.sh`: one script that takes a date range or a list of runs, finds the Webster implementer fork transcripts, and reports per fork whether it read its pack's spans in one parallel first work turn, plus exploration calls per card, split by pack on or off and, once `webster-pack-layout-switch` lands, by pack layout from the begin-batch trace line.\n",
       "created": "2026-10-15T07:46:42Z",
       "revised": "2026-10-15T07:48:17Z"
+    },
+    {
+      "id": 538,
+      "slug": "seed-ide-interactive-chain",
+      "title": "batten Seed-IDE writes the interactive VS Code chain into a driven pair, so opening it in VS Code starts a bare claude",
+      "kind": "note",
+      "labels": [
+        "bug"
+      ],
+      "issues": [
+        633
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Imported from [issue #633](https://github.com/Knatte18/loomyard/issues/633).\n\nSeen (2026-10-15): in the running pair shed-tackler, the reed shell window held a bare interactive claude (no prompt, no role) that no agent or operator started. Its bash and claude started at 09:41:39, the same second VS Code's extension host ran 'lyx reed up' and 'lyx reed attach' on the pair: the pair's .vscode/tasks.json, written by batten's Seed-IDE row, carries the folderOpen 'Start Claude' chain (reed up, reed add --if-absent --unless-name orch --cmd claude --name claude --focus, reed attach). Cause: ideengine.SeedTask calls writeInteractiveConfig, which writes vscode.TaskChainInteractive; vscode.TaskChainAttachOnly, documented as the driven pair's chain, has no caller. Expected: Seed-IDE writes the attach-only chain, so opening a driven pair in VS Code attaches to the run and adds no claude strand. Workaround: none applied; the stray claude sits idle in the pair's session.",
+      "created": "2026-10-15T07:49:52Z",
+      "revised": "2026-10-15T07:49:52Z"
     }
   ]
 }
