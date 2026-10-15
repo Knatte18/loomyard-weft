@@ -896,6 +896,24 @@
       "body": "## Seen\n\n`contracts/stencils/loom/loom-template-plan.md` lets a card's `**Edit:**` list a plain test-file path \"for a test file the card adds tests to without changing an existing member\".\nThe same stencil already makes each new test function in an existing file a `**Create:**` declaration with a `plan:` handle, so the plain path only repeats where those new tests go.\nNo recorded reason for keeping both was found; the rule came in with `78a2b1f14` and was tightened in `c279a38ba`.\nThe 2026-10-15 pack audit (`.scratch/glyph-audit-3/`, to be committed under `docs/research/`) found that edits to files with no pack span were mostly md, yaml and test files, which this exception and the non-Go exception allow.\n\n## Operator view, not a decision (2026-10-15)\n\nTest files should not be an exception to glyph references.\n\n## Idea\n\n- Drop the plain test-file path from `**Edit:**`: a card that adds tests to an existing file lists them only as `**Create:**` declarations with `plan:` handles, and the declaration carries the file.\n- Have the plan gate refuse a plain `_test.go` path under `**Edit:**`, naming the way forward, and update `loom-plan-spec.md` and the stencil together.\n- Check that Webster's kick-start pack and the fork prompt still tell the fork which file the new tests go in.\n",
       "created": "2026-10-15T08:55:29Z",
       "revised": "2026-10-15T08:55:29Z"
+    },
+    {
+      "id": 544,
+      "slug": "kickstart-per-card",
+      "title": "Kick-start pack per card, read when the card starts",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "webster",
+        "stencil"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "Forks read about a quarter of a batch-wide pack; hand each card its own pack as everything it needs to begin",
+      "body": "## Seen\n\nThe 2026-10-15 pack audit (`.scratch/glyph-audit-3/`, to be committed under `docs/research/`) measured 24 Webster forks on the pack-file layout (`1e39afc10`).\nEvery fork opened the pack file in turn 2, but the median fork reached only about a quarter of its listed spans before its first edit, and only 7 of 24 read in parallel in their first work turn (52% under the earlier read-all-first layout).\nA batch pack holds on average about 37 spans per fork, so \"read every card and every span first\" (`793c6a8ee`, today's `webster-fragment-locate-pack.md`) asks a fork to front-load a whole batch's code.\nThe pack entries were correct at batch start: 801 of 823 checked spans exact, 22 declaration-only, none stale or wrong.\n\n## Operator view, not a decision (2026-10-15)\n\nGive the pack per card instead of per batch.\nThe batch gets one general instruction.\nEach card then says: read this card's kick-start pack first; it is, to begin with, everything you need for this card.\n\n## Idea\n\n- Split the pack by card and hand each card's part to the fork when it starts that card, not all at batch start.\n- Replace the read-all-first instruction with a per-card one: before the card's first edit, read its whole pack in one parallel turn.\n- Frame the card pack as complete for a start, so the fork reads further only when the card needs it.\n- Combine with putting the span code itself into the pack (separate idea from the same audit), so a card's pack is one read.\n- Keep the layout behind the `webster.yaml` switch, as `kickstart_pack_file` is today, so it can be measured against the current layout with the audit scripts.\n- History: `113593990` had a per-card pack inline without a read rule (arm `mid` in the 2026-10-13 audit, 9 forks); this differs in giving each card its pack when that card starts.\n",
+      "created": "2026-10-15T08:56:35Z",
+      "revised": "2026-10-15T08:56:35Z"
     }
   ]
 }
