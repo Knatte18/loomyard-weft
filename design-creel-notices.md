@@ -2,8 +2,6 @@
 
 `creel-notices` · Task · feature, creel, orch, batten
 
-Depends on: [`creel-core`](design-creel-core.md)
-
 ## Goal
 
 Creel stage 2: system notices go through creel.
