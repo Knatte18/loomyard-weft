@@ -75,5 +75,10 @@ _No rounds yet._
 - Q6 plan editing the rules — resolved, auto-pick: open risk with bound.
 - Q7 recovery fresh-read wording — resolved, auto-pick: wording holds for a cold session (D3, D4).
 - Q8 verify-gate fixer — resolved, auto-pick: states no inherited code (D5).
-- Q9 carrying the re-measure past landing — resolved, auto-pick after lens review: the summary names it (D8); the orch may also file a board note, which this writer cannot.
-- Accepted cost, not a risk to act on: forks explore more by construction, so per-fork tokens and wall time rise.
+- Q9 carrying the re-measure past landing — resolved, auto-pick after review round 3: the change description carries it (D8); the Describe row runs in every loom run and reads the record whole, so the check reaches the pull request body and the landing commit's message.
+  The task summary cannot carry it, since the Master writes it from batch digests alone.
+  A board note filed by the discussion writer was rejected: the discussion stencil limits its writes to the decision record and the support log, and no gate message has it reread D8 after Discussion-Write, so it has no step that would file one.
+  A message from the writer to `ly:orch` was rejected for the same missing step.
+  No note is filed now; one is filed only when the orch reviews the pull request.
+  A board note is passive in any case: the orch only proposes and the operator promotes, so the note reaches an actor at triage, not at landing.
+- Accepted cost, not a risk to act on: forks explore more by construction, so per-fork tokens and wall time rise; D8 states how this reads in the re-measure.
