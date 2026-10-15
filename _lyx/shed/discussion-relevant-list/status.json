@@ -1,11 +1,11 @@
 {
-  "current_producer": "Webster",
+  "current_producer": "Webster-Bouncer",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Webster",
-    "last": "Batchifier → done",
+    "now": "Webster-Bouncer",
+    "last": "Webster → done",
     "wait": ""
   },
   "history": [
@@ -203,6 +203,33 @@
       "outcome": "done",
       "output": "",
       "at": "2026-10-15T15:48:50Z"
+    },
+    {
+      "producer": "Webster",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYXHUB/discussion-relevant-list/_lyx/webster/summary.md",
+      "at": "2026-10-15T16:00:07Z",
+      "gate_attempts": 1,
+      "gate_spans": [
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-10-15T15:57:30.426430835Z",
+          "end": "2026-10-15T15:58:26.801124011Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "rework",
+          "start": "2026-10-15T15:58:27.193470874Z",
+          "end": "2026-10-15T15:58:56.277256237Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-10-15T15:58:56.304297495Z",
+          "end": "2026-10-15T16:00:06.24660554Z"
+        }
+      ]
     }
   ],
   "product": {
