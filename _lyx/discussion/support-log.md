@@ -80,7 +80,7 @@ Every lens fork returned a report.
 - Socket at `$XDG_RUNTIME_DIR/lyx/creel-<shortname>.sock`: unset on Windows and often in WSL, and the shortname alone collides between hubs of one repo.
 - Shortname-only socket with a refusal on collision: sandbox hubs would refuse each other.
 - Amending `PATTERN-orch-pane-single-writer` in stage 1 so creel types into the orch: reminders mid-cycle reproduce the loss creel exists to fix, and no watcher hold exists yet.
-- Refusing the orch as a receiver outright: storage and read of orch mail are worth testing now, and a held reminder shows the state honestly.
+- Refusing the orch as a receiver outright: storage and read of orch mail are worth testing now, and a withheld reminder shows the state honestly.
 - Reminding at every idle edge with no backoff: an agent that ends its turn unread is reminded at once, looping turns.
 - A mailbox file per receiver: the board chose one pool; forward and the sweep become holder changes.
 - Rewriting a pool snapshot through `internal/state`: two sources of truth beside the journal; the fold keeps one.
@@ -88,6 +88,8 @@ Every lens fork returned a report.
 - A `--as <name>` CLI flag for senders: any agent could claim any name with no env change.
 - Injects with no TTL: a `/clear` queued behind a long turn would land into a session that moved on.
 - A TTL in wall time, expiring under a pause: contradicts the board's hold until the pause is lifted.
+- Stopping an inject's TTL under another sender's hold: an inject muted for up to an hour lands as stale as one behind a long turn, which the TTL exists to prevent, and holds would add aged-event transitions.
+- Refusing `hold` and `release` on an orch in stage 1: holds type nothing, and accepting them lets `creel-notices` use holds on the orch with no stage-1 rule to lift.
 - Retyping an unlanded inject: a command could run twice.
 - Self re-exec of the daemon through `selfexec`: the exec drops a close-on-exec lock, opening a window for a second daemon.
 - Sender identity from the environment alone on Linux: an agent that unsets it becomes EXTERNAL and privileged.
@@ -108,7 +110,7 @@ _No rounds yet._
 - Q5 hand-added strands — resolved, auto-pick: shuttle record-less path (D17).
 - Q6 storage and retention — resolved, auto-pick: day-file journal, fold, carry-forward (D6).
 - Q7 config module — resolved, auto-pick: none.
-- Q8 inject TTL — resolved, auto-pick: 10 minutes default, 1 hour max, wall time (D9, D14).
+- Q8 inject TTL — resolved, auto-pick: 10 minutes by default and 1 hour at most, counted only while the receiver is live and unpaused (D9, D14).
 - Q9 hold expiry — resolved, auto-pick: required duration, at most 1 hour (D13).
 - Q10 read marking — resolved, auto-pick: on client ack (D8).
 - Q11 program mailboxes — resolved, auto-pick: exist from first use, never reminded (D5, D7).
@@ -117,3 +119,5 @@ _No rounds yet._
 - Q14 daemon on a replaced binary — resolved, auto-pick: exit, next verb restarts (D2).
 - Q15 unlanded inject — resolved, auto-pick: unconfirmed, never retyped (D9).
 - Q16 which orch is excluded — resolved, auto-pick: every strand of role `orch` (D16).
+- Q17 inject TTL under another sender's hold — resolved, auto-pick: the hold does not stop it (D9).
+- Q18 hold and release on an orch in stage 1 — resolved, auto-pick: accepted and recorded, nothing typed (D16).
