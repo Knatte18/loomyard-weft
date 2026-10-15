@@ -1,6 +1,6 @@
 # Plan and Webster checks out of step with the code a plan changes
 
-`twb-d0-ga` · Note · bug · running · Discussion-Write
+`twb-d0-ga` · Note · bug · paused · Discussion-Bouncer
 
 ## From `webster-glyph-rename`
 
