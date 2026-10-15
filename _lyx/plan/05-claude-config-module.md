@@ -2,16 +2,16 @@
 
 **Create:**
 - `internal/shuttleengine/claudeengine/template.yaml`
-- `plan:internal/shuttleengine/claudeengine#configTemplate` -> `var configTemplate string`
-- `plan:internal/shuttleengine/claudeengine#Config` -> `type Config struct`
-- `plan:internal/shuttleengine/claudeengine#ConfigTemplate` -> `func ConfigTemplate() string`
-- `plan:internal/shuttleengine/claudeengine#ConfigOpenMaps` -> `func ConfigOpenMaps() []string`
-- `plan:internal/shuttleengine/claudeengine#ConfigSpec` -> `func ConfigSpec() configengine.Spec`
-- `plan:internal/shuttleengine/claudeengine#LoadConfig` -> `func LoadConfig(dirs configengine.Dirs) (Config, error)`
-- `plan:internal/shuttleengine/claudeengine#TestLoadConfig` -> `func TestLoadConfig(t *testing.T)`
-- `plan:internal/shuttleengines#ConfigModule` -> `type ConfigModule struct`
-- `plan:internal/shuttleengines#entry` -> `type entry struct`
-- `plan:internal/shuttleengines#ConfigModules` -> `func ConfigModules() []ConfigModule`
+- `internal/shuttleengine/claudeengine#configTemplate`
+- `internal/shuttleengine/claudeengine#Config`
+- `internal/shuttleengine/claudeengine#ConfigTemplate`
+- `internal/shuttleengine/claudeengine#ConfigOpenMaps`
+- `internal/shuttleengine/claudeengine#ConfigSpec`
+- `internal/shuttleengine/claudeengine#LoadConfig`
+- `internal/shuttleengine/claudeengine#TestLoadConfig`
+- `internal/shuttleengines#ConfigModule`
+- `internal/shuttleengines#entry`
+- `internal/shuttleengines#ConfigModules`
 
 **Edit:**
 - `internal/shuttleengines#registry`

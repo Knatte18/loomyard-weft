@@ -41,7 +41,7 @@
 - `internal/reedengine#fakeNamer`
 - `internal/reedengine#repairStrand`
 - `internal/reedengine#newRepairTestEngine`
-- `plan:internal/shuttleengines#entry`
+- `internal/shuttleengines#entry`
 
 **Intent:**
 reed strands carry an opaque provider tag that shuttle sets, and the watchdog repairs a session name through the namer for each strand's tag, so reed stays blind to what a tag means (D9).

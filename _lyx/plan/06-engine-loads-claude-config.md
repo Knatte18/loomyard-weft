@@ -45,7 +45,7 @@
 - `internal/shuttleengine/claudeengine#TestComposeSend`
 - `internal/shuttleengine/claudeengine/doc.go`
 - `internal/shuttleengines#constructor`
-- `plan:internal/shuttleengines#entry`
+- `internal/shuttleengines#entry`
 - `internal/shuttleengines#registry`
 - `internal/shuttleengines#New` -> `func New(cfg shuttleengine.Config, dirs configengine.Dirs) (shuttleengine.EngineSet, error)`
 - `internal/shuttleengines#build` -> `func build(cfg shuttleengine.Config, dirs configengine.Dirs, constructors map[string]constructor) (shuttleengine.EngineSet, error)`
@@ -82,9 +82,9 @@
 - `internal/loomengine/plan.go`
 
 **Uses:**
-- `plan:internal/shuttleengine/claudeengine#Config`
-- `plan:internal/shuttleengine/claudeengine#LoadConfig`
-- `plan:internal/shuttleengine/claudeengine#ConfigTemplate`
+- `internal/shuttleengine/claudeengine#Config`
+- `internal/shuttleengine/claudeengine#LoadConfig`
+- `internal/shuttleengine/claudeengine#ConfigTemplate`
 - `internal/shuttleengines#loadWithLocalEngine`
 - `internal/testkit/shuttlefake#Reed`
 

@@ -35,7 +35,7 @@
 - `internal/reedengine#TestRemoveStrand_SoleStrandEmptiesSessionSucceeds`
 - `internal/reedengine#TestDeadSelvagePaneIsHealedByUpWithoutCorruptingLayout`
 - `internal/reedengine/doc.go`
-- `plan:internal/shuttleengines#entry`
+- `internal/shuttleengines#entry`
 - `internal/shuttleengines#registry`
 - `internal/shuttleengines/doc.go`
 - `internal/testkit/tmuxkit#startServer`

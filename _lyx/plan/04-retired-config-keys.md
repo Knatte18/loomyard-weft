@@ -1,8 +1,8 @@
 # Card 4 — retired-config-keys
 
 **Create:**
-- `plan:internal/configengine#retiredCovering` -> `func retiredCovering(spec Spec, path string) (string, Category, bool)`
-- `plan:internal/configengine#dropRetired` -> `func dropRetired(doc []byte, spec Spec) ([]byte, error)`
+- `internal/configengine#retiredCovering`
+- `internal/configengine#dropRetired`
 
 **Edit:**
 - `internal/configengine#Spec`

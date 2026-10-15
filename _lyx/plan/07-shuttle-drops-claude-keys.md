@@ -37,7 +37,7 @@
 - `docs/overview.md`
 
 **Uses:**
-- `plan:internal/configengine#retiredCovering`
+- `internal/configengine#retiredCovering`
 - `internal/shuttleengine#LoadConfig`
 
 **Intent:**

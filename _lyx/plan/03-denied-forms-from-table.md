@@ -1,8 +1,8 @@
 # Card 3 — denied-forms-from-table
 
 **Create:**
-- `plan:cmd/lyx#operatorDeniedForms` -> `var operatorDeniedForms [][]string`
-- `plan:cmd/lyx#shellGuardForms` -> `func shellGuardForms() [][]string`
+- `cmd/lyx#operatorDeniedForms`
+- `cmd/lyx#shellGuardForms`
 
 **Edit:**
 - `cmd/lyx#deniedRecoveryForms`
