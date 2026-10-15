@@ -1,0 +1,8 @@
+attempt: 1
+cap: 3
+failures:
+    - id: github.com/Knatte18/loomyard/cmd/lyx.TestCLIForm_EveryCommand
+      kind: test
+      package: github.com/Knatte18/loomyard/cmd/lyx
+      tail: '    clitree_test.go:401: lyx board upsert: Long is 2143 bytes; the cap is 2000, so move the long page into the package doc'
+log_path: /home/knatte/Code/loomyard-LYXHUB/sibling-overlap-check/.lyx/verify/verify-2.log
