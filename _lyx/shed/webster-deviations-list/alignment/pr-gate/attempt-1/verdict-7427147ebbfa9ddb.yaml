@@ -1,0 +1,4 @@
+verdict: approve
+reason: "The diff implements D1 (file and package targets cover their symbols in ScopeGuard through the exported planparser.RefMember), D2 (one deviation rule in the implementer body's step 2) and D3 (the plan spec points at planglyph.ScopeGuard), leaves every Out item alone, and the carried-over risks are settled; the only peer, creel-stage1-fixes, has no changed paths and no overlap, and no parent commit is listed."
+question: ""
+superseded: []
