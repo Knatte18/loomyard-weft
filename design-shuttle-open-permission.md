@@ -1,6 +1,8 @@
 # lyx shuttle open cannot choose the permission mode
 
-`shuttle-open-permission` · Note · enhancement, shuttle
+`shuttle-open-permission` · Task · enhancement, shuttle
+
+Depends on: [`creel-stage1-fixes`](design-creel-stage1-fixes.md)
 
 ## Seen
 
@@ -11,3 +13,7 @@ The operator wanted bypass permissions; the orch removed the strand and started 
 ## Idea
 
 `lyx shuttle open` takes a `--permission-mode` flag (bypass or prompt), or a config default, so an operator session opens in bypass with its lyx strand name.
+
+## Operator decision (2026-10-15)
+
+Build it as a small task, from the 2026-10-15 board triage, once `creel-stage1-fixes` has landed, since both touch the shuttle module.
