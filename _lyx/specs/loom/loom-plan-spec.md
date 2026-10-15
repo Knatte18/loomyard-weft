@@ -1,4 +1,4 @@
-<!-- lyx-stencil: sha256=e61a82fd30f9c4e5e5f1d2e8062912fd137a622ac75d5c3c402d347ba6fe2b1e build=46d71787adf4e1cebf3da111d6b79f4d5ab5e9e6 time=2026-10-15T13:59:47Z -->
+<!-- lyx-stencil: sha256=92a3a06edcd42f83f61b7e21fe72347e45979244b1c1ddf3eb70b0506bb6ee25 build=e131c76252f7cabe5faa92e9ffe42c53040fad26 time=2026-10-15T15:14:46Z -->
 
 # Loom plan-spec — flat card list
 
@@ -22,6 +22,7 @@ The smallest change that:
 2. **Is independently committable** — a meaningful, revertible git commit on its own.
 3. **Carries the coverage for any new behavior it introduces**; the card's own targets include the test that covers it (`PATTERN-test-economy`).
    Pure refactors/renames may rely on existing tests instead.
+   A stencil's static prose is not behavior a test covers; a stencil card carries a test only when it changes a marker, a value Go fills, reads or names, a fragment Go chooses, or a rule a scan across stencils checks.
 
 **Key insight,
 and the reason the schema is shaped this way:** criterion 1 is not just a post-hoc check — it's *why the dependency graph exists at all*.
