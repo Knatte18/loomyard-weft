@@ -1,0 +1,12 @@
+verdict: approve
+reason: >-
+  PR 656 at 5c7313a66 carries every goal point of engine-config-seams and keeps to decisions D1-D10.
+  These are claude.yaml owned by claudeengine through shuttleengines, deny_python neutral in shuttle.yaml,
+  the declared key move, the shellguard table rendered by claudeengine and read by the no-denied-recovery scan,
+  engine-declared scrub keys replacing CleanClaudeEnv, and the provider tag with per-tag namers.
+  It makes no change outside the goal.
+  The six trimmed PATTERN overview lines keep their clauses in their background files.
+  The one peer, engine-model-choice, overlaps only in text, with no conflicting decision or PATTERN entry.
+  This run (row 22) lands before it (row 12).
+question: ""
+superseded: []
