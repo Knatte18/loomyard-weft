@@ -1,9 +1,9 @@
 # Card 13 — role-prefix-config
 
 **Create:**
-- `plan:internal/shedrecipe#rolePrefixKey` -> `func rolePrefixKey(entry string, cfg Config) (string, error)`
-- `plan:internal/shedadapters#Bouncer.role` -> `func (b *Bouncer) role(base string) string`
-- `plan:internal/burlerengine#Profile.rolePrefix` -> `func (p *Profile) rolePrefix(base string) string`
+- `internal/shedrecipe#rolePrefixKey`
+- `internal/shedadapters#Bouncer.role`
+- `internal/burlerengine#Profile.rolePrefix`
 
 **Edit:**
 - `internal/shedrecipe#bouncerEntry`

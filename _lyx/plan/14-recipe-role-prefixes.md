@@ -1,7 +1,7 @@
 # Card 14 — recipe-role-prefixes
 
 **Create:**
-- `plan:internal/loomrecipe#rolePrefixViolations` -> `func rolePrefixViolations(recipe shedbuild.Recipe) []string`
+- `internal/loomrecipe#rolePrefixViolations`
 
 **Edit:**
 - `contracts/recipes/loom-recipe.yaml`

@@ -1,9 +1,9 @@
 # Card 12 — overview-entry-numbers
 
 **Create:**
-- `plan:internal/battencli#overviewStage` -> `func overviewStage(recipe, row string) string`
-- `plan:internal/battencli#overviewSource.resolveChildPair` -> `func (s *overviewSource) resolveChildPair(slug string) (*lyxcwd.Location, error)`
-- `plan:internal/battencli#overviewSource.resolveChildRecipe` -> `func (s *overviewSource) resolveChildRecipe(slug string) (string, error)`
+- `internal/battencli#overviewStage`
+- `internal/battencli#overviewSource.resolveChildPair`
+- `internal/battencli#overviewSource.resolveChildRecipe`
 
 **Edit:**
 - `internal/battencli#overviewRun`
