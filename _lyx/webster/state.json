@@ -1,0 +1,449 @@
+{
+  "runGuid": "65068fb4a0035d8a33ba8bd22558c241",
+  "planFingerprint": "7644a8b3ea72ba95acb38ac431ffb00b1c78e97b52b1d136537124c7e531870a",
+  "planFileHashes": {
+    "00-overview.md": "dad976c121536ad9d32c0e5d1936dc77ad3d5bd5eba0a6e134c0ae4c9cdbf2a2",
+    "01-interrupt-policy-words.md": "f8d8e99ff723899bd9bf96fc78b12a69ba4b527def2f4c274fd0aaacf46fdd85",
+    "02-sheddriver-records.md": "f4cf0702342b663f97d2a6c0cb36bbe6d0990885d4dd9715f8a5e547b789aed5",
+    "03-settle-records-per-run.md": "bbcfcf421c64fb80223d115fc8395118485d964b4c32c7ad7cf6c86af84c14dc",
+    "04-tackler-call-to-sheddriver.md": "885e77bfd94f68786f05915f36b6112a426a5dee697b100c7eadd59c261fb826",
+    "05-drive-verb-split.md": "4aa963120205a7385428de1fae45a7f51a9ac98bbcef59e0d1a600a9584cc8b3",
+    "06-driver-loop-to-sheddriver.md": "c4cfb07431272918d9332d7200ea30a5156d4a7afd0ce00c5c985ca96b064032",
+    "07-shed-config-module.md": "5f61243d6904008d621cc9a5835abb87b2b62d7fe5266881118ae0df756d8e1c",
+    "08-module-overrides.md": "0fa7bd43b26a51b229c4f3750db6a122e0b7f6520e2917201266681e0a830b4a",
+    "09-loom-override-migration.md": "606eaf94c2f4f8418d8f1db7b15f05de5185b4ff4bdb91797691974719213f6c",
+    "10-shed-driver-pattern.md": "d77c27796b0133ca2ddba864171f8d7d68e3b10edb6662e37db48678c89856b3",
+    "11-batten-loop-arming.md": "eac69029069fbdcf26b99aeebb0f3e8f83150aaa27c88a53e899e6d4ded89617",
+    "12-batten-hand-back-notice.md": "eabdc946c4247244d07b25d53aaa045df96cb7a260511711c0314c547ba4f4c2",
+    "13-batten-drives-its-run.md": "87fda3bbc0afc464ff10fbf323285bcaa9513a2ec458375ec38122f278265e4e",
+    "14-driver-docs.md": "ff904464fd433c5276840cac5d0706c6d910a9489f8d4fe2f38ad1d34b4d1016"
+  },
+  "planOverviewFrameHash": "c2db84b8e29b130fe4b2321531b0d8af1ec9babf1028f85b0034ce30e1075362",
+  "partition": [
+    {
+      "cards": [
+        "01-interrupt-policy-words",
+        "02-sheddriver-records",
+        "03-settle-records-per-run"
+      ],
+      "profile": "cautious",
+      "estimate": 360836,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 1,
+        "startup": 54712,
+        "read_union": 122944,
+        "cards": [
+          {
+            "card": 1,
+            "card_text": 384,
+            "reads": {
+              "package:internal/arbiterstop": 2000,
+              "package:internal/loomcli": 2000,
+              "package:internal/loomrecipe": 2000,
+              "package:internal/loomshed": 2000,
+              "tests:internal/arbiterstop": 2000,
+              "tests:internal/loomcli": 2000,
+              "tests:internal/loomrecipe": 2000,
+              "tests:internal/loomshed": 2000
+            },
+            "messages": 142.5,
+            "written": 43134
+          },
+          {
+            "card": 2,
+            "card_text": 828,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1836,
+              "file:internal/arbiterstop/holdreading.go": 1596,
+              "file:internal/arbiterstop/holdreading_test.go": 2964,
+              "file:internal/loomcli/arbiter.go": 6432,
+              "file:internal/loomcli/arbiter_test.go": 9072,
+              "file:internal/loomcli/arbiterconsume.go": 1392,
+              "file:internal/loomcli/drive.go": 10440,
+              "file:internal/loomcli/drive_test.go": 9168,
+              "file:internal/loomcli/drivehandback.go": 2124,
+              "file:internal/loomcli/drivehandback_test.go": 2160,
+              "file:internal/loomcli/driverules.go": 2928,
+              "file:internal/loomcli/driverules_test.go": 2112,
+              "file:internal/loomcli/drivewiring.go": 4596,
+              "file:internal/loomcli/tackler.go": 4824,
+              "file:internal/loomcli/tackler_test.go": 6180,
+              "file:internal/loomcli/tacklerconsume.go": 708,
+              "file:internal/loomcli/tacklerconsume_test.go": 2016,
+              "file:internal/loomcli/tacklerprompt.go": 1260,
+              "file:internal/loomcli/tacklerprompt_test.go": 1488,
+              "file:internal/loomengine/settle.go": 1308,
+              "file:internal/loomengine/settle_test.go": 1068,
+              "file:internal/loomengine/tackler.go": 2928,
+              "file:internal/loomengine/tackler_test.go": 2052,
+              "package:cmd/lyx/testdata": 2000,
+              "package:internal/arbiterstop": 2000,
+              "package:internal/battencli": 2000,
+              "package:internal/loomcli": 2000,
+              "package:internal/loomengine": 2000,
+              "package:internal/reportengine": 2000,
+              "package:internal/sheddriver": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:internal/arbiterstop": 2000,
+              "tests:internal/battencli": 2000,
+              "tests:internal/loomcli": 2000,
+              "tests:internal/loomengine": 2000,
+              "tests:internal/reportengine": 2000,
+              "tests:internal/sheddriver": 2000
+            },
+            "messages": 312,
+            "written": 94428
+          },
+          {
+            "card": 3,
+            "card_text": 468,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1836,
+              "file:internal/shedrun/doc.go": 612,
+              "package:cmd/lyx/testdata": 2000,
+              "package:internal/arbiterstop": 2000,
+              "package:internal/battencli": 2000,
+              "package:internal/loomcli": 2000,
+              "package:internal/shedrun": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:internal/arbiterstop": 2000,
+              "tests:internal/battencli": 2000,
+              "tests:internal/loomcli": 2000,
+              "tests:internal/shedrun": 2000
+            },
+            "messages": 150.5,
+            "written": 45618
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "04-tackler-call-to-sheddriver",
+        "05-drive-verb-split",
+        "06-driver-loop-to-sheddriver"
+      ],
+      "profile": "cautious",
+      "estimate": 372276,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 2,
+        "startup": 61712,
+        "read_union": 83740,
+        "cards": [
+          {
+            "card": 4,
+            "card_text": 1704,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1836,
+              "file:contracts/stencils/loom/loom-template-tackler.md": 876,
+              "file:internal/loomcli/drive.go": 10440,
+              "file:internal/loomcli/drive_test.go": 9168,
+              "file:internal/loomcli/tackler.go": 4824,
+              "file:internal/loomcli/tackler_test.go": 6180,
+              "file:internal/loomcli/tacklerconsume.go": 708,
+              "file:internal/loomcli/tacklerconsume_test.go": 2016,
+              "file:internal/loomcli/tacklerprompt.go": 1260,
+              "file:internal/loomcli/tacklerprompt_test.go": 1488,
+              "package:cmd/lyx/testdata": 2000,
+              "package:contracts/stencils": 2000,
+              "package:contracts/stencils/loom": 2000,
+              "package:contracts/stencils/shed": 2000,
+              "package:internal/loomcli": 2000,
+              "package:internal/loomengine": 2000,
+              "package:internal/sheddriver": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:contracts/stencils": 2000,
+              "tests:contracts/stencils/loom": 2000,
+              "tests:contracts/stencils/shed": 2000,
+              "tests:internal/loomcli": 2000,
+              "tests:internal/loomengine": 2000,
+              "tests:internal/sheddriver": 2000
+            },
+            "messages": 470,
+            "written": 142704
+          },
+          {
+            "card": 5,
+            "card_text": 132,
+            "reads": {
+              "package:internal/loomcli": 2000,
+              "tests:internal/loomcli": 2000
+            },
+            "messages": 60,
+            "written": 18132
+          },
+          {
+            "card": 6,
+            "card_text": 1188,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1836,
+              "file:internal/loomcli/drive.go": 10440,
+              "file:internal/loomcli/drive_test.go": 9168,
+              "file:internal/loomcli/drivehandback.go": 2124,
+              "file:internal/loomcli/drivehandback_test.go": 2160,
+              "file:internal/loomcli/driverules.go": 2928,
+              "file:internal/loomcli/driverules_test.go": 2112,
+              "file:internal/loomcli/drivewiring.go": 4596,
+              "package:cmd/lyx/testdata": 2000,
+              "package:internal/loomcli": 2000,
+              "package:internal/sheddriver": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:internal/loomcli": 2000,
+              "tests:internal/sheddriver": 2000
+            },
+            "messages": 216,
+            "written": 65988
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "07-shed-config-module",
+        "08-module-overrides",
+        "09-loom-override-migration",
+        "10-shed-driver-pattern",
+        "11-batten-loop-arming",
+        "12-batten-hand-back-notice"
+      ],
+      "profile": "cautious",
+      "estimate": 343204,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 3,
+        "startup": 68712,
+        "read_union": 68848,
+        "cards": [
+          {
+            "card": 7,
+            "card_text": 648,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1836,
+              "package:cmd/lyx/testdata": 2000,
+              "package:internal/configreg": 2000,
+              "package:internal/sheddriver": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:internal/configreg": 2000,
+              "tests:internal/sheddriver": 2000
+            },
+            "messages": 104.5,
+            "written": 31998
+          },
+          {
+            "card": 8,
+            "card_text": 1392,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1836,
+              "file:contracts/specs/refusal-spec.md": 5712,
+              "file:internal/battenshed/template.yaml": 36,
+              "file:internal/darnengine/template.yaml": 72,
+              "file:internal/loomcli/doc.go": 2664,
+              "file:internal/loomengine/template.yaml": 720,
+              "file:pattern/PATTERN-driver-choice-single-site.md": 420,
+              "package:cmd/lyx/testdata": 2000,
+              "package:contracts/specs": 2000,
+              "package:internal/battencli": 2000,
+              "package:internal/battenshed": 2000,
+              "package:internal/configreg": 2000,
+              "package:internal/darnengine": 2000,
+              "package:internal/loomcli": 2000,
+              "package:internal/loomengine": 2000,
+              "package:internal/shedrecipe": 2000,
+              "package:internal/testkit/envkit": 2000,
+              "package:pattern": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:contracts/specs": 2000,
+              "tests:internal/battencli": 2000,
+              "tests:internal/battenshed": 2000,
+              "tests:internal/configreg": 2000,
+              "tests:internal/darnengine": 2000,
+              "tests:internal/loomcli": 2000,
+              "tests:internal/loomengine": 2000,
+              "tests:internal/shedrecipe": 2000,
+              "tests:internal/testkit/envkit": 2000,
+              "tests:pattern": 2000
+            },
+            "messages": 429.5,
+            "written": 130242
+          },
+          {
+            "card": 9,
+            "card_text": 408,
+            "reads": {
+              "package:internal/configreg": 2000,
+              "package:internal/loomengine": 2000,
+              "tests:internal/configreg": 2000,
+              "tests:internal/loomengine": 2000
+            },
+            "messages": 36.5,
+            "written": 11358
+          },
+          {
+            "card": 10,
+            "card_text": 528,
+            "reads": {
+              "file:PATTERN.md": 1368,
+              "file:cmd/lyx/testdata/test-budget.yaml": 1836,
+              "file:pattern/PATTERN-told-geometry.md": 276,
+              "package:.": 2000,
+              "package:cmd/lyx/testdata": 2000,
+              "package:internal/sheddriver": 2000,
+              "package:pattern": 2000,
+              "tests:.": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:internal/sheddriver": 2000,
+              "tests:pattern": 2000
+            },
+            "messages": 30,
+            "written": 9528
+          },
+          {
+            "card": 11,
+            "card_text": 384,
+            "reads": {
+              "package:internal/battencli": 2000,
+              "tests:internal/battencli": 2000
+            },
+            "messages": 44.5,
+            "written": 13734
+          },
+          {
+            "card": 12,
+            "card_text": 384,
+            "reads": {
+              "package:internal/battenshed": 2000,
+              "tests:internal/battenshed": 2000
+            },
+            "messages": 28,
+            "written": 8784
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "13-batten-drives-its-run",
+        "14-driver-docs"
+      ],
+      "profile": "cautious",
+      "estimate": 215810,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 4,
+        "startup": 75712,
+        "read_union": 49900,
+        "cards": [
+          {
+            "card": 13,
+            "card_text": 1188,
+            "reads": {
+              "file:contracts/specs/refusal-spec.md": 5712,
+              "file:pattern/PATTERN-shed-verb-set.md": 552,
+              "package:contracts/specs": 2000,
+              "package:internal/battencli": 2000,
+              "package:internal/loomcli": 2000,
+              "package:internal/sheddriver": 2000,
+              "package:pattern": 2000,
+              "tests:contracts/specs": 2000,
+              "tests:internal/battencli": 2000,
+              "tests:internal/loomcli": 2000,
+              "tests:internal/sheddriver": 2000,
+              "tests:pattern": 2000
+            },
+            "messages": 219.5,
+            "written": 67038
+          },
+          {
+            "card": 14,
+            "card_text": 360,
+            "reads": {
+              "file:docs/overview.md": 9288,
+              "file:internal/battenshed/doc.go": 2136,
+              "file:internal/loomcli/doc.go": 2664,
+              "package:docs": 2000,
+              "package:internal/battenshed": 2000,
+              "package:internal/loomcli": 2000,
+              "package:internal/sheddriver": 2000,
+              "tests:docs": 2000,
+              "tests:internal/battenshed": 2000,
+              "tests:internal/loomcli": 2000,
+              "tests:internal/sheddriver": 2000
+            },
+            "messages": 76,
+            "written": 23160
+          }
+        ]
+      }
+    }
+  ],
+  "currentBatch": 1,
+  "masterStrand": "05836e1fa6d8d140857a550caa8fce04",
+  "masterSessionId": "fe51066b-538a-477c-b9a6-3c2526af3fa8",
+  "batches": {
+    "1": {
+      "slug": "interrupt-policy-words",
+      "cards": [
+        "01-interrupt-policy-words",
+        "02-sheddriver-records",
+        "03-settle-records-per-run"
+      ],
+      "cardHashes": {
+        "01-interrupt-policy-words": "f8d8e99ff723899bd9bf96fc78b12a69ba4b527def2f4c274fd0aaacf46fdd85",
+        "02-sheddriver-records": "f4cf0702342b663f97d2a6c0cb36bbe6d0990885d4dd9715f8a5e547b789aed5",
+        "03-settle-records-per-run": "bbcfcf421c64fb80223d115fc8395118485d964b4c32c7ad7cf6c86af84c14dc"
+      },
+      "startSha": "9ea1f7474ead98d92d8421759f61a8c8ce2f943a",
+      "kind": "fork",
+      "spawnedAt": "2026-10-15T07:12:47Z",
+      "sessionId": "fe51066b-538a-477c-b9a6-3c2526af3fa8",
+      "terminal": false,
+      "status": ""
+    }
+  }
+}
