@@ -1,0 +1,541 @@
+{
+  "runGuid": "fc8d0d4534910705d28f6c2374faac9c",
+  "planFingerprint": "440b434743ff04448919532b59a8eda4ac363cf8a690fdb58efe11958ea99e29",
+  "planFileHashes": {
+    "00-overview.md": "e5112df343f84bfa4759c0499782b42a0fa642a9eee98c7cb096bde46bac615a",
+    "01-settings-golden.md": "a8913a085fecf5abeac6ecbf1db11fc3b1d829dca0e5189fc85ac20f02ee6f32",
+    "02-shell-guard-table.md": "aaa96a6bfd9bc8c8001314e33bf3d09c0fca3beb88e83367f397abb60982c29a",
+    "03-denied-forms-from-table.md": "c861619f3ebfbbb319d459b920f9829c3bbd05ab93ba4e0caa7e7cddd215abad",
+    "04-retired-config-keys.md": "162b2f097a4be92906c0a98d5fa98f7f645680ce171b9d8925d4c794c403ae0d",
+    "05-claude-config-module.md": "3ab34614fb4a11a6f1e0a12c5f00ca27fe5f8e1aa5c1985751f473be86622bf9",
+    "06-engine-loads-claude-config.md": "157663651d8e2e6169da8edf6bc01a1c594d7f19874fd134ea5ca39a0c35a529",
+    "07-shuttle-drops-claude-keys.md": "3ee01df9dc25aba12c950a9cde23475262055e0cf0f24c006ea145678aeb6e19",
+    "08-config-key-move.md": "76a0cf5452e3abc56052c1bc2e80ebab6246f5e2fa87a2704973f47dd0603a3b",
+    "09-engine-scrub-keys.md": "89185ad5dfa79f53fd13ca275fe20de1ae5f01b5bf62bbff4af743deedebe207",
+    "10-strand-provider-tag.md": "1070873d71cdd9587aaf40069de7b5e149095ed5aa1bfda745bef67d69fa8e21",
+    "11-config-package-docs.md": "1ba92269f6eb33d193ebfa8cdce9cf9f4f594b06cb572792f56deba627e9c569"
+  },
+  "planOverviewFrameHash": "0bfcab02462827bce130a374c1cd2a9a1a314d98e44b365321e59c3b1b9b3a01",
+  "partition": [
+    {
+      "cards": [
+        "01-settings-golden"
+      ],
+      "profile": "cautious",
+      "estimate": 78232,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 1,
+        "startup": 54472,
+        "read_union": 14184,
+        "cards": [
+          {
+            "card": 1,
+            "card_text": 276,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1908,
+              "package:cmd/lyx/testdata": 2000,
+              "package:internal/shuttleengine/claudeengine": 2000,
+              "package:internal/shuttleengine/claudeengine/testdata": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:internal/shuttleengine/claudeengine": 2000,
+              "tests:internal/shuttleengine/claudeengine/testdata": 2000
+            },
+            "messages": 31,
+            "written": 9576
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "02-shell-guard-table"
+      ],
+      "profile": "cautious",
+      "estimate": 216248,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 2,
+        "startup": 61472,
+        "read_union": 41532,
+        "cards": [
+          {
+            "card": 2,
+            "card_text": 1344,
+            "reads": {
+              "file:PATTERN.md": 1380,
+              "file:cmd/lyx/testdata/test-budget.yaml": 1908,
+              "file:docs/overview.md": 9468,
+              "file:internal/shuttleengine/claudeengine/doc.go": 2376,
+              "file:pattern/PATTERN-leaf-packages.md": 1056,
+              "package:.": 2000,
+              "package:cmd/lyx/testdata": 2000,
+              "package:docs": 2000,
+              "package:internal/shellguard": 2000,
+              "package:internal/shuttleengine/claudeengine": 2000,
+              "package:pattern": 2000,
+              "tests:.": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:docs": 2000,
+              "tests:internal/shellguard": 2000,
+              "tests:internal/shuttleengine/claudeengine": 2000,
+              "tests:pattern": 2000
+            },
+            "messages": 373,
+            "written": 113244
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "03-denied-forms-from-table",
+        "04-retired-config-keys",
+        "05-claude-config-module"
+      ],
+      "profile": "cautious",
+      "estimate": 185724,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 3,
+        "startup": 68472,
+        "read_union": 29376,
+        "cards": [
+          {
+            "card": 3,
+            "card_text": 348,
+            "reads": {
+              "file:pattern/PATTERN-no-denied-recovery.md": 252,
+              "package:cmd/lyx": 2000,
+              "package:pattern": 2000,
+              "tests:cmd/lyx": 2000,
+              "tests:pattern": 2000
+            },
+            "messages": 58,
+            "written": 17748
+          },
+          {
+            "card": 4,
+            "card_text": 432,
+            "reads": {
+              "file:internal/configengine/doc.go": 864,
+              "package:internal/configengine": 2000,
+              "tests:internal/configengine": 2000
+            },
+            "messages": 51,
+            "written": 15732
+          },
+          {
+            "card": 5,
+            "card_text": 696,
+            "reads": {
+              "file:internal/shuttleengine/claudeengine/doc.go": 2376,
+              "file:internal/shuttleengines/doc.go": 132,
+              "file:pattern/PATTERN-config-strictness.md": 168,
+              "file:pattern/PATTERN-shuttle-provider-seam.md": 108,
+              "package:cmd/lyx": 2000,
+              "package:internal/configreg": 2000,
+              "package:internal/shuttleengine/claudeengine": 2000,
+              "package:internal/shuttleengines": 2000,
+              "package:pattern": 2000,
+              "tests:cmd/lyx": 2000,
+              "tests:internal/configreg": 2000,
+              "tests:internal/shuttleengine/claudeengine": 2000,
+              "tests:internal/shuttleengines": 2000,
+              "tests:pattern": 2000
+            },
+            "messages": 179,
+            "written": 54396
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "06-engine-loads-claude-config"
+      ],
+      "profile": "cautious",
+      "estimate": 310730,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 4,
+        "startup": 75472,
+        "read_union": 57472,
+        "cards": [
+          {
+            "card": 6,
+            "card_text": 1536,
+            "reads": {
+              "file:internal/loomengine/plan.go": 1428,
+              "file:internal/shuttleengine/claudeengine/doc.go": 2376,
+              "file:internal/shuttleengines/doc.go": 132,
+              "package:internal/battencli": 2000,
+              "package:internal/burlercli": 2000,
+              "package:internal/burlerengine": 2000,
+              "package:internal/loomcli": 2000,
+              "package:internal/loomengine": 2000,
+              "package:internal/orchcli": 2000,
+              "package:internal/seatengine": 2000,
+              "package:internal/shuttlecli": 2000,
+              "package:internal/shuttleengine/claudeengine": 2000,
+              "package:internal/shuttleengines": 2000,
+              "package:internal/tendercli": 2000,
+              "package:internal/treadleengine": 2000,
+              "package:internal/webstercli": 2000,
+              "tests:internal/battencli": 2000,
+              "tests:internal/burlercli": 2000,
+              "tests:internal/burlerengine": 2000,
+              "tests:internal/loomcli": 2000,
+              "tests:internal/loomengine": 2000,
+              "tests:internal/orchcli": 2000,
+              "tests:internal/seatengine": 2000,
+              "tests:internal/shuttlecli": 2000,
+              "tests:internal/shuttleengine/claudeengine": 2000,
+              "tests:internal/shuttleengines": 2000,
+              "tests:internal/tendercli": 2000,
+              "tests:internal/treadleengine": 2000,
+              "tests:internal/webstercli": 2000
+            },
+            "messages": 587.5,
+            "written": 177786
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "07-shuttle-drops-claude-keys"
+      ],
+      "profile": "cautious",
+      "estimate": 203690,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 5,
+        "startup": 82472,
+        "read_union": 42216,
+        "cards": [
+          {
+            "card": 7,
+            "card_text": 852,
+            "reads": {
+              "file:docs/overview.md": 9468,
+              "file:internal/shuttleengine/claudeengine/doc.go": 2376,
+              "file:internal/shuttleengine/doc.go": 5292,
+              "file:internal/shuttleengine/template.yaml": 228,
+              "package:docs": 2000,
+              "package:internal/configreg": 2000,
+              "package:internal/loomcli": 2000,
+              "package:internal/shuttleengine": 2000,
+              "package:internal/shuttleengine/claudeengine": 2000,
+              "package:internal/testkit/envkit": 2000,
+              "tests:docs": 2000,
+              "tests:internal/configreg": 2000,
+              "tests:internal/loomcli": 2000,
+              "tests:internal/shuttleengine": 2000,
+              "tests:internal/shuttleengine/claudeengine": 2000,
+              "tests:internal/testkit/envkit": 2000
+            },
+            "messages": 260.5,
+            "written": 79002
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "08-config-key-move"
+      ],
+      "profile": "cautious",
+      "estimate": 156978,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 6,
+        "startup": 89472,
+        "read_union": 26832,
+        "cards": [
+          {
+            "card": 8,
+            "card_text": 924,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1908,
+              "package:cmd/lyx/testdata": 2000,
+              "package:internal/configcli": 2000,
+              "package:internal/configreg": 2000,
+              "package:internal/configsync": 2000,
+              "package:internal/fabriccli": 2000,
+              "package:internal/hubreconcile": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:internal/configcli": 2000,
+              "tests:internal/configreg": 2000,
+              "tests:internal/configsync": 2000,
+              "tests:internal/fabriccli": 2000,
+              "tests:internal/hubreconcile": 2000
+            },
+            "messages": 132.5,
+            "written": 40674
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "09-engine-scrub-keys"
+      ],
+      "profile": "cautious",
+      "estimate": 376014,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 7,
+        "startup": 96472,
+        "read_union": 101660,
+        "cards": [
+          {
+            "card": 9,
+            "card_text": 1332,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1908,
+              "file:internal/burlerengine/doc.go": 4116,
+              "file:internal/reedengine/doc.go": 12216,
+              "file:internal/reedengine/env.go": 336,
+              "file:internal/reedengine/env_test.go": 696,
+              "file:internal/shuttleengines/doc.go": 132,
+              "file:pattern/PATTERN-shuttle-provider-seam.md": 108,
+              "file:pattern/PATTERN-test-isolation.md": 816,
+              "package:cmd/lyx/testdata": 2000,
+              "package:internal/battencli": 2000,
+              "package:internal/burlercli": 2000,
+              "package:internal/burlerengine": 2000,
+              "package:internal/hubgeom": 2000,
+              "package:internal/loomcli": 2000,
+              "package:internal/orchcli": 2000,
+              "package:internal/pairteardown": 2000,
+              "package:internal/reedcli": 2000,
+              "package:internal/reedengine": 2000,
+              "package:internal/seatengine": 2000,
+              "package:internal/shuttlecli": 2000,
+              "package:internal/shuttleengine/claudeengine": 2000,
+              "package:internal/shuttleengines": 2000,
+              "package:internal/standalonegeom": 2000,
+              "package:internal/tendercli": 2000,
+              "package:internal/testkit/tmuxkit": 2000,
+              "package:internal/treadleengine": 2000,
+              "package:internal/webstercli": 2000,
+              "package:pattern": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:internal/battencli": 2000,
+              "tests:internal/burlercli": 2000,
+              "tests:internal/burlerengine": 2000,
+              "tests:internal/hubgeom": 2000,
+              "tests:internal/loomcli": 2000,
+              "tests:internal/orchcli": 2000,
+              "tests:internal/pairteardown": 2000,
+              "tests:internal/reedcli": 2000,
+              "tests:internal/reedengine": 2000,
+              "tests:internal/seatengine": 2000,
+              "tests:internal/shuttlecli": 2000,
+              "tests:internal/shuttleengine/claudeengine": 2000,
+              "tests:internal/shuttleengines": 2000,
+              "tests:internal/standalonegeom": 2000,
+              "tests:internal/tendercli": 2000,
+              "tests:internal/testkit/tmuxkit": 2000,
+              "tests:internal/treadleengine": 2000,
+              "tests:internal/webstercli": 2000,
+              "tests:pattern": 2000
+            },
+            "messages": 588.5,
+            "written": 177882
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "10-strand-provider-tag"
+      ],
+      "profile": "cautious",
+      "estimate": 227538,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 8,
+        "startup": 103472,
+        "read_union": 43240,
+        "cards": [
+          {
+            "card": 10,
+            "card_text": 876,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1908,
+              "file:internal/reedengine/doc.go": 12216,
+              "file:internal/shuttleengines/doc.go": 132,
+              "file:pattern/PATTERN-shuttle-provider-seam.md": 108,
+              "package:cmd/lyx/testdata": 2000,
+              "package:internal/reedcli": 2000,
+              "package:internal/reedengine": 2000,
+              "package:internal/shuttleengine": 2000,
+              "package:internal/shuttleengines": 2000,
+              "package:internal/testkit/shuttlefake": 2000,
+              "package:pattern": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:internal/reedcli": 2000,
+              "tests:internal/reedengine": 2000,
+              "tests:internal/shuttleengine": 2000,
+              "tests:internal/shuttleengines": 2000,
+              "tests:internal/testkit/shuttlefake": 2000,
+              "tests:pattern": 2000
+            },
+            "messages": 266.5,
+            "written": 80826
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "11-config-package-docs"
+      ],
+      "profile": "cautious",
+      "estimate": 133214,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 9,
+        "startup": 110472,
+        "read_union": 17960,
+        "cards": [
+          {
+            "card": 11,
+            "card_text": 132,
+            "reads": {
+              "file:internal/configreg/configreg.go": 2412,
+              "file:internal/configsync/configsync.go": 7416,
+              "package:internal/configreg": 2000,
+              "package:internal/configsync": 2000,
+              "tests:internal/configreg": 2000,
+              "tests:internal/configsync": 2000
+            },
+            "messages": 15.5,
+            "written": 4782
+          }
+        ]
+      }
+    }
+  ],
+  "currentBatch": 1,
+  "masterStrand": "d2803100d37c969fd246e0e363103c5b",
+  "masterSessionId": "6f6ada06-2c95-4aa6-a77f-74e1252cb5bb",
+  "batches": {
+    "1": {
+      "slug": "settings-golden",
+      "cards": [
+        "01-settings-golden"
+      ],
+      "cardHashes": {
+        "01-settings-golden": "a8913a085fecf5abeac6ecbf1db11fc3b1d829dca0e5189fc85ac20f02ee6f32"
+      },
+      "startSha": "88ea645bbc3ed48e33fbe831baa41b961b6991f9",
+      "kind": "fork",
+      "spawnedAt": "2026-10-15T15:21:27Z",
+      "sessionId": "6f6ada06-2c95-4aa6-a77f-74e1252cb5bb",
+      "terminal": false,
+      "status": ""
+    }
+  }
+}
