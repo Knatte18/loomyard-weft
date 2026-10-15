@@ -1,0 +1,237 @@
+{
+  "runGuid": "f563ea8bb180f22fa1f933414146165f",
+  "planFingerprint": "144f45cb4161afdd19358749d6dcfe52c1c30d68bc4f69e1bcba5673d8fce053",
+  "planFileHashes": {
+    "00-overview.md": "16a9035396d5e8c81321e81b42f45f4685d30e4667caca4a268d1c63b35517f1",
+    "01-replace-stencil-claims.md": "a28eae968b3425b016ef091549ed495ab896bbb644a88df822cba45269b9ada8",
+    "02-webster-template-tests.md": "8c732a6a0ce18928d927fd03b495eea54351dc6a1a27f6570cf9d1940fb57c70",
+    "03-burler-prompt-tests.md": "71b6d8f143c7ecce02ad3bab3993596b80cfd4c143b3a591df2efb70b976a40c",
+    "04-treadle-template-tests.md": "cc1a6b3b03431da06a78791acb3467887410802aa1e08a4bd379a34b0d0d95d9",
+    "05-shed-prompt-tests.md": "11b7c621187d03d8c3a4e3f453e147d21cbf6911ee18a5efb442e14a3ab4ea0f",
+    "06-loom-prompt-tests.md": "80d372c83dc74a053ff71858201aca90d0f93860b49adc0dec16d59274b2c62b",
+    "07-directive-tests.md": "cec7f13c7fc592ac67451efd5243d45d9a2e05b3c19555164d6d0ce08d86ba1c",
+    "08-coverage-rule-text.md": "a37cc96e2170f21cf44d40c6f6c6809c85d3e96b70c7f55488af2b167cbac1c6"
+  },
+  "planOverviewFrameHash": "5b7538e12d86b2c76379dc39d19afb91f6b9d4278b7d48408e4966c140859a30",
+  "partition": [
+    {
+      "cards": [
+        "01-replace-stencil-claims",
+        "02-webster-template-tests",
+        "03-burler-prompt-tests"
+      ],
+      "profile": "cautious",
+      "estimate": 149732,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 1,
+        "startup": 54436,
+        "read_union": 33016,
+        "cards": [
+          {
+            "card": 1,
+            "card_text": 816,
+            "reads": {
+              "file:contracts/stencils/claims_test.go": 15336,
+              "package:contracts/stencils": 2000,
+              "package:internal/loomengine": 2000,
+              "tests:contracts/stencils": 2000,
+              "tests:internal/loomengine": 2000
+            },
+            "messages": 72,
+            "written": 22416
+          },
+          {
+            "card": 2,
+            "card_text": 624,
+            "reads": {
+              "package:internal/websterengine": 2000,
+              "tests:internal/websterengine": 2000
+            },
+            "messages": 93.5,
+            "written": 28674
+          },
+          {
+            "card": 3,
+            "card_text": 240,
+            "reads": {
+              "package:internal/burlerengine": 2000,
+              "tests:internal/burlerengine": 2000
+            },
+            "messages": 36.5,
+            "written": 11190
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "04-treadle-template-tests",
+        "05-shed-prompt-tests",
+        "06-loom-prompt-tests"
+      ],
+      "profile": "cautious",
+      "estimate": 161200,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 2,
+        "startup": 61436,
+        "read_union": 33032,
+        "cards": [
+          {
+            "card": 4,
+            "card_text": 360,
+            "reads": {
+              "package:internal/treadleengine": 2000,
+              "tests:internal/treadleengine": 2000
+            },
+            "messages": 44.5,
+            "written": 13710
+          },
+          {
+            "card": 5,
+            "card_text": 276,
+            "reads": {
+              "package:cmd/lyx": 2000,
+              "package:internal/loomcli": 2000,
+              "package:internal/shedadapters": 2000,
+              "package:internal/sheddriver": 2000,
+              "tests:cmd/lyx": 2000,
+              "tests:internal/loomcli": 2000,
+              "tests:internal/shedadapters": 2000,
+              "tests:internal/sheddriver": 2000
+            },
+            "messages": 110.5,
+            "written": 33426
+          },
+          {
+            "card": 6,
+            "card_text": 396,
+            "reads": {
+              "package:internal/alignment": 2000,
+              "package:internal/darnengine": 2000,
+              "package:internal/loomengine": 2000,
+              "tests:internal/alignment": 2000,
+              "tests:internal/darnengine": 2000,
+              "tests:internal/loomengine": 2000
+            },
+            "messages": 64,
+            "written": 19596
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "07-directive-tests",
+        "08-coverage-rule-text"
+      ],
+      "profile": "cautious",
+      "estimate": 143474,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 3,
+        "startup": 68436,
+        "read_union": 48836,
+        "cards": [
+          {
+            "card": 7,
+            "card_text": 240,
+            "reads": {
+              "package:internal/editdirective": 2000,
+              "package:internal/orchengine": 2000,
+              "package:internal/parentdirective": 2000,
+              "package:internal/pattern": 2000,
+              "package:internal/twilldirective": 2000,
+              "tests:internal/editdirective": 2000,
+              "tests:internal/orchengine": 2000,
+              "tests:internal/parentdirective": 2000,
+              "tests:internal/pattern": 2000,
+              "tests:internal/twilldirective": 2000
+            },
+            "messages": 42.5,
+            "written": 12990
+          },
+          {
+            "card": 8,
+            "card_text": 312,
+            "reads": {
+              "file:contracts/specs/loom-plan-spec.md": 8328,
+              "file:contracts/stencils/loom/loom-rubric-darn-review.md": 912,
+              "file:contracts/stencils/loom/loom-rubric-merge-review.md": 804,
+              "file:contracts/stencils/loom/loom-rubric-plan-review.md": 1584,
+              "file:contracts/stencils/loom/loom-rubric-webster-review.md": 1140,
+              "file:contracts/stencils/loom/loom-template-plan.md": 3240,
+              "file:pattern/PATTERN-test-economy.md": 276,
+              "package:contracts/specs": 2000,
+              "package:contracts/stencils/loom": 2000,
+              "package:pattern": 2000,
+              "tests:contracts/specs": 2000,
+              "tests:contracts/stencils/loom": 2000,
+              "tests:pattern": 2000
+            },
+            "messages": 43,
+            "written": 13212
+          }
+        ]
+      }
+    }
+  ],
+  "currentBatch": 1,
+  "masterStrand": "61783571fc7a72646c7e82d2e3c2e5b2",
+  "masterSessionId": "882225e9-2a89-4521-9764-61f243c588d9",
+  "batches": {
+    "1": {
+      "slug": "replace-stencil-claims",
+      "cards": [
+        "01-replace-stencil-claims",
+        "02-webster-template-tests",
+        "03-burler-prompt-tests"
+      ],
+      "cardHashes": {
+        "01-replace-stencil-claims": "a28eae968b3425b016ef091549ed495ab896bbb644a88df822cba45269b9ada8",
+        "02-webster-template-tests": "8c732a6a0ce18928d927fd03b495eea54351dc6a1a27f6570cf9d1940fb57c70",
+        "03-burler-prompt-tests": "71b6d8f143c7ecce02ad3bab3993596b80cfd4c143b3a591df2efb70b976a40c"
+      },
+      "startSha": "46d71787adf4e1cebf3da111d6b79f4d5ab5e9e6",
+      "kind": "fork",
+      "spawnedAt": "2026-10-15T14:50:52Z",
+      "sessionId": "882225e9-2a89-4521-9764-61f243c588d9",
+      "terminal": false,
+      "status": ""
+    }
+  }
+}
