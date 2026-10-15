@@ -308,7 +308,7 @@
       }
     }
   ],
-  "currentBatch": 0,
+  "currentBatch": 1,
   "masterStrand": "9b5d66aec3da73a49c887c9db722ae35",
   "masterSessionId": "4bda0955-d804-438f-978f-3ec2ff46fb8f",
   "batches": {
@@ -325,27 +325,22 @@
         "03-settle-records-shedrun": "36f469fd7e3d8506577a6583c5cd033b7956c9c13a0fcea0ed228596b6842699"
       },
       "startSha": "4ebb73ff31750a9d92e5164a690a072bcbda1b13",
-      "kind": "fork",
-      "spawnedAt": "2026-10-15T12:27:13Z",
-      "sessionId": "4bda0955-d804-438f-978f-3ec2ff46fb8f",
-      "terminal": true,
-      "status": "failed",
-      "digest": {
-        "batch": "01-durfmt",
-        "status": "failed",
-        "head_sha": "43a93ff51278dce7416658743d186faf0df42e56",
-        "reasons": [
-          "batch 01-durfmt holds cards 1-durfmt, 2-sleepjournal, 3-settle-records-shedrun",
-          "create-not-done/2-sleepjournal[blocking]: Create target \"plan:internal/sleepjournal#TestParse\" still does not resolve: looked up \"internal/sleepjournal#TestParse\", quarry answered not_found (the unit exists and the member is missing)",
-          "create-not-done/3-settle-records-shedrun[blocking]: Create target \"plan:internal/shedrun#TestParseSettleRecords\" still does not resolve: looked up \"internal/shedrun#TestParseSettleRecords\", quarry answered not_found (the unit exists and the member is missing)"
-        ]
-      },
+      "kind": "recovery",
+      "spawnedAt": "2026-10-15T12:32:45Z",
+      "terminal": false,
+      "status": "",
       "forkTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-report-timing/4bda0955-d804-438f-978f-3ec2ff46fb8f/subagents/agent-a410985c520cdf01d.jsonl"
       ],
-      "bracketTranscripts": [
-        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-report-timing/4bda0955-d804-438f-978f-3ec2ff46fb8f/subagents/agent-a410985c520cdf01d.jsonl"
-      ]
+      "strandGuid": "ed17d3526fec63db0f12e2f6a59a63f7",
+      "shuttleRunDir": "/home/knatte/Code/loomyard-LYXHUB/report-timing/.lyx/shuttle/a2edf9ce9b1685609d1cfcf403444703",
+      "eventsPath": "/home/knatte/Code/loomyard-LYXHUB/report-timing/.lyx/shuttle/a2edf9ce9b1685609d1cfcf403444703/events.jsonl",
+      "eventsOffset": 2231,
+      "recoveries": 1,
+      "recoverySessions": [
+        "55e6f129-ef7b-4c66-8173-61b8f02afb4d"
+      ],
+      "recoveryStartSha": "43a93ff51278dce7416658743d186faf0df42e56"
     }
   },
   "seenForkTranscripts": [
