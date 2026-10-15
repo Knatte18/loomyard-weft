@@ -1,6 +1,6 @@
 ---
 format: 5
-approved: false
+approved: true
 first_card: 4
 language: go
 ---
