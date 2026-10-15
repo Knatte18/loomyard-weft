@@ -2,8 +2,6 @@
 
 `kickstart-per-card` · Task · enhancement, webster, stencil
 
-Depends on: [`refusal-route-config-empty`](design-refusal-route-config-empty.md)
-
 ## Seen
 
 The 2026-10-15 pack audit (`.scratch/glyph-audit-3/`, to be committed under `docs/research/`) measured 24 Webster forks on the pack-file layout (`1e39afc10`).
