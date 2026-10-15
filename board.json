@@ -693,7 +693,7 @@
       "id": 539,
       "slug": "viewer-off-shell",
       "title": "Run window stays on shell: follow the overview and newest agent from run start",
-      "kind": "note",
+      "kind": "task",
       "labels": [
         "bug",
         "reed",

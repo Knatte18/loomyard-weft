@@ -1,6 +1,6 @@
 # Run window stays on shell: follow the overview and newest agent from run start
 
-`viewer-off-shell` · Note · bug, reed, batten
+`viewer-off-shell` · Task · bug, reed, batten
 
 ## Seen
 
