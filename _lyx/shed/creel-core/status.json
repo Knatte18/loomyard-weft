@@ -1,11 +1,11 @@
 {
-  "current_producer": "Merge-Burler-Fix",
+  "current_producer": "Merge-Bouncer",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Merge-Burler-Fix",
-    "last": "Merge-Burler-Review → bounced to Merge-Burler-Fix",
+    "now": "Merge-Bouncer",
+    "last": "Merge-Burler-Fix → bounced to Merge-Bouncer",
     "wait": ""
   },
   "history": [
@@ -685,6 +685,35 @@
       ],
       "budget_exempt": true,
       "routed_to": "Merge-Burler-Fix"
+    },
+    {
+      "producer": "Merge-Burler-Fix",
+      "outcome": "stuck",
+      "output": "/home/knatte/Code/loomyard-LYXHUB/creel-core/_lyx/reviews/merge/round-1-review.md",
+      "at": "2026-10-15T14:46:12Z",
+      "gate_attempts": 1,
+      "gate_spans": [
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-10-15T14:43:14.210416991Z",
+          "end": "2026-10-15T14:43:14.830842235Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "rework",
+          "start": "2026-10-15T14:43:15.21829438Z",
+          "end": "2026-10-15T14:43:50.298334321Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-10-15T14:43:50.326705196Z",
+          "end": "2026-10-15T14:46:12.15474082Z"
+        }
+      ],
+      "budget_exempt": true,
+      "routed_to": "Merge-Bouncer"
     }
   ],
   "product": {
