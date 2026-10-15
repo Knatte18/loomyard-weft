@@ -1,8 +1,8 @@
 # Card 3 — FollowRun: turn follow on and select the relevant window
 
 **Create:**
-- `plan:internal/reedengine#Engine.FollowRun` -> `func (e *Engine) FollowRun() error`
-- `plan:internal/reedengine#TestFollow_RealTmux` -> `func TestFollow_RealTmux(t *testing.T)`
+- `internal/reedengine#Engine.FollowRun`
+- `internal/reedengine#TestFollow_RealTmux`
 
 **Edit:**
 - `internal/reedengine#Engine.selectRelevantWindowLocked`
@@ -10,8 +10,8 @@
 - `cmd/lyx/testdata/test-budget.yaml`
 
 **Uses:**
-- `plan:internal/reedengine#followSessionOption`
-- `plan:internal/reedengine#Engine.followingLocked`
+- `internal/reedengine#followSessionOption`
+- `internal/reedengine#Engine.followingLocked`
 - `internal/reedengine#Engine.AttachArgv`
 
 **Intent:**

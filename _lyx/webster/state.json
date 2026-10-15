@@ -1,14 +1,14 @@
 {
   "runGuid": "a4327c04dd0ad524ee890c9e2c56013a",
-  "planFingerprint": "90c6334c780e71eda723f224b7fbe3bfa7ca51abbdbd9b83d97ecabfe8171501",
+  "planFingerprint": "07075b28cc92e36b07604a84690297ef76ab5a67b3b0909e999077e89243c29d",
   "planFileHashes": {
     "00-overview.md": "5bd30065662e0ae8f1e72efb8b6c0407fb7d6d7e0bd9e4376e75e1b83aa1109f",
-    "01-follow-state-focus.md": "6e1490f74791edf038a421f5223a303a6a114220af1c96d333318c46b675e06a",
-    "02-attach-follow.md": "a884bcc2ce9d947f265d2a0e86e2487340d22ab1e76a2af7add1d22b78440403",
-    "03-follow-run-op.md": "818daaaaa9290063decc0d4ee5da2f0a1071ad6760524476822620818f891e46",
-    "04-loom-start-follows.md": "9ea00dd7c613a0d4a4f71c27c4ff9b9d44d5c1f236055b4b6abf0c2dbae0cdee",
-    "05-reed-follow-verb.md": "5173628ed621cb88c6adb1d83f0fa04216ffd5fb9b14a3215fb99fe8db628a7e",
-    "06-follow-bindings-button.md": "1259742d7b57185695141e4763932939a07219d176fb5dbdfb8e16ab76d0195a"
+    "01-follow-state-focus.md": "5864643d47e82968ce33fcab6737d10a07648d5ba30ded608ee2d08ff7c4483b",
+    "02-attach-follow.md": "67b6ae7761352aca4a1b5da71e7f97f5a9793618af2aa8a8b4e6544a754dfe97",
+    "03-follow-run-op.md": "b61f642f9c18465c3d4fb77f38bf587841cba7f46b23eb38e6373db9161f7471",
+    "04-loom-start-follows.md": "0f03bd454510c5054e0d850880faeee189b2f0bd9826d24390efd1adf1532f8c",
+    "05-reed-follow-verb.md": "e41f8608878618386968b75c4c1ad32fdbc35bcec436a38f3794cfaf3dddf864",
+    "06-follow-bindings-button.md": "fd9f749e12c33e81eca617270df1e367dc3a6bf265abbe598c2357d1dc1990b7"
   },
   "planOverviewFrameHash": "3ec3cd6a068e4fea1b924988a9506742eecaf1ecb2a8a85f6d2b32a98ad348c0",
   "partition": [
@@ -124,7 +124,7 @@
       }
     }
   ],
-  "currentBatch": 1,
+  "currentBatch": 0,
   "masterStrand": "27ca166cd12741f74bda72a1212a1665",
   "masterSessionId": "25dd2a62-43c2-4ead-9d64-9fb9d321e903",
   "batches": {
@@ -139,19 +139,42 @@
         "06-follow-bindings-button"
       ],
       "cardHashes": {
-        "01-follow-state-focus": "6e1490f74791edf038a421f5223a303a6a114220af1c96d333318c46b675e06a",
-        "02-attach-follow": "a884bcc2ce9d947f265d2a0e86e2487340d22ab1e76a2af7add1d22b78440403",
-        "03-follow-run-op": "818daaaaa9290063decc0d4ee5da2f0a1071ad6760524476822620818f891e46",
-        "04-loom-start-follows": "9ea00dd7c613a0d4a4f71c27c4ff9b9d44d5c1f236055b4b6abf0c2dbae0cdee",
-        "05-reed-follow-verb": "5173628ed621cb88c6adb1d83f0fa04216ffd5fb9b14a3215fb99fe8db628a7e",
-        "06-follow-bindings-button": "1259742d7b57185695141e4763932939a07219d176fb5dbdfb8e16ab76d0195a"
+        "01-follow-state-focus": "5864643d47e82968ce33fcab6737d10a07648d5ba30ded608ee2d08ff7c4483b",
+        "02-attach-follow": "67b6ae7761352aca4a1b5da71e7f97f5a9793618af2aa8a8b4e6544a754dfe97",
+        "03-follow-run-op": "b61f642f9c18465c3d4fb77f38bf587841cba7f46b23eb38e6373db9161f7471",
+        "04-loom-start-follows": "0f03bd454510c5054e0d850880faeee189b2f0bd9826d24390efd1adf1532f8c",
+        "05-reed-follow-verb": "e41f8608878618386968b75c4c1ad32fdbc35bcec436a38f3794cfaf3dddf864",
+        "06-follow-bindings-button": "fd9f749e12c33e81eca617270df1e367dc3a6bf265abbe598c2357d1dc1990b7"
       },
       "startSha": "4ebb73ff31750a9d92e5164a690a072bcbda1b13",
       "kind": "fork",
       "spawnedAt": "2026-10-15T12:20:07Z",
       "sessionId": "25dd2a62-43c2-4ead-9d64-9fb9d321e903",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "01-follow-state-focus",
+        "status": "done",
+        "head_sha": "86339b93281a6c41ecf9c72536676292842aa535",
+        "deviations": [
+          "internal/loomcli/smoke_drivingsurface_test.go",
+          "internal/reedengine/bindings.go",
+          "internal/reedengine/bindings_integration_test.go",
+          "internal/reedengine/bindings_test.go"
+        ]
+      },
+      "cardShas": [
+        "86339b93281a6c41ecf9c72536676292842aa535"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-viewer-off-shell/25dd2a62-43c2-4ead-9d64-9fb9d321e903/subagents/agent-a504a3f453ae167a1.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-viewer-off-shell/25dd2a62-43c2-4ead-9d64-9fb9d321e903/subagents/agent-a504a3f453ae167a1.jsonl"
+      ]
     }
-  }
+  },
+  "seenForkTranscripts": [
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-viewer-off-shell/25dd2a62-43c2-4ead-9d64-9fb9d321e903/subagents/agent-a504a3f453ae167a1.jsonl"
+  ]
 }

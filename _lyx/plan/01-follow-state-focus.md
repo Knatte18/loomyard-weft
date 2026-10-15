@@ -1,8 +1,8 @@
 # Card 1 — Follow state and the new-agent-window rule
 
 **Create:**
-- `plan:internal/reedengine#followSessionOption` -> `const followSessionOption = "@lyx_follow"`
-- `plan:internal/reedengine#Engine.followingLocked` -> `func (e *Engine) followingLocked() bool`
+- `internal/reedengine#followSessionOption`
+- `internal/reedengine#Engine.followingLocked`
 
 **Edit:**
 - `internal/reedengine#newAgentWindowSelected` -> `func newAgentWindowSelected(display render.Display, following bool) bool`

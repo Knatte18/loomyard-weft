@@ -1,8 +1,8 @@
 # Card 4 — Every `lyx loom start` entry re-arms follow
 
 **Create:**
-- `plan:internal/loomcli#readFollow` -> `func readFollow(t *testing.T, eng *reedengine.Engine) string`
-- `plan:internal/loomcli#setFollow` -> `func setFollow(t *testing.T, eng *reedengine.Engine, value string)`
+- `internal/loomcli#readFollow`
+- `internal/loomcli#setFollow`
 
 **Edit:**
 - `internal/loomcli#loomCLI.startCmd`
@@ -11,7 +11,7 @@
 - `internal/loomcli/doc.go`
 
 **Uses:**
-- `plan:internal/reedengine#Engine.FollowRun`
+- `internal/reedengine#Engine.FollowRun`
 - `internal/loomcli#loomCLI.ensureStatusStrand`
 
 **Intent:**

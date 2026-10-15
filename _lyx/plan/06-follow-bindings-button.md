@@ -1,10 +1,10 @@
 # Card 6 — Manual window changes turn follow off; the follow button
 
 **Create:**
-- `plan:internal/reedengine#followCommandOption` -> `const followCommandOption = "@lyx_follow_command"`
-- `plan:internal/reedengine#followClickCommand` -> `func followClickCommand(followJump bool) string`
-- `plan:internal/reedengine#composeFollowCommand` -> `func composeFollowCommand(sh shell.Shell, socketPath, tmuxPath string) (string, bool)`
-- `plan:internal/reedengine#followButtonFormat` -> `const followButtonFormat = "#[range=user|follow #{?#{!=:#{@lyx_follow},off},bg=green fg=black bold,bg=colour236 fg=white}] follow #[norange list=on default] "`
+- `internal/reedengine#followCommandOption`
+- `internal/reedengine#followClickCommand`
+- `internal/reedengine#composeFollowCommand`
+- `internal/reedengine#followButtonFormat`
 
 **Edit:**
 - `internal/reedengine#bindingArgvs` -> `func bindingArgvs(switchPrev, switchNext string, followJump bool) [][]string`
@@ -25,8 +25,8 @@
 - `pattern/PATTERN-pane-binary-resolution.md`
 
 **Uses:**
-- `plan:internal/reedengine#followSessionOption`
-- `plan:internal/reedcli#reedCLI.followCmd`
+- `internal/reedengine#followSessionOption`
+- `internal/reedcli#reedCLI.followCmd`
 - `internal/reedengine#composeSwitchCommand`
 - `internal/reedengine#newBindingsFixture`
 

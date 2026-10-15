@@ -1,19 +1,19 @@
 # Card 5 — `lyx reed follow`: the jump verb
 
 **Create:**
-- `plan:internal/reedengine#overviewWindowOption` -> `const overviewWindowOption = "@lyx_overview"`
-- `plan:internal/reedengine#followTargetFormat` -> `const followTargetFormat = "#{window_id} #{window_index} #{?#{@lyx_own},1,0} #{?#{@lyx_overview},1,0} #{pane_dead}"`
-- `plan:internal/reedengine#followTargetWindow` -> `func followTargetWindow(listing string) string`
-- `plan:internal/reedengine#FollowSession` -> `func FollowSession(tmuxPath, socketPath, session string) error`
-- `plan:internal/reedengine#followSessionVia` -> `func followSessionVia(cmd TmuxCmd, session string) error`
-- `plan:internal/reedengine#TestFollowSessionVia` -> `func TestFollowSessionVia(t *testing.T)`
-- `plan:internal/reedcli#reedCLI.followCmd` -> `func (c *reedCLI) followCmd() *cobra.Command`
-- `plan:internal/reedcli#validateFollowFlags` -> `func validateFollowFlags(socketPath, session, tmuxPath string) error`
-- `plan:cmd/lyx#reedSubcommand` -> `func reedSubcommand(t *testing.T, name string) *cobra.Command`
+- `internal/reedengine#overviewWindowOption`
+- `internal/reedengine#followTargetFormat`
+- `internal/reedengine#followTargetWindow`
+- `internal/reedengine#FollowSession`
+- `internal/reedengine#followSessionVia`
+- `internal/reedengine#TestFollowSessionVia`
+- `internal/reedcli#reedCLI.followCmd`
+- `internal/reedcli#validateFollowFlags`
+- `cmd/lyx#reedSubcommand`
 
 **Edit:**
 - `internal/reedengine#Engine.openOwnWindowLocked`
-- `plan:internal/reedengine#TestFollow_RealTmux`
+- `internal/reedengine#TestFollow_RealTmux`
 - `internal/reedengine#TestWindowOrder_RealTmux`
 - `internal/reedengine/doc.go`
 - `internal/reedcli#Command`
@@ -27,7 +27,7 @@
 - `cmd/lyx#reedSwitchCommand`
 
 **Uses:**
-- `plan:internal/reedengine#followSessionOption`
+- `internal/reedengine#followSessionOption`
 - `internal/reedengine#relevantWindow`
 - `internal/reedengine#SwitchClient`
 - `internal/reedcli#reedCLI.switchCmd`

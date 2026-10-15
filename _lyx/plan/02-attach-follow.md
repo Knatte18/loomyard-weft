@@ -8,7 +8,7 @@
 - `internal/reedengine/doc.go`
 
 **Uses:**
-- `plan:internal/reedengine#Engine.followingLocked`
+- `internal/reedengine#Engine.followingLocked`
 - `internal/reedengine#Engine.attachWindowSelectionLocked`
 - `internal/reedengine#relevantWindowFixture`
 
