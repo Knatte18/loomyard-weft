@@ -2,8 +2,6 @@
 
 `engine-config-seams` · Task · enhancement, shuttle, claude, config, reed
 
-Depends on: [`engine-registry`](design-engine-registry.md)
-
 ## Goal
 
 Second task of the Codex-readiness series (see `engine-registry` for the operator decision): engine settings owned by each engine, one neutral guardrail table, and reed blind to the provider.

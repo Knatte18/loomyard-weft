@@ -2,8 +2,6 @@
 
 `engine-model-choice` · Task · enhancement, shuttle, loom, webster, burler, shed
 
-Depends on: [`engine-registry`](design-engine-registry.md)
-
 ## Goal
 
 A task of the Codex-readiness series (see `engine-registry` for the operator decision): every role's spawn spec carries the engine its model alias resolves to, not only the model.

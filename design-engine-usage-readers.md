@@ -2,7 +2,7 @@
 
 `engine-usage-readers` · Task · enhancement, shuttle, claude
 
-Depends on: [`engine-registry`](design-engine-registry.md), [`engine-config-seams`](design-engine-config-seams.md)
+Depends on: [`engine-config-seams`](design-engine-config-seams.md)
 
 ## Goal
 

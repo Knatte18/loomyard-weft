@@ -705,30 +705,6 @@
       "revised": "2026-10-15T11:46:18Z"
     },
     {
-      "id": 547,
-      "slug": "engine-registry",
-      "title": "Engine registry: engine per run, one constructor, narrower Engine interface",
-      "kind": "task",
-      "labels": [
-        "enhancement",
-        "shuttle",
-        "config",
-        "loom",
-        "webster",
-        "burler",
-        "orch",
-        "batten"
-      ],
-      "issues": [],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "Shuttle picks the engine per spec from a registry and records it per run, so a second engine plugs in at one place",
-      "body": "## Goal\n\nFirst of the tasks that make lyx ready for a second LLM engine (Codex CLI) before Codex is installed; the series is `engine-registry`, `engine-config-seams`, `engine-model-choice`, `engine-usage-readers`, and creel in three stages (`creel-core`, `creel-notices`, `creel-agents`), from a planning agent's report of 2026-10-15 (not committed).\nThis task gives shuttle an engine registry and records the engine per run, so a later `codexengine` plugs in at one place.\n\n## Operator decision (2026-10-15)\n\nBuild the tasks of the Codex-readiness plan, in order; everything that needs Codex installed stays in note `codex-engine`.\nCreel is a prerequisite for Codex: agents reach their parent and each other through creel, not Claude Code's `SendMessage`, so the plan's interim `neutral-parent-asks` (hold-based asks plus `lyx shuttle send`) is dropped.\nOperator view, not a decision: that the model spec's engine is dropped today is natural while lyx has one engine.\n\n## Seen (verified 2026-10-15)\n\n- `claudeengine.NewFromConfig`/`New` is hardwired at 17 sites in 11 files: `burlercli/wiring.go`, `webstercli/wiring.go`, `loomcli/{wiring,looparm,looplock}.go`, `orchcli/cli.go`, `battencli/{wire,parentlock,drive}.go`, `tendercli/deps.go`, `shuttlecli/cli.go`, `cliwire/sessionnamer.go`; `orchcli/resumecontext.go` calls `claudeengine.SessionStartContext`.\n- `modelspec`'s `knownEngines` is `{claude}`; `shuttleengine.Spec` has no `Engine` field and the run record (`rundir.go`) stores none.\n- The cross-run readers (`ReadAgentActivity`, `ReadSessionStates`, `ReadAgentWaits`) and `Runner` take a single engine.\n- The `Engine` interface makes every engine implement `AuditForks*`, `ModelSwitchSequence` and `ColorSequence`, which are Claude, orch or Webster concerns.\n\n## Scope\n\n- `Spec.Engine`, and a neutral `engine: claude` default key in `shuttle.yaml` for specs with no model spec (the orch, a bare `lyx shuttle run`).\n- An engine set (name to Engine); an unknown name is refused, naming the registered engines.\n- One `Runner` over the set: `Start` picks by `Spec.Engine`; attach, send, interrupt, inject, stop, resume, open and the sweep pick from the run record.\n- The run record gains `engine`; an absent value reads as the default engine.\n- The cross-run readers dispatch per run.\n- One registry constructor replaces the 17 sites; the orch's resume context goes through an engine capability.\n- `AuditForks*` and `ModelSwitchSequence` become optional capabilities.\n- A neutral `Spec.Requires` capability list (forks, peer messaging, background wake) checked at `Start`, refusing with a way forward.\n- An `InstructionFiles()` capability (Claude: `CLAUDE.md`, `CLAUDE.local.md`).\n- A shared `shuttleengine.ModelChoice{Engine, Model, Effort, Version}` built from `modelspec.Resolved`, defined here and adopted by `engine-model-choice`.\n- A PATTERN entry: only the registry constructs or imports a concrete engine, and provider specifics live only under `shuttleengine/\u003cengine\u003e`; the seam test checks it.\n\n## Out\n\nConfig key moves and guardrails (`engine-config-seams`), messaging (creel), the role model carriers (`engine-model-choice`), tokencount (`engine-usage-readers`), anything Codex.\n\n## Design points: the planning agent's recommendations, not yet decided by the operator\n\n- The registry lives in `cliwire`, which already holds the sole wiring (alternative: a new `internal/shuttleengines`).\n\n## Operator decision (2026-10-15): the engine comes from the model alias\n\nThe model aliases were designed for this: `sonnet[high]` is an alias for engine `claude`, model `sonnet`, effort `high`.\nCodex gets the same form for its models (Luna, Sol, Astra): `sol[medium]` is an alias for engine `codex`, model `sol`, effort `medium`.\nSo a role's engine follows from its model spec alias in `models.yaml`, the existing contract in `llm-model-spec.md`; there is no separate `engine:` key per module.\n\n## Further design points (recommendations, continued)\n- One Runner over the engine set (alternative: one per engine, which leaves send, interrupt, tender and the readers guessing).\n- Claude-only roles are gated by `Spec.Requires` at `Start`, since config cannot see the registry.\n- `modelspec` keeps a closed engine-name set, pinned equal to the registry by a test; `codex` is added only with the engine.\n",
-      "status": "done",
-      "created": "2026-10-13T07:31:27Z",
-      "revised": "2026-10-15T10:16:43Z"
-    },
-    {
       "id": 548,
       "slug": "engine-config-seams",
       "title": "Engine-owned config, one neutral guardrail table, provider-blind reed",
@@ -741,9 +717,7 @@
         "reed"
       ],
       "issues": [],
-      "depends_on": [
-        "engine-registry"
-      ],
+      "depends_on": [],
       "isolated": false,
       "brief": "claude.yaml owned by claudeengine, a neutral shell-guard table each engine renders as hooks, reed strands tagged by provider",
       "body": "## Goal\n\nSecond task of the Codex-readiness series (see `engine-registry` for the operator decision): engine settings owned by each engine, one neutral guardrail table, and reed blind to the provider.\n\n## Seen (2026-10-15)\n\n- `shuttleengine/config.go` and its `template.yaml` hold Claude keys: `claude`, `claude_deny_agent_tool`, `claude_deny_ask_user_question`, `claude_deny_python`, `claude_prompt_cache_ttl(_roles)`.\n- The guardrail table in `claudeengine/settings.go` mixes neutral shell policy (python, raw go and gate-slot, `sed -i`, computed `rm`, sleep) with Claude tool denies (Agent, AskUserQuestion, webster-in-fork); `cmd/lyx/norecoverydeny_test.go` keeps a hand list mirroring it.\n- `reedengine/env.go` `CleanClaudeEnv` is used at reed's launch path.\n- reed's `SessionNamer` seam is filled once for every strand (`reedcli/watchdog.go`), with no per-strand provider.\n\n## Scope\n\n- A `claude.yaml` module owned and loaded by `claudeengine`, registered in `configreg` and layered (default, worktree, local): binary path, prompt-cache TTL and per-role map, the Agent and AskUserQuestion denies.\n- The neutral switch `deny_python` stays in `shuttle.yaml`; migration moves the old keys out of `shuttle.yaml`.\n- One neutral shell-guard table (grep pattern, steer, notice, switch) in a leaf package; `claudeengine` renders it as PreToolUse hooks, and the no-denied-recovery test reads the table instead of its hand list.\n- Engines declare the environment keys to scrub, replacing `CleanClaudeEnv`.\n- reed strands carry an opaque provider tag set by shuttle; the watchdog takes a `SessionNamer` per provider, and an engine with none gets no session-name repair.\n\n## Out\n\nCodex hook rendering and `codex.yaml` (note `codex-engine`).\n\n## Design points: the planning agent's recommendations, not yet decided by the operator\n\n- A module file per engine (`claude.yaml`, later `codex.yaml`) rather than an `engines:` map in `shuttle.yaml`, matching the rule that settings live in the owning module's config with layered overrides.\n- Guardrails as a neutral grep table each engine wraps in its own hooks, not a `lyx` hook verb (which would start a `lyx` process on every Bash call; see note `spawn-audit-log`).\n- Per-engine overrides of timing keys such as `submit_settle_ms` wait for the Codex tuning.\n\nNote `spawn-audit-log` (reed launch path) should land after this task if promoted.\n",
@@ -764,9 +738,7 @@
         "shed"
       ],
       "issues": [],
-      "depends_on": [
-        "engine-registry"
-      ],
+      "depends_on": [],
       "isolated": false,
       "brief": "Role specs take engine, model and effort from the model alias through one shared ModelChoice; Claude-only roles declare their needs",
       "body": "## Goal\n\nA task of the Codex-readiness series (see `engine-registry` for the operator decision): every role's spawn spec carries the engine its model alias resolves to, not only the model.\n\n## Seen (2026-10-15)\n\n- No consumer reads `modelspec.Resolved.Engine`; about 17 places copy `Model`, `Params[\"effort\"]` and `Params[\"version\"]` by hand: `darnengine/spec.go`, `landingshed/describe.go`, `frictionengine/spec.go`, `mergeresolve/spec.go`, `loomengine/{review,driver,rework,discussiontable}.go`, `websterengine/{runlevel,recoverbatch}.go`, `sheddriver/config.go`, `shedrecipe/entries_multillm.go`, `shuttlecli/open.go`.\n- Separate model carriers have no engine field: `burlerengine.ModelChoice` (also `shedadapters.BouncerModels`), treadle's model strings, `seatengine`'s `seat.Model`, alignment's `s.Model`.\n- `websterengine/merriambase.go` counts `CLAUDE.md` and `CLAUDE.local.md` by name.\n\n## Scope\n\n- Replace `burlerengine.ModelChoice` and the bare model strings with `engine-registry`'s `shuttleengine.ModelChoice`.\n- Convert every hand mapping from `Resolved` to `Spec` through it.\n- Per-round model lists keep the engine, and `round-N-usage.yaml` records it.\n- Claude-only roles declare their requirements through `Spec.Requires`: Webster master and implementers, twill, seats with advisors, the Burler cluster fan, the Claude-strand loom driver.\n- Merriam's base reads the engine's instruction files instead of naming `CLAUDE.md`.\n\n## Out\n\nThe orch model (Claude-only for now), key renames (note `loom-model-key-names`, which should wait on this task, as should `shed-arbiter-all`), adding `codex` to the engine names.\n",
@@ -785,7 +757,6 @@
       ],
       "issues": [],
       "depends_on": [
-        "engine-registry",
         "engine-config-seams"
       ],
       "isolated": false,
