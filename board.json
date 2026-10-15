@@ -531,7 +531,6 @@
       ],
       "issues": [],
       "depends_on": [
-        "kickstart-per-card",
         "plan-test-file-path"
       ],
       "isolated": false,
@@ -733,7 +732,6 @@
       ],
       "issues": [],
       "depends_on": [
-        "kickstart-per-card",
         "webster-master-no-code"
       ],
       "isolated": false,
@@ -747,25 +745,6 @@
           "review_max_bounces": 2
         }
       }
-    },
-    {
-      "id": 544,
-      "slug": "kickstart-per-card",
-      "title": "Kick-start pack per card, read when the card starts",
-      "kind": "task",
-      "labels": [
-        "enhancement",
-        "webster",
-        "stencil"
-      ],
-      "issues": [],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "Forks read about a quarter of a batch-wide pack; hand each card its own pack as everything it needs to begin",
-      "body": "## Seen\n\nThe 2026-10-15 pack audit (`.scratch/glyph-audit-3/`, to be committed under `docs/research/`) measured 24 Webster forks on the pack-file layout (`1e39afc10`).\nEvery fork opened the pack file in turn 2, but the median fork reached only about a quarter of its listed spans before its first edit, and only 7 of 24 read in parallel in their first work turn (52% under the earlier read-all-first layout).\nA batch pack holds on average about 37 spans per fork, so \"read every card and every span first\" (`793c6a8ee`, today's `webster-fragment-locate-pack.md`) asks a fork to front-load a whole batch's code.\nThe pack entries were correct at batch start: 801 of 823 checked spans exact, 22 declaration-only, none stale or wrong.\n\n## Operator view, not a decision (2026-10-15)\n\nGive the pack per card instead of per batch.\nThe batch gets one general instruction.\nEach card then says: read this card's kick-start pack first; it is, to begin with, everything you need for this card.\n\n## Idea\n\n- Today's pack is one file per batch, `\u003cbatch\u003e-pack.md`, already sectioned under each card's path; only the instruction makes it batch-wide.\n  The cheapest form is therefore a new fragment text behind the switch: \"before card N's first edit, read card N's section of the pack in one parallel turn\", with no change to the pack file.\n  The heavier form splits the pack into one file per card and hands each to the fork when it starts that card.\n- Replace the read-all-first instruction with a per-card one: before the card's first edit, read its whole pack in one parallel turn.\n- Frame the card pack as complete for a start, so the fork reads further only when the card needs it.\n- Putting the span code itself into the pack was considered and rejected; see the operator decision on variant 2 below.\n\n## Trade-off raised by the operator (2026-10-15): all at once lets the fork plan the whole batch\n\nFor reading everything first: the fork sees how the cards interact, plans the batch in one go, and fetches in one parallel turn instead of many small ones.\nAgainst it: forks did not do it in the audit; code read in turn 2 is carried and paid as cache reads in every later turn, also through cards that do not need it; and line numbers go stale after the first edit anyway.\nTwo variants to measure against today's layout behind the switch:\n\n1. Overview first, code per card (the orch's recommendation): at batch start the fork gets every card's intent and glyph list, no code, to plan the batch; it reads a card's spans when it starts that card.\n   Those spans must be resolved fresh at card start, since an earlier card's edits shift line numbers: Claude Code's Edit matches by text and is unaffected, but Read takes line offsets that do not follow edits.\n   So the card's pack comes from one call at card start (`lyx quarry resolve` over the card's glyphs, or a new `lyx webster` verb that renders the card's pack against the current tree), and the fork reads its spans in one parallel turn.\n2. All at once as today, but with the span code inside the pack file, so it is one read instead of about 37 and gets done; the context is as heavy as today's intended read.\n- Keep the layout behind the `webster.yaml` switch, as `kickstart_pack_file` is today, so it can be measured against the current layout with the audit scripts.\n- History: `113593990` had a per-card pack inline without a read rule (arm `mid` in the 2026-10-13 audit, 9 forks); this differs in giving each card its pack when that card starts.\n\n## Operator decision (2026-10-15): scope\n\nBuild variant 1 above, overview first and code per card, with each card's spans resolved fresh at card start and read in one parallel turn.\nPut it behind a `webster.yaml` switch beside `kickstart_pack_file`, so it can be measured against today's layout; the begin-batch `webster: kickstart pack` trace line records which layout a batch used.\nVariant 2 (span code inside the pack file) is not part of this task.\n\n## Operator decision (2026-10-15): no code in the pack\n\nVariant 2 is rejected, not deferred: code pasted into a pack goes stale fast.\nIt would also save no reads: Claude Code refuses an Edit on a file the agent has not read itself in the session, so a fork must Read every file it edits whatever the pack holds.\nThe pack points at code and never stands in for reading it.\n",
-      "status": "done",
-      "created": "2026-10-15T08:56:35Z",
-      "revised": "2026-10-15T09:24:22Z"
     },
     {
       "id": 545,
@@ -818,9 +797,7 @@
         "batten"
       ],
       "issues": [],
-      "depends_on": [
-        "kickstart-per-card"
-      ],
+      "depends_on": [],
       "isolated": false,
       "brief": "Shuttle picks the engine per spec from a registry and records it per run, so a second engine plugs in at one place",
       "body": "## Goal\n\nFirst of the tasks that make lyx ready for a second LLM engine (Codex CLI) before Codex is installed; the series is `engine-registry`, `engine-config-seams`, `engine-model-choice`, `engine-usage-readers`, and creel in three stages (`creel-core`, `creel-notices`, `creel-agents`), from a planning agent's report of 2026-10-15 (not committed).\nThis task gives shuttle an engine registry and records the engine per run, so a later `codexengine` plugs in at one place.\n\n## Operator decision (2026-10-15)\n\nBuild the tasks of the Codex-readiness plan, in order; everything that needs Codex installed stays in note `codex-engine`.\nCreel is a prerequisite for Codex: agents reach their parent and each other through creel, not Claude Code's `SendMessage`, so the plan's interim `neutral-parent-asks` (hold-based asks plus `lyx shuttle send`) is dropped.\nOperator view, not a decision: that the model spec's engine is dropped today is natural while lyx has one engine.\n\n## Seen (verified 2026-10-15)\n\n- `claudeengine.NewFromConfig`/`New` is hardwired at 17 sites in 11 files: `burlercli/wiring.go`, `webstercli/wiring.go`, `loomcli/{wiring,looparm,looplock}.go`, `orchcli/cli.go`, `battencli/{wire,parentlock,drive}.go`, `tendercli/deps.go`, `shuttlecli/cli.go`, `cliwire/sessionnamer.go`; `orchcli/resumecontext.go` calls `claudeengine.SessionStartContext`.\n- `modelspec`'s `knownEngines` is `{claude}`; `shuttleengine.Spec` has no `Engine` field and the run record (`rundir.go`) stores none.\n- The cross-run readers (`ReadAgentActivity`, `ReadSessionStates`, `ReadAgentWaits`) and `Runner` take a single engine.\n- The `Engine` interface makes every engine implement `AuditForks*`, `ModelSwitchSequence` and `ColorSequence`, which are Claude, orch or Webster concerns.\n\n## Scope\n\n- `Spec.Engine`, and a neutral `engine: claude` default key in `shuttle.yaml` for specs with no model spec (the orch, a bare `lyx shuttle run`).\n- An engine set (name to Engine); an unknown name is refused, naming the registered engines.\n- One `Runner` over the set: `Start` picks by `Spec.Engine`; attach, send, interrupt, inject, stop, resume, open and the sweep pick from the run record.\n- The run record gains `engine`; an absent value reads as the default engine.\n- The cross-run readers dispatch per run.\n- One registry constructor replaces the 17 sites; the orch's resume context goes through an engine capability.\n- `AuditForks*` and `ModelSwitchSequence` become optional capabilities.\n- A neutral `Spec.Requires` capability list (forks, peer messaging, background wake) checked at `Start`, refusing with a way forward.\n- An `InstructionFiles()` capability (Claude: `CLAUDE.md`, `CLAUDE.local.md`).\n- A shared `shuttleengine.ModelChoice{Engine, Model, Effort, Version}` built from `modelspec.Resolved`, defined here and adopted by `engine-model-choice`.\n- A PATTERN entry: only the registry constructs or imports a concrete engine, and provider specifics live only under `shuttleengine/\u003cengine\u003e`; the seam test checks it.\n\n## Out\n\nConfig key moves and guardrails (`engine-config-seams`), messaging (creel), the role model carriers (`engine-model-choice`), tokencount (`engine-usage-readers`), anything Codex.\n\n## Design points: the planning agent's recommendations, not yet decided by the operator\n\n- The registry lives in `cliwire`, which already holds the sole wiring (alternative: a new `internal/shuttleengines`).\n\n## Operator decision (2026-10-15): the engine comes from the model alias\n\nThe model aliases were designed for this: `sonnet[high]` is an alias for engine `claude`, model `sonnet`, effort `high`.\nCodex gets the same form for its models (Luna, Sol, Astra): `sol[medium]` is an alias for engine `codex`, model `sol`, effort `medium`.\nSo a role's engine follows from its model spec alias in `models.yaml`, the existing contract in `llm-model-spec.md`; there is no separate `engine:` key per module.\n\n## Further design points (recommendations, continued)\n- One Runner over the engine set (alternative: one per engine, which leaves send, interrupt, tender and the readers guessing).\n- Claude-only roles are gated by `Spec.Requires` at `Start`, since config cannot see the registry.\n- `modelspec` keeps a closed engine-name set, pinned equal to the registry by a test; `codex` is added only with the engine.\n",
@@ -1001,9 +978,7 @@
         "stencil"
       ],
       "issues": [],
-      "depends_on": [
-        "kickstart-per-card"
-      ],
+      "depends_on": [],
       "isolated": false,
       "brief": "The master template tells the master to read the codebase once up front for its forks to inherit, but forks rewrite the code, so every later fork inherits stale reads",
       "body": "## Seen\n\n`contracts/stencils/webster/webster-template-master.md` tells the master to read the codebase structure and conventions and the plan overview once, up front, so that every implementer fork inherits what it read with no cold orientation.\nThe 2026-10-12 and 2026-10-13 pack audits (`docs/research/glyph-audit-2026-10-12`, `-10-13`) found forks explore only about 6 calls before their first edit, because they inherit that orientation.\n\n## Operator decision (2026-10-15)\n\nA serious bug: Webster was never meant to work this way.\nThe master reads only what is common to every fork and stable during the run: the plan, `CLAUDE.md`, `PATTERN.md` and the like.\nIt reads no source code: Webster rewrites the code, so nothing else is stable during the run, and every fork after the first would inherit stale reads.\nEach fork reads the code its own card needs, fresh, when the card starts.\nThe up-front codebase read has stood in the master template since at least 2026-07-27 (`d89a56232`).\n\n## Idea\n\nRewrite the master orientation to the plan only (`00-overview.md`, the Card Index, Shared Decisions) and drop the inherit-my-reads framing from the master template and the fork prefix.\nThe per-card pack of `kickstart-per-card` then becomes the fork read set rather than an extra on top of inherited reads.\nRe-measure fork exploration with `tools/forkaudit` afterwards: forks will explore more by construction, so compare total reads and stale-read edits, not calls before the first edit.",

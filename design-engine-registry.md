@@ -2,8 +2,6 @@
 
 `engine-registry` · Task · enhancement, shuttle, config, loom, webster, burler, orch, batten
 
-Depends on: [`kickstart-per-card`](design-kickstart-per-card.md)
-
 ## Goal
 
 First of the tasks that make lyx ready for a second LLM engine (Codex CLI) before Codex is installed; the series is `engine-registry`, `engine-config-seams`, `engine-model-choice`, `engine-usage-readers`, and creel in three stages (`creel-core`, `creel-notices`, `creel-agents`), from a planning agent's report of 2026-10-15 (not committed).

@@ -2,7 +2,7 @@
 
 `plan-test-file-path` · Task · enhancement, loom, stencil
 
-Depends on: [`kickstart-per-card`](design-kickstart-per-card.md), [`webster-master-no-code`](design-webster-master-no-code.md)
+Depends on: [`webster-master-no-code`](design-webster-master-no-code.md)
 
 ## Seen
 
