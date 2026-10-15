@@ -5,7 +5,7 @@
      It is a marker VALUE, never a template -- it carries only the optional markers internal/shedadapters' ReadRubric fills at read time,
      and internal/stencil's StripLeadingComment removes this leading comment before either consumer ever
      sees it.
-lyx-stencil: sha256=b11856f34b37c1d1da99290dc37295e333c22d014760c7854540392ae928a5da build=314816cde00092577fd3e2caa5083b5763837b63 time=2026-10-12T10:07:28Z -->
+lyx-stencil: sha256=85c4dcaf995e59859c395ebcf284028682dfbc90f62a499d562a74b378ecb64d build=e131c76252f7cabe5faa92e9ffe42c53040fad26 time=2026-10-15T15:14:46Z -->
 
 # Merge-Review rubric
 
@@ -57,7 +57,7 @@ Do not flag any of the following as a finding:
 - **Test economy.**
   `PATTERN-test-economy` holds the rule; each of these is a finding, and each names what grounds it:
   - a test the merge made redundant with another, naming the covering test;
-  - a behavior of the interaction with no coverage, naming the uncovered behavior.
+  - a behavior of the interaction with no coverage, naming the uncovered behavior; a stencil's static prose is exempt.
 
 ## Finding class
 

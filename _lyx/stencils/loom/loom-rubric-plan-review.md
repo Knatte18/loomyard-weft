@@ -5,7 +5,7 @@
      It is a marker VALUE, never a template -- its only markers are the ones ReadRubric fills, and
      internal/stencil's StripLeadingComment removes this leading comment before either consumer ever
      sees it.
-lyx-stencil: sha256=1fdc18cde2e5fbac7621a63e07f2f3a5ee80df0bbb38554b9a31e72bfedafcc0 build=46d71787adf4e1cebf3da111d6b79f4d5ab5e9e6 time=2026-10-15T13:59:47Z -->
+lyx-stencil: sha256=e36d14d022162021057c5ac140837fc3584d47398b1c2e3d64a80b4c3b35ea35 build=e131c76252f7cabe5faa92e9ffe42c53040fad26 time=2026-10-15T15:14:46Z -->
 
 # Plan-Review rubric
 
@@ -56,7 +56,7 @@ Do not flag any of the following as a finding:
   A private supporting type, or a constructor inseparable from its type, belongs in the other symbol's card;
   a symbol that is part of a module's public surface, or reused across packages, gets its own card even when one card is its only consumer, and a helper serving one surface is bundled into that surface's card.
 - **Test economy.**
-  A card that plans a new test function or file for behavior an existing test already covers, or one test per symbol, is a finding; `PATTERN-test-economy` holds the rule.
+  A card that plans a new test function or file for behavior an existing test already covers, or one test per symbol, is a finding; so is a card that plans an assertion on a stencil's static prose; `PATTERN-test-economy` holds the rule.
   The finding names the existing test that covers the behavior, or, for a per-symbol test, the public-surface test that covers the symbol;
   a vague "seems redundant" is not a finding.
 - **Member glyphs on an `Edit` card.**

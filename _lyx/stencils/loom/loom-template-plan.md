@@ -8,7 +8,7 @@
      twill_directive is a fourth optional marker, rendered by internal/twilldirective through internal/loomengine;
      it sits on the line that would otherwise be blank, so an empty value leaves the blank line and the prompt's bytes unchanged.
      edit_directive is a required marker, rendered unconditionally by internal/editdirective.
-lyx-stencil: sha256=7c9b17d037fa4921907ad9a53d27dee9e495ebe64d9d0a96c2e3ebc5dea20eba build=46d71787adf4e1cebf3da111d6b79f4d5ab5e9e6 time=2026-10-15T13:59:47Z -->
+lyx-stencil: sha256=9db1c505718348cad35990aa65b3a0e7cbca9d3489994baf5bd380eb4d69d853 build=e131c76252f7cabe5faa92e9ffe42c53040fad26 time=2026-10-15T15:14:46Z -->
 
 # Plan — read the decision record, write a plan-format flat-card plan
 
@@ -71,6 +71,7 @@ Each card is the smallest change that:
 3. **Carries the coverage for the behavior it introduces** — the card's own targets include the test that covers it (`PATTERN-test-economy`).
    `verify:` commands are no substitute for test coverage;
    only pure refactors/renames may rely on existing tests instead.
+   A stencil's static prose is not behavior a test covers.
 4. **Greps for reworded messages** — a card that changes a user-visible message or error text greps the repository for the old text, and every test asserting it joins that card's targets.
    A stale exact-string assertion then fails on the card that reworded it, under that card's own gate, not at the plan-level gate.
 

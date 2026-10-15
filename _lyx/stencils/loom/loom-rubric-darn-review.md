@@ -5,7 +5,7 @@
      It is a marker VALUE, never a template -- it carries no top-level stencil markers of its own, and
      internal/stencil's StripLeadingComment removes this leading comment before either consumer ever
      sees it.
-lyx-stencil: sha256=1ae3285864a3df3418817cbe757c5ba9920876469d87192e9a5fa03ed3f29003 build=0850f76e44d4328c27ab16d0bea13c08c7e0eb8e time=2026-10-14T16:52:39Z -->
+lyx-stencil: sha256=0ab92fe90da2cb52df50bcdf2295d990af7223ebef18c81c6d89caf77c6733b1 build=e131c76252f7cabe5faa92e9ffe42c53040fad26 time=2026-10-15T15:14:46Z -->
 
 # Darn-Review rubric
 
@@ -61,10 +61,13 @@ Do not flag any of the following as a finding:
   A comment's line breaks and wrapping are never a finding; the gate's `lyx loom lint-comments` alone checks them.
 - **The change description.**
   A claim in `_lyx/landing/summary.md` that the diff does not bear out is a finding.
+- **Stencil wording.**
+  A diff that changes a stencil is read against the measuring stick, the board entry as the decision record's added entries amend it; a rule the entry did not ask to change that the diff drops, weakens or contradicts is a finding.
 - **Test economy.**
   `PATTERN-test-economy` holds the rule; each of these is a finding, and each names what grounds it:
   - a new test that duplicates an existing test's coverage, naming the covering test;
-  - a behavior the diff adds with no coverage, naming the uncovered behavior.
+  - a new assertion on a stencil's static prose, naming the assertion;
+  - a behavior the diff adds with no coverage, naming the uncovered behavior; a stencil's static prose is exempt.
 
   A redundancy finding is raised only by naming the existing test that covers the behavior, so it cannot block on a vague suspicion.
 
