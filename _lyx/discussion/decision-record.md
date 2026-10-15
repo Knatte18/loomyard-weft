@@ -9,6 +9,7 @@ Make Webster's deviation list name only changes outside the batch's card targets
 In:
 
 - `planglyph.ScopeGuard`: a touched symbol is in scope when a file or package target covers it, not only when it is itself a target.
+- `internal/planparser`: a new exported accessor, an exported form of `refMember` in `targetdirs.go`, that `ScopeGuard` calls to tell a member glyph or member `plan:` handle from a package self glyph or directory path.
 - `contracts/stencils/webster/webster-body-implementer.md`: one deviation rule, stated once, and the dangling "every other deviation rule stands" clause reworded to point at it.
 - `contracts/specs/loom-plan-spec.md`: its deviation union paragraph points at `planglyph.ScopeGuard` instead of describing a `UnitPath`-mapped file comparison the guard does not make.
 
@@ -31,12 +32,16 @@ Decision: `ScopeGuard` treats a touched symbol as in scope when any of these hol
 - a card's file target is the file the symbol lives in;
 - a card's package target, a package self glyph or a directory path, is the directory the symbol's file lives in directly.
 
+The file a symbol lives in is fixed per delta shape.
+A Modified symbol is covered by file and package targets only when every file on its `Before` and `After` sides is covered.
+A Renamed pair falls back to file and package coverage only when both `From.File` and `To.File` are covered.
+A Created or Deleted symbol uses its own `File`.
+
 A member glyph target still covers only that member; it never covers its package's other members.
 The file-level check for a changed file with no symbols in the delta is unchanged.
 The guard stays informational.
 
 Rationale: today a symbol is in scope only by exact match against the target union, so a card that targets a file or package and edits members in it gets every one of those members, and so their files, reported as deviations.
-That is the bug the board entry names, now produced by the guard rather than the fork.
 The bound is the target's own extent: a file target covers that file, a package target that directory and not its subdirectories, matching the symbol-less file check's existing bound.
 
 ### D2: One deviation rule in the implementer body's per-card step 2
@@ -44,7 +49,7 @@ The bound is the target's own extent: a file target covers that file, a package 
 Decision: step 2 of the per-card loop, which already says to make exactly the changes the card describes in exactly the targets its type labels name, carries the rule:
 
 - A deviation is a change outside the batch's card targets as `ScopeGuard` counts them: a member target covers that member, a file target every member of that file, a package target every member of the files directly in its directory, and a rename is inside when either name is a target.
-- `**Uses:**` entries are never targets: a change to a member a card only reads is a deviation.
+- `**Uses:**` entries add no coverage, so a change to a member a card only reads is a deviation unless a target of some card in the batch covers it.
 - Three deviations are sanctioned, each with the bound the body already gives it:
   the guard-step fix in step 3, only in a file the guard step's failure names;
   the scan-error fix the guard-fix line names, only in that file and under the card it names;
@@ -61,6 +66,7 @@ The sanctioned exits already exist in the body and the guard-fix fragment; namin
 ### D3: The plan spec points at `ScopeGuard`
 
 Decision: the plan spec's deviation union paragraph, under its `## Deferred / forward-compat` heading, keeps its two facts, that the mismatch is informational and never blocking on its own and that `Uses:` is excluded, and replaces its description of the comparison with a pointer to `planglyph.ScopeGuard`, merged with the paragraph's existing pointer to `internal/websterengine`'s package doc.
+The paragraph's sentence beginning "This union is defined over each card's flat target set" is dropped, since the `ScopeGuard` pointer covers it.
 
 Rationale: the paragraph's comparison does not match `ScopeGuard`, and a pointer to the code cannot go stale.
 
@@ -69,6 +75,7 @@ Rationale: the paragraph's comparison does not match `ScopeGuard`, and a pointer
 - `PATTERN-stencil-ownership`: edit `contracts/specs/loom-plan-spec.md` and the stencil under `contracts/stencils/` only; the deployed copies under the board refresh through the normal deploy, never by hand.
 - `PATTERN-producer-pointer-rule`: the plan spec points at `ScopeGuard`; the stencil's rule is the fork's instruction, stated because the fork cannot read the guard.
 - `PATTERN-ref-shape-registry`: telling a member glyph from a package self glyph, a file path or a directory path goes through `internal/planparser`'s classification, never a new shape test in `planglyph`.
+  `RefScope` cannot make this distinction, since it returns `isFile` false for both a member glyph and a package self glyph, and `RefCovers` does not apply, since its directory cover reaches subdirectories.
 - `PATTERN-test-economy`: `ScopeGuard`'s coverage extends its existing tests; no test pins stencil prose, and the Master digest-field set the webster template test pins stays as it is.
 - `ScopeGuard`'s doc comment states the new coverage, one sentence per line.
 - Semantic line breaks in both markdown files.
@@ -81,14 +88,24 @@ Rationale: the paragraph's comparison does not match `ScopeGuard`, and a pointer
 
 - `card-own-entry-edit` is running and may also edit `contracts/specs/loom-plan-spec.md`; the paragraphs differ, so a Merge-In there is expected to be clean.
 
+<!-- lyx:carry-over Discussion-Review -->
+- Discussion-Review, round 1: converged; each finding below was fixed or disputed by the round's fixer, and no fresh reviewer has seen the result; the fixer report says which.
+  Review: _lyx/reviews/discussion/round-1-review.md; fixer report: _lyx/reviews/discussion/round-1-fixer-report.md.
+  - d1-deciding-file-for-moved-symbol (class decision, severity MEDIUM, open in rounds 1)
+  - d2-uses-bullet-contradicts-d1 (class consistency, severity MEDIUM, open in rounds 1)
+  - refshape-planparser-export-missing-from-scope (class scope, severity MEDIUM, open in rounds 1)
+<!-- /lyx:carry-over Discussion-Review -->
+
 ## Acceptance criteria
 
 - A symbol in a card's file target is not reported by `ScopeGuard`.
-- A symbol in a file directly in a card's package target directory is not reported; one in a subdirectory is.
+- A symbol in a file directly in a card's package target directory, for both a package self glyph and a directory path target, is not reported; one in a subdirectory is.
+- A symbol moved from a card's file target into an untargeted file is still reported.
 - A symbol in the same package as a member glyph target, but not that member, is still reported.
 - A `plan:` handle target, a rename with either side targeted, and a symbol-less changed file keep today's verdicts.
 - The rendered fork prompt and the rendered recovery prompt each state the deviation rule once, in per-card step 2, naming the three sanctioned deviations with their bounds and saying a deviation alone never makes the report `FAILED`.
-- Neither prompt asks the fork to list, compare or report deviations, names a glyph or changes-files union, or refers to a deviation rule it does not state.
+- The step-2 rule states that `**Uses:**` entries add no coverage, so a change to a member a card only reads is a deviation unless a target of some card in the batch covers it.
+- Neither prompt asks the fork to list, compare or report deviations, or refers to a deviation rule it does not state.
 - The plan spec's deviation paragraph names `planglyph.ScopeGuard` and no longer describes a `UnitPath`-mapped comparison.
 
 ## Notes for the plan writer
