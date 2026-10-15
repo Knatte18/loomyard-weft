@@ -17,7 +17,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | **Go driver and tackler in shed, for every FSM-driven run**<br>• Move the Go driver and tackler from loomcli into shed so darn, batten and every recipe get them; module config overrides model and budgets | [`shed-tackler`](design-shed-tackler.md) | loom | Webster | 14h | 13h | shed, loom, batten |
+| 1 | **Go driver and tackler in shed, for every FSM-driven run**<br>• Move the Go driver and tackler from loomcli into shed so darn, batten and every recipe get them; module config overrides model and budgets | [`shed-tackler`](design-shed-tackler.md) | loom | Webster-Bouncer | 14h | 13h | shed, loom, batten |
 | 2 | **batten Seed-IDE writes the interactive VS Code chain into a driven pair, so opening it in VS Code starts a bare claude** | [`seed-ide-interactive-chain`](design-seed-ide-interactive-chain.md) | darn | Merge-In | 14m | 9m | ide, batten |
 
 ### Ready
@@ -48,7 +48,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | --- | --- | --- | --- | --- | --- |
 | 1 | **Plan-Bouncer and Batchifier pass a plan that webster begin-batch then refuses with delete-before-reference** | [`plan-drift-refusal-route`](design-plan-drift-refusal-route.md) | 2h | 2h | webster, loom |
 | 2 | **config: bare lyx config <module> from an agent writes an empty layer file** | [`config-bare-empty-write`](design-config-bare-empty-write.md) | 1h | 1h | config |
-| 3 | **Run window stays on shell: follow the overview and newest agent from run start**<br>• A viewer attached before any overview or agent window exists rests on shell and never follows the run | [`viewer-off-shell`](design-viewer-off-shell.md) | 4m | 0m | reed, batten |
+| 3 | **Run window stays on shell: follow the overview and newest agent from run start**<br>• A viewer attached before any overview or agent window exists rests on shell and never follows the run | [`viewer-off-shell`](design-viewer-off-shell.md) | 5m | 0m | reed, batten |
 
 #### Low priority
 
