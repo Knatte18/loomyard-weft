@@ -1,0 +1,12 @@
+---
+round: 1
+focus:
+  - "internal/shuttleengine/run.go and send.go: the parent's recordless Send and Interrupt resolve the default engine through `engineFor(RunState{})` for a live reed strand with no run record; check against this task's per-engine config loading (D2) and the opaque reed provider tag (D9) whether that engine, its lazily loaded `claude.yaml`, and the strand's `Provider` tag still agree, and whether a bad `claude.yaml` now refuses a recordless send or interrupt that the parent meant to always work."
+  - "internal/reedengine/lifecycle.go and the strand/namerepair code: the parent added `PanePID` to `StrandStatus` from the session listing; check that this task's change to reed (provider tag, `SessionNamer` per provider, env scrub declared by engines in place of `CleanClaudeEnv`) leaves every `StrandStatus` and `Status()` construction site consistent, and that no merged call site still uses a removed symbol or an unset provider."
+  - "PATTERN.md and the changed `pattern/` files (agent-name, creel-store, daemon-wakeups, gate-self-check-parity, lyx-temp-root, pane-text-injection, test-economy, told-geometry): for each invariant the parent added or changed, settle whether this task's new code (`internal/shellguard`, `claudeengine` config and hooks, `shuttleengines` registry, `configsync` key moves, reed env scrub) follows it, and whether this task's PATTERN and `docs/overview.md` edits still read correctly beside the parent's edits to the same files."
+  - "internal/loomcli/wiring.go, internal/loomengine/plan.go and internal/testkit/envkit/envkit.go: the parent added `RelevantPath` to the env and the Plan values; check that every wiring site this task touched for config dirs or engine construction sets `RelevantPath` alongside, and that the `envkit.FullEnv` fixture still builds a complete env for tests this task added."
+  - "cmd/lyx/testdata/test-budget.yaml and the test files both sides edited (`internal/reedengine/lifecycle_test.go`, `internal/shuttleengine/run_test.go`): check the merged budget rows against the merged top-level test counts, and name any test the merge made redundant with another or any interaction behavior with no coverage, such as a recordless send under an invalid engine config."
+---
+
+Seed focus from reading the parent's diffs for the overlapping non-doc files against the decision record's D2 and D9.
+The first entry is the one concrete code interaction found; the rest direct the reviewer to the remaining overlap.
