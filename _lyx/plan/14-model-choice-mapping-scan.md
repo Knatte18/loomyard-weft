@@ -1,8 +1,8 @@
 # Card 14 — PATTERN-model-choice-mapping and its scan
 
 **Create:**
-- `plan:internal/shuttleengine#modelChoiceMappingViolations` -> `func modelChoiceMappingViolations(t *testing.T, base string) ([]string, int)`
-- `plan:internal/shuttleengine#TestModelChoiceMappingRule` -> `func TestModelChoiceMappingRule(t *testing.T)`
+- `internal/shuttleengine#modelChoiceMappingViolations`
+- `internal/shuttleengine#TestModelChoiceMappingRule`
 - `pattern/PATTERN-model-choice-mapping.md`
 
 **Edit:**
