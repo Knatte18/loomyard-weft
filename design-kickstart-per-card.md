@@ -1,6 +1,8 @@
 # Kick-start pack per card, read when the card starts
 
-`kickstart-per-card` · Note · enhancement, webster, stencil
+`kickstart-per-card` · Task · enhancement, webster, stencil
+
+Depends on: [`refusal-route-config-empty`](design-refusal-route-config-empty.md)
 
 ## Seen
 
@@ -36,3 +38,9 @@ Two variants to measure against today's layout behind the switch:
 2. All at once as today, but with the span code inside the pack file, so it is one read instead of about 37 and gets done; the context is as heavy as today's intended read.
 - Keep the layout behind the `webster.yaml` switch, as `kickstart_pack_file` is today, so it can be measured against the current layout with the audit scripts.
 - History: `113593990` had a per-card pack inline without a read rule (arm `mid` in the 2026-10-13 audit, 9 forks); this differs in giving each card its pack when that card starts.
+
+## Operator decision (2026-10-15): scope
+
+Build variant 1 above, overview first and code per card, with each card's spans resolved fresh at card start and read in one parallel turn.
+Put it behind a `webster.yaml` switch beside `kickstart_pack_file`, so it can be measured against today's layout; the begin-batch `webster: kickstart pack` trace line records which layout a batch used.
+Variant 2 (span code inside the pack file) is not part of this task.
