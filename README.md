@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-15 05:47 UTC; every age below is as of then.
+Rendered 2026-10-15 05:49 UTC; every age below is as of then.
 
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
@@ -18,8 +18,8 @@ Held by a run; its scope is locked until the run ends.
 | # | Task | Slug | Recipe | At | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | 1 | **Go driver and tackler in shed, for every FSM-driven run**<br>• Move the Go driver and tackler from loomcli into shed so darn, batten and every recipe get them; module config overrides model and budgets | [`shed-tackler`](design-shed-tackler.md) | loom | Discussion-Burler-Fix | 11h | 11h | shed, loom, batten |
-| 2 | **Twill fork0: blind lens review, strict critical fixer, branch-coverage lens**<br>• Plan-Write: fork0 writes the plan, the master spawns blind lens forks and judges as a strict Burler-style fixer; new branch-coverage lens | [`twill-fork0`](design-twill-fork0.md) | loom | Plan-Burler-Review | 2d | 11h | loom, stencil, burler |
-| 3 | **lyx config --set stores an invalid model value instead of refusing it** | [`config-set-validate`](design-config-set-validate.md) | darn | Darn-Write | 11h | 6m | config |
+| 2 | **Twill fork0: blind lens review, strict critical fixer, branch-coverage lens**<br>• Plan-Write: fork0 writes the plan, the master spawns blind lens forks and judges as a strict Burler-style fixer; new branch-coverage lens | [`twill-fork0`](design-twill-fork0.md) | loom | Plan-Burler-Fix | 2d | 11h | loom, stencil, burler |
+| 3 | **lyx config --set stores an invalid model value instead of refusing it** | [`config-set-validate`](design-config-set-validate.md) | darn | Darn-Write | 11h | 7m | config |
 
 ### Ready
 
@@ -37,9 +37,9 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Note | Slug | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| 1 | **A hub pause leaves background forks and shells running, so hibernate never confirms**<br>• Pause interrupts turns but not background forks or shells; sessions read busy and hibernate confirmation fails | [`pause-background-work`](design-pause-background-work.md) | 9h | 16m | shuttle, webster |
-| 2 | **Plan-Bouncer and Batchifier pass a plan that webster begin-batch then refuses with delete-before-reference** | [`plan-drift-refusal-route`](design-plan-drift-refusal-route.md) | 14m | 14m | webster, loom |
-| 3 | **tokencount counts hibernation and idle time in producer shares**<br>• Producer share counts a session parked over a hibernation as working time; subtract sleep gaps and rank share by active time | [`tokencount-active-time`](design-tokencount-active-time.md) | 0m | 0m |  |
+| 1 | **A hub pause leaves background forks and shells running, so hibernate never confirms**<br>• Pause interrupts turns but not background forks or shells; sessions read busy and hibernate confirmation fails | [`pause-background-work`](design-pause-background-work.md) | 9h | 18m | shuttle, webster |
+| 2 | **Plan-Bouncer and Batchifier pass a plan that webster begin-batch then refuses with delete-before-reference** | [`plan-drift-refusal-route`](design-plan-drift-refusal-route.md) | 15m | 15m | webster, loom |
+| 3 | **tokencount counts hibernation and idle time in producer shares**<br>• Producer share counts a session parked over a hibernation as working time; subtract sleep gaps and rank share by active time | [`tokencount-active-time`](design-tokencount-active-time.md) | 1m | 1m |  |
 
 ### Enhancements
 
@@ -47,7 +47,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Note | Slug | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| 1 | **Model downgrade per role**<br>• Bench cheaper models (Sonnet 5.5, Haiku 5.5) per role by replaying older runs; per-round models and fan vs solo | [`model-downgrade`](design-model-downgrade.md) | 1d | 18m | burler, loom, webster, shuttle |
+| 1 | **Model downgrade per role**<br>• Bench cheaper models (Sonnet 5.5, Haiku 5.5) per role by replaying older runs; per-round models and fan vs solo | [`model-downgrade`](design-model-downgrade.md) | 1d | 20m | burler, loom, webster, shuttle |
 
 #### Normal priority
 
@@ -68,7 +68,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 14 | **Show the orch context size in the prime overview window**<br>• The prime overview window shows the orch session context tokens against its thresholds beside the batten runs | [`orch-context-overview`](design-orch-context-overview.md) | 11h | 11h | orch, batten |
 | 15 | **Clearer loom model key names, one per step**<br>• Model keys like fix name the role they set, and every review segment gets its own reviewer and fixer key | [`loom-model-key-names`](design-loom-model-key-names.md) | 11h | 11h | config, loom |
 | 16 | **Spawned code roles load the hub language skills**<br>• Darn, Webster, Burler and merge sessions write Go without scribe:golang-* skills; the hub config should name its language skills | [`role-language-skills`](design-role-language-skills.md) | 10h | 10h | config, shuttle |
-| 17 | **tokencount splits Burler roles across the overview-seats rename**<br>• After overview-seats renamed Burler seat roles, tokencount per-role tables may list old and new names as separate roles across runs | [`tokencount-role-rename`](design-tokencount-role-rename.md) | 16m | 16m | burler |
+| 17 | **tokencount splits Burler roles across the overview-seats rename**<br>• After overview-seats renamed Burler seat roles, tokencount per-role tables may list old and new names as separate roles across runs | [`tokencount-role-rename`](design-tokencount-role-rename.md) | 17m | 17m | burler |
 
 #### Low priority
 
@@ -127,4 +127,4 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | --- | --- | --- | --- | --- | --- |
 | 2 | **Re-measure the test suite weight on a quiet machine**<br>• The test-suite-weight before and after numbers were taken under load; rerun the report Regenerate section on an idle machine for a fair wall-time comparison | `suite-weight-quiet-rerun` | 4d | 1d |  |
 | 3 | **Lighter test rules for small changes**<br>• Tests that pin stencil wording make small prompt changes large; pin only what must hold, measured first | [`lighter-test-rules`](design-lighter-test-rules.md) | 1d | 1d | stencil |
-| 4 | **Bench fork0 and the strict critical fixer on twill Discussion-Write**<br>• Arms: twill as is, with the strict critical fixer, and fork0 plus the critical fixer, graded against Discussion-Review keys | [`twill-discussion-fork0-bench`](design-twill-discussion-fork0-bench.md) | 29m | 29m | loom, burler, stencil |
+| 4 | **Bench fork0 and the strict critical fixer on twill Discussion-Write**<br>• Arms: twill as is, with the strict critical fixer, and fork0 plus the critical fixer, graded against Discussion-Review keys | [`twill-discussion-fork0-bench`](design-twill-discussion-fork0-bench.md) | 30m | 30m | loom, burler, stencil |
