@@ -1,11 +1,11 @@
 {
-  "current_producer": "Plan-Bouncer",
+  "current_producer": "Plan-Burler-Review",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Plan-Bouncer",
-    "last": "Plan-Burler-Fix → bounced to Plan-Bouncer",
+    "now": "Plan-Burler-Review",
+    "last": "Plan-Bouncer → bounced to Plan-Burler-Review",
     "wait": ""
   },
   "history": [
@@ -534,6 +534,13 @@
       ],
       "budget_exempt": true,
       "routed_to": "Plan-Bouncer"
+    },
+    {
+      "producer": "Plan-Bouncer",
+      "outcome": "stuck",
+      "output": "/home/knatte/Code/loomyard-LYXHUB/creel-core/_lyx/reviews/plan/round-2-bouncer-ledger.md",
+      "at": "2026-10-15T14:20:53Z",
+      "routed_to": "Plan-Burler-Review"
     }
   ],
   "product": {
