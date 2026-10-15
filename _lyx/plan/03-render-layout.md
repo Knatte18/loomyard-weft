@@ -41,6 +41,7 @@ Render (D4):
 - `BeginBatch` passes `deps.Config.KickstartPackFile`; its existing nil-`packFile` branch then writes no `<batch>-pack.md` for the inline layout.
   A pack file an earlier file-layout call of the same batch wrote stays on disk, and the inline prompt never names it.
   The empty-pack rule is decided in `buildKickstartPack` before the layout matters, so it holds in both layouts.
+  Its doc comment's "preceded by the kick-start pack file's beside it when the batch has a pack" becomes a clause saying the pack file is written beside the prompt only when the batch has a pack and `kickstart_pack_file` is true, the file layout.
 
 Docs: `doc.go`'s "the kick-start pack" section describes `kickstart_pack_file`, its default, both layouts (the inline one being the `1e39afc10^` text kept in three frozen fragments, its pack section between the per-card steps and the sandbox rule, no pack file and no `## Start here`), that a flip applies from the next begin-batch on, and that a stale pack file from an earlier file-layout call is left on disk unnamed.
 
