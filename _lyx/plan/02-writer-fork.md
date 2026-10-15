@@ -3,13 +3,13 @@
 **Create:**
 - `contracts/stencils/twill/twill-writer-fork.md`
 - `contracts/stencils/twill/twill-relaunch.md`
-- `plan:contracts/stencils#TwillWriterFork` -> `var TwillWriterFork []byte`
-- `plan:contracts/stencils#TwillRelaunch` -> `var TwillRelaunch []byte`
-- `plan:internal/twilldirective#WriterFork` -> `type WriterFork struct`
-- `plan:internal/twilldirective#writerForkStencil` -> `const writerForkStencil = "twill-writer-fork"`
-- `plan:internal/twilldirective#relaunchStencil` -> `const relaunchStencil = "twill-relaunch"`
-- `plan:internal/twilldirective#fillPart` -> `func fillPart(stencilsDir, name string, values map[string]string, optional []string) (string, error)`
-- `plan:internal/twilldirective#filledWriterFork` -> `func filledWriterFork() *WriterFork`
+- `contracts/stencils#TwillWriterFork`
+- `contracts/stencils#TwillRelaunch`
+- `internal/twilldirective#WriterFork`
+- `internal/twilldirective#writerForkStencil`
+- `internal/twilldirective#relaunchStencil`
+- `internal/twilldirective#fillPart`
+- `internal/twilldirective#filledWriterFork`
 
 **Edit:**
 - `contracts/stencils/twill/twill-directive.md`
