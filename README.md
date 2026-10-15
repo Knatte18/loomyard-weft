@@ -20,7 +20,7 @@ Held by a run; its scope is locked until the run ends.
 | 1 | **Lighter test rules for small changes**<br>• Tests that pin stencil wording make small prompt changes large; pin only what must hold, measured first | [`lighter-test-rules`](design-lighter-test-rules.md) | loom | Plan-Write | 2d | 2h | stencil, webster, burler, loom |
 | 2 | **Engine-owned config, one neutral guardrail table, provider-blind reed**<br>• claude.yaml owned by claudeengine, a neutral shell-guard table each engine renders as hooks, reed strands tagged by provider | [`engine-config-seams`](design-engine-config-seams.md) | loom | Discussion-Burler-Review | 4h | 4h | shuttle, claude, config, reed |
 | 3 | **Every role spec carries its resolved engine**<br>• Role specs take engine, model and effort from the model alias through one shared ModelChoice; Claude-only roles declare their needs | [`engine-model-choice`](design-engine-model-choice.md) | loom | Discussion-Burler-Review | 4h | 4h | shuttle, loom, webster, burler, shed |
-| 4 | **creel stage 1: the one way to reach an agent, standalone**<br>• The creel daemon, queues, journal and verbs, delivering through shuttle, built and tested before any module sends through it | [`creel-core`](design-creel-core.md) | loom | Webster-Burler-Fix | 13d | 2h | creel, reed, shuttle |
+| 4 | **creel stage 1: the one way to reach an agent, standalone**<br>• The creel daemon, queues, journal and verbs, delivering through shuttle, built and tested before any module sends through it | [`creel-core`](design-creel-core.md) | loom | Webster-Bouncer | 13d | 2h | creel, reed, shuttle |
 
 ### Ready
 
@@ -37,7 +37,7 @@ Waits only on Running or Ready entries.
 | # | Task | Slug | Recipe | After | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | 1 | **Usage and cost read through the engine**<br>• tokencount reads each run through its engine, with prices per engine, instead of reading Claude transcripts directly | [`engine-usage-readers`](design-engine-usage-readers.md) | loom | `engine-config-seams` | 4h | 4h | shuttle, claude |
-| 2 | **Discussion hands Plan a list of the relevant code**<br>• The Discussion writer writes relevant.md listing the files and members it read and found relevant; Plan-Write reads it first, so its context starts smaller | [`discussion-relevant-list`](design-discussion-relevant-list.md) | loom | `lighter-test-rules` | 33m | 15m | loom, stencil |
+| 2 | **Discussion hands Plan a list of the relevant code**<br>• The Discussion writer writes relevant.md listing the files and members it read and found relevant; Plan-Write reads it first, so its context starts smaller | [`discussion-relevant-list`](design-discussion-relevant-list.md) | loom | `lighter-test-rules` | 33m | 16m | loom, stencil |
 
 ## Notes
 
@@ -90,11 +90,11 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 9 | **Run verbs in one shared namespace, not under lyx loom**<br>• lyx loom decision/status/goto/approve act on darn runs too; move recipe-neutral run verbs to one shared namespace | [`run-verbs-shared`](design-run-verbs-shared.md) | 21h | 21h | shed, loom |
 | 10 | **Clearer loom model key names, one per step**<br>• Model keys like fix name the role they set, and every review segment gets its own reviewer and fixer key | [`loom-model-key-names`](design-loom-model-key-names.md) | 19h | 19h | config, loom |
 | 11 | **Fork the Burler fixer from the reviewer session**<br>• The fixer re-reads the context the reviewer just read; fork it from the reviewer to reuse the cache | [`burler-fixer-fork`](design-burler-fixer-fork.md) | 8h | 8h | burler |
-| 12 | **The arbiter in shed for every shed run, batten included**<br>• The batten Go driver has a tackler but no arbiter; move the arbiter and its keys into shed beside the tackler | [`shed-arbiter-all`](design-shed-arbiter-all.md) | 5h | 5h | shed, batten, loom, config |
+| 12 | **The arbiter in shed for every shed run, batten included**<br>• The batten Go driver has a tackler but no arbiter; move the arbiter and its keys into shed beside the tackler | [`shed-arbiter-all`](design-shed-arbiter-all.md) | 6h | 5h | shed, batten, loom, config |
 | 13 | **Paste cited code into a review rounds context**<br>• Reviewers edit nothing and review a fixed commit, so code pasted at round start cannot go stale; measure it against todays reviewer | [`review-inline-code`](design-review-inline-code.md) | 3d | 2h | burler, stencil |
 | 14 | **Module labels from what a task touches, not only what it is about**<br>• Half the landings that changed the shuttle core lacked the shuttle label; derive or check module labels from the plan and the diff | [`labels-from-diff`](design-labels-from-diff.md) | 3h | 3h | board, loom |
 | 15 | **Start one task per overlapping group at a newly-ready start**<br>• When a landing makes several overlapping tasks ready at once, batten starts one per group and names the rest in its notice | [`batten-ready-overlap`](design-batten-ready-overlap.md) | 2h | 2h | batten |
-| 16 | **lyx shuttle open cannot choose the permission mode**<br>• An interactive session opened by lyx shuttle open always prompts for permissions; there is no flag or config for bypass | [`shuttle-open-permission`](design-shuttle-open-permission.md) | 1h | 1h | shuttle |
+| 16 | **lyx shuttle open cannot choose the permission mode**<br>• An interactive session opened by lyx shuttle open always prompts for permissions; there is no flag or config for bypass | [`shuttle-open-permission`](design-shuttle-open-permission.md) | 2h | 2h | shuttle |
 
 #### Low priority
 
