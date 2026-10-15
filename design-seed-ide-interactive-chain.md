@@ -1,6 +1,6 @@
 # batten Seed-IDE writes the interactive VS Code chain into a driven pair, so opening it in VS Code starts a bare claude
 
-`seed-ide-interactive-chain` · Task · bug, ide, batten · running · Worktree-Create
+`seed-ide-interactive-chain` · Task · bug, ide, batten · running · Darn-Write
 
 Imported from [issue #633](https://github.com/Knatte18/loomyard/issues/633).
 
