@@ -832,45 +832,6 @@
       "revised": "2026-10-15T05:59:55Z"
     },
     {
-      "id": 531,
-      "slug": "reed-launch-race",
-      "title": "reed: parallel window launches corrupt the launch line",
-      "kind": "note",
-      "labels": [
-        "bug",
-        "reed"
-      ],
-      "issues": [
-        627
-      ],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "Imported from [issue #627](https://github.com/Knatte18/loomyard/issues/627).\n\nSeen (2026-10-15): several lyx shuttle run windows launched at once in the prime's tmux session. Window loomyard:5 received \"5. '\u003cprime\u003e/.lyx/reed/launch/e97d8002568306288d817e5f23215a96.sh'\" and window loomyard:6 received \"0. '\u003cprime\u003e/.lyx/reed/launch/10654afc6d30051dd4405708cafd6503.sh'\"; bash answered '5.: command not found' / '0.: command not found' and Claude never started, so the shuttle run hung. Workaround: launch one window at a time. Expected: concurrent launches each get their own intact launch line.",
-      "created": "2026-10-15T06:03:10Z",
-      "revised": "2026-10-15T06:03:14Z"
-    },
-    {
-      "id": 532,
-      "slug": "reed-focus-false",
-      "title": "reed: shuttle run --focus=false windows still take focus",
-      "kind": "note",
-      "labels": [
-        "bug",
-        "reed",
-        "shuttle"
-      ],
-      "issues": [
-        628
-      ],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "Imported from [issue #628](https://github.com/Knatte18/loomyard/issues/628).\n\nSeen (2026-10-15): lyx shuttle run --focus=false from the prime opened each agent window in the prime's tmux session and switched focus to it, pulling the operator away from the orch pane. There is also no flag to open the window outside the prime's session, and --anchor hidden died before Claude started ('provider never became ready'). Expected: --focus=false never switches the active window.",
-      "created": "2026-10-15T06:03:12Z",
-      "revised": "2026-10-15T06:03:14Z"
-    },
-    {
       "id": 533,
       "slug": "burler-fixer-fork",
       "title": "Fork the Burler fixer from the reviewer session",
@@ -886,6 +847,29 @@
       "body": "## Seen\n\nCarried over from the removed note `model-downgrade` (2026-10-15).\nEach Burler fixer is a fresh session that reads the whole context the reviewer just read, part of the $1.9 per run in the Burler cost breakdown.\nSkipping the fixer on an empty review is already built (`internal/burlerengine/fix.go`).\n\n## Idea\n\nFork the fixer from the reviewer's session, so it inherits the reviewer's cache prefix instead of reading the context again.\nA fork inherits the reviewer's model, so this rules out a separate fixer model for a forked fixer.\n\n## Other open items from `model-downgrade`\n\n- Plan and Discussion fixers to `sonnet[medium]`: estimated about $4 over six runs, not benched.\n- Fan on or off per round (fan in round 1, solo after) does not exist and needs code.\n- A per-batch Webster model (a cheap model only for mechanical cards) needs code in `internal/websterengine`.\n",
       "created": "2026-10-15T06:06:10Z",
       "revised": "2026-10-15T06:06:10Z"
+    },
+    {
+      "id": 534,
+      "slug": "reed-launch-fixes",
+      "title": "reed: intact launch lines under parallel launches, --focus=false never takes focus",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "reed",
+        "shuttle"
+      ],
+      "issues": [
+        627,
+        628
+      ],
+      "recipe": "darn",
+      "priority": "high",
+      "depends_on": [],
+      "isolated": false,
+      "brief": "Parallel shuttle launches corrupt the typed launch line, and --focus=false windows still steal focus",
+      "body": "Imported from [issue #627](https://github.com/Knatte18/loomyard/issues/627) and [issue #628](https://github.com/Knatte18/loomyard/issues/628).\n\n## 1. Parallel launches corrupt the launch line (#627)\n\nSeen (2026-10-15): several `lyx shuttle run` windows launched at once in the prime's tmux session.\nWindow `loomyard:5` received `5. '\u003cprime\u003e/.lyx/reed/launch/e97d8002568306288d817e5f23215a96.sh'` and window `loomyard:6` received `0. '\u003cprime\u003e/.lyx/reed/launch/10654afc6d30051dd4405708cafd6503.sh'`; bash answered `5.: command not found` / `0.: command not found` and Claude never started, so the shuttle run hung.\nWorkaround: launch one window at a time.\nExpected: concurrent launches each get their own intact launch line.\n\n## 2. `--focus=false` windows still take focus (#628)\n\nSeen (2026-10-15): `lyx shuttle run --focus=false` from the prime opened each agent window in the prime's tmux session and switched focus to it, pulling the operator away from the orch pane.\nExpected: `--focus=false` never switches the active window.\n\nAlso seen, in scope only if the fix needs it: there is no flag to open the window outside the prime's session, and `--anchor hidden` died before Claude started (\"provider never became ready\").\n",
+      "created": "2026-10-15T06:03:10Z",
+      "revised": "2026-10-15T06:10:23Z"
     }
   ]
 }
