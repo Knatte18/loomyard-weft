@@ -1,0 +1,24 @@
+# Relevant files
+
+- `docs/research/creel-audit-2026-10-15/report.md` — the audit: defects, gate runs and scenarios C1 to C13
+- `internal/creelengine/doc.go` — creel's design; every decision changes a paragraph here
+- `internal/creelengine/seam.go` `Delivery`, `Strand` — the seam whose idle answer gains a stall reason
+- `internal/creelengine/deliver.go` `worker.probe`, `worker.finish`, `worker.idle`, `worker.typeInject`, `Store.ageInjects` — the delivery loop, TTL charging and the idle check
+- `internal/creelcli/delivery.go` `hubDelivery.Idle`, `hubDelivery.Interrupt`, `shuttleOps` — the adapter that drops `TooShort` and calls shuttle's interrupt
+- `internal/creelcli/spawn.go` `spawnDaemon` — the detached spawn with null stdio
+- `internal/creelcli/cli.go` `messageFields`, `readCmd`, `daemonCmd` — read rendering, the swallowed write error and the daemon verb
+- `internal/creelcli/smoke_llm_test.go` — `TestSmokeCreelClaudeStrand`, the llm-tier test that must pass
+- `internal/shuttleengine/session.go` `Runner.SessionIdle` — the idle probe with its pane-only fallback
+- `internal/shuttleengine/interruptguard.go` `guardedInterrupt` — the guarded interrupt the creel variant wraps
+- `internal/shuttleengine/run.go` `Runner.Interrupt`, `Runner.InterruptSettle`, `Runner.Send` — interrupt and send entry points for strands with no run record
+- `internal/shuttleengine/claudeengine/session.go` `IdleSession`, `InputBoxText`, `PaneTooShort`, `ClearInputSequence` — Claude's box reading and its stated placeholder residual
+- `internal/shuttleengine/claudeengine/settings.go` — `promptSuggestionEnabled: false` for shuttle-launched sessions
+- `internal/reedengine/io.go` `Engine.CapturePane` — the plain capture the styled one sits beside
+- `internal/creelengine/verbs.go` `Store.Interrupt`, `Store.interruptTarget`, `Store.checkMayAct`, `Store.strandTarget` — the interrupt path outside the worker, the privilege rule and the unknown-name refusal
+- `pattern/PATTERN-pane-text-injection.md` — the empty-box definition D1 widens and the clear rule D3 extends
+- `internal/output/output.go` `Ok` — writes without returning its write error
+- `internal/tenderengine/pause.go` `guardedKey` — a guarded-interrupt caller left unchanged
+- `tools/sandbox/SANDBOX-SHUTTLE-SUITE.md` — S9 and the suite's black-box rule, exceptions and session-log template
+- `pattern/PATTERN-guarded-interrupt.md` — interrupt-key rules D3 keeps
+- `pattern/PATTERN-creel-store.md` — seam and journal rules D2 and D5 keep
+- `pattern/PATTERN-shuttle-provider-seam.md` — where the placeholder style knowledge lives
