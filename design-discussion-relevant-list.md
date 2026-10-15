@@ -1,6 +1,6 @@
 # Discussion hands Plan a list of the relevant code
 
-`plan-research-step` · Note · enhancement, loom, stencil
+`discussion-relevant-list` · Task · enhancement, loom, stencil
 
 ## Seen
 
