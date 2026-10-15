@@ -1,9 +1,9 @@
 # Card 10 — strand-provider-tag
 
 **Create:**
-- `plan:internal/shuttleengines#SessionNamers` -> `func SessionNamers() map[string]reedengine.SessionNamer`
-- `plan:internal/shuttleengines#namersOf` -> `func namersOf(engines map[string]shuttleengine.Engine) map[string]reedengine.SessionNamer`
-- `plan:internal/shuttleengines#TestSessionNamers` -> `func TestSessionNamers(t *testing.T)`
+- `internal/shuttleengines#SessionNamers`
+- `internal/shuttleengines#namersOf`
+- `internal/shuttleengines#TestSessionNamers`
 
 **Delete:**
 - `internal/shuttleengines#SessionNamer`
