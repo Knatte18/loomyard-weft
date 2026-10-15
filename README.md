@@ -18,7 +18,7 @@ Held by a run; its scope is locked until the run ends.
 | # | Task | Slug | Recipe | At | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | 1 | **Go driver and tackler in shed, for every FSM-driven run**<br>• Move the Go driver and tackler from loomcli into shed so darn, batten and every recipe get them; module config overrides model and budgets | [`shed-tackler`](design-shed-tackler.md) | loom | Webster | 14h | 13h | shed, loom, batten |
-| 2 | **batten Seed-IDE writes the interactive VS Code chain into a driven pair, so opening it in VS Code starts a bare claude** | [`seed-ide-interactive-chain`](design-seed-ide-interactive-chain.md) | darn | Darn-Burler-Fix | 13m | 8m | ide, batten |
+| 2 | **batten Seed-IDE writes the interactive VS Code chain into a driven pair, so opening it in VS Code starts a bare claude** | [`seed-ide-interactive-chain`](design-seed-ide-interactive-chain.md) | darn | Darn-Bouncer | 13m | 8m | ide, batten |
 
 ### Ready
 
