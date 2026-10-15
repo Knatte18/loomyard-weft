@@ -1,0 +1,14 @@
+attempt: 1
+cap: 3
+failures:
+    - id: github.com/Knatte18/loomyard/internal/loomcli.TestWire_DiscussionTableEvaluatesToExpectedShape/Interactive
+      kind: test
+      package: github.com/Knatte18/loomyard/internal/loomcli
+      tail: '        wiring_test.go:568: chair.Outputs = [/tmp/lyx-1000/r466130062/TestWire_DiscussionTableEvaluatesToExpectedShapeInteractive3860815032/001/pair/_lyx/discussion/decision-record.md /tmp/lyx-1000/r466130062/TestWire_DiscussionTableEvaluatesToExpectedShapeInteractive3860815032/001/pair/_lyx/discussion/support-log.md /tmp/lyx-1000/r466130062/TestWire_DiscussionTableEvaluatesToExpectedShapeInteractive3860815032/001/pair/_lyx/discussion/relevant.md]; want [/tmp/lyx-1000/r466130062/TestWire_DiscussionTableEvaluatesToExpectedShapeInteractive3860815032/001/pair/_lyx/discussion/decision-record.md /tmp/lyx-1000/r466130062/TestWire_DiscussionTableEvaluatesToExpectedShapeInteractive3860815032/001/pair/_lyx/discussion/support-log.md]'
+    - id: github.com/Knatte18/loomyard/internal/loomcli.TestWire_DiscussionTableEvaluatesToExpectedShape/Autonomous
+      kind: test
+      package: github.com/Knatte18/loomyard/internal/loomcli
+      tail: '        wiring_test.go:568: chair.Outputs = [/tmp/lyx-1000/r466130062/TestWire_DiscussionTableEvaluatesToExpectedShapeAutonomous458909252/001/pair/_lyx/discussion/decision-record.md /tmp/lyx-1000/r466130062/TestWire_DiscussionTableEvaluatesToExpectedShapeAutonomous458909252/001/pair/_lyx/discussion/support-log.md /tmp/lyx-1000/r466130062/TestWire_DiscussionTableEvaluatesToExpectedShapeAutonomous458909252/001/pair/_lyx/discussion/relevant.md]; want [/tmp/lyx-1000/r466130062/TestWire_DiscussionTableEvaluatesToExpectedShapeAutonomous458909252/001/pair/_lyx/discussion/decision-record.md /tmp/lyx-1000/r466130062/TestWire_DiscussionTableEvaluatesToExpectedShapeAutonomous458909252/001/pair/_lyx/discussion/support-log.md]'
+log_path: /home/knatte/Code/loomyard-LYXHUB/discussion-relevant-list/.lyx/verify/verify-2.log
+hint:
+    - 01-discussion-spec-relevant
