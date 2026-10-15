@@ -1,0 +1,661 @@
+{
+  "runGuid": "e391ddb15401f5a81b08424cb64a8529",
+  "planFingerprint": "42df00c087df397ca3e18a681a7909b399c444d6786a3d970309de8dc8943c6e",
+  "planFileHashes": {
+    "00-overview.md": "0cc0239984c652a3a9371a173c8eef54dd26d9f5453f59429974fc14a282fe46",
+    "01-spec-embeds-model-choice.md": "f842f3214767ddf75471d4bb7c177de0f16755066caf1609509020bc126a13c3",
+    "02-seat-model-choice.md": "7d2ddbc79e48121a29994caaf7eb68ca93405eb5a325555765aa71381413bb2f",
+    "03-burler-model-choice.md": "eb8d48e5a5113f5ac0b2c9bd7f3ce31209cfc657d0ab51b4de6d61ce9ab585b6",
+    "04-role-settings-model-choice.md": "f176a76a367da4c28453ae8155b5f27498f6cdc67c78e208ede4d51b5e5545d1",
+    "05-treadle-model-choice.md": "2a3289c6bc676d660f2358dbb3877eb512a2431660e679a3ea0ffec69066e02e",
+    "06-round-usage-engine.md": "c41b5755474d43be1cfb376fbfdfb09ba5929769bdd3c885fc8f3fba6740e755",
+    "07-webster-roles-record-engines.md": "348ac7e94424cc57b27627c10a5759bb267e53e80b188a4ef43ea9f359deafda",
+    "08-webster-session-engines.md": "d948db3714eda38139c07f76b9ff3c45b65eebbee99e0d62bbb3ce4d3f476ebe",
+    "09-webster-spawn-engine-checks.md": "f5af0bf1d15cc342c8249298fb213fb501c10201ffff5ca169e0ed75cc0b44ed",
+    "10-merriam-instruction-files.md": "f6120de781799544f6f9e473acd61cbe8bbb094d2baa751c4be8722d3d7b8bf6",
+    "11-start-requirements-model-key.md": "31608a24163c7e6aaf8409b46da50a5979674fd1a0a9674f279629c0af568a9e",
+    "12-seat-requires.md": "9869ca42fa15e2fdeda927340cb32bf4126c167ea80ce3f6e168d5befb1e6a4a",
+    "13-master-driver-requires.md": "3a36329c7e7b6d2ef2e1888bd979a3601d78132f38d2c48f2a43664fdfeb05ff",
+    "14-model-choice-mapping-scan.md": "b2ffea8ce3d4293bd3c6d1f40b4027f0e12e28575639f1bfd4948d2dc5d98a7c"
+  },
+  "planOverviewFrameHash": "07bc4c8f74dd43eefd72e9495aedea0f81a880cbac5e2f0127087f74dc8841f0",
+  "partition": [
+    {
+      "cards": [
+        "01-spec-embeds-model-choice"
+      ],
+      "profile": "cautious",
+      "estimate": 264346,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 1,
+        "startup": 54508,
+        "read_union": 68244,
+        "cards": [
+          {
+            "card": 1,
+            "card_text": 1044,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1908,
+              "file:internal/shuttleengine/doc.go": 5292,
+              "package:cmd/lyx/testdata": 2000,
+              "package:internal/alignment": 2000,
+              "package:internal/frictionengine": 2000,
+              "package:internal/loomcli": 2000,
+              "package:internal/mergeresolve": 2000,
+              "package:internal/orchcli": 2000,
+              "package:internal/seatengine": 2000,
+              "package:internal/shedadapters": 2000,
+              "package:internal/sheddriver": 2000,
+              "package:internal/shuttlecli": 2000,
+              "package:internal/shuttleengine": 2000,
+              "package:internal/shuttleengine/claudeengine": 2000,
+              "package:internal/treadleengine": 2000,
+              "package:internal/webstercli": 2000,
+              "package:internal/websterengine": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:internal/alignment": 2000,
+              "tests:internal/frictionengine": 2000,
+              "tests:internal/loomcli": 2000,
+              "tests:internal/mergeresolve": 2000,
+              "tests:internal/orchcli": 2000,
+              "tests:internal/seatengine": 2000,
+              "tests:internal/shedadapters": 2000,
+              "tests:internal/sheddriver": 2000,
+              "tests:internal/shuttlecli": 2000,
+              "tests:internal/shuttleengine": 2000,
+              "tests:internal/shuttleengine/claudeengine": 2000,
+              "tests:internal/treadleengine": 2000,
+              "tests:internal/webstercli": 2000,
+              "tests:internal/websterengine": 2000
+            },
+            "messages": 468.5,
+            "written": 141594
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "02-seat-model-choice"
+      ],
+      "profile": "cautious",
+      "estimate": 162480,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 2,
+        "startup": 61508,
+        "read_union": 29896,
+        "cards": [
+          {
+            "card": 2,
+            "card_text": 576,
+            "reads": {
+              "file:internal/seatengine/doc.go": 1320,
+              "package:internal/burlerengine": 2000,
+              "package:internal/darnengine": 2000,
+              "package:internal/landingshed": 2000,
+              "package:internal/loomcli": 2000,
+              "package:internal/loomengine": 2000,
+              "package:internal/seatengine": 2000,
+              "package:internal/shedrecipe": 2000,
+              "tests:internal/burlerengine": 2000,
+              "tests:internal/darnengine": 2000,
+              "tests:internal/landingshed": 2000,
+              "tests:internal/loomcli": 2000,
+              "tests:internal/loomengine": 2000,
+              "tests:internal/seatengine": 2000,
+              "tests:internal/shedrecipe": 2000
+            },
+            "messages": 235,
+            "written": 71076
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "03-burler-model-choice"
+      ],
+      "profile": "cautious",
+      "estimate": 205152,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 3,
+        "startup": 68508,
+        "read_union": 28980,
+        "cards": [
+          {
+            "card": 3,
+            "card_text": 864,
+            "reads": {
+              "file:internal/burlerengine/doc.go": 4116,
+              "package:internal/burlercli": 2000,
+              "package:internal/burlerengine": 2000,
+              "package:internal/loomcli": 2000,
+              "package:internal/loomengine": 2000,
+              "package:internal/shedadapters": 2000,
+              "package:internal/shedrecipe": 2000,
+              "tests:internal/burlercli": 2000,
+              "tests:internal/burlerengine": 2000,
+              "tests:internal/loomcli": 2000,
+              "tests:internal/loomengine": 2000,
+              "tests:internal/shedadapters": 2000,
+              "tests:internal/shedrecipe": 2000
+            },
+            "messages": 356,
+            "written": 107664
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "04-role-settings-model-choice"
+      ],
+      "profile": "cautious",
+      "estimate": 166076,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 4,
+        "startup": 75508,
+        "read_union": 18244,
+        "cards": [
+          {
+            "card": 4,
+            "card_text": 624,
+            "reads": {
+              "file:internal/alignment/doc.go": 588,
+              "file:internal/sheddriver/doc.go": 1032,
+              "package:internal/alignment": 2000,
+              "package:internal/loomcli": 2000,
+              "package:internal/loomengine": 2000,
+              "package:internal/sheddriver": 2000,
+              "tests:internal/alignment": 2000,
+              "tests:internal/loomcli": 2000,
+              "tests:internal/loomengine": 2000,
+              "tests:internal/sheddriver": 2000
+            },
+            "messages": 239,
+            "written": 72324
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "05-treadle-model-choice",
+        "06-round-usage-engine"
+      ],
+      "profile": "cautious",
+      "estimate": 161696,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 5,
+        "startup": 82508,
+        "read_union": 19260,
+        "cards": [
+          {
+            "card": 5,
+            "card_text": 456,
+            "reads": {
+              "file:internal/treadleengine/doc.go": 2328,
+              "package:internal/treadleengine": 2000,
+              "tests:internal/treadleengine": 2000
+            },
+            "messages": 108.5,
+            "written": 33006
+          },
+          {
+            "card": 6,
+            "card_text": 372,
+            "reads": {
+              "file:internal/shedadapters/doc.go": 4104,
+              "package:internal/burlerengine": 2000,
+              "package:internal/shedadapters": 2000,
+              "tests:internal/burlerengine": 2000,
+              "tests:internal/shedadapters": 2000
+            },
+            "messages": 88.5,
+            "written": 26922
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "07-webster-roles-record-engines"
+      ],
+      "profile": "cautious",
+      "estimate": 174480,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 6,
+        "startup": 89508,
+        "read_union": 21672,
+        "cards": [
+          {
+            "card": 7,
+            "card_text": 600,
+            "reads": {
+              "file:internal/websterengine/doc.go": 9072,
+              "package:internal/loomcli": 2000,
+              "package:internal/webstercli": 2000,
+              "package:internal/websterengine": 2000,
+              "tests:internal/loomcli": 2000,
+              "tests:internal/webstercli": 2000,
+              "tests:internal/websterengine": 2000
+            },
+            "messages": 209,
+            "written": 63300
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "08-webster-session-engines"
+      ],
+      "profile": "cautious",
+      "estimate": 306080,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 7,
+        "startup": 96508,
+        "read_union": 45064,
+        "cards": [
+          {
+            "card": 8,
+            "card_text": 1608,
+            "reads": {
+              "file:contracts/specs/refusal-spec.md": 5856,
+              "file:internal/websterengine/auditengine_test.go": 528,
+              "file:internal/websterengine/doc.go": 9072,
+              "package:contracts/specs": 2000,
+              "package:internal/battencli": 2000,
+              "package:internal/loomcli": 2000,
+              "package:internal/shedrecipe": 2000,
+              "package:internal/testkit/shedfake": 2000,
+              "package:internal/webstercli": 2000,
+              "package:internal/websterengine": 2000,
+              "tests:contracts/specs": 2000,
+              "tests:internal/battencli": 2000,
+              "tests:internal/loomcli": 2000,
+              "tests:internal/shedrecipe": 2000,
+              "tests:internal/testkit/shedfake": 2000,
+              "tests:internal/webstercli": 2000,
+              "tests:internal/websterengine": 2000
+            },
+            "messages": 543,
+            "written": 164508
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "09-webster-spawn-engine-checks"
+      ],
+      "profile": "cautious",
+      "estimate": 151000,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 8,
+        "startup": 103508,
+        "read_union": 23360,
+        "cards": [
+          {
+            "card": 9,
+            "card_text": 432,
+            "reads": {
+              "file:contracts/specs/refusal-spec.md": 5856,
+              "file:internal/websterengine/doc.go": 9072,
+              "package:contracts/specs": 2000,
+              "package:internal/websterengine": 2000,
+              "tests:contracts/specs": 2000,
+              "tests:internal/websterengine": 2000
+            },
+            "messages": 79,
+            "written": 24132
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "10-merriam-instruction-files"
+      ],
+      "profile": "cautious",
+      "estimate": 215552,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 9,
+        "startup": 110508,
+        "read_union": 35636,
+        "cards": [
+          {
+            "card": 10,
+            "card_text": 708,
+            "reads": {
+              "file:contracts/specs/refusal-spec.md": 5856,
+              "file:internal/websterengine/doc.go": 9072,
+              "package:contracts/specs": 2000,
+              "package:internal/loomcli": 2000,
+              "package:internal/testkit/envkit": 2000,
+              "package:internal/webstercli": 2000,
+              "package:internal/websterengine": 2000,
+              "tests:contracts/specs": 2000,
+              "tests:internal/loomcli": 2000,
+              "tests:internal/testkit/envkit": 2000,
+              "tests:internal/webstercli": 2000,
+              "tests:internal/websterengine": 2000
+            },
+            "messages": 229,
+            "written": 69408
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "11-start-requirements-model-key"
+      ],
+      "profile": "cautious",
+      "estimate": 144242,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 10,
+        "startup": 117508,
+        "read_union": 9688,
+        "cards": [
+          {
+            "card": 11,
+            "card_text": 396,
+            "reads": {
+              "file:internal/shuttleengine/doc.go": 5292,
+              "package:internal/shuttleengine": 2000,
+              "tests:internal/shuttleengine": 2000
+            },
+            "messages": 55.5,
+            "written": 17046
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "12-seat-requires"
+      ],
+      "profile": "cautious",
+      "estimate": 220678,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 11,
+        "startup": 124508,
+        "read_union": 39848,
+        "cards": [
+          {
+            "card": 12,
+            "card_text": 672,
+            "reads": {
+              "file:contracts/specs/refusal-spec.md": 5856,
+              "file:internal/seatengine/doc.go": 1320,
+              "package:contracts/specs": 2000,
+              "package:internal/burlercli": 2000,
+              "package:internal/burlerengine": 2000,
+              "package:internal/darnengine": 2000,
+              "package:internal/landingshed": 2000,
+              "package:internal/loomengine": 2000,
+              "package:internal/seatengine": 2000,
+              "package:internal/shedrecipe": 2000,
+              "tests:contracts/specs": 2000,
+              "tests:internal/burlercli": 2000,
+              "tests:internal/burlerengine": 2000,
+              "tests:internal/darnengine": 2000,
+              "tests:internal/landingshed": 2000,
+              "tests:internal/loomengine": 2000,
+              "tests:internal/seatengine": 2000,
+              "tests:internal/shedrecipe": 2000
+            },
+            "messages": 185.5,
+            "written": 56322
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "13-master-driver-requires"
+      ],
+      "profile": "cautious",
+      "estimate": 222220,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 12,
+        "startup": 131508,
+        "read_union": 34384,
+        "cards": [
+          {
+            "card": 13,
+            "card_text": 528,
+            "reads": {
+              "file:contracts/specs/refusal-spec.md": 5856,
+              "package:contracts/specs": 2000,
+              "package:internal/alignment": 2000,
+              "package:internal/frictionengine": 2000,
+              "package:internal/loomcli": 2000,
+              "package:internal/sheddriver": 2000,
+              "package:internal/treadleengine": 2000,
+              "package:internal/websterengine": 2000,
+              "tests:contracts/specs": 2000,
+              "tests:internal/alignment": 2000,
+              "tests:internal/frictionengine": 2000,
+              "tests:internal/loomcli": 2000,
+              "tests:internal/sheddriver": 2000,
+              "tests:internal/treadleengine": 2000,
+              "tests:internal/websterengine": 2000
+            },
+            "messages": 186,
+            "written": 56328
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "14-model-choice-mapping-scan"
+      ],
+      "profile": "cautious",
+      "estimate": 173582,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 13,
+        "startup": 138508,
+        "read_union": 19756,
+        "cards": [
+          {
+            "card": 14,
+            "card_text": 468,
+            "reads": {
+              "file:PATTERN.md": 1380,
+              "file:cmd/lyx/testdata/test-budget.yaml": 1908,
+              "package:.": 2000,
+              "package:cmd/lyx/testdata": 2000,
+              "package:internal/shuttleengine": 2000,
+              "package:pattern": 2000,
+              "tests:.": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:internal/shuttleengine": 2000,
+              "tests:pattern": 2000
+            },
+            "messages": 49.5,
+            "written": 15318
+          }
+        ]
+      }
+    }
+  ],
+  "currentBatch": 1,
+  "masterStrand": "8dcfa8fbb9190a5d1380349627be79ef",
+  "masterSessionId": "18713a0e-05ad-4256-81d3-7852940edfc6",
+  "batches": {
+    "1": {
+      "slug": "spec-embeds-model-choice",
+      "cards": [
+        "01-spec-embeds-model-choice"
+      ],
+      "cardHashes": {
+        "01-spec-embeds-model-choice": "f842f3214767ddf75471d4bb7c177de0f16755066caf1609509020bc126a13c3"
+      },
+      "startSha": "88ea645bbc3ed48e33fbe831baa41b961b6991f9",
+      "kind": "fork",
+      "spawnedAt": "2026-10-15T16:06:31Z",
+      "sessionId": "18713a0e-05ad-4256-81d3-7852940edfc6",
+      "terminal": false,
+      "status": ""
+    }
+  }
+}
