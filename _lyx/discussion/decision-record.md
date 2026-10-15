@@ -28,7 +28,7 @@ Out:
 
 A sibling of task X for a write is a task Y with:
 
-- Y is not X, and Y's status is not `done`;
+- Y is not X, X's status after the write is not `done`, and Y's status is neither `done` nor `abandoned`;
 - Y's `depends_on` holds a dependency D that this write added to X's `depends_on`, and D is not `done`;
 - X and Y share at least one module label.
 
@@ -39,10 +39,12 @@ An `upsert` without the `depends_on` key leaves the list unchanged and so adds n
 A write that only adds a shared module label to a task already waiting on D adds no dependency and stays silent.
 A module label is a label the board vocabulary does not list under `types`, so `bug` or `enhancement` alone never makes a sibling.
 X's labels are the ones the write leaves on it.
+X's status is the one the write leaves on it, so the relation is symmetric within a batch: a pair is a sibling from both sides or from neither.
 
 Rationale: the board entry scopes the warning to a new `depends_on`.
 Comparing against the baseline keeps a write that touches only a body or title, or re-sends the same `depends_on`, silent.
-A done task waits on nothing, and a done dependency holds no one back, so neither is the incident.
+A done task waits on nothing, and a done dependency holds no one back, so neither is the incident; this holds for X as for Y.
+An abandoned task is never started by a newly-ready start, which takes only tasks with no status, so it never collides there.
 Type labels say nothing about which code a task edits.
 Running siblings stay in: a running task waiting on the same entry still collides when the entry lands, and the warning is cheap.
 
@@ -60,7 +62,7 @@ A batch sees its own members as siblings of each other, since two tasks in one `
 
 The warning goes into the success envelope's existing `notice` field, one line per sibling pair, joined by newlines to any run-settings notice the same write produces.
 `set-deps`, which today prints a bare `{"ok":true}`, gains the same `notice` field when there is a warning.
-A line names X, the sibling Y, every shared dependency once, and the shared module labels, and ends with the way forward: chain one after the other with `lyx board set-deps`, or leave both if they do not overlap.
+A line names X, the sibling Y, every dependency that makes the pair siblings under D1, once, so a dependency X and Y already shared before the write is not named, and the shared module labels, and ends with the way forward: chain one after the other with `lyx board set-deps`, or leave both if they do not overlap.
 In a batch, a pair whose both members newly wait on a shared dependency is reported once.
 With no sibling, the envelope carries no `notice` for it, so the output is unchanged.
 
@@ -92,7 +94,7 @@ Rationale: the board entry places the rule in the skill every board writer loads
 ## Auto-mode assumptions
 
 - D4: the upsert family includes `upsert-batch` and `merge`; the board entry names only `upsert`.
-- D1: done siblings and done dependencies are excluded, running siblings included.
+- D1: done siblings, abandoned siblings, a done written task and done dependencies are excluded, running siblings included.
 - D1: only dependencies added against the baseline trigger the warning.
 - D3: the warning reuses `notice` rather than a new key.
 
@@ -102,11 +104,17 @@ Rationale: the board entry places the rule in the skill every board writer loads
   When that note derives labels or paths, this check is a natural consumer of them.
 - A board with many tasks on one popular dependency and a broad label such as `stencil` may warn on pairs that do not overlap in code; the warning is advisory and names the labels, so the writer judges it.
 
+<!-- lyx:carry-over Discussion-Review -->
+- Discussion-Review, round 1: converged; each finding below was fixed or disputed by the round's fixer, and no fresh reviewer has seen the result; the fixer report says which.
+  Review: _lyx/reviews/discussion/round-1-review.md; fixer report: _lyx/reviews/discussion/round-1-fixer-report.md.
+  - d1-no-status-condition-on-written-task (class decision, severity MEDIUM, open in rounds 1)
+<!-- /lyx:carry-over Discussion-Review -->
+
 ## Acceptance criteria
 
 - `set-deps` adding D to X, where open task Y waits on D and shares module label L with X: succeeds, stores the list, and the envelope's `notice` names X, Y, D and L.
 - The same through `upsert`, `upsert-batch` and `merge` carrying `depends_on`.
-- No warning, and no `notice` key from the check, when: X and Y share only a type label; Y is done; D is done; Y is X; D was already in X's `depends_on` before the write; an `upsert` on X omits `depends_on`; the write clears `depends_on`; no other task waits on D.
+- No warning, and no `notice` key from the check, when: X and Y share only a type label; Y is done; Y is abandoned; X is written with status done; D is done; Y is X; D was already in X's `depends_on` before the write; an `upsert` on X omits `depends_on`; the write clears `depends_on`; no other task waits on D.
 - A running sibling Y still warns.
 - `upsert` that also sets labels uses the labels as written.
 - `upsert-batch` writing X and Z both newly on D with a shared module label reports the pair once.
