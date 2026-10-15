@@ -1025,7 +1025,7 @@
       "isolated": false,
       "brief": "set-deps and upsert warn when a new depends_on makes a task a sibling of one sharing a module label; the ly:board skill gains the sibling check rule",
       "body": "## Seen\n\nOn 2026-10-15, four tasks had `depends_on` `kickstart-per-card`: `webster-master-no-code`, `plan-test-file-path`, `lighter-test-rules` and `engine-registry`.\nThe newly-ready auto-start would have started all four together, though the first three edit the same Webster, plan and stencil files and their tests.\nThe operator noticed just before the landing; the orch then chained the three.\nThe orch checks a new task against the running ones only, never against other tasks waiting on the same entry, and each task got its `depends_on` at a different time.\n\n## Scope\n\nOperator decision 2026-10-15: build both parts below.\n\n- `lyx board set-deps` and `upsert` warn when the new `depends_on` makes a task a sibling of another task with a shared module label, that is another task waiting on one of the same entries.\n  The warning names the sibling and the shared labels; the write still succeeds.\n  Path-based overlap waits for note `labels-from-diff`.\n- The rule to check siblings, not only running tasks, whenever `depends_on` is set goes into the `ly:board` skill beside its `depends_on` guidance, since every agent that writes the board loads that skill.\n  The orch role needs no copy.\n\nOut of scope: batten starting one task per overlapping group at a newly-ready start, which is note `batten-ready-overlap`.\n",
-      "status": "running · Discussion-Bouncer",
+      "status": "running · Discussion-Burler-Review",
       "created": "2026-10-15T12:08:25Z",
       "revised": "2026-10-15T12:28:05Z",
       "run_settings": {
