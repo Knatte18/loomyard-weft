@@ -890,6 +890,23 @@
       "body": "Imported from [issue #628](https://github.com/Knatte18/loomyard/issues/628).\n\nSeen (2026-10-15): lyx shuttle run --focus=false from the prime opened each agent window in the prime's tmux session and switched focus to it, pulling the operator away from the orch pane. There is also no flag to open the window outside the prime's session, and --anchor hidden died before Claude started ('provider never became ready'). Expected: --focus=false never switches the active window.",
       "created": "2026-10-15T06:03:12Z",
       "revised": "2026-10-15T06:03:14Z"
+    },
+    {
+      "id": 533,
+      "slug": "burler-fixer-fork",
+      "title": "Fork the Burler fixer from the reviewer session",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "burler"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "The fixer re-reads the context the reviewer just read; fork it from the reviewer to reuse the cache",
+      "body": "## Seen\n\nCarried over from the removed note `model-downgrade` (2026-10-15).\nEach Burler fixer is a fresh session that reads the whole context the reviewer just read, part of the $1.9 per run in the Burler cost breakdown.\nSkipping the fixer on an empty review is already built (`internal/burlerengine/fix.go`).\n\n## Idea\n\nFork the fixer from the reviewer's session, so it inherits the reviewer's cache prefix instead of reading the context again.\nA fork inherits the reviewer's model, so this rules out a separate fixer model for a forked fixer.\n\n## Other open items from `model-downgrade`\n\n- Plan and Discussion fixers to `sonnet[medium]`: estimated about $4 over six runs, not benched.\n- Fan on or off per round (fan in round 1, solo after) does not exist and needs code.\n- A per-batch Webster model (a cheap model only for mechanical cards) needs code in `internal/websterengine`.\n",
+      "created": "2026-10-15T06:06:10Z",
+      "revised": "2026-10-15T06:06:10Z"
     }
   ]
 }
