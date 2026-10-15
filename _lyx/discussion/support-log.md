@@ -77,7 +77,7 @@ _No rounds yet._
 - Q1 (resolved, auto-pick): does the plan pin the test file? No; the fork picks it inside the handle's package (D1).
 - Q2 (resolved, auto-pick): how does the fork find neighbouring tests? Through `**Uses:**` member glyphs (D2).
 - Q3 (resolved, auto-pick): which gates run the check? Format and rework validation of the plan index, done cards skipped, never dispatch (D3).
-- Q4 (resolved, auto-pick): exemptions? `language: none` and `testdata` paths only (D3).
+- Q4 (resolved, auto-pick): exemptions? `language: none` and paths with a segment the go tool ignores only (D3).
 - Q5 (resolved, auto-pick): does Webster change? No (D6).
 - Q6 (resolved, auto-pick): does a handle on an external test unit bind? Yes, an existing chain test binds one (D5).
-- Q7 (open, informational): does `ScopeGuard` map a handle's `<dir>_test` unit to its directory? Left as an open risk.
+- Q7 (resolved): does `ScopeGuard` map a handle's `<dir>_test` unit to its directory? Yes; its coverage maps a handle's glyph unit through the external-test unit mapping (D6).
