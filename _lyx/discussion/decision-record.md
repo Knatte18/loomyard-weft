@@ -65,6 +65,7 @@ Loading where the keys are read keeps the `engine-registry` guarantee that a bro
 **Decision:** `shuttle.yaml`'s `claude_deny_python` becomes `deny_python`, classified Guard, with today's template value `true`.
 Its comment no longer names Claude: it switches the python guard of the shell-guard table (D5) for every engine.
 `shuttleengine.MigrateConfig` renames the key in a present document, value and comment kept; it runs on every layer reconcile reaches and on run settings, as the existing poll-floor step does.
+On run settings the renamed `deny_python` is then refused, like every Guard key.
 **Rationale:** the board keeps the python switch in `shuttle.yaml` because it governs a neutral shell guard, not a Claude tool; a same-module rename belongs to the module's own migrate hook.
 
 ### D4 — A declared cross-module key move carries the old values
@@ -74,15 +75,25 @@ It holds the five rows of D1's table, from `shuttle` to `claude`.
 `configsync` applies the table to each layer as that layer's first step, in every reconcile entry point (`ReconcileAll`, `ReconcileHubWideAt` and the standalone base reconcile), before any module of that layer is seeded from the prime or the template, materialized or reconciled.
 For each moved key the source file holds, the value (unexpanded, with its line comment replaced by the target template's) is written into the target module's file of the same layer, and the key is removed from the source file.
 An absent target file of that layer is created: at a base layer as the full template with the moved values, at a sparse layer holding only them.
-When the target file already holds the key with a value other than the target template's default, that value is kept and the source key is dropped; a target value equal to the template default is overwritten by the source value.
-Every move and every kept-target collision is reported.
+At a base layer, when the target file already holds the key with a value other than the target template's default, that value is kept and the source key is dropped; a target value equal to the template default is overwritten by the source value.
+At a sparse layer, any value the target file already holds is kept and the source key is dropped, as a kept-target collision.
+Every move, every kept-target collision and every template-default target overwritten by a source value is reported.
 `PrepareRunSettings` applies the same table to a task's run settings before each module's migrate step, so a `shuttle: {claude_prompt_cache_ttl_roles: …}` entry becomes a `claude: {prompt_cache_ttl_roles: …}` document.
 A dry run (`lyx config reconcile` without `--apply`) reports each pending move and writes nothing.
 The move is idempotent: a second pass over a moved layer finds no source key and changes nothing.
 The table stays after this task: any layer or run-settings entry not yet reconciled still meets it.
 Bound: the move only relocates values between two registered modules' files of one layer; it never changes a value, never crosses layers, and a local-layer move carries only the keys the target's local rule admits, which are the TTL keys, since the old Executable and Guard keys were already closed to the local layer.
+`shuttle`'s `ConfigSpec` declares the five source keys as retired keys, a new `configengine.Spec` field: `configengine.ValidateLocal` admits a retired key a local file holds when its category allows it, and the loader drops every retired key from the merged document, so an unreconciled layer loads as if the keys were absent and `shuttle.yaml` never refuses over them.
+The field maps each retired dotted key to the category it held.
+`ValidateLocal` admits a local unit when a `CategoryNone` retired key equals it or is its dotted prefix, so each `claude_prompt_cache_ttl_roles.<role>` entry is admitted, and refuses a unit covered by a retired key of any other category, naming the key.
+A retired unit is judged by that rule alone, before the template-presence and shape checks, so its value's shape is not checked: a wrong-shaped TTL value, such as `claude_prompt_cache_ttl: {a: 1}`, loads, is dropped from the merged document and is moved verbatim, and `claude`'s own local validation then refuses it naming `claude.local.yaml`, which blocks a run start, an open or a resume and never a stop or teardown.
+The retired keys leave `Categories` and `OpenMaps`, which keep naming only template paths.
+A retired key is never read; it exists only to be moved, and reconcile still moves and prunes it.
+It is admitted only at the layers and categories it was admitted at before: the TTL keys at the local layer, while the old Executable and Guard keys stay refused there.
 **Rationale:** without it, reconcile prunes the old keys from `shuttle.yaml` as retired and an operator's explicit binary path, a switched-off Agent deny or a role's TTL is silently lost.
-Running before every seed and treating a template-default target as unset keeps a base `claude.yaml` scaffolded by `--set` or by seeding from swallowing the operator's value.
+Running before every seed and treating a template-default target as unset keeps a base `claude.yaml` scaffolded by `--set` or by seeding from swallowing the operator's value;
+at a sparse layer a present key overrides the layer below, so it is never scaffolding and always wins.
+Retiring the source keys keeps D2's guarantee across the deploy: a TTL key that run settings wrote into a pair's `shuttle.local.yaml` would otherwise make every `shuttle.yaml` load refuse, stop and teardown included, until a walk moved it, and `lyx shuttle stop`, reed and pair teardown never start a walk.
 
 ### D5 — `internal/shellguard`: the one neutral shell-guard table
 
@@ -103,7 +114,7 @@ The raw-go steer is the one text an engine fills: the table takes the engine's p
 The package checks at init that no steer or notice holds a quote, a backslash or a line break, the checks that sit in `claudeengine` today.
 It imports the standard library, `internal/agentname` and `internal/gateslot` only, the last two for the three environment-variable names the raw-go guard refuses.
 The Claude tool guards stay in `claudeengine`: the Agent deny in both its forms, the AskUserQuestion deny and the interactive AskUserQuestion recorder, and the webster-in-fork guard, which keys on Claude's fork payload field `agent_id`.
-**Rationale:** the board asks for one neutral table each engine wraps in its own hooks; the in-process `lyx` hook verb was rejected on the board for starting a process on every shell call.
+**Rationale:** the board asks for one neutral table each engine wraps in its own hooks.
 Splitting on "shell command policy" versus "Claude tool or payload field" puts every guard Codex will need in the table and nothing it cannot use.
 The env-name imports keep each name declared once by its owner rather than copied into the table.
 
@@ -126,11 +137,11 @@ The scan, its surface, its marker and its self-test are otherwise unchanged.
 **Decision:** an engine may declare the environment keys a spawned process must not inherit, as exact names and name prefixes; Claude declares `CLAUDECODE` and the prefix `CLAUDE_CODE_`.
 `shuttleengines` exposes the union over the registered engines as plain data of a `reedengine` type.
 reed is told that union where it is constructed, as a required constructor input, and its tmux server spawn scrubs exactly those keys before its own `LYX_TRACE_ID` and strand-name steps; `CleanClaudeEnv` is deleted, and the stripped keys still go to `ReedState.StrippedEnv`, whose JSON key is unchanged.
-A reed construction site that cannot import `shuttleengines` without a cycle takes the union from its caller.
 `tmuxkit`'s copy of the filter stays; the test pinning it to the union lives in `shuttleengines`, so `tmuxkit` gains no import of a concrete engine.
 **Rationale:** the board asks that engines declare what to scrub.
 The server is shared by every strand, so it scrubs every engine's keys, not one provider's.
-A required input makes a forgotten site a compile error instead of a session that inherits a stale identity.
+A required input makes an omitted argument a compile error instead of a session that inherits a stale identity;
+an empty set still compiles, so `reedengine.New` panics on one as a programmer error.
 
 ### D9 — Strands carry an opaque provider tag
 
@@ -170,7 +181,8 @@ The empty-tag mapping keeps today's repair of long-lived strands, the orch above
 
 - Key names in `claude.yaml` drop the `claude_` prefix, and the binary key is `binary` (D1).
 - `LYX_SHUTTLE_CLAUDE` keeps its name (D1).
-- On a move collision a non-default target value wins (D4).
+- On a move collision a non-default target value wins at a base layer, and any target value wins at a sparse layer (D4).
+- The moved source keys stay retired in `shuttle`'s spec, so an unreconciled local layer loads instead of refusing (D4).
 - The key-move table stays permanently (D4).
 - An empty provider tag maps to the `claude` namer permanently (D9).
 - The webster-in-fork guard stays a Claude guard (D5).
@@ -179,7 +191,8 @@ The empty-tag mapping keeps today's repair of long-lived strands, the orch above
 ## Open risks
 
 - Codex's PreToolUse payload may not put the shell command under a `"command"` key as a JSON string; `codex-engine` then adapts its rendering or changes the table under D5's contract.
-- Until a layer is reconciled, its stale `claude_*` keys in `shuttle.yaml` are ignored and `claude.yaml` resolves from the layers below it, so an operator's binary path, switched-off Agent deny or TTL roles are not in force.
+- Until a layer is reconciled, its stale `claude_*` keys in `shuttle.yaml` are ignored, the local layer's through D4's retired keys, and `claude.yaml` resolves from the layers below it, so an operator's binary path, switched-off Agent deny or TTL roles are not in force.
+  Likewise an operator's `claude_deny_python: false` in an unreconciled base or worktree `shuttle.yaml` is ignored, so `deny_python` resolves to `true` and the python guard is installed in a Python target repo until the walk renames the key.
   This covers a pair the walk skipped (mid-merge or being created), any process started through a verb that does not call `hubreconcile.Ensure` before the first walk after the deploy, and a long-lived process of the old binary that reloads config.
   It ends at the first walk, which any loom, batten or orch start verb triggers, or at `lyx config reconcile --apply`.
 - A board entry's run settings naming the old keys is moved only when the task is next seeded, through `PrepareRunSettings`; the board JSON itself keeps the old spelling.
@@ -191,14 +204,17 @@ The empty-tag mapping keeps today's repair of long-lived strands, the orch above
 - An invalid `claude.yaml` refuses a run start naming the file and key, while stop, strand removal and the activity and state reads still work.
 - `shuttle.yaml`'s template holds no `claude` key; `deny_python` loads and switches the python guard; `MigrateConfig` renames `claude_deny_python` keeping value and comment, and a second pass is a no-op.
 - Reconcile moves each old key at the repo default, worktree and local layers: the value lands in that layer's `claude.yaml` (created when absent, full at the base and sparse above it) and the source key is gone.
-  A pre-existing base `claude.yaml` holding template values plus a `shuttle.yaml` with `claude: /x` resolves `binary` to `/x`; a target holding a non-default value keeps it and both are reported.
+  A pre-existing base `claude.yaml` holding template values plus a `shuttle.yaml` with `claude: /x` resolves `binary` to `/x`; a target holding a non-default value keeps it and both are reported, and so does a worktree `claude.yaml` holding a template-default value.
   A board default seeded in the same `ReconcileHubWideAt` pass carries the moved values.
   A dry run writes nothing and reports the pending moves, a second pass changes nothing, a `shuttle.local.yaml` left empty is removed, and a walk that fails after writing `claude.yaml` restores both files.
-- `PrepareRunSettings` turns `shuttle: {claude_prompt_cache_ttl_roles: …}` into a `claude` document and `claude_deny_python` into `deny_python`.
+- `PrepareRunSettings` turns `shuttle: {claude_prompt_cache_ttl_roles: …}` into a `claude` document, and a run settings entry `shuttle: {claude_deny_python: …}` is refused as a `RunSettingsError` whose cause names `deny_python`.
+- Before any reconcile, a pair whose `shuttle.local.yaml` holds `claude_prompt_cache_ttl_roles` loads `shuttle.yaml` with the key absent, and stop and strand removal work.
+  A local `claude_prompt_cache_ttl_roles` holding two roles loads, and a local `claude` or `claude_deny_agent_tool` is still refused naming the key.
+  A local `claude_prompt_cache_ttl: {a: 1}` also loads `shuttle.yaml`, and after reconcile moves it, loading `claude` refuses naming `claude.local.yaml`.
 - For every combination of interactive, fork subagents, allow-Agent-tool, `deny_agent_tool`, `deny_ask_user_question` and `deny_python`, the settings document and the deny notice equal today's byte for byte.
 - `shellguard`'s init check refuses a steer or notice with a quote, backslash or line break; each row's patterns deny and allow the same commands as today's (the existing pattern tables move with them); its leaf enforcement test pins its import set.
 - The no-denied-recovery scan's forms equal the operator list plus the table's forms, and its self-test still plants and catches each.
-- reed's server spawn scrubs exactly the told keys: `CLAUDECODE` and `CLAUDE_CODE_*` are absent from the spawned environment and recorded in `StrippedEnv`, and other keys pass; the tmuxkit filter equals the `shuttleengines` union.
+- reed's server spawn scrubs exactly the told keys: `CLAUDECODE` and `CLAUDE_CODE_*` are absent from the spawned environment and recorded in `StrippedEnv`, and other keys pass; constructing reed with an empty set fails; the tmuxkit filter equals the `shuttleengines` union.
 - A strand added by a shuttle run or open carries `provider: claude`, and keeps it through reed's resume relaunch and replace and shuttle's attach and respawn; a strand without the field decodes.
 - The watchdog repairs a session name through the namer for its tag, through the `claude` namer for an empty tag, and not at all for a tag with no namer, while still repairing that strand's pane title.
 
