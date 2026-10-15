@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-15 09:12 UTC; every age below is as of then.
+Rendered 2026-10-15 09:20 UTC; every age below is as of then.
 
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
@@ -18,7 +18,7 @@ Held by a run; its scope is locked until the run ends.
 | # | Task | Slug | Recipe | At | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | 1 | **Run status pane: numbered rows, seconds, round totals, gate time; segment-named sessions**<br>• Per-run status pane shows seconds, a total per Burler round, and each gate with its time and the rework it caused | [`run-pane-timing`](design-run-pane-timing.md) | loom | Webster | 3h | 2h | loom, burler, shed, reed |
-| 2 | **Webster fork read audit as a tool under tools/**<br>• Move the 2026-10-13 fork read audit jq scripts out of scratch into a repeatable tools/ script | [`glyph-audit-tool`](design-glyph-audit-tool.md) | loom | Discussion-Write | 1h | 1m | webster |
+| 2 | **Webster fork read audit as a tool under tools/**<br>• Move the 2026-10-13 fork read audit jq scripts out of scratch into a repeatable tools/ script | [`glyph-audit-tool`](design-glyph-audit-tool.md) | loom | Discussion-Bouncer | 1h | 8m | webster |
 | 3 | **Begin-batch refusal route and label; bare lyx config writes an empty layer**<br>• Two small bugs: a delete-before-reference refusal is mislabelled plan_drifted and halts for a human; bare lyx config with no TTY saves an empty layer | [`refusal-route-config-empty`](design-refusal-route-config-empty.md) | loom | Webster | 3h | 1h | webster, loom, config |
 
 ### Ready
@@ -35,7 +35,7 @@ Waits only on Running or Ready entries.
 
 | # | Task | Slug | Recipe | After | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | **Kick-start pack per card, read when the card starts**<br>• Forks read about a quarter of a batch-wide pack; hand each card its own pack as everything it needs to begin | [`kickstart-per-card`](design-kickstart-per-card.md) | loom | `refusal-route-config-empty` | 16m | 0m | webster, stencil |
+| 1 | **Kick-start pack per card, read when the card starts**<br>• Forks read about a quarter of a batch-wide pack; hand each card its own pack as everything it needs to begin | [`kickstart-per-card`](design-kickstart-per-card.md) | loom | `refusal-route-config-empty` | 23m | 8m | webster, stencil |
 
 ## Notes
 
@@ -75,16 +75,16 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 12 | **Run verbs in one shared namespace, not under lyx loom**<br>• lyx loom decision/status/goto/approve act on darn runs too; move recipe-neutral run verbs to one shared namespace | [`run-verbs-shared`](design-run-verbs-shared.md) | 15h | 15h | shed, loom |
 | 13 | **Show the orch context size in the prime overview window**<br>• The prime overview window shows the orch session context tokens against its thresholds beside the batten runs | [`orch-context-overview`](design-orch-context-overview.md) | 14h | 14h | orch, batten |
 | 14 | **Clearer loom model key names, one per step**<br>• Model keys like fix name the role they set, and every review segment gets its own reviewer and fixer key | [`loom-model-key-names`](design-loom-model-key-names.md) | 14h | 14h | config, loom |
-| 15 | **Spawned code roles load the hub language skills**<br>• Darn, Webster, Burler and merge sessions write Go without scribe:golang-* skills; the hub config should name its language skills | [`role-language-skills`](design-role-language-skills.md) | 13h | 13h | config, shuttle |
+| 15 | **Spawned code roles load the hub language skills**<br>• Darn, Webster, Burler and merge sessions write Go without scribe:golang-* skills; the hub config should name its language skills | [`role-language-skills`](design-role-language-skills.md) | 14h | 14h | config, shuttle |
 | 16 | **Fork the Burler fixer from the reviewer session**<br>• The fixer re-reads the context the reviewer just read; fork it from the reviewer to reuse the cache | [`burler-fixer-fork`](design-burler-fixer-fork.md) | 3h | 3h | burler |
-| 17 | **The arbiter in shed for every shed run, batten included**<br>• The batten Go driver has a tackler but no arbiter; move the arbiter and its keys into shed beside the tackler | [`shed-arbiter-all`](design-shed-arbiter-all.md) | 41m | 38m | shed, batten, loom, config |
-| 18 | **Plan cards name added tests by Create handle, never a plain test-file path**<br>• Drop the Edit exception for a test file the card only adds tests to; the Create plan handle carries the file | [`plan-test-file-path`](design-plan-test-file-path.md) | 17m | 17m | loom, stencil |
+| 17 | **The arbiter in shed for every shed run, batten included**<br>• The batten Go driver has a tackler but no arbiter; move the arbiter and its keys into shed beside the tackler | [`shed-arbiter-all`](design-shed-arbiter-all.md) | 48m | 46m | shed, batten, loom, config |
+| 18 | **Plan cards name added tests by Create handle, never a plain test-file path**<br>• Drop the Edit exception for a test file the card only adds tests to; the Create plan handle carries the file | [`plan-test-file-path`](design-plan-test-file-path.md) | 24m | 24m | loom, stencil |
 
 #### Low priority
 
 | # | Note | Slug | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| 19 | **Fabric's Windows path behaviour verified on a Windows host**<br>• Unverified after six hardening rounds; needs a Windows host, not design; take it only if Windows becomes relevant | [`fabric-windows`](design-fabric-windows.md) | 11d | 4d | fabric |
+| 19 | **Fabric's Windows path behaviour verified on a Windows host**<br>• Unverified after six hardening rounds; needs a Windows host, not design; take it only if Windows becomes relevant | [`fabric-windows`](design-fabric-windows.md) | 11d | 5d | fabric |
 | 20 | **warp-visibility: CLAUDE.local.md invisible in the Fabric repo's git history**<br>• Expose CLAUDE.local.md by symlink so nothing lyx-related shows in the Fabric repo's history; the constraints half is out of date | [`warp-visibility`](design-warp-visibility.md) | 10d |  | ide, fabric |
 | 21 | **Windows verify timeout kills the whole process tree**<br>• On Windows the verifytree timeout kills only the shell, not the process tree it started | [`verify-watchdog`](design-verify-watchdog.md) | 7d | 2d | shed |
 
@@ -138,4 +138,4 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | --- | --- | --- | --- | --- | --- |
 | 2 | **Re-measure the test suite weight on a quiet machine**<br>• The test-suite-weight before and after numbers were taken under load; rerun the report Regenerate section on an idle machine for a fair wall-time comparison | `suite-weight-quiet-rerun` | 4d | 1d |  |
 | 3 | **Lighter test rules for small changes**<br>• Tests that pin stencil wording make small prompt changes large; pin only what must hold, measured first | [`lighter-test-rules`](design-lighter-test-rules.md) | 1d | 1d | stencil |
-| 4 | **Bench fork0 and the strict critical fixer on twill Discussion-Write**<br>• Arms: twill as is, with the strict critical fixer, and fork0 plus the critical fixer, graded against Discussion-Review keys | [`twill-discussion-fork0-bench`](design-twill-discussion-fork0-bench.md) | 3h | 3h | loom, burler, stencil |
+| 4 | **Bench fork0 and the strict critical fixer on twill Discussion-Write**<br>• Arms: twill as is, with the strict critical fixer, and fork0 plus the critical fixer, graded against Discussion-Review keys | [`twill-discussion-fork0-bench`](design-twill-discussion-fork0-bench.md) | 4h | 4h | loom, burler, stencil |
