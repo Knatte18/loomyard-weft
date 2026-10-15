@@ -1,0 +1,150 @@
+{
+  "runGuid": "1d94acaafe5c923f9e126adf25a3ed1c",
+  "planFingerprint": "96be81ed05080d5dc00e432b3b8d2531a439601981925ff815c6bfd1cf9ae027",
+  "planFileHashes": {
+    "00-overview.md": "42f584c4a4149210fe6a09d9c4bc2c1aa099a8005978cc25cea353e55c7d2c97",
+    "01-per-card-switch.md": "942348c10794b8147011d31453c6cbb87482485082233c49124ad5e8b037e3db",
+    "02-card-pack-verb.md": "ca9f2adbd6a949311dcb3b62f92e1e54d1a93f0e0356a75cb6f983b6073c773f",
+    "03-per-card-layout.md": "f3e326de8c1952debb32639fc9b224bbfc33911487c12bd1f586f2d5d205a1f3",
+    "04-forkaudit-card-arm.md": "31475a80b734ad0aa9045b8444844614d6f3bcaa6ee0084998c8aa1765d620d5"
+  },
+  "planOverviewFrameHash": "912302b37bc4f6b091990042a587ddd8c1f1acd9e456163e75643216a6da34a9",
+  "partition": [
+    {
+      "cards": [
+        "01-per-card-switch",
+        "02-card-pack-verb",
+        "03-per-card-layout",
+        "04-forkaudit-card-arm"
+      ],
+      "profile": "cautious",
+      "estimate": 326810,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 1,
+        "startup": 54268,
+        "read_union": 84568,
+        "cards": [
+          {
+            "card": 1,
+            "card_text": 384,
+            "reads": {
+              "file:internal/websterengine/template.yaml": 96,
+              "package:internal/configcli": 2000,
+              "package:internal/websterengine": 2000,
+              "tests:internal/configcli": 2000,
+              "tests:internal/websterengine": 2000
+            },
+            "messages": 61.5,
+            "written": 18834
+          },
+          {
+            "card": 2,
+            "card_text": 1008,
+            "reads": {
+              "file:contracts/specs/refusal-spec.md": 5772,
+              "file:contracts/stencils/webster/webster-fragment-pack-card.md": 108,
+              "file:contracts/stencils/webster/webster-fragment-pack-empty.md": 72,
+              "file:contracts/stencils/webster/webster-fragment-pack-unresolved.md": 120,
+              "file:docs/overview.md": 9384,
+              "file:internal/loomcli/doc.go": 2664,
+              "file:internal/websterengine/doc.go": 8904,
+              "package:contracts/specs": 2000,
+              "package:contracts/stencils": 2000,
+              "package:contracts/stencils/webster": 2000,
+              "package:docs": 2000,
+              "package:internal/loomcli": 2000,
+              "package:internal/websterengine": 2000,
+              "tests:contracts/specs": 2000,
+              "tests:contracts/stencils": 2000,
+              "tests:contracts/stencils/webster": 2000,
+              "tests:docs": 2000,
+              "tests:internal/loomcli": 2000,
+              "tests:internal/websterengine": 2000
+            },
+            "messages": 190.5,
+            "written": 58158
+          },
+          {
+            "card": 3,
+            "card_text": 1260,
+            "reads": {
+              "file:.gitattributes": 588,
+              "file:contracts/stencils/webster/webster-body-implementer.md": 1296,
+              "file:contracts/stencils/webster/webster-fragment-card-read-pack.md": 84,
+              "file:contracts/stencils/webster/webster-fragment-fresh-read-pack-inline.md": 192,
+              "file:contracts/stencils/webster/webster-fragment-locate-pack-inline.md": 156,
+              "file:contracts/stencils/webster/webster-fragment-locate-pack.md": 144,
+              "file:contracts/stencils/webster/webster-fragment-pack-read.md": 96,
+              "file:contracts/stencils/webster/webster-fragment-pack-section-inline.md": 156,
+              "file:internal/websterengine/doc.go": 8904,
+              "package:.": 2000,
+              "package:contracts/stencils": 2000,
+              "package:contracts/stencils/webster": 2000,
+              "package:internal/websterengine": 2000,
+              "tests:.": 2000,
+              "tests:contracts/stencils": 2000,
+              "tests:contracts/stencils/webster": 2000,
+              "tests:internal/websterengine": 2000
+            },
+            "messages": 295.5,
+            "written": 89910
+          },
+          {
+            "card": 4,
+            "card_text": 972,
+            "reads": {
+              "file:tools/forkaudit/extract.jq": 1716,
+              "file:tools/forkaudit/forkaudit.sh": 6876,
+              "file:tools/forkaudit/pack-entries.jq": 324,
+              "file:tools/forkaudit/report.jq": 2196,
+              "package:tools/forkaudit": 2000,
+              "package:tools/forkaudit/testdata": 2000,
+              "tests:tools/forkaudit": 2000,
+              "tests:tools/forkaudit/testdata": 2000
+            },
+            "messages": 67,
+            "written": 21072
+          }
+        ]
+      }
+    }
+  ],
+  "currentBatch": 1,
+  "masterStrand": "d90eaf1144326f81da37e6156278388b",
+  "masterSessionId": "e7f5396f-b928-4bc7-a937-5001284d84be",
+  "batches": {
+    "1": {
+      "slug": "per-card-switch",
+      "cards": [
+        "01-per-card-switch",
+        "02-card-pack-verb",
+        "03-per-card-layout",
+        "04-forkaudit-card-arm"
+      ],
+      "cardHashes": {
+        "01-per-card-switch": "942348c10794b8147011d31453c6cbb87482485082233c49124ad5e8b037e3db",
+        "02-card-pack-verb": "ca9f2adbd6a949311dcb3b62f92e1e54d1a93f0e0356a75cb6f983b6073c773f",
+        "03-per-card-layout": "f3e326de8c1952debb32639fc9b224bbfc33911487c12bd1f586f2d5d205a1f3",
+        "04-forkaudit-card-arm": "31475a80b734ad0aa9045b8444844614d6f3bcaa6ee0084998c8aa1765d620d5"
+      },
+      "startSha": "5e7adbbe20777365eb1da34cf6592f99e61ec71b",
+      "kind": "fork",
+      "spawnedAt": "2026-10-15T11:41:37Z",
+      "sessionId": "e7f5396f-b928-4bc7-a937-5001284d84be",
+      "terminal": false,
+      "status": ""
+    }
+  }
+}
