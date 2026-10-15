@@ -15,7 +15,7 @@ In `webster-template-master.md`:
 - The banner comment's "the long-lived session that reads the codebase and the plan once" becomes "the long-lived session that reads the plan's overview and the repo's rules once, never the code".
   The rest of the banner is unchanged.
 - The opening paragraph under the two `>` blocks drops "you read the codebase and the plan once, up front," and "inherits everything you have already read — no cold orientation, no codebase tour, per batch."
-  It says instead: you stay alive for the whole plan, you read the plan's overview and the repo's rules once, up front, and every implementer you spawn is an in-session fork that inherits those reads;
+  It says instead: you stay alive for the whole plan, you read the plan's overview once, up front, plus the rules a constraints section below names, when that section is present, and every implementer you spawn is an in-session fork that inherits those reads;
   you never read the code, since forks rewrite it and a code read a later fork inherited would be stale, and each fork reads the code its own cards need itself.
   The sentence "You never edit code yourself, you never run git, and you never use a `/model` switch." stays.
 - `## Orientation — read this ONCE, up front` keeps its heading (the `template_test.go` order check against the PATTERN directive pins it).
