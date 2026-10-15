@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-15 18:48 UTC; every age below is as of then.
+Rendered 2026-10-15 18:49 UTC; every age below is as of then.
 
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
@@ -19,15 +19,17 @@ Held by a run; its scope is locked until the run ends.
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | 1 | **Fix the creel stage 1 audit defects and add its sandbox scenarios**<br>• Eight creel defects from the audit (#657-#664) plus sandbox scenarios C1-C13 | [`creel-stage1-fixes`](design-creel-stage1-fixes.md) | loom | Discussion-Bouncer | 2h | 1h | creel, shuttle, reed, claude |
 
+#### Normal priority
+
+| # | Task | Slug | Recipe | At | Age | Revised | Labels |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| 2 | **lyx orch start --continue resumes the last orch session**<br>• lyx orch records its session id so a reboot resumes the same orch conversation instead of a fresh one. | [`orch-continue`](design-orch-continue.md) | loom | Worktree-Create | 4d | 0m | orch |
+
 ### Ready
 
 Waits on nothing open; can start now.
 
-#### Normal priority
-
-| # | Task | Slug | Recipe | After | Age | Revised | Labels |
-| --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | **lyx orch start --continue resumes the last orch session**<br>• lyx orch records its session id so a reboot resumes the same orch conversation instead of a fresh one. | [`orch-continue`](design-orch-continue.md) | loom |  | 4d | 0m | orch |
+_None._
 
 ### Layer A
 
