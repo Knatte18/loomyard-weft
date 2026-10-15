@@ -1,7 +1,7 @@
 # Card 7 — burler-seat-skills
 
 **Create:**
-- `plan:internal/burlerengine#Engine.seatSkills` -> `func (e *Engine) seatSkills(p *Profile) []string`
+- `internal/burlerengine#Engine.seatSkills`
 
 **Edit:**
 - `internal/burlerengine#Profile`

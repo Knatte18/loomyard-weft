@@ -1,8 +1,8 @@
 # Card 6 — webster-wiring
 
 **Create:**
-- `plan:internal/webstercli#TestWireHub_LanguageSkills` -> `func TestWireHub_LanguageSkills(t *testing.T)`
-- `plan:internal/webstercli#websterCLI.recoverDeps` -> `func (c *websterCLI) recoverDeps(plan *planparser.Plan, batches []batcher.Batch, st *websterengine.State) websterengine.RecoverDeps`
+- `internal/webstercli#TestWireHub_LanguageSkills`
+- `internal/webstercli#websterCLI.recoverDeps`
 
 **Edit:**
 - `internal/webstercli#websterCLI`

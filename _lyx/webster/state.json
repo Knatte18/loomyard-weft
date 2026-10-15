@@ -1,6 +1,6 @@
 {
   "runGuid": "0634b471948e5397b3b2b9cd5b9b7d48",
-  "planFingerprint": "4b9f3966a29f4970a0f38ba60adb6478ab80a70d15a1cab982947a42f4142556",
+  "planFingerprint": "d914805a5daf57d616a8fdc14f03d1d386d5c8b7fe280aa923c8f8d69bd2e9c7",
   "planFileHashes": {
     "00-overview.md": "121a83f8d979c5a42cabf6b640a4ef2579d4a7a88da8d7e77c841b7e2cc60021",
     "01-language-config-module.md": "bb8acbc96e6b96739065f7fbd77ed3ce8a607f802357ef813987d72571569c44",
@@ -8,8 +8,8 @@
     "03-webster-role-skills.md": "134b99a6faf0903253b7ea13a215a469da24427876480b7d2931c5d13231442a",
     "04-conflict-session-skills.md": "42a0e891f03d06213728d2a3981539fad49f75926616becf817752adda0f0216",
     "05-loom-wiring.md": "eba408ae3a7cb936918cdd8c77b519535803a5a8d6cc6fc76017348829eb253e",
-    "06-webster-wiring.md": "5eed7256d17db6d741a1b6782d73e95c8d9e309326f2f1f3117eb3bb509f8281",
-    "07-burler-seat-skills.md": "2cf4599243c852fe18caa828482be8427d7115a8fb64b33ee5cef75c7991ad4d",
+    "06-webster-wiring.md": "43fb209b5bcf8330cbc5ccbb3e56bdf6f87dac882166bf1df49301ff8eb07502",
+    "07-burler-seat-skills.md": "e89daa7efc733dcc8d81a65f42307c7b99978007c7a780ed3ce433d003d3f2c5",
     "08-burler-profile-key.md": "37dedfdc0419ae89b32be66c147cad2bb31ad7db98d3869d75d51d6099bd8d0f",
     "09-recipe-code-rounds.md": "f9107dad6086ceeae01dedb122cf432cad2b48d26c36af5e2414464c501e358e"
   },
@@ -208,7 +208,7 @@
       }
     }
   ],
-  "currentBatch": 6,
+  "currentBatch": 0,
   "masterStrand": "4055370d3477c0c9065480d91a80d796",
   "masterSessionId": "43646314-f3b4-45bf-ac33-38ebc27cce71",
   "batches": {
@@ -265,8 +265,8 @@
         "09-recipe-code-rounds"
       ],
       "cardHashes": {
-        "06-webster-wiring": "5eed7256d17db6d741a1b6782d73e95c8d9e309326f2f1f3117eb3bb509f8281",
-        "07-burler-seat-skills": "2cf4599243c852fe18caa828482be8427d7115a8fb64b33ee5cef75c7991ad4d",
+        "06-webster-wiring": "43fb209b5bcf8330cbc5ccbb3e56bdf6f87dac882166bf1df49301ff8eb07502",
+        "07-burler-seat-skills": "e89daa7efc733dcc8d81a65f42307c7b99978007c7a780ed3ce433d003d3f2c5",
         "08-burler-profile-key": "37dedfdc0419ae89b32be66c147cad2bb31ad7db98d3869d75d51d6099bd8d0f",
         "09-recipe-code-rounds": "f9107dad6086ceeae01dedb122cf432cad2b48d26c36af5e2414464c501e358e"
       },
@@ -274,11 +274,29 @@
       "kind": "fork",
       "spawnedAt": "2026-10-15T10:42:10Z",
       "sessionId": "43646314-f3b4-45bf-ac33-38ebc27cce71",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "06-webster-wiring",
+        "status": "done",
+        "head_sha": "d678a3a68af32260dc6c2619939537f0608b2c3f",
+        "deviations": [
+          "internal/loomrecipe/languageskills_test.go"
+        ]
+      },
+      "cardShas": [
+        "d678a3a68af32260dc6c2619939537f0608b2c3f"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-role-language-skills/43646314-f3b4-45bf-ac33-38ebc27cce71/subagents/agent-a1f892d6671142d3d.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-role-language-skills/43646314-f3b4-45bf-ac33-38ebc27cce71/subagents/agent-a1f892d6671142d3d.jsonl"
+      ]
     }
   },
   "seenForkTranscripts": [
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-role-language-skills/43646314-f3b4-45bf-ac33-38ebc27cce71/subagents/agent-a26c9a5c62f27de64.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-role-language-skills/43646314-f3b4-45bf-ac33-38ebc27cce71/subagents/agent-a26c9a5c62f27de64.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-role-language-skills/43646314-f3b4-45bf-ac33-38ebc27cce71/subagents/agent-a1f892d6671142d3d.jsonl"
   ]
 }
