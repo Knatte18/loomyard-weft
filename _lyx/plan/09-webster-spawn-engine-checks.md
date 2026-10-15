@@ -1,7 +1,7 @@
 # Card 9 — Webster checks each role's engine before it spawns
 
 **Create:**
-- `plan:internal/websterengine#roleAuditEngine` -> `func roleAuditEngine(engines AuditEngines, role Role, choice shuttleengine.ModelChoice) error`
+- `internal/websterengine#roleAuditEngine`
 
 **Edit:**
 - `internal/websterengine#Run`
