@@ -1,6 +1,6 @@
 # Spawned code roles load the hub language skills
 
-`role-language-skills` · Task · enhancement, config, shuttle · running · Plan-Burler-Fix
+`role-language-skills` · Task · enhancement, config, shuttle · running · Plan-Bouncer
 
 ## Seen (operator, 2026-10-14)
 
