@@ -2,6 +2,8 @@
 
 `lighter-test-rules` · Task · enhancement, stencil, webster, burler, loom
 
+Depends on: [`kickstart-per-card`](design-kickstart-per-card.md)
+
 ## Idea (operator, 2026-10-13)
 
 The project's test and doc rules make small changes large.

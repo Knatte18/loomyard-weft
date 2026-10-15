@@ -21,17 +21,23 @@ Held by a run; its scope is locked until the run ends.
 | 2 | **Spawned code roles load the hub language skills**<br>• Darn, Webster, Burler and merge sessions write Go without scribe:golang-* skills; the hub config should name its language skills | [`role-language-skills`](design-role-language-skills.md) | loom | Discussion-Burler-Review | 14h | 14h | config, shuttle |
 | 3 | **Run status pane: numbered rows, seconds, round totals, gate time; segment-named sessions**<br>• Per-run status pane shows seconds, a total per Burler round, and each gate with its time and the rework it caused | [`run-pane-timing`](design-run-pane-timing.md) | loom | Merge-In | 3h | 3h | loom, burler, shed, reed |
 | 4 | **Webster fork read audit as a tool under tools/**<br>• Move the 2026-10-13 fork read audit jq scripts out of scratch into a repeatable tools/ script | [`glyph-audit-tool`](design-glyph-audit-tool.md) | loom | Plan-Burler-Review | 2h | 39m | webster |
-| 5 | **Kick-start pack per card, read when the card starts**<br>• Forks read about a quarter of a batch-wide pack; hand each card its own pack as everything it needs to begin | [`kickstart-per-card`](design-kickstart-per-card.md) | loom | Discussion-Write | 54m | 26m | webster, stencil |
+| 5 | **Kick-start pack per card, read when the card starts**<br>• Forks read about a quarter of a batch-wide pack; hand each card its own pack as everything it needs to begin | [`kickstart-per-card`](design-kickstart-per-card.md) | loom | Discussion-Write | 54m | 27m | webster, stencil |
 
 ### Ready
 
 Waits on nothing open; can start now.
 
+_None._
+
+### Layer A
+
+Waits only on Running or Ready entries.
+
 #### Normal priority
 
 | # | Task | Slug | Recipe | After | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | **Lighter test rules for small changes**<br>• Tests that pin stencil wording make small prompt changes large; pin only what must hold, measured first | [`lighter-test-rules`](design-lighter-test-rules.md) | loom |  | 1d | 9m | stencil, webster, burler, loom |
+| 1 | **Lighter test rules for small changes**<br>• Tests that pin stencil wording make small prompt changes large; pin only what must hold, measured first | [`lighter-test-rules`](design-lighter-test-rules.md) | loom | `kickstart-per-card` | 1d | 0m | stencil, webster, burler, loom |
 
 ## Notes
 
@@ -49,7 +55,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Note | Slug | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| 2 | **A hub pause leaves background forks and shells running, so hibernate never confirms**<br>• Pause interrupts turns but not background forks or shells; sessions read busy and hibernate confirmation fails | [`pause-background-work`](design-pause-background-work.md) | 13h | 3h | shuttle, webster |
+| 2 | **A hub pause leaves background forks and shells running, so hibernate never confirms**<br>• Pause interrupts turns but not background forks or shells; sessions read busy and hibernate confirmation fails | [`pause-background-work`](design-pause-background-work.md) | 14h | 3h | shuttle, webster |
 
 ### Enhancements
 
@@ -72,8 +78,8 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 13 | **Clearer loom model key names, one per step**<br>• Model keys like fix name the role they set, and every review segment gets its own reviewer and fixer key | [`loom-model-key-names`](design-loom-model-key-names.md) | 15h | 15h | config, loom |
 | 14 | **Fork the Burler fixer from the reviewer session**<br>• The fixer re-reads the context the reviewer just read; fork it from the reviewer to reuse the cache | [`burler-fixer-fork`](design-burler-fixer-fork.md) | 3h | 3h | burler |
 | 15 | **The arbiter in shed for every shed run, batten included**<br>• The batten Go driver has a tackler but no arbiter; move the arbiter and its keys into shed beside the tackler | [`shed-arbiter-all`](design-shed-arbiter-all.md) | 1h | 1h | shed, batten, loom, config |
-| 16 | **Plan cards name added tests by Create handle, never a plain test-file path**<br>• Drop the Edit exception for a test file the card only adds tests to; the Create plan handle carries the file | [`plan-test-file-path`](design-plan-test-file-path.md) | 55m | 55m | loom, stencil |
-| 17 | **Paste cited code into a review rounds context**<br>• Reviewers edit nothing and review a fixed commit, so code pasted at round start cannot go stale; measure it against todays reviewer | [`review-inline-code`](design-review-inline-code.md) | 26m | 24m | burler, stencil |
+| 16 | **Plan cards name added tests by Create handle, never a plain test-file path**<br>• Drop the Edit exception for a test file the card only adds tests to; the Create plan handle carries the file | [`plan-test-file-path`](design-plan-test-file-path.md) | 56m | 56m | loom, stencil |
+| 17 | **Paste cited code into a review rounds context**<br>• Reviewers edit nothing and review a fixed commit, so code pasted at round start cannot go stale; measure it against todays reviewer | [`review-inline-code`](design-review-inline-code.md) | 26m | 25m | burler, stencil |
 
 #### Low priority
 
@@ -133,4 +139,4 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | --- | --- | --- | --- | --- | --- |
 | 2 | **Re-measure the test suite weight on a quiet machine**<br>• The test-suite-weight before and after numbers were taken under load; rerun the report Regenerate section on an idle machine for a fair wall-time comparison | `suite-weight-quiet-rerun` | 4d | 1d |  |
 | 3 | **Bench fork0 and the strict critical fixer on twill Discussion-Write**<br>• Arms: twill as is, with the strict critical fixer, and fork0 plus the critical fixer, graded against Discussion-Review keys | [`twill-discussion-fork0-bench`](design-twill-discussion-fork0-bench.md) | 4h | 4h | loom, burler, stencil |
-| 4 | **Prototype reed status buttons in a throwaway tmux server**<br>• A fresh agent tries the menu button, follow toggle and extra button line by hand before reed-status-buttons becomes a task | [`reed-status-buttons-prototype`](design-reed-status-buttons-prototype.md) | 29m | 29m | reed |
+| 4 | **Prototype reed status buttons in a throwaway tmux server**<br>• A fresh agent tries the menu button, follow toggle and extra button line by hand before reed-status-buttons becomes a task | [`reed-status-buttons-prototype`](design-reed-status-buttons-prototype.md) | 30m | 30m | reed |
