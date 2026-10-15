@@ -87,7 +87,7 @@
 - `internal/shuttleengine#SessionRead`
 - `internal/shuttleengine#LocatedSession`
 - `internal/shuttleengine#MessageUsage`
-- `plan:internal/testkit/shuttlefake#TokencountRunReads`
+- `internal/testkit/shuttlefake#TokencountRunReads`
 
 **Intent:** tokencount reads every session, fork and orch transcript through the engine that recorded it (D1, D2), prices through that engine (D4), and deletes its Claude parser, its projects-root resolution, its `-projects` flag and its price table.
 Of the engine packages it imports only `shuttleengine` and `shuttleengines` (`PATTERN-shuttle-provider-seam`), and every lyx-format rule stays here: role from strand name, card pointer lines, the begin-batch envelope, the orch's run attribution, the time-bound cutoff and cross-transcript dedupe.

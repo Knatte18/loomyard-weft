@@ -1,22 +1,22 @@
 # Card 2 — claude-transcript-reader
 
 **Create:**
-- `plan:internal/shuttleengine/claudeengine#claudeRecord` -> `type claudeRecord struct`
-- `plan:internal/shuttleengine/claudeengine#parsedTranscript` -> `type parsedTranscript struct`
-- `plan:internal/shuttleengine/claudeengine#claudeRecord.endsTurn` -> `func (r claudeRecord) endsTurn() bool`
-- `plan:internal/shuttleengine/claudeengine#claudeRecord.startsTurn` -> `func (r claudeRecord) startsTurn() bool`
-- `plan:internal/shuttleengine/claudeengine#recordUserTexts` -> `func recordUserTexts(content json.RawMessage) []string`
-- `plan:internal/shuttleengine/claudeengine#recordToolCalls` -> `func recordToolCalls(content json.RawMessage) []shuttleengine.ToolCall`
-- `plan:internal/shuttleengine/claudeengine#recordToolResults` -> `func recordToolResults(content json.RawMessage) []shuttleengine.ToolResult`
-- `plan:internal/shuttleengine/claudeengine#parseTranscript` -> `func parseTranscript(path, transcriptKey string, includeSidechain bool, skipIDs map[string]struct{}) (parsedTranscript, error)`
-- `plan:internal/shuttleengine/claudeengine#launchLine` -> `var launchLine *regexp.Regexp`
-- `plan:internal/shuttleengine/claudeengine#projectsRoot` -> `func projectsRoot() (string, error)`
-- `plan:internal/shuttleengine/claudeengine#projectDirUnder` -> `func projectDirUnder(projects, workdir string) string`
-- `plan:internal/shuttleengine/claudeengine#locateSessions` -> `func locateSessions(projects, worktree string) ([]shuttleengine.LocatedSession, error)`
-- `plan:internal/shuttleengine/claudeengine#Claude.LocateSessions` -> `func (c *Claude) LocateSessions(worktree string) ([]shuttleengine.LocatedSession, error)`
-- `plan:internal/shuttleengine/claudeengine#Claude.ReadSession` -> `func (c *Claude) ReadSession(s shuttleengine.LocatedSession) (shuttleengine.SessionRead, error)`
-- `plan:internal/shuttleengine/claudeengine#TestReadSession` -> `func TestReadSession(t *testing.T)`
-- `plan:internal/shuttleengine/claudeengine#TestLocateSessions` -> `func TestLocateSessions(t *testing.T)`
+- `internal/shuttleengine/claudeengine#claudeRecord`
+- `internal/shuttleengine/claudeengine#parsedTranscript`
+- `internal/shuttleengine/claudeengine#claudeRecord.endsTurn`
+- `internal/shuttleengine/claudeengine#claudeRecord.startsTurn`
+- `internal/shuttleengine/claudeengine#recordUserTexts`
+- `internal/shuttleengine/claudeengine#recordToolCalls`
+- `internal/shuttleengine/claudeengine#recordToolResults`
+- `internal/shuttleengine/claudeengine#parseTranscript`
+- `internal/shuttleengine/claudeengine#launchLine`
+- `internal/shuttleengine/claudeengine#projectsRoot`
+- `internal/shuttleengine/claudeengine#projectDirUnder`
+- `internal/shuttleengine/claudeengine#locateSessions`
+- `internal/shuttleengine/claudeengine#Claude.LocateSessions`
+- `internal/shuttleengine/claudeengine#Claude.ReadSession`
+- `internal/shuttleengine/claudeengine#TestReadSession`
+- `internal/shuttleengine/claudeengine#TestLocateSessions`
 - `internal/shuttleengine/claudeengine/testdata/tokencount-run/a.jsonl`
 - `internal/shuttleengine/claudeengine/testdata/tokencount-run/a-webster.jsonl`
 - `internal/shuttleengine/claudeengine/testdata/tokencount-run/a-webster/subagents/agent-3.jsonl`
@@ -27,7 +27,7 @@
 - `internal/shuttleengine/claudeengine/testdata/tokencount-run/d.jsonl`
 - `internal/shuttleengine/claudeengine/testdata/tokencount-run/e.jsonl`
 - `internal/testkit/shuttlefake/tokencount-run-reads.json`
-- `plan:internal/testkit/shuttlefake#TokencountRunReads` -> `func TokencountRunReads() []shuttleengine.SessionRead`
+- `internal/testkit/shuttlefake#TokencountRunReads`
 
 **Edit:**
 - `internal/shuttleengine/claudeengine/usage.go`
