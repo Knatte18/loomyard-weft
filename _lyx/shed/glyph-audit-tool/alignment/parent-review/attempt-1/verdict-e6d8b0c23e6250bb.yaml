@@ -1,0 +1,9 @@
+verdict: approve
+reason: >-
+  The decision record covers every Scope point of the glyph-audit-tool board entry (one shell-and-jq tool under tools/,
+  date-window or run-list input with self-discovery, prompt-and-trace arm classification, every listed metric,
+  both optional sections, a per-arm markdown report, the research directories untouched) and adds no work that belongs
+  to another entry. Neither peer run conflicts: refusal-route-config-empty changes begin-batch's refusal class, not the
+  kickstart pack trace line, and run-pane-timing touches the status pane only. No parent commits are listed.
+question: ""
+superseded: []
