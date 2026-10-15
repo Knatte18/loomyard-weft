@@ -1,6 +1,6 @@
 # creel: inject --interrupt stalls behind the prompt Claude restores into the input box
 
-`creel-interrupt-restored-prompt` · Note · bug
+`creel-interrupt-restored-prompt` · Note · bug, creel, shuttle, claude
 
 Imported from [issue #659](https://github.com/Knatte18/loomyard/issues/659).
 

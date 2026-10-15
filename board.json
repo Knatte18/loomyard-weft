@@ -934,7 +934,10 @@
       "title": "creel: inject --interrupt stalls behind the prompt Claude restores into the input box",
       "kind": "note",
       "labels": [
-        "bug"
+        "bug",
+        "creel",
+        "shuttle",
+        "claude"
       ],
       "issues": [
         659
@@ -944,7 +947,25 @@
       "brief": "",
       "body": "Imported from [issue #659](https://github.com/Knatte18/loomyard/issues/659).\n\nFound by the creel stage 1 audit (board note `creel-test`), in a sandbox hub, with `lyx` built from `main` at e131c7625.\n\n## What was seen\n\n`lyx creel inject --interrupt` does not deliver its line in the common case.\nWhen Claude Code is interrupted early in a turn (here 4 to 9 seconds in, still thinking), it puts the interrupted prompt back into the input box.\nCreel's next idle probe then reads a draft in the box and answers busy, so the head-queued inject waits until someone clears the box or its TTL expires.\n`lyx creel interrupt` leaves the strand in the same state: every later reminder and inject is held behind the restored prompt.\n\n## Steps\n\n1. In a sandbox hub, a Claude strand `ctest:eve` in its own window, idle.\n2. `lyx creel inject --wait ctest:eve \"Without using any tool, write a 700-word essay about mountains.\"` (outcome injected).\n3. Nine seconds later: `lyx creel inject --interrupt --wait --timeout 40s ctest:eve \"Reply STOPPED2.\"`.\n4. The journal shows `interrupted` and the inject `posted`; the call times out (exit 4).\n5. The pane shows the essay prompt back in the input box; nothing more is typed.\n6. Clearing the box by hand (C-u) lets the queued inject go at the next probe.\n\n## Expected\n\n`inject --interrupt` stops the turn and then types its line, as its help example `\"stop and run the tests\" --interrupt --wait` promises.\nFor example, the guarded interrupt (or the inject path after it) clears a box that holds exactly the interrupted prompt, or creel treats that restored text as its own to clear before typing.\n",
       "created": "2026-10-15T16:35:13Z",
-      "revised": "2026-10-15T16:35:13Z"
+      "revised": "2026-10-15T16:35:15Z"
+    },
+    {
+      "id": 568,
+      "slug": "creel-read-ack-on-write-error",
+      "title": "creel: read marks mail read even when writing it out failed",
+      "kind": "note",
+      "labels": [
+        "bug"
+      ],
+      "issues": [
+        660
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Imported from [issue #660](https://github.com/Knatte18/loomyard/issues/660).\n\nFound by the creel stage 1 audit (board note `creel-test`), in a sandbox hub, with `lyx` built from `main` at e131c7625.\n\n## What was seen\n\n`lyx creel read` marks messages read even when it failed to write them out, so the mail is lost.\nThe design says a read is acknowledged only once the client wrote the messages out (`internal/creelengine/doc.go`, \"Mail\"), and `Client.Call` acks only when its handler returns nil.\nBut the read verb's handler in `internal/creelcli/cli.go` (`printMessages` in `readCmd`) calls `output.Ok(out, fields)` and always returns nil, ignoring a write error.\n\n## Steps\n\n1. In a sandbox hub, post a message to a shell strand: `lyx creel post ctest:carol \"w1 unacked test\"`.\n2. In carol's pane: `lyx creel read \u003e /dev/full; echo rc=$?` prints `rc=0`.\n3. `lyx creel inbox` in carol's pane shows no unread mail, and `lyx creel log --id \u003cid\u003e` shows a `read` event.\n\n## Expected\n\nA read whose output cannot be written exits non-zero and sends no acknowledgement, so the messages stay unread, as the design promises for a client that dies before writing them.\n",
+      "created": "2026-10-15T16:35:16Z",
+      "revised": "2026-10-15T16:35:16Z"
     }
   ]
 }
