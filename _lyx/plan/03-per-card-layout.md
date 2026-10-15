@@ -15,12 +15,16 @@
 - `plan:internal/websterengine#PackLayoutFile` -> `const PackLayoutFile PackLayout = "file"`
 - `plan:internal/websterengine#PackLayoutInline` -> `const PackLayoutInline PackLayout = "inline"`
 - `plan:internal/websterengine#PackLayoutCard` -> `const PackLayoutCard PackLayout = "card"`
-- `plan:internal/websterengine#packLayoutOf` -> `func packLayoutOf(cfg Config) PackLayout`
+- `plan:internal/websterengine#packLayoutOf` -> `func packLayoutOf(cfg Config, geom Geometry) PackLayout`
 
 **Edit:**
 - `contracts/stencils/webster/webster-body-implementer.md`
 - `contracts/stencils/webster/webster-fragment-card-read-pack.md`
 - `contracts/stencils/webster/webster-fragment-pack-read.md`
+- `contracts/stencils/webster/webster-fragment-locate-pack.md`
+- `contracts/stencils/webster/webster-fragment-fresh-read-pack-inline.md`
+- `contracts/stencils/webster/webster-fragment-locate-pack-inline.md`
+- `contracts/stencils/webster/webster-fragment-pack-section-inline.md`
 - `contracts/stencils#WebsterFragmentCardReadPack`
 - `contracts/stencils#WebsterFragmentPackRead`
 - `contracts/stencils#entries`
@@ -45,6 +49,7 @@
 
 **Uses:**
 - `internal/websterengine#Config`
+- `internal/websterengine#Geometry`
 
 **Intent:**
 Render the per-card layout in the implementer fork prompt and make begin-batch pick it when `kickstart_pack_per_card` is true (D1, D2, D4, D5).
@@ -58,18 +63,20 @@ Five new fragments, each with a banner in the style of its neighbours (what read
 - `webster-fragment-card-pack-allowed`, filling the new `card_pack_allowed` marker, no marker: the text ``, `lyx loom card-pack` `` (a comma, a space and the backticked command), with no trailing newline once read.
 
 The banners of `webster-fragment-card-read-pack` and `webster-fragment-pack-read`, and the doc comments of `WebsterFragmentCardReadPack` and `WebsterFragmentPackRead`, say they are read for the file and inline layouts, and for the file layout alone, since a per-card pack fills `card_read` and `kickstart_pack` from the new fragments.
+The banners of `webster-fragment-locate-pack` and the three inline fragments `webster-fragment-fresh-read-pack-inline`, `webster-fragment-locate-pack-inline` and `webster-fragment-pack-section-inline` read "kickstart_pack_per_card is false and kickstart_pack_file is true" for the file layout and "kickstart_pack_per_card is false and kickstart_pack_file is false" for the inline layout, and the text after each banner stays byte-identical.
 
 `webster-body-implementer.md`'s sandbox paragraph becomes "`lyx loom lint-pattern`{{.card_pack_allowed}} and `lyx quarry resolve` are always allowed", the marker directly after `` `lyx loom lint-pattern` `` and before ` and`, so a per-card prompt lists lint-comments, lint-pattern, card-pack and quarry resolve, and every other prompt fills it empty.
 
-`PackLayout` (`render.go`) names the three layouts, its string values the `pack_layout` trace values; `packLayoutOf` returns `PackLayoutCard` when `cfg.KickstartPackPerCard`, else `PackLayoutFile` when `cfg.KickstartPackFile`, else `PackLayoutInline`.
+`PackLayout` (`render.go`) names the three layouts, its string values the `pack_layout` trace values; `packLayoutOf` returns `PackLayoutCard` when `cfg.KickstartPackPerCard` and `geom.AnchorRoot` equals `geom.WorktreeRoot`, else `PackLayoutFile` when `cfg.KickstartPackFile`, else `PackLayoutInline`.
+A standalone geometry sets `AnchorRoot` to the state directory and `WorktreeRoot` to the target, where `lyx loom card-pack`, a hub-only verb, cannot run, so a standalone run keeps the file or inline layout it renders today and never gets a prompt whose every card-pack call refuses; a hub geometry sets both to the anchor path.
 `renderLocate` and `renderReadRules` take the layout in place of the inline bool: with packOn, `PackLayoutInline` reads the frozen `-inline` fragments as today, `PackLayoutCard` reads the `-pack-card` fragments (locate filled with specs_dir like the other pack locates; card_read from `webster-fragment-card-read-pack-card`), and `PackLayoutFile` reads today's fragments; without packOn the layout is ignored.
 `RenderForkPrompt` takes `layout PackLayout` in place of `packFileLayout bool`.
 With a non-nil pack and `PackLayoutCard` it fills `kickstart_pack` with "\n\n" and the `webster-fragment-pack-start-card` text, `card_pack_allowed` with the `webster-fragment-card-pack-allowed` text, leaves `kickstart_pack_inline` empty and returns a nil packFile, so begin-batch writes no `<batch>-pack.md`; the pack's entries reach neither the prompt nor any file.
 The file and inline branches are unchanged; every branch but the per-card one fills `card_pack_allowed` empty, and a nil pack renders the pack-off prompt whatever the layout.
 `card_pack_allowed` joins the optional markers of `RenderForkPrompt`'s and `RenderRecoveryPrompt`'s `FillOptional` calls, and the recovery prompt fills it empty, so its bytes are unchanged.
-`buildKickstartPack` logs `pack_layout` as `string(packLayoutOf(deps.Config))` when a pack is built and `none` otherwise, so a per-card batch's line ends `pack_layout=card`; it still builds the batch pack under the per-card layout, so the off, language-none and empty outcomes and the resolved and unresolved counts keep their batch-start meaning.
-`BeginBatch` passes `packLayoutOf(deps.Config)`; a pack file an earlier file-layout call of the same batch wrote stays on disk and the per-card prompt never names it.
-`internal/websterengine/doc.go`'s kick-start pack section describes the per-card layout, the key's precedence over `kickstart_pack_file`, the card files as the batch overview, the `## Start here` section, the sandbox marker, and `card` among the `pack_layout` values.
+`buildKickstartPack` logs `pack_layout` as `string(packLayoutOf(deps.Config, deps.Geom))` when a pack is built and `none` otherwise, so a per-card batch's line ends `pack_layout=card`; it still builds the batch pack under the per-card layout, so the off, language-none and empty outcomes and the resolved and unresolved counts keep their batch-start meaning.
+`BeginBatch` passes `packLayoutOf(deps.Config, deps.Geom)`; a pack file an earlier file-layout call of the same batch wrote stays on disk and the per-card prompt never names it.
+`internal/websterengine/doc.go`'s kick-start pack section describes the per-card layout, the key's precedence over `kickstart_pack_file` in a hub geometry and its fall-back to that key in a standalone one, the card files as the batch overview, the `## Start here` section, the sandbox marker, and `card` among the `pack_layout` values.
 
 Tests:
 - `TestStencils_TopLevelMarkers` gains a row per new fragment: `specs_dir` for the locate fragment, none for the other four.
@@ -88,10 +95,11 @@ Tests:
   "the per-card layout writes no pack file and names card-pack" (perCard, noPack, wantPrompt the per-card FRESH-READ and step 1 needles and `## Start here`, wantNotPrompt `packFirstTurn`, the pack entry lines and `packHeading`, log `batch=1 kickstart_pack=on resolved=1 unresolved=0 pack_layout=card`);
   "the per-card switch overrides kickstart_pack_file" (perCard with `inline` set, noPack, the same needles and the same full log line);
   "a flip from file to per-card leaves a prompt that names no pack file" (flip toggles `KickstartPackPerCard` when perCard-flip is set, stalePack, log `batch=1 kickstart_pack=on resolved=1 unresolved=0 pack_layout=file` then the same line ending `pack_layout=card`);
-  "a flip from per-card to file writes the pack file" (the reverse, the `pack_layout=card` line then the `pack_layout=file` one).
+  "a flip from per-card to file writes the pack file" (the reverse, the `pack_layout=card` line then the `pack_layout=file` one);
+  "a standalone geometry keeps the file layout under per-card" (perCard and a new `standaloneGeom bool` case field that sets `Geom.AnchorRoot` to a fresh temp directory apart from `WorktreeRoot`, wantPrompt `packFirstTurn` and the pack entry lines, wantNotPrompt the per-card step 1 needle, log `batch=1 kickstart_pack=on resolved=1 unresolved=0 pack_layout=file`), which writes the pack file.
   The case gains a `flipPerCard bool` field naming which key `flip` toggles, so the existing flip rows keep flipping `kickstart_pack_file`.
   `layoutBlind`'s second call flips both `KickstartPackFile` and `KickstartPackPerCard`, so it compares the file layout's settings against the per-card ones, and the off, language-none and empty rows all set `layoutBlind` (today only the off row does), each requiring the same prompt bytes, no pack file and a `pack_layout=none` line on both calls: the pack-off prompt holds under every layout value at begin-batch, and the nil-pack `TestRenderPrompts` row covers the inline value.
 
-**ImpactSummary:** RenderForkPrompt, renderLocate and renderReadRules take a PackLayout in place of a bool, with BeginBatch and the template_test helpers their only callers; the file, inline, pack-off and recovery bytes are pinned unchanged and only a per-card config changes a prompt.
+**ImpactSummary:** RenderForkPrompt, renderLocate and renderReadRules take a PackLayout in place of a bool, with BeginBatch and the template_test helpers their only callers; the file, inline, pack-off and recovery bytes are pinned unchanged and only a per-card config in a hub geometry changes a prompt.
 
 **Commit:** 3: webster: per-card kick-start pack layout in the fork prompt

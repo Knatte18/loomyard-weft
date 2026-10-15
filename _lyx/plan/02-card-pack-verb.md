@@ -20,6 +20,7 @@
 - `contracts/stencils/webster/webster-fragment-pack-card.md`
 - `contracts/stencils/webster/webster-fragment-pack-unresolved.md`
 - `contracts/stencils/webster/webster-fragment-pack-empty.md`
+- `contracts/stencils#WebsterFragmentPackCard`
 
 **Uses:**
 - `internal/websterengine#renderCardPack`
@@ -53,7 +54,8 @@ an error goes out through `output.Err` with exit 1, and success writes the markd
 `wireLightweight` fills `c.env.StencilsDir` with `fabricengine.StencilsDir(location.HubPath)`, the value `hubgeom.WebsterGeometry` gives webster.
 `resolveRunID` treats card-pack's positional argument as a card number, never a run-id, as it does insert-card's.
 The verb resolves its location through `lyxcwd` in loom's pre-run like every other loom verb: every loom verb is hub-only, so `internal/cliwire`, the standalone-capable wiring the record's constraint names, does not apply, as `internal/loomcli/doc.go` says of the peers group.
-A webster run in standalone geometry gets a per-card prompt too, and its fork's `lyx loom card-pack` call refuses at loom's pre-run, outside a hub worktree; the fork then locates every glyph on the card through the per-card locate step's fallback, so the run degrades and never stops.
+Loom's pre-run only needs a git repository at its anchored directory, so a call from a standalone target passes it, and the verb refuses on the missing plan directory, since a standalone run's plan lives in its state directory and not under the anchor;
+its way forward is the locate fallback, so a standalone webster run never gets a working pack from the verb and card 3's begin-batch renders the file or inline layout there.
 
 Bound: the verb mutates no webster, plan or tracked state and holds no lock, so it adds no route around any gate.
 Beyond its stdout it writes only through `internal/logger`, as every lyx verb that logs does: the process's own trace file under the anchor's `.lyx/logs`, the Info line, the Warn on an index failure, which also reaches stderr at the logger's default threshold, and the exit retention sweep.
@@ -62,7 +64,8 @@ It is a `lyx loom` verb rather than a `lyx webster` one because the claudeengine
 Tests, all in the new `cardpack_test.go`, one table-driven `TestCardPackCmd` over a hand-populated `*loomCLI` (`AnchorPath`, `WorktreeRoot`, `StencilsDir` from `stencilkit.Seed`, `PlanIndex`), its plan written with `plankit.Write` under `<anchor>/_lyx/plan`, its log captured with `logcapture.CaptureVerbose`, so it does not call `t.Parallel`:
 - a card with an Edit glyph `internal/foo#Baz` and a `Uses:` glyph that does not resolve, over a Go file holding `Baz`, with the real `planglyph.NewIndex`: exit 0, stdout equals the exact subsection, heading `### `_lyx/plan/01-<slug>.md``, the `Baz` entry with its span and signature and the `#### Unresolved` list, and the log holds `msg="webster: card pack"` with `card=1 resolved=1 unresolved=1`;
 - the same fixture after an uncommitted edit inserts lines above `Baz`: the span in stdout is the shifted current one, not the first call's;
-- a card whose only targets are a plain path and a `plan:` handle, and a plan with `language: none`: exit 0, stdout holds `no member glyphs on this card`, and the log holds the Info line with `resolved=0`;
+- a `go` plan whose card targets only a plain path and a `plan:` handle: exit 0, stdout holds `no member glyphs on this card` and a `#### Unresolved` list naming the handle, and the log holds the Info line with `card=1 resolved=0 unresolved=1`;
+- a `language: none` plan whose card targets only a plain path: exit 0, stdout holds `no member glyphs on this card` and no `#### Unresolved` heading, and the log holds the Info line with `resolved=0 unresolved=0`;
 - a test-local index embedding `planindex.Index` whose `KickstartPack` returns the card with its glyph unresolved and an error wrapping `planindex.ErrQuarryUnavailable`: exit 0, stdout lists the glyph unresolved with that error, the log holds a `level=WARN` line and the Info line;
 - refusals, each asserting exit 1, a failure envelope whose error ends with the way forward, and no `webster: card pack` line in the log: argument `x`, argument `0`, no argument (cobra's `ExactArgs` error, no envelope asserted), card `9` of a one-card plan, an anchor with no `_lyx/plan` directory, and a plan whose Card Index names a card with no card file.
 `TestVerbUsesLightweightWiring` gains the row `{"CardPack", "card-pack", true}`;
@@ -71,7 +74,7 @@ Tests, all in the new `cardpack_test.go`, one table-driven `TestCardPackCmd` ove
 `internal/loomcli` stays within its row in `cmd/lyx/testdata/test-budget.yaml`.
 
 Docs in this commit: `contracts/specs/refusal-spec.md`'s loom section gains one row per refusal (an argument that is not an integer or is `0`, unknown card number, missing plan directory, plan that does not parse), each a correctness halt with the way forward above, and its grouped raw I/O row's Trigger gains the plan directory's stat and the pack fragment reads;
-the banners of `webster-fragment-pack-card`, `-pack-unresolved` and `-pack-empty` name `lyx loom card-pack`'s stdout as a third destination beside the pack file and the inline section;
+the banners of `webster-fragment-pack-card`, `-pack-unresolved` and `-pack-empty` name `lyx loom card-pack`'s stdout as a third destination beside the pack file and the inline section, and the `WebsterFragmentPackCard` doc comment also names rendering one card alone as `lyx loom card-pack`'s output;
 `internal/loomcli/doc.go` gains a `# Card pack verb` section naming the verb, its output and its bound;
 `internal/websterengine/doc.go`'s kick-start pack section describes `CardPackMarkdown` and the `webster: card pack` Info line and its keys;
 `docs/overview.md`'s loom module line lists `card-pack`, and its loom verb paragraph gains one line saying what `card-pack <card>` prints.
