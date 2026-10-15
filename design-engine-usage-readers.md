@@ -1,6 +1,6 @@
 # Usage and cost read through the engine
 
-`engine-usage-readers` · Task · enhancement, shuttle
+`engine-usage-readers` · Task · enhancement, shuttle, claude
 
 Depends on: [`engine-registry`](design-engine-registry.md), [`engine-config-seams`](design-engine-config-seams.md)
 

@@ -1,6 +1,6 @@
 # Engine-owned config, one neutral guardrail table, provider-blind reed
 
-`engine-config-seams` · Task · enhancement, shuttle, config, reed
+`engine-config-seams` · Task · enhancement, shuttle, claude, config, reed
 
 Depends on: [`engine-registry`](design-engine-registry.md)
 
