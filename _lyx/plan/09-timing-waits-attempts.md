@@ -1,17 +1,17 @@
 # Card 9 — timing-waits-attempts
 
 **Create:**
-- `plan:internal/reportengine#WaitParentReview` -> `const WaitParentReview = "parent_review"`
-- `plan:internal/reportengine#WaitPRGate` -> `const WaitPRGate = "pr_gate"`
-- `plan:internal/reportengine#WaitEscalation` -> `const WaitEscalation = "escalation"`
-- `plan:internal/reportengine#WaitHalt` -> `const WaitHalt = "halt"`
-- `plan:internal/reportengine#waitInterval` -> `type waitInterval struct`
-- `plan:internal/reportengine#battenRowHalts` -> `func battenRowHalts(history []shedengine.HistoryEntry) []int`
-- `plan:internal/reportengine#runWaits` -> `func runWaits(row RunRow, rows []timedRow, end time.Time) []waitInterval`
-- `plan:internal/reportengine#netWaits` -> `func netWaits(waits []waitInterval, sleeps []Interval) map[string][]Interval`
-- `plan:internal/reportengine#AttemptFigure` -> `type AttemptFigure struct`
-- `plan:internal/reportengine#TimingAttempts` -> `type TimingAttempts struct`
-- `plan:internal/reportengine#runAttempts` -> `func runAttempts(row RunRow, rows []timedRow, span Interval, sleeps []Interval) (TimingAttempts, []Finding)`
+- `internal/reportengine#WaitParentReview`
+- `internal/reportengine#WaitPRGate`
+- `internal/reportengine#WaitEscalation`
+- `internal/reportengine#WaitHalt`
+- `internal/reportengine#waitInterval`
+- `internal/reportengine#battenRowHalts`
+- `internal/reportengine#runWaits`
+- `internal/reportengine#netWaits`
+- `internal/reportengine#AttemptFigure`
+- `internal/reportengine#TimingAttempts`
+- `internal/reportengine#runAttempts`
 
 **Edit:**
 - `internal/reportengine#RunRow`

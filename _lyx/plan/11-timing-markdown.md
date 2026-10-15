@@ -1,13 +1,13 @@
 # Card 11 — timing-markdown
 
 **Create:**
-- `plan:internal/reportengine#HeadingTimingRuns` -> `const HeadingTimingRuns = "## Runs"`
-- `plan:internal/reportengine#HeadingTimingPhases` -> `const HeadingTimingPhases = "## Phase medians"`
-- `plan:internal/reportengine#HeadingTimingBuckets` -> `const HeadingTimingBuckets = "## Time per bucket"`
-- `plan:internal/reportengine#HeadingTimingSettlers` -> `const HeadingTimingSettlers = "## Stops by settler"`
-- `plan:internal/reportengine#RenderTimingMarkdown` -> `func RenderTimingMarkdown(r TimingReport) string`
-- `plan:internal/reportengine#formatSeconds` -> `func formatSeconds(seconds *int64) string`
-- `plan:internal/reportengine#TestRenderTimingMarkdown` -> `func TestRenderTimingMarkdown(t *testing.T)`
+- `internal/reportengine#HeadingTimingRuns`
+- `internal/reportengine#HeadingTimingPhases`
+- `internal/reportengine#HeadingTimingBuckets`
+- `internal/reportengine#HeadingTimingSettlers`
+- `internal/reportengine#RenderTimingMarkdown`
+- `internal/reportengine#formatSeconds`
+- `internal/reportengine#TestRenderTimingMarkdown`
 
 **Edit:**
 - `internal/reportengine#allowedImports`

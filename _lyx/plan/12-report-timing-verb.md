@@ -1,20 +1,20 @@
 # Card 12 — report-timing-verb
 
 **Create:**
-- `plan:internal/reportcli#defaultTimingDays` -> `const defaultTimingDays = 7`
-- `plan:internal/reportcli#timingCommand` -> `func timingCommand() *cobra.Command`
-- `plan:internal/reportcli#parseTimingOptions` -> `func parseTimingOptions(since, by, format string, now time.Time) (reportengine.TimingOptions, error)`
-- `plan:internal/reportcli#resolvePrime` -> `func resolvePrime(ctx context.Context, verb string) (*lyxcwd.Location, error)`
-- `plan:internal/reportcli#livePairs` -> `func livePairs(location *lyxcwd.Location) ([]string, error)`
-- `plan:internal/reportcli#journalSleeps` -> `func journalSleeps(ctx context.Context) ([]reportengine.Interval, string)`
-- `plan:internal/reportcli#sleepsFromJournal` -> `func sleepsFromJournal(out []byte, runErr error) ([]reportengine.Interval, string)`
-- `plan:internal/reportcli#TestTimingSleepNote` -> `func TestTimingSleepNote(t *testing.T)`
-- `plan:internal/reportcli#TestParseTimingOptions` -> `func TestParseTimingOptions(t *testing.T)`
+- `internal/reportcli#defaultTimingDays`
+- `internal/reportcli#timingCommand`
+- `internal/reportcli#parseTimingOptions`
+- `internal/reportcli#resolvePrime`
+- `internal/reportcli#livePairs`
+- `internal/reportcli#journalSleeps`
+- `internal/reportcli#sleepsFromJournal`
+- `internal/reportcli#TestTimingSleepNote`
+- `internal/reportcli#TestParseTimingOptions`
 - `internal/reportcli/timing.go`
 
 **Rename:**
-- `internal/reportcli#TestConvergence_RefusesBadFlags` -> `plan:internal/reportcli#TestReportVerbs_RefuseBadFlags`
-- `internal/reportcli#TestConvergence_RefusesOutsideThePrimeThenReportsTheSeededRun` -> `plan:internal/reportcli#TestReportVerbs_RefuseOutsideThePrimeThenReportTheSeededRun`
+- `internal/reportcli#TestConvergence_RefusesBadFlags` -> `internal/reportcli#TestReportVerbs_RefuseBadFlags`
+- `internal/reportcli#TestConvergence_RefusesOutsideThePrimeThenReportsTheSeededRun` -> `internal/reportcli#TestReportVerbs_RefuseOutsideThePrimeThenReportTheSeededRun`
 
 **Edit:**
 - `internal/reportcli#Command`

@@ -1,23 +1,23 @@
 # Card 10 — timing-stops-settlers
 
 **Create:**
-- `plan:internal/reportengine#TimingStop` -> `type TimingStop struct`
-- `plan:internal/reportengine#StopKindStop` -> `const StopKindStop = "stop"`
-- `plan:internal/reportengine#StopKindBounce` -> `const StopKindBounce = "bounce"`
-- `plan:internal/reportengine#StopKindBattenHalt` -> `const StopKindBattenHalt = "batten-halt"`
-- `plan:internal/reportengine#SettledByJudge` -> `const SettledByJudge = "judge"`
-- `plan:internal/reportengine#SettledByShed` -> `const SettledByShed = "shed"`
-- `plan:internal/reportengine#SettledByTackler` -> `const SettledByTackler = "tackler"`
-- `plan:internal/reportengine#SettledByArbiter` -> `const SettledByArbiter = "arbiter"`
-- `plan:internal/reportengine#SettledByAlignment` -> `const SettledByAlignment = "alignment"`
-- `plan:internal/reportengine#SettledByUnknown` -> `const SettledByUnknown = "unknown"`
-- `plan:internal/reportengine#SettledByOpen` -> `const SettledByOpen = "open"`
-- `plan:internal/reportengine#RunRow.readSettles` -> `func (row *RunRow) readSettles(records Reader, tag gitrepo.TagRef) ([]Finding, error)`
-- `plan:internal/reportengine#runStops` -> `func runStops(row RunRow, rows []timedRow) ([]TimingStop, []Finding)`
-- `plan:internal/reportengine#matchChildRecords` -> `func matchChildRecords(stops []TimingStop, row RunRow) (map[int]shedrun.SettleRecord, []Finding)`
-- `plan:internal/reportengine#matchBattenRecords` -> `func matchBattenRecords(stops []TimingStop, row RunRow) (map[int]shedrun.SettleRecord, []Finding)`
-- `plan:internal/reportengine#settlerOf` -> `func settlerOf(stop TimingStop, record *shedrun.SettleRecord, row RunRow, rows []timedRow) string`
-- `plan:internal/reportengine#world.battenSettles` -> `func (w *world) battenSettles(sha string, hour int, slug string, status shedengine.Status, records ...shedrun.SettleRecord)`
+- `internal/reportengine#TimingStop`
+- `internal/reportengine#StopKindStop`
+- `internal/reportengine#StopKindBounce`
+- `internal/reportengine#StopKindBattenHalt`
+- `internal/reportengine#SettledByJudge`
+- `internal/reportengine#SettledByShed`
+- `internal/reportengine#SettledByTackler`
+- `internal/reportengine#SettledByArbiter`
+- `internal/reportengine#SettledByAlignment`
+- `internal/reportengine#SettledByUnknown`
+- `internal/reportengine#SettledByOpen`
+- `internal/reportengine#RunRow.readSettles`
+- `internal/reportengine#runStops`
+- `internal/reportengine#matchChildRecords`
+- `internal/reportengine#matchBattenRecords`
+- `internal/reportengine#settlerOf`
+- `internal/reportengine#world.battenSettles`
 
 **Edit:**
 - `internal/reportengine#RunRow`
