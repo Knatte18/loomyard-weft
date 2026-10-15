@@ -673,7 +673,7 @@
       "isolated": false,
       "brief": "tokencount reads each run through its engine, with prices per engine, instead of reading Claude transcripts directly",
       "body": "## Goal\n\nA task of the Codex-readiness series (see `engine-registry` for the operator decision): token use and cost read through each run's engine, not straight from Claude's transcripts.\n\n## Seen (2026-10-15)\n\n- `tools/tokencount/main.go` reads `~/.claude/projects`; `cost.go` holds a Claude price table; `count.go` carries its own copy of the Claude transcript usage parser, duplicating `claudeengine/usage.go`; `calibrate.go` reads `CLAUDE.md`.\n\n## Scope\n\n- A neutral per-message usage record and a transcript locator capability in `shuttleengine`; `claudeengine` implements them.\n- `tokencount` reads through each run's engine and deletes its own parser.\n- Prices move into each engine behind a capability.\n- Calibration reads the engine's instruction files.\n\n## Out\n\nNote `report-timing` itself; it should wait on this task if it is to report token totals.\n",
-      "status": "running · Merge-In",
+      "status": "running · Merge-Bouncer",
       "created": "2026-10-15T10:16:44Z",
       "revised": "2026-10-15T10:25:08Z"
     },
