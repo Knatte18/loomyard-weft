@@ -3,6 +3,7 @@
   "state": "running",
   "error": "",
   "pause_requested": false,
+  "pause_after": "Discussion-Write",
   "activity": {
     "now": "Loom-Preflight",
     "last": "Preflight → done",
