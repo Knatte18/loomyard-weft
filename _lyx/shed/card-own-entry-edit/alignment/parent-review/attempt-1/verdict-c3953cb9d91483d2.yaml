@@ -1,0 +1,10 @@
+verdict: approve
+reason: >-
+  The design covers every point of the board entry and its operator decision: it traces the cause to the CLAUDE.md and overview doc-lifecycle wording,
+  states the own-entry rule where the planner, the discussion writer and the darn writer read it and in a new PATTERN entry, declines the optional plan check with a reason,
+  and leaves the board lock unchanged.
+  The darn writer and rubric additions are the same defect, not another entry's work.
+  No board entry is duplicated or contradicted.
+  The only peer overlap is a separate new PATTERN.md index line beside engine-model-choice's, which lands first.
+question: ""
+superseded: []
