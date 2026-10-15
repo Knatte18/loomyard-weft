@@ -195,6 +195,13 @@ Rationale: The prescribed wording grows PATTERN.md to 15681 bytes, past the 1556
 - A resumed session's transcript gets a later modification time, so `--since`/`--until` can move a fork between windows.
 - Claude Code's transcript and project-directory encoding are not a stable interface; a format change breaks discovery or extraction, visible only as a drop in kept forks.
 
+<!-- lyx:carry-over Plan-Review -->
+- Plan-Review, round 2: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
+  Review: _lyx/reviews/plan/round-2-review.md; fixer report: _lyx/reviews/plan/round-2-fixer-report.md.
+  - appended-records-path-breaks-identical-report-assertion (class consistency, severity MEDIUM, open in rounds 2)
+  - filters-spell-directory-roots-outside-variable-block (class consistency, severity BLOCKING, open in rounds 2)
+<!-- /lyx:carry-over Plan-Review -->
+
 ## Acceptance criteria
 
 - `forkaudit.sh --since <date>` over fixtures with one fork per arm reports each arm with its fork, run and card counts, and the medians of D5.
