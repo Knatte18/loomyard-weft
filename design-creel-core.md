@@ -1,6 +1,6 @@
 # creel stage 1: the one way to reach an agent, standalone
 
-`creel-core` · Task · feature, creel, reed, shuttle · running · Webster-Bouncer
+`creel-core` · Task · feature, creel, reed, shuttle · running · Describe
 
 ## This task: stage 1
 
