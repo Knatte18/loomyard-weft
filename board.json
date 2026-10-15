@@ -493,33 +493,6 @@
       "revised": "2026-10-13T08:40:37Z"
     },
     {
-      "id": 478,
-      "slug": "lighter-test-rules",
-      "title": "Lighter test rules for small changes",
-      "kind": "task",
-      "labels": [
-        "enhancement",
-        "stencil",
-        "webster",
-        "burler",
-        "loom"
-      ],
-      "issues": [],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "Tests that pin stencil wording make small prompt changes large; pin only what must hold, measured first",
-      "body": "## Idea (operator, 2026-10-13)\n\nThe project's test and doc rules make small changes large.\n`webster-pack-last` moved the kick-start pack into a file of its own: about 70 lines of change, about 140 lines of tests and about 20 lines of required docs and registration, 14 files in all.\n\n## Seen\n\n- Tests that pin stencil wording (`contracts/stencils/claims_test.go`, the template tests such as `internal/websterengine/template_test.go`) change with every sentence a prompt changes, and prompt changes are much of today's work.\n- The doc rule (`doc.go` in the same commit) is cheap and keeps the package docs true.\n\n## Options to discuss\n\n1. Tests pin only what must hold: markers, file paths, order and the presence of load-bearing rules, not the wording of sentences.\n2. Stencil wording claims move from tests to review: the Burler review checks them instead.\n3. Keep the doc rule, but drop the per-card test requirement for stencil-only changes.\n\n## First step\n\nCount, over the landed tasks of the last weeks, how much of each diff is tests that pin stencil or template wording, against the code change itself, so the choice rests on numbers.\n\n## Result (count, 2026-10-15)\n\nA Sonnet agent counted the 267 task landings on `main` since 2026-09-29 from `git log -p`, classing every changed line as stencil, wording test, other test, code, docs or other; its awk scripts and per-commit table are in `.scratch/test-weight/` in the prime, not committed.\nWording tests were: every `_test.go` under `contracts/stencils/`, every `*template*_test.go` and `*prompt*_test.go`, and in other tests the lines with `must:`/`mustNot:`/`want(All|None|Prompt|NotPrompt)` or a `Contains` call naming a prompt, stencil, template or render.\n\n- Overall, wording tests are about 4% of code plus stencil lines (7k against 181k code and 5k stencil lines, three mass test-prune commits left out); the median commit has none.\n- The weight sits in prompt-edit tasks with little code: in the 115 commits that changed a stencil, wording-test lines match or exceed stencil lines in 52, with a median of 1.2 wording-test lines per stencil line.\n  Examples: `793c6a8ee` 20 stencil, 73 wording-test, 0 code; `1e39afc10` (`webster-pack-last`) 41 stencil, 96 wording-test, 91 code; `da58615cd` 54 stencil, 204 wording-test, 137 code.\n- In tasks that also change much code the share falls to 5-20%.\n- Uncertain: the regex over-counts a few lines that only mention a prompt and misses assertions in other idioms; the `contracts/stencils` test files also hold marker and registry tests, counted as wording; renames count as full delete plus add.\n\n## Operator decision (2026-10-15)\n\nBuild option 1: stencil tests pin only what must hold (markers, file paths, order, and the presence of load-bearing rules), not the wording of sentences.\n\n## Operator view, not a decision (2026-10-15)\n\nIt is odd to have mechanical tests for stencils at all.\n\n## Operator decision (2026-10-15, later): drop wording claims entirely\n\nThis supersedes the option 1 wording above where they differ.\nStencil tests come in three kinds:\n\n1. Marker sets and Fill round-trips: the Go code fills fields such as `{{.outcome_path}}`, and a missing or misspelled marker breaks a run. They stay.\n2. PATTERN scans over stencils (`PATTERN-parent-directive`, `PATTERN-edit-directive`, `PATTERN-no-denied-recovery` and the like) and the registry tests: rules across all stencils, not prose. They stay.\n3. Wording claims (`contracts/stencils/claims_test.go`, and the `must`/`mustNot`/`wantPrompt`-style prose assertions in template and prompt tests): they go entirely, the protected claims that cite a provenance included; review guards prompt wording instead.\n\n## Open for the Discussion\n\n- Where the rule that asks for a test per stencil change is written (stencils, PATTERN, CLAUDE.md, the plan stencil), so it changes with the tests.\n- Where a prose assertion in a template or prompt test is in fact a marker or structure check of kind 1 or 2, it stays.\n",
-      "status": "done",
-      "created": "2026-10-13T13:50:13Z",
-      "revised": "2026-10-15T12:07:23Z",
-      "run_settings": {
-        "loom": {
-          "review_hard_max_bounces": 3,
-          "review_max_bounces": 2
-        }
-      }
-    },
-    {
       "id": 483,
       "slug": "dotnet-verify-protocol",
       "title": "Verification protocol for a .NET repo: slow-suite tier, numerical-baseline capture/compare, verify timeouts and logs",
@@ -907,9 +880,7 @@
         "stencil"
       ],
       "issues": [],
-      "depends_on": [
-        "lighter-test-rules"
-      ],
+      "depends_on": [],
       "isolated": false,
       "brief": "The Discussion writer writes relevant.md listing the files and members it read and found relevant; Plan-Write reads it first, so its context starts smaller",
       "body": "## Seen\n\nIn the 10 runs before 2026-10-15 (`tools/tokencount/tokencount.sh -last 10`), Plan-Write was the second-largest cost after the Webster forks.\nThe plan lead session read 108M cached tokens, fork0 (the plan-writing fork) 51M and the five lens forks 44M.\nThe plan lead peaks at 130k to 370k context, and fork0 and every lens fork inherit about 80% of that peak; each message re-reads it.\nLens forks never re-read the plan (0 of 219 calls); they spot-check code briefly.\nThe cost comes from many messages on a large context, not from the reads themselves.\n\n## Operator view, not a decision (2026-10-15)\n\nThe plan writer must know everything relevant before it writes.\nAn alternative: a separate agent between Discussion and Plan does the research and settles what is relevant.\n\n## Orch notes (my view, not decided)\n\n- The step writes a durable record (for example member glyphs plus short excerpts, the shape of the Webster kick-start pack), which Plan-Write reads instead of exploring, so its lead and forks start smaller.\n- The research agent can run on a cheaper model, and its own exploration context is dropped when it ends.\n- Risk: the plan writer re-explores anyway, or the record misses something and the plan goes wrong; measure with tokencount and plan review findings before and after.\n- Related notes: `fan-master-preread`, `review-inline-code`.\n\n## Discussion so far (2026-10-15)\n\n- Orch: model price matters little here, since nearly all tokens are cache reads (tokencount estimates about $2.7 per weighted million for the Opus plan lead against $2.0 for the Sonnet Webster forks); the gain comes from a smaller context, and a separate research agent adds a handoff that may lose understanding.\n- Orch proposal, not decided: no new role; the Discussion writer, which already reads the relevant code, writes a separate file beside its discussion (for example `relevant.md`) listing the files and members it found relevant, in plain code names with one line of why each, not glyphs; the discussion prose stays free of glyphs.\n  Plan-Write starts by reading that list and may read more.\n  Discussion-Review does not review the list as design, so the review does not grow.\n  Measure the plan lead peak context and the Plan cost with tokencount over a few runs before and after.\n- Operator view, not a decision: the Discussion agent has already looked at everything relevant, so the list records what it read and found relevant, with no extra search for Plan.\n- Operator: discuss further before this becomes a task.\n\n## Operator decision 2026-10-15\n\n- No new role: the Discussion step is extended.\n- The Discussion writer writes a separate file beside the decision record and the support log, `relevant.md`, listing the files and members it read and found relevant, in plain code names with one line of why each; not glyphs, and no extra search for Plan.\n- The discussion prose stays free of glyphs.\n- Plan-Write starts by reading the list and may read more.\n- Discussion-Review does not review the list as design.\n- The new file goes into `contracts/specs/loom-discussion-spec.md`, which pins the files a design step writes, together with the Discussion and Plan stencils (and `loom-plan-spec.md` where it names what Plan reads).\n- Measure the plan lead peak context and the Plan cost with `tools/tokencount/tokencount.sh` over a few runs before and after.",

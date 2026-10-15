@@ -2,8 +2,6 @@
 
 `discussion-relevant-list` · Task · enhancement, loom, stencil
 
-Depends on: [`lighter-test-rules`](design-lighter-test-rules.md)
-
 ## Seen
 
 In the 10 runs before 2026-10-15 (`tools/tokencount/tokencount.sh -last 10`), Plan-Write was the second-largest cost after the Webster forks.
