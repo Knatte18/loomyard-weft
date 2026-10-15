@@ -823,6 +823,25 @@
       "body": "Fix the defects the creel stage 1 audit found, and make its sandbox scenarios re-runnable.\nThe audit report is `docs/research/creel-audit-2026-10-15/report.md`; each issue below holds its steps and expected behaviour.\n\n## Operator decisions (2026-10-15)\n\n- The eight creel bugs from the audit are fixed together in this one task, at high priority.\n- The audit's proposed sandbox scenarios C1-C13 are written into the sandbox suite in this task.\n- `creel-notices` and `creel-agents` stay notes until this task has landed and creel is tested again.\n\n## Defects\n\n- #657: a strand added by hand with `lyx reed add --cmd claude` is never read idle, because Claude's greyed placeholder in the empty input box reads as a draft; `TestSmokeCreelClaudeStrand` (llm tier) fails for the same reason. Shuttle-launched sessions avoid it through `promptSuggestionEnabled: false`.\n- #658: no delivery into a strand pane reed collapsed to 3 rows; the idle probe's `TooShort` is dropped in `internal/creelcli/delivery.go`, so the inject expires and no reason is shown anywhere.\n- #659: after `interrupt` or `inject --interrupt`, Claude restores the interrupted prompt into its input box, creel reads the strand as busy, and the queued inject waits until the box is cleared by hand.\n- #660: `lyx creel read \u003e /dev/full` exits 0 and acknowledges, so the mail is marked read and lost.\n- #661: a daemon that fails to start leaves verbs with only \"no daemon answers\"; its own error (for example a malformed journal line, with file and line) is lost.\n- #662: a new inject is charged TTL for the time since the receiver's previous probe, before it was posted.\n- #663: `read` does not show that a message was returned by a removed holder (`EndedUnreadBy` is never printed).\n- #664: `log` prints `reminded` with `\"id\":0` and no ids; `inject --help` misstates who may inject; `--wait` verbs print an empty sender; `release` of an unknown receiver answers ok.\n\n## Done when\n\n- Each defect above is fixed as its issue's Expected section says, with a test where the repo's tiers can hold one.\n- `lyx gate test --tags llm ./internal/creelcli` passes (`TestSmokeCreelClaudeStrand`), as do the tmux, unit and integration tiers.\n- Scenarios C1-C13 from the report's \"Proposed creel sandbox suite\" are added to the sandbox suite in `tools/sandbox/`, beside the existing creel scenario S9.\n",
       "created": "2026-10-15T16:35:07Z",
       "revised": "2026-10-15T17:12:16Z"
+    },
+    {
+      "id": 566,
+      "slug": "plan-writer-finding-classes",
+      "title": "Classify Plan lens and review findings to make the Plan writer get it right first",
+      "kind": "note",
+      "labels": [
+        "audit",
+        "loom",
+        "burler",
+        "stencil"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "Find what Plan lenses and Plan-Burler-Review keep catching, and stop each recurring class at the writer",
+      "body": "## Seen (2026-10-15)\n\nOver the 15 most recent full loom runs (`tools/tokencount/tokencount.sh -last 15`), Plan cost about $13 a run: the plan lead about $5.50, its forks (fork0 and the five lens forks) about $4, and Plan-Burler-Review about $3.80.\nEach fix the lenses or the review ask for is work the writer did not get right the first time.\n\n## Operator view, not a decision (2026-10-15)\n\nPlan is heavy by nature, since it turns the Discussion into concrete work; the aim is a smarter Plan writer, so fewer Burler rounds are needed.\n\n## Idea (orch recommendation)\n\n- A fresh agent classifies every finding the Plan lenses and Plan-Burler-Review raised in recent runs: what kind of defect, whether it was real, and whether the review found something the lenses had not.\n- Each recurring class goes where it is cheapest to stop at the source:\n  - a machine check in `lyx loom validate-plan`, when the class can be checked deterministically;\n  - a writer rule in the Plan stencil, when it is a judgement the writer can make up front;\n  - a missing input, when the writer lacked something it needed (for example what `discussion-relevant-list` now hands it).\n- Then measure whether lens and review findings per run drop.\n",
+      "created": "2026-10-15T18:13:11Z",
+      "revised": "2026-10-15T18:13:11Z"
     }
   ]
 }
