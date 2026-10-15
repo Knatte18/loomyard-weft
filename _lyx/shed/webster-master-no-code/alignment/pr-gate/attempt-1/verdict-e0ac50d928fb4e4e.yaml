@@ -1,0 +1,7 @@
+verdict: approve
+reason: >-
+  PR 644 changes exactly the files the decision record scopes in, implements D1-D7 as recorded (D8 is by decision not carded),
+  leaves every Out item untouched, and its only peer overlap is a text-only docs/overview.md change with report-timing,
+  which this run (row 22 vs 12) lands ahead of.
+question: ""
+superseded: []
