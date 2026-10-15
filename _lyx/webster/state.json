@@ -1,0 +1,174 @@
+{
+  "runGuid": "e7954b2db7ca7049f155346444afbc94",
+  "planFingerprint": "05425f988920365ccfde783698fc9c432c41ad24b7f39b651bea0afe630b4098",
+  "planFileHashes": {
+    "00-overview.md": "4cf76797668c20c733e8b12142919bcc440c2499190b4f9b530a7c31f29e7838",
+    "01-cli-and-output.md": "9b7afd5710b61d7c147f12d7c49836620d0396a454986308fb6d6610f97a027d",
+    "02-fork-records.md": "ddb476da07d2cb57f034447e25ff5a05ee3f51b3f4579b423032a2bef926aa59",
+    "03-arm-tables.md": "ceca21d6d35d7ffd1061d10d46459c2bf1d2fb78036a823a67e5d53baecd0158",
+    "04-trace-cross-check.md": "021573ad01768f43b14ae7500b5358a7480893af0894fd7009d03a9c4e023c4e",
+    "05-pack-check.md": "815ac3ef0752a01cf47722536224d9f64a6bf7ea65824b5496462bee3dffc628",
+    "06-plan-glyph-use.md": "11a2297674e136a363785486f700ce9873d574c0e71974a80a2c8fd4249e02a1"
+  },
+  "planOverviewFrameHash": "fbf048f80dfee8b6d775cb8b2eb2fe86729bd870140f61be41546f7fbcc5b152",
+  "partition": [
+    {
+      "cards": [
+        "01-cli-and-output",
+        "02-fork-records",
+        "03-arm-tables",
+        "04-trace-cross-check",
+        "05-pack-check",
+        "06-plan-glyph-use"
+      ],
+      "profile": "cautious",
+      "estimate": 214916,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 1,
+        "startup": 54280,
+        "read_union": 38512,
+        "cards": [
+          {
+            "card": 1,
+            "card_text": 924,
+            "reads": {
+              "file:PATTERN.md": 1380,
+              "file:cmd/lyx/testdata/test-budget.yaml": 1848,
+              "file:tools/tokencount/testmain_test.go": 204,
+              "file:tools/tokencount/tokencount.sh": 216,
+              "package:.": 2000,
+              "package:cmd/lyx/testdata": 2000,
+              "package:tools/forkaudit": 2000,
+              "tests:.": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:tools/forkaudit": 2000
+            },
+            "messages": 62,
+            "written": 19524
+          },
+          {
+            "card": 2,
+            "card_text": 912,
+            "reads": {
+              "file:docs/research/glyph-audit-2026-10-15/extract-pf.jq": 1368,
+              "file:docs/research/glyph-audit-2026-10-15/perfork-pf.jq": 48,
+              "file:docs/research/glyph-audit-2026-10-15/report.md": 1092,
+              "file:docs/research/glyph-audit-2026-10-15/run-extract.sh": 228,
+              "package:tools/forkaudit": 2000,
+              "package:tools/forkaudit/testdata": 2000,
+              "tests:tools/forkaudit": 2000,
+              "tests:tools/forkaudit/testdata": 2000
+            },
+            "messages": 104,
+            "written": 32112
+          },
+          {
+            "card": 3,
+            "card_text": 408,
+            "reads": {
+              "file:docs/research/glyph-audit-2026-10-15/quartiles.jq": 192,
+              "file:docs/research/glyph-audit-2026-10-15/stats-pf.jq": 708,
+              "package:tools/forkaudit": 2000,
+              "tests:tools/forkaudit": 2000
+            },
+            "messages": 16,
+            "written": 5208
+          },
+          {
+            "card": 4,
+            "card_text": 840,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1848,
+              "file:docs/research/glyph-audit-2026-10-15/resolve-batches.sh": 312,
+              "file:internal/websterengine/beginbatch.go": 8076,
+              "package:cmd/lyx/testdata": 2000,
+              "package:tools/forkaudit": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:tools/forkaudit": 2000
+            },
+            "messages": 72,
+            "written": 22440
+          },
+          {
+            "card": 5,
+            "card_text": 648,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1848,
+              "file:docs/research/glyph-audit-2026-10-15/check-pack.sh": 528,
+              "file:docs/research/glyph-audit-2026-10-15/missed-files.sh": 240,
+              "file:docs/research/glyph-audit-2026-10-15/pack-entries.jq": 216,
+              "file:docs/research/glyph-audit-2026-10-15/touched-files.jq": 96,
+              "package:cmd/lyx/testdata": 2000,
+              "package:tools/forkaudit": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:tools/forkaudit": 2000
+            },
+            "messages": 52,
+            "written": 16248
+          },
+          {
+            "card": 6,
+            "card_text": 792,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1848,
+              "file:docs/research/glyph-audit-2026-10-15/plan-refs.sh": 456,
+              "file:docs/research/glyph-audit-2026-10-15/plan-stats.jq": 384,
+              "file:docs/research/glyph-audit-2026-10-15/plan-writer.jq": 192,
+              "file:docs/research/glyph-audit-2026-10-15/plan-writer.sh": 204,
+              "package:cmd/lyx/testdata": 2000,
+              "package:tools/forkaudit": 2000,
+              "package:tools/forkaudit/testdata": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:tools/forkaudit": 2000,
+              "tests:tools/forkaudit/testdata": 2000
+            },
+            "messages": 86,
+            "written": 26592
+          }
+        ]
+      }
+    }
+  ],
+  "currentBatch": 1,
+  "masterStrand": "25601c35ac1c2d722346207c7d890c5b",
+  "masterSessionId": "2e0516be-b2a5-4e05-8d25-887fec6b7a84",
+  "batches": {
+    "1": {
+      "slug": "cli-and-output",
+      "cards": [
+        "01-cli-and-output",
+        "02-fork-records",
+        "03-arm-tables",
+        "04-trace-cross-check",
+        "05-pack-check",
+        "06-plan-glyph-use"
+      ],
+      "cardHashes": {
+        "01-cli-and-output": "9b7afd5710b61d7c147f12d7c49836620d0396a454986308fb6d6610f97a027d",
+        "02-fork-records": "ddb476da07d2cb57f034447e25ff5a05ee3f51b3f4579b423032a2bef926aa59",
+        "03-arm-tables": "ceca21d6d35d7ffd1061d10d46459c2bf1d2fb78036a823a67e5d53baecd0158",
+        "04-trace-cross-check": "021573ad01768f43b14ae7500b5358a7480893af0894fd7009d03a9c4e023c4e",
+        "05-pack-check": "815ac3ef0752a01cf47722536224d9f64a6bf7ea65824b5496462bee3dffc628",
+        "06-plan-glyph-use": "11a2297674e136a363785486f700ce9873d574c0e71974a80a2c8fd4249e02a1"
+      },
+      "startSha": "b1d1638ad89988a82e4db9a55cc8e78acef511f5",
+      "kind": "fork",
+      "spawnedAt": "2026-10-15T10:09:56Z",
+      "sessionId": "2e0516be-b2a5-4e05-8d25-887fec6b7a84",
+      "terminal": false,
+      "status": ""
+    }
+  }
+}
