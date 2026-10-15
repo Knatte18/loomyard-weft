@@ -1,6 +1,6 @@
 # Show the orch context size in the prime overview window
 
-`orch-context-overview` · Task · enhancement, orch, batten · running · Discussion-Burler-Review
+`orch-context-overview` · Task · enhancement, orch, batten · running · Discussion-Burler-Fix
 
 ## Ask (operator, 2026-10-14)
 
