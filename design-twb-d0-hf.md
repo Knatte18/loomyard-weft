@@ -1,6 +1,6 @@
 # Hibernate the machine on a trigger, such as a task landing
 
-`twb-d0-hf` · Note · feature · running · Discussion-Write
+`twb-d0-hf` · Note · feature · paused · Discussion-Bouncer
 
 ## Seen (2026-10-13)
 
