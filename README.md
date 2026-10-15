@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-15 05:32 UTC; every age below is as of then.
+Rendered 2026-10-15 05:33 UTC; every age below is as of then.
 
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
@@ -17,17 +17,14 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | **Twill fork0: blind lens review, strict critical fixer, branch-coverage lens**<br>• Plan-Write: fork0 writes the plan, the master spawns blind lens forks and judges as a strict Burler-style fixer; new branch-coverage lens | [`twill-fork0`](design-twill-fork0.md) | loom | paused · Plan-Write | 2d | 11h | loom, stencil, burler |
+| 1 | **Go driver and tackler in shed, for every FSM-driven run**<br>• Move the Go driver and tackler from loomcli into shed so darn, batten and every recipe get them; module config overrides model and budgets | [`shed-tackler`](design-shed-tackler.md) | loom | Worktree-Create | 11h | 10h | shed, loom, batten |
+| 2 | **Twill fork0: blind lens review, strict critical fixer, branch-coverage lens**<br>• Plan-Write: fork0 writes the plan, the master spawns blind lens forks and judges as a strict Burler-style fixer; new branch-coverage lens | [`twill-fork0`](design-twill-fork0.md) | loom | paused · Plan-Write | 2d | 11h | loom, stencil, burler |
 
 ### Ready
 
 Waits on nothing open; can start now.
 
-#### Normal priority
-
-| # | Task | Slug | Recipe | After | Age | Revised | Labels |
-| --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | **Go driver and tackler in shed, for every FSM-driven run**<br>• Move the Go driver and tackler from loomcli into shed so darn, batten and every recipe get them; module config overrides model and budgets | [`shed-tackler`](design-shed-tackler.md) | loom |  | 11h | 10h | shed, loom, batten |
+_None._
 
 ## Notes
 
@@ -41,12 +38,12 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | --- | --- | --- | --- | --- | --- |
 | 1 | **lyx config --set stores an invalid model value instead of refusing it** | [`config-set-validate`](design-config-set-validate.md) | 10h | 10h | config |
 | 2 | **A hub pause leaves background forks and shells running, so hibernate never confirms**<br>• Pause interrupts turns but not background forks or shells; sessions read busy and hibernate confirmation fails | [`pause-background-work`](design-pause-background-work.md) | 9h | 1m | shuttle, webster |
-| 3 | **Plan and Webster checks out of step with the code a plan changes** | [`twb-d0-ga`](design-twb-d0-ga.md) | 5m | 5m |  |
-| 4 | **Darn: a decision record for mid-run scope corrections, and PR-Align**<br>• Darn has no decision record, so a mid-run scope correction never reaches its review; and no PR-Align row, so every darn PR waits for the orch at PR-Gate | [`twb-d0-sa`](design-twb-d0-sa.md) | 5m | 5m |  |
-| 5 | **Plan and Webster checks out of step with the code a plan changes** | [`twb-d0-gc`](design-twb-d0-gc.md) | 5m | 5m |  |
-| 6 | **Darn: a decision record for mid-run scope corrections, and PR-Align**<br>• Darn has no decision record, so a mid-run scope correction never reaches its review; and no PR-Align row, so every darn PR waits for the orch at PR-Gate | [`twb-d0-sc`](design-twb-d0-sc.md) | 5m | 5m |  |
-| 7 | **Plan and Webster checks out of step with the code a plan changes** | [`twb-d0-gf`](design-twb-d0-gf.md) | 5m | 5m |  |
-| 8 | **Darn: a decision record for mid-run scope corrections, and PR-Align**<br>• Darn has no decision record, so a mid-run scope correction never reaches its review; and no PR-Align row, so every darn PR waits for the orch at PR-Gate | [`twb-d0-sf`](design-twb-d0-sf.md) | 5m | 5m |  |
+| 3 | **Plan and Webster checks out of step with the code a plan changes** | [`twb-d0-ga`](design-twb-d0-ga.md) | 6m | 6m |  |
+| 4 | **Darn: a decision record for mid-run scope corrections, and PR-Align**<br>• Darn has no decision record, so a mid-run scope correction never reaches its review; and no PR-Align row, so every darn PR waits for the orch at PR-Gate | [`twb-d0-sa`](design-twb-d0-sa.md) | 6m | 6m |  |
+| 5 | **Plan and Webster checks out of step with the code a plan changes** | [`twb-d0-gc`](design-twb-d0-gc.md) | 6m | 6m |  |
+| 6 | **Darn: a decision record for mid-run scope corrections, and PR-Align**<br>• Darn has no decision record, so a mid-run scope correction never reaches its review; and no PR-Align row, so every darn PR waits for the orch at PR-Gate | [`twb-d0-sc`](design-twb-d0-sc.md) | 6m | 6m |  |
+| 7 | **Plan and Webster checks out of step with the code a plan changes** | [`twb-d0-gf`](design-twb-d0-gf.md) | 6m | 6m |  |
+| 8 | **Darn: a decision record for mid-run scope corrections, and PR-Align**<br>• Darn has no decision record, so a mid-run scope correction never reaches its review; and no PR-Align row, so every darn PR waits for the orch at PR-Gate | [`twb-d0-sf`](design-twb-d0-sf.md) | 6m | 6m |  |
 
 ### Enhancements
 
