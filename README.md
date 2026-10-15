@@ -17,15 +17,18 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | **Lighter test rules for small changes**<br>• Tests that pin stencil wording make small prompt changes large; pin only what must hold, measured first | [`lighter-test-rules`](design-lighter-test-rules.md) | loom | Finalize | 2d | 3h | stencil, webster, burler, loom |
-| 2 | **Engine-owned config, one neutral guardrail table, provider-blind reed**<br>• claude.yaml owned by claudeengine, a neutral shell-guard table each engine renders as hooks, reed strands tagged by provider | [`engine-config-seams`](design-engine-config-seams.md) | loom | Plan-Burler-Review | 4h | 4h | shuttle, claude, config, reed |
-| 3 | **Every role spec carries its resolved engine**<br>• Role specs take engine, model and effort from the model alias through one shared ModelChoice; Claude-only roles declare their needs | [`engine-model-choice`](design-engine-model-choice.md) | loom | Plan-Write | 4h | 4h | shuttle, loom, webster, burler, shed |
+| 1 | **Engine-owned config, one neutral guardrail table, provider-blind reed**<br>• claude.yaml owned by claudeengine, a neutral shell-guard table each engine renders as hooks, reed strands tagged by provider | [`engine-config-seams`](design-engine-config-seams.md) | loom | Plan-Burler-Review | 4h | 4h | shuttle, claude, config, reed |
+| 2 | **Every role spec carries its resolved engine**<br>• Role specs take engine, model and effort from the model alias through one shared ModelChoice; Claude-only roles declare their needs | [`engine-model-choice`](design-engine-model-choice.md) | loom | Plan-Write | 4h | 4h | shuttle, loom, webster, burler, shed |
 
 ### Ready
 
 Waits on nothing open; can start now.
 
-_None._
+#### Normal priority
+
+| # | Task | Slug | Recipe | After | Age | Revised | Labels |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| 1 | **Discussion hands Plan a list of the relevant code**<br>• The Discussion writer writes relevant.md listing the files and members it read and found relevant; Plan-Write reads it first, so its context starts smaller | [`discussion-relevant-list`](design-discussion-relevant-list.md) | loom |  | 1h | 59m | loom, stencil |
 
 ### Layer A
 
@@ -36,7 +39,6 @@ Waits only on Running or Ready entries.
 | # | Task | Slug | Recipe | After | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | 1 | **Usage and cost read through the engine**<br>• tokencount reads each run through its engine, with prices per engine, instead of reading Claude transcripts directly | [`engine-usage-readers`](design-engine-usage-readers.md) | loom | `engine-config-seams` | 4h | 4h | shuttle, claude |
-| 2 | **Discussion hands Plan a list of the relevant code**<br>• The Discussion writer writes relevant.md listing the files and members it read and found relevant; Plan-Write reads it first, so its context starts smaller | [`discussion-relevant-list`](design-discussion-relevant-list.md) | loom | `lighter-test-rules` | 1h | 59m | loom, stencil |
 
 ## Notes
 
@@ -140,3 +142,11 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | # | Note | Slug | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | 20 | **Scoped build and test for C# hubs on Windows**<br>• Verify gates in a .NET hub build and test only the projects a card touches, since a scanned Windows machine makes every build slow. | [`dotnet-scoped-verify`](design-dotnet-scoped-verify.md) | 3d | 3d | shed, webster |
+
+## Done
+
+Finished, awaiting `lyx board prune --apply`.
+
+| # | Entry | Slug | Age | Revised | Labels |
+| --- | --- | --- | --- | --- | --- |
+| 1 | **Lighter test rules for small changes**<br>• Tests that pin stencil wording make small prompt changes large; pin only what must hold, measured first | [`lighter-test-rules`](design-lighter-test-rules.md) | 2d | 3h | stencil, webster, burler, loom |
