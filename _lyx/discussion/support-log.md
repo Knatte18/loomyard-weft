@@ -40,7 +40,7 @@ Auto-picked both.
 - leanness LOW, generic cobra and test-rule constraint bullets: fixed, cut; the test-budget line stays.
 - leanness LOW, boot autostart exclusion guards nothing: fixed, cut.
 - leanness LOW, plan notes repeat `relevant.md`: fixed, only the non-obvious hint stays.
-- goal-scope MEDIUM, a plain start after reboot silently loses the conversation: fixed, D1 adds the envelope hint naming `--continue`.
+- goal-scope MEDIUM, a plain start after reboot silently loses the conversation: fixed, D1 adds the envelope hint naming `--continue`; a later round moved the hint to `--adopt` with the previous id.
 - goal-scope LOW, interaction with `lyx reed resume`: fixed, the Out bullet names the recovery.
 - goal-scope LOW, envelope field and status line go past the ask: rejected, both serve the entry's stated pain.
 - goal-scope LOW, Goal says "any death" though D1 needs a request: fixed, Goal reworded.
@@ -74,4 +74,4 @@ _No rounds yet._
 - Q4 Separate launch path or adopt reuse? Resolved: adopt reuse, envelope adds `session_id` (auto-pick).
 - Q5 Show the id in `lyx orch status`? Resolved: yes (auto-pick).
 - Q6 Fix reed's rebirth replay of the launch id? Resolved: out of scope (auto-pick).
-- Q7 Point a plain fresh launch at `--continue`? Resolved: yes, through the envelope hint when an id is recorded, from the goal-scope lens (auto-pick).
+- Q7 Should a fresh launch point back at the previous conversation? Resolved: yes, through the envelope hint naming `lyx orch stop` then `lyx orch start --adopt <previous id>` with the previous id inline, since a `--continue` after the launch would resume the new session; from the goal-scope lens (auto-pick).
