@@ -31,7 +31,7 @@ Out:
 Decision: an assertion about stencil or rendered-prompt text stays when the text it checks comes from Go or is read by Go, or when it enforces a rule across a stencil family; otherwise it goes.
 It stays when it checks:
 
-- a marker set, a required-marker error, a Fill/FillOptional round-trip, or the order of two markers Go fills;
+- a marker set, a required-marker error, a Fill/FillOptional round-trip, or the position of a Go-filled marker relative to another marker, a heading, or the end of the body;
 - a value Go filled into a marker, or a fragment or branch Go chose by its inputs, anchored on the shortest phrase that tells the branches apart;
 - a stencil naming a Go-declared value: a constant (`shuttleengine.MessageTail`, `shedrun.ParkMarkerFileName`, `gatecli.SlotBusyExit`), or a key or field name the test reads from the Go definition that parses it (a constant or a struct tag), such as the webster master's digest and outcome-key lists and the fork report schema;
 - a cross-stencil rule: a PATTERN scan over stencils, the registry, the rubric marker allowlist, the citation scan, and the twill host-neutral ban (`hostNeutralClaims`: a twill stencil names no host value, since another host renders it).
@@ -48,9 +48,17 @@ A drift in Go-filled, Go-read or Go-named text breaks a run; a drift in prose ch
 Decision: from `claims_test.go`:
 
 - rows naming a Go-declared value (D1's third keep) become one table-driven test in `contracts/stencils`, one row per stencil and value, each row naming a registered stencil and failing when the stencil no longer names the value;
-- marker-order rows join `markers_test.go`;
+- rows pinning a Go-filled marker's position join `markers_test.go` as one table of marker positions, each row anchored on markers, headings and the end of the body only, never on prose:
+  the `{{.kickstart_pack}}` row (today `never a slot-busy exit.{{.kickstart_pack}}\n`) checks the body ends with the marker,
+  the `{{.kickstart_pack_inline}}` row (today `do not continue to a later card on top of a broken one.{{.kickstart_pack_inline}}\n\n## The sandbox rule`) checks the marker is followed by a blank line and `## The sandbox rule` directly (`{{.kickstart_pack_inline}}\n\n## The sandbox rule`), which holds only a marker, whitespace and a heading,
+  and each section-scoped marker row (a `claims_test.go` row with a `section:` key whose `must` is exactly one marker: the `{{.twill_directive}}` rows in the plan template's `## Step 2 — Explore the codebase` and the discussion template's `## Step 4 — How to get answers`, `{{.decision_record_path}}` and `{{.support_log_path}}` in the discussion fence section, `{{.parent_notify}}` under `## Notifying the parent` and `{{.arbiter_command}}` under `## Arbiter`) checks the marker sits inside that heading's section;
+  the `{{.specs_dir}}/loom/loom-discussion-spec.md` row under `## Step 5 — Write the two output files` goes, since its `/loom/loom-discussion-spec.md` tail is prose of one stencil;
 - the twill host-neutral ban becomes one scan test over the twill stencils;
-- every other row goes, the section-scoped marker-placement rows included, since `markers_test.go`'s exact marker sets pin presence;
+- the Go-value table test and the twill host-neutral scan each carry `//lyx:guard`, taking over `TestStencilClaims`'s marker, so a card that renames `shuttleengine.MessageTail`, `shedrun.ParkMarkerFileName` or `gatecli.SlotBusyExit` outside `contracts/stencils` still fails its own card gate;
+- a row that names a marker without pinning its position, for a stencil that no Fill round-trip or marker-set test reads in its real file, becomes a row of `TestStencils_TopLevelMarkers` in `markers_test.go`, one row per stencil;
+  the darn Describe stencil `landing-template-describe-darn.md` is such a stencil, since `internal/landingshed/describe_test.go` fills a fixture string and not the real file;
+  the plan writer sorts each marker-naming row by whether another test reads the real stencil's markers, so removing a marker still fails a test for every stencil these rows cover today;
+- every other row goes;
 - the `loom-discussion-spec.md` heading rows go: `internal/discussionparser`'s required list is unexported, holds only the decision record's required headings, and the parser's own tests pin it.
 
 Rationale: a renamed Go value or a host word in a twill stencil breaks a run or another host's render unseen.
@@ -66,6 +74,7 @@ Decision: in the same commit as the tests:
   The `PATTERN.md` one-liner is unchanged, so the PATTERN headroom is untouched.
 - `loom-rubric-plan-review.md`'s **Test economy** bullet adds: a card that plans an assertion on a stencil's static prose is a finding.
 - The **Test economy** lists in `loom-rubric-webster-review.md` and `loom-rubric-darn-review.md` add one item, a new assertion on a stencil's static prose, and their "behavior the diff adds with no coverage" item exempts stencil prose.
+  `loom-rubric-merge-review.md`'s "a behavior of the interaction with no coverage" item exempts stencil prose too.
 - The doc comments heading `contracts/stencils/markers_test.go`, `contracts/stencils/rubric_test.go` and `internal/websterengine/template_test.go` stop naming `claims_test.go` or prose assertions.
 
 Rationale: the board asks for the rule to change with the tests; it lives in the plan spec's coverage rule, its plan stencil restatement, the reviewers' test-economy lists, and the claims file's own "protected, never dropped" header, which goes with the file.
@@ -76,7 +85,15 @@ Decision: the webster-review and darn-review rubrics, which the Burler review ro
 No new review step, agent or gate is added.
 
 Rationale: option 2 of the board entry, chosen by the operator as the replacement guard.
-This downgrades a guard from mechanical to judged: what it lets through is a prose regression the reviewer misses; what bounds it is that a loom landing passes Plan-Review and Webster-Review and a darn landing passes Darn-Review, each reading stencil changes against the stick it already uses.
+This downgrades a guard from mechanical to judged.
+What it lets through is a prose regression the reviewer misses;
+any stencil change landed outside loom and darn, such as the orchestrator's own pushed fix or an operator commit on main, which no rubric reads;
+a stencil change in a loom run whose Webster-Review budget is 0 (`webster_max_bounces`, or `review_max_bounces` when that key is null, settable per run), where the Bouncer settles approved at once;
+a darn run with `darn.yaml`'s `review_max_bounces` at 0, which goes from Darn-Write straight to Merge-In with no Darn-Review;
+a loom run whose `webster_auto_accept` is true, where the Webster-Review perch accepts a harvested round at a spent budget instead of running the soft-cap rule, so a stencil-regression finding lands unfixed;
+and a round numbered at or past the hard cap (`webster_hard_max_bounces`, or `review_hard_max_bounces` when that key is 0, and darn's `review_hard_max_bounces`), which is accepted or escalated and never continued.
+What bounds it is that in a loom landing whose Webster-Review budget is above 0 the reviewer reads stencil changes against the plan card's `Intent` and a finding is fixed or escalated, unless the perch's auto-accept or hard cap accepts the round;
+likewise in a darn landing whose `review_max_bounces` is above 0 Darn-Review reads them against the board entry and a finding is fixed or escalated, unless the hard cap accepts the round, since darn has no auto-accept key.
 
 ### D5 — Test budget rows stay as they are
 
@@ -103,20 +120,27 @@ Rationale: the rows are ceilings; lowering them would fail a concurrent task tha
   Whichever lands second meets a modify/delete conflict on `claims_test.go`; the resolution drops the other side's rows by D1, porting a Go-value row into D2's table.
 - A concurrent task that adds a prose assertion to a template or prompt test merges without conflict after this lands, reviewed under the old rubric; the next task touching that file prunes it by D1.
 
+<!-- lyx:carry-over Discussion-Review -->
+- Discussion-Review, round 3: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
+  Review: _lyx/reviews/discussion/round-3-review.md; fixer report: _lyx/reviews/discussion/round-3-fixer-report.md.
+  - acceptance-criterion-2-contradicts-d1-keeps (class consistency, severity MEDIUM, open in rounds 1, 2, 3)
+  - d4-bound-overstates-coverage (class design, severity MEDIUM, open in rounds 1, 2, 3)
+  - marker-placement-between-d1-d2 (class design, severity MEDIUM, open in rounds 1, 2, 3)
+<!-- /lyx:carry-over Discussion-Review -->
+
 ## Acceptance criteria
 
 - `contracts/stencils/claims_test.go` no longer exists, and no test keeps an assertion D1 drops.
-- Rewording a sentence of static prose in any stencil, leaving markers, Go-named values and twill host words untouched, fails no test.
+- Rewording a sentence of static prose in any stencil fails no test, unless the sentence holds a marker, a Go-named value, a heading a kept marker-position row anchors on, a twill host word, the phrase a kept test anchors a Go-chosen branch on, or text a PATTERN scan over stencils checks.
 - Renaming one of D2's Go-declared values without the stencil, or the reverse, fails D2's table test; the table is non-empty and every row names a registered stencil.
 - Adding a host word to a twill stencil fails the host-neutral scan.
-- Removing a marker from a stencil, swapping two order-pinned markers, or omitting a required marker from a Fill input still fails a test.
+- Removing a marker from a stencil, moving a position-pinned marker out of its anchored place (out of its heading's section, or off the end of the body or its heading), or omitting a required marker from a Fill input still fails a test.
 - A Go-chosen fragment or branch (webster's pack layout, burler's single-reviewer versus fork render, the friction and parent directive renders) is still told apart by a kept assertion.
 - The PATTERN scans over stencils, the registry test, the rubric marker allowlist and the citation scan pass unchanged.
-- The plan spec, the plan stencil, `PATTERN-test-economy.md` and the plan-review, webster-review and darn-review rubrics carry D3's and D4's text.
+- The plan spec, the plan stencil, `PATTERN-test-economy.md` and the plan-review, webster-review, darn-review and merge-review rubrics carry D3's and D4's text.
 - `lyx gate test ./...` and `lyx gate test --tags integration ./...` are green.
 
 ## Notes for the plan writer
 
-- `claims_test.go`'s Go-value rows are found by grepping it for `gatecli.`, `shedrun.` and `shuttleengine.`; its literal key rows include `class` and `first_card` on the webster-review rubric.
-- `//lyx:guard` sits on `TestStencilClaims`; deleting it drops it from every card gate's guard step with no other change.
+- `claims_test.go`'s Go-value rows are found by grepping it for `gatecli.`, `shedrun.` and `shuttleengine.`; its literal key rows, such as `class` and `first_card`, go by D1, since their Go definitions (`loomshed`'s `roundRecord`, `planparser`'s `overviewFrontmatter`) are unexported.
 - `parentdirective_test.go` and `roleskills_test.go` hold PATTERN scans, which D1 keeps; a stencil reword under `creel-agents` hits them by design.
