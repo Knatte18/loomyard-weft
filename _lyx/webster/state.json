@@ -638,7 +638,7 @@
       }
     }
   ],
-  "currentBatch": 0,
+  "currentBatch": 3,
   "masterStrand": "8dcfa8fbb9190a5d1380349627be79ef",
   "masterSessionId": "18713a0e-05ad-4256-81d3-7852940edfc6",
   "batches": {
@@ -702,6 +702,21 @@
       "bracketTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-engine-model-choice/18713a0e-05ad-4256-81d3-7852940edfc6/subagents/agent-ac34cd2821b5916a7.jsonl"
       ]
+    },
+    "3": {
+      "slug": "burler-model-choice",
+      "cards": [
+        "03-burler-model-choice"
+      ],
+      "cardHashes": {
+        "03-burler-model-choice": "eb8d48e5a5113f5ac0b2c9bd7f3ce31209cfc657d0ab51b4de6d61ce9ab585b6"
+      },
+      "startSha": "04d4c3ca698333bdd86d18ac1b37fd8467790f8b",
+      "kind": "fork",
+      "spawnedAt": "2026-10-15T16:14:26Z",
+      "sessionId": "18713a0e-05ad-4256-81d3-7852940edfc6",
+      "terminal": false,
+      "status": ""
     }
   },
   "seenForkTranscripts": [
