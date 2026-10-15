@@ -20,6 +20,8 @@
 - `internal/shedadapters#Bouncer.awaitLiveSeed`
 - `internal/shedadapters#Bouncer.runSeedSpawn`
 - `internal/shedadapters#Bouncer.judgeCall`
+- `internal/shedadapters#TestBouncer_ReBounceProbesForALiveSeed`
+- `internal/shedadapters#TestBouncer_EntryProbe_SpecNamesTheJudgesOwnOutputFiles`
 - `internal/shedadapters/doc.go`
 - `internal/burlerengine#Profile`
 - `internal/burlerengine#Profile.reviewTable`
@@ -46,8 +48,9 @@ A standalone `lyx burler run` builds its profile with no prefix and keeps its ro
 
 Tests:
 - `TestBouncerEntry_EnvJudgeFallback`'s `callAndCaptureSpec` takes extra config keys, and two rows set `role_prefix: plan` and want `plan-bouncer-seed` and `plan-bouncer-judge`; the existing rows keep the unprefixed roles.
-  Each row also asserts the fake shuttle's `GotAttachSpec`, the spec of the live probe the call ran before spawning (`awaitLiveSeed` on the seed path, `awaitLiveJudge` on the judge path), carries the same role as the spawn.
+  Each row also asserts the fake shuttle's `GotAttachSpec`, the spec of the Attach that `runSeedSpawn` (seed path) or `judgeCall` (judge path) runs on its own spawn spec before spawning, carries the same role as the spawn.
   The test's doc comment names the role it now pins beside the env fallback.
+- `TestBouncer_ReBounceProbesForALiveSeed` and `TestBouncer_EntryProbe_SpecNamesTheJudgesOwnOutputFiles`, the tests that reach the live probes, each gain a row or case that sets `RolePrefix: "plan"` on the fixture's public `Config` before `Build` and asserts `GotAttachSpec.Role` is `plan-bouncer-seed` (the re-bounce probe, `awaitLiveSeed`) or `plan-bouncer-judge` (the entry-time judge probe, `awaitLiveJudge`).
 - `TestBouncerEntry_ConstructionFailures` gains a subtest: `role_prefix: Plan!` is refused, the error naming `role_prefix` and the value.
 - `TestBurlerHalfEntries_ColorSegment` gains, per entry, a subtest with `role_prefix: plan` that captures `profile.RolePrefix == "plan"`, an absent-key subtest capturing "", and one refusing `role_prefix: Plan!`; its doc comment says it pins both segment keys.
 - `TestEngine_Review_TableShape` gains a `rolePrefix` column and a row with `merge`, whose one started seat is `merge-burler-review`; `fakeShuttle.scriptFor` picks the review script for any role ending in `reviewHalfRole`, so a prefixed reviewer still gets it.

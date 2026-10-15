@@ -23,7 +23,7 @@
 
 **Intent:**
 Every row whose producer runs a gated shuttle run copies that run's gate count and spans into its history entry (D5).
-`gateSpansOf`, in `gateattempts.go` beside `gateAttemptsPointer`, flattens a gate outcome's entries into `shedengine.GateSpan` values: one per span, in entry order and, within an entry, span order, each carrying the entry's `Name` as `Gate`, its kind's string (`GateSpanGate` maps to `GateSpanKindGate`, and so on) and its start and end as RFC 3339 UTC.
+`gateSpansOf`, in `gateattempts.go` beside `gateAttemptsPointer`, flattens a gate outcome's entries into `shedengine.GateSpan` values: one per span, in entry order and, within an entry, span order, each carrying the entry's `Name` as `Gate`, its kind's string (`GateSpanGate` maps to `GateSpanKindGate`, and so on) and its start and end as RFC 3339 UTC with fractional seconds (`time.RFC3339Nano`).
 A nil outcome gives nil, and an outcome whose entries carry no spans gives nil too, so an ungated call and a call whose shuttle recorded nothing keep the field off disk.
 The file's header comment names both helpers and all four carriers.
 

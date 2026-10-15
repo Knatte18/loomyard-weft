@@ -26,7 +26,7 @@
 
 **Intent:**
 The shed history entry stores a call's gate spans as an optional list beside `gate_attempts` (D5).
-`GateSpan` (in `status.go`) is a plain stdlib struct, so `shedengine` imports nothing new (PATTERN-shed-producer-seam): `Gate string` (`json:"gate"`, the entry's name as recorded), `Kind string` (`json:"kind"`, one of the three `GateSpanKind*` constants), `Start string` and `End string` (`json:"start"`, `json:"end"`, RFC 3339 UTC to the second, the form `At` uses).
+`GateSpan` (in `status.go`) is a plain stdlib struct, so `shedengine` imports nothing new (PATTERN-shed-producer-seam): `Gate string` (`json:"gate"`, the entry's name as recorded), `Kind string` (`json:"kind"`, one of the three `GateSpanKind*` constants), `Start string` and `End string` (`json:"start"`, `json:"end"`, RFC 3339 UTC with fractional seconds, `time.RFC3339Nano`, so a sub-second evaluation keeps its length).
 `HistoryEntry` gains `GateSpans []GateSpan` with `json:"gate_spans,omitempty"`, and `OutputPointer` gains `GateSpans []GateSpan`, carried straight through like `GateAttempts`.
 The field is additive and tolerant (PATTERN-tolerant-records): an entry written before it reads with a nil list, and a span object carrying an unknown key still decodes.
 Writes keep going through `internal/state`.

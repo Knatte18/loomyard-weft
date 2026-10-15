@@ -21,6 +21,7 @@ Tests:
 - `reworkFixture` gains `gateAttempts *int` and `gateSpans []shedengine.GateSpan`, which `reworkInner.Call` stamps on the Done pointer it returns.
 - `TestPRRework_ClassRecorded`'s "mixed" row sets both and asserts the producer's returned Done pointer carries them; the "all prosa" row leaves them unset and asserts the pointer carries neither.
   `reworkFixture.call` discards the pointer, so the row calls `f.producer().Call` itself.
+- `TestPRRework_ClassRecorded` gains a row whose fake session (`onInner`) leaves a plan that `planparser.ParsePlan` refuses, with `gateAttempts` and `gateSpans` set on the fixture; the row calls `f.producer().Call` and asserts the outcome is Stuck, the reason starts with `rework plan does not parse`, and the pointer carries the fixture's gate count and spans.
 
 **ImpactSummary:** one producer's exit pointers in `internal/loomshed/prrework.go`, two private re-signed helpers whose callers are all in `prRework.Call`; routing is unchanged, since shed only records the gate fields.
 
