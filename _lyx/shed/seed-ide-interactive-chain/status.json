@@ -1,0 +1,17 @@
+{
+  "current_producer": "Preflight",
+  "state": "running",
+  "error": "",
+  "pause_requested": false,
+  "activity": {
+    "now": "",
+    "last": "",
+    "wait": ""
+  },
+  "history": [],
+  "product": {
+    "slug": "seed-ide-interactive-chain",
+    "parent": "main",
+    "start_sha": null
+  }
+}
