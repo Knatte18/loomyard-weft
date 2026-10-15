@@ -1,9 +1,9 @@
 # Card 11 — Shuttle's Start requirements refusal takes a caller's model key
 
 **Create:**
-- `plan:internal/shuttleengine#ModelKey` -> `type ModelKey struct`
-- `plan:internal/shuttleengine#ModelKey.Wrap` -> `func (k ModelKey) Wrap(err error) error`
-- `plan:internal/shuttleengine#startRequirementsError` -> `type startRequirementsError struct`
+- `internal/shuttleengine#ModelKey`
+- `internal/shuttleengine#ModelKey.Wrap`
+- `internal/shuttleengine#startRequirementsError`
 
 **Edit:**
 - `internal/shuttleengine#Runner.checkRequirementsAtStart`
