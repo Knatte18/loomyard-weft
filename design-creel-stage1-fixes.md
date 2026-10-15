@@ -2,8 +2,6 @@
 
 `creel-stage1-fixes` · Task · bug, creel, shuttle, reed, claude
 
-Depends on: [`engine-usage-readers`](design-engine-usage-readers.md)
-
 Fix the defects the creel stage 1 audit found, and make its sandbox scenarios re-runnable.
 The audit report is `docs/research/creel-audit-2026-10-15/report.md`; each issue below holds its steps and expected behaviour.
 
