@@ -1,0 +1,120 @@
+{
+  "runGuid": "3f38f4c499a9c3c34c8150d2577184c9",
+  "planFingerprint": "9eae6067a432b043355951dd6fc39d2b9f9ec358ed2f82dc2a4633cf31f9c93b",
+  "planFileHashes": {
+    "00-overview.md": "c24c90f5e976662a1faf236555949b8832f493748e2dcd44c76180085a4756fa",
+    "01-critical-judge.md": "76a13eb2cd3b670eef07e9a943b980857aef103d98fa32d6ad64d398ac1055d2",
+    "02-writer-fork.md": "70ccdb8944a49ccd0849e02a8ebf321787e7bb703a68e7bd7d99d70ad37d1a7c",
+    "03-plan-lenses.md": "547a7cb7e674a2d4a835839a266a55fbbf4726f29d7b3be4a6bc6375cb33f1ee"
+  },
+  "planOverviewFrameHash": "965075c2355cef2b9b1457b1c644fcc2aa65307aa121462fa89116215b0f1623",
+  "partition": [
+    {
+      "cards": [
+        "01-critical-judge",
+        "02-writer-fork",
+        "03-plan-lenses"
+      ],
+      "profile": "cautious",
+      "estimate": 185926,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 1,
+        "startup": 54352,
+        "read_union": 41004,
+        "cards": [
+          {
+            "card": 1,
+            "card_text": 828,
+            "reads": {
+              "file:contracts/stencils/twill/twill-directive.md": 552,
+              "file:docs/overview.md": 9288,
+              "file:internal/twilldirective/doc.go": 252,
+              "package:contracts/stencils": 2000,
+              "package:contracts/stencils/twill": 2000,
+              "package:docs": 2000,
+              "package:internal/loomengine": 2000,
+              "package:internal/twilldirective": 2000,
+              "tests:contracts/stencils": 2000,
+              "tests:contracts/stencils/twill": 2000,
+              "tests:docs": 2000,
+              "tests:internal/loomengine": 2000,
+              "tests:internal/twilldirective": 2000
+            },
+            "messages": 105,
+            "written": 32328
+          },
+          {
+            "card": 2,
+            "card_text": 1128,
+            "reads": {
+              "file:contracts/stencils/twill/twill-directive.md": 552,
+              "file:docs/overview.md": 9288,
+              "file:internal/loomengine/plan.go": 1404,
+              "file:internal/loomengine/template.yaml": 720,
+              "file:internal/twilldirective/doc.go": 252,
+              "package:contracts/stencils": 2000,
+              "package:contracts/stencils/twill": 2000,
+              "package:docs": 2000,
+              "package:internal/loomengine": 2000,
+              "package:internal/twilldirective": 2000,
+              "tests:contracts/stencils": 2000,
+              "tests:contracts/stencils/twill": 2000,
+              "tests:docs": 2000,
+              "tests:internal/loomengine": 2000,
+              "tests:internal/twilldirective": 2000
+            },
+            "messages": 171,
+            "written": 52428
+          },
+          {
+            "card": 3,
+            "card_text": 264,
+            "reads": {
+              "file:internal/burlerengine/template.yaml": 2568,
+              "package:internal/burlerengine": 2000,
+              "tests:internal/burlerengine": 2000
+            },
+            "messages": 18.5,
+            "written": 5814
+          }
+        ]
+      }
+    }
+  ],
+  "currentBatch": 1,
+  "masterStrand": "a115b37cfa89dfacd077bf021c6ab97e",
+  "masterSessionId": "f9b74145-18d6-482e-bfb4-c0e89e94c4cc",
+  "batches": {
+    "1": {
+      "slug": "critical-judge",
+      "cards": [
+        "01-critical-judge",
+        "02-writer-fork",
+        "03-plan-lenses"
+      ],
+      "cardHashes": {
+        "01-critical-judge": "76a13eb2cd3b670eef07e9a943b980857aef103d98fa32d6ad64d398ac1055d2",
+        "02-writer-fork": "70ccdb8944a49ccd0849e02a8ebf321787e7bb703a68e7bd7d99d70ad37d1a7c",
+        "03-plan-lenses": "547a7cb7e674a2d4a835839a266a55fbbf4726f29d7b3be4a6bc6375cb33f1ee"
+      },
+      "startSha": "9ea1f7474ead98d92d8421759f61a8c8ce2f943a",
+      "kind": "fork",
+      "spawnedAt": "2026-10-15T05:51:39Z",
+      "sessionId": "f9b74145-18d6-482e-bfb4-c0e89e94c4cc",
+      "terminal": false,
+      "status": ""
+    }
+  }
+}
