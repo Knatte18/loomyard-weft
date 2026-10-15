@@ -18,7 +18,7 @@ Held by a run; its scope is locked until the run ends.
 | # | Task | Slug | Recipe | At | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | 1 | **Go driver and tackler in shed, for every FSM-driven run**<br>• Move the Go driver and tackler from loomcli into shed so darn, batten and every recipe get them; module config overrides model and budgets | [`shed-tackler`](design-shed-tackler.md) | loom | Webster | 14h | 13h | shed, loom, batten |
-| 2 | **batten Seed-IDE writes the interactive VS Code chain into a driven pair, so opening it in VS Code starts a bare claude** | [`seed-ide-interactive-chain`](design-seed-ide-interactive-chain.md) | darn | Darn-Bouncer | 11m | 6m | ide, batten |
+| 2 | **batten Seed-IDE writes the interactive VS Code chain into a driven pair, so opening it in VS Code starts a bare claude** | [`seed-ide-interactive-chain`](design-seed-ide-interactive-chain.md) | darn | Darn-Burler-Review | 12m | 7m | ide, batten |
 
 ### Ready
 
@@ -78,7 +78,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 14 | **Clearer loom model key names, one per step**<br>• Model keys like fix name the role they set, and every review segment gets its own reviewer and fixer key | [`loom-model-key-names`](design-loom-model-key-names.md) | 13h | 13h | config, loom |
 | 15 | **Spawned code roles load the hub language skills**<br>• Darn, Webster, Burler and merge sessions write Go without scribe:golang-* skills; the hub config should name its language skills | [`role-language-skills`](design-role-language-skills.md) | 12h | 12h | config, shuttle |
 | 16 | **Fork the Burler fixer from the reviewer session**<br>• The fixer re-reads the context the reviewer just read; fork it from the reviewer to reuse the cache | [`burler-fixer-fork`](design-burler-fixer-fork.md) | 1h | 1h | burler |
-| 17 | **Webster fork read audit as a tool under tools/**<br>• Move the 2026-10-13 fork read audit jq scripts out of scratch into a repeatable tools/ script | [`glyph-audit-tool`](design-glyph-audit-tool.md) | 14m | 13m | webster |
+| 17 | **Webster fork read audit as a tool under tools/**<br>• Move the 2026-10-13 fork read audit jq scripts out of scratch into a repeatable tools/ script | [`glyph-audit-tool`](design-glyph-audit-tool.md) | 15m | 13m | webster |
 
 #### Low priority
 
