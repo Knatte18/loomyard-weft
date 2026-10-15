@@ -1,8 +1,8 @@
 # Card 7 — pair-branch-snapshot
 
 **Create:**
-- `plan:internal/gitrepo#BranchRef` -> `type BranchRef struct`
-- `plan:internal/gitrepo#Repo.BranchRefs` -> `func (r *Repo) BranchRefs() ([]BranchRef, error)`
+- `internal/gitrepo#BranchRef`
+- `internal/gitrepo#Repo.BranchRefs`
 
 **Edit:**
 - `internal/gitrepo_test#TestReportReads`

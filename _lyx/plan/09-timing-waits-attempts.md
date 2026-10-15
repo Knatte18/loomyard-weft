@@ -16,10 +16,10 @@
 **Edit:**
 - `internal/reportengine#RunRow`
 - `internal/reportengine#RunRow.readAlignmentWakes`
-- `plan:internal/reportengine#TimingRun`
-- `plan:internal/reportengine#TimingBucket`
-- `plan:internal/reportengine#timeRun`
-- `plan:internal/reportengine#TestComputeTiming`
+- `internal/reportengine#TimingRun`
+- `internal/reportengine#TimingBucket`
+- `internal/reportengine#timeRun`
+- `internal/reportengine#TestComputeTiming`
 - `internal/reportengine/doc.go`
 
 **Intent:**

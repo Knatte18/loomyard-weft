@@ -1,39 +1,39 @@
 # Card 8 — timing-spans-phases
 
 **Create:**
-- `plan:internal/reportengine#Interval` -> `type Interval struct`
-- `plan:internal/reportengine#TimingOptions` -> `type TimingOptions struct`
-- `plan:internal/reportengine#TimingSelection` -> `type TimingSelection struct`
-- `plan:internal/reportengine#TimingReport` -> `type TimingReport struct`
-- `plan:internal/reportengine#TimingRun` -> `type TimingRun struct`
-- `plan:internal/reportengine#PhaseMedian` -> `type PhaseMedian struct`
-- `plan:internal/reportengine#TimingBucket` -> `type TimingBucket struct`
-- `plan:internal/reportengine#BucketDay` -> `const BucketDay = "day"`
-- `plan:internal/reportengine#BucketWeek` -> `const BucketWeek = "week"`
-- `plan:internal/reportengine#PhaseSetup` -> `const PhaseSetup = "setup"`
-- `plan:internal/reportengine#PhaseDiscussion` -> `const PhaseDiscussion = "discussion"`
-- `plan:internal/reportengine#PhasePlan` -> `const PhasePlan = "plan"`
-- `plan:internal/reportengine#PhaseWebster` -> `const PhaseWebster = "webster"`
-- `plan:internal/reportengine#PhaseMerge` -> `const PhaseMerge = "merge"`
-- `plan:internal/reportengine#PhasePublishFinalize` -> `const PhasePublishFinalize = "publish-finalize"`
-- `plan:internal/reportengine#PhaseLand` -> `const PhaseLand = "land"`
-- `plan:internal/reportengine#PhaseOther` -> `const PhaseOther = "other"`
-- `plan:internal/reportengine#RunStateLanded` -> `const RunStateLanded = "landed"`
-- `plan:internal/reportengine#RunStateInFlight` -> `const RunStateInFlight = "in-flight"`
-- `plan:internal/reportengine#ComputeTiming` -> `func ComputeTiming(src Sources, opts TimingOptions) (TimingReport, error)`
-- `plan:internal/reportengine#selectInFlight` -> `func selectInFlight(src Sources, opts TimingOptions, findings *[]Finding) ([]RunRow, error)`
-- `plan:internal/reportengine#phaseOf` -> `func phaseOf(rows []timedRow, index int) (string, bool)`
-- `plan:internal/reportengine#timedRow` -> `type timedRow struct`
-- `plan:internal/reportengine#mergeRows` -> `func mergeRows(row RunRow) ([]timedRow, []Finding)`
-- `plan:internal/reportengine#timeRun` -> `func timeRun(row RunRow, opts TimingOptions, snapshot time.Time) (TimingRun, []Finding)`
-- `plan:internal/reportengine#unionIntervals` -> `func unionIntervals(set []Interval) []Interval`
-- `plan:internal/reportengine#withoutIntervals` -> `func withoutIntervals(set, cut []Interval) []Interval`
-- `plan:internal/reportengine#clipIntervals` -> `func clipIntervals(set []Interval, window Interval) []Interval`
-- `plan:internal/reportengine#bucketWindow` -> `type bucketWindow struct`
-- `plan:internal/reportengine#bucketWindows` -> `func bucketWindows(by string, window Interval) []bucketWindow`
-- `plan:internal/reportengine#medianSeconds` -> `func medianSeconds(values []int64) *int64`
-- `plan:internal/reportengine#world.pairBranch` -> `func (w *world) pairBranch(slug, sha string, when time.Time, seed, status string, extra map[string]string)`
-- `plan:internal/reportengine#TestComputeTiming` -> `func TestComputeTiming(t *testing.T)`
+- `internal/reportengine#Interval`
+- `internal/reportengine#TimingOptions`
+- `internal/reportengine#TimingSelection`
+- `internal/reportengine#TimingReport`
+- `internal/reportengine#TimingRun`
+- `internal/reportengine#PhaseMedian`
+- `internal/reportengine#TimingBucket`
+- `internal/reportengine#BucketDay`
+- `internal/reportengine#BucketWeek`
+- `internal/reportengine#PhaseSetup`
+- `internal/reportengine#PhaseDiscussion`
+- `internal/reportengine#PhasePlan`
+- `internal/reportengine#PhaseWebster`
+- `internal/reportengine#PhaseMerge`
+- `internal/reportengine#PhasePublishFinalize`
+- `internal/reportengine#PhaseLand`
+- `internal/reportengine#PhaseOther`
+- `internal/reportengine#RunStateLanded`
+- `internal/reportengine#RunStateInFlight`
+- `internal/reportengine#ComputeTiming`
+- `internal/reportengine#selectInFlight`
+- `internal/reportengine#phaseOf`
+- `internal/reportengine#timedRow`
+- `internal/reportengine#mergeRows`
+- `internal/reportengine#timeRun`
+- `internal/reportengine#unionIntervals`
+- `internal/reportengine#withoutIntervals`
+- `internal/reportengine#clipIntervals`
+- `internal/reportengine#bucketWindow`
+- `internal/reportengine#bucketWindows`
+- `internal/reportengine#medianSeconds`
+- `internal/reportengine#world.pairBranch`
+- `internal/reportengine#TestComputeTiming`
 - `internal/reportengine/timing_test.go`
 
 **Edit:**

@@ -23,12 +23,12 @@
 - `internal/reportengine#RunRow`
 - `internal/reportengine#battenIndex.snapshotsOfRun` -> `func (b *battenIndex) snapshotsOfRun(slug, tag string, earlier *time.Time, until time.Time) ([]shedengine.Status, string, []Finding, error)`
 - `internal/reportengine#selectRuns`
-- `plan:internal/reportengine#selectInFlight`
-- `plan:internal/reportengine#ComputeTiming`
-- `plan:internal/reportengine#TimingRun`
-- `plan:internal/reportengine#TimingBucket`
-- `plan:internal/reportengine#timeRun`
-- `plan:internal/reportengine#TestComputeTiming`
+- `internal/reportengine#selectInFlight`
+- `internal/reportengine#ComputeTiming`
+- `internal/reportengine#TimingRun`
+- `internal/reportengine#TimingBucket`
+- `internal/reportengine#timeRun`
+- `internal/reportengine#TestComputeTiming`
 - `internal/reportengine/doc.go`
 
 **Intent:**

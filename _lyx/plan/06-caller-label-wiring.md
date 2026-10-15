@@ -1,12 +1,12 @@
 # Card 6 — caller-label-wiring
 
 **Create:**
-- `plan:internal/loomcli#loomCLI.driverGoto` -> `func (c *loomCLI) driverGoto(ctx context.Context, target string) error`
-- `plan:internal/loomcli#loomCLI.driverStep` -> `func (c *loomCLI) driverStep(ctx context.Context, attempt string) ([]byte, error)`
-- `plan:internal/loomcli#TestGoDriverSeams_LabelShed` -> `func TestGoDriverSeams_LabelShed(t *testing.T)`
-- `plan:internal/battencli#battenCLI.driverGoto` -> `func (c *battenCLI) driverGoto(ctx context.Context, target string) error`
-- `plan:internal/battencli#battenCLI.driverStep` -> `func (c *battenCLI) driverStep(ctx context.Context, attempt string) ([]byte, error)`
-- `plan:internal/battencli#childGotoArgv` -> `func childGotoArgv(target string) []string`
+- `internal/loomcli#loomCLI.driverGoto`
+- `internal/loomcli#loomCLI.driverStep`
+- `internal/loomcli#TestGoDriverSeams_LabelShed`
+- `internal/battencli#battenCLI.driverGoto`
+- `internal/battencli#battenCLI.driverStep`
+- `internal/battencli#childGotoArgv`
 
 **Edit:**
 - `internal/shedverbs#Spec`

@@ -1,9 +1,9 @@
 # Card 4 — caller-label
 
 **Create:**
-- `plan:internal/agentname#CallerOperator` -> `const CallerOperator = "operator"`
-- `plan:internal/agentname#CallerLabel` -> `func CallerLabel(strand string) string`
-- `plan:internal/agentname#TestCallerLabel` -> `func TestCallerLabel(t *testing.T)`
+- `internal/agentname#CallerOperator`
+- `internal/agentname#CallerLabel`
+- `internal/agentname#TestCallerLabel`
 
 **Edit:**
 - `cmd/lyx/testdata/test-budget.yaml`

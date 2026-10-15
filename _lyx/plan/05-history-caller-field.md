@@ -1,9 +1,9 @@
 # Card 5 — history-caller-field
 
 **Create:**
-- `plan:internal/shedengine#CallerShed` -> `const CallerShed = "shed"`
-- `plan:internal/shedengine#RecordResumer` -> `func RecordResumer(statusPath, statusLockPath, by string) error`
-- `plan:internal/shedengine#TestRecordResumer` -> `func TestRecordResumer(t *testing.T)`
+- `internal/shedengine#CallerShed`
+- `internal/shedengine#RecordResumer`
+- `internal/shedengine#TestRecordResumer`
 
 **Edit:**
 - `internal/shedengine#HistoryEntry`
