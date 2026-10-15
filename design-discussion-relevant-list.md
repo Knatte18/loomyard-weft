@@ -1,6 +1,6 @@
 # Discussion hands Plan a list of the relevant code
 
-`discussion-relevant-list` · Task · enhancement, loom, stencil · running · PR-Align
+`discussion-relevant-list` · Task · enhancement, loom, stencil · running · PR-Gate
 
 ## Seen
 
