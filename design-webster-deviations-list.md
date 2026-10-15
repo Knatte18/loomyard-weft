@@ -1,6 +1,6 @@
 # Webster fork deviations list mixes in its own target files
 
-`webster-deviations-list` · Note · bug, webster, stencil
+`webster-deviations-list` · Task · bug, webster, stencil
 
 ## Seen
 
@@ -9,3 +9,7 @@ Recorded in note `glyph-use-audit` (removed 2026-10-15): a Webster fork deviatio
 ## Idea
 
 Give the stencil one rule for what counts as a deviation, matching what `ScopeGuard` checks, and check it again after `kickstart-per-card` lands, since that task rewrites the fork prompt.
+
+## Operator decision (2026-10-15)
+
+Fix it now, as a small task: `kickstart-per-card` has landed, so check the implementer prompt as it stands today and give it the one deviation rule that matches `ScopeGuard`.

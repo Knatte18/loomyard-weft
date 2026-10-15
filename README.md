@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-15 17:34 UTC; every age below is as of then.
+Rendered 2026-10-15 17:35 UTC; every age below is as of then.
 
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
@@ -18,13 +18,17 @@ Held by a run; its scope is locked until the run ends.
 | # | Task | Slug | Recipe | At | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | 1 | **Usage and cost read through the engine**<br>• tokencount reads each run through its engine, with prices per engine, instead of reading Claude transcripts directly | [`engine-usage-readers`](design-engine-usage-readers.md) | loom | Webster | 7h | 7h | shuttle, claude |
-| 2 | **Card can require a board-entry edit that the running task's own board lock refuses** | [`card-own-entry-edit`](design-card-own-entry-edit.md) | loom | Plan-Bouncer | 2h | 22m | loom, stencil |
+| 2 | **Card can require a board-entry edit that the running task's own board lock refuses** | [`card-own-entry-edit`](design-card-own-entry-edit.md) | loom | Plan-Bouncer | 2h | 23m | loom, stencil |
 
 ### Ready
 
 Waits on nothing open; can start now.
 
-_None._
+#### Normal priority
+
+| # | Task | Slug | Recipe | After | Age | Revised | Labels |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| 1 | **Webster fork deviations list mixes in its own target files**<br>• The implementer stencil asks a fork to compare its edits against the glyph union and also tells it not to, so deviations lists files that house its own target glyphs | [`webster-deviations-list`](design-webster-deviations-list.md) | loom |  | 5h | 0m | webster, stencil |
 
 ### Layer A
 
@@ -34,7 +38,7 @@ Waits only on Running or Ready entries.
 
 | # | Task | Slug | Recipe | After | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | **Fix the creel stage 1 audit defects and add its sandbox scenarios**<br>• Eight creel defects from the audit (#657-#664) plus sandbox scenarios C1-C13 | [`creel-stage1-fixes`](design-creel-stage1-fixes.md) | loom | `engine-usage-readers` | 59m | 22m | creel, shuttle, reed, claude |
+| 1 | **Fix the creel stage 1 audit defects and add its sandbox scenarios**<br>• Eight creel defects from the audit (#657-#664) plus sandbox scenarios C1-C13 | [`creel-stage1-fixes`](design-creel-stage1-fixes.md) | loom | `engine-usage-readers` | 1h | 23m | creel, shuttle, reed, claude |
 
 ## Notes
 
@@ -57,17 +61,11 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 ### Bugs
 
-#### Normal priority
-
-| # | Note | Slug | Age | Revised | Labels |
-| --- | --- | --- | --- | --- | --- |
-| 1 | **Webster fork deviations list mixes in its own target files**<br>• The implementer stencil asks a fork to compare its edits against the glyph union and also tells it not to, so deviations lists files that house its own target glyphs | [`webster-deviations-list`](design-webster-deviations-list.md) | 5h | 5h | webster, stencil |
-
 #### Low priority
 
 | # | Note | Slug | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| 2 | **A hub pause leaves background forks and shells running, so hibernate never confirms**<br>• Pause interrupts turns but not background forks or shells; sessions read busy and hibernate confirmation fails | [`pause-background-work`](design-pause-background-work.md) | 21h | 11h | shuttle, webster |
+| 1 | **A hub pause leaves background forks and shells running, so hibernate never confirms**<br>• Pause interrupts turns but not background forks or shells; sessions read busy and hibernate confirmation fails | [`pause-background-work`](design-pause-background-work.md) | 21h | 11h | shuttle, webster |
 
 ### Enhancements
 
