@@ -142,6 +142,12 @@ It also inherits the round number, so a rerouted round at or past the plan perch
 - A conflict record left by a Plan-Review that halted stays until Webster's next entry; if the operator then runs `goto Plan-Write`, the new plan's review treats its findings as findings and may force edits nobody asked for.
 - `run-pane-timing` (running in parallel) numbers the status pane from the recipe's fixed rows; whichever lands second renders Webster's backward reroute into Plan-Review.
 
+<!-- lyx:carry-over Plan-Review -->
+- Plan-Review, round 1: converged; each finding below was fixed or disputed by the round's fixer, and no fresh reviewer has seen the result; the fixer report says which.
+  Review: _lyx/reviews/plan/round-1-review.md; fixer report: _lyx/reviews/plan/round-1-fixer-report.md.
+  - card6-menu-hub-write-guard-subtest-unspecified (class scope, severity MEDIUM, open in rounds 1)
+<!-- /lyx:carry-over Plan-Review -->
+
 ## Acceptance criteria
 
 - begin-batch with a blocking dispatch finding and an empty begun set refuses with `plan_conflict: plan_defect`; with a begun batch, `plan_conflict: tree_moved`; both messages keep the rebaseline way forward, and neither carries `plan_drifted`.
