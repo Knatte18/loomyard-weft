@@ -1,6 +1,6 @@
 # creel stage 1: the one way to reach an agent, standalone
 
-`creel-core` · Task · feature, creel, reed, shuttle
+`creel-core` · Task · feature, creel, reed, shuttle · running · Worktree-Create
 
 ## This task: stage 1
 
