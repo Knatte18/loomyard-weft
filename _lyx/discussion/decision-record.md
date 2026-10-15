@@ -11,7 +11,7 @@ In:
 
 - The checklist frame (`internal/loomcli/checklist.go`): seconds in closed times, round totals, gate lines, rework attribution, entry numbers.
 - A seconds-precision time format in `internal/statuspane`, beside `FormatMinutes`.
-- Per-entry gate spans in shuttle's gate outcome, carried through the producer output into the shed history entry, Webster's verify gate included.
+- Per-entry gate spans in shuttle's gate outcome, carried through the producer output into the shed history entry, Webster's verify gate and Burler's review-parse gate included.
 - One recipe-rows lookup covering every embedded recipe, batten's included.
 - Row numbers in batten's prime runs overview (`internal/battencli/overview.go`), the one pane a batten run has.
 - Segment-prefixed session roles for the Bouncer (seed, judge) and Burler (review, fix) sessions of every review segment in the loom and darn recipes, and every stencil and doc that names those roles.
@@ -55,7 +55,8 @@ Rationale: a recipe's row list is fixed, so a number names the same entry on eve
 
 ### D4 — Batten's numbers in the runs overview
 
-Decision: the prime runs overview's stage cell is prefixed with the stage's entry number: `5. Land` for a batten row; while batten is in Run-Shed, the child's row as `<Run-Shed's number>.<child number> <row>`, for example `4.7 Plan-Write`, the child number being the one D3 gives that row in the child's checklist.
+Decision: the prime runs overview's stage cell is prefixed with the stage's entry number: `7. Land` for a batten row; while batten is in Run-Shed, the child's row as `<Run-Shed's number>.<child number> <row>`, for example `6.5 Plan-Write`, the child number being the one D3 gives that row in the child's checklist.
+A child row inside a review segment takes its segment's number, for example `6.6 Plan-Burler-Review`.
 A stage whose number cannot be read (row not in the recipe, unreadable seed) shows the name alone.
 
 Rationale: batten runs have no per-run checklist; the overview line is the batten run's pane, and the board entry names batten among the recipes to number.
@@ -63,14 +64,18 @@ The dotted form keeps a batten number and a child number from reading alike.
 
 ### D5 — Gate spans recorded by shuttle
 
-Decision: shuttle's gate outcome reports, per gate entry, beside its attempt count, the spans that entry took, each a start and an end on the run clock and a kind:
-a gate span for each closure evaluation, and for a pending entry such as `parent-review` the time held pending;
+Decision: shuttle's gate outcome reports, per gate entry, beside its attempt count, the spans that entry took, each a start and an end on the run clock and a kind from the closed set gate, held and rework:
+a gate span for each closure evaluation;
+a held span for the time a pending entry such as `parent-review` is held pending;
 a rework span from each re-prompt that entry sent to the writer's next arrival.
+While an entry is held pending, the evaluations shuttle re-runs record no gate span for any entry of the gate, the held span covering them, so no entry gains a span per recheck and no two spans of one entry overlap.
 A span still open when the run finalizes (session lost, deadline expired, a later terminal failure, a failed send) ends at finalize and counts.
 The spans are kept in `Wait`'s memory like the attempt count; a re-attach after a driver restart starts them afresh, as it starts the attempt count.
 The outcome carries the spans on every result, done, failed or session-lost alike.
 
-Carriers: the producers that today copy a gate count into the history entry (`MultiLLMProducer` and `BurlerFixProducer`, through `internal/shedadapters/gateattempts.go`) copy the spans too.
+Carriers: every row whose producer runs a gated shuttle run copies that run's gate count and spans into its history entry, whether or not it copies a count today.
+The producers that copy a count today (`MultiLLMProducer` and `BurlerFixProducer`, through `internal/shedadapters/gateattempts.go`) copy the spans too.
+The Burler review row becomes a carrier: its reviewer runs gated on the review-parse entry (`burlerengine`'s `ReviewGateEntry`), and `BurlerReviewProducer` copies its count and spans the same way.
 The Webster row becomes a carrier: its result surfaces the Merriam run's gate outcome, verify gate included, and the adapter copies its count and spans the same way.
 The shed history entry stores the spans as an optional list beside `gate_attempts`, on every entry kind that carries `gate_attempts` today, reroute entries included.
 The field is additive and tolerant (PATTERN-tolerant-records): an entry without it reads as today.
@@ -83,7 +88,9 @@ Spans with start and end, not bare durations, let the checklist take paused time
 ### D6 — Gate lines in the checklist
 
 Decision: under a visit line whose history entry carries gate spans, the checklist draws one line per gate entry with a span: `gate <name> <gate time>`, then ` refused <n> rework <rework time>` when it re-prompted.
-Each time is the sum of that entry's spans of that kind, each span less the pause record's coverage within it and clamped at zero.
+The gate time is the sum of that entry's gate and held spans, and the rework time the sum of its rework spans; since no two spans of one entry overlap (D5), no time is counted twice.
+An entry listed before a held one therefore shows only the evaluations outside the hold.
+Each span counts less the pause record's coverage within it, clamped at zero.
 A visit with only the legacy `gate_attempts` keeps today's ` gate attempts <n>` suffix; an empty span list draws no gate line.
 The gate name is drawn as recorded, whether or not a recipe names it.
 
@@ -93,7 +100,8 @@ Rationale: the in-row gates (validate-discussion, parent-review, plan validation
 
 Decision: a visit that ends bounced (a Stuck entry with `routed_to`) in no segment holding a Bouncer row is a gate refusal.
 Its rework is the history entry right after the bounce entry when that entry is a visit of the routed-to row; otherwise the refusal has no rework visit.
-The rework visit line reads ` rework for <gate row>`, and the gate row's own line adds ` rework <time>`, the sum of its rework visits.
+When the last history entry is a gate bounce routed to the open visit's row, the open visit is that refusal's rework visit.
+The rework visit line reads ` rework for <gate row>`, and the gate row's own line adds ` rework <time>`, the sum of its rework visits; a sum that includes the open visit is drawn with `FormatMinutes` per D1.
 In a segment holding a Bouncer row the bounces are not attributed this way: the review rounds are the rework and D2's round totals show it.
 PR-Gate and PR-Rework sit in `PR-Review`, which holds no Bouncer row, so D7 covers them.
 
@@ -128,8 +136,6 @@ Shuttle's attach matches on output files, not the role, so a session spawned und
 
 - "Gates" means both kinds a run has: the in-row gates a writer row runs and the gate rows that bounce to another producer. A perch's Bouncer is covered by the round totals.
 - "In the pane" for item 5: the checklist already names each review row with its segment (`Discussion-Burler-Review`), so the item's gap is the session names reed shows.
-- The rework span of an in-row gate runs from the re-prompt send to the next arrival, the writer's turn end that the next evaluation reads.
-
 ## Open risks
 
 - A run in flight when this lands has history entries without gate spans; its frames show the legacy `gate attempts` suffix for those visits.
@@ -137,18 +143,24 @@ Shuttle's attach matches on output files, not the role, so a session spawned und
 - A gated run re-attached after a driver restart reports only the spans from the re-attach on.
 - Token tallies grouped by role no longer line up with runs from before the change.
 
+<!-- lyx:carry-over Discussion-Review -->
+- Discussion-Review, round 2: converged; each finding below was fixed or disputed by the round's fixer, and no fresh reviewer has seen the result; the fixer report says which.
+  Review: _lyx/reviews/discussion/round-2-review.md; fixer report: _lyx/reviews/discussion/round-2-fixer-report.md.
+  - earlier-entries-regate-spans-during-hold (class design, severity MEDIUM, open in rounds 2)
+<!-- /lyx:carry-over Discussion-Review -->
+
 ## Acceptance criteria
 
 - A frame with closed visits shows seconds (`45s`, `12m05s`, `1h05m12s`), and a frame whose only change is the open visit's next second is byte-identical to the previous frame.
 - A review block's round lines each show the sum of their lines' times; a round holding the open visit shows it in whole minutes.
 - Entries are numbered in recipe order, a review segment taking one number; a history-only row and the recipe-unreadable fallback carry none; a darn run's frame numbers by the darn recipe.
-- Batten's overview stage cell shows `<n>. <row>` for a batten row and `<n>.<m> <row>` for the child's row in Run-Shed; an unknown row shows the name alone.
-- A gated run that passes first try reports each entry with zero attempts and its gate span; one refused twice reports two attempts and a rework span from each re-prompt to the next arrival; a pending entry reports its held span; times come from an injected clock.
+- Batten's overview stage cell shows `<n>. <row>` for a batten row and `<n>.<m> <row>` for the child's row in Run-Shed, a child row in a review segment taking its segment's number; an unknown row shows the name alone.
+- A gated run that passes first try reports each entry with zero attempts and its gate span; one refused twice reports two attempts and a rework span from each re-prompt to the next arrival; a pending entry reports its held span, and one re-evaluated while held reports one held span and no gate span overlapping it; an entry listed before a held entry reports no gate span for the re-evaluations run during the hold; times come from an injected clock.
 - A deadline expiring after a re-prompt, and a session lost after one, end the open span at finalize, and the outcome carries the spans.
-- The Webster row's history entry carries the verify gate's count and spans.
+- The Webster row's history entry carries the verify gate's count and spans, and a Burler review row's entry carries the review-parse gate's.
 - A folded history entry carries the spans of every entry folded into it.
 - A history entry with spans draws one gate line per entry; a pause inside a pending gate's span is left out of its time; a span ending before it starts draws zero; an empty list draws no gate line; an entry with only `gate_attempts` draws today's suffix; an entry with unknown extra keys still decodes.
-- A gate row's bounce marks the visit right after it as its rework when that visit is of the routed-to row, and adds its time to the gate row's line; a bounce followed by a goto or another row has no rework visit; a bounce in a segment holding a Bouncer row is not attributed.
+- A gate row's bounce marks the visit right after it as its rework when that visit is of the routed-to row, and adds its time to the gate row's line, the open visit included, whose time the gate row's line draws in whole minutes; a bounce followed by a goto or another row has no rework visit; a bounce in a segment holding a Bouncer row is not attributed.
 - With `role_prefix` set, the Bouncer's seed and judge and the Burler's review and fix sessions carry the prefixed roles; with it empty the roles are today's; an invalid prefix is refused when the row is built.
 - The recipe test fails when a review segment's row lacks `role_prefix`, when a segment's rows disagree, or when two segments share a prefix.
 
