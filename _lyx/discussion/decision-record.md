@@ -23,7 +23,7 @@ In:
 - `orchcli`'s resume-context verb builds its hook JSON through an engine capability, not `claudeengine.SessionStartContext`.
 - `AuditForks` and `AuditForksIncremental` move off `Engine` into an optional fork-audit capability.
 - `ModelSwitchSequence` is deleted (D7).
-- `Spec.Requires`: a closed list of requirements (forks, peer messaging, background wake) checked at `Start`, refused with a way forward.
+- `Spec.Requires`: a closed list of requirements (forks, peer messaging, background wake) checked at `Start` and attach, refused with a way forward.
 - An `InstructionFiles()` capability; Claude answers `CLAUDE.md`, `CLAUDE.local.md`.
 - `shuttleengine.ModelChoice{Engine, Model, Effort, Version}` and its constructor from `modelspec.Resolved`, defined here for `engine-model-choice` to adopt.
 - An exported read of `modelspec`'s closed engine-name set, pinned equal to the registry's names by a test.
@@ -78,9 +78,12 @@ Decision:
 - Stop, the step-stop sweep and strand removal consult no engine today and resolve none, so a record naming an unregistered engine never blocks a stop or teardown.
 - An engine-consulting operation on a record naming an unregistered engine is refused with the lookup's error.
 - `Attach` drives a found run through its recorded engine; when the caller's spec resolves to a different engine, the mismatch is logged and the record's engine wins, because the live session belongs to it.
+  An attach checks, against the recorded engine, the spec's own `Requires` joined with `forks` when the run record carries `ForkSubagents`, the field that decides the end-of-run fork audit; a `ForkSubagents` on the attaching spec alone adds nothing.
+  When the recorded engine does not meet them, the attach is refused with D8's error and the attach way forward D8 names, except a finished run, which D8 harvests without the check.
   A respawn after a failed attach is a new `Start` and uses the spec's engine.
-- A `Runner` method that today takes only an event (the context-token and compaction reads, the skill-load classification) gains the guid of the run it reads.
-  Its callers are the orch watcher's session seam (`orchcli`'s runner session) and shuttle's own run loop, both of which hold the guid.
+- A `Runner` method that consults an engine with neither a guid nor a run (the context-token and compaction reads, the skill-load classification, `InterruptSettle`) gains the guid of the run it reads and resolves the engine from that run's record.
+  Its callers are the orch watcher's session seam (`orchcli`'s runner session), which passes the orch run's guid, shuttle's own run loop, and `tenderengine`'s settle, which passes each paused session's guid; each holds the guid.
+  An `InterruptSettle` whose run record cannot be resolved returns an error; `tenderengine`'s settle and the orch watcher log it at Warn and wait the longest settle among the sessions they did resolve, none when every resolution fails.
 
 Rationale: send, interrupt, tender and the readers act on runs they did not start; only the record knows the engine.
 
@@ -107,16 +110,22 @@ Rationale: one unreadable run never fails the whole sweep.
 Decision:
 
 - `AuditForks` and `AuditForksIncremental` move into an optional fork-audit capability in `shuttleengine`.
-  `Wait`'s end-of-run audit for a `ForkSubagents` run takes it, as does every `websterengine` entry that today takes an `Engine` for audits (its run deps and the reset, accept-audit, record and recover paths).
+  `Wait`'s end-of-run audit for a `ForkSubagents` run takes it;
+  `Wait` over a `ForkSubagents` record whose engine lacks the capability fails the run with an error naming the engine, and never finishes it without the audit.
+  The capability is also taken by every `websterengine` entry that today takes an `Engine` for audits (its run deps and the reset, accept-audit, record and recover paths).
   Both wirings that hand Webster its engine, `webstercli` and `loomcli`, resolve the default engine from the set and assert the capability.
   An engine without it is refused as a webster refusal, with its row in `contracts/specs/refusal-spec.md` and a test, naming the engine and the way forward: set `shuttle.yaml`'s `engine:` to an engine with fork support.
 - The board asked for `ModelSwitchSequence` to become an optional capability; this deletes it instead, from the interface, every implementation and fake, and the `submit_settle_ms` template comment's `/model` clause.
   No production code has called it since the builder module was deleted, and no board entry plans a live model switch.
 - `ColorSequence` stays on `Engine`: spawn color applies to every spawned session (`PATTERN-spawn-color`), and its contract already lets an engine return no inputs.
 
+Bound: `websterengine` audits its sessions' forks and parses their events (`TurnEndedAfter` in the recover path) through the default engine.
+That equals the engine that ran a batch's sessions only while one engine is registered;
+with two registered it can differ when a Webster spawn spec names an engine, or when `shuttle.yaml`'s `engine:` changes between a batch's spawn and its later audit, recover parse or archive.
+
 Rationale: fork audit is the concern of Webster and of fork-authorized runs only.
 
-### D8 — `Spec.Requires`, checked at `Start`
+### D8 — `Spec.Requires`, checked at `Start` and attach
 
 Decision:
 
@@ -125,14 +134,21 @@ Decision:
 - A `ForkSubagents` spec implies `forks`; the requirement list is treated as a set, so a duplicate or an implied entry listed again is harmless.
 - `Start` refuses before creating a pane when the spec lists an unknown requirement or one the resolved engine does not meet.
   The refusal names the engine, each unmet requirement, the registered engines that meet them, and the way forward: give the role a model alias of an engine that meets them.
-  It is a shuttle error; a loom or webster driver that hits it surfaces it through its existing spawn-failure path, so it adds no loom or webster refusal row.
+  An attach checks the same set against the run's recorded engine (D4).
+  An attach refusal names its own way forward instead of the alias one, because the live run keeps its recorded engine: end the run's live strand with `lyx reed remove <strand guid>`, then re-step the row once the run record is older than twice `startup_timeout_s`.
+  `lyx reed remove` leaves the record reading running, so the probe then treats the run as untracked and applies its age rule: it answers not found only once the record is older than twice `startup_timeout_s`, and before that it errors with `attach.go`'s "younger than" message, which tells the caller to wait.
+  Once the probe answers not found, the caller's `Start` uses the spec's engine.
+  A finished run, every declared output file on disk, is harvested without the `Requires` check, since its harvest drives no further turn; its fork audit still follows D7.
+  It is a shuttle error.
+  It adds no loom or webster refusal row in this task because neither it nor the `Start` refusal is reachable from any on-disk state: Claude is the one registered engine and declares all three requirements, and no role sets `Requires` beyond the `ForkSubagents` implication.
+  R5 names the tasks that land the rows.
 - `shuttleengines.New` refuses an engine that declares `forks` without implementing the fork-audit capability.
 - Claude declares all three.
 - This task sets no role's `Requires` beyond the `ForkSubagents` implication; `engine-model-choice` declares each Claude-only role's list.
 
 Bound: `Requires` only refuses runs and never lets a run skip a check; an empty list behaves as today.
 
-Rationale: config cannot see the registry, so the only place a Claude-only role meets its engine is `Start`.
+Rationale: config cannot see the registry, so the only places a Claude-only role meets its engine are `Start` and attach.
 
 ### D9 — Orch resume context through an engine capability
 
@@ -204,11 +220,21 @@ Rationale: board scope; amending the existing entry keeps one rule per concern.
 
 ## Open risks
 
-- R1: `creel-core`, planned in parallel, calls shuttle's idle check and send, which D4 changes (the `Runner` constructors take a set, and the event-only methods gain a guid).
+- R1: `creel-core`, planned in parallel, calls shuttle's idle check and send, which D4 changes (the `Runner` constructors take a set, and the guid-less engine-consulting methods gain a guid).
   Its board body says creel moves onto the registry when this task lands, so `creel-core` adapts if it lands second; if it lands first, this task's plan updates creel's `Runner` construction.
-- R2: A run in flight across a change of the `engine:` default is read with the new default (D5), and long-lived set holders (the tender, the orch watcher, batten's drive) keep the default they started with until restart.
+- R2: A run started before this task lands, whose record has no `engine` key, is read with whatever default is configured at read time (D5), and long-lived set holders (the tender, the orch watcher, batten's drive) keep the default they started with until restart.
   Both are acceptable while one engine exists.
+- R4: D7's bound is owned downstream: `engine-model-choice` keeps Merriam and batch specs on the default engine or resolves the engine from the batch run's record, and `codex-engine` resolves Webster's audit and parse engine per batch.
 - R3: A new spec's `ResumeSessionID` is checked only by the spec's engine's resumer (`SessionResumer.CheckResume`); a session id from another engine is refused by that check, not by a comparison against a recorded engine.
+- R5: D8's `Start` and attach refusals become reachable with the first role `Requires` beyond the `ForkSubagents` implication or the first second engine.
+  `engine-model-choice` and `codex-engine`, whichever makes them reachable first, land their loom-section rows in `contracts/specs/refusal-spec.md`: the `Start` refusal with the alias way forward, and the attach refusal with D8's attach way forward.
+
+<!-- lyx:carry-over Discussion-Review -->
+- Discussion-Review, round 3: converged; each finding below was fixed or disputed by the round's fixer, and no fresh reviewer has seen the result; the fixer report says which.
+  Review: _lyx/reviews/discussion/round-3-review.md; fixer report: _lyx/reviews/discussion/round-3-fixer-report.md.
+  - attach-way-forward-age-window (class design, severity MEDIUM, open in rounds 3)
+  - refusal-row-skip-unjustified (class consistency, severity MEDIUM, open in rounds 3)
+<!-- /lyx:carry-over Discussion-Review -->
 
 ## Acceptance criteria
 
@@ -217,7 +243,11 @@ Rationale: board scope; amending the existing entry keeps one rule per concern.
   - `Open` records the resolved engine the same way.
   - `Start` and `Open` with an unknown engine name are refused before any pane is created, naming the registered engines.
   - After a `Start` on the non-default fake, send, interrupt, inject, attach, resume and a session read on that run use the non-default fake.
+  - `InterruptSettle` on a run of the non-default fake answers that fake's settle.
   - Attach after a process restart, with a spec now resolving to the other engine, drives the run through its recorded engine and logs the mismatch.
+  - Attach with a spec whose `Requires` the recorded engine does not meet is refused with D8's error and its attach way forward, which names the wait until the record is older than twice `startup_timeout_s`, as is attach of a record carrying `ForkSubagents` by a spec without it on an engine without `forks`; a finished run is harvested without the check.
+  - `Wait` over a `ForkSubagents` record whose engine lacks the fork-audit capability fails the run, naming the engine.
+  - An `InterruptSettle` on an unresolvable record returns an error, and tender's settle waits the longest settle it did resolve.
   - A run record with no `engine` key resolves to the default engine.
   - An engine-consulting operation on a record naming an unregistered engine is refused; stop and the step-stop sweep on that run succeed.
   - Each cross-run reader, over runs of two engines, reads each run through its own engine, and skips, with a log, a run whose record names an unregistered engine.
@@ -225,6 +255,7 @@ Rationale: board scope; amending the existing entry keeps one rule per concern.
   - An empty `engine:` value is a config error at load.
   - `shuttleengines.New` refuses a `Config.Engine` that names no registered engine, including one set by a local layer, and an engine declaring `forks` without the fork-audit capability.
   - `modelspec`'s engine names equal the registry's names.
+  - The Claude engine's `InstructionFiles` answers `CLAUDE.md` and `CLAUDE.local.md`.
   - `ModelChoice`'s constructor maps `Resolved` engine, model, `effort` and `version`.
   - The orch resume-context verb, given an engine without the capability, prints the error envelope and writes no delivery mark.
   - Webster's wiring refuses an engine without fork audit, with the way forward.
