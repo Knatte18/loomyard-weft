@@ -1,11 +1,11 @@
 {
-  "current_producer": "Darn-Bouncer",
+  "current_producer": "Darn-Burler-Review",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Darn-Bouncer",
-    "last": "Darn-Write → done",
+    "now": "Darn-Burler-Review",
+    "last": "Darn-Bouncer → bounced to Darn-Burler-Review",
     "wait": ""
   },
   "history": [
@@ -21,6 +21,13 @@
       "output": "/home/knatte/Code/loomyard-LYXHUB/config-set-validate/_lyx/landing/summary.md",
       "at": "2026-10-15T05:50:07Z",
       "gate_attempts": 0
+    },
+    {
+      "producer": "Darn-Bouncer",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-15T05:50:27Z",
+      "routed_to": "Darn-Burler-Review"
     }
   ],
   "product": {
