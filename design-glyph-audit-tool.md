@@ -4,8 +4,9 @@
 
 ## Seen
 
-The Webster fork read audits of 2026-10-13 (board note `glyph-use-audit`) ran on jq scripts kept only in the prime's git-ignored scratch: `extract2.jq` pulls per-fork rows from Webster implementer fork transcripts (pack parsing, edits, first-turn reads), `stats-base.jq`, `stats2.jq` and `stats3.jq` aggregate them, and a by-hand recipe builds `table.tsv` and `turns.tsv`.
-Scratch may be wiped at any time; a holding copy of the scripts and the report sits in the prime's `.lyx/keep/glyph-audit-2/`.
+The Webster fork read audit of 2026-10-13 (board note `glyph-use-audit`) ran on jq scripts: `extract2.jq` pulls per-fork rows from Webster implementer fork transcripts (pack parsing, edits, first-turn reads), `stats-base.jq`, `stats2.jq` and `stats3.jq` aggregate them, and by-hand steps build `files.txt`, `table.tsv` and `turns.tsv`.
+Since `290c773d0` the scripts, the report and a README with the re-run recipe sit in `docs/research/glyph-audit-2026-10-13/`.
+The README names the steps that were never recorded: how `files.txt` was built, the exact `extract2.jq` invocation, the script that produced `turns.tsv`, and the commands behind the pack-quality figures.
 
 Operator view (2026-10-15), not a decision: scripts like these must be kept in the repository, not in scratch.
 
