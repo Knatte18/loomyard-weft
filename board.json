@@ -870,25 +870,6 @@
       "revised": "2026-10-15T12:31:11Z"
     },
     {
-      "id": 562,
-      "slug": "discussion-relevant-list",
-      "title": "Discussion hands Plan a list of the relevant code",
-      "kind": "task",
-      "labels": [
-        "enhancement",
-        "loom",
-        "stencil"
-      ],
-      "issues": [],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "The Discussion writer writes relevant.md listing the files and members it read and found relevant; Plan-Write reads it first, so its context starts smaller",
-      "body": "## Seen\n\nIn the 10 runs before 2026-10-15 (`tools/tokencount/tokencount.sh -last 10`), Plan-Write was the second-largest cost after the Webster forks.\nThe plan lead session read 108M cached tokens, fork0 (the plan-writing fork) 51M and the five lens forks 44M.\nThe plan lead peaks at 130k to 370k context, and fork0 and every lens fork inherit about 80% of that peak; each message re-reads it.\nLens forks never re-read the plan (0 of 219 calls); they spot-check code briefly.\nThe cost comes from many messages on a large context, not from the reads themselves.\n\n## Operator view, not a decision (2026-10-15)\n\nThe plan writer must know everything relevant before it writes.\nAn alternative: a separate agent between Discussion and Plan does the research and settles what is relevant.\n\n## Orch notes (my view, not decided)\n\n- The step writes a durable record (for example member glyphs plus short excerpts, the shape of the Webster kick-start pack), which Plan-Write reads instead of exploring, so its lead and forks start smaller.\n- The research agent can run on a cheaper model, and its own exploration context is dropped when it ends.\n- Risk: the plan writer re-explores anyway, or the record misses something and the plan goes wrong; measure with tokencount and plan review findings before and after.\n- Related notes: `fan-master-preread`, `review-inline-code`.\n\n## Discussion so far (2026-10-15)\n\n- Orch: model price matters little here, since nearly all tokens are cache reads (tokencount estimates about $2.7 per weighted million for the Opus plan lead against $2.0 for the Sonnet Webster forks); the gain comes from a smaller context, and a separate research agent adds a handoff that may lose understanding.\n- Orch proposal, not decided: no new role; the Discussion writer, which already reads the relevant code, writes a separate file beside its discussion (for example `relevant.md`) listing the files and members it found relevant, in plain code names with one line of why each, not glyphs; the discussion prose stays free of glyphs.\n  Plan-Write starts by reading that list and may read more.\n  Discussion-Review does not review the list as design, so the review does not grow.\n  Measure the plan lead peak context and the Plan cost with tokencount over a few runs before and after.\n- Operator view, not a decision: the Discussion agent has already looked at everything relevant, so the list records what it read and found relevant, with no extra search for Plan.\n- Operator: discuss further before this becomes a task.\n\n## Operator decision 2026-10-15\n\n- No new role: the Discussion step is extended.\n- The Discussion writer writes a separate file beside the decision record and the support log, `relevant.md`, listing the files and members it read and found relevant, in plain code names with one line of why each; not glyphs, and no extra search for Plan.\n- The discussion prose stays free of glyphs.\n- Plan-Write starts by reading the list and may read more.\n- Discussion-Review does not review the list as design.\n- The new file goes into `contracts/specs/loom-discussion-spec.md`, which pins the files a design step writes, together with the Discussion and Plan stencils (and `loom-plan-spec.md` where it names what Plan reads).\n- Measure the plan lead peak context and the Plan cost with `tools/tokencount/tokencount.sh` over a few runs before and after.",
-      "status": "done",
-      "created": "2026-10-15T13:57:35Z",
-      "revised": "2026-10-15T14:15:11Z"
-    },
-    {
       "id": 563,
       "slug": "card-own-entry-edit",
       "title": "Card can require a board-entry edit that the running task's own board lock refuses",
