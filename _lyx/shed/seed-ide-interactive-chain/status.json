@@ -1,14 +1,21 @@
 {
-  "current_producer": "Preflight",
+  "current_producer": "Darn-Write",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "",
-    "last": "",
+    "now": "Darn-Write",
+    "last": "Preflight → done",
     "wait": ""
   },
-  "history": [],
+  "history": [
+    {
+      "producer": "Preflight",
+      "outcome": "done",
+      "output": "",
+      "at": "2026-10-15T07:55:41Z"
+    }
+  ],
   "product": {
     "slug": "seed-ide-interactive-chain",
     "parent": "main",
