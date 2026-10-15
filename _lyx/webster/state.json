@@ -1,0 +1,128 @@
+{
+  "runGuid": "8b867eb68ede1de84ec61c12515c7c4f",
+  "planFingerprint": "f65e90f9ab5c097a98cf7b654ae0b264e5e26b3615533960d6d01b4df2925938",
+  "planFileHashes": {
+    "00-overview.md": "349332abeacedc189ad1801de656d5e87f4304c6109619ed9fdc9b2f22f8f6d0",
+    "01-config-key.md": "01d0de9380b02f84745134c820ce1d797a90ec0a0d726b3a376f6315acc66792",
+    "02-inline-fragments.md": "1882d1997ec2e906efc1abf9ed20b07ff8eeebe6d68f7885023f7c50aee12dac",
+    "03-render-layout.md": "501140ffe900f03d5195b39c86a2fae8426f786c424c6ff0430c47073645ad82",
+    "04-trace-layout.md": "6679d22598a288f8da67218e229f9d3e837bc9201f8b65e143a5c0b6a4cc559d"
+  },
+  "planOverviewFrameHash": "09e450a1bf9fb52b57d372db331936e47b90a09dfdfe748d9da13176f4c15f46",
+  "partition": [
+    {
+      "cards": [
+        "01-config-key",
+        "02-inline-fragments",
+        "03-render-layout",
+        "04-trace-layout"
+      ],
+      "profile": "cautious",
+      "estimate": 193830,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 1,
+        "startup": 54292,
+        "read_union": 33272,
+        "cards": [
+          {
+            "card": 1,
+            "card_text": 396,
+            "reads": {
+              "file:internal/websterengine/template.yaml": 84,
+              "package:internal/configcli": 2000,
+              "package:internal/websterengine": 2000,
+              "tests:internal/configcli": 2000,
+              "tests:internal/websterengine": 2000
+            },
+            "messages": 63.5,
+            "written": 19446
+          },
+          {
+            "card": 2,
+            "card_text": 660,
+            "reads": {
+              "file:.gitattributes": 552,
+              "file:contracts/stencils/webster/webster-fragment-locate-pack.md": 144,
+              "file:contracts/stencils/webster/webster-fragment-pack-card.md": 108,
+              "file:contracts/stencils/webster/webster-fragment-pack-empty.md": 72,
+              "file:contracts/stencils/webster/webster-fragment-pack-unresolved.md": 120,
+              "package:.": 2000,
+              "package:contracts/stencils": 2000,
+              "package:contracts/stencils/webster": 2000,
+              "tests:.": 2000,
+              "tests:contracts/stencils": 2000,
+              "tests:contracts/stencils/webster": 2000
+            },
+            "messages": 100,
+            "written": 30660
+          },
+          {
+            "card": 3,
+            "card_text": 972,
+            "reads": {
+              "file:contracts/stencils/webster/webster-body-implementer.md": 1296,
+              "file:internal/websterengine/doc.go": 8580,
+              "package:contracts/stencils": 2000,
+              "package:contracts/stencils/webster": 2000,
+              "package:internal/websterengine": 2000,
+              "tests:contracts/stencils": 2000,
+              "tests:contracts/stencils/webster": 2000,
+              "tests:internal/websterengine": 2000
+            },
+            "messages": 135.5,
+            "written": 41622
+          },
+          {
+            "card": 4,
+            "card_text": 288,
+            "reads": {
+              "file:internal/websterengine/doc.go": 8580,
+              "package:internal/websterengine": 2000,
+              "tests:internal/websterengine": 2000
+            },
+            "messages": 47.5,
+            "written": 14538
+          }
+        ]
+      }
+    }
+  ],
+  "currentBatch": 1,
+  "masterStrand": "ada70b1c306a0d17bc8cb8f58d610ac9",
+  "masterSessionId": "deb0549a-355a-41bd-81cb-140eaabfa433",
+  "batches": {
+    "1": {
+      "slug": "config-key",
+      "cards": [
+        "01-config-key",
+        "02-inline-fragments",
+        "03-render-layout",
+        "04-trace-layout"
+      ],
+      "cardHashes": {
+        "01-config-key": "01d0de9380b02f84745134c820ce1d797a90ec0a0d726b3a376f6315acc66792",
+        "02-inline-fragments": "1882d1997ec2e906efc1abf9ed20b07ff8eeebe6d68f7885023f7c50aee12dac",
+        "03-render-layout": "501140ffe900f03d5195b39c86a2fae8426f786c424c6ff0430c47073645ad82",
+        "04-trace-layout": "6679d22598a288f8da67218e229f9d3e837bc9201f8b65e143a5c0b6a4cc559d"
+      },
+      "startSha": "2abb06c5ee3473f283f0b526362161487b9e6b26",
+      "kind": "fork",
+      "spawnedAt": "2026-10-15T07:38:31Z",
+      "sessionId": "deb0549a-355a-41bd-81cb-140eaabfa433",
+      "terminal": false,
+      "status": ""
+    }
+  }
+}
