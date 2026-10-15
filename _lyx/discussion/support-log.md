@@ -70,20 +70,28 @@ Every lens fork returned a report; none was BLOCKING.
 - Scrubbing per strand rather than at server spawn: panes inherit the shared server's environment, so the server must be clean of every engine's keys.
 - Loading every engine's config eagerly in `shuttleengines.New`: it runs in polling closures and would let a bad file block stop, lock and teardown paths.
 - Plain target-wins on a move collision: a base `claude.yaml` scaffolded from the template would swallow the operator's value.
+- Keeping the local-layer refusal of the moved TTL keys until a walk: it blocks stop and teardown in a pair whose run settings wrote them, and those verbs start no walk.
 - Keeping `shellguard` off the leaf list to avoid the `gateslot` departure: the board asks for a leaf, and the enforcement test is worth more than a clean header.
 - An optional reed setter for the scrub keys: a forgotten call leaks a stale session identity silently.
 - Renaming `LYX_SHUTTLE_CLAUDE`: breaks operator environments and test kits for no behavioural gain.
 
 ## Review rounds
 
-_No rounds yet._
+### Round 1
+
+- F1 (BLOCKING): a run-settings TTL key in an unreconciled `shuttle.local.yaml` makes every `shuttle.yaml` load refuse, stop and teardown included — fixed: D4 retires the moved source keys in `shuttle`'s spec, admitted where they were before and dropped from the merged document; Open risks and an acceptance row follow.
+- F2: Open risks omitted the python switch — fixed.
+- F3: the template-default overwrite clobbered an explicit sparse-layer override — fixed: limited to base layers, the overwrite is reported, acceptance row extended.
+- F4: the run-settings acceptance row expected a `deny_python` document the Guard check refuses — fixed: the row expects the refusal, and D3 says so.
+- F5: D8's cycle exception had no user and an empty scrub set compiled — fixed: the exception is cut and `reedengine.New` panics on an empty set.
+- F6: D5's Rationale narrated a rejected alternative — fixed: cut.
 
 ## Question ledger
 
 - Q1 `claude.yaml` key names — resolved, auto-pick: unprefixed, `binary` (D1).
 - Q2 registration route — resolved, auto-pick: through `shuttleengines` (D2).
 - Q3 when engine config loads — resolved, auto-pick: lazily in the methods that read it, after the lens review showed an eager load blocks stop paths (D2).
-- Q4 value carry-over — resolved, auto-pick: `configreg` move table in reconcile and run settings, run before every seed, a non-default target wins on collision, kept permanently (D4).
+- Q4 value carry-over — resolved, auto-pick: `configreg` move table in reconcile and run settings, run before every seed, on collision a non-default target wins at a base layer and any target wins at a sparse layer, the source keys retired in `shuttle`'s spec, kept permanently (D4).
 - Q5 neutral versus Claude guards — resolved, auto-pick: shell-command rows neutral; Agent, AskUserQuestion and webster-in-fork stay Claude (D5).
 - Q6 env names in `shellguard` — resolved, auto-pick: import `agentname` and `gateslot` (D5).
 - Q7 raw-go steer's tool wording — resolved, auto-pick: engine-supplied phrase, Claude's unchanged (D5).
