@@ -21,3 +21,4 @@ labels:
     batten: the outer run lifecycle around a loom
     shed: the phase machine, its recipes and drivers
     orch: the hub orchestrator session
+    creel: the message layer every agent, program and operator uses to reach an agent
