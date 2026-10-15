@@ -1,12 +1,11 @@
 {
-  "current_producer": "Land",
+  "current_producer": "Worktree-Teardown",
   "state": "running",
   "error": "",
-  "pending_by": "shed",
   "pause_requested": false,
   "activity": {
-    "now": "Land",
-    "last": "Land → stuck",
+    "now": "Worktree-Teardown",
+    "last": "Land → done",
     "wait": ""
   },
   "history": [
@@ -59,6 +58,13 @@
       "outcome": "stuck",
       "output": "",
       "at": "2026-10-15T16:13:09Z"
+    },
+    {
+      "producer": "Land",
+      "outcome": "done",
+      "output": "",
+      "at": "2026-10-15T16:13:47Z",
+      "by": "shed"
     }
   ]
 }
