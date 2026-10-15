@@ -1,16 +1,16 @@
 # Card 13 — batten-drives-its-run
 
 **Create:**
-- `plan:internal/sheddriver#ReportFileName` -> `func ReportFileName(now time.Time, suffix string) string`
-- `plan:internal/sheddriver#EnvelopeFileName` -> `func EnvelopeFileName(now time.Time, suffix string) string`
-- `plan:internal/battencli#battenCLI.driveRun` -> `func (c *battenCLI) driveRun(cmd *cobra.Command) error`
-- `plan:internal/battencli#battenCLI.driverDepsFor` -> `func (c *battenCLI) driverDepsFor() (sheddriver.Deps, error)`
-- `plan:internal/battencli#battenRunEnvelope` -> `func battenRunEnvelope(exit sheddriver.Exit, st shedengine.Status, found bool, abandonedSession, busyMessage string) (map[string]any, error)`
-- `plan:internal/battencli#battenTacklerRecipe` -> `const battenTacklerRecipe = "batten"`
-- `plan:internal/battencli#battenDriveRefusal` -> `const battenDriveRefusal = "battencli: a batten driver already drives this run"`
-- `plan:internal/battencli#inProcessUntilStop` -> `func inProcessUntilStop(t *testing.T, c *battenCLI) func(ctx context.Context, attempt string) ([]byte, error)`
-- `plan:internal/battencli#battenDriveLock` -> `func battenDriveLock(location *lyxcwd.Location, slug string) sheddriver.DriveLock`
-- `plan:internal/battencli#TestBattenDriverDeps` -> `func TestBattenDriverDeps(t *testing.T)`
+- `internal/sheddriver#ReportFileName`
+- `internal/sheddriver#EnvelopeFileName`
+- `internal/battencli#battenCLI.driveRun`
+- `internal/battencli#battenCLI.driverDepsFor`
+- `internal/battencli#battenRunEnvelope`
+- `internal/battencli#battenTacklerRecipe`
+- `internal/battencli#battenDriveRefusal`
+- `internal/battencli#inProcessUntilStop`
+- `internal/battencli#battenDriveLock`
+- `internal/battencli#TestBattenDriverDeps`
 
 **Delete:**
 - `internal/battencli#battenCLI.battenPostRun`

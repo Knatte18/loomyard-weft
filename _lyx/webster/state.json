@@ -1,6 +1,6 @@
 {
   "runGuid": "65068fb4a0035d8a33ba8bd22558c241",
-  "planFingerprint": "f547e3011271940e135b31e68c5969a9c936cac88b9c313f7cdef5834005d8bc",
+  "planFingerprint": "2aae3c9e20fe8cb468a74c50d321cff7839225a6e7a2d9de9ffb2c287337e48f",
   "planFileHashes": {
     "00-overview.md": "dad976c121536ad9d32c0e5d1936dc77ad3d5bd5eba0a6e134c0ae4c9cdbf2a2",
     "01-interrupt-policy-words.md": "f8d8e99ff723899bd9bf96fc78b12a69ba4b527def2f4c274fd0aaacf46fdd85",
@@ -15,7 +15,7 @@
     "10-shed-driver-pattern.md": "d77c27796b0133ca2ddba864171f8d7d68e3b10edb6662e37db48678c89856b3",
     "11-batten-loop-arming.md": "fb00c4d6d63b5d6f3395824fa6dd721e47b9ed7b5c74dfd370857f5fce83301c",
     "12-batten-hand-back-notice.md": "9d36f7290e69f57d3e0b27d3d816872e6a9fbf9d1c2d8699d7f4f5b1da5aa020",
-    "13-batten-drives-its-run.md": "87fda3bbc0afc464ff10fbf323285bcaa9513a2ec458375ec38122f278265e4e",
+    "13-batten-drives-its-run.md": "d45f04da332f611f62794e2f549a9fa2418353862446f223764f96f8e6e4259c",
     "14-driver-docs.md": "ff904464fd433c5276840cac5d0706c6d910a9489f8d4fe2f38ad1d34b4d1016"
   },
   "planOverviewFrameHash": "c2db84b8e29b130fe4b2321531b0d8af1ec9babf1028f85b0034ce30e1075362",
@@ -422,7 +422,7 @@
       }
     }
   ],
-  "currentBatch": 13,
+  "currentBatch": 0,
   "masterStrand": "05836e1fa6d8d140857a550caa8fce04",
   "masterSessionId": "fe51066b-538a-477c-b9a6-3c2526af3fa8",
   "batches": {
@@ -497,15 +497,37 @@
         "14-driver-docs"
       ],
       "cardHashes": {
-        "13-batten-drives-its-run": "87fda3bbc0afc464ff10fbf323285bcaa9513a2ec458375ec38122f278265e4e",
+        "13-batten-drives-its-run": "d45f04da332f611f62794e2f549a9fa2418353862446f223764f96f8e6e4259c",
         "14-driver-docs": "ff904464fd433c5276840cac5d0706c6d910a9489f8d4fe2f38ad1d34b4d1016"
       },
       "startSha": "63d7c20db29045632ae00fe0b2bc72c4feeec573",
       "kind": "fork",
       "spawnedAt": "2026-10-15T07:51:03Z",
       "sessionId": "fe51066b-538a-477c-b9a6-3c2526af3fa8",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "13-batten-drives-its-run",
+        "status": "done",
+        "head_sha": "dbd4d179fb84fb6691b24c5af15f66cd88cbf742",
+        "deviations": [
+          "internal/battencli/arm.go",
+          "internal/battencli/drive.go",
+          "internal/battencli/run_test.go",
+          "internal/loomcli/driverreport.go",
+          "internal/loomcli/driverreport_test.go",
+          "internal/sheddriver/reportfiles.go"
+        ]
+      },
+      "cardShas": [
+        "dbd4d179fb84fb6691b24c5af15f66cd88cbf742"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-shed-tackler/fe51066b-538a-477c-b9a6-3c2526af3fa8/subagents/agent-ad560effe438053ea.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-shed-tackler/fe51066b-538a-477c-b9a6-3c2526af3fa8/subagents/agent-ad560effe438053ea.jsonl"
+      ]
     },
     "4": {
       "slug": "tackler-call-to-sheddriver",
@@ -626,6 +648,7 @@
   "seenForkTranscripts": [
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-shed-tackler/fe51066b-538a-477c-b9a6-3c2526af3fa8/subagents/agent-ab8474bee4dcd0df4.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-shed-tackler/fe51066b-538a-477c-b9a6-3c2526af3fa8/subagents/agent-a9bb7c4a85fd7af13.jsonl",
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-shed-tackler/fe51066b-538a-477c-b9a6-3c2526af3fa8/subagents/agent-ad9d98a1b5736ce0a.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-shed-tackler/fe51066b-538a-477c-b9a6-3c2526af3fa8/subagents/agent-ad9d98a1b5736ce0a.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-shed-tackler/fe51066b-538a-477c-b9a6-3c2526af3fa8/subagents/agent-ad560effe438053ea.jsonl"
   ]
 }
