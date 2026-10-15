@@ -1,0 +1,14 @@
+{
+  "verdict": "resume",
+  "reason": "Hard-cap escalation at Discussion-Review round 4. Three design-wrong findings are open, and the round-4 fixer's edits to decision-record.md answer each one; I checked each edit against the code. F1 (d6-wiring-check-verb-placement): D7 now has the wiring build the instruction-file names lazily, so it refuses nothing. An unregistered Master engine is refused only by the MerriamBase callers: runlevel.go:464, autorebaseline.go:49, rebaseline.go:99, and cli.go:276 through executionBatches with a nil state. The fixer narrowed the never-refused list to a run with a state, and validate without --batches. The code supports that: validate.go:104 and :280 pass a nil state, and awaitbatch.go:63 passes whatever LoadState returns. D6's line 119 carves out the same cases, so D6 and D7 now agree. F2 (d6-spawn-check-after-mutation): D6 now puts Run's check among the entry gates beside the deps.Batcher check (runlevel.go:400), before AcquireStateMutation (:427), the reclaim (:448) and archiveRunInPlace (:534). It puts recover-batch's check after the return to a live recovery (recoverbatch.go:455) and before AcceptBatchFabricReference (:464), archiveStaleReport (:268) and StopStrand (:274). An acceptance criterion pins that a refused run or recover-batch changes nothing. F5 (d6-engine-less-entry-bound): the Bound now gives both outcomes, the claude engine's parent-transcript read error (claudeengine/audit.go:290) with its way forward, and the empty audit. It keeps the open risk accepted while one engine is registered. The mechanical findings F3 and F4 are fixed as proposed. The fixer reported nothing disputed or deferred, so I recorded no new design call.",
+  "question": "",
+  "goto": "",
+  "verbs": [
+    "lyx loom circling accept engine-model-choice"
+  ],
+  "cause": "",
+  "attempt": 2,
+  "attempt_dir": "/home/knatte/Code/loomyard-LYXHUB/engine-model-choice/_lyx/shed/engine-model-choice/arbiter/attempt-2",
+  "verdict_path": "/home/knatte/Code/loomyard-LYXHUB/engine-model-choice/_lyx/shed/engine-model-choice/arbiter/attempt-2/verdict.yaml",
+  "relaunch": "lyx shed step engine-model-choice --until-stop --arbiter-attempt 2"
+}
