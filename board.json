@@ -1017,7 +1017,7 @@
       "id": 557,
       "slug": "webster-master-no-code",
       "title": "Webster master reads only what every fork shares, never source code",
-      "kind": "note",
+      "kind": "task",
       "labels": [
         "bug",
         "webster",
