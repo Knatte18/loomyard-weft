@@ -26,8 +26,8 @@
 - `internal/seatengine_test#TestSmokeSeatsChairAsksAdvisor`
 
 **Uses:**
-- `plan:internal/shuttleengines#New`
-- `plan:internal/testkit/shuttlefake#EngineSet`
+- `internal/shuttleengines#New`
+- `internal/testkit/shuttlefake#EngineSet`
 
 **Intent:** Make the three cross-run readers dispatch each run through the engine its record names (D5, D6), and move their production callers onto the registry.
 

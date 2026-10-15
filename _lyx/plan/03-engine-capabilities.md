@@ -1,17 +1,17 @@
 # Card 3 — engine-capabilities
 
 **Create:**
-- `plan:internal/shuttleengine#Requirement` -> `type Requirement string`
-- `plan:internal/shuttleengine#RequirementForks` -> `const RequirementForks Requirement = "forks"`
-- `plan:internal/shuttleengine#RequirementPeerMessaging` -> `const RequirementPeerMessaging Requirement = "peer-messaging"`
-- `plan:internal/shuttleengine#RequirementBackgroundWake` -> `const RequirementBackgroundWake Requirement = "background-wake"`
-- `plan:internal/shuttleengine#RequirementSupporter` -> `type RequirementSupporter interface`
-- `plan:internal/shuttleengine#ForkAuditor` -> `type ForkAuditor interface`
-- `plan:internal/shuttleengine#ResumeContextRenderer` -> `type ResumeContextRenderer interface`
-- `plan:internal/shuttleengine#InstructionFileLister` -> `type InstructionFileLister interface`
-- `plan:internal/shuttleengine/claudeengine#Claude.Supports` -> `func (c *Claude) Supports(req shuttleengine.Requirement) bool`
-- `plan:internal/shuttleengine/claudeengine#Claude.InstructionFiles` -> `func (c *Claude) InstructionFiles() []string`
-- `plan:internal/shuttleengine/claudeengine#Claude.ResumeContext` -> `func (c *Claude) ResumeContext(text string) ([]byte, error)`
+- `internal/shuttleengine#Requirement`
+- `internal/shuttleengine#RequirementForks`
+- `internal/shuttleengine#RequirementPeerMessaging`
+- `internal/shuttleengine#RequirementBackgroundWake`
+- `internal/shuttleengine#RequirementSupporter`
+- `internal/shuttleengine#ForkAuditor`
+- `internal/shuttleengine#ResumeContextRenderer`
+- `internal/shuttleengine#InstructionFileLister`
+- `internal/shuttleengine/claudeengine#Claude.Supports`
+- `internal/shuttleengine/claudeengine#Claude.InstructionFiles`
+- `internal/shuttleengine/claudeengine#Claude.ResumeContext`
 - `internal/shuttleengine/claudeengine/capabilities_test.go`
 
 **Edit:**

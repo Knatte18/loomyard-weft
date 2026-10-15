@@ -1,14 +1,14 @@
 # Card 1 — engine-set
 
 **Create:**
-- `plan:internal/shuttleengine#EngineSet` -> `type EngineSet struct`
-- `plan:internal/shuttleengine#NewEngineSet` -> `func NewEngineSet(defaultName string, engines map[string]Engine) EngineSet`
-- `plan:internal/shuttleengine#EngineSet.Lookup` -> `func (s EngineSet) Lookup(name string) (Engine, error)`
-- `plan:internal/shuttleengine#EngineSet.Names` -> `func (s EngineSet) Names() []string`
-- `plan:internal/shuttleengine#EngineSet.DefaultName` -> `func (s EngineSet) DefaultName() string`
-- `plan:internal/shuttleengine#ErrEngineNotRegistered` -> `var ErrEngineNotRegistered = errors.New("shuttle: the engine is not registered")`
-- `plan:internal/testkit/shuttlefake#EngineName` -> `const EngineName = "fake"`
-- `plan:internal/testkit/shuttlefake#EngineSet` -> `func EngineSet(engine shuttleengine.Engine) shuttleengine.EngineSet`
+- `internal/shuttleengine#EngineSet`
+- `internal/shuttleengine#NewEngineSet`
+- `internal/shuttleengine#EngineSet.Lookup`
+- `internal/shuttleengine#EngineSet.Names`
+- `internal/shuttleengine#EngineSet.DefaultName`
+- `internal/shuttleengine#ErrEngineNotRegistered`
+- `internal/testkit/shuttlefake#EngineName`
+- `internal/testkit/shuttlefake#EngineSet`
 - `internal/shuttleengine/engineset_test.go`
 
 **Edit:**

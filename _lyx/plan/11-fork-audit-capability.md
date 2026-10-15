@@ -15,7 +15,7 @@
 - `internal/shuttleengine/doc.go`
 - `internal/shuttleengine/claudeengine#Claude.AuditForks`
 - `internal/shuttleengine/claudeengine#Claude.AuditForksIncremental`
-- `plan:internal/shuttleengines#build`
+- `internal/shuttleengines#build`
 - `internal/shuttleengines/shuttleengines_test.go`
 - `internal/websterengine#TestPendingFindingsText`
 - `internal/websterengine#TestAcceptPendingAudit_ContractFiles`

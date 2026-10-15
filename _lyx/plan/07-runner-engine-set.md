@@ -47,8 +47,8 @@
 - `internal/shuttleengine/claudeengine#TestStart_LoneEOLMarkBoxTakesStartupSends`
 
 **Uses:**
-- `plan:internal/shuttleengines#New`
-- `plan:internal/testkit/shuttlefake#EngineSet`
+- `internal/shuttleengines#New`
+- `internal/testkit/shuttlefake#EngineSet`
 
 **Intent:** One `Runner` over the engine set: `NewRunner` and `NewDetachedRunner` take an `EngineSet` instead of an `Engine` (D4), and every production construction site builds its set through the registry (D1).
 

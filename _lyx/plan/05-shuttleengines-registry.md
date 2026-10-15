@@ -2,13 +2,13 @@
 
 **Create:**
 - `internal/shuttleengines/doc.go`
-- `plan:internal/shuttleengines#constructor` -> `type constructor func(cfg shuttleengine.Config) shuttleengine.Engine`
-- `plan:internal/shuttleengines#registry` -> `var registry map[string]constructor`
-- `plan:internal/shuttleengines#New` -> `func New(cfg shuttleengine.Config) (shuttleengine.EngineSet, error)`
-- `plan:internal/shuttleengines#build` -> `func build(cfg shuttleengine.Config, constructors map[string]constructor) (shuttleengine.EngineSet, error)`
-- `plan:internal/shuttleengines#Names` -> `func Names() []string`
-- `plan:internal/modelspec#EngineNames` -> `func EngineNames() []string`
-- `plan:internal/shuttleengines#SessionNamer` -> `func SessionNamer() reedengine.SessionNamer`
+- `internal/shuttleengines#constructor`
+- `internal/shuttleengines#registry`
+- `internal/shuttleengines#New`
+- `internal/shuttleengines#build`
+- `internal/shuttleengines#Names`
+- `internal/modelspec#EngineNames`
+- `internal/shuttleengines#SessionNamer`
 - `internal/shuttleengines/shuttleengines_test.go`
 - `internal/shuttleengines/seam_enforcement_test.go`
 

@@ -9,7 +9,7 @@
 - `cmd/lyx/testdata/test-budget.yaml`
 
 **Create:**
-- `plan:internal/shuttleengine_test#TestLoadConfig_EngineKey` -> `func TestLoadConfig_EngineKey(t *testing.T)`
+- `internal/shuttleengine_test#TestLoadConfig_EngineKey`
 
 **Intent:** Add the neutral `engine:` key to `shuttle.yaml`, the default engine for a spec that names none (D3).
 

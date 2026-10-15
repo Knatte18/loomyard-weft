@@ -1,8 +1,8 @@
 # Card 4 — model-choice
 
 **Create:**
-- `plan:internal/shuttleengine#ModelChoice` -> `type ModelChoice struct`
-- `plan:internal/shuttleengine#NewModelChoice` -> `func NewModelChoice(resolved modelspec.Resolved) ModelChoice`
+- `internal/shuttleengine#ModelChoice`
+- `internal/shuttleengine#NewModelChoice`
 - `internal/shuttleengine/modelchoice_test.go`
 
 **Edit:**
