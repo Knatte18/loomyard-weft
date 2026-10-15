@@ -1,15 +1,15 @@
 # Card 9 — engine-scrub-keys
 
 **Create:**
-- `plan:internal/reedengine#EnvScrub` -> `type EnvScrub struct`
-- `plan:internal/reedengine#EnvScrub.Apply` -> `func (s EnvScrub) Apply(environ []string) (clean []string, stripped []string)`
-- `plan:internal/reedengine#testScrub` -> `var testScrub EnvScrub`
-- `plan:internal/reedengine#TestEnvScrub_Apply` -> `func TestEnvScrub_Apply(t *testing.T)`
-- `plan:internal/shuttleengine/claudeengine#ScrubbedEnv` -> `func ScrubbedEnv() (names []string, prefixes []string)`
-- `plan:internal/shuttleengines#EnvScrub` -> `func EnvScrub() reedengine.EnvScrub`
-- `plan:internal/shuttleengines#scrubOf` -> `func scrubOf(entries map[string]entry) reedengine.EnvScrub`
-- `plan:internal/shuttleengines#TestEnvScrub_MatchesTmuxkitServerEnviron` -> `func TestEnvScrub_MatchesTmuxkitServerEnviron(t *testing.T)`
-- `plan:internal/testkit/tmuxkit#ServerEnviron` -> `func ServerEnviron(environ []string) []string`
+- `internal/reedengine#EnvScrub`
+- `internal/reedengine#EnvScrub.Apply`
+- `internal/reedengine#testScrub`
+- `internal/reedengine#TestEnvScrub_Apply`
+- `internal/shuttleengine/claudeengine#ScrubbedEnv`
+- `internal/shuttleengines#EnvScrub`
+- `internal/shuttleengines#scrubOf`
+- `internal/shuttleengines#TestEnvScrub_MatchesTmuxkitServerEnviron`
+- `internal/testkit/tmuxkit#ServerEnviron`
 
 **Delete:**
 - `internal/reedengine/env.go`
