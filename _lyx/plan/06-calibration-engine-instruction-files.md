@@ -26,7 +26,7 @@
 - `tools/tokencount#fileAtBase`
 - `plan:tools/tokencount#ReadSet`
 - `plan:tools/tokencount#oneEngine`
-- `plan:internal/shuttleengine#RecordReads`
+- `internal/shuttleengine#RecordReads`
 - `internal/shuttleengine#InstructionFileLister`
 
 **Intent:** Calibration's Merriam texts take their instruction files from the Webster session's engine instead of `CLAUDE.md` by name (D8), so tokencount names no instruction file.

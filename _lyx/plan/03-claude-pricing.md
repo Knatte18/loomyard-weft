@@ -10,8 +10,8 @@
 - `internal/shuttleengine/claudeengine/doc.go`
 
 **Uses:**
-- `plan:internal/shuttleengine#MessagePricer`
-- `plan:internal/shuttleengine#MessageUsage`
+- `internal/shuttleengine#MessagePricer`
+- `internal/shuttleengine#MessageUsage`
 
 **Intent:** `claudeengine` implements `shuttleengine.MessagePricer` (D4) in a new file `pricing.go`, with `var _ shuttleengine.MessagePricer = (*Claude)(nil)`.
 `modelPrice` and `prices` are copied from `tools/tokencount/cost.go` with their doc comments, the price table's source citation, the Haiku 5.5 long-prompt card and the one-hour/five-minute cache-write split unchanged; card 5 deletes tokencount's copy.

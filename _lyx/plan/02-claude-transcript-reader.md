@@ -44,11 +44,11 @@
 - `internal/shuttleengine/claudeengine#encodeForTest`
 - `internal/shuttleengine/claudeengine#assistantLine`
 - `internal/shuttleengine/claudeengine#New`
-- `plan:internal/shuttleengine#TranscriptReader`
-- `plan:internal/shuttleengine#SessionRead`
-- `plan:internal/shuttleengine#LocatedSession`
-- `plan:internal/shuttleengine#TranscriptEntry`
-- `plan:internal/shuttleengine#MessageUsage`
+- `internal/shuttleengine#TranscriptReader`
+- `internal/shuttleengine#SessionRead`
+- `internal/shuttleengine#LocatedSession`
+- `internal/shuttleengine#TranscriptEntry`
+- `internal/shuttleengine#MessageUsage`
 
 **Intent:** `claudeengine` implements `shuttleengine.TranscriptReader` (D1, D2), and its `SessionUsage` and the reader share one parse of Claude's transcript lines, so the duplicate usage parse ends (D5).
 Every Claude transcript fact tokencount's parser holds today moves here, and none stays in tokencount.

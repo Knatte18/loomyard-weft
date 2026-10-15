@@ -1,24 +1,24 @@
 # Card 1 — neutral-transcript-types
 
 **Create:**
-- `plan:internal/shuttleengine#MessageUsage` -> `type MessageUsage struct`
-- `plan:internal/shuttleengine#EntryRole` -> `type EntryRole string`
-- `plan:internal/shuttleengine#EntryUser` -> `const EntryUser EntryRole = "user"`
-- `plan:internal/shuttleengine#EntryAssistant` -> `const EntryAssistant EntryRole = "assistant"`
-- `plan:internal/shuttleengine#ToolKind` -> `type ToolKind string`
-- `plan:internal/shuttleengine#ToolShell` -> `const ToolShell ToolKind = "shell"`
-- `plan:internal/shuttleengine#ToolFileRead` -> `const ToolFileRead ToolKind = "file-read"`
-- `plan:internal/shuttleengine#ToolOther` -> `const ToolOther ToolKind = "other"`
-- `plan:internal/shuttleengine#ToolCall` -> `type ToolCall struct`
-- `plan:internal/shuttleengine#ToolResult` -> `type ToolResult struct`
-- `plan:internal/shuttleengine#TranscriptEntry` -> `type TranscriptEntry struct`
-- `plan:internal/shuttleengine#TranscriptRead` -> `type TranscriptRead struct`
-- `plan:internal/shuttleengine#TranscriptRef` -> `type TranscriptRef struct`
-- `plan:internal/shuttleengine#LocatedSession` -> `type LocatedSession struct`
-- `plan:internal/shuttleengine#SessionRead` -> `type SessionRead struct`
-- `plan:internal/shuttleengine#TranscriptReader` -> `type TranscriptReader interface`
-- `plan:internal/shuttleengine#MessagePricer` -> `type MessagePricer interface`
-- `plan:internal/shuttleengine#RecordReads` -> `type RecordReads struct`
+- `internal/shuttleengine#MessageUsage`
+- `internal/shuttleengine#EntryRole`
+- `internal/shuttleengine#EntryUser`
+- `internal/shuttleengine#EntryAssistant`
+- `internal/shuttleengine#ToolKind`
+- `internal/shuttleengine#ToolShell`
+- `internal/shuttleengine#ToolFileRead`
+- `internal/shuttleengine#ToolOther`
+- `internal/shuttleengine#ToolCall`
+- `internal/shuttleengine#ToolResult`
+- `internal/shuttleengine#TranscriptEntry`
+- `internal/shuttleengine#TranscriptRead`
+- `internal/shuttleengine#TranscriptRef`
+- `internal/shuttleengine#LocatedSession`
+- `internal/shuttleengine#SessionRead`
+- `internal/shuttleengine#TranscriptReader`
+- `internal/shuttleengine#MessagePricer`
+- `internal/shuttleengine#RecordReads`
 
 **Edit:**
 - `internal/shuttleengine/doc.go`

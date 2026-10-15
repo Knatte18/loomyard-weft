@@ -79,14 +79,14 @@
 - `tools/tokencount#finishedRuns`
 - `tools/tokencount#fakeArchiveTrees`
 - `plan:internal/shuttleengines#RecordReaders`
-- `plan:internal/shuttleengine#RecordReads`
-- `plan:internal/shuttleengine#TranscriptReader`
-- `plan:internal/shuttleengine#MessagePricer`
-- `plan:internal/shuttleengine#TranscriptEntry`
-- `plan:internal/shuttleengine#TranscriptRead`
-- `plan:internal/shuttleengine#SessionRead`
-- `plan:internal/shuttleengine#LocatedSession`
-- `plan:internal/shuttleengine#MessageUsage`
+- `internal/shuttleengine#RecordReads`
+- `internal/shuttleengine#TranscriptReader`
+- `internal/shuttleengine#MessagePricer`
+- `internal/shuttleengine#TranscriptEntry`
+- `internal/shuttleengine#TranscriptRead`
+- `internal/shuttleengine#SessionRead`
+- `internal/shuttleengine#LocatedSession`
+- `internal/shuttleengine#MessageUsage`
 - `plan:internal/testkit/shuttlefake#TokencountRunReads`
 
 **Intent:** tokencount reads every session, fork and orch transcript through the engine that recorded it (D1, D2), prices through that engine (D4), and deletes its Claude parser, its projects-root resolution, its `-projects` flag and its price table.

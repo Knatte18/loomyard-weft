@@ -27,9 +27,9 @@
 - `internal/shuttleengines#forksWithoutAuditEngine`
 - `internal/shuttleengine#Engine`
 - `internal/shuttleengine#InstructionFileLister`
-- `plan:internal/shuttleengine#RecordReads`
-- `plan:internal/shuttleengine#TranscriptReader`
-- `plan:internal/shuttleengine#MessagePricer`
+- `internal/shuttleengine#RecordReads`
+- `internal/shuttleengine#TranscriptReader`
+- `internal/shuttleengine#MessagePricer`
 
 **Intent:** `internal/shuttleengines` hands out every registered engine's read capabilities for offline record reading, built without a shuttle config (D6).
 
