@@ -24,7 +24,7 @@ Each card then says: read this card's kick-start pack first; it is, to begin wit
   The heavier form splits the pack into one file per card and hands each to the fork when it starts that card.
 - Replace the read-all-first instruction with a per-card one: before the card's first edit, read its whole pack in one parallel turn.
 - Frame the card pack as complete for a start, so the fork reads further only when the card needs it.
-- Combine with putting the span code itself into the pack (separate idea from the same audit), so a card's pack is one read.
+- Putting the span code itself into the pack was considered and rejected; see the operator decision on variant 2 below.
 
 ## Trade-off raised by the operator (2026-10-15): all at once lets the fork plan the whole batch
 
@@ -44,3 +44,9 @@ Two variants to measure against today's layout behind the switch:
 Build variant 1 above, overview first and code per card, with each card's spans resolved fresh at card start and read in one parallel turn.
 Put it behind a `webster.yaml` switch beside `kickstart_pack_file`, so it can be measured against today's layout; the begin-batch `webster: kickstart pack` trace line records which layout a batch used.
 Variant 2 (span code inside the pack file) is not part of this task.
+
+## Operator decision (2026-10-15): no code in the pack, and read before edit
+
+Variant 2 is rejected, not deferred: code pasted into a pack goes stale fast.
+A Webster fork must never edit code it has not read itself first, through its own read of the current tree; the operator marked this as very important for Webster.
+The pack points at code and never stands in for reading it.
