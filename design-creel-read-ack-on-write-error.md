@@ -1,6 +1,6 @@
 # creel: read marks mail read even when writing it out failed
 
-`creel-read-ack-on-write-error` · Note · bug
+`creel-read-ack-on-write-error` · Note · bug, creel
 
 Imported from [issue #660](https://github.com/Knatte18/loomyard/issues/660).
 

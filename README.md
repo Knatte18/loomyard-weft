@@ -58,7 +58,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 3 | **creel: a hand-added claude strand is never read idle, so nothing is delivered (llm smoke test fails)** | [`creel-hand-added-claude-idle`](design-creel-hand-added-claude-idle.md) | 0m | 0m | creel, shuttle, reed, claude |
 | 4 | **creel: no delivery into a collapsed (too short) strand pane, and no reason surfaced** | [`creel-collapsed-pane-delivery`](design-creel-collapsed-pane-delivery.md) | 0m | 0m | creel, reed, shuttle |
 | 5 | **creel: inject --interrupt stalls behind the prompt Claude restores into the input box** | [`creel-interrupt-restored-prompt`](design-creel-interrupt-restored-prompt.md) | 0m | 0m | creel, shuttle, claude |
-| 6 | **creel: read marks mail read even when writing it out failed** | [`creel-read-ack-on-write-error`](design-creel-read-ack-on-write-error.md) | 0m | 0m |  |
+| 6 | **creel: read marks mail read even when writing it out failed** | [`creel-read-ack-on-write-error`](design-creel-read-ack-on-write-error.md) | 0m | 0m | creel |
 
 #### Low priority
 
