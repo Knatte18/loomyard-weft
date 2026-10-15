@@ -858,6 +858,26 @@
           "review_max_bounces": 2
         }
       }
+    },
+    {
+      "id": 542,
+      "slug": "shed-arbiter-all",
+      "title": "The arbiter in shed for every shed run, batten included",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "shed",
+        "batten",
+        "loom",
+        "config"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "The batten Go driver has a tackler but no arbiter; move the arbiter and its keys into shed beside the tackler",
+      "body": "## Seen (2026-10-15, after `shed-tackler` landed)\n\nThe Go driver in `internal/sheddriver` has an optional `Arbiter` seam.\nLoom and darn fill it (`internal/loomcli/drivewiring.go`, `ArbiterSeam`), so their stop chain is: rule table, then the tackler (`haiku`), then the arbiter (`opus[high]`), then the orch.\nBatten's own lifecycle run fills only the tackler (`internal/battencli/drive.go`, `sheddriver.Deps` has no `Arbiter`), so a stop the tackler escalates goes straight to the orch.\nThe arbiter's keys (`arbiter`, `arbiter_timeout_min`, `arbiter_max_spawns`) sit in `loom.yaml`, while the tackler's defaults moved to `shed.yaml`.\n\n## Operator view, not a decision (2026-10-15)\n\nThe stop chain should be the same for every shed run: if loom and darn have an arbiter, batten should have one too.\nThe arbiter is there to take load off the orch.\n\nThis matches the operator's 2026-10-14 principle that anything every FSM needs belongs in shed, with shed defaults a module's config overrides.\n\n## Idea\n\n- Move the arbiter into shed beside the tackler: its seam wired for every shed-driven recipe, batten included, and its keys in `shed.yaml` with per-module overrides, as `driver_kind` and the tackler keys already are.\n- Give batten an arbiter stencil or a recipe line that describes batten's rows (Worktree-Create, Run-Shed, Land, Worktree-Teardown and the rest), so the arbiter can judge a batten stop.\n",
+      "created": "2026-10-15T08:31:24Z",
+      "revised": "2026-10-15T08:31:24Z"
     }
   ]
 }
