@@ -1,11 +1,11 @@
 {
-  "current_producer": "Plan-Burler-Fix",
+  "current_producer": "Plan-Bouncer",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Plan-Burler-Fix",
-    "last": "Plan-Burler-Review → bounced to Plan-Burler-Fix",
+    "now": "Plan-Bouncer",
+    "last": "Plan-Burler-Fix → bounced to Plan-Bouncer",
     "wait": ""
   },
   "history": [
@@ -133,6 +133,23 @@
       ],
       "budget_exempt": true,
       "routed_to": "Plan-Burler-Fix"
+    },
+    {
+      "producer": "Plan-Burler-Fix",
+      "outcome": "stuck",
+      "output": "/home/knatte/Code/loomyard-LYXHUB/sibling-overlap-check/_lyx/reviews/plan/round-1-review.md",
+      "at": "2026-10-15T13:21:33Z",
+      "gate_attempts": 0,
+      "gate_spans": [
+        {
+          "gate": "plan",
+          "kind": "gate",
+          "start": "2026-10-15T13:20:30.312448366Z",
+          "end": "2026-10-15T13:21:33.510560002Z"
+        }
+      ],
+      "budget_exempt": true,
+      "routed_to": "Plan-Bouncer"
     }
   ],
   "product": {
