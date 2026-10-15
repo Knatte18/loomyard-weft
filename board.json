@@ -1014,21 +1014,42 @@
     {
       "id": 559,
       "slug": "sibling-overlap-check",
-      "title": "Check overlap between tasks that wait on the same entry",
-      "kind": "note",
+      "title": "Warn on overlap between tasks that wait on the same entry",
+      "kind": "task",
       "labels": [
         "enhancement",
-        "board",
-        "batten",
-        "orch"
+        "board"
       ],
       "issues": [],
       "depends_on": [],
       "isolated": false,
-      "brief": "Four tasks waited on kickstart-per-card and would have auto-started together although three edit the same stencils; nothing checks overlap among siblings",
-      "body": "## Seen\n\nOn 2026-10-15, four tasks had `depends_on` `kickstart-per-card`: `webster-master-no-code`, `plan-test-file-path`, `lighter-test-rules` and `engine-registry`.\nThe newly-ready auto-start would have started all four together, though the first three edit the same Webster, plan and stencil files and their tests.\nThe operator noticed just before the landing; the orch then chained the three.\nThe orch checks a new task against the running ones only, never against other tasks waiting on the same entry, and each task got its `depends_on` at a different time.\n\n## Idea\n\nCatch it when it is cheap, in two places:\n- `lyx board set-deps` and `upsert` warn when the new `depends_on` makes a task a sibling of another task with a shared module label (and later the paths of note `labels-from-diff`).\n- Batten newly-ready start: when a landing makes several tasks ready at once, start one per overlapping group and leave the rest for the orch, naming the overlap in the notice.\nThe rule to check siblings whenever `depends_on` is set goes into the `ly:board` skill beside its `depends_on` guidance, since every agent that writes the board loads that skill; the orch role needs no copy (the operator asked whether these rules belong in the board skill; the orch recommends this split, not yet decided).",
+      "brief": "set-deps and upsert warn when a new depends_on makes a task a sibling of one sharing a module label; the ly:board skill gains the sibling check rule",
+      "body": "## Seen\n\nOn 2026-10-15, four tasks had `depends_on` `kickstart-per-card`: `webster-master-no-code`, `plan-test-file-path`, `lighter-test-rules` and `engine-registry`.\nThe newly-ready auto-start would have started all four together, though the first three edit the same Webster, plan and stencil files and their tests.\nThe operator noticed just before the landing; the orch then chained the three.\nThe orch checks a new task against the running ones only, never against other tasks waiting on the same entry, and each task got its `depends_on` at a different time.\n\n## Scope\n\nOperator decision 2026-10-15: build both parts below.\n\n- `lyx board set-deps` and `upsert` warn when the new `depends_on` makes a task a sibling of another task with a shared module label, that is another task waiting on one of the same entries.\n  The warning names the sibling and the shared labels; the write still succeeds.\n  Path-based overlap waits for note `labels-from-diff`.\n- The rule to check siblings, not only running tasks, whenever `depends_on` is set goes into the `ly:board` skill beside its `depends_on` guidance, since every agent that writes the board loads that skill.\n  The orch role needs no copy.\n\nOut of scope: batten starting one task per overlapping group at a newly-ready start, which is note `batten-ready-overlap`.\n",
       "created": "2026-10-15T12:08:25Z",
-      "revised": "2026-10-15T12:10:38Z"
+      "revised": "2026-10-15T12:28:05Z",
+      "run_settings": {
+        "loom": {
+          "review_hard_max_bounces": 3,
+          "review_max_bounces": 2
+        }
+      }
+    },
+    {
+      "id": 560,
+      "slug": "batten-ready-overlap",
+      "title": "Start one task per overlapping group at a newly-ready start",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "batten"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "When a landing makes several overlapping tasks ready at once, batten starts one per group and names the rest in its notice",
+      "body": "Split from `sibling-overlap-check` on 2026-10-15; the operator decided only the board warning and skill rule there.\n\n## Idea\n\nWhen a landing makes several tasks ready at once, batten starts one task per group of overlapping tasks (shared module labels, later the paths of note `labels-from-diff`) and leaves the rest for the orch, naming the overlap in the notice.",
+      "created": "2026-10-15T12:28:05Z",
+      "revised": "2026-10-15T12:28:05Z"
     }
   ]
 }
