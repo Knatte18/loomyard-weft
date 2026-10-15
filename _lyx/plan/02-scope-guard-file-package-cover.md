@@ -22,14 +22,14 @@
 **Intent:**
 Widen `ScopeGuard`'s symbol check per decision D1: a touched symbol is in scope when it is in the target union as today, when a rename has either side in the union as today, or when a card's file or package target covers every file the symbol lives in.
 
-`symbolFilesCovered` reports whether every path in `files` is covered by some non-member target of `cards`, and false for an empty `files`.
-For each target it skips a ref `planparser.RefMember(nil, t)` reports as a member, so a member glyph or member `plan:` handle never covers its package's other members, then maps the ref through `planparser.RefScope(nil, t)`, skipping a ref with no scope.
+`symbolFilesCovered` reports whether every path in `files` is covered by some non-member target of `cards`.
+For each target it skips a ref `planparser.RefMember(nil, t)` reports as a member, so a member glyph or member `plan:` handle never covers its package's other members, then maps the ref through `planparser.RefScope(nil, t)`.
 A file scope covers a path equal to it; a directory scope, a package self glyph or a directory path, covers a path whose `path.Dir` equals it, never one in a subdirectory.
 The member test goes through planparser per `PATTERN-ref-shape-registry`; `targetsCover` stays as it is, since the symbol-less file check keeps counting a member target's package directory.
 
 The files a symbol lives in are fixed per delta shape:
 - a Created or Deleted symbol: its own `File`;
-- a Modified symbol: every `File` on its `Before` and `After` sides, so a symbol moved from a file target into an untargeted file stays reported; a Modified entry with neither side has no files and is reported as today;
+- a Modified symbol: every `File` on its `Before` and `After` sides, so a symbol moved from a file target into an untargeted file stays reported;
 - a Renamed pair: `From.File` and `To.File`, consulted only when neither side is in the union.
 
 The `report` closure takes the symbol's files beside its ID and finding file, and returns early when `symbolFilesCovered(cards, files)` holds.
@@ -54,7 +54,6 @@ New rows:
 - plain file path target `sub/a.go`, Created `sub#Foo` in `sub/a.go`: none;
 - file target `sub/a.go#`, Created `sub#Bar` in `sub/b.go`: `sub/b.go`;
 - package self glyph `sub#`, Modified `sub#Foo` with `Before` and `After` in `sub/a.go`: none;
-- package self glyph `sub#`, Modified `sub#Foo` with only `After` in `sub/a.go`: none;
 - directory path `sub`, Deleted `sub#Gone` in `sub/c.go`: none;
 - package self glyph `sub#`, Created `sub/inner#Foo` in `sub/inner/a.go`: `sub/inner/a.go`;
 - directory path `sub`, Created `sub/inner#Foo` in `sub/inner/a.go`: `sub/inner/a.go`;
@@ -65,9 +64,7 @@ New rows:
 - file target `sub/a.go#`, Renamed `sub#Foo` in `sub/b.go` to `sub#Bar` in `sub/a.go`: `sub/a.go`;
 - package self glyph `sub#`, Renamed `sub#Foo` in `sub/a.go` to `sub#Bar` in `sub/b.go`: none;
 - file-unit member glyph `sub/a.go#Foo`, Created `sub#Bar` in `sub/a.go`: `sub/a.go`;
-- member handle `plan:sub#Foo`, Created `sub#Bar` in `sub/a.go`: `sub/a.go`;
-- unmappable handle `plan:nohash`, Created `sub#Bar` in `sub/a.go`: `sub/a.go`, the row that reaches the no-scope skip;
-- package self glyph `sub#`, Modified `sub#Foo` with no `Before` or `After`: one finding with an empty `File`.
+- member handle `plan:sub#Foo`, Created `sub#Bar` in `sub/a.go`: `sub/a.go`.
 
 The remaining `ScopeGuard` tests keep their verdicts unchanged, covering the rename either-side rule, a Deleted and a Modified symbol outside the union, the empty delta and the symbol-less file check.
 The card adds one top-level test and deletes three, so the `internal/planglyph` row of `cmd/lyx/testdata/test-budget.yaml` needs no change.

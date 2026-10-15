@@ -7,6 +7,7 @@
 - `plan:internal/planparser_test#TestRefMember` -> `func TestRefMember(t *testing.T)`
 
 **Edit:**
+- `plan:internal/planparser#RefMember`
 - `internal/planparser#RefCovers`
 - `cmd/lyx/testdata/test-budget.yaml`
 
