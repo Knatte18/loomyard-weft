@@ -13,7 +13,13 @@ When this lands, the design moves into the creel package's `doc.go`, which those
 ## Operator decision (2026-10-15)
 
 Creel is a prerequisite for Codex: agents reach their parent and each other through creel, not Claude Code's `SendMessage`.
-Creel delivers through shuttle, so its idle check and send go through the engine registry of task `engine-registry` and work for any engine.
+Creel delivers through shuttle, so its idle check and send go through shuttle and work for any engine shuttle drives.
+
+## Operator decision (2026-10-15, later): a working creel first, in parallel
+
+Build a working creel now, in parallel with the other runs, and test it thoroughly before anything that works today is switched over to it.
+This task therefore no longer waits on `engine-registry`: creel calls shuttle's present idle check and send, and moves onto the engine registry when that lands.
+Stages 2 and 3 (`creel-notices`, `creel-agents`) replace working paths, so they start only on the operator's word once creel has proven itself, never on a newly-ready auto-start.
 
 ## Design
 
