@@ -202,6 +202,14 @@ Rationale: `convergence`'s envelope shape and finding policy.
   - settle-record-to-stop-join-unstated (class design, severity MEDIUM, open in rounds 2, 3)
 <!-- /lyx:carry-over Discussion-Review -->
 
+<!-- lyx:carry-over Plan-Review -->
+- Plan-Review, round 1: converged; each finding below was fixed or disputed by the round's fixer, and no fresh reviewer has seen the result; the fixer report says which.
+  Review: _lyx/reviews/plan/round-1-review.md; fixer report: _lyx/reviews/plan/round-1-fixer-report.md.
+  - card5-resume-from-paused-label-disagrees (class consistency, severity MEDIUM, open in rounds 1)
+  - card6-label-shed-test-duplicates-driverdeps (class consistency, severity MEDIUM, open in rounds 1)
+  - card8-batten-rows-between-run-shed-no-phase (class consistency, severity MEDIUM, open in rounds 1)
+<!-- /lyx:carry-over Plan-Review -->
+
 ## Acceptance criteria
 
 - For a landed run holding both histories, its phase seconds, `other` included, plus its sleep sum to its span, and active plus waits plus sleep equals the span.
