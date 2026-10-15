@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-15 05:30 UTC; every age below is as of then.
+Rendered 2026-10-15 05:31 UTC; every age below is as of then.
 
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
@@ -47,13 +47,13 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | # | Note | Slug | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | 1 | **lyx config --set stores an invalid model value instead of refusing it** | [`config-set-validate`](design-config-set-validate.md) | 10h | 10h | config |
-| 2 | **A hub pause leaves background forks and shells running, so hibernate never confirms**<br>• Pause interrupts turns but not background forks or shells; sessions read busy and hibernate confirmation fails | [`pause-background-work`](design-pause-background-work.md) | 9h | 1m | shuttle, webster |
-| 3 | **Plan and Webster checks out of step with the code a plan changes** | [`twb-d0-ga`](design-twb-d0-ga.md) | 3m | 3m |  |
-| 4 | **Darn: a decision record for mid-run scope corrections, and PR-Align**<br>• Darn has no decision record, so a mid-run scope correction never reaches its review; and no PR-Align row, so every darn PR waits for the orch at PR-Gate | [`twb-d0-sa`](design-twb-d0-sa.md) | 3m | 3m |  |
-| 5 | **Plan and Webster checks out of step with the code a plan changes** | [`twb-d0-gc`](design-twb-d0-gc.md) | 3m | 3m |  |
-| 6 | **Darn: a decision record for mid-run scope corrections, and PR-Align**<br>• Darn has no decision record, so a mid-run scope correction never reaches its review; and no PR-Align row, so every darn PR waits for the orch at PR-Gate | [`twb-d0-sc`](design-twb-d0-sc.md) | 3m | 3m |  |
-| 7 | **Plan and Webster checks out of step with the code a plan changes** | [`twb-d0-gf`](design-twb-d0-gf.md) | 3m | 3m |  |
-| 8 | **Darn: a decision record for mid-run scope corrections, and PR-Align**<br>• Darn has no decision record, so a mid-run scope correction never reaches its review; and no PR-Align row, so every darn PR waits for the orch at PR-Gate | [`twb-d0-sf`](design-twb-d0-sf.md) | 3m | 3m |  |
+| 2 | **A hub pause leaves background forks and shells running, so hibernate never confirms**<br>• Pause interrupts turns but not background forks or shells; sessions read busy and hibernate confirmation fails | [`pause-background-work`](design-pause-background-work.md) | 9h | 0m | shuttle, webster |
+| 3 | **Plan and Webster checks out of step with the code a plan changes** | [`twb-d0-ga`](design-twb-d0-ga.md) | 4m | 4m |  |
+| 4 | **Darn: a decision record for mid-run scope corrections, and PR-Align**<br>• Darn has no decision record, so a mid-run scope correction never reaches its review; and no PR-Align row, so every darn PR waits for the orch at PR-Gate | [`twb-d0-sa`](design-twb-d0-sa.md) | 4m | 4m |  |
+| 5 | **Plan and Webster checks out of step with the code a plan changes** | [`twb-d0-gc`](design-twb-d0-gc.md) | 4m | 4m |  |
+| 6 | **Darn: a decision record for mid-run scope corrections, and PR-Align**<br>• Darn has no decision record, so a mid-run scope correction never reaches its review; and no PR-Align row, so every darn PR waits for the orch at PR-Gate | [`twb-d0-sc`](design-twb-d0-sc.md) | 4m | 4m |  |
+| 7 | **Plan and Webster checks out of step with the code a plan changes** | [`twb-d0-gf`](design-twb-d0-gf.md) | 4m | 4m |  |
+| 8 | **Darn: a decision record for mid-run scope corrections, and PR-Align**<br>• Darn has no decision record, so a mid-run scope correction never reaches its review; and no PR-Align row, so every darn PR waits for the orch at PR-Gate | [`twb-d0-sf`](design-twb-d0-sf.md) | 4m | 4m |  |
 
 ### Enhancements
 
@@ -61,7 +61,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Note | Slug | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| 1 | **Model downgrade per role**<br>• Bench cheaper models (Sonnet 5.5, Haiku 5.5) per role by replaying older runs; per-round models and fan vs solo | [`model-downgrade`](design-model-downgrade.md) | 1d | 1m | burler, loom, webster, shuttle |
+| 1 | **Model downgrade per role**<br>• Bench cheaper models (Sonnet 5.5, Haiku 5.5) per role by replaying older runs; per-round models and fan vs solo | [`model-downgrade`](design-model-downgrade.md) | 1d | 2m | burler, loom, webster, shuttle |
 
 #### Normal priority
 
@@ -104,9 +104,9 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Note | Slug | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| 3 | **Hibernate the machine on a trigger, such as a task landing**<br>• Let the operator trigger a hibernate through lyx, for instance once a task is done | [`twb-d0-ha`](design-twb-d0-ha.md) | 3m | 3m |  |
-| 4 | **Hibernate the machine on a trigger, such as a task landing**<br>• Let the operator trigger a hibernate through lyx, for instance once a task is done | [`twb-d0-hc`](design-twb-d0-hc.md) | 3m | 3m |  |
-| 5 | **Hibernate the machine on a trigger, such as a task landing**<br>• Let the operator trigger a hibernate through lyx, for instance once a task is done | [`twb-d0-hf`](design-twb-d0-hf.md) | 3m | 3m |  |
+| 3 | **Hibernate the machine on a trigger, such as a task landing**<br>• Let the operator trigger a hibernate through lyx, for instance once a task is done | [`twb-d0-ha`](design-twb-d0-ha.md) | 4m | 4m |  |
+| 4 | **Hibernate the machine on a trigger, such as a task landing**<br>• Let the operator trigger a hibernate through lyx, for instance once a task is done | [`twb-d0-hc`](design-twb-d0-hc.md) | 4m | 4m |  |
+| 5 | **Hibernate the machine on a trigger, such as a task landing**<br>• Let the operator trigger a hibernate through lyx, for instance once a task is done | [`twb-d0-hf`](design-twb-d0-hf.md) | 4m | 4m |  |
 | 6 | **creel: the one way to reach an agent**<br>• Post (pulled mail with reminders), inject and interrupt to any agent by name, through one daemon per hub; built standalone first, then wired in two stages | [`creel`](design-creel.md) | 12d | 6d | reed |
 | 7 | **Hardener: an autonomous behavior-review campaign that replaces crucible**<br>• Parked by the operator: settle the Tenter/Hardener design and build the campaign that runs a live-substrate module in a sandbox until it converges | [`hardener`](design-hardener.md) | 12d | 6d | burler |
 | 8 | **Orch and batten run from the operator's own long-lived worktree, not only the prime**<br>• Every orch and batten verb refuses outside the prime; let a long-lived personal worktree be an orch's home, with pairs branching from and landing into its branch | [`orch-any-worktree`](design-orch-any-worktree.md) | 11d |  | fabric, batten, orch |
@@ -143,4 +143,4 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | --- | --- | --- | --- | --- | --- |
 | 2 | **Re-measure the test suite weight on a quiet machine**<br>• The test-suite-weight before and after numbers were taken under load; rerun the report Regenerate section on an idle machine for a fair wall-time comparison | `suite-weight-quiet-rerun` | 4d | 1d |  |
 | 3 | **Lighter test rules for small changes**<br>• Tests that pin stencil wording make small prompt changes large; pin only what must hold, measured first | [`lighter-test-rules`](design-lighter-test-rules.md) | 1d | 1d | stencil |
-| 4 | **Bench fork0 and the strict critical fixer on twill Discussion-Write**<br>• Arms: twill as is, with the strict critical fixer, and fork0 plus the critical fixer, graded against Discussion-Review keys | [`twill-discussion-fork0-bench`](design-twill-discussion-fork0-bench.md) | 11m | 11m | loom, burler, stencil |
+| 4 | **Bench fork0 and the strict critical fixer on twill Discussion-Write**<br>• Arms: twill as is, with the strict critical fixer, and fork0 plus the critical fixer, graded against Discussion-Review keys | [`twill-discussion-fork0-bench`](design-twill-discussion-fork0-bench.md) | 12m | 12m | loom, burler, stencil |
