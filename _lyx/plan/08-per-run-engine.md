@@ -53,8 +53,8 @@
 - `cmd/lyx/testdata/test-budget.yaml`
 
 **Create:**
-- `plan:internal/shuttleengine#Runner.engineFor` -> `func (r *Runner) engineFor(rs RunState) (Engine, string, error)`
-- `plan:internal/shuttleengine#withEngines` -> `func withEngines(engines EngineSet) fixtureOpt`
+- `internal/shuttleengine#Runner.engineFor`
+- `internal/shuttleengine#withEngines`
 - `internal/shuttleengine/enginedispatch_test.go`
 
 **Intent:** Pick each run's engine by name: `Start` and `Open` resolve the spec's engine and record it, and every other engine-consulting operation resolves the engine its run's record names (D4, D5).
