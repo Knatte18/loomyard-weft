@@ -284,7 +284,7 @@
       }
     }
   ],
-  "currentBatch": 0,
+  "currentBatch": 6,
   "masterStrand": "5869ee916a60ab850c7742f87fa34560",
   "masterSessionId": "6b68c927-cf8b-4e65-84e0-b3ee7c61d58a",
   "batches": {
@@ -347,6 +347,31 @@
       "bracketTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-run-pane-timing/6b68c927-cf8b-4e65-84e0-b3ee7c61d58a/subagents/agent-a9c06cc5bedcbc2ab.jsonl"
       ]
+    },
+    "6": {
+      "slug": "prrework-carry-gate",
+      "cards": [
+        "06-prrework-carry-gate",
+        "07-recipe-entry-numbers",
+        "08-checklist-seconds-round-totals",
+        "09-checklist-entry-numbers",
+        "10-checklist-gate-lines",
+        "11-checklist-gate-rework"
+      ],
+      "cardHashes": {
+        "06-prrework-carry-gate": "e3e61c0e5a5b9d4043e0077a8c7a903e1d47db845c9cf1d1d960f70b352d9f4f",
+        "07-recipe-entry-numbers": "74ce1686b2e3536906c1bad2dfa9c917aa3955e3749a8548cb0b5c8346aa913c",
+        "08-checklist-seconds-round-totals": "a5ead4944efae620cb7b774d529eccf58b4eb19e014ee0998a96650fe15d2596",
+        "09-checklist-entry-numbers": "ef5caf8d97c2ffea60710766107a69c934ef3b8d90cfba7b6a015ff586c94cac",
+        "10-checklist-gate-lines": "2ee23cc23f15720cb5203e696613d2328288e81b97ef33135f29f4100cc1bbe4",
+        "11-checklist-gate-rework": "c380c99de2abde37b7de92d63a6c49820191a9407057a2cd040e406c52880425"
+      },
+      "startSha": "5e63687a50745939513464f75a43d208dbe5c6b4",
+      "kind": "fork",
+      "spawnedAt": "2026-10-15T09:25:40Z",
+      "sessionId": "6b68c927-cf8b-4e65-84e0-b3ee7c61d58a",
+      "terminal": false,
+      "status": ""
     }
   },
   "seenForkTranscripts": [
