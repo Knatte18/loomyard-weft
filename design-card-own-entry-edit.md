@@ -1,6 +1,6 @@
 # Card can require a board-entry edit that the running task's own board lock refuses
 
-`card-own-entry-edit` · Note · bug
+`card-own-entry-edit` · Note · bug, loom, stencil, board
 
 Imported from [issue #653](https://github.com/Knatte18/loomyard/issues/653).
 
