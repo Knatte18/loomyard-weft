@@ -1,0 +1,70 @@
+{
+  "runGuid": "225bb4e29544d28429898b9d9b74573a",
+  "planFingerprint": "e5328ab0dc1208a87f9bb5560ea9ef97f08b4cab9fd6a6f66fd3f377ad3d3041",
+  "planFileHashes": {
+    "00-overview.md": "50f30f78b67eb9e4f483089cfdebf4ca4bd3e72832941c1195ab1d58358e2bd7",
+    "17-creel-read-sets.md": "a882f06eb406eb478a8c35199ad87c788d98cd95034ed2e7532d96ed6eacbef7"
+  },
+  "planOverviewFrameHash": "e12b6cc43fce7d2ab6541a40c86ba6dcbd2eba43c45c46a01c1b8cfe28e140f1",
+  "partition": [
+    {
+      "cards": [
+        "17-creel-read-sets"
+      ],
+      "profile": "cautious",
+      "estimate": 81006,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 1,
+        "startup": 54352,
+        "read_union": 10364,
+        "cards": [
+          {
+            "card": 17,
+            "card_text": 540,
+            "reads": {
+              "file:internal/creelengine/doc.go": 1824,
+              "package:internal/creelcli": 2000,
+              "package:internal/creelengine": 2000,
+              "tests:internal/creelcli": 2000,
+              "tests:internal/creelengine": 2000
+            },
+            "messages": 52.5,
+            "written": 16290
+          }
+        ]
+      }
+    }
+  ],
+  "currentBatch": 17,
+  "masterStrand": "749008d8a22878048a56b25b2caf847a",
+  "masterSessionId": "fab50425-6971-4ad3-97e6-3f0ef791943b",
+  "batches": {
+    "17": {
+      "slug": "creel-read-sets",
+      "cards": [
+        "17-creel-read-sets"
+      ],
+      "cardHashes": {
+        "17-creel-read-sets": "a882f06eb406eb478a8c35199ad87c788d98cd95034ed2e7532d96ed6eacbef7"
+      },
+      "startSha": "302a1dba0e01045855dc7b4a3c8917fc2f568374",
+      "kind": "fork",
+      "spawnedAt": "2026-10-15T14:26:17Z",
+      "sessionId": "fab50425-6971-4ad3-97e6-3f0ef791943b",
+      "terminal": false,
+      "status": ""
+    }
+  }
+}
