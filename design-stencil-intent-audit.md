@@ -19,3 +19,5 @@ The findings go under `docs/research/` through a fresh agent.
 
 The audit pass is done and archived in `docs/research/stencil-intent-audit-2026-10-15/`: `catalogue.md` lists every assumption per stencil, `findings.md` the flagged entries F0 to F17, and `README.md` says how to resume.
 The review with the operator has not started: no entry is confirmed or rejected, and no finding note is filed yet.
+The operator was shown batch 1 (F2 to F5) but gave no verdict.
+The session that did the pass can be resumed from the prime: `claude --resume ec3437ad-288b-4c22-b14b-4d3ab4519a4b --dangerously-skip-permissions`.
