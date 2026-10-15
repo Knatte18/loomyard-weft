@@ -1,0 +1,10 @@
+verdict: hand-back
+reason: >-
+  The Land row's deploy failed because update-plugins.sh refuses to run on a dirty prime working tree.
+  Land-deploy.log names the one dirty entry, an untracked `.claude/worktrees/` directory in /home/knatte/Code/loomyard-LYXHUB/loomyard.
+  A plain re-launch would hit the same refusal, since nothing in the run removes that directory.
+  Clearing it means deleting it or ignoring it, and the directory may hold worktrees another session still uses, so that choice belongs to the parent, not to a resume.
+question: >-
+  The prime's working tree has an untracked `.claude/worktrees/` directory, and update-plugins.sh refuses to deploy while it is there (Land-deploy.log line 1-2, step trace 0dffaa9e130fed14).
+  Should that directory be removed, or added to .gitignore so it no longer counts as dirty?
+  Once the tree is clean, run `lyx batten run discussion-relevant-list` from the prime.
