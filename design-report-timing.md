@@ -1,6 +1,6 @@
 # lyx report timing: phase minutes, parent waits and agent spawns from run records
 
-`report-timing` · Task · enhancement, shed, orch · running · Webster-Bouncer
+`report-timing` · Task · enhancement, shed, orch · running · Webster-Burler-Review
 
 A mechanical time report over the hub's run records, beside `lyx report convergence`: today it took an LLM agent five minutes and an awk script to compute (2026-10-12).
 The operator wants it as a tool, not an LLM job.
