@@ -1,0 +1,16 @@
+{
+  "number": 1,
+  "key": "round-1",
+  "point": "parent-review",
+  "token": "03354471facb8d2e",
+  "spawned_at": "2026-10-15T13:35:40.356646397+02:00",
+  "deadline": "2026-10-15T13:55:40.356646397+02:00",
+  "strand_guid": "e5d1f987b4ec38c89b32753067ea100e",
+  "snapshot": "aa4b1c1865df66f9b9fc4d29060aacbd14dafbbcadcb798dbd7597bdbb8550f6",
+  "pr_number": 0,
+  "head_sha": "",
+  "closed": true,
+  "closed_reason": "",
+  "applied": "",
+  "notified": false
+}
