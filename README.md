@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-15 16:43 UTC; every age below is as of then.
+Rendered 2026-10-15 16:44 UTC; every age below is as of then.
 
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
@@ -18,7 +18,7 @@ Held by a run; its scope is locked until the run ends.
 | # | Task | Slug | Recipe | At | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | 1 | **Every role spec carries its resolved engine**<br>• Role specs take engine, model and effort from the model alias through one shared ModelChoice; Claude-only roles declare their needs | [`engine-model-choice`](design-engine-model-choice.md) | loom | Webster | 6h | 6h | shuttle, loom, webster, burler, shed |
-| 2 | **Usage and cost read through the engine**<br>• tokencount reads each run through its engine, with prices per engine, instead of reading Claude transcripts directly | [`engine-usage-readers`](design-engine-usage-readers.md) | loom | Discussion-Burler-Fix | 6h | 6h | shuttle, claude |
+| 2 | **Usage and cost read through the engine**<br>• tokencount reads each run through its engine, with prices per engine, instead of reading Claude transcripts directly | [`engine-usage-readers`](design-engine-usage-readers.md) | loom | Discussion-Bouncer | 6h | 6h | shuttle, claude |
 
 ### Ready
 
@@ -45,7 +45,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 2 | **Re-measure the test suite weight on a quiet machine**<br>• The test-suite-weight before and after numbers were taken under load; rerun the report Regenerate section on an idle machine for a fair wall-time comparison | `suite-weight-quiet-rerun` | 5d | 2d |  |
 | 3 | **Bench fork0 and the strict critical fixer on twill Discussion-Write**<br>• Arms: twill as is, with the strict critical fixer, and fork0 plus the critical fixer, graded against Discussion-Review keys | [`twill-discussion-fork0-bench`](design-twill-discussion-fork0-bench.md) | 11h | 11h | loom, burler, stencil |
 | 4 | **Prototype reed status buttons in a throwaway tmux server**<br>• A fresh agent tries the menu button, follow toggle and extra button line by hand before reed-status-buttons becomes a task | [`reed-status-buttons-prototype`](design-reed-status-buttons-prototype.md) | 7h | 7h | reed |
-| 5 | **Audit creel stage 1 in a closed sandbox hub**<br>• End-to-end and hands-on testing of lyx creel as it is, in a sandbox hub with its own tmux server; defects become issues | [`creel-test`](design-creel-test.md) | 46m | 44m | creel |
+| 5 | **Audit creel stage 1 in a closed sandbox hub**<br>• End-to-end and hands-on testing of lyx creel as it is, in a sandbox hub with its own tmux server; defects become issues | [`creel-test`](design-creel-test.md) | 48m | 45m | creel |
 
 ### Bugs
 
@@ -55,14 +55,14 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | --- | --- | --- | --- | --- | --- |
 | 1 | **Webster fork deviations list mixes in its own target files**<br>• The implementer stencil asks a fork to compare its edits against the glyph union and also tells it not to, so deviations lists files that house its own target glyphs | [`webster-deviations-list`](design-webster-deviations-list.md) | 4h | 4h | webster, stencil |
 | 2 | **Card can require a board-entry edit that the running task's own board lock refuses** | [`card-own-entry-edit`](design-card-own-entry-edit.md) | 1h | 1h | loom, stencil, board |
-| 3 | **creel: a hand-added claude strand is never read idle, so nothing is delivered (llm smoke test fails)** | [`creel-hand-added-claude-idle`](design-creel-hand-added-claude-idle.md) | 7m | 7m | creel, shuttle, reed, claude |
-| 4 | **creel: no delivery into a collapsed (too short) strand pane, and no reason surfaced** | [`creel-collapsed-pane-delivery`](design-creel-collapsed-pane-delivery.md) | 7m | 7m | creel, reed, shuttle |
-| 5 | **creel: inject --interrupt stalls behind the prompt Claude restores into the input box** | [`creel-interrupt-restored-prompt`](design-creel-interrupt-restored-prompt.md) | 7m | 7m | creel, shuttle, claude |
-| 6 | **creel: read marks mail read even when writing it out failed** | [`creel-read-ack-on-write-error`](design-creel-read-ack-on-write-error.md) | 7m | 7m | creel |
-| 7 | **creel: a daemon that fails to start leaves verbs with only 'no daemon answers'** | [`creel-daemon-start-error`](design-creel-daemon-start-error.md) | 7m | 7m | creel |
-| 8 | **creel: a new inject is charged TTL from before it was posted** | [`creel-inject-ttl-before-post`](design-creel-inject-ttl-before-post.md) | 7m | 7m | creel |
-| 9 | **creel: read does not show that a message was returned by a removed holder** | [`creel-read-returned-mark`](design-creel-read-returned-mark.md) | 7m | 7m | creel |
-| 10 | **creel: log, inject help, sender field and release output inconsistencies** | [`creel-output-inconsistencies`](design-creel-output-inconsistencies.md) | 7m | 7m | creel |
+| 3 | **creel: a hand-added claude strand is never read idle, so nothing is delivered (llm smoke test fails)** | [`creel-hand-added-claude-idle`](design-creel-hand-added-claude-idle.md) | 9m | 9m | creel, shuttle, reed, claude |
+| 4 | **creel: no delivery into a collapsed (too short) strand pane, and no reason surfaced** | [`creel-collapsed-pane-delivery`](design-creel-collapsed-pane-delivery.md) | 9m | 9m | creel, reed, shuttle |
+| 5 | **creel: inject --interrupt stalls behind the prompt Claude restores into the input box** | [`creel-interrupt-restored-prompt`](design-creel-interrupt-restored-prompt.md) | 9m | 9m | creel, shuttle, claude |
+| 6 | **creel: read marks mail read even when writing it out failed** | [`creel-read-ack-on-write-error`](design-creel-read-ack-on-write-error.md) | 9m | 9m | creel |
+| 7 | **creel: a daemon that fails to start leaves verbs with only 'no daemon answers'** | [`creel-daemon-start-error`](design-creel-daemon-start-error.md) | 9m | 9m | creel |
+| 8 | **creel: a new inject is charged TTL from before it was posted** | [`creel-inject-ttl-before-post`](design-creel-inject-ttl-before-post.md) | 9m | 9m | creel |
+| 9 | **creel: read does not show that a message was returned by a removed holder** | [`creel-read-returned-mark`](design-creel-read-returned-mark.md) | 9m | 9m | creel |
+| 10 | **creel: log, inject help, sender field and release output inconsistencies** | [`creel-output-inconsistencies`](design-creel-output-inconsistencies.md) | 9m | 9m | creel |
 
 #### Low priority
 
