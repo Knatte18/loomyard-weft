@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-15 09:00 UTC; every age below is as of then.
+Rendered 2026-10-15 09:01 UTC; every age below is as of then.
 
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
@@ -18,7 +18,7 @@ Held by a run; its scope is locked until the run ends.
 | # | Task | Slug | Recipe | At | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | 1 | **Run status pane: numbered rows, seconds, round totals, gate time; segment-named sessions**<br>• Per-run status pane shows seconds, a total per Burler round, and each gate with its time and the rework it caused | [`run-pane-timing`](design-run-pane-timing.md) | loom | Plan-Write | 3h | 2h | loom, burler, shed, reed |
-| 2 | **Begin-batch refusal route and label; bare lyx config writes an empty layer**<br>• Two small bugs: a delete-before-reference refusal is mislabelled plan_drifted and halts for a human; bare lyx config with no TTY saves an empty layer | [`refusal-route-config-empty`](design-refusal-route-config-empty.md) | loom | Plan-Write | 3h | 49m | webster, loom, config |
+| 2 | **Begin-batch refusal route and label; bare lyx config writes an empty layer**<br>• Two small bugs: a delete-before-reference refusal is mislabelled plan_drifted and halts for a human; bare lyx config with no TTY saves an empty layer | [`refusal-route-config-empty`](design-refusal-route-config-empty.md) | loom | Plan-Bouncer | 3h | 50m | webster, loom, config |
 
 ### Ready
 
