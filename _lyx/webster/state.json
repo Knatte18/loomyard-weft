@@ -1,0 +1,175 @@
+{
+  "runGuid": "f1dc8240bb47e4d129168eda4a5d3fe8",
+  "planFingerprint": "9b596b33a603b578d90c18883d4639ed7d2e39b4b8e592352b784d366a4d9da1",
+  "planFileHashes": {
+    "00-overview.md": "27d1c521c0e4998628b0f4d0b5eb1a6a3b594cb7352caed6c9c54b3b7e889efe",
+    "01-plan-conflict-class.md": "e37138aecf009fc250b05dfd77ee9272cb6aab9eed6a363f98aa8ee40db43154",
+    "02-conflict-record.md": "16e69ed5073d937dc0621d7de012d695955842b950910fec230684825d7b7d17",
+    "03-webster-reroute-edge.md": "a80bd8f1d375a7f4922a58be7f1c6c13a3367ea84274f3d45d982ff3821e61b5",
+    "04-adapter-routes-conflict.md": "5ce14965b58500798460b8f4c387fc577bae70569b219f52e2e757b48e9dbd5e",
+    "05-config-empty-edit-abort.md": "66381d248af7e4785ef8e95ddd191fb8b659113e07d6e61ff7a0a34994ef0f43",
+    "06-config-terminal-guard.md": "80b494cb252ca34df6e84e3129339675ad432a955db8f2aa18e65f6a29cd7c9d"
+  },
+  "planOverviewFrameHash": "fdbe7d53f5cf7836bb352ca5b5a89e06d8e23b4b0f0a4133b00d0939d8f24324",
+  "partition": [
+    {
+      "cards": [
+        "01-plan-conflict-class",
+        "02-conflict-record",
+        "03-webster-reroute-edge",
+        "04-adapter-routes-conflict",
+        "05-config-empty-edit-abort",
+        "06-config-terminal-guard"
+      ],
+      "profile": "cautious",
+      "estimate": 356606,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 1,
+        "startup": 54280,
+        "read_union": 95248,
+        "cards": [
+          {
+            "card": 1,
+            "card_text": 828,
+            "reads": {
+              "file:contracts/specs/refusal-spec.md": 5736,
+              "file:contracts/stencils/webster/webster-template-master.md": 2976,
+              "file:internal/websterengine/doc.go": 8688,
+              "package:contracts/specs": 2000,
+              "package:contracts/stencils": 2000,
+              "package:contracts/stencils/webster": 2000,
+              "package:internal/webstercli": 2000,
+              "package:internal/websterengine": 2000,
+              "tests:contracts/specs": 2000,
+              "tests:contracts/stencils": 2000,
+              "tests:contracts/stencils/webster": 2000,
+              "tests:internal/webstercli": 2000,
+              "tests:internal/websterengine": 2000
+            },
+            "messages": 161,
+            "written": 49128
+          },
+          {
+            "card": 2,
+            "card_text": 732,
+            "reads": {
+              "file:internal/websterengine/doc.go": 8688,
+              "package:internal/webstercli": 2000,
+              "package:internal/websterengine": 2000,
+              "tests:internal/webstercli": 2000,
+              "tests:internal/websterengine": 2000
+            },
+            "messages": 132,
+            "written": 40332
+          },
+          {
+            "card": 3,
+            "card_text": 444,
+            "reads": {
+              "file:contracts/recipes/loom-recipe.yaml": 7104,
+              "file:docs/overview.md": 9372,
+              "package:contracts/recipes": 2000,
+              "package:docs": 2000,
+              "package:internal/loomcli": 2000,
+              "package:internal/loomrecipe": 2000,
+              "package:internal/shedadapters": 2000,
+              "tests:contracts/recipes": 2000,
+              "tests:docs": 2000,
+              "tests:internal/loomcli": 2000,
+              "tests:internal/loomrecipe": 2000,
+              "tests:internal/shedadapters": 2000
+            },
+            "messages": 103.5,
+            "written": 31494
+          },
+          {
+            "card": 4,
+            "card_text": 744,
+            "reads": {
+              "file:contracts/specs/refusal-spec.md": 5736,
+              "file:internal/shedadapters/doc.go": 4032,
+              "file:internal/websterengine/doc.go": 8688,
+              "package:contracts/specs": 2000,
+              "package:internal/loomshed": 2000,
+              "package:internal/shedadapters": 2000,
+              "package:internal/websterengine": 2000,
+              "tests:contracts/specs": 2000,
+              "tests:internal/loomshed": 2000,
+              "tests:internal/shedadapters": 2000,
+              "tests:internal/websterengine": 2000
+            },
+            "messages": 142,
+            "written": 43344
+          },
+          {
+            "card": 5,
+            "card_text": 408,
+            "reads": {
+              "file:internal/configcli/doc.go": 684,
+              "file:internal/configengine/doc.go": 828,
+              "package:internal/configcli": 2000,
+              "package:internal/configengine": 2000,
+              "tests:internal/configcli": 2000,
+              "tests:internal/configengine": 2000
+            },
+            "messages": 41,
+            "written": 12708
+          },
+          {
+            "card": 6,
+            "card_text": 672,
+            "reads": {
+              "file:internal/configcli/doc.go": 684,
+              "package:internal/configcli": 2000,
+              "tests:internal/configcli": 2000
+            },
+            "messages": 98,
+            "written": 30072
+          }
+        ]
+      }
+    }
+  ],
+  "currentBatch": 1,
+  "masterStrand": "fb7a0377a304296537a478cd7e1f662c",
+  "masterSessionId": "cf4d1211-e0cc-4918-a645-1d926d96478b",
+  "batches": {
+    "1": {
+      "slug": "plan-conflict-class",
+      "cards": [
+        "01-plan-conflict-class",
+        "02-conflict-record",
+        "03-webster-reroute-edge",
+        "04-adapter-routes-conflict",
+        "05-config-empty-edit-abort",
+        "06-config-terminal-guard"
+      ],
+      "cardHashes": {
+        "01-plan-conflict-class": "e37138aecf009fc250b05dfd77ee9272cb6aab9eed6a363f98aa8ee40db43154",
+        "02-conflict-record": "16e69ed5073d937dc0621d7de012d695955842b950910fec230684825d7b7d17",
+        "03-webster-reroute-edge": "a80bd8f1d375a7f4922a58be7f1c6c13a3367ea84274f3d45d982ff3821e61b5",
+        "04-adapter-routes-conflict": "5ce14965b58500798460b8f4c387fc577bae70569b219f52e2e757b48e9dbd5e",
+        "05-config-empty-edit-abort": "66381d248af7e4785ef8e95ddd191fb8b659113e07d6e61ff7a0a34994ef0f43",
+        "06-config-terminal-guard": "80b494cb252ca34df6e84e3129339675ad432a955db8f2aa18e65f6a29cd7c9d"
+      },
+      "startSha": "a52467411aceba2e6a891a6de0a3c494ad0359d4",
+      "kind": "fork",
+      "spawnedAt": "2026-10-15T09:09:08Z",
+      "sessionId": "cf4d1211-e0cc-4918-a645-1d926d96478b",
+      "terminal": false,
+      "status": ""
+    }
+  }
+}
