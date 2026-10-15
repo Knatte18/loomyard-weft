@@ -1,0 +1,140 @@
+{
+  "runGuid": "a06ea14855cd0d5aa738fe68a3262e0d",
+  "planFingerprint": "7c39d2d9ec73a86b0057c1a36d3a18af3d45199c3c6bf34b17a7296e44fd5856",
+  "planFileHashes": {
+    "00-overview.md": "a413ab79532e714b7185a17a649ed7fe39291b00720f37d7a139905b22b3ecf7",
+    "01-master-read-set.md": "14cb73f7a4e91c47393301a05dcefb44bffcde83febccbcfe96f288f2219f8ea",
+    "02-fork-no-code.md": "f811676995eb680e583257c3792a832400d6384ba64544a437bd541bbc9d372e",
+    "03-recovery-orientation.md": "13575ea9906c7660cb5428b9d225725755301b798531280edcfbf39bb4442341",
+    "04-verify-fix-no-code.md": "7ca2a304f927931bad75bded4872b1c4762b30bd2db2d398ce010dd43bfc0813"
+  },
+  "planOverviewFrameHash": "ca95994fe156d9955cd8f787f8d7a0f75d81f38f3408af54413a4b465b688da5",
+  "partition": [
+    {
+      "cards": [
+        "01-master-read-set",
+        "02-fork-no-code",
+        "03-recovery-orientation",
+        "04-verify-fix-no-code"
+      ],
+      "profile": "cautious",
+      "estimate": 183384,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 1,
+        "startup": 54364,
+        "read_union": 47600,
+        "cards": [
+          {
+            "card": 1,
+            "card_text": 624,
+            "reads": {
+              "file:contracts/stencils/webster/webster-template-master.md": 2988,
+              "file:docs/overview.md": 9408,
+              "file:internal/websterengine/doc.go": 9096,
+              "file:tools/sandbox/SANDBOX-WEBSTER-SUITE.md": 1980,
+              "package:contracts/stencils": 2000,
+              "package:contracts/stencils/webster": 2000,
+              "package:docs": 2000,
+              "package:internal/websterengine": 2000,
+              "package:tools/sandbox": 2000,
+              "tests:contracts/stencils": 2000,
+              "tests:contracts/stencils/webster": 2000,
+              "tests:docs": 2000,
+              "tests:internal/websterengine": 2000,
+              "tests:tools/sandbox": 2000
+            },
+            "messages": 72.5,
+            "written": 22374
+          },
+          {
+            "card": 2,
+            "card_text": 720,
+            "reads": {
+              "file:contracts/stencils/webster/webster-fragment-fresh-read-pack-card.md": 144,
+              "file:contracts/stencils/webster/webster-fragment-fresh-read-pack-inline.md": 192,
+              "file:contracts/stencils/webster/webster-fragment-fresh-read-pack.md": 132,
+              "file:contracts/stencils/webster/webster-fragment-fresh-read-plain.md": 120,
+              "file:contracts/stencils/webster/webster-prefix-fork.md": 372,
+              "package:contracts/stencils": 2000,
+              "package:contracts/stencils/webster": 2000,
+              "package:internal/websterengine": 2000,
+              "tests:contracts/stencils": 2000,
+              "tests:contracts/stencils/webster": 2000,
+              "tests:internal/websterengine": 2000
+            },
+            "messages": 89.5,
+            "written": 27570
+          },
+          {
+            "card": 3,
+            "card_text": 348,
+            "reads": {
+              "file:contracts/stencils/webster/webster-prefix-recovery.md": 600,
+              "package:contracts/stencils": 2000,
+              "package:contracts/stencils/webster": 2000,
+              "package:internal/websterengine": 2000,
+              "tests:contracts/stencils": 2000,
+              "tests:contracts/stencils/webster": 2000,
+              "tests:internal/websterengine": 2000
+            },
+            "messages": 51.5,
+            "written": 15798
+          },
+          {
+            "card": 4,
+            "card_text": 228,
+            "reads": {
+              "file:contracts/stencils/webster/webster-body-verify-fix.md": 648,
+              "package:contracts/stencils": 2000,
+              "package:contracts/stencils/webster": 2000,
+              "package:internal/websterengine": 2000,
+              "tests:contracts/stencils": 2000,
+              "tests:contracts/stencils/webster": 2000,
+              "tests:internal/websterengine": 2000
+            },
+            "messages": 51.5,
+            "written": 15678
+          }
+        ]
+      }
+    }
+  ],
+  "currentBatch": 1,
+  "masterStrand": "7c22b155d1c3b3b94422bb682b3c4eb6",
+  "masterSessionId": "f2b42b91-65fe-480a-97bd-7b1f2565681a",
+  "batches": {
+    "1": {
+      "slug": "master-read-set",
+      "cards": [
+        "01-master-read-set",
+        "02-fork-no-code",
+        "03-recovery-orientation",
+        "04-verify-fix-no-code"
+      ],
+      "cardHashes": {
+        "01-master-read-set": "14cb73f7a4e91c47393301a05dcefb44bffcde83febccbcfe96f288f2219f8ea",
+        "02-fork-no-code": "f811676995eb680e583257c3792a832400d6384ba64544a437bd541bbc9d372e",
+        "03-recovery-orientation": "13575ea9906c7660cb5428b9d225725755301b798531280edcfbf39bb4442341",
+        "04-verify-fix-no-code": "7ca2a304f927931bad75bded4872b1c4762b30bd2db2d398ce010dd43bfc0813"
+      },
+      "startSha": "aa925bdcc554c36ec01aa7bf6e12311dae8ba9cc",
+      "kind": "fork",
+      "spawnedAt": "2026-10-15T12:47:21Z",
+      "sessionId": "f2b42b91-65fe-480a-97bd-7b1f2565681a",
+      "terminal": false,
+      "status": ""
+    }
+  }
+}
