@@ -1,11 +1,11 @@
 {
-  "current_producer": "PR-Gate",
+  "current_producer": "PR-Rework",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "PR-Gate",
-    "last": "PR-Align → done",
+    "now": "PR-Rework",
+    "last": "PR-Gate → bounced to PR-Rework",
     "wait": ""
   },
   "history": [
@@ -229,6 +229,13 @@
       "outcome": "done",
       "output": "",
       "at": "2026-10-15T06:11:16Z"
+    },
+    {
+      "producer": "PR-Gate",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-15T06:11:28Z",
+      "routed_to": "PR-Rework"
     }
   ],
   "product": {
