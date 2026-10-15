@@ -19,3 +19,9 @@ No role is made to read, and nothing checks that a stated premise rests on code 
 
 - Which sections of the record count as premises, so the rule does not reach design text.
 - Whether the gate refuses or only warns.
+
+## Operator decision (2026-10-15)
+
+The Discussion writer does prose exploration and does not use quarry or glyphs; glyphs come in only at Plan.
+So the idea above, glyph cites in the decision record resolved by the Discussion gate, conflicts with that decision as written.
+What stays open is the finding itself: Discussion premises about today's code rest on reading nobody checks.
