@@ -1,0 +1,11 @@
+verdict: approve
+reason: >-
+  The diff of PR 645 delivers the board entry's goal, a per-session follow state with its button, and keeps decisions D1 to D9.
+  The follow option drives agent-window focus and attach, every loom start entry turns follow on, reed's manual bindings write it off,
+  and the button and `lyx reed follow` jump back to the run.
+  Nothing falls outside the scope.
+  The carried-over review keys are fixed in the diff or settled by the record.
+  The peers overlap only in text (creel-core in reedengine/lifecycle.go) or in the bookkeeping file test-budget.yaml.
+  This run, at row 22, lands first.
+question: ""
+superseded: []
