@@ -1,11 +1,11 @@
 {
-  "current_producer": "PR-Rework",
+  "current_producer": "Plan-Bouncer",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "PR-Rework",
-    "last": "PR-Gate → bounced to PR-Rework",
+    "now": "Plan-Bouncer",
+    "last": "PR-Rework → done",
     "wait": ""
   },
   "history": [
@@ -437,6 +437,21 @@
       "output": "",
       "at": "2026-10-15T14:08:59Z",
       "routed_to": "PR-Rework"
+    },
+    {
+      "producer": "PR-Rework",
+      "outcome": "done",
+      "output": "",
+      "at": "2026-10-15T14:10:31Z",
+      "gate_attempts": 0,
+      "gate_spans": [
+        {
+          "gate": "rework-plan",
+          "kind": "gate",
+          "start": "2026-10-15T14:10:30.652833686Z",
+          "end": "2026-10-15T14:10:30.827200369Z"
+        }
+      ]
     }
   ],
   "product": {
