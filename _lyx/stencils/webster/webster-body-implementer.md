@@ -1,4 +1,4 @@
-<!-- lyx-stencil: sha256=bb7b49986f86ee9679e72ec1b1cc319f136dc9cd75608273a29c4a071b6ad1ee build=da58615cdfa6ed3e9c60550f0a82bc85f0215d84 time=2026-10-15T07:54:26Z -->
+<!-- lyx-stencil: sha256=97df8133d91a29f96d7a965570b14798a429f00a1cff7a2201e3578138ae1336 build=aa925bdcc554c36ec01aa7bf6e12311dae8ba9cc time=2026-10-15T12:10:13Z -->
 
 # Webster implementer job — read your cards, implement, commit, report
 
@@ -59,7 +59,7 @@ A scratch hub is a Go test fixture over local bare repositories (`hubforge`).
 `lyx fabric` refuses its mutating verbs from your strand; the refusal is the rule's owner.
 When the work itself needs a refused verb, stop and report `status: FAILED`, so the orch runs the verb.
 
-The card gate steps, the batch gate steps, `lyx loom lint-comments`, `lyx loom lint-pattern` and `lyx quarry resolve` are always allowed from any strand, and none of them is a fabric reference.
+The card gate steps, the batch gate steps, `lyx loom lint-comments`, `lyx loom lint-pattern`{{.card_pack_allowed}} and `lyx quarry resolve` are always allowed from any strand, and none of them is a fabric reference.
 The sandbox ban covers mutating `lyx fabric` verbs only.
 
 ## The batch gate — once, after the last card
