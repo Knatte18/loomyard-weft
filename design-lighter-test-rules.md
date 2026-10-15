@@ -1,6 +1,6 @@
 # Lighter test rules for small changes
 
-`lighter-test-rules` · Task · enhancement, stencil, webster, burler, loom · running · Merge-Bouncer
+`lighter-test-rules` · Task · enhancement, stencil, webster, burler, loom · running · Publish
 
 ## Idea (operator, 2026-10-13)
 
