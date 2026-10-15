@@ -1,0 +1,16 @@
+{
+  "number": 1,
+  "key": "round-1",
+  "point": "parent-review",
+  "token": "872482bf91c91098",
+  "spawned_at": "2026-10-15T11:51:26.200978302+02:00",
+  "deadline": "2026-10-15T12:11:26.200978302+02:00",
+  "strand_guid": "4f85bae3d647ccf4931d510e5cc69557",
+  "snapshot": "ef5f1cd5d7b147ca9b13727e6abe7502605c2960cb2bb6b8f4d8f185dfccbf69",
+  "pr_number": 0,
+  "head_sha": "",
+  "closed": true,
+  "closed_reason": "Peer glyph-audit-tool's decision record requires a task that adds a pack layout to add its marker row to tools/forkaudit in the same task. kickstart-per-card's decision record (Scope Out, Open risks) leaves that to the orch after landing. Its per-card prompt also carries the \"## Start here\" heading that forkaudit's marker table reads as the file arm. Should kickstart-per-card add a per-card marker row, ordered ahead of file (for example matching \"lyx loom card-pack\"), and a span source to tools/forkaudit at Merge-In? Or should glyph-audit-tool drop that constraint and change its file-arm marker?",
+  "applied": "",
+  "notified": false
+}

@@ -1,0 +1,13 @@
+verdict: escalate
+reason: >-
+  The design matches the board entry's goal and operator decisions, but it conflicts with the decisions of the peer run glyph-audit-tool.
+  glyph-audit-tool's decision record requires a task that adds a pack layout to add its prompt marker row to tools/forkaudit in the same task.
+  kickstart-per-card's record puts extending the audit tool out of scope and hands it to the orch.
+  Also, the per-card prompt keeps a closing "## Start here" section (D4), the marker forkaudit uses for the file arm, so forkaudit would class per-card forks as file and merge the two arms the task exists to compare.
+  glyph-audit-tool is at row 9 and this run at row 3, so glyph-audit-tool lands first.
+question: >-
+  Peer glyph-audit-tool's decision record requires a task that adds a pack layout to add its marker row to tools/forkaudit in the same task.
+  kickstart-per-card's decision record (Scope Out, Open risks) leaves that to the orch after landing.
+  Its per-card prompt also carries the "## Start here" heading that forkaudit's marker table reads as the file arm.
+  Should kickstart-per-card add a per-card marker row, ordered ahead of file (for example matching "lyx loom card-pack"), and a span source to tools/forkaudit at Merge-In?
+  Or should glyph-audit-tool drop that constraint and change its file-arm marker?

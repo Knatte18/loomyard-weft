@@ -1,0 +1,10 @@
+verdict: approve
+reason: >-
+  The design builds the board entry's variant 1: the card files are the batch overview, and each card's pack is fetched and resolved fresh at card start, then read in one parallel turn.
+  The layout sits behind a webster.yaml switch beside kickstart_pack_file, the begin-batch trace line records pack_layout=card, and variant 2 stays out.
+  The default true and the per-call trace line are named as additions for the parent to veto, and neither is ruled out by the entry.
+  D7 resolves round 1's conflict with glyph-audit-tool: this run adds the per-card marker row, ahead of file, plus the trace value and span source to tools/forkaudit at Merge-In, as glyph-audit-tool's constraint requires.
+  The overlaps with glyph-audit-tool, run-pane-timing and role-language-skills are text-only or provided for, with no design conflict.
+  Each of those lands first, and this run is at row 3.
+question: ""
+superseded: []
