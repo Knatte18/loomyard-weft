@@ -1,6 +1,6 @@
 # lyx orch start --continue resumes the last orch session
 
-`orch-continue` · Task · feature, orch · running · Worktree-Create
+`orch-continue` · Task · feature, orch · running · Loom-Preflight
 
 Split out of note `orch-owns-the-loop` (2026-10-11).
 
