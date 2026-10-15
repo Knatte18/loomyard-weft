@@ -1,6 +1,6 @@
 # Darn: a decision record for mid-run scope corrections, and PR-Align
 
-`twb-d0-sa` · Note · bug
+`twb-d0-sa` · Note · bug · running · Loom-Preflight
 
 ## Seen (2026-10-13, `webster-pack-last`)
 
