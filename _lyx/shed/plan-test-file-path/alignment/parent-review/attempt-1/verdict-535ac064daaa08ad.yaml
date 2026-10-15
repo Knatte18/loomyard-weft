@@ -1,0 +1,8 @@
+verdict: approve
+reason: >-
+  The design covers each Idea point of the board entry: the stencil drops the plain test-file path under Edit, a blocking plan-gate check with its way forward lands with the spec row, and Webster's pack and fork prompt are checked, with D2 replacing the whole-file read.
+  D1 corrects the entry's false premise that a handle carries the file, in line with the operator's view.
+  Wording-test removal stays with lighter-test-rules and the fork deviation rule with webster-deviations-list.
+  No peer run or parent commit overlaps beyond the shared test-budget.yaml bookkeeping file.
+question: ""
+superseded: []
