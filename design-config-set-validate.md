@@ -1,6 +1,6 @@
 # lyx config --set stores an invalid model value instead of refusing it
 
-`config-set-validate` · Task · bug, config · running · Merge-In
+`config-set-validate` · Task · bug, config · running · Publish
 
 Imported from [issue #620](https://github.com/Knatte18/loomyard/issues/620).
 
