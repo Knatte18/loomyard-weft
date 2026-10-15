@@ -131,6 +131,13 @@ Rationale: The run is held by a loom pause before Plan-Write until glyph-audit-t
 - Until the audit tool learns the per-card layout, every per-card fork classifies as a file-layout fork, with a trace disagreement.
 - Task `lighter-test-rules` (Ready) will relax wording tests; this task's tests follow today's rules, and whichever lands second adapts.
 
+<!-- lyx:carry-over Plan-Review -->
+- Plan-Review, round 3: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
+  Review: _lyx/reviews/plan/round-3-review.md; fixer report: _lyx/reviews/plan/round-3-fixer-report.md.
+  - card4-card-arm-spans-biased-window (class scope, severity MEDIUM, open in rounds 1, 2, 3)
+  - card4-later-card-pack-files-missing-from-missed-files (class scope, severity BLOCKING, open in rounds 3)
+<!-- /lyx:carry-over Plan-Review -->
+
 ## Acceptance criteria
 
 - With `kickstart_pack_per_card: true` and a non-empty batch pack, begin-batch writes no `<batch>-pack.md`, the prompt carries the per-card FRESH-READ, step 1, locate step and `## Start here` texts, the `kickstart_pack_inline` marker is empty, and the trace line ends `pack_layout=card`.
