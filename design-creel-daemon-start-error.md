@@ -1,6 +1,6 @@
 # creel: a daemon that fails to start leaves verbs with only 'no daemon answers'
 
-`creel-daemon-start-error` · Note · bug
+`creel-daemon-start-error` · Note · bug, creel
 
 Imported from [issue #661](https://github.com/Knatte18/loomyard/issues/661).
 

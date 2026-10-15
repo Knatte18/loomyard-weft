@@ -974,7 +974,8 @@
       "title": "creel: a daemon that fails to start leaves verbs with only 'no daemon answers'",
       "kind": "note",
       "labels": [
-        "bug"
+        "bug",
+        "creel"
       ],
       "issues": [
         661
@@ -984,7 +985,25 @@
       "brief": "",
       "body": "Imported from [issue #661](https://github.com/Knatte18/loomyard/issues/661).\n\nFound by the creel stage 1 audit (board note `creel-test`), in a sandbox hub, with `lyx` built from `main` at e131c7625.\n\n## What was seen\n\nWhen the creel daemon cannot start, every verb reports only that no daemon answers, after about 30 seconds, and the reason is nowhere to be found.\nThe daemon is spawned detached with null stdio (`internal/creelcli/spawn.go`) and writes no log file, so its own error is lost.\n\nSeen with a malformed line in the middle of a journal day file, which the design says fails the load naming the file and line.\n`lyx creel inbox` printed: `creel: no daemon answers on /tmp/lyx-1000/creel-ctest-41ca7726.sock after starting one and 6 connects: dial unix ...: connect: no such file or directory`.\nOnly running the hidden `lyx creel daemon --hub-path \u003chub\u003e` in the foreground showed the real error: `creel journal: .../2026-10-14.jsonl line 3 is not a valid record (...); way forward: repair or remove that line by hand, then start the daemon again`.\n`_board/.lyx/logs` held no creel entry.\n\n## Steps\n\n1. Stop the sandbox hub's daemon (replace its binary).\n2. Add a non-JSON line in the middle of a day file under `_board/.lyx/creel/journal/`.\n3. Run any verb, for example `lyx creel inbox`.\n\n## Expected\n\nA verb whose daemon fails to start reports the daemon's own error, or names a log file that holds it, so the operator can follow the \"way forward\" the daemon already writes.\n",
       "created": "2026-10-15T16:35:19Z",
-      "revised": "2026-10-15T16:35:19Z"
+      "revised": "2026-10-15T16:35:21Z"
+    },
+    {
+      "id": 570,
+      "slug": "creel-inject-ttl-before-post",
+      "title": "creel: a new inject is charged TTL from before it was posted",
+      "kind": "note",
+      "labels": [
+        "bug"
+      ],
+      "issues": [
+        662
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Imported from [issue #662](https://github.com/Knatte18/loomyard/issues/662).\n\nFound by the creel stage 1 audit (board note `creel-test`), in a sandbox hub, with `lyx` built from `main` at e131c7625.\n\n## What was seen\n\nA new inject is charged TTL for time that passed before it was posted.\nIn `internal/creelengine/deliver.go`, `worker.probe` ages every queued inject of the receiver by `now - lastProbe`.\nWhen a worker already runs for the receiver (for example because it has unread mail) and a new inject wakes it, the new inject is charged the whole gap since the previous probe, up to the 8-second probe ceiling, or longer when the previous probe spent its time in a slow send.\n\nJournal evidence:\n\n- inject #34 posted 16:18:45.783, `aged` 16:18:45.813 with `consumed_s: 3` (30 ms after posting);\n- inject #905 posted 16:25:08.4, `aged` 16:25:31.7 with `consumed_s: 28` (23 s after posting);\n- inject #907 posted 16:26:25.6, `aged` 16:26:32.8 with `consumed_s: 9` (7 s after posting).\n\n## Steps\n\n1. Give a strand unread mail so its worker keeps probing on its backoff.\n2. `lyx creel inject --ttl 60s \u003cstrand\u003e \"x\"` while the strand is not idle.\n3. Read the journal: the first `aged` record for the inject counts more seconds than have passed since its `posted` record.\n\n## Expected\n\nAn inject's TTL counts only from its own posting (and only while the receiver is live and unpaused), so a short `--ttl` is not cut by up to several seconds.\n",
+      "created": "2026-10-15T16:35:21Z",
+      "revised": "2026-10-15T16:35:21Z"
     }
   ]
 }
