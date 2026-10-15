@@ -19,3 +19,11 @@ One run per arm is too few to decide anything.
 ## Idea
 
 Give a review round, Webster-Review or Merge-Review first, since their target is a diff at a fixed commit, the bodies of the symbols the target changes or cites, rendered by lyx at round start, and measure finding quality and cost against today's reviewer.
+
+## Problem raised by the operator (2026-10-15)
+
+A reviewer often finds it must explore more code than it was given.
+Code pasted into its context does not count as read the way its own Read calls do, so it cannot tell what it already holds: it may re-read pasted code or miss that a span is already there.
+
+Possible answer (the orch's idea, not discussed): label each pasted block with its file and line range, and open the paste with a list of every file and range it holds, so the reviewer checks that list before a read.
+The `fan-master-preread` lab used the same kind of reading manifest for forks; whether reviewers follow it is untested.
