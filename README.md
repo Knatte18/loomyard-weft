@@ -78,7 +78,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | # | Note | Slug | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | 1 | **Webster fork deviations list mixes in its own target files**<br>• The implementer stencil asks a fork to compare its edits against the glyph union and also tells it not to, so deviations lists files that house its own target glyphs | [`webster-deviations-list`](design-webster-deviations-list.md) | 1h | 1h | webster, stencil |
-| 2 | **Reed key bindings stay stale on a running tmux server after a deploy** | [`reed-bindings-repin`](design-reed-bindings-repin.md) | 0m | 0m |  |
+| 2 | **Reed key bindings stay stale on a running tmux server after a deploy** | [`reed-bindings-repin`](design-reed-bindings-repin.md) | 0m | 0m | reed |
 
 #### Low priority
 
