@@ -1,11 +1,11 @@
 {
-  "current_producer": "PR-Rework",
+  "current_producer": "Plan-Bouncer",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "PR-Rework",
-    "last": "PR-Gate → bounced to PR-Rework",
+    "now": "Plan-Bouncer",
+    "last": "PR-Rework → done",
     "wait": ""
   },
   "history": [
@@ -236,6 +236,12 @@
       "output": "",
       "at": "2026-10-15T06:11:28Z",
       "routed_to": "PR-Rework"
+    },
+    {
+      "producer": "PR-Rework",
+      "outcome": "done",
+      "output": "",
+      "at": "2026-10-15T06:14:04Z"
     }
   ],
   "product": {
