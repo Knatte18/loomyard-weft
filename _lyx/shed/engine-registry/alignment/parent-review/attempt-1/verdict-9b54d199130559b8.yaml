@@ -1,0 +1,7 @@
+verdict: approve
+reason: >-
+  The design covers every Scope point of the engine-registry board entry and keeps every Out item with the entry that owns it.
+  Deleting ModelSwitchSequence instead of making it optional meets the entry's goal of a narrower Engine interface, with no caller and no planned consumer.
+  The overlap with creel-core on shuttle's Send and Interrupt record lookup is consistent (both drive a record-less strand with the default engine) and both records plan the adaptation; creel-core lands first.
+question: ""
+superseded: []
