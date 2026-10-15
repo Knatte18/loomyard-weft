@@ -31,3 +31,13 @@ An alternative: a separate agent between Discussion and Plan does the research a
   Measure the plan lead peak context and the Plan cost with tokencount over a few runs before and after.
 - Operator view, not a decision: the Discussion agent has already looked at everything relevant, so the list records what it read and found relevant, with no extra search for Plan.
 - Operator: discuss further before this becomes a task.
+
+## Operator decision 2026-10-15
+
+- No new role: the Discussion step is extended.
+- The Discussion writer writes a separate file beside the decision record and the support log, `relevant.md`, listing the files and members it read and found relevant, in plain code names with one line of why each; not glyphs, and no extra search for Plan.
+- The discussion prose stays free of glyphs.
+- Plan-Write starts by reading the list and may read more.
+- Discussion-Review does not review the list as design.
+- The new file goes into `contracts/specs/loom-discussion-spec.md`, which pins the files a design step writes, together with the Discussion and Plan stencils (and `loom-plan-spec.md` where it names what Plan reads).
+- Measure the plan lead peak context and the Plan cost with `tools/tokencount/tokencount.sh` over a few runs before and after.
