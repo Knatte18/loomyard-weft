@@ -163,6 +163,12 @@ Rationale: the board lists pack correctness against the batch's start tree; the 
 
 Rationale: `lyx gate test --tags integration ./...` then exercises the tool like any other code under `tools/`, as CLAUDE.md requires; synthetic fixtures keep the tests independent of real transcripts.
 
+### Added after Discussion (parent, 2026-10-15): Shorter PATTERN-lyxdirs-single-declarer line to stay under the headroom
+
+Decision: The PATTERN.md entry line for PATTERN-lyxdirs-single-declarer reads exactly: - `PATTERN-lyxdirs-single-declarer` — Naming `_lyx` or `.lyx` in a path: only `internal/lyxdirs` declares them, bar one variable block heading a `tools/` script. This replaces the wording prescribed in Constraints; the rest of that constraint (literals once, in a variable block at the script head) stands.
+
+Rationale: The prescribed wording grows PATTERN.md to 15681 bytes, past the 15564-byte headroom line, so the card gate refuses it. The shorter line keeps the same rule at net -2 bytes; cutting other PATTERN entries would widen scope.
+
 ## Constraints
 
 - `PATTERN-lyxdirs-single-declarer`: the script spells `_lyx/webster/state.json`, `_lyx/plan/` and `.lyx/logs` because it reads run records and worktree logs, and the literals sit once, in a variable block at the script's head.
