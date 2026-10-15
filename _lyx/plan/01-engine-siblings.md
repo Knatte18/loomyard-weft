@@ -3,12 +3,12 @@
 **Create:**
 - `internal/boardengine/siblings.go`
 - `internal/boardengine/siblings_test.go`
-- `plan:internal/boardengine#Sibling` -> `type Sibling struct`
-- `plan:internal/boardengine#SharedModuleLabels` -> `func SharedModuleLabels(a, b Task, v Vocabulary) []string`
-- `plan:internal/boardengine#addedSiblings` -> `func addedSiblings(before, after []Task, v Vocabulary) []Sibling`
-- `plan:internal/boardengine#Board.writeReportingSiblings` -> `func (b *Board) writeReportingSiblings(fn func(store *Store) (any, error)) (any, []Sibling, error)`
-- `plan:internal/boardengine#Board.UpsertTaskSiblings` -> `func (b *Board) UpsertTaskSiblings(fields map[string]any) (Task, []Sibling, error)`
-- `plan:internal/boardengine_test#TestWriteSiblings` -> `func TestWriteSiblings(t *testing.T)`
+- `internal/boardengine#Sibling`
+- `internal/boardengine#SharedModuleLabels`
+- `internal/boardengine#addedSiblings`
+- `internal/boardengine#Board.writeReportingSiblings`
+- `internal/boardengine#Board.UpsertTaskSiblings`
+- `internal/boardengine_test#TestWriteSiblings`
 
 **Edit:**
 - `internal/boardengine#Board.UpsertTask`

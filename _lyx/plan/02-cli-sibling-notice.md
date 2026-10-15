@@ -1,10 +1,10 @@
 # Card 2 — cli-sibling-notice
 
 **Create:**
-- `plan:internal/boardcli#siblingNotice` -> `func siblingNotice(siblings []boardengine.Sibling) string`
-- `plan:internal/boardcli#joinNotices` -> `func joinNotices(notices ...string) string`
-- `plan:internal/boardcli#outputSuccessWithNotice` -> `func outputSuccessWithNotice(out io.Writer, notice string) int`
-- `plan:internal/boardcli_test#stepSiblingWarning` -> `func stepSiblingWarning(t *testing.T, f *cliFixture)`
+- `internal/boardcli#siblingNotice`
+- `internal/boardcli#joinNotices`
+- `internal/boardcli#outputSuccessWithNotice`
+- `internal/boardcli_test#stepSiblingWarning`
 
 **Edit:**
 - `internal/boardcli#storeVerbs`

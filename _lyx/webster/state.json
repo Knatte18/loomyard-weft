@@ -1,10 +1,10 @@
 {
   "runGuid": "addb885b24abeea8845c020d9d7ffcb6",
-  "planFingerprint": "3ba6b942a1f73013731405652b45ee6109582680bf3872c7048f3bb6ebc0ee42",
+  "planFingerprint": "46dd59cacc5e4c65bcf27def897272857476d0904068170b374eb3ff7d0be75e",
   "planFileHashes": {
     "00-overview.md": "086406837a2feaa84743042174f4307e9b68292d81663c3a352e9a172484be96",
-    "01-engine-siblings.md": "010087347798eb603c7c719b4281774d95653c3b4cab0649981e5704b3f10b67",
-    "02-cli-sibling-notice.md": "fcb83cb9a32939f7d3f2b53cad66b54ac652222db7df846b8e279f9adf9f6c48"
+    "01-engine-siblings.md": "34a2c41792c418abf1b986411beb6c42a6a26159a69c890009fae1f6af7cd1e9",
+    "02-cli-sibling-notice.md": "64031ce72a07258b1e28bc6835549402765954c7e5ab799265b084eb4aedf81e"
   },
   "planOverviewFrameHash": "d595e4299c566cee8484fee098db7fbe434327b73c71a131d8e5b10633ec75d1",
   "partition": [
@@ -66,7 +66,7 @@
       }
     }
   ],
-  "currentBatch": 1,
+  "currentBatch": 0,
   "masterStrand": "1cd145994e7cfa30debdc906d7ad1b11",
   "masterSessionId": "2e425719-ea22-46d2-9f29-a96d5c9e2808",
   "batches": {
@@ -77,15 +77,35 @@
         "02-cli-sibling-notice"
       ],
       "cardHashes": {
-        "01-engine-siblings": "010087347798eb603c7c719b4281774d95653c3b4cab0649981e5704b3f10b67",
-        "02-cli-sibling-notice": "fcb83cb9a32939f7d3f2b53cad66b54ac652222db7df846b8e279f9adf9f6c48"
+        "01-engine-siblings": "34a2c41792c418abf1b986411beb6c42a6a26159a69c890009fae1f6af7cd1e9",
+        "02-cli-sibling-notice": "64031ce72a07258b1e28bc6835549402765954c7e5ab799265b084eb4aedf81e"
       },
       "startSha": "25acb5b7c5737f8f9a5382dbdae01efaca8a19ff",
       "kind": "fork",
       "spawnedAt": "2026-10-15T13:22:33Z",
       "sessionId": "2e425719-ea22-46d2-9f29-a96d5c9e2808",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "01-engine-siblings",
+        "status": "done",
+        "head_sha": "69ad56e1be621d49b456b74561eb0f213f721feb",
+        "deviations": [
+          "internal/boardengine/siblings_test.go"
+        ]
+      },
+      "cardShas": [
+        "69ad56e1be621d49b456b74561eb0f213f721feb"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-sibling-overlap-check/2e425719-ea22-46d2-9f29-a96d5c9e2808/subagents/agent-a9117c948283d0703.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-sibling-overlap-check/2e425719-ea22-46d2-9f29-a96d5c9e2808/subagents/agent-a9117c948283d0703.jsonl"
+      ]
     }
-  }
+  },
+  "seenForkTranscripts": [
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-sibling-overlap-check/2e425719-ea22-46d2-9f29-a96d5c9e2808/subagents/agent-a9117c948283d0703.jsonl"
+  ]
 }
