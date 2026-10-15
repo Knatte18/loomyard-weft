@@ -990,6 +990,23 @@
       "body": "## Seen (count, 2026-10-15)\n\nOf 50 landings on `main` from 2026-10-05 to 2026-10-15 that changed non-test Go code in `internal/shuttleengine/*.go`, 47 were matched to their task through the closing PR comment, and only 24 of those carried the `shuttle` label.\nThe others carried labels for what the task was about (`reed`, `loom`, `burler`, `batten`, `stencil`), not for every package its diff touched: `run-pane-timing`, `overview-seats`, `hibernate-trigger`, `merge-review`, `twill-discusser` and `small-fixes-batch` among them.\nThe board's module labels are set by hand when an entry is written, before anyone knows which packages the work will touch.\nThe orch bundles tasks and sets `depends_on` by package overlap read from labels, so a label that misses a touched module hides an overlap.\nCounted by Haiku agents from the board history and `gh pr list`; scripts and tables in `.scratch/label-count/` in the prime, not committed.\n\n## Idea\n\n- Derive a task's module labels, or check them, from what the work touches: the plan's `Edit:`/`Create:` paths once Plan-Write has run, and the landed diff at landing.\n- At least, record the touched modules on the landed entry or in the run record, so overlap checks and reports read facts, not the labels written up front.\n- Whether a mismatch only warns, adds the label, or feeds the orch's overlap check is open.\n",
       "created": "2026-10-15T10:34:27Z",
       "revised": "2026-10-15T10:34:27Z"
+    },
+    {
+      "id": 555,
+      "slug": "orch-color-on-reexec",
+      "title": "Orch color retyped after every deploy",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "orch"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "The watcher retypes /color into the orch pane after each self-exec on a new binary, minutes later and on an already colored session",
+      "body": "## Seen\n\nThe orch pane gets `/color blue` typed long after a distill, often minutes later and mid-work.\nAn orch agent traced it on 2026-10-15: the reload color itself lands 0.5 to 1.2 s after each compaction ends (once held 2m29s by the operator typing in the pane, which is the intended guard).\nThe late colors are extra ones: every deploy changes the `lyx` binary, `selfexec.Check` re-execs the watcher in place (`internal/selfexec/selfexec.go`), and the fresh process's first tick runs `initCursor` in `internal/orchengine/watcher.go`, which sets `colorPending = true` unconditionally.\n`typeStartColor` then types the color on the first idle tick, so it arrives once the orch's running turn ends.\n17 such colors were typed from 2026-10-14 18:36Z to 2026-10-15 11:05Z, each one on a session already colored.\n`typeStartColor` writes no typed-injection log line, unlike the reload step, so these never show in the watcher log.\n\n## Idea\n\nRe-type the color only when something can have reset it: persist in the watcher `State` the strand and session start the color was last typed for, and set `colorPending` in `initCursor` only when they differ.\nA re-exec on the same session then types nothing; a new session still gets its color.\nLog the start color like the reload steps do.\n",
+      "created": "2026-10-15T11:18:30Z",
+      "revised": "2026-10-15T11:18:30Z"
     }
   ]
 }
