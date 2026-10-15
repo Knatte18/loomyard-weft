@@ -5,12 +5,12 @@
 - `internal/creelengine/server.go`
 - `internal/creelengine/client.go`
 - `internal/creelengine/server_test.go`
-- `plan:internal/creelengine#Options` -> `type Options struct`
-- `plan:internal/creelengine#Run` -> `func Run(ctx context.Context, opts Options) error`
-- `plan:internal/creelengine#Request` -> `type Request struct`
-- `plan:internal/creelengine#Response` -> `type Response struct`
-- `plan:internal/creelengine#Client` -> `type Client struct`
-- `plan:internal/creelengine#NewClient` -> `func NewClient(geom Geometry, claim Claim, spawn func() error, clock Clock) *Client`
+- `internal/creelengine#Options`
+- `internal/creelengine#Run`
+- `internal/creelengine#Request`
+- `internal/creelengine#Response`
+- `internal/creelengine#Client`
+- `internal/creelengine#NewClient`
 
 **Edit:**
 - `cmd/lyx#unboundedWaitFiles`

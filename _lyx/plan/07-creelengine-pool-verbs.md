@@ -6,12 +6,12 @@
 - `internal/creelengine/verbs.go`
 - `internal/creelengine/verbs_test.go`
 - `internal/testkit/creelfake/creelfake.go`
-- `plan:internal/creelengine#Strand` -> `type Strand struct`
-- `plan:internal/creelengine#Delivery` -> `type Delivery interface`
-- `plan:internal/creelengine#Sender` -> `type Sender struct`
-- `plan:internal/creelengine#Store` -> `type Store struct`
-- `plan:internal/testkit/creelfake#Delivery` -> `type Delivery struct`
-- `plan:internal/testkit/creelfake#Clock` -> `type Clock struct`
+- `internal/creelengine#Strand`
+- `internal/creelengine#Delivery`
+- `internal/creelengine#Sender`
+- `internal/creelengine#Store`
+- `internal/testkit/creelfake#Delivery`
+- `internal/testkit/creelfake#Clock`
 
 **Edit:**
 - `//cmd/lyx/testdata/test-budget.yaml`

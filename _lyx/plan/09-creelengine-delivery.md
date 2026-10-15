@@ -5,7 +5,7 @@
 - `internal/creelengine/reminder.go`
 - `internal/creelengine/sweep.go`
 - `internal/creelengine/deliver_test.go`
-- `plan:internal/creelengine#Scheduler` -> `type Scheduler struct`
+- `internal/creelengine#Scheduler`
 
 **Edit:**
 - `cmd/lyx#unboundedWaitFiles`

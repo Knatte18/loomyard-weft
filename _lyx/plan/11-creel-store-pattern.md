@@ -3,7 +3,7 @@
 **Create:**
 - `pattern/PATTERN-creel-store.md`
 - `internal/creelengine/seam_enforcement_test.go`
-- `plan:internal/creelengine#TestCreelStore_DeliverySeamImports` -> `func TestCreelStore_DeliverySeamImports(t *testing.T)`
+- `internal/creelengine#TestCreelStore_DeliverySeamImports`
 
 **Edit:**
 - `//PATTERN.md`

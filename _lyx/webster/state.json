@@ -1,6 +1,6 @@
 {
   "runGuid": "59f32fa4ce8f07ac4302baa96d787bec",
-  "planFingerprint": "c0939099d58bf71b3c83192a10f973fc54d1c22242bd7422907e0c4b90c70d27",
+  "planFingerprint": "156d536fd987b5ed1858793678e99d796e2d39c78a0ae3e74b6ea8c98ce049d0",
   "planFileHashes": {
     "00-overview.md": "353db3c7e75d05a65e0aad3d66b43170d0378b2ec9658afe62d256558a7312b4",
     "01-agentname-program-senders.md": "729500cb67bf27c868014b0cc6673b8113fd1a6584b394ce11b9857738429127",
@@ -9,11 +9,11 @@
     "04-reed-status-pane-pid.md": "b3d3c7880c341d6a575134bb76c55f6747f424bf77878cc9a9b0bfe664834ffc",
     "05-shuttle-recordless-strand.md": "25db175584beb26e06a084b9a49ae2ca58861e08748b9f04c89e058129565a35",
     "06-creelengine-journal.md": "a109a03c4705ec9a568d62370ac47f3939713c2ab4506021accfd9d8da5d0bc5",
-    "07-creelengine-pool-verbs.md": "69142cf534337f47f3b33f3b315b472675533d291614124c6b13cc7917fc24b5",
-    "08-creelengine-identity.md": "fb31b9bfaba36492c5cb173e150937dab72c6a47f3fc0e0fa643500dc5bdff31",
-    "09-creelengine-delivery.md": "12dede0c4a0b3b85a86fa1775406cd4e7e3da2b2717ed241205d7a485c55d370",
-    "10-creelengine-daemon.md": "33b9a58bd127edc5b09e54e128faa4f81d450b5ef834f623ec5f031d26e3febb",
-    "11-creel-store-pattern.md": "d7e624a4fc051642a389aa788924e7ef496ba7c2f3e823966bb0ed0816ec995e",
+    "07-creelengine-pool-verbs.md": "a677b3c33ace264d428868717a4202fe53a39228c2de4b7c6cb9b575a82c21f1",
+    "08-creelengine-identity.md": "2dd1dbce789f45d1e89bb54d4258d1027a5dcd23222830866a2733ad8c6ff962",
+    "09-creelengine-delivery.md": "fbc6187308f85ca44e4c01238371012d928542f76ded1726ed7f09aa2117c940",
+    "10-creelengine-daemon.md": "02f37cb225996b8f1b4aada113696260e33b8c1436facc9c5fbb9125cf6a7da5",
+    "11-creel-store-pattern.md": "ad49b26fccbf839dd61b9cd7475bbbbe3a3496b34d85932bebadd8054e285941",
     "12-hubgeom-creel-geometry.md": "f27bf5dc00f55376b5d6f059a72d55dd7ce425f8afc3075255adb8d36900083e",
     "13-creelcli-delivery-adapter.md": "70131a227a07e75b03df8556aad3ae523a18f4e2c691247a0a2a456cbfacb0be",
     "14-creelcli-verbs.md": "2e9611c73521ef3549e7657f88cac9a2331e2359c89ded6481d54fcc4f5f1f4c",
@@ -341,7 +341,7 @@
       }
     }
   ],
-  "currentBatch": 7,
+  "currentBatch": 0,
   "masterStrand": "19e432caef90e94f900d46639b05a8fa",
   "masterSessionId": "087ffc57-feef-4893-8162-2e42d2cfed42",
   "batches": {
@@ -407,21 +407,57 @@
         "11-creel-store-pattern"
       ],
       "cardHashes": {
-        "07-creelengine-pool-verbs": "69142cf534337f47f3b33f3b315b472675533d291614124c6b13cc7917fc24b5",
-        "08-creelengine-identity": "fb31b9bfaba36492c5cb173e150937dab72c6a47f3fc0e0fa643500dc5bdff31",
-        "09-creelengine-delivery": "12dede0c4a0b3b85a86fa1775406cd4e7e3da2b2717ed241205d7a485c55d370",
-        "10-creelengine-daemon": "33b9a58bd127edc5b09e54e128faa4f81d450b5ef834f623ec5f031d26e3febb",
-        "11-creel-store-pattern": "d7e624a4fc051642a389aa788924e7ef496ba7c2f3e823966bb0ed0816ec995e"
+        "07-creelengine-pool-verbs": "a677b3c33ace264d428868717a4202fe53a39228c2de4b7c6cb9b575a82c21f1",
+        "08-creelengine-identity": "2dd1dbce789f45d1e89bb54d4258d1027a5dcd23222830866a2733ad8c6ff962",
+        "09-creelengine-delivery": "fbc6187308f85ca44e4c01238371012d928542f76ded1726ed7f09aa2117c940",
+        "10-creelengine-daemon": "02f37cb225996b8f1b4aada113696260e33b8c1436facc9c5fbb9125cf6a7da5",
+        "11-creel-store-pattern": "ad49b26fccbf839dd61b9cd7475bbbbe3a3496b34d85932bebadd8054e285941"
       },
       "startSha": "a4a5f4d569f0e1baa3b1b93cc8f8bd38ecf4cb84",
       "kind": "fork",
       "spawnedAt": "2026-10-15T12:55:20Z",
       "sessionId": "087ffc57-feef-4893-8162-2e42d2cfed42",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "07-creelengine-pool-verbs",
+        "status": "done",
+        "head_sha": "100b570192c5450edb6c1205e9e07a757e5d8a12",
+        "deviations": [
+          "internal/creelengine/client.go",
+          "internal/creelengine/deliver.go",
+          "internal/creelengine/deliver_test.go",
+          "internal/creelengine/fold.go",
+          "internal/creelengine/identity.go",
+          "internal/creelengine/identity_test.go",
+          "internal/creelengine/journal.go",
+          "internal/creelengine/peer_linux.go",
+          "internal/creelengine/pool.go",
+          "internal/creelengine/protocol.go",
+          "internal/creelengine/reminder.go",
+          "internal/creelengine/seam.go",
+          "internal/creelengine/seam_enforcement_test.go",
+          "internal/creelengine/server.go",
+          "internal/creelengine/server_test.go",
+          "internal/creelengine/sweep.go",
+          "internal/creelengine/verbs.go",
+          "internal/creelengine/verbs_test.go",
+          "internal/testkit/creelfake/creelfake.go"
+        ]
+      },
+      "cardShas": [
+        "100b570192c5450edb6c1205e9e07a757e5d8a12"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-creel-core/087ffc57-feef-4893-8162-2e42d2cfed42/subagents/agent-a24a65cc367fa6981.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-creel-core/087ffc57-feef-4893-8162-2e42d2cfed42/subagents/agent-a24a65cc367fa6981.jsonl"
+      ]
     }
   },
   "seenForkTranscripts": [
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-creel-core/087ffc57-feef-4893-8162-2e42d2cfed42/subagents/agent-a482863979053a5df.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-creel-core/087ffc57-feef-4893-8162-2e42d2cfed42/subagents/agent-a482863979053a5df.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-creel-core/087ffc57-feef-4893-8162-2e42d2cfed42/subagents/agent-a24a65cc367fa6981.jsonl"
   ]
 }

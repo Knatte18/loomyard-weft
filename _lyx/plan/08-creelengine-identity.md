@@ -5,7 +5,7 @@
 - `internal/creelengine/peer_linux.go`
 - `internal/creelengine/peer_other.go`
 - `internal/creelengine/identity_test.go`
-- `plan:internal/creelengine#Claim` -> `type Claim struct`
+- `internal/creelengine#Claim`
 
 **Edit:**
 - `//cmd/lyx/testdata/test-budget.yaml`
