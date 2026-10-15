@@ -1,9 +1,9 @@
 {
   "runGuid": "14848409faa5f40cdfea5852e6d18905",
-  "planFingerprint": "02fafd4c7b41c19d188aa78543dca906629b7aaf2e29bb42be038cdb4a5a2ac8",
+  "planFingerprint": "9a2daa9aa6b258aac950399fe526833c5d9face6f4666b0e31953b8ba97f6bef",
   "planFileHashes": {
     "00-overview.md": "9dd5e21db850d16cb8c32cbcb95590738b15052539ed331d3c1eeb5f296e71b0",
-    "01-edit-test-file-check.md": "bd009245b6f03b6f5e6b5d5e991d3033f56bc89f44b30082c946fd562ae5f2dd",
+    "01-edit-test-file-check.md": "32d659f38b7abfa256afc66ce17cc031298c39e6222e913103ac53ea87473b9a",
     "02-test-file-ways-forward.md": "a47e66594a494a85ca8ce69a96c87fa51ac9c0028262f730ef4336a6a19cd836",
     "03-plan-stencil-test-rules.md": "70a5e9671bcd5223c3c0b085d61d076a4fe2eda8961903ecd52e7b7010492c4e"
   },
@@ -87,7 +87,7 @@
       }
     }
   ],
-  "currentBatch": 1,
+  "currentBatch": 0,
   "masterStrand": "ca48942509099cc17dd9a5849323220d",
   "masterSessionId": "7e50957d-614e-4103-956b-1cb7f00415e8",
   "batches": {
@@ -99,7 +99,7 @@
         "03-plan-stencil-test-rules"
       ],
       "cardHashes": {
-        "01-edit-test-file-check": "bd009245b6f03b6f5e6b5d5e991d3033f56bc89f44b30082c946fd562ae5f2dd",
+        "01-edit-test-file-check": "32d659f38b7abfa256afc66ce17cc031298c39e6222e913103ac53ea87473b9a",
         "02-test-file-ways-forward": "a47e66594a494a85ca8ce69a96c87fa51ac9c0028262f730ef4336a6a19cd836",
         "03-plan-stencil-test-rules": "70a5e9671bcd5223c3c0b085d61d076a4fe2eda8961903ecd52e7b7010492c4e"
       },
@@ -107,8 +107,28 @@
       "kind": "fork",
       "spawnedAt": "2026-10-15T13:39:28Z",
       "sessionId": "7e50957d-614e-4103-956b-1cb7f00415e8",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "01-edit-test-file-check",
+        "status": "done",
+        "head_sha": "fa8ea1c07df0be17dae6ec6e25800d94ba5b67a6",
+        "deviations": [
+          "internal/planparser/edittestfile.go"
+        ]
+      },
+      "cardShas": [
+        "fa8ea1c07df0be17dae6ec6e25800d94ba5b67a6"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-plan-test-file-path/7e50957d-614e-4103-956b-1cb7f00415e8/subagents/agent-ae49d56372d65274f.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-plan-test-file-path/7e50957d-614e-4103-956b-1cb7f00415e8/subagents/agent-ae49d56372d65274f.jsonl"
+      ]
     }
-  }
+  },
+  "seenForkTranscripts": [
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-plan-test-file-path/7e50957d-614e-4103-956b-1cb7f00415e8/subagents/agent-ae49d56372d65274f.jsonl"
+  ]
 }

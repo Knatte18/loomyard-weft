@@ -1,10 +1,10 @@
 # Card 1 — edit-test-file-check
 
 **Create:**
-- `plan:internal/planparser#gateEditTestFile` -> `const gateEditTestFile refGate = "edit-test-file"`
-- `plan:internal/planparser#CheckEditTestFile` -> `func CheckEditTestFile(plan *Plan, done []Card) []ValidationError`
-- `plan:internal/planparser#ignoredByGoTool` -> `func ignoredByGoTool(segment string) bool`
-- `plan:internal/planparser_test#TestCheckEditTestFile` -> `func TestCheckEditTestFile(t *testing.T)`
+- `internal/planparser#gateEditTestFile`
+- `internal/planparser#CheckEditTestFile`
+- `internal/planparser#ignoredByGoTool`
+- `internal/planparser_test#TestCheckEditTestFile`
 
 **Edit:**
 - `internal/planparser#ledger`
@@ -21,7 +21,7 @@
 - `cmd/lyx/testdata/test-budget.yaml`
 
 **Rename:**
-- `internal/planglyph#TestIndex_AppendsFabricVocabularyName` -> `plan:internal/planglyph#TestIndex_AppendsPlanChecks`
+- `internal/planglyph#TestIndex_AppendsFabricVocabularyName` -> `internal/planglyph#TestIndex_AppendsPlanChecks`
 
 **Intent:** Add the blocking plan check `edit-test-file` (D3, D4, D5) and wire it into the plan index's format and rework validation, never dispatch.
 
