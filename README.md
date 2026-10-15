@@ -30,6 +30,16 @@ Waits on nothing open; can start now.
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | 1 | **Card can require a board-entry edit that the running task's own board lock refuses** | [`card-own-entry-edit`](design-card-own-entry-edit.md) | loom |  | 2h | 0m | loom, stencil |
 
+### Layer A
+
+Waits only on Running or Ready entries.
+
+#### High priority
+
+| # | Task | Slug | Recipe | After | Age | Revised | Labels |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| 1 | **Fix the creel stage 1 audit defects and add its sandbox scenarios**<br>• Eight creel defects from the audit (#657-#664) plus sandbox scenarios C1-C13 | [`creel-stage1-fixes`](design-creel-stage1-fixes.md) | loom | `engine-model-choice`, `engine-usage-readers` | 37m | 0m | creel, shuttle, reed, claude |
+
 ## Notes
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
@@ -58,20 +68,12 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | # | Note | Slug | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | 1 | **Webster fork deviations list mixes in its own target files**<br>• The implementer stencil asks a fork to compare its edits against the glyph union and also tells it not to, so deviations lists files that house its own target glyphs | [`webster-deviations-list`](design-webster-deviations-list.md) | 5h | 5h | webster, stencil |
-| 2 | **creel: a hand-added claude strand is never read idle, so nothing is delivered (llm smoke test fails)** | [`creel-hand-added-claude-idle`](design-creel-hand-added-claude-idle.md) | 37m | 37m | creel, shuttle, reed, claude |
-| 3 | **creel: no delivery into a collapsed (too short) strand pane, and no reason surfaced** | [`creel-collapsed-pane-delivery`](design-creel-collapsed-pane-delivery.md) | 37m | 37m | creel, reed, shuttle |
-| 4 | **creel: inject --interrupt stalls behind the prompt Claude restores into the input box** | [`creel-interrupt-restored-prompt`](design-creel-interrupt-restored-prompt.md) | 37m | 37m | creel, shuttle, claude |
-| 5 | **creel: read marks mail read even when writing it out failed** | [`creel-read-ack-on-write-error`](design-creel-read-ack-on-write-error.md) | 37m | 36m | creel |
-| 6 | **creel: a daemon that fails to start leaves verbs with only 'no daemon answers'** | [`creel-daemon-start-error`](design-creel-daemon-start-error.md) | 36m | 36m | creel |
-| 7 | **creel: a new inject is charged TTL from before it was posted** | [`creel-inject-ttl-before-post`](design-creel-inject-ttl-before-post.md) | 36m | 36m | creel |
-| 8 | **creel: read does not show that a message was returned by a removed holder** | [`creel-read-returned-mark`](design-creel-read-returned-mark.md) | 36m | 36m | creel |
-| 9 | **creel: log, inject help, sender field and release output inconsistencies** | [`creel-output-inconsistencies`](design-creel-output-inconsistencies.md) | 36m | 36m | creel |
 
 #### Low priority
 
 | # | Note | Slug | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| 10 | **A hub pause leaves background forks and shells running, so hibernate never confirms**<br>• Pause interrupts turns but not background forks or shells; sessions read busy and hibernate confirmation fails | [`pause-background-work`](design-pause-background-work.md) | 21h | 11h | shuttle, webster |
+| 2 | **A hub pause leaves background forks and shells running, so hibernate never confirms**<br>• Pause interrupts turns but not background forks or shells; sessions read busy and hibernate confirmation fails | [`pause-background-work`](design-pause-background-work.md) | 21h | 11h | shuttle, webster |
 
 ### Enhancements
 

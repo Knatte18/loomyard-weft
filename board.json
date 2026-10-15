@@ -892,9 +892,9 @@
     },
     {
       "id": 565,
-      "slug": "creel-hand-added-claude-idle",
-      "title": "creel: a hand-added claude strand is never read idle, so nothing is delivered (llm smoke test fails)",
-      "kind": "note",
+      "slug": "creel-stage1-fixes",
+      "title": "Fix the creel stage 1 audit defects and add its sandbox scenarios",
+      "kind": "task",
       "labels": [
         "bug",
         "creel",
@@ -903,151 +903,25 @@
         "claude"
       ],
       "issues": [
-        657
-      ],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "Imported from [issue #657](https://github.com/Knatte18/loomyard/issues/657).\n\nFound by the creel stage 1 audit (board note `creel-test`), in a sandbox hub, with `lyx` built from `main` at e131c7625.\n\n## What was seen\n\nA strand added by hand with `lyx reed add --cmd claude` is never read idle, so creel never types a reminder or an inject into it.\nA fresh Claude Code session shows its greyed placeholder in the empty input box, for example `❯ Try \"edit \u003cfilepath\u003e to...\"`.\nA pane capture carries no styling, so `claudeengine.IdleSession` reads that placeholder as a draft and answers not idle.\nShuttle-launched sessions avoid this because every shuttle settings file sets `promptSuggestionEnabled: false` (`internal/shuttleengine/claudeengine/settings.go`); a hand-added strand gets no such settings.\n\nThe llm-tier smoke test fails the same way: `lyx gate test --tags llm ./internal/creelcli` runs `TestSmokeCreelClaudeStrand`, which fails twice in a row with `smoke_llm_test.go:51: the adapter never read the booted session idle`.\nThe test adds the strand with the bare claude path, as the commit's \"hand-added strand is reachable\" claim intends.\n\n## Steps\n\n1. In a sandbox hub: `lyx reed add --role alice --cmd claude` (here `claude --model haiku`), accept the folder-trust prompt.\n2. `lyx creel post ctest:alice \"please say READ\"`.\n3. Watch the pane for minutes: no `[creel]` line is ever typed; `lyx creel log` shows `posted` and nothing else.\n4. Control: the same strand launched as `claude --settings '{\"promptSuggestionEnabled\":false}'` shows an empty box and gets the reminder within a second.\n\n## Expected\n\nA strand added by hand with `--cmd claude` is reachable by creel, as `internal/creelengine/doc.go` and the commit message say, and `TestSmokeCreelClaudeStrand` passes.\nEither creel/shuttle reads a placeholder-only box as empty, or `lyx reed add` (or the docs) makes hand-added Claude strands start with prompt suggestions off.\n",
-      "created": "2026-10-15T16:35:07Z",
-      "revised": "2026-10-15T16:35:10Z"
-    },
-    {
-      "id": 566,
-      "slug": "creel-collapsed-pane-delivery",
-      "title": "creel: no delivery into a collapsed (too short) strand pane, and no reason surfaced",
-      "kind": "note",
-      "labels": [
-        "bug",
-        "creel",
-        "reed",
-        "shuttle"
-      ],
-      "issues": [
-        658
-      ],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "Imported from [issue #658](https://github.com/Knatte18/loomyard/issues/658).\n\nFound by the creel stage 1 audit (board note `creel-test`), in a sandbox hub, with `lyx` built from `main` at e131c7625.\n\n## What was seen\n\nCreel delivers nothing into a strand whose pane reed has collapsed, and says nothing about why.\nReed stacks hand-added strands of one worktree in one window; every strand but the bottom one collapses to `collapsed_rows` (3 rows).\nA 3-row Claude pane cannot draw its input box, so shuttle's idle probe answers not idle with `TooShort` set.\nCreel's delivery adapter (`internal/creelcli/delivery.go`) drops `TooShort`, and the scheduler simply keeps probing.\nMail is never reminded, and an inject sits until its TTL runs out and is journaled `expired`, because the TTL runs while the strand is live and unpaused.\nThe orch watcher, by contrast, records `orch pane too short for the idle probe; resize or use the larger client`.\n\n## Steps\n\n1. In a sandbox hub add three strands to the prime: `lyx reed add --role bob --cmd claude`, then `--role carol --cmd bash`, then `--role dave --cmd bash`.\n2. bob's pane is now 220x3 (`tmux list-panes`).\n3. `lyx creel inject --wait --timeout 120s ctest:bob \"Reply INJECTED\"`: times out (exit 4); bob's pane shows nothing.\n4. The journal shows `aged` records every minute and, ten minutes later, `expired` for that inject.\n\n## Expected\n\nEither creel can deliver into a collapsed strand (for example by having reed or shuttle make the pane tall enough for the send), or the stall is surfaced: a `lyx creel inject --wait` / `log` / `inbox` line that names the short pane as the reason, so a sender is not left guessing.\n",
-      "created": "2026-10-15T16:35:10Z",
-      "revised": "2026-10-15T16:35:12Z"
-    },
-    {
-      "id": 567,
-      "slug": "creel-interrupt-restored-prompt",
-      "title": "creel: inject --interrupt stalls behind the prompt Claude restores into the input box",
-      "kind": "note",
-      "labels": [
-        "bug",
-        "creel",
-        "shuttle",
-        "claude"
-      ],
-      "issues": [
-        659
-      ],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "Imported from [issue #659](https://github.com/Knatte18/loomyard/issues/659).\n\nFound by the creel stage 1 audit (board note `creel-test`), in a sandbox hub, with `lyx` built from `main` at e131c7625.\n\n## What was seen\n\n`lyx creel inject --interrupt` does not deliver its line in the common case.\nWhen Claude Code is interrupted early in a turn (here 4 to 9 seconds in, still thinking), it puts the interrupted prompt back into the input box.\nCreel's next idle probe then reads a draft in the box and answers busy, so the head-queued inject waits until someone clears the box or its TTL expires.\n`lyx creel interrupt` leaves the strand in the same state: every later reminder and inject is held behind the restored prompt.\n\n## Steps\n\n1. In a sandbox hub, a Claude strand `ctest:eve` in its own window, idle.\n2. `lyx creel inject --wait ctest:eve \"Without using any tool, write a 700-word essay about mountains.\"` (outcome injected).\n3. Nine seconds later: `lyx creel inject --interrupt --wait --timeout 40s ctest:eve \"Reply STOPPED2.\"`.\n4. The journal shows `interrupted` and the inject `posted`; the call times out (exit 4).\n5. The pane shows the essay prompt back in the input box; nothing more is typed.\n6. Clearing the box by hand (C-u) lets the queued inject go at the next probe.\n\n## Expected\n\n`inject --interrupt` stops the turn and then types its line, as its help example `\"stop and run the tests\" --interrupt --wait` promises.\nFor example, the guarded interrupt (or the inject path after it) clears a box that holds exactly the interrupted prompt, or creel treats that restored text as its own to clear before typing.\n",
-      "created": "2026-10-15T16:35:13Z",
-      "revised": "2026-10-15T16:35:15Z"
-    },
-    {
-      "id": 568,
-      "slug": "creel-read-ack-on-write-error",
-      "title": "creel: read marks mail read even when writing it out failed",
-      "kind": "note",
-      "labels": [
-        "bug",
-        "creel"
-      ],
-      "issues": [
-        660
-      ],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "Imported from [issue #660](https://github.com/Knatte18/loomyard/issues/660).\n\nFound by the creel stage 1 audit (board note `creel-test`), in a sandbox hub, with `lyx` built from `main` at e131c7625.\n\n## What was seen\n\n`lyx creel read` marks messages read even when it failed to write them out, so the mail is lost.\nThe design says a read is acknowledged only once the client wrote the messages out (`internal/creelengine/doc.go`, \"Mail\"), and `Client.Call` acks only when its handler returns nil.\nBut the read verb's handler in `internal/creelcli/cli.go` (`printMessages` in `readCmd`) calls `output.Ok(out, fields)` and always returns nil, ignoring a write error.\n\n## Steps\n\n1. In a sandbox hub, post a message to a shell strand: `lyx creel post ctest:carol \"w1 unacked test\"`.\n2. In carol's pane: `lyx creel read \u003e /dev/full; echo rc=$?` prints `rc=0`.\n3. `lyx creel inbox` in carol's pane shows no unread mail, and `lyx creel log --id \u003cid\u003e` shows a `read` event.\n\n## Expected\n\nA read whose output cannot be written exits non-zero and sends no acknowledgement, so the messages stay unread, as the design promises for a client that dies before writing them.\n",
-      "created": "2026-10-15T16:35:16Z",
-      "revised": "2026-10-15T16:35:18Z"
-    },
-    {
-      "id": 569,
-      "slug": "creel-daemon-start-error",
-      "title": "creel: a daemon that fails to start leaves verbs with only 'no daemon answers'",
-      "kind": "note",
-      "labels": [
-        "bug",
-        "creel"
-      ],
-      "issues": [
-        661
-      ],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "Imported from [issue #661](https://github.com/Knatte18/loomyard/issues/661).\n\nFound by the creel stage 1 audit (board note `creel-test`), in a sandbox hub, with `lyx` built from `main` at e131c7625.\n\n## What was seen\n\nWhen the creel daemon cannot start, every verb reports only that no daemon answers, after about 30 seconds, and the reason is nowhere to be found.\nThe daemon is spawned detached with null stdio (`internal/creelcli/spawn.go`) and writes no log file, so its own error is lost.\n\nSeen with a malformed line in the middle of a journal day file, which the design says fails the load naming the file and line.\n`lyx creel inbox` printed: `creel: no daemon answers on /tmp/lyx-1000/creel-ctest-41ca7726.sock after starting one and 6 connects: dial unix ...: connect: no such file or directory`.\nOnly running the hidden `lyx creel daemon --hub-path \u003chub\u003e` in the foreground showed the real error: `creel journal: .../2026-10-14.jsonl line 3 is not a valid record (...); way forward: repair or remove that line by hand, then start the daemon again`.\n`_board/.lyx/logs` held no creel entry.\n\n## Steps\n\n1. Stop the sandbox hub's daemon (replace its binary).\n2. Add a non-JSON line in the middle of a day file under `_board/.lyx/creel/journal/`.\n3. Run any verb, for example `lyx creel inbox`.\n\n## Expected\n\nA verb whose daemon fails to start reports the daemon's own error, or names a log file that holds it, so the operator can follow the \"way forward\" the daemon already writes.\n",
-      "created": "2026-10-15T16:35:19Z",
-      "revised": "2026-10-15T16:35:21Z"
-    },
-    {
-      "id": 570,
-      "slug": "creel-inject-ttl-before-post",
-      "title": "creel: a new inject is charged TTL from before it was posted",
-      "kind": "note",
-      "labels": [
-        "bug",
-        "creel"
-      ],
-      "issues": [
-        662
-      ],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "Imported from [issue #662](https://github.com/Knatte18/loomyard/issues/662).\n\nFound by the creel stage 1 audit (board note `creel-test`), in a sandbox hub, with `lyx` built from `main` at e131c7625.\n\n## What was seen\n\nA new inject is charged TTL for time that passed before it was posted.\nIn `internal/creelengine/deliver.go`, `worker.probe` ages every queued inject of the receiver by `now - lastProbe`.\nWhen a worker already runs for the receiver (for example because it has unread mail) and a new inject wakes it, the new inject is charged the whole gap since the previous probe, up to the 8-second probe ceiling, or longer when the previous probe spent its time in a slow send.\n\nJournal evidence:\n\n- inject #34 posted 16:18:45.783, `aged` 16:18:45.813 with `consumed_s: 3` (30 ms after posting);\n- inject #905 posted 16:25:08.4, `aged` 16:25:31.7 with `consumed_s: 28` (23 s after posting);\n- inject #907 posted 16:26:25.6, `aged` 16:26:32.8 with `consumed_s: 9` (7 s after posting).\n\n## Steps\n\n1. Give a strand unread mail so its worker keeps probing on its backoff.\n2. `lyx creel inject --ttl 60s \u003cstrand\u003e \"x\"` while the strand is not idle.\n3. Read the journal: the first `aged` record for the inject counts more seconds than have passed since its `posted` record.\n\n## Expected\n\nAn inject's TTL counts only from its own posting (and only while the receiver is live and unpaused), so a short `--ttl` is not cut by up to several seconds.\n",
-      "created": "2026-10-15T16:35:21Z",
-      "revised": "2026-10-15T16:35:23Z"
-    },
-    {
-      "id": 571,
-      "slug": "creel-read-returned-mark",
-      "title": "creel: read does not show that a message was returned by a removed holder",
-      "kind": "note",
-      "labels": [
-        "bug",
-        "creel"
-      ],
-      "issues": [
-        663
-      ],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "Imported from [issue #663](https://github.com/Knatte18/loomyard/issues/663).\n\nFound by the creel stage 1 audit (board note `creel-test`), in a sandbox hub, with `lyx` built from `main` at e131c7625.\n\n## What was seen\n\nA message that the removed-holder sweep returned does not say so when it is read.\nThe design says each unread message of a gone holder goes one step back \"and is marked with the receiver that ended without reading it\" (`internal/creelengine/doc.go`, \"Removed holders\").\nThe fold sets `Message.EndedUnreadBy` and `EndedUnreadAt`, and the journal's `returned` record holds the receiver, but `messageFields` in `internal/creelcli/cli.go` never prints them.\nThe return also strips the last forwarder from `path`, so the read shows a bare message.\n\n## Steps\n\n1. `ctest:dave` posts \"sweep test\" to `ctest:carol`; carol forwards it to `ctest:stuck2`.\n2. `lyx reed remove \u003cstuck2 guid\u003e`; about a minute later the journal shows `{\"event\":\"returned\",\"id\":908,\"to\":\"ctest:carol\",\"receiver\":\"ctest:stuck2\"}`.\n3. carol runs `lyx creel read --from ctest:dave` and gets `{\"body\":\"sweep test\",\"from\":\"ctest:dave\",\"id\":908,\"kind\":\"mail\",\"posted\":...}`, with no word that it came back from stuck2.\n4. The same holds for a sender who gets their own message back (dave's #32 returned from a removed strand reads like a note to self).\n\n## Expected\n\n`read` prints the returned mark (for example `ended_unread_by` and its time), so the reader knows the message bounced and from whom.\n",
-      "created": "2026-10-15T16:35:24Z",
-      "revised": "2026-10-15T16:35:26Z"
-    },
-    {
-      "id": 572,
-      "slug": "creel-output-inconsistencies",
-      "title": "creel: log, inject help, sender field and release output inconsistencies",
-      "kind": "note",
-      "labels": [
-        "bug",
-        "creel"
-      ],
-      "issues": [
+        657,
+        658,
+        659,
+        660,
+        661,
+        662,
+        663,
         664
       ],
-      "depends_on": [],
+      "priority": "high",
+      "depends_on": [
+        "engine-model-choice",
+        "engine-usage-readers"
+      ],
       "isolated": false,
-      "brief": "",
-      "body": "Imported from [issue #664](https://github.com/Knatte18/loomyard/issues/664).\n\nFound by the creel stage 1 audit (board note `creel-test`), in a sandbox hub, with `lyx` built from `main` at e131c7625.\nThree small output and help inconsistencies in `lyx creel`, filed together.\n\n1. `lyx creel log` prints each `reminded` event with `\"id\":0` and without the message ids, although the journal record carries them (`\"unread\":[22]`) and the backoff `step`.\n   A reader of the log cannot tell which messages a reminder named.\n2. `lyx creel inject --help` says \"Only the orch, a program and an external caller may inject; any other strand posts instead.\"\n   The design (`internal/creelengine/doc.go`) and the code let any strand inject into its own pane, and `lyx creel inject ctest:dave \"self inject\"` run from dave's pane is accepted.\n3. The waiting verbs print an empty sender: `lyx creel inject --wait` and `lyx creel post --wait-reply` print `\"sender\":\"\"`, where the plain verbs print `\"sender\":\"ctest:EXTERNAL\"`.\n\nAlso seen: `lyx creel release \u003cunknown name\u003e` answers `{\"ok\":true,\"released\":false}` instead of naming the strands that exist, as `hold` does.\n\n## Expected\n\nThe log shows the reminded ids (and step), the inject help matches the privilege rule, the sender is printed the same way by every verb, and `release` refuses an unknown receiver like the other verbs.\n",
-      "created": "2026-10-15T16:35:27Z",
-      "revised": "2026-10-15T16:35:29Z"
+      "brief": "Eight creel defects from the audit (#657-#664) plus sandbox scenarios C1-C13",
+      "body": "Fix the defects the creel stage 1 audit found, and make its sandbox scenarios re-runnable.\nThe audit report is `docs/research/creel-audit-2026-10-15/report.md`; each issue below holds its steps and expected behaviour.\n\n## Operator decisions (2026-10-15)\n\n- The eight creel bugs from the audit are fixed together in this one task, at high priority.\n- The audit's proposed sandbox scenarios C1-C13 are written into the sandbox suite in this task.\n- `creel-notices` and `creel-agents` stay notes until this task has landed and creel is tested again.\n\n## Defects\n\n- #657: a strand added by hand with `lyx reed add --cmd claude` is never read idle, because Claude's greyed placeholder in the empty input box reads as a draft; `TestSmokeCreelClaudeStrand` (llm tier) fails for the same reason. Shuttle-launched sessions avoid it through `promptSuggestionEnabled: false`.\n- #658: no delivery into a strand pane reed collapsed to 3 rows; the idle probe's `TooShort` is dropped in `internal/creelcli/delivery.go`, so the inject expires and no reason is shown anywhere.\n- #659: after `interrupt` or `inject --interrupt`, Claude restores the interrupted prompt into its input box, creel reads the strand as busy, and the queued inject waits until the box is cleared by hand.\n- #660: `lyx creel read \u003e /dev/full` exits 0 and acknowledges, so the mail is marked read and lost.\n- #661: a daemon that fails to start leaves verbs with only \"no daemon answers\"; its own error (for example a malformed journal line, with file and line) is lost.\n- #662: a new inject is charged TTL for the time since the receiver's previous probe, before it was posted.\n- #663: `read` does not show that a message was returned by a removed holder (`EndedUnreadBy` is never printed).\n- #664: `log` prints `reminded` with `\"id\":0` and no ids; `inject --help` misstates who may inject; `--wait` verbs print an empty sender; `release` of an unknown receiver answers ok.\n\n## Done when\n\n- Each defect above is fixed as its issue's Expected section says, with a test where the repo's tiers can hold one.\n- `lyx gate test --tags llm ./internal/creelcli` passes (`TestSmokeCreelClaudeStrand`), as do the tmux, unit and integration tiers.\n- Scenarios C1-C13 from the report's \"Proposed creel sandbox suite\" are added to the sandbox suite in `tools/sandbox/`, beside the existing creel scenario S9.\n",
+      "created": "2026-10-15T16:35:07Z",
+      "revised": "2026-10-15T17:12:16Z"
     }
   ]
 }
