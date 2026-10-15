@@ -44,7 +44,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 6 | **Darn: a decision record for mid-run scope corrections, and PR-Align**<br>• Darn has no decision record, so a mid-run scope correction never reaches its review; and no PR-Align row, so every darn PR waits for the orch at PR-Gate | [`twb-d0-sf`](design-twb-d0-sf.md) | 8m | 8m |  |
 | 7 | **lyx config --set stores an invalid model value instead of refusing it** | [`config-set-validate`](design-config-set-validate.md) | 10h | 10h | config |
 | 8 | **A hub pause leaves background forks and shells running, so hibernate never confirms**<br>• Pause interrupts turns but not background forks or shells; sessions read busy and hibernate confirmation fails | [`pause-background-work`](design-pause-background-work.md) | 9h | 4m | shuttle, webster |
-| 9 | **Plan-Bouncer and Batchifier pass a plan that webster begin-batch then refuses with delete-before-reference** | [`plan-drift-refusal-route`](design-plan-drift-refusal-route.md) | 1m | 1m | webster, loom |
+| 9 | **Plan-Bouncer and Batchifier pass a plan that webster begin-batch then refuses with delete-before-reference** | [`plan-drift-refusal-route`](design-plan-drift-refusal-route.md) | 2m | 1m | webster, loom |
 
 ### Enhancements
 
@@ -135,4 +135,4 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | --- | --- | --- | --- | --- | --- |
 | 2 | **Re-measure the test suite weight on a quiet machine**<br>• The test-suite-weight before and after numbers were taken under load; rerun the report Regenerate section on an idle machine for a fair wall-time comparison | `suite-weight-quiet-rerun` | 4d | 1d |  |
 | 3 | **Lighter test rules for small changes**<br>• Tests that pin stencil wording make small prompt changes large; pin only what must hold, measured first | [`lighter-test-rules`](design-lighter-test-rules.md) | 1d | 1d | stencil |
-| 4 | **Bench fork0 and the strict critical fixer on twill Discussion-Write**<br>• Arms: twill as is, with the strict critical fixer, and fork0 plus the critical fixer, graded against Discussion-Review keys | [`twill-discussion-fork0-bench`](design-twill-discussion-fork0-bench.md) | 16m | 16m | loom, burler, stencil |
+| 4 | **Bench fork0 and the strict critical fixer on twill Discussion-Write**<br>• Arms: twill as is, with the strict critical fixer, and fork0 plus the critical fixer, graded against Discussion-Review keys | [`twill-discussion-fork0-bench`](design-twill-discussion-fork0-bench.md) | 17m | 17m | loom, burler, stencil |

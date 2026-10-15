@@ -1,6 +1,6 @@
 # Plan and Webster checks out of step with the code a plan changes
 
-`twb-d0-gc` · Note · bug · running · Loom-Preflight
+`twb-d0-gc` · Note · bug · running · Discussion-Write
 
 ## From `webster-glyph-rename`
 
