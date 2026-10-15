@@ -1,6 +1,6 @@
 # Every role spec carries its resolved engine
 
-`engine-model-choice` · Task · enhancement, shuttle, loom, webster, burler, shed · running · Describe
+`engine-model-choice` · Task · enhancement, shuttle, loom, webster, burler, shed · running · Merge-In
 
 ## Goal
 
