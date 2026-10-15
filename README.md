@@ -17,11 +17,11 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | **lyx report timing: phase minutes, parent waits and agent spawns from run records**<br>• A mechanical per-run and per-day time report beside lyx report convergence, including stops by who settled them. | [`report-timing`](design-report-timing.md) | loom | Discussion-Burler-Fix | 2d | 17m | shed, orch |
-| 2 | **Run window stays on shell: follow the overview and newest agent from run start**<br>• A viewer attached before any overview or agent window exists rests on shell and never follows the run | [`viewer-off-shell`](design-viewer-off-shell.md) | loom | Plan-Write | 3h | 17m | reed, batten |
+| 1 | **lyx report timing: phase minutes, parent waits and agent spawns from run records**<br>• A mechanical per-run and per-day time report beside lyx report convergence, including stops by who settled them. | [`report-timing`](design-report-timing.md) | loom | Discussion-Bouncer | 2d | 18m | shed, orch |
+| 2 | **Run window stays on shell: follow the overview and newest agent from run start**<br>• A viewer attached before any overview or agent window exists rests on shell and never follows the run | [`viewer-off-shell`](design-viewer-off-shell.md) | loom | Plan-Write | 3h | 18m | reed, batten |
 | 3 | **Kick-start pack per card, read when the card starts**<br>• Forks read about a quarter of a batch-wide pack; hand each card its own pack as everything it needs to begin | [`kickstart-per-card`](design-kickstart-per-card.md) | loom | Webster | 2h | 2h | webster, stencil |
-| 4 | **creel stage 1: the one way to reach an agent, standalone**<br>• The creel daemon, queues, journal and verbs, delivering through shuttle, built and tested before any module sends through it | [`creel-core`](design-creel-core.md) | loom | Discussion-Write | 13d | 10m | creel, reed, shuttle |
-| 5 | **Orch color retyped after every deploy**<br>• The watcher retypes /color into the orch pane after each self-exec on a new binary, minutes later and on an already colored session | [`orch-color-on-reexec`](design-orch-color-on-reexec.md) | darn | Worktree-Create | 26m | 0m | orch |
+| 4 | **creel stage 1: the one way to reach an agent, standalone**<br>• The creel daemon, queues, journal and verbs, delivering through shuttle, built and tested before any module sends through it | [`creel-core`](design-creel-core.md) | loom | Discussion-Write | 13d | 11m | creel, reed, shuttle |
+| 5 | **Orch color retyped after every deploy**<br>• The watcher retypes /color into the orch pane after each self-exec on a new binary, minutes later and on an already colored session | [`orch-color-on-reexec`](design-orch-color-on-reexec.md) | darn | Worktree-Create | 27m | 0m | orch |
 
 ### Ready
 
