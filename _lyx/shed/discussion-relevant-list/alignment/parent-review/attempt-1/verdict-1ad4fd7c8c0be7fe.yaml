@@ -1,0 +1,11 @@
+verdict: approve
+reason: >-
+  The design covers every point of the board entry's 2026-10-15 operator decision:
+  no new role, a separate relevant.md in plain code names with one line of why each,
+  no glyphs, Plan-Write reads it first and may read more, Discussion-Review does not review it,
+  and the discussion spec and the Discussion and Plan stencils change.
+  It adds nothing that belongs to another entry.
+  The only peer overlap is text-only: engine-model-choice also edits discussiontable.go, at different places and for different behaviour,
+  and it lands first (row 7 against own row 3).
+question: ""
+superseded: []
