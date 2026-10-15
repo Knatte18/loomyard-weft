@@ -22,3 +22,12 @@ fix:
     tokens_known: true
     fresh_tokens: 64614
     cache_read_tokens: 836657
+judge:
+    - model: sonnet
+      effort: medium
+      start: 2026-10-15T12:31:58Z
+      end: 2026-10-15T14:32:25.441235243+02:00
+      wall_seconds: 27.441235243
+      tokens_known: true
+      fresh_tokens: 36136
+      cache_read_tokens: 150469
