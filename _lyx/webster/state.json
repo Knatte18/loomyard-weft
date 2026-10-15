@@ -210,7 +210,7 @@
       }
     }
   ],
-  "currentBatch": 0,
+  "currentBatch": 4,
   "masterStrand": "61783571fc7a72646c7e82d2e3c2e5b2",
   "masterSessionId": "882225e9-2a89-4521-9764-61f243c588d9",
   "batches": {
@@ -250,6 +250,25 @@
       "bracketTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-lighter-test-rules/882225e9-2a89-4521-9764-61f243c588d9/subagents/agent-a19b9ce354272f345.jsonl"
       ]
+    },
+    "4": {
+      "slug": "treadle-template-tests",
+      "cards": [
+        "04-treadle-template-tests",
+        "05-shed-prompt-tests",
+        "06-loom-prompt-tests"
+      ],
+      "cardHashes": {
+        "04-treadle-template-tests": "cc1a6b3b03431da06a78791acb3467887410802aa1e08a4bd379a34b0d0d95d9",
+        "05-shed-prompt-tests": "11b7c621187d03d8c3a4e3f453e147d21cbf6911ee18a5efb442e14a3ab4ea0f",
+        "06-loom-prompt-tests": "80d372c83dc74a053ff71858201aca90d0f93860b49adc0dec16d59274b2c62b"
+      },
+      "startSha": "a03bec83cd5695d9ba63bbe9d3d63b816faa4cb6",
+      "kind": "fork",
+      "spawnedAt": "2026-10-15T14:55:30Z",
+      "sessionId": "882225e9-2a89-4521-9764-61f243c588d9",
+      "terminal": false,
+      "status": ""
     }
   },
   "seenForkTranscripts": [
