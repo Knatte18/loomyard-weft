@@ -98,6 +98,12 @@ Decision: each `card-pack` call that renders a pack logs one Info line, `webster
 
 Rationale: the audit needs to see whether and when each card's pack was fetched; the batch line alone says only which layout a batch ran.
 
+### Added after Discussion (parent, 2026-10-15): kickstart-per-card teaches tools/forkaudit the per-card layout
+
+Decision: This task takes the forkaudit card arm into scope, overriding the Burler round 2 removal of D7: a card marker row matching lyx loom card-pack, checked ahead of the file row, the card trace value, and spans from the card-pack tool results with the webster card pack lines as cross-check, plus an acceptance criterion. No follow-up task is filed. Plan-Write writes the card for it.
+
+Rationale: The run is held by a loom pause before Plan-Write until glyph-audit-tool lands; the orch then merges origin/main into this pair, so tools/forkaudit is present at Plan-Write. The hold is the pause, not depends_on. glyph-audit-tool records the rule that a task adding a pack layout adds its marker row in the same task, and splitting it would leave per-card forks counted as file.
+
 ## Constraints
 
 - `PATTERN-cli-cobra`: the verb is a cobra child of `loom` with the `role` audience, a lower-case `Short` and a `Long` within the walk's limit.
