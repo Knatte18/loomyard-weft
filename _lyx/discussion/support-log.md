@@ -75,6 +75,8 @@ All six forks returned.
 - **Importing `statuspane` from `reportengine`.** Rejected: it brings terminal and self-exec imports into a told-geometry engine.
 - **Local-time day buckets.** Rejected: `convergence` uses UTC, and two reports disagreeing on a day's edge would confuse more than the two-hour shift.
 - **Counting only awaiting stops as waits.** Rejected after the lens review: a halt left overnight would read as active time.
+- **Folding `tackler` into `shed` or `driver`.** Rejected: it would hide which agent carries the load.
+- **Importing `internal/sheddriver` from `reportengine` for the settle records.** Rejected: it brings the driver's lock, verb and render imports into a told-geometry engine, and its reader opens a file where the engine reads git objects.
 
 ## Review rounds
 
