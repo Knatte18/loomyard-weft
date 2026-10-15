@@ -855,34 +855,6 @@
       "revised": "2026-10-15T07:48:17Z"
     },
     {
-      "id": 538,
-      "slug": "seed-ide-interactive-chain",
-      "title": "batten Seed-IDE writes the interactive VS Code chain into a driven pair, so opening it in VS Code starts a bare claude",
-      "kind": "task",
-      "labels": [
-        "bug",
-        "ide",
-        "batten"
-      ],
-      "issues": [
-        633
-      ],
-      "recipe": "darn",
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "Imported from [issue #633](https://github.com/Knatte18/loomyard/issues/633).\n\nSeen (2026-10-15): in the running pair shed-tackler, the reed shell window held a bare interactive claude (no prompt, no role) that no agent or operator started. Its bash and claude started at 09:41:39, the same second VS Code's extension host ran 'lyx reed up' and 'lyx reed attach' on the pair: the pair's .vscode/tasks.json, written by batten's Seed-IDE row, carries the folderOpen 'Start Claude' chain (reed up, reed add --if-absent --unless-name orch --cmd claude --name claude --focus, reed attach). Cause: ideengine.SeedTask calls writeInteractiveConfig, which writes vscode.TaskChainInteractive; vscode.TaskChainAttachOnly, documented as the driven pair's chain, has no caller. Expected: Seed-IDE writes the attach-only chain, so opening a driven pair in VS Code attaches to the run and adds no claude strand. Workaround: none applied; the stray claude sits idle in the pair's session.\n\n## Operator decision (2026-10-15)\n\nThe folderOpen task chain goes out of the VS Code seeding: it is no longer needed, since runs are watched in their own terminal window, and above all `reed add claude` must not run from inside VS Code.\nThere is one VS Code seeding, shared by every caller; no duplicated seeding code.\nChecked: `ideengine.Spawn` (`lyx ide spawn`) and `ideengine.SeedTask` (batten's Seed-IDE) already share `writeInteractiveConfig`, so the change lands in that one path; `vscode.TaskChainAttachOnly` has no caller.\n\nOperator view, not a decision: a shortcut in VS Code for `lyx a` (`lyx reed attach`) is welcome, run on demand rather than on folder open.",
-      "status": "done",
-      "created": "2026-10-15T07:49:52Z",
-      "revised": "2026-10-15T07:54:47Z",
-      "run_settings": {
-        "darn": {
-          "review_hard_max_bounces": 3,
-          "review_max_bounces": 2
-        }
-      }
-    },
-    {
       "id": 539,
       "slug": "viewer-off-shell",
       "title": "Run window stays on shell: follow the overview and newest agent from run start",
