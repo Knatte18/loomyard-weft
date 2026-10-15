@@ -7,7 +7,6 @@
 - `plan:internal/battencli#battenCLI.driverGoto` -> `func (c *battenCLI) driverGoto(ctx context.Context, target string) error`
 - `plan:internal/battencli#battenCLI.driverStep` -> `func (c *battenCLI) driverStep(ctx context.Context, attempt string) ([]byte, error)`
 - `plan:internal/battencli#childGotoArgv` -> `func childGotoArgv(target string) []string`
-- `plan:internal/battencli#TestBattenAutomaticMoves_LabelShed` -> `func TestBattenAutomaticMoves_LabelShed(t *testing.T)`
 
 **Edit:**
 - `internal/shedverbs#Spec`
@@ -33,8 +32,8 @@
 - `internal/battencli#battenCLI.driverDepsFor`
 - `internal/battencli#childGoto`
 - `internal/battencli#TestSpecFor_FillsRunIdentityForSlug`
+- `internal/battencli#TestBattenDriverDeps`
 - `contracts/specs/refusal-spec.md`
-- `cmd/lyx/testdata/test-budget.yaml`
 
 **Intent:**
 Fill the caller label card 5 records: the goto verb and the step verb that resumes a halted run pass it down, classified in the CLI layer from the strand variable through `agentname.CallerLabel` (card 4), and the Go driver and batten's automatic goto pass `shedengine.CallerShed`.
@@ -71,8 +70,8 @@ Tests:
 `TestStepCmd_SuccessEnvelopeCarriesIdentityAndProgress` gains a subtest seeding the status blocked with `spec.Caller` `orch`, asserting the appended entry's `By` is `orch` and `PendingBy` empty, and one with an empty `spec.Caller` asserting no `by`.
 `TestStepCmd_BusyTreatment` seeds the status blocked with `spec.Caller` `orch` and asserts `PendingBy` stays empty after the busy refusal.
 `TestGoDriverSeams_LabelShed` in `internal/loomcli/drivewiring_test.go` builds a `loomCLI` over a temp status file seeded blocked: `driverGoto` writes a goto entry with `By` `shed`, and `driverStep`, over a spec whose `Loop.Spawn` seam records the call and returns an error so no loop runs, leaves `PendingBy` `shed`.
-`TestBattenAutomaticMoves_LabelShed` in `internal/battencli/publishretry_test.go` asserts `childGotoArgv("Merge-In")` is `loom goto --to Merge-In --by shed`, and the same `driverGoto` and `driverStep` assertions over a `battenCLI`.
-`cmd/lyx/testdata/test-budget.yaml` raises `internal/battencli` to 84; `internal/loomcli` stays within its row and `internal/shedverbs` gains no top-level test.
+`TestBattenDriverDeps` in `internal/battencli/driverdeps_test.go` gains the assertions that `childGotoArgv("Merge-In")` is `loom goto --to Merge-In --by shed`, and that the `deps.Goto` and `deps.Step` seams `driverDepsFor` returns, over the receiver's status seeded blocked with `untilStop` nil, write a goto entry with `By` `shed` and leave `PendingBy` `shed`.
+`internal/battencli` keeps its row of 83 and `internal/loomcli` stays within its row, so the budget file is not touched; `internal/shedverbs` gains no top-level test.
 `internal/shedverbs/doc.go` says the goto and step bodies record `Spec.Caller`, `RunGoto` and `RunUntilStop` take the label explicitly, and `--by` admits `shed` alone.
 
 **ImpactSummary:** RunGoto and RunUntilStop each gain one parameter, their callers moving into the four new driver methods and the verb bodies on this card; Spec gains one field filled from the two arming modules' armAt; the only new refusal is the hidden flag's.
