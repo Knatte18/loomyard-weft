@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-15 17:10 UTC; every age below is as of then.
+Rendered 2026-10-15 17:11 UTC; every age below is as of then.
 
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
@@ -17,7 +17,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | **Every role spec carries its resolved engine**<br>• Role specs take engine, model and effort from the model alias through one shared ModelChoice; Claude-only roles declare their needs | [`engine-model-choice`](design-engine-model-choice.md) | loom | Merge-Bouncer | 6h | 6h | shuttle, loom, webster, burler, shed |
+| 1 | **Every role spec carries its resolved engine**<br>• Role specs take engine, model and effort from the model alias through one shared ModelChoice; Claude-only roles declare their needs | [`engine-model-choice`](design-engine-model-choice.md) | loom | Merge-Burler-Review | 6h | 6h | shuttle, loom, webster, burler, shed |
 | 2 | **Usage and cost read through the engine**<br>• tokencount reads each run through its engine, with prices per engine, instead of reading Claude transcripts directly | [`engine-usage-readers`](design-engine-usage-readers.md) | loom | Plan-Burler-Review | 6h | 6h | shuttle, claude |
 
 ### Ready
@@ -55,8 +55,8 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | --- | --- | --- | --- | --- | --- |
 | 1 | **Webster fork deviations list mixes in its own target files**<br>• The implementer stencil asks a fork to compare its edits against the glyph union and also tells it not to, so deviations lists files that house its own target glyphs | [`webster-deviations-list`](design-webster-deviations-list.md) | 5h | 5h | webster, stencil |
 | 2 | **Card can require a board-entry edit that the running task's own board lock refuses** | [`card-own-entry-edit`](design-card-own-entry-edit.md) | 2h | 2h | loom, stencil, board |
-| 3 | **creel: a hand-added claude strand is never read idle, so nothing is delivered (llm smoke test fails)** | [`creel-hand-added-claude-idle`](design-creel-hand-added-claude-idle.md) | 35m | 35m | creel, shuttle, reed, claude |
-| 4 | **creel: no delivery into a collapsed (too short) strand pane, and no reason surfaced** | [`creel-collapsed-pane-delivery`](design-creel-collapsed-pane-delivery.md) | 35m | 35m | creel, reed, shuttle |
+| 3 | **creel: a hand-added claude strand is never read idle, so nothing is delivered (llm smoke test fails)** | [`creel-hand-added-claude-idle`](design-creel-hand-added-claude-idle.md) | 36m | 36m | creel, shuttle, reed, claude |
+| 4 | **creel: no delivery into a collapsed (too short) strand pane, and no reason surfaced** | [`creel-collapsed-pane-delivery`](design-creel-collapsed-pane-delivery.md) | 36m | 35m | creel, reed, shuttle |
 | 5 | **creel: inject --interrupt stalls behind the prompt Claude restores into the input box** | [`creel-interrupt-restored-prompt`](design-creel-interrupt-restored-prompt.md) | 35m | 35m | creel, shuttle, claude |
 | 6 | **creel: read marks mail read even when writing it out failed** | [`creel-read-ack-on-write-error`](design-creel-read-ack-on-write-error.md) | 35m | 35m | creel |
 | 7 | **creel: a daemon that fails to start leaves verbs with only 'no daemon answers'** | [`creel-daemon-start-error`](design-creel-daemon-start-error.md) | 35m | 35m | creel |
