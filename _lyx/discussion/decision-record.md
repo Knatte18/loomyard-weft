@@ -127,6 +127,12 @@ Rationale: one place for the code list keeps the decision record lean and avoids
   - d1-plan-host-relaunch-value (class design, severity MEDIUM, open in rounds 2)
 <!-- /lyx:carry-over Discussion-Review -->
 
+<!-- lyx:carry-over Plan-Review -->
+- Plan-Review, round 1: converged; each finding below was fixed or disputed by the round's fixer, and no fresh reviewer has seen the result; the fixer report says which.
+  Review: _lyx/reviews/plan/round-1-review.md; fixer report: _lyx/reviews/plan/round-1-fixer-report.md.
+  - relevant-path-wire-assignment-untested (class scope, severity MEDIUM, open in rounds 1)
+<!-- /lyx:carry-over Plan-Review -->
+
 ## Acceptance criteria
 
 - A loom Discussion-Write lead seat lists `relevant.md` among its outputs.
