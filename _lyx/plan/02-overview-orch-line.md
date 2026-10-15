@@ -1,18 +1,18 @@
 # Card 2 — Orch line in the batten overview
 
 **Create:**
-- `plan:internal/battencli#overviewOrchBroken` -> `const overviewOrchBroken = "orch  state unreadable"`
-- `plan:internal/battencli#overviewWatcherDown` -> `const overviewWatcherDown = "watcher down"`
-- `plan:internal/battencli#orchStatePoll` -> `type orchStatePoll struct`
-- `plan:internal/battencli#orchStateCache` -> `type orchStateCache struct`
-- `plan:internal/battencli#orchStateCache.Poll` -> `func (c *orchStateCache) Poll(paths orchengine.Paths) orchStatePoll`
-- `plan:internal/battencli#orchStateCache.fail` -> `func (c *orchStateCache) fail(modTime time.Time, known bool, err error) orchStatePoll`
-- `plan:internal/battencli#overviewThresholds` -> `type overviewThresholds struct`
-- `plan:internal/battencli#loadOverviewThresholds` -> `func loadOverviewThresholds(location *lyxcwd.Location) overviewThresholds`
-- `plan:internal/battencli#overviewOrchLine` -> `func overviewOrchLine(orch orchStatePoll, thresholds overviewThresholds) (string, bool)`
-- `plan:internal/battencli#overviewTokens` -> `func overviewTokens(n int) string`
-- `plan:internal/battencli#TestOverviewSource_DrawsTheOrchLine` -> `func TestOverviewSource_DrawsTheOrchLine(t *testing.T)`
-- `plan:internal/battencli#TestLoadOverviewThresholds` -> `func TestLoadOverviewThresholds(t *testing.T)`
+- `internal/battencli#overviewOrchBroken`
+- `internal/battencli#overviewWatcherDown`
+- `internal/battencli#orchStatePoll`
+- `internal/battencli#orchStateCache`
+- `internal/battencli#orchStateCache.Poll`
+- `internal/battencli#orchStateCache.fail`
+- `internal/battencli#overviewThresholds`
+- `internal/battencli#loadOverviewThresholds`
+- `internal/battencli#overviewOrchLine`
+- `internal/battencli#overviewTokens`
+- `internal/battencli#TestOverviewSource_DrawsTheOrchLine`
+- `internal/battencli#TestLoadOverviewThresholds`
 
 **Edit:**
 - `internal/battencli#renderOverview` -> `func renderOverview(orch orchStatePoll, thresholds overviewThresholds, runs []overviewRun, now time.Time) []string`
@@ -27,7 +27,7 @@
 - `cmd/lyx/testdata/test-budget.yaml`
 
 **Uses:**
-- `plan:internal/orchengine#PeekState`
+- `internal/orchengine#PeekState`
 - `internal/orchengine#LoadConfig`
 - `internal/orchengine#Config.Threshold`
 - `internal/orchengine#Config.SoftThreshold`

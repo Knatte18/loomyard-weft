@@ -1,8 +1,8 @@
 # Card 1 — Lockless orch state reader
 
 **Create:**
-- `plan:internal/orchengine#PeekState` -> `func PeekState(p Paths) (State, bool, error)`
-- `plan:internal/orchengine#TestPeekState` -> `func TestPeekState(t *testing.T)`
+- `internal/orchengine#PeekState`
+- `internal/orchengine#TestPeekState`
 
 **Edit:**
 - `cmd/lyx/testdata/test-budget.yaml`

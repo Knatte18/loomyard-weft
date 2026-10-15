@@ -1,10 +1,10 @@
 {
   "runGuid": "a3bffb57e97eac2b0ef2dbf6f6de0ba2",
-  "planFingerprint": "be65fffa3b46dac642bf2783a5e3f52b927997d04f82b00978127c013440905c",
+  "planFingerprint": "5e39137b6b5ed028646cd863721a4b9e0d401d62d026bcee9c4ce3b88224b587",
   "planFileHashes": {
     "00-overview.md": "7256cd4507eac768f268fc7ae49dd116b3d45e9ae24d42e804e8b21ccaca6061",
-    "01-orch-state-peek.md": "3b55d644995d656e24df2e95fee6fa6bdcf2775af42af75925607e0fae4beb44",
-    "02-overview-orch-line.md": "fda0bb8f0da7347e5575fc4f6000730d8299962c0369af11737eb6b1f28dcbbe"
+    "01-orch-state-peek.md": "44f5958b533a71942ea9e920ee04c0c9db0ba790f01e0f32ceb0bc5bc1ab1170",
+    "02-overview-orch-line.md": "13b6f3428130ab2965d33bf1354a6e6d1b355d4ca872cab13b3b3546f4732ddc"
   },
   "planOverviewFrameHash": "9a670587200f0cbab241c00fc33f010aa04585b863280d5f66b7c3ff04a01a05",
   "partition": [
@@ -66,7 +66,7 @@
       }
     }
   ],
-  "currentBatch": 1,
+  "currentBatch": 0,
   "masterStrand": "4b259718ca8d3c1cdb511cbfa9be6436",
   "masterSessionId": "ceb073db-c725-47f8-b466-5e1b19811aec",
   "batches": {
@@ -77,15 +77,37 @@
         "02-overview-orch-line"
       ],
       "cardHashes": {
-        "01-orch-state-peek": "3b55d644995d656e24df2e95fee6fa6bdcf2775af42af75925607e0fae4beb44",
-        "02-overview-orch-line": "fda0bb8f0da7347e5575fc4f6000730d8299962c0369af11737eb6b1f28dcbbe"
+        "01-orch-state-peek": "44f5958b533a71942ea9e920ee04c0c9db0ba790f01e0f32ceb0bc5bc1ab1170",
+        "02-overview-orch-line": "13b6f3428130ab2965d33bf1354a6e6d1b355d4ca872cab13b3b3546f4732ddc"
       },
       "startSha": "b1d1638ad89988a82e4db9a55cc8e78acef511f5",
       "kind": "fork",
       "spawnedAt": "2026-10-15T09:59:16Z",
       "sessionId": "ceb073db-c725-47f8-b466-5e1b19811aec",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "01-orch-state-peek",
+        "status": "done",
+        "head_sha": "0e1a4465dfb254e5c693e89855dbeb60619db189",
+        "deviations": [
+          "internal/battencli/overview_test.go",
+          "internal/battencli/overvieworch.go",
+          "internal/orchengine/state_test.go"
+        ]
+      },
+      "cardShas": [
+        "0e1a4465dfb254e5c693e89855dbeb60619db189"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-orch-context-overview/ceb073db-c725-47f8-b466-5e1b19811aec/subagents/agent-a9a567a274e485f5c.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-orch-context-overview/ceb073db-c725-47f8-b466-5e1b19811aec/subagents/agent-a9a567a274e485f5c.jsonl"
+      ]
     }
-  }
+  },
+  "seenForkTranscripts": [
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-orch-context-overview/ceb073db-c725-47f8-b466-5e1b19811aec/subagents/agent-a9a567a274e485f5c.jsonl"
+  ]
 }
