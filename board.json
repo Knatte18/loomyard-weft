@@ -958,9 +958,9 @@
       ],
       "isolated": false,
       "brief": "The orch watcher and batten notices and injects go through creel; the watcher keeps only its cycle logic",
-      "body": "## Goal\n\nCreel stage 2: system notices go through creel.\nThe design is in `creel-core`'s body until that task lands, then in the creel package's `doc.go`.\n\n## Operator decision (2026-10-15)\n\nCreel is a prerequisite for Codex and is built in its three stages (operator, 2026-10-06).\n\n## Scope (stage 2 of the creel design)\n\nThe orch watcher's and batten's notices and the watcher's injects go through creel, and the watcher's notice queue and idle probe go.\nThe watcher keeps only its cycle logic (tracking tokens, choosing `refresh`/`distill`/automatic cycles, waiting for the note, sequencing the reload, its state and lifecycle), and advances a cycle phase only on the orch's reply to the note request, or once creel confirms a command inject was typed.\nThe note request is mail, answered by post (`written \u003cpath\u003e` or `defer`).\n",
+      "body": "## Goal\n\nCreel stage 2: system notices go through creel.\nThe design is in `creel-core`'s body until that task lands, then in the creel package's `doc.go`.\n\n## Operator decision (2026-10-15)\n\nCreel is a prerequisite for Codex and is built in its three stages (operator, 2026-10-06).\n\n## Scope (stage 2 of the creel design)\n\nThe orch watcher's and batten's notices and the watcher's injects go through creel, and the watcher's notice queue and idle probe go.\nThe watcher keeps only its cycle logic (tracking tokens, choosing `refresh`/`distill`/automatic cycles, waiting for the note, sequencing the reload, its state and lifecycle), and advances a cycle phase only on the orch's reply to the note request, or once creel confirms a command inject was typed.\nThe note request is mail, answered by post (`written \u003cpath\u003e` or `defer`).\n\n## Operator decision (2026-10-15): no auto-start\n\nThis stage replaces paths that work today, so it starts only on the operator's word once `creel-core` has landed and creel has proven itself, never on a newly-ready auto-start.\n",
       "created": "2026-10-15T10:16:44Z",
-      "revised": "2026-10-15T10:21:27Z"
+      "revised": "2026-10-15T11:34:21Z"
     },
     {
       "id": 553,
