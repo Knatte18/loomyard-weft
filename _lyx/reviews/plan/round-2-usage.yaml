@@ -17,3 +17,12 @@ fix:
     model: opus
     effort: medium
     tokens_known: false
+judge:
+    - model: sonnet
+      effort: medium
+      start: 2026-10-15T14:49:48Z
+      end: 2026-10-15T16:50:06.868265324+02:00
+      wall_seconds: 18.868265324
+      tokens_known: true
+      fresh_tokens: 31765
+      cache_read_tokens: 158362
