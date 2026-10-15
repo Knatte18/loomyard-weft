@@ -1,12 +1,12 @@
 {
   "current_producer": "Land",
-  "state": "running",
-  "error": "",
+  "state": "blocked",
+  "error": "deploy failed: exit code 1; log: /home/knatte/Code/loomyard-LYXHUB/loomyard/.lyx/shed/discussion-relevant-list/Land-deploy.log; way forward: fix the cause, then run \"lyx batten run discussion-relevant-list\" from the prime",
   "pause_requested": false,
   "activity": {
     "now": "Land",
-    "last": "Run-Shed → done",
-    "wait": ""
+    "last": "Land → stuck",
+    "wait": "deploy failed: exit code 1; log: /home/knatte/Code/loomyard-LYXHUB/loomyard/.lyx/shed/discussion-relevant-list/Land-deploy.log; way forward: fix the cause, then run \"lyx batten run discussion-relevant-list\" from the prime"
   },
   "history": [
     {
@@ -52,6 +52,12 @@
       "outcome": "done",
       "output": "",
       "at": "2026-10-15T16:13:06Z"
+    },
+    {
+      "producer": "Land",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-15T16:13:09Z"
     }
   ]
 }
