@@ -55,7 +55,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | --- | --- | --- | --- | --- | --- |
 | 1 | **Webster fork deviations list mixes in its own target files**<br>• The implementer stencil asks a fork to compare its edits against the glyph union and also tells it not to, so deviations lists files that house its own target glyphs | [`webster-deviations-list`](design-webster-deviations-list.md) | 4h | 4h | webster, stencil |
 | 2 | **Card can require a board-entry edit that the running task's own board lock refuses** | [`card-own-entry-edit`](design-card-own-entry-edit.md) | 1h | 1h | loom, stencil, board |
-| 3 | **creel: a hand-added claude strand is never read idle, so nothing is delivered (llm smoke test fails)** | [`creel-hand-added-claude-idle`](design-creel-hand-added-claude-idle.md) | 0m | 0m |  |
+| 3 | **creel: a hand-added claude strand is never read idle, so nothing is delivered (llm smoke test fails)** | [`creel-hand-added-claude-idle`](design-creel-hand-added-claude-idle.md) | 0m | 0m | creel, shuttle, reed, claude |
 
 #### Low priority
 

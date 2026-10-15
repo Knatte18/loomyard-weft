@@ -1,6 +1,6 @@
 # creel: a hand-added claude strand is never read idle, so nothing is delivered (llm smoke test fails)
 
-`creel-hand-added-claude-idle` · Note · bug
+`creel-hand-added-claude-idle` · Note · bug, creel, shuttle, reed, claude
 
 Imported from [issue #657](https://github.com/Knatte18/loomyard/issues/657).
 

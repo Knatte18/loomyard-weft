@@ -891,7 +891,11 @@
       "title": "creel: a hand-added claude strand is never read idle, so nothing is delivered (llm smoke test fails)",
       "kind": "note",
       "labels": [
-        "bug"
+        "bug",
+        "creel",
+        "shuttle",
+        "reed",
+        "claude"
       ],
       "issues": [
         657
@@ -901,7 +905,7 @@
       "brief": "",
       "body": "Imported from [issue #657](https://github.com/Knatte18/loomyard/issues/657).\n\nFound by the creel stage 1 audit (board note `creel-test`), in a sandbox hub, with `lyx` built from `main` at e131c7625.\n\n## What was seen\n\nA strand added by hand with `lyx reed add --cmd claude` is never read idle, so creel never types a reminder or an inject into it.\nA fresh Claude Code session shows its greyed placeholder in the empty input box, for example `❯ Try \"edit \u003cfilepath\u003e to...\"`.\nA pane capture carries no styling, so `claudeengine.IdleSession` reads that placeholder as a draft and answers not idle.\nShuttle-launched sessions avoid this because every shuttle settings file sets `promptSuggestionEnabled: false` (`internal/shuttleengine/claudeengine/settings.go`); a hand-added strand gets no such settings.\n\nThe llm-tier smoke test fails the same way: `lyx gate test --tags llm ./internal/creelcli` runs `TestSmokeCreelClaudeStrand`, which fails twice in a row with `smoke_llm_test.go:51: the adapter never read the booted session idle`.\nThe test adds the strand with the bare claude path, as the commit's \"hand-added strand is reachable\" claim intends.\n\n## Steps\n\n1. In a sandbox hub: `lyx reed add --role alice --cmd claude` (here `claude --model haiku`), accept the folder-trust prompt.\n2. `lyx creel post ctest:alice \"please say READ\"`.\n3. Watch the pane for minutes: no `[creel]` line is ever typed; `lyx creel log` shows `posted` and nothing else.\n4. Control: the same strand launched as `claude --settings '{\"promptSuggestionEnabled\":false}'` shows an empty box and gets the reminder within a second.\n\n## Expected\n\nA strand added by hand with `--cmd claude` is reachable by creel, as `internal/creelengine/doc.go` and the commit message say, and `TestSmokeCreelClaudeStrand` passes.\nEither creel/shuttle reads a placeholder-only box as empty, or `lyx reed add` (or the docs) makes hand-added Claude strands start with prompt suggestions off.\n",
       "created": "2026-10-15T16:35:07Z",
-      "revised": "2026-10-15T16:35:07Z"
+      "revised": "2026-10-15T16:35:10Z"
     }
   ]
 }
