@@ -1,7 +1,7 @@
 # Card 1 — settings-golden
 
 **Create:**
-- `plan:internal/shuttleengine/claudeengine#TestBuildSettings_MatchesGolden` -> `func TestBuildSettings_MatchesGolden(t *testing.T)`
+- `internal/shuttleengine/claudeengine#TestBuildSettings_MatchesGolden`
 - `internal/shuttleengine/claudeengine/testdata/settings-golden.json`
 
 **Edit:**

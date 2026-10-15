@@ -28,7 +28,7 @@
 - `internal/shuttleengine/claudeengine#TestBuildSettings_DenyToggleMatrix`
 - `internal/shuttleengine/claudeengine#TestBuildDenyNotice_MatchesInstalledDenies`
 - `internal/shuttleengine/claudeengine#TestPrepare_AppendSystemPromptMatchesDenyNotice`
-- `plan:internal/shuttleengine/claudeengine#TestBuildSettings_MatchesGolden`
+- `internal/shuttleengine/claudeengine#TestBuildSettings_MatchesGolden`
 - `internal/shuttleengine/claudeengine/doc.go`
 - `internal/testkit/envkit#nilLegal`
 - `internal/loomcli#providerlessShuttleConfig`

@@ -39,7 +39,7 @@
 - `internal/shuttleengine/claudeengine#TestBuildSettings_AgentAndBashHooks`
 - `internal/shuttleengine/claudeengine#TestBuildDenyNotice_MatchesInstalledDenies`
 - `internal/shuttleengine/claudeengine#TestBuildDenyNotice_SentenceContent`
-- `plan:internal/shuttleengine/claudeengine#TestBuildSettings_MatchesGolden`
+- `internal/shuttleengine/claudeengine#TestBuildSettings_MatchesGolden`
 - `internal/shuttleengine/claudeengine#recordingHookCommands`
 - `internal/shuttleengine/claudeengine#TestEnvFile_DefaultStdinIsDevNull`
 - `internal/shuttleengine/claudeengine#TestComposeSend`
