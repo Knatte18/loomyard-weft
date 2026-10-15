@@ -55,16 +55,17 @@ Bound: the degrade lets through only an absent hub file or an absent board, and 
 
 ### D4: Each code role appends the list after its own, skipping repeats
 
-Decision: Whatever constructs a code role's engine loads the `language` module once at construction, for that run invocation, and tells the engine the list.
-For the merge conflict session that constructor is `landingshed`, at both Merge-In and Finalize, so `landingshed`'s deps carry the list from its wiring.
+Decision: The wiring that builds a code role's engine or its deps loads the `language` module once per process and tells the engine the list.
+The merge conflict session's engine is built inside `landingshed` at both Merge-In and Finalize, so `landingshed` loads no config;
+`internal/loomcli`'s `wire()` loads the module beside `landing.yaml`, and the list reaches `landingshed.Deps` and then `mergeresolve.Deps` as a told value, with `landingDeps` staying free of I/O.
 The engine sets the spawn spec's `Skills` to its own list followed by every language skill not already present, in config order, so a skill repeated in the config or already in the role's list appears once, at its first position.
 The code roles are the darn writer (`darnSkills`), the Webster master and recovery strand (`roleSkills`), the merge conflict session (`conflictSkills`) and the Burler seats of a code round (D5).
 The role lists stay package variables.
-An edit to `language.yaml` takes effect at the next run invocation, never inside a running one.
+Every process that builds a code role's spawn loads the list itself, including `lyx webster recover-batch`, which spawns the recovery strand in its own process; an edit to `language.yaml` reaches the next spawn built by a process started after it, so a recovery strand can load a newer list than its master.
 
 Rationale: Every code role here writes or reviews both production code and its tests, so each gets the whole list.
 Webster's Agent-tool forks inherit the master's loaded skills, so they need no list of their own.
-Loading once per construction gives the master, the recovery strand and every Burler round of one invocation the same list.
+Loading once per process gives every spawn that process builds the same list.
 Naming skills on the launch spec is the route `PATTERN-role-skills-typed` requires.
 
 ### D5: A Burler profile key marks a code round
@@ -90,6 +91,10 @@ Code does not filter any skill name.
 
 Rationale: `scribe:golang-build` tells an agent to run `go test ./...` and similar commands, which this hub's agents must run through `lyx gate test`, and a verify gate already runs the hub's build.
 Which skills to list is the operator's call per hub, so the template guides it and the code stays language-neutral.
+Bound: the agents' session deny (`rawGoCommandPattern` in `internal/shuttleengine/claudeengine/settings.go`) refuses a `go test`, `go build` or `go vet` whose arguments hold a word containing `...` or the word `all`, a `go test` whose `-tags` value names `tmux` or `llm`, and any command naming the gate-slot, strand-name or prebuilt-binary environment variable.
+It is a guardrail on static text, so a run behind a script or `bash -c` passes too.
+Every other command a build skill names, such as `goimports -w`, `golangci-lint run`, `go install …@latest`, a `go test` of one package such as `./internal/x`, and every `dotnet build` or `dotnet test`, runs unrefused and outside the gate slots.
+What bounds the hatch is the template comment and the operator's per-hub choice; the verify gate still runs the hub's own build, so no gate is skipped.
 
 ## Constraints
 
@@ -98,7 +103,6 @@ Which skills to list is the operator's call per hub, so the template guides it a
 - `PATTERN-config-strictness`: the new loader is a degrading caller, recorded in its background file.
 - `PATTERN-role-skills-typed`: skills reach a session only through the spawn spec's `Skills`; no stencil asks for a language skill.
 - `PATTERN-refusal-way-forward`: D3's load failure names its way forward.
-- `PATTERN-sandbox-coverage` binds lyx CLI modules; this task adds a config module and no CLI module.
 - `PATTERN-test-economy` and `PATTERN-test-speed`: extend the existing skill-list and config-registry tests where they exist, at unit tier.
 - The module order in `configreg.Modules()` is alphabetical.
 
@@ -113,8 +117,8 @@ Which skills to list is the operator's call per hub, so the template guides it a
 
 - Until the operator sets this hub's value, code roles load no language skill, as today.
   The hub-wide reconcile after deploy seeds `language.yaml` from the template; then run `lyx config language --set 'skills=[scribe:golang-comments, scribe:golang-testing]'` in the prime.
-- An operator who lists a build skill in a hub that builds through `lyx gate` sends agents toward commands the session settings refuse; D7's template comment is the only guard.
-- Each listed skill adds to every code role's context on every spawn, and a misspelled one costs every code spawn a second, typed load turn before shuttle skips it.
+- An operator who lists a build skill in a hub that builds through `lyx gate` sends agents to run that skill's commands, which D7's Bound lists as unrefused where they are not module-wide or tier runs, outside the gate slots; D7's template comment is the only thing that steers the operator away from listing one.
+- Each listed skill adds to every code role's context on every spawn, and a misspelled one is skipped at once with a logged warning, so its rules never reach the role and nothing else signals it.
 - `burler-fixer-fork` plans to fork the fixer from the reviewer, which would inherit the reviewer's language skills; that design decides whether the fix rows keep `language-skills`.
 
 ## Acceptance criteria
@@ -127,13 +131,14 @@ Which skills to list is the operator's call per hub, so the template guides it a
 - A skill repeated in the config, or already in a role's own list, appears once, at its first position.
 - A `BurlerReview` or `BurlerFix` row with `language-skills: true` spawns every seat of its half with `burlerSkills` followed by the language list; a row without the key spawns `burlerSkills` alone.
 - A non-boolean `language-skills` value on a recipe row or a `lyx burler run` profile fails construction naming the key.
-- The Webster, Merge and Darn review rows and their fix rows carry `language-skills: true`; the Discussion and Plan review rows do not.
+- The Webster, Merge and Darn review rows and their fix rows carry `language-skills: true`; the Discussion and Plan review rows and their fix rows do not.
 - Roles outside D4 keep their skill lists unchanged.
 
 ## Notes for the plan writer
 
 - Role lists: `darnSkills` in `internal/darnengine/spec.go`, `roleSkills` in `internal/websterengine/roles.go`, `conflictSkills` in `internal/mergeresolve/spec.go`, `burlerSkills` in `internal/burlerengine/engine.go`.
 - `mergeresolve.New` is called from `internal/landingshed/mergein.go` and `internal/landingshed/finalize.go`.
+- `landingDeps` in `internal/loomcli/landingdeps.go` is called from `arm.go` and `sharedbootstrap.go`; both pass the list.
 - Burler profile mapping lives in `internal/shedrecipe/entries_burler.go` (`burlerRoundProfile`, `burlerFixProfile`, with `configRejectUnknown`) and `internal/burlercli/run.go`.
 - `TestModules_SeedOnlyAndHubWideFlags` in `internal/configreg/configreg_test.go` pins the set of hub-wide modules.
 - No D4 role resumes a session, so no resume path needs the list.
