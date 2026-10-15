@@ -1033,6 +1033,25 @@
       "body": "## Seen\n\nOn 2026-10-15 the operator found that the Webster master template has told the master to read the codebase up front since at least July, which was never the design (task `webster-master-no-code`).\nIf one stencil carried a wrong design assumption this long, others may too.\n\n## Idea\n\nAn orch agent (Opus) reads every stencil under `contracts/stencils/` and lists, per stencil, each sentence that states a design assumption: what the role reads and when, what it inherits from a parent or master, what it may assume is stable during the run, who it reports to, and what it must not do.\nEach entry carries the file and line and a one-line plain restatement.\nThe agent flags the entries that look doubtful (state assumed stable while other agents edit it, inherited context, duplicated or conflicting rules across stencils) but decides nothing.\nThe orch shows the operator the list in short batches to confirm or reject; each rejected assumption becomes a note.\nThe findings go under `docs/research/` through a fresh agent.",
       "created": "2026-10-15T11:56:41Z",
       "revised": "2026-10-15T11:59:55Z"
+    },
+    {
+      "id": 559,
+      "slug": "sibling-overlap-check",
+      "title": "Check overlap between tasks that wait on the same entry",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "board",
+        "batten",
+        "orch"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "Four tasks waited on kickstart-per-card and would have auto-started together although three edit the same stencils; nothing checks overlap among siblings",
+      "body": "## Seen\n\nOn 2026-10-15, four tasks had `depends_on` `kickstart-per-card`: `webster-master-no-code`, `plan-test-file-path`, `lighter-test-rules` and `engine-registry`.\nThe newly-ready auto-start would have started all four together, though the first three edit the same Webster, plan and stencil files and their tests.\nThe operator noticed just before the landing; the orch then chained the three.\nThe orch checks a new task against the running ones only, never against other tasks waiting on the same entry, and each task got its `depends_on` at a different time.\n\n## Idea\n\nCatch it when it is cheap, in two places:\n- `lyx board set-deps` and `upsert` warn when the new `depends_on` makes a task a sibling of another task with a shared module label (and later the paths of note `labels-from-diff`).\n- Batten newly-ready start: when a landing makes several tasks ready at once, start one per overlapping group and leave the rest for the orch, naming the overlap in the notice.\nThe orch role also gains the rule to check siblings whenever it sets `depends_on`.",
+      "created": "2026-10-15T12:08:25Z",
+      "revised": "2026-10-15T12:08:25Z"
     }
   ]
 }
