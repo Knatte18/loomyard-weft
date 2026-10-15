@@ -1,6 +1,6 @@
 # Webster fork prompt: switch between the pack-file layout and the inline layout
 
-`webster-pack-layout-switch` · Task · enhancement, webster, stencil · running · Webster
+`webster-pack-layout-switch` · Task · enhancement, webster, stencil · running · Webster-Bouncer
 
 ## Seen
 
