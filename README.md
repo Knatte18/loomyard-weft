@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-15 08:06 UTC; every age below is as of then.
+Rendered 2026-10-15 08:07 UTC; every age below is as of then.
 
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
@@ -18,7 +18,7 @@ Held by a run; its scope is locked until the run ends.
 | # | Task | Slug | Recipe | At | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | 1 | **Go driver and tackler in shed, for every FSM-driven run**<br>• Move the Go driver and tackler from loomcli into shed so darn, batten and every recipe get them; module config overrides model and budgets | [`shed-tackler`](design-shed-tackler.md) | loom | Webster-Bouncer | 14h | 13h | shed, loom, batten |
-| 2 | **batten Seed-IDE writes the interactive VS Code chain into a driven pair, so opening it in VS Code starts a bare claude** | [`seed-ide-interactive-chain`](design-seed-ide-interactive-chain.md) | darn | PR-Align | 16m | 11m | ide, batten |
+| 2 | **batten Seed-IDE writes the interactive VS Code chain into a driven pair, so opening it in VS Code starts a bare claude** | [`seed-ide-interactive-chain`](design-seed-ide-interactive-chain.md) | darn | PR-Gate | 17m | 12m | ide, batten |
 
 ### Ready
 
