@@ -1005,6 +1005,24 @@
       "body": "Imported from [issue #662](https://github.com/Knatte18/loomyard/issues/662).\n\nFound by the creel stage 1 audit (board note `creel-test`), in a sandbox hub, with `lyx` built from `main` at e131c7625.\n\n## What was seen\n\nA new inject is charged TTL for time that passed before it was posted.\nIn `internal/creelengine/deliver.go`, `worker.probe` ages every queued inject of the receiver by `now - lastProbe`.\nWhen a worker already runs for the receiver (for example because it has unread mail) and a new inject wakes it, the new inject is charged the whole gap since the previous probe, up to the 8-second probe ceiling, or longer when the previous probe spent its time in a slow send.\n\nJournal evidence:\n\n- inject #34 posted 16:18:45.783, `aged` 16:18:45.813 with `consumed_s: 3` (30 ms after posting);\n- inject #905 posted 16:25:08.4, `aged` 16:25:31.7 with `consumed_s: 28` (23 s after posting);\n- inject #907 posted 16:26:25.6, `aged` 16:26:32.8 with `consumed_s: 9` (7 s after posting).\n\n## Steps\n\n1. Give a strand unread mail so its worker keeps probing on its backoff.\n2. `lyx creel inject --ttl 60s \u003cstrand\u003e \"x\"` while the strand is not idle.\n3. Read the journal: the first `aged` record for the inject counts more seconds than have passed since its `posted` record.\n\n## Expected\n\nAn inject's TTL counts only from its own posting (and only while the receiver is live and unpaused), so a short `--ttl` is not cut by up to several seconds.\n",
       "created": "2026-10-15T16:35:21Z",
       "revised": "2026-10-15T16:35:23Z"
+    },
+    {
+      "id": 571,
+      "slug": "creel-read-returned-mark",
+      "title": "creel: read does not show that a message was returned by a removed holder",
+      "kind": "note",
+      "labels": [
+        "bug"
+      ],
+      "issues": [
+        663
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Imported from [issue #663](https://github.com/Knatte18/loomyard/issues/663).\n\nFound by the creel stage 1 audit (board note `creel-test`), in a sandbox hub, with `lyx` built from `main` at e131c7625.\n\n## What was seen\n\nA message that the removed-holder sweep returned does not say so when it is read.\nThe design says each unread message of a gone holder goes one step back \"and is marked with the receiver that ended without reading it\" (`internal/creelengine/doc.go`, \"Removed holders\").\nThe fold sets `Message.EndedUnreadBy` and `EndedUnreadAt`, and the journal's `returned` record holds the receiver, but `messageFields` in `internal/creelcli/cli.go` never prints them.\nThe return also strips the last forwarder from `path`, so the read shows a bare message.\n\n## Steps\n\n1. `ctest:dave` posts \"sweep test\" to `ctest:carol`; carol forwards it to `ctest:stuck2`.\n2. `lyx reed remove \u003cstuck2 guid\u003e`; about a minute later the journal shows `{\"event\":\"returned\",\"id\":908,\"to\":\"ctest:carol\",\"receiver\":\"ctest:stuck2\"}`.\n3. carol runs `lyx creel read --from ctest:dave` and gets `{\"body\":\"sweep test\",\"from\":\"ctest:dave\",\"id\":908,\"kind\":\"mail\",\"posted\":...}`, with no word that it came back from stuck2.\n4. The same holds for a sender who gets their own message back (dave's #32 returned from a removed strand reads like a note to self).\n\n## Expected\n\n`read` prints the returned mark (for example `ended_unread_by` and its time), so the reader knows the message bounced and from whom.\n",
+      "created": "2026-10-15T16:35:24Z",
+      "revised": "2026-10-15T16:35:24Z"
     }
   ]
 }

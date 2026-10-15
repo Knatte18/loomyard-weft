@@ -61,12 +61,13 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 6 | **creel: read marks mail read even when writing it out failed** | [`creel-read-ack-on-write-error`](design-creel-read-ack-on-write-error.md) | 0m | 0m | creel |
 | 7 | **creel: a daemon that fails to start leaves verbs with only 'no daemon answers'** | [`creel-daemon-start-error`](design-creel-daemon-start-error.md) | 0m | 0m | creel |
 | 8 | **creel: a new inject is charged TTL from before it was posted** | [`creel-inject-ttl-before-post`](design-creel-inject-ttl-before-post.md) | 0m | 0m | creel |
+| 9 | **creel: read does not show that a message was returned by a removed holder** | [`creel-read-returned-mark`](design-creel-read-returned-mark.md) | 0m | 0m |  |
 
 #### Low priority
 
 | # | Note | Slug | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| 9 | **A hub pause leaves background forks and shells running, so hibernate never confirms**<br>• Pause interrupts turns but not background forks or shells; sessions read busy and hibernate confirmation fails | [`pause-background-work`](design-pause-background-work.md) | 20h | 10h | shuttle, webster |
+| 10 | **A hub pause leaves background forks and shells running, so hibernate never confirms**<br>• Pause interrupts turns but not background forks or shells; sessions read busy and hibernate confirmation fails | [`pause-background-work`](design-pause-background-work.md) | 20h | 10h | shuttle, webster |
 
 ### Enhancements
 
