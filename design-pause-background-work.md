@@ -15,3 +15,10 @@
 - A hub pause also stops, or lets finish and then holds, each session's background work: forks, background shells, Monitors; or confirmation treats a session whose only background work is a known-safe wait (the driver's loop) as idle.
 - What a paused fork should do (stop and be re-spawned on resume, or finish its batch and write its report) needs a design choice, since killing an implementer fork mid-batch leaves a half-done batch for Webster's recovery.
 - The orch's own turn should not withhold confirmation when the orch itself requested the hibernate and ends its turn.
+
+## Operator view (2026-10-15, not a decision)
+
+- Forks are not interrupted as a rule: Webster forks can live long (one ran 45 minutes on 2026-10-14), and cutting one off mid-batch is out of the question as a default.
+- But that 45-minute fork held 300k+ tokens of context: its batch was too long, and interrupting and restarting it with a fresh context might have been cheaper.
+  This points at a separate idea: a context bound on a Webster fork that ends it and restarts the rest of the batch fresh, which also gives a pause a clean place to stop.
+
