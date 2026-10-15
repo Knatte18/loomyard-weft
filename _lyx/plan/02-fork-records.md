@@ -41,11 +41,13 @@ Find fork transcripts, extract one record per fork, classify its arm from the pr
 - A fork is kept only when its first tool call (Skill and Agent calls excluded) is a Read of a Webster prompt file whose result holds `# Webster implementer job`, exactly as `extract-pf.jq` decides; anything else yields no record.
 - The marker table is one array at the head of the file, checked in order, one row per arm: `file` (prompt holds the `## Start here` heading), `raf` (inline `## Kick-start pack` plus the read-all-first phrase), `inline` (inline `## Kick-start pack` without it), `none` (no pack heading and no pack-file read); a fork matching no row is `unknown`.
   A new layout adds one row.
+  The comment above the marker table, and the script's header comment, state the rule: a task that adds a Webster pack layout adds its marker row here in the same task.
 - `cls`, `hit`, `segs`, `rtext` and the record fields are carried over unchanged, so numbers stay comparable with the kept audits: arm, run, session and agent id (from the path), start time, cards, pack opened, pack turn, pack before first edit, resolved and unresolved entries, spans and span files, the strict and file-level span reach before the first edit and in the first work turn, first-turn parallelism and its classes, calls before the first edit raw and net, exploration calls with their reads and greps, whole and partial reads, greps, member greps and quarry lookups total and before the first edit, turns, output tokens, fresh input tokens, cache reads, edits and writes and those to files with no span, and dropped lines.
   The `proj` field comes from the run name passed in, not from a hard-coded path prefix.
+  The card count is taken from the prompt's card lines under the plan directory the script passes with `--arg`, not from a spelled `_lyx/plan/` pattern.
 
 `report.jq` renders the report body from the slurped records; the script appends it to the header:
-- Samples table: per arm, forks, runs and cards; an arm of the marker table with no forks is left out of the table and named once in a sentence under it.
+- Samples table: per arm, forks, runs and cards; an arm among `file`, `raf`, `inline`, `none` and `unknown` with no forks is left out of the table and named once in a sentence under it; a `trace:<value>` arm exists only with forks.
 - Per-fork table, one row per fork with the D4 fields `perfork-pf.jq` printed plus arm, run, agent id and dropped lines.
 - Rows and arms sort by arm (marker-table order, then any other arm name alphabetically), then run, then start time, then agent id, so two runs over the same input differ only in the `Generated:` line.
 

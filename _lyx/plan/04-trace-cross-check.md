@@ -11,11 +11,14 @@
 - `tools/forkaudit/extract.jq`
 - `tools/forkaudit/report.jq`
 - `plan:tools/forkaudit#runForkaudit`
+- `plan:tools/forkaudit#TestForkauditReport`
 - `cmd/lyx/testdata/test-budget.yaml`
 
 **Uses:**
 - `internal/gitkit#Git`
 - `internal/gitkit#CommitFileOnBranch`
+- `internal/lyxdirs#LyxDirName`
+- `internal/lyxdirs#DotLyxDirName`
 - `docs/research/glyph-audit-2026-10-15/resolve-batches.sh`
 - `internal/websterengine/beginbatch.go`
 
@@ -24,6 +27,7 @@ Resolve each fork's batch from the records repo and cross-check its prompt arm a
 
 `forkaudit.sh`:
 - New flag `--records <dir>`, default the repo root's sibling named the repo root plus the records suffix from the variable block; its usage and header comment grow with it.
+  The report header names the resolved `--records` path on every run.
   Without `--pack-check` and `--plan` (cards 5 and 6) a missing records directory only disables the cross-check, and the header says `No cross-check: records repo <path> not found.`
 - Batch resolution, per fork whose worktree `<hub>/<run>` has a trace file under the logs directory of the variable block: for each second 1 to 6 seconds before the fork's first transcript line, `git -C <records> log <refs> -S<UTC second> --format=%H -- <state path>` over only that fork's run refs, given as `--glob` patterns — the local and `origin/` records branch (run name plus the records suffix) and the tags `archive/<run>/*` — then `git show <commit>:<state path>` and the batch whose `spawnedAt` equals that second, giving batch number, cards, `startSha` and the commit.
   A pickaxe hit whose state holds no batch with that `spawnedAt` resolves nothing for that second, and the loop goes on to the next.
@@ -43,6 +47,7 @@ Resolve each fork's batch from the records repo and cross-check its prompt arm a
 
 Tests:
 - `runForkaudit` appends `--records` naming a path under a fresh `t.TempDir()` that does not exist, unless the arguments already carry `--records`, so the rows of cards 1 and 2 never read the live records repo beside the worktree and stay host-independent.
+- `TestForkauditReport`'s run-twice row passes the same explicit `--records` path, one `filepath.Join(t.TempDir(), "absent-records")` computed once per row, on both runs, so the header's arguments line and records line match and the two reports stay identical once the `Generated:` line is removed.
 - `recordsRun` holds a run name, the ref kind its state is committed under (`local` branch, `origin` remote-tracking branch, or `archive` tag), its `batchFixture` values (batch number, cards, `startSha`, `spawnedAt`), an optional extra state key whose value is a UTC second, and plan card files (path under the plan dir to content), which card 6 commits and cards 4 and 5 leave nil.
 - `recordsRepo` builds a records git repo in `t.TempDir()` with `gitkit.Git`: an initial empty commit on `main`, then per run the branch created from it, the state file committed at the variable block's path with `gitkit.CommitFileOnBranch`, and for the `origin` kind the commit moved to `refs/remotes/origin/<run>` plus the records suffix and the local branch deleted, for the `archive` kind tagged `archive/<run>/final` and the branch deleted.
 - `TestForkauditTraceCrossCheck` is table-driven; each row places forks with `placeForks`, writes trace files under `<hub>/<run>/` and builds the records repo, then asserts the per-fork arm and cross-check cells and the samples section:
