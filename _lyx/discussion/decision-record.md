@@ -90,6 +90,12 @@ Rationale: the board entry asks for tokens against both thresholds plus phase an
 - A hub whose prime never ran `lyx orch start` has no state file and so no orch line; this is the intended empty state.
 - A watcher killed outright leaves a stale reading unmarked (D4).
 
+<!-- lyx:carry-over Webster-Review -->
+- Webster-Review, round 1: converged; each finding below was fixed or disputed by the round's fixer, and no fresh reviewer has seen the result; the fixer report says which.
+  Review: _lyx/reviews/webster/round-1-review.md; fixer report: _lyx/reviews/webster/round-1-fixer-report.md.
+  - testtiming-keep-directive-detached (class consistency, severity MEDIUM, open in rounds 1)
+<!-- /lyx:carry-over Webster-Review -->
+
 ## Acceptance criteria
 
 - With an orch state holding a known reading, the overview frame's first line shows the tokens, both thresholds, the phase and the cycle count, and the run lines follow as the parent renders them.
