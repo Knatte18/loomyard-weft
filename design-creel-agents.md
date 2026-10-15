@@ -25,3 +25,7 @@ Creel is a prerequisite for Codex; the Codex-readiness plan's interim `neutral-p
 ## Risk to check in Discussion
 
 The hold notice goes to the prime orch (`orchcli.NotifyPrime`), while the parent directive names `parent_name`, which may be a loom driver strand: check per recipe that a question reaches the session that answers it.
+
+## Operator decision (2026-10-15): no auto-start
+
+This stage replaces paths that work today, so it starts only on the operator's word once creel has proven itself, never on a newly-ready auto-start.
