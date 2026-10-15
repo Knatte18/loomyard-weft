@@ -1,11 +1,11 @@
 {
-  "current_producer": "Webster-Bouncer",
+  "current_producer": "Webster-Burler-Review",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Webster-Bouncer",
-    "last": "Webster → done",
+    "now": "Webster-Burler-Review",
+    "last": "Webster-Bouncer → bounced to Webster-Burler-Review",
     "wait": ""
   },
   "history": [
@@ -196,6 +196,13 @@
           "end": "2026-10-15T10:40:20.506985835Z"
         }
       ]
+    },
+    {
+      "producer": "Webster-Bouncer",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-15T10:40:57Z",
+      "routed_to": "Webster-Burler-Review"
     }
   ],
   "product": {
