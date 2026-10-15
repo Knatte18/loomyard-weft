@@ -3,10 +3,10 @@
 **Create:**
 - `internal/sheddriver/doc.go`
 - `internal/sheddriver/testmain_test.go`
-- `plan:internal/sheddriver#StopKey` -> `type StopKey struct`
-- `plan:internal/sheddriver#StopKeyOf` -> `func StopKeyOf(st shedengine.Status) StopKey`
-- `plan:internal/sheddriver#writeRecordJSON` -> `func writeRecordJSON(path string, v any) error`
-- `plan:internal/sheddriver#readRecordJSON` -> `func readRecordJSON(path string, v any) (found bool, err error)`
+- `internal/sheddriver#StopKey`
+- `internal/sheddriver#StopKeyOf`
+- `internal/sheddriver#writeRecordJSON`
+- `internal/sheddriver#readRecordJSON`
 
 **Move:**
 - `internal/loomengine/settle.go`

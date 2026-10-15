@@ -1,11 +1,11 @@
 {
   "runGuid": "65068fb4a0035d8a33ba8bd22558c241",
-  "planFingerprint": "7644a8b3ea72ba95acb38ac431ffb00b1c78e97b52b1d136537124c7e531870a",
+  "planFingerprint": "7d2a09822b6b3d3a82efbfe8b5d85398b7c8325760d2072068a53891c661153b",
   "planFileHashes": {
     "00-overview.md": "dad976c121536ad9d32c0e5d1936dc77ad3d5bd5eba0a6e134c0ae4c9cdbf2a2",
     "01-interrupt-policy-words.md": "f8d8e99ff723899bd9bf96fc78b12a69ba4b527def2f4c274fd0aaacf46fdd85",
-    "02-sheddriver-records.md": "f4cf0702342b663f97d2a6c0cb36bbe6d0990885d4dd9715f8a5e547b789aed5",
-    "03-settle-records-per-run.md": "bbcfcf421c64fb80223d115fc8395118485d964b4c32c7ad7cf6c86af84c14dc",
+    "02-sheddriver-records.md": "69b1926a7adff48d106fd3cc1b2df14a1126189384ead21067ec09b4e0a6904a",
+    "03-settle-records-per-run.md": "df64660d5ca77554784c3ca6247118c0263a95d752dc47783cedeab66d12ae05",
     "04-tackler-call-to-sheddriver.md": "885e77bfd94f68786f05915f36b6112a426a5dee697b100c7eadd59c261fb826",
     "05-drive-verb-split.md": "4aa963120205a7385428de1fae45a7f51a9ac98bbcef59e0d1a600a9584cc8b3",
     "06-driver-loop-to-sheddriver.md": "c4cfb07431272918d9332d7200ea30a5156d4a7afd0ce00c5c985ca96b064032",
@@ -422,7 +422,7 @@
       }
     }
   ],
-  "currentBatch": 1,
+  "currentBatch": 0,
   "masterStrand": "05836e1fa6d8d140857a550caa8fce04",
   "masterSessionId": "fe51066b-538a-477c-b9a6-3c2526af3fa8",
   "batches": {
@@ -435,15 +435,63 @@
       ],
       "cardHashes": {
         "01-interrupt-policy-words": "f8d8e99ff723899bd9bf96fc78b12a69ba4b527def2f4c274fd0aaacf46fdd85",
-        "02-sheddriver-records": "f4cf0702342b663f97d2a6c0cb36bbe6d0990885d4dd9715f8a5e547b789aed5",
-        "03-settle-records-per-run": "bbcfcf421c64fb80223d115fc8395118485d964b4c32c7ad7cf6c86af84c14dc"
+        "02-sheddriver-records": "69b1926a7adff48d106fd3cc1b2df14a1126189384ead21067ec09b4e0a6904a",
+        "03-settle-records-per-run": "df64660d5ca77554784c3ca6247118c0263a95d752dc47783cedeab66d12ae05"
       },
       "startSha": "9ea1f7474ead98d92d8421759f61a8c8ce2f943a",
       "kind": "fork",
       "spawnedAt": "2026-10-15T07:12:47Z",
       "sessionId": "fe51066b-538a-477c-b9a6-3c2526af3fa8",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "01-interrupt-policy-words",
+        "status": "done",
+        "head_sha": "932c294f4da65c510a8ca447db39ad9ea1f889c8",
+        "deviations": [
+          "internal/arbiterstop/holdreading.go",
+          "internal/arbiterstop/holdreading_test.go",
+          "internal/loomcli/arbiter.go",
+          "internal/loomcli/arbiter_test.go",
+          "internal/loomcli/arbiterconsume.go",
+          "internal/loomcli/drive.go",
+          "internal/loomcli/drivehandback.go",
+          "internal/loomcli/drivehandback_test.go",
+          "internal/loomcli/driverules.go",
+          "internal/loomcli/driverules_test.go",
+          "internal/loomcli/drivewiring.go",
+          "internal/loomcli/tackler.go",
+          "internal/loomcli/tackler_test.go",
+          "internal/loomcli/tacklerconsume.go",
+          "internal/loomcli/tacklerconsume_test.go",
+          "internal/loomcli/tacklerprompt.go",
+          "internal/loomcli/tacklerprompt_test.go",
+          "internal/loomengine/settle.go",
+          "internal/loomengine/settle_test.go",
+          "internal/loomengine/tackler.go",
+          "internal/loomengine/tackler_test.go",
+          "internal/sheddriver/settle.go",
+          "internal/sheddriver/settle_test.go",
+          "internal/sheddriver/stopkey_test.go",
+          "internal/sheddriver/tacklerrecords.go",
+          "internal/sheddriver/tacklerrecords_test.go",
+          "internal/sheddriver/testmain_test.go",
+          "internal/shedverbs/spec.go",
+          "internal/shedverbs/testsupport_test.go"
+        ]
+      },
+      "cardShas": [
+        "932c294f4da65c510a8ca447db39ad9ea1f889c8"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-shed-tackler/fe51066b-538a-477c-b9a6-3c2526af3fa8/subagents/agent-ab8474bee4dcd0df4.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-shed-tackler/fe51066b-538a-477c-b9a6-3c2526af3fa8/subagents/agent-ab8474bee4dcd0df4.jsonl"
+      ]
     }
-  }
+  },
+  "seenForkTranscripts": [
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-shed-tackler/fe51066b-538a-477c-b9a6-3c2526af3fa8/subagents/agent-ab8474bee4dcd0df4.jsonl"
+  ]
 }

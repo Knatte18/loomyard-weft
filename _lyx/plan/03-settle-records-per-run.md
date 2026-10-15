@@ -1,9 +1,9 @@
 # Card 3 — settle-records-per-run
 
 **Create:**
-- `plan:internal/shedrun#SettleRecords` -> `func SettleRecords(l *lyxcwd.Location, runID string) string`
-- `plan:internal/battencli#childGoVerifyRetrySpent` -> `func childGoVerifyRetrySpent(taskLocation *lyxcwd.Location) (bool, error)`
-- `plan:internal/battencli#TestChildGoVerifyRetrySpent_ReadsThePerRunRecords` -> `func TestChildGoVerifyRetrySpent_ReadsThePerRunRecords(t *testing.T)`
+- `internal/shedrun#SettleRecords`
+- `internal/battencli#childGoVerifyRetrySpent`
+- `internal/battencli#TestChildGoVerifyRetrySpent_ReadsThePerRunRecords`
 
 **Delete:**
 - `internal/shedrun#SettleRecordsFile`
