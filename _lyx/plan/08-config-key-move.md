@@ -1,12 +1,12 @@
 # Card 8 — config-key-move
 
 **Create:**
-- `plan:internal/configreg#KeyMove` -> `type KeyMove struct`
-- `plan:internal/configreg#KeyMoves` -> `func KeyMoves() []KeyMove`
-- `plan:internal/configreg#moveRunSettings` -> `func moveRunSettings(settings map[string]any) map[string]any`
-- `plan:internal/configsync#moveKeys` -> `func moveKeys(dir, seedDir string, layer configengine.Layer, base, apply bool) ([]Result, error)`
-- `plan:internal/configsync#templateLineComment` -> `func templateLineComment(template []byte, key string) string`
-- `plan:internal/configsync#TestReconcile_MovesKeysAcrossModules` -> `func TestReconcile_MovesKeysAcrossModules(t *testing.T)`
+- `internal/configreg#KeyMove`
+- `internal/configreg#KeyMoves`
+- `internal/configreg#moveRunSettings`
+- `internal/configsync#moveKeys`
+- `internal/configsync#templateLineComment`
+- `internal/configsync#TestReconcile_MovesKeysAcrossModules`
 
 **Edit:**
 - `internal/configreg#PrepareRunSettings`
