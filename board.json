@@ -655,7 +655,7 @@
       "isolated": false,
       "brief": "The prime overview window shows the orch session context tokens against its thresholds beside the batten runs",
       "body": "## Ask (operator, 2026-10-14)\n\nThe operator wants the orch's context size easy to see, in the prime's overview window beside the batten runs.\n\n## Today\n\n- The prime's overview window runs `lyx batten overview` (`internal/battencli/overview.go`), one line per batten run in flight.\n- The orch's context size is read by the distill watcher (`internal/orchengine/watcher.go`, `ContextTokens` in `internal/shuttleengine/claudeengine/usage.go`) and stored as `LastContextTokens` in the orch state (`internal/orchengine/state.go`).\n- It is shown only by `lyx orch status` (`context_tokens`, `soft_threshold_tokens`, `threshold_tokens`); no pane or statusline shows it.\n\n## Sketch\n\n- The batten overview gains a line for the orch: context tokens against the soft and hard thresholds, plus the watcher's phase and cycle count, read from the orch state file it already sits beside (files only, as the overview reads today).\n- Dependency direction to check: batten's overview reading orch state may cross a layer; if so, the orch line comes from a provider the orch module registers, or the runs strand runs a composed view.\n",
-      "status": "running · Worktree-Create",
+      "status": "running · Loom-Preflight",
       "created": "2026-10-14T18:34:51Z",
       "revised": "2026-10-14T18:34:51Z",
       "run_settings": {
