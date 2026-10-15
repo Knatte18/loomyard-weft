@@ -1,11 +1,11 @@
 {
   "current_producer": "Run-Shed",
-  "state": "running",
+  "state": "paused",
   "error": "",
   "pause_requested": false,
   "activity": {
     "now": "Run-Shed",
-    "last": "Open-IDE → done",
+    "last": "Run-Shed → bounced to Run-Shed",
     "wait": ""
   },
   "history": [
@@ -38,6 +38,14 @@
       "outcome": "done",
       "output": "",
       "at": "2026-10-15T06:46:35Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "pause requested at 2026-10-15T09:05:38+02:00",
+      "at": "2026-10-15T07:05:38Z",
+      "budget_exempt": true,
+      "routed_to": "Run-Shed"
     }
   ]
 }
