@@ -27,6 +27,13 @@
       "output": "child running → paused at Plan-Write",
       "at": "2026-10-14T19:02:00Z",
       "budget_exempt": true
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "child paused → running at Plan-Write",
+      "at": "2026-10-15T05:33:09Z",
+      "budget_exempt": true
     }
   ]
 }
