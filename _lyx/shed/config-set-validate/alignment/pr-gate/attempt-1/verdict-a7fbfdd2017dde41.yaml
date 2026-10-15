@@ -1,0 +1,6 @@
+verdict: approve
+reason: >-
+  The diff makes every lyx config --set write, on the worktree, local and board-dir layers, load through the module's own loader and roll back with an error naming the key when the load newly fails, covering issue #620's single-model plan case, as the board entry asks and no more.
+  The only peer overlap is a text-only docs/overview.md change by twill-fork0 at different lines; this run (row 22) lands first.
+question: ""
+superseded: []
