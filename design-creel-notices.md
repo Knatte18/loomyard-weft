@@ -17,6 +17,7 @@ The orch watcher's and batten's notices and the watcher's injects go through cre
 The watcher keeps only its cycle logic (tracking tokens, choosing `refresh`/`distill`/automatic cycles, waiting for the note, sequencing the reload, its state and lifecycle), and advances a cycle phase only on the orch's reply to the note request, or once creel confirms a command inject was typed.
 The note request is mail, answered by post (`written <path>` or `defer`).
 
-## Operator decision (2026-10-15): no auto-start
+## Operator decision (2026-10-15): a note until creel has proven itself
 
-This stage replaces paths that work today, so it starts only on the operator's word once `creel-core` has landed and creel has proven itself, never on a newly-ready auto-start.
+This stage replaces paths that work today, so it stays a note, which never starts, until `creel-core` has landed and creel has proven itself; the operator then promotes it.
+When promoted, it depends on `creel-core`.
