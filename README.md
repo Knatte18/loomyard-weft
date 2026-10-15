@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-15 06:26 UTC; every age below is as of then.
+Rendered 2026-10-15 06:27 UTC; every age below is as of then.
 
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
@@ -17,14 +17,14 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | **reed: intact launch lines under parallel launches, --focus=false never takes focus**<br>• Parallel shuttle launches corrupt the typed launch line, and --focus=false windows still steal focus | [`reed-launch-fixes`](design-reed-launch-fixes.md) | darn | Publish | 23m | 16m | reed, shuttle |
+| 1 | **reed: intact launch lines under parallel launches, --focus=false never takes focus**<br>• Parallel shuttle launches corrupt the typed launch line, and --focus=false windows still steal focus | [`reed-launch-fixes`](design-reed-launch-fixes.md) | darn | Publish | 24m | 16m | reed, shuttle |
 
 #### Normal priority
 
 | # | Task | Slug | Recipe | At | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | 2 | **Go driver and tackler in shed, for every FSM-driven run**<br>• Move the Go driver and tackler from loomcli into shed so darn, batten and every recipe get them; module config overrides model and budgets | [`shed-tackler`](design-shed-tackler.md) | loom | Plan-Write | 12h | 11h | shed, loom, batten |
-| 3 | **Twill fork0: blind lens review, strict critical fixer, branch-coverage lens**<br>• Plan-Write: fork0 writes the plan, the master spawns blind lens forks and judges as a strict Burler-style fixer; new branch-coverage lens | [`twill-fork0`](design-twill-fork0.md) | loom | Webster-Burler-Review | 2d | 12h | loom, stencil, burler |
+| 3 | **Twill fork0: blind lens review, strict critical fixer, branch-coverage lens**<br>• Plan-Write: fork0 writes the plan, the master spawns blind lens forks and judges as a strict Burler-style fixer; new branch-coverage lens | [`twill-fork0`](design-twill-fork0.md) | loom | Webster-Burler-Fix | 2d | 12h | loom, stencil, burler |
 
 ### Ready
 
@@ -40,7 +40,7 @@ Waits only on Running or Ready entries.
 
 | # | Task | Slug | Recipe | After | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | **Run status pane: numbered rows, seconds, round totals, gate time; segment-named sessions**<br>• Per-run status pane shows seconds, a total per Burler round, and each gate with its time and the rework it caused | [`run-pane-timing`](design-run-pane-timing.md) | loom | `shed-tackler`, `reed-launch-fixes` | 26m | 2m | loom, burler, shed, reed |
+| 1 | **Run status pane: numbered rows, seconds, round totals, gate time; segment-named sessions**<br>• Per-run status pane shows seconds, a total per Burler round, and each gate with its time and the rework it caused | [`run-pane-timing`](design-run-pane-timing.md) | loom | `shed-tackler`, `reed-launch-fixes` | 27m | 3m | loom, burler, shed, reed |
 
 ## Notes
 
@@ -52,7 +52,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Note | Slug | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| 1 | **Plan-Bouncer and Batchifier pass a plan that webster begin-batch then refuses with delete-before-reference** | [`plan-drift-refusal-route`](design-plan-drift-refusal-route.md) | 53m | 53m | webster, loom |
+| 1 | **Plan-Bouncer and Batchifier pass a plan that webster begin-batch then refuses with delete-before-reference** | [`plan-drift-refusal-route`](design-plan-drift-refusal-route.md) | 54m | 53m | webster, loom |
 
 #### Low priority
 
@@ -81,7 +81,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 13 | **Show the orch context size in the prime overview window**<br>• The prime overview window shows the orch session context tokens against its thresholds beside the batten runs | [`orch-context-overview`](design-orch-context-overview.md) | 11h | 11h | orch, batten |
 | 14 | **Clearer loom model key names, one per step**<br>• Model keys like fix name the role they set, and every review segment gets its own reviewer and fixer key | [`loom-model-key-names`](design-loom-model-key-names.md) | 11h | 11h | config, loom |
 | 15 | **Spawned code roles load the hub language skills**<br>• Darn, Webster, Burler and merge sessions write Go without scribe:golang-* skills; the hub config should name its language skills | [`role-language-skills`](design-role-language-skills.md) | 11h | 11h | config, shuttle |
-| 16 | **Fork the Burler fixer from the reviewer session**<br>• The fixer re-reads the context the reviewer just read; fork it from the reviewer to reuse the cache | [`burler-fixer-fork`](design-burler-fixer-fork.md) | 20m | 20m | burler |
+| 16 | **Fork the Burler fixer from the reviewer session**<br>• The fixer re-reads the context the reviewer just read; fork it from the reviewer to reuse the cache | [`burler-fixer-fork`](design-burler-fixer-fork.md) | 21m | 21m | burler |
 
 #### Low priority
 
