@@ -72,7 +72,34 @@ Every fork returned a report.
 
 ## Review rounds
 
-_No rounds yet._
+### Round 1
+
+- F1 recovery strand's engine unchecked before spawn — fixed, D6's wiring checks both role engines, each refusal naming its key.
+- F2 lookup refusal's way forward cannot clear it — fixed, the lookup's way forward sets `engine:` in `shuttle.yaml`; a recorded engine value without fork audit is an internal error.
+- F3 `lyx burler run` has no key to name — fixed differently, D8 names the caller and its way forward, but no row, since the refusal spec keeps burler out of scope.
+- F4 driver's `peer-messaging` contradicts Out — fixed, the driver row drops it; parent messages never imply it.
+- F5 D2's scan misses a `Model`-only mapping — fixed, the rule covers every `modelspec.Resolved` field.
+- F6, F7 — fixed as proposed.
+
+### Round 2
+
+- F1 D6's run record is gone once a run is done — fixed, webster's state records each session's engine beside its session id (`masterEngine`, each batch's `engine`, `recoveryEngines`), and the lookup reads that.
+- F2 D6 does not place the wiring check — fixed, each verb checks only the role engines it spawns: `run` both, `recover-batch` recovery, and `record-batch` and `reset` none.
+
+### Round 3
+
+- F1 engine state lost across re-begin and respawn — fixed, the keys live on `State` and `BatchState`, and both batch writers carry `recoveryEngines` forward with `RecoverySessions`.
+- F2 the per-verb check had no true placement — fixed, the check sits at the spawn sites, `websterengine.Run` before `StartMaster` and recover-batch's spawn branch, through the handed lookup.
+- F3 `run` checks a strand it never spawns — fixed, the rule names every strand the run can spawn.
+- F4 engine-less entry bounded only for a default without fork audit — fixed with option (a), an accepted open risk revisited at `codex-engine`; a recorded engine the set does not hold is a refusal naming it.
+
+### Round 4
+
+- F1 D7's wiring refusal contradicted D6 — fixed, the wiring builds the instruction-file names lazily, and only the `MerriamBase` callers refuse an unregistered Master engine.
+- F2 spawn checks sat after the run's mutations — fixed, `Run`'s check is an entry gate before `AcquireStateMutation`, and recover-batch's is the spawn branch's first step.
+- F3 "spawn site" framing — fixed, the checks sit in the engine functions that spawn, and `run`'s recovery check is a pre-flight.
+- F4 turn-end read had no key — fixed, it resolves through the last `RecoverySessions` entry.
+- F5 wrong-default failure mode — fixed, the Bound states the audit-error and empty-audit outcomes, with a way forward for the error.
 
 ## Question ledger
 
