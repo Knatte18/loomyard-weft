@@ -42,9 +42,9 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 4 | **Darn: a decision record for mid-run scope corrections, and PR-Align**<br>• Darn has no decision record, so a mid-run scope correction never reaches its review; and no PR-Align row, so every darn PR waits for the orch at PR-Gate | [`twb-d0-sc`](design-twb-d0-sc.md) | 14m | 14m |  |
 | 5 | **Plan and Webster checks out of step with the code a plan changes** | [`twb-d0-gf`](design-twb-d0-gf.md) | 14m | 14m |  |
 | 6 | **Darn: a decision record for mid-run scope corrections, and PR-Align**<br>• Darn has no decision record, so a mid-run scope correction never reaches its review; and no PR-Align row, so every darn PR waits for the orch at PR-Gate | [`twb-d0-sf`](design-twb-d0-sf.md) | 14m | 14m |  |
-| 7 | **lyx config --set stores an invalid model value instead of refusing it** | [`config-set-validate`](design-config-set-validate.md) | 11h | 11h | config |
+| 7 | **lyx config --set stores an invalid model value instead of refusing it** | [`config-set-validate`](design-config-set-validate.md) | 11h | 0m | config |
 | 8 | **A hub pause leaves background forks and shells running, so hibernate never confirms**<br>• Pause interrupts turns but not background forks or shells; sessions read busy and hibernate confirmation fails | [`pause-background-work`](design-pause-background-work.md) | 9h | 10m | shuttle, webster |
-| 9 | **Plan-Bouncer and Batchifier pass a plan that webster begin-batch then refuses with delete-before-reference** | [`plan-drift-refusal-route`](design-plan-drift-refusal-route.md) | 8m | 7m | webster, loom |
+| 9 | **Plan-Bouncer and Batchifier pass a plan that webster begin-batch then refuses with delete-before-reference** | [`plan-drift-refusal-route`](design-plan-drift-refusal-route.md) | 8m | 8m | webster, loom |
 
 ### Enhancements
 
@@ -73,7 +73,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 14 | **Show the orch context size in the prime overview window**<br>• The prime overview window shows the orch session context tokens against its thresholds beside the batten runs | [`orch-context-overview`](design-orch-context-overview.md) | 11h | 11h | orch, batten |
 | 15 | **Clearer loom model key names, one per step**<br>• Model keys like fix name the role they set, and every review segment gets its own reviewer and fixer key | [`loom-model-key-names`](design-loom-model-key-names.md) | 11h | 11h | config, loom |
 | 16 | **Spawned code roles load the hub language skills**<br>• Darn, Webster, Burler and merge sessions write Go without scribe:golang-* skills; the hub config should name its language skills | [`role-language-skills`](design-role-language-skills.md) | 10h | 10h | config, shuttle |
-| 17 | **tokencount splits Burler roles across the overview-seats rename**<br>• After overview-seats renamed Burler seat roles, tokencount per-role tables may list old and new names as separate roles across runs | [`tokencount-role-rename`](design-tokencount-role-rename.md) | 9m | 9m | burler |
+| 17 | **tokencount splits Burler roles across the overview-seats rename**<br>• After overview-seats renamed Burler seat roles, tokencount per-role tables may list old and new names as separate roles across runs | [`tokencount-role-rename`](design-tokencount-role-rename.md) | 10m | 10m | burler |
 
 #### Low priority
 
