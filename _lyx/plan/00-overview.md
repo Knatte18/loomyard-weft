@@ -1,6 +1,6 @@
 ---
 format: 5
-approved: false
+approved: true
 language: go
 ---
 
@@ -33,7 +33,7 @@ No other module sends through creel when this lands.
 
 ### Decision: constants-not-config
 
-- **Decision:** retention (7 days), TTL default and cap (10 minutes, 1 hour), hold cap (1 hour), reminder backoff (5 minutes to 1 hour), probe backoff (1 to 8 seconds), sweep period (30 seconds), body cap (64 KiB) and reminder caps (5 messages, 80 runes) are named constants in `internal/creelengine`; there is no `creel.yaml`.
+- **Decision:** retention (7 days), TTL default and cap (10 minutes, 1 hour), hold cap (1 hour), reminder backoff (5 minutes to 1 hour), probe backoff (1 to 8 seconds), sweep backoff (30 seconds to a 4-minute ceiling), body cap (64 KiB) and reminder caps (5 messages, 80 runes) are named constants in `internal/creelengine`; there is no `creel.yaml`.
 - **Applies to:** cards 6 to 10
 
 ## verify:
