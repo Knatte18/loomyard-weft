@@ -183,6 +183,12 @@ Rationale: a refusal a bound module's verb can reach needs its row and a test, a
   - d6-wiring-check-verb-placement (class consistency, severity BLOCKING, open in rounds 2, 3, 4)
 <!-- /lyx:carry-over Discussion-Review -->
 
+<!-- lyx:carry-over Merge-Review -->
+- Merge-Review, round 1: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
+  Review: _lyx/reviews/merge/round-1-review.md; fixer report: _lyx/reviews/merge/round-1-fixer-report.md.
+  - recordless-send-interrupt-ignore-strand-engine (class design, severity MEDIUM, open in rounds 1)
+<!-- /lyx:carry-over Merge-Review -->
+
 ## Acceptance criteria
 
 - No production code outside `internal/modelspec` and `shuttleengine.NewModelChoice` reads any `modelspec.Resolved` field (`Engine`, `Model` or `Params`), the D2 scan fails on a new read of any of the three, and `burlerengine.ModelChoice` no longer exists.
