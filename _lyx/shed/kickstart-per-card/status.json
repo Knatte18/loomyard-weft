@@ -1,12 +1,12 @@
 {
-  "current_producer": "Discussion-Burler-Review",
+  "current_producer": "Discussion-Burler-Fix",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "pause_before": "Plan-Write",
   "activity": {
-    "now": "Discussion-Burler-Review",
-    "last": "Discussion-Bouncer → bounced to Discussion-Burler-Review",
+    "now": "Discussion-Burler-Fix",
+    "last": "Discussion-Burler-Review → bounced to Discussion-Burler-Fix",
     "wait": ""
   },
   "history": [
@@ -92,6 +92,35 @@
       "at": "2026-10-15T10:06:52Z",
       "budget_exempt": true,
       "routed_to": "Discussion-Burler-Review"
+    },
+    {
+      "producer": "Discussion-Burler-Review",
+      "outcome": "stuck",
+      "output": "/home/knatte/Code/loomyard-LYXHUB/kickstart-per-card/_lyx/reviews/discussion/round-3-review.md",
+      "at": "2026-10-15T10:09:18Z",
+      "gate_attempts": 1,
+      "gate_spans": [
+        {
+          "gate": "review",
+          "kind": "gate",
+          "start": "2026-10-15T10:08:51.781812585Z",
+          "end": "2026-10-15T10:08:51.781997561Z"
+        },
+        {
+          "gate": "review",
+          "kind": "rework",
+          "start": "2026-10-15T10:08:52.177992283Z",
+          "end": "2026-10-15T10:09:18.239648943Z"
+        },
+        {
+          "gate": "review",
+          "kind": "gate",
+          "start": "2026-10-15T10:09:18.264402665Z",
+          "end": "2026-10-15T10:09:18.264786782Z"
+        }
+      ],
+      "budget_exempt": true,
+      "routed_to": "Discussion-Burler-Fix"
     }
   ],
   "product": {
