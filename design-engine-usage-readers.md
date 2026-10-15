@@ -2,8 +2,6 @@
 
 `engine-usage-readers` · Task · enhancement, shuttle, claude
 
-Depends on: [`engine-config-seams`](design-engine-config-seams.md)
-
 ## Goal
 
 A task of the Codex-readiness series (see `engine-registry` for the operator decision): token use and cost read through each run's engine, not straight from Claude's transcripts.
