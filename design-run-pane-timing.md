@@ -2,7 +2,7 @@
 
 `run-pane-timing` · Task · enhancement, loom, burler, shed, reed
 
-Depends on: [`shed-tackler`](design-shed-tackler.md), [`reed-launch-fixes`](design-reed-launch-fixes.md)
+Depends on: [`shed-tackler`](design-shed-tackler.md)
 
 ## Seen
 
