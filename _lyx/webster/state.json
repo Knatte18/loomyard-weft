@@ -1,0 +1,114 @@
+{
+  "runGuid": "14848409faa5f40cdfea5852e6d18905",
+  "planFingerprint": "02fafd4c7b41c19d188aa78543dca906629b7aaf2e29bb42be038cdb4a5a2ac8",
+  "planFileHashes": {
+    "00-overview.md": "9dd5e21db850d16cb8c32cbcb95590738b15052539ed331d3c1eeb5f296e71b0",
+    "01-edit-test-file-check.md": "bd009245b6f03b6f5e6b5d5e991d3033f56bc89f44b30082c946fd562ae5f2dd",
+    "02-test-file-ways-forward.md": "a47e66594a494a85ca8ce69a96c87fa51ac9c0028262f730ef4336a6a19cd836",
+    "03-plan-stencil-test-rules.md": "70a5e9671bcd5223c3c0b085d61d076a4fe2eda8961903ecd52e7b7010492c4e"
+  },
+  "planOverviewFrameHash": "1330c813fb1b91d844baa58030e35c0d09ef2efc7f9ae89ef0b0c6e12a7bad23",
+  "partition": [
+    {
+      "cards": [
+        "01-edit-test-file-check",
+        "02-test-file-ways-forward",
+        "03-plan-stencil-test-rules"
+      ],
+      "profile": "cautious",
+      "estimate": 175454,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 1,
+        "startup": 54400,
+        "read_union": 47608,
+        "cards": [
+          {
+            "card": 1,
+            "card_text": 864,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1872,
+              "file:contracts/specs/loom-plan-spec.md": 8220,
+              "file:internal/planglyph/doc.go": 1332,
+              "file:internal/planparser/doc.go": 1764,
+              "package:cmd/lyx/testdata": 2000,
+              "package:contracts/specs": 2000,
+              "package:internal/loomcli": 2000,
+              "package:internal/planglyph": 2000,
+              "package:internal/planparser": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:contracts/specs": 2000,
+              "tests:internal/loomcli": 2000,
+              "tests:internal/planglyph": 2000,
+              "tests:internal/planparser": 2000
+            },
+            "messages": 164.5,
+            "written": 50214
+          },
+          {
+            "card": 2,
+            "card_text": 396,
+            "reads": {
+              "file:contracts/specs/loom-plan-spec.md": 8220,
+              "package:contracts/specs": 2000,
+              "package:internal/planglyph": 2000,
+              "tests:contracts/specs": 2000,
+              "tests:internal/planglyph": 2000
+            },
+            "messages": 53,
+            "written": 16296
+          },
+          {
+            "card": 3,
+            "card_text": 336,
+            "reads": {
+              "file:contracts/stencils/loom/loom-rubric-plan-review.md": 1596,
+              "file:contracts/stencils/loom/loom-template-plan.md": 3228,
+              "package:contracts/stencils": 2000,
+              "package:contracts/stencils/loom": 2000,
+              "tests:contracts/stencils": 2000,
+              "tests:contracts/stencils/loom": 2000
+            },
+            "messages": 22,
+            "written": 6936
+          }
+        ]
+      }
+    }
+  ],
+  "currentBatch": 1,
+  "masterStrand": "ca48942509099cc17dd9a5849323220d",
+  "masterSessionId": "7e50957d-614e-4103-956b-1cb7f00415e8",
+  "batches": {
+    "1": {
+      "slug": "edit-test-file-check",
+      "cards": [
+        "01-edit-test-file-check",
+        "02-test-file-ways-forward",
+        "03-plan-stencil-test-rules"
+      ],
+      "cardHashes": {
+        "01-edit-test-file-check": "bd009245b6f03b6f5e6b5d5e991d3033f56bc89f44b30082c946fd562ae5f2dd",
+        "02-test-file-ways-forward": "a47e66594a494a85ca8ce69a96c87fa51ac9c0028262f730ef4336a6a19cd836",
+        "03-plan-stencil-test-rules": "70a5e9671bcd5223c3c0b085d61d076a4fe2eda8961903ecd52e7b7010492c4e"
+      },
+      "startSha": "6757288004041b031c36d78ed8c1c444fa9a7202",
+      "kind": "fork",
+      "spawnedAt": "2026-10-15T13:39:28Z",
+      "sessionId": "7e50957d-614e-4103-956b-1cb7f00415e8",
+      "terminal": false,
+      "status": ""
+    }
+  }
+}
