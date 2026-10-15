@@ -1,0 +1,9 @@
+verdict: approve
+reason: >-
+  PR 643 builds the board entry's variant 1 behind kickstart_pack_per_card (default true), with lyx loom card-pack, the per-card fragments,
+  pack_layout=card and the card pack trace line, and the forkaudit card arm the record added after Discussion.
+  The file, inline, pack-off and recovery bytes are unchanged, and the Plan-Review carry-over findings are fixed in code.
+  The three peers (report-timing, viewer-off-shell, creel-core) do not overlap in behaviour, there are no parent commits,
+  and this run lands first at row 22.
+question: ""
+superseded: []
