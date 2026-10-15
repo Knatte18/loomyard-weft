@@ -1,14 +1,14 @@
 {
   "runGuid": "f1dc8240bb47e4d129168eda4a5d3fe8",
-  "planFingerprint": "9b596b33a603b578d90c18883d4639ed7d2e39b4b8e592352b784d366a4d9da1",
+  "planFingerprint": "bbd96ccfb404a3db8c8999cf6cc6155c84ca84aede35a0d2e36b0d9459683f4b",
   "planFileHashes": {
     "00-overview.md": "27d1c521c0e4998628b0f4d0b5eb1a6a3b594cb7352caed6c9c54b3b7e889efe",
-    "01-plan-conflict-class.md": "e37138aecf009fc250b05dfd77ee9272cb6aab9eed6a363f98aa8ee40db43154",
-    "02-conflict-record.md": "16e69ed5073d937dc0621d7de012d695955842b950910fec230684825d7b7d17",
-    "03-webster-reroute-edge.md": "a80bd8f1d375a7f4922a58be7f1c6c13a3367ea84274f3d45d982ff3821e61b5",
-    "04-adapter-routes-conflict.md": "5ce14965b58500798460b8f4c387fc577bae70569b219f52e2e757b48e9dbd5e",
+    "01-plan-conflict-class.md": "e6ab9eede9bb820d752d329d751362a1687839ed0d6802902630a5c34746fd8b",
+    "02-conflict-record.md": "1d510c558b602b27d6ddf3ded51efd32ebad620b824a8e0983e514537b238843",
+    "03-webster-reroute-edge.md": "955494c507dabec05c6fe2ab7976e8ec4b07e4b88048ee9ad5ce203862d45967",
+    "04-adapter-routes-conflict.md": "0636763df52363adeae47eb0d03b4bd3cd2a2242b5f189378748fdfa1415cf51",
     "05-config-empty-edit-abort.md": "66381d248af7e4785ef8e95ddd191fb8b659113e07d6e61ff7a0a34994ef0f43",
-    "06-config-terminal-guard.md": "80b494cb252ca34df6e84e3129339675ad432a955db8f2aa18e65f6a29cd7c9d"
+    "06-config-terminal-guard.md": "8e7f66aad8ec9323108525406badc949e94d8d333835074fbf104e9fe95e4502"
   },
   "planOverviewFrameHash": "fdbe7d53f5cf7836bb352ca5b5a89e06d8e23b4b0f0a4133b00d0939d8f24324",
   "partition": [
@@ -142,7 +142,7 @@
       }
     }
   ],
-  "currentBatch": 1,
+  "currentBatch": 0,
   "masterStrand": "fb7a0377a304296537a478cd7e1f662c",
   "masterSessionId": "cf4d1211-e0cc-4918-a645-1d926d96478b",
   "batches": {
@@ -157,19 +157,43 @@
         "06-config-terminal-guard"
       ],
       "cardHashes": {
-        "01-plan-conflict-class": "e37138aecf009fc250b05dfd77ee9272cb6aab9eed6a363f98aa8ee40db43154",
-        "02-conflict-record": "16e69ed5073d937dc0621d7de012d695955842b950910fec230684825d7b7d17",
-        "03-webster-reroute-edge": "a80bd8f1d375a7f4922a58be7f1c6c13a3367ea84274f3d45d982ff3821e61b5",
-        "04-adapter-routes-conflict": "5ce14965b58500798460b8f4c387fc577bae70569b219f52e2e757b48e9dbd5e",
+        "01-plan-conflict-class": "e6ab9eede9bb820d752d329d751362a1687839ed0d6802902630a5c34746fd8b",
+        "02-conflict-record": "1d510c558b602b27d6ddf3ded51efd32ebad620b824a8e0983e514537b238843",
+        "03-webster-reroute-edge": "955494c507dabec05c6fe2ab7976e8ec4b07e4b88048ee9ad5ce203862d45967",
+        "04-adapter-routes-conflict": "0636763df52363adeae47eb0d03b4bd3cd2a2242b5f189378748fdfa1415cf51",
         "05-config-empty-edit-abort": "66381d248af7e4785ef8e95ddd191fb8b659113e07d6e61ff7a0a34994ef0f43",
-        "06-config-terminal-guard": "80b494cb252ca34df6e84e3129339675ad432a955db8f2aa18e65f6a29cd7c9d"
+        "06-config-terminal-guard": "8e7f66aad8ec9323108525406badc949e94d8d333835074fbf104e9fe95e4502"
       },
       "startSha": "a52467411aceba2e6a891a6de0a3c494ad0359d4",
       "kind": "fork",
       "spawnedAt": "2026-10-15T09:09:08Z",
       "sessionId": "cf4d1211-e0cc-4918-a645-1d926d96478b",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "01-plan-conflict-class",
+        "status": "done",
+        "head_sha": "e6315b91caf3887623ada7258491ad0406ade4df",
+        "deviations": [
+          "internal/loomshed/webster_test.go",
+          "internal/shedadapters/webster_test.go",
+          "internal/webstercli/refusalnote_test.go",
+          "internal/websterengine/conflictrecord.go",
+          "internal/websterengine/runlevel_test.go"
+        ]
+      },
+      "cardShas": [
+        "e6315b91caf3887623ada7258491ad0406ade4df"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-refusal-route-config-empty/cf4d1211-e0cc-4918-a645-1d926d96478b/subagents/agent-ac7312d05a7ee72e0.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-refusal-route-config-empty/cf4d1211-e0cc-4918-a645-1d926d96478b/subagents/agent-ac7312d05a7ee72e0.jsonl"
+      ]
     }
-  }
+  },
+  "seenForkTranscripts": [
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-refusal-route-config-empty/cf4d1211-e0cc-4918-a645-1d926d96478b/subagents/agent-ac7312d05a7ee72e0.jsonl"
+  ]
 }

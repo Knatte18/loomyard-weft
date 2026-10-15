@@ -1,14 +1,14 @@
 # Card 1 — plan-conflict-class
 
 **Create:**
-- `plan:internal/websterengine#ErrPlanConflict` -> `var ErrPlanConflict error`
-- `plan:internal/websterengine#PlanConflictError` -> `type PlanConflictError struct`
-- `plan:internal/websterengine#PlanConflictError.Error` -> `func (e *PlanConflictError) Error() string`
-- `plan:internal/websterengine#PlanConflictError.Unwrap` -> `func (e *PlanConflictError) Unwrap() error`
-- `plan:internal/websterengine#ConflictCausePlanDefect` -> `const ConflictCausePlanDefect = "plan_defect"`
-- `plan:internal/websterengine#ConflictCauseTreeMoved` -> `const ConflictCauseTreeMoved = "tree_moved"`
-- `plan:internal/webstercli#TestBeginBatchCmd_PlanConflict` -> `func TestBeginBatchCmd_PlanConflict(t *testing.T)`
-- `plan:internal/webstercli#TestFingerprintRefusals_CarryPlanDrifted` -> `func TestFingerprintRefusals_CarryPlanDrifted(t *testing.T)`
+- `internal/websterengine#ErrPlanConflict`
+- `internal/websterengine#PlanConflictError`
+- `internal/websterengine#PlanConflictError.Error`
+- `internal/websterengine#PlanConflictError.Unwrap`
+- `internal/websterengine#ConflictCausePlanDefect`
+- `internal/websterengine#ConflictCauseTreeMoved`
+- `internal/webstercli#TestBeginBatchCmd_PlanConflict`
+- `internal/webstercli#TestFingerprintRefusals_CarryPlanDrifted`
 
 **Delete:**
 - `internal/websterengine#ErrPlanDrifted`

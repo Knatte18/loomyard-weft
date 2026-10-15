@@ -1,10 +1,10 @@
 # Card 4 — adapter-routes-conflict
 
 **Create:**
-- `plan:internal/websterengine#ConflictRoute` -> `type ConflictRoute struct`
-- `plan:internal/websterengine#ClaimConflictRoute` -> `func ClaimConflictRoute(scratchDir string) (ConflictRoute, error)`
-- `plan:internal/shedadapters#planConflictWayForward` -> `const planConflictWayForward = "edit the named pending cards by hand so they match the tree, then run \"lyx loom resume\" in the task worktree"`
-- `plan:internal/shedadapters#TestWebsterProducer_ConflictRerouteCapThenRepeatHalts` -> `func TestWebsterProducer_ConflictRerouteCapThenRepeatHalts(t *testing.T)`
+- `internal/websterengine#ConflictRoute`
+- `internal/websterengine#ClaimConflictRoute`
+- `internal/shedadapters#planConflictWayForward`
+- `internal/shedadapters#TestWebsterProducer_ConflictRerouteCapThenRepeatHalts`
 
 **Edit:**
 - `internal/shedadapters#WebsterProducer.Call`

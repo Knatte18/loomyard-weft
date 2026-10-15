@@ -1,8 +1,8 @@
 # Card 3 — webster-reroute-edge
 
 **Create:**
-- `plan:internal/loomrecipe#TestRecipe_WebsterReroutesToPlanReview` -> `func TestRecipe_WebsterReroutesToPlanReview(t *testing.T)`
-- `plan:internal/loomcli#TestLoomRerouteCapWayForward_IsRowNeutral` -> `func TestLoomRerouteCapWayForward_IsRowNeutral(t *testing.T)`
+- `internal/loomrecipe#TestRecipe_WebsterReroutesToPlanReview`
+- `internal/loomcli#TestLoomRerouteCapWayForward_IsRowNeutral`
 
 **Edit:**
 - `contracts/recipes/loom-recipe.yaml`
@@ -11,7 +11,7 @@
 - `docs/overview.md`
 
 **Uses:**
-- `plan:internal/websterengine#ConflictRecordRel`
+- `internal/websterengine#ConflictRecordRel`
 
 **Intent:**
 Decision D3's recipe half and D5's recipe header: the loom graph gains the edge a Webster plan conflict travels, before any producer asks for it.

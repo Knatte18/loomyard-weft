@@ -1,8 +1,8 @@
 # Card 6 — config-terminal-guard
 
 **Create:**
-- `plan:internal/configcli#noTerminalRefusal` -> `func noTerminalRefusal(module string) string`
-- `plan:internal/configcli#stdinIsTerminal` -> `func stdinIsTerminal(in io.Reader) bool`
+- `internal/configcli#noTerminalRefusal`
+- `internal/configcli#stdinIsTerminal`
 
 **Edit:**
 - `internal/configcli#dispatch` -> `func dispatch(l *lyxcwd.Location, out io.Writer, args []string, edit configengine.EditorFunc, sync syncFunc, commit hubCommitFunc, printOnly bool, setFlags []string, layer string, hubWriteGuard func() (string, error), terminal bool) int`

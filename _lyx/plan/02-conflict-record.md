@@ -1,12 +1,12 @@
 # Card 2 — conflict-record
 
 **Create:**
-- `plan:internal/websterengine#ConflictRecordRel` -> `func ConflictRecordRel() string`
-- `plan:internal/websterengine#ConflictRecordPath` -> `func ConflictRecordPath(scratchDir string) string`
-- `plan:internal/websterengine#RoutedConflictPath` -> `func RoutedConflictPath(scratchDir string) string`
-- `plan:internal/websterengine#WriteConflictRecord` -> `func WriteConflictRecord(scratchDir string, conflict *PlanConflictError) error`
-- `plan:internal/websterengine#RemoveConflictRecord` -> `func RemoveConflictRecord(scratchDir string) error`
-- `plan:internal/websterengine#RemoveRoutedConflict` -> `func RemoveRoutedConflict(scratchDir string) error`
+- `internal/websterengine#ConflictRecordRel`
+- `internal/websterengine#ConflictRecordPath`
+- `internal/websterengine#RoutedConflictPath`
+- `internal/websterengine#WriteConflictRecord`
+- `internal/websterengine#RemoveConflictRecord`
+- `internal/websterengine#RemoveRoutedConflict`
 
 **Edit:**
 - `internal/websterengine#Run`
@@ -16,7 +16,7 @@
 - `internal/websterengine_test#TestRun_EntryHousekeeping`
 - `internal/websterengine_test#TestRun_AutoRebaseline`
 - `internal/webstercli#websterCLI.beginBatchCmd`
-- `plan:internal/webstercli#TestBeginBatchCmd_PlanConflict`
+- `internal/webstercli#TestBeginBatchCmd_PlanConflict`
 - `internal/webstercli#runVerbs`
 - `internal/websterengine/doc.go`
 
