@@ -2,26 +2,26 @@
 
 **Create:**
 - `internal/shellguard/doc.go`
-- `plan:internal/shellguard#Switch` -> `type Switch string`
-- `plan:internal/shellguard#SwitchNone` -> `const SwitchNone Switch = ""`
-- `plan:internal/shellguard#SwitchDenyPython` -> `const SwitchDenyPython Switch = "deny_python"`
-- `plan:internal/shellguard#Row` -> `type Row struct`
-- `plan:internal/shellguard#Rows` -> `func Rows(foreground string) []Row`
-- `plan:internal/shellguard#forbiddenSteerChars` -> `const forbiddenSteerChars = "x"`
-- `plan:internal/shellguard#forbiddenNoticeChars` -> `const forbiddenNoticeChars = "x"`
-- `plan:internal/shellguard#checkTexts` -> `func checkTexts(rows []Row) error`
-- `plan:internal/shellguard#init` -> `func init()`
-- `plan:internal/shellguard#TestMain` -> `func TestMain(m *testing.M)`
-- `plan:internal/shellguard#allowedImports` -> `var allowedImports []string`
-- `plan:internal/shellguard#TestLeafInvariant_AllowlistOnly` -> `func TestLeafInvariant_AllowlistOnly(t *testing.T)`
-- `plan:internal/shellguard#TestCheckTexts` -> `func TestCheckTexts(t *testing.T)`
-- `plan:internal/shellguard#payloadDenied` -> `func payloadDenied(t *testing.T, row Row, command string) bool`
-- `plan:internal/shellguard#TestRows_PatternsDenyAndAllow` -> `func TestRows_PatternsDenyAndAllow(t *testing.T)`
-- `plan:internal/shuttleengine/claudeengine#bashForegroundPhrase` -> `var bashForegroundPhrase string`
-- `plan:internal/shuttleengine/claudeengine#renderShellGuard` -> `func renderShellGuard(row shellguard.Row) standingDeny`
-- `plan:internal/shuttleengine/claudeengine#shellGuardInstalled` -> `func shellGuardInstalled(sw shellguard.Switch, in denyInputs) bool`
-- `plan:internal/shuttleengine/claudeengine#shellRow` -> `func shellRow(t *testing.T, name string) shellguard.Row`
-- `plan:internal/shuttleengine/claudeengine#TestStandingDenies_RenderEveryShellGuardRow` -> `func TestStandingDenies_RenderEveryShellGuardRow(t *testing.T)`
+- `internal/shellguard#Switch`
+- `internal/shellguard#SwitchNone`
+- `internal/shellguard#SwitchDenyPython`
+- `internal/shellguard#Row`
+- `internal/shellguard#Rows`
+- `internal/shellguard#forbiddenSteerChars`
+- `internal/shellguard#forbiddenNoticeChars`
+- `internal/shellguard#checkTexts`
+- `internal/shellguard#init`
+- `internal/shellguard#TestMain`
+- `internal/shellguard#allowedImports`
+- `internal/shellguard#TestLeafInvariant_AllowlistOnly`
+- `internal/shellguard#TestCheckTexts`
+- `internal/shellguard#payloadDenied`
+- `internal/shellguard#TestRows_PatternsDenyAndAllow`
+- `internal/shuttleengine/claudeengine#bashForegroundPhrase`
+- `internal/shuttleengine/claudeengine#renderShellGuard`
+- `internal/shuttleengine/claudeengine#shellGuardInstalled`
+- `internal/shuttleengine/claudeengine#shellRow`
+- `internal/shuttleengine/claudeengine#TestStandingDenies_RenderEveryShellGuardRow`
 
 **Move:**
 - `internal/shuttleengine/claudeengine#commandPositionPattern`

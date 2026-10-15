@@ -10,8 +10,8 @@
 - `pattern/PATTERN-no-denied-recovery.md`
 
 **Uses:**
-- `plan:internal/shellguard#Rows`
-- `plan:internal/shellguard#Row`
+- `internal/shellguard#Rows`
+- `internal/shellguard#Row`
 
 **Intent:**
 Make the no-denied-recovery scan read lyx's own denied forms from the shell-guard table instead of mirroring it by hand (D7).

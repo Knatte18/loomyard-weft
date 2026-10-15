@@ -24,7 +24,7 @@
 - `internal/configreg#TestModules_EveryTemplateKeyClassified`
 - `internal/configreg#TestLookup`
 - `internal/configreg#TestPrepareRunSettings`
-- `plan:internal/shuttleengine/claudeengine#shellGuardInstalled`
+- `internal/shuttleengine/claudeengine#shellGuardInstalled`
 - `internal/shuttleengine/claudeengine#TestBuildSettings_DenyToggleMatrix`
 - `internal/shuttleengine/claudeengine#TestBuildDenyNotice_MatchesInstalledDenies`
 - `internal/shuttleengine/claudeengine#TestPrepare_AppendSystemPromptMatchesDenyNotice`
