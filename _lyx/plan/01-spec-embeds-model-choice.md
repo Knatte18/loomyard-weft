@@ -30,6 +30,9 @@
 - `internal/mergeresolve#buildConflictSpec`
 - `internal/mergeresolve#TestBuildConflictSpec_SkillsAndParentDirective`
 - `internal/shuttleengine#TestNewModelChoice`
+- `internal/websterengine_test#newRunFixtureOver`
+- `internal/websterengine_test#newRecoverFixtureOver`
+- `internal/webstercli#newVerbsFixture`
 - `internal/seatengine#seatSpec`
 - `internal/shuttlecli#shuttleCLI.runCmd`
 - `internal/shuttlecli#shuttleCLI.openCmd`
@@ -66,13 +69,14 @@ No provider name enters the type (`PATTERN-shuttle-provider-seam`).
 Every `Spec` and `OpenSpec` literal that set one of the four fields is rewritten to set `ModelChoice` (a promoted field cannot be named in a composite literal), each production site keeping the values it passes today:
 `tacklerSpec`, `runJudgeCall`, `runTargeting`, `alignment.Spec`, `arbiterSpec`, `driverSpec`, `orchSpec`, `seatSpec`, the Bouncer's seed and judge specs and shuttle's `run` verb build `shuttleengine.ModelChoice{Model: ..., Effort: ..., Version: ...}` from the fields their carriers hold now (later cards hand them a whole choice).
 The sites that resolve a `modelspec.Resolved` themselves build their choice with `shuttleengine.NewModelChoice(resolved)`, so they now carry the alias's engine: `webster`'s Master spec in `Run` and recovery spec in `recoverSpawn`, `buildReflectionSpec`, `buildConflictSpec`, and `lyx shuttle open`, whose `openCmd` sets `spec.ModelChoice = shuttleengine.NewModelChoice(resolved)` in place of its three-field assignment.
+Because the webster specs now carry the role's engine, and the real `Runner` that `newRecoverFixtureOver` and `newVerbsFixture` hand `recoverSpawn` runs over a `shuttlefake.EngineSet` that registers only `fake`, `newRunFixtureOver`, `newRecoverFixtureOver` and `newVerbsFixture` drop `Engine` `claude` from their role literals in this commit, leaving an empty engine, the default of their set; card 7 later moves the same fixtures to `shuttleengine.ModelChoice` role values.
 The test literals listed are rewritten the same way with unchanged values, the tmux-tier shuttlecli smoke specs keeping `smokeClaudeModel` inside the choice so `TestSmokeSuite_EveryRealClaudeSpawnPinsTheModel` still finds the constant at every site.
 
 Tests:
 - `TestRunner_EngineSetDispatch` gains a subtest: a run started with `Engine: "b"` and driven to done returns `Result.Engine == "b"`, one started with an empty engine returns `"a"` (the set's default name), and a run whose `Wait` ends on a mechanism failure returns its identity with the engine set.
   A further row rewrites a started run's `run.json` with no `engine` key, as a record written before `engine-registry`, attaches to it with `Runner.Attach` and drives it to done: `Result.Engine` is `"a"`, the default's name.
 - `TestNewModelChoice` gains an end-to-end row: `modelspec.Parse("claude:some-model[high]")` resolved through an empty `modelspec.Registry` and mapped by `NewModelChoice` gives `Engine` `claude`, model `some-model` and effort `high`.
-  It is the escape-form row for every resolver at once, since card 13's scan holds every resolver to `Resolve` then `NewModelChoice`.
+  It is the escape-form row for every resolver at once, since card 14's scan holds every resolver to `Resolve` then `NewModelChoice`.
 - `TestReflect_OneNote_SpawnsAndArchives` asserts the reflection spec's `Engine` is the friction alias's engine (`claude` for the test registry's alias), and `TestBuildConflictSpec_SkillsAndParentDirective` asserts the conflict spec's `Engine` is the conflict alias's engine and its `Requires` is empty (merge-resolve declares nothing, D5).
 - `TestOpenCmd_ModelAliasEngine` builds a `shuttleCLI` over a real `Runner` on `shuttlefake.Reed` and an engine set whose default is `fake` and which also registers a second `shuttlefake.Engine` under `claude`, with `configDirs` on an empty temp anchor so the registry is the built-in set.
   `lyx shuttle open --role explore --model opus` must fail with the open refusal naming engine `"claude"` (neither fake has a session opener), which proves the alias's engine reached `Open`; without `--model` it names `"fake"`.

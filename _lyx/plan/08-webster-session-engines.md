@@ -46,6 +46,11 @@
 - `internal/testkit/shedfake#shuttleEngine`
 - `internal/testkit/shedfake#WebsterSeams`
 - `internal/testkit/shedfake#TestWebsterSeams_FieldsNonNil`
+- `internal/shedrecipe#websterEntry`
+- `internal/shedrecipe#zeroEnvField`
+- `internal/shedrecipe#simpleEntryCases`
+- `internal/shedrecipe#TestWebsterEntry_SeamFields`
+- `internal/battencli#intentionallyNil`
 - `internal/websterengine#TestLoadRunWrites`
 - `internal/websterengine#TestPendingFindingsText`
 - `internal/websterengine#TestAcceptPendingAudit_RefusesPathlessFinding`
@@ -79,12 +84,17 @@ D6's read side.
 `AuditEngines` is the lookup `webstercli` and loom's Webster wiring hand `websterengine` in place of one default `AuditEngine`: `Lookup(name string) (shuttleengine.Engine, error)`, an empty name resolving the default, and `DefaultName() string`.
 `shuttleengine.EngineSet` satisfies it, so the wiring passes the engine set it already built, and `websterengine` resolves no engine set itself (`PATTERN-told-geometry`).
 `RunDeps`, `RecoverDeps`, `RecordDeps` and `ResetDeps` replace `Engine` with `Engines AuditEngines`; a nil `Engines` keeps the nil-engine meanings each site has today (no write history, no reset own paths).
+`websterEntry` validates `Env.WebsterDeps.Engines` in place of `Engine`, naming `WebsterDeps.Engines` in its refusal,
+and the shedrecipe test field lists and battencli's `intentionallyNil` key move from `WebsterDeps.Engine` to `WebsterDeps.Engines`.
 `AuditEngineFrom` is deleted, and neither `webstercli`'s two wiring prologues nor `loomCLI.wire` check any engine, since the wiring runs once per invocation for every verb; `websterCLI` holds the engine set, and `setRunner` takes it.
 
 `sessionAuditEngine` resolves the engine of one session from the name its state entry records, three ways:
 - a name the set holds is read through that engine; one without fork audit is unreachable (every spawn checks its engine, card 9) and returns an internal error naming the session and the engine, not a refusal row;
 - a name the set does not hold (the `lyx` binary changed between spawn and read) is refused, wrapping the lookup's `ErrEngineNotRegistered` and naming the session and its engine, with the way forward `re-run the verb, or under the Webster row re-step the row, with a lyx whose engine set holds "<engine>"`;
 - an empty name (an entry written before this change) reads as the current default, and is refused when that default has no fork audit, naming the session and `shuttle.yaml`'s `engine:` value, with the way forward `set engine: in shuttle.yaml back to an engine with fork audit, then re-run the verb, or under the Webster row re-step the row`.
+
+An engine-less entry read through a default that differs from the engine that ran the session either ends in that engine's own audit error or returns an empty audit, which can pass a run-exit audit or hide a run's own path from `reset`;
+the bound is the single registered engine, and the `engine:` value in shuttle.yaml is the way forward for the first case.
 
 The readers resolve each session's engine from its own state entry, so a later change to the `master` or `recovery` key never changes it:
 `recordedSessions` returns each session id with its recorded engine (Master's id with `MasterEngine`, each batch's `SessionID` with its `Engine`, each recovery session with its `RecoveryEngines` entry, empty when absent), the first sighting of an id fixing its engine;

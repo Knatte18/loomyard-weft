@@ -1,6 +1,6 @@
 ---
 format: 5
-approved: false
+approved: true
 language: go
 ---
 
@@ -22,9 +22,10 @@ Webster records each session's engine in its own state and reads every session t
 8 — webster-session-engines — webster reads each session through its recorded engine via a told lookup
 9 — webster-spawn-engine-checks — run and recover-batch refuse a role engine without fork audit before any mutation
 10 — merriam-instruction-files — MerriamBase counts the instruction files Master's engine names
-11 — seat-requires — seats declare their requirements and a Start refusal names the model key
-12 — master-driver-requires — Master and the loom driver declare their requirements
-13 — model-choice-mapping-scan — PATTERN-model-choice-mapping and its scan
+11 — start-requirements-model-key — shuttle's Start requirements refusal becomes a typed error whose generic way forward a caller's ModelKey replaces
+12 — seat-requires — seats declare their requirements and a Start refusal names the model key
+13 — master-driver-requires — Master and the loom driver declare their requirements
+14 — model-choice-mapping-scan — PATTERN-model-choice-mapping and its scan
 
 ## Shared Decisions
 

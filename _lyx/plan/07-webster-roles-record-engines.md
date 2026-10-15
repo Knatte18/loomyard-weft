@@ -39,7 +39,7 @@ Both keys are additive, and a state written before this change reads with them a
 Tests:
 - `TestResolveRoles` asserts each role's `Engine` is its alias's engine.
 - `seedShuttleRunState` writes `Engine: shuttlefake.EngineName` into the run record it seeds, as a real `Start` would; its other callers assert nothing about the engine.
-- `newRunFixtureOver`, `newRecoverFixtureOver` and `newVerbsFixture` build their roles as `shuttleengine.ModelChoice` values with an empty `Engine`, the default of their `shuttlefake.EngineSet`, since a role naming `claude` would now be refused by a set that registers only `fake`.
+- `newRunFixtureOver`, `newRecoverFixtureOver` and `newVerbsFixture` build their roles as `shuttleengine.ModelChoice` values keeping the empty `Engine` card 1 gave them, the default of their `shuttlefake.EngineSet`.
 - `TestRun_MasterSpawn` asserts the spawned spec's `Engine` is the master choice's and that `state.json` records `masterEngine` `fake`, the engine the seeded Master run record names.
 - `TestBeginBatch_Record` asserts a begun batch records `engine` equal to `masterEngine` and that a re-begin over a record with `recoveryEngines` keeps them.
 - `TestRecoverSpawnOrAttach` asserts a first recovery records its session's engine under its session id, and a respawn keeps the first entry and adds the second.

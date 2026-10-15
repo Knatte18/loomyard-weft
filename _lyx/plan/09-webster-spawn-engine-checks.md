@@ -18,7 +18,7 @@ D6's spawn side.
 `webstercli` and loom's Webster row reach it through the same `Engines` they wire, so both share one check.
 
 `Run` checks both roles, `RoleMaster` and `RoleRecovery`, as one of its entry gates right after the plan-approved and `deps.Batcher` checks and before `AcquireStateMutation`, reading only `deps.Roles` and `deps.Engines`: no live strand has been stopped, no `--fresh` archive or new `State` saved and no stale outcome or summary archived when it refuses.
-Its recovery check is a pre-flight for the later `recover-batch` spawns, which `run` never makes itself; a missing role entry keeps today's refusal.
+Its recovery check is a pre-flight for the later `recover-batch` spawns, which `run` never makes itself; a role with no entry in `deps.Roles` is skipped by the gate, so Master's `no resolved model-spec` refusal in `Run` and the recovery one in `recoverSpawn` fire where they do today.
 `RecoverSpawnOrAttach` checks the recovery role again as the first step of its spawn branch, right after its return to a live, non-terminal recovery record and ahead of the exhausted-recoveries refusal, `AcceptBatchFabricReference`, the contract-file check and `recoverSpawn`'s `archiveStaleReport` and `StopStrand`, because the `recovery` key can change mid-run.
 The attach, await and terminal paths, and every verb that spawns nothing, check no key.
 Bound: the default engine is checked only when a role's choice resolves to it, so a default without fork audit is refused only then; the check skips no audit, since every later read still goes through `sessionAuditEngine`.

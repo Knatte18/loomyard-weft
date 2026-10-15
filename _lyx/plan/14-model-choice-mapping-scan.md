@@ -1,4 +1,4 @@
-# Card 13 — PATTERN-model-choice-mapping and its scan
+# Card 14 — PATTERN-model-choice-mapping and its scan
 
 **Create:**
 - `plan:internal/shuttleengine#modelChoiceMappingViolations` -> `func modelChoiceMappingViolations(t *testing.T, base string) ([]string, int)`
@@ -36,4 +36,4 @@ and `pattern/PATTERN-model-choice-mapping.md` holds the full rule, the resolvers
 
 **Verify:** lyx loom lint-pattern
 
-**Commit:** 13: PATTERN-model-choice-mapping and its scan
+**Commit:** 14: PATTERN-model-choice-mapping and its scan

@@ -1,4 +1,4 @@
-# Card 12 — Master and the loom driver declare their requirements
+# Card 13 — Master and the loom driver declare their requirements
 
 **Create:**
 - `plan:internal/websterengine_test#realMasterStarter` -> `type realMasterStarter struct`
@@ -41,4 +41,4 @@ Tests:
 
 **ImpactSummary:** two spec builders gain one requirement and their two callers wrap the Start refusal; the declare-nothing roles change no code, only their spec tests' assertions.
 
-**Commit:** 12: Master and the loom driver declare their requirements
+**Commit:** 13: Master and the loom driver declare their requirements
