@@ -1,10 +1,10 @@
 {
   "runGuid": "18bc7599f3afe3fd8ac479fda8fc03e5",
-  "planFingerprint": "376bc5bbebae53d26fd476f435f521025392964055caa29db7d48a042b9b288c",
+  "planFingerprint": "1da938246fa0632dd0e4b3de1094533cabd77835f7f39c9155ef79469af4919d",
   "planFileHashes": {
     "00-overview.md": "05bf8413fb9ceeb86af62939093d7ce8c7d89dcddfce0ccfe37076d9d8fd86bc",
-    "01-planparser-ref-member.md": "c2a7e07e094f41a8e6e39e85ffe35357061288a73d9c6283844b6d4d9f0b2e26",
-    "02-scope-guard-file-package-cover.md": "0c90cf7d0cc28707b67176d000d2ee13bc4c5ee95b775bfa5750fbd9137c0057",
+    "01-planparser-ref-member.md": "64f4a2c884dd54f201c029eab309e7e8ca584d07fa104dd99984c2a1b74d912f",
+    "02-scope-guard-file-package-cover.md": "dff0c98d90905394cf1641213e8b3400ac3c15b1ff45862b48f905ebe729a688",
     "03-implementer-deviation-rule.md": "8f0e3c405bf6dd8c08f0ae8a8cb40e0a570743befe112735e1139756d61e71b7",
     "04-plan-spec-scope-guard-pointer.md": "63e7b8df0a3e478468ee0b8798555ae21b10ccf5e1aad2ab8bcdf092e576b3ff"
   },
@@ -87,7 +87,7 @@
       }
     }
   ],
-  "currentBatch": 1,
+  "currentBatch": 0,
   "masterStrand": "e0e30eaf73ecdd1bb34e51098c98f8df",
   "masterSessionId": "6575fbdb-247c-44c2-b42c-2042731dbfcf",
   "masterEngine": "claude",
@@ -101,8 +101,8 @@
         "04-plan-spec-scope-guard-pointer"
       ],
       "cardHashes": {
-        "01-planparser-ref-member": "c2a7e07e094f41a8e6e39e85ffe35357061288a73d9c6283844b6d4d9f0b2e26",
-        "02-scope-guard-file-package-cover": "0c90cf7d0cc28707b67176d000d2ee13bc4c5ee95b775bfa5750fbd9137c0057",
+        "01-planparser-ref-member": "64f4a2c884dd54f201c029eab309e7e8ca584d07fa104dd99984c2a1b74d912f",
+        "02-scope-guard-file-package-cover": "dff0c98d90905394cf1641213e8b3400ac3c15b1ff45862b48f905ebe729a688",
         "03-implementer-deviation-rule": "8f0e3c405bf6dd8c08f0ae8a8cb40e0a570743befe112735e1139756d61e71b7",
         "04-plan-spec-scope-guard-pointer": "63e7b8df0a3e478468ee0b8798555ae21b10ccf5e1aad2ab8bcdf092e576b3ff"
       },
@@ -111,8 +111,25 @@
       "spawnedAt": "2026-10-15T17:59:30Z",
       "sessionId": "6575fbdb-247c-44c2-b42c-2042731dbfcf",
       "engine": "claude",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "01-planparser-ref-member",
+        "status": "done",
+        "head_sha": "332dd16ae9d04d22d4333a563c1c57bb574bd68a"
+      },
+      "cardShas": [
+        "332dd16ae9d04d22d4333a563c1c57bb574bd68a"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-webster-deviations-list/6575fbdb-247c-44c2-b42c-2042731dbfcf/subagents/agent-acefc5797e19854e5.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-webster-deviations-list/6575fbdb-247c-44c2-b42c-2042731dbfcf/subagents/agent-acefc5797e19854e5.jsonl"
+      ]
     }
-  }
+  },
+  "seenForkTranscripts": [
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-webster-deviations-list/6575fbdb-247c-44c2-b42c-2042731dbfcf/subagents/agent-acefc5797e19854e5.jsonl"
+  ]
 }

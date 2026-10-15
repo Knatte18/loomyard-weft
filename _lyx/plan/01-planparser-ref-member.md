@@ -1,13 +1,13 @@
 # Card 1 — planparser-ref-member
 
 **Rename:**
-- `internal/planparser#refMember` -> `plan:internal/planparser#RefMember`
+- `internal/planparser#refMember` -> `internal/planparser#RefMember`
 
 **Create:**
-- `plan:internal/planparser_test#TestRefMember` -> `func TestRefMember(t *testing.T)`
+- `internal/planparser_test#TestRefMember`
 
 **Edit:**
-- `plan:internal/planparser#RefMember`
+- `internal/planparser#RefMember`
 - `internal/planparser#RefCovers`
 - `cmd/lyx/testdata/test-budget.yaml`
 

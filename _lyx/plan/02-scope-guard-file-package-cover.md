@@ -1,8 +1,8 @@
 # Card 2 — scope-guard-file-package-cover
 
 **Create:**
-- `plan:internal/planglyph#symbolFilesCovered` -> `func symbolFilesCovered(cards []planparser.Card, files []string) bool`
-- `plan:internal/planglyph#TestScopeGuard_SymbolCoverage` -> `func TestScopeGuard_SymbolCoverage(t *testing.T)`
+- `internal/planglyph#symbolFilesCovered`
+- `internal/planglyph#TestScopeGuard_SymbolCoverage`
 
 **Edit:**
 - `internal/planglyph#ScopeGuard`
@@ -15,7 +15,7 @@
 - `internal/planglyph#TestScopeGuard_HandleTargetCoversTheSymbolItStandsFor`
 
 **Uses:**
-- `plan:internal/planparser#RefMember`
+- `internal/planparser#RefMember`
 - `internal/planparser#RefScope`
 - `internal/planglyph#TestScopeGuard_FileLevelCoverage`
 
