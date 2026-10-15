@@ -1,0 +1,123 @@
+{
+  "runGuid": "3ad4a39c62c58805bf0ab4017f5bc4c8",
+  "planFingerprint": "33c79521cd9d3db54eca11ec6e36ca79ff271cb9af622bfeadd5e30fd4c32d47",
+  "planFileHashes": {
+    "00-overview.md": "3800d40b6972d3d019649fa90c7b4767032148d6254a8988c0a689c486e1aae6",
+    "01-doc-lifecycle-wording.md": "16f62a448ac3c1a1b8e8702edd229c6207326c7bf1c12891d6a70c4174635018",
+    "02-discussion-own-entry-rule.md": "1a855a00f20e2c8f5e67222af61824c49ca3670bc680b7189442ee6edcd5dd2d",
+    "03-plan-own-entry-rule.md": "c8fbfd60804f893702478927aff30c8085c7a089130f5b9c33daa7d5b799e5dc",
+    "04-darn-own-entry-rule.md": "60917384284d39ed8bfa18f4f829c7f563448eef30b7151d5914ed89c5c6bdf1"
+  },
+  "planOverviewFrameHash": "2f70071d6e54b9ed3a28bd31bf6f1b56920099c988ff3d255fcdd9ba36363282",
+  "partition": [
+    {
+      "cards": [
+        "01-doc-lifecycle-wording",
+        "02-discussion-own-entry-rule",
+        "03-plan-own-entry-rule",
+        "04-darn-own-entry-rule"
+      ],
+      "profile": "cautious",
+      "estimate": 106700,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 1,
+        "startup": 54280,
+        "read_union": 36928,
+        "cards": [
+          {
+            "card": 1,
+            "card_text": 288,
+            "reads": {
+              "file:CLAUDE.md": 936,
+              "file:docs/overview.md": 9564,
+              "package:.": 2000,
+              "package:docs": 2000,
+              "tests:.": 2000,
+              "tests:docs": 2000
+            },
+            "messages": 12,
+            "written": 3888
+          },
+          {
+            "card": 2,
+            "card_text": 240,
+            "reads": {
+              "file:contracts/stencils/loom/loom-rubric-discussion-review.md": 588,
+              "file:contracts/stencils/loom/loom-template-discussion.md": 1824,
+              "package:contracts/stencils/loom": 2000,
+              "tests:contracts/stencils/loom": 2000
+            },
+            "messages": 12,
+            "written": 3840
+          },
+          {
+            "card": 3,
+            "card_text": 252,
+            "reads": {
+              "file:contracts/stencils/loom/loom-rubric-plan-review.md": 1584,
+              "file:contracts/stencils/loom/loom-template-plan.md": 3300,
+              "package:contracts/stencils/loom": 2000,
+              "tests:contracts/stencils/loom": 2000
+            },
+            "messages": 12,
+            "written": 3852
+          },
+          {
+            "card": 4,
+            "card_text": 312,
+            "reads": {
+              "file:contracts/stencils/darn/darn-template-write.md": 1092,
+              "file:contracts/stencils/loom/loom-rubric-darn-review.md": 948,
+              "package:contracts/stencils/darn": 2000,
+              "package:contracts/stencils/loom": 2000,
+              "tests:contracts/stencils/darn": 2000,
+              "tests:contracts/stencils/loom": 2000
+            },
+            "messages": 12,
+            "written": 3912
+          }
+        ]
+      }
+    }
+  ],
+  "currentBatch": 1,
+  "masterStrand": "095f2f56d0a83d1476cedb5ec7f90747",
+  "masterSessionId": "bdd02286-e2f7-4b70-b3b1-6c9a1f638c22",
+  "masterEngine": "claude",
+  "batches": {
+    "1": {
+      "slug": "doc-lifecycle-wording",
+      "cards": [
+        "01-doc-lifecycle-wording",
+        "02-discussion-own-entry-rule",
+        "03-plan-own-entry-rule",
+        "04-darn-own-entry-rule"
+      ],
+      "cardHashes": {
+        "01-doc-lifecycle-wording": "16f62a448ac3c1a1b8e8702edd229c6207326c7bf1c12891d6a70c4174635018",
+        "02-discussion-own-entry-rule": "1a855a00f20e2c8f5e67222af61824c49ca3670bc680b7189442ee6edcd5dd2d",
+        "03-plan-own-entry-rule": "c8fbfd60804f893702478927aff30c8085c7a089130f5b9c33daa7d5b799e5dc",
+        "04-darn-own-entry-rule": "60917384284d39ed8bfa18f4f829c7f563448eef30b7151d5914ed89c5c6bdf1"
+      },
+      "startSha": "a44ef5e6659ced9a3d1cf548ea73953c89699ed0",
+      "kind": "fork",
+      "spawnedAt": "2026-10-15T17:39:58Z",
+      "sessionId": "bdd02286-e2f7-4b70-b3b1-6c9a1f638c22",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
+    }
+  }
+}
