@@ -39,4 +39,9 @@ From `docs/research/codex-feasibility.md`, section 3:
 Single-session roles that spawn no forks and only write output files: Burler review chair without a cluster fan, Burler fixer, Describe, Bouncer judge and seed, treadle, friction, merge-conflict resolver, darn writer, the alignment agent.
 Webster, twill, the orch and the Burler cluster fan depend on Claude Code's Agent forks, cross-session messaging and background-task wake-ups, and wait.
 
-The engine-neutral groundwork is the note `llm-agnostic-engine`, and it lands before or with the engine.
+The engine-neutral groundwork is the task series of the operator's 2026-10-15 decision, which replaced the note `llm-agnostic-engine`: `engine-registry`, `engine-config-seams`, `engine-model-choice`, `engine-usage-readers` (cost reporting only), and creel in three stages, `creel-core`, `creel-notices`, `creel-agents`, since creel is a prerequisite for Codex.
+Everything here that needs Codex installed waits on that series: the spike, the `codexengine` itself (rendering the shared guard table as Codex hooks, `codex.yaml`, the registry entry, the engine name, the aliases), the skills sync to `~/.agents/skills`, and tuning.
+
+## Model aliases (operator, 2026-10-15)
+
+The aliases were designed for a second engine: `sonnet[high]` is engine `claude`, model `sonnet`, effort `high`, and Codex's models get the same form, such as `sol[medium]` for engine `codex`, model `sol`, effort `medium` (also Luna, Astra).
