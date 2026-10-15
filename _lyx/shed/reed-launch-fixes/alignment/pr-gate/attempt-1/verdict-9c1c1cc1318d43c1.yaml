@@ -1,0 +1,8 @@
+verdict: approve
+reason: >-
+  The diff covers both parts of the board entry and nothing more.
+  Launches send the shell's discard-line key ahead of the launch line (#627), and lyx shuttle run --focus=false sets Display.KeepViewer so a new agent window never takes the viewer (#628).
+  The optional out-of-session flag and the --anchor hidden failure are left out, as the entry allows.
+  The decision record's open risks name no parent correction, and neither peer run (shed-tackler, twill-fork0) overlaps; there are no parent commits.
+question: ""
+superseded: []
