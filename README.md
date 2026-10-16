@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-16 11:47 UTC; every age below is as of then.
+Rendered 2026-10-16 11:48 UTC; every age below is as of then.
 
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
@@ -34,7 +34,7 @@ Waits only on Running or Ready entries.
 
 | # | Task | Slug | Recipe | After | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | **Burler lens fan in production: per-segment lenses for Discussion and Plan review**<br>• Revisit the parked lens fan with lens and fork prompts that overlap less, measured against solo on the fan-lab fixtures | [`fan-prompt-tuning`](design-fan-prompt-tuning.md) | loom | `webster-fork-stencil-fixes` | 5d | 2m | burler, stencil, loom |
+| 1 | **Burler lens fan in production: per-segment lenses for Discussion and Plan review**<br>• Revisit the parked lens fan with lens and fork prompts that overlap less, measured against solo on the fan-lab fixtures | [`fan-prompt-tuning`](design-fan-prompt-tuning.md) | loom | `webster-fork-stencil-fixes` | 5d | 3m | burler, stencil, loom |
 
 ## Notes
 
@@ -56,12 +56,12 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Note | Slug | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| 1 | **Plan gate paths to external test packages, flaky lyxtemp sweep test, Merge-In halt with no status**<br>• Three intake bugs: validate gate-step package paths at plan time, fix the flaky concurrent-sweep test, and make a producer exit without status diagnosable. | [`twb-btf-is`](design-twb-btf-is.md) | 46m | 46m |  |
-| 2 | **Plan gate paths to external test packages, flaky lyxtemp sweep test, Merge-In halt with no status**<br>• Three intake bugs: validate gate-step package paths at plan time, fix the flaky concurrent-sweep test, and make a producer exit without status diagnosable. | [`twb-btf-it`](design-twb-btf-it.md) | 46m | 46m |  |
-| 3 | **Logging cleanup: right levels, no per-tick noise, reed resize layout bug** | [`twb-btf-ls`](design-twb-btf-ls.md) | 40m | 40m |  |
-| 4 | **Logging cleanup: right levels, no per-tick noise, reed resize layout bug** | [`twb-btf-lt`](design-twb-btf-lt.md) | 38m | 38m |  |
-| 5 | **Reusing a landed task's slug: Publish finds the old run's closed PR and halts** | [`slug-reuse-old-pr`](design-slug-reuse-old-pr.md) | 39m | 39m | loom, batten, board |
-| 6 | **A note that only names a running task stops the alignment agent from settling its PR**<br>• Alignment reads any note naming the slug as a recorded decision | [`alignment-note-mention-trigger`](design-alignment-note-mention-trigger.md) | 36m | 36m | loom |
+| 1 | **Plan gate paths to external test packages, flaky lyxtemp sweep test, Merge-In halt with no status**<br>• Three intake bugs: validate gate-step package paths at plan time, fix the flaky concurrent-sweep test, and make a producer exit without status diagnosable. | [`twb-btf-is`](design-twb-btf-is.md) | 47m | 47m |  |
+| 2 | **Plan gate paths to external test packages, flaky lyxtemp sweep test, Merge-In halt with no status**<br>• Three intake bugs: validate gate-step package paths at plan time, fix the flaky concurrent-sweep test, and make a producer exit without status diagnosable. | [`twb-btf-it`](design-twb-btf-it.md) | 47m | 47m |  |
+| 3 | **Logging cleanup: right levels, no per-tick noise, reed resize layout bug** | [`twb-btf-ls`](design-twb-btf-ls.md) | 41m | 41m |  |
+| 4 | **Logging cleanup: right levels, no per-tick noise, reed resize layout bug** | [`twb-btf-lt`](design-twb-btf-lt.md) | 39m | 39m |  |
+| 5 | **Reusing a landed task's slug: Publish finds the old run's closed PR and halts** | [`slug-reuse-old-pr`](design-slug-reuse-old-pr.md) | 40m | 40m | loom, batten, board |
+| 6 | **A note that only names a running task stops the alignment agent from settling its PR**<br>• Alignment reads any note naming the slug as a recorded decision | [`alignment-note-mention-trigger`](design-alignment-note-mention-trigger.md) | 37m | 37m | loom |
 
 #### Low priority
 
@@ -75,18 +75,18 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Note | Slug | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| 1 | **Fork the Burler fixer from the reviewer session**<br>• The fixer re-reads the context the reviewer just read; fork it from the reviewer to reuse the cache | [`burler-fixer-fork`](design-burler-fixer-fork.md) | 1d | 57m | burler |
+| 1 | **Fork the Burler fixer from the reviewer session**<br>• The fixer re-reads the context the reviewer just read; fork it from the reviewer to reuse the cache | [`burler-fixer-fork`](design-burler-fixer-fork.md) | 1d | 58m | burler |
 | 2 | **Perch review analysis: rounds, tokens and late BLOCKING findings, with proposals** | [`perch-review-analysis`](design-perch-review-analysis.md) | 3h | 3h | burler, loom, shed |
 
 #### Normal priority
 
 | # | Note | Slug | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| 3 | **Go driver and tackler in shed, for every FSM-driven run** | [`twb-btf-ks`](design-twb-btf-ks.md) | 39m | 39m |  |
-| 4 | **tender: hub-wide pause, resume, revive and stale-binary restart** | [`twb-btf-ts`](design-twb-btf-ts.md) | 38m | 38m |  |
-| 5 | **Every role spec carries its resolved engine** | [`twb-btf-et`](design-twb-btf-et.md) | 37m | 37m |  |
-| 6 | **Go driver and tackler in shed, for every FSM-driven run** | [`twb-btf-kt`](design-twb-btf-kt.md) | 37m | 37m |  |
-| 7 | **tender: hub-wide pause, resume, revive and stale-binary restart** | [`twb-btf-tt`](design-twb-btf-tt.md) | 36m | 36m |  |
+| 3 | **Go driver and tackler in shed, for every FSM-driven run** | [`twb-btf-ks`](design-twb-btf-ks.md) | 40m | 40m |  |
+| 4 | **tender: hub-wide pause, resume, revive and stale-binary restart** | [`twb-btf-ts`](design-twb-btf-ts.md) | 40m | 40m |  |
+| 5 | **Every role spec carries its resolved engine** | [`twb-btf-et`](design-twb-btf-et.md) | 38m | 38m |  |
+| 6 | **Go driver and tackler in shed, for every FSM-driven run** | [`twb-btf-kt`](design-twb-btf-kt.md) | 38m | 38m |  |
+| 7 | **tender: hub-wide pause, resume, revive and stale-binary restart** | [`twb-btf-tt`](design-twb-btf-tt.md) | 37m | 37m |  |
 | 8 | **Codex CLI as a second shuttle engine: hands-on spike, then codexengine**<br>• Codex CLI as a second engine to offload Claude tokens: short hands-on tests first, then a codexengine for single-session roles | [`codex-engine`](design-codex-engine.md) | 12d | 1d | shuttle, codex |
 | 9 | **finalize: the discrepancy-document conflict shape**<br>• Divergences that cannot be a git conflict get a precomputed document for the resolving agent instead of markers | [`finalize-discrepancy-doc`](design-finalize-discrepancy-doc.md) | 11d | 11d | fabric, loom |
 | 10 | **shedrecipe: capability declaration instead of manual seam-threading**<br>• A producer declares what it needs and the registry wires it, instead of a hand-threaded Env passthrough field per layer | [`shedrecipe-capabilities`](design-shedrecipe-capabilities.md) | 11d |  | shed |
@@ -102,15 +102,14 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 20 | **Rename the `lyx` binary to `lyd` (name clash with LyX)** | [`rename-binary-lyd`](design-rename-binary-lyd.md) | 4h | 4h | stencil, shuttle |
 | 21 | **Rewrite C13's stacked half for window-per-strand**<br>• C13's stacked 3-row half cannot be set up once reed-add-parentless-placement lands | [`creel-c13-stacked-rewrite`](design-creel-c13-stacked-rewrite.md) | 2h | 2h | creel |
 | 22 | **Go driver messages the orch about a verify halt batten retries itself**<br>• Drop or reword the parent message for a watched verify halt | [`driver-watched-verify-notice`](design-driver-watched-verify-notice.md) | 1h | 1h | shed, batten |
-| 23 | **Every role spec carries its resolved engine** | [`twb-btf-es`](design-twb-btf-es.md) | 40m | 40m |  |
 
 #### Low priority
 
 | # | Note | Slug | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| 24 | **Fabric's Windows path behaviour verified on a Windows host**<br>• Unverified after six hardening rounds; needs a Windows host, not design; take it only if Windows becomes relevant | [`fabric-windows`](design-fabric-windows.md) | 12d | 6d | fabric |
-| 25 | **warp-visibility: CLAUDE.local.md invisible in the Fabric repo's git history**<br>• Expose CLAUDE.local.md by symlink so nothing lyx-related shows in the Fabric repo's history; the constraints half is out of date | [`warp-visibility`](design-warp-visibility.md) | 11d |  | ide, fabric |
-| 26 | **Windows verify timeout kills the whole process tree**<br>• On Windows the verifytree timeout kills only the shell, not the process tree it started | [`verify-watchdog`](design-verify-watchdog.md) | 8d | 16h | shed |
+| 23 | **Fabric's Windows path behaviour verified on a Windows host**<br>• Unverified after six hardening rounds; needs a Windows host, not design; take it only if Windows becomes relevant | [`fabric-windows`](design-fabric-windows.md) | 12d | 6d | fabric |
+| 24 | **warp-visibility: CLAUDE.local.md invisible in the Fabric repo's git history**<br>• Expose CLAUDE.local.md by symlink so nothing lyx-related shows in the Fabric repo's history; the constraints half is out of date | [`warp-visibility`](design-warp-visibility.md) | 11d |  | ide, fabric |
+| 25 | **Windows verify timeout kills the whole process tree**<br>• On Windows the verifytree timeout kills only the shell, not the process tree it started | [`verify-watchdog`](design-verify-watchdog.md) | 8d | 16h | shed |
 
 ### Features
 
@@ -127,8 +126,8 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Note | Slug | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| 5 | **reed: runs overview pane above the orch, gate checklist, Selvage by key, run windows close** | [`twb-btf-rs`](design-twb-btf-rs.md) | 38m | 38m |  |
-| 6 | **reed: runs overview pane above the orch, gate checklist, Selvage by key, run windows close** | [`twb-btf-rt`](design-twb-btf-rt.md) | 36m | 36m |  |
+| 5 | **reed: runs overview pane above the orch, gate checklist, Selvage by key, run windows close** | [`twb-btf-rs`](design-twb-btf-rs.md) | 39m | 39m |  |
+| 6 | **reed: runs overview pane above the orch, gate checklist, Selvage by key, run windows close** | [`twb-btf-rt`](design-twb-btf-rt.md) | 37m | 37m |  |
 | 7 | **Hardener: an autonomous behavior-review campaign that replaces crucible**<br>• Parked by the operator: settle the Tenter/Hardener design and build the campaign that runs a live-substrate module in a sandbox until it converges | [`hardener`](design-hardener.md) | 13d | 3h | burler |
 | 8 | **Orch and batten run from the operator's own long-lived worktree, not only the prime**<br>• Every orch and batten verb refuses outside the prime; let a long-lived personal worktree be an orch's home, with pairs branching from and landing into its branch | [`orch-any-worktree`](design-orch-any-worktree.md) | 13d |  | fabric, batten, orch |
 | 9 | **semantic-index: find code by concept, not by literal keyword**<br>• Semantic search over docstrings and comments; doubtful today, since agents now navigate well with grep | [`semantic-index`](design-semantic-index.md) | 12d |  | quarry |
