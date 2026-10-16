@@ -1,0 +1,7 @@
+verdict: approve
+reason: >-
+  The diff fixes all eight board defects (#677, #678, #681-#686) within the decision record's scope, and D1-D9 hold.
+  Dropping the smoke helper's --anchor own-window follows D9's recorded open risk, because merged parent commit 654cecd6a closes #673 and makes own-window the default.
+  No peer run conflicts in design: the only shared files are SANDBOX-CREEL-SUITE.md with reed-down-and-pane-path, at different lines, and the bookkeeping file test-budget.yaml with webster-fork-stencil-fixes.
+question: ""
+superseded: []
