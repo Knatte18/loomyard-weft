@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-16 11:04 UTC; every age below is as of then.
+Rendered 2026-10-16 11:05 UTC; every age below is as of then.
 
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
@@ -18,7 +18,7 @@ Held by a run; its scope is locked until the run ends.
 | # | Task | Slug | Recipe | At | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | 1 | **Webster fork and pattern-directive stencil fixes from the stencil intent audit**<br>• Structure-aware rename tool from hub config, departures reach the Master via the digest, spawn wording, no inline pack, declared PATTERN changes | [`webster-fork-stencil-fixes`](design-webster-fork-stencil-fixes.md) | loom | Webster | 3h | 2h | stencil, webster, burler, loom |
-| 2 | **Creel stage 1 re-test fixes**<br>• Fix the eight creel defects from the 2026-10-16 re-test, the journal torn-line one first | [`creel-stage1-fixes`](design-creel-stage1-fixes.md) | loom | Merge-Bouncer | 2h | 1h | creel, shuttle, claude |
+| 2 | **Creel stage 1 re-test fixes**<br>• Fix the eight creel defects from the 2026-10-16 re-test, the journal torn-line one first | [`creel-stage1-fixes`](design-creel-stage1-fixes.md) | loom | Publish | 2h | 1h | creel, shuttle, claude |
 | 3 | **reed down ends its watchdog; strand panes resolve lyx to the spawning binary**<br>• Fix reed defects #679 and #680 from the creel re-test | [`reed-down-and-pane-path`](design-reed-down-and-pane-path.md) | loom | Plan-Write | 2h | 25m | reed, shuttle |
 
 ### Ready
@@ -47,8 +47,8 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Note | Slug | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| 1 | **Plan gate paths to external test packages, flaky lyxtemp sweep test, Merge-In halt with no status**<br>• Three intake bugs: validate gate-step package paths at plan time, fix the flaky concurrent-sweep test, and make a producer exit without status diagnosable. | [`twb-btf-is`](design-twb-btf-is.md) | 3m | 3m |  |
-| 2 | **Plan gate paths to external test packages, flaky lyxtemp sweep test, Merge-In halt with no status**<br>• Three intake bugs: validate gate-step package paths at plan time, fix the flaky concurrent-sweep test, and make a producer exit without status diagnosable. | [`twb-btf-it`](design-twb-btf-it.md) | 3m | 3m |  |
+| 1 | **Plan gate paths to external test packages, flaky lyxtemp sweep test, Merge-In halt with no status**<br>• Three intake bugs: validate gate-step package paths at plan time, fix the flaky concurrent-sweep test, and make a producer exit without status diagnosable. | [`twb-btf-is`](design-twb-btf-is.md) | 4m | 4m |  |
+| 2 | **Plan gate paths to external test packages, flaky lyxtemp sweep test, Merge-In halt with no status**<br>• Three intake bugs: validate gate-step package paths at plan time, fix the flaky concurrent-sweep test, and make a producer exit without status diagnosable. | [`twb-btf-it`](design-twb-btf-it.md) | 4m | 4m |  |
 
 #### Low priority
 
@@ -62,8 +62,8 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Note | Slug | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| 1 | **Tune the Burler lens fan prompts**<br>• Revisit the parked lens fan with lens and fork prompts that overlap less, measured against solo on the fan-lab fixtures | [`fan-prompt-tuning`](design-fan-prompt-tuning.md) | 5d | 7m | burler, stencil |
-| 2 | **Fork the Burler fixer from the reviewer session**<br>• The fixer re-reads the context the reviewer just read; fork it from the reviewer to reuse the cache | [`burler-fixer-fork`](design-burler-fixer-fork.md) | 1d | 14m | burler |
+| 1 | **Tune the Burler lens fan prompts**<br>• Revisit the parked lens fan with lens and fork prompts that overlap less, measured against solo on the fan-lab fixtures | [`fan-prompt-tuning`](design-fan-prompt-tuning.md) | 5d | 8m | burler, stencil |
+| 2 | **Fork the Burler fixer from the reviewer session**<br>• The fixer re-reads the context the reviewer just read; fork it from the reviewer to reuse the cache | [`burler-fixer-fork`](design-burler-fixer-fork.md) | 1d | 15m | burler |
 | 3 | **Perch review analysis: rounds, tokens and late BLOCKING findings, with proposals** | [`perch-review-analysis`](design-perch-review-analysis.md) | 2h | 2h | burler, loom, shed |
 
 #### Normal priority
@@ -83,8 +83,8 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 14 | **Module labels from what a task touches, not only what it is about**<br>• Half the landings that changed the shuttle core lacked the shuttle label; derive or check module labels from the plan and the diff | [`labels-from-diff`](design-labels-from-diff.md) | 1d | 1d | board, loom |
 | 15 | **Start one task per overlapping group at a newly-ready start**<br>• When a landing makes several overlapping tasks ready at once, batten starts one per group and names the rest in its notice | [`batten-ready-overlap`](design-batten-ready-overlap.md) | 22h | 22h | batten |
 | 16 | **Rename the `lyx` binary to `lyd` (name clash with LyX)** | [`rename-binary-lyd`](design-rename-binary-lyd.md) | 4h | 4h | stencil, shuttle |
-| 17 | **Rewrite C13's stacked half for window-per-strand**<br>• C13's stacked 3-row half cannot be set up once reed-add-parentless-placement lands | [`creel-c13-stacked-rewrite`](design-creel-c13-stacked-rewrite.md) | 1h | 1h | creel |
-| 18 | **Go driver messages the orch about a verify halt batten retries itself**<br>• Drop or reword the parent message for a watched verify halt | [`driver-watched-verify-notice`](design-driver-watched-verify-notice.md) | 41m | 41m | shed, batten |
+| 17 | **Rewrite C13's stacked half for window-per-strand**<br>• C13's stacked 3-row half cannot be set up once reed-add-parentless-placement lands | [`creel-c13-stacked-rewrite`](design-creel-c13-stacked-rewrite.md) | 2h | 2h | creel |
+| 18 | **Go driver messages the orch about a verify halt batten retries itself**<br>• Drop or reword the parent message for a watched verify halt | [`driver-watched-verify-notice`](design-driver-watched-verify-notice.md) | 42m | 42m | shed, batten |
 
 #### Low priority
 
