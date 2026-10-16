@@ -1093,6 +1093,23 @@
       "status": "running · Loom-Preflight",
       "created": "2026-10-16T11:10:50Z",
       "revised": "2026-10-16T11:10:50Z"
+    },
+    {
+      "id": 613,
+      "slug": "alignment-note-mention-trigger",
+      "title": "A note that only names a running task stops the alignment agent from settling its PR",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "loom"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "Alignment reads any note naming the slug as a recorded decision",
+      "body": "## Seen\n\nOn 2026-10-16 the PR-Gate alignment agent of `creel-stage1-fixes` did not settle PR #691: \"a decision was recorded for this task while the alignment agent ran\".\nNo decision was recorded; the decision record was unchanged.\nThe trigger was the new note `slug-reuse-old-pr` (#692), whose body names `creel-stage1-fixes`, which changed the snapshot of notes naming the slug.\nThe orch then had to review the PR with a fork.\n\n## Idea\n\nThe alignment agent counts only a real decision on the task (the run decision record, or a board note recorded as a decision for that held task) as a change, and not any note that only mentions the slug.",
+      "created": "2026-10-16T11:10:55Z",
+      "revised": "2026-10-16T11:10:55Z"
     }
   ]
 }

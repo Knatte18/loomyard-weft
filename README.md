@@ -52,12 +52,13 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 3 | **Logging cleanup: right levels, no per-tick noise, reed resize layout bug** | [`twb-btf-ls`](design-twb-btf-ls.md) | 3m | 3m |  |
 | 4 | **Logging cleanup: right levels, no per-tick noise, reed resize layout bug** | [`twb-btf-lt`](design-twb-btf-lt.md) | 1m | 1m |  |
 | 5 | **Reusing a landed task's slug: Publish finds the old run's closed PR and halts** | [`slug-reuse-old-pr`](design-slug-reuse-old-pr.md) | 2m | 2m | loom, batten, board |
+| 6 | **A note that only names a running task stops the alignment agent from settling its PR**<br>• Alignment reads any note naming the slug as a recorded decision | [`alignment-note-mention-trigger`](design-alignment-note-mention-trigger.md) | 0m | 0m | loom |
 
 #### Low priority
 
 | # | Note | Slug | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| 6 | **A hub pause leaves background forks and shells running, so hibernate never confirms**<br>• Pause interrupts turns but not background forks or shells; sessions read busy and hibernate confirmation fails | [`pause-background-work`](design-pause-background-work.md) | 1d | 1d | shuttle, webster |
+| 7 | **A hub pause leaves background forks and shells running, so hibernate never confirms**<br>• Pause interrupts turns but not background forks or shells; sessions read busy and hibernate confirmation fails | [`pause-background-work`](design-pause-background-work.md) | 1d | 1d | shuttle, webster |
 
 ### Enhancements
 
