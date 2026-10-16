@@ -36,7 +36,7 @@
 - `contracts/specs/refusal-spec.md`
 
 **Uses:**
-- `plan:internal/shedrecipe#RowModelKeys`
+- `internal/shedrecipe#RowModelKeys`
 
 **Intent:**
 Make each perch's fan key and fixer fan key a per-round list in `loom.yaml`, in the grammar of the per-segment model keys, and retire `fan_review` (D2, D3).

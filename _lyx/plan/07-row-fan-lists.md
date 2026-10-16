@@ -1,7 +1,7 @@
 # Card 7 — row-fan-lists
 
 **Create:**
-- `plan:internal/shedrecipe#RowModelKeys` -> `type RowModelKeys struct`
+- `internal/shedrecipe#RowModelKeys`
 
 **Edit:**
 - `internal/shedrecipe#Env`
