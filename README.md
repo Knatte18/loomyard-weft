@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-16 14:39 UTC; every age below is as of then.
+Rendered 2026-10-16 14:40 UTC; every age below is as of then.
 
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
@@ -109,11 +109,3 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | # | Note | Slug | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | 19 | **Scoped build and test for C# hubs on Windows**<br>• Verify gates in a .NET hub build and test only the projects a card touches, since a scanned Windows machine makes every build slow. | [`dotnet-scoped-verify`](design-dotnet-scoped-verify.md) | 4d | 4d | shed, webster |
-
-## Done
-
-Finished, awaiting `lyx board prune --apply`.
-
-| # | Entry | Slug | Age | Revised | Labels |
-| --- | --- | --- | --- | --- | --- |
-| 1 | **Burler lens fan and twill fixer in production, per-segment lenses for Discussion and Plan review**<br>• Revisit the parked lens fan with lens and fork prompts that overlap less, measured against solo on the fan-lab fixtures | [`fan-prompt-tuning`](design-fan-prompt-tuning.md) | 6d | 2h | burler, stencil, loom |
