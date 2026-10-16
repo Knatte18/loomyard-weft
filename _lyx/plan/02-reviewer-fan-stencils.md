@@ -4,11 +4,11 @@
 - `contracts/stencils/burler/burler-fork-reading.md`
 - `contracts/stencils/burler/burler-cluster-solo.md`
 - `contracts/stencils/burler/burler-cluster-fan.md`
-- `plan:contracts/stencils#BurlerForkReading` -> `var BurlerForkReading []byte`
-- `plan:contracts/stencils#BurlerClusterSolo` -> `var BurlerClusterSolo []byte`
-- `plan:contracts/stencils#BurlerClusterFan` -> `var BurlerClusterFan []byte`
-- `plan:internal/burlerengine#forkReadingBlock` -> `func forkReadingBlock(stencilsDir string, p *Profile) (string, error)`
-- `plan:internal/burlerengine#lensList` -> `func lensList(lenses []Lens) string`
+- `contracts/stencils#BurlerForkReading`
+- `contracts/stencils#BurlerClusterSolo`
+- `contracts/stencils#BurlerClusterFan`
+- `internal/burlerengine#forkReadingBlock`
+- `internal/burlerengine#lensList`
 
 **Edit:**
 - `contracts/stencils/burler/burler-step-1-explore.md`

@@ -3,12 +3,12 @@
 **Create:**
 - `contracts/stencils/burler/burler-fix-self-check.md`
 - `contracts/stencils/burler/burler-fix-check-rubric.md`
-- `plan:contracts/stencils#BurlerFixSelfCheck` -> `var BurlerFixSelfCheck []byte`
-- `plan:contracts/stencils#BurlerFixCheckRubric` -> `var BurlerFixCheckRubric []byte`
-- `plan:internal/burlerengine#selfCheckBlock` -> `func selfCheckBlock(stencilsDir string, p *Profile) (string, error)`
-- `plan:internal/burlerengine#forkViolation` -> `func forkViolation(audit *shuttleengine.ForkAudit) error`
-- `plan:internal/burlerengine#auditFixRound` -> `func auditFixRound(audit *shuttleengine.ForkAudit, wantN int) (warnings []string, forks int, err error)`
-- `plan:internal/burlerengine#twillEngineRefusal` -> `func twillEngineRefusal(opts RunOpts, err error) error`
+- `contracts/stencils#BurlerFixSelfCheck`
+- `contracts/stencils#BurlerFixCheckRubric`
+- `internal/burlerengine#selfCheckBlock`
+- `internal/burlerengine#forkViolation`
+- `internal/burlerengine#auditFixRound`
+- `internal/burlerengine#twillEngineRefusal`
 
 **Edit:**
 - `contracts/stencils/burler/burler-step-fix.md`
@@ -37,7 +37,7 @@
 - `internal/burlerengine/doc.go`
 
 **Uses:**
-- `plan:internal/burlerengine#lensList`
+- `internal/burlerengine#lensList`
 - `internal/burlerengine#newFixCase`
 - `internal/burlerengine#testClusterFanConfig`
 - `internal/seatengine#RunnerShuttle`
