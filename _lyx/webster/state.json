@@ -411,7 +411,7 @@
       }
     }
   ],
-  "currentBatch": 0,
+  "currentBatch": 5,
   "masterStrand": "82c75826b095a6c5a7307cea152d3217",
   "masterSessionId": "26014106-761d-4bd2-97e5-9d1eed89ef07",
   "masterEngine": "claude",
@@ -491,6 +491,22 @@
       "bracketTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-creel-stage1-fixes/26014106-761d-4bd2-97e5-9d1eed89ef07/subagents/agent-ac92d2e0ba2c0dec8.jsonl"
       ]
+    },
+    "5": {
+      "slug": "shuttle-interrupt-restoring",
+      "cards": [
+        "05-shuttle-interrupt-restoring"
+      ],
+      "cardHashes": {
+        "05-shuttle-interrupt-restoring": "5d7cef116467c74fda0e8aa4780667d4f8f9e6abf2a84e83487e4bafd8a79d79"
+      },
+      "startSha": "b9a551990030faec9a5fdd89b8609715fe60ea1d",
+      "kind": "fork",
+      "spawnedAt": "2026-10-16T06:01:45Z",
+      "sessionId": "26014106-761d-4bd2-97e5-9d1eed89ef07",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
     }
   },
   "seenForkTranscripts": [
