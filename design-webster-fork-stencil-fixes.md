@@ -2,8 +2,6 @@
 
 `webster-fork-stencil-fixes` · Task · bug, stencil, webster, burler, loom
 
-Depends on: [`loom-stencil-wording`](design-loom-stencil-wording.md)
-
 Bundle of the Webster fork and pattern-directive findings of the stencil intent audit of 2026-10-15, all in `contracts/stencils/webster/`, `contracts/stencils/pattern/`, `contracts/stencils/edit/`, the Webster-Review rubric and the plan spec.
 Line numbers as of `main` on 2026-10-16.
 
