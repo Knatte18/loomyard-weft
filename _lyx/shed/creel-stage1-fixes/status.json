@@ -1,11 +1,11 @@
 {
-  "current_producer": "Webster-Bouncer",
+  "current_producer": "Describe",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Webster-Bouncer",
-    "last": "Webster-Burler-Fix → bounced to Webster-Bouncer",
+    "now": "Describe",
+    "last": "Webster-Bouncer → done",
     "wait": ""
   },
   "history": [
@@ -291,6 +291,12 @@
       "at": "2026-10-16T06:37:55Z",
       "budget_exempt": true,
       "routed_to": "Webster-Bouncer"
+    },
+    {
+      "producer": "Webster-Bouncer",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYXHUB/creel-stage1-fixes/_lyx/reviews/webster/round-1-bouncer-ledger.md",
+      "at": "2026-10-16T06:38:28Z"
     }
   ],
   "product": {
