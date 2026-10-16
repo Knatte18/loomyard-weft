@@ -1,6 +1,6 @@
 # reed down ends its watchdog; strand panes resolve lyx to the spawning binary
 
-`reed-down-and-pane-path` · Task · bug, reed, shuttle · running · Plan-Write
+`reed-down-and-pane-path` · Task · bug, reed, shuttle · running · Plan-Bouncer
 
 Two reed defects from the creel stage 1 re-test of 2026-10-16.
 Operator decision 2026-10-16: the two run as one low-budget task.
