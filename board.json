@@ -990,6 +990,23 @@
           "review_max_bounces": 2
         }
       }
+    },
+    {
+      "id": 598,
+      "slug": "reed-673-workaround-home",
+      "title": "Where the #673 workaround removal lands",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "reed"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "Home of the #673 workaround for reed-add-parentless-placement",
+      "body": "The `reed-add-parentless-placement` task's workaround removal targets `ORCHESTRATOR.md`'s #673 entry wherever the parent holds it there, and `CLAUDE.md`'s otherwise.\nOn that task's `landed` notice, when the parent's `ORCHESTRATOR.md` still holds the #673 entry, the orch hands a fresh agent its removal.\n",
+      "created": "2026-10-16T09:15:52Z",
+      "revised": "2026-10-16T09:15:52Z"
     }
   ]
 }
