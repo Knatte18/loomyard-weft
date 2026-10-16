@@ -1,7 +1,7 @@
 # Card 4 — The watchdog honours a stop, re-checks on exit and respawns only for a live hub
 
 **Create:**
-- `plan:internal/reedcli#watchdogStopFloor` -> `const watchdogStopFloor = time.Second`
+- `internal/reedcli#watchdogStopFloor`
 
 **Edit:**
 - `internal/reedcli#watchdogHubIdleCycles`

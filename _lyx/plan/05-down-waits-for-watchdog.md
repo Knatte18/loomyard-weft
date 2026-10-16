@@ -1,12 +1,12 @@
 # Card 5 — The down verb waits, bounded, for the watchdog to leave its loop
 
 **Create:**
-- `plan:internal/reedcli#watchdogDownWait` -> `const watchdogDownWait = 10 * time.Second`
-- `plan:internal/reedcli#watchdogDownPoll` -> `const watchdogDownPoll = 100 * time.Millisecond`
-- `plan:internal/reedcli#probeWatchdogLock` -> `func probeWatchdogLock(lockPath string) (free bool, err error)`
-- `plan:internal/reedcli#waitWatchdogLockFree` -> `func waitWatchdogLockFree(hub string, wait, poll time.Duration, probe func(lockPath string) (bool, error), sleep func(time.Duration))`
-- `plan:internal/reedcli#fakeStrandOps.Down` -> `func (f *fakeStrandOps) Down() (reedengine.DownResult, error)`
-- `plan:internal/reedcli#TestDownCmd_WaitsForTheWatchdogOnlyWhenItEndedTheServer` -> `func TestDownCmd_WaitsForTheWatchdogOnlyWhenItEndedTheServer(t *testing.T)`
+- `internal/reedcli#watchdogDownWait`
+- `internal/reedcli#watchdogDownPoll`
+- `internal/reedcli#probeWatchdogLock`
+- `internal/reedcli#waitWatchdogLockFree`
+- `internal/reedcli#fakeStrandOps.Down`
+- `internal/reedcli#TestDownCmd_WaitsForTheWatchdogOnlyWhenItEndedTheServer`
 
 **Edit:**
 - `internal/reedcli#strandOps`
