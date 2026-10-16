@@ -1,6 +1,6 @@
 # tender: hub-wide pause, resume, revive and stale-binary restart
 
-`twb-btf-ts` · Note · enhancement · paused · Plan-Burler-Review
+`twb-btf-ts` · Note · enhancement · running · Plan-Burler-Review
 
 # tender: hub-wide pause, resume, revive and stale-binary restart
 
