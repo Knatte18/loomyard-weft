@@ -1,9 +1,9 @@
 # Card 14 — rename-tool-refusal
 
 **Create:**
-- `plan:internal/websterengine#ErrRenameToolMissing` -> `var ErrRenameToolMissing = errors.New("webster: the batch holds a symbol Rename pair and the hub lists no rename tool")`
-- `plan:internal/websterengine#renameToolRefusal` -> `func renameToolRefusal(plan *planparser.Plan, batch batcher.Batch, renameTools []string, verb string) error`
-- `plan:internal/webstercli#TestRenameToolMissingEnvelope` -> `func TestRenameToolMissingEnvelope(t *testing.T)`
+- `internal/websterengine#ErrRenameToolMissing`
+- `internal/websterengine#renameToolRefusal`
+- `internal/webstercli#TestRenameToolMissingEnvelope`
 
 **Edit:**
 - `internal/websterengine#BeginBatch`
