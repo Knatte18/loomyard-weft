@@ -827,6 +827,24 @@
       "body": "## Seen\n\nFound by the stencil intent audit (`docs/research/stencil-intent-audit-2026-10-15/findings.md`, F5); line numbers as of `main` on 2026-10-16.\n\n- `contracts/stencils/webster/webster-prefix-fork.md:24` tells the fork that \"Master's own `await-batch` sees it and takes over\" once the report is written.\n  Master no longer runs `await-batch`: it ends its turn after the spawn and is woken by the fork's completion notification (`internal/websterengine/doc.go`).\n  The banner at `:3` likewise names an Agent-tool call, \"Read this file and follow it exactly: \u003cpath\u003e\", that Master never sends.\n- `contracts/stencils/webster/webster-template-master.md:12` tells a fork to recognise itself by that same instruction, but the fork prompt Master sends (`:73`, and the verify-fix fork at `:168`) reads \"Read this file and do exactly and only what it says\".\n\n## Decision\n\nOperator decision (2026-10-16): the stencils' account of how a fork is spawned and how Master learns it finished is wrong and is to be fixed; the operator leaves the shape of the fix to the agent.\n\nOperator view, not a decision: Master's prompt cache is believed to stay warm while a fork runs.\n\n## Idea\n\nAgent's suggestion: in the fork prefix, say the fork's turn ends after the report and Master is woken by its completion notification, and drop the `await-batch` wording except the ban on running it; make the master's self-identification rule at `:12` quote the instruction Master sends, or key it on \"You are an implementer fork\", which both spawn prompts open with.\nThe cache remark needs no change here: the fix touches only wording.\n",
       "created": "2026-10-16T07:15:52Z",
       "revised": "2026-10-16T07:15:52Z"
+    },
+    {
+      "id": 571,
+      "slug": "rework-findings-not-operator",
+      "title": "PR-Rework stencil calls agent findings the operator's",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "stencil",
+        "loom"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "The rework writer is told rejection findings are the operator's, but they come from the alignment agent or the orch.",
+      "body": "## Seen\n\nFound by the stencil intent audit (`docs/research/stencil-intent-audit-2026-10-15/findings.md`, F6); line numbers as of `main` on 2026-10-16.\n\n`contracts/stencils/loom/loom-template-rework.md:12` and `:29` tell the PR-Rework writer that the rejection's findings are \"the operator's findings\".\nA PR rejection comes from the alignment agent, whose report becomes the findings (`internal/landingshed/pralign.go`, `applyReject`), or from the orch's reviewer fork; `contracts/stencils/orch/orch-template-role.md` has the orch, never the operator, decide at PR-Gate.\nA writer told the findings are the operator's may treat an agent's claim as an operator decision.\n\n## Decision\n\nOperator decision (2026-10-16): the wording is wrong and is to be fixed.\n\n## Idea\n\nAgent's suggestion: call them the reviewer's findings on the rejected pull request, and say they come from the alignment agent or the parent, so the writer weighs them as a review rather than as an operator ruling.\n",
+      "created": "2026-10-16T07:15:52Z",
+      "revised": "2026-10-16T07:15:52Z"
     }
   ]
 }

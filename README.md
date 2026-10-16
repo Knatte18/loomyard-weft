@@ -53,12 +53,13 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | # | Note | Slug | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | 1 | **Webster stencils describe a stale fork spawn and wake-up**<br>• The fork prefix still says Master waits with await-batch, and Master recognises forks by an instruction it never sends. | [`webster-fork-spawn-wording`](design-webster-fork-spawn-wording.md) | 0m | 0m | stencil, webster |
+| 2 | **PR-Rework stencil calls agent findings the operator's**<br>• The rework writer is told rejection findings are the operator's, but they come from the alignment agent or the orch. | [`rework-findings-not-operator`](design-rework-findings-not-operator.md) | 0m | 0m | stencil, loom |
 
 #### Low priority
 
 | # | Note | Slug | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| 2 | **A hub pause leaves background forks and shells running, so hibernate never confirms**<br>• Pause interrupts turns but not background forks or shells; sessions read busy and hibernate confirmation fails | [`pause-background-work`](design-pause-background-work.md) | 1d | 1d | shuttle, webster |
+| 3 | **A hub pause leaves background forks and shells running, so hibernate never confirms**<br>• Pause interrupts turns but not background forks or shells; sessions read busy and hibernate confirmation fails | [`pause-background-work`](design-pause-background-work.md) | 1d | 1d | shuttle, webster |
 
 ### Enhancements
 
