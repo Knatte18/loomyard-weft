@@ -998,6 +998,25 @@
       "body": "Imported from [issue #681](https://github.com/Knatte18/loomyard/issues/681).\n\nSeen: `lyx creel read \u003e /dev/full 2\u003eerr` exits 1 and `err` is empty. The mail correctly stays unread (the #660 fix holds).\n\nExpected: a short error on stderr, since the JSON error envelope cannot be written to stdout either.\n\nFound by the creel stage 1 re-test of 2026-10-16 (sandbox scenario C4).",
       "created": "2026-10-16T08:56:13Z",
       "revised": "2026-10-16T08:56:13Z"
+    },
+    {
+      "id": 591,
+      "slug": "creel-stale-stall-line",
+      "title": "creel inject --wait prints a draft stall from 37 s earlier as if current",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "creel"
+      ],
+      "issues": [
+        682
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Imported from [issue #682](https://github.com/Knatte18/loomyard/issues/682).\n\nSeen: the owner `inject --wait` into lyt:bob printed `lyt:bob is stalled: the input box holds a draft ... (at 10:39:55)` 37 s after the draft had been cleared, then injected at once.\n\nExpected: no stall line once the input box is empty, or one clearly marked as past.\n\nFound by the creel stage 1 re-test of 2026-10-16 (sandbox scenario C8).",
+      "created": "2026-10-16T08:56:16Z",
+      "revised": "2026-10-16T08:56:16Z"
     }
   ]
 }
