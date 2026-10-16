@@ -1,0 +1,7 @@
+verdict: approve
+reason: >-
+  D1-D5 cover every point of the entry's operator decision and Idea list: the orch checks the inbox by number and title only, one one-shot fork takes each issue to a note, fold or noise close with module labels and returns one line per issue, and import prints a short result.
+  The ly:board and doc.go updates follow from D1 and D2.
+  Moving the check to Go (orch-split) and labels from diffs (labels-from-diff) are kept out of scope, and the one peer, shuttle-open-permission, does not overlap.
+question: ""
+superseded: []
