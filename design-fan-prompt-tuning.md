@@ -245,3 +245,7 @@ Report: `docs/research/burler-twill-fixer-bench-2026-10-16/report.md`, a proof o
 - The reviewer's lens set and the fixer's self-check lens set are designed together per perch so they complement each other, not repeat each other.
 - A defect in the reviewer's own proposed fix is caught at reviewer level or by a lens that challenges the proposal itself (whether the proposed change is right and what it breaks), not only its execution.
 - This is built in this task together with the lens fan; real runs are the reference, with no further bench.
+
+## Operator view, not a decision (2026-10-16)
+
+The aim of the two together: the reviewer's lens fan and the twill fixer make one Burler round's review and fix much more solid, so fewer rounds are needed.
