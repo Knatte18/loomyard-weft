@@ -1,15 +1,15 @@
 {
   "runGuid": "0acc8524e37c46d7f6bf33304842b221",
-  "planFingerprint": "cf266601f26210d15eddf359b86b6ac48e449d84fe061acc25c6eaa9ccbcb6c7",
+  "planFingerprint": "ffc26779d34b5bc56210c990ce5b073b754e91aaf0f4c0669de1da1e740d1385",
   "planFileHashes": {
     "00-overview.md": "dd9e232a4268b1190e73fad0fc24a00027cbf2f0a81a883bc1bc8d2571526593",
     "01-production-fans.md": "66b6501afdb897bd098c68abcb637dbd38334c93ce0e47659ebc7df145700ad6",
     "02-reviewer-fan-stencils.md": "dcffc51c6a90161d4f0b19c2481e04fa82ff106b2bb868ed562ee46ad40ee243",
     "03-twill-fixer-engine.md": "76282a438f217a67257177f80692c8c55052db56396bbf0ba0a1313b91873c8f",
     "04-burler-run-fix-fan.md": "d310a521c767318c76932e6d7bc189eccf8f1fac501e72169e3bf03433ac2f23",
-    "05-recorded-round-fans.md": "fc9564e0d6783e40595206a161a069f15c3e4278f0a18d41b06228a57d2e0655",
-    "06-bouncer-per-round-exclusions.md": "39140449e87d6420eae968aa46750846790ae589d02e2dda6c13755c61523acc",
-    "07-row-fan-lists.md": "4fc19fc42cb31c7580bef7434d1b4f31d3b64f487683bb402c29c85988af24f4",
+    "05-recorded-round-fans.md": "985359ef3631cdf844a1337e5032a7d1301a246194e26ef4a4f16af56cc1a8aa",
+    "06-bouncer-per-round-exclusions.md": "67d79881230ba42f813b26e13d9d50eb7afd73377f179037c76f6016ce74bc8d",
+    "07-row-fan-lists.md": "04ba09a5da3b13d54d714d6ca737b40c7b867a0eac180eba13a7bbd372fb96da",
     "08-loom-per-round-fan-keys.md": "096557deb863e2d48f3d8d935cced69455216d2e533818eb1c3bd922b9598465"
   },
   "planOverviewFrameHash": "5171bc71e2e5e77e0851d9a146eeb39b1bad8b2d70a174288f49655325bac7f3",
@@ -250,7 +250,7 @@
       }
     }
   ],
-  "currentBatch": 4,
+  "currentBatch": 0,
   "masterStrand": "9e18c98f07f78cbdb16a10227347d6b2",
   "masterSessionId": "518950fe-4628-411d-8e44-a355236b5940",
   "masterEngine": "claude",
@@ -304,19 +304,38 @@
       ],
       "cardHashes": {
         "04-burler-run-fix-fan": "d310a521c767318c76932e6d7bc189eccf8f1fac501e72169e3bf03433ac2f23",
-        "05-recorded-round-fans": "fc9564e0d6783e40595206a161a069f15c3e4278f0a18d41b06228a57d2e0655",
-        "06-bouncer-per-round-exclusions": "39140449e87d6420eae968aa46750846790ae589d02e2dda6c13755c61523acc"
+        "05-recorded-round-fans": "985359ef3631cdf844a1337e5032a7d1301a246194e26ef4a4f16af56cc1a8aa",
+        "06-bouncer-per-round-exclusions": "67d79881230ba42f813b26e13d9d50eb7afd73377f179037c76f6016ce74bc8d"
       },
       "startSha": "9ea64b16dfa3dfe505883b85174da7e565b6b1cf",
       "kind": "fork",
       "spawnedAt": "2026-10-16T14:04:27Z",
       "sessionId": "518950fe-4628-411d-8e44-a355236b5940",
       "engine": "claude",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "04-burler-run-fix-fan",
+        "status": "done",
+        "head_sha": "38389e18498d6a2cc4c589aaeda49fff154cfa23",
+        "deviations": [
+          "internal/shedadapters/burlerfix_test.go",
+          "internal/shedadapters/burlerreview_test.go"
+        ]
+      },
+      "cardShas": [
+        "38389e18498d6a2cc4c589aaeda49fff154cfa23"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-fan-prompt-tuning/518950fe-4628-411d-8e44-a355236b5940/subagents/agent-a031164123a47b899.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-fan-prompt-tuning/518950fe-4628-411d-8e44-a355236b5940/subagents/agent-a031164123a47b899.jsonl"
+      ]
     }
   },
   "seenForkTranscripts": [
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-fan-prompt-tuning/518950fe-4628-411d-8e44-a355236b5940/subagents/agent-ae3b58559664a7121.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-fan-prompt-tuning/518950fe-4628-411d-8e44-a355236b5940/subagents/agent-ae3b58559664a7121.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-fan-prompt-tuning/518950fe-4628-411d-8e44-a355236b5940/subagents/agent-a031164123a47b899.jsonl"
   ]
 }

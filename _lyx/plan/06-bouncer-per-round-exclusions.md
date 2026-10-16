@@ -1,7 +1,7 @@
 # Card 6 — bouncer-per-round-exclusions
 
 **Create:**
-- `plan:internal/shedadapters#Bouncer.excludesLenses` -> `func (b *Bouncer) excludesLenses(round int) (bool, string)`
+- `internal/shedadapters#Bouncer.excludesLenses`
 
 **Edit:**
 - `internal/shedadapters#BouncerConfig`
@@ -16,9 +16,9 @@
 - `internal/shedadapters/doc.go`
 
 **Uses:**
-- `plan:internal/shedadapters#readRecordedFans`
-- `plan:internal/shedadapters#roundFan`
-- `plan:internal/shedadapters#recordRoundFans`
+- `internal/shedadapters#readRecordedFans`
+- `internal/shedadapters#roundFan`
+- `internal/shedadapters#recordRoundFans`
 - `internal/shedadapters#newBouncerFixture`
 - `internal/shedadapters#withStencilOverrides`
 - `internal/shedadapters#assertExcludeLensesText`

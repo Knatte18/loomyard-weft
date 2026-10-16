@@ -24,7 +24,7 @@
 
 **Uses:**
 - `internal/shedrecipe#captureReview`
-- `plan:internal/shedadapters#RoundFans`
+- `internal/shedadapters#RoundFans`
 
 **Intent:**
 Carry a segment's per-round fan lists and its model keys from the wiring to its rows (D2, D7, D10), in place of one fan per row.

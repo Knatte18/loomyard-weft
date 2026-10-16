@@ -1,11 +1,11 @@
 # Card 5 — recorded-round-fans
 
 **Create:**
-- `plan:internal/shedadapters#RoundFans` -> `type RoundFans struct`
-- `plan:internal/shedadapters#roundFan` -> `func roundFan(fans []string, round int) string`
-- `plan:internal/shedadapters#recordRoundFans` -> `func recordRoundFans(runDir string, round int, now func() time.Time, fan, fixFan string) error`
-- `plan:internal/shedadapters#readRecordedFans` -> `func readRecordedFans(runDir string, round int) (fan, fixFan string, err error)`
-- `plan:internal/shedadapters#TestBurlerReviewProducer_Call_RecordsRoundFans` -> `func TestBurlerReviewProducer_Call_RecordsRoundFans(t *testing.T)`
+- `internal/shedadapters#RoundFans`
+- `internal/shedadapters#roundFan`
+- `internal/shedadapters#recordRoundFans`
+- `internal/shedadapters#readRecordedFans`
+- `internal/shedadapters#TestBurlerReviewProducer_Call_RecordsRoundFans`
 
 **Edit:**
 - `internal/shedadapters#roundUsage`
