@@ -49,7 +49,7 @@ Then an idle listing on a stop-woken cycle logs at Info that the daemon exits on
 A cancelled context still returns `ctx.Err()`.
 A daemon whose watch failed to open never sees a stop and exits by the idle-cycle rule as today.
 `runWatchdogLoop`'s doc comment is rewritten to match: its return conditions name the stop exit and the idle replaced retire, and the replaced check is described as running after the session listing on each timer tick.
-`watchdogHubIdleCycles`' comment says the three cycles cover a `down` followed by an `up` while the daemon has not consumed a stop: a non-last `down`, or a daemon whose watch failed to open.
+`watchdogHubIdleCycles`' comment says the three cycles cover a `down` followed by an `up` for a daemon whose watch failed to open and so never sees the stop, and a transient list-sessions error, which `sessionsAreIdle` counts as idle.
 
 `reedCLI` gains the test seam `watchdogListSessions func(tmuxPath, socketKey string) ([]string, error)`, nil meaning `reedengine.ListSessions`.
 `watchdogCmd`'s RunE passes it to the loop and, after the loop returns:
@@ -57,6 +57,8 @@ A daemon whose watch failed to open never sees a stop and exits by the idle-cycl
 - `errWatchdogBinaryReplaced`: releases the lock and respawns, as today.
 - nil (a stop, the idle-cycle rule or an idle replaced retire): releases the lock, then, unless `cmd.Context()` is done, lists the hub's sessions once more through the same lister; an affirmative listing (`!sessionsAreIdle`) calls the respawn seam (`c.respawnWatchdog`, else `reedengine.SpawnWatchdog`, with `testing.Testing()` as today) and logs at Info that a successor was spawned for a live hub; an idle listing spawns nothing (D3a).
 - any other error (a cancelled context): logs as today and spawns nothing, whatever a listing would say.
+
+The exit-path table's stop-with-an-idle-listing-and-a-cancelled-context row is the test of the nil branch's `cmd.Context()` guard.
 
 Bound: the stop lets a writer skip the idle-cycle tolerance and shorten the cadence floor to `StopFloor`, never below one second in production; the exit re-check costs one list-sessions and at most one spawn per daemon exit, and the successor is single-instance by the lock.
 `sessionsAreIdle` counts a list error as idle, so a transient error on a stop-woken cycle can end a daemon whose hub still has a session; the re-check bounds that to one successor spawn.
@@ -72,6 +74,8 @@ Every row asserts the new `stop` result.
 Its table gains, per row, `IdleCycles`, a lister script answering by call number (idle as an empty listing, affirmative as one session name), and whether the test writes the stop.
 Rows keep `DiscoveryCycle` and `DiscoveryCeiling` at 1ms and add `StopFloor` 1ms and `OrphanGoneCycles` 1000 so no affirmative cycle reaps; the real `reedengine.OpenFileWatch` watches the hub scratch directory; each row is bounded by a 10-second wait on the command's return.
 The test writes the stop the way `Engine.writeDiscoverStop` does, `DiscoverStopMarker` through `fsx.AtomicWriteBytes` onto the signal path, once the lister has been called so the watch is open.
+The empty-logs-directory assertion is limited to the lock-already-held row, the only row that runs no loop.
+Every other row asserts its own trace lines instead: for example the stop-with-an-idle-listing row the exit-on-stop Info line, and the rows with no successor that no successor-spawned line appears.
 Rows:
 
 - lock already held: unchanged.
@@ -79,7 +83,8 @@ Rows:
 - idle-cycle exit (`IdleCycles` 3, every listing idle): no respawn.
 - idle-cycle exit, re-check affirmative (the call after the third idle cycle answers a session): one respawn, lock free.
 - stop with an idle listing (`IdleCycles` 1000000, so the idle-cycle rule cannot end the run within the bound): the command returns, the re-check is idle, no respawn.
-- stop with an affirmative listing (`IdleCycles` 1000000, every call affirmative): after the marker is consumed (the file is gone) and one more lister call the command is still running; the test cancels its context and the command returns with no respawn, though the lister still answers a session.
+- stop with an affirmative listing (`IdleCycles` 1000000, every call affirmative): after the marker is consumed (the file is gone) and two more lister calls, the second proving the stop-woken cycle finished and the loop started another, the command is still running; the test cancels its context and the command returns with no respawn, though the lister still answers a session.
+- stop with an idle listing and a cancelled context (`IdleCycles` 1000000): the lister script cancels the command's context during the stop-woken cycle's call, answers idle on that call and affirmative on every later call; the loop returns nil, and the row asserts no respawn and no lister call after the cancelling one.
 - binary replaced, idle cycle listing and idle re-check (`IdleCycles` 1000000): no respawn, the "retires on a replaced binary with no successor" Info line is in the trace and the "watchdog retired" line is not.
 - binary replaced, idle cycle listing and affirmative re-check (`IdleCycles` 1000000): one respawn, lock free.
 

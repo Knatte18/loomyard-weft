@@ -4,12 +4,13 @@
 - `plan:internal/reedengine#DiscoverStopMarker` -> `const DiscoverStopMarker = "stop"`
 - `plan:internal/reedengine#Engine.writeDiscoverStop` -> `func (e *Engine) writeDiscoverStop()`
 - `plan:internal/reedengine#TestDown_WritesTheDiscoverStopOnlyWhenItEndsTheServer` -> `func TestDown_WritesTheDiscoverStopOnlyWhenItEndsTheServer(t *testing.T)`
-- `plan:internal/reedengine#TestTouchDiscoverSignal_TruncatesAPendingStop` -> `func TestTouchDiscoverSignal_TruncatesAPendingStop(t *testing.T)`
 
 **Edit:**
 - `internal/reedengine#Engine`
 - `internal/reedengine#Engine.Down`
 - `internal/reedengine#DownResult`
+- `internal/reedengine#DiscoverSignalFileName`
+- `internal/reedengine#Geometry`
 - `internal/reedengine/doc.go`
 
 **Uses:**
@@ -34,6 +35,7 @@ In that branch `Engine.Down` calls `writeDiscoverStop` before `kill-server`, so 
 A `Down` that leaves a sibling session writes nothing and reports `EndedServer` false.
 `PATTERN-told-geometry` holds: `Down` writes only the told path and learns nothing of the daemon's lock.
 Every `Engine.Down` caller, `internal/pairteardown` included, gets the stop with no change of its own.
+The `DiscoverSignalFileName` doc comment and the `Geometry.DiscoverSignalPath` field comment, which name only a cold session boot as the file's writer, are extended to say `Engine.Down` also writes `DiscoverStopMarker` into the file when it ends the server.
 
 `Engine` gains the test seam `ensureServerGone func(serverPID int) error`, nil meaning `ensureServerGoneLocked`, which `Down` calls through; production never sets it.
 It exists because the not-confirmed-gone exit needs a socket holder that survives `SIGKILL`, which no hermetic test can stage otherwise.
@@ -41,14 +43,12 @@ It exists because the not-confirmed-gone exit needs a socket holder that survive
 `TestDown_WritesTheDiscoverStopOnlyWhenItEndsTheServer` drives `Down` on `newTestEngine` with a `DiscoverSignalPath` under the test hub's scratch directory and the fake tmux answering a dead pane listing, so no real process is reaped, as `TestDown_ListsEveryWindowsPanesOverACorruptState` does; it captures logs with `logcapture.Capture`.
 Rows:
 
-- last session (`list-sessions` empty): `Down` returns nil, the file's content is exactly `DiscoverStopMarker`, `EndedServer` is true.
+- last session (`list-sessions` empty): `Down` returns nil, the file's content is exactly `DiscoverStopMarker`, `EndedServer` is true; the row then calls `touchDiscoverSignal` and asserts the file exists and is empty, so a cold boot after a stop and before the daemon consumes it turns the stop back into a discover.
 - listing errors (`list-sessions` answers an error): the same.
 - sibling live (`list-sessions` answers another session): no signal file, `EndedServer` false.
 - no path told (`DiscoverSignalPath` empty), last session: no `DiscoverSignalFileName` under `fabricengine.HubScratchDir(hub)`, the hub's directory entries are unchanged, `EndedServer` true.
 - told path names an existing directory, last session: `Down` returns nil, `EndedServer` true, and exactly one Warn naming the path is logged.
 - server not confirmed gone (`ensureServerGone` returns an error), last session: `Down` returns that error and the file's content is exactly `DiscoverStopMarker`.
-
-`TestTouchDiscoverSignal_TruncatesAPendingStop` writes the stop through `writeDiscoverStop`, calls `touchDiscoverSignal`, and asserts the file exists and is empty, so a cold boot after a stop and before the daemon consumes it turns the stop back into a discover.
 
 `internal/reedengine/doc.go`'s discover-signal paragraph adds that `Down`, when it ends the server, writes `DiscoverStopMarker` into the file atomically to ask the daemon to stop, that a cold boot's touch truncates it back to an ordinary discover, and that `DownResult.EndedServer` reports the teardown.
 

@@ -1,6 +1,6 @@
 ---
 format: 5
-approved: false
+approved: true
 language: go
 ---
 
@@ -30,7 +30,7 @@ The package docs and the three sandbox suites' pre-condition bullets follow.
 
 ```bash
 go build ./cmd/lyx
-lyx gate test ./internal/agentname ./internal/reedengine ./internal/reedcli ./internal/shuttleengine/claudeengine ./cmd/lyx
-lyx gate test --tags integration ./internal/agentname ./internal/reedengine ./internal/reedcli ./internal/shuttleengine/claudeengine ./cmd/lyx
+lyx gate test ./internal/agentname ./internal/reedengine ./internal/reedcli ./internal/shuttleengine/claudeengine ./tools/sandbox ./cmd/lyx
+lyx gate test --tags integration ./internal/agentname ./internal/reedengine ./internal/reedcli ./internal/shuttleengine/claudeengine ./tools/sandbox ./cmd/lyx
 lyx gate test --tags tmux ./internal/reedengine ./internal/reedcli
 ```
