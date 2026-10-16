@@ -19,3 +19,8 @@ Plan is heavy by nature, since it turns the Discussion into concrete work; the a
   - a writer rule in the Plan stencil, when it is a judgement the writer can make up front;
   - a missing input, when the writer lacked something it needed (for example what `discussion-relevant-list` now hands it).
 - Then measure whether lens and review findings per run drop.
+
+## Operator view, not a decision (2026-10-16)
+
+The lens fan and twill fixer (`fan-prompt-tuning`) are built first.
+Later, this audit runs over real runs made with them, and the wording of the reviewer and fixer prompts is adjusted from what it observes, beside the Plan writer measures above.
