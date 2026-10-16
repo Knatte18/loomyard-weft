@@ -1,0 +1,15 @@
+---
+round: 1
+focus:
+  - "Card 5 `Edit` list: it targets many existing test functions for a convenient-anchor swap. Settle whether each listed test really names `below-parent`/`top` or relies on the old default, and whether any listed target is a glyph the card's Intent does not change."
+  - "Card 5 refusal reachability: settle whether `validateDisplay`'s retired-anchor refusal and the CLI's `overview` refusal each have a named input that reaches them, given `Anchor.UnmarshalJSON` remaps retired spellings at decode, and whether `TestWriteOps_RefuseARetiredAnchor` and `TestAddCmd_RefusesAnAnchorOutsideTheVocabulary` reach them."
+  - "Card 5 and card 6 attack surface: `lyx shuttle run --anchor` and `lyx reed add --anchor` change their accepted vocabulary, and card 5's decode remap changes what a stored anchor means. Settle whether each Intent states what it lets through and what bounds it, and whether the CLI shape fits `pattern/PATTERN-cli-cobra.md`'s audience bullet."
+  - "Card 7 (move of shell-window strand panes): settle that its Intent carries every D3 sentence: the move runs first in every reconcile, a dead pane moves before the dead-pane kill, the re-list after a move, heal-before-move in up/resume, the last-pane exception, and the `@lyx_strands` fallback never using the session's current window. Check the re-sign arrow on every `Edit` glyph whose signature changes, and whether `Create` lists more helpers than independently reviewable units (granularity)."
+  - "Card order: settle whether any card depends on a symbol that a later card creates or deletes, in particular cards 2 to 5 deleting render and reed symbols that card 7 or card 8 still edits, and card 7's `Edit` of `launchStrandLocked` after card 5's."
+  - "Fidelity to the decision record: settle that D4 (no `select-layout` on the shell window, `Display.Size`, `SetContentRows` and `ContentRows` removed), D5 (`RetiredKeys` with `CategoryNone`, `width`/`height` kept), D6 (watchdog key kept, template comment rewritten) and D7 (explicit `unbind-key` for `M-z`, shell click no longer unzooms) each have a carrying card, and that no card adds scope the record does not license."
+  - "Verify coverage: settle that every package a card targets, including `internal/vscode`, `internal/pairteardown`, `internal/standalonegeom`, `tools/` and the sandbox docs, has its tests run by `## verify:`, and that the section order matches the plan template. Check the three closing `grep` gates against the exception list they carry."
+  - "Test economy: settle for cards 1 to 4 and 7 whether a planned new test duplicates an existing one or tests one symbol, naming the existing test, and whether any card asserts static stencil or doc prose (card 8)."
+  - "Card 8: settle that a `Prosa`/`Edit` group on docs and sandbox suites carries only target kinds its type admits, and that no card edits this task's own board entry's body or scope."
+---
+
+Seed focus drawn from the overview, the decision record and the cards read for it. The lens review in the plan directory was not treated as an answer key.
