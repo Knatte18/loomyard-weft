@@ -1,6 +1,6 @@
 # lyx shuttle open cannot choose the permission mode
 
-`shuttle-open-permission` · Task · enhancement, shuttle · running · Webster-Bouncer
+`shuttle-open-permission` · Task · enhancement, shuttle · running · Webster-Burler-Review
 
 ## Seen
 
