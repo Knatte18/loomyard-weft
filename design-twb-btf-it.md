@@ -1,6 +1,6 @@
 # Plan gate paths to external test packages, flaky lyxtemp sweep test, Merge-In halt with no status
 
-`twb-btf-it` · Note · bug · running · Plan-Burler-Review
+`twb-btf-it` · Note · bug · paused · Plan-Burler-Fix
 
 # Plan gate paths to external test packages, flaky lyxtemp sweep test, Merge-In halt with no status
 
