@@ -714,7 +714,7 @@
       "isolated": false,
       "brief": "An interactive session opened by lyx shuttle open always prompts for permissions; there is no flag or config for bypass",
       "body": "## Seen\n\nOn 2026-10-15 the orch opened a dedicated Opus session for the operator with `lyx shuttle open --role stencil-audit`.\nIt came up in prompt mode, since an interactive run resolves an empty `PermissionMode` to prompt (`claudeengine.validatePermissionMode`), and `shuttle open` has no way to set it.\nThe operator wanted bypass permissions; the orch removed the strand and started a plain `claude --dangerously-skip-permissions` through `lyx reed add`, which then registered under a generic session name (`loomyard-13`) instead of `ly:stencil-audit`.\n\n## Idea\n\n`lyx shuttle open` takes a `--permission-mode` flag (bypass or prompt), or a config default, so an operator session opens in bypass with its lyx strand name.\n\n## Operator decision (2026-10-15)\n\nBuild it as a small task, from the 2026-10-15 board triage, once `creel-stage1-fixes` has landed, since both touch the shuttle module.",
-      "status": "running · Webster-Burler-Review",
+      "status": "running · Webster-Burler-Fix",
       "created": "2026-10-15T12:31:11Z",
       "revised": "2026-10-15T18:48:53Z",
       "run_settings": {
