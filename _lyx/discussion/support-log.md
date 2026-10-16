@@ -42,7 +42,7 @@ Six forks, one per lens; every fork returned a report.
 - scenarios, LOW, the attack-surface bound of the new channel unstated: fixed in D5's bound.
 - scenarios, LOW, a mid-run list change: fixed, Open risks.
 - scenarios, LOW, template-like text in an entry: fixed, D6 says verbatim, Acceptance covers `{{`.
-- goal-scope + board-fit, MEDIUM, no check against `dotnet-verify-protocol`: fixed, D5's rationale maps the .NET tiers.
+- goal-scope + board-fit, MEDIUM, no check against `dotnet-verify-protocol`: checked, a .NET hub fits; its per-attempt suite and build are entries, and its landing-only slow tier is an entry naming landing config's `publish_verify`, which runs it; the zero-test refusal, per-tier timeouts and baseline capture are machine-run checks for `dotnet-verify-protocol`, beside this list rather than in it.
 - goal-scope + board-fit, MEDIUM/LOW, this hub's value has no owner and hides a deferral: fixed, D7 names the operator and why hub config is theirs; the window stays in Open risks.
 - goal-scope, LOW, D1 goes past wording: fixed, marked in Auto-mode assumptions.
 - goal-scope, LOW, the spec in scope: already disclosed, no change.
@@ -64,13 +64,15 @@ Six forks, one per lens; every fork returned a report.
 
 ## Rejected alternatives
 
-- **A structured per-tier schema (`command`, `run|compile`, `reason`)** for `verify_tiers`: encodes Go's tier shape, and the stencils need prose rules (nested-module form, raw-run limits) a schema would not hold.
+- **A structured per-tier schema (`command`, `run|compile`, `reason`)** for `verify_tiers`: entries are prose an agent reads, a schema encodes Go's tier shape, and the stencils need prose rules (nested-module form, raw-run limits) a schema would not hold.
 - **One prose string key**: a long single line in a one-line-per-key config, and no clean bullet rendering.
 - **A hub-editable stencil fragment holding the tiers**: the seeded default would be some language's text, so a fresh hub still gets Go; config is where hub facts live.
 - **A template default of this repo's Go rules**: every new hub would inherit Go, the defect itself.
 - **Rendering `publish_verify`'s command into the prompts**: the list's rule names which tier Publish runs; a second rendered value adds nothing.
 - **Generalising `verify-module-wide`, `verify-nested-module`, `lyx gate test` and the raw-go guard**: Go-coded gates are `dotnet-scoped-verify`'s toolchain question, not wording.
 - **Letting the rework writer dispute a finding in `coverage.md` with no card**: contradicts the stencil's "never answer a finding with a coverage entry alone" and the round rule; the parent route covers the conflict case.
+- **Dropping only a declined finding and planning the rest**: `coverage.md` must map every finding and Plan-Review flags an uncovered one, so a dropped finding needs a recording no route provides; stopping the whole rework halts the run for the parent instead.
+- **An optional plan and implementer marker that renders nothing on an empty list**: one `none` render at every site keeps each fallback sentence reading the same and lets the strict fill catch a dropped value.
 - **Fixing `lyx loom reject`'s help ("the operator's rejection")**: the operator may run the verb by hand, so it is not wrong.
 - **Naming the `--set` command in the PR description**: the description is the Describe session's, no card writes it, and the entries' quotes break a single-quoted `--set` line.
 - **A separate loader for `verify_tiers`** so a bad value cannot block `skills`: the keys share one file, whose parse error blocks both anyway, and one `Load` keeps the module's single read.
@@ -78,7 +80,8 @@ Six forks, one per lens; every fork returned a report.
 
 ## Review rounds
 
-_No rounds yet._
+- Round 1, APPROVED with eight findings, all fixed: D5's Bound names the tier skip and its bounds (F1); D1 keeps a non-overturning finding's scope license (F2) and stops the whole rework on a decline (F3); D6 keeps the implementer's guard and gate-step sentences (F4, F5) and renders `none` at every site (F6); Acceptance pins D1's rubric change and the no-parent stop (F7); D5's rationale deliberation moved here (F8).
+- Round 2, APPROVED with four findings, all fixed: D5's Bound names landing as the section's second consumer and `publish_verify` as its only bound there (F1); D1's rework stencil plans a non-overturning finding directly as its own exception to the plan stencil's route (F2); D6 keeps the implementer's `tmux`/`llm` compile-only sentence and Open risks drops that gap (F3); the plan and rubric bullets keep the hermetic build-tagged clause, language-neutral (F4).
 
 ## Question ledger
 
