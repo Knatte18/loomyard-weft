@@ -1,0 +1,170 @@
+{
+  "runGuid": "f29f67c16314e7ed6ab14a986a620c10",
+  "planFingerprint": "877d1129b43a8db84e9f613d3f83ec8648d695ebb2075e0e68b5263da53dbc96",
+  "planFileHashes": {
+    "00-overview.md": "ad2406d1ba0dfed9c041652bbf216cf9a3de5934151e1c064aff0f5df5b12cdb",
+    "01-lyx-bin-env-key.md": "90459430261b9be3a08eb4ba43109551bd945f5ba6e66c8d23c954caf32cfde5",
+    "02-env-file-prepends-lyx-bin.md": "55cf896dac81452949bdc9edbcc2672abdcc74ac1d0fc9107be58076bcc881ba",
+    "03-down-writes-discover-stop.md": "de211acfe7deb6a288394214fbdd33fdf83551edd57da7214b7abfec7da39a72",
+    "04-watchdog-stop-and-recheck.md": "2fbdd9942c21638b8de70da44602695c588b46ac3d266340d0c35d2a26c0d6bb",
+    "05-down-waits-for-watchdog.md": "c3f9ef9d339167866335ef0c703d9cd8721e60f91f5058f993ca5dd8bf280ff3",
+    "06-sandbox-suite-preconditions.md": "b9aab6224a4944b3fb3f5bf56bbd3e1fb67468be0e0608b126ab130f79c827db"
+  },
+  "planOverviewFrameHash": "dbdefb0ac445f8bd8f1c1d4f2eb39d767aa6cf24ebfda9eace200a7490db308f",
+  "partition": [
+    {
+      "cards": [
+        "01-lyx-bin-env-key",
+        "02-env-file-prepends-lyx-bin",
+        "03-down-writes-discover-stop"
+      ],
+      "profile": "cautious",
+      "estimate": 162760,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 1,
+        "startup": 54376,
+        "read_union": 24180,
+        "cards": [
+          {
+            "card": 1,
+            "card_text": 300,
+            "reads": {
+              "package:internal/agentname": 2000,
+              "package:internal/reedengine": 2000,
+              "tests:internal/agentname": 2000,
+              "tests:internal/reedengine": 2000
+            },
+            "messages": 66.5,
+            "written": 20250
+          },
+          {
+            "card": 2,
+            "card_text": 720,
+            "reads": {
+              "file:internal/reedengine/doc.go": 7740,
+              "file:internal/shuttleengine/claudeengine/doc.go": 2736,
+              "package:internal/reedengine": 2000,
+              "package:internal/shuttleengine/claudeengine": 2000,
+              "tests:internal/reedengine": 2000,
+              "tests:internal/shuttleengine/claudeengine": 2000
+            },
+            "messages": 105.5,
+            "written": 32370
+          },
+          {
+            "card": 3,
+            "card_text": 684,
+            "reads": {
+              "file:internal/reedengine/doc.go": 7740,
+              "package:internal/reedengine": 2000,
+              "tests:internal/reedengine": 2000
+            },
+            "messages": 103,
+            "written": 31584
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "04-watchdog-stop-and-recheck",
+        "05-down-waits-for-watchdog",
+        "06-sandbox-suite-preconditions"
+      ],
+      "profile": "cautious",
+      "estimate": 165940,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 2,
+        "startup": 61376,
+        "read_union": 24284,
+        "cards": [
+          {
+            "card": 4,
+            "card_text": 1272,
+            "reads": {
+              "file:internal/reedcli/doc.go": 336,
+              "package:internal/reedcli": 2000,
+              "tests:internal/reedcli": 2000
+            },
+            "messages": 144.5,
+            "written": 44622
+          },
+          {
+            "card": 5,
+            "card_text": 780,
+            "reads": {
+              "file:internal/reedcli/doc.go": 336,
+              "package:internal/reedcli": 2000,
+              "tests:internal/reedcli": 2000
+            },
+            "messages": 94.5,
+            "written": 29130
+          },
+          {
+            "card": 6,
+            "card_text": 228,
+            "reads": {
+              "file:tools/sandbox/SANDBOX-CREEL-SUITE.md": 4032,
+              "file:tools/sandbox/SANDBOX-REED-SUITE.md": 6204,
+              "file:tools/sandbox/SANDBOX-SHUTTLE-SUITE.md": 3432,
+              "package:tools/sandbox": 2000,
+              "tests:tools/sandbox": 2000
+            },
+            "messages": 21,
+            "written": 6528
+          }
+        ]
+      }
+    }
+  ],
+  "currentBatch": 1,
+  "masterStrand": "a0fb105d0c91eefb80a8fae525c8faea",
+  "masterSessionId": "2bf04ce3-78be-41d3-b2db-46c910eceea8",
+  "masterEngine": "claude",
+  "batches": {
+    "1": {
+      "slug": "lyx-bin-env-key",
+      "cards": [
+        "01-lyx-bin-env-key",
+        "02-env-file-prepends-lyx-bin",
+        "03-down-writes-discover-stop"
+      ],
+      "cardHashes": {
+        "01-lyx-bin-env-key": "90459430261b9be3a08eb4ba43109551bd945f5ba6e66c8d23c954caf32cfde5",
+        "02-env-file-prepends-lyx-bin": "55cf896dac81452949bdc9edbcc2672abdcc74ac1d0fc9107be58076bcc881ba",
+        "03-down-writes-discover-stop": "de211acfe7deb6a288394214fbdd33fdf83551edd57da7214b7abfec7da39a72"
+      },
+      "startSha": "654cecd6afbc26e06b954194a7ccc4f03b146b0e",
+      "kind": "fork",
+      "spawnedAt": "2026-10-16T11:43:06Z",
+      "sessionId": "2bf04ce3-78be-41d3-b2db-46c910eceea8",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
+    }
+  }
+}
