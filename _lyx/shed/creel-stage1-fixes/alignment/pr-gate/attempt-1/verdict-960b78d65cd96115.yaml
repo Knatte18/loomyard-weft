@@ -1,0 +1,4 @@
+verdict: approve
+reason: The diff fixes #657 to #664 as decisions D1 to D8 record and adds C1 to C13 beside S9 as D9 records, with no change outside the recorded scope and none to creel stages 2 or 3; lyx loom peers lists no peer run and no parent commit, so there is no overlap.
+question: ""
+superseded: []
