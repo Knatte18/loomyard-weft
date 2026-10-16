@@ -1,11 +1,11 @@
 {
-  "current_producer": "Describe",
+  "current_producer": "Merge-In",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Describe",
-    "last": "Webster-Bouncer → done",
+    "now": "Merge-In",
+    "last": "Describe → done",
     "wait": ""
   },
   "history": [
@@ -307,6 +307,21 @@
       "outcome": "done",
       "output": "/home/knatte/Code/loomyard-LYXHUB/orch-role-stencil-fixes/_lyx/reviews/webster/round-1-bouncer-ledger.md",
       "at": "2026-10-16T09:21:44Z"
+    },
+    {
+      "producer": "Describe",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYXHUB/orch-role-stencil-fixes/_lyx/landing/summary.md",
+      "at": "2026-10-16T09:22:22Z",
+      "gate_attempts": 0,
+      "gate_spans": [
+        {
+          "gate": "description",
+          "kind": "gate",
+          "start": "2026-10-16T09:22:21.813502886Z",
+          "end": "2026-10-16T09:22:21.813550265Z"
+        }
+      ]
     }
   ],
   "product": {
