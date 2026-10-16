@@ -1,0 +1,16 @@
+round: 3
+fan: ""
+review:
+    engine: claude
+    model: sonnet
+    effort: high
+    start: 2026-10-16T13:44:33Z
+    end: 2026-10-16T15:49:23.586242595+02:00
+    wall_seconds: 290.586242595
+    tokens_known: true
+    fresh_tokens: 191738
+    cache_read_tokens: 3892266
+    forks: 0
+    fork_fresh_tokens: 0
+    fork_cache_read_tokens: 0
+    fork_fresh_share: 0
