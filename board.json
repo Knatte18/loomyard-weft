@@ -789,23 +789,6 @@
       "revised": "2026-10-16T14:40:40Z"
     },
     {
-      "id": 615,
-      "slug": "gitrepo-tmux-tier-memory",
-      "title": "Investigate internal/gitrepo tmux-tier cost: 16.5s and 3 GB peak memory",
-      "kind": "note",
-      "labels": [
-        "audit",
-        "fabric"
-      ],
-      "issues": [],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "In the tmux tier internal/gitrepo went from 0.31s and 82.5M to 16.50s and 2992.7M peak memory between the two test-suite-weight runs; find which test causes it and whether it is needed",
-      "body": "## Seen (2026-10-16)\n\n`docs/benchmarks/test-suite-weight.md`, tier 3 (`tmux`), measured serially package by package: `internal/gitrepo` took 0.31s wall and 82.5M peak memory at `df36bb2a4` (2026-10-10), and 16.50s wall, 13.82s CPU and 2992.7M peak memory at `112cccb8f` (2026-10-16, idle machine, commit `3617eae27`).\nIn tiers 1 and 2 the package is unchanged (under 1.3s and about 110M).\nThe package has no `tmux`-tagged test file: its test files are untagged or `integration`, so the tmux tier runs the same untagged tests that took 0.46s and 103.4M in tier 1 of the same run.\nThe spike is therefore likely a measurement artifact of that one run (a fresh build of the test binary under the new tag set, or something else on the machine), not a growing test.\n\n## Idea\n\nFirst re-run `go run ./cmd/testtiming -resources -tags tmux` for this package alone on an idle machine; if the spike does not repeat, close the note.\nOtherwise find which test in `internal/gitrepo` drives the time and memory, whether the 3 GB peak is the test process or a child it spawns, and whether the test can be made lighter or belongs in another tier.\nThe board has no `gitrepo` label, so `fabric`, its main consumer, stands in.",
-      "created": "2026-10-16T14:58:47Z",
-      "revised": "2026-10-16T15:00:21Z"
-    },
-    {
       "id": 616,
       "slug": "xdr-git-test-file-burst",
       "title": "Git test fixtures trip Cortex XDR on the work laptop",
