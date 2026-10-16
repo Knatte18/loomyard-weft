@@ -143,3 +143,8 @@ Open if the fan comes back:
 - The landing text must say "go straight on to step 2 in the same turn": the master ended its turn after posting the manifest.
 - The `discussion` fan has no lens aimed at a guard's callers; `scenarios` is the natural owner if a lens change is wanted.
 - Proposal E (not run): lyx extracts the target's citations (paths, backticked symbols) as the manifest's starting list without loading code, leaving the choice of what to read to the master; 22 of the 25 files the original forks needed are cited in the target, the other 3 one hop away.
+
+## Operator view, not a decision (2026-10-16)
+
+The operator believes fan-out reviewers can work: they need better tuning and harder thinking, and then one reviewer run yields more findings.
+Related: `perch-review-analysis` (issue #676) measures rounds and late BLOCKING findings and proposes two parallel reviewers in round 1.
