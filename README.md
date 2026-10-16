@@ -47,8 +47,8 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Note | Slug | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| 1 | **Plan gate paths to external test packages, flaky lyxtemp sweep test, Merge-In halt with no status**<br>• Three intake bugs: validate gate-step package paths at plan time, fix the flaky concurrent-sweep test, and make a producer exit without status diagnosable. | [`twb-btf-is`](design-twb-btf-is.md) | 7m | 7m |  |
-| 2 | **Plan gate paths to external test packages, flaky lyxtemp sweep test, Merge-In halt with no status**<br>• Three intake bugs: validate gate-step package paths at plan time, fix the flaky concurrent-sweep test, and make a producer exit without status diagnosable. | [`twb-btf-it`](design-twb-btf-it.md) | 7m | 7m |  |
+| 1 | **Plan gate paths to external test packages, flaky lyxtemp sweep test, Merge-In halt with no status**<br>• Three intake bugs: validate gate-step package paths at plan time, fix the flaky concurrent-sweep test, and make a producer exit without status diagnosable. | [`twb-btf-is`](design-twb-btf-is.md) | 8m | 8m |  |
+| 2 | **Plan gate paths to external test packages, flaky lyxtemp sweep test, Merge-In halt with no status**<br>• Three intake bugs: validate gate-step package paths at plan time, fix the flaky concurrent-sweep test, and make a producer exit without status diagnosable. | [`twb-btf-it`](design-twb-btf-it.md) | 8m | 8m |  |
 | 3 | **Logging cleanup: right levels, no per-tick noise, reed resize layout bug** | [`twb-btf-ls`](design-twb-btf-ls.md) | 1m | 1m |  |
 | 4 | **Reusing a landed task's slug: Publish finds the old run's closed PR and halts** | [`slug-reuse-old-pr`](design-slug-reuse-old-pr.md) | 0m | 0m | loom, batten, board |
 
@@ -64,7 +64,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Note | Slug | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| 1 | **Tune the Burler lens fan prompts**<br>• Revisit the parked lens fan with lens and fork prompts that overlap less, measured against solo on the fan-lab fixtures | [`fan-prompt-tuning`](design-fan-prompt-tuning.md) | 5d | 11m | burler, stencil |
+| 1 | **Tune the Burler lens fan prompts**<br>• Revisit the parked lens fan with lens and fork prompts that overlap less, measured against solo on the fan-lab fixtures | [`fan-prompt-tuning`](design-fan-prompt-tuning.md) | 5d | 12m | burler, stencil |
 | 2 | **Fork the Burler fixer from the reviewer session**<br>• The fixer re-reads the context the reviewer just read; fork it from the reviewer to reuse the cache | [`burler-fixer-fork`](design-burler-fixer-fork.md) | 1d | 18m | burler |
 | 3 | **Perch review analysis: rounds, tokens and late BLOCKING findings, with proposals** | [`perch-review-analysis`](design-perch-review-analysis.md) | 2h | 2h | burler, loom, shed |
 
@@ -89,7 +89,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 18 | **Start one task per overlapping group at a newly-ready start**<br>• When a landing makes several overlapping tasks ready at once, batten starts one per group and names the rest in its notice | [`batten-ready-overlap`](design-batten-ready-overlap.md) | 22h | 22h | batten |
 | 19 | **Rename the `lyx` binary to `lyd` (name clash with LyX)** | [`rename-binary-lyd`](design-rename-binary-lyd.md) | 4h | 4h | stencil, shuttle |
 | 20 | **Rewrite C13's stacked half for window-per-strand**<br>• C13's stacked 3-row half cannot be set up once reed-add-parentless-placement lands | [`creel-c13-stacked-rewrite`](design-creel-c13-stacked-rewrite.md) | 2h | 2h | creel |
-| 21 | **Go driver messages the orch about a verify halt batten retries itself**<br>• Drop or reword the parent message for a watched verify halt | [`driver-watched-verify-notice`](design-driver-watched-verify-notice.md) | 45m | 45m | shed, batten |
+| 21 | **Go driver messages the orch about a verify halt batten retries itself**<br>• Drop or reword the parent message for a watched verify halt | [`driver-watched-verify-notice`](design-driver-watched-verify-notice.md) | 46m | 46m | shed, batten |
 
 #### Low priority
 
