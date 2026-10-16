@@ -19,8 +19,8 @@ Held by a run; its scope is locked until the run ends.
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | 1 | **reed add defaults to pane-era placement and splits the selvage shell window**<br>• Replace the obsolete below-parent default and sweep for other pane-era leftovers | [`reed-add-parentless-placement`](design-reed-add-parentless-placement.md) | loom | Plan-Bouncer | 1h | 1h | reed |
 | 2 | **Orch role stencil fixes from the stencil intent audit**<br>• Arbiter as the orch filter with a fault fallback, no peer comparing, ORCHESTRATOR.md for repo-specific orch rules, owner of a small PR-Gate defect | [`orch-role-stencil-fixes`](design-orch-role-stencil-fixes.md) | loom | Plan-Bouncer | 1h | 40m | stencil, orch, loom, config |
-| 3 | **Loom stencil fixes from the stencil intent audit, verify tiers from hub config**<br>• Rejection findings are a reviewer claim, never the operator; driver, advisor, plan and rework wording | [`loom-stencil-wording`](design-loom-stencil-wording.md) | loom | Plan-Write | 1h | 36m | stencil, loom, shed, config, webster |
-| 4 | **Creel gets its own sandbox suite**<br>• Move S9 and C1-C13 out of the shuttle sandbox suite into SANDBOX-CREEL-SUITE.md | [`creel-sandbox-suite`](design-creel-sandbox-suite.md) | loom | Plan-Burler-Review | 30m | 30m | creel, shuttle |
+| 3 | **Loom stencil fixes from the stencil intent audit, verify tiers from hub config**<br>• Rejection findings are a reviewer claim, never the operator; driver, advisor, plan and rework wording | [`loom-stencil-wording`](design-loom-stencil-wording.md) | loom | Plan-Write | 1h | 37m | stencil, loom, shed, config, webster |
+| 4 | **Creel gets its own sandbox suite**<br>• Move S9 and C1-C13 out of the shuttle sandbox suite into SANDBOX-CREEL-SUITE.md | [`creel-sandbox-suite`](design-creel-sandbox-suite.md) | loom | Plan-Burler-Fix | 30m | 30m | creel, shuttle |
 
 ### Ready
 
@@ -65,7 +65,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | # | Note | Slug | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | 1 | **creel journal: a bad last line ending in a newline is skipped, not cut, and the next daemon start refuses the journal** | [`creel-journal-torn-newline-line`](design-creel-journal-torn-newline-line.md) | 6m | 6m | creel |
-| 2 | **creel llm smoke test TestSmokeCreelClaudeStrand still fails with no pane capture** | [`creel-llm-smoke-idle`](design-creel-llm-smoke-idle.md) | 5m | 5m | creel, shuttle, claude |
+| 2 | **creel llm smoke test TestSmokeCreelClaudeStrand still fails with no pane capture** | [`creel-llm-smoke-idle`](design-creel-llm-smoke-idle.md) | 6m | 6m | creel, shuttle, claude |
 | 3 | **reed watchdog outlives lyx reed down and respawns on a redeployed binary** | [`reed-watchdog-outlives-down`](design-reed-watchdog-outlives-down.md) | 5m | 5m | reed |
 | 4 | **strand pane resolves bare lyx to the production binary while LYX_BIN names the dev build** | [`strand-pane-lyx-path`](design-strand-pane-lyx-path.md) | 5m | 5m | reed, shuttle |
 | 5 | **lyx creel read to an unwritable stdout exits 1 with nothing on stderr** | [`creel-read-silent-write-fail`](design-creel-read-silent-write-fail.md) | 5m | 5m | creel |
