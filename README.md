@@ -70,12 +70,13 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 4 | **strand pane resolves bare lyx to the production binary while LYX_BIN names the dev build** | [`strand-pane-lyx-path`](design-strand-pane-lyx-path.md) | 0m | 0m | reed, shuttle |
 | 5 | **lyx creel read to an unwritable stdout exits 1 with nothing on stderr** | [`creel-read-silent-write-fail`](design-creel-read-silent-write-fail.md) | 0m | 0m | creel |
 | 6 | **creel inject --wait prints a draft stall from 37 s earlier as if current** | [`creel-stale-stall-line`](design-creel-stale-stall-line.md) | 0m | 0m | creel |
+| 7 | **creel verb waits about 23 s to report a daemon that already exited at start** | [`creel-dead-daemon-slow-report`](design-creel-dead-daemon-slow-report.md) | 0m | 0m | creel |
 
 #### Low priority
 
 | # | Note | Slug | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| 7 | **A hub pause leaves background forks and shells running, so hibernate never confirms**<br>• Pause interrupts turns but not background forks or shells; sessions read busy and hibernate confirmation fails | [`pause-background-work`](design-pause-background-work.md) | 1d | 1d | shuttle, webster |
+| 8 | **A hub pause leaves background forks and shells running, so hibernate never confirms**<br>• Pause interrupts turns but not background forks or shells; sessions read busy and hibernate confirmation fails | [`pause-background-work`](design-pause-background-work.md) | 1d | 1d | shuttle, webster |
 
 ### Enhancements
 
