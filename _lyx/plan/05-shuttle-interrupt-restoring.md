@@ -1,22 +1,22 @@
 # Card 5 — shuttle-interrupt-restoring
 
 **Create:**
-- `plan:internal/shuttleengine#Runner.InterruptRestoring` -> `func (r *Runner) InterruptRestoring(guid string) error`
-- `plan:internal/shuttleengine#ErrInterruptClearFailed` -> `var ErrInterruptClearFailed error`
-- `plan:internal/shuttleengine#clearRestoredPrompt` -> `func clearRestoredPrompt(reed ReedOps, engine Engine, clock Clock, guid string) error`
-- `plan:internal/shuttleengine#restoreReed` -> `type restoreReed struct`
-- `plan:internal/shuttleengine#restoreReed.SendKey` -> `func (r *restoreReed) SendKey(guid, key string) error`
-- `plan:internal/shuttleengine#restoreReed.CapturePane` -> `func (r *restoreReed) CapturePane(guid string) (string, error)`
-- `plan:internal/shuttleengine#restoreReed.CapturePaneStyled` -> `func (r *restoreReed) CapturePaneStyled(guid string) (string, error)`
-- `plan:internal/shuttleengine#restoreEngine.Startup` -> `func (e *restoreEngine) Startup(capture string) StartupState`
-- `plan:internal/shuttleengine#styledRestoreEngine` -> `type styledRestoreEngine struct`
-- `plan:internal/shuttleengine#styledRestoreEngine.PlainBoxCapture` -> `func (e *styledRestoreEngine) PlainBoxCapture(styled string) string`
-- `plan:internal/shuttleengine#restoreEngine` -> `type restoreEngine struct`
-- `plan:internal/shuttleengine#restoreEngine.InputBoxText` -> `func (e *restoreEngine) InputBoxText(capture string) (string, bool)`
-- `plan:internal/shuttleengine#restoreEngine.SubmitSettle` -> `func (e *restoreEngine) SubmitSettle() time.Duration`
-- `plan:internal/shuttleengine#restoreEngine.TypeSequence` -> `func (e *restoreEngine) TypeSequence(text string) []PaneInput`
-- `plan:internal/shuttleengine#restoreEngine.RestoredPromptClearSequence` -> `func (e *restoreEngine) RestoredPromptClearSequence(capture string) []PaneInput`
-- `plan:internal/shuttleengine#TestRunner_InterruptRestoring` -> `func TestRunner_InterruptRestoring(t *testing.T)`
+- `internal/shuttleengine#Runner.InterruptRestoring`
+- `internal/shuttleengine#ErrInterruptClearFailed`
+- `internal/shuttleengine#clearRestoredPrompt`
+- `internal/shuttleengine#restoreReed`
+- `internal/shuttleengine#restoreReed.SendKey`
+- `internal/shuttleengine#restoreReed.CapturePane`
+- `internal/shuttleengine#restoreReed.CapturePaneStyled`
+- `internal/shuttleengine#restoreEngine.Startup`
+- `internal/shuttleengine#styledRestoreEngine`
+- `internal/shuttleengine#styledRestoreEngine.PlainBoxCapture`
+- `internal/shuttleengine#restoreEngine`
+- `internal/shuttleengine#restoreEngine.InputBoxText`
+- `internal/shuttleengine#restoreEngine.SubmitSettle`
+- `internal/shuttleengine#restoreEngine.TypeSequence`
+- `internal/shuttleengine#restoreEngine.RestoredPromptClearSequence`
+- `internal/shuttleengine#TestRunner_InterruptRestoring`
 
 **Edit:**
 - `internal/shuttleengine/doc.go`

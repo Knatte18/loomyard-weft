@@ -23,8 +23,8 @@
 - `internal/creelcli#TestHubDelivery`
 
 **Uses:**
-- `plan:internal/shuttleengine#Runner.InterruptRestoring`
-- `plan:internal/shuttleengine#ErrInterruptClearFailed`
+- `internal/shuttleengine#Runner.InterruptRestoring`
+- `internal/shuttleengine#ErrInterruptClearFailed`
 - `internal/creelengine_test#env`
 - `internal/creelengine_test#newEnv`
 - `internal/creelengine_test#env.start`
