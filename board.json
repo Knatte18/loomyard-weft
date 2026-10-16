@@ -876,7 +876,7 @@
       "isolated": false,
       "brief": "Fix reed defects #679 and #680 from the creel re-test",
       "body": "Two reed defects from the creel stage 1 re-test of 2026-10-16.\nOperator decision 2026-10-16: the two run as one low-budget task.\n\n## reed watchdog outlives lyx reed down (#679)\n\nImported from [issue #679](https://github.com/Knatte18/loomyard/issues/679).\n\nSeen: in the sandbox hub, after `lyx reed down`, the reed watchdog process was still running; after the dev binary was redeployed it respawned on the new binary, and it had to be killed by pid.\n\nExpected: `lyx reed down` ends the watchdog of that worktree reed session, so no reed process remains after it.\n\nFound by the creel stage 1 re-test of 2026-10-16 (teardown).\n## strand pane resolves bare lyx to the production binary (#680)\n\nImported from [issue #680](https://github.com/Knatte18/loomyard/issues/680).\n\nSeen: in a sandbox strand pane, `command -v lyx` names `/home/knatte/go/bin/lyx` while `LYX_BIN` names `.dev-bin/lyx`. The pane PATH begins `/home/knatte/go/bin:` because `~/.bashrc` prepends it after reed sets PATH, so a Claude strand that runs bare `lyx creel read` talks to the sandbox daemon through the production binary. The shuttle sandbox suite pre-condition (`command -v lyx` names the spawning binary) fails on this machine.\n\nExpected: bare `lyx` in a strand pane resolves to the spawning binary, as the suite pre-condition states, even when the shell rc prepends another directory.\n\nFound by the creel stage 1 re-test of 2026-10-16.",
-      "status": "running · Discussion-Bouncer",
+      "status": "running · Plan-Write",
       "created": "2026-10-16T08:56:08Z",
       "revised": "2026-10-16T10:39:08Z",
       "run_settings": {
