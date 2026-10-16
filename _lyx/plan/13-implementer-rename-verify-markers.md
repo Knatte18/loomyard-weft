@@ -13,8 +13,8 @@
 - `internal/webstercli#websterCLI.beginDeps`
 - `internal/webstercli#websterCLI.recoverDeps`
 - `contracts/stencils/webster/webster-body-implementer.md`
-- `internal/websterengine_test#renderForkWithPack`
-- `internal/websterengine_test#renderRecoveryWithUncommitted`
+- `internal/websterengine_test#renderForkWithPack` -> `func renderForkWithPack(batch batcher.Batch, root, stencilsDir, specsDir, prevDigest string, selfFixCap int, notePath string, layout websterengine.PackLayout, pack []planindex.CardPack, verifyTiers, renameTools []string, planVerify string) (prompt, packFile string, err error)`
+- `internal/websterengine_test#renderRecoveryWithUncommitted` -> `func renderRecoveryWithUncommitted(batch batcher.Batch, repoRoot, anchorRoot, stencilsDir, specsDir, failureDigest, uncommittedPaths, notePath, parent string, verifyTiers, renameTools, patternChanges []string, planVerify string) (string, error)`
 - `internal/websterengine_test#renderFork`
 - `internal/websterengine_test#renderForkPromptAndPack`
 - `internal/websterengine_test#renderRecovery`

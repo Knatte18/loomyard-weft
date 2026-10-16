@@ -40,7 +40,9 @@ A darn run takes no PATTERN declaration (D5.4), so its review rows are told no r
 - `DiscussionTable`, `PlanTable` and `ReworkTable` read `DiscussionDecisionRecord(layout)`; an error fails the table as `loom: DiscussionTable: <err> re-step the row with "lyx loom start"` (and `PlanTable` and `ReworkTable` alike).
   On a first Discussion-Write no record exists yet, which renders no changes.
   `darnengine.DarnTable` keeps nil as card 8 left it.
-- `refusal-spec.md`: `## shed` gains, beside the review segment's other Bouncer rows, a row for the Bouncer's judge call and one for the Burler-round row's review, each triggered by a malformed `## PATTERN changes` section, a correctness halt whose way forward is the operator's record fix, `lyx loom validate-discussion`, then `lyx loom start`; `## loom` gains the same row for the Discussion-Write, Plan-Write and PR-Rework tables.
+- `refusal-spec.md`: `## shed` gains, beside the review segment's other Bouncer rows, one row for the Burler-round row's review triggered by a malformed `## PATTERN changes` section, a correctness halt whose way forward is the operator's record fix, `lyx loom validate-discussion`, then `lyx loom start`.
+  Its trigger folds in the Bouncer case: the Bouncer's judge call degrades to Stuck with no judge spawned, the perch's `on_stuck` (for example `Plan-Bouncer` to `Plan-Burler-Review` in `contracts/recipes/loom-recipe.yaml`) routes it to the Burler-round row, and that row's `Engine.Review` refuses on the same record and halts the run, so the operator sees the Burler-round row's message.
+  `## loom` gains the same correctness-halt row for the Discussion-Write, Plan-Write and PR-Rework tables.
 
 Tests:
 `TestEngine_Review_TableShape` gains a row whose geometry's `PatternRecordPath` record declares one bullet: the reviewer's prompt directive holds it.

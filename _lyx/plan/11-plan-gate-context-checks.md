@@ -21,6 +21,7 @@
 - `internal/shedrecipe#planWriteGateSpec`
 - `internal/loomcli#loomCLI.wire`
 - `internal/loomcli#loomCLI.validatePlanCmd`
+- `internal/loomcli#loomCLI.wireLightweight`
 - `internal/loomshed#TestNewPlanGate`
 - `internal/loomshed#TestNewPlanGate_ParsePlanSplit`
 - `internal/loomshed#TestNewReworkPlanGate`
@@ -56,6 +57,7 @@ D1.7 and D5.3: two plan-gate checks outside `internal/planparser`, in the one lo
   `env.PatternRecordPath` is card 10's loom-only record path, so a darn run is not checked against a record, as D5.3 says.
   `loomCLI.wire` sets `c.env.RenameTools` from the `language.yaml` it already loads.
 - `validatePlanCmd`, on the lightweight wiring that loads no config, loads `languageconfig.Load(fabricengine.ConfigDirs(c.location))` itself in its default, `--lens-review` and `--rework` modes, refusing with the loader's error (which names `lyx config language`) when it fails, and builds `PlanContext` from it and `c.env.PatternRecordPath`.
+- `wireLightweight`'s doc comment, which says `validateDiscussionCmd` and `validatePlanCmd` read only paths and need no config load, now says that `validate-plan` loads the hub-wide `language.yaml` itself for its `rename-tool-missing` check, and that this path still loads none of `wire()`'s module configs.
 - `loom-plan-spec.md`'s validation-checks preamble lists `rename-tool-missing` and `pattern-changes-mismatch` beside `done-card-edited` as checks `loomshed` appends outside the `planparser` entry points, in every mode, with their conditions and ways forward above; `loom-template-plan.md` tells the writer to copy the record's `## PATTERN changes` bullets into the overview's section when the record has one, and that a symbol `Rename` needs the hub's `rename_tools`.
 - `doc.go` names both checks and `PlanContext`.
 

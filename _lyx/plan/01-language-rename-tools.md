@@ -16,6 +16,9 @@
 - `internal/languageconfig_test#TestLoad_InvalidFailsNamingKey`
 - `contracts/specs/refusal-spec.md`
 
+**Prosa:**
+- `docs/overview.md`
+
 **Intent:**
 D1.1 and D1.2: `language.yaml` gains a third key, `rename_tools`, an ordered list of strings, each a rule naming the hub's structure-aware rename tool for one language and how to run it.
 
@@ -28,6 +31,7 @@ D1.1 and D1.2: `language.yaml` gains a third key, `rename_tools`, an ordered lis
 - `VerifyTiersValue` keeps its name and body; its doc says it renders the value every `verify_tiers` and `rename_tools` marker takes, so one renderer serves both lists.
 - `doc.go` describes the three keys, and carries a Go hub's example value built on `gopls rename -w` (for each symbol pair, `gopls rename -w <file>:#<offset> <new name>` from the worktree root), and states that a Python-based tool needs shuttle's `deny_python` off, since the shell guard's python row refuses it otherwise.
 - `refusal-spec.md`: the `config file content invalid` row in `## webster` and the `language.yaml invalid` row in `## shed` name `rename_tools` beside `verify_tiers` wherever they list the keys and the line-break check.
+- In `docs/overview.md`, the `internal/languageconfig/` line of the module tree also names the hub's structure-aware rename tools, which the Webster implementer prompt renders.
 
 Tests:
 `TestLoad_ResolvesSkills` gains a `wantRenameTools` column asserted non-nil and equal on every row, and a row listing all three keys that keeps `rename_tools` in file order;

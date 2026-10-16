@@ -9,9 +9,9 @@
 - `internal/websterengine#Run`
 - `internal/websterengine#MerriamBase`
 - `internal/websterengine/doc.go`
-- `internal/websterengine_test#renderRecoveryWithUncommitted`
+- `internal/websterengine_test#renderRecoveryWithUncommitted` -> `func renderRecoveryWithUncommitted(batch batcher.Batch, repoRoot, anchorRoot, stencilsDir, specsDir, failureDigest, uncommittedPaths, notePath, parent string, verifyTiers, patternChanges []string) (string, error)`
 - `internal/websterengine_test#renderRecovery`
-- `internal/websterengine_test#renderMaster`
+- `internal/websterengine_test#renderMaster` -> `func renderMaster(batches []batcher.Batch, anchorRoot, repoRoot, stencilsDir, notePath, parent string, patternChanges []string) (string, error)`
 - `internal/websterengine_test#TestRenderPrompts`
 - `internal/websterengine_test#TestRenderPrompts_FrictionDirective`
 - `internal/websterengine_test#TestRenderPrompts_ParentDirective`
