@@ -1,6 +1,6 @@
 # Plan gate paths to external test packages, flaky lyxtemp sweep test, Merge-In halt with no status
 
-`twb-btf-is` · Note · bug · running · Loom-Preflight
+`twb-btf-is` · Note · bug · running · Discussion-Write
 
 # Plan gate paths to external test packages, flaky lyxtemp sweep test, Merge-In halt with no status
 
