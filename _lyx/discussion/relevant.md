@@ -1,0 +1,23 @@
+# Relevant files
+
+- `internal/creelengine/journal.go` `openJournal`, `repairTail`, `journalWriter.retain` — the tail repair of #677 and the live retention that writes carried records for #684
+- `internal/creelengine/fold.go` `foldJournal`, `pool.apply`, `pool.carryRecords` — the fold's torn-line skip of #677 and the carried record that never reaches the event list in #684
+- `internal/creelengine/deliver.go` `worker.run`, `worker.probe`, `worker.idle`, `Store.ageInjects`, `Store.settleInjectLocked`, `Store.noteStall` — probe backoff, TTL expiry and stall state for #682, #685 and #686
+- `internal/creelengine/pool.go` — wait registration that seeds a new inject waiter from the standing stall in #682
+- `internal/creelengine/sweep.go` `Scheduler.sweepLoop`, `Scheduler.sweepOnce` — the removed-holder sweep timing of #685
+- `internal/creelengine/client.go` `Client.connect`, `NewClient` — the post-spawn connect backoff of #683
+- `internal/creelengine/seam.go` `Idleness`, `Stall`, `Stall.Reason` — the stall set D7 extends
+- `internal/creelengine/verbs.go` `Store.Log` — the `log` filter over the event list for #684
+- `internal/creelengine/server.go` `daemon.awaitOutcome`, `progressResponse` — how stall notes reach a waiting inject
+- `internal/creelengine/doc.go` — the module doc that describes stalls, the sweep and the client's connect
+- `internal/creelcli/cli.go` `runVerb`, `refuse`, `readCmd`, `writeOk` — the refusal path and the read output of #681
+- `internal/creelcli/spawn.go` `spawnDaemon` — the spawn seam #683 extends with an exit signal
+- `internal/creelcli/delivery.go` `hubDelivery.Idle` — the adapter mapping the idle probe to a stall for #686
+- `internal/creelcli/smoke_llm_test.go` `TestSmokeCreelClaudeStrand` — the failing llm smoke test of #678
+- `internal/creelcli/smoke_helpers_test.go` `smokeHub.addStrand`, `smokeHub.awaitPane` — the plain `reed add` strand and the capture helper #678 uses
+- `internal/shuttleengine/session.go` `Runner.SessionIdle` — the idle probe that D7 extends with a no-input-box reading
+- `internal/shuttleengine/engine.go` `IdleProbe` — the probe result type D7 adds a field to
+- `internal/shuttleengine/readiness.go` `readBox`, `judgeReadiness` — where a missing input box is already read
+- `internal/shuttleengine/claudeengine/startup.go` — the trust-gate classification and accept sequence D9 reuses
+- `pattern/PATTERN-daemon-wakeups.md` — lists the creel sweep and worker waits that D4, D6 and D8 change
+- `tools/sandbox/SANDBOX-CREEL-SUITE.md` — scenarios C4, C6, C8, C10 and C11 the defects were seen in
