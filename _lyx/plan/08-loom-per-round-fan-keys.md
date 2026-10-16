@@ -1,12 +1,12 @@
 # Card 8 — loom-per-round-fan-keys
 
 **Create:**
-- `plan:internal/loomengine#FanList` -> `type FanList []string`
-- `plan:internal/loomengine#FanList.UnmarshalYAML` -> `func (l *FanList) UnmarshalYAML(node *yaml.Node) error`
-- `plan:internal/loomengine#fanShapeError` -> `type fanShapeError struct`
-- `plan:internal/loomengine#fanShapeError.Error` -> `func (e *fanShapeError) Error() string`
-- `plan:internal/loomengine#retireFanReview` -> `func retireFanReview(document []byte) ([]byte, []string, error)`
-- `plan:internal/loomengine#SegmentKeys` -> `type SegmentKeys struct`
+- `internal/loomengine#FanList`
+- `internal/loomengine#FanList.UnmarshalYAML`
+- `internal/loomengine#fanShapeError`
+- `internal/loomengine#fanShapeError.Error`
+- `internal/loomengine#retireFanReview`
+- `internal/loomengine#SegmentKeys`
 
 **Delete:**
 - `internal/loomengine#fannedReview`

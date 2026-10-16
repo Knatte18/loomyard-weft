@@ -1,6 +1,6 @@
 {
   "runGuid": "0acc8524e37c46d7f6bf33304842b221",
-  "planFingerprint": "2fd080f160f87acf34dbcaaea15b1ba93f7349a6c472e533e2eda33258d80677",
+  "planFingerprint": "2b06fbef9cf11f838f0c96df36dab3218c1a33bdb9c91fd3b34054fa7909d304",
   "planFileHashes": {
     "00-overview.md": "dd9e232a4268b1190e73fad0fc24a00027cbf2f0a81a883bc1bc8d2571526593",
     "01-production-fans.md": "66b6501afdb897bd098c68abcb637dbd38334c93ce0e47659ebc7df145700ad6",
@@ -10,7 +10,7 @@
     "05-recorded-round-fans.md": "985359ef3631cdf844a1337e5032a7d1301a246194e26ef4a4f16af56cc1a8aa",
     "06-bouncer-per-round-exclusions.md": "67d79881230ba42f813b26e13d9d50eb7afd73377f179037c76f6016ce74bc8d",
     "07-row-fan-lists.md": "6452d07c097563b016689d695746ef73b5549428a106b01ffaa378c6a8ae8326",
-    "08-loom-per-round-fan-keys.md": "04100be423cc43365e20bbc16330c7feccf6506edb7f3dd13ec52d8ede5658a1"
+    "08-loom-per-round-fan-keys.md": "4b8922d91ca48656be780d43402d7811f2741ff7518cc2b9415d85d1e8928be4"
   },
   "planOverviewFrameHash": "5171bc71e2e5e77e0851d9a146eeb39b1bad8b2d70a174288f49655325bac7f3",
   "partition": [
@@ -250,7 +250,7 @@
       }
     }
   ],
-  "currentBatch": 8,
+  "currentBatch": 0,
   "masterStrand": "9e18c98f07f78cbdb16a10227347d6b2",
   "masterSessionId": "518950fe-4628-411d-8e44-a355236b5940",
   "masterEngine": "claude",
@@ -373,20 +373,39 @@
         "08-loom-per-round-fan-keys"
       ],
       "cardHashes": {
-        "08-loom-per-round-fan-keys": "04100be423cc43365e20bbc16330c7feccf6506edb7f3dd13ec52d8ede5658a1"
+        "08-loom-per-round-fan-keys": "4b8922d91ca48656be780d43402d7811f2741ff7518cc2b9415d85d1e8928be4"
       },
       "startSha": "a90f3430af26dcc8b64fabc59d94d87d1013cb2a",
       "kind": "fork",
       "spawnedAt": "2026-10-16T14:19:53Z",
       "sessionId": "518950fe-4628-411d-8e44-a355236b5940",
       "engine": "claude",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "08-loom-per-round-fan-keys",
+        "status": "done",
+        "head_sha": "bfa8e868982294c513245d50ddcb7c68d77029a7",
+        "deviations": [
+          "internal/loomcli/wiring.go",
+          "internal/loomengine/review.go"
+        ]
+      },
+      "cardShas": [
+        "bfa8e868982294c513245d50ddcb7c68d77029a7"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-fan-prompt-tuning/518950fe-4628-411d-8e44-a355236b5940/subagents/agent-a61792ad60530b833.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-fan-prompt-tuning/518950fe-4628-411d-8e44-a355236b5940/subagents/agent-a61792ad60530b833.jsonl"
+      ]
     }
   },
   "seenForkTranscripts": [
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-fan-prompt-tuning/518950fe-4628-411d-8e44-a355236b5940/subagents/agent-ae3b58559664a7121.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-fan-prompt-tuning/518950fe-4628-411d-8e44-a355236b5940/subagents/agent-a031164123a47b899.jsonl",
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-fan-prompt-tuning/518950fe-4628-411d-8e44-a355236b5940/subagents/agent-a5932e8cffa3994ce.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-fan-prompt-tuning/518950fe-4628-411d-8e44-a355236b5940/subagents/agent-a5932e8cffa3994ce.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-fan-prompt-tuning/518950fe-4628-411d-8e44-a355236b5940/subagents/agent-a61792ad60530b833.jsonl"
   ]
 }
