@@ -1,0 +1,6 @@
+verdict: approve
+reason: >-
+  The design covers the entry's F6 rework-findings wording (D1), F15 to F17 and the rework gap (D2 to D4),
+  and the verify tiers from hub config (D5 to D7), and leaves the .NET verify, orch role and webster fork work to their own entries.
+  The only related peer, orch-role-stencil-fixes, shares no file and its PR-Gate wording agrees with D2; landing order is a tie on row 3.
+question: ""
