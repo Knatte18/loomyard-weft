@@ -710,9 +710,7 @@
         "shuttle"
       ],
       "issues": [],
-      "depends_on": [
-        "creel-stage1-fixes"
-      ],
+      "depends_on": [],
       "isolated": false,
       "brief": "An interactive session opened by lyx shuttle open always prompts for permissions; there is no flag or config for bypass",
       "body": "## Seen\n\nOn 2026-10-15 the orch opened a dedicated Opus session for the operator with `lyx shuttle open --role stencil-audit`.\nIt came up in prompt mode, since an interactive run resolves an empty `PermissionMode` to prompt (`claudeengine.validatePermissionMode`), and `shuttle open` has no way to set it.\nThe operator wanted bypass permissions; the orch removed the strand and started a plain `claude --dangerously-skip-permissions` through `lyx reed add`, which then registered under a generic session name (`loomyard-13`) instead of `ly:stencil-audit`.\n\n## Idea\n\n`lyx shuttle open` takes a `--permission-mode` flag (bypass or prompt), or a config default, so an operator session opens in bypass with its lyx strand name.\n\n## Operator decision (2026-10-15)\n\nBuild it as a small task, from the 2026-10-15 board triage, once `creel-stage1-fixes` has landed, since both touch the shuttle module.",
@@ -724,37 +722,6 @@
           "review_max_bounces": 2
         }
       }
-    },
-    {
-      "id": 565,
-      "slug": "creel-stage1-fixes",
-      "title": "Fix the creel stage 1 audit defects and add its sandbox scenarios",
-      "kind": "task",
-      "labels": [
-        "bug",
-        "creel",
-        "shuttle",
-        "reed",
-        "claude"
-      ],
-      "issues": [
-        657,
-        658,
-        659,
-        660,
-        661,
-        662,
-        663,
-        664
-      ],
-      "priority": "high",
-      "depends_on": [],
-      "isolated": false,
-      "brief": "Eight creel defects from the audit (#657-#664) plus sandbox scenarios C1-C13",
-      "body": "Fix the defects the creel stage 1 audit found, and make its sandbox scenarios re-runnable.\nThe audit report is `docs/research/creel-audit-2026-10-15/report.md`; each issue below holds its steps and expected behaviour.\n\n## Operator decisions (2026-10-15)\n\n- The eight creel bugs from the audit are fixed together in this one task, at high priority.\n- The audit's proposed sandbox scenarios C1-C13 are written into the sandbox suite in this task.\n- `creel-notices` and `creel-agents` stay notes until this task has landed and creel is tested again.\n\n## Defects\n\n- #657: a strand added by hand with `lyx reed add --cmd claude` is never read idle, because Claude's greyed placeholder in the empty input box reads as a draft; `TestSmokeCreelClaudeStrand` (llm tier) fails for the same reason. Shuttle-launched sessions avoid it through `promptSuggestionEnabled: false`.\n- #658: no delivery into a strand pane reed collapsed to 3 rows; the idle probe's `TooShort` is dropped in `internal/creelcli/delivery.go`, so the inject expires and no reason is shown anywhere.\n- #659: after `interrupt` or `inject --interrupt`, Claude restores the interrupted prompt into its input box, creel reads the strand as busy, and the queued inject waits until the box is cleared by hand.\n- #660: `lyx creel read \u003e /dev/full` exits 0 and acknowledges, so the mail is marked read and lost.\n- #661: a daemon that fails to start leaves verbs with only \"no daemon answers\"; its own error (for example a malformed journal line, with file and line) is lost.\n- #662: a new inject is charged TTL for the time since the receiver's previous probe, before it was posted.\n- #663: `read` does not show that a message was returned by a removed holder (`EndedUnreadBy` is never printed).\n- #664: `log` prints `reminded` with `\"id\":0` and no ids; `inject --help` misstates who may inject; `--wait` verbs print an empty sender; `release` of an unknown receiver answers ok.\n\n## Done when\n\n- Each defect above is fixed as its issue's Expected section says, with a test where the repo's tiers can hold one.\n- `lyx gate test --tags llm ./internal/creelcli` passes (`TestSmokeCreelClaudeStrand`), as do the tmux, unit and integration tiers.\n- Scenarios C1-C13 from the report's \"Proposed creel sandbox suite\" are added to the sandbox suite in `tools/sandbox/`, beside the existing creel scenario S9.\n",
-      "status": "done",
-      "created": "2026-10-15T16:35:07Z",
-      "revised": "2026-10-15T17:12:16Z"
     },
     {
       "id": 566,

@@ -2,8 +2,6 @@
 
 `shuttle-open-permission` · Task · enhancement, shuttle
 
-Depends on: [`creel-stage1-fixes`](design-creel-stage1-fixes.md)
-
 ## Seen
 
 On 2026-10-15 the orch opened a dedicated Opus session for the operator with `lyx shuttle open --role stencil-audit`.
