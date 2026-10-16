@@ -1,6 +1,6 @@
 # Fix the creel stage 1 audit defects and add its sandbox scenarios
 
-`creel-stage1-fixes` · Task · bug, creel, shuttle, reed, claude · running · Plan-Burler-Review
+`creel-stage1-fixes` · Task · bug, creel, shuttle, reed, claude · running · Plan-Burler-Fix
 
 Fix the defects the creel stage 1 audit found, and make its sandbox scenarios re-runnable.
 The audit report is `docs/research/creel-audit-2026-10-15/report.md`; each issue below holds its steps and expected behaviour.
