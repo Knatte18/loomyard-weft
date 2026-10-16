@@ -31,9 +31,15 @@
 - `loom-rubric-plan-review.md`'s `Verify coverage` bullet: a targeted package whose tests the section leaves unrun, its hermetic build-tagged tests included, is a finding;
   the hub's verify tiers follow as `{{.verify_tiers}}` on its own line; a tier the list says is compiled rather than run is not a finding, and a section out of the list's order is a finding;
   with `none`, only the coverage rule applies.
+  An entry that calls a tier compiled rather than run lets a plan leave that tier unrun and Plan-Review accept it;
+  the key is Guard-classified in a board-only file, so only the hub operator writes it;
+  inside webster the Go-coded card and batch gates still run the untagged and `-tags integration` tests over the batch's packages whatever an entry says,
+  and at landing the skip is bounded only by landing config's `publish_verify`;
+  the shell guard and the plan gate refuse what they refuse whatever an entry says.
   The `go vet -tags llm`, `go vet -tags tmux` and `go -C` examples and the "order the plan template states" sentence leave the bullet.
   The header comment's marker sentence names `verify_tiers` among the markers `ReadRubric` fills.
-- `contracts/stencils/rubric_test.go`'s file header comment, which lists the markers a rubric may carry and which rubric renders each note, names `verify_tiers` and that only the Plan-Review rubric renders it.
+- `contracts/stencils/rubric_test.go`'s file header comment, which lists the markers a rubric may carry and which rubric renders each note, names `verify_tiers` and that only the Plan-Review rubric renders it;
+  the doc comment of `rubricMarkerAllowlist`, which lists the markers `ReadRubric` fills, names `verify_tiers` too.
 
 Tests:
 
@@ -43,6 +49,6 @@ Tests:
 - `TestBurlerReviewEntry_RubricStencil` gains a subtest `FillsTheVerifyTiers`, shaped like `FillsTheWebsterRecordNote`, asserting `profile.Rubric` carries the env's tiers as bullets.
 - `rubricMarkerAllowlist` admits `verify_tiers`, and `TestLoomRubrics` passes a known tier list in `RubricNotes` and asserts only `loom-rubric-plan-review` renders its bullet.
   The ban on Go tier commands in the rubric's text is Card 4's one scan, not an assertion here.
-- `TestWire_LanguageSkills`'s listed row asserts `c.env.VerifyTiers` equals the file's tiers.
+- `TestWire_LanguageSkills`'s listed row asserts `c.env.VerifyTiers` equals the row's `wantTiers` column.
 
 **ImpactSummary:** Additive struct fields across shedadapters and shedrecipe plus one more fixed marker in `ReadRubric`; every other rubric renders unchanged because none carries the marker.

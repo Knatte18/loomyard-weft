@@ -9,8 +9,11 @@
 - `internal/websterengine#recoverSpawn`
 - `internal/websterengine/doc.go`
 - `internal/websterengine_test#forkTemplateMarkerValues`
-- `internal/websterengine_test#renderForkWithPack`
-- `internal/websterengine_test#renderRecoveryWithUncommitted`
+- `internal/websterengine_test#renderForkWithPack` -> `func renderForkWithPack(batch batcher.Batch, root, stencilsDir, specsDir, prevDigest string, selfFixCap int, notePath string, layout websterengine.PackLayout, pack []planindex.CardPack, verifyTiers []string) (prompt, packFile string, err error)`
+- `internal/websterengine_test#renderRecoveryWithUncommitted` -> `func renderRecoveryWithUncommitted(batch batcher.Batch, repoRoot, anchorRoot, stencilsDir, specsDir, failureDigest, uncommittedPaths, notePath, parent string, verifyTiers []string) (string, error)`
+- `internal/websterengine_test#renderFork`
+- `internal/websterengine_test#renderForkPromptAndPack`
+- `internal/websterengine_test#renderRecovery`
 - `internal/websterengine_test#TestRenderPrompts_ParentDirective`
 - `internal/websterengine_test#TestTemplates_FillRequiresEveryRequiredMarker`
 - `internal/websterengine_test#TestRenderPrompts`
@@ -45,6 +48,7 @@
   The sentence that a `lyx gate test` step runs as written, whatever its `--tags`, stays, so the list's compile-only rule governs raw runs and runs no gate step names, never a rendered card or batch gate step.
   The gate-describing sentence stays: a test under the `tmux` or `llm` tag that no gate step names is compiled, never run, through `lyx gate test --tags <tag> <packages> -- -run '^$'`, and the list's compile-only rule adds tiers beyond those two.
   The failure and report sentences `webster-fork-stencil-fixes` cites are not edited.
+  A tier the list calls compiled is compiled, never run, by the implementer's raw runs only, while every rendered card or batch gate step still runs as written, which bounds it.
 - `doc.go`'s sentence on the master's and recovery strand's language skills (`RunDeps.LanguageSkills`, `RecoverDeps.LanguageSkills`) gains one beside it: the fork and recovery prompts render the hub's verify tiers from `BeginDeps.VerifyTiers` and `RecoverDeps.VerifyTiers`, `none` for an empty list.
 
 `TestHubGenericStencils_NameNoGoTiers` is the one scan behind the acceptance criterion that a hub with an empty list gets no Go tier commands: over the registered default text of `loom-template-plan`, `loom-rubric-plan-review` and `webster-body-implementer`, it fails on any of `go build`, `go vet`, `go test`, `-tags tmux`, `-tags llm` and `go -C`, shaped like `TestTwillStencils_HostNeutral` and carrying `//lyx:guard`.
@@ -55,8 +59,8 @@ It lands on this card because Cards 2 and 3 have already edited the other two st
 Tests:
 
 - `forkTemplateMarkerValues` gains a `verify_tiers` placeholder (the recovery map inherits it), and `TestTemplates_FillRequiresEveryRequiredMarker` lists `verify_tiers` among the fork's and the recovery's required markers.
-- `renderForkWithPack`, `renderRecoveryWithUncommitted` and `TestRenderPrompts_ParentDirective`'s direct calls pass nil tiers.
-- `TestRenderPrompts` gains rows in its `cases` table, under `testLayout`: the fork and the recovery prompt rendered with two tiers, one holding `{{.x}}`, each carry both bullets consecutively, in order and verbatim;
+- `renderForkWithPack` and `renderRecoveryWithUncommitted` gain a `verifyTiers []string` parameter that they pass to `RenderForkPrompt` and `RenderRecoveryPrompt`; `renderFork`, `renderRecovery`, `renderForkPromptAndPack` and `TestRenderPrompts_ParentDirective`'s direct calls pass nil.
+- `TestRenderPrompts` gains rows in its `cases` table, under `testLayout`: the fork and the recovery prompt rendered with two tiers, one holding `{{.x}}`, through direct calls to `renderForkWithPack` and `renderRecoveryWithUncommitted` with the tiers, each carry both bullets consecutively, in order and verbatim;
   the fork and the recovery prompt rendered with nil tiers each carry `none` after the list sentence and hold no `- ` line with empty content.
 - `TestBeginBatch_PromptFile` gains a row whose `prepare` sets `fx.Deps.VerifyTiers` and whose `want` holds the tier bullet, read from the prompt file `BeginBatch` writes.
 - `TestRecoverBatch_UncommittedPathsPrompt` sets `RecoverDeps.VerifyTiers` and asserts the recovery prompt it spawns carries the tier bullet.

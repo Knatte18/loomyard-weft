@@ -12,7 +12,6 @@
 - `internal/loomcli#loomCLI.wire`
 - `internal/loomcli#TestWire_LanguageSkills`
 - `internal/webstercli#websterCLI.wireHub`
-- `internal/webstercli#TestWireHub_LanguageSkills`
 - `internal/burlercli#burlerCLI.wireHub`
 - `internal/configreg#Modules`
 - `internal/languageconfig#ConfigTemplate`
@@ -32,7 +31,8 @@
 - `Language` holds `Skills []string` and `VerifyTiers []string`, each in file order; `Load` returns it, and the empty-board degrade returns both lists empty and non-nil.
 - `config` gains `VerifyTiers yaml.Node` under the `verify_tiers` tag.
 - `stringList` holds the shape checks `skills` runs today (a sequence of `!!str` scalars, no empty entry, no surrounding whitespace), each failure through `unusable` naming the key it was given.
-  `Load` runs it for `skills` as today, and for `verify_tiers` only when the node is present: an absent key (node kind zero) resolves the empty list, so an existing hub file without the key loads unchanged.
+  `Load` runs it over both keys unconditionally.
+  An existing hub file without `verify_tiers` reaches `Load` holding the template's empty `verify_tiers` list, because configengine's load fills missing template keys through `yamlengine.FillMissing`, so it loads unchanged.
   `Load` additionally refuses a `verify_tiers` entry holding `\n` or `\r`, through `unusable(verifyTiersKey, …)`, so every entry renders as one bullet line.
 - `unusable` takes the key it names; a configengine content failure or an unparseable file has no single key, so `Load` passes an empty key and `unusable` then writes `language config: <detail>` with no key segment.
   The marking (`configengine.ErrInvalid` wrapping `ErrUnusable`) and the `wayForward` clause are unchanged.
@@ -47,18 +47,20 @@
 - `contracts/specs/refusal-spec.md`'s `config file content invalid` and `language.yaml invalid` rows widen from `skills` to both keys: a `verify_tiers` value that is not a list of strings, an entry that is empty, carries surrounding whitespace or holds a line break, and a local override holding either key; the way forward is unchanged (`PATTERN-refusal-way-forward`).
 - `docs/overview.md`'s module-table line for `internal/languageconfig/` names the verify tiers beside the skills.
 - Callers: `loomCLI.wire`, `websterCLI.wireHub` and `burlerCLI.wireHub` read `.Skills` where they used the returned slice; `loomCLI.wire` keeps the whole `Language` in a local for the later cards.
+  The comment above `loomCLI.wire`'s `languageconfig.Load` call (`internal/loomcli/wiring.go`) says the error already names the failing key and its own way forward.
   `configreg`'s `Modules` row passes `languageconfig.Load` to `checkLoad`, which is generic over the result: the row's text stays as is and is listed only because it references the re-signed `Load`.
 
 Tests:
 
-- `TestLoad_ResolvesSkills` gains a `wantTiers` column: every existing row wants the empty tier list (the template row proves the template's `verify_tiers: []`); a new row lists two tiers and some skills and wants both lists in file order; a row with a skills list and no `verify_tiers` key wants the empty tier list.
+- `TestLoad_ResolvesSkills` gains a `wantTiers` column: every existing row wants the empty tier list (the template row proves the template's `verify_tiers: []`); a new row lists two tiers and some skills and wants both lists in file order; a row with a skills list and no `verify_tiers` key wants the empty tier list, which pins the template fill.
   Every row also asserts both returned lists are non-nil, which `slices.Equal` alone does not, so the no-board row pins the non-nil degrade.
 - `TestLoad_InvalidFailsNamingKey` gains a `key` column, the key the error must name beside `lyx config language`.
   The unparseable-yaml row has an empty `key` and asserts the error names neither `skills` nor `verify_tiers`, pinning `unusable`'s no-key form.
   New rows refuse `verify_tiers`: a scalar value, a non-string entry (`[1]`), an empty entry, leading whitespace, trailing whitespace, an entry holding `\n` (`["a\nb"]`), an entry holding `\r` (`["a\rb"]`), and a local override holding `verify_tiers`; each is a content failure naming `verify_tiers`.
 - `TestVerifyTiersValue` is table-driven: nil and empty give `none`; two entries give two bullet lines in order; an entry holding `{{.x}}` is rendered verbatim.
   The package's row in `cmd/lyx/testdata/test-budget.yaml` rises by one for it.
-- `TestWire_LanguageSkills` gains a `wantKey` column that replaces its fixed `"skills"` check, `skills` on the existing error row, and a row whose file holds a valid `skills` list and `verify_tiers: [""]`: `wire` halts with an error naming `verify_tiers` and `lyx config language`, the real spawn path the acceptance criterion names.
-- `TestWireHub_LanguageSkills` gains a row whose file holds `verify_tiers: [""]`: `wire` returns an invalid `configLoadRefusal` naming `language.yaml`, `verify_tiers` and `lyx config language`; its refusal branch's fixed `"skills"` want gives way to the row's key the same way.
+- `TestWire_LanguageSkills` gains a `wantKey` column that replaces its fixed `"skills"` check, `skills` on the existing error row.
+  Its listed row's file also holds a two-entry `verify_tiers` list, and the row struct gains a `wantTiers` column holding those entries, asserted against the `Language` that `loomCLI.wire` keeps.
+  It gains a row whose file holds a valid `skills` list and `verify_tiers: [""]`: `wire` halts with an error naming `verify_tiers` and `lyx config language`, the real spawn path the acceptance criterion names.
 
 **ImpactSummary:** `Load` re-signed with three production callers (loom, webster and burler CLI wiring) switched to `.Skills`; `configreg` compiles unchanged; the only behavior change is the new key and its refusals, recorded in the refusal spec and the module table.

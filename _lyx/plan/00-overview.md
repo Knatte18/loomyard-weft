@@ -1,6 +1,6 @@
 ---
 format: 5
-approved: false
+approved: true
 ---
 
 # Plan: loom-stencil-wording
