@@ -1,0 +1,129 @@
+{
+  "runGuid": "fe53ce1394c4a0718754589b304ce9ff",
+  "planFingerprint": "ed899330bac9d633d39d171821dc66b04f6dd643905c2b913ed897a9f3b7eee4",
+  "planFileHashes": {
+    "00-overview.md": "cb1807a374fef044993e433a4270dd274851374fda9371f3987db92a71861264",
+    "01-role-file-repository-rules.md": "ea8bd68a2de195db7889028dbceffcdef963e940ad877edf114991eb14ed8839",
+    "02-role-stencil-rewrites.md": "178097c10ca4f8ab9645b9dda606e124728f8b04e9f7e0b8731d3b19c8786031",
+    "03-escalation-brief-operator-decisions.md": "d4d01e6d0351f7bf17c161b0388713954fed9cb97eb2d587c854f2c635823011",
+    "04-orchestrator-md.md": "248542cb7b534c70ecaf1940cab7f271621b0c6446cc98bfdb5cf472d087eb64"
+  },
+  "planOverviewFrameHash": "df82aa2bb7762d9e1a119133bca3af150b4ea27c0db0adf489f29297732ce888",
+  "partition": [
+    {
+      "cards": [
+        "01-role-file-repository-rules",
+        "02-role-stencil-rewrites",
+        "03-escalation-brief-operator-decisions",
+        "04-orchestrator-md"
+      ],
+      "profile": "cautious",
+      "estimate": 158882,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 1,
+        "startup": 54544,
+        "read_union": 43324,
+        "cards": [
+          {
+            "card": 1,
+            "card_text": 1104,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1944,
+              "file:contracts/stencils/orch/orch-template-role.md": 2772,
+              "file:internal/orchcli/doc.go": 792,
+              "file:internal/orchcli/paths.go": 456,
+              "file:internal/orchengine/doc.go": 5316,
+              "package:cmd/lyx/testdata": 2000,
+              "package:contracts/stencils": 2000,
+              "package:contracts/stencils/orch": 2000,
+              "package:internal/orchcli": 2000,
+              "package:internal/orchengine": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:contracts/stencils": 2000,
+              "tests:contracts/stencils/orch": 2000,
+              "tests:internal/orchcli": 2000,
+              "tests:internal/orchengine": 2000
+            },
+            "messages": 159.5,
+            "written": 48954
+          },
+          {
+            "card": 2,
+            "card_text": 480,
+            "reads": {
+              "file:contracts/stencils/orch/orch-template-role.md": 2772,
+              "package:contracts/stencils/orch": 2000,
+              "tests:contracts/stencils/orch": 2000
+            },
+            "messages": 6,
+            "written": 2280
+          },
+          {
+            "card": 3,
+            "card_text": 336,
+            "reads": {
+              "file:contracts/stencils/bouncer/bouncer-fragment-decide-capped.md": 84,
+              "file:contracts/stencils/bouncer/bouncer-fragment-decide-open.md": 84,
+              "file:contracts/stencils/bouncer/bouncer-template-escalation.md": 480,
+              "package:contracts/stencils/bouncer": 2000,
+              "tests:contracts/stencils/bouncer": 2000
+            },
+            "messages": 18,
+            "written": 5736
+          },
+          {
+            "card": 4,
+            "card_text": 444,
+            "reads": {
+              "file:CLAUDE.md": 1032,
+              "package:.": 2000,
+              "tests:.": 2000
+            },
+            "messages": 12,
+            "written": 4044
+          }
+        ]
+      }
+    }
+  ],
+  "currentBatch": 1,
+  "masterStrand": "265242ac593b75c7fa7ab18f4c19948a",
+  "masterSessionId": "13c51569-a066-4564-a2b6-6e8194990b49",
+  "masterEngine": "claude",
+  "batches": {
+    "1": {
+      "slug": "role-file-repository-rules",
+      "cards": [
+        "01-role-file-repository-rules",
+        "02-role-stencil-rewrites",
+        "03-escalation-brief-operator-decisions",
+        "04-orchestrator-md"
+      ],
+      "cardHashes": {
+        "01-role-file-repository-rules": "ea8bd68a2de195db7889028dbceffcdef963e940ad877edf114991eb14ed8839",
+        "02-role-stencil-rewrites": "178097c10ca4f8ab9645b9dda606e124728f8b04e9f7e0b8731d3b19c8786031",
+        "03-escalation-brief-operator-decisions": "d4d01e6d0351f7bf17c161b0388713954fed9cb97eb2d587c854f2c635823011",
+        "04-orchestrator-md": "248542cb7b534c70ecaf1940cab7f271621b0c6446cc98bfdb5cf472d087eb64"
+      },
+      "startSha": "1cf2b272657430a2e9641cf4cb99f8a75e363932",
+      "kind": "fork",
+      "spawnedAt": "2026-10-16T09:11:46Z",
+      "sessionId": "13c51569-a066-4564-a2b6-6e8194990b49",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
+    }
+  }
+}
