@@ -1,14 +1,14 @@
 # Card 7 — Move a strand pane left in the shell window into its own window
 
 **Create:**
-- `plan:internal/reedengine#planShellWindowMoves` -> `func planShellWindowMoves(st *ReedState, shellPanes []LivePane) []string`
-- `plan:internal/reedengine#Engine.moveShellWindowStrandsLocked` -> `func (e *Engine) moveShellWindowStrandsLocked(st *ReedState, shellWindow string, paneIDs []string) bool`
-- `plan:internal/reedengine#Engine.listReconcilePanesLocked` -> `func (e *Engine) listReconcilePanesLocked(st *ReedState) ([]LivePane, []windowPane, error)`
-- `plan:internal/reedengine#Engine.markOwnWindowLocked` -> `func (e *Engine) markOwnWindowLocked(s *Strand, windowID string, overview, unseen bool, group string)`
-- `plan:internal/reedengine#strandsMarkerFormat` -> `const strandsMarkerFormat = "#{window_id} #{?#{@lyx_strands},1,0}"`
-- `plan:internal/reedengine#markedStrandsWindow` -> `func markedStrandsWindow(out string) (string, bool)`
-- `plan:internal/reedengine#TmuxCmd.shellWindow` -> `func (p TmuxCmd) shellWindow(session string, st *ReedState) (string, bool, error)`
-- `plan:internal/reedengine#TestListReconcilePanesLocked_MovesShellWindowStrands` -> `func TestListReconcilePanesLocked_MovesShellWindowStrands(t *testing.T)`
+- `internal/reedengine#planShellWindowMoves`
+- `internal/reedengine#Engine.moveShellWindowStrandsLocked`
+- `internal/reedengine#Engine.listReconcilePanesLocked`
+- `internal/reedengine#Engine.markOwnWindowLocked`
+- `internal/reedengine#strandsMarkerFormat`
+- `internal/reedengine#markedStrandsWindow`
+- `internal/reedengine#TmuxCmd.shellWindow`
+- `internal/reedengine#TestListReconcilePanesLocked_MovesShellWindowStrands`
 
 **Edit:**
 - `internal/reedengine#TmuxCmd.strandWindowTarget`
