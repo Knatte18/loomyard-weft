@@ -1,0 +1,9 @@
+verdict: approve
+reason: >-
+  The decision record covers every scope point of entry #573: own-window as the reed add default with retired anchors refused (D1, D2, D3),
+  the pane-era sweep of layout code, config, bindings, help, docs, sandbox suites and tests, with the stencils checked clean (D4-D8),
+  and removal of the CLAUDE.md #673 workaround (D8).
+  It neither contradicts nor duplicates reed-status-buttons, reed-status-buttons-prototype or spawn-audit-log,
+  and lyx loom peers lists no peer runs and no parent commits.
+question: ""
+superseded: []
