@@ -1,0 +1,119 @@
+{
+  "runGuid": "f9a874ca5d3eef64bf470d8f0060853a",
+  "planFingerprint": "8ad2a852a16ff618036dab7bf1ea5e5a8e5185f577ceb5551dc25e125e804846",
+  "planFileHashes": {
+    "00-overview.md": "e1391e15199fd799148cdc9677e74e269c014cb553c494eeba84155dfa584203",
+    "01-shuttle-session-id.md": "64c0495ea8151b2e0156bc9a7bae8b2d0748d4d6e61577ccc2b298520093efba",
+    "02-watcher-records-session-id.md": "8686f09c7d88262d391774350b98a1d4623330cb8605596bc2a85367b30e53d0",
+    "03-start-continue.md": "bccf0099fed2d6265039e299a2f218900e155c2d991f48fdac72b9a1409172d1",
+    "04-status-session-id.md": "14293e216724f5373a308e28b9b63bc35af4ba65a5afc93d9c8fc821332d621f"
+  },
+  "planOverviewFrameHash": "3aa0722517609659b65dd4050e5d6f4fc3967cef904e1e7110772903ecf83d64",
+  "partition": [
+    {
+      "cards": [
+        "01-shuttle-session-id",
+        "02-watcher-records-session-id",
+        "03-start-continue",
+        "04-status-session-id"
+      ],
+      "profile": "cautious",
+      "estimate": 175280,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 1,
+        "startup": 54340,
+        "read_union": 26344,
+        "cards": [
+          {
+            "card": 1,
+            "card_text": 420,
+            "reads": {
+              "package:internal/shuttleengine": 2000,
+              "tests:internal/shuttleengine": 2000
+            },
+            "messages": 62,
+            "written": 19020
+          },
+          {
+            "card": 2,
+            "card_text": 696,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1944,
+              "file:internal/orchengine/doc.go": 5124,
+              "package:cmd/lyx/testdata": 2000,
+              "package:internal/orchengine": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:internal/orchengine": 2000
+            },
+            "messages": 86.5,
+            "written": 26646
+          },
+          {
+            "card": 3,
+            "card_text": 1164,
+            "reads": {
+              "file:internal/orchcli/doc.go": 780,
+              "file:internal/orchengine/doc.go": 5124,
+              "package:internal/orchcli": 2000,
+              "package:internal/orchengine": 2000,
+              "tests:internal/orchcli": 2000,
+              "tests:internal/orchengine": 2000
+            },
+            "messages": 135.5,
+            "written": 41814
+          },
+          {
+            "card": 4,
+            "card_text": 216,
+            "reads": {
+              "package:internal/orchcli": 2000,
+              "tests:internal/orchcli": 2000
+            },
+            "messages": 23,
+            "written": 7116
+          }
+        ]
+      }
+    }
+  ],
+  "currentBatch": 1,
+  "masterStrand": "40acb6d52b6dc37b0636b41bf2ec045b",
+  "masterSessionId": "06e6b4e7-8eac-4046-ad23-eed288b134ed",
+  "masterEngine": "claude",
+  "batches": {
+    "1": {
+      "slug": "shuttle-session-id",
+      "cards": [
+        "01-shuttle-session-id",
+        "02-watcher-records-session-id",
+        "03-start-continue",
+        "04-status-session-id"
+      ],
+      "cardHashes": {
+        "01-shuttle-session-id": "64c0495ea8151b2e0156bc9a7bae8b2d0748d4d6e61577ccc2b298520093efba",
+        "02-watcher-records-session-id": "8686f09c7d88262d391774350b98a1d4623330cb8605596bc2a85367b30e53d0",
+        "03-start-continue": "bccf0099fed2d6265039e299a2f218900e155c2d991f48fdac72b9a1409172d1",
+        "04-status-session-id": "14293e216724f5373a308e28b9b63bc35af4ba65a5afc93d9c8fc821332d621f"
+      },
+      "startSha": "493c62b710455b6f0fcf8f6b2814c8d9812c8118",
+      "kind": "fork",
+      "spawnedAt": "2026-10-16T05:38:18Z",
+      "sessionId": "06e6b4e7-8eac-4046-ad23-eed288b134ed",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
+    }
+  }
+}
