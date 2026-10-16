@@ -17,7 +17,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | **lyx shuttle open cannot choose the permission mode**<br>• An interactive session opened by lyx shuttle open always prompts for permissions; there is no flag or config for bypass | [`shuttle-open-permission`](design-shuttle-open-permission.md) | loom | PR-Gate | 18h | 12h | shuttle |
+| 1 | **lyx shuttle open cannot choose the permission mode**<br>• An interactive session opened by lyx shuttle open always prompts for permissions; there is no flag or config for bypass | [`shuttle-open-permission`](design-shuttle-open-permission.md) | loom | Finalize | 18h | 12h | shuttle |
 | 2 | **Orch delegates board intake to a one-shot fork**<br>• Orch checks the inbox by number and title only; a fork imports, labels and folds issues | [`orch-intake-fork`](design-orch-intake-fork.md) | loom | Webster | 24m | 24m | orch, board |
 
 ### Ready
@@ -54,8 +54,8 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | --- | --- | --- | --- | --- | --- |
 | 1 | **Webster stencils describe a stale fork spawn and wake-up**<br>• The fork prefix still says Master waits with await-batch, and Master recognises forks by an instruction it never sends. | [`webster-fork-spawn-wording`](design-webster-fork-spawn-wording.md) | 8m | 8m | stencil, webster |
 | 2 | **PR-Rework stencil calls agent findings the operator's**<br>• The rework writer is told rejection findings are the operator's, but they come from the alignment agent or the orch. | [`rework-findings-not-operator`](design-rework-findings-not-operator.md) | 8m | 8m | stencil, loom |
-| 3 | **Drop Webster's inline kick-start pack layout**<br>• The inline layout puts code locations straight into the fork prompt and keeps a frozen sentence about Master reading files. | [`webster-drop-inline-pack`](design-webster-drop-inline-pack.md) | 4m | 4m | stencil, webster |
-| 4 | **reed add without --parent splits the selvage shell window** | [`reed-add-parentless-placement`](design-reed-add-parentless-placement.md) | 1m | 1m | reed |
+| 3 | **Drop Webster's inline kick-start pack layout**<br>• The inline layout puts code locations straight into the fork prompt and keeps a frozen sentence about Master reading files. | [`webster-drop-inline-pack`](design-webster-drop-inline-pack.md) | 5m | 5m | stencil, webster |
+| 4 | **reed add without --parent splits the selvage shell window** | [`reed-add-parentless-placement`](design-reed-add-parentless-placement.md) | 2m | 2m | reed |
 | 5 | **A task that changes PATTERN declares it in its record and plan**<br>• Reviewers judge a PATTERN change against the old text and flag it as a violation; the record and plan must declare the change so reviewers judge by the new rule. | [`pattern-change-declared`](design-pattern-change-declared.md) | 0m | 0m | stencil, loom, webster, burler |
 
 #### Low priority
@@ -84,7 +84,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 12 | **Paste cited code into a review rounds context**<br>• Reviewers edit nothing and review a fixed commit, so code pasted at round start cannot go stale; measure it against todays reviewer | [`review-inline-code`](design-review-inline-code.md) | 4d | 19h | burler, stencil |
 | 13 | **Module labels from what a task touches, not only what it is about**<br>• Half the landings that changed the shuttle core lacked the shuttle label; derive or check module labels from the plan and the diff | [`labels-from-diff`](design-labels-from-diff.md) | 20h | 20h | board, loom |
 | 14 | **Start one task per overlapping group at a newly-ready start**<br>• When a landing makes several overlapping tasks ready at once, batten starts one per group and names the rest in its notice | [`batten-ready-overlap`](design-batten-ready-overlap.md) | 18h | 18h | batten |
-| 15 | **Rename the `lyx` binary to `lyd` (name clash with LyX)** | [`rename-binary-lyd`](design-rename-binary-lyd.md) | 34m | 34m | stencil, shuttle |
+| 15 | **Rename the `lyx` binary to `lyd` (name clash with LyX)** | [`rename-binary-lyd`](design-rename-binary-lyd.md) | 35m | 35m | stencil, shuttle |
 
 #### Low priority
 
