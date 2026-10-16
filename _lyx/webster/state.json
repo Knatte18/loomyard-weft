@@ -242,7 +242,7 @@
       }
     }
   ],
-  "currentBatch": 2,
+  "currentBatch": 0,
   "masterStrand": "7dabff2aa15977171b6ba5462f5feaf5",
   "masterSessionId": "cb2d3764-93b9-414c-9bdf-5a3159e2a75e",
   "masterEngine": "claude",
@@ -296,11 +296,26 @@
       "spawnedAt": "2026-10-16T09:25:29Z",
       "sessionId": "cb2d3764-93b9-414c-9bdf-5a3159e2a75e",
       "engine": "claude",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "02-plan-verify-tiers",
+        "status": "done",
+        "head_sha": "65524dd179c0696bce5422f5a95a792dc266693f"
+      },
+      "cardShas": [
+        "65524dd179c0696bce5422f5a95a792dc266693f"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-loom-stencil-wording/cb2d3764-93b9-414c-9bdf-5a3159e2a75e/subagents/agent-ac9c28fb68bff4670.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-loom-stencil-wording/cb2d3764-93b9-414c-9bdf-5a3159e2a75e/subagents/agent-ac9c28fb68bff4670.jsonl"
+      ]
     }
   },
   "seenForkTranscripts": [
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-loom-stencil-wording/cb2d3764-93b9-414c-9bdf-5a3159e2a75e/subagents/agent-a8ad9e226c3726846.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-loom-stencil-wording/cb2d3764-93b9-414c-9bdf-5a3159e2a75e/subagents/agent-a8ad9e226c3726846.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-loom-stencil-wording/cb2d3764-93b9-414c-9bdf-5a3159e2a75e/subagents/agent-ac9c28fb68bff4670.jsonl"
   ]
 }
