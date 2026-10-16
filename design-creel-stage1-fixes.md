@@ -1,6 +1,6 @@
 # Creel stage 1 re-test fixes
 
-`creel-stage1-fixes` · Task · bug, creel, shuttle, claude · running · Publish
+`creel-stage1-fixes` · Task · bug, creel, shuttle, claude · blocked · Publish
 
 Fix the eight creel defects found by the creel stage 1 re-test of 2026-10-16 (report: the creel audit of 2026-10-16).
 Fix #677 first: it is the worst, since it leaves creel down until a journal line is removed by hand.
