@@ -1,11 +1,11 @@
 {
-  "current_producer": "Discussion-Write",
+  "current_producer": "Discussion-Burler-Fix",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Discussion-Write",
-    "last": "Loom-Preflight → done",
+    "now": "Discussion-Burler-Fix",
+    "last": "Discussion-Burler-Review → bounced to Discussion-Burler-Fix",
     "wait": ""
   },
   "history": [
@@ -20,6 +20,152 @@
       "outcome": "done",
       "output": "",
       "at": "2026-10-16T11:07:47Z"
+    },
+    {
+      "producer": "Discussion-Write",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYXHUB/twb-btf-es/_lyx/discussion/decision-record.md",
+      "at": "2026-10-15T14:28:02Z",
+      "gate_attempts": 0,
+      "gate_spans": [
+        {
+          "gate": "discussion",
+          "kind": "gate",
+          "start": "2026-10-15T14:26:38.321486451Z",
+          "end": "2026-10-15T14:26:38.321566681Z"
+        },
+        {
+          "gate": "parent-review",
+          "kind": "gate",
+          "start": "2026-10-15T14:26:38.375565203Z",
+          "end": "2026-10-15T14:27:39.629493435Z"
+        },
+        {
+          "gate": "parent-review",
+          "kind": "held",
+          "start": "2026-10-15T14:27:39.676335439Z",
+          "end": "2026-10-15T14:28:01.872536909Z"
+        }
+      ]
+    },
+    {
+      "producer": "Discussion-Bouncer",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-15T14:28:36Z",
+      "routed_to": "Discussion-Burler-Review"
+    },
+    {
+      "producer": "Discussion-Burler-Review",
+      "outcome": "stuck",
+      "output": "/home/knatte/Code/loomyard-LYXHUB/twb-btf-es/_lyx/reviews/discussion/round-1-review.md",
+      "at": "2026-10-15T14:32:46Z",
+      "gate_attempts": 1,
+      "gate_spans": [
+        {
+          "gate": "review",
+          "kind": "gate",
+          "start": "2026-10-15T14:32:31.879379554Z",
+          "end": "2026-10-15T14:32:31.879581661Z"
+        },
+        {
+          "gate": "review",
+          "kind": "rework",
+          "start": "2026-10-15T14:32:32.291569923Z",
+          "end": "2026-10-15T14:32:46.340227926Z"
+        },
+        {
+          "gate": "review",
+          "kind": "gate",
+          "start": "2026-10-15T14:32:46.367759362Z",
+          "end": "2026-10-15T14:32:46.368183234Z"
+        }
+      ],
+      "budget_exempt": true,
+      "routed_to": "Discussion-Burler-Fix"
+    },
+    {
+      "producer": "Discussion-Burler-Fix",
+      "outcome": "stuck",
+      "output": "/home/knatte/Code/loomyard-LYXHUB/twb-btf-es/_lyx/reviews/discussion/round-1-review.md",
+      "at": "2026-10-15T14:34:47Z",
+      "gate_attempts": 0,
+      "gate_spans": [
+        {
+          "gate": "discussion",
+          "kind": "gate",
+          "start": "2026-10-15T14:34:46.771054918Z",
+          "end": "2026-10-15T14:34:46.771165194Z"
+        }
+      ],
+      "budget_exempt": true,
+      "routed_to": "Discussion-Bouncer"
+    },
+    {
+      "producer": "Discussion-Bouncer",
+      "outcome": "stuck",
+      "output": "/home/knatte/Code/loomyard-LYXHUB/twb-btf-es/_lyx/reviews/discussion/round-1-bouncer-ledger.md",
+      "at": "2026-10-15T14:35:26Z",
+      "routed_to": "Discussion-Burler-Review"
+    },
+    {
+      "producer": "Discussion-Burler-Review",
+      "outcome": "stuck",
+      "output": "/home/knatte/Code/loomyard-LYXHUB/twb-btf-es/_lyx/reviews/discussion/round-2-review.md",
+      "at": "2026-10-15T14:38:09Z",
+      "gate_attempts": 0,
+      "gate_spans": [
+        {
+          "gate": "review",
+          "kind": "gate",
+          "start": "2026-10-15T14:38:08.719669572Z",
+          "end": "2026-10-15T14:38:08.719969313Z"
+        }
+      ],
+      "budget_exempt": true,
+      "routed_to": "Discussion-Burler-Fix"
+    },
+    {
+      "producer": "Discussion-Burler-Fix",
+      "outcome": "stuck",
+      "output": "/home/knatte/Code/loomyard-LYXHUB/twb-btf-es/_lyx/reviews/discussion/round-2-review.md",
+      "at": "2026-10-15T14:39:52Z",
+      "gate_attempts": 0,
+      "gate_spans": [
+        {
+          "gate": "discussion",
+          "kind": "gate",
+          "start": "2026-10-15T14:39:52.352032277Z",
+          "end": "2026-10-15T14:39:52.352106816Z"
+        }
+      ],
+      "budget_exempt": true,
+      "routed_to": "Discussion-Bouncer"
+    },
+    {
+      "producer": "Discussion-Bouncer",
+      "outcome": "stuck",
+      "output": "/home/knatte/Code/loomyard-LYXHUB/twb-btf-es/_lyx/reviews/discussion/round-2-bouncer-ledger.md",
+      "at": "2026-10-15T14:40:32Z",
+      "budget_exempt": true,
+      "routed_to": "Discussion-Burler-Review"
+    },
+    {
+      "producer": "Discussion-Burler-Review",
+      "outcome": "stuck",
+      "output": "/home/knatte/Code/loomyard-LYXHUB/twb-btf-es/_lyx/reviews/discussion/round-3-review.md",
+      "at": "2026-10-15T14:43:45Z",
+      "gate_attempts": 0,
+      "gate_spans": [
+        {
+          "gate": "review",
+          "kind": "gate",
+          "start": "2026-10-15T14:43:44.893388693Z",
+          "end": "2026-10-15T14:43:44.89386344Z"
+        }
+      ],
+      "budget_exempt": true,
+      "routed_to": "Discussion-Burler-Fix"
     }
   ],
   "product": {
