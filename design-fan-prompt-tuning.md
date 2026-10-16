@@ -1,6 +1,6 @@
 # Burler lens fan and twill fixer in production, per-segment lenses for Discussion and Plan review
 
-`fan-prompt-tuning` · Task · enhancement, burler, stencil, loom · running · Discussion-Bouncer
+`fan-prompt-tuning` · Task · enhancement, burler, stencil, loom · running · Plan-Write
 
 ## Idea (operator, 2026-10-13)
 
