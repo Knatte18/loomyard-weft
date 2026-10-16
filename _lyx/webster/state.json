@@ -411,7 +411,7 @@
       }
     }
   ],
-  "currentBatch": 0,
+  "currentBatch": 3,
   "masterStrand": "82c75826b095a6c5a7307cea152d3217",
   "masterSessionId": "26014106-761d-4bd2-97e5-9d1eed89ef07",
   "masterEngine": "claude",
@@ -454,6 +454,24 @@
       "bracketTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-creel-stage1-fixes/26014106-761d-4bd2-97e5-9d1eed89ef07/subagents/agent-a79aff91af950e06a.jsonl"
       ]
+    },
+    "3": {
+      "slug": "shuttle-box-reads",
+      "cards": [
+        "03-shuttle-box-reads",
+        "04-claude-restored-prompt-clear"
+      ],
+      "cardHashes": {
+        "03-shuttle-box-reads": "e9d7bd5ad7565c2115252189be6d23fbc3697becf2d6302d6b22614272669997",
+        "04-claude-restored-prompt-clear": "b87712115a6495aaddd7ff86eed931882332814477e1632c5b8bb4e7f479d062"
+      },
+      "startSha": "8aaea6fda1afd78a8de8d375f08a56418067334d",
+      "kind": "fork",
+      "spawnedAt": "2026-10-16T05:57:33Z",
+      "sessionId": "26014106-761d-4bd2-97e5-9d1eed89ef07",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
     }
   },
   "seenForkTranscripts": [
