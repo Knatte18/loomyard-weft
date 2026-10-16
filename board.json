@@ -979,6 +979,25 @@
       "body": "Imported from [issue #680](https://github.com/Knatte18/loomyard/issues/680).\n\nSeen: in a sandbox strand pane, `command -v lyx` names `/home/knatte/go/bin/lyx` while `LYX_BIN` names `.dev-bin/lyx`. The pane PATH begins `/home/knatte/go/bin:` because `~/.bashrc` prepends it after reed sets PATH, so a Claude strand that runs bare `lyx creel read` talks to the sandbox daemon through the production binary. The shuttle sandbox suite pre-condition (`command -v lyx` names the spawning binary) fails on this machine.\n\nExpected: bare `lyx` in a strand pane resolves to the spawning binary, as the suite pre-condition states, even when the shell rc prepends another directory.\n\nFound by the creel stage 1 re-test of 2026-10-16.",
       "created": "2026-10-16T08:56:11Z",
       "revised": "2026-10-16T08:56:11Z"
+    },
+    {
+      "id": 590,
+      "slug": "creel-read-silent-write-fail",
+      "title": "lyx creel read to an unwritable stdout exits 1 with nothing on stderr",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "creel"
+      ],
+      "issues": [
+        681
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Imported from [issue #681](https://github.com/Knatte18/loomyard/issues/681).\n\nSeen: `lyx creel read \u003e /dev/full 2\u003eerr` exits 1 and `err` is empty. The mail correctly stays unread (the #660 fix holds).\n\nExpected: a short error on stderr, since the JSON error envelope cannot be written to stdout either.\n\nFound by the creel stage 1 re-test of 2026-10-16 (sandbox scenario C4).",
+      "created": "2026-10-16T08:56:13Z",
+      "revised": "2026-10-16T08:56:13Z"
     }
   ]
 }
