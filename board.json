@@ -1055,6 +1055,25 @@
       "body": "Imported from [issue #684](https://github.com/Knatte18/loomyard/issues/684).\n\nSeen: the journal holds `{\"event\":\"carried\",\"id\":900,...}` and the receiver `inbox` counts message 900, but `lyx creel log --id 900` returns `[]`.\n\nExpected: `log` shows a carried message, at least as a `carried` event.\n\nFound by the creel stage 1 re-test of 2026-10-16 (sandbox scenario C10).",
       "created": "2026-10-16T08:56:20Z",
       "revised": "2026-10-16T08:56:20Z"
+    },
+    {
+      "id": 594,
+      "slug": "creel-holder-sweep-slow",
+      "title": "creel removed-holder sweep took 80 s instead of about 60",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "creel"
+      ],
+      "issues": [
+        685
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Imported from [issue #685](https://github.com/Knatte18/loomyard/issues/685).\n\nSeen: strands frank and gus were removed at 08:48:03; their held messages went `returned`/`undelivered` at 08:49:23, 80 s later. The outcomes themselves were correct.\n\nExpected: per sandbox scenario C11, within about 60 s.\n\nFound by the creel stage 1 re-test of 2026-10-16 (sandbox scenario C11).",
+      "created": "2026-10-16T08:56:27Z",
+      "revised": "2026-10-16T08:56:27Z"
     }
   ]
 }
