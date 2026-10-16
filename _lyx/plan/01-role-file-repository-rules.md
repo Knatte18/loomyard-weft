@@ -20,13 +20,13 @@
 - `cmd/lyx/testdata/test-budget.yaml`
 
 **Create:**
-- `plan:internal/orchengine#repositoryRulesMarker` -> `const repositoryRulesMarker = "repository_rules"`
-- `plan:internal/orchengine#noRepositoryRules` -> `const noRepositoryRules = "This repository has no ORCHESTRATOR.md."`
-- `plan:internal/orchengine#readRepositoryRules` -> `func readRepositoryRules(path string) (string, error)`
-- `plan:internal/orchcli#TestPrimePaths_RootsRepositoryRulesAtTheWorktree` -> `func TestPrimePaths_RootsRepositoryRulesAtTheWorktree(t *testing.T)`
+- `internal/orchengine#repositoryRulesMarker`
+- `internal/orchengine#noRepositoryRules`
+- `internal/orchengine#readRepositoryRules`
+- `internal/orchcli#TestPrimePaths_RootsRepositoryRulesAtTheWorktree`
 
 **Rename:**
-- `internal/orchengine#TestRenderRoleFile_RefusesStencilWithoutIndexMarker` -> `plan:internal/orchengine#TestRenderRoleFile_RefusalsWriteNoFile`
+- `internal/orchengine#TestRenderRoleFile_RefusesStencilWithoutIndexMarker` -> `internal/orchengine#TestRenderRoleFile_RefusalsWriteNoFile`
 
 **Uses:**
 - `internal/orchengine#seedStencils`
