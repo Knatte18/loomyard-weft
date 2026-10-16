@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-16 10:21 UTC; every age below is as of then.
+Rendered 2026-10-16 10:22 UTC; every age below is as of then.
 
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
@@ -17,7 +17,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | **reed add defaults to pane-era placement and splits the selvage shell window**<br>• Replace the obsolete below-parent default and sweep for other pane-era leftovers | [`reed-add-parentless-placement`](design-reed-add-parentless-placement.md) | loom | Webster-Burler-Review | 2h | 2h | reed |
+| 1 | **reed add defaults to pane-era placement and splits the selvage shell window**<br>• Replace the obsolete below-parent default and sweep for other pane-era leftovers | [`reed-add-parentless-placement`](design-reed-add-parentless-placement.md) | loom | Webster-Burler-Review | 3h | 2h | reed |
 | 2 | **Webster fork and pattern-directive stencil fixes from the stencil intent audit**<br>• Structure-aware rename tool from hub config, departures reach the Master via the digest, spawn wording, no inline pack, declared PATTERN changes | [`webster-fork-stencil-fixes`](design-webster-fork-stencil-fixes.md) | loom | Plan-Write | 3h | 1h | stencil, webster, burler, loom |
 | 3 | **Creel stage 1 re-test fixes**<br>• Fix the eight creel defects from the 2026-10-16 re-test, the journal torn-line one first | [`creel-stage1-fixes`](design-creel-stage1-fixes.md) | loom | Webster | 1h | 1h | creel, shuttle, claude |
 
@@ -80,19 +80,20 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 10 | **Run verbs in one shared namespace, not under lyx loom**<br>• lyx loom decision/status/goto/approve act on darn runs too; move recipe-neutral run verbs to one shared namespace | [`run-verbs-shared`](design-run-verbs-shared.md) | 1d | 1d | shed, loom |
 | 11 | **Clearer loom model key names, one per step**<br>• Model keys like fix name the role they set, and every review segment gets its own reviewer and fixer key | [`loom-model-key-names`](design-loom-model-key-names.md) | 1d | 1d | config, loom |
 | 12 | **The arbiter in shed for every shed run, batten included**<br>• The batten Go driver has a tackler but no arbiter; move the arbiter and its keys into shed beside the tackler | [`shed-arbiter-all`](design-shed-arbiter-all.md) | 1d | 1d | shed, batten, loom, config |
-| 13 | **Paste cited code into a review rounds context**<br>• Reviewers edit nothing and review a fixed commit, so code pasted at round start cannot go stale; measure it against todays reviewer | [`review-inline-code`](design-review-inline-code.md) | 4d | 1h | burler, stencil |
+| 13 | **Paste cited code into a review rounds context**<br>• Reviewers edit nothing and review a fixed commit, so code pasted at round start cannot go stale; measure it against todays reviewer | [`review-inline-code`](design-review-inline-code.md) | 4d | 2h | burler, stencil |
 | 14 | **Module labels from what a task touches, not only what it is about**<br>• Half the landings that changed the shuttle core lacked the shuttle label; derive or check module labels from the plan and the diff | [`labels-from-diff`](design-labels-from-diff.md) | 23h | 23h | board, loom |
 | 15 | **Start one task per overlapping group at a newly-ready start**<br>• When a landing makes several overlapping tasks ready at once, batten starts one per group and names the rest in its notice | [`batten-ready-overlap`](design-batten-ready-overlap.md) | 21h | 21h | batten |
 | 16 | **Rename the `lyx` binary to `lyd` (name clash with LyX)** | [`rename-binary-lyd`](design-rename-binary-lyd.md) | 3h | 3h | stencil, shuttle |
 | 17 | **Rewrite C13's stacked half for window-per-strand**<br>• C13's stacked 3-row half cannot be set up once reed-add-parentless-placement lands | [`creel-c13-stacked-rewrite`](design-creel-c13-stacked-rewrite.md) | 1h | 1h | creel |
+| 18 | **Go driver messages the orch about a verify halt batten retries itself**<br>• Drop or reword the parent message for a watched verify halt | [`driver-watched-verify-notice`](design-driver-watched-verify-notice.md) | 0m | 0m | shed, batten |
 
 #### Low priority
 
 | # | Note | Slug | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| 18 | **Fabric's Windows path behaviour verified on a Windows host**<br>• Unverified after six hardening rounds; needs a Windows host, not design; take it only if Windows becomes relevant | [`fabric-windows`](design-fabric-windows.md) | 12d | 6d | fabric |
-| 19 | **warp-visibility: CLAUDE.local.md invisible in the Fabric repo's git history**<br>• Expose CLAUDE.local.md by symlink so nothing lyx-related shows in the Fabric repo's history; the constraints half is out of date | [`warp-visibility`](design-warp-visibility.md) | 11d |  | ide, fabric |
-| 20 | **Windows verify timeout kills the whole process tree**<br>• On Windows the verifytree timeout kills only the shell, not the process tree it started | [`verify-watchdog`](design-verify-watchdog.md) | 8d | 15h | shed |
+| 19 | **Fabric's Windows path behaviour verified on a Windows host**<br>• Unverified after six hardening rounds; needs a Windows host, not design; take it only if Windows becomes relevant | [`fabric-windows`](design-fabric-windows.md) | 12d | 6d | fabric |
+| 20 | **warp-visibility: CLAUDE.local.md invisible in the Fabric repo's git history**<br>• Expose CLAUDE.local.md by symlink so nothing lyx-related shows in the Fabric repo's history; the constraints half is out of date | [`warp-visibility`](design-warp-visibility.md) | 11d |  | ide, fabric |
+| 21 | **Windows verify timeout kills the whole process tree**<br>• On Windows the verifytree timeout kills only the shell, not the process tree it started | [`verify-watchdog`](design-verify-watchdog.md) | 8d | 15h | shed |
 
 ### Features
 
@@ -109,7 +110,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Note | Slug | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| 5 | **Hardener: an autonomous behavior-review campaign that replaces crucible**<br>• Parked by the operator: settle the Tenter/Hardener design and build the campaign that runs a live-substrate module in a sandbox until it converges | [`hardener`](design-hardener.md) | 13d | 1h | burler |
+| 5 | **Hardener: an autonomous behavior-review campaign that replaces crucible**<br>• Parked by the operator: settle the Tenter/Hardener design and build the campaign that runs a live-substrate module in a sandbox until it converges | [`hardener`](design-hardener.md) | 13d | 2h | burler |
 | 6 | **Orch and batten run from the operator's own long-lived worktree, not only the prime**<br>• Every orch and batten verb refuses outside the prime; let a long-lived personal worktree be an orch's home, with pairs branching from and landing into its branch | [`orch-any-worktree`](design-orch-any-worktree.md) | 12d |  | fabric, batten, orch |
 | 7 | **semantic-index: find code by concept, not by literal keyword**<br>• Semantic search over docstrings and comments; doubtful today, since agents now navigate well with grep | [`semantic-index`](design-semantic-index.md) | 12d |  | quarry |
 | 8 | **Ship lyx as an installable Claude Code plugin**<br>• Package lyx and its skills as one installable plugin | [`plugin-packaging`](design-plugin-packaging.md) | 12d |  | stencil |
