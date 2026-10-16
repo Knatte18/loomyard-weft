@@ -655,7 +655,7 @@
       }
     }
   ],
-  "currentBatch": 0,
+  "currentBatch": 8,
   "masterStrand": "71953c680b84bd88f36cef5b47f6fe98",
   "masterSessionId": "94219480-9e76-4530-ae14-fbb68854c48f",
   "masterEngine": "claude",
@@ -740,6 +740,22 @@
       "bracketTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-webster-fork-stencil-fixes/94219480-9e76-4530-ae14-fbb68854c48f/subagents/agent-a324c187f030b8098.jsonl"
       ]
+    },
+    "8": {
+      "slug": "pattern-directive-changes",
+      "cards": [
+        "08-pattern-directive-changes"
+      ],
+      "cardHashes": {
+        "08-pattern-directive-changes": "6c50c2e72f59219eab6ebdf7a0f12ed438dbfc5683a36d26c2c2d8e50a24a3dc"
+      },
+      "startSha": "89b4036b214fac2d97895426380d75f7a58bca11",
+      "kind": "fork",
+      "spawnedAt": "2026-10-16T11:13:33Z",
+      "sessionId": "94219480-9e76-4530-ae14-fbb68854c48f",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
     }
   },
   "seenForkTranscripts": [
