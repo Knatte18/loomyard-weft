@@ -20,7 +20,7 @@ Held by a run; its scope is locked until the run ends.
 | 1 | **reed add defaults to pane-era placement and splits the selvage shell window**<br>• Replace the obsolete below-parent default and sweep for other pane-era leftovers | [`reed-add-parentless-placement`](design-reed-add-parentless-placement.md) | loom | Webster | 1h | 1h | reed |
 | 2 | **Orch role stencil fixes from the stencil intent audit**<br>• Arbiter as the orch filter with a fault fallback, no peer comparing, ORCHESTRATOR.md for repo-specific orch rules, owner of a small PR-Gate defect | [`orch-role-stencil-fixes`](design-orch-role-stencil-fixes.md) | loom | Webster | 1h | 52m | stencil, orch, loom, config |
 | 3 | **Loom stencil fixes from the stencil intent audit, verify tiers from hub config**<br>• Rejection findings are a reviewer claim, never the operator; driver, advisor, plan and rework wording | [`loom-stencil-wording`](design-loom-stencil-wording.md) | loom | Plan-Burler-Review | 1h | 48m | stencil, loom, shed, config, webster |
-| 4 | **Creel gets its own sandbox suite**<br>• Move S9 and C1-C13 out of the shuttle sandbox suite into SANDBOX-CREEL-SUITE.md | [`creel-sandbox-suite`](design-creel-sandbox-suite.md) | loom | Merge-Bouncer | 41m | 41m | creel, shuttle |
+| 4 | **Creel gets its own sandbox suite**<br>• Move S9 and C1-C13 out of the shuttle sandbox suite into SANDBOX-CREEL-SUITE.md | [`creel-sandbox-suite`](design-creel-sandbox-suite.md) | loom | Publish | 42m | 42m | creel, shuttle |
 
 ### Ready
 
@@ -72,8 +72,8 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 6 | **creel inject --wait prints a draft stall from 37 s earlier as if current** | [`creel-stale-stall-line`](design-creel-stale-stall-line.md) | 17m | 17m | creel |
 | 7 | **creel verb waits about 23 s to report a daemon that already exited at start** | [`creel-dead-daemon-slow-report`](design-creel-dead-daemon-slow-report.md) | 17m | 17m | creel |
 | 8 | **creel log shows nothing for mail carried forward from an old day file** | [`creel-log-carried-mail`](design-creel-log-carried-mail.md) | 17m | 17m | creel |
-| 9 | **creel removed-holder sweep took 80 s instead of about 60** | [`creel-holder-sweep-slow`](design-creel-holder-sweep-slow.md) | 16m | 16m | creel |
-| 10 | **creel inject into a bash strand expires with no stall reason, and a stalled inject expired 3 s late** | [`creel-inject-expiry-reason`](design-creel-inject-expiry-reason.md) | 16m | 16m | creel |
+| 9 | **creel removed-holder sweep took 80 s instead of about 60** | [`creel-holder-sweep-slow`](design-creel-holder-sweep-slow.md) | 17m | 17m | creel |
+| 10 | **creel inject into a bash strand expires with no stall reason, and a stalled inject expired 3 s late** | [`creel-inject-expiry-reason`](design-creel-inject-expiry-reason.md) | 17m | 17m | creel |
 
 #### Low priority
 
