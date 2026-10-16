@@ -1,11 +1,11 @@
 {
-  "current_producer": "Merge-Bouncer",
+  "current_producer": "Publish",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Merge-Bouncer",
-    "last": "Merge-Burler-Fix → bounced to Merge-Bouncer",
+    "now": "Publish",
+    "last": "Merge-Bouncer → done",
     "wait": ""
   },
   "history": [
@@ -384,6 +384,12 @@
       "at": "2026-10-16T12:15:51Z",
       "budget_exempt": true,
       "routed_to": "Merge-Bouncer"
+    },
+    {
+      "producer": "Merge-Bouncer",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYXHUB/webster-fork-stencil-fixes/_lyx/reviews/merge/round-1-bouncer-ledger.md",
+      "at": "2026-10-16T12:16:32Z"
     }
   ],
   "product": {
