@@ -1,6 +1,6 @@
 # Orch role stencil fixes from the stencil intent audit
 
-`orch-role-stencil-fixes` · Task · bug, stencil, orch, loom, config · running · Discussion-Burler-Review
+`orch-role-stencil-fixes` · Task · bug, stencil, orch, loom, config · running · Discussion-Burler-Fix
 
 Bundle of the orch-role findings of the stencil intent audit of 2026-10-15, all in `contracts/stencils/orch/orch-template-role.md`.
 Line numbers as of `main` on 2026-10-16.

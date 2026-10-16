@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-16 08:50 UTC; every age below is as of then.
+Rendered 2026-10-16 08:51 UTC; every age below is as of then.
 
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
@@ -18,7 +18,7 @@ Held by a run; its scope is locked until the run ends.
 | # | Task | Slug | Recipe | At | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | 1 | **reed add defaults to pane-era placement and splits the selvage shell window**<br>• Replace the obsolete below-parent default and sweep for other pane-era leftovers | [`reed-add-parentless-placement`](design-reed-add-parentless-placement.md) | loom | Plan-Burler-Review | 1h | 1h | reed |
-| 2 | **Orch role stencil fixes from the stencil intent audit**<br>• Arbiter as the orch filter with a fault fallback, no peer comparing, ORCHESTRATOR.md for repo-specific orch rules, owner of a small PR-Gate defect | [`orch-role-stencil-fixes`](design-orch-role-stencil-fixes.md) | loom | Discussion-Burler-Review | 1h | 29m | stencil, orch, loom, config |
+| 2 | **Orch role stencil fixes from the stencil intent audit**<br>• Arbiter as the orch filter with a fault fallback, no peer comparing, ORCHESTRATOR.md for repo-specific orch rules, owner of a small PR-Gate defect | [`orch-role-stencil-fixes`](design-orch-role-stencil-fixes.md) | loom | Discussion-Burler-Fix | 1h | 29m | stencil, orch, loom, config |
 | 3 | **Loom stencil fixes from the stencil intent audit, verify tiers from hub config**<br>• Rejection findings are a reviewer claim, never the operator; driver, advisor, plan and rework wording | [`loom-stencil-wording`](design-loom-stencil-wording.md) | loom | Plan-Write | 1h | 25m | stencil, loom, shed, config, webster |
 | 4 | **Creel gets its own sandbox suite**<br>• Move S9 and C1-C13 out of the shuttle sandbox suite into SANDBOX-CREEL-SUITE.md | [`creel-sandbox-suite`](design-creel-sandbox-suite.md) | loom | Plan-Write | 19m | 19m | creel, shuttle |
 
@@ -74,7 +74,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | --- | --- | --- | --- | --- | --- |
 | 1 | **Tune the Burler lens fan prompts**<br>• Revisit the parked lens fan with lens and fork prompts that overlap less, measured against solo on the fan-lab fixtures | [`fan-prompt-tuning`](design-fan-prompt-tuning.md) | 5d | 10m | burler, stencil |
 | 2 | **Fork the Burler fixer from the reviewer session**<br>• The fixer re-reads the context the reviewer just read; fork it from the reviewer to reuse the cache | [`burler-fixer-fork`](design-burler-fixer-fork.md) | 1d | 10m | burler |
-| 3 | **Perch review analysis: rounds, tokens and late BLOCKING findings, with proposals** | [`perch-review-analysis`](design-perch-review-analysis.md) | 14m | 10m | burler, loom, shed |
+| 3 | **Perch review analysis: rounds, tokens and late BLOCKING findings, with proposals** | [`perch-review-analysis`](design-perch-review-analysis.md) | 15m | 10m | burler, loom, shed |
 
 #### Normal priority
 
