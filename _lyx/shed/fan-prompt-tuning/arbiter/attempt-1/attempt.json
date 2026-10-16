@@ -1,0 +1,15 @@
+{
+  "number": 1,
+  "stop_key": {
+    "current_producer": "Discussion-Bouncer",
+    "history_length": 13,
+    "state": "awaiting"
+  },
+  "pause_before": "",
+  "pause_after": "",
+  "spawned_at": "2026-10-16T14:56:52.625339802+02:00",
+  "deadline": "2026-10-16T15:26:52.625339802+02:00",
+  "strand_guid": "d7cf060c7d92416fa8495c19c6b4edd7",
+  "envelope_path": "/home/knatte/Code/loomyard-LYXHUB/fan-prompt-tuning/_lyx/shed/fan-prompt-tuning/drive-reports/drive-envelope-20261016-145652-a91e.json",
+  "report_path": "/home/knatte/Code/loomyard-LYXHUB/fan-prompt-tuning/_lyx/shed/fan-prompt-tuning/drive-reports/drive-report-20261016-145652-3e2b.md"
+}

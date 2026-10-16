@@ -1,0 +1,12 @@
+verdict: resume
+reason: >-
+  Hard-cap escalation at Discussion-Bouncer round 3. Every open design-wrong finding (F1-F6) is answered by the round-3 fix now in the decision record.
+  F1: D2 now archives the round's review, fixer report and acceptance record before the absent-names refusal, as archiveWholeRound in internal/shedadapters/burlerfix.go:77 does, so BurlerReviewProducer.Call (burlerreview.go:167-172) finds no accepted review and spawns a fresh reviewer that writes the names; an acceptance criterion covers it.
+  F2: D2 names the fans_recorded presence flag, its merge survival, the replaced-record case and the decode-failure refusal, with a criterion row.
+  F3: D2 puts the pre-spawn write after the live-reviewer probe on the spawn path only and drops the fan from the acceptance-time merge; both are in the fan-list-changed criterion.
+  F4: the refusal is scoped to the Discussion and Plan fix halves, Webster/Merge/Darn record no names, and the Bouncer degrades in line with computeLensFacts and lensesRunUnderFan, with criterion rows.
+  F5: D7 adds RunOpts.FixKey and a told per-row key pair, and states the lyx burler run wording.
+  F6: D8 fix-affected-set orders by severity and lists unchecked findings, D7 and D4 state the 6-call caps, and Open risks names the fixer cap.
+  The fixer report disputes and defers nothing, so accepting closes the segment with no design-wrong finding left unanswered.
+verbs:
+  - lyx loom circling accept fan-prompt-tuning
