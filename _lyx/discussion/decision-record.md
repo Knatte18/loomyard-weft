@@ -228,6 +228,12 @@ Self-made picks the plan writer should treat as provisional, each stated in its 
   - usage-record-authoritative-without-hard-write (class design, severity MEDIUM, open in rounds 2, 3)
 <!-- /lyx:carry-over Discussion-Review -->
 
+<!-- lyx:carry-over Plan-Review -->
+- Plan-Review, round 3: converged; each finding below was fixed or disputed by the round's fixer, and no fresh reviewer has seen the result; the fixer report says which.
+  Review: _lyx/reviews/plan/round-3-review.md; fixer report: _lyx/reviews/plan/round-3-fixer-report.md.
+  - fixer-lens-list-sentence-overreach (class consistency, severity MEDIUM, open in rounds 3)
+<!-- /lyx:carry-over Plan-Review -->
+
 ## Acceptance criteria
 
 - A fanned round's explore step carries the fork-reading part and its review step the fanned cluster-rules part, filled with every lens of the round's fan in fan order and carrying the spawn mechanics D4 keeps; a solo round's two steps render the same bytes as before this task.
