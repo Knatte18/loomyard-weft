@@ -1,1 +1,1 @@
-{}
+{plan_fix: 'opus[medium]', plan_review: 'opus[medium]', discussion_fix: 'opus[medium]', discussion_review: 'opus[medium]', skip_alignment: true, discussion_max_bounces: 4, discussion_hard_max_bounces: 5, plan_max_bounces: 4, plan_hard_max_bounces: 5}
