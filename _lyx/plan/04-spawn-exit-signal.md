@@ -18,9 +18,9 @@
 - `pattern/PATTERN-daemon-wakeups.md`
 
 **Create:**
-- `plan:internal/creelengine#Spawn` -> `type Spawn struct`
-- `plan:internal/creelengine#SpawnExit` -> `type SpawnExit struct`
-- `plan:internal/creelcli#reapDaemon` -> `func reapDaemon(cmd *exec.Cmd) <-chan creelengine.SpawnExit`
+- `internal/creelengine#Spawn`
+- `internal/creelengine#SpawnExit`
+- `internal/creelcli#reapDaemon`
 
 **Uses:**
 - `internal/creelengine#ConnectAttempts`

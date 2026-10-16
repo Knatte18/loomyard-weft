@@ -15,7 +15,7 @@
 - `tools/sandbox/SANDBOX-CREEL-SUITE.md`
 
 **Create:**
-- `plan:internal/creelengine#sweepConfirmInterval` -> `const sweepConfirmInterval = 10 * time.Second`
+- `internal/creelengine#sweepConfirmInterval`
 
 **Uses:**
 - `internal/creelengine#sweepBackoffBase`
