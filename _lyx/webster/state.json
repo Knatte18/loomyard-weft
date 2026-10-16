@@ -331,7 +331,7 @@
       }
     }
   ],
-  "currentBatch": 0,
+  "currentBatch": 6,
   "masterStrand": "e37a7dd745963c076067340e4df035d4",
   "masterSessionId": "5deb3191-8c44-4a70-9a63-bca09f4873d5",
   "masterEngine": "claude",
@@ -488,6 +488,24 @@
       "bracketTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-reed-add-parentless-placement/5deb3191-8c44-4a70-9a63-bca09f4873d5/subagents/agent-a1a8d1d90a2271daf.jsonl"
       ]
+    },
+    "6": {
+      "slug": "shuttle-run-anchor-vocabulary",
+      "cards": [
+        "06-shuttle-run-anchor-vocabulary",
+        "07-move-shell-window-strands"
+      ],
+      "cardHashes": {
+        "06-shuttle-run-anchor-vocabulary": "a57d8d4c53866b8af66bc9836a103958e31b53f396b1b3467a0f1a0bca34bba5",
+        "07-move-shell-window-strands": "f9a3fa9304423df2e092eabd6a53ca0725ad2b406d9d0ee4d1914a6e30a6c111"
+      },
+      "startSha": "3ff7271c866dd136be27417c1334e92c9f307a83",
+      "kind": "fork",
+      "spawnedAt": "2026-10-16T09:40:56Z",
+      "sessionId": "5deb3191-8c44-4a70-9a63-bca09f4873d5",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
     }
   },
   "seenForkTranscripts": [
