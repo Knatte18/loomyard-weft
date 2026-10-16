@@ -1,6 +1,6 @@
 # reed add defaults to pane-era placement and splits the selvage shell window
 
-`reed-add-parentless-placement` · Task · bug, reed · running · Plan-Write
+`reed-add-parentless-placement` · Task · bug, reed · running · Plan-Bouncer
 
 Imported from [issue #673](https://github.com/Knatte18/loomyard/issues/673).
 
