@@ -1,6 +1,6 @@
 # lyx shuttle open cannot choose the permission mode
 
-`shuttle-open-permission` · Task · enhancement, shuttle · running · Finalize
+`shuttle-open-permission` · Task · enhancement, shuttle · done
 
 ## Seen
 
