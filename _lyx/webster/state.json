@@ -1,0 +1,267 @@
+{
+  "runGuid": "1d194c259b1f22661b4eefc38f8a020e",
+  "planFingerprint": "e5c43dec7ea5360fc45ced22ff3f6125b48601a5b5a5e7fb1074c02f5b4c139a",
+  "planFileHashes": {
+    "00-overview.md": "c876e5574f0fc1c3104274982bf12f88dccb729759b74ccca0a3188bdeec8829",
+    "01-language-verify-tiers.md": "84b2153220e47d6fdd7a6a6289da480f8e3c97a69087874be12a6869ed1cd445",
+    "02-plan-verify-tiers.md": "b56bbda364060ad7df84f8d61ac289de5cdc7280fc429cb91cd6dc2107261702",
+    "03-rubric-verify-tiers.md": "9733e3b19a2de4e5bfa578fcc227cad31883c09439d427a6fe60c6a6e637101c",
+    "04-implementer-verify-tiers.md": "24eede9ab03c5ad7e636a26cbc3babd23370ae6b58b696ec9941822d6e93cff7",
+    "05-rework-findings-are-claims.md": "c2f1da655432c5cb20787b8586f6d450225e11e2cb4814e3ec4715255d38b0a1",
+    "06-driver-advisor-wording.md": "b187fb324b48143b31336622daf3b911b19238658c5b67e86a390f9f62a99a0b",
+    "07-spec-verify-model.md": "78778dcc8689ae2145cb0f9a10359cca17535942c2c51e031dfd4893787c3c86"
+  },
+  "planOverviewFrameHash": "3531f3683604ca7d2ace6771a67428cd30d07f960fa4e265fb50267dc8fb582d",
+  "partition": [
+    {
+      "cards": [
+        "01-language-verify-tiers"
+      ],
+      "profile": "cautious",
+      "estimate": 161514,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 1,
+        "startup": 54592,
+        "read_union": 50480,
+        "cards": [
+          {
+            "card": 1,
+            "card_text": 792,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1944,
+              "file:contracts/specs/refusal-spec.md": 5976,
+              "file:docs/overview.md": 9576,
+              "file:internal/languageconfig/doc.go": 180,
+              "file:internal/languageconfig/template.yaml": 12,
+              "package:cmd/lyx/testdata": 2000,
+              "package:contracts/specs": 2000,
+              "package:docs": 2000,
+              "package:internal/burlercli": 2000,
+              "package:internal/configreg": 2000,
+              "package:internal/languageconfig": 2000,
+              "package:internal/loomcli": 2000,
+              "package:internal/webstercli": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:contracts/specs": 2000,
+              "tests:docs": 2000,
+              "tests:internal/burlercli": 2000,
+              "tests:internal/configreg": 2000,
+              "tests:internal/languageconfig": 2000,
+              "tests:internal/loomcli": 2000,
+              "tests:internal/webstercli": 2000
+            },
+            "messages": 185.5,
+            "written": 56442
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "02-plan-verify-tiers",
+        "03-rubric-verify-tiers"
+      ],
+      "profile": "cautious",
+      "estimate": 170336,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 2,
+        "startup": 61592,
+        "read_union": 30192,
+        "cards": [
+          {
+            "card": 2,
+            "card_text": 504,
+            "reads": {
+              "file:contracts/stencils/loom/loom-template-plan.md": 3396,
+              "package:contracts/stencils/loom": 2000,
+              "package:internal/loomcli": 2000,
+              "package:internal/loomengine": 2000,
+              "tests:contracts/stencils/loom": 2000,
+              "tests:internal/loomcli": 2000,
+              "tests:internal/loomengine": 2000
+            },
+            "messages": 88.5,
+            "written": 27054
+          },
+          {
+            "card": 3,
+            "card_text": 648,
+            "reads": {
+              "file:contracts/stencils/loom/loom-rubric-plan-review.md": 1644,
+              "package:contracts/stencils": 2000,
+              "package:contracts/stencils/loom": 2000,
+              "package:internal/loomcli": 2000,
+              "package:internal/shedadapters": 2000,
+              "package:internal/shedrecipe": 2000,
+              "tests:contracts/stencils": 2000,
+              "tests:contracts/stencils/loom": 2000,
+              "tests:internal/loomcli": 2000,
+              "tests:internal/shedadapters": 2000,
+              "tests:internal/shedrecipe": 2000
+            },
+            "messages": 169.5,
+            "written": 51498
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "04-implementer-verify-tiers"
+      ],
+      "profile": "cautious",
+      "estimate": 164000,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 3,
+        "startup": 68592,
+        "read_union": 33380,
+        "cards": [
+          {
+            "card": 4,
+            "card_text": 828,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1944,
+              "file:contracts/stencils/webster/webster-body-implementer.md": 1356,
+              "file:internal/websterengine/doc.go": 9252,
+              "package:cmd/lyx/testdata": 2000,
+              "package:contracts/stencils": 2000,
+              "package:contracts/stencils/webster": 2000,
+              "package:internal/webstercli": 2000,
+              "package:internal/websterengine": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:contracts/stencils": 2000,
+              "tests:contracts/stencils/webster": 2000,
+              "tests:internal/webstercli": 2000,
+              "tests:internal/websterengine": 2000
+            },
+            "messages": 204,
+            "written": 62028
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "05-rework-findings-are-claims",
+        "06-driver-advisor-wording",
+        "07-spec-verify-model"
+      ],
+      "profile": "cautious",
+      "estimate": 111940,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 4,
+        "startup": 75592,
+        "read_union": 26436,
+        "cards": [
+          {
+            "card": 5,
+            "card_text": 300,
+            "reads": {
+              "file:contracts/stencils/loom/loom-rubric-plan-review.md": 1644,
+              "file:contracts/stencils/loom/loom-template-rework.md": 1020,
+              "package:contracts/stencils/loom": 2000,
+              "tests:contracts/stencils/loom": 2000
+            },
+            "messages": 12,
+            "written": 3900
+          },
+          {
+            "card": 6,
+            "card_text": 168,
+            "reads": {
+              "file:contracts/stencils/loom/loom-template-discussion-advisor.md": 648,
+              "file:contracts/stencils/shed/shed-template-driver.md": 2172,
+              "package:contracts/stencils/loom": 2000,
+              "package:contracts/stencils/shed": 2000,
+              "tests:contracts/stencils/loom": 2000,
+              "tests:contracts/stencils/shed": 2000
+            },
+            "messages": 12,
+            "written": 3768
+          },
+          {
+            "card": 7,
+            "card_text": 144,
+            "reads": {
+              "file:contracts/specs/loom-plan-spec.md": 8340,
+              "package:contracts/specs": 2000,
+              "tests:contracts/specs": 2000
+            },
+            "messages": 7,
+            "written": 2244
+          }
+        ]
+      }
+    }
+  ],
+  "currentBatch": 1,
+  "masterStrand": "7dabff2aa15977171b6ba5462f5feaf5",
+  "masterSessionId": "cb2d3764-93b9-414c-9bdf-5a3159e2a75e",
+  "masterEngine": "claude",
+  "batches": {
+    "1": {
+      "slug": "language-verify-tiers",
+      "cards": [
+        "01-language-verify-tiers"
+      ],
+      "cardHashes": {
+        "01-language-verify-tiers": "84b2153220e47d6fdd7a6a6289da480f8e3c97a69087874be12a6869ed1cd445"
+      },
+      "startSha": "1cf2b272657430a2e9641cf4cb99f8a75e363932",
+      "kind": "fork",
+      "spawnedAt": "2026-10-16T09:22:46Z",
+      "sessionId": "cb2d3764-93b9-414c-9bdf-5a3159e2a75e",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
+    }
+  }
+}
