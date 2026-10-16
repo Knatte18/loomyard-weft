@@ -1,9 +1,9 @@
 # Card 10 — read-checked-write
 
 **Create:**
-- `plan:internal/creelcli#writeOk` -> `func writeOk(w io.Writer, fields map[string]any) error`
-- `plan:internal/creelcli#failingWriter` -> `type failingWriter struct`
-- `plan:internal/creelcli#failingWriter.Write` -> `func (failingWriter) Write(p []byte) (int, error)`
+- `internal/creelcli#writeOk`
+- `internal/creelcli#failingWriter`
+- `internal/creelcli#failingWriter.Write`
 
 **Edit:**
 - `internal/creelcli#readCmd`
