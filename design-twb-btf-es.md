@@ -1,6 +1,6 @@
 # Every role spec carries its resolved engine
 
-`twb-btf-es` · Note · enhancement · running · Discussion-Write
+`twb-btf-es` · Note · enhancement
 
 # Every role spec carries its resolved engine
 
