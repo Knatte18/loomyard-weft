@@ -1093,6 +1093,23 @@
       "body": "Imported from [issue #686](https://github.com/Knatte18/loomyard/issues/686).\n\nSeen: `inject lyt:dave ... --ttl 10s --wait` into a bash strand ended `expired` with no `stall` field, while Claude-adapter panes now name theirs. Separately, a 20 s TTL into a too-short pane expired at 23.3 s, while a never-idle pane 30 s TTL expired on time at 31.4 s.\n\nExpected: an expired inject names a reason, such as \"not an agent pane\", or the outcome is documented; a stalled inject expires at its TTL.\n\nFound by the creel stage 1 re-test of 2026-10-16.",
       "created": "2026-10-16T08:56:30Z",
       "revised": "2026-10-16T08:56:30Z"
+    },
+    {
+      "id": 596,
+      "slug": "creel-c13-stacked-rewrite",
+      "title": "Rewrite C13's stacked half for window-per-strand",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "creel"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "C13's stacked 3-row half cannot be set up once reed-add-parentless-placement lands",
+      "body": "The board entry `reed-add-parentless-placement` removes the stacked layout and `collapsed_rows`, refuses `below-parent` and `top`, and moves a strand pane left in the shell window into its own window.\nC13 in `tools/sandbox/SANDBOX-CREEL-SUITE.md` then needs its stacked 3-row half rewritten against the window-per-strand layout.\nIts hand-added half (a plain `lyx reed add --cmd claude` strand receiving its reminder) stays as is.\n",
+      "created": "2026-10-16T09:04:42Z",
+      "revised": "2026-10-16T09:04:42Z"
     }
   ]
 }
