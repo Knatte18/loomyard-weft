@@ -1,0 +1,8 @@
+verdict: approve
+reason: >-
+  The diff moves S9, the creel fixtures and C1 to C13 into SANDBOX-CREEL-SUITE.md unchanged with ids kept,
+  cuts the shuttle suite to S1 to S8, and adds the creel-suite subcommand, launchers, table-test rows and howto entries,
+  as decisions D1 to D6 record; the D6 board note is filed.
+  No peer run or parent commit overlaps it.
+question: ""
+superseded: []
