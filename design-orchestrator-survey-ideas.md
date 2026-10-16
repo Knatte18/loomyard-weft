@@ -1,6 +1,6 @@
 # Ideas to borrow from comparable agent orchestrators (survey, Oct 2026)
 
-`orchestrator-survey-ideas` · Note · feature
+`orchestrator-survey-ideas` · Note · feature, burler, shed, orch, quarry
 
 Imported from [issue #671](https://github.com/Knatte18/loomyard/issues/671).
 
