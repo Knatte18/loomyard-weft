@@ -1,7 +1,7 @@
 # Card 1 — intake list prints numbers and titles unless --full
 
 **Create:**
-- `plan:internal/boardcli#intakeIssueSummary` -> `type intakeIssueSummary struct`
+- `internal/boardcli#intakeIssueSummary`
 
 **Edit:**
 - `internal/boardcli#intakeCommand`

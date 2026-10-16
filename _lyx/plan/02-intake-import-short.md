@@ -8,7 +8,7 @@
 - `internal/boardcli/doc.go`
 
 **Rename:**
-- `internal/boardcli#TestIntakeImport_CloseFailureReportsEntryAndClosePayload` -> `plan:internal/boardcli#TestIntakeImport_CloseFailureReportsShortResultAndClosePayload`
+- `internal/boardcli#TestIntakeImport_CloseFailureReportsEntryAndClosePayload` -> `internal/boardcli#TestIntakeImport_CloseFailureReportsShortResultAndClosePayload`
 
 **Uses:**
 - `internal/boardengine#ImportResult`
