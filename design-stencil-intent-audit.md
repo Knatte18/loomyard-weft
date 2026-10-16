@@ -15,15 +15,15 @@ The agent flags the entries that look doubtful (state assumed stable while other
 The orch shows the operator the list in short batches to confirm or reject; each rejected assumption becomes a note.
 The findings go under `docs/research/` through a fresh agent.
 
-## Status 2026-10-15
-
-The audit pass is done and archived in `docs/research/stencil-intent-audit-2026-10-15/`: `catalogue.md` lists every assumption per stencil, `findings.md` the flagged entries F0 to F17, and `README.md` says how to resume.
-The review with the operator has not started: no entry is confirmed or rejected, and no finding note is filed yet.
-
 ## Status 2026-10-16
 
-The operator reviewed every entry; the audit is complete.
-`findings.md` maps each entry to its outcome, and the rejected ones are the notes `webster-drop-inline-pack`, `pattern-change-declared`, `webster-fork-spawn-wording`, `rework-findings-not-operator`, `webster-rename-script`, `arbiter-filters-orch`, `orch-no-peer-compare`, `fork-deviation-in-commit`, `orch-hub-rules` and `stencil-wording-fixes`.
+The operator reviewed every entry, and an orch fork and a cold agent then reviewed the outcomes as a whole; the audit is complete.
+Every outcome is on the board:
+
+- `orch-role-stencil-fixes`, `webster-fork-stencil-fixes` and `loom-stencil-wording` bundle the rejected assumptions by the files they change;
+- `stencil-verify-tiers-from-config` holds the finding the whole-document review added;
+- `hardener` records that the treadle judge stencils are kept;
+- `review-inline-code` records the decision on pasting code into a prompt that it must answer.
+
+The findings directory `docs/research/stencil-intent-audit-2026-10-15/` is deleted, since the notes carry every decision.
 This note can be removed once the operator agrees.
-The operator was shown batch 1 (F2 to F5) but gave no verdict.
-The session that did the pass can be resumed from the prime: `claude --resume ec3437ad-288b-4c22-b14b-4d3ab4519a4b --dangerously-skip-permissions`.

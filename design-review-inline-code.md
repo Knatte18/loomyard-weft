@@ -11,6 +11,11 @@ Neither reason holds for a reviewer: it edits nothing, and it reviews a fixed co
 
 For reviewers it may be different: they could get the code the target cites pasted in, instead of reading it themselves.
 
+## Operator decision this note must answer (2026-10-16)
+
+From the stencil intent audit of 2026-10-15 (now in note `webster-fork-stencil-fixes`): code text is never pasted into a prompt without a good reason, and the reason is written down.
+Before this note is built, it states its good reason for pasting code into a review round against that decision.
+
 ## Earlier data
 
 Note `fan-master-preread` records one hand-built try on solo `opus[medium]` Discussion review (2026-10-10, one run on the `webster-replan-state` fixture): a body dump of the 35 cited symbols, about 20k tokens in a file read first, cost about the same as a kick-start pack of spans and missed the BLOCKING finding the span pack found.
