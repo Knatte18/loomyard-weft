@@ -2,6 +2,8 @@
 
 `fan-prompt-tuning` · Task · enhancement, burler, stencil, loom
 
+Depends on: [`webster-fork-stencil-fixes`](design-webster-fork-stencil-fixes.md)
+
 ## Idea (operator, 2026-10-13)
 
 The Burler lens fan is parked because the fan-lab bench found it no better than a solo round, and its forks found mostly overlapping findings.
