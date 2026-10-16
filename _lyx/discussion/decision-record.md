@@ -120,6 +120,12 @@ Rationale: CLAUDE.md's "Docs land in the same commit" rule and PATTERN-sandbox-c
   - card2-breaks-update-strand-test (class scope, severity MEDIUM, open in rounds 2)
 <!-- /lyx:carry-over Plan-Review -->
 
+<!-- lyx:carry-over Merge-Review -->
+- Merge-Review, round 1: converged; each finding below was fixed or disputed by the round's fixer, and no fresh reviewer has seen the result; the fixer report says which.
+  Review: _lyx/reviews/merge/round-1-review.md; fixer report: _lyx/reviews/merge/round-1-fixer-report.md.
+  - orchestrator-md-673-workaround-survives (class scope, severity MEDIUM, open in rounds 1)
+<!-- /lyx:carry-over Merge-Review -->
+
 ## Acceptance criteria
 
 - `lyx reed add --cmd <c>` with no `--anchor` and no `--parent` opens the strand in its own window, and the shell window still holds only the Selvage pane.
