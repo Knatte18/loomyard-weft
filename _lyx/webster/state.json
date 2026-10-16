@@ -1,0 +1,686 @@
+{
+  "runGuid": "e5e0839c8a4d296582e7be24e5223938",
+  "planFingerprint": "a3d80ef65e4fe7a26acaad9f7c11b83643c2b2335b5555df54290cc4d30da4c2",
+  "planFileHashes": {
+    "00-overview.md": "fefd06c6d01c3542c72638a3996df769b80dc097a93a27828e09f2fe0bb88282",
+    "01-language-rename-tools.md": "590d32850583a563ffd30887aad03aee757c67442338169bd6998b05eabc7c09",
+    "02-plan-spec-rename-departure.md": "1529794c76a189967e5518717fbe11bde70e13d9a74ab0d6e395fb05764da42d",
+    "03-planparser-symbol-renames.md": "b2fbec0ac25ea809c630ef3e68d5608984f3371fa2e248d0eb0c838fba58f705",
+    "04-planparser-pattern-changes.md": "001703fc59bdccb751d324f44d1204305195b0943b4d3cbd6d8fb6d975f0c908",
+    "05-discussion-pattern-changes.md": "2f7d0e956d52af167207ffce8bd2c890138a9a4f7b26eebc0b15c45494a99348",
+    "06-discussion-append-pattern-change.md": "943336e9408cd196b403deeccd3fb66556174a158b72ca2c8842e56b086f7401",
+    "07-decision-add-pattern-form.md": "0d65026837e7c4bf8871888b2194000d0ac2b609a00b4a193dc506ccf735a9e8",
+    "08-pattern-directive-changes.md": "6c50c2e72f59219eab6ebdf7a0f12ed438dbfc5683a36d26c2c2d8e50a24a3dc",
+    "09-webster-declared-changes.md": "daa1416ed565a6629c0dfc3897ab68ada96802e860020d0612056be62b804c8c",
+    "10-review-loom-declared-changes.md": "9416e1971e0d8b83276a32edd7189d95c50f06064e836cc4f76d02e3f2361ba0",
+    "11-plan-gate-context-checks.md": "4521674f323080ace09c2b6ac481504aff959cba08607ffe4c6b7e051ae8f6c1",
+    "12-webster-inline-pack-removal.md": "084660b2240aed4959ec46baa87059372821e43db540c3d2117ff90ac3bd72fb",
+    "13-implementer-rename-verify-markers.md": "c2bd623c71db4486437e7c54785e227192e389ad858629187b737252b373ba2c",
+    "14-rename-tool-refusal.md": "611a670da842b74856654015c2abfd0d493b66f18f8411eb56ef212ada51843c",
+    "15-digest-departures.md": "6a5208941f1188a0f1f3abc990152e22c178f646454fe197d6a29a4d5b727f8c",
+    "16-verify-gate-fix-commits.md": "9bec94661afb29aa750fea9e349dc97b1626b9de108b2b4988550e88be213363",
+    "17-stencil-wording.md": "63093d90c10e561fa7951de3abbf494b6a918672201974e62818560d6fd1b8a5"
+  },
+  "planOverviewFrameHash": "22769e97e25b259afb459b3662d1f63dcd5add6ebdc8df6aed14dfa95523c5d4",
+  "partition": [
+    {
+      "cards": [
+        "01-language-rename-tools",
+        "02-plan-spec-rename-departure",
+        "03-planparser-symbol-renames",
+        "04-planparser-pattern-changes"
+      ],
+      "profile": "cautious",
+      "estimate": 170392,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 1,
+        "startup": 54592,
+        "read_union": 55152,
+        "cards": [
+          {
+            "card": 1,
+            "card_text": 480,
+            "reads": {
+              "file:contracts/specs/refusal-spec.md": 5976,
+              "file:docs/overview.md": 9576,
+              "file:internal/languageconfig/doc.go": 324,
+              "file:internal/languageconfig/template.yaml": 24,
+              "package:contracts/specs": 2000,
+              "package:docs": 2000,
+              "package:internal/languageconfig": 2000,
+              "tests:contracts/specs": 2000,
+              "tests:docs": 2000,
+              "tests:internal/languageconfig": 2000
+            },
+            "messages": 80,
+            "written": 24480
+          },
+          {
+            "card": 2,
+            "card_text": 324,
+            "reads": {
+              "file:contracts/specs/loom-plan-spec.md": 8340,
+              "file:contracts/stencils/loom/loom-template-plan.md": 3420,
+              "package:contracts/specs": 2000,
+              "package:contracts/stencils/loom": 2000,
+              "tests:contracts/specs": 2000,
+              "tests:contracts/stencils/loom": 2000
+            },
+            "messages": 13,
+            "written": 4224
+          },
+          {
+            "card": 3,
+            "card_text": 348,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1944,
+              "package:cmd/lyx/testdata": 2000,
+              "package:internal/planparser": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:internal/planparser": 2000
+            },
+            "messages": 47.5,
+            "written": 14598
+          },
+          {
+            "card": 4,
+            "card_text": 396,
+            "reads": {
+              "file:contracts/specs/loom-plan-spec.md": 8340,
+              "package:contracts/specs": 2000,
+              "package:internal/planparser": 2000,
+              "tests:contracts/specs": 2000,
+              "tests:internal/planparser": 2000
+            },
+            "messages": 56.5,
+            "written": 17346
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "05-discussion-pattern-changes",
+        "06-discussion-append-pattern-change",
+        "07-decision-add-pattern-form"
+      ],
+      "profile": "cautious",
+      "estimate": 170402,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 2,
+        "startup": 61592,
+        "read_union": 32472,
+        "cards": [
+          {
+            "card": 5,
+            "card_text": 600,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1944,
+              "file:contracts/specs/loom-discussion-spec.md": 972,
+              "file:internal/discussionparser/doc.go": 132,
+              "package:cmd/lyx/testdata": 2000,
+              "package:contracts/specs": 2000,
+              "package:internal/discussionparser": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:contracts/specs": 2000,
+              "tests:internal/discussionparser": 2000
+            },
+            "messages": 94,
+            "written": 28800
+          },
+          {
+            "card": 6,
+            "card_text": 504,
+            "reads": {
+              "file:internal/discussionparser/doc.go": 132,
+              "package:internal/discussionparser": 2000,
+              "tests:internal/discussionparser": 2000
+            },
+            "messages": 69,
+            "written": 21204
+          },
+          {
+            "card": 7,
+            "card_text": 384,
+            "reads": {
+              "file:contracts/stencils/loom/loom-template-arbiter.md": 984,
+              "file:contracts/stencils/orch/orch-template-role.md": 2952,
+              "package:contracts/stencils/loom": 2000,
+              "package:contracts/stencils/orch": 2000,
+              "package:internal/loomcli": 2000,
+              "tests:contracts/stencils/loom": 2000,
+              "tests:contracts/stencils/orch": 2000,
+              "tests:internal/loomcli": 2000
+            },
+            "messages": 86.5,
+            "written": 26334
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "08-pattern-directive-changes"
+      ],
+      "profile": "cautious",
+      "estimate": 184002,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 3,
+        "startup": 68592,
+        "read_union": 39540,
+        "cards": [
+          {
+            "card": 8,
+            "card_text": 720,
+            "reads": {
+              "file:.gitattributes": 648,
+              "file:contracts/stencils/pattern/pattern-directive-designer.md": 240,
+              "file:contracts/stencils/pattern/pattern-directive-implementer.md": 228,
+              "file:contracts/stencils/pattern/pattern-directive-judge.md": 240,
+              "file:contracts/stencils/pattern/pattern-directive-orchestrator.md": 228,
+              "file:contracts/stencils/pattern/pattern-directive-review-fix.md": 228,
+              "file:internal/pattern/doc.go": 1008,
+              "package:.": 2000,
+              "package:contracts/stencils": 2000,
+              "package:contracts/stencils/pattern": 2000,
+              "package:internal/burlerengine": 2000,
+              "package:internal/darnengine": 2000,
+              "package:internal/loomengine": 2000,
+              "package:internal/pattern": 2000,
+              "package:internal/shedadapters": 2000,
+              "package:internal/websterengine": 2000,
+              "tests:.": 2000,
+              "tests:contracts/stencils": 2000,
+              "tests:contracts/stencils/pattern": 2000,
+              "tests:internal/burlerengine": 2000,
+              "tests:internal/darnengine": 2000,
+              "tests:internal/loomengine": 2000,
+              "tests:internal/pattern": 2000,
+              "tests:internal/shedadapters": 2000,
+              "tests:internal/websterengine": 2000
+            },
+            "messages": 250.5,
+            "written": 75870
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "09-webster-declared-changes"
+      ],
+      "profile": "cautious",
+      "estimate": 159752,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 4,
+        "startup": 75592,
+        "read_union": 34912,
+        "cards": [
+          {
+            "card": 9,
+            "card_text": 648,
+            "reads": {
+              "file:contracts/specs/refusal-spec.md": 5976,
+              "file:contracts/stencils/webster/webster-template-master.md": 3024,
+              "file:internal/websterengine/doc.go": 9264,
+              "package:contracts/specs": 2000,
+              "package:contracts/stencils/webster": 2000,
+              "package:internal/hubgeom": 2000,
+              "package:internal/websterengine": 2000,
+              "tests:contracts/specs": 2000,
+              "tests:contracts/stencils/webster": 2000,
+              "tests:internal/hubgeom": 2000,
+              "tests:internal/websterengine": 2000
+            },
+            "messages": 162,
+            "written": 49248
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "10-review-loom-declared-changes"
+      ],
+      "profile": "cautious",
+      "estimate": 178388,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 5,
+        "startup": 82592,
+        "read_union": 30636,
+        "cards": [
+          {
+            "card": 10,
+            "card_text": 660,
+            "reads": {
+              "file:contracts/specs/refusal-spec.md": 5976,
+              "package:contracts/specs": 2000,
+              "package:internal/burlerengine": 2000,
+              "package:internal/loomcli": 2000,
+              "package:internal/loomengine": 2000,
+              "package:internal/shedadapters": 2000,
+              "package:internal/shedrecipe": 2000,
+              "tests:contracts/specs": 2000,
+              "tests:internal/burlerengine": 2000,
+              "tests:internal/loomcli": 2000,
+              "tests:internal/loomengine": 2000,
+              "tests:internal/shedadapters": 2000,
+              "tests:internal/shedrecipe": 2000
+            },
+            "messages": 215,
+            "written": 65160
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "11-plan-gate-context-checks"
+      ],
+      "profile": "cautious",
+      "estimate": 203852,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 6,
+        "startup": 89592,
+        "read_union": 33476,
+        "cards": [
+          {
+            "card": 11,
+            "card_text": 984,
+            "reads": {
+              "file:contracts/specs/loom-plan-spec.md": 8340,
+              "file:contracts/stencils/loom/loom-template-plan.md": 3420,
+              "file:internal/loomshed/doc.go": 732,
+              "package:contracts/specs": 2000,
+              "package:contracts/stencils/loom": 2000,
+              "package:internal/loomcli": 2000,
+              "package:internal/loomshed": 2000,
+              "package:internal/shedrecipe": 2000,
+              "tests:contracts/specs": 2000,
+              "tests:contracts/stencils/loom": 2000,
+              "tests:internal/loomcli": 2000,
+              "tests:internal/loomshed": 2000,
+              "tests:internal/shedrecipe": 2000
+            },
+            "messages": 266,
+            "written": 80784
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "12-webster-inline-pack-removal"
+      ],
+      "profile": "cautious",
+      "estimate": 200178,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 7,
+        "startup": 96592,
+        "read_union": 32816,
+        "cards": [
+          {
+            "card": 12,
+            "card_text": 720,
+            "reads": {
+              "file:.gitattributes": 648,
+              "file:contracts/stencils/webster/webster-body-implementer.md": 1428,
+              "file:contracts/stencils/webster/webster-fragment-fresh-read-pack-inline.md": 192,
+              "file:contracts/stencils/webster/webster-fragment-locate-pack-inline.md": 156,
+              "file:contracts/stencils/webster/webster-fragment-locate-pack.md": 144,
+              "file:contracts/stencils/webster/webster-fragment-pack-section-inline.md": 156,
+              "file:internal/websterengine/doc.go": 9264,
+              "file:internal/websterengine/template.yaml": 108,
+              "package:.": 2000,
+              "package:contracts/stencils": 2000,
+              "package:contracts/stencils/webster": 2000,
+              "package:internal/configcli": 2000,
+              "package:internal/websterengine": 2000,
+              "tests:.": 2000,
+              "tests:contracts/stencils": 2000,
+              "tests:contracts/stencils/webster": 2000,
+              "tests:internal/configcli": 2000,
+              "tests:internal/websterengine": 2000
+            },
+            "messages": 233.5,
+            "written": 70770
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "13-implementer-rename-verify-markers"
+      ],
+      "profile": "cautious",
+      "estimate": 184028,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 8,
+        "startup": 103592,
+        "read_union": 23364,
+        "cards": [
+          {
+            "card": 13,
+            "card_text": 672,
+            "reads": {
+              "file:contracts/stencils/webster/webster-body-implementer.md": 1428,
+              "file:internal/websterengine/doc.go": 9264,
+              "package:contracts/stencils/webster": 2000,
+              "package:internal/webstercli": 2000,
+              "package:internal/websterengine": 2000,
+              "tests:contracts/stencils/webster": 2000,
+              "tests:internal/webstercli": 2000,
+              "tests:internal/websterengine": 2000
+            },
+            "messages": 188,
+            "written": 57072
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "14-rename-tool-refusal"
+      ],
+      "profile": "cautious",
+      "estimate": 176420,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 9,
+        "startup": 110592,
+        "read_union": 31436,
+        "cards": [
+          {
+            "card": 14,
+            "card_text": 492,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1944,
+              "file:contracts/specs/refusal-spec.md": 5976,
+              "file:contracts/stencils/webster/webster-template-master.md": 3024,
+              "package:cmd/lyx/testdata": 2000,
+              "package:contracts/specs": 2000,
+              "package:contracts/stencils/webster": 2000,
+              "package:internal/webstercli": 2000,
+              "package:internal/websterengine": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:contracts/specs": 2000,
+              "tests:contracts/stencils/webster": 2000,
+              "tests:internal/webstercli": 2000,
+              "tests:internal/websterengine": 2000
+            },
+            "messages": 113,
+            "written": 34392
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "15-digest-departures"
+      ],
+      "profile": "cautious",
+      "estimate": 197646,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 10,
+        "startup": 117592,
+        "read_union": 22460,
+        "cards": [
+          {
+            "card": 15,
+            "card_text": 744,
+            "reads": {
+              "file:contracts/stencils/webster/webster-body-implementer.md": 1428,
+              "file:contracts/stencils/webster/webster-template-master.md": 3024,
+              "file:internal/websterengine/doc.go": 9264,
+              "package:contracts/stencils/webster": 2000,
+              "package:internal/websterengine": 2000,
+              "tests:contracts/stencils/webster": 2000,
+              "tests:internal/websterengine": 2000
+            },
+            "messages": 189.5,
+            "written": 57594
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "16-verify-gate-fix-commits"
+      ],
+      "profile": "cautious",
+      "estimate": 185518,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 11,
+        "startup": 124592,
+        "read_union": 21512,
+        "cards": [
+          {
+            "card": 16,
+            "card_text": 564,
+            "reads": {
+              "file:contracts/stencils/webster/webster-body-verify-fix.md": 660,
+              "file:contracts/stencils/webster/webster-template-master.md": 3024,
+              "file:internal/websterengine/doc.go": 9264,
+              "package:contracts/stencils/webster": 2000,
+              "package:internal/websterengine": 2000,
+              "tests:contracts/stencils/webster": 2000,
+              "tests:internal/websterengine": 2000
+            },
+            "messages": 129.5,
+            "written": 39414
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "17-stencil-wording"
+      ],
+      "profile": "cautious",
+      "estimate": 170464,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 12,
+        "startup": 131592,
+        "read_union": 22264,
+        "cards": [
+          {
+            "card": 17,
+            "card_text": 408,
+            "reads": {
+              "file:contracts/stencils/edit/edit-directive.md": 120,
+              "file:contracts/stencils/loom/loom-rubric-webster-review.md": 1176,
+              "file:contracts/stencils/pattern/pattern-directive-designer.md": 240,
+              "file:contracts/stencils/pattern/pattern-directive-implementer.md": 228,
+              "file:contracts/stencils/pattern/pattern-directive-judge.md": 240,
+              "file:contracts/stencils/pattern/pattern-directive-orchestrator.md": 228,
+              "file:contracts/stencils/pattern/pattern-directive-review-fix.md": 228,
+              "file:contracts/stencils/webster/webster-prefix-fork.md": 372,
+              "file:contracts/stencils/webster/webster-template-master.md": 3024,
+              "package:contracts/stencils/edit": 2000,
+              "package:contracts/stencils/loom": 2000,
+              "package:contracts/stencils/pattern": 2000,
+              "package:contracts/stencils/webster": 2000,
+              "tests:contracts/stencils/edit": 2000,
+              "tests:contracts/stencils/loom": 2000,
+              "tests:contracts/stencils/pattern": 2000,
+              "tests:contracts/stencils/webster": 2000
+            },
+            "messages": 54,
+            "written": 16608
+          }
+        ]
+      }
+    }
+  ],
+  "currentBatch": 1,
+  "masterStrand": "71953c680b84bd88f36cef5b47f6fe98",
+  "masterSessionId": "94219480-9e76-4530-ae14-fbb68854c48f",
+  "masterEngine": "claude",
+  "batches": {
+    "1": {
+      "slug": "language-rename-tools",
+      "cards": [
+        "01-language-rename-tools",
+        "02-plan-spec-rename-departure",
+        "03-planparser-symbol-renames",
+        "04-planparser-pattern-changes"
+      ],
+      "cardHashes": {
+        "01-language-rename-tools": "590d32850583a563ffd30887aad03aee757c67442338169bd6998b05eabc7c09",
+        "02-plan-spec-rename-departure": "1529794c76a189967e5518717fbe11bde70e13d9a74ab0d6e395fb05764da42d",
+        "03-planparser-symbol-renames": "b2fbec0ac25ea809c630ef3e68d5608984f3371fa2e248d0eb0c838fba58f705",
+        "04-planparser-pattern-changes": "001703fc59bdccb751d324f44d1204305195b0943b4d3cbd6d8fb6d975f0c908"
+      },
+      "startSha": "27657341cf3a467214d0a482c7d34359ff06151c",
+      "kind": "fork",
+      "spawnedAt": "2026-10-16T11:02:04Z",
+      "sessionId": "94219480-9e76-4530-ae14-fbb68854c48f",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
+    }
+  }
+}
