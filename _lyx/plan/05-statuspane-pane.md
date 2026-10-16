@@ -11,6 +11,7 @@
 - `plan:internal/statuspane#NewStatusCache` -> `func NewStatusCache() *StatusCache`
 - `plan:internal/statuspane#StatusPoll` -> `type StatusPoll struct`
 - `plan:internal/statuspane#StatusCache.Poll` -> `func (c *StatusCache) Poll(path string) StatusPoll`
+- `plan:internal/statuspane#FormatMinutes` -> `func FormatMinutes(d time.Duration) string`
 - `internal/statuspane/pane_test.go`
 - `internal/statuspane/cache_test.go`
 - `internal/statuspane/testmain_test.go`
@@ -22,7 +23,7 @@
 - `docs/overview.md`
 
 **Intent:**
-Add `internal/statuspane`, the one implementation of the pane mechanics the runs overview (card 9) and the gate checklist (card 7) share: a redraw-in-place pane loop and a status-file reader.
+Add `internal/statuspane`, the one implementation of the pane mechanics the runs overview (card 9) and the gate checklist (card 7) share: a redraw-in-place pane loop, a status-file reader and the minute-resolution time format.
 It takes every path and size it works on as values (`PATTERN-told-geometry`) and imports the standard library, `internal/shedengine`, `internal/agentname`, `internal/logger` and `golang.org/x/term`.
 
 `pane.go`:
@@ -33,6 +34,7 @@ It takes every path and size it works on as values (`PATTERN-told-geometry`) and
   A redraw homes the cursor, writes each line followed by an erase-to-end-of-line and a newline except after the last line, then erases below, so the pane is redrawn in place and never scrolls; the cursor is hidden once at the start.
   The wait between polls starts at one second, doubles while a poll changes nothing, up to an eight-second ceiling, and returns to one second on any change, as `PATTERN-daemon-wakeups` requires; both values are named constants.
   Bound: it reads and writes nothing but its told seams and `Out`.
+- `FormatMinutes(d)` renders a duration in whole minutes as `12m`, `1h05m` or `2d03h`, the one time format both panes use (Shared Decision `minute-resolution-times`); it has no test of its own, since the exact time strings `TestRenderChecklist` (card 7) and `TestRenderOverview` (card 9) assert cover it.
 - `TerminalSize(f)` reads the columns and rows of the terminal on `f` through `term.GetSize`, so the pane reads its own height and a summary line is right before reed has applied a reported count.
 - `ReportFromEnv(getenv, set)` returns a report func that calls `set` with the `agentname.StrandNameEnv` and `TMUX_PANE` values `getenv` gives (production passes `os.Getenv`), or nil when either is empty, so a hand-run pane outside a strand reports nothing.
 

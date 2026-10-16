@@ -16,7 +16,7 @@ The cards run in dependency order: render's vocabulary, then reed's use of it an
 2 — reed-content-strands — reed persists content rows, plans with the title row, validates displays and splits top strands at the window top
 3 — reed-content-rows-op — Engine.SetContentRows, the bounded report that resizes one content strand under the zoom bracket
 4 — reed-selvage-cycle — a display-only Selvage marker, Selvage in the Alt+Up/Down cycle and Alt+z on Selvage, in the strands' window only
-5 — statuspane-pane — the shared pane loop, frame fitting, content-rows report and two-strike status reader
+5 — statuspane-pane — the shared pane loop, frame fitting, content-rows report, two-strike status reader and minute-resolution time format
 6 — statuspane-build-identity — move loom's strand build identity and sidecar into statuspane for both pane strands
 7 — loom-checklist — the hidden loom checklist verb run in the loom-status strand on both drivers
 8 — batten-notice-log — every composed batten notice appended once per process to the hub notice log
