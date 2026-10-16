@@ -46,10 +46,11 @@ Decision: the arming module fills these seams; every optional seam left unwired 
 - Friction note writer: loom and darn write the `go-driver-paused` note; batten writes none.
 - Hand-over spawn: optional; loom and darn spawn `lyx loom drive` of the on-disk build. Batten wires none, and with none the hand-over row never fires.
 - Tamper snapshot: optional; loom and darn snapshot the task worktree as today. Batten wires none (D4).
+- Resume goto targets: loom and darn allow the current row and the routed-from row as today; batten allows the current row only, and a verdict naming any other row is refused and hands back.
 - Recipe description: one short line filled into the tackler stencil (D7).
 
 Rationale: these are the loom-specific parts of today's `drivewiring.go` and `driverules.go`.
-Bound: an unwired seam can only take agent help or a check away, never skip a hand-back, since every unwired path ends in one.
+Bound: an unwired seam removes a row or an agent from the table; a stop whose row never fires meets the later rows unchanged, so it ends in the tackler under its spawn budget and stop-key check, a re-step under the repair cap, or a hand-back, and no unwired seam adds a resume path the table does not already have.
 
 ### D3 — `lyx loom drive` stays the verb for loom and darn
 
@@ -57,7 +58,7 @@ Decision: the hidden role verb keeps its name and mounts `sheddriver`'s body wit
 No `lyx shed` verb is added.
 The driver lock, park marker, resume report, drive reports, settle records, driver log and tackler attempt directory are declared in `internal/shedrun` per run-id (`PATTERN-shed-run-directory`).
 Rationale: `run-verbs-shared` keeps run verbs under `lyx loom` for now and keeps `lyx shed` to the FSM; the driver queues parent notices and parks runs, which is that layer.
-No go-seeded run exists (the hub's `loom.yaml` holds `driver_kind: llm`), so the records move to `shedrun` paths without a migration.
+No run has driver records today: loom and darn runs are all seeded `llm`, and batten runs, though seeded `go`, write none of the driver records, so the records move to `shedrun` paths without a migration.
 
 ### D4 — Batten drives its own run through the driver body
 
@@ -66,13 +67,16 @@ Decision: `lyx batten run <slug>` runs the `sheddriver` body in-process over its
 Batten arms the `--until-stop` loop (`Spec.Loop`) without the agent idle watchdog, since Run-Shed's wait is idle by design, and without an arbiter attempt hook.
 The process takes the driver lock for its life; a second `lyx batten run` for the slug is refused by the driver lock.
 A rerun after the process died while a detached step still runs adopts that step through the loop's waiter instead of exiting as busy.
+A batten run started on the old build is no exception: a `lyx batten run` of the new build over it takes the driver lock, and a step the old process still runs is adopted through the loop's waiter like any detached step.
 Batten's tackler strand runs in the prime's reed session through a detached runner from batten's CLI wiring, so Worktree-Teardown's session shutdown never ends it.
-Batten wires no tamper snapshot: the prime has other writers (landings, the orch), so a snapshot would read `tampered` falsely; the stop-key check still discards a verdict for a run that moved.
-A tackler `resume` for batten names only the halted row, never the routed-from row, so it does what a rerun of `lyx batten run` does today: re-enter the row it halted at, Land and Worktree-Teardown included.
+Batten wires no tamper snapshot: the prime has other writers (landings, the orch), so a snapshot would read `tampered` falsely.
+With no snapshot, a batten tackler that writes in the prime (files, the index, a local commit) has its verdict acted on, and a resume may then re-enter Land or Worktree-Teardown over that state.
+The only bound on those writes is the tackler stencil's write rule and the agent settings' denies; the stop-key check discards a verdict for a run that moved, which bounds run movement, not writes.
+A tackler `resume` for batten names only the halted row, never the routed-from row (D2's resume goto targets), so it does what a rerun of `lyx batten run` does today: re-enter the row it halted at, Land and Worktree-Teardown included.
 Batten's hand-back queues one orch notice per stop episode through `orchengine.QueueNotice`, sharing the rows' per-episode marker keyed by batten's history length, so a row notice already sent is not repeated; a paused stop sends none, since a pause is the operator's own act.
-Batten's window, pause, row notices, status envelope, `abandonedSession` and `haltedOverDoneChild` flag keep their behaviour, and `lyx batten run`'s envelope keeps `abandonedSession`.
+Batten's window, pause, row notices, status envelope, `haltedOverDoneChild` flag, and `lyx batten run`'s envelope with its `abandonedSession` keep their behaviour.
 Rationale: batten already steps in Go; a private stop handler beside the driver would be the second loop the operator's one-pattern goal rules out.
-Bound: the tackler can only re-enter batten's halted row, never move the child run, and never resume without passing the stop-key check.
+Bound: the tackler can only re-enter batten's halted row, never move the child run, and never resume without passing the stop-key check; its writes in the prime are bounded only by the stencil's write rule and the agent settings' denies.
 
 ### D5 — The `shed` config module and the overrides
 
@@ -81,10 +85,16 @@ Its keys and defaults are today's: `driver_kind: llm`, `tackler: haiku`, `tackle
 `loom.yaml` keeps its four keys as overrides and `darn.yaml` gains the four, both open to the local layer; `batten.yaml` gains the three tackler keys and no `driver_kind`, since batten's own driver is always `go`.
 Every new key is classified in its module's `ConfigSpec`, and each module's `CheckValues` validates its override values as loom's does today.
 An override that is empty or absent inherits the `shed.yaml` value; a set override wins, and `tackler_max_spawns: 0` set in a module still turns the tackler off for that module.
-The plan picks the representation that tells an unset integer from 0.
+`tackler_timeout_min: 0` set in a module inherits the next layer, and in `shed.yaml` takes the built-in 10 minutes, so 0 is never a timeout.
+The plan picks the representation that tells an unset `tackler_max_spawns` from 0.
 Resolution is one pure function in `internal/sheddriver` taking the shed config and the module's override; only `configengine` reads the files (`PATTERN-config-layers`).
+The arming module passes the override of the run's own recipe for every tackler key: `loom.yaml` for a loom run, `darn.yaml` for a darn run, `batten.yaml` for batten's own run, chosen by the seed's recipe at `lyx loom drive`'s wiring, the rule D6 states for `driver_kind`.
 `shed` loads through `LoadOrTemplate` (`PATTERN-config-strictness`), so a hub or pair with no `shed.yaml` yet reads the template defaults.
-`loom.yaml`'s `Migrate` turns each of the four keys whose value equals the old template default (`llm`, `haiku`, 10, 4) into the inherit value.
+The loom template's four keys, `darn.yaml`'s four and `batten.yaml`'s three ship with the inherit value, so a fresh hub does not mask `shed.yaml`.
+Loom's `Migrate` hook runs on every reconcile and on every task's `run_settings` document (`internal/configreg/runsettings.go` calls `module.Migrate`), so a rewrite keyed on value equality alone would fire forever and would also turn a `run_settings` pin into a fall-through to the hub layer.
+The rewrite therefore fires once, on the hub-level `loom.yaml` only: when all four keys hold the old template defaults (`llm`, `haiku`, 10, 4) together with their old template comments, it sets the four to the inherit value and replaces the comments with the new template's, so the marker is gone afterwards.
+A `run_settings` document is never rewritten; the plan picks how the `run_settings` path skips this rewrite.
+Bound: a hub `loom.yaml` that pinned all four old defaults deliberately with the template comments untouched is reset once; a value set after that, or any one key set apart from the others, is kept.
 Key names stay today's loom names; `loom-model-key-names` renames them later in every module at once.
 Rationale: shed holds the defaults and a module overrides them, as the board asks; without the migration, the hub's `loom.yaml`, which spells every default out, would make `shed.yaml` dead for loom runs.
 
@@ -105,6 +115,8 @@ It gains:
 - a required `{{.recipe}}` marker: the recipe name and the one-line description the arming module tells;
 - a short list of the stops it receives (a transient error, `producer`, `bootstrap`, `unseeded`, `interrupted`, `blocked`, a returned stop it already resumed), each with how it typically looks and its usual verdict;
 - a reading order: the envelope and the stop report first, then the stop step's trace copy and stderr, and the child traces only when those leave the cause open.
+
+The stencil's goto rule reads from D2's resume goto targets seam, so it names the rows the run's recipe allows.
 
 Rationale: the board's stencil points, for a small model on its first live runs.
 The marker is required rather than optional because every arming module supplies the line, so a missing value is a wiring fault.
@@ -149,13 +161,17 @@ Rationale: without the entry, a later recipe would grow a private loop as batten
 - `lyx loom drive` drives a go-seeded loom run and a go-seeded darn run through `sheddriver`, with the rule table, tackler and hand-back behaving as today's loom tests pin.
 - A loom or darn run seeds `driver_kind` from its own module's override, then `shed.yaml`, then `llm`; a typed `--child-driver` still wins; a recorded driver never changes.
 - With no `shed.yaml` present, seeding and driving read the template defaults.
-- Empty or absent module overrides inherit `shed.yaml`; a module's `tackler_max_spawns: 0` turns its tackler off while `shed.yaml` says 4; an invalid override value is refused, and `driver_kind` in `batten.yaml` is refused.
-- Migrating a `loom.yaml` holding the old template defaults leaves the four keys inheriting, and a non-default value is kept.
-- `lyx batten run` over a blocked or error stop spawns a tackler in the prime's session; a `resume` re-enters the halted row; a `hand-back` queues one orch notice per stop episode, not repeated by a row notice for the same episode; an `escalate` hands back naming the case brief; a requested pause sends no notice.
+- Empty or absent module overrides inherit `shed.yaml`; a module's `tackler_max_spawns: 0` turns its tackler off while `shed.yaml` says 4; a module's `tackler_timeout_min: 0` inherits `shed.yaml`'s value, and `shed.yaml`'s 0 takes 10 minutes; an invalid override value is refused, and `driver_kind` in `batten.yaml` is refused.
+- A darn run driven by `lyx loom drive` with `darn.yaml`'s `tackler_max_spawns: 0` and `loom.yaml`'s 4 spawns no tackler, and with the values swapped spawns one.
+- Migrating a hub `loom.yaml` holding all four old template defaults with their old template comments leaves the four keys inheriting, and migrating it again changes nothing; a hub `loom.yaml` with one of the four set apart from the others keeps every value; a `run_settings` document holding the old default values is not rewritten.
+- A freshly seeded `loom.yaml`, `darn.yaml` and `batten.yaml` hold the inherit value for every override key, so a run reads `shed.yaml`'s values.
+- `lyx batten run` over a blocked or error stop spawns a tackler in the prime's session; a `resume` re-enters the halted row; a `resume` whose goto names the routed-from row is refused and hands back; a `hand-back` queues one orch notice per stop episode, not repeated by a row notice for the same episode; an `escalate` hands back naming the case brief; a requested pause sends no notice.
+- The rendered batten tackler prompt carries the stencil's write rule, and the batten tackler spawns under the same agent settings' denies as a loom tackler.
+- A batten stop after the on-disk build changed goes to the tackler, never a hand-over; a batten blocked stop with a Publish failure record present goes to the tackler, never a verify goto.
 - An interrupted Run-Shed step re-steps; an interrupted step at any other batten row hands back.
 - A second `lyx batten run` for a running slug is refused while the first holds the driver lock; a rerun after the first died adopts a still-running detached step.
 - Batten's InnerRun hold sees a child's live tackler marker, and batten's publish retry reads the child's settle records, at their new paths.
-- The tackler prompt renders with the recipe marker filled for loom, darn and batten, and a missing marker value is refused.
+- The tackler prompt renders with the recipe marker filled for loom, darn and batten, and a missing marker value is refused; the rendered prompt for each recipe names no arbiter and contains the stop-kind list and the reading order D7 names.
 - Scenarios kept from today: a driver restarted over a halted run reuses an unclosed tackler attempt; a pause covering the slug holds spawns and re-steps; a loom tackler that changes the worktree reads as `tampered`; a run moved by the orch during a tackler is decided afresh; a tackler timeout hands back with cause `timeout`; tackler attempts count across a driver restart of the same run.
 - `internal/sheddriver` imports no `lyxcwd`, `loomengine`, `loomshed` or `<module>cli`, pinned by its seam test.
 
