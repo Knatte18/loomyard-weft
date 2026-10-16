@@ -1,12 +1,12 @@
 {
   "runGuid": "1d194c259b1f22661b4eefc38f8a020e",
-  "planFingerprint": "e5c43dec7ea5360fc45ced22ff3f6125b48601a5b5a5e7fb1074c02f5b4c139a",
+  "planFingerprint": "e54b1d0acde4f842b462120022435206caf9ed362402d328ad2125cda8aedb6f",
   "planFileHashes": {
     "00-overview.md": "c876e5574f0fc1c3104274982bf12f88dccb729759b74ccca0a3188bdeec8829",
-    "01-language-verify-tiers.md": "84b2153220e47d6fdd7a6a6289da480f8e3c97a69087874be12a6869ed1cd445",
-    "02-plan-verify-tiers.md": "b56bbda364060ad7df84f8d61ac289de5cdc7280fc429cb91cd6dc2107261702",
-    "03-rubric-verify-tiers.md": "9733e3b19a2de4e5bfa578fcc227cad31883c09439d427a6fe60c6a6e637101c",
-    "04-implementer-verify-tiers.md": "24eede9ab03c5ad7e636a26cbc3babd23370ae6b58b696ec9941822d6e93cff7",
+    "01-language-verify-tiers.md": "f61c5ed46b87e216b8bed36db3e804ad0cef864ceabbc258ffe8b84e9e5a8ede",
+    "02-plan-verify-tiers.md": "000d1241d0d6daee5fff134451a6f6fb28f073fe1ab9d0a22bee8ce246033057",
+    "03-rubric-verify-tiers.md": "8e6161447dda415ab46ef5ca98428896c8e757ff9d1021c5e14ef05ce800fb0a",
+    "04-implementer-verify-tiers.md": "b658e6ff2e5f6bf81ad0aa452b697d0798ec2359097db4b6b04073474089fc27",
     "05-rework-findings-are-claims.md": "c2f1da655432c5cb20787b8586f6d450225e11e2cb4814e3ec4715255d38b0a1",
     "06-driver-advisor-wording.md": "b187fb324b48143b31336622daf3b911b19238658c5b67e86a390f9f62a99a0b",
     "07-spec-verify-model.md": "78778dcc8689ae2145cb0f9a10359cca17535942c2c51e031dfd4893787c3c86"
@@ -242,7 +242,7 @@
       }
     }
   ],
-  "currentBatch": 1,
+  "currentBatch": 0,
   "masterStrand": "7dabff2aa15977171b6ba5462f5feaf5",
   "masterSessionId": "cb2d3764-93b9-414c-9bdf-5a3159e2a75e",
   "masterEngine": "claude",
@@ -253,15 +253,36 @@
         "01-language-verify-tiers"
       ],
       "cardHashes": {
-        "01-language-verify-tiers": "84b2153220e47d6fdd7a6a6289da480f8e3c97a69087874be12a6869ed1cd445"
+        "01-language-verify-tiers": "f61c5ed46b87e216b8bed36db3e804ad0cef864ceabbc258ffe8b84e9e5a8ede"
       },
       "startSha": "1cf2b272657430a2e9641cf4cb99f8a75e363932",
       "kind": "fork",
       "spawnedAt": "2026-10-16T09:22:46Z",
       "sessionId": "cb2d3764-93b9-414c-9bdf-5a3159e2a75e",
       "engine": "claude",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "01-language-verify-tiers",
+        "status": "done",
+        "head_sha": "b51a45dd3d13352d46fb8a8582f4acc72be267a2",
+        "deviations": [
+          "internal/languageconfig/config.go",
+          "internal/loomcli/cli.go"
+        ]
+      },
+      "cardShas": [
+        "b51a45dd3d13352d46fb8a8582f4acc72be267a2"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-loom-stencil-wording/cb2d3764-93b9-414c-9bdf-5a3159e2a75e/subagents/agent-a8ad9e226c3726846.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-loom-stencil-wording/cb2d3764-93b9-414c-9bdf-5a3159e2a75e/subagents/agent-a8ad9e226c3726846.jsonl"
+      ]
     }
-  }
+  },
+  "seenForkTranscripts": [
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-loom-stencil-wording/cb2d3764-93b9-414c-9bdf-5a3159e2a75e/subagents/agent-a8ad9e226c3726846.jsonl"
+  ]
 }

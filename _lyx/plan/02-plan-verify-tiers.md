@@ -9,7 +9,7 @@
 - `contracts/stencils/loom/loom-template-plan.md`
 
 **Uses:**
-- `plan:internal/languageconfig#VerifyTiersValue`
+- `internal/languageconfig#VerifyTiersValue`
 
 **Intent:** The plan writer's prompt renders the hub's `verify_tiers` and stops naming this repository's Go tiers (D6), and its role line says it never asks the operator (D4).
 

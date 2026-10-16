@@ -20,11 +20,11 @@
 - `docs/overview.md`
 
 **Create:**
-- `plan:internal/languageconfig#Language` -> `type Language struct`
-- `plan:internal/languageconfig#verifyTiersKey` -> `const verifyTiersKey = "verify_tiers"`
-- `plan:internal/languageconfig#stringList` -> `func stringList(key string, node yaml.Node) ([]string, error)`
-- `plan:internal/languageconfig#VerifyTiersValue` -> `func VerifyTiersValue(tiers []string) string`
-- `plan:internal/languageconfig_test#TestVerifyTiersValue` -> `func TestVerifyTiersValue(t *testing.T)`
+- `internal/languageconfig#Language`
+- `internal/languageconfig#verifyTiersKey`
+- `internal/languageconfig#stringList`
+- `internal/languageconfig#VerifyTiersValue`
+- `internal/languageconfig_test#TestVerifyTiersValue`
 
 **Intent:** `language.yaml` gains its second key, `verify_tiers` (D5), and `Load` resolves both keys into one value.
 

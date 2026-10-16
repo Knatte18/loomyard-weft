@@ -32,7 +32,7 @@
 - `plan:contracts/stencils#TestHubGenericStencils_NameNoGoTiers` -> `func TestHubGenericStencils_NameNoGoTiers(t *testing.T)`
 
 **Uses:**
-- `plan:internal/languageconfig#VerifyTiersValue`
+- `internal/languageconfig#VerifyTiersValue`
 
 **Intent:** The implementer body, shared by the in-session fork and the recovery strand, renders the hub's `verify_tiers` in its raw-run section instead of naming raw `go` runs (D6).
 

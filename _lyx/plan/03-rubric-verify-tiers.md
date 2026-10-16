@@ -19,7 +19,7 @@
 - `contracts/stencils/loom/loom-rubric-plan-review.md`
 
 **Uses:**
-- `plan:internal/languageconfig#VerifyTiersValue`
+- `internal/languageconfig#VerifyTiersValue`
 
 **Intent:** The Plan-Review rubric checks the plan's `## verify:` section against the hub's `verify_tiers` instead of this repository's Go tiers (D6).
 
