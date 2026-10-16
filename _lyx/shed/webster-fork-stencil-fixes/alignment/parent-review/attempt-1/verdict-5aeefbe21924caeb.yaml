@@ -1,0 +1,8 @@
+verdict: approve
+reason: >-
+  The decision record covers all five sections of the board entry and their operator decisions, and adds only mechanisms that serve them.
+  It defers `review-inline-code` and `discussion-lands-invariant` to their own entries without contradicting them.
+  The overlap with reed-add-parentless-placement in internal/webstercli and internal/burlercli is text-only (reed anchor vocabulary), and that run lands first (row 13 against 3).
+  creel-stage1-fixes does not overlap, and no parent commits are listed.
+question: ""
+superseded: []
