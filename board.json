@@ -919,6 +919,27 @@
       "body": "Imported from [issue #677](https://github.com/Knatte18/loomyard/issues/677).\n\nSeen: with `{\"event\":\"posted\",\"at\":\"2026-10-16T08:45:1` plus a newline as the last journal line, the creel daemon logged `skipping a torn last line left by a crash ... line=101` and appended new records after it. At the next start that line sat in the middle of the file and the daemon refused it: `line 101 is not a valid record (unexpected end of JSON input); way forward: repair or remove that line by hand`. Creel was down until the line was removed by hand.\n\nExpected: the skipped line is cut, as a torn tail without a newline already is (`cutting a torn last line ... bytes=42`), so a later start does not fail on it.\n\nFound by the creel stage 1 re-test of 2026-10-16 (sandbox scenario C10).",
       "created": "2026-10-16T08:56:03Z",
       "revised": "2026-10-16T08:56:03Z"
+    },
+    {
+      "id": 587,
+      "slug": "creel-llm-smoke-idle",
+      "title": "creel llm smoke test TestSmokeCreelClaudeStrand still fails with no pane capture",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "creel",
+        "shuttle",
+        "claude"
+      ],
+      "issues": [
+        678
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Imported from [issue #678](https://github.com/Knatte18/loomyard/issues/678).\n\nSeen: `lyx gate test --tags llm ./internal/creelcli` fails with `smoke_llm_test.go:51: the adapter never read the booted session idle` after 60.7 s, the same message as before the #657 fix. In live sandbox use the #657 fix holds: a strand added with plain `lyx reed add --cmd claude` (placeholder `Try \"fix lint errors\"`) was reminded 0.5 s after mail was posted. The test prints no pane capture, so the cause is unknown; one candidate is the Claude folder-trust dialog in the test temp hub, which the sandbox also showed on first boot.\n\nExpected: the smoke test passes, and on failure it prints the pane capture so the cause can be read.\n\nFound by the creel stage 1 re-test of 2026-10-16.",
+      "created": "2026-10-16T08:56:06Z",
+      "revised": "2026-10-16T08:56:06Z"
     }
   ]
 }
