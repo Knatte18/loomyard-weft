@@ -24,8 +24,7 @@
 - `internal/reedengine/render#breakCycles`
 - `internal/reedengine/render#severParent`
 - `internal/reedengine/render#orderStack`
-- `internal/reedengine/render#TestPartitionByAnchor`
-- `internal/reedengine/render#TestBreakCyclesTerminatesAndKeepsEveryStrand`
+- `internal/reedengine/render/policy_test.go`
 - `internal/reedengine/apply_test.go`
 - `internal/reedengine/zoom_integration_test.go`
 - `internal/reedengine#paneIDsByTop`
@@ -150,6 +149,8 @@
 - `internal/reedengine#TestAddStrandLocked`
 - `internal/reedengine#newBindingsFixture`
 - `internal/reedengine#TestWindowOrder_RealTmux`
+- `internal/reedengine#TestUpdateStrandLocked`
+- `internal/reedengine#TestMultiplexerContract`
 
 **Create:**
 - `plan:internal/reedengine#TestPinBootOptionsLocked_ClearsTheWindowResizedHook` -> `func TestPinBootOptionsLocked_ClearsTheWindowResizedHook(t *testing.T)`
@@ -157,6 +158,7 @@
 **Intent:** D4, and D6's hook half: reed stops laying out the shell window, so nothing computes, applies, pins or re-applies a stacked strand layout, and every boot and attach clears a `window-resized` hook an older binary pinned.
 
 render keeps only the closed display vocabulary spawners name: `Anchor` and its constants, `Display` and `ValidateDisplay`.
+The `internal/reedengine/render/policy.go` file header is rewritten to describe only the display check `ValidateDisplay` makes, dropping the placed-cell filtering, stack ordering, cycle repair, the below-parent and top wording and the policy-versus-mechanics note.
 Every layout file goes (`Rules`, `FixedHeightPins`, `Pin`, the cell planner, the height rules, the band clamp, the focus pick, the layout string and its checksum), and so do `Strand`, `Box`, `Selvage`, `Params`, `Size` and the `SizeKind` constants.
 `Display` loses its `Size` field; `ValidateDisplay` keeps the own-window `WindowSize` refusal and returns nil for every other anchor, with no size branch.
 `AnchorTop` and `AnchorBelowParent` stay for card 5, which retires them; their doc comments stop describing a stacked region.
@@ -179,7 +181,7 @@ This unpin clears only that one window hook on the shell window, which only reed
 `AttachArgv` keeps its signature and its pre-flight (session check, the mismatched-client warning, the state read, `ensureShellWindowLocked`, the window selection, the strand-window marker, the option re-assert, the Selvage marker and `pinGeometryOptionsLocked`) and always returns the bare attach argv with the selection appended; it chains no `select-layout` and no pins, and needs no window-size or status readback.
 A degrade path (no lock, no session, no state) still returns the bare argv, without the selection where it returns before the state read.
 
-Tests: the render layout tests and `apply_test.go` go whole; `zoom_integration_test.go` goes whole here because both its tests drive `SetContentRows` and the stack, and card 3 retires the bracket they pin.
+Tests: the render layout tests, `render/policy_test.go` and `apply_test.go` go whole; `zoom_integration_test.go` goes whole here because both its tests drive `SetContentRows` and the stack, and card 3 retires the bracket they pin.
 `TestPinBootOptionsLocked_ClearsTheWindowResizedHook` replaces `TestPinBootOptionsLocked_InstallsTheSignalEntry` on its fake with one assertion: boot issues both unpins and no `set-hook` that installs a `window-resized` entry.
 `TestPinGeometryOptionsLocked` asserts both unpins on both watchdog values, and no `pane-border-status` pin, and gains a row where the fake fails the window-scoped `set-hook -u` and the session-scoped unpin and the binding pins still follow; `TestAttachArgv_PreflightOnAKnownGoodSession` asserts the attach pre-flight issues it, so both acceptance paths (boot, attach) are pinned.
 `TestAttachArgv_EveryOtherDegradedPathYieldsBareArgv`, `TestAttachArgv_SelectsTheRelevantWindow`, `TestAttachArgv_MultiClientWarning` and their helpers expect the bare argv plus selection on the known-good path too.
@@ -193,6 +195,8 @@ The doc comment of `goodAttachLive` and `TestSmokeLifecycle`'s comments stop jus
 `TestBar_LineTwoListsSessionsInIDOrderAndTheBorderNamesStrands` drops its border-title half.
 `TestSmokeWarmPath` counts attach's round trips without the chain's readbacks.
 `topContentDisplay`, `TestAddStrandLocked`'s content and sharing rows, `newBindingsFixture` and `TestWindowOrder_RealTmux` stop building a `Size`: the size refusal rows go, and the displays keep their anchors for card 5.
+`TestUpdateStrandLocked` drops its `TopPositionalDisplayRejected` row, which pinned the content-sized refusal this card removes, and keeps every other row for card 5.
+`TestMultiplexerContract`'s step (c) comment stops citing `apply_test.go` and `render.Rules`, which this card deletes.
 The two reedcli dot-fill smokes measured the resize artifact the pins and the hook caused, and go whole.
 
 **ImpactSummary:** removes render's layout surface and reed's shell-window apply, pins, hook array and attach chain; the only cross-package callers are `AttachArgv`'s, in `internal/reedcli` and `internal/loomcli`, whose signature is unchanged.

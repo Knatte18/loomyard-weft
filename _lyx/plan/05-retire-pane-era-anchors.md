@@ -41,7 +41,6 @@
 - `internal/reedengine#TestNeedsLaunchOnSurface`
 - `internal/reedengine#TestRemovalEmptiedSession`
 - `internal/reedengine#TestRemoveStrand_NeverKillsAPaneOutsideThisSession`
-- `internal/reedengine#TestWouldFormCycle`
 - `internal/reedengine#TestCapturePaneArgv`
 - `internal/reedengine#TestPasteSubmit`
 - `internal/reedengine#TestResolveLivePaneID`
@@ -50,6 +49,10 @@
 - `internal/reedengine#TestPlanUpLaunches_NeverLaunchesAnyStrand`
 - `internal/reedengine#repairStrand`
 - `internal/reedengine#TestStrandWindowTarget`
+- `internal/reedengine/render#TestDisplayMarshalsWithoutRetiredKeys`
+- `internal/reedengine#goodAttachStrands`
+- `internal/reedengine#TestAttachArgv_EveryOtherDegradedPathYieldsBareArgv`
+- `internal/reedengine#setupAttachGeometryFixture`
 - `internal/reedengine#clearConflictingPaneBindings`
 - `internal/reedengine#Engine.AddStrandUnless`
 - `internal/reedengine#Engine.ReplaceStrand`
@@ -115,10 +118,13 @@ At the tmux tier `TestStrandNamingAndList` replaces its `--anchor sideways` chec
 `TestWriteOps_RefuseARetiredAnchor` runs on the fake tmux with a persisted strand: rows call `AddStrand`, `AddStrandUnless`, `UpdateStrand` on that strand and `ReplaceStrand` of it, each with `below-parent` and with `top`, and assert an error naming `own-window`, an unchanged `reed.json`, and no `split-window`, `new-window` or `kill-pane` issued (`mustNotCall`); the `ReplaceStrand` rows fail if the check stays only in `addStrandLocked`.
 `TestDisplayDecodesRetiredKeysIgnored` gains rows decoding `"below-parent"` and `"top"` as `own-window`, `"hidden"` unchanged, and a non-string anchor (`1`) as a decode error.
 `TestStrandWindowTarget` drops its `StrandPaneResolvesWithoutSelvage` row, which pinned the strand-pane fallback `recordedPaneIDs` no longer feeds.
+`TestDisplayMarshalsWithoutRetiredKeys`, `goodAttachStrands`, `TestAttachArgv_EveryOtherDegradedPathYieldsBareArgv` and `setupAttachGeometryFixture` move their displays to `own-window`; `TestDisplayMarshalsWithoutRetiredKeys` round-trips an `own-window` display with `KeepViewer` set, since a `top` value now decodes as `own-window` and would no longer round-trip equal.
 `retiredKeysState` holds strands with `anchor: below-parent` and `anchor: top`, a `size` object and `contentRows`; `currentKeysState` holds the same strands as `own-window`, and `TestLoadState_RetiredDisplayKeysIgnoredAndLayoutUnchanged` asserts the retired file loads to the current displays, and that a `SaveState` of the loaded state writes `anchor: own-window` and keeps the `size` and `contentRows` keys in the file.
 Every other test listed used `below-parent` or `top` only as a convenient anchor, or relied on `lyx reed add`'s old default, and moves to `own-window` (D8); `TestPlanPaneTarget` and `topContentDisplay` pin only the retired split planning and go.
 The launch tests assert a `new-window` where they asserted a `split-window`; the reedcli smokes that read the session's current window to find a strand pane read the strand's own window, `listPaneLines` listing session-wide.
 The hidden-strand rows in `TestNeedsLaunchOnAdd` and `TestNeedsLaunchOnSurface` keep pinning that a hidden strand owns no pane.
+`TestMultiplexerContract` builds no display; its step (b) comment stops describing the raw `split-window` as the path `launchStrandLocked` uses, since `launchStrandLocked` now creates every pane through `new-window`.
+`TestSmokeLifecycle`'s `StackedAddsKeepEverySessionPane` subtest is renamed `AddsKeepEverySessionPane`, and its comment is rewritten to say that successive default adds each open a window of their own and yield one live pane per strand plus Selvage in the session-wide listing.
 
 **ImpactSummary:** removes two exported render constants whose only remaining users are the tests and comments listed here, across `internal/reedengine`, `internal/reedcli`, `internal/shuttleengine`, `internal/pairteardown` and `internal/standalonegeom`; no production spawner named either.
 

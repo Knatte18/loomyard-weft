@@ -9,6 +9,17 @@
 - `tools/sandbox/SANDBOX-REED-WATCH-SUITE.md`
 - `CLAUDE.md`
 - `internal/reedengine/watchdog_test.go`
+- `internal/reedcli/smoke_test.go`
+- `internal/reedcli/smoke_lifecycle_test.go`
+- `internal/reedengine/windowsize.go`
+- `internal/reedengine/watchdog.go`
+- `internal/reedengine/attach.go`
+- `internal/reedengine/state.go`
+- `internal/reedengine/bar.go`
+- `internal/reedengine/ownwindow.go`
+- `internal/reedengine/windowsize_test.go`
+- `internal/reedengine/bar_integration_test.go`
+- `internal/reedengine/strandops_integration_test.go`
 
 **Intent:** D8: every doc loses its claim that a strand is split under a parent or stacked in the shell window, and the #673 workaround goes.
 
@@ -19,6 +30,17 @@ render's package doc, in `types.go`, describes the package as the closed display
 `docs/overview.md`'s reed row says reed hosts every managed process as a strand in a window of its own or its group's, with no "arranges them" or own-window-as-the-exception wording, and calls the watchdog the per-hub name-repair and reap daemon; its spawn walk-through's step 4 no longer names `anchor:below-parent`.
 Its `lyx ide spawn` bullet says the VS Code block forwards the four Alt keys of reed's bindings, and its "reed is three things" bullet drops the positional stack heights, `collapsed_rows` and the content and sharing sizes, saying a display is an anchor, focus and an optional window group, and that render is the closed display vocabulary rather than `layout = Rules(strands, box)`.
 The `internal/reedengine/watchdog_test.go` header stops listing `resizeHookCommand`, `tmuxQuoteValue` and `resizeSignalPath`, whose tests card 2 deleted.
+The `internal/reedcli/smoke_test.go` and `internal/reedcli/smoke_lifecycle_test.go` file headers reword the layout-survival-under-stacked-below-parent-adds scenario in their inventories as one live pane per strand across successive adds, since card 5 keeps its subtest.
+Each of these reedengine file headers is rewritten to describe only what its file still holds after cards 1 to 7:
+`windowsize.go` loses the effective-value readbacks, the title-row readback and the `window-resized` array writer, keeping the pins and the unpin;
+`watchdog.go` loses the resize signal file, its hook command and the loop timings;
+`attach.go` loses the readbacks, the layout guards and the layout plan;
+`state.go` loses the `toRenderStrands` mapper and its layout-decision sentence;
+`bar.go` loses the pane-border title;
+`ownwindow.go` stops contrasting with a window 0 layout;
+`windowsize_test.go` describes only the geometry pin tests that remain;
+`bar_integration_test.go` loses the border-title half;
+and `strandops_integration_test.go` loses the `collapsed_rows` stack sentence.
 
 Both reed sandbox suites are swept: a scenario that exercises only the retired layout or the resize self-heal (M12's stack geometry, M18's mother/child shrink, M26's resize self-heal, and the watch suite's stack-collapse and live-resize scenarios) is retired with a one-line reason as M6 already is, and a scenario that adds a strand for another purpose adds it with the default anchor and watches its own window (PATTERN-sandbox-coverage keeps reed exercised).
 `CLAUDE.md`'s #673 workaround bullet goes, and the `## Workarounds` section with it, since nothing else is in it.
