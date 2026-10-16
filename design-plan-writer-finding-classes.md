@@ -30,7 +30,7 @@ Later, this audit runs over real runs made with them, and the wording of the rev
 The Discussion and Plan perches run the twill fixer in every round; the lens fan reviewer runs in round 1 only, with solo review from round 2.
 Reason: fixers introduce many defects, and a defect a late-round fixer introduces is seen only by the next review, or not at all at the hard cap.
 The hub's `loom.yaml` carries it as `discussion_fan: ["review-discussion", ""]`, `plan_fan: ["review-plan", ""]`, `discussion_fix_fan: fix-discussion` and `plan_fix_fan: fix-plan`.
-The audit compares late-round fixer defects against runs from before this setup.
+Orch recommendation, not a decision: the audit compares late-round fixer defects against runs from before this setup.
 
 # Moved from note `perch-review-analysis` (issue #676, 2026-10-16)
 
