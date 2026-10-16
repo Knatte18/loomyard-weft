@@ -21,7 +21,7 @@
 - `contracts/stencils/webster/webster-body-verify-fix.md`
 
 **Uses:**
-- `plan:internal/websterengine#CommitLogEntry`
+- `internal/websterengine#CommitLogEntry`
 - `internal/websterengine#appendToSummary`
 
 **Intent:**

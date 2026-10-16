@@ -1,13 +1,13 @@
 # Card 15 — digest-departures
 
 **Create:**
-- `plan:internal/websterengine#CommitLogEntry` -> `type CommitLogEntry struct`
-- `plan:internal/websterengine#CommitLogEntry.DepartureLines` -> `func (e CommitLogEntry) DepartureLines() []string`
-- `plan:internal/websterengine#realGit.CommitLog` -> `func (realGit) CommitLog(worktree, base, head string) ([]CommitLogEntry, error)`
-- `plan:internal/websterengine#commitLog` -> `func commitLog(worktree, base, head string) ([]CommitLogEntry, error)`
-- `plan:internal/websterengine#batchDepartures` -> `func batchDepartures(geom Geometry, startSHA, headSHA string) ([]string, error)`
-- `plan:internal/websterengine_test#fakeGit.CommitLog` -> `func (g *fakeGit) CommitLog(_, base, head string) ([]websterengine.CommitLogEntry, error)`
-- `plan:internal/websterengine_test#fakeGit.commitWith` -> `func (g *fakeGit) commitWith(subject string, departures ...string) string`
+- `internal/websterengine#CommitLogEntry`
+- `internal/websterengine#CommitLogEntry.DepartureLines`
+- `internal/websterengine#realGit.CommitLog`
+- `internal/websterengine#commitLog`
+- `internal/websterengine#batchDepartures`
+- `internal/websterengine_test#fakeGit.CommitLog`
+- `internal/websterengine_test#fakeGit.commitWith`
 
 **Edit:**
 - `internal/websterengine#Git`
