@@ -67,12 +67,13 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 1 | **creel journal: a bad last line ending in a newline is skipped, not cut, and the next daemon start refuses the journal** | [`creel-journal-torn-newline-line`](design-creel-journal-torn-newline-line.md) | 0m | 0m | creel |
 | 2 | **creel llm smoke test TestSmokeCreelClaudeStrand still fails with no pane capture** | [`creel-llm-smoke-idle`](design-creel-llm-smoke-idle.md) | 0m | 0m | creel, shuttle, claude |
 | 3 | **reed watchdog outlives lyx reed down and respawns on a redeployed binary** | [`reed-watchdog-outlives-down`](design-reed-watchdog-outlives-down.md) | 0m | 0m | reed |
+| 4 | **strand pane resolves bare lyx to the production binary while LYX_BIN names the dev build** | [`strand-pane-lyx-path`](design-strand-pane-lyx-path.md) | 0m | 0m | reed, shuttle |
 
 #### Low priority
 
 | # | Note | Slug | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| 4 | **A hub pause leaves background forks and shells running, so hibernate never confirms**<br>• Pause interrupts turns but not background forks or shells; sessions read busy and hibernate confirmation fails | [`pause-background-work`](design-pause-background-work.md) | 1d | 1d | shuttle, webster |
+| 5 | **A hub pause leaves background forks and shells running, so hibernate never confirms**<br>• Pause interrupts turns but not background forks or shells; sessions read busy and hibernate confirmation fails | [`pause-background-work`](design-pause-background-work.md) | 1d | 1d | shuttle, webster |
 
 ### Enhancements
 
