@@ -47,6 +47,8 @@ Rows:
 - a non-idle phase, `PhaseHandoffRequested`, saved before `Run`: the check never runs;
 - a live hub entry in the told record, handled by the watcher or not yet: the check never runs;
 - a live slug entry only: the check runs, since no hub entry is live.
+- a state re-read error after a successful idle tick: the `fakeSession`'s `onAlive` hook, on the second tick only, replaces the state file with a directory, and the sleep after that tick restores the file;
+  a quiet idle tick past the first saves nothing after `StrandAlive`, so that tick succeeds, `restartSafe`'s re-read fails, and the check runs on every tick but that one.
 
 `test-budget.yaml`'s `internal/orchengine` row rises from 142 to 143.
 

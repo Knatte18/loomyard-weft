@@ -41,8 +41,9 @@ It refuses at once:
   and operator activity in the pane, asked last.
 It never clears a stray character and never closes the picker.
 
-`typeVerified` is the typing half of `sendVerified`, cut out with no change: the paste path, or the typing, appearance and submit path, with their windows.
-`sendVerified` becomes `awaitIdleSession` followed by `typeVerified`, so every existing send behaves as today.
+`typeVerified` is the typing half of `sendVerified`, cut out with no change but one: the paste path, or the typing, appearance and submit path, with their windows, and not the `retryLanded` check.
+`sendVerified` becomes `awaitIdleSession`, then `retryLanded` on the paste path, returning nil when it reports the pending text landed, then `typeVerified`, so every existing send behaves as today.
+`Runner.SendConditioned` thus never consults `pending-send.json`: a conditioned send after an unlanded one always types its line.
 `clearUnlandedText` skips its clear when `sc.keepUnlanded` is set, returning not landed with the note "the unlanded text was left in the input box".
 A conditioned send that does not land therefore fails with `ErrSubmissionNotLanded` and leaves its text in the box.
 
@@ -69,6 +70,10 @@ Rows:
 - operator active: `ActiveQueue` reads active; a `*SessionBusyError`, nothing typed.
 - rewind picker: the capture shows `REWIND-PICKER`; an error wrapping `ErrRewindPickerOpen`, with no key sent.
 - not landed: `swallowEnterUntil` past the window; `ErrSubmissionNotLanded`, and the box still holds the sent text, with no clear key sent.
+- pending send on the paste path: the engine is a `pastePickerEngine`, declared in `conditionedsend_test.go` as a `pickerEngine` that also implements `TextPaster` with `PasteSubmits` true, since the existing `pasteEngine` parses no session signals and is no `SessionCycler`;
+  the run holds a `pending-send.json` with the same text and an offset before the events file's `START`, then `START` and `APIERR`;
+  the line is pasted, the clock's sleep hook appends a `START` after the landing as in the clean row, and the result is `turnStarted` true.
+  The paste path is the one production's engine takes, so the row also covers it.
 Each refusal row asserts the fake clock advanced zero.
 
 `test-budget.yaml`'s `internal/shuttleengine` row rises from 171 to 172.
