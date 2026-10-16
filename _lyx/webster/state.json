@@ -250,7 +250,7 @@
       }
     }
   ],
-  "currentBatch": 0,
+  "currentBatch": 8,
   "masterStrand": "9e18c98f07f78cbdb16a10227347d6b2",
   "masterSessionId": "518950fe-4628-411d-8e44-a355236b5940",
   "masterEngine": "claude",
@@ -366,6 +366,22 @@
       "bracketTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-fan-prompt-tuning/518950fe-4628-411d-8e44-a355236b5940/subagents/agent-a5932e8cffa3994ce.jsonl"
       ]
+    },
+    "8": {
+      "slug": "loom-per-round-fan-keys",
+      "cards": [
+        "08-loom-per-round-fan-keys"
+      ],
+      "cardHashes": {
+        "08-loom-per-round-fan-keys": "04100be423cc43365e20bbc16330c7feccf6506edb7f3dd13ec52d8ede5658a1"
+      },
+      "startSha": "a90f3430af26dcc8b64fabc59d94d87d1013cb2a",
+      "kind": "fork",
+      "spawnedAt": "2026-10-16T14:19:53Z",
+      "sessionId": "518950fe-4628-411d-8e44-a355236b5940",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
     }
   },
   "seenForkTranscripts": [
