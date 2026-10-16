@@ -236,6 +236,12 @@ The plan writer schedules only Decisions, Scope and Acceptance criteria, so the 
   - role-bullet-design-call-survives-beside-d1-d2 (class consistency, severity MEDIUM, open in rounds 3)
 <!-- /lyx:carry-over Discussion-Review -->
 
+<!-- lyx:carry-over Plan-Review -->
+- Plan-Review, round 1: converged; each finding below was fixed or disputed by the round's fixer, and no fresh reviewer has seen the result; the fixer report says which.
+  Review: _lyx/reviews/plan/round-1-review.md; fixer report: _lyx/reviews/plan/round-1-fixer-report.md.
+  - card1-orchestrator-md-inlining-no-bound (class scope, severity MEDIUM, open in rounds 1)
+<!-- /lyx:carry-over Plan-Review -->
+
 ## Acceptance criteria
 
 - The rendered role file contains no "round 3" rule, no `update-plugins.sh`, no `origin/prod`, and no instruction to read both Discussions, pause after Plan-Write to compare plans, or review PRs side by side.
