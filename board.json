@@ -940,6 +940,25 @@
       "body": "Imported from [issue #678](https://github.com/Knatte18/loomyard/issues/678).\n\nSeen: `lyx gate test --tags llm ./internal/creelcli` fails with `smoke_llm_test.go:51: the adapter never read the booted session idle` after 60.7 s, the same message as before the #657 fix. In live sandbox use the #657 fix holds: a strand added with plain `lyx reed add --cmd claude` (placeholder `Try \"fix lint errors\"`) was reminded 0.5 s after mail was posted. The test prints no pane capture, so the cause is unknown; one candidate is the Claude folder-trust dialog in the test temp hub, which the sandbox also showed on first boot.\n\nExpected: the smoke test passes, and on failure it prints the pane capture so the cause can be read.\n\nFound by the creel stage 1 re-test of 2026-10-16.",
       "created": "2026-10-16T08:56:06Z",
       "revised": "2026-10-16T08:56:06Z"
+    },
+    {
+      "id": 588,
+      "slug": "reed-watchdog-outlives-down",
+      "title": "reed watchdog outlives lyx reed down and respawns on a redeployed binary",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "reed"
+      ],
+      "issues": [
+        679
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Imported from [issue #679](https://github.com/Knatte18/loomyard/issues/679).\n\nSeen: in the sandbox hub, after `lyx reed down`, the reed watchdog process was still running; after the dev binary was redeployed it respawned on the new binary, and it had to be killed by pid.\n\nExpected: `lyx reed down` ends the watchdog of that worktree reed session, so no reed process remains after it.\n\nFound by the creel stage 1 re-test of 2026-10-16 (teardown).",
+      "created": "2026-10-16T08:56:08Z",
+      "revised": "2026-10-16T08:56:08Z"
     }
   ]
 }
