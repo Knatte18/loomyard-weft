@@ -909,6 +909,25 @@
       "body": "## Seen\n\nFound by the stencil intent audit (`docs/research/stencil-intent-audit-2026-10-15/findings.md`, F9); line numbers as of `main` on 2026-10-16.\n\n`contracts/stencils/orch/orch-template-role.md:94` has the orch read both Discussions itself at parent-review for related runs, pause both after Plan-Write to compare their plans, and review both PRs side by side.\nThat predates the alignment agent: `:40-45` of the same file has the alignment agent settle parent-review, an escalated review go to a one-shot fork, and the orch's context grow by the fork's summary only.\nThe alignment agent checks overlap with every run in flight and with the parent's landed commits, at both parent-review and PR-Gate, and escalates a real design conflict (`loom/loom-template-alignment.md:36`, `:55-71`).\n\n## Decision\n\nOperator decision (2026-10-16): comparing related runs is the alignment agent's job; the orch does not do it itself.\n\n## Idea\n\nAgent's suggestion: drop the reading, pausing and comparing in `:94`, and keep \"two runs never talk to each other; you align them\" only for an alignment escalation that names a peer, handled with the peer's escalation as `:68` already says, by a one-shot fork that reads both decision records.\nPlans are not compared directly, since they follow from the records alignment compared, and a code-level clash surfaces at Merge-In and Merge-Review.\n",
       "created": "2026-10-16T07:32:34Z",
       "revised": "2026-10-16T07:32:34Z"
+    },
+    {
+      "id": 578,
+      "slug": "fork-deviation-in-commit",
+      "title": "A webster fork states a PATTERN departure in its commit message",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "stencil",
+        "webster",
+        "burler"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "A fork has no channel for a PATTERN conflict or an unrelated failure; departures go into the card commit body and Webster-Review reads them.",
+      "body": "## Seen\n\nFound by the stencil intent audit (`docs/research/stencil-intent-audit-2026-10-15/findings.md`, F12 and F13); line numbers as of `main` on 2026-10-16.\n\nA webster fork has no channel for two things:\n\n- `contracts/stencils/webster/webster-body-implementer.md:98` has it name a failure its card did not cause \"in your final reply to Master\", but Master never reads raw fork output (`webster-template-master.md:101`, `:243-244`) and the batch report holds only `status` and `head_sha` (`webster-body-implementer.md:104`, which also says Master reads that report, when Go reads it through `record-batch`).\n- `contracts/stencils/pattern/pattern-directive-implementer.md:19` has an implementer that meets a PATTERN conflict follow PATTERN and \"say so in your report\", which the same two-field report cannot hold.\n\nA fork that follows PATTERN over its card leaves a diff that departs from the plan with no stated reason, so Webster-Review, which measures the diff against the plan, flags the departure and its fixer reverts it into the PATTERN violation.\n\n## Decision\n\nOperator decision (2026-10-16), on the agent's recommendation:\n\n- A fork that departs from its card because of a PATTERN entry states the departure and the entry in that card's commit message body.\n- Webster-Review's rubric reads the commit messages of its range as well as the diff, and takes a departure stated there as the reason, not as an unexplained mismatch.\n- The \"name it in your final reply to Master\" sentence goes: a failure the card did not cause is left to the plan-level verify gate, which runs the whole suite and spawns a fixer.\n- No new report field.\n\n## Idea\n\nAgent's suggestions: point `pattern-directive-implementer.md:19` at the commit message for a webster fork and at the plan's `## Shared Decisions` for the plan writer, its other reader; correct `webster-body-implementer.md:104` to say `record-batch` reads the two fields.\n",
+      "created": "2026-10-16T07:42:25Z",
+      "revised": "2026-10-16T07:42:25Z"
     }
   ]
 }
