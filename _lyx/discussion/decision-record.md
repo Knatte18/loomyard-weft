@@ -151,6 +151,12 @@ Rationale: the issue reported the suite pre-condition as failing; the reed and s
   - free-lock-vs-exiting-daemon (class consistency, severity MEDIUM, open in rounds 1, 2)
 <!-- /lyx:carry-over Discussion-Review -->
 
+<!-- lyx:carry-over Plan-Review -->
+- Plan-Review, round 2: converged; each finding below was fixed or disputed by the round's fixer, and no fresh reviewer has seen the result; the fixer report says which.
+  Review: _lyx/reviews/plan/round-2-review.md; fixer report: _lyx/reviews/plan/round-2-fixer-report.md.
+  - watchdog-down-poll-unannotated (class scope, severity MEDIUM, open in rounds 2)
+<!-- /lyx:carry-over Plan-Review -->
+
 ## Acceptance criteria
 
 - `lyx reed down` of a hub's last session returns with the watchdog lock free, and the exiting daemon process ends after its post-release re-check without spawning a successor.
