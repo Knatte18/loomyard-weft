@@ -1,12 +1,12 @@
 {
   "current_producer": "Publish",
-  "state": "running",
-  "error": "",
+  "state": "blocked",
+  "error": "the pull request was closed without being merged: https://github.com/Knatte18/loomyard/pull/672",
   "pause_requested": false,
   "activity": {
     "now": "Publish",
-    "last": "Merge-Bouncer → done",
-    "wait": ""
+    "last": "Publish → stuck",
+    "wait": "the pull request was closed without being merged: https://github.com/Knatte18/loomyard/pull/672"
   },
   "history": [
     {
@@ -365,6 +365,12 @@
       "outcome": "done",
       "output": "/home/knatte/Code/loomyard-LYXHUB/creel-stage1-fixes/_lyx/reviews/merge/round-1-bouncer-ledger.md",
       "at": "2026-10-16T11:05:02Z"
+    },
+    {
+      "producer": "Publish",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-16T11:06:27Z"
     }
   ],
   "product": {
