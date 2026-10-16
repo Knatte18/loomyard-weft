@@ -1,0 +1,16 @@
+round: 2
+fan: ""
+review:
+    engine: claude
+    model: opus
+    effort: medium
+    start: 2026-10-16T10:05:40Z
+    end: 2026-10-16T12:08:20.582247522+02:00
+    wall_seconds: 160.582247522
+    tokens_known: true
+    fresh_tokens: 95185
+    cache_read_tokens: 1325493
+    forks: 0
+    fork_fresh_tokens: 0
+    fork_cache_read_tokens: 0
+    fork_fresh_share: 0
