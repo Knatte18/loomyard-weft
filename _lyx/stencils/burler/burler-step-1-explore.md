@@ -9,7 +9,9 @@
      focus_directive is the sixth marker, optional, filled via stencil.FillOptional, and renders
      nothing when the round has no directive.
      Both stay at the top level, before the first work heading, so their optional-blank semantics hold.
-lyx-stencil: sha256=0c970fbbaa078cf08758ff33d362efff196403c82270d897171c718de2a754e6 build=b2e4cf913d2834503e0338810b1f952e426af78f time=2026-10-11T18:29:27Z -->
+     fork_reading is the seventh marker, optional, filled via stencil.FillOptional, and renders nothing in a solo round;
+     it sits directly after tool_use_rules on the same line, so an empty value adds no byte.
+lyx-stencil: sha256=8404297a9e6adbbd9830dd557f75778ed52a8d0b7120c439f82adc3d0cffdecc build=112cccb8f4e09be50a700c9346b294b79f649e17 time=2026-10-16T14:39:17Z -->
 
 {{.pattern_directive}}
 {{.focus_directive}}
@@ -35,4 +37,4 @@ Each finding also carries one of the four classes — `design`, `scope`, `decisi
 
 ## Tool-use rules — how you gather evidence
 
-{{.tool_use_rules}}
+{{.tool_use_rules}}{{.fork_reading}}
