@@ -1,0 +1,9 @@
+# Lens review
+
+- branch-coverage, MEDIUM, `run`'s `creel-suite` flag-parse failure exit reached by no row: fixed differently. A row in `TestRun_RejectsBadInvocation` (proposed) runs with a bare temp parent, so an ignored parse error would still return non-zero from `runSuite`'s absent-hub check (`tools/sandbox/main_test.go:303-319`) and the row could not fail. Card 2 instead adds an `unknown flag exits non-zero` subtest to `TestRun_SuiteSubcommands`, with a hub built by `makeHubRepo` and a `t.Error` launch stub, so every suite row's parse failure is reached and an ignored error fails it.
+- criteria-coverage, MEDIUM, reed teardown after a creel session pinned by no creel row: fixed as proposed. Card 2 adds the `creelSuite` row to `TestRunSuite_ReedTeardown` and moves that test from `Uses:` to `Edit:`.
+- criteria-coverage, LOW, card 1 rewords the controlled creel exceptions lead line against D1's "moved verbatim": fixed as proposed. Card 1 keeps the section verbatim, lead line included, plus the operator-observed pane content bullet.
+- criteria-coverage, LOW, the creel absent-hub row checks no build-first error: fixed as proposed. Card 2's `absent Hub exits non-zero` subtest captures stderr with `captureStderr` and asserts it contains `sandbox/build.cmd`.
+- test-economy, LOW, the absent-hub launch stub framed as new coverage that `TestRunSuite_HubAbsent` already holds: fixed as proposed. Card 2 now calls the stub a guard against starting a real `claude` and names `TestRunSuite_HubAbsent` as the test of the hub check.
+- row-reachability, LOW, no row tells whether `creelSandboxSuiteMD` embeds the creel file: fixed as proposed. Card 2's `TestRunSuite_PerSuiteSpec` default run asserts the scheme contains `"# " + strings.TrimSuffix(tt.spec.fileName, ".md")`; every suite file's first line opens with that heading (`head -1 tools/sandbox/SANDBOX-*.md`).
+- forced-edits: no findings.
