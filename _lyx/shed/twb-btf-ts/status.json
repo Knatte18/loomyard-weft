@@ -3,6 +3,7 @@
   "state": "paused",
   "error": "",
   "pause_requested": false,
+  "pause_after": "Plan-Burler-Review",
   "activity": {
     "now": "Plan-Burler-Review",
     "last": "Plan-Bouncer → bounced to Plan-Burler-Review",
