@@ -1,0 +1,14 @@
+verdict: escalate
+reason: >-
+  The decision record covers #679 in full.
+  For #680 it narrows the board entry's Expected (bare lyx in a strand pane resolves to the spawning binary even when the rc prepends another directory) to the pane shell and shuttle-spawned Claude agents.
+  It names this as a departure from the entry.
+  The case the entry reports, a plain lyx reed add --cmd claude creel strand running bare lyx creel read, is left resolving through the rc's PATH.
+  The run was in auto mode with no advisor, and the board gives no Done-when that allows the narrower fix, so the operator has to accept or refuse it.
+  There is no design conflict with a peer run: creel-stage1-fixes only edits different lines of SANDBOX-CREEL-SUITE.md and lands first (row 12 against own row 3).
+question: >-
+  Does #680 close with the record's narrower guarantee, where bare lyx resolves to the spawning binary in the pane shell and in the Bash tool of shuttle-spawned Claude agents (D5, D7, D8)?
+  Under it, plain lyx reed add --cmd claude and --cmd bash strands, the creel suite's strands and the case the board entry reports, keep following the operator's rc PATH.
+  Or must those strands also be fixed?
+  The source is the board entry reed-down-and-pane-path, #680 Expected, against the decision record's Scope Out third bullet, which calls it a departure.
+superseded: []
