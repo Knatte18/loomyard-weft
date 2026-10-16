@@ -114,6 +114,12 @@ Rationale: CLAUDE.md's "Docs land in the same commit" rule and PATTERN-sandbox-c
   - d3-shell-window-identity-without-selvage (class design, severity MEDIUM, open in rounds 2)
 <!-- /lyx:carry-over Discussion-Review -->
 
+<!-- lyx:carry-over Plan-Review -->
+- Plan-Review, round 2: converged; each finding below was fixed or disputed by the round's fixer, and no fresh reviewer has seen the result; the fixer report says which.
+  Review: _lyx/reviews/plan/round-2-review.md; fixer report: _lyx/reviews/plan/round-2-fixer-report.md.
+  - card2-breaks-update-strand-test (class scope, severity MEDIUM, open in rounds 2)
+<!-- /lyx:carry-over Plan-Review -->
+
 ## Acceptance criteria
 
 - `lyx reed add --cmd <c>` with no `--anchor` and no `--parent` opens the strand in its own window, and the shell window still holds only the Selvage pane.
