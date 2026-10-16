@@ -12,7 +12,7 @@
 - `internal/creelengine#Waiter`
 - `internal/creelengine#Outcome`
 - `internal/creelengine#Response`
-- `plan:internal/creelengine#Store.noteStall`
+- `internal/creelengine#Store.noteStall`
 - `internal/creelengine#Store.addWaiterLocked`
 - `internal/creelengine#Store.settleInjectLocked`
 - `internal/creelengine#daemon.awaitOutcome`
@@ -26,9 +26,9 @@
 - `internal/creelcli#TestCreelCLI`
 
 **Uses:**
-- `plan:internal/creelengine#Stall`
-- `plan:internal/creelengine#Stall.Reason`
-- `plan:internal/testkit/creelfake#Delivery.SetStall`
+- `internal/creelengine#Stall`
+- `internal/creelengine#Stall.Reason`
+- `internal/testkit/creelfake#Delivery.SetStall`
 - `internal/creelengine_test#rig`
 - `internal/creelengine_test#journalText`
 - `internal/creelengine_test#callAsync`

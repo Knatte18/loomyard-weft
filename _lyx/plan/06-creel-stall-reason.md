@@ -1,14 +1,14 @@
 # Card 6 — creel-stall-reason
 
 **Create:**
-- `plan:internal/creelengine#Idleness` -> `type Idleness struct`
-- `plan:internal/creelengine#Stall` -> `type Stall string`
-- `plan:internal/creelengine#StallTooShort` -> `const StallTooShort Stall = "too-short"`
-- `plan:internal/creelengine#StallDraft` -> `const StallDraft Stall = "draft"`
-- `plan:internal/creelengine#Stall.Reason` -> `func (s Stall) Reason() string`
-- `plan:internal/creelengine#eventStalled` -> `const eventStalled = "stalled"`
-- `plan:internal/creelengine#Store.noteStall` -> `func (s *Store) noteStall(receiver string, stall Stall) error`
-- `plan:internal/testkit/creelfake#Delivery.SetStall` -> `func (d *Delivery) SetStall(name string, stall creelengine.Stall)`
+- `internal/creelengine#Idleness`
+- `internal/creelengine#Stall`
+- `internal/creelengine#StallTooShort`
+- `internal/creelengine#StallDraft`
+- `internal/creelengine#Stall.Reason`
+- `internal/creelengine#eventStalled`
+- `internal/creelengine#Store.noteStall`
+- `internal/testkit/creelfake#Delivery.SetStall`
 
 **Edit:**
 - `internal/creelengine#Delivery`
