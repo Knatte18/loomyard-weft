@@ -1,8 +1,8 @@
 # Card 6 — discussion-append-pattern-change
 
 **Create:**
-- `plan:internal/discussionparser#patternChangesInsertOffset` -> `func patternChangesInsertOffset(content string) (offset int, needHeading bool)`
-- `plan:internal/discussionparser#checkPatternChangeDropped` -> `const checkPatternChangeDropped = "pattern-change-dropped"`
+- `internal/discussionparser#patternChangesInsertOffset`
+- `internal/discussionparser#checkPatternChangeDropped`
 
 **Edit:**
 - `internal/discussionparser#AddedDecision`
@@ -14,8 +14,8 @@
 - `internal/discussionparser/doc.go`
 
 **Uses:**
-- `plan:internal/discussionparser#ParsePatternChanges`
-- `plan:internal/discussionparser#PatternChange`
+- `internal/discussionparser#ParsePatternChanges`
+- `internal/discussionparser#PatternChange`
 - `internal/discussionparser#fencedLines`
 - `internal/discussionparser#addedDecision`
 - `internal/discussionparser#writeFixture`

@@ -13,7 +13,7 @@
 
 **Uses:**
 - `internal/discussionparser#AddedDecision`
-- `plan:internal/discussionparser#PatternChange`
+- `internal/discussionparser#PatternChange`
 
 **Intent:**
 D5.2: `lyx loom decision add` gains an optional PATTERN-change form, so a PATTERN change decided after the Discussion, by the run's parent, the operator or the run's arbiter, reaches the declaration.

@@ -23,8 +23,8 @@
 - `contracts/specs/refusal-spec.md`
 
 **Uses:**
-- `plan:internal/discussionparser#DeclaredPatternChanges`
-- `plan:internal/discussionparser#ErrPatternChangesInvalid`
+- `internal/discussionparser#DeclaredPatternChanges`
+- `internal/discussionparser#ErrPatternChangesInvalid`
 - `internal/websterengine_test#patternActiveLayout`
 - `internal/websterengine_test#newRecoverFixture`
 

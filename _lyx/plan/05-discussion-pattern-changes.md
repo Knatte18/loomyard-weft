@@ -1,15 +1,15 @@
 # Card 5 — discussion-pattern-changes
 
 **Create:**
-- `plan:internal/discussionparser#PatternChange` -> `type PatternChange struct`
-- `plan:internal/discussionparser#PatternChange.Bullet` -> `func (c PatternChange) Bullet() string`
-- `plan:internal/discussionparser#ParsePatternChanges` -> `func ParsePatternChanges(record []byte) ([]PatternChange, []Finding)`
-- `plan:internal/discussionparser#DeclaredPatternChanges` -> `func DeclaredPatternChanges(recordPath string) ([]string, error)`
-- `plan:internal/discussionparser#ErrPatternChangesInvalid` -> `var ErrPatternChangesInvalid = errors.New("decision record's PATTERN changes section is malformed")`
-- `plan:internal/discussionparser#patternChangesHeading` -> `const patternChangesHeading = "## PATTERN changes"`
-- `plan:internal/discussionparser#checkPatternChangeMalformed` -> `const checkPatternChangeMalformed = "pattern-change-malformed"`
-- `plan:internal/discussionparser#TestValidate_PatternChanges` -> `func TestValidate_PatternChanges(t *testing.T)`
-- `plan:internal/discussionparser#TestDeclaredPatternChanges` -> `func TestDeclaredPatternChanges(t *testing.T)`
+- `internal/discussionparser#PatternChange`
+- `internal/discussionparser#PatternChange.Bullet`
+- `internal/discussionparser#ParsePatternChanges`
+- `internal/discussionparser#DeclaredPatternChanges`
+- `internal/discussionparser#ErrPatternChangesInvalid`
+- `internal/discussionparser#patternChangesHeading`
+- `internal/discussionparser#checkPatternChangeMalformed`
+- `internal/discussionparser#TestValidate_PatternChanges`
+- `internal/discussionparser#TestDeclaredPatternChanges`
 
 **Edit:**
 - `internal/discussionparser#Validate`

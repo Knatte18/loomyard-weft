@@ -39,7 +39,7 @@
 **Uses:**
 - `internal/planparser#SymbolRenamePairs`
 - `internal/planparser#PatternChange`
-- `plan:internal/discussionparser#ParsePatternChanges`
+- `internal/discussionparser#ParsePatternChanges`
 - `internal/languageconfig#Load`
 - `internal/loomshed#seedPlanFormatFixture`
 

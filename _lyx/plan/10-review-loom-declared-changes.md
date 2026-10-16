@@ -24,7 +24,7 @@
 - `contracts/specs/refusal-spec.md`
 
 **Uses:**
-- `plan:internal/discussionparser#DeclaredPatternChanges`
+- `internal/discussionparser#DeclaredPatternChanges`
 - `internal/shedadapters#Bouncer.degrade`
 
 **Intent:**
