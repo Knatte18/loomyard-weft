@@ -1,6 +1,6 @@
 # Creel gets its own sandbox suite
 
-`creel-sandbox-suite` · Task · enhancement, creel, shuttle
+`creel-sandbox-suite` · Task · enhancement, creel, shuttle · running · Worktree-Create
 
 ## Seen
 
