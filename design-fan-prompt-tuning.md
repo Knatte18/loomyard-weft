@@ -147,4 +147,5 @@ Open if the fan comes back:
 ## Operator view, not a decision (2026-10-16)
 
 The operator believes fan-out reviewers can work: they need better tuning and harder thinking, and then one reviewer run yields more findings.
+The aim is broader reviews from the Burler reviewer's lenses: the earlier tuning attempt had the lenses find mostly the same, and the operator wants another tuning attempt in time.
 Related: `perch-review-analysis` (issue #676) measures rounds and late BLOCKING findings and proposes two parallel reviewers in round 1.
