@@ -14,7 +14,7 @@ In:
 
 - **reed-resize-pane-count**: the hub watchdog daemon retires and respawns itself when the `lyx` binary it was started from is replaced (D1, D2, D18).
   The resize re-apply failure logs once per failure episode (D3).
-- **log-level-hygiene**: the call sites the board inventory names (D3 to D10), an audit of every production `logger.Warn` site plus every log line in a polled loop (D11), and the `Level policy` text with a new PATTERN entry (D12).
+- **log-level-hygiene**: the call sites the board inventory names (D3 to D10), an audit of every production `logger.Warn` site plus every Info-or-above line in a loop or a polled path (D11), and the `Level policy` text with a new PATTERN entry (D12).
 - **Test noise**: `tmuxkit.Main` discards the logger's stderr half (D13).
 - **run-log-archive**: pair teardown copies the pair's trace logs and verify logs into a hub archive and prunes entries older than 30 days (D14, D15).
 - **batten-land-notice**: every landing sends `<slug>: landed`, with `; newly ready: …` appended when a task became ready, and the orch stencil handles it (D16, D17).
@@ -132,7 +132,7 @@ Every production `logger.Warn` call is checked against the policy, and so is eve
 Each site either stays as it is, moves to Info or Debug, or gains a once-per-change or once-per-episode guard.
 The test for a site: Warn only for a recoverable failure (a retry, an unconfirmed teardown, an error swallowed on a fallback path); nothing at Info or above repeats without a state change.
 A site that sits in no loop and records a real failure stays Warn.
-The audit is finished when the plan gives every production `logger.Warn` site a verdict (keep, demote, or guard) and every changed site has its change in a card.
+The audit is finished when the plan gives every production `logger.Warn` site, and every Info-or-above line inside a loop or a polled path, a verdict (keep, demote, or guard) and every changed site has its change in a card.
 Rationale: the board asks for the other modules' Warn calls to be checked, and the inventory ranked only the sites that fired in four days of traces.
 
 ### D12 — The policy text and a PATTERN entry
@@ -186,9 +186,9 @@ Pruning sits outside `package fabricengine`, so `PATTERN-fabric-destruction-chok
 The Land row's last step queues `<slug>: landed` after the board prune, appending `; newly ready: a, b` when the landing made tasks ready.
 It is sent once per batten run, guarded by the row's marker line.
 The existing ready marker literal keeps meaning "the landing notice was queued", so a row resumed across the upgrade sends no second notice.
-A notice that cannot be queued, because the orch state is unreadable or no orch strand is recorded, logs Warn naming the slug and is not retried: the row is done, and the board entry turns `done` at teardown.
+A notice that cannot be queued, because the orch state is unreadable or no orch strand is recorded, logs Warn naming the slug and is not retried: the row is done, the board entry turns `done` at teardown, and D17's board check at the orch's next wake treats the task as landed.
 A Land failure still sends its failure notice, and a landing that fails before the ready read sends no landed notice.
-Rationale: the alignment agent lands tasks with no orch turn, so the notice is the orch's only prompt that a task landed.
+Rationale: the alignment agent lands tasks with no orch turn, so the notice is the orch's prompt that a task landed, and the board is its durable fallback.
 It is also the signal a later run driver (`orch-split`) would take over, so it does not add to what that note plans to move.
 
 ### D17 — The orch stencil handles every landing notice
@@ -200,7 +200,15 @@ It is also the signal a later run driver (`orch-split`) would take over, so it d
 - starts any tasks the notice names as newly ready;
 - runs `update-plugins.sh` by hand when the hub's landing `deploy` key is empty.
 
-The line telling the orch to deploy "at your next wake after any landing" goes, since the notice now marks each landing.
+A dropped notice is caught at the orch's next wake by two checks that read the board, not the orch's context, and neither depends on the deploy key:
+
+- a task the orch counts as running whose board entry is `done`, or whose pair is gone, is treated as landed and no longer running;
+- any task the board shows ready and not yet started is started.
+
+A third check recovers only the deploy: while the hub's landing `deploy` key is empty, the wake runs `update-plugins.sh` by hand when `origin/main` holds a commit `origin/prod` lacks.
+`tools/deploy` moves `origin/prod` only after a deploy succeeds, so `origin/prod` is the baseline for the deploy and never for the landing, and the check covers landings into a `require_pr_to_base` branch only, the ones the deploy key applies to.
+Bound: the board and `origin/prod` are durable, so an orch refresh, compact or handoff loses none of the three baselines.
+The line telling the orch to deploy "at your next wake after any landing" goes, replaced by these checks.
 The `contracts/stencils/claims_test.go` rows that pin the old sentences change with it, and `docs/overview.md`'s line on Land notifying only on a failure or a newly ready task is updated.
 
 ## Constraints
@@ -239,11 +247,13 @@ The `contracts/stencils/claims_test.go` rows that pin the old sentences change w
 - Loom's `driver_busy` refusal still names the draft.
 - A missing transcript in `SessionNameDrift` logs at Debug; another read error logs Warn once per session id.
 - `tmuxkit.Main` leaves no logger stderr output in a package run whose code logs at Warn, and the logger package's own tests still pass.
-- Every production `logger.Warn` site has a verdict in the plan (D11).
+- Every production `logger.Warn` site, and every Info-or-above line inside a loop or a polled path, has a verdict in the plan (D11).
 - Pair teardown copies the pair's trace logs and verify logs into `<root>/<slug>/<timestamp>/` after the run-lock wait and before removal. A pair with neither source creates no entry. A copy failure leaves no partial entry, logs Warn and leaves the teardown's result unchanged. A refused removal leaves the pair's logs in place. Two archives of one slug in the same second land in two entries.
 - An archive write removes timestamp entries older than 30 days and empty slug directories, keeps newer entries, leaves entries with unparsable names and plain files alone, and treats an entry already gone as removed.
 - A landing with no newly ready task sends `[batten notice] <slug>: landed`; one with ready tasks sends `[batten notice] <slug>: landed; newly ready: a, b`. A Land row resumed after the notice was queued sends no second notice, a notice that cannot be queued logs Warn, and a failed Land step sends only its failure notice.
 - The orch stencil's claims test pins that every landing notice goes to After landing.
+- The orch stencil's claims test pins the wake check that treats a running task whose board entry is `done`, or whose pair is gone, as landed, and the wake start of every ready task not yet started.
+- The orch stencil's claims test pins the deploy check, scoped to an empty `deploy` key, that runs `update-plugins.sh` when `origin/main` holds a commit `origin/prod` lacks.
 
 ## Notes for the plan writer
 

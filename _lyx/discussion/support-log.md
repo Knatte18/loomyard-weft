@@ -70,10 +70,13 @@ Autonomous mode: no operator answered, and every pick below is an auto-pick reco
 - **Move the pair's logs instead of copying**: a refused removal would leave the pair without its logs.
 - **Archive shuttle run directories**: not asked for; trace logs carry shuttle's engine log lines.
 - **Archive batten per-slug logs**: they live in the prime, which is never torn down.
+- **Dropped landing notice: detect the landing by `origin/main` holding a commit `origin/prod` lacks**: with the landing `deploy` key set, the Land row deploys and `tools/deploy` moves `origin/prod` after every landing, so the two agree and the landing goes unseen; `origin/prod` stays the baseline for the deploy only (D17).
 
 ## Review rounds
 
-_No rounds yet._
+- Round 3: F1 fixed, D17 gains board-based wake checks for a dropped landing notice, independent of the deploy key, with the `origin/prod` comparison kept as a deploy-only check, and D16 points at them; two acceptance rows pin the checks.
+  F2 disputed, premise false: D11 on disk audits every Warn site, and nothing exempts one outside a loop.
+  D11's finish line, its acceptance row and the Scope bullet now also name the Info-or-above lines in a loop or polled path, matching D11's stated reach.
 
 ## Question ledger
 
