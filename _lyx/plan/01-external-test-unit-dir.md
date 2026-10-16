@@ -7,10 +7,10 @@
 - `internal/planparser#CardTargetDirs`
 - `internal/planparser#targetDir`
 - `internal/planparser#brokenFabricVocabularyRule`
-- `internal/planparser/targetdirs_test.go`
+- `internal/planparser_test#TestCardTargetDirs`
 - `internal/planparser/doc.go`
 - `internal/websterengine#TestCardGateCommand`
-- `internal/batcher/estimate_test.go`
+- `internal/batcher_test#TestPeakContext`
 - `PATTERN.md`
 - `pattern/PATTERN-glyph-conversion-chokepoint.md`
 - `contracts/specs/loom-plan-spec.md`
