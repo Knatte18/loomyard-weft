@@ -18,8 +18,8 @@ Held by a run; its scope is locked until the run ends.
 | # | Task | Slug | Recipe | At | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | 1 | **reed add defaults to pane-era placement and splits the selvage shell window**<br>• Replace the obsolete below-parent default and sweep for other pane-era leftovers | [`reed-add-parentless-placement`](design-reed-add-parentless-placement.md) | loom | Webster | 1h | 1h | reed |
-| 2 | **Orch role stencil fixes from the stencil intent audit**<br>• Arbiter as the orch filter with a fault fallback, no peer comparing, ORCHESTRATOR.md for repo-specific orch rules, owner of a small PR-Gate defect | [`orch-role-stencil-fixes`](design-orch-role-stencil-fixes.md) | loom | Webster-Bouncer | 1h | 59m | stencil, orch, loom, config |
-| 3 | **Loom stencil fixes from the stencil intent audit, verify tiers from hub config**<br>• Rejection findings are a reviewer claim, never the operator; driver, advisor, plan and rework wording | [`loom-stencil-wording`](design-loom-stencil-wording.md) | loom | Plan-Burler-Fix | 2h | 56m | stencil, loom, shed, config, webster |
+| 2 | **Orch role stencil fixes from the stencil intent audit**<br>• Arbiter as the orch filter with a fault fallback, no peer comparing, ORCHESTRATOR.md for repo-specific orch rules, owner of a small PR-Gate defect | [`orch-role-stencil-fixes`](design-orch-role-stencil-fixes.md) | loom | Webster-Bouncer | 1h | 1h | stencil, orch, loom, config |
+| 3 | **Loom stencil fixes from the stencil intent audit, verify tiers from hub config**<br>• Rejection findings are a reviewer claim, never the operator; driver, advisor, plan and rework wording | [`loom-stencil-wording`](design-loom-stencil-wording.md) | loom | Plan-Bouncer | 2h | 56m | stencil, loom, shed, config, webster |
 | 4 | **Creel stage 1 re-test fixes**<br>• Fix the eight creel defects from the 2026-10-16 re-test, the journal torn-line one first | [`creel-stage1-fixes`](design-creel-stage1-fixes.md) | loom | Discussion-Write | 25m | 6m | creel, shuttle, claude |
 
 ### Ready
@@ -36,7 +36,7 @@ Waits only on Running or Ready entries.
 
 | # | Task | Slug | Recipe | After | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | **Webster fork and pattern-directive stencil fixes from the stencil intent audit**<br>• Structure-aware rename tool from hub config, departures reach the Master via the digest, spawn wording, no inline pack, declared PATTERN changes | [`webster-fork-stencil-fixes`](design-webster-fork-stencil-fixes.md) | loom | `loom-stencil-wording` | 2h | 55m | stencil, webster, burler, loom |
+| 1 | **Webster fork and pattern-directive stencil fixes from the stencil intent audit**<br>• Structure-aware rename tool from hub config, departures reach the Master via the digest, spawn wording, no inline pack, declared PATTERN changes | [`webster-fork-stencil-fixes`](design-webster-fork-stencil-fixes.md) | loom | `loom-stencil-wording` | 2h | 56m | stencil, webster, burler, loom |
 
 ## Notes
 
@@ -55,7 +55,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | # | Note | Slug | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | 2 | **Re-measure the test suite weight on a quiet machine**<br>• The test-suite-weight before and after numbers were taken under load; rerun the report Regenerate section on an idle machine for a fair wall-time comparison | `suite-weight-quiet-rerun` | 5d | 2d |  |
-| 3 | **Prototype reed status buttons in a throwaway tmux server**<br>• A fresh agent tries the menu button, follow toggle and extra button line by hand before reed-status-buttons becomes a task | [`reed-status-buttons-prototype`](design-reed-status-buttons-prototype.md) | 23h | 23h | reed |
+| 3 | **Prototype reed status buttons in a throwaway tmux server**<br>• A fresh agent tries the menu button, follow toggle and extra button line by hand before reed-status-buttons becomes a task | [`reed-status-buttons-prototype`](design-reed-status-buttons-prototype.md) | 1d | 1d | reed |
 | 4 | **Classify Plan lens and review findings to make the Plan writer get it right first**<br>• Find what Plan lenses and Plan-Burler-Review keep catching, and stop each recurring class at the writer | [`plan-writer-finding-classes`](design-plan-writer-finding-classes.md) | 15h | 15h | loom, burler, stencil |
 
 ### Bugs
@@ -80,9 +80,9 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Note | Slug | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| 1 | **Tune the Burler lens fan prompts**<br>• Revisit the parked lens fan with lens and fork prompts that overlap less, measured against solo on the fan-lab fixtures | [`fan-prompt-tuning`](design-fan-prompt-tuning.md) | 5d | 40m | burler, stencil |
-| 2 | **Fork the Burler fixer from the reviewer session**<br>• The fixer re-reads the context the reviewer just read; fork it from the reviewer to reuse the cache | [`burler-fixer-fork`](design-burler-fixer-fork.md) | 1d | 40m | burler |
-| 3 | **Perch review analysis: rounds, tokens and late BLOCKING findings, with proposals** | [`perch-review-analysis`](design-perch-review-analysis.md) | 45m | 40m | burler, loom, shed |
+| 1 | **Tune the Burler lens fan prompts**<br>• Revisit the parked lens fan with lens and fork prompts that overlap less, measured against solo on the fan-lab fixtures | [`fan-prompt-tuning`](design-fan-prompt-tuning.md) | 5d | 41m | burler, stencil |
+| 2 | **Fork the Burler fixer from the reviewer session**<br>• The fixer re-reads the context the reviewer just read; fork it from the reviewer to reuse the cache | [`burler-fixer-fork`](design-burler-fixer-fork.md) | 1d | 41m | burler |
+| 3 | **Perch review analysis: rounds, tokens and late BLOCKING findings, with proposals** | [`perch-review-analysis`](design-perch-review-analysis.md) | 45m | 41m | burler, loom, shed |
 
 #### Normal priority
 
