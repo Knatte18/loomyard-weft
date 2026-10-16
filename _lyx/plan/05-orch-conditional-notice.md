@@ -5,6 +5,7 @@
 - `internal/orchengine#ListNotices`
 - `internal/orchengine#Watcher.deliverNotice`
 - `internal/orchengine#Session`
+- `internal/orchengine#Watcher.logIdleStateDisagreement`
 - `internal/orchengine/doc.go`
 - `cmd/lyx/testdata/test-budget.yaml`
 
@@ -32,8 +33,10 @@ the file's content stays the line, so a watcher built before this change deliver
 When the state's name or cause differs from the condition, it removes the notice without typing it, logs one Info naming it, and delivers nothing on that tick.
 When they match it delivers as today; a state read error returns the error and keeps the notice.
 The `Session` interface's `SessionState` comment, which says the watcher only logs the state, now says the watcher also reads it to drop a conditioned notice.
+`Watcher.logIdleStateDisagreement`'s doc comment clause "nothing the watcher decides depends on the state" now names the conditioned notice's drop as the one decision that reads the state.
 
 `doc.go`'s "Notices" section states the conditioned notice, its duplicate skip and the drop at delivery.
+`doc.go`'s session-state paragraph, in "The watcher only logs it" and "no probe result, cycle, delivery or State write depends on the state", likewise names that drop as the one decision that reads the state.
 
 `TestQueueConditionalNotice` in `notice_test.go`, a new top-level test for a new exported function:
 - the queued notice lists with its line and its `Condition`;

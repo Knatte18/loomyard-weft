@@ -18,7 +18,6 @@
 
 **Edit:**
 - `cmd/lyx#newRoot`
-- `cmd/lyx/seamsignature_test.go`
 - `cmd/lyx/testdata/test-budget.yaml`
 - `docs/overview.md`
 - `pattern/PATTERN-cli-cobra.md`
@@ -34,7 +33,8 @@ Each pair moves with `git mv` first, per the plan's rename mechanic, followed by
 - `tendercli`'s log messages, which start `pausecli:`, now start `tendercli:`.
   Error texts keep their `pause:` prefix, which names the verb, and the shortcut spellings `lyx pause` and `lyx resume`.
 `InstallNetworkGate` moves with the CLI package, and `newRoot`'s pre-run calls `tendercli.InstallNetworkGate`; its module list mounts `tendercli.Command()`.
-`seamsignature_test.go` lists `tendercli.RunCLI` and `tendercli.RunCLIIn` in place of the `pausecli` ones.
+`cmd/lyx/seamsignature_test.go` imports `internal/tendercli` and lists `tendercli.RunCLI` and `tendercli.RunCLIIn` in place of the `pausecli` ones.
+The file declares only two blank-identifier slices, so it has no member glyph an Edit target could name; its import and its two slice entries are part of this rename's import updates.
 `test-budget.yaml` replaces the rows `internal/pausecli: 4` and `internal/pauseengine: 5` with `internal/tendercli: 4` and `internal/tenderengine: 5`, sorted in place.
 
 `docs/overview.md`'s package tree lines and the tender module bullet name `internal/tendercli` and `internal/tenderengine`.

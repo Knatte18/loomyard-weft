@@ -41,19 +41,20 @@ It refuses at once:
   and operator activity in the pane, asked last.
 It never clears a stray character and never closes the picker.
 
-`typeVerified` is the typing half of `sendVerified`, cut out with no change: the paste path, or the typing, appearance and submit path, with their windows.
-`sendVerified` becomes `awaitIdleSession` followed by `typeVerified`, so every existing send behaves as today.
+`typeVerified` is the typing half of `sendVerified`, cut out with no change but one: the paste path, or the typing, appearance and submit path, with their windows.
+The `retryLanded` check stays out of the cut: `sendVerified` becomes `awaitIdleSession`, then `retryLanded` on the paste path, then `typeVerified`, so every existing send behaves as today.
+`typeVerified` holds only the paste and typing paths, and `Runner.SendConditioned` never consults `pending-send.json`, so a pending record left by an earlier unlanded send never stands in for this line.
 `clearUnlandedText` skips its clear when `sc.keepUnlanded` is set, returning not landed with the note "the unlanded text was left in the input box".
 A conditioned send that does not land therefore fails with `ErrSubmissionNotLanded` and leaves its text in the box.
 
 `awaitTurnStart` polls `turnStartedSince` on the send context's clock from the landing for at most one submit window (`submitConfirmTimeout`), at `idlePollInitial` doubling to `idlePollMax`, with `windowPollCap` as its read bound.
 
-Bound: compared with `Runner.Send`, a conditioned send adds refusals and drops the picker close, the stray-character clear and the unlanded-text clear, then adds the turn-start wait.
+Bound: compared with `Runner.Send`, a conditioned send adds refusals and drops the picker close, the stray-character clear, the pending-send retry and the unlanded-text clear, then adds the turn-start wait.
 So it never types where today's send would not, and plays no key beyond its typed line and its submit.
 It holds its caller for one ready reading, at most one submit window from the start of typing to the landing, and at most one more submit window for the turn start.
 Each pane capture inside that span waits on reed's per-worktree operation lock and a tmux call with no timeout of their own, so the windows bound the polling, not a hung reed or tmux call.
 
-`doc.go` gains a "Conditioned send" paragraph stating the at-once refusals, the dropped clears and the turn-start wait.
+`doc.go` gains a "Conditioned send" paragraph stating the at-once refusals, the dropped clears and pending-send retry, and the turn-start wait.
 
 `TestRunner_SendConditioned` in `conditionedsend_test.go` is the one new top-level test, for a surface no existing test reaches.
 It runs a `Runner` over a `tuiReed` and a `pickerEngine`, which parses the session-fake signals, reads the box after the caret and reads the picker.
@@ -69,6 +70,7 @@ Rows:
 - operator active: `ActiveQueue` reads active; a `*SessionBusyError`, nothing typed.
 - rewind picker: the capture shows `REWIND-PICKER`; an error wrapping `ErrRewindPickerOpen`, with no key sent.
 - not landed: `swallowEnterUntil` past the window; `ErrSubmissionNotLanded`, and the box still holds the sent text, with no clear key sent.
+- pending record ignored: the engine is `pickerEngine` plus `TextPaster`, a `PasteSubmits` and `OwnPastePlaceholder` pair declared in `conditionedsend_test.go`, so the send takes the paste path production's engine takes; the run dir holds a `pending-send.json` with the same text and an offset before the events file's `START` then `APIERR`; the line is pasted and the result is `turnStarted` as the clock's sleep hook scripts it.
 Each refusal row asserts the fake clock advanced zero.
 
 `test-budget.yaml`'s `internal/shuttleengine` row rises from 171 to 172.
