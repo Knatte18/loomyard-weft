@@ -869,7 +869,7 @@
       "isolated": false,
       "brief": "Move S9 and C1-C13 out of the shuttle sandbox suite into SANDBOX-CREEL-SUITE.md",
       "body": "## Seen\n\nThe creel sandbox scenarios live in the shuttle suite: `tools/sandbox/SANDBOX-SHUTTLE-SUITE.md` holds S9 (creel delivers mail and injects into a hand-added strand) and C1 to C13, each with `**Covers:** creel`.\nTask `creel-stage1-fixes` put C1 to C13 there because S9 already was, by its own Discussion's choice (D9, \"beside S9\"), not by an operator decision.\nEvery other module with sandbox scenarios has its own suite file (`SANDBOX-REED-SUITE.md`, `SANDBOX-FABRIC-SUITE.md`, `SANDBOX-BURLER-SUITE.md` and the others under `tools/sandbox/`).\n\n## Operator decision (2026-10-16)\n\nCreel gets its own sandbox suite.\n\n## Idea\n\nAgent's suggestion: a new `tools/sandbox/SANDBOX-CREEL-SUITE.md` with the black-box rule, the controlled tmux and creel exceptions, pre-conditions and session-log format creel needs, holding S9 and C1 to C13 moved out of the shuttle suite with their ids kept; the shuttle suite keeps only shuttle scenarios; `tools/sandbox/suite.go` and its tests and the `PATTERN-sandbox-coverage` guard follow the move.\n",
-      "status": "running · Plan-Write",
+      "status": "running · Plan-Bouncer",
       "created": "2026-10-16T08:31:31Z",
       "revised": "2026-10-16T08:31:31Z",
       "run_settings": {
