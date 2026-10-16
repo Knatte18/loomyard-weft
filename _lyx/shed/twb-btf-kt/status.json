@@ -3,6 +3,7 @@
   "state": "paused",
   "error": "",
   "pause_requested": false,
+  "pause_after": "Discussion-Burler-Review",
   "activity": {
     "now": "Discussion-Burler-Review",
     "last": "Discussion-Bouncer → bounced to Discussion-Burler-Review",
