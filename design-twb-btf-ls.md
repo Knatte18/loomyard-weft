@@ -1,6 +1,6 @@
 # Logging cleanup: right levels, no per-tick noise, reed resize layout bug
 
-`twb-btf-ls` · Note · bug
+`twb-btf-ls` · Note · bug · running · Loom-Preflight
 
 # Logging cleanup: right levels, no per-tick noise, reed resize layout bug
 
