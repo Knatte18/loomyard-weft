@@ -12,7 +12,7 @@ In:
 - A `PermissionMode` field on `shuttleengine.OpenSpec`, carried to the engine's `OpenLaunch`.
 - `claudeengine`'s open launch realizing the mode on its fresh line and on its resume line, the fallback fresh line included.
 - The permission mode on `Runner.Open`'s existing "opened session" log line.
-- The docs the change touches: the `open` command's help text, the `OpenSpec` and open-launch paragraphs of the `shuttleengine` and `claudeengine` package docs, and the shuttle row of `docs/overview.md`.
+- The docs the change touches: the `open` command's help text, the `buildOpenCmd` and `Claude.OpenLaunch` doc comments, the `OpenSpec` and open-launch paragraphs of the `shuttleengine` and `claudeengine` package docs, and the shuttle row of `docs/overview.md`.
 
 Out:
 
@@ -25,7 +25,7 @@ Out:
 ### D1 — A flag, no config default
 
 `lyx shuttle open` gains `--permission-mode <mode>`.
-Empty, the flag's default, keeps today's behaviour: the session prompts.
+Empty, the flag's default, keeps today's behaviour: the line carries no permission flag, so the session starts in the default mode its Claude Code settings set, prompting when none sets one.
 Rationale: an empty default changes no existing caller, and the entry's "a flag or a config default" is met by the flag alone; a config key adds a resolution layer nobody asked for (YAGNI).
 
 ### D2 — Permission mode is engine vocabulary on `OpenSpec`
@@ -39,6 +39,7 @@ Rationale: `Spec.PermissionMode` already sets this split (`shuttleengine/doc.go`
 
 `Claude.OpenLaunch` resolves the mode through `validatePermissionMode(mode, true)` before it mints a session id, alongside its effort and model checks.
 `bypass` adds `--dangerously-skip-permissions`, `prompt` and empty add nothing, and any other value is refused with the existing error naming the legal values.
+Because `prompt` adds nothing, it cannot override a default mode the Claude Code settings set.
 `Runner.Open`'s existing refusals that run before `OpenLaunch` (unknown engine, covering pause, engine with no `SessionOpener`) keep reporting ahead of a mode refusal.
 Rationale: an opened session is always interactive, so the existing interactive branch of the rule is the open rule; a second validator would drift from it.
 
@@ -53,10 +54,18 @@ The line stays one pipeline with no environment assignment, so `OrElse` still jo
 What it lets through: an opened session in bypass runs every tool without a permission dialog.
 What bounds it:
 
-- It is opt-in per call; nothing but an explicit `--permission-mode bypass` turns it on.
-- The session still takes the worktree's own settings, and Claude Code applies their deny rules and hooks in bypass mode too (Claude Code behaviour, not lyx code).
-- It is one interactive session per call in the caller's own worktree, in its own window an operator watches, refused under a covering pause, unchanged from today.
-- It carries none of shuttle's run guards (no `--settings` from shuttle), as an opened session does today in prompt mode; bypass removes only the dialog that stood in for them.
+- It is opt-in per call; lyx turns bypass on only through an explicit `--permission-mode bypass`.
+  A settings layer's `defaultMode` can still set the mode outside lyx, as today.
+- The session loads Claude Code's own settings layers, the worktree's included, and Claude Code applies their deny rules and hooks in bypass mode too (Claude Code behaviour, not lyx code); lyx installs no rule or hook of its own on an opened session.
+- It is one interactive session per call in the caller's own worktree, refused under a covering pause, unchanged from today.
+  It takes no turn until text reaches its pane through a channel that types there: the operator in its window, `lyx shuttle send <guid>`, `lyx creel inject`, and the reminder line a `lyx creel post` types into the idle receiver.
+  Each channel types into a live reed strand with no run record, so a session driven through any of them runs every tool without a dialog and with no shuttle guard, bounded by that channel's own rules:
+  - `send` refuses under a covering pause.
+  - Creel lets EXTERNAL callers, programs and orch strands inject on any strand, and any other strand on its own strand only.
+  - Any strand of the hub may post to the session, and so start a turn through the reminder.
+  - Creel's sender identity boundary is the operator's user: any process of that user posts as EXTERNAL or as a program, and the 0700 lyxtemp root is the boundary.
+  - A covering pause holds creel's injects and reminders too.
+- It carries none of shuttle's run guards (no `--settings` from shuttle), as an opened session does today without the flag; bypass replaces whatever default mode the settings set with skipping every dialog.
 - The opened-session log line records the mode, so a bypass open is traceable afterwards (`PATTERN-spawn-observability`).
 
 ## Constraints
@@ -74,16 +83,21 @@ What bounds it:
 
 - R1: The `ly:cli` index (`lyx help index`) lists commands, not flags, so the orch finds the flag only through `lyx shuttle open --help`; until it reads that it may still fall back to `lyx reed add` for a bypass session.
 
+<!-- lyx:carry-over Discussion-Review -->
+- Discussion-Review, round 2: converged; each finding below was fixed or disputed by the round's fixer, and no fresh reviewer has seen the result; the fixer report says which.
+  Review: _lyx/reviews/discussion/round-2-review.md; fixer report: _lyx/reviews/discussion/round-2-fixer-report.md.
+  - d5-bypass-driver-reach-omits-creel (class design, severity MEDIUM, open in rounds 2)
+<!-- /lyx:carry-over Discussion-Review -->
+
 ## Acceptance criteria
 
 - AC1: `lyx shuttle open --role r --permission-mode bypass` opens a session whose fresh launch line carries `--dangerously-skip-permissions`.
 - AC2: The same open's `ResumeCmd` carries `--dangerously-skip-permissions` on both the resume branch and the fresh fallback branch.
 - AC3: An open with no `--permission-mode`, or with `prompt`, produces launch and resume lines without `--dangerously-skip-permissions`, identical to today's.
-- AC4: An open with an unknown mode (for example `Bypass` or `auto`) is refused with an error naming the legal values, before a session id is minted, a strand is added or the marker directory is created.
+- AC4: An open with an unknown mode (for example `Bypass` or `auto`) is refused with an error naming the legal values, before a strand is added or the marker directory is created.
 - AC5: The CLI hands the flag's value to `Runner.Open` unchanged in `OpenSpec.PermissionMode`.
 - AC6: The `open` help text describes the flag and its example uses `--permission-mode bypass`; the `shuttleengine` and `claudeengine` package docs and `docs/overview.md`'s shuttle row describe the flag, and no doc still says the open line passes no permission flag.
 
 ## Notes for the plan writer
 
-- `buildOpenCmd`'s comment says the line passes "no permission flag"; that sentence changes with D4.
 - `TestOpenLaunch` is a table over `OpenSpec`; AC1–AC4 fit as rows there. AC5 fits beside the existing `open` rows in `internal/shuttlecli/cli_test.go`.
