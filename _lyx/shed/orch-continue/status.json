@@ -1,11 +1,11 @@
 {
-  "current_producer": "Plan-Bouncer",
+  "current_producer": "Plan-Burler-Review",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Plan-Bouncer",
-    "last": "Plan-Write → done",
+    "now": "Plan-Burler-Review",
+    "last": "Plan-Bouncer → bounced to Plan-Burler-Review",
     "wait": ""
   },
   "history": [
@@ -162,6 +162,13 @@
           "end": "2026-10-16T05:30:12.124313365Z"
         }
       ]
+    },
+    {
+      "producer": "Plan-Bouncer",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-16T05:30:39Z",
+      "routed_to": "Plan-Burler-Review"
     }
   ],
   "product": {

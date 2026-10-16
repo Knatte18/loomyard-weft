@@ -1,0 +1,12 @@
+round: 1
+fan: ""
+seed:
+    - engine: claude
+      model: sonnet
+      effort: medium
+      start: 2026-10-16T05:30:21Z
+      end: 2026-10-16T07:30:38.753905223+02:00
+      wall_seconds: 17.753905223
+      tokens_known: true
+      fresh_tokens: 31648
+      cache_read_tokens: 125650
