@@ -1,11 +1,11 @@
 {
-  "current_producer": "Plan-Write",
+  "current_producer": "Plan-Bouncer",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Plan-Write",
-    "last": "Discussion-Bouncer → done",
+    "now": "Plan-Bouncer",
+    "last": "Plan-Write → done",
     "wait": ""
   },
   "history": [
@@ -177,6 +177,21 @@
       "outcome": "done",
       "output": "/home/knatte/Code/loomyard-LYXHUB/orch-role-stencil-fixes/_lyx/reviews/discussion/round-3-bouncer-ledger.md",
       "at": "2026-10-16T08:53:45Z"
+    },
+    {
+      "producer": "Plan-Write",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYXHUB/orch-role-stencil-fixes/_lyx/plan/00-overview.md",
+      "at": "2026-10-16T09:01:41Z",
+      "gate_attempts": 0,
+      "gate_spans": [
+        {
+          "gate": "plan",
+          "kind": "gate",
+          "start": "2026-10-16T09:01:40.649729708Z",
+          "end": "2026-10-16T09:01:41.419951215Z"
+        }
+      ]
     }
   ],
   "product": {
