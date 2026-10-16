@@ -1,22 +1,22 @@
 {
   "runGuid": "e5e0839c8a4d296582e7be24e5223938",
-  "planFingerprint": "a3d80ef65e4fe7a26acaad9f7c11b83643c2b2335b5555df54290cc4d30da4c2",
+  "planFingerprint": "08cce1ffa5858fb031d6782fdf66ac904ead4ec686b9ec056830a1c6dbeddfb9",
   "planFileHashes": {
     "00-overview.md": "fefd06c6d01c3542c72638a3996df769b80dc097a93a27828e09f2fe0bb88282",
-    "01-language-rename-tools.md": "590d32850583a563ffd30887aad03aee757c67442338169bd6998b05eabc7c09",
+    "01-language-rename-tools.md": "be4610fb2e4b7cab497194c53ca5e8fa269a4010c103fb06c8d69e01b986eaa7",
     "02-plan-spec-rename-departure.md": "1529794c76a189967e5518717fbe11bde70e13d9a74ab0d6e395fb05764da42d",
-    "03-planparser-symbol-renames.md": "b2fbec0ac25ea809c630ef3e68d5608984f3371fa2e248d0eb0c838fba58f705",
-    "04-planparser-pattern-changes.md": "001703fc59bdccb751d324f44d1204305195b0943b4d3cbd6d8fb6d975f0c908",
+    "03-planparser-symbol-renames.md": "4a98d02b5895c3ac21a0722d2b69ea4bf979bbd822749e379bd0230066b86d19",
+    "04-planparser-pattern-changes.md": "53ffdcffcd6078b5bd97b3dc12fda432bb0e5a1191a1bda501667ea86e152cd2",
     "05-discussion-pattern-changes.md": "2f7d0e956d52af167207ffce8bd2c890138a9a4f7b26eebc0b15c45494a99348",
     "06-discussion-append-pattern-change.md": "943336e9408cd196b403deeccd3fb66556174a158b72ca2c8842e56b086f7401",
     "07-decision-add-pattern-form.md": "0d65026837e7c4bf8871888b2194000d0ac2b609a00b4a193dc506ccf735a9e8",
     "08-pattern-directive-changes.md": "6c50c2e72f59219eab6ebdf7a0f12ed438dbfc5683a36d26c2c2d8e50a24a3dc",
     "09-webster-declared-changes.md": "daa1416ed565a6629c0dfc3897ab68ada96802e860020d0612056be62b804c8c",
     "10-review-loom-declared-changes.md": "9416e1971e0d8b83276a32edd7189d95c50f06064e836cc4f76d02e3f2361ba0",
-    "11-plan-gate-context-checks.md": "4521674f323080ace09c2b6ac481504aff959cba08607ffe4c6b7e051ae8f6c1",
+    "11-plan-gate-context-checks.md": "731ced9852682a95cafb7372d5545a802bde9f7d1a214a4972d9c67a18dcffff",
     "12-webster-inline-pack-removal.md": "084660b2240aed4959ec46baa87059372821e43db540c3d2117ff90ac3bd72fb",
     "13-implementer-rename-verify-markers.md": "c2bd623c71db4486437e7c54785e227192e389ad858629187b737252b373ba2c",
-    "14-rename-tool-refusal.md": "611a670da842b74856654015c2abfd0d493b66f18f8411eb56ef212ada51843c",
+    "14-rename-tool-refusal.md": "dae28c4d8fd239b29970e8254a76f5985f2c8237eff00ad1b1bce38817f3d352",
     "15-digest-departures.md": "6a5208941f1188a0f1f3abc990152e22c178f646454fe197d6a29a4d5b727f8c",
     "16-verify-gate-fix-commits.md": "9bec94661afb29aa750fea9e349dc97b1626b9de108b2b4988550e88be213363",
     "17-stencil-wording.md": "63093d90c10e561fa7951de3abbf494b6a918672201974e62818560d6fd1b8a5"
@@ -655,7 +655,7 @@
       }
     }
   ],
-  "currentBatch": 1,
+  "currentBatch": 0,
   "masterStrand": "71953c680b84bd88f36cef5b47f6fe98",
   "masterSessionId": "94219480-9e76-4530-ae14-fbb68854c48f",
   "masterEngine": "claude",
@@ -669,18 +669,39 @@
         "04-planparser-pattern-changes"
       ],
       "cardHashes": {
-        "01-language-rename-tools": "590d32850583a563ffd30887aad03aee757c67442338169bd6998b05eabc7c09",
+        "01-language-rename-tools": "be4610fb2e4b7cab497194c53ca5e8fa269a4010c103fb06c8d69e01b986eaa7",
         "02-plan-spec-rename-departure": "1529794c76a189967e5518717fbe11bde70e13d9a74ab0d6e395fb05764da42d",
-        "03-planparser-symbol-renames": "b2fbec0ac25ea809c630ef3e68d5608984f3371fa2e248d0eb0c838fba58f705",
-        "04-planparser-pattern-changes": "001703fc59bdccb751d324f44d1204305195b0943b4d3cbd6d8fb6d975f0c908"
+        "03-planparser-symbol-renames": "4a98d02b5895c3ac21a0722d2b69ea4bf979bbd822749e379bd0230066b86d19",
+        "04-planparser-pattern-changes": "53ffdcffcd6078b5bd97b3dc12fda432bb0e5a1191a1bda501667ea86e152cd2"
       },
       "startSha": "27657341cf3a467214d0a482c7d34359ff06151c",
       "kind": "fork",
       "spawnedAt": "2026-10-16T11:02:04Z",
       "sessionId": "94219480-9e76-4530-ae14-fbb68854c48f",
       "engine": "claude",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "01-language-rename-tools",
+        "status": "done",
+        "head_sha": "f6da02c4385184e39558a4866727ce4f91cdc14e",
+        "deviations": [
+          "internal/planparser/glyphref.go",
+          "internal/planparser/sections.go"
+        ]
+      },
+      "cardShas": [
+        "f6da02c4385184e39558a4866727ce4f91cdc14e"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-webster-fork-stencil-fixes/94219480-9e76-4530-ae14-fbb68854c48f/subagents/agent-adaf296809f9a40cc.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-webster-fork-stencil-fixes/94219480-9e76-4530-ae14-fbb68854c48f/subagents/agent-adaf296809f9a40cc.jsonl"
+      ]
     }
-  }
+  },
+  "seenForkTranscripts": [
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-webster-fork-stencil-fixes/94219480-9e76-4530-ae14-fbb68854c48f/subagents/agent-adaf296809f9a40cc.jsonl"
+  ]
 }

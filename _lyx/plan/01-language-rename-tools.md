@@ -1,7 +1,7 @@
 # Card 1 — language-rename-tools
 
 **Create:**
-- `plan:internal/languageconfig#renameToolsKey` -> `const renameToolsKey = "rename_tools"`
+- `internal/languageconfig#renameToolsKey`
 
 **Edit:**
 - `internal/languageconfig#config`

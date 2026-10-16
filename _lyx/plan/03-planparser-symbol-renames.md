@@ -1,9 +1,9 @@
 # Card 3 — planparser-symbol-renames
 
 **Create:**
-- `plan:internal/planparser#SymbolRenamePairs` -> `func SymbolRenamePairs(plan *Plan, cards []Card) []MovePair`
-- `plan:internal/planparser#gateUntypedFileRenamePair` -> `const gateUntypedFileRenamePair refGate = "untyped-file-rename-pair"`
-- `plan:internal/planparser_test#TestSymbolRenamePairs` -> `func TestSymbolRenamePairs(t *testing.T)`
+- `internal/planparser#SymbolRenamePairs`
+- `internal/planparser#gateUntypedFileRenamePair`
+- `internal/planparser_test#TestSymbolRenamePairs`
 
 **Edit:**
 - `internal/planparser#ledger`

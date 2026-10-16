@@ -37,8 +37,8 @@
 - `contracts/stencils/loom/loom-template-plan.md`
 
 **Uses:**
-- `plan:internal/planparser#SymbolRenamePairs`
-- `plan:internal/planparser#PatternChange`
+- `internal/planparser#SymbolRenamePairs`
+- `internal/planparser#PatternChange`
 - `plan:internal/discussionparser#ParsePatternChanges`
 - `internal/languageconfig#Load`
 - `internal/loomshed#seedPlanFormatFixture`

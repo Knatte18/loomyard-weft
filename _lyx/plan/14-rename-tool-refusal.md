@@ -17,7 +17,7 @@
 - `cmd/lyx/testdata/test-budget.yaml`
 
 **Uses:**
-- `plan:internal/planparser#SymbolRenamePairs`
+- `internal/planparser#SymbolRenamePairs`
 - `internal/websterengine_test#newRecoverFixture`
 
 **Intent:**

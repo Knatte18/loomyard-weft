@@ -1,9 +1,9 @@
 # Card 4 — planparser-pattern-changes
 
 **Create:**
-- `plan:internal/planparser#PatternChange` -> `type PatternChange struct`
-- `plan:internal/planparser#patternChangesHeading` -> `const patternChangesHeading = "## PATTERN changes"`
-- `plan:internal/planparser#parsePatternChanges` -> `func parsePatternChanges(section []string) []PatternChange`
+- `internal/planparser#PatternChange`
+- `internal/planparser#patternChangesHeading`
+- `internal/planparser#parsePatternChanges`
 
 **Edit:**
 - `internal/planparser#Plan`
