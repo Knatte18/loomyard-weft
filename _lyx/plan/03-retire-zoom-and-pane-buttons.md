@@ -9,7 +9,7 @@
 - `internal/reedengine#TestBindings_AltZTogglesStrandAndSelvageZoomInTheStrandsWindowOnly`
 
 **Create:**
-- `plan:internal/reedengine#Engine.withBootOpLock` -> `func (e *Engine) withBootOpLock(fn func() error) error`
+- `internal/reedengine#Engine.withBootOpLock`
 
 **Edit:**
 - `internal/reedengine#Engine.AddStrandUnless`
