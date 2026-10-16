@@ -183,6 +183,7 @@ Whether the round agent literally imports the `burler` package or only follows t
 - The Go-scaffolding / LLM-brain boundary above.
 - Whether it reuses the `burler` package or just the prompt template.
 - Sandbox provisioning: how much lyx automates vs. a pre-existing sandbox repo.
+- The treadle judge stencils (`contracts/stencils/treadle/treadle-template-judge-circling.md`, `treadle-template-judge-milestone.md`, `treadle-template-targeting.md`) are kept for Hardener but unmaintained, and are re-derived from the Bouncer judge (`bouncer/bouncer-template-judge.md`) when Hardener is built, so no dead-code sweep removes them (operator decision 2026-10-16, from the stencil intent audit of 2026-10-15).
 
 **This module is post-loom and on-demand;
 nothing here blocks the `burler → shed → loom` spine, nor the `Treadle`/`Shed` work, which proceeds independently of whether `Tenter`/`Hardener` are ever scheduled.**
