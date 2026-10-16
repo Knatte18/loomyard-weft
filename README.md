@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-16 09:13 UTC; every age below is as of then.
+Rendered 2026-10-16 09:15 UTC; every age below is as of then.
 
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
@@ -18,15 +18,19 @@ Held by a run; its scope is locked until the run ends.
 | # | Task | Slug | Recipe | At | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | 1 | **reed add defaults to pane-era placement and splits the selvage shell window**<br>• Replace the obsolete below-parent default and sweep for other pane-era leftovers | [`reed-add-parentless-placement`](design-reed-add-parentless-placement.md) | loom | Webster | 1h | 1h | reed |
-| 2 | **Orch role stencil fixes from the stencil intent audit**<br>• Arbiter as the orch filter with a fault fallback, no peer comparing, ORCHESTRATOR.md for repo-specific orch rules, owner of a small PR-Gate defect | [`orch-role-stencil-fixes`](design-orch-role-stencil-fixes.md) | loom | Webster | 1h | 52m | stencil, orch, loom, config |
-| 3 | **Loom stencil fixes from the stencil intent audit, verify tiers from hub config**<br>• Rejection findings are a reviewer claim, never the operator; driver, advisor, plan and rework wording | [`loom-stencil-wording`](design-loom-stencil-wording.md) | loom | Plan-Burler-Fix | 1h | 48m | stencil, loom, shed, config, webster |
-| 4 | **Creel gets its own sandbox suite**<br>• Move S9 and C1-C13 out of the shuttle sandbox suite into SANDBOX-CREEL-SUITE.md | [`creel-sandbox-suite`](design-creel-sandbox-suite.md) | loom | Publish | 42m | 42m | creel, shuttle |
+| 2 | **Orch role stencil fixes from the stencil intent audit**<br>• Arbiter as the orch filter with a fault fallback, no peer comparing, ORCHESTRATOR.md for repo-specific orch rules, owner of a small PR-Gate defect | [`orch-role-stencil-fixes`](design-orch-role-stencil-fixes.md) | loom | Webster | 1h | 53m | stencil, orch, loom, config |
+| 3 | **Loom stencil fixes from the stencil intent audit, verify tiers from hub config**<br>• Rejection findings are a reviewer claim, never the operator; driver, advisor, plan and rework wording | [`loom-stencil-wording`](design-loom-stencil-wording.md) | loom | Plan-Burler-Fix | 1h | 49m | stencil, loom, shed, config, webster |
+| 4 | **Creel gets its own sandbox suite**<br>• Move S9 and C1-C13 out of the shuttle sandbox suite into SANDBOX-CREEL-SUITE.md | [`creel-sandbox-suite`](design-creel-sandbox-suite.md) | loom | Publish | 43m | 43m | creel, shuttle |
 
 ### Ready
 
 Waits on nothing open; can start now.
 
-_None._
+#### Normal priority
+
+| # | Task | Slug | Recipe | After | Age | Revised | Labels |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| 1 | **Creel stage 1 re-test fixes**<br>• Fix the eight creel defects from the 2026-10-16 re-test, the journal torn-line one first | [`creel-stage1-fixes`](design-creel-stage1-fixes.md) | loom |  | 19m | 0m | creel, shuttle, claude |
 
 ### Layer A
 
@@ -36,7 +40,7 @@ Waits only on Running or Ready entries.
 
 | # | Task | Slug | Recipe | After | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | **Webster fork and pattern-directive stencil fixes from the stencil intent audit**<br>• Structure-aware rename tool from hub config, departures reach the Master via the digest, spawn wording, no inline pack, declared PATTERN changes | [`webster-fork-stencil-fixes`](design-webster-fork-stencil-fixes.md) | loom | `loom-stencil-wording` | 1h | 48m | stencil, webster, burler, loom |
+| 1 | **Webster fork and pattern-directive stencil fixes from the stencil intent audit**<br>• Structure-aware rename tool from hub config, departures reach the Master via the digest, spawn wording, no inline pack, declared PATTERN changes | [`webster-fork-stencil-fixes`](design-webster-fork-stencil-fixes.md) | loom | `loom-stencil-wording` | 1h | 49m | stencil, webster, burler, loom |
 
 ## Notes
 
@@ -48,7 +52,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Note | Slug | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| 1 | **Audit every stencil for design assumptions the operator never meant**<br>• List each claim a stencil makes about how its role works, so the operator can confirm or reject it, after the Webster master code-read bug | [`stencil-intent-audit`](design-stencil-intent-audit.md) | 21h | 51m | stencil |
+| 1 | **Audit every stencil for design assumptions the operator never meant**<br>• List each claim a stencil makes about how its role works, so the operator can confirm or reject it, after the Webster master code-read bug | [`stencil-intent-audit`](design-stencil-intent-audit.md) | 21h | 52m | stencil |
 
 #### Normal priority
 
@@ -64,22 +68,14 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Note | Slug | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| 1 | **creel journal: a bad last line ending in a newline is skipped, not cut, and the next daemon start refuses the journal** | [`creel-journal-torn-newline-line`](design-creel-journal-torn-newline-line.md) | 17m | 17m | creel |
-| 2 | **creel llm smoke test TestSmokeCreelClaudeStrand still fails with no pane capture** | [`creel-llm-smoke-idle`](design-creel-llm-smoke-idle.md) | 17m | 17m | creel, shuttle, claude |
-| 3 | **reed watchdog outlives lyx reed down and respawns on a redeployed binary** | [`reed-watchdog-outlives-down`](design-reed-watchdog-outlives-down.md) | 17m | 17m | reed |
-| 4 | **strand pane resolves bare lyx to the production binary while LYX_BIN names the dev build** | [`strand-pane-lyx-path`](design-strand-pane-lyx-path.md) | 17m | 17m | reed, shuttle |
-| 5 | **lyx creel read to an unwritable stdout exits 1 with nothing on stderr** | [`creel-read-silent-write-fail`](design-creel-read-silent-write-fail.md) | 17m | 17m | creel |
-| 6 | **creel inject --wait prints a draft stall from 37 s earlier as if current** | [`creel-stale-stall-line`](design-creel-stale-stall-line.md) | 17m | 17m | creel |
-| 7 | **creel verb waits about 23 s to report a daemon that already exited at start** | [`creel-dead-daemon-slow-report`](design-creel-dead-daemon-slow-report.md) | 17m | 17m | creel |
-| 8 | **creel log shows nothing for mail carried forward from an old day file** | [`creel-log-carried-mail`](design-creel-log-carried-mail.md) | 17m | 17m | creel |
-| 9 | **creel removed-holder sweep took 80 s instead of about 60** | [`creel-holder-sweep-slow`](design-creel-holder-sweep-slow.md) | 17m | 17m | creel |
-| 10 | **creel inject into a bash strand expires with no stall reason, and a stalled inject expired 3 s late** | [`creel-inject-expiry-reason`](design-creel-inject-expiry-reason.md) | 17m | 17m | creel |
+| 1 | **reed watchdog outlives lyx reed down and respawns on a redeployed binary** | [`reed-watchdog-outlives-down`](design-reed-watchdog-outlives-down.md) | 18m | 18m | reed |
+| 2 | **strand pane resolves bare lyx to the production binary while LYX_BIN names the dev build** | [`strand-pane-lyx-path`](design-strand-pane-lyx-path.md) | 18m | 18m | reed, shuttle |
 
 #### Low priority
 
 | # | Note | Slug | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| 11 | **A hub pause leaves background forks and shells running, so hibernate never confirms**<br>• Pause interrupts turns but not background forks or shells; sessions read busy and hibernate confirmation fails | [`pause-background-work`](design-pause-background-work.md) | 1d | 1d | shuttle, webster |
+| 3 | **A hub pause leaves background forks and shells running, so hibernate never confirms**<br>• Pause interrupts turns but not background forks or shells; sessions read busy and hibernate confirmation fails | [`pause-background-work`](design-pause-background-work.md) | 1d | 1d | shuttle, webster |
 
 ### Enhancements
 
@@ -87,9 +83,9 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Note | Slug | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| 1 | **Tune the Burler lens fan prompts**<br>• Revisit the parked lens fan with lens and fork prompts that overlap less, measured against solo on the fan-lab fixtures | [`fan-prompt-tuning`](design-fan-prompt-tuning.md) | 5d | 33m | burler, stencil |
-| 2 | **Fork the Burler fixer from the reviewer session**<br>• The fixer re-reads the context the reviewer just read; fork it from the reviewer to reuse the cache | [`burler-fixer-fork`](design-burler-fixer-fork.md) | 1d | 33m | burler |
-| 3 | **Perch review analysis: rounds, tokens and late BLOCKING findings, with proposals** | [`perch-review-analysis`](design-perch-review-analysis.md) | 37m | 33m | burler, loom, shed |
+| 1 | **Tune the Burler lens fan prompts**<br>• Revisit the parked lens fan with lens and fork prompts that overlap less, measured against solo on the fan-lab fixtures | [`fan-prompt-tuning`](design-fan-prompt-tuning.md) | 5d | 34m | burler, stencil |
+| 2 | **Fork the Burler fixer from the reviewer session**<br>• The fixer re-reads the context the reviewer just read; fork it from the reviewer to reuse the cache | [`burler-fixer-fork`](design-burler-fixer-fork.md) | 1d | 34m | burler |
+| 3 | **Perch review analysis: rounds, tokens and late BLOCKING findings, with proposals** | [`perch-review-analysis`](design-perch-review-analysis.md) | 39m | 34m | burler, loom, shed |
 
 #### Normal priority
 
@@ -104,11 +100,11 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 10 | **Run verbs in one shared namespace, not under lyx loom**<br>• lyx loom decision/status/goto/approve act on darn runs too; move recipe-neutral run verbs to one shared namespace | [`run-verbs-shared`](design-run-verbs-shared.md) | 1d | 1d | shed, loom |
 | 11 | **Clearer loom model key names, one per step**<br>• Model keys like fix name the role they set, and every review segment gets its own reviewer and fixer key | [`loom-model-key-names`](design-loom-model-key-names.md) | 1d | 1d | config, loom |
 | 12 | **The arbiter in shed for every shed run, batten included**<br>• The batten Go driver has a tackler but no arbiter; move the arbiter and its keys into shed beside the tackler | [`shed-arbiter-all`](design-shed-arbiter-all.md) | 1d | 1d | shed, batten, loom, config |
-| 13 | **Paste cited code into a review rounds context**<br>• Reviewers edit nothing and review a fixed commit, so code pasted at round start cannot go stale; measure it against todays reviewer | [`review-inline-code`](design-review-inline-code.md) | 4d | 51m | burler, stencil |
+| 13 | **Paste cited code into a review rounds context**<br>• Reviewers edit nothing and review a fixed commit, so code pasted at round start cannot go stale; measure it against todays reviewer | [`review-inline-code`](design-review-inline-code.md) | 4d | 52m | burler, stencil |
 | 14 | **Module labels from what a task touches, not only what it is about**<br>• Half the landings that changed the shuttle core lacked the shuttle label; derive or check module labels from the plan and the diff | [`labels-from-diff`](design-labels-from-diff.md) | 22h | 22h | board, loom |
 | 15 | **Start one task per overlapping group at a newly-ready start**<br>• When a landing makes several overlapping tasks ready at once, batten starts one per group and names the rest in its notice | [`batten-ready-overlap`](design-batten-ready-overlap.md) | 20h | 20h | batten |
 | 16 | **Rename the `lyx` binary to `lyd` (name clash with LyX)** | [`rename-binary-lyd`](design-rename-binary-lyd.md) | 2h | 2h | stencil, shuttle |
-| 17 | **Rewrite C13's stacked half for window-per-strand**<br>• C13's stacked 3-row half cannot be set up once reed-add-parentless-placement lands | [`creel-c13-stacked-rewrite`](design-creel-c13-stacked-rewrite.md) | 8m | 8m | creel |
+| 17 | **Rewrite C13's stacked half for window-per-strand**<br>• C13's stacked 3-row half cannot be set up once reed-add-parentless-placement lands | [`creel-c13-stacked-rewrite`](design-creel-c13-stacked-rewrite.md) | 10m | 10m | creel |
 
 #### Low priority
 
@@ -133,7 +129,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Note | Slug | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| 5 | **Hardener: an autonomous behavior-review campaign that replaces crucible**<br>• Parked by the operator: settle the Tenter/Hardener design and build the campaign that runs a live-substrate module in a sandbox until it converges | [`hardener`](design-hardener.md) | 13d | 51m | burler |
+| 5 | **Hardener: an autonomous behavior-review campaign that replaces crucible**<br>• Parked by the operator: settle the Tenter/Hardener design and build the campaign that runs a live-substrate module in a sandbox until it converges | [`hardener`](design-hardener.md) | 13d | 52m | burler |
 | 6 | **Orch and batten run from the operator's own long-lived worktree, not only the prime**<br>• Every orch and batten verb refuses outside the prime; let a long-lived personal worktree be an orch's home, with pairs branching from and landing into its branch | [`orch-any-worktree`](design-orch-any-worktree.md) | 12d |  | fabric, batten, orch |
 | 7 | **semantic-index: find code by concept, not by literal keyword**<br>• Semantic search over docstrings and comments; doubtful today, since agents now navigate well with grep | [`semantic-index`](design-semantic-index.md) | 12d |  | quarry |
 | 8 | **Ship lyx as an installable Claude Code plugin**<br>• Package lyx and its skills as one installable plugin | [`plugin-packaging`](design-plugin-packaging.md) | 12d |  | stencil |
