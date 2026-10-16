@@ -84,7 +84,12 @@ All six forks returned.
 
 ## Review rounds
 
-_No rounds yet._
+### Round 1 — fix
+
+- F1: picked the stated bound over a narrowed batten snapshot: nothing read this round shows that the prime's other writers (landings, the orch) leave no tracked dirty paths outside the records side, so a narrowed snapshot risked the same false `tampered` the full one has.
+- F2: picked the once-only rewrite keyed on the old template comments over a value-only rewrite: `run_settings` documents are marshalled from JSON with no comments (`internal/configreg/runsettings.go`), so they never match, and an operator pin survives.
+- F6: the proposed premise sentence was false: live loom runs are seeded `go` too, and the driver lock, park marker, resume report, drive reports and tackler directory already sit at `shedrun` paths (`internal/shedrun/paths.go`); D3 now names the two records that move, the settle records and the driver log, and what a run in flight loses.
+- F8: a set `tackler_timeout_min: 0` inherits in a module and takes 10 in `shed.yaml`, so only `tackler_max_spawns` needs an unset-versus-0 representation.
 
 ## Question ledger
 
