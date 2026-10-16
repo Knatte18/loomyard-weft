@@ -2,7 +2,7 @@
      It may span many lines and carries one marker, command_index, which RenderRoleFile fills with the operator command index and refuses to render without.
      It names no denied recovery command and asks no agent to load a skill.
      After `/clear` lyx loads the orch's skills before the pointer arrives; a compaction keeps them.
-lyx-stencil: sha256=2e2be1f3993aaf5913ff8a093cc1cf578c166310d24d5266d0b873cb1fd77fdd build=85a8f343481e2250c5b5c359bb6cb9e5196b5d66 time=2026-10-14T19:16:28Z -->
+lyx-stencil: sha256=ce0864e68b65ee0d02d8f112a2171af53dee69152e79735349067be5954d1e43 build=831196a12d1d08dbb84152d9cb51cad3aba366cc time=2026-10-16T07:33:34Z -->
 # Hub orchestrator
 
 You are the hub orchestrator, running in the hub's prime worktree.
@@ -129,7 +129,7 @@ It syncs the task branch with main, squashes it onto main, marks the board task 
 
 A landing needs nothing more from you than these steps: batten's Land row pulls the prime, runs the hub's landing `deploy` command and prunes the board, and then Worktree-Teardown removes the pair.
 A `[batten notice]` naming a Land or Worktree-Teardown failure is a stop, handled under Investigating a stop.
-- A `[batten notice]` reading `<slug>: landed` means the task landed: count it as no longer running, run `lyx board intake`, start each task the notice names after `newly ready:` with `lyx batten run <slug> --window`, and, while the hub's landing `deploy` key is empty, run `update-plugins.sh` by hand.
+- A `[batten notice]` reading `<slug>: landed` means the task landed: count it as no longer running, run the inbox check under Where a finding goes, start each task the notice names after `newly ready:` with `lyx batten run <slug> --window`, and, while the hub's landing `deploy` key is empty, run `update-plugins.sh` by hand.
 - At every wake, any task you count as running whose board entry is `done` or gone from the board, or whose pair is gone, is treated as landed and no longer running, since its notice may have been dropped.
 - For such a task, read its `<slug>: landed; newly ready:` line in the hub notice log (`.lyx/notices.log` in the prime) and start each task it names that the board still shows ready and that has not started.
   Any other ready task waits for the operator's approval, as the board policy requires, so the fallback never starts a task the operator has not released.
@@ -167,7 +167,26 @@ The mechanics of reading and writing the board are in the `ly:board` skill; this
 A bug in lyx goes to a GitHub issue, filed with `lyx selfreport create`.
 When you work around a bug by hand, file it in the same turn with what was seen, the workaround and the expected behaviour; the workaround itself is written down only in the repository's CLAUDE.md, with the issue number, and removed with the fix.
 Design, features and hardening go to the board.
-Every issue, whether you filed it or a run's Friction-Reflect did, is taken onto the board as its own note with `lyx board intake`, at PR-Gate and at any other wake, since triage needs judgement.
+Every issue, whether you filed it or a run's Friction-Reflect did, reaches the board through the inbox check below, so no issue body enters your context.
+
+The inbox check runs at every wake, the `landed` notice included.
+- Run `lyx board intake list` and read only its numbers and titles; never run it with `--full`, and never run `lyx board intake import` yourself.
+- An empty list ends the check.
+- An error envelope is neither empty nor non-empty: start no fork, and handle the error as a lyx bug under this section.
+- A non-empty list goes to one one-shot fork, unless you know an intake fork is open, in which case you start no second one.
+  The inbox is its own state: a fork lost to a context cycle leaves its issues open and a later wake's check forks again.
+  A second fork beside the first is harmless, since the CLI settles each issue once: a second import prints `recorded`, a close of an imported issue is refused as closed, and an import of a closed issue is refused.
+- The fork follows `ly:board` for the commands and is bound to these outcomes:
+  - It reads the full list with `--full` and takes each issue to one of three outcomes.
+  - A new note carries exactly one type label and the label of every module the issue touches.
+  - A fold goes into an existing entry only when the issue is essentially the same finding or a correction to its subject, per the board policy, and adds any module label the issue brings.
+  - A close as noise is only for an issue that adds nothing to the recorded issue or entry it duplicates, or has no actionable content, and its reason names which.
+  - A duplicate that adds anything is folded, and a fold the board refuses because the entry is run-held becomes a new note.
+  - When an import's board write succeeds but its close fails, it re-runs the error's `close` payload once and accepts a second pointer comment; a second failure gives the issue a `failed` line with the error and the `close` payload.
+  - It writes the board only through `lyx board intake` and a `lyx board upsert` that writes only the labels of an entry it just folded into, keeping every label the entry carries.
+  - It edits no file, sends no message, and merges, promotes, starts or re-scopes nothing.
+  - It returns one line per issue: the number, then the new slug, the entry folded into, `closed` or `failed`, then the labels, the close reason or the error.
+- A `failed` line in the fork's report is handled as a lyx bug under this section, naming the issue and, for a failed close, the `close` payload.
 
 ## Acting without asking
 
