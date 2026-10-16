@@ -14,8 +14,8 @@
 - `plan:internal/creelengine#DaemonStartHeader`
 - `plan:internal/creelengine#DaemonLogPrefix`
 - `internal/creelengine#Geometry`
-- `plan:internal/creelcli#runCreelSplit`
-- `plan:internal/creelcli#lockedBuffer`
+- `internal/creelcli#runCreelSplit`
+- `internal/creelcli#lockedBuffer`
 - `internal/creelcli#newRig`
 - `internal/testkit/logcapture#Capture`
 

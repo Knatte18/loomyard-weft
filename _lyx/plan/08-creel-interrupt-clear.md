@@ -1,11 +1,11 @@
 # Card 8 — creel-interrupt-clear
 
 **Create:**
-- `plan:internal/creelengine#ErrClearFailed` -> `var ErrClearFailed error`
-- `plan:internal/creelengine#Store.paneLock` -> `func (s *Store) paneLock(receiver string) *sync.Mutex`
-- `plan:internal/testkit/creelfake#Delivery.SetInterruptFunc` -> `func (d *Delivery) SetInterruptFunc(fn func(strand string) error)`
-- `plan:internal/creelcli#restoringEngine` -> `type restoringEngine struct`
-- `plan:internal/creelcli#stepClock` -> `type stepClock struct`
+- `internal/creelengine#ErrClearFailed`
+- `internal/creelengine#Store.paneLock`
+- `internal/testkit/creelfake#Delivery.SetInterruptFunc`
+- `internal/creelcli#restoringEngine`
+- `internal/creelcli#stepClock`
 
 **Edit:**
 - `internal/creelengine#Delivery`

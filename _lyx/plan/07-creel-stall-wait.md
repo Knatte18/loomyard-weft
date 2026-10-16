@@ -1,12 +1,12 @@
 # Card 7 — creel-stall-wait
 
 **Create:**
-- `plan:internal/creelengine#StallNote` -> `type StallNote struct`
-- `plan:internal/creelengine#Client.CallWatching` -> `func (c *Client) CallWatching(req Request, timeout time.Duration, handle func(Response) error, progress func(Response)) (Response, error)`
-- `plan:internal/creelcli#runCreelSplit` -> `func runCreelSplit(cwd string, stderr io.Writer, args ...string) cliRun`
-- `plan:internal/creelcli#lockedBuffer` -> `type lockedBuffer struct`
-- `plan:internal/creelcli#lockedBuffer.Write` -> `func (b *lockedBuffer) Write(p []byte) (int, error)`
-- `plan:internal/creelcli#lockedBuffer.String` -> `func (b *lockedBuffer) String() string`
+- `internal/creelengine#StallNote`
+- `internal/creelengine#Client.CallWatching`
+- `internal/creelcli#runCreelSplit`
+- `internal/creelcli#lockedBuffer`
+- `internal/creelcli#lockedBuffer.Write`
+- `internal/creelcli#lockedBuffer.String`
 
 **Edit:**
 - `internal/creelengine#Waiter`
