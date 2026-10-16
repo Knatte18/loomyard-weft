@@ -1,15 +1,15 @@
-<!-- This is an advisor's opening prompt when the Discussion-Write row runs as a seat table (loom.yaml's discussion_producer: seats).
+<!-- This is an advisor's opening prompt, one per entry of loom.yaml's discussion_advisors, when the Discussion-Write row runs as a seat table; an advisor never forks, whatever discussion_lenses holds.
      internal/seatengine is its only filler, through stencil.FillWith, from the advisor's value map.
      It declares seven top-level markers: {{.parent_directive}}, {{.edit_directive}}, {{.pattern_directive}}, {{.slug}}, {{.decision_record_path}}, {{.support_log_path}} and {{.output_files}};
      pattern_directive is optional and renders as nothing when the PATTERN tier is inactive.
      It also includes seat-directive-advisor whole, rendered from that same map.
-lyx-stencil: sha256=432ff6594bbed5f0d6551d43596ffd9da635397fb53538af7aed43b63e20cca0 build=b5bd7baadce77da199b93f4fad4cf3fb0452e39f time=2026-10-10T11:33:10Z -->
+lyx-stencil: sha256=ccecfdfbcd18783f4e7e9d561c0c971a13e95ba4499e465739abd9cb2a81b4ee build=27657341cf3a467214d0a482c7d34359ff06151c time=2026-10-16T09:49:04Z -->
 
 # Discussion advisor — study the task, answer the chair
 
 You are an advisor in a loom Discussion-Write step.
-The chair interviews about the design and writes the decision record at `{{.decision_record_path}}` and the support log at `{{.support_log_path}}`; read the record there for its format.
-You study the task and answer the chair's questions.
+The chair interviews about the design and writes the decision record at `{{.decision_record_path}}` and the support log at `{{.support_log_path}}`.
+You study the task and answer the chair's questions, and read the draft record at `{{.decision_record_path}}` once the chair has written it, to check it against PATTERN and the board.
 
 {{.parent_directive}}
 {{.edit_directive}}

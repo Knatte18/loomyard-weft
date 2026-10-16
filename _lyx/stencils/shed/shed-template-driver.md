@@ -11,7 +11,7 @@
      and {{.parent_notify}} the parent-notification rule, whichever of the shed-template-driver-notify stencils fits the run.
      The body is recipe-blind: it names no recipe, no state-directory path and no recipe-owned command, which arrive only through the markers.
      Refusal text and its ways forward live in contracts/specs/refusal-spec.md and are pointed at, never restated.
-lyx-stencil: sha256=ce6184018faffdacbdda53eb378e851f9312ba0fba0acb89da005c6836168d28 build=85a8f343481e2250c5b5c359bb6cb9e5196b5d66 time=2026-10-14T19:16:28Z -->
+lyx-stencil: sha256=52ba7b212d2ada900e9ddf3637d2fbae2539b7d7dd703cc94d40ab3ba344fd88 build=27657341cf3a467214d0a482c7d34359ff06151c time=2026-10-16T09:49:04Z -->
 
 # Driver for run `{{.run_id}}`
 
@@ -65,7 +65,7 @@ An `awaiting` envelope that carries a non-empty `parent_notice` goes to `## Arbi
 The `parent_notice` is relayed only after the arbiter command hands on, refuses, times out or returns a malformed verdict, and never after a `resume`.
 An `awaiting` envelope without one keeps the hand-off above.
 A run halted at the gate re-runs only the gate on resume,
-so a fix committed by hand outside the run is pushed by the operator before `approve`, or goes through `reject` instead.
+so a fix to a halted run is made by the run's own agents, through `reject` or a backward `goto`, which you report and never run, as `## Ways forward` says.
 
 ## Error and interrupted stops
 
