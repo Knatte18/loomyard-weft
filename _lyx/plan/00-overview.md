@@ -23,10 +23,9 @@ The flaky `TestSweep` (#584) needs no code change.
 
 ## Shared Decisions
 
-- **External-test members are named by their test file.**
-  Until card 1 ships in the `lyx` binary that runs this plan, a target on an external test package's unit, a member glyph like `internal/planparser_test#TestCardTargetDirs` or a `plan:` handle on that unit, derives the gate argument `./internal/planparser_test`, the bug card 1 fixes.
-  Cards therefore name a test function of an external `_test` package, changed or new, through its test file path (`internal/planparser/targetdirs_test.go`, `internal/planparser/validate_test.go`, `internal/batcher/estimate_test.go`), and the Intent names the function.
-  Tests in an internal test package are named by member glyph as usual.
+- **External-test members are named by glyph on their `_test` unit.**
+  The `lyx` binary that runs this plan already maps an external test package's unit to its package directory, so a member glyph like `internal/planparser_test#TestCardTargetDirs` or a `plan:` handle on that unit derives the gate argument `./internal/planparser`.
+  Cards therefore name a changed test function of an external `_test` package as a member glyph under Edit, and declare a new one as a Create `plan:` handle on `<dir>_test`, as `edit-test-file` requires.
 - **D6, no `internal/lyxtemp` change.**
   `lyx gate test ./internal/lyxtemp -- -race -run TestSweep -count=1000` and the same with `-count=300` and no `-race` pass on current code.
   No card touches the package, and card 5's commit closes #584 citing `78e31aa06`'s bounded retry and those two runs.

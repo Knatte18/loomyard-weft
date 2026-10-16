@@ -36,7 +36,7 @@
 - Found: the child runs as today.
 - Absent: no child runs, and the result carries the cause `status-missing` with `statusStop` set.
 - An error wrapping `state.ErrDecode`: no child runs, and the cause is `status-unreadable: <error>`, the `<class>: <detail>` form of `start-failed: <error>`. There is no re-read, since `internal/state` writes by atomic rename under the status lock, so the file stays undecodable to this binary.
-- Any other error, a read-lock or raw read failure: when the loop's one re-step is unused, it marks it used, sets `obj.Restep` to `{Producer: lastKnown, Error: "status-unreadable: <error>"}` with an empty transient, logs it and re-reads through the same loop top. A re-read that succeeds steps on as usual. One that fails stops with `status-unreadable: <error>`.
+- Any other error, a read-lock or raw read failure: when the loop's one re-step is unused, it marks it used, sets `obj.Restep` to `{Producer: lastKnown, Error: "status-unreadable: <error>"}` with an empty transient, logs it and re-reads through the same loop top. A re-read that succeeds steps on as usual. One that fails stops with `status-unreadable: <error>`. When the re-step is already used, it stops at once with `status-unreadable: <error>` and the read-error way forward, with no re-read.
 
 At each status cause the loop writes one `logger.Warn` naming the status path, and the error when there is one.
 In the `LoopStopInterrupted` branch, a result with `statusStop` set uses `spec.Loop.LogPath` as the trace file handed to `Hooks.AfterInterrupt` and to `interruptedRecord`, as the dead-loop stop already does.
@@ -66,6 +66,8 @@ Tests, as subtests of `TestLoop_InterruptedChildFillsTheErrorForm`:
   This row alone pins the skipped `WriteFailedStop`: the real file is readable here, so an unskipped write would turn it `failed`, while at an absent or undecodable file the write fails on its own.
 - "a read error that clears on the re-read steps on": `fx.spec.Loop.ReadStatus` fails its first call and then delegates to `readStatusAt`, with one script halting the run done.
   It asserts the stop is halted, one child started and `loop.restep` names the read error.
+- "a read error after a used re-step stops without a re-read": the first child returns a transient error envelope, and `fx.spec.Loop.ReadStatus` delegates to `readStatusAt` on its first call and then returns `errors.New("read lock unavailable")`.
+  It asserts one child started, an error holding `status-unreadable: read lock unavailable`, and `loop.restep` naming the child's transient error rather than the read error.
 
 Docs:
 - `contracts/specs/refusal-spec.md`'s shed section:
