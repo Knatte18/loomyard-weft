@@ -349,22 +349,6 @@
       "revised": "2026-10-12T13:52:03Z"
     },
     {
-      "id": 298,
-      "slug": "suite-weight-quiet-rerun",
-      "title": "Re-measure the test suite weight on a quiet machine",
-      "kind": "note",
-      "labels": [
-        "audit"
-      ],
-      "issues": [],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "The test-suite-weight before and after numbers were taken under load; rerun the report Regenerate section on an idle machine for a fair wall-time comparison",
-      "body": "",
-      "created": "2026-10-10T12:55:33Z",
-      "revised": "2026-10-13T14:08:14Z"
-    },
-    {
       "id": 329,
       "slug": "weaver",
       "title": "Weaver: a cold-start implementer beside Webster, with model escalation",
