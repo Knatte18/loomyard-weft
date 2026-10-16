@@ -1,6 +1,6 @@
 # Orch delegates board intake to a one-shot fork
 
-`orch-intake-fork` · Task · enhancement, orch, board
+`orch-intake-fork` · Task · enhancement, orch, board · running · Worktree-Create
 
 ## Seen
 
