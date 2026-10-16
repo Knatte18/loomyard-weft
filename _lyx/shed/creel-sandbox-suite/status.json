@@ -1,11 +1,11 @@
 {
-  "current_producer": "Discussion-Write",
+  "current_producer": "Discussion-Bouncer",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Discussion-Write",
-    "last": "Loom-Preflight → done",
+    "now": "Discussion-Bouncer",
+    "last": "Discussion-Write → done",
     "wait": ""
   },
   "history": [
@@ -20,6 +20,33 @@
       "outcome": "done",
       "output": "",
       "at": "2026-10-16T08:32:57Z"
+    },
+    {
+      "producer": "Discussion-Write",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYXHUB/creel-sandbox-suite/_lyx/discussion/decision-record.md",
+      "at": "2026-10-16T08:37:38Z",
+      "gate_attempts": 0,
+      "gate_spans": [
+        {
+          "gate": "discussion",
+          "kind": "gate",
+          "start": "2026-10-16T08:36:52.288902792Z",
+          "end": "2026-10-16T08:36:52.288959738Z"
+        },
+        {
+          "gate": "parent-review",
+          "kind": "gate",
+          "start": "2026-10-16T08:36:52.346616994Z",
+          "end": "2026-10-16T08:37:36.270140104Z"
+        },
+        {
+          "gate": "parent-review",
+          "kind": "held",
+          "start": "2026-10-16T08:37:36.315652591Z",
+          "end": "2026-10-16T08:37:37.450347203Z"
+        }
+      ]
     }
   ],
   "product": {
