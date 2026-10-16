@@ -1,0 +1,15 @@
+round: 3
+fan: ""
+review:
+    model: sonnet
+    effort: high
+    start: 2026-10-15T14:40:35Z
+    end: 2026-10-15T16:43:44.918694428+02:00
+    wall_seconds: 189.918694428
+    tokens_known: true
+    fresh_tokens: 134286
+    cache_read_tokens: 1365440
+    forks: 0
+    fork_fresh_tokens: 0
+    fork_cache_read_tokens: 0
+    fork_fresh_share: 0
