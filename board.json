@@ -417,7 +417,7 @@
       "isolated": false,
       "brief": "lyx orch records its session id so a reboot resumes the same orch conversation instead of a fresh one.",
       "body": "Split out of note `orch-owns-the-loop` (2026-10-11).\n\nAfter a reboot the operator wants the same conversation back, as `claude --continue` gives, not a fresh session reading a handoff.\nToday that takes `lyx orch start --adopt \u003csession-id\u003e`, with the id dug out of `~/.claude/projects/`.\n`lyx orch` records its session id and offers `lyx orch start --continue` (or makes it the default for a dead strand) to adopt the last orch session.\n\n## Operator decision (2026-10-15)\n\nBuild it now as a small task, from the 2026-10-15 board triage.\n",
-      "status": "running · Publish",
+      "status": "running · PR-Align",
       "created": "2026-10-11T16:16:41Z",
       "revised": "2026-10-15T18:48:53Z",
       "run_settings": {
