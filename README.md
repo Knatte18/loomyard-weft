@@ -17,10 +17,10 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | **reed add defaults to pane-era placement and splits the selvage shell window**<br>• Replace the obsolete below-parent default and sweep for other pane-era leftovers | [`reed-add-parentless-placement`](design-reed-add-parentless-placement.md) | loom | Plan-Write | 1h | 54m | reed |
-| 2 | **Orch role stencil fixes from the stencil intent audit**<br>• Arbiter as the orch filter with a fault fallback, no peer comparing, ORCHESTRATOR.md for repo-specific orch rules, owner of a small PR-Gate defect | [`orch-role-stencil-fixes`](design-orch-role-stencil-fixes.md) | loom | Discussion-Bouncer | 1h | 12m | stencil, orch, loom, config |
+| 1 | **reed add defaults to pane-era placement and splits the selvage shell window**<br>• Replace the obsolete below-parent default and sweep for other pane-era leftovers | [`reed-add-parentless-placement`](design-reed-add-parentless-placement.md) | loom | Plan-Write | 1h | 55m | reed |
+| 2 | **Orch role stencil fixes from the stencil intent audit**<br>• Arbiter as the orch filter with a fault fallback, no peer comparing, ORCHESTRATOR.md for repo-specific orch rules, owner of a small PR-Gate defect | [`orch-role-stencil-fixes`](design-orch-role-stencil-fixes.md) | loom | Discussion-Burler-Review | 1h | 13m | stencil, orch, loom, config |
 | 3 | **Loom stencil fixes from the stencil intent audit, verify tiers from hub config**<br>• Rejection findings are a reviewer claim, never the operator; driver, advisor, plan and rework wording | [`loom-stencil-wording`](design-loom-stencil-wording.md) | loom | Discussion-Write | 1h | 9m | stencil, loom, shed, config, webster |
-| 4 | **Creel gets its own sandbox suite**<br>• Move S9 and C1-C13 out of the shuttle sandbox suite into SANDBOX-CREEL-SUITE.md | [`creel-sandbox-suite`](design-creel-sandbox-suite.md) | loom | Discussion-Write | 2m | 2m | creel, shuttle |
+| 4 | **Creel gets its own sandbox suite**<br>• Move S9 and C1-C13 out of the shuttle sandbox suite into SANDBOX-CREEL-SUITE.md | [`creel-sandbox-suite`](design-creel-sandbox-suite.md) | loom | Discussion-Write | 3m | 3m | creel, shuttle |
 
 ### Ready
 
@@ -84,7 +84,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 10 | **Fork the Burler fixer from the reviewer session**<br>• The fixer re-reads the context the reviewer just read; fork it from the reviewer to reuse the cache | [`burler-fixer-fork`](design-burler-fixer-fork.md) | 1d | 1d | burler |
 | 11 | **The arbiter in shed for every shed run, batten included**<br>• The batten Go driver has a tackler but no arbiter; move the arbiter and its keys into shed beside the tackler | [`shed-arbiter-all`](design-shed-arbiter-all.md) | 1d | 1d | shed, batten, loom, config |
 | 12 | **Paste cited code into a review rounds context**<br>• Reviewers edit nothing and review a fixed commit, so code pasted at round start cannot go stale; measure it against todays reviewer | [`review-inline-code`](design-review-inline-code.md) | 4d | 12m | burler, stencil |
-| 13 | **Module labels from what a task touches, not only what it is about**<br>• Half the landings that changed the shuttle core lacked the shuttle label; derive or check module labels from the plan and the diff | [`labels-from-diff`](design-labels-from-diff.md) | 21h | 21h | board, loom |
+| 13 | **Module labels from what a task touches, not only what it is about**<br>• Half the landings that changed the shuttle core lacked the shuttle label; derive or check module labels from the plan and the diff | [`labels-from-diff`](design-labels-from-diff.md) | 22h | 22h | board, loom |
 | 14 | **Start one task per overlapping group at a newly-ready start**<br>• When a landing makes several overlapping tasks ready at once, batten starts one per group and names the rest in its notice | [`batten-ready-overlap`](design-batten-ready-overlap.md) | 20h | 20h | batten |
 | 15 | **Rename the `lyx` binary to `lyd` (name clash with LyX)** | [`rename-binary-lyd`](design-rename-binary-lyd.md) | 1h | 1h | stencil, shuttle |
 
