@@ -1,11 +1,11 @@
 # Card 2 — claude-placeholder-blank
 
 **Create:**
-- `plan:internal/shuttleengine#StyledBoxReader` -> `type StyledBoxReader interface`
-- `plan:internal/shuttleengine/claudeengine#Claude.PlainBoxCapture` -> `func (c *Claude) PlainBoxCapture(styled string) string`
-- `plan:internal/shuttleengine/claudeengine#styledRun` -> `type styledRun struct`
-- `plan:internal/shuttleengine/claudeengine#parseStyledLine` -> `func parseStyledLine(line string) []styledRun`
-- `plan:internal/shuttleengine/claudeengine#TestPlainBoxCapture` -> `func TestPlainBoxCapture(t *testing.T)`
+- `internal/shuttleengine#StyledBoxReader`
+- `internal/shuttleengine/claudeengine#Claude.PlainBoxCapture`
+- `internal/shuttleengine/claudeengine#styledRun`
+- `internal/shuttleengine/claudeengine#parseStyledLine`
+- `internal/shuttleengine/claudeengine#TestPlainBoxCapture`
 - `internal/shuttleengine/claudeengine/testdata/pane-placeholder-styled.txt`
 - `internal/shuttleengine/claudeengine/testdata/pane-restored-prompt-styled.txt`
 

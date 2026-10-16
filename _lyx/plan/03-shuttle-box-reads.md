@@ -23,7 +23,7 @@
 - `//internal/orchengine/doc.go`
 
 **Uses:**
-- `plan:internal/shuttleengine#StyledBoxReader`
+- `internal/shuttleengine#StyledBoxReader`
 - `internal/shuttleengine#ReedOps`
 - `internal/shuttleengine#readBox`
 - `internal/shuttleengine#readinessEngine`

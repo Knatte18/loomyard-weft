@@ -11,7 +11,7 @@
 
 **Uses:**
 - `internal/shuttleengine/claudeengine#inputBoxInterior`
-- `plan:internal/shuttleengine/claudeengine#Claude.PlainBoxCapture`
+- `internal/shuttleengine/claudeengine#Claude.PlainBoxCapture`
 - `internal/shuttleengine/claudeengine#readPaneFixture`
 - `internal/shuttleengine/claudeengine/testdata/pane-restored-prompt-styled.txt`
 - `internal/shuttleengine#InputBoxClearer`

@@ -8,11 +8,11 @@
 - `//cmd/lyx/testdata/test-budget.yaml`
 
 **Create:**
-- `plan:internal/reedengine#Engine.CapturePaneStyled` -> `func (e *Engine) CapturePaneStyled(guid string) (string, error)`
-- `plan:internal/reedengine#Engine.capturePane` -> `func (e *Engine) capturePane(guid string, styled bool) (string, error)`
-- `plan:internal/reedengine#TestCapturePaneArgv` -> `func TestCapturePaneArgv(t *testing.T)`
-- `plan:internal/shuttleengine#fakeReed.CapturePaneStyled` -> `func (m *fakeReed) CapturePaneStyled(guid string) (string, error)`
-- `plan:internal/testkit/shuttlefake#Reed.CapturePaneStyled` -> `func (r *Reed) CapturePaneStyled(guid string) (string, error)`
+- `internal/reedengine#Engine.CapturePaneStyled`
+- `internal/reedengine#Engine.capturePane`
+- `internal/reedengine#TestCapturePaneArgv`
+- `internal/shuttleengine#fakeReed.CapturePaneStyled`
+- `internal/testkit/shuttlefake#Reed.CapturePaneStyled`
 
 **Uses:**
 - `internal/reedengine#newTestEngine`
