@@ -160,6 +160,13 @@ Rationale: the board entry names this file's S9 as the place, and one suite keep
   - d5-concurrent-starts-interleave-log (class design, severity MEDIUM, open in rounds 2)
 <!-- /lyx:carry-over Discussion-Review -->
 
+<!-- lyx:carry-over Plan-Review -->
+- Plan-Review, round 2: converged; each finding below was fixed or disputed by the round's fixer, and no fresh reviewer has seen the result; the fixer report says which.
+  Review: _lyx/reviews/plan/round-2-review.md; fixer report: _lyx/reviews/plan/round-2-fixer-report.md.
+  - daemon-log-unreadable-branch-unreached (class design, severity MEDIUM, open in rounds 2)
+  - sgr-faint-reads-extended-colour-subparameters (class decision, severity MEDIUM, open in rounds 2)
+<!-- /lyx:carry-over Plan-Review -->
+
 ## Acceptance criteria
 
 - `lyx gate test --tags llm ./internal/creelcli` passes with `TestSmokeCreelClaudeStrand` adding the strand with the bare claude command.
