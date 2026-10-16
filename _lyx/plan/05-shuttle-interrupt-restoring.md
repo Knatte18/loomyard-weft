@@ -66,11 +66,12 @@ The fakes: `restoreReed` embeds `*fakeReed` and its fields script the pane: `bef
 Before the key it draws `RUNNING` (unless `idleBefore`) and `❯ ` plus `before` or the suggestion; after an `Escape` it draws `afterHead` and a box of the restored lines (`❯ <line1>` then `  <line>` rows), or no caret line at all when `afterHead` is `NOBOX`.
 `restoreReed.CapturePane` and `restoreReed.CapturePaneStyled` each call the embedded `fakeReed`'s capture first, so its `CaptureErrQueue` fails a scripted capture, counted over every capture of the call.
 `restoreReed.SendKey` deletes the caret row's text on `C-u`, and on `BSpace` at an empty last row removes that row so the caret joins the row above, else deletes one rune, as Claude did live; it records every key through the embedded `fakeReed`, whose `SendKeyErrQueue` fails a scripted key.
-`restoreEngine` is a `fakeEngine` (`RUNNING` read as a running turn, settle 2 s) with `Startup` answering ready unless the capture holds `SHELL`, `InputBoxText` reading the rows after the caret joined by a space, a zero `SubmitSettle`, a `TypeSequence` of the text, and `RestoredPromptClearSequence` built as Claude's is, or as one bare `C-u` when its `singleClear` field is set.
+`restoreEngine` is a `fakeEngine` (`RUNNING` read as a running turn, settle 2 s) with `Startup` answering ready unless the capture holds `SHELL`, `InputBoxText` reading the rows after the caret joined by a space, a zero `SubmitSettle`, a `TypeSequence` of the text, and `RestoredPromptClearSequence` built as Claude's is, sized from the first to the last row holding text with blank rows between them counted, or as one bare `C-u` when its `singleClear` field is set.
 `styledRestoreEngine` embeds `*restoreEngine` and answers `PlainBoxCapture` with `blankMarkedSpans`, so the box readings of the call go through the styled capture.
 
 `TestRunner_InterruptRestoring` is a new table test, since `TestRun_Interrupt_PlaysEscape` pins the unchanged guarded key and a restored box needs the stateful fake; its rows assert the keys sent, the final box and the error:
 a two-row and a three-row restored prompt are emptied by `Escape` then `C-u BSpace C-u` and `C-u BSpace C-u BSpace C-u`;
+a three-row restored prompt whose middle row is blank is emptied by `Escape` then `C-u BSpace C-u BSpace C-u`;
 the `singleClear` engine's one `C-u` leaves text, returns nil and sends nothing after it;
 a box that held a draft before the key gets the `Escape` alone;
 a box showing only the suggestion before the key, on `styledRestoreEngine`, reads empty, so its restored prompt is cleared, while the same pane on `restoreEngine` reads a draft before the key and gets the `Escape` alone;
@@ -82,7 +83,8 @@ an engine without the restored-prompt clear (a plain `fakeEngine`) gets the `Esc
 a capture that fails before the key fails the call with no key sent;
 a capture that fails after the key, an activity query that fails at the guard reading (`ActivityErrQueue`) and a failed `C-u` of the clear (`SendKeyErrQueue`) each return an error wrapping `ErrInterruptClearFailed` with the `Escape` sent, and the failed activity query sends no clear key;
 a pane with no running turn (`idleBefore`) returns `ErrNoRunningTurn` and sends nothing;
-and a strand with no run record, resolved through the live strand's provider, has its restored prompt cleared.
+a strand with no run record, resolved through the live strand's provider, has its restored prompt cleared;
+and a guid with no run record that reed reports no live strand for (a `newFixture` without `withStrand`, the `fakeReed`'s `StatusQueue` from `liveStrandStatus(false)`) fails with `notShuttleOrLiveStrandError`'s error naming the guid and sends no key.
 `cmd/lyx/testdata/test-budget.yaml`'s `internal/shuttleengine` row rises from 178 to 179.
 
 Docs in the same commit: `internal/shuttleengine/doc.go`'s interrupt paragraph gains `Runner.InterruptRestoring`;

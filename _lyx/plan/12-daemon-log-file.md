@@ -49,9 +49,10 @@ Under `go test` `spawnDaemon` still starts nothing and returns its error.
 `clientSeam.spawn` takes the hub and log paths and answers the pid, `seam` keeps `spawnDaemon`, and `runVerb` hands `NewClient` a spawn closure over `geometry.DaemonLogPath`.
 
 Client: `NewClient`'s spawn answers the pid it started, and `Client.connect`, when it gives up after `ConnectAttempts`, appends `daemonLogExcerpt(geom.DaemonLogPath, pid)` to its error, which keeps naming the socket and now names the log file.
-`daemonLogExcerpt` reads the file and quotes the lines that open with `DaemonLogPrefix(pid)`, and the lines carrying no `pid=` prefix (a runtime panic trace) that follow this pid's own start header with no other start header after it.
+`daemonLogExcerpt` first opens the told log path for append, write-only and without creating it, as `openDaemonLog` opens it, and closes it at once with nothing written; when that open fails it says the daemon log could not be opened and reads nothing, since that is the open a spawn needed, so an existing file the spawn could not append to or truncate is reported as such rather than as holding no line.
+Otherwise it reads the file and quotes the lines that open with `DaemonLogPrefix(pid)`, and the lines carrying no `pid=` prefix (a runtime panic trace) that follow this pid's own start header with no other start header after it.
 When another start header follows this pid's own, it quotes only the pid-tagged lines and says the file also holds lines it cannot attribute.
-A file with no such line says the file holds no line from that start; a file that cannot be read says the daemon log could not be opened, which is also what a spawn that could not open it leaves behind.
+A file with no such line says the file holds no line from that start; a file that opens for append but cannot be read also says the daemon log could not be opened.
 A truncation that erased this start's header but not its later lines still finds those lines by pid.
 Bound: the excerpt reads one capped file once, at a give-up only.
 
@@ -64,6 +65,8 @@ lines of pid 4242 and a pid-less panic line after its own header are quoted, and
 another start header after 4242's own leaves only 4242's tagged lines quoted and the unattributed-lines note;
 4242's tagged lines with no 4242 start header, as a truncation leaves them, are still quoted;
 a file holding only pid 77's lines says it holds no line from that start;
+the same file with mode 0o444 says the daemon log could not be opened, a row that skips on Windows and when `os.Geteuid()` is 0, as the repository's other permission-denial rows do, since root opens a 0o444 file for append;
+the same file with mode 0o200, writable but not readable, says the daemon log could not be opened, under the same Windows and root skip, since Windows has no write-only file and root reads any file;
 and an absent file says the log could not be opened; every row's error names the log file.
 `TestCreelCLI` gains a row where `openDaemonLog` appends to a small existing log, truncates one over the cap before appending, and on a path whose parent is a regular file answers a nil file and an error and logs a Warn, the fallback that leaves the daemon's stderr null.
 `openDaemonLog` is unexported and tested in the package, because `spawnDaemon` starts nothing under `go test`, so no verb reaches the log's opening.

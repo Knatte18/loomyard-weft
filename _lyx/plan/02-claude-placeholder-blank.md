@@ -28,11 +28,11 @@
 
 **Intent:** Decision D1, provider half: a styled capture of Claude's input box holding only its placeholder or prompt suggestion turns into a plain capture whose box reads empty.
 
-`shuttleengine` declares, in `engine.go` beside `InputBoxReader`, the optional capability `StyledBoxReader` with the one method `PlainBoxCapture(styled string) string`: it takes a capture reed's `CapturePaneStyled` returned and answers the plain capture, every SGR and other escape sequence removed, with the cells of a box holding only the provider's placeholder blanked to spaces.
-Its doc says a caller reads the box, the running turn and every other classification of one decision from the one plain capture it answers.
+`shuttleengine` declares, in `engine.go` beside `InputBoxReader`, the optional capability `StyledBoxReader` with the one method `PlainBoxCapture(styled string) string`: it takes a capture reed's `CapturePaneStyled` returned and answers the plain capture, every SGR and other escape sequence removed and each line's trailing ASCII spaces (U+0020) trimmed as `capture-pane -p` trims them, with the cells of a box holding only the provider's placeholder blanked to spaces.
+Its doc states that trimming, so the answer matches what `capture-pane -p` returns for a pane with no placeholder, and says a caller reads the box, the running turn and every other classification of one decision from the one plain capture it answers.
 
-`Claude.PlainBoxCapture` splits the styled capture into lines and runs `parseStyledLine` over each: it walks the line, drops every CSI sequence (`ESC [` parameters and a final byte in `@`–`~`) and every OSC sequence (`ESC ]` up to `BEL` or `ESC \`), tracks the SGR faint attribute (parameter `2` sets it; `0`, `22` and an empty `ESC [ m` clear it; the other parameters leave it), and returns the line's text as `styledRun` values, each a text with its faint flag.
-Joining the runs' texts gives the plain line, so for a capture with no placeholder the answer equals the escape-stripped capture.
+`Claude.PlainBoxCapture` splits the styled capture into lines and runs `parseStyledLine` over each: it walks the line, drops every CSI sequence (`ESC [` parameters and a final byte in `@`–`~`) and every OSC sequence (`ESC ]` up to `BEL` or `ESC \`), tracks the SGR faint attribute (parameter `2` sets it; `0`, `22` and an empty `ESC [ m` clear it; the other parameters leave it; the parameters after `38`, `48` and `58` are consumed as a colour and never read as attributes, that is `38;2;r;g;b` and `38;5;n` and the same for `48` and `58`, so a `2` or a `0` inside a colour sets and clears nothing), and returns the line's text as `styledRun` values, each a text with its faint flag.
+Joining the runs' texts and trimming the trailing ASCII spaces (U+0020) gives the plain line, since `capture-pane -e` keeps trailing blank cells drawn on a non-default background that `capture-pane -p` drops; so for a capture with no placeholder the answer equals the escape-stripped capture with each line right-trimmed, which is what `capture-pane -p` returns.
 The box is located on the plain lines with `inputBoxInterior`, exactly as `IdleSession` and `InputBoxText` locate it.
 The box is blanked only when, once the caret marker, the side bars and whitespace are stripped from its interior lines and a lone `%` (`shellEOLMark`) standing as its own token is set aside as `holdsOnlyEOLMark` sets it aside, at least one non-blank cell remains, every remaining non-blank cell is faint, and the faint text joined does not match `pastePlaceholderShape`.
 Blanking replaces each faint non-blank rune of the interior with a space; every other line, and every capture whose box fails the rule, is answered unblanked.
@@ -70,9 +70,13 @@ typed text followed by faint text in one box reads not idle with both texts;
 and faint placeholder text beside a lone unstyled `%` reads idle with empty text.
 `TestPlainBoxCapture` is a new table test in `session_test.go` for the answer's own shape, which no test reads, each row comparing the answer with an expected plain capture:
 the restored-prompt fixture's answer equals, line by line, the fixture with its escapes removed;
-a capture with no box comes back escape-stripped and unchanged otherwise;
+a capture with no box comes back escape-stripped and right-trimmed and unchanged otherwise;
 a faint line outside the box, such as a faint transcript line above it, stays in the answer;
 an OSC 8 hyperlink sequence around box text is dropped from the answer, the text kept;
+a line ending in three spaces drawn under a background SGR (`ESC[44m`, text, three spaces, then `ESC[49m`) answers the text with no trailing spaces;
+a box line holding the caret, an NBSP and nothing else under no SGR answers that line with the NBSP kept, exactly as `capture-pane -p` returns it;
+a row whose box text is drawn under `ESC[38;2;10;2;20m` and then under `ESC[38;5;2m`, with no faint, comes back unblanked;
+a row where faint text is followed in the box by text under `ESC[38;5;0m` keeps that text faint and comes back with the box blanked, so the colour-parameter skip is pinned in both directions;
 and two rows where faint placeholder text is followed in the box by text after `ESC[22m` and after a bare `ESC[m` come back unblanked, so a missed faint clear, which would blank typed text, fails them.
 `cmd/lyx/testdata/test-budget.yaml`'s `internal/shuttleengine/claudeengine` row rises from 113 to 114.
 
