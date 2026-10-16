@@ -73,7 +73,7 @@ Autonomous mode: no operator answered, and every pick below is an auto-pick reco
 
 ## Review rounds
 
-_No rounds yet._
+- Round 3: D16 points the dropped-notice case at D17's wake checks, which read the board entry turning `done` or pruned and the board's ready tasks, independent of the `deploy` key; `origin/prod` against `origin/main` stays a deploy-recovery check, scoped to an empty `deploy` key, that fetches, pulls the prime and reports a refused or incomplete deploy once. D11's finish line and acceptance row now cover the same reach as its first sentence: every production Warn site plus every Info-or-above line in a loop or polled path.
 
 ## Question ledger
 

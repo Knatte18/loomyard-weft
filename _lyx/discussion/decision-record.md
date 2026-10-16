@@ -132,7 +132,7 @@ Every production `logger.Warn` call is checked against the policy, and so is eve
 Each site either stays as it is, moves to Info or Debug, or gains a once-per-change or once-per-episode guard.
 The test for a site: Warn only for a recoverable failure (a retry, an unconfirmed teardown, an error swallowed on a fallback path); nothing at Info or above repeats without a state change.
 A site that sits in no loop and records a real failure stays Warn.
-The audit is finished when the plan gives every production `logger.Warn` site a verdict (keep, demote, or guard) and every changed site has its change in a card.
+The audit is finished when the plan gives every production `logger.Warn` site, and every Info-or-above line inside a loop or a polled path, a verdict (keep, demote, or guard) and every changed site has its change in a card.
 Rationale: the board asks for the other modules' Warn calls to be checked, and the inventory ranked only the sites that fired in four days of traces.
 
 ### D12 — The policy text and a PATTERN entry
@@ -186,7 +186,8 @@ Pruning sits outside `package fabricengine`, so `PATTERN-fabric-destruction-chok
 The Land row's last step queues `<slug>: landed` after the board prune, appending `; newly ready: a, b` when the landing made tasks ready.
 It is sent once per batten run, guarded by the row's marker line.
 The existing ready marker literal keeps meaning "the landing notice was queued", so a row resumed across the upgrade sends no second notice.
-A notice that cannot be queued, because the orch state is unreadable or no orch strand is recorded, logs Warn naming the slug and is not retried: the row is done, and the board entry turns `done` at teardown.
+A notice that cannot be queued, because the orch state is unreadable or no orch strand is recorded, logs Warn naming the slug and is not retried: the row is done, and the board entry turns `done` at teardown, which D17's wake check reads in the notice's place.
+`origin/prod` is the baseline for the deploy only, never for the landing.
 A Land failure still sends its failure notice, and a landing that fails before the ready read sends no landed notice.
 Rationale: the alignment agent lands tasks with no orch turn, so the notice is the orch's only prompt that a task landed.
 It is also the signal a later run driver (`orch-split`) would take over, so it does not add to what that note plans to move.
@@ -200,7 +201,14 @@ It is also the signal a later run driver (`orch-split`) would take over, so it d
 - starts any tasks the notice names as newly ready;
 - runs `update-plugins.sh` by hand when the hub's landing `deploy` key is empty.
 
-The line telling the orch to deploy "at your next wake after any landing" goes, since the notice now marks each landing.
+A dropped notice is caught by two checks the stencil runs at every wake, each reading the board, which survives a refresh, compact or handoff, and neither depending on the `deploy` key:
+
+- any task the orch counts as running whose board entry is `done`, or is no longer on the board because a later landing pruned it, is no longer running;
+- any task the board shows ready and not yet started is started.
+
+A separate deploy-recovery check runs at each wake only while the landing `deploy` key is empty, and covers landings into `main`, the branch `update-plugins.sh` deploys from: the orch fetches, compares `origin/prod`, which `update-plugins.sh` moves to the commit it deploys, against `origin/main`, and when `main` holds a commit `prod` lacks, pulls the prime and runs `update-plugins.sh` there.
+A refused pull or deploy, or a `prod` still behind `main` after the run, is reported to the operator once and not retried until `origin/main` moves.
+The line telling the orch to deploy "at your next wake after any landing" gives way to that check.
 The `contracts/stencils/claims_test.go` rows that pin the old sentences change with it, and `docs/overview.md`'s line on Land notifying only on a failure or a newly ready task is updated.
 
 ## Constraints
@@ -239,11 +247,13 @@ The `contracts/stencils/claims_test.go` rows that pin the old sentences change w
 - Loom's `driver_busy` refusal still names the draft.
 - A missing transcript in `SessionNameDrift` logs at Debug; another read error logs Warn once per session id.
 - `tmuxkit.Main` leaves no logger stderr output in a package run whose code logs at Warn, and the logger package's own tests still pass.
-- Every production `logger.Warn` site has a verdict in the plan (D11).
+- Every production `logger.Warn` site, and every Info-or-above line inside a loop or a polled path, has a verdict in the plan (D11).
 - Pair teardown copies the pair's trace logs and verify logs into `<root>/<slug>/<timestamp>/` after the run-lock wait and before removal. A pair with neither source creates no entry. A copy failure leaves no partial entry, logs Warn and leaves the teardown's result unchanged. A refused removal leaves the pair's logs in place. Two archives of one slug in the same second land in two entries.
 - An archive write removes timestamp entries older than 30 days and empty slug directories, keeps newer entries, leaves entries with unparsable names and plain files alone, and treats an entry already gone as removed.
 - A landing with no newly ready task sends `[batten notice] <slug>: landed`; one with ready tasks sends `[batten notice] <slug>: landed; newly ready: a, b`. A Land row resumed after the notice was queued sends no second notice, a notice that cannot be queued logs Warn, and a failed Land step sends only its failure notice.
 - The orch stencil's claims test pins that every landing notice goes to After landing.
+- The orch stencil's claims test pins the wake check that counts a task whose board entry is `done` or gone as no longer running, and the wake check that starts every ready task not yet started.
+- The orch stencil's claims test pins the deploy-recovery check, scoped to an empty `deploy` key, including its baseline (`origin/main` holding a commit `origin/prod` lacks) and its one report of a refused or incomplete deploy.
 
 ## Notes for the plan writer
 
