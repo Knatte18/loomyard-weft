@@ -11,6 +11,7 @@
 - `plan:internal/statuspane#NewStatusCache` -> `func NewStatusCache() *StatusCache`
 - `plan:internal/statuspane#StatusPoll` -> `type StatusPoll struct`
 - `plan:internal/statuspane#StatusCache.Poll` -> `func (c *StatusCache) Poll(path string) StatusPoll`
+- `plan:internal/statuspane#FormatMinutes` -> `func FormatMinutes(d time.Duration) string`
 - `internal/statuspane/pane_test.go`
 - `internal/statuspane/cache_test.go`
 - `internal/statuspane/testmain_test.go`
@@ -34,6 +35,7 @@ It takes every path and size it works on as values (`PATTERN-told-geometry`) and
   The wait between polls starts at one second, doubles while a poll changes nothing, up to an eight-second ceiling, and returns to one second on any change, as `PATTERN-daemon-wakeups` requires; both values are named constants.
   Bound: it reads and writes nothing but its told seams and `Out`.
 - `TerminalSize(f)` reads the columns and rows of the terminal on `f` through `term.GetSize`, so the pane reads its own height and a summary line is right before reed has applied a reported count.
+- `FormatMinutes(d)` renders a duration in whole minutes as `12m`, `1h05m` or `2d03h`, the one time format both panes share (the `minute-resolution-times` decision); it has no test of its own, since the exact time strings `TestRenderChecklist` (card 7) and `TestRenderOverview` (card 9) assert cover it.
 - `ReportFromEnv(getenv, set)` returns a report func that calls `set` with the `agentname.StrandNameEnv` and `TMUX_PANE` values `getenv` gives (production passes `os.Getenv`), or nil when either is empty, so a hand-run pane outside a strand reports nothing.
 
 `cache.go`: `StatusCache.Poll(path)` reads a `shedengine.Status` without the run's status lock, which is safe because `internal/state` writes it atomically, so it never blocks or slows a run.

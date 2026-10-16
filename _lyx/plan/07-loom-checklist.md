@@ -27,6 +27,9 @@
 - `docs/overview.md`
 - `cmd/lyx/testdata/test-budget.yaml`
 
+**Uses:**
+- `plan:internal/statuspane#FormatMinutes`
+
 **Intent:**
 Build D7: the pair's `loom-status` strand becomes the gate checklist, a top content strand at a quarter share, on both child drivers.
 
@@ -40,7 +43,7 @@ Bound: it reads files only; its one write is the content-rows report, which card
 `renderChecklist` (pure, in `checklist.go`) returns the frame:
 - The first line is the state line: `shedverbs.RenderStatusLine("loom", status)`, or `shedverbs.UnavailableLine("loom")` while the status is not found or unreadable.
 - With `rowsErr` set, the only other line is `recipe unreadable`.
-- Otherwise one line per recipe row in recipe order: a box, `[x]` done, `[>]` running, `[!]` failed, `[-]` halted, `[ ]` not reached; the row name; the time spent in it summed over its visits, rendered in minutes as `12m`, `1h05m` or `2d03h`; and `x<N>` when it was visited more than once.
+- Otherwise one line per recipe row in recipe order: a box, `[x]` done, `[>]` running, `[!]` failed, `[-]` halted, `[ ]` not reached; the row name; the time spent in it summed over its visits, rendered by `statuspane.FormatMinutes`; and `x<N>` when it was visited more than once.
 - Visits follow D7: a visit lasts from the previous history entry's end (the seed's `started_at` for the first entry; with none, the first entry's `at`) to its own end, its `last_at` when set and else its `at`; an entry's `repeats` count as further visits and its end is its `last_at`; a `goto` entry is no visit and adds no time, and its `at` starts the next visit; a call that recorded no entry adds its time to the next recorded visit, since the start does not move.
 - The current producer's row is running while the state is running, failed while it is failed and halted while it is paused, blocked or awaiting, and its current visit runs from the last entry's end to `now` in every one of them; on a done run no visit is open.
   Every other row with a visit is done, and a row with none is not reached.

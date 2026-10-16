@@ -33,7 +33,7 @@
 - `internal/reedengine/render#TestDisplayMarshalsWithoutRetiredKeys`
 
 **Intent:**
-Give render the D3 size vocabulary and height rules, in its policy layer only (`PATTERN-leaf-packages`: render stays a pure leaf, and `layout.go`/`checksum.go` are untouched).
+Give render the D3 size vocabulary and height rules, in its policy layer only (`PATTERN-leaf-packages`: render stays a pure leaf, and no mechanics in `layout.go` or `checksum.go` change; `layout.go` changes only the comment of `placement.strip`, which now names every collapsed positional cell and every content cell).
 
 Vocabulary, in `types.go`:
 - `AnchorTop` joins the closed anchor set; the `Anchor` comment and the package comment name four values, `own-window` still reserved.

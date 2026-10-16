@@ -17,6 +17,9 @@
 - `docs/overview.md`
 - `cmd/lyx/testdata/test-budget.yaml`
 
+**Uses:**
+- `plan:internal/statuspane#FormatMinutes`
+
 **Intent:**
 Build D2's runs overview as `lyx batten overview`, a hidden pane verb (audience internal, a cobra child of `batten`, a `Short`, JSON errors per `PATTERN-cli-cobra`) in `overview.go`.
 `resolvePersistentPreRun` skips it as it skips `cleanup`: it takes no slug and arms no shed spec.
@@ -31,7 +34,7 @@ The `overviewRun` values it builds, and `renderOverview`'s rules over them (D2):
 - A status file unreadable on two polls in a row (`StatusPoll.Unreadable`), batten's or the child's, shows the slug and `status unreadable`; one failed poll keeps the line built from the cache's previous status; neither stops the other lines.
   A run whose very first poll fails has no previous status, so its line is the one a seed without a status file gets, `starting`, until the second failure.
 - The stage is the child's current producer while batten is in Run-Shed and the child's status is found, and batten's own current producer otherwise, also when the child's file does not exist yet or any more.
-- One line per run, columns padded to the frame's widest value: the slug, batten's state, the stage, the time in that stage (from the end of the last history entry of the status the stage came from, falling back to batten's, then to the seed's `started_at`), the run's age (from the seed's `started_at`), and the pair's reed session name, `reedengine.SessionName(fabricengine.WorktreePath(prime, slug))`; an unknown time renders `-`, and times render in minutes as `12m`, `1h05m` or `2d03h`, so a line changes at most once a minute and the pane's wait can back off.
+- One line per run, columns padded to the frame's widest value: the slug, batten's state, the stage, the time in that stage (from the end of the last history entry of the status the stage came from, falling back to batten's, then to the seed's `started_at`), the run's age (from the seed's `started_at`), and the pair's reed session name, `reedengine.SessionName(fabricengine.WorktreePath(prime, slug))`; an unknown time renders `-`, and times render through `statuspane.FormatMinutes`, so a line changes at most once a minute and the pane's wait can back off.
 - Lines are ordered by the seed's `started_at`, then by slug; runs with no readable seed or a seed without `started_at` come last, by slug.
 - No run in flight renders the one line `no runs in flight`.
 `fitOverview(lines, rows)` keeps the oldest runs, drops the newest first, and ends with `… <N> more runs not shown`, so the pane never exceeds the height reed gives it and the summary is right whatever count reed last applied.
@@ -39,10 +42,9 @@ The `overviewRun` values it builds, and `renderOverview`'s rules over them (D2):
 `docs/overview.md`'s batten bullet names the overview verb and that the orch start runs it (card 10).
 
 Tests (`overview_test.go`):
-- `TestRenderOverview`, table-driven over built `overviewRun` values and a fixed `now`: two runs ordered by `started_at` with their six fields; a run with no `started_at` and one with no readable seed after them, by slug; a run in Worktree-Create with no pair shown; a seeded run with no status shown as `starting`; a non-done run whose pair is gone hidden and a failed run with its pair shown; a run in Run-Shed whose child status is not found showing batten's producer, never `status unreadable`; an unreadable status showing `status unreadable` beside a normal line; no runs giving `no runs in flight`.
-- `TestFitOverview`: three lines into two rows keep the oldest line and the summary naming one run not shown; lines that fit are returned unchanged.
+- `TestRenderOverview`, table-driven over built `overviewRun` values and a fixed `now`: two runs ordered by `started_at` with their six fields; a run with no `started_at` and one with no readable seed after them, by slug; a run in Worktree-Create with no pair shown; a seeded run with no status shown as `starting`; a non-done run whose pair is gone hidden and a failed run with its pair shown; a run in Run-Shed whose child status is not found showing batten's producer, never `status unreadable`; an unreadable status showing `status unreadable` beside a normal line; no runs giving `no runs in flight`; and two rows that pass `renderOverview`'s output through `fitOverview` with a told row count: three lines into two rows keep the oldest line and a summary naming one run not shown, and lines that fit come back unchanged.
 - `TestOverviewSource_ReadsThePrimesRunsFromDisk` over a temp prime (`locationkit.Location`) with run directories written through `shedrun.WriteSeed` and status files, a pair directory, and a temp child status path behind `childStatus`: a run whose status turns undecodable keeps its line for one frame and shows `status unreadable` on the second; a run in Run-Shed reads its stage from the child file and falls back to batten's producer once that file is removed; a seed with another recipe is not shown.
 - `overview_integration_test.go` (`//go:build integration`, it builds a hub through `hubforge`): `TestOverviewCmd_RefusesOutsideThePrime` runs `overview` through `RunCLIIn` from the hub's task pair, wanting exit 1 and an `"ok":false` envelope naming the prime (the `RefuseUnlessPrime` refusal), and from a temp directory that is no git worktree, wanting exit 1 and the resolution refusal on the envelope; neither starts a pane.
-- `test-budget.yaml`: `internal/battencli` 69 → 73.
+- `test-budget.yaml`: `internal/battencli` 69 → 72.
 
 **ImpactSummary:** one new hidden batten verb and its pure rendering; no existing batten verb or producer changes.
