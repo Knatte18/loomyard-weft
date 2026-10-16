@@ -1,0 +1,438 @@
+{
+  "runGuid": "e880b0e9428e0f2ce5d1972c126e0cf3",
+  "planFingerprint": "666744094399a1541aa180921c899370aa4196efe3fb1a2818865a9dc7a390e3",
+  "planFileHashes": {
+    "00-overview.md": "26033f3ee2e2d1d39b3f8d5c560887856a85f82773b835a7b5ed296f2f883489",
+    "01-reed-styled-capture.md": "e521d193b8c94b11d1fbabe9702b46578ee18b04bef651d3252900770f63bc96",
+    "02-claude-placeholder-blank.md": "237850cca85da537d285c01c5fc995fd8bdba243a66f5443ba1a77cfec7816ad",
+    "03-shuttle-box-reads.md": "bd78945ff611ba516a5bdbca6e32fbf9be2c5bd286caea3474dc85435c25789d",
+    "04-claude-restored-prompt-clear.md": "0d24943bf3415d5e157283ea44c12ac958b883c6f055585d76571aef9c13893a",
+    "05-shuttle-interrupt-restoring.md": "a4c6e2aaefe54ce0b70cca953c1077db473211f8414becd010744a4affdf5a38",
+    "06-creel-stall-reason.md": "5f468f9c67ea77bb222a05195882a577f9aab86dc89e1a8a3140f31499148e78",
+    "07-creel-stall-wait.md": "8bde5c9c2dd17689754282cab2a0e38ff7557f3e0a2da984061b76c5f1d7eeb4",
+    "08-creel-interrupt-clear.md": "f83a08daebb0c878bdd69b989527846471a20c8fab8f0a2282c49ea4bb51b52e",
+    "09-inject-ttl-from-posting.md": "801101275da3d1073fc9623db1f6402f9fdafe7ea345613331a57c8bb7d65306",
+    "10-read-checked-write.md": "d4820094416d8c8f6fec7cb4f73da34be3ece54a0888390e26849604c6433a5e",
+    "11-creel-output-consistency.md": "228badfc3286564fa8229758f3e35e045c19444dd496382e7b9bbf5e8dfb774c",
+    "12-daemon-log-file.md": "8ac4ded99cab7961fa43cbf076894a7506950073bd609bae9a875b1d0ae37950",
+    "13-daemon-log-lines.md": "93d3b40e16972ee4bc2862c56eb7768774510236aba1aacada81356b8df66b23",
+    "14-creel-sandbox-scenarios.md": "da00ba3917b5b60ba6529f9f6c5f605a5d8165cde4e0138493053f9de3584c52"
+  },
+  "planOverviewFrameHash": "402f362299c6c1aba1c6cb1dfffa8414e5a96c50ebf86a1cad8578cca2bedd82",
+  "partition": [
+    {
+      "cards": [
+        "01-reed-styled-capture",
+        "02-claude-placeholder-blank"
+      ],
+      "profile": "cautious",
+      "estimate": 179116,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 1,
+        "startup": 54556,
+        "read_union": 46548,
+        "cards": [
+          {
+            "card": 1,
+            "card_text": 468,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1944,
+              "file:internal/reedengine/doc.go": 12276,
+              "package:cmd/lyx/testdata": 2000,
+              "package:internal/reedengine": 2000,
+              "package:internal/shuttleengine": 2000,
+              "package:internal/testkit/shuttlefake": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:internal/reedengine": 2000,
+              "tests:internal/shuttleengine": 2000,
+              "tests:internal/testkit/shuttlefake": 2000
+            },
+            "messages": 128.5,
+            "written": 39018
+          },
+          {
+            "card": 2,
+            "card_text": 1044,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1944,
+              "file:internal/shuttleengine/claudeengine/doc.go": 2688,
+              "file:internal/shuttleengine/claudeengine/settings.go": 4128,
+              "package:cmd/lyx/testdata": 2000,
+              "package:internal/shuttleengine": 2000,
+              "package:internal/shuttleengine/claudeengine": 2000,
+              "package:internal/shuttleengine/claudeengine/testdata": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:internal/shuttleengine": 2000,
+              "tests:internal/shuttleengine/claudeengine": 2000,
+              "tests:internal/shuttleengine/claudeengine/testdata": 2000
+            },
+            "messages": 126.5,
+            "written": 38994
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "03-shuttle-box-reads",
+        "04-claude-restored-prompt-clear"
+      ],
+      "profile": "cautious",
+      "estimate": 162216,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 2,
+        "startup": 61556,
+        "read_union": 30724,
+        "cards": [
+          {
+            "card": 3,
+            "card_text": 792,
+            "reads": {
+              "file:internal/orchengine/doc.go": 5124,
+              "file:internal/shuttleengine/doc.go": 5412,
+              "file:pattern/PATTERN-pane-text-injection.md": 264,
+              "package:internal/orchengine": 2000,
+              "package:internal/shuttleengine": 2000,
+              "package:pattern": 2000,
+              "tests:internal/orchengine": 2000,
+              "tests:internal/shuttleengine": 2000,
+              "tests:pattern": 2000
+            },
+            "messages": 154.5,
+            "written": 47142
+          },
+          {
+            "card": 4,
+            "card_text": 444,
+            "reads": {
+              "file:internal/shuttleengine/claudeengine/doc.go": 2688,
+              "package:internal/shuttleengine": 2000,
+              "package:internal/shuttleengine/claudeengine": 2000,
+              "tests:internal/shuttleengine": 2000,
+              "tests:internal/shuttleengine/claudeengine": 2000
+            },
+            "messages": 74.5,
+            "written": 22794
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "05-shuttle-interrupt-restoring"
+      ],
+      "profile": "cautious",
+      "estimate": 142800,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 3,
+        "startup": 68556,
+        "read_union": 20916,
+        "cards": [
+          {
+            "card": 5,
+            "card_text": 1128,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1944,
+              "file:internal/shuttleengine/doc.go": 5412,
+              "file:pattern/PATTERN-guarded-interrupt.md": 168,
+              "file:pattern/PATTERN-pane-text-injection.md": 264,
+              "package:cmd/lyx/testdata": 2000,
+              "package:internal/shuttleengine": 2000,
+              "package:pattern": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:internal/shuttleengine": 2000,
+              "tests:pattern": 2000
+            },
+            "messages": 174,
+            "written": 53328
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "06-creel-stall-reason"
+      ],
+      "profile": "cautious",
+      "estimate": 153346,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 4,
+        "startup": 75556,
+        "read_union": 14832,
+        "cards": [
+          {
+            "card": 6,
+            "card_text": 1008,
+            "reads": {
+              "file:internal/creelengine/doc.go": 1824,
+              "package:internal/creelcli": 2000,
+              "package:internal/creelengine": 2000,
+              "package:internal/testkit/creelfake": 2000,
+              "tests:internal/creelcli": 2000,
+              "tests:internal/creelengine": 2000,
+              "tests:internal/testkit/creelfake": 2000
+            },
+            "messages": 206.5,
+            "written": 62958
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "07-creel-stall-wait",
+        "08-creel-interrupt-clear"
+      ],
+      "profile": "cautious",
+      "estimate": 188048,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 5,
+        "startup": 82556,
+        "read_union": 15408,
+        "cards": [
+          {
+            "card": 7,
+            "card_text": 828,
+            "reads": {
+              "file:internal/creelengine/doc.go": 1824,
+              "package:internal/creelcli": 2000,
+              "package:internal/creelengine": 2000,
+              "tests:internal/creelcli": 2000,
+              "tests:internal/creelengine": 2000
+            },
+            "messages": 150.5,
+            "written": 45978
+          },
+          {
+            "card": 8,
+            "card_text": 756,
+            "reads": {
+              "file:internal/creelengine/doc.go": 1824,
+              "package:internal/creelcli": 2000,
+              "package:internal/creelengine": 2000,
+              "package:internal/testkit/creelfake": 2000,
+              "tests:internal/creelcli": 2000,
+              "tests:internal/creelengine": 2000,
+              "tests:internal/testkit/creelfake": 2000
+            },
+            "messages": 144.5,
+            "written": 44106
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "09-inject-ttl-from-posting",
+        "10-read-checked-write",
+        "11-creel-output-consistency"
+      ],
+      "profile": "cautious",
+      "estimate": 165500,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 6,
+        "startup": 89556,
+        "read_union": 11276,
+        "cards": [
+          {
+            "card": 9,
+            "card_text": 336,
+            "reads": {
+              "package:internal/creelengine": 2000,
+              "tests:internal/creelengine": 2000
+            },
+            "messages": 41.5,
+            "written": 12786
+          },
+          {
+            "card": 10,
+            "card_text": 456,
+            "reads": {
+              "file:internal/creelcli/doc.go": 84,
+              "package:internal/creelcli": 2000,
+              "tests:internal/creelcli": 2000
+            },
+            "messages": 57,
+            "written": 17556
+          },
+          {
+            "card": 11,
+            "card_text": 576,
+            "reads": {
+              "file:internal/creelengine/doc.go": 1824,
+              "package:internal/creelcli": 2000,
+              "package:internal/creelengine": 2000,
+              "tests:internal/creelcli": 2000,
+              "tests:internal/creelengine": 2000
+            },
+            "messages": 112.5,
+            "written": 34326
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "12-daemon-log-file",
+        "13-daemon-log-lines",
+        "14-creel-sandbox-scenarios"
+      ],
+      "profile": "cautious",
+      "estimate": 188804,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 7,
+        "startup": 96556,
+        "read_union": 24568,
+        "cards": [
+          {
+            "card": 12,
+            "card_text": 912,
+            "reads": {
+              "file:internal/creelcli/doc.go": 84,
+              "file:internal/creelengine/doc.go": 1824,
+              "package:internal/creelcli": 2000,
+              "package:internal/creelengine": 2000,
+              "package:internal/hubgeom": 2000,
+              "tests:internal/creelcli": 2000,
+              "tests:internal/creelengine": 2000,
+              "tests:internal/hubgeom": 2000
+            },
+            "messages": 156,
+            "written": 47712
+          },
+          {
+            "card": 13,
+            "card_text": 456,
+            "reads": {
+              "file:internal/creelcli/doc.go": 84,
+              "package:internal/creelcli": 2000,
+              "tests:internal/creelcli": 2000
+            },
+            "messages": 53,
+            "written": 16356
+          },
+          {
+            "card": 14,
+            "card_text": 312,
+            "reads": {
+              "file:docs/research/creel-audit-2026-10-15/report.md": 1380,
+              "file:tools/sandbox/SANDBOX-SHUTTLE-SUITE.md": 3600,
+              "package:tools/sandbox": 2000,
+              "tests:tools/sandbox": 2000
+            },
+            "messages": 11,
+            "written": 3612
+          }
+        ]
+      }
+    }
+  ],
+  "currentBatch": 1,
+  "masterStrand": "82c75826b095a6c5a7307cea152d3217",
+  "masterSessionId": "26014106-761d-4bd2-97e5-9d1eed89ef07",
+  "masterEngine": "claude",
+  "batches": {
+    "1": {
+      "slug": "reed-styled-capture",
+      "cards": [
+        "01-reed-styled-capture",
+        "02-claude-placeholder-blank"
+      ],
+      "cardHashes": {
+        "01-reed-styled-capture": "e521d193b8c94b11d1fbabe9702b46578ee18b04bef651d3252900770f63bc96",
+        "02-claude-placeholder-blank": "237850cca85da537d285c01c5fc995fd8bdba243a66f5443ba1a77cfec7816ad"
+      },
+      "startSha": "1d1a8fef46fa973d909dbe247d281c9db7e77636",
+      "kind": "fork",
+      "spawnedAt": "2026-10-16T05:53:09Z",
+      "sessionId": "26014106-761d-4bd2-97e5-9d1eed89ef07",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
+    }
+  }
+}
