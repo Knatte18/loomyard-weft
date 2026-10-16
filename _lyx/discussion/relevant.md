@@ -1,0 +1,29 @@
+# Relevant files
+
+- `contracts/stencils/edit/edit-directive.md` — the edit rule the rename exception joins
+- `contracts/stencils/webster/webster-body-implementer.md` — fork and recovery body: rename tool, departures, status rule, report wording
+- `contracts/stencils/webster/webster-body-verify-fix.md` — the verify-fix fork's final reply the Master reads
+- `contracts/stencils/webster/webster-prefix-fork.md` — the `await-batch` takeover wording and spawn banner
+- `contracts/stencils/webster/webster-template-master.md` — self-identification, digest fields, verify-fix summary, plan-drift paragraph, orientation claim
+- `contracts/stencils/webster/webster-fragment-fresh-read-pack-inline.md` — inline fragment to remove
+- `contracts/stencils/webster/webster-fragment-locate-pack-inline.md` — inline fragment to remove
+- `contracts/stencils/webster/webster-fragment-pack-section-inline.md` — inline fragment to remove
+- `contracts/stencils/stencils.go` — embeds and registry rows of the inline fragments
+- `contracts/stencils/pattern/pattern-directive-designer.md` — designer lists declared PATTERN changes
+- `contracts/stencils/pattern/pattern-directive-implementer.md` — "say so in your report" becomes the departure rule
+- `contracts/stencils/pattern/pattern-directive-orchestrator.md` — the forks' only PATTERN rule
+- `contracts/stencils/pattern/pattern-directive-review-fix.md` — BLOCKING rule that meets declared changes
+- `contracts/stencils/pattern/pattern-directive-judge.md` — never-downgrade rule that meets declared changes
+- `contracts/stencils/loom/loom-rubric-webster-review.md` — Rename mechanical check and commit-message reading
+- `contracts/specs/loom-plan-spec.md` — Rename row, Rename mechanic, Quarry integration, validation checks
+- `internal/languageconfig/doc.go` — `verify_tiers`, the model for `rename_tools`
+- `internal/websterengine/digest.go` `Digest`, `distill` — digest gains `departures`
+- `internal/websterengine/beginbatch.go` `digestSummaryLine` — prior-batch line carries departures
+- `internal/websterengine/recordbatch.go` `RecordBatch` — fills the digest's fields
+- `internal/websterengine/git.go` `Git` — webster's git seam for the trailer read
+- `internal/websterengine/config.go` `Config`, `ConfigSpec` — `kickstart_pack_file` to retire
+- `internal/websterengine/render.go` — pack layout choice, inline branch, value maps, directive calls
+- `internal/websterengine/doc.go` — pack layout docs to update
+- `internal/pattern/pattern.go` `Directive` — renders the directives; gains declared changes
+- `internal/configengine/layers.go` `Spec` — `RetiredKeys` for the retired pack key
+- `internal/shellguard/rows.go` — the `deny_python` row a Python rename tool meets
