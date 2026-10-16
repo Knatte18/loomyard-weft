@@ -10,8 +10,10 @@ Give each repository one orch-only rules file, `ORCHESTRATOR.md`, that lyx rende
 
 In:
 
-- `contracts/stencils/orch/orch-template-role.md`: the rewrites and cuts of D1 to D5, the new repository-rules section of D6, and the leading comment's marker list.
-- `contracts/stencils/bouncer/bouncer-template-escalation.md`: the materials list and settle condition of D1, and the `budget` line of D2.
+- `contracts/stencils/orch/orch-template-role.md`: the rewrites and cuts of D1 to D5, including the reworded design-call bullet of `## Escalations from a child`, the new repository-rules section of D6, and the leading comment's marker list.
+- `contracts/stencils/bouncer/bouncer-template-escalation.md`: the materials list, settle condition and step 1 of D1, and the `budget` line of D2.
+- `contracts/stencils/bouncer/bouncer-fragment-decide-open.md` and `contracts/stencils/bouncer/bouncer-fragment-decide-capped.md`: the reworded lead-in of D1.
+- A board note for `reed-add-parentless-placement` on where its #673 workaround removal lands (D9).
 - `internal/orchengine` and `internal/orchcli`: reading `ORCHESTRATOR.md` from a told path and filling a second role-stencil marker with it at every role-file render (D6).
 - `internal/orchengine/doc.go`: the role file's new section and marker, beside the `command_index` text it already has.
 - A new tracked `ORCHESTRATOR.md` at this repository's root, and the matching cuts and one pointer line in `CLAUDE.md` (D7, D8).
@@ -32,50 +34,75 @@ Decision:
 In the role's `## Escalations from a child`, the bullet "A hand-on of a review loop follows a fixed rule: accept unless a finding makes the design wrong, and hand a blocker that remains after round 3 to the operator" goes.
 In its place:
 
-- A review escalation whose stop report names an arbiter verdict of `hand-on` goes to a one-shot fork, handed the escalation brief's path and the verdict's path.
-  The fork answers the verdict's `question`, or the brief's own question when the verdict has none, from the operator's recorded decisions: the board entry, the decision record and support log, and the operator's board notes.
+- A review escalation whose stop report names an arbiter attempt whose `envelope.json` carries verdict `hand-on` and an empty `cause`, the arbiter agent's own verdict, goes to a one-shot fork.
+  The fork is handed the escalation brief's path and the path of that attempt's `envelope.json`, which sits in the attempt directory beside the verdict file the stop report names.
+  The fork answers the envelope's `question` from recorded operator decisions only.
+  A recorded operator decision is one of:
+  a passage of the task's board entry that the entry marks as an operator decision with a date, as `Operator decision (<date>)` does;
+  a board note whose body states that it records an operator decision;
+  a decision-record entry added with `--by operator` that is already in the committed decision record when the escalation arrives;
+  or a Discussion answer that the support log's `## Interview` shows the operator gave.
+  An `Idea` or agent-suggestion passage, an operator view not marked as a decision, a decision-record entry added with `--by arbiter` or `--by parent`, a writer's auto-pick, and an `## Auto-mode assumptions` entry never count.
+  `--by` is an unverified label: `internal/loomcli/decision.go` restricts only `--by arbiter`, so a `--by operator` entry written after the escalation arrives never counts, and the fork records only with `--by parent`.
   It follows the brief's steps to record and resume; when the recorded decisions do not answer the question, it records nothing and reports back, and the orch brings the question to the operator.
 - The fork falls under the open-fork rules of `## Investigating a stop`: a repeat notice for the slug starts no second fork, and the slug is named in the orch note while its fork is open.
 - The role restates no rule for deciding a stuck review: the arbiter's per-cause rule in `loom-template-arbiter.md` is the only one.
 
 The escalation brief changes to match:
 
-- Its materials list gains the arbiter's verdict, when the parent names one, read first.
-- Its settle condition becomes: settle only when the operator's recorded decisions answer the question, since the arbiter already judged the review materials by its rule; otherwise record nothing and report back to the parent session, which asks the operator.
+- Its materials list gains the arbiter attempt's `envelope.json`, when the parent names one, read first,
+  and the support log in the decision record's directory, read when the definition below needs its `## Interview`.
+- Its settle condition becomes: settle only when a recorded operator decision answers the envelope's question directly, since the arbiter already judged the review materials by its rule.
+  The brief states D1's definition of a recorded operator decision, including the entries that never count and the rule that `--by` is an unverified label, so a `--by operator` entry counts only when it is in the committed decision record before the escalation.
+  Never settle a question whose answer widens the task's scope, and never accept over an open design-wrong finding unless a recorded operator decision covers that finding.
+  Otherwise record nothing and report back to the parent session, which asks the operator.
+- Its `## What to do` step 1 records the operator decision the fork applied, citing where it is recorded, with `lyx loom decision add … --by parent`, instead of a design call the fork makes itself.
+  The fork never records with `--by operator`.
+  Without a decision record, the fork names the applied decision and its source in its report.
+- The decide fragments `bouncer-fragment-decide-open.md` and `bouncer-fragment-decide-capped.md` reword their lead-in "Record your decision on the segment" to name the applied operator decision as the ground for the option the fork runs.
 
+Bound: the fork may run only the brief's `decide_options` (`lyx loom circling accept` or `continue`) and `lyx loom decision add --by parent`, then `lyx loom resume`.
+It settles only when a recorded operator decision, as D1 defines it, answers the envelope's question directly; an `Idea` or agent-suggestion passage, an unmarked operator view, a `--by arbiter` or `--by parent` entry, a `--by operator` entry written after the escalation arrived, an auto-pick and an Auto-mode assumption never count.
+It never settles a question whose answer widens the task's scope, and it never accepts over an open design-wrong finding unless a recorded operator decision covers that finding.
+In every other case it records nothing and reports back.
+
+The section's bullet "A design call the child cannot make: decide it and record it with `lyx loom decision add`" is reworded to cover only an escalation that is not a review escalation; a review escalation never takes it and follows D1 or D2.
 The `lyx loom circling continue` / `accept` bullet and the other mechanics bullets of the role section stay.
 
 Rationale:
 Operator decision of 2026-10-16.
 The removed bullet duplicated the arbiter's rule with a fixed round 3 that ignores the configurable hard cap, and both the role and the brief ignored that the arbiter already applied its rule.
-Bouncer renders the brief before the arbiter runs, so the brief cannot name the verdict's path; the orch hands it to the fork, and the brief says to read it.
-A `hand-on` verdict in the stop report is the signal the orch reads, for the LLM driver and the Go driver alike.
+Bouncer renders the brief before the arbiter runs, so the brief cannot name the envelope's path; the orch hands it to the fork, and the brief says to read it.
+The arbiter verb also concludes `hand-on` itself, with a non-empty `cause` (`timeout`, `died`, `missing`, `unparseable`, `precondition`) and a synthetic question, when the agent left no sound verdict; the empty `cause` in the attempt's `envelope.json` is the only field that tells the agent's own verdict apart, for the LLM driver and the Go driver alike.
 
-### D2: An escalation with no hand-on verdict is a fault
+### D2: An escalation without the arbiter agent's hand-on is a fault
 
 Decision:
-The role section gains one short fallback rule:
-a review escalation whose stop report names no `hand-on` verdict (cause `budget`; an arbiter refusal, timeout or malformed verdict; a job exit without an envelope; a failed re-launch after a `resume` verdict; or the arbiter switched off or out of spawns) is treated as a fault and handled under `## Investigating a stop`, never decided as a design call by the orch.
+The role section gains one fallback rule, kept to one short paragraph:
+a review escalation without the arbiter agent's own `hand-on` of D1 is treated as a fault and handled under `## Investigating a stop`, never decided as a design call by the orch.
+The cases are cause `budget`; an arbiter refusal, which leaves no envelope; a `hand-on` carrying a `cause` (`timeout`, `died`, `missing`, `unparseable`, `precondition`); a job exit without an envelope; a failed re-launch after a `resume` verdict; and the arbiter switched off or out of spawns.
 When the fault is diagnosed and acted on and a design question still stands, the orch brings that question to the operator.
 
 The escalation brief gains one line: at cause `budget`, decide nothing and report back which input could not be read.
 
-Bound: the rule covers only review escalations without a `hand-on` verdict.
+Bound: the rule covers only review escalations without the arbiter agent's own `hand-on`.
 It adds no route and no command; the investigation ends in the actions `## Investigating a stop` already allows, taken after its re-check, or in a question to the operator.
 
 Rationale:
 Operator decision of 2026-10-16.
 Such an escalation means a review that did not parse, a record that could not be read, or an arbiter that failed or was off: a stop to diagnose, not a design question for the orch.
-The driver stencil reports an arbiter refusal at an `awaiting` stop with no claim of failure; it records what happened, and the orch's role classifies it, so the two wordings do not conflict.
-The operator doubts the case occurs, so the rule stays short.
+The driver stencil reports an arbiter refusal at an `awaiting` stop with no claim of failure, and takes its hand-on path for a verb-concluded `hand-on`; it records what happened, and the orch's role classifies it, so the wordings do not conflict.
 
 ### D3: Comparing related runs is the alignment agent's job
 
 Decision:
 In `## Investigating a stop`, the sentence "Read both Discussions yourself at parent-review …, pause both after Plan-Write … to compare the plans before Webster, and review both PRs side by side at PR-Gate" goes.
 "Work that spans runs stays with you: comparing plans across runs, comparing PRs that touch the same packages, and deciding when held runs go on" shrinks to the orch deciding when held runs go on.
-"Two runs with related work never talk to each other; you align them" survives only in the `## Escalations from a child` bullet on an escalation naming a peer: both escalations go to one one-shot fork that reads both decision records.
-A peer's escalation that arrives after the first fork has started goes to a fresh fork that also reads the first fork's outcome.
+"Two runs with related work never talk to each other; you align them" survives only in the `## Escalations from a child` bullet on an escalation naming a peer.
+Each peer escalation is first classified by D1 and D2.
+A peer escalation that is a D2 fault is investigated as a stop.
+The peers' D1 hand-on escalations go to one joint one-shot fork that reads both decision records, under D1's settle rule and bound, with each slug named in the orch note as an open fork.
+A peer's hand-on escalation that arrives while the first fork is open waits for that fork's report and its re-check; only then does it go to a fresh fork, under the same rule and bound, that also reads the first fork's finished outcome.
 
 Rationale:
 Operator decision of 2026-10-16.
@@ -122,7 +149,9 @@ Decision:
 - `orchcli` joins the path once from the prime worktree's root and hands it to `orchengine` as a told path; `orchengine` derives no path (`PATTERN-told-geometry`, `PATTERN-cwd-resolution`).
   The file is a repository document like `CLAUDE.md`, not lyx state, so `PATTERN-lyxdirs-single-declarer` and `PATTERN-durable-vs-ephemeral-state` do not apply.
 
-Bound: the render reads one fixed path in the prime, never a task pair's copy, and inlines it with no size cap; it adds no verb or flag, and the file can add orch rules but not override the role's.
+Bound: the render reads one fixed path in the prime, never a task pair's copy, and inlines it with no size cap; it adds no verb or flag.
+The file can carry any text into the orch's role file at every delivery, and it reaches the prime through any landing, including one the alignment agent lands with no orch turn.
+The only guard against a rule that contradicts the role is the section's own text, which tells the orch to follow the role and raise the conflict to the operator.
 
 Rationale:
 Operator decision of 2026-10-16: `ORCHESTRATOR.md` is the orch-only counterpart of `CLAUDE.md`, rendered into the orch's prompt the way the command index is inlined today, so it reaches the orch at every context cycle on top of its general role.
@@ -139,14 +168,14 @@ These move to a new `ORCHESTRATOR.md` at the repository root, worded as rules fo
   The sentences that stay in `CLAUDE.md` are reworded so "the second standing route" no longer leans on the moved one.
 - From `## Watching runs`, the orch-directed sentences: the operator watches each run in its own terminal window, never in VS Code, and VS Code opens only when the operator asks, through `lyx ide` or `batten.yaml`'s `open_ide`.
   The section's description of batten's `Open-Window` row is cut, since `internal/battenshed/doc.go` and the role's run loop already carry it.
-- `## Workarounds` with the #673 entry, when `CLAUDE.md` still holds it at plan time; if `reed-add-parentless-placement` has landed and removed it, nothing moves.
+- `## Workarounds` with the #673 entry, removed with the fix of #673 as D9 assigns it.
 
 Every other `CLAUDE.md` section stays.
 
 Rationale:
 Operator decision of 2026-10-16: instructions about the orch's behaviour go to the orch only, and the #673 workaround belongs in `ORCHESTRATOR.md`.
 The moved items instruct only the orch; no spawned role's stencil runs `lyx reed add` without `--parent`.
-`reed-add-parentless-placement` (running) fixes #673 and removes the workaround from `CLAUDE.md` in the same change.
+`reed-add-parentless-placement` fixes #673 and removes the workaround from `CLAUDE.md` in the same change.
 
 ### D8: `CLAUDE.md` points at `ORCHESTRATOR.md` for orch-only notes
 
@@ -155,6 +184,23 @@ Decision:
 
 Rationale:
 Any agent the orch briefs to write a durable note reads `CLAUDE.md`, so the routing is stated where every agent sees it, or orch-only notes drift back into `CLAUDE.md`.
+
+### D9: The #673 entry's removal has an owner in either landing order
+
+Decision:
+
+- When `reed-add-parentless-placement` lands first: this run's Merge-Review perch, which measures each merge-in against this record, checks after every merge-in whether the parent's `CLAUDE.md` still holds the #673 workaround.
+  If it does not, a #673 entry in this task's `ORCHESTRATOR.md` is a finding, fixed by removing the entry.
+  The check holds while the perch's budget, `merge_max_bounces`, is above 0; at a budget of 0 the perch settles without a review, and the entry is left to the orch's rule that a workaround is removed with its fix (D5).
+- When this run lands first: a card of this run's plan adds a board note for `reed-add-parentless-placement` with `lyx board upsert`.
+  The note says that its workaround removal targets `ORCHESTRATOR.md`'s #673 entry wherever the parent holds it there, and `CLAUDE.md`'s otherwise.
+  The note is worded for either order, so it holds if that run lands first after all.
+  That run's agents measure against its own record, not the board, so the note's reader is the orch: on that run's `landed` notice, when the parent's `ORCHESTRATOR.md` still holds the #673 entry, the orch hands a fresh agent its removal, as the rule that a workaround is removed with its fix (D5) directs.
+
+Rationale:
+Merge-In is a Go engine row that merges, verifies and writes the merge record; on a clean merge no agent resolves anything, so it cannot own the drop.
+The Merge-Review perch runs after every merge-in and reads this record as its answer key, and its overlap skip does not apply, since the parent's removal touches `CLAUDE.md`, which this task also changes.
+The plan writer schedules only Decisions, Scope and Acceptance criteria, so the board note is a Decision rather than an open risk.
 
 ## Constraints
 
@@ -179,13 +225,24 @@ Any agent the orch briefs to write a durable note reads `CLAUDE.md`, so the rout
 - A render that reads the file while batten's Land row pulls the prime may see it missing and render the placeholder for that one delivery.
 - A task branch can change `ORCHESTRATOR.md`, and the change reaches the orch at its first delivery after the landing pulls the prime, even for a run the alignment agent landed with no orch turn.
 - Hubs whose deployed role stencil is a hand-edited override refuse to start the orch after the deploy until the override gains the marker or is deleted.
-- If this run lands before `reed-add-parentless-placement`, that run finds no #673 workaround in `CLAUDE.md`, and its removal must target `ORCHESTRATOR.md` instead.
+- If this run lands before `reed-add-parentless-placement`, that run finds no #673 workaround in `CLAUDE.md`; the removal of the `ORCHESTRATOR.md` entry rests on the orch acting on D9's board note at that run's `landed` notice.
+- If this run lands second with `merge_max_bounces: 0`, no Merge-Review checks for the #673 entry, and its removal rests on the orch's workaround rule (D5).
+
+<!-- lyx:carry-over Discussion-Review -->
+- Discussion-Review, round 3: converged; each finding below was fixed or disputed by the round's fixer, and no fresh reviewer has seen the result; the fixer report says which.
+  Review: _lyx/reviews/discussion/round-3-review.md; fixer report: _lyx/reviews/discussion/round-3-fixer-report.md.
+  - d1-board-source-no-provenance (class design, severity MEDIUM, open in rounds 3)
+  - d1-operator-label-unverified (class design, severity MEDIUM, open in rounds 3)
+  - role-bullet-design-call-survives-beside-d1-d2 (class consistency, severity MEDIUM, open in rounds 3)
+<!-- /lyx:carry-over Discussion-Review -->
 
 ## Acceptance criteria
 
 - The rendered role file contains no "round 3" rule, no `update-plugins.sh`, no `origin/prod`, and no instruction to read both Discussions, pause after Plan-Write to compare plans, or review PRs side by side.
-- The rendered role file sends an escalation with a `hand-on` verdict to a one-shot fork with the brief and the verdict, defers the decision rule to the arbiter, and treats an escalation without one as a fault investigated as a stop.
-- The rendered escalation brief lists the arbiter's verdict among its materials, settles only from recorded decisions, and decides nothing at cause `budget`.
+- The rendered role file sends an escalation whose arbiter attempt's `envelope.json` carries verdict `hand-on` with an empty `cause` to a one-shot fork with the brief and that envelope, defers the decision rule to the arbiter, and treats every other review escalation as a fault investigated as a stop.
+- The rendered role file's design-call bullet in `## Escalations from a child` covers only escalations that are not review escalations, so no rule there has the orch decide a review escalation itself.
+- A `hand-on` carrying a `cause` (`timeout`, `died`, `missing`, `unparseable`, `precondition`) is treated as a fault, never sent to the settling fork.
+- The rendered escalation brief lists the arbiter attempt's envelope and the support log among its materials, defines a recorded operator decision as D1 does, `--by` bound included, settles only when such a decision answers the question directly, never on a scope-widening answer or an accept over an uncovered design-wrong finding, records the applied operator decision and its source rather than a design call of its own, and decides nothing at cause `budget`.
 - The PR-Gate section names the reject and the rework row as the fixer of a small defect.
 - The workaround rule routes orch-only workarounds to `ORCHESTRATOR.md` and every-agent workarounds to `CLAUDE.md`.
 - Render scenarios covered by tests:
@@ -198,7 +255,9 @@ Any agent the orch briefs to write a durable note reads `CLAUDE.md`, so the rout
   - `start` refuses on an unreadable file.
   - The watcher's clear cycle aborts back to idle with a reason naming the file.
   - `resume-context` fails on an unreadable file and writes no resume mark.
-- `ORCHESTRATOR.md` exists at the repository root with the Production exception and the Watching-runs sentences, and with the #673 workaround unless D7's condition dropped it; `CLAUDE.md` no longer carries them and carries the D8 pointer line.
+- `ORCHESTRATOR.md` exists at the repository root with the Production exception and the Watching-runs sentences, and with the #673 workaround unless D9 removed it; `CLAUDE.md` no longer carries them and carries the D8 pointer line.
+- When the parent's `CLAUDE.md` no longer holds the #673 workaround at a merge-in and `merge_max_bounces` is above 0, the Merge-Review perch raises any #673 entry in `ORCHESTRATOR.md` as a finding, and the landed `ORCHESTRATOR.md` carries no #673 entry.
+- The board holds a note for `reed-add-parentless-placement`, worded for either landing order, saying where its #673 workaround removal lands.
 
 ## Notes for the plan writer
 
