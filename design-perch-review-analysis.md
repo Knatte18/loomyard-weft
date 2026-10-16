@@ -4,6 +4,13 @@
 
 Imported from [issue #676](https://github.com/Knatte18/loomyard/issues/676).
 
+## Related notes (intake, 2026-10-16)
+
+- `burler-fixer-fork`: forks the fixer from the reviewer to share its cache; proposal 5 here (a twill fixer verifying its own fix with forks of itself) is a different fixer design and touches the same fixer.
+- `fan-prompt-tuning`: proposal 2 (two parallel full reviewers in round 1) is the simpler alternative to a tuned lens fan.
+- `plan-writer-finding-classes`: the late-BLOCKING classification below is a first version of that analysis, across all perches.
+- `orchestrator-survey-ideas`: proposal 3 (review the fix delta) cites its Traycer incremental re-verify item.
+
 This issue collects an analysis of the review perches (Bouncer + Burler rounds) from the records in `loomyard-weft`, and the proposals that follow from it.
 All numbers come from the newest `archive/<slug>/<sha>` tag per slug, read on 2026-10-16.
 They cover review-side records only (`_lyx/reviews/<phase>/round-N-*.md` and `round-N-usage.yaml`); writer, implementer and orch sessions are not in weft and are not counted here.
