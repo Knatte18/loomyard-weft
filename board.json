@@ -845,6 +845,24 @@
       "body": "## Seen\n\nFound by the stencil intent audit (`docs/research/stencil-intent-audit-2026-10-15/findings.md`, F6); line numbers as of `main` on 2026-10-16.\n\n`contracts/stencils/loom/loom-template-rework.md:12` and `:29` tell the PR-Rework writer that the rejection's findings are \"the operator's findings\".\nA PR rejection comes from the alignment agent, whose report becomes the findings (`internal/landingshed/pralign.go`, `applyReject`), or from the orch's reviewer fork; `contracts/stencils/orch/orch-template-role.md` has the orch, never the operator, decide at PR-Gate.\nA writer told the findings are the operator's may treat an agent's claim as an operator decision.\n\n## Decision\n\nOperator decision (2026-10-16): the wording is wrong and is to be fixed.\n\n## Idea\n\nAgent's suggestion: call them the reviewer's findings on the rejected pull request, and say they come from the alignment agent or the parent, so the writer weighs them as a review rather than as an operator ruling.\n",
       "created": "2026-10-16T07:15:52Z",
       "revised": "2026-10-16T07:15:52Z"
+    },
+    {
+      "id": 572,
+      "slug": "webster-drop-inline-pack",
+      "title": "Drop Webster's inline kick-start pack layout",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "stencil",
+        "webster"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "The inline layout puts code locations straight into the fork prompt and keeps a frozen sentence about Master reading files.",
+      "body": "## Seen\n\nFound by the stencil intent audit (`docs/research/stencil-intent-audit-2026-10-15/findings.md`, F3); line numbers as of `main` on 2026-10-16.\n\nWebster's kick-start pack has three layouts: per card (`kickstart_pack_per_card`, the default in a hub run), a pack file (`kickstart_pack_file`, the standalone fallback) and inline in the fork prompt (both keys false).\nThe inline layout's fragments are frozen as a measurement baseline (`contracts/stencils/webster/webster-fragment-fresh-read-pack-inline.md:4`, `webster-fragment-locate-pack-inline.md:4`, `webster-fragment-pack-section-inline.md:4`), so `webster-fragment-fresh-read-pack-inline.md:8` still says \"one Master read before forking you\", which `webster-master-no-code` made untrue for the other layouts.\n\n## Decision\n\nOperator decision (2026-10-16): never put code-location text straight into a prompt.\nInlined text goes stale as the batch's cards change the tree, and it gives the agent no sign of what it has already read from the source.\n\n## Idea\n\nAgent's suggestion: remove the inline layout, its three fragments and the measurement-baseline freeze, so `kickstart_pack_file: false` with `kickstart_pack_per_card: false` no longer selects it; the per-card layout and the pack-file fallback stay.\n",
+      "created": "2026-10-16T07:19:27Z",
+      "revised": "2026-10-16T07:19:27Z"
     }
   ]
 }
