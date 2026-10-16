@@ -1,11 +1,11 @@
 {
-  "current_producer": "Webster",
+  "current_producer": "Webster-Bouncer",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Webster",
-    "last": "Batchifier → done",
+    "now": "Webster-Bouncer",
+    "last": "Webster → done",
     "wait": ""
   },
   "history": [
@@ -245,6 +245,33 @@
       "outcome": "done",
       "output": "",
       "at": "2026-10-16T11:01:29Z"
+    },
+    {
+      "producer": "Webster",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYXHUB/webster-fork-stencil-fixes/_lyx/webster/summary.md",
+      "at": "2026-10-16T11:58:43Z",
+      "gate_attempts": 1,
+      "gate_spans": [
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-10-16T11:55:08.619109262Z",
+          "end": "2026-10-16T11:56:07.42784347Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "rework",
+          "start": "2026-10-16T11:56:07.805045132Z",
+          "end": "2026-10-16T11:57:30.042013842Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-10-16T11:57:30.068930516Z",
+          "end": "2026-10-16T11:58:42.982025893Z"
+        }
+      ]
     }
   ],
   "product": {
