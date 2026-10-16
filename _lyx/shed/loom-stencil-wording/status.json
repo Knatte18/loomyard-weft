@@ -1,11 +1,11 @@
 {
-  "current_producer": "Webster",
+  "current_producer": "Webster-Bouncer",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Webster",
-    "last": "Batchifier → done",
+    "now": "Webster-Bouncer",
+    "last": "Webster → done",
     "wait": ""
   },
   "history": [
@@ -277,6 +277,21 @@
       "outcome": "done",
       "output": "",
       "at": "2026-10-16T09:22:19Z"
+    },
+    {
+      "producer": "Webster",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYXHUB/loom-stencil-wording/_lyx/webster/summary.md",
+      "at": "2026-10-16T09:36:35Z",
+      "gate_attempts": 0,
+      "gate_spans": [
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-10-16T09:34:48.873331865Z",
+          "end": "2026-10-16T09:36:34.751859736Z"
+        }
+      ]
     }
   ],
   "product": {
