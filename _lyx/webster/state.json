@@ -1,0 +1,102 @@
+{
+  "runGuid": "15a1f3e6cd4fa803f4e27b2c301c1406",
+  "planFingerprint": "a5390bcdf644f00116897a1fd4849d15361f15ff03fa87ff2e664f2f133d5894",
+  "planFileHashes": {
+    "00-overview.md": "697ddcd2b101013c8b67d49624e69c39ddde70b8edcc5b7d038dfb34c80d3b1a",
+    "01-open-spec-permission-mode.md": "12dc76e7a44e5ac33d85f8f414598340777a7491ed67dba8b3af94334ca9e69a",
+    "02-claude-open-permission.md": "d888a2514a29c5e4509fbdc1410fee38e8eac82613970a06f9ac17f5d56bb2ff",
+    "03-open-permission-flag.md": "6aae14cd973f2858e662e9e122370e1562a9607dd8fa26fe272b79213e380a9a"
+  },
+  "planOverviewFrameHash": "4bfc6a6845bd47e8ed73f939673e5b95285dff2eb508cef7edabe067d1cd4b2c",
+  "partition": [
+    {
+      "cards": [
+        "01-open-spec-permission-mode",
+        "02-claude-open-permission",
+        "03-open-permission-flag"
+      ],
+      "profile": "cautious",
+      "estimate": 134870,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 1,
+        "startup": 54352,
+        "read_union": 35200,
+        "cards": [
+          {
+            "card": 1,
+            "card_text": 408,
+            "reads": {
+              "file:internal/shuttleengine/doc.go": 5532,
+              "package:internal/shuttleengine": 2000,
+              "tests:internal/shuttleengine": 2000
+            },
+            "messages": 58,
+            "written": 17808
+          },
+          {
+            "card": 2,
+            "card_text": 456,
+            "reads": {
+              "file:internal/shuttleengine/claudeengine/doc.go": 2724,
+              "package:internal/shuttleengine/claudeengine": 2000,
+              "tests:internal/shuttleengine/claudeengine": 2000
+            },
+            "messages": 48.5,
+            "written": 15006
+          },
+          {
+            "card": 3,
+            "card_text": 504,
+            "reads": {
+              "file:docs/overview.md": 9576,
+              "package:docs": 2000,
+              "package:internal/shuttlecli": 2000,
+              "tests:docs": 2000,
+              "tests:internal/shuttlecli": 2000
+            },
+            "messages": 40,
+            "written": 12504
+          }
+        ]
+      }
+    }
+  ],
+  "currentBatch": 1,
+  "masterStrand": "68b2a109f630ca5c5f3a35af64e89127",
+  "masterSessionId": "fc9675d0-782f-42c1-90ec-9f437a24c462",
+  "masterEngine": "claude",
+  "batches": {
+    "1": {
+      "slug": "open-spec-permission-mode",
+      "cards": [
+        "01-open-spec-permission-mode",
+        "02-claude-open-permission",
+        "03-open-permission-flag"
+      ],
+      "cardHashes": {
+        "01-open-spec-permission-mode": "12dc76e7a44e5ac33d85f8f414598340777a7491ed67dba8b3af94334ca9e69a",
+        "02-claude-open-permission": "d888a2514a29c5e4509fbdc1410fee38e8eac82613970a06f9ac17f5d56bb2ff",
+        "03-open-permission-flag": "6aae14cd973f2858e662e9e122370e1562a9607dd8fa26fe272b79213e380a9a"
+      },
+      "startSha": "27887027b63f2435b31d79c170fead4af5581509",
+      "kind": "fork",
+      "spawnedAt": "2026-10-16T07:14:56Z",
+      "sessionId": "fc9675d0-782f-42c1-90ec-9f437a24c462",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
+    }
+  }
+}
