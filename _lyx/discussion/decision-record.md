@@ -23,7 +23,7 @@ Out:
 
 ### D1 — Retire `below-parent` and `top` from the anchor vocabulary
 
-Decision: `render.Anchor`'s closed set becomes `own-window`, `overview` and `hidden`.
+Decision: `render.Anchor`'s closed set becomes `own-window`, `overview` and `hidden`, and its constants `AnchorBelowParent` and `AnchorTop` go.
 No strand reed places lands in the shell window.
 Rationale: the operator's decision names `below-parent` a leftover of the pane era, and the shell window must hold only the Selvage terminal.
 No production spawner names `below-parent` or `top`; only `lyx reed add`'s default produces `below-parent`.
@@ -41,10 +41,15 @@ Rationale: the CLIs match the window-per-strand layout, and a refusal is clearer
 Decision: the display check every add (`AddStrand`, `AddStrandUnless`), `UpdateStrand` and `ReplaceStrand` run refuses a display naming `below-parent` or `top`, naming `own-window`.
 A `reed.json` strand record carrying a retired anchor loads (PATTERN-tolerant-records), and its anchor reads as `own-window`.
 The `size` and `contentRows` keys become unknown keys: no code reads them, and `internal/state` keeps them on a rewrite.
-At the first op under the op lock that reconciles the session (up, resume, attach pre-flight, any add or remove), a strand whose pane still sits in the shell window is moved into its own agent window with `break-pane`, keeping its process, then marked and placed as a newly opened own window (before the shell window, carrying `@lyx_own` and the strand's pane options), and its record is rewritten with `anchor: own-window`.
-A dead pane is moved the same way, so it relaunches like any dead own-window pane.
-Rationale: a running hub may hold a strand an older binary placed; moving it once keeps the operator's live session and lets every own-window rule (relaunch kill, window order, remove, viewer moves) apply unchanged, where a strand left in the shell window would need a special case in each.
+As the first step of the reconcile every public engine op runs, before reconcile plans its dead-pane kill, untracked reap and binding clears, a strand whose pane still sits in the shell window is moved into its own agent window with `break-pane`, keeping its process, then marked and placed as a newly opened own window (before the shell window, carrying `@lyx_own` and the strand's pane options), and its record is rewritten with `anchor: own-window`.
+A dead pane is moved the same way, before reconcile's dead-pane kill can reach it, so it relaunches like any dead own-window pane.
+Once any pane is moved, reconcile re-lists the shell window's panes and the session's windows before it plans, so a moved pane is judged only as an own-window pane.
+In an op that heals Selvage (up, resume), the heal runs before the move, so the shell window holds Selvage or its corpse whenever a strand pane is broken out of it.
+The move is a standing step of every reconcile, keyed on a bound strand pane in the shell window and gated by no upgrade marker, so a strand that an older or `.dev-bin` binary adds to the shell window later is moved by the next op.
+Rationale: a running hub may hold a strand an older binary placed; moving it keeps the operator's live session and lets every own-window rule (relaunch kill, window order, remove, viewer moves) apply unchanged, where a strand left in the shell window would need a special case in each.
 Bound: the move touches only bound strand panes found in the shell window, never Selvage and never an unbound pane, which the existing untracked reap still governs.
+The move never breaks out the shell window's last pane, since `break-pane` on a window's only pane takes the whole window, so the shell window and its markers stay in place; such a pane stays until an up or resume heals Selvage beside it, and the move after that heal takes it.
+When no recorded Selvage pane is listed, the shell window is the window carrying the `@lyx_strands` marker, which both the Selvage heal's window resolution and the move use in that case, never the session's current window.
 
 ### D4 — Remove the stacked strand layout of the shell window
 
@@ -103,14 +108,21 @@ Rationale: CLAUDE.md's "Docs land in the same commit" rule and PATTERN-sandbox-c
 
 - A long-lived `lyx` process on the old binary (an orch, a shuttle run) keeps running the old stack layout and re-pins the `window-resized` hook on its reed ops until it ends; the next op on the new binary clears the hook and lays out nothing, so the window settles once the old processes are gone.
 
+<!-- lyx:carry-over Discussion-Review -->
+- Discussion-Review, round 2: converged; each finding below was fixed or disputed by the round's fixer, and no fresh reviewer has seen the result; the fixer report says which.
+  Review: _lyx/reviews/discussion/round-2-review.md; fixer report: _lyx/reviews/discussion/round-2-fixer-report.md.
+  - d3-shell-window-identity-without-selvage (class design, severity MEDIUM, open in rounds 2)
+<!-- /lyx:carry-over Discussion-Review -->
+
 ## Acceptance criteria
 
 - `lyx reed add --cmd <c>` with no `--anchor` and no `--parent` opens the strand in its own window, and the shell window still holds only the Selvage pane.
 - `lyx reed add --parent <guid> --cmd <c>` with no `--anchor` opens the strand in its own window and keeps its parent link, so a recursive remove of the parent removes it.
 - `lyx reed add --anchor` with `below-parent`, `top`, `overview`, an unknown or an empty value exits non-zero with a message naming `own-window`, and adds nothing.
-- `lyx shuttle run` accepts `own-window|hidden` and refuses `below-parent`.
+- `lyx shuttle run --anchor` accepts `own-window|hidden`, and `below-parent`, `top`, `overview`, an unknown or an empty value exits non-zero with a message naming `own-window` and starts no run.
 - The engine refuses `AddStrand`, `AddStrandUnless`, `UpdateStrand` and `ReplaceStrand` with a retired anchor.
 - A `reed.json` holding a strand with `anchor: below-parent`, a `size` object and `contentRows` loads and reads that strand as `own-window`.
+- A leftover strand pane that is the shell window's only pane, with Selvage missing, stays in the shell window through an add or remove, which leave the shell window and its markers in place, and an up or resume run while the operator views an agent window heals Selvage in the shell window beside it and then moves it into its own window.
 - A live strand pane an older binary left in the shell window survives the first op on the new binary, ends up in its own agent window placed before the shell window, keeps its process, and its record reads `anchor: own-window`; a dead one is moved the same way and relaunches into that window; afterwards a relaunch leaves no second copy of the pane, and a remove leaves the shell window and a viewer on it in place.
 - After a fresh boot, a Selvage heal (also with the Selvage corpse as the window's only pane) and a resize, Selvage is the shell window's only pane and fills it.
 - A `reed.yaml` still holding `collapsed_rows`, `min_full_rows` and `selvage.height_rows` loads, and `lyx config reconcile` prunes them.
@@ -118,12 +130,11 @@ Rationale: CLAUDE.md's "Docs land in the same commit" rule and PATTERN-sandbox-c
 - `watchdog: off` still keeps the daemon's name repair off for that worktree.
 - The status bar shows no per-strand pane buttons, and a server pinned by an older build has `M-z` unbound after the re-pin.
 - Hidden strands still own no pane; own-window, group-window and overview placement behave as before.
-- Outside the CLI refusal, the engine's refusal and read-time remap, retired-key fixtures, sandbox retirement notes and measurement reports under `docs/benchmarks/`, no `.go`, `.md` or `.yaml` file names `below-parent` or `AnchorTop`.
+- Outside the CLI refusal, the engine's refusal and read-time remap, retired-key fixtures, sandbox retirement notes and measurement reports under `docs/benchmarks/`, no `.go`, `.md` or `.yaml` file names `below-parent`, `AnchorBelowParent`, `AnchorTop`, `--anchor top` or `anchor: top`.
 - CLAUDE.md holds no #673 workaround.
 
 ## Notes for the plan writer
 
 - `internal/reedengine/apply.go`'s `planLayout` and `fixedHeightPins`, `internal/reedengine/selvagepane.go`'s `planPaneTarget` and `planTopPaneTarget`, and `internal/reedengine/reapply.go` are the main removal sites; `ownwindow.go`'s own `select-layout` for a shared group window is not part of the stack and stays.
 - `spawn.go`'s `killReplacedOwnWindowPaneLocked` only kills a previous pane in an `@lyx_own` window, and a relaunch opens `-a` after the previous window; D3's move runs before either, so both hold for a migrated strand.
-- The strands'-window resolver's "recorded strand pane placed in window 0" tier no longer fires once D3 has run; check its fallback with no Selvage and no window-0 strand.
 - `internal/reedengine/retiredkeys_test.go` already pins a retired display-key fixture; the retired anchor and size keys can join it.
