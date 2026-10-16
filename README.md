@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-16 07:16 UTC; every age below is as of then.
+Rendered 2026-10-16 07:17 UTC; every age below is as of then.
 
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
@@ -18,7 +18,7 @@ Held by a run; its scope is locked until the run ends.
 | # | Task | Slug | Recipe | At | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | 1 | **lyx shuttle open cannot choose the permission mode**<br>• An interactive session opened by lyx shuttle open always prompts for permissions; there is no flag or config for bypass | [`shuttle-open-permission`](design-shuttle-open-permission.md) | loom | Webster | 18h | 12h | shuttle |
-| 2 | **Orch delegates board intake to a one-shot fork**<br>• Orch checks the inbox by number and title only; a fork imports, labels and folds issues | [`orch-intake-fork`](design-orch-intake-fork.md) | loom | Plan-Bouncer | 16m | 16m | orch, board |
+| 2 | **Orch delegates board intake to a one-shot fork**<br>• Orch checks the inbox by number and title only; a fork imports, labels and folds issues | [`orch-intake-fork`](design-orch-intake-fork.md) | loom | Plan-Burler-Review | 17m | 17m | orch, board |
 
 ### Ready
 
@@ -52,8 +52,8 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Note | Slug | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| 1 | **Webster stencils describe a stale fork spawn and wake-up**<br>• The fork prefix still says Master waits with await-batch, and Master recognises forks by an instruction it never sends. | [`webster-fork-spawn-wording`](design-webster-fork-spawn-wording.md) | 0m | 0m | stencil, webster |
-| 2 | **PR-Rework stencil calls agent findings the operator's**<br>• The rework writer is told rejection findings are the operator's, but they come from the alignment agent or the orch. | [`rework-findings-not-operator`](design-rework-findings-not-operator.md) | 0m | 0m | stencil, loom |
+| 1 | **Webster stencils describe a stale fork spawn and wake-up**<br>• The fork prefix still says Master waits with await-batch, and Master recognises forks by an instruction it never sends. | [`webster-fork-spawn-wording`](design-webster-fork-spawn-wording.md) | 1m | 1m | stencil, webster |
+| 2 | **PR-Rework stencil calls agent findings the operator's**<br>• The rework writer is told rejection findings are the operator's, but they come from the alignment agent or the orch. | [`rework-findings-not-operator`](design-rework-findings-not-operator.md) | 1m | 1m | stencil, loom |
 
 #### Low priority
 
@@ -99,8 +99,8 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | --- | --- | --- | --- | --- | --- |
 | 1 | **Weaver: a cold-start implementer beside Webster, with model escalation**<br>• A second implementer built on Millhouse Builder: a fresh agent per batch with its own model, escalating the model when an agent fails; Webster stays fork-based | [`weaver`](design-weaver.md) | 4d | 3d | webster |
 | 2 | **Split the orch into a run driver and a conversational orch**<br>• One agent drives runs and takes escalations; the operator talks to the other, which discusses problems and updates the board. | [`orch-split`](design-orch-split.md) | 3d | 2d | orch, batten, shed, loom |
-| 3 | **creel stage 2: orch and batten notices through creel**<br>• The orch watcher and batten notices and injects go through creel; the watcher keeps only its cycle logic | [`creel-notices`](design-creel-notices.md) | 20h | 19h | creel, orch, batten |
-| 4 | **creel stage 3: agents message through creel, not SendMessage**<br>• Parent asks, parent review, stop reports and shuttle send go through creel, so a non-Claude engine can take a role with a parent | [`creel-agents`](design-creel-agents.md) | 20h | 19h | creel, shuttle, loom, stencil |
+| 3 | **creel stage 2: orch and batten notices through creel**<br>• The orch watcher and batten notices and injects go through creel; the watcher keeps only its cycle logic | [`creel-notices`](design-creel-notices.md) | 21h | 19h | creel, orch, batten |
+| 4 | **creel stage 3: agents message through creel, not SendMessage**<br>• Parent asks, parent review, stop reports and shuttle send go through creel, so a non-Claude engine can take a role with a parent | [`creel-agents`](design-creel-agents.md) | 21h | 19h | creel, shuttle, loom, stencil |
 
 #### Normal priority
 

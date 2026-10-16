@@ -800,7 +800,7 @@
       "isolated": false,
       "brief": "Orch checks the inbox by number and title only; a fork imports, labels and folds issues",
       "body": "## Seen\n\nOn 2026-10-16, right after a `/clear`, the orch ran `lyx board intake list` and `lyx board intake import` in its own session.\nBoth print an issue's full body, so one survey issue (#671) entered the orch context twice, about 14k tokens of a 71k session.\nThe orch needs only issue numbers and titles to know whether the inbox holds anything.\n\n## Operator decision (2026-10-16)\n\nIntake is delegated to a one-shot fork.\nThe orch itself only checks whether the inbox is empty, reading numbers and titles alone.\nWhen it is not empty, a one-shot fork takes each open issue onto the board (new note, fold into an existing entry, or close as noise), gives it its module labels, and returns one line per issue.\nA fork rather than a fresh agent, since the fork already knows the board policy and the operator's settled decisions.\n\n## Idea\n\n- `contracts/stencils/orch/orch-template-role.md`: the Where a finding goes and After landing sections say intake goes to a one-shot fork, and the orch checks the inbox only by number and title.\n- `lyx board intake list` gets a compact mode (number and title only), or compact by default with the bodies behind a flag, so the orch check costs little.\n- `lyx board intake import` prints a short result (slug, issue, labels) instead of the whole entry with its body.\n",
-      "status": "running · Plan-Bouncer",
+      "status": "running · Plan-Burler-Review",
       "created": "2026-10-16T06:59:33Z",
       "revised": "2026-10-16T06:59:33Z",
       "run_settings": {
