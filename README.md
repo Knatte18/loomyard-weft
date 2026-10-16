@@ -73,12 +73,13 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 7 | **creel verb waits about 23 s to report a daemon that already exited at start** | [`creel-dead-daemon-slow-report`](design-creel-dead-daemon-slow-report.md) | 0m | 0m | creel |
 | 8 | **creel log shows nothing for mail carried forward from an old day file** | [`creel-log-carried-mail`](design-creel-log-carried-mail.md) | 0m | 0m | creel |
 | 9 | **creel removed-holder sweep took 80 s instead of about 60** | [`creel-holder-sweep-slow`](design-creel-holder-sweep-slow.md) | 0m | 0m | creel |
+| 10 | **creel inject into a bash strand expires with no stall reason, and a stalled inject expired 3 s late** | [`creel-inject-expiry-reason`](design-creel-inject-expiry-reason.md) | 0m | 0m | creel |
 
 #### Low priority
 
 | # | Note | Slug | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| 10 | **A hub pause leaves background forks and shells running, so hibernate never confirms**<br>• Pause interrupts turns but not background forks or shells; sessions read busy and hibernate confirmation fails | [`pause-background-work`](design-pause-background-work.md) | 1d | 1d | shuttle, webster |
+| 11 | **A hub pause leaves background forks and shells running, so hibernate never confirms**<br>• Pause interrupts turns but not background forks or shells; sessions read busy and hibernate confirmation fails | [`pause-background-work`](design-pause-background-work.md) | 1d | 1d | shuttle, webster |
 
 ### Enhancements
 

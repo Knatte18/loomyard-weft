@@ -1074,6 +1074,25 @@
       "body": "Imported from [issue #685](https://github.com/Knatte18/loomyard/issues/685).\n\nSeen: strands frank and gus were removed at 08:48:03; their held messages went `returned`/`undelivered` at 08:49:23, 80 s later. The outcomes themselves were correct.\n\nExpected: per sandbox scenario C11, within about 60 s.\n\nFound by the creel stage 1 re-test of 2026-10-16 (sandbox scenario C11).",
       "created": "2026-10-16T08:56:27Z",
       "revised": "2026-10-16T08:56:27Z"
+    },
+    {
+      "id": 595,
+      "slug": "creel-inject-expiry-reason",
+      "title": "creel inject into a bash strand expires with no stall reason, and a stalled inject expired 3 s late",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "creel"
+      ],
+      "issues": [
+        686
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Imported from [issue #686](https://github.com/Knatte18/loomyard/issues/686).\n\nSeen: `inject lyt:dave ... --ttl 10s --wait` into a bash strand ended `expired` with no `stall` field, while Claude-adapter panes now name theirs. Separately, a 20 s TTL into a too-short pane expired at 23.3 s, while a never-idle pane 30 s TTL expired on time at 31.4 s.\n\nExpected: an expired inject names a reason, such as \"not an agent pane\", or the outcome is documented; a stalled inject expires at its TTL.\n\nFound by the creel stage 1 re-test of 2026-10-16.",
+      "created": "2026-10-16T08:56:30Z",
+      "revised": "2026-10-16T08:56:30Z"
     }
   ]
 }
