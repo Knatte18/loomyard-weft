@@ -264,7 +264,7 @@
       }
     }
   ],
-  "currentBatch": 0,
+  "currentBatch": 7,
   "masterStrand": "e97e068e59a0576225913a2b05430d70",
   "masterSessionId": "0567153d-5f1b-4372-bd92-3b70e272f013",
   "masterEngine": "claude",
@@ -345,6 +345,30 @@
       "bracketTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-creel-stage1-fixes/0567153d-5f1b-4372-bd92-3b70e272f013/subagents/agent-a8123df9f7f72d5cf.jsonl"
       ]
+    },
+    "7": {
+      "slug": "idle-probe-no-input-box",
+      "cards": [
+        "07-idle-probe-no-input-box",
+        "08-no-input-box-stall",
+        "09-ttl-capped-probe-wait",
+        "10-startup-gate-seam",
+        "11-llm-smoke-strand"
+      ],
+      "cardHashes": {
+        "07-idle-probe-no-input-box": "64ee86085f2135dcfb048c35c4569f3459db2917d2ab667244a2469467df7838",
+        "08-no-input-box-stall": "914c53cd70fc8dbd7545a3cc6d2ac9bcd7b7f297d15d6ef60f59922a73a6e411",
+        "09-ttl-capped-probe-wait": "7acc9c84ddf2d92b811870ec391442f7d55205e245a656c31ae1656cc58cba78",
+        "10-startup-gate-seam": "a46ffad66cbff880d261de0c8b3de88bd3410adde029b945a205b6b862fd6827",
+        "11-llm-smoke-strand": "4752dceb294ad9d552d687940467dda39e89c39443065ddf84e5da83ad747759"
+      },
+      "startSha": "393ad6b5c7c97de0c0e1f10be5f58411709eb841",
+      "kind": "fork",
+      "spawnedAt": "2026-10-16T10:44:33Z",
+      "sessionId": "0567153d-5f1b-4372-bd92-3b70e272f013",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
     }
   },
   "seenForkTranscripts": [
