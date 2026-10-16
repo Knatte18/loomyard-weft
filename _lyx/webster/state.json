@@ -1,0 +1,105 @@
+{
+  "runGuid": "46ff5757cb7bc4786cdbaa68e942740c",
+  "planFingerprint": "8c8e15ff1112138c2c7ec0514d6cee1a32bb5a9dd1c09ba36b58ed0fdc140624",
+  "planFileHashes": {
+    "00-overview.md": "7d11147f971e9f9de7965c51f1555eca9d962a4f992478b91061e1f01b51d02d",
+    "01-creel-suite-file.md": "1ef6d15f26a6909569c0cd66f88cb50a0a7cd90b0bd0552f5e20e75289d477fa",
+    "02-creel-suite-subcommand.md": "a9bda768050ad097b4b081375e619e5ae0458fa0151371c06141883f31a1d18c",
+    "03-creel-launchers-and-docs.md": "31451c8fd315a3379cc48bee2911661abfa7c5ea6bc29fac1c2224cc0cf2a418"
+  },
+  "planOverviewFrameHash": "b15c3f099c6411500b7f0853961a1cc444a82a64dda16f92faa92cac92b54f9b",
+  "partition": [
+    {
+      "cards": [
+        "01-creel-suite-file",
+        "02-creel-suite-subcommand",
+        "03-creel-launchers-and-docs"
+      ],
+      "profile": "cautious",
+      "estimate": 111704,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 1,
+        "startup": 54424,
+        "read_union": 26488,
+        "cards": [
+          {
+            "card": 1,
+            "card_text": 492,
+            "reads": {
+              "file:tools/sandbox/SANDBOX-SHUTTLE-SUITE.md": 6096,
+              "package:tools/sandbox": 2000,
+              "tests:tools/sandbox": 2000
+            },
+            "messages": 15,
+            "written": 4992
+          },
+          {
+            "card": 2,
+            "card_text": 600,
+            "reads": {
+              "package:tools/sandbox": 2000,
+              "tests:tools/sandbox": 2000
+            },
+            "messages": 61,
+            "written": 18900
+          },
+          {
+            "card": 3,
+            "card_text": 300,
+            "reads": {
+              "file:docs/sandbox-howto.md": 2712,
+              "file:sandbox/posix/shuttle-suite.sh": 156,
+              "file:sandbox/win/shuttle-suite.cmd": 132,
+              "package:docs": 2000,
+              "package:sandbox/posix": 2000,
+              "package:sandbox/win": 2000,
+              "tests:docs": 2000,
+              "tests:sandbox/posix": 2000,
+              "tests:sandbox/win": 2000
+            },
+            "messages": 22,
+            "written": 6900
+          }
+        ]
+      }
+    }
+  ],
+  "currentBatch": 1,
+  "masterStrand": "938a0c8b214c74a6c3236ab590872070",
+  "masterSessionId": "9207a1b8-c30e-47c8-9b67-a7e521c19604",
+  "masterEngine": "claude",
+  "batches": {
+    "1": {
+      "slug": "creel-suite-file",
+      "cards": [
+        "01-creel-suite-file",
+        "02-creel-suite-subcommand",
+        "03-creel-launchers-and-docs"
+      ],
+      "cardHashes": {
+        "01-creel-suite-file": "1ef6d15f26a6909569c0cd66f88cb50a0a7cd90b0bd0552f5e20e75289d477fa",
+        "02-creel-suite-subcommand": "a9bda768050ad097b4b081375e619e5ae0458fa0151371c06141883f31a1d18c",
+        "03-creel-launchers-and-docs": "31451c8fd315a3379cc48bee2911661abfa7c5ea6bc29fac1c2224cc0cf2a418"
+      },
+      "startSha": "1cf2b272657430a2e9641cf4cb99f8a75e363932",
+      "kind": "fork",
+      "spawnedAt": "2026-10-16T09:03:18Z",
+      "sessionId": "9207a1b8-c30e-47c8-9b67-a7e521c19604",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
+    }
+  }
+}
