@@ -1,12 +1,11 @@
 {
-  "current_producer": "Plan-Burler-Review",
-  "state": "running",
+  "current_producer": "Plan-Burler-Fix",
+  "state": "paused",
   "error": "",
   "pause_requested": false,
-  "pause_after": "Plan-Burler-Review",
   "activity": {
-    "now": "Plan-Burler-Review",
-    "last": "Plan-Bouncer → bounced to Plan-Burler-Review",
+    "now": "Plan-Burler-Fix",
+    "last": "Plan-Burler-Review → bounced to Plan-Burler-Fix",
     "wait": ""
   },
   "history": [
@@ -132,6 +131,35 @@
       "output": "/home/knatte/Code/loomyard-LYXHUB/twb-btf-is/_lyx/reviews/plan/round-1-bouncer-ledger.md",
       "at": "2026-10-16T11:06:32Z",
       "routed_to": "Plan-Burler-Review"
+    },
+    {
+      "producer": "Plan-Burler-Review",
+      "outcome": "stuck",
+      "output": "/home/knatte/Code/loomyard-LYXHUB/twb-btf-is/_lyx/reviews/plan/round-2-review.md",
+      "at": "2026-10-16T11:11:02Z",
+      "gate_attempts": 1,
+      "gate_spans": [
+        {
+          "gate": "review",
+          "kind": "gate",
+          "start": "2026-10-16T11:10:47.847302011Z",
+          "end": "2026-10-16T11:10:47.847892344Z"
+        },
+        {
+          "gate": "review",
+          "kind": "rework",
+          "start": "2026-10-16T11:10:48.263859658Z",
+          "end": "2026-10-16T11:11:02.308451132Z"
+        },
+        {
+          "gate": "review",
+          "kind": "gate",
+          "start": "2026-10-16T11:11:02.343013896Z",
+          "end": "2026-10-16T11:11:02.34336899Z"
+        }
+      ],
+      "budget_exempt": true,
+      "routed_to": "Plan-Burler-Fix"
     }
   ],
   "product": {
