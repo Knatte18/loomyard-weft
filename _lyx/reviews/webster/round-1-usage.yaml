@@ -1,5 +1,19 @@
 round: 1
 fan: ""
+review:
+    engine: claude
+    model: sonnet
+    effort: medium
+    start: 2026-10-16T06:33:56Z
+    end: 2026-10-16T08:37:30.351004147+02:00
+    wall_seconds: 214.351004147
+    tokens_known: true
+    fresh_tokens: 124983
+    cache_read_tokens: 1658510
+    forks: 0
+    fork_fresh_tokens: 0
+    fork_cache_read_tokens: 0
+    fork_fresh_share: 0
 seed:
     - engine: claude
       model: sonnet
