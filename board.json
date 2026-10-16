@@ -1036,6 +1036,25 @@
       "body": "Imported from [issue #683](https://github.com/Knatte18/loomyard/issues/683).\n\nSeen: against a malformed journal the creel daemon died at once (daemon log 10:46:01.395), but `lyx creel inbox` returned its error, which now quotes the daemon log as the #661 fix intends, only after about 23 s.\n\nExpected: the verb reports the error as soon as the daemon it started has exited.\n\nFound by the creel stage 1 re-test of 2026-10-16 (sandbox scenario C10).",
       "created": "2026-10-16T08:56:18Z",
       "revised": "2026-10-16T08:56:18Z"
+    },
+    {
+      "id": 593,
+      "slug": "creel-log-carried-mail",
+      "title": "creel log shows nothing for mail carried forward from an old day file",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "creel"
+      ],
+      "issues": [
+        684
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Imported from [issue #684](https://github.com/Knatte18/loomyard/issues/684).\n\nSeen: the journal holds `{\"event\":\"carried\",\"id\":900,...}` and the receiver `inbox` counts message 900, but `lyx creel log --id 900` returns `[]`.\n\nExpected: `log` shows a carried message, at least as a `carried` event.\n\nFound by the creel stage 1 re-test of 2026-10-16 (sandbox scenario C10).",
+      "created": "2026-10-16T08:56:20Z",
+      "revised": "2026-10-16T08:56:20Z"
     }
   ]
 }
