@@ -1,6 +1,6 @@
 # Creel gets its own sandbox suite
 
-`creel-sandbox-suite` · Note · enhancement, creel, shuttle
+`creel-sandbox-suite` · Task · enhancement, creel, shuttle
 
 ## Seen
 

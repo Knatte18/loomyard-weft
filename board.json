@@ -856,7 +856,7 @@
       "id": 584,
       "slug": "creel-sandbox-suite",
       "title": "Creel gets its own sandbox suite",
-      "kind": "note",
+      "kind": "task",
       "labels": [
         "enhancement",
         "creel",
