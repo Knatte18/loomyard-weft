@@ -14,3 +14,13 @@ review:
     fork_fresh_tokens: 0
     fork_cache_read_tokens: 0
     fork_fresh_share: 0
+fix:
+    engine: claude
+    model: opus
+    effort: medium
+    start: 2026-10-16T12:52:53Z
+    end: 2026-10-16T14:55:34.250629653+02:00
+    wall_seconds: 161.250629653
+    tokens_known: true
+    fresh_tokens: 86253
+    cache_read_tokens: 888905
