@@ -250,7 +250,7 @@
       }
     }
   ],
-  "currentBatch": 0,
+  "currentBatch": 4,
   "masterStrand": "9e18c98f07f78cbdb16a10227347d6b2",
   "masterSessionId": "518950fe-4628-411d-8e44-a355236b5940",
   "masterEngine": "claude",
@@ -294,6 +294,26 @@
       "bracketTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-fan-prompt-tuning/518950fe-4628-411d-8e44-a355236b5940/subagents/agent-ae3b58559664a7121.jsonl"
       ]
+    },
+    "4": {
+      "slug": "burler-run-fix-fan",
+      "cards": [
+        "04-burler-run-fix-fan",
+        "05-recorded-round-fans",
+        "06-bouncer-per-round-exclusions"
+      ],
+      "cardHashes": {
+        "04-burler-run-fix-fan": "d310a521c767318c76932e6d7bc189eccf8f1fac501e72169e3bf03433ac2f23",
+        "05-recorded-round-fans": "fc9564e0d6783e40595206a161a069f15c3e4278f0a18d41b06228a57d2e0655",
+        "06-bouncer-per-round-exclusions": "39140449e87d6420eae968aa46750846790ae589d02e2dda6c13755c61523acc"
+      },
+      "startSha": "9ea64b16dfa3dfe505883b85174da7e565b6b1cf",
+      "kind": "fork",
+      "spawnedAt": "2026-10-16T14:04:27Z",
+      "sessionId": "518950fe-4628-411d-8e44-a355236b5940",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
     }
   },
   "seenForkTranscripts": [
