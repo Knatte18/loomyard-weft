@@ -10,7 +10,7 @@
 - `tools/sandbox/SANDBOX-CREEL-SUITE.md`
 
 **Create:**
-- `plan:internal/creelcli#writeRefusal` -> `func writeRefusal(cmd *cobra.Command, msg string, fields map[string]any, code int)`
+- `internal/creelcli#writeRefusal`
 
 **Uses:**
 - `internal/creelcli#writeOk`

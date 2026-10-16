@@ -8,8 +8,8 @@
 - `tools/sandbox/SANDBOX-CREEL-SUITE.md`
 
 **Create:**
-- `plan:internal/creelengine#lastNonBlankLine` -> `func lastNonBlankLine(lines [][]byte) int`
-- `plan:internal/creelengine#parseRecord` -> `func parseRecord(line []byte) (record, error)`
+- `internal/creelengine#lastNonBlankLine`
+- `internal/creelengine#parseRecord`
 
 **Uses:**
 - `internal/creelengine#openJournal`

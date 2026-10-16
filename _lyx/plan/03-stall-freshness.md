@@ -16,9 +16,9 @@
 - `tools/sandbox/SANDBOX-CREEL-SUITE.md`
 
 **Create:**
-- `plan:internal/creelengine#stallFreshness` -> `const stallFreshness = 2 * probeBackoffCeiling`
-- `plan:internal/creelengine#Store.freshStallLocked` -> `func (s *Store) freshStallLocked(receiver string) (stallNote, bool)`
-- `plan:internal/testkit/creelfake#Clock.AdvanceByWaitsWhere` -> `func (c *Clock) AdvanceByWaitsWhere(keep func(time.Duration) bool, done <-chan struct{})`
+- `internal/creelengine#stallFreshness`
+- `internal/creelengine#Store.freshStallLocked`
+- `internal/testkit/creelfake#Clock.AdvanceByWaitsWhere`
 
 **Uses:**
 - `internal/creelengine#probeBackoffCeiling`
