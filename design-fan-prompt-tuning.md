@@ -1,6 +1,6 @@
-# Tune the Burler lens fan prompts
+# Burler lens fan in production: per-segment lenses for Discussion and Plan review
 
-`fan-prompt-tuning` · Note · enhancement, burler, stencil
+`fan-prompt-tuning` · Task · enhancement, burler, stencil, loom
 
 ## Idea (operator, 2026-10-13)
 
@@ -155,3 +155,18 @@ The operator's plan for the tuning, stated 2026-10-16 (not yet a decision):
 - The bench agent takes one review and tunes the lenses over a few iterations, up to 3 rounds at first.
 - The first lens set must be based on something, not invented.
 - Too many lenses are not useful: perhaps 3-4.
+
+## Bench result (2026-10-16)
+
+The lens-fan tuning bench, cut to a proof of concept at the operator's word, is in `docs/research/burler-fan-tuning-bench-2026-10-16/report.md`.
+On `reed-view` Discussion-Review round 1, a 4-lens fan found 16 distinct real defects (8 at MEDIUM or above) against 11 and 9 (5 and 6) for two solo runs, including the round-4 BLOCKING both solo runs missed, at about 1.9x a solo round's cost and the same wall time.
+The `existing-paths` lens found the late BLOCKING alone; `way-forward` was the noisiest.
+
+## Operator decision (2026-10-16)
+
+The lens fan goes into production:
+- The lens set is configured per review segment.
+- Discussion-Review gets the lenses `interactions`, `existing-paths` (widened to the readers of a changed state), `bound-breaker` and a walkthrough lens in place of `way-forward` (execute each decision's mechanism step by step on a concrete case, with the data each step is handed, against the decision's stated purpose), plus the bench's prompt additions: the explore step's pre-read manifest for the fork reviewers and the review step's fork rules, with the off-lens BLOCKING escape dropped.
+- Plan-Review gets its own lenses, based on the Plan findings in `perch-review-analysis`.
+- One task builds it; real runs are the reference from here, with no further bench.
+The bench's lens texts and stencil additions are in the report's `setup/` folder.
