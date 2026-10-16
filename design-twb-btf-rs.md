@@ -1,6 +1,6 @@
 # reed: runs overview pane above the orch, gate checklist, Selvage by key, run windows close
 
-`twb-btf-rs` · Note · feature · paused · Plan-Burler-Fix
+`twb-btf-rs` · Note · feature
 
 # reed: runs overview pane above the orch, gate checklist, Selvage by key, run windows close
 
