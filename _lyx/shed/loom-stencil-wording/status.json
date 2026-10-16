@@ -1,11 +1,11 @@
 {
-  "current_producer": "Merge-Burler-Review",
+  "current_producer": "Merge-Burler-Fix",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Merge-Burler-Review",
-    "last": "Merge-Bouncer → bounced to Merge-Burler-Review",
+    "now": "Merge-Burler-Fix",
+    "last": "Merge-Burler-Review → bounced to Merge-Burler-Fix",
     "wait": ""
   },
   "history": [
@@ -367,6 +367,23 @@
       "output": "",
       "at": "2026-10-16T09:43:45Z",
       "routed_to": "Merge-Burler-Review"
+    },
+    {
+      "producer": "Merge-Burler-Review",
+      "outcome": "stuck",
+      "output": "/home/knatte/Code/loomyard-LYXHUB/loom-stencil-wording/_lyx/reviews/merge/round-1-review.md",
+      "at": "2026-10-16T09:44:57Z",
+      "gate_attempts": 0,
+      "gate_spans": [
+        {
+          "gate": "review",
+          "kind": "gate",
+          "start": "2026-10-16T09:44:56.76542346Z",
+          "end": "2026-10-16T09:44:56.765708693Z"
+        }
+      ],
+      "budget_exempt": true,
+      "routed_to": "Merge-Burler-Fix"
     }
   ],
   "product": {
