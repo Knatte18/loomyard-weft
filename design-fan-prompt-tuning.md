@@ -149,3 +149,9 @@ Open if the fan comes back:
 The operator believes fan-out reviewers can work: they need better tuning and harder thinking, and then one reviewer run yields more findings.
 The aim is broader reviews from the Burler reviewer's lenses: the earlier tuning attempt had the lenses find mostly the same, and the operator wants another tuning attempt in time.
 Related: `perch-review-analysis` (issue #676) measures rounds and late BLOCKING findings and proposes two parallel reviewers in round 1.
+
+The operator's plan for the tuning, stated 2026-10-16 (not yet a decision):
+- The tuning is a bench, not a task: an iterative bench that tunes the lenses and the rest of the reviewer prompt until the fan is useful.
+- The bench agent takes one review and tunes the lenses over a few iterations, up to 3 rounds at first.
+- The first lens set must be based on something, not invented.
+- Too many lenses are not useful: perhaps 3-4.
