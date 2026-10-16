@@ -28,8 +28,8 @@
 - `cmd/lyx/testdata/test-budget.yaml`
 
 **Create:**
-- `plan:internal/webstercli#websterCLI.beginDeps` -> `func (c *websterCLI) beginDeps(plan *planparser.Plan, batches []batcher.Batch, st *websterengine.State) websterengine.BeginDeps`
-- `plan:contracts/stencils#TestHubGenericStencils_NameNoGoTiers` -> `func TestHubGenericStencils_NameNoGoTiers(t *testing.T)`
+- `internal/webstercli#websterCLI.beginDeps`
+- `contracts/stencils#TestHubGenericStencils_NameNoGoTiers`
 
 **Uses:**
 - `internal/languageconfig#VerifyTiersValue`
