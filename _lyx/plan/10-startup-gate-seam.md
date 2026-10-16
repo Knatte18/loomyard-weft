@@ -2,8 +2,6 @@
 
 **Edit:**
 - `internal/shuttleengine#TestProviderSeamImportRule`
-- `internal/shuttleengine#fakeEngine`
-- `internal/shuttleengine#fakeEngine.TrustDismissSequence`
 - `internal/shuttleengine/doc.go`
 - `cmd/lyx/testdata/test-budget.yaml`
 
@@ -20,6 +18,7 @@
 - `internal/shuttleengine#withStrand`
 - `internal/shuttleengine#withEngines`
 - `internal/shuttleengine#liveStrandStatus`
+- `internal/shuttleengine#undismissableEngine`
 
 **Intent:** The shuttle half of #678 (D9): an engine-neutral seam that accepts a provider's startup gate on a live strand.
 
@@ -33,12 +32,10 @@ Its only caller is the llm smoke test's helper; a production caller is a new dec
 `TestProviderSeamImportRule`, the package's seam-enforcement scan, pins that through a call-site scan beside its import scan: no production `.go` file outside `internal/shuttleengine/` contains `.AcceptStartupGate(`, with a planted-file row in another package proving the scan finds a call and one in `internal/shuttleengine/` proving it is let through, and a `RealModule` check over the module.
 Since the test reads repository files outside its own package, it gains `//lyx:guard` stacked with its `//testtiming:keep` above its func line (`PATTERN-test-speed`), and the keep reason names the call-site scan too.
 
-`fakeEngine` gains `NoTrustInputs`, which makes `TrustDismissSequence` record the capture and answer no inputs, like an engine that cannot locate the accepting option.
-
 Test `TestRunner_AcceptStartupGate`, over the `fakeReed` and `fakeEngine` fixture with a live strand:
 - a capture the engine classifies `StartupTrustPrompt` sends the engine's sequence, one Enter, reports true, and hands `TrustDismissSequence` that same capture;
 - a capture classified `StartupReady`, and one classified `StartupPending`, each send no key and report false;
-- a gate capture over a `fakeEngine` with `NoTrustInputs` sends no key and reports false;
+- a gate capture over the existing `undismissableEngine`, whose sequence is empty, sends no key and reports false;
 - a strand with no run record, in a set built with `withEngines` whose default is one `fakeEngine` and whose second `fakeEngine` the live strand's provider names, accepts the gate through the second engine: only its `TrustDismissCaptures` holds the capture;
 - a run record that cannot be read returns its error and sends nothing;
 - a dead strand returns an error and sends nothing;
@@ -48,4 +45,4 @@ Test `TestRunner_AcceptStartupGate`, over the `fakeReed` and `fakeEngine` fixtur
 
 Docs in the same commit: `internal/shuttleengine/doc.go` documents `Runner.AcceptStartupGate` beside the startup-gate dismissal Wait does, with its bound, its one caller and the scan that pins it.
 
-**ImpactSummary:** Adds one exported `Runner` method built from existing engine calls and helpers in `internal/shuttleengine`; no production member changes, and the seam-enforcement test, one fake field, the budget row and the package doc are the only other edits.
+**ImpactSummary:** Adds one exported `Runner` method built from existing engine calls and helpers in `internal/shuttleengine`; no production member changes, and the seam-enforcement test, the budget row and the package doc are the only other edits.

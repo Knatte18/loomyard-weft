@@ -3,6 +3,7 @@
 **Edit:**
 - `internal/creelengine#LogEntry`
 - `internal/creelengine#pool.apply`
+- `internal/creelengine#pool.applyCarried` -> `func (p *pool) applyCarried(rec record, day string) bool`
 - `internal/creelengine#pool.logEntryFor`
 - `internal/creelengine#journalWriter.retain`
 - `internal/creelengine#TestJournal_Retention`
@@ -13,7 +14,6 @@
 - `internal/creelengine/doc.go`
 
 **Uses:**
-- `internal/creelengine#pool.applyCarried`
 - `internal/creelengine#pool.carryRecords`
 - `internal/creelengine#Store.Log`
 - `internal/creelcli#newRig`
@@ -22,7 +22,8 @@
 **Intent:** Fix #684 (D5): `log` shows a carried entry as a `carried` event.
 
 `LogEntry` gains `Kind`, the kind of the message or inject a carried entry snapshots, empty on every other entry.
-`pool.apply` adds one event-list entry for a carried record after `applyCarried` folds it, where today it returns before the append; a carried record whose `of` this binary does not know adds none, as an unknown event adds none.
+`pool.apply` adds one event-list entry for a carried record after `applyCarried` folds it, where today it returns before the append.
+`applyCarried` reports true when it folded a held or posted record and false for an `of` it does not know, and `apply` adds the entry only on true, so a carried record whose `of` this binary does not know adds none, as an unknown event adds none.
 `pool.logEntryFor` builds that entry with event `carried`, the carried record's own time, its id, its sender, its receiver, its kind (`mail` when the record names none), and the subject of the message the pool holds under that id; a carried hold's entry names the held receiver in `To` and the owner in `By`.
 `journalWriter.retain` folds each carried record it writes into the pool through `pool.apply`, as `append` does for every other record, so a running daemon's `log` lists the carry at once; the fold is idempotent by id, so the entries the pool already holds are unchanged, and `prune` keeps these entries since they are of the new day.
 A message carried again at a later retention gets one `carried` entry per carry, and `--from`, `--to` and `--since` match the entry like any other event.

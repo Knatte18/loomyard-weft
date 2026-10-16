@@ -18,8 +18,7 @@
 **Create:**
 - `plan:internal/creelengine#stallFreshness` -> `const stallFreshness = 2 * probeBackoffCeiling`
 - `plan:internal/creelengine#Store.freshStallLocked` -> `func (s *Store) freshStallLocked(receiver string) (stallNote, bool)`
-- `plan:internal/creelengine_test#rig.probeUntilDone` -> `func (r *rig) probeUntilDone(t *testing.T, done <-chan callResult) callResult`
-- `plan:internal/creelcli#rig.probeUntilDone` -> `func (r *rig) probeUntilDone(t *testing.T, done <-chan cliRun) cliRun`
+- `plan:internal/testkit/creelfake#Clock.AdvanceByWaitsWhere` -> `func (c *Clock) AdvanceByWaitsWhere(keep func(time.Duration) bool, done <-chan struct{})`
 
 **Uses:**
 - `internal/creelengine#probeBackoffCeiling`
@@ -27,6 +26,7 @@
 - `internal/creelengine_test#env.driveProbeWaits`
 - `internal/creelengine_test#awaitOutcome`
 - `internal/creelengine_test#newRig`
+- `internal/testkit/creelfake#Clock.AwaitWaitsWhere`
 
 **Intent:** Fix #682 (D3): a stall reaches a reader only from a fresh reading.
 
@@ -45,10 +45,12 @@ Tests, rows of `TestScheduler_Injects` on the fake delivery and clock; each reac
 - "StallClearedUnderAHoldIsNotSeededIntoALaterWaiter": the draft is cleared in the fake, `InjectWait` from the hold owner starts, its progress channel holds no note when the inject is typed, and its outcome is injected.
 - "PersistingStallIsToldOnceToALaterWaiterAndEachChangeOnce": the draft stays, the owner's `InjectWait` gets no seed, the next probe tells it the draft once, a repeat probe tells it nothing, and too-short then draft again are each told once, the channel drained after each probe; then a reading with no reason tells nothing, and the draft read after it is told again; the notes' times are each stall's start.
 - "ExpiryNamesNoStallLastReadBeforeTheBound": a non-owner `InjectWait` with a one-minute TTL expires under the hold with an empty `Stall` and zero `StallAt`, and the `expired` log entry has no reason.
-The existing rows that read a stall and expire move the clock in steps a probe reads at; `rig.probeUntilDone` and its `internal/creelcli` twin advance the daemon clock by each new probe wait until the call returns, so the rows "InjectWaitHearsEachStallChangeAndExpiresWithTheLastOne" and "ResumedInjectWaitHearsTheStandingStallAtOnce" of `TestDaemon_Protocol` and "a waiting inject hears the stall on stderr and an expired answer carries it" of `TestCreelCLI`, which today jump 61 seconds in one advance past the last reading, keep their asserted expired stall through it.
-`TestCreelCLI` gains the row "an inject --wait started after a draft cleared under a hold prints no stall line and ends injected": an EXTERNAL `post` to alpha is reminder-probed while the fake shows a draft; the caller then runs as alpha (its strand name set and the strand's pane pid the test's own, as the read rows do) and holds alpha with `hold`, which mutes the EXTERNAL mail, so the probes skip the pane; the draft is cleared in the fake and the daemon clock stepped probe by probe past 16 seconds; alpha's own `inject --wait` into alpha then exits 0 injected with no `is stalled` line on its stderr.
+The existing rows that read a stall and expire move the clock in steps a probe reads at.
+`Clock.AdvanceByWaitsWhere`, in the shared kit both packages' rigs drive, advances the clock by the last recorded wait `keep` accepts, then waits for the next such wait to be recorded before the next step, until `done` closes; like `Clock.AwaitWaitsWhere`, it gives up after a real ten seconds, so a failing test fails on its own assertion instead of hanging.
+It never jumps to a pending timer, so the sweep timer a queued inject arms is never fired between two probe readings, as `Clock.AutoAdvance` would fire it.
+Each row's call goroutine closes a `returned` channel after it sends its result, and the row runs the daemon clock's `AdvanceByWaitsWhere(isProbeWait, returned)` before it reads the result, so a probe reads at each of its waits until the call returns, and the rows "InjectWaitHearsEachStallChangeAndExpiresWithTheLastOne" and "ResumedInjectWaitHearsTheStandingStallAtOnce" of `TestDaemon_Protocol` and "a waiting inject hears the stall on stderr and an expired answer carries it" of `TestCreelCLI`, which today jump 61 seconds in one advance past the last reading, keep their asserted expired stall through it.
 
 Comments in the same commit: the `stalls` field of `Store` names the stall's start and last read times, `Outcome` says its stall is the receiver's fresh stall at expiry, and `StallNote` says its time is when the stall began.
 Docs in the same commit: the Daemon, Inject, Log and Delivery loop paragraphs of `internal/creelengine/doc.go` say a waiter and an expired answer get a stall only from a reading no older than twice the probe ceiling, that a waiter is told each change it sees once, that the printed time is when the stall began, and that a stall read again after it went stale journals a new `stalled` record; the C8 watch line of `tools/sandbox/SANDBOX-CREEL-SUITE.md` adds that an `inject --wait` started after a draft was cleared under a hold prints no stall line and ends injected.
 
-**ImpactSummary:** The stall state behind `inject --wait` progress, seeding and expiry in `internal/creelengine` gains a read time and per-waiter told state; no exported signature changes, and three existing rows in two test files change only how they step the clock.
+**ImpactSummary:** The stall state behind `inject --wait` progress, seeding and expiry in `internal/creelengine` gains a read time and per-waiter told state; no exported signature changes, the shared `creelfake` kit gains one clock-stepping method, and three existing rows in two test files change only how they step the clock.

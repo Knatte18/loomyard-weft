@@ -38,6 +38,7 @@ In `sweepLoop`:
 - Outside a pending confirm, such a wake re-arms the wait at the shorter of the base and the time left on the current wait, measured on the scheduler's clock, so new mail never lengthens the wait to the next sweep.
 A removed holder is then settled within the ceiling plus the confirm interval, 60 seconds, while listings succeed, an orch-role holder included, which has no delivery worker; each failed listing between the removal and the second miss delays the release by at most its own wait.
 Bound: the confirm interval and the ceiling stay above the one-second floor, the sweep still runs only while unread mail or a queued inject exists (`PATTERN-daemon-wakeups`), and a holder is released only after two successful listings at least 10 seconds apart both miss it.
+The shorter guard now lets a strand that is absent from reed's persisted state for 10 seconds or more, for example while it is removed and re-added under the same name, have its held mail returned along its path, where before it had to be absent for at least 30 seconds.
 
 Tests: `isSweepWait` in both test packages becomes "longer than the 8-second probe ceiling", which still tells every sweep wait but a post-shortened one from the probe waits on the shared clock; the rows that observe a post-shortened wait hold only orch-role mail, which has no worker, and read the clock's waits unfiltered.
 The doc comment both predicates share, which sits on `isProbeWait`, says sweep waits are longer than the probe ceiling in place of "30 seconds and up".
