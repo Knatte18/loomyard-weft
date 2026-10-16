@@ -791,7 +791,7 @@
       "id": 581,
       "slug": "orch-role-stencil-fixes",
       "title": "Orch role stencil fixes from the stencil intent audit",
-      "kind": "note",
+      "kind": "task",
       "labels": [
         "bug",
         "stencil",
