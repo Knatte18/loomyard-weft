@@ -10,7 +10,7 @@
 - `internal/orchengine#TestRenderFiles_WriteWithoutLeadingComment`
 - `internal/orchengine#TestResumeContext_FailureReturnsErrorAndWritesNoMark`
 - `internal/orchengine#TestWatcher_FailingRenderAbortsWithoutClear`
-- `internal/orchcli#orchPaths`
+- `internal/orchcli/paths.go`
 - `internal/orchcli#orchCLI.startCmd`
 - `internal/orchcli/doc.go`
 - `internal/orchcli#newTestCLI`
@@ -47,6 +47,10 @@
 A missing file (`errors.Is(err, fs.ErrNotExist)`), or one holding only whitespace, returns `noRepositoryRules`.
 Any other read error, a directory at that path included, returns `orch: read repository rules <path>: <err>; fix the file or remove it`.
 Otherwise it returns the content as it stands, untrimmed (D6).
+
+Bound (D6): the render reads one fixed path in the prime worktree, `Paths.RepoRulesPath` set from `WorktreePath()`, never a task pair's copy, and inlines the file with no size cap; it adds no verb or flag.
+The file can carry any text into the orch's role file at every delivery, and it reaches the prime through any landing, including one the alignment agent lands with no orch turn.
+The only guard against a rule that contradicts the role is the `## This repository` section's own text, which tells the orch to follow the role and raise the conflict to the operator.
 
 `RenderRoleFile` takes `rulesPath`.
 It refuses a role stencil whose top-level markers lack either `command_index` or `repository_rules`, with the existing refusal's wording naming the stencil and the missing marker: restore the marker, or delete the override so the shipped stencil applies.
