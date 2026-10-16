@@ -1,0 +1,4 @@
+verdict: approve
+reason: The diff implements the board entry's #679 and #680 goal and decisions D1 through D8 within the recorded Scope, and touches none of the Out items. The only overlap is the shared bookkeeping file cmd/lyx/testdata/test-budget.yaml with webster-fork-stencil-fixes (row 13). This run (row 22) lands first. No parent commits are listed.
+question: ""
+superseded: []
