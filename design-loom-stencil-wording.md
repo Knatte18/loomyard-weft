@@ -1,6 +1,6 @@
 # Loom stencil fixes from the stencil intent audit, verify tiers from hub config
 
-`loom-stencil-wording` · Task · bug, stencil, loom, shed, config, webster · running · Discussion-Write
+`loom-stencil-wording` · Task · bug, stencil, loom, shed, config, webster · running · Discussion-Bouncer
 
 Bundle of the loom and shed wording findings of the stencil intent audit of 2026-10-15.
 Line numbers as of `main` on 2026-10-16.
