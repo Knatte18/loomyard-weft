@@ -18,7 +18,7 @@ Held by a run; its scope is locked until the run ends.
 | # | Task | Slug | Recipe | At | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | 1 | **Webster fork and pattern-directive stencil fixes from the stencil intent audit**<br>• Structure-aware rename tool from hub config, departures reach the Master via the digest, spawn wording, no inline pack, declared PATTERN changes | [`webster-fork-stencil-fixes`](design-webster-fork-stencil-fixes.md) | loom | Webster | 4h | 3h | stencil, webster, burler, loom |
-| 2 | **reed down ends its watchdog; strand panes resolve lyx to the spawning binary**<br>• Fix reed defects #679 and #680 from the creel re-test | [`reed-down-and-pane-path`](design-reed-down-and-pane-path.md) | loom | Batchifier | 2h | 1h | reed, shuttle |
+| 2 | **reed down ends its watchdog; strand panes resolve lyx to the spawning binary**<br>• Fix reed defects #679 and #680 from the creel re-test | [`reed-down-and-pane-path`](design-reed-down-and-pane-path.md) | loom | Webster | 2h | 1h | reed, shuttle |
 
 ### Ready
 
@@ -65,7 +65,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Note | Slug | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| 1 | **Tune the Burler lens fan prompts**<br>• Revisit the parked lens fan with lens and fork prompts that overlap less, measured against solo on the fan-lab fixtures | [`fan-prompt-tuning`](design-fan-prompt-tuning.md) | 5d | 45m | burler, stencil |
+| 1 | **Tune the Burler lens fan prompts**<br>• Revisit the parked lens fan with lens and fork prompts that overlap less, measured against solo on the fan-lab fixtures | [`fan-prompt-tuning`](design-fan-prompt-tuning.md) | 5d | 46m | burler, stencil |
 | 2 | **Fork the Burler fixer from the reviewer session**<br>• The fixer re-reads the context the reviewer just read; fork it from the reviewer to reuse the cache | [`burler-fixer-fork`](design-burler-fixer-fork.md) | 1d | 52m | burler |
 | 3 | **Perch review analysis: rounds, tokens and late BLOCKING findings, with proposals** | [`perch-review-analysis`](design-perch-review-analysis.md) | 3h | 3h | burler, loom, shed |
 
@@ -75,7 +75,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | --- | --- | --- | --- | --- | --- |
 | 4 | **Every role spec carries its resolved engine** | [`twb-btf-es`](design-twb-btf-es.md) | 35m | 35m |  |
 | 5 | **Go driver and tackler in shed, for every FSM-driven run** | [`twb-btf-ks`](design-twb-btf-ks.md) | 34m | 34m |  |
-| 6 | **tender: hub-wide pause, resume, revive and stale-binary restart** | [`twb-btf-ts`](design-twb-btf-ts.md) | 33m | 33m |  |
+| 6 | **tender: hub-wide pause, resume, revive and stale-binary restart** | [`twb-btf-ts`](design-twb-btf-ts.md) | 34m | 34m |  |
 | 7 | **Every role spec carries its resolved engine** | [`twb-btf-et`](design-twb-btf-et.md) | 32m | 32m |  |
 | 8 | **Go driver and tackler in shed, for every FSM-driven run** | [`twb-btf-kt`](design-twb-btf-kt.md) | 32m | 32m |  |
 | 9 | **tender: hub-wide pause, resume, revive and stale-binary restart** | [`twb-btf-tt`](design-twb-btf-tt.md) | 31m | 31m |  |
