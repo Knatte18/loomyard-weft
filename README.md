@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-16 09:09 UTC; every age below is as of then.
+Rendered 2026-10-16 09:10 UTC; every age below is as of then.
 
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
@@ -20,7 +20,7 @@ Held by a run; its scope is locked until the run ends.
 | 1 | **reed add defaults to pane-era placement and splits the selvage shell window**<br>• Replace the obsolete below-parent default and sweep for other pane-era leftovers | [`reed-add-parentless-placement`](design-reed-add-parentless-placement.md) | loom | Webster | 1h | 1h | reed |
 | 2 | **Orch role stencil fixes from the stencil intent audit**<br>• Arbiter as the orch filter with a fault fallback, no peer comparing, ORCHESTRATOR.md for repo-specific orch rules, owner of a small PR-Gate defect | [`orch-role-stencil-fixes`](design-orch-role-stencil-fixes.md) | loom | Plan-Burler-Fix | 1h | 48m | stencil, orch, loom, config |
 | 3 | **Loom stencil fixes from the stencil intent audit, verify tiers from hub config**<br>• Rejection findings are a reviewer claim, never the operator; driver, advisor, plan and rework wording | [`loom-stencil-wording`](design-loom-stencil-wording.md) | loom | Plan-Burler-Review | 1h | 44m | stencil, loom, shed, config, webster |
-| 4 | **Creel gets its own sandbox suite**<br>• Move S9 and C1-C13 out of the shuttle sandbox suite into SANDBOX-CREEL-SUITE.md | [`creel-sandbox-suite`](design-creel-sandbox-suite.md) | loom | Webster | 37m | 37m | creel, shuttle |
+| 4 | **Creel gets its own sandbox suite**<br>• Move S9 and C1-C13 out of the shuttle sandbox suite into SANDBOX-CREEL-SUITE.md | [`creel-sandbox-suite`](design-creel-sandbox-suite.md) | loom | Webster-Bouncer | 38m | 38m | creel, shuttle |
 
 ### Ready
 
@@ -64,7 +64,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Note | Slug | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| 1 | **creel journal: a bad last line ending in a newline is skipped, not cut, and the next daemon start refuses the journal** | [`creel-journal-torn-newline-line`](design-creel-journal-torn-newline-line.md) | 13m | 13m | creel |
+| 1 | **creel journal: a bad last line ending in a newline is skipped, not cut, and the next daemon start refuses the journal** | [`creel-journal-torn-newline-line`](design-creel-journal-torn-newline-line.md) | 14m | 14m | creel |
 | 2 | **creel llm smoke test TestSmokeCreelClaudeStrand still fails with no pane capture** | [`creel-llm-smoke-idle`](design-creel-llm-smoke-idle.md) | 13m | 13m | creel, shuttle, claude |
 | 3 | **reed watchdog outlives lyx reed down and respawns on a redeployed binary** | [`reed-watchdog-outlives-down`](design-reed-watchdog-outlives-down.md) | 13m | 13m | reed |
 | 4 | **strand pane resolves bare lyx to the production binary while LYX_BIN names the dev build** | [`strand-pane-lyx-path`](design-strand-pane-lyx-path.md) | 13m | 13m | reed, shuttle |
@@ -72,8 +72,8 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 6 | **creel inject --wait prints a draft stall from 37 s earlier as if current** | [`creel-stale-stall-line`](design-creel-stale-stall-line.md) | 13m | 13m | creel |
 | 7 | **creel verb waits about 23 s to report a daemon that already exited at start** | [`creel-dead-daemon-slow-report`](design-creel-dead-daemon-slow-report.md) | 13m | 13m | creel |
 | 8 | **creel log shows nothing for mail carried forward from an old day file** | [`creel-log-carried-mail`](design-creel-log-carried-mail.md) | 13m | 13m | creel |
-| 9 | **creel removed-holder sweep took 80 s instead of about 60** | [`creel-holder-sweep-slow`](design-creel-holder-sweep-slow.md) | 12m | 12m | creel |
-| 10 | **creel inject into a bash strand expires with no stall reason, and a stalled inject expired 3 s late** | [`creel-inject-expiry-reason`](design-creel-inject-expiry-reason.md) | 12m | 12m | creel |
+| 9 | **creel removed-holder sweep took 80 s instead of about 60** | [`creel-holder-sweep-slow`](design-creel-holder-sweep-slow.md) | 13m | 13m | creel |
+| 10 | **creel inject into a bash strand expires with no stall reason, and a stalled inject expired 3 s late** | [`creel-inject-expiry-reason`](design-creel-inject-expiry-reason.md) | 13m | 13m | creel |
 
 #### Low priority
 
@@ -89,7 +89,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | --- | --- | --- | --- | --- | --- |
 | 1 | **Tune the Burler lens fan prompts**<br>• Revisit the parked lens fan with lens and fork prompts that overlap less, measured against solo on the fan-lab fixtures | [`fan-prompt-tuning`](design-fan-prompt-tuning.md) | 5d | 29m | burler, stencil |
 | 2 | **Fork the Burler fixer from the reviewer session**<br>• The fixer re-reads the context the reviewer just read; fork it from the reviewer to reuse the cache | [`burler-fixer-fork`](design-burler-fixer-fork.md) | 1d | 29m | burler |
-| 3 | **Perch review analysis: rounds, tokens and late BLOCKING findings, with proposals** | [`perch-review-analysis`](design-perch-review-analysis.md) | 33m | 29m | burler, loom, shed |
+| 3 | **Perch review analysis: rounds, tokens and late BLOCKING findings, with proposals** | [`perch-review-analysis`](design-perch-review-analysis.md) | 34m | 29m | burler, loom, shed |
 
 #### Normal priority
 
@@ -108,7 +108,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 14 | **Module labels from what a task touches, not only what it is about**<br>• Half the landings that changed the shuttle core lacked the shuttle label; derive or check module labels from the plan and the diff | [`labels-from-diff`](design-labels-from-diff.md) | 22h | 22h | board, loom |
 | 15 | **Start one task per overlapping group at a newly-ready start**<br>• When a landing makes several overlapping tasks ready at once, batten starts one per group and names the rest in its notice | [`batten-ready-overlap`](design-batten-ready-overlap.md) | 20h | 20h | batten |
 | 16 | **Rename the `lyx` binary to `lyd` (name clash with LyX)** | [`rename-binary-lyd`](design-rename-binary-lyd.md) | 2h | 2h | stencil, shuttle |
-| 17 | **Rewrite C13's stacked half for window-per-strand**<br>• C13's stacked 3-row half cannot be set up once reed-add-parentless-placement lands | [`creel-c13-stacked-rewrite`](design-creel-c13-stacked-rewrite.md) | 4m | 4m | creel |
+| 17 | **Rewrite C13's stacked half for window-per-strand**<br>• C13's stacked 3-row half cannot be set up once reed-add-parentless-placement lands | [`creel-c13-stacked-rewrite`](design-creel-c13-stacked-rewrite.md) | 5m | 5m | creel |
 
 #### Low priority
 
