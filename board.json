@@ -809,6 +809,24 @@
           "review_max_bounces": 2
         }
       }
+    },
+    {
+      "id": 570,
+      "slug": "webster-fork-spawn-wording",
+      "title": "Webster stencils describe a stale fork spawn and wake-up",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "stencil",
+        "webster"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "The fork prefix still says Master waits with await-batch, and Master recognises forks by an instruction it never sends.",
+      "body": "## Seen\n\nFound by the stencil intent audit (`docs/research/stencil-intent-audit-2026-10-15/findings.md`, F5); line numbers as of `main` on 2026-10-16.\n\n- `contracts/stencils/webster/webster-prefix-fork.md:24` tells the fork that \"Master's own `await-batch` sees it and takes over\" once the report is written.\n  Master no longer runs `await-batch`: it ends its turn after the spawn and is woken by the fork's completion notification (`internal/websterengine/doc.go`).\n  The banner at `:3` likewise names an Agent-tool call, \"Read this file and follow it exactly: \u003cpath\u003e\", that Master never sends.\n- `contracts/stencils/webster/webster-template-master.md:12` tells a fork to recognise itself by that same instruction, but the fork prompt Master sends (`:73`, and the verify-fix fork at `:168`) reads \"Read this file and do exactly and only what it says\".\n\n## Decision\n\nOperator decision (2026-10-16): the stencils' account of how a fork is spawned and how Master learns it finished is wrong and is to be fixed; the operator leaves the shape of the fix to the agent.\n\nOperator view, not a decision: Master's prompt cache is believed to stay warm while a fork runs.\n\n## Idea\n\nAgent's suggestion: in the fork prefix, say the fork's turn ends after the report and Master is woken by its completion notification, and drop the `await-batch` wording except the ban on running it; make the master's self-identification rule at `:12` quote the instruction Master sends, or key it on \"You are an implementer fork\", which both spawn prompts open with.\nThe cache remark needs no change here: the fix touches only wording.\n",
+      "created": "2026-10-16T07:15:52Z",
+      "revised": "2026-10-16T07:15:52Z"
     }
   ]
 }

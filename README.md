@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-16 07:14 UTC; every age below is as of then.
+Rendered 2026-10-16 07:15 UTC; every age below is as of then.
 
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
@@ -18,7 +18,7 @@ Held by a run; its scope is locked until the run ends.
 | # | Task | Slug | Recipe | At | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | 1 | **lyx shuttle open cannot choose the permission mode**<br>• An interactive session opened by lyx shuttle open always prompts for permissions; there is no flag or config for bypass | [`shuttle-open-permission`](design-shuttle-open-permission.md) | loom | Webster | 18h | 12h | shuttle |
-| 2 | **Orch delegates board intake to a one-shot fork**<br>• Orch checks the inbox by number and title only; a fork imports, labels and folds issues | [`orch-intake-fork`](design-orch-intake-fork.md) | loom | Plan-Write | 14m | 14m | orch, board |
+| 2 | **Orch delegates board intake to a one-shot fork**<br>• Orch checks the inbox by number and title only; a fork imports, labels and folds issues | [`orch-intake-fork`](design-orch-intake-fork.md) | loom | Plan-Write | 16m | 16m | orch, board |
 
 ### Ready
 
@@ -48,11 +48,17 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 ### Bugs
 
+#### Normal priority
+
+| # | Note | Slug | Age | Revised | Labels |
+| --- | --- | --- | --- | --- | --- |
+| 1 | **Webster stencils describe a stale fork spawn and wake-up**<br>• The fork prefix still says Master waits with await-batch, and Master recognises forks by an instruction it never sends. | [`webster-fork-spawn-wording`](design-webster-fork-spawn-wording.md) | 0m | 0m | stencil, webster |
+
 #### Low priority
 
 | # | Note | Slug | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| 1 | **A hub pause leaves background forks and shells running, so hibernate never confirms**<br>• Pause interrupts turns but not background forks or shells; sessions read busy and hibernate confirmation fails | [`pause-background-work`](design-pause-background-work.md) | 1d | 1d | shuttle, webster |
+| 2 | **A hub pause leaves background forks and shells running, so hibernate never confirms**<br>• Pause interrupts turns but not background forks or shells; sessions read busy and hibernate confirmation fails | [`pause-background-work`](design-pause-background-work.md) | 1d | 1d | shuttle, webster |
 
 ### Enhancements
 
@@ -74,7 +80,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 12 | **Paste cited code into a review rounds context**<br>• Reviewers edit nothing and review a fixed commit, so code pasted at round start cannot go stale; measure it against todays reviewer | [`review-inline-code`](design-review-inline-code.md) | 4d | 19h | burler, stencil |
 | 13 | **Module labels from what a task touches, not only what it is about**<br>• Half the landings that changed the shuttle core lacked the shuttle label; derive or check module labels from the plan and the diff | [`labels-from-diff`](design-labels-from-diff.md) | 20h | 20h | board, loom |
 | 14 | **Start one task per overlapping group at a newly-ready start**<br>• When a landing makes several overlapping tasks ready at once, batten starts one per group and names the rest in its notice | [`batten-ready-overlap`](design-batten-ready-overlap.md) | 18h | 18h | batten |
-| 15 | **Rename the `lyx` binary to `lyd` (name clash with LyX)** | [`rename-binary-lyd`](design-rename-binary-lyd.md) | 24m | 24m | stencil, shuttle |
+| 15 | **Rename the `lyx` binary to `lyd` (name clash with LyX)** | [`rename-binary-lyd`](design-rename-binary-lyd.md) | 26m | 26m | stencil, shuttle |
 
 #### Low priority
 
@@ -112,7 +118,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 15 | **Interactive board view: a regenerated HTML file and a phone-friendly README**<br>• board.html rendered with README on every write; a VS Code task opens it in the browser; collapsible README for the GitHub app | [`board-viewer`](design-board-viewer.md) | 11d | 10d | board, ide, orch |
 | 16 | **Spawn audit log: every process lyx starts is recorded and traceable**<br>• One recorded launch path and a hub-wide spawn log with owner, argv and resource use, plus a sampler and a summary verb, so a process storm can be traced after a crash | [`spawn-audit-log`](design-spawn-audit-log.md) | 7d | 3d | reed, shuttle, config |
 | 17 | **Configurable action buttons on the reed status bar**<br>• Clickable status-bar buttons that run configured commands: VS Code, orch distill/refresh, the follow toggle and more | [`reed-status-buttons`](design-reed-status-buttons.md) | 23h | 23h | reed, config |
-| 18 | **Ideas to borrow from comparable agent orchestrators (survey, Oct 2026)** | [`orchestrator-survey-ideas`](design-orchestrator-survey-ideas.md) | 22m | 22m | burler, shed, orch, quarry |
+| 18 | **Ideas to borrow from comparable agent orchestrators (survey, Oct 2026)** | [`orchestrator-survey-ideas`](design-orchestrator-survey-ideas.md) | 23m | 23m | burler, shed, orch, quarry |
 
 #### Low priority
 
