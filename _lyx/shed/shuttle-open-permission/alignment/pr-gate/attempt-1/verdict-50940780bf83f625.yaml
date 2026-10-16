@@ -1,0 +1,8 @@
+verdict: approve
+reason: >-
+  The diff adds the --permission-mode flag to lyx shuttle open, carries it blind through OpenSpec and Runner.Open,
+  realizes it in claudeengine on the fresh and resume lines with the existing interactive validation before anything is created,
+  logs it on the opened-session line and updates the docs the scope names, matching the goal and decisions D1-D5 with nothing out of scope.
+  The only peer, orch-intake-fork, shares no file, behaviour or decision, and no parent commit is listed.
+question: ""
+superseded: []
