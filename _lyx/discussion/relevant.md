@@ -1,0 +1,27 @@
+# Relevant files
+
+- `internal/burlerengine/prompt.go` `composeReviewPrompt`, `composeFixPrompt`, `clusterRulesBlock` — the reviewer's and fixer's prompt composition; the fan prose to move into stencils
+- `internal/burlerengine/config.go` `Config`, `ResolveFan`, `LoadConfig` — the lens and fan library and its per-name fallback
+- `internal/burlerengine/template.yaml` — the embedded lens and fan template the new fans join
+- `internal/burlerengine/profile.go` `Profile`, `applyClusterExclude` — the profile fields a fixer fan joins
+- `internal/burlerengine/review.go` `reviewTable` — sets fork authorization for a fanned reviewer; the fixer's table is its twin
+- `internal/burlerengine/cluster.go` `auditClusterRound` — the per-fork violation checks the twill fixer reuses
+- `internal/burlerengine/doc.go` — the module doc the built design goes into
+- `internal/loomengine/template.yaml` — `discussion_fan`, `plan_fan`, `fan_review` and the per-segment model keys whose list form the new keys copy
+- `internal/loomengine/config.go` `Config`, `MigrateConfig` — key declaration, local-layer guards, fan validation and key retirement
+- `internal/loomengine/review.go` `ResolveReview`, `fannedReview`, `resolveSegmentModels` — where `fan_review` replaces a segment's reviewer list
+- `internal/loomengine/twill.go` `twillLenses` — the writer's twill lens resolution, the model for the fixer fan's
+- `internal/twilldirective/twilldirective.go` `Directive`, `Values` — the writer's twill block, not reused for the fixer
+- `internal/shedrecipe/entries_burler.go` — wires the row's cluster fan and the `fan_review` refusal key into the review profile
+- `internal/shedrecipe/entries_bouncer.go` — sets the Bouncer's `ClusterExcludes` from the row's fan
+- `internal/shedrecipe/recipe.go` `RowClusterFans` — the per-row fan the per-round list replaces
+- `internal/shedadapters/burlerreview.go` — applies focus-file lens exclusions per round and writes the usage record
+- `internal/shedadapters/focus.go` `excludedLenses` — exclusion eligibility across rounds
+- `internal/shedadapters/roundusage.go` — the round usage record that gains the fixer's fan and lenses
+- `internal/shedadapters/bouncer.go` `BouncerConfig` — the told `ClusterExcludes` that becomes per round
+- `contracts/stencils/burler/burler-step-1-explore.md` — the explore step that gains the fork-reading marker
+- `contracts/stencils/burler/burler-step-review.md` — the review step whose cluster rules become stencil parts
+- `contracts/stencils/burler/burler-step-fix.md` — the fix step that gains the self-check marker
+- `contracts/stencils/twill/twill-directive.md` — the writer's twill block the fixer self-check is modelled on
+- `docs/research/burler-fan-tuning-bench-2026-10-16/report.md` — the reviewer fan bench and its next changes
+- `docs/research/burler-twill-fixer-bench-2026-10-16/report.md` — the twill fixer bench, its self-check block and rubric
