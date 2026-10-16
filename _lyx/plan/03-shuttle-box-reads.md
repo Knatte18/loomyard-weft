@@ -1,13 +1,13 @@
 # Card 3 — shuttle-box-reads
 
 **Create:**
-- `plan:internal/shuttleengine#boxCapture` -> `func boxCapture(reed ReedOps, engine Engine, guid string) (string, error)`
-- `plan:internal/shuttleengine#blankMarkedSpans` -> `func blankMarkedSpans(styled string) string`
-- `plan:internal/shuttleengine#styledReadinessEngine` -> `type styledReadinessEngine struct`
-- `plan:internal/shuttleengine#styledReadinessEngine.PlainBoxCapture` -> `func (e *styledReadinessEngine) PlainBoxCapture(styled string) string`
-- `plan:internal/shuttleengine#styledPasteEngine` -> `type styledPasteEngine struct`
-- `plan:internal/shuttleengine#styledPasteEngine.PlainBoxCapture` -> `func (e *styledPasteEngine) PlainBoxCapture(styled string) string`
-- `plan:internal/shuttleengine#tuiReed.CapturePaneStyled` -> `func (r *tuiReed) CapturePaneStyled(guid string) (string, error)`
+- `internal/shuttleengine#boxCapture`
+- `internal/shuttleengine#blankMarkedSpans`
+- `internal/shuttleengine#styledReadinessEngine`
+- `internal/shuttleengine#styledReadinessEngine.PlainBoxCapture`
+- `internal/shuttleengine#styledPasteEngine`
+- `internal/shuttleengine#styledPasteEngine.PlainBoxCapture`
+- `internal/shuttleengine#tuiReed.CapturePaneStyled`
 
 **Edit:**
 - `internal/shuttleengine#Runner.SessionIdle`

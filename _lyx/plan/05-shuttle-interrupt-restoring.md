@@ -26,14 +26,14 @@
 
 **Uses:**
 - `internal/shuttleengine#guardedInterrupt`
-- `plan:internal/shuttleengine#boxCapture`
+- `internal/shuttleengine#boxCapture`
 - `internal/shuttleengine#readBox`
-- `plan:internal/shuttleengine#blankMarkedSpans`
+- `internal/shuttleengine#blankMarkedSpans`
 - `internal/shuttleengine#liveStrand`
 - `internal/shuttleengine#notShuttleOrLiveStrandError`
 - `internal/shuttleengine#Runner.engineFor`
 - `internal/shuttleengine#playInputs`
-- `plan:internal/shuttleengine#RestoredPromptClearer`
+- `internal/shuttleengine#RestoredPromptClearer`
 - `internal/shuttleengine#InterruptGuard`
 - `internal/shuttleengine#InputBoxReader`
 - `internal/shuttleengine#fakeReed`

@@ -1,8 +1,8 @@
 # Card 4 — claude-restored-prompt-clear
 
 **Create:**
-- `plan:internal/shuttleengine#RestoredPromptClearer` -> `type RestoredPromptClearer interface`
-- `plan:internal/shuttleengine/claudeengine#Claude.RestoredPromptClearSequence` -> `func (c *Claude) RestoredPromptClearSequence(capture string) []shuttleengine.PaneInput`
+- `internal/shuttleengine#RestoredPromptClearer`
+- `internal/shuttleengine/claudeengine#Claude.RestoredPromptClearSequence`
 
 **Edit:**
 - `internal/shuttleengine/claudeengine#Claude.ClearInputSequence`
