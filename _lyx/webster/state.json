@@ -1,13 +1,13 @@
 {
   "runGuid": "1fd54512e1bac54786d0c2c82bc7806c",
-  "planFingerprint": "cebb3023955f32aa70c5c54582b1cdd1ad29ed1f681337ab7f42bc5902e086fc",
+  "planFingerprint": "faf855c37131f1aa6701a85a8b417b4e0c9ac840ff6a767ab091e454f0b011c6",
   "planFileHashes": {
     "00-overview.md": "db1b6da2789f6c0767bbae5e0d4fc5d81ab95a2336983624a08707426e04a805",
     "01-retire-resize-watch-loop.md": "9b393dc7c3cfa94b07ed885a5bb9ad471cc9e071932d9fad0db65b2b0552dbf6",
     "02-retire-shell-window-stack.md": "c6b9e554566167adb4ed777d04930af12289f08eb946e375faafdf8e48b852c5",
     "03-retire-zoom-and-pane-buttons.md": "fec695d9cbc9a045bd458be85b057eafef6b4b819d001ba61a9cd4f688e2e70f",
     "04-retire-layout-config-keys.md": "24b3019714e413e206d6df3523688786db9e20a8b8d2fc5c71b7dc26a32e795f",
-    "05-retire-pane-era-anchors.md": "4a15ec22adcd21b816210d88bb376e5a041bcd428f9298c70bed9fe782bc6f80",
+    "05-retire-pane-era-anchors.md": "98dfe28fe1197d24d6055605b82d55d6493d1eead733cfcf0abf2e296fcf69ca",
     "06-shuttle-run-anchor-vocabulary.md": "a57d8d4c53866b8af66bc9836a103958e31b53f396b1b3467a0f1a0bca34bba5",
     "07-move-shell-window-strands.md": "f9a3fa9304423df2e092eabd6a53ca0725ad2b406d9d0ee4d1914a6e30a6c111",
     "08-sweep-docs-and-sandbox.md": "93ff610f951244b3c1bd8e1f045a284a226bee4fee729cab95a39ce4883921bc"
@@ -331,7 +331,7 @@
       }
     }
   ],
-  "currentBatch": 5,
+  "currentBatch": 0,
   "masterStrand": "e37a7dd745963c076067340e4df035d4",
   "masterSessionId": "5deb3191-8c44-4a70-9a63-bca09f4873d5",
   "masterEngine": "claude",
@@ -458,20 +458,42 @@
         "05-retire-pane-era-anchors"
       ],
       "cardHashes": {
-        "05-retire-pane-era-anchors": "4a15ec22adcd21b816210d88bb376e5a041bcd428f9298c70bed9fe782bc6f80"
+        "05-retire-pane-era-anchors": "98dfe28fe1197d24d6055605b82d55d6493d1eead733cfcf0abf2e296fcf69ca"
       },
       "startSha": "520510a9c59b0098000fbc988547004cec1e0fb8",
       "kind": "fork",
       "spawnedAt": "2026-10-16T09:27:40Z",
       "sessionId": "5deb3191-8c44-4a70-9a63-bca09f4873d5",
       "engine": "claude",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "05-retire-pane-era-anchors",
+        "status": "done",
+        "head_sha": "3ff7271c866dd136be27417c1334e92c9f307a83",
+        "deviations": [
+          "internal/reedcli/smoke_test.go",
+          "internal/reedcli/watchdogreap_integration_test.go",
+          "internal/reedengine/attach_test.go",
+          "internal/reedengine/retiredkeys_test.go",
+          "internal/reedengine/windowtarget.go"
+        ]
+      },
+      "cardShas": [
+        "3ff7271c866dd136be27417c1334e92c9f307a83"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-reed-add-parentless-placement/5deb3191-8c44-4a70-9a63-bca09f4873d5/subagents/agent-a1a8d1d90a2271daf.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-reed-add-parentless-placement/5deb3191-8c44-4a70-9a63-bca09f4873d5/subagents/agent-a1a8d1d90a2271daf.jsonl"
+      ]
     }
   },
   "seenForkTranscripts": [
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-reed-add-parentless-placement/5deb3191-8c44-4a70-9a63-bca09f4873d5/subagents/agent-a9afd70de4407f5ad.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-reed-add-parentless-placement/5deb3191-8c44-4a70-9a63-bca09f4873d5/subagents/agent-a237f0e40ecba78a1.jsonl",
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-reed-add-parentless-placement/5deb3191-8c44-4a70-9a63-bca09f4873d5/subagents/agent-aeaef7b1407166d80.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-reed-add-parentless-placement/5deb3191-8c44-4a70-9a63-bca09f4873d5/subagents/agent-aeaef7b1407166d80.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-reed-add-parentless-placement/5deb3191-8c44-4a70-9a63-bca09f4873d5/subagents/agent-a1a8d1d90a2271daf.jsonl"
   ]
 }

@@ -11,9 +11,9 @@
 - `internal/reedengine#TestPlanPaneTarget`
 
 **Create:**
-- `plan:internal/reedengine/render#Anchor.UnmarshalJSON` -> `func (a *Anchor) UnmarshalJSON(data []byte) error`
-- `plan:internal/reedcli#TestAddCmd_RefusesAnAnchorOutsideTheVocabulary` -> `func TestAddCmd_RefusesAnAnchorOutsideTheVocabulary(t *testing.T)`
-- `plan:internal/reedengine#TestWriteOps_RefuseARetiredAnchor` -> `func TestWriteOps_RefuseARetiredAnchor(t *testing.T)`
+- `internal/reedengine/render#Anchor.UnmarshalJSON`
+- `internal/reedcli#TestAddCmd_RefusesAnAnchorOutsideTheVocabulary`
+- `internal/reedengine#TestWriteOps_RefuseARetiredAnchor`
 
 **Edit:**
 - `internal/reedengine/render#Anchor`
