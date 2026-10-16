@@ -67,7 +67,14 @@ All six forks returned.
 
 ## Review rounds
 
-_No rounds yet._
+### Round 3
+
+- F1, BLOCKING, D2 refusal loops on the hand-on path: fixed, the fix half archives the whole round before refusing, so the re-stepped review row spawns afresh and records the names.
+- F2, MEDIUM, absent names versus an empty name: fixed, `fans_recorded: true` decides presence; an undecodable record takes the refusal.
+- F3, MEDIUM, live-reviewer resume and acceptance-time write: fixed, the write is on the spawn path after the probe, and the acceptance merge no longer writes the fan.
+- F4, MEDIUM, Bouncer refusal and unscoped rows: fixed, the refusal is scoped to the Discussion and Plan fix halves; the Bouncer degrades.
+- F5, LOW, no carrier for the fix row's key names: fixed, a told per-row key pair and `RunOpts.FixKey`; `lyx burler run` names the default engine and `fix-fan`.
+- F6, MEDIUM, fixer fork cap against `fix-affected-set`: fixed, most severe first with unchecked findings listed; caps stated in D4 and D7.
 
 ## Question ledger
 
