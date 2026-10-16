@@ -40,7 +40,8 @@ A wiring list holding a non-empty name beside the recipe's `cluster-fan` keeps t
 A recipe `fix-fan` is recorded by the review row but read only by a fix row told a fixer fan key, so on a Webster, Merge or Darn row it runs no twill fixer.
 The row's `opts.ReviewKey` is its `RowModelKeys` entry's `Review`, replacing the hard-coded `fan_review` key, and a row with no entry keeps the zero key.
 `burlerFixEntry` sets `opts.FixKey` and `opts.FixFanKey` from its `RowModelKeys` entry and sets `RequiresFans` exactly when that entry names a `FixFan` key, so only a fix row the wiring tells a fixer fan key refuses an unrecorded round.
-`bouncerEntry` passes the row's `RowClusterFans` list as `BouncerConfig.ClusterFans` and stops widening its `cluster_excludes` key from the row's fan, so the recipe key alone sets `ClusterExcludes`.
+`bouncerEntry` passes the row's `RowClusterFans` list as `BouncerConfig.ClusterFans` only when the list holds a non-empty entry, the all-empty-counts-as-absent rule `burlerReviewEntry` applies, so a row whose fan comes from the recipe's profile keeps the told `cluster_excludes` bool;
+it stops widening its `cluster_excludes` key from the row's fan, so the recipe key alone sets `ClusterExcludes`.
 
 `internal/loomrecipe`'s gate-quiescence test re-states its premise for the twill fixer D7 decides, which is the re-opening its message asks for:
 `gatedRowFanViolations` takes `fans` as `map[string][]string`, the type `Env.RowClusterFans` now carries, a row receiving a fan when any entry is non-empty, and keeps refusing a cluster fan on every gated row, a gated `BurlerFix` row included.
@@ -58,6 +59,7 @@ the row's `RowModelKeys` entry reaches `opts.ReviewKey` and a row with none keep
 `TestBurlerHalfEntries_StrictUnknownKeys` gains rows: `fix-fan` is accepted on a review profile and rejected on a fix profile.
 `captureFix` also writes a round-1 usage record carrying `fans_recorded`, so a fix row told a fixer fan key reaches its runner, and `TestBurlerFixEntry_GateConfig` gains a row whose `RowModelKeys` entry reaches `FixKey` and `FixFanKey` through it.
 `TestBouncerEntry_ClusterExcludes`'s env-fan subtests pass lists, and the one-entry list now asks for `exclude_lenses` only when round 1's record names the same fan: its `judgePrompt` helper writes a hand-built `round-1-usage.yaml` into the run directory holding `fans_recorded: true`, `fan: env-fan` and a review half, since `recordRoundFans` is unexported in `shedadapters`.
+A new subtest sets `cluster_excludes: true` beside a `[""]` `RowClusterFans` entry and asserts the prompt still asks for `exclude_lenses`.
 `TestWire_ReviewKeysReachTheEnv` compares `RowClusterFans` as lists and asserts the two review rows' `RowModelKeys`.
 
 `refusal-spec.md` gains the fix-fan construction conflict row in the loom section, beside the review rows.

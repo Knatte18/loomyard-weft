@@ -2,13 +2,17 @@
 
 **Edit:**
 - `internal/burlerengine/template.yaml`
-- `internal/burlerengine#TestResolveFan`
+- `internal/burlerengine#TestConfigTemplate_DecodesAndIsSelfConsistent`
 
 **Intent:**
 Add the four production fans and their new lenses to the embedded `burler.yaml` template, so they reach every hub through `ResolveFan`'s per-name fallback without rewriting an operator's `burler.yaml` (D5, D6, D8; `PATTERN-config-layers`).
 The dormant `standard`, `full`, `discussion` and `plan` fans and their lenses stay as they are.
 
-New lenses, each a procedure that starts its fork's final message with its own list, written as emphasis, never exclusion, per the template's header:
+The seven reviewer lenses, `interactions`, `existing-paths`, `bound-breaker`, `walkthrough`, `affected-set`, `guard-reach` and `way-forward`, are each a procedure that starts its fork's final message with its own list, and keep the bench text, which ends in its own `Your list:` sentence.
+Of the five fixer lenses, `fix-consistency`, `fix-claims` and `fix-way-forward` keep the twill-fixer bench's lens text as it is, with no list sentence, since the fixer's fork boilerplate returns findings only;
+`fix-affected-set` ends by listing each finding it left unchecked, as D8 requires;
+and `fix-proposal` is a procedure with no list sentence.
+No new lens carries the emphasis line, since per D4 a fork reports only what its lens's procedure produces:
 
 - `interactions`: the bench's `i1-interactions` text (`docs/research/burler-fan-tuning-bench-2026-10-16/setup/iter1/burler.yaml`).
 - `existing-paths`: the bench's `i1-existing-paths` text, widened per D5: for each state, setting, file or invariant a decision introduces or changes, every existing path that writes, resets, reapplies or reads it, and for a reader whether it still reads the state right under the new behaviour; a path that undoes or misreads a decision is a design finding about that decision, never a missing call-site list.
@@ -26,7 +30,8 @@ New fans, in this lens order:
 - `fix-discussion`: `fix-consistency`, `fix-claims`, `fix-proposal`, `fix-way-forward`.
 - `fix-plan`: `fix-consistency`, `fix-claims`, `fix-proposal`, `fix-affected-set`.
 
-`TestResolveFan` gains a row resolving each of the four names against a zero `Config` and asserting the lens names in exactly that order, which fails if a fan is missing, misordered or names an undefined lens.
-`TestConfigTemplate_DecodesAndIsSelfConsistent` already checks every template fan names a defined lens and needs no change.
+`TestConfigTemplate_DecodesAndIsSelfConsistent` raises its `wantLenses` and `wantFans` pins by the lenses and fans this card adds, adds the four new fans to its per-fan entry-count map and to its `wantOrders` map with the lens order listed above, which resolves each against a zero `Config` through `ResolveFan` and so fails on a missing fan, a misordered fan or an undefined lens, and keeps its defined-lens cross-reference check.
+Its emphasis-suffix assertion skips the lenses the four new fans name, per the bench-text choice above, while its `ignore ` check still covers every lens.
+The header comment of `internal/burlerengine/template.yaml`, from "Lens prose is always phrased as EMPHASIS" onward, is edited to say the dormant lenses are emphasis prose and the procedure lenses of the four production fans end in their own list instead, while the no-"ignore" rule still holds for every lens.
 
-**ImpactSummary:** template data plus one test row in `internal/burlerengine`; no fan any config names today changes, so no caller is affected.
+**ImpactSummary:** template data, its header comment and the template self-consistency test's pins in `internal/burlerengine`; no fan any config names today changes, so no caller is affected.

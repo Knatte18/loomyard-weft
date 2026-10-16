@@ -59,8 +59,9 @@ The accepted-review hand-on path writes nothing.
 `acceptedExit` stops writing `fan` from the producer's profile and merges only `Lenses` and the review half, so a hub edit between spawn and acceptance cannot overwrite the recorded name.
 
 `BurlerFixProducer.Call`, on a row told `RequiresFans` (a Discussion or Plan fix row), reads the recorded names after the accepted-review check and before the probe.
-With them it sets the profile's `FixFan` to the recorded fixer fan, so a list changed between the halves cannot reach this round.
-Without them it archives the round's review, fixer report and acceptance record as the changed-review exit does and refuses with `round N's usage record holds no recorded fan names (<reason>); <wayForward>`, the `goto` of the segment's review row; the archive is what lets the review row spawn a fresh reviewer that records the names.
+With them it sets the profile's `FixFan` to the recorded fixer fan before the probe, so a twill fixer is probed under its fan and a list changed between the halves cannot reach this round.
+Without them it defers the archive and refusal until after the probe, keeping the contract that a live fixer is probed before anything is archived: it probes under the single-fixer profile, and a live fixer is resumed as the single fixer it was spawned as, since only an old binary's fixer can be live over a record with no names on a `RequiresFans` row.
+Only when the probe finds no live fixer does it archive the round's review, fixer report and acceptance record as the changed-review exit does and refuse with `round N's usage record holds no recorded fan names (<reason>); <wayForward>`, the `goto` of the segment's review row; the archive is what lets the review row spawn a fresh reviewer that records the names.
 A row not told `RequiresFans` (Webster, Merge, Darn) reads no names, runs the single fixer and never refuses, per D2.
 A recorded fixer fan that `burler.yaml` no longer defines fails the engine's `validateFix` with card 3's way forward, which the fixer's error exit carries out unchanged.
 `fixedExit` merges `fix_lenses` and `fix_forks` from the `FixResult` beside the fix half when the result names lenses, and neither for a single fixer.
@@ -78,7 +79,8 @@ and a round whose fix half was refused, with its review, fixer report and accept
 a row whose round-2 record names the same fan without `fans_recorded` drops the round-3 focus file's exclusion, which reaches `lensesRunUnderFan`'s new check; its existing record gains `FansRecorded`.
 `TestBurlerReviewProducer_Call_ProbeAndResume` gains `Fans` rows: a live reviewer whose round already recorded `fan-a` is probed and resumed under `fan-a`, read from `GotProbeReviewProfiles` and `GotResumeReviewProfiles`, though the list now says `fan-b`, and the record still names `fan-a` after acceptance;
 a resumed reviewer that had already died falls through to a fresh spawn, which records and runs `fan-b`.
-`TestBurlerFixProducer_Call_RefusesARoundWithNoAcceptedReview` gains `RequiresFans` rows: a record lacking the flag with `fan: ""`, one that does not decode and a missing one each refuse with `wayForwardToReview`, archive the review, fixer report and acceptance record and spawn nothing.
+`TestBurlerFixProducer_Call_RefusesARoundWithNoAcceptedReview` gains `RequiresFans` rows: a record lacking the flag with `fan: ""`, one that does not decode and a missing one each refuse with `wayForwardToReview`, archive the review, fixer report and acceptance record and spawn nothing;
+a flagless record with a live fixer resumes it as the single fixer and archives nothing.
 `TestBurlerFixProducer_Call_FinishedFixIsRecorded` gains rows: a `RequiresFans` row whose record names a fixer fan passes it as `FixFan`; a row without `RequiresFans` over a flagless record runs the single fixer;
 a twill result naming lenses and two forks records `fix_lenses` and `fix_forks: 2`, one naming lenses and zero forks records `fix_forks: 0`, and the single rows assert neither key is set.
 `TestBurlerReviewProducer_Call_AcceptedReviewIsRecorded` asserts the acceptance merge leaves `fan` as the record held it.

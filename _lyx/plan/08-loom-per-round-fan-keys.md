@@ -30,6 +30,7 @@
 - `internal/loomcli#loomCLI.wire`
 - `internal/loomcli#TestWire_ReviewKeysReachTheEnv`
 - `internal/configreg#TestLookup`
+- `internal/configreg#TestModules_EveryTemplateKeyClassified`
 - `internal/configcli/doc.go`
 - `docs/overview.md`
 - `contracts/specs/refusal-spec.md`
@@ -41,6 +42,7 @@
 Make each perch's fan key and fixer fan key a per-round list in `loom.yaml`, in the grammar of the per-segment model keys, and retire `fan_review` (D2, D3).
 
 `FanList` decodes one fan name or a block sequence of names, any other shape a `fanShapeError` that `LoadConfig` names by key as it names a `modelSpecShapeError`.
+`fanShapeError.Error()` reads `value at line %d is neither a fan name nor a list of fan names; set the key to a fan name, or to a list of fan names, with "" for a solo or single round`, so the key-naming wrap carries a way forward as it does for `modelSpecShapeError`.
 `Config`'s `DiscussionFan` and `PlanFan` become `FanList`, and it gains `DiscussionFixFan` and `PlanFixFan` (`discussion_fix_fan`, `plan_fix_fan`), whose empty entry is the single fixer and whose fan name is the twill fixer with that fan's lenses.
 The template gives all four `""`, so a hub that sets nothing runs solo review and the single fixer in every round, and each comment states the scalar-or-list grammar, the last entry serving every later round and what an empty entry means; `fan_review` leaves the template.
 `ConfigSpec` makes the two new keys guards like the fan keys, so all four are refused in the local layer and in a task's `run_settings`, and declares `fan_review` in `RetiredKeys` with `CategoryNone`, so every load drops it from the stacked document and a layer still holding it loads.
@@ -59,14 +61,16 @@ Webster, Merge and Darn rows get no fan list, fix fan list or `FixFan` key.
 Tests:
 `templateConfig`, the test helper's `Config` literal, drops `FanReview`, writes the two fan fields as `FanList{""}` and adds the two fixer fan fields at `FanList{""}`.
 `TestLoadConfig_Loads` replaces its `fan_review` row with rows loading each of the four keys as a scalar and as a list, and adds a row whose repo-default layer still holds `fan_review` and loads with the key ignored.
-`TestLoadConfig_Refuses` replaces the two `fan_review` rows with an empty-list row for each of the four keys, a row whose second list entry names an unknown fan, each asserting the key, the entry and the way forward, and a row whose `discussion_fix_fan` is a mapping, which reaches `fanShapeError` and is refused naming the key;
+`TestLoadConfig_Refuses` replaces the two `fan_review` rows with an empty-list row for each of the four keys, a row whose second list entry names an unknown fan, each asserting the key, the entry and the way forward, a row whose `discussion_fix_fan` is a mapping, and a row whose `plan_fan` list holds a mapping entry, which reaches `fanShapeError` through the list branch of `FanList.UnmarshalYAML`, each refused naming the key and the way forward;
+its existing "unknown discussion_fan" and "unknown plan_fan" rows keep their key, fan name and `known fans: ` assertions but replace their `to empty to run the segment solo` assertion with `entry 1` and `set the entry to ""`, since a scalar value is entry 1 of the key and takes the new wording, while the "set discussion_fan with a malformed burler.yaml" row keeps its assertions, since the read-failure wording stays;
 it adds a local-layer subtest table refusing each of the four keys, naming the local file and the key.
 `TestMigrateConfig_RetiresSkipMergeReview` gains a row whose document holds `fan_review` and loses it with the reconcile line; its loop's second-pass check proves a second reconcile changes nothing.
 `TestResolveReview` asserts a fanned segment's reviewer list is its own `*_review` list, else `review`, and checks `SegmentKeys` for set and unset segment keys; its bad-`fan_review` assertion is dropped.
 `TestWire_ReviewKeysReachTheEnv` seeds per-round lists for the four keys and asserts `RowClusterFans`, `RowFixFans` and `RowModelKeys`, and that the fanned review rows' models come from the segment's own list.
 `TestLookup` lists loom's new open maps.
+`TestModules_EveryTemplateKeyClassified`'s `wantLocalDenied` entry for `loom` gains `discussion_fix_fan` and `plan_fix_fan`, in the sorted order the derived list has: each right after `discussion_fan` and `plan_fan`.
 
-`refusal-spec.md`: the model-spec list row drops `fan_review`; the unknown-fan and unreadable-burler.yaml rows widen to the four keys and to a list entry, with the new way forward; a new row refuses the empty fan list; the cluster-fan reviewer engine row names the segment's reviewer key in place of `fan_review`.
+`refusal-spec.md`: the model-spec list row drops `fan_review`; the unknown-fan and unreadable-burler.yaml rows widen to the four keys and to a list entry, with the new way forward; a new row refuses the empty fan list; a new row, `config: fan key not a fan list`, refuses `discussion_fan`, `plan_fan`, `discussion_fix_fan` or `plan_fix_fan` holding a mapping or a list with a non-scalar entry, with `fanShapeError`'s way forward; the cluster-fan reviewer engine row names the segment's reviewer key in place of `fan_review`.
 `internal/loomengine/config.go`'s file comment, `internal/configcli/doc.go`'s open-map example and `docs/overview.md`'s loom config paragraph name the four list keys and drop `fan_review`.
 
 **ImpactSummary:** `Config`'s fan fields change type and `fan_review` goes, read only by `ResolveReview`, `validateFanKeys` and `loomCLI.wire`; a hub's reconcile drops `fan_review`, moving a fanned reviewer onto its segment's reviewer list, and every other loom key is unaffected.

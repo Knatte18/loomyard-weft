@@ -40,6 +40,7 @@
 - `plan:internal/burlerengine#lensList`
 - `internal/burlerengine#newFixCase`
 - `internal/burlerengine#testClusterFanConfig`
+- `internal/seatengine#RunnerShuttle`
 
 **Intent:**
 Build the twill fixer in the engine (D7, D9): a fix half whose profile names a fixer fan spawns its fixer with fork subagents authorized and has it check its own change set with read-only forks before its fixer-report.
@@ -49,7 +50,7 @@ A profile with no fixer fan is today's single fixer, byte for byte.
 `validateFix` takes the engine's `Config` and resolves a non-empty `FixFan` through `ResolveFan` into `fixLenses`, so an unknown fixer fan fails the half before any spawn; its three callers, `Engine.Fix`, `Engine.ProbeFix` and `Engine.ResumeFix`, pass `e.cfg`.
 A `ResolveFan` error in `validateFix`, and in `validateReview` for `ClusterFan`, is wrapped with `; way forward: define the fan in burler.yaml, then resume the run or re-run the verb`, since card 5 hands each half a fan recorded at spawn time, which an edit of `burler.yaml` before the fix half or a resume can leave undefined.
 `RunOpts` gains `FixKey`, a `shuttleengine.ModelKey` naming the key the fixer's model came from as `ReviewKey` does for the reviewer, and `FixFanKey`, the name of the key or profile field the fixer fan came from.
-`fixTable` sets the fixer seat's `ForkSubagents` exactly when `FixFan` is non-empty and its `ModelKey` to `opts.FixKey`, and its doc comment drops "never forks" for "forks exactly when the profile names a fixer fan".
+`fixTable` sets the fixer seat's `ForkSubagents` exactly when `FixFan` is non-empty and leaves its `ModelKey` zero in every round, as today, so `opts.FixKey` is read only by `twillEngineRefusal` and a single fixer's start refusal keeps today's message; its doc comment drops "never forks" for "forks exactly when the profile names a fixer fan".
 A forking fixer still carries its row's gates: a turn end whose Stop payload reports an outstanding fork is a wait, so no gate runs while a fork is live, as for the gated Plan-Write lead that forks under `plan_lenses`; card 7 re-states that premise in `internal/loomrecipe`'s gate-quiescence test.
 
 Two new stencils, embedded and registered after card 2's:
@@ -67,7 +68,8 @@ it then counts the forks, and a count unequal to `wantN`, none included, is a wa
 `FixResult` gains `Lenses` (the fixer fan's lens names in fan order, nil for a single fixer), `Forks` (the audited count) and `Warnings`.
 `concludeFix`, for a done fixer of a twill round, runs `auditFixRound(fixer.ForkAudit, len(p.fixLenses))` before the gate check, so a violation fails the half whether or not the gate passed and a fork that wrote over a passing gate still stops the run; the audit reads the session's whole fork record, so it holds across the gate's re-prompts of the same session.
 A start error wrapping `shuttleengine.ErrRequirementsUnmet` for a twill round goes through `twillEngineRefusal` before the generic `burler: shuttle run:` wrap.
-It reads one wording with the two keys as slots, `burler: the twill fixer's fan from <fan key> needs fork subagents, which the engine of <model key> cannot run: <refusal>; way forward: <step>`, whose step follows D7 per caller.
+It reads one wording with the two keys as slots, `burler: the twill fixer's fan from <fan key> needs fork subagents, which the engine of <model key> cannot run: <refusal>; way forward: <step>`, whose step follows D7 per caller, so the message carries exactly one `way forward:`.
+`<refusal>` is the unmet-requirements refusal without any way-forward clause: `seatengine` wraps the start error with the zero seat key's `ModelKey.Wrap`, whose default case appends `; way forward: ...`, and `twillEngineRefusal` cuts the error text at its last `; way forward: `.
 For a set `FixKey.Key` (a shed row), the model key is `<key> in <module>.yaml` and the step is `move <key> in <module>.yaml to an engine with forks, then resume; setting the <fan key> entry to "" reaches only rounds whose reviewer is spawned after the edit`.
 For a `DefaultEngine` key (`lyx burler run`), the model key is `engine: in shuttle.yaml` and the step is `set engine: in shuttle.yaml to an engine with forks, or remove <fan key> from the profile, and re-run`.
 Only a fix row told a fixer fan key reads a recorded fixer fan (card 5), and `lyx burler run` sets its keys (card 4), so a twill fixer always carries one of these two key shapes.
@@ -77,13 +79,15 @@ Tests:
 `TestProfile_Validate` passes a `Config` to `validateFix` and gains fix-half rows for an unknown `FixFan` (refused naming the fan and the way forward) and a resolving one (`fixLenses` set in fan order), using `testClusterFanConfig`; its existing unknown-`ClusterFan` row asserts the way forward too.
 `TestAuditClusterRound` gains `auditFixRound` rows in its table shape: exact count clean, none, fewer and more forks than lenses each a count warning with no error and the counted forks, a never-returned report a warning, and a write-call fork the twill-fixer violation with its way forward; its existing rows pin `auditClusterRound` unchanged through `forkViolation`.
 `TestEngine_Fix_TableShapeAndFiles` becomes a two-row table: the single row keeps today's assertions plus that the fix step equals the fix stencil filled with the `{{.self_check}}` literal removed, and that `Lenses` is nil;
-the twill row sets `FixFan` and `opts.FixKey`, and asserts `spec.ForkSubagents`, the seat's model key, that the fix step differs from the single render and carries the rubric path and the filled lens bullets in fan order, and `FixResult.Lenses`; it asserts no other stencil text.
+the twill row sets `FixFan` and `opts.FixKey`, and asserts `spec.ForkSubagents`, the seat's zero model key, that the fix step differs from the single render and carries the rubric path and the filled lens bullets in fan order, and `FixResult.Lenses`; it asserts no other stencil text.
 `TestEngine_Fix_Outcomes` gains rows: a twill fixer whose done result carries a write-call fork audit returns the violation error with the way forward and its gate, which proves `concludeFix` wires the audit; one with a nil audit returns no error with `Forks` 0 and a count warning;
-a twill start error wrapping `ErrRequirementsUnmet` under a `loom` `FixKey` names that key, the `FixFanKey` and the resume step, under a `DefaultEngine` key names `engine: in shuttle.yaml`, `remove fix-fan from the profile` and `re-run`, and a single fixer's start error wrapping `ErrRequirementsUnmet` keeps today's `burler: shuttle run:` message with no fan key.
+the start-error rows drive the fixer through `seatengine.RunnerShuttle` over a real `shuttleengine.Runner` whose `shuttlefake` engine supports no requirement, so the start error is shuttleengine's own start-requirements refusal and `seatengine`'s `Wrap` runs:
+a twill fixer under a `loom` `FixKey` names that key, the `FixFanKey` and the resume step, under a `DefaultEngine` key names `engine: in shuttle.yaml`, `remove fix-fan from the profile` and `re-run`, and each asserts `way forward:` appears exactly once;
+a single fixer's start error wrapping `ErrRequirementsUnmet` keeps today's `burler: shuttle run:` message with no fan key.
 `fixStepMarkerValues` gains `self_check`, `TestTemplate_FillsWithAllMarkers` lists it as optional on the fix step, and `TestTemplate_OptionalDirectives`' fix-step subtest adds `self_check` to its `FillOptional` optional list and renders an empty `self_check` cleanly too.
 `TestStencils_TopLevelMarkers` gains `burler-fix-self-check` with `lens_list` and `rubric_path`, and `burler-fix-check-rubric` with none.
 
-`refusal-spec.md` gains three rows in the loom section, beside the review rows: the twill fixer's engine refusal, quoting the one wording with its two slots and the two steps, the twill fixer's fork violation with its way forward, and a recorded fan that no longer resolves with its way forward;
+`refusal-spec.md` gains three rows in the loom section, beside the review rows: the twill fixer's engine refusal, quoting the one wording with its two slots and the two steps as its only way forward, the twill fixer's fork violation with its way forward, and a recorded fan that no longer resolves with its way forward;
 the Out of scope paragraph names them as the exceptions to "Burler's own round errors stay out".
 `internal/burlerengine/doc.go` documents the fixer fan, its self-check, the fixer audit's error and warning split and the new result fields.
 

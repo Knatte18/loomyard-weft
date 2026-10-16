@@ -27,7 +27,7 @@
 **Intent:**
 Key the judge's `exclude_lenses` request to the next round's fan (D10, D2): the judge of round N asks for `exclude_lenses`, and the facts file carries its `## Lenses` section, only when round N ran a fan and round N+1's resolved fan is the same non-empty fan.
 
-`BouncerConfig` gains `ClusterFans`, the segment's per-round reviewer fan list as card 5's `RoundFans.Review`; nil keeps the told `ClusterExcludes` bool as the whole answer, so a row the wiring names no list for behaves as today.
+`BouncerConfig` gains `ClusterFans`, the effective per-round reviewer fan list of the partner review row as card 5's `RoundFans.Review`, never the raw wiring value; nil keeps the told `ClusterExcludes` bool as the whole answer, so a row the wiring names no list for behaves as today.
 `excludesLenses(n)` answers for a non-nil list: it reads round n's recorded names through `readRecordedFans`;
 a record that is missing, lacks `fans_recorded` or does not decode counts as a round that ran no fan, answering false with a note naming the reason, and never fails the judge;
 a recorded empty fan answers false;
