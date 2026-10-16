@@ -331,7 +331,7 @@
       }
     }
   ],
-  "currentBatch": 8,
+  "currentBatch": 0,
   "masterStrand": "e37a7dd745963c076067340e4df035d4",
   "masterSessionId": "5deb3191-8c44-4a70-9a63-bca09f4873d5",
   "masterEngine": "claude",
@@ -537,8 +537,25 @@
       "spawnedAt": "2026-10-16T09:46:59Z",
       "sessionId": "5deb3191-8c44-4a70-9a63-bca09f4873d5",
       "engine": "claude",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "08-sweep-docs-and-sandbox",
+        "status": "done",
+        "head_sha": "66dabb434a91ddee953643b68d266b1a64a18b1a",
+        "deviations": [
+          "internal/shuttlecli/cli_test.go"
+        ]
+      },
+      "cardShas": [
+        "66dabb434a91ddee953643b68d266b1a64a18b1a"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-reed-add-parentless-placement/5deb3191-8c44-4a70-9a63-bca09f4873d5/subagents/agent-a0b64a0d2e9353d99.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-reed-add-parentless-placement/5deb3191-8c44-4a70-9a63-bca09f4873d5/subagents/agent-a0b64a0d2e9353d99.jsonl"
+      ]
     }
   },
   "seenForkTranscripts": [
@@ -546,6 +563,7 @@
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-reed-add-parentless-placement/5deb3191-8c44-4a70-9a63-bca09f4873d5/subagents/agent-a237f0e40ecba78a1.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-reed-add-parentless-placement/5deb3191-8c44-4a70-9a63-bca09f4873d5/subagents/agent-aeaef7b1407166d80.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-reed-add-parentless-placement/5deb3191-8c44-4a70-9a63-bca09f4873d5/subagents/agent-a1a8d1d90a2271daf.jsonl",
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-reed-add-parentless-placement/5deb3191-8c44-4a70-9a63-bca09f4873d5/subagents/agent-ac6a44d7d4fecac0a.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-reed-add-parentless-placement/5deb3191-8c44-4a70-9a63-bca09f4873d5/subagents/agent-ac6a44d7d4fecac0a.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-reed-add-parentless-placement/5deb3191-8c44-4a70-9a63-bca09f4873d5/subagents/agent-a0b64a0d2e9353d99.jsonl"
   ]
 }
