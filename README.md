@@ -58,8 +58,8 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | --- | --- | --- | --- | --- | --- |
 | 1 | **Plan gate paths to external test packages, flaky lyxtemp sweep test, Merge-In halt with no status**<br>• Three intake bugs: validate gate-step package paths at plan time, fix the flaky concurrent-sweep test, and make a producer exit without status diagnosable. | [`twb-btf-is`](design-twb-btf-is.md) | 49m | 49m |  |
 | 2 | **Plan gate paths to external test packages, flaky lyxtemp sweep test, Merge-In halt with no status**<br>• Three intake bugs: validate gate-step package paths at plan time, fix the flaky concurrent-sweep test, and make a producer exit without status diagnosable. | [`twb-btf-it`](design-twb-btf-it.md) | 49m | 49m |  |
-| 3 | **Logging cleanup: right levels, no per-tick noise, reed resize layout bug** | [`twb-btf-ls`](design-twb-btf-ls.md) | 43m | 43m |  |
-| 4 | **Logging cleanup: right levels, no per-tick noise, reed resize layout bug** | [`twb-btf-lt`](design-twb-btf-lt.md) | 40m | 40m |  |
+| 3 | **Logging cleanup: right levels, no per-tick noise, reed resize layout bug** | [`twb-btf-lt`](design-twb-btf-lt.md) | 40m | 40m |  |
+| 4 | **Logging cleanup: right levels, no per-tick noise, reed resize layout bug** | [`twb-btf-ls`](design-twb-btf-ls.md) | 43m | 43m |  |
 | 5 | **Reusing a landed task's slug: Publish finds the old run's closed PR and halts** | [`slug-reuse-old-pr`](design-slug-reuse-old-pr.md) | 41m | 41m | loom, batten, board |
 | 6 | **A note that only names a running task stops the alignment agent from settling its PR**<br>• Alignment reads any note naming the slug as a recorded decision | [`alignment-note-mention-trigger`](design-alignment-note-mention-trigger.md) | 39m | 39m | loom |
 
@@ -82,7 +82,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Note | Slug | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| 3 | **Go driver and tackler in shed, for every FSM-driven run** | [`twb-btf-ks`](design-twb-btf-ks.md) | 41m | 41m |  |
+| 3 | **Go driver and tackler in shed, for every FSM-driven run** | [`twb-btf-ks`](design-twb-btf-ks.md) | 42m | 42m |  |
 | 4 | **tender: hub-wide pause, resume, revive and stale-binary restart** | [`twb-btf-ts`](design-twb-btf-ts.md) | 41m | 41m |  |
 | 5 | **Go driver and tackler in shed, for every FSM-driven run** | [`twb-btf-kt`](design-twb-btf-kt.md) | 39m | 39m |  |
 | 6 | **tender: hub-wide pause, resume, revive and stale-binary restart** | [`twb-btf-tt`](design-twb-btf-tt.md) | 39m | 39m |  |
@@ -125,7 +125,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Note | Slug | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| 5 | **reed: runs overview pane above the orch, gate checklist, Selvage by key, run windows close** | [`twb-btf-rs`](design-twb-btf-rs.md) | 40m | 40m |  |
+| 5 | **reed: runs overview pane above the orch, gate checklist, Selvage by key, run windows close** | [`twb-btf-rs`](design-twb-btf-rs.md) | 41m | 41m |  |
 | 6 | **reed: runs overview pane above the orch, gate checklist, Selvage by key, run windows close** | [`twb-btf-rt`](design-twb-btf-rt.md) | 38m | 38m |  |
 | 7 | **Hardener: an autonomous behavior-review campaign that replaces crucible**<br>• Parked by the operator: settle the Tenter/Hardener design and build the campaign that runs a live-substrate module in a sandbox until it converges | [`hardener`](design-hardener.md) | 13d | 3h | burler |
 | 8 | **Orch and batten run from the operator's own long-lived worktree, not only the prime**<br>• Every orch and batten verb refuses outside the prime; let a long-lived personal worktree be an orch's home, with pairs branching from and landing into its branch | [`orch-any-worktree`](design-orch-any-worktree.md) | 13d |  | fabric, batten, orch |
