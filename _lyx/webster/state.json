@@ -1,6 +1,6 @@
 {
   "runGuid": "e5e0839c8a4d296582e7be24e5223938",
-  "planFingerprint": "0b498f093ab70bc13ccb0a1260cada944e15c4f6d8232697b94b9faa25ec03d2",
+  "planFingerprint": "4e5c4d7a0071195b46528d2f47303fbfe0046f9eff39a744eb0e8fc9b9042cb0",
   "planFileHashes": {
     "00-overview.md": "fefd06c6d01c3542c72638a3996df769b80dc097a93a27828e09f2fe0bb88282",
     "01-language-rename-tools.md": "be4610fb2e4b7cab497194c53ca5e8fa269a4010c103fb06c8d69e01b986eaa7",
@@ -18,7 +18,7 @@
     "13-implementer-rename-verify-markers.md": "c2bd623c71db4486437e7c54785e227192e389ad858629187b737252b373ba2c",
     "14-rename-tool-refusal.md": "24ff9612cc06fe0c358e4eda5e8babcf7494d00952e31225c6b4bf051a303dd6",
     "15-digest-departures.md": "917ecec5eb2f37d3f5f88eb4031938641f1575558d61b099847db069404ef2d8",
-    "16-verify-gate-fix-commits.md": "8bf1dfe7068e3cfda344bc1c948a1231751f07f820f2f831ba2cc5d0994861ec",
+    "16-verify-gate-fix-commits.md": "98933a5eb6bba81c9788c4be846ad417278812f8591a9a0c343890f2682de9f7",
     "17-stencil-wording.md": "63093d90c10e561fa7951de3abbf494b6a918672201974e62818560d6fd1b8a5"
   },
   "planOverviewFrameHash": "22769e97e25b259afb459b3662d1f63dcd5add6ebdc8df6aed14dfa95523c5d4",
@@ -655,7 +655,7 @@
       }
     }
   ],
-  "currentBatch": 16,
+  "currentBatch": 0,
   "masterStrand": "71953c680b84bd88f36cef5b47f6fe98",
   "masterSessionId": "94219480-9e76-4530-ae14-fbb68854c48f",
   "masterEngine": "claude",
@@ -914,15 +914,32 @@
         "16-verify-gate-fix-commits"
       ],
       "cardHashes": {
-        "16-verify-gate-fix-commits": "8bf1dfe7068e3cfda344bc1c948a1231751f07f820f2f831ba2cc5d0994861ec"
+        "16-verify-gate-fix-commits": "98933a5eb6bba81c9788c4be846ad417278812f8591a9a0c343890f2682de9f7"
       },
       "startSha": "b32fb01d5a7f9fea4b6962d736f37e6ad4c1f57f",
       "kind": "fork",
       "spawnedAt": "2026-10-16T11:50:18Z",
       "sessionId": "94219480-9e76-4530-ae14-fbb68854c48f",
       "engine": "claude",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "16-verify-gate-fix-commits",
+        "status": "done",
+        "head_sha": "979d0367508b1f3886f3c0d4abcaff2db74f94d1",
+        "deviations": [
+          "internal/websterengine/summary_test.go"
+        ]
+      },
+      "cardShas": [
+        "979d0367508b1f3886f3c0d4abcaff2db74f94d1"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-webster-fork-stencil-fixes/94219480-9e76-4530-ae14-fbb68854c48f/subagents/agent-a9e6fb7b8f3516fb2.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-webster-fork-stencil-fixes/94219480-9e76-4530-ae14-fbb68854c48f/subagents/agent-a9e6fb7b8f3516fb2.jsonl"
+      ]
     },
     "5": {
       "slug": "discussion-pattern-changes",
@@ -1040,6 +1057,7 @@
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-webster-fork-stencil-fixes/94219480-9e76-4530-ae14-fbb68854c48f/subagents/agent-aca692133ebd35ee5.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-webster-fork-stencil-fixes/94219480-9e76-4530-ae14-fbb68854c48f/subagents/agent-a2105c3740e155cd3.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-webster-fork-stencil-fixes/94219480-9e76-4530-ae14-fbb68854c48f/subagents/agent-ac00042e959cab050.jsonl",
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-webster-fork-stencil-fixes/94219480-9e76-4530-ae14-fbb68854c48f/subagents/agent-a1903b4e47207bda2.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-webster-fork-stencil-fixes/94219480-9e76-4530-ae14-fbb68854c48f/subagents/agent-a1903b4e47207bda2.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-webster-fork-stencil-fixes/94219480-9e76-4530-ae14-fbb68854c48f/subagents/agent-a9e6fb7b8f3516fb2.jsonl"
   ]
 }

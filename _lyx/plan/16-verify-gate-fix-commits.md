@@ -1,10 +1,10 @@
 # Card 16 — verify-gate-fix-commits
 
 **Create:**
-- `plan:internal/websterengine#VerifyGateNotes.addCommits` -> `func (n *VerifyGateNotes) addCommits(entries []CommitLogEntry)`
-- `plan:internal/websterengine#VerifyGateNotes.FixCommits` -> `func (n *VerifyGateNotes) FixCommits() []CommitLogEntry`
-- `plan:internal/websterengine#AppendVerifyGateFixCommits` -> `func AppendVerifyGateFixCommits(websterDir string, commits []CommitLogEntry) error`
-- `plan:internal/websterengine#TestVerifyGate_NotesFixCommitsOnce` -> `func TestVerifyGate_NotesFixCommitsOnce(t *testing.T)`
+- `internal/websterengine#VerifyGateNotes.addCommits`
+- `internal/websterengine#VerifyGateNotes.FixCommits`
+- `internal/websterengine#AppendVerifyGateFixCommits`
+- `internal/websterengine#TestVerifyGate_NotesFixCommitsOnce`
 
 **Edit:**
 - `internal/websterengine#VerifyGateNotes`
