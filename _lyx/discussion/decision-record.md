@@ -131,6 +131,13 @@ The editor avoids the quoting the entries' backticks and quotes would need on a 
 - Between this task's deploy and the operator setting this hub's `verify_tiers`, plan writers here get the neutral rule and may omit the `go vet -tags tmux`/`-tags llm` compile steps, and Plan-Review checks no order.
 - The list is read fresh at each spawn, so a mid-run edit of `language.yaml` can make a later Plan-Review round check a plan against rules it was not written to; reconciling that is the operator's.
 
+<!-- lyx:carry-over Plan-Review -->
+- Plan-Review, round 2: converged; each finding below was fixed or disputed by the round's fixer, and no fresh reviewer has seen the result; the fixer report says which.
+  Review: _lyx/reviews/plan/round-2-review.md; fixer report: _lyx/reviews/plan/round-2-fixer-report.md.
+  - card4-test-helper-resign-missing-wrappers (class scope, severity MEDIUM, open in rounds 2)
+  - tier-skip-bound-unstated-in-intents (class scope, severity MEDIUM, open in rounds 2)
+<!-- /lyx:carry-over Plan-Review -->
+
 ## Acceptance criteria
 
 - `languageconfig.Load` resolves `verify_tiers`: an absent key and an absent file give the empty list, a list gives its entries in order, and each refused shape (non-list, non-string entry, empty entry, surrounding whitespace, line break) fails with the way forward; a local override holding the key is refused.
