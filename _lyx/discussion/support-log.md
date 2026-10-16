@@ -53,17 +53,20 @@ Turn 6 — lens review; every fork returned a report.
 - Hand renames by Edit when `rename_tools` is empty: the operator made the tool required.
 - A new report field for departures: operator decision for the commit message.
 - The Master reading `fix:` commits itself: it runs no git.
-- A Go-side list of verify-fix commits for the summary: more plumbing than naming the one exception.
+- The verify-fix fork's reply as the Master's one exception for fix commits and departures: the operator ruled that the Master never reads raw fork output and a departure reaches it through Go.
 - A required `## PATTERN changes` section with a literal `None`: breaks every in-flight decision record.
 - Directives pointing at the plan's section instead of rendering it: the judge and the in-session forks never read it.
 - Admitting `discussionparser` into `internal/pattern`: changes `PATTERN-leaf-packages` for no gain over passing entries in.
 - Keeping `kickstart_pack_file` with a new meaning: nothing left to choose.
 - The fork reporting `FAILED` on a symbol pair under an empty `rename_tools`: contradicts the closed `FAILED` list and burns both recoveries in a standalone run.
 - A new PATTERN entry for the declaration rule: it governs a task's documents, not code structure, and lives in the specs.
+- Landing a PATTERN edit during Discussion (`discussion-lands-invariant`): D5 answers the same need without it, since the edit stays in Webster and the declaration carries the new text to every earlier role.
 
 ## Review rounds
 
-_No rounds yet._
+Round 1 — six findings, all fixed: D5.4 bounds the declaration and D5.7 checks it lands (F1); D2.8 takes fix commits and departures from the verify gate result (F2); D2.6's bound names the plan's `## verify:` command and keeps `FAILED` without one (F3); D5.4's refusal names the record fix and places each caller's row (F4); D1.4's exception wording (F5); the Webster-landing ruling moves into D5.1 (F6).
+
+Round 2 — three findings, all fixed: Go writes the verify-fix commits and departures into `summary.md` from the gate's notes after the wait (F1); D5.4's refusal names the operator's record fix, since the orch never edits the record (F2); D5.7 reads the declared entries from the record, so a bullet appended after the plan gate is checked (F3).
 
 ## Question ledger
 
@@ -71,7 +74,7 @@ _No rounds yet._
 - Q2 What happens with no tool configured? Auto-pick: plan gate `rename-tool-missing` and a `begin-batch`/`recover-batch` refusal (revised after lens review; the fork's `none` fallback was dropped).
 - Q3 Trailer shape for a departure? Auto-pick: `Pattern-Departure: <entry> — <text>`.
 - Q4 Status of a batch gate failure the cards did not cause? Auto-pick: `OK`, left to the plan-level verify gate.
-- Q5 How does the summary get the verify-fix commits? Auto-pick: from the fixer's reply, named as the one exception.
+- Q5 How does the summary get the verify-fix commits? Auto-pick: the gate records them in its notes and Run writes them into `summary.md` after the wait (revised in review round 1 against the operator's through-Go ruling, and in round 2 because the Master writes the summary before the gate walks the fixer's commits).
 - Q6 How does the master self-identification rule key? Auto-pick: on "You are an implementer fork".
 - Q7 What does `kickstart_pack_file` become? Auto-pick: retired.
 - Q8 Is the decision record's PATTERN section required? Auto-pick: optional.
@@ -79,5 +82,5 @@ _No rounds yet._
 - Q10 Does `CLAUDE.md` get the same treatment? Auto-pick: no; no directive makes its rules gating.
 - Q11 Does this task change a PATTERN entry? Auto-pick: no.
 - Q12 How is a PATTERN change decided after Discussion declared? Auto-pick: a PATTERN-change form of `lyx loom decision add`.
-- Q13 What does a directive caller do with a record that fails to parse? Auto-pick: refuse the spawn, naming `lyx loom validate-discussion`.
+- Q13 What does a directive caller do with a record that fails to parse? Auto-pick: refuse the spawn, naming the operator's record fix (the orch never edits the record), `lyx loom validate-discussion` and the re-step.
 - Q14 Which commits does the trailer read cover? Auto-pick: the batch's own first-parent non-merge commits.
