@@ -24,15 +24,18 @@ Bound of the new flag (D5): it lets an opened session run every tool without a p
 The shuttle row of `docs/overview.md`, after the sentence on `lyx shuttle open`, adds that `--permission-mode bypass|prompt` chooses the opened session's permission mode, empty keeping the engine's interactive default (AC6).
 
 Test: `TestOpenCmd_ModelAliasEngine` already pins the `OpenSpec` `openCmd` hands `Runner.Open` for its `--model` flag, so it takes the pass-through rows (AC5) rather than a new top-level test.
-Both engines of its set, `"fake"` (the default) and `"claude"`, become `*openRecorderEngine` values, so the open succeeds instead of being refused; each row runs `c.openCmd()` with its args, asserts through `parseSingleEnvelope` that the envelope is ok, and asserts that the row's engine recorder saw exactly one spec, whose `PermissionMode` equals the row's want, and that the other recorder saw none.
+Both engines of its set, `"fake"` (the default) and `"claude"`, become `*openRecorderEngine` values, so the open reaches `OpenLaunch` instead of being refused for a missing session opener; each row runs `c.openCmd()` with its args and asserts that the row's engine recorder saw exactly one spec, whose `PermissionMode` equals the row's want, and that the other recorder saw none.
+Every row but the refusal row asserts through `parseSingleEnvelope` that the envelope is ok.
 Rows:
 - `--role explore --model opus`: the `claude` recorder, mode empty (the existing alias row).
 - `--role explore`: the `fake` recorder, mode empty (the existing default row, and the no-flag case).
 - `--role explore --permission-mode bypass`: the `fake` recorder, mode `bypass`.
 - `--role explore --permission-mode prompt`: the `fake` recorder, mode `prompt`.
 - `--role explore --permission-mode Bypass`: the `fake` recorder, mode `Bypass`, passed unchanged since the CLI never validates.
-Its doc comment changes from naming the refusal to saying it pins the engine and permission mode `open` hands `Runner.Open`.
-`openRecorderEngine` is a test type in the `shuttlecli` test package that embeds `shuttlefake.Engine` and adds `OpenLaunch`, which appends the spec it is given to a `specs []shuttleengine.OpenSpec` field and returns a fixed `shuttleengine.Launch{Cmd: "open-cmd", ResumeCmd: "resume-cmd", SessionID: "session-1"}`.
+- `--role explore --permission-mode auto`: the refusal row; the `fake` recorder is scripted with an error whose text holds `invalid permission mode`, and the row asserts through `parseSingleEnvelope` that the envelope is not ok and that its error holds `invalid permission mode`, and that the `fake` recorder still saw exactly one spec, with mode `auto`.
+  It keeps the CLI-level coverage of the branch that turns a `Runner.Open` refusal into the error envelope.
+Its doc comment changes from naming the refusal to saying it pins the engine and permission mode `open` hands `Runner.Open`, and that a refusal from `Open` reaches the error envelope.
+`openRecorderEngine` is a test type in the `shuttlecli` test package that embeds `shuttlefake.Engine` and adds an `err error` field and `OpenLaunch`, which appends the spec it is given to a `specs []shuttleengine.OpenSpec` field and returns a fixed `shuttleengine.Launch{Cmd: "open-cmd", ResumeCmd: "resume-cmd", SessionID: "session-1"}` beside `err`.
 
 **ImpactSummary:** One new flag on `lyx shuttle open` with an empty default, so every existing caller's launch line is unchanged; one doc row and one existing CLI test table change, with no new top-level test.
 
