@@ -23,6 +23,7 @@ The arbiter stencil already holds the per-cause rule and stays.
 ### Turn 3 — F8 fallback wording
 
 Pick: one rule naming the no-verdict cases and routing them to `## Investigating a stop` (D2), with no new commands.
+The operator doubts the case occurs, so the rule stays short.
 
 ### Turn 4 — F9: what survives of "you align them"
 
@@ -104,12 +105,35 @@ Six forks reviewed the record; every lens returned a report.
 
 ## Review rounds
 
-_No rounds yet._
+### Round 1
+
+- F1, BLOCKING, D1's `hand-on` signal also caught the arbiter verb's own hand-ons (`timeout`, `died`, `missing`, `unparseable`, `precondition`): fixed; the signal is a `hand-on` with an empty `cause` in the attempt's `envelope.json`, a `hand-on` with a cause is a D2 fault, and D1's fallback to the brief's question is dropped, since the agent's `hand-on` requires a question.
+- F2, MEDIUM, D1's fork had no bound: fixed; D1 gains a Bound, and the brief's settle condition mirrors its scope and design-wrong limits.
+- F3, MEDIUM, D3's peer forks were not tied to D1 and D2: fixed; each peer escalation is classified first, and a late peer's fork waits for the first fork's re-checked report.
+- F4, MEDIUM, the #673 move missed a landing after plan time: fixed; the condition holds through Merge-In, and Open risks names the board-note follow-up.
+- F5, LOW, D6's Bound overstated the no-override guarantee: fixed; it names what the file can carry and its only guard.
+- F6, NIT, deliberation narrative in D2: moved to Turn 3; D2 keeps the one-paragraph constraint.
+
+### Round 2
+
+- F1, MEDIUM, D7's #673 drop named a Merge-In resolution that never runs on a clean merge: fixed; new D9 gives the Merge-Review perch the check after every merge-in, and turns the board-note follow-up into a scheduled card, worded for either landing order.
+- F2, MEDIUM, D1's recorded operator decision also admitted arbiter, parent and auto-mode calls: fixed; D1 defines it, names what never counts, and the brief and Bound mirror the definition.
+- F3, LOW, the brief's step 1 still asked for the fork's own design calls: fixed; D1 rewords step 1 to record the applied operator decision and its source.
+
+### Round 3
+
+- F1, MEDIUM, a `--by operator` entry counted though `--by` is an unverified label: fixed; such an entry counts only when it is in the committed record before the escalation, and the fork records only with `--by parent`.
+- F2, MEDIUM, the board entry and notes counted wholesale: fixed; only a dated passage the entry marks as an operator decision, or a note stating it records one, counts, and `Idea` and agent-suggestion passages and unmarked operator views never do.
+- F3, LOW, the support log was a source the brief never handed the fork: fixed; the brief's materials gain it.
+- F4, MEDIUM, the role's design-call bullet let the orch decide a review escalation: fixed; D1 rewords it to non-review escalations, and Scope and Acceptance criteria name it.
+- F5, LOW, the decide fragments framed the choice as the fork's own: fixed; D1 rewords their lead-in, and Scope lists both files.
+- F6, LOW, D9's perch check ignored `merge_max_bounces: 0`: fixed; D9 and the criterion bound it to a budget above 0, and Open risks names the budget-0 case.
+- F7, LOW, D9's lands-first note had no reader: fixed; the orch acts on it at that run's `landed` notice.
 
 ## Question ledger
 
 - Q1 (auto-pick): Does this task depend on `shed-arbiter-all`, `loom-stencil-wording` or `orch-split`? — No; Turn 1.
-- Q2 (auto-pick): Does the bouncer brief change? — Yes, its materials, settle condition and `budget` line; D1, D2.
+- Q2 (auto-pick): Does the bouncer brief change? — Yes, its materials, settle condition, step 1 and `budget` line; D1, D2.
 - Q3 (auto-pick): Fallback for an escalation without a `hand-on` verdict? — Fault, investigated as a stop, then the operator for a standing design question; D2.
 - Q4 (auto-pick): What of the cross-run alignment text survives? — Held-run release and the peer-escalation fork; D3.
 - Q5 (auto-pick): Where is `ORCHESTRATOR.md` inlined? — The role file, through a second required marker; D6.
