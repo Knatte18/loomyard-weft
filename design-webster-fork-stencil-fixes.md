@@ -1,6 +1,6 @@
 # Webster fork and pattern-directive stencil fixes from the stencil intent audit
 
-`webster-fork-stencil-fixes` · Task · bug, stencil, webster, burler, loom · running · Discussion-Write
+`webster-fork-stencil-fixes` · Task · bug, stencil, webster, burler, loom · running · Discussion-Bouncer
 
 Bundle of the Webster fork and pattern-directive findings of the stencil intent audit of 2026-10-15, all in `contracts/stencils/webster/`, `contracts/stencils/pattern/`, `contracts/stencils/edit/`, the Webster-Review rubric and the plan spec.
 Line numbers as of `main` on 2026-10-16.
