@@ -17,7 +17,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | **Orch delegates board intake to a one-shot fork**<br>• Orch checks the inbox by number and title only; a fork imports, labels and folds issues | [`orch-intake-fork`](design-orch-intake-fork.md) | loom | Merge-In | 29m | 29m | orch, board |
+| 1 | **Orch delegates board intake to a one-shot fork**<br>• Orch checks the inbox by number and title only; a fork imports, labels and folds issues | [`orch-intake-fork`](design-orch-intake-fork.md) | loom | Merge-Bouncer | 30m | 30m | orch, board |
 
 ### Ready
 
@@ -51,11 +51,11 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Note | Slug | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| 1 | **Webster stencils describe a stale fork spawn and wake-up**<br>• The fork prefix still says Master waits with await-batch, and Master recognises forks by an instruction it never sends. | [`webster-fork-spawn-wording`](design-webster-fork-spawn-wording.md) | 13m | 13m | stencil, webster |
-| 2 | **PR-Rework stencil calls agent findings the operator's**<br>• The rework writer is told rejection findings are the operator's, but they come from the alignment agent or the orch. | [`rework-findings-not-operator`](design-rework-findings-not-operator.md) | 13m | 13m | stencil, loom |
+| 1 | **Webster stencils describe a stale fork spawn and wake-up**<br>• The fork prefix still says Master waits with await-batch, and Master recognises forks by an instruction it never sends. | [`webster-fork-spawn-wording`](design-webster-fork-spawn-wording.md) | 14m | 14m | stencil, webster |
+| 2 | **PR-Rework stencil calls agent findings the operator's**<br>• The rework writer is told rejection findings are the operator's, but they come from the alignment agent or the orch. | [`rework-findings-not-operator`](design-rework-findings-not-operator.md) | 14m | 14m | stencil, loom |
 | 3 | **Drop Webster's inline kick-start pack layout**<br>• The inline layout puts code locations straight into the fork prompt and keeps a frozen sentence about Master reading files. | [`webster-drop-inline-pack`](design-webster-drop-inline-pack.md) | 10m | 10m | stencil, webster |
 | 4 | **reed add without --parent splits the selvage shell window** | [`reed-add-parentless-placement`](design-reed-add-parentless-placement.md) | 7m | 7m | reed |
-| 5 | **A task that changes PATTERN declares it in its record and plan**<br>• Reviewers judge a PATTERN change against the old text and flag it as a violation; the record and plan must declare the change so reviewers judge by the new rule. | [`pattern-change-declared`](design-pattern-change-declared.md) | 5m | 5m | stencil, loom, webster, burler |
+| 5 | **A task that changes PATTERN declares it in its record and plan**<br>• Reviewers judge a PATTERN change against the old text and flag it as a violation; the record and plan must declare the change so reviewers judge by the new rule. | [`pattern-change-declared`](design-pattern-change-declared.md) | 6m | 6m | stencil, loom, webster, burler |
 
 #### Low priority
 
@@ -83,7 +83,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 12 | **Paste cited code into a review rounds context**<br>• Reviewers edit nothing and review a fixed commit, so code pasted at round start cannot go stale; measure it against todays reviewer | [`review-inline-code`](design-review-inline-code.md) | 4d | 19h | burler, stencil |
 | 13 | **Module labels from what a task touches, not only what it is about**<br>• Half the landings that changed the shuttle core lacked the shuttle label; derive or check module labels from the plan and the diff | [`labels-from-diff`](design-labels-from-diff.md) | 20h | 20h | board, loom |
 | 14 | **Start one task per overlapping group at a newly-ready start**<br>• When a landing makes several overlapping tasks ready at once, batten starts one per group and names the rest in its notice | [`batten-ready-overlap`](design-batten-ready-overlap.md) | 19h | 19h | batten |
-| 15 | **Rename the `lyx` binary to `lyd` (name clash with LyX)** | [`rename-binary-lyd`](design-rename-binary-lyd.md) | 39m | 39m | stencil, shuttle |
+| 15 | **Rename the `lyx` binary to `lyd` (name clash with LyX)** | [`rename-binary-lyd`](design-rename-binary-lyd.md) | 40m | 40m | stencil, shuttle |
 
 #### Low priority
 
