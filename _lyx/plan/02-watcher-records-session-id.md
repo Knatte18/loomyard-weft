@@ -32,6 +32,8 @@
   A read error is logged at Debug and returns nil, so an unreadable reading, or a bound strand with no shuttle run, leaves the recorded id and never fails the tick.
   An empty reading id, or one equal to `st.SessionID`, writes nothing.
   Otherwise it logs at Info (`orch: session id recorded`, with the strand guid, the previous and the new id), sets `st.SessionID` and saves through `w.save`, the strand-checked `saveStateForStrand`, so a watcher never writes onto a strand a concurrent `start` bound; that save's `errStrandReplaced` is returned for `Tick` to absorb as it does today.
+  It accepts whatever id the newest id-naming signal of the strand's own run names, bounded to that run's events file.
+  That rests on the provider naming the parent session id in a subagent's or fork's hook lines, since the orch strand runs with `ForkSubagents` and the claude engine takes each hook line's `session_id` as given, so a provider that names the subagent's own id there records the subagent's session, which `--continue` then resumes.
 - `Watcher.tick` calls `recordSessionID(&st)` once per tick, after the strand-alive check and the `initCursor` binding and before `ReadEvents`, returning its error.
   Compact mode keeps one id, so after a launch it writes nothing there.
 - The `Session` interface's `SessionState` method comment says the watcher also records the reading's session id, and `logIdleStateDisagreement`'s doc drops "dropping a conditioned notice is the one decision the watcher takes from the state", naming the two decisions: dropping a conditioned notice and recording the session id.
@@ -51,5 +53,6 @@ Tests:
 - `cmd/lyx/testdata/test-budget.yaml` raises `internal/orchengine` by one for the new top-level test.
 
 `internal/orchengine/doc.go`'s `# The watcher` section gains that each tick reads the strand's session id from shuttle's reading and records it in State when it changes, through the strand-checked save, and its `# The .lyx/orch/ layout` entry for `state.json` notes that the state carries the orch session's id and outlives `lyx orch stop`.
+Its `# Open risks` section gains the provider reliance above: the recorded id is right only while the provider names the parent session id in a subagent's or fork's hook lines.
 
 **ImpactSummary:** One new State field read by nobody but `start`, `status` and the watcher; one extra files-only reading per tick, whose error never fails a tick; no existing test's assertions change, and two interface and method comments are reworded.
