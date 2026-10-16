@@ -6,8 +6,8 @@
 - `docs/overview.md`
 
 **Create:**
-- `plan:internal/shuttlecli#openRecorderEngine` -> `type openRecorderEngine struct`
-- `plan:internal/shuttlecli#openRecorderEngine.OpenLaunch` -> `func (e *openRecorderEngine) OpenLaunch(spec shuttleengine.OpenSpec, cfg shuttleengine.Config) (shuttleengine.Launch, error)`
+- `internal/shuttlecli#openRecorderEngine`
+- `internal/shuttlecli#openRecorderEngine.OpenLaunch`
 
 **Uses:**
 - `internal/testkit/shuttlefake#Engine`
