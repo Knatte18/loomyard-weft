@@ -1,0 +1,8 @@
+verdict: approve
+reason: >-
+  The design gives lyx shuttle open a --permission-mode flag with the values bypass and prompt.
+  That meets the entry's goal, which offers a flag or a config default.
+  The design adds nothing the entry rules out and contradicts no other board entry.
+  lyx loom peers lists no peer runs or parent commits, so there is no overlap.
+question: ""
+superseded: []
