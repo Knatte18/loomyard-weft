@@ -1,0 +1,356 @@
+{
+  "runGuid": "1fd54512e1bac54786d0c2c82bc7806c",
+  "planFingerprint": "efd66c0a2505e02e7ce43b4063f909ada8e32c805209176258cfee3138ee0f33",
+  "planFileHashes": {
+    "00-overview.md": "db1b6da2789f6c0767bbae5e0d4fc5d81ab95a2336983624a08707426e04a805",
+    "01-retire-resize-watch-loop.md": "9b393dc7c3cfa94b07ed885a5bb9ad471cc9e071932d9fad0db65b2b0552dbf6",
+    "02-retire-shell-window-stack.md": "c592c0a7ca8429e61dcc41e2afd60acab6a3308f54490dded8379d2bede0b6f3",
+    "03-retire-zoom-and-pane-buttons.md": "77d24f1cbf8fd22bf0393ed348862784fa84b88c281241aec1db4782bf515520",
+    "04-retire-layout-config-keys.md": "24b3019714e413e206d6df3523688786db9e20a8b8d2fc5c71b7dc26a32e795f",
+    "05-retire-pane-era-anchors.md": "4a15ec22adcd21b816210d88bb376e5a041bcd428f9298c70bed9fe782bc6f80",
+    "06-shuttle-run-anchor-vocabulary.md": "a57d8d4c53866b8af66bc9836a103958e31b53f396b1b3467a0f1a0bca34bba5",
+    "07-move-shell-window-strands.md": "f9a3fa9304423df2e092eabd6a53ca0725ad2b406d9d0ee4d1914a6e30a6c111",
+    "08-sweep-docs-and-sandbox.md": "93ff610f951244b3c1bd8e1f045a284a226bee4fee729cab95a39ce4883921bc"
+  },
+  "planOverviewFrameHash": "1a503ee19999e82b765ff03ddb56d68e9fc0eb089380088879bf4a2c348d3732",
+  "partition": [
+    {
+      "cards": [
+        "01-retire-resize-watch-loop"
+      ],
+      "profile": "cautious",
+      "estimate": 268352,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 1,
+        "startup": 54568,
+        "read_union": 29020,
+        "cards": [
+          {
+            "card": 1,
+            "card_text": 1464,
+            "reads": {
+              "file:internal/reedengine/reapply.go": 2208,
+              "file:internal/reedengine/reapply_test.go": 3792,
+              "file:internal/reedengine/template_posix.yaml": 300,
+              "file:internal/reedengine/template_windows.yaml": 300,
+              "file:internal/reedengine/watchdog_integration_test.go": 4956,
+              "package:internal/burlercli": 2000,
+              "package:internal/reedcli": 2000,
+              "package:internal/reedengine": 2000,
+              "package:internal/webstercli": 2000,
+              "tests:internal/burlercli": 2000,
+              "tests:internal/reedcli": 2000,
+              "tests:internal/reedengine": 2000,
+              "tests:internal/webstercli": 2000
+            },
+            "messages": 611,
+            "written": 184764
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "02-retire-shell-window-stack"
+      ],
+      "profile": "cautious",
+      "estimate": 400604,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 2,
+        "startup": 61568,
+        "read_union": 52188,
+        "cards": [
+          {
+            "card": 2,
+            "card_text": 2448,
+            "reads": {
+              "file:internal/reedcli/smoke_dotfill_measure_test.go": 3408,
+              "file:internal/reedcli/smoke_dotfill_test.go": 6276,
+              "file:internal/reedengine/apply_test.go": 6600,
+              "file:internal/reedengine/render/checksum.go": 240,
+              "file:internal/reedengine/render/checksum_test.go": 564,
+              "file:internal/reedengine/render/focus.go": 264,
+              "file:internal/reedengine/render/height.go": 2532,
+              "file:internal/reedengine/render/height_test.go": 1668,
+              "file:internal/reedengine/render/layout.go": 912,
+              "file:internal/reedengine/render/pins_test.go": 3216,
+              "file:internal/reedengine/render/policy_test.go": 1896,
+              "file:internal/reedengine/render/rules.go": 2292,
+              "file:internal/reedengine/render/rules_test.go": 6264,
+              "file:internal/reedengine/zoom_integration_test.go": 1608,
+              "package:internal/reedcli": 2000,
+              "package:internal/reedengine": 2000,
+              "package:internal/reedengine/render": 2000,
+              "tests:internal/reedcli": 2000,
+              "tests:internal/reedengine": 2000,
+              "tests:internal/reedengine/render": 2000
+            },
+            "messages": 948,
+            "written": 286848
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "03-retire-zoom-and-pane-buttons",
+        "04-retire-layout-config-keys"
+      ],
+      "profile": "cautious",
+      "estimate": 189814,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 3,
+        "startup": 68568,
+        "read_union": 20056,
+        "cards": [
+          {
+            "card": 3,
+            "card_text": 684,
+            "reads": {
+              "file:internal/reedengine/zoom.go": 1380,
+              "file:internal/reedengine/zoom_test.go": 936,
+              "package:internal/reedengine": 2000,
+              "package:internal/vscode": 2000,
+              "tests:internal/reedengine": 2000,
+              "tests:internal/vscode": 2000
+            },
+            "messages": 202.5,
+            "written": 61434
+          },
+          {
+            "card": 4,
+            "card_text": 456,
+            "reads": {
+              "file:internal/reedengine/template_posix.yaml": 300,
+              "file:internal/reedengine/template_windows.yaml": 300,
+              "package:internal/configreg": 2000,
+              "package:internal/configsync": 2000,
+              "package:internal/reedengine": 2000,
+              "tests:internal/configreg": 2000,
+              "tests:internal/configsync": 2000,
+              "tests:internal/reedengine": 2000
+            },
+            "messages": 131,
+            "written": 39756
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "05-retire-pane-era-anchors"
+      ],
+      "profile": "cautious",
+      "estimate": 278212,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 4,
+        "startup": 75568,
+        "read_union": 25572,
+        "cards": [
+          {
+            "card": 5,
+            "card_text": 1572,
+            "reads": {
+              "package:internal/pairteardown": 2000,
+              "package:internal/reedcli": 2000,
+              "package:internal/reedengine": 2000,
+              "package:internal/reedengine/render": 2000,
+              "package:internal/shuttleengine": 2000,
+              "package:internal/standalonegeom": 2000,
+              "tests:internal/pairteardown": 2000,
+              "tests:internal/reedcli": 2000,
+              "tests:internal/reedengine": 2000,
+              "tests:internal/reedengine/render": 2000,
+              "tests:internal/shuttleengine": 2000,
+              "tests:internal/standalonegeom": 2000
+            },
+            "messages": 585,
+            "written": 177072
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "06-shuttle-run-anchor-vocabulary",
+        "07-move-shell-window-strands"
+      ],
+      "profile": "cautious",
+      "estimate": 139258,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 5,
+        "startup": 82568,
+        "read_union": 9020,
+        "cards": [
+          {
+            "card": 6,
+            "card_text": 180,
+            "reads": {
+              "package:internal/shuttlecli": 2000,
+              "tests:internal/shuttlecli": 2000
+            },
+            "messages": 16,
+            "written": 4980
+          },
+          {
+            "card": 7,
+            "card_text": 840,
+            "reads": {
+              "package:internal/reedengine": 2000,
+              "tests:internal/reedengine": 2000
+            },
+            "messages": 139.5,
+            "written": 42690
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "08-sweep-docs-and-sandbox"
+      ],
+      "profile": "cautious",
+      "estimate": 255468,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 6,
+        "startup": 89568,
+        "read_union": 114000,
+        "cards": [
+          {
+            "card": 8,
+            "card_text": 600,
+            "reads": {
+              "file:CLAUDE.md": 1032,
+              "file:docs/overview.md": 9576,
+              "file:internal/reedcli/doc.go": 312,
+              "file:internal/reedcli/smoke_lifecycle_test.go": 8208,
+              "file:internal/reedcli/smoke_test.go": 10572,
+              "file:internal/reedengine/attach.go": 3636,
+              "file:internal/reedengine/bar.go": 876,
+              "file:internal/reedengine/bar_integration_test.go": 3384,
+              "file:internal/reedengine/doc.go": 12300,
+              "file:internal/reedengine/ownwindow.go": 5244,
+              "file:internal/reedengine/render/types.go": 1800,
+              "file:internal/reedengine/state.go": 2628,
+              "file:internal/reedengine/strandops_integration_test.go": 2088,
+              "file:internal/reedengine/watchdog.go": 1344,
+              "file:internal/reedengine/watchdog_test.go": 2352,
+              "file:internal/reedengine/windowsize.go": 5340,
+              "file:internal/reedengine/windowsize_test.go": 9024,
+              "file:tools/sandbox/SANDBOX-REED-SUITE.md": 6588,
+              "file:tools/sandbox/SANDBOX-REED-WATCH-SUITE.md": 3096,
+              "package:.": 2000,
+              "package:docs": 2000,
+              "package:internal/reedcli": 2000,
+              "package:internal/reedengine": 2000,
+              "package:internal/reedengine/render": 2000,
+              "package:tools/sandbox": 2000,
+              "tests:.": 2000,
+              "tests:docs": 2000,
+              "tests:internal/reedcli": 2000,
+              "tests:internal/reedengine": 2000,
+              "tests:internal/reedengine/render": 2000,
+              "tests:tools/sandbox": 2000
+            },
+            "messages": 171,
+            "written": 51900
+          }
+        ]
+      }
+    }
+  ],
+  "currentBatch": 1,
+  "masterStrand": "e37a7dd745963c076067340e4df035d4",
+  "masterSessionId": "5deb3191-8c44-4a70-9a63-bca09f4873d5",
+  "masterEngine": "claude",
+  "batches": {
+    "1": {
+      "slug": "retire-resize-watch-loop",
+      "cards": [
+        "01-retire-resize-watch-loop"
+      ],
+      "cardHashes": {
+        "01-retire-resize-watch-loop": "9b393dc7c3cfa94b07ed885a5bb9ad471cc9e071932d9fad0db65b2b0552dbf6"
+      },
+      "startSha": "45bf775ffe63c7df53f3916a381f920fd220c64a",
+      "kind": "fork",
+      "spawnedAt": "2026-10-16T09:03:33Z",
+      "sessionId": "5deb3191-8c44-4a70-9a63-bca09f4873d5",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
+    }
+  }
+}
