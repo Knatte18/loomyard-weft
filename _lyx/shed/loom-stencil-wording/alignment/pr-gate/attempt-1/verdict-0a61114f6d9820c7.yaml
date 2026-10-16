@@ -1,0 +1,4 @@
+verdict: approve
+reason: The diff of PR 689 implements D1 to D7 of the decision record and nothing outside its Scope. The only overlap, with peer reed-add-parentless-placement, is text-only in the burler and webster CLI wiring; this run (row 22) lands first, ahead of the peer (row 12).
+question: ""
+superseded: []
