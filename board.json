@@ -947,6 +947,25 @@
       "body": "## Seen\n\nFound by the stencil intent audit (`docs/research/stencil-intent-audit-2026-10-15/findings.md`, F14); line numbers as of `main` on 2026-10-16.\n\n`contracts/stencils/orch/orch-template-role.md:131` and `:135` are hub-generic but name this repository's `update-plugins.sh`, and tell the orch to run it by hand after a landing while the hub's landing `deploy` key is empty.\nThis repository's `CLAUDE.md` lets the orch run that script only after its own pushed fix; the lines are dormant in this hub, whose `landing.yaml` sets `deploy`.\n\n## Decision\n\nOperator decision (2026-10-16):\n\n- The orch stencil carries nothing specific to one repository.\n- What an orch must remember for one repository is specific to that repository: it lives in one fixed place and reaches the orch at every context cycle, on top of the orch's general role.\n- `CLAUDE.md` holds only what every agent in the repository must have; instructions about the orch's behaviour go to the orch only, since giving them to every agent through `CLAUDE.md` wastes their context.\n\nOperator view, not a decision: the orch watcher injects those rules at each cycle.\n\n## Idea\n\nAgent's suggestions:\n\n- Drop `:131`'s tail and `:135` from the orch stencil.\n- Operator's idea (2026-10-16): the file is an `ORCHESTRATOR.md` (or `ORCH.md`) at the repository root, plainly a system file of that repository, beside `CLAUDE.md` and `PATTERN.md`.\n  Agent's suggestion on top: track it in git like those two, and have `RenderRoleFile` render the prime's copy into the role file under its own heading; the role file is re-read in full at every start, resume, reload and adopt, so no extra typing by the watcher is needed and nothing is lost to a compaction.\n  Claude Code does not load the file on its own, so no other agent reads it.\n- Move `CLAUDE.md`'s orch-only sentences into that file, starting with the orch's `update-plugins.sh` exception under `## Production`.\n",
       "created": "2026-10-16T07:42:25Z",
       "revised": "2026-10-16T07:43:10Z"
+    },
+    {
+      "id": 580,
+      "slug": "stencil-wording-fixes",
+      "title": "Three small stencil wording fixes from the intent audit",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "stencil",
+        "shed",
+        "loom"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "Driver names an operator hand fix, the advisor reads a not-yet-written record for its format, and the plan writer never asks yet asks.",
+      "body": "## Seen\n\nFound by the stencil intent audit (`docs/research/stencil-intent-audit-2026-10-15/findings.md`, F15 to F17); line numbers as of `main` on 2026-10-16.\nThree small wording defects:\n\n- F15: `contracts/stencils/shed/shed-template-driver.md:67` says a fix committed by hand outside the run is pushed by the operator before `approve`; nobody commits by hand in a task pair, and `orch/orch-template-role.md` forbids the orch to.\n- F16: `contracts/stencils/loom/loom-template-discussion-advisor.md:10` has the advisor read the decision record \"for its format\", but the record does not exist until the chair writes it, and the advisor never writes one.\n- F17: `contracts/stencils/loom/loom-template-plan.md:15` says the Plan producer \"never asks\", while `:35` has it ask its parent to record a late scope addition.\n\n## Decision\n\nOperator decision (2026-10-16): all three are to be fixed as the agent proposed.\n\n## Idea\n\n- F15: strike the sentence part; a fix to a halted run goes through `reject` or a `goto`, so the run's own agents make it.\n- F16: strike \"for its format\"; the advisor reads the draft record once it exists, to check it against PATTERN and the board, as `:46` already says.\n- F17: make `:15` say it never asks the operator, and that its one message is the request to its parent in Step 1.\n",
+      "created": "2026-10-16T07:46:20Z",
+      "revised": "2026-10-16T07:46:20Z"
     }
   ]
 }
