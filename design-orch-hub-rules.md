@@ -24,5 +24,7 @@ Operator view, not a decision: the orch watcher injects those rules at each cycl
 Agent's suggestions:
 
 - Drop `:131`'s tail and `:135` from the orch stencil.
-- Keep a hub's orch rules in one file on the board, beside the hub-wide config (`PATTERN-hub-wide-config`), and have `RenderRoleFile` render it into the role file under its own heading; the role file is re-read in full at every start, resume, reload and adopt, so no extra typing by the watcher is needed and nothing is lost to a compaction.
+- Operator's idea (2026-10-16): the file is an `ORCHESTRATOR.md` (or `ORCH.md`) at the repository root, plainly a system file of that repository, beside `CLAUDE.md` and `PATTERN.md`.
+  Agent's suggestion on top: track it in git like those two, and have `RenderRoleFile` render the prime's copy into the role file under its own heading; the role file is re-read in full at every start, resume, reload and adopt, so no extra typing by the watcher is needed and nothing is lost to a compaction.
+  Claude Code does not load the file on its own, so no other agent reads it.
 - Move `CLAUDE.md`'s orch-only sentences into that file, starting with the orch's `update-plugins.sh` exception under `## Production`.
