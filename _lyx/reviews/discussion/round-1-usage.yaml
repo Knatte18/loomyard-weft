@@ -14,6 +14,16 @@ review:
     fork_fresh_tokens: 0
     fork_cache_read_tokens: 0
     fork_fresh_share: 0
+fix:
+    engine: claude
+    model: opus
+    effort: medium
+    start: 2026-10-16T10:57:12Z
+    end: 2026-10-16T12:57:58.031161808+02:00
+    wall_seconds: 46.031161808
+    tokens_known: true
+    fresh_tokens: 38328
+    cache_read_tokens: 307356
 seed:
     - engine: claude
       model: sonnet
