@@ -50,12 +50,13 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 7 | **One rule for a stuck review: the arbiter's, with the orch answering its question**<br>• The stuck-review rule is worded three ways across the arbiter, orch role and escalation brief, and the orch's ignores the arbiter's filter. | [`arbiter-filters-orch`](design-arbiter-filters-orch.md) | 9m | 9m | stencil, orch, loom |
 | 8 | **Orch leaves comparing related runs to the alignment agent**<br>• The orch role still has the orch read both Discussions, pause after Plan-Write and compare plans, which the alignment agent now covers. | [`orch-no-peer-compare`](design-orch-no-peer-compare.md) | 9m | 9m | stencil, orch |
 | 9 | **A webster fork states a PATTERN departure in its commit message**<br>• A fork has no channel for a PATTERN conflict or an unrelated failure; departures go into the card commit body and Webster-Review reads them. | [`fork-deviation-in-commit`](design-fork-deviation-in-commit.md) | 0m | 0m | stencil, webster, burler |
+| 10 | **Repo-specific orch rules in one place, rendered into the orch role**<br>• The orch stencil names update-plugins.sh; repo-specific orch rules belong in one hub file that reaches the orch only. | [`orch-hub-rules`](design-orch-hub-rules.md) | 0m | 0m | stencil, orch, config |
 
 #### Low priority
 
 | # | Note | Slug | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| 10 | **A hub pause leaves background forks and shells running, so hibernate never confirms**<br>• Pause interrupts turns but not background forks or shells; sessions read busy and hibernate confirmation fails | [`pause-background-work`](design-pause-background-work.md) | 1d | 1d | shuttle, webster |
+| 11 | **A hub pause leaves background forks and shells running, so hibernate never confirms**<br>• Pause interrupts turns but not background forks or shells; sessions read busy and hibernate confirmation fails | [`pause-background-work`](design-pause-background-work.md) | 1d | 1d | shuttle, webster |
 
 ### Enhancements
 
