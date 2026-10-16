@@ -331,7 +331,7 @@
       }
     }
   ],
-  "currentBatch": 0,
+  "currentBatch": 3,
   "masterStrand": "e37a7dd745963c076067340e4df035d4",
   "masterSessionId": "5deb3191-8c44-4a70-9a63-bca09f4873d5",
   "masterEngine": "claude",
@@ -415,6 +415,24 @@
       "bracketTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-reed-add-parentless-placement/5deb3191-8c44-4a70-9a63-bca09f4873d5/subagents/agent-a237f0e40ecba78a1.jsonl"
       ]
+    },
+    "3": {
+      "slug": "retire-zoom-and-pane-buttons",
+      "cards": [
+        "03-retire-zoom-and-pane-buttons",
+        "04-retire-layout-config-keys"
+      ],
+      "cardHashes": {
+        "03-retire-zoom-and-pane-buttons": "77d24f1cbf8fd22bf0393ed348862784fa84b88c281241aec1db4782bf515520",
+        "04-retire-layout-config-keys": "24b3019714e413e206d6df3523688786db9e20a8b8d2fc5c71b7dc26a32e795f"
+      },
+      "startSha": "9f44bda697f440ed900c1e1555d15df46c7a7532",
+      "kind": "fork",
+      "spawnedAt": "2026-10-16T09:21:49Z",
+      "sessionId": "5deb3191-8c44-4a70-9a63-bca09f4873d5",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
     }
   },
   "seenForkTranscripts": [
