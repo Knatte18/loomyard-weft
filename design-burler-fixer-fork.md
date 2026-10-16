@@ -36,3 +36,22 @@ The fix itself may also be done by a fork, so the master does not hold the reaso
 The gain the other agent pointed out: the reviewer master already has every file in context, so no fresh fixer reads it all again, which saves tokens and time.
 A smaller first step: keep today's reviewer and fixer split, and make only the self-review of the fix part of the fixer agent.
 The operator asked for an audit of whether this is feasible and worth it (2026-10-16).
+
+## Audit result (2026-10-16)
+
+Report: `docs/research/burler-fork-review-audit-2026-10-16/report.md`.
+
+- A fresh fixer re-reads little: about $0.40 and 1 minute a session, all fixers 7.3 % of run cost over the last 10 runs, a re-read of 15-35k tokens.
+- A reviewer master that fixes (stages 1-2) is about break-even on Discussion and dearer on Plan at its 90-140k end context, needs a PATTERN change (reviewer and fixer are separate sessions) and gives up a separate fixer model; with one lens the review fork is pure overhead.
+- A master that forks to review its own fix (stage 3) costs about $0.3 a round more than the same check inside today's fixer, since its forks inherit 100-250k instead of 40-65k.
+- The fix in a fork (stage 4) is feasible, but the Twill writer-fork benches showed no gain.
+- Stage 0, the agent's recommendation: today's fixer fixes, then forks K read-only copies of itself, each checking one aspect of the fix (consistency of siblings, claims against the code, way forward can be carried out), and folds their findings in before it writes its fixer-report.
+  Estimated +$0.55-0.75 and +2 minutes a fixer session; it pays if it saves one round per 2.5-4 self-reviewed fixes, and it checks the closing round's fix, which nothing reviews today.
+- Independence: of about 630 findings in 60 runs, fixers disputed 1 and fixed about 2 % differently; the fresh reviewer each round is the real gate and stays.
+- Only in-session fork subagents share the cache; an engine without them falls back to today's two-session round.
+
+## Operator view, not a decision (2026-10-16)
+
+- A bench should test whether a Twill fixer in Burler is useful.
+- The fixer mode must be selectable as `single` or `twill`, as the Discussion and Plan writers' already is, and per Burler perch: Twill for Discussion and Plan, probably not needed for code.
+- Since the fixer now also becomes a kind of reviewer, its context may grow a lot; the bench will show.
