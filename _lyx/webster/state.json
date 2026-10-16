@@ -1,6 +1,6 @@
 {
   "runGuid": "e5e0839c8a4d296582e7be24e5223938",
-  "planFingerprint": "156a9204d542ee247cafe3774923abb3d02d52cdede76c9b9a227a09373c01b2",
+  "planFingerprint": "d220d1417913cd1c104af414fbbcd9030faf27e426e6f571591d7087eba1c78e",
   "planFileHashes": {
     "00-overview.md": "fefd06c6d01c3542c72638a3996df769b80dc097a93a27828e09f2fe0bb88282",
     "01-language-rename-tools.md": "be4610fb2e4b7cab497194c53ca5e8fa269a4010c103fb06c8d69e01b986eaa7",
@@ -13,7 +13,7 @@
     "08-pattern-directive-changes.md": "6a51c7630b033e0b33f81bdf0e5157e629a054327d27aa824501b223ed5d8647",
     "09-webster-declared-changes.md": "7f195c328c24088cf817db3219b2485dee68002180bee907db15d61c0c5f7ea4",
     "10-review-loom-declared-changes.md": "565208d2e3e4a61b3a163b54bba7244e9754c4540ef9ca7f8e7c7ffcd52661f9",
-    "11-plan-gate-context-checks.md": "465f41b5b2310fa2724624a4914814c865e6e4404f74e19f8bbef400e8e8df26",
+    "11-plan-gate-context-checks.md": "153a0249a1c57eac9dab5c1e1df063ce55da30664b72fe712c408e8ddf08dbd7",
     "12-webster-inline-pack-removal.md": "084660b2240aed4959ec46baa87059372821e43db540c3d2117ff90ac3bd72fb",
     "13-implementer-rename-verify-markers.md": "c2bd623c71db4486437e7c54785e227192e389ad858629187b737252b373ba2c",
     "14-rename-tool-refusal.md": "dae28c4d8fd239b29970e8254a76f5985f2c8237eff00ad1b1bce38817f3d352",
@@ -655,7 +655,7 @@
       }
     }
   ],
-  "currentBatch": 11,
+  "currentBatch": 0,
   "masterStrand": "71953c680b84bd88f36cef5b47f6fe98",
   "masterSessionId": "94219480-9e76-4530-ae14-fbb68854c48f",
   "masterEngine": "claude",
@@ -741,15 +741,36 @@
         "11-plan-gate-context-checks"
       ],
       "cardHashes": {
-        "11-plan-gate-context-checks": "465f41b5b2310fa2724624a4914814c865e6e4404f74e19f8bbef400e8e8df26"
+        "11-plan-gate-context-checks": "153a0249a1c57eac9dab5c1e1df063ce55da30664b72fe712c408e8ddf08dbd7"
       },
       "startSha": "a70b9d2c5bfe61dc0d18a1f6fcaa8f9f49a1cd0b",
       "kind": "fork",
       "spawnedAt": "2026-10-16T11:26:16Z",
       "sessionId": "94219480-9e76-4530-ae14-fbb68854c48f",
       "engine": "claude",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "11-plan-gate-context-checks",
+        "status": "done",
+        "head_sha": "c2731d567fa7442bd4ce5cea1aca0cfc24e9f9b2",
+        "deviations": [
+          "internal/loomcli/overlay_test.go",
+          "internal/loomcli/parity_test.go",
+          "internal/loomcli/validate_test.go",
+          "internal/loomshed/plancontext.go",
+          "internal/shedrecipe/fixture_test.go"
+        ]
+      },
+      "cardShas": [
+        "c2731d567fa7442bd4ce5cea1aca0cfc24e9f9b2"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-webster-fork-stencil-fixes/94219480-9e76-4530-ae14-fbb68854c48f/subagents/agent-a009c52588d32cf1f.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-webster-fork-stencil-fixes/94219480-9e76-4530-ae14-fbb68854c48f/subagents/agent-a009c52588d32cf1f.jsonl"
+      ]
     },
     "5": {
       "slug": "discussion-pattern-changes",
@@ -862,6 +883,7 @@
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-webster-fork-stencil-fixes/94219480-9e76-4530-ae14-fbb68854c48f/subagents/agent-a324c187f030b8098.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-webster-fork-stencil-fixes/94219480-9e76-4530-ae14-fbb68854c48f/subagents/agent-a7f0f8c4c2c8aae2d.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-webster-fork-stencil-fixes/94219480-9e76-4530-ae14-fbb68854c48f/subagents/agent-ab17a4c9777a93513.jsonl",
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-webster-fork-stencil-fixes/94219480-9e76-4530-ae14-fbb68854c48f/subagents/agent-adaa556eea4a27e1a.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-webster-fork-stencil-fixes/94219480-9e76-4530-ae14-fbb68854c48f/subagents/agent-adaa556eea4a27e1a.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-webster-fork-stencil-fixes/94219480-9e76-4530-ae14-fbb68854c48f/subagents/agent-a009c52588d32cf1f.jsonl"
   ]
 }

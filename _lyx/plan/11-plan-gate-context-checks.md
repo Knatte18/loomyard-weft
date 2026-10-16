@@ -1,12 +1,12 @@
 # Card 11 — plan-gate-context-checks
 
 **Create:**
-- `plan:internal/loomshed#PlanContext` -> `type PlanContext struct`
-- `plan:internal/loomshed#planContextFindings` -> `func planContextFindings(plan *planparser.Plan, cards []planparser.Card, pc PlanContext) ([]planindex.Finding, error)`
-- `plan:internal/loomshed#renameToolMissingCheck` -> `const renameToolMissingCheck = "rename-tool-missing"`
-- `plan:internal/loomshed#patternChangesMismatchCheck` -> `const patternChangesMismatchCheck = "pattern-changes-mismatch"`
-- `plan:internal/loomshed#seedPlanContextFixture` -> `func seedPlanContextFixture(t *testing.T, anchorPath, renamePair, planSection, recordSection string) PlanContext`
-- `plan:internal/shedrecipe#planContextOf` -> `func planContextOf(env Env) loomshed.PlanContext`
+- `internal/loomshed#PlanContext`
+- `internal/loomshed#planContextFindings`
+- `internal/loomshed#renameToolMissingCheck`
+- `internal/loomshed#patternChangesMismatchCheck`
+- `internal/loomshed#seedPlanContextFixture`
+- `internal/shedrecipe#planContextOf`
 
 **Edit:**
 - `internal/loomshed#ValidatePlan` -> `func ValidatePlan(plan *planparser.Plan, anchorPath, worktreeRoot string, index planindex.Index, pc PlanContext) ([]planindex.Finding, error)`
