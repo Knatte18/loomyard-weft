@@ -5,7 +5,7 @@
      It is a marker VALUE, never a template -- it carries no top-level stencil markers of its own, and
      internal/stencil's StripLeadingComment removes this leading comment before either consumer ever
      sees it.
-lyx-stencil: sha256=62a2262dc08a78010befa2488c2babe093ee4f45b86b3a8cef0d9a26afb1068f build=e131c76252f7cabe5faa92e9ffe42c53040fad26 time=2026-10-15T15:14:46Z -->
+lyx-stencil: sha256=e1c47413ac654511537d14b4f0f7390d160ef39fb1cbf3bd046272cd251a25dc build=6bfaaa1448adcd5fda4ab769115846291406977a time=2026-10-16T12:19:49Z -->
 
 # Webster-Review rubric
 
@@ -77,7 +77,18 @@ Do not flag any of the following as a finding:
   A comment's line breaks and wrapping are never a finding; the gate's `lyx loom lint-comments` alone checks them.
   This rubric checks compliance with the target repository's own standard, not loomyard's.
 - **Per-card mechanical check.**
-  Confirm every one of the card's own groups' type-specific mechanical checks actually ran and passed, each against that group's own targets, not just the first label's — the AST-script-plus-grep for a `Rename` group, `assert-no-callers` for a `Delete` group, per the per-type table in `{{.specs_dir}}/loom/loom-plan-spec.md` — not merely that the diff compiles and its tests pass.
+  Confirm every one of the card's own groups' type-specific mechanical checks actually ran and passed, each against that group's own targets, not just the first label's, per the per-type table in `{{.specs_dir}}/loom/loom-plan-spec.md` — not merely that the diff compiles and its tests pass.
+  For a `Rename` group, check the outcome the diff shows: no reference to the old name is left and the symbol's doc-comment opening is updated; never check that a tool ran.
+  For a `Delete` group, check `assert-no-callers`.
+- **Commit messages and departures.**
+  Read the commit messages of the review range (`git log` over the same range) as well as the diff.
+  A difference from the plan that a `Pattern-Departure:` trailer explains is judged on that reason, and holds when the named entry forbids the card's way, read in its declared new text where the directive's declared changes list it.
+  A trailer naming an unknown entry, or an entry that does not forbid the card's way, is a finding.
+  A trailer excuses only the difference it names.
+- **Declared PATTERN changes landed.**
+  Check that the branch's `PATTERN.md` and `pattern/` diff carries each entry the constraints section's declared changes list, its add, change or remove with the declared text, and raise a BLOCKING finding for each declared entry the diff does not land.
+  Read the declarations rendered into your directive, never the plan's section, so a bullet appended after the plan gate is checked too.
+  Raise nothing when every declared entry lands.
 - **Stencil wording.**
   A diff that changes a stencil is read against the measuring stick, the plan card's `Intent`; a rule the card did not ask to change that the diff drops, weakens or contradicts is a finding.
 - **Test economy.**

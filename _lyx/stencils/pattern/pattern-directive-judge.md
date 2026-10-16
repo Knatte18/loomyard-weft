@@ -2,20 +2,21 @@
      judge that weighs a review's findings and decides whether the review loop has converged.
      internal/shedadapters/bouncer.go's judgeCall is its consuming call site, passing pattern.RoleJudge.
      internal/pattern.Directive reads this file through stencilstore.Read, strips this banner with
-     stencil.StripLeadingComment and fills the file's one marker, the pattern_overview marker, with
-     the content of PATTERN.md at the repository's worktree root.
+     stencil.StripLeadingComment and fills the file's required pattern_overview marker with
+     the content of PATTERN.md at the repository's worktree root, and its optional pattern_changes marker with the task's declared PATTERN changes.
      The result is injected as a producer template's optional pattern_directive marker value, so it
      is never itself passed through stencil.Fill again.
-     This file declares that one marker and no other, and the marker is required.
-lyx-stencil: sha256=5593225797c85f0bc1879a2b832e8f41bf6eed2fd7abf2edf145a480cba501b3 -->
+     This file declares two markers, the required pattern_overview and the optional pattern_changes, and no other.
+lyx-stencil: sha256=87ae9f9295bcd0775bf550e68bd04875fe9f1425f1d72afcd6e58da4f8f59cd1 build=6bfaaa1448adcd5fda4ab769115846291406977a time=2026-10-16T12:19:49Z -->
 
 ## Constraints — weigh every finding against these
 
 - These are the repo's rules; read them in full before weighing a single finding:
 
 {{.pattern_overview}}
+{{.pattern_changes}}
 
-- A finding that cites a violation of one of these entries is gating: you never downgrade it below BLOCKING on your own say-so, and you never relabel its class to a non-gating one.
+- A finding that cites a violation of one of these entries, an entry the declared changes list judged by its declared text, is gating: you never downgrade it below BLOCKING on your own say-so, and you never relabel its class to a non-gating one.
 - You still never open the reviewed artifacts. Read a background file under pattern/ only to weigh an entry a finding cites, never to look for violations of your own.
 - A finding that cites an entry the overview does not list is an ordinary finding and gets no special weight from the citation.
 - If an entry conflicts with anything else in this prompt, the entry wins — say so in your verdict rationale instead of silently picking one.

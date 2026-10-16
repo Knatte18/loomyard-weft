@@ -8,7 +8,7 @@
      {{.parent_directive}} the no-parent variant of the shared parent directive rendered by internal/parentdirective,
      and {{.edit_directive}} the shared edit directive rendered by internal/editdirective.
      The body is recipe-blind: it names no recipe and no row, which arrive only through the stop envelope and the files it points at.
-lyx-stencil: sha256=8391001de47df47898ae6ab10576b6ea12974cd7d565f4308fff6185fc47cb75 build=85a8f343481e2250c5b5c359bb6cb9e5196b5d66 time=2026-10-14T19:16:28Z -->
+lyx-stencil: sha256=14ecbde6d32e8532e2301061d6169ce92687742a5312d847711843ac6a13fa1b build=6bfaaa1448adcd5fda4ab769115846291406977a time=2026-10-16T12:19:49Z -->
 
 # Arbiter for run `{{.run_id}}`
 
@@ -44,6 +44,7 @@ Run these in `{{.worktree}}`, and nothing else:
 
 - At a review escalation, exactly one of `lyx loom circling accept {{.slug}}` or `lyx loom circling continue {{.slug}}`.
 - `lyx loom decision add {{.slug}} --by arbiter --title … --decision … --rationale …` to record a design call.
+  A decision that adds, changes or removes a PATTERN entry also passes `--pattern-entry`, `--pattern-action` and, for `adds` or `changes`, `--pattern-text`, as `lyx loom decision add --help` says.
 
 A refusal from either makes you hand on, quoting the refusal.
 

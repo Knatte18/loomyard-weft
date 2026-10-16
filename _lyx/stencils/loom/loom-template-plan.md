@@ -9,7 +9,7 @@
      twill_directive is a fourth optional marker, rendered by internal/twilldirective through internal/loomengine;
      it sits on the line that would otherwise be blank, so an empty value leaves the blank line and the prompt's bytes unchanged.
      edit_directive is a required marker, rendered unconditionally by internal/editdirective.
-lyx-stencil: sha256=8d9237179f50dee253220e741b5d20266ea90583e9450b41a22138f17a92b841 build=27657341cf3a467214d0a482c7d34359ff06151c time=2026-10-16T09:49:04Z -->
+lyx-stencil: sha256=39fdbfcd892fb6fde3d0c1ef55c7a9e9b577d418ed88730aaab67659fc456f50 build=6bfaaa1448adcd5fda4ab769115846291406977a time=2026-10-16T12:19:49Z -->
 
 # Plan — read the decision record, write a plan-format flat-card plan
 
@@ -151,6 +151,8 @@ A handle referenced but never declared, or two `Create:` bullets declaring the s
 Always write `approved: false` — you never self-approve;
 `Plan-Bouncer`'s approved settle writes it to `true`.
 Body: a short task-framing paragraph, then an ordered **Card Index** (`N — <card-slug> — <one-line intent>`), then the optional plan-level sections `## Shared Decisions`, `## Rename mechanic` (required when any card is type `Rename`), `## verify:`.
+When the decision record has a `## PATTERN changes` section, copy its bullets into the overview's `## PATTERN changes` section, one per entry, without the added-after-Discussion suffix; the plan gate refuses a mismatch.
+A symbol `Rename` needs the hub's `rename_tools` in `language.yaml`; the plan gate refuses one when the list is empty.
 
 ### Each `NN-<card-slug>.md`
 
@@ -217,13 +219,14 @@ A genuinely new file with no predecessor belongs in a separate `Create` card, ne
 ```markdown
 ## Rename mechanic
 
-1. Run `git mv <old> <new>` FIRST, before any other change to the moved file.
+1. For a file pair (both sides file self glyphs or paths), run `git mv <old> <new>` FIRST, before any other change to the moved file.
 2. Then make ONLY surgical edits (package declaration, imports, identifier
    retargeting) — no unrelated rewrites.
 3. A genuinely new file with no predecessor belongs in a separate `Create` card, never folded
    into the `Rename` pair.
 4. Never write the relocated file from scratch and delete the original — that loses
    git history exactly as an unstructured create+delete pair would.
+5. For a symbol pair, run the hub's structure-aware rename tool the implementer prompt names (`language.yaml` `rename_tools`), never a text or regex replace, then grep for zero remaining old-name references and confirm the symbol's doc comment opening names the new name.
 ```
 
 ### Minimal skeleton

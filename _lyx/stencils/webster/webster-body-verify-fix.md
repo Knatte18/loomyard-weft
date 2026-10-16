@@ -5,7 +5,7 @@
      stencil.FillOptional requires all of them non-empty.
      {{.friction_directive}} is the one optional marker (filled via stencil.FillOptional), rendering as nothing when Tier 2 is off.
      There are no {{if}}/{{range}} conditionals anywhere in this file.
-lyx-stencil: sha256=32f40349c0fdfb688638a95d8f767dbc2063314bdf2548ea87464317cab1dfd3 build=6757288004041b031c36d78ed8c1c444fa9a7202 time=2026-10-15T13:02:41Z -->
+lyx-stencil: sha256=d775038d839e0279c40933c715113948bf509560de4ea7be16f321a0dc763bf3 build=6bfaaa1448adcd5fda4ab769115846291406977a time=2026-10-16T12:19:49Z -->
 
 # Webster verify-gate fixer fork — fix the recorded failures in source, commit, report
 
@@ -44,6 +44,7 @@ You never run a Bash call in the background, and you end your turn only after yo
 - Never touch the plan directory `{{.plan_dir}}` or anything under `_lyx`: they sit outside every code commit, and the run-exit audit flags a fork that writes there.
 - Commit each fix to the repo with normal git from your working directory, with the subject `fix: <summary>`, where `<summary>` says what the fix repairs.
   Never commit a path under `_lyx`.
+- A fix that departs from a PATTERN entry because the entry forbids the way the findings call for records the departure as a `Pattern-Departure:` trailer in that `fix:` commit, in the shape `loom-plan-spec.md`'s `## Pattern-Departure trailer` section defines.
 - Never write, create or delete Merriam's contract files `{{.outcome_path}}` and `{{.summary_path}}`, even though you inherit Merriam's instruction to write them as a final action.
   A fixer writing either forges the run's terminal judgment and halts the run at its exit audit.
 - Before you report, run `lyx gate test --tags integration <the findings' packages>` as a foreground Bash call under the gate rule in your system prompt, and fix what it still reports.
@@ -52,5 +53,5 @@ You never run a Bash call in the background, and you end your turn only after yo
 
 ## Your final action
 
-Your last action is ending your turn with a short reply naming each commit you made and any failure you could not fix.
-Merriam reads only that reply.
+Your last action is ending your turn with a short reply naming any failure you could not fix.
+Merriam reads only that reply; Go reads your commits from git.
