@@ -1,8 +1,8 @@
 # Card 13 — daemon-log-lines
 
 **Create:**
-- `plan:internal/creelcli#pidLineWriter` -> `type pidLineWriter struct`
-- `plan:internal/creelcli#pidLineWriter.Write` -> `func (w *pidLineWriter) Write(p []byte) (int, error)`
+- `internal/creelcli#pidLineWriter`
+- `internal/creelcli#pidLineWriter.Write`
 
 **Edit:**
 - `internal/creelcli#daemonCmd`
@@ -11,8 +11,8 @@
 - `internal/creelcli/doc.go`
 
 **Uses:**
-- `plan:internal/creelengine#DaemonStartHeader`
-- `plan:internal/creelengine#DaemonLogPrefix`
+- `internal/creelengine#DaemonStartHeader`
+- `internal/creelengine#DaemonLogPrefix`
 - `internal/creelengine#Geometry`
 - `internal/creelcli#runCreelSplit`
 - `internal/creelcli#lockedBuffer`

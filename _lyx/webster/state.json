@@ -1,6 +1,6 @@
 {
   "runGuid": "e880b0e9428e0f2ce5d1972c126e0cf3",
-  "planFingerprint": "fcfeb5f4e3809045a423f19e21f35f27b01b0e9e6ad9b61064e63f424bca7cd3",
+  "planFingerprint": "8c9e39c1a768b1ea1e83439f7fec5686466283d6049d92c8802c232dda688725",
   "planFileHashes": {
     "00-overview.md": "26033f3ee2e2d1d39b3f8d5c560887856a85f82773b835a7b5ed296f2f883489",
     "01-reed-styled-capture.md": "ad3ac3434e1d491713ba45cde2b6f986a449ea13192493b1e96ba208f7e37a1a",
@@ -14,8 +14,8 @@
     "09-inject-ttl-from-posting.md": "801101275da3d1073fc9623db1f6402f9fdafe7ea345613331a57c8bb7d65306",
     "10-read-checked-write.md": "4c9cc9f65f1f615d54cc41452b36bb5fba68066f168cfd83683b1594285380f0",
     "11-creel-output-consistency.md": "228badfc3286564fa8229758f3e35e045c19444dd496382e7b9bbf5e8dfb774c",
-    "12-daemon-log-file.md": "8ac4ded99cab7961fa43cbf076894a7506950073bd609bae9a875b1d0ae37950",
-    "13-daemon-log-lines.md": "4b72eeb3e2d81ed6e9e2ebc55a9c06377ef877ef0f107de2157c04e280135be7",
+    "12-daemon-log-file.md": "8ef6f7aa4339640fb4cbd655fa86a3e01e024b06019b0b17636ee70bc9886f52",
+    "13-daemon-log-lines.md": "0b3996cde324fe1f01947fe88c0f7716728b5a759f100c29a137032625c7d29e",
     "14-creel-sandbox-scenarios.md": "da00ba3917b5b60ba6529f9f6c5f605a5d8165cde4e0138493053f9de3584c52"
   },
   "planOverviewFrameHash": "402f362299c6c1aba1c6cb1dfffa8414e5a96c50ebf86a1cad8578cca2bedd82",
@@ -411,7 +411,7 @@
       }
     }
   ],
-  "currentBatch": 12,
+  "currentBatch": 0,
   "masterStrand": "82c75826b095a6c5a7307cea152d3217",
   "masterSessionId": "26014106-761d-4bd2-97e5-9d1eed89ef07",
   "masterEngine": "claude",
@@ -463,8 +463,8 @@
         "14-creel-sandbox-scenarios"
       ],
       "cardHashes": {
-        "12-daemon-log-file": "8ac4ded99cab7961fa43cbf076894a7506950073bd609bae9a875b1d0ae37950",
-        "13-daemon-log-lines": "4b72eeb3e2d81ed6e9e2ebc55a9c06377ef877ef0f107de2157c04e280135be7",
+        "12-daemon-log-file": "8ef6f7aa4339640fb4cbd655fa86a3e01e024b06019b0b17636ee70bc9886f52",
+        "13-daemon-log-lines": "0b3996cde324fe1f01947fe88c0f7716728b5a759f100c29a137032625c7d29e",
         "14-creel-sandbox-scenarios": "da00ba3917b5b60ba6529f9f6c5f605a5d8165cde4e0138493053f9de3584c52"
       },
       "startSha": "ba7f0c1bd7c45cd4e12723215eca7baee2c4573d",
@@ -472,8 +472,28 @@
       "spawnedAt": "2026-10-16T06:25:48Z",
       "sessionId": "26014106-761d-4bd2-97e5-9d1eed89ef07",
       "engine": "claude",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "12-daemon-log-file",
+        "status": "done",
+        "head_sha": "67f5426a5c21f12f8e98919d42f631ab9a25afcf",
+        "deviations": [
+          "internal/creelcli/cli.go",
+          "internal/creelcli/spawn.go",
+          "internal/creelengine/daemonlog.go",
+          "internal/creelengine/server_test.go"
+        ]
+      },
+      "cardShas": [
+        "67f5426a5c21f12f8e98919d42f631ab9a25afcf"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-creel-stage1-fixes/26014106-761d-4bd2-97e5-9d1eed89ef07/subagents/agent-ab5cd2d450f8e31c2.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-creel-stage1-fixes/26014106-761d-4bd2-97e5-9d1eed89ef07/subagents/agent-ab5cd2d450f8e31c2.jsonl"
+      ]
     },
     "3": {
       "slug": "shuttle-box-reads",
@@ -669,6 +689,7 @@
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-creel-stage1-fixes/26014106-761d-4bd2-97e5-9d1eed89ef07/subagents/agent-a70be60830a422531.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-creel-stage1-fixes/26014106-761d-4bd2-97e5-9d1eed89ef07/subagents/agent-a20895cd635929401.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-creel-stage1-fixes/26014106-761d-4bd2-97e5-9d1eed89ef07/subagents/agent-a12c50a76dd57f365.jsonl",
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-creel-stage1-fixes/26014106-761d-4bd2-97e5-9d1eed89ef07/subagents/agent-a04817dcf664315e3.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-creel-stage1-fixes/26014106-761d-4bd2-97e5-9d1eed89ef07/subagents/agent-a04817dcf664315e3.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-creel-stage1-fixes/26014106-761d-4bd2-97e5-9d1eed89ef07/subagents/agent-ab5cd2d450f8e31c2.jsonl"
   ]
 }

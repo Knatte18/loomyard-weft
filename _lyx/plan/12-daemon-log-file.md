@@ -1,11 +1,11 @@
 # Card 12 — daemon-log-file
 
 **Create:**
-- `plan:internal/creelengine#DaemonStartHeader` -> `func DaemonStartHeader(pid int, at time.Time) string`
-- `plan:internal/creelengine#DaemonLogPrefix` -> `func DaemonLogPrefix(pid int) string`
-- `plan:internal/creelengine#daemonLogExcerpt` -> `func daemonLogExcerpt(path string, pid int) string`
-- `plan:internal/creelcli#openDaemonLog` -> `func openDaemonLog(path string) (*os.File, error)`
-- `plan:internal/creelcli#daemonLogCap` -> `const daemonLogCap = 1 << 20`
+- `internal/creelengine#DaemonStartHeader`
+- `internal/creelengine#DaemonLogPrefix`
+- `internal/creelengine#daemonLogExcerpt`
+- `internal/creelcli#openDaemonLog`
+- `internal/creelcli#daemonLogCap`
 
 **Edit:**
 - `internal/creelengine#Geometry`
