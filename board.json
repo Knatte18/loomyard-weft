@@ -804,6 +804,23 @@
       "body": "## Seen (2026-10-16)\n\n`docs/benchmarks/test-suite-weight.md`, tier 3 (`tmux`), measured serially package by package: `internal/gitrepo` took 0.31s wall and 82.5M peak memory at `df36bb2a4` (2026-10-10), and 16.50s wall, 13.82s CPU and 2992.7M peak memory at `112cccb8f` (2026-10-16, idle machine, commit `3617eae27`).\nIn tiers 1 and 2 the package is unchanged (under 1.3s and about 110M).\nThe package has no `tmux`-tagged test file: its test files are untagged or `integration`, so the tmux tier runs the same untagged tests that took 0.46s and 103.4M in tier 1 of the same run.\nThe spike is therefore likely a measurement artifact of that one run (a fresh build of the test binary under the new tag set, or something else on the machine), not a growing test.\n\n## Idea\n\nFirst re-run `go run ./cmd/testtiming -resources -tags tmux` for this package alone on an idle machine; if the spike does not repeat, close the note.\nOtherwise find which test in `internal/gitrepo` drives the time and memory, whether the 3 GB peak is the test process or a child it spawns, and whether the test can be made lighter or belongs in another tier.\nThe board has no `gitrepo` label, so `fabric`, its main consumer, stands in.",
       "created": "2026-10-16T14:58:47Z",
       "revised": "2026-10-16T15:00:21Z"
+    },
+    {
+      "id": 616,
+      "slug": "xdr-git-test-file-burst",
+      "title": "Git test fixtures trip Cortex XDR on the work laptop",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "fabric"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "Parallel git-heavy tests create so many files at once that Cortex XDR killed VS Code and then crashed itself, twice; tests must stay usable on a machine with endpoint protection",
+      "body": "## Seen (operator report, 2026-10-16)\n\nOn the operator work laptop, which runs Cortex XDR, the git tests create so many files at once that XDR flagged them as malware behaviour.\nTwice it terminated all of VS Code, and both times XDR itself crashed afterwards, so the machine had to be restarted.\n\nFor scale, on the home machine a parallel `lyx gate test --tags integration ./...` (gate `go_parallel: 4`) takes 56s, and the serial package-by-package total is 156s (`docs/benchmarks/test-suite-weight.md`, which also counts git fixture and code subprocesses per package).\n\n## Idea (orch recommendation, not a decision)\n\n- Short term: on that machine set the machine-local gate layer, `lyx config gate --layer local --set go_parallel=1` and `--set slots=1`, so one package and one test run go at a time.\n- Check on the laptop whether that is enough, since XDR may react to the file-creation rate within one package as well.\n- If not: make the git fixtures create fewer files (shared fixtures built once per package, cloned or copied less), and measure files created per package so the heaviest are known.",
+      "created": "2026-10-16T15:06:45Z",
+      "revised": "2026-10-16T15:06:45Z"
     }
   ]
 }
