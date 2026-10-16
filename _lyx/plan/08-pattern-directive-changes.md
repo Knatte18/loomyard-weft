@@ -2,11 +2,11 @@
 
 **Create:**
 - `contracts/stencils/pattern/pattern-fragment-changes.md`
-- `plan:contracts/stencils#PatternFragmentChanges` -> `var PatternFragmentChanges []byte`
-- `plan:internal/pattern#changesMarker` -> `const changesMarker = "pattern_changes"`
-- `plan:internal/pattern#changesFragmentStencil` -> `const changesFragmentStencil = "pattern-fragment-changes"`
-- `plan:internal/pattern#renderChanges` -> `func renderChanges(stencilsDir string, declared []string) (string, error)`
-- `plan:internal/pattern#fillDirective` -> `func fillDirective(stencilName, stencilText, overview, changes string) (string, error)`
+- `contracts/stencils#PatternFragmentChanges`
+- `internal/pattern#changesMarker`
+- `internal/pattern#changesFragmentStencil`
+- `internal/pattern#renderChanges`
+- `internal/pattern#fillDirective`
 
 **Edit:**
 - `internal/pattern#Directive` -> `func Directive(worktreeRoot, stencilsDir string, role Role, declared []string) (string, error)`
