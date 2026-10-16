@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-16 10:14 UTC; every age below is as of then.
+Rendered 2026-10-16 10:15 UTC; every age below is as of then.
 
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
@@ -18,8 +18,8 @@ Held by a run; its scope is locked until the run ends.
 | # | Task | Slug | Recipe | At | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | 1 | **reed add defaults to pane-era placement and splits the selvage shell window**<br>• Replace the obsolete below-parent default and sweep for other pane-era leftovers | [`reed-add-parentless-placement`](design-reed-add-parentless-placement.md) | loom | Webster-Burler-Fix | 2h | 2h | reed |
-| 2 | **Webster fork and pattern-directive stencil fixes from the stencil intent audit**<br>• Structure-aware rename tool from hub config, departures reach the Master via the digest, spawn wording, no inline pack, declared PATTERN changes | [`webster-fork-stencil-fixes`](design-webster-fork-stencil-fixes.md) | loom | Discussion-Bouncer | 2h | 1h | stencil, webster, burler, loom |
-| 3 | **Creel stage 1 re-test fixes**<br>• Fix the eight creel defects from the 2026-10-16 re-test, the journal torn-line one first | [`creel-stage1-fixes`](design-creel-stage1-fixes.md) | loom | Plan-Burler-Review | 1h | 59m | creel, shuttle, claude |
+| 2 | **Webster fork and pattern-directive stencil fixes from the stencil intent audit**<br>• Structure-aware rename tool from hub config, departures reach the Master via the digest, spawn wording, no inline pack, declared PATTERN changes | [`webster-fork-stencil-fixes`](design-webster-fork-stencil-fixes.md) | loom | Plan-Write | 2h | 1h | stencil, webster, burler, loom |
+| 3 | **Creel stage 1 re-test fixes**<br>• Fix the eight creel defects from the 2026-10-16 re-test, the journal torn-line one first | [`creel-stage1-fixes`](design-creel-stage1-fixes.md) | loom | Plan-Burler-Review | 1h | 1h | creel, shuttle, claude |
 
 ### Ready
 
@@ -49,7 +49,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | --- | --- | --- | --- | --- | --- |
 | 1 | **reed watchdog outlives lyx reed down and respawns on a redeployed binary** | [`reed-watchdog-outlives-down`](design-reed-watchdog-outlives-down.md) | 1h | 1h | reed |
 | 2 | **strand pane resolves bare lyx to the production binary while LYX_BIN names the dev build** | [`strand-pane-lyx-path`](design-strand-pane-lyx-path.md) | 1h | 1h | reed, shuttle |
-| 3 | **Where the #673 workaround removal lands**<br>• Home of the #673 workaround for reed-add-parentless-placement | [`reed-673-workaround-home`](design-reed-673-workaround-home.md) | 58m | 58m | reed |
+| 3 | **Where the #673 workaround removal lands**<br>• Home of the #673 workaround for reed-add-parentless-placement | [`reed-673-workaround-home`](design-reed-673-workaround-home.md) | 59m | 59m | reed |
 
 #### Low priority
 
