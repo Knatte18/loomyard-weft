@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-16 12:11 UTC; every age below is as of then.
+Rendered 2026-10-16 12:13 UTC; every age below is as of then.
 
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
@@ -17,7 +17,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | **Webster fork and pattern-directive stencil fixes from the stencil intent audit**<br>• Structure-aware rename tool from hub config, departures reach the Master via the digest, spawn wording, no inline pack, declared PATTERN changes | [`webster-fork-stencil-fixes`](design-webster-fork-stencil-fixes.md) | loom | Merge-In | 4h | 3h | stencil, webster, burler, loom |
+| 1 | **Webster fork and pattern-directive stencil fixes from the stencil intent audit**<br>• Structure-aware rename tool from hub config, departures reach the Master via the digest, spawn wording, no inline pack, declared PATTERN changes | [`webster-fork-stencil-fixes`](design-webster-fork-stencil-fixes.md) | loom | Merge-Bouncer | 4h | 3h | stencil, webster, burler, loom |
 
 ### Ready
 
@@ -33,7 +33,7 @@ Waits only on Running or Ready entries.
 
 | # | Task | Slug | Recipe | After | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | **Burler lens fan and twill fixer in production, per-segment lenses for Discussion and Plan review**<br>• Revisit the parked lens fan with lens and fork prompts that overlap less, measured against solo on the fan-lab fixtures | [`fan-prompt-tuning`](design-fan-prompt-tuning.md) | loom | `webster-fork-stencil-fixes` | 5d | 0m | burler, stencil, loom |
+| 1 | **Burler lens fan and twill fixer in production, per-segment lenses for Discussion and Plan review**<br>• Revisit the parked lens fan with lens and fork prompts that overlap less, measured against solo on the fan-lab fixtures | [`fan-prompt-tuning`](design-fan-prompt-tuning.md) | loom | `webster-fork-stencil-fixes` | 5d | 2m | burler, stencil, loom |
 
 ## Notes
 
