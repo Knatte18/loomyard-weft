@@ -789,45 +789,6 @@
       "revised": "2026-10-16T08:40:23Z"
     },
     {
-      "id": 588,
-      "slug": "reed-watchdog-outlives-down",
-      "title": "reed watchdog outlives lyx reed down and respawns on a redeployed binary",
-      "kind": "note",
-      "labels": [
-        "bug",
-        "reed"
-      ],
-      "issues": [
-        679
-      ],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "Imported from [issue #679](https://github.com/Knatte18/loomyard/issues/679).\n\nSeen: in the sandbox hub, after `lyx reed down`, the reed watchdog process was still running; after the dev binary was redeployed it respawned on the new binary, and it had to be killed by pid.\n\nExpected: `lyx reed down` ends the watchdog of that worktree reed session, so no reed process remains after it.\n\nFound by the creel stage 1 re-test of 2026-10-16 (teardown).",
-      "created": "2026-10-16T08:56:08Z",
-      "revised": "2026-10-16T08:56:08Z"
-    },
-    {
-      "id": 589,
-      "slug": "strand-pane-lyx-path",
-      "title": "strand pane resolves bare lyx to the production binary while LYX_BIN names the dev build",
-      "kind": "note",
-      "labels": [
-        "bug",
-        "reed",
-        "shuttle"
-      ],
-      "issues": [
-        680
-      ],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "Imported from [issue #680](https://github.com/Knatte18/loomyard/issues/680).\n\nSeen: in a sandbox strand pane, `command -v lyx` names `/home/knatte/go/bin/lyx` while `LYX_BIN` names `.dev-bin/lyx`. The pane PATH begins `/home/knatte/go/bin:` because `~/.bashrc` prepends it after reed sets PATH, so a Claude strand that runs bare `lyx creel read` talks to the sandbox daemon through the production binary. The shuttle sandbox suite pre-condition (`command -v lyx` names the spawning binary) fails on this machine.\n\nExpected: bare `lyx` in a strand pane resolves to the spawning binary, as the suite pre-condition states, even when the shell rc prepends another directory.\n\nFound by the creel stage 1 re-test of 2026-10-16.",
-      "created": "2026-10-16T08:56:11Z",
-      "revised": "2026-10-16T08:56:11Z"
-    },
-    {
       "id": 596,
       "slug": "creel-c13-stacked-rewrite",
       "title": "Rewrite C13's stacked half for window-per-strand",
@@ -896,6 +857,33 @@
       "body": "## Seen\n\nOn 2026-10-16 `reed-add-parentless-placement` failed its first `publish_verify` at Publish.\nThe Go driver applied the rule \"a verify halt matching the failure record under a watching batten: hand back\", and batten sent the run back to Webster-Burler-Review by itself.\nThe driver still messaged the orch \"Run ... stopped; stop report ...\", which asks for an answer although the orch has nothing to do.\nThis is by design: `driveHandBack.WatchedVerifyLine` in `internal/sheddriver/drivehandback.go` exists \"so the parent still hears of it\", from `1c812c1f8`.\n\n## Idea\n\nWhen a watching batten owns the verify halt, the driver sends the parent no message, or at most a line that says batten retries it and no action is needed.\nBatten's own notice for the second failure stays the parent's wake-up.\n",
       "created": "2026-10-16T10:22:36Z",
       "revised": "2026-10-16T10:22:36Z"
+    },
+    {
+      "id": 600,
+      "slug": "reed-down-and-pane-path",
+      "title": "reed down ends its watchdog; strand panes resolve lyx to the spawning binary",
+      "kind": "task",
+      "labels": [
+        "bug",
+        "reed",
+        "shuttle"
+      ],
+      "issues": [
+        679,
+        680
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "Fix reed defects #679 and #680 from the creel re-test",
+      "body": "Two reed defects from the creel stage 1 re-test of 2026-10-16.\nOperator decision 2026-10-16: the two run as one low-budget task.\n\n## reed watchdog outlives lyx reed down (#679)\n\nImported from [issue #679](https://github.com/Knatte18/loomyard/issues/679).\n\nSeen: in the sandbox hub, after `lyx reed down`, the reed watchdog process was still running; after the dev binary was redeployed it respawned on the new binary, and it had to be killed by pid.\n\nExpected: `lyx reed down` ends the watchdog of that worktree reed session, so no reed process remains after it.\n\nFound by the creel stage 1 re-test of 2026-10-16 (teardown).\n## strand pane resolves bare lyx to the production binary (#680)\n\nImported from [issue #680](https://github.com/Knatte18/loomyard/issues/680).\n\nSeen: in a sandbox strand pane, `command -v lyx` names `/home/knatte/go/bin/lyx` while `LYX_BIN` names `.dev-bin/lyx`. The pane PATH begins `/home/knatte/go/bin:` because `~/.bashrc` prepends it after reed sets PATH, so a Claude strand that runs bare `lyx creel read` talks to the sandbox daemon through the production binary. The shuttle sandbox suite pre-condition (`command -v lyx` names the spawning binary) fails on this machine.\n\nExpected: bare `lyx` in a strand pane resolves to the spawning binary, as the suite pre-condition states, even when the shell rc prepends another directory.\n\nFound by the creel stage 1 re-test of 2026-10-16.",
+      "created": "2026-10-16T08:56:08Z",
+      "revised": "2026-10-16T10:39:08Z",
+      "run_settings": {
+        "loom": {
+          "review_hard_max_bounces": 3,
+          "review_max_bounces": 2
+        }
+      }
     }
   ]
 }
