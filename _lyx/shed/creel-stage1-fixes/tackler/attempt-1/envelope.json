@@ -1,0 +1,11 @@
+{
+  "verdict": "hand-back",
+  "reason": "The Publish producer is stuck because PR https://github.com/Knatte18/loomyard/pull/672 (head creel-stage1-fixes, base main) was closed without being merged at 2026-10-16T06:47:03Z, before this stop at 13:06 local. The trace (steps/e23c3e21ae09eb5a.trace.log lines 7 and 13) shows Publish reading that state and halting. A plain re-launch of Publish would hit the same closed PR, so resume does not settle it. Whether the work should be re-proposed as a new PR, the PR reopened, or the landing abandoned is a scope choice for the run's parent. The post-merge publish_verify and go test -tags tmux ./... passed (trace lines 5-6), and the weft records branch push succeeded on the third attempt (trace line 12), so no other part of the landing is in question.",
+  "question": "PR 672 for run creel-stage1-fixes was closed without merge on 2026-10-16 at 06:47Z, and Publish halts on that state. Should the run reopen PR 672, open a replacement PR from branch creel-stage1-fixes, or abandon the landing? Once one is chosen, Publish can be resumed.",
+  "goto": "",
+  "cause": "",
+  "attempt": 1,
+  "attempt_dir": "/home/knatte/Code/loomyard-LYXHUB/creel-stage1-fixes/_lyx/shed/creel-stage1-fixes/tackler/attempt-1",
+  "verdict_path": "/home/knatte/Code/loomyard-LYXHUB/creel-stage1-fixes/_lyx/shed/creel-stage1-fixes/tackler/attempt-1/verdict.yaml",
+  "case_brief_path": ""
+}
