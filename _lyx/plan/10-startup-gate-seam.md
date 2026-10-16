@@ -6,8 +6,8 @@
 - `cmd/lyx/testdata/test-budget.yaml`
 
 **Create:**
-- `plan:internal/shuttleengine#Runner.AcceptStartupGate` -> `func (r *Runner) AcceptStartupGate(guid string) (bool, error)`
-- `plan:internal/shuttleengine#TestRunner_AcceptStartupGate` -> `func TestRunner_AcceptStartupGate(t *testing.T)`
+- `internal/shuttleengine#Runner.AcceptStartupGate`
+- `internal/shuttleengine#TestRunner_AcceptStartupGate`
 
 **Uses:**
 - `internal/shuttleengine#Runner.interruptEngine`

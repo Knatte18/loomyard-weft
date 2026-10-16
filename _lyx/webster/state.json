@@ -1,6 +1,6 @@
 {
   "runGuid": "4fc33e818a0e4e1a608ba85e0e35f586",
-  "planFingerprint": "b67f1d0406daed7f400403eee477e77266c416bbbf287a878d0c230bfb4c9f4a",
+  "planFingerprint": "8963f87e15fefb30ac752859b055dbf0549042b3b6328e8bb101998793b3b726",
   "planFileHashes": {
     "00-overview.md": "00fbb96f31a0f9d1ac646d49de06838250b020f65421e3e372c11bef21952c91",
     "01-journal-tail-repair.md": "9f1b1a52be33f3d5feb7f6cfbb4a1e46e96f63d8e94f27c5e3af7dc275c8bad1",
@@ -10,10 +10,10 @@
     "05-carried-log-entries.md": "7e932486462c0e3a664424ed70285d4492c867cc15072d00b2143ade6e46c2cf",
     "06-sweep-confirm-timing.md": "900c576f83db42f5cb148f30bb4ad00656b30e25faba2e9e6384a4d379cc9927",
     "07-idle-probe-no-input-box.md": "64ee86085f2135dcfb048c35c4569f3459db2917d2ab667244a2469467df7838",
-    "08-no-input-box-stall.md": "914c53cd70fc8dbd7545a3cc6d2ac9bcd7b7f297d15d6ef60f59922a73a6e411",
-    "09-ttl-capped-probe-wait.md": "7acc9c84ddf2d92b811870ec391442f7d55205e245a656c31ae1656cc58cba78",
-    "10-startup-gate-seam.md": "a46ffad66cbff880d261de0c8b3de88bd3410adde029b945a205b6b862fd6827",
-    "11-llm-smoke-strand.md": "4752dceb294ad9d552d687940467dda39e89c39443065ddf84e5da83ad747759"
+    "08-no-input-box-stall.md": "09a873bd8388d51eb87c7151deefa4e2da10349ba4c72072a88d965c9af3495b",
+    "09-ttl-capped-probe-wait.md": "be8a83c965a9adc5e585ad35de932660e02ef8712d84d8ff4596da5290fae3d2",
+    "10-startup-gate-seam.md": "235b244ed47e5489bb810f9876a4c64bb8ce959d52df1ec34e37efd7f0e5eed6",
+    "11-llm-smoke-strand.md": "27ad58d3d633d37232e27cc3a5384a7898cd0f853f0ba38f17471fc3d4d37230"
   },
   "planOverviewFrameHash": "c1256da16a96359c73e32b62e2b54d66844dbf38c203d036957cc716265ef6dc",
   "partition": [
@@ -264,7 +264,7 @@
       }
     }
   ],
-  "currentBatch": 7,
+  "currentBatch": 0,
   "masterStrand": "e97e068e59a0576225913a2b05430d70",
   "masterSessionId": "0567153d-5f1b-4372-bd92-3b70e272f013",
   "masterEngine": "claude",
@@ -357,22 +357,41 @@
       ],
       "cardHashes": {
         "07-idle-probe-no-input-box": "64ee86085f2135dcfb048c35c4569f3459db2917d2ab667244a2469467df7838",
-        "08-no-input-box-stall": "914c53cd70fc8dbd7545a3cc6d2ac9bcd7b7f297d15d6ef60f59922a73a6e411",
-        "09-ttl-capped-probe-wait": "7acc9c84ddf2d92b811870ec391442f7d55205e245a656c31ae1656cc58cba78",
-        "10-startup-gate-seam": "a46ffad66cbff880d261de0c8b3de88bd3410adde029b945a205b6b862fd6827",
-        "11-llm-smoke-strand": "4752dceb294ad9d552d687940467dda39e89c39443065ddf84e5da83ad747759"
+        "08-no-input-box-stall": "09a873bd8388d51eb87c7151deefa4e2da10349ba4c72072a88d965c9af3495b",
+        "09-ttl-capped-probe-wait": "be8a83c965a9adc5e585ad35de932660e02ef8712d84d8ff4596da5290fae3d2",
+        "10-startup-gate-seam": "235b244ed47e5489bb810f9876a4c64bb8ce959d52df1ec34e37efd7f0e5eed6",
+        "11-llm-smoke-strand": "27ad58d3d633d37232e27cc3a5384a7898cd0f853f0ba38f17471fc3d4d37230"
       },
       "startSha": "393ad6b5c7c97de0c0e1f10be5f58411709eb841",
       "kind": "fork",
       "spawnedAt": "2026-10-16T10:44:33Z",
       "sessionId": "0567153d-5f1b-4372-bd92-3b70e272f013",
       "engine": "claude",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "07-idle-probe-no-input-box",
+        "status": "done",
+        "head_sha": "208a1c2211f1d7ffd71e7c79b8281f930c4face0",
+        "deviations": [
+          "internal/creelcli/smoke_helpers_test.go",
+          "internal/shuttleengine/seam_enforcement_test.go"
+        ]
+      },
+      "cardShas": [
+        "208a1c2211f1d7ffd71e7c79b8281f930c4face0"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-creel-stage1-fixes/0567153d-5f1b-4372-bd92-3b70e272f013/subagents/agent-a8008ac91fc1ffb27.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-creel-stage1-fixes/0567153d-5f1b-4372-bd92-3b70e272f013/subagents/agent-a8008ac91fc1ffb27.jsonl"
+      ]
     }
   },
   "seenForkTranscripts": [
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-creel-stage1-fixes/0567153d-5f1b-4372-bd92-3b70e272f013/subagents/agent-a1ae9889300e0e308.jsonl",
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-creel-stage1-fixes/0567153d-5f1b-4372-bd92-3b70e272f013/subagents/agent-a8123df9f7f72d5cf.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-creel-stage1-fixes/0567153d-5f1b-4372-bd92-3b70e272f013/subagents/agent-a8123df9f7f72d5cf.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-creel-stage1-fixes/0567153d-5f1b-4372-bd92-3b70e272f013/subagents/agent-a8008ac91fc1ffb27.jsonl"
   ]
 }

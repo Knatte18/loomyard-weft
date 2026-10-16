@@ -8,7 +8,7 @@
 - `tools/sandbox/SANDBOX-CREEL-SUITE.md`
 
 **Create:**
-- `plan:internal/creelengine#Store.remainingTTL` -> `func (s *Store) remainingTTL(receiver string) (time.Duration, bool)`
+- `internal/creelengine#Store.remainingTTL`
 
 **Uses:**
 - `internal/creelengine#probeBackoffBase`

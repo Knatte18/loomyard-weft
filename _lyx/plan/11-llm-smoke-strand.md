@@ -9,7 +9,7 @@
 - `internal/creelcli#smokePaneWindow`
 - `internal/creelcli#wireShuttle`
 - `internal/creelcli#hubDelivery.Idle`
-- `plan:internal/shuttleengine#Runner.AcceptStartupGate`
+- `internal/shuttleengine#Runner.AcceptStartupGate`
 
 **Intent:** The test half of #678 (D9): the llm smoke test prints its pane, places its strand in its own window and gets past the folder-trust gate.
 

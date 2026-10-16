@@ -11,7 +11,7 @@
 - `internal/creelengine/doc.go`
 
 **Create:**
-- `plan:internal/creelengine#StallNoInputBox` -> `const StallNoInputBox Stall = "no-input-box"`
+- `internal/creelengine#StallNoInputBox`
 
 **Uses:**
 - `internal/shuttleengine#IdleProbe`
