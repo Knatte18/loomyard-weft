@@ -1,0 +1,12 @@
+verdict: approve
+reason: >-
+  PR 690 at af7cff081 meets entry 573's goal and decisions D1-D8: reed add and shuttle run default to own-window and
+  accept only own-window|hidden, the engine refuses the retired anchors and remaps them on read, leftover shell-window
+  panes are broken out, the stack, resize loop, zoom and pane buttons are removed, the layout keys are retired, and the
+  docs and sandbox suites are swept. The #673 workaround is removed from ORCHESTRATOR.md, where note
+  reed-673-workaround-home places it. All three carried-over review risks were fixed. The only peer overlap,
+  creel-stage1-fixes, shares no path and its design agrees with this run's; this run (row 22) lands first, ahead of
+  that peer (row 12).
+question: ""
+superseded:
+  - reed-673-workaround-home
