@@ -18,7 +18,7 @@ Held by a run; its scope is locked until the run ends.
 | # | Task | Slug | Recipe | At | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | 1 | **Webster fork and pattern-directive stencil fixes from the stencil intent audit**<br>• Structure-aware rename tool from hub config, departures reach the Master via the digest, spawn wording, no inline pack, declared PATTERN changes | [`webster-fork-stencil-fixes`](design-webster-fork-stencil-fixes.md) | loom | Webster | 4h | 2h | stencil, webster, burler, loom |
-| 2 | **reed down ends its watchdog; strand panes resolve lyx to the spawning binary**<br>• Fix reed defects #679 and #680 from the creel re-test | [`reed-down-and-pane-path`](design-reed-down-and-pane-path.md) | loom | Plan-Bouncer | 2h | 38m | reed, shuttle |
+| 2 | **reed down ends its watchdog; strand panes resolve lyx to the spawning binary**<br>• Fix reed defects #679 and #680 from the creel re-test | [`reed-down-and-pane-path`](design-reed-down-and-pane-path.md) | loom | Plan-Burler-Review | 2h | 38m | reed, shuttle |
 
 ### Ready
 
@@ -73,7 +73,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Note | Slug | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| 4 | **Every role spec carries its resolved engine** | [`twb-btf-es`](design-twb-btf-es.md) | 9m | 9m |  |
+| 4 | **Every role spec carries its resolved engine** | [`twb-btf-es`](design-twb-btf-es.md) | 10m | 10m |  |
 | 5 | **Go driver and tackler in shed, for every FSM-driven run** | [`twb-btf-ks`](design-twb-btf-ks.md) | 9m | 9m |  |
 | 6 | **tender: hub-wide pause, resume, revive and stale-binary restart** | [`twb-btf-ts`](design-twb-btf-ts.md) | 8m | 8m |  |
 | 7 | **Every role spec carries its resolved engine** | [`twb-btf-et`](design-twb-btf-et.md) | 7m | 7m |  |
