@@ -1,11 +1,11 @@
 {
-  "current_producer": "Merge-In",
+  "current_producer": "Merge-Bouncer",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Merge-In",
-    "last": "PR-Gate → rerouted to Merge-In",
+    "now": "Merge-Bouncer",
+    "last": "Merge-In → done",
     "wait": ""
   },
   "history": [
@@ -375,6 +375,12 @@
       "output": "",
       "at": "2026-10-16T12:06:23Z",
       "routed_to": "Merge-In"
+    },
+    {
+      "producer": "Merge-In",
+      "outcome": "done",
+      "output": "",
+      "at": "2026-10-16T12:07:37Z"
     }
   ],
   "product": {
