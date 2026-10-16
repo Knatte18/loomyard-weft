@@ -57,12 +57,14 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 4 | **reed add without --parent splits the selvage shell window** | [`reed-add-parentless-placement`](design-reed-add-parentless-placement.md) | 10m | 10m | reed |
 | 5 | **A task that changes PATTERN declares it in its record and plan**<br>• Reviewers judge a PATTERN change against the old text and flag it as a violation; the record and plan must declare the change so reviewers judge by the new rule. | [`pattern-change-declared`](design-pattern-change-declared.md) | 9m | 9m | stencil, loom, webster, burler |
 | 6 | **Webster renames through a type-aware tool, the edit rule's one exception**<br>• The edit directive bans the AST rename script the plan spec requires, the fork is never told to run it, and Webster-Review checks that it ran. | [`webster-rename-script`](design-webster-rename-script.md) | 0m | 0m | stencil, webster, burler |
+| 7 | **One rule for a stuck review: the arbiter's, with the orch answering its question**<br>• The stuck-review rule is worded three ways across the arbiter, orch role and escalation brief, and the orch's ignores the arbiter's filter. | [`arbiter-filters-orch`](design-arbiter-filters-orch.md) | 0m | 0m | stencil, orch, loom |
+| 8 | **Orch leaves comparing related runs to the alignment agent**<br>• The orch role still has the orch read both Discussions, pause after Plan-Write and compare plans, which the alignment agent now covers. | [`orch-no-peer-compare`](design-orch-no-peer-compare.md) | 0m | 0m | stencil, orch |
 
 #### Low priority
 
 | # | Note | Slug | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| 7 | **A hub pause leaves background forks and shells running, so hibernate never confirms**<br>• Pause interrupts turns but not background forks or shells; sessions read busy and hibernate confirmation fails | [`pause-background-work`](design-pause-background-work.md) | 1d | 1d | shuttle, webster |
+| 9 | **A hub pause leaves background forks and shells running, so hibernate never confirms**<br>• Pause interrupts turns but not background forks or shells; sessions read busy and hibernate confirmation fails | [`pause-background-work`](design-pause-background-work.md) | 1d | 1d | shuttle, webster |
 
 ### Enhancements
 
