@@ -1,6 +1,6 @@
 # Logging cleanup: right levels, no per-tick noise, reed resize layout bug
 
-`twb-btf-lt` · Note · bug · awaiting · Discussion-Bouncer
+`twb-btf-lt` · Note · bug
 
 # Logging cleanup: right levels, no per-tick noise, reed resize layout bug
 
