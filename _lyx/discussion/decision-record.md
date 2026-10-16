@@ -202,6 +202,14 @@ D1.7 and D1.8 (gate check and refusal), D2.1 (trailer shape), D2.3 (first-parent
   - verify-gate-fixes-heading-two-writers (class consistency, severity MEDIUM, open in rounds 3)
 <!-- /lyx:carry-over Discussion-Review -->
 
+<!-- lyx:carry-over Plan-Review -->
+- Plan-Review, round 1: converged; each finding below was fixed or disputed by the round's fixer, and no fresh reviewer has seen the result; the fixer report says which.
+  Review: _lyx/reviews/plan/round-1-review.md; fixer report: _lyx/reviews/plan/round-1-fixer-report.md.
+  - bouncer-refusal-row-misstates-outcome (class consistency, severity MEDIUM, open in rounds 1)
+  - d5-4-bound-stated-by-no-card (class scope, severity MEDIUM, open in rounds 1)
+  - test-helper-resign-arrows-cards-9-13 (class consistency, severity MEDIUM, open in rounds 1)
+<!-- /lyx:carry-over Plan-Review -->
+
 ## Acceptance criteria
 
 - `language.yaml` with `rename_tools` loads; a local override holding it, an empty entry or one with a line break is refused with the `lyx config language` way forward; an absent key loads empty.
