@@ -1,11 +1,11 @@
 {
-  "current_producer": "Discussion-Write",
+  "current_producer": "Discussion-Burler-Fix",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Discussion-Write",
-    "last": "Loom-Preflight → done",
+    "now": "Discussion-Burler-Fix",
+    "last": "Discussion-Burler-Review → bounced to Discussion-Burler-Fix",
     "wait": ""
   },
   "history": [
@@ -20,6 +20,69 @@
       "outcome": "done",
       "output": "",
       "at": "2026-10-16T11:09:49Z"
+    },
+    {
+      "producer": "Discussion-Write",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYXHUB/twb-btf-lt/_lyx/discussion/decision-record.md",
+      "at": "2026-10-13T07:56:06Z",
+      "gate_attempts": 0
+    },
+    {
+      "producer": "Discussion-Bouncer",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-13T07:56:40Z"
+    },
+    {
+      "producer": "Discussion-Burler-Review",
+      "outcome": "stuck",
+      "output": "/home/knatte/Code/loomyard-LYXHUB/twb-btf-lt/_lyx/reviews/discussion/round-1-review.md",
+      "at": "2026-10-13T08:02:30Z",
+      "budget_exempt": true
+    },
+    {
+      "producer": "Discussion-Burler-Fix",
+      "outcome": "stuck",
+      "output": "/home/knatte/Code/loomyard-LYXHUB/twb-btf-lt/_lyx/reviews/discussion/round-1-review.md",
+      "at": "2026-10-13T08:03:58Z",
+      "gate_attempts": 0,
+      "budget_exempt": true
+    },
+    {
+      "producer": "Discussion-Bouncer",
+      "outcome": "stuck",
+      "output": "/home/knatte/Code/loomyard-LYXHUB/twb-btf-lt/_lyx/reviews/discussion/round-1-bouncer-ledger.md",
+      "at": "2026-10-13T08:04:28Z"
+    },
+    {
+      "producer": "Discussion-Burler-Review",
+      "outcome": "stuck",
+      "output": "/home/knatte/Code/loomyard-LYXHUB/twb-btf-lt/_lyx/reviews/discussion/round-2-review.md",
+      "at": "2026-10-13T08:07:21Z",
+      "budget_exempt": true
+    },
+    {
+      "producer": "Discussion-Burler-Fix",
+      "outcome": "stuck",
+      "output": "/home/knatte/Code/loomyard-LYXHUB/twb-btf-lt/_lyx/reviews/discussion/round-2-review.md",
+      "at": "2026-10-13T08:08:57Z",
+      "gate_attempts": 0,
+      "budget_exempt": true
+    },
+    {
+      "producer": "Discussion-Bouncer",
+      "outcome": "stuck",
+      "output": "/home/knatte/Code/loomyard-LYXHUB/twb-btf-lt/_lyx/reviews/discussion/round-2-bouncer-ledger.md",
+      "at": "2026-10-13T08:09:38Z",
+      "budget_exempt": true
+    },
+    {
+      "producer": "Discussion-Burler-Review",
+      "outcome": "stuck",
+      "output": "/home/knatte/Code/loomyard-LYXHUB/twb-btf-lt/_lyx/reviews/discussion/round-3-review.md",
+      "at": "2026-10-13T08:11:35Z",
+      "budget_exempt": true
     }
   ],
   "product": {
