@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-16 14:58 UTC; every age below is as of then.
+Rendered 2026-10-16 15:00 UTC; every age below is as of then.
 
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
@@ -26,8 +26,8 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | # | Note | Slug | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | 1 | **Prototype reed status buttons in a throwaway tmux server**<br>• A fresh agent tries the menu button, follow toggle and extra button line by hand before reed-status-buttons becomes a task | [`reed-status-buttons-prototype`](design-reed-status-buttons-prototype.md) | 1d | 1d | reed |
-| 2 | **Classify Plan lens and review findings to make the Plan writer get it right first**<br>• Find what Plan lenses and Plan-Burler-Review keep catching, and stop each recurring class at the writer | [`plan-writer-finding-classes`](design-plan-writer-finding-classes.md) | 20h | 7m | loom, burler, stencil, shed |
-| 3 | **Investigate internal/gitrepo tmux-tier cost: 16.5s and 3 GB peak memory**<br>• In the tmux tier internal/gitrepo went from 0.31s and 82.5M to 16.50s and 2992.7M peak memory between the two test-suite-weight runs; find which test causes it and whether it is needed | [`gitrepo-tmux-tier-memory`](design-gitrepo-tmux-tier-memory.md) | 0m | 0m | fabric |
+| 2 | **Classify Plan lens and review findings to make the Plan writer get it right first**<br>• Find what Plan lenses and Plan-Burler-Review keep catching, and stop each recurring class at the writer | [`plan-writer-finding-classes`](design-plan-writer-finding-classes.md) | 20h | 8m | loom, burler, stencil, shed |
+| 3 | **Investigate internal/gitrepo tmux-tier cost: 16.5s and 3 GB peak memory**<br>• In the tmux tier internal/gitrepo went from 0.31s and 82.5M to 16.50s and 2992.7M peak memory between the two test-suite-weight runs; find which test causes it and whether it is needed | [`gitrepo-tmux-tier-memory`](design-gitrepo-tmux-tier-memory.md) | 1m | 0m | fabric |
 
 ### Bugs
 
@@ -37,7 +37,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | --- | --- | --- | --- | --- | --- |
 | 1 | **Reusing a landed task's slug: Publish finds the old run's closed PR and halts** | [`slug-reuse-old-pr`](design-slug-reuse-old-pr.md) | 3h | 3h | loom, batten, board |
 | 2 | **A note that only names a running task stops the alignment agent from settling its PR**<br>• Alignment reads any note naming the slug as a recorded decision | [`alignment-note-mention-trigger`](design-alignment-note-mention-trigger.md) | 3h | 3h | loom |
-| 3 | **report timing counts a pause before Plan-Write as Plan phase time** | [`timing-pause-as-phase`](design-timing-pause-as-phase.md) | 18m | 18m | shed, batten |
+| 3 | **report timing counts a pause before Plan-Write as Plan phase time** | [`timing-pause-as-phase`](design-timing-pause-as-phase.md) | 19m | 19m | shed, batten |
 
 #### Low priority
 
