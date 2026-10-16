@@ -264,7 +264,7 @@
       }
     }
   ],
-  "currentBatch": 0,
+  "currentBatch": 4,
   "masterStrand": "e97e068e59a0576225913a2b05430d70",
   "masterSessionId": "0567153d-5f1b-4372-bd92-3b70e272f013",
   "masterEngine": "claude",
@@ -307,6 +307,26 @@
       "bracketTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-creel-stage1-fixes/0567153d-5f1b-4372-bd92-3b70e272f013/subagents/agent-a1ae9889300e0e308.jsonl"
       ]
+    },
+    "4": {
+      "slug": "spawn-exit-signal",
+      "cards": [
+        "04-spawn-exit-signal",
+        "05-carried-log-entries",
+        "06-sweep-confirm-timing"
+      ],
+      "cardHashes": {
+        "04-spawn-exit-signal": "b2b49aaba0378b2c457fc56d53bc99f8742acb83bbca59d9b0c1932316de2f97",
+        "05-carried-log-entries": "7e932486462c0e3a664424ed70285d4492c867cc15072d00b2143ade6e46c2cf",
+        "06-sweep-confirm-timing": "1a0ffc835fd9a7e4a9abe0063f1eb03f78abad8491ee75edf189acdd7c992acf"
+      },
+      "startSha": "3e74dff03c21c8657213e8136cf01203df0b1cd9",
+      "kind": "fork",
+      "spawnedAt": "2026-10-16T10:27:13Z",
+      "sessionId": "0567153d-5f1b-4372-bd92-3b70e272f013",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
     }
   },
   "seenForkTranscripts": [
