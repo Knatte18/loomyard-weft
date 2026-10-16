@@ -881,43 +881,6 @@
       "revised": "2026-10-16T07:32:34Z"
     },
     {
-      "id": 576,
-      "slug": "arbiter-filters-orch",
-      "title": "One rule for a stuck review: the arbiter's, with the orch answering its question",
-      "kind": "note",
-      "labels": [
-        "bug",
-        "stencil",
-        "orch",
-        "loom"
-      ],
-      "issues": [],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "The stuck-review rule is worded three ways across the arbiter, orch role and escalation brief, and the orch's ignores the arbiter's filter.",
-      "body": "## Seen\n\nFound by the stencil intent audit (`docs/research/stencil-intent-audit-2026-10-15/findings.md`, F8); line numbers as of `main` on 2026-10-16.\n\nA review loop that cannot settle goes to the arbiter first, and reaches the orch only when the arbiter hands on (`contracts/stencils/orch/orch-template-role.md:52`, `shed/shed-template-driver.md:63-64`).\nThe decision is worded three times:\n\n- `loom/loom-template-arbiter.md:65-66` gives the arbiter its rule per cause (`hard-cap`, `circling`).\n- `orch/orch-template-role.md:54` gives the orch its own: \"accept unless a finding makes the design wrong, and hand a blocker that remains after round 3 to the operator\", with a fixed round 3 that ignores the configurable hard cap.\n- `bouncer/bouncer-template-escalation.md:31-39` has the orch's one-shot fork settle \"on the materials\" or report back to the orch, \"which asks the operator\".\n\nNeither orch text accounts for the arbiter having already applied its rule.\n\n## Decision\n\nOperator decision (2026-10-16): the arbiter is the orch's filter.\n\n## Idea\n\nAgent's suggestions:\n\n- The arbiter's per-cause rule is the only statement of how a stuck review is decided.\n- What reaches the orch is the arbiter's hand-on question; the escalation brief has the fork answer that question from the operator's recorded decisions, and otherwise bring that question to the operator.\n- `orch-template-role.md:54` and its fixed round 3 go, and the orch role points at the brief instead of restating a rule.\n",
-      "created": "2026-10-16T07:32:34Z",
-      "revised": "2026-10-16T07:32:34Z"
-    },
-    {
-      "id": 577,
-      "slug": "orch-no-peer-compare",
-      "title": "Orch leaves comparing related runs to the alignment agent",
-      "kind": "note",
-      "labels": [
-        "bug",
-        "stencil",
-        "orch"
-      ],
-      "issues": [],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "The orch role still has the orch read both Discussions, pause after Plan-Write and compare plans, which the alignment agent now covers.",
-      "body": "## Seen\n\nFound by the stencil intent audit (`docs/research/stencil-intent-audit-2026-10-15/findings.md`, F9); line numbers as of `main` on 2026-10-16.\n\n`contracts/stencils/orch/orch-template-role.md:94` has the orch read both Discussions itself at parent-review for related runs, pause both after Plan-Write to compare their plans, and review both PRs side by side.\nThat predates the alignment agent: `:40-45` of the same file has the alignment agent settle parent-review, an escalated review go to a one-shot fork, and the orch's context grow by the fork's summary only.\nThe alignment agent checks overlap with every run in flight and with the parent's landed commits, at both parent-review and PR-Gate, and escalates a real design conflict (`loom/loom-template-alignment.md:36`, `:55-71`).\n\n## Decision\n\nOperator decision (2026-10-16): comparing related runs is the alignment agent's job; the orch does not do it itself.\n\n## Idea\n\nAgent's suggestion: drop the reading, pausing and comparing in `:94`, and keep \"two runs never talk to each other; you align them\" only for an alignment escalation that names a peer, handled with the peer's escalation as `:68` already says, by a one-shot fork that reads both decision records.\nPlans are not compared directly, since they follow from the records alignment compared, and a code-level clash surfaces at Merge-In and Merge-Review.\n",
-      "created": "2026-10-16T07:32:34Z",
-      "revised": "2026-10-16T07:32:34Z"
-    },
-    {
       "id": 578,
       "slug": "fork-deviation-in-commit",
       "title": "A webster fork states a PATTERN departure in its commit message",
@@ -937,25 +900,6 @@
       "revised": "2026-10-16T07:42:25Z"
     },
     {
-      "id": 579,
-      "slug": "orch-hub-rules",
-      "title": "Repo-specific orch rules in one place, rendered into the orch role",
-      "kind": "note",
-      "labels": [
-        "bug",
-        "stencil",
-        "orch",
-        "config"
-      ],
-      "issues": [],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "The orch stencil names update-plugins.sh; repo-specific orch rules belong in one hub file that reaches the orch only.",
-      "body": "## Seen\n\nFound by the stencil intent audit (`docs/research/stencil-intent-audit-2026-10-15/findings.md`, F14); line numbers as of `main` on 2026-10-16.\n\n`contracts/stencils/orch/orch-template-role.md:131` and `:135` are hub-generic but name this repository's `update-plugins.sh`, and tell the orch to run it by hand after a landing while the hub's landing `deploy` key is empty.\nThis repository's `CLAUDE.md` lets the orch run that script only after its own pushed fix; the lines are dormant in this hub, whose `landing.yaml` sets `deploy`.\n\n## Decision\n\nOperator decision (2026-10-16):\n\n- The orch stencil carries nothing specific to one repository.\n- What an orch must remember for one repository is specific to that repository: it lives in one fixed place and reaches the orch at every context cycle, on top of the orch's general role.\n- `CLAUDE.md` holds only what every agent in the repository must have; instructions about the orch's behaviour go to the orch only, since giving them to every agent through `CLAUDE.md` wastes their context.\n\nOperator view, not a decision: the orch watcher injects those rules at each cycle.\n\n## Idea\n\nAgent's suggestions:\n\n- Drop `:131`'s tail and `:135` from the orch stencil.\n- Operator's idea (2026-10-16): the file is an `ORCHESTRATOR.md` (or `ORCH.md`) at the repository root, plainly a system file of that repository, beside `CLAUDE.md` and `PATTERN.md`.\n  Agent's suggestion on top: track it in git like those two, and have `RenderRoleFile` render the prime's copy into the role file under its own heading; the role file is re-read in full at every start, resume, reload and adopt, so no extra typing by the watcher is needed and nothing is lost to a compaction.\n  Claude Code does not load the file on its own, so no other agent reads it.\n- Move `CLAUDE.md`'s orch-only sentences into that file, starting with the orch's `update-plugins.sh` exception under `## Production`.\n",
-      "created": "2026-10-16T07:42:25Z",
-      "revised": "2026-10-16T07:43:10Z"
-    },
-    {
       "id": 580,
       "slug": "stencil-wording-fixes",
       "title": "Three small stencil wording fixes from the intent audit",
@@ -973,6 +917,26 @@
       "body": "## Seen\n\nFound by the stencil intent audit (`docs/research/stencil-intent-audit-2026-10-15/findings.md`, F15 to F17); line numbers as of `main` on 2026-10-16.\nThree small wording defects:\n\n- F15: `contracts/stencils/shed/shed-template-driver.md:67` says a fix committed by hand outside the run is pushed by the operator before `approve`; nobody commits by hand in a task pair, and `orch/orch-template-role.md` forbids the orch to.\n- F16: `contracts/stencils/loom/loom-template-discussion-advisor.md:10` has the advisor read the decision record \"for its format\", but the record does not exist until the chair writes it, and the advisor never writes one.\n- F17: `contracts/stencils/loom/loom-template-plan.md:15` says the Plan producer \"never asks\", while `:35` has it ask its parent to record a late scope addition.\n\n## Decision\n\nOperator decision (2026-10-16): all three are to be fixed as the agent proposed.\n\n## Idea\n\n- F15: strike the sentence part; a fix to a halted run goes through `reject` or a `goto`, so the run's own agents make it.\n- F16: strike \"for its format\"; the advisor reads the draft record once it exists, to check it against PATTERN and the board, as `:46` already says.\n- F17: make `:15` say it never asks the operator, and that its one message is the request to its parent in Step 1.\n",
       "created": "2026-10-16T07:46:20Z",
       "revised": "2026-10-16T07:46:20Z"
+    },
+    {
+      "id": 581,
+      "slug": "orch-role-stencil-fixes",
+      "title": "Orch role stencil fixes from the stencil intent audit",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "stencil",
+        "orch",
+        "loom",
+        "config"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "Arbiter as the orch filter with a fault fallback, no peer comparing, ORCHESTRATOR.md for repo-specific orch rules, owner of a small PR-Gate defect",
+      "body": "Bundle of the orch-role findings of the stencil intent audit of 2026-10-15, all in `contracts/stencils/orch/orch-template-role.md`.\nLine numbers as of `main` on 2026-10-16.\n\n## Review escalations: the arbiter is the orch's filter (F8, was `arbiter-filters-orch`)\n\n### Seen\n\nA review loop that cannot settle goes to the arbiter first, and reaches the orch only when the arbiter hands on (`orch-template-role.md:52`, `shed/shed-template-driver.md:63-64`).\nThe decision is worded three times:\n\n- `loom/loom-template-arbiter.md:65-66` gives the arbiter its rule per cause (`hard-cap`, `circling`).\n- `orch-template-role.md:54` gives the orch its own: \"accept unless a finding makes the design wrong, and hand a blocker that remains after round 3 to the operator\", with a fixed round 3 that ignores the configurable hard cap.\n- `bouncer/bouncer-template-escalation.md:31-39` has the orch's one-shot fork settle \"on the materials\" or report back to the orch, \"which asks the operator\".\n\nNeither orch text accounts for the arbiter having already applied its rule.\n\nNot every review escalation passes the arbiter:\n\n- an escalation of cause `budget` is never arbiter-eligible and goes straight to the parent (`internal/arbiterstop/doc.go:10-11`); it arises only from a review that does not parse or a ledger or previous decision that cannot be read (`internal/shedadapters/doc.go:80-84`);\n- the driver relays the parent notice after an arbiter refusal, timeout or malformed verdict (`shed/shed-template-driver.md:64`);\n- a stop with the arbiter switched off or out of spawns is never held for it (`internal/battenshed/doc.go:45`).\n\n### Decision\n\nOperator decision (2026-10-16): the arbiter is the orch's filter.\n\nOperator decision (2026-10-16): the orch role keeps one short fallback rule for an escalation that reaches it with no arbiter verdict (cause `budget`, an arbiter refusal, timeout or malformed verdict, or the arbiter switched off): it is treated as a fault and investigated as a stop, not as a design call.\n\nOperator view, not a decision: the operator doubts this case occurs in practice.\n\n### Idea\n\nAgent's suggestions:\n\n- The arbiter's per-cause rule is the only statement of how a stuck review is decided.\n- What reaches the orch with a verdict is the arbiter's hand-on question, which sits in the driver's stop report (`orch-template-role.md:53`), not in the escalation brief: Bouncer renders the brief before the arbiter runs.\n  The orch hands its one-shot fork the arbiter verdict path with the brief; the fork answers the question from the operator's recorded decisions, and otherwise brings it to the operator.\n- `orch-template-role.md:54` and its fixed round 3 go, replaced by the fallback rule above; the orch role points at the stop report and the brief instead of restating a rule.\n- Cross-reference `shed-arbiter-all`, which would give batten's own lifecycle run an arbiter too.\n\n## Comparing related runs is the alignment agent's job (F9, was `orch-no-peer-compare`)\n\n### Seen\n\n`orch-template-role.md:94` has the orch read both Discussions itself at parent-review for related runs, pause both after Plan-Write to compare their plans, and review both PRs side by side.\n`orch-template-role.md:92` says the same: \"Work that spans runs stays with you: comparing plans across runs, comparing PRs that touch the same packages\".\nThat predates the alignment agent: `:40-45` of the same file has the alignment agent settle parent-review, an escalated review go to a one-shot fork, and the orch's context grow by the fork's summary only.\nThe alignment agent checks overlap with every run in flight and with the parent's landed commits, at both parent-review and PR-Gate, and escalates a real design conflict (`loom/loom-template-alignment.md:36`, `:55-71`).\n\n### Decision\n\nOperator decision (2026-10-16): comparing related runs is the alignment agent's job; the orch does not do it itself.\n\n### Idea\n\nAgent's suggestions:\n\n- Drop the reading, pausing and comparing in `:94`, and the plan and PR comparing in `:92`, keeping only \"deciding when held runs go on\".\n- Keep \"two runs never talk to each other; you align them\" only for an alignment escalation that names a peer, handled with the peer's escalation as `:68` already says, by a one-shot fork that reads both decision records.\n- Plans are not compared directly, since they follow from the records alignment compared, and a code-level clash surfaces at Merge-In and Merge-Review.\n\n## No repository specifics in the orch stencil; `ORCHESTRATOR.md` (F14, was `orch-hub-rules`)\n\n### Seen\n\n`orch-template-role.md:131` and `:135` are hub-generic but name this repository's `update-plugins.sh`, and tell the orch to run it by hand after a landing while the hub's landing `deploy` key is empty.\nThis repository's `CLAUDE.md` lets the orch run that script only after its own pushed fix; the lines are dormant in this hub, whose `landing.yaml` sets `deploy`.\n`orch-template-role.md:167`, under Where a finding goes, says a workaround the orch applies by hand \"is written down only in the repository's CLAUDE.md, with the issue number\"; the orch followed it on 2026-10-16 with `977a177cf` (`## Workarounds`, issue #673), so the role still routes orch-side notes into `CLAUDE.md`.\n\n### Decision\n\nOperator decision (2026-10-16):\n\n- The orch stencil carries nothing specific to one repository.\n- What an orch must remember for one repository is specific to that repository: it lives in one fixed place and reaches the orch at every context cycle, on top of the orch's general role.\n- `CLAUDE.md` holds only what every agent in the repository must have; instructions about the orch's behaviour go to the orch only, since giving them to every agent through `CLAUDE.md` wastes their context.\n\nOperator decision (2026-10-16):\n\n- `ORCHESTRATOR.md` at the repository root is the orch-only counterpart of `CLAUDE.md`.\n- The orch watcher renders it into the orch's start prompt, the way `lyx help index` is inlined today.\n- A workaround only the orch applies goes into `ORCHESTRATOR.md`, and the role stencil's workaround rule at `:167` changes accordingly; `CLAUDE.md` takes a workaround only when every agent needs it.\n- The #673 workaround now in `CLAUDE.md` (`## Workarounds`) belongs in `ORCHESTRATOR.md`.\n\n### Idea\n\nAgent's suggestions:\n\n- Drop `:131`'s tail and `:135` from the orch stencil.\n- Track `ORCHESTRATOR.md` in git beside `CLAUDE.md` and `PATTERN.md`; Claude Code does not load it on its own, so no other agent reads it.\n- Move `CLAUDE.md`'s orch-only sentences into that file, starting with the orch's `update-plugins.sh` exception under `## Production` and the #673 workaround.\n\n## A small PR-Gate defect has no owner (catalogue gap)\n\n### Seen\n\n`orch-template-role.md:118` says \"A small defect in that goal is fixed on the task branch\" but names no one who fixes it, while `:99` forbids the orch to edit or commit in either worktree of a task pair.\n\n### Idea\n\nAgent's suggestion: say the reject sends the defect back to the run's own agents (`lyx loom reject` re-spawns the rework writer), so the sentence names who fixes it.\n",
+      "created": "2026-10-16T07:32:34Z",
+      "revised": "2026-10-16T08:21:25Z"
     }
   ]
 }

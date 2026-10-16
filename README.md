@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-16 08:15 UTC; every age below is as of then.
+Rendered 2026-10-16 08:21 UTC; every age below is as of then.
 
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
@@ -17,7 +17,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | **reed add defaults to pane-era placement and splits the selvage shell window**<br>• Replace the obsolete below-parent default and sweep for other pane-era leftovers | [`reed-add-parentless-placement`](design-reed-add-parentless-placement.md) | loom | Plan-Write | 52m | 35m | reed |
+| 1 | **reed add defaults to pane-era placement and splits the selvage shell window**<br>• Replace the obsolete below-parent default and sweep for other pane-era leftovers | [`reed-add-parentless-placement`](design-reed-add-parentless-placement.md) | loom | Plan-Write | 59m | 41m | reed |
 
 ### Ready
 
@@ -35,14 +35,14 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Note | Slug | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| 1 | **Audit every stencil for design assumptions the operator never meant**<br>• List each claim a stencil makes about how its role works, so the operator can confirm or reject it, after the Webster master code-read bug | [`stencil-intent-audit`](design-stencil-intent-audit.md) | 20h | 28m | stencil |
+| 1 | **Audit every stencil for design assumptions the operator never meant**<br>• List each claim a stencil makes about how its role works, so the operator can confirm or reject it, after the Webster master code-read bug | [`stencil-intent-audit`](design-stencil-intent-audit.md) | 20h | 34m | stencil |
 
 #### Normal priority
 
 | # | Note | Slug | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | 2 | **Re-measure the test suite weight on a quiet machine**<br>• The test-suite-weight before and after numbers were taken under load; rerun the report Regenerate section on an idle machine for a fair wall-time comparison | `suite-weight-quiet-rerun` | 5d | 2d |  |
-| 3 | **Prototype reed status buttons in a throwaway tmux server**<br>• A fresh agent tries the menu button, follow toggle and extra button line by hand before reed-status-buttons becomes a task | [`reed-status-buttons-prototype`](design-reed-status-buttons-prototype.md) | 22h | 22h | reed |
+| 3 | **Prototype reed status buttons in a throwaway tmux server**<br>• A fresh agent tries the menu button, follow toggle and extra button line by hand before reed-status-buttons becomes a task | [`reed-status-buttons-prototype`](design-reed-status-buttons-prototype.md) | 23h | 23h | reed |
 | 4 | **Classify Plan lens and review findings to make the Plan writer get it right first**<br>• Find what Plan lenses and Plan-Burler-Review keep catching, and stop each recurring class at the writer | [`plan-writer-finding-classes`](design-plan-writer-finding-classes.md) | 14h | 14h | loom, burler, stencil |
 
 ### Bugs
@@ -51,22 +51,20 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Note | Slug | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| 1 | **Webster stencils describe a stale fork spawn and wake-up**<br>• The fork prefix still says Master waits with await-batch, and Master recognises forks by an instruction it never sends. | [`webster-fork-spawn-wording`](design-webster-fork-spawn-wording.md) | 59m | 59m | stencil, webster |
-| 2 | **PR-Rework stencil calls agent findings the operator's**<br>• The rework writer is told rejection findings are the operator's, but they come from the alignment agent or the orch. | [`rework-findings-not-operator`](design-rework-findings-not-operator.md) | 59m | 59m | stencil, loom |
-| 3 | **Drop Webster's inline kick-start pack layout**<br>• The inline layout puts code locations straight into the fork prompt and keeps a frozen sentence about Master reading files. | [`webster-drop-inline-pack`](design-webster-drop-inline-pack.md) | 55m | 55m | stencil, webster |
-| 4 | **A task that changes PATTERN declares it in its record and plan**<br>• Reviewers judge a PATTERN change against the old text and flag it as a violation; the record and plan must declare the change so reviewers judge by the new rule. | [`pattern-change-declared`](design-pattern-change-declared.md) | 51m | 51m | stencil, loom, webster, burler |
-| 5 | **Webster renames through a type-aware tool, the edit rule's one exception**<br>• The edit directive bans the AST rename script the plan spec requires, the fork is never told to run it, and Webster-Review checks that it ran. | [`webster-rename-script`](design-webster-rename-script.md) | 42m | 42m | stencil, webster, burler |
-| 6 | **One rule for a stuck review: the arbiter's, with the orch answering its question**<br>• The stuck-review rule is worded three ways across the arbiter, orch role and escalation brief, and the orch's ignores the arbiter's filter. | [`arbiter-filters-orch`](design-arbiter-filters-orch.md) | 42m | 42m | stencil, orch, loom |
-| 7 | **Orch leaves comparing related runs to the alignment agent**<br>• The orch role still has the orch read both Discussions, pause after Plan-Write and compare plans, which the alignment agent now covers. | [`orch-no-peer-compare`](design-orch-no-peer-compare.md) | 42m | 42m | stencil, orch |
-| 8 | **A webster fork states a PATTERN departure in its commit message**<br>• A fork has no channel for a PATTERN conflict or an unrelated failure; departures go into the card commit body and Webster-Review reads them. | [`fork-deviation-in-commit`](design-fork-deviation-in-commit.md) | 32m | 32m | stencil, webster, burler |
-| 9 | **Repo-specific orch rules in one place, rendered into the orch role**<br>• The orch stencil names update-plugins.sh; repo-specific orch rules belong in one hub file that reaches the orch only. | [`orch-hub-rules`](design-orch-hub-rules.md) | 32m | 32m | stencil, orch, config |
-| 10 | **Three small stencil wording fixes from the intent audit**<br>• Driver names an operator hand fix, the advisor reads a not-yet-written record for its format, and the plan writer never asks yet asks. | [`stencil-wording-fixes`](design-stencil-wording-fixes.md) | 28m | 28m | stencil, shed, loom |
+| 1 | **Webster stencils describe a stale fork spawn and wake-up**<br>• The fork prefix still says Master waits with await-batch, and Master recognises forks by an instruction it never sends. | [`webster-fork-spawn-wording`](design-webster-fork-spawn-wording.md) | 1h | 1h | stencil, webster |
+| 2 | **PR-Rework stencil calls agent findings the operator's**<br>• The rework writer is told rejection findings are the operator's, but they come from the alignment agent or the orch. | [`rework-findings-not-operator`](design-rework-findings-not-operator.md) | 1h | 1h | stencil, loom |
+| 3 | **Drop Webster's inline kick-start pack layout**<br>• The inline layout puts code locations straight into the fork prompt and keeps a frozen sentence about Master reading files. | [`webster-drop-inline-pack`](design-webster-drop-inline-pack.md) | 1h | 1h | stencil, webster |
+| 4 | **A task that changes PATTERN declares it in its record and plan**<br>• Reviewers judge a PATTERN change against the old text and flag it as a violation; the record and plan must declare the change so reviewers judge by the new rule. | [`pattern-change-declared`](design-pattern-change-declared.md) | 57m | 57m | stencil, loom, webster, burler |
+| 5 | **Webster renames through a type-aware tool, the edit rule's one exception**<br>• The edit directive bans the AST rename script the plan spec requires, the fork is never told to run it, and Webster-Review checks that it ran. | [`webster-rename-script`](design-webster-rename-script.md) | 48m | 48m | stencil, webster, burler |
+| 6 | **A webster fork states a PATTERN departure in its commit message**<br>• A fork has no channel for a PATTERN conflict or an unrelated failure; departures go into the card commit body and Webster-Review reads them. | [`fork-deviation-in-commit`](design-fork-deviation-in-commit.md) | 39m | 39m | stencil, webster, burler |
+| 7 | **Three small stencil wording fixes from the intent audit**<br>• Driver names an operator hand fix, the advisor reads a not-yet-written record for its format, and the plan writer never asks yet asks. | [`stencil-wording-fixes`](design-stencil-wording-fixes.md) | 35m | 35m | stencil, shed, loom |
+| 8 | **Orch role stencil fixes from the stencil intent audit**<br>• Arbiter as the orch filter with a fault fallback, no peer comparing, ORCHESTRATOR.md for repo-specific orch rules, owner of a small PR-Gate defect | [`orch-role-stencil-fixes`](design-orch-role-stencil-fixes.md) | 48m | 0m | stencil, orch, loom, config |
 
 #### Low priority
 
 | # | Note | Slug | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| 11 | **A hub pause leaves background forks and shells running, so hibernate never confirms**<br>• Pause interrupts turns but not background forks or shells; sessions read busy and hibernate confirmation fails | [`pause-background-work`](design-pause-background-work.md) | 1d | 1d | shuttle, webster |
+| 9 | **A hub pause leaves background forks and shells running, so hibernate never confirms**<br>• Pause interrupts turns but not background forks or shells; sessions read busy and hibernate confirmation fails | [`pause-background-work`](design-pause-background-work.md) | 1d | 1d | shuttle, webster |
 
 ### Enhancements
 
@@ -106,8 +104,8 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | --- | --- | --- | --- | --- | --- |
 | 1 | **Weaver: a cold-start implementer beside Webster, with model escalation**<br>• A second implementer built on Millhouse Builder: a fresh agent per batch with its own model, escalating the model when an agent fails; Webster stays fork-based | [`weaver`](design-weaver.md) | 5d | 3d | webster |
 | 2 | **Split the orch into a run driver and a conversational orch**<br>• One agent drives runs and takes escalations; the operator talks to the other, which discusses problems and updates the board. | [`orch-split`](design-orch-split.md) | 3d | 2d | orch, batten, shed, loom |
-| 3 | **creel stage 2: orch and batten notices through creel**<br>• The orch watcher and batten notices and injects go through creel; the watcher keeps only its cycle logic | [`creel-notices`](design-creel-notices.md) | 21h | 20h | creel, orch, batten |
-| 4 | **creel stage 3: agents message through creel, not SendMessage**<br>• Parent asks, parent review, stop reports and shuttle send go through creel, so a non-Claude engine can take a role with a parent | [`creel-agents`](design-creel-agents.md) | 21h | 20h | creel, shuttle, loom, stencil |
+| 3 | **creel stage 2: orch and batten notices through creel**<br>• The orch watcher and batten notices and injects go through creel; the watcher keeps only its cycle logic | [`creel-notices`](design-creel-notices.md) | 22h | 20h | creel, orch, batten |
+| 4 | **creel stage 3: agents message through creel, not SendMessage**<br>• Parent asks, parent review, stop reports and shuttle send go through creel, so a non-Claude engine can take a role with a parent | [`creel-agents`](design-creel-agents.md) | 22h | 20h | creel, shuttle, loom, stencil |
 
 #### Normal priority
 
