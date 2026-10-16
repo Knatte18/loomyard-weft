@@ -37,12 +37,13 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | --- | --- | --- | --- | --- | --- |
 | 1 | **Reusing a landed task's slug: Publish finds the old run's closed PR and halts** | [`slug-reuse-old-pr`](design-slug-reuse-old-pr.md) | 3h | 3h | loom, batten, board |
 | 2 | **A note that only names a running task stops the alignment agent from settling its PR**<br>• Alignment reads any note naming the slug as a recorded decision | [`alignment-note-mention-trigger`](design-alignment-note-mention-trigger.md) | 3h | 3h | loom |
+| 3 | **report timing counts a pause before Plan-Write as Plan phase time** | [`timing-pause-as-phase`](design-timing-pause-as-phase.md) | 0m | 0m |  |
 
 #### Low priority
 
 | # | Note | Slug | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| 3 | **A hub pause leaves background forks and shells running, so hibernate never confirms**<br>• Pause interrupts turns but not background forks or shells; sessions read busy and hibernate confirmation fails | [`pause-background-work`](design-pause-background-work.md) | 1d | 1d | shuttle, webster |
+| 4 | **A hub pause leaves background forks and shells running, so hibernate never confirms**<br>• Pause interrupts turns but not background forks or shells; sessions read busy and hibernate confirmation fails | [`pause-background-work`](design-pause-background-work.md) | 1d | 1d | shuttle, webster |
 
 ### Enhancements
 
