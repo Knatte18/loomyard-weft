@@ -1,0 +1,103 @@
+{
+  "runGuid": "cb041311a5b12bd5d326b5107f5830d9",
+  "planFingerprint": "e5fed5a324124e9ea4b902e7355e50b2f1b6678742afb708197e624203f55e63",
+  "planFileHashes": {
+    "00-overview.md": "348a245b21d12b6f5d66d41663b647d54efcf13b736a64e170cde61cee68c1c1",
+    "01-intake-list-compact.md": "63c6f761cc692d64477553a46661fda316d2d475fdbd973ed6a792a0185661f6",
+    "02-intake-import-short.md": "f9b3315aba66e51c154ee117bd94f62c5b0101c6ba9147e55b6e7647196c4be2",
+    "03-orch-intake-fork.md": "e137be1eba4bc0d2b43468d8d9ed996419ee35864701fe847df3145accd8388e"
+  },
+  "planOverviewFrameHash": "e747c5750fc6f69e952afcbef86f33a6d01b2c6d369b4a647b457e8c607111e7",
+  "partition": [
+    {
+      "cards": [
+        "01-intake-list-compact",
+        "02-intake-import-short",
+        "03-orch-intake-fork"
+      ],
+      "profile": "cautious",
+      "estimate": 112432,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 1,
+        "startup": 54484,
+        "read_union": 18360,
+        "cards": [
+          {
+            "card": 1,
+            "card_text": 576,
+            "reads": {
+              "file:internal/boardcli/doc.go": 744,
+              "package:internal/boardcli": 2000,
+              "tests:internal/boardcli": 2000
+            },
+            "messages": 60.5,
+            "written": 18726
+          },
+          {
+            "card": 2,
+            "card_text": 492,
+            "reads": {
+              "file:internal/boardcli/doc.go": 744,
+              "package:internal/boardcli": 2000,
+              "tests:internal/boardcli": 2000
+            },
+            "messages": 54.5,
+            "written": 16842
+          },
+          {
+            "card": 3,
+            "card_text": 420,
+            "reads": {
+              "file:contracts/stencils/orch/orch-template-role.md": 2544,
+              "file:plugins/ly/skills/board/SKILL.md": 1584,
+              "package:contracts/stencils/orch": 2000,
+              "package:plugins/ly/skills/board": 2000,
+              "tests:contracts/stencils/orch": 2000,
+              "tests:plugins/ly/skills/board": 2000
+            },
+            "messages": 12,
+            "written": 4020
+          }
+        ]
+      }
+    }
+  ],
+  "currentBatch": 1,
+  "masterStrand": "f68fb9a6f52452e7460f6773cdd4f0f5",
+  "masterSessionId": "97cce43e-ac12-4911-a5fe-ae312b4557aa",
+  "masterEngine": "claude",
+  "batches": {
+    "1": {
+      "slug": "intake-list-compact",
+      "cards": [
+        "01-intake-list-compact",
+        "02-intake-import-short",
+        "03-orch-intake-fork"
+      ],
+      "cardHashes": {
+        "01-intake-list-compact": "63c6f761cc692d64477553a46661fda316d2d475fdbd973ed6a792a0185661f6",
+        "02-intake-import-short": "f9b3315aba66e51c154ee117bd94f62c5b0101c6ba9147e55b6e7647196c4be2",
+        "03-orch-intake-fork": "e137be1eba4bc0d2b43468d8d9ed996419ee35864701fe847df3145accd8388e"
+      },
+      "startSha": "27887027b63f2435b31d79c170fead4af5581509",
+      "kind": "fork",
+      "spawnedAt": "2026-10-16T07:23:18Z",
+      "sessionId": "97cce43e-ac12-4911-a5fe-ae312b4557aa",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
+    }
+  }
+}
