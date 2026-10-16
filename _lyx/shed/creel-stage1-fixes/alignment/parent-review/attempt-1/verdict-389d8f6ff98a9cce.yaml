@@ -1,0 +1,8 @@
+verdict: approve
+reason: >-
+  D1 to D9 cover all eight defects the board entry lists, each to the expectation its section states, with #677 placed first and #679 and #680 left out.
+  No decision does work owned by another entry: C13's stacked half stays with creel-c13-stacked-rewrite, and creel stages 2 and 3 stay out.
+  The overlap with reed-add-parentless-placement does not conflict: own-window stays an accepted anchor, the shuttleengine and creel-suite edits are at different places, and that peer lands first by row.
+  loom-stencil-wording and parent commit 0a1f161 do not overlap with this design.
+question: ""
+superseded: []
