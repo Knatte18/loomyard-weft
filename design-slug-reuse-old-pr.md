@@ -1,0 +1,7 @@
+# Reusing a landed task's slug: Publish finds the old run's closed PR and halts
+
+`slug-reuse-old-pr` · Note · bug, loom, batten, board
+
+Imported from [issue #692](https://github.com/Knatte18/loomyard/issues/692).
+
+Seen (2026-10-16): the board task creel-stage1-fixes reused the slug of an earlier task that landed the same morning (commit 27887027b, PR #672 closed by Finalize at 06:47Z). Two things then broke. 1) lyx batten run refused: the old run's record in _lyx/shed/<slug> still read completed; lyx batten cleanup --apply cleared it. 2) At Publish, FindPullRequest (internal/landingshed/pullrequest.go) lists PRs by head branch and base with state all and takes the newest, which was the old run's closed PR #672, so Publish halted with 'the pull request was closed without being merged' and the tackler handed the stop to the orch. Workaround: the orch opened a replacement PR (#691) from the task branch by hand and resumed the run; FindPullRequest then finds the newer open PR. Expected: a new run never adopts a PR it did not create, e.g. Publish records the PR number it created in the run state and ignores older PRs for the branch, or the board or batten refuses a slug whose earlier run landed.
