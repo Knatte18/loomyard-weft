@@ -153,7 +153,7 @@
 - `internal/reedengine#TestMultiplexerContract`
 
 **Create:**
-- `plan:internal/reedengine#TestPinBootOptionsLocked_ClearsTheWindowResizedHook` -> `func TestPinBootOptionsLocked_ClearsTheWindowResizedHook(t *testing.T)`
+- `internal/reedengine#TestPinBootOptionsLocked_ClearsTheWindowResizedHook`
 
 **Intent:** D4, and D6's hook half: reed stops laying out the shell window, so nothing computes, applies, pins or re-applies a stacked strand layout, and every boot and attach clears a `window-resized` hook an older binary pinned.
 

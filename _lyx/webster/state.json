@@ -1,10 +1,10 @@
 {
   "runGuid": "1fd54512e1bac54786d0c2c82bc7806c",
-  "planFingerprint": "efd66c0a2505e02e7ce43b4063f909ada8e32c805209176258cfee3138ee0f33",
+  "planFingerprint": "ff93b1305368a2da44c5a7ee1c6c940436e9cd0e6095e45838b052768b45701a",
   "planFileHashes": {
     "00-overview.md": "db1b6da2789f6c0767bbae5e0d4fc5d81ab95a2336983624a08707426e04a805",
     "01-retire-resize-watch-loop.md": "9b393dc7c3cfa94b07ed885a5bb9ad471cc9e071932d9fad0db65b2b0552dbf6",
-    "02-retire-shell-window-stack.md": "c592c0a7ca8429e61dcc41e2afd60acab6a3308f54490dded8379d2bede0b6f3",
+    "02-retire-shell-window-stack.md": "c6b9e554566167adb4ed777d04930af12289f08eb946e375faafdf8e48b852c5",
     "03-retire-zoom-and-pane-buttons.md": "77d24f1cbf8fd22bf0393ed348862784fa84b88c281241aec1db4782bf515520",
     "04-retire-layout-config-keys.md": "24b3019714e413e206d6df3523688786db9e20a8b8d2fc5c71b7dc26a32e795f",
     "05-retire-pane-era-anchors.md": "4a15ec22adcd21b816210d88bb376e5a041bcd428f9298c70bed9fe782bc6f80",
@@ -331,7 +331,7 @@
       }
     }
   ],
-  "currentBatch": 2,
+  "currentBatch": 0,
   "masterStrand": "e37a7dd745963c076067340e4df035d4",
   "masterSessionId": "5deb3191-8c44-4a70-9a63-bca09f4873d5",
   "masterEngine": "claude",
@@ -377,18 +377,48 @@
         "02-retire-shell-window-stack"
       ],
       "cardHashes": {
-        "02-retire-shell-window-stack": "c592c0a7ca8429e61dcc41e2afd60acab6a3308f54490dded8379d2bede0b6f3"
+        "02-retire-shell-window-stack": "c6b9e554566167adb4ed777d04930af12289f08eb946e375faafdf8e48b852c5"
       },
       "startSha": "b6c21641dace93b1bf739a56d19c6028aa9737dd",
       "kind": "fork",
       "spawnedAt": "2026-10-16T09:08:18Z",
       "sessionId": "5deb3191-8c44-4a70-9a63-bca09f4873d5",
       "engine": "claude",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "02-retire-shell-window-stack",
+        "status": "done",
+        "head_sha": "9f44bda697f440ed900c1e1555d15df46c7a7532",
+        "deviations": [
+          "internal/reedengine/apply.go",
+          "internal/reedengine/attach.go",
+          "internal/reedengine/attach_test.go",
+          "internal/reedengine/attachgeometry_integration_test.go",
+          "internal/reedengine/bar_integration_test.go",
+          "internal/reedengine/contract_integration_test.go",
+          "internal/reedengine/lifecycle.go",
+          "internal/reedengine/render/types.go",
+          "internal/reedengine/retiredkeys_test.go",
+          "internal/reedengine/selvagepane.go",
+          "internal/reedengine/spawn.go",
+          "internal/reedengine/watchdog.go",
+          "internal/reedengine/windowsize_test.go"
+        ]
+      },
+      "cardShas": [
+        "9f44bda697f440ed900c1e1555d15df46c7a7532"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-reed-add-parentless-placement/5deb3191-8c44-4a70-9a63-bca09f4873d5/subagents/agent-a237f0e40ecba78a1.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-reed-add-parentless-placement/5deb3191-8c44-4a70-9a63-bca09f4873d5/subagents/agent-a237f0e40ecba78a1.jsonl"
+      ]
     }
   },
   "seenForkTranscripts": [
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-reed-add-parentless-placement/5deb3191-8c44-4a70-9a63-bca09f4873d5/subagents/agent-a9afd70de4407f5ad.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-reed-add-parentless-placement/5deb3191-8c44-4a70-9a63-bca09f4873d5/subagents/agent-a9afd70de4407f5ad.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-reed-add-parentless-placement/5deb3191-8c44-4a70-9a63-bca09f4873d5/subagents/agent-a237f0e40ecba78a1.jsonl"
   ]
 }
