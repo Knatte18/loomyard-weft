@@ -819,7 +819,7 @@
       "id": 573,
       "slug": "reed-add-parentless-placement",
       "title": "reed add defaults to pane-era placement and splits the selvage shell window",
-      "kind": "note",
+      "kind": "task",
       "labels": [
         "bug",
         "reed"
