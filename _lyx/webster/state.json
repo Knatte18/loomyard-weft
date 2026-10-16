@@ -242,7 +242,7 @@
       }
     }
   ],
-  "currentBatch": 5,
+  "currentBatch": 0,
   "masterStrand": "7dabff2aa15977171b6ba5462f5feaf5",
   "masterSessionId": "cb2d3764-93b9-414c-9bdf-5a3159e2a75e",
   "masterEngine": "claude",
@@ -363,13 +363,28 @@
       "spawnedAt": "2026-10-16T09:32:48Z",
       "sessionId": "cb2d3764-93b9-414c-9bdf-5a3159e2a75e",
       "engine": "claude",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "05-rework-findings-are-claims",
+        "status": "done",
+        "head_sha": "dc75a3c8c8040fde9b0694b0258e1c286aac4c1d"
+      },
+      "cardShas": [
+        "dc75a3c8c8040fde9b0694b0258e1c286aac4c1d"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-loom-stencil-wording/cb2d3764-93b9-414c-9bdf-5a3159e2a75e/subagents/agent-a6522a9ade63b5b55.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-loom-stencil-wording/cb2d3764-93b9-414c-9bdf-5a3159e2a75e/subagents/agent-a6522a9ade63b5b55.jsonl"
+      ]
     }
   },
   "seenForkTranscripts": [
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-loom-stencil-wording/cb2d3764-93b9-414c-9bdf-5a3159e2a75e/subagents/agent-a8ad9e226c3726846.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-loom-stencil-wording/cb2d3764-93b9-414c-9bdf-5a3159e2a75e/subagents/agent-ac9c28fb68bff4670.jsonl",
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-loom-stencil-wording/cb2d3764-93b9-414c-9bdf-5a3159e2a75e/subagents/agent-adee0b37c6af5a3fb.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-loom-stencil-wording/cb2d3764-93b9-414c-9bdf-5a3159e2a75e/subagents/agent-adee0b37c6af5a3fb.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-loom-stencil-wording/cb2d3764-93b9-414c-9bdf-5a3159e2a75e/subagents/agent-a6522a9ade63b5b55.jsonl"
   ]
 }
