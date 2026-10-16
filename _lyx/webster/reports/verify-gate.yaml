@@ -1,0 +1,16 @@
+attempt: 1
+cap: 3
+failures:
+    - id: github.com/Knatte18/loomyard/cmd/lyx.TestCLIForm_EveryCommand
+      kind: test
+      package: github.com/Knatte18/loomyard/cmd/lyx
+      tail: |4-
+            clitree_test.go:401: lyx loom decision add: Long is 2021 bytes; the cap is 2000, so move the long page into the package doc
+            clitree_test.go:401: lyx loom validate-plan: Long is 2188 bytes; the cap is 2000, so move the long page into the package doc
+    - id: github.com/Knatte18/loomyard/internal/testkit/envkit.TestFullEnv_PathFieldsAbsoluteUnderOneRoot
+      kind: test
+      package: github.com/Knatte18/loomyard/internal/testkit/envkit
+      tail: |4-
+            envkit_test.go:59: PatternRecordPath = ""; want an absolute path
+            envkit_test.go:62: PatternRecordPath = ""; want a path under "/tmp/lyx-1000/r1245326854/TestFullEnv_PathFieldsAbsoluteUnderOneRoot2363303147/001"
+log_path: /home/knatte/Code/loomyard-LYXHUB/webster-fork-stencil-fixes/.lyx/verify/verify-2.log
