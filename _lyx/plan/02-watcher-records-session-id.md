@@ -1,8 +1,8 @@
 # Card 2 — watcher-records-session-id
 
 **Create:**
-- `plan:internal/orchengine#Watcher.recordSessionID` -> `func (w *Watcher) recordSessionID(st *State) error`
-- `plan:internal/orchengine#TestWatcher_RecordsTheSessionIDItReads` -> `func TestWatcher_RecordsTheSessionIDItReads(t *testing.T)`
+- `internal/orchengine#Watcher.recordSessionID`
+- `internal/orchengine#TestWatcher_RecordsTheSessionIDItReads`
 
 **Edit:**
 - `internal/orchengine#State`

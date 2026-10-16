@@ -1,8 +1,8 @@
 # Card 1 — shuttle-session-id
 
 **Create:**
-- `plan:internal/shuttleengine#newestSessionID` -> `func newestSessionID(rs RunState, signals []SessionSignal) string`
-- `plan:internal/shuttleengine#Run.SessionID` -> `func (run *Run) SessionID() string`
+- `internal/shuttleengine#newestSessionID`
+- `internal/shuttleengine#Run.SessionID`
 
 **Edit:**
 - `internal/shuttleengine#RunSessionState`

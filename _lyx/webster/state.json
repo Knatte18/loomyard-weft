@@ -1,11 +1,11 @@
 {
   "runGuid": "f9a874ca5d3eef64bf470d8f0060853a",
-  "planFingerprint": "8ad2a852a16ff618036dab7bf1ea5e5a8e5185f577ceb5551dc25e125e804846",
+  "planFingerprint": "83a4ad44cebdd8610400550642b0b8b96f7a676e8701abbb6ec3242a442c87f5",
   "planFileHashes": {
     "00-overview.md": "e1391e15199fd799148cdc9677e74e269c014cb553c494eeba84155dfa584203",
-    "01-shuttle-session-id.md": "64c0495ea8151b2e0156bc9a7bae8b2d0748d4d6e61577ccc2b298520093efba",
-    "02-watcher-records-session-id.md": "8686f09c7d88262d391774350b98a1d4623330cb8605596bc2a85367b30e53d0",
-    "03-start-continue.md": "bccf0099fed2d6265039e299a2f218900e155c2d991f48fdac72b9a1409172d1",
+    "01-shuttle-session-id.md": "a1ad32438651656dd6fcf46171b23c8e72f7662393a2c8d4712f423846f6fc5d",
+    "02-watcher-records-session-id.md": "ebcbd978a5e9eebe356fe6e8e1a56ac692fb90f5a6a87b7d9734ea46fbdb28d9",
+    "03-start-continue.md": "5f85b5bad285f425835ca11114c05053489f983a87c93ece479b159b5845aeb5",
     "04-status-session-id.md": "14293e216724f5373a308e28b9b63bc35af4ba65a5afc93d9c8fc821332d621f"
   },
   "planOverviewFrameHash": "3aa0722517609659b65dd4050e5d6f4fc3967cef904e1e7110772903ecf83d64",
@@ -88,7 +88,7 @@
       }
     }
   ],
-  "currentBatch": 1,
+  "currentBatch": 0,
   "masterStrand": "40acb6d52b6dc37b0636b41bf2ec045b",
   "masterSessionId": "06e6b4e7-8eac-4046-ad23-eed288b134ed",
   "masterEngine": "claude",
@@ -102,9 +102,9 @@
         "04-status-session-id"
       ],
       "cardHashes": {
-        "01-shuttle-session-id": "64c0495ea8151b2e0156bc9a7bae8b2d0748d4d6e61577ccc2b298520093efba",
-        "02-watcher-records-session-id": "8686f09c7d88262d391774350b98a1d4623330cb8605596bc2a85367b30e53d0",
-        "03-start-continue": "bccf0099fed2d6265039e299a2f218900e155c2d991f48fdac72b9a1409172d1",
+        "01-shuttle-session-id": "a1ad32438651656dd6fcf46171b23c8e72f7662393a2c8d4712f423846f6fc5d",
+        "02-watcher-records-session-id": "ebcbd978a5e9eebe356fe6e8e1a56ac692fb90f5a6a87b7d9734ea46fbdb28d9",
+        "03-start-continue": "5f85b5bad285f425835ca11114c05053489f983a87c93ece479b159b5845aeb5",
         "04-status-session-id": "14293e216724f5373a308e28b9b63bc35af4ba65a5afc93d9c8fc821332d621f"
       },
       "startSha": "493c62b710455b6f0fcf8f6b2814c8d9812c8118",
@@ -112,8 +112,30 @@
       "spawnedAt": "2026-10-16T05:38:18Z",
       "sessionId": "06e6b4e7-8eac-4046-ad23-eed288b134ed",
       "engine": "claude",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "01-shuttle-session-id",
+        "status": "done",
+        "head_sha": "4158bfa40a1da6593e982da40723b5043dde412c",
+        "deviations": [
+          "internal/orchcli/start.go",
+          "internal/orchcli/start_test.go",
+          "internal/orchengine/watcher.go"
+        ]
+      },
+      "cardShas": [
+        "4158bfa40a1da6593e982da40723b5043dde412c"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-orch-continue/06e6b4e7-8eac-4046-ad23-eed288b134ed/subagents/agent-aff5931e5b8620b56.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-orch-continue/06e6b4e7-8eac-4046-ad23-eed288b134ed/subagents/agent-aff5931e5b8620b56.jsonl"
+      ]
     }
-  }
+  },
+  "seenForkTranscripts": [
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-orch-continue/06e6b4e7-8eac-4046-ad23-eed288b134ed/subagents/agent-aff5931e5b8620b56.jsonl"
+  ]
 }

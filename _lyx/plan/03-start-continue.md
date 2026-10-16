@@ -1,9 +1,9 @@
 # Card 3 — start-continue
 
 **Create:**
-- `plan:internal/orchcli#startedSession` -> `type startedSession struct`
-- `plan:internal/orchcli#previousSessionHint` -> `func previousSessionHint(id string) string`
-- `plan:internal/orchcli#withContinueWaysForward` -> `func withContinueWaysForward(err error) error`
+- `internal/orchcli#startedSession`
+- `internal/orchcli#previousSessionHint`
+- `internal/orchcli#withContinueWaysForward`
 
 **Edit:**
 - `internal/orchcli#sessionStarter`
