@@ -1,0 +1,6 @@
+verdict: approve
+reason: >-
+  The diff builds the board entry's goal, an explicit `lyx orch start --continue` resuming the session id orch records at launch and the watcher keeps current, with the status field and docs, and breaks none of the recorded decisions D1 to D6.
+  The only overlap, `internal/shuttleengine` with `creel-stage1-fixes`, is text-only; this run (row 22) lands before the peer (row 8).
+question: ""
+superseded: []
