@@ -1,0 +1,4 @@
+verdict: approve
+reason: The diff of PR 694 carries the board entry's five sections as decisions D1-D5 record them, with no change the goal does not call for and no recorded decision broken; lyx loom peers lists no peer run and no parent commit, so there is no overlap.
+question: ""
+superseded: []
