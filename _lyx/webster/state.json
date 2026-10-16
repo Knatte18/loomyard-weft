@@ -1,0 +1,293 @@
+{
+  "runGuid": "4fc33e818a0e4e1a608ba85e0e35f586",
+  "planFingerprint": "7d3551e9d33aaa17fce3f5abd4d1959a18cbe05b17f3ac006bef1f8c5632af2f",
+  "planFileHashes": {
+    "00-overview.md": "00fbb96f31a0f9d1ac646d49de06838250b020f65421e3e372c11bef21952c91",
+    "01-journal-tail-repair.md": "1da1d846c5551821514b9b03f6b160a8c2f6abb7e5827f7866610eeed7b03a0e",
+    "02-refusal-stderr-fallback.md": "f5b15ef7cd055959cf5e79060febaff2969e6b5a476058b055b2995913c4d47b",
+    "03-stall-freshness.md": "0b8b6a49578115a1f4a1db1eb2c53cf2767baef7cadf2dbb2e3444950b324108",
+    "04-spawn-exit-signal.md": "b2b49aaba0378b2c457fc56d53bc99f8742acb83bbca59d9b0c1932316de2f97",
+    "05-carried-log-entries.md": "7e932486462c0e3a664424ed70285d4492c867cc15072d00b2143ade6e46c2cf",
+    "06-sweep-confirm-timing.md": "1a0ffc835fd9a7e4a9abe0063f1eb03f78abad8491ee75edf189acdd7c992acf",
+    "07-idle-probe-no-input-box.md": "64ee86085f2135dcfb048c35c4569f3459db2917d2ab667244a2469467df7838",
+    "08-no-input-box-stall.md": "914c53cd70fc8dbd7545a3cc6d2ac9bcd7b7f297d15d6ef60f59922a73a6e411",
+    "09-ttl-capped-probe-wait.md": "7acc9c84ddf2d92b811870ec391442f7d55205e245a656c31ae1656cc58cba78",
+    "10-startup-gate-seam.md": "a46ffad66cbff880d261de0c8b3de88bd3410adde029b945a205b6b862fd6827",
+    "11-llm-smoke-strand.md": "4752dceb294ad9d552d687940467dda39e89c39443065ddf84e5da83ad747759"
+  },
+  "planOverviewFrameHash": "c1256da16a96359c73e32b62e2b54d66844dbf38c203d036957cc716265ef6dc",
+  "partition": [
+    {
+      "cards": [
+        "01-journal-tail-repair",
+        "02-refusal-stderr-fallback",
+        "03-stall-freshness"
+      ],
+      "profile": "cautious",
+      "estimate": 149492,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 1,
+        "startup": 54484,
+        "read_union": 23752,
+        "cards": [
+          {
+            "card": 1,
+            "card_text": 552,
+            "reads": {
+              "file:internal/creelengine/doc.go": 1944,
+              "file:tools/sandbox/SANDBOX-CREEL-SUITE.md": 4032,
+              "package:internal/creelengine": 2000,
+              "package:tools/sandbox": 2000,
+              "tests:internal/creelengine": 2000,
+              "tests:tools/sandbox": 2000
+            },
+            "messages": 52.5,
+            "written": 16302
+          },
+          {
+            "card": 2,
+            "card_text": 432,
+            "reads": {
+              "file:internal/creelcli/doc.go": 120,
+              "file:tools/sandbox/SANDBOX-CREEL-SUITE.md": 4032,
+              "package:internal/creelcli": 2000,
+              "package:tools/sandbox": 2000,
+              "tests:internal/creelcli": 2000,
+              "tests:tools/sandbox": 2000
+            },
+            "messages": 62,
+            "written": 19032
+          },
+          {
+            "card": 3,
+            "card_text": 672,
+            "reads": {
+              "file:internal/creelengine/doc.go": 1944,
+              "file:tools/sandbox/SANDBOX-CREEL-SUITE.md": 4032,
+              "package:internal/creelcli": 2000,
+              "package:internal/creelengine": 2000,
+              "package:internal/testkit/creelfake": 2000,
+              "package:tools/sandbox": 2000,
+              "tests:internal/creelcli": 2000,
+              "tests:internal/creelengine": 2000,
+              "tests:internal/testkit/creelfake": 2000,
+              "tests:tools/sandbox": 2000
+            },
+            "messages": 117.5,
+            "written": 35922
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "04-spawn-exit-signal",
+        "05-carried-log-entries",
+        "06-sweep-confirm-timing"
+      ],
+      "profile": "cautious",
+      "estimate": 180018,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 2,
+        "startup": 61484,
+        "read_union": 24652,
+        "cards": [
+          {
+            "card": 4,
+            "card_text": 744,
+            "reads": {
+              "file:internal/creelcli/doc.go": 120,
+              "file:internal/creelengine/doc.go": 1944,
+              "file:pattern/PATTERN-daemon-wakeups.md": 624,
+              "package:internal/creelcli": 2000,
+              "package:internal/creelengine": 2000,
+              "package:pattern": 2000,
+              "tests:internal/creelcli": 2000,
+              "tests:internal/creelengine": 2000,
+              "tests:pattern": 2000
+            },
+            "messages": 126.5,
+            "written": 38694
+          },
+          {
+            "card": 5,
+            "card_text": 504,
+            "reads": {
+              "file:internal/creelengine/doc.go": 1944,
+              "package:internal/creelcli": 2000,
+              "package:internal/creelengine": 2000,
+              "tests:internal/creelcli": 2000,
+              "tests:internal/creelengine": 2000
+            },
+            "messages": 80.5,
+            "written": 24654
+          },
+          {
+            "card": 6,
+            "card_text": 684,
+            "reads": {
+              "file:internal/creelengine/doc.go": 1944,
+              "file:pattern/PATTERN-daemon-wakeups.md": 624,
+              "file:tools/sandbox/SANDBOX-CREEL-SUITE.md": 4032,
+              "package:internal/creelcli": 2000,
+              "package:internal/creelengine": 2000,
+              "package:pattern": 2000,
+              "package:tools/sandbox": 2000,
+              "tests:internal/creelcli": 2000,
+              "tests:internal/creelengine": 2000,
+              "tests:pattern": 2000,
+              "tests:tools/sandbox": 2000
+            },
+            "messages": 99.5,
+            "written": 30534
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "07-idle-probe-no-input-box",
+        "08-no-input-box-stall",
+        "09-ttl-capped-probe-wait",
+        "10-startup-gate-seam",
+        "11-llm-smoke-strand"
+      ],
+      "profile": "cautious",
+      "estimate": 192384,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 3,
+        "startup": 68484,
+        "read_union": 40200,
+        "cards": [
+          {
+            "card": 7,
+            "card_text": 312,
+            "reads": {
+              "file:internal/shuttleengine/doc.go": 5556,
+              "package:internal/shuttleengine": 2000,
+              "tests:internal/shuttleengine": 2000
+            },
+            "messages": 52,
+            "written": 15912
+          },
+          {
+            "card": 8,
+            "card_text": 456,
+            "reads": {
+              "file:internal/creelengine/doc.go": 1944,
+              "package:internal/creelcli": 2000,
+              "package:internal/creelengine": 2000,
+              "tests:internal/creelcli": 2000,
+              "tests:internal/creelengine": 2000
+            },
+            "messages": 70.5,
+            "written": 21606
+          },
+          {
+            "card": 9,
+            "card_text": 432,
+            "reads": {
+              "file:internal/creelengine/doc.go": 1944,
+              "file:pattern/PATTERN-daemon-wakeups.md": 624,
+              "file:tools/sandbox/SANDBOX-CREEL-SUITE.md": 4032,
+              "package:internal/creelengine": 2000,
+              "package:pattern": 2000,
+              "package:tools/sandbox": 2000,
+              "tests:internal/creelengine": 2000,
+              "tests:pattern": 2000,
+              "tests:tools/sandbox": 2000
+            },
+            "messages": 56.5,
+            "written": 17382
+          },
+          {
+            "card": 10,
+            "card_text": 576,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1944,
+              "file:internal/shuttleengine/doc.go": 5556,
+              "package:cmd/lyx/testdata": 2000,
+              "package:internal/shuttleengine": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:internal/shuttleengine": 2000
+            },
+            "messages": 68,
+            "written": 20976
+          },
+          {
+            "card": 11,
+            "card_text": 324,
+            "reads": {
+              "package:internal/creelcli": 2000,
+              "tests:internal/creelcli": 2000
+            },
+            "messages": 25,
+            "written": 7824
+          }
+        ]
+      }
+    }
+  ],
+  "currentBatch": 1,
+  "masterStrand": "e97e068e59a0576225913a2b05430d70",
+  "masterSessionId": "0567153d-5f1b-4372-bd92-3b70e272f013",
+  "masterEngine": "claude",
+  "batches": {
+    "1": {
+      "slug": "journal-tail-repair",
+      "cards": [
+        "01-journal-tail-repair",
+        "02-refusal-stderr-fallback",
+        "03-stall-freshness"
+      ],
+      "cardHashes": {
+        "01-journal-tail-repair": "1da1d846c5551821514b9b03f6b160a8c2f6abb7e5827f7866610eeed7b03a0e",
+        "02-refusal-stderr-fallback": "f5b15ef7cd055959cf5e79060febaff2969e6b5a476058b055b2995913c4d47b",
+        "03-stall-freshness": "0b8b6a49578115a1f4a1db1eb2c53cf2767baef7cadf2dbb2e3444950b324108"
+      },
+      "startSha": "0091abc773e7d32e0c9b48ac02643abc3b75d10c",
+      "kind": "fork",
+      "spawnedAt": "2026-10-16T10:20:02Z",
+      "sessionId": "0567153d-5f1b-4372-bd92-3b70e272f013",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
+    }
+  }
+}
