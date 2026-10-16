@@ -38,7 +38,7 @@ Every fork returned a report.
 - leanness LOW, D1's section list could be derived: rejected, the entry asks for exactly those sections and D1 carries the `ref` list and S2 exclusion.
 - scenarios MEDIUM, D4's new subcommand states no bound: fixed, D4 states what `runSuite` does and nothing more.
 - scenarios MEDIUM, the absent-hub failure path is missing from the criteria: fixed, added to the table-test criterion.
-- scenarios LOW, nothing pins `shuttleSuite` keeping teardown: fixed, criterion added.
+- scenarios LOW, nothing pins `shuttleSuite` keeping teardown: rejected, `TestSuiteSpecs_ReedTeardownFlag` already pins it and no Decision changes `shuttleSuite`.
 - scenarios LOW, the daemon risk on Windows `build -reset`: fixed, Open risk amended.
 - scenarios LOW, back-to-back suite runs lose an unfetched report: fixed, Open risk added.
 
@@ -48,6 +48,7 @@ Every fork returned a report.
 - A creel suite that points back to the shuttle suite for its preamble: the agent reads only the one copied file, so each suite is self-contained.
 - `reedTeardown: false`: leaves a tmux server that blocks the next `build -reset`.
 - Adding a creel-daemon stop to the launcher: no sanctioned stop verb exists besides a binary replacement, and no scenario asks for it.
+- Carrying the shuttle suite's controlled tmux exception into the creel suite: no creel scenario needs it, and its socket lookup depends on a shuttle run's strand guid.
 - Updating every sibling suite's Notes list: none lists every suite today, so adding creel to each is churn with no reader need.
 
 ## Review rounds
