@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-16 10:35 UTC; every age below is as of then.
+Rendered 2026-10-16 10:36 UTC; every age below is as of then.
 
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
@@ -48,13 +48,12 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | --- | --- | --- | --- | --- | --- |
 | 1 | **reed watchdog outlives lyx reed down and respawns on a redeployed binary** | [`reed-watchdog-outlives-down`](design-reed-watchdog-outlives-down.md) | 1h | 1h | reed |
 | 2 | **strand pane resolves bare lyx to the production binary while LYX_BIN names the dev build** | [`strand-pane-lyx-path`](design-strand-pane-lyx-path.md) | 1h | 1h | reed, shuttle |
-| 3 | **Where the #673 workaround removal lands**<br>• Home of the #673 workaround for reed-add-parentless-placement | [`reed-673-workaround-home`](design-reed-673-workaround-home.md) | 1h | 1h | reed |
 
 #### Low priority
 
 | # | Note | Slug | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| 4 | **A hub pause leaves background forks and shells running, so hibernate never confirms**<br>• Pause interrupts turns but not background forks or shells; sessions read busy and hibernate confirmation fails | [`pause-background-work`](design-pause-background-work.md) | 1d | 1d | shuttle, webster |
+| 3 | **A hub pause leaves background forks and shells running, so hibernate never confirms**<br>• Pause interrupts turns but not background forks or shells; sessions read busy and hibernate confirmation fails | [`pause-background-work`](design-pause-background-work.md) | 1d | 1d | shuttle, webster |
 
 ### Enhancements
 
@@ -84,7 +83,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 15 | **Start one task per overlapping group at a newly-ready start**<br>• When a landing makes several overlapping tasks ready at once, batten starts one per group and names the rest in its notice | [`batten-ready-overlap`](design-batten-ready-overlap.md) | 22h | 22h | batten |
 | 16 | **Rename the `lyx` binary to `lyd` (name clash with LyX)** | [`rename-binary-lyd`](design-rename-binary-lyd.md) | 3h | 3h | stencil, shuttle |
 | 17 | **Rewrite C13's stacked half for window-per-strand**<br>• C13's stacked 3-row half cannot be set up once reed-add-parentless-placement lands | [`creel-c13-stacked-rewrite`](design-creel-c13-stacked-rewrite.md) | 1h | 1h | creel |
-| 18 | **Go driver messages the orch about a verify halt batten retries itself**<br>• Drop or reword the parent message for a watched verify halt | [`driver-watched-verify-notice`](design-driver-watched-verify-notice.md) | 13m | 13m | shed, batten |
+| 18 | **Go driver messages the orch about a verify halt batten retries itself**<br>• Drop or reword the parent message for a watched verify halt | [`driver-watched-verify-notice`](design-driver-watched-verify-notice.md) | 14m | 14m | shed, batten |
 
 #### Low priority
 
