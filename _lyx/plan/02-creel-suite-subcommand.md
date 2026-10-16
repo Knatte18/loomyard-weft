@@ -41,7 +41,7 @@ Tests, each a row in an existing table, no new top-level test:
   The test's doc comment names both subtests.
 - `TestRunSuite_PerSuiteSpec` gains `creelSuite` in its `suites` list and the row `{"creel", creelSuite}` in its table, covering the default instruction, the scheme file written with the fingerprint header and embedded body, no other suite's file written, both names git-excluded, the stale report removed and the `-prompt` override.
   Adding `creelSuite` to `suites` also makes every other row assert it writes no `SANDBOX-CREEL-SUITE.md`.
-  The `default run` subtest also asserts the written scheme contains `"# " + strings.TrimSuffix(tt.spec.fileName, ".md")`, the heading every suite file opens with, so a spec embedding another suite's file fails its row; the existing `tt.spec.doc` check compares the spec against itself and cannot catch that.
+  The `default run` subtest also reads `tt.spec.fileName` from the package directory (`os.ReadFile(tt.spec.fileName)`, the test's working directory being `tools/sandbox`) and asserts it equals `tt.spec.doc`, so a spec embedding another suite's file fails its row without pinning any suite text; the existing `tt.spec.doc` check compares the spec against itself and cannot catch that.
 - `TestSuiteSpecs_ReedTeardownFlag` gains `creelSuite` in its live-reed list, so a creel spec with `reedTeardown` false fails it.
 - `TestRunSuite_ReedTeardown` gains the row `{"creel suite tears down once after the agent", creelSuite, 0, nil, 1}`, pinning that a creel run calls `reedDown` once, after the agent session, with the repo directory and the resolved lyx.
 
