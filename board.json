@@ -787,6 +787,23 @@
       "body": "Imported from [issue #695](https://github.com/Knatte18/loomyard/issues/695).\n\nSeen: lyx report timing --since 2026-10-14 gave twill-fork0 Plan 1h47m and kickstart-per-card Plan 1h30m. The driver transcripts show both runs were paused before Plan-Write on request (notices.log: 'twill-fork0: paused at Plan-Write; since 19:02:00Z', 'kickstart-per-card: paused at Plan-Write; since 10:11:04Z'), and the Plan-Write sessions ran only 11 and 13 minutes. lyx shed status also shows 'now: Plan-Write' during such a pause. Expected: time a run spends paused at a producer boundary is reported apart, like machine sleep and waits, not as the next phase's time.",
       "created": "2026-10-16T14:40:38Z",
       "revised": "2026-10-16T14:40:40Z"
+    },
+    {
+      "id": 615,
+      "slug": "gitrepo-tmux-tier-memory",
+      "title": "Investigate internal/gitrepo tmux-tier cost: 16.5s and 3 GB peak memory",
+      "kind": "note",
+      "labels": [
+        "audit",
+        "fabric"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "In the tmux tier internal/gitrepo went from 0.31s and 82.5M to 16.50s and 2992.7M peak memory between the two test-suite-weight runs; find which test causes it and whether it is needed",
+      "body": "## Seen (2026-10-16)\n\n`docs/benchmarks/test-suite-weight.md`, tier 3 (`tmux`), measured serially package by package: `internal/gitrepo` took 0.31s wall and 82.5M peak memory at `df36bb2a4` (2026-10-10), and 16.50s wall, 13.82s CPU and 2992.7M peak memory at `112cccb8f` (2026-10-16, idle machine, commit `3617eae27`).\nIn tiers 1 and 2 the package is unchanged (under 1.3s and about 110M).\n\n## Idea\n\nFind which tmux-tier test in `internal/gitrepo` drives the time and memory, whether the 3 GB peak is the test process or a child it spawns, and whether the test can be made lighter or belongs in another tier.\nThe board has no `gitrepo` label, so `fabric`, its main consumer, stands in.",
+      "created": "2026-10-16T14:58:47Z",
+      "revised": "2026-10-16T14:58:47Z"
     }
   ]
 }
