@@ -1,0 +1,27 @@
+# Relevant files
+
+- `internal/reedcli/add.go` `addCmd` — the `--anchor` default and vocabulary this task changes
+- `internal/shuttlecli/run.go` — `lyx shuttle run`'s `--anchor` vocabulary
+- `internal/shuttleengine/spec.go` `Spec` — the `Display` comment that names `AnchorBelowParent`
+- `internal/shuttleengine/attach.go` — defaults an empty anchor to `own-window`
+- `internal/reedengine/render/types.go` `Anchor`, `Display`, `Size`, `Params`, `Selvage` — the vocabulary and stack params being cut
+- `internal/reedengine/render/policy.go` `ValidateDisplay`, `partitionByAnchor` — the anchor dispatch of the stack
+- `internal/reedengine/render/rules.go` `planCells` — the stack layout entry point
+- `internal/reedengine/strand.go` `AddStrand`, `UpdateStrand`, `SetContentRows` — the engine's display check and content-rows op
+- `internal/reedengine/replace.go` `ReplaceStrand` — another display write
+- `internal/reedengine/selvagepane.go` `planPaneTarget`, `planTopPaneTarget` — split-target planning for shell-window strands
+- `internal/reedengine/apply.go` `planLayout`, `fixedHeightPins` — the shell-window layout apply
+- `internal/reedengine/reapply.go` `ReapplyResult` — the resize self-heal's re-apply
+- `internal/reedengine/watchloop.go` `Engine.Watch` — the per-worktree loop driving the re-apply
+- `internal/reedengine/namerepair.go` — the daemon duty that stays
+- `internal/reedcli/watchdog.go` — the per-hub daemon and its spawn seam
+- `internal/reedengine/ownwindow.go` `isOwnWindow`, `planOwnWindowPlacement` — own-window placement that stays
+- `internal/reedengine/doc.go` — module doc describing the stack, bindings, bar and Selvage rules
+- `internal/reedengine/template_posix.yaml` — the layout config keys and their comments
+- `internal/reedengine/config.go` — reed's config spec, where retired keys are declared
+- `internal/reedengine/retiredkeys_test.go` — precedent fixture for retired display keys
+- `internal/configengine/layers.go` `RetiredKeys` — the retired-key mechanism
+- `tools/sandbox/SANDBOX-REED-SUITE.md` — sandbox scenarios built on below-parent and the resize self-heal
+- `tools/sandbox/SANDBOX-REED-WATCH-SUITE.md` — watch scenarios built on the stack collapse and live resize
+- `docs/overview.md` — the spawn walk-through naming `anchor:below-parent`
+- `CLAUDE.md` — the #673 workaround to remove
