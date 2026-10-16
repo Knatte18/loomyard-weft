@@ -1,8 +1,8 @@
 # Card 2 — creel-suite-subcommand
 
 **Create:**
-- `plan:tools/sandbox#creelSandboxSuiteMD` -> `var creelSandboxSuiteMD string`
-- `plan:tools/sandbox#creelSuite` -> `var creelSuite suiteSpec`
+- `tools/sandbox#creelSandboxSuiteMD`
+- `tools/sandbox#creelSuite`
 
 **Edit:**
 - `tools/sandbox#suiteSpec`
