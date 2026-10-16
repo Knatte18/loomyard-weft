@@ -1,0 +1,33 @@
+round: 2
+fan: ""
+review:
+    model: opus
+    effort: medium
+    start: 2026-10-13T08:04:33Z
+    end: 2026-10-13T10:07:20.911636921+02:00
+    wall_seconds: 167.911636921
+    tokens_known: true
+    fresh_tokens: 95769
+    cache_read_tokens: 1949115
+    forks: 0
+    fork_fresh_tokens: 0
+    fork_cache_read_tokens: 0
+    fork_fresh_share: 0
+fix:
+    model: opus
+    effort: medium
+    start: 2026-10-13T08:07:34Z
+    end: 2026-10-13T10:08:56.36415306+02:00
+    wall_seconds: 82.36415306
+    tokens_known: true
+    fresh_tokens: 48703
+    cache_read_tokens: 569938
+judge:
+    - model: sonnet
+      effort: medium
+      start: 2026-10-13T08:09:07Z
+      end: 2026-10-13T10:09:37.513325137+02:00
+      wall_seconds: 30.513325137
+      tokens_known: true
+      fresh_tokens: 32399
+      cache_read_tokens: 148934
