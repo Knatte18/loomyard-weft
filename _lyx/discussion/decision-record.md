@@ -98,6 +98,12 @@ D1 through D6 and the Out bullets are auto-picks with no operator input; the sup
 - A watcher bound to a strand reed's rebirth replayed records the pre-clear id, since the replayed `--resume` names it in the session-start signal; the post-clear id is then recoverable only from the provider's own session list for `--adopt`, and `lyx orch status` shows the pre-clear id.
 - D4 reads the id from the newest signal of any kind, relying on Claude Code naming the parent session id in a subagent's or fork's hook lines; a version that names the subagent's own id there makes the watcher record it, and `--continue` then resumes the subagent's session.
 
+<!-- lyx:carry-over Plan-Review -->
+- Plan-Review, round 1: converged; each finding below was fixed or disputed by the round's fixer, and no fresh reviewer has seen the result; the fixer report says which.
+  Review: _lyx/reviews/plan/round-1-review.md; fixer report: _lyx/reviews/plan/round-1-fixer-report.md.
+  - continue-bound-omits-provider-reliance (class scope, severity MEDIUM, open in rounds 1)
+<!-- /lyx:carry-over Plan-Review -->
+
 ## Acceptance criteria
 
 - `lyx orch start --continue` with a dead or absent strand and a recorded id launches the orch strand resuming that id, with the adopt prompt, spawns the watcher, keeps `LastHandoff`, and reports `prompt_source` `adopt` and the `session_id`.
