@@ -1,12 +1,11 @@
 {
-  "current_producer": "Publish",
+  "current_producer": "PR-Align",
   "state": "running",
   "error": "",
-  "pending_by": "shed",
   "pause_requested": false,
   "activity": {
-    "now": "Publish",
-    "last": "Publish → stuck",
+    "now": "PR-Align",
+    "last": "Publish → done",
     "wait": ""
   },
   "history": [
@@ -372,6 +371,13 @@
       "outcome": "stuck",
       "output": "",
       "at": "2026-10-16T11:06:27Z"
+    },
+    {
+      "producer": "Publish",
+      "outcome": "done",
+      "output": "",
+      "at": "2026-10-16T11:08:09Z",
+      "by": "shed"
     }
   ],
   "product": {
