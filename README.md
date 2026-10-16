@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-16 09:27 UTC; every age below is as of then.
+Rendered 2026-10-16 09:28 UTC; every age below is as of then.
 
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
@@ -19,7 +19,7 @@ Held by a run; its scope is locked until the run ends.
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | 1 | **reed add defaults to pane-era placement and splits the selvage shell window**<br>• Replace the obsolete below-parent default and sweep for other pane-era leftovers | [`reed-add-parentless-placement`](design-reed-add-parentless-placement.md) | loom | Webster | 2h | 1h | reed |
 | 2 | **Loom stencil fixes from the stencil intent audit, verify tiers from hub config**<br>• Rejection findings are a reviewer claim, never the operator; driver, advisor, plan and rework wording | [`loom-stencil-wording`](design-loom-stencil-wording.md) | loom | Webster | 2h | 1h | stencil, loom, shed, config, webster |
-| 3 | **Creel stage 1 re-test fixes**<br>• Fix the eight creel defects from the 2026-10-16 re-test, the journal torn-line one first | [`creel-stage1-fixes`](design-creel-stage1-fixes.md) | loom | Discussion-Bouncer | 31m | 12m | creel, shuttle, claude |
+| 3 | **Creel stage 1 re-test fixes**<br>• Fix the eight creel defects from the 2026-10-16 re-test, the journal torn-line one first | [`creel-stage1-fixes`](design-creel-stage1-fixes.md) | loom | Discussion-Burler-Review | 32m | 13m | creel, shuttle, claude |
 
 ### Ready
 
@@ -63,9 +63,9 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Note | Slug | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| 1 | **reed watchdog outlives lyx reed down and respawns on a redeployed binary** | [`reed-watchdog-outlives-down`](design-reed-watchdog-outlives-down.md) | 31m | 31m | reed |
-| 2 | **strand pane resolves bare lyx to the production binary while LYX_BIN names the dev build** | [`strand-pane-lyx-path`](design-strand-pane-lyx-path.md) | 31m | 31m | reed, shuttle |
-| 3 | **Where the #673 workaround removal lands**<br>• Home of the #673 workaround for reed-add-parentless-placement | [`reed-673-workaround-home`](design-reed-673-workaround-home.md) | 11m | 11m | reed |
+| 1 | **reed watchdog outlives lyx reed down and respawns on a redeployed binary** | [`reed-watchdog-outlives-down`](design-reed-watchdog-outlives-down.md) | 32m | 32m | reed |
+| 2 | **strand pane resolves bare lyx to the production binary while LYX_BIN names the dev build** | [`strand-pane-lyx-path`](design-strand-pane-lyx-path.md) | 32m | 32m | reed, shuttle |
+| 3 | **Where the #673 workaround removal lands**<br>• Home of the #673 workaround for reed-add-parentless-placement | [`reed-673-workaround-home`](design-reed-673-workaround-home.md) | 12m | 12m | reed |
 
 #### Low priority
 
@@ -79,9 +79,9 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Note | Slug | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| 1 | **Tune the Burler lens fan prompts**<br>• Revisit the parked lens fan with lens and fork prompts that overlap less, measured against solo on the fan-lab fixtures | [`fan-prompt-tuning`](design-fan-prompt-tuning.md) | 5d | 47m | burler, stencil |
-| 2 | **Fork the Burler fixer from the reviewer session**<br>• The fixer re-reads the context the reviewer just read; fork it from the reviewer to reuse the cache | [`burler-fixer-fork`](design-burler-fixer-fork.md) | 1d | 47m | burler |
-| 3 | **Perch review analysis: rounds, tokens and late BLOCKING findings, with proposals** | [`perch-review-analysis`](design-perch-review-analysis.md) | 52m | 47m | burler, loom, shed |
+| 1 | **Tune the Burler lens fan prompts**<br>• Revisit the parked lens fan with lens and fork prompts that overlap less, measured against solo on the fan-lab fixtures | [`fan-prompt-tuning`](design-fan-prompt-tuning.md) | 5d | 48m | burler, stencil |
+| 2 | **Fork the Burler fixer from the reviewer session**<br>• The fixer re-reads the context the reviewer just read; fork it from the reviewer to reuse the cache | [`burler-fixer-fork`](design-burler-fixer-fork.md) | 1d | 48m | burler |
+| 3 | **Perch review analysis: rounds, tokens and late BLOCKING findings, with proposals** | [`perch-review-analysis`](design-perch-review-analysis.md) | 52m | 48m | burler, loom, shed |
 
 #### Normal priority
 
@@ -91,14 +91,14 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 5 | **finalize: the discrepancy-document conflict shape**<br>• Divergences that cannot be a git conflict get a precomputed document for the resolving agent instead of markers | [`finalize-discrepancy-doc`](design-finalize-discrepancy-doc.md) | 11d | 11d | fabric, loom |
 | 6 | **shedrecipe: capability declaration instead of manual seam-threading**<br>• A producer declares what it needs and the registry wires it, instead of a hand-threaded Env passthrough field per layer | [`shedrecipe-capabilities`](design-shedrecipe-capabilities.md) | 11d |  | shed |
 | 7 | **Discussion stage has no sanctioned path to land a repository edit ahead of Plan**<br>• Discussion has no sanctioned path to commit a PATTERN edit ahead of Plan | [`discussion-lands-invariant`](design-discussion-lands-invariant.md) | 10d | 10d | loom |
-| 8 | **Kick-start packs from tool locations through quarry Enclose**<br>• Turn file:line locations from verify failures, lint and audits into member glyphs with quarry enclose, then into a kick-start pack | [`enclose-kickstart`](design-enclose-kickstart.md) | 8d | 20h | quarry |
+| 8 | **Kick-start packs from tool locations through quarry Enclose**<br>• Turn file:line locations from verify failures, lint and audits into member glyphs with quarry enclose, then into a kick-start pack | [`enclose-kickstart`](design-enclose-kickstart.md) | 8d | 21h | quarry |
 | 9 | **Verification protocol for a .NET repo: slow-suite tier, numerical-baseline capture/compare, verify timeouts and logs** | [`dotnet-verify-protocol`](design-dotnet-verify-protocol.md) | 11d | 14h | loom, webster, config |
 | 10 | **Run verbs in one shared namespace, not under lyx loom**<br>• lyx loom decision/status/goto/approve act on darn runs too; move recipe-neutral run verbs to one shared namespace | [`run-verbs-shared`](design-run-verbs-shared.md) | 1d | 1d | shed, loom |
 | 11 | **Clearer loom model key names, one per step**<br>• Model keys like fix name the role they set, and every review segment gets its own reviewer and fixer key | [`loom-model-key-names`](design-loom-model-key-names.md) | 1d | 1d | config, loom |
 | 12 | **The arbiter in shed for every shed run, batten included**<br>• The batten Go driver has a tackler but no arbiter; move the arbiter and its keys into shed beside the tackler | [`shed-arbiter-all`](design-shed-arbiter-all.md) | 1d | 1d | shed, batten, loom, config |
 | 13 | **Paste cited code into a review rounds context**<br>• Reviewers edit nothing and review a fixed commit, so code pasted at round start cannot go stale; measure it against todays reviewer | [`review-inline-code`](design-review-inline-code.md) | 4d | 1h | burler, stencil |
 | 14 | **Module labels from what a task touches, not only what it is about**<br>• Half the landings that changed the shuttle core lacked the shuttle label; derive or check module labels from the plan and the diff | [`labels-from-diff`](design-labels-from-diff.md) | 22h | 22h | board, loom |
-| 15 | **Start one task per overlapping group at a newly-ready start**<br>• When a landing makes several overlapping tasks ready at once, batten starts one per group and names the rest in its notice | [`batten-ready-overlap`](design-batten-ready-overlap.md) | 20h | 20h | batten |
+| 15 | **Start one task per overlapping group at a newly-ready start**<br>• When a landing makes several overlapping tasks ready at once, batten starts one per group and names the rest in its notice | [`batten-ready-overlap`](design-batten-ready-overlap.md) | 21h | 21h | batten |
 | 16 | **Rename the `lyx` binary to `lyd` (name clash with LyX)** | [`rename-binary-lyd`](design-rename-binary-lyd.md) | 2h | 2h | stencil, shuttle |
 | 17 | **Rewrite C13's stacked half for window-per-strand**<br>• C13's stacked 3-row half cannot be set up once reed-add-parentless-placement lands | [`creel-c13-stacked-rewrite`](design-creel-c13-stacked-rewrite.md) | 23m | 23m | creel |
 
