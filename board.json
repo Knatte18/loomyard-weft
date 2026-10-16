@@ -742,6 +742,26 @@
       "body": "## Seen (2026-10-15)\n\nOver the 15 most recent full loom runs (`tools/tokencount/tokencount.sh -last 15`), Plan cost about $13 a run: the plan lead about $5.50, its forks (fork0 and the five lens forks) about $4, and Plan-Burler-Review about $3.80.\nEach fix the lenses or the review ask for is work the writer did not get right the first time.\n\n## Operator view, not a decision (2026-10-15)\n\nPlan is heavy by nature, since it turns the Discussion into concrete work; the aim is a smarter Plan writer, so fewer Burler rounds are needed.\n\n## Idea (orch recommendation)\n\n- A fresh agent classifies every finding the Plan lenses and Plan-Burler-Review raised in recent runs: what kind of defect, whether it was real, and whether the review found something the lenses had not.\n- Each recurring class goes where it is cheapest to stop at the source:\n  - a machine check in `lyx loom validate-plan`, when the class can be checked deterministically;\n  - a writer rule in the Plan stencil, when it is a judgement the writer can make up front;\n  - a missing input, when the writer lacked something it needed (for example what `discussion-relevant-list` now hands it).\n- Then measure whether lens and review findings per run drop.\n",
       "created": "2026-10-15T18:13:11Z",
       "revised": "2026-10-15T18:13:11Z"
+    },
+    {
+      "id": 567,
+      "slug": "rename-binary-lyd",
+      "title": "Rename the `lyx` binary to `lyd` (name clash with LyX)",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "stencil",
+        "shuttle"
+      ],
+      "issues": [
+        670
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Imported from [issue #670](https://github.com/Knatte18/loomyard/issues/670).\n\n`lyx` collides with LyX, the LaTeX editor, which ships as the `lyx` package in Ubuntu/Debian and installs `/usr/bin/lyx`.\nOn a machine with both, whichever comes first on PATH wins: a shell where `~/go/bin` is not yet on PATH starts the LaTeX editor instead of LoomYard.\nLyX is common among researchers, so the clash is likely for other users too.\n\nProposal: rename the binary to `lyd` (LoomYard driver).\nIt is short, close to `lyx`, and not an Ubuntu package name.\n\nScope: the `cmd/lyx` build target and `binaryName()` in `tools/deploy`, docs and README, stencils and skills in the `ly` plugin that invoke `lyx`, and any scripts or launchers that call it.\n",
+      "created": "2026-10-16T06:49:28Z",
+      "revised": "2026-10-16T06:49:28Z"
     }
   ]
 }
