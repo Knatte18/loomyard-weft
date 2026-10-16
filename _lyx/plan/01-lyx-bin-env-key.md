@@ -1,7 +1,7 @@
 # Card 1 — Declare the LYX_BIN key in agentname
 
 **Create:**
-- `plan:internal/agentname#LyxBinEnv` -> `const LyxBinEnv = "LYX_BIN"`
+- `internal/agentname#LyxBinEnv`
 
 **Delete:**
 - `internal/reedengine#lyxBinEnvKey`

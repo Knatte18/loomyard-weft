@@ -1,9 +1,9 @@
 # Card 2 — The Claude engine's env file re-prepends LYX_BIN's directory
 
 **Create:**
-- `plan:internal/shuttleengine/claudeengine#envFileContentPosix` -> `const envFileContentPosix = ""`
-- `plan:internal/shuttleengine/claudeengine#envFileContentWindows` -> `const envFileContentWindows = ""`
-- `plan:internal/shuttleengine/claudeengine#envFileContentFor` -> `func envFileContentFor(goos string) string`
+- `internal/shuttleengine/claudeengine#envFileContentPosix`
+- `internal/shuttleengine/claudeengine#envFileContentWindows`
+- `internal/shuttleengine/claudeengine#envFileContentFor`
 
 **Delete:**
 - `internal/shuttleengine/claudeengine#envFileContent`
@@ -16,7 +16,7 @@
 - `internal/reedengine/doc.go`
 
 **Uses:**
-- `plan:internal/agentname#LyxBinEnv`
+- `internal/agentname#LyxBinEnv`
 
 **Intent:**
 D5 and D7.

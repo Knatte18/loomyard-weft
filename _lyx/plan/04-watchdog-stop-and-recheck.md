@@ -25,7 +25,7 @@
 - `internal/reedcli/doc.go`
 
 **Uses:**
-- `plan:internal/reedengine#DiscoverStopMarker`
+- `internal/reedengine#DiscoverStopMarker`
 - `internal/reedcli#watchdogLockFileName`
 - `internal/reedcli#errWatchdogBinaryReplaced`
 - `internal/reedcli#compressedWatchdogTiming`

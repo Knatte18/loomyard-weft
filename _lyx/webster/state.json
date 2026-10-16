@@ -1,12 +1,12 @@
 {
   "runGuid": "f29f67c16314e7ed6ab14a986a620c10",
-  "planFingerprint": "877d1129b43a8db84e9f613d3f83ec8648d695ebb2075e0e68b5263da53dbc96",
+  "planFingerprint": "f3e96a375e0418a732179e179533bb5192b8626367f4f334f53d311bf617fc36",
   "planFileHashes": {
     "00-overview.md": "ad2406d1ba0dfed9c041652bbf216cf9a3de5934151e1c064aff0f5df5b12cdb",
-    "01-lyx-bin-env-key.md": "90459430261b9be3a08eb4ba43109551bd945f5ba6e66c8d23c954caf32cfde5",
-    "02-env-file-prepends-lyx-bin.md": "55cf896dac81452949bdc9edbcc2672abdcc74ac1d0fc9107be58076bcc881ba",
-    "03-down-writes-discover-stop.md": "de211acfe7deb6a288394214fbdd33fdf83551edd57da7214b7abfec7da39a72",
-    "04-watchdog-stop-and-recheck.md": "2fbdd9942c21638b8de70da44602695c588b46ac3d266340d0c35d2a26c0d6bb",
+    "01-lyx-bin-env-key.md": "0d3badf5284d8ff1f4a1711b5869e0b4a28e96afd6a42b4229df1e85ad17f934",
+    "02-env-file-prepends-lyx-bin.md": "81dcd851b88e27f075e76a965483742ad4cbdb8f7f9f915aff45ad822b1caf77",
+    "03-down-writes-discover-stop.md": "dd87d8bd2456f755be6f76cfeb99c219ea24d0d88fceca879e57e65ea5cddd26",
+    "04-watchdog-stop-and-recheck.md": "dbe8a375e52b3336b31e74d7dfc8fc7916e6dbd218577fe0e6a51f8ed5d4505e",
     "05-down-waits-for-watchdog.md": "c3f9ef9d339167866335ef0c703d9cd8721e60f91f5058f993ca5dd8bf280ff3",
     "06-sandbox-suite-preconditions.md": "b9aab6224a4944b3fb3f5bf56bbd3e1fb67468be0e0608b126ab130f79c827db"
   },
@@ -141,7 +141,7 @@
       }
     }
   ],
-  "currentBatch": 1,
+  "currentBatch": 0,
   "masterStrand": "a0fb105d0c91eefb80a8fae525c8faea",
   "masterSessionId": "2bf04ce3-78be-41d3-b2db-46c910eceea8",
   "masterEngine": "claude",
@@ -154,17 +154,37 @@
         "03-down-writes-discover-stop"
       ],
       "cardHashes": {
-        "01-lyx-bin-env-key": "90459430261b9be3a08eb4ba43109551bd945f5ba6e66c8d23c954caf32cfde5",
-        "02-env-file-prepends-lyx-bin": "55cf896dac81452949bdc9edbcc2672abdcc74ac1d0fc9107be58076bcc881ba",
-        "03-down-writes-discover-stop": "de211acfe7deb6a288394214fbdd33fdf83551edd57da7214b7abfec7da39a72"
+        "01-lyx-bin-env-key": "0d3badf5284d8ff1f4a1711b5869e0b4a28e96afd6a42b4229df1e85ad17f934",
+        "02-env-file-prepends-lyx-bin": "81dcd851b88e27f075e76a965483742ad4cbdb8f7f9f915aff45ad822b1caf77",
+        "03-down-writes-discover-stop": "dd87d8bd2456f755be6f76cfeb99c219ea24d0d88fceca879e57e65ea5cddd26"
       },
       "startSha": "654cecd6afbc26e06b954194a7ccc4f03b146b0e",
       "kind": "fork",
       "spawnedAt": "2026-10-16T11:43:06Z",
       "sessionId": "2bf04ce3-78be-41d3-b2db-46c910eceea8",
       "engine": "claude",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "01-lyx-bin-env-key",
+        "status": "done",
+        "head_sha": "f1404e01d5f30e13a631eaf89d7471a74d60b6a1",
+        "deviations": [
+          "internal/shuttleengine/claudeengine/envfile_integration_test.go"
+        ]
+      },
+      "cardShas": [
+        "f1404e01d5f30e13a631eaf89d7471a74d60b6a1"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-reed-down-and-pane-path/2bf04ce3-78be-41d3-b2db-46c910eceea8/subagents/agent-a79ef1b8c3cfb2d02.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-reed-down-and-pane-path/2bf04ce3-78be-41d3-b2db-46c910eceea8/subagents/agent-a79ef1b8c3cfb2d02.jsonl"
+      ]
     }
-  }
+  },
+  "seenForkTranscripts": [
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-reed-down-and-pane-path/2bf04ce3-78be-41d3-b2db-46c910eceea8/subagents/agent-a79ef1b8c3cfb2d02.jsonl"
+  ]
 }

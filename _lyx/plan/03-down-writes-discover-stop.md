@@ -1,9 +1,9 @@
 # Card 3 — Down writes a stop request when it ends the server
 
 **Create:**
-- `plan:internal/reedengine#DiscoverStopMarker` -> `const DiscoverStopMarker = "stop"`
-- `plan:internal/reedengine#Engine.writeDiscoverStop` -> `func (e *Engine) writeDiscoverStop()`
-- `plan:internal/reedengine#TestDown_WritesTheDiscoverStopOnlyWhenItEndsTheServer` -> `func TestDown_WritesTheDiscoverStopOnlyWhenItEndsTheServer(t *testing.T)`
+- `internal/reedengine#DiscoverStopMarker`
+- `internal/reedengine#Engine.writeDiscoverStop`
+- `internal/reedengine#TestDown_WritesTheDiscoverStopOnlyWhenItEndsTheServer`
 
 **Edit:**
 - `internal/reedengine#Engine`
