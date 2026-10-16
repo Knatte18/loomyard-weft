@@ -655,7 +655,7 @@
       }
     }
   ],
-  "currentBatch": 0,
+  "currentBatch": 12,
   "masterStrand": "71953c680b84bd88f36cef5b47f6fe98",
   "masterSessionId": "94219480-9e76-4530-ae14-fbb68854c48f",
   "masterEngine": "claude",
@@ -771,6 +771,22 @@
       "bracketTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-webster-fork-stencil-fixes/94219480-9e76-4530-ae14-fbb68854c48f/subagents/agent-a009c52588d32cf1f.jsonl"
       ]
+    },
+    "12": {
+      "slug": "webster-inline-pack-removal",
+      "cards": [
+        "12-webster-inline-pack-removal"
+      ],
+      "cardHashes": {
+        "12-webster-inline-pack-removal": "084660b2240aed4959ec46baa87059372821e43db540c3d2117ff90ac3bd72fb"
+      },
+      "startSha": "c2731d567fa7442bd4ce5cea1aca0cfc24e9f9b2",
+      "kind": "fork",
+      "spawnedAt": "2026-10-16T11:33:49Z",
+      "sessionId": "94219480-9e76-4530-ae14-fbb68854c48f",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
     },
     "5": {
       "slug": "discussion-pattern-changes",
