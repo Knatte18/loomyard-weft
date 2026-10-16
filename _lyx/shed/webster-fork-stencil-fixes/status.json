@@ -1,11 +1,11 @@
 {
-  "current_producer": "Webster-Bouncer",
+  "current_producer": "Describe",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Webster-Bouncer",
-    "last": "Webster-Burler-Fix → bounced to Webster-Bouncer",
+    "now": "Describe",
+    "last": "Webster-Bouncer → done",
     "wait": ""
   },
   "history": [
@@ -325,6 +325,12 @@
       ],
       "budget_exempt": true,
       "routed_to": "Webster-Bouncer"
+    },
+    {
+      "producer": "Webster-Bouncer",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYXHUB/webster-fork-stencil-fixes/_lyx/reviews/webster/round-1-bouncer-ledger.md",
+      "at": "2026-10-16T12:05:52Z"
     }
   ],
   "product": {
