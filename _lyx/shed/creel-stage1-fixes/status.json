@@ -1,13 +1,13 @@
 {
   "current_producer": "Publish",
-  "state": "blocked",
-  "error": "the pull request was closed without being merged: https://github.com/Knatte18/loomyard/pull/672",
+  "state": "running",
+  "error": "",
   "pending_by": "shed",
   "pause_requested": false,
   "activity": {
     "now": "Publish",
     "last": "Publish → stuck",
-    "wait": "the pull request was closed without being merged: https://github.com/Knatte18/loomyard/pull/672"
+    "wait": ""
   },
   "history": [
     {
