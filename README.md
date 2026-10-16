@@ -51,20 +51,16 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Note | Slug | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| 1 | **Webster stencils describe a stale fork spawn and wake-up**<br>• The fork prefix still says Master waits with await-batch, and Master recognises forks by an instruction it never sends. | [`webster-fork-spawn-wording`](design-webster-fork-spawn-wording.md) | 1h | 1h | stencil, webster |
-| 2 | **PR-Rework stencil calls agent findings the operator's**<br>• The rework writer is told rejection findings are the operator's, but they come from the alignment agent or the orch. | [`rework-findings-not-operator`](design-rework-findings-not-operator.md) | 1h | 1h | stencil, loom |
-| 3 | **Drop Webster's inline kick-start pack layout**<br>• The inline layout puts code locations straight into the fork prompt and keeps a frozen sentence about Master reading files. | [`webster-drop-inline-pack`](design-webster-drop-inline-pack.md) | 1h | 1h | stencil, webster |
-| 4 | **A task that changes PATTERN declares it in its record and plan**<br>• Reviewers judge a PATTERN change against the old text and flag it as a violation; the record and plan must declare the change so reviewers judge by the new rule. | [`pattern-change-declared`](design-pattern-change-declared.md) | 57m | 57m | stencil, loom, webster, burler |
-| 5 | **Webster renames through a type-aware tool, the edit rule's one exception**<br>• The edit directive bans the AST rename script the plan spec requires, the fork is never told to run it, and Webster-Review checks that it ran. | [`webster-rename-script`](design-webster-rename-script.md) | 48m | 48m | stencil, webster, burler |
-| 6 | **A webster fork states a PATTERN departure in its commit message**<br>• A fork has no channel for a PATTERN conflict or an unrelated failure; departures go into the card commit body and Webster-Review reads them. | [`fork-deviation-in-commit`](design-fork-deviation-in-commit.md) | 39m | 39m | stencil, webster, burler |
-| 7 | **Three small stencil wording fixes from the intent audit**<br>• Driver names an operator hand fix, the advisor reads a not-yet-written record for its format, and the plan writer never asks yet asks. | [`stencil-wording-fixes`](design-stencil-wording-fixes.md) | 35m | 35m | stencil, shed, loom |
-| 8 | **Orch role stencil fixes from the stencil intent audit**<br>• Arbiter as the orch filter with a fault fallback, no peer comparing, ORCHESTRATOR.md for repo-specific orch rules, owner of a small PR-Gate defect | [`orch-role-stencil-fixes`](design-orch-role-stencil-fixes.md) | 48m | 0m | stencil, orch, loom, config |
+| 1 | **PR-Rework stencil calls agent findings the operator's**<br>• The rework writer is told rejection findings are the operator's, but they come from the alignment agent or the orch. | [`rework-findings-not-operator`](design-rework-findings-not-operator.md) | 1h | 1h | stencil, loom |
+| 2 | **Three small stencil wording fixes from the intent audit**<br>• Driver names an operator hand fix, the advisor reads a not-yet-written record for its format, and the plan writer never asks yet asks. | [`stencil-wording-fixes`](design-stencil-wording-fixes.md) | 35m | 35m | stencil, shed, loom |
+| 3 | **Orch role stencil fixes from the stencil intent audit**<br>• Arbiter as the orch filter with a fault fallback, no peer comparing, ORCHESTRATOR.md for repo-specific orch rules, owner of a small PR-Gate defect | [`orch-role-stencil-fixes`](design-orch-role-stencil-fixes.md) | 48m | 0m | stencil, orch, loom, config |
+| 4 | **Webster fork and pattern-directive stencil fixes from the stencil intent audit**<br>• Structure-aware rename tool from hub config, departures reach the Master via the digest, spawn wording, no inline pack, declared PATTERN changes | [`webster-fork-stencil-fixes`](design-webster-fork-stencil-fixes.md) | 1h | 0m | stencil, webster, burler, loom |
 
 #### Low priority
 
 | # | Note | Slug | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| 9 | **A hub pause leaves background forks and shells running, so hibernate never confirms**<br>• Pause interrupts turns but not background forks or shells; sessions read busy and hibernate confirmation fails | [`pause-background-work`](design-pause-background-work.md) | 1d | 1d | shuttle, webster |
+| 5 | **A hub pause leaves background forks and shells running, so hibernate never confirms**<br>• Pause interrupts turns but not background forks or shells; sessions read busy and hibernate confirmation fails | [`pause-background-work`](design-pause-background-work.md) | 1d | 1d | shuttle, webster |
 
 ### Enhancements
 
