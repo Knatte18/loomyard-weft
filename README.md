@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-16 07:10 UTC; every age below is as of then.
+Rendered 2026-10-16 07:11 UTC; every age below is as of then.
 
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
@@ -18,7 +18,7 @@ Held by a run; its scope is locked until the run ends.
 | # | Task | Slug | Recipe | At | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | 1 | **lyx shuttle open cannot choose the permission mode**<br>• An interactive session opened by lyx shuttle open always prompts for permissions; there is no flag or config for bypass | [`shuttle-open-permission`](design-shuttle-open-permission.md) | loom | Plan-Burler-Review | 18h | 12h | shuttle |
-| 2 | **Orch delegates board intake to a one-shot fork**<br>• Orch checks the inbox by number and title only; a fork imports, labels and folds issues | [`orch-intake-fork`](design-orch-intake-fork.md) | loom | Discussion-Bouncer | 11m | 11m | orch, board |
+| 2 | **Orch delegates board intake to a one-shot fork**<br>• Orch checks the inbox by number and title only; a fork imports, labels and folds issues | [`orch-intake-fork`](design-orch-intake-fork.md) | loom | Plan-Write | 11m | 11m | orch, board |
 
 ### Ready
 
@@ -112,7 +112,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 15 | **Interactive board view: a regenerated HTML file and a phone-friendly README**<br>• board.html rendered with README on every write; a VS Code task opens it in the browser; collapsible README for the GitHub app | [`board-viewer`](design-board-viewer.md) | 11d | 10d | board, ide, orch |
 | 16 | **Spawn audit log: every process lyx starts is recorded and traceable**<br>• One recorded launch path and a hub-wide spawn log with owner, argv and resource use, plus a sampler and a summary verb, so a process storm can be traced after a crash | [`spawn-audit-log`](design-spawn-audit-log.md) | 7d | 3d | reed, shuttle, config |
 | 17 | **Configurable action buttons on the reed status bar**<br>• Clickable status-bar buttons that run configured commands: VS Code, orch distill/refresh, the follow toggle and more | [`reed-status-buttons`](design-reed-status-buttons.md) | 23h | 23h | reed, config |
-| 18 | **Ideas to borrow from comparable agent orchestrators (survey, Oct 2026)** | [`orchestrator-survey-ideas`](design-orchestrator-survey-ideas.md) | 18m | 18m | burler, shed, orch, quarry |
+| 18 | **Ideas to borrow from comparable agent orchestrators (survey, Oct 2026)** | [`orchestrator-survey-ideas`](design-orchestrator-survey-ideas.md) | 19m | 19m | burler, shed, orch, quarry |
 
 #### Low priority
 
