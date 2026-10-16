@@ -1,6 +1,6 @@
 # Go driver and tackler in shed, for every FSM-driven run
 
-`twb-btf-kt` · Note · enhancement · paused · Discussion-Burler-Fix
+`twb-btf-kt` · Note · enhancement
 
 # Go driver and tackler in shed, for every FSM-driven run
 
