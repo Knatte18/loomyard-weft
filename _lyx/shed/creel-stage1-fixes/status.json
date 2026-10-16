@@ -3,6 +3,7 @@
   "state": "awaiting",
   "error": "alignment report /home/knatte/Code/loomyard-LYXHUB/creel-stage1-fixes/_lyx/shed/creel-stage1-fixes/alignment/pr-gate/attempt-1/report-20c9fea9352cbf68.md did not settle this pull request - a decision was recorded for this task while the alignment agent ran; the pull request awaits review; run `lyx loom approve` to land it or `lyx loom reject` to send findings to rework: https://github.com/Knatte18/loomyard/pull/691",
   "parent_notice": "alignment report /home/knatte/Code/loomyard-LYXHUB/creel-stage1-fixes/_lyx/shed/creel-stage1-fixes/alignment/pr-gate/attempt-1/report-20c9fea9352cbf68.md did not settle this pull request - a decision was recorded for this task while the alignment agent ran",
+  "pending_by": "shed",
   "pause_requested": false,
   "activity": {
     "now": "PR-Gate",
