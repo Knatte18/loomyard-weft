@@ -28,6 +28,21 @@ Operator view, not a decision: regression tests are not always wanted, since som
 - Batten tears the job down with the run.
 - The compare runs at the final gate only, never per card, to keep the cost down.
 
+## Stations (operator view, not a decision, 2026-10-17)
+
+Loom's recipe could hold fixed command boxes of one type, each taking several entries set per repository:
+
+- Before Discussion: a box that starts the async regression suite, which writes the baseline. The IDE and terminal rows may be their own box of the same type; they stay in any case.
+- Right before Webster: a box that only waits for the regression suite to finish.
+- Before Finalize: a box that checks whether the regression passed. What it does when it did not is the open hard part.
+
+## On a failed compare (orch recommendation, not a decision)
+
+- Place the compare right after the Webster review (before Describe and Merge-In), not before Finalize: the baseline and the code then share one parent, so drift from other tasks landed meanwhile never enters the compare, which settles the parent-move question.
+- `preserve`: drift is a defect, routed as a verify failure is today: the run goes to `Webster-Burler-Review` with the drift report as its finding, under that perch's caps; past them it escalates to the orch, who brings it to the operator.
+- `expect-drift`: the compare fails nothing; the drift report goes to PR-Align, where the alignment agent judges it against the task's goal and escalates when it cannot tell.
+- So no new failure machinery: both routes exist today.
+
 ## Open
 
 - How long the generator takes on the work machine, and whether it can be scoped like the other tiers.
