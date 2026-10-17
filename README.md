@@ -30,7 +30,7 @@ Waits on nothing open; can start now.
 
 | # | Task | Slug | Recipe | After | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | **Rewrite C13's stacked half for window-per-strand**<br>• C13's stacked 3-row half cannot be set up once reed-add-parentless-placement lands | [`creel-c13-stacked-rewrite`](design-creel-c13-stacked-rewrite.md) | loom |  | 1d | 1d | creel |
+| 1 | **Rewrite C13 stacked half for window-per-strand, commit the creel re-test report**<br>• C13's stacked 3-row half cannot be set up once reed-add-parentless-placement lands<br>• `darn: review_max_bounces 0`<br>• `darn: writer sonnet[medium]` | [`creel-c13-stacked-rewrite`](design-creel-c13-stacked-rewrite.md) | darn |  | 1d | 0m | creel |
 
 ### Layer A
 
