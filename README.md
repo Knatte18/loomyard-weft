@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-17 10:36 UTC; every age below is as of then.
+Rendered 2026-10-17 10:37 UTC; every age below is as of then.
 
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
@@ -18,7 +18,7 @@ Held by a run; its scope is locked until the run ends.
 | # | Task | Slug | Recipe | At | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | 1 | **Clearer loom model key names, one per step**<br>• Model keys like fix name the role they set, and every review segment gets its own reviewer and fixer key | [`loom-model-key-names`](design-loom-model-key-names.md) | darn | Darn-Write | 2d | 44m | config, loom |
-| 2 | **Go driver messages the orch about a verify halt batten retries itself**<br>• Drop or reword the parent message for a watched verify halt | [`driver-watched-verify-notice`](design-driver-watched-verify-notice.md) | darn | Describe | 1d | 50m | shed, batten |
+| 2 | **Go driver messages the orch about a verify halt batten retries itself**<br>• Drop or reword the parent message for a watched verify halt | [`driver-watched-verify-notice`](design-driver-watched-verify-notice.md) | darn | Merge-In | 1d | 50m | shed, batten |
 | 3 | **report timing counts a pause before Plan-Write as Plan phase time** | [`timing-pause-as-phase`](design-timing-pause-as-phase.md) | darn | Merge-In | 19h | 47m | report |
 | 4 | **lyx creates <prime>/.claude/worktrees/_board/.lyx/pause/net when run from a Claude Code agent worktree** | [`agent-worktree-board-dir`](design-agent-worktree-board-dir.md) | darn | PR-Align | 1h | 50m | fabric |
 | 5 | **Show each task run_settings in the board README**<br>• Stack a task run_settings, such as its review budget, inside an existing README cell, with no new column | [`readme-run-settings`](design-readme-run-settings.md) | darn | Describe | 49m | 49m | board |
