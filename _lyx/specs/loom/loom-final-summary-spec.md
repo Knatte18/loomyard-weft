@@ -1,4 +1,4 @@
-<!-- lyx-stencil: sha256=e97f2367d7d98c07ef1b1a96b0419763ec40f5201633a915035569b951f823a3 build=66f4e711353236a637689da121b500ac49da45e6 time=2026-10-11T11:12:50Z -->
+<!-- lyx-stencil: sha256=3807d043849b1a608592bf0fc27733657b3757421af1860e1606df2b454c27f1 build=89b854c85e80c4ba9287ffa92a91845a8d36591b time=2026-10-17T12:14:07Z -->
 
 # Final-summary spec — the producer-agnostic final-summary artifact
 
@@ -35,7 +35,7 @@ The contract names no location: the artifact's directory belongs to whichever pr
 The artifact has two consumers today, both in `internal/landingshed`:
 
 - **`Publish`** uses the parsed title and body as the pull request's own title and body fields.
-- **`Finalize`** uses `LandingMessage` — the title, a blank line, the body with its leading whitespace trimmed, then exactly one `Co-Authored-By` trailer carrying `landing.yaml`'s `co_authored_by` — as the landing merge commit's message.
+- **`Finalize`** uses `LandingMessage` — the title, a blank line, the body with its leading whitespace trimmed, then, after a blank line, the trailer block Go composes from `landing.yaml`'s `trailer_text` and the `engine_trailers` entries of the engines that ran a session in the task — as the landing merge commit's message.
 
 `Finalize`'s read is unconditional: a missing or malformed artifact there is a hard error.
 `Publish`'s read is reached only when the parent branch requires a pull request: it opens one from the artifact, or refreshes an open one's title and body, so a re-run Publish carries a rewritten description onto the pull request.
