@@ -1,11 +1,11 @@
 {
-  "current_producer": "Darn-Write",
+  "current_producer": "Merge-In",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Darn-Write",
-    "last": "Preflight → done",
+    "now": "Merge-In",
+    "last": "Darn-Write → done",
     "wait": ""
   },
   "history": [
@@ -14,6 +14,33 @@
       "outcome": "done",
       "output": "",
       "at": "2026-10-17T11:43:50Z"
+    },
+    {
+      "producer": "Darn-Write",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYXHUB/creel-c13-stacked-rewrite/_lyx/landing/summary.md",
+      "at": "2026-10-17T11:48:18Z",
+      "gate_attempts": 0,
+      "gate_spans": [
+        {
+          "gate": "discussion",
+          "kind": "gate",
+          "start": "2026-10-17T11:45:12.265579461Z",
+          "end": "2026-10-17T11:45:23.649018254Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-10-17T11:45:23.711349567Z",
+          "end": "2026-10-17T11:48:17.808355371Z"
+        },
+        {
+          "gate": "description",
+          "kind": "gate",
+          "start": "2026-10-17T11:48:17.858316459Z",
+          "end": "2026-10-17T11:48:17.858374968Z"
+        }
+      ]
     }
   ],
   "product": {
