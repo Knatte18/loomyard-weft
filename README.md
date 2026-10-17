@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-17 12:17 UTC; every age below is as of then.
+Rendered 2026-10-17 12:18 UTC; every age below is as of then.
 
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
@@ -18,7 +18,7 @@ Held by a run; its scope is locked until the run ends.
 | # | Task | Slug | Recipe | At | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | 1 | **shedrecipe: per-segment settings and one told setting lookup instead of per-value Env fields**<br>• A producer declares what it needs and the registry wires it, instead of a hand-threaded Env passthrough field per layer | [`shedrecipe-capabilities`](design-shedrecipe-capabilities.md) | loom | Discussion-Write | 12d | 2h | shed, loom, config |
-| 2 | **creel CLI output fixes: lost success envelope, doubled prefix, log --id reminders**<br>• Three output bugs in internal/creelcli from the creel stage 1 re-test (#699, #700, #701).<br>• `loom: review_hard_max_bounces 3`<br>• `loom: review_max_bounces 2` | [`creel-cli-output-fixes`](design-creel-cli-output-fixes.md) | loom | Merge-Bouncer | 2h | 46m | creel |
+| 2 | **creel CLI output fixes: lost success envelope, doubled prefix, log --id reminders**<br>• Three output bugs in internal/creelcli from the creel stage 1 re-test (#699, #700, #701).<br>• `loom: review_hard_max_bounces 3`<br>• `loom: review_max_bounces 2` | [`creel-cli-output-fixes`](design-creel-cli-output-fixes.md) | loom | Publish | 2h | 47m | creel |
 
 ### Ready
 
@@ -68,8 +68,8 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 11 | **Rename the lyx binary to lyr (name clash with LyX)** | [`rename-binary-lyr`](design-rename-binary-lyr.md) | 1d | 2h | stencil, shuttle |
 | 12 | **Language-neutral gate: lyx gate run takes a slot for any command**<br>• The gate slot pool covers only go test; a C# or Python hub verify bypasses it. Add lyx gate run -- cmd and per-language parallelism. | [`gate-language-neutral`](design-gate-language-neutral.md) | 1h | 1h | config, webster, shed |
 | 13 | **One generic Command producer for every flag-gated side-action row**<br>• Replace OpenWindow, SeedIDE, OpenIDE and the planned Job-Start/Job-Join with one shed engine that runs a CLI command named in config, sync or async, warn or halt. | [`command-producer`](design-command-producer.md) | 1h | 1h | shed, batten, config |
-| 14 | **Entry gate on shed rows: a check decides whether a row runs at all**<br>• Replace darn recipe edge rewrite and the switched producer flag check with one shed entry gate per row; false means Done without acting. | [`row-entry-gate`](design-row-entry-gate.md) | 47m | 44m | shed, loom, batten |
-| 15 | **Preflight pushes the weft branch synchronously and races the board sync**<br>• Preflight spent 11 s mostly in a weft push to GitHub, refused once after 8 s; push detached or serialise with the board sync. | [`preflight-weft-push-sync`](design-preflight-weft-push-sync.md) | 32m | 29m | fabric, shed |
+| 14 | **Entry gate on shed rows: a check decides whether a row runs at all**<br>• Replace darn recipe edge rewrite and the switched producer flag check with one shed entry gate per row; false means Done without acting. | [`row-entry-gate`](design-row-entry-gate.md) | 48m | 44m | shed, loom, batten |
+| 15 | **Preflight pushes the weft branch synchronously and races the board sync**<br>• Preflight spent 11 s mostly in a weft push to GitHub, refused once after 8 s; push detached or serialise with the board sync. | [`preflight-weft-push-sync`](design-preflight-weft-push-sync.md) | 32m | 30m | fabric, shed |
 | 16 | **A darn writer cannot rerun a verify tier it is refused, so a flaky tier failure loops and escalates** | [`darn-verify-tier-unrunnable`](design-darn-verify-tier-unrunnable.md) | 13m | 13m | loom, shed |
 
 #### Low priority
@@ -110,7 +110,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 16 | **Spawn audit log: every process lyx starts is recorded and traceable**<br>• One recorded launch path and a hub-wide spawn log with owner, argv and resource use, plus a sampler and a summary verb, so a process storm can be traced after a crash | [`spawn-audit-log`](design-spawn-audit-log.md) | 8d | 4d | reed, shuttle, config |
 | 17 | **Configurable action buttons on the reed status bar**<br>• Clickable status-bar buttons that run configured commands: VS Code, orch distill/refresh, the follow toggle and more | [`reed-status-buttons`](design-reed-status-buttons.md) | 2d | 2d | reed, config |
 | 18 | **Ideas to borrow from comparable agent orchestrators (survey, Oct 2026)** | [`orchestrator-survey-ideas`](design-orchestrator-survey-ideas.md) | 1d | 2h | burler, shed, orch, quarry, report |
-| 19 | **Regression tier: baseline profiles before the run, compare at the final gate**<br>• Support a hub regression tier that writes profiles on the parent before implementation and compares after, switchable per task for expected drift. | [`regression-baseline-verify`](design-regression-baseline-verify.md) | 1h | 49m | shed, webster, batten, config |
+| 19 | **Regression tier: baseline profiles before the run, compare at the final gate**<br>• Support a hub regression tier that writes profiles on the parent before implementation and compares after, switchable per task for expected drift. | [`regression-baseline-verify`](design-regression-baseline-verify.md) | 1h | 50m | shed, webster, batten, config |
 
 #### Low priority
 
