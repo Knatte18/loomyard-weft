@@ -1,0 +1,7 @@
+verdict: approve
+reason: >-
+  The one commit rewrites only C13's stacked half for the window-per-strand layout, leaves the hand-added half as is,
+  and copies the creel re-test report byte for byte, with no code change, as the board entry's two parts and Done-when ask.
+  The only overlap is a text-only one in the same suite file with creel-cli-output-fixes; this run lands first.
+question: ""
+superseded: []
