@@ -6,6 +6,8 @@
 
 Remove the Webster kick-start pack, every layout of it (inline, pack file, per card), with its code and config keys.
 Glyphs stay in the plan and in the plan gates.
+Until the code is removed, the hub's `webster.yaml` sets `kickstart_pack: false` (operator, 2026-10-17, `_board` commit `2d850b341`).
+Quarry stays its own repository for now, since it changes rarely (operator, 2026-10-17).
 
 ## Evidence
 
