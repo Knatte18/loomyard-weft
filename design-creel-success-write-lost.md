@@ -1,6 +1,6 @@
 # creel verbs exit 0 with nothing on stderr when their success envelope cannot be written
 
-`creel-success-write-lost` · Note · bug
+`creel-success-write-lost` · Note · bug, creel
 
 Imported from [issue #699](https://github.com/Knatte18/loomyard/issues/699).
 
