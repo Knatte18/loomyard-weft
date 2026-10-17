@@ -218,9 +218,7 @@
         "config"
       ],
       "issues": [],
-      "depends_on": [
-        "landing-trailer-text"
-      ],
+      "depends_on": [],
       "isolated": false,
       "brief": "A producer declares what it needs and the registry wires it, instead of a hand-threaded Env passthrough field per layer",
       "body": "From `manifest/roadmap.md` Someday.\nGiving a producer a new capability means hand-threading a passthrough `Env` field through three layers, because the Shed Recipe Registry entry (`PATTERN-shed-recipe-registry`) bars `shedrecipe` from importing the capability's owning package.\nThe idea, not yet designed: let a producer declare what it needs and have the registry wire it.\nDeep, likely touching the invariant itself and every registry entry.\n\n## Seen (2026-10-17)\n\n`shedrecipe.Env` (`internal/shedrecipe/recipe.go`) has 80 fields.\nSince 2026-10-01, 38 of 289 commits changed `recipe.go`, adding about 64 `Env` fields.\nEach new config value touches four places: the wiring in `internal/loomcli/wiring.go`, the `Env` field, the row that reads it (for example `internal/shedrecipe/entries_burler.go`), and the field list in `internal/testkit/envkit/envkit.go`.\nExample: the fix-fan list goes `loom.yaml` -\u003e `wiring.go` `RowFixFans` -\u003e `Env.RowFixFans` -\u003e `entries_burler.go`.\n`PATTERN-told-geometry` keeps engines told rather than deriving, so they run alike in a hub, in a standalone CLI (`standalonegeom`) and in a bare test directory; that bound is about paths, while the per-value threading comes from `shedrecipe` neither reading config files nor importing `loomcli`.\n\n## Operator decision 2026-10-17\n\nBuild the first two steps as one loom task, not the full capability declaration:\n\n1. Per-segment settings instead of per-value maps: fold the per-row maps (`RowClusterFans`, `RowFixFans`, the per-row reviewer and fixer model lists and their kin) into one `Env.Segments map[string]SegmentSettings`, so a new value is one struct field and a new review segment is data, not new `Env` fields.\n2. One told lookup instead of many fields: `Env` gains one caller-filled closure, such as `Setting(module, key)`, and a recipe row names the key it reads, as `FixFanKey: \"fix-fan\"` already does, so a new config value needs a recipe key and a template key and no Go wiring change; `shedrecipe` still never learns the file format.\n   A recipe that names an unknown key is refused when it loads, since a string lookup loses the compile-time check.\n\nThe standalone and test bound stays: the hub fills the lookup from its module config, and a standalone CLI or a test fills it with its own values.\nIt runs after the code-review fan keys and the loom model key renaming have landed, since both change the same wiring and key names.\n",
@@ -660,32 +658,6 @@
       "body": "## Seen (operator report, 2026-10-16)\n\nOn the operator work laptop, which runs Cortex XDR, the git tests create so many files at once that XDR flagged them as malware behaviour.\nTwice it terminated all of VS Code, and both times XDR itself crashed afterwards, so the machine had to be restarted.\n\nFor scale, on the home machine a parallel `lyx gate test --tags integration ./...` (gate `go_parallel: 4`) takes 56s, and the serial package-by-package total is 156s (`docs/benchmarks/test-suite-weight.md`, which also counts git fixture and code subprocesses per package).\n\n## Idea (orch recommendation, not a decision)\n\n- Short term: on that machine set the machine-local gate layer, `lyx config gate --layer local --set go_parallel=1` and `--set slots=1`, so one package and one test run go at a time.\n- Check on the laptop whether that is enough, since XDR may react to the file-creation rate within one package as well.\n- If not: make the git fixtures create fewer files (shared fixtures built once per package, cloned or copied less), and measure files created per package so the heaviest are known.",
       "created": "2026-10-16T15:06:45Z",
       "revised": "2026-10-16T15:06:45Z"
-    },
-    {
-      "id": 620,
-      "slug": "landing-trailer-text",
-      "title": "landing.yaml trailer_text: an operator-set trailer block for the landing commit",
-      "kind": "task",
-      "labels": [
-        "enhancement",
-        "config",
-        "loom",
-        "shuttle"
-      ],
-      "issues": [],
-      "recipe": "darn",
-      "depends_on": [],
-      "isolated": false,
-      "brief": "Replace co_authored_by with trailer_text and engine_trailers: fixed lines plus one line per engine that ran, each copied verbatim, each switchable off",
-      "body": "## Seen\n\nFinalize appends exactly one `Co-Authored-By: \u003cvalue\u003e` trailer to the landing commit, with the value from `landing.yaml`'s `co_authored_by` (`internal/landingshed/config.go`, `internal/summaryparser/summary.go`).\nThe key refuses an empty value, and its name and the fixed `Co-Authored-By: ` prefix leave the operator no say over what the trailer block holds.\n\n## Operator decision 2026-10-17\n\n- Replace `co_authored_by` with a generic `trailer_text` key in `landing.yaml`.\n- Go copies its value verbatim, as the trailer block after the change description, with no prefix added: whoever wants `Co-Authored-By: Claude \u003cnoreply@anthropic.com\u003e` writes that whole line.\n- The value may hold several lines, for example a `Created using Loomyard` line; its lines land on every commit.\n- A second key, `engine_trailers`, maps an engine name to its trailer text, for example `claude: \"Co-Authored-By: Claude \u003cnoreply@anthropic.com\u003e\"` and later `codex: \"Co-Authored-By: Codex \u003c...\u003e\"`.\n  At landing Go includes an engine's text only when that engine ran at least one session in the run, read from the run's own records of the sessions it spawned, with the engine taken from the model spec, since model aliases encode the engine.\n  A run that used only Codex therefore lands with no Claude line.\n- Either key can be turned off: an empty `trailer_text` adds no fixed lines, and an empty `engine_trailers` map, or an engine left out or set to empty text, names no engine even when it ran.\n  Both empty lands the commit with no trailer block.\n- The template default keeps today's behaviour: `trailer_text` empty and `engine_trailers` holding the `claude` line `Co-Authored-By: Claude \u003cnoreply@anthropic.com\u003e`.\n- `lyx config reconcile` migrates an existing `co_authored_by` value to `engine_trailers.claude` as `Co-Authored-By: \u003cvalue\u003e`.\n- The change description still may not carry trailers of its own; the Describe validation keeps refusing them.\n- Update `internal/landingshed/doc.go` and the specs or stencils that name `co_authored_by`.\n",
-      "status": "done",
-      "created": "2026-10-17T09:59:20Z",
-      "revised": "2026-10-17T10:02:37Z",
-      "run_settings": {
-        "darn": {
-          "review_max_bounces": 1
-        }
-      }
     },
     {
       "id": 622,
