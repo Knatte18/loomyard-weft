@@ -1,6 +1,6 @@
 # lyx creates <prime>/.claude/worktrees/_board/.lyx/pause/net when run from a Claude Code agent worktree
 
-`agent-worktree-board-dir` · Task · bug, fabric · running · Darn-Burler-Fix
+`agent-worktree-board-dir` · Task · bug, fabric · running · Darn-Bouncer
 
 Imported from [issue #697](https://github.com/Knatte18/loomyard/issues/697).
 
