@@ -1,10 +1,10 @@
 <!-- This is the landing Describe session's entire instruction set. It is shipped as an embedded
      default in the top-level stencils package (stencils/stencils.go), seeded to
-     <hub>/_board/_lyx/stencils/landing/, and read from there at call time by landingshed's
-     DescribeSpec via internal/stencil, then handed to shuttle as the describing agent's whole
-     prompt. Every marker below is a top-level {{.X}} substitution; stencil.Fill requires every
+     <hub>/_board/_lyx/stencils/landing/, and read from there at call time by internal/seatengine,
+     which fills it from the lead's value map that landingshed's DescribeTable builds, then hands it to shuttle as the describing agent's whole
+     prompt. Every marker below is a top-level {{.X}} substitution; stencil.FillWith requires every
      marker non-empty, parent_directive (rendered by internal/parentdirective) and edit_directive (rendered unconditionally by internal/editdirective) included, and there are no {{if}}/{{range}} conditionals anywhere in this file.
-lyx-stencil: sha256=ffd06f2f0c1b98a14975214fd00d6bbcd746a071d6cc79c001b6956fa508817b build=797b125e102191d97e6b763964b96572e727581e time=2026-10-11T08:58:56Z -->
+lyx-stencil: sha256=3294571d3c69184a40f92ecbf3a0e956a5c2b3b472e564a29d0d8b5f28c8457a build=89b854c85e80c4ba9287ffa92a91845a8d36591b time=2026-10-17T12:14:07Z -->
 
 # Change description — write the one description this task lands under
 
@@ -47,7 +47,7 @@ Naming a module is fine when the change touches it.
 
 ## Rules
 
-- Write no `Co-Authored-By` line — the landing step appends its own trailer.
+- Write no `Co-Authored-By` line — the landing step appends the configured trailer block itself.
 - Never commit, and never run any git command that changes the repository.
 - Before ending your turn, run `lyx loom validate-description` and fix every finding it reports.
   A clean `validate-description` run is the last thing you do in this session.

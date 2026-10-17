@@ -1,10 +1,10 @@
 <!-- This is the darn recipe's Describe session's entire instruction set. It is shipped as an embedded
      default in the top-level stencils package (stencils/stencils.go), seeded to
-     <hub>/_board/_lyx/stencils/landing/, and read from there at call time by landingshed's
-     DarnDescribeSpec via internal/stencil, then handed to shuttle as the describing agent's whole
-     prompt. The markers are slug, decision_record_path, task_branch, parent_branch, review_dir and description_path, plus the two directives. Every marker below is a top-level {{.X}} substitution; stencil.Fill requires every
+     <hub>/_board/_lyx/stencils/landing/, and read from there at call time by internal/seatengine,
+     which fills it from the lead's value map that landingshed's DarnDescribeTable builds, then hands it to shuttle as the describing agent's whole
+     prompt. The markers are slug, decision_record_path, task_branch, parent_branch, review_dir and description_path, plus the two directives. Every marker below is a top-level {{.X}} substitution; stencil.FillWith requires every
      marker non-empty, parent_directive (rendered by internal/parentdirective) and edit_directive (rendered unconditionally by internal/editdirective) included, and there are no {{if}}/{{range}} conditionals anywhere in this file.
-lyx-stencil: sha256=856a338f40628cb491ba0eacb28a6237100570acd63e290b2829aaed57219ebd build=0850f76e44d4328c27ab16d0bea13c08c7e0eb8e time=2026-10-14T16:52:39Z -->
+lyx-stencil: sha256=25ebd58ece65d6e473b057cb16266f48efa45dc6558ba2b863e2d0a738cdec4a build=89b854c85e80c4ba9287ffa92a91845a8d36591b time=2026-10-17T12:14:07Z -->
 
 # Change description — write the one description this task lands under
 
@@ -44,7 +44,7 @@ Naming a module is fine when the change touches it.
 
 ## Rules
 
-- Write no `Co-Authored-By` line — the landing step appends its own trailer.
+- Write no `Co-Authored-By` line — the landing step appends the configured trailer block itself.
 - Never commit, and never run any git command that changes the repository.
 - Before ending your turn, run `lyx loom validate-description` and fix every finding it reports.
   A clean `validate-description` run is the last thing you do in this session.
