@@ -1,6 +1,6 @@
 ---
 format: 5
-approved: false
+approved: true
 language: go
 ---
 
@@ -27,6 +27,6 @@ The engine's id filter is one card; the creelcli fixes are two, the prefix first
 
 ```bash
 go build ./cmd/lyx
-lyx gate test ./internal/creelengine ./internal/creelcli
+lyx gate test ./internal/creelengine ./internal/creelcli ./tools/sandbox
 lyx gate test --tags integration ./internal/creelengine ./internal/creelcli
 ```

@@ -6,6 +6,7 @@
 - `internal/creelcli#logCmd`
 - `tools/sandbox/SANDBOX-CREEL-SUITE.md`
 - `internal/creelengine_test#TestScheduler_Reminders`
+- `internal/creelcli#TestCreelCLI`
 
 **Uses:**
 - `internal/creelengine#LogFilter`
@@ -15,6 +16,7 @@
 - `internal/creelengine_test#env.readBodies`
 - `internal/creelengine_test#eventsOf`
 - `internal/creelengine_test#strand`
+- `internal/testkit/creelfake#DormantStrand`
 
 **Intent:**
 D4: `Store.Log`'s id clause keeps an entry whose `ID` equals `filter.ID` or whose `Unread` holds `filter.ID` (`slices.Contains(entry.Unread, filter.ID)`); a zero `filter.ID` still filters nothing.
@@ -38,7 +40,9 @@ Assert, with `eventsOf`:
 These are the full lists: `Reading.Ack` journals only a `read` event, and a worker probes before it first waits, so the reminder listing `first` is journaled once `e.probeWaits(1)` returns.
 
 The existing `LogFilter{ID: ...}` assertions were checked against this change: those in `verbs_test.go` and `server_test.go` run no scheduler or filter an inject id, and `deliver_test.go`'s filter mail whose receiver is an orch strand or a removed strand, so none of them sees a `reminded` event and none changes.
+One `log --id` assertion in `internal/creelcli/cli_test.go` does change: the `TestCreelCLI` subtest `log --id prints a carried entry's kind` journals a carried, unread message #1 to `beta`, which it registers as `creelfake.LiveStrand(beta)`, an idle strand the daemon's scheduler reminds of #1 once it starts, so `log --id 1` now lists `carried` and `reminded` and the subtest's one-entry assertion fails or flakes.
+Register `beta` as `creelfake.DormantStrand(beta)` in that subtest's `SetStrands` call: the scheduler types nothing to a strand that is not live, so no reminder is journaled and the one-entry assertion stays as it is.
 
-**ImpactSummary:** one filter clause in `Store.Log`, reached by the daemon's log verb only, plus `logCmd`'s help wording; no record shape changes and no existing assertion changes.
+**ImpactSummary:** one filter clause in `Store.Log`, reached by the daemon's log verb only, plus `logCmd`'s help wording; no record shape changes, and one existing creelcli assertion changes, through its fixture's `beta` strand turning dormant.
 
 **Commit:** 1: creel log --id lists the reminded events that hold the id
