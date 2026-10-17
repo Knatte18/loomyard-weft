@@ -1,0 +1,15 @@
+{
+  "number": 1,
+  "stop_key": {
+    "current_producer": "Discussion-Bouncer",
+    "history_length": 13,
+    "state": "awaiting"
+  },
+  "pause_before": "",
+  "pause_after": "",
+  "spawned_at": "2026-10-17T16:01:57.732700712+02:00",
+  "deadline": "2026-10-17T16:31:57.732700712+02:00",
+  "strand_guid": "71303fc1fb6e59eee2f43a9ebff6728a",
+  "envelope_path": "/home/knatte/Code/loomyard-LYXHUB/creel-notices/_lyx/shed/creel-notices/drive-reports/drive-envelope-20261017-160157-5a87.json",
+  "report_path": "/home/knatte/Code/loomyard-LYXHUB/creel-notices/_lyx/shed/creel-notices/drive-reports/drive-report-20261017-160157-83b5.md"
+}

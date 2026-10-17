@@ -1,0 +1,14 @@
+{
+  "verdict": "resume",
+  "reason": "Review escalation at Discussion-Bouncer round 3 with cause circling. The returned finding F1 (keys fresh-launch-leaves-hold-and-queued-injects and relaunch-old-note-request-reminded) is correct against creel's doc: an inject's TTL runs only while the receiver is live and unpaused, and mail has no TTL, so it is not a wrong finding and accept does not apply. The fix is converging: the round-3 judge said the next fix should settle the bound either by accepting the exposure in one stated sentence or by refusing the launch while the first withdraw is refused, and the round-3 fixer did both in D5 of _lyx/discussion/decision-record.md (lines 111-117): a failed first withdraw makes lyx orch start start and bind no session with creel's error and the way forward, the second-withdraw failure path states the bound that holds and says \"This exposure is accepted.\", and the acceptance criteria (lines 248-250) are split to match. The other round-3 findings (F2-F6) were all fixed with no dispute or deferral, none is BLOCKING, and the fix stays inside the board entry's scope (the orch watcher's injects and fresh-launch handling). The perch's hard cap resolves to the default review_hard_max_bounces of 4 (lyx config loom --print shows no override), so round 3 is below it and one more round is allowed.",
+  "question": "",
+  "goto": "",
+  "verbs": [
+    "lyx loom circling continue creel-notices"
+  ],
+  "cause": "",
+  "attempt": 1,
+  "attempt_dir": "/home/knatte/Code/loomyard-LYXHUB/creel-notices/_lyx/shed/creel-notices/arbiter/attempt-1",
+  "verdict_path": "/home/knatte/Code/loomyard-LYXHUB/creel-notices/_lyx/shed/creel-notices/arbiter/attempt-1/verdict.yaml",
+  "relaunch": "lyx shed step creel-notices --until-stop --arbiter-attempt 1"
+}
