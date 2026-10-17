@@ -65,35 +65,3 @@ webster_auto_accept: true # true makes the Webster-Review perch accept a harvest
 merge_max_bounces: 1 # bounce budget of the Merge-Review perch: N gives N judged Burler rounds; null takes review_max_bounces; 0 runs no review round: the perch's Bouncer settles approved at once
 merge_hard_max_bounces: 0 # hard cap of the Merge-Review perch: a round numbered at or past it is never continued, it is accepted or escalated hard-cap; 0 takes review_hard_max_bounces
 merge_auto_accept: true # true makes the Merge-Review perch accept a harvested round at a spent budget instead of running the soft-cap rule; an open BLOCKING finding in the ledger sends the round to the rule
-# preserved (not in current template)
-discussion_fan: ["review-discussion", ""] # fan name from burler.yaml (its fans fall back per name to the embedded template) that turns the lens fan on for Discussion-Review; one fan name, or a YAML list with one fan name per round, the last entry serving every later round; an empty entry, the default, runs that round solo
-# preserved (not in current template)
-discussion_fix: "" # model-spec for the Discussion-Review fixer; empty takes the run-wide fix list, a set value (one model-spec, or a per-round list whose last entry serves every later round) replaces it for this segment
-# preserved (not in current template)
-discussion_fix_fan: fix-discussion # fan name from burler.yaml that has the Discussion-Review fixer fork itself once per lens of the fan to check its fixes; one fan name, or a YAML list with one fan name per round, the last entry serving every later round; an empty entry, the default, runs the single fixer for that round
-# preserved (not in current template)
-discussion_review: ["opus[medium]", "opus[medium]", "sonnet[high]"] # model-spec for the Discussion-Review reviewer; empty takes the run-wide review list, a set value (one model-spec, or a per-round list whose last entry serves every later round) replaces it for this segment
-# preserved (not in current template)
-fix: opus[medium] # model-spec for the fixer of every review segment round (see contracts/specs/llm-model-spec.md); a YAML list sets one model per round, with the last entry for every later round
-# preserved (not in current template)
-merge_fan: ["review-code", ""] # fan name from burler.yaml, such as review-code, that turns the lens fan on for Merge-Review; one fan name, or a YAML list with one fan name per round, the last entry serving every later round; an empty entry, the default, runs that round solo
-# preserved (not in current template)
-merge_fix_fan: fix-code # fan name from burler.yaml, such as fix-code, that has the Merge-Review fixer fork itself once per lens of the fan to check its fixes; one fan name, or a YAML list with one fan name per round, the last entry serving every later round; an empty entry, the default, runs the single fixer for that round
-# preserved (not in current template)
-plan_fan: ["review-plan", ""] # fan name from burler.yaml that turns the lens fan on for Plan-Review; one fan name, or a YAML list with one fan name per round, the last entry serving every later round; an empty entry, the default, runs that round solo; Webster-Review has no fan key and always runs solo
-# preserved (not in current template)
-plan_fix: "" # model-spec for the Plan-Review fixer; empty takes the run-wide fix list, a set value (one model-spec, or a per-round list whose last entry serves every later round) replaces it for this segment
-# preserved (not in current template)
-plan_fix_fan: fix-plan # fan name from burler.yaml that has the Plan-Review fixer fork itself once per lens of the fan to check its fixes; one fan name, or a YAML list with one fan name per round, the last entry serving every later round; an empty entry, the default, runs the single fixer for that round
-# preserved (not in current template)
-plan_review: ["opus[medium]", "sonnet[high]"] # model-spec for the Plan-Review reviewer; empty takes the run-wide review list, a set value (one model-spec, or a per-round list whose last entry serves every later round) replaces it for this segment
-# preserved (not in current template)
-review: opus[medium] # model-spec for the review-segment producers (see contracts/specs/llm-model-spec.md)
-# preserved (not in current template)
-webster_fan: ["review-code", ""] # fan name from burler.yaml, such as review-code, that turns the lens fan on for Webster-Review; one fan name, or a YAML list with one fan name per round, the last entry serving every later round; an empty entry, the default, runs that round solo
-# preserved (not in current template)
-webster_fix: "sonnet[medium]" # model-spec for the Webster-Review fixer; empty takes the run-wide fix list, a set value (one model-spec, or a per-round list whose last entry serves every later round) replaces it for this segment
-# preserved (not in current template)
-webster_fix_fan: fix-code # fan name from burler.yaml, such as fix-code, that has the Webster-Review fixer fork itself once per lens of the fan to check its fixes; one fan name, or a YAML list with one fan name per round, the last entry serving every later round; an empty entry, the default, runs the single fixer for that round
-# preserved (not in current template)
-webster_review: sonnet[medium] # model-spec for the Webster-Review reviewer; empty takes the run-wide review list, a set value (one model-spec, or a per-round list whose last entry serves every later round) replaces it for this segment
