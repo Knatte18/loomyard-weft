@@ -5,7 +5,7 @@
      stencil.FillOptional requires all of them non-empty.
      {{.friction_directive}} is the one optional marker (filled via stencil.FillOptional), rendering as nothing when Tier 2 is off.
      There are no {{if}}/{{range}} conditionals anywhere in this file.
-lyx-stencil: sha256=d775038d839e0279c40933c715113948bf509560de4ea7be16f321a0dc763bf3 build=6bfaaa1448adcd5fda4ab769115846291406977a time=2026-10-16T12:19:49Z -->
+lyx-stencil: sha256=e0f866d5e4d1afccabf9a41a3abe4ecbddc5812f9623149567b20cf84e0ae120 build=743c11f0d7347f95d82bdf90a3e219ba6a09a486 time=2026-10-17T12:09:15Z -->
 
 # Webster verify-gate fixer fork — fix the recorded failures in source, commit, report
 
@@ -48,7 +48,7 @@ You never run a Bash call in the background, and you end your turn only after yo
 - Never write, create or delete Merriam's contract files `{{.outcome_path}}` and `{{.summary_path}}`, even though you inherit Merriam's instruction to write them as a final action.
   A fixer writing either forges the run's terminal judgment and halts the run at its exit audit.
 - Before you report, run `lyx gate test --tags integration <the findings' packages>` as a foreground Bash call under the gate rule in your system prompt, and fix what it still reports.
-  A slot-busy exit (`lyx gate test` exiting with a JSON error naming the slot holders) is re-run, never counted as a failure.
+  A slot-busy exit (`lyx gate test` answering `slot_free: false` and naming the slot holders) is re-run, never counted as a failure.
 - Leave the worktree clean: no uncommitted change may remain when you end your turn.
 
 ## Your final action

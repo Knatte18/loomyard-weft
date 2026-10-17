@@ -1,4 +1,4 @@
-<!-- lyx-stencil: sha256=272c0d43e26f61e42d10ae3bb101198917a176a7f3d789f8fc4318846b3d2510 build=6bfaaa1448adcd5fda4ab769115846291406977a time=2026-10-16T12:19:49Z -->
+<!-- lyx-stencil: sha256=14faa344aec4450ab0a90bf65c002855f9bfe3b21968c0ee6e8f5decddc5f129 build=743c11f0d7347f95d82bdf90a3e219ba6a09a486 time=2026-10-17T12:09:15Z -->
 
 # Webster implementer job — read your cards, implement, commit, report
 
@@ -83,8 +83,8 @@ A failure counts as a gate failure under the self-fix bound below and makes the 
 
 ## Slot-busy exits and raw test runs
 
-A step that exits with code `75`, with a JSON error naming the slot holders, found every gate slot held: that is not a failure.
-It costs no self-fix attempt, never makes the report `FAILED`, and you re-run the same step.
+A step that exits with code `75`, answering `slot_free: false` and naming the slot holders, found every gate slot held: that is not a failure.
+It costs no self-fix attempt, never makes the report `FAILED`, and you re-run the same step in a turn that does nothing else, so the prompt cache stays warm between calls.
 
 You may run a raw test run of the hub's language on the batch's listed packages only.
 The hub's verify tiers follow:
