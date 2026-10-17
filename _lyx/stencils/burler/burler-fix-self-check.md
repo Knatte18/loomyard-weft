@@ -1,7 +1,7 @@
 <!-- This is burler's fix self-check part: the procedure by which a twill fixer has read-only forks check its own change set before it writes the fixer-report.
      internal/burlerengine's selfCheckBlock (prompt.go) reads and fills it, and composeFixPrompt injects it as burler-step-fix's optional self_check marker value in a round whose profile names a fixer fan.
      It declares two required markers, {{.rubric_path}} and {{.lens_list}}: the deployed fix-check rubric's path, and the fixer fan's lenses as one bullet per lens in fan order.
-lyx-stencil: sha256=edde3a69850a3df9852501f694c716894993e1ba06fac6b973f19a725862efc8 build=112cccb8f4e09be50a700c9346b294b79f649e17 time=2026-10-16T14:39:17Z -->
+lyx-stencil: sha256=3cd6370ded454cb0e8962405f83727911f559a2c351761870c203a1a55f9507d build=4d3c8ea4f6a11132c97fa53ce1738ab6fb44260a time=2026-10-17T10:20:24Z -->
 ## Self-check of your fix by forks (BLOCKING — after every fix, before the fixer-report)
 
 Once every finding has its disposition and every change is made, and before you write the fixer-report, run this procedure once.
@@ -32,7 +32,7 @@ Copy these lines verbatim into every fork's prompt, ahead of its lens text.
 - Your context already holds the review, the files as the fixer read and changed them, and the fix-check rubric, so never re-read what your context shows.
   Make at most 6 further tool calls, each for something your lens needs that your context lacks.
   End your report with one line per such call, saying what you read and why your context lacked it.
-- You are read-only: never write, edit or delete a file, run no git command, and never call the Agent tool.
+- You are read-only: never write, edit or delete a file, run only git commands that read, such as `git diff`, `git log` or `git show`, and never one that changes the repository, its index, its refs or its working tree, and never call the Agent tool.
 - Return your findings only as your final message, each with a severity (`BLOCKING`, `MEDIUM` or `LOW`, as the rubric defines them), the changed text it concerns, a one-line summary and the evidence, and start it with the list your lens asks for, if it asks for one; return "no findings" when you have none.
 
 A fork never calls the Agent tool, so the fixer is the only session that spawns.
