@@ -1,0 +1,4 @@
+verdict: approve
+reason: InstallNetworkGate now installs nothing unless the resolved location holds a board-level _lyx, so a lyx process in an agent worktree no longer creates pause/net state under a guessed _board, which is the board entry's refuse branch with no work beyond it; no peer run or parent commit overlaps.
+question: ""
+superseded: []
