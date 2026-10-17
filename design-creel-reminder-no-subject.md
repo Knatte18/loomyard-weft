@@ -13,6 +13,9 @@ A message without a separate first line therefore shows its content in the remin
 
 The reminder must not carry the message's content.
 The receiver has to ask for it actively with `lyx creel read`.
+A reminder can reach an agent in the middle of a run, busy with something else: it should only learn that one or more messages wait, and choose itself when it has the time and capacity to read them.
+Part of a message arriving with the reminder is clutter and confuses the agent.
+Something the agent must read at once goes by `lyx creel inject` instead (with `--interrupt` when the running turn must stop first).
 
 ## Idea
 
@@ -20,5 +23,7 @@ The receiver has to ask for it actively with `lyx creel read`.
 - `lyx creel log` keeps its subjects, since only the operator and the orch read the journal.
 
 ## Open
+
+- The reminder is typed only at idle, but in Claude a typed line starts a new turn, so even a content-free reminder takes the agent's next turn: whether stencils should tell agents that a reminder may be left until their current task is done.
 
 - Whether the journal's `subject` field stays as the body's first line or goes too.
