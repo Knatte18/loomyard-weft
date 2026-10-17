@@ -1,8 +1,8 @@
 # Card 1 — configreg-setting-lookup
 
 **Create:**
-- `plan:internal/configreg#SettingLookup` -> `func SettingLookup(dirs configengine.Dirs) func(module, key string) (any, error)`
-- `plan:internal/configreg#TestSettingLookup` -> `func TestSettingLookup(t *testing.T)`
+- `internal/configreg#SettingLookup`
+- `internal/configreg#TestSettingLookup`
 
 **Edit:**
 - `cmd/lyx#configStrictnessStrictSet`

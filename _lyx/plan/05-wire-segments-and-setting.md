@@ -13,7 +13,7 @@
 - `internal/loomcli#TestWire_DarnRecipe`
 
 **Uses:**
-- `plan:internal/configreg#SettingLookup`
+- `internal/configreg#SettingLookup`
 - `plan:internal/shedrecipe#SegmentSettings`
 - `internal/loomcli#seedLoomConfigWithKeys`
 - `internal/loomcli#seedDarnHubConfig`
