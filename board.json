@@ -947,6 +947,24 @@
       "body": "## Operator decisions (2026-10-17)\n\n- The plan writer writes a flat plan; how that plan is implemented is the implementer's call, and batching is part of implementing.\n- So the batchifier belongs inside the implementer, and the type of batchifier is the implementer's own config.\n- No recipe row is skipped, or entered conditionally, on which implementer runs.\n- The groundwork Weaver needs is its own task, built and landed before Weaver itself.\n\n## Seen\n\n- Loom's recipe runs `Batchifier` as a row of its own before `Webster` (`contracts/recipes/loom-recipe.yaml`, engine in `internal/loomshed/batchifier.go`), and it partitions the whole plan once.\n- A recipe row names its engine directly (`internal/shedrecipe/registry.go`); no setting chooses a row's engine.\n- `internal/reportengine/timingspans.go` reports `Batchifier` as a phase.\n\n## Idea\n\n- Webster runs the batcher itself when it starts and partitions the plan once, as the row does today; the `Batchifier` row leaves the loom recipe; behaviour is otherwise unchanged.\n- The implementer row's contract is written down in `contracts/specs/`: in, the approved plan and the task branch; out, commits on the branch, the run's state file and an outcome (done, reroute to plan review, stuck), so the review, Merge-In and later rows do not depend on which implementer ran.\n- A setting such as `loom.implementer` chooses the implementer row's engine, settable per task through `run_settings`; `webster` is its only value until Weaver lands.\n- `lyx report timing` folds batching into the implementer phase.\n\n### Open\n\nOther groundwork Weaver needs (see `weaver`), such as a cold-agent spawn per batch in its own worktree, may belong here or in Weaver itself.\n",
       "created": "2026-10-17T15:16:55Z",
       "revised": "2026-10-17T15:16:55Z"
+    },
+    {
+      "id": 645,
+      "slug": "plan-dag-view",
+      "title": "Draw a plan as a card DAG with its glyph and file matrix",
+      "kind": "note",
+      "labels": [
+        "feature",
+        "loom",
+        "webster"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "A tools/ program that reads a plan, builds the card x glyph/file matrix and writes Graphviz DOT of the card dependencies",
+      "body": "## Seen (2026-10-17)\n\n- The parallel-batches study (`docs/research/parallel-batches-2026-10-17/`) derived each plan's card dependency graph from the cards' targets and `Uses:` with awk, but nothing shows that graph.\n- A DAG batchifier for Weaver (see `weaver`) is judged on that graph, so seeing it for a real plan helps design and check the batchifier.\n- Graphviz is installed on the operator's machine (`dot`).\n\n## Idea (operator, 2026-10-17)\n\nA tool under `tools/` takes a plan directory and draws its cards as a DAG with arrows for dependencies.\n\n- It builds an incidence matrix: one row per card, one column per glyph and file any card names, each cell saying whether the card changes or uses it.\n- Two cards with a mark in the same column get an edge; its direction follows who changes and who uses.\n- It writes the matrix as a markdown table and the graph as Graphviz DOT text, rendered with `dot -Tsvg`; no Go graph package is needed for this.\n- It reads targets and `Uses:` through `internal/planparser`, so no plan parsing is duplicated.\n\n### Orch recommendation\n\nLater, the same tool colours each card by the batch a batchifier puts it in, so a new batchifier's clusters can be checked by eye on real plans before it runs.\n",
+      "created": "2026-10-17T15:27:07Z",
+      "revised": "2026-10-17T15:27:07Z"
     }
   ]
 }
