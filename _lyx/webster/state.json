@@ -1,0 +1,178 @@
+{
+  "runGuid": "17b3dcbb856578c9155e7398cf65e2c3",
+  "planFingerprint": "0cf0bd56a04a3f61cab04807239621d2fefd93198e7bb643d48d2a920037e525",
+  "planFileHashes": {
+    "00-overview.md": "8e047f287376bbc788324031d106adf1e1f4bca90128948b6c0c8d2a0fbe89ac",
+    "01-decision-reason-once.md": "5044ba66df6ad9626ee96202c2e243011d9b2b240d036404eb2dd426de944a37",
+    "02-snapshot-title-form.md": "747fc4d4ae9b282e95c66b836007a95de9c8ce798ad8118128fad46230915fab",
+    "03-orch-role-title-form.md": "944790702896461d8748e7fc66d21d74bd8044b2d343b984dcf4f63787b77e14",
+    "04-seed-run-start.md": "11205e13eb85173e24da8a6fd7d38f4ca9eee3611ddc2bcf6c5e5dc6a7adf7bf",
+    "05-run-bounded-lookup.md": "873f0b1fce769c7df03301ec308513852869d280a08648c6c788762e95d8319c",
+    "06-publish-older-open-stop.md": "36db2ad1a1ea874bde6e4bda9a8995ed3385002572cb7f21afef9861159446e2"
+  },
+  "planOverviewFrameHash": "ddc8a0c24f77fbeaa3ebf43854a5b0f401f82c5c1b3b98819d0d26381adabb8a",
+  "partition": [
+    {
+      "cards": [
+        "01-decision-reason-once",
+        "02-snapshot-title-form",
+        "03-orch-role-title-form"
+      ],
+      "profile": "cautious",
+      "estimate": 170926,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 1,
+        "startup": 54400,
+        "read_union": 37044,
+        "cards": [
+          {
+            "card": 1,
+            "card_text": 360,
+            "reads": {
+              "package:internal/alignment": 2000,
+              "package:internal/landingshed": 2000,
+              "package:internal/loomcli": 2000,
+              "tests:internal/alignment": 2000,
+              "tests:internal/landingshed": 2000,
+              "tests:internal/loomcli": 2000
+            },
+            "messages": 97,
+            "written": 29460
+          },
+          {
+            "card": 2,
+            "card_text": 528,
+            "reads": {
+              "file:internal/alignment/doc.go": 600,
+              "file:internal/loomcli/doc.go": 2796,
+              "package:internal/alignment": 2000,
+              "package:internal/landingshed": 2000,
+              "package:internal/loomcli": 2000,
+              "tests:internal/alignment": 2000,
+              "tests:internal/landingshed": 2000,
+              "tests:internal/loomcli": 2000
+            },
+            "messages": 103,
+            "written": 31428
+          },
+          {
+            "card": 3,
+            "card_text": 444,
+            "reads": {
+              "file:contracts/stencils/orch/orch-template-role.md": 2964,
+              "file:internal/orchengine/doc.go": 5352,
+              "package:contracts/stencils": 2000,
+              "package:contracts/stencils/orch": 2000,
+              "package:internal/orchengine": 2000,
+              "tests:contracts/stencils": 2000,
+              "tests:contracts/stencils/orch": 2000,
+              "tests:internal/orchengine": 2000
+            },
+            "messages": 60.5,
+            "written": 18594
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "04-seed-run-start",
+        "05-run-bounded-lookup",
+        "06-publish-older-open-stop"
+      ],
+      "profile": "cautious",
+      "estimate": 183040,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 2,
+        "startup": 61400,
+        "read_union": 11552,
+        "cards": [
+          {
+            "card": 4,
+            "card_text": 288,
+            "reads": {
+              "package:internal/loomcli": 2000,
+              "tests:internal/loomcli": 2000
+            },
+            "messages": 52.5,
+            "written": 16038
+          },
+          {
+            "card": 5,
+            "card_text": 1140,
+            "reads": {
+              "file:internal/landingshed/doc.go": 1764,
+              "package:internal/landingshed": 2000,
+              "package:internal/loomcli": 2000,
+              "tests:internal/landingshed": 2000,
+              "tests:internal/loomcli": 2000
+            },
+            "messages": 272.5,
+            "written": 82890
+          },
+          {
+            "card": 6,
+            "card_text": 360,
+            "reads": {
+              "file:internal/landingshed/doc.go": 1764,
+              "package:internal/landingshed": 2000,
+              "tests:internal/landingshed": 2000
+            },
+            "messages": 36,
+            "written": 11160
+          }
+        ]
+      }
+    }
+  ],
+  "currentBatch": 1,
+  "masterStrand": "2726b72b70bedf9a08ce3b8b7ec10866",
+  "masterSessionId": "582982f2-19ff-4e2a-a908-33330f7356a3",
+  "masterEngine": "claude",
+  "batches": {
+    "1": {
+      "slug": "decision-reason-once",
+      "cards": [
+        "01-decision-reason-once",
+        "02-snapshot-title-form",
+        "03-orch-role-title-form"
+      ],
+      "cardHashes": {
+        "01-decision-reason-once": "5044ba66df6ad9626ee96202c2e243011d9b2b240d036404eb2dd426de944a37",
+        "02-snapshot-title-form": "747fc4d4ae9b282e95c66b836007a95de9c8ce798ad8118128fad46230915fab",
+        "03-orch-role-title-form": "944790702896461d8748e7fc66d21d74bd8044b2d343b984dcf4f63787b77e14"
+      },
+      "startSha": "4d3c8ea4f6a11132c97fa53ce1738ab6fb44260a",
+      "kind": "fork",
+      "spawnedAt": "2026-10-17T11:17:15Z",
+      "sessionId": "582982f2-19ff-4e2a-a908-33330f7356a3",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
+    }
+  }
+}
