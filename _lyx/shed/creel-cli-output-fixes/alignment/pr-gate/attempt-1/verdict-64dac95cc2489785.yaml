@@ -1,0 +1,4 @@
+verdict: approve
+reason: The diff fixes #699, #700 and #701 as D1–D5 record, within the record's Scope, and the only peer run (shedrecipe-capabilities) shares no behaviour, file or PATTERN entry with it.
+question: ""
+superseded: []
