@@ -1,6 +1,6 @@
 # Drop the per-refusal table from refusal-spec.md, keep the way-forward rule
 
-`refusal-spec-table-drop` · Task · enhancement, shed, loom, webster, stencil · running · PR-Gate
+`refusal-spec-table-drop` · Task · enhancement, shed, loom, webster, stencil · running · Finalize
 
 ## Seen (2026-10-17)
 

@@ -17,7 +17,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | **Drop the per-refusal table from refusal-spec.md, keep the way-forward rule**<br>• contracts/specs/refusal-spec.md is 133 KB and grows with every new refusal; its 428 table rows quote messages the code already carries, so keep the definition and classes and drop the table | [`refusal-spec-table-drop`](design-refusal-spec-table-drop.md) | darn | PR-Gate | 14m | 8m | shed, loom, webster, stencil |
+| 1 | **Drop the per-refusal table from refusal-spec.md, keep the way-forward rule**<br>• contracts/specs/refusal-spec.md is 133 KB and grows with every new refusal; its 428 table rows quote messages the code already carries, so keep the definition and classes and drop the table | [`refusal-spec-table-drop`](design-refusal-spec-table-drop.md) | darn | Finalize | 14m | 9m | shed, loom, webster, stencil |
 
 ### Ready
 
