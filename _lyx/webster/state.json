@@ -1,0 +1,324 @@
+{
+  "runGuid": "b3858eb7d4489359affe813ff0f37361",
+  "planFingerprint": "38e31daee2529d3e172bb08d24a76bf2c1324860e0b731688b372002c3c914cd",
+  "planFileHashes": {
+    "00-overview.md": "c89bb67c9055c18dc5c73083ff23a1f816e85d3b10fd457ac4808d9c39ed654d",
+    "01-configreg-setting-lookup.md": "27c85877fd00f53cb79efd16407f55d51c282838f44e481661c41cd20155b61b",
+    "02-constructor-row-identity.md": "425e6a99b72f295ffe9097f111c1a5b8400591ab1c0679e3194d37409803ee38",
+    "03-shedrecipe-segment-settings.md": "982767922aabfbcc9ea1e1e32712b4fea3d6e988f46ce1efd23fc614be41d2a0",
+    "04-envkit-template-setting.md": "f9d4329df19e4301d99f5cb464050304fca8bc9208cb8f3a8857aa474dce78d3",
+    "05-wire-segments-and-setting.md": "55939cb62b9ec4ed81b7e3f85c72b4ef7aeb145758a43bf7e6e51e8c1aae6e9a",
+    "06-review-rows-read-segments.md": "753d43e5441a448fc2ab3282260fed48cd57471159983bfc11242ea95918ea13",
+    "07-budgets-by-segment.md": "0630a31acc5bf38398eb4be6c8ce5a5c153e756554a6cc8c2a921ff4e8cbc668",
+    "08-retire-row-maps.md": "f7a1d1818c57e0f581c3ceaf9d647e26868641d9d5633e706d523f89596e8d68"
+  },
+  "planOverviewFrameHash": "c026813c5a5281ffc82aa867b38268662ba51d9ab188746d7452c29876a92dc6",
+  "partition": [
+    {
+      "cards": [
+        "01-configreg-setting-lookup"
+      ],
+      "profile": "cautious",
+      "estimate": 90890,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 1,
+        "startup": 54676,
+        "read_union": 18688,
+        "cards": [
+          {
+            "card": 1,
+            "card_text": 576,
+            "reads": {
+              "file:cmd/lyx/testdata/test-budget.yaml": 1944,
+              "file:pattern/PATTERN-config-strictness.md": 168,
+              "package:cmd/lyx": 2000,
+              "package:cmd/lyx/testdata": 2000,
+              "package:internal/configreg": 2000,
+              "package:pattern": 2000,
+              "tests:cmd/lyx": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:internal/configreg": 2000,
+              "tests:pattern": 2000
+            },
+            "messages": 56.5,
+            "written": 17526
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "02-constructor-row-identity"
+      ],
+      "profile": "cautious",
+      "estimate": 290240,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 2,
+        "startup": 61676,
+        "read_union": 13632,
+        "cards": [
+          {
+            "card": 2,
+            "card_text": 1632,
+            "reads": {
+              "package:internal/loomcli": 2000,
+              "package:internal/shedbuild": 2000,
+              "package:internal/shedrecipe": 2000,
+              "tests:internal/loomcli": 2000,
+              "tests:internal/shedbuild": 2000,
+              "tests:internal/shedrecipe": 2000
+            },
+            "messages": 711,
+            "written": 214932
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "03-shedrecipe-segment-settings",
+        "04-envkit-template-setting",
+        "05-wire-segments-and-setting"
+      ],
+      "profile": "cautious",
+      "estimate": 135640,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 3,
+        "startup": 68676,
+        "read_union": 18664,
+        "cards": [
+          {
+            "card": 3,
+            "card_text": 396,
+            "reads": {
+              "file:contracts/specs/shed-recipe-spec.md": 1464,
+              "package:contracts/specs": 2000,
+              "package:internal/shedrecipe": 2000,
+              "package:internal/testkit/envkit": 2000,
+              "tests:contracts/specs": 2000,
+              "tests:internal/shedrecipe": 2000,
+              "tests:internal/testkit/envkit": 2000
+            },
+            "messages": 37,
+            "written": 11496
+          },
+          {
+            "card": 4,
+            "card_text": 288,
+            "reads": {
+              "package:internal/testkit/envkit": 2000,
+              "tests:internal/testkit/envkit": 2000
+            },
+            "messages": 23,
+            "written": 7188
+          },
+          {
+            "card": 5,
+            "card_text": 516,
+            "reads": {
+              "package:internal/loomcli": 2000,
+              "tests:internal/loomcli": 2000
+            },
+            "messages": 97,
+            "written": 29616
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "06-review-rows-read-segments"
+      ],
+      "profile": "cautious",
+      "estimate": 198524,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 4,
+        "startup": 75676,
+        "read_union": 43348,
+        "cards": [
+          {
+            "card": 6,
+            "card_text": 1500,
+            "reads": {
+              "file:PATTERN.md": 1416,
+              "file:cmd/lyx/testdata/test-budget.yaml": 1944,
+              "file:contracts/recipes/darn-recipe.yaml": 2580,
+              "file:contracts/recipes/loom-recipe.yaml": 7452,
+              "file:internal/shedrecipe/doc.go": 456,
+              "package:.": 2000,
+              "package:cmd/lyx/testdata": 2000,
+              "package:contracts/recipes": 2000,
+              "package:internal/loomrecipe": 2000,
+              "package:internal/shedadapters": 2000,
+              "package:internal/shedbuild": 2000,
+              "package:internal/shedrecipe": 2000,
+              "tests:.": 2000,
+              "tests:cmd/lyx/testdata": 2000,
+              "tests:contracts/recipes": 2000,
+              "tests:internal/loomrecipe": 2000,
+              "tests:internal/shedadapters": 2000,
+              "tests:internal/shedbuild": 2000,
+              "tests:internal/shedrecipe": 2000
+            },
+            "messages": 260,
+            "written": 79500
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "07-budgets-by-segment"
+      ],
+      "profile": "cautious",
+      "estimate": 167632,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 5,
+        "startup": 82676,
+        "read_union": 9332,
+        "cards": [
+          {
+            "card": 7,
+            "card_text": 924,
+            "reads": {
+              "file:internal/loomrecipe/doc.go": 408,
+              "package:internal/loomcli": 2000,
+              "package:internal/loomrecipe": 2000,
+              "tests:internal/loomcli": 2000,
+              "tests:internal/loomrecipe": 2000
+            },
+            "messages": 249,
+            "written": 75624
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "08-retire-row-maps"
+      ],
+      "profile": "cautious",
+      "estimate": 166064,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 6,
+        "startup": 89676,
+        "read_union": 22700,
+        "cards": [
+          {
+            "card": 8,
+            "card_text": 588,
+            "reads": {
+              "file:docs/research/haiku-judge.md": 2112,
+              "package:docs/research": 2000,
+              "package:internal/loomcli": 2000,
+              "package:internal/loomrecipe": 2000,
+              "package:internal/shedrecipe": 2000,
+              "package:internal/testkit/envkit": 2000,
+              "tests:docs/research": 2000,
+              "tests:internal/loomcli": 2000,
+              "tests:internal/loomrecipe": 2000,
+              "tests:internal/shedrecipe": 2000,
+              "tests:internal/testkit/envkit": 2000
+            },
+            "messages": 177,
+            "written": 53688
+          }
+        ]
+      }
+    }
+  ],
+  "currentBatch": 1,
+  "masterStrand": "eb8db455948f4323b50f53e181ec7b6f",
+  "masterSessionId": "e3f53896-42a2-48cf-91b5-173fdd533903",
+  "masterEngine": "claude",
+  "batches": {
+    "1": {
+      "slug": "configreg-setting-lookup",
+      "cards": [
+        "01-configreg-setting-lookup"
+      ],
+      "cardHashes": {
+        "01-configreg-setting-lookup": "27c85877fd00f53cb79efd16407f55d51c282838f44e481661c41cd20155b61b"
+      },
+      "startSha": "89b854c85e80c4ba9287ffa92a91845a8d36591b",
+      "kind": "fork",
+      "spawnedAt": "2026-10-17T13:52:44Z",
+      "sessionId": "e3f53896-42a2-48cf-91b5-173fdd533903",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
+    }
+  }
+}
