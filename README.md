@@ -17,10 +17,19 @@ Waits on nothing open; can start now.
 
 | # | Task | Slug | Recipe | After | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | **Go driver messages the orch about a verify halt batten retries itself**<br>• Drop or reword the parent message for a watched verify halt | [`driver-watched-verify-notice`](design-driver-watched-verify-notice.md) | darn |  | 23h | 4m | shed, batten |
-| 2 | **report timing counts a pause before Plan-Write as Plan phase time** | [`timing-pause-as-phase`](design-timing-pause-as-phase.md) | darn |  | 19h | 4m | shed, batten |
-| 3 | **lyx creates <prime>/.claude/worktrees/_board/.lyx/pause/net when run from a Claude Code agent worktree** | [`agent-worktree-board-dir`](design-agent-worktree-board-dir.md) | darn |  | 46m | 4m | fabric |
-| 4 | **Lens fan and twill fixer for Webster, Merge and Darn review**<br>• Fan and fix-fan keys for the three code-review perches, read-only git for forks, and code lenses in burler.yaml | [`code-review-fan`](design-code-review-fan.md) | darn |  | 0m | 0m | burler, loom, stencil, config |
+| 1 | **Lens fan and twill fixer for Webster, Merge and Darn review**<br>• Fan and fix-fan keys for the three code-review perches, read-only git for forks, and code lenses in burler.yaml | [`code-review-fan`](design-code-review-fan.md) | darn |  | 0m | 0m | burler, loom, stencil, config |
+
+### Layer A
+
+Waits only on Running or Ready entries.
+
+#### Normal priority
+
+| # | Task | Slug | Recipe | After | Age | Revised | Labels |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| 1 | **Go driver messages the orch about a verify halt batten retries itself**<br>• Drop or reword the parent message for a watched verify halt | [`driver-watched-verify-notice`](design-driver-watched-verify-notice.md) | darn | `code-review-fan` | 23h | 0m | shed, batten |
+| 2 | **report timing counts a pause before Plan-Write as Plan phase time** | [`timing-pause-as-phase`](design-timing-pause-as-phase.md) | darn | `code-review-fan` | 19h | 0m | shed, batten |
+| 3 | **lyx creates <prime>/.claude/worktrees/_board/.lyx/pause/net when run from a Claude Code agent worktree** | [`agent-worktree-board-dir`](design-agent-worktree-board-dir.md) | darn | `code-review-fan` | 46m | 0m | fabric |
 
 ## Notes
 

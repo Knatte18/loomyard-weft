@@ -2,6 +2,8 @@
 
 `driver-watched-verify-notice` · Task · enhancement, shed, batten
 
+Depends on: [`code-review-fan`](design-code-review-fan.md)
+
 ## Seen
 
 On 2026-10-16 `reed-add-parentless-placement` failed its first `publish_verify` at Publish.

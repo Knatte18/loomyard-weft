@@ -724,12 +724,19 @@
       ],
       "issues": [],
       "recipe": "darn",
-      "depends_on": [],
+      "depends_on": [
+        "code-review-fan"
+      ],
       "isolated": false,
       "brief": "Drop or reword the parent message for a watched verify halt",
       "body": "## Seen\n\nOn 2026-10-16 `reed-add-parentless-placement` failed its first `publish_verify` at Publish.\nThe Go driver applied the rule \"a verify halt matching the failure record under a watching batten: hand back\", and batten sent the run back to Webster-Burler-Review by itself.\nThe driver still messaged the orch \"Run ... stopped; stop report ...\", which asks for an answer although the orch has nothing to do.\nThis is by design: `driveHandBack.WatchedVerifyLine` in `internal/sheddriver/drivehandback.go` exists \"so the parent still hears of it\", from `1c812c1f8`.\n\n## Idea\n\nWhen a watching batten owns the verify halt, the driver sends the parent no message, or at most a line that says batten retries it and no action is needed.\nBatten's own notice for the second failure stays the parent's wake-up.\n",
       "created": "2026-10-16T10:22:36Z",
-      "revised": "2026-10-17T09:41:11Z"
+      "revised": "2026-10-17T09:46:10Z",
+      "run_settings": {
+        "darn": {
+          "review_max_bounces": 1
+        }
+      }
     },
     {
       "id": 606,
@@ -783,12 +790,19 @@
         695
       ],
       "recipe": "darn",
-      "depends_on": [],
+      "depends_on": [
+        "code-review-fan"
+      ],
       "isolated": false,
       "brief": "",
       "body": "Imported from [issue #695](https://github.com/Knatte18/loomyard/issues/695).\n\nSeen: lyx report timing --since 2026-10-14 gave twill-fork0 Plan 1h47m and kickstart-per-card Plan 1h30m. The driver transcripts show both runs were paused before Plan-Write on request (notices.log: 'twill-fork0: paused at Plan-Write; since 19:02:00Z', 'kickstart-per-card: paused at Plan-Write; since 10:11:04Z'), and the Plan-Write sessions ran only 11 and 13 minutes. lyx shed status also shows 'now: Plan-Write' during such a pause. Expected: time a run spends paused at a producer boundary is reported apart, like machine sleep and waits, not as the next phase's time.",
       "created": "2026-10-16T14:40:38Z",
-      "revised": "2026-10-17T09:41:11Z"
+      "revised": "2026-10-17T09:46:10Z",
+      "run_settings": {
+        "darn": {
+          "review_max_bounces": 1
+        }
+      }
     },
     {
       "id": 616,
@@ -820,12 +834,14 @@
         697
       ],
       "recipe": "darn",
-      "depends_on": [],
+      "depends_on": [
+        "code-review-fan"
+      ],
       "isolated": false,
       "brief": "",
       "body": "Imported from [issue #697](https://github.com/Knatte18/loomyard/issues/697).\n\nSeen: the prime had an untracked /home/knatte/Code/loomyard-LYXHUB/loomyard/.claude/worktrees/_board/.lyx/pause/net (empty dirs, created 2026-10-15 18:03). .claude/worktrees/ is Claude Code's own directory for isolation: worktree agents, so lyx run inside such a worktree resolved the hub board dir as the sibling _board of the agent worktree, not the hub's _board, and created its pause/net state there. On 2026-10-15 the untracked directory made update-plugins.sh refuse the dirty prime, so the Land deploy of discussion-relevant-list failed (its tackler attempt diagnosed it). Workaround: /.claude/worktrees/ was added to .git/info/exclude, and the empty dirs were removed by hand on 2026-10-17. Expected: lyx run from a directory that is not a recorded fabric worktree resolves the board dir from the fabric anchor or refuses, and never creates hub state under a guessed path.",
       "created": "2026-10-17T09:00:00Z",
-      "revised": "2026-10-17T09:41:11Z",
+      "revised": "2026-10-17T09:46:10Z",
       "run_settings": {
         "darn": {
           "review_max_bounces": 1
