@@ -1,50 +1,50 @@
-# Name review model keys after their roles, one pair per segment
+# Name loom model keys by role, with one reviewer and fixer per step
 
-The review segments' model and fan keys now say which role they set, and every review segment, Merge-Review and Darn-Review included, has its own reviewer and fixer model key.
+Loom's model keys now say what they set, and every review segment has its own reviewer and fixer model key.
+`fix` read like a flag; it is now `fixer_model`.
+Merge-Review and Darn-Review used to borrow Webster's models and now have keys of their own.
 
-## Key names
+## Renames
 
-| Old | New |
-| --- | --- |
-| `loom.yaml` `review`, `fix` | `reviewer_model`, `fixer_model` (the shared fallback) |
-| `loom.yaml` `<segment>_review`, `<segment>_fix` (Discussion, Plan, Webster) | `<segment>_reviewer_model`, `<segment>_fixer_model` |
-| (none) | `loom.yaml` `merge_reviewer_model`, `merge_fixer_model` |
-| `loom.yaml` `<segment>_fan`, `<segment>_fix_fan` (Discussion, Plan, Webster, Merge) | `<segment>_reviewer_fan`, `<segment>_fixer_fan` |
-| (none) | `darn.yaml` `darn_reviewer_model`, `darn_fixer_model` |
-| `darn.yaml` `review_fan`, `review_fix_fan` | `darn_reviewer_fan`, `darn_fixer_fan` |
+In `loom.yaml`:
 
-An empty segment model key takes the shared `reviewer_model` or `fixer_model` in `loom.yaml`, Darn's included.
-The other role keys (`judge`, `seed`, the per-segment judge and seed keys, `rework` and the rest) and the non-model `review_*` knobs keep their names.
+- `review` and `fix` become `reviewer_model` and `fixer_model`, the shared fallback an empty segment key takes.
+- `discussion_review`, `plan_review` and `webster_review` become `<segment>_reviewer_model`; the `_fix` keys become `<segment>_fixer_model`.
+- `discussion_fan`, `plan_fan`, `webster_fan` and the Merge fan become `<segment>_reviewer_fan`; the `_fix_fan` keys become `<segment>_fixer_fan`.
+- New: `merge_reviewer_model` and `merge_fixer_model`, defaulting to Webster's template values (`sonnet[high]` and empty), so a hub on the template runs Merge-Review on the models it ran on before.
 
-## Behavior
+In `darn.yaml`:
 
-- Merge-Review runs on `merge_reviewer_model` and `merge_fixer_model` rather than on Webster-Review's resolved models, and Darn-Review on darn.yaml's two new keys.
-  The new keys' template defaults equal Webster's (`sonnet[high]` reviewer, empty fixer), so a hub on the template runs both perches on the models they used before.
-- A Burler row's refusal or engine error names the key its model came from: darn.yaml's key for a set Darn key, else loom.yaml's shared key.
-  `loomengine.SegmentKeys` now carries a `shuttleengine.ModelKey` (module and key) per half, so `reviewRowModelKeys` and the Darn wiring pass the key through without guessing its file.
-- `lyx config reconcile` renames every retired key to its new name with its value and the new key's template line comment.
-  A document holding both names keeps the new one's value and drops the old.
-  A document holding `webster_review` or `webster_fix` and no Merge key gets `merge_reviewer_model` or `merge_fixer_model` set to the same value first, so Merge-Review keeps the models it followed; the report line notes that Darn-Review now reads darn.yaml, which the loom rewrite cannot set.
-  The same Migrate hooks run on a task's `run_settings`, so a board entry still naming an old key keeps working.
-- `darnengine` gains a `MigrateConfig`, registered in `configreg`, for its two fan-key renames.
+- New: `darn_reviewer_model` and `darn_fixer_model`, defaulting to Webster's template values.
+  An empty value takes `loom.yaml`'s `reviewer_model` or `fixer_model`.
+- `review_fan` and `review_fix_fan` become `darn_reviewer_fan` and `darn_fixer_fan`.
 
-## Code
+The other role model keys (`judge`, `seed`, `rework`, `friction`, `driver`, `arbiter`, `tackler`, `alignment`, `writer`) and the non-model `review_*` knobs keep their names.
+A strict load refuses the old names as unknown keys.
+A refusal or engine error about a segment's model names the key the value came from, `darn.yaml`'s key for a set Darn key.
 
-- `burlerengine/modelkeys.go`: `ModelSpecList`, its shape error, `Unset` and `ValidateModelSpecList`, moved from loomengine beside the fan list so darnengine reads the same per-round model grammar (darnengine cannot import loomengine).
-- `yamlengine/rename.go`: `RenameKeys`, the top-level key rename both modules' Migrate hooks use.
-- `loomengine/review.go`: `ResolveReview` resolves Merge too, and `ResolveDarnReview` resolves Darn's keys over the shared list; `loomcli.wireDarnReview` (formerly `wireDarnFans`) puts the result on the Darn rows.
-- The templates, `ConfigSpec` categories and open maps, the recipe comments, `docs/overview.md`, and the package docs of darnengine, burlerengine and yamlengine use the new names.
-  The `lyx config` help example now names `reviewer_model`, with shorter values to stay under the help-length cap.
+## Migration
+
+`lyx config reconcile` renames each old key to its new name with its value, in the hub file, local files and a task's `run_settings`, and reports one line per rename.
+A document that already holds the new name keeps it, drops the old key and says so.
+A second pass changes nothing.
+`darnengine` gets a `MigrateConfig` for its two fan keys, registered in `configreg`.
+
+A document that sets `webster_review` or `webster_fix` and neither Merge key gets `merge_reviewer_model` or `merge_fixer_model` set to the same value, so Merge-Review keeps the models it followed.
+This is the only value the migration writes that the document did not already hold.
 
 ## Design decisions
 
-- Darn's keys carry a `darn_` prefix inside darn.yaml, following the operator's `<segment>_reviewer_model` for every segment, and so they do not share a name with loom.yaml's shared `reviewer_model`.
-- The renames go through each module's Migrate hook rather than `configreg.KeyMoves`, because a key move carries one source to one target and cannot also copy Webster's value onto the new Merge key.
-- The decision record's acceptance criterion that a strict load refuses an old key does not hold: a base-layer load ignores a key the template lacks, as it does for every retired key.
-  The automatic reconcile after a binary change is what moves a hub onto the new names, and the tests pin the rename there instead.
-- An empty list (`[]`) on a segment or Darn model key reads as unset and takes the shared list, as loom's segment keys already did; only the shared keys refuse an empty list.
+- `yamlengine.RenameKeys` is the shared top-level rename.
+  It keeps each value, every other key and the comments, and gives the renamed key the template's line comment.
+- The one-or-per-round model-spec list type, its shape error and its validation moved from `loomengine` into `burlerengine` beside the fan list.
+  `darnengine` cannot import `loomengine`, and now reads its two model keys with the same grammar.
+- `loomcli` names each Burler row's model and fan keys in `reviewRowModelKeys` and `wireDarnFans`; Merge and Darn rows no longer borrow Webster's.
+- Docs follow: `doc.go` of the touched packages, `docs/overview.md`, and the recipe comments.
+  `docs/research/` reports keep the names their runs used.
 
-## Tests
+## To check by hand
 
-Existing config, migration, resolution and wiring tests move to the new names and gain rows for Merge's keys, Darn's model keys and their refusals, the renames with comments and the Merge copy, and the run-settings rename.
-`darnengine` gains `TestMigrateConfig`, so its row in `cmd/lyx/testdata/test-budget.yaml` rises to 5.
+A hub whose `loom.yaml` overrode `webster_review` or `webster_fix` sees Darn-Review move to `darn.yaml`'s template default.
+Reconcile cannot copy across files, so its report line names the `darn.yaml` keys for the operator to set.
+A board entry's `run_settings` keeps the old key names on disk; the migration rewrites them at each read.
