@@ -729,7 +729,7 @@
       "isolated": false,
       "brief": "",
       "body": "Imported from [issue #695](https://github.com/Knatte18/loomyard/issues/695).\n\nSeen: lyx report timing --since 2026-10-14 gave twill-fork0 Plan 1h47m and kickstart-per-card Plan 1h30m. The driver transcripts show both runs were paused before Plan-Write on request (notices.log: 'twill-fork0: paused at Plan-Write; since 19:02:00Z', 'kickstart-per-card: paused at Plan-Write; since 10:11:04Z'), and the Plan-Write sessions ran only 11 and 13 minutes. lyx shed status also shows 'now: Plan-Write' during such a pause. Expected: time a run spends paused at a producer boundary is reported apart, like machine sleep and waits, not as the next phase's time.",
-      "status": "running · Worktree-Create",
+      "status": "running · Darn-Write",
       "created": "2026-10-16T14:40:38Z",
       "revised": "2026-10-17T09:49:24Z",
       "run_settings": {
@@ -796,7 +796,7 @@
       "isolated": false,
       "brief": "Stack a task run_settings, such as its review budget, inside an existing README cell, with no new column",
       "body": "## Seen\n\nThe board README (rendered by `internal/boardengine/render.go`) does not show a task's `run_settings`, so the review budget a task will run with, such as `{\"darn\":{\"review_max_bounces\":1}}` or the low budget `{\"loom\":{\"review_max_bounces\":2,\"review_hard_max_bounces\":3}}`, cannot be read there.\n\n## Scope\n\n- Show each task's `run_settings` in the README, compact, for example `darn: review_max_bounces 1`.\n- Add no table column: the tables are already hard to read. Stack the settings vertically inside an existing cell instead, one setting per line, for example under the title.\n- A task without `run_settings` renders as today.\n- Update `internal/boardengine/doc.go` where it describes the README layout.\n\nOperator decision 2026-10-17: no new README column; stack in height instead.\n",
-      "status": "running · Worktree-Create",
+      "status": "running · Darn-Write",
       "created": "2026-10-17T09:47:09Z",
       "revised": "2026-10-17T09:47:09Z",
       "run_settings": {
