@@ -144,6 +144,18 @@ The width analysis ran on 34 real plans (238 cards, 106 batches): `docs/research
 Weaver's batchifier keeps forming clusters of cards from the plan's flat card list that can run in parallel safely enough and efficiently; today's batcher, which groups contiguous cards by cost, cannot serve this, so Weaver gets a new one.
 The measure for it is the card-level width (cp and w columns of the study), not the batch level.
 
+### Operator view, not a decision: a DAG batchifier (2026-10-17)
+
+- The plan's card order is not given to be a good or logical order, and today's limit of joining only contiguous cards may not be needed.
+- Cards that touch the same glyphs belong in one batch, even with cards between them, as long as no card between them depends on the first and is depended on by the later one.
+- Ordering the cards and forming the batches can be done mechanically by a Go program over a DAG.
+- A Codex implementer needs Weaver anyway, since Webster's forks are a Claude Code feature.
+
+### Orch recommendation on the DAG batchifier
+
+Edges come from the cards' targets and `Uses:`; joining two cards into one batch is legal when it keeps the batch graph acyclic, which is the condition above; a cost budget caps a batch's size; ready batches with no edge between them run in parallel.
+The DAG is only as good as the declared targets: the plan spec says `Uses:` completeness cannot be proven at plan time, and 16% of changed files in the study were outside the batch's targets, so the verify on the merged result stays the real gate.
+
 ### Operator view, not a decision (2026-10-17)
 
 - Weaver starts cold agents; that is what sets it apart from Webster, which forks.
