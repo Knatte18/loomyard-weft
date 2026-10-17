@@ -1,6 +1,6 @@
 # Flaky tmux test: TestBoot_TmuxConf TwoWorktreesBootedConcurrently fails with server exited unexpectedly
 
-`tmux-conf-concurrent-boot-flake` · Note · bug
+`tmux-conf-concurrent-boot-flake` · Note · bug, reed
 
 Imported from [issue #712](https://github.com/Knatte18/loomyard/issues/712).
 
