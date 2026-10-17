@@ -1,28 +1,29 @@
-# Creel commands skip the root pre-run's stencil-seed pass
+# Creel commands skip the stencil-seed pass
 
-No `lyx creel` verb prints the `stencilstore: dev build does not refresh untouched stencils ...` warning any more.
-The warning came from the root pre-run's stencil-seed pass, which runs before every command and prints it when it writes board stencils that are due.
-The first creel verb in a hub with due stencils therefore printed it on stderr, mixed into creel's refusals and stall progress lines.
-Creel reads no stencils, so the pass is wasted on it.
-The creel daemon is long-lived and should not commit seed writes into the hub, the reason `reed switch` and `reed follow` already opt out.
+A dev-build `lyx` printed `stencilstore: dev build does not refresh untouched stencils ...` on stderr from the first `lyx creel` verb of a hub whose board stencils were due.
+The root pre-run seeds stencils before every command, and the warning comes from a seed pass that writes.
+The line mixed into the stderr that creel verbs use for refusals and stall progress.
 
-`creelcli.Command()` now sets `clihelp.SkipStencilSeedAnnotation` to `clihelp.AnnotationEnabled` on the `creel` group and on each of its subcommands, the hidden `daemon` included.
-`internal/creelcli/doc.go` states the skip.
-`TestSkipStencilSeed_HonoursTheAnnotation` gains one row per creel command, so a verb added without the opt-out fails the test.
+Every `lyx creel` command now opts out of that pass, so a creel verb's stderr carries only creel's own lines.
 
 Closes #702
 
 ## Design decisions
 
-- The annotation is set on each command in a loop, not inherited through a parent walk.
-  `skipStencilSeed` keeps reading only the running command's own annotations; a parent walk would change that contract for every group in the binary.
-- Only creel's pass is skipped.
-  The next stencil-reading command in the hub seeds as before, and no other command group changes.
-- The wording, level and once-per-pass behavior of the stencilstore notices are unchanged.
+- `creelcli.Command()` sets `clihelp.SkipStencilSeedAnnotation` to `clihelp.AnnotationEnabled` on the `creel` group and on each of its subcommands, the hidden `daemon` included.
+  Creel reads no stencils, and its long-lived daemon should never commit seed writes into the hub, the same reason `reed switch` and `reed follow` already opt out.
+- The annotation is set on each command in a loop, not through a parent walk.
+  `skipStencilSeed` still reads only the running command's own annotations, so no other command group's seed pass changes.
+- The wording, level and once-per-pass behavior of the stencilstore notices are untouched.
 - A hub whose only commands are creel verbs never seeds its board stencils until another command runs.
-  No creel path reads them, so nothing depends on it.
+  No creel path reads them.
+
+## Tests and docs
+
+- `TestSkipStencilSeed_HonoursTheAnnotation` in `cmd/lyx/stencilseedgate_test.go` gains one row per creel command, the group included, each expecting the opt-out.
+  The existing absent, unrelated and `"false"` annotation rows are unchanged.
+- The `internal/creelcli` package doc states that creel skips the seed pass.
 
 ## To check by hand
 
-- The report was seen with a dev binary from `./deploy-dev`.
-  Running a creel verb in a freshly built sandbox hub with due board stencils, and confirming stderr is clean, was not done; the tests build cobra values and run no hook.
+Not run: a dev build (`./deploy-dev`) in a fresh hub, confirming that the first `lyx creel` verb prints no `stencilstore:` line on stderr.
