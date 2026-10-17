@@ -1,0 +1,32 @@
+# Relevant files
+
+- `internal/creelengine/doc.go` — creel's design, the stage 1 orch withholding and the planned stage 2
+- `internal/creelengine/reminder.go` `composeReminder`, `reminderSubject` — the reminder line D2 changes
+- `internal/creelengine/identity.go` `resolveSender`, `checkProgramClaim` — the program-claim rule D6 works within
+- `internal/creelengine/verbs.go` `checkMayAct`, `Inject`, `Hold`, `Inbox` — the orch refusal and the inject and hold verbs D1 and D3 touch
+- `internal/creelengine/deliver.go` `deliverableReceiver` — the orch exclusion in the delivery loop
+- `internal/creelengine/pool.go` `appendWithheldLocked` — the withheld record D1 retires
+- `internal/creelengine/seam.go` `isOrchName`, `ProgramSender` — the Delivery seam and sender kinds
+- `internal/creelengine/client.go` `Client`, `NewClient` — the Go client program senders use
+- `internal/creelcli/delivery.go` — the Delivery implementation over shuttle that gains the command operation
+- `internal/orchengine/doc.go` — the watcher's cycle, idle rules, notices, pause and reload sequence
+- `internal/orchengine/watcher.go` `Session` — the seam whose typing operations move behind creel
+- `internal/orchengine/notice.go` `QueueNotice`, `QueueConditionalNotice` — the notice queue that goes
+- `internal/orchengine/pause.go` — the hub-pause handling and its resume notice
+- `internal/orchcli/notify.go` `NotifyPrime` — the one route modules use to notify the prime's orch
+- `internal/shuttleengine/session.go` `ClearSession`, `ReloadPlugins`, `TypeColor`, `CompactSession`, `LoadSkills` — the session operations command injects map to
+- `internal/battencli/wire.go` `noticeLog` — batten's notice wiring and the notice log seam
+- `internal/battencli/drive.go` — a batten notice path through `QueueNotice`
+- `internal/battenshed/rownotice.go` `NoticeLog`, `appendNoticeLog` — the notice log append D8 removes
+- `internal/battenshed/doc.go` — batten's notice and notice-log design
+- `internal/shedrun/paths.go` `NoticeLog`, `NoticeLogRel` — the notice log path
+- `internal/tendercli/deps.go` — tender's conditioned orch revive
+- `internal/loomcli/drivewiring.go` — the driver hand-back notice through `NotifyPrime`
+- `internal/loomcli/landingdeps.go` — the landing notice through `NotifyPrime`
+- `internal/hibernatecli/deps.go` — hibernate's notice through `NotifyPrime`
+- `contracts/stencils/orch/orch-template-role.md` — the orch's notice wake-up and notice-log fallback
+- `contracts/stencils/orch/orch-template-handoff.md` — the note request that becomes mail
+- `contracts/stencils/orch/orch-template-handoff-soft.md` — the soft note request and its DEFER answer
+- `pattern/PATTERN-durable-vs-ephemeral-state.md` — the entry the operator extends
+- `pattern/PATTERN-guarded-interrupt.md` — names the watcher's pause-interrupt exemption
+- `pattern/PATTERN-creel-store.md` — the Delivery seam rule the command operation joins
