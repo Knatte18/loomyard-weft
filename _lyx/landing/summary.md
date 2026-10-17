@@ -1,25 +1,30 @@
-# Board README: stack each task's run settings under its title
+# Show each task's run settings in the board README
 
-The board README now shows a task's `run_settings`, so the review budget a task will run with can be read there.
+The board README now shows a task's `run_settings`, so the review budget a task will run with can be read there, for example `{"darn":{"review_max_bounces":1}}`.
+The tables were already hard to read, so the settings add no column: they stack in height inside the existing entry cell.
 
 ## What changes
 
-- `entryCell` in `internal/boardengine/render.go` appends one `• ` bullet per run setting after the brief, each a code span `<module>: <key path> <value>`, for example `darn: review_max_bounces 1`.
-- A key nested below the module renders as its dotted path, such as `darn: models.writer opus`.
-- A string value renders bare; any other value renders as its compact JSON, so a stored `1` shows as `1` and a list as `["a","b"]`.
-- The lines are sorted, so the output is deterministic despite Go map order.
-- No column is added, and an entry without `run_settings` renders exactly as before.
-- `internal/boardengine/doc.go`'s `# README` section and `render.go`'s file header describe the setting lines.
+- Each setting is a `• ` bullet in the entry cell, after the title and the brief, rendered as a code span such as `` `darn: review_max_bounces 1` ``.
+- The entry cell is shared by every README table, so Running, Ready, layer, Notes and Done rows all show their settings.
+- A task without `run_settings` renders as before.
+- `internal/boardengine/doc.go` describes the settings bullets in its README section.
 
 ## Design decisions
 
-- The setting lines go in the entry cell shared by every README table, so a note or done entry that carries settings shows them too; one cell builder serves every table.
-- Each setting line is a code span so it reads apart from the brief bullet beside it.
-- Values are not backtick-escaped inside the code span: config keys and values are not expected to hold a backtick.
-  A pipe is escaped like every other cell text.
+- One line per leaf setting.
+  A key nested below the module renders as its dotted path, such as `darn: models.writer opus`.
+  Lines sort by module, then by key path, so the output is deterministic despite Go's random map order.
+- A string value renders as itself and any other value as compact JSON, with HTML escaping off, matching what `lyx board get` shows: `1`, not `1.0`, and `["a","b"]` for a list.
+- `codeSpan` fences with a backtick run longer than any in the text, so a value holding backticks cannot break the span.
+  A pipe in a value is escaped by the existing cell escaping, so a row stays one table row.
+- Out of scope: the design-doc header and `lyx board list --text`.
 
 ## Tests
 
-`TestRenderReadmeGolden`'s fixture gives three tasks run settings: two keys in one module after a brief, a nested key whose value holds a pipe beside a list value, and a single key on a task with no brief.
-The golden pins the sorted bullets, the dotted path, the JSON value and the escaped pipe.
-No top-level test is added.
+`TestRenderReadmeGolden`'s fixture and golden carry run settings on some entries, covering a brief with several settings, a task with settings and no brief, and a nested key.
+No new top-level test was added.
+
+## Check by hand
+
+Nothing outstanding; run `lyx board` against a board with settings and read the rendered README once.
