@@ -1,0 +1,105 @@
+{
+  "runGuid": "214dfe153866a1b4aa55094310786223",
+  "planFingerprint": "b901a25a0087609ed507c183a21fdc26fb48cbb0e6c115611b7619188262af59",
+  "planFileHashes": {
+    "00-overview.md": "ac98804ef76f43c880baf747b4f1cd1c276e91a54aa6fcbe23eb93604de82432",
+    "01-log-id-reminded.md": "991bb0552baa6f6f797306545c2aefe5d9deffe599011ffb679c14c5213f96ba",
+    "02-refusal-prefix-once.md": "556ca1f537d97950dc050ed4c1c8f090f75ba7f9668e6b8a31c55c935de0ea00",
+    "03-lost-answer-names-done.md": "bd7846f7e9b8fdca46cc5652c526ed9e65559d11cd6fdb0bb3597208de12bb9d"
+  },
+  "planOverviewFrameHash": "bd8eb5e1c5dc5a53677f837649094f76e00b38d3dd5345127d08b5fd1c00d8b9",
+  "partition": [
+    {
+      "cards": [
+        "01-log-id-reminded",
+        "02-refusal-prefix-once",
+        "03-lost-answer-names-done"
+      ],
+      "profile": "cautious",
+      "estimate": 150886,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 1,
+        "startup": 54448,
+        "read_union": 20520,
+        "cards": [
+          {
+            "card": 1,
+            "card_text": 576,
+            "reads": {
+              "file:internal/creelengine/doc.go": 2040,
+              "file:tools/sandbox/SANDBOX-CREEL-SUITE.md": 4056,
+              "package:internal/creelcli": 2000,
+              "package:internal/creelengine": 2000,
+              "package:tools/sandbox": 2000,
+              "tests:internal/creelcli": 2000,
+              "tests:internal/creelengine": 2000,
+              "tests:tools/sandbox": 2000
+            },
+            "messages": 61.5,
+            "written": 19026
+          },
+          {
+            "card": 2,
+            "card_text": 432,
+            "reads": {
+              "file:internal/creelcli/doc.go": 156,
+              "package:internal/creelcli": 2000,
+              "tests:internal/creelcli": 2000
+            },
+            "messages": 39,
+            "written": 12132
+          },
+          {
+            "card": 3,
+            "card_text": 1260,
+            "reads": {
+              "file:internal/creelcli/doc.go": 156,
+              "package:internal/creelcli": 2000,
+              "tests:internal/creelcli": 2000
+            },
+            "messages": 145,
+            "written": 44760
+          }
+        ]
+      }
+    }
+  ],
+  "currentBatch": 1,
+  "masterStrand": "484ba83e2e652ff378b19c48b990aba3",
+  "masterSessionId": "0e0487df-c790-4a2a-b80e-615383fdbd33",
+  "masterEngine": "claude",
+  "batches": {
+    "1": {
+      "slug": "log-id-reminded",
+      "cards": [
+        "01-log-id-reminded",
+        "02-refusal-prefix-once",
+        "03-lost-answer-names-done"
+      ],
+      "cardHashes": {
+        "01-log-id-reminded": "991bb0552baa6f6f797306545c2aefe5d9deffe599011ffb679c14c5213f96ba",
+        "02-refusal-prefix-once": "556ca1f537d97950dc050ed4c1c8f090f75ba7f9668e6b8a31c55c935de0ea00",
+        "03-lost-answer-names-done": "bd7846f7e9b8fdca46cc5652c526ed9e65559d11cd6fdb0bb3597208de12bb9d"
+      },
+      "startSha": "a273d69bc51f0a57a77f0e1b5d0808508e78a3e7",
+      "kind": "fork",
+      "spawnedAt": "2026-10-17T12:06:29Z",
+      "sessionId": "0e0487df-c790-4a2a-b80e-615383fdbd33",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
+    }
+  }
+}
