@@ -1,0 +1,18 @@
+round: 2
+fan: ""
+fix_fan: fix-discussion
+fans_recorded: true
+review:
+    engine: claude
+    model: opus
+    effort: medium
+    start: 2026-10-17T13:41:00Z
+    end: 2026-10-17T15:46:07.181632278+02:00
+    wall_seconds: 307.181632278
+    tokens_known: true
+    fresh_tokens: 128025
+    cache_read_tokens: 2276327
+    forks: 0
+    fork_fresh_tokens: 0
+    fork_cache_read_tokens: 0
+    fork_fresh_share: 0
