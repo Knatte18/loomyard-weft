@@ -142,6 +142,7 @@ The width analysis ran on 34 real plans (238 cards, 106 batches): `docs/research
 - Little is gained from parallel implementers because tasks are already split by the packages they touch: the board's labels and `depends_on` are that parallelism, and work better than expected.
 - Weaver is a Go process with an arbiter at hand, not an LLM master.
   Go runs the batchifier after every finished batch and decides which cards suit the next spawns.
+  The batchifier is then part of Weaver, not a producer row of its own before the implementer as loom's `Batchifier` row is before `Webster` today; this replaces the Batchify and Batch-Run rows sketched under "batches formed as the run goes".
 - A batchifier that does its job leaves few conflicts between batches, and a fast Haiku should resolve the ones left quickly.
 
 ### Orch recommendation
