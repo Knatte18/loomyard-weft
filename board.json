@@ -826,6 +826,27 @@
       "body": "Imported from [issue #697](https://github.com/Knatte18/loomyard/issues/697).\n\nSeen: the prime had an untracked /home/knatte/Code/loomyard-LYXHUB/loomyard/.claude/worktrees/_board/.lyx/pause/net (empty dirs, created 2026-10-15 18:03). .claude/worktrees/ is Claude Code's own directory for isolation: worktree agents, so lyx run inside such a worktree resolved the hub board dir as the sibling _board of the agent worktree, not the hub's _board, and created its pause/net state there. On 2026-10-15 the untracked directory made update-plugins.sh refuse the dirty prime, so the Land deploy of discussion-relevant-list failed (its tackler attempt diagnosed it). Workaround: /.claude/worktrees/ was added to .git/info/exclude, and the empty dirs were removed by hand on 2026-10-17. Expected: lyx run from a directory that is not a recorded fabric worktree resolves the board dir from the fabric anchor or refuses, and never creates hub state under a guessed path.",
       "created": "2026-10-17T09:00:00Z",
       "revised": "2026-10-17T09:41:11Z"
+    },
+    {
+      "id": 618,
+      "slug": "code-review-fan",
+      "title": "Lens fan and twill fixer for Webster, Merge and Darn review",
+      "kind": "task",
+      "labels": [
+        "enhancement",
+        "burler",
+        "loom",
+        "stencil",
+        "config"
+      ],
+      "issues": [],
+      "recipe": "darn",
+      "depends_on": [],
+      "isolated": false,
+      "brief": "Fan and fix-fan keys for the three code-review perches, read-only git for forks, and code lenses in burler.yaml",
+      "body": "## Seen\n\nEvery perch runs the same `BurlerReview` and `BurlerFix` engines, wired in one function in `internal/loomcli/wiring.go`.\nOnly Discussion-Review and Plan-Review can take a lens fan and a twill fixer: `loom.yaml` carries `discussion_fan`, `plan_fan`, `discussion_fix_fan` and `plan_fix_fan`, and `RowClusterFans` and `RowFixFans` hold entries for those rows only.\nWebster-Review, Merge-Review and Darn-Review always run solo.\nThe recorded reason (comments in `contracts/recipes/loom-recipe.yaml` at Webster-Review and Merge-Review) is that fork reviewers may run no git command, so they could not reach a subject that exists only through git.\nThat ban lives in the fork stencils (`contracts/stencils/burler/burler-cluster-fan.md`, `burler-fix-self-check.md`: \"never run any git command\").\nThe engine's fork audit (`internal/burlerengine/cluster.go`) refuses only state-mutating git commands.\nThe `burler.yaml` fans have lenses for a design record and a plan only, none for code.\n\n## Scope\n\n- Give Webster-Review, Merge-Review and Darn-Review the same fan and fix-fan keys Discussion-Review and Plan-Review have, with the same grammar (one fan name, or a per-round list whose last entry serves every later round; empty runs solo), threaded through the same wiring maps.\n  The loom keys live in `loom.yaml`, the Darn-Review keys in `darn.yaml`, since flags live in the config of the module that owns the recipe.\n  Template defaults stay empty, so no run changes until a hub sets a key.\n- Let fork reviewers and fix-check forks run read-only git (such as `git diff`, `git log`, `git show`), matching the engine's audit, which keeps refusing state-mutating git.\n- Remove the recipe comments that say Webster-Review and Merge-Review stay solo, and any doc text resting on that premise.\n- Add a code-review fan and a code fix-check fan to the embedded `burler.yaml` template, with lenses for a committed diff (for example correctness, tests, PATTERN fit, leanness), each naming the rubric item it emphasizes without paraphrasing the rubric, as the existing lenses do.\n- Update the package `doc.go` files and `docs/overview.md` where they describe which segments can fan.\n\n## Out of scope\n\n- Changing the hub's config; the orch sets the new keys after landing.\n- Tuning the lens texts beyond a first draft; later audits of real runs tune them.\n",
+      "created": "2026-10-17T09:45:56Z",
+      "revised": "2026-10-17T09:45:56Z"
     }
   ]
 }
