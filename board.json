@@ -902,6 +902,24 @@
       "body": "Imported from [issue #670](https://github.com/Knatte18/loomyard/issues/670).\n\n`lyx` collides with LyX, the LaTeX editor, which ships as the `lyx` package in Ubuntu/Debian and installs `/usr/bin/lyx`.\nOn a machine with both, whichever comes first on PATH wins: a shell where `~/go/bin` is not yet on PATH starts the LaTeX editor instead of LoomYard.\nLyX is common among researchers, so the clash is likely for other users too.\n\nOperator decision 2026-10-17: rename the binary to `lyr` (LoomYard Runner), replacing the first proposal `lyd`.\nChecked 2026-10-17: `lyr` is no Ubuntu package name, is not installed on the operator's machine, and a web search found no CLI tool whose binary is named `lyr`.\nRejected: `warp` and `ply` are Ubuntu packages, `weft` and `warp` are already fabric terms here, and the four-letter weaving names (`pirn`, `sley`) are longer to type.\n\nScope: the `cmd/lyx` build target and `binaryName()` in `tools/deploy`, docs and README, stencils and skills in the `ly` plugin that invoke `lyx`, and any scripts or launchers that call it.\n",
       "created": "2026-10-16T06:49:28Z",
       "revised": "2026-10-17T10:09:18Z"
+    },
+    {
+      "id": 623,
+      "slug": "creel-success-write-lost",
+      "title": "creel verbs exit 0 with nothing on stderr when their success envelope cannot be written",
+      "kind": "note",
+      "labels": [
+        "bug"
+      ],
+      "issues": [
+        699
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Imported from [issue #699](https://github.com/Knatte18/loomyard/issues/699).\n\nFound in the creel stage 1 re-test of 2026-10-17 (main at 58a7feec7, dev build, sandbox hub lyt).\n\nSeen: with stdout unwritable, every creel verb whose answer is a success exits 0 and prints nothing on stderr; the answer is lost.\n- `lyx creel post lyt:dave \"x\" \u003e /dev/full` exits 0, stderr empty; the message (#907) is stored, but its id never reaches the caller.\n- `lyx creel inject lyt:sink \"x\" \u003e /dev/full` exits 0, stderr empty, and the line is typed.\n- `lyx creel log \u003e /dev/full` exits 0, stderr empty.\n- `lyx creel inbox \u003e /dev/full` from a strand pane exits 0, stderr empty.\nA refusal to the same stdout is handled (#681): it writes `creel: \u003cerror\u003e` to stderr and exits 1, and `read` leaves the mail unread.\n\nCause: the shared success path in internal/creelcli/cli.go (line 175, `output.Ok(out, res.fields)`) drops the write error; only `writeRefusal` and `read`'s `writeOk` check it.\n\nReproduce: in a hub with a live strand lyt:dave, run `lyx creel log \u003e /dev/full; echo $?`, then the same for post, inject and inbox.\n\nExpected: when the success envelope cannot be written, a short `creel: ...` line on stderr and a non-zero exit, as for a refusal; for post and inject the stderr line names the id, since the message or inject was already stored.",
+      "created": "2026-10-17T10:17:27Z",
+      "revised": "2026-10-17T10:17:27Z"
     }
   ]
 }
