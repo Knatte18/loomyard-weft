@@ -29,6 +29,20 @@ One line in `lyx creel read`'s output (the sender is another strand, not the ope
 - An inject never carries a question that expects an answer from the receiver; a sender that wants an answer posts.
 - A message whose sender waits and that goes unanswered past a bound is journaled, so the orch can see it.
 
+## Operator idea (2026-10-17): reply expected, chased
+
+- `post` takes a flag marking that the sender expects a reply, without blocking the sender the way `--wait-reply` does.
+- Creel already journals `read` and links a reply to its message by `reply_to`, so it knows when an expected reply is owed.
+- When no reply is sent within a set time after the receiver read the message, creel types a reminder of its own, such as `Sender expected a reply to #<id> from <sender>`.
+
+Orch recommendation on the idea:
+- `--wait-reply` implies the flag, so a waiting sender gets the chase too.
+- The chase follows the reminder rules: typed only at idle, no message content, and `read` shows the expected-reply mark and the reply command.
+- Chases are bounded (one or two), after which creel journals the message as unanswered and tells the sender, so a dead receiver never makes a chase loop.
+- The time limit is a creel config key.
+
 ## Open
+
+- The flag's name, and whether a reply by `defer` (as in the orch's note request) counts as an answer.
 
 - Whether this belongs in `creel-notices` (stage 2), where the orch answers the watcher's note request by post, or in `creel-agents` (stage 3), where agents move onto creel.
