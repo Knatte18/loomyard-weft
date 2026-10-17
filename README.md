@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-17 09:45 UTC; every age below is as of then.
+Rendered 2026-10-17 09:46 UTC; every age below is as of then.
 
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
@@ -19,7 +19,7 @@ Waits on nothing open; can start now.
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | 1 | **Go driver messages the orch about a verify halt batten retries itself**<br>• Drop or reword the parent message for a watched verify halt | [`driver-watched-verify-notice`](design-driver-watched-verify-notice.md) | darn |  | 23h | 4m | shed, batten |
 | 2 | **report timing counts a pause before Plan-Write as Plan phase time** | [`timing-pause-as-phase`](design-timing-pause-as-phase.md) | darn |  | 19h | 4m | shed, batten |
-| 3 | **lyx creates <prime>/.claude/worktrees/_board/.lyx/pause/net when run from a Claude Code agent worktree** | [`agent-worktree-board-dir`](design-agent-worktree-board-dir.md) | darn |  | 45m | 4m | fabric |
+| 3 | **lyx creates <prime>/.claude/worktrees/_board/.lyx/pause/net when run from a Claude Code agent worktree** | [`agent-worktree-board-dir`](design-agent-worktree-board-dir.md) | darn |  | 46m | 4m | fabric |
 | 4 | **Lens fan and twill fixer for Webster, Merge and Darn review**<br>• Fan and fix-fan keys for the three code-review perches, read-only git for forks, and code lenses in burler.yaml | [`code-review-fan`](design-code-review-fan.md) | darn |  | 0m | 0m | burler, loom, stencil, config |
 
 ## Notes
