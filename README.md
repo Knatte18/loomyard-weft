@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-17 14:31 UTC; every age below is as of then.
+Rendered 2026-10-17 14:32 UTC; every age below is as of then.
 
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
@@ -43,7 +43,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | --- | --- | --- | --- | --- | --- |
 | 1 | **Prototype reed status buttons in a throwaway tmux server**<br>• A fresh agent tries the menu button, follow toggle and extra button line by hand before reed-status-buttons becomes a task | [`reed-status-buttons-prototype`](design-reed-status-buttons-prototype.md) | 2d | 2d | reed |
 | 2 | **Classify Plan lens and review findings to make the Plan writer get it right first**<br>• Find what Plan lenses and Plan-Burler-Review keep catching, and stop each recurring class at the writer | [`plan-writer-finding-classes`](design-plan-writer-finding-classes.md) | 1d | 23h | loom, burler, stencil, shed |
-| 3 | **Recurring Webster kick-start pack (glyph) audit**<br>• Re-run tools/forkaudit on new Webster forks to track pack use and correctness | [`glyph-audit-recurring`](design-glyph-audit-recurring.md) | 50m | 50m | webster, quarry |
+| 3 | **Recurring Webster kick-start pack (glyph) audit**<br>• Re-run tools/forkaudit on new Webster forks to track pack use and correctness | [`glyph-audit-recurring`](design-glyph-audit-recurring.md) | 51m | 51m | webster, quarry |
 
 ### Bugs
 
@@ -54,6 +54,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 1 | **Key-rename migration never reaches the hub config: loom-model-key-names silently turned off the hub fans** | [`config-migrate-hub-layer`](design-config-migrate-hub-layer.md) | 3h | 3h | config, loom |
 | 2 | **Flaky tmux test: TestBoot_TmuxConf TwoWorktreesBootedConcurrently fails with server exited unexpectedly** | [`tmux-conf-concurrent-boot-flake`](design-tmux-conf-concurrent-boot-flake.md) | 2h | 2h | reed |
 | 3 | **shedverbs wait-world integration tests flake: loop exited before it recorded itself** | [`wait-world-lock-grace-flake`](design-wait-world-lock-grace-flake.md) | 2h | 2h | shed |
+| 4 | **lyx report timing leaves out darn runs**<br>• Report darn runs beside loom runs, with phases from the recipe | [`timing-report-darn`](design-timing-report-darn.md) | 0m | 0m | report |
 
 ### Enhancements
 
@@ -76,9 +77,9 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 13 | **Entry gate on shed rows: a check decides whether a row runs at all**<br>• Replace darn recipe edge rewrite and the switched producer flag check with one shed entry gate per row; false means Done without acting. | [`row-entry-gate`](design-row-entry-gate.md) | 3h | 2h | shed, loom, batten |
 | 14 | **Preflight pushes the weft branch synchronously and races the board sync**<br>• Preflight spent 11 s mostly in a weft push to GitHub, refused once after 8 s; push detached or serialise with the board sync. | [`preflight-weft-push-sync`](design-preflight-weft-push-sync.md) | 2h | 2h | fabric, shed |
 | 15 | **A darn writer cannot rerun a verify tier it is refused, so a flaky tier failure loops and escalates** | [`darn-verify-tier-unrunnable`](design-darn-verify-tier-unrunnable.md) | 2h | 2h | loom, shed |
-| 16 | **Remove the Webster kick-start pack**<br>• Drop every kick-start pack layout and its code; glyphs stay in the plan and its gates | [`kickstart-pack-remove`](design-kickstart-pack-remove.md) | 23m | 6m | webster, quarry, loom |
-| 17 | **Use quarry Enclose for mechanical checks: verify failures to plan cards**<br>• Map tool-output file:line to member glyphs, then to the card and batch that changed them | [`enclose-checks`](design-enclose-checks.md) | 9d | 6m | quarry, webster, loom |
-| 18 | **lyx board rename: change an entry slug in one write**<br>• Rename an entry keeping all fields and rewriting depends_on; report prose mentions | [`board-rename`](design-board-rename.md) | 5m | 5m | board |
+| 16 | **Remove the Webster kick-start pack**<br>• Drop every kick-start pack layout and its code; glyphs stay in the plan and its gates | [`kickstart-pack-remove`](design-kickstart-pack-remove.md) | 23m | 7m | webster, quarry, loom |
+| 17 | **Use quarry Enclose for mechanical checks: verify failures to plan cards**<br>• Map tool-output file:line to member glyphs, then to the card and batch that changed them | [`enclose-checks`](design-enclose-checks.md) | 9d | 7m | quarry, webster, loom |
+| 18 | **lyx board rename: change an entry slug in one write**<br>• Rename an entry keeping all fields and rewriting depends_on; report prose mentions | [`board-rename`](design-board-rename.md) | 6m | 6m | board |
 
 #### Low priority
 

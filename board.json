@@ -911,6 +911,23 @@
       "body": "## Seen\n\n`lyx board` has no verb that changes an entry's slug.\nRenaming `enclose-kickstart` to `enclose-checks` (2026-10-17) took `get --body` to a file, a `merge` with `remove_slugs` and an upsert carrying the old entry's title, brief, kind, labels and `created`, then a manual fix of the old slug in another entry's body.\n\n## Idea\n\nA verb `lyx board rename {slug, to}` that renames an entry in one atomic write, keeping its body, kind, labels, priority, issues, `created` and every other field, and rewrites the old slug in every other task's `depends_on`.\nIt refuses a run-held entry, as the run lock does for any scope change, and a target slug that exists or breaks the slug length limit.\nIt reports the entries whose body or brief still mention the old slug, since prose references are not rewritten.\n",
       "created": "2026-10-17T14:26:12Z",
       "revised": "2026-10-17T14:26:12Z"
+    },
+    {
+      "id": 642,
+      "slug": "timing-report-darn",
+      "title": "lyx report timing leaves out darn runs",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "report"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "Report darn runs beside loom runs, with phases from the recipe",
+      "body": "## Seen (orch, 2026-10-17)\n\n`lyx report timing --since 2026-10-01` lists 161 runs and none of the darn runs that landed in that window: `gate-wait-cache-cap`, `landing-trailer-text` and `stencilstore-dev-warning-noise`, among others, are absent from `.runs`.\nIts phase columns are loom's (setup, discussion, plan, webster, merge, publish-finalize, land), so a darn run's rows (Darn-Write, Darn-Bouncer, Darn-Burler-Review, Darn-Burler-Fix) have no column either.\nTo compare darn with loom, the orch read each darn run's last batten `status.json` from the records repository's history instead: 29 darn runs, median span from first to last history entry 22 minutes (15 to 31), sleep and waits not taken out, against a loom active-time median of 108 minutes.\n\n## Idea\n\n- `lyx report timing` reports darn runs beside loom runs, tagged with their recipe, with the same sleep and wait accounting.\n- Darn's rows map to phases of their own (such as write and review), or the report's phase set comes from the recipe, so a new recipe needs no report change.\n- `lyx report convergence` is checked for the same gap.\n",
+      "created": "2026-10-17T14:32:25Z",
+      "revised": "2026-10-17T14:32:25Z"
     }
   ]
 }
