@@ -1,59 +1,58 @@
-# Landing trailer block: trailer_text plus one line per engine that ran
+# landing.yaml: operator-set trailer_text and per-engine engine_trailers
 
-Finalize used to append exactly one `Co-Authored-By: <value>` trailer to the landing commit, with the value taken from `landing.yaml`'s `co_authored_by`.
-That gave the operator no say over what the trailer block holds.
-The landing commit's trailer block is now built from two operator-set keys, and each line is copied verbatim with no prefix added.
+The landing commit's trailer block was a single `Co-Authored-By: <value>` line, with the value from `landing.yaml`'s `co_authored_by`.
+The key refused an empty value, and the fixed prefix left the operator no say over what the block holds.
 
-## What changes
+`co_authored_by` is replaced by two keys, each copied verbatim with no prefix added:
 
-- `landing.yaml` drops `co_authored_by` and gains two keys, both `CategoryCrossPair`:
-  - `trailer_text` holds fixed lines that land on every commit, for example `Created using Loomyard`.
-    It may span several lines.
-  - `engine_trailers` maps an engine name to its trailer text.
-    It is an open map, so reconcile and the layer stack carry the operator's entries whole.
-- The template default keeps today's commit: `trailer_text: ""` and `engine_trailers.claude: "Co-Authored-By: Claude <noreply@anthropic.com>"`.
-- `Config.TrailerBlock` builds the block in this order:
-  - the trimmed `trailer_text`;
-  - then the trimmed `engine_trailers` text of each engine that ran, in sorted engine-name order, one line each.
-- What adds no line:
-  - an empty or whitespace-only value;
-  - an engine with no entry;
-  - an engine that did not run.
+- `trailer_text`: fixed lines, possibly several, that land on every commit.
+- `engine_trailers`: a map from engine name to trailer text.
+  An engine's text lands only when that engine ran at least one session in the task.
 
-  With both keys empty, the commit carries no trailer block.
-- `summaryparser.Summary.LandingMessage` takes the composed block and appends it after a blank line.
-  An empty block yields the bare commit message.
-- Finalize reads the engines through a new `landingshed.Deps.EnginesRun` seam.
-  The read happens next to the change-description parse, before any parent-side mutation.
-  If the read fails, Call returns an error and nothing is merged.
-  `internal/loomcli` wires the seam to the run's shuttle runner.
-- `shuttleengine` keeps a record of which engines ran:
-  - Start adds each run's engine name to `engines-run.json` at the run directory root before it registers the strand.
-  - A failed ledger write fails the start and removes the run directory.
-  - `Runner.EnginesRun` returns the sorted union of the ledger and the engine of every run record still under the root.
-    A record that names no engine counts as the engine set's default.
-- `LoadConfig` refuses an `engine_trailers` key that names no engine `modelspec` knows.
-  The error names the key and lists the known engines.
-- `landingshed.MigrateConfig` is now landing's `Migrate` hook, so `lyx config reconcile` rewrites `co_authored_by: X` into `engine_trailers: {claude: "Co-Authored-By: X"}`.
-  If the document already holds `engine_trailers`, that map is kept and `co_authored_by` is dropped.
-  A second pass changes nothing.
-- The Describe validation still refuses a `Co-Authored-By` line in the change description.
-- Docs updated in this change:
-  - `internal/landingshed/doc.go` and `internal/shuttleengine/doc.go` describe the trailer block and the ledger;
-  - `docs/overview.md` and `contracts/specs/loom-final-summary-spec.md` describe the new message composition and keys.
+An empty `trailer_text`, an empty map, or an engine left out or set to empty text adds nothing.
+With both empty the commit has no trailer block.
+The template default keeps today's landing commit for a Claude-only run: `trailer_text` empty and `engine_trailers.claude` set to `Co-Authored-By: Claude <noreply@anthropic.com>`.
+The change description still may not carry trailers of its own, and the Describe validation keeps refusing them.
 
 ## Design decisions
 
-- **Where "engines that ran" comes from.** Shuttle sweeps a per-run directory once its strand is gone, so run records alone cannot answer the question at landing time.
-  The ledger is a file beside the run directories, and the orphan sweep removes only directories, so the ledger outlives every run in the worktree.
-  Every runner in a task worktree anchors at the same run directory root, so the ledger lists the engines of the task's own sessions.
-  It is never tracked and goes away with the worktree.
-- **Runs started before the ledger existed.** The scan of surviving run records covers sessions started by an older binary.
-  A run already in flight across the upgrade can still miss an engine whose only sessions were swept before the ledger existed.
-- **Typos.** An unknown engine key in `engine_trailers` is refused at load, because a typo would otherwise drop that engine's line silently.
-- **Line order.** Fixed lines come first and engine lines follow in name order, so the message is stable across runs.
-- **Test helpers.** The shuttleengine tests that asserted "no leftover entries" under the run directory root now count run directories only, since the ledger and its lock file are legitimate files there.
+- **Composition.** The block is `trailer_text` trimmed, then each ran engine's trimmed text in sorted engine-name order, joined by newlines.
+  The landing message is the commit message, a blank line and the block, or the bare commit message when the block is empty.
+  `summaryparser`'s `LandingMessage` now takes the composed block instead of a co-author value.
+- **Which engines ran.**
+  Per-run directories under the shuttle run directory root are swept once their strand ends, so they alone cannot answer at landing.
+  `shuttleengine`'s `Start` therefore records each started run's engine name in an engine ledger file at that root, written through `internal/state`.
+  The orphan sweep removes directories only, so the file survives.
+  `Runner.EnginesRun` returns the sorted union of the ledger and the engine of every run record still present, a record with no engine reading as the default engine.
+  `landingshed` reads it through a new `Deps.EnginesRun` seam, wired in `loomcli`; a nil seam names no engine.
+- **Ledger semantics.**
+  The ledger counts start attempts that passed `Prepare`, so a start that fails after the ledger write can leave an engine counted that never ran a session.
+  A failed ledger write fails `Start`, removes the run directory and registers no strand.
+  The ledger lives in the never-tracked run directory and dies with the worktree.
+  A run in flight across an upgrade, whose earlier run directories were swept before the ledger existed, lands without that engine's line unless a later session of the same engine starts.
+- **Validation.**
+  An `engine_trailers` key must be an engine `modelspec` knows; an unknown key fails `LoadConfig`, naming the key and the known engines, so a typo cannot silently drop a line.
+  Text values, empty included, are unrestricted.
+- **Config categories.**
+  Both keys are `CategoryCrossPair`, as `co_authored_by` was, and `engine_trailers` is an open map so `lyx config reconcile` carries the operator's entries whole.
+- **Migration.**
+  `landingshed.MigrateConfig`, landing's `Migrate` hook, rewrites `co_authored_by: X` into `engine_trailers.claude: "Co-Authored-By: X"` and drops the old key.
+  An empty, whitespace-only or non-scalar `co_authored_by` is dropped without creating an entry, since empty meant off.
+  A document already holding `engine_trailers` keeps it and drops `co_authored_by`, reporting the dropped value.
+  A second pass changes nothing.
+
+`internal/landingshed/doc.go`, `internal/shuttleengine/doc.go`, `docs/overview.md`, the final-summary spec and both describe stencils are updated to the new keys.
+The `test-budget.yaml` rows for `internal/shuttleengine` and `internal/landingshed` are raised for the new tests.
 
 ## To check by hand
 
-- On a hub with a hand-edited `co_authored_by`, run `lyx config reconcile --apply` and confirm `landing.yaml` holds `engine_trailers.claude: "Co-Authored-By: <that value>"`, an empty `trailer_text`, and no `co_authored_by`.
+Each item below was raised in review and addressed in the diff; none was re-run end to end.
+
+- `internal/shuttleengine/run.go` (`Start`): a failed engine-ledger write fails `Start`, removes the run directory and registers no strand.
+- `internal/landingshed/config.go` (`migrateCoAuthoredBy`): an empty, whitespace-only or non-scalar `co_authored_by` migrates to no `engine_trailers.claude` entry rather than a bare `Co-Authored-By:` line.
+- `internal/shuttleengine/run.go` (`Start`): when `AddStrand` fails after the ledger write, the ledger keeps the engine, so a landing can carry a line for an engine that never started a session.
+- `internal/shuttleengine/enginedispatch_test.go`: the real orphan sweep leaves `engines-run.json` and its lock file in place, and `EnginesRun` still returns the engine.
+- `internal/landingshed/finalize.go` (the `EnginesRun` nil guard): a nil seam lands with no engine line.
+- `internal/landingshed/config_test.go` (`TestMigrateConfig`): existing `engine_trailers` entries are kept beside `co_authored_by`, and an unparsable or non-mapping document returns `configengine.ErrInvalid`.
+- `contracts/stencils/landing/landing-template-describe.md` and `landing-template-describe-darn.md`: both say the landing step appends the configured trailer block, and still forbid a `Co-Authored-By` line in the description.
+- `internal/landingshed/deps.go` and `internal/shuttleengine/enginesrun.go`: the `EnginesRun` and ledger doc comments state only what the symbol does and why.
