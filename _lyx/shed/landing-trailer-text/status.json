@@ -1,11 +1,11 @@
 {
-  "current_producer": "Darn-Write",
+  "current_producer": "Darn-Bouncer",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Darn-Write",
-    "last": "Preflight → done",
+    "now": "Darn-Bouncer",
+    "last": "Darn-Write → done",
     "wait": ""
   },
   "history": [
@@ -14,6 +14,51 @@
       "outcome": "done",
       "output": "",
       "at": "2026-10-17T11:40:30Z"
+    },
+    {
+      "producer": "Darn-Write",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYXHUB/landing-trailer-text/_lyx/landing/summary.md",
+      "at": "2026-10-17T11:58:31Z",
+      "gate_attempts": 1,
+      "gate_spans": [
+        {
+          "gate": "discussion",
+          "kind": "gate",
+          "start": "2026-10-17T11:55:25.914438661Z",
+          "end": "2026-10-17T11:55:35.875451471Z"
+        },
+        {
+          "gate": "discussion",
+          "kind": "gate",
+          "start": "2026-10-17T11:57:02.225517444Z",
+          "end": "2026-10-17T11:57:10.562772924Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-10-17T11:55:35.921240827Z",
+          "end": "2026-10-17T11:56:14.588033589Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "rework",
+          "start": "2026-10-17T11:56:15.029709806Z",
+          "end": "2026-10-17T11:57:02.196515383Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-10-17T11:57:10.617277809Z",
+          "end": "2026-10-17T11:58:30.622760188Z"
+        },
+        {
+          "gate": "description",
+          "kind": "gate",
+          "start": "2026-10-17T11:58:30.678688822Z",
+          "end": "2026-10-17T11:58:30.678745879Z"
+        }
+      ]
     }
   ],
   "product": {
