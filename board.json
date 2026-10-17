@@ -893,6 +893,24 @@
       "body": "Imported from [issue #712](https://github.com/Knatte18/loomyard/issues/712).\n\nSeen 2026-10-17 in run stencilstore-dev-warning-noise, at Publish (publish_verify: go test -tags tmux ./...): internal/reedengine TestBoot_TmuxConf/AppendingFileIsSourcedOncePerServerStart/TwoWorktreesBootedConcurrently failed with 'run list-commands: exit status 1: server exited unexpectedly'. The task's diff touched only internal/creelcli and cmd/lyx/stencilseedgate_test.go, so the failure is unrelated to the change; batten retried the run. Several runs were in flight on the machine at the time, and publish_verify runs raw go test outside the gate slot pool. Expected: the test boots two tmux servers concurrently without flaking, or isolates them so a concurrent boot cannot kill a server.",
       "created": "2026-10-17T11:51:35Z",
       "revised": "2026-10-17T11:51:37Z"
+    },
+    {
+      "id": 636,
+      "slug": "darn-verify-tier-unrunnable",
+      "title": "A darn writer cannot rerun a verify tier it is refused, so a flaky tier failure loops and escalates",
+      "kind": "note",
+      "labels": [
+        "enhancement"
+      ],
+      "issues": [
+        714
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Imported from [issue #714](https://github.com/Knatte18/loomyard/issues/714).\n\n## What happened\n\n`lyx loom` halted `blocked` (anomaly `escalation-to-human`) at Publish.\n`publish_verify` failed after merging the parent branch with `internal/reedengine` `TestBoot_TmuxConf/AppendingFileIsSourcedOncePerServerStart/TwoWorktreesBootedConcurrently` reporting `run list-commands: exit status 1: server exited unexpectedly`.\nThe task's diff did not touch `internal/reedengine`, so the failure looks like a race in booting two tmux servers concurrently, not a defect of the change.\n\n## Why it is abnormal\n\n- The test is flaky and fails an unrelated task at the Publish gate.\n- The Darn-Write agent could not reproduce or fix it: the test carries the `tmux` build tag, and tmux-tier go runs are refused in a darn session.\n  The agent handed off with no commit, so the run escalated to a human with a failure the darn step can never resolve.\n\n## What to do\n\n- Make `TwoWorktreesBootedConcurrently` deterministic, or retry or isolate the tmux server start it races on.\n- Consider whether a darn session facing a verify failure only in a tier it cannot run should get a way to rerun it, or should be told up front to escalate, rather than looping through the Darn cycle first.\n\nProvenance: task `stencilstore-dev-warning-noise`; notes `Darn-Write.md`, `loom-halt.md`.\n",
+      "created": "2026-10-17T12:04:23Z",
+      "revised": "2026-10-17T12:04:23Z"
     }
   ]
 }
