@@ -1,6 +1,6 @@
 # Key-rename migration never reaches the hub config: loom-model-key-names silently turned off the hub fans
 
-`config-migrate-hub-layer` · Note · bug
+`config-migrate-hub-layer` · Note · bug, config, loom
 
 Imported from [issue #709](https://github.com/Knatte18/loomyard/issues/709).
 
