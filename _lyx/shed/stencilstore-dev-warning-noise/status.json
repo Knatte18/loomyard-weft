@@ -1,11 +1,11 @@
 {
-  "current_producer": "Darn-Write",
+  "current_producer": "Darn-Bouncer",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Darn-Write",
-    "last": "Preflight → done",
+    "now": "Darn-Bouncer",
+    "last": "Darn-Write → done",
     "wait": ""
   },
   "history": [
@@ -14,6 +14,33 @@
       "outcome": "done",
       "output": "",
       "at": "2026-10-17T11:31:30Z"
+    },
+    {
+      "producer": "Darn-Write",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYXHUB/stencilstore-dev-warning-noise/_lyx/landing/summary.md",
+      "at": "2026-10-17T11:41:32Z",
+      "gate_attempts": 0,
+      "gate_spans": [
+        {
+          "gate": "discussion",
+          "kind": "gate",
+          "start": "2026-10-17T11:39:00.542467765Z",
+          "end": "2026-10-17T11:39:07.601583273Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-10-17T11:39:07.647466473Z",
+          "end": "2026-10-17T11:41:31.808207018Z"
+        },
+        {
+          "gate": "description",
+          "kind": "gate",
+          "start": "2026-10-17T11:41:31.861058221Z",
+          "end": "2026-10-17T11:41:31.862654985Z"
+        }
+      ]
     }
   ],
   "product": {
