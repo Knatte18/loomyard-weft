@@ -139,6 +139,11 @@ The width analysis ran on 34 real plans (238 cards, 106 batches): `docs/research
   `test-budget.yaml` is one line per package, so different packages' raises merge cleanly in git unless adjacent; it is a false scheduling dependency.
 - A batchifier aiming at parallelism would gain roughly 1.3x to 1.6x on 8 to 17-card plans by ignoring `test-budget.yaml`, moving shared-doc edits to a final card and getting honest per-card file lists; nothing on the about 40% of plans with 4 or fewer cards.
 
+### Operator decision (2026-10-17)
+
+Weaver's batchifier keeps forming clusters of cards from the plan's flat card list that can run in parallel safely enough and efficiently; today's batcher, which groups contiguous cards by cost, cannot serve this, so Weaver gets a new one.
+The measure for it is the card-level width (cp and w columns of the study), not the batch level.
+
 ### Operator view, not a decision (2026-10-17)
 
 - Weaver starts cold agents; that is what sets it apart from Webster, which forks.
