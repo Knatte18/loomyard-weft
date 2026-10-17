@@ -1,6 +1,6 @@
 # landing.yaml trailer_text: an operator-set trailer block for the landing commit
 
-`landing-trailer-text` · Task · enhancement, config, loom, shuttle · running · PR-Gate
+`landing-trailer-text` · Task · enhancement, config, loom, shuttle · running · Finalize
 
 ## Seen
 

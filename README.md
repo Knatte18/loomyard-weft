@@ -17,8 +17,8 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | **landing.yaml trailer_text: an operator-set trailer block for the landing commit**<br>• Replace co_authored_by with trailer_text and engine_trailers: fixed lines plus one line per engine that ran, each copied verbatim, each switchable off<br>• `darn: review_max_bounces 1` | [`landing-trailer-text`](design-landing-trailer-text.md) | darn | PR-Gate | 2h | 2h | config, loom, shuttle |
-| 2 | **creel CLI output fixes: lost success envelope, doubled prefix, log --id reminders**<br>• Three output bugs in internal/creelcli from the creel stage 1 re-test (#699, #700, #701).<br>• `loom: review_hard_max_bounces 3`<br>• `loom: review_max_bounces 2` | [`creel-cli-output-fixes`](design-creel-cli-output-fixes.md) | loom | Webster-Burler-Fix | 1h | 42m | creel |
+| 1 | **landing.yaml trailer_text: an operator-set trailer block for the landing commit**<br>• Replace co_authored_by with trailer_text and engine_trailers: fixed lines plus one line per engine that ran, each copied verbatim, each switchable off<br>• `darn: review_max_bounces 1` | [`landing-trailer-text`](design-landing-trailer-text.md) | darn | Finalize | 2h | 2h | config, loom, shuttle |
+| 2 | **creel CLI output fixes: lost success envelope, doubled prefix, log --id reminders**<br>• Three output bugs in internal/creelcli from the creel stage 1 re-test (#699, #700, #701).<br>• `loom: review_hard_max_bounces 3`<br>• `loom: review_max_bounces 2` | [`creel-cli-output-fixes`](design-creel-cli-output-fixes.md) | loom | Webster-Burler-Fix | 1h | 43m | creel |
 
 ### Ready
 
