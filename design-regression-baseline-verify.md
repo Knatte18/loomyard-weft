@@ -39,9 +39,9 @@ Loom's recipe could hold fixed command boxes of one type, each taking several en
 ## On a failed compare (orch recommendation, not a decision)
 
 - Place the compare right after the Webster review (before Describe and Merge-In), not before Finalize: the baseline and the code then share one parent, so drift from other tasks landed meanwhile never enters the compare, which settles the parent-move question.
-- `preserve`: drift is a defect, routed as a verify failure is today: the run goes to `Webster-Burler-Review` with the drift report as its finding, under that perch's caps; past them it escalates to the orch, who brings it to the operator.
+- Operator view, not a decision: a jump back to `Webster-Burler-Review` on a failed compare is jumping around, and not clean.
+- `preserve`: the compare is its own perch, built like every other perch: a check row that runs the compare command, and a fix row that gets the drift report as its finding and hands back to the check. It loops under its own caps and escalates to the orch past them, with no jump into another segment.
 - `expect-drift`: the compare fails nothing; the drift report goes to PR-Align, where the alignment agent judges it against the task's goal and escalates when it cannot tell.
-- So no new failure machinery: both routes exist today.
 
 ## Open
 
