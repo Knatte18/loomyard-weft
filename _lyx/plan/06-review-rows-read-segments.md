@@ -1,14 +1,14 @@
 # Card 6 — review-rows-read-segments
 
 **Create:**
-- `plan:internal/shedrecipe#rowSegment` -> `func rowSegment(entry string, row RowIdentity, env Env) (SegmentSettings, error)`
-- `plan:internal/shedrecipe#settingRef` -> `func settingRef(entry string, row RowIdentity, cfg Config, key string, env Env) (ref settingReference, named bool, err error)`
-- `plan:internal/shedrecipe#settingReference` -> `type settingReference struct`
-- `plan:internal/shedrecipe#fanSetting` -> `func fanSetting(entry string, row RowIdentity, cfg Config, key string, env Env) (fans []string, ref settingReference, named bool, err error)`
-- `plan:internal/shedrecipe#boolSetting` -> `func boolSetting(entry string, row RowIdentity, cfg Config, key string, env Env) (bool, error)`
-- `plan:internal/shedrecipe#fakeSetting` -> `func fakeSetting(values map[string]any) func(module, key string) (any, error)`
-- `plan:internal/loomrecipe#fanSettingMismatches` -> `func fanSettingMismatches(r shedbuild.Recipe) []string`
-- `plan:internal/loomrecipe#TestShippedRecipes_FanSettingsAgreeWithinSegment` -> `func TestShippedRecipes_FanSettingsAgreeWithinSegment(t *testing.T)`
+- `internal/shedrecipe#rowSegment`
+- `internal/shedrecipe#settingRef`
+- `internal/shedrecipe#settingReference`
+- `internal/shedrecipe#fanSetting`
+- `internal/shedrecipe#boolSetting`
+- `internal/shedrecipe#fakeSetting`
+- `internal/loomrecipe#fanSettingMismatches`
+- `internal/loomrecipe#TestShippedRecipes_FanSettingsAgreeWithinSegment`
 
 **Edit:**
 - `internal/shedrecipe#bouncerEntry`
