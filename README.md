@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-17 12:14 UTC; every age below is as of then.
+Rendered 2026-10-17 12:15 UTC; every age below is as of then.
 
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
@@ -17,7 +17,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | **creel CLI output fixes: lost success envelope, doubled prefix, log --id reminders**<br>• Three output bugs in internal/creelcli from the creel stage 1 re-test (#699, #700, #701).<br>• `loom: review_hard_max_bounces 3`<br>• `loom: review_max_bounces 2` | [`creel-cli-output-fixes`](design-creel-cli-output-fixes.md) | loom | Describe | 1h | 44m | creel |
+| 1 | **creel CLI output fixes: lost success envelope, doubled prefix, log --id reminders**<br>• Three output bugs in internal/creelcli from the creel stage 1 re-test (#699, #700, #701).<br>• `loom: review_hard_max_bounces 3`<br>• `loom: review_max_bounces 2` | [`creel-cli-output-fixes`](design-creel-cli-output-fixes.md) | loom | Merge-In | 1h | 44m | creel |
 
 ### Ready
 
