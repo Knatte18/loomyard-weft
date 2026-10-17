@@ -1,6 +1,6 @@
 # report timing counts a pause before Plan-Write as Plan phase time
 
-`timing-pause-as-phase` · Task · bug, report · running · Finalize
+`timing-pause-as-phase` · Task · bug, report · done
 
 Imported from [issue #695](https://github.com/Knatte18/loomyard/issues/695).
 
