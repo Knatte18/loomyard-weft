@@ -167,6 +167,12 @@ Rationale: a new perch becomes one table row and one recipe segment, and the lig
   - fan-setting-presence-agreement-unpinned (class design, severity MEDIUM, open in rounds 2)
 <!-- /lyx:carry-over Discussion-Review -->
 
+<!-- lyx:carry-over Webster-Review -->
+- Webster-Review, round 1: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
+  Review: _lyx/reviews/webster/round-1-review.md; fixer report: _lyx/reviews/webster/round-1-fixer-report.md.
+  - unrelated-pattern-entries-rewritten (class consistency, severity BLOCKING, open in rounds 1)
+<!-- /lyx:carry-over Webster-Review -->
+
 ## Acceptance criteria
 
 - A loom run and a darn run resolve the same reviewer and fixer models, model keys, Bouncer models, bounce budgets, hard caps, reviewer fans, fixer fans and auto-accept flags per row as before, Darn-Bouncer's auto-accept false.
