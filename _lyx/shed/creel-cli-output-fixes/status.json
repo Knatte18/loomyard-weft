@@ -1,11 +1,11 @@
 {
-  "current_producer": "Describe",
+  "current_producer": "Merge-In",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Describe",
-    "last": "Webster-Bouncer → done",
+    "now": "Merge-In",
+    "last": "Describe → done",
     "wait": ""
   },
   "history": [
@@ -259,6 +259,21 @@
       "outcome": "done",
       "output": "/home/knatte/Code/loomyard-LYXHUB/creel-cli-output-fixes/_lyx/reviews/webster/round-1-bouncer-ledger.md",
       "at": "2026-10-17T12:14:39Z"
+    },
+    {
+      "producer": "Describe",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYXHUB/creel-cli-output-fixes/_lyx/landing/summary.md",
+      "at": "2026-10-17T12:15:12Z",
+      "gate_attempts": 0,
+      "gate_spans": [
+        {
+          "gate": "description",
+          "kind": "gate",
+          "start": "2026-10-17T12:15:12.276901031Z",
+          "end": "2026-10-17T12:15:12.27694882Z"
+        }
+      ]
     }
   ],
   "product": {
