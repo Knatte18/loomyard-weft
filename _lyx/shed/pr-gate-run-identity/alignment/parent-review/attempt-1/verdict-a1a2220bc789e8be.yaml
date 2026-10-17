@@ -1,0 +1,11 @@
+verdict: approve
+reason: >-
+  The design covers the entry's three points with nothing extra.
+  D1 and D2 stop a reused slug from adopting an older pull request.
+  D3 limits the alignment snapshot to notes titled "Decision for <slug>:", the form the entry recommends.
+  D4 declares decisionRecordedReason once.
+  Leaving out batten's refusal is justified: it already meets the entry's alternative expectation.
+  Overlaps with driver-watched-verify-notice (internal/loomcli/doc.go) and loom-model-key-names (internal/loomcli) are text-only, and the landing order is unknown because both peers report row 0.
+  There are no parent commits.
+question: ""
+superseded: []
