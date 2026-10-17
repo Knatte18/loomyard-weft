@@ -1,0 +1,11 @@
+verdict: approve
+reason: >-
+  PR 719 delivers both operator steps as decisions D1 to D8 record them:
+  Env.Segments replaces the eight per-row maps, Env.Setting with configreg.SettingLookup replaces the fan and auto-accept maps,
+  the recipes name module.key settings, the D7 agreement test pins reference and presence, and the out-of-scope items stay untouched.
+  The carried-over Webster finding on shortened PATTERN entries is not a scope deviation:
+  the headroom lint's way forward requires the cut to land the recorded PATTERN-recipe-setting-lookup line,
+  and every dropped qualifier is already in its background file.
+  The only peer, creel-notices, overlaps this run in text only (PATTERN.md and envkit.go at different places), and this run (row 22) lands before it (row 7).
+question: ""
+superseded: []
