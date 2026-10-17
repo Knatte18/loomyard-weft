@@ -749,7 +749,7 @@
       "isolated": false,
       "brief": "",
       "body": "Imported from [issue #702](https://github.com/Knatte18/loomyard/issues/702).\n\nSeen in the creel re-tests of 2026-10-16 and 2026-10-17 (dev binary built by ./deploy-dev into .dev-bin): every lyx creel verb prints 'stencilstore: dev build does not refresh untouched stencils ...' on stderr. It is noise on every call, and it mixes into the stderr that creel verbs use for refusals and stall progress lines. Expected: the warning prints once per process that refreshes stencils, or only from verbs that read stencils, never from creel verbs.",
-      "status": "running · Darn-Burler-Review",
+      "status": "running · Darn-Burler-Fix",
       "created": "2026-10-17T10:17:35Z",
       "revised": "2026-10-17T11:30:53Z",
       "run_settings": {
