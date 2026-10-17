@@ -43,6 +43,8 @@ Loom's recipe could hold fixed command boxes of one type, each taking several en
 - `preserve`: the compare is its own perch, built like every other perch: a check row that runs the compare command, and a fix row that gets the drift report as its finding and hands back to the check. It loops under its own caps and escalates to the orch past them, with no jump into another segment.
 - Operator view, not a decision (stated as very important): when regression is not needed, all of it is skipped completely.
   Orch recommendation, not a decision: with `off`, or no regression tier in the hub's `language.yaml`, every regression row is a no-show that reads its setting and is Done: no job starts, no slot is taken, no build runs and no agent is spawned; a hub with no regression tier never shows these rows in its status.
+- Operator view, not a decision: a compare that finds no drift is skipped onward too.
+  Orch recommendation, not a decision: under `preserve` the check row passes and the fix row never runs, so no agent is spawned. Under `expect-drift`, no drift is itself worth a line to PR-Align, since a model change that moves no numbers may not have taken effect.
 - `expect-drift`: the compare fails nothing; the drift report goes to PR-Align, where the alignment agent judges it against the task's goal and escalates when it cannot tell.
 
 ## Open
