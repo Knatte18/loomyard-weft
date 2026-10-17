@@ -140,11 +140,16 @@ The width analysis ran on 34 real plans (238 cards, 106 batches): `docs/research
 - Weaver starts cold agents; that is what sets it apart from Webster, which forks.
 - A Master Weaver LLM could run several cold agents at once as background processes, one batch per worktree; a Go scheduler could do the same.
 - Little is gained from parallel implementers because tasks are already split by the packages they touch: the board's labels and `depends_on` are that parallelism, and work better than expected.
+- Weaver is a Go process with an arbiter at hand, not an LLM master.
+  Go runs the batchifier after every finished batch and decides which cards suit the next spawns.
+- A batchifier that does its job leaves few conflicts between batches, and a fast Haiku should resolve the ones left quickly.
 
 ### Orch recommendation
 
 If parallel batches are built, a Go scheduler forms, starts, waits for, merges and verifies the batches, and an LLM is called only when a batch fails, as loom's Go driver and arbiter do.
 Given the numbers, building it now buys little.
+The conflicts the study saw (`wiring.go`, `doc.go`, `refusal-spec.md`) are mostly both sides adding an entry at one spot, which Haiku can merge.
+A merge git makes cleanly can still be wrong (one batch changes a signature, the other adds a call to the old one); the verify on the merged result catches it, and a failure there goes up the escalation ladder: a stronger model, then the arbiter.
 
 ## The separable, cheap win already taken
 
