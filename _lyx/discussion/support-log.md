@@ -24,6 +24,7 @@ A plain `lyx creel read` returns the oldest unread message, which during a cycle
 
 A program claim from a non-orch pane is refused by creel, and some notifiers run inside driver or webster panes.
 Picked: claim the strand when `$LYX_STRAND_NAME` names a non-orch strand, else the module's program name (D6), leaving identity unchanged.
+The current rule: the caller claims the strand named by the environment, and creel's refusal for running in no strand pane triggers one retry as the program (D6).
 
 ### Turn 5 — what keeps a direct pane action
 
@@ -75,22 +76,40 @@ All six forks returned.
 
 ## Review rounds
 
-_No rounds yet._
+### Round 1
+
+Every finding was fixed; the fixer-report holds the dispositions.
+
+- F2: the relaunch path needed a creel verb to drop a program's own queued injects; picked `withdraw` over binding injects to the strand GUID, since creel addresses strands by name and a GUID binding would change every inject.
+- F4: the Go client already runs a read handler before it acknowledges, so the watcher persists the gate's outcome there; creel's `log` carries no body and no `reply_to`, which rules out the journal lookup.
+- F8: a sender-resolution refusal holds the cycle and shows as `stuck`, since a cycle without the hold was already rejected.
+- F12: the pause-resume line goes as mail, which has no TTL, instead of a tracked and requeued inject.
+- F14: the orch revive's lookup and inject move into a `pauserecord.Update`, the lock tender's task-session revive sends already take, so no new lock is added.
+
+### Round 3
+
+Every finding was fixed; the fixer-report holds the dispositions.
+
+- F1: a failed first withdraw now makes `lyx orch start` start no session, over accepting an old `/clear` in a continued or adopted session; the exposure left after a failed second withdraw is accepted and stated.
+- F2, F3: the Stop times come from `ParseSessionSignals`, which already pairs stamps and holds back a trailing stamp run, set by `Runner.ReadEvents`, over a second pairing in the claude `ParseEvents`.
+- F4: a typed refusal code on creel's response, so `NotifyPrime` never matches message text.
 
 ## Question ledger
 
 - Q1 Command delivery shape — auto-pick: closed command set through the `Delivery` seam (D3).
 - Q2 Reminder under a hold — auto-pick: names `lyx creel read --from <owner>` (D2).
-- Q3 Stencil line telling agents a reminder may wait (board open point) — auto-pick: none, since a reminder is typed only at idle.
+- Q3 Stencil line telling agents a reminder may wait (board open point) — auto-pick: none, since when an agent reads its mail is part of stage 3's reply-discipline rules, which Scope Out leaves to `creel-agents`.
 - Q4 Keep the journal `subject` (board open point) — auto-pick: keep; `lyx creel log` uses it.
 - Q5 Remove the notice log (orch recommendation) — auto-pick: remove (D8).
 - Q6 Operator PATTERN text naming the notice log — auto-pick: drop "and the notice log", since D8 removes it in the same commit.
-- Q7 Notice sender identity — auto-pick: strand when a non-orch strand, else program (D6).
+- Q7 Notice sender identity — auto-pick: strand claim when the environment names a non-orch strand, one program retry on creel's no-strand-pane refusal, else program (D6).
 - Q8 Tender's conditional notice — auto-pick: tender-side check, TTL at most one minute, one pending at a time found through a journal lookup (D7).
-- Q9 `unconfirmed` outcome of a command inject — auto-pick: advance for `/clear` and steps that wait on their own signal (D5); recorded as an open risk.
+- Q9 `unconfirmed` outcome of a command inject — auto-pick: advance for `/clear`, the color and plugins steps, the bind color and steps that wait on their own signal (D5); recorded as an open risk.
 - Q10 Creel outage in the watcher — auto-pick: held and logged, not counted toward the tick-error cap (D5).
 - Q11 Hub-pause interrupt — auto-pick: stays in the watcher (D9).
 - Q12 Leftover queued notices at the deploy — auto-pick: not delivered; cleanup removes them.
 - Q13 Watcher program name — auto-pick: `ORCHWATCH`, which the program grammar accepts.
 - Q14 Who may hold or command-inject an orch strand — auto-pick: programs only (D1, D3), so no foreign hold can block a cycle.
-- Q15 Restart between creel's answer and the id save — auto-pick: persist the pending step, then look it up in the journal (D5).
+- Q15 Restart between creel's answer and the id save — auto-pick: persist the pending step with its persist time, then look up a matching inject since that time in the journal (D5).
+- Q16 Old cycle's hold and injects at a relaunch — auto-pick: `lyx orch start` withdraws ORCHWATCH's queued injects and releases its hold through a new `withdraw` verb, and starts no session when the first withdraw fails (D5).
+- Q17 Pause-resume line's carrier — auto-pick: mail, which cannot expire (D9).
