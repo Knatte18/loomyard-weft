@@ -1,0 +1,12 @@
+# Lens review
+
+- criteria-coverage, MEDIUM, D1 "never through `writeRefusal`": fixed differently. The proposal was a writer that refuses its first write and records the rest. Card 3 instead creates `partialWriter`, which takes half of its first write and then refuses it, and records every later write. The `log` row into it asserts that only the half line is held, with no `"ok":false` envelope after it. This one helper also covers the partial-write finding below.
+- criteria-coverage, MEDIUM, D1 bound "both streams refusing" (merged with branch-coverage LOW of the same premise): fixed as proposed. Card 3 adds a `log` row with `failingWriter{}` as both stdout and stderr, asserting exit 1.
+- criteria-coverage, MEDIUM, "after any stall notes" (merged with branch-coverage MEDIUM and row-reachability LOW of the same premise): fixed as proposed. Card 3's expired row in the waiting subtest now runs with `SetStall(alpha, creelengine.StallDraft)`, driven as the existing stall subtest drives it. It asserts that every stderr line but the last is a stall note and that the last is the `inject #N was queued; ...expired` line.
+- criteria-coverage, LOW, `post --reply` stored: fixed as proposed. The `--reply` row also checks that `log --id <id>` lists `posted`.
+- criteria-coverage, LOW, D1 bound "a write that fails after part of the line went out": fixed as proposed, through the `partialWriter` row above. It asserts exit 1 and the lost-answer stderr line.
+- forced-edits, LOW, `logCmd` help under-describes `--id`: fixed as proposed. Card 1 adds `internal/creelcli#logCmd` and rewords the `--id` flag help and the Long text's `--id` sentence.
+- branch-coverage, LOW, `writeRefusal` with `done` into a writable stdout: fixed as proposed. The waiting subtest first runs a written unconfirmed inject through `runCreelSplit`. It asserts exit 2, an empty stderr, the envelope's `error` text and no `done` key.
+- row-reachability, LOW, card 3 Uses lacks `ErrNoRunningTurn` and `StrandNameEnv`: fixed as proposed. Both are added to card 3's Uses, together with the stall and clock members the new rows call (`SetSendError`, `SetStall`, `AwaitWaitsWhere`, `AdvanceByWaitsWhere`, `awaitStderr`, `StallDraft`).
+- row-reachability, LOW, card 1 hedge on the expected event lists: fixed as proposed. The hedge sentence is replaced by the reason the lists are complete: `Reading.Ack` journals only `read`, and a worker probes before its first wait.
+- test-economy: returned no findings.
