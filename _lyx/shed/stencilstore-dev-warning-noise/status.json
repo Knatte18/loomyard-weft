@@ -1,11 +1,11 @@
 {
-  "current_producer": "Describe",
+  "current_producer": "Merge-In",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Describe",
-    "last": "Darn-Bouncer → done",
+    "now": "Merge-In",
+    "last": "Describe → done",
     "wait": ""
   },
   "history": [
@@ -79,6 +79,21 @@
       "outcome": "done",
       "output": "/home/knatte/Code/loomyard-LYXHUB/stencilstore-dev-warning-noise/_lyx/reviews/darn/round-1-bouncer-ledger.md",
       "at": "2026-10-17T11:44:07Z"
+    },
+    {
+      "producer": "Describe",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYXHUB/stencilstore-dev-warning-noise/_lyx/landing/summary.md",
+      "at": "2026-10-17T11:44:36Z",
+      "gate_attempts": 0,
+      "gate_spans": [
+        {
+          "gate": "description",
+          "kind": "gate",
+          "start": "2026-10-17T11:44:36.31920007Z",
+          "end": "2026-10-17T11:44:36.319238361Z"
+        }
+      ]
     }
   ],
   "product": {
