@@ -999,6 +999,26 @@
       "body": "## Seen (orch, 2026-10-17)\n\n`lyx gate test` runs only `go test`: it takes a hub gate slot, then runs `go test -p \u003cgo_parallel\u003e` over the named packages.\nA hub in another language has no gate, so its verify command (for example `dotnet test` in a C# hub) runs outside the slot pool.\nSeveral runs then build and test at once with no limit, which is what the slot pool exists to stop.\n\n## Idea\n\n- `lyx gate run -- \u003ccmd\u003e`: take a gate slot, run any command, release the slot.\n  The language-specific verbs (`lyx gate test` for Go) become thin wrappers over it.\n- Parallelism per language in `language.yaml`, in place of the Go-only `go_parallel`.\n- Each language's verify commands and test tiers are declared by the hub, never hard-coded in lyx.\n\n## Operator view, not a decision (2026-10-17)\n\n- lyx is to support Python as well: Go, C# and Python are the three languages in the first round.\n- Layered test tiers matter in C# too; see note `dotnet-scoped-verify` for the tiers in the operator's work repository.\n\n- Scoped tests are extremely important: a C# hub cannot run its full suite.\n\n## Orch recommendation, not a decision (2026-10-17)\n\nThe slot pool in `internal/gateslot` is already language-neutral (one file lock per slot); only `lyx gate test` on top of it is Go-specific.\n\n1. `lyx gate run -- \u003ccmd\u003e`: take a slot, run any command, release; a nested run inherits the parent slot through the existing environment variable. `lyx gate test` becomes the Go form of it.\n2. The hub declares its test tiers in `language.yaml`: name, command and when each runs (card, final, Publish, baseline), with placeholders such as `{parallel}` and `{targets}`, so lyx knows no tool. Examples: `dotnet test --filter {targets} -maxcpucount:{parallel}`, `pytest -n {parallel} {targets}`, `go test -p {parallel} {targets}`. `go_parallel` becomes a general `parallel`.\n3. Test selection per language behind one interface: Go has `internal/impactset`; C# needs what note `dotnet-scoped-verify` describes; Python could use `pytest-testmon` or the import graph.\n4. The shell guard refuses raw `dotnet test` and `pytest` as it refuses raw module-wide `go test`, so every run goes through the gate.\n5. The regression tier (note `regression-baseline-verify`) uses the same tier mechanism.\n\nOrder: 1, 2, 4 first; 3 and 5 are the large ones and come separately.\n\n## Related\n\nNotes `dotnet-verify-protocol` and `dotnet-scoped-verify`.\n",
       "created": "2026-10-17T10:33:39Z",
       "revised": "2026-10-17T10:38:45Z"
+    },
+    {
+      "id": 629,
+      "slug": "regression-baseline-verify",
+      "title": "Regression tier: baseline profiles before the run, compare at the final gate",
+      "kind": "note",
+      "labels": [
+        "feature",
+        "shed",
+        "webster",
+        "batten",
+        "config"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "Support a hub regression tier that writes profiles on the parent before implementation and compares after, switchable per task for expected drift.",
+      "body": "## Seen (operator, 2026-10-17)\n\nThe operator's C# work repository has a regression tier: a suite run before the implementation writes profiles, and the same suite run after it compares against them to catch drift.\nMany tasks there are pure refactorings that must not change behaviour, and this tier is what proves it.\nOperator view, not a decision: regression tests are not always wanted, since some tasks expect drift, for example when a model is changed; this must be handled, perhaps by a flag on the task in the board.\n\n## Orch recommendation, not a decision\n\n- A per-task setting in the board entry's `run_settings`, with three values:\n  - `off`: no baseline, no compare.\n  - `preserve`: any drift fails the final gate, as a verify failure.\n  - `expect-drift`: baseline and compare still run, but the drift report goes to the reviewers and the alignment agent, who judge whether it matches the task's goal; drift alone fails nothing.\n  The hub's default lives in config.\n- The hub declares the tier in `language.yaml` as three commands: the profile generator, the compare (the repository's own tool, with its tolerances) and the profile directory. lyx only orchestrates and knows no format.\n- A Baseline producer early in the run, a side action with a config flag, runs the generator on the parent commit before any card lands, inside a gate slot.\n- The baseline is cached hub-wide keyed by the parent commit, so runs from the same parent share one baseline run.\n- When the parent moves and the run merges it in, the baseline is taken again at the new parent (a cache hit if another run made it), so other tasks' drift is not blamed on this one.\n- The compare runs at the final gate only, never per card, to keep the cost down.\n\n## Open\n\n- How long the generator takes on the work machine, and whether it can be scoped like the other tiers.\n- Whether `preserve` should also run the compare per batch, to point at the card that caused drift.\n- Where the profiles live: run state under `.lyx/` or the records repository.\n\n## Related\n\nNotes `gate-language-neutral` and `dotnet-scoped-verify`.\n",
+      "created": "2026-10-17T10:38:45Z",
+      "revised": "2026-10-17T10:38:45Z"
     }
   ]
 }
