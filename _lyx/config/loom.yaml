@@ -59,5 +59,3 @@ webster_auto_accept: true # true makes the Webster-Review perch accept a harvest
 merge_max_bounces: 1 # bounce budget of the Merge-Review perch: N gives N judged Burler rounds; null takes review_max_bounces; 0 runs no review round: the perch's Bouncer settles approved at once
 merge_hard_max_bounces: 0 # hard cap of the Merge-Review perch: a round numbered at or past it is never continued, it is accepted or escalated hard-cap; 0 takes review_hard_max_bounces
 merge_auto_accept: true # true makes the Merge-Review perch accept a harvested round at a spent budget instead of running the soft-cap rule; an open BLOCKING finding in the ledger sends the round to the rule
-# preserved (not in current template)
-fan_review: sonnet[high] # model-spec for the reviewer of a fanned segment's round (a segment whose discussion_fan or plan_fan is set), replacing that segment's review list while its fixer list is kept; it is also the forks' model, since forks run on the reviewer session's model; same grammar as review, a YAML list sets one model per round with the last entry for every later round
