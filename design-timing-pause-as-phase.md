@@ -1,6 +1,6 @@
 # report timing counts a pause before Plan-Write as Plan phase time
 
-`timing-pause-as-phase` · Task · bug, shed, batten
+`timing-pause-as-phase` · Task · bug, report
 
 Depends on: [`code-review-fan`](design-code-review-fan.md)
 
