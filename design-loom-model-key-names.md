@@ -2,8 +2,6 @@
 
 `loom-model-key-names` · Task · enhancement, config, loom
 
-Depends on: [`code-review-fan`](design-code-review-fan.md)
-
 ## Ask (operator, 2026-10-14)
 
 The loom config's model keys say little about what they set: `fix` reads like a flag, not "the model of the fixer in a review round".

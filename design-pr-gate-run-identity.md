@@ -2,8 +2,6 @@
 
 `pr-gate-run-identity` · Task · bug, loom, batten, board
 
-Depends on: [`code-review-fan`](design-code-review-fan.md)
-
 Two PR-Gate faults where a run takes something that is not its own as its own. Both fixes sit in `internal/landingshed`, and the second also in `internal/loomcli`.
 
 ## 1. A reused slug adopts the old run's closed PR (issue #692)

@@ -2,8 +2,6 @@
 
 `readme-run-settings` · Task · enhancement, board
 
-Depends on: [`code-review-fan`](design-code-review-fan.md)
-
 ## Seen
 
 The board README (rendered by `internal/boardengine/render.go`) does not show a task's `run_settings`, so the review budget a task will run with, such as `{"darn":{"review_max_bounces":1}}` or the low budget `{"loom":{"review_max_bounces":2,"review_hard_max_bounces":3}}`, cannot be read there.

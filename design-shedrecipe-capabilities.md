@@ -2,7 +2,7 @@
 
 `shedrecipe-capabilities` · Task · enhancement, shed, loom, config
 
-Depends on: [`code-review-fan`](design-code-review-fan.md), [`loom-model-key-names`](design-loom-model-key-names.md), [`landing-trailer-text`](design-landing-trailer-text.md)
+Depends on: [`loom-model-key-names`](design-loom-model-key-names.md), [`landing-trailer-text`](design-landing-trailer-text.md)
 
 From `manifest/roadmap.md` Someday.
 Giving a producer a new capability means hand-threading a passthrough `Env` field through three layers, because the Shed Recipe Registry entry (`PATTERN-shed-recipe-registry`) bars `shedrecipe` from importing the capability's owning package.
