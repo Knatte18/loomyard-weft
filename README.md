@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-17 08:56 UTC; every age below is as of then.
+Rendered 2026-10-17 08:57 UTC; every age below is as of then.
 
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
@@ -17,7 +17,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | **Drop the per-refusal table from refusal-spec.md, keep the way-forward rule**<br>• contracts/specs/refusal-spec.md is 133 KB and grows with every new refusal; its 428 table rows quote messages the code already carries, so keep the definition and classes and drop the table | [`refusal-spec-table-drop`](design-refusal-spec-table-drop.md) | darn | Publish | 11m | 6m | shed, loom, webster, stencil |
+| 1 | **Drop the per-refusal table from refusal-spec.md, keep the way-forward rule**<br>• contracts/specs/refusal-spec.md is 133 KB and grows with every new refusal; its 428 table rows quote messages the code already carries, so keep the definition and classes and drop the table | [`refusal-spec-table-drop`](design-refusal-spec-table-drop.md) | darn | PR-Align | 13m | 8m | shed, loom, webster, stencil |
 
 ### Ready
 
