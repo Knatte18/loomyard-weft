@@ -17,12 +17,12 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | **Clearer loom model key names, one per step**<br>• Model keys like fix name the role they set, and every review segment gets its own reviewer and fixer key | [`loom-model-key-names`](design-loom-model-key-names.md) | darn | Darn-Write | 2d | 39m | config, loom |
+| 1 | **Clearer loom model key names, one per step**<br>• Model keys like fix name the role they set, and every review segment gets its own reviewer and fixer key | [`loom-model-key-names`](design-loom-model-key-names.md) | darn | Darn-Write | 2d | 40m | config, loom |
 | 2 | **Go driver messages the orch about a verify halt batten retries itself**<br>• Drop or reword the parent message for a watched verify halt | [`driver-watched-verify-notice`](design-driver-watched-verify-notice.md) | darn | Darn-Burler-Fix | 1d | 46m | shed, batten |
-| 3 | **report timing counts a pause before Plan-Write as Plan phase time** | [`timing-pause-as-phase`](design-timing-pause-as-phase.md) | darn | Darn-Write | 19h | 42m | report |
+| 3 | **report timing counts a pause before Plan-Write as Plan phase time** | [`timing-pause-as-phase`](design-timing-pause-as-phase.md) | darn | Darn-Write | 19h | 43m | report |
 | 4 | **lyx creates <prime>/.claude/worktrees/_board/.lyx/pause/net when run from a Claude Code agent worktree** | [`agent-worktree-board-dir`](design-agent-worktree-board-dir.md) | darn | Darn-Burler-Review | 1h | 46m | fabric |
-| 5 | **Show each task run_settings in the board README**<br>• Stack a task run_settings, such as its review budget, inside an existing README cell, with no new column | [`readme-run-settings`](design-readme-run-settings.md) | darn | Darn-Burler-Review | 45m | 45m | board |
-| 6 | **PR-Gate takes only its own run: no adopted old PR, no note-mention trigger**<br>• Publish never adopts an older PR for a reused slug, and the alignment snapshot counts only real decisions | [`pr-gate-run-identity`](design-pr-gate-run-identity.md) | loom | Discussion-Burler-Review | 23h | 29m | loom, batten, board |
+| 5 | **Show each task run_settings in the board README**<br>• Stack a task run_settings, such as its review budget, inside an existing README cell, with no new column | [`readme-run-settings`](design-readme-run-settings.md) | darn | Darn-Burler-Fix | 45m | 45m | board |
+| 6 | **PR-Gate takes only its own run: no adopted old PR, no note-mention trigger**<br>• Publish never adopts an older PR for a reused slug, and the alignment snapshot counts only real decisions | [`pr-gate-run-identity`](design-pr-gate-run-identity.md) | loom | Discussion-Burler-Review | 23h | 30m | loom, batten, board |
 
 ### Ready
 
@@ -42,7 +42,7 @@ Waits only on Running or Ready entries.
 
 | # | Task | Slug | Recipe | After | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | **landing.yaml trailer_text: an operator-set trailer block for the landing commit**<br>• Replace co_authored_by with trailer_text and engine_trailers: fixed lines plus one line per engine that ran, each copied verbatim, each switchable off | [`landing-trailer-text`](design-landing-trailer-text.md) | darn | `pr-gate-run-identity` | 32m | 29m | config, loom, shuttle |
+| 1 | **landing.yaml trailer_text: an operator-set trailer block for the landing commit**<br>• Replace co_authored_by with trailer_text and engine_trailers: fixed lines plus one line per engine that ran, each copied verbatim, each switchable off | [`landing-trailer-text`](design-landing-trailer-text.md) | darn | `pr-gate-run-identity` | 33m | 30m | config, loom, shuttle |
 
 ### Layer B
 
@@ -73,10 +73,10 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Note | Slug | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| 1 | **creel verbs exit 0 with nothing on stderr when their success envelope cannot be written** | [`creel-success-write-lost`](design-creel-success-write-lost.md) | 14m | 14m | creel |
-| 2 | **creel stderr fallback for an unwritable refusal prints the prefix twice: creel: creel:** | [`creel-stderr-double-prefix`](design-creel-stderr-double-prefix.md) | 14m | 14m | creel |
-| 3 | **creel log --id omits the reminded events that list that id** | [`creel-log-id-reminders`](design-creel-log-id-reminders.md) | 14m | 14m | creel |
-| 4 | **stencilstore dev-build warning prints on every creel verb** | [`stencilstore-dev-warning-noise`](design-stencilstore-dev-warning-noise.md) | 14m | 14m | stencil, creel |
+| 1 | **creel verbs exit 0 with nothing on stderr when their success envelope cannot be written** | [`creel-success-write-lost`](design-creel-success-write-lost.md) | 15m | 14m | creel |
+| 2 | **creel stderr fallback for an unwritable refusal prints the prefix twice: creel: creel:** | [`creel-stderr-double-prefix`](design-creel-stderr-double-prefix.md) | 15m | 14m | creel |
+| 3 | **creel log --id omits the reminded events that list that id** | [`creel-log-id-reminders`](design-creel-log-id-reminders.md) | 15m | 14m | creel |
+| 4 | **stencilstore dev-build warning prints on every creel verb** | [`stencilstore-dev-warning-noise`](design-stencilstore-dev-warning-noise.md) | 15m | 14m | stencil, creel |
 
 ### Enhancements
 
@@ -104,7 +104,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 13 | **Fabric's Windows path behaviour verified on a Windows host**<br>• Unverified after six hardening rounds; needs a Windows host, not design; take it only if Windows becomes relevant | [`fabric-windows`](design-fabric-windows.md) | 13d | 7d | fabric |
 | 14 | **warp-visibility: CLAUDE.local.md invisible in the Fabric repo's git history**<br>• Expose CLAUDE.local.md by symlink so nothing lyx-related shows in the Fabric repo's history; the constraints half is out of date | [`warp-visibility`](design-warp-visibility.md) | 12d |  | ide, fabric |
 | 15 | **Windows verify timeout kills the whole process tree**<br>• On Windows the verifytree timeout kills only the shell, not the process tree it started | [`verify-watchdog`](design-verify-watchdog.md) | 9d | 1d | shed |
-| 16 | **A hub pause leaves background forks and shells running, so hibernate never confirms**<br>• Pause interrupts turns but not background forks or shells; sessions read busy and hibernate confirmation fails | [`pause-background-work`](design-pause-background-work.md) | 2d | 53m | shuttle, webster |
+| 16 | **A hub pause leaves background forks and shells running, so hibernate never confirms**<br>• Pause interrupts turns but not background forks or shells; sessions read busy and hibernate confirmation fails | [`pause-background-work`](design-pause-background-work.md) | 2d | 54m | shuttle, webster |
 
 ### Features
 
