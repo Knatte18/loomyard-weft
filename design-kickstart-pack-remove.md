@@ -16,5 +16,6 @@ Glyphs stay in the plan and in the plan gates.
 
 ## Orch recommendation, not a decision
 
-- Keep `lyx quarry resolve` available to the fork, and keep `tools/forkaudit` working for runs without a pack, so a no-pack baseline can be measured.
-- Note `enclose-kickstart` builds the pack from tool locations and loses its purpose with this removal.
+- Keep `tools/forkaudit` working for runs without a pack, so a no-pack baseline can be measured.
+- Forks never call `lyx quarry` in any audit since the pack; resolve's value is in the plan gates, which call quarry in code.
+- Note `enclose-kickstart` lost its pack use with this removal and now proposes Enclose for mechanical checks instead.
