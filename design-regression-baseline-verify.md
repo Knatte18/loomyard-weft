@@ -41,6 +41,8 @@ Loom's recipe could hold fixed command boxes of one type, each taking several en
 - Place the compare right after the Webster review (before Describe and Merge-In), not before Finalize: the baseline and the code then share one parent, so drift from other tasks landed meanwhile never enters the compare, which settles the parent-move question.
 - Operator view, not a decision: a jump back to `Webster-Burler-Review` on a failed compare is jumping around, and not clean.
 - `preserve`: the compare is its own perch, built like every other perch: a check row that runs the compare command, and a fix row that gets the drift report as its finding and hands back to the check. It loops under its own caps and escalates to the orch past them, with no jump into another segment.
+- Operator view, not a decision (stated as very important): when regression is not needed, all of it is skipped completely.
+  Orch recommendation, not a decision: with `off`, or no regression tier in the hub's `language.yaml`, every regression row is a no-show that reads its setting and is Done: no job starts, no slot is taken, no build runs and no agent is spawned; a hub with no regression tier never shows these rows in its status.
 - `expect-drift`: the compare fails nothing; the drift report goes to PR-Align, where the alignment agent judges it against the task's goal and escalates when it cannot tell.
 
 ## Open
