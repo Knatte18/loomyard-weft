@@ -2,7 +2,7 @@
 
 `landing-trailer-text` · Task · enhancement, config, loom, shuttle
 
-Depends on: [`code-review-fan`](design-code-review-fan.md)
+Depends on: [`code-review-fan`](design-code-review-fan.md), [`pr-gate-run-identity`](design-pr-gate-run-identity.md)
 
 ## Seen
 
