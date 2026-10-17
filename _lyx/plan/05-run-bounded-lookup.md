@@ -1,8 +1,8 @@
 # Card 5 — run-bounded-lookup
 
 **Create:**
-- `plan:internal/loomcli#findRunPullRequest` -> `func findRunPullRequest(ctx context.Context, owner, repo, head, base string, since time.Time) (*github.PullRequest, error)`
-- `plan:internal/loomcli#TestFindRunPullRequest` -> `func TestFindRunPullRequest(t *testing.T)`
+- `internal/loomcli#findRunPullRequest`
+- `internal/loomcli#TestFindRunPullRequest`
 
 **Edit:**
 - `internal/landingshed#FindPullRequest` -> `func FindPullRequest(ctx context.Context, client *github.Client, owner, repo, head, base string, since time.Time) (pr, olderOpen *github.PullRequest, err error)`
@@ -40,7 +40,7 @@
 - `internal/loomcli#TestWireLanding_TellsLanguageSkills`
 
 **Uses:**
-- `plan:internal/loomcli#seedRunStart`
+- `internal/loomcli#seedRunStart`
 - `internal/landingshed#newTestDeps`
 - `internal/landingshed#newPRGateFixture`
 - `internal/landingshed#publishGitHubServer`

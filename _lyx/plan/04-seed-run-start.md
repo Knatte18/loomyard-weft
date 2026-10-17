@@ -1,8 +1,8 @@
 # Card 4 — seed-run-start
 
 **Create:**
-- `plan:internal/loomcli#seedRunStart` -> `func seedRunStart(l *lyxcwd.Location) (time.Time, error)`
-- `plan:internal/loomcli#TestSeedRunStart` -> `func TestSeedRunStart(t *testing.T)`
+- `internal/loomcli#seedRunStart`
+- `internal/loomcli#TestSeedRunStart`
 
 **Intent:** D1: `internal/loomcli` reads the run's start, the lower bound of the landing's pull-request lookup, from the `started_at` stamp of the pair's own run seed, through `shedrun.ReadSeed(l, shedrun.SelfRunID)` only, per `PATTERN-shed-run-directory`.
 `seedRunStart` goes in a new file `internal/loomcli/runstart.go`, with a file header naming what it reads, and not in `landingdeps.go`, whose header promises a file that does no I/O; later cards call it from the landing wiring and from the approve and reject verbs.
