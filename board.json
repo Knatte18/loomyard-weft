@@ -659,7 +659,7 @@
       "isolated": false,
       "brief": "C13's stacked 3-row half cannot be set up once reed-add-parentless-placement lands",
       "body": "## Goal\n\nA docs-only change in two parts.\nOperator decision 2026-10-17: run as darn with a `sonnet[medium]` writer and no review perch.\n\n## 1. Rewrite C13's stacked half\n\nThe board entry `reed-add-parentless-placement` removed the stacked layout and `collapsed_rows`, refuses `below-parent` and `top`, and moves a strand pane left in the shell window into its own window.\nC13 in `tools/sandbox/SANDBOX-CREEL-SUITE.md` still describes its stacked 3-row half against the old layout: rewrite that half against the window-per-strand layout, reading `internal/reed`'s package doc for how strands are placed now.\nIts hand-added half (a plain `lyx reed add --cmd claude` strand receiving its reminder) stays as is.\n\n## 2. Commit the creel stage 1 re-test report\n\nCopy `/home/knatte/Code/loomyard-LYXHUB/loomyard/.scratch/creel-retest-2026-10-17.md` (in the hub prime, outside this worktree; read it, never edit or move it) verbatim to `docs/research/creel-audit-2026-10-17/report.md` in this worktree.\nIt is a measurement report of one run on `58a7feec7`, so it stays as written.\n\n## Done when\n\nBoth files are committed in one commit; no code changes.\n",
-      "status": "running · Publish",
+      "status": "running · PR-Align",
       "created": "2026-10-16T09:04:42Z",
       "revised": "2026-10-17T11:43:16Z",
       "run_settings": {
