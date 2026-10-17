@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-17 08:50 UTC; every age below is as of then.
+Rendered 2026-10-17 08:56 UTC; every age below is as of then.
 
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
@@ -17,7 +17,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | **Drop the per-refusal table from refusal-spec.md, keep the way-forward rule**<br>• contracts/specs/refusal-spec.md is 133 KB and grows with every new refusal; its 428 table rows quote messages the code already carries, so keep the definition and classes and drop the table | [`refusal-spec-table-drop`](design-refusal-spec-table-drop.md) | darn | Darn-Write | 5m | 0m | shed, loom, webster, stencil |
+| 1 | **Drop the per-refusal table from refusal-spec.md, keep the way-forward rule**<br>• contracts/specs/refusal-spec.md is 133 KB and grows with every new refusal; its 428 table rows quote messages the code already carries, so keep the definition and classes and drop the table | [`refusal-spec-table-drop`](design-refusal-spec-table-drop.md) | darn | Merge-In | 11m | 6m | shed, loom, webster, stencil |
 
 ### Ready
 
@@ -36,7 +36,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | # | Note | Slug | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | 1 | **Prototype reed status buttons in a throwaway tmux server**<br>• A fresh agent tries the menu button, follow toggle and extra button line by hand before reed-status-buttons becomes a task | [`reed-status-buttons-prototype`](design-reed-status-buttons-prototype.md) | 1d | 1d | reed |
-| 2 | **Classify Plan lens and review findings to make the Plan writer get it right first**<br>• Find what Plan lenses and Plan-Burler-Review keep catching, and stop each recurring class at the writer | [`plan-writer-finding-classes`](design-plan-writer-finding-classes.md) | 1d | 17h | loom, burler, stencil, shed |
+| 2 | **Classify Plan lens and review findings to make the Plan writer get it right first**<br>• Find what Plan lenses and Plan-Burler-Review keep catching, and stop each recurring class at the writer | [`plan-writer-finding-classes`](design-plan-writer-finding-classes.md) | 1d | 18h | loom, burler, stencil, shed |
 
 ### Bugs
 
