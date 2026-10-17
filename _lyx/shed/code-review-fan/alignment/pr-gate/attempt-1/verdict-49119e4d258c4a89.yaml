@@ -1,0 +1,8 @@
+verdict: approve
+reason: >-
+  The diff covers every scope point of the board entry: the six fan and fix-fan keys for Webster-, Merge- and Darn-Review with empty defaults, wired into the same maps;
+  read-only git for fork reviewers and fix-check forks with the audit unchanged; the solo-premise recipe comments removed; the review-code and fix-code fans in burler.yaml;
+  and the doc.go files and docs/overview.md updated.
+  It adds nothing the entry does not call for, the open risks name no parent correction, and lyx loom peers lists no peer run or parent commit to overlap.
+question: ""
+superseded: []
