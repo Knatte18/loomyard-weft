@@ -3,7 +3,7 @@
 ## Goal
 
 A loom or darn run's landing rows act only on what belongs to the run itself.
-Publish, PR-Align, PR-Gate, Finalize and the `lyx loom approve` and `lyx loom reject` verbs never take a pull request opened before the run started, so a reused slug cannot adopt the earlier run's closed pull request (issue #692).
+Publish, PR-Align, PR-Gate, Finalize and the `lyx loom approve` and `lyx loom reject` verbs never take a pull request opened before the run started, for a run whose seed carries its start stamp, so a reused slug cannot adopt the earlier run's closed pull request (issue #692).
 The alignment agent's decision snapshot moves only on a real decision for the task, never on a board note that merely mentions the slug.
 
 ## Scope
@@ -15,7 +15,7 @@ In:
 - The run's start time handed to those callers by `internal/loomcli`'s wiring.
 - Publish's stop when an older open pull request blocks the create.
 - `alignmentSnapshot` in `internal/loomcli/alignmentwiring.go` and the decision-note title form it recognises.
-- The orch role stencil's decision-note rule, which names that form.
+- The orch role stencil's decision-note rule, which renders that form, and `internal/orchengine`'s role render, which fills its template key.
 - One declaration of `decisionRecordedReason`, removing the duplicate.
 - `doc.go` of `internal/landingshed`, `internal/loomcli` and `internal/alignment` where they describe the pull-request lookup or the snapshot.
 
@@ -40,12 +40,15 @@ The run starts hours before Publish, so clock skew between the machine and GitHu
 
 Bound: the filter only narrows what a lookup returns.
 A missing seed, or one with no stamp or a stamp that does not parse, gives a zero bound, which filters nothing and keeps today's behaviour; the wiring logs a warning when that happens.
+A new pair for a reused slug never reaches the zero bound, given the cleanup the first Auto-mode assumption names:
+the loom and darn bootstrap writes it a fresh stamped seed before the landing wiring first runs, and the approve and reject verbs read that same seed later.
+Only a seed that predates the `started_at` field, which `WriteSeed` leaves byte for byte when it agrees, or a seed removed or a stamp edited by hand reaches it.
 A seed that exists but cannot be read or decoded fails the wiring with an error, and the approve and reject verbs refuse with it, so an I/O fault never silently reopens the adoption.
 
 ### D2. Publish stops on an older open pull request it cannot replace
 
 When the bounded lookup finds none but the head branch still has an open pull request to the base created before the run started, Publish does not create one, since GitHub refuses a second open pull request for the same head and base.
-It stops Stuck with a reason that names that pull request's URL and ends in a `way forward:` clause: close it, then resume the run.
+It stops Stuck with a reason that names that pull request's URL and ends in a `way forward:` clause: close that pull request on GitHub, then resume the run with `lyx loom start`, the resume verb Publish's push-rejected stop already names.
 
 Rationale: D1 makes this stop necessary, because the bounded lookup no longer adopts such a pull request, and a create would fail with a raw GitHub error that names no way forward.
 Such a pull request belongs to an earlier run that was abandoned before landing or whose Finalize close failed, which only warns; landing through it would land through another run's pull request.
@@ -57,15 +60,17 @@ Bound: the stop applies only to an open pull request older than the bound; a clo
 The decision snapshot hashes the decision record and the board entries of kind note whose title starts with `Decision for <slug>:`, the slug followed by a colon, case-sensitive.
 A note that names the slug anywhere else, in its title, brief or body, no longer moves the snapshot, and an entry of another kind never does.
 `internal/alignment` declares the title form once, as a function of the slug, and the snapshot filter calls it.
-The orch role stencil's decision-note rule, the branch where `lyx loom decision add` refuses for want of a decision record, tells the orch to title the note in that form.
-A test pins the stencil's text of the form to the Go declaration.
+The orch role stencil's decision-note rule, the branch where `lyx loom decision add` refuses for want of a decision record, renders the title form from `internal/alignment`'s declaration through a template key, as it already renders `{{.command_index}}`, so the form has one declaration.
+The role stencil is hub-wide, so the key carries the form for the literal placeholder `<slug>`.
+The key joins the role render's required markers, so an operator-edited override without it fails the render naming the marker, with the existing way forward of restoring it or deleting the override, rather than rendering silently without the form.
 
 Rationale: the orch already writes such a note only for a held task without a decision record, so a fixed title form is the one signal both the orch and Go can see; a decision added to an existing record already moves the record's bytes.
 The trailing colon keeps `Decision for foo:` from matching slug `foo-bar`.
 
 Bound: the snapshot now ignores notes outside the form, so a decision recorded as a free-form note no longer turns an approve into an escalation.
 That includes free-form decision notes already on the board for a task held when this lands; they stop counting at landing.
-That is the intended narrowing: the orch's rule is the only route that writes a decision note, and it now names the form.
+A decision note the operator writes on the board without the `Decision for <slug>:` title, such as one the bouncer escalation stencil counts as an operator decision by its body, no longer moves the snapshot either, so an approve given while such a note is added is applied.
+That is the bound: only the title form counts, so an operator who wants the agent's approve held titles the note in that form, or records the decision through `lyx loom decision add` when a decision record exists.
 
 ### D4. `decisionRecordedReason` is declared once, in `internal/alignment`
 
@@ -78,8 +83,6 @@ Rationale: the reason belongs to the snapshot check that `internal/alignment` ow
 - `PATTERN-told-geometry`: landingshed takes the start time as a told value; only loomcli reads the seed.
 - `PATTERN-shed-run-directory`: the seed is read only through `shedrun.ReadSeed`.
 - `PATTERN-refusal-way-forward`: the entry binds `internal/shed*`, `internal/loom*` and `internal/webster*`, not `internal/landingshed`; D2's stop follows its form by choice, with the `way forward:` clause `contracts/specs/refusal-spec.md` defines and a test that reaches it, and the entry is not changed.
-- `PATTERN-producer-pointer-rule`: the orch stencil states the title form instead of pointing at a format contract, a deliberate departure, since the orch writes the note through `lyx board`, which has no format contract to point at; the test pinning the stencil to `internal/alignment`'s declaration keeps the two from drifting.
-- `PATTERN-leaf-packages`: `internal/alignment` gains a constant and a string function only, no new import.
 - `PATTERN-test-economy`, `PATTERN-test-speed`: extend the existing table tests in `internal/landingshed` and `internal/loomcli/alignmentwiring_test.go` rather than add new top-level tests where a row fits.
 
 ## Auto-mode assumptions
@@ -90,13 +93,13 @@ Rationale: the reason belongs to the snapshot check that `internal/alignment` ow
 
 ## Open risks
 
-- D1 rests on the seed's stamp being this run's: a change that lets batten start a reused slug without removing the earlier run directory, or a hand reset that removes and rewrites a pair's seed mid-run, moves the bound and makes D2 call the run's own open pull request older.
+- D1 rests on the seed's stamp being this run's: a change that lets batten start a reused slug without removing the earlier run directory, or a hand reset that removes and rewrites a pair's seed mid-run, moves the bound and makes D2 call the run's own open pull request older, and makes PR-Gate, PR-Align, Finalize's close and the approve and reject verbs find no pull request, where PR-Gate's existing nil-lookup reason names reopening it, which cannot help.
 
 ## Acceptance criteria
 
 - With a closed, unmerged pull request for the task branch created before the run started, Publish creates a new pull request and ends Done.
 - With a merged pull request for the task branch created before the run started, Publish creates a new pull request rather than ending Done on the old merge, and PR-Gate does not end Done on it.
-- With an open pull request for the task branch created before the run started and none after, Publish stops Stuck naming that pull request's URL with a `way forward:` clause saying to close it and resume; PR-Align does not align it, and Finalize does not close it.
+- With an open pull request for the task branch created before the run started and none after, Publish stops Stuck naming that pull request's URL with the `way forward:` clause "close that pull request on GitHub, then resume the run with `lyx loom start`"; PR-Align does not align it, and Finalize does not close it.
 - A pull request created after the run started, including one opened by hand, is found by Publish, PR-Gate, PR-Align, Finalize and the approve and reject verbs; a resumed Publish refreshes it instead of creating a second.
 - A pull request closed unmerged after the run started still stops Publish with "the pull request was closed without being merged".
 - A zero start bound, from a missing seed or one without a parseable stamp, keeps today's lookup and logs a warning.
@@ -105,7 +108,7 @@ Rationale: the reason belongs to the snapshot check that `internal/alignment` ow
 - A note titled `Decision for <slug>: …` added while the agent runs changes the snapshot and turns the approve into an escalation with the reason.
 - A note titled `Decision for <slug>-other: …`, or a task entry titled `Decision for <slug>: …`, does not count for `<slug>`.
 - A change to the decision record still changes the snapshot.
-- The orch role stencil names the decision-note title form, and a test fails when it and the Go declaration diverge.
+- The rendered orch role stencil names the decision-note title form.
 - `decisionRecordedReason`'s text is declared once in the module.
 
 ## Notes for the plan writer
