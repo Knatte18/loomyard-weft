@@ -1,47 +1,43 @@
 # Lens fan and twill fixer for Webster, Merge and Darn review
 
-Webster-Review, Merge-Review and Darn-Review can now run the Burler lens fan and the twill fixer, chosen per round, as Discussion-Review and Plan-Review already could.
-Every new key defaults to empty, so no run changes until a hub sets one.
+Webster-Review, Merge-Review and Darn-Review can now run the Burler lens fan and the twill fixer per round, as Discussion-Review and Plan-Review already could.
+The recorded reason they stayed solo was that fork reviewers may run no git, so they could not reach a subject that exists only through git.
+This change lifts that ban for read-only git and adds the keys and lenses to use it.
+Every template default is empty, so no run changes until a hub sets a key.
 
 ## What changes
 
-- **New fan keys.**
-  `loom.yaml` gains `webster_fan`, `webster_fix_fan`, `merge_fan` and `merge_fix_fan`.
-  `darn.yaml` gains `review_fan` and `review_fix_fan`.
-  Each takes the existing grammar: one fan name, or a per-round list whose last entry serves every later round, with `""` running that round solo or with the single fixer.
-  All six are closed to the local layer and declared as open maps, so reconcile and `--set` carry a list whole.
-  An empty list, a value of another shape and an entry naming an undefined fan are refused at load, naming the module, the key and the entry.
-- **One fan grammar.**
-  `FanList`, its shape error (now `burlerengine.FanShapeError`) and the fan validation (`burlerengine.ValidateFanKeys`) move from `loomengine` into `burlerengine`, and loom and darn both load through them.
-  The lookup that names the key behind a malformed value moves to `configengine.KeyAtLine`.
-- **Wiring.**
-  `wire` adds the Webster and Merge Bouncer and review rows to `RowClusterFans`, and their review rows to `RowFixFans`.
-  `wireDarnFans` adds the Darn rows from `darn.yaml`.
-  `RowModelKeys` now has entries for the Webster, Merge and Darn review and fix rows.
-  Merge and Darn name Webster's model keys (the new `ReviewSettings.WebsterKeys`), since they run on Webster's models.
-  The Darn fixer fan key reads `review_fix_fan in darn.yaml`, because its model keys live in `loom.yaml`.
-- **Read-only git for forks.**
-  The fork boilerplates in `burler-cluster-fan.md` and `burler-fix-self-check.md` now allow git commands that only read, such as `git diff`, `git log` and `git show`, and forbid any that change the repository, its index, its refs or its working tree.
-  The engine's fork audits are unchanged and still fail a fork that runs a mutating git subcommand.
-- **Code fans in `burler.yaml`.**
-  `review-code` runs `code-correctness`, `code-affected-set`, `code-tests` and `code-pattern-fit`.
-  `fix-code` runs `fix-code-correctness` with the existing `fix-consistency`, `fix-proposal` and `fix-affected-set`.
-  Each review lens names the rubric items it emphasizes by their headings, and qualifies the ones only some of the three code rubrics carry.
-- **Wording.**
-  The fan-conflict refusal in `shedrecipe`'s BurlerReview entry says the list came "from the hub config", since a darn row's list comes from `darn.yaml`.
-  The recipe comments, `internal/loomengine/config.go`'s header, both config templates, the `burlerengine`, `darnengine` and `configcli` package docs and `docs/overview.md` no longer say these perches always run solo.
+- New per-round keys in `loom.yaml`: `webster_fan`, `webster_fix_fan`, `merge_fan` and `merge_fix_fan`.
+  New keys in `darn.yaml`: `review_fan` and `review_fix_fan`, matching darn's existing `review_*` budget keys.
+  Each takes one fan name or a per-round list whose last entry serves every later round, and an empty value runs solo with the single fixer.
+  Each is `CategoryGuard`, closed to the local layer like the four existing fan keys.
+- The wiring in `internal/loomcli` adds the Webster, Merge and Darn rows to `RowClusterFans`, `RowFixFans` and `RowModelKeys`.
+  Merge and Darn rows use Webster's review and fix model keys, which their models come from today.
+- The fork stencils `burler-cluster-fan.md` and `burler-fix-self-check.md` now permit read-only git (`git diff`, `git log`, `git show`) and still forbid any command that changes the repository, index, refs or working tree.
+  The engine's fork audit is unchanged and keeps failing a fork that runs a state-mutating git subcommand.
+- The embedded `burler.yaml` template gains `review-code` (lenses `code-correctness`, `code-affected-set`, `code-tests`, `code-pattern-fit`) and `fix-code` (lenses `fix-code-correctness`, `fix-consistency`, `fix-proposal`, `fix-affected-set`).
+  Each review lens names the rubric item it emphasizes by heading, without paraphrasing it.
+  The texts are a first draft for later audits to tune.
+- The recipe comments, `doc.go` files, config templates and `docs/overview.md` no longer say these three perches always run solo or that forks may run no git.
 
-## Design decisions to know
+## Design decisions
 
-- With a `RowModelKeys` fix fan key present, the Webster, Merge and Darn fix halves now need the fan names their review half recorded, as Discussion and Plan fix halves already do.
-  So a round reviewed by an older binary and fixed by this one refuses, and the way forward is the existing one: `goto` the segment's review row and resume.
-- The Darn entries are wired in `wireDarnFans`, beside the darn fan lists, so a darn row never needs recorded fans unless its review row records them.
-- The gate-quiescence test now also checks the shipped darn recipe, and admits `DarnWrite` among the gated writer engines, since the darn writer's seat never authorizes forks.
+- The fan grammar (`FanList`, its shape error and per-key fan validation) moves from `loomengine` into `internal/burlerengine`, because `darnengine` cannot import `loomengine`.
+  Validation is told its module name, so each refusal names `loom config key` or `darn config key`.
+  The lookup that names a malformed value's key moves to `configengine`, since both loaders need it.
+- Merge-Review and Darn-Review get their own fan keys rather than reading Webster's, so each perch is configured separately.
+- A darn fix fan key is named with its file (`review_fix_fan in darn.yaml`) in refusals, because its model keys live in `loom.yaml`.
+- With a fan entry present, the review half records each round's fan names before spawning, and the fix half refuses a round whose usage record lacks them, as Discussion and Plan rounds do.
+  The way forward is a `goto` to the segment's review row and a resume.
+  This newly reaches a Webster, Merge or Darn round reviewed by an older binary and fixed by this one.
+- The fan-conflict refusal in `burlerReviewEntry` no longer names `loom.yaml`, since a darn row's list comes from `darn.yaml`.
 
-## Check by hand
+## Risks
 
-- The `review-code` and `fix-code` lens texts are a first draft and have not been benched; the 6-call fork cap may be tight against `git diff` over a large range.
-- The read-only git permission rests on the stencil wording plus the audit's list of mutating subcommands; a state-changing git command outside that list would pass the audit.
-- A hub `burler.yaml` that defines a lens named like a new one (`code-tests`, ...) shadows the new text through the per-name fallback.
-- The hub's own `loom.yaml` and `darn.yaml` are unchanged; the orch sets the new keys after landing.
-- Not run by hand: a real Webster, Merge or Darn round with a fan and a twill fixer.
+- The read-only git permission rests on the stencil text and the audit's mutating-subcommand pattern; a command that looks read-only but mutates state, and falls outside that pattern, would pass the audit.
+- Forks running `git diff` over a large range spend more of their tool-call cap than Discussion and Plan forks do; the cap is unmeasured for code review.
+- A hub `burler.yaml` that defines a lens with the same name as a new one shadows the new text through the per-name fallback.
+
+## To check by hand
+
+- Set the new keys in a hub's `loom.yaml` and `darn.yaml` and run a Webster, Merge and Darn review round with a fan, then a fix round, to see forks read the diff through git and the fixer's fan work end to end; no real run was made.
