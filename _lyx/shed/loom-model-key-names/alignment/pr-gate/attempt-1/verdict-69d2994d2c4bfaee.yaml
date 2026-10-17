@@ -1,0 +1,10 @@
+verdict: approve
+reason: >-
+  The diff carries out the board entry's 2026-10-17 operator decision with no scope deviation.
+  It renames the loom reviewer, fixer and fan keys to flat role names and keeps reviewer_model and fixer_model as the shared fallback.
+  It gives Merge and Darn their own reviewer and fixer model keys, with Darn's in darn.yaml, and renames the Darn fan keys.
+  lyx config reconcile and run_settings rewrite the old keys through each module's Migrate hook.
+  The open risks name no unrecorded parent correction.
+  The only peer, pr-gate-run-identity, overlaps on text alone in internal/loomcli; this run (row 22) lands before it (row 9).
+question: ""
+superseded: []
