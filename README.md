@@ -17,8 +17,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | **Clearer loom model key names, one per step**<br>• Model keys like fix name the role they set, and every review segment gets its own reviewer and fixer key<br>• `darn: review_max_bounces 1` | [`loom-model-key-names`](design-loom-model-key-names.md) | darn | Finalize | 2d | 1h | config, loom |
-| 2 | **PR-Gate takes only its own run: no adopted old PR, no note-mention trigger**<br>• Publish never adopts an older PR for a reused slug, and the alignment snapshot counts only real decisions<br>• `loom: review_hard_max_bounces 3`<br>• `loom: review_max_bounces 2` | [`pr-gate-run-identity`](design-pr-gate-run-identity.md) | loom | Plan-Burler-Review | 23h | 57m | loom, batten, board |
+| 1 | **PR-Gate takes only its own run: no adopted old PR, no note-mention trigger**<br>• Publish never adopts an older PR for a reused slug, and the alignment snapshot counts only real decisions<br>• `loom: review_hard_max_bounces 3`<br>• `loom: review_max_bounces 2` | [`pr-gate-run-identity`](design-pr-gate-run-identity.md) | loom | Plan-Burler-Review | 23h | 58m | loom, batten, board |
 
 ### Ready
 
@@ -28,7 +27,7 @@ Waits on nothing open; can start now.
 
 | # | Task | Slug | Recipe | After | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | **lyx gate test slot wait capped under the prompt-cache lifetime, like shuttle await**<br>• Gate slot wait uses the shared keep-cache-warm cap and answers run-again instead of blocking past the cache lifetime<br>• `darn: review_max_bounces 1` | [`gate-wait-cache-cap`](design-gate-wait-cache-cap.md) | darn |  | 36m | 36m | config, shuttle |
+| 1 | **lyx gate test slot wait capped under the prompt-cache lifetime, like shuttle await**<br>• Gate slot wait uses the shared keep-cache-warm cap and answers run-again instead of blocking past the cache lifetime<br>• `darn: review_max_bounces 1` | [`gate-wait-cache-cap`](design-gate-wait-cache-cap.md) | darn |  | 37m | 37m | config, shuttle |
 
 ### Layer A
 
@@ -38,7 +37,7 @@ Waits only on Running or Ready entries.
 
 | # | Task | Slug | Recipe | After | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | **landing.yaml trailer_text: an operator-set trailer block for the landing commit**<br>• Replace co_authored_by with trailer_text and engine_trailers: fixed lines plus one line per engine that ran, each copied verbatim, each switchable off<br>• `darn: review_max_bounces 1` | [`landing-trailer-text`](design-landing-trailer-text.md) | darn | `pr-gate-run-identity` | 1h | 57m | config, loom, shuttle |
+| 1 | **landing.yaml trailer_text: an operator-set trailer block for the landing commit**<br>• Replace co_authored_by with trailer_text and engine_trailers: fixed lines plus one line per engine that ran, each copied verbatim, each switchable off<br>• `darn: review_max_bounces 1` | [`landing-trailer-text`](design-landing-trailer-text.md) | darn | `pr-gate-run-identity` | 1h | 58m | config, loom, shuttle |
 
 ### Layer B
 
@@ -48,7 +47,7 @@ Starts when every entry it names under After is done.
 
 | # | Task | Slug | Recipe | After | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | **shedrecipe: per-segment settings and one told setting lookup instead of per-value Env fields**<br>• A producer declares what it needs and the registry wires it, instead of a hand-threaded Env passthrough field per layer | [`shedrecipe-capabilities`](design-shedrecipe-capabilities.md) | loom | `loom-model-key-names`, `landing-trailer-text` | 12d | 42m | shed, loom, config |
+| 1 | **shedrecipe: per-segment settings and one told setting lookup instead of per-value Env fields**<br>• A producer declares what it needs and the registry wires it, instead of a hand-threaded Env passthrough field per layer | [`shedrecipe-capabilities`](design-shedrecipe-capabilities.md) | loom | `landing-trailer-text` | 12d | 43m | shed, loom, config |
 
 ## Notes
 
@@ -72,7 +71,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 1 | **creel verbs exit 0 with nothing on stderr when their success envelope cannot be written** | [`creel-success-write-lost`](design-creel-success-write-lost.md) | 43m | 42m | creel |
 | 2 | **creel stderr fallback for an unwritable refusal prints the prefix twice: creel: creel:** | [`creel-stderr-double-prefix`](design-creel-stderr-double-prefix.md) | 43m | 42m | creel |
 | 3 | **creel log --id omits the reminded events that list that id** | [`creel-log-id-reminders`](design-creel-log-id-reminders.md) | 43m | 42m | creel |
-| 4 | **stencilstore dev-build warning prints on every creel verb** | [`stencilstore-dev-warning-noise`](design-stencilstore-dev-warning-noise.md) | 42m | 42m | stencil, creel |
+| 4 | **stencilstore dev-build warning prints on every creel verb** | [`stencilstore-dev-warning-noise`](design-stencilstore-dev-warning-noise.md) | 43m | 42m | stencil, creel |
 
 ### Enhancements
 
@@ -92,7 +91,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 10 | **Rewrite C13's stacked half for window-per-strand**<br>• C13's stacked 3-row half cannot be set up once reed-add-parentless-placement lands | [`creel-c13-stacked-rewrite`](design-creel-c13-stacked-rewrite.md) | 1d | 1d | creel |
 | 11 | **Git test fixtures trip Cortex XDR on the work laptop**<br>• Parallel git-heavy tests create so many files at once that Cortex XDR killed VS Code and then crashed itself, twice; tests must stay usable on a machine with endpoint protection | [`xdr-git-test-file-burst`](design-xdr-git-test-file-burst.md) | 19h | 19h | fabric |
 | 12 | **Rename the lyx binary to lyr (name clash with LyX)** | [`rename-binary-lyr`](design-rename-binary-lyr.md) | 1d | 51m | stencil, shuttle |
-| 13 | **Language-neutral gate: lyx gate run takes a slot for any command**<br>• The gate slot pool covers only go test; a C# or Python hub verify bypasses it. Add lyx gate run -- cmd and per-language parallelism. | [`gate-language-neutral`](design-gate-language-neutral.md) | 26m | 21m | config, webster, shed |
+| 13 | **Language-neutral gate: lyx gate run takes a slot for any command**<br>• The gate slot pool covers only go test; a C# or Python hub verify bypasses it. Add lyx gate run -- cmd and per-language parallelism. | [`gate-language-neutral`](design-gate-language-neutral.md) | 27m | 21m | config, webster, shed |
 
 #### Low priority
 
@@ -138,4 +137,12 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Note | Slug | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| 20 | **Scoped build and test for C# hubs on Windows**<br>• Verify gates in a .NET hub build and test only the projects a card touches, since a scanned Windows machine makes every build slow. | [`dotnet-scoped-verify`](design-dotnet-scoped-verify.md) | 4d | 26m | shed, webster |
+| 20 | **Scoped build and test for C# hubs on Windows**<br>• Verify gates in a .NET hub build and test only the projects a card touches, since a scanned Windows machine makes every build slow. | [`dotnet-scoped-verify`](design-dotnet-scoped-verify.md) | 4d | 27m | shed, webster |
+
+## Done
+
+Finished, awaiting `lyx board prune --apply`.
+
+| # | Entry | Slug | Age | Revised | Labels |
+| --- | --- | --- | --- | --- | --- |
+| 1 | **Clearer loom model key names, one per step**<br>• Model keys like fix name the role they set, and every review segment gets its own reviewer and fixer key<br>• `darn: review_max_bounces 1` | [`loom-model-key-names`](design-loom-model-key-names.md) | 2d | 1h | config, loom |
