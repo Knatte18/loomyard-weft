@@ -9,15 +9,21 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 Concrete and claimable; only a task can run.
 
+### Running
+
+Held by a run; its scope is locked until the run ends.
+
+#### Normal priority
+
+| # | Task | Slug | Recipe | At | Age | Revised | Labels |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| 1 | **Drop the per-refusal table from refusal-spec.md, keep the way-forward rule**<br>• contracts/specs/refusal-spec.md is 133 KB and grows with every new refusal; its 428 table rows quote messages the code already carries, so keep the definition and classes and drop the table | [`refusal-spec-table-drop`](design-refusal-spec-table-drop.md) | darn | Worktree-Create | 5m | 0m | shed, loom, webster, stencil |
+
 ### Ready
 
 Waits on nothing open; can start now.
 
-#### Normal priority
-
-| # | Task | Slug | Recipe | After | Age | Revised | Labels |
-| --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | **Drop the per-refusal table from refusal-spec.md, keep the way-forward rule**<br>• contracts/specs/refusal-spec.md is 133 KB and grows with every new refusal; its 428 table rows quote messages the code already carries, so keep the definition and classes and drop the table | [`refusal-spec-table-drop`](design-refusal-spec-table-drop.md) | darn |  | 5m | 0m | shed, loom, webster, stencil |
+_None._
 
 ## Notes
 
