@@ -1,6 +1,6 @@
 # PR-Gate takes only its own run: no adopted old PR, no note-mention trigger
 
-`pr-gate-run-identity` · Task · bug, loom, batten, board · running · Publish
+`pr-gate-run-identity` · Task · bug, loom, batten, board · running · PR-Align
 
 Two PR-Gate faults where a run takes something that is not its own as its own. Both fixes sit in `internal/landingshed`, and the second also in `internal/loomcli`.
 
