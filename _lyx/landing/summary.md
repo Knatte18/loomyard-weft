@@ -17,6 +17,8 @@ The gate now follows the same rule.
 - The gate rule in `internal/shellguard` tells agents to re-run on a no-slot-free answer in a turn that does nothing else, in the words the await help uses.
   The webster implementer and verify-fix stencils describe the new answer shape.
 - `cmd/testtiming` takes the shared cap for its slot wait, since `Limits` no longer carries one; a stuck holder still ends the measurement.
+- The `internal/shedverbs` wait-world fixture gives its detached loops the production lock grace instead of 20 ms.
+  Under full-suite load the short grace could run out while the waiter's free-lock probe held the flock, so the loop exited before recording itself and loop-wait tests failed intermittently.
 - Docs: `internal/gatecli/doc.go`, `internal/gateslot/doc.go`, `internal/shuttleengine/doc.go` and `docs/overview.md`.
 
 ## Design decisions
