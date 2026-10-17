@@ -658,9 +658,9 @@
       "depends_on": [],
       "isolated": false,
       "brief": "",
-      "body": "Imported from [issue #670](https://github.com/Knatte18/loomyard/issues/670).\n\n`lyx` collides with LyX, the LaTeX editor, which ships as the `lyx` package in Ubuntu/Debian and installs `/usr/bin/lyx`.\nOn a machine with both, whichever comes first on PATH wins: a shell where `~/go/bin` is not yet on PATH starts the LaTeX editor instead of LoomYard.\nLyX is common among researchers, so the clash is likely for other users too.\n\nProposal: rename the binary to `lyd` (LoomYard driver).\nIt is short, close to `lyx`, and not an Ubuntu package name.\n\nScope: the `cmd/lyx` build target and `binaryName()` in `tools/deploy`, docs and README, stencils and skills in the `ly` plugin that invoke `lyx`, and any scripts or launchers that call it.\n",
+      "body": "Imported from [issue #670](https://github.com/Knatte18/loomyard/issues/670).\n\n`lyx` collides with LyX, the LaTeX editor, which ships as the `lyx` package in Ubuntu/Debian and installs `/usr/bin/lyx`.\nOn a machine with both, whichever comes first on PATH wins: a shell where `~/go/bin` is not yet on PATH starts the LaTeX editor instead of LoomYard.\nLyX is common among researchers, so the clash is likely for other users too.\n\nProposal: rename the binary to `lyd` (LoomYard driver).\nIt is short, close to `lyx`, and not an Ubuntu package name.\n\nOperator view, not a decision (2026-10-17): not quite happy with `lyd`; the operator has thought of `lyr`, for \"LoomYard Runnable\" or \"Runner\".\nChecked 2026-10-17: neither `lyr` nor `lyd` is an Ubuntu package name or installed on the operator's machine, and a web search found no CLI tool whose binary is named `lyr`.\n\nScope: the `cmd/lyx` build target and `binaryName()` in `tools/deploy`, docs and README, stencils and skills in the `ly` plugin that invoke `lyx`, and any scripts or launchers that call it.\n",
       "created": "2026-10-16T06:49:28Z",
-      "revised": "2026-10-16T06:49:28Z"
+      "revised": "2026-10-17T10:06:25Z"
     },
     {
       "id": 568,
