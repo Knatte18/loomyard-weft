@@ -888,6 +888,24 @@
       "body": "Imported from [issue #714](https://github.com/Knatte18/loomyard/issues/714).\n\n## What happened\n\n`lyx loom` halted `blocked` (anomaly `escalation-to-human`) at Publish.\n`publish_verify` failed after merging the parent branch with `internal/reedengine` `TestBoot_TmuxConf/AppendingFileIsSourcedOncePerServerStart/TwoWorktreesBootedConcurrently` reporting `run list-commands: exit status 1: server exited unexpectedly`.\nThe task's diff did not touch `internal/reedengine`, so the failure looks like a race in booting two tmux servers concurrently, not a defect of the change.\n\n## Why it is abnormal\n\n- The test is flaky and fails an unrelated task at the Publish gate.\n- The Darn-Write agent could not reproduce or fix it: the test carries the `tmux` build tag, and tmux-tier go runs are refused in a darn session.\n  The agent handed off with no commit, so the run escalated to a human with a failure the darn step can never resolve.\n\n## What to do\n\n- Make `TwoWorktreesBootedConcurrently` deterministic, or retry or isolate the tmux server start it races on.\n- Consider whether a darn session facing a verify failure only in a tier it cannot run should get a way to rerun it, or should be told up front to escalate, rather than looping through the Darn cycle first.\n\nProvenance: task `stencilstore-dev-warning-noise`; notes `Darn-Write.md`, `loom-halt.md`.\n",
       "created": "2026-10-17T12:04:23Z",
       "revised": "2026-10-17T12:04:25Z"
+    },
+    {
+      "id": 637,
+      "slug": "wait-world-lock-grace-flake",
+      "title": "shedverbs wait-world integration tests flake: loop exited before it recorded itself",
+      "kind": "note",
+      "labels": [
+        "bug"
+      ],
+      "issues": [
+        716
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Imported from [issue #716](https://github.com/Knatte18/loomyard/issues/716).\n\nTwo consecutive Merge-In verifies failed in the `internal/shedverbs` integration tier, on different wait-world tests.\nEach failure had the waiter reporting `loop … exited before it recorded itself`.\nThe loom run halted blocked at Merge-In (`escalation-to-human`) with the way forward `lyx loom goto --to Darn-Write`, then `lyx loom resume`.\n\nWhy it is abnormal: the failures did not reproduce in isolation, under `-race`, under `-count=300` or beside heavy integration packages, so diagnosing them cost several runs.\nThe likely cause is the wait-world fixture's 20 ms `LockGrace`, which the waiter's free-lock probe can exhaust under scheduling stalls.\n\nWhat to do: give the wait-world fixture the production lock grace (the task's fix did this), and check other fixtures in the integration tier for short grace values that make verify nondeterministic.\n\nProvenance: task `gate-wait-cache-cap`, notes `Darn-Write.md`, `loom-halt.md`.\n",
+      "created": "2026-10-17T12:12:20Z",
+      "revised": "2026-10-17T12:12:20Z"
     }
   ]
 }
