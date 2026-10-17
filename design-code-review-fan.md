@@ -1,6 +1,6 @@
 # Lens fan and twill fixer for Webster, Merge and Darn review
 
-`code-review-fan` · Task · enhancement, burler, loom, stencil, config · running · Merge-In
+`code-review-fan` · Task · enhancement, burler, loom, stencil, config · running · Publish
 
 ## Seen
 
