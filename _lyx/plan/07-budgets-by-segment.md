@@ -1,9 +1,9 @@
 # Card 7 — budgets-by-segment
 
 **Create:**
-- `plan:internal/loomrecipe#segmentBudgets` -> `func segmentBudgets(segments map[string]string, env shedrecipe.Env, wayForward string) (map[string]int, error)`
-- `plan:internal/loomrecipe#checkSegmentBudgets` -> `func checkSegmentBudgets(segments map[string]string, budgets map[string]int, wayForward string) error`
-- `plan:internal/loomcli#loomSegmentBudgets` -> `func loomSegmentBudgets(cfg loomengine.Config) map[string]int`
+- `internal/loomrecipe#segmentBudgets`
+- `internal/loomrecipe#checkSegmentBudgets`
+- `internal/loomcli#loomSegmentBudgets`
 
 **Edit:**
 - `internal/loomrecipe#New`
