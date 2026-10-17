@@ -1,0 +1,7 @@
+verdict: approve
+reason: >-
+  The diff opts every creel command, the group and the hidden daemon included, out of the root pre-run's stencil-seed pass.
+  That meets the board entry's expected outcome that the warning never prints from creel verbs, and the change goes no further.
+  The overlap with creel-cli-output-fixes in internal/creelcli is text only and has no design conflict; this run (row 22) lands first.
+question: ""
+superseded: []
