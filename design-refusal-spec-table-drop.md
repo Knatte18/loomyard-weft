@@ -14,7 +14,11 @@ Readers: `shed-template-driver.md` (the LLM driver; the hub now runs the Go driv
 
 The operator does not remember the table as part of the design; it reads as a growing reference work rather than something an agent needs.
 
-## Idea (orch recommendation, not a decision)
+## Operator decision (2026-10-17)
+
+The per-refusal table is removed, as the scope below says; the task runs as darn with no review rounds.
+
+## Scope
 
 Keep the rule that every refusal message ends in a `way forward:` clause, and keep the definition and classes (lines 1-34) as the spec.
 Drop the per-refusal table and the PATTERN clause that requires a row per refusal; the message and the test that reaches it stay the record.
