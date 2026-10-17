@@ -883,6 +883,32 @@
           "review_max_bounces": 1
         }
       }
+    },
+    {
+      "id": 620,
+      "slug": "landing-trailer-text",
+      "title": "landing.yaml trailer_text: an operator-set trailer block for the landing commit",
+      "kind": "task",
+      "labels": [
+        "enhancement",
+        "config",
+        "loom"
+      ],
+      "issues": [],
+      "recipe": "darn",
+      "depends_on": [
+        "code-review-fan"
+      ],
+      "isolated": false,
+      "brief": "Replace co_authored_by with trailer_text, copied verbatim into the landing commit, empty meaning no trailer",
+      "body": "## Seen\n\nFinalize appends exactly one `Co-Authored-By: \u003cvalue\u003e` trailer to the landing commit, with the value from `landing.yaml`'s `co_authored_by` (`internal/landingshed/config.go`, `internal/summaryparser/summary.go`).\nThe key refuses an empty value, and its name and the fixed `Co-Authored-By: ` prefix leave the operator no say over what the trailer block holds.\n\n## Operator decision 2026-10-17\n\n- Replace `co_authored_by` with a generic `trailer_text` key in `landing.yaml`.\n- Go copies its value verbatim, as the trailer block after the change description, with no prefix added: whoever wants `Co-Authored-By: Claude \u003cnoreply@anthropic.com\u003e` writes that whole line.\n- The value may hold several lines, for example a `Co-Authored-By` line, a `Created using Loomyard` line and later a Codex line.\n- An empty value lands the commit with no trailer block.\n- The template default keeps today's behaviour: `Co-Authored-By: Claude \u003cnoreply@anthropic.com\u003e`.\n- `lyx config reconcile` migrates an existing `co_authored_by` value to `trailer_text` as `Co-Authored-By: \u003cvalue\u003e`.\n- The change description still may not carry trailers of its own; the Describe validation keeps refusing them.\n- Update `internal/landingshed/doc.go` and the specs or stencils that name `co_authored_by`.\n",
+      "created": "2026-10-17T09:59:20Z",
+      "revised": "2026-10-17T09:59:20Z",
+      "run_settings": {
+        "darn": {
+          "review_max_bounces": 1
+        }
+      }
     }
   ]
 }
