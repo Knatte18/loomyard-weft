@@ -449,7 +449,7 @@
       "id": 513,
       "slug": "loom-model-key-names",
       "title": "Clearer loom model key names, one per step",
-      "kind": "note",
+      "kind": "task",
       "labels": [
         "enhancement",
         "config",

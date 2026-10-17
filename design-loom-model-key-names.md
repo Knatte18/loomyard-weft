@@ -1,6 +1,6 @@
 # Clearer loom model key names, one per step
 
-`loom-model-key-names` · Note · enhancement, config, loom
+`loom-model-key-names` · Task · enhancement, config, loom
 
 ## Ask (operator, 2026-10-14)
 
