@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-17 10:19 UTC; every age below is as of then.
+Rendered 2026-10-17 10:20 UTC; every age below is as of then.
 
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
@@ -17,7 +17,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | **Lens fan and twill fixer for Webster, Merge and Darn review**<br>• Fan and fix-fan keys for the three code-review perches, read-only git for forks, and code lenses in burler.yaml | [`code-review-fan`](design-code-review-fan.md) | darn | PR-Gate | 34m | 34m | burler, loom, stencil, config |
+| 1 | **Lens fan and twill fixer for Webster, Merge and Darn review**<br>• Fan and fix-fan keys for the three code-review perches, read-only git for forks, and code lenses in burler.yaml | [`code-review-fan`](design-code-review-fan.md) | darn | Finalize | 34m | 34m | burler, loom, stencil, config |
 
 ### Ready
 
@@ -37,7 +37,7 @@ Waits only on Running or Ready entries.
 | 2 | **Go driver messages the orch about a verify halt batten retries itself**<br>• Drop or reword the parent message for a watched verify halt | [`driver-watched-verify-notice`](design-driver-watched-verify-notice.md) | darn | `code-review-fan` | 23h | 33m | shed, batten |
 | 3 | **report timing counts a pause before Plan-Write as Plan phase time** | [`timing-pause-as-phase`](design-timing-pause-as-phase.md) | darn | `code-review-fan` | 19h | 30m | report |
 | 4 | **lyx creates <prime>/.claude/worktrees/_board/.lyx/pause/net when run from a Claude Code agent worktree** | [`agent-worktree-board-dir`](design-agent-worktree-board-dir.md) | darn | `code-review-fan` | 1h | 33m | fabric |
-| 5 | **Show each task run_settings in the board README**<br>• Stack a task run_settings, such as its review budget, inside an existing README cell, with no new column | [`readme-run-settings`](design-readme-run-settings.md) | darn | `code-review-fan` | 32m | 32m | board |
+| 5 | **Show each task run_settings in the board README**<br>• Stack a task run_settings, such as its review budget, inside an existing README cell, with no new column | [`readme-run-settings`](design-readme-run-settings.md) | darn | `code-review-fan` | 33m | 33m | board |
 | 6 | **PR-Gate takes only its own run: no adopted old PR, no note-mention trigger**<br>• Publish never adopts an older PR for a reused slug, and the alignment snapshot counts only real decisions | [`pr-gate-run-identity`](design-pr-gate-run-identity.md) | loom | `code-review-fan` | 23h | 17m | loom, batten, board |
 
 ### Layer B
