@@ -1,6 +1,6 @@
 # shedrecipe: per-segment settings and one told setting lookup instead of per-value Env fields
 
-`shedrecipe-capabilities` · Task · enhancement, shed, loom, config · running · Finalize
+`shedrecipe-capabilities` · Task · enhancement, shed, loom, config · done
 
 From `manifest/roadmap.md` Someday.
 Giving a producer a new capability means hand-threading a passthrough `Env` field through three layers, because the Shed Recipe Registry entry (`PATTERN-shed-recipe-registry`) bars `shedrecipe` from importing the capability's owning package.
