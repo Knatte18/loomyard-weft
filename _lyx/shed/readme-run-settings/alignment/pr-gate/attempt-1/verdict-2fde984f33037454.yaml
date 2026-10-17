@@ -1,0 +1,4 @@
+verdict: approve
+reason: The diff of PR 707 renders each run setting as a code-span bullet in the README entry cell with no new column, leaves entries without run_settings unchanged and updates internal/boardengine/doc.go, which covers every point of the board entry; it touches only internal/boardengine, and no peer run or parent commit overlaps it.
+question: ""
+superseded: []
