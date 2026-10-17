@@ -1,6 +1,6 @@
 # stencilstore dev-build warning prints on every creel verb
 
-`stencilstore-dev-warning-noise` · Task · bug, stencil, creel · running · Worktree-Create
+`stencilstore-dev-warning-noise` · Task · bug, stencil, creel · running · Darn-Write
 
 Imported from [issue #702](https://github.com/Knatte18/loomyard/issues/702).
 
