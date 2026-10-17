@@ -5,7 +5,7 @@
   "pause_requested": false,
   "activity": {
     "now": "Run-Shed",
-    "last": "Open-IDE → done",
+    "last": "Run-Shed → bounced to Run-Shed",
     "wait": ""
   },
   "history": [
@@ -38,6 +38,38 @@
       "outcome": "done",
       "output": "",
       "at": "2026-10-17T11:22:51Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "child running → blocked at Merge-In",
+      "at": "2026-10-17T11:41:30Z",
+      "budget_exempt": true,
+      "routed_to": "Run-Shed"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "automatic Publish verify retry: sent the child to Darn-Write",
+      "at": "2026-10-17T11:42:00Z",
+      "budget_exempt": true,
+      "routed_to": "Run-Shed"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "automatic Publish verify retry: resumed the child at Darn-Write",
+      "at": "2026-10-17T11:42:00Z",
+      "budget_exempt": true,
+      "routed_to": "Run-Shed"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "child paused → running at Darn-Write",
+      "at": "2026-10-17T11:42:02Z",
+      "budget_exempt": true,
+      "routed_to": "Run-Shed"
     }
   ]
 }
