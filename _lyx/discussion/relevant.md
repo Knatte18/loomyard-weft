@@ -1,0 +1,25 @@
+# Relevant code
+
+- `internal/shedrecipe/recipe.go` `Constructor`, `Env`, `RowModelKeys` — the Env fields this task folds and the constructor signature it changes
+- `internal/shedrecipe/registry.go` `registry`, `Lookup`, `Names` — every entry whose signature changes
+- `internal/shedrecipe/config.go` `configString`, `configStringSlice`, `configRejectUnknown` — the accessors the setting references extend
+- `internal/shedrecipe/env.go` `requireSeam` — validates a nil Setting
+- `internal/shedrecipe/entries_bouncer.go` `bouncerEntry` — reads RowClusterFans, RowBouncerModels, RowAutoAccept, RowHardMaxBounces
+- `internal/shedrecipe/entries_burler.go` `burlerRowModels`, `burlerReviewEntry`, `burlerFixEntry` — reads RowReviewModels, RowClusterFans, RowFixFans, RowModelKeys
+- `internal/shedrecipe/doc.go` — package doc the design lands in
+- `internal/shedbuild/build.go` `Build` — calls each constructor and knows the row's segment
+- `internal/shedbuild/recipe.go` `Row` — carries the segment field
+- `internal/loomcli/wiring.go` `reviewRowModelKeys`, `perchMaxBounces`, `perchHardMaxBounces`, `perchAutoAccept`, `loomPerches` — fills the per-row maps today
+- `internal/loomcli/darnwiring.go` `wireDarnReview`, `wireDarn` — fills the Darn-Review entries
+- `internal/loomrecipe/loomrecipe.go` `New`, `Routing`, `applyReviewBudget`, `stampZeroRounds` — reads ReviewMaxBounces and RowMaxBounces
+- `internal/loomrecipe/darnrecipe.go` `NewDarn`, `DarnRouting` — reads DarnReviewMaxBounces
+- `internal/loomengine/review.go` `ReviewSettings`, `JudgeSettings`, `ResolveReview`, `ResolveDarnReview` — resolves the models a segment carries
+- `internal/loomengine/config.go` `Config` — the fan, budget and auto-accept keys
+- `internal/darnengine/config.go` `Config`, `FixerFanKey` — darn's fan keys
+- `internal/loomcli/arm.go` `recipeRouting`, `reviewBudget`, `darnReviewBudget` — the status path's own degrading budget reads that call Routing
+- `internal/reviewbudget/reviewbudget.go` — the leaf owning the budget and hard-cap key family
+- `internal/configengine/config.go` `Load` — strict stack load the lookup calls
+- `internal/configreg/configreg.go` `Lookup`, `Template` — module name to spec, home of the lookup
+- `internal/testkit/envkit/envkit.go` `FullEnv`, `NilSeams` — the shared Env fixture
+- `contracts/recipes/loom-recipe.yaml` — review rows that gain setting references
+- `contracts/recipes/darn-recipe.yaml` — Darn-Review rows that gain setting references
