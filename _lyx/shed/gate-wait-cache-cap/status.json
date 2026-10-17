@@ -1,12 +1,12 @@
 {
   "current_producer": "Merge-In",
-  "state": "running",
-  "error": "",
+  "state": "blocked",
+  "error": "verify failed after merging parent branch \"main\" (exit code 1); output: /home/knatte/Code/loomyard-LYXHUB/gate-wait-cache-cap/.lyx/verify/verify-3.log; way forward: run \"lyx loom goto --to Darn-Write\", then \"lyx loom resume\", in the task worktree; the Darn-Write spawn renders the Publish failure record and its gate runs the failing tests",
   "pause_requested": false,
   "activity": {
     "now": "Merge-In",
-    "last": "Describe → done",
-    "wait": ""
+    "last": "Merge-In → stuck",
+    "wait": "verify failed after merging parent branch \"main\" (exit code 1); output: /home/knatte/Code/loomyard-LYXHUB/gate-wait-cache-cap/.lyx/verify/verify-3.log; way forward: run \"lyx loom goto --to Darn-Write\", then \"lyx loom resume\", in the task worktree; the Darn-Write spawn renders the Publish failure record and its gate runs the failing tests"
   },
   "history": [
     {
@@ -103,6 +103,12 @@
           "end": "2026-10-17T11:38:55.202270736Z"
         }
       ]
+    },
+    {
+      "producer": "Merge-In",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-17T11:41:28Z"
     }
   ],
   "product": {
