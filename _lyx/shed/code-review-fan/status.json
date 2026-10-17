@@ -1,11 +1,11 @@
 {
-  "current_producer": "Publish",
+  "current_producer": "PR-Align",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Publish",
-    "last": "Merge-In → done",
+    "now": "PR-Align",
+    "last": "Publish → done",
     "wait": ""
   },
   "history": [
@@ -145,6 +145,12 @@
       "outcome": "done",
       "output": "",
       "at": "2026-10-17T10:17:20Z"
+    },
+    {
+      "producer": "Publish",
+      "outcome": "done",
+      "output": "",
+      "at": "2026-10-17T10:18:48Z"
     }
   ],
   "product": {
