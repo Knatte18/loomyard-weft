@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-17 12:57 UTC; every age below is as of then.
+Rendered 2026-10-17 12:58 UTC; every age below is as of then.
 
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
@@ -46,7 +46,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | --- | --- | --- | --- | --- | --- |
 | 1 | **Key-rename migration never reaches the hub config: loom-model-key-names silently turned off the hub fans** | [`config-migrate-hub-layer`](design-config-migrate-hub-layer.md) | 1h | 1h | config, loom |
 | 2 | **Flaky tmux test: TestBoot_TmuxConf TwoWorktreesBootedConcurrently fails with server exited unexpectedly** | [`tmux-conf-concurrent-boot-flake`](design-tmux-conf-concurrent-boot-flake.md) | 1h | 1h | reed |
-| 3 | **shedverbs wait-world integration tests flake: loop exited before it recorded itself** | [`wait-world-lock-grace-flake`](design-wait-world-lock-grace-flake.md) | 45m | 45m | shed |
+| 3 | **shedverbs wait-world integration tests flake: loop exited before it recorded itself** | [`wait-world-lock-grace-flake`](design-wait-world-lock-grace-flake.md) | 46m | 46m | shed |
 
 ### Enhancements
 
@@ -69,9 +69,9 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 13 | **One generic Command producer for every flag-gated side-action row**<br>• Replace OpenWindow, SeedIDE, OpenIDE and the planned Job-Start/Job-Join with one shed engine that runs a CLI command named in config, sync or async, warn or halt. | [`command-producer`](design-command-producer.md) | 1h | 1h | shed, batten, config |
 | 14 | **Entry gate on shed rows: a check decides whether a row runs at all**<br>• Replace darn recipe edge rewrite and the switched producer flag check with one shed entry gate per row; false means Done without acting. | [`row-entry-gate`](design-row-entry-gate.md) | 1h | 1h | shed, loom, batten |
 | 15 | **Preflight pushes the weft branch synchronously and races the board sync**<br>• Preflight spent 11 s mostly in a weft push to GitHub, refused once after 8 s; push detached or serialise with the board sync. | [`preflight-weft-push-sync`](design-preflight-weft-push-sync.md) | 1h | 1h | fabric, shed |
-| 16 | **A darn writer cannot rerun a verify tier it is refused, so a flaky tier failure loops and escalates** | [`darn-verify-tier-unrunnable`](design-darn-verify-tier-unrunnable.md) | 53m | 53m | loom, shed |
-| 17 | **Creel reminders carry no message content**<br>• The idle reminder names only count, ids and senders; the receiver runs lyx creel read for the content | [`creel-reminder-no-subject`](design-creel-reminder-no-subject.md) | 14m | 10m | creel |
-| 18 | **Creel replies always go back by post**<br>• A receiver answers a creel message by post --reply, never in its pane; read prints the reply command | [`creel-reply-discipline`](design-creel-reply-discipline.md) | 8m | 0m | creel, stencil |
+| 16 | **A darn writer cannot rerun a verify tier it is refused, so a flaky tier failure loops and escalates** | [`darn-verify-tier-unrunnable`](design-darn-verify-tier-unrunnable.md) | 54m | 54m | loom, shed |
+| 17 | **Creel reminders carry no message content**<br>• The idle reminder names only count, ids and senders; the receiver runs lyx creel read for the content | [`creel-reminder-no-subject`](design-creel-reminder-no-subject.md) | 15m | 11m | creel |
+| 18 | **Creel replies always go back by post**<br>• A receiver answers a creel message by post --reply, never in its pane; read prints the reply command | [`creel-reply-discipline`](design-creel-reply-discipline.md) | 9m | 0m | creel, stencil, report |
 
 #### Low priority
 

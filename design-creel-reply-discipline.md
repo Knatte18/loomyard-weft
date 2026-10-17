@@ -1,6 +1,6 @@
 # Creel replies always go back by post
 
-`creel-reply-discipline` · Note · enhancement, creel, stencil
+`creel-reply-discipline` · Note · enhancement, creel, stencil, report
 
 ## Seen (orch, 2026-10-17)
 
@@ -40,6 +40,12 @@ Orch recommendation on the idea:
 - The chase follows the reminder rules: typed only at idle, no message content, and `read` shows the expected-reply mark and the reply command.
 - Chases are bounded (one or two), after which creel journals the message as unanswered and tells the sender, so a dead receiver never makes a chase loop.
 - The time limit is a creel config key.
+
+Operator view, not a decision (2026-10-17): all of this must be logged, including how often creel has to chase.
+
+Orch recommendation on the logging:
+- The journal gets an event per chase (`chased`, with the message id, receiver and chase number) and one `unanswered` event when the chases run out; `lyx creel log --id <id>` then shows a message's whole path, posted, read, chased, replied or unanswered.
+- A report, beside `lyx report convergence`, counts expected replies, chases and unanswered messages per receiver role, so the stencils of roles that often need chasing can be tuned.
 
 ## Open
 
