@@ -1,6 +1,6 @@
 # Use quarry Enclose for mechanical checks: verify failures to plan cards
 
-`enclose-kickstart` · Note · enhancement, quarry, webster, loom
+`enclose-checks` · Note · enhancement, quarry, webster, loom
 
 Operator, 2026-10-08: quarry gains `Enclose`, written as quarry's task `enclose-locations` (in the quarry repo; the operator spawns it).
 It maps `file:line` ranges from tool output to the innermost enclosing member glyphs, with the same Symbol data `Resolve` returns, also at a git revision (`quarry enclose [--rev R]`).

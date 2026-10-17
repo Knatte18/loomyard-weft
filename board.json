@@ -298,25 +298,6 @@
       "revised": "2026-10-15T18:48:53Z"
     },
     {
-      "id": 180,
-      "slug": "enclose-kickstart",
-      "title": "Use quarry Enclose for mechanical checks: verify failures to plan cards",
-      "kind": "note",
-      "labels": [
-        "enhancement",
-        "quarry",
-        "webster",
-        "loom"
-      ],
-      "issues": [],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "Map tool-output file:line to member glyphs, then to the card and batch that changed them",
-      "body": "Operator, 2026-10-08: quarry gains `Enclose`, written as quarry's task `enclose-locations` (in the quarry repo; the operator spawns it).\nIt maps `file:line` ranges from tool output to the innermost enclosing member glyphs, with the same Symbol data `Resolve` returns, also at a git revision (`quarry enclose [--rev R]`).\nMarkdown is out of its scope: a `.md` location is a per-item rejection.\n\n## Change of direction, 2026-10-17\n\nThe original use was a kick-start pack of the failing members for recovery agents and fixers.\nThe pack measurement this waited on (operator decisions 2026-10-11 and 2026-10-15) came in with `docs/research/glyph-audit-2026-10-17/`: forks read code themselves whatever the pack holds, and note `kickstart-pack-remove` records the operator decision to remove the pack.\nA pack of failing members is dropped with it: a fork given `file:line` reads around it in one call.\n\nOperator view, not a decision: Enclose can be useful for mechanical checks, where Loomyard's own code needs to know which member a line belongs to, with no agent in the loop.\n\n## Orch recommendation, not a decision\n\nFirst use, which changes no flow: a verify failure at Merge-In or Publish is mapped through Enclose to its member glyph, then to the plan card whose targets hold that glyph and the batch and commit that ran the card (`_lyx/webster/state.json`).\nThe fixer's brief names that card, its intent and its commit, as a starting point instead of the whole diff.\nLater possibilities, each its own decision:\n\n- Re-run only the batch that made the failing change (`lyx webster reset --batch` and a fresh fork with the failure attached), instead of a whole-diff review round.\n- A finding that cites `path:line` is mapped to a glyph at the reviewed revision, so later edits never shift it, and it can be checked against the plan's targets.\n- A failure in a member no card targets is reported as a scope gap: the plan missed it.\n- Test, vet and lint failures are grouped per member, so duplicate findings fold.\n\nMeasure that a fixer uses the named card before building more, as the pack showed agents may read and ignore such hints.\n\nGlyph↔path conversion stays in quarry; Loomyard never intersects lines with symbol spans itself.\n\n## Quarry's Enclose as delivered (quarry PR #36, 2026-10-08)\n\n- Released in quarry v0.3.0: `(*Repo).Enclose(locs)` and `(*Repo).EncloseAt(rev, locs)`, with `EncloseResult`, `EncloseReasons` and `RenderEncloseJSON`; paths are relative to the repo root, not the cwd, and an unknown rev fails the whole call.\n- They take location spellings (`path:N`, `path:N-M`, `path:N:col`), not structs; Loomyard formats tool-output locations into them.\n- Rejections carry a closed reason set (`EncloseReasons`), including `unaddressable` for a `.go` file in the repo root or a path containing `#`; Loomyard cites `path:line` for any rejected item.\n- A `found` glyph may not Resolve afterwards (an explicitly named gitignored file, a file without a package clause, a path through a symlinked directory; `quarry/enclose.go`). Loomyard treats a Resolve miss after Enclose as \"no current span\", never as an error, the same as a member the fixer deleted or renamed.\n- Loomyard pins quarry v0.2.1; this task bumps `go.mod` to v0.3.0, which has no other breaking change.\n",
-      "created": "2026-10-08T05:56:26Z",
-      "revised": "2026-10-17T14:22:55Z"
-    },
-    {
       "id": 231,
       "slug": "spawn-audit-log",
       "title": "Spawn audit log: every process lyx starts is recorded and traceable",
@@ -894,6 +875,25 @@
       "body": "## Operator decision 2026-10-17\n\nRemove the Webster kick-start pack, every layout of it (inline, pack file, per card), with its code and config keys.\nGlyphs stay in the plan and in the plan gates.\nUntil the code is removed, the hub's `webster.yaml` sets `kickstart_pack: false` (operator, 2026-10-17, `_board` commit `2d850b341`).\nQuarry stays its own repository for now, since it changes rarely (operator, 2026-10-17).\n\n## Evidence\n\n- Four audits, `docs/research/glyph-audit-2026-10-12/`, `-10-13/`, `-10-15/`, `-10-17/`: no layout lowered exploration against no pack (exploration calls per card 5.2 without a pack, 5.8 to 7 with one; calls before the first edit 7 against 4 to 8.5), and the per-card layout costs more per card than the older ones on a different workload.\n- A sample of 9 per-card forks (2026-10-17): the forks work file by file and read a file just before editing it; of the spans not read before the first edit, 59% were read later, 23% never read while the file was edited from the fork's own grep, `sed` or build errors, 18% not needed or already covered.\n  Several forks grepped for sites the pack had already listed, and none mentioned the pack.\n- Webster is about a third of a loom run's active time (`lyx report timing` since 2026-10-10, 105 landed runs: median 30% per run), and reading code is a small part of it.\n\n## Orch recommendation, not a decision\n\n- Keep `tools/forkaudit` working for runs without a pack, so a no-pack baseline can be measured.\n- Forks never call `lyx quarry` in any audit since the pack; resolve's value is in the plan gates, which call quarry in code.\n- Note `enclose-kickstart` lost its pack use with this removal and now proposes Enclose for mechanical checks instead.\n",
       "created": "2026-10-17T14:08:42Z",
       "revised": "2026-10-17T14:24:35Z"
+    },
+    {
+      "id": 640,
+      "slug": "enclose-checks",
+      "title": "Use quarry Enclose for mechanical checks: verify failures to plan cards",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "quarry",
+        "webster",
+        "loom"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "Map tool-output file:line to member glyphs, then to the card and batch that changed them",
+      "body": "Operator, 2026-10-08: quarry gains `Enclose`, written as quarry's task `enclose-locations` (in the quarry repo; the operator spawns it).\nIt maps `file:line` ranges from tool output to the innermost enclosing member glyphs, with the same Symbol data `Resolve` returns, also at a git revision (`quarry enclose [--rev R]`).\nMarkdown is out of its scope: a `.md` location is a per-item rejection.\n\n## Change of direction, 2026-10-17\n\nThe original use was a kick-start pack of the failing members for recovery agents and fixers.\nThe pack measurement this waited on (operator decisions 2026-10-11 and 2026-10-15) came in with `docs/research/glyph-audit-2026-10-17/`: forks read code themselves whatever the pack holds, and note `kickstart-pack-remove` records the operator decision to remove the pack.\nA pack of failing members is dropped with it: a fork given `file:line` reads around it in one call.\n\nOperator view, not a decision: Enclose can be useful for mechanical checks, where Loomyard's own code needs to know which member a line belongs to, with no agent in the loop.\n\n## Orch recommendation, not a decision\n\nFirst use, which changes no flow: a verify failure at Merge-In or Publish is mapped through Enclose to its member glyph, then to the plan card whose targets hold that glyph and the batch and commit that ran the card (`_lyx/webster/state.json`).\nThe fixer's brief names that card, its intent and its commit, as a starting point instead of the whole diff.\nLater possibilities, each its own decision:\n\n- Re-run only the batch that made the failing change (`lyx webster reset --batch` and a fresh fork with the failure attached), instead of a whole-diff review round.\n- A finding that cites `path:line` is mapped to a glyph at the reviewed revision, so later edits never shift it, and it can be checked against the plan's targets.\n- A failure in a member no card targets is reported as a scope gap: the plan missed it.\n- Test, vet and lint failures are grouped per member, so duplicate findings fold.\n\nMeasure that a fixer uses the named card before building more, as the pack showed agents may read and ignore such hints.\n\nGlyph↔path conversion stays in quarry; Loomyard never intersects lines with symbol spans itself.\n\n## Quarry's Enclose as delivered (quarry PR #36, 2026-10-08)\n\n- Released in quarry v0.3.0: `(*Repo).Enclose(locs)` and `(*Repo).EncloseAt(rev, locs)`, with `EncloseResult`, `EncloseReasons` and `RenderEncloseJSON`; paths are relative to the repo root, not the cwd, and an unknown rev fails the whole call.\n- They take location spellings (`path:N`, `path:N-M`, `path:N:col`), not structs; Loomyard formats tool-output locations into them.\n- Rejections carry a closed reason set (`EncloseReasons`), including `unaddressable` for a `.go` file in the repo root or a path containing `#`; Loomyard cites `path:line` for any rejected item.\n- A `found` glyph may not Resolve afterwards (an explicitly named gitignored file, a file without a package clause, a path through a symlinked directory; `quarry/enclose.go`). Loomyard treats a Resolve miss after Enclose as \"no current span\", never as an error, the same as a member the fixer deleted or renamed.\n- Loomyard pins quarry v0.2.1; this task bumps `go.mod` to v0.3.0, which has no other breaking change.\n",
+      "created": "2026-10-08T05:56:26Z",
+      "revised": "2026-10-17T14:25:08Z"
     }
   ]
 }
