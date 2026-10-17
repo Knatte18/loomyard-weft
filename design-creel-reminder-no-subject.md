@@ -9,6 +9,10 @@ A demo post from `ly:orch` to a fresh Claude strand `ly:demo` was reminded as:
 This is the documented design (`internal/creelengine/doc.go`, the reminder paragraph): the subject is the body's first line, cut at 80 runes, inside « ».
 A message without a separate first line therefore shows its content in the reminder, and the receiving agent can act on it without running `lyx creel read`.
 
+## Operator decision (2026-10-17)
+
+Creel's reminder carries no message content, only the count, ids and senders; urgent content goes by inject.
+
 ## Operator view, not a decision (2026-10-17)
 
 The reminder must not carry the message's content.
