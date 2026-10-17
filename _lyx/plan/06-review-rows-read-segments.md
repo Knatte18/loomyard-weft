@@ -40,10 +40,10 @@
 - `internal/shedrecipe#burlerRowModels`
 
 **Uses:**
-- `plan:internal/testkit/envkit#TemplateSetting`
+- `internal/testkit/envkit#TemplateSetting`
 - `internal/shedrecipe#reviewRow`
 - `internal/shedrecipe#testReviewSegment`
-- `plan:internal/shedrecipe#SegmentSettings`
+- `internal/shedrecipe#SegmentSettings`
 - `internal/shedrecipe#captureReview`
 - `internal/shedrecipe#captureFix`
 - `internal/shedrecipe#minimalBouncerConfig`

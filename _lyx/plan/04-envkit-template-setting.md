@@ -1,7 +1,7 @@
 # Card 4 — envkit-template-setting
 
 **Create:**
-- `plan:internal/testkit/envkit#TemplateSetting` -> `func TemplateSetting(module, key string) (any, error)`
+- `internal/testkit/envkit#TemplateSetting`
 
 **Edit:**
 - `internal/testkit/envkit#FullEnv`
@@ -9,7 +9,7 @@
 
 **Uses:**
 - `internal/configreg#Lookup`
-- `plan:internal/shedrecipe#SegmentSettings`
+- `internal/shedrecipe#SegmentSettings`
 
 **Intent:** Give the shared test kit a template-backed setting lookup and fill `FullEnv`'s two new `Env` fields, so packages built on the kit keep today's budgets once the entries and `loomrecipe` read the segment settings (cards 6 and 7).
 

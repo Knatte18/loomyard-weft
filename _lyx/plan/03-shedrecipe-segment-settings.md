@@ -1,7 +1,7 @@
 # Card 3 — shedrecipe-segment-settings
 
 **Create:**
-- `plan:internal/shedrecipe#SegmentSettings` -> `type SegmentSettings struct`
+- `internal/shedrecipe#SegmentSettings`
 
 **Edit:**
 - `internal/shedrecipe#Env`

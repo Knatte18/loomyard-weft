@@ -39,8 +39,8 @@
 - `internal/loomrecipe#checkDarnReviewBudget`
 
 **Uses:**
-- `plan:internal/loomcli#loomSegmentPerches`
-- `plan:internal/loomcli#darnReviewSegment`
+- `internal/loomcli#loomSegmentPerches`
+- `internal/loomcli#darnReviewSegment`
 - `internal/loomrecipe#reviewSegments`
 
 **Intent:** D8: `internal/loomrecipe`'s budget stamping and routing are keyed by segment, `New` and `NewDarn` read each review segment's budget from `env.Segments`, and `Routing` and `DarnRouting` take per-segment budgets alone.

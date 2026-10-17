@@ -1,9 +1,9 @@
 # Card 5 — wire-segments-and-setting
 
 **Create:**
-- `plan:internal/loomcli#loomSegmentPerches` -> `var loomSegmentPerches map[string]loomengine.Perch`
-- `plan:internal/loomcli#darnReviewSegment` -> `const darnReviewSegment = "Darn-Review"`
-- `plan:internal/loomcli#loomSegmentSettings` -> `func loomSegmentSettings(cfg loomengine.Config, review loomengine.ReviewSettings, judge loomengine.JudgeSettings) map[string]shedrecipe.SegmentSettings`
+- `internal/loomcli#loomSegmentPerches`
+- `internal/loomcli#darnReviewSegment`
+- `internal/loomcli#loomSegmentSettings`
 
 **Edit:**
 - `internal/loomcli#loomCLI.wire`
@@ -14,7 +14,7 @@
 
 **Uses:**
 - `internal/configreg#SettingLookup`
-- `plan:internal/shedrecipe#SegmentSettings`
+- `internal/shedrecipe#SegmentSettings`
 - `internal/loomcli#seedLoomConfigWithKeys`
 - `internal/loomcli#seedDarnHubConfig`
 
