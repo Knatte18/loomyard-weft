@@ -1,4 +1,4 @@
-# Card 4 — review-rows-read-segments
+# Card 6 — review-rows-read-segments
 
 **Create:**
 - `plan:internal/shedrecipe#rowSegment` -> `func rowSegment(entry string, row RowIdentity, env Env) (SegmentSettings, error)`
@@ -52,7 +52,7 @@
 - `internal/shedrecipe#assertErrContains`
 
 **Intent:** The Bouncer, BurlerReview and BurlerFix entries read their segment's `SegmentSettings` and the settings their row names, and the embedded recipes name those settings (D3, D5, D6, D7).
-After this card no entry reads `ReviewModels`, `RowReviewModels`, `RowClusterFans`, `RowFixFans`, `RowModelKeys`, `RowAutoAccept`, `RowHardMaxBounces` or `RowBouncerModels`; card 6 deletes them.
+After this card no entry reads `ReviewModels`, `RowReviewModels`, `RowClusterFans`, `RowFixFans`, `RowModelKeys`, `RowAutoAccept`, `RowHardMaxBounces` or `RowBouncerModels`; card 8 deletes them.
 
 Segment (D3): `rowSegment` refuses a row whose `row.Segment` is empty, and a segment with no `env.Segments` entry, each naming the entry, the row and the segment, e.g. `shedrecipe: Bouncer: row "X" has no segment; way forward: put the row in a review segment with segment: in the recipe`, and `shedrecipe: Bouncer: row "X": segment "S" has no Env.Segments entry; way forward: wire segment "S"'s settings in the caller's Env.Segments`.
 All three entries call it; the run-wide `ReviewModels` fallback goes (`burlerRowModels` is deleted with its two callers on this card).
@@ -60,18 +60,23 @@ All three entries call it; the run-wide `ReviewModels` fallback goes (`burlerRow
 Settings (D5, D6): a row config value that references a setting is a string `module.key` under a key ending in `_setting`.
 `settingRef` reads `key` with `configString`; absent or empty means not named.
 A named value is split at the first dot into `settingReference{Module, Key, Text}`, refusing no dot, an empty module or an empty key; then a nil `env.Setting` is refused; then the lookup is called and its error (unknown module, unknown key, unreadable file) is wrapped.
-Every refusal names the entry, the row, the config key and the reference, and its way forward names the recipe key to fix, or, for a lookup error, keeps the lookup's own text, which names the template that lacks the key.
+Every refusal but one names the entry, the row, the config key and the reference: a recipe value that is not a string keeps `configString`'s own text, which names only the key.
+Every other refusal's way forward names the recipe key to fix, with two exceptions: a lookup error keeps the lookup's own text, and the nil-`Setting` refusal, a wiring fault no recipe edit cures, ends `way forward: fill Env.Setting in the caller that builds this recipe`.
+Card 1's unregistered-module and unknown-key errors carry their own `way forward`.
+An error propagated from `configengine.Load` or the snapshot decode stays as it is, because it is unreachable for the shipped recipes: for `loom` and `darn` the wiring's strict load of the same stack has already passed before the recipe builds.
 `fanSetting` turns the value into a fan list as `burlerengine.FanList` reads YAML: a `string` is a one-entry list and a `[]any` of strings is the list (a lookup's YAML decode yields `[]any`, never `[]string`, so there is no `[]string` case); a null, an empty string and a list whose every entry is `""` count as absent (a nil list, `named` still true); any other shape (a number, a map, a list holding a non-string) is refused naming the row, key, reference and the shape.
 `boolSetting` answers a `bool`, false for a null, and refuses any other shape.
 `settingReference` renders the refusal citation `<key> in <module>.yaml`.
 Every setting a row names is read at construction, so `loomrecipe.New` and `NewDarn` refuse before any row runs.
+Bound: a `_setting` key lets a row read any template key of any registered config module, a guard-category key included, through `Env.Setting`; only rows of the recipes embedded in the binary name such keys, the lookup is read-only and answers only template keys of registered modules (card 1), a guard-category key never takes a local or `run_settings` value because `configengine.Load` refuses it, and `TestShippedRecipes_FanSettingsAgreeWithinSegment` pins each shipped row's exact reference, so a recipe edit that points a row at another key fails that test.
 
 Entries:
 - `bouncerEntry` recognises `reviewer_fan_setting` and `auto_accept_setting`; `ClusterFans` is the fan list when `hasFanName` holds (as with today's map), `AutoAccept` the bool, `Models` the segment's `Bouncer`, `HardCap` the segment's `HardMaxBounces`.
 - `burlerReviewEntry` recognises `reviewer_fan_setting` and `fixer_fan_setting`; `Models` is the segment's `Models` and `RunOpts.ReviewKey` its `ReviewKey`.
   A row that names either setting records its round's fans whatever the value, exactly where a present map entry did, and a list naming a fan beside the recipe profile's `cluster-fan` or `fix-fan` stays a construction error; the conflict message names the reference instead of "the hub config through the wiring".
 - `burlerFixEntry` recognises `fixer_fan_setting` and reads it at construction; when named, `RequiresFans` is true and `RunOpts.FixFanKey` is `<key> in <module>.yaml` (so loom's citation gains the file name it lacks today), and when not named the row reads no recorded fans and runs the single fixer; `Models` is the segment's `Models` and `FixKey` its `FixKey`.
-- `BurlerFixProducer.Call`'s unrecorded-round refusal (a `RequiresFans` row over a round whose usage record holds no recorded fan names) names the fixer fan's source from `p.opts.FixFanKey`, e.g. `round 2's usage record holds no recorded fan names (<err>); the row's fixer fan comes from discussion_fixer_fan in loom.yaml; way forward: …`, keeping its way forward to the review row as the message's end; with an empty `FixFanKey` the clause is left out.
+  The `<key> in <module>.yaml` form also reaches `burlerengine`'s twill engine refusal through `RunOpts.FixFanKey`, which the darn wiring already feeds in that form, so that refusal's text needs no change.
+- `BurlerFixProducer.Call`'s unrecorded-round refusal (a `RequiresFans` row over a round whose usage record holds no recorded fan names) names the fixer fan's source from `p.opts.FixFanKey`, e.g. `round 2's usage record holds no recorded fan names (<err>); the row's fixer fan comes from discussion_fixer_fan in loom.yaml; way forward: …`, keeping its way forward to the review row as the message's end.
   This is the refusal the fix row raises on an unrecorded fan round, so it cites `<key> in <module>.yaml` for loom and darn alike.
 Each entry's doc comment is updated for these sources, and each `configRejectUnknown` list gains its new keys.
 
@@ -89,8 +94,8 @@ It carries one `//testtiming:keep` reason naming both of its purposes: the pin o
 
 Shared fixture: `newTestEnv` sets `Segments: map[string]SegmentSettings{testReviewSegment: {}}`; `fakeSetting(values)` returns a lookup answering `values["module.key"]` and erroring, naming the reference, for a reference it lacks.
 
-Tests (each row asserting the exact value or the error's row, key, reference and way forward):
-- `TestBouncerEntry_ConstructionFailures`: the `NoRowBouncerModelsEntry` row becomes a row with an empty segment and a row whose segment has no entry; new rows reach each settings refusal with every upstream check passing: `reviewer_fan_setting` of `"loomfan"` (no dot), `".x"` and `"loom."`; a recipe value of `3` for `reviewer_fan_setting`, refused by `configString` as not a string; a named setting with `env.Setting` nil; a lookup error from `fakeSetting` (unknown reference); a fan value of `3` and of `[]any{"a", 1}`; an `auto_accept_setting` value of `"yes"`.
+Tests (each building row asserting the exact value; a settings-refusal row asserting the error's row, key, reference and way forward; a segment-refusal row the error's entry, row, segment and way forward; the lookup-error row the row, key and reference, `fakeSetting`'s text carrying no way forward; and the `configString` row as named below):
+- `TestBouncerEntry_ConstructionFailures`: the `NoRowBouncerModelsEntry` row becomes a row with an empty segment and a row whose segment has no entry; new rows reach each settings refusal with every upstream check passing: `reviewer_fan_setting` of `"loomfan"` (no dot), `".x"` and `"loom."`; a recipe value of `3` for `reviewer_fan_setting`, refused by `configString` as not a string, whose row asserts only the key name `reviewer_fan_setting` and `must be a string`, as `configString` words it, since a direct entry call carries no row name and the error holds no reference or way forward; a named setting with `env.Setting` nil, whose row asserts the way forward `fill Env.Setting in the caller that builds this recipe`; a lookup error from `fakeSetting` (unknown reference); a fan value of `3` and of `[]any{"a", 1}`; an `auto_accept_setting` value of `"yes"`.
 One row sets `reviewer_fan_setting: ""` with `env.Setting` nil and builds: an empty reference counts as not named, so no lookup is needed.
 - `TestBouncerEntry_EnvJudgeFallback`: the seed and judge triples come from `env.Segments[testReviewSegment].Bouncer`.
 - `TestBouncerEntry_ClusterExcludes`: the fan rows set `reviewer_fan_setting: loom.fan` with `fakeSetting` answering the old map's lists, plus a null-valued row behaving like today's all-empty list.
@@ -112,6 +117,9 @@ One row sets `reviewer_fan_setting: ""` with `env.Setting` nil and builds: an em
 - `PATTERN-recipe-setting-lookup` — Giving a shed recipe row a per-row or per-segment config value: a plain value is named `module.key` and read through `Env.Setting`, a resolved one of a review segment's row is a `SegmentSettings` field; never its own `Env` field.
 ```
 
-**ImpactSummary:** Three review entries switch sources and gain build-time refusals, both embedded recipes gain setting keys; shedrecipe, shedbuild and loomrecipe tests follow, and the old per-row Env maps lose their last reader.
+`PATTERN.md` ends at no more than 15564 bytes (`pattern.HeadroomBytes`), so the card also shortens existing entry lines by at least 264 bytes in total, keeping the declared entry line verbatim and dropping only words the entries' linked background files already say.
+`lyx loom lint-pattern` confirms the result.
 
-**Commit:** 4: shedrecipe: review rows read their segment's settings and their named settings
+**ImpactSummary:** Three review entries switch sources and gain build-time refusals, both embedded recipes gain setting keys, and shedadapters' unrecorded-round refusal gains the setting's citation; shedrecipe, shedadapters, shedbuild and loomrecipe tests follow, and the old per-row Env maps lose their last reader.
+
+**Commit:** 6: shedrecipe: review rows read their segment's settings and their named settings

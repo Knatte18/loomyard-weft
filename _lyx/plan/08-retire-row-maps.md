@@ -1,4 +1,4 @@
-# Card 6 — retire-row-maps
+# Card 8 — retire-row-maps
 
 **Edit:**
 - `internal/shedrecipe#Env`
@@ -39,10 +39,11 @@ Fills removed:
 
 Tests:
 - `TestWire_DefaultConfig` drops its `c.env.ReviewModels` assertion in favour of each segment's `Segments[...].Models`, and its "merge review stays on by default" subtest reads `c.env.Segments["Merge-Review"].MaxBounces` (non-zero under the template).
-- `TestWire_ReviewKeysReachTheEnv` and `TestWire_DarnRecipe` drop the per-row map assertions card 3 duplicated in `Segments`, and their per-row fan and auto-accept expectations go: card 4's `TestShippedRecipes_FanSettingsAgreeWithinSegment` pins which key each row reads, and card 1's `TestSettingLookup` pins what a key answers.
-  Each keeps one `c.env.Setting` read of its own module's seeded fan key (`loom.plan_reviewer_fan`, from card 3, and `darn.darn_fixer_fan`), which proves the wiring builds the lookup over the pair's `Dirs`, the board included for darn.
+- `TestWire_ReviewKeysReachTheEnv` and `TestWire_DarnRecipe` drop the per-row map assertions card 5 duplicated in `Segments`, and their per-row fan and auto-accept expectations go: card 6's `TestShippedRecipes_FanSettingsAgreeWithinSegment` pins which key each row reads, and card 1's `TestSettingLookup` pins what a key answers.
+  In `TestWire_ReviewKeysReachTheEnv` the `fanned` wiring's per-row fan, `RowModelKeys` and `RowReviewModels` expectations go; its `Segments` assertions from card 5 stay, since they alone pin a segment's own model keys.
+  Each test keeps one `Setting` read of its own module's seeded fan key (`fanned.env.Setting` for `loom.plan_reviewer_fan`, from card 5, and the "set fans and models" case's `c.env.Setting` for `darn.darn_fixer_fan`, also from card 5), which proves the wiring builds the lookup over the pair's `Dirs`, the board included for darn.
 - `TestWire_MergeReviewSeams` reads `c.env.Segments["Merge-Review"].MaxBounces == 0` under `merge_max_bounces: 0`.
 
-**ImpactSummary:** Eleven Env fields and one type removed with four unread loomcli helpers; their fills in loomcli and the kits and four loomcli wiring tests change, and the full suite's other users already moved on cards 3 to 5.
+**ImpactSummary:** Eleven Env fields and one type removed with four unread loomcli helpers; their fills in loomcli and the kits and four loomcli wiring tests change, and the full suite's other users already moved on cards 3 to 7.
 
-**Commit:** 6: shedrecipe: retire the per-row review maps from Env
+**Commit:** 8: shedrecipe: retire the per-row review maps from Env

@@ -26,8 +26,11 @@ The doc comment on `SettingLookup` states this bound.
 
 `configreg` now calls `configengine.Load`, so `configStrictnessStrictSet` in `cmd/lyx/configstrictness_test.go` gains `"internal/configreg": true`, and the strict-caller list in `pattern/PATTERN-config-strictness.md` gains `configreg` with one line saying it loads strictly to answer a recipe row's setting.
 
-`TestSettingLookup` is a table whose every row builds its own temp hub fixture (`t.TempDir()` under the package's existing `TestMain`), so the rows that rewrite or corrupt a file share no state with the others and run in parallel: a board dir and an anchor dir, each with a `_lyx/config/` directory, the loom default file written at `configengine.ConfigFile(<board _lyx dir>, "loom")` from `loomengine`'s template text with `review_max_bounces` changed, and a darn hub file at the board.
-Rows, each asserting the exact value or an error containing the module, the key and `way forward`:
+`TestSettingLookup` is a table whose every row builds its own temp hub fixture (`t.TempDir()` under the package's existing `TestMain`), so the rows that rewrite or corrupt a file share no state with the others and run in parallel: a board dir and an anchor dir, each with a `_lyx/config/` directory, the loom default file written at `configengine.ConfigFile(<board dir>, "loom")` from `loomengine`'s template text with `review_max_bounces` changed, and a darn hub file at the board.
+Each answering row asserts the exact value.
+The unregistered-module row asserts an error containing the module and `way forward`, and the unknown-key row an error containing the module, the key and `way forward`.
+The guard-key and invalid-YAML rows reach `configengine.Load`'s propagated error, whose text carries no way forward and which step 3 wraps only with the module name: the guard-key row asserts an error containing the module name and the guard key's name, and the invalid-YAML row an error containing the module name.
+Rows:
 - a key no layer sets answers its template default (`loom`, `plan_auto_accept` → `false`);
 - a key the default file sets answers the file's value;
 - a `CategoryNone` key (`review_max_bounces`) set in the pair's local layer at `configengine.LocalFile(anchor, "loom")` answers the local value;

@@ -115,7 +115,7 @@
 
 **Intent:** D2: the registry's `Constructor` learns its row's segment.
 `RowIdentity` is a small struct with two string fields, `Name`, the recipe row's `name`, and `Segment`, its `segment:` value (empty for a row outside any segment); its doc comment says so.
-`Constructor` takes a `RowIdentity` in place of the bare name, and every registry entry takes the new parameter; this card is a pure re-sign, so every entry reads `row.Name` exactly where it read `name` before (entries that discarded the name keep discarding it) and no entry reads `row.Segment` yet — card 4 makes the Bouncer, BurlerReview and BurlerFix entries read it.
+`Constructor` takes a `RowIdentity` in place of the bare name, and every registry entry takes the new parameter; this card is a pure re-sign, so every entry reads `row.Name` exactly where it read `name` before (entries that discarded the name keep discarding it) and no entry reads `row.Segment` yet — card 6 makes the Bouncer, BurlerReview and BurlerFix entries read it.
 `switchedEntry` keeps its `name string` parameter and its three callers pass `row.Name`.
 The `registry` map literal, `Lookup` and `Names` keep their text (`PATTERN-shed-recipe-registry`); `registry` and `Lookup` are listed because they reference the re-signed `Constructor` type.
 `Constructor`'s doc comment is rewritten for the new parameter, and the `recipe.go` file header names `RowIdentity` among the declared types.
@@ -124,7 +124,7 @@ The `registry` map literal, `Lookup` and `Names` keep their text (`PATTERN-shed-
 `newPRFixture` in `internal/loomcli/parentreview_integration_test.go` (integration tag) builds its Discussion-Write row the same way.
 
 Test call sites change mechanically.
-`testReviewSegment` and `reviewRow(name)` live in the package's test fixture: `reviewRow` returns `RowIdentity{Name: name, Segment: testReviewSegment}`, the identity every Bouncer, BurlerReview and BurlerFix test row is built with, so card 4's segment requirement needs only a fixture `Segments` entry.
+`testReviewSegment` and `reviewRow(name)` live in the package's test fixture: `reviewRow` returns `RowIdentity{Name: name, Segment: testReviewSegment}`, the identity every Bouncer, BurlerReview and BurlerFix test row is built with, so card 6's segment requirement needs only a fixture `Segments` entry.
 Every direct call of a Bouncer, BurlerReview or BurlerFix entry in this package's tests passes `reviewRow("<name>")`, and `captureReview` and `captureFix` keep their `name string` parameter and call their entry with `reviewRow(name)`; every other entry's test call passes `RowIdentity{Name: "<name>"}`.
 `TestEveryEntry_RejectsUnknownConfigKey` calls each entry with `reviewRow("row-name")`, which every entry accepts.
 The table-driven tests that call an entry through a `Constructor` value (`tt.entry(...)`, `lookupEntry(t, ...)(...)`, the conformance and switched tests' `constructor(...)`) pass a `RowIdentity` the same way, and the table types and builders holding a `Constructor` field or map (`lifecycleEntryCase`, `simpleEntryCase`, `gateCapableEntries` and the like) are listed because they reference the re-signed type, though their text needs no change.
