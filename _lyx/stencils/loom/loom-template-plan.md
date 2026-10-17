@@ -9,7 +9,7 @@
      twill_directive is a fourth optional marker, rendered by internal/twilldirective through internal/loomengine;
      it sits on the line that would otherwise be blank, so an empty value leaves the blank line and the prompt's bytes unchanged.
      edit_directive is a required marker, rendered unconditionally by internal/editdirective.
-lyx-stencil: sha256=39fdbfcd892fb6fde3d0c1ef55c7a9e9b577d418ed88730aaab67659fc456f50 build=6bfaaa1448adcd5fda4ab769115846291406977a time=2026-10-16T12:19:49Z -->
+lyx-stencil: sha256=1d671a2f482a9b3045f68b353dbf173cbc660e01e883931509eb357d2f1c9fa9 build=58a7feec731d6e109b82b39826f5d3cf3c844ff8 time=2026-10-17T08:59:01Z -->
 
 # Plan — read the decision record, write a plan-format flat-card plan
 
@@ -188,8 +188,8 @@ A card that introduces a new verb, flag, escape hatch or routing edge, or remove
 Plan-Review flags one left unbounded.
 
 A card that prescribes a refusal or guard branch names in its `**Intent:**` the input that reaches it after every upstream check passes, and the test that reaches it.
-A propagated raw I/O error that joins its section's grouped transient row in `refusal-spec.md` is exempt.
-A branch that upstream validation already rules out is not prescribed: drop it, or, when it guards an invariant, write it as a fail-loud wiring guard in `refusal-spec.md`'s sense, which takes no per-row test.
+A propagated raw I/O error, which `refusal-spec.md` exempts as transient, is exempt.
+A branch that upstream validation already rules out is not prescribed: drop it, or, when it guards an invariant, write it as a fail-loud wiring guard in `refusal-spec.md`'s sense, which takes no reaching test.
 A test that calls only the refusal's error constructor does not reach it.
 
 A field with no content is omitted entirely — never write a `none` sentinel on any field.

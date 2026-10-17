@@ -10,8 +10,8 @@
      {{.edit_directive}} the shared edit directive rendered by internal/editdirective,
      and {{.parent_notify}} the parent-notification rule, whichever of the shed-template-driver-notify stencils fits the run.
      The body is recipe-blind: it names no recipe, no state-directory path and no recipe-owned command, which arrive only through the markers.
-     Refusal text and its ways forward live in contracts/specs/refusal-spec.md and are pointed at, never restated.
-lyx-stencil: sha256=52ba7b212d2ada900e9ddf3637d2fbae2539b7d7dd703cc94d40ab3ba344fd88 build=27657341cf3a467214d0a482c7d34359ff06151c time=2026-10-16T09:49:04Z -->
+     Refusal text and its ways forward live in the refusal messages and are quoted from them, never restated.
+lyx-stencil: sha256=b3d6ea93cbde42139ce07676fc0c6358a964181471b5fb7efcf27d675be4197a build=58a7feec731d6e109b82b39826f5d3cf3c844ff8 time=2026-10-17T08:59:01Z -->
 
 # Driver for run `{{.run_id}}`
 
@@ -159,9 +159,9 @@ A resume line that arrives while the loop job is in flight starts no second loop
 
 ## Ways forward
 
-A refusal's message ends in a `way forward:` clause, and `contracts/specs/refusal-spec.md` lists every refusal with the way forward it names.
-When a stop report quotes a refusal, look the refusal text up in that table and name the way forward beside it, so the operator reads a next step rather than a diagnosis alone.
-A refusal the table does not list is reported verbatim with no way forward added.
+A refusal's message ends in a `way forward:` clause naming the next step.
+When a stop report quotes a refusal, name that clause's way forward beside it, so the operator reads a next step rather than a diagnosis alone.
+A refusal whose message carries no such clause is reported verbatim with no way forward added.
 
 Two stops name `lyx shed goto {{.run_id}} --to <producer>` as their way forward:
 

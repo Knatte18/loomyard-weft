@@ -6,7 +6,7 @@
      internal/stencil's StripLeadingComment removes this leading comment before either consumer ever
      sees it.
      Among those markers, verify_tiers is filled by ReadRubric from the hub's language.yaml list, as bullets or none.
-lyx-stencil: sha256=6f7936dc6e21aacd7ebee3a20b40dc8eb6940cff0771098f0dff338de21a3185 build=27657341cf3a467214d0a482c7d34359ff06151c time=2026-10-16T09:49:04Z -->
+lyx-stencil: sha256=ee7d79ecac963a0a78c9a92de905709e3b36ec6f17c5fff3285f2c95a5425393 build=58a7feec731d6e109b82b39826f5d3cf3c844ff8 time=2026-10-17T08:59:01Z -->
 
 # Plan-Review rubric
 
@@ -110,7 +110,7 @@ Do not flag any of the following as a finding:
 - **Reachability of a prescribed refusal.**
   A card that prescribes a refusal or guard branch with no named input that reaches it, or no named test that reaches it, is a finding.
   So is one whose named input an upstream check rejects; the finding names that upstream check.
-  A propagated raw I/O error that joins its section's grouped transient row in `refusal-spec.md` is exempt, and so is a fail-loud wiring guard in that file's sense, which takes no per-row test.
+  A propagated raw I/O error, which `refusal-spec.md` exempts as transient, is exempt, and so is a fail-loud wiring guard in that file's sense, which takes no reaching test.
   A test that calls only the refusal's error constructor does not reach the refusal.
 - **The writer/reviewer symmetry note.**
   The plan writer's own stencil is `{{.stencils_dir}}/loom/loom-template-plan.md`.
