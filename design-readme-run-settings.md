@@ -1,6 +1,6 @@
 # Show each task run_settings in the board README
 
-`readme-run-settings` · Task · enhancement, board
+`readme-run-settings` · Task · enhancement, board · running · Worktree-Create
 
 ## Seen
 
