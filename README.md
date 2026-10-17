@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-17 11:30 UTC; every age below is as of then.
+Rendered 2026-10-17 11:31 UTC; every age below is as of then.
 
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
@@ -19,6 +19,7 @@ Held by a run; its scope is locked until the run ends.
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | 1 | **PR-Gate takes only its own run: no adopted old PR, no note-mention trigger**<br>• Publish never adopts an older PR for a reused slug, and the alignment snapshot counts only real decisions<br>• `loom: review_hard_max_bounces 3`<br>• `loom: review_max_bounces 2` | [`pr-gate-run-identity`](design-pr-gate-run-identity.md) | loom | Webster-Burler-Fix | 1d | 1h | loom, batten, board |
 | 2 | **lyx gate test slot wait capped under the prompt-cache lifetime, like shuttle await**<br>• Gate slot wait uses the shared keep-cache-warm cap and answers run-again instead of blocking past the cache lifetime<br>• `darn: review_max_bounces 1` | [`gate-wait-cache-cap`](design-gate-wait-cache-cap.md) | darn | Darn-Write | 1h | 1h | config, shuttle |
+| 3 | **creel CLI output fixes: lost success envelope, doubled prefix, log --id reminders**<br>• Three output bugs in internal/creelcli from the creel stage 1 re-test (#699, #700, #701).<br>• `loom: review_hard_max_bounces 3`<br>• `loom: review_max_bounces 2` | [`creel-cli-output-fixes`](design-creel-cli-output-fixes.md) | loom | Worktree-Create | 1h | 0m | creel |
 
 ### Ready
 
@@ -29,7 +30,6 @@ Waits on nothing open; can start now.
 | # | Task | Slug | Recipe | After | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | 1 | **stencilstore dev-build warning prints on every creel verb**<br>• `darn: review_max_bounces 1` | [`stencilstore-dev-warning-noise`](design-stencilstore-dev-warning-noise.md) | darn |  | 1h | 0m | stencil, creel |
-| 2 | **creel CLI output fixes: lost success envelope, doubled prefix, log --id reminders**<br>• Three output bugs in internal/creelcli from the creel stage 1 re-test (#699, #700, #701).<br>• `loom: review_hard_max_bounces 3`<br>• `loom: review_max_bounces 2` | [`creel-cli-output-fixes`](design-creel-cli-output-fixes.md) | loom |  | 1h | 0m | creel |
 
 ### Layer A
 
@@ -132,7 +132,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 16 | **Spawn audit log: every process lyx starts is recorded and traceable**<br>• One recorded launch path and a hub-wide spawn log with owner, argv and resource use, plus a sampler and a summary verb, so a process storm can be traced after a crash | [`spawn-audit-log`](design-spawn-audit-log.md) | 8d | 4d | reed, shuttle, config |
 | 17 | **Configurable action buttons on the reed status bar**<br>• Clickable status-bar buttons that run configured commands: VS Code, orch distill/refresh, the follow toggle and more | [`reed-status-buttons`](design-reed-status-buttons.md) | 2d | 2d | reed, config |
 | 18 | **Ideas to borrow from comparable agent orchestrators (survey, Oct 2026)** | [`orchestrator-survey-ideas`](design-orchestrator-survey-ideas.md) | 1d | 1h | burler, shed, orch, quarry, report |
-| 19 | **Regression tier: baseline profiles before the run, compare at the final gate**<br>• Support a hub regression tier that writes profiles on the parent before implementation and compares after, switchable per task for expected drift. | [`regression-baseline-verify`](design-regression-baseline-verify.md) | 52m | 2m | shed, webster, batten, config |
+| 19 | **Regression tier: baseline profiles before the run, compare at the final gate**<br>• Support a hub regression tier that writes profiles on the parent before implementation and compares after, switchable per task for expected drift. | [`regression-baseline-verify`](design-regression-baseline-verify.md) | 52m | 3m | shed, webster, batten, config |
 
 #### Low priority
 
