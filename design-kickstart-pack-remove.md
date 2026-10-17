@@ -20,4 +20,4 @@ Quarry stays its own repository for now, since it changes rarely (operator, 2026
 
 - Keep `tools/forkaudit` working for runs without a pack, so a no-pack baseline can be measured.
 - Forks never call `lyx quarry` in any audit since the pack; resolve's value is in the plan gates, which call quarry in code.
-- Note `enclose-kickstart` lost its pack use with this removal and now proposes Enclose for mechanical checks instead.
+- Note `enclose-checks` (formerly `enclose-kickstart`) lost its pack use with this removal and now proposes Enclose for mechanical checks instead.
