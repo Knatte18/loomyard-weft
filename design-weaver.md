@@ -124,6 +124,28 @@ Wide (fat waves, short critical path, low file-conflict) → an executor might p
 Narrow (long critical path, most cards chained, or simply few cards) → parallelism won't materialize;
 sequential is the complete correct design, not just the MVP.
 
+## Decision gate run (2026-10-17)
+
+The width analysis ran on 34 real plans (238 cards, 106 batches): `docs/research/parallel-batches-2026-10-17/`.
+
+- Narrow: the median plan has 6 cards and a critical path of 4, so unlimited worktrees give about 1.6x at best (1.3x counting same-package cards as dependent), with 2 to 3 cards runnable together.
+- Webster's actual batches leave about 1.0 to 1.1x, since batching by package already groups dependent cards.
+- 14 to 18% of batch pairs disjoint on paper still touched a common file; 16% of changed files were outside the batch's declared targets.
+- Shared docs (`doc.go`, `docs/overview.md`, `PATTERN.md`) and `cmd/lyx/testdata/test-budget.yaml` serialize most plans; 65% of cards list one of them.
+  `test-budget.yaml` is one line per package, so different packages' raises merge cleanly in git unless adjacent; it is a false scheduling dependency.
+- A batchifier aiming at parallelism would gain roughly 1.3x to 1.6x on 8 to 17-card plans by ignoring `test-budget.yaml`, moving shared-doc edits to a final card and getting honest per-card file lists; nothing on the about 40% of plans with 4 or fewer cards.
+
+### Operator view, not a decision (2026-10-17)
+
+- Weaver starts cold agents; that is what sets it apart from Webster, which forks.
+- A Master Weaver LLM could run several cold agents at once as background processes, one batch per worktree; a Go scheduler could do the same.
+- Little is gained from parallel implementers because tasks are already split by the packages they touch: the board's labels and `depends_on` are that parallelism, and work better than expected.
+
+### Orch recommendation
+
+If parallel batches are built, a Go scheduler forms, starts, waits for, merges and verifies the batches, and an LLM is called only when a batch fails, as loom's Go driver and arbiter do.
+Given the numbers, building it now buys little.
+
 ## The separable, cheap win already taken
 
 A planner that emits true card dependencies (`depends-on`) instead of an over-constrained batch line recovers most of the *width* insight with **no worktrees and no concurrent execution** — this is exactly what loom-plan-spec.md already does.
