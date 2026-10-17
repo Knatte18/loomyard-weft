@@ -1,18 +1,31 @@
-# Kick-start packs from tool locations through quarry Enclose
+# Use quarry Enclose for mechanical checks: verify failures to plan cards
 
-`enclose-kickstart` · Note · enhancement, quarry
+`enclose-kickstart` · Note · enhancement, quarry, webster, loom
 
 Operator, 2026-10-08: quarry gains `Enclose`, written as quarry's task `enclose-locations` (in the quarry repo; the operator spawns it).
 It maps `file:line` ranges from tool output to the innermost enclosing member glyphs, with the same Symbol data `Resolve` returns, also at a git revision (`quarry enclose [--rev R]`).
 Markdown is out of its scope: a `.md` location is a per-item rejection.
 
-Use in Loomyard once it lands, building on the kick-start pack:
-this waits for task `plan-glyph-tuning`, which builds the Webster pack behind a config switch, and for its with/without measurement to show the pack helps (operator, 2026-10-11).
-Operator decision 2026-10-15: this waits on the `tools/forkaudit` measurement of the per-card pack (landed with `kickstart-per-card`), taken after 4-5 Webster runs on it and again after `webster-master-no-code` lands, since that changes what forks inherit.
+## Change of direction, 2026-10-17
 
-- Verify failures (`go test` failure lines, `go vet`, compile errors) give the recovery agent or fixer a pack of the failing members.
-- Comment-lint findings and Webster audit findings carry glyphs instead of lines.
-- A review finding that cites `path:line` despite the glyph rule is mapped at the reviewed revision, then resolved in the working tree, so the fixer's own edits never shift it.
+The original use was a kick-start pack of the failing members for recovery agents and fixers.
+The pack measurement this waited on (operator decisions 2026-10-11 and 2026-10-15) came in with `docs/research/glyph-audit-2026-10-17/`: forks read code themselves whatever the pack holds, and note `kickstart-pack-remove` records the operator decision to remove the pack.
+A pack of failing members is dropped with it: a fork given `file:line` reads around it in one call.
+
+Operator view, not a decision: Enclose can be useful for mechanical checks, where Loomyard's own code needs to know which member a line belongs to, with no agent in the loop.
+
+## Orch recommendation, not a decision
+
+First use, which changes no flow: a verify failure at Merge-In or Publish is mapped through Enclose to its member glyph, then to the plan card whose targets hold that glyph and the batch and commit that ran the card (`_lyx/webster/state.json`).
+The fixer's brief names that card, its intent and its commit, as a starting point instead of the whole diff.
+Later possibilities, each its own decision:
+
+- Re-run only the batch that made the failing change (`lyx webster reset --batch` and a fresh fork with the failure attached), instead of a whole-diff review round.
+- A finding that cites `path:line` is mapped to a glyph at the reviewed revision, so later edits never shift it, and it can be checked against the plan's targets.
+- A failure in a member no card targets is reported as a scope gap: the plan missed it.
+- Test, vet and lint failures are grouped per member, so duplicate findings fold.
+
+Measure that a fixer uses the named card before building more, as the pack showed agents may read and ignore such hints.
 
 Glyph↔path conversion stays in quarry; Loomyard never intersects lines with symbol spans itself.
 
