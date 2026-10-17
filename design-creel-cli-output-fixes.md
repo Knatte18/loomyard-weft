@@ -1,6 +1,6 @@
 # creel CLI output fixes: lost success envelope, doubled prefix, log --id reminders
 
-`creel-cli-output-fixes` · Task · bug, creel · running · Merge-In
+`creel-cli-output-fixes` · Task · bug, creel · running · Merge-Bouncer
 
 ## Goal
 
