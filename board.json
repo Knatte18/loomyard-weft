@@ -932,6 +932,25 @@
       "body": "## Seen (orch, 2026-10-17)\n\nBatten's Open-Window, Seed-IDE and Open-IDE rows share one Go type, `SwitchedProducer` in `internal/shedadapters`, but each is its own registry engine (`OpenWindow`, `SeedIDE`, `OpenIDE`) wrapping a told Go action behind a told `batten.yaml` flag.\nA new side action therefore needs a new engine, a new Go action and a new flag.\nOther places already run a shell command from config inside a bigger row: `landing.yaml`'s `deploy` (Land) and `publish_verify` (Publish), and darn's `verify`.\nNote `regression-baseline-verify` adds `Job-Start` and `Job-Join`, which would be two more such rows.\n\n## Operator view, not a decision (2026-10-17)\n\nAll these special rows should be one and the same producer whose only job is to run a CLI command; the flag and the command to run can live somewhere else entirely, in config.\n\n## Orch recommendation, not a decision\n\n- One registry engine, `Command`, used by every such row. The row names a config key; the key holds the command, with placeholders such as `{slug}` and `{pair}`. An empty command is the off switch, so no separate flag is needed.\n- Per row, in the recipe: the failure policy (`warn`, as the IDE rows do today, or `halt`) and the mode (`sync`, or `async`, which starts the command detached and records its handle).\n- A `Join` form of the same engine waits for an `async` row's handle and applies its failure policy; this is `Job-Join`.\n- Each action that is Go code today gets a `lyx` verb (for example the terminal window and the IDE seed), so the default config spells it as a command.\n- Later candidates: `deploy` and `publish_verify` as their own `Command` rows instead of commands buried in Land and Publish.\n\n## Open\n\n- Whether a task's `run_settings` may set the command, or only switch it on and off; a command from a board entry runs on the machine, so it may need the same trust class as `deploy`.\n- Placeholders: which run facts a command may name.\n\n## Related\n\nNotes `regression-baseline-verify`, `gate-language-neutral`.\n",
       "created": "2026-10-17T11:07:42Z",
       "revised": "2026-10-17T11:07:42Z"
+    },
+    {
+      "id": 632,
+      "slug": "row-entry-gate",
+      "title": "Entry gate on shed rows: a check decides whether a row runs at all",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "shed",
+        "loom",
+        "batten"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "Replace darn recipe edge rewrite and the switched producer flag check with one shed entry gate per row; false means Done without acting.",
+      "body": "## Seen (orch, 2026-10-17)\n\nTwo ways exist today to leave out a row that is not wanted:\n\n- Darn turns its review perch off by a recipe rewrite: with `review_max_bounces` 0, `internal/loomrecipe` rewrites Darn-Write's Done edge straight to Merge-In when the recipe loads (`contracts/recipes/darn-recipe.yaml`), so the perch rows are never entered.\n- Batten's Open-Window, Seed-IDE and Open-IDE rows are `shedadapters`' switched producer: the row reads its `batten.yaml` flag and is Done without acting when the flag is off.\n\n## Operator view, not a decision (2026-10-17)\n\nThe recipe rewrite is a terrible solution.\nA Bouncer should instead have an entry gate: a check that runs first and decides whether the Bouncer runs at all.\nFor darn's perch that check is only whether `review_max_bounces` is above 0, and the producer that opens VS Code works the same way: it checks its flag and skips everything when the flag is off.\n\n## Orch recommendation, not a decision\n\n- The entry gate belongs in shed, for every row, since every FSM needs it: a row in the recipe may name an entry check, read from the run's config stack when the row is reached; when it is false, the row is Done without acting and the run follows its Done edge.\n  A perch's Burler row is reached only through the Bouncer's stuck edge, so a skipped Bouncer skips the whole perch.\n- Status and the run's history record the row as skipped with the check's reason, so a skip is visible.\n- The switched producer's flag check becomes this gate, and `internal/loomrecipe`'s edge rewrite for darn is removed.\n- The regression perch (note `regression-baseline-verify`) and the `Command` rows (note `command-producer`) use the same gate.\n\n## Open\n\n- The form of a check: a config key that must be true or above 0, or a small fixed set of predicates; never free code.\n- Whether a task's `run_settings` can switch a gate per task: it can today for darn's budget and batten's flags, since both read the pair's config stack.\n",
+      "created": "2026-10-17T11:30:13Z",
+      "revised": "2026-10-17T11:30:13Z"
     }
   ]
 }
