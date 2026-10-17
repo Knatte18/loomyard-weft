@@ -1,29 +1,28 @@
-# Creel commands skip the stencil-seed pass
+# Creel commands skip the root pre-run's stencil-seed pass
 
-Fixes #702.
+No `lyx creel` verb prints the `stencilstore: dev build does not refresh untouched stencils ...` warning any more.
+The warning came from the root pre-run's stencil-seed pass, which runs before every command and prints it when it writes board stencils that are due.
+The first creel verb in a hub with due stencils therefore printed it on stderr, mixed into creel's refusals and stall progress lines.
+Creel reads no stencils, so the pass is wasted on it.
+The creel daemon is long-lived and should not commit seed writes into the hub, the reason `reed switch` and `reed follow` already opt out.
 
-The root pre-run runs the stencil-seed pass before every command.
-When the pass writes, `stencilstore.Reconcile` logs its refresh notices, and under a dev build that is the Warn `stencilstore: dev build does not refresh untouched stencils ...` on stderr.
-The first creel verb in a hub whose board stencils were due printed that line into the stderr creel uses for refusals and stall progress lines.
-In the creel re-tests this was the first verb of the freshly built sandbox hub.
+`creelcli.Command()` now sets `clihelp.SkipStencilSeedAnnotation` to `clihelp.AnnotationEnabled` on the `creel` group and on each of its subcommands, the hidden `daemon` included.
+`internal/creelcli/doc.go` states the skip.
+`TestSkipStencilSeed_HonoursTheAnnotation` gains one row per creel command, so a verb added without the opt-out fails the test.
 
-Creel reads no stencils, so the pass is waste for it.
-Its daemon is a long-lived detached process that should never commit seed writes into the hub, the reason reed's `switch` and `follow` already opt out.
-
-## Changes
-
-- `internal/creelcli/cli.go`: `Command()` sets `clihelp.SkipStencilSeedAnnotation` on the `creel` group and on each of its subcommands, the hidden `daemon` included.
-- `internal/creelcli/doc.go`: the package doc states that every creel command skips the seed pass.
-- `cmd/lyx/stencilseedgate_test.go`: `TestSkipStencilSeed_HonoursTheAnnotation` gains one row per creel command, built from `creelcli.Command()`, so a new creel verb is covered without editing the test.
+Closes #702
 
 ## Design decisions
 
-- The annotation is set on every creel command in a loop, and `skipStencilSeed` still reads only the running command's own annotations.
-  A parent walk would have changed the per-command contract for every group in the binary.
-- The stencilstore notices keep their level and wording: for a stencil-reading verb, the dev-build warning still tells a tester that producers read the older on-disk copies.
-- A hub where only creel verbs run seeds its board stencils at the next stencil-reading command, as before.
+- The annotation is set on each command in a loop, not inherited through a parent walk.
+  `skipStencilSeed` keeps reading only the running command's own annotations; a parent walk would change that contract for every group in the binary.
+- Only creel's pass is skipped.
+  The next stencil-reading command in the hub seeds as before, and no other command group changes.
+- The wording, level and once-per-pass behavior of the stencilstore notices are unchanged.
+- A hub whose only commands are creel verbs never seeds its board stencils until another command runs.
+  No creel path reads them, so nothing depends on it.
 
-## Testing
+## To check by hand
 
-- `lyx gate test ./cmd/lyx ./internal/creelcli`
-- `lyx gate test --tags integration ./internal/creelcli ./cmd/lyx`
+- The report was seen with a dev binary from `./deploy-dev`.
+  Running a creel verb in a freshly built sandbox hub with due board stencils, and confirming stderr is clean, was not done; the tests build cobra values and run no hook.
