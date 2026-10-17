@@ -34,6 +34,17 @@ Orch recommendation, not a decision, from the code:
 - Shed's loop checks the gate before it calls `ShedProducer.Call`; a false gate records the row as skipped and follows `OnDone`, so no producer implements anything, and every row of every recipe gets the gate for free.
 - The `ShedProducer` interface itself stays one method, `Call`.
 
+## The check's form (orch recommendation, not a decision)
+
+- Reading config: shed knows no config, so the gate reads through the one told lookup task `shedrecipe-capabilities` adds, `Setting(module, key)`, filled by the recipe's owner from the pair's config stack, a task's `run_settings` included. The gate is read when the row is reached, never when the recipe loads, so a setting changed mid-run counts.
+- A small fixed form, no expression language:
+  - `darn.review_max_bounces`: true when the value is set and not zero, false, empty or an empty list.
+  - `regression.mode != off` and `== <value>`: one comparison against a literal.
+  - A list of such checks: all must hold.
+  - No or, no arithmetic, no free code: a case that needs more gets a setting of its own.
+- Recipe load refuses a gate naming an unknown module or key, as `shedrecipe-capabilities` refuses unknown keys.
+- Examples: Darn-Review `entry_gate: darn.review_max_bounces`; Open-IDE `entry_gate: batten.open_ide`; a regression row `entry_gate: [loom.regression_mode != off]`.
+
 ## Open
 
 - The form of a check: a config key that must be true or above 0, or a small fixed set of predicates; never free code.
