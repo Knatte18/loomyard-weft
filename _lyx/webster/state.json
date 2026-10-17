@@ -299,7 +299,7 @@
       }
     }
   ],
-  "currentBatch": 0,
+  "currentBatch": 8,
   "masterStrand": "eb8db455948f4323b50f53e181ec7b6f",
   "masterSessionId": "e3f53896-42a2-48cf-91b5-173fdd533903",
   "masterEngine": "claude",
@@ -474,6 +474,22 @@
       "bracketTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-shedrecipe-capabilities/e3f53896-42a2-48cf-91b5-173fdd533903/subagents/agent-a8ef9a33722081484.jsonl"
       ]
+    },
+    "8": {
+      "slug": "retire-row-maps",
+      "cards": [
+        "08-retire-row-maps"
+      ],
+      "cardHashes": {
+        "08-retire-row-maps": "f7a1d1818c57e0f581c3ceaf9d647e26868641d9d5633e706d523f89596e8d68"
+      },
+      "startSha": "ff7b74fb40e9c036c6ee70969f5987438a0fad6a",
+      "kind": "fork",
+      "spawnedAt": "2026-10-17T14:17:17Z",
+      "sessionId": "e3f53896-42a2-48cf-91b5-173fdd533903",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
     }
   },
   "seenForkTranscripts": [
