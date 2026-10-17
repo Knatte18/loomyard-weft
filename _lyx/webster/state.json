@@ -299,7 +299,7 @@
       }
     }
   ],
-  "currentBatch": 8,
+  "currentBatch": 0,
   "masterStrand": "eb8db455948f4323b50f53e181ec7b6f",
   "masterSessionId": "e3f53896-42a2-48cf-91b5-173fdd533903",
   "masterEngine": "claude",
@@ -488,8 +488,22 @@
       "spawnedAt": "2026-10-17T14:17:17Z",
       "sessionId": "e3f53896-42a2-48cf-91b5-173fdd533903",
       "engine": "claude",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "08-retire-row-maps",
+        "status": "done",
+        "head_sha": "4acb9b30a878fccbc2749a686a8923880d80e75e"
+      },
+      "cardShas": [
+        "4acb9b30a878fccbc2749a686a8923880d80e75e"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-shedrecipe-capabilities/e3f53896-42a2-48cf-91b5-173fdd533903/subagents/agent-ae6af766f60f995ad.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-shedrecipe-capabilities/e3f53896-42a2-48cf-91b5-173fdd533903/subagents/agent-ae6af766f60f995ad.jsonl"
+      ]
     }
   },
   "seenForkTranscripts": [
@@ -497,6 +511,7 @@
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-shedrecipe-capabilities/e3f53896-42a2-48cf-91b5-173fdd533903/subagents/agent-a078faf27a4ab220f.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-shedrecipe-capabilities/e3f53896-42a2-48cf-91b5-173fdd533903/subagents/agent-aa56d6d415c87205b.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-shedrecipe-capabilities/e3f53896-42a2-48cf-91b5-173fdd533903/subagents/agent-a9a3335e7cd797039.jsonl",
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-shedrecipe-capabilities/e3f53896-42a2-48cf-91b5-173fdd533903/subagents/agent-a8ef9a33722081484.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-shedrecipe-capabilities/e3f53896-42a2-48cf-91b5-173fdd533903/subagents/agent-a8ef9a33722081484.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-shedrecipe-capabilities/e3f53896-42a2-48cf-91b5-173fdd533903/subagents/agent-ae6af766f60f995ad.jsonl"
   ]
 }
