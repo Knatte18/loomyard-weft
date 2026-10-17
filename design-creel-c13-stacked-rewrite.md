@@ -1,6 +1,6 @@
 # Rewrite C13 stacked half for window-per-strand, commit the creel re-test report
 
-`creel-c13-stacked-rewrite` · Task · enhancement, creel · running · Darn-Write
+`creel-c13-stacked-rewrite` · Task · enhancement, creel · running · Merge-In
 
 ## Goal
 
