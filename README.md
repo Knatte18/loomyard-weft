@@ -17,20 +17,17 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | **landing.yaml trailer_text: an operator-set trailer block for the landing commit**<br>• Replace co_authored_by with trailer_text and engine_trailers: fixed lines plus one line per engine that ran, each copied verbatim, each switchable off<br>• `darn: review_max_bounces 1` | [`landing-trailer-text`](design-landing-trailer-text.md) | darn | Darn-Write | 1h | 1h | config, loom, shuttle |
-| 2 | **stencilstore dev-build warning prints on every creel verb**<br>• `darn: review_max_bounces 1` | [`stencilstore-dev-warning-noise`](design-stencilstore-dev-warning-noise.md) | darn | Darn-Burler-Fix | 1h | 12m | stencil, creel |
-| 3 | **lyx gate test slot wait capped under the prompt-cache lifetime, like shuttle await**<br>• Gate slot wait uses the shared keep-cache-warm cap and answers run-again instead of blocking past the cache lifetime<br>• `darn: review_max_bounces 1` | [`gate-wait-cache-cap`](design-gate-wait-cache-cap.md) | darn | Darn-Write | 1h | 1h | config, shuttle |
-| 4 | **creel CLI output fixes: lost success envelope, doubled prefix, log --id reminders**<br>• Three output bugs in internal/creelcli from the creel stage 1 re-test (#699, #700, #701).<br>• `loom: review_hard_max_bounces 3`<br>• `loom: review_max_bounces 2` | [`creel-cli-output-fixes`](design-creel-cli-output-fixes.md) | loom | Discussion-Burler-Review | 1h | 12m | creel |
+| 1 | **Rewrite C13 stacked half for window-per-strand, commit the creel re-test report**<br>• C13's stacked 3-row half cannot be set up once reed-add-parentless-placement lands<br>• `darn: review_max_bounces 0`<br>• `darn: writer sonnet[medium]` | [`creel-c13-stacked-rewrite`](design-creel-c13-stacked-rewrite.md) | darn | Worktree-Create | 1d | 0m | creel |
+| 2 | **landing.yaml trailer_text: an operator-set trailer block for the landing commit**<br>• Replace co_authored_by with trailer_text and engine_trailers: fixed lines plus one line per engine that ran, each copied verbatim, each switchable off<br>• `darn: review_max_bounces 1` | [`landing-trailer-text`](design-landing-trailer-text.md) | darn | Darn-Write | 1h | 1h | config, loom, shuttle |
+| 3 | **stencilstore dev-build warning prints on every creel verb**<br>• `darn: review_max_bounces 1` | [`stencilstore-dev-warning-noise`](design-stencilstore-dev-warning-noise.md) | darn | Darn-Burler-Fix | 1h | 12m | stencil, creel |
+| 4 | **lyx gate test slot wait capped under the prompt-cache lifetime, like shuttle await**<br>• Gate slot wait uses the shared keep-cache-warm cap and answers run-again instead of blocking past the cache lifetime<br>• `darn: review_max_bounces 1` | [`gate-wait-cache-cap`](design-gate-wait-cache-cap.md) | darn | Darn-Write | 1h | 1h | config, shuttle |
+| 5 | **creel CLI output fixes: lost success envelope, doubled prefix, log --id reminders**<br>• Three output bugs in internal/creelcli from the creel stage 1 re-test (#699, #700, #701).<br>• `loom: review_hard_max_bounces 3`<br>• `loom: review_max_bounces 2` | [`creel-cli-output-fixes`](design-creel-cli-output-fixes.md) | loom | Discussion-Burler-Review | 1h | 12m | creel |
 
 ### Ready
 
 Waits on nothing open; can start now.
 
-#### Normal priority
-
-| # | Task | Slug | Recipe | After | Age | Revised | Labels |
-| --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | **Rewrite C13 stacked half for window-per-strand, commit the creel re-test report**<br>• C13's stacked 3-row half cannot be set up once reed-add-parentless-placement lands<br>• `darn: review_max_bounces 0`<br>• `darn: writer sonnet[medium]` | [`creel-c13-stacked-rewrite`](design-creel-c13-stacked-rewrite.md) | darn |  | 1d | 0m | creel |
+_None._
 
 ### Layer A
 
