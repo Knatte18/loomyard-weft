@@ -2,8 +2,6 @@
 
 `landing-trailer-text` · Task · enhancement, config, loom, shuttle
 
-Depends on: [`pr-gate-run-identity`](design-pr-gate-run-identity.md)
-
 ## Seen
 
 Finalize appends exactly one `Co-Authored-By: <value>` trailer to the landing commit, with the value from `landing.yaml`'s `co_authored_by` (`internal/landingshed/config.go`, `internal/summaryparser/summary.go`).
