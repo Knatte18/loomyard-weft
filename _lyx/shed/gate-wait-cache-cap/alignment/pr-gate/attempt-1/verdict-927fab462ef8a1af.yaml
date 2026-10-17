@@ -1,0 +1,9 @@
+verdict: approve
+reason: >-
+  The diff meets every point of the board entry's operator decision: the slot wait is bounded by shuttleengine.DefaultAwaitCap itself,
+  the busy answer is an ok slot_free false envelope naming the holders with exit 75 and a run-again message,
+  the gate rule carries the await help's re-run wording, and cli_wait_sec is retired through RetiredKeys so reconcile prunes it.
+  The out-of-scope points are left untouched, the one open risk names no parent correction,
+  and the only peer overlap, landing-trailer-text, is text-only in docs/overview.md and internal/shuttleengine/doc.go; this run (row 22) lands first.
+question: ""
+superseded: []
