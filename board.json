@@ -809,7 +809,7 @@
       "id": 617,
       "slug": "refusal-spec-table-drop",
       "title": "Drop the per-refusal table from refusal-spec.md, keep the way-forward rule",
-      "kind": "note",
+      "kind": "task",
       "labels": [
         "enhancement",
         "shed",

@@ -13,7 +13,11 @@ Concrete and claimable; only a task can run.
 
 Waits on nothing open; can start now.
 
-_None._
+#### Normal priority
+
+| # | Task | Slug | Recipe | After | Age | Revised | Labels |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| 1 | **Drop the per-refusal table from refusal-spec.md, keep the way-forward rule**<br>• contracts/specs/refusal-spec.md is 133 KB and grows with every new refusal; its 428 table rows quote messages the code already carries, so keep the definition and classes and drop the table | [`refusal-spec-table-drop`](design-refusal-spec-table-drop.md) | darn |  | 5m | 0m | shed, loom, webster, stencil |
 
 ## Notes
 
@@ -66,15 +70,14 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 14 | **Rewrite C13's stacked half for window-per-strand**<br>• C13's stacked 3-row half cannot be set up once reed-add-parentless-placement lands | [`creel-c13-stacked-rewrite`](design-creel-c13-stacked-rewrite.md) | 23h | 23h | creel |
 | 15 | **Go driver messages the orch about a verify halt batten retries itself**<br>• Drop or reword the parent message for a watched verify halt | [`driver-watched-verify-notice`](design-driver-watched-verify-notice.md) | 22h | 22h | shed, batten |
 | 16 | **Git test fixtures trip Cortex XDR on the work laptop**<br>• Parallel git-heavy tests create so many files at once that Cortex XDR killed VS Code and then crashed itself, twice; tests must stay usable on a machine with endpoint protection | [`xdr-git-test-file-burst`](design-xdr-git-test-file-burst.md) | 17h | 17h | fabric |
-| 17 | **Drop the per-refusal table from refusal-spec.md, keep the way-forward rule**<br>• contracts/specs/refusal-spec.md is 133 KB and grows with every new refusal; its 428 table rows quote messages the code already carries, so keep the definition and classes and drop the table | [`refusal-spec-table-drop`](design-refusal-spec-table-drop.md) | 5m | 0m | shed, loom, webster, stencil |
 
 #### Low priority
 
 | # | Note | Slug | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| 18 | **Fabric's Windows path behaviour verified on a Windows host**<br>• Unverified after six hardening rounds; needs a Windows host, not design; take it only if Windows becomes relevant | [`fabric-windows`](design-fabric-windows.md) | 13d | 6d | fabric |
-| 19 | **warp-visibility: CLAUDE.local.md invisible in the Fabric repo's git history**<br>• Expose CLAUDE.local.md by symlink so nothing lyx-related shows in the Fabric repo's history; the constraints half is out of date | [`warp-visibility`](design-warp-visibility.md) | 12d |  | ide, fabric |
-| 20 | **Windows verify timeout kills the whole process tree**<br>• On Windows the verifytree timeout kills only the shell, not the process tree it started | [`verify-watchdog`](design-verify-watchdog.md) | 9d | 1d | shed |
+| 17 | **Fabric's Windows path behaviour verified on a Windows host**<br>• Unverified after six hardening rounds; needs a Windows host, not design; take it only if Windows becomes relevant | [`fabric-windows`](design-fabric-windows.md) | 13d | 6d | fabric |
+| 18 | **warp-visibility: CLAUDE.local.md invisible in the Fabric repo's git history**<br>• Expose CLAUDE.local.md by symlink so nothing lyx-related shows in the Fabric repo's history; the constraints half is out of date | [`warp-visibility`](design-warp-visibility.md) | 12d |  | ide, fabric |
+| 19 | **Windows verify timeout kills the whole process tree**<br>• On Windows the verifytree timeout kills only the shell, not the process tree it started | [`verify-watchdog`](design-verify-watchdog.md) | 9d | 1d | shed |
 
 ### Features
 
