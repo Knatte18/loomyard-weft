@@ -1,0 +1,4 @@
+verdict: approve
+reason: The diff makes lyx report timing count a child's pause at a producer boundary under its own paused phase, kept out of active time like sleep and waits, which is what the board entry and issue 695 expect, and it changes nothing beyond that. No peer run or parent commit changes the same behaviour; the only shared file is the docs/overview.md module-table line, which is bookkeeping.
+question: ""
+superseded: []
