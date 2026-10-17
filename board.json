@@ -869,6 +869,24 @@
       "body": "## Seen (orch, 2026-10-17)\n\nA demo post from `ly:orch` to a fresh Claude strand `ly:demo` was reminded as:\n`[creel] 1 unread: #3 from ly:orch «Hello from ly:orch via creel. Please reply to this message with: lyx creel post » — run lyx creel read`.\nThis is the documented design (`internal/creelengine/doc.go`, the reminder paragraph): the subject is the body's first line, cut at 80 runes, inside « ».\nA message without a separate first line therefore shows its content in the reminder, and the receiving agent can act on it without running `lyx creel read`.\n\n## Operator decision (2026-10-17)\n\nCreel's reminder carries no message content, only the count, ids and senders; urgent content goes by inject.\n\n## Operator view, not a decision (2026-10-17)\n\nThe reminder must not carry the message's content.\nThe receiver has to ask for it actively with `lyx creel read`.\nA reminder can reach an agent in the middle of a run, busy with something else: it should only learn that one or more messages wait, and choose itself when it has the time and capacity to read them.\nPart of a message arriving with the reminder is clutter and confuses the agent.\nSomething the agent must read at once goes by `lyx creel inject` instead (with `--interrupt` when the running turn must stop first).\n\n## Idea\n\n- The reminder names only the count, ids and senders, such as `[creel] 1 unread: #3 from ly:orch — run lyx creel read`.\n- `lyx creel log` keeps its subjects, since only the operator and the orch read the journal.\n\n## Open\n\n- The reminder is typed only at idle, but in Claude a typed line starts a new turn, so even a content-free reminder takes the agent's next turn: whether stencils should tell agents that a reminder may be left until their current task is done.\n\n- Whether the journal's `subject` field stays as the body's first line or goes too.\n",
       "created": "2026-10-17T12:43:05Z",
       "revised": "2026-10-17T12:47:17Z"
+    },
+    {
+      "id": 639,
+      "slug": "creel-reply-discipline",
+      "title": "Creel replies always go back by post",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "creel",
+        "stencil"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "A receiver answers a creel message by post --reply, never in its pane; read prints the reply command",
+      "body": "## Seen (orch, 2026-10-17)\n\nIn a demo, `ly:orch` posted #3 to a fresh Claude strand `ly:demo`, whose body asked for a reply by `lyx creel post --reply`; the agent read it and replied as #4.\nIt replied by post only because the body told it how.\nAn inject (#5) asking for `PONG` was answered in the receiver's own pane, to the operator, and never reached the sender: an inject is typed as a user line and has no reply path.\n`lyx creel read` prints the message with its id but says nothing about answering by `post --reply`.\nCreel already limits inject: only EXTERNAL callers, programs and orch strands may inject into another strand (`lyx creel inject --help`).\n\n## Operator view, not a decision (2026-10-17)\n\nCreel needs a strict regime, so that an agent that sends something to another agent never ends up without an answer because the receiver wrote its answer in its own pane, to the operator.\n\n## Idea (orch recommendation)\n\n- `lyx creel read` prints, with each message, the command that answers it (`lyx creel post --reply \u003cid\u003e \u003ctext\u003e`), and says when the sender waits on the reply (`--wait-reply`).\n- The agent stencils state the rule once, in a shared block: a creel message is answered by `post --reply`, never in the pane; a line in the pane is for the operator.\n- An inject never carries a question that expects an answer from the receiver; a sender that wants an answer posts.\n- A message whose sender waits and that goes unanswered past a bound is journaled, so the orch can see it.\n\n## Open\n\n- Whether this belongs in `creel-notices` (stage 2), where the orch answers the watcher's note request by post, or in `creel-agents` (stage 3), where agents move onto creel.\n",
+      "created": "2026-10-17T12:49:10Z",
+      "revised": "2026-10-17T12:49:10Z"
     }
   ]
 }
