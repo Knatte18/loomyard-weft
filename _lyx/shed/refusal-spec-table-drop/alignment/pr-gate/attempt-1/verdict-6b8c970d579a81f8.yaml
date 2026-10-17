@@ -1,0 +1,4 @@
+verdict: approve
+reason: The diff drops the per-refusal table and per-module sections from refusal-spec.md, keeps the definition and classes, moves the two exemptions into a Reaching tests section the Plan stencils cite, drops the row-per-refusal PATTERN clause and updates every pointer, as the board entry's scope calls for; the open risk names no parent correction, and no peer run or parent commit overlaps.
+question: ""
+superseded: []
