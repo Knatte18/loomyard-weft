@@ -1,6 +1,6 @@
 # A hub pause leaves background forks and shells running, so hibernate never confirms
 
-`pause-background-work` · Note · bug, shuttle, webster
+`pause-background-work` · Note · enhancement, shuttle, webster
 
 ## Seen (2026-10-14)
 
