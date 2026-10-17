@@ -73,6 +73,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 1 | **creel verbs exit 0 with nothing on stderr when their success envelope cannot be written** | [`creel-success-write-lost`](design-creel-success-write-lost.md) | 0m | 0m |  |
 | 2 | **creel stderr fallback for an unwritable refusal prints the prefix twice: creel: creel:** | [`creel-stderr-double-prefix`](design-creel-stderr-double-prefix.md) | 0m | 0m |  |
 | 3 | **creel log --id omits the reminded events that list that id** | [`creel-log-id-reminders`](design-creel-log-id-reminders.md) | 0m | 0m |  |
+| 4 | **stencilstore dev-build warning prints on every creel verb** | [`stencilstore-dev-warning-noise`](design-stencilstore-dev-warning-noise.md) | 0m | 0m |  |
 
 ### Enhancements
 

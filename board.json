@@ -962,6 +962,24 @@
       "body": "Imported from [issue #701](https://github.com/Knatte18/loomyard/issues/701).\n\nFound in the creel stage 1 re-test of 2026-10-17 (main at 58a7feec7, dev build, sandbox hub lyt).\n\nSeen: mail #2 to lyt:eve was reminded three times, and the journal holds `{\"event\":\"reminded\",\"to\":\"lyt:eve\",\"unread\":[2]}` records (and later `\"unread\":[2,44]`), which `lyx creel log --to lyt:eve` shows.\n`lyx creel log --id 2` returns only the `posted` event; none of the reminders appear.\nThe same holds for every message: `log --id 4` showed `posted` and `read` but not the `reminded` event between them.\n\nCause: since #664 a `reminded` record carries its ids in `unread` and has no `id`, and the `--id` filter matches `id` only.\n\nReproduce: post a message to a live agent strand, let it be reminded (a `reminded` record appears in `log --to \u003cstrand\u003e`), then run `lyx creel log --id \u003cid\u003e`.\n\nExpected: `log --id \u003cid\u003e` includes each `reminded` event whose `unread` lists that id, so one message's history (posted, reminded, read) can be read in one call; or the --id help says reminders are not included.",
       "created": "2026-10-17T10:17:32Z",
       "revised": "2026-10-17T10:17:32Z"
+    },
+    {
+      "id": 626,
+      "slug": "stencilstore-dev-warning-noise",
+      "title": "stencilstore dev-build warning prints on every creel verb",
+      "kind": "note",
+      "labels": [
+        "bug"
+      ],
+      "issues": [
+        702
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Imported from [issue #702](https://github.com/Knatte18/loomyard/issues/702).\n\nSeen in the creel re-tests of 2026-10-16 and 2026-10-17 (dev binary built by ./deploy-dev into .dev-bin): every lyx creel verb prints 'stencilstore: dev build does not refresh untouched stencils ...' on stderr. It is noise on every call, and it mixes into the stderr that creel verbs use for refusals and stall progress lines. Expected: the warning prints once per process that refreshes stencils, or only from verbs that read stencils, never from creel verbs.",
+      "created": "2026-10-17T10:17:35Z",
+      "revised": "2026-10-17T10:17:35Z"
     }
   ]
 }
