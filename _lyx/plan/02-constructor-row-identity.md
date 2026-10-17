@@ -1,9 +1,9 @@
 # Card 2 — constructor-row-identity
 
 **Create:**
-- `plan:internal/shedrecipe#RowIdentity` -> `type RowIdentity struct`
-- `plan:internal/shedrecipe#testReviewSegment` -> `const testReviewSegment = "Test-Review"`
-- `plan:internal/shedrecipe#reviewRow` -> `func reviewRow(name string) RowIdentity`
+- `internal/shedrecipe#RowIdentity`
+- `internal/shedrecipe#testReviewSegment`
+- `internal/shedrecipe#reviewRow`
 
 **Edit:**
 - `internal/shedrecipe#Constructor` -> `type Constructor func(row RowIdentity, cfg Config, env Env) (shedengine.ShedProducer, error)`

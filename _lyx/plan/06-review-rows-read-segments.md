@@ -41,8 +41,8 @@
 
 **Uses:**
 - `plan:internal/testkit/envkit#TemplateSetting`
-- `plan:internal/shedrecipe#reviewRow`
-- `plan:internal/shedrecipe#testReviewSegment`
+- `internal/shedrecipe#reviewRow`
+- `internal/shedrecipe#testReviewSegment`
 - `plan:internal/shedrecipe#SegmentSettings`
 - `internal/shedrecipe#captureReview`
 - `internal/shedrecipe#captureFix`
