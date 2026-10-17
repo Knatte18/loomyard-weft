@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-17 13:01 UTC; every age below is as of then.
+Rendered 2026-10-17 13:02 UTC; every age below is as of then.
 
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
@@ -17,7 +17,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | **shedrecipe: per-segment settings and one told setting lookup instead of per-value Env fields**<br>• A producer declares what it needs and the registry wires it, instead of a hand-threaded Env passthrough field per layer | [`shedrecipe-capabilities`](design-shedrecipe-capabilities.md) | loom | Plan-Bouncer | 13d | 2h | shed, loom, config |
+| 1 | **shedrecipe: per-segment settings and one told setting lookup instead of per-value Env fields**<br>• A producer declares what it needs and the registry wires it, instead of a hand-threaded Env passthrough field per layer | [`shedrecipe-capabilities`](design-shedrecipe-capabilities.md) | loom | Plan-Burler-Review | 13d | 2h | shed, loom, config |
 
 ### Ready
 
@@ -70,8 +70,8 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 14 | **Entry gate on shed rows: a check decides whether a row runs at all**<br>• Replace darn recipe edge rewrite and the switched producer flag check with one shed entry gate per row; false means Done without acting. | [`row-entry-gate`](design-row-entry-gate.md) | 1h | 1h | shed, loom, batten |
 | 15 | **Preflight pushes the weft branch synchronously and races the board sync**<br>• Preflight spent 11 s mostly in a weft push to GitHub, refused once after 8 s; push detached or serialise with the board sync. | [`preflight-weft-push-sync`](design-preflight-weft-push-sync.md) | 1h | 1h | fabric, shed |
 | 16 | **A darn writer cannot rerun a verify tier it is refused, so a flaky tier failure loops and escalates** | [`darn-verify-tier-unrunnable`](design-darn-verify-tier-unrunnable.md) | 57m | 57m | loom, shed |
-| 17 | **Creel reminders carry no message content**<br>• The idle reminder names only count, ids and senders; the receiver runs lyx creel read for the content | [`creel-reminder-no-subject`](design-creel-reminder-no-subject.md) | 18m | 14m | creel |
-| 18 | **Creel replies always go back by post**<br>• A receiver answers a creel message by post --reply, never in its pane; read prints the reply command | [`creel-reply-discipline`](design-creel-reply-discipline.md) | 12m | 2m | creel, stencil, report |
+| 17 | **Creel reminders carry no message content**<br>• The idle reminder names only count, ids and senders; the receiver runs lyx creel read for the content | [`creel-reminder-no-subject`](design-creel-reminder-no-subject.md) | 19m | 15m | creel |
+| 18 | **Creel replies always go back by post**<br>• A receiver answers a creel message by post --reply, never in its pane; read prints the reply command | [`creel-reply-discipline`](design-creel-reply-discipline.md) | 13m | 3m | creel, stencil, report |
 
 #### Low priority
 
