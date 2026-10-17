@@ -1,6 +1,26 @@
 round: 1
-fan: ""
-fix_fan: ""
+fan: review-discussion
+fix_fan: fix-discussion
+fans_recorded: true
+lenses:
+    - interactions
+    - existing-paths
+    - bound-breaker
+    - walkthrough
+review:
+    engine: claude
+    model: opus
+    effort: medium
+    start: 2026-10-17T11:38:28Z
+    end: 2026-10-17T13:43:40.39548566+02:00
+    wall_seconds: 312.39548566
+    tokens_known: true
+    fresh_tokens: 183888
+    cache_read_tokens: 4132718
+    forks: 4
+    fork_fresh_tokens: 46519
+    fork_cache_read_tokens: 1360229
+    fork_fresh_share: 0.25297463673540416
 seed:
     - engine: claude
       model: sonnet
