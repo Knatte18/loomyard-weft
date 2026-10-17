@@ -18,9 +18,9 @@ Held by a run; its scope is locked until the run ends.
 | # | Task | Slug | Recipe | At | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | 1 | **Clearer loom model key names, one per step**<br>• Model keys like fix name the role they set, and every review segment gets its own reviewer and fixer key | [`loom-model-key-names`](design-loom-model-key-names.md) | darn | Darn-Write | 2d | 51m | config, loom |
-| 2 | **Go driver messages the orch about a verify halt batten retries itself**<br>• Drop or reword the parent message for a watched verify halt | [`driver-watched-verify-notice`](design-driver-watched-verify-notice.md) | darn | Merge-In | 1d | 57m | shed, batten |
-| 3 | **Show each task run_settings in the board README**<br>• Stack a task run_settings, such as its review budget, inside an existing README cell, with no new column | [`readme-run-settings`](design-readme-run-settings.md) | darn | Merge-In | 56m | 56m | board |
-| 4 | **PR-Gate takes only its own run: no adopted old PR, no note-mention trigger**<br>• Publish never adopts an older PR for a reused slug, and the alignment snapshot counts only real decisions | [`pr-gate-run-identity`](design-pr-gate-run-identity.md) | loom | Discussion-Burler-Fix | 23h | 41m | loom, batten, board |
+| 2 | **Go driver messages the orch about a verify halt batten retries itself**<br>• Drop or reword the parent message for a watched verify halt | [`driver-watched-verify-notice`](design-driver-watched-verify-notice.md) | darn | Merge-In | 1d | 58m | shed, batten |
+| 3 | **Show each task run_settings in the board README**<br>• Stack a task run_settings, such as its review budget, inside an existing README cell, with no new column | [`readme-run-settings`](design-readme-run-settings.md) | darn | Merge-In | 57m | 57m | board |
+| 4 | **PR-Gate takes only its own run: no adopted old PR, no note-mention trigger**<br>• Publish never adopts an older PR for a reused slug, and the alignment snapshot counts only real decisions | [`pr-gate-run-identity`](design-pr-gate-run-identity.md) | loom | Discussion-Bouncer | 23h | 41m | loom, batten, board |
 
 ### Ready
 
@@ -40,7 +40,7 @@ Waits only on Running or Ready entries.
 
 | # | Task | Slug | Recipe | After | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | **landing.yaml trailer_text: an operator-set trailer block for the landing commit**<br>• Replace co_authored_by with trailer_text and engine_trailers: fixed lines plus one line per engine that ran, each copied verbatim, each switchable off | [`landing-trailer-text`](design-landing-trailer-text.md) | darn | `pr-gate-run-identity` | 44m | 41m | config, loom, shuttle |
+| 1 | **landing.yaml trailer_text: an operator-set trailer block for the landing commit**<br>• Replace co_authored_by with trailer_text and engine_trailers: fixed lines plus one line per engine that ran, each copied verbatim, each switchable off | [`landing-trailer-text`](design-landing-trailer-text.md) | darn | `pr-gate-run-identity` | 45m | 41m | config, loom, shuttle |
 
 ### Layer B
 
@@ -93,7 +93,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 9 | **Start one task per overlapping group at a newly-ready start**<br>• When a landing makes several overlapping tasks ready at once, batten starts one per group and names the rest in its notice | [`batten-ready-overlap`](design-batten-ready-overlap.md) | 1d | 1d | batten |
 | 10 | **Rewrite C13's stacked half for window-per-strand**<br>• C13's stacked 3-row half cannot be set up once reed-add-parentless-placement lands | [`creel-c13-stacked-rewrite`](design-creel-c13-stacked-rewrite.md) | 1d | 1d | creel |
 | 11 | **Git test fixtures trip Cortex XDR on the work laptop**<br>• Parallel git-heavy tests create so many files at once that Cortex XDR killed VS Code and then crashed itself, twice; tests must stay usable on a machine with endpoint protection | [`xdr-git-test-file-burst`](design-xdr-git-test-file-burst.md) | 19h | 19h | fabric |
-| 12 | **Rename the lyx binary to lyr (name clash with LyX)** | [`rename-binary-lyr`](design-rename-binary-lyr.md) | 1d | 34m | stencil, shuttle |
+| 12 | **Rename the lyx binary to lyr (name clash with LyX)** | [`rename-binary-lyr`](design-rename-binary-lyr.md) | 1d | 35m | stencil, shuttle |
 | 13 | **Language-neutral gate: lyx gate run takes a slot for any command**<br>• The gate slot pool covers only go test; a C# or Python hub verify bypasses it. Add lyx gate run -- cmd and per-language parallelism. | [`gate-language-neutral`](design-gate-language-neutral.md) | 10m | 5m | config, webster, shed |
 
 #### Low priority
@@ -134,7 +134,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 16 | **Spawn audit log: every process lyx starts is recorded and traceable**<br>• One recorded launch path and a hub-wide spawn log with owner, argv and resource use, plus a sampler and a summary verb, so a process storm can be traced after a crash | [`spawn-audit-log`](design-spawn-audit-log.md) | 8d | 4d | reed, shuttle, config |
 | 17 | **Configurable action buttons on the reed status bar**<br>• Clickable status-bar buttons that run configured commands: VS Code, orch distill/refresh, the follow toggle and more | [`reed-status-buttons`](design-reed-status-buttons.md) | 2d | 2d | reed, config |
 | 18 | **Ideas to borrow from comparable agent orchestrators (survey, Oct 2026)** | [`orchestrator-survey-ideas`](design-orchestrator-survey-ideas.md) | 1d | 54m | burler, shed, orch, quarry, report |
-| 19 | **Regression tier: baseline profiles before the run, compare at the final gate**<br>• Support a hub regression tier that writes profiles on the parent before implementation and compares after, switchable per task for expected drift. | [`regression-baseline-verify`](design-regression-baseline-verify.md) | 5m | 3m | shed, webster, batten, config |
+| 19 | **Regression tier: baseline profiles before the run, compare at the final gate**<br>• Support a hub regression tier that writes profiles on the parent before implementation and compares after, switchable per task for expected drift. | [`regression-baseline-verify`](design-regression-baseline-verify.md) | 5m | 4m | shed, webster, batten, config |
 
 #### Low priority
 
