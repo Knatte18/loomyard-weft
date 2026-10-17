@@ -809,7 +809,7 @@
       "id": 617,
       "slug": "agent-worktree-board-dir",
       "title": "lyx creates \u003cprime\u003e/.claude/worktrees/_board/.lyx/pause/net when run from a Claude Code agent worktree",
-      "kind": "note",
+      "kind": "task",
       "labels": [
         "bug",
         "fabric"
