@@ -1,11 +1,11 @@
 {
-  "current_producer": "Merge-In",
+  "current_producer": "Merge-Bouncer",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Merge-In",
-    "last": "Describe → done",
+    "now": "Merge-Bouncer",
+    "last": "Merge-In → done",
     "wait": ""
   },
   "history": [
@@ -274,6 +274,12 @@
           "end": "2026-10-17T12:15:12.27694882Z"
         }
       ]
+    },
+    {
+      "producer": "Merge-In",
+      "outcome": "done",
+      "output": "",
+      "at": "2026-10-17T12:15:31Z"
     }
   ],
   "product": {
