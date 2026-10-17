@@ -778,34 +778,6 @@
       "revised": "2026-10-17T11:33:45Z"
     },
     {
-      "id": 633,
-      "slug": "creel-cli-output-fixes",
-      "title": "creel CLI output fixes: lost success envelope, doubled prefix, log --id reminders",
-      "kind": "task",
-      "labels": [
-        "bug",
-        "creel"
-      ],
-      "issues": [
-        699,
-        700,
-        701
-      ],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "Three output bugs in internal/creelcli from the creel stage 1 re-test (#699, #700, #701).",
-      "body": "## Goal\n\nFix three output bugs in `internal/creelcli` found in the creel stage 1 re-test of 2026-10-17 (main at `58a7feec7`, dev build, sandbox hub `lyt`).\nOperator decision 2026-10-17: fix these as one loom task, then go on to creel stage 2.\n\n## 1. A success envelope that cannot be written is lost (#699)\n\nSeen: with stdout unwritable, every creel verb whose answer is a success exits 0 and prints nothing on stderr; the answer is lost.\n\n- `lyx creel post lyt:dave \"x\" \u003e /dev/full` exits 0, stderr empty; the message (#907) is stored, but its id never reaches the caller.\n- `lyx creel inject lyt:sink \"x\" \u003e /dev/full` exits 0, stderr empty, and the line is typed.\n- `lyx creel log \u003e /dev/full` and `lyx creel inbox \u003e /dev/full` (from a strand pane) exit 0, stderr empty.\n\nA refusal to the same stdout is handled (#681): it writes `creel: \u003cerror\u003e` to stderr and exits 1, and `read` leaves the mail unread.\n\nCause: the shared success path in `internal/creelcli/cli.go` (`output.Ok(out, res.fields)`) drops the write error; only `writeRefusal` and `read`'s `writeOk` check it.\n\nExpected: when the success envelope cannot be written, a short `creel: ...` line on stderr and a non-zero exit, as for a refusal; for post and inject the stderr line names the id, since the message or inject was already stored.\n\n## 2. The stderr fallback prints the prefix twice (#700)\n\nSeen: a refusal whose JSON envelope cannot be written to stdout (the #681 fallback) prints its message with the prefix doubled:\n\n- `lyx creel inbox \u003e /dev/full` from a terminal: `creel: creel: an EXTERNAL caller holds no mail; ...`\n- `lyx creel post lyt:nosuch x \u003e /dev/full`: `creel: creel: unknown receiver \"lyt:nosuch\"; ...`\n\n`read \u003e /dev/full` in a strand pane prints `creel: creel read: could not write the messages, so they stay unread: ...`, which reads as intended.\n\nCause: `writeRefusal` in `internal/creelcli/cli.go` prepends `creel: ` to a message that the engine's errors already open with `creel: `.\n\nExpected: one prefix, as the creelcli `doc.go` line \"writes `creel: \u003cerror\u003e` to stderr\" describes.\n\n## 3. `log --id` omits the reminded events (#701)\n\nSeen: mail #2 to `lyt:eve` was reminded three times, and the journal holds `{\"event\":\"reminded\",\"to\":\"lyt:eve\",\"unread\":[2]}` records, which `lyx creel log --to lyt:eve` shows.\n`lyx creel log --id 2` returns only the `posted` event; `log --id 4` showed `posted` and `read` but not the `reminded` event between them.\n\nCause: since #664 a `reminded` record carries its ids in `unread` and has no `id`, and the `--id` filter matches `id` only.\n\nExpected: `log --id \u003cid\u003e` includes each `reminded` event whose `unread` lists that id, so one message's history (posted, reminded, read) reads in one call.\n\n## Reproduce\n\nIn a hub with live strands: `lyx creel log \u003e /dev/full; echo $?`, the same for post, inject and inbox; `lyx creel inbox \u003e /dev/full` from a terminal; post to a live agent strand, let it be reminded, then `lyx creel log --id \u003cid\u003e`.\n",
-      "status": "done",
-      "created": "2026-10-17T10:17:27Z",
-      "revised": "2026-10-17T11:30:53Z",
-      "run_settings": {
-        "loom": {
-          "review_hard_max_bounces": 3,
-          "review_max_bounces": 2
-        }
-      }
-    },
-    {
       "id": 634,
       "slug": "preflight-weft-push-sync",
       "title": "Preflight pushes the weft branch synchronously and races the board sync",
