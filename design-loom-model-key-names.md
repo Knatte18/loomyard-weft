@@ -1,6 +1,6 @@
 # Clearer loom model key names, one per step
 
-`loom-model-key-names` · Task · enhancement, config, loom · running · Publish
+`loom-model-key-names` · Task · enhancement, config, loom · running · PR-Align
 
 ## Ask (operator, 2026-10-14)
 
