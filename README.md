@@ -17,7 +17,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | **Rewrite C13 stacked half for window-per-strand, commit the creel re-test report**<br>• C13's stacked 3-row half cannot be set up once reed-add-parentless-placement lands<br>• `darn: review_max_bounces 0`<br>• `darn: writer sonnet[medium]` | [`creel-c13-stacked-rewrite`](design-creel-c13-stacked-rewrite.md) | darn | PR-Align | 1d | 7m | creel |
+| 1 | **Rewrite C13 stacked half for window-per-strand, commit the creel re-test report**<br>• C13's stacked 3-row half cannot be set up once reed-add-parentless-placement lands<br>• `darn: review_max_bounces 0`<br>• `darn: writer sonnet[medium]` | [`creel-c13-stacked-rewrite`](design-creel-c13-stacked-rewrite.md) | darn | PR-Align | 1d | 8m | creel |
 | 2 | **landing.yaml trailer_text: an operator-set trailer block for the landing commit**<br>• Replace co_authored_by with trailer_text and engine_trailers: fixed lines plus one line per engine that ran, each copied verbatim, each switchable off<br>• `darn: review_max_bounces 1` | [`landing-trailer-text`](design-landing-trailer-text.md) | darn | Darn-Write | 1h | 1h | config, loom, shuttle |
 | 3 | **stencilstore dev-build warning prints on every creel verb**<br>• `darn: review_max_bounces 1` | [`stencilstore-dev-warning-noise`](design-stencilstore-dev-warning-noise.md) | darn | Darn-Write | 1h | 20m | stencil, creel |
 | 4 | **lyx gate test slot wait capped under the prompt-cache lifetime, like shuttle await**<br>• Gate slot wait uses the shared keep-cache-warm cap and answers run-again instead of blocking past the cache lifetime<br>• `darn: review_max_bounces 1` | [`gate-wait-cache-cap`](design-gate-wait-cache-cap.md) | darn | Darn-Write | 1h | 1h | config, shuttle |
@@ -58,7 +58,8 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Note | Slug | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| 1 | **Key-rename migration never reaches the hub config: loom-model-key-names silently turned off the hub fans** | [`config-migrate-hub-layer`](design-config-migrate-hub-layer.md) | 44m | 44m | config, loom |
+| 1 | **Key-rename migration never reaches the hub config: loom-model-key-names silently turned off the hub fans** | [`config-migrate-hub-layer`](design-config-migrate-hub-layer.md) | 45m | 45m | config, loom |
+| 2 | **Flaky tmux test: TestBoot_TmuxConf TwoWorktreesBootedConcurrently fails with server exited unexpectedly** | [`tmux-conf-concurrent-boot-flake`](design-tmux-conf-concurrent-boot-flake.md) | 0m | 0m |  |
 
 ### Enhancements
 
@@ -79,7 +80,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 11 | **Rename the lyx binary to lyr (name clash with LyX)** | [`rename-binary-lyr`](design-rename-binary-lyr.md) | 1d | 1h | stencil, shuttle |
 | 12 | **Language-neutral gate: lyx gate run takes a slot for any command**<br>• The gate slot pool covers only go test; a C# or Python hub verify bypasses it. Add lyx gate run -- cmd and per-language parallelism. | [`gate-language-neutral`](design-gate-language-neutral.md) | 1h | 1h | config, webster, shed |
 | 13 | **One generic Command producer for every flag-gated side-action row**<br>• Replace OpenWindow, SeedIDE, OpenIDE and the planned Job-Start/Job-Join with one shed engine that runs a CLI command named in config, sync or async, warn or halt. | [`command-producer`](design-command-producer.md) | 43m | 43m | shed, batten, config |
-| 14 | **Entry gate on shed rows: a check decides whether a row runs at all**<br>• Replace darn recipe edge rewrite and the switched producer flag check with one shed entry gate per row; false means Done without acting. | [`row-entry-gate`](design-row-entry-gate.md) | 20m | 17m | shed, loom, batten |
+| 14 | **Entry gate on shed rows: a check decides whether a row runs at all**<br>• Replace darn recipe edge rewrite and the switched producer flag check with one shed entry gate per row; false means Done without acting. | [`row-entry-gate`](design-row-entry-gate.md) | 21m | 17m | shed, loom, batten |
 | 15 | **Preflight pushes the weft branch synchronously and races the board sync**<br>• Preflight spent 11 s mostly in a weft push to GitHub, refused once after 8 s; push detached or serialise with the board sync. | [`preflight-weft-push-sync`](design-preflight-weft-push-sync.md) | 5m | 3m | fabric, shed |
 
 #### Low priority

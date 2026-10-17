@@ -926,6 +926,24 @@
       "body": "## Seen (orch, 2026-10-17)\n\nThe darn run `creel-c13-stacked-rewrite` spent 11.1 s in its Preflight row (trace `acc61c4a8e5651cb` in the pair's `.lyx/logs/`), almost all of it in a synchronous push of the weft branch to GitHub:\n\n- 13:43:50.98: the row commits the weft (`fabric: mutation kind=commit_created`); 0.2 s earlier the same step spawned a detached board sync, which pushes to the same records repository.\n- 13:43:58.91: the first push of `creel-c13-stacked-rewrite-weft` is refused after 8 s: `! [remote rejected] ... (failed)`.\n- 13:44:01.89: the retry succeeds after 3 s, and the row is Done.\n\nThe operator saw about 22 s for the row; the trace accounts for 11 s of it.\n\n## Idea\n\n- Nothing in the run reads the remote weft branch until Publish, so Preflight could push it detached, as the board sync already is, and leave the row at local work only.\n- The 8 s refusal looks like two pushes to the same records repository at once (the board sync and the weft push); if so, serialising them, or the detached push, would remove the retry.\n\n## A pair begun on another machine\n\nOperator question 2026-10-17: what if the branches already exist because the task was begun on another machine?\nThat case is settled before Preflight, at `fabricengine.Add` (Worktree-Create), per `internal/fabricengine/doc.go`: it probes both origins read-only, adopts a live pair (fast-forwards a local weft branch behind origin, or makes origin's weft and warp branches local tracking branches), refuses a true divergence with `ErrRemoteLeftover`, and never force-pushes or deletes a live pair's branches.\n`Add` itself already pushes nothing and leaves the push to the pair's detached push (`SpawnPairPush`).\nSo a detached Preflight push changes nothing for that case; it only gives up seeing at once a push the remote refuses, which the next detached push logs as a Warn.\nThe bare `(failed)` refusal is a known server-side race: every plain fabric push retries it with backoff.\n\n## Open\n\n- Whether the remote refusal is a GitHub race between the two pushes or something else; check other runs' Preflight traces for the same warning.\n",
       "created": "2026-10-17T11:45:46Z",
       "revised": "2026-10-17T11:47:55Z"
+    },
+    {
+      "id": 635,
+      "slug": "tmux-conf-concurrent-boot-flake",
+      "title": "Flaky tmux test: TestBoot_TmuxConf TwoWorktreesBootedConcurrently fails with server exited unexpectedly",
+      "kind": "note",
+      "labels": [
+        "bug"
+      ],
+      "issues": [
+        712
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Imported from [issue #712](https://github.com/Knatte18/loomyard/issues/712).\n\nSeen 2026-10-17 in run stencilstore-dev-warning-noise, at Publish (publish_verify: go test -tags tmux ./...): internal/reedengine TestBoot_TmuxConf/AppendingFileIsSourcedOncePerServerStart/TwoWorktreesBootedConcurrently failed with 'run list-commands: exit status 1: server exited unexpectedly'. The task's diff touched only internal/creelcli and cmd/lyx/stencilseedgate_test.go, so the failure is unrelated to the change; batten retried the run. Several runs were in flight on the machine at the time, and publish_verify runs raw go test outside the gate slot pool. Expected: the test boots two tmux servers concurrently without flaking, or isolates them so a concurrent boot cannot kill a server.",
+      "created": "2026-10-17T11:51:35Z",
+      "revised": "2026-10-17T11:51:35Z"
     }
   ]
 }
