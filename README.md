@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-17 10:30 UTC; every age below is as of then.
+Rendered 2026-10-17 10:31 UTC; every age below is as of then.
 
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
@@ -21,7 +21,7 @@ Held by a run; its scope is locked until the run ends.
 | 2 | **Go driver messages the orch about a verify halt batten retries itself**<br>• Drop or reword the parent message for a watched verify halt | [`driver-watched-verify-notice`](design-driver-watched-verify-notice.md) | darn | Darn-Burler-Review | 1d | 44m | shed, batten |
 | 3 | **report timing counts a pause before Plan-Write as Plan phase time** | [`timing-pause-as-phase`](design-timing-pause-as-phase.md) | darn | Darn-Write | 19h | 41m | report |
 | 4 | **lyx creates <prime>/.claude/worktrees/_board/.lyx/pause/net when run from a Claude Code agent worktree** | [`agent-worktree-board-dir`](design-agent-worktree-board-dir.md) | darn | Darn-Write | 1h | 44m | fabric |
-| 5 | **Show each task run_settings in the board README**<br>• Stack a task run_settings, such as its review budget, inside an existing README cell, with no new column | [`readme-run-settings`](design-readme-run-settings.md) | darn | Darn-Write | 43m | 43m | board |
+| 5 | **Show each task run_settings in the board README**<br>• Stack a task run_settings, such as its review budget, inside an existing README cell, with no new column | [`readme-run-settings`](design-readme-run-settings.md) | darn | Darn-Bouncer | 43m | 43m | board |
 | 6 | **PR-Gate takes only its own run: no adopted old PR, no note-mention trigger**<br>• Publish never adopts an older PR for a reused slug, and the alignment snapshot counts only real decisions | [`pr-gate-run-identity`](design-pr-gate-run-identity.md) | loom | Discussion-Bouncer | 23h | 28m | loom, batten, board |
 
 ### Ready
