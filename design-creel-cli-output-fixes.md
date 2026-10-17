@@ -1,6 +1,6 @@
 # creel CLI output fixes: lost success envelope, doubled prefix, log --id reminders
 
-`creel-cli-output-fixes` · Task · bug, creel · running · Worktree-Create
+`creel-cli-output-fixes` · Task · bug, creel · running · Loom-Preflight
 
 ## Goal
 
