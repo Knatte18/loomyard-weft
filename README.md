@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-17 11:00 UTC; every age below is as of then.
+Rendered 2026-10-17 11:01 UTC; every age below is as of then.
 
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
@@ -68,10 +68,10 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Note | Slug | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| 1 | **creel verbs exit 0 with nothing on stderr when their success envelope cannot be written** | [`creel-success-write-lost`](design-creel-success-write-lost.md) | 43m | 42m | creel |
-| 2 | **creel stderr fallback for an unwritable refusal prints the prefix twice: creel: creel:** | [`creel-stderr-double-prefix`](design-creel-stderr-double-prefix.md) | 43m | 42m | creel |
-| 3 | **creel log --id omits the reminded events that list that id** | [`creel-log-id-reminders`](design-creel-log-id-reminders.md) | 43m | 42m | creel |
-| 4 | **stencilstore dev-build warning prints on every creel verb** | [`stencilstore-dev-warning-noise`](design-stencilstore-dev-warning-noise.md) | 43m | 42m | stencil, creel |
+| 1 | **creel verbs exit 0 with nothing on stderr when their success envelope cannot be written** | [`creel-success-write-lost`](design-creel-success-write-lost.md) | 44m | 43m | creel |
+| 2 | **creel stderr fallback for an unwritable refusal prints the prefix twice: creel: creel:** | [`creel-stderr-double-prefix`](design-creel-stderr-double-prefix.md) | 44m | 43m | creel |
+| 3 | **creel log --id omits the reminded events that list that id** | [`creel-log-id-reminders`](design-creel-log-id-reminders.md) | 43m | 43m | creel |
+| 4 | **stencilstore dev-build warning prints on every creel verb** | [`stencilstore-dev-warning-noise`](design-stencilstore-dev-warning-noise.md) | 43m | 43m | stencil, creel |
 
 ### Enhancements
 
@@ -90,8 +90,8 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 9 | **Start one task per overlapping group at a newly-ready start**<br>• When a landing makes several overlapping tasks ready at once, batten starts one per group and names the rest in its notice | [`batten-ready-overlap`](design-batten-ready-overlap.md) | 1d | 1d | batten |
 | 10 | **Rewrite C13's stacked half for window-per-strand**<br>• C13's stacked 3-row half cannot be set up once reed-add-parentless-placement lands | [`creel-c13-stacked-rewrite`](design-creel-c13-stacked-rewrite.md) | 1d | 1d | creel |
 | 11 | **Git test fixtures trip Cortex XDR on the work laptop**<br>• Parallel git-heavy tests create so many files at once that Cortex XDR killed VS Code and then crashed itself, twice; tests must stay usable on a machine with endpoint protection | [`xdr-git-test-file-burst`](design-xdr-git-test-file-burst.md) | 19h | 19h | fabric |
-| 12 | **Rename the lyx binary to lyr (name clash with LyX)** | [`rename-binary-lyr`](design-rename-binary-lyr.md) | 1d | 51m | stencil, shuttle |
-| 13 | **Language-neutral gate: lyx gate run takes a slot for any command**<br>• The gate slot pool covers only go test; a C# or Python hub verify bypasses it. Add lyx gate run -- cmd and per-language parallelism. | [`gate-language-neutral`](design-gate-language-neutral.md) | 27m | 21m | config, webster, shed |
+| 12 | **Rename the lyx binary to lyr (name clash with LyX)** | [`rename-binary-lyr`](design-rename-binary-lyr.md) | 1d | 52m | stencil, shuttle |
+| 13 | **Language-neutral gate: lyx gate run takes a slot for any command**<br>• The gate slot pool covers only go test; a C# or Python hub verify bypasses it. Add lyx gate run -- cmd and per-language parallelism. | [`gate-language-neutral`](design-gate-language-neutral.md) | 27m | 22m | config, webster, shed |
 
 #### Low priority
 
@@ -131,7 +131,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 16 | **Spawn audit log: every process lyx starts is recorded and traceable**<br>• One recorded launch path and a hub-wide spawn log with owner, argv and resource use, plus a sampler and a summary verb, so a process storm can be traced after a crash | [`spawn-audit-log`](design-spawn-audit-log.md) | 8d | 4d | reed, shuttle, config |
 | 17 | **Configurable action buttons on the reed status bar**<br>• Clickable status-bar buttons that run configured commands: VS Code, orch distill/refresh, the follow toggle and more | [`reed-status-buttons`](design-reed-status-buttons.md) | 2d | 2d | reed, config |
 | 18 | **Ideas to borrow from comparable agent orchestrators (survey, Oct 2026)** | [`orchestrator-survey-ideas`](design-orchestrator-survey-ideas.md) | 1d | 1h | burler, shed, orch, quarry, report |
-| 19 | **Regression tier: baseline profiles before the run, compare at the final gate**<br>• Support a hub regression tier that writes profiles on the parent before implementation and compares after, switchable per task for expected drift. | [`regression-baseline-verify`](design-regression-baseline-verify.md) | 21m | 20m | shed, webster, batten, config |
+| 19 | **Regression tier: baseline profiles before the run, compare at the final gate**<br>• Support a hub regression tier that writes profiles on the parent before implementation and compares after, switchable per task for expected drift. | [`regression-baseline-verify`](design-regression-baseline-verify.md) | 22m | 0m | shed, webster, batten, config |
 
 #### Low priority
 
