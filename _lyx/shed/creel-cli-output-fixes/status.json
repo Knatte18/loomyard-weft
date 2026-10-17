@@ -1,11 +1,11 @@
 {
-  "current_producer": "Merge-Bouncer",
+  "current_producer": "Publish",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Merge-Bouncer",
-    "last": "Merge-Burler-Fix → bounced to Merge-Bouncer",
+    "now": "Publish",
+    "last": "Merge-Bouncer → done",
     "wait": ""
   },
   "history": [
@@ -312,6 +312,12 @@
       "at": "2026-10-17T12:17:47Z",
       "budget_exempt": true,
       "routed_to": "Merge-Bouncer"
+    },
+    {
+      "producer": "Merge-Bouncer",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYXHUB/creel-cli-output-fixes/_lyx/reviews/merge/round-1-bouncer-ledger.md",
+      "at": "2026-10-17T12:18:17Z"
     }
   ],
   "product": {
