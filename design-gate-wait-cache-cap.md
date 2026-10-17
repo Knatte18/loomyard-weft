@@ -1,6 +1,6 @@
 # lyx gate test slot wait capped under the prompt-cache lifetime, like shuttle await
 
-`gate-wait-cache-cap` · Task · enhancement, config, shuttle · running · Describe
+`gate-wait-cache-cap` · Task · enhancement, config, shuttle · running · Merge-In
 
 ## Seen (2026-10-17)
 
