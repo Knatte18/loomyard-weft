@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-17 10:38 UTC; every age below is as of then.
+Rendered 2026-10-17 10:39 UTC; every age below is as of then.
 
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
@@ -21,7 +21,7 @@ Held by a run; its scope is locked until the run ends.
 | 2 | **Go driver messages the orch about a verify halt batten retries itself**<br>• Drop or reword the parent message for a watched verify halt | [`driver-watched-verify-notice`](design-driver-watched-verify-notice.md) | darn | Merge-In | 1d | 52m | shed, batten |
 | 3 | **report timing counts a pause before Plan-Write as Plan phase time** | [`timing-pause-as-phase`](design-timing-pause-as-phase.md) | darn | Merge-In | 19h | 49m | report |
 | 4 | **Show each task run_settings in the board README**<br>• Stack a task run_settings, such as its review budget, inside an existing README cell, with no new column | [`readme-run-settings`](design-readme-run-settings.md) | darn | Merge-In | 51m | 51m | board |
-| 5 | **PR-Gate takes only its own run: no adopted old PR, no note-mention trigger**<br>• Publish never adopts an older PR for a reused slug, and the alignment snapshot counts only real decisions | [`pr-gate-run-identity`](design-pr-gate-run-identity.md) | loom | Discussion-Burler-Fix | 23h | 36m | loom, batten, board |
+| 5 | **PR-Gate takes only its own run: no adopted old PR, no note-mention trigger**<br>• Publish never adopts an older PR for a reused slug, and the alignment snapshot counts only real decisions | [`pr-gate-run-identity`](design-pr-gate-run-identity.md) | loom | Discussion-Bouncer | 23h | 36m | loom, batten, board |
 
 ### Ready
 
