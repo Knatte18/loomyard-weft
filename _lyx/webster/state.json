@@ -1,11 +1,11 @@
 {
   "runGuid": "214dfe153866a1b4aa55094310786223",
-  "planFingerprint": "b901a25a0087609ed507c183a21fdc26fb48cbb0e6c115611b7619188262af59",
+  "planFingerprint": "085684739f24acc927f6dce0da3744498ae55b490951abf490d4a92dfe4e45b7",
   "planFileHashes": {
     "00-overview.md": "ac98804ef76f43c880baf747b4f1cd1c276e91a54aa6fcbe23eb93604de82432",
     "01-log-id-reminded.md": "991bb0552baa6f6f797306545c2aefe5d9deffe599011ffb679c14c5213f96ba",
     "02-refusal-prefix-once.md": "556ca1f537d97950dc050ed4c1c8f090f75ba7f9668e6b8a31c55c935de0ea00",
-    "03-lost-answer-names-done.md": "bd7846f7e9b8fdca46cc5652c526ed9e65559d11cd6fdb0bb3597208de12bb9d"
+    "03-lost-answer-names-done.md": "9a6c174fb990394a73c5f5a311b1d7b9d39f1f80ccd726439df3be5f23819bed"
   },
   "planOverviewFrameHash": "bd8eb5e1c5dc5a53677f837649094f76e00b38d3dd5345127d08b5fd1c00d8b9",
   "partition": [
@@ -76,7 +76,7 @@
       }
     }
   ],
-  "currentBatch": 1,
+  "currentBatch": 0,
   "masterStrand": "484ba83e2e652ff378b19c48b990aba3",
   "masterSessionId": "0e0487df-c790-4a2a-b80e-615383fdbd33",
   "masterEngine": "claude",
@@ -91,15 +91,35 @@
       "cardHashes": {
         "01-log-id-reminded": "991bb0552baa6f6f797306545c2aefe5d9deffe599011ffb679c14c5213f96ba",
         "02-refusal-prefix-once": "556ca1f537d97950dc050ed4c1c8f090f75ba7f9668e6b8a31c55c935de0ea00",
-        "03-lost-answer-names-done": "bd7846f7e9b8fdca46cc5652c526ed9e65559d11cd6fdb0bb3597208de12bb9d"
+        "03-lost-answer-names-done": "9a6c174fb990394a73c5f5a311b1d7b9d39f1f80ccd726439df3be5f23819bed"
       },
       "startSha": "a273d69bc51f0a57a77f0e1b5d0808508e78a3e7",
       "kind": "fork",
       "spawnedAt": "2026-10-17T12:06:29Z",
       "sessionId": "0e0487df-c790-4a2a-b80e-615383fdbd33",
       "engine": "claude",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "01-log-id-reminded",
+        "status": "done",
+        "head_sha": "6d1e80810afe422d6ef8194e8322be8af0124550",
+        "deviations": [
+          "internal/creelcli/cli_test.go"
+        ]
+      },
+      "cardShas": [
+        "6d1e80810afe422d6ef8194e8322be8af0124550"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-creel-cli-output-fixes/0e0487df-c790-4a2a-b80e-615383fdbd33/subagents/agent-a645e9374e3a28195.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-creel-cli-output-fixes/0e0487df-c790-4a2a-b80e-615383fdbd33/subagents/agent-a645e9374e3a28195.jsonl"
+      ]
     }
-  }
+  },
+  "seenForkTranscripts": [
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-creel-cli-output-fixes/0e0487df-c790-4a2a-b80e-615383fdbd33/subagents/agent-a645e9374e3a28195.jsonl"
+  ]
 }

@@ -15,9 +15,9 @@
 - `internal/creelcli#TestCreelCLI`
 
 **Create:**
-- `plan:internal/creelcli#partialWriter` -> `type partialWriter struct`
-- `plan:internal/creelcli#partialWriter.Write` -> `func (w *partialWriter) Write(p []byte) (int, error)`
-- `plan:internal/creelcli#partialWriter.String` -> `func (w *partialWriter) String() string`
+- `internal/creelcli#partialWriter`
+- `internal/creelcli#partialWriter.Write`
+- `internal/creelcli#partialWriter.String`
 
 **Uses:**
 - `internal/creelcli#writeOk`
