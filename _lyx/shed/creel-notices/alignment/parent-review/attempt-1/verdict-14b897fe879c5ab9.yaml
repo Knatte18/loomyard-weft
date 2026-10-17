@@ -1,0 +1,12 @@
+verdict: approve
+reason: >-
+  The design covers every Goal and Scope point of the creel-notices board entry.
+  Notices and watcher injects go through creel, the notice queue and the pre-typing idle probe go,
+  the note request is mail answered by post, reminders carry no content, and the notice log goes.
+  Its two bounded departures, the hub-pause SessionIdle in D9 and the shortened PATTERN sentence,
+  follow from the entry itself.
+  Stage-3 work is left to creel-agents, and the receiver routing question is left to orch-split.
+  The only peer overlap, with shedrecipe-capabilities, is text-only in envkit.go plus the shared
+  test-budget file; the peer is at row 9 and this run at row 3, so the peer lands first.
+question: ""
+superseded: []
