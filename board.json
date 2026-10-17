@@ -873,6 +873,25 @@
       "body": "## What this is\n\nA recurring audit of how Webster implementer forks use their kick-start pack (glyph spans) and whether the pack is correct, run with `tools/forkaudit/forkaudit.sh --since \u003cdate\u003e --pack-check --plan`.\nEach audit keeps its report and summary under `docs/research/glyph-audit-\u003cdate\u003e/`.\nOperator instruction 2026-10-17: keep this on the board so future glyph audits are not forgotten.\n\n## Audits so far\n\n- `docs/research/glyph-audit-2026-10-12/`, `-10-13/`, `-10-15/`: the inline, read-all-first and pack-file layouts.\n- `docs/research/glyph-audit-2026-10-17/`: the first audit of the per-card layout (`lyx loom card-pack`, default since `aa925bdcc`), 90 forks from 26 runs.\n  Card forks read about half their spans before the first edit (pack-file forks a quarter) and start editing after half as many calls; 0 stale spans of 1661 checked at batch start; about 20% of edits still go to files with no span; cost per card is higher, but the workloads differ.\n\n## Open points for the next audit\n\n- `forkaudit` grades only a fork's first `card-pack` call, so files a later card's pack covered count as missed, and the 20% missed share is an upper bound (open finding from `aa925bdcc`, in `tools/forkaudit/pack-entries.jq` and `report.jq`).\n- The card arm's spans-window definition may bias the spans-reached share (open finding from `aa925bdcc`, in `tools/forkaudit/extract.jq`).\n- Pack drift during a batch is unmeasured.\n- Five forks in the 2026-10-17 sample matched no arm marker (`none`).\n- Three card forks had no spans at all, among them a creel-core fork with 81 edits; why is unknown.\n\n## Orch recommendation, not a decision\n\nRun the next audit after about 20 more Webster runs, or right after any change to the pack layout or the fork prompt, whichever comes first, and fix the first-call grading gap in `forkaudit` before it, so the missed-files share means something.\nA cheap model (Sonnet) runs the script; the orch places the result in `docs/research/`.\n",
       "created": "2026-10-17T13:41:06Z",
       "revised": "2026-10-17T13:41:06Z"
+    },
+    {
+      "id": 639,
+      "slug": "kickstart-pack-remove",
+      "title": "Remove the Webster kick-start pack",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "webster",
+        "quarry",
+        "loom"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "Drop every kick-start pack layout and its code; glyphs stay in the plan and its gates",
+      "body": "## Operator decision 2026-10-17\n\nRemove the Webster kick-start pack, every layout of it (inline, pack file, per card), with its code and config keys.\nGlyphs stay in the plan and in the plan gates.\n\n## Evidence\n\n- Four audits, `docs/research/glyph-audit-2026-10-12/`, `-10-13/`, `-10-15/`, `-10-17/`: no layout lowered exploration against no pack (exploration calls per card 5.2 without a pack, 5.8 to 7 with one; calls before the first edit 7 against 4 to 8.5), and the per-card layout costs more per card than the older ones on a different workload.\n- A sample of 9 per-card forks (2026-10-17): the forks work file by file and read a file just before editing it; of the spans not read before the first edit, 59% were read later, 23% never read while the file was edited from the fork's own grep, `sed` or build errors, 18% not needed or already covered.\n  Several forks grepped for sites the pack had already listed, and none mentioned the pack.\n- Webster is about a third of a loom run's active time (`lyx report timing` since 2026-10-10, 105 landed runs: median 30% per run), and reading code is a small part of it.\n\n## Orch recommendation, not a decision\n\n- Keep `lyx quarry resolve` available to the fork, and keep `tools/forkaudit` working for runs without a pack, so a no-pack baseline can be measured.\n- Note `enclose-kickstart` builds the pack from tool locations and loses its purpose with this removal.\n",
+      "created": "2026-10-17T14:08:42Z",
+      "revised": "2026-10-17T14:08:42Z"
     }
   ]
 }
