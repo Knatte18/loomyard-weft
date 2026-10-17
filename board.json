@@ -703,7 +703,7 @@
       "isolated": false,
       "brief": "Drop or reword the parent message for a watched verify halt",
       "body": "## Seen\n\nOn 2026-10-16 `reed-add-parentless-placement` failed its first `publish_verify` at Publish.\nThe Go driver applied the rule \"a verify halt matching the failure record under a watching batten: hand back\", and batten sent the run back to Webster-Burler-Review by itself.\nThe driver still messaged the orch \"Run ... stopped; stop report ...\", which asks for an answer although the orch has nothing to do.\nThis is by design: `driveHandBack.WatchedVerifyLine` in `internal/sheddriver/drivehandback.go` exists \"so the parent still hears of it\", from `1c812c1f8`.\n\n## Idea\n\nWhen a watching batten owns the verify halt, the driver sends the parent no message, or at most a line that says batten retries it and no action is needed.\nBatten's own notice for the second failure stays the parent's wake-up.\n",
-      "status": "running · PR-Gate",
+      "status": "running · Finalize",
       "created": "2026-10-16T10:22:36Z",
       "revised": "2026-10-17T09:46:10Z",
       "run_settings": {

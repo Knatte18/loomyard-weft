@@ -1,6 +1,6 @@
 # Go driver messages the orch about a verify halt batten retries itself
 
-`driver-watched-verify-notice` · Task · enhancement, shed, batten · running · PR-Gate
+`driver-watched-verify-notice` · Task · enhancement, shed, batten · running · Finalize
 
 ## Seen
 
