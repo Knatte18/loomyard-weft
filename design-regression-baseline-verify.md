@@ -21,7 +21,9 @@ Operator view, not a decision: regression tests are not always wanted, since som
   - `Job-Start` (a side action with a config flag) starts a detached job, records its handle in run state and returns at once.
   - `Job-Join` waits for the job and fails with its log when it failed.
 - Operator view, not a decision: the baseline runs in the task worktree itself, since loom changes no code before Webster, and its output goes to a gitignored place such as `.scratch/`; large simulation time series are never committed.
-- Orch recommendation, not a decision: `Job-Join` sits before Webster, the first row that changes code, so Webster never edits or builds (`bin/`, `obj/`) while the baseline still runs; when Discussion and Plan take longer than the baseline, the join costs nothing.
+- Operator decision 2026-10-17: `Job-Join` sits right before Webster, the first row that changes code, so Webster never edits or builds (`bin/`, `obj/`) while the baseline still runs; when Discussion and Plan take longer than the baseline, the join costs nothing.
+- Operator view, not a decision: fixed rows in loom for a case that may never come feel clumsy, but each only checks its flag and moves on in milliseconds when it is off.
+- Precedent: batten's Open-Window, Seed-IDE and Open-IDE are such rows today, `shedadapters`' switched producer behind a `batten.yaml` flag read from the pair's config stack, so a task's `run_settings` sets it per task. Unlike those, `Job-Join` must be able to fail the run, since the switched producer only warns.
 - The job takes a gate slot like every test run, and obeys a hub pause like the run's other work (note `pause-background-work`).
 - Batten tears the job down with the run.
 - The compare runs at the final gate only, never per card, to keep the cost down.
