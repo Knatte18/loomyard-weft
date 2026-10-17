@@ -276,25 +276,6 @@
       "revised": "2026-10-05T18:09:48Z"
     },
     {
-      "id": 132,
-      "slug": "discussion-lands-invariant",
-      "title": "Discussion stage has no sanctioned path to land a repository edit ahead of Plan",
-      "kind": "note",
-      "labels": [
-        "enhancement",
-        "loom"
-      ],
-      "issues": [
-        385
-      ],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "Discussion has no sanctioned path to commit a PATTERN edit ahead of Plan",
-      "body": "Imported from [issue #385](https://github.com/Knatte18/loomyard/issues/385).\n\nDuring the Discussion stage of a loom task, the parent (`ly:orch`) relayed an operator request to edit `PATTERN.md` and `pattern/` directly in the task worktree, so the review rounds would read the revised rules.\n\nThe Discussion launch prompt allows only the two discussion files and no git.\nAn uncommitted repository edit would leave the tree dirty for the `PATTERN-verified-tree` check.\nIt took an extra round trip to get the operator's explicit instruction and a named committer (the driver) before the edit could be made.\n\nDiscussion has no sanctioned path for \"land this invariant now, ahead of Plan\".\nIf this should be supported, the Discussion launch prompt or the parent-review flow needs a carve-out that names who commits such an edit, instead of leaving it to an ad-hoc message exchange.\n\nProvenance: task `test-writing-rules`, note `Discussion-Write.md`.\n",
-      "created": "2026-10-05T19:40:02Z",
-      "revised": "2026-10-05T19:40:02Z"
-    },
-    {
       "id": 177,
       "slug": "verify-watchdog",
       "title": "Windows verify timeout kills the whole process tree",
