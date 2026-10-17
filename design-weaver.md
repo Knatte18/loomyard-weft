@@ -124,6 +124,10 @@ Wide (fat waves, short critical path, low file-conflict) → an executor might p
 Narrow (long critical path, most cards chained, or simply few cards) → parallelism won't materialize;
 sequential is the complete correct design, not just the MVP.
 
+## Groundwork first (operator, 2026-10-17)
+
+The groundwork Weaver needs, the batchifier moved inside the implementer and the implementer engine chosen by a setting, is the note `implementer-seam`, built and landed before Weaver itself.
+
 ## Decision gate run (2026-10-17)
 
 The width analysis ran on 34 real plans (238 cards, 106 batches): `docs/research/parallel-batches-2026-10-17/`.
