@@ -804,6 +804,24 @@
       "body": "## Seen (operator report, 2026-10-16)\n\nOn the operator work laptop, which runs Cortex XDR, the git tests create so many files at once that XDR flagged them as malware behaviour.\nTwice it terminated all of VS Code, and both times XDR itself crashed afterwards, so the machine had to be restarted.\n\nFor scale, on the home machine a parallel `lyx gate test --tags integration ./...` (gate `go_parallel: 4`) takes 56s, and the serial package-by-package total is 156s (`docs/benchmarks/test-suite-weight.md`, which also counts git fixture and code subprocesses per package).\n\n## Idea (orch recommendation, not a decision)\n\n- Short term: on that machine set the machine-local gate layer, `lyx config gate --layer local --set go_parallel=1` and `--set slots=1`, so one package and one test run go at a time.\n- Check on the laptop whether that is enough, since XDR may react to the file-creation rate within one package as well.\n- If not: make the git fixtures create fewer files (shared fixtures built once per package, cloned or copied less), and measure files created per package so the heaviest are known.",
       "created": "2026-10-16T15:06:45Z",
       "revised": "2026-10-16T15:06:45Z"
+    },
+    {
+      "id": 617,
+      "slug": "agent-worktree-board-dir",
+      "title": "lyx creates \u003cprime\u003e/.claude/worktrees/_board/.lyx/pause/net when run from a Claude Code agent worktree",
+      "kind": "note",
+      "labels": [
+        "bug"
+      ],
+      "issues": [
+        697
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Imported from [issue #697](https://github.com/Knatte18/loomyard/issues/697).\n\nSeen: the prime had an untracked /home/knatte/Code/loomyard-LYXHUB/loomyard/.claude/worktrees/_board/.lyx/pause/net (empty dirs, created 2026-10-15 18:03). .claude/worktrees/ is Claude Code's own directory for isolation: worktree agents, so lyx run inside such a worktree resolved the hub board dir as the sibling _board of the agent worktree, not the hub's _board, and created its pause/net state there. On 2026-10-15 the untracked directory made update-plugins.sh refuse the dirty prime, so the Land deploy of discussion-relevant-list failed (its tackler attempt diagnosed it). Workaround: /.claude/worktrees/ was added to .git/info/exclude, and the empty dirs were removed by hand on 2026-10-17. Expected: lyx run from a directory that is not a recorded fabric worktree resolves the board dir from the fabric anchor or refuses, and never creates hub state under a guessed path.",
+      "created": "2026-10-17T09:00:00Z",
+      "revised": "2026-10-17T09:00:00Z"
     }
   ]
 }
