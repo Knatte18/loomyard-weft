@@ -1,11 +1,11 @@
 {
-  "current_producer": "Darn-Bouncer",
+  "current_producer": "Describe",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Darn-Bouncer",
-    "last": "Darn-Burler-Fix → bounced to Darn-Bouncer",
+    "now": "Describe",
+    "last": "Darn-Bouncer → done",
     "wait": ""
   },
   "history": [
@@ -73,6 +73,12 @@
       "at": "2026-10-17T10:35:38Z",
       "budget_exempt": true,
       "routed_to": "Darn-Bouncer"
+    },
+    {
+      "producer": "Darn-Bouncer",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYXHUB/timing-pause-as-phase/_lyx/reviews/darn/round-1-bouncer-ledger.md",
+      "at": "2026-10-17T10:36:03Z"
     }
   ],
   "product": {
