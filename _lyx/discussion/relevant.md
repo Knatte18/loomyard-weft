@@ -1,0 +1,22 @@
+# Relevant files
+
+- `internal/landingshed/pullrequest.go` `FindPullRequest` — the shared pull-request lookup that gains the run-start bound
+- `internal/landingshed/publish.go` `Publish.Call`, `Publish.refreshPullRequest` — creates, refreshes or stops on the found pull request
+- `internal/landingshed/prgate.go` — PR-Gate's lookup and approval/rejection matching by pull request number
+- `internal/landingshed/pralign.go` `PRAlign.findPullRequest`, `decisionRecordedReason` — PR-Align's lookup and the duplicate reason constant
+- `internal/landingshed/finalize.go` `Finalize.closePullRequest` — Finalize's close of the run's open pull request
+- `internal/landingshed/deps.go` — the told deps the run-start bound joins
+- `internal/landingshed/doc.go` — package doc describing Publish and PR-Align
+- `internal/loomcli/alignmentwiring.go` `alignmentSnapshot`, `decisionRecordedReason`, `newParentReviewAligner` — the snapshot that counts notes naming the slug
+- `internal/loomcli/landingdeps.go` — wires landingshed deps, including the alignment snapshot
+- `internal/loomcli/reject.go` — the reject verb's `findPR` seam
+- `internal/loomcli/approve.go` — the approve verb's `findPR` seam
+- `internal/loomcli/doc.go` — describes the snapshot as covering every note naming the task
+- `internal/loomcli/alignmentwiring_test.go` — holds the row asserting a note naming the slug escalates
+- `internal/shedrun/seed.go` `Seed`, `WriteSeed` — the seed's `started_at` stamp, written once
+- `internal/hubgeom/spawnorder.go` `runStartTime` — existing reader of the seed stamp as the pair's start time
+- `internal/alignment/doc.go` — documents the decision snapshot
+- `internal/battencli/arm.go` — batten's existing refusal of a completed slug, left as is
+- `contracts/stencils/orch/orch-template-role.md` — the orch's decision-note rule that gains the title form
+- `contracts/stencils/bouncer/bouncer-template-escalation.md` — the arbiter's own recorded-decision definition, left as is
+- `contracts/stencils/loom/loom-template-alignment.md` — the alignment agent's board reads
