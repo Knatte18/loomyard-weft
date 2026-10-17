@@ -25,7 +25,7 @@ Picked a Stuck stop naming it and the way forward.
 ### Turn 4 — what counts as a decision note
 
 Read `alignmentSnapshot`, the orch role stencil's decision-note rule and the bouncer escalation stencil's definition of a recorded operator decision.
-Picked the orch's recommended fixed title form `Decision for <slug>:`, declared in `internal/alignment` and pinned to the orch stencil by a test.
+Picked the orch's recommended fixed title form `Decision for <slug>:`, declared in `internal/alignment` and rendered into the orch role stencil through a template key.
 
 ### Turn 5 — the duplicate reason constant
 
@@ -52,7 +52,7 @@ Every fork returned a report.
 - leanness, Scope and Notes overlap on `doc.go`: rejected, Notes carries the wording to change and Scope the package list.
 - pattern-fit, `PATTERN-refusal-way-forward` does not bind `internal/landingshed`: fixed, Constraints says D2 follows its form by choice with the `way forward:` clause.
 - pattern-fit, no PATTERN entry for the title form: rejected, Q7 now gives the reason.
-- pattern-fit, `PATTERN-producer-pointer-rule` departure: fixed, named in Constraints.
+- pattern-fit, `PATTERN-producer-pointer-rule` departure: fixed, the stencil renders the title form through a template key, so no second literal copy exists and no departure remains.
 - premises, D2 rationale names only a failed Finalize close: fixed, an abandoned run added.
 - scenarios, PR-Gate on an older merged pull request and PR-Align on an older open one: fixed, acceptance criteria added.
 - scenarios, a seed that exists but cannot be read: fixed, D1 fails the wiring and the verbs refuse, with an acceptance criterion.
@@ -81,4 +81,4 @@ _No rounds yet._
 - Q4 (auto-pick): What does Publish do with an older open pull request? Stop Stuck naming it, close and resume.
 - Q5 (auto-pick): How is a decision note recognised? Title prefix `Decision for <slug>:`, case-sensitive, declared in `internal/alignment`.
 - Q6 (auto-pick): Where does `decisionRecordedReason` live? One exported constant in `internal/alignment`.
-- Q7 (auto-pick): Is a new PATTERN entry needed? No; the lookup already has one function every caller uses, and the decision-note title form has one Go declaration and one stencil site that a test pins together, so no third site exists for an entry to guard.
+- Q7 (auto-pick): Is a new PATTERN entry needed? No; the lookup already has one function every caller uses, and the decision-note title form has one Go declaration that the orch role stencil renders through a required template key, so no second copy exists for an entry to guard.
