@@ -1,0 +1,11 @@
+verdict: approve
+reason: >-
+  The diff carries out the entry's goal and decisions D1 to D4.
+  Every FindPullRequest caller, the approve and reject verbs included, is bounded by the seed's started_at.
+  Publish stops with a way forward on an older open pull request.
+  The snapshot counts only notes titled with the one-declared "Decision for <slug>:" form, which the orch role stencil renders.
+  DecisionRecordedReason is declared once.
+  The carried-over re-seed risk is addressed in the wiring's error text and breaks no decision.
+  No peer or parent commit overlaps.
+question: ""
+superseded: []
