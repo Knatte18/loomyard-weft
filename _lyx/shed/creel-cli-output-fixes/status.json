@@ -1,11 +1,11 @@
 {
-  "current_producer": "Webster",
+  "current_producer": "Webster-Bouncer",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Webster",
-    "last": "Batchifier → done",
+    "now": "Webster-Bouncer",
+    "last": "Webster → done",
     "wait": ""
   },
   "history": [
@@ -206,6 +206,21 @@
       "outcome": "done",
       "output": "",
       "at": "2026-10-17T12:06:02Z"
+    },
+    {
+      "producer": "Webster",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYXHUB/creel-cli-output-fixes/_lyx/webster/summary.md",
+      "at": "2026-10-17T12:11:47Z",
+      "gate_attempts": 0,
+      "gate_spans": [
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-10-17T12:11:39.39093309Z",
+          "end": "2026-10-17T12:11:46.870479834Z"
+        }
+      ]
     }
   ],
   "product": {
