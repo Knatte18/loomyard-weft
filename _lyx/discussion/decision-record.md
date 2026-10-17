@@ -77,6 +77,12 @@ Rationale: the operator decision's default, which keeps today's landing commit f
 
 - A run in flight when the binary changes may have had earlier run directories swept before the ledger existed; such a run lands without that engine's line unless a later session of the same engine started.
 
+<!-- lyx:carry-over Darn-Review -->
+- Darn-Review, round 1: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
+  Review: _lyx/reviews/darn/round-1-review.md; fixer report: _lyx/reviews/darn/round-1-fixer-report.md.
+  - start-ledger-write-failure-untested (class design, severity MEDIUM, open in rounds 1)
+<!-- /lyx:carry-over Darn-Review -->
+
 ## Acceptance criteria
 
 - A landing with an empty `trailer_text` and an empty `engine_trailers` has no trailer block.
