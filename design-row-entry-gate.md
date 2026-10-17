@@ -23,6 +23,17 @@ For darn's perch that check is only whether `review_max_bounces` is above 0, and
 - The switched producer's flag check becomes this gate, and `internal/loomrecipe`'s edge rewrite for darn is removed.
 - The regression perch (note `regression-baseline-verify`) and the `Command` rows (note `command-producer`) use the same gate.
 
+## Where it sits (2026-10-17)
+
+Operator view, not a decision: the recipe rewrite is not clean at all; every producer should be able to carry an entry gate, set in the one template all producers share.
+
+Orch recommendation, not a decision, from the code:
+
+- Every row is already one shared shape: `shedbuild.Row` in the recipe (`internal/shedbuild/recipe.go`) and `shedengine.ProducerDef` in the engine (`internal/shedengine/producer.go`), which carry each row's routing (`OnDone`, `OnStuck`, `OnReroute`) and budget around the `ShedProducer` seam.
+- The entry gate goes there, as one more field beside the routing: an `entry_gate` key on `Row` and its counterpart on `ProducerDef`.
+- Shed's loop checks the gate before it calls `ShedProducer.Call`; a false gate records the row as skipped and follows `OnDone`, so no producer implements anything, and every row of every recipe gets the gate for free.
+- The `ShedProducer` interface itself stays one method, `Call`.
+
 ## Open
 
 - The form of a check: a config key that must be true or above 0, or a small fixed set of predicates; never free code.
