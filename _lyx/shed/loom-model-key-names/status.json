@@ -1,11 +1,11 @@
 {
-  "current_producer": "Darn-Write",
+  "current_producer": "Darn-Bouncer",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Darn-Write",
-    "last": "Preflight → done",
+    "now": "Darn-Bouncer",
+    "last": "Darn-Write → done",
     "wait": ""
   },
   "history": [
@@ -14,6 +14,33 @@
       "outcome": "done",
       "output": "",
       "at": "2026-10-17T10:24:44Z"
+    },
+    {
+      "producer": "Darn-Write",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYXHUB/loom-model-key-names/_lyx/landing/summary.md",
+      "at": "2026-10-17T10:49:34Z",
+      "gate_attempts": 0,
+      "gate_spans": [
+        {
+          "gate": "discussion",
+          "kind": "gate",
+          "start": "2026-10-17T10:47:54.107059775Z",
+          "end": "2026-10-17T10:48:01.533349589Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-10-17T10:48:01.580350816Z",
+          "end": "2026-10-17T10:49:34.131112289Z"
+        },
+        {
+          "gate": "description",
+          "kind": "gate",
+          "start": "2026-10-17T10:49:34.17278204Z",
+          "end": "2026-10-17T10:49:34.172848263Z"
+        }
+      ]
     }
   ],
   "product": {
