@@ -648,7 +648,7 @@
       "id": 596,
       "slug": "creel-c13-stacked-rewrite",
       "title": "Rewrite C13's stacked half for window-per-strand",
-      "kind": "note",
+      "kind": "task",
       "labels": [
         "enhancement",
         "creel"

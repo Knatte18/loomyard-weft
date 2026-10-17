@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-17 11:42 UTC; every age below is as of then.
+Rendered 2026-10-17 11:43 UTC; every age below is as of then.
 
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
@@ -18,15 +18,19 @@ Held by a run; its scope is locked until the run ends.
 | # | Task | Slug | Recipe | At | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | 1 | **landing.yaml trailer_text: an operator-set trailer block for the landing commit**<br>• Replace co_authored_by with trailer_text and engine_trailers: fixed lines plus one line per engine that ran, each copied verbatim, each switchable off<br>• `darn: review_max_bounces 1` | [`landing-trailer-text`](design-landing-trailer-text.md) | darn | Darn-Write | 1h | 1h | config, loom, shuttle |
-| 2 | **stencilstore dev-build warning prints on every creel verb**<br>• `darn: review_max_bounces 1` | [`stencilstore-dev-warning-noise`](design-stencilstore-dev-warning-noise.md) | darn | Darn-Burler-Review | 1h | 11m | stencil, creel |
+| 2 | **stencilstore dev-build warning prints on every creel verb**<br>• `darn: review_max_bounces 1` | [`stencilstore-dev-warning-noise`](design-stencilstore-dev-warning-noise.md) | darn | Darn-Burler-Review | 1h | 12m | stencil, creel |
 | 3 | **lyx gate test slot wait capped under the prompt-cache lifetime, like shuttle await**<br>• Gate slot wait uses the shared keep-cache-warm cap and answers run-again instead of blocking past the cache lifetime<br>• `darn: review_max_bounces 1` | [`gate-wait-cache-cap`](design-gate-wait-cache-cap.md) | darn | Darn-Write | 1h | 1h | config, shuttle |
-| 4 | **creel CLI output fixes: lost success envelope, doubled prefix, log --id reminders**<br>• Three output bugs in internal/creelcli from the creel stage 1 re-test (#699, #700, #701).<br>• `loom: review_hard_max_bounces 3`<br>• `loom: review_max_bounces 2` | [`creel-cli-output-fixes`](design-creel-cli-output-fixes.md) | loom | Discussion-Burler-Review | 1h | 11m | creel |
+| 4 | **creel CLI output fixes: lost success envelope, doubled prefix, log --id reminders**<br>• Three output bugs in internal/creelcli from the creel stage 1 re-test (#699, #700, #701).<br>• `loom: review_hard_max_bounces 3`<br>• `loom: review_max_bounces 2` | [`creel-cli-output-fixes`](design-creel-cli-output-fixes.md) | loom | Discussion-Burler-Review | 1h | 12m | creel |
 
 ### Ready
 
 Waits on nothing open; can start now.
 
-_None._
+#### Normal priority
+
+| # | Task | Slug | Recipe | After | Age | Revised | Labels |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| 1 | **Rewrite C13's stacked half for window-per-strand**<br>• C13's stacked 3-row half cannot be set up once reed-add-parentless-placement lands | [`creel-c13-stacked-rewrite`](design-creel-c13-stacked-rewrite.md) | loom |  | 1d | 1d | creel |
 
 ### Layer A
 
@@ -57,7 +61,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Note | Slug | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| 1 | **Key-rename migration never reaches the hub config: loom-model-key-names silently turned off the hub fans** | [`config-migrate-hub-layer`](design-config-migrate-hub-layer.md) | 35m | 35m | config, loom |
+| 1 | **Key-rename migration never reaches the hub config: loom-model-key-names silently turned off the hub fans** | [`config-migrate-hub-layer`](design-config-migrate-hub-layer.md) | 36m | 36m | config, loom |
 
 ### Enhancements
 
@@ -74,21 +78,20 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 7 | **Paste cited code into a review rounds context**<br>• Reviewers edit nothing and review a fixed commit, so code pasted at round start cannot go stale; measure it against todays reviewer | [`review-inline-code`](design-review-inline-code.md) | 5d | 1d | burler, stencil |
 | 8 | **Module labels from what a task touches, not only what it is about**<br>• Half the landings that changed the shuttle core lacked the shuttle label; derive or check module labels from the plan and the diff | [`labels-from-diff`](design-labels-from-diff.md) | 2d | 2d | board, loom |
 | 9 | **Start one task per overlapping group at a newly-ready start**<br>• When a landing makes several overlapping tasks ready at once, batten starts one per group and names the rest in its notice | [`batten-ready-overlap`](design-batten-ready-overlap.md) | 1d | 1d | batten |
-| 10 | **Rewrite C13's stacked half for window-per-strand**<br>• C13's stacked 3-row half cannot be set up once reed-add-parentless-placement lands | [`creel-c13-stacked-rewrite`](design-creel-c13-stacked-rewrite.md) | 1d | 1d | creel |
-| 11 | **Git test fixtures trip Cortex XDR on the work laptop**<br>• Parallel git-heavy tests create so many files at once that Cortex XDR killed VS Code and then crashed itself, twice; tests must stay usable on a machine with endpoint protection | [`xdr-git-test-file-burst`](design-xdr-git-test-file-burst.md) | 20h | 20h | fabric |
-| 12 | **Rename the lyx binary to lyr (name clash with LyX)** | [`rename-binary-lyr`](design-rename-binary-lyr.md) | 1d | 1h | stencil, shuttle |
-| 13 | **Language-neutral gate: lyx gate run takes a slot for any command**<br>• The gate slot pool covers only go test; a C# or Python hub verify bypasses it. Add lyx gate run -- cmd and per-language parallelism. | [`gate-language-neutral`](design-gate-language-neutral.md) | 1h | 1h | config, webster, shed |
-| 14 | **One generic Command producer for every flag-gated side-action row**<br>• Replace OpenWindow, SeedIDE, OpenIDE and the planned Job-Start/Job-Join with one shed engine that runs a CLI command named in config, sync or async, warn or halt. | [`command-producer`](design-command-producer.md) | 34m | 34m | shed, batten, config |
-| 15 | **Entry gate on shed rows: a check decides whether a row runs at all**<br>• Replace darn recipe edge rewrite and the switched producer flag check with one shed entry gate per row; false means Done without acting. | [`row-entry-gate`](design-row-entry-gate.md) | 11m | 8m | shed, loom, batten |
+| 10 | **Git test fixtures trip Cortex XDR on the work laptop**<br>• Parallel git-heavy tests create so many files at once that Cortex XDR killed VS Code and then crashed itself, twice; tests must stay usable on a machine with endpoint protection | [`xdr-git-test-file-burst`](design-xdr-git-test-file-burst.md) | 20h | 20h | fabric |
+| 11 | **Rename the lyx binary to lyr (name clash with LyX)** | [`rename-binary-lyr`](design-rename-binary-lyr.md) | 1d | 1h | stencil, shuttle |
+| 12 | **Language-neutral gate: lyx gate run takes a slot for any command**<br>• The gate slot pool covers only go test; a C# or Python hub verify bypasses it. Add lyx gate run -- cmd and per-language parallelism. | [`gate-language-neutral`](design-gate-language-neutral.md) | 1h | 1h | config, webster, shed |
+| 13 | **One generic Command producer for every flag-gated side-action row**<br>• Replace OpenWindow, SeedIDE, OpenIDE and the planned Job-Start/Job-Join with one shed engine that runs a CLI command named in config, sync or async, warn or halt. | [`command-producer`](design-command-producer.md) | 35m | 35m | shed, batten, config |
+| 14 | **Entry gate on shed rows: a check decides whether a row runs at all**<br>• Replace darn recipe edge rewrite and the switched producer flag check with one shed entry gate per row; false means Done without acting. | [`row-entry-gate`](design-row-entry-gate.md) | 13m | 9m | shed, loom, batten |
 
 #### Low priority
 
 | # | Note | Slug | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| 16 | **Fabric's Windows path behaviour verified on a Windows host**<br>• Unverified after six hardening rounds; needs a Windows host, not design; take it only if Windows becomes relevant | [`fabric-windows`](design-fabric-windows.md) | 13d | 7d | fabric |
-| 17 | **warp-visibility: CLAUDE.local.md invisible in the Fabric repo's git history**<br>• Expose CLAUDE.local.md by symlink so nothing lyx-related shows in the Fabric repo's history; the constraints half is out of date | [`warp-visibility`](design-warp-visibility.md) | 12d |  | ide, fabric |
-| 18 | **Windows verify timeout kills the whole process tree**<br>• On Windows the verifytree timeout kills only the shell, not the process tree it started | [`verify-watchdog`](design-verify-watchdog.md) | 9d | 1d | shed |
-| 19 | **A hub pause leaves background forks and shells running, so hibernate never confirms**<br>• Pause interrupts turns but not background forks or shells; sessions read busy and hibernate confirmation fails | [`pause-background-work`](design-pause-background-work.md) | 2d | 2h | shuttle, webster |
+| 15 | **Fabric's Windows path behaviour verified on a Windows host**<br>• Unverified after six hardening rounds; needs a Windows host, not design; take it only if Windows becomes relevant | [`fabric-windows`](design-fabric-windows.md) | 13d | 7d | fabric |
+| 16 | **warp-visibility: CLAUDE.local.md invisible in the Fabric repo's git history**<br>• Expose CLAUDE.local.md by symlink so nothing lyx-related shows in the Fabric repo's history; the constraints half is out of date | [`warp-visibility`](design-warp-visibility.md) | 12d |  | ide, fabric |
+| 17 | **Windows verify timeout kills the whole process tree**<br>• On Windows the verifytree timeout kills only the shell, not the process tree it started | [`verify-watchdog`](design-verify-watchdog.md) | 9d | 1d | shed |
+| 18 | **A hub pause leaves background forks and shells running, so hibernate never confirms**<br>• Pause interrupts turns but not background forks or shells; sessions read busy and hibernate confirmation fails | [`pause-background-work`](design-pause-background-work.md) | 2d | 2h | shuttle, webster |
 
 ### Features
 
@@ -119,7 +122,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 16 | **Spawn audit log: every process lyx starts is recorded and traceable**<br>• One recorded launch path and a hub-wide spawn log with owner, argv and resource use, plus a sampler and a summary verb, so a process storm can be traced after a crash | [`spawn-audit-log`](design-spawn-audit-log.md) | 8d | 4d | reed, shuttle, config |
 | 17 | **Configurable action buttons on the reed status bar**<br>• Clickable status-bar buttons that run configured commands: VS Code, orch distill/refresh, the follow toggle and more | [`reed-status-buttons`](design-reed-status-buttons.md) | 2d | 2d | reed, config |
 | 18 | **Ideas to borrow from comparable agent orchestrators (survey, Oct 2026)** | [`orchestrator-survey-ideas`](design-orchestrator-survey-ideas.md) | 1d | 1h | burler, shed, orch, quarry, report |
-| 19 | **Regression tier: baseline profiles before the run, compare at the final gate**<br>• Support a hub regression tier that writes profiles on the parent before implementation and compares after, switchable per task for expected drift. | [`regression-baseline-verify`](design-regression-baseline-verify.md) | 1h | 14m | shed, webster, batten, config |
+| 19 | **Regression tier: baseline profiles before the run, compare at the final gate**<br>• Support a hub regression tier that writes profiles on the parent before implementation and compares after, switchable per task for expected drift. | [`regression-baseline-verify`](design-regression-baseline-verify.md) | 1h | 15m | shed, webster, batten, config |
 
 #### Low priority
 
