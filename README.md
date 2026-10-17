@@ -13,21 +13,23 @@ Concrete and claimable; only a task can run.
 
 Held by a run; its scope is locked until the run ends.
 
+#### High priority
+
+| # | Task | Slug | Recipe | At | Age | Revised | Labels |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| 1 | **creel stage 2: orch and batten notices through creel**<br>• The orch watcher and batten notices and injects go through creel; the watcher keeps only its cycle logic | [`creel-notices`](design-creel-notices.md) | loom | Worktree-Create | 2d | 0m | creel, orch, batten, shed |
+
 #### Normal priority
 
 | # | Task | Slug | Recipe | At | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | **shedrecipe: per-segment settings and one told setting lookup instead of per-value Env fields**<br>• A producer declares what it needs and the registry wires it, instead of a hand-threaded Env passthrough field per layer | [`shedrecipe-capabilities`](design-shedrecipe-capabilities.md) | loom | Plan-Burler-Review | 13d | 2h | shed, loom, config |
+| 2 | **shedrecipe: per-segment settings and one told setting lookup instead of per-value Env fields**<br>• A producer declares what it needs and the registry wires it, instead of a hand-threaded Env passthrough field per layer | [`shedrecipe-capabilities`](design-shedrecipe-capabilities.md) | loom | Plan-Burler-Review | 13d | 2h | shed, loom, config |
 
 ### Ready
 
 Waits on nothing open; can start now.
 
-#### High priority
-
-| # | Task | Slug | Recipe | After | Age | Revised | Labels |
-| --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | **creel stage 2: orch and batten notices through creel**<br>• The orch watcher and batten notices and injects go through creel; the watcher keeps only its cycle logic | [`creel-notices`](design-creel-notices.md) | loom |  | 2d | 0m | creel, orch, batten, shed |
+_None._
 
 ## Notes
 
