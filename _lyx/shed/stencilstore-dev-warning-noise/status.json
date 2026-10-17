@@ -1,12 +1,12 @@
 {
-  "current_producer": "Publish",
-  "state": "blocked",
-  "error": "publish_verify failed after merging parent branch \"main\" (exit code 1); output: /home/knatte/Code/loomyard-LYXHUB/stencilstore-dev-warning-noise/.lyx/verify/verify-3.log; way forward: run \"lyx loom goto --to Darn-Write\", then \"lyx loom resume\", in the task worktree; the Darn-Write spawn renders the Publish failure record and its gate runs the failing tests",
+  "current_producer": "Darn-Write",
+  "state": "paused",
+  "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Publish",
-    "last": "Publish → stuck",
-    "wait": "publish_verify failed after merging parent branch \"main\" (exit code 1); output: /home/knatte/Code/loomyard-LYXHUB/stencilstore-dev-warning-noise/.lyx/verify/verify-3.log; way forward: run \"lyx loom goto --to Darn-Write\", then \"lyx loom resume\", in the task worktree; the Darn-Write spawn renders the Publish failure record and its gate runs the failing tests"
+    "now": "Darn-Write",
+    "last": "Darn-Write → goto",
+    "wait": ""
   },
   "history": [
     {
@@ -106,6 +106,13 @@
       "outcome": "stuck",
       "output": "",
       "at": "2026-10-17T11:49:04Z"
+    },
+    {
+      "producer": "Darn-Write",
+      "outcome": "goto",
+      "output": "",
+      "at": "2026-10-17T11:49:36Z",
+      "by": "shed"
     }
   ],
   "product": {
