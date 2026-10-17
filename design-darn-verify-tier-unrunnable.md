@@ -1,6 +1,6 @@
 # A darn writer cannot rerun a verify tier it is refused, so a flaky tier failure loops and escalates
 
-`darn-verify-tier-unrunnable` · Note · enhancement
+`darn-verify-tier-unrunnable` · Note · enhancement, loom, shed
 
 Imported from [issue #714](https://github.com/Knatte18/loomyard/issues/714).
 
