@@ -894,6 +894,23 @@
       "body": "Operator, 2026-10-08: quarry gains `Enclose`, written as quarry's task `enclose-locations` (in the quarry repo; the operator spawns it).\nIt maps `file:line` ranges from tool output to the innermost enclosing member glyphs, with the same Symbol data `Resolve` returns, also at a git revision (`quarry enclose [--rev R]`).\nMarkdown is out of its scope: a `.md` location is a per-item rejection.\n\n## Change of direction, 2026-10-17\n\nThe original use was a kick-start pack of the failing members for recovery agents and fixers.\nThe pack measurement this waited on (operator decisions 2026-10-11 and 2026-10-15) came in with `docs/research/glyph-audit-2026-10-17/`: forks read code themselves whatever the pack holds, and note `kickstart-pack-remove` records the operator decision to remove the pack.\nA pack of failing members is dropped with it: a fork given `file:line` reads around it in one call.\n\nOperator view, not a decision: Enclose can be useful for mechanical checks, where Loomyard's own code needs to know which member a line belongs to, with no agent in the loop.\n\n## Orch recommendation, not a decision\n\nFirst use, which changes no flow: a verify failure at Merge-In or Publish is mapped through Enclose to its member glyph, then to the plan card whose targets hold that glyph and the batch and commit that ran the card (`_lyx/webster/state.json`).\nThe fixer's brief names that card, its intent and its commit, as a starting point instead of the whole diff.\nLater possibilities, each its own decision:\n\n- Re-run only the batch that made the failing change (`lyx webster reset --batch` and a fresh fork with the failure attached), instead of a whole-diff review round.\n- A finding that cites `path:line` is mapped to a glyph at the reviewed revision, so later edits never shift it, and it can be checked against the plan's targets.\n- A failure in a member no card targets is reported as a scope gap: the plan missed it.\n- Test, vet and lint failures are grouped per member, so duplicate findings fold.\n\nMeasure that a fixer uses the named card before building more, as the pack showed agents may read and ignore such hints.\n\nGlyph↔path conversion stays in quarry; Loomyard never intersects lines with symbol spans itself.\n\n## Quarry's Enclose as delivered (quarry PR #36, 2026-10-08)\n\n- Released in quarry v0.3.0: `(*Repo).Enclose(locs)` and `(*Repo).EncloseAt(rev, locs)`, with `EncloseResult`, `EncloseReasons` and `RenderEncloseJSON`; paths are relative to the repo root, not the cwd, and an unknown rev fails the whole call.\n- They take location spellings (`path:N`, `path:N-M`, `path:N:col`), not structs; Loomyard formats tool-output locations into them.\n- Rejections carry a closed reason set (`EncloseReasons`), including `unaddressable` for a `.go` file in the repo root or a path containing `#`; Loomyard cites `path:line` for any rejected item.\n- A `found` glyph may not Resolve afterwards (an explicitly named gitignored file, a file without a package clause, a path through a symlinked directory; `quarry/enclose.go`). Loomyard treats a Resolve miss after Enclose as \"no current span\", never as an error, the same as a member the fixer deleted or renamed.\n- Loomyard pins quarry v0.2.1; this task bumps `go.mod` to v0.3.0, which has no other breaking change.\n",
       "created": "2026-10-08T05:56:26Z",
       "revised": "2026-10-17T14:25:08Z"
+    },
+    {
+      "id": 641,
+      "slug": "board-rename",
+      "title": "lyx board rename: change an entry slug in one write",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "board"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "Rename an entry keeping all fields and rewriting depends_on; report prose mentions",
+      "body": "## Seen\n\n`lyx board` has no verb that changes an entry's slug.\nRenaming `enclose-kickstart` to `enclose-checks` (2026-10-17) took `get --body` to a file, a `merge` with `remove_slugs` and an upsert carrying the old entry's title, brief, kind, labels and `created`, then a manual fix of the old slug in another entry's body.\n\n## Idea\n\nA verb `lyx board rename {slug, to}` that renames an entry in one atomic write, keeping its body, kind, labels, priority, issues, `created` and every other field, and rewrites the old slug in every other task's `depends_on`.\nIt refuses a run-held entry, as the run lock does for any scope change, and a target slug that exists or breaks the slug length limit.\nIt reports the entries whose body or brief still mention the old slug, since prose references are not rewritten.\n",
+      "created": "2026-10-17T14:26:12Z",
+      "revised": "2026-10-17T14:26:12Z"
     }
   ]
 }
