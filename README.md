@@ -23,11 +23,7 @@ Held by a run; its scope is locked until the run ends.
 
 Waits on nothing open; can start now.
 
-#### Normal priority
-
-| # | Task | Slug | Recipe | After | Age | Revised | Labels |
-| --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | **Clearer loom model key names, one per step**<br>• Model keys like fix name the role they set, and every review segment gets its own reviewer and fixer key | [`loom-model-key-names`](design-loom-model-key-names.md) | loom |  | 2d | 2d | config, loom |
+_None._
 
 ### Layer A
 
@@ -37,10 +33,11 @@ Waits only on Running or Ready entries.
 
 | # | Task | Slug | Recipe | After | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | **Go driver messages the orch about a verify halt batten retries itself**<br>• Drop or reword the parent message for a watched verify halt | [`driver-watched-verify-notice`](design-driver-watched-verify-notice.md) | darn | `code-review-fan` | 23h | 6m | shed, batten |
-| 2 | **report timing counts a pause before Plan-Write as Plan phase time** | [`timing-pause-as-phase`](design-timing-pause-as-phase.md) | darn | `code-review-fan` | 19h | 3m | report |
-| 3 | **lyx creates <prime>/.claude/worktrees/_board/.lyx/pause/net when run from a Claude Code agent worktree** | [`agent-worktree-board-dir`](design-agent-worktree-board-dir.md) | darn | `code-review-fan` | 52m | 6m | fabric |
-| 4 | **Show each task run_settings in the board README**<br>• Stack a task run_settings, such as its review budget, inside an existing README cell, with no new column | [`readme-run-settings`](design-readme-run-settings.md) | darn | `code-review-fan` | 5m | 5m | board |
+| 1 | **Clearer loom model key names, one per step**<br>• Model keys like fix name the role they set, and every review segment gets its own reviewer and fixer key | [`loom-model-key-names`](design-loom-model-key-names.md) | darn | `code-review-fan` | 2d | 0m | config, loom |
+| 2 | **Go driver messages the orch about a verify halt batten retries itself**<br>• Drop or reword the parent message for a watched verify halt | [`driver-watched-verify-notice`](design-driver-watched-verify-notice.md) | darn | `code-review-fan` | 23h | 6m | shed, batten |
+| 3 | **report timing counts a pause before Plan-Write as Plan phase time** | [`timing-pause-as-phase`](design-timing-pause-as-phase.md) | darn | `code-review-fan` | 19h | 3m | report |
+| 4 | **lyx creates <prime>/.claude/worktrees/_board/.lyx/pause/net when run from a Claude Code agent worktree** | [`agent-worktree-board-dir`](design-agent-worktree-board-dir.md) | darn | `code-review-fan` | 52m | 6m | fabric |
+| 5 | **Show each task run_settings in the board README**<br>• Stack a task run_settings, such as its review budget, inside an existing README cell, with no new column | [`readme-run-settings`](design-readme-run-settings.md) | darn | `code-review-fan` | 5m | 5m | board |
 
 ## Notes
 

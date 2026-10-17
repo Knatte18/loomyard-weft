@@ -2,6 +2,8 @@
 
 `loom-model-key-names` · Task · enhancement, config, loom
 
+Depends on: [`code-review-fan`](design-code-review-fan.md)
+
 ## Ask (operator, 2026-10-14)
 
 The loom config's model keys say little about what they set: `fix` reads like a flag, not "the model of the fixer in a review round".
@@ -21,3 +23,11 @@ The operator wants clearer names, and a model per step rather than one shared va
 - Give every review segment, Merge included, its own reviewer and fixer key, so each step is set explicitly; whether a shared fallback stays is open.
 - `lyx config reconcile`/Migrate rewrites old keys to the new names.
 - The shape (flat role names or a nested `models:` block per segment) is an operator choice still open.
+
+## Operator decision 2026-10-17
+
+- Flat role names: `<segment>_reviewer_model` and `<segment>_fixer_model` for every review segment, Discussion, Plan, Webster, Merge and Darn (Darn's in `darn.yaml`).
+- The shared fallback stays, as `reviewer_model` and `fixer_model`; an empty segment key takes it.
+- The per-segment fan and fix-fan keys are renamed in the same style.
+- `lyx config reconcile` rewrites the old keys to the new names.
+- Runs as darn, after the fan keys for the code-review segments have landed.
