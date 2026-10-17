@@ -95,6 +95,12 @@ Rationale: the reason belongs to the snapshot check that `internal/alignment` ow
 
 - D1 rests on the seed's stamp being this run's: a change that lets batten start a reused slug without removing the earlier run directory, or a hand reset that removes and rewrites a pair's seed mid-run, moves the bound and makes D2 call the run's own open pull request older, and makes PR-Gate, PR-Align, Finalize's close and the approve and reject verbs find no pull request, where PR-Gate's existing nil-lookup reason names reopening it, which cannot help.
 
+<!-- lyx:carry-over Webster-Review -->
+- Webster-Review, round 1: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
+  Review: _lyx/reviews/webster/round-1-review.md; fixer report: _lyx/reviews/webster/round-1-fixer-report.md.
+  - reseed-after-publish-strands-own-pr (class design, severity MEDIUM, open in rounds 1)
+<!-- /lyx:carry-over Webster-Review -->
+
 ## Acceptance criteria
 
 - With a closed, unmerged pull request for the task branch created before the run started, Publish creates a new pull request and ends Done.
