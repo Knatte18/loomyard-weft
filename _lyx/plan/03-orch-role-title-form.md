@@ -1,7 +1,7 @@
 # Card 3 — orch-role-title-form
 
 **Create:**
-- `plan:internal/orchengine#decisionNoteTitleMarker` -> `const decisionNoteTitleMarker = "decision_note_title"`
+- `internal/orchengine#decisionNoteTitleMarker`
 
 **Edit:**
 - `internal/orchengine#RenderRoleFile`
@@ -13,7 +13,7 @@
 - `internal/orchengine/doc.go`
 
 **Uses:**
-- `plan:internal/alignment#DecisionNoteTitle`
+- `internal/alignment#DecisionNoteTitle`
 
 **Intent:** D3: the orch role stencil's decision-note rule renders the title form from `internal/alignment`'s one declaration, so the orch writes the note the snapshot counts.
 

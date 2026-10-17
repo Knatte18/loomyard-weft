@@ -1,7 +1,7 @@
 # Card 1 — decision-reason-once
 
 **Create:**
-- `plan:internal/alignment#DecisionRecordedReason` -> `const DecisionRecordedReason = "a decision was recorded for this task while the alignment agent ran"`
+- `internal/alignment#DecisionRecordedReason`
 
 **Delete:**
 - `internal/landingshed#decisionRecordedReason`

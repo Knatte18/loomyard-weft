@@ -1,7 +1,7 @@
 # Card 2 — snapshot-title-form
 
 **Create:**
-- `plan:internal/alignment#DecisionNoteTitle` -> `func DecisionNoteTitle(slug string) string`
+- `internal/alignment#DecisionNoteTitle`
 
 **Edit:**
 - `internal/loomcli#alignmentSnapshot`
