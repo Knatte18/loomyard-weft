@@ -9,15 +9,21 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 Concrete and claimable; only a task can run.
 
+### Running
+
+Held by a run; its scope is locked until the run ends.
+
+#### Normal priority
+
+| # | Task | Slug | Recipe | At | Age | Revised | Labels |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| 1 | **Lens fan and twill fixer for Webster, Merge and Darn review**<br>• Fan and fix-fan keys for the three code-review perches, read-only git for forks, and code lenses in burler.yaml | [`code-review-fan`](design-code-review-fan.md) | darn | Worktree-Create | 1m | 1m | burler, loom, stencil, config |
+
 ### Ready
 
 Waits on nothing open; can start now.
 
-#### Normal priority
-
-| # | Task | Slug | Recipe | After | Age | Revised | Labels |
-| --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | **Lens fan and twill fixer for Webster, Merge and Darn review**<br>• Fan and fix-fan keys for the three code-review perches, read-only git for forks, and code lenses in burler.yaml | [`code-review-fan`](design-code-review-fan.md) | darn |  | 1m | 1m | burler, loom, stencil, config |
+_None._
 
 ### Layer A
 
@@ -27,9 +33,9 @@ Waits only on Running or Ready entries.
 
 | # | Task | Slug | Recipe | After | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | **Go driver messages the orch about a verify halt batten retries itself**<br>• Drop or reword the parent message for a watched verify halt | [`driver-watched-verify-notice`](design-driver-watched-verify-notice.md) | darn | `code-review-fan` | 23h | 0m | shed, batten |
-| 2 | **report timing counts a pause before Plan-Write as Plan phase time** | [`timing-pause-as-phase`](design-timing-pause-as-phase.md) | darn | `code-review-fan` | 19h | 0m | shed, batten |
-| 3 | **lyx creates <prime>/.claude/worktrees/_board/.lyx/pause/net when run from a Claude Code agent worktree** | [`agent-worktree-board-dir`](design-agent-worktree-board-dir.md) | darn | `code-review-fan` | 47m | 0m | fabric |
+| 1 | **Go driver messages the orch about a verify halt batten retries itself**<br>• Drop or reword the parent message for a watched verify halt | [`driver-watched-verify-notice`](design-driver-watched-verify-notice.md) | darn | `code-review-fan` | 23h | 1m | shed, batten |
+| 2 | **report timing counts a pause before Plan-Write as Plan phase time** | [`timing-pause-as-phase`](design-timing-pause-as-phase.md) | darn | `code-review-fan` | 19h | 1m | shed, batten |
+| 3 | **lyx creates <prime>/.claude/worktrees/_board/.lyx/pause/net when run from a Claude Code agent worktree** | [`agent-worktree-board-dir`](design-agent-worktree-board-dir.md) | darn | `code-review-fan` | 47m | 1m | fabric |
 | 4 | **Show each task run_settings in the board README**<br>• Stack a task run_settings, such as its review budget, inside an existing README cell, with no new column | [`readme-run-settings`](design-readme-run-settings.md) | darn | `code-review-fan` | 0m | 0m | board |
 
 ## Notes
