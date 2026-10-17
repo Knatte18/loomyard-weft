@@ -13,6 +13,14 @@ Creel already limits inject: only EXTERNAL callers, programs and orch strands ma
 ## Operator view, not a decision (2026-10-17)
 
 Creel needs a strict regime, so that an agent that sends something to another agent never ends up without an answer because the receiver wrote its answer in its own pane, to the operator.
+Inject and post are two different things.
+An inject looks as if the operator typed it, and that is its point.
+A post takes an active step by the receiver to fetch it, and that step should tell the agent the message came from outside, not from the operator, so it cannot answer by writing in its pane.
+
+## Orch view on that
+
+The split holds, but the agent should be told rather than left to infer it: the reminder that starts its turn is itself typed into the pane like an operator line, and a model answers in its pane by default.
+One line in `lyx creel read`'s output (the sender is another strand, not the operator; answer with `lyx creel post --reply <id> <text>`) makes it explicit at the moment it matters.
 
 ## Idea (orch recommendation)
 
