@@ -912,6 +912,25 @@
       "body": "Imported from [issue #709](https://github.com/Knatte18/loomyard/issues/709).\n\n## Seen\n\nAfter `loom-model-key-names` landed (`a273d69bc`), the hub's `_board/_lyx/config/loom.yaml` and `darn.yaml` still held the old key names (`review`, `discussion_review`, `webster_fan`, `merge_fix_fan`, darn `review_fan`, ...).\nThe new keys resolved from the template, so every run silently lost the hub's lens fan, twill fixer and reviewer models: `lyx config loom --resolved` showed `webster_reviewer_fan: \"\" # template` and the old keys as `# default`.\n\n- `lyx config reconcile` in the prime reports loom with no `migrated` entry: it never reaches the hub default layer.\n- `lyx config reconcile` (dry-run) run from `_board/` does list the loom renames, but treats the hub files as a worktree layer: it would strip most keys and mark `darn`, `gate`, `landing`, `language`, `fabric` and `board` as retired, so `--apply` there is unsafe.\n- Nothing at landing or deploy ran the migration, and nothing warned that the hub file held unknown keys.\n\n## Workaround\n\nThe orch carried every value to its new name by hand with `lyx config loom --layer default --set ...` and `lyx config darn --layer default --set ...`.\nThe old keys stay in both files as `preserved` entries, since `--set` cannot remove a key.\n\n## Expected\n\nA key-rename migration reaches the hub's default layer, through a hub-scoped `lyx config reconcile` or at landing, and removes the old keys.\nA hub config file holding keys the template no longer knows is reported loudly at load.",
       "created": "2026-10-17T11:06:29Z",
       "revised": "2026-10-17T11:06:31Z"
+    },
+    {
+      "id": 631,
+      "slug": "command-producer",
+      "title": "One generic Command producer for every flag-gated side-action row",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "shed",
+        "batten",
+        "config"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "Replace OpenWindow, SeedIDE, OpenIDE and the planned Job-Start/Job-Join with one shed engine that runs a CLI command named in config, sync or async, warn or halt.",
+      "body": "## Seen (orch, 2026-10-17)\n\nBatten's Open-Window, Seed-IDE and Open-IDE rows share one Go type, `SwitchedProducer` in `internal/shedadapters`, but each is its own registry engine (`OpenWindow`, `SeedIDE`, `OpenIDE`) wrapping a told Go action behind a told `batten.yaml` flag.\nA new side action therefore needs a new engine, a new Go action and a new flag.\nOther places already run a shell command from config inside a bigger row: `landing.yaml`'s `deploy` (Land) and `publish_verify` (Publish), and darn's `verify`.\nNote `regression-baseline-verify` adds `Job-Start` and `Job-Join`, which would be two more such rows.\n\n## Operator view, not a decision (2026-10-17)\n\nAll these special rows should be one and the same producer whose only job is to run a CLI command; the flag and the command to run can live somewhere else entirely, in config.\n\n## Orch recommendation, not a decision\n\n- One registry engine, `Command`, used by every such row. The row names a config key; the key holds the command, with placeholders such as `{slug}` and `{pair}`. An empty command is the off switch, so no separate flag is needed.\n- Per row, in the recipe: the failure policy (`warn`, as the IDE rows do today, or `halt`) and the mode (`sync`, or `async`, which starts the command detached and records its handle).\n- A `Join` form of the same engine waits for an `async` row's handle and applies its failure policy; this is `Job-Join`.\n- Each action that is Go code today gets a `lyx` verb (for example the terminal window and the IDE seed), so the default config spells it as a command.\n- Later candidates: `deploy` and `publish_verify` as their own `Command` rows instead of commands buried in Land and Publish.\n\n## Open\n\n- Whether a task's `run_settings` may set the command, or only switch it on and off; a command from a board entry runs on the machine, so it may need the same trust class as `deploy`.\n- Placeholders: which run facts a command may name.\n\n## Related\n\nNotes `regression-baseline-verify`, `gate-language-neutral`.\n",
+      "created": "2026-10-17T11:07:42Z",
+      "revised": "2026-10-17T11:07:42Z"
     }
   ]
 }
