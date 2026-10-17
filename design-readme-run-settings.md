@@ -1,6 +1,6 @@
 # Show each task run_settings in the board README
 
-`readme-run-settings` · Task · enhancement, board · running · Describe
+`readme-run-settings` · Task · enhancement, board · running · Merge-In
 
 ## Seen
 
