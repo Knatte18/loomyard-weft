@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-17 11:31 UTC; every age below is as of then.
+Rendered 2026-10-17 11:32 UTC; every age below is as of then.
 
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
@@ -19,7 +19,7 @@ Held by a run; its scope is locked until the run ends.
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | 1 | **PR-Gate takes only its own run: no adopted old PR, no note-mention trigger**<br>• Publish never adopts an older PR for a reused slug, and the alignment snapshot counts only real decisions<br>• `loom: review_hard_max_bounces 3`<br>• `loom: review_max_bounces 2` | [`pr-gate-run-identity`](design-pr-gate-run-identity.md) | loom | Describe | 1d | 1h | loom, batten, board |
 | 2 | **stencilstore dev-build warning prints on every creel verb**<br>• `darn: review_max_bounces 1` | [`stencilstore-dev-warning-noise`](design-stencilstore-dev-warning-noise.md) | darn | Darn-Write | 1h | 1m | stencil, creel |
-| 3 | **lyx gate test slot wait capped under the prompt-cache lifetime, like shuttle await**<br>• Gate slot wait uses the shared keep-cache-warm cap and answers run-again instead of blocking past the cache lifetime<br>• `darn: review_max_bounces 1` | [`gate-wait-cache-cap`](design-gate-wait-cache-cap.md) | darn | Darn-Write | 1h | 1h | config, shuttle |
+| 3 | **lyx gate test slot wait capped under the prompt-cache lifetime, like shuttle await**<br>• Gate slot wait uses the shared keep-cache-warm cap and answers run-again instead of blocking past the cache lifetime<br>• `darn: review_max_bounces 1` | [`gate-wait-cache-cap`](design-gate-wait-cache-cap.md) | darn | Darn-Bouncer | 1h | 1h | config, shuttle |
 | 4 | **creel CLI output fixes: lost success envelope, doubled prefix, log --id reminders**<br>• Three output bugs in internal/creelcli from the creel stage 1 re-test (#699, #700, #701).<br>• `loom: review_hard_max_bounces 3`<br>• `loom: review_max_bounces 2` | [`creel-cli-output-fixes`](design-creel-cli-output-fixes.md) | loom | Discussion-Write | 1h | 1m | creel |
 
 ### Ready
@@ -89,7 +89,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 12 | **Rename the lyx binary to lyr (name clash with LyX)** | [`rename-binary-lyr`](design-rename-binary-lyr.md) | 1d | 1h | stencil, shuttle |
 | 13 | **Language-neutral gate: lyx gate run takes a slot for any command**<br>• The gate slot pool covers only go test; a C# or Python hub verify bypasses it. Add lyx gate run -- cmd and per-language parallelism. | [`gate-language-neutral`](design-gate-language-neutral.md) | 58m | 53m | config, webster, shed |
 | 14 | **One generic Command producer for every flag-gated side-action row**<br>• Replace OpenWindow, SeedIDE, OpenIDE and the planned Job-Start/Job-Join with one shed engine that runs a CLI command named in config, sync or async, warn or halt. | [`command-producer`](design-command-producer.md) | 24m | 24m | shed, batten, config |
-| 15 | **Entry gate on shed rows: a check decides whether a row runs at all**<br>• Replace darn recipe edge rewrite and the switched producer flag check with one shed entry gate per row; false means Done without acting. | [`row-entry-gate`](design-row-entry-gate.md) | 1m | 0m | shed, loom, batten |
+| 15 | **Entry gate on shed rows: a check decides whether a row runs at all**<br>• Replace darn recipe edge rewrite and the switched producer flag check with one shed entry gate per row; false means Done without acting. | [`row-entry-gate`](design-row-entry-gate.md) | 2m | 0m | shed, loom, batten |
 
 #### Low priority
 
@@ -107,7 +107,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | # | Note | Slug | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | 1 | **Weaver: a cold-start implementer beside Webster, with model escalation**<br>• A second implementer built on Millhouse Builder: a fresh agent per batch with its own model, escalating the model when an agent fails; Webster stays fork-based | [`weaver`](design-weaver.md) | 6d | 4d | webster |
-| 2 | **Split the orch into a run driver and a conversational orch**<br>• One agent drives runs and takes escalations; the operator talks to the other, which discusses problems and updates the board. | [`orch-split`](design-orch-split.md) | 5d | 3d | orch, batten, shed, loom |
+| 2 | **Split the orch into a run driver and a conversational orch**<br>• One agent drives runs and takes escalations; the operator talks to the other, which discusses problems and updates the board. | [`orch-split`](design-orch-split.md) | 5d | 4d | orch, batten, shed, loom |
 | 3 | **creel stage 2: orch and batten notices through creel**<br>• The orch watcher and batten notices and injects go through creel; the watcher keeps only its cycle logic | [`creel-notices`](design-creel-notices.md) | 2d | 1d | creel, orch, batten |
 | 4 | **creel stage 3: agents message through creel, not SendMessage**<br>• Parent asks, parent review, stop reports and shuttle send go through creel, so a non-Claude engine can take a role with a parent | [`creel-agents`](design-creel-agents.md) | 2d | 1d | creel, shuttle, loom, stencil |
 
