@@ -1,6 +1,6 @@
 # creel log --id omits the reminded events that list that id
 
-`creel-log-id-reminders` · Note · bug
+`creel-log-id-reminders` · Note · bug, creel
 
 Imported from [issue #701](https://github.com/Knatte18/loomyard/issues/701).
 

@@ -1,6 +1,6 @@
 # creel stderr fallback for an unwritable refusal prints the prefix twice: creel: creel:
 
-`creel-stderr-double-prefix` · Note · bug
+`creel-stderr-double-prefix` · Note · bug, creel
 
 Imported from [issue #700](https://github.com/Knatte18/loomyard/issues/700).
 
