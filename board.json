@@ -1011,7 +1011,7 @@
     {
       "id": 649,
       "slug": "orch-rules-in-weft",
-      "title": "Hub orch rules move out of the repository into Bolt",
+      "title": "Orch rules move out of the repository into each orch weft",
       "kind": "note",
       "labels": [
         "enhancement",
@@ -1022,10 +1022,10 @@
       "priority": "high",
       "depends_on": [],
       "isolated": false,
-      "brief": "ORCHESTRATOR.md holds hub-specific lyx behaviour in the code repo; move it to _board/_lyx/orch/rules.md, with optional per-umbrella rules in its weft",
-      "body": "## Seen (2026-10-18)\n\n- `ORCHESTRATOR.md` is a tracked file at the repository root holding the orch-only rules of this hub; the watcher inlines it into the role file's `## This repository` at every render (`RepoRulesPath` in `internal/orchcli/paths.go`).\n- Its rules are the operator's choices for how lyx behaves in this hub, not knowledge about the code, so anyone cloning the repository gets them unasked.\n- It is written for one orch, which no longer fits once umbrellas each have their own orch thread (`orch-any-worktree`).\n- The orch role stencil already has a board copy on Bolt (`_board/_lyx/stencils/orch/orch-template-role.md`), and hub config lives in `_board/_lyx/config/`.\n\n## Operator view, not a decision (2026-10-18)\n\nThe file breaks the concept: instructions for how something in lyx behaves do not belong in the repository, but under `_lyx`, tracked in the weft repository.\nBolt is hard to see and search from a working worktree, which the umbrella workspaces (`hub-workspaces`) solve by listing Bolt as a folder.\n\n## Orch recommendation, not a decision\n\n- Hub-level rules for every orch thread in the hub live in `_board/_lyx/orch/rules.md` on Bolt, inlined where `ORCHESTRATOR.md` is today; `ORCHESTRATOR.md` and its CLAUDE.md mentions go.\n- An umbrella may add rules of its own in its weft, `_lyx/orch/rules.md` in its pair, inlined after the hub rules for that umbrella's thread only.\n- Not an edit of the role stencil's board copy: `lyx stencil` reads such an edit as drift to port back to the shipped source, which hub rules are not.\n",
+      "brief": "ORCHESTRATOR.md holds hub-specific lyx behaviour in the code repo; each orch thread reads its own rules from its worktree weft, _lyx/orch/rules.md",
+      "body": "## Seen (2026-10-18)\n\n- `ORCHESTRATOR.md` is a tracked file at the repository root holding the orch-only rules of this hub; the watcher inlines it into the role file's `## This repository` at every render (`RepoRulesPath` in `internal/orchcli/paths.go`).\n- Its rules are the operator's choices for how lyx behaves in this hub, not knowledge about the code, so anyone cloning the repository gets them unasked.\n- It is written for one orch, which no longer fits once umbrellas each have their own orch thread (`orch-any-worktree`).\n- The orch role stencil already has a board copy on Bolt (`_board/_lyx/stencils/orch/orch-template-role.md`), and hub config lives in `_board/_lyx/config/`.\n\n## Operator view, not a decision (2026-10-18)\n\nThe file breaks the concept: instructions for how something in lyx behaves do not belong in the repository, but under `_lyx`, tracked in the weft repository.\nBolt is hard to see and search from a working worktree, which the umbrella workspaces (`hub-workspaces`) solve by listing Bolt as a folder.\n\n## Operator view, not a decision (2026-10-18, later)\n\nThe rules belong in each orch's own weft `_lyx`, not on Bolt, since an umbrella's orch does not want the same rules as another's.\n\n## Orch recommendation, not a decision\n\n- Each orch thread's rules live in its own worktree's weft, `_lyx/orch/rules.md`, inlined where `ORCHESTRATOR.md` is today; `ORCHESTRATOR.md` and its CLAUDE.md mentions go.\n- For the root umbrella that is the prime's `_lyx`, a link to the records repository's `main-weft` worktree, so the file shows inside the prime's own folder with no Bolt folder needed.\n- No hub-wide rules file on Bolt.\n- Not an edit of the role stencil's board copy: `lyx stencil` reads such an edit as drift to port back to the shipped source, which these rules are not.\n",
       "created": "2026-10-18T13:38:52Z",
-      "revised": "2026-10-18T13:38:52Z"
+      "revised": "2026-10-18T13:39:09Z"
     },
     {
       "id": 650,

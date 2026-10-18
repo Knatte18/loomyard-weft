@@ -1,4 +1,4 @@
-# Hub orch rules move out of the repository into Bolt
+# Orch rules move out of the repository into each orch weft
 
 `orch-rules-in-weft` · Note · enhancement, orch, work-laptop
 
@@ -14,8 +14,13 @@
 The file breaks the concept: instructions for how something in lyx behaves do not belong in the repository, but under `_lyx`, tracked in the weft repository.
 Bolt is hard to see and search from a working worktree, which the umbrella workspaces (`hub-workspaces`) solve by listing Bolt as a folder.
 
+## Operator view, not a decision (2026-10-18, later)
+
+The rules belong in each orch's own weft `_lyx`, not on Bolt, since an umbrella's orch does not want the same rules as another's.
+
 ## Orch recommendation, not a decision
 
-- Hub-level rules for every orch thread in the hub live in `_board/_lyx/orch/rules.md` on Bolt, inlined where `ORCHESTRATOR.md` is today; `ORCHESTRATOR.md` and its CLAUDE.md mentions go.
-- An umbrella may add rules of its own in its weft, `_lyx/orch/rules.md` in its pair, inlined after the hub rules for that umbrella's thread only.
-- Not an edit of the role stencil's board copy: `lyx stencil` reads such an edit as drift to port back to the shipped source, which hub rules are not.
+- Each orch thread's rules live in its own worktree's weft, `_lyx/orch/rules.md`, inlined where `ORCHESTRATOR.md` is today; `ORCHESTRATOR.md` and its CLAUDE.md mentions go.
+- For the root umbrella that is the prime's `_lyx`, a link to the records repository's `main-weft` worktree, so the file shows inside the prime's own folder with no Bolt folder needed.
+- No hub-wide rules file on Bolt.
+- Not an edit of the role stencil's board copy: `lyx stencil` reads such an edit as drift to port back to the shipped source, which these rules are not.

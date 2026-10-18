@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-18 13:38 UTC; every age below is as of then.
+Rendered 2026-10-18 13:39 UTC; every age below is as of then.
 
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
@@ -71,7 +71,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | # | Note | Slug | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | 1 | **One VS Code workspace per umbrella, listing its worktrees directly**<br>• Workspace files in the hub dir; umbrella worktree first, then Bolt, then its live pairs at their anchors; no _portals; finished pairs drop out | [`hub-workspaces`](design-hub-workspaces.md) | 0m | 0m | fabric, ide, work-laptop |
-| 2 | **Hub orch rules move out of the repository into Bolt**<br>• ORCHESTRATOR.md holds hub-specific lyx behaviour in the code repo; move it to _board/_lyx/orch/rules.md, with optional per-umbrella rules in its weft | [`orch-rules-in-weft`](design-orch-rules-in-weft.md) | 0m | 0m | orch, work-laptop |
+| 2 | **Orch rules move out of the repository into each orch weft**<br>• ORCHESTRATOR.md holds hub-specific lyx behaviour in the code repo; each orch thread reads its own rules from its worktree weft, _lyx/orch/rules.md | [`orch-rules-in-weft`](design-orch-rules-in-weft.md) | 0m | 0m | orch, work-laptop |
 
 #### Normal priority
 
