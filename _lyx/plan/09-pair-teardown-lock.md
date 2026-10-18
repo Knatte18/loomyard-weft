@@ -1,16 +1,16 @@
 # Card 9 — pair-teardown-lock
 
 **Create:**
-- `plan:internal/lock#TryAcquireReadLock` -> `func TryAcquireReadLock(lockPath string) (*FileLock, bool, error)`
-- `plan:internal/lock_test#TestTryAcquireReadLock` -> `func TestTryAcquireReadLock(t *testing.T)`
-- `plan:internal/fabricengine#TeardownLockPath` -> `func TeardownLockPath(hubPath, slug string) string`
-- `plan:internal/fabricengine#DetachedPush` -> `func DetachedPush(hubPath string, req PushSpawn) (PushResult, error)`
-- `plan:internal/fabricengine#ErrPairPushRunning` -> `var ErrPairPushRunning error`
-- `plan:internal/fabricengine#SetTeardownWaitForTest` -> `func SetTeardownWaitForTest(t *Topology, wait time.Duration)`
-- `plan:internal/fabricengine#detachedPushHeldHook` -> `var detachedPushHeldHook func()`
-- `plan:internal/fabricengine#removeAfterTeardownHook` -> `var removeAfterTeardownHook func()`
-- `plan:internal/fabricengine#SetTeardownHooksForTest` -> `func SetTeardownHooksForTest(t *testing.T, heldByPush, afterRemoveTeardown func())`
-- `plan:internal/fabricengine_test#TestRemove_TeardownLockAgainstThePairsPush` -> `func TestRemove_TeardownLockAgainstThePairsPush(t *testing.T)`
+- `internal/lock#TryAcquireReadLock`
+- `internal/lock_test#TestTryAcquireReadLock`
+- `internal/fabricengine#TeardownLockPath`
+- `internal/fabricengine#DetachedPush`
+- `internal/fabricengine#ErrPairPushRunning`
+- `internal/fabricengine#SetTeardownWaitForTest`
+- `internal/fabricengine#detachedPushHeldHook`
+- `internal/fabricengine#removeAfterTeardownHook`
+- `internal/fabricengine#SetTeardownHooksForTest`
+- `internal/fabricengine_test#TestRemove_TeardownLockAgainstThePairsPush`
 
 **Edit:**
 - `internal/fabricengine#Topology`
