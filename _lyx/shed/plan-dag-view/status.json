@@ -1,11 +1,11 @@
 {
-  "current_producer": "Darn-Write",
+  "current_producer": "Merge-In",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Darn-Write",
-    "last": "Preflight → done",
+    "now": "Merge-In",
+    "last": "Darn-Write → done",
     "wait": ""
   },
   "history": [
@@ -14,6 +14,33 @@
       "outcome": "done",
       "output": "",
       "at": "2026-10-18T17:20:28Z"
+    },
+    {
+      "producer": "Darn-Write",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYXHUB/plan-dag-view/_lyx/landing/summary.md",
+      "at": "2026-10-18T17:27:57Z",
+      "gate_attempts": 0,
+      "gate_spans": [
+        {
+          "gate": "discussion",
+          "kind": "gate",
+          "start": "2026-10-18T17:25:56.061016994Z",
+          "end": "2026-10-18T17:26:08.099036518Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-10-18T17:26:08.145341708Z",
+          "end": "2026-10-18T17:27:57.08076009Z"
+        },
+        {
+          "gate": "description",
+          "kind": "gate",
+          "start": "2026-10-18T17:27:57.120509034Z",
+          "end": "2026-10-18T17:27:57.120564918Z"
+        }
+      ]
     }
   ],
   "product": {
