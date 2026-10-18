@@ -169,9 +169,8 @@ For each batch:
 - Before step 5, the batch's own card gate runs in its worktree; after step 5, the verify runs on the merged result; a failure goes up the escalation ladder (a fresh agent on a stronger model in the same worktree, then the arbiter).
 - After step 5, the batchifier runs again over the remaining cards, reading the report's deviations, and starts the next ready batches.
 - Parallel tests share the hub's gate slots, which caps how many batches verify at once.
-- A batch pair never reaches origin, so it needs a local-only add and remove.
-  Measured in the sandbox hub (2026-10-18, 5-file repo): `lyx fabric add` takes about 1.1 s, 92% of it two serial `git ls-remote` origin probes, and local work about 50 ms; `lyx fabric remove --remote` takes 6 to 7 s, almost all network (force-with-lease push, archive-tag push, weft branch delete).
-  `internal/fabricengine/add.go` already has `SkipGit`/`SkipPush` for the probes; `internal/fabricengine/remove.go` pushes an archive tag whenever the weft has an origin, so remove needs a local-only mode too, since a batch's records reach the task pair through the merge.
+- A batch pair is an ordinary pair that pushes to origin like any other (operator, 2026-10-18): its commits are part of the implementation, and an agent continuing the work on another machine must see what a batch left half done.
+  An earlier orch recommendation here, that batch pairs stay local-only, was wrong; `batten-start-speed` built that local-only mode from it before the correction.
   Teardown runs off the critical path, after the merge, so the next batch never waits for it.
   The operator saw 10 to 12 s for an add; where is unmeasured, and the loomyard repo's checkout (about 3,150 files) was not timed.
 
