@@ -793,7 +793,7 @@
       "id": 645,
       "slug": "plan-dag-view",
       "title": "Draw a plan as a card DAG with its glyph and file matrix",
-      "kind": "note",
+      "kind": "task",
       "labels": [
         "feature",
         "loom",
