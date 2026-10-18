@@ -39,6 +39,16 @@ So one orch needs to start runs from more than one parent branch, not only one o
 - The board is shared by the whole hub, so nothing hub-wide is left for a thread; intake from GitHub issues needs no automatic owner and runs on command.
 - A thread that is not running is a real problem whatever the design, as it is for the orch today.
 - Open (orch): who starts a task that becomes ready; the task could carry its home thread or parent branch as a board field.
+- The orch role should not be unique: any thread that starts another thread becomes its parent, so an orch has no special role.
+- Two large projects can each have their own orchestrating thread, each working from and writing to its own worktree.
+- Giving a thread the orch hosting (its own watcher and context cycling) is an explicit command; the hub orch is long-lived enough to need it, while a project thread is time-limited, so cycling matters less there but would be nice.
+- Reed shows every session at once, which gets messy; the threads a project thread starts should be grouped under it as one project.
+
+## Seen (2026-10-18, what makes the orch unique today)
+
+- Every file orch writes goes through one accessor, `internal/orchcli/paths.go`, under the prime's `<anchor>/.lyx/orch/`.
+- `lyx orch` refuses outside the prime (`internal/orchcli/refusal.go`) and its strand name carries no worktree (`agentname.RoleOrch`).
+- Each pair already records its parent worktree (`ParentWorktree` in its origin record), which a grouped reed view could follow.
 - Two hubs with two weft repos would work today, but would make exchanging information between them hard.
 
 ## Orch sketch, not a decision
