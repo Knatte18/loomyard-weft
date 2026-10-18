@@ -51,9 +51,17 @@ Run parentage already follows the worktree a pair was created from (`aa67fd1d7`,
 - The board has no field naming a task's parent today.
 - Every file orch writes goes through one accessor, `internal/orchcli/paths.go`, under the prime's `<anchor>/.lyx/orch/`; `lyx orch` refuses outside the prime and its strand name carries no worktree (`agentname.RoleOrch`).
 
+## Operator decision (2026-10-18): no process while an umbrella lives
+
+An umbrella is not a shed run that waits for weeks, since nothing restarts a waiting process after a machine restart (today `lyx batten run <slug>` resumes from disk, but someone must run it).
+It has work only at its start and its end:
+
+1. Create: its pair, thread and workspace, in one short command.
+2. Live: no process; it is a pair, a board task and a thread the operator talks to when they want.
+3. Land: when the operator says the project is done, a short run does Merge-In, Publish, PR-Gate and Finalize into its own parent; that run may be a shed run, living only as long as the landing.
+
 ## Orch sketch, not a decision
 
-- An umbrella spawns through a shed recipe of its own: pair, thread, wait until the project is done, then Merge-In, Publish, PR-Gate and Finalize into its own parent; no Discussion, Plan or Webster.
 - A thread starts its runs itself with `lyx batten run`, which finds the prime for the shared state; the run records the thread's strand as its owner, and notices go to that owner through creel rather than to a fixed `ly:orch`.
 - Threads talk to each other through creel posts, as strands already can.
 - This builds on `orch-split` (a Go run driver beside a conversational agent): once the run loop is Go, a thread holds only the conversation and its own runs' escalations.
