@@ -674,7 +674,7 @@
       "id": 630,
       "slug": "config-migrate-hub-layer",
       "title": "Key-rename migration never reaches the hub config: loom-model-key-names silently turned off the hub fans",
-      "kind": "note",
+      "kind": "task",
       "labels": [
         "bug",
         "config",
@@ -683,12 +683,18 @@
       "issues": [
         709
       ],
+      "recipe": "darn",
       "depends_on": [],
       "isolated": false,
       "brief": "",
-      "body": "Imported from [issue #709](https://github.com/Knatte18/loomyard/issues/709).\n\n## Seen\n\nAfter `loom-model-key-names` landed (`a273d69bc`), the hub's `_board/_lyx/config/loom.yaml` and `darn.yaml` still held the old key names (`review`, `discussion_review`, `webster_fan`, `merge_fix_fan`, darn `review_fan`, ...).\nThe new keys resolved from the template, so every run silently lost the hub's lens fan, twill fixer and reviewer models: `lyx config loom --resolved` showed `webster_reviewer_fan: \"\" # template` and the old keys as `# default`.\n\n- `lyx config reconcile` in the prime reports loom with no `migrated` entry: it never reaches the hub default layer.\n- `lyx config reconcile` (dry-run) run from `_board/` does list the loom renames, but treats the hub files as a worktree layer: it would strip most keys and mark `darn`, `gate`, `landing`, `language`, `fabric` and `board` as retired, so `--apply` there is unsafe.\n- Nothing at landing or deploy ran the migration, and nothing warned that the hub file held unknown keys.\n\n## Workaround\n\nThe orch carried every value to its new name by hand with `lyx config loom --layer default --set ...` and `lyx config darn --layer default --set ...`.\nThe old keys stay in both files as `preserved` entries, since `--set` cannot remove a key.\n\n## Expected\n\nA key-rename migration reaches the hub's default layer, through a hub-scoped `lyx config reconcile` or at landing, and removes the old keys.\nA hub config file holding keys the template no longer knows is reported loudly at load.",
+      "body": "Imported from [issue #709](https://github.com/Knatte18/loomyard/issues/709).\n\n## Seen\n\nAfter `loom-model-key-names` landed (`a273d69bc`), the hub's `_board/_lyx/config/loom.yaml` and `darn.yaml` still held the old key names (`review`, `discussion_review`, `webster_fan`, `merge_fix_fan`, darn `review_fan`, ...).\nThe new keys resolved from the template, so every run silently lost the hub's lens fan, twill fixer and reviewer models: `lyx config loom --resolved` showed `webster_reviewer_fan: \"\" # template` and the old keys as `# default`.\n\n- `lyx config reconcile` in the prime reports loom with no `migrated` entry: it never reaches the hub default layer.\n- `lyx config reconcile` (dry-run) run from `_board/` does list the loom renames, but treats the hub files as a worktree layer: it would strip most keys and mark `darn`, `gate`, `landing`, `language`, `fabric` and `board` as retired, so `--apply` there is unsafe.\n- Nothing at landing or deploy ran the migration, and nothing warned that the hub file held unknown keys.\n\n## Workaround\n\nThe orch carried every value to its new name by hand with `lyx config loom --layer default --set ...` and `lyx config darn --layer default --set ...`.\nThe old keys stay in both files as `preserved` entries, since `--set` cannot remove a key.\n\n## Expected\n\nA key-rename migration reaches the hub's default layer, through a hub-scoped `lyx config reconcile` or at landing, and removes the old keys.\nA hub config file holding keys the template no longer knows is reported loudly at load.\n## Operator decision (2026-10-18)\n\nThe task also removes the `preserved` old keys that `loom-model-key-names` left in the hub's `loom.yaml` and `darn.yaml`, through the migration it builds.\n",
       "created": "2026-10-17T11:06:29Z",
-      "revised": "2026-10-17T11:06:31Z"
+      "revised": "2026-10-18T15:01:57Z",
+      "run_settings": {
+        "darn": {
+          "review_max_bounces": 1
+        }
+      }
     },
     {
       "id": 632,
@@ -731,7 +737,7 @@
       "id": 635,
       "slug": "tmux-conf-concurrent-boot-flake",
       "title": "Flaky tmux test: TestBoot_TmuxConf TwoWorktreesBootedConcurrently fails with server exited unexpectedly",
-      "kind": "note",
+      "kind": "task",
       "labels": [
         "bug",
         "reed"
@@ -739,12 +745,18 @@
       "issues": [
         712
       ],
+      "recipe": "darn",
       "depends_on": [],
       "isolated": false,
       "brief": "",
       "body": "Imported from [issue #712](https://github.com/Knatte18/loomyard/issues/712).\n\nSeen 2026-10-17 in run stencilstore-dev-warning-noise, at Publish (publish_verify: go test -tags tmux ./...): internal/reedengine TestBoot_TmuxConf/AppendingFileIsSourcedOncePerServerStart/TwoWorktreesBootedConcurrently failed with 'run list-commands: exit status 1: server exited unexpectedly'. The task's diff touched only internal/creelcli and cmd/lyx/stencilseedgate_test.go, so the failure is unrelated to the change; batten retried the run. Several runs were in flight on the machine at the time, and publish_verify runs raw go test outside the gate slot pool. Expected: the test boots two tmux servers concurrently without flaking, or isolates them so a concurrent boot cannot kill a server.",
       "created": "2026-10-17T11:51:35Z",
-      "revised": "2026-10-17T11:51:37Z"
+      "revised": "2026-10-18T15:01:57Z",
+      "run_settings": {
+        "darn": {
+          "review_max_bounces": 1
+        }
+      }
     },
     {
       "id": 636,
@@ -770,7 +782,7 @@
       "id": 637,
       "slug": "wait-world-lock-grace-flake",
       "title": "shedverbs wait-world integration tests flake: loop exited before it recorded itself",
-      "kind": "note",
+      "kind": "task",
       "labels": [
         "bug",
         "shed"
@@ -778,12 +790,18 @@
       "issues": [
         716
       ],
+      "recipe": "darn",
       "depends_on": [],
       "isolated": false,
       "brief": "",
       "body": "Imported from [issue #716](https://github.com/Knatte18/loomyard/issues/716).\n\nTwo consecutive Merge-In verifies failed in the `internal/shedverbs` integration tier, on different wait-world tests.\nEach failure had the waiter reporting `loop … exited before it recorded itself`.\nThe loom run halted blocked at Merge-In (`escalation-to-human`) with the way forward `lyx loom goto --to Darn-Write`, then `lyx loom resume`.\n\nWhy it is abnormal: the failures did not reproduce in isolation, under `-race`, under `-count=300` or beside heavy integration packages, so diagnosing them cost several runs.\nThe likely cause is the wait-world fixture's 20 ms `LockGrace`, which the waiter's free-lock probe can exhaust under scheduling stalls.\n\nWhat to do: give the wait-world fixture the production lock grace (the task's fix did this), and check other fixtures in the integration tier for short grace values that make verify nondeterministic.\n\nProvenance: task `gate-wait-cache-cap`, notes `Darn-Write.md`, `loom-halt.md`.\n",
       "created": "2026-10-17T12:12:20Z",
-      "revised": "2026-10-17T12:12:24Z"
+      "revised": "2026-10-18T15:01:57Z",
+      "run_settings": {
+        "darn": {
+          "review_max_bounces": 1
+        }
+      }
     },
     {
       "id": 639,
@@ -844,18 +862,24 @@
       "id": 642,
       "slug": "timing-report-darn",
       "title": "lyx report timing leaves out darn runs",
-      "kind": "note",
+      "kind": "task",
       "labels": [
         "bug",
         "report"
       ],
       "issues": [],
+      "recipe": "darn",
       "depends_on": [],
       "isolated": false,
       "brief": "Report darn runs beside loom runs, with phases from the recipe",
       "body": "## Seen (orch, 2026-10-17)\n\n`lyx report timing --since 2026-10-01` lists 161 runs and none of the darn runs that landed in that window: `gate-wait-cache-cap`, `landing-trailer-text` and `stencilstore-dev-warning-noise`, among others, are absent from `.runs`.\nIts phase columns are loom's (setup, discussion, plan, webster, merge, publish-finalize, land), so a darn run's rows (Darn-Write, Darn-Bouncer, Darn-Burler-Review, Darn-Burler-Fix) have no column either.\nTo compare darn with loom, the orch read each darn run's last batten `status.json` from the records repository's history instead: 29 darn runs, median span from first to last history entry 22 minutes (15 to 31), sleep and waits not taken out, against a loom active-time median of 108 minutes.\n\n## Idea\n\n- `lyx report timing` reports darn runs beside loom runs, tagged with their recipe, with the same sleep and wait accounting.\n- Darn's rows map to phases of their own (such as write and review), or the report's phase set comes from the recipe, so a new recipe needs no report change.\n- `lyx report convergence` is checked for the same gap.\n",
       "created": "2026-10-17T14:32:25Z",
-      "revised": "2026-10-17T14:32:25Z"
+      "revised": "2026-10-18T15:01:57Z",
+      "run_settings": {
+        "darn": {
+          "review_max_bounces": 1
+        }
+      }
     },
     {
       "id": 644,
@@ -1058,7 +1082,7 @@
       "id": 655,
       "slug": "creel-hold-log-spam",
       "title": "creel log: a hold refresh writes a held event every ~2s",
-      "kind": "note",
+      "kind": "task",
       "labels": [
         "bug",
         "creel"
@@ -1066,12 +1090,18 @@
       "issues": [
         722
       ],
+      "recipe": "darn",
       "depends_on": [],
       "isolated": false,
       "brief": "",
       "body": "Imported from [issue #722](https://github.com/Knatte18/loomyard/issues/722).\n\nSeen 2026-10-18 14:09-14:13Z: while ly:ORCHWATCH held ly:orch during a context cycle, lyx creel log --to ly:orch got a held event roughly every 2.3 s (over a hundred in four minutes), burying the posted/read/injected events. Expected: one held event when a hold starts (and one when it ends or changes), not one per refresh.",
       "created": "2026-10-18T14:14:23Z",
-      "revised": "2026-10-18T14:14:24Z"
+      "revised": "2026-10-18T15:01:57Z",
+      "run_settings": {
+        "darn": {
+          "review_max_bounces": 1
+        }
+      }
     },
     {
       "id": 656,

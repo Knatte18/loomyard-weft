@@ -29,7 +29,15 @@ Held by a run; its scope is locked until the run ends.
 
 Waits on nothing open; can start now.
 
-_None._
+#### Normal priority
+
+| # | Task | Slug | Recipe | After | Age | Revised | Labels |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| 1 | **Key-rename migration never reaches the hub config: loom-model-key-names silently turned off the hub fans**<br>• `darn: review_max_bounces 1` | [`config-migrate-hub-layer`](design-config-migrate-hub-layer.md) | darn |  | 1d | 0m | config, loom |
+| 2 | **Flaky tmux test: TestBoot_TmuxConf TwoWorktreesBootedConcurrently fails with server exited unexpectedly**<br>• `darn: review_max_bounces 1` | [`tmux-conf-concurrent-boot-flake`](design-tmux-conf-concurrent-boot-flake.md) | darn |  | 1d | 0m | reed |
+| 3 | **shedverbs wait-world integration tests flake: loop exited before it recorded itself**<br>• `darn: review_max_bounces 1` | [`wait-world-lock-grace-flake`](design-wait-world-lock-grace-flake.md) | darn |  | 1d | 0m | shed |
+| 4 | **lyx report timing leaves out darn runs**<br>• Report darn runs beside loom runs, with phases from the recipe<br>• `darn: review_max_bounces 1` | [`timing-report-darn`](design-timing-report-darn.md) | darn |  | 1d | 0m | report |
+| 5 | **creel log: a hold refresh writes a held event every ~2s**<br>• `darn: review_max_bounces 1` | [`creel-hold-log-spam`](design-creel-hold-log-spam.md) | darn |  | 47m | 0m | creel |
 
 ### Layer A
 
@@ -61,18 +69,6 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 2 | **Classify Plan lens and review findings to make the Plan writer get it right first**<br>• Find what Plan lenses and Plan-Burler-Review keep catching, and stop each recurring class at the writer | [`plan-writer-finding-classes`](design-plan-writer-finding-classes.md) | 2d | 2d | loom, burler, stencil, shed |
 | 3 | **Recurring test-suite time and growth audit**<br>• Re-run cmd/testtiming against test-suite-timing.md to watch suite growth | [`test-time-audit-recurring`](design-test-time-audit-recurring.md) | 1h | 1h |  |
 | 4 | **Audit the use of the twill and lens review setup at every perch**<br>• After about ten loom runs, measure what the lens fans and twill fixers catch per perch against their cost, and set the standard review rounds from it | [`review-setup-audit`](design-review-setup-audit.md) | 4m | 4m | burler, loom, report |
-
-### Bugs
-
-#### Normal priority
-
-| # | Note | Slug | Age | Revised | Labels |
-| --- | --- | --- | --- | --- | --- |
-| 1 | **Key-rename migration never reaches the hub config: loom-model-key-names silently turned off the hub fans** | [`config-migrate-hub-layer`](design-config-migrate-hub-layer.md) | 1d | 1d | config, loom |
-| 2 | **Flaky tmux test: TestBoot_TmuxConf TwoWorktreesBootedConcurrently fails with server exited unexpectedly** | [`tmux-conf-concurrent-boot-flake`](design-tmux-conf-concurrent-boot-flake.md) | 1d | 1d | reed |
-| 3 | **shedverbs wait-world integration tests flake: loop exited before it recorded itself** | [`wait-world-lock-grace-flake`](design-wait-world-lock-grace-flake.md) | 1d | 1d | shed |
-| 4 | **lyx report timing leaves out darn runs**<br>• Report darn runs beside loom runs, with phases from the recipe | [`timing-report-darn`](design-timing-report-darn.md) | 1d | 1d | report |
-| 5 | **creel log: a hold refresh writes a held event every ~2s** | [`creel-hold-log-spam`](design-creel-hold-log-spam.md) | 47m | 47m | creel |
 
 ### Enhancements
 

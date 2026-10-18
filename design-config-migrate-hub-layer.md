@@ -1,6 +1,6 @@
 # Key-rename migration never reaches the hub config: loom-model-key-names silently turned off the hub fans
 
-`config-migrate-hub-layer` · Note · bug, config, loom
+`config-migrate-hub-layer` · Task · bug, config, loom
 
 Imported from [issue #709](https://github.com/Knatte18/loomyard/issues/709).
 
@@ -22,3 +22,6 @@ The old keys stay in both files as `preserved` entries, since `--set` cannot rem
 
 A key-rename migration reaches the hub's default layer, through a hub-scoped `lyx config reconcile` or at landing, and removes the old keys.
 A hub config file holding keys the template no longer knows is reported loudly at load.
+## Operator decision (2026-10-18)
+
+The task also removes the `preserved` old keys that `loom-model-key-names` left in the hub's `loom.yaml` and `darn.yaml`, through the migration it builds.
