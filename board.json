@@ -1004,9 +1004,7 @@
       ],
       "issues": [],
       "priority": "high",
-      "depends_on": [
-        "creel-compact-notices"
-      ],
+      "depends_on": [],
       "isolated": false,
       "brief": "ORCHESTRATOR.md holds hub-specific lyx behaviour in the code repo; each orch thread reads its own rules from its worktree weft, _lyx/orch/rules.md",
       "body": "## Seen (2026-10-18)\n\n- `ORCHESTRATOR.md` is a tracked file at the repository root holding the orch-only rules of this hub; the watcher inlines it into the role file's `## This repository` at every render (`RepoRulesPath` in `internal/orchcli/paths.go`).\n- Its rules are the operator's choices for how lyx behaves in this hub, not knowledge about the code, so anyone cloning the repository gets them unasked.\n- It is written for one orch, which no longer fits once umbrellas each have their own orch thread (`orch-any-worktree`).\n- The orch role stencil already has a board copy on Bolt (`_board/_lyx/stencils/orch/orch-template-role.md`), and hub config lives in `_board/_lyx/config/`.\n\n## Operator view, not a decision (2026-10-18)\n\nThe file breaks the concept: instructions for how something in lyx behaves do not belong in the repository, but under `_lyx`, tracked in the weft repository.\nBolt is hard to see and search from a working worktree, which the umbrella workspaces (`hub-workspaces`) solve by listing Bolt as a folder.\n\n## Operator view, not a decision (2026-10-18, later)\n\nThe rules belong in each orch's own weft `_lyx`, not on Bolt, since an umbrella's orch does not want the same rules as another's.\n\n## Operator decisions (2026-10-18, later)\n\n- Two layers of orch rules, both inlined where `ORCHESTRATOR.md` is today, hub-wide first:\n  - Hub-wide rules for every orch of the hub live on Bolt, `_board/_lyx/orch/rules.md`: the repository-specific rules a general orch needs, which the shipped role template cannot hold.\n  - Each orch thread's own rules live in its own worktree's weft, `_lyx/orch/rules.md`.\n- For the root umbrella the own-rules file is in the prime's `_lyx`, a link to the records repository's `main-weft` worktree, so it shows inside the prime's own folder.\n- `ORCHESTRATOR.md` goes, with its mentions in CLAUDE.md and the orch role stencil; its current rules move to the new files.\n\n## Orch recommendation, not a decision\n\n- Not an edit of the role stencil's board copy: `lyx stencil` reads such an edit as drift to port back to the shipped source, which these rules are not.\n",
@@ -1077,32 +1075,6 @@
       "body": "## What this is\n\nA recurring audit of test-suite growth, run with `go run ./cmd/testtiming` (Tier 1) and `go run ./cmd/testtiming -full` (Tier 2), and compared against the latest after-state in `docs/benchmarks/test-suite-timing.md`.\nIt replaces the per-package test-count budget that `test-budget-remove` deleted (operator decision 2026-10-17): count is kept down by `PATTERN-test-economy` in review, and this audit watches the wall time and the per-package test counts that review cannot see in aggregate.\nEach audit appends its numbers as a new section of `docs/benchmarks/test-suite-timing.md`, under the method that file states.\n\n## What to look at\n\n- Wall time per tier against the previous section, and the packages that moved most.\n- Per-package test counts from `cmd/testtiming`'s `TESTS` column, and which packages grew since the previous audit.\n- A growth with no matching new behavior is a candidate for a prune task under `PATTERN-test-economy`.\n\n## Orch recommendation, not a decision\n\nRun the audit every two weeks or after about 50 landed tasks, whichever comes first.\nA cheap model (Sonnet) runs the measurement; the orch writes the section and files a prune task when a package grew without cause.\n",
       "created": "2026-10-18T13:44:55Z",
       "revised": "2026-10-18T13:44:55Z"
-    },
-    {
-      "id": 653,
-      "slug": "creel-compact-notices",
-      "title": "[WS 001] Creel: program notices in the reminder line, plain-text read",
-      "kind": "task",
-      "labels": [
-        "enhancement",
-        "creel",
-        "workspaces"
-      ],
-      "issues": [],
-      "recipe": "darn",
-      "priority": "high",
-      "depends_on": [],
-      "isolated": false,
-      "brief": "A program notice is carried in the reminder itself and needs no read; creel read prints plain text for every sender, sender and id only where a reply is wanted",
-      "body": "## Seen (2026-10-18)\n\n- A one-line batten notice now takes three steps for the orch: a contentless `[creel] N unread` reminder, a `lyx creel read`, and a JSON reply carrying `messages`, `body`, `from`, `envelope`, `id`, `kind` and `posted`.\n- `lyx creel read` reads only the oldest sender's messages by default, so two senders take two reads.\n- The receiver needs the body always, sender and id only when a reply is wanted (`post --reply \u003cid\u003e`), the time only when a message is old (withheld test posts arrived a day late), and envelope and kind never; the creel journal (`lyx creel log`) keeps the full metadata for debugging.\n\n## Operator decisions (2026-10-18)\n\n- A program sender's notice (an upper-case sender such as `ly:BATTEN`, which takes no reply) is carried in the reminder line itself, such as `[creel] ly:BATTEN: test-budget-remove: landed; newly ready: batten-start-speed`, needs no read, and is marked read on delivery.\n- Mail from an agent keeps the contentless reminder (operator decision 2026-10-17); `lyx creel read` prints plain text for every sender at once: id and sender with how to reply, then the body, with the time only when the message is more than a few minutes old.\n- JSON only behind a flag, for programs.\n",
-      "status": "done",
-      "created": "2026-10-18T14:00:34Z",
-      "revised": "2026-10-18T14:04:05Z",
-      "run_settings": {
-        "darn": {
-          "review_max_bounces": 1
-        }
-      }
     },
     {
       "id": 654,

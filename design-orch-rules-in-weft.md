@@ -2,8 +2,6 @@
 
 `orch-rules-in-weft` · Task · enhancement, orch, workspaces
 
-Depends on: [`creel-compact-notices`](design-creel-compact-notices.md)
-
 ## Seen (2026-10-18)
 
 - `ORCHESTRATOR.md` is a tracked file at the repository root holding the orch-only rules of this hub; the watcher inlines it into the role file's `## This repository` at every render (`RepoRulesPath` in `internal/orchcli/paths.go`).
