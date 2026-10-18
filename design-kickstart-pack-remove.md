@@ -19,5 +19,10 @@ Quarry stays its own repository for now, since it changes rarely (operator, 2026
 ## Orch recommendation, not a decision
 
 - Keep `tools/forkaudit` working for runs without a pack, so a no-pack baseline can be measured.
+
+## Operator decision (2026-10-18)
+
+- `tools/forkaudit`'s `--pack-check` part goes with the pack; the rest of `forkaudit` stays for other fork audits.
+- The recurring glyph audit is dropped with the pack; its reports stay in `docs/research/glyph-audit-*`.
 - Forks never call `lyx quarry` in any audit since the pack; resolve's value is in the plan gates, which call quarry in code.
 - Note `enclose-checks` (formerly `enclose-kickstart`) lost its pack use with this removal and now proposes Enclose for mechanical checks instead.
