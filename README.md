@@ -66,7 +66,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 2 | **Flaky tmux test: TestBoot_TmuxConf TwoWorktreesBootedConcurrently fails with server exited unexpectedly** | [`tmux-conf-concurrent-boot-flake`](design-tmux-conf-concurrent-boot-flake.md) | 1d | 1d | reed |
 | 3 | **shedverbs wait-world integration tests flake: loop exited before it recorded itself** | [`wait-world-lock-grace-flake`](design-wait-world-lock-grace-flake.md) | 1d | 1d | shed |
 | 4 | **lyx report timing leaves out darn runs**<br>• Report darn runs beside loom runs, with phases from the recipe | [`timing-report-darn`](design-timing-report-darn.md) | 23h | 23h | report |
-| 5 | **creel log: a hold refresh writes a held event every ~2s** | [`creel-hold-log-spam`](design-creel-hold-log-spam.md) | 0m | 0m |  |
+| 5 | **creel log: a hold refresh writes a held event every ~2s** | [`creel-hold-log-spam`](design-creel-hold-log-spam.md) | 0m | 0m | creel |
 
 ### Enhancements
 
