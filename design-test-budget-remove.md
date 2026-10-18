@@ -2,8 +2,6 @@
 
 `test-budget-remove` · Task · enhancement, loom, burler, stencil
 
-Depends on: [`creel-notices`](design-creel-notices.md)
-
 ## Seen (2026-10-17)
 
 - `test-tiers` (D9, 2026-10-07) added a per-package test-count budget: `cmd/lyx/testdata/test-budget.yaml`, guarded by `cmd/lyx/testbudget_test.go`, so that "guards keep the suite from regrowing unseen".
