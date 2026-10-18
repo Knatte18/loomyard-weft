@@ -2,6 +2,8 @@
 
 `batten-start-speed` · Task · enhancement, batten, fabric, shed, config, loom
 
+Depends on: [`creel-notices`](design-creel-notices.md)
+
 ## Seen: batten's start (2026-10-17/18)
 
 - Batten's start of `creel-notices` (row times from `lyx batten status creel-notices`): Worktree-Create done 13:15:13, Seed-Child about 1 s, Open-Window about 8 s, Seed-IDE about 2 s, Open-IDE about 2 s; about 10 to 12 s before Run-Shed, as the operator sees it.
