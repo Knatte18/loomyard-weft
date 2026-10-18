@@ -12,9 +12,9 @@
 - `cmd/lyx/testdata/test-budget.yaml`
 
 **Create:**
-- `plan:internal/testkit/shuttlefake#SignalEngine` -> `type SignalEngine struct`
-- `plan:internal/testkit/shuttlefake#SignalEngine.ParseSessionSignals` -> `func (e *SignalEngine) ParseSessionSignals(data []byte) ([]shuttleengine.SessionSignal, int)`
-- `plan:internal/testkit/shuttlefake#TestSignalEngine_PairsStampsAndHoldsTrailingStamps` -> `func TestSignalEngine_PairsStampsAndHoldsTrailingStamps(t *testing.T)`
+- `internal/testkit/shuttlefake#SignalEngine`
+- `internal/testkit/shuttlefake#SignalEngine.ParseSessionSignals`
+- `internal/testkit/shuttlefake#TestSignalEngine_PairsStampsAndHoldsTrailingStamps`
 
 **Intent:**
 `shuttleengine.Event` gains `At time.Time`, the hook-side time of the line the event was parsed from, zero when the engine gives none (decision record D5, Scope "A shuttle change").
