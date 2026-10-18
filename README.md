@@ -17,18 +17,18 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | **[WS 003] Orch rules move out of the repository into each orch weft**<br>• ORCHESTRATOR.md holds hub-specific lyx behaviour in the code repo; each orch thread reads its own rules from its worktree weft, _lyx/orch/rules.md<br>• `loom: discussion_max_bounces 1`<br>• `loom: merge_max_bounces 1`<br>• `loom: plan_max_bounces 1`<br>• `loom: webster_max_bounces 1` | [`orch-rules-files`](design-orch-rules-files.md) | loom | Plan-Write | 1h | 33m | orch, workspaces |
+| 1 | **[WS 003] Orch rules move out of the repository into each orch weft**<br>• ORCHESTRATOR.md holds hub-specific lyx behaviour in the code repo; each orch thread reads its own rules from its worktree weft, _lyx/orch/rules.md<br>• `loom: discussion_max_bounces 1`<br>• `loom: merge_max_bounces 1`<br>• `loom: plan_max_bounces 1`<br>• `loom: webster_max_bounces 1` | [`orch-rules-files`](design-orch-rules-files.md) | loom | Plan-Write | 1h | 34m | orch, workspaces |
 
 #### Normal priority
 
 | # | Task | Slug | Recipe | At | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 2 | **Key-rename migration never reaches the hub config: loom-model-key-names silently turned off the hub fans**<br>• `darn: review_max_bounces 1` | [`config-migrate-hub-layer`](design-config-migrate-hub-layer.md) | darn | Darn-Write | 1d | 10m | config, loom |
-| 3 | **Flaky tmux test: TestBoot_TmuxConf TwoWorktreesBootedConcurrently fails with server exited unexpectedly**<br>• `darn: review_max_bounces 1` | [`tmux-conf-concurrent-boot-flake`](design-tmux-conf-concurrent-boot-flake.md) | darn | Darn-Write | 1d | 10m | reed |
-| 4 | **shedverbs wait-world integration tests flake: loop exited before it recorded itself**<br>• `darn: review_max_bounces 1` | [`wait-world-lock-grace-flake`](design-wait-world-lock-grace-flake.md) | darn | Darn-Bouncer | 1d | 10m | shed |
-| 5 | **lyx report timing leaves out darn runs**<br>• Report darn runs beside loom runs, with phases from the recipe<br>• `darn: review_max_bounces 1` | [`timing-report-darn`](design-timing-report-darn.md) | darn | Darn-Write | 1d | 10m | report |
+| 2 | **Key-rename migration never reaches the hub config: loom-model-key-names silently turned off the hub fans**<br>• `darn: review_max_bounces 1` | [`config-migrate-hub-layer`](design-config-migrate-hub-layer.md) | darn | Darn-Write | 1d | 11m | config, loom |
+| 3 | **Flaky tmux test: TestBoot_TmuxConf TwoWorktreesBootedConcurrently fails with server exited unexpectedly**<br>• `darn: review_max_bounces 1` | [`tmux-conf-concurrent-boot-flake`](design-tmux-conf-concurrent-boot-flake.md) | darn | Darn-Write | 1d | 11m | reed |
+| 4 | **shedverbs wait-world integration tests flake: loop exited before it recorded itself**<br>• `darn: review_max_bounces 1` | [`wait-world-lock-grace-flake`](design-wait-world-lock-grace-flake.md) | darn | Describe | 1d | 11m | shed |
+| 5 | **lyx report timing leaves out darn runs**<br>• Report darn runs beside loom runs, with phases from the recipe<br>• `darn: review_max_bounces 1` | [`timing-report-darn`](design-timing-report-darn.md) | darn | Darn-Write | 1d | 11m | report |
 | 6 | **Fast batten start, local-only fabric pairs and one Command producer**<br>• Batten pushes status to GitHub after every row (about 2 s each); fabric add/remove wait on origin even for local pairs; side-action rows become one Command producer | [`batten-start-speed`](design-batten-start-speed.md) | loom | Plan-Burler-Review | 1d | 7h | batten, fabric, shed, config, loom |
-| 7 | **creel log: a hold refresh writes a held event every ~2s**<br>• `darn: review_max_bounces 1` | [`creel-hold-log-spam`](design-creel-hold-log-spam.md) | darn | Darn-Burler-Fix | 57m | 10m | creel |
+| 7 | **creel log: a hold refresh writes a held event every ~2s**<br>• `darn: review_max_bounces 1` | [`creel-hold-log-spam`](design-creel-hold-log-spam.md) | darn | Darn-Burler-Fix | 58m | 11m | creel |
 
 ### Ready
 
@@ -44,7 +44,7 @@ Waits only on Running or Ready entries.
 
 | # | Task | Slug | Recipe | After | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | **[WS 002] One VS Code workspace per umbrella, listing its worktrees directly**<br>• Workspace files in the hub dir; umbrella worktree first, then Bolt, then its live pairs at their anchors; no _portals; finished pairs drop out<br>• `loom: discussion_max_bounces 2`<br>• `loom: merge_max_bounces 1`<br>• `loom: plan_max_bounces 1`<br>• `loom: webster_max_bounces 1` | [`hub-workspaces`](design-hub-workspaces.md) | loom | `batten-start-speed` | 1h | 42m | fabric, ide, workspaces |
+| 1 | **[WS 002] One VS Code workspace per umbrella, listing its worktrees directly**<br>• Workspace files in the hub dir; umbrella worktree first, then Bolt, then its live pairs at their anchors; no _portals; finished pairs drop out<br>• `loom: discussion_max_bounces 2`<br>• `loom: merge_max_bounces 1`<br>• `loom: plan_max_bounces 1`<br>• `loom: webster_max_bounces 1` | [`hub-workspaces`](design-hub-workspaces.md) | loom | `batten-start-speed` | 1h | 43m | fabric, ide, workspaces |
 
 #### Normal priority
 
@@ -65,7 +65,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 1 | **Prototype reed status buttons in a throwaway tmux server**<br>• A fresh agent tries the menu button, follow toggle and extra button line by hand before reed-status-buttons becomes a task | [`reed-status-buttons-prototype`](design-reed-status-buttons-prototype.md) | 3d | 3d | reed |
 | 2 | **Classify Plan lens and review findings to make the Plan writer get it right first**<br>• Find what Plan lenses and Plan-Burler-Review keep catching, and stop each recurring class at the writer | [`plan-writer-finding-classes`](design-plan-writer-finding-classes.md) | 2d | 2d | loom, burler, stencil, shed |
 | 3 | **Recurring test-suite time and growth audit**<br>• Re-run cmd/testtiming against test-suite-timing.md to watch suite growth | [`test-time-audit-recurring`](design-test-time-audit-recurring.md) | 1h | 1h |  |
-| 4 | **Audit the use of the twill and lens review setup at every perch**<br>• After about ten loom runs, measure what the lens fans and twill fixers catch per perch against their cost, and set the standard review rounds from it | [`review-setup-audit`](design-review-setup-audit.md) | 14m | 14m | burler, loom, report |
+| 4 | **Audit the use of the twill and lens review setup at every perch**<br>• After about ten loom runs, measure what the lens fans and twill fixers catch per perch against their cost, and set the standard review rounds from it | [`review-setup-audit`](design-review-setup-audit.md) | 15m | 15m | burler, loom, report |
 
 ### Enhancements
 
@@ -73,7 +73,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Note | Slug | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| 1 | **[WS 005] One Go daemon per beam owns and drives its runs**<br>• Each beam (a worktree with an orch thread) gets a Go daemon, started by lyx orch start, that follows its runs status files, starts ready tasks, lands, settles mechanical stops and tells the thread only what needs judgement | [`umbrella-daemon`](design-umbrella-daemon.md) | 6d | 2m | batten, orch, shed, workspaces, loom |
+| 1 | **[WS 005] One Go daemon per beam owns and drives its runs**<br>• Each beam (a worktree with an orch thread) gets a Go daemon, started by lyx orch start, that follows its runs status files, starts ready tasks, lands, settles mechanical stops and tells the thread only what needs judgement | [`umbrella-daemon`](design-umbrella-daemon.md) | 6d | 3m | batten, orch, shed, workspaces, loom |
 
 #### Normal priority
 
@@ -118,7 +118,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 1 | **[WS 006] Umbrella tasks: project threads that spawn and land from their own worktree**<br>• A larger project is an umbrella task with a long-lived pair and its own orch thread; tasks name it as parent, spawn from and land into its branch, and report to its thread; the prime is the root umbrella | [`orch-any-worktree`](design-orch-any-worktree.md) | 2w | 1h | fabric, batten, orch, board, reed, creel, shed, workspaces |
 | 2 | **Weaver: a cold-start implementer beside Webster, with model escalation**<br>• A second implementer built on Millhouse Builder: a fresh agent per batch with its own model, escalating the model when an agent fails; Webster stays fork-based | [`weaver`](design-weaver.md) | 7d | 7h | webster |
 | 3 | **creel stage 3: agents message through creel, not SendMessage**<br>• Parent asks, parent review, stop reports and shuttle send go through creel, so a non-Claude engine can take a role with a parent | [`creel-agents`](design-creel-agents.md) | 3d | 1d | creel, shuttle, loom, stencil, report |
-| 4 | **[WS 004] Board projects and pairs created from a parent pair**<br>• A task names its project; a project groups tasks in order and may have its own worktree; fabric and batten create a project task pair from that branch, batten verbs run from any worktree | [`pair-from-parent`](design-pair-from-parent.md) | 1h | 10m | fabric, batten, board, workspaces |
+| 4 | **[WS 004] Board projects and pairs created from a parent pair**<br>• A task names its project; a project groups tasks in order and may have its own worktree; fabric and batten create a project task pair from that branch, batten verbs run from any worktree | [`pair-from-parent`](design-pair-from-parent.md) | 1h | 11m | fabric, batten, board, workspaces |
 
 #### Normal priority
 
@@ -139,7 +139,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 17 | **Ideas to borrow from comparable agent orchestrators (survey, Oct 2026)** | [`orchestrator-survey-ideas`](design-orchestrator-survey-ideas.md) | 2d | 1d | burler, shed, orch, quarry, report |
 | 18 | **Regression tier: baseline profiles before the run, compare at the final gate**<br>• Support a hub regression tier that writes profiles on the parent before implementation and compares after, switchable per task for expected drift. | [`regression-baseline-verify`](design-regression-baseline-verify.md) | 1d | 1d | shed, webster, batten, config |
 | 19 | **Draw a plan as a card DAG with its glyph and file matrix**<br>• A tools/ program that reads a plan, builds the card x glyph/file matrix and writes Graphviz DOT of the card dependencies | [`plan-dag-view`](design-plan-dag-view.md) | 23h | 23h | loom, webster |
-| 20 | **Go-driven loom run: no long-lived LLM driver per run, and who receives a run message**<br>• A Go loop steps every loom run and spawns a cold LLM watcher only on a stop it cannot pass; messages for a run go to its driver or a durable record | [`go-driven-loom`](design-go-driven-loom.md) | 2m | 2m | loom, shed, creel |
+| 20 | **Go-driven loom run: no long-lived LLM driver per run, and who receives a run message**<br>• A Go loop steps every loom run and spawns a cold LLM watcher only on a stop it cannot pass; messages for a run go to its driver or a durable record | [`go-driven-loom`](design-go-driven-loom.md) | 3m | 3m | loom, shed, creel |
 
 #### Low priority
 
