@@ -30,6 +30,7 @@ Batten's Seed-Child writes the profile's settings into the pair's local config w
   battencli's new `prepareRunSettings` loads the profiles from the board dir and calls `LayerRunSettings`.
   An unknown profile, a profiles file that fails to decode, or a refused key wraps `ErrInvalidRunSettings`, so the row stands Stuck.
   The Stuck reason's way forward now names the profile field and `lyx config profiles` beside `run_settings`.
+- `PATTERN-config-strictness` records `runprofile` as a third loading stance beside strict `Load` and `LoadOrTemplate`, with the reason.
 - Docs: the new package's `doc.go`, the `boardengine`, `boardcli`, `battenshed`, `configcli`, `configengine` and `yamlengine` package docs, `docs/overview.md` and the `ly:board` skill.
 
 ## Design decisions
@@ -42,6 +43,7 @@ Batten's Seed-Child writes the profile's settings into the pair's local config w
 - `SetEntries` writes JSON scalars in plain YAML style, quoted only where the text needs it, so a profile set from JSON reads like a hand-written one.
 - A task session can no longer change its own `profile`, just as it cannot change its own `run_settings`: a profile lowers review rounds the same way.
   The guard is the existing slug guard: it stops a mistaken write, not a determined one.
+- A profile is read at seeding only, so a later change of a profile never reaches a run already seeded.
 - The help pages of `lyx board upsert` and `lyx config` grew past the 2000-byte cap once the new field and module were added.
   A few lines of each were shortened, dropping asides such as `body`'s "(proposal / background)" and `--body-file`'s "every other field still comes from the payload".
 
@@ -49,3 +51,11 @@ Batten's Seed-Child writes the profile's settings into the pair's local config w
 
 - The hub default of about 3-3-2 review rounds is untouched, and is not a profile.
 - A hub whose reconcile has not yet run after this binary reads the template's profiles until it does.
+
+## To check by hand
+
+- `internal/runprofile/runprofile.go`: `Load` is a third config loading policy; check that the wording added to `PATTERN-config-strictness` and its `PATTERN.md` line states it right.
+- `internal/boardcli/verbs_test.go`: check that the unknown-profile refusal is covered on `upsert-batch` and `merge`, as on `upsert`.
+- `internal/boardcli/runsettings.go`: check the profile-specific running-pair notice, and that re-sending the stored profile from a task session is not refused.
+- `internal/configreg/runsettings.go`: the second check of the merged document after layering, which refuses a profile and task settings that each validate alone but not together, has no test row; try one by hand.
+- `internal/configengine/set.go`: `setEntries` on the local layer (`lyx config profiles --layer local --set ...`) should be refused with the file untouched; check it by hand.
