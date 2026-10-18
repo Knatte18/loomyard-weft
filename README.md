@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-18 13:53 UTC; every age below is as of then.
+Rendered 2026-10-18 13:54 UTC; every age below is as of then.
 
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
@@ -17,7 +17,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | **Fast batten start, local-only fabric pairs and one Command producer**<br>• Batten pushes status to GitHub after every row (about 2 s each); fabric add/remove wait on origin even for local pairs; side-action rows become one Command producer | [`batten-start-speed`](design-batten-start-speed.md) | loom | Loom-Preflight | 1d | 6h | batten, fabric, shed, config, loom |
+| 1 | **Fast batten start, local-only fabric pairs and one Command producer**<br>• Batten pushes status to GitHub after every row (about 2 s each); fabric add/remove wait on origin even for local pairs; side-action rows become one Command producer | [`batten-start-speed`](design-batten-start-speed.md) | loom | Discussion-Write | 1d | 6h | batten, fabric, shed, config, loom |
 
 ### Ready
 
@@ -48,7 +48,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 1 | **Prototype reed status buttons in a throwaway tmux server**<br>• A fresh agent tries the menu button, follow toggle and extra button line by hand before reed-status-buttons becomes a task | [`reed-status-buttons-prototype`](design-reed-status-buttons-prototype.md) | 3d | 3d | reed |
 | 2 | **Classify Plan lens and review findings to make the Plan writer get it right first**<br>• Find what Plan lenses and Plan-Burler-Review keep catching, and stop each recurring class at the writer | [`plan-writer-finding-classes`](design-plan-writer-finding-classes.md) | 2d | 1d | loom, burler, stencil, shed |
 | 3 | **Recurring Webster kick-start pack (glyph) audit**<br>• Re-run tools/forkaudit on new Webster forks to track pack use and correctness | [`glyph-audit-recurring`](design-glyph-audit-recurring.md) | 1d | 1d | webster, quarry |
-| 4 | **Recurring test-suite time and growth audit**<br>• Re-run cmd/testtiming against test-suite-timing.md to watch suite growth | [`test-time-audit-recurring`](design-test-time-audit-recurring.md) | 8m | 8m |  |
+| 4 | **Recurring test-suite time and growth audit**<br>• Re-run cmd/testtiming against test-suite-timing.md to watch suite growth | [`test-time-audit-recurring`](design-test-time-audit-recurring.md) | 9m | 9m |  |
 
 ### Bugs
 
