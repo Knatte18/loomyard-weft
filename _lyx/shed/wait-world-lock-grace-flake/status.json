@@ -1,11 +1,11 @@
 {
-  "current_producer": "Darn-Write",
+  "current_producer": "Darn-Bouncer",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Darn-Write",
-    "last": "Preflight → done",
+    "now": "Darn-Bouncer",
+    "last": "Darn-Write → done",
     "wait": ""
   },
   "history": [
@@ -14,6 +14,33 @@
       "outcome": "done",
       "output": "",
       "at": "2026-10-18T15:03:00Z"
+    },
+    {
+      "producer": "Darn-Write",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYXHUB/wait-world-lock-grace-flake/_lyx/landing/summary.md",
+      "at": "2026-10-18T15:10:15Z",
+      "gate_attempts": 0,
+      "gate_spans": [
+        {
+          "gate": "discussion",
+          "kind": "gate",
+          "start": "2026-10-18T15:08:09.951968549Z",
+          "end": "2026-10-18T15:08:21.760554134Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-10-18T15:08:21.858605615Z",
+          "end": "2026-10-18T15:10:15.447017883Z"
+        },
+        {
+          "gate": "description",
+          "kind": "gate",
+          "start": "2026-10-18T15:10:15.491191316Z",
+          "end": "2026-10-18T15:10:15.491229908Z"
+        }
+      ]
     }
   ],
   "product": {
