@@ -1,11 +1,11 @@
 {
-  "current_producer": "PR-Align",
+  "current_producer": "PR-Gate",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "PR-Align",
-    "last": "Publish → done",
+    "now": "PR-Gate",
+    "last": "PR-Align → done",
     "wait": ""
   },
   "history": [
@@ -106,6 +106,12 @@
       "outcome": "done",
       "output": "",
       "at": "2026-10-18T15:23:14Z"
+    },
+    {
+      "producer": "PR-Align",
+      "outcome": "done",
+      "output": "",
+      "at": "2026-10-18T15:23:58Z"
     }
   ],
   "product": {

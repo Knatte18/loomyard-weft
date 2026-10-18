@@ -1,0 +1,8 @@
+verdict: approve
+reason: >-
+  The diff moves the capability probe's transient tmux server off the hub socket to a private -L key per probe and removes that socket afterwards.
+  This removes in production code the race behind the TwoWorktreesBootedConcurrently flake, as the board entry asks.
+  It adds a tmux-tier test pinning that behaviour and updates the reedengine doc, with no work outside the entry.
+  The one open risk names no parent correction, and no peer run or parent commit overlaps.
+question: ""
+superseded: []
