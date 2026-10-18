@@ -34,12 +34,12 @@
 - `internal/tendercli#InstallNetworkGate` -> `func InstallNetworkGate(ctx context.Context, pauseSlug *string)`
 - `internal/tendercli#TestInstallNetworkGate_TellsThePairsSlugAndInstallsNothingOutsideAHub`
 - `cmd/lyx#newRoot`
-- `plan:internal/fabriccli_test#TestRunCLI_LocalPairScenario`
+- `internal/fabriccli_test#TestRunCLI_LocalPairScenario`
 - `internal/fabricengine/doc.go`
 
 **Uses:**
 - `internal/gitrepo#Repo.BranchMarkedLocal`
-- `plan:internal/fabricengine#Topology.AddLocal`
+- `internal/fabricengine#Topology.AddLocal`
 - `internal/fabricengine#IsPrimeWorktree`
 - `internal/fabricengine#RecordsWorktree`
 - `internal/fabricengine#BoardDir`

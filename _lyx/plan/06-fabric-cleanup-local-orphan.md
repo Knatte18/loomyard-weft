@@ -9,7 +9,7 @@
 
 **Uses:**
 - `internal/gitrepo#Repo.BranchMarkedLocal`
-- `plan:internal/fabricengine#Topology.AddLocal`
+- `internal/fabricengine#Topology.AddLocal`
 - `internal/fabricengine#deleteWeftBranch`
 
 **Intent:** Make `lyx fabric cleanup --apply` over a local pair's orphan weft branch push nothing (D3: "pushes no archive tag and deletes nothing remote; the branch itself goes by the records rule").

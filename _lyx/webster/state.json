@@ -1,15 +1,15 @@
 {
   "runGuid": "8475583b7647c7b1e83b8c2edc8f0c33",
-  "planFingerprint": "07cb980343af0fb6980ffcf81eb258d0d602c15e7d8f67aa61545d710bd633d4",
+  "planFingerprint": "ac6bce13589d2ce3b203beb485fa2486f8af49cc7268c2610fb25b1cba85fefd",
   "planFileHashes": {
     "00-overview.md": "65dbab17d30b6830dd38752ec2b055d7da0c5949016051b0179fcd9aa57edbd7",
     "01-batten-start-before-numbers.md": "c9553b61faf0eef0836963bd117c0c779f923f3fa11037526908d548088f8997",
     "02-gitrepo-local-branch-mark.md": "647417f441a85322affc1a222bdc3192039d458716546db84dba46613523906f",
     "03-fabric-push-skips-local-branches.md": "0b1b7d5ffe01d76e0548496751ee97b86bd42df94f8a0fe0c33ed1f7a623eefd",
-    "04-fabric-add-local.md": "3fc5a65b7dc8624b19be75e2ae870f001b9ff3f3d7077cd5a856929c722a57b6",
-    "05-fabric-remove-local-pair.md": "35cd5fb00df678b54a20d5ef3584b0ed82db82b1551cb728aaec085e1f70fdf1",
-    "06-fabric-cleanup-local-orphan.md": "a1c163a561e97d8a87482ebf97dad417e5e6cb03bdd7b7cfd820eb4e5462f231",
-    "07-status-push-spawn-entry.md": "1cce00a0e42588b745309b790bc78fdf888aef79fb9da03ac9a704984c636b59",
+    "04-fabric-add-local.md": "b400f4e1986b57638077d3ca321a06a63f22b07770eb777bcb33554ebc0a5d96",
+    "05-fabric-remove-local-pair.md": "cc5fc4f37272fdffb8484d07eaf68b2ccd8a521d8c36e349251e29b0ea52cdd2",
+    "06-fabric-cleanup-local-orphan.md": "467161e8aab38d745d0a402730c995c5051e07751eff1449688e17c46d003be6",
+    "07-status-push-spawn-entry.md": "03800247424dc043166c6069856a65388c1369f70968f425cc4bfc09b5a2dfc3",
     "08-push-lock-pending-flags.md": "857702a997fbb6d58d1e2bebf6696cd372bc1cf6519bb5c250b32189dd1a9275",
     "09-pair-teardown-lock.md": "41ffa9d74467e67ab23a08ecfba4e79643dc7b982109bef440827467c35aa527",
     "10-status-seams-spawn-detached-push.md": "8c401513883ecf07fd8e837ed2a1e909d80e774c5c7cd374ce80ec4e879fb2e6",
@@ -534,7 +534,7 @@
       }
     }
   ],
-  "currentBatch": 4,
+  "currentBatch": 0,
   "masterStrand": "18b89fdaf0c53d704ba876fc2316b225",
   "masterSessionId": "42895572-32bc-4eb5-9874-49c6600de7bc",
   "masterEngine": "claude",
@@ -585,18 +585,37 @@
         "04-fabric-add-local"
       ],
       "cardHashes": {
-        "04-fabric-add-local": "3fc5a65b7dc8624b19be75e2ae870f001b9ff3f3d7077cd5a856929c722a57b6"
+        "04-fabric-add-local": "b400f4e1986b57638077d3ca321a06a63f22b07770eb777bcb33554ebc0a5d96"
       },
       "startSha": "6d8423fc7e40464cd28322f6d1610b7017379f96",
       "kind": "fork",
       "spawnedAt": "2026-10-18T16:16:15Z",
       "sessionId": "42895572-32bc-4eb5-9874-49c6600de7bc",
       "engine": "claude",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "04-fabric-add-local",
+        "status": "done",
+        "head_sha": "0ea24c5e37685cfb8aea507aa6eddc4dec3ca54f",
+        "deviations": [
+          "internal/fabricengine/add.go",
+          "internal/fabricengine/add_local_integration_test.go"
+        ]
+      },
+      "cardShas": [
+        "0ea24c5e37685cfb8aea507aa6eddc4dec3ca54f"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-batten-start-speed/42895572-32bc-4eb5-9874-49c6600de7bc/subagents/agent-a0c08c0787eb4db52.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-batten-start-speed/42895572-32bc-4eb5-9874-49c6600de7bc/subagents/agent-a0c08c0787eb4db52.jsonl"
+      ]
     }
   },
   "seenForkTranscripts": [
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-batten-start-speed/42895572-32bc-4eb5-9874-49c6600de7bc/subagents/agent-a1185b1131e07de8f.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-batten-start-speed/42895572-32bc-4eb5-9874-49c6600de7bc/subagents/agent-a1185b1131e07de8f.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-batten-start-speed/42895572-32bc-4eb5-9874-49c6600de7bc/subagents/agent-a0c08c0787eb4db52.jsonl"
   ]
 }

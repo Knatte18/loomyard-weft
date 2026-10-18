@@ -1,14 +1,14 @@
 # Card 4 — fabric-add-local
 
 **Create:**
-- `plan:internal/fabricengine#Topology.AddLocal` -> `func (t *Topology) AddLocal(l *lyxcwd.Location, slug string) (AddResult, error)`
-- `plan:internal/fabricengine#Topology.add` -> `func (t *Topology) add(l *lyxcwd.Location, slug string, opts AddOptions, local bool) (res AddResult, err error)`
-- `plan:internal/fabricengine#ErrLocalAddOverOrdinary` -> `type ErrLocalAddOverOrdinary struct`
-- `plan:internal/fabricengine#ErrLocalAddOverOrdinary.Error` -> `func (e *ErrLocalAddOverOrdinary) Error() string`
-- `plan:internal/fabricengine#addFailAfterWarpHook` -> `var addFailAfterWarpHook func() error`
-- `plan:internal/fabricengine#SetAddFailAfterWarpHookForTest` -> `func SetAddFailAfterWarpHookForTest(t *testing.T, hook func() error)`
-- `plan:internal/fabricengine_test#TestAddLocal` -> `func TestAddLocal(t *testing.T)`
-- `plan:internal/fabriccli_test#TestRunCLI_LocalPairScenario` -> `func TestRunCLI_LocalPairScenario(t *testing.T)`
+- `internal/fabricengine#Topology.AddLocal`
+- `internal/fabricengine#Topology.add`
+- `internal/fabricengine#ErrLocalAddOverOrdinary`
+- `internal/fabricengine#ErrLocalAddOverOrdinary.Error`
+- `internal/fabricengine#addFailAfterWarpHook`
+- `internal/fabricengine#SetAddFailAfterWarpHookForTest`
+- `internal/fabricengine_test#TestAddLocal`
+- `internal/fabriccli_test#TestRunCLI_LocalPairScenario`
 
 **Edit:**
 - `internal/fabricengine#Topology.Add`

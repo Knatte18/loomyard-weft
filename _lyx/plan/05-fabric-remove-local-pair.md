@@ -22,7 +22,7 @@
 
 **Uses:**
 - `internal/gitrepo#Repo.BranchMarkedLocal`
-- `plan:internal/fabricengine#Topology.AddLocal`
+- `internal/fabricengine#Topology.AddLocal`
 - `internal/fabricengine#deleteWarpBranch`
 - `internal/fabricengine#ArchiveWeftTipForTest`
 - `internal/fabricengine#CheckRemoteBranchRequestForTest`
