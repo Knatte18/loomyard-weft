@@ -786,24 +786,6 @@
       "revised": "2026-10-17T12:12:24Z"
     },
     {
-      "id": 638,
-      "slug": "glyph-audit-recurring",
-      "title": "Recurring Webster kick-start pack (glyph) audit",
-      "kind": "note",
-      "labels": [
-        "audit",
-        "webster",
-        "quarry"
-      ],
-      "issues": [],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "Re-run tools/forkaudit on new Webster forks to track pack use and correctness",
-      "body": "## What this is\n\nA recurring audit of how Webster implementer forks use their kick-start pack (glyph spans) and whether the pack is correct, run with `tools/forkaudit/forkaudit.sh --since \u003cdate\u003e --pack-check --plan`.\nEach audit keeps its report and summary under `docs/research/glyph-audit-\u003cdate\u003e/`.\nOperator instruction 2026-10-17: keep this on the board so future glyph audits are not forgotten.\n\n## Audits so far\n\n- `docs/research/glyph-audit-2026-10-12/`, `-10-13/`, `-10-15/`: the inline, read-all-first and pack-file layouts.\n- `docs/research/glyph-audit-2026-10-17/`: the first audit of the per-card layout (`lyx loom card-pack`, default since `aa925bdcc`), 90 forks from 26 runs.\n  Card forks read about half their spans before the first edit (pack-file forks a quarter) and start editing after half as many calls; 0 stale spans of 1661 checked at batch start; about 20% of edits still go to files with no span; cost per card is higher, but the workloads differ.\n\n## Open points for the next audit\n\n- `forkaudit` grades only a fork's first `card-pack` call, so files a later card's pack covered count as missed, and the 20% missed share is an upper bound (open finding from `aa925bdcc`, in `tools/forkaudit/pack-entries.jq` and `report.jq`).\n- The card arm's spans-window definition may bias the spans-reached share (open finding from `aa925bdcc`, in `tools/forkaudit/extract.jq`).\n- Pack drift during a batch is unmeasured.\n- Five forks in the 2026-10-17 sample matched no arm marker (`none`).\n- Three card forks had no spans at all, among them a creel-core fork with 81 edits; why is unknown.\n\n## Orch recommendation, not a decision\n\nRun the next audit after about 20 more Webster runs, or right after any change to the pack layout or the fork prompt, whichever comes first, and fix the first-call grading gap in `forkaudit` before it, so the missed-files share means something.\nA cheap model (Sonnet) runs the script; the orch places the result in `docs/research/`.\n",
-      "created": "2026-10-17T13:41:06Z",
-      "revised": "2026-10-17T13:41:06Z"
-    },
-    {
       "id": 639,
       "slug": "kickstart-pack-remove",
       "title": "Remove the Webster kick-start pack",
