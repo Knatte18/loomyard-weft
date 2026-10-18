@@ -1,0 +1,9 @@
+verdict: approve
+reason: >-
+  The diff stays inside internal/creelengine and does what the board entry asks:
+  a same-owner renewal is journaled as a renewed record that keeps its expiry across a restart and adds no log event,
+  while a hold's start, a retake after expiry or release, and a release each still log once.
+  The one open risk, an older binary keeping a hold's first expiry, names no parent correction.
+  No peer run or parent commit touches the package, so there is no overlap.
+question: ""
+superseded: []
