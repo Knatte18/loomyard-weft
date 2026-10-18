@@ -1,0 +1,563 @@
+{
+  "runGuid": "8475583b7647c7b1e83b8c2edc8f0c33",
+  "planFingerprint": "c3f76439577baab81d875c8005d492a1604c04bc0a80d9def9db6baffa29fe75",
+  "planFileHashes": {
+    "00-overview.md": "65dbab17d30b6830dd38752ec2b055d7da0c5949016051b0179fcd9aa57edbd7",
+    "01-batten-start-before-numbers.md": "c9553b61faf0eef0836963bd117c0c779f923f3fa11037526908d548088f8997",
+    "02-gitrepo-local-branch-mark.md": "ef17c0c88363c35d824e1ce1eafa2c2b6e06a2d4f03d62669486b75814703fe3",
+    "03-fabric-push-skips-local-branches.md": "c71ae6b8acf00d0515cf99473426ce9f76cf676cbf873d0f815ffc63def61e21",
+    "04-fabric-add-local.md": "93a2699017eb29e37bd7283b0b1c5397466cf1b5d40f7e8475c9e16c638f973a",
+    "05-fabric-remove-local-pair.md": "8e86146a7e6da35beff07f8dcaa8fa217272845fdc0cf3a9291c538c2a7da299",
+    "06-fabric-cleanup-local-orphan.md": "bd8e47cb55a694850ca7770d711865238527cc2e5284bc3dcd8363e3c2dbfade",
+    "07-status-push-spawn-entry.md": "359eeeaa7d117f632a7a991d8960eda1bf40ad76c0ccde7e4422e11510c71d76",
+    "08-push-lock-pending-flags.md": "857702a997fbb6d58d1e2bebf6696cd372bc1cf6519bb5c250b32189dd1a9275",
+    "09-pair-teardown-lock.md": "41ffa9d74467e67ab23a08ecfba4e79643dc7b982109bef440827467c35aa527",
+    "10-status-seams-spawn-detached-push.md": "8c401513883ecf07fd8e837ed2a1e909d80e774c5c7cd374ce80ec4e879fb2e6",
+    "11-verifyrun-argument-quoting.md": "0fe46df642efd0f6c7d950548f53e46f44f1eb2d71c10a3e39e06dce42864c8e",
+    "12-ide-seed-and-open-verbs.md": "f9ed887cdb53d809a68e2b7d413b00f79bb4bf1f87411fd2d5858ef31691fc8f",
+    "13-reed-window-verb.md": "5f1fe7d97ad56af9ff8b18ae6f32d49174acf54c2be4869e0c4d6a118bd9a7d4",
+    "14-command-producer.md": "80bff0fb85d6fa87724ccd5252e9855eb155216371677a97148aad1433e857ac",
+    "15-command-engine-replaces-switched-rows.md": "f81d24dc4798ab97c8ba702df393c9487f3c9f8415333367dc3bca74007b8b9e",
+    "16-batten-start-after-numbers.md": "b5972ac80b6c2a5c16b896d97f6adf8956240db1e711be7410b022a18fe88a2d"
+  },
+  "planOverviewFrameHash": "809c2c8dbb8ea3d83eaec5ab368ee25d7825669d6f577af31fee82ae7345fbbc",
+  "partition": [
+    {
+      "cards": [
+        "01-batten-start-before-numbers",
+        "02-gitrepo-local-branch-mark",
+        "03-fabric-push-skips-local-branches"
+      ],
+      "profile": "cautious",
+      "estimate": 130984,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 1,
+        "startup": 54772,
+        "read_union": 13056,
+        "cards": [
+          {
+            "card": 1,
+            "card_text": 204,
+            "reads": {
+              "package:docs/research/batten-start-2026-10-18": 2000,
+              "tests:docs/research/batten-start-2026-10-18": 2000
+            },
+            "messages": 6,
+            "written": 2004
+          },
+          {
+            "card": 2,
+            "card_text": 468,
+            "reads": {
+              "package:internal/gitrepo": 2000,
+              "tests:internal/gitrepo": 2000
+            },
+            "messages": 69.5,
+            "written": 21318
+          },
+          {
+            "card": 3,
+            "card_text": 384,
+            "reads": {
+              "package:internal/fabricengine": 2000,
+              "tests:internal/fabricengine": 2000
+            },
+            "messages": 131.5,
+            "written": 39834
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "04-fabric-add-local"
+      ],
+      "profile": "cautious",
+      "estimate": 181026,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 2,
+        "startup": 61772,
+        "read_union": 51580,
+        "cards": [
+          {
+            "card": 4,
+            "card_text": 924,
+            "reads": {
+              "file:docs/overview.md": 9612,
+              "file:internal/fabriccli/doc.go": 780,
+              "file:internal/fabricengine/doc.go": 16932,
+              "file:tools/sandbox/SANDBOX-FABRIC-SUITE.md": 7332,
+              "package:docs": 2000,
+              "package:internal/fabriccli": 2000,
+              "package:internal/fabricengine": 2000,
+              "package:tools/sandbox": 2000,
+              "tests:docs": 2000,
+              "tests:internal/fabriccli": 2000,
+              "tests:internal/fabricengine": 2000,
+              "tests:tools/sandbox": 2000
+            },
+            "messages": 222.5,
+            "written": 67674
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "05-fabric-remove-local-pair",
+        "06-fabric-cleanup-local-orphan"
+      ],
+      "profile": "cautious",
+      "estimate": 188756,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 3,
+        "startup": 68772,
+        "read_union": 26108,
+        "cards": [
+          {
+            "card": 5,
+            "card_text": 840,
+            "reads": {
+              "file:internal/fabricengine/doc.go": 16932,
+              "package:internal/fabriccli": 2000,
+              "package:internal/fabricengine": 2000,
+              "tests:internal/fabriccli": 2000,
+              "tests:internal/fabricengine": 2000
+            },
+            "messages": 199.5,
+            "written": 60690
+          },
+          {
+            "card": 6,
+            "card_text": 336,
+            "reads": {
+              "package:internal/fabricengine": 2000,
+              "tests:internal/fabricengine": 2000
+            },
+            "messages": 109.5,
+            "written": 33186
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "07-status-push-spawn-entry"
+      ],
+      "profile": "cautious",
+      "estimate": 206390,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 4,
+        "startup": 75772,
+        "read_union": 34000,
+        "cards": [
+          {
+            "card": 7,
+            "card_text": 1068,
+            "reads": {
+              "file:internal/fabricengine/doc.go": 16932,
+              "package:cmd/lyx": 2000,
+              "package:internal/fabriccli": 2000,
+              "package:internal/fabricengine": 2000,
+              "package:internal/tendercli": 2000,
+              "tests:cmd/lyx": 2000,
+              "tests:internal/fabriccli": 2000,
+              "tests:internal/fabricengine": 2000,
+              "tests:internal/tendercli": 2000
+            },
+            "messages": 318.5,
+            "written": 96618
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "08-push-lock-pending-flags"
+      ],
+      "profile": "cautious",
+      "estimate": 168634,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 5,
+        "startup": 82772,
+        "read_union": 25772,
+        "cards": [
+          {
+            "card": 8,
+            "card_text": 840,
+            "reads": {
+              "file:internal/fabricengine/doc.go": 16932,
+              "package:internal/fabriccli": 2000,
+              "package:internal/fabricengine": 2000,
+              "tests:internal/fabriccli": 2000,
+              "tests:internal/fabricengine": 2000
+            },
+            "messages": 197.5,
+            "written": 60090
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "09-pair-teardown-lock"
+      ],
+      "profile": "cautious",
+      "estimate": 198496,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 6,
+        "startup": 89772,
+        "read_union": 33928,
+        "cards": [
+          {
+            "card": 9,
+            "card_text": 996,
+            "reads": {
+              "file:internal/fabricengine/doc.go": 16932,
+              "package:internal/battencli": 2000,
+              "package:internal/fabriccli": 2000,
+              "package:internal/fabricengine": 2000,
+              "package:internal/lock": 2000,
+              "tests:internal/battencli": 2000,
+              "tests:internal/fabriccli": 2000,
+              "tests:internal/fabricengine": 2000,
+              "tests:internal/lock": 2000
+            },
+            "messages": 246,
+            "written": 74796
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "10-status-seams-spawn-detached-push"
+      ],
+      "profile": "cautious",
+      "estimate": 220930,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 7,
+        "startup": 96772,
+        "read_union": 36972,
+        "cards": [
+          {
+            "card": 10,
+            "card_text": 1536,
+            "reads": {
+              "file:PATTERN.md": 1428,
+              "file:docs/overview.md": 9612,
+              "file:internal/cleanupcli/doc.go": 396,
+              "package:.": 2000,
+              "package:docs": 2000,
+              "package:internal/battencli": 2000,
+              "package:internal/cleanupcli": 2000,
+              "package:internal/loomcli": 2000,
+              "package:internal/statuscommit": 2000,
+              "tests:.": 2000,
+              "tests:docs": 2000,
+              "tests:internal/battencli": 2000,
+              "tests:internal/cleanupcli": 2000,
+              "tests:internal/loomcli": 2000,
+              "tests:internal/statuscommit": 2000
+            },
+            "messages": 285.5,
+            "written": 87186
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "11-verifyrun-argument-quoting",
+        "12-ide-seed-and-open-verbs",
+        "13-reed-window-verb",
+        "14-command-producer"
+      ],
+      "profile": "cautious",
+      "estimate": 196030,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 8,
+        "startup": 103772,
+        "read_union": 26564,
+        "cards": [
+          {
+            "card": 11,
+            "card_text": 312,
+            "reads": {
+              "package:internal/verifyrun": 2000,
+              "tests:internal/verifyrun": 2000
+            },
+            "messages": 37,
+            "written": 11412
+          },
+          {
+            "card": 12,
+            "card_text": 420,
+            "reads": {
+              "package:cmd/lyx": 2000,
+              "package:internal/idecli": 2000,
+              "tests:cmd/lyx": 2000,
+              "tests:internal/idecli": 2000
+            },
+            "messages": 52.5,
+            "written": 16170
+          },
+          {
+            "card": 13,
+            "card_text": 360,
+            "reads": {
+              "file:internal/reedcli/doc.go": 372,
+              "package:internal/reedcli": 2000,
+              "tests:internal/reedcli": 2000
+            },
+            "messages": 47,
+            "written": 14460
+          },
+          {
+            "card": 14,
+            "card_text": 852,
+            "reads": {
+              "file:internal/shedadapters/doc.go": 4248,
+              "package:internal/shedadapters": 2000,
+              "tests:internal/shedadapters": 2000
+            },
+            "messages": 76,
+            "written": 23652
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "15-command-engine-replaces-switched-rows"
+      ],
+      "profile": "cautious",
+      "estimate": 300150,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 9,
+        "startup": 110772,
+        "read_union": 70200,
+        "cards": [
+          {
+            "card": 15,
+            "card_text": 1428,
+            "reads": {
+              "file:PATTERN.md": 1428,
+              "file:contracts/recipes/batten-recipe.yaml": 900,
+              "file:docs/overview.md": 9612,
+              "file:internal/battenshed/doc.go": 2112,
+              "file:internal/battenshed/template.yaml": 72,
+              "file:internal/shedadapters/doc.go": 4248,
+              "file:internal/shedadapters/switched.go": 696,
+              "file:internal/shedadapters/switched_test.go": 624,
+              "file:internal/shedrecipe/entries_switched.go": 444,
+              "file:internal/shedrecipe/entries_switched_test.go": 636,
+              "package:.": 2000,
+              "package:cmd/lyx": 2000,
+              "package:contracts/recipes": 2000,
+              "package:docs": 2000,
+              "package:internal/battencli": 2000,
+              "package:internal/battenrecipe": 2000,
+              "package:internal/battenshed": 2000,
+              "package:internal/configreg": 2000,
+              "package:internal/loomcli": 2000,
+              "package:internal/shedadapters": 2000,
+              "package:internal/shedrecipe": 2000,
+              "package:internal/testkit/envkit": 2000,
+              "tests:.": 2000,
+              "tests:cmd/lyx": 2000,
+              "tests:contracts/recipes": 2000,
+              "tests:docs": 2000,
+              "tests:internal/battencli": 2000,
+              "tests:internal/battenrecipe": 2000,
+              "tests:internal/battenshed": 2000,
+              "tests:internal/configreg": 2000,
+              "tests:internal/loomcli": 2000,
+              "tests:internal/shedadapters": 2000,
+              "tests:internal/shedrecipe": 2000,
+              "tests:internal/testkit/envkit": 2000
+            },
+            "messages": 392.5,
+            "written": 119178
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "16-batten-start-after-numbers"
+      ],
+      "profile": "cautious",
+      "estimate": 160394,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 10,
+        "startup": 117772,
+        "read_union": 16336,
+        "cards": [
+          {
+            "card": 16,
+            "card_text": 336,
+            "reads": {
+              "package:docs/research/batten-start-2026-10-18": 2000,
+              "package:internal/battencli": 2000,
+              "package:internal/shedadapters": 2000,
+              "package:internal/shedrecipe": 2000,
+              "tests:docs/research/batten-start-2026-10-18": 2000,
+              "tests:internal/battencli": 2000,
+              "tests:internal/shedadapters": 2000,
+              "tests:internal/shedrecipe": 2000
+            },
+            "messages": 86.5,
+            "written": 26286
+          }
+        ]
+      }
+    }
+  ],
+  "currentBatch": 1,
+  "masterStrand": "18b89fdaf0c53d704ba876fc2316b225",
+  "masterSessionId": "42895572-32bc-4eb5-9874-49c6600de7bc",
+  "masterEngine": "claude",
+  "batches": {
+    "1": {
+      "slug": "batten-start-before-numbers",
+      "cards": [
+        "01-batten-start-before-numbers",
+        "02-gitrepo-local-branch-mark",
+        "03-fabric-push-skips-local-branches"
+      ],
+      "cardHashes": {
+        "01-batten-start-before-numbers": "c9553b61faf0eef0836963bd117c0c779f923f3fa11037526908d548088f8997",
+        "02-gitrepo-local-branch-mark": "ef17c0c88363c35d824e1ce1eafa2c2b6e06a2d4f03d62669486b75814703fe3",
+        "03-fabric-push-skips-local-branches": "c71ae6b8acf00d0515cf99473426ce9f76cf676cbf873d0f815ffc63def61e21"
+      },
+      "startSha": "47da41a0b280d8c39dd00187d952a0d251fb0bdb",
+      "kind": "fork",
+      "spawnedAt": "2026-10-18T16:10:36Z",
+      "sessionId": "42895572-32bc-4eb5-9874-49c6600de7bc",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
+    }
+  }
+}
