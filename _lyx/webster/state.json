@@ -1,0 +1,151 @@
+{
+  "runGuid": "847f7f9c11f7dcb0fdd38fac4172072e",
+  "planFingerprint": "13a0bdd22f14d050ca0c3a4bb4c897cc076ec883683701a9fb28106f8ffd9eb3",
+  "planFileHashes": {
+    "00-overview.md": "7c6613cc410ebf10f62d04a44443fba36f3b13c062a38d9a37ebeca4abe715aa",
+    "01-rule-files-render.md": "6bd54540743f008500dfb24bc992e84dc9c2f1508c8c9ecf1377c132bf8920c6",
+    "02-orch-rules-verb.md": "b7ab9f091fc6e5e97c31cc00c6509febd0dcaaece4aa1dbe35752b4e66302173",
+    "03-orchestrator-md-removal.md": "0c9723fa83724b825841fe7265ea3b73c3acb97cbf60f237721fb08331269003",
+    "04-orch-rules-move-note.md": "6c0a9d1737c9c0803a1ab87f06b45e84b0f45dd13881fbd84cd4dc18fa3b6ab2"
+  },
+  "planOverviewFrameHash": "2111a8f0d5efa6cb97b2c5d72450c5086dae0af9a694497c6bab7295b88daa97",
+  "partition": [
+    {
+      "cards": [
+        "01-rule-files-render"
+      ],
+      "profile": "cautious",
+      "estimate": 147032,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 1,
+        "startup": 54388,
+        "read_union": 26536,
+        "cards": [
+          {
+            "card": 1,
+            "card_text": 1008,
+            "reads": {
+              "file:contracts/stencils/orch/orch-template-role.md": 2988,
+              "file:internal/orchcli/doc.go": 960,
+              "file:internal/orchengine/doc.go": 5580,
+              "package:contracts/stencils": 2000,
+              "package:contracts/stencils/orch": 2000,
+              "package:internal/orchcli": 2000,
+              "package:internal/orchengine": 2000,
+              "tests:contracts/stencils": 2000,
+              "tests:contracts/stencils/orch": 2000,
+              "tests:internal/orchcli": 2000,
+              "tests:internal/orchengine": 2000
+            },
+            "messages": 217,
+            "written": 66108
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "02-orch-rules-verb",
+        "03-orchestrator-md-removal",
+        "04-orch-rules-move-note"
+      ],
+      "profile": "cautious",
+      "estimate": 155996,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 2,
+        "startup": 61388,
+        "read_union": 45816,
+        "cards": [
+          {
+            "card": 2,
+            "card_text": 1044,
+            "reads": {
+              "file:docs/overview.md": 9612,
+              "file:internal/orchcli/doc.go": 960,
+              "file:internal/orchengine/doc.go": 5580,
+              "package:docs": 2000,
+              "package:internal/orchcli": 2000,
+              "package:internal/orchengine": 2000,
+              "tests:docs": 2000,
+              "tests:internal/orchcli": 2000,
+              "tests:internal/orchengine": 2000
+            },
+            "messages": 133,
+            "written": 40944
+          },
+          {
+            "card": 3,
+            "card_text": 288,
+            "reads": {
+              "file:CLAUDE.md": 840,
+              "file:ORCHESTRATOR.md": 144,
+              "file:contracts/stencils/orch/orch-template-role.md": 2988,
+              "package:.": 2000,
+              "package:contracts/stencils/orch": 2000,
+              "tests:.": 2000,
+              "tests:contracts/stencils/orch": 2000
+            },
+            "messages": 18,
+            "written": 5688
+          },
+          {
+            "card": 4,
+            "card_text": 360,
+            "reads": {
+              "package:.scratch": 2000,
+              "tests:.scratch": 2000
+            },
+            "messages": 6,
+            "written": 2160
+          }
+        ]
+      }
+    }
+  ],
+  "currentBatch": 1,
+  "masterStrand": "23b13108086888443fc8ba934095ac2d",
+  "masterSessionId": "2e418875-5918-4042-9911-310e5800e5b6",
+  "masterEngine": "claude",
+  "batches": {
+    "1": {
+      "slug": "rule-files-render",
+      "cards": [
+        "01-rule-files-render"
+      ],
+      "cardHashes": {
+        "01-rule-files-render": "6bd54540743f008500dfb24bc992e84dc9c2f1508c8c9ecf1377c132bf8920c6"
+      },
+      "startSha": "ff6b3e8c1315ed6dfccfa2a5549938c46da8cf6c",
+      "kind": "fork",
+      "spawnedAt": "2026-10-18T15:34:28Z",
+      "sessionId": "2e418875-5918-4042-9911-310e5800e5b6",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
+    }
+  }
+}
