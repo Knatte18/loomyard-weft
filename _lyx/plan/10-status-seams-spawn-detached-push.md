@@ -1,9 +1,9 @@
 # Card 10 — status-seams-spawn-detached-push
 
 **Create:**
-- `plan:internal/battencli#spawnStatusPush` -> `var spawnStatusPush func(l *lyxcwd.Location, gateSlug string) (fabricengine.SpawnResult, error)`
-- `plan:internal/loomcli#spawnStatusPush` -> `var spawnStatusPush func(l *lyxcwd.Location, gateSlug string) (fabricengine.SpawnResult, error)`
-- `plan:internal/battencli#TestStatusPushSpawns_TellTheirLocationAndGateSlug` -> `func TestStatusPushSpawns_TellTheirLocationAndGateSlug(t *testing.T)`
+- `internal/battencli#spawnStatusPush`
+- `internal/loomcli#spawnStatusPush`
+- `internal/battencli#TestStatusPushSpawns_TellTheirLocationAndGateSlug`
 
 **Edit:**
 - `internal/statuscommit#Deps`
