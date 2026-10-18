@@ -1,6 +1,6 @@
 # Fast batten start, local-only fabric pairs and one Command producer
 
-`batten-start-speed` · Task · enhancement, batten, fabric, shed, config, loom · running · Webster-Burler-Review
+`batten-start-speed` · Task · enhancement, batten, fabric, shed, config, loom · running · Webster-Burler-Fix
 
 ## Seen: batten's start (2026-10-17/18)
 
