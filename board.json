@@ -1137,6 +1137,26 @@
       "body": "Imported from [issue #724](https://github.com/Knatte18/loomyard/issues/724).\n\nSeen 2026-10-18: task orch-rules-in-weft was promoted and started; batten blocked at Worktree-Create with invalid slug, since a slug ending in -weft is reserved for weft worktrees. Workaround: cleared the run claim with lyx board set-status, renamed the entry to orch-rules-files with lyx board merge, started a new run; the old blocked batten record _lyx/shed/orch-rules-in-weft stays, since lyx batten cleanup skips blocked runs. Expected: lyx board upsert/promote refuses a task slug fabric cannot use, naming the rule, and a blocked run whose board entry is gone can be cleaned up.",
       "created": "2026-10-18T14:39:17Z",
       "revised": "2026-10-18T14:39:19Z"
+    },
+    {
+      "id": 658,
+      "slug": "run-profiles",
+      "title": "Named run profiles: a board field picks a central set of run settings",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "board",
+        "batten",
+        "loom",
+        "config"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "A board entry names a run profile defined once in the hub config; seeding writes its values into the pair, instead of each task carrying its own review-round numbers",
+      "body": "## Seen (2026-10-18)\n\n- Each task that wants other review rounds than the hub's carries the numbers itself in `run_settings`, such as `{\"loom\":{\"discussion_max_bounces\":2,\"plan_max_bounces\":1,\"webster_max_bounces\":1,\"merge_max_bounces\":1}}` for a light loom.\n- Batten's seeding copies a task's `run_settings` into the pair's `.lyx/config/\u003cmodule\u003e.local.yaml`, and the run reads that file from then on.\n- No named set of run settings exists; the batcher's `cautious` profile is the batcher's own.\n\n## Operator decisions (2026-10-18)\n\n- A board entry gets its own field naming a run profile, beside `recipe`, not a key inside `run_settings`.\n- The profile is read at seeding, when its values are written into the pair's `.local.yaml` with the task's own `run_settings`; a later change of the profile does not reach a run already seeded.\n\n## Operator view, not a decision (2026-10-18)\n\n- The standard profile is about 3-3-2 review rounds (Discussion, Plan, code perches).\n- How many rounds each perch should have waits for an audit of the use of the twill and lens perches introduced on 2026-10-16/17, after they have run for a while.\n\n## Orch recommendation, not a decision\n\n- Profiles are defined once on Bolt, in the hub config of the module that owns the recipe (`loom.yaml`, `darn.yaml`), as a map from profile name to settings, such as `light` and `budget`.\n- Names say what a profile is for, not its numbers (`light`, not `loom211`): numbers in a name say nothing about which perch they set, and the name breaks once a profile also sets models, fans or hard caps.\n- A task's own `run_settings` override single values on top of its profile.\n",
+      "created": "2026-10-18T14:56:10Z",
+      "revised": "2026-10-18T14:56:10Z"
     }
   ]
 }
