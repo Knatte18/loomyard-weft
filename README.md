@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-18 16:50 UTC; every age below is as of then.
+Rendered 2026-10-18 16:52 UTC; every age below is as of then.
 
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
@@ -55,7 +55,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 2 | **Classify Plan lens and review findings to make the Plan writer get it right first**<br>• Find what Plan lenses and Plan-Burler-Review keep catching, and stop each recurring class at the writer | [`plan-writer-finding-classes`](design-plan-writer-finding-classes.md) | 2d | 2d | loom, burler, stencil, shed |
 | 3 | **Recurring test-suite time and growth audit**<br>• Re-run cmd/testtiming against test-suite-timing.md to watch suite growth | [`test-time-audit-recurring`](design-test-time-audit-recurring.md) | 3h | 3h |  |
 | 4 | **Audit the use of the twill and lens review setup at every perch**<br>• After about ten loom runs, measure what the lens fans and twill fixers catch per perch against their cost, and set the standard review rounds from it | [`review-setup-audit`](design-review-setup-audit.md) | 1h | 1h | burler, loom, report |
-| 5 | **Audit: ideas from tree-sitter-analyzer for quarry and its use in lyx**<br>• What the Python tree-sitter-analyzer offers that quarry or lyx could use if built in Go, what already exists, and what would not pay off | [`tsa-quarry-audit`](design-tsa-quarry-audit.md) | 0m | 0m | quarry, webster, burler, loom |
+| 5 | **Audit: ideas from tree-sitter-analyzer for quarry and its use in lyx**<br>• What the Python tree-sitter-analyzer offers that quarry or lyx could use if built in Go, what already exists, and what would not pay off | [`tsa-quarry-audit`](design-tsa-quarry-audit.md) | 1m | 0m | quarry, webster, burler, loom |
 
 ### Bugs
 
@@ -63,7 +63,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Note | Slug | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| 1 | **webster create-not-done check rejects a Create target the card removes itself** | [`create-target-transient`](design-create-target-transient.md) | 52m | 52m | webster, loom, quarry |
+| 1 | **webster create-not-done check rejects a Create target the card removes itself** | [`create-target-transient`](design-create-target-transient.md) | 53m | 53m | webster, loom, quarry |
 
 ### Enhancements
 
@@ -71,7 +71,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Note | Slug | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| 1 | **[WS 005] One dobby daemon per beam owns and drives its runs**<br>• Each beam (a worktree with an orch thread) gets a Go daemon, started by lyx orch start, that follows its runs status files, starts ready tasks, lands, settles mechanical stops and tells the thread only what needs judgement | [`umbrella-daemon`](design-umbrella-daemon.md) | 6d | 57m | batten, orch, shed, workspaces, loom, board |
+| 1 | **[WS 005] One dobby daemon per beam owns and drives its runs**<br>• Each beam (a worktree with an orch thread) gets a Go daemon, started by lyx orch start, that follows its runs status files, starts ready tasks, lands, settles mechanical stops and tells the thread only what needs judgement | [`umbrella-daemon`](design-umbrella-daemon.md) | 6d | 59m | batten, orch, shed, workspaces, loom, board |
 
 #### Normal priority
 
@@ -97,8 +97,8 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 19 | **Parallel batches: the shared pieces for Webster forks and Weaver**<br>• DAG batchifier, worktree per batch, merge-back with conflict resolution; open: keeping a fork inside its worktree | [`parallel-batch-parts`](design-parallel-batch-parts.md) | 10h | 10h | webster, fabric, loom |
 | 20 | **The orch watcher sees the note is written instead of waiting for a reply**<br>• At a context cycle the watcher checks that the orch turn ended and the note file exists, and cycles with no written reply; defer stays | [`orch-note-no-reply`](design-orch-note-no-reply.md) | 1h | 1h | orch, creel, workspaces |
 | 21 | **Move the orch rules into the hub-wide rules file**<br>• Operator step after the orch-rules-files deploy: run lyx orch rules from the prime | [`orch-rules-move`](design-orch-rules-move.md) | 1h | 1h | orch |
-| 22 | **A batten verb that ends a paused or blocked run and removes its records**<br>• Dead paused and blocked run records stay in the records and the overview, since no verb ends them and cleanup skips them | [`batten-abandon`](design-batten-abandon.md) | 38m | 38m | batten, fabric |
-| 23 | **Verify gates run only the touched trees and the repo-wide scans when a diff touches no production code**<br>• A diff that touches only a tool or docs still waits on both test tiers over the whole module at every verify gate | [`verify-diff-scope`](design-verify-diff-scope.md) | 10m | 9m | loom, shed, config |
+| 22 | **A batten verb that ends a paused or blocked run and removes its records**<br>• Dead paused and blocked run records stay in the records and the overview, since no verb ends them and cleanup skips them | [`batten-abandon`](design-batten-abandon.md) | 39m | 39m | batten, fabric |
+| 23 | **Verify gates run only the touched trees and the repo-wide scans when a diff touches no production code**<br>• A diff that touches only a tool or docs still waits on both test tiers over the whole module at every verify gate | [`verify-diff-scope`](design-verify-diff-scope.md) | 12m | 10m | loom, shed, config |
 
 #### Low priority
 

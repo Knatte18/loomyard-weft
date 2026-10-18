@@ -88,4 +88,4 @@ It rates the typed `impact` query (idea 4) the most valuable longer-term item, m
 - Idea 1 is a variant of the kick-start pack, which the glyph audits in `docs/research/glyph-audit-2026-10-12` to `-17` found saved no exploration, and which the operator decided to remove (note `kickstart-pack-remove`); it should not be tried again without a new reason.
 - Idea 2 overlaps note `enclose-checks`; its glyph-cited findings are a use that note does not name yet.
 - `internal/impactset` is relevant to note `verify-diff-scope`.
-- For Go references, gopls answers exactly from type information, where tree-sitter matches names.
+- An LSP server such as gopls is no answer for references (operator, 2026-10-18): it is one more daemon to keep running, and it serves one language, so every language would need its own server; reference answers stay in quarry, language-neutral by design.
