@@ -36,7 +36,9 @@
 `Add`'s body moves into `add`, with `local` choosing the local path; `Add` calls `add(l, slug, opts, false)` and `AddLocal` calls `add(l, slug, AddOptions{SkipPush: true}, true)`, so a local add takes the path `SkipGit`/`SkipPush` takes today: no origin probe (`probeWeftLeftover`, `probeWarpLeftover`), no archived-leftover replacement, and the warp branch forks from HEAD.
 On the local path:
 - After the slug, dirtiness and existing-directory refusals and before the first mutation, `add` refuses with `*ErrLocalAddOverOrdinary` when the warp branch exists unmarked locally, when the weft branch exists unmarked locally, or when either exists as an `origin` remote-tracking ref (`refs/remotes/origin/<branch>`, read locally, no network).
-  Its message names the branch and the way forward: `lyx fabric add <slug>` makes an ordinary pair over it.
+  Its message names the branch and a way forward that depends on which branch tripped it, the checks running in the order above and the first match deciding, since a plain add refuses an unmarked warp branch with `ErrBranchExists`:
+  - an unmarked local warp branch names `ErrBranchExists`' remedies: switch a pair onto it with `lyx fabric checkout <branch>`, delete it with `git branch -D <branch>` if it is a leftover from a removed pair, or use another slug;
+  - an unmarked local weft branch or an `origin` remote-tracking ref names `lyx fabric add <slug>`, which makes an ordinary pair over it.
   The input reaching it: a slug whose warp branch an earlier ordinary add left; `TestAddLocal` reaches it.
   This bound means `--local` never adopts and silences an ordinary pair.
 - A warp or weft branch that exists and carries the mark is adopted: the warp worktree is added on the existing branch with no `-b` (through `containedWorktreeAdd`), and the weft branch through the existing adopt path.
@@ -59,13 +61,13 @@ What this lets through: a plain add now adopts a local pair's kept warp branch r
 It stays serial (no `t.Parallel`), since one row sets the package-level hook.
 Its rows:
 - a fresh `AddLocal` succeeds with both branches marked (`BranchMarkedLocal` true in each repo), no `_portals/<slug>` and no `_launchers/<slug>`, `Local` true;
-- `AddLocal` refuses with `*ErrLocalAddOverOrdinary` naming `lyx fabric add` and creates nothing, one row per unmarked branch: a local warp branch, a local weft branch, an `origin` remote-tracking warp ref and an `origin` remote-tracking weft ref;
+- `AddLocal` refuses with `*ErrLocalAddOverOrdinary` and creates nothing, one row per unmarked branch, each asserting its own way forward: a local warp branch names `lyx fabric checkout <branch>` and `git branch -D <branch>`; a local weft branch, an `origin` remote-tracking warp ref and an `origin` remote-tracking weft ref each name `lyx fabric add <slug>`;
 - `AddLocal` over a local pair whose two worktrees and weft branch were removed by hand, leaving its marked warp branch, adopts that branch and succeeds, both branches marked;
 - `AddLocal` with the hook returning an error fails and leaves no worktree and neither branch;
 - a plain `Add` with `AddOptions{SkipPush: true}`, so no origin probe runs on this hub, over a local pair whose two worktrees were removed by hand (`git worktree remove`), leaving both marked branches, adopts both, lists both in `LocalMarkCleared` and leaves `BranchMarkedLocal` false in each repo;
 - the same plain `Add` with the hook returning an error fails, keeps the adopted warp branch and leaves it marked.
 An ordinary add's behaviour stays pinned by the existing add tests, `TestAdd_SkipPushSkipsLeftoverProbes` among them, unchanged.
-`TestRunCLI_LocalPairScenario` drives the verbs over a hubforge hub: `lyx fabric add --local <slug>` exits 0 with `local: true` and no `push_spawned` entry; `lyx fabric push` from the new pair exits 0 with `local_skipped` naming both branches; `lyx fabric add --local` over an ordinary pair's slug exits non-zero naming `lyx fabric add`.
+`TestRunCLI_LocalPairScenario` drives the verbs over a hubforge hub: `lyx fabric add --local <slug>` exits 0 with `local: true` and no `push_spawned` entry; `lyx fabric push` from the new pair exits 0 with `local_skipped` naming both branches; `lyx fabric add --local` over the slug of an ordinary pair whose two worktrees were removed by hand, leaving its warp branch, exits non-zero with the local refusal naming `lyx fabric checkout` and `git branch -D`, not the existing-directory refusal.
 The PATTERN-sandbox-coverage entry is met by a new fabric scenario in `SANDBOX-FABRIC-SUITE.md`, tagged `**Covers:** fabric`, that adds a local pair and checks it pushes nothing.
 
 Docs: `internal/fabricengine/doc.go` and `internal/fabriccli/doc.go` describe the local pair, its mark and the adopt-clears rule; `docs/overview.md`'s fabric line names `--local`.

@@ -27,6 +27,13 @@
 - `plan:internal/fabricengine#CoalescePushRequest`
 - `plan:internal/fabricengine#SpawnStatusPush`
 - `internal/fabricengine#HubScratchDir`
+- `internal/fabricengine#HubLogsDir`
+- `internal/fabricengine#WorktreePath`
+- `internal/fabricengine#RecordsWorktreePath`
+- `internal/fabricengine#BoardDir`
+- `internal/fabricengine#spawnDetachedPushFn`
+- `internal/lyxcwd#ResolveWorktree`
+- `internal/logger#SetDurableSinkDir`
 - `internal/fabricengine#SwapPushRecorderForTest`
 - `internal/lock#AcquireWriteLockWithin`
 - `internal/lock#AcquireReadLock`
@@ -36,7 +43,7 @@
 `TryAcquireReadLock` is `AcquireReadLock`'s non-blocking form: a shared lock, false with a nil error when an exclusive holder has it.
 `TeardownLockPath(hubPath, slug)` is `<HubScratchDir(hubPath)>/teardown/<slug>.lock`, outside both worktrees, so neither the lock file nor any child's working directory or log file sits in a tree `Remove` deletes.
 
-`DetachedPush(hubPath, req)` is the detached child's body, which `fabriccli`'s push bypass now calls with the hub its `_board` working directory resolves to:
+`DetachedPush(hubPath, req)` is the detached child's body, which `fabriccli`'s push bypass now calls with the hub `lyxcwd.ResolveWorktree` gives over its `_board` working directory, the ungated resolution card 7's gate uses, so a hub with a subpath anchor resolves too; before its first record the bypass calls `logger.SetDurableSinkDir(fabricengine.HubLogsDir(hub))`, so the child logs under `HubLogsDir`:
 - with `req.TeardownSlug` set, it creates the lock's directory and takes the teardown lock shared through `TryAcquireReadLock` for its whole run, and exits with a Warn ("the pair is being removed; its push is not run") and a nil error when an exclusive holder has it;
 - every child, teardown slug or none, then checks that each worktree path it was given is an existing directory before it creates the push lock's directory or touches anything, and exits with a Warn and nil when one is gone; a child with a teardown slug checks while holding the lock, so it leaves nothing at a removed path;
 - it then runs `CoalescePushRequest(req, SyncOptions{})`.
@@ -47,7 +54,10 @@ Two hooks, nil in production and set only by a non-parallel test through `SetTea
 `Remove` takes the teardown lock exclusive through `AcquireWriteLockWithin(TeardownLockPath(l.HubPath, slug), t.teardownWait)` after `RemoveRefusal` and the pair inspection, and before its first mutation, local path included; it releases it after its last step, past the worktree teardown and the store housekeeping.
 When the wait runs out it returns, before any mutation, an error wrapping `ErrPairPushRunning`: "a push of the pair %q is still running or waiting under a pause; re-run `lyx fabric remove %s` once the push finishes or the pause is resumed, or end the stuck push child, whose pid its spawn logged".
 The input reaching it: a child of the pair holding the shared lock past the wait; `TestRemove_TeardownLockAgainstThePairsPush` reaches it.
-A `Remove` that fails after taking the lock and leaves the pair's task worktree in place spawns the pair's push through `SpawnStatusPush` after releasing the lock, so a child that exited on the held lock loses nothing.
+A `Remove` that fails after taking the lock and leaves either of the pair's worktrees in place (D1) respawns the pair's push after releasing the lock, so a child that exited on the held lock loses nothing.
+`Remove`'s own location is the prime, as `pairteardown` passes it, so the respawn builds the pair's location instead:
+- with the task worktree standing, `lyxcwd.ResolveWorktree(WorktreePath(l, slug))`, and calls `SpawnStatusPush(pairLocation, "")`, so the request carries both of the pair's worktrees and both slugs, a local side being dropped as card 7 drops it;
+- with the task worktree gone and the records worktree standing, as when `removeSibling` fails after the task teardown, a records-side-only `PushSpawn` of `RecordsWorktreePath(l, slug)` with `PauseSlug` and `TeardownSlug` both the slug and `WorkDir` `BoardDir(l.HubPath)`, through `spawnDetachedPushFn`, and nothing when the pair is local.
 A push of the prime's records side carries no teardown slug (card 7), so batten's status push spawned at the transition into `Worktree-Teardown` neither delays nor refuses that row's `Remove`.
 `pairteardown` gets this refusal from `Remove` after its own `RemoveRefusal` probe passed, unchanged, and batten's `Worktree-Teardown` producer stands Stuck on any `Remove` error, as `battenshed`'s teardown producer already does.
 `teardownRefusal` maps an error wrapping `ErrPairPushRunning` to "the pair for %q was left in place because a push of it is still running; once it finishes, resume this run with \"lyx batten run %s\"", wrapping the error.
@@ -61,7 +71,8 @@ Tests:
   - a `DetachedPush` of the pair parked in `detachedPushHeldHook` makes a `Remove` with the shortened wait refuse with `ErrPairPushRunning`; once the hook is released and `DetachedPush` returns, `Remove` succeeds, so a child holds the lock shared for its whole run;
   - with `removeAfterTeardownHook` starting a `DetachedPush` of the pair's paths, that push returns nil having taken no lock and pushed nothing, so `Remove` still holds the lock past the worktree teardown;
   - a `DetachedPush` of the pair's paths after `Remove` with `remote` true returns nil, recreates nothing at either removed path, `ls-remote` on each origin lists neither of the pair's branches, and a following `Add` of the same slug succeeds;
-  - with the weft `origin` URL pointing at a missing path, `Remove` fails at its archive after taking the lock, leaves the pair, and, with `SwapPushRecorderForTest`, records one push request for the pair with both slugs, made after the lock was released.
+  - with the weft `origin` URL pointing at a missing path, `Remove` fails at its archive after taking the lock, leaves the pair, and, with `SwapPushRecorderForTest`, records one push request naming the pair's task and records worktree paths with both slugs, made after the lock was released;
+  - with the records worktree locked by `git worktree lock`, so `git worktree remove` refuses it after the task worktree is torn down, `Remove` fails, and, with `SwapPushRecorderForTest`, records one push request carrying only the records worktree path, with both slugs and the board dir as its working directory.
   The rows use no platform branch, so the same test pins the Windows half of the criterion where the suite runs on Windows.
 - `TestTeardownRefusal_RecordsRemedyNamesCommitRecordsNeverForce` gains a row: an error wrapping `ErrPairPushRunning` maps to the text naming `lyx batten run <slug>` and still satisfies `errors.Is(err, fabricengine.ErrPairPushRunning)`.
 

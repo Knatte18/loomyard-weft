@@ -24,7 +24,7 @@
 `CommandDeps` is what the recipe's owner tells, deriving no path in the producer (PATTERN-told-geometry):
 - `Setting`, the plain setting lookup the switch is read through, and through which the producer also reads the command key over the owner's ordinary stack to warn about an ignored value;
 - `ExecutableSetting`, the owner's executable-key lookup over the template and the board default layer only, the only lookup the command is read through;
-- `Forced`, the row names whose switch the run forces on, read instead of the switch;
+- `Forced []string`, the row names whose switch the run forces on, read instead of the switch;
 - `Lyx`, `Slug` and `TaskDir func() (string, error)`, the placeholder values;
 - `Dir`, the directory the command runs in, and `LogPath func(row string) string`, its log file;
 - `Run func(ctx context.Context, dir, command, logPath string, timeout time.Duration) (CommandResult, error)`, the runner, `CommandResult` carrying the exit code and whether it timed out;
@@ -36,8 +36,8 @@
    The input reaching it: a `CommandDeps` built without it, which `TestCommandProducer` reaches; the registry entry never refuses it at build time, so the refusal falls when the row is reached.
 2. A row in `Forced` is on; otherwise the switch is read through `Setting`, and a read error or a non-bool value is an error naming `<module>.<key>` and the way forward "correct it, then <Rerun>".
    A switch that is off is Done with no process, logged at Info.
-3. The command is read through `ExecutableSetting`, a read error or a non-string value being the same error for its key.
-   When `Setting` resolves the same key to a different non-empty value, the row warns that the value is ignored, naming the way to set it: `lyx config set --layer default` from the prime.
+3. The command is read through `ExecutableSetting`; a read error or a non-string value is an error naming `<module>.<key>` and where to correct it, "correct it with `lyx config <module> --layer default --set <key>=<value>` from the prime, then <Rerun>", since a correction in any other layer is never read.
+   When `Setting` resolves the same key to a different non-empty value, the row warns that the value is ignored, naming the way to set it: `lyx config <module> --layer default --set <key>=<value>` from the prime.
    A `Setting` read of the command key that fails skips that comparison, logged at Info, and never stops the row.
 4. An empty command is Done with no process; on a forced row it is logged at Warn.
 5. The placeholders `{lyx}`, `{slug}` and `{task_dir}` are replaced, each value quoted by `verifyrun.QuoteArg` for the shell the command runs under; any other brace text, `${HOME}` included, passes through literally, and `TaskDir` is called only when `{task_dir}` appears, its error being the step-2 error naming the task worktree.
@@ -52,14 +52,15 @@ No command outcome halts the run; only an unreadable setting or a missing execut
 - a switch off runs nothing and is Done;
 - an empty command runs nothing and is Done, with no Warn unforced and a Warn on a forced row;
 - exit 0 is Done with one run and no Warn; a non-zero exit, a timeout and a runner error are each Done with one run and a Warn naming the log path;
-- an unreadable switch, a switch holding a non-bool, a command lookup error and a non-string command each return an error naming `<module>.<key>` and the `Rerun` text, running nothing;
+- an unreadable switch and a switch holding a non-bool each return an error naming `<module>.<key>` and the `Rerun` text, running nothing;
+- a command lookup error and a non-string command each return an error naming `<module>.<key>`, `lyx config <module> --layer default --set <key>=<value>` and the `Rerun` text, running nothing;
 - a `TaskDir` error with `{task_dir}` in the command returns an error naming the task worktree and the `Rerun` text, running nothing;
 - a nil `ExecutableSetting` returns the missing-lookup error naming its way forward, with no lookup read and no run;
 - a forced row whose switch lookup would fail runs;
 - placeholder values holding spaces, quotes and `%` expand under `linux` to `QuoteArg`'s text;
 - under `windows` a `{task_dir}` holding `%` runs nothing, is Done, and warns naming `{task_dir}` and the hub as the way forward;
 - `${HOME}` and `{other}` reach the command unchanged;
-- a `Setting` answering a different command than `ExecutableSetting` runs the `ExecutableSetting` one and warns that the other is ignored, naming `lyx config set --layer default`; a `Setting` failing on the command key runs the `ExecutableSetting` one with no Warn;
+- a `Setting` answering a different command than `ExecutableSetting` runs the `ExecutableSetting` one and warns that the other is ignored, naming `lyx config <module> --layer default --set`; a `Setting` failing on the command key runs the `ExecutableSetting` one with no Warn;
 - a cancelled context returns an error.
 That a quoted value reaches `sh` as one literal argument is pinned by card 11's `TestRun` row.
 

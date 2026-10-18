@@ -1,6 +1,6 @@
 ---
 format: 5
-approved: false
+approved: true
 language: go
 ---
 
@@ -45,6 +45,6 @@ The plan measures a start first, then gives fabric local-only pairs (a branch ma
 
 ```
 go build ./...
-go test ./cmd/lyx ./internal/gitrepo ./internal/fabricengine ./internal/fabriccli ./internal/tendercli ./internal/lock ./internal/statuscommit ./internal/battencli ./internal/loomcli ./internal/cleanupcli ./internal/verifyrun ./internal/idecli ./internal/reedcli ./internal/shedadapters ./internal/shedrecipe ./internal/battenrecipe ./internal/battenshed ./internal/configreg ./internal/testkit/envkit
-go test -tags integration ./cmd/lyx ./internal/gitrepo ./internal/fabricengine ./internal/fabriccli ./internal/tendercli ./internal/lock ./internal/statuscommit ./internal/battencli ./internal/loomcli ./internal/cleanupcli ./internal/verifyrun ./internal/idecli ./internal/reedcli ./internal/shedadapters ./internal/shedrecipe ./internal/battenrecipe ./internal/battenshed ./internal/configreg ./internal/testkit/envkit
+go test ./cmd/lyx ./internal/gitrepo ./internal/fabricengine ./internal/fabriccli ./internal/tendercli ./internal/lock ./internal/statuscommit ./internal/battencli ./internal/loomcli ./internal/cleanupcli ./internal/verifyrun ./internal/idecli ./internal/reedcli ./internal/shedadapters ./internal/shedrecipe ./internal/battenrecipe ./internal/battenshed ./internal/configreg ./internal/testkit/envkit ./internal/pattern ./internal/lyxcwd ./internal/loomrecipe
+go test -tags integration ./cmd/lyx ./internal/gitrepo ./internal/fabricengine ./internal/fabriccli ./internal/tendercli ./internal/lock ./internal/statuscommit ./internal/battencli ./internal/loomcli ./internal/cleanupcli ./internal/verifyrun ./internal/idecli ./internal/reedcli ./internal/shedadapters ./internal/shedrecipe ./internal/battenrecipe ./internal/battenshed ./internal/configreg ./internal/testkit/envkit ./internal/pattern ./internal/lyxcwd ./internal/loomrecipe
 ```

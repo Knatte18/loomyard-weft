@@ -5,7 +5,7 @@
 - `plan:internal/fabricengine#dirtyRecordsDisposable` -> `func dirtyRecordsDisposable() pathDirtiness`
 - `plan:internal/fabricengine#removeLocalWeft` -> `func removeLocalWeft(rec *Mutations, l *lyxcwd.Location, slug, branch, branchPrefix string) (steps []string, err error)`
 - `plan:internal/fabricengine_test#TestRemove_LocalPair` -> `func TestRemove_LocalPair(t *testing.T)`
-- `plan:internal/fabricengine#TestOriginWrites_LocalMarkedBranch` -> `func TestOriginWrites_LocalMarkedBranch(t *testing.T)`
+- `plan:internal/fabricengine_test#TestOriginWrites_LocalMarkedBranch` -> `func TestOriginWrites_LocalMarkedBranch(t *testing.T)`
 
 **Edit:**
 - `internal/fabricengine#Topology.Remove`
@@ -24,6 +24,8 @@
 - `plan:internal/gitrepo#Repo.BranchMarkedLocal`
 - `plan:internal/fabricengine#Topology.AddLocal`
 - `internal/fabricengine#deleteWarpBranch`
+- `internal/fabricengine#ArchiveWeftTipForTest`
+- `internal/fabricengine#CheckRemoteBranchRequestForTest`
 
 **Intent:** Make `lyx fabric remove` of a local pair run no origin step and drop its records (D3's remove, its bound and the hand-deleted-branch rule).
 
@@ -43,10 +45,10 @@ So no new refusal guards a local remove and no flag answers one; what the path s
 
 `dirtyRecordsDisposable`, in `destroy.go` (PATTERN-fabric-destruction-chokepoint), declares a new `pathDirtinessKind` whose dirtiness step passes: the records on that worktree are disposable by the local pair's contract, and the refusal for content outside the record pathspec has already run in `RemoveRefusal`.
 `archiveWeftTip` returns no tag, the skipped reason "the branch is local-only, so it is not archived" and no error when the local weft branch carries the mark, before it resolves a tip or touches origin.
-`checkRemoteBranchRequest` refuses with a `CheckOwnership` destructive refusal, "the branch is local-only, never on a remote; nothing to delete", when the local copy of `req.branch` in `req.repoDir` carries the mark.
+`checkRemoteBranchRequest` refuses with a `CheckOwnership` destructive refusal, "the branch is local-only, never on a remote; nothing to delete; remove the pair with `lyx fabric remove <slug>`, which runs no origin step", when the local copy of `req.branch` in `req.repoDir` carries the mark.
 Neither of those two checks is reached by `Remove`'s local path, which calls neither.
 `archiveWeftTip`'s check guards any caller that archives a marked branch; card 6's `Cleanup` reads the mark before it would call it.
-The gate's check reads the local copy of the branch, so it guards a caller that deletes the remote copy while the local branch still stands, such as `Add`'s leftover replacement; on the paths that delete the local branch first (`removeWeftWorktree`, `Cleanup`), the mark is gone by then, and those paths are guarded by `Remove`'s local branch here and `Cleanup`'s mark read in card 6.
+The gate's check is a second line behind `Remove`'s local path here and `Cleanup`'s mark read in card 6: it reads the local copy of the branch, so it refuses a caller that would delete the remote copy of a branch whose marked local copy still stands, and `TestOriginWrites_LocalMarkedBranch` reaches it.
 `removeFields` maps the three new fields to `local`, `local_mark_branch` and `dropped_records_tip`, each present only when set.
 
 `TestRemove_LocalPair` runs over a hubforge hub whose `origin` URLs point at a path that does not exist, so any origin step fails the remove, with one `AddLocal` pair per row, each removed without `--force`:
@@ -58,7 +60,7 @@ The gate's check reads the local copy of the branch, so it guards a caller that 
 - a pair whose weft worktree and branch were deleted by hand: still removed as local, `LocalMarkBranch` the warp branch, with no origin step;
 - a pair whose task worktree and warp branch were deleted by hand: still removed as local, `LocalMarkBranch` the weft branch, with no origin step.
 An ordinary pair's remove stays pinned by the existing remove tests, unchanged.
-`TestOriginWrites_LocalMarkedBranch`, in the package's internal tests over a hubforge hub with an `AddLocal` pair and the weft `origin` URL pointing at a missing path, has two rows: `archiveWeftTip` of the marked weft branch returns no tag, the local-only skipped reason and a nil error, and creates no `archive/` tag; and `checkRemoteBranchRequest` over a request deleting that branch returns the `CheckOwnership` refusal naming local-only.
+`TestOriginWrites_LocalMarkedBranch`, an external `fabricengine_test` test, since an internal test cannot import hubforge without an import cycle, runs over a hubforge hub with an `AddLocal` pair and the weft `origin` URL pointing at a missing path, and has two rows: `archiveWeftTip`, driven through `ArchiveWeftTipForTest`, over the marked weft branch returns no tag, the local-only skipped reason and a nil error, and creates no `archive/` tag; and the gate, driven through `CheckRemoteBranchRequestForTest` over a request deleting that branch, returns the `CheckOwnership` refusal naming local-only and `lyx fabric remove`.
 `TestRemoveFields` gains a row with the three fields set and a row asserting them absent when unset.
 
 `internal/fabricengine/doc.go` describes the local remove path and the records-disposable rule.
