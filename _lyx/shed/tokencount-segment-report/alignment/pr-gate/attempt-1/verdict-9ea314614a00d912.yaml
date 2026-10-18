@@ -1,0 +1,4 @@
+verdict: approve
+reason: The diff stays in tools/tokencount and covers all seven scope points of the board entry plus the operator's amendment that puts the unattributed orch usage into the All runs Orch segment. It counts, prices and charges sessions as before. The only peer, batten-start-speed, touches no file in tools/tokencount, and no parent commits are listed.
+question: ""
+superseded: []
