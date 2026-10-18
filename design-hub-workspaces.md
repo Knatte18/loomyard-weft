@@ -1,6 +1,6 @@
 # [WS 002] One VS Code workspace per umbrella, listing its worktrees directly
 
-`hub-workspaces` · Note · enhancement, fabric, ide, workspaces
+`hub-workspaces` · Task · enhancement, fabric, ide, workspaces
 
 ## Seen (2026-10-18)
 
