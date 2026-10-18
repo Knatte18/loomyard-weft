@@ -57,14 +57,16 @@ These replace the earlier wording above where they differ: the daemon is not the
   It writes the board only for statuses and the prune, and makes no design call.
 - Batten drives one task's lifecycle as today and knows nothing of who owns its run.
 
-## A start flag on tasks (operator decision, 2026-10-18)
+## Draft tasks (operator decisions, 2026-10-18)
 
 The operator often plans ahead by putting tasks on the board with their `depends_on` set, so a task is no longer by definition ready to be spawned.
-A task carries a boolean flag of its own that says it may start.
-Dobby starts a task only when the flag is set and its `depends_on` are done.
-The operator can flip the flag themselves, and dobby then starts the task with no orch involved.
+A task carries a boolean field `draft` of its own, apart from `status`, which stays the run state.
+`draft: true` means the task is not yet fully described; a new task is a draft by default.
+Dobby starts a task only when it is not a draft and its `depends_on` are done; clearing `draft` on a task whose dependencies are done is how a task is started by hand.
+The operator can clear the flag themselves, and dobby then starts the task with no orch involved.
+A draft task keeps its dependencies visible in the README, in its Ready or Layer section with its After column, marked as a draft.
 
-Orch recommendation, not a decision: the flag is named `released`, defaults to false, and is flipped with a board verb such as `lyx board release <slug>`; the README shows it.
+Orch recommendation, not a decision: the mark is a `Draft` column or a badge before the title, and the flag is cleared with a board verb such as `lyx board undraft <slug>`.
 
 ## Folded in from `orch-split` (2026-10-11 to 10-13)
 
