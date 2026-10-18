@@ -151,6 +151,13 @@ The support log's Question ledger holds every auto-pick; D2, D3 and D4 carry the
   - d4-bolt-premise-false-reminder-gap (class design, severity MEDIUM, open in rounds 2)
 <!-- /lyx:carry-over Discussion-Review -->
 
+<!-- lyx:carry-over Plan-Review -->
+- Plan-Review, round 1: converged; each finding below was fixed or disputed by the round's fixer, and no fresh reviewer has seen the result; the fixer report says which.
+  Review: _lyx/reviews/plan/round-1-review.md; fixer report: _lyx/reviews/plan/round-1-fixer-report.md.
+  - overview-orch-verb-list-not-updated (class scope, severity MEDIUM, open in rounds 1)
+  - push-refusal-rebase-conflict-loop (class scope, severity MEDIUM, open in rounds 1)
+<!-- /lyx:carry-over Plan-Review -->
+
 ## Acceptance criteria
 
 - `ORCHESTRATOR.md` is gone from the repository, and no tracked source, stencil or doc names it outside Scope's exclusions.
