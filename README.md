@@ -17,13 +17,13 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | **[WS 001] Creel: program notices in the reminder line, plain-text read**<br>• A program notice is carried in the reminder itself and needs no read; creel read prints plain text for every sender, sender and id only where a reply is wanted<br>• `darn: review_max_bounces 1` | [`creel-compact-notices`](design-creel-compact-notices.md) | darn | Darn-Write | 23m | 20m | creel, workspaces |
+| 1 | **[WS 001] Creel: program notices in the reminder line, plain-text read**<br>• A program notice is carried in the reminder itself and needs no read; creel read prints plain text for every sender, sender and id only where a reply is wanted<br>• `darn: review_max_bounces 1` | [`creel-compact-notices`](design-creel-compact-notices.md) | darn | Darn-Write | 24m | 20m | creel, workspaces |
 
 #### Normal priority
 
 | # | Task | Slug | Recipe | At | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 2 | **Fast batten start, local-only fabric pairs and one Command producer**<br>• Batten pushes status to GitHub after every row (about 2 s each); fabric add/remove wait on origin even for local pairs; side-action rows become one Command producer | [`batten-start-speed`](design-batten-start-speed.md) | loom | Discussion-Burler-Review | 1d | 7h | batten, fabric, shed, config, loom |
+| 2 | **Fast batten start, local-only fabric pairs and one Command producer**<br>• Batten pushes status to GitHub after every row (about 2 s each); fabric add/remove wait on origin even for local pairs; side-action rows become one Command producer | [`batten-start-speed`](design-batten-start-speed.md) | loom | Discussion-Burler-Fix | 1d | 7h | batten, fabric, shed, config, loom |
 
 ### Ready
 
@@ -76,7 +76,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | --- | --- | --- | --- | --- | --- |
 | 1 | **[WS 002] One VS Code workspace per umbrella, listing its worktrees directly**<br>• Workspace files in the hub dir; umbrella worktree first, then Bolt, then its live pairs at their anchors; no _portals; finished pairs drop out | [`hub-workspaces`](design-hub-workspaces.md) | 45m | 0m | fabric, ide, workspaces |
 | 2 | **[WS 003] Orch rules move out of the repository into each orch weft**<br>• ORCHESTRATOR.md holds hub-specific lyx behaviour in the code repo; each orch thread reads its own rules from its worktree weft, _lyx/orch/rules.md | [`orch-rules-in-weft`](design-orch-rules-in-weft.md) | 45m | 0m | orch, workspaces |
-| 3 | **[WS 005] One daemon per umbrella owns its batten runs**<br>• The orch watcher follows the status files of the runs it owns and re-runs short batten passes, replacing one waiting batten process per run; survives restarts | [`umbrella-daemon`](design-umbrella-daemon.md) | 23m | 23m | batten, orch, shed, workspaces |
+| 3 | **[WS 005] One daemon per umbrella owns its batten runs**<br>• The orch watcher follows the status files of the runs it owns and re-runs short batten passes, replacing one waiting batten process per run; survives restarts | [`umbrella-daemon`](design-umbrella-daemon.md) | 24m | 24m | batten, orch, shed, workspaces |
 
 #### Normal priority
 
@@ -109,7 +109,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 23 | **warp-visibility: CLAUDE.local.md invisible in the Fabric repo's git history**<br>• Expose CLAUDE.local.md by symlink so nothing lyx-related shows in the Fabric repo's history; the constraints half is out of date | [`warp-visibility`](design-warp-visibility.md) | 2w |  | ide, fabric |
 | 24 | **Windows verify timeout kills the whole process tree**<br>• On Windows the verifytree timeout kills only the shell, not the process tree it started | [`verify-watchdog`](design-verify-watchdog.md) | 10d | 2d | shed |
 | 25 | **A hub pause leaves background forks and shells running, so hibernate never confirms**<br>• Pause interrupts turns but not background forks or shells; sessions read busy and hibernate confirmation fails | [`pause-background-work`](design-pause-background-work.md) | 3d | 1d | shuttle, webster |
-| 26 | **[WS 007] An anchor per umbrella**<br>• Let an umbrella work in its own subdirectory of the repository, inherited by its tasks; hard to change now | [`umbrella-anchor`](design-umbrella-anchor.md) | 45m | 23m | fabric, config, workspaces |
+| 26 | **[WS 007] An anchor per umbrella**<br>• Let an umbrella work in its own subdirectory of the repository, inherited by its tasks; hard to change now | [`umbrella-anchor`](design-umbrella-anchor.md) | 45m | 24m | fabric, config, workspaces |
 
 ### Features
 
