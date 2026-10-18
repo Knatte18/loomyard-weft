@@ -985,7 +985,7 @@
       "revised": "2026-10-18T14:29:25Z",
       "run_settings": {
         "loom": {
-          "discussion_max_bounces": 1,
+          "discussion_max_bounces": 2,
           "merge_max_bounces": 1,
           "plan_max_bounces": 1,
           "webster_max_bounces": 1
