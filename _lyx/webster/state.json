@@ -534,7 +534,7 @@
       }
     }
   ],
-  "currentBatch": 16,
+  "currentBatch": 0,
   "masterStrand": "18b89fdaf0c53d704ba876fc2316b225",
   "masterSessionId": "42895572-32bc-4eb5-9874-49c6600de7bc",
   "masterEngine": "claude",
@@ -707,8 +707,25 @@
       "spawnedAt": "2026-10-18T17:09:32Z",
       "sessionId": "42895572-32bc-4eb5-9874-49c6600de7bc",
       "engine": "claude",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "16-batten-start-after-numbers",
+        "status": "done",
+        "head_sha": "6c81b12007206da9d3d7b0dc28776ed5aad9d48d",
+        "deviations": [
+          "internal/battencli/lifecycle_integration_test.go"
+        ]
+      },
+      "cardShas": [
+        "6c81b12007206da9d3d7b0dc28776ed5aad9d48d"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-batten-start-speed/42895572-32bc-4eb5-9874-49c6600de7bc/subagents/agent-a1b703f346a771385.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-batten-start-speed/42895572-32bc-4eb5-9874-49c6600de7bc/subagents/agent-a1b703f346a771385.jsonl"
+      ]
     },
     "4": {
       "slug": "fabric-add-local",
@@ -898,6 +915,7 @@
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-batten-start-speed/42895572-32bc-4eb5-9874-49c6600de7bc/subagents/agent-ae4fec76e59923bde.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-batten-start-speed/42895572-32bc-4eb5-9874-49c6600de7bc/subagents/agent-addf3045b52ae49c7.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-batten-start-speed/42895572-32bc-4eb5-9874-49c6600de7bc/subagents/agent-a78fff6269ef8a436.jsonl",
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-batten-start-speed/42895572-32bc-4eb5-9874-49c6600de7bc/subagents/agent-aa6213a57a2ef455f.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-batten-start-speed/42895572-32bc-4eb5-9874-49c6600de7bc/subagents/agent-aa6213a57a2ef455f.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-batten-start-speed/42895572-32bc-4eb5-9874-49c6600de7bc/subagents/agent-a1b703f346a771385.jsonl"
   ]
 }
