@@ -1,17 +1,17 @@
 # Card 2 — orch-rules-verb
 
 **Create:**
-- `plan:internal/orchcli#rulesBolt` -> `type rulesBolt interface`
-- `plan:internal/orchcli#boardRulesBolt` -> `type boardRulesBolt struct`
-- `plan:internal/orchcli#boardRulesBolt.Push` -> `func (b boardRulesBolt) Push() error`
-- `plan:internal/orchcli#boardRulesBolt.PullThenCommitWritten` -> `func (b boardRulesBolt) PullThenCommitWritten(write fabricengine.BoltWrite) (fabricengine.BoltWriteResult, error)`
-- `plan:internal/orchcli#orchCLI.rulesCmd` -> `func (c *orchCLI) rulesCmd() *cobra.Command`
-- `plan:internal/orchcli#writeHubRules` -> `func writeHubRules(out io.Writer, cwd, from, rulesPath string, bolt rulesBolt) int`
-- `plan:internal/orchcli#fakeRulesBolt` -> `type fakeRulesBolt struct`
-- `plan:internal/orchcli#fakeRulesBolt.Push` -> `func (f *fakeRulesBolt) Push() error`
-- `plan:internal/orchcli#fakeRulesBolt.PullThenCommitWritten` -> `func (f *fakeRulesBolt) PullThenCommitWritten(write fabricengine.BoltWrite) (fabricengine.BoltWriteResult, error)`
-- `plan:internal/orchcli#TestWriteHubRules` -> `func TestWriteHubRules(t *testing.T)`
-- `plan:internal/orchcli#TestOrchIntegration_RulesCommitsOnBolt` -> `func TestOrchIntegration_RulesCommitsOnBolt(t *testing.T)`
+- `internal/orchcli#rulesBolt`
+- `internal/orchcli#boardRulesBolt`
+- `internal/orchcli#boardRulesBolt.Push`
+- `internal/orchcli#boardRulesBolt.PullThenCommitWritten`
+- `internal/orchcli#orchCLI.rulesCmd`
+- `internal/orchcli#writeHubRules`
+- `internal/orchcli#fakeRulesBolt`
+- `internal/orchcli#fakeRulesBolt.Push`
+- `internal/orchcli#fakeRulesBolt.PullThenCommitWritten`
+- `internal/orchcli#TestWriteHubRules`
+- `internal/orchcli#TestOrchIntegration_RulesCommitsOnBolt`
 
 **Edit:**
 - `internal/orchcli#Command`

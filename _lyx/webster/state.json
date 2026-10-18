@@ -1,10 +1,10 @@
 {
   "runGuid": "847f7f9c11f7dcb0fdd38fac4172072e",
-  "planFingerprint": "939f904545452f0136e148f41f9d0355c8f3eb7c9072d1ed055e02ce0598c222",
+  "planFingerprint": "39c094bb7396a32d77269539f22fd2bc48da549982c112831aafd45221b9b86d",
   "planFileHashes": {
     "00-overview.md": "7c6613cc410ebf10f62d04a44443fba36f3b13c062a38d9a37ebeca4abe715aa",
     "01-rule-files-render.md": "6a262ecaa948f4f727bd5b431c925c3c86ee19ce843c9947d29fc40cf3e1b28b",
-    "02-orch-rules-verb.md": "7b2cb534f18c1d273ef7d1f40046dc012847bc6d6aed0926e96865b6e058236a",
+    "02-orch-rules-verb.md": "0e5e30c5df972c7e95d76f675ec4b20bd49fef43af91a2a7a8071b2a715b4bb8",
     "03-orchestrator-md-removal.md": "0c9723fa83724b825841fe7265ea3b73c3acb97cbf60f237721fb08331269003",
     "04-orch-rules-move-note.md": "6c0a9d1737c9c0803a1ab87f06b45e84b0f45dd13881fbd84cd4dc18fa3b6ab2"
   },
@@ -126,7 +126,7 @@
       }
     }
   ],
-  "currentBatch": 2,
+  "currentBatch": 0,
   "masterStrand": "23b13108086888443fc8ba934095ac2d",
   "masterSessionId": "2e418875-5918-4042-9911-310e5800e5b6",
   "masterEngine": "claude",
@@ -169,15 +169,26 @@
         "04-orch-rules-move-note"
       ],
       "cardHashes": {
-        "02-orch-rules-verb": "7b2cb534f18c1d273ef7d1f40046dc012847bc6d6aed0926e96865b6e058236a",
+        "02-orch-rules-verb": "0e5e30c5df972c7e95d76f675ec4b20bd49fef43af91a2a7a8071b2a715b4bb8",
         "03-orchestrator-md-removal": "0c9723fa83724b825841fe7265ea3b73c3acb97cbf60f237721fb08331269003",
         "04-orch-rules-move-note": "6c0a9d1737c9c0803a1ab87f06b45e84b0f45dd13881fbd84cd4dc18fa3b6ab2"
       },
       "startSha": "0ba9e9557c7b5a793e203f0858b432c7f81e96d2",
       "kind": "recovery",
       "spawnedAt": "2026-10-18T15:41:03Z",
-      "terminal": false,
-      "status": "",
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "02-orch-rules-verb",
+        "status": "done",
+        "head_sha": "8f0a8633d7b3c3fe6ca496be04937830529e88cf",
+        "deviations": [
+          "internal/orchcli/rules.go"
+        ]
+      },
+      "cardShas": [
+        "8f0a8633d7b3c3fe6ca496be04937830529e88cf"
+      ],
       "forkTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-orch-rules-files/2e418875-5918-4042-9911-310e5800e5b6/subagents/agent-afc672cee123faf99.jsonl"
       ],
