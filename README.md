@@ -17,7 +17,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | **[WS 001] Creel: program notices in the reminder line, plain-text read**<br>• A program notice is carried in the reminder itself and needs no read; creel read prints plain text for every sender, sender and id only where a reply is wanted<br>• `darn: review_max_bounces 1` | [`creel-compact-notices`](design-creel-compact-notices.md) | darn | Worktree-Create | 3m | 0m | creel, workspaces |
+| 1 | **[WS 001] Creel: program notices in the reminder line, plain-text read**<br>• A program notice is carried in the reminder itself and needs no read; creel read prints plain text for every sender, sender and id only where a reply is wanted<br>• `darn: review_max_bounces 1` | [`creel-compact-notices`](design-creel-compact-notices.md) | darn | Darn-Write | 3m | 0m | creel, workspaces |
 
 #### Normal priority
 
