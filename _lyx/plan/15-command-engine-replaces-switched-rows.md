@@ -1,10 +1,10 @@
 # Card 15 — command-engine-replaces-switched-rows
 
 **Create:**
-- `plan:internal/shedrecipe#commandEntry` -> `func commandEntry(row RowIdentity, cfg Config, env Env) (shedengine.ShedProducer, error)`
-- `plan:internal/shedrecipe#TestCommandEntry` -> `func TestCommandEntry(t *testing.T)`
-- `plan:internal/battencli#runRowCommand` -> `func runRowCommand(ctx context.Context, dir, command, logPath string, timeout time.Duration) (shedadapters.CommandResult, error)`
-- `plan:internal/battencli#battenCLI.commandDeps` -> `func (c *battenCLI) commandDeps(location *lyxcwd.Location, slug, executable string, locateTask func() (*lyxcwd.Location, error)) shedadapters.CommandDeps`
+- `internal/shedrecipe#commandEntry`
+- `internal/shedrecipe#TestCommandEntry`
+- `internal/battencli#runRowCommand`
+- `internal/battencli#battenCLI.commandDeps`
 
 **Delete:**
 - `internal/shedadapters/switched.go`

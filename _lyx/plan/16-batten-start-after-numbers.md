@@ -4,9 +4,9 @@
 - `docs/research/batten-start-2026-10-18/README.md`
 - `internal/battencli#newCommitStatusSeam`
 - `internal/battencli#battenCommitStatusDeps`
-- `plan:internal/battencli#battenCLI.commandDeps`
+- `internal/battencli#battenCLI.commandDeps`
 - `internal/shedadapters#CommandProducer.Call`
-- `plan:internal/shedrecipe#commandEntry`
+- `internal/shedrecipe#commandEntry`
 - `internal/battencli#TestBattenIntegration_Rows`
 
 **Uses:**
