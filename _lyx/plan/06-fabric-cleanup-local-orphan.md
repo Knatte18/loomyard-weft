@@ -1,7 +1,7 @@
 # Card 6 — fabric-cleanup-local-orphan
 
 **Create:**
-- `plan:internal/fabricengine_test#TestCleanup_LocalOrphanPushesNothing` -> `func TestCleanup_LocalOrphanPushesNothing(t *testing.T)`
+- `internal/fabricengine_test#TestCleanup_LocalOrphanPushesNothing`
 
 **Edit:**
 - `internal/fabricengine#Topology.Cleanup`

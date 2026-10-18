@@ -1,11 +1,11 @@
 # Card 5 — fabric-remove-local-pair
 
 **Create:**
-- `plan:internal/fabricengine#RemoveStepRecordsDropped` -> `const RemoveStepRecordsDropped = "records_dropped"`
-- `plan:internal/fabricengine#dirtyRecordsDisposable` -> `func dirtyRecordsDisposable() pathDirtiness`
-- `plan:internal/fabricengine#removeLocalWeft` -> `func removeLocalWeft(rec *Mutations, l *lyxcwd.Location, slug, branch, branchPrefix string) (steps []string, err error)`
-- `plan:internal/fabricengine_test#TestRemove_LocalPair` -> `func TestRemove_LocalPair(t *testing.T)`
-- `plan:internal/fabricengine_test#TestOriginWrites_LocalMarkedBranch` -> `func TestOriginWrites_LocalMarkedBranch(t *testing.T)`
+- `internal/fabricengine#RemoveStepRecordsDropped`
+- `internal/fabricengine#dirtyRecordsDisposable`
+- `internal/fabricengine#removeLocalWeft`
+- `internal/fabricengine_test#TestRemove_LocalPair`
+- `internal/fabricengine_test#TestOriginWrites_LocalMarkedBranch`
 
 **Edit:**
 - `internal/fabricengine#Topology.Remove`
