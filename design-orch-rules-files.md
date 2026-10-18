@@ -1,6 +1,6 @@
 # [WS 003] Orch rules move out of the repository into each orch weft
 
-`orch-rules-files` · Task · enhancement, orch, workspaces · running · Webster-Bouncer
+`orch-rules-files` · Task · enhancement, orch, workspaces · running · Describe
 
 ## Seen (2026-10-18)
 
