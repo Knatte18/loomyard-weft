@@ -1,0 +1,8 @@
+verdict: approve
+reason: >-
+  The diff does what the board entry asks and nothing beyond it.
+  It makes the production loop lock grace the only one by removing the dead LoopSpec.LockGrace field, after the fixture fix already landed in 743c11f0d.
+  It also audits the integration tier's other fixtures, fixing four short bounds on success paths and keeping the held-lock expiry bound.
+  No peer run or parent commit overlaps it, and the one open risk names no parent correction.
+question: ""
+superseded: []
