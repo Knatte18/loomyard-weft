@@ -1,11 +1,11 @@
 {
-  "current_producer": "Open-Window",
+  "current_producer": "Seed-IDE",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Open-Window",
-    "last": "Seed-Child → done",
+    "now": "Seed-IDE",
+    "last": "Open-Window → done",
     "wait": ""
   },
   "history": [
@@ -20,6 +20,12 @@
       "outcome": "done",
       "output": "",
       "at": "2026-10-18T14:39:06Z"
+    },
+    {
+      "producer": "Open-Window",
+      "outcome": "done",
+      "output": "",
+      "at": "2026-10-18T14:39:13Z"
     }
   ]
 }
