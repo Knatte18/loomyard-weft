@@ -1,11 +1,11 @@
 {
-  "current_producer": "Darn-Write",
+  "current_producer": "Darn-Bouncer",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Darn-Write",
-    "last": "Preflight → done",
+    "now": "Darn-Bouncer",
+    "last": "Darn-Write → done",
     "wait": ""
   },
   "history": [
@@ -14,6 +14,51 @@
       "outcome": "done",
       "output": "",
       "at": "2026-10-18T14:04:25Z"
+    },
+    {
+      "producer": "Darn-Write",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYXHUB/creel-compact-notices/_lyx/landing/summary.md",
+      "at": "2026-10-18T14:25:51Z",
+      "gate_attempts": 1,
+      "gate_spans": [
+        {
+          "gate": "discussion",
+          "kind": "gate",
+          "start": "2026-10-18T14:22:51.378457163Z",
+          "end": "2026-10-18T14:22:58.502237056Z"
+        },
+        {
+          "gate": "discussion",
+          "kind": "gate",
+          "start": "2026-10-18T14:24:31.424351822Z",
+          "end": "2026-10-18T14:24:38.754275016Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-10-18T14:22:58.544612272Z",
+          "end": "2026-10-18T14:23:30.840940951Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "rework",
+          "start": "2026-10-18T14:23:31.247628301Z",
+          "end": "2026-10-18T14:24:31.399337352Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-10-18T14:24:38.813128418Z",
+          "end": "2026-10-18T14:25:50.798222187Z"
+        },
+        {
+          "gate": "description",
+          "kind": "gate",
+          "start": "2026-10-18T14:25:50.84076216Z",
+          "end": "2026-10-18T14:25:50.840825708Z"
+        }
+      ]
     }
   ],
   "product": {
