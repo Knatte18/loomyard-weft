@@ -1,6 +1,6 @@
 # lyx report timing leaves out darn runs
 
-`timing-report-darn` · Task · bug, report · running · Finalize
+`timing-report-darn` · Task · bug, report · done
 
 ## Seen (orch, 2026-10-17)
 
