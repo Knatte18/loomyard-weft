@@ -64,6 +64,12 @@ Decision: `-detail` adds the sessions, output, cache write, cache read, input an
 Without it the tables hold the segment or part, cost, share, time, time share and models.
 It changes no figure and no other section.
 
+### Added after Discussion (operator, 2026-10-18): Orch segment shows the whole orch cost
+
+Decision: The Orch segment shows the whole orch cost of the counted period, with the orch usage charged to no run as its own sub-row (unattributed), so the segment total and the Most expensive parts list carry all of it.
+
+Rationale: The orch is likely among the most expensive parts today, and a quarter of its cost is charged to no run.
+
 ## Constraints
 
 - PATTERN-test-economy and PATTERN-test-speed: extend the existing tests in `tools/tokencount` rather than add parallel ones; tier-1 fakes only.
