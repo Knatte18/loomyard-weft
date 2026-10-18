@@ -12,6 +12,7 @@ The time it saves is small: in the sandbox hub `lyx fabric add` took about 1.1 s
 
 - Remove the local-only pair mode once `batten-start-speed` has landed: `--local`, the local-only branch mark and its push refusal, the skipped-local reporting in pushes, the local modes of remove and cleanup, and the local-mark check in the status push.
 - Every operation against a remote runs async, so no lyx command waits on the network.
+  This includes `fabric remove`'s 6 to 7 s of network at teardown (force-with-lease push, archive-tag push, weft branch delete).
 - One exception may stay synchronous: the check whether a pair's branches already exist on origin, since a branch found there is fetched and the work continued on, and that is worth waiting for.
   Today that is `fabric add`'s `git ls-remote` probes; they may run in parallel to cut the wait.
 
