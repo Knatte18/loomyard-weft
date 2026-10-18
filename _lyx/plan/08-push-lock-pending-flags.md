@@ -1,12 +1,12 @@
 # Card 8 — push-lock-pending-flags
 
 **Create:**
-- `plan:internal/fabricengine#pendingFlagPath` -> `func pendingFlagPath(lockDir, side string) string`
-- `plan:internal/fabricengine#markPending` -> `func markPending(lockDir string, owed map[string]PushSpawn) error`
-- `plan:internal/fabricengine#takePending` -> `func takePending(lockDir, side string) (req PushSpawn, found bool, err error)`
-- `plan:internal/fabricengine#coalesceFlagged` -> `func coalesceFlagged(lockDir string, owed map[string]PushSpawn, acquire func(lockPath string) (*lock.FileLock, bool, error), step func() (progressed bool, err error)) (acquired bool, err error)`
-- `plan:internal/fabricengine#CoalescePushRequest` -> `func CoalescePushRequest(req PushSpawn, opts SyncOptions) (res PushResult, err error)`
-- `plan:internal/fabricengine#TestCoalesceFlagged_PendingFlags` -> `func TestCoalesceFlagged_PendingFlags(t *testing.T)`
+- `internal/fabricengine#pendingFlagPath`
+- `internal/fabricengine#markPending`
+- `internal/fabricengine#takePending`
+- `internal/fabricengine#coalesceFlagged`
+- `internal/fabricengine#CoalescePushRequest`
+- `internal/fabricengine#TestCoalesceFlagged_PendingFlags`
 
 **Edit:**
 - `internal/fabricengine#acquirePushLock` -> `func acquirePushLock(lockWait time.Duration) func(lockPath string) (*lock.FileLock, bool, error)`

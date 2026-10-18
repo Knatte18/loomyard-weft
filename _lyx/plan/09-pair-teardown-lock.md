@@ -24,7 +24,7 @@
 
 **Uses:**
 - `internal/fabricengine#PushSpawn`
-- `plan:internal/fabricengine#CoalescePushRequest`
+- `internal/fabricengine#CoalescePushRequest`
 - `internal/fabricengine#SpawnStatusPush`
 - `internal/fabricengine#HubScratchDir`
 - `internal/fabricengine#HubLogsDir`
