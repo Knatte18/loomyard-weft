@@ -965,6 +965,25 @@
       "body": "## Seen (2026-10-17)\n\n- The parallel-batches study (`docs/research/parallel-batches-2026-10-17/`) derived each plan's card dependency graph from the cards' targets and `Uses:` with awk, but nothing shows that graph.\n- A DAG batchifier for Weaver (see `weaver`) is judged on that graph, so seeing it for a real plan helps design and check the batchifier.\n- Graphviz is installed on the operator's machine (`dot`).\n\n## Idea (operator, 2026-10-17)\n\nA tool under `tools/` takes a plan directory and draws its cards as a DAG with arrows for dependencies.\n\n- It builds an incidence matrix: one row per card, one column per glyph and file any card names, each cell saying whether the card changes or uses it.\n- Two cards with a mark in the same column get an edge; its direction follows who changes and who uses.\n- It writes the matrix as a markdown table and the graph as Graphviz DOT text, rendered with `dot -Tsvg`; no Go graph package is needed for this.\n- It reads targets and `Uses:` through `internal/planparser`, so no plan parsing is duplicated.\n\n### Orch recommendation\n\nLater, the same tool colours each card by the batch a batchifier puts it in, so a new batchifier's clusters can be checked by eye on real plans before it runs.\n",
       "created": "2026-10-17T15:27:07Z",
       "revised": "2026-10-17T15:27:07Z"
+    },
+    {
+      "id": 646,
+      "slug": "parallel-batch-parts",
+      "title": "Parallel batches: the shared pieces for Webster forks and Weaver",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "webster",
+        "fabric",
+        "loom"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "DAG batchifier, worktree per batch, merge-back with conflict resolution; open: keeping a fork inside its worktree",
+      "body": "## Seen (2026-10-17)\n\nThe pieces parallel batches need are the same whether a batch starts as a Webster fork or as a cold Weaver agent (see `weaver`); only the spawn differs.\n\n1. A DAG batchifier: edges from the cards' targets and `Uses:`, cards joined into batches while the batch graph stays acyclic and under a cost budget, ready batches chosen. New.\n2. A worktree per batch, created for the batch and removed after it. New; may build on fabric.\n3. Merge-back of each batch worktree into the task branch, with a cheap model such as Haiku resolving textual conflicts. New.\n4. The verify on the merged result and its failure ladder. Exists in Webster (verify gate).\n5. The batch brackets and report: `begin-batch`, `record-batch`, the changed-files guard and the report contract. Exist in Webster.\n6. `plan-dag-view`, to see the graph and the batches. Note filed.\n\n## Operator view, not a decision (2026-10-17)\n\n- Start with these pieces, built so both Webster and Weaver can use them; Webster can run parallel forks first.\n- The hard part is getting a Webster fork to work in another worktree than its master's.\n- Claude Code's own worktree isolation for agents has given the operator only trouble before.\n\n## Open\n\nHow a fork is kept inside its batch's worktree: it inherits the master's working directory and a context full of paths into the task worktree, and `lyx` commands find their anchor from the working directory.\n\n### Orch recommendation\n\nBench before build: a small proof of concept in which one fork is told to work in a worktree Go created, with absolute paths, and a PreToolUse hook refuses its Edit and Write calls outside that worktree, so a slip is refused instead of landing in the wrong tree; measure whether the fork stays inside and what `lyx` commands it needs a directory flag for.\n",
+      "created": "2026-10-18T06:44:29Z",
+      "revised": "2026-10-18T06:44:29Z"
     }
   ]
 }
