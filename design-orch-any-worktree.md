@@ -36,6 +36,9 @@ So one orch needs to start runs from more than one parent branch, not only one o
 - They need not be called orchestrators.
 - Millhouse supports this today: a thread anywhere creates a task and spawns it from its own worktree, the task records that thread and worktree as its parent, and it merges back there when done.
 - The thread in the worktree a batten run was started from is responsible for that run and receives its notices.
+- The board is shared by the whole hub, so nothing hub-wide is left for a thread; intake from GitHub issues needs no automatic owner and runs on command.
+- A thread that is not running is a real problem whatever the design, as it is for the orch today.
+- Open (orch): who starts a task that becomes ready; the task could carry its home thread or parent branch as a board field.
 - Two hubs with two weft repos would work today, but would make exchanging information between them hard.
 
 ## Orch sketch, not a decision
