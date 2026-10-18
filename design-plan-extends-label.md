@@ -45,6 +45,28 @@ The risk is a wrongly labelled `Extends`, which surfaces as a harder merge confl
 Before the plan format changes, extend `tools/plandag` (darn, review 0) to recompute the DAG with additive refs guessed by path and name (doc files, `docs/overview.md`, `PATTERN.md`, `contracts/specs/*`, CLI wire functions), treating change-against-change on them as no dependency.
 Rerun it on the plans above and compare critical paths; the size of the drop decides whether the label is worth building.
 
+### Rough estimate (orch, 2026-10-18)
+
+A throwaway awk pass over the plandag matrices recomputed each critical path with plandag's own overlap rule; with nothing skipped it reproduced every critical path above.
+Columns skipped for change-against-change only: `test-budget.yaml` (already gone), then doc files, `docs/`, `PATTERN.md` and `contracts/specs/`, then also wire functions guessed by name (`wire*`, `addWeftVerbs`).
+Use against change still counts.
+
+| Plan | Cards | Today (no test-budget) | Docs and specs additive | Plus wire additive |
+|---|---|---|---|---|
+| `batten-start-speed` | 16 | 9 | 8 | 8 |
+| `claimed-scope-edit` | 14 | 8 | 8 | 6 |
+| `engine-model-choice` | 14 | 8 | 7 | 6 |
+| `engine-registry` | 14 | 7 | 5 | 5 |
+| `overview-seats` | 20 | 11 | 9 | 8 |
+| `report-timing` | 12 | 4 | 3 | 3 |
+| `run-pane-timing` | 14 | 5 | 5 | 5 |
+| `shed-tackler` | 14 | 5 | 5 | 4 |
+| `webster-fork-stencil-fixes` | 17 | 8 | 8 | 8 |
+
+Median best speedup, cards over critical path with every card counted equal: about 2.0x today, about 2.5x with docs, specs and wire functions additive.
+Removing `test-budget.yaml` already lifted the median from about 1.8x.
+Docs and specs alone give the smaller part; wire functions give about as much again.
+
 ## Side finding
 
 `fabriccli#addWeftVerbs` holds shared hidden flags and pre-run logic beside the verb list, which is why so many cards touch it; a thin wire function, only the list, with flags and logic beside each command, would remove much of that hot spot.
