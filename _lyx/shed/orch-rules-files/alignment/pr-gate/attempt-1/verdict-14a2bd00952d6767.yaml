@@ -1,0 +1,7 @@
+verdict: approve
+reason: >-
+  The diff delivers the board entry's two-layer orch rules (hub-wide on Bolt first, the orch's own weft file second),
+  deletes ORCHESTRATOR.md with its mentions, adds lyx orch rules, and files the orch-rules-move note, keeping decisions D1 to D5.
+  The one peer, batten-start-speed, has no design conflict, and this run (row 22) lands before it (row 8).
+question: ""
+superseded: []
