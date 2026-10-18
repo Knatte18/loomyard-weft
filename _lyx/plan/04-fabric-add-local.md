@@ -24,9 +24,9 @@
 - `tools/sandbox/SANDBOX-FABRIC-SUITE.md`
 
 **Uses:**
-- `plan:internal/gitrepo#Repo.MarkBranchLocal`
-- `plan:internal/gitrepo#Repo.ClearBranchLocalMark`
-- `plan:internal/gitrepo#Repo.BranchMarkedLocal`
+- `internal/gitrepo#Repo.MarkBranchLocal`
+- `internal/gitrepo#Repo.ClearBranchLocalMark`
+- `internal/gitrepo#Repo.BranchMarkedLocal`
 - `internal/fabricengine#containedWorktreeAdd`
 - `internal/fabricengine#createGitWorktree`
 - `internal/fabricengine_test#TestAdd_SkipPushSkipsLeftoverProbes`

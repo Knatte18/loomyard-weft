@@ -21,7 +21,7 @@
 - `internal/fabricengine/doc.go`
 
 **Uses:**
-- `plan:internal/gitrepo#Repo.BranchMarkedLocal`
+- `internal/gitrepo#Repo.BranchMarkedLocal`
 - `plan:internal/fabricengine#Topology.AddLocal`
 - `internal/fabricengine#deleteWarpBranch`
 - `internal/fabricengine#ArchiveWeftTipForTest`

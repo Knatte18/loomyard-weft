@@ -10,8 +10,8 @@
 - `internal/fabricengine_test#TestCoalescePushBothAt_AdvancesBothSidesAndLeavesNoWarpRootLock`
 
 **Uses:**
-- `plan:internal/gitrepo#ErrLocalBranch`
-- `plan:internal/gitrepo#Repo.MarkBranchLocal`
+- `internal/gitrepo#ErrLocalBranch`
+- `internal/gitrepo#Repo.MarkBranchLocal`
 
 **Intent:** Make fabric's synchronous pushes and the detached child's push report a local-only branch as skipped rather than failed (D3: "`PushAnchored`, `PushPairAnchored` and `lyx fabric push` skip a marked branch and report it skipped on their results"; "The detached child ... skips a marked branch through the same check and logs it").
 

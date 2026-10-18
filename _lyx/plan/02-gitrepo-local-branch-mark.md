@@ -1,11 +1,11 @@
 # Card 2 — gitrepo-local-branch-mark
 
 **Create:**
-- `plan:internal/gitrepo#LocalBranchKey` -> `const LocalBranchKey = "lyxlocal"`
-- `plan:internal/gitrepo#ErrLocalBranch` -> `var ErrLocalBranch error`
-- `plan:internal/gitrepo#Repo.MarkBranchLocal` -> `func (r *Repo) MarkBranchLocal(branch string) error`
-- `plan:internal/gitrepo#Repo.ClearBranchLocalMark` -> `func (r *Repo) ClearBranchLocalMark(branch string) (cleared bool, err error)`
-- `plan:internal/gitrepo#Repo.BranchMarkedLocal` -> `func (r *Repo) BranchMarkedLocal(branch string) (bool, error)`
+- `internal/gitrepo#LocalBranchKey`
+- `internal/gitrepo#ErrLocalBranch`
+- `internal/gitrepo#Repo.MarkBranchLocal`
+- `internal/gitrepo#Repo.ClearBranchLocalMark`
+- `internal/gitrepo#Repo.BranchMarkedLocal`
 
 **Edit:**
 - `internal/gitrepo#Repo.pushPlainWithRetry`
