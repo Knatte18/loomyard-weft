@@ -1,6 +1,6 @@
 # Umbrella tasks: project threads that spawn and land from their own worktree
 
-`orch-any-worktree` · Note · feature, fabric, batten, orch
+`orch-any-worktree` · Note · feature, fabric, batten, orch, board, reed, creel, shed
 
 ## Why
 
