@@ -1,6 +1,6 @@
 # Fast batten start, local-only fabric pairs and one Command producer
 
-`batten-start-speed` · Task · enhancement, batten, fabric, shed, config
+`batten-start-speed` · Task · enhancement, batten, fabric, shed, config, loom
 
 ## Seen: batten's start (2026-10-17/18)
 
@@ -34,9 +34,14 @@ All these special rows should be one and the same producer whose only job is to 
 - Whether a task's `run_settings` may set the command, or only switch it on and off; a command from a board entry runs on the machine, so it may need the same trust class as `deploy`.
 - Placeholders: which run facts a command may name.
 
+## Operator view, not a decision (2026-10-18)
+
+Every such push goes to the background, async: fabric is built for exactly this (its detached push, as `lyx fabric add` already uses through `SpawnPairPush`).
+Loom's own per-transition status push (`internal/loomcli/wiring.go`, `fabricengine.PushPairAnchored`) is synchronous too, and so is the push in `internal/battencli/cleanup.go`.
+
 ## Scope
 
-1. Measure where batten's start goes, row by row and inside each row, and cut the overhead so a row that does nothing costs milliseconds and Open-Window costs no more than starting the window; nothing needs batten's status on GitHub before the next row runs.
+1. Measure where batten's start goes, row by row and inside each row, and cut the overhead so a row that does nothing costs milliseconds and Open-Window costs no more than starting the window; nothing needs batten's status on GitHub before the next row runs, so every per-transition status push (batten, loom and any other shed run's seam) becomes fabric's detached push.
 2. Local-only pairs in fabric: an add with no origin probes and a remove with no push, archive tag or remote delete, for pairs that never reach origin (the batch pairs `weaver` and `parallel-batch-parts` describe).
 3. One `Command` producer for the flag-gated side-action rows, as above.
 
