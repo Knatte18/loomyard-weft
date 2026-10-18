@@ -19,6 +19,7 @@
 - `internal/creelengine#Client.exchange`
 - `internal/creelcli#postCmd`
 - `internal/creelcli#readCmd`
+- `internal/creelcli#injectCmd`
 - `internal/creelengine#TestResolveSender`
 - `internal/creelengine_test#TestStore_InjectAndHold`
 - `internal/creelengine_test#TestScheduler_Injects`
@@ -45,13 +46,13 @@ A claim from another strand's pane, a program claim from a non-orch pane and the
 
 Call timeout (D7's "the Go client's call timeout"):
 `Client.Call` and `CallWatching` apply their timeout to every request, not only a waiting one, so a non-waiting call to a daemon that accepts and never answers returns `ErrWaitTimeout` once the timeout passes; zero still means none.
-`postCmd` and `readCmd` pass their `--timeout` only when they wait (`--wait-reply`, `--wait`) and zero otherwise, so a CLI call's behavior is unchanged.
+`postCmd`, `readCmd` and `injectCmd` pass their `--timeout` only when they wait (`--wait-reply` for a post, `--wait` for a read or an inject) and zero otherwise, so a CLI call's behavior is unchanged.
 
 Tests:
 `TestResolveSender` gains rows: the outside-pane refusal wraps `ErrStrandClaimOutsidePane`, and the other-pane refusal and the unknown-pane-process refusal do not.
 `TestStore_InjectAndHold` gains rows: a program's withdraw removes its queued injects and unread mail to `ly:orch`, journaled with reason `withdrawn`, answers their ids and subjects, and leaves another sender's inject and a read message; a registered `InjectWait` on a withdrawn inject is answered expired and a `PostWait` on a withdrawn message is answered returned; a withdraw on a name creel no longer lists with nothing queued answers empty; a strand's withdraw is refused.
 `TestScheduler_Injects` gains a row: with the scheduler started and a send held open by the fake delivery's `SetSendFunc`, a withdraw leaves the inject journaled `sending` alone and it settles `injected`.
-`TestDaemon_Protocol` gains rows: a program client's withdraw is answered with the result; a client whose strand claim names a listed strand from outside every pane gets an error that `errors.Is` matches; a non-waiting call to a listener that accepts and never answers returns `ErrWaitTimeout` at the timeout.
+`TestDaemon_Protocol` gains rows: a program client's withdraw is answered with the result; a client whose strand claim names a listed strand from outside every pane gets an error that `errors.Is` matches, a row run on Linux only and skipped elsewhere as the existing Linux-only identity row in `internal/creelengine/server_test.go` is, since off Linux `resolveFromEnvironment` signs such a claim as the strand; a non-waiting call to a listener that accepts and never answers returns `ErrWaitTimeout` at the timeout.
 `internal/creelengine/doc.go` describes withdraw, the refusal code and the call timeout.
 
-**ImpactSummary:** One new daemon verb and one response field, a typed wrap of one existing refusal, and a client timeout every CLI caller passes as zero; no existing verb changes behavior.
+**ImpactSummary:** One new daemon verb and one response field, a typed wrap of one existing refusal, and a client timeout every non-waiting CLI call passes as zero; no existing verb changes behavior.

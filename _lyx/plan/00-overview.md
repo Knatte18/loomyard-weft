@@ -1,6 +1,6 @@
 ---
 format: 5
-approved: false
+approved: true
 language: go
 ---
 
@@ -20,7 +20,7 @@ The orch watcher keeps only its cycle logic: it reaches creel through a seam, po
 5 — creelcli-go-client — the exported Go client other modules call creel through, and command injects in the log
 6 — orch-notify-over-creel — NotifyPrime posts creel mail and every notice caller moves to it
 7 — tender-orch-revive-inject — tender's orch revive as a checked creel inject under the record lock
-8 — drop-hub-notice-log — remove batten's notice log and its paths, with the durable-state PATTERN change
+8 — drop-hub-notice-log — remove batten's notice log and its paths, with the durable-state PATTERN change and the overview room both PATTERN changes need
 9 — orch-creel-seam — the watcher's creel seam, the pause-resume line as mail, the notice queue removed
 10 — orch-cycle-over-creel — the watcher's cycle delivered and confirmed through creel
 11 — orch-start-withdraws — orch start's two withdraw rounds and the watcher's retry of a failed one
@@ -60,7 +60,7 @@ The bind color's inject id is watcher memory only; a restarted watcher may queue
 ## verify:
 
 go build ./cmd/lyx
-lyx gate test ./cmd/lyx ./contracts/stencils ./internal/shuttleengine ./internal/testkit/shuttlefake ./internal/creelengine ./internal/creelcli ./internal/testkit/creelfake ./internal/orchengine ./internal/orchcli ./internal/battencli ./internal/battenshed ./internal/loomcli ./internal/burlercli ./internal/webstercli ./internal/hibernatecli ./internal/tenderengine ./internal/tendercli ./internal/shedrun ./internal/testkit/envkit ./internal/landingshed ./internal/sheddriver
-lyx gate test --tags integration ./cmd/lyx ./contracts/stencils ./internal/shuttleengine ./internal/testkit/shuttlefake ./internal/creelengine ./internal/creelcli ./internal/testkit/creelfake ./internal/orchengine ./internal/orchcli ./internal/battencli ./internal/battenshed ./internal/loomcli ./internal/burlercli ./internal/webstercli ./internal/hibernatecli ./internal/tenderengine ./internal/tendercli ./internal/shedrun ./internal/testkit/envkit ./internal/landingshed ./internal/sheddriver
+lyx gate test ./cmd/lyx ./contracts/stencils ./internal/shuttleengine ./internal/testkit/shuttlefake ./internal/creelengine ./internal/creelcli ./internal/testkit/creelfake ./internal/orchengine ./internal/orchcli ./internal/battencli ./internal/battenshed ./internal/loomcli ./internal/burlercli ./internal/webstercli ./internal/hibernatecli ./internal/tenderengine ./internal/tendercli ./internal/shedrun ./internal/testkit/envkit ./internal/landingshed ./internal/sheddriver ./internal/pattern
+lyx gate test --tags integration ./cmd/lyx ./contracts/stencils ./internal/shuttleengine ./internal/testkit/shuttlefake ./internal/creelengine ./internal/creelcli ./internal/testkit/creelfake ./internal/orchengine ./internal/orchcli ./internal/battencli ./internal/battenshed ./internal/loomcli ./internal/burlercli ./internal/webstercli ./internal/hibernatecli ./internal/tenderengine ./internal/tendercli ./internal/shedrun ./internal/testkit/envkit ./internal/landingshed ./internal/sheddriver ./internal/pattern
 go vet -tags llm ./internal/creelcli ./internal/orchcli
 go vet -tags tmux ./internal/creelcli
