@@ -1,0 +1,19 @@
+verdict: resume
+reason: >-
+  Plan-Bouncer escalated round 3 with cause circling over two recurring keys,
+  pattern-md-headroom-overrun and pending-flag-protocol-no-bound.
+  Both returned findings are correct against the code: PATTERN.md is 15556 bytes, HeadroomBytes is 15564
+  (internal/pattern/check.go), the declared growth is 371 bytes, and round 2's card 10 left 211 bytes owed
+  behind a mid-run stop; card 8's respawn did trust the flag's slugs and opposite-side path.
+  The fix is converging: the findings fell from 17 to 7 to 4, and the round 3 fixer fixed all four as proposed,
+  with nothing disputed or deferred.
+  Card 10 now names a complete 368-byte cut made first (15188 bytes before growth, 15559 after, under 15564),
+  with no stop and no "211 bytes owed" text left.
+  Card 8 now builds the respawn from the validated side path and slugs only, drops slugs that hold a separator
+  or a dot-dot element, and adds both test rows.
+  Card 15 has the non-string command row and the Env.Setting fixtures.
+  The plan segment's hard cap is 4 (review_hard_max_bounces in the board's loom.yaml, with plan_hard_max_bounces 0
+  and no run override), so round 3 is below it, and round 4's focus already targets these three areas.
+  No recorded operator decision was needed: this is the circling rule's continue case, not a design call.
+verbs:
+  - lyx loom circling continue batten-start-speed

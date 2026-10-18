@@ -1,0 +1,15 @@
+{
+  "number": 1,
+  "stop_key": {
+    "current_producer": "Plan-Bouncer",
+    "history_length": 21,
+    "state": "awaiting"
+  },
+  "pause_before": "",
+  "pause_after": "",
+  "spawned_at": "2026-10-18T17:55:49.513581583+02:00",
+  "deadline": "2026-10-18T18:25:49.513581583+02:00",
+  "strand_guid": "c0955bf7e928c46a1562a576f2229937",
+  "envelope_path": "/home/knatte/Code/loomyard-LYXHUB/batten-start-speed/_lyx/shed/batten-start-speed/drive-reports/drive-envelope-20261018-175549-76ec.json",
+  "report_path": "/home/knatte/Code/loomyard-LYXHUB/batten-start-speed/_lyx/shed/batten-start-speed/drive-reports/drive-report-20261018-175549-676b.md"
+}
