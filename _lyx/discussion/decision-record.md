@@ -66,6 +66,12 @@ The operator decision is met by that run of the migration; this task writes no h
 - A long-lived process that loads config before and after a hub file changes warns again only for a new key set.
 - A failed write after the dry run leaves written files uncommitted; the report says so and the next board commit carries them, as a failed `--set` commit does.
 
+<!-- lyx:carry-over Darn-Review -->
+- Darn-Review, round 1: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
+  Review: _lyx/reviews/darn/round-1-review.md; fixer report: _lyx/reviews/darn/round-1-fixer-report.md.
+  - apply-failure-leaves-files-unrestored (class design, severity MEDIUM, open in rounds 1)
+<!-- /lyx:carry-over Darn-Review -->
+
 ## Acceptance criteria
 
 - `lyx config reconcile --layer default` from the prime, over a board `loom.yaml` holding an old key name, lists the rename under `migrated` with `layer: default` and writes nothing.
