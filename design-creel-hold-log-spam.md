@@ -1,6 +1,6 @@
 # creel log: a hold refresh writes a held event every ~2s
 
-`creel-hold-log-spam` · Task · bug, creel · running · Describe
+`creel-hold-log-spam` · Task · bug, creel · running · Merge-In
 
 Imported from [issue #722](https://github.com/Knatte18/loomyard/issues/722).
 
