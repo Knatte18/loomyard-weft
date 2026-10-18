@@ -1,11 +1,11 @@
 {
-  "current_producer": "Merge-In",
+  "current_producer": "Publish",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Merge-In",
-    "last": "Describe → done",
+    "now": "Publish",
+    "last": "Merge-In → done",
     "wait": ""
   },
   "history": [
@@ -121,6 +121,12 @@
           "end": "2026-10-18T14:33:15.491051133Z"
         }
       ]
+    },
+    {
+      "producer": "Merge-In",
+      "outcome": "done",
+      "output": "",
+      "at": "2026-10-18T14:33:29Z"
     }
   ],
   "product": {
