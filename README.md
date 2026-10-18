@@ -13,21 +13,23 @@ Concrete and claimable; only a task can run.
 
 Held by a run; its scope is locked until the run ends.
 
+#### High priority
+
+| # | Task | Slug | Recipe | At | Age | Revised | Labels |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| 1 | **[WS 001] Creel: program notices in the reminder line, plain-text read**<br>• A program notice is carried in the reminder itself and needs no read; creel read prints plain text for every sender, sender and id only where a reply is wanted<br>• `darn: review_max_bounces 1` | [`creel-compact-notices`](design-creel-compact-notices.md) | darn | Worktree-Create | 3m | 0m | creel, workspaces |
+
 #### Normal priority
 
 | # | Task | Slug | Recipe | At | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | **Fast batten start, local-only fabric pairs and one Command producer**<br>• Batten pushes status to GitHub after every row (about 2 s each); fabric add/remove wait on origin even for local pairs; side-action rows become one Command producer | [`batten-start-speed`](design-batten-start-speed.md) | loom | Discussion-Burler-Review | 1d | 6h | batten, fabric, shed, config, loom |
+| 2 | **Fast batten start, local-only fabric pairs and one Command producer**<br>• Batten pushes status to GitHub after every row (about 2 s each); fabric add/remove wait on origin even for local pairs; side-action rows become one Command producer | [`batten-start-speed`](design-batten-start-speed.md) | loom | Discussion-Burler-Review | 1d | 6h | batten, fabric, shed, config, loom |
 
 ### Ready
 
 Waits on nothing open; can start now.
 
-#### High priority
-
-| # | Task | Slug | Recipe | After | Age | Revised | Labels |
-| --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | **[WS 001] Creel: program notices in the reminder line, plain-text read**<br>• A program notice is carried in the reminder itself and needs no read; creel read prints plain text for every sender, sender and id only where a reply is wanted<br>• `darn: review_max_bounces 1` | [`creel-compact-notices`](design-creel-compact-notices.md) | darn |  | 3m | 0m | creel, workspaces |
+_None._
 
 ### Layer A
 
