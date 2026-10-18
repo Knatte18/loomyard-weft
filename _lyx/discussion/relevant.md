@@ -1,0 +1,23 @@
+# Relevant
+
+- `internal/battencli/commitstatus.go` `battenCommitStatusDeps`, `newCommitStatusSeam` — batten's per-transition seam whose push goes detached
+- `internal/loomcli/wiring.go` `loomCommitStatusDeps` — loom's and darn's seam, pushing the pair synchronously today
+- `internal/battencli/cleanup.go` `fabricCleanupDeps` — the cleanup verb's synchronous records push
+- `internal/statuscommit/statuscommit.go` `New` — the shared seam core and its push-warns disposition
+- `internal/fabricengine/spawn.go` `SpawnDetachedPush`, `SpawnPairPush` — the detached push child the seams switch to
+- `internal/fabricengine/pushanchored.go` `PushAnchored`, `PushPairAnchored`, `StatusPushLockWait` — the synchronous pushes and the prime rule
+- `internal/fabricengine/add.go` `Add`, `AddOptions` — the origin probes a local add skips
+- `internal/fabricengine/remove.go` `Remove` — the archive and remote steps a local remove skips
+- `internal/fabriccli/fabric.go` — the add and remove flags
+- `internal/shedadapters/switched.go` `SwitchedProducer`, `SwitchedAction` — the producer `Command` replaces
+- `internal/shedrecipe/entries_switched.go` — the three registry entries that go
+- `internal/shedrecipe/registry.go` — the engine map `Command` joins
+- `internal/shedrecipe/recipe.go` `Env` — the switched seams that go and the `Setting` lookup `Command` reads
+- `internal/battencli/wire.go` `switchedActions`, `wire` — where batten fills the seams and the status seam today
+- `internal/battenshed/config.go` `Config`, `ConfigSpec` — batten's flags and their categories
+- `internal/battenshed/template.yaml` — the defaults the command keys join
+- `contracts/recipes/batten-recipe.yaml` — the three rows and their header comment
+- `internal/battencli/land.go` `runDeploy` — the existing shell runner pattern for a configured command
+- `internal/configengine/layers.go` `CategoryExecutable` — the category the local layer refuses
+- `internal/idecli/cli.go` — the module the IDE verbs join
+- `internal/testkit/envkit/envkit.go` — fills the three switched seams in tests
