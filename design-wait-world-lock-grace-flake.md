@@ -1,6 +1,6 @@
 # shedverbs wait-world integration tests flake: loop exited before it recorded itself
 
-`wait-world-lock-grace-flake` · Task · bug, shed · running · Darn-Write
+`wait-world-lock-grace-flake` · Task · bug, shed · running · Darn-Bouncer
 
 Imported from [issue #716](https://github.com/Knatte18/loomyard/issues/716).
 
