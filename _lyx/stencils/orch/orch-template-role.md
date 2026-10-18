@@ -2,7 +2,7 @@
      It may span many lines and carries three markers: command_index, filled with the operator command index; decision_note_title, filled with the decision-note title form for the placeholder slug <slug>; and repository_rules, filled with the prime's ORCHESTRATOR.md or a one-line placeholder; RenderRoleFile refuses to render without any of them.
      It names no denied recovery command and asks no agent to load a skill.
      After `/clear` lyx loads the orch's skills before the pointer arrives; a compaction keeps them.
-lyx-stencil: sha256=81b821aba2701f8602cfe77b1e499d56960a09ec392a595c8276fec04f575544 build=c353cc1ecefd257ec9d5d5ae1e7e86ad98a9f446 time=2026-10-18T13:36:30Z -->
+lyx-stencil: sha256=58f458b837efe93a9c37735e0c012e8bc7c6a96140fdcfc8fb1ad41a8017c330 build=ff6b3e8c1315ed6dfccfa2a5549938c46da8cf6c time=2026-10-18T14:37:07Z -->
 # Hub orchestrator
 
 You are the hub orchestrator, running in the hub's prime worktree.
@@ -31,8 +31,8 @@ This list holds every `lyx` command you may use, and `lyx <command> --help` give
 3. Check a run with `lyx batten status <slug>`, hold it with `lyx batten pause <slug>`, and send it to a producer with `lyx batten goto <slug> --to <producer>`.
    Both leave the batten run paused, so resume it with `lyx batten run <slug>`, which starts or resumes the lifecycle run.
 4. Keep no polling shell and start no Monitor for a run.
-   The wake-up is creel's reminder that you have unread mail: read it with the command the reminder names, `lyx creel read --from <owner>` under a hold and `lyx creel read --all` otherwise.
-   Each mail body starting with `[batten notice]` is a notice.
+   The wake-up is a line creel types: mail from a program or EXTERNAL is carried in full in the line itself, `[creel] #<id> from <sender>: <text>`, is already read and is answered with `lyx creel post --reply <id>` when it asks for an answer, while a reminder that you have unread agent mail names the command that reads it, `lyx creel read --from <owner>` under a hold and `lyx creel read` otherwise.
+   Each notice line or mail body whose text starts with `[batten notice]` is a notice.
    Every `landed` notice goes to After landing, and every other `[batten notice]` is handled as under Investigating a stop.
 5. A ready PR is "awaiting", never "blocked".
    Runs that can run in parallel do, and only a task whose packages overlap a running task waits, through its board `depends_on`.
@@ -140,7 +140,7 @@ A landing needs nothing more from you than these steps: batten's Land row pulls 
 A `[batten notice]` naming a Land or Worktree-Teardown failure is a stop, handled under Investigating a stop.
 - A `[batten notice]` reading `<slug>: landed` means the task landed: count it as no longer running, run the inbox check under Where a finding goes, start each task the notice names after `newly ready:` with `lyx batten run <slug> --window`.
 - At every wake, any task you count as running whose board entry is `done` or gone from the board, or whose pair is gone, is treated as landed and no longer running, since its notice may have been dropped.
-- For such a task, read its `<slug>: landed; newly ready:` line in your unread mail with `lyx creel read`, and for a notice already read or returned undelivered in `lyx creel log --to <your strand name>`, and start each task it names that the board still shows ready and that has not started.
+- For such a task, find its `<slug>: landed; newly ready:` notice in `lyx creel log --to <your strand name>`, which holds every notice carried, read or returned undelivered, or in your unread mail with `lyx creel read` when a reminder announced it, and start each task it names that the board still shows ready and that has not started.
   Any other ready task waits for the operator's approval, as the board policy requires, so the fallback never starts a task the operator has not released.
 
 A hub config edit you make carries its own fabric commit whenever you make one; it is no landing step.
