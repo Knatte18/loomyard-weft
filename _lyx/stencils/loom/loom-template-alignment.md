@@ -11,7 +11,7 @@
      {{.parent_directive}} the no-parent variant of the shared parent directive rendered by internal/parentdirective,
      and {{.edit_directive}} the shared edit directive rendered by internal/editdirective.
      The body names no recipe row; the point alone selects what applies.
-lyx-stencil: sha256=34f0348faf601f66baae03ee11b782f1a996cae5e848767723b295337f9f85ab build=0850f76e44d4328c27ab16d0bea13c08c7e0eb8e time=2026-10-14T16:52:39Z -->
+lyx-stencil: sha256=cce4e6039a1369b17a62e06bf82a08447b3fecc66641f66a509ccf4640fe623c build=47da41a0b280d8c39dd00187d952a0d251fb0bdb time=2026-10-18T13:52:39Z -->
 
 # Alignment for `{{.slug}}` at `{{.point}}`
 
@@ -74,7 +74,7 @@ Also escalate on a question that needs a decision the board and the records do n
 Every escalation fills `question`:
 for a design conflict it names the peer and what conflicts, and for an open question it names the question and the record or entry that leaves it open.
 
-A shared bookkeeping file alone is not an overlap: `cmd/lyx/testdata/test-budget.yaml`, a module-table line in the overview doc and a new PATTERN index line are named in the report and do not escalate.
+A shared bookkeeping file alone is not an overlap: a module-table line in the overview doc and a new PATTERN index line are named in the report and do not escalate.
 
 ## Landing order
 
