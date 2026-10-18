@@ -73,7 +73,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 3 | **shedverbs wait-world integration tests flake: loop exited before it recorded itself** | [`wait-world-lock-grace-flake`](design-wait-world-lock-grace-flake.md) | 1d | 1d | shed |
 | 4 | **lyx report timing leaves out darn runs**<br>• Report darn runs beside loom runs, with phases from the recipe | [`timing-report-darn`](design-timing-report-darn.md) | 1d | 1d | report |
 | 5 | **creel log: a hold refresh writes a held event every ~2s** | [`creel-hold-log-spam`](design-creel-hold-log-spam.md) | 24m | 24m | creel |
-| 6 | **board accepts a task slug that batten Worktree-Create refuses (ends in -weft)** | [`board-slug-fabric-check`](design-board-slug-fabric-check.md) | 0m | 0m |  |
+| 6 | **board accepts a task slug that batten Worktree-Create refuses (ends in -weft)** | [`board-slug-fabric-check`](design-board-slug-fabric-check.md) | 0m | 0m | board, fabric, batten |
 
 ### Enhancements
 

@@ -1,6 +1,6 @@
 # board accepts a task slug that batten Worktree-Create refuses (ends in -weft)
 
-`board-slug-fabric-check` · Note · bug
+`board-slug-fabric-check` · Note · bug, board, fabric, batten
 
 Imported from [issue #724](https://github.com/Knatte18/loomyard/issues/724).
 
