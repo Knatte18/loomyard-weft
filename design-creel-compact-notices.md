@@ -1,6 +1,6 @@
 # [WS 001] Creel: program notices in the reminder line, plain-text read
 
-`creel-compact-notices` · Note · enhancement, creel, workspaces
+`creel-compact-notices` · Task · enhancement, creel, workspaces
 
 ## Seen (2026-10-18)
 

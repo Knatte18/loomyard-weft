@@ -1062,7 +1062,7 @@
       "id": 653,
       "slug": "creel-compact-notices",
       "title": "[WS 001] Creel: program notices in the reminder line, plain-text read",
-      "kind": "note",
+      "kind": "task",
       "labels": [
         "enhancement",
         "creel",
