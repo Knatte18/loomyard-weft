@@ -1,22 +1,22 @@
 # Card 14 — command-producer
 
 **Create:**
-- `plan:internal/shedadapters#CommandRow` -> `type CommandRow struct`
-- `plan:internal/shedadapters#CommandDeps` -> `type CommandDeps struct`
-- `plan:internal/shedadapters#CommandResult` -> `type CommandResult struct`
-- `plan:internal/shedadapters#CommandProducer` -> `type CommandProducer struct`
-- `plan:internal/shedadapters#NewCommandProducer` -> `func NewCommandProducer(name string, row CommandRow, deps CommandDeps) *CommandProducer`
-- `plan:internal/shedadapters#CommandProducer.Call` -> `func (p *CommandProducer) Call(ctx context.Context) (shedengine.Outcome, shedengine.OutputPointer, error)`
-- `plan:internal/shedadapters#expandPlaceholders` -> `func expandPlaceholders(command, goos string, values map[string]string) (expanded, refusedPlaceholder string, err error)`
-- `plan:internal/shedadapters#TestCommandProducer` -> `func TestCommandProducer(t *testing.T)`
+- `internal/shedadapters#CommandRow`
+- `internal/shedadapters#CommandDeps`
+- `internal/shedadapters#CommandResult`
+- `internal/shedadapters#CommandProducer`
+- `internal/shedadapters#NewCommandProducer`
+- `internal/shedadapters#CommandProducer.Call`
+- `internal/shedadapters#expandPlaceholders`
+- `internal/shedadapters#TestCommandProducer`
 
 **Edit:**
 - `internal/shedadapters/doc.go`
 
 **Uses:**
 - `internal/testkit/logcapture#Capture`
-- `plan:internal/verifyrun#QuoteArg`
-- `plan:internal/verifyrun#ErrPercentUnderCmd`
+- `internal/verifyrun#QuoteArg`
+- `internal/verifyrun#ErrPercentUnderCmd`
 
 **Intent:** Add D4's generic `Command` producer: a row whose switch and command are config settings, which runs the command once through the platform shell and never halts the run over its outcome.
 

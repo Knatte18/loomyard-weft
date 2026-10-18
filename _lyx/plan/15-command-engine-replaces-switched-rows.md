@@ -48,10 +48,10 @@
 - `docs/overview.md`
 
 **Uses:**
-- `plan:internal/shedadapters#NewCommandProducer`
-- `plan:internal/shedadapters#CommandRow`
-- `plan:internal/shedadapters#CommandDeps`
-- `plan:internal/shedadapters#CommandResult`
+- `internal/shedadapters#NewCommandProducer`
+- `internal/shedadapters#CommandRow`
+- `internal/shedadapters#CommandDeps`
+- `internal/shedadapters#CommandResult`
 - `internal/shedrecipe#settingRef`
 - `internal/shedrecipe#configString`
 - `internal/shedrecipe#configInt`

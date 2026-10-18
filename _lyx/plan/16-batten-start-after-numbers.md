@@ -5,7 +5,7 @@
 - `internal/battencli#newCommitStatusSeam`
 - `internal/battencli#battenCommitStatusDeps`
 - `plan:internal/battencli#battenCLI.commandDeps`
-- `plan:internal/shedadapters#CommandProducer.Call`
+- `internal/shedadapters#CommandProducer.Call`
 - `plan:internal/shedrecipe#commandEntry`
 - `internal/battencli#TestBattenIntegration_Rows`
 

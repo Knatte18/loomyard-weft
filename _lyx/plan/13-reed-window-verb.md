@@ -1,8 +1,8 @@
 # Card 13 — reed-window-verb
 
 **Create:**
-- `plan:internal/reedcli#reedCLI.windowCmd` -> `func (c *reedCLI) windowCmd() *cobra.Command`
-- `plan:internal/reedcli#TestWindowCmd_OpensATerminalAttachedToTheToldWorktree` -> `func TestWindowCmd_OpensATerminalAttachedToTheToldWorktree(t *testing.T)`
+- `internal/reedcli#reedCLI.windowCmd`
+- `internal/reedcli#TestWindowCmd_OpensATerminalAttachedToTheToldWorktree`
 
 **Edit:**
 - `internal/reedcli#reedCLI`

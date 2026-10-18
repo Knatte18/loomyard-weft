@@ -1,10 +1,10 @@
 # Card 11 — verifyrun-argument-quoting
 
 **Create:**
-- `plan:internal/verifyrun#shellFor` -> `func shellFor(goos string) (name, flag string)`
-- `plan:internal/verifyrun#QuoteArg` -> `func QuoteArg(goos, value string) (string, error)`
-- `plan:internal/verifyrun#ErrPercentUnderCmd` -> `var ErrPercentUnderCmd error`
-- `plan:internal/verifyrun#TestQuoteArg` -> `func TestQuoteArg(t *testing.T)`
+- `internal/verifyrun#shellFor`
+- `internal/verifyrun#QuoteArg`
+- `internal/verifyrun#ErrPercentUnderCmd`
+- `internal/verifyrun#TestQuoteArg`
 
 **Edit:**
 - `internal/verifyrun#run`
