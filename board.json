@@ -894,7 +894,7 @@
       "id": 643,
       "slug": "test-budget-remove",
       "title": "Remove the per-package test budget; watch suite growth by a recurring test-time audit",
-      "kind": "note",
+      "kind": "task",
       "labels": [
         "enhancement",
         "loom",
