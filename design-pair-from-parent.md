@@ -1,4 +1,4 @@
-# Pairs created from a parent pair: board parent field, batten from any worktree
+# [WS 004] Pairs created from a parent pair: board parent field, batten from any worktree
 
 `pair-from-parent` · Note · feature, fabric, batten, board, workspaces
 

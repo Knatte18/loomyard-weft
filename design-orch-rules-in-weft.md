@@ -1,4 +1,4 @@
-# Orch rules move out of the repository into each orch weft
+# [WS 003] Orch rules move out of the repository into each orch weft
 
 `orch-rules-in-weft` · Note · enhancement, orch, workspaces
 

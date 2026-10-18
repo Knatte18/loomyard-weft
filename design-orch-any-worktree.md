@@ -1,4 +1,4 @@
-# Umbrella tasks: project threads that spawn and land from their own worktree
+# [WS 006] Umbrella tasks: project threads that spawn and land from their own worktree
 
 `orch-any-worktree` · Note · feature, fabric, batten, orch, board, reed, creel, shed, workspaces
 
