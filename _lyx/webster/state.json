@@ -534,7 +534,7 @@
       }
     }
   ],
-  "currentBatch": 0,
+  "currentBatch": 10,
   "masterStrand": "18b89fdaf0c53d704ba876fc2316b225",
   "masterSessionId": "42895572-32bc-4eb5-9874-49c6600de7bc",
   "masterEngine": "claude",
@@ -578,6 +578,22 @@
       "bracketTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-batten-start-speed/42895572-32bc-4eb5-9874-49c6600de7bc/subagents/agent-a1185b1131e07de8f.jsonl"
       ]
+    },
+    "10": {
+      "slug": "status-seams-spawn-detached-push",
+      "cards": [
+        "10-status-seams-spawn-detached-push"
+      ],
+      "cardHashes": {
+        "10-status-seams-spawn-detached-push": "2a2c1dc13ec03a74440d0bd317be0eb79ec70aa29a81828e0d9947ec1cc2724a"
+      },
+      "startSha": "716cf2147610ae488ca67bcec91f8118b98ca4e0",
+      "kind": "fork",
+      "spawnedAt": "2026-10-18T16:48:58Z",
+      "sessionId": "42895572-32bc-4eb5-9874-49c6600de7bc",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
     },
     "4": {
       "slug": "fabric-add-local",
