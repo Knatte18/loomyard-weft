@@ -1157,6 +1157,25 @@
       "body": "## Seen (2026-10-18)\n\n- Each task that wants other review rounds than the hub's carries the numbers itself in `run_settings`, such as `{\"loom\":{\"discussion_max_bounces\":2,\"plan_max_bounces\":1,\"webster_max_bounces\":1,\"merge_max_bounces\":1}}` for a light loom.\n- Batten's seeding copies a task's `run_settings` into the pair's `.lyx/config/\u003cmodule\u003e.local.yaml`, and the run reads that file from then on.\n- No named set of run settings exists; the batcher's `cautious` profile is the batcher's own.\n\n## Operator decisions (2026-10-18)\n\n- A board entry gets its own field naming a run profile, beside `recipe`, not a key inside `run_settings`.\n- The profile is read at seeding, when its values are written into the pair's `.local.yaml` with the task's own `run_settings`; a later change of the profile does not reach a run already seeded.\n\n## Operator view, not a decision (2026-10-18)\n\n- The standard profile is about 3-3-2 review rounds (Discussion, Plan, code perches).\n- How many rounds each perch should have waits for an audit of the use of the twill and lens perches introduced on 2026-10-16/17, after they have run for a while.\n\n## Orch recommendation, not a decision\n\n- Profiles are defined once on Bolt, in the hub config of the module that owns the recipe (`loom.yaml`, `darn.yaml`), as a map from profile name to settings, such as `light` and `budget`.\n- Names say what a profile is for, not its numbers (`light`, not `loom211`): numbers in a name say nothing about which perch they set, and the name breaks once a profile also sets models, fans or hard caps.\n- A task's own `run_settings` override single values on top of its profile.\n",
       "created": "2026-10-18T14:56:10Z",
       "revised": "2026-10-18T14:56:10Z"
+    },
+    {
+      "id": 659,
+      "slug": "review-setup-audit",
+      "title": "Audit the use of the twill and lens review setup at every perch",
+      "kind": "note",
+      "labels": [
+        "audit",
+        "burler",
+        "loom",
+        "report"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "After about ten loom runs, measure what the lens fans and twill fixers catch per perch against their cost, and set the standard review rounds from it",
+      "body": "## Seen (2026-10-18)\n\n- On 2026-10-16/17 every perch got the reworked review setup: a lens fan in round 1 (`review-discussion`, `review-plan`, `review-code` beside a plain reviewer), a twill fixer every round, and twill writers for Discussion and Plan.\n- The setup costs tokens and time at every perch, and no measurement yet shows what it catches that the plain setup missed.\n- `plan-writer-finding-classes` classifies Plan findings to improve the Plan writer; it does not judge whether the setup is worth its cost.\n\n## Operator decision (2026-10-18)\n\n- Audit the use of the twill and lens setup across every perch once it has run for a while, and set the standard review rounds from the result (see `run-profiles`).\n\n## Orch recommendation, not a decision\n\n- Run it after about ten loom runs with the setup, from `lyx report convergence` (stop classes, fresh-code fixes, review rounds per segment), `tools/tokencount/tokencount.sh` and the review files in the records repository.\n- Per perch: how many findings each fan member and round raised, how many led to a change that stayed, how many the later perches or PR-Gate would have caught anyway, and the tokens and minutes each round cost.\n- Compare with the runs from before 2026-10-16 where the records allow it.\n",
+      "created": "2026-10-18T14:57:29Z",
+      "revised": "2026-10-18T14:57:29Z"
     }
   ]
 }

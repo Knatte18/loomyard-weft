@@ -61,6 +61,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 2 | **Classify Plan lens and review findings to make the Plan writer get it right first**<br>• Find what Plan lenses and Plan-Burler-Review keep catching, and stop each recurring class at the writer | [`plan-writer-finding-classes`](design-plan-writer-finding-classes.md) | 2d | 2d | loom, burler, stencil, shed |
 | 3 | **Recurring Webster kick-start pack (glyph) audit**<br>• Re-run tools/forkaudit on new Webster forks to track pack use and correctness | [`glyph-audit-recurring`](design-glyph-audit-recurring.md) | 1d | 1d | webster, quarry |
 | 4 | **Recurring test-suite time and growth audit**<br>• Re-run cmd/testtiming against test-suite-timing.md to watch suite growth | [`test-time-audit-recurring`](design-test-time-audit-recurring.md) | 1h | 1h |  |
+| 5 | **Audit the use of the twill and lens review setup at every perch**<br>• After about ten loom runs, measure what the lens fans and twill fixers catch per perch against their cost, and set the standard review rounds from it | [`review-setup-audit`](design-review-setup-audit.md) | 0m | 0m | burler, loom, report |
 
 ### Bugs
 
