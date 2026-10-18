@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-18 15:02 UTC; every age below is as of then.
+Rendered 2026-10-18 15:03 UTC; every age below is as of then.
 
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
@@ -23,12 +23,12 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 2 | **Key-rename migration never reaches the hub config: loom-model-key-names silently turned off the hub fans**<br>• `darn: review_max_bounces 1` | [`config-migrate-hub-layer`](design-config-migrate-hub-layer.md) | darn | Darn-Write | 1d | 0m | config, loom |
-| 3 | **Flaky tmux test: TestBoot_TmuxConf TwoWorktreesBootedConcurrently fails with server exited unexpectedly**<br>• `darn: review_max_bounces 1` | [`tmux-conf-concurrent-boot-flake`](design-tmux-conf-concurrent-boot-flake.md) | darn | Worktree-Create | 1d | 0m | reed |
-| 4 | **shedverbs wait-world integration tests flake: loop exited before it recorded itself**<br>• `darn: review_max_bounces 1` | [`wait-world-lock-grace-flake`](design-wait-world-lock-grace-flake.md) | darn | Worktree-Create | 1d | 0m | shed |
-| 5 | **lyx report timing leaves out darn runs**<br>• Report darn runs beside loom runs, with phases from the recipe<br>• `darn: review_max_bounces 1` | [`timing-report-darn`](design-timing-report-darn.md) | darn | Worktree-Create | 1d | 0m | report |
+| 2 | **Key-rename migration never reaches the hub config: loom-model-key-names silently turned off the hub fans**<br>• `darn: review_max_bounces 1` | [`config-migrate-hub-layer`](design-config-migrate-hub-layer.md) | darn | Darn-Write | 1d | 1m | config, loom |
+| 3 | **Flaky tmux test: TestBoot_TmuxConf TwoWorktreesBootedConcurrently fails with server exited unexpectedly**<br>• `darn: review_max_bounces 1` | [`tmux-conf-concurrent-boot-flake`](design-tmux-conf-concurrent-boot-flake.md) | darn | Worktree-Create | 1d | 1m | reed |
+| 4 | **shedverbs wait-world integration tests flake: loop exited before it recorded itself**<br>• `darn: review_max_bounces 1` | [`wait-world-lock-grace-flake`](design-wait-world-lock-grace-flake.md) | darn | Darn-Write | 1d | 1m | shed |
+| 5 | **lyx report timing leaves out darn runs**<br>• Report darn runs beside loom runs, with phases from the recipe<br>• `darn: review_max_bounces 1` | [`timing-report-darn`](design-timing-report-darn.md) | darn | Worktree-Create | 1d | 1m | report |
 | 6 | **Fast batten start, local-only fabric pairs and one Command producer**<br>• Batten pushes status to GitHub after every row (about 2 s each); fabric add/remove wait on origin even for local pairs; side-action rows become one Command producer | [`batten-start-speed`](design-batten-start-speed.md) | loom | Plan-Burler-Review | 1d | 7h | batten, fabric, shed, config, loom |
-| 7 | **creel log: a hold refresh writes a held event every ~2s**<br>• `darn: review_max_bounces 1` | [`creel-hold-log-spam`](design-creel-hold-log-spam.md) | darn | Worktree-Create | 48m | 0m | creel |
+| 7 | **creel log: a hold refresh writes a held event every ~2s**<br>• `darn: review_max_bounces 1` | [`creel-hold-log-spam`](design-creel-hold-log-spam.md) | darn | Worktree-Create | 48m | 1m | creel |
 
 ### Ready
 
@@ -119,7 +119,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 2 | **Weaver: a cold-start implementer beside Webster, with model escalation**<br>• A second implementer built on Millhouse Builder: a fresh agent per batch with its own model, escalating the model when an agent fails; Webster stays fork-based | [`weaver`](design-weaver.md) | 7d | 7h | webster |
 | 3 | **Split the orch into a run driver and a conversational orch**<br>• One agent drives runs and takes escalations; the operator talks to the other, which discusses problems and updates the board. | [`orch-split`](design-orch-split.md) | 6d | 5d | orch, batten, shed, loom |
 | 4 | **creel stage 3: agents message through creel, not SendMessage**<br>• Parent asks, parent review, stop reports and shuttle send go through creel, so a non-Claude engine can take a role with a parent | [`creel-agents`](design-creel-agents.md) | 3d | 1d | creel, shuttle, loom, stencil, report |
-| 5 | **[WS 004] Board projects and pairs created from a parent pair**<br>• A task names its project; a project groups tasks in order and may have its own worktree; fabric and batten create a project task pair from that branch, batten verbs run from any worktree | [`pair-from-parent`](design-pair-from-parent.md) | 1h | 0m | fabric, batten, board, workspaces |
+| 5 | **[WS 004] Board projects and pairs created from a parent pair**<br>• A task names its project; a project groups tasks in order and may have its own worktree; fabric and batten create a project task pair from that branch, batten verbs run from any worktree | [`pair-from-parent`](design-pair-from-parent.md) | 1h | 1m | fabric, batten, board, workspaces |
 
 #### Normal priority
 
