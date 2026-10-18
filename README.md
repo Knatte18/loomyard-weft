@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-18 13:32 UTC; every age below is as of then.
+Rendered 2026-10-18 13:35 UTC; every age below is as of then.
 
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
@@ -17,7 +17,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | **creel stage 2: orch and batten notices through creel**<br>• The orch watcher and batten notices and injects go through creel; the watcher keeps only its cycle logic | [`creel-notices`](design-creel-notices.md) | loom | PR-Align | 3d | 1d | creel, orch, batten, shed |
+| 1 | **creel stage 2: orch and batten notices through creel**<br>• The orch watcher and batten notices and injects go through creel; the watcher keeps only its cycle logic | [`creel-notices`](design-creel-notices.md) | loom | PR-Gate | 3d | 1d | creel, orch, batten, shed |
 
 ### Ready
 
@@ -78,7 +78,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 1 | **Key-rename migration never reaches the hub config: loom-model-key-names silently turned off the hub fans** | [`config-migrate-hub-layer`](design-config-migrate-hub-layer.md) | 1d | 1d | config, loom |
 | 2 | **Flaky tmux test: TestBoot_TmuxConf TwoWorktreesBootedConcurrently fails with server exited unexpectedly** | [`tmux-conf-concurrent-boot-flake`](design-tmux-conf-concurrent-boot-flake.md) | 1d | 1d | reed |
 | 3 | **shedverbs wait-world integration tests flake: loop exited before it recorded itself** | [`wait-world-lock-grace-flake`](design-wait-world-lock-grace-flake.md) | 1d | 1d | shed |
-| 4 | **lyx report timing leaves out darn runs**<br>• Report darn runs beside loom runs, with phases from the recipe | [`timing-report-darn`](design-timing-report-darn.md) | 22h | 22h | report |
+| 4 | **lyx report timing leaves out darn runs**<br>• Report darn runs beside loom runs, with phases from the recipe | [`timing-report-darn`](design-timing-report-darn.md) | 23h | 23h | report |
 
 ### Enhancements
 
