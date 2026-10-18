@@ -1,13 +1,13 @@
 # Card 4 — creel-withdraw-and-refusal-code
 
 **Create:**
-- `plan:internal/creelengine#VerbWithdraw` -> `const VerbWithdraw = "withdraw"`
-- `plan:internal/creelengine#WithdrawnMessage` -> `type WithdrawnMessage struct`
-- `plan:internal/creelengine#WithdrawResult` -> `type WithdrawResult struct`
-- `plan:internal/creelengine#Store.Withdraw` -> `func (s *Store) Withdraw(sender Sender, receiver string) (WithdrawResult, error)`
-- `plan:internal/creelengine#WithdrawnReason` -> `const WithdrawnReason = "withdrawn"`
-- `plan:internal/creelengine#CodeStrandClaimOutsidePane` -> `const CodeStrandClaimOutsidePane = "strand-claim-outside-pane"`
-- `plan:internal/creelengine#ErrStrandClaimOutsidePane` -> `var ErrStrandClaimOutsidePane = errors.New("creel: the strand claim comes from a process in no strand pane")`
+- `internal/creelengine#VerbWithdraw`
+- `internal/creelengine#WithdrawnMessage`
+- `internal/creelengine#WithdrawResult`
+- `internal/creelengine#Store.Withdraw`
+- `internal/creelengine#WithdrawnReason`
+- `internal/creelengine#CodeStrandClaimOutsidePane`
+- `internal/creelengine#ErrStrandClaimOutsidePane`
 
 **Edit:**
 - `internal/creelengine#Response`

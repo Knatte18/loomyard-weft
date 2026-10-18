@@ -1,20 +1,20 @@
 # Card 5 — creelcli-go-client
 
 **Create:**
-- `plan:internal/creelcli#GoClient` -> `type GoClient struct`
-- `plan:internal/creelcli#NewProgramClient` -> `func NewProgramClient(location *lyxcwd.Location, program string) (*GoClient, error)`
-- `plan:internal/creelcli#NewStrandClient` -> `func NewStrandClient(location *lyxcwd.Location, strandName string) (*GoClient, error)`
-- `plan:internal/creelcli#newGoClient` -> `func newGoClient(location *lyxcwd.Location, claim func(shortname string) (creelengine.Claim, error)) (*GoClient, error)`
-- `plan:internal/creelcli#goCallTimeout` -> `const goCallTimeout = 30 * time.Second`
-- `plan:internal/creelcli#GoClient.Shortname` -> `func (c *GoClient) Shortname() string`
-- `plan:internal/creelcli#GoClient.Post` -> `func (c *GoClient) Post(receiver, body string) (int64, error)`
-- `plan:internal/creelcli#GoClient.ReadAll` -> `func (c *GoClient) ReadAll(handle func([]creelengine.Message) error) error`
-- `plan:internal/creelcli#GoClient.Inject` -> `func (c *GoClient) Inject(receiver, text string, ttl time.Duration) (int64, error)`
-- `plan:internal/creelcli#GoClient.InjectCommand` -> `func (c *GoClient) InjectCommand(receiver string, command creelengine.Command, ttl time.Duration) (int64, error)`
-- `plan:internal/creelcli#GoClient.Log` -> `func (c *GoClient) Log(filter creelengine.LogFilter) ([]creelengine.LogEntry, error)`
-- `plan:internal/creelcli#GoClient.Hold` -> `func (c *GoClient) Hold(receiver string, duration time.Duration) error`
-- `plan:internal/creelcli#GoClient.Release` -> `func (c *GoClient) Release(receiver string) (bool, error)`
-- `plan:internal/creelcli#GoClient.Withdraw` -> `func (c *GoClient) Withdraw(receiver string) (creelengine.WithdrawResult, error)`
+- `internal/creelcli#GoClient`
+- `internal/creelcli#NewProgramClient`
+- `internal/creelcli#NewStrandClient`
+- `internal/creelcli#newGoClient`
+- `internal/creelcli#goCallTimeout`
+- `internal/creelcli#GoClient.Shortname`
+- `internal/creelcli#GoClient.Post`
+- `internal/creelcli#GoClient.ReadAll`
+- `internal/creelcli#GoClient.Inject`
+- `internal/creelcli#GoClient.InjectCommand`
+- `internal/creelcli#GoClient.Log`
+- `internal/creelcli#GoClient.Hold`
+- `internal/creelcli#GoClient.Release`
+- `internal/creelcli#GoClient.Withdraw`
 
 **Edit:**
 - `internal/creelcli#logEntryFields`
