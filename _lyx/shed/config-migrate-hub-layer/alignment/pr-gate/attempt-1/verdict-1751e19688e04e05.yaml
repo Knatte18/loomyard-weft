@@ -1,0 +1,11 @@
+verdict: approve
+reason: >-
+  The diff covers both expected points of the board entry and adds nothing beyond it.
+  A hub-scoped lyx config reconcile --layer default migrates and prunes the board dir's files, guarded and committed in _board on --apply.
+  Reconcile run from _board is refused.
+  configengine warns once at load for a default- or worktree-layer file with unknown keys.
+  The operator decision's preserved old keys are already gone from the hub's loom.yaml and darn.yaml: the hub walk at board commit aa9f100c5 removed them through the same ReconcileHubWideAt migration.
+  The carried-over Darn-Review risk is addressed by the snapshot and restore code and names no parent correction.
+  Neither peer (batten-start-speed, orch-rules-files) overlaps, and there are no parent commits.
+question: ""
+superseded: []
