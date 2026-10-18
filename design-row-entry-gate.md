@@ -21,7 +21,7 @@ For darn's perch that check is only whether `review_max_bounces` is above 0, and
   A perch's Burler row is reached only through the Bouncer's stuck edge, so a skipped Bouncer skips the whole perch.
 - Status and the run's history record the row as skipped with the check's reason, so a skip is visible.
 - The switched producer's flag check becomes this gate, and `internal/loomrecipe`'s edge rewrite for darn is removed.
-- The regression perch (note `regression-baseline-verify`) and the `Command` rows (note `command-producer`) use the same gate.
+- The regression perch (note `regression-baseline-verify`) and the `Command` rows (task `batten-start-speed`) use the same gate.
 
 ## Where it sits (2026-10-17)
 
