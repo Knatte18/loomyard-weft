@@ -1,0 +1,17 @@
+{
+  "current_producer": "Preflight",
+  "state": "running",
+  "error": "",
+  "pause_requested": false,
+  "activity": {
+    "now": "",
+    "last": "",
+    "wait": ""
+  },
+  "history": [],
+  "product": {
+    "slug": "creel-compact-notices",
+    "parent": "main",
+    "start_sha": null
+  }
+}
