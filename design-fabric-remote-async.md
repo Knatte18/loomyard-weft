@@ -1,6 +1,6 @@
-# Local-only fabric pairs stay an explicit choice only, and every remote operation runs async
+# Every remote operation runs async, and local-only fabric pairs stay an explicit choice only
 
-`fabric-local-pairs-remove` · Note · enhancement, fabric, batten
+`fabric-remote-async` · Note · enhancement, fabric, batten
 
 ## Seen
 
