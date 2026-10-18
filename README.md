@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-18 06:54 UTC; every age below is as of then.
+Rendered 2026-10-18 06:59 UTC; every age below is as of then.
 
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
@@ -76,7 +76,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 18 | **lyx board rename: change an entry slug in one write**<br>• Rename an entry keeping all fields and rewriting depends_on; report prose mentions | [`board-rename`](design-board-rename.md) | 16h | 16h | board |
 | 19 | **Remove the per-package test budget; watch suite growth by a recurring test-time audit**<br>• test-budget.yaml forces no reviewed decision and serializes plans; remove it | [`test-budget-remove`](design-test-budget-remove.md) | 15h | 15h | loom, burler, stencil |
 | 20 | **Implementer seam: batchifier inside Webster, engine chosen by setting**<br>• Groundwork before Weaver: batching moves into the implementer, a written implementer contract, loom.implementer selects the engine | [`implementer-seam`](design-implementer-seam.md) | 15h | 15h | webster, loom, shed, report |
-| 21 | **Parallel batches: the shared pieces for Webster forks and Weaver**<br>• DAG batchifier, worktree per batch, merge-back with conflict resolution; open: keeping a fork inside its worktree | [`parallel-batch-parts`](design-parallel-batch-parts.md) | 10m | 10m | webster, fabric, loom |
+| 21 | **Parallel batches: the shared pieces for Webster forks and Weaver**<br>• DAG batchifier, worktree per batch, merge-back with conflict resolution; open: keeping a fork inside its worktree | [`parallel-batch-parts`](design-parallel-batch-parts.md) | 15m | 15m | webster, fabric, loom |
 
 #### Low priority
 
@@ -93,7 +93,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Note | Slug | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| 1 | **Weaver: a cold-start implementer beside Webster, with model escalation**<br>• A second implementer built on Millhouse Builder: a fresh agent per batch with its own model, escalating the model when an agent fails; Webster stays fork-based | [`weaver`](design-weaver.md) | 6d | 15h | webster |
+| 1 | **Weaver: a cold-start implementer beside Webster, with model escalation**<br>• A second implementer built on Millhouse Builder: a fresh agent per batch with its own model, escalating the model when an agent fails; Webster stays fork-based | [`weaver`](design-weaver.md) | 6d | 0m | webster |
 | 2 | **Split the orch into a run driver and a conversational orch**<br>• One agent drives runs and takes escalations; the operator talks to the other, which discusses problems and updates the board. | [`orch-split`](design-orch-split.md) | 5d | 4d | orch, batten, shed, loom |
 | 3 | **creel stage 3: agents message through creel, not SendMessage**<br>• Parent asks, parent review, stop reports and shuttle send go through creel, so a non-Claude engine can take a role with a parent | [`creel-agents`](design-creel-agents.md) | 2d | 17h | creel, shuttle, loom, stencil, report |
 

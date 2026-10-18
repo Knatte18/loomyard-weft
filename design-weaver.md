@@ -151,6 +151,25 @@ The measure for it is the card-level width (cp and w columns of the study), not 
 - Ordering the cards and forming the batches can be done mechanically by a Go program over a DAG.
 - A Codex implementer needs Weaver anyway, since Webster's forks are a Claude Code feature.
 
+### Operator view, not a decision: one batch's life (2026-10-18)
+
+For each batch:
+
+1. Create the batch's worktree with `lyx fabric`, so it has its own `.lyx` and `_lyx` folders.
+2. Copy the relevant part of the plan into the worktree's `_lyx`.
+3. Seed the agent's instructions into the worktree; to the cold agent the worktree is an ordinary working folder, and it need not know anything outside it started it.
+4. Start a cold agent in the worktree; it does its work, writes a report with any deviations from the plan, and ends.
+5. Merge the worktree's work into the parent worktree, resolving conflicts; a good plan leaves little to resolve.
+6. Tear the worktree down as usual.
+
+### Orch recommendation on the batch life
+
+- Steps 1 to 4 run for several ready batches at once; step 5 runs one batch at a time under a lock, since the task branch has one head.
+- A ready batch's worktree starts from the task branch as it stands when the batch starts, so later batches see earlier merges.
+- Before step 5, the batch's own card gate runs in its worktree; after step 5, the verify runs on the merged result; a failure goes up the escalation ladder (a fresh agent on a stronger model in the same worktree, then the arbiter).
+- After step 5, the batchifier runs again over the remaining cards, reading the report's deviations, and starts the next ready batches.
+- Parallel tests share the hub's gate slots, which caps how many batches verify at once.
+
 ### Orch recommendation on the DAG batchifier
 
 Edges come from the cards' targets and `Uses:`; joining two cards into one batch is legal when it keeps the batch graph acyclic, which is the condition above; a cost budget caps a batch's size; ready batches with no edge between them run in parallel.
