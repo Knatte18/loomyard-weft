@@ -1,59 +1,35 @@
-# Creel: carry non-agent mail in its own line, plain-text read
+# creel: carry non-agent mail in the typed line, read prints plain text
 
-A one-line batten notice used to cost the orch three steps: a contentless `[creel] N unread` reminder, a `lyx creel read`, and a JSON reply with fields it never needed.
-With this change, mail from any sender but an agent strand is carried in full in the line creel types, and `lyx creel read` prints plain text for every sender at once.
+A program's notice used to cost the orch three steps: a contentless `[creel] N unread` reminder, a `lyx creel read`, and a JSON envelope with fields it never uses.
+Now mail from any sender but an agent strand is carried in full in the line creel types, and `lyx creel read` prints plain text.
 
-## Carried mail
+## What changes
 
-A message is carried when its sender is a program or EXTERNAL, any sender but an agent strand, and its body is at most 4096 bytes.
-The delivery worker types it as its own line, `[creel] #<id> from <sender>: <body>`, after any due inject and before the reminder, one per probe, and only the hold owner's under a hold.
-Every run of line breaks and other control characters in the body becomes one space.
-The line opens with the id, so a program that takes replies, such as the orch watcher's note request, is answered with `lyx creel post --reply <id>` and no read; creel does not need to know which programs answer.
-Once the send returns, typed or not confirmed, the store journals the message `read` by the receiver, so `lyx creel log` keeps its history; a busy send leaves it unread for the next probe.
-The reminder's count, listed ids and backoff set cover only the rest: agent mail and bodies over the cap.
-
-The code is `isNotice` and `composeNotice` in `internal/creelengine/reminder.go`, and the snapshot split, `worker.typeNotice` and `Store.markNoticeRead` in `deliver.go`.
-
-## Read
-
-`Store.Read` returns every unread message by default, and `--from` narrows it to one sender; the `--all` flag and the request's `all` field are gone.
-`lyx creel read` prints each message as a header line and its body, with a blank line between two messages, and `nothing unread` when there is none.
-The header is `#<id> from <sender>`, then `in reply to #N`, `returned unread by <receiver>`, and `posted <RFC 3339>` once the message is more than five minutes old by the CLI's clock.
-It ends with `— reply with: lyx creel post --reply <id> <text>`.
-Envelope, kind and path stay out of it, and `lyx creel log` keeps them.
-`read --envelope` prints the old JSON envelope unchanged, and refusals keep the JSON error envelope every creel verb prints.
-
-## Docs
-
-`internal/creelengine/doc.go` and `internal/creelcli/doc.go` describe carried mail and the new read output, and `internal/orchcli/doc.go` and `internal/orchengine/doc.go` follow.
-The orch role stencil's wake-up step tells a carried line from a reminder, and its After-landing fallback looks for a landed notice in `lyx creel log` first.
-The two handoff stencils tell the orch to reply to the id the carried `[creel]` line opens with, not one `lyx creel read` prints.
-The sandbox creel suite's scenarios post agent mail from a shell strand where they judge a reminder, and S9 also watches a terminal post being carried.
+- **Carried mail.** A message from a program or `ly:EXTERNAL` whose body is at most 4 KiB is typed as `[creel] #<id> from <sender>: <body>` when the receiver is idle, and is journaled read afterwards.
+  Line breaks and other control characters in the body become one space.
+  The id leads the line, so a sender that takes replies (the orch watcher) is answered with `lyx creel post --reply <id>` without a read.
+- **Reminder.** The count, the listed ids and the backoff cover only the unread mail that is not carried, so a receiver whose unread mail is all carried gets no reminder.
+  Mail from an agent strand, and carried-eligible mail over the cap, keeps the contentless reminder.
+- **Delivery order.** One delivery per probe: the first due inject, else the oldest carried message, else the reminder.
+  Under a hold only the hold owner's mail is typed.
+  A busy send leaves the message unread for the next probe; a send that did not land marks it read, as an inject that did not land is not retyped.
+- **`lyx creel read`.** With no filter it returns every unread message, oldest first, in one call; `--from` narrows it to one sender, and `--all` and the request's `all` field are gone (a client that still sends `all` reads everything, since unknown keys are ignored).
+  Output is a header line (`#<id> from <sender>`, with the message it answers or the receiver that returned it unread when those apply, and `posted <time>` only when the message is over five minutes old), the reply command, then the body; messages are separated by a blank line, and `nothing unread` prints when there is none.
+  `--envelope` prints the previous JSON envelope unchanged, for programs.
+- The Go client's read, the orch role stencils' mail steps, the sandbox creel suite (`tools/sandbox/SANDBOX-CREEL-SUITE.md`), `docs/overview.md` and the `creelengine`, `creelcli`, `orchcli` and `orchengine` docs follow.
 
 ## Design decisions
 
-- The parent's decision "Which mail needs creel read", recorded after Discussion, widens the board's program-only notice to EXTERNAL and puts the id in every carried line and every read header; this description follows it.
-- A 4096-byte cap still applies to carried mail, so a long body does not flood a pane line; mail over it falls back to the reminder.
-- The JSON form is `--envelope`, not `--json`: a verb's own `--json` shadows the root's global help flag, and the read-only classifier takes a trailing `--json` as a help form, which is wrong for a verb that marks mail read.
-  `TestOwnJSONFlags` pins that set.
-- Carried mail is journaled read after its send, not before: a busy send must not lose it, and the cost is one retype if the daemon dies between the send and the read record.
-- A message a concurrent read holds reserved is left to that read, both when the snapshot picks carried mail and when `markNoticeRead` writes, so it is never journaled read twice.
-- Carried mail is read, so a removed receiver no longer returns it.
-  Rows that pin the returned-undelivered path for EXTERNAL or program mail now keep the receiver busy, so nothing is carried first, `TestDaemon_Protocol/PostWaitReplyIsAnsweredWhenTheMessageReturnsUndelivered` among them.
-  `MailReturnsOneStepAtATimeThenIsUndeliveredAndAnswersItsWaiter` posts a body over the cap for the same reason.
-  The CLI's reminded-log row posts from a strand pane.
-- That sweep row's first event check also ignores `reminded` events: the worker types the returned mail's reminder with no clock advance, so that event could land before the check.
-- The text rendering is pinned by an internal unit table, `TestWriteMessagesText`, because the CLI cannot post as a program and carried mail never reaches a read.
-  The integration row covers plain text, the posting time past five minutes, `--envelope` and `nothing unread` end to end.
-- The tmux and llm smoke tests post as EXTERNAL, so they now wait for the carried `[creel] #1 from ` line instead of a reminder; those tiers were not run here.
+- **Agent mail is never carried.** An agent's text typed into another agent's pane would let it pose as an instruction; the reminder carries no sender text, and agent mail keeps it.
+  A program name is accepted only from an orch pane or the Go client, and `ly:EXTERNAL` has no strand, so neither poses that risk.
+- **No "takes replies" flag.** Case does not tell whether a program answers (the watcher does, batten does not), so every carried line shows its id and creel does not need to know.
+- **Retype windows.** A daemon crash between the send and the read record types that message once more at the next start.
+  A message a `read` holds reserved is neither typed nor journaled read by the delivery; if that read is released rather than acknowledged, the line is typed once after the release, and the journal still holds a single read.
+- **Journal unchanged.** The existing `read` event records a carried message, so `lyx creel log` keeps the full history, including the metadata `read` no longer prints.
+- **Flag name.** The JSON flag is `--envelope`, not `--json`, which the CLI's own-JSON-flag test pins.
+- **Out of scope.** How batten or any other program words its notices, and notices posted under a strand claim, which stay agent mail.
 
-## Tests
+## Check by hand
 
-`TestScheduler_Reminders` gains rows for each of these:
-
-- a program's line carried with its id, read, and left out of the reminder beside strand mail;
-- multi-line program and EXTERNAL mail carried flattened, with over-cap and strand mail reminded;
-- a busy carried send left unread and a not-landed one read.
-
-The hold row expects the owner's carried line and its over-cap mail reminded.
-The read-set rows exercise the all-senders default and `--from`.
+- A receiver that relied on the `[batten notice]` mail being readable after delivery now finds it only in `lyx creel log`; the orch role stencil names that place.
+- The tmux and LLM smoke tests (`smoke_tmux_test.go`, `smoke_llm_test.go`) are updated to the new read output but are not part of the default test run; run them if you want the end-to-end check.
