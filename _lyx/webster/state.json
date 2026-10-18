@@ -126,7 +126,7 @@
       }
     }
   ],
-  "currentBatch": 0,
+  "currentBatch": 2,
   "masterStrand": "23b13108086888443fc8ba934095ac2d",
   "masterSessionId": "2e418875-5918-4042-9911-310e5800e5b6",
   "masterEngine": "claude",
@@ -174,27 +174,25 @@
         "04-orch-rules-move-note": "6c0a9d1737c9c0803a1ab87f06b45e84b0f45dd13881fbd84cd4dc18fa3b6ab2"
       },
       "startSha": "0ba9e9557c7b5a793e203f0858b432c7f81e96d2",
-      "kind": "fork",
-      "spawnedAt": "2026-10-18T15:37:20Z",
-      "sessionId": "2e418875-5918-4042-9911-310e5800e5b6",
-      "engine": "claude",
-      "terminal": true,
-      "status": "failed",
-      "digest": {
-        "batch": "02-orch-rules-verb",
-        "status": "failed",
-        "head_sha": "8f0a8633d7b3c3fe6ca496be04937830529e88cf",
-        "reasons": [
-          "batch 02-orch-rules-verb holds cards 2-orch-rules-verb, 3-orchestrator-md-removal, 4-orch-rules-move-note",
-          "create-not-done/4-orch-rules-move-note[blocking]: Create target \".scratch/orch-rules-move.md#\" still does not resolve: looked up \".scratch/orch-rules-move.md#\", quarry answered not_found (the unit is missing)"
-        ]
-      },
+      "kind": "recovery",
+      "spawnedAt": "2026-10-18T15:41:03Z",
+      "terminal": false,
+      "status": "",
       "forkTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-orch-rules-files/2e418875-5918-4042-9911-310e5800e5b6/subagents/agent-afc672cee123faf99.jsonl"
       ],
-      "bracketTranscripts": [
-        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-orch-rules-files/2e418875-5918-4042-9911-310e5800e5b6/subagents/agent-afc672cee123faf99.jsonl"
-      ]
+      "strandGuid": "44f5ce04461e5194b5249ddec8331454",
+      "shuttleRunDir": "/home/knatte/Code/loomyard-LYXHUB/orch-rules-files/.lyx/shuttle/c0bf01887bf0df21d879097fe2523a7e",
+      "eventsPath": "/home/knatte/Code/loomyard-LYXHUB/orch-rules-files/.lyx/shuttle/c0bf01887bf0df21d879097fe2523a7e/events.jsonl",
+      "eventsOffset": 2264,
+      "recoveries": 1,
+      "recoverySessions": [
+        "dd7d7151-75b2-4373-a83b-fa8653f9824b"
+      ],
+      "recoveryEngines": {
+        "dd7d7151-75b2-4373-a83b-fa8653f9824b": "claude"
+      },
+      "recoveryStartSha": "8f0a8633d7b3c3fe6ca496be04937830529e88cf"
     }
   },
   "seenForkTranscripts": [
