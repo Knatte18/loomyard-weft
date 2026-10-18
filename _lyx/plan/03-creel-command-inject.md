@@ -1,30 +1,30 @@
 # Card 3 — creel-command-inject
 
 **Create:**
-- `plan:internal/creelengine#CommandName` -> `type CommandName string`
-- `plan:internal/creelengine#CommandClear` -> `const CommandClear CommandName = "clear"`
-- `plan:internal/creelengine#CommandCompact` -> `const CommandCompact CommandName = "compact"`
-- `plan:internal/creelengine#CommandReloadPlugins` -> `const CommandReloadPlugins CommandName = "reload-plugins"`
-- `plan:internal/creelengine#CommandColor` -> `const CommandColor CommandName = "color"`
-- `plan:internal/creelengine#CommandLoadSkills` -> `const CommandLoadSkills CommandName = "load-skills"`
-- `plan:internal/creelengine#Command` -> `type Command struct`
-- `plan:internal/creelengine#Command.validate` -> `func (c Command) validate() error`
-- `plan:internal/creelengine#Store.InjectCommand` -> `func (s *Store) InjectCommand(sender Sender, receiver string, command Command, ttl time.Duration) (InjectResult, error)`
-- `plan:internal/creelcli#sessionCommands` -> `type sessionCommands interface`
-- `plan:internal/creelcli#runSessionCommand` -> `func runSessionCommand(ops sessionCommands, guid string, command creelengine.Command) error`
-- `plan:internal/creelcli#shuttleOps.RunCommand` -> `func (o shuttleOps) RunCommand(guid string, command creelengine.Command) error`
-- `plan:internal/creelcli#hubDelivery.Command` -> `func (d *hubDelivery) Command(strand creelengine.Strand, command creelengine.Command) error`
-- `plan:internal/creelcli#stubOps.RunCommand` -> `func (s *stubOps) RunCommand(guid string, command creelengine.Command) error`
-- `plan:internal/creelcli#recordingCommands` -> `type recordingCommands struct`
-- `plan:internal/creelcli#recordingCommands.ClearSession` -> `func (r *recordingCommands) ClearSession(guid string) error`
-- `plan:internal/creelcli#recordingCommands.CompactSession` -> `func (r *recordingCommands) CompactSession(guid, focus string) error`
-- `plan:internal/creelcli#recordingCommands.ReloadPlugins` -> `func (r *recordingCommands) ReloadPlugins(guid string) error`
-- `plan:internal/creelcli#recordingCommands.TypeColor` -> `func (r *recordingCommands) TypeColor(guid string, color segmentcolor.Color) error`
-- `plan:internal/creelcli#recordingCommands.LoadSkills` -> `func (r *recordingCommands) LoadSkills(guid string, skills []string) error`
-- `plan:internal/testkit/creelfake#CommandCall` -> `type CommandCall struct`
-- `plan:internal/testkit/creelfake#Delivery.Command` -> `func (d *Delivery) Command(strand creelengine.Strand, command creelengine.Command) error`
-- `plan:internal/testkit/creelfake#Delivery.Commands` -> `func (d *Delivery) Commands() []CommandCall`
-- `plan:internal/testkit/creelfake#Delivery.SetCommandError` -> `func (d *Delivery) SetCommandError(err error)`
+- `internal/creelengine#CommandName`
+- `internal/creelengine#CommandClear`
+- `internal/creelengine#CommandCompact`
+- `internal/creelengine#CommandReloadPlugins`
+- `internal/creelengine#CommandColor`
+- `internal/creelengine#CommandLoadSkills`
+- `internal/creelengine#Command`
+- `internal/creelengine#Command.validate`
+- `internal/creelengine#Store.InjectCommand`
+- `internal/creelcli#sessionCommands`
+- `internal/creelcli#runSessionCommand`
+- `internal/creelcli#shuttleOps.RunCommand`
+- `internal/creelcli#hubDelivery.Command`
+- `internal/creelcli#stubOps.RunCommand`
+- `internal/creelcli#recordingCommands`
+- `internal/creelcli#recordingCommands.ClearSession`
+- `internal/creelcli#recordingCommands.CompactSession`
+- `internal/creelcli#recordingCommands.ReloadPlugins`
+- `internal/creelcli#recordingCommands.TypeColor`
+- `internal/creelcli#recordingCommands.LoadSkills`
+- `internal/testkit/creelfake#CommandCall`
+- `internal/testkit/creelfake#Delivery.Command`
+- `internal/testkit/creelfake#Delivery.Commands`
+- `internal/testkit/creelfake#Delivery.SetCommandError`
 
 **Edit:**
 - `internal/creelengine#Delivery`
