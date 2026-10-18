@@ -126,7 +126,7 @@
       }
     }
   ],
-  "currentBatch": 2,
+  "currentBatch": 0,
   "masterStrand": "23b13108086888443fc8ba934095ac2d",
   "masterSessionId": "2e418875-5918-4042-9911-310e5800e5b6",
   "masterEngine": "claude",
@@ -178,11 +178,27 @@
       "spawnedAt": "2026-10-18T15:37:20Z",
       "sessionId": "2e418875-5918-4042-9911-310e5800e5b6",
       "engine": "claude",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "failed",
+      "digest": {
+        "batch": "02-orch-rules-verb",
+        "status": "failed",
+        "head_sha": "8f0a8633d7b3c3fe6ca496be04937830529e88cf",
+        "reasons": [
+          "batch 02-orch-rules-verb holds cards 2-orch-rules-verb, 3-orchestrator-md-removal, 4-orch-rules-move-note",
+          "create-not-done/4-orch-rules-move-note[blocking]: Create target \".scratch/orch-rules-move.md#\" still does not resolve: looked up \".scratch/orch-rules-move.md#\", quarry answered not_found (the unit is missing)"
+        ]
+      },
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-orch-rules-files/2e418875-5918-4042-9911-310e5800e5b6/subagents/agent-afc672cee123faf99.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-orch-rules-files/2e418875-5918-4042-9911-310e5800e5b6/subagents/agent-afc672cee123faf99.jsonl"
+      ]
     }
   },
   "seenForkTranscripts": [
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-orch-rules-files/2e418875-5918-4042-9911-310e5800e5b6/subagents/agent-a6fb175109429c17e.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-orch-rules-files/2e418875-5918-4042-9911-310e5800e5b6/subagents/agent-a6fb175109429c17e.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-orch-rules-files/2e418875-5918-4042-9911-310e5800e5b6/subagents/agent-afc672cee123faf99.jsonl"
   ]
 }
