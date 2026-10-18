@@ -1,16 +1,16 @@
 # Card 6 — orch-notify-over-creel
 
 **Create:**
-- `plan:internal/orchcli#PrimeOrchStrand` -> `func PrimeOrchStrand(prime *lyxcwd.Location) (name string, recorded bool, err error)`
-- `plan:internal/orchcli#notifyPoster` -> `type notifyPoster interface`
-- `plan:internal/orchcli#notifyClients` -> `type notifyClients struct`
-- `plan:internal/orchcli#notifyPrime` -> `func notifyPrime(orch func() (string, bool, error), line, strandClaim string, clients notifyClients) (bool, error)`
-- `plan:internal/battencli#battenProgram` -> `const battenProgram = "BATTEN"`
-- `plan:internal/loomcli#loomProgram` -> `const loomProgram = "LOOM"`
-- `plan:internal/burlercli#burlerProgram` -> `const burlerProgram = "BURLER"`
-- `plan:internal/webstercli#websterProgram` -> `const websterProgram = "WEBSTER"`
-- `plan:internal/hibernatecli#hibernateProgram` -> `const hibernateProgram = "HIBERNATE"`
-- `plan:internal/orchcli#TestNotifyPrime_SignsAndPosts` -> `func TestNotifyPrime_SignsAndPosts(t *testing.T)`
+- `internal/orchcli#PrimeOrchStrand`
+- `internal/orchcli#notifyPoster`
+- `internal/orchcli#notifyClients`
+- `internal/orchcli#notifyPrime`
+- `internal/battencli#battenProgram`
+- `internal/loomcli#loomProgram`
+- `internal/burlercli#burlerProgram`
+- `internal/webstercli#websterProgram`
+- `internal/hibernatecli#hibernateProgram`
+- `internal/orchcli#TestNotifyPrime_SignsAndPosts`
 
 **Edit:**
 - `internal/orchcli#NotifyPrime` -> `func NotifyPrime(location *lyxcwd.Location, program, line string) (posted bool, err error)`
