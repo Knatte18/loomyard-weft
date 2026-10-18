@@ -776,7 +776,7 @@
       "isolated": false,
       "brief": "",
       "body": "Imported from [issue #716](https://github.com/Knatte18/loomyard/issues/716).\n\nTwo consecutive Merge-In verifies failed in the `internal/shedverbs` integration tier, on different wait-world tests.\nEach failure had the waiter reporting `loop … exited before it recorded itself`.\nThe loom run halted blocked at Merge-In (`escalation-to-human`) with the way forward `lyx loom goto --to Darn-Write`, then `lyx loom resume`.\n\nWhy it is abnormal: the failures did not reproduce in isolation, under `-race`, under `-count=300` or beside heavy integration packages, so diagnosing them cost several runs.\nThe likely cause is the wait-world fixture's 20 ms `LockGrace`, which the waiter's free-lock probe can exhaust under scheduling stalls.\n\nWhat to do: give the wait-world fixture the production lock grace (the task's fix did this), and check other fixtures in the integration tier for short grace values that make verify nondeterministic.\n\nProvenance: task `gate-wait-cache-cap`, notes `Darn-Write.md`, `loom-halt.md`.\n",
-      "status": "running · Darn-Burler-Review",
+      "status": "running · Darn-Burler-Fix",
       "created": "2026-10-17T12:12:20Z",
       "revised": "2026-10-18T15:01:57Z",
       "run_settings": {
