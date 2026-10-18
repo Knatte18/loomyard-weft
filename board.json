@@ -1053,6 +1053,24 @@
       "body": "This note is an operator step, run from the hub's prime worktree after the orch-rules-files task lands and the deploy has put `lyx orch rules` in production.\nIt is never promoted to a run: a task pair's call to `lyx orch rules` is refused by the orch's prime-only refusal.\n\nFrom the prime, draft the hub-wide rules file in `.scratch/` with exactly the text between the two fence lines below, then run `lyx orch rules --from \u003cdraft\u003e`.\n\n```markdown\n### Production\n\nAn exception to `CLAUDE.md`'s Production rule: after your own pushed fix, on a clean `main`, you run `update-plugins.sh` yourself and say so in your report.\n\n### Watching runs\n\nThe operator watches each run in its own terminal window, never in VS Code.\nVS Code opens only when the operator asks for it, through `lyx ide` or `batten.yaml`'s `open_ide`.\n```\n",
       "created": "2026-10-18T15:40:21Z",
       "revised": "2026-10-18T15:40:21Z"
+    },
+    {
+      "id": 663,
+      "slug": "create-target-transient",
+      "title": "webster create-not-done check rejects a Create target the card removes itself",
+      "kind": "note",
+      "labels": [
+        "bug"
+      ],
+      "issues": [
+        731
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Imported from [issue #731](https://github.com/Knatte18/loomyard/issues/731).\n\n**What happened**\n\nA card named a git-ignored scratch file as its one `Create:` target and also told the implementer to remove that file by its literal path once `lyx board upsert` had read it.\nAfter the batch, `lyx webster record-batch` ran its `create-not-done` check, looked the target up through quarry, got `not_found (the unit is missing)` and refused the batch:\n\n```\ncreate-not-done/\u003ccard\u003e[blocking]: Create target \".scratch/\u003cfile\u003e.md#\" still does not resolve: looked up \".scratch/\u003cfile\u003e.md#\", quarry answered not_found (the unit is missing)\nway forward: lyx webster recover-batch \u003cbatch\u003e\n```\n\nThe board write itself had succeeded.\nRecovery worked only by leaving the git-ignored draft in place, refilled from `lyx board get --body`, so the target resolved.\n\n**Why it is abnormal**\n\nThe card's removal step and the check cannot both hold.\nA card whose only effect lies outside the repo, such as a board write, has no target type the check accepts for a transient draft.\nA planner following the cleanup rule for scratch files produces a card that Webster always rejects.\n\n**What to do**\n\nGive the planner a way to declare a transient or non-persistent `Create:` target that `create-not-done` skips, or exempt `.scratch/` paths from the check.\nAlternatively, have the card validator reject a card that both creates and removes the same path, so the conflict surfaces at planning time rather than at `record-batch`.\n\nProvenance: task `orch-rules-files`; notes `02-orch-rules-verb-recovery.md`, `webster-refusal-record-batch.md`.\n",
+      "created": "2026-10-18T15:58:37Z",
+      "revised": "2026-10-18T15:58:37Z"
     }
   ]
 }
