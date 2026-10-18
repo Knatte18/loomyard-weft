@@ -1,6 +1,6 @@
 # Named run profiles in one hub file, picked per task by a profile field
 
-`run-profiles` · Task · enhancement, board, batten, config, loom · running · Darn-Burler-Review
+`run-profiles` · Task · enhancement, board, batten, config, loom · running · Darn-Burler-Fix
 
 ## Seen (2026-10-18)
 
