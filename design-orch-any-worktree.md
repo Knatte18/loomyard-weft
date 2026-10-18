@@ -29,7 +29,21 @@ So one orch needs to start runs from more than one parent branch, not only one o
 - Batten's Worktree-Create calls fabric's `Add` from the prime (`internal/battencli/wire.go`), and `Add` forks from the HEAD of the worktree it runs from, so every batten run forks from the prime's checked-out branch.
 - The parent is already per run after that: the pair's origin record carries `ParentBranch`, loom and darn take `params.parent` from it, parent locks are per parent branch, and the Land row skips the prime pull and deploy when the parent is not the prime's branch (`internal/battenshed/land.go`).
 
-## Orch recommendation, not a decision
+## Operator view, not a decision (2026-10-18, later)
+
+- What the operator wants is a thread they can open in any worktree and hold a running conversation with, which can spawn everything from there, whatever the worktree.
+- With two large projects at once, two such threads, one per project, which the operator talks to separately and which can talk to each other.
+- They need not be called orchestrators.
+- Two hubs with two weft repos would work today, but would make exchanging information between them hard.
+
+## Orch sketch, not a decision
+
+- Split the hub machinery from the conversation: batten runs, the board, creel, landing, deploy, prune and intake stay hub-level and prime-anchored, while the thread is an ordinary strand in its worktree that asks the hub to start runs.
+- A run started from a thread takes the thread's branch as its parent and records the thread's strand as its owner; batten's notices and escalations go to that owner through creel rather than to a fixed `ly:orch`.
+- Threads talk to each other through creel posts, as strands already can.
+- This builds on `orch-split` (a Go run driver beside a conversational agent): once the run loop is Go, a thread holds only the conversation and its own runs' escalations.
+
+## Orch recommendation, not a decision (earlier)
 
 A per-task parent branch, as a board field (and a `lyx batten run --parent` override), from which Worktree-Create forks the pair (`origin/<parent>`) instead of the prime's HEAD.
 One orch, one board and one prime then serve runs on `main` and on `henrik` alike, and the multi-orch part of Want becomes optional.
