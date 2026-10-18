@@ -975,18 +975,28 @@
       ],
       "issues": [],
       "priority": "high",
-      "depends_on": [],
+      "depends_on": [
+        "batten-start-speed"
+      ],
       "isolated": false,
       "brief": "Workspace files in the hub dir; umbrella worktree first, then Bolt, then its live pairs at their anchors; no _portals; finished pairs drop out",
       "body": "## Seen (2026-10-18)\n\n- Fabric writes one hub workspace for the prime, `\u003chub\u003e/_launchers/\u003cAnchorRel\u003e/\u003cprimeName\u003e.code-workspace` (`internal/fabricengine/hubworkspace.go`), with the folders prime, `_board` and `_portals`.\n- `_portals` holds one link per live pair, pointing at that pair's `_lyx` only, so the workspace file never changes as pairs come and go, but a pair's code is not in it.\n- Opening it in VS Code works, and the operator found it very promising.\n- A stale prime `.vscode/tasks.json` from before `6667f79df` auto-ran `reed up`, `reed add claude` and `reed attach` on folder open; it was git-ignored leftover state and is deleted.\n\n## Operator decisions (2026-10-18)\n\n- Workspaces are how the operator opens a hub: one workspace per umbrella (see `orch-any-worktree`); today only the prime, the root umbrella.\n- Every folder entry points straight at the worktree's anchor directory, so the operator never navigates down to the right subdirectory.\n- The umbrella's own worktree is always the first folder, then Bolt, then every worktree belonging to the umbrella, each listed directly; `_portals` is not needed.\n- A finished pair's folder is removed from the workspace again.\n- Folder display names: the prime's worktree shows as its branch name (`main`), `_board` shows as `Bolt`, a task as its slug; directories on disk keep their names.\n  The prime's directory kept the repository's name only because VS Code's recent-folders list showed many indistinguishable `main` folders, which workspaces make moot.\n- The workspace files live directly in the hub directory, ready to open; the hub directory is untracked, as `_launchers` and `_portals` are today.\n\n## Operator decisions (2026-10-18, later)\n\n- Each file is named with the repository in it: `loomyard.code-workspace` for the root umbrella and `loomyard-\u003cumbrella-slug\u003e.code-workspace` for another, since VS Code's recent list shows workspaces by file name.\n  An umbrella is named by its slug on the board.\n- Folder order: the umbrella's own worktree first, then Bolt, then the other worktrees alphabetically by display name, so a task is easy to find.\n\n## Orch recommendation, not a decision\n\n- Fabric rewrites an umbrella's workspace at every `add` and `remove` of a pair under it; VS Code picks up a changed folder list in an open window, and only a change of the first folder restarts its extensions, which never happens since the umbrella stays first.\n  A drag in VS Code rewrites the file and lasts until fabric's next rewrite.\n",
       "created": "2026-10-18T13:38:52Z",
-      "revised": "2026-10-18T14:24:32Z"
+      "revised": "2026-10-18T14:29:25Z",
+      "run_settings": {
+        "loom": {
+          "discussion_max_bounces": 1,
+          "merge_max_bounces": 1,
+          "plan_max_bounces": 1,
+          "webster_max_bounces": 1
+        }
+      }
     },
     {
       "id": 649,
       "slug": "orch-rules-in-weft",
       "title": "[WS 003] Orch rules move out of the repository into each orch weft",
-      "kind": "note",
+      "kind": "task",
       "labels": [
         "enhancement",
         "orch",
@@ -994,12 +1004,22 @@
       ],
       "issues": [],
       "priority": "high",
-      "depends_on": [],
+      "depends_on": [
+        "creel-compact-notices"
+      ],
       "isolated": false,
       "brief": "ORCHESTRATOR.md holds hub-specific lyx behaviour in the code repo; each orch thread reads its own rules from its worktree weft, _lyx/orch/rules.md",
       "body": "## Seen (2026-10-18)\n\n- `ORCHESTRATOR.md` is a tracked file at the repository root holding the orch-only rules of this hub; the watcher inlines it into the role file's `## This repository` at every render (`RepoRulesPath` in `internal/orchcli/paths.go`).\n- Its rules are the operator's choices for how lyx behaves in this hub, not knowledge about the code, so anyone cloning the repository gets them unasked.\n- It is written for one orch, which no longer fits once umbrellas each have their own orch thread (`orch-any-worktree`).\n- The orch role stencil already has a board copy on Bolt (`_board/_lyx/stencils/orch/orch-template-role.md`), and hub config lives in `_board/_lyx/config/`.\n\n## Operator view, not a decision (2026-10-18)\n\nThe file breaks the concept: instructions for how something in lyx behaves do not belong in the repository, but under `_lyx`, tracked in the weft repository.\nBolt is hard to see and search from a working worktree, which the umbrella workspaces (`hub-workspaces`) solve by listing Bolt as a folder.\n\n## Operator view, not a decision (2026-10-18, later)\n\nThe rules belong in each orch's own weft `_lyx`, not on Bolt, since an umbrella's orch does not want the same rules as another's.\n\n## Operator decisions (2026-10-18, later)\n\n- Two layers of orch rules, both inlined where `ORCHESTRATOR.md` is today, hub-wide first:\n  - Hub-wide rules for every orch of the hub live on Bolt, `_board/_lyx/orch/rules.md`: the repository-specific rules a general orch needs, which the shipped role template cannot hold.\n  - Each orch thread's own rules live in its own worktree's weft, `_lyx/orch/rules.md`.\n- For the root umbrella the own-rules file is in the prime's `_lyx`, a link to the records repository's `main-weft` worktree, so it shows inside the prime's own folder.\n- `ORCHESTRATOR.md` goes, with its mentions in CLAUDE.md and the orch role stencil; its current rules move to the new files.\n\n## Orch recommendation, not a decision\n\n- Not an edit of the role stencil's board copy: `lyx stencil` reads such an edit as drift to port back to the shipped source, which these rules are not.\n",
       "created": "2026-10-18T13:38:52Z",
-      "revised": "2026-10-18T14:24:32Z"
+      "revised": "2026-10-18T14:29:25Z",
+      "run_settings": {
+        "loom": {
+          "discussion_max_bounces": 1,
+          "merge_max_bounces": 1,
+          "plan_max_bounces": 1,
+          "webster_max_bounces": 1
+        }
+      }
     },
     {
       "id": 650,

@@ -2,6 +2,8 @@
 
 `hub-workspaces` · Task · enhancement, fabric, ide, workspaces
 
+Depends on: [`batten-start-speed`](design-batten-start-speed.md)
+
 ## Seen (2026-10-18)
 
 - Fabric writes one hub workspace for the prime, `<hub>/_launchers/<AnchorRel>/<primeName>.code-workspace` (`internal/fabricengine/hubworkspace.go`), with the folders prime, `_board` and `_portals`.

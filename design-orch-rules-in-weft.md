@@ -1,6 +1,8 @@
 # [WS 003] Orch rules move out of the repository into each orch weft
 
-`orch-rules-in-weft` · Note · enhancement, orch, workspaces
+`orch-rules-in-weft` · Task · enhancement, orch, workspaces
+
+Depends on: [`creel-compact-notices`](design-creel-compact-notices.md)
 
 ## Seen (2026-10-18)
 
