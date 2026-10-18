@@ -1,6 +1,26 @@
 round: 1
-fan: ""
-fix_fan: ""
+fan: review-code
+fix_fan: fix-code
+fans_recorded: true
+lenses:
+    - code-correctness
+    - code-affected-set
+    - code-tests
+    - code-pattern-fit
+review:
+    engine: claude
+    model: sonnet
+    effort: medium
+    start: 2026-10-18T15:10:48Z
+    end: 2026-10-18T17:12:04.608138517+02:00
+    wall_seconds: 76.608138517
+    tokens_known: true
+    fresh_tokens: 91529
+    cache_read_tokens: 1321222
+    forks: 4
+    fork_fresh_tokens: 16755
+    fork_cache_read_tokens: 438865
+    fork_fresh_share: 0.18305673611642212
 seed:
     - engine: claude
       model: sonnet
