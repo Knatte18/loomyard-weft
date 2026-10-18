@@ -1,6 +1,6 @@
 # creel stage 2: orch and batten notices through creel
 
-`creel-notices` · Task · feature, creel, orch, batten, shed · running · Merge-Bouncer
+`creel-notices` · Task · feature, creel, orch, batten, shed · running · Merge-Burler-Review
 
 ## Goal
 
