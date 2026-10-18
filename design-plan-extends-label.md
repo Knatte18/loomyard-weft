@@ -1,0 +1,51 @@
+# Plan cards mark additive edits so shared spots stop chaining the card DAG
+
+`plan-extends-label` · Note · enhancement, loom, webster, burler
+
+## What was seen
+
+`tools/plandag` (landed `c03af73d0`) was run on nine recorded plans of 12 to 20 cards (2026-10-18, plan artifacts from the records repo).
+The best parallel speedup, cards over critical path with every card counted equal, came out at about 1.8x median:
+
+| Plan | Cards | Critical path | Best speedup |
+|---|---|---|---|
+| `overview-seats` | 20 | 11 | 1.8x |
+| `webster-fork-stencil-fixes` | 17 | 9 | 1.9x |
+| `batten-start-speed` | 16 | 9 | 1.8x |
+| `claimed-scope-edit` | 14 | 8 | 1.75x |
+| `run-pane-timing` | 14 | 5 | 2.8x |
+| `engine-registry` | 14 | 11 | 1.3x |
+| `engine-model-choice` | 14 | 8 | 1.75x |
+| `shed-tackler` | 14 | 7 | 2.0x |
+| `report-timing` | 12 | 9 | 1.3x |
+
+Much of each chain comes from a few shared spots that many cards change by adding to them, not by changing what is there:
+
+- docs: the package `doc.go` (4 to 7 cards per plan), `docs/overview.md` (3 to 5), `PATTERN.md`;
+- specs: `contracts/specs/refusal-spec.md` (4 to 5 cards);
+- CLI wiring: `loomCLI.wire`, `battenCLI.wire`, `fabriccli#addWeftVerbs` (3 to 6 cards), where each card adds a flag or a verb;
+- `cmd/lyx/testdata/test-budget.yaml` (7 to 9 cards in three plans), since removed by `test-budget-remove`.
+
+Real overlaps also exist, such as six cards changing `websterengine#Run` in `engine-model-choice`; those stay dependencies.
+
+## Idea (agreed with the operator 2026-10-18)
+
+A plan card states how it changes a shared spot, not only that it changes it:
+
+1. A new card label, working name `Extends`, beside the change labels and `Uses`: the card only adds to the ref (a flag, a list line, a doc paragraph, a spec entry) and changes nothing already there.
+2. Two `Extends` on the same ref are no dependency in the card DAG; `Extends` against a real change still is.
+3. Git merges additions in different hunks by itself; two additions on the same lines are a simple conflict for the merge-back resolver of parallel batches (see note `parallel-batch-parts`).
+4. Plan review checks the label: an `Extends` on a ref the card in fact rewrites is a finding, like a missing `Uses` today.
+5. Docs use `Extends` too, so the card that writes the code also writes its docs, and no separate final docs card is needed.
+
+The risk is a wrongly labelled `Extends`, which surfaces as a harder merge conflict at merge-back, never silently.
+
+## First step: measure before building
+
+Before the plan format changes, extend `tools/plandag` (darn, review 0) to recompute the DAG with additive refs guessed by path and name (doc files, `docs/overview.md`, `PATTERN.md`, `contracts/specs/*`, CLI wire functions), treating change-against-change on them as no dependency.
+Rerun it on the plans above and compare critical paths; the size of the drop decides whether the label is worth building.
+
+## Side finding
+
+`fabriccli#addWeftVerbs` holds shared hidden flags and pre-run logic beside the verb list, which is why so many cards touch it; a thin wire function, only the list, with flags and logic beside each command, would remove much of that hot spot.
+Orch view, not a decision: this is a separate code cleanup, to become its own note if the measurement shows wire functions matter.

@@ -1145,6 +1145,25 @@
       "body": "Imported from [issue #735](https://github.com/Knatte18/loomyard/issues/735).\n\nA plan-stage burler round (plan, round 2) had to measure by hand whether the plan's declared `PATTERN.md` growth fit the headroom line.\nThe round's finding asked for a named cut of at least 370 bytes across `PATTERN.md` entries outside the three the plan declares, keeping every rule, marker and link.\nMeasuring each candidate gave wording-only cuts of 152 bytes, and the overview's entries are already terse, so the proposed fix could not be carried out.\n\nThis is abnormal because the plan declares more `PATTERN.md` growth than the headroom line admits, and neither Discussion nor the plan gate catches that before a burler round.\nThe check is a mechanical byte comparison, yet it fell to a reviewing agent to measure it manually, costing a round and leaving an unsatisfiable finding.\n\nSuggested fix: make the plan gate (or the Discussion stage) compare the plan's declared `PATTERN.md` growth against the current headroom and refuse or flag a plan that exceeds it, so the plan is corrected before review.\n\nProvenance: task `batten-start-speed`, from note `burler-plan-r2.md`.\n",
       "created": "2026-10-18T17:42:34Z",
       "revised": "2026-10-18T17:42:41Z"
+    },
+    {
+      "id": 674,
+      "slug": "plan-extends-label",
+      "title": "Plan cards mark additive edits so shared spots stop chaining the card DAG",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "loom",
+        "webster",
+        "burler"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "An Extends label for edits that only add to a ref; two Extends on one ref are no dependency; measure with plandag first",
+      "body": "## What was seen\n\n`tools/plandag` (landed `c03af73d0`) was run on nine recorded plans of 12 to 20 cards (2026-10-18, plan artifacts from the records repo).\nThe best parallel speedup, cards over critical path with every card counted equal, came out at about 1.8x median:\n\n| Plan | Cards | Critical path | Best speedup |\n|---|---|---|---|\n| `overview-seats` | 20 | 11 | 1.8x |\n| `webster-fork-stencil-fixes` | 17 | 9 | 1.9x |\n| `batten-start-speed` | 16 | 9 | 1.8x |\n| `claimed-scope-edit` | 14 | 8 | 1.75x |\n| `run-pane-timing` | 14 | 5 | 2.8x |\n| `engine-registry` | 14 | 11 | 1.3x |\n| `engine-model-choice` | 14 | 8 | 1.75x |\n| `shed-tackler` | 14 | 7 | 2.0x |\n| `report-timing` | 12 | 9 | 1.3x |\n\nMuch of each chain comes from a few shared spots that many cards change by adding to them, not by changing what is there:\n\n- docs: the package `doc.go` (4 to 7 cards per plan), `docs/overview.md` (3 to 5), `PATTERN.md`;\n- specs: `contracts/specs/refusal-spec.md` (4 to 5 cards);\n- CLI wiring: `loomCLI.wire`, `battenCLI.wire`, `fabriccli#addWeftVerbs` (3 to 6 cards), where each card adds a flag or a verb;\n- `cmd/lyx/testdata/test-budget.yaml` (7 to 9 cards in three plans), since removed by `test-budget-remove`.\n\nReal overlaps also exist, such as six cards changing `websterengine#Run` in `engine-model-choice`; those stay dependencies.\n\n## Idea (agreed with the operator 2026-10-18)\n\nA plan card states how it changes a shared spot, not only that it changes it:\n\n1. A new card label, working name `Extends`, beside the change labels and `Uses`: the card only adds to the ref (a flag, a list line, a doc paragraph, a spec entry) and changes nothing already there.\n2. Two `Extends` on the same ref are no dependency in the card DAG; `Extends` against a real change still is.\n3. Git merges additions in different hunks by itself; two additions on the same lines are a simple conflict for the merge-back resolver of parallel batches (see note `parallel-batch-parts`).\n4. Plan review checks the label: an `Extends` on a ref the card in fact rewrites is a finding, like a missing `Uses` today.\n5. Docs use `Extends` too, so the card that writes the code also writes its docs, and no separate final docs card is needed.\n\nThe risk is a wrongly labelled `Extends`, which surfaces as a harder merge conflict at merge-back, never silently.\n\n## First step: measure before building\n\nBefore the plan format changes, extend `tools/plandag` (darn, review 0) to recompute the DAG with additive refs guessed by path and name (doc files, `docs/overview.md`, `PATTERN.md`, `contracts/specs/*`, CLI wire functions), treating change-against-change on them as no dependency.\nRerun it on the plans above and compare critical paths; the size of the drop decides whether the label is worth building.\n\n## Side finding\n\n`fabriccli#addWeftVerbs` holds shared hidden flags and pre-run logic beside the verb list, which is why so many cards touch it; a thin wire function, only the list, with flags and logic beside each command, would remove much of that hot spot.\nOrch view, not a decision: this is a separate code cleanup, to become its own note if the measurement shows wire functions matter.\n",
+      "created": "2026-10-18T18:09:07Z",
+      "revised": "2026-10-18T18:09:07Z"
     }
   ]
 }
