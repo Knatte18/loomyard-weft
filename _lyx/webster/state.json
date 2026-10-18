@@ -534,7 +534,7 @@
       }
     }
   ],
-  "currentBatch": 0,
+  "currentBatch": 5,
   "masterStrand": "18b89fdaf0c53d704ba876fc2316b225",
   "masterSessionId": "42895572-32bc-4eb5-9874-49c6600de7bc",
   "masterEngine": "claude",
@@ -612,6 +612,24 @@
       "bracketTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-batten-start-speed/42895572-32bc-4eb5-9874-49c6600de7bc/subagents/agent-a0c08c0787eb4db52.jsonl"
       ]
+    },
+    "5": {
+      "slug": "fabric-remove-local-pair",
+      "cards": [
+        "05-fabric-remove-local-pair",
+        "06-fabric-cleanup-local-orphan"
+      ],
+      "cardHashes": {
+        "05-fabric-remove-local-pair": "cc5fc4f37272fdffb8484d07eaf68b2ccd8a521d8c36e349251e29b0ea52cdd2",
+        "06-fabric-cleanup-local-orphan": "467161e8aab38d745d0a402730c995c5051e07751eff1449688e17c46d003be6"
+      },
+      "startSha": "0ea24c5e37685cfb8aea507aa6eddc4dec3ca54f",
+      "kind": "fork",
+      "spawnedAt": "2026-10-18T16:21:54Z",
+      "sessionId": "42895572-32bc-4eb5-9874-49c6600de7bc",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
     }
   },
   "seenForkTranscripts": [
