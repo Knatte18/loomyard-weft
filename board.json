@@ -1063,6 +1063,23 @@
       "body": "## Seen (2026-10-18)\n\n- At a context cycle the orch watcher posts a request to write the orch note, and waits for the orch to answer `lyx creel post --reply \u003cid\u003e \"written \u003cpath\u003e\"` before it compacts or clears the session.\n- The reply costs the orch one more tool call per cycle, and the operator questioned why it is needed.\n- The watcher already reads the session's turn ends, since a soft cycle waits for the newest turn end to be quiet.\n\n## Operator decision (2026-10-18)\n\n- The watcher sees by itself that the note is written: the orch's turn has ended and the named note file exists and is not empty; it then cycles with no reply.\n- A `defer` reply to a soft request stays, since only the orch knows that work a cycle would lose is in flight.\n",
       "created": "2026-10-18T15:13:52Z",
       "revised": "2026-10-18T15:13:52Z"
+    },
+    {
+      "id": 662,
+      "slug": "orch-rules-move",
+      "title": "Move the orch rules into the hub-wide rules file",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "orch"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "Operator step after the orch-rules-files deploy: run lyx orch rules from the prime",
+      "body": "This note is an operator step, run from the hub's prime worktree after the orch-rules-files task lands and the deploy has put `lyx orch rules` in production.\nIt is never promoted to a run: a task pair's call to `lyx orch rules` is refused by the orch's prime-only refusal.\n\nFrom the prime, draft the hub-wide rules file in `.scratch/` with exactly the text between the two fence lines below, then run `lyx orch rules --from \u003cdraft\u003e`.\n\n```markdown\n### Production\n\nAn exception to `CLAUDE.md`'s Production rule: after your own pushed fix, on a clean `main`, you run `update-plugins.sh` yourself and say so in your report.\n\n### Watching runs\n\nThe operator watches each run in its own terminal window, never in VS Code.\nVS Code opens only when the operator asks for it, through `lyx ide` or `batten.yaml`'s `open_ide`.\n```\n",
+      "created": "2026-10-18T15:40:21Z",
+      "revised": "2026-10-18T15:40:21Z"
     }
   ]
 }
