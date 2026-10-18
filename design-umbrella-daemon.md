@@ -34,6 +34,19 @@ Open: who owns a run whose parent has no running daemon, the same problem as a t
 - The daemon never starts with the machine: `lyx orch start`, with or without `--continue`, starts the daemons of every beam in the hub, which after a restart replaces running `lyx batten run <slug>` for each run in flight.
 - The daemon outgrows the name `ORCHWATCH`: as a creel sender it is the program `BEAM`, `ly:BEAM` for the root beam and `ly:<slug>:BEAM` for another beam.
 
+## Operator decisions (2026-10-18, beam and orch apart)
+
+These replace the earlier wording above where they differ: the daemon is not the orch watcher, and `lyx orch start` does not own the daemons.
+
+- A beam is a worktree plus its Go daemon, and is its own module, `lyx beam`.
+  The daemon starts ready tasks, follows their batten runs, lands them and cleans up; it holds no LLM.
+- An orch is only an LLM with a role: interactive and long-lived, hence its own watcher for context cycling.
+  An orch can be attached to a beam, but a beam runs its tasks with no orch at all.
+- What a beam's daemon cannot settle escalates upward: through the arbiter first, then to the beam's orch, or, when the beam has none, to the parent beam's orch, up to the prime.
+- `lyx beam start` starts the daemons of every beam in the hub, and `lyx orch start` calls it first, so one command still starts everything; never at machine start.
+- The orch watcher and the beam daemon are two different programs.
+  The daemon needs a name of its own, since "beam" names the worktree; open (2026-10-18).
+
 ## Folded in from `orch-split` (2026-10-11 to 10-13)
 
 ### Seen (operator, 2026-10-11)
