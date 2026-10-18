@@ -41,9 +41,9 @@
 - `internal/cleanupcli/doc.go`
 
 **Uses:**
-- `plan:internal/fabricengine#SpawnStatusPush`
-- `plan:internal/fabricengine#SpawnResult`
-- `plan:internal/fabricengine#ErrSpawnUnderTest`
+- `internal/fabricengine#SpawnStatusPush`
+- `internal/fabricengine#SpawnResult`
+- `internal/fabricengine#ErrSpawnUnderTest`
 - `internal/fabricengine#PushPairAnchored`
 - `internal/fabricengine#StatusPushLockWait`
 

@@ -23,9 +23,9 @@
 - `internal/fabricengine/doc.go`
 
 **Uses:**
-- `plan:internal/fabricengine#PushSpawn`
+- `internal/fabricengine#PushSpawn`
 - `plan:internal/fabricengine#CoalescePushRequest`
-- `plan:internal/fabricengine#SpawnStatusPush`
+- `internal/fabricengine#SpawnStatusPush`
 - `internal/fabricengine#HubScratchDir`
 - `internal/fabricengine#HubLogsDir`
 - `internal/fabricengine#WorktreePath`

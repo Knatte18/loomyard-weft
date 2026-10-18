@@ -18,8 +18,8 @@
 - `internal/fabricengine/doc.go`
 
 **Uses:**
-- `plan:internal/fabricengine#PushSpawn`
-- `plan:internal/fabricengine#statusPushRequest`
+- `internal/fabricengine#PushSpawn`
+- `internal/fabricengine#statusPushRequest`
 - `internal/fabricengine#coalescePush`
 - `internal/fabricengine#spawnDetachedPushFn`
 - `internal/fabricengine#weftPushLockFile`

@@ -1,18 +1,18 @@
 # Card 7 — status-push-spawn-entry
 
 **Create:**
-- `plan:internal/fabricengine#PushSpawn` -> `type PushSpawn struct`
-- `plan:internal/fabricengine#SpawnResult` -> `type SpawnResult struct`
-- `plan:internal/fabricengine#SpawnStatusPush` -> `func SpawnStatusPush(l *lyxcwd.Location, gateSlug string) (SpawnResult, error)`
-- `plan:internal/fabricengine#statusPushRequest` -> `func statusPushRequest(l *lyxcwd.Location, gateSlug string) (req PushSpawn, localSkipped []string, err error)`
-- `plan:internal/fabricengine#PauseSlugFlag` -> `const PauseSlugFlag = "pause-slug"`
-- `plan:internal/fabricengine#TeardownSlugFlag` -> `const TeardownSlugFlag = "teardown-slug"`
-- `plan:internal/fabricengine#ErrSpawnUnderTest` -> `var ErrSpawnUnderTest error`
-- `plan:internal/fabricengine#pushSpawnCommand` -> `func pushSpawnCommand(req PushSpawn) (args []string, dir string)`
-- `plan:internal/fabricengine#TestPushSpawnCommand` -> `func TestPushSpawnCommand(t *testing.T)`
-- `plan:cmd/lyx#pauseSlugOverride` -> `func pauseSlugOverride(cmd *cobra.Command) *string`
-- `plan:cmd/lyx#TestPauseSlugOverride` -> `func TestPauseSlugOverride(t *testing.T)`
-- `plan:internal/fabricengine_test#TestSpawnStatusPush` -> `func TestSpawnStatusPush(t *testing.T)`
+- `internal/fabricengine#PushSpawn`
+- `internal/fabricengine#SpawnResult`
+- `internal/fabricengine#SpawnStatusPush`
+- `internal/fabricengine#statusPushRequest`
+- `internal/fabricengine#PauseSlugFlag`
+- `internal/fabricengine#TeardownSlugFlag`
+- `internal/fabricengine#ErrSpawnUnderTest`
+- `internal/fabricengine#pushSpawnCommand`
+- `internal/fabricengine#TestPushSpawnCommand`
+- `cmd/lyx#pauseSlugOverride`
+- `cmd/lyx#TestPauseSlugOverride`
+- `internal/fabricengine_test#TestSpawnStatusPush`
 
 **Delete:**
 - `internal/fabricengine#TestSpawnPairPush_HandsTheDetachedPushBothSidesOfThePair`
