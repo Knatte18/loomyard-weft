@@ -1,6 +1,6 @@
 # An anchor per umbrella
 
-`umbrella-anchor` · Note · enhancement, fabric, config, work-laptop
+`umbrella-anchor` · Note · enhancement, fabric, config, workspaces
 
 ## Seen (2026-10-18)
 

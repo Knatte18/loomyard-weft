@@ -1,6 +1,6 @@
 # Pairs created from a parent pair: board parent field, batten from any worktree
 
-`pair-from-parent` · Note · feature, fabric, batten, board, work-laptop
+`pair-from-parent` · Note · feature, fabric, batten, board, workspaces
 
 ## Seen (2026-10-18)
 

@@ -1,6 +1,6 @@
 # Orch rules move out of the repository into each orch weft
 
-`orch-rules-in-weft` · Note · enhancement, orch, work-laptop
+`orch-rules-in-weft` · Note · enhancement, orch, workspaces
 
 ## Seen (2026-10-18)
 
