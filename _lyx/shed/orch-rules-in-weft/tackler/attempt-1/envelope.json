@@ -1,0 +1,11 @@
+{
+  "verdict": "hand-back",
+  "reason": "The stop is a blocked Worktree-Create on the slug \"orch-rules-in-weft\". The producer refuses the slug because a slug must not end in \"-weft\", a suffix reserved for weft worktrees (stop envelope drive-envelope-20261018-163813-bbfd.json, loop.detail; trace 5f661d38b04c96dd at 16:38:11.842, WARN \"producer stuck\"). The run id and the task slug are the same string, so the stop is not transient and a plain re-launch fails the same way. A goto to Worktree-Create would hit the same check, so neither resume nor goto settles it. Choosing a different slug renames the task, which is the run's parent to decide.",
+  "question": "The task slug \"orch-rules-in-weft\" ends in \"-weft\", which the worktree producer reserves for weft worktrees, so Worktree-Create blocks. Which slug should the task use instead (for example one not ending in \"-weft\"), or should the run be restarted under a renamed task?",
+  "goto": "",
+  "cause": "",
+  "attempt": 1,
+  "attempt_dir": "/home/knatte/Code/loomyard-LYXHUB/loomyard/_lyx/shed/orch-rules-in-weft/tackler/attempt-1",
+  "verdict_path": "/home/knatte/Code/loomyard-LYXHUB/loomyard/_lyx/shed/orch-rules-in-weft/tackler/attempt-1/verdict.yaml",
+  "case_brief_path": ""
+}
