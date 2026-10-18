@@ -1,0 +1,21 @@
+# Relevant code
+
+- `internal/fabricengine/hubworkspace.go` `HubWorkspacePath`, `HubWorkspaceFolders`, `HubWorkspaceFolder` — today's path and folder list, both replaced
+- `internal/fabricengine/hubworkspace_write.go` `WriteHubWorkspace` — the os.Root write that gains the atomic replace and loses the portals mkdir
+- `internal/fabricengine/portals.go` `createPortal`, `removePortal`, `PortalLink`, `PortalsDir`, `portalAnchorDir`, `portalTarget`, `ensureContainedLinkParent` — the portal surface being retired; its ownership check guides the sweep
+- `internal/fabricengine/add.go` `Topology.Add`, `Topology.AddLocal` — create a pair and call createPortal; the rollback calls removePortal
+- `internal/fabricengine/remove.go` `Topology.Remove`, `RemoveStepPortal` — pair removal with the portal step and presence probe
+- `internal/fabricengine/prune.go` `Topology.Prune`, `removeStalePair` — stale-pair teardown that removes portals
+- `internal/fabricengine/reconcile.go` `Topology.Reconcile`, `restorePortalAndLaunchers`, `ReconcileActionPortalRestored` — portal restore, and where the sweep goes
+- `internal/fabricengine/junctionnames.go` `HubReservedNames`, `BoardDir` — reserved names and the Bolt path
+- `internal/fabricengine/worktreelist.go` `PrimeName` — prime directory name
+- `internal/fabricengine/codeworktrees.go` `CodeWorktrees` — the listing of live code worktrees
+- `internal/fabricengine/clone.go` — hub creation, which now writes the first workspace file
+- `internal/fabricengine/mutation.go` `KindFileWritten`, `KindLinkRemoved` — mutation kinds the regeneration and sweep record
+- `internal/ideengine/spawn.go` `Spawn`, `writePrimeWorkspace`, `writeWorkspaceFile` — the prime spawn path that moves onto the fabric function
+- `internal/vscode/workspace.go` `BuildWorkspace`, `RelativeSettingKeys` — file content builder and the relative-settings check
+- `internal/lyxcwd/lyxcwd.go` `Location` — carries `RepoName` for the file name
+- `internal/hubforge/hub.go` `Hub.PairPortalLink` — fixture accessor that goes with portals
+- `internal/fabriccli/fabric.go` — help text for add, remove and reconcile naming portals
+- `pattern/PATTERN-hub-containment.md` — background naming `_launchers` as the workspace's home
+- `docs/overview.md` — hub tree and workspace description
