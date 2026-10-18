@@ -1157,7 +1157,9 @@
       "title": "Plan gate does not catch declared PATTERN.md growth that exceeds the headroom line",
       "kind": "note",
       "labels": [
-        "enhancement"
+        "enhancement",
+        "loom",
+        "burler"
       ],
       "issues": [
         735
@@ -1167,7 +1169,7 @@
       "brief": "",
       "body": "Imported from [issue #735](https://github.com/Knatte18/loomyard/issues/735).\n\nA plan-stage burler round (plan, round 2) had to measure by hand whether the plan's declared `PATTERN.md` growth fit the headroom line.\nThe round's finding asked for a named cut of at least 370 bytes across `PATTERN.md` entries outside the three the plan declares, keeping every rule, marker and link.\nMeasuring each candidate gave wording-only cuts of 152 bytes, and the overview's entries are already terse, so the proposed fix could not be carried out.\n\nThis is abnormal because the plan declares more `PATTERN.md` growth than the headroom line admits, and neither Discussion nor the plan gate catches that before a burler round.\nThe check is a mechanical byte comparison, yet it fell to a reviewing agent to measure it manually, costing a round and leaving an unsatisfiable finding.\n\nSuggested fix: make the plan gate (or the Discussion stage) compare the plan's declared `PATTERN.md` growth against the current headroom and refuse or flag a plan that exceeds it, so the plan is corrected before review.\n\nProvenance: task `batten-start-speed`, from note `burler-plan-r2.md`.\n",
       "created": "2026-10-18T17:42:34Z",
-      "revised": "2026-10-18T17:42:34Z"
+      "revised": "2026-10-18T17:42:41Z"
     }
   ]
 }

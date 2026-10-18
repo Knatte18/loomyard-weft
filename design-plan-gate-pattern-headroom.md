@@ -1,6 +1,6 @@
 # Plan gate does not catch declared PATTERN.md growth that exceeds the headroom line
 
-`plan-gate-pattern-headroom` · Note · enhancement
+`plan-gate-pattern-headroom` · Note · enhancement, loom, burler
 
 Imported from [issue #735](https://github.com/Knatte18/loomyard/issues/735).
 
