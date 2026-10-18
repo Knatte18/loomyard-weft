@@ -29,13 +29,13 @@
 - `internal/orchcli#TestPrimePaths_RootsRepositoryRulesAtTheWorktree`
 
 **Create:**
-- `plan:internal/orchengine#hubRulesMarker` -> `const hubRulesMarker = "hub_rules"`
-- `plan:internal/orchengine#orchRulesMarker` -> `const orchRulesMarker = "orch_rules"`
-- `plan:internal/orchengine#noHubRules` -> `const noHubRules = "This hub has no hub-wide orch rules; they go in %s."`
-- `plan:internal/orchengine#noOwnRules` -> `const noOwnRules = "This orch has no rules of its own; they go in %s."`
-- `plan:internal/orchengine#readRules` -> `func readRules(path, placeholder string) (string, error)`
-- `plan:internal/orchcli#rulesRel` -> `func rulesRel() string`
-- `plan:internal/orchcli#TestPrimePaths_JoinsRuleFilesAndPrimeRoot` -> `func TestPrimePaths_JoinsRuleFilesAndPrimeRoot(t *testing.T)`
+- `internal/orchengine#hubRulesMarker`
+- `internal/orchengine#orchRulesMarker`
+- `internal/orchengine#noHubRules`
+- `internal/orchengine#noOwnRules`
+- `internal/orchengine#readRules`
+- `internal/orchcli#rulesRel`
+- `internal/orchcli#TestPrimePaths_JoinsRuleFilesAndPrimeRoot`
 
 **Uses:**
 - `internal/fabricengine#BoardDir`

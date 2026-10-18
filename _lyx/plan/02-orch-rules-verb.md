@@ -21,7 +21,7 @@
 - `//docs/overview.md`
 
 **Uses:**
-- `plan:internal/orchcli#rulesRel`
+- `internal/orchcli#rulesRel`
 - `internal/fabricengine#NewBolt`
 - `internal/fabricengine#Bolt.Push`
 - `internal/fabricengine#Bolt.PullThenCommitWritten`
