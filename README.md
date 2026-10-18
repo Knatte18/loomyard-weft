@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-18 15:48 UTC; every age below is as of then.
+Rendered 2026-10-18 15:49 UTC; every age below is as of then.
 
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
@@ -17,7 +17,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | **[WS 003] Orch rules move out of the repository into each orch weft**<br>• ORCHESTRATOR.md holds hub-specific lyx behaviour in the code repo; each orch thread reads its own rules from its worktree weft, _lyx/orch/rules.md<br>• `loom: discussion_max_bounces 1`<br>• `loom: merge_max_bounces 1`<br>• `loom: plan_max_bounces 1`<br>• `loom: webster_max_bounces 1` | [`orch-rules-files`](design-orch-rules-files.md) | loom | Merge-Bouncer | 2h | 1h | orch, workspaces |
+| 1 | **[WS 003] Orch rules move out of the repository into each orch weft**<br>• ORCHESTRATOR.md holds hub-specific lyx behaviour in the code repo; each orch thread reads its own rules from its worktree weft, _lyx/orch/rules.md<br>• `loom: discussion_max_bounces 1`<br>• `loom: merge_max_bounces 1`<br>• `loom: plan_max_bounces 1`<br>• `loom: webster_max_bounces 1` | [`orch-rules-files`](design-orch-rules-files.md) | loom | Merge-Burler-Review | 2h | 1h | orch, workspaces |
 
 #### Normal priority
 
@@ -88,12 +88,12 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 13 | **Entry gate on shed rows: a check decides whether a row runs at all**<br>• Replace darn recipe edge rewrite and the switched producer flag check with one shed entry gate per row; false means Done without acting. | [`row-entry-gate`](design-row-entry-gate.md) | 1d | 8h | shed, loom, batten |
 | 14 | **Preflight pushes the weft branch synchronously and races the board sync**<br>• Preflight spent 11 s mostly in a weft push to GitHub, refused once after 8 s; push detached or serialise with the board sync. | [`preflight-weft-push-sync`](design-preflight-weft-push-sync.md) | 1d | 1d | fabric, shed |
 | 15 | **A darn writer cannot rerun a verify tier it is refused, so a flaky tier failure loops and escalates** | [`darn-verify-tier-unrunnable`](design-darn-verify-tier-unrunnable.md) | 1d | 1d | loom, shed |
-| 16 | **Remove the Webster kick-start pack**<br>• Drop every kick-start pack layout and its code; glyphs stay in the plan and its gates | [`kickstart-pack-remove`](design-kickstart-pack-remove.md) | 1d | 48m | webster, quarry, loom |
+| 16 | **Remove the Webster kick-start pack**<br>• Drop every kick-start pack layout and its code; glyphs stay in the plan and its gates | [`kickstart-pack-remove`](design-kickstart-pack-remove.md) | 1d | 49m | webster, quarry, loom |
 | 17 | **Use quarry Enclose for mechanical checks: verify failures to plan cards**<br>• Map tool-output file:line to member glyphs, then to the card and batch that changed them | [`enclose-checks`](design-enclose-checks.md) | 10d | 1d | quarry, webster, loom |
 | 18 | **lyx board rename: change an entry slug in one write**<br>• Rename an entry keeping all fields and rewriting depends_on; report prose mentions | [`board-rename`](design-board-rename.md) | 1d | 1d | board |
 | 19 | **Parallel batches: the shared pieces for Webster forks and Weaver**<br>• DAG batchifier, worktree per batch, merge-back with conflict resolution; open: keeping a fork inside its worktree | [`parallel-batch-parts`](design-parallel-batch-parts.md) | 9h | 9h | webster, fabric, loom |
-| 20 | **Named run profiles: a board field picks a central set of run settings**<br>• A board entry names a run profile defined once in the hub config; seeding writes its values into the pair, instead of each task carrying its own review-round numbers | [`run-profiles`](design-run-profiles.md) | 52m | 52m | board, batten, loom, config |
-| 21 | **The orch watcher sees the note is written instead of waiting for a reply**<br>• At a context cycle the watcher checks that the orch turn ended and the note file exists, and cycles with no written reply; defer stays | [`orch-note-no-reply`](design-orch-note-no-reply.md) | 34m | 34m | orch, creel, workspaces |
+| 20 | **Named run profiles: a board field picks a central set of run settings**<br>• A board entry names a run profile defined once in the hub config; seeding writes its values into the pair, instead of each task carrying its own review-round numbers | [`run-profiles`](design-run-profiles.md) | 53m | 53m | board, batten, loom, config |
+| 21 | **The orch watcher sees the note is written instead of waiting for a reply**<br>• At a context cycle the watcher checks that the orch turn ended and the note file exists, and cycles with no written reply; defer stays | [`orch-note-no-reply`](design-orch-note-no-reply.md) | 35m | 35m | orch, creel, workspaces |
 | 22 | **Move the orch rules into the hub-wide rules file**<br>• Operator step after the orch-rules-files deploy: run lyx orch rules from the prime | [`orch-rules-move`](design-orch-rules-move.md) | 8m | 8m | orch |
 
 #### Low priority
@@ -112,10 +112,10 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Note | Slug | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| 1 | **[WS 006] Umbrella tasks: project threads that spawn and land from their own worktree**<br>• A larger project is an umbrella task with a long-lived pair and its own orch thread; tasks name it as parent, spawn from and land into its branch, and report to its thread; the prime is the root umbrella | [`orch-any-worktree`](design-orch-any-worktree.md) | 2w | 15m | fabric, batten, orch, board, reed, creel, shed, workspaces |
+| 1 | **[WS 006] Umbrella tasks: project threads that spawn and land from their own worktree**<br>• A larger project is an umbrella task with a long-lived pair and its own orch thread; tasks name it as parent, spawn from and land into its branch, and report to its thread; the prime is the root umbrella | [`orch-any-worktree`](design-orch-any-worktree.md) | 2w | 16m | fabric, batten, orch, board, reed, creel, shed, workspaces |
 | 2 | **Weaver: a cold-start implementer beside Webster, with model escalation**<br>• A second implementer built on Millhouse Builder: a fresh agent per batch with its own model, escalating the model when an agent fails; Webster stays fork-based | [`weaver`](design-weaver.md) | 7d | 7h | webster |
 | 3 | **creel stage 3: agents message through creel, not SendMessage**<br>• Parent asks, parent review, stop reports and shuttle send go through creel, so a non-Claude engine can take a role with a parent | [`creel-agents`](design-creel-agents.md) | 3d | 1d | creel, shuttle, loom, stencil, report |
-| 4 | **[WS 004] Board projects and pairs created from a parent pair**<br>• A task names its project; a project groups tasks in order and may have its own worktree; fabric and batten create a project task pair from that branch, batten verbs run from any worktree | [`pair-from-parent`](design-pair-from-parent.md) | 2h | 46m | fabric, batten, board, workspaces |
+| 4 | **[WS 004] Board projects and pairs created from a parent pair**<br>• A task names its project; a project groups tasks in order and may have its own worktree; fabric and batten create a project task pair from that branch, batten verbs run from any worktree | [`pair-from-parent`](design-pair-from-parent.md) | 2h | 47m | fabric, batten, board, workspaces |
 
 #### Normal priority
 
@@ -136,7 +136,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 17 | **Ideas to borrow from comparable agent orchestrators (survey, Oct 2026)** | [`orchestrator-survey-ideas`](design-orchestrator-survey-ideas.md) | 2d | 1d | burler, shed, orch, quarry, report |
 | 18 | **Regression tier: baseline profiles before the run, compare at the final gate**<br>• Support a hub regression tier that writes profiles on the parent before implementation and compares after, switchable per task for expected drift. | [`regression-baseline-verify`](design-regression-baseline-verify.md) | 1d | 1d | shed, webster, batten, config |
 | 19 | **Draw a plan as a card DAG with its glyph and file matrix**<br>• A tools/ program that reads a plan, builds the card x glyph/file matrix and writes Graphviz DOT of the card dependencies | [`plan-dag-view`](design-plan-dag-view.md) | 1d | 1d | loom, webster |
-| 20 | **Go-driven loom run: no long-lived LLM driver per run, and who receives a run message**<br>• A Go loop steps every loom run and spawns a cold LLM watcher only on a stop it cannot pass; messages for a run go to its driver or a durable record | [`go-driven-loom`](design-go-driven-loom.md) | 38m | 38m | loom, shed, creel |
+| 20 | **Go-driven loom run: no long-lived LLM driver per run, and who receives a run message**<br>• A Go loop steps every loom run and spawns a cold LLM watcher only on a stop it cannot pass; messages for a run go to its driver or a durable record | [`go-driven-loom`](design-go-driven-loom.md) | 39m | 39m | loom, shed, creel |
 
 #### Low priority
 
