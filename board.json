@@ -1079,7 +1079,7 @@
       "isolated": false,
       "brief": "",
       "body": "Imported from [issue #722](https://github.com/Knatte18/loomyard/issues/722).\n\nSeen 2026-10-18 14:09-14:13Z: while ly:ORCHWATCH held ly:orch during a context cycle, lyx creel log --to ly:orch got a held event roughly every 2.3 s (over a hundred in four minutes), burying the posted/read/injected events. Expected: one held event when a hold starts (and one when it ends or changes), not one per refresh.",
-      "status": "running · Darn-Burler-Review",
+      "status": "running · Darn-Burler-Fix",
       "created": "2026-10-18T14:14:23Z",
       "revised": "2026-10-18T15:01:57Z",
       "run_settings": {
