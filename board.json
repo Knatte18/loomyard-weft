@@ -1068,6 +1068,22 @@
       "body": "## Seen (2026-10-18)\n\nThe anchor (`fabric clone --subpath`) is set once per hub and decides where `_lyx`, `.lyx/` and config sit in every worktree of the hub.\n\n## Idea\n\nLet an umbrella (`orch-any-worktree`) have an anchor of its own, a different subdirectory of the repository, inherited by every task under it as it inherits the branch.\nFabric, batten and loom would then read the anchor from the task's umbrella rather than from the hub.\n\n## Operator view, not a decision (2026-10-18)\n\nHard to change now; a low-priority task for later.\n",
       "created": "2026-10-18T13:38:52Z",
       "revised": "2026-10-18T13:43:50Z"
+    },
+    {
+      "id": 652,
+      "slug": "test-time-audit-recurring",
+      "title": "Recurring test-suite time and growth audit",
+      "kind": "note",
+      "labels": [
+        "audit"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "Re-run cmd/testtiming against test-suite-timing.md to watch suite growth",
+      "body": "## What this is\n\nA recurring audit of test-suite growth, run with `go run ./cmd/testtiming` (Tier 1) and `go run ./cmd/testtiming -full` (Tier 2), and compared against the latest after-state in `docs/benchmarks/test-suite-timing.md`.\nIt replaces the per-package test-count budget that `test-budget-remove` deleted (operator decision 2026-10-17): count is kept down by `PATTERN-test-economy` in review, and this audit watches the wall time and the per-package test counts that review cannot see in aggregate.\nEach audit appends its numbers as a new section of `docs/benchmarks/test-suite-timing.md`, under the method that file states.\n\n## What to look at\n\n- Wall time per tier against the previous section, and the packages that moved most.\n- Per-package test counts from `cmd/testtiming`'s `TESTS` column, and which packages grew since the previous audit.\n- A growth with no matching new behavior is a candidate for a prune task under `PATTERN-test-economy`.\n\n## Orch recommendation, not a decision\n\nRun the audit every two weeks or after about 50 landed tasks, whichever comes first.\nA cheap model (Sonnet) runs the measurement; the orch writes the section and files a prune task when a package grew without cause.\n",
+      "created": "2026-10-18T13:44:55Z",
+      "revised": "2026-10-18T13:44:55Z"
     }
   ]
 }
