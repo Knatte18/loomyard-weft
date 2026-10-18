@@ -1,11 +1,11 @@
 {
-  "current_producer": "Open-IDE",
+  "current_producer": "Run-Shed",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Open-IDE",
-    "last": "Seed-IDE → done",
+    "now": "Run-Shed",
+    "last": "Open-IDE → done",
     "wait": ""
   },
   "history": [
@@ -32,6 +32,12 @@
       "outcome": "done",
       "output": "",
       "at": "2026-10-18T13:41:58Z"
+    },
+    {
+      "producer": "Open-IDE",
+      "outcome": "done",
+      "output": "",
+      "at": "2026-10-18T13:42:00Z"
     }
   ]
 }
