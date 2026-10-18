@@ -984,6 +984,25 @@
       "body": "## Seen (2026-10-17)\n\nThe pieces parallel batches need are the same whether a batch starts as a Webster fork or as a cold Weaver agent (see `weaver`); only the spawn differs.\n\n1. A DAG batchifier: edges from the cards' targets and `Uses:`, cards joined into batches while the batch graph stays acyclic and under a cost budget, ready batches chosen. New.\n2. A worktree per batch, created for the batch and removed after it. New; may build on fabric.\n3. Merge-back of each batch worktree into the task branch, with a cheap model such as Haiku resolving textual conflicts. New.\n4. The verify on the merged result and its failure ladder. Exists in Webster (verify gate).\n5. The batch brackets and report: `begin-batch`, `record-batch`, the changed-files guard and the report contract. Exist in Webster.\n6. `plan-dag-view`, to see the graph and the batches. Note filed.\n\n## Operator view, not a decision (2026-10-17)\n\n- Start with these pieces, built so both Webster and Weaver can use them; Webster can run parallel forks first.\n- The hard part is getting a Webster fork to work in another worktree than its master's.\n- Claude Code's own worktree isolation for agents has given the operator only trouble before.\n\n## Open\n\nHow a fork is kept inside its batch's worktree: it inherits the master's working directory and a context full of paths into the task worktree, and `lyx` commands find their anchor from the working directory.\n\n### Orch recommendation\n\nBench before build: a small proof of concept in which one fork is told to work in a worktree Go created, with absolute paths, and a PreToolUse hook refuses its Edit and Write calls outside that worktree, so a slip is refused instead of landing in the wrong tree; measure whether the fork stays inside and what `lyx` commands it needs a directory flag for.\n",
       "created": "2026-10-18T06:44:29Z",
       "revised": "2026-10-18T06:44:29Z"
+    },
+    {
+      "id": 647,
+      "slug": "batten-start-speed",
+      "title": "Fast batten start and local-only fabric pairs",
+      "kind": "task",
+      "labels": [
+        "enhancement",
+        "batten",
+        "fabric",
+        "shed"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "Batten takes 10-12 s before Run-Shed with about 2 s per idle row; fabric add/remove wait on origin even for local pairs",
+      "body": "## Seen (2026-10-17/18)\n\n- Batten's start of `creel-notices` (row times from `lyx batten status creel-notices`): Worktree-Create done 13:15:13, Seed-Child about 1 s, Open-Window about 8 s, Seed-IDE about 2 s, Open-IDE about 2 s; about 10 to 12 s before Run-Shed, as the operator sees it.\n- Open-IDE is off in the hub and does nothing, yet its row took about 2 s, as did Seed-IDE: each batten row seems to cost about 2 s of overhead on its own.\n- Open-Window does not wait for the window: `OpenAttach` in `internal/termwindow/termwindow.go` returns after `cmd.Start()`, and opening Konsole takes milliseconds; the other 6 s are unexplained (`termwindow.Resolve`, the config read from the pair's stack in `internal/battencli/wire.go` `switchedActions`, or the row's own status and history writes).\n- `lyx fabric add` in the sandbox hub (5-file repo) took about 1.1 s, 92% of it two serial `git ls-remote` origin probes; `lyx fabric remove --remote` took 6 to 7 s, almost all network (force-with-lease push, archive-tag push, weft branch delete). `internal/fabricengine/add.go` has `SkipGit`/`SkipPush` for tests only; `internal/fabricengine/remove.go` always pushes an archive tag when the weft has an origin.\n\n## Scope\n\n1. Measure where batten's start goes, row by row and inside each row, and cut the overhead so a row that does nothing costs milliseconds and Open-Window costs no more than starting the window.\n2. Local-only pairs in fabric: an add with no origin probes and a remove with no push, archive tag or remote delete, for pairs that never reach origin (the batch pairs `weaver` and `parallel-batch-parts` describe).\n\nOut: Weaver itself; the overlap with `command-producer` (one generic producer for the flag-gated side-action rows) is left to the operator to bundle or not.\n",
+      "created": "2026-10-18T07:13:43Z",
+      "revised": "2026-10-18T07:13:43Z"
     }
   ]
 }
