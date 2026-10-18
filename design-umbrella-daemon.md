@@ -1,4 +1,4 @@
-# [WS 005] One Go daemon per beam owns and drives its runs
+# [WS 005] One dobby daemon per beam owns and drives its runs
 
 `umbrella-daemon` · Note · enhancement, batten, orch, shed, workspaces, loom
 
@@ -32,7 +32,7 @@ Open: who owns a run whose parent has no running daemon, the same problem as a t
   Its later steps: start ready tasks with their run settings, run the landing routine, settle mechanical stops by rule with a cold helper where no rule fits, and the landing check for per-worktree config below.
 - A worktree must be settable as a beam, the worktree with a thread and a daemon (see `orch-any-worktree` for the create command and the convert verb); the word replaces "umbrella" for that worktree, while the group of tasks is the project.
 - The daemon never starts with the machine: `lyx orch start`, with or without `--continue`, starts the daemons of every beam in the hub, which after a restart replaces running `lyx batten run <slug>` for each run in flight.
-- The daemon outgrows the name `ORCHWATCH`: as a creel sender it is the program `BEAM`, `ly:BEAM` for the root beam and `ly:<slug>:BEAM` for another beam.
+- The daemon outgrows the name `ORCHWATCH` (its name and creel sender are now set below).
 
 ## Operator decisions (2026-10-18, beam and orch apart)
 
@@ -45,7 +45,8 @@ These replace the earlier wording above where they differ: the daemon is not the
 - What a beam's daemon cannot settle escalates upward: through the arbiter first, then to the beam's orch, or, when the beam has none, to the parent beam's orch, up to the prime.
 - `lyx beam start` starts the daemons of every beam in the hub, and `lyx orch start` calls it first, so one command still starts everything; never at machine start.
 - The orch watcher and the beam daemon are two different programs.
-  The daemon needs a name of its own, since "beam" names the worktree; open (2026-10-18).
+  The daemon is named `dobby`, after the loom mechanism that lifts the shafts by pattern, since "beam" names the worktree.
+  As a creel sender it is the program `DOBBY`: `ly:DOBBY` for the root beam and `ly:<slug>:DOBBY` for another beam.
 
 ## Folded in from `orch-split` (2026-10-11 to 10-13)
 
