@@ -23,7 +23,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 2 | **Key-rename migration never reaches the hub config: loom-model-key-names silently turned off the hub fans**<br>• `darn: review_max_bounces 1` | [`config-migrate-hub-layer`](design-config-migrate-hub-layer.md) | darn | Darn-Burler-Review | 1d | 17m | config, loom |
+| 2 | **Key-rename migration never reaches the hub config: loom-model-key-names silently turned off the hub fans**<br>• `darn: review_max_bounces 1` | [`config-migrate-hub-layer`](design-config-migrate-hub-layer.md) | darn | Darn-Burler-Fix | 1d | 17m | config, loom |
 | 3 | **Flaky tmux test: TestBoot_TmuxConf TwoWorktreesBootedConcurrently fails with server exited unexpectedly**<br>• `darn: review_max_bounces 1` | [`tmux-conf-concurrent-boot-flake`](design-tmux-conf-concurrent-boot-flake.md) | darn | Merge-In | 1d | 17m | reed |
 | 4 | **shedverbs wait-world integration tests flake: loop exited before it recorded itself**<br>• `darn: review_max_bounces 1` | [`wait-world-lock-grace-flake`](design-wait-world-lock-grace-flake.md) | darn | Finalize | 1d | 17m | shed |
 | 5 | **lyx report timing leaves out darn runs**<br>• Report darn runs beside loom runs, with phases from the recipe<br>• `darn: review_max_bounces 1` | [`timing-report-darn`](design-timing-report-darn.md) | darn | Darn-Burler-Fix | 1d | 17m | report |
@@ -44,7 +44,7 @@ Waits only on Running or Ready entries.
 
 | # | Task | Slug | Recipe | After | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | **[WS 002] One VS Code workspace per umbrella, listing its worktrees directly**<br>• Workspace files in the hub dir; umbrella worktree first, then Bolt, then its live pairs at their anchors; no _portals; finished pairs drop out<br>• `loom: discussion_max_bounces 2`<br>• `loom: merge_max_bounces 1`<br>• `loom: plan_max_bounces 1`<br>• `loom: webster_max_bounces 1` | [`hub-workspaces`](design-hub-workspaces.md) | loom | `batten-start-speed` | 1h | 49m | fabric, ide, workspaces |
+| 1 | **[WS 002] One VS Code workspace per umbrella, listing its worktrees directly**<br>• Workspace files in the hub dir; umbrella worktree first, then Bolt, then its live pairs at their anchors; no _portals; finished pairs drop out<br>• `loom: discussion_max_bounces 2`<br>• `loom: merge_max_bounces 1`<br>• `loom: plan_max_bounces 1`<br>• `loom: webster_max_bounces 1` | [`hub-workspaces`](design-hub-workspaces.md) | loom | `batten-start-speed` | 1h | 50m | fabric, ide, workspaces |
 
 #### Normal priority
 
