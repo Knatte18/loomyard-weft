@@ -1,6 +1,6 @@
 # [WS 003] Orch rules move out of the repository into each orch weft
 
-`orch-rules-files` · Task · enhancement, orch, workspaces · running · Loom-Preflight
+`orch-rules-files` · Task · enhancement, orch, workspaces · running · Discussion-Write
 
 ## Seen (2026-10-18)
 
