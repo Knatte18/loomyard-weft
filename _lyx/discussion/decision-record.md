@@ -12,9 +12,10 @@ Both are tracked, so the hub-wide file gets a verb that commits it on Bolt.
 
 In:
 
-- Two told rule paths on `orchengine.Paths`, replacing `RepoRulesPath`, joined once in `internal/orchcli/paths.go`.
+- Two told rule paths and a told prime root on `orchengine.Paths`, replacing `RepoRulesPath`, joined once in `internal/orchcli/paths.go`.
 - The role stencil renders both files in two sections, hub-wide first, each with its own placeholder when the file is absent or blank.
 - A new orch verb, `lyx orch rules`, that writes the hub-wide rules file on Bolt and commits and pushes it.
+- A board note, `orch-rules-move`, filed through `lyx board upsert --body-file`, holding D4's operator step and the moved rules verbatim.
 - Deleting `ORCHESTRATOR.md` and rewording every reference to it: `CLAUDE.md`'s "Notes go in git" rule, the role stencil's `## Where a finding goes`, `## Scratch and notes` and closing section, `internal/orchcli` and `internal/orchengine` comments and `doc.go`s, and the tests that name the file.
 
 Out:
@@ -32,6 +33,8 @@ Out:
 The hub-wide file is `<BoardDir>/_lyx/orch/rules.md`, with `BoardDir` from `fabricengine.BoardDir(location.HubPath)`, the same base `configcli` uses for Bolt's `_lyx/config/`.
 The own file is `<anchor>/_lyx/orch/rules.md` of the orch's worktree, today the prime, whose `_lyx` is the link to `main-weft`'s `_lyx`, so the file shows inside the prime's folder and is tracked on `main-weft`.
 Both paths are joined in `orchPaths` from `lyxdirs.LyxDirName` and the existing `orchDirName`, and handed to `orchengine` as `Paths.HubRulesPath` and `Paths.OwnRulesPath`; `RepoRulesPath` goes.
+`RepoRulesPath`'s directory is also the prime's worktree root the watcher's `isRequestedNote` resolves a relative note path against, and neither new path's directory is that root.
+So `Paths` gains a told `PrimeRoot` field, joined in `orchPaths` from `location.WorktreePath()`, and `isRequestedNote` reads it in place of `filepath.Dir(RepoRulesPath)`.
 
 Rationale: the operator decided both locations, and `_lyx/orch/` mirrors the existing `.lyx/orch/`.
 
@@ -43,27 +46,37 @@ The role stencil's closing `## This repository` section and its `repository_rule
 2. `## This orch's rules`, filled by an `orch_rules` marker with the own file.
 
 The preamble the current section carries (the rules add to the role, override none of it, and a contradiction is raised to the operator while the role is followed) moves above the two sections and covers both.
+It gains one sentence: a rules file's own headings start at level three (`###`), since the file is inlined under a level-two section.
 `RenderRoleFile` takes the two paths in place of `rulesPath`, checks for both new markers as it checks the others today, and reads each file the way `readRepositoryRules` does: a missing or blank file yields a one-line placeholder naming that file's absolute path, so the orch knows where a rule would go;
 any other read error fails the render naming the file, as today.
-Each file's text is inlined verbatim; a file's own headings start at `###`.
+Each file's text is inlined verbatim.
 `start`, the watcher and `resume-context` pass the two paths wherever they pass `RepoRulesPath` today.
 
 Rationale: hub-wide first is the operator's order; a placeholder naming the path replaces the "This repository has no ORCHESTRATOR.md." line, which no longer names anything.
 
 ### D3 — `lyx orch rules --from <file>` writes the hub-wide file on Bolt
 
-The verb copies `<file>`'s content to the hub-wide rules path, creating `<BoardDir>/_lyx/orch/` when absent, with a temporary-file-and-rename write so a concurrent role render never reads a partial file.
-The write happens inside a scoped commit of that one path on Bolt under the board write lock, through `fabricengine.NewBolt(...).CommitWritten` with the one rules path as its file list, then `Push`, as `configcli`'s `newHubCommit` does.
-An unchanged content commits nothing and reports success.
+The verb replaces the whole hub-wide rules file with `<file>`'s content, creating `<BoardDir>/_lyx/orch/` when absent, with a temporary-file-and-rename write so a concurrent role render never reads a partial file.
+Its help text says the verb replaces the whole file, so a draft starts as a copy of the current hub-wide file at its Bolt path.
+The temporary file is created beside the rules file, so a write killed between create and rename can leave it untracked in Bolt, where the next whole-repo `Bolt.Commit` sweeps it in.
+The write runs through `fabricengine.NewBolt(...).PullThenCommitWritten` with one write whose path list is the one rules path, so Bolt is brought up to date with its upstream under the board write lock before the write and its commit, then `Push`.
+When Bolt cannot be brought up to date, nothing is written, and the refusal names the result's `SkipDetail` as the way forward.
+Unchanged content commits nothing.
+Before the pull-first write, the verb pushes Bolt's unpushed commits with `Push`, whose recovery rebase carries them over a non-conflicting upstream change; the pull-first write would otherwise skip a Bolt holding an unpushed rules commit behind its upstream as diverged.
+A failed first push is refused with the push error, and nothing is written.
+After the write the verb pushes again, so every successful run, unchanged content included, leaves the earlier commit pushed.
 An empty or whitespace-only `<file>` is accepted and committed: it is how the hub-wide rules are cleared, and the role file then shows the placeholder.
 `--from` is required and resolves against the caller's working directory; a missing or unreadable `<file>` is refused naming the flag and the file, before any lock is taken.
-A failed write or commit puts the hub-wide file back to its prior content, as `configcli`'s `rollBack` does inside its write closure.
-A failed push after a landed commit leaves file and commit in place and reports the commit as made but not pushed, for the next Bolt push to carry.
-The envelope names the hub-wide path and whether a commit was made and pushed.
+A failed commit leaves the new content in place, and the envelope reports it as written but uncommitted, with re-running `lyx orch rules --from <file>` as the way forward, since that run commits the one path under the verb's own message.
+A board write before the re-run sweeps the file into its own commit under its own message.
+A failed push leaves file and commit in place and reports the commit as made but not pushed, for the next run of the verb to push.
+The envelope names the hub-wide path, whether a commit was made, and whether Bolt was left with unpushed commits.
 
-Bound: the verb writes and commits only `<BoardDir>/_lyx/orch/rules.md`, never another Bolt path;
-it publishes whatever `<file>` holds to Bolt and its remote, so it reads only the file it is named;
-it runs under every orch verb's existing prime-only refusal, so no session outside the prime reaches it.
+Bound: the verb commits only `<BoardDir>/_lyx/orch/rules.md`, never another Bolt path; a killed write can leave its temporary file untracked beside it, as above.
+It publishes whatever `<file>` holds to Bolt and its remote, so it reads only the file it is named.
+It runs only with the prime's worktree as its working directory, under every orch verb's existing prime-only refusal.
+That refusal checks the directory, not the caller, so any session can reach the verb from the prime, as it can edit today's `ORCHESTRATOR.md` there.
+What bounds the written text is the role preamble D2 moves: the rules add to the role, override none of it, and a contradiction goes to the operator.
 
 The own file needs no verb: in the prime it is a `main-weft` file that `lyx fabric commit` and `lyx fabric sync` already commit.
 
@@ -74,11 +87,12 @@ Rationale: a hand-edited Bolt file stays uncommitted, and `Bolt.Commit` stages e
 Both rules in today's `ORCHESTRATOR.md` are about this hub, not one orch thread, so both move to the hub-wide file.
 The own file of the prime starts absent.
 
-A card cannot write either file: the hub-wide file is on Bolt and the prime's own file is on `main-weft`, and weft content never lands from a task pair.
-So `ly:orch` moves the rules after this task lands and the deploy has put the new verb in production, a step it takes from this record at parent review:
-
-1. `lyx orch stop`, then `lyx orch start --continue`, so the watcher runs the deployed binary, which knows the new markers (Open risks).
-2. Draft the hub-wide file in `.scratch/` with exactly this text, and run `lyx orch rules --from <draft>`:
+A card cannot write either file: the only route that commits the hub-wide file is `lyx orch rules`, which this task ships, which is in production only after the deploy, and which runs only from the prime; the prime's own file is on `main-weft`, and weft content never lands from a task pair.
+No landing path gives `ly:orch` a turn with this record: an alignment approve at PR-Gate lands and deploys with no orch turn, and a task's `run_settings` cannot set `alignment_pr_approve`, a guard key the local layer refuses.
+So the operator moves the rules, from the prime, after this task lands and the deploy has put the new verb in production:
+draft the hub-wide file in `.scratch/` with exactly this text, and run `lyx orch rules --from <draft>`.
+A card files a board note through `lyx board upsert --body-file`, slug `orch-rules-move`, whose body holds this step and the text below verbatim, so the step is on the board when the task lands.
+The body states that the note is an operator step, run from the prime after the deploy, and never promoted to a run, since a task pair's call to the verb is refused.
 
 ```markdown
 ### Production
@@ -91,7 +105,7 @@ The operator watches each run in its own terminal window, never in VS Code.
 VS Code opens only when the operator asks for it, through `lyx ide` or `batten.yaml`'s `open_ide`.
 ```
 
-Rationale: the content is the operator's and moves verbatim, without the old H1 and with its H2s as `###`; the only route that commits a Bolt file is the new verb.
+Rationale: the content is the operator's and moves verbatim, without the old H1 and with its H2s as `###`; the only route that commits the hub-wide file is the new verb.
 
 ### D5 — Rule-placement wording in `CLAUDE.md` and the role stencil
 
@@ -99,6 +113,7 @@ Rationale: the content is the operator's and moves verbatim, without the old H1 
 The role stencil's two placement sentences say the same:
 a workaround only orchs apply goes in the hub-wide file; a durable orch-only rule goes in the hub-wide file when every orch of the hub needs it and in this orch's own file when only this thread does.
 Both name `lyx orch rules` for the hub-wide file and `lyx fabric commit` for the own file.
+The role stencil's placement sentence for the hub-wide file also says that the verb replaces the whole file, so a draft starts as a copy of the current hub-wide file, `_board/_lyx/orch/rules.md`.
 
 Rationale: every mention the board entry names is reworded, and an orch rule never lands in a file every agent reads.
 
@@ -118,13 +133,23 @@ The support log's Question ledger holds every auto-pick; D2, D3 and D4 carry the
 
 ## Open risks
 
-- The deployed binary's first process reseeds the role stencil's board copy without `repository_rules`, and a watcher still running the old binary then refuses every role render naming that marker, so its cycles abort until D4's step 1 restarts the orch.
+- The deployed binary's first process reseeds the role stencil's board copy without `repository_rules`, and a watcher still running the old binary then refuses every role render naming that marker, so its cycles abort.
+  On Linux the watcher re-execs onto the deployed binary at its first restart-safe idle tick, which bounds the refusal window to the time between the stencil reseed and that tick.
+  The re-exec runs only after a tick that succeeded, so a watcher that reaches its tick-error cap first exits without it.
+  On Windows, where `selfexec` never re-execs, and on Linux after such an exit, the operator restarts the orch with `lyx orch stop`, then `lyx orch start --continue`, from the prime.
   An operator-edited board copy that keeps `repository_rules` makes the new binary refuse in the same way until the copy is ported or deleted; today's copy is unedited.
-- Between deploy and `ly:orch` running D4's step, the role file shows the hub-wide placeholder, so the two rules are absent from the orch's role for that interval.
+- Between deploy and the operator running D4's step, the role file shows the hub-wide placeholder, so the two rules are absent from the orch's role for that interval; their text survives in this record and in git history.
 - D3's bound rests on the prime-only refusal of every orch verb; `orch-any-worktree`, which lets `lyx orch` run outside the prime, must bound `lyx orch rules` again.
 - A pair's weft forks from its parent worktree's weft, today `main-weft`, so a new pair's `_lyx/orch/rules.md` is a copy of its parent's own file.
   Nothing reads it outside the prime today; `orch-any-worktree` and `pair-from-parent`, which give pairs their own orch threads, inherit that copy as the new thread's starting rules.
 - The moved Production rule predates the Land row's automatic deploy that `CLAUDE.md` now describes; it moves verbatim, and whether it still holds is the operator's call.
+
+<!-- lyx:carry-over Discussion-Review -->
+- Discussion-Review, round 2: converged; each finding below was fixed or disputed by the round's fixer, and no fresh reviewer has seen the result; the fixer report says which.
+  Review: _lyx/reviews/discussion/round-2-review.md; fixer report: _lyx/reviews/discussion/round-2-fixer-report.md.
+  - d3-failed-commit-recovery-is-sweep (class consistency, severity MEDIUM, open in rounds 2)
+  - d4-bolt-premise-false-reminder-gap (class design, severity MEDIUM, open in rounds 2)
+<!-- /lyx:carry-over Discussion-Review -->
 
 ## Acceptance criteria
 
@@ -135,18 +160,22 @@ The support log's Question ledger holds every auto-pick; D2, D3 and D4 carry the
 - A role stencil missing `hub_rules` or `orch_rules` fails the render naming the missing marker.
 - `start`, the watcher and `resume-context` each render both files.
 - `orchPaths` puts the hub-wide path under the hub's board dir and the own path under the worktree anchor's `_lyx/orch/`.
+- The watcher resolves a relative note path against the told prime root.
 - `lyx orch rules --from <file>` on a hub with no `_lyx/orch/` on Bolt creates the file with the given content and leaves one new Bolt commit touching only that path, pushed.
 - The same call with unchanged content makes no commit and succeeds.
+- A retry with the same content after a failed push makes no new commit and pushes the earlier one.
+- A call while Bolt cannot be brought up to date with its upstream writes nothing, and the refusal names the skip's way forward.
 - An empty `<file>` commits an empty hub-wide file, and the next role render shows the hub-wide placeholder.
 - `--from` naming a missing file is refused before any Bolt write, and leaves the hub-wide file untouched.
-- A failed commit puts the hub-wide file back to its prior content.
+- A failed write leaves the hub-wide file at its prior content, and a failed commit is reported as written but uncommitted, naming the re-run as the way forward.
 - A failed push after a landed commit leaves the new content and the commit in place and reports the commit as not pushed.
 - `lyx orch rules` from a task worktree is refused by the orch's prime-only refusal.
+- The board holds a note `orch-rules-move` whose body holds D4's operator step and the moved rules verbatim, and says it is never promoted to a run.
 
 ## Notes for the plan writer
 
-- `newHubCommit`, `setHubWide` and `rollBack` in `internal/configcli/hubwide.go` show the Bolt commit-and-push and restore shape D3 follows; a shared helper is the plan's call.
-- `CommitWritten` documents an empty path list as committing nothing; confirm an unchanged single path also reports no commit rather than an error.
+- `reportHubWrite` in `internal/configcli/hubwide.go` shows the uncommitted report; D3 commits through `PullThenCommitWritten`, the pull-first sibling of the `CommitWritten` that `newHubCommit` uses.
+- `PullThenCommitWritten` documents an empty path list as committing nothing; confirm an unchanged single path also reports no commit rather than an error.
 - The `orch` command's persistent pre-run resolves engine config for every verb; whether `rules` needs all of it is the plan's call.
-- Tests: a fake commit seam in the style of `hubCommitFunc` for the restore, push-failure and no-change cases, and a `hubforge` hub only for the one real Bolt commit.
+- Tests: a fake commit seam in the style of `hubCommitFunc` for a failed write leaving the prior content, the uncommitted report, the pull skip, push-failure and no-change cases, and a `hubforge` hub only for the one real Bolt commit.
 - The `ly:cli` index lists `lyx orch rules` once the verb is registered; no hand-written index edit is needed.
