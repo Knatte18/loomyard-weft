@@ -1,0 +1,10 @@
+---
+round: 2
+focus:
+  - "D4 (post-landing move of the two operator rules out of ORCHESTRATOR.md): settle whether the route that makes ly:orch take the step holds on every landing path, including a PR-Gate approve that lands and deploys with no orch turn (CLAUDE.md says Batten's Land row deploys after such a landing; contracts/stencils/orch/orch-template-role.md says a parent-review request reaches the orch only on an alignment escalation or no verdict), and whether any step has the orch run lyx orch stop, which removes the orchestrator strand that is the orch's own session (internal/orchcli/stop.go)."
+  - "D3 (the lyx orch rules verb writing the hub-wide rules file on Bolt): settle whether its failure paths match what the cited helpers do. Check the restore on a failed commit against internal/configcli/hubwide.go (rollBack runs inside the write closure) and internal/fabricengine/bolt.go (CommitWritten commits after the closure returns, PullThenCommitWritten is the pull-first sibling), whether unchanged content pushes, and whether a retry after a failed push pushes the earlier commit."
+  - "D3's attack-surface bound and D1's path removal: settle whether the stated bound names the real mechanism (a working-directory check in internal/orchcli/cli.go and refusal.go, with no shell-guard row denying lyx orch), whether the temporary file written beside the rules file is covered by the bound that the verb writes no other Bolt path, and whether the watcher's relative-note resolution in internal/orchengine/watcher.go (isRequestedNote, currently filepath.Dir of RepoRulesPath) still has a told prime worktree root after D1 removes that field."
+  - "D2 and D5 (what a later rule writer is told): settle whether the role stencil's placement sentence and the verb's help tell the writer that the verb replaces the whole hub-wide file, so a draft must start from the current file, and that a rules file's own headings start at level three."
+---
+
+Round 1 left every gating finding open in the ledger, so this round re-reviews the edited Decisions from scratch.
