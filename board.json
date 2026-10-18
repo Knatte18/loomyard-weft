@@ -1081,6 +1081,24 @@
       "body": "Imported from [issue #731](https://github.com/Knatte18/loomyard/issues/731).\n\n**What happened**\n\nA card named a git-ignored scratch file as its one `Create:` target and also told the implementer to remove that file by its literal path once `lyx board upsert` had read it.\nAfter the batch, `lyx webster record-batch` ran its `create-not-done` check, looked the target up through quarry, got `not_found (the unit is missing)` and refused the batch:\n\n```\ncreate-not-done/\u003ccard\u003e[blocking]: Create target \".scratch/\u003cfile\u003e.md#\" still does not resolve: looked up \".scratch/\u003cfile\u003e.md#\", quarry answered not_found (the unit is missing)\nway forward: lyx webster recover-batch \u003cbatch\u003e\n```\n\nThe board write itself had succeeded.\nRecovery worked only by leaving the git-ignored draft in place, refilled from `lyx board get --body`, so the target resolved.\n\n**Why it is abnormal**\n\nThe card's removal step and the check cannot both hold.\nA card whose only effect lies outside the repo, such as a board write, has no target type the check accepts for a transient draft.\nA planner following the cleanup rule for scratch files produces a card that Webster always rejects.\n\n**What to do**\n\nGive the planner a way to declare a transient or non-persistent `Create:` target that `create-not-done` skips, or exempt `.scratch/` paths from the check.\nAlternatively, have the card validator reject a card that both creates and removes the same path, so the conflict surfaces at planning time rather than at `record-batch`.\n\nProvenance: task `orch-rules-files`; notes `02-orch-rules-verb-recovery.md`, `webster-refusal-record-batch.md`.\n",
       "created": "2026-10-18T15:58:37Z",
       "revised": "2026-10-18T15:58:39Z"
+    },
+    {
+      "id": 664,
+      "slug": "batten-abandon",
+      "title": "A batten verb that ends a paused or blocked run and removes its records",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "batten",
+        "fabric"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "Dead paused and blocked run records stay in the records and the overview, since no verb ends them and cleanup skips them",
+      "body": "## Seen\n\nOn 2026-10-18 the records held four batten run records with no pair and no board entry:\n\n- `orch-rules-in-weft`, blocked at Worktree-Create because its slug ended in the reserved `-weft` suffix; the task reran as `orch-rules-files` and landed.\n- `plan-gate-quality` and `fabric-net-and-config-warn`, paused at Run-Shed on 2026-10-08 a minute after their start, then re-scoped on the board into other entries.\n- `webster-pack-end-of-prompt`, paused at Run-Shed on 2026-10-15, then replaced by `webster-pack-layout-switch`, which landed.\n\nTheir pairs were removed with `lyx fabric remove`, but no verb ends a paused or blocked run, and `lyx batten cleanup --apply` skips every paused, blocked, awaiting or failed run.\nSo the records stayed, showed as runs in the reed overview, and were removed by hand with `git rm` in the records repository.\n\n## Idea\n\nA batten verb, for example `lyx batten abandon \u003cslug\u003e`, ends a run that will not go on:\nit refuses while the run's driver or run lock is live, tears down the pair if one is left, releases the run's board lock, removes the run's records directory and scratch, and commits and pushes the records.\nIt leaves the board entry itself alone, so a re-scope or rerun stays the caller's own step.\n",
+      "created": "2026-10-18T16:12:34Z",
+      "revised": "2026-10-18T16:12:34Z"
     }
   ]
 }
