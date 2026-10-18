@@ -1,0 +1,8 @@
+verdict: approve
+reason: >-
+  The design covers every operator decision in the board entry: two rule files, hub-wide on Bolt and the orch's own in its weft, inlined hub-wide first;
+  ORCHESTRATOR.md and its mentions removed; its rules moved verbatim; the stencil's board copy left alone.
+  The lyx orch rules verb is the means the tracked Bolt location needs, not extra scope.
+  No other entry claims this work, and the one peer run, batten-start-speed, does not overlap it.
+question: ""
+superseded: []
