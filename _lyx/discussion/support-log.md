@@ -60,12 +60,30 @@ Every lens returned a report.
 - No verb, the orch commits Bolt with raw git: races the board write lock and bypasses `fabricengine`.
 - Keep one `repository_rules` marker filled with both files joined: hides which file a rule came from and needs a joining convention in Go.
 - Put the rules in the role stencil's board copy: `lyx stencil` reads that edit as drift to port back to the shipped source (board entry's orch recommendation).
-- A card writes the moved rules: a card works in the task pair, which reaches neither Bolt nor `main-weft`.
+- A card writes the moved rules: a card can reach Bolt only through `lyx board`, and the verb that commits the rules file is not deployed until the task lands.
 - Strip `_lyx/orch/rules.md` from a new pair's weft: no reader exists outside the prime today, so it solves nothing this task needs; recorded as an open risk for `orch-any-worktree`.
 
 ## Review rounds
 
-_No rounds yet._
+### Round 1
+
+- F1: no landing path gives `ly:orch` a turn with the record, and `alignment_pr_approve` is a guard key `run_settings` cannot set — fixed: D4 names the operator as the actor, and the open risk says the text survives in the record and git history.
+- F2: `lyx orch stop` removes the orch's own strand, and the Linux watcher re-execs onto the deployed binary — fixed: the restart step is dropped, and the open risk bounds the Linux window and gives the Windows restart to the operator.
+- F3: `configcli` restores only inside the write closure — fixed: D3 and its criterion report a failed commit as uncommitted.
+- F4: `isRequestedNote` uses `RepoRulesPath`'s directory as the prime root — fixed: D1 adds a told `PrimeRoot`.
+- F5: a draft holding only a new rule deletes the others — fixed: D3's help text and D5's placement sentence say the verb replaces the whole file.
+- F6: a commit over a stale Bolt copy conflicts at every later push — fixed: D3 writes through `PullThenCommitWritten`, with a criterion for the skip.
+- F7: unchanged content after a failed push — fixed: the verb pushes before its pull-first write and after it (Q8), with a criterion.
+- F8: the prime-only refusal is a working-directory check — fixed: D3's bound states it and names the preamble as what bounds the text.
+- F9: the temporary file is a second Bolt path — fixed: D3 states the exposure and the bound commits only the rules path.
+- F10: the `###` heading rule has no carrier — fixed: D2's moved preamble states it.
+
+### Round 2
+
+- F1: `lyx board` writes Bolt from a task pair — fixed: D4 rests on the undeployed, prime-only verb, a card files the `orch-rules-move` board note, and the no-reminder risk is gone.
+- F2: the failed-commit recovery was the next board sync's sweep — fixed: D3 and its criterion name re-running the verb.
+- F3: the restore on a failed write guards nothing after an atomic rename — fixed: cut from D3 and the plan-writer notes.
+- F4: D2 stated the heading rule twice — fixed: the second statement is cut.
 
 ## Question ledger
 
@@ -73,6 +91,7 @@ _No rounds yet._
 - Q2 How the hub-wide file is committed — auto-pick: `lyx orch rules --from <file>` (D3).
 - Q3 How the own file is committed — auto-pick: existing `lyx fabric commit`/`sync` (D3).
 - Q4 Render shape — auto-pick: two closing H2 sections, hub-wide first (D2).
-- Q5 Who moves the content — auto-pick: `ly:orch` after landing and deploy (D4).
+- Q5 Who moves the content — auto-pick: `ly:orch` after landing and deploy; changed in round 1 to the operator, since no landing path gives the orch a turn (D4).
 - Q6 Empty `--from` content — auto-pick: accepted, as the way to clear the hub-wide rules (D3).
 - Q7 A failed push after a landed commit — auto-pick: keep the commit and report it as not pushed (D3).
+- Q8 Whether unchanged content pushes — auto-pick: the verb pushes before its pull-first write and again after it, so every successful run, a retry included, carries an unpushed commit (D3).
