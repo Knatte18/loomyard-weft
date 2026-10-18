@@ -35,6 +35,11 @@ Run parentage already follows the worktree a pair was created from (`aa67fd1d7`,
   Giving a grouping-only project a worktree later is the same step, and its tasks need no change, since they name the project rather than a worktree.
   Since a run-held entry takes no board edits, this is a verb of its own that releases the run's lock.
 
+## Operator decision (2026-10-18, later): beam and orch apart
+
+An umbrella is now called a beam: a worktree plus a Go daemon, in the module `lyx beam` (see `umbrella-daemon`).
+An orch thread is separate and optional: a beam runs its tasks with no orch, and what its daemon cannot settle escalates through the arbiter to the nearest orch up the beam chain, the prime last.
+
 ## Operator views, not decisions (2026-10-18)
 
 - At work the operator sets a branch of their own as their base and spawns large sub-projects from it, while smaller tasks still spawn from `main`.
