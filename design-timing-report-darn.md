@@ -1,6 +1,6 @@
 # lyx report timing leaves out darn runs
 
-`timing-report-darn` · Task · bug, report · running · PR-Align
+`timing-report-darn` · Task · bug, report · running · PR-Gate
 
 ## Seen (orch, 2026-10-17)
 
