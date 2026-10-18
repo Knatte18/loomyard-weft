@@ -1,11 +1,11 @@
 {
-  "current_producer": "Darn-Burler-Review",
+  "current_producer": "Darn-Burler-Fix",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Darn-Burler-Review",
-    "last": "Darn-Bouncer → bounced to Darn-Burler-Review",
+    "now": "Darn-Burler-Fix",
+    "last": "Darn-Burler-Review → bounced to Darn-Burler-Fix",
     "wait": ""
   },
   "history": [
@@ -132,6 +132,23 @@
       "at": "2026-10-18T18:06:32Z",
       "budget_exempt": true,
       "routed_to": "Darn-Burler-Review"
+    },
+    {
+      "producer": "Darn-Burler-Review",
+      "outcome": "stuck",
+      "output": "/home/knatte/Code/loomyard-LYXHUB/implementer-seam/_lyx/reviews/darn/round-2-review.md",
+      "at": "2026-10-18T18:07:28Z",
+      "gate_attempts": 0,
+      "gate_spans": [
+        {
+          "gate": "review",
+          "kind": "gate",
+          "start": "2026-10-18T18:07:27.750424131Z",
+          "end": "2026-10-18T18:07:27.750703604Z"
+        }
+      ],
+      "budget_exempt": true,
+      "routed_to": "Darn-Burler-Fix"
     }
   ],
   "product": {
