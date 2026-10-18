@@ -20,3 +20,12 @@ A tool under `tools/` takes a plan directory and draws its cards as a DAG with a
 ### Orch recommendation
 
 Later, the same tool colours each card by the batch a batchifier puts it in, so a new batchifier's clusters can be checked by eye on real plans before it runs.
+
+## Scope (operator, 2026-10-18)
+
+- A tool under `tools/plandag/`, the way `tools/tokencount/` is laid out, with a `.sh` and a `.cmd` wrapper.
+- Input: a plan directory, such as a pair's `_lyx/plan`.
+- Output: the card by glyph/file matrix as a markdown table and the card graph as Graphviz DOT; it also renders SVG with `dot -Tsvg` when `dot` is on `PATH`, and says so when it is not.
+- It shows what a plan could run in parallel: cards with no path between them are independent.
+- Batch colouring is out of scope until a new batchifier exists.
+- It changes no code outside `tools/plandag/`, apart from what reusing `internal/planparser` needs.
