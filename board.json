@@ -31,15 +31,17 @@
         "board",
         "reed",
         "creel",
-        "shed"
+        "shed",
+        "work-laptop"
       ],
       "issues": [],
+      "priority": "high",
       "depends_on": [],
       "isolated": false,
       "brief": "A larger project is an umbrella task with a long-lived pair and its own orch thread; tasks name it as parent, spawn from and land into its branch, and report to its thread; the prime is the root umbrella",
       "body": "## Why\n\nThe operator works long-term on a branch of their own in its own worktree, not on `main`, which in a large project is not theirs to drive; that worktree is where they want their orch.\nToday every `lyx orch` verb refuses outside the hub's prime (`internal/orchcli/refusal.go`), every batten verb does too (`RefuseUnlessPrime` in `internal/battencli`), and orch keeps its files under the prime's `.lyx/orch/`.\nRun parentage already follows the worktree a pair was created from (`aa67fd1d7`, #341), so a pair created from the operator's worktree would land there; orch and batten are what stand in the way.\n\n## Want\n\n- `lyx orch` and `lyx batten` run from any drivable worktree in the hub, which then acts as that orch's home: pairs branch from its branch and land into it, and orch's scratch, handoffs and reed strand live in that worktree.\n- More than one orch per hub, one per home worktree, without stepping on each other's pairs, board claims or reed sessions.\n\n## Open points\n\n- What \"prime only\" protects today and whether any of it must stay prime-bound (board writes, deploy, `lyx board prune`, the hub workspace).\n- What the relevant CONSTRAINTS.md invariants say about prime (batten's prime-anchored status and lock paths, Told-Geometry) and how they change.\n- Who starts a task that becomes ready: presumably its umbrella's thread, found through the task's `parent`.\n\n## Operator decisions (2026-10-18)\n\n- A larger project is an umbrella task on the board: a long-lived fabric pair that is a starting point with its own orch thread.\n  It is not a separate hub: it shares the hub's repo, weft, board, creel daemon and gate slots, and has its own `.lyx/`, thread and batten runs.\n- The prime is the root umbrella.\n- A task carries a `parent` field naming its umbrella's slug; empty means the prime.\n  The parent's branch is derived from the slug and fabric's `branch_prefix` (so a work hub with `branch_prefix: hanf/` needs no thought about prefixes); no branch name is hard-coded or stored.\n- A task's pair is created from its umbrella's branch and lands there, and the task's notices and escalations go to the umbrella's thread.\n- The board is shared by the whole hub; an umbrella's thread sees and starts only its own tasks.\n- An existing, spawned task can be turned into an umbrella: its pair and the commits on its branch stay, its loom run stops, a thread starts in the pair, and later tasks name it as `parent`.\n  Since a run-held entry takes no board edits, this is a verb of its own that releases the run's lock.\n\n## Operator views, not decisions (2026-10-18)\n\n- At work the operator sets a branch of their own as their base and spawns large sub-projects from it, while smaller tasks still spawn from `main`.\n- What the operator wants is a thread they can open in any worktree and hold a running conversation with, which can spawn everything from there.\n  With two large projects at once, two such threads, one per project, which the operator talks to separately and which can talk to each other; they need not be called orchestrators.\n- Millhouse supports this today: a thread anywhere creates a task and spawns it from its own worktree, the task records that thread and worktree as its parent, and it merges back there when done.\n- The orch role should not be unique: any thread that starts another thread becomes its parent.\n- Giving a thread the orch hosting (its own watcher and context cycling) is an explicit command; the hub orch is long-lived enough to need it, while a project thread is time-limited, so cycling matters less there but would be nice.\n- Reed shows every session at once, which gets messy; the threads a project's thread starts should be grouped under it as one project.\n- Nothing hub-wide is left for a thread: deploy and prune are in the Land row, and intake from GitHub issues runs on command.\n- A thread that is not running is a real problem whatever the design, as it is for the orch today.\n- Two hubs with two weft repos would work today, but would make exchanging information between them hard.\n\n## Seen (2026-10-18)\n\n- Batten's Worktree-Create calls fabric's `Add` from the prime (`internal/battencli/wire.go`), and `Add` forks from the HEAD of the worktree it runs from, so every batten run forks from the prime's checked-out branch.\n- The parent is already per run after that: the pair's origin record carries `ParentBranch` and `ParentWorktree`, loom and darn take `params.parent` from it, parent locks are per parent branch, and the Land row skips the prime pull and deploy when the parent is not the prime's branch (`internal/battenshed/land.go`).\n- The board has no field naming a task's parent today.\n- Every file orch writes goes through one accessor, `internal/orchcli/paths.go`, under the prime's `\u003canchor\u003e/.lyx/orch/`; `lyx orch` refuses outside the prime and its strand name carries no worktree (`agentname.RoleOrch`).\n\n## Orch sketch, not a decision\n\n- An umbrella spawns through a shed recipe of its own: pair, thread, wait until the project is done, then Merge-In, Publish, PR-Gate and Finalize into its own parent; no Discussion, Plan or Webster.\n- A thread starts its runs itself with `lyx batten run`, which finds the prime for the shared state; the run records the thread's strand as its owner, and notices go to that owner through creel rather than to a fixed `ly:orch`.\n- Threads talk to each other through creel posts, as strands already can.\n- This builds on `orch-split` (a Go run driver beside a conversational agent): once the run loop is Go, a thread holds only the conversation and its own runs' escalations.\n\n## Orch recommendation, not a decision: shared groundwork with Weaver\n\nUmbrellas and `weaver` need the same primitive: create a pair from a parent pair's branch, merge it back into the parent, tear it down.\nToday fabric creates a pair only from the worktree it runs in, and batten only from the prime.\nThat primitive is its own piece of groundwork, built before either umbrellas or Weaver.\nWeaver's batches are not umbrellas: they are not board tasks, run as cold agents for minutes rather than loom runs for days, merge locally with Haiku resolving conflicts, and have no conversational thread.\n",
       "created": "2026-10-03T11:38:04Z",
-      "revised": "2026-10-18T08:02:26Z"
+      "revised": "2026-10-18T13:38:52Z"
     },
     {
       "id": 62,
@@ -1003,6 +1005,66 @@
       "isolated": false,
       "brief": "Workspace files in the hub dir; umbrella worktree first, then Bolt, then its live pairs at their anchors; no _portals; finished pairs drop out",
       "body": "## Seen (2026-10-18)\n\n- Fabric writes one hub workspace for the prime, `\u003chub\u003e/_launchers/\u003cAnchorRel\u003e/\u003cprimeName\u003e.code-workspace` (`internal/fabricengine/hubworkspace.go`), with the folders prime, `_board` and `_portals`.\n- `_portals` holds one link per live pair, pointing at that pair's `_lyx` only, so the workspace file never changes as pairs come and go, but a pair's code is not in it.\n- Opening it in VS Code works, and the operator found it very promising.\n- A stale prime `.vscode/tasks.json` from before `6667f79df` auto-ran `reed up`, `reed add claude` and `reed attach` on folder open; it was git-ignored leftover state and is deleted.\n\n## Operator decisions (2026-10-18)\n\n- Workspaces are how the operator opens a hub: one workspace per umbrella (see `orch-any-worktree`); today only the prime, the root umbrella.\n- Every folder entry points straight at the worktree's anchor directory, so the operator never navigates down to the right subdirectory.\n- The umbrella's own worktree is always the first folder, then Bolt, then every worktree belonging to the umbrella, each listed directly; `_portals` is not needed.\n- A finished pair's folder is removed from the workspace again.\n- Folder display names: the prime's worktree shows as its branch name (`main`), `_board` shows as `Bolt`, a task as its slug; directories on disk keep their names.\n  The prime's directory kept the repository's name only because VS Code's recent-folders list showed many indistinguishable `main` folders, which workspaces make moot.\n- The workspace files live directly in the hub directory, ready to open; the hub directory is untracked, as `_launchers` and `_portals` are today.\n\n## Orch recommendation, not a decision\n\n- Name each file with the repository in it, such as `loomyard.code-workspace` for the root umbrella and `loomyard-\u003cumbrella-slug\u003e.code-workspace` for another, since VS Code's recent list shows workspaces by file name.\n- Fabric rewrites an umbrella's workspace at every `add` and `remove` of a pair under it; VS Code picks up a changed folder list in an open window, and only a change of the first folder restarts its extensions, which never happens since the umbrella stays first.\n- Folders after Bolt in a fixed order, such as by creation time; a drag in VS Code rewrites the file and lasts until fabric's next rewrite.\n",
+      "created": "2026-10-18T13:38:52Z",
+      "revised": "2026-10-18T13:38:52Z"
+    },
+    {
+      "id": 649,
+      "slug": "orch-rules-in-weft",
+      "title": "Hub orch rules move out of the repository into Bolt",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "orch",
+        "work-laptop"
+      ],
+      "issues": [],
+      "priority": "high",
+      "depends_on": [],
+      "isolated": false,
+      "brief": "ORCHESTRATOR.md holds hub-specific lyx behaviour in the code repo; move it to _board/_lyx/orch/rules.md, with optional per-umbrella rules in its weft",
+      "body": "## Seen (2026-10-18)\n\n- `ORCHESTRATOR.md` is a tracked file at the repository root holding the orch-only rules of this hub; the watcher inlines it into the role file's `## This repository` at every render (`RepoRulesPath` in `internal/orchcli/paths.go`).\n- Its rules are the operator's choices for how lyx behaves in this hub, not knowledge about the code, so anyone cloning the repository gets them unasked.\n- It is written for one orch, which no longer fits once umbrellas each have their own orch thread (`orch-any-worktree`).\n- The orch role stencil already has a board copy on Bolt (`_board/_lyx/stencils/orch/orch-template-role.md`), and hub config lives in `_board/_lyx/config/`.\n\n## Operator view, not a decision (2026-10-18)\n\nThe file breaks the concept: instructions for how something in lyx behaves do not belong in the repository, but under `_lyx`, tracked in the weft repository.\nBolt is hard to see and search from a working worktree, which the umbrella workspaces (`hub-workspaces`) solve by listing Bolt as a folder.\n\n## Orch recommendation, not a decision\n\n- Hub-level rules for every orch thread in the hub live in `_board/_lyx/orch/rules.md` on Bolt, inlined where `ORCHESTRATOR.md` is today; `ORCHESTRATOR.md` and its CLAUDE.md mentions go.\n- An umbrella may add rules of its own in its weft, `_lyx/orch/rules.md` in its pair, inlined after the hub rules for that umbrella's thread only.\n- Not an edit of the role stencil's board copy: `lyx stencil` reads such an edit as drift to port back to the shipped source, which hub rules are not.\n",
+      "created": "2026-10-18T13:38:52Z",
+      "revised": "2026-10-18T13:38:52Z"
+    },
+    {
+      "id": 650,
+      "slug": "pair-from-parent",
+      "title": "Pairs created from a parent pair: board parent field, batten from any worktree",
+      "kind": "note",
+      "labels": [
+        "feature",
+        "fabric",
+        "batten",
+        "board",
+        "work-laptop"
+      ],
+      "issues": [],
+      "priority": "high",
+      "depends_on": [],
+      "isolated": false,
+      "brief": "Groundwork for umbrellas: a task names its parent umbrella slug, fabric and batten create its pair from that branch, batten verbs run from any worktree",
+      "body": "## Seen (2026-10-18)\n\n- Fabric's `Add` forks a pair from the HEAD of the worktree it runs in (`internal/fabricengine/add.go`), and batten's Worktree-Create calls it from the prime (`internal/battencli/wire.go`), so every batten run forks from the prime's checked-out branch.\n- Every batten verb refuses outside the prime (`RefuseUnlessPrime` in `internal/battencli`).\n- After creation the parent is already per run: the origin record carries `ParentBranch` and `ParentWorktree`, loom and darn take `params.parent` from it, parent locks are per parent branch, and the Land row skips the prime pull and deploy when the parent is not the prime's branch (`internal/battenshed/land.go`).\n- The board has no field naming a task's parent.\n\n## Operator decisions (2026-10-18, recorded in `orch-any-worktree`)\n\n- A task carries a `parent` field naming its umbrella's slug; empty means the prime.\n- The parent's branch is derived from the slug and fabric's `branch_prefix`; no branch name is hard-coded or stored.\n- A task's pair is created from its umbrella's branch and lands there.\n\n## Idea\n\nThe groundwork umbrellas need, built first:\n\n- A board `parent` field on tasks.\n- Fabric creates a pair from a named parent pair's branch rather than from the worktree it runs in.\n- Batten's Worktree-Create creates the pair from the task's `parent`, and batten verbs run from any worktree of the hub, keeping their shared state under the prime.\n- Merge-back into the parent and teardown work unchanged, as they already follow the origin record.\n\n`weaver`'s per-batch pairs need the same create-from-parent-pair, merge-back and teardown primitive.\n",
+      "created": "2026-10-18T13:38:52Z",
+      "revised": "2026-10-18T13:38:52Z"
+    },
+    {
+      "id": 651,
+      "slug": "umbrella-anchor",
+      "title": "An anchor per umbrella",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "fabric",
+        "config",
+        "work-laptop"
+      ],
+      "issues": [],
+      "priority": "low",
+      "depends_on": [],
+      "isolated": false,
+      "brief": "Let an umbrella work in its own subdirectory of the repository, inherited by its tasks; hard to change now",
+      "body": "## Seen (2026-10-18)\n\nThe anchor (`fabric clone --subpath`) is set once per hub and decides where `_lyx`, `.lyx/` and config sit in every worktree of the hub.\n\n## Idea\n\nLet an umbrella (`orch-any-worktree`) have an anchor of its own, a different subdirectory of the repository, inherited by every task under it as it inherits the branch.\nFabric, batten and loom would then read the anchor from the task's umbrella rather than from the hub.\n\n## Operator view, not a decision (2026-10-18)\n\nHard to change now; a low-priority task for later.\n",
       "created": "2026-10-18T13:38:52Z",
       "revised": "2026-10-18T13:38:52Z"
     }
