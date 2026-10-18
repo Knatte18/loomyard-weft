@@ -1,6 +1,6 @@
-# [WS 005] One daemon per umbrella owns its batten runs
+# [WS 005] One Go daemon per beam owns and drives its runs
 
-`umbrella-daemon` · Note · enhancement, batten, orch, shed, workspaces
+`umbrella-daemon` · Note · enhancement, batten, orch, shed, workspaces, loom
 
 ## Seen (2026-10-18)
 
@@ -25,3 +25,71 @@ An orchestrator gets not only a long-lived thread but a daemon that looks after 
 2. Step 2, optional and later: move logic from batten into the daemon.
 
 Open: who owns a run whose parent has no running daemon, the same problem as a thread that is not running.
+
+## Operator decisions (2026-10-18, later)
+
+- Everything `orch-split` proposed at the hub level belongs here: a Go program in each beam drives the runs of that beam, so the thread the operator talks to gets only what needs judgement; the split into two LLM agents is settled by the daemon, with no second LLM.
+  Its later steps: start ready tasks with their run settings, run the landing routine, settle mechanical stops by rule with a cold helper where no rule fits, and the landing check for per-worktree config below.
+- A worktree must be settable as a beam, the worktree with a thread and a daemon (see `orch-any-worktree` for the create command and the convert verb); the word replaces "umbrella" for that worktree, while the group of tasks is the project.
+- The daemon never starts with the machine: `lyx orch start`, with or without `--continue`, starts the daemons of every beam in the hub, which after a restart replaces running `lyx batten run <slug>` for each run in flight.
+
+## Folded in from `orch-split` (2026-10-11 to 10-13)
+
+### Seen (operator, 2026-10-11)
+
+The operator follows the orch from the phone through Remote Control, but so much comes in to the orch (batten notices, parent-review requests, escalations, PR-Gate reviews, landing routines) that the conversation is hard to follow.
+
+### Idea (operator, 2026-10-11)
+
+Split the hub orchestrator into two agents:
+
+1. The run driver, the repo's upper driver: it reads the board, starts batten runs, and takes the escalated questions (parent reviews, review escalations, PR-Gate, landings).
+   The operator can talk to it, but should not need to.
+2. The conversational orch: the agent the operator talks to.
+   It discusses problems with the operator and updates the board.
+
+### Open
+
+- How a question the run driver cannot settle reaches the operator: through the conversational orch, or as a notice of its own.
+  The operator can keep both agents on Remote Control and gets a notification from the run driver when it needs input (operator, 2026-10-11).
+- Who writes what on the board: the run driver only claims, sets statuses and prunes, while scope edits and notes stay with the conversational orch, or both write freely.
+- How an operator decision reaches the run driver (start this bundle, change a hub config), and how the run driver learns the operator's settled decisions it needs at parent review.
+- How much of the run driver is an LLM at all: most of the run loop is mechanical, as loom's driver now is; see `orch-owns-the-loop`.
+  Starting a batten run on each ready board task (kind task, `depends_on` cleared, not claimed) needs no LLM (operator, 2026-10-11); nor does the landing routine.
+  What the orch adds by hand today would need a home: per-task loom settings such as `review_max_bounces: 2` for a small task (a board field), and a cap on concurrent runs.
+- `runs-overview` and `orch-token-spend` touch the same split.
+
+### Idea: the run driver as a Go program (operator, 2026-10-12)
+
+Perhaps the part split out of the orch is a Go-driven program: Go handles most of it on its own (starting ready tasks with their run settings, landings) and brings in the orch only when something goes wrong.
+The same shape as loom today: the Go shed engine steps the run on its own (`lyx shed step --until-stop`), and the LLM driver above it wakes only when shed stops on something it cannot pass.
+Per-task run settings (`config-layers-run-settings`) carry a task's review budgets and step models, so a start needs no LLM to set them.
+
+### Two tiers, as in `go-driver-assistant` (2026-10-12)
+
+`go-driver-assistant` (running) builds this shape for one loom run: a Go driver that settles stops by rule, a cold cheap assistant (the tackler) spawned only at a stop no rule settles, and the arbiter behind it.
+The same two tiers fit the repo level:
+
+1. A Go run driver: starts ready tasks with their `run_settings`, runs the landing routine (Land row, prod, intake), and posts what it cannot settle.
+2. A spawnable assistant, cold per stop, never kept warm: it reads the stop and answers with a verdict or hands the question to the conversational orch.
+   Scope and design choices always go to the orch.
+
+Evidence from the loom level, a driver count over 98 runs (2026-10-05..12, 392 stops):
+
+- plain relaunch 12 %; mechanical fix a Go rule could do 52 %; repair that needed an LLM 0 %;
+- arbiter called 5 % (11 real attempts, all `resume`); relayed to the orch 22 %; other 10 %;
+- drivers lived 370 h, 93 % of it idle.
+
+The agent that ran the count estimated a cold helper would be needed at about 1 stop in 12 runs once Go takes the mechanical stops.
+Nobody has counted the hub level yet: the orch's parent reviews, escalations, PR-Gates and landings by hand would need the same split before the Go share is known.
+
+### A landing check for the Go run driver (operator, 2026-10-13)
+
+At landing, loom warns that a task branch changed per-worktree config files (`_lyx/config/*.yaml`), which landing does not carry to the parent, and asks the parent to re-apply each change meant for it.
+`logging-cleanup` raised it for a new, empty `_lyx/config/loom.yaml`: nothing to re-apply, and the orch found that only by diffing the file by hand.
+The operator sees that check as a job for the Go run driver:
+
+- parse the file at the fork base, the task tip and the parent tip, and compare keys;
+- stay silent when the tip changes no key (an empty file, comments only) or the parent already holds the tip's value;
+- otherwise name each changed key with its base, tip and parent values, so the parent knows exactly what to re-apply.
+
