@@ -1117,6 +1117,24 @@
       "body": "## Seen\n\n`batten-start-speed` builds local-only fabric pairs (`fabric add --local`, a local-only branch mark in `gitrepo` with a push refusal, pushes that skip such branches, and local modes of `fabric remove` and `fabric cleanup`): about 630 lines of code, 1360 with tests, plus a local-mark check in the status-push spawn entry.\nThe mode came from an orch recommendation in `weaver` that batch pairs never reach origin, which was wrong: a batch pair's commits are part of the implementation, and an agent continuing the work on another machine must see what a batch left half done.\nThe time it saves is small: in the sandbox hub `lyx fabric add` took about 1.1 s, nearly all of it two synchronous `git ls-remote` origin probes, with local work about 50 ms and its push already async; `lyx fabric remove --remote` took 6 to 7 s of network, at teardown, where nothing waits on it.\n\n## Decisions (operator, 2026-10-18)\n\n- The local-only pair mode stays for now, only as an explicit `fabric add --local` choice, since local work that needs no remote (experiments, local testing) may use it; no lyx flow creates local pairs, batch pairs included.\n  Remove it (`--local`, the local-only branch mark and its push refusal, the skipped-local reporting in pushes, the local modes of remove and cleanup, and the local-mark check in the status push) if no use turns up.\n- Every operation against a remote runs async, so no lyx command waits on the network.\n  This includes `fabric remove`'s 6 to 7 s of network at teardown (force-with-lease push, archive-tag push, weft branch delete).\n- One exception may stay synchronous: the check whether a pair's branches already exist on origin, since a branch found there is fetched and the work continued on, and that is worth waiting for.\n  Today that is `fabric add`'s `git ls-remote` probes; they may run in parallel to cut the wait.\n\n## Open\n\n- Which remote operations are synchronous today besides `fabric remove`'s (force-with-lease push, archive-tag push, weft branch delete); an audit of the call sites belongs to the task that builds this.\n- How an async remote failure reaches the operator or the orch.\n",
       "created": "2026-10-18T17:13:06Z",
       "revised": "2026-10-18T17:16:22Z"
+    },
+    {
+      "id": 669,
+      "slug": "loom-tell",
+      "title": "One verb to give a running task an instruction, with no LLM between",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "loom",
+        "creel"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "With the Go driver no agent lives for the whole run, so a downward instruction is recorded in the decision record and handed to the live LLM producer if any, and PR-Gate catches the rest",
+      "body": "## Seen\n\nLoom runs on the Go driver since `a52467411` (2026-10-15, hub `shed.yaml` `driver_kind: go`): no LLM lives for the whole run, and Go spawns one only when it needs it.\nThe earlier operator decision that a run's driver takes every downward message for the run, an instruction from the operator or the orch such as a decision about a card, a scope correction or a stop (2026-10-07, confirmed 2026-10-12), so has no receiver.\nToday the orch records content with `lyx loom decision add`, stops a run with `lyx batten pause`, and messages whichever agent works at that moment, which it must look up first.\nUpward messages, stops and escalations, are settled in `umbrella-daemon` (WS 005) and are not this note's subject.\n\n## Orch recommendation, not a decision (discussed with the operator 2026-10-18)\n\nOne `lyx` verb, for example `lyx loom tell \u003cslug\u003e \"\u003ctext\u003e\"`, with no LLM between:\n\n1. It records the text in the run's decision record, always.\n2. When an LLM producer of the run is live, it gives that strand one short line saying a new decision is in the decision record; Go knows the current producer and its strand.\n3. When only Go runs, recording is enough: a later LLM producer reads the decision record when it starts, and when the work it concerns is already done, the alignment agent at PR-Gate judges the run against the decision record and its reject sends the deviation to PR-Rework.\n\nA stop stays `lyx batten pause`.\nA late correction so costs a rework round at PR-Gate instead of an early goto, which is rare and keeps the verb simple.\nCreel only carries the line in step 2 and knows nothing of runs; tackler, a short-lived Haiku that gets a stopped step going, is not the receiver, since judging what a decision means for the plan is not its job.\n\n## Dropped\n\nAn alias such as `ly:\u003cslug\u003e:active` for the strand that owns the current step, and a queue holding a message for the next LLM producer.\n",
+      "created": "2026-10-18T17:25:52Z",
+      "revised": "2026-10-18T17:25:52Z"
     }
   ]
 }
