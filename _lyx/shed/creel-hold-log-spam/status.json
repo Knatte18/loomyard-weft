@@ -1,11 +1,11 @@
 {
-  "current_producer": "Darn-Write",
+  "current_producer": "Darn-Bouncer",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Darn-Write",
-    "last": "Preflight → done",
+    "now": "Darn-Bouncer",
+    "last": "Darn-Write → done",
     "wait": ""
   },
   "history": [
@@ -14,6 +14,33 @@
       "outcome": "done",
       "output": "",
       "at": "2026-10-18T15:03:11Z"
+    },
+    {
+      "producer": "Darn-Write",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYXHUB/creel-hold-log-spam/_lyx/landing/summary.md",
+      "at": "2026-10-18T15:08:25Z",
+      "gate_attempts": 0,
+      "gate_spans": [
+        {
+          "gate": "discussion",
+          "kind": "gate",
+          "start": "2026-10-18T15:06:26.728993335Z",
+          "end": "2026-10-18T15:06:34.447306094Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-10-18T15:06:34.505337064Z",
+          "end": "2026-10-18T15:08:25.313231038Z"
+        },
+        {
+          "gate": "description",
+          "kind": "gate",
+          "start": "2026-10-18T15:08:25.400017867Z",
+          "end": "2026-10-18T15:08:25.400068601Z"
+        }
+      ]
     }
   ],
   "product": {
