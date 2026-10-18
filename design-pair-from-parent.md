@@ -27,3 +27,9 @@ The groundwork umbrellas need, built first:
 - Merge-back into the parent and teardown work unchanged, as they already follow the origin record.
 
 `weaver`'s per-batch pairs need the same create-from-parent-pair, merge-back and teardown primitive.
+
+## Folded in: board slug check and blocked-run cleanup (issue #724, operator decision 2026-10-18)
+
+- Seen 2026-10-18: task `orch-rules-in-weft` was promoted and started, and batten blocked at Worktree-Create with an invalid slug, since a slug ending in `-weft` is reserved for weft worktrees.
+  The orch cleared the run claim with `lyx board set-status`, renamed the entry to `orch-rules-files` with `lyx board merge` and started a new run; the old blocked batten record `_lyx/shed/orch-rules-in-weft` stays, since `lyx batten cleanup` skips blocked runs.
+- Expected: `lyx board upsert` and `promote` refuse a task slug fabric cannot use, naming the rule, from one slug rule fabric owns; and a blocked run whose board entry is gone can be cleaned up.
