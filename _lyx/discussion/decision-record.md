@@ -70,6 +70,12 @@ Rationale: that is the recipe's standing policy for retired rows.
 
 - A hub whose `loom.yaml` predates the key reads the template default through the layer stack; reconcile adds the key on the next binary change.
 
+<!-- lyx:carry-over Darn-Review -->
+- Darn-Review, round 2: converged; each finding below was fixed or disputed by the round's fixer, and no fresh reviewer has seen the result; the fixer report says which.
+  Review: _lyx/reviews/darn/round-2-review.md; fixer report: _lyx/reviews/darn/round-2-fixer-report.md.
+  - summary-claims-reverted-creel-fix (class consistency, severity MEDIUM, open in rounds 2)
+<!-- /lyx:carry-over Darn-Review -->
+
 ## Acceptance criteria
 
 - The loom recipe has no `Batchifier` row, and Plan-Bouncer's Done routes to Webster.
