@@ -34,6 +34,8 @@ So one orch needs to start runs from more than one parent branch, not only one o
 - What the operator wants is a thread they can open in any worktree and hold a running conversation with, which can spawn everything from there, whatever the worktree.
 - With two large projects at once, two such threads, one per project, which the operator talks to separately and which can talk to each other.
 - They need not be called orchestrators.
+- Millhouse supports this today: a thread anywhere creates a task and spawns it from its own worktree, the task records that thread and worktree as its parent, and it merges back there when done.
+- The thread in the worktree a batten run was started from is responsible for that run and receives its notices.
 - Two hubs with two weft repos would work today, but would make exchanging information between them hard.
 
 ## Orch sketch, not a decision
