@@ -650,33 +650,6 @@
       "revised": "2026-10-17T11:27:54Z"
     },
     {
-      "id": 630,
-      "slug": "config-migrate-hub-layer",
-      "title": "Key-rename migration never reaches the hub config: loom-model-key-names silently turned off the hub fans",
-      "kind": "task",
-      "labels": [
-        "bug",
-        "config",
-        "loom"
-      ],
-      "issues": [
-        709
-      ],
-      "recipe": "darn",
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "Imported from [issue #709](https://github.com/Knatte18/loomyard/issues/709).\n\n## Seen\n\nAfter `loom-model-key-names` landed (`a273d69bc`), the hub's `_board/_lyx/config/loom.yaml` and `darn.yaml` still held the old key names (`review`, `discussion_review`, `webster_fan`, `merge_fix_fan`, darn `review_fan`, ...).\nThe new keys resolved from the template, so every run silently lost the hub's lens fan, twill fixer and reviewer models: `lyx config loom --resolved` showed `webster_reviewer_fan: \"\" # template` and the old keys as `# default`.\n\n- `lyx config reconcile` in the prime reports loom with no `migrated` entry: it never reaches the hub default layer.\n- `lyx config reconcile` (dry-run) run from `_board/` does list the loom renames, but treats the hub files as a worktree layer: it would strip most keys and mark `darn`, `gate`, `landing`, `language`, `fabric` and `board` as retired, so `--apply` there is unsafe.\n- Nothing at landing or deploy ran the migration, and nothing warned that the hub file held unknown keys.\n\n## Workaround\n\nThe orch carried every value to its new name by hand with `lyx config loom --layer default --set ...` and `lyx config darn --layer default --set ...`.\nThe old keys stay in both files as `preserved` entries, since `--set` cannot remove a key.\n\n## Expected\n\nA key-rename migration reaches the hub's default layer, through a hub-scoped `lyx config reconcile` or at landing, and removes the old keys.\nA hub config file holding keys the template no longer knows is reported loudly at load.\n## Operator decision (2026-10-18)\n\nThe task also removes the `preserved` old keys that `loom-model-key-names` left in the hub's `loom.yaml` and `darn.yaml`, through the migration it builds.\n",
-      "status": "done",
-      "created": "2026-10-17T11:06:29Z",
-      "revised": "2026-10-18T15:01:57Z",
-      "run_settings": {
-        "darn": {
-          "review_max_bounces": 1
-        }
-      }
-    },
-    {
       "id": 632,
       "slug": "row-entry-gate",
       "title": "Entry gate on shed rows: a check decides whether a row runs at all",
