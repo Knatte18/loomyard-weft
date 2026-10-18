@@ -19,8 +19,13 @@
   The prime's directory kept the repository's name only because VS Code's recent-folders list showed many indistinguishable `main` folders, which workspaces make moot.
 - The workspace files live directly in the hub directory, ready to open; the hub directory is untracked, as `_launchers` and `_portals` are today.
 
+## Operator decisions (2026-10-18, later)
+
+- Each file is named with the repository in it: `loomyard.code-workspace` for the root umbrella and `loomyard-<umbrella-slug>.code-workspace` for another, since VS Code's recent list shows workspaces by file name.
+  An umbrella is named by its slug on the board.
+- Folder order: the umbrella's own worktree first, then Bolt, then the other worktrees alphabetically by display name, so a task is easy to find.
+
 ## Orch recommendation, not a decision
 
-- Name each file with the repository in it, such as `loomyard.code-workspace` for the root umbrella and `loomyard-<umbrella-slug>.code-workspace` for another, since VS Code's recent list shows workspaces by file name.
 - Fabric rewrites an umbrella's workspace at every `add` and `remove` of a pair under it; VS Code picks up a changed folder list in an open window, and only a change of the first folder restarts its extensions, which never happens since the umbrella stays first.
-- Folders after Bolt in a fixed order, such as by creation time; a drag in VS Code rewrites the file and lasts until fabric's next rewrite.
+  A drag in VS Code rewrites the file and lasts until fabric's next rewrite.
