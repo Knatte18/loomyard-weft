@@ -1,56 +1,52 @@
-# Reconcile the board dir's config by hand; warn on unknown keys at load
+# Migrate key renames in the hub config and warn on unknown keys
 
-A key-rename migration such as `loom-model-key-names` reached the files under `<BoardDir>/_lyx/config/` only through the hub walk, which runs at the first start verb after a binary change.
-`lyx config reconcile` in the prime covered the worktree's own and local files alone.
-Run from `_board/`, it treated the hub's files as a sparse worktree layer, so `--apply` would have stripped them and retired the hub-wide modules' files.
-Until something reconciled the hub file, a renamed key lost its value with nothing said: no loader reads a key the template lacks, and the load filled the new name from the template.
+After `loom-model-key-names` renamed the loom and darn keys, the hub's `_board/_lyx/config/*.yaml` kept the old names.
+The new keys resolved from the template, so the hub's lens fans, fixer and reviewer models were silently lost.
+`lyx config reconcile` never reached those files, and from `_board/` it treated them as a worktree layer, so `--apply` there would have stripped them.
+Nothing warned that a hub file held keys the template no longer knows.
 
 ## What changes
 
-- `lyx config reconcile --layer default` reconciles every file under the board dir: the hub-wide modules' files and each per-worktree module's repo default.
-  It makes the same `configsync.ReconcileHubWideAt` call as the hub walk (`SeedDefaults: true`), seeded from the prime's anchor.
-  Each module's `Migrate` hook renames old keys.
-  A document already holding the new name keeps it and drops the old key.
-  Keys the template lacks are pruned.
-  The envelope matches the worktree reconcile's, with `layer: default` and a new `seed` field.
-- `--apply` with it uses the guard a `--set --layer default` write uses: it is refused from a non-prime worktree and from a slug-bearing strand.
-  It holds the board write lock (`Bolt.CommitWritten`) and dry-runs first, so a file that fails to reconcile leaves every file unwritten.
-  Then it writes, commits the written files in `_board` under `config: reconcile the board dir's files`, and pushes.
-  A dry run is never guarded.
-- `lyx config reconcile` is refused when the resolved worktree is the board dir.
-  `--layer` values other than `default` are refused too.
-  Both refusals name the way forward.
-- `configengine`'s `Load` and `LoadOrTemplate` still load a default- or worktree-layer file that holds units the template lacks.
-  They now log a Warn naming the module, the layer, the file, the keys and the reconcile that removes them.
-  Open-map entries and the spec's `RetiredKeys` are left out.
-  The warning goes out once per file and key list in a process (`sync.Map`), so a loader in a poll loop does not flood stderr or the trace.
-  The local layer already refuses such units.
-  Seed-only modules load through `StackLayers` and get no warning.
+- `lyx config reconcile --layer default` reconciles every module's file under the hub's board dir through `configsync.ReconcileHubWideAt`, the call the hub walk makes.
+  Each module's `Migrate` hook renames old keys, a document holding both names keeps the new value and drops the old key, and keys the template lacks are removed.
+  A dry run is the default and the report carries `layer: default` and the `seed` per module.
+- `--apply --layer default` is guarded like `--set --layer default`: it is refused from a worktree that is not the prime and from a strand carrying a slug.
+  Under the board write lock it dry-runs first, so a file that fails to parse or migrate leaves every file unwritten.
+  It then writes, commits the files in `_board` and pushes.
+  A write that fails part-way restores the board dir's config files.
+  A commit failure and a push failure are reported apart, each naming the files left for the next board sync.
+- `lyx config reconcile` run from the board dir is refused, with or without `--apply`, naming `lyx config reconcile --layer default` from the prime as the way forward.
+  Any `--layer` other than `default` is refused.
+- `configengine`'s load logs one `logger.Warn` for a default- or worktree-layer file holding units the template lacks, naming the module, file, keys and the reconcile that fixes it.
+  Open-map entries and retired keys do not warn, nor does a `WholeEntries` spec.
+  The warning is deduplicated per process on file and key list.
+  The load still succeeds, so a binary change does not block runs before the reconcile.
+- The `lyx config` help, the `missingBaseError` message, `internal/configcli/doc.go`, `internal/configengine/doc.go`, `docs/shared-libs/configengine.md` and `docs/overview.md` follow.
+  The help page drops its per-round model-key example, which `doc.go` carries, to stay under the help length cap.
+
+Closes #709
 
 ## Design decisions
 
-- `--layer default` on `reconcile` reuses the flag `lyx config <module>` already takes for the board dir.
-  Making the bare reconcile also cover the board would have a pair's dry run report changes it can never apply.
-- No landing or deploy step was added.
-  The hub walk at the next start verb already runs this migration.
-  For the window before that walk, the load warning names the manual route.
-- The warning does not refuse the load.
-  A refusal would stop every run between a binary change and the reconcile.
-- The operator decision asked to remove the `preserved` old keys that `loom-model-key-names` left in the hub's `loom.yaml` and `darn.yaml`.
-  The hub walk for build `a273d69bc` (board commit `aa9f100c5`) already removed them, and neither file holds any today, so this change writes no hub file.
-  The new verb removes such keys from any hub that still holds them.
-  The integration test pins this: a board `loom.yaml` holding `merge_fan` beside `merge_reviewer_fan` loses `merge_fan`.
-
-## Tests
-
-- `TestLoad_LayerStack` gains a row with unknown keys in the default and worktree layers.
-  Over both loaders it expects exactly one warning per file, naming the keys and the way forward.
-  The existing retired-key and open-map rows now also assert that no warning is logged.
-- `TestConfigOverRealHub` gains a scenario on a real hub.
-  The dry run of `--layer default` reports the `webster_fan` and `merge_fan` rewrites and writes nothing.
-  `--apply` from the pair, reconcile from `_board`, and `--layer local` are each refused, and the file stays unchanged.
-  `--apply` from the prime writes `webster_reviewer_fan`, drops both old keys and commits only `loom.yaml` in `_board`.
+- The hub walk (`internal/hubreconcile`) keeps running the migration after a binary change; the new verb is the operator's manual route to the same reconcile, with `SeedDefaults: true` so it also seeds an absent per-worktree repo default.
+- The warning is a warning, not a refusal: the local layer already refuses unknown keys and is not covered.
+- The guard bounds a mistaken write, not a determined agent; a dry run is never guarded.
+- The hub's `preserved` old keys named in the issue are already gone: the hub walk for build `a273d69bc` removed them.
+  This change writes no hub file itself; the new verb removes such keys from any hub that still holds them.
 
 ## To check by hand
 
-On the live hub, `lyx config reconcile --layer default` from the prime should report no `migrated` or `removed` entries, since the walk already reconciled the board.
+Not run: a real hub with an old-key `loom.yaml` through `--layer default --apply` from the prime.
+The commit-failure and push-failure branches of `reconcileDefaultLayer` have no test, since no commit seam exists to fake them.
+The failed-apply integration test skips on Windows and as root.
+
+Review findings to confirm are addressed:
+
+- `internal/configcli/hubwide.go` `reconcileDefaultLayer`: a failure part-way through the apply must leave no file written, restored by `restoreBoardConfig`.
+- `reconcileDefaultLayer`, final switch: a push failure alone must say the files are committed but not pushed.
+- `internal/configcli/configcli.go` `runReconcile`: from the board dir with a non-default layer, the board-dir refusal must show first.
+- `internal/configcli/configcli_integration_test.go`: the failed-apply path should be pinned.
+- `internal/configcli/configcli.go` config help: preserved keys must point at `reconcile --layer default --apply`.
+- `internal/configengine/config.go` `missingBaseError`: the comment and message must name `reconcile --layer default --apply` as a writer of the repo default.
+- `internal/configengine/config.go` `warnUnknownKeys`: a `WholeEntries` spec must not warn; `Prune` still re-parses each layer on every load.
+- `internal/configcli/configcli_integration_test.go`: a dry run from a task pair should exit 0 and leave the board `loom.yaml` unchanged.
