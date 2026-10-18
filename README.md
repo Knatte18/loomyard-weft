@@ -17,8 +17,8 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | **Fast batten start, local-only fabric pairs and one Command producer**<br>• Batten pushes status to GitHub after every row (about 2 s each); fabric add/remove wait on origin even for local pairs; side-action rows become one Command producer | [`batten-start-speed`](design-batten-start-speed.md) | loom | Batchifier | 1d | 8h | batten, fabric, shed, config, loom |
-| 2 | **Named run profiles in one hub file, picked per task by a profile field**<br>• A profiles.yaml on Bolt maps names to run_settings-shaped sets; a task names one in its profile field, and batten seeds it under the task run_settings<br>• `darn: review_max_bounces 1` | [`run-profiles`](design-run-profiles.md) | darn | Darn-Write | 1h | 10m | board, batten, config, loom |
+| 1 | **Fast batten start, local-only fabric pairs and one Command producer**<br>• Batten pushes status to GitHub after every row (about 2 s each); fabric add/remove wait on origin even for local pairs; side-action rows become one Command producer | [`batten-start-speed`](design-batten-start-speed.md) | loom | Webster | 1d | 8h | batten, fabric, shed, config, loom |
+| 2 | **Named run profiles in one hub file, picked per task by a profile field**<br>• A profiles.yaml on Bolt maps names to run_settings-shaped sets; a task names one in its profile field, and batten seeds it under the task run_settings<br>• `darn: review_max_bounces 1` | [`run-profiles`](design-run-profiles.md) | darn | Darn-Write | 1h | 11m | board, batten, config, loom |
 
 ### Ready
 
@@ -63,7 +63,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Note | Slug | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| 1 | **webster create-not-done check rejects a Create target the card removes itself** | [`create-target-transient`](design-create-target-transient.md) | 11m | 10m | webster, loom, quarry |
+| 1 | **webster create-not-done check rejects a Create target the card removes itself** | [`create-target-transient`](design-create-target-transient.md) | 11m | 11m | webster, loom, quarry |
 
 ### Enhancements
 
