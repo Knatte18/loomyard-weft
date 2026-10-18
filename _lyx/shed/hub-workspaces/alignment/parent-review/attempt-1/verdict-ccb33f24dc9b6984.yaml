@@ -1,0 +1,6 @@
+verdict: approve
+reason: >-
+  The design covers every operator decision in the board entry: the prime's workspace file sits in the hub dir and is named after the repository, the folders are the prime, then Bolt, then pairs at their anchors in alphabetical order, _portals is retired, and finished pairs drop out.
+  It leaves other umbrellas' files to orch-any-worktree and batch worktrees to parallel-batch-parts and weaver, with no contradiction of another entry.
+  The peer implementer-seam and parent commit c03af73 do not overlap with this run.
+question: ""
