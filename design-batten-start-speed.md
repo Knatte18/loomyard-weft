@@ -2,7 +2,7 @@
 
 `batten-start-speed` · Task · enhancement, batten, fabric, shed, config, loom
 
-Depends on: [`creel-notices`](design-creel-notices.md)
+Depends on: [`creel-notices`](design-creel-notices.md), [`test-budget-remove`](design-test-budget-remove.md)
 
 ## Seen: batten's start (2026-10-17/18)
 
