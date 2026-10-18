@@ -1,45 +1,38 @@
-# Implementer seam: batching in Webster, engine set by loom.implementer
+# Implementer seam: batching inside Webster, engine by loom.implementer
 
-Groundwork before Weaver: batching is now part of the implementer, the implementer row's contract is written down, and a setting picks the row's engine.
+Loom's implementer becomes a seam ahead of Weaver: batching moves into the implementer, the implementer row's contract is written down, and a setting chooses the row's engine.
+Behaviour is otherwise unchanged; Webster still partitions the plan once per run.
 
 ## What changes
 
-- **The `Batchifier` row is gone from the loom recipe.**
+- The `Batchifier` row leaves `contracts/recipes/loom-recipe.yaml`, and its engine (`internal/loomshed/batchifier.go`), registry entry, row name constant and interrupt-policy entry go with it.
   `Plan-Bouncer`'s `on_done` now names `Webster`.
-  The row was only a fail-fast check that `batcher.yaml` resolves, and that check already runs in two other places: Loom-Preflight loads `batcher.yaml` before any LLM row, and the Webster producer resolves `batcher.Active` itself at the start of every call, then partitions the plan once per run as before.
-  The engine, its registry entry, `loomshed.NameBatchifier` and its interrupt-policy entry are deleted.
-  The shared reason prefix and way forward move into `internal/loomshed/webster.go`.
-- **A new `Implementer` registry engine builds the `Webster` row.**
-  The row's `implementer_setting: loom.implementer` names a setting, read through `Env.Setting`.
-  The setting's value picks a constructor from a closed table in `internal/shedrecipe/entries_implementer.go`, and every other row Config key passes to that constructor.
-  The table holds only `webster`, which is `websterEntry`.
-  `Webster` is no longer a registry name of its own, so the table is the only way to reach `websterEntry`.
-  A row without the key refuses at recipe build with a way forward, and so does a setting that holds anything but a known implementer name (unknown, empty, null or non-string).
-- **`loom.yaml` gains `implementer: webster`**, with category none, so the local layer and a task's `run_settings` can set it.
-- **`contracts/specs/implementer-spec.md`** pins the row's contract.
-  In: the approved plan under `_lyx/plan/` and the task branch.
-  Out: commits on the branch with a clean tree, plus the implementer's own durable run directory and state file, which Go commits on Done.
-  Outcomes: Done, a Stuck reroute to plan review, or a halting Stuck.
-  Batching and its config belong to the implementer.
-  `webster-spec.md` and `docs/overview.md` point at the new spec.
-- **A flaky creel test is fixed.**
-  `TestScheduler_Reminders/HoldMutesOtherSendersLetsTheOwnerPassAndEndsAtExpiry` now waits for both of the worker's probe waits after its two muted posts.
-  The second post leaves a wake in the worker's buffer, and an extra probe after the baseline could stand in for the owner's delivery.
-- **`lyx report timing`** counts a `Batchifier` row in a past run's history under the webster phase, so batching time folds into the implementer.
+- The Webster producer keeps resolving `batcher.Active` at the start of every `Call`.
+  The reason prefix and way forward the row shared with Webster and Loom-Preflight move into `internal/loomshed/webster.go`.
+- A new `Implementer` registry engine in `internal/shedrecipe` builds the implementer row.
+  The row's Config names its setting as `implementer_setting: loom.implementer`, read through `Env.Setting`; the value selects a constructor from a closed table that holds `webster` alone.
+- `loom.yaml` gains `implementer`, default `webster`, settable in the local layer and per task through `run_settings`.
+- `contracts/specs/implementer-spec.md` is new and writes down the implementer row's contract: in, the approved plan and the task branch; out, commits on the branch with a clean tree and the implementer's run directory with its state file; outcomes Done, a Stuck reroute to plan review, or a halting Stuck.
+  `webster-spec.md` points at it.
+- `lyx report timing` maps a past run's `Batchifier` row to the webster phase, so old histories count batching with the implementer instead of under other.
+- Docs follow: `PATTERN.md`, `README.md`, `docs/overview.md`, the `shedrecipe` and `loomshed` package docs, and the loom-plan and shed-recipe specs.
 
 ## Design decisions
 
-- The row keeps the name `Webster` and stays in the `Webster-Review` ring.
-  A row name is a durable on-disk identity, and the name Weaver's row should carry is Weaver's call.
-- `loom.implementer` is validated only where the `Implementer` entry builds the row, not in `loomengine.LoadConfig`.
-  That keeps the accepted values in one table, and a bad value still refuses at recipe build, before any LLM row.
-- A loom run parked at `Batchifier` is restarted, not migrated, following the recipe's standing rule for retired rows.
-  The retired row name lives on only as `reportengine`'s `retiredBatchifierRow`, for the phase mapping.
-- The `Webster` row's handback interrupt policy now keys on the `Implementer` engine in `TestInterruptPolicies_MatchEngineIdentity`.
-  It is webster's policy, and webster is the only implementer.
-- Status-pane entry numbers after Plan-Review drop by one, because one row is gone.
+- **Dropping the row loses no early failure.**
+  The `Batchifier` row was a fail-fast gate that Loom-Preflight's `batcher.yaml` load already covers before any LLM row; a batcher config that breaks later still stops at Webster.
+- **The setting only chooses among constructors of the same row.**
+  Every implementer builds the same row with the same edges, so no recipe row is skipped or entered conditionally.
+  An absent, empty, non-string or unknown value refuses at recipe build, naming the setting, the accepted values and the `lyx config loom --set implementer=<implementer>` command.
+- **The row keeps the name `Webster`**, and the `Webster-Review` segment is unchanged.
+  The row name is a durable on-disk identity, and the name Weaver's row carries is Weaver's decision.
+- **The implementer table is a second `map[string]Constructor` in `internal/shedrecipe`.**
+  `PATTERN-shed-recipe-registry` is reworded to bar it from the no-`init()`/`Register` rule's scope.
+- **No status migration.**
+  A loom run parked at `Batchifier` is restarted, as the recipe header records for earlier retired rows.
+- **Out of scope:** Weaver itself and other Weaver groundwork, such as a cold-agent spawn per batch in its own worktree.
 
-## Check
+## To check by hand
 
-- `lyx gate test` is green for `internal/loomshed`, `internal/shedrecipe`, `internal/shedbuild`, `internal/loomrecipe`, `internal/reportengine`, `internal/loomengine`, `internal/configreg`, `internal/loomcli`, `internal/battencli`, `internal/lyxcwd`, `contracts/...`, `tools/...` and `cmd/...`.
-- `lyx loom lint-comments` and `lyx loom lint-pattern` are clean.
+- A hub whose `loom.yaml` predates the `implementer` key reads the template default through the layer stack; reconcile adds the key on the next binary change.
+  Not run against a real hub.
