@@ -1,6 +1,6 @@
 # tokencount reports cost per segment, most expensive first, each split into its parts
 
-`tokencount-segment-report` · Task · enhancement, report · running · Publish
+`tokencount-segment-report` · Task · enhancement, report · running · PR-Align
 
 ## Goal
 
