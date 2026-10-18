@@ -2,8 +2,6 @@
 
 `implementer-seam` · Task · enhancement, webster, loom, shed, report
 
-Depends on: [`batten-start-speed`](design-batten-start-speed.md)
-
 ## Operator decisions (2026-10-17)
 
 - The plan writer writes a flat plan; how that plan is implemented is the implementer's call, and batching is part of implementing.
