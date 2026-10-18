@@ -44,6 +44,10 @@ So one orch needs to start runs from more than one parent branch, not only one o
 - Giving a thread the orch hosting (its own watcher and context cycling) is an explicit command; the hub orch is long-lived enough to need it, while a project thread is time-limited, so cycling matters less there but would be nice.
 - Reed shows every session at once, which gets messy; the threads a project thread starts should be grouped under it as one project.
 
+## Operator decision (2026-10-18)
+
+A project thread sees and starts only its own project's tasks on the board.
+
 ## Seen (2026-10-18, what makes the orch unique today)
 
 - Every file orch writes goes through one accessor, `internal/orchcli/paths.go`, under the prime's `<anchor>/.lyx/orch/`.
