@@ -120,7 +120,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 2 | **Weaver: a cold-start implementer beside Webster, with model escalation**<br>• A second implementer built on Millhouse Builder: a fresh agent per batch with its own model, escalating the model when an agent fails; Webster stays fork-based | [`weaver`](design-weaver.md) | 7d | 6h | webster |
 | 3 | **Split the orch into a run driver and a conversational orch**<br>• One agent drives runs and takes escalations; the operator talks to the other, which discusses problems and updates the board. | [`orch-split`](design-orch-split.md) | 6d | 5d | orch, batten, shed, loom |
 | 4 | **creel stage 3: agents message through creel, not SendMessage**<br>• Parent asks, parent review, stop reports and shuttle send go through creel, so a non-Claude engine can take a role with a parent | [`creel-agents`](design-creel-agents.md) | 3d | 1d | creel, shuttle, loom, stencil, report |
-| 5 | **[WS 004] Pairs created from a parent pair: board parent field, batten from any worktree**<br>• Groundwork for umbrellas: a task names its parent umbrella slug, fabric and batten create its pair from that branch, batten verbs run from any worktree | [`pair-from-parent`](design-pair-from-parent.md) | 33m | 11m | fabric, batten, board, workspaces |
+| 5 | **[WS 004] Board projects and pairs created from a parent pair**<br>• A task names its project; a project groups tasks in order and may have its own worktree; fabric and batten create a project task pair from that branch, batten verbs run from any worktree | [`pair-from-parent`](design-pair-from-parent.md) | 33m | 0m | fabric, batten, board, workspaces |
 
 #### Normal priority
 
