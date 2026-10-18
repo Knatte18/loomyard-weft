@@ -139,9 +139,10 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 17 | **Ideas to borrow from comparable agent orchestrators (survey, Oct 2026)** | [`orchestrator-survey-ideas`](design-orchestrator-survey-ideas.md) | 2d | 1d | burler, shed, orch, quarry, report |
 | 18 | **Regression tier: baseline profiles before the run, compare at the final gate**<br>• Support a hub regression tier that writes profiles on the parent before implementation and compares after, switchable per task for expected drift. | [`regression-baseline-verify`](design-regression-baseline-verify.md) | 1d | 1d | shed, webster, batten, config |
 | 19 | **Draw a plan as a card DAG with its glyph and file matrix**<br>• A tools/ program that reads a plan, builds the card x glyph/file matrix and writes Graphviz DOT of the card dependencies | [`plan-dag-view`](design-plan-dag-view.md) | 23h | 23h | loom, webster |
+| 20 | **Go-driven loom run: no long-lived LLM driver per run, and who receives a run message**<br>• A Go loop steps every loom run and spawns a cold LLM watcher only on a stop it cannot pass; messages for a run go to its driver or a durable record | [`go-driven-loom`](design-go-driven-loom.md) | 0m | 0m | loom, shed, creel |
 
 #### Low priority
 
 | # | Note | Slug | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| 20 | **Scoped build and test for C# hubs on Windows**<br>• Verify gates in a .NET hub build and test only the projects a card touches, since a scanned Windows machine makes every build slow. | [`dotnet-scoped-verify`](design-dotnet-scoped-verify.md) | 6d | 1d | shed, webster |
+| 21 | **Scoped build and test for C# hubs on Windows**<br>• Verify gates in a .NET hub build and test only the projects a card touches, since a scanned Windows machine makes every build slow. | [`dotnet-scoped-verify`](design-dotnet-scoped-verify.md) | 6d | 1d | shed, webster |
