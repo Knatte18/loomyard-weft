@@ -1,56 +1,56 @@
 # Card 9 — orch-creel-seam
 
 **Create:**
-- `plan:internal/orchengine#Creel` -> `type Creel interface`
-- `plan:internal/orchengine#CreelMessage` -> `type CreelMessage struct`
-- `plan:internal/orchengine#CreelStep` -> `type CreelStep struct`
-- `plan:internal/orchengine#CreelState` -> `type CreelState string`
-- `plan:internal/orchengine#CreelQueued` -> `const CreelQueued CreelState = "queued"`
-- `plan:internal/orchengine#CreelSending` -> `const CreelSending CreelState = "sending"`
-- `plan:internal/orchengine#CreelInjected` -> `const CreelInjected CreelState = "injected"`
-- `plan:internal/orchengine#CreelUnconfirmed` -> `const CreelUnconfirmed CreelState = "unconfirmed"`
-- `plan:internal/orchengine#CreelExpired` -> `const CreelExpired CreelState = "expired"`
-- `plan:internal/orchengine#CreelWithdrawnState` -> `const CreelWithdrawnState CreelState = "withdrawn"`
-- `plan:internal/orchengine#CreelOutcome` -> `type CreelOutcome struct`
-- `plan:internal/orchengine#CreelSent` -> `type CreelSent struct`
-- `plan:internal/orchengine#CreelWithdrawn` -> `type CreelWithdrawn struct`
-- `plan:internal/orchengine#CleanupRetiredNotices` -> `func CleanupRetiredNotices(p Paths, apply bool) ([]string, error)`
-- `plan:internal/orchengine#fakeCreel` -> `type fakeCreel struct`
-- `plan:internal/orchengine#fakeCreel.Post` -> `func (f *fakeCreel) Post(receiver, body string) (int64, error)`
-- `plan:internal/orchengine#fakeCreel.ReadMailbox` -> `func (f *fakeCreel) ReadMailbox(handle func([]CreelMessage) error) error`
-- `plan:internal/orchengine#fakeCreel.Inject` -> `func (f *fakeCreel) Inject(receiver string, step CreelStep, ttl time.Duration) (int64, error)`
-- `plan:internal/orchengine#fakeCreel.InjectOutcome` -> `func (f *fakeCreel) InjectOutcome(id int64) (CreelOutcome, error)`
-- `plan:internal/orchengine#fakeCreel.Sent` -> `func (f *fakeCreel) Sent(receiver string, since time.Time) ([]CreelSent, error)`
-- `plan:internal/orchengine#fakeCreel.Hold` -> `func (f *fakeCreel) Hold(receiver string, duration time.Duration) error`
-- `plan:internal/orchengine#fakeCreel.Release` -> `func (f *fakeCreel) Release(receiver string) error`
-- `plan:internal/orchengine#fakeCreel.Withdraw` -> `func (f *fakeCreel) Withdraw(receiver string) ([]CreelWithdrawn, error)`
-- `plan:internal/orchengine#fakeSession.StrandName` -> `func (f *fakeSession) StrandName(guid string) (string, error)`
-- `plan:internal/orchcli#orchWatchProgram` -> `const orchWatchProgram = "ORCHWATCH"`
-- `plan:internal/orchcli#creelClient` -> `type creelClient interface`
-- `plan:internal/orchcli#fakeCreelClient` -> `type fakeCreelClient struct`
-- `plan:internal/orchcli#fakeCreelClient.Log` -> `func (f *fakeCreelClient) Log(filter creelengine.LogFilter) ([]creelengine.LogEntry, error)`
-- `plan:internal/orchcli#creelSeam` -> `type creelSeam struct`
-- `plan:internal/orchcli#creelSeam.Post` -> `func (s creelSeam) Post(receiver, body string) (int64, error)`
-- `plan:internal/orchcli#creelSeam.ReadMailbox` -> `func (s creelSeam) ReadMailbox(handle func([]orchengine.CreelMessage) error) error`
-- `plan:internal/orchcli#creelSeam.Inject` -> `func (s creelSeam) Inject(receiver string, step orchengine.CreelStep, ttl time.Duration) (int64, error)`
-- `plan:internal/orchcli#creelSeam.InjectOutcome` -> `func (s creelSeam) InjectOutcome(id int64) (orchengine.CreelOutcome, error)`
-- `plan:internal/orchcli#creelSeam.Sent` -> `func (s creelSeam) Sent(receiver string, since time.Time) ([]orchengine.CreelSent, error)`
-- `plan:internal/orchcli#creelSeam.Hold` -> `func (s creelSeam) Hold(receiver string, duration time.Duration) error`
-- `plan:internal/orchcli#creelSeam.Release` -> `func (s creelSeam) Release(receiver string) error`
-- `plan:internal/orchcli#creelSeam.Withdraw` -> `func (s creelSeam) Withdraw(receiver string) ([]orchengine.CreelWithdrawn, error)`
-- `plan:internal/orchcli#injectOutcomeOf` -> `func injectOutcomeOf(id int64, entries []creelengine.LogEntry) orchengine.CreelOutcome`
-- `plan:internal/orchcli#sentOf` -> `func sentOf(entries []creelengine.LogEntry) []orchengine.CreelSent`
-- `plan:internal/orchcli#runnerSession.StrandName` -> `func (s runnerSession) StrandName(guid string) (string, error)`
-- `plan:internal/orchcli#TestCreelSeam_FoldsTheJournal` -> `func TestCreelSeam_FoldsTheJournal(t *testing.T)`
-- `plan:internal/orchcli#fakeCreel` -> `type fakeCreel struct`
-- `plan:internal/orchcli#fakeCreel.Post` -> `func (f *fakeCreel) Post(receiver, body string) (int64, error)`
-- `plan:internal/orchcli#fakeCreel.ReadMailbox` -> `func (f *fakeCreel) ReadMailbox(handle func([]orchengine.CreelMessage) error) error`
-- `plan:internal/orchcli#fakeCreel.Inject` -> `func (f *fakeCreel) Inject(receiver string, step orchengine.CreelStep, ttl time.Duration) (int64, error)`
-- `plan:internal/orchcli#fakeCreel.InjectOutcome` -> `func (f *fakeCreel) InjectOutcome(id int64) (orchengine.CreelOutcome, error)`
-- `plan:internal/orchcli#fakeCreel.Sent` -> `func (f *fakeCreel) Sent(receiver string, since time.Time) ([]orchengine.CreelSent, error)`
-- `plan:internal/orchcli#fakeCreel.Hold` -> `func (f *fakeCreel) Hold(receiver string, duration time.Duration) error`
-- `plan:internal/orchcli#fakeCreel.Release` -> `func (f *fakeCreel) Release(receiver string) error`
-- `plan:internal/orchcli#fakeCreel.Withdraw` -> `func (f *fakeCreel) Withdraw(receiver string) ([]orchengine.CreelWithdrawn, error)`
+- `internal/orchengine#Creel`
+- `internal/orchengine#CreelMessage`
+- `internal/orchengine#CreelStep`
+- `internal/orchengine#CreelState`
+- `internal/orchengine#CreelQueued`
+- `internal/orchengine#CreelSending`
+- `internal/orchengine#CreelInjected`
+- `internal/orchengine#CreelUnconfirmed`
+- `internal/orchengine#CreelExpired`
+- `internal/orchengine#CreelWithdrawnState`
+- `internal/orchengine#CreelOutcome`
+- `internal/orchengine#CreelSent`
+- `internal/orchengine#CreelWithdrawn`
+- `internal/orchengine#CleanupRetiredNotices`
+- `internal/orchengine#fakeCreel`
+- `internal/orchengine#fakeCreel.Post`
+- `internal/orchengine#fakeCreel.ReadMailbox`
+- `internal/orchengine#fakeCreel.Inject`
+- `internal/orchengine#fakeCreel.InjectOutcome`
+- `internal/orchengine#fakeCreel.Sent`
+- `internal/orchengine#fakeCreel.Hold`
+- `internal/orchengine#fakeCreel.Release`
+- `internal/orchengine#fakeCreel.Withdraw`
+- `internal/orchengine#fakeSession.StrandName`
+- `internal/orchcli#orchWatchProgram`
+- `internal/orchcli#creelClient`
+- `internal/orchcli#fakeCreelClient`
+- `internal/orchcli#fakeCreelClient.Log`
+- `internal/orchcli#creelSeam`
+- `internal/orchcli#creelSeam.Post`
+- `internal/orchcli#creelSeam.ReadMailbox`
+- `internal/orchcli#creelSeam.Inject`
+- `internal/orchcli#creelSeam.InjectOutcome`
+- `internal/orchcli#creelSeam.Sent`
+- `internal/orchcli#creelSeam.Hold`
+- `internal/orchcli#creelSeam.Release`
+- `internal/orchcli#creelSeam.Withdraw`
+- `internal/orchcli#injectOutcomeOf`
+- `internal/orchcli#sentOf`
+- `internal/orchcli#runnerSession.StrandName`
+- `internal/orchcli#TestCreelSeam_FoldsTheJournal`
+- `internal/orchcli#fakeCreel`
+- `internal/orchcli#fakeCreel.Post`
+- `internal/orchcli#fakeCreel.ReadMailbox`
+- `internal/orchcli#fakeCreel.Inject`
+- `internal/orchcli#fakeCreel.InjectOutcome`
+- `internal/orchcli#fakeCreel.Sent`
+- `internal/orchcli#fakeCreel.Hold`
+- `internal/orchcli#fakeCreel.Release`
+- `internal/orchcli#fakeCreel.Withdraw`
 
 **Edit:**
 - `internal/orchengine#Session`

@@ -61,7 +61,7 @@
 - `internal/orchengine#render`
 - `internal/orchengine#fakeSession`
 - `internal/orchengine#fakeSession.count`
-- `plan:internal/orchengine#fakeCreel.Inject`
+- `internal/orchengine#fakeCreel.Inject`
 - `internal/orchengine#watchEnv`
 - `internal/orchengine#newWatchEnv`
 - `internal/orchengine#watchEnv.injectHandoff`
