@@ -1,22 +1,26 @@
 # Remove the per-package test budget
 
-The per-package test-count budget is removed.
-It was meant to make each raise a visible, reviewed decision, but no role judged a raise: the alignment stencil treated the file as bookkeeping, the code reviewers were not asked, the plan review's test-economy lens only checked that a new test was budgeted, and the guard's failure named the value to set.
-Its only lasting effect was a shared file most test-adding cards had to list under `Edit:`, which made it the largest false scheduling dependency between cards.
-`PATTERN-test-economy`, enforced in review, stays the check on test count.
+The per-package test-count budget is gone.
+It forced no reviewed decision: the guard's failure message names the value to set a row to, so an agent raised it and moved on, and no reviewer or stencil judged the raise.
+It also serialized plans, since every card adding tests had to list `cmd/lyx/testdata/test-budget.yaml` under `Edit:`, making it a false scheduling dependency between otherwise independent cards.
+What keeps test count down is `PATTERN-test-economy`, enforced in review, and that stays unchanged.
 
 ## Changes
 
-- `cmd/lyx/testbudget_test.go` and `cmd/lyx/testdata/test-budget.yaml` are deleted.
-- `pattern/PATTERN-test-speed.md` loses its `## Test budget` section; the `PATTERN.md` index line needed no edit.
-- `CLAUDE.md` loses its `## Test budget` section.
-- The alignment stencil (`contracts/stencils/loom/loom-template-alignment.md`) no longer names the budget file among the shared bookkeeping files that do not escalate.
-- The `test-economy` lens in `internal/burlerengine/template.yaml` keeps its two remaining checks, a new top-level test that should be a row and a row that repeats existing coverage, and drops the unbudgeted-test check.
+- Delete `cmd/lyx/testbudget_test.go` and `cmd/lyx/testdata/test-budget.yaml`.
+- Delete the `## Test budget` section from `pattern/PATTERN-test-speed.md` and from `CLAUDE.md`.
+- `contracts/stencils/loom/loom-template-alignment.md`: the shared-bookkeeping sentence no longer names the budget file; the module-table line and the PATTERN index line remain.
+- `internal/burlerengine/template.yaml`: the `test-economy` lens drops its "unbudgeted test" check and keeps the other two (a top-level test that should be a row, and a row that repeats existing coverage).
 
 ## Design decisions
 
-- No replacement guard: a package's top-level test count can now grow with no test failing.
-  Review under `PATTERN-test-economy` and a recurring audit are the checks on it.
-- The recurring audit is the board note `test-time-audit-recurring`, modelled on `glyph-audit-recurring`.
-  It describes a periodic `cmd/testtiming` run compared against `docs/benchmarks/test-suite-timing.md` and is not code.
+- No replacement test is added: a package's top-level test count can now grow with no test failing.
+  Review under `PATTERN-test-economy` and the recurring audit below are the only checks on it.
+- Growth is watched by a recurring test-time audit, kept as the board note `test-time-audit-recurring` rather than as code.
+  It re-runs `cmd/testtiming` against `docs/benchmarks/test-suite-timing.md`, in the manner of `glyph-audit-recurring`.
 - Files under `docs/research/` and `docs/benchmarks/` that mention the budget are left as written, since they record past runs.
+
+## To check by hand
+
+- Run `grep -rn "test-budget.yaml\|testbudget_test" .` and confirm only `docs/research/` and `docs/benchmarks/` files match.
+- Run `lyx gate test ./cmd/lyx` and `lyx gate test ./internal/burlerengine`; they were not run while writing this description.
