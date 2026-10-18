@@ -1,0 +1,10 @@
+verdict: approve
+reason: >-
+  The diff covers every point of the run-profiles board entry: the profile field beside recipe, the hub-wide seed-only profiles.yaml with the three starting profiles verbatim,
+  lyx config profiles with a whole-profile JSON --set, lyx board profiles, the profile's keys checked as run_settings are,
+  the unknown-profile refusal at the board write and at Seed-Child, and the task's run_settings layered over the profile at seeding.
+  It adds nothing beyond the entry and its docs.
+  The Darn-Review carry-over findings are addressed by the fix commits and name no parent correction.
+  The only overlap is docs/overview.md with batten-start-speed, a bookkeeping file. This run (row 22) lands first, and batten-start-speed (row 12) takes the change at Merge-In.
+question: ""
+superseded: []
