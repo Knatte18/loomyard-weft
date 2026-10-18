@@ -534,7 +534,7 @@
       }
     }
   ],
-  "currentBatch": 0,
+  "currentBatch": 9,
   "masterStrand": "18b89fdaf0c53d704ba876fc2316b225",
   "masterSessionId": "42895572-32bc-4eb5-9874-49c6600de7bc",
   "masterEngine": "claude",
@@ -722,6 +722,22 @@
       "bracketTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-batten-start-speed/42895572-32bc-4eb5-9874-49c6600de7bc/subagents/agent-a3e8f7ea1020c0891.jsonl"
       ]
+    },
+    "9": {
+      "slug": "pair-teardown-lock",
+      "cards": [
+        "09-pair-teardown-lock"
+      ],
+      "cardHashes": {
+        "09-pair-teardown-lock": "c412b288fbab97ad948e1110aaca5a239c7847e0d6b3d538e777309a967ce109"
+      },
+      "startSha": "6b1e8b69652679fc9d6aec72c1b268f163399053",
+      "kind": "fork",
+      "spawnedAt": "2026-10-18T16:42:42Z",
+      "sessionId": "42895572-32bc-4eb5-9874-49c6600de7bc",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
     }
   },
   "seenForkTranscripts": [
