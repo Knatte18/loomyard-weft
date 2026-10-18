@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-18 13:35 UTC; every age below is as of then.
+Rendered 2026-10-18 13:36 UTC; every age below is as of then.
 
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
@@ -9,21 +9,15 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 Concrete and claimable; only a task can run.
 
-### Running
-
-Held by a run; its scope is locked until the run ends.
-
-#### High priority
-
-| # | Task | Slug | Recipe | At | Age | Revised | Labels |
-| --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | **creel stage 2: orch and batten notices through creel**<br>• The orch watcher and batten notices and injects go through creel; the watcher keeps only its cycle logic | [`creel-notices`](design-creel-notices.md) | loom | Finalize | 3d | 1d | creel, orch, batten, shed |
-
 ### Ready
 
 Waits on nothing open; can start now.
 
-_None._
+#### Normal priority
+
+| # | Task | Slug | Recipe | After | Age | Revised | Labels |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| 1 | **Remove the per-package test budget; watch suite growth by a recurring test-time audit**<br>• test-budget.yaml forces no reviewed decision and serializes plans; remove it<br>• `darn: review_max_bounces 1` | [`test-budget-remove`](design-test-budget-remove.md) | darn |  | 22h | 6h | loom, burler, stencil |
 
 ### Layer A
 
@@ -33,19 +27,9 @@ Waits only on Running or Ready entries.
 
 | # | Task | Slug | Recipe | After | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | **Remove the per-package test budget; watch suite growth by a recurring test-time audit**<br>• test-budget.yaml forces no reviewed decision and serializes plans; remove it<br>• `darn: review_max_bounces 1` | [`test-budget-remove`](design-test-budget-remove.md) | darn | `creel-notices` | 22h | 6h | loom, burler, stencil |
+| 1 | **Fast batten start, local-only fabric pairs and one Command producer**<br>• Batten pushes status to GitHub after every row (about 2 s each); fabric add/remove wait on origin even for local pairs; side-action rows become one Command producer | [`batten-start-speed`](design-batten-start-speed.md) | loom | `test-budget-remove` | 1d | 6h | batten, fabric, shed, config, loom |
 
 ### Layer B
-
-Starts when every entry it names under After is done.
-
-#### Normal priority
-
-| # | Task | Slug | Recipe | After | Age | Revised | Labels |
-| --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | **Fast batten start, local-only fabric pairs and one Command producer**<br>• Batten pushes status to GitHub after every row (about 2 s each); fabric add/remove wait on origin even for local pairs; side-action rows become one Command producer | [`batten-start-speed`](design-batten-start-speed.md) | loom | `creel-notices`, `test-budget-remove` | 1d | 6h | batten, fabric, shed, config, loom |
-
-### Layer C
 
 Starts when every entry it names under After is done.
 
@@ -150,3 +134,11 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | # | Note | Slug | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | 20 | **Scoped build and test for C# hubs on Windows**<br>• Verify gates in a .NET hub build and test only the projects a card touches, since a scanned Windows machine makes every build slow. | [`dotnet-scoped-verify`](design-dotnet-scoped-verify.md) | 6d | 1d | shed, webster |
+
+## Done
+
+Finished, awaiting `lyx board prune --apply`.
+
+| # | Entry | Slug | Age | Revised | Labels |
+| --- | --- | --- | --- | --- | --- |
+| 1 | **creel stage 2: orch and batten notices through creel**<br>• The orch watcher and batten notices and injects go through creel; the watcher keeps only its cycle logic | [`creel-notices`](design-creel-notices.md) | 3d | 1d | creel, orch, batten, shed |
