@@ -1,6 +1,6 @@
 # Remove the per-package test budget; watch suite growth by a recurring test-time audit
 
-`test-budget-remove` · Task · enhancement, loom, burler, stencil · running · Merge-In
+`test-budget-remove` · Task · enhancement, loom, burler, stencil · running · Publish
 
 ## Seen (2026-10-17)
 
