@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-18 15:23 UTC; every age below is as of then.
+Rendered 2026-10-18 15:24 UTC; every age below is as of then.
 
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
@@ -25,7 +25,7 @@ Held by a run; its scope is locked until the run ends.
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | 2 | **Key-rename migration never reaches the hub config: loom-model-key-names silently turned off the hub fans**<br>• `darn: review_max_bounces 1` | [`config-migrate-hub-layer`](design-config-migrate-hub-layer.md) | darn | Darn-Burler-Fix | 1d | 22m | config, loom |
 | 3 | **Flaky tmux test: TestBoot_TmuxConf TwoWorktreesBootedConcurrently fails with server exited unexpectedly**<br>• `darn: review_max_bounces 1` | [`tmux-conf-concurrent-boot-flake`](design-tmux-conf-concurrent-boot-flake.md) | darn | PR-Gate | 1d | 22m | reed |
-| 4 | **lyx report timing leaves out darn runs**<br>• Report darn runs beside loom runs, with phases from the recipe<br>• `darn: review_max_bounces 1` | [`timing-report-darn`](design-timing-report-darn.md) | darn | Darn-Burler-Fix | 1d | 22m | report |
+| 4 | **lyx report timing leaves out darn runs**<br>• Report darn runs beside loom runs, with phases from the recipe<br>• `darn: review_max_bounces 1` | [`timing-report-darn`](design-timing-report-darn.md) | darn | Darn-Bouncer | 1d | 22m | report |
 | 5 | **Fast batten start, local-only fabric pairs and one Command producer**<br>• Batten pushes status to GitHub after every row (about 2 s each); fabric add/remove wait on origin even for local pairs; side-action rows become one Command producer | [`batten-start-speed`](design-batten-start-speed.md) | loom | Plan-Burler-Review | 1d | 8h | batten, fabric, shed, config, loom |
 | 6 | **creel log: a hold refresh writes a held event every ~2s**<br>• `darn: review_max_bounces 1` | [`creel-hold-log-spam`](design-creel-hold-log-spam.md) | darn | Merge-In | 1h | 22m | creel |
 
