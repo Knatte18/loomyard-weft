@@ -1,12 +1,12 @@
 # Card 7 — tender-orch-revive-inject
 
 **Create:**
-- `plan:internal/tenderengine#orchInjected` -> `const orchInjected = "injected"`
-- `plan:internal/tenderengine#orchPending` -> `const orchPending = "pending"`
-- `plan:internal/tendercli#tenderProgram` -> `const tenderProgram = "TENDER"`
-- `plan:internal/tendercli#orchReviveTTL` -> `const orchReviveTTL = time.Minute`
-- `plan:internal/tendercli#revivePending` -> `func revivePending(entries []creelengine.LogEntry) bool`
-- `plan:internal/tendercli#TestRevivePending` -> `func TestRevivePending(t *testing.T)`
+- `internal/tenderengine#orchInjected`
+- `internal/tenderengine#orchPending`
+- `internal/tendercli#tenderProgram`
+- `internal/tendercli#orchReviveTTL`
+- `internal/tendercli#revivePending`
+- `internal/tendercli#TestRevivePending`
 
 **Edit:**
 - `internal/tenderengine#Deps`

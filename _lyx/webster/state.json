@@ -1,6 +1,6 @@
 {
   "runGuid": "0ef99f9e9a9404114fb3ec6573486408",
-  "planFingerprint": "404d8a215c26accf08ed25427e34650fba5b26d268f44180101beee915866451",
+  "planFingerprint": "0b72a8f66aea07f6d46e73eb1afd4b659c95a3516bd229a5dddc2f9220213db8",
   "planFileHashes": {
     "00-overview.md": "ff2c9b7fdcdd73c21d9da73cb8171a72dd5fb43e364e42cf2d1eb2c61da789d4",
     "01-shuttle-event-time.md": "046b40242ff3c218ac4b07f262a7b3182bffffc27db8388687ddb3465bb98541",
@@ -9,7 +9,7 @@
     "04-creel-withdraw-and-refusal-code.md": "009ef33e342df10752d8f61ac3e45711017ed5ac3e913622e4fde01a5b68c7cc",
     "05-creelcli-go-client.md": "ebe06ef6007562beac3ed5bc71dc2db77812412d72a7d9a0f0728eabf6337e3d",
     "06-orch-notify-over-creel.md": "76041d4cba6a48f00cedb4b652ac673b17b12986faab6eb1044d3c7e8673633c",
-    "07-tender-orch-revive-inject.md": "1e2e7de8beb559c9884b702096e092a2e80e29dfeeeb8502f45ae20b1446e95d",
+    "07-tender-orch-revive-inject.md": "5ddd9ef72c0debd4a8cce8d4364849f7012db624f7f39cfac7578e388447bf50",
     "08-drop-hub-notice-log.md": "3ee1e9a6da7024a81f7e79f8c9f9aea0833c76565a28460084a19331c6fdcc50",
     "09-orch-creel-seam.md": "03e80daa31a83216ed49844ed394e3384dd8a6abceeaef86bddc67458f8698f7",
     "10-orch-cycle-over-creel.md": "2a5b7934aca986dddb47ff8987d3cff6ed55f92132ff03219c89efe9ef06a00d",
@@ -463,7 +463,7 @@
       }
     }
   ],
-  "currentBatch": 7,
+  "currentBatch": 0,
   "masterStrand": "8f47be96752c4f196cef4674286d92e4",
   "masterSessionId": "776189d3-d536-48b7-b230-4f7e219e603f",
   "masterEngine": "claude",
@@ -621,21 +621,41 @@
         "07-tender-orch-revive-inject"
       ],
       "cardHashes": {
-        "07-tender-orch-revive-inject": "1e2e7de8beb559c9884b702096e092a2e80e29dfeeeb8502f45ae20b1446e95d"
+        "07-tender-orch-revive-inject": "5ddd9ef72c0debd4a8cce8d4364849f7012db624f7f39cfac7578e388447bf50"
       },
       "startSha": "5866bf5bd43c75e6af95076061aae21c29a1abe9",
       "kind": "fork",
       "spawnedAt": "2026-10-18T07:18:00Z",
       "sessionId": "776189d3-d536-48b7-b230-4f7e219e603f",
       "engine": "claude",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "07-tender-orch-revive-inject",
+        "status": "done",
+        "head_sha": "401af3e8c870c525f37e45eda28770b08f519d27",
+        "deviations": [
+          "internal/tendercli/deps.go",
+          "internal/tenderengine/pause_test.go",
+          "internal/tenderengine/resume.go"
+        ]
+      },
+      "cardShas": [
+        "401af3e8c870c525f37e45eda28770b08f519d27"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-creel-notices/776189d3-d536-48b7-b230-4f7e219e603f/subagents/agent-a2b9f15c1f0fe0f10.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-creel-notices/776189d3-d536-48b7-b230-4f7e219e603f/subagents/agent-a2b9f15c1f0fe0f10.jsonl"
+      ]
     }
   },
   "seenForkTranscripts": [
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-creel-notices/776189d3-d536-48b7-b230-4f7e219e603f/subagents/agent-a4a28e992b662712c.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-creel-notices/776189d3-d536-48b7-b230-4f7e219e603f/subagents/agent-a637748a77bd2147e.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-creel-notices/776189d3-d536-48b7-b230-4f7e219e603f/subagents/agent-a1213664b6807fa16.jsonl",
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-creel-notices/776189d3-d536-48b7-b230-4f7e219e603f/subagents/agent-a711c0982bf096c07.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-creel-notices/776189d3-d536-48b7-b230-4f7e219e603f/subagents/agent-a711c0982bf096c07.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-creel-notices/776189d3-d536-48b7-b230-4f7e219e603f/subagents/agent-a2b9f15c1f0fe0f10.jsonl"
   ]
 }
