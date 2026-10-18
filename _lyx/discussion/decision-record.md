@@ -45,6 +45,12 @@ Envelope, kind and path are left out; `lyx creel log` keeps them.
 `--json` prints the current JSON envelope unchanged.
 Rationale: the operator decision of 2026-10-18; a program's sender stays in the header because the body alone does not say which program wrote it.
 
+### Added after Discussion (parent, 2026-10-18): Which mail needs creel read
+
+Decision: Only mail from an agent strand keeps the contentless reminder and needs lyx creel read. Mail from every other sender, program senders and ly:EXTERNAL alike, is carried in full in the reminder line and marked read on delivery. Every carried line starts with its message id, so a program that takes replies, such as the orch watcher with its written/defer answer, can be answered with lyx creel post --reply <id> without a read.
+
+Rationale: ly:EXTERNAL has no strand, so a reply to it is undelivered and its mail needs no read. Case does not tell whether a sender takes replies (the watcher does, batten does not); always showing the id costs a few characters and keeps creel from knowing which programs answer.
+
 ## Constraints
 
 - `PATTERN-creel-store`: the journal is written only by the daemon in `internal/creelengine`, and panes are reached only through the `Delivery` seam.
