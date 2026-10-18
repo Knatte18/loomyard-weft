@@ -1,0 +1,11 @@
+verdict: approve
+reason: >-
+  The diff meets the board entry as amended by the parent's 2026-10-18 entry.
+  Program and EXTERNAL mail is typed in full as a `[creel] #<id> from <sender>: <body>` line and journaled read on delivery, while only agent-strand mail keeps the contentless reminder.
+  Plain `lyx creel read` returns every sender's mail as plain text, and JSON sits behind `--envelope`.
+  The orch stencils, docs and sandbox suite follow.
+  The departures from the record's pre-coding decisions (4 KiB cap, flag name, id shown for every sender in read) follow the parent's amendment or are left open by the entry.
+  The carried-over Darn risk is a test gap with no parent correction.
+  The one peer, batten-start-speed, does not overlap, and no parent commits are listed.
+question: ""
+superseded: []
