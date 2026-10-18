@@ -1,6 +1,6 @@
 # Implementer seam: batchifier inside Webster, engine chosen by setting
 
-`implementer-seam` · Task · enhancement, webster, loom, shed, report · running · Worktree-Create
+`implementer-seam` · Task · enhancement, webster, loom, shed, report · running · Darn-Write
 
 ## Operator decisions (2026-10-17)
 
