@@ -1,11 +1,11 @@
 {
-  "current_producer": "Discussion-Bouncer",
+  "current_producer": "Plan-Write",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Discussion-Bouncer",
-    "last": "Discussion-Burler-Fix → bounced to Discussion-Bouncer",
+    "now": "Plan-Write",
+    "last": "Discussion-Bouncer → done",
     "wait": ""
   },
   "history": [
@@ -129,6 +129,12 @@
       ],
       "budget_exempt": true,
       "routed_to": "Discussion-Bouncer"
+    },
+    {
+      "producer": "Discussion-Bouncer",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYXHUB/batten-start-speed/_lyx/reviews/discussion/round-2-bouncer-ledger.md",
+      "at": "2026-10-18T14:29:31Z"
     }
   ],
   "product": {
