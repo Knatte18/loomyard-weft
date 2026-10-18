@@ -1,6 +1,6 @@
 # [WS 003] Orch rules move out of the repository into each orch weft
 
-`orch-rules-in-weft` · Task · enhancement, orch, workspaces · running · Worktree-Create
+`orch-rules-in-weft` · Task · enhancement, orch, workspaces · 
 
 ## Seen (2026-10-18)
 
