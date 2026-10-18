@@ -1,37 +1,41 @@
 # reed: run the capability probe on a private tmux socket
 
-Fixes the `TestBoot_TmuxConf/AppendingFileIsSourcedOncePerServerStart/TwoWorktreesBootedConcurrently` flake (issue #712), where a boot failed with `run list-commands: exit status 1: server exited unexpectedly`.
+Two concurrent reed boots on one hub socket could fail with `run list-commands: exit status 1: server exited unexpectedly`.
+That was the cause of the `TestBoot_TmuxConf/AppendingFileIsSourcedOncePerServerStart/TwoWorktreesBootedConcurrently` flake.
 
-## Cause
+`list-commands` is answered by a server, so on a socket with none tmux starts a transient server that exits as soon as it answers.
+The capability probe ran it on the hub's socket.
+A sibling boot whose client connected to that socket while the transient server was exiting got `server exited unexpectedly`.
+Twelve concurrent `tmux -f /dev/null -L <key> list-commands` loops on one key reproduced it: 1 failure in 2400 calls, with that message.
 
-The capability probe runs `list-commands` before every boot.
-`list-commands` is answered by a server, so on a hub socket with no server running tmux starts a transient one that exits as soon as it has answered.
-The probe used the hub's own `-L` socket.
-When two worktrees of one hub boot at once, one boot's tmux client could connect to the other boot's transient server while it was exiting, and failed with `server exited unexpectedly`.
-The race is in production, not only in the test: two `lyx reed up` calls from sibling worktrees hit it the same way.
-Twelve concurrent loops of `tmux -f /dev/null -L <key> list-commands` on one key reproduce it, about once in 2,400 calls.
+Closes #712
 
 ## Change
 
-- `probeCapabilityLocked` (`internal/reedengine/probe.go`): off Windows, the probe now copies the engine's `TmuxCmd` and points it at a fresh `-L` key per call.
-  It keeps `-f /dev/null`, so an operator config cannot keep the transient server alive.
-  After the probe it removes that key's socket file with the existing `removeSocketFileOnceGone`, and logs a failure without failing the probe.
-  Windows keeps the hub's socket, as before.
-- `newProbeSocketKey`: the key is `lyx-p` plus seven random hex digits.
-- `internal/reedengine/doc.go`: the multiplexer-contract section describes the private probe socket.
-- New tmux-tier test `TestProbeCapability_LeavesTheHubSocketAndNoProbeSocketBehind` (`serverconfig_integration_test.go`): after a probe on a hub with no server running, the hub's key has no server and no socket file, and the socket directory holds no probe socket.
+Off Windows, `probeCapabilityLocked` (`internal/reedengine/probe.go`) now runs both probe calls (`-V`, then `list-commands`) on a fresh `-L` key of its own, still with `-f /dev/null`.
+No client of the hub's socket can reach the transient server any more, so the race is gone from production code rather than worked around in the test.
+Once the server is gone, the probe removes its socket file with `removeSocketFileOnceGone`.
+A removal failure is logged and never fails the probe.
+The `reedengine` package doc (`doc.go`) describes the new behavior.
 
 ## Design decisions
 
-- **Private socket, not a retry.** Retrying `list-commands` would hide only the probe's own failure.
-  The transient server would still sit on the hub socket, where a concurrent boot's `new-session`, `has-session` or `display-message` could reach it while it exits.
-- **The key is 12 bytes.** The shortest hub key reed forms is the standalone `lyx-<hash8>`, which is also 12 bytes.
-  So wherever the hub's socket path passes reed's path-length check, the probe's path fits too.
-  The socket lives in tmux's per-user socket directory, like every reed `-L` socket, rather than under `lyxtemp`'s longer run-directory path.
-- **The new test is not parallel.** It scans the socket directory that every test in the binary shares, and a concurrent probe would leave a socket there mid-scan.
-- **Cost.** Every `up` or `resume` now starts one short-lived tmux server, including when the hub's server is already up.
+- The key is `lyx-p` plus seven random hex digits, 12 bytes.
+  A hub socket key that passes reed's path-length check is never shorter than 12 bytes (`lyx-<hash8>`), so the probe's socket path fits wherever the hub's does.
+  Two concurrent probes drawing the same key would share one transient server, which only costs the isolation.
+- Windows keeps the engine's own socket, since psmux has no `/dev/null`.
+- The socket directory comes from the existing `socketDirFromEnv`, as `removeStaleSocket` already uses it.
+- Unchanged: the boot loop, the stale socket-holder reap, the tmux_conf claim, and the gate slot pool that `publish_verify` runs outside.
+- The cost is one extra transient tmux server per `up` or `resume`.
 
-## Bounds
+## Tests
 
-- A collision between two concurrent probes' random keys brings back the old shared transient server for those two probes only.
-- A transient server that outlives `socketGoneWait` (2s) leaves its socket file in the per-user socket directory.
+`TestProbeCapability_LeavesTheHubSocketAndNoProbeSocketBehind` (tmux tier, not parallel) probes a hub with no server.
+It asserts that no server and no socket file stand on the hub's key, and that no `lyx-p*` socket file is left in the socket directory.
+The existing probe unit test still pins exactly two calls, `-V` then `list-commands`.
+
+## To check by hand
+
+- `lyx gate test --tags tmux ./internal/reedengine` was not run for this description, so run it, in particular `TestBoot_TmuxConf`.
+- A tmux whose transient server outlives its client for longer than the socket-gone wait leaves the probe's socket file behind in the per-user socket directory.
+  This was not exercised.
