@@ -1104,6 +1104,24 @@
       "body": "## Seen (2026-10-18)\n\n- Every batten run is its own Go process in a tmux window, and its Run-Shed row waits on the child with no time limit (`internal/battenshed/doc.go`): it sends halt notices, retries the first verify failure, revives a dead driver's strands, and lands and tears down once the child is done.\n- Nothing restarts those processes after a machine restart; `lyx batten run \u003cslug\u003e` resumes from disk, and each row is idempotent, but someone must run it.\n- The orch already has a Go daemon of its own, the watcher (`lyx orch watch`).\n\n## Operator view, not a decision (2026-10-18)\n\nAn orchestrator gets not only a long-lived thread but a daemon that looks after every batten run it owns (those whose parent is its worktree) and sets their next steps going; see `orch-split`.\n\n## Agreed in discussion (2026-10-18)\n\n- One daemon per umbrella (see `orch-any-worktree`), the orch watcher, replaces one waiting batten process per run.\n- The daemon follows its runs' status files (fsnotify, with a periodic re-read as a fallback where file watching is unreliable, such as WSL and junctions); the child only writes its status, as today, and knows nothing of its owner.\n- Creel only where an agent must be told: the daemon posts to its thread when something needs judgement.\n- The same pass finds dead drivers, so after a restart only the daemons need starting, one per umbrella.\n\n## Orch recommendation, not a decision\n\n1. Step 1: the Run-Shed row checks the child once and exits while it still runs; the daemon re-runs `lyx batten run \u003cslug\u003e` for each run it owns, so notices, the verify retry, revival and landing stay batten's own code, run in short passes.\n2. Step 2, optional and later: move logic from batten into the daemon.\n\nOpen: who owns a run whose parent has no running daemon, the same problem as a thread that is not running.\n",
       "created": "2026-10-18T14:00:34Z",
       "revised": "2026-10-18T14:00:34Z"
+    },
+    {
+      "id": 655,
+      "slug": "creel-hold-log-spam",
+      "title": "creel log: a hold refresh writes a held event every ~2s",
+      "kind": "note",
+      "labels": [
+        "bug"
+      ],
+      "issues": [
+        722
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Imported from [issue #722](https://github.com/Knatte18/loomyard/issues/722).\n\nSeen 2026-10-18 14:09-14:13Z: while ly:ORCHWATCH held ly:orch during a context cycle, lyx creel log --to ly:orch got a held event roughly every 2.3 s (over a hundred in four minutes), burying the posted/read/injected events. Expected: one held event when a hold starts (and one when it ends or changes), not one per refresh.",
+      "created": "2026-10-18T14:14:23Z",
+      "revised": "2026-10-18T14:14:23Z"
     }
   ]
 }
