@@ -1,0 +1,9 @@
+verdict: approve
+reason: >-
+  The design covers the board entry's three scope points (detached per-transition status pushes with a measured start,
+  local-only fabric pairs, one Command producer with lyx verbs), keeps to its Out list,
+  settles the entry's open trust and placeholder questions, and neither duplicates nor contradicts
+  row-entry-gate, preflight-weft-push-sync, pair-from-parent or the other related notes;
+  lyx loom peers lists no peer run and no parent commit.
+question: ""
+superseded: []

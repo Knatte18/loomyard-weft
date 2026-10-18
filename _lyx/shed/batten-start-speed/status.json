@@ -1,11 +1,11 @@
 {
-  "current_producer": "Discussion-Write",
+  "current_producer": "Discussion-Bouncer",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Discussion-Write",
-    "last": "Loom-Preflight → done",
+    "now": "Discussion-Bouncer",
+    "last": "Discussion-Write → done",
     "wait": ""
   },
   "history": [
@@ -20,6 +20,33 @@
       "outcome": "done",
       "output": "",
       "at": "2026-10-18T13:54:05Z"
+    },
+    {
+      "producer": "Discussion-Write",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYXHUB/batten-start-speed/_lyx/discussion/decision-record.md",
+      "at": "2026-10-18T14:02:31Z",
+      "gate_attempts": 0,
+      "gate_spans": [
+        {
+          "gate": "discussion",
+          "kind": "gate",
+          "start": "2026-10-18T14:01:27.513478991Z",
+          "end": "2026-10-18T14:01:27.513589187Z"
+        },
+        {
+          "gate": "parent-review",
+          "kind": "gate",
+          "start": "2026-10-18T14:01:27.572535142Z",
+          "end": "2026-10-18T14:02:28.824971825Z"
+        },
+        {
+          "gate": "parent-review",
+          "kind": "held",
+          "start": "2026-10-18T14:02:28.861647249Z",
+          "end": "2026-10-18T14:02:30.543072475Z"
+        }
+      ]
     }
   ],
   "product": {
