@@ -68,6 +68,12 @@ Rationale: ly:EXTERNAL has no strand, so a reply to it is undelivered and its ma
 
 - A receiver that relied on the `[batten notice]` mail being readable after delivery now finds it only in `lyx creel log`; the orch role stencil names that place.
 
+<!-- lyx:carry-over Darn-Review -->
+- Darn-Review, round 1: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
+  Review: _lyx/reviews/darn/round-1-review.md; fixer report: _lyx/reviews/darn/round-1-fixer-report.md.
+  - reserved-by-read-path-untested (class design, severity MEDIUM, open in rounds 1)
+<!-- /lyx:carry-over Darn-Review -->
+
 ## Acceptance criteria
 
 - A program's one-line message to a live idle strand is typed as `[creel] <sender>: <body>`, is read afterwards, and no reminder follows for it.
