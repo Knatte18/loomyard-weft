@@ -1,27 +1,27 @@
 # Card 10 — orch-cycle-over-creel
 
 **Create:**
-- `plan:internal/orchengine#PendingStep` -> `type PendingStep struct`
-- `plan:internal/orchengine#stepInjectTTL` -> `const stepInjectTTL = 10 * time.Minute`
-- `plan:internal/orchengine#cycleHoldDuration` -> `const cycleHoldDuration = 10 * time.Minute`
-- `plan:internal/orchengine#Watcher.orchName` -> `func (w *Watcher) orchName(st State) (string, error)`
-- `plan:internal/orchengine#Watcher.creelFailed` -> `func (w *Watcher) creelFailed(st *State, err error) error`
-- `plan:internal/orchengine#Watcher.renewHold` -> `func (w *Watcher) renewHold(st *State) (bool, error)`
-- `plan:internal/orchengine#Watcher.releaseHold` -> `func (w *Watcher) releaseHold(st *State) error`
-- `plan:internal/orchengine#Watcher.sendStep` -> `func (w *Watcher) sendStep(st *State, mail bool, step CreelStep, body string, now time.Time) error`
-- `plan:internal/orchengine#Watcher.adoptPending` -> `func (w *Watcher) adoptPending(st *State) (bool, error)`
-- `plan:internal/orchengine#Watcher.stepOutcome` -> `func (w *Watcher) stepOutcome(st *State) (CreelOutcome, bool, error)`
-- `plan:internal/orchengine#Watcher.readReplies` -> `func (w *Watcher) readReplies(messages []CreelMessage) error`
-- `plan:internal/orchengine#Watcher.turnEndAfterSending` -> `func (w *Watcher) turnEndAfterSending(sendingAt time.Time) (shuttleengine.Event, bool)`
-- `plan:internal/orchengine#Watcher.resetForOtherStrand` -> `func (w *Watcher) resetForOtherStrand(st State) (State, error)`
-- `plan:internal/orchengine#ClearResumeNoticed` -> `func ClearResumeNoticed(recordPath, strand string, withdrawn []CreelWithdrawn, now time.Time) error`
-- `plan:internal/orchengine#fakeSession.StrandColor` -> `func (f *fakeSession) StrandColor(guid string) (string, error)`
-- `plan:internal/orchengine#TestWatcher_NoteReplyGate` -> `func TestWatcher_NoteReplyGate(t *testing.T)`
-- `plan:internal/orchengine#TestWatcher_StepOutcomes` -> `func TestWatcher_StepOutcomes(t *testing.T)`
-- `plan:internal/orchengine#TestWatcher_CycleHold` -> `func TestWatcher_CycleHold(t *testing.T)`
-- `plan:internal/orchengine#TestWatcher_CreelFailuresHoldTheCycle` -> `func TestWatcher_CreelFailuresHoldTheCycle(t *testing.T)`
-- `plan:internal/orchengine#TestWatcher_TurnEndCountsOnlyAfterSending` -> `func TestWatcher_TurnEndCountsOnlyAfterSending(t *testing.T)`
-- `plan:internal/orchcli#runnerSession.StrandColor` -> `func (s runnerSession) StrandColor(guid string) (string, error)`
+- `internal/orchengine#PendingStep`
+- `internal/orchengine#stepInjectTTL`
+- `internal/orchengine#cycleHoldDuration`
+- `internal/orchengine#Watcher.orchName`
+- `internal/orchengine#Watcher.creelFailed`
+- `internal/orchengine#Watcher.renewHold`
+- `internal/orchengine#Watcher.releaseHold`
+- `internal/orchengine#Watcher.sendStep`
+- `internal/orchengine#Watcher.adoptPending`
+- `internal/orchengine#Watcher.stepOutcome`
+- `internal/orchengine#Watcher.readReplies`
+- `internal/orchengine#Watcher.turnEndAfterSending`
+- `internal/orchengine#Watcher.resetForOtherStrand`
+- `internal/orchengine#ClearResumeNoticed`
+- `internal/orchengine#fakeSession.StrandColor`
+- `internal/orchengine#TestWatcher_NoteReplyGate`
+- `internal/orchengine#TestWatcher_StepOutcomes`
+- `internal/orchengine#TestWatcher_CycleHold`
+- `internal/orchengine#TestWatcher_CreelFailuresHoldTheCycle`
+- `internal/orchengine#TestWatcher_TurnEndCountsOnlyAfterSending`
+- `internal/orchcli#runnerSession.StrandColor`
 
 **Edit:**
 - `internal/orchengine#Session`

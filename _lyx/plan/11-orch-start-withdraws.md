@@ -11,7 +11,7 @@
 - `internal/orchengine#Watcher.tick`
 - `internal/orchengine#ResetForFreshLaunch`
 - `internal/orchengine#TestResetForFreshLaunch`
-- `plan:internal/orchengine#TestWatcher_CreelFailuresHoldTheCycle`
+- `internal/orchengine#TestWatcher_CreelFailuresHoldTheCycle`
 - `internal/orchcli#orchCLI.startCmd`
 - `internal/orchcli#orchCLI.adoptStrand` -> `func (c *orchCLI) adoptStrand(st orchengine.State, guid string, creel orchengine.Creel, name string) error`
 - `internal/orchcli#startHarness`
