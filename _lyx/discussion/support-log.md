@@ -65,6 +65,10 @@ Q8 measurement: trace timestamps and status history into a research report (reco
 - leanness: call-site note in Notes — fixed, cut.
 - leanness: vague IDE verb criterion — fixed, made concrete.
 
+### Note on a later design
+
+Note `row-entry-gate` would later move the switch out of `Command` into a shed-wide entry gate, and `Command`'s switch config then goes.
+
 ## Rejected alternatives
 
 - Synchronous push with a shorter lock wait: still costs a network round trip per row.
@@ -76,6 +80,11 @@ Q8 measurement: trace timestamps and status history into a research report (reco
 - A local-pair mark as a file under `.lyx`: outlives a branch deleted by hand and needs its own cleanup; git config dies with the branch.
 - A remove flag instead of a mark: a later commit's detached push would still publish the pair.
 - A local archive tag on remove: accumulates in the shared records repository and needs its own prune.
+- A containment guard on a local pair's remove: the weft is never merged, so it refuses every pair that ran anything, and answering it becomes routine.
+- Holding the records worktree's push lock through `Remove`: the lock file lives in the tree `Remove` deletes.
+- A blocking push lock for detached children: a hung holder queues every later child behind it.
+- Reading command keys from the task worktree's stack: a task branch could then set a command.
+- Escaping `%` for `cmd`: inside double quotes no quoting stops `cmd /C` expanding `%NAME%`, and the value must stay quoted.
 - New timing spans in the logger: trace timestamps already order every step.
 - Taking the shed-wide entry gate now: note `row-entry-gate` owns it and the board entry puts it out.
 - A separate `PATTERN-status-push-detached` entry: it overlaps PATTERN-push-both-sides, which now carries the rule.
@@ -84,7 +93,37 @@ Q8 measurement: trace timestamps and status history into a research report (reco
 
 ## Review rounds
 
-_No rounds yet._
+### Round 1 (BLOCKING, every finding fixed)
+
+- F1 command keys settable from the task branch — fixed, batten reads command keys from the template and board default layer only.
+- F2 Remove's lock inside the tree it deletes — fixed, a per-slug teardown lock under the hub scratch dir.
+- F3 local remove guard makes `--force` routine — fixed, guard dropped: a local pair's records are disposable and its warp keeps today's gate.
+- F4 late child recreates the removed `.weft` — fixed, the child checks its worktrees under the teardown lock first.
+- F5 absorbing-lock premise false — fixed, try-lock with a pending flag every holder re-checks.
+- F6 unbounded Remove wait — fixed, `StatusPushLockWait` and a refusal with its way forward.
+- F7 no-op skip absent — fixed, `Commit` returns whether a commit landed.
+- F8 child loses the pair's pause entry — fixed, a hidden slug flag.
+- F9 `--force` against the warp gate — fixed, `--force` answers dirtiness only and the warp gate is unchanged.
+- F10 guard order against the pending-records commit — fixed, a local remove commits no pending records.
+- F11 cleanup publishes a local orphan weft — fixed, the archive push and remote delete check the mark.
+- F12 batten's `Env.Setting` stack unstated — fixed, resolved lazily per key class.
+- F13 100 ms criterion — fixed, measured beyond the status commit.
+- F14 `--window` override channel — fixed, forced rows are told.
+- F15 `cmd` percent expansion — fixed, a `%` value on Windows runs nothing and warns.
+- F16 half-marked pair — fixed, either surviving mark makes it local.
+- F17 skip unreportable from the child — fixed, the spawn entry point checks the mark.
+- F18 Open risks — fixed, `row-entry-gate` moved here, `pair-from-parent` bullet deleted.
+
+### Round 2 (APPROVED, every finding fixed)
+
+- F1 prime-side pushes hold the pair's teardown lock — fixed, separate pause and teardown slugs; only a push from the pair takes the teardown lock.
+- F2 child's working directory inside the task worktree — fixed, the child runs in the hub's `_board` worktree and logs under `fabricengine.HubLogsDir`.
+- F3 command trust bound in batten only — fixed, the bound is `Command`'s contract through a told executable-key lookup, and a row without one refuses.
+- F4 destruction-chokepoint constraint misplaces orchestration — fixed, only the dirtiness kind and the remote-delete check live in `destroy.go`.
+- F5 try-lock reach unclear — fixed, the records push lock only; `Bolt.Sync` unchanged.
+- F6 local-mark bound states a premise — fixed, the hand-set case stated and the local path reported on remove's result.
+- F7 failure-halt contradiction — fixed, a command's outcome never halts, an unreadable setting stops the row.
+- F8 hidden slug flag unbounded — fixed, only the spawn entry point sets it, and a hand-run child's reach is stated.
 
 ## Question ledger
 
@@ -93,11 +132,11 @@ _No rounds yet._
 - Q3 Command modes — resolved, auto-pick: sync only.
 - Q4 failure policy — resolved, auto-pick: warn only.
 - Q5 local pair mark — resolved, auto-pick: per-branch git config key owned by fabric.
-- Q6 local remove guard — resolved, auto-pick: refuse an uncontained tip without `--force`.
+- Q6 local remove guard — resolved in round 1: no guard; a local pair's records are disposable and its warp branch keeps today's gate.
 - Q7 placeholders — resolved, auto-pick: `{lyx}`, `{slug}`, `{task_dir}`, shell-quoted.
 - Q8 measurement — resolved, auto-pick: research report from trace timestamps and status history.
 - Q9 verb homes — resolved, auto-pick: `lyx ide seed`/`lyx ide open` in `idecli`, the terminal window verb in `reedcli`.
-- Q10 teardown against an in-flight detached push — resolved, auto-pick: Remove waits for and holds the pair's push lock.
+- Q10 teardown against an in-flight detached push — resolved in round 1: a per-slug teardown lock under the hub scratch dir, children shared, Remove exclusive within `StatusPushLockWait`; since round 2, only a child pushing the pair's own worktrees takes it.
 - Q11 `--local` over an existing branch — resolved, auto-pick: refuse, naming a plain add.
 - Q12 placeholder quoting on Windows — resolved, auto-pick: quote for the shell `verifyrun` runs, beside its choice.
 - Q13 local pair's portals and launchers — resolved, auto-pick: none created.
