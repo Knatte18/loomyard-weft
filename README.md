@@ -75,7 +75,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | # | Note | Slug | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | 1 | **[WS 002] One VS Code workspace per umbrella, listing its worktrees directly**<br>• Workspace files in the hub dir; umbrella worktree first, then Bolt, then its live pairs at their anchors; no _portals; finished pairs drop out | [`hub-workspaces`](design-hub-workspaces.md) | 45m | 0m | fabric, ide, workspaces |
-| 2 | **[WS 003] Orch rules move out of the repository into each orch weft**<br>• ORCHESTRATOR.md holds hub-specific lyx behaviour in the code repo; each orch thread reads its own rules from its worktree weft, _lyx/orch/rules.md | [`orch-rules-in-weft`](design-orch-rules-in-weft.md) | 45m | 23m | orch, workspaces |
+| 2 | **[WS 003] Orch rules move out of the repository into each orch weft**<br>• ORCHESTRATOR.md holds hub-specific lyx behaviour in the code repo; each orch thread reads its own rules from its worktree weft, _lyx/orch/rules.md | [`orch-rules-in-weft`](design-orch-rules-in-weft.md) | 45m | 0m | orch, workspaces |
 | 3 | **[WS 005] One daemon per umbrella owns its batten runs**<br>• The orch watcher follows the status files of the runs it owns and re-runs short batten passes, replacing one waiting batten process per run; survives restarts | [`umbrella-daemon`](design-umbrella-daemon.md) | 23m | 23m | batten, orch, shed, workspaces |
 
 #### Normal priority
