@@ -1,6 +1,6 @@
 # Draw a plan as a card DAG with its glyph and file matrix
 
-`plan-dag-view` · Task · feature, loom, webster
+`plan-dag-view` · Task · feature, loom, webster · running · Worktree-Create
 
 ## Seen (2026-10-17)
 
