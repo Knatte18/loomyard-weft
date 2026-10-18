@@ -1095,7 +1095,7 @@
       "isolated": false,
       "brief": "A program notice is carried in the reminder itself and needs no read; creel read prints plain text for every sender, sender and id only where a reply is wanted",
       "body": "## Seen (2026-10-18)\n\n- A one-line batten notice now takes three steps for the orch: a contentless `[creel] N unread` reminder, a `lyx creel read`, and a JSON reply carrying `messages`, `body`, `from`, `envelope`, `id`, `kind` and `posted`.\n- `lyx creel read` reads only the oldest sender's messages by default, so two senders take two reads.\n- The receiver needs the body always, sender and id only when a reply is wanted (`post --reply \u003cid\u003e`), the time only when a message is old (withheld test posts arrived a day late), and envelope and kind never; the creel journal (`lyx creel log`) keeps the full metadata for debugging.\n\n## Operator decisions (2026-10-18)\n\n- A program sender's notice (an upper-case sender such as `ly:BATTEN`, which takes no reply) is carried in the reminder line itself, such as `[creel] ly:BATTEN: test-budget-remove: landed; newly ready: batten-start-speed`, needs no read, and is marked read on delivery.\n- Mail from an agent keeps the contentless reminder (operator decision 2026-10-17); `lyx creel read` prints plain text for every sender at once: id and sender with how to reply, then the body, with the time only when the message is more than a few minutes old.\n- JSON only behind a flag, for programs.\n",
-      "status": "running · Darn-Bouncer",
+      "status": "running · Describe",
       "created": "2026-10-18T14:00:34Z",
       "revised": "2026-10-18T14:04:05Z",
       "run_settings": {
