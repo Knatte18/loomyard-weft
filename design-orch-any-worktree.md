@@ -17,18 +17,22 @@ Run parentage already follows the worktree a pair was created from (`aa67fd1d7`,
 
 - What "prime only" protects today and whether any of it must stay prime-bound (board writes, deploy, `lyx board prune`, the hub workspace).
 - What the relevant CONSTRAINTS.md invariants say about prime (batten's prime-anchored status and lock paths, Told-Geometry) and how they change.
-- Who starts a task that becomes ready: presumably its umbrella's thread, found through the task's `parent`.
+- Who starts a task that becomes ready: presumably its umbrella's thread, found through the task's `project`.
 
 ## Operator decisions (2026-10-18)
 
-- A larger project is an umbrella task on the board: a long-lived fabric pair that is a starting point with its own orch thread.
+- A task carries one `project` field naming a project entry on the board (decision later the same day, replacing an earlier `parent` field).
+  A project always groups its tasks; the project entry itself says whether it has a worktree of its own.
+  A project with its own worktree is an umbrella; one without is a grouping only, and its tasks spawn from and land into the prime.
+  The project entry may hold the ordered list of its tasks, so the README shows it as a plan and titles need no order prefix; the `workspaces` work is the first project, with no worktree of its own.
+- An umbrella is a long-lived fabric pair that is a starting point with its own orch thread.
   It is not a separate hub: it shares the hub's repo, weft, board, creel daemon and gate slots, and has its own `.lyx/`, thread and batten runs.
-- The prime is the root umbrella.
-- A task carries a `parent` field naming its umbrella's slug; empty means the prime.
-  The parent's branch is derived from the slug and fabric's `branch_prefix` (so a work hub with `branch_prefix: hanf/` needs no thought about prefixes); no branch name is hard-coded or stored.
+- The prime is the root umbrella; a task with no `project`, or whose project has no worktree, goes to the prime.
+  The umbrella's branch is derived from the slug and fabric's `branch_prefix` (so a work hub with `branch_prefix: hanf/` needs no thought about prefixes); no branch name is hard-coded or stored.
 - A task's pair is created from its umbrella's branch and lands there, and the task's notices and escalations go to the umbrella's thread.
 - The board is shared by the whole hub; an umbrella's thread sees and starts only its own tasks.
-- An existing, spawned task can be turned into an umbrella: its pair and the commits on its branch stay, its loom run stops, a thread starts in the pair, and later tasks name it as `parent`.
+- An existing, spawned task can be turned into an umbrella: its pair and the commits on its branch stay, its loom run stops, a thread starts in the pair, and later tasks name it as their `project`.
+  Giving a grouping-only project a worktree later is the same step, and its tasks need no change, since they name the project rather than a worktree.
   Since a run-held entry takes no board edits, this is a verb of its own that releases the run's lock.
 
 ## Operator views, not decisions (2026-10-18)
