@@ -249,6 +249,14 @@ Rationale: keeps the engine told and testable, as the `Session` seam does.
   - inject-outcome-sending-record-ambiguous (class design, severity MEDIUM, open in rounds 3)
 <!-- /lyx:carry-over Plan-Review -->
 
+<!-- lyx:carry-over Webster-Review -->
+- Webster-Review, round 1: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
+  Review: _lyx/reviews/webster/round-1-review.md; fixer report: _lyx/reviews/webster/round-1-fixer-report.md.
+  - creelseam-mapping-untested (class design, severity MEDIUM, open in rounds 1)
+  - readmailbox-stale-state-on-ack-failure (class design, severity MEDIUM, open in rounds 1)
+  - retryfreshlaunch-loses-withdrawn-resume-line (class design, severity MEDIUM, open in rounds 1)
+<!-- /lyx:carry-over Webster-Review -->
+
 ## Acceptance criteria
 
 - The reminder line holds no subject; under a hold it lists only the owner's mail and names `lyx creel read --from <owner>`.
