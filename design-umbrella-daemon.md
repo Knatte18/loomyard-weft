@@ -32,6 +32,7 @@ Open: who owns a run whose parent has no running daemon, the same problem as a t
   Its later steps: start ready tasks with their run settings, run the landing routine, settle mechanical stops by rule with a cold helper where no rule fits, and the landing check for per-worktree config below.
 - A worktree must be settable as a beam, the worktree with a thread and a daemon (see `orch-any-worktree` for the create command and the convert verb); the word replaces "umbrella" for that worktree, while the group of tasks is the project.
 - The daemon never starts with the machine: `lyx orch start`, with or without `--continue`, starts the daemons of every beam in the hub, which after a restart replaces running `lyx batten run <slug>` for each run in flight.
+- The daemon outgrows the name `ORCHWATCH`: as a creel sender it is the program `BEAM`, `ly:BEAM` for the root beam and `ly:<slug>:BEAM` for another beam.
 
 ## Folded in from `orch-split` (2026-10-11 to 10-13)
 
