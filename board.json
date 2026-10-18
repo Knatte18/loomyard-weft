@@ -751,6 +751,7 @@
       "isolated": false,
       "brief": "",
       "body": "Imported from [issue #712](https://github.com/Knatte18/loomyard/issues/712).\n\nSeen 2026-10-17 in run stencilstore-dev-warning-noise, at Publish (publish_verify: go test -tags tmux ./...): internal/reedengine TestBoot_TmuxConf/AppendingFileIsSourcedOncePerServerStart/TwoWorktreesBootedConcurrently failed with 'run list-commands: exit status 1: server exited unexpectedly'. The task's diff touched only internal/creelcli and cmd/lyx/stencilseedgate_test.go, so the failure is unrelated to the change; batten retried the run. Several runs were in flight on the machine at the time, and publish_verify runs raw go test outside the gate slot pool. Expected: the test boots two tmux servers concurrently without flaking, or isolates them so a concurrent boot cannot kill a server.",
+      "status": "running · Worktree-Create",
       "created": "2026-10-17T11:51:35Z",
       "revised": "2026-10-18T15:01:57Z",
       "run_settings": {
@@ -796,6 +797,7 @@
       "isolated": false,
       "brief": "",
       "body": "Imported from [issue #716](https://github.com/Knatte18/loomyard/issues/716).\n\nTwo consecutive Merge-In verifies failed in the `internal/shedverbs` integration tier, on different wait-world tests.\nEach failure had the waiter reporting `loop … exited before it recorded itself`.\nThe loom run halted blocked at Merge-In (`escalation-to-human`) with the way forward `lyx loom goto --to Darn-Write`, then `lyx loom resume`.\n\nWhy it is abnormal: the failures did not reproduce in isolation, under `-race`, under `-count=300` or beside heavy integration packages, so diagnosing them cost several runs.\nThe likely cause is the wait-world fixture's 20 ms `LockGrace`, which the waiter's free-lock probe can exhaust under scheduling stalls.\n\nWhat to do: give the wait-world fixture the production lock grace (the task's fix did this), and check other fixtures in the integration tier for short grace values that make verify nondeterministic.\n\nProvenance: task `gate-wait-cache-cap`, notes `Darn-Write.md`, `loom-halt.md`.\n",
+      "status": "running · Worktree-Create",
       "created": "2026-10-17T12:12:20Z",
       "revised": "2026-10-18T15:01:57Z",
       "run_settings": {
@@ -1097,6 +1099,7 @@
       "isolated": false,
       "brief": "",
       "body": "Imported from [issue #722](https://github.com/Knatte18/loomyard/issues/722).\n\nSeen 2026-10-18 14:09-14:13Z: while ly:ORCHWATCH held ly:orch during a context cycle, lyx creel log --to ly:orch got a held event roughly every 2.3 s (over a hundred in four minutes), burying the posted/read/injected events. Expected: one held event when a hold starts (and one when it ends or changes), not one per refresh.",
+      "status": "running · Worktree-Create",
       "created": "2026-10-18T14:14:23Z",
       "revised": "2026-10-18T15:01:57Z",
       "run_settings": {
