@@ -1,6 +1,6 @@
 # Fast batten start, local-only fabric pairs and one Command producer
 
-`batten-start-speed` · Task · enhancement, batten, fabric, shed, config, loom · running · PR-Gate
+`batten-start-speed` · Task · enhancement, batten, fabric, shed, config, loom · running · Finalize
 
 ## Seen: batten's start (2026-10-17/18)
 
