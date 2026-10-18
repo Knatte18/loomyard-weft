@@ -1,12 +1,11 @@
 {
-  "current_producer": "Plan-Bouncer",
+  "current_producer": "Plan-Burler-Review",
   "state": "running",
   "error": "",
-  "pending_by": "shed",
   "pause_requested": false,
   "activity": {
-    "now": "Plan-Bouncer",
-    "last": "Plan-Bouncer → awaiting",
+    "now": "Plan-Burler-Review",
+    "last": "Plan-Bouncer → bounced to Plan-Burler-Review",
     "wait": ""
   },
   "history": [
@@ -280,6 +279,15 @@
       "outcome": "awaiting",
       "output": "/home/knatte/Code/loomyard-LYXHUB/batten-start-speed/_lyx/reviews/plan/round-3-bouncer-ledger.md",
       "at": "2026-10-18T15:55:38Z"
+    },
+    {
+      "producer": "Plan-Bouncer",
+      "outcome": "stuck",
+      "output": "/home/knatte/Code/loomyard-LYXHUB/batten-start-speed/_lyx/reviews/plan/round-3-bouncer-ledger.md",
+      "at": "2026-10-18T15:57:13Z",
+      "budget_exempt": true,
+      "routed_to": "Plan-Burler-Review",
+      "by": "shed"
     }
   ],
   "product": {
