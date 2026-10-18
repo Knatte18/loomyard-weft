@@ -185,6 +185,13 @@ No command's outcome (a non-zero exit, a timeout, a Windows percent refusal) hal
   - pending-flag-protocol-no-bound (class design, severity MEDIUM, open in rounds 1, 2, 3, 4)
 <!-- /lyx:carry-over Plan-Review -->
 
+<!-- lyx:carry-over Webster-Review -->
+- Webster-Review, round 1: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
+  Review: _lyx/reviews/webster/round-1-review.md; fixer report: _lyx/reviews/webster/round-1-fixer-report.md.
+  - pattern-recipe-setting-lookup-missing-told (class design, severity BLOCKING, open in rounds 1)
+  - respawned-code-flag-lacks-weft-path (class design, severity MEDIUM, open in rounds 1)
+<!-- /lyx:carry-over Webster-Review -->
+
 ## Acceptance criteria
 
 - Batten's, loom's and darn's status seams and `lyx batten cleanup` commit synchronously and spawn the detached push instead of pushing; a no-op transition, including a clean-path commit that lands nothing in loom's or darn's seam, spawns nothing; in the prime no spawn names the code side; no test forks a real push child.
