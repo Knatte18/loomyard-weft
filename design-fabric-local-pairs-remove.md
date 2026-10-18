@@ -1,4 +1,4 @@
-# Remove local-only fabric pairs, and run every remote operation async
+# Local-only fabric pairs stay an explicit choice only, and every remote operation runs async
 
 `fabric-local-pairs-remove` · Note · enhancement, fabric, batten
 
@@ -10,7 +10,8 @@ The time it saves is small: in the sandbox hub `lyx fabric add` took about 1.1 s
 
 ## Decisions (operator, 2026-10-18)
 
-- Remove the local-only pair mode once `batten-start-speed` has landed: `--local`, the local-only branch mark and its push refusal, the skipped-local reporting in pushes, the local modes of remove and cleanup, and the local-mark check in the status push.
+- The local-only pair mode stays for now, only as an explicit `fabric add --local` choice, since local work that needs no remote (experiments, local testing) may use it; no lyx flow creates local pairs, batch pairs included.
+  Remove it (`--local`, the local-only branch mark and its push refusal, the skipped-local reporting in pushes, the local modes of remove and cleanup, and the local-mark check in the status push) if no use turns up.
 - Every operation against a remote runs async, so no lyx command waits on the network.
   This includes `fabric remove`'s 6 to 7 s of network at teardown (force-with-lease push, archive-tag push, weft branch delete).
 - One exception may stay synchronous: the check whether a pair's branches already exist on origin, since a branch found there is fetched and the work continued on, and that is worth waiting for.
