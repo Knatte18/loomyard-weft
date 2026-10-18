@@ -913,7 +913,7 @@
       "id": 644,
       "slug": "implementer-seam",
       "title": "Implementer seam: batchifier inside Webster, engine chosen by setting",
-      "kind": "note",
+      "kind": "task",
       "labels": [
         "enhancement",
         "webster",
