@@ -1,6 +1,6 @@
 # [WS 005] One dobby daemon per beam owns and drives its runs
 
-`umbrella-daemon` · Note · enhancement, batten, orch, shed, workspaces, loom
+`umbrella-daemon` · Note · enhancement, batten, orch, shed, workspaces, loom, board
 
 ## Seen (2026-10-18)
 
@@ -47,6 +47,24 @@ These replace the earlier wording above where they differ: the daemon is not the
 - The orch watcher and the beam daemon are two different programs.
   The daemon is named `dobby`, after the loom mechanism that lifts the shafts by pattern, since "beam" names the worktree.
   As a creel sender it is the program `DOBBY`: `ly:DOBBY` for the root beam and `ly:<slug>:DOBBY` for another beam.
+- Beam and dobby are one module: `lyx beam` holds the commands (`create`, `promote`, `start`), and dobby is that module's daemon, as the watcher is orch's.
+
+## Who does what (operator decisions, 2026-10-18)
+
+- The orch is the LLM the operator talks to: it discusses, writes notes and tasks on the board, and takes the escalations that need judgement (parent review, PR-Gate when the alignment agent escalates, design questions).
+  It never starts, stops or cleans up a batten run.
+- Dobby sets everything going and cleans up: it starts tasks, follows their batten runs, revives dead drivers, settles mechanical stops by rule, lands and cleans up, and hands on what it cannot settle, first to the arbiter and then to the nearest orch.
+  It writes the board only for statuses and the prune, and makes no design call.
+- Batten drives one task's lifecycle as today and knows nothing of who owns its run.
+
+## A start flag on tasks (operator decision, 2026-10-18)
+
+The operator often plans ahead by putting tasks on the board with their `depends_on` set, so a task is no longer by definition ready to be spawned.
+A task carries a boolean flag of its own that says it may start.
+Dobby starts a task only when the flag is set and its `depends_on` are done.
+The operator can flip the flag themselves, and dobby then starts the task with no orch involved.
+
+Orch recommendation, not a decision: the flag is named `released`, defaults to false, and is flipped with a board verb such as `lyx board release <slug>`; the README shows it.
 
 ## Folded in from `orch-split` (2026-10-11 to 10-13)
 
