@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-18 06:50 UTC; every age below is as of then.
+Rendered 2026-10-18 06:53 UTC; every age below is as of then.
 
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
@@ -17,7 +17,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | **creel stage 2: orch and batten notices through creel**<br>• The orch watcher and batten notices and injects go through creel; the watcher keeps only its cycle logic | [`creel-notices`](design-creel-notices.md) | loom | Plan-Burler-Fix | 2d | 17h | creel, orch, batten, shed |
+| 1 | **creel stage 2: orch and batten notices through creel**<br>• The orch watcher and batten notices and injects go through creel; the watcher keeps only its cycle logic | [`creel-notices`](design-creel-notices.md) | loom | Plan-Bouncer | 2d | 17h | creel, orch, batten, shed |
 
 ### Ready
 
@@ -46,7 +46,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | # | Note | Slug | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | 1 | **Key-rename migration never reaches the hub config: loom-model-key-names silently turned off the hub fans** | [`config-migrate-hub-layer`](design-config-migrate-hub-layer.md) | 19h | 19h | config, loom |
-| 2 | **Flaky tmux test: TestBoot_TmuxConf TwoWorktreesBootedConcurrently fails with server exited unexpectedly** | [`tmux-conf-concurrent-boot-flake`](design-tmux-conf-concurrent-boot-flake.md) | 18h | 18h | reed |
+| 2 | **Flaky tmux test: TestBoot_TmuxConf TwoWorktreesBootedConcurrently fails with server exited unexpectedly** | [`tmux-conf-concurrent-boot-flake`](design-tmux-conf-concurrent-boot-flake.md) | 19h | 19h | reed |
 | 3 | **shedverbs wait-world integration tests flake: loop exited before it recorded itself** | [`wait-world-lock-grace-flake`](design-wait-world-lock-grace-flake.md) | 18h | 18h | shed |
 | 4 | **lyx report timing leaves out darn runs**<br>• Report darn runs beside loom runs, with phases from the recipe | [`timing-report-darn`](design-timing-report-darn.md) | 16h | 16h | report |
 
@@ -76,7 +76,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 18 | **lyx board rename: change an entry slug in one write**<br>• Rename an entry keeping all fields and rewriting depends_on; report prose mentions | [`board-rename`](design-board-rename.md) | 16h | 16h | board |
 | 19 | **Remove the per-package test budget; watch suite growth by a recurring test-time audit**<br>• test-budget.yaml forces no reviewed decision and serializes plans; remove it | [`test-budget-remove`](design-test-budget-remove.md) | 15h | 15h | loom, burler, stencil |
 | 20 | **Implementer seam: batchifier inside Webster, engine chosen by setting**<br>• Groundwork before Weaver: batching moves into the implementer, a written implementer contract, loom.implementer selects the engine | [`implementer-seam`](design-implementer-seam.md) | 15h | 15h | webster, loom, shed, report |
-| 21 | **Parallel batches: the shared pieces for Webster forks and Weaver**<br>• DAG batchifier, worktree per batch, merge-back with conflict resolution; open: keeping a fork inside its worktree | [`parallel-batch-parts`](design-parallel-batch-parts.md) | 6m | 6m | webster, fabric, loom |
+| 21 | **Parallel batches: the shared pieces for Webster forks and Weaver**<br>• DAG batchifier, worktree per batch, merge-back with conflict resolution; open: keeping a fork inside its worktree | [`parallel-batch-parts`](design-parallel-batch-parts.md) | 9m | 9m | webster, fabric, loom |
 
 #### Low priority
 
@@ -114,7 +114,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 14 | **Interactive board view: a regenerated HTML file and a phone-friendly README**<br>• board.html rendered with README on every write; a VS Code task opens it in the browser; collapsible README for the GitHub app | [`board-viewer`](design-board-viewer.md) | 13d | 12d | board, ide, orch |
 | 15 | **Spawn audit log: every process lyx starts is recorded and traceable**<br>• One recorded launch path and a hub-wide spawn log with owner, argv and resource use, plus a sampler and a summary verb, so a process storm can be traced after a crash | [`spawn-audit-log`](design-spawn-audit-log.md) | 9d | 5d | reed, shuttle, config |
 | 16 | **Configurable action buttons on the reed status bar**<br>• Clickable status-bar buttons that run configured commands: VS Code, orch distill/refresh, the follow toggle and more | [`reed-status-buttons`](design-reed-status-buttons.md) | 2d | 2d | reed, config |
-| 17 | **Ideas to borrow from comparable agent orchestrators (survey, Oct 2026)** | [`orchestrator-survey-ideas`](design-orchestrator-survey-ideas.md) | 1d | 21h | burler, shed, orch, quarry, report |
+| 17 | **Ideas to borrow from comparable agent orchestrators (survey, Oct 2026)** | [`orchestrator-survey-ideas`](design-orchestrator-survey-ideas.md) | 2d | 21h | burler, shed, orch, quarry, report |
 | 18 | **Regression tier: baseline profiles before the run, compare at the final gate**<br>• Support a hub regression tier that writes profiles on the parent before implementation and compares after, switchable per task for expected drift. | [`regression-baseline-verify`](design-regression-baseline-verify.md) | 20h | 19h | shed, webster, batten, config |
 | 19 | **Draw a plan as a card DAG with its glyph and file matrix**<br>• A tools/ program that reads a plan, builds the card x glyph/file matrix and writes Graphviz DOT of the card dependencies | [`plan-dag-view`](design-plan-dag-view.md) | 15h | 15h | loom, webster |
 
