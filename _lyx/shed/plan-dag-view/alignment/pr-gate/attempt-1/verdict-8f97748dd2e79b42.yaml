@@ -1,0 +1,4 @@
+verdict: approve
+reason: The diff adds only tools/plandag/ with its .sh and .cmd launchers, reads the plan through internal/planparser's existing exports, writes the markdown matrix, levels table and DOT, renders SVG when dot is on PATH and says so when not, and leaves out batch colouring, which is every point of the board entry's Scope; the open risks name no parent correction, and neither peer run nor any parent commit overlaps.
+question: ""
+superseded: []
