@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-18 13:51 UTC; every age below is as of then.
+Rendered 2026-10-18 13:52 UTC; every age below is as of then.
 
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
@@ -17,7 +17,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | **Remove the per-package test budget; watch suite growth by a recurring test-time audit**<br>• test-budget.yaml forces no reviewed decision and serializes plans; remove it<br>• `darn: review_max_bounces 1` | [`test-budget-remove`](design-test-budget-remove.md) | darn | PR-Align | 22h | 6h | loom, burler, stencil |
+| 1 | **Remove the per-package test budget; watch suite growth by a recurring test-time audit**<br>• test-budget.yaml forces no reviewed decision and serializes plans; remove it<br>• `darn: review_max_bounces 1` | [`test-budget-remove`](design-test-budget-remove.md) | darn | PR-Gate | 22h | 6h | loom, burler, stencil |
 
 ### Ready
 
@@ -58,7 +58,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 1 | **Prototype reed status buttons in a throwaway tmux server**<br>• A fresh agent tries the menu button, follow toggle and extra button line by hand before reed-status-buttons becomes a task | [`reed-status-buttons-prototype`](design-reed-status-buttons-prototype.md) | 3d | 3d | reed |
 | 2 | **Classify Plan lens and review findings to make the Plan writer get it right first**<br>• Find what Plan lenses and Plan-Burler-Review keep catching, and stop each recurring class at the writer | [`plan-writer-finding-classes`](design-plan-writer-finding-classes.md) | 2d | 1d | loom, burler, stencil, shed |
 | 3 | **Recurring Webster kick-start pack (glyph) audit**<br>• Re-run tools/forkaudit on new Webster forks to track pack use and correctness | [`glyph-audit-recurring`](design-glyph-audit-recurring.md) | 1d | 1d | webster, quarry |
-| 4 | **Recurring test-suite time and growth audit**<br>• Re-run cmd/testtiming against test-suite-timing.md to watch suite growth | [`test-time-audit-recurring`](design-test-time-audit-recurring.md) | 6m | 6m |  |
+| 4 | **Recurring test-suite time and growth audit**<br>• Re-run cmd/testtiming against test-suite-timing.md to watch suite growth | [`test-time-audit-recurring`](design-test-time-audit-recurring.md) | 7m | 7m |  |
 
 ### Bugs
 
@@ -77,8 +77,8 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Note | Slug | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| 1 | **One VS Code workspace per umbrella, listing its worktrees directly**<br>• Workspace files in the hub dir; umbrella worktree first, then Bolt, then its live pairs at their anchors; no _portals; finished pairs drop out | [`hub-workspaces`](design-hub-workspaces.md) | 12m | 7m | fabric, ide, workspaces |
-| 2 | **Orch rules move out of the repository into each orch weft**<br>• ORCHESTRATOR.md holds hub-specific lyx behaviour in the code repo; each orch thread reads its own rules from its worktree weft, _lyx/orch/rules.md | [`orch-rules-in-weft`](design-orch-rules-in-weft.md) | 12m | 7m | orch, workspaces |
+| 1 | **One VS Code workspace per umbrella, listing its worktrees directly**<br>• Workspace files in the hub dir; umbrella worktree first, then Bolt, then its live pairs at their anchors; no _portals; finished pairs drop out | [`hub-workspaces`](design-hub-workspaces.md) | 13m | 8m | fabric, ide, workspaces |
+| 2 | **Orch rules move out of the repository into each orch weft**<br>• ORCHESTRATOR.md holds hub-specific lyx behaviour in the code repo; each orch thread reads its own rules from its worktree weft, _lyx/orch/rules.md | [`orch-rules-in-weft`](design-orch-rules-in-weft.md) | 13m | 8m | orch, workspaces |
 
 #### Normal priority
 
@@ -111,7 +111,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 22 | **warp-visibility: CLAUDE.local.md invisible in the Fabric repo's git history**<br>• Expose CLAUDE.local.md by symlink so nothing lyx-related shows in the Fabric repo's history; the constraints half is out of date | [`warp-visibility`](design-warp-visibility.md) | 2w |  | ide, fabric |
 | 23 | **Windows verify timeout kills the whole process tree**<br>• On Windows the verifytree timeout kills only the shell, not the process tree it started | [`verify-watchdog`](design-verify-watchdog.md) | 10d | 2d | shed |
 | 24 | **A hub pause leaves background forks and shells running, so hibernate never confirms**<br>• Pause interrupts turns but not background forks or shells; sessions read busy and hibernate confirmation fails | [`pause-background-work`](design-pause-background-work.md) | 3d | 1d | shuttle, webster |
-| 25 | **An anchor per umbrella**<br>• Let an umbrella work in its own subdirectory of the repository, inherited by its tasks; hard to change now | [`umbrella-anchor`](design-umbrella-anchor.md) | 12m | 7m | fabric, config, workspaces |
+| 25 | **An anchor per umbrella**<br>• Let an umbrella work in its own subdirectory of the repository, inherited by its tasks; hard to change now | [`umbrella-anchor`](design-umbrella-anchor.md) | 13m | 8m | fabric, config, workspaces |
 
 ### Features
 
@@ -119,11 +119,11 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Note | Slug | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| 1 | **Umbrella tasks: project threads that spawn and land from their own worktree**<br>• A larger project is an umbrella task with a long-lived pair and its own orch thread; tasks name it as parent, spawn from and land into its branch, and report to its thread; the prime is the root umbrella | [`orch-any-worktree`](design-orch-any-worktree.md) | 2w | 4m | fabric, batten, orch, board, reed, creel, shed, workspaces |
+| 1 | **Umbrella tasks: project threads that spawn and land from their own worktree**<br>• A larger project is an umbrella task with a long-lived pair and its own orch thread; tasks name it as parent, spawn from and land into its branch, and report to its thread; the prime is the root umbrella | [`orch-any-worktree`](design-orch-any-worktree.md) | 2w | 5m | fabric, batten, orch, board, reed, creel, shed, workspaces |
 | 2 | **Weaver: a cold-start implementer beside Webster, with model escalation**<br>• A second implementer built on Millhouse Builder: a fresh agent per batch with its own model, escalating the model when an agent fails; Webster stays fork-based | [`weaver`](design-weaver.md) | 7d | 5h | webster |
 | 3 | **Split the orch into a run driver and a conversational orch**<br>• One agent drives runs and takes escalations; the operator talks to the other, which discusses problems and updates the board. | [`orch-split`](design-orch-split.md) | 6d | 5d | orch, batten, shed, loom |
 | 4 | **creel stage 3: agents message through creel, not SendMessage**<br>• Parent asks, parent review, stop reports and shuttle send go through creel, so a non-Claude engine can take a role with a parent | [`creel-agents`](design-creel-agents.md) | 3d | 1d | creel, shuttle, loom, stencil, report |
-| 5 | **Pairs created from a parent pair: board parent field, batten from any worktree**<br>• Groundwork for umbrellas: a task names its parent umbrella slug, fabric and batten create its pair from that branch, batten verbs run from any worktree | [`pair-from-parent`](design-pair-from-parent.md) | 12m | 7m | fabric, batten, board, workspaces |
+| 5 | **Pairs created from a parent pair: board parent field, batten from any worktree**<br>• Groundwork for umbrellas: a task names its parent umbrella slug, fabric and batten create its pair from that branch, batten verbs run from any worktree | [`pair-from-parent`](design-pair-from-parent.md) | 13m | 8m | fabric, batten, board, workspaces |
 
 #### Normal priority
 
@@ -139,7 +139,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 13 | **doctor: a lyx diagnostics command**<br>• lyx doctor checks the _lyx layout, config parse, board reachability and stale locks | [`doctor`](design-doctor.md) | 2w | 9d | config, board |
 | 14 | **session sync: Claude transcripts across machines**<br>• Copy Claude .jsonl transcripts across machines so --resume works elsewhere | [`session-sync`](design-session-sync.md) | 2w |  | shuttle |
 | 15 | **Interactive board view: a regenerated HTML file and a phone-friendly README**<br>• board.html rendered with README on every write; a VS Code task opens it in the browser; collapsible README for the GitHub app | [`board-viewer`](design-board-viewer.md) | 13d | 12d | board, ide, orch |
-| 16 | **Spawn audit log: every process lyx starts is recorded and traceable**<br>• One recorded launch path and a hub-wide spawn log with owner, argv and resource use, plus a sampler and a summary verb, so a process storm can be traced after a crash | [`spawn-audit-log`](design-spawn-audit-log.md) | 9d | 5d | reed, shuttle, config |
+| 16 | **Spawn audit log: every process lyx starts is recorded and traceable**<br>• One recorded launch path and a hub-wide spawn log with owner, argv and resource use, plus a sampler and a summary verb, so a process storm can be traced after a crash | [`spawn-audit-log`](design-spawn-audit-log.md) | 9d | 6d | reed, shuttle, config |
 | 17 | **Configurable action buttons on the reed status bar**<br>• Clickable status-bar buttons that run configured commands: VS Code, orch distill/refresh, the follow toggle and more | [`reed-status-buttons`](design-reed-status-buttons.md) | 3d | 3d | reed, config |
 | 18 | **Ideas to borrow from comparable agent orchestrators (survey, Oct 2026)** | [`orchestrator-survey-ideas`](design-orchestrator-survey-ideas.md) | 2d | 1d | burler, shed, orch, quarry, report |
 | 19 | **Regression tier: baseline profiles before the run, compare at the final gate**<br>• Support a hub regression tier that writes profiles on the parent before implementation and compares after, switchable per task for expected drift. | [`regression-baseline-verify`](design-regression-baseline-verify.md) | 1d | 1d | shed, webster, batten, config |
