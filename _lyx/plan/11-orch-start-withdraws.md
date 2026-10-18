@@ -1,10 +1,10 @@
 # Card 11 — orch-start-withdraws
 
 **Create:**
-- `plan:internal/orchengine#Watcher.retryFreshLaunch` -> `func (w *Watcher) retryFreshLaunch(st *State) (bool, error)`
-- `plan:internal/orchcli#orchCLI.withdrawFirst` -> `func (c *orchCLI) withdrawFirst(creel orchengine.Creel, name string, listed bool) (string, error)`
-- `plan:internal/orchcli#orchCLI.withdrawSecond` -> `func (c *orchCLI) withdrawSecond(creel orchengine.Creel, name string) string`
-- `plan:internal/orchcli#orchStrandFullName` -> `func orchStrandFullName(listed reedengine.StrandStatus, hasStrand bool, shortname string) string`
+- `internal/orchengine#Watcher.retryFreshLaunch`
+- `internal/orchcli#orchCLI.withdrawFirst`
+- `internal/orchcli#orchCLI.withdrawSecond`
+- `internal/orchcli#orchStrandFullName`
 
 **Edit:**
 - `internal/orchengine#State`
