@@ -18,7 +18,7 @@ Held by a run; its scope is locked until the run ends.
 | # | Task | Slug | Recipe | At | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | 1 | **Fast batten start, local-only fabric pairs and one Command producer**<br>• Batten pushes status to GitHub after every row (about 2 s each); fabric add/remove wait on origin even for local pairs; side-action rows become one Command producer | [`batten-start-speed`](design-batten-start-speed.md) | loom | Webster | 1d | 9h | batten, fabric, shed, config, loom |
-| 2 | **Named run profiles in one hub file, picked per task by a profile field**<br>• A profiles.yaml on Bolt maps names to run_settings-shaped sets; a task names one in its profile field, and batten seeds it under the task run_settings<br>• `darn: review_max_bounces 1` | [`run-profiles`](design-run-profiles.md) | darn | PR-Gate | 1h | 33m | board, batten, config, loom |
+| 2 | **Named run profiles in one hub file, picked per task by a profile field**<br>• A profiles.yaml on Bolt maps names to run_settings-shaped sets; a task names one in its profile field, and batten seeds it under the task run_settings<br>• `darn: review_max_bounces 1` | [`run-profiles`](design-run-profiles.md) | darn | Finalize | 1h | 33m | board, batten, config, loom |
 | 3 | **tokencount reports cost per segment, most expensive first, each split into its parts**<br>• Lead the tokencount report with the most expensive parts and a per-run segment table, and show roles as segment totals with sub-rows<br>• `darn: review_max_bounces 0` | [`tokencount-segment-report`](design-tokencount-segment-report.md) | darn | Darn-Write | 3m | 3m | report |
 
 ### Ready
