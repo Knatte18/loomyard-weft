@@ -81,3 +81,17 @@ Orch recommendation on the logging:
 ### Open
 
 - The flag's name, and whether a reply by `defer` (as in the orch's note request) counts as an answer.
+
+## Who receives a message for a run (folded in from note `go-driven-loom`, 2026-10-18)
+
+Loom runs on the Go driver since `a52467411` (2026-10-15, hub `shed.yaml` `driver_kind: go`): no LLM lives for the whole run, and Go spawns an LLM only when it needs one.
+The earlier operator decision that a run's driver takes every message for the run (2026-10-07, confirmed 2026-10-12) therefore has no receiver in a go-driven run.
+Today the orch addresses such a run through `lyx loom` and `lyx shed` verbs (pause, goto, decision, resume), or messages the agent working at that moment.
+
+Pieces from the earlier discussion that still hold:
+
+- Content ("the settle comes from config") goes into the decision record, which is durable, read by every later LLM producer, and needs no live receiver.
+- The most urgent instruction, stop, is a run pause (`lyx batten pause`), which works during a Go step too.
+- Only an instruction that must act now needs a live receiver; one option is an alias such as `ly:<slug>:active` that loom sets at every producer transition, with creel storing only a plain name-to-name alias and knowing nothing of what runs (operator: creel owns messages and injects only).
+- A message sent while a Go producer runs has no strand to reach; whether it waits for the next LLM producer, which may not be the right one, is open.
+
