@@ -40,6 +40,18 @@ Run parentage already follows the worktree a pair was created from (`aa67fd1d7`,
 An umbrella is now called a beam: a worktree plus a Go daemon, in the module `lyx beam` (see `umbrella-daemon`).
 An orch thread is separate and optional: a beam runs its tasks with no orch, and what its daemon cannot settle escalates through the arbiter to the nearest orch up the beam chain, the prime last.
 
+## Naming a beam's orch thread (2026-10-19, not decided)
+
+The thread has no name of its own yet.
+Operator view, not a decision: it can well be called orchestrator, since that is what it is.
+Candidates:
+
+- orchestrator (orch recommendation): run through `lyx orch` in every beam; its strand is `ly:orch` in the root beam and `ly:<slug>:orch` in another beam, matching dobby's `ly:DOBBY` and `ly:<slug>:DOBBY`.
+- foreman: the lead on a building site; fits the workshop theme, but is one more word to learn.
+- steward: the one who looks after a beam.
+
+Weaver is ruled out (operator): it names the planned cold-start implementer beside Webster (note `weaver`).
+
 ## Operator views, not decisions (2026-10-18)
 
 - At work the operator sets a branch of their own as their base and spawns large sub-projects from it, while smaller tasks still spawn from `main`.
