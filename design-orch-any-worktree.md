@@ -69,6 +69,14 @@ It has work only at its start and its end:
 2. Live: no process; it is a pair, a board task and a thread the operator talks to when they want.
 3. Land: when the operator says the project is done, a short run does Merge-In, Publish, PR-Gate and Finalize into its own parent; that run may be a shed run, living only as long as the landing.
 
+## Operator decision (2026-10-19): a beam has an owner machine
+
+Task `machine-handover` gives every board entry an `owner` machine and a takeover verb; beams extend it:
+- a beam carries an owner like any entry, the machine its dobby runs on;
+- adopting a beam takes every entry below it that has the same owner, since the beam's dobby starts, revives and lands them; an entry another machine owns stays there and is only listed;
+- adopting the prime, the root beam, takes over the whole hub;
+- the origin check of `machine-handover` (`git ls-remote` over the warp and records repos) covers beam branches with no extra work.
+
 ## Orch sketch, not a decision
 
 - A thread starts its runs itself with `lyx batten run`, which finds the prime for the shared state; the run records the thread's strand as its owner, and notices go to that owner through creel rather than to a fixed `ly:orch`.
