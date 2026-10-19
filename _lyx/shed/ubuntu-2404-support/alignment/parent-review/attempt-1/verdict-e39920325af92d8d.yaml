@@ -1,0 +1,8 @@
+verdict: approve
+reason: >-
+  The design covers every part of the board entry (#739, #743 with its merge-lock failure, #738/#740/#748, #744, the #747 audit and the minimum-version check)
+  and follows the operator's recorded decisions, and its Out list matches the entry and keeps doctor, xdr-git-test-file-burst, pause-background-work and the multi-machine entries out.
+  D4's check at each tool's first use rather than at start-up still makes a below-floor host fail plainly, so it is a design choice, not a scope deviation.
+  The only peer, hub-workspaces, overlaps in internal/fabricengine at different places with no shared behaviour, decision or PATTERN entry; it is at row 7 against this run's row 3, so it lands first.
+question: ""
+superseded: []
