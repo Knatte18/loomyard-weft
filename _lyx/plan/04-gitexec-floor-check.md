@@ -7,6 +7,7 @@
 - `internal/gitexec#RunGit`
 - `internal/gitexec#SetKillReporter`
 - `internal/gitexec/doc.go`
+- `internal/gitrepo/doc.go`
 - `cmd/lyx#spawnObservabilityAllowedSpawners`
 - `cmd/lyx#logGitKill`
 
@@ -38,6 +39,8 @@
   It also logs each spawn it makes with `logger.Debug` (subcommand and dir), so the exec core is observable; `internal/logger`'s import closure no longer reaches `internal/gitexec`, so the import closes no cycle.
 - `cmd/lyx#spawnObservabilityAllowedSpawners` drops its `internal/gitexec/gitexec.go` entry, whose import-cycle reason no longer holds; `TestSpawnObservability_ProductionSpawnsAreLogged` then holds gitexec to the rule like any file.
 - `SetKillReporter`'s godoc and `cmd/lyx`'s `logGitKill` godoc stop saying gitexec cannot log: the reporter stays, since the process owner decides how a kill is reported.
+- `internal/gitrepo/doc.go`'s clause "gitexec itself stays a zero-dependency leaf" becomes a statement that gitexec stays a low-level package gitrepo builds on, importing no gitrepo or feature package; the clause names no import list, since gitexec already imports `internal/pauserecord` and `internal/proc` and this card adds `internal/logger` and `internal/toolfloor`.
+  Card 3 also edits that file, but runs first and changes only the `CherryPick` bullet.
 - `internal/gitexec/doc.go` gains a `# Floor` section: the once-per-process check, the uncached exec failure, the Warn-and-admit of an unparseable line, the exported check and the bound above.
 - `SetVersionProbeForTest`, in `export_test.go`, replaces `versionProbe` and resets `gitFloor` for the test, restoring both on cleanup; its godoc says it changes process-global state, so the caller must not be parallel.
 - `TestCheckFloor` goes in the `//go:build integration` file `gitexec_test.go`, since it spawns git through `Run` and `cmd/lyx`'s tier-purity guard bans `gitexec.Run` in untagged test files; it is a serial table test (no `t.Parallel`, naming the process-global probe and cache), each row installing a counting probe through `SetVersionProbeForTest`:
