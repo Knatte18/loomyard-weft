@@ -8,27 +8,17 @@
 - `internal/fabricengine#Bolt.PushRecorded`
 - `internal/fabricengine#Bolt.dropSeedCommitsAfterConflict`
 - `internal/toolfloor/doc.go`
-- `internal/fabricengine_test#TestBolt_PullThenCommitWritten`
 - `internal/fabricengine/doc.go`
-
-**Create:**
-- `plan:internal/fabricengine#ErrDropReplayFailedForTest` -> `var ErrDropReplayFailedForTest = errDropReplayFailed`
 
 **Uses:**
 - `internal/gitrepo#Repo.CherryPickAbort`
 - `internal/gitrepo#Repo.MergeHeadPresent`
 - `internal/fabricengine#dropSeedCommits`
-- `internal/fabricengine#DropSeedCommitsForTest`
-- `internal/fabricengine#BoardDropRequestForTest`
 - `internal/gitrepo_test#newRepo`
 - `internal/gitrepo_test#writeFile`
 - `internal/gitrepo_test#commitAll`
 - `internal/gitrepo_test#requireCurrentSHA`
 - `internal/gitrepo_test#statusOf`
-- `internal/fabricengine_test#newBoltFixture`
-- `internal/fabricengine_test#boltFixture.seedCommitLocal`
-- `internal/fabricengine_test#boltFixture.moveUpstream`
-- `internal/fabricengine_test#boltFixture.head`
 
 **Intent:** D2: `Repo.CherryPick` stops passing `--empty=drop`, which git 2.43 lacks (`cherry-pick --empty` arrived in 2.45), and keeps its result on every git version: a commit whose change HEAD already carries is dropped with HEAD unmoved, and a commit empty from the start is refused as newer git refuses it today.
 
@@ -57,8 +47,7 @@
   `Bolt.dropSeedCommitsAfterConflict`'s godoc says "a failed replay" in place of "a conflicting replay", and the executor paragraph of `doc.go` says a replay that fails aborts the cherry-pick and restores the tip, and that a non-seed commit is replayed or, when its replay fails, kept at its original tip.
 - `internal/toolfloor/doc.go`'s audit records `cherry-pick --empty=drop` as replaced by this card, leaving the two-format `#{S:}` loop as the one form still to be replaced, by card 8, beside the optional `allow-set-title` that card 2 records as kept.
   `internal/fabricengine/doc.go`'s board seed-commit drop paragraph replaces `cherry-pick --empty=drop` with the plain pick that skips a change upstream already carries and refuses a commit empty from the start.
-- `ErrDropReplayFailedForTest`, in `export_test.go`, re-exports the sentinel.
-- `TestBolt_PullThenCommitWritten` gains the subtest "an empty local commit fails the replay and restores the original tip": it makes a seed commit, then `git commit --allow-empty -m "local note"` on the board, moves upstream, fetches, and calls `DropSeedCommitsForTest` with `BoardDropRequestForTest(f.board, nil)`, the board's repo, the upstream tip and the two commits ahead (newest first); it expects `errors.Is(err, fabricengine.ErrDropReplayFailedForTest)`, head equal to the pre-drop tip, a clean board, no cherry-pick in progress and no record entry.
+- No Bolt test is added: `dropSeedCommits` handles a failed replay (abort, restore of the start tip and `errDropReplayFailed`) in one branch for every `CherryPick` error, which `TestBolt_PullThenCommitWritten`'s subtest "a replay conflict restores the original tip" pins; with `TestCherryPick`'s empty-from-start step, that test meets the acceptance criterion.
   The two Bolt tests that failed on git 2.43 (`TestBolt_PullThenCommitWritten`, `TestBolt_PushRecorded_DropsSeedCommitsOnRebaseConflict`) reach the pick through `dropSeedCommits` and need no other change.
 
 **Verify:** ! grep -rnF -e '"--empty' --include=*.go internal cmd tools

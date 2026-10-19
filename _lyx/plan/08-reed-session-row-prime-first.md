@@ -40,7 +40,7 @@
   With no marked session the first loop draws nothing.
   The constant's comment and `internal/reedengine/doc.go`'s geometry-pin paragraph describe the new row and the order.
 - `TestStatusFormats_SessionLoopsTakeOneFormat` scans `statusFormatButtons` and `statusFormatSessions` for every `#{S:` loop and fails when a loop's body has a comma outside its nested `#{…}` and `#[…]` groups, which is the second, current-item format tmux 3.4 does not take.
-  It also fails when any non-test `.go` file of `internal/reedengine` other than `bar.go` contains `#{S:`, so a session loop declared elsewhere cannot escape the scan.
+  It also parses each non-test `.go` file of `internal/reedengine` other than `bar.go` and fails when a Go string literal (an `*ast.BasicLit` of kind `STRING`) contains `#{S:`, so a session loop declared elsewhere cannot escape the scan, while comments and doc prose, such as `doc.go`'s description of the new row, are not scanned.
   Rendering on this host's tmux 3.6 cannot catch such a loop, so this untagged check pins it.
 - `TestPinGeometryOptionsLocked` gains a subtest "PrimeSessionIsMarked" with rows prime (`DiscoverSignalPath` set, `NameSlug` empty), pair (`NameSlug` set) and standalone (both empty): only the prime row issues the mark's `set-option`, with the strand window target and value `1`; the `AllOptionsIssued` list is unchanged, since `newTestEngine` is a pair geometry.
   A further row "a boot marks the prime" drives `pinBootOptionsLocked` on a prime engine and asserts the same mark, which is the boot half of the criterion.

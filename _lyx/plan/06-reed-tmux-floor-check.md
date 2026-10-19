@@ -41,6 +41,8 @@
   Bound: `execHook` and `floorLine` are set only by `reedengine`'s own `_test.go` files, so no production `TmuxCmd` carries a hook, and every production `run`, `runStdin` and `output` reaches `CheckTmuxFloor`.
 - `run`, `runStdin` and `output` call `checkFloor` first and return its error before the hook or the spawn.
 - The lifecycle server spawn in `ensureServerAndSessionLocked`'s `spawnSession` closure calls `CheckTmuxFloor(e.cfg.Tmux)` before `exec.Command` and returns its error as `start tmux: %w`, so a floor refusal still reads as a failed start and `TestEnsureServerAndSession_RevivalTrigger`'s "start tmux" rows, which run a nonexistent binary, keep passing.
+  In production this call is a backstop, not the boot's first refusal: the boot's earlier runner commands over the same `e.cfg.Tmux` path (the capability probe's `-V` and `list-commands`, and the boot's own `has-session` check) refuse a below-floor tmux first from the same cache entry, so the spawn-time check refuses only a spawn no runner command preceded.
+  The row "the server spawn refuses before running tmux" reaches it only because a hook runner never reads the process cache.
 - The capability probe's own native floor (`minTmuxVersion`, 3.3) stays: the new check refuses a native tmux below 3.4 before the capability probe runs, and psmux keeps its Windows floor there.
 - `internal/reedengine/doc.go` describes the check, its cache and the bounds above.
 - `setTmuxVersionProbeForTest` replaces `tmuxVersionProbe` and resets `tmuxFloors` for the test, restoring both on cleanup; its godoc says it changes process-global state, so the caller must not be parallel.
