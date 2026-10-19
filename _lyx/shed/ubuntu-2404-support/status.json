@@ -1,12 +1,12 @@
 {
   "current_producer": "Plan-Burler-Review",
-  "state": "running",
-  "error": "",
+  "state": "failed",
+  "error": "shedadapters: Plan-Burler-Review (burler-review): round 1 attempt 1: review: burler: the cluster round did not produce exactly the requested number of fork reviewers (requested 3, spawned 0)",
   "pause_requested": false,
   "activity": {
     "now": "Plan-Burler-Review",
     "last": "Plan-Bouncer → bounced to Plan-Burler-Review",
-    "wait": ""
+    "wait": "shedadapters: Plan-Burler-Review (burler-review): round 1 attempt 1: review: burler: the cluster round did not produce exactly the requested number of fork reviewers (requested 3, spawned 0)"
   },
   "history": [
     {
