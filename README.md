@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-19 18:41 UTC; every age below is as of then.
+Rendered 2026-10-19 18:43 UTC; every age below is as of then.
 
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
@@ -17,7 +17,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | **lyx runs and tests green on Ubuntu 24.04 (git 2.43, tmux 3.4, 10-digit uid)**<br>• Toolchain audit with minimum versions, tmux socket path for long uids, cherry-pick without --empty, tmux 3.4 session row, prime first, creel hold test<br>• `loom: discussion_hard_max_bounces 3`<br>• `loom: discussion_max_bounces 2`<br>• `loom: merge_max_bounces 1`<br>• `loom: plan_hard_max_bounces 3`<br>• `loom: plan_max_bounces 2`<br>• `loom: webster_max_bounces 1` | [`ubuntu-2404-support`](design-ubuntu-2404-support.md) | loom | Merge-Burler-Review | 4h | 3h | fabric, reed, creel |
+| 1 | **lyx runs and tests green on Ubuntu 24.04 (git 2.43, tmux 3.4, 10-digit uid)**<br>• Toolchain audit with minimum versions, tmux socket path for long uids, cherry-pick without --empty, tmux 3.4 session row, prime first, creel hold test<br>• `loom: discussion_hard_max_bounces 3`<br>• `loom: discussion_max_bounces 2`<br>• `loom: merge_max_bounces 1`<br>• `loom: plan_hard_max_bounces 3`<br>• `loom: plan_max_bounces 2`<br>• `loom: webster_max_bounces 1` | [`ubuntu-2404-support`](design-ubuntu-2404-support.md) | loom | Merge-Burler-Fix | 4h | 3h | fabric, reed, creel |
 
 ### Ready
 
@@ -75,8 +75,8 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 1 | **webster create-not-done check rejects a Create target the card removes itself** | [`create-target-transient`](design-create-target-transient.md) | 1d | 1d | webster, loom, quarry |
 | 2 | **orch status reports a live strand after the orch Claude session exits, so --continue is refused** | [`orch-strand-live-after-exit`](design-orch-strand-live-after-exit.md) | 4h | 4h | orch, reed |
 | 3 | **Arbiter verdict with an unquoted verbs item containing ': ' is unparseable** | [`arbiter-verdict-quoting`](design-arbiter-verdict-quoting.md) | 1h | 1h | shed, loom |
-| 4 | **A stop after a converged review verdict spends no review budget, and its way forward keeps the verdict**<br>• Plan-Bouncer commit retries after CONVERGED used up the budget; the suggested goto discarded the verdict and re-ran the review | [`converged-bouncer-budget`](design-converged-bouncer-budget.md) | 43m | 40m | shed, loom, burler |
-| 5 | **Burler review round hard-fails when the chair session finishes without spawning its fork reviewers** | [`burler-zero-fork-round`](design-burler-zero-fork-round.md) | 29m | 29m | burler, shuttle, shed |
+| 4 | **A stop after a converged review verdict spends no review budget, and its way forward keeps the verdict**<br>• Plan-Bouncer commit retries after CONVERGED used up the budget; the suggested goto discarded the verdict and re-ran the review | [`converged-bouncer-budget`](design-converged-bouncer-budget.md) | 45m | 42m | shed, loom, burler |
+| 5 | **Burler review round hard-fails when the chair session finishes without spawning its fork reviewers** | [`burler-zero-fork-round`](design-burler-zero-fork-round.md) | 31m | 31m | burler, shuttle, shed |
 
 ### Enhancements
 
@@ -120,8 +120,8 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 29 | **lyx batten run starts in its own window by default**<br>• Every batten run is started with --window, so the window should be the default and foreground the opt-in. | [`batten-window-default`](design-batten-window-default.md) | 7h | 7h | batten, reed, orch |
 | 30 | **A halt a plan card asks for reaches the parent as a question, not as a batch failure**<br>• A card-requested halt went through recover-batch, tackler and arbiter as a failure; it should go straight to the parent and the next attempt should carry the decision | [`card-halt-is-question`](design-card-halt-is-question.md) | 1h | 1h | webster, shed, loom |
 | 31 | **A question research can settle is settled in Discussion, never deferred to Plan or an implementer**<br>• Discussion writer researches the facts its design rests on; reviewers flag a deferred research question or a halt-on-discovery rule | [`research-in-discussion`](design-research-in-discussion.md) | 1h | 1h | loom, stencil, burler |
-| 32 | **A plan or discussion re-entered for a small amendment gets one review round, not a fresh full budget**<br>• A goto back to Plan-Write for a one-card fix reset the full Plan review budget; an amendment round should get a small budget by itself | [`amend-review-budget`](design-amend-review-budget.md) | 1h | 40m | loom, burler, shed |
-| 33 | **Friction is gathered once per run, not by an agent session at every stop**<br>• Each stop started a friction session that held the driver lock; friction belongs at the end of the run | [`friction-not-per-stop`](design-friction-not-per-stop.md) | 34m | 34m | shed, loom |
+| 32 | **A plan or discussion re-entered for a small amendment gets one review round, not a fresh full budget**<br>• A goto back to Plan-Write for a one-card fix reset the full Plan review budget; an amendment round should get a small budget by itself | [`amend-review-budget`](design-amend-review-budget.md) | 1h | 42m | loom, burler, shed |
+| 33 | **Friction is gathered once per run, not by an agent session at every stop**<br>• Each stop started a friction session that held the driver lock; friction belongs at the end of the run | [`friction-not-per-stop`](design-friction-not-per-stop.md) | 36m | 36m | shed, loom |
 
 #### Low priority
 
