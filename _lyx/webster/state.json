@@ -227,7 +227,7 @@
       }
     }
   ],
-  "currentBatch": 0,
+  "currentBatch": 2,
   "masterStrand": "551ece777914475d09ccc79e2d5ceaf1",
   "masterSessionId": "88cba410-86ac-4b1f-a0de-2d502785e9e2",
   "masterEngine": "claude",
@@ -267,6 +267,24 @@
       "bracketTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-hub-workspaces/88cba410-86ac-4b1f-a0de-2d502785e9e2/subagents/agent-a8b58f5ce9eb9f71d.jsonl"
       ]
+    },
+    "2": {
+      "slug": "verbs-regenerate",
+      "cards": [
+        "02-verbs-regenerate",
+        "03-reconcile-launchers-restored"
+      ],
+      "cardHashes": {
+        "02-verbs-regenerate": "1281db5427ef4081822419dcc26bcb38f0a8bbeee5c175124c7d54eb8fcf7db9",
+        "03-reconcile-launchers-restored": "b1fee4708fcb6669d0da5abc37a333e6edbb0c485eb99fd33c9a0b9423d3c415"
+      },
+      "startSha": "acf5697d34e79c63b68e06e6b59b3e663789a83a",
+      "kind": "fork",
+      "spawnedAt": "2026-10-19T15:47:12Z",
+      "sessionId": "88cba410-86ac-4b1f-a0de-2d502785e9e2",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
     }
   },
   "seenForkTranscripts": [
