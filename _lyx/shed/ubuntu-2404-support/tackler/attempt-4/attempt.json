@@ -1,0 +1,20 @@
+{
+  "number": 4,
+  "stop_key": {
+    "current_producer": "Plan-Burler-Review",
+    "history_length": 31,
+    "state": "failed"
+  },
+  "pause_before": "",
+  "pause_after": "",
+  "snapshot": {
+    "head": "c27d4e82978ad2c477773f92a37e4b8ff0da1b22",
+    "branch": "ubuntu-2404-support",
+    "dirty": {}
+  },
+  "spawned_at": "2026-10-19T19:59:40.926082437+02:00",
+  "deadline": "2026-10-19T20:09:40.926082437+02:00",
+  "envelope_path": "/home/knatte/Code/loomyard-LYXHUB/ubuntu-2404-support/_lyx/shed/ubuntu-2404-support/drive-reports/drive-envelope-20261019-195940-155f.json",
+  "report_path": "/home/knatte/Code/loomyard-LYXHUB/ubuntu-2404-support/_lyx/shed/ubuntu-2404-support/drive-reports/drive-report-20261019-195940-88c3.md",
+  "strand_guid": "5f502e71e009b054d9434b8254f95ba5"
+}
