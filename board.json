@@ -1243,25 +1243,26 @@
     },
     {
       "id": 689,
-      "slug": "burler-hub-full-lens-set",
-      "title": "Hub burler.yaml lists every lens and fan; the Discussion writer fan moves into the template",
+      "slug": "lenses-module",
+      "title": "Lenses and fans move into a lenses module of their own, listed in full in the hub file",
       "kind": "task",
       "labels": [
         "enhancement",
         "burler",
+        "loom",
         "config"
       ],
       "issues": [],
-      "recipe": "darn",
       "depends_on": [],
       "isolated": false,
-      "brief": "Reconcile carries new lenses and fans into the hub file, and the 7-lens twill-discussion fan becomes the template default",
-      "body": "## Seen (2026-10-19)\n\nThe hub `burler.yaml` on Bolt is a copy that `lyx config reconcile` wrote on 2026-10-12: it lists the lenses and fans the template had then (`generic`, `correctness`, ..., fans `standard` and `full`).\nEvery lens and fan added to `internal/burlerengine/template.yaml` since (`interactions`, `existing-paths`, `bound-breaker`, `walkthrough`, the `twill-*` and `review-*` fans, and the rest) is absent from the hub file and reaches runs only through the per-name merge with the template.\n`lyx config burler --resolved` marks them `# template` and the copied ones `# default`.\n`lyx config reconcile --layer default` reports burler with `added: null` and `removed: null`: reconcile does not carry new lens or fan names into a hub file.\nSo the hub file is misleading: a fan names lenses the file never defines, and a lens cannot be tuned in the hub file without first copying its prose in by hand.\n\nThe hub file overrides `twill-discussion` today with seven lenses (Bolt `3f3286b8d`, operator decision recorded in `writer-reviewer-lens-align`); as a hub-only override it is a trial nobody will remember.\n\n## Want (operator, 2026-10-19)\n\n- The template's `twill-discussion` fan becomes the seven lenses: `interactions`, `existing-paths`, `bound-breaker`, `walkthrough`, `goal-scope`, `board-fit`, `leanness`, so the choice is the default and no longer a hub-only trial.\n- A hub's `burler.yaml` lists every lens with its prose and every fan, the way it lists `generic` and `standard` today, so any lens or fan can be tuned there later.\n  Reconcile carries a lens or fan the template adds into the hub file, and reports one the template drops, as it does for the keys of other modules.\n- After landing, the orch runs the reconcile on the loomyard hub so its `burler.yaml` holds the full current set, with its `twill-discussion` entry then equal to the template's.\n",
+      "brief": "A lenses module holds every lens and fan for reviewers, fixers and twill writers; reconcile keeps the hub file complete; the 7-lens twill-discussion fan becomes the default",
+      "body": "## Seen (2026-10-19)\n\nEvery lens and fan lyx has lives in burler's template, `internal/burlerengine/template.yaml`: the reviewer fans (`review-discussion`, `review-plan`, `review-code`), the fixer fans (`fix-discussion`, `fix-plan`, `fix-code`), the writer twill fans (`twill-discussion`, `twill-plan`) and the older `standard`, `full`, `discussion` and `plan`, each lens with its prose.\nThe twill fans are no part of burler: loom's `discussion_lenses` and `plan_lenses` name a fan in `burler.yaml` (`internal/loomengine/config.go`), and the Discussion-Write and Plan-Write leads fork once per lens of it.\n\nThe hub `burler.yaml` on Bolt is a copy that `lyx config reconcile` wrote on 2026-10-12: it lists the lenses and fans the template had then (`generic`, `correctness`, ..., fans `standard` and `full`).\nEvery lens and fan added to the template since is absent from the hub file and reaches runs only through the per-name merge with the template; `lyx config burler --resolved` marks them `# template`.\n`lyx config reconcile --layer default` reports burler with `added: null` and `removed: null`: reconcile does not carry a new lens or fan into a hub file.\nSo a fan names lenses the hub file never defines, and a lens cannot be tuned in the hub file without copying its prose in by hand.\n\nThe hub `burler.yaml` overrides `twill-discussion` today with seven lenses (Bolt `3f3286b8d`, operator decision recorded in `writer-reviewer-lens-align`); as a hub-only override it is a trial nobody will remember.\n\n## Want (operator decisions, 2026-10-19)\n\n- Lenses and fans move out of burler into a module of their own, `lenses`, with its file `lenses.yaml`; they are never in `burler.yaml`.\n  Burler's reviewers and fixers and loom's twill writers all read their lenses and fans from it.\n- The template's `twill-discussion` fan becomes the seven lenses `interactions`, `existing-paths`, `bound-breaker`, `walkthrough`, `goal-scope`, `board-fit`, `leanness`, so the choice is the default and no longer a hub-only trial.\n- A hub's `lenses.yaml` lists every lens with its prose and every fan, so any lens or fan can be tuned there.\n  Reconcile carries a lens or fan the template adds into the hub file, and reports one the template drops, as it does for the keys of other modules.\n- A hub `burler.yaml` that still holds `lenses` or `fans` is migrated: its entries move into the hub `lenses.yaml`.\n- After landing, the orch runs the reconcile on the loomyard hub, so its `lenses.yaml` holds the full current set and its `burler.yaml` holds no lens or fan.\n",
       "created": "2026-10-19T16:58:03Z",
-      "revised": "2026-10-19T16:58:03Z",
+      "revised": "2026-10-19T17:04:45Z",
       "run_settings": {
-        "darn": {
-          "review_max_bounces": 1
+        "loom": {
+          "review_hard_max_bounces": 3,
+          "review_max_bounces": 2
         }
       }
     }
