@@ -1,12 +1,12 @@
 {
-  "current_producer": "Webster",
-  "state": "blocked",
-  "error": "Batch 01-lyxtemp-short-run-names: recover-batch refused with batch_failed; card 2 (toolfloor-package) still has no internal/toolfloor targets, because the fork halted on the audit rule (tmux allow-set-title needs 3.5, above the 3.4 floor).",
+  "current_producer": "Plan-Write",
+  "state": "paused",
+  "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Webster",
-    "last": "Webster → stuck",
-    "wait": "Batch 01-lyxtemp-short-run-names: recover-batch refused with batch_failed; card 2 (toolfloor-package) still has no internal/toolfloor targets, because the fork halted on the audit rule (tmux allow-set-title needs 3.5, above the 3.4 floor)."
+    "now": "Plan-Write",
+    "last": "Plan-Write → goto",
+    "wait": ""
   },
   "history": [
     {
@@ -315,6 +315,13 @@
           "end": "2026-10-19T17:19:55.801505652Z"
         }
       ]
+    },
+    {
+      "producer": "Plan-Write",
+      "outcome": "goto",
+      "output": "",
+      "at": "2026-10-19T17:25:32Z",
+      "by": "orch"
     }
   ],
   "product": {
