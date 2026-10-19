@@ -1,6 +1,7 @@
 round: 1
-fan: ""
-fix_fan: ""
+fan: review-discussion
+fix_fan: fix-discussion
+fans_recorded: true
 seed:
     - engine: claude
       model: sonnet
