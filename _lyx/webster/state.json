@@ -293,7 +293,7 @@
       }
     }
   ],
-  "currentBatch": 3,
+  "currentBatch": 0,
   "masterStrand": "fc4d391709e3d0b2c2dc1729dbd26db5",
   "masterSessionId": "6939c57c-46a1-443b-9c0e-40f9ed398b6c",
   "masterEngine": "claude",
@@ -354,11 +354,26 @@
       "spawnedAt": "2026-10-19T18:09:16Z",
       "sessionId": "6939c57c-46a1-443b-9c0e-40f9ed398b6c",
       "engine": "claude",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "03-cherrypick-without-empty",
+        "status": "done",
+        "head_sha": "cfe2022064eb5d5b1991c563bf1f02d4a31aec23"
+      },
+      "cardShas": [
+        "cfe2022064eb5d5b1991c563bf1f02d4a31aec23"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-ubuntu-2404-support/6939c57c-46a1-443b-9c0e-40f9ed398b6c/subagents/agent-af4e0c8a86af11877.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-ubuntu-2404-support/6939c57c-46a1-443b-9c0e-40f9ed398b6c/subagents/agent-af4e0c8a86af11877.jsonl"
+      ]
     }
   },
   "seenForkTranscripts": [
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-ubuntu-2404-support/6939c57c-46a1-443b-9c0e-40f9ed398b6c/subagents/agent-a93e2078dccd06f16.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-ubuntu-2404-support/6939c57c-46a1-443b-9c0e-40f9ed398b6c/subagents/agent-a93e2078dccd06f16.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-ubuntu-2404-support/6939c57c-46a1-443b-9c0e-40f9ed398b6c/subagents/agent-af4e0c8a86af11877.jsonl"
   ]
 }
