@@ -1,0 +1,11 @@
+{
+  "verdict": "escalate",
+  "reason": "The Plan-Bouncer commit fails because planCommitPathspec (internal/loomcli/wiring.go:154-161) adds _lyx/webster to the pathspec when an archived webster run under _lyx/plan/archive-20261019T172536Z/webster holds files, even though the live _lyx/webster directory is empty and untracked, so git refuses the pathspec.\nNeither a plain re-launch nor a goto settles it, since the same disk state rebuilds the same pathspec.\nThe fix is a condition in Go code that must be read and judged, so the case goes to a stronger agent or the run's parent.\nThe case brief is at _lyx/shed/ubuntu-2404-support/tackler/attempt-3/case-brief.md.\n",
+  "question": "",
+  "goto": "",
+  "cause": "",
+  "attempt": 3,
+  "attempt_dir": "/home/knatte/Code/loomyard-LYXHUB/ubuntu-2404-support/_lyx/shed/ubuntu-2404-support/tackler/attempt-3",
+  "verdict_path": "/home/knatte/Code/loomyard-LYXHUB/ubuntu-2404-support/_lyx/shed/ubuntu-2404-support/tackler/attempt-3/verdict.yaml",
+  "case_brief_path": "/home/knatte/Code/loomyard-LYXHUB/ubuntu-2404-support/_lyx/shed/ubuntu-2404-support/tackler/attempt-3/case-brief.md"
+}
