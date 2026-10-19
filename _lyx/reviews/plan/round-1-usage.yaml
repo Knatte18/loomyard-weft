@@ -1,58 +1,13 @@
 round: 1
-fan: review-plan
-fix_fan: fix-plan
-fans_recorded: true
-lenses:
-    - affected-set
-    - guard-reach
-    - way-forward
-fix_lenses:
-    - fix-consistency
-    - fix-claims
-    - fix-proposal
-    - fix-affected-set
-fix_forks: 4
-review:
-    engine: claude
-    model: opus
-    effort: medium
-    start: 2026-10-19T16:16:08Z
-    end: 2026-10-19T18:30:52.819325754+02:00
-    wall_seconds: 884.819325754
-    tokens_known: true
-    fresh_tokens: 369908
-    cache_read_tokens: 17204577
-    forks: 3
-    fork_fresh_tokens: 47210
-    fork_cache_read_tokens: 2299717
-    fork_fresh_share: 0.12762632870876
-fix:
-    engine: claude
-    model: opus
-    effort: medium
-    start: 2026-10-19T16:30:53Z
-    end: 2026-10-19T18:37:04.796510672+02:00
-    wall_seconds: 371.796510672
-    tokens_known: true
-    fresh_tokens: 171605
-    cache_read_tokens: 3256853
+fan: ""
+fix_fan: ""
 seed:
     - engine: claude
       model: sonnet
       effort: medium
-      start: 2026-10-19T16:15:45Z
-      end: 2026-10-19T18:16:07.511261379+02:00
-      wall_seconds: 22.511261379
+      start: 2026-10-19T17:31:33Z
+      end: 2026-10-19T19:32:00.126345783+02:00
+      wall_seconds: 27.126345783
       tokens_known: true
-      fresh_tokens: 32409
-      cache_read_tokens: 143532
-judge:
-    - engine: claude
-      model: sonnet
-      effort: medium
-      start: 2026-10-19T16:37:05Z
-      end: 2026-10-19T18:37:41.638991847+02:00
-      wall_seconds: 36.638991847
-      tokens_known: true
-      fresh_tokens: 46911
-      cache_read_tokens: 159666
+      fresh_tokens: 36291
+      cache_read_tokens: 142692
