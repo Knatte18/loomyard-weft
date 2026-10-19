@@ -27,19 +27,19 @@
 - `internal/ideengine#writeWorkspaceFile`
 
 **Create:**
-- `plan:internal/fabricengine#RegenerateHubWorkspace` -> `func RegenerateHubWorkspace(rec *Mutations, l *lyxcwd.Location) (string, error)`
-- `plan:internal/fabricengine#regenerateHubWorkspace` -> `func regenerateHubWorkspace(rec *Mutations, l *lyxcwd.Location, lockWait time.Duration) (string, error)`
-- `plan:internal/fabricengine#hubWorkspaceLockWait` -> `const hubWorkspaceLockWait = 5 * time.Second`
-- `plan:internal/fabricengine#HubWorkspaceLockPath` -> `func HubWorkspaceLockPath(hubPath string) string`
-- `plan:internal/fabricengine#lockHubWorkspace` -> `func lockHubWorkspace(rec *Mutations, hubPath string, wait time.Duration) (func(), error)`
-- `plan:internal/fabricengine#hubWorkspaceFolders` -> `func hubWorkspaceFolders(l *lyxcwd.Location, primeName string) ([]vscode.WorkspaceFolder, error)`
-- `plan:internal/fabricengine#writeHubWorkspace` -> `func writeHubWorkspace(l *lyxcwd.Location, content []byte) (bool, error)`
-- `plan:internal/fabricengine#RegenerateHubWorkspaceWithinForTest` -> `func RegenerateHubWorkspaceWithinForTest(rec *Mutations, l *lyxcwd.Location, wait time.Duration) (string, error)`
-- `plan:internal/fabricengine#hubWorkspaceBeforeLockHook` -> `var hubWorkspaceBeforeLockHook func()`
-- `plan:internal/fabricengine#SetHubWorkspaceBeforeLockHookForTest` -> `func SetHubWorkspaceBeforeLockHookForTest(t *testing.T, hook func())`
-- `plan:internal/fabricengine_test#TestRegenerateHubWorkspace` -> `func TestRegenerateHubWorkspace(t *testing.T)`
-- `plan:internal/fabricengine#TestWriteHubWorkspace_RefusesEscapingSymlink` -> `func TestWriteHubWorkspace_RefusesEscapingSymlink(t *testing.T)`
-- `plan:internal/ideengine#checkPrimeWriteFailure` -> `func checkPrimeWriteFailure(t *testing.T, h *hubforge.Hub)`
+- `internal/fabricengine#RegenerateHubWorkspace`
+- `internal/fabricengine#regenerateHubWorkspace`
+- `internal/fabricengine#hubWorkspaceLockWait`
+- `internal/fabricengine#HubWorkspaceLockPath`
+- `internal/fabricengine#lockHubWorkspace`
+- `internal/fabricengine#hubWorkspaceFolders`
+- `internal/fabricengine#writeHubWorkspace`
+- `internal/fabricengine#RegenerateHubWorkspaceWithinForTest`
+- `internal/fabricengine#hubWorkspaceBeforeLockHook`
+- `internal/fabricengine#SetHubWorkspaceBeforeLockHookForTest`
+- `internal/fabricengine_test#TestRegenerateHubWorkspace`
+- `internal/fabricengine#TestWriteHubWorkspace_RefusesEscapingSymlink`
+- `internal/ideengine#checkPrimeWriteFailure`
 
 **Prosa:**
 - `README.md`

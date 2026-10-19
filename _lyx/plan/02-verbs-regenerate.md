@@ -19,7 +19,7 @@
 - `plan:internal/fabricengine_test#TestVerbsRegenerateHubWorkspace` -> `func TestVerbsRegenerateHubWorkspace(t *testing.T)`
 
 **Uses:**
-- `plan:internal/fabricengine#RegenerateHubWorkspace`
+- `internal/fabricengine#RegenerateHubWorkspace`
 - `internal/fabricengine#HubWorkspacePath`
 - `internal/fabricengine#Topology.RemoveRefusal`
 - `internal/fabricengine#Topology.lockPairTeardown`

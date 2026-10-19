@@ -3,7 +3,7 @@
 **Edit:**
 - `internal/fabricengine#ReconcileResult`
 - `internal/fabricengine#Topology.Reconcile`
-- `plan:internal/fabricengine#regenerateHubWorkspace`
+- `internal/fabricengine#regenerateHubWorkspace`
 - `internal/fabricengine#resolvePathOwnership`
 - `internal/fabriccli#runReconcile`
 - `internal/fabriccli#Command`
