@@ -55,6 +55,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 5 | **Every test package fails on a host with a 10-digit uid: tmuxkit socket path over 107 bytes** | [`tmux-socket-path-long-uid`](design-tmux-socket-path-long-uid.md) | 0m | 0m | reed |
 | 6 | **A run started on one machine shows as running on another, and nothing stops the second machine from resuming it** | [`run-machine-ownership`](design-run-machine-ownership.md) | 0m | 0m | batten, board, orch, fabric |
 | 7 | **A run resumed on a second machine opens no terminal window on it** | [`open-window-per-machine`](design-open-window-per-machine.md) | 0m | 0m | batten |
+| 8 | **lyx needs a newer git than 2.43: cherry-pick --empty=drop and Bolt rebase tests fail** | [`git-243-cherry-pick-empty`](design-git-243-cherry-pick-empty.md) | 0m | 0m | fabric |
 
 ### Enhancements
 
