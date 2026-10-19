@@ -1,0 +1,169 @@
+# Decision record — ubuntu-2404-support
+
+## Goal
+
+lyx runs, and both gate tiers (`lyx gate test ./...` and `lyx gate test --tags integration ./...`) pass, on Ubuntu 24.04 with its packaged git 2.43 and tmux 3.4 under a 10-digit uid, without dropping behaviour on newer git and tmux.
+A host below the supported floor fails plainly, with an error naming the tool, the version found and the floor, instead of failing in odd places.
+
+## Scope
+
+In:
+- #739: tmux socket path too long under a 10-digit uid.
+- #743: `git cherry-pick --empty=drop` on git 2.43, the two Bolt seed-commit rebase tests that fail through it, and the merge-lock foreign-state test failure seen on the same run.
+- #738, #740, #748: reed's session row on tmux 3.4: each session once, no stray comma, the prime's session leftmost.
+- #744: the creel reminders hold test failure, diagnosed and fixed at its cause.
+- #747: an audit of every git and tmux invocation, the fixes it finds, and a minimum-version check for git and tmux.
+
+Out:
+- Multi-machine run ownership and per-machine windows (`run-machine-ownership`, `open-window-per-machine`), per the operator.
+- Cortex XDR file-burst behaviour of the git fixtures (`xdr-git-test-file-burst`); that note shares the host, not the fix.
+- The pause leaving background forks running (`pause-background-work`).
+- A general diagnostics command (`doctor`): the floor check here is no `lyx doctor` verb.
+- Running the gates on the NORCE host: the operator does that after landing, and what still fails there becomes a follow-up, per the operator.
+
+## Decisions
+
+### D1 — Short run directory names in lyxtemp
+
+A run directory is `r` plus six random hex digits, created with `os.Mkdir` mode 0700 under the root.
+A taken name is retried with a fresh one up to a bounded attempt count, after which creation fails with an error naming the root.
+The `r` prefix stays, so the sweep's prefix rule and run directories left by older binaries keep working.
+`internal/lyxtemp`'s `doc.go` and `pattern/PATTERN-lyx-temp-root.md` describe the new name; the entry line itself is unchanged.
+This card lands first, since no test package runs on the host before it.
+
+Rationale: the longest socket path becomes 105 bytes for the widest uid (4294967295), under the 107-byte limit, and the change stays inside the one package that names run directories.
+
+### D2 — CherryPick without `--empty`
+
+`gitrepo.Repo.CherryPick` runs a plain `git cherry-pick <sha>`.
+When the pick stops because the change is already carried, it runs `git cherry-pick --skip` and returns nil, so HEAD stays unmoved, as before and on every git version, per the operator.
+The pick counts as stopped-empty only when a cherry-pick is in progress, no index entry is unmerged and the index equals HEAD.
+The two probes are CLI calls through `runChecked`, the same shape as `MergeHeadPresent`, on the gitrepo client boundary's list of CLI reads.
+Every other failure, and a failing `--skip`, returns the wrapped error and leaves the pick in progress for `CherryPickAbort`.
+Bound: `--skip` runs only on a pick that would add nothing, so it can drop no change and no conflict; uncommitted working-tree changes that `dropSeedCommits`' `reset --keep` kept survive it.
+`fabricengine`'s `dropSeedCommits` and its `doc.go` paragraph stop naming `--empty=drop`.
+
+Rationale: `cherry-pick --empty` arrived after git 2.43, and `cherry-pick --skip` has existed since git 2.23.
+The two failing Bolt tests (`TestBolt_PullThenCommitWritten`, `TestBolt_PushRecorded_DropsSeedCommitsOnRebaseConflict`) reach the cherry-pick through `dropSeedCommits` after the expected `pull --rebase` conflict, so this same fix covers them.
+
+### D3 — Reed's session row works on tmux 3.4 and puts the prime first
+
+Reed marks the prime's session with a session user option.
+The prime is a hub geometry with an empty `NameSlug`; a standalone geometry, which also has an empty `NameSlug`, and a pair's session are never marked.
+Reed sets the option, idempotently, whenever it creates or boots onto the prime's session, so a session that already existed before the new binary gets it on its next boot.
+`status-format[1]` becomes two single-format `#{S:}` loops, both filtered by `reedSessionFilter`: the first draws only the marked session, the second every other session in session-id order.
+With no marked session the first loop draws nothing.
+Each loop body picks the lit style, focus and full name when `#{session_name}` equals `#{client_session}`, and the unlit style with the 12-character cut otherwise, so no loop uses the second, current-item format.
+The follow button and the time stay where they are.
+The option is display only, as `bar.go`'s header says of the bar's options.
+
+Rationale: tmux 3.4's `S:` takes one format, so the current two-format loop draws every session twice with a literal comma (#738), and `S:` has no sort option in 3.4, so a prime-first order needs the prime outside the shared loop (#740, #748).
+Marking the prime by an option rather than by its name keeps the format independent of hub naming.
+
+### D4 — A toolchain floor checked once per process at each tool's first use
+
+This replaces the board entry's "check at start-up": the check runs once per process before the first use of each tool, not in the root command.
+A new leaf package, `internal/toolfloor`, importing only the standard library and pinned by a leaf enforcement test, declares the floor, git 2.43.0 and tmux 3.4.
+It parses a tool's version line and returns a floor error naming the tool, the version found, the floor and the way forward: install that tool at the floor or newer.
+The floor error is its own type, never a `*gitexec.GitError`, so no caller reads it as git's answer.
+Its `doc.go` holds the audit result of D5.
+- `internal/gitexec` runs `git --version` through its own exec core before its first git command, so `Run`, `RunStdin` and `RunGit` all return the floor error in a process whose git is below the floor.
+  The probe spawn is unlogged under gitexec's existing reason for not importing the logger.
+- `internal/reedengine` exposes one check, run before the first tmux command of each resolved tmux path in the process, off Windows only, and logs its spawn through `internal/logger`.
+  Every tmux spawn calls it: the `TmuxCmd` runner, the lifecycle server spawn and `reedcli`'s attach; the watchdog daemon reaches tmux through the same runner.
+  In tests the probe goes through the runner's exec hook, so hook-driven tests spawn no real tmux.
+- Only a parsed result is cached for the process; a probe that cannot run returns its exec error and is retried on the next command.
+  Bound: a long-lived daemon keeps its parsed result and is not rechecked after a git or tmux upgrade during its life.
+- A version line that does not parse, such as a vendor or development build, is admitted: silently in gitexec, which cannot log, and with a Warn in reed.
+  Bound: only a parsed version below the floor is refused; nothing bypasses a parsed refusal.
+- Tests reach the floor check through an injected version line, never a substituted git or tmux binary.
+
+Rationale: every git command runs through gitexec's exec core and every tmux spawn through the reed sites above, so checking there covers every command that needs either tool, and a command that needs neither, such as `lyx board get` on a machine without tmux, pays nothing.
+The floor equals the oldest versions lyx is proven on.
+
+### D5 — Audit every git and tmux invocation
+
+The Plan audits every git subcommand and flag lyx runs, in production code, test kits and `tools/`, and every tmux command, option and format feature reed and tmuxkit use, against git 2.43 and tmux 3.4.
+Each feature newer than the floor is replaced by a form both the floor and newer versions run with the same behaviour.
+`internal/toolfloor`'s `doc.go` lists every feature lyx uses that arrived after git 2.20 or tmux 3.0, with the version each needs, so a later change checks a new feature against a recorded baseline.
+
+Rationale: the board entry asks for the audit, and the suite catches only what it exercises: tmux formats were set but never checked as rendered.
+
+### D6 — #744: the creel deliver tests synchronize on a probe that saw the post
+
+Diagnosis: the failure reproduces on this host as a rare flake, so it is a race in the test, not a fault of the Ubuntu host.
+`probeWaits(before + n)` counts any probe that went back to sleep.
+A worker's wake channel holds one signal, so a wake left by an earlier post can start a probe that satisfies the count before the post under test is delivered.
+The test then reads `typed` and sees only the owner's notice.
+A slower or busier host widens the window, which is why the NORCE host fails it twice in a row.
+
+Fix: every subtest in `deliver_test.go` that waits by counting probe waits after a post, directly or through `tick`, waits instead for a probe whose snapshot was taken after the post, and then for the wait that follows it.
+A probe reads the strands before it snapshots the store, so a strand read by the test's fake delivery that starts after the post returned marks such a probe.
+Positive and negative checks both use it: a check that nothing was typed then proves the probe under test ran.
+The scheduler is unchanged: a full wake channel already guarantees a probe that will see a post.
+
+Rationale: per the operator, #744 is diagnosed and its cause fixed in this run, never deferred.
+
+### D7 — The merge-lock tests prove the verb waits on the lock
+
+Diagnosis, from the code: `launchBlockedOnLock` assumes the verb is parked on the weft write lock 150 ms after it starts.
+Where git spawns are slow, as under the Cortex XDR scanning that `xdr-git-test-file-burst` reports on the same laptop, the verb's pre-lock guard stage still runs when the fixture rewrites a tracked file or switches branch in the warp checkout, and reads that as tracked dirt: `worktree dirty` instead of `ErrForeignMergeState`.
+The Plan confirms it by slowing the verb's pre-lock path past the old wait, which must turn the current helper's result into `worktree dirty`; if it does not, git 2.43 stays the open cause.
+
+Fix: `internal/fabricengine` gains an unexported test seam, set only from its `export_test.go`, that signals when a verb is about to wait for the weft write lock.
+The signal is tied to one lock path, so parallel tests each wait only for their own verb.
+Every verb `launchBlockedOnLock` launches, `MergeIn`, `Merge` and `MergeAbort` among them, reaches the seam at its lock acquisition.
+`launchBlockedOnLock` waits for that signal, bounded by a real-time deadline, before it returns, then keeps its check that the verb has not finished.
+Bound: the seam is nil in production and is called at that one point only; it observes and changes nothing.
+
+Rationale: a test that waits for a fixed time stands in for a state it does not check.
+
+## Constraints
+
+- No test installs git 2.43 or tmux 3.4: host conditions are reproduced through properties of lyx's own code, and the operator's host run after landing covers the real tools, per the operator.
+- `PATTERN-lyx-temp-root`: run directories stay under lyxtemp's root, created 0700, owner-locked.
+- `PATTERN-gitexec-checked-call` and `PATTERN-gitrepo-client-boundary`: the git version probe runs inside `gitexec`; `CherryPick`'s new calls go through `runChecked`.
+- `PATTERN-spawn-observability`: reed's tmux version probe logs its spawn; gitexec's probe falls under gitexec's recorded reason.
+- `PATTERN-leaf-packages`: `internal/toolfloor` imports only the standard library and is listed in the background file.
+- `PATTERN-test-speed` and `PATTERN-test-isolation`: new tests take the lowest fitting tier, and reed's rendered-row check stays in its tagged integration file.
+- `PATTERN-documentation-lifecycle`: the floor and the audit live in `internal/toolfloor`'s `doc.go`, and `docs/overview.md`'s module tree gains `internal/toolfloor`.
+- PATTERN.md stands one byte under its headroom line, so this task adds no PATTERN entry, although CLAUDE.md asks one for a new cross-cutting invariant: the mechanical headroom check wins, and `## Open risks` names where the floor rule lives instead.
+- Behaviour on newer git and tmux stays the same: the same pick result, the same session row apart from the prime's place.
+
+## Auto-mode assumptions
+
+- The floor is git 2.43.0 and tmux 3.4, the NORCE host's versions, not a lower version the audit might allow.
+- The floor check runs at each tool's first use, not in the root command.
+- An unparseable version line is admitted.
+
+## Open risks
+
+- git 2.43 and tmux 3.4 behaviour is proven on the NORCE host only after landing, per the operator; a failure there becomes a follow-up.
+- D7's cause rests on the code and the slowed reproduction, since the plain stress run stays green here; if the host still fails after the fix, the cause lies elsewhere.
+- `#{client_session}` inside an `#{S:}` loop is checked rendered on this host's tmux only; tmux 3.4's man page lists it as a client format available in status formats.
+- A 10-digit uid with a `TMPDIR` longer than `/tmp` can still pass the socket limit; tmuxkit's existing error names `TMPDIR` as the remedy.
+- The rule that a git or tmux feature must exist at the floor lives in `internal/toolfloor`'s `doc.go` and in review, not in PATTERN.md, until the overview has room.
+
+## Acceptance criteria
+
+- A run directory's name is `r` plus six hex digits, and tmuxkit's socket-path check admits a run directory of that name under uid 4294967295.
+- Run directory creation retries a taken name and fails, naming the root, once the attempt bound is spent.
+- `CherryPick` of a commit whose change HEAD already carries returns nil with HEAD and index unmoved, no cherry-pick in progress, and uncommitted working-tree changes kept.
+- A conflicting pick returns the error with the pick in progress, and `CherryPickAbort` restores HEAD.
+- No `cherry-pick` argv lyx runs carries `--empty`, and the Bolt seed-commit drop tests pass.
+- Reed's rendered session row shows each reed session exactly once, the prime's session first, then the others in session-id order, the client's session lit with its full name, and no comma between buttons.
+- A prime session created by an older binary is marked after reed boots onto it, and a standalone session is never marked.
+- Every `#{S:}` loop in reed's formats has a single format.
+- The floor parser admits git 2.43.0, a newer git, a Windows git (`2.45.1.windows.1`), an Apple git, and tmux 3.4, `3.4a` and newer.
+  It refuses git 2.42 and tmux 3.3a with an error naming the tool, the found version, the floor and the way forward, and admits a line it cannot parse.
+- With a below-floor version line injected, `Run` and `RunGit` both return the floor error, which is no `*GitError`; the probe runs once per process after a parsed result and again after a probe that could not run.
+- `internal/toolfloor`'s leaf enforcement test pins its import set to the standard library.
+- `internal/toolfloor`'s `doc.go` lists every git and tmux feature after git 2.20 or tmux 3.0 that the audit found, each with its version, and none is newer than the floor.
+- The deliver subtests pass under `-count=1000 -cpu=1,2,4`, and a check that nothing was typed waits for a probe that saw the post.
+- The merge-lock tests pass with the verb's pre-lock path slowed past the old fixed wait, and parallel tests each wait for their own verb.
+- `lyx gate test ./...` and `lyx gate test --tags integration ./...` pass on this host.
+
+## Notes for the plan writer
+
+- The #739 diff in the board entry's #745 section, host-tested there, is the starting point for D1, including its tests and the PATTERN background edit.
+- For D6, `tick` and the direct `probeWaits(before + n)` callers carry the counting shape; `sweepStep` counts sweep waits and is not part of the race.

@@ -1,0 +1,22 @@
+# Relevant files
+
+- `internal/lyxtemp/run.go` `newRun`, `runPrefix` — creates the run directory whose name D1 shortens
+- `internal/testkit/tmuxkit/tmuxkit.go` `checkSocketPath`, `maxKeyBytes`, `maxSocketPath` — the socket-path arithmetic that refuses the long uid
+- `internal/gitrepo/reset.go` `CherryPick`, `CherryPickAbort` — runs `--empty=drop`, replaced by D2
+- `internal/gitrepo/merge.go` `ConflictedFiles`, `MergeHeadPresent` — probe shapes for D2's stopped-empty test
+- `internal/fabricengine/destroy.go` `dropSeedCommits` — the Bolt seed-commit replay that calls CherryPick
+- `internal/fabricengine/bolt.go` `dropSeedCommitsAfterConflict` — reaches the drop after a `pull --rebase` conflict
+- `internal/fabricengine/merge.go` `recheckMergePreconditionsUnderLock` — checks foreign state before dirtiness under the lock, and where D7's seam sits
+- `internal/fabricengine/mergeguards.go` `pairDirtyReason` — yields the `worktree dirty` reason the failing test sees
+- `internal/fabricengine/mergelock_integration_test.go` `launchBlockedOnLock`, `TestMergeIn_ForeignStateAppearingWhileWaitingForLock_Refuses` — the fixed 150 ms wait D7 replaces
+- `internal/fabricengine/mergein_integration_test.go` `setupConflictingDivergence` — the fixture commits that overlap the verb's guard stage
+- `internal/reedengine/bar.go` `statusFormatSessions`, `sessionButtonFormat`, `currentSessionButtonFormat` — the two-format `#{S:}` loop of #738
+- `internal/reedengine/tmuxconf.go` `reedSessionFilter`, `reedSessionOption` — the session filter both new loops keep
+- `internal/reedengine/windowsize.go` — sets `status-format[1]` globally
+- `internal/reedengine/bar_integration_test.go` `TestBar_LineTwoListsSessionsInIDOrder` — the rendered session-row check, which uses Contains and so misses doubled entries
+- `internal/reedengine/geometry.go` — `NameSlug` empty marks the prime geometry
+- `internal/gitexec/gitexec.go` — the exec core every git command runs through, home of the git floor probe
+- `internal/creelengine/deliver.go` `worker.run`, `worker.probe`, `Scheduler.wake` — the one-slot wake channel behind #744's race
+- `internal/creelengine/deliver_test.go` `probeWaits`, `tick`, `TestScheduler_Reminders` — the wait counting that satisfies early
+- `pattern/PATTERN-leaf-packages.md` — gains the toolfloor package
+- `pattern/PATTERN-lyx-temp-root.md` — describes the run directory name
