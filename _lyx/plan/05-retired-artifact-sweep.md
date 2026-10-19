@@ -10,12 +10,12 @@
 - `internal/fabriccli_test#TestRunCLI_HubMutationScenario`
 
 **Create:**
-- `plan:internal/fabricengine#retiredPortalTarget` -> `func retiredPortalTarget(l *lyxcwd.Location, name string) string`
-- `plan:internal/fabricengine#retiredHubWorkspacePath` -> `func retiredHubWorkspacePath(l *lyxcwd.Location, primeName string) string`
-- `plan:internal/fabricengine#retiredHubArtifactsPresent` -> `func retiredHubArtifactsPresent(l *lyxcwd.Location) bool`
-- `plan:internal/fabricengine#sweepRetiredHubArtifacts` -> `func sweepRetiredHubArtifacts(rec *Mutations, l *lyxcwd.Location) []string`
-- `plan:internal/fabricengine_test#TestReconcile_SweepsRetiredHubArtifacts` -> `func TestReconcile_SweepsRetiredHubArtifacts(t *testing.T)`
-- `plan:internal/fabricengine#TestSweepRetiredHubArtifacts_UnresolvablePrime` -> `func TestSweepRetiredHubArtifacts_UnresolvablePrime(t *testing.T)`
+- `internal/fabricengine#retiredPortalTarget`
+- `internal/fabricengine#retiredHubWorkspacePath`
+- `internal/fabricengine#retiredHubArtifactsPresent`
+- `internal/fabricengine#sweepRetiredHubArtifacts`
+- `internal/fabricengine_test#TestReconcile_SweepsRetiredHubArtifacts`
+- `internal/fabricengine#TestSweepRetiredHubArtifacts_UnresolvablePrime`
 
 **Prosa:**
 - `pattern/PATTERN-hub-containment.md`

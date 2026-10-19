@@ -1,13 +1,13 @@
 {
   "runGuid": "d92b7a6f89d41378953091e8a42a33bc",
-  "planFingerprint": "5c8495a0e80b021e25a90a1c0f5e64be443a00b2d45e3bb1074657e4c5a77f46",
+  "planFingerprint": "fbf6529a99974d1b3d5a786d1b22c0b5605f6cbcbca156f3d616f5db115c76c9",
   "planFileHashes": {
     "00-overview.md": "91ee0dc2d6d6d4bdfd45d8c3d1042ba1f4e0e5fe13ed0e3e9f21107f2c0edeac",
     "01-hub-workspace-file.md": "374b4e781d58f8807cb06547d4e9be57054b4c0f7dfcd1646e1bbe43b0be2721",
     "02-verbs-regenerate.md": "1e653235dc1879bbf7a5a50d86f13851ba1349191335baa46fba93ee65d82af7",
     "03-reconcile-launchers-restored.md": "a74c1e77e58dfa4221d0872ec9159f1da0ee79df7b2b8af250b7f0481c6acb80",
     "04-retire-portals.md": "5936b62875f2d13b9bfe452370c8316b37f4b981ce9807c39b547bd04286259f",
-    "05-retired-artifact-sweep.md": "b0c265d5077acdcd9d8b99eaa90f317f42ab20657b63035aa75c217bc3051f07"
+    "05-retired-artifact-sweep.md": "6ec3209bc1e5eedcc3f1d6799746d3f750d00317c5ab501380072ed93afeb748"
   },
   "planOverviewFrameHash": "0f39118f9b4fadfd6d01f1914408870dcab2118f98e101874deb521499fcaa0c",
   "partition": [
@@ -227,7 +227,7 @@
       }
     }
   ],
-  "currentBatch": 5,
+  "currentBatch": 0,
   "masterStrand": "551ece777914475d09ccc79e2d5ceaf1",
   "masterSessionId": "88cba410-86ac-4b1f-a0de-2d502785e9e2",
   "masterEngine": "claude",
@@ -347,20 +347,39 @@
         "05-retired-artifact-sweep"
       ],
       "cardHashes": {
-        "05-retired-artifact-sweep": "b0c265d5077acdcd9d8b99eaa90f317f42ab20657b63035aa75c217bc3051f07"
+        "05-retired-artifact-sweep": "6ec3209bc1e5eedcc3f1d6799746d3f750d00317c5ab501380072ed93afeb748"
       },
       "startSha": "aa29a48593582dafbf6dff08639f30cc58a18682",
       "kind": "fork",
       "spawnedAt": "2026-10-19T16:03:28Z",
       "sessionId": "88cba410-86ac-4b1f-a0de-2d502785e9e2",
       "engine": "claude",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "05-retired-artifact-sweep",
+        "status": "done",
+        "head_sha": "c7e16fbbe146c7c6ab2a34b31fad9f877b0ef7f3",
+        "deviations": [
+          "internal/fabricengine/portals.go",
+          "internal/fabricengine/portals_sweep_integration_test.go"
+        ]
+      },
+      "cardShas": [
+        "c7e16fbbe146c7c6ab2a34b31fad9f877b0ef7f3"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-hub-workspaces/88cba410-86ac-4b1f-a0de-2d502785e9e2/subagents/agent-adcf05561c4f50039.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-hub-workspaces/88cba410-86ac-4b1f-a0de-2d502785e9e2/subagents/agent-adcf05561c4f50039.jsonl"
+      ]
     }
   },
   "seenForkTranscripts": [
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-hub-workspaces/88cba410-86ac-4b1f-a0de-2d502785e9e2/subagents/agent-a8b58f5ce9eb9f71d.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-hub-workspaces/88cba410-86ac-4b1f-a0de-2d502785e9e2/subagents/agent-abb5e1706bddea7e0.jsonl",
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-hub-workspaces/88cba410-86ac-4b1f-a0de-2d502785e9e2/subagents/agent-a3e4bddd519ac15f8.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-hub-workspaces/88cba410-86ac-4b1f-a0de-2d502785e9e2/subagents/agent-a3e4bddd519ac15f8.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-hub-workspaces/88cba410-86ac-4b1f-a0de-2d502785e9e2/subagents/agent-adcf05561c4f50039.jsonl"
   ]
 }
