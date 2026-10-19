@@ -284,7 +284,7 @@
       }
     }
   ],
-  "currentBatch": 1,
+  "currentBatch": 0,
   "masterStrand": "06e1d7c21336a18b8bd496e3df5edb47",
   "masterSessionId": "ecec8656-2d4b-4043-b894-2071a1074e16",
   "masterEngine": "claude",
@@ -304,8 +304,34 @@
       "spawnedAt": "2026-10-19T17:14:11Z",
       "sessionId": "ecec8656-2d4b-4043-b894-2071a1074e16",
       "engine": "claude",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "failed",
+      "digest": {
+        "batch": "01-lyxtemp-short-run-names",
+        "status": "failed",
+        "head_sha": "c27d4e82978ad2c477773f92a37e4b8ff0da1b22",
+        "reasons": [
+          "batch 01-lyxtemp-short-run-names holds cards 1-lyxtemp-short-run-names, 2-toolfloor-package",
+          "create-not-done/2-toolfloor-package[blocking]: Create target \"internal/toolfloor/doc.go#\" still does not resolve: looked up \"internal/toolfloor/doc.go#\", quarry answered not_found (the unit is missing)",
+          "create-not-done/2-toolfloor-package[blocking]: Create target \"plan:internal/toolfloor#GitFloor\" still does not resolve: looked up \"internal/toolfloor#GitFloor\", quarry answered not_found (the unit is missing)",
+          "create-not-done/2-toolfloor-package[blocking]: Create target \"plan:internal/toolfloor#TmuxFloor\" still does not resolve: looked up \"internal/toolfloor#TmuxFloor\", quarry answered not_found (the unit is missing)",
+          "create-not-done/2-toolfloor-package[blocking]: Create target \"plan:internal/toolfloor#FloorError\" still does not resolve: looked up \"internal/toolfloor#FloorError\", quarry answered not_found (the unit is missing)",
+          "create-not-done/2-toolfloor-package[blocking]: Create target \"plan:internal/toolfloor#FloorError.Error\" still does not resolve: looked up \"internal/toolfloor#FloorError.Error\", quarry answered not_found (the unit is missing)",
+          "create-not-done/2-toolfloor-package[blocking]: Create target \"plan:internal/toolfloor#CheckGit\" still does not resolve: looked up \"internal/toolfloor#CheckGit\", quarry answered not_found (the unit is missing)",
+          "create-not-done/2-toolfloor-package[blocking]: Create target \"plan:internal/toolfloor#CheckTmux\" still does not resolve: looked up \"internal/toolfloor#CheckTmux\", quarry answered not_found (the unit is missing)",
+          "create-not-done/2-toolfloor-package[blocking]: Create target \"plan:internal/toolfloor#TestCheck\" still does not resolve: looked up \"internal/toolfloor#TestCheck\", quarry answered not_found (the unit is missing)",
+          "create-not-done/2-toolfloor-package[blocking]: Create target \"plan:internal/toolfloor#TestLeafInvariant_StandardLibraryOnly\" still does not resolve: looked up \"internal/toolfloor#TestLeafInvariant_StandardLibraryOnly\", quarry answered not_found (the unit is missing)"
+        ]
+      },
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-ubuntu-2404-support/ecec8656-2d4b-4043-b894-2071a1074e16/subagents/agent-ab3496cc51b471391.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-ubuntu-2404-support/ecec8656-2d4b-4043-b894-2071a1074e16/subagents/agent-ab3496cc51b471391.jsonl"
+      ]
     }
-  }
+  },
+  "seenForkTranscripts": [
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-ubuntu-2404-support/ecec8656-2d4b-4043-b894-2071a1074e16/subagents/agent-ab3496cc51b471391.jsonl"
+  ]
 }
