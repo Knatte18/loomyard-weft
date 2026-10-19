@@ -9,6 +9,13 @@ Plan-Bouncer then failed on its own commit of the approved plan (a pathspec bug,
 Each retry of that commit counted against the Plan-Review segment's bounce budget, so once the fix was deployed the run blocked with "bounce budget exhausted for Plan-Bouncer", whose way forward named `lyx shed goto self --to Plan-Bouncer`.
 The orch took that goto; it gave the whole segment a fresh budget, the converged round no longer counted, and the Bouncer started a new review round over an approved plan.
 
+An order to the reviewer to write a review with no findings did not help either: burler refused the round ("requested 3, spawned 0") and the step failed.
+
+## Operator decisions (2026-10-19)
+
+- Goto is extremely fragile.
+- Once the plan is approved, no further review runs on it.
+
 ## Idea
 
 - A stop after a converged verdict, such as a failed commit or other mechanical step of the Bouncer, does not spend the segment's review budget: retrying it re-runs only the step that failed.
