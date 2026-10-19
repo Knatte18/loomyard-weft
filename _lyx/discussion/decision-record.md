@@ -131,6 +131,12 @@ Bound: the seam is nil in production and is called only where a launched verb ac
 
 Rationale: a test that waits for a fixed time stands in for a state it does not check.
 
+### Added after Discussion (arbiter, 2026-10-19): D6 refined: card 9's wait postcondition and inject coverage
+
+Decision: Card 9's Intent is the mechanism for D6. awaitMarkedProbe ends when the probe after the marked one has begun (the pause read at mark+2), so the marked probe has finished and the wait after it has fired. That is how D6's 'waits for the marked probe and the wait after it' is met. Neither awaitMarkedProbe nor awaitTyped leaves the worker parked, so a later flip or clock jump re-marks through awaitMarkedProbe and never uses a bare tick or probeWaits(before + n). A single post made after e.start to a receiver with nothing pending since e.start keeps its probeWaits(1) wait, and so does a pre-start post. An inject made after e.start falls under D6 as a post does, with the per-subtest exceptions card 9 names. A positive check whose assertion reads the journal waits for the journal event, since awaitTyped returns before the probe journals.
+
+Rationale: The plan review's round-3 fixer deferred this mismatch between D6 and card 9: card 9 states the postcondition and covers injects, and D6 covers neither. Checked against the code: the worker registers clock.After only after its probe returns (deliver.go run), Scheduler.wake creates a worker with an empty wake channel only for a receiver without one (deliver.go:72-95), Hold sends no wake (verbs.go:537-585), the inject path wakes the receiver (verbs.go:397), and a hold ends by the clock alone (pool.go:208).
+
 ## Constraints
 
 - No test installs git 2.43 or tmux 3.4: host conditions are reproduced through properties of lyx's own code, and the operator's host run after landing covers the real tools, per the operator.
