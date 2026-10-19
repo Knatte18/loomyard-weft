@@ -8,12 +8,12 @@
 - `internal/fabricengine_test#launchBlockedOnLock`
 
 **Create:**
-- `plan:internal/fabricengine#lockWaitHook` -> `var lockWaitHook atomic.Pointer[func(lockPath string)]`
-- `plan:internal/fabricengine#acquireWeftWriteLock` -> `func acquireWeftWriteLock(lockDir string) (*lock.FileLock, error)`
-- `plan:internal/fabricengine#lockWaitWaiters` -> `var lockWaitWaiters sync.Map`
-- `plan:internal/fabricengine#installLockWaitDispatch` -> `var installLockWaitDispatch sync.Once`
-- `plan:internal/fabricengine#AwaitWeftLockWaitForTest` -> `func AwaitWeftLockWaitForTest(t *testing.T, lockPath string) <-chan struct{}`
-- `plan:internal/fabricengine#TestAcquireWeftWriteLock_SignalsOnlyItsOwnPath` -> `func TestAcquireWeftWriteLock_SignalsOnlyItsOwnPath(t *testing.T)`
+- `internal/fabricengine#lockWaitHook`
+- `internal/fabricengine#acquireWeftWriteLock`
+- `internal/fabricengine#lockWaitWaiters`
+- `internal/fabricengine#installLockWaitDispatch`
+- `internal/fabricengine#AwaitWeftLockWaitForTest`
+- `internal/fabricengine#TestAcquireWeftWriteLock_SignalsOnlyItsOwnPath`
 
 **Uses:**
 - `internal/fabricengine#weftWriteLockFile`
