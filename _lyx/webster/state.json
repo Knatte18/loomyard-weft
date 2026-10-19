@@ -293,7 +293,7 @@
       }
     }
   ],
-  "currentBatch": 0,
+  "currentBatch": 9,
   "masterStrand": "fc4d391709e3d0b2c2dc1729dbd26db5",
   "masterSessionId": "6939c57c-46a1-443b-9c0e-40f9ed398b6c",
   "masterEngine": "claude",
@@ -441,6 +441,24 @@
       "bracketTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-ubuntu-2404-support/6939c57c-46a1-443b-9c0e-40f9ed398b6c/subagents/agent-a3780f142596fb3f5.jsonl"
       ]
+    },
+    "9": {
+      "slug": "creel-deliver-marked-probe",
+      "cards": [
+        "09-creel-deliver-marked-probe",
+        "10-merge-lock-wait-signal"
+      ],
+      "cardHashes": {
+        "09-creel-deliver-marked-probe": "667cb3780862e1c5aed3d90bb40a9f62c723fb1acdf51339fabdf5d489642d5a",
+        "10-merge-lock-wait-signal": "545854f8e2f73b73b304084f696efb06f48a098e0309bfdd210ed1e306d12aba"
+      },
+      "startSha": "9c4a8eb709368a78cf10d099c79d3c00f9505202",
+      "kind": "fork",
+      "spawnedAt": "2026-10-19T18:21:46Z",
+      "sessionId": "6939c57c-46a1-443b-9c0e-40f9ed398b6c",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
     }
   },
   "seenForkTranscripts": [
