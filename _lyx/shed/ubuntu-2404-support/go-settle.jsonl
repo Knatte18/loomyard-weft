@@ -1,0 +1,5 @@
+{"stop_key":{"current_producer":"Discussion-Burler-Review","history_length":4,"state":"failed"},"settler":"tackler","action":"spawn","outcome":"tackler spawned","at":"2026-10-19T17:09:11.247712905+02:00","target":"attempt-1"}
+{"stop_key":{"current_producer":"Discussion-Burler-Review","history_length":4,"state":"failed"},"settler":"arbiter","action":"spawn","outcome":"arbiter spawned","at":"2026-10-19T17:10:01.640544101+02:00","target":"attempt-1"}
+{"stop_key":{"current_producer":"Discussion-Burler-Review","history_length":4,"state":"failed"},"settler":"parent","action":"hand-back","outcome":"the arbiter handed the stop on","at":"2026-10-19T17:10:01.640631484+02:00"}
+{"stop_key":{"current_producer":"Plan-Bouncer","history_length":21,"state":"awaiting"},"settler":"arbiter","action":"spawn","outcome":"arbiter spawned","at":"2026-10-19T19:11:54.597321289+02:00","target":"attempt-2"}
+{"stop_key":{"current_producer":"Plan-Bouncer","history_length":21,"state":"awaiting"},"settler":"parent","action":"hand-back","outcome":"the arbiter handed the stop on","at":"2026-10-19T19:11:54.597522736+02:00"}

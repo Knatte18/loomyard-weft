@@ -1,0 +1,311 @@
+{
+  "runGuid": "3758da6a83d9a101fdff67f8ed622032",
+  "planFingerprint": "4e7007abd9f4f8d201bbfc3615ce327eeac56068a930cd56083d7bc7e65233ee",
+  "planFileHashes": {
+    "00-overview.md": "0cb353654a702a4fe8ef6d15ef8b881783c0975ea07773ff4f58d437fed041ae",
+    "01-lyxtemp-short-run-names.md": "2fad160b5424aa931ad9fc97f9e37bee0f7a38e297a4debb6d406ea9d8879a75",
+    "02-toolfloor-package.md": "9c8ad9d355f4cf6c57d10349c771ecf015567df111ef880c29f115af7ada2ec2",
+    "03-cherrypick-without-empty.md": "6c364a52a1d9ae1e2a9f4f6d250aa319e1677895cf16297b55f5eb04f5356122",
+    "04-gitexec-floor-check.md": "2bccb29c20b0e31cf90b20b1b034333354a41b80f9923062effb47ff1cffa071",
+    "05-planglyph-delta-floor.md": "4d16d1dd427e7a84d2ee2aa9986428c2a1ad2864c17332bf048aeb246400de0f",
+    "06-reed-tmux-floor-check.md": "902a1f6c4e33185ea8267b940e9a820952b64da5b4bd5967f53cd7735cd4a3ef",
+    "07-reedcli-attach-floor.md": "5b50dd3f056fe284d1afc4c757561edc56b6e1a4dc4130e40947859fe1c47f94",
+    "08-reed-session-row-prime-first.md": "3de7d19fbc6a651a8e2a364297a0921fe8edc0ade198e7b37403ffc5a56d83fb",
+    "09-creel-deliver-marked-probe.md": "667cb3780862e1c5aed3d90bb40a9f62c723fb1acdf51339fabdf5d489642d5a",
+    "10-merge-lock-wait-signal.md": "f038f5618d6083a5e5433d95ce29c5022b0e6ba0bc96c45bc5247a81e08f2758"
+  },
+  "planOverviewFrameHash": "2dd7581af3e2858ef97b53e289bc7503277dca74106f81ddd36fa54e569cf63f",
+  "partition": [
+    {
+      "cards": [
+        "01-lyxtemp-short-run-names",
+        "02-toolfloor-package"
+      ],
+      "profile": "cautious",
+      "estimate": 135250,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 1,
+        "startup": 54604,
+        "read_union": 36888,
+        "cards": [
+          {
+            "card": 1,
+            "card_text": 468,
+            "reads": {
+              "file:internal/lyxtemp/doc.go": 276,
+              "file:pattern/PATTERN-lyx-temp-root.md": 240,
+              "package:internal/lyxtemp": 2000,
+              "package:internal/testkit/tmuxkit": 2000,
+              "package:pattern": 2000,
+              "tests:internal/lyxtemp": 2000,
+              "tests:internal/testkit/tmuxkit": 2000,
+              "tests:pattern": 2000
+            },
+            "messages": 70.5,
+            "written": 21618
+          },
+          {
+            "card": 2,
+            "card_text": 540,
+            "reads": {
+              "file:docs/overview.md": 9696,
+              "file:docs/shared-libs/README.md": 540,
+              "file:pattern/PATTERN-leaf-packages.md": 1128,
+              "package:docs": 2000,
+              "package:docs/shared-libs": 2000,
+              "package:internal/toolfloor": 2000,
+              "package:pattern": 2000,
+              "tests:docs": 2000,
+              "tests:docs/shared-libs": 2000,
+              "tests:internal/toolfloor": 2000,
+              "tests:pattern": 2000
+            },
+            "messages": 72,
+            "written": 22140
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "03-cherrypick-without-empty"
+      ],
+      "profile": "cautious",
+      "estimate": 153026,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 2,
+        "startup": 61604,
+        "read_union": 34380,
+        "cards": [
+          {
+            "card": 3,
+            "card_text": 792,
+            "reads": {
+              "file:internal/fabricengine/doc.go": 17520,
+              "file:internal/gitrepo/doc.go": 4068,
+              "package:internal/fabricengine": 2000,
+              "package:internal/gitrepo": 2000,
+              "package:internal/toolfloor": 2000,
+              "tests:internal/fabricengine": 2000,
+              "tests:internal/gitrepo": 2000,
+              "tests:internal/toolfloor": 2000
+            },
+            "messages": 187.5,
+            "written": 57042
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "04-gitexec-floor-check",
+        "05-planglyph-delta-floor"
+      ],
+      "profile": "cautious",
+      "estimate": 142468,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 3,
+        "startup": 68604,
+        "read_union": 17236,
+        "cards": [
+          {
+            "card": 4,
+            "card_text": 600,
+            "reads": {
+              "file:internal/gitexec/doc.go": 408,
+              "package:cmd/lyx": 2000,
+              "package:internal/gitexec": 2000,
+              "tests:cmd/lyx": 2000,
+              "tests:internal/gitexec": 2000
+            },
+            "messages": 126.5,
+            "written": 38550
+          },
+          {
+            "card": 5,
+            "card_text": 228,
+            "reads": {
+              "package:internal/planglyph": 2000,
+              "package:internal/websterengine": 2000,
+              "tests:internal/planglyph": 2000,
+              "tests:internal/websterengine": 2000
+            },
+            "messages": 59.5,
+            "written": 18078
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "06-reed-tmux-floor-check",
+        "07-reedcli-attach-floor",
+        "08-reed-session-row-prime-first"
+      ],
+      "profile": "cautious",
+      "estimate": 182518,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 4,
+        "startup": 75604,
+        "read_union": 21444,
+        "cards": [
+          {
+            "card": 6,
+            "card_text": 732,
+            "reads": {
+              "file:internal/reedengine/doc.go": 7824,
+              "package:internal/reedengine": 2000,
+              "tests:internal/reedengine": 2000
+            },
+            "messages": 139,
+            "written": 42432
+          },
+          {
+            "card": 7,
+            "card_text": 180,
+            "reads": {
+              "package:internal/reedcli": 2000,
+              "tests:internal/reedcli": 2000
+            },
+            "messages": 23.5,
+            "written": 7230
+          },
+          {
+            "card": 8,
+            "card_text": 708,
+            "reads": {
+              "file:internal/reedengine/doc.go": 7824,
+              "package:internal/reedengine": 2000,
+              "package:internal/toolfloor": 2000,
+              "tests:internal/reedengine": 2000,
+              "tests:internal/toolfloor": 2000
+            },
+            "messages": 117,
+            "written": 35808
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "09-creel-deliver-marked-probe",
+        "10-merge-lock-wait-signal"
+      ],
+      "profile": "cautious",
+      "estimate": 163886,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 5,
+        "startup": 82604,
+        "read_union": 13416,
+        "cards": [
+          {
+            "card": 9,
+            "card_text": 960,
+            "reads": {
+              "package:internal/creelengine": 2000,
+              "package:internal/testkit/creelfake": 2000,
+              "tests:internal/creelengine": 2000,
+              "tests:internal/testkit/creelfake": 2000
+            },
+            "messages": 61.5,
+            "written": 19410
+          },
+          {
+            "card": 10,
+            "card_text": 456,
+            "reads": {
+              "package:internal/fabricengine": 2000,
+              "tests:internal/fabricengine": 2000
+            },
+            "messages": 160,
+            "written": 48456
+          }
+        ]
+      }
+    }
+  ],
+  "currentBatch": 1,
+  "masterStrand": "06e1d7c21336a18b8bd496e3df5edb47",
+  "masterSessionId": "ecec8656-2d4b-4043-b894-2071a1074e16",
+  "masterEngine": "claude",
+  "batches": {
+    "1": {
+      "slug": "lyxtemp-short-run-names",
+      "cards": [
+        "01-lyxtemp-short-run-names",
+        "02-toolfloor-package"
+      ],
+      "cardHashes": {
+        "01-lyxtemp-short-run-names": "2fad160b5424aa931ad9fc97f9e37bee0f7a38e297a4debb6d406ea9d8879a75",
+        "02-toolfloor-package": "9c8ad9d355f4cf6c57d10349c771ecf015567df111ef880c29f115af7ada2ec2"
+      },
+      "startSha": "e14e9b4952c711cd015e7a3e5426793c32c6a9fa",
+      "kind": "fork",
+      "spawnedAt": "2026-10-19T17:14:11Z",
+      "sessionId": "ecec8656-2d4b-4043-b894-2071a1074e16",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
+    }
+  }
+}
