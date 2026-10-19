@@ -1,0 +1,11 @@
+lyx webster recover-batch refused
+
+Arguments: 1
+
+```
+webster: batch 01-lyxtemp-short-run-names failed: batch 01-lyxtemp-short-run-names holds cards 1-lyxtemp-short-run-names, 2-toolfloor-package; create-not-done/2-toolfloor-package[blocking]: Create target "internal/toolfloor/doc.go#" still does not resolve: looked up "internal/toolfloor/doc.go#", quarry answered not_found (the unit is missing); create-not-done/2-toolfloor-package[blocking]: Create target "plan:internal/toolfloor#GitFloor" still does not resolve: looked up "internal/toolfloor#GitFloor", quarry answered not_found (the unit is missing); create-not-done/2-toolfloor-package[blocking]: Create target "plan:internal/toolfloor#TmuxFloor" still does not resolve: looked up "internal/toolfloor#TmuxFloor", quarry answered not_found (the unit is missing); create-not-done/2-toolfloor-package[blocking]: Create target "plan:internal/toolfloor#FloorError" still does not resolve: looked up "internal/toolfloor#FloorError", quarry answered not_found (the unit is missing); create-not-done/2-toolfloor-package[blocking]: Create target "plan:internal/toolfloor#FloorError.Error" still does not resolve: looked up "internal/toolfloor#FloorError.Error", quarry answered not_found (the unit is missing); create-not-done/2-toolfloor-package[blocking]: Create target "plan:internal/toolfloor#CheckGit" still does not resolve: looked up "internal/toolfloor#CheckGit", quarry answered not_found (the unit is missing); create-not-done/2-toolfloor-package[blocking]: Create target "plan:internal/toolfloor#CheckTmux" still does not resolve: looked up "internal/toolfloor#CheckTmux", quarry answered not_found (the unit is missing); create-not-done/2-toolfloor-package[blocking]: Create target "plan:internal/toolfloor#TestCheck" still does not resolve: looked up "internal/toolfloor#TestCheck", quarry answered not_found (the unit is missing); create-not-done/2-toolfloor-package[blocking]: Create target "plan:internal/toolfloor#TestLeafInvariant_StandardLibraryOnly" still does not resolve: looked up "internal/toolfloor#TestLeafInvariant_StandardLibraryOnly", quarry answered not_found (the unit is missing); way forward: lyx webster recover-batch 01
+```
+
+batch: 01-lyxtemp-short-run-names
+batch_failed: true
+warnings: <nil>

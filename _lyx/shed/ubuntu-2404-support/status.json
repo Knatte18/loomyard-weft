@@ -1,12 +1,12 @@
 {
   "current_producer": "Webster",
-  "state": "running",
-  "error": "",
+  "state": "blocked",
+  "error": "Batch 01-lyxtemp-short-run-names: recover-batch refused with batch_failed; card 2 (toolfloor-package) still has no internal/toolfloor targets, because the fork halted on the audit rule (tmux allow-set-title needs 3.5, above the 3.4 floor).",
   "pause_requested": false,
   "activity": {
     "now": "Webster",
-    "last": "Plan-Bouncer → done",
-    "wait": ""
+    "last": "Webster → stuck",
+    "wait": "Batch 01-lyxtemp-short-run-names: recover-batch refused with batch_failed; card 2 (toolfloor-package) still has no internal/toolfloor targets, because the fork halted on the audit rule (tmux allow-set-title needs 3.5, above the 3.4 floor)."
   },
   "history": [
     {
@@ -300,6 +300,21 @@
       "output": "/home/knatte/Code/loomyard-LYXHUB/ubuntu-2404-support/_lyx/reviews/plan/round-3-bouncer-ledger.md",
       "at": "2026-10-19T17:13:26Z",
       "by": "shed"
+    },
+    {
+      "producer": "Webster",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-19T17:19:56Z",
+      "gate_attempts": 0,
+      "gate_spans": [
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-10-19T17:19:55.801407559Z",
+          "end": "2026-10-19T17:19:55.801505652Z"
+        }
+      ]
     }
   ],
   "product": {
