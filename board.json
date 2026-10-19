@@ -1185,6 +1185,25 @@
       "body": "Imported from [issue #737](https://github.com/Knatte18/loomyard/issues/737).\n\n## What happened\n\nOn the operator's work PC the GitHub account in use had read-only access to the records repo.\nEvery detached weft and board push failed with a 403 from 2026-10-16 to 2026-10-19, and lyx said nothing outside a WARN in the detached child's trace log under `_board/.lyx/logs/`.\nThe prime's `main-weft` fell 552 commits behind origin unnoticed.\n\n## Gaps\n\n- **A rejected detached push is silent.**\n  `lyx cleanup --apply` reported `push_error: \"\"` because the push was spawned, not because it landed.\n  A push that fails for a non-transient reason (auth, permission, non-fast-forward after the recovery rebase) should reach the operator: a notice to the orch through creel, or a status the next `lyx cleanup`, `lyx fabric status` or `lyx board` call prints.\n- **`lyx cleanup` judges runs from a stale weft.**\n  It never fetches first, so it listed three runs as paused that origin had deleted days earlier, and its removals diverged the weft from origin.\n  It should pull the weft first, or refuse while the weft is behind its upstream.\n- **`lyx fabric pull` leaves a diverged weft alone and still reports `ok: true`.**\n  `git pull --ff-only` fails, the pull logs a WARN and returns `weft_pulled: false` inside an ok result.\n  The doc names `git -C \u003cweft\u003e reset --hard origin/\u003cbranch\u003e` as the manual recovery.\n  Instead, pull should rebase the local weft commits onto the upstream and drop those that become empty, stopping with a named way forward only on a real conflict, such as a `status.json` both sides changed.\n",
       "created": "2026-10-19T10:57:24Z",
       "revised": "2026-10-19T10:57:24Z"
+    },
+    {
+      "id": 676,
+      "slug": "batten-window-default",
+      "title": "lyx batten run starts in its own window by default",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "batten",
+        "reed",
+        "orch"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "Every batten run is started with --window, so the window should be the default and foreground the opt-in.",
+      "body": "## Seen\n\nThe orch starts every run with `lyx batten run \u003cslug\u003e --window`, and the operator confirms that this is always how runs are started.\nWithout the flag the whole lifecycle runs in the caller's foreground for hours, which blocks the orch session and can be killed by the shell timeout.\n\n## Idea\n\nMake the window the default for `lyx batten run`: start the run in its own tmux window of the prime's reed session, return at once, and run the Open-Window row.\nKeep the foreground as an explicit opt-in flag for the cases that need it, such as the window's own inner invocation and tests.\nUpdate the orch role and the `lyx batten run` help to drop `--window` from the normal path.",
+      "created": "2026-10-19T11:00:53Z",
+      "revised": "2026-10-19T11:00:53Z"
     }
   ]
 }
