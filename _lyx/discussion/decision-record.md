@@ -170,6 +170,13 @@ Rationale: The plan review's round-3 fixer deferred this mismatch between D6 and
   - d3-boot-cannot-mark-existing-prime (class design, severity MEDIUM, open in rounds 2)
 <!-- /lyx:carry-over Discussion-Review -->
 
+<!-- lyx:carry-over Plan-Review -->
+- Plan-Review, round 3: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
+  Review: _lyx/reviews/plan/round-3-review.md; fixer report: _lyx/reviews/plan/round-3-fixer-report.md.
+  - card9-stall-subtests-inject-after-start (class design, severity MEDIUM, open in rounds 3)
+  - card9-wait-leaves-worker-mid-probe (class design, severity BLOCKING, open in rounds 3)
+<!-- /lyx:carry-over Plan-Review -->
+
 ## Acceptance criteria
 
 - A run directory's name is `r` plus six hex digits, and tmuxkit's socket-path check admits a run directory of that name under uid 4294967295.
