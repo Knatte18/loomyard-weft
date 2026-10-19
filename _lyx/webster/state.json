@@ -284,7 +284,7 @@
       }
     }
   ],
-  "currentBatch": 0,
+  "currentBatch": 1,
   "masterStrand": "06e1d7c21336a18b8bd496e3df5edb47",
   "masterSessionId": "ecec8656-2d4b-4043-b894-2071a1074e16",
   "masterEngine": "claude",
@@ -300,35 +300,25 @@
         "02-toolfloor-package": "9c8ad9d355f4cf6c57d10349c771ecf015567df111ef880c29f115af7ada2ec2"
       },
       "startSha": "e14e9b4952c711cd015e7a3e5426793c32c6a9fa",
-      "kind": "fork",
-      "spawnedAt": "2026-10-19T17:14:11Z",
-      "sessionId": "ecec8656-2d4b-4043-b894-2071a1074e16",
-      "engine": "claude",
-      "terminal": true,
-      "status": "failed",
-      "digest": {
-        "batch": "01-lyxtemp-short-run-names",
-        "status": "failed",
-        "head_sha": "c27d4e82978ad2c477773f92a37e4b8ff0da1b22",
-        "reasons": [
-          "batch 01-lyxtemp-short-run-names holds cards 1-lyxtemp-short-run-names, 2-toolfloor-package",
-          "create-not-done/2-toolfloor-package[blocking]: Create target \"internal/toolfloor/doc.go#\" still does not resolve: looked up \"internal/toolfloor/doc.go#\", quarry answered not_found (the unit is missing)",
-          "create-not-done/2-toolfloor-package[blocking]: Create target \"plan:internal/toolfloor#GitFloor\" still does not resolve: looked up \"internal/toolfloor#GitFloor\", quarry answered not_found (the unit is missing)",
-          "create-not-done/2-toolfloor-package[blocking]: Create target \"plan:internal/toolfloor#TmuxFloor\" still does not resolve: looked up \"internal/toolfloor#TmuxFloor\", quarry answered not_found (the unit is missing)",
-          "create-not-done/2-toolfloor-package[blocking]: Create target \"plan:internal/toolfloor#FloorError\" still does not resolve: looked up \"internal/toolfloor#FloorError\", quarry answered not_found (the unit is missing)",
-          "create-not-done/2-toolfloor-package[blocking]: Create target \"plan:internal/toolfloor#FloorError.Error\" still does not resolve: looked up \"internal/toolfloor#FloorError.Error\", quarry answered not_found (the unit is missing)",
-          "create-not-done/2-toolfloor-package[blocking]: Create target \"plan:internal/toolfloor#CheckGit\" still does not resolve: looked up \"internal/toolfloor#CheckGit\", quarry answered not_found (the unit is missing)",
-          "create-not-done/2-toolfloor-package[blocking]: Create target \"plan:internal/toolfloor#CheckTmux\" still does not resolve: looked up \"internal/toolfloor#CheckTmux\", quarry answered not_found (the unit is missing)",
-          "create-not-done/2-toolfloor-package[blocking]: Create target \"plan:internal/toolfloor#TestCheck\" still does not resolve: looked up \"internal/toolfloor#TestCheck\", quarry answered not_found (the unit is missing)",
-          "create-not-done/2-toolfloor-package[blocking]: Create target \"plan:internal/toolfloor#TestLeafInvariant_StandardLibraryOnly\" still does not resolve: looked up \"internal/toolfloor#TestLeafInvariant_StandardLibraryOnly\", quarry answered not_found (the unit is missing)"
-        ]
-      },
+      "kind": "recovery",
+      "spawnedAt": "2026-10-19T17:17:11Z",
+      "terminal": false,
+      "status": "",
       "forkTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-ubuntu-2404-support/ecec8656-2d4b-4043-b894-2071a1074e16/subagents/agent-ab3496cc51b471391.jsonl"
       ],
-      "bracketTranscripts": [
-        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-ubuntu-2404-support/ecec8656-2d4b-4043-b894-2071a1074e16/subagents/agent-ab3496cc51b471391.jsonl"
-      ]
+      "strandGuid": "dcd54a8468a10ce996f140de94561727",
+      "shuttleRunDir": "/home/knatte/Code/loomyard-LYXHUB/ubuntu-2404-support/.lyx/shuttle/4e7669402ce524f9928fac9a842ca830",
+      "eventsPath": "/home/knatte/Code/loomyard-LYXHUB/ubuntu-2404-support/.lyx/shuttle/4e7669402ce524f9928fac9a842ca830/events.jsonl",
+      "eventsOffset": 2297,
+      "recoveries": 1,
+      "recoverySessions": [
+        "3596b91d-03ef-4a38-bf80-427cb30d552d"
+      ],
+      "recoveryEngines": {
+        "3596b91d-03ef-4a38-bf80-427cb30d552d": "claude"
+      },
+      "recoveryStartSha": "c27d4e82978ad2c477773f92a37e4b8ff0da1b22"
     }
   },
   "seenForkTranscripts": [
