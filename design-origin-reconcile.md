@@ -2,7 +2,7 @@
 
 `origin-reconcile` · Task · bug, enhancement, fabric, batten, orch, creel
 
-Depends on: [`ubuntu-2404-support`](design-ubuntu-2404-support.md), [`hub-workspaces`](design-hub-workspaces.md)
+Depends on: [`ubuntu-2404-support`](design-ubuntu-2404-support.md)
 
 ## Goal
 
