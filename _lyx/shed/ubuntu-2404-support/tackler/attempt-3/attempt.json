@@ -1,0 +1,20 @@
+{
+  "number": 3,
+  "stop_key": {
+    "current_producer": "Plan-Bouncer",
+    "history_length": 28,
+    "state": "failed"
+  },
+  "pause_before": "",
+  "pause_after": "",
+  "snapshot": {
+    "head": "c27d4e82978ad2c477773f92a37e4b8ff0da1b22",
+    "branch": "ubuntu-2404-support",
+    "dirty": {}
+  },
+  "spawned_at": "2026-10-19T19:48:36.20493063+02:00",
+  "deadline": "2026-10-19T19:58:36.20493063+02:00",
+  "envelope_path": "/home/knatte/Code/loomyard-LYXHUB/ubuntu-2404-support/_lyx/shed/ubuntu-2404-support/drive-reports/drive-envelope-20261019-194836-4e6b.json",
+  "report_path": "/home/knatte/Code/loomyard-LYXHUB/ubuntu-2404-support/_lyx/shed/ubuntu-2404-support/drive-reports/drive-report-20261019-194836-0a4c.md",
+  "strand_guid": "f4e7e7a50916afd3873413b0dcb51db2"
+}

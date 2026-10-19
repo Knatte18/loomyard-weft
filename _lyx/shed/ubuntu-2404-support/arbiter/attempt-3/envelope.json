@@ -1,0 +1,12 @@
+{
+  "verdict": "hand-on",
+  "reason": "Plan-Bouncer's plan commit fails deterministically in the deployed lyx's own code, so neither a plain re-launch nor a goto settles it. `planCommitPathspec` (internal/loomcli/wiring.go) adds `_lyx/webster` when the live webster directory holds a file or any `_lyx/plan/archive-*/webster` holds one. The archive `_lyx/plan/archive-20261019T172536Z/webster/` was already committed, together with the live directory's deletions, in weft commit cf8be7c82 (\"loom: plan artifacts for ubuntu-2404-support\"). Since then `git ls-files -- _lyx/webster` in the weft is empty and the live directory holds no file, but the archive clause still fires on every later plan commit, and git refuses the pathspec that matches nothing. Every re-run of Plan-Bouncer, or of any row that reaches it, rebuilds the same pathspec from the same disk state. To fix it, change the condition (for example, add the path only when the live directory holds a file or has entries in the index) in lyx on main and redeploy through update-plugins. That code change is outside this task's scope (the Ubuntu 24.04 toolchain parts), and the arbiter has no verb that makes it. The decision record and support log say nothing about it.",
+  "question": "Plan-Bouncer's plan commit fails every time because `planCommitPathspec` in internal/loomcli/wiring.go adds `_lyx/webster` whenever an archived `_lyx/plan/archive-*/webster` holds a file, even after that archive and the live directory's deletions were committed (weft cf8be7c82) and nothing under `_lyx/webster` is tracked any longer. Should the condition be fixed on main and redeployed before this run is re-launched at Plan-Bouncer (my recommendation)? Or should the fix go into this run's scope, which would widen the task beyond its Ubuntu 24.04 parts?",
+  "goto": "",
+  "verbs": [],
+  "cause": "",
+  "attempt": 3,
+  "attempt_dir": "/home/knatte/Code/loomyard-LYXHUB/ubuntu-2404-support/_lyx/shed/ubuntu-2404-support/arbiter/attempt-3",
+  "verdict_path": "/home/knatte/Code/loomyard-LYXHUB/ubuntu-2404-support/_lyx/shed/ubuntu-2404-support/arbiter/attempt-3/verdict.yaml",
+  "relaunch": ""
+}
