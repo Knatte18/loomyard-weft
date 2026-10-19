@@ -1,6 +1,20 @@
-# Run lyx on Ubuntu 24.04's toolchain (git 2.43, tmux 3.4): audit, fix and a minimum-version check
+# lyx runs and tests green on Ubuntu 24.04 (git 2.43, tmux 3.4, 10-digit uid)
 
-`ubuntu-2404-toolchain` · Note · enhancement, fabric, reed
+`ubuntu-2404-support` · Task · bug, enhancement, fabric, reed, creel
+
+## Goal
+
+lyx runs, and both test tiers pass, on Ubuntu 24.04 with its packaged git 2.43 and tmux 3.4 under a 10-digit Active Directory uid: the operator's NORCE machine, which may not be upgraded.
+That host is where development continues, so this is the operator's priority (2026-10-19).
+
+## Operator decisions (2026-10-19)
+
+- One standard loom run holding every part below.
+- The `cherry-pick --empty=drop` replacement keeps the same behaviour on every git version: a plain `git cherry-pick`, and on an empty pick `git cherry-pick --skip`, so HEAD stays unmoved.
+- The run proves itself here with tests that reproduce the host's conditions (long uid, git 2.43 and tmux 3.4 behaviour); the operator runs both gate tiers on the NORCE machine after landing, and what still fails there becomes a follow-up.
+- Multi-machine ownership (`run-machine-ownership`, `open-window-per-machine`) stays out of this task.
+
+## Part: toolchain audit and minimum versions (#747, #745)
 
 Imported from [issue #747](https://github.com/Knatte18/loomyard/issues/747).
 
@@ -201,3 +215,101 @@ index 160489a5..22b57e44 100644
 - Whether the `internal/fabricengine` merge-lock failure (`worktree dirty`, want `ErrForeignMergeState`) is git 2.43 or a separate fault.
 - Whether #744 fails on the Kubuntu machine too, or only here.
 - Which git version lyx needs at minimum: `cherry-pick --empty` arrived after 2.43.
+
+## Part: tmux socket path too long for a 10-digit uid (#739)
+
+Imported from [issue #739](https://github.com/Knatte18/loomyard/issues/739).
+
+Seen on Linux host with uid 1856216086, in the implementer-seam Merge-In verify and reproduced with `lyx gate test ./internal/durfmt`; main fails the same way.
+
+Every package fails before any test runs:
+
+```
+tmuxkit: socket directory "/tmp/lyx-1856216086/r859730815" is too long: its longest socket path would be 108 bytes, over the 107-byte limit; set TMPDIR to a shorter path.
+```
+
+The uid appears twice, in lyxtemp's root `/tmp/lyx-<uid>/r<rand>` and in tmux's `tmux-<uid>` socket dir, and with `maxKeyBytes` = 61 the longest socket path reaches 108-109 bytes (`internal/testkit/tmuxkit/tmuxkit.go`).
+
+Workaround: none taken; the run holds until main is fixed.
+
+Expected: the suite runs on any uid length, e.g. by giving tmuxkit a shorter socket directory or shortening lyxtemp's run-dir naming.
+
+## Part: git 2.43 has no cherry-pick --empty (#743)
+
+Imported from [issue #743](https://github.com/Knatte18/loomyard/issues/743).
+
+Seen on a Linux host with git 2.43.0 (Ubuntu 24.04's packaged git), go 1.26.9, tmux 3.4, running `lyx gate test --tags integration ./...` on main plus the #739 fix.
+
+Failures:
+- `internal/gitrepo` `TestCherryPick/a_pick_whose_change_is_already_carried_leaves_HEAD_unmoved`: `git cherry-pick --empty=drop <sha>` exits 129 with the usage text, since git 2.43 has no `--empty` for cherry-pick.
+- `internal/fabricengine` `TestBolt_PullThenCommitWritten` and `TestBolt_PushRecorded_DropsSeedCommitsOnRebaseConflict`: `git pull --rebase` stops on `could not apply ... lyx: seed stencils` instead of dropping the seed commit, and one case reports `skipped "diverged", want the genuine seed commit dropped and the write to run`.
+- `internal/fabricengine` merge-lock test (`mergelock_integration_test.go:342` and `:365`): `merge preconditions failed: worktree dirty`, want `ErrForeignMergeState`; possibly the same git version cause, not confirmed.
+
+The same calls run in production paths, so fabric and Bolt writes can fail on this host outside tests too.
+
+Expected: lyx states its minimum git version and checks it at start with a clear error, or avoids flags the packaged git of a current Ubuntu LTS lacks.
+
+## Part: reed session row on tmux 3.4 (#738, #748)
+
+Imported from [issue #738](https://github.com/Knatte18/loomyard/issues/738).
+
+Seen on Linux with tmux 3.4, in the prime's reed session `loomyard` (the only session on the socket).
+
+The session row (`status-format[1]`) reads ` loomyard , loomyard `: one grey copy, a literal comma, then the yellow focused copy.
+
+Rendered with `tmux display-message -p '#{T:status-format[1]}'`:
+
+```
+#[range=session|$0 bg=colour236 fg=white] loomyard #[norange list=on default] ,#[range=session|$0 list=focus bg=yellow fg=black bold] loomyard #[norange list=on default]
+```
+
+The format is `#{S:<other-session arm>,<current-session arm>}`.
+tmux 3.4 does not split `#{S:}` into a separate current-session format, so every session gets both arms and the comma between them.
+
+Expected: each session is drawn once, the current one highlighted, on every tmux version lyx supports.
+For example, use one arm that picks the style with `#{?session_attached,...}` or `#{==:#{session_name},#{client_session}}`, or detect the tmux version.
+
+## From issue #748
+
+Imported from [issue #748](https://github.com/Knatte18/loomyard/issues/748).
+
+Fix approach for #738 and #740 together, part of the Ubuntu 24.04 toolchain work in #747.
+
+tmux 3.4's man page says that only `W:` and `P:` take a second, current-item format; `S:` takes one, so reed's `#{S:<other>,<current>}` in `status-format[1]` draws every session twice with a literal comma (#738).
+`S:` also walks sessions in name order with no sort option in 3.4, so the prime is not leftmost (#740).
+
+Both go away in one format string that works on tmux 3.4 and newer:
+1. Draw the prime's session first, outside the loop.
+2. Loop with `#{S:...}` over the others only, skipping the prime with a test such as `#{?#{==:#{session_name},<prime session>},,...}`.
+3. Inside the loop, pick the focused style with `#{==:#{session_name},#{client_session}}` instead of a second format, so no comma-separated pair is needed.
+
+Expected: the prime's session leftmost, every other session once to its right, the current one highlighted, on tmux 3.4 and later.
+Check it rendered, e.g. with `tmux display-message -p '#{T:status-format[1]}'`, since a test that only checks the option is set does not catch either fault.
+
+## Part: reed session row puts the prime first (#740)
+
+Imported from [issue #740](https://github.com/Knatte18/loomyard/issues/740).
+
+Seen on Linux, tmux 3.4, with the prime's reed session `loomyard` and two task-pair sessions `hub-workspaces` and `implementer-seam`.
+
+The session row (`status-format[1]`, `#{S:...}`) draws the sessions in tmux's name order: hub-workspaces, implementer-seam, loomyard.
+
+Expected, per the operator: the prime's session always sits leftmost, and the task-pair sessions follow to its right.
+Separate from #738, which is the doubled entry with a stray comma in the same row.
+
+## Part: creel reminders hold test fails on the second host (#744)
+
+Imported from [issue #744](https://github.com/Knatte18/loomyard/issues/744).
+
+Seen on a Linux host (git 2.43.0, tmux 3.4, go 1.26.9) with main at c03af73d plus the #739 lyxtemp fix, which creelengine does not read beyond its temp directory.
+`lyx gate test ./internal/creelengine` fails twice in a row:
+
+```
+--- FAIL: TestScheduler_Reminders/HoldMutesOtherSendersLetsTheOwnerPassAndEndsAtExpiry (0.03s)
+    deliver_test.go:505: typed ["[creel] #3 from ly:BATTEN: from the owner"]; want only the owner's notice and mail
+```
+
+The owner's 4097-byte post under its own hold gets no reminder line; only the notice for the short post is typed.
+Not seen before on this host only because no package could run here until #739.
+
+Expected: the test passes on every host, or the reminder for the hold owner's over-long mail is typed as the test wants.
