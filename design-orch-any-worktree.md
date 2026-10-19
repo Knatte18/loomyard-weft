@@ -75,6 +75,7 @@ Task `machine-handover` gives every board entry an `owner` machine and a takeove
 - a beam has one owner machine, the machine its dobby runs on, and every task below it goes with it: there is no per-task ownership, since handovers are rare;
 - a task lands into its parent by merging in the parent's local worktree, so a branch lands into a beam only on the machine that owns the beam;
 - adopting a beam takes it with all its children;
+- landing a beam merges it into its parent beam, so it needs the parent's owner machine: normally that machine lands it from the beam branch on origin, with no takeover; when that machine is not available, the landing machine adopts the parent beam with its whole tree first, without the old owner's help, and the old owner pauses its runs when it next wakes or starts its orch;
 - adopting the prime, the root beam, takes over the whole hub;
 - the origin check of `machine-handover` (`git ls-remote` over the warp and records repos) covers beam branches with no extra work.
 
