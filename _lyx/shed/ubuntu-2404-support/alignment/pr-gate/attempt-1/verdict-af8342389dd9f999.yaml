@@ -1,0 +1,8 @@
+verdict: approve
+reason: >-
+  The PR 757 diff at 100b879e8 implements the board entry's goal and D1-D7 plus the three added decisions, with no change outside scope.
+  The Webster BLOCKING carry-over (duplicated time segment) is fixed in 43d444292.
+  The other carry-overs are recorded bounds or are resolved.
+  lyx loom peers lists no peer runs and no parent commits, so there is no overlap.
+question: ""
+superseded: []
