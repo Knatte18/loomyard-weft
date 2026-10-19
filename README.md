@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-19 18:04 UTC; every age below is as of then.
+Rendered 2026-10-19 18:07 UTC; every age below is as of then.
 
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
@@ -27,7 +27,7 @@ Waits on nothing open; can start now.
 
 | # | Task | Slug | Recipe | After | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | **Lenses and fans move into a lenses module of their own, listed in full in the hub file**<br>• A lenses module holds every lens and fan for reviewers, fixers and twill writers; reconcile keeps the hub file complete; the 7-lens twill-discussion fan becomes the default<br>• `loom: review_hard_max_bounces 3`<br>• `loom: review_max_bounces 2` | [`lenses-module`](design-lenses-module.md) | loom |  | 1h | 59m | burler, loom, config |
+| 1 | **Lenses and fans move into a lenses module of their own, listed in full in the hub file**<br>• A lenses module holds every lens and fan for reviewers, fixers and twill writers; reconcile keeps the hub file complete; the 7-lens twill-discussion fan becomes the default<br>• `loom: review_hard_max_bounces 3`<br>• `loom: review_max_bounces 2` | [`lenses-module`](design-lenses-module.md) | loom |  | 1h | 1h | burler, loom, config |
 
 ### Layer A
 
@@ -74,8 +74,8 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | --- | --- | --- | --- | --- | --- |
 | 1 | **webster create-not-done check rejects a Create target the card removes itself** | [`create-target-transient`](design-create-target-transient.md) | 1d | 1d | webster, loom, quarry |
 | 2 | **orch status reports a live strand after the orch Claude session exits, so --continue is refused** | [`orch-strand-live-after-exit`](design-orch-strand-live-after-exit.md) | 3h | 3h | orch, reed |
-| 3 | **Arbiter verdict with an unquoted verbs item containing ': ' is unparseable** | [`arbiter-verdict-quoting`](design-arbiter-verdict-quoting.md) | 50m | 50m | shed, loom |
-| 4 | **A stop after a converged review verdict spends no review budget, and its way forward keeps the verdict**<br>• Plan-Bouncer commit retries after CONVERGED used up the budget; the suggested goto discarded the verdict and re-ran the review | [`converged-bouncer-budget`](design-converged-bouncer-budget.md) | 6m | 3m | shed, loom, burler |
+| 3 | **Arbiter verdict with an unquoted verbs item containing ': ' is unparseable** | [`arbiter-verdict-quoting`](design-arbiter-verdict-quoting.md) | 53m | 53m | shed, loom |
+| 4 | **A stop after a converged review verdict spends no review budget, and its way forward keeps the verdict**<br>• Plan-Bouncer commit retries after CONVERGED used up the budget; the suggested goto discarded the verdict and re-ran the review | [`converged-bouncer-budget`](design-converged-bouncer-budget.md) | 9m | 6m | shed, loom, burler |
 
 ### Enhancements
 
@@ -117,19 +117,20 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 27 | **Plan gate does not catch declared PATTERN.md growth that exceeds the headroom line** | [`plan-gate-pattern-headroom`](design-plan-gate-pattern-headroom.md) | 1d | 1d | loom, burler |
 | 28 | **Plan cards mark additive edits so shared spots stop chaining the card DAG**<br>• An Extends label for edits that only add to a ref; two Extends on one ref are no dependency; measure with plandag first | [`plan-extends-label`](design-plan-extends-label.md) | 23h | 23h | loom, webster, burler |
 | 29 | **lyx batten run starts in its own window by default**<br>• Every batten run is started with --window, so the window should be the default and foreground the opt-in. | [`batten-window-default`](design-batten-window-default.md) | 7h | 7h | batten, reed, orch |
-| 30 | **A halt a plan card asks for reaches the parent as a question, not as a batch failure**<br>• A card-requested halt went through recover-batch, tackler and arbiter as a failure; it should go straight to the parent and the next attempt should carry the decision | [`card-halt-is-question`](design-card-halt-is-question.md) | 42m | 42m | webster, shed, loom |
-| 31 | **A question research can settle is settled in Discussion, never deferred to Plan or an implementer**<br>• Discussion writer researches the facts its design rests on; reviewers flag a deferred research question or a halt-on-discovery rule | [`research-in-discussion`](design-research-in-discussion.md) | 30m | 30m | loom, stencil, burler |
-| 32 | **A plan or discussion re-entered for a small amendment gets one review round, not a fresh full budget**<br>• A goto back to Plan-Write for a one-card fix reset the full Plan review budget; an amendment round should get a small budget by itself | [`amend-review-budget`](design-amend-review-budget.md) | 27m | 3m | loom, burler, shed |
+| 30 | **A halt a plan card asks for reaches the parent as a question, not as a batch failure**<br>• A card-requested halt went through recover-batch, tackler and arbiter as a failure; it should go straight to the parent and the next attempt should carry the decision | [`card-halt-is-question`](design-card-halt-is-question.md) | 46m | 46m | webster, shed, loom |
+| 31 | **A question research can settle is settled in Discussion, never deferred to Plan or an implementer**<br>• Discussion writer researches the facts its design rests on; reviewers flag a deferred research question or a halt-on-discovery rule | [`research-in-discussion`](design-research-in-discussion.md) | 34m | 34m | loom, stencil, burler |
+| 32 | **A plan or discussion re-entered for a small amendment gets one review round, not a fresh full budget**<br>• A goto back to Plan-Write for a one-card fix reset the full Plan review budget; an amendment round should get a small budget by itself | [`amend-review-budget`](design-amend-review-budget.md) | 30m | 6m | loom, burler, shed |
+| 33 | **Friction is gathered once per run, not by an agent session at every stop**<br>• Each stop started a friction session that held the driver lock; friction belongs at the end of the run | [`friction-not-per-stop`](design-friction-not-per-stop.md) | 0m | 0m | shed, loom |
 
 #### Low priority
 
 | # | Note | Slug | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| 33 | **Fabric's Windows path behaviour verified on a Windows host**<br>• Unverified after six hardening rounds; needs a Windows host, not design; take it only if Windows becomes relevant | [`fabric-windows`](design-fabric-windows.md) | 2w | 9d | fabric |
-| 34 | **warp-visibility: CLAUDE.local.md invisible in the Fabric repo's git history**<br>• Expose CLAUDE.local.md by symlink so nothing lyx-related shows in the Fabric repo's history; the constraints half is out of date | [`warp-visibility`](design-warp-visibility.md) | 2w |  | ide, fabric |
-| 35 | **Windows verify timeout kills the whole process tree**<br>• On Windows the verifytree timeout kills only the shell, not the process tree it started | [`verify-watchdog`](design-verify-watchdog.md) | 12d | 3d | shed |
-| 36 | **A hub pause leaves background forks and shells running, so hibernate never confirms**<br>• Pause interrupts turns but not background forks or shells; sessions read busy and hibernate confirmation fails | [`pause-background-work`](design-pause-background-work.md) | 4d | 2d | shuttle, webster |
-| 37 | **[WS 007] An anchor per umbrella**<br>• Let an umbrella work in its own subdirectory of the repository, inherited by its tasks; hard to change now | [`umbrella-anchor`](design-umbrella-anchor.md) | 1d | 1d | fabric, config, workspaces |
+| 34 | **Fabric's Windows path behaviour verified on a Windows host**<br>• Unverified after six hardening rounds; needs a Windows host, not design; take it only if Windows becomes relevant | [`fabric-windows`](design-fabric-windows.md) | 2w | 9d | fabric |
+| 35 | **warp-visibility: CLAUDE.local.md invisible in the Fabric repo's git history**<br>• Expose CLAUDE.local.md by symlink so nothing lyx-related shows in the Fabric repo's history; the constraints half is out of date | [`warp-visibility`](design-warp-visibility.md) | 2w |  | ide, fabric |
+| 36 | **Windows verify timeout kills the whole process tree**<br>• On Windows the verifytree timeout kills only the shell, not the process tree it started | [`verify-watchdog`](design-verify-watchdog.md) | 12d | 3d | shed |
+| 37 | **A hub pause leaves background forks and shells running, so hibernate never confirms**<br>• Pause interrupts turns but not background forks or shells; sessions read busy and hibernate confirmation fails | [`pause-background-work`](design-pause-background-work.md) | 4d | 2d | shuttle, webster |
+| 38 | **[WS 007] An anchor per umbrella**<br>• Let an umbrella work in its own subdirectory of the repository, inherited by its tasks; hard to change now | [`umbrella-anchor`](design-umbrella-anchor.md) | 1d | 1d | fabric, config, workspaces |
 
 ### Features
 
