@@ -2,6 +2,9 @@
 
 **Edit:**
 - `internal/gitexec#runCore`
+- `internal/gitexec#Run`
+- `internal/gitexec#RunStdin`
+- `internal/gitexec#RunGit`
 - `internal/gitexec#SetKillReporter`
 - `internal/gitexec/doc.go`
 - `cmd/lyx#spawnObservabilityAllowedSpawners`
@@ -20,18 +23,18 @@
 **Uses:**
 - `plan:internal/toolfloor#CheckGit`
 - `plan:internal/toolfloor#FloorError`
-- `internal/gitexec#Run`
-- `internal/gitexec#RunGit`
 
 **Intent:** D4, git half: a process whose git is below the floor fails every git command with the floor error, checked once per process before the first git command.
 
 - `probeGitVersion` runs `git --version` with `exec.Command` directly, never through `runCore`, with the same `childEnv(nil)` and `proc.HideWindow`, and logs the spawn with `logger.Debug`; it returns the trimmed stdout, or the exec error when git could not run.
+  It bypasses `runCore` only because `runCore`'s first step is the floor check itself, so a probe through it would re-enter the check it serves while `check` holds the cache's mutex; it keeps `runCore`'s local-command environment, so the probe runs as any local git command does.
   `versionProbe` holds it so a test injects a version line; tests never substitute a git binary.
 - `floorCache` holds a mutex, a done flag and the cached floor error.
   `check` returns the cached result once done; otherwise it calls probe: an exec error is returned and not cached, so the next command probes again; a line `toolfloor.CheckGit` parses is cached with its answer (nil or the `*toolfloor.FloorError`); an unparseable line is logged once with `logger.Warn` naming the line and cached as admitted.
   Bound: only a parsed version below the floor is refused, nothing bypasses a parsed refusal, and a long-lived daemon keeps its cached answer after a git upgrade during its life.
 - `CheckFloor` returns `gitFloor.check(versionProbe)`, exported so a git spawn outside the exec core (card 5's `planglyph.Delta`) checks too.
 - `runCore` calls `CheckFloor` first and returns its error unwrapped with exit code -1, before any spawn, so `Run`, `RunStdin` and `RunGit` all return the floor error, which is no `*GitError`.
+  `runCore`'s godoc, the godocs of `Run`, `RunStdin` and `RunGit`, `gitexec.go`'s file header comment and the package summary in `internal/gitexec/doc.go` name the floor error as the other non-`*GitError` result, which no git command ran to produce, beside the exec-level failure where git could not be run at all.
   It also logs each spawn it makes with `logger.Debug` (subcommand and dir), so the exec core is observable; `internal/logger`'s import closure no longer reaches `internal/gitexec`, so the import closes no cycle.
 - `cmd/lyx#spawnObservabilityAllowedSpawners` drops its `internal/gitexec/gitexec.go` entry, whose import-cycle reason no longer holds; `TestSpawnObservability_ProductionSpawnsAreLogged` then holds gitexec to the rule like any file.
 - `SetKillReporter`'s godoc and `cmd/lyx`'s `logGitKill` godoc stop saying gitexec cannot log: the reporter stays, since the process owner decides how a kill is reported.

@@ -38,6 +38,7 @@
 - `TmuxCmd` gains an unexported field `floorLine string`, read only when `execHook` is set.
   `checkFloor` returns nil on Windows; with `execHook` set it never reads or fills the process cache: it admits when `floorLine` is empty and otherwise returns `toolfloor.CheckTmux(floorLine)`'s refusal, admitting an unparseable line; without a hook it returns `CheckTmuxFloor(p.tmuxPath)`.
   So hook-driven tests run no probe and keep their exact call counts, such as `lock_test.go`'s zero-call and `overlay_test.go`'s one-call checks.
+  Bound: `execHook` and `floorLine` are set only by `reedengine`'s own `_test.go` files, so no production `TmuxCmd` carries a hook, and every production `run`, `runStdin` and `output` reaches `CheckTmuxFloor`.
 - `run`, `runStdin` and `output` call `checkFloor` first and return its error before the hook or the spawn.
 - The lifecycle server spawn in `ensureServerAndSessionLocked`'s `spawnSession` closure calls `CheckTmuxFloor(e.cfg.Tmux)` before `exec.Command` and returns its error as `start tmux: %w`, so a floor refusal still reads as a failed start and `TestEnsureServerAndSession_RevivalTrigger`'s "start tmux" rows, which run a nonexistent binary, keep passing.
 - The capability probe's own native floor (`minTmuxVersion`, 3.3) stays: the new check refuses a native tmux below 3.4 before the capability probe runs, and psmux keeps its Windows floor there.
