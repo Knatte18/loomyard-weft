@@ -1,0 +1,12 @@
+{
+  "verdict": "hand-on",
+  "reason": "loom: parse arbiter verdict \"/home/knatte/Code/loomyard-LYXHUB/ubuntu-2404-support/_lyx/shed/ubuntu-2404-support/arbiter/attempt-2/verdict.yaml\": yaml: unmarshal errors:\n  line 21: cannot unmarshal !!map into string",
+  "question": "The arbiter could not settle this stop (unparseable); decide it yourself and report the choice in the stop report.",
+  "goto": "",
+  "verbs": null,
+  "cause": "unparseable",
+  "attempt": 2,
+  "attempt_dir": "/home/knatte/Code/loomyard-LYXHUB/ubuntu-2404-support/_lyx/shed/ubuntu-2404-support/arbiter/attempt-2",
+  "verdict_path": "/home/knatte/Code/loomyard-LYXHUB/ubuntu-2404-support/_lyx/shed/ubuntu-2404-support/arbiter/attempt-2/verdict.yaml",
+  "relaunch": ""
+}
