@@ -1,6 +1,6 @@
 # Fork git-mutation guard flags read-only 'git help' piped through col/grep as state-mutating
 
-`fork-git-guard-readonly` · Task · bug, burler · running · Merge-In
+`fork-git-guard-readonly` · Task · bug, burler · running · Publish
 
 Imported from [issue #750](https://github.com/Knatte18/loomyard/issues/750).
 
