@@ -23,7 +23,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 2 | **Implementer seam: batchifier inside Webster, engine chosen by setting**<br>• Groundwork before Weaver: batching moves into the implementer, a written implementer contract, loom.implementer selects the engine<br>• `darn: review_max_bounces 1` | [`implementer-seam`](design-implementer-seam.md) | darn | PR-Gate | 1d | 1d | webster, loom, shed, report |
+| 2 | **Implementer seam: batchifier inside Webster, engine chosen by setting**<br>• Groundwork before Weaver: batching moves into the implementer, a written implementer contract, loom.implementer selects the engine<br>• `darn: review_max_bounces 1` | [`implementer-seam`](design-implementer-seam.md) | darn | Finalize | 1d | 1d | webster, loom, shed, report |
 
 ### Ready
 
