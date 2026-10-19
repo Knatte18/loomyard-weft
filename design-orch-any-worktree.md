@@ -72,11 +72,13 @@ It has work only at its start and its end:
 ## Operator decision (2026-10-19): a beam has an owner machine
 
 Task `machine-handover` gives every board entry an `owner` machine and a takeover verb; beams extend it:
-- a beam has one owner machine, the machine its dobby runs on, and every task below it goes with it: there is no per-task ownership, since handovers are rare;
+- every task and every beam has its own owner machine, and each machine's dobby drives only the runs that machine owns;
+- adopting a beam takes the beam only: its children keep their owners (this replaces an earlier same-day decision that the children go with it);
 - a task lands into its parent by merging in the parent's local worktree, so a branch lands into a beam only on the machine that owns the beam;
-- adopting a beam takes it with all its children;
-- landing a beam merges it into its parent beam, so it needs the parent's owner machine: normally that machine lands it from the beam branch on origin, with no takeover; when that machine is not available, the landing machine adopts the parent beam with its whole tree first, without the old owner's help, and the old owner pauses its runs when it next wakes or starts its orch;
-- adopting the prime, the root beam, takes over the whole hub;
+- normally the parent's owner lands a finished run of another machine from its branch on origin, after a ready-to-land handover through Bolt (creel reaches only one machine), with no takeover;
+- when that machine is not available, the landing machine adopts the parent first, without the old owner's help, and the old owner pauses what it no longer owns when it next wakes or starts its orch;
+- landing a beam into its parent beam follows the same rule;
+- `lyx adopt --all` takes over the whole hub;
 - the origin check of `machine-handover` (`git ls-remote` over the warp and records repos) covers beam branches with no extra work.
 
 ## Orch sketch, not a decision
