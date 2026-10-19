@@ -1,6 +1,6 @@
 {
   "runGuid": "6d516a631aa57b9c9724c7003a424cac",
-  "planFingerprint": "da62843ffa6b9c67ac214d57c1a3aa7ab3c63765d555a3d09c4af66fde4f0514",
+  "planFingerprint": "ed1fcbbba0699c9c4974bf98afe94f6851c0155d44951f4f485efb46d88dc8ec",
   "planFileHashes": {
     "00-overview.md": "37db3c4d8d732f4dc375eefe15878fac6f32c906a9a41b445ca315e3fda358d2",
     "01-lyxtemp-short-run-names.md": "298c9abb097d782d1bbce20f41ca4a57e829c6ccfc377bb88e216855ad4a00ac",
@@ -8,9 +8,9 @@
     "03-cherrypick-without-empty.md": "41d5b49c6fd6e5353062716492371b2b8fade0f6b4d16fc136446299fc558aa6",
     "04-gitexec-floor-check.md": "6c81ac1f1c9bd76613ef95684174c2c6cf95d7a42252dc07cfd0bbe78d2a7377",
     "05-planglyph-delta-floor.md": "10c60e5611777d65a4ca81c98bc575712ec455b049d6cba6bdf672b155adfe55",
-    "06-reed-tmux-floor-check.md": "b33e03ff7abb54610bb0f442732d92163b07051c17fbb64175f0d8b22955a87f",
-    "07-reedcli-attach-floor.md": "1be700c070df65cb6ac16d215605596673beea6b37e837335eadac9e08ff1d0a",
-    "08-reed-session-row-prime-first.md": "8ea7c9501cd2239d3cc3d1cf08d50778adcbc99015e0125fe3b4be7a998157fc",
+    "06-reed-tmux-floor-check.md": "3dcb8a336afc829d78eb730bec2ddb8b9c514c1e2881b65dfcf2cd4f8ecc7978",
+    "07-reedcli-attach-floor.md": "e783a4b1dc6125cda1a76e21ccd0a71224b32e4f8218ea621af05a89dfd9ebc8",
+    "08-reed-session-row-prime-first.md": "6be782c4420d158698612f1eb0f82ef60f6e47b470a4d4f69e9c0123137a37d8",
     "09-creel-deliver-marked-probe.md": "667cb3780862e1c5aed3d90bb40a9f62c723fb1acdf51339fabdf5d489642d5a",
     "10-merge-lock-wait-signal.md": "545854f8e2f73b73b304084f696efb06f48a098e0309bfdd210ed1e306d12aba"
   },
@@ -293,7 +293,7 @@
       }
     }
   ],
-  "currentBatch": 6,
+  "currentBatch": 0,
   "masterStrand": "fc4d391709e3d0b2c2dc1729dbd26db5",
   "masterSessionId": "6939c57c-46a1-443b-9c0e-40f9ed398b6c",
   "masterEngine": "claude",
@@ -411,22 +411,42 @@
         "08-reed-session-row-prime-first"
       ],
       "cardHashes": {
-        "06-reed-tmux-floor-check": "b33e03ff7abb54610bb0f442732d92163b07051c17fbb64175f0d8b22955a87f",
-        "07-reedcli-attach-floor": "1be700c070df65cb6ac16d215605596673beea6b37e837335eadac9e08ff1d0a",
-        "08-reed-session-row-prime-first": "8ea7c9501cd2239d3cc3d1cf08d50778adcbc99015e0125fe3b4be7a998157fc"
+        "06-reed-tmux-floor-check": "3dcb8a336afc829d78eb730bec2ddb8b9c514c1e2881b65dfcf2cd4f8ecc7978",
+        "07-reedcli-attach-floor": "e783a4b1dc6125cda1a76e21ccd0a71224b32e4f8218ea621af05a89dfd9ebc8",
+        "08-reed-session-row-prime-first": "6be782c4420d158698612f1eb0f82ef60f6e47b470a4d4f69e9c0123137a37d8"
       },
       "startSha": "7b2d037a839133494de372dadcb5df9439089476",
       "kind": "fork",
       "spawnedAt": "2026-10-19T18:15:52Z",
       "sessionId": "6939c57c-46a1-443b-9c0e-40f9ed398b6c",
       "engine": "claude",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "06-reed-tmux-floor-check",
+        "status": "done",
+        "head_sha": "9c4a8eb709368a78cf10d099c79d3c00f9505202",
+        "deviations": [
+          "internal/reedengine/bar_integration_test.go",
+          "internal/reedengine/bar_test.go",
+          "internal/reedengine/tmuxfloor_test.go"
+        ]
+      },
+      "cardShas": [
+        "9c4a8eb709368a78cf10d099c79d3c00f9505202"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-ubuntu-2404-support/6939c57c-46a1-443b-9c0e-40f9ed398b6c/subagents/agent-a3780f142596fb3f5.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-ubuntu-2404-support/6939c57c-46a1-443b-9c0e-40f9ed398b6c/subagents/agent-a3780f142596fb3f5.jsonl"
+      ]
     }
   },
   "seenForkTranscripts": [
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-ubuntu-2404-support/6939c57c-46a1-443b-9c0e-40f9ed398b6c/subagents/agent-a93e2078dccd06f16.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-ubuntu-2404-support/6939c57c-46a1-443b-9c0e-40f9ed398b6c/subagents/agent-af4e0c8a86af11877.jsonl",
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-ubuntu-2404-support/6939c57c-46a1-443b-9c0e-40f9ed398b6c/subagents/agent-a5737fa1a1bc785dd.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-ubuntu-2404-support/6939c57c-46a1-443b-9c0e-40f9ed398b6c/subagents/agent-a5737fa1a1bc785dd.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-ubuntu-2404-support/6939c57c-46a1-443b-9c0e-40f9ed398b6c/subagents/agent-a3780f142596fb3f5.jsonl"
   ]
 }

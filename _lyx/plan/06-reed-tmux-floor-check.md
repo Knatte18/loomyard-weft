@@ -9,16 +9,16 @@
 - `internal/reedengine/doc.go`
 
 **Create:**
-- `plan:internal/reedengine#CheckTmuxFloor` -> `func CheckTmuxFloor(tmuxPath string) error`
-- `plan:internal/reedengine#tmuxFloorCache` -> `type tmuxFloorCache struct`
-- `plan:internal/reedengine#tmuxFloorCache.check` -> `func (c *tmuxFloorCache) check(tmuxPath string, probe func(tmuxPath string) (string, error)) error`
-- `plan:internal/reedengine#tmuxFloors` -> `var tmuxFloors tmuxFloorCache`
-- `plan:internal/reedengine#probeTmuxVersion` -> `func probeTmuxVersion(tmuxPath string) (string, error)`
-- `plan:internal/reedengine#tmuxVersionProbe` -> `var tmuxVersionProbe = probeTmuxVersion`
-- `plan:internal/reedengine#TmuxCmd.checkFloor` -> `func (p TmuxCmd) checkFloor() error`
-- `plan:internal/reedengine#setTmuxVersionProbeForTest` -> `func setTmuxVersionProbeForTest(t *testing.T, probe func(tmuxPath string) (string, error))`
-- `plan:internal/reedengine#TestTmuxFloor` -> `func TestTmuxFloor(t *testing.T)`
-- `plan:internal/reedengine#TestCheckTmuxFloor_RunsNoProbeOnWindows` -> `func TestCheckTmuxFloor_RunsNoProbeOnWindows(t *testing.T)`
+- `internal/reedengine#CheckTmuxFloor`
+- `internal/reedengine#tmuxFloorCache`
+- `internal/reedengine#tmuxFloorCache.check`
+- `internal/reedengine#tmuxFloors`
+- `internal/reedengine#probeTmuxVersion`
+- `internal/reedengine#tmuxVersionProbe`
+- `internal/reedengine#TmuxCmd.checkFloor`
+- `internal/reedengine#setTmuxVersionProbeForTest`
+- `internal/reedengine#TestTmuxFloor`
+- `internal/reedengine#TestCheckTmuxFloor_RunsNoProbeOnWindows`
 
 **Uses:**
 - `internal/toolfloor#CheckTmux`
