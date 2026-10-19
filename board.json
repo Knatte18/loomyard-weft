@@ -1283,6 +1283,25 @@
       "body": "Imported from [issue #741](https://github.com/Knatte18/loomyard/issues/741).\n\nSeen on a second Linux machine of the operator, in a fresh orch session of the loomyard hub.\nThe tasks hub-workspaces and implementer-seam were started on another PC.\n\nOn this machine:\n- `lyx board list` showed them `running · Plan-Write` and `running · Merge-In`.\n- `lyx batten status \u003cslug\u003e` showed `state: running` at `Run-Shed`, `error` empty, nothing since 2026-10-18 17:42 UTC.\n- Neither pair worktree existed locally, and `lyx tender status` listed no session for either.\n\nNothing in the board, batten status or tender status says which machine owns a run.\nThe orch role reads a missing pair as a landed run, which is wrong here, because the board does not show either run as done.\n\n`lyx fabric add \u003cslug\u003e` adopted both pairs from origin, and `lyx batten run \u003cslug\u003e --window` resumed both runs here without any check.\nThe driver lock is machine-local, so nothing stopped this machine from driving the same branches while the other PC may still have been driving them.\n\nWorkaround: the operator confirmed by hand that the other PC was not running them.\n\nExpected:\n- A run records the machine that drives it, and `lyx batten status`, the board and `lyx tender status` show it.\n- A run owned by another machine is reported as such, not as a stalled or landed run.\n- Resuming a run another machine owns is refused unless the operator hands it over explicitly.",
       "created": "2026-10-19T14:26:59Z",
       "revised": "2026-10-19T14:26:59Z"
+    },
+    {
+      "id": 681,
+      "slug": "open-window-per-machine",
+      "title": "A run resumed on a second machine opens no terminal window on it",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "batten"
+      ],
+      "issues": [
+        742
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Imported from [issue #742](https://github.com/Knatte18/loomyard/issues/742).\n\nSeen when two batten runs started on another PC were adopted with `lyx fabric add \u003cslug\u003e` and resumed with `lyx batten run \u003cslug\u003e --window` on this machine.\n\nBatten resumed both at `Run-Shed`.\n`Open-Window` was already recorded done from the first machine, so no terminal window opened on this machine (the help says that a run resumed past that row opens no window).\nThe operator watches each run in its own terminal window, so they had no window for either run here.\n\nWorkaround: attach by hand with `cd \u003cpair\u003e \u0026\u0026 lyx reed attach`.\n\nExpected: Open-Window counts as done per machine, so a run resumed on a machine that never opened its window opens one there.",
+      "created": "2026-10-19T14:27:02Z",
+      "revised": "2026-10-19T14:27:02Z"
     }
   ]
 }

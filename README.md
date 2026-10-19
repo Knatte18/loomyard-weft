@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-19 14:26 UTC; every age below is as of then.
+Rendered 2026-10-19 14:27 UTC; every age below is as of then.
 
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
@@ -54,6 +54,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 4 | **reed status bar orders sessions by name instead of putting the prime first** | [`reed-session-row-prime-first`](design-reed-session-row-prime-first.md) | 0m | 0m | reed |
 | 5 | **Every test package fails on a host with a 10-digit uid: tmuxkit socket path over 107 bytes** | [`tmux-socket-path-long-uid`](design-tmux-socket-path-long-uid.md) | 0m | 0m | reed |
 | 6 | **A run started on one machine shows as running on another, and nothing stops the second machine from resuming it** | [`run-machine-ownership`](design-run-machine-ownership.md) | 0m | 0m | batten, board, orch, fabric |
+| 7 | **A run resumed on a second machine opens no terminal window on it** | [`open-window-per-machine`](design-open-window-per-machine.md) | 0m | 0m | batten |
 
 ### Enhancements
 
