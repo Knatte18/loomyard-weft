@@ -44,7 +44,7 @@
   Rendering on this host's tmux 3.6 cannot catch such a loop, so this untagged check pins it.
 - `TestPinGeometryOptionsLocked` gains a subtest "PrimeSessionIsMarked" with rows prime (`DiscoverSignalPath` set, `NameSlug` empty), pair (`NameSlug` set) and standalone (both empty): only the prime row issues the mark's `set-option`, with the strand window target and value `1`; the `AllOptionsIssued` list is unchanged, since `newTestEngine` is a pair geometry.
   A further row "a boot marks the prime" drives `pinBootOptionsLocked` on a prime engine and asserts the same mark, which is the boot half of the criterion.
-  A further row "a failing mark is non-fatal" scripts the mark's `set-option` to fail on a prime engine and asserts a `logcapture` Warn naming the option and that the calls after it (window-size and the hooks) are still issued.
+  The existing subtest `OneOptionFailureDoesNotStopTheRest` becomes two cases: its pair case, failing the first `set-option` and expecting its `wantCalls` of 8, and a prime case that fails the mark's `set-option` and expects one call more, every option still attempted, and a `logcapture` Warn naming `@lyx_prime_session`.
   The test's `//testtiming:keep` reason gains the prime mark among the pins it names.
 - `TestAttachArgv_PreflightOnAKnownGoodSession` gains a prime-geometry run beside its existing pair run: on the prime engine it expects `wantSetOptionCalls` plus one and the mark among the `set-option` calls, which is the attach half of "a prime session created by an older binary is marked after an attach"; the pair run's count stays as it is.
 - `TestBar_LineTwoListsSessionsInIDOrder`, in its `tmux && linux` file, renders line 2 three times:
@@ -54,6 +54,6 @@
   with the mark moved to the client's own session, that session's lit button with its full name comes first, then the other's unlit one, each range once.
   The prime-first order is asserted only by the two marked renders.
   The test is renamed `TestBar_LineTwoListsSessionsPrimeFirst`, and its comment names the prime-first order, so neither the name nor the comment claims session-id order; the follow-button half keeps its assertions against the last session button.
-- `internal/toolfloor/doc.go`'s audit sentence, which card 2 wrote naming `cherry-pick --empty=drop` and the two-format `#{S:}` loop as found above the floor and to be replaced, becomes the final statement: no feature lyx uses is newer than the floor, since card 3 removed the one and this card the other.
+- `internal/toolfloor/doc.go`'s audit sentence, which card 2 wrote naming `cherry-pick --empty=drop` and the two-format `#{S:}` loop as found above the floor and to be replaced, becomes the final statement: no feature lyx requires is newer than the floor, since card 3 removed the one and this card the other, and the one above-floor feature lyx uses, `allow-set-title` (tmux 3.5), stays optional: on tmux 3.4 reed Warns and continues, as card 2 records.
 
-**ImpactSummary:** Changes the global `status-format[1]` string and adds one session option pin for the prime; no Go decision reads either, and the windows line, follow button and time are unchanged; toolfloor's audit sentence reaches its final form.
+**ImpactSummary:** Changes the global `status-format[1]` string and adds one session option pin for the prime; no Go decision reads either, and the windows line, follow button and time are unchanged; toolfloor's audit sentence reaches its final form, with `allow-set-title` still recorded as optional.
