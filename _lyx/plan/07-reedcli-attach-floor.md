@@ -5,7 +5,7 @@
 - `docs/overview.md`
 
 **Uses:**
-- `plan:internal/reedengine#CheckTmuxFloor`
+- `internal/reedengine#CheckTmuxFloor`
 - `internal/reedengine#Engine.TmuxPath`
 
 **Intent:** D4: `lyx reed attach` spawns tmux itself through `handOver`, outside the `TmuxCmd` runner, so the attach command's `RunE` calls `reedengine.CheckTmuxFloor(c.eng.TmuxPath())` at its top, after the `clihelp.ShouldAbort` check and before `EnsureSession`.

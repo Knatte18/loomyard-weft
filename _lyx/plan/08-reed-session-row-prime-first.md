@@ -14,9 +14,9 @@
 - `internal/reedengine#currentSessionButtonFormat`
 
 **Create:**
-- `plan:internal/reedengine#primeSessionOption` -> `const primeSessionOption = "@lyx_prime_session"`
-- `plan:internal/reedengine#Engine.primeGeometry` -> `func (e *Engine) primeGeometry() bool`
-- `plan:internal/reedengine#TestStatusFormats_SessionLoopsTakeOneFormat` -> `func TestStatusFormats_SessionLoopsTakeOneFormat(t *testing.T)`
+- `internal/reedengine#primeSessionOption`
+- `internal/reedengine#Engine.primeGeometry`
+- `internal/reedengine#TestStatusFormats_SessionLoopsTakeOneFormat`
 
 **Uses:**
 - `internal/reedengine#reedSessionOption`
