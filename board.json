@@ -1204,6 +1204,25 @@
       "body": "## Seen\n\nThe orch starts every run with `lyx batten run \u003cslug\u003e --window`, and the operator confirms that this is always how runs are started.\nWithout the flag the whole lifecycle runs in the caller's foreground for hours, which blocks the orch session and can be killed by the shell timeout.\n\n## Idea\n\nMake the window the default for `lyx batten run`: start the run in its own tmux window of the prime's reed session, return at once, and run the Open-Window row.\nKeep the foreground as an explicit opt-in flag for the cases that need it, such as the window's own inner invocation and tests.\nUpdate the orch role and the `lyx batten run` help to drop `--window` from the normal path.",
       "created": "2026-10-19T11:00:53Z",
       "revised": "2026-10-19T11:00:53Z"
+    },
+    {
+      "id": 677,
+      "slug": "reed-session-row-tmux34",
+      "title": "reed status bar draws the current session twice with a stray comma on tmux 3.4",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "reed"
+      ],
+      "issues": [
+        738
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Imported from [issue #738](https://github.com/Knatte18/loomyard/issues/738).\n\nSeen on Linux with tmux 3.4, in the prime's reed session `loomyard` (the only session on the socket).\n\nThe session row (`status-format[1]`) reads ` loomyard , loomyard `: one grey copy, a literal comma, then the yellow focused copy.\n\nRendered with `tmux display-message -p '#{T:status-format[1]}'`:\n\n```\n#[range=session|$0 bg=colour236 fg=white] loomyard #[norange list=on default] ,#[range=session|$0 list=focus bg=yellow fg=black bold] loomyard #[norange list=on default]\n```\n\nThe format is `#{S:\u003cother-session arm\u003e,\u003ccurrent-session arm\u003e}`.\ntmux 3.4 does not split `#{S:}` into a separate current-session format, so every session gets both arms and the comma between them.\n\nExpected: each session is drawn once, the current one highlighted, on every tmux version lyx supports.\nFor example, use one arm that picks the style with `#{?session_attached,...}` or `#{==:#{session_name},#{client_session}}`, or detect the tmux version.",
+      "created": "2026-10-19T14:26:51Z",
+      "revised": "2026-10-19T14:26:51Z"
     }
   ]
 }
