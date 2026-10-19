@@ -68,6 +68,13 @@ A draft task keeps its dependencies visible in the README, in its Ready or Layer
 
 Orch recommendation, not a decision: the mark is a `Draft` column or a badge before the title, and the flag is cleared with a board verb such as `lyx board undraft <slug>`.
 
+## Readiness without batten notices (operator decision, 2026-10-19)
+
+Batten's landing notice no longer names newly ready tasks; dobby computes readiness itself from the board (kind task, not draft, `depends_on` done, not claimed).
+The `newly ready` part of the notice, and the orch's start-on-notice step, go away when dobby lands.
+
+Operator view, not a decision (2026-10-19): with dobby up, batten notices to the orch are hardly needed any more, and every kind of batten notice is to be revised in this light.
+
 ## Folded in from `orch-split` (2026-10-11 to 10-13)
 
 ### Seen (operator, 2026-10-11)
