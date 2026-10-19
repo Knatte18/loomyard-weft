@@ -1,6 +1,6 @@
 # A paused run records who paused it, a goto included
 
-`paused-state-reason` · Note · bug
+`paused-state-reason` · Note · bug, shed, loom
 
 Imported from [issue #759](https://github.com/Knatte18/loomyard/issues/759).
 
