@@ -33,7 +33,7 @@ Waits on nothing open; can start now.
 
 | # | Task | Slug | Recipe | After | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | **Fork git-mutation guard flags read-only 'git help' piped through col/grep as state-mutating** | [`fork-git-guard-readonly`](design-fork-git-guard-readonly.md) | loom |  | 0m | 0m | burler |
+| 1 | **Fork git-mutation guard flags read-only 'git help' piped through col/grep as state-mutating**<br>• `darn: review_max_bounces 1` | [`fork-git-guard-readonly`](design-fork-git-guard-readonly.md) | darn |  | 0m | 0m | burler |
 
 ### Layer A
 
