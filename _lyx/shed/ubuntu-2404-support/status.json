@@ -1,12 +1,12 @@
 {
   "current_producer": "Plan-Bouncer",
-  "state": "running",
-  "error": "",
+  "state": "failed",
+  "error": "shedadapters: Plan-Bouncer (bouncer): commit approved artifacts: gitrepo: git commit: git commit -m \"loom: plan artifacts for ubuntu-2404-support\" -- _lyx/plan _lyx/webster: exit 1: error: pathspec '_lyx/webster' did not match any file(s) known to git",
   "pause_requested": false,
   "activity": {
     "now": "Plan-Bouncer",
     "last": "Plan-Burler-Fix → bounced to Plan-Bouncer",
-    "wait": ""
+    "wait": "shedadapters: Plan-Bouncer (bouncer): commit approved artifacts: gitrepo: git commit: git commit -m \"loom: plan artifacts for ubuntu-2404-support\" -- _lyx/plan _lyx/webster: exit 1: error: pathspec '_lyx/webster' did not match any file(s) known to git"
   },
   "history": [
     {
