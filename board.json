@@ -1188,14 +1188,15 @@
         "reed"
       ],
       "issues": [
-        738
+        738,
+        748
       ],
       "depends_on": [],
       "isolated": false,
       "brief": "",
-      "body": "Imported from [issue #738](https://github.com/Knatte18/loomyard/issues/738).\n\nSeen on Linux with tmux 3.4, in the prime's reed session `loomyard` (the only session on the socket).\n\nThe session row (`status-format[1]`) reads ` loomyard , loomyard `: one grey copy, a literal comma, then the yellow focused copy.\n\nRendered with `tmux display-message -p '#{T:status-format[1]}'`:\n\n```\n#[range=session|$0 bg=colour236 fg=white] loomyard #[norange list=on default] ,#[range=session|$0 list=focus bg=yellow fg=black bold] loomyard #[norange list=on default]\n```\n\nThe format is `#{S:\u003cother-session arm\u003e,\u003ccurrent-session arm\u003e}`.\ntmux 3.4 does not split `#{S:}` into a separate current-session format, so every session gets both arms and the comma between them.\n\nExpected: each session is drawn once, the current one highlighted, on every tmux version lyx supports.\nFor example, use one arm that picks the style with `#{?session_attached,...}` or `#{==:#{session_name},#{client_session}}`, or detect the tmux version.",
+      "body": "Imported from [issue #738](https://github.com/Knatte18/loomyard/issues/738).\n\nSeen on Linux with tmux 3.4, in the prime's reed session `loomyard` (the only session on the socket).\n\nThe session row (`status-format[1]`) reads ` loomyard , loomyard `: one grey copy, a literal comma, then the yellow focused copy.\n\nRendered with `tmux display-message -p '#{T:status-format[1]}'`:\n\n```\n#[range=session|$0 bg=colour236 fg=white] loomyard #[norange list=on default] ,#[range=session|$0 list=focus bg=yellow fg=black bold] loomyard #[norange list=on default]\n```\n\nThe format is `#{S:\u003cother-session arm\u003e,\u003ccurrent-session arm\u003e}`.\ntmux 3.4 does not split `#{S:}` into a separate current-session format, so every session gets both arms and the comma between them.\n\nExpected: each session is drawn once, the current one highlighted, on every tmux version lyx supports.\nFor example, use one arm that picks the style with `#{?session_attached,...}` or `#{==:#{session_name},#{client_session}}`, or detect the tmux version.\n\n## From issue #748\n\nImported from [issue #748](https://github.com/Knatte18/loomyard/issues/748).\n\nFix approach for #738 and #740 together, part of the Ubuntu 24.04 toolchain work in #747.\n\ntmux 3.4's man page says that only `W:` and `P:` take a second, current-item format; `S:` takes one, so reed's `#{S:\u003cother\u003e,\u003ccurrent\u003e}` in `status-format[1]` draws every session twice with a literal comma (#738).\n`S:` also walks sessions in name order with no sort option in 3.4, so the prime is not leftmost (#740).\n\nBoth go away in one format string that works on tmux 3.4 and newer:\n1. Draw the prime's session first, outside the loop.\n2. Loop with `#{S:...}` over the others only, skipping the prime with a test such as `#{?#{==:#{session_name},\u003cprime session\u003e},,...}`.\n3. Inside the loop, pick the focused style with `#{==:#{session_name},#{client_session}}` instead of a second format, so no comma-separated pair is needed.\n\nExpected: the prime's session leftmost, every other session once to its right, the current one highlighted, on tmux 3.4 and later.\nCheck it rendered, e.g. with `tmux display-message -p '#{T:status-format[1]}'`, since a test that only checks the option is set does not catch either fault.",
       "created": "2026-10-19T14:26:51Z",
-      "revised": "2026-10-19T14:26:51Z"
+      "revised": "2026-10-19T14:27:28Z"
     },
     {
       "id": 678,
