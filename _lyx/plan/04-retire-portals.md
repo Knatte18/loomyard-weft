@@ -30,7 +30,7 @@
 - `internal/fabricengine_test#TestCorrespondenceIndex`
 - `internal/fabricengine_test#TestRemove_DoesNotDeleteOutsideHubThroughLauncherSymlink`
 - `internal/fabricengine_test#TestRemove_ReturnsPairNotFoundWhenNothingRemains`
-- `plan:internal/fabricengine_test#TestVerbsRegenerateHubWorkspace`
+- `internal/fabricengine_test#TestVerbsRegenerateHubWorkspace`
 - `internal/fslink#RawTarget`
 - `internal/fabricengine_test#TestAddRollback_AdoptedWeftBranchSurvives`
 - `internal/fabricengine_test#TestAddRollback_LiveWeftFromOrigin`

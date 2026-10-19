@@ -15,8 +15,8 @@
 - `internal/ideengine#checkPrimeWorkspaceSurvivesTopologyVerbs`
 
 **Create:**
-- `plan:internal/fabricengine#regenerateAfterVerb` -> `func regenerateAfterVerb(rec *Mutations, l *lyxcwd.Location, verb string)`
-- `plan:internal/fabricengine_test#TestVerbsRegenerateHubWorkspace` -> `func TestVerbsRegenerateHubWorkspace(t *testing.T)`
+- `internal/fabricengine#regenerateAfterVerb`
+- `internal/fabricengine_test#TestVerbsRegenerateHubWorkspace`
 
 **Uses:**
 - `internal/fabricengine#RegenerateHubWorkspace`

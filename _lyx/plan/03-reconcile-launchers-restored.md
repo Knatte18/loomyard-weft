@@ -11,9 +11,9 @@
 - `internal/fabricengine_test#TestReconcile_RestoresDeletedPortalAndLaunchers`
 
 **Create:**
-- `plan:internal/fabricengine#ReconcileActionLaunchersRestored` -> `const ReconcileActionLaunchersRestored ReconcileAction = "launchers_restored"`
-- `plan:internal/fabricengine#restoreLaunchers` -> `func restoreLaunchers(rec *Mutations, warpLayout *lyxcwd.Location, slug, warpBranch string, pr *ReconcilePairResult) bool`
-- `plan:internal/fabricengine_test#TestReconcile_RestoresDeletedLaunchers` -> `func TestReconcile_RestoresDeletedLaunchers(t *testing.T)`
+- `internal/fabricengine#ReconcileActionLaunchersRestored`
+- `internal/fabricengine#restoreLaunchers`
+- `internal/fabricengine_test#TestReconcile_RestoresDeletedLaunchers`
 
 **Prosa:**
 - `tools/sandbox/SANDBOX-FABRIC-SUITE.md`
