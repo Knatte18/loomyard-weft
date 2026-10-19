@@ -1,11 +1,11 @@
 {
-  "current_producer": "Plan-Bouncer",
+  "current_producer": "Webster",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Plan-Bouncer",
-    "last": "Plan-Bouncer → goto",
+    "now": "Webster",
+    "last": "Plan-Bouncer → done",
     "wait": ""
   },
   "history": [
@@ -406,6 +406,12 @@
       "output": "",
       "at": "2026-10-19T18:03:04Z",
       "by": "orch"
+    },
+    {
+      "producer": "Plan-Bouncer",
+      "outcome": "done",
+      "output": "",
+      "at": "2026-10-19T18:04:24Z"
     }
   ],
   "product": {
