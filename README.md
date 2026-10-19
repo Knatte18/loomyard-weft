@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-19 15:29 UTC; every age below is as of then.
+Rendered 2026-10-19 15:30 UTC; every age below is as of then.
 
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
@@ -23,8 +23,8 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 2 | **lyx runs and tests green on Ubuntu 24.04 (git 2.43, tmux 3.4, 10-digit uid)**<br>• Toolchain audit with minimum versions, tmux socket path for long uids, cherry-pick without --empty, tmux 3.4 session row, prime first, creel hold test<br>• `loom: discussion_hard_max_bounces 3`<br>• `loom: discussion_max_bounces 2`<br>• `loom: merge_max_bounces 1`<br>• `loom: plan_hard_max_bounces 3`<br>• `loom: plan_max_bounces 2`<br>• `loom: webster_max_bounces 1` | [`ubuntu-2404-support`](design-ubuntu-2404-support.md) | loom | failed · Discussion-Burler-Review | 1h | 41m | fabric, reed, creel |
-| 3 | **Fork git-mutation guard flags read-only 'git help' piped through col/grep as state-mutating**<br>• `darn: review_max_bounces 1` | [`fork-git-guard-readonly`](design-fork-git-guard-readonly.md) | darn | Publish | 18m | 17m | burler |
+| 2 | **lyx runs and tests green on Ubuntu 24.04 (git 2.43, tmux 3.4, 10-digit uid)**<br>• Toolchain audit with minimum versions, tmux socket path for long uids, cherry-pick without --empty, tmux 3.4 session row, prime first, creel hold test<br>• `loom: discussion_hard_max_bounces 3`<br>• `loom: discussion_max_bounces 2`<br>• `loom: merge_max_bounces 1`<br>• `loom: plan_hard_max_bounces 3`<br>• `loom: plan_max_bounces 2`<br>• `loom: webster_max_bounces 1` | [`ubuntu-2404-support`](design-ubuntu-2404-support.md) | loom | failed · Discussion-Burler-Review | 1h | 43m | fabric, reed, creel |
+| 3 | **Fork git-mutation guard flags read-only 'git help' piped through col/grep as state-mutating**<br>• `darn: review_max_bounces 1` | [`fork-git-guard-readonly`](design-fork-git-guard-readonly.md) | darn | PR-Align | 19m | 18m | burler |
 
 ### Ready
 
@@ -40,7 +40,7 @@ Waits only on Running or Ready entries.
 
 | # | Task | Slug | Recipe | After | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | **Origin reconcile before anything that matters, and pushes that never fail silently**<br>• ls-remote over warp and records repos at orch start, wake, batten resume, Merge-In and Finalize; fast-forward, landed-elsewhere cleanup, stop on divergence; rejected push retries and reports | [`origin-reconcile`](design-origin-reconcile.md) | loom | `ubuntu-2404-support`, `hub-workspaces` | 4h | 2m | fabric, batten, orch, creel |
+| 1 | **Origin reconcile before anything that matters, and pushes that never fail silently**<br>• ls-remote over warp and records repos at orch start, wake, batten resume, Merge-In and Finalize; fast-forward, landed-elsewhere cleanup, stop on divergence; rejected push retries and reports | [`origin-reconcile`](design-origin-reconcile.md) | loom | `ubuntu-2404-support`, `hub-workspaces` | 4h | 4m | fabric, batten, orch, creel |
 
 ### Layer B
 
@@ -50,7 +50,7 @@ Starts when every entry it names under After is done.
 
 | # | Task | Slug | Recipe | After | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | **One machine takes over from another: owner machines, lyx adopt, landing on the parent owner**<br>• Owner machine per entry, lyx adopt of named entries, landing only on the parent owner, owner outcome in the origin reconcile, Open-Window per machine | [`machine-handover`](design-machine-handover.md) | loom | `origin-reconcile` | 4h | 2m | batten, board, orch, fabric |
+| 1 | **One machine takes over from another: owner machines, lyx adopt, landing on the parent owner**<br>• Owner machine per entry, lyx adopt of named entries, landing only on the parent owner, owner outcome in the origin reconcile, Open-Window per machine | [`machine-handover`](design-machine-handover.md) | loom | `origin-reconcile` | 4h | 4m | batten, board, orch, fabric |
 
 ## Notes
 
@@ -67,7 +67,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 3 | **Recurring test-suite time and growth audit**<br>• Re-run cmd/testtiming against test-suite-timing.md to watch suite growth | [`test-time-audit-recurring`](design-test-time-audit-recurring.md) | 1d | 1d |  |
 | 4 | **Audit the use of the twill and lens review setup at every perch**<br>• After about ten loom runs, measure what the lens fans and twill fixers catch per perch against their cost, and set the standard review rounds from it | [`review-setup-audit`](design-review-setup-audit.md) | 1d | 1d | burler, loom, report |
 | 5 | **Audit: ideas from tree-sitter-analyzer for quarry and its use in lyx**<br>• What the Python tree-sitter-analyzer offers that quarry or lyx could use if built in Go, what already exists, and what would not pay off | [`tsa-quarry-audit`](design-tsa-quarry-audit.md) | 22h | 22h | quarry, webster, burler, loom |
-| 6 | **Audit: Discussion and Plan quality before and after the twill writers**<br>• Plan round-1 findings fell about half with the twill Plan writer; Discussion is the same or slightly better; fork0 and the code list added no further gain | [`twill-writer-quality-audit`](design-twill-writer-quality-audit.md) | 21h | 21h | loom, burler, stencil |
+| 6 | **Audit: Discussion and Plan quality before and after the twill writers**<br>• Plan round-1 findings fell about half with the twill Plan writer; Discussion is the same or slightly better; fork0 and the code list added no further gain | [`twill-writer-quality-audit`](design-twill-writer-quality-audit.md) | 22h | 22h | loom, burler, stencil |
 
 ### Bugs
 
@@ -135,7 +135,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Note | Slug | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| 1 | **[WS 006] Umbrella tasks: project threads that spawn and land from their own worktree**<br>• A larger project is an umbrella task with a long-lived pair and its own orch thread; tasks name it as parent, spawn from and land into its branch, and report to its thread; the prime is the root umbrella | [`orch-any-worktree`](design-orch-any-worktree.md) | 2w | 10m | fabric, batten, orch, board, reed, creel, shed, workspaces |
+| 1 | **[WS 006] Umbrella tasks: project threads that spawn and land from their own worktree**<br>• A larger project is an umbrella task with a long-lived pair and its own orch thread; tasks name it as parent, spawn from and land into its branch, and report to its thread; the prime is the root umbrella | [`orch-any-worktree`](design-orch-any-worktree.md) | 2w | 12m | fabric, batten, orch, board, reed, creel, shed, workspaces |
 | 2 | **Weaver: a cold-start implementer beside Webster, with model escalation**<br>• A second implementer built on Millhouse Builder: a fresh agent per batch with its own model, escalating the model when an agent fails; Webster stays fork-based | [`weaver`](design-weaver.md) | 8d | 22h | webster |
 | 3 | **creel stage 3: agents message through creel, not SendMessage**<br>• Parent asks, parent review, stop reports and shuttle send go through creel, so a non-Claude engine can take a role with a parent | [`creel-agents`](design-creel-agents.md) | 4d | 22h | creel, shuttle, loom, stencil, report |
 | 4 | **[WS 004] Board projects and pairs created from a parent pair**<br>• A task names its project; a project groups tasks in order and may have its own worktree; fabric and batten create a project task pair from that branch, batten verbs run from any worktree | [`pair-from-parent`](design-pair-from-parent.md) | 1d | 1d | fabric, batten, board, workspaces |
