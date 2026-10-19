@@ -51,6 +51,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 1 | **webster create-not-done check rejects a Create target the card removes itself** | [`create-target-transient`](design-create-target-transient.md) | 22h | 22h | webster, loom, quarry |
 | 2 | **A rejected weft push goes unnoticed, and a diverged weft is never repaired** | [`weft-push-failure-silent`](design-weft-push-failure-silent.md) | 3h | 3h | fabric, creel, batten |
 | 3 | **reed status bar draws the current session twice with a stray comma on tmux 3.4** | [`reed-session-row-tmux34`](design-reed-session-row-tmux34.md) | 0m | 0m | reed |
+| 4 | **reed status bar orders sessions by name instead of putting the prime first** | [`reed-session-row-prime-first`](design-reed-session-row-prime-first.md) | 0m | 0m | reed |
 
 ### Enhancements
 

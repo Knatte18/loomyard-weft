@@ -1223,6 +1223,25 @@
       "body": "Imported from [issue #738](https://github.com/Knatte18/loomyard/issues/738).\n\nSeen on Linux with tmux 3.4, in the prime's reed session `loomyard` (the only session on the socket).\n\nThe session row (`status-format[1]`) reads ` loomyard , loomyard `: one grey copy, a literal comma, then the yellow focused copy.\n\nRendered with `tmux display-message -p '#{T:status-format[1]}'`:\n\n```\n#[range=session|$0 bg=colour236 fg=white] loomyard #[norange list=on default] ,#[range=session|$0 list=focus bg=yellow fg=black bold] loomyard #[norange list=on default]\n```\n\nThe format is `#{S:\u003cother-session arm\u003e,\u003ccurrent-session arm\u003e}`.\ntmux 3.4 does not split `#{S:}` into a separate current-session format, so every session gets both arms and the comma between them.\n\nExpected: each session is drawn once, the current one highlighted, on every tmux version lyx supports.\nFor example, use one arm that picks the style with `#{?session_attached,...}` or `#{==:#{session_name},#{client_session}}`, or detect the tmux version.",
       "created": "2026-10-19T14:26:51Z",
       "revised": "2026-10-19T14:26:51Z"
+    },
+    {
+      "id": 678,
+      "slug": "reed-session-row-prime-first",
+      "title": "reed status bar orders sessions by name instead of putting the prime first",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "reed"
+      ],
+      "issues": [
+        740
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Imported from [issue #740](https://github.com/Knatte18/loomyard/issues/740).\n\nSeen on Linux, tmux 3.4, with the prime's reed session `loomyard` and two task-pair sessions `hub-workspaces` and `implementer-seam`.\n\nThe session row (`status-format[1]`, `#{S:...}`) draws the sessions in tmux's name order: hub-workspaces, implementer-seam, loomyard.\n\nExpected, per the operator: the prime's session always sits leftmost, and the task-pair sessions follow to its right.\nSeparate from #738, which is the doubled entry with a stray comma in the same row.",
+      "created": "2026-10-19T14:26:53Z",
+      "revised": "2026-10-19T14:26:53Z"
     }
   ]
 }
