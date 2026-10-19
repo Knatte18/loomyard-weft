@@ -137,6 +137,12 @@ Decision: Card 9's Intent is the mechanism for D6. awaitMarkedProbe ends when th
 
 Rationale: The plan review's round-3 fixer deferred this mismatch between D6 and card 9: card 9 states the postcondition and covers injects, and D6 covers neither. Checked against the code: the worker registers clock.After only after its probe returns (deliver.go run), Scheduler.wake creates a worker with an empty wake channel only for a receiver without one (deliver.go:72-95), Hold sends no wake (verbs.go:537-585), the inject path wakes the receiver (verbs.go:397), and a hold ends by the clock alone (pool.go:208).
 
+### Added after Discussion (parent, 2026-10-19): tmux allow-set-title stays an optional above-floor feature
+
+Decision: doc.go records allow-set-title (tmux 3.5) as a third above-floor form that lyx keeps as an optional feature: on a tmux 3.4 host reed Warns when setting it fails and the pane title stays one the agent can overwrite. Card 2 continues with this recorded; no plan revision.
+
+Rationale: lyx already degrades here (internal/reedengine/spawn.go Warns on failure; naming_integration_test.go skips where the option is missing), so nothing on a 3.4 host breaks; the task goal is lyx working on Ubuntu 24.04, not reaching every tmux 3.5 nicety.
+
 ## Constraints
 
 - No test installs git 2.43 or tmux 3.4: host conditions are reproduced through properties of lyx's own code, and the operator's host run after landing covers the real tools, per the operator.
