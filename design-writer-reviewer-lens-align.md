@@ -26,3 +26,9 @@ The writer's and the reviewer's lenses at a perch are aligned: the writer's twil
 ## Orch recommendation, not a decision
 
 Try the aligned fan on the next three to five loom runs and compare their round-1 Discussion findings, per run and per card, with the twill baseline in `twill-writer-quality-audit`, under the same review fan.
+
+## Operator decision (2026-10-19): Discussion trial live
+
+The hub `burler.yaml` overrides `twill-discussion` with seven lenses: `interactions`, `existing-paths`, `bound-breaker`, `walkthrough`, `goal-scope`, `board-fit`, `leanness` (Bolt commit `3f3286b8d`).
+`premises`, `pattern-fit` and `scenarios` are dropped to keep the fork count near today's six.
+It applies to every Discussion-Write that starts after the commit; measure the next three to five loom runs as above, then decide whether to keep it and whether Plan, Webster and Merge get the same treatment.
