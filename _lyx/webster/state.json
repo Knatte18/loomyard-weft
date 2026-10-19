@@ -293,7 +293,7 @@
       }
     }
   ],
-  "currentBatch": 0,
+  "currentBatch": 6,
   "masterStrand": "fc4d391709e3d0b2c2dc1729dbd26db5",
   "masterSessionId": "6939c57c-46a1-443b-9c0e-40f9ed398b6c",
   "masterEngine": "claude",
@@ -402,6 +402,26 @@
       "bracketTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-ubuntu-2404-support/6939c57c-46a1-443b-9c0e-40f9ed398b6c/subagents/agent-a5737fa1a1bc785dd.jsonl"
       ]
+    },
+    "6": {
+      "slug": "reed-tmux-floor-check",
+      "cards": [
+        "06-reed-tmux-floor-check",
+        "07-reedcli-attach-floor",
+        "08-reed-session-row-prime-first"
+      ],
+      "cardHashes": {
+        "06-reed-tmux-floor-check": "b33e03ff7abb54610bb0f442732d92163b07051c17fbb64175f0d8b22955a87f",
+        "07-reedcli-attach-floor": "1be700c070df65cb6ac16d215605596673beea6b37e837335eadac9e08ff1d0a",
+        "08-reed-session-row-prime-first": "8ea7c9501cd2239d3cc3d1cf08d50778adcbc99015e0125fe3b4be7a998157fc"
+      },
+      "startSha": "7b2d037a839133494de372dadcb5df9439089476",
+      "kind": "fork",
+      "spawnedAt": "2026-10-19T18:15:52Z",
+      "sessionId": "6939c57c-46a1-443b-9c0e-40f9ed398b6c",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
     }
   },
   "seenForkTranscripts": [
