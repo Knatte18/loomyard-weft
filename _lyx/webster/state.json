@@ -1,14 +1,14 @@
 {
   "runGuid": "6d516a631aa57b9c9724c7003a424cac",
-  "planFingerprint": "b855c701ffb7e373c30f9f77f6431c7c07d4a468bf3cbea9c476b09af51d58cc",
+  "planFingerprint": "8bab3f6d7a7ec53b17275786706b8116798d919f17d0f5cc0fef047c5c5e01ed",
   "planFileHashes": {
     "00-overview.md": "37db3c4d8d732f4dc375eefe15878fac6f32c906a9a41b445ca315e3fda358d2",
     "01-lyxtemp-short-run-names.md": "298c9abb097d782d1bbce20f41ca4a57e829c6ccfc377bb88e216855ad4a00ac",
-    "02-toolfloor-package.md": "df839a9f8c1cb336afd63479ea1518c018397607b9b2578e0810bc1994ea63e0",
+    "02-toolfloor-package.md": "f94a2b538a0ba8beeae57d51d38f2892b3ec5376c194e03343c51b8f525d4335",
     "03-cherrypick-without-empty.md": "41d5b49c6fd6e5353062716492371b2b8fade0f6b4d16fc136446299fc558aa6",
-    "04-gitexec-floor-check.md": "d56477ccb7e48dc8ab2930e511383bd5a5baf1ab896a460bb19647577091324c",
+    "04-gitexec-floor-check.md": "44a9b1f981247a98c08f5a5be4cf95f8ea8781ce039076bc46562c749808fa13",
     "05-planglyph-delta-floor.md": "4d16d1dd427e7a84d2ee2aa9986428c2a1ad2864c17332bf048aeb246400de0f",
-    "06-reed-tmux-floor-check.md": "ce9163da5d06444045b1ec81daf61966934663e161234e53ef7f137d8a72f874",
+    "06-reed-tmux-floor-check.md": "b33e03ff7abb54610bb0f442732d92163b07051c17fbb64175f0d8b22955a87f",
     "07-reedcli-attach-floor.md": "1be700c070df65cb6ac16d215605596673beea6b37e837335eadac9e08ff1d0a",
     "08-reed-session-row-prime-first.md": "8ea7c9501cd2239d3cc3d1cf08d50778adcbc99015e0125fe3b4be7a998157fc",
     "09-creel-deliver-marked-probe.md": "667cb3780862e1c5aed3d90bb40a9f62c723fb1acdf51339fabdf5d489642d5a",
@@ -293,7 +293,7 @@
       }
     }
   ],
-  "currentBatch": 1,
+  "currentBatch": 0,
   "masterStrand": "fc4d391709e3d0b2c2dc1729dbd26db5",
   "masterSessionId": "6939c57c-46a1-443b-9c0e-40f9ed398b6c",
   "masterEngine": "claude",
@@ -306,13 +306,25 @@
       ],
       "cardHashes": {
         "01-lyxtemp-short-run-names": "298c9abb097d782d1bbce20f41ca4a57e829c6ccfc377bb88e216855ad4a00ac",
-        "02-toolfloor-package": "df839a9f8c1cb336afd63479ea1518c018397607b9b2578e0810bc1994ea63e0"
+        "02-toolfloor-package": "f94a2b538a0ba8beeae57d51d38f2892b3ec5376c194e03343c51b8f525d4335"
       },
       "startSha": "c27d4e82978ad2c477773f92a37e4b8ff0da1b22",
       "kind": "recovery",
       "spawnedAt": "2026-10-19T18:07:39Z",
-      "terminal": false,
-      "status": "",
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "01-lyxtemp-short-run-names",
+        "status": "done",
+        "head_sha": "fec538da8fc76da66c9baf510157df1f6c1dc821",
+        "deviations": [
+          "internal/toolfloor/testmain_test.go",
+          "internal/toolfloor/toolfloor.go"
+        ]
+      },
+      "cardShas": [
+        "fec538da8fc76da66c9baf510157df1f6c1dc821"
+      ],
       "forkTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-ubuntu-2404-support/6939c57c-46a1-443b-9c0e-40f9ed398b6c/subagents/agent-a93e2078dccd06f16.jsonl"
       ],

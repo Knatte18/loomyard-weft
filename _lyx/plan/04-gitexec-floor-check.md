@@ -22,8 +22,8 @@
 - `plan:internal/gitexec_test#TestCheckFloor` -> `func TestCheckFloor(t *testing.T)`
 
 **Uses:**
-- `plan:internal/toolfloor#CheckGit`
-- `plan:internal/toolfloor#FloorError`
+- `internal/toolfloor#CheckGit`
+- `internal/toolfloor#FloorError`
 
 **Intent:** D4, git half: a process whose git is below the floor fails every git command with the floor error, checked once per process before the first git command.
 
