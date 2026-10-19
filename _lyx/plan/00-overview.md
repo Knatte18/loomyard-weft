@@ -1,6 +1,6 @@
 ---
 format: 5
-approved: false
+approved: true
 language: go
 ---
 
@@ -40,6 +40,6 @@ Card 1 lands first, since no test package runs on the host before it.
 ## verify:
 
 go build ./...
-lyx gate test ./internal/lyxtemp ./internal/testkit/tmuxkit ./internal/toolfloor ./internal/gitrepo ./internal/fabricengine ./internal/gitexec ./internal/planglyph ./internal/reedengine ./internal/reedcli ./internal/creelengine ./internal/testkit/creelfake ./cmd/lyx
-lyx gate test --tags integration ./internal/lyxtemp ./internal/testkit/tmuxkit ./internal/toolfloor ./internal/gitrepo ./internal/fabricengine ./internal/gitexec ./internal/planglyph ./internal/reedengine ./internal/reedcli ./internal/creelengine ./internal/testkit/creelfake ./cmd/lyx
+lyx gate test ./internal/lyxtemp ./internal/testkit/tmuxkit ./internal/toolfloor ./internal/gitrepo ./internal/fabricengine ./internal/gitexec ./internal/planglyph ./internal/reedengine ./internal/reedcli ./internal/creelengine ./internal/testkit/creelfake ./internal/websterengine ./cmd/lyx
+lyx gate test --tags integration ./internal/lyxtemp ./internal/testkit/tmuxkit ./internal/toolfloor ./internal/gitrepo ./internal/fabricengine ./internal/gitexec ./internal/planglyph ./internal/reedengine ./internal/reedcli ./internal/creelengine ./internal/testkit/creelfake ./internal/websterengine ./cmd/lyx
 lyx gate test --tags tmux ./internal/reedengine ./internal/reedcli ./internal/testkit/tmuxkit

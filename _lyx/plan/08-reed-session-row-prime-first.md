@@ -8,6 +8,7 @@
 - `internal/reedengine#TestAttachArgv_PreflightOnAKnownGoodSession`
 - `internal/reedengine#TestBar_LineTwoListsSessionsInIDOrder`
 - `internal/reedengine/doc.go`
+- `internal/toolfloor/doc.go`
 
 **Delete:**
 - `internal/reedengine#currentSessionButtonFormat`
@@ -48,8 +49,11 @@
 - `TestAttachArgv_PreflightOnAKnownGoodSession` gains a prime-geometry run beside its existing pair run: on the prime engine it expects `wantSetOptionCalls` plus one and the mark among the `set-option` calls, which is the attach half of "a prime session created by an older binary is marked after an attach"; the pair run's count stays as it is.
 - `TestBar_LineTwoListsSessionsInIDOrder`, in its `tmux && linux` file, renders line 2 three times:
   with no session marked, each session's range appears exactly once (`strings.Count` of its `range=session|` start is 1), the client's session lit with its full name, and no comma before the follow button, so the first loop draws nothing;
+  that unmarked render drops the existing assertion that the client's session comes before the other, since the `S` loop's order is session name on tmux 3.4 and session id on newer tmux (D3), and the fixture's session `worktree` sorts after `a-very-long-session-name` by name;
   with the mark set on the fixture's second session `a-very-long-session-name`, standing for a prime the client is not on, that session's unlit button comes first, then the client's lit one, each range once and no comma;
   with the mark moved to the client's own session, that session's lit button with its full name comes first, then the other's unlit one, each range once.
-  Its comment names the prime-first order; the follow-button half keeps its assertions against the last session button.
+  The prime-first order is asserted only by the two marked renders.
+  The test is renamed `TestBar_LineTwoListsSessionsPrimeFirst`, and its comment names the prime-first order, so neither the name nor the comment claims session-id order; the follow-button half keeps its assertions against the last session button.
+- `internal/toolfloor/doc.go`'s audit sentence, which card 2 wrote naming `cherry-pick --empty=drop` and the two-format `#{S:}` loop as found above the floor and to be replaced, becomes the final statement: no feature lyx uses is newer than the floor, since card 3 removed the one and this card the other.
 
-**ImpactSummary:** Changes the global `status-format[1]` string and adds one session option pin for the prime; no Go decision reads either, and the windows line, follow button and time are unchanged.
+**ImpactSummary:** Changes the global `status-format[1]` string and adds one session option pin for the prime; no Go decision reads either, and the windows line, follow button and time are unchanged; toolfloor's audit sentence reaches its final form.

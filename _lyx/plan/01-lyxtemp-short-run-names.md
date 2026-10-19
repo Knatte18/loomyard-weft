@@ -27,7 +27,7 @@ This card lands first, since no test package runs on the Ubuntu host before it.
 - `Root.newRun` replaces `os.MkdirTemp(r.path, runPrefix)` with a loop of at most `runNameAttempts` tries: each draws `r.runName()` and calls `os.Mkdir(filepath.Join(r.path, name), 0o700)`; an `fs.ErrExist` failure draws a fresh name, any other error returns at once wrapped as today (`create run directory: %w`).
   When every attempt hit a taken name it returns an error naming the root and the attempt count, for example `create run directory under %q: %d names taken`.
   The sweep, the lock and the inherited-root rule are unchanged: the `r` prefix stays, so `Root.Sweep`, `resolveRootPath` and run directories left by older binaries keep working.
-- `TestNewRun_HoldsItsLockUntilRemoved` additionally asserts the created directory's base name matches `^r[0-9a-f]{6}$` and its mode is 0700.
+- `TestNewRun_HoldsItsLockUntilRemoved` additionally asserts the created directory's base name matches `^r[0-9a-f]{6}$` on every platform, and that its mode is 0700 only off Windows, which reports no Unix permission bits, as `root_test.go` does for the root.
 - `TestNewRun_RetriesATakenNameUpToTheBound` is a table over a `newTestRoot` root whose `runName` is replaced by a scripted sequence, with a directory pre-created under the root for the taken name:
   row "a taken name is retried" scripts the taken name then a fresh one and expects the fresh directory created and locked;
   row "the bound spent fails naming the root" scripts the taken name on every call and expects an error containing the root's path, exactly `runNameAttempts` draws, and no new entry under the root;
