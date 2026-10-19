@@ -21,8 +21,8 @@
 - `plan:internal/reedengine#TestCheckTmuxFloor_RunsNoProbeOnWindows` -> `func TestCheckTmuxFloor_RunsNoProbeOnWindows(t *testing.T)`
 
 **Uses:**
-- `plan:internal/toolfloor#CheckTmux`
-- `plan:internal/toolfloor#FloorError`
+- `internal/toolfloor#CheckTmux`
+- `internal/toolfloor#FloorError`
 - `internal/reedengine#installFakeTmuxOn`
 - `internal/reedengine#reviveTestEngine`
 

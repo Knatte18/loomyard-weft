@@ -2,14 +2,14 @@
 
 **Create:**
 - `internal/toolfloor/doc.go`
-- `plan:internal/toolfloor#GitFloor` -> `const GitFloor = "2.43.0"`
-- `plan:internal/toolfloor#TmuxFloor` -> `const TmuxFloor = "3.4"`
-- `plan:internal/toolfloor#FloorError` -> `type FloorError struct`
-- `plan:internal/toolfloor#FloorError.Error` -> `func (e *FloorError) Error() string`
-- `plan:internal/toolfloor#CheckGit` -> `func CheckGit(versionLine string) (parsed bool, err error)`
-- `plan:internal/toolfloor#CheckTmux` -> `func CheckTmux(versionLine string) (parsed bool, err error)`
-- `plan:internal/toolfloor#TestCheck` -> `func TestCheck(t *testing.T)`
-- `plan:internal/toolfloor#TestLeafInvariant_StandardLibraryOnly` -> `func TestLeafInvariant_StandardLibraryOnly(t *testing.T)`
+- `internal/toolfloor#GitFloor`
+- `internal/toolfloor#TmuxFloor`
+- `internal/toolfloor#FloorError`
+- `internal/toolfloor#FloorError.Error`
+- `internal/toolfloor#CheckGit`
+- `internal/toolfloor#CheckTmux`
+- `internal/toolfloor#TestCheck`
+- `internal/toolfloor#TestLeafInvariant_StandardLibraryOnly`
 
 **Edit:**
 - `pattern/PATTERN-leaf-packages.md`
