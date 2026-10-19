@@ -63,7 +63,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 3 | **Arbiter verdict with an unquoted verbs item containing ': ' is unparseable** | [`arbiter-verdict-quoting`](design-arbiter-verdict-quoting.md) | 1h | 1h | shed, loom |
 | 4 | **A stop after a converged review verdict spends no review budget, and its way forward keeps the verdict**<br>• Plan-Bouncer commit retries after CONVERGED used up the budget; the suggested goto discarded the verdict and re-ran the review | [`converged-bouncer-budget`](design-converged-bouncer-budget.md) | 50m | 47m | shed, loom, burler |
 | 5 | **Burler review round hard-fails when the chair session finishes without spawning its fork reviewers** | [`burler-zero-fork-round`](design-burler-zero-fork-round.md) | 36m | 36m | burler, shuttle, shed |
-| 6 | **A paused run records who paused it, a goto included** | [`paused-state-reason`](design-paused-state-reason.md) | 0m | 0m |  |
+| 6 | **A paused run records who paused it, a goto included** | [`paused-state-reason`](design-paused-state-reason.md) | 0m | 0m | shed, loom |
 
 ### Enhancements
 
@@ -80,7 +80,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | --- | --- | --- | --- | --- | --- |
 | 3 | **Codex CLI as a second shuttle engine: hands-on spike, then codexengine**<br>• Codex CLI as a second engine to offload Claude tokens: short hands-on tests first, then a codexengine for single-session roles | [`codex-engine`](design-codex-engine.md) | 2w | 4d | shuttle, codex |
 | 4 | **finalize: the discrepancy-document conflict shape**<br>• Divergences that cannot be a git conflict get a precomputed document for the resolving agent instead of markers | [`finalize-discrepancy-doc`](design-finalize-discrepancy-doc.md) | 2w | 2w | fabric, loom |
-| 5 | **Verification protocol for a .NET repo: slow-suite tier, numerical-baseline capture/compare, verify timeouts and logs** | [`dotnet-verify-protocol`](design-dotnet-verify-protocol.md) | 2w | 3d | loom, webster, config |
+| 5 | **Verification protocol for a .NET repo: slow-suite tier, numerical-baseline capture/compare, verify timeouts and logs** | [`dotnet-verify-protocol`](design-dotnet-verify-protocol.md) | 2w | 4d | loom, webster, config |
 | 6 | **Run verbs in one shared namespace, not under lyx loom**<br>• lyx loom decision/status/goto/approve act on darn runs too; move recipe-neutral run verbs to one shared namespace | [`run-verbs-shared`](design-run-verbs-shared.md) | 5d | 5d | shed, loom |
 | 7 | **The arbiter in shed for every shed run, batten included**<br>• The batten Go driver has a tackler but no arbiter; move the arbiter and its keys into shed beside the tackler | [`shed-arbiter-all`](design-shed-arbiter-all.md) | 4d | 4d | shed, batten, loom, config |
 | 8 | **Paste cited code into a review rounds context**<br>• Reviewers edit nothing and review a fixed commit, so code pasted at round start cannot go stale; measure it against todays reviewer | [`review-inline-code`](design-review-inline-code.md) | 8d | 3d | burler, stencil |
@@ -116,7 +116,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | --- | --- | --- | --- | --- | --- |
 | 34 | **Fabric's Windows path behaviour verified on a Windows host**<br>• Unverified after six hardening rounds; needs a Windows host, not design; take it only if Windows becomes relevant | [`fabric-windows`](design-fabric-windows.md) | 2w | 9d | fabric |
 | 35 | **warp-visibility: CLAUDE.local.md invisible in the Fabric repo's git history**<br>• Expose CLAUDE.local.md by symlink so nothing lyx-related shows in the Fabric repo's history; the constraints half is out of date | [`warp-visibility`](design-warp-visibility.md) | 2w |  | ide, fabric |
-| 36 | **Windows verify timeout kills the whole process tree**<br>• On Windows the verifytree timeout kills only the shell, not the process tree it started | [`verify-watchdog`](design-verify-watchdog.md) | 12d | 3d | shed |
+| 36 | **Windows verify timeout kills the whole process tree**<br>• On Windows the verifytree timeout kills only the shell, not the process tree it started | [`verify-watchdog`](design-verify-watchdog.md) | 12d | 4d | shed |
 | 37 | **A hub pause leaves background forks and shells running, so hibernate never confirms**<br>• Pause interrupts turns but not background forks or shells; sessions read busy and hibernate confirmation fails | [`pause-background-work`](design-pause-background-work.md) | 4d | 2d | shuttle, webster |
 | 38 | **[WS 007] An anchor per umbrella**<br>• Let an umbrella work in its own subdirectory of the repository, inherited by its tasks; hard to change now | [`umbrella-anchor`](design-umbrella-anchor.md) | 1d | 1d | fabric, config, workspaces |
 
