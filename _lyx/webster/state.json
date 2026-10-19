@@ -293,7 +293,7 @@
       }
     }
   ],
-  "currentBatch": 1,
+  "currentBatch": 0,
   "masterStrand": "fc4d391709e3d0b2c2dc1729dbd26db5",
   "masterSessionId": "6939c57c-46a1-443b-9c0e-40f9ed398b6c",
   "masterEngine": "claude",
@@ -313,8 +313,26 @@
       "spawnedAt": "2026-10-19T18:05:02Z",
       "sessionId": "6939c57c-46a1-443b-9c0e-40f9ed398b6c",
       "engine": "claude",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "failed",
+      "digest": {
+        "batch": "01-lyxtemp-short-run-names",
+        "status": "failed",
+        "head_sha": "d4f9f26d722247df491c361af0403646fbcccd7f",
+        "reasons": [
+          "batch 01-lyxtemp-short-run-names holds cards 1-lyxtemp-short-run-names, 2-toolfloor-package",
+          "create-not-done/2-toolfloor-package[blocking]: Create target \"plan:internal/toolfloor#TestCheck\" still does not resolve: looked up \"internal/toolfloor#TestCheck\", quarry answered not_found (the unit exists and the member is missing)"
+        ]
+      },
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-ubuntu-2404-support/6939c57c-46a1-443b-9c0e-40f9ed398b6c/subagents/agent-a93e2078dccd06f16.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-ubuntu-2404-support/6939c57c-46a1-443b-9c0e-40f9ed398b6c/subagents/agent-a93e2078dccd06f16.jsonl"
+      ]
     }
-  }
+  },
+  "seenForkTranscripts": [
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-ubuntu-2404-support/6939c57c-46a1-443b-9c0e-40f9ed398b6c/subagents/agent-a93e2078dccd06f16.jsonl"
+  ]
 }
