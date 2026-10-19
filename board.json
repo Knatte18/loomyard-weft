@@ -1321,6 +1321,25 @@
       "body": "Imported from [issue #743](https://github.com/Knatte18/loomyard/issues/743).\n\nSeen on a Linux host with git 2.43.0 (Ubuntu 24.04's packaged git), go 1.26.9, tmux 3.4, running `lyx gate test --tags integration ./...` on main plus the #739 fix.\n\nFailures:\n- `internal/gitrepo` `TestCherryPick/a_pick_whose_change_is_already_carried_leaves_HEAD_unmoved`: `git cherry-pick --empty=drop \u003csha\u003e` exits 129 with the usage text, since git 2.43 has no `--empty` for cherry-pick.\n- `internal/fabricengine` `TestBolt_PullThenCommitWritten` and `TestBolt_PushRecorded_DropsSeedCommitsOnRebaseConflict`: `git pull --rebase` stops on `could not apply ... lyx: seed stencils` instead of dropping the seed commit, and one case reports `skipped \"diverged\", want the genuine seed commit dropped and the write to run`.\n- `internal/fabricengine` merge-lock test (`mergelock_integration_test.go:342` and `:365`): `merge preconditions failed: worktree dirty`, want `ErrForeignMergeState`; possibly the same git version cause, not confirmed.\n\nThe same calls run in production paths, so fabric and Bolt writes can fail on this host outside tests too.\n\nExpected: lyx states its minimum git version and checks it at start with a clear error, or avoids flags the packaged git of a current Ubuntu LTS lacks.",
       "created": "2026-10-19T14:27:04Z",
       "revised": "2026-10-19T14:27:04Z"
+    },
+    {
+      "id": 683,
+      "slug": "creel-reminders-hold-second-host",
+      "title": "creelengine TestScheduler_Reminders hold case fails on a second Linux host",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "creel"
+      ],
+      "issues": [
+        744
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Imported from [issue #744](https://github.com/Knatte18/loomyard/issues/744).\n\nSeen on a Linux host (git 2.43.0, tmux 3.4, go 1.26.9) with main at c03af73d plus the #739 lyxtemp fix, which creelengine does not read beyond its temp directory.\n`lyx gate test ./internal/creelengine` fails twice in a row:\n\n```\n--- FAIL: TestScheduler_Reminders/HoldMutesOtherSendersLetsTheOwnerPassAndEndsAtExpiry (0.03s)\n    deliver_test.go:505: typed [\"[creel] #3 from ly:BATTEN: from the owner\"]; want only the owner's notice and mail\n```\n\nThe owner's 4097-byte post under its own hold gets no reminder line; only the notice for the short post is typed.\nNot seen before on this host only because no package could run here until #739.\n\nExpected: the test passes on every host, or the reminder for the hold owner's over-long mail is typed as the test wants.",
+      "created": "2026-10-19T14:27:07Z",
+      "revised": "2026-10-19T14:27:07Z"
     }
   ]
 }
