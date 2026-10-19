@@ -23,7 +23,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 2 | **lyx runs and tests green on Ubuntu 24.04 (git 2.43, tmux 3.4, 10-digit uid)**<br>• Toolchain audit with minimum versions, tmux socket path for long uids, cherry-pick without --empty, tmux 3.4 session row, prime first, creel hold test<br>• `loom: discussion_hard_max_bounces 3`<br>• `loom: discussion_max_bounces 2`<br>• `loom: merge_max_bounces 1`<br>• `loom: plan_hard_max_bounces 3`<br>• `loom: plan_max_bounces 2`<br>• `loom: webster_max_bounces 1` | [`ubuntu-2404-support`](design-ubuntu-2404-support.md) | loom | failed · Discussion-Burler-Review | 41m | 21m | fabric, reed, creel |
+| 2 | **lyx runs and tests green on Ubuntu 24.04 (git 2.43, tmux 3.4, 10-digit uid)**<br>• Toolchain audit with minimum versions, tmux socket path for long uids, cherry-pick without --empty, tmux 3.4 session row, prime first, creel hold test<br>• `loom: discussion_hard_max_bounces 3`<br>• `loom: discussion_max_bounces 2`<br>• `loom: merge_max_bounces 1`<br>• `loom: plan_hard_max_bounces 3`<br>• `loom: plan_max_bounces 2`<br>• `loom: webster_max_bounces 1` | [`ubuntu-2404-support`](design-ubuntu-2404-support.md) | loom | failed · Discussion-Burler-Review | 42m | 21m | fabric, reed, creel |
 
 ### Ready
 
@@ -39,7 +39,7 @@ Waits only on Running or Ready entries.
 
 | # | Task | Slug | Recipe | After | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | **One machine takes over the hub from another: run owners, adopt, origin check, loud pushes**<br>• Owner per entry, lyx batten adopt, ls-remote check of origin at orch start, batten start and wake, push retry that reports, Open-Window per machine | [`machine-handover`](design-machine-handover.md) | loom | `ubuntu-2404-support`, `hub-workspaces` | 4h | 4m | batten, board, orch, fabric, creel |
+| 1 | **One machine takes over the hub from another: run owners, adopt, origin check, loud pushes**<br>• One owner machine per beam (today the hub) with its children, lyx adopt, ls-remote check of origin at orch start, batten start and wake, push retry that reports, Open-Window per machine | [`machine-handover`](design-machine-handover.md) | loom | `ubuntu-2404-support`, `hub-workspaces` | 4h | 0m | batten, board, orch, fabric, creel |
 
 ## Notes
 
