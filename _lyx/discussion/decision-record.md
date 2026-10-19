@@ -164,6 +164,12 @@ Rationale: CLAUDE.md's docs-in-the-same-commit rule.
   - portal-restored-launcher-only-restore-unreported (class design, severity MEDIUM, open in rounds 2)
 <!-- /lyx:carry-over Discussion-Review -->
 
+<!-- lyx:carry-over Plan-Review -->
+- Plan-Review, round 2: converged; each finding below was fixed or disputed by the round's fixer, and no fresh reviewer has seen the result; the fixer report says which.
+  Review: _lyx/reviews/plan/round-2-review.md; fixer report: _lyx/reviews/plan/round-2-fixer-report.md.
+  - card1-row7-folder-change-via-verb (class design, severity MEDIUM, open in rounds 2)
+<!-- /lyx:carry-over Plan-Review -->
+
 ## Acceptance criteria
 
 - On a hub with a prime on `main` and pairs `b-task` and `a-task`, the file `<hub>/<RepoName>.code-workspace` lists `main`, `Bolt`, `a-task`, `b-task` in that order, each path the folder's anchor directory relative to the hub.
