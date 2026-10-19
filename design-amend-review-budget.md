@@ -13,7 +13,11 @@ The orch cut it to one round by hand in the pair's `.lyx/config/loom.local.yaml`
 
 A lightly revised plan does not need three new review rounds.
 
+## Operator decision (2026-10-19)
+
+Taking another planner round does not reset the review budget.
+
 ## Idea
 
-A segment re-entered for an amendment of an already reviewed artifact gets a small review budget by itself, one round by default, configurable in `loom.yaml`, instead of the full fresh budget.
+A segment re-entered for an amendment of an already reviewed artifact keeps its spent budget and gets at most a small allowance on top, one round by default, configurable in `loom.yaml`, never the full fresh budget.
 The review of such a round may be scoped to the change against the reviewed artifact.
