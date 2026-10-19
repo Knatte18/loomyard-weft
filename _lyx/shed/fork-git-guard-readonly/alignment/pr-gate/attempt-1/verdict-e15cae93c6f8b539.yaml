@@ -1,0 +1,10 @@
+verdict: approve
+reason: >-
+  The diff of PR 752 does what the board entry asks and nothing more.
+  The fork git-mutation check now decides by the git subcommand word after git's global options, not by mutating verbs named in arguments.
+  It treats help, --help and -h as read-only.
+  Its tests cover the git help cherry-pick command from the issue and the git log and git show shapes.
+  The one open risk names no parent correction.
+  Neither peer run (ubuntu-2404-support, hub-workspaces) touches the burlerengine fork audit, and there are no parent commits.
+question: ""
+superseded: []
