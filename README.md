@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-19 10:53 UTC; every age below is as of then.
+Rendered 2026-10-19 10:57 UTC; every age below is as of then.
 
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
@@ -55,6 +55,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | # | Note | Slug | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | 1 | **webster create-not-done check rejects a Create target the card removes itself** | [`create-target-transient`](design-create-target-transient.md) | 18h | 18h | webster, loom, quarry |
+| 2 | **A rejected weft push goes unnoticed, and a diverged weft is never repaired** | [`weft-push-failure-silent`](design-weft-push-failure-silent.md) | 0m | 0m | fabric, creel, batten |
 
 ### Enhancements
 
