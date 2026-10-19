@@ -12,12 +12,14 @@ The operator puts this high (2026-10-19).
 
 ## Design (agreed with the operator 2026-10-19)
 
-1. **An owner on every entry.**
-   When batten starts or resumes a run, the board entry records the machine as `owner` (for example `owner: neve`) and the write is pushed to Bolt.
-   A machine that sees another owner never resumes the run: `lyx board`, `lyx batten status` and `lyx tender status` show it as owned by that machine, not as stalled or landed.
-2. **Takeover is an explicit verb**, working name `lyx batten adopt <slug>`.
-   It fetches everything the run needs from origin, sets this machine as owner and pushes.
-   A machine that wakes, or starts its orch, and finds a run it drove now owned by another machine pauses that run instead of driving it on.
+1. **A beam has one owner machine, and its children go with it** (operator decision 2026-10-19).
+   A task lands into its parent by merging in the parent's local worktree and pushing it, so a branch may land into a beam only on the machine that owns the beam, and owning a beam means owning every task below it.
+   Handovers are rare, so there is no per-task ownership.
+   Beams are not built yet and the prime is the root beam, so in this task the unit is the whole hub: one owner machine recorded on Bolt (for example `owner: neve`), shown by `lyx board`, `lyx batten status` and `lyx tender status`.
+   A machine that is not the owner starts, resumes and lands nothing, and shows the hub's runs as owned by that machine, not as stalled or landed.
+2. **Takeover is an explicit verb**, working name `lyx adopt` (the hub, today).
+   It brings every repo of the hub up to date from origin (warp, prime weft, Bolt and every live pair's branches, adding pairs this machine lacks), records this machine as owner, pushes, and resumes the hub's runs here.
+   A machine that wakes, or starts its orch, and finds the hub now owned by another machine pauses its runs instead of driving them on.
 3. **A quick check of whether anything changed on origin.**
    `git ls-remote origin` returns every branch head in one round trip with no download; one call for the warp repo and one for the records repo (prime weft, every task weft and Bolt) cover the hub.
    The heads are compared with the local tracking refs:
@@ -30,7 +32,7 @@ The operator puts this high (2026-10-19).
 
 ## Beams, not built here
 
-Beams do not exist yet, so the beam part of the design is recorded in note `orch-any-worktree` (WS 006), not built by this task: a beam carries an owner like any entry, adopting a beam takes every entry below it with the same owner, and adopting the prime, the root beam, takes the whole hub.
+Beams do not exist yet, so the beam part of the design is recorded in note `orch-any-worktree` (WS 006), not built by this task: each beam has one owner machine, adopting a beam takes it with every task below it, and a branch lands into a beam only on its owner machine.
 
 ## From issue #741
 
