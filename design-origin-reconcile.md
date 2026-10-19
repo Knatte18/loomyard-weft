@@ -2,8 +2,6 @@
 
 `origin-reconcile` · Task · bug, enhancement, fabric, batten, orch, creel
 
-Depends on: [`ubuntu-2404-support`](design-ubuntu-2404-support.md)
-
 ## Goal
 
 A machine never acts on a stale view of origin, and a push that origin rejects is never silent.
