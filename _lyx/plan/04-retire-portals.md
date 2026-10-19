@@ -11,6 +11,7 @@
 - `internal/fabricengine#ErrPairNotFound`
 - `internal/fabricengine#Topology.Prune`
 - `internal/fabricengine#removeStalePair`
+- `internal/fabricengine#applyStalePairOwnership`
 - `internal/fabricengine#portalsDirName`
 - `internal/fabricengine#HubReservedNames`
 - `internal/fabricengine#refuseUncontainedPath`
@@ -22,6 +23,10 @@
 - `internal/fabricengine#checkPathRequest`
 - `internal/fabricengine#resolvePathOwnership`
 - `internal/fabricengine#TestGate_ZeroValueDeclarationsAreRefusals`
+- `internal/fabricengine#wantMenuLauncherName`
+- `internal/fabricengine#TestRemoveLaunchers_PreservesForeignContent`
+- `internal/fabricengine#TestRemoveLaunchers_DirRemovalIsContained`
+- `internal/fabricengine#TestRemoveLaunchers_EmptyDirRemovedAndRecorded`
 - `internal/fabricengine_test#TestCorrespondenceIndex`
 - `internal/fabricengine_test#TestRemove_DoesNotDeleteOutsideHubThroughLauncherSymlink`
 - `internal/fabricengine_test#TestRemove_ReturnsPairNotFoundWhenNothingRemains`
@@ -102,6 +107,7 @@
 - `internal/hubforge#CopyHub`
 - `internal/hubforge#AddPair`
 - `internal/hubforge#AddPairWith`
+- `internal/fslink#CreateDirLink`
 
 **Intent:**
 No verb creates or removes a portal link any more (D6).
@@ -123,8 +129,10 @@ Production:
   The same goes for:
   - the containment section of `internal/fabricengine/doc.go`, and the `AddLocal` and archive lines of that file;
   - the `remove.go` header and `resolvePathOwnership`'s one-hop comment;
+  - `applyStalePairOwnership`'s doc, which says `removeStalePair` still has portal, launcher and worktree-registration debris to clear, and names launcher and worktree-registration debris only;
   - `fslink`'s `RawTarget` example in both platform files;
   - the comment in `TestGate_ZeroValueDeclarationsAreRefusals`, and the file headers above `TestCorrespondenceIndex` and `TestRemove_DoesNotDeleteOutsideHubThroughLauncherSymlink`;
+  - the `portallauncher_test.go` header, which names the launcher accessors and the `_launchers` layout only, and the doc comment of `TestRemoveLaunchers_PreservesForeignContent`, which drops the portal half of the teardown;
   - `hubforge`'s `registerTeardown`;
   - `battencli`'s `incompletePairRemedy` and `battenCLI.wire`.
 - `cmd/lyx`'s uncontained-write guard: its header comment, the `uncontainedWriteAllowlist` comment and the failure message of `TestNoUncontainedWrite_FabricengineProductionSource` name `launchers.go`'s `writeLaunchers` and `hubworkspace_write.go`'s `writeHubWorkspace` as the rooted writers, in place of `portals.go`.
@@ -143,14 +151,14 @@ Tests, each dropping the portal path from its assertions:
   - `TestPrune_ApplyRemovesLaunchers` replaces `TestPrune_ApplyRemovesPortalAndLaunchers` and asserts the launcher directory's removal alone.
   - `TestLaunchersDir` and `TestMirroredLauncherMethods` replace `TestPortalsDirAndLaunchersDir` and `TestMirroredPortalLauncherMethods`, keeping their launcher assertions with `//testtiming:keep` reasons that name launchers only.
   - `TestRemoveLaunchers_ContainmentRefusalSurvivesSurfaceRefusal` replaces `TestRemoveLaunchersAndPortal_ContainmentRefusalSurvivesSurfaceRefusal` without its portal row.
-- `TestRemove_ReturnsPairNotFoundWhenNothingRemains` gains a row: after a pair is finished, a hand-planted link at `_portals/<AnchorRel>/<slug>` is all that remains, and `Remove` wraps `ErrPairNotFound`.
+- `TestRemove_ReturnsPairNotFoundWhenNothingRemains` gains a row: after a pair is finished, a link planted by hand with `fslink.CreateDirLink` at `_portals/<AnchorRel>/<slug>` is all that remains, and `Remove` wraps `ErrPairNotFound`.
 - `TestVerbsRegenerateHubWorkspace` asserts after each verb step that no `_portals` entry exists.
 - `TestRemovePortal_LeavesAnchorDirectory` and `TestAdd_DoesNotCreatePortalOutsideHubThroughContainerSymlink`, with its file, go.
 - `TestNewHub` and `TestCopyHub` drop the portal-link assertions and assert no `_portals` directory exists after a pair is added.
 - `TestRunCLI_AdoptRemoteWeftScenario` and `requireAdoptedFromOrigin` drop the portal path.
 - `TestRunCLI_HubMutationScenario`'s `Remove_RefusesDriftedPortalJunctionWithRefusalObject` row keeps the repo's positive assertion that a `refusal` object reaches the remove envelope.
-  It drives the refusal through the launcher surface instead: the pair's launcher directory, scripts included, is moved to a directory outside the hub and a symlink to it is left in its place.
-  `removeLaunchers`' first script removal then reaches `checkPathRequest`, whose containment check resolves the script's parent through that symlink to outside `_launchers` and refuses with `CheckContainment`.
+  It drives the refusal through the launcher surface instead: the pair's launcher directory, scripts included, is moved to a directory outside the hub and an `fslink.CreateDirLink` link to it is left in its place, as the replaced row's drifted link was.
+  `removeLaunchers`' first script removal then reaches `checkPathRequest`, whose containment check resolves the script's parent through that link to outside `_launchers` and refuses with `CheckContainment`.
   `refuseUncontainedPath` on the launcher directory itself does not refuse, because the leaf link is not resolved.
   The row asserts the four refusal keys, the flattened error and `check` equal to `containment`, and is renamed to name the launcher.
 - `TestBattenIntegration_CreateRow_IncompletePairRemedyWorksVerbatimOnAPrefixedHub` stops planting a portal link and keeps every other step.

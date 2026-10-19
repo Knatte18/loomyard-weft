@@ -58,7 +58,8 @@ Tests:
      - A switch to another branch in the prime renames the first folder to that branch.
      - A Checkout that fails at junction wiring and rolls back, arranged as `TestCheckout_JunctionFailureRollsBackBothSides` does, with the workspace file removed first, recreates the file with the original branch first.
      - A Checkout refused by a dirty weft worktree, with the file removed first, leaves it absent.
-  5. An `Add` failed by `SetAddFailAfterWarpHookForTest` leaves the file without the pair.
+  5. With the workspace file removed first, an `Add` failed by `SetAddFailAfterWarpHookForTest` recreates the file, listing the prime and `Bolt` and not the pair.
+     This row is serial, because the hook is process-global.
   6. A `Remove` whose weft worktree is locked, as `TestRemove_FailedWeftTeardownIsReported` arranges, returns its error and leaves the file without the pair whose task worktree it took.
      This row is serial and sets `FABRIC_SKIP_PUSH=1` with `t.Setenv`, as that test does, because a failed Remove respawns the pair's push.
   7. Pre-flight refusals regenerate nothing: with the workspace file removed first, an `Add` from a dirty prime and a no-force `Remove` of a pair with a dirty worktree each leave it absent.

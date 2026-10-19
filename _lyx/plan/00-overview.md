@@ -1,6 +1,6 @@
 ---
 format: 5
-approved: false
+approved: true
 language: go
 ---
 
@@ -42,6 +42,6 @@ The `_portals` container, whose only consumer was the old workspace, is retired.
 
 ```
 go build ./...
-go test ./cmd/lyx ./internal/fabricengine ./internal/fabriccli ./internal/ideengine ./internal/hubforge ./internal/battencli ./internal/fslink
-go test -tags integration ./cmd/lyx ./internal/fabricengine ./internal/fabriccli ./internal/ideengine ./internal/hubforge ./internal/battencli ./internal/fslink
+go test ./cmd/lyx ./internal/fabricengine ./internal/fabriccli ./internal/ideengine ./internal/hubforge ./internal/battencli ./internal/fslink ./internal/vscode
+go test -tags integration ./cmd/lyx ./internal/fabricengine ./internal/fabriccli ./internal/ideengine ./internal/hubforge ./internal/battencli ./internal/fslink ./internal/vscode
 ```
