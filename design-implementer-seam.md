@@ -1,6 +1,6 @@
 # Implementer seam: batchifier inside Webster, engine chosen by setting
 
-`implementer-seam` · Task · enhancement, webster, loom, shed, report · running · PR-Gate
+`implementer-seam` · Task · enhancement, webster, loom, shed, report · running · Finalize
 
 ## Operator decisions (2026-10-17)
 
