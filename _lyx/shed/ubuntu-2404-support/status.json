@@ -1,13 +1,12 @@
 {
   "current_producer": "Plan-Bouncer",
-  "state": "running",
-  "error": "",
-  "pending_by": "shed",
+  "state": "blocked",
+  "error": "bounce budget exhausted for Plan-Bouncer; way forward: \"lyx shed goto self --to Plan-Bouncer\" gives segment \"Plan-Review\" a fresh budget",
   "pause_requested": false,
   "activity": {
     "now": "Plan-Bouncer",
-    "last": "Plan-Burler-Fix → bounced to Plan-Bouncer",
-    "wait": ""
+    "last": "Plan-Bouncer → stuck",
+    "wait": "bounce budget exhausted for Plan-Bouncer; way forward: \"lyx shed goto self --to Plan-Bouncer\" gives segment \"Plan-Review\" a fresh budget"
   },
   "history": [
     {
@@ -379,6 +378,13 @@
       ],
       "budget_exempt": true,
       "routed_to": "Plan-Bouncer"
+    },
+    {
+      "producer": "Plan-Bouncer",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-19T17:54:49Z",
+      "by": "shed"
     }
   ],
   "product": {
