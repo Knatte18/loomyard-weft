@@ -1304,6 +1304,25 @@
       "body": "## Seen (2026-10-19, run `ubuntu-2404-support`)\n\nCard 2 (`toolfloor-package`) told its implementer to halt, with a note, on any audited git or tmux feature above the 3.4 floor besides two known forms.\nThe fork found a third (tmux `allow-set-title`, 3.5), halted as the card said, and the batch was reported `FAILED`.\nWebster then ran `recover-batch`, whose agent asked the orch the card's question directly, but ended before the answer came and refused with `batch_failed`, since the card still said halt.\nThe Go driver then spawned the tackler, which handed back because it could not find the decision; the next step was the arbiter.\nSo a halt the plan asked for travelled as a failure through three agent sessions, and the orch's answer (a parent decision in the decision record) reached none of them.\n\n## Idea\n\nA halt a card asks for is a question, not a failure.\nIt goes straight to the parent as a question: no `recover-batch`, no tackler, no arbiter.\nWebster waits for the answer, and the next attempt at the batch gets the recorded decision, so a card whose halt condition the decision settles is carried out instead of halting again.\n",
       "created": "2026-10-19T17:21:30Z",
       "revised": "2026-10-19T17:21:30Z"
+    },
+    {
+      "id": 692,
+      "slug": "research-in-discussion",
+      "title": "A question research can settle is settled in Discussion, never deferred to Plan or an implementer",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "loom",
+        "stencil",
+        "burler"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "Discussion writer researches the facts its design rests on; reviewers flag a deferred research question or a halt-on-discovery rule",
+      "body": "## Seen (2026-10-19, run `ubuntu-2404-support`)\n\nThe task's goal included researching which git and tmux features lyx uses above the Ubuntu 24.04 floor (git 2.43, tmux 3.4).\nDiscussion and Plan settled two above-floor forms without auditing the full list against tmux's `CHANGES`.\nPlan card 2 (`toolfloor-package`) was given the audit itself, with a rule to halt on any third above-floor form.\nThe implementer fork did the research in about two minutes (tmux `CHANGES` plus `tmux.1` at tags 3.4 and 3.5), found `allow-set-title` (3.5), and halted.\nThe halt cost a failed batch, a recover-batch, a tackler, an orch decision and a `goto Plan-Write` with a fresh Plan review.\n\n## Operator decision (2026-10-19)\n\nA question research can settle is settled in Discussion, never deferred to Plan or to an implementer with a halt rule.\n\n## Idea\n\n- The Discussion writer stencil says so: a factual question the design rests on (versions, upstream behaviour, what the code does today) is researched and its answer, with the evidence, recorded in the discussion.\n- The Discussion reviewer finds a deferred research question: a decision or criterion that leaves a fact to be found out later, or a halt-on-discovery rule handed downstream, is a finding.\n- The Plan reviewer treats a card that carries a research step whose answer the design depends on as a finding.\n",
+      "created": "2026-10-19T17:33:31Z",
+      "revised": "2026-10-19T17:33:31Z"
     }
   ]
 }
