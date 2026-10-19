@@ -1,0 +1,22 @@
+verdict: resume
+reason: >-
+  Plan-Bouncer stopped at round 3 with cause hard-cap and two open design-wrong findings, both on card 9.
+  I read both against card 9's current Intent and the creel code, and the round-3 fix in the card answers each of them.
+  F1 (the wait helpers leave the worker mid-probe, so later ticks race it):
+  the card now states both helpers' postconditions and forbids a bare tick or probeWaits(before + n) after either one.
+  It also gives HoldMutesOtherSendersLetsTheOwnerPassAndEndsAtExpiry a re-marked shape for its 31-minute jump, which is sound because the hold expires by clock comparison (pool.go:208).
+  The fixer did not reshape BusyReceiverIsRemindedAtItsNextIdleEdge and PauseTypesNothingUntilLifted, and exempted them instead.
+  The code bears that out: neither receiver has anything pending at e.start, so the post's wake creates a fresh worker with an empty wake channel (deliver.go:72-95).
+  That worker's first probe sees the post, and probeWaits(1) returns with it parked, so their flip and tick(time.Second) are safe.
+  F2 (stall subtests that inject after e.start):
+  the card now names all three subtests and says injects wake the worker as posts do (verbs.go:397).
+  It keeps PersistingStall's probeWaits(before + 1) on a parked worker; Hold sends no wake (verbs.go:537-585), and the stall ticks end on a parked worker.
+  It leaves StallCleared unchanged, since that subtest waits on waiter.C.
+  It brackets the inject in ExpiryNames and in InjectPostedMidWait with before / probeWaits(before + 1).
+  F3 is mechanical and LOW, and it is fixed.
+  The fixer deferred one mismatch, between D6's wording and card 9's postcondition and inject coverage.
+  I recorded an arbiter decision that refines D6 to match card 9, so the implementer and later reviewers read one consistent record.
+  I then accepted the segment at its hard cap.
+verbs:
+  - lyx loom decision add ubuntu-2404-support --by arbiter --title "D6 refined: card 9's wait postcondition and inject coverage" --decision … --rationale …
+  - lyx loom circling accept ubuntu-2404-support
