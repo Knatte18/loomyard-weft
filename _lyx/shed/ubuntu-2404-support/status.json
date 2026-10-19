@@ -5,7 +5,7 @@
   "pause_requested": false,
   "activity": {
     "now": "Run-Shed",
-    "last": "Open-IDE → done",
+    "last": "Run-Shed → bounced to Run-Shed",
     "wait": ""
   },
   "history": [
@@ -38,6 +38,14 @@
       "outcome": "done",
       "output": "",
       "at": "2026-10-19T14:47:27Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "child running → failed at Discussion-Burler-Review",
+      "at": "2026-10-19T15:08:20Z",
+      "budget_exempt": true,
+      "routed_to": "Run-Shed"
     }
   ]
 }
