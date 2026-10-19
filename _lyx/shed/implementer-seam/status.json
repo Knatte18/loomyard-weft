@@ -5,7 +5,7 @@
   "pause_requested": false,
   "activity": {
     "now": "Run-Shed",
-    "last": "Open-IDE → done",
+    "last": "Run-Shed → bounced to Run-Shed",
     "wait": ""
   },
   "history": [
@@ -38,6 +38,14 @@
       "outcome": "done",
       "output": "",
       "at": "2026-10-18T17:42:20Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "child running → blocked at Merge-In",
+      "at": "2026-10-19T11:03:04Z",
+      "budget_exempt": true,
+      "routed_to": "Run-Shed"
     }
   ]
 }
