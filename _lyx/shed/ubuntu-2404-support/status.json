@@ -1,11 +1,11 @@
 {
-  "current_producer": "Webster",
+  "current_producer": "Webster-Bouncer",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Webster",
-    "last": "Plan-Bouncer → done",
+    "now": "Webster-Bouncer",
+    "last": "Webster → done",
     "wait": ""
   },
   "history": [
@@ -412,6 +412,21 @@
       "outcome": "done",
       "output": "",
       "at": "2026-10-19T18:04:24Z"
+    },
+    {
+      "producer": "Webster",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYXHUB/ubuntu-2404-support/_lyx/webster/summary.md",
+      "at": "2026-10-19T18:31:05Z",
+      "gate_attempts": 0,
+      "gate_spans": [
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-10-19T18:28:48.937281857Z",
+          "end": "2026-10-19T18:31:05.167736241Z"
+        }
+      ]
     }
   ],
   "product": {
