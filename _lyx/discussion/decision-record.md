@@ -183,10 +183,9 @@ Rationale: The task exists so lyx runs on Ubuntu 24.04 with tmux 3.4; raising th
 <!-- /lyx:carry-over Discussion-Review -->
 
 <!-- lyx:carry-over Plan-Review -->
-- Plan-Review, round 3: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
-  Review: _lyx/reviews/plan/round-3-review.md; fixer report: _lyx/reviews/plan/round-3-fixer-report.md.
-  - card9-stall-subtests-inject-after-start (class design, severity MEDIUM, open in rounds 3)
-  - card9-wait-leaves-worker-mid-probe (class design, severity BLOCKING, open in rounds 3)
+- Plan-Review, round 1: converged; each finding below was fixed or disputed by the round's fixer, and no fresh reviewer has seen the result; the fixer report says which.
+  Review: _lyx/reviews/plan/round-1-review.md; fixer report: _lyx/reviews/plan/round-1-fixer-report.md.
+  - card7-attach-preflight-docs-stale (class consistency, severity MEDIUM, open in rounds 1)
 <!-- /lyx:carry-over Plan-Review -->
 
 ## Acceptance criteria
