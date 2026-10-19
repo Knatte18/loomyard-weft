@@ -1,11 +1,11 @@
 {
-  "current_producer": "Publish",
+  "current_producer": "PR-Align",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Publish",
-    "last": "Merge-Bouncer → done",
+    "now": "PR-Align",
+    "last": "Publish → done",
     "wait": ""
   },
   "history": [
@@ -533,6 +533,12 @@
       "outcome": "done",
       "output": "/home/knatte/Code/loomyard-LYXHUB/ubuntu-2404-support/_lyx/reviews/merge/round-1-bouncer-ledger.md",
       "at": "2026-10-19T18:44:30Z"
+    },
+    {
+      "producer": "Publish",
+      "outcome": "done",
+      "output": "",
+      "at": "2026-10-19T18:45:56Z"
     }
   ],
   "product": {
