@@ -75,6 +75,16 @@ The `newly ready` part of the notice, and the orch's start-on-notice step, go aw
 
 Operator view, not a decision (2026-10-19): with dobby up, batten notices to the orch are hardly needed any more, and every kind of batten notice is to be revised in this light.
 
+## Tender and dobby (2026-10-19)
+
+Seen: `lyx tender` (pause, resume, revive, status) overlaps dobby's job in three places.
+`tender revive` nudges sessions stalled on an API error, while dobby is to revive dead drivers; `tender resume` woke no Plan-Write strand that had a background fork (2026-10-19), which dobby, following status files, could notice; and batten starts runs today without reading tender's pause entries.
+
+Orch recommendation, not a decision: keep them apart, tender as the brake and dobby as the engine.
+Tender stays one hub-wide switch, used by the operator and by hibernate, across every beam.
+Dobby reads tender's pause entries and starts, lands and revives nothing in a paused hub or pair; after a resume it checks that each interrupted run came back.
+Revive moves into dobby as an automatic step, and `lyx tender revive` stays as a manual button.
+
 ## Folded in from `orch-split` (2026-10-11 to 10-13)
 
 ### Seen (operator, 2026-10-11)
