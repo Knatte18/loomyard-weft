@@ -1,0 +1,252 @@
+{
+  "runGuid": "d92b7a6f89d41378953091e8a42a33bc",
+  "planFingerprint": "2515d8b1a48e2c54de6e7b9e12b878bbcae28b1dd74788a28526e3f826bca63b",
+  "planFileHashes": {
+    "00-overview.md": "91ee0dc2d6d6d4bdfd45d8c3d1042ba1f4e0e5fe13ed0e3e9f21107f2c0edeac",
+    "01-hub-workspace-file.md": "aa09fd74b60345621e2b904faa93371d073d383a3c57953848b1d5ee8b0f6460",
+    "02-verbs-regenerate.md": "1a09748d0bd6ce082803e6388b6bde90ad781c49c14bfe8cd21f3c09b1ddf1f9",
+    "03-reconcile-launchers-restored.md": "b1fee4708fcb6669d0da5abc37a333e6edbb0c485eb99fd33c9a0b9423d3c415",
+    "04-retire-portals.md": "8fc6f897a2ef2bd06f82552a5bc7ee957d03c5a123673593af3f3e6a43415a02",
+    "05-retired-artifact-sweep.md": "fcf4aade30892bfccb2d5821efb6e4ce364a2b9a203fd84fcaa86885f4b5a0ea"
+  },
+  "planOverviewFrameHash": "0f39118f9b4fadfd6d01f1914408870dcab2118f98e101874deb521499fcaa0c",
+  "partition": [
+    {
+      "cards": [
+        "01-hub-workspace-file"
+      ],
+      "profile": "cautious",
+      "estimate": 229384,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 1,
+        "startup": 54760,
+        "read_union": 59052,
+        "cards": [
+          {
+            "card": 1,
+            "card_text": 2172,
+            "reads": {
+              "file:PATTERN.md": 1440,
+              "file:README.md": 3000,
+              "file:docs/overview.md": 9684,
+              "file:internal/fabricengine/doc.go": 17520,
+              "file:internal/vscode/config.go": 1152,
+              "file:pattern/PATTERN-hub-containment.md": 84,
+              "package:.": 2000,
+              "package:docs": 2000,
+              "package:internal/fabricengine": 2000,
+              "package:internal/ideengine": 2000,
+              "package:internal/vscode": 2000,
+              "package:pattern": 2000,
+              "tests:.": 2000,
+              "tests:docs": 2000,
+              "tests:internal/fabricengine": 2000,
+              "tests:internal/ideengine": 2000,
+              "tests:internal/vscode": 2000,
+              "tests:pattern": 2000
+            },
+            "messages": 378,
+            "written": 115572
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "02-verbs-regenerate",
+        "03-reconcile-launchers-restored"
+      ],
+      "profile": "cautious",
+      "estimate": 197730,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 2,
+        "startup": 61760,
+        "read_union": 25072,
+        "cards": [
+          {
+            "card": 2,
+            "card_text": 888,
+            "reads": {
+              "package:internal/fabricengine": 2000,
+              "package:internal/ideengine": 2000,
+              "tests:internal/fabricengine": 2000,
+              "tests:internal/ideengine": 2000
+            },
+            "messages": 189,
+            "written": 57588
+          },
+          {
+            "card": 3,
+            "card_text": 660,
+            "reads": {
+              "file:tools/sandbox/SANDBOX-FABRIC-SUITE.md": 7524,
+              "package:internal/fabriccli": 2000,
+              "package:internal/fabricengine": 2000,
+              "package:tools/sandbox": 2000,
+              "tests:internal/fabriccli": 2000,
+              "tests:internal/fabricengine": 2000,
+              "tests:tools/sandbox": 2000
+            },
+            "messages": 175.5,
+            "written": 53310
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "04-retire-portals"
+      ],
+      "profile": "cautious",
+      "estimate": 369938,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 3,
+        "startup": 68760,
+        "read_union": 89264,
+        "cards": [
+          {
+            "card": 4,
+            "card_text": 2064,
+            "reads": {
+              "file:README.md": 3000,
+              "file:docs/overview.md": 9684,
+              "file:docs/sandbox-hub.md": 2796,
+              "file:docs/shared-libs/lyxcwd.md": 1500,
+              "file:internal/fabriccli/doc.go": 864,
+              "file:internal/fabricengine/doc.go": 17520,
+              "file:pattern/PATTERN-hub-containment.md": 84,
+              "file:pattern/PATTERN-hub-suffix.md": 228,
+              "file:tools/sandbox/SANDBOX-FABRIC-SUITE.md": 7524,
+              "package:.": 2000,
+              "package:cmd/lyx": 2000,
+              "package:docs": 2000,
+              "package:docs/shared-libs": 2000,
+              "package:internal/battencli": 2000,
+              "package:internal/fabriccli": 2000,
+              "package:internal/fabricengine": 2000,
+              "package:internal/fslink": 2000,
+              "package:internal/hubforge": 2000,
+              "package:pattern": 2000,
+              "package:tools/sandbox": 2000,
+              "tests:.": 2000,
+              "tests:cmd/lyx": 2000,
+              "tests:docs": 2000,
+              "tests:docs/shared-libs": 2000,
+              "tests:internal/battencli": 2000,
+              "tests:internal/fabriccli": 2000,
+              "tests:internal/fabricengine": 2000,
+              "tests:internal/fslink": 2000,
+              "tests:internal/hubforge": 2000,
+              "tests:pattern": 2000,
+              "tests:tools/sandbox": 2000
+            },
+            "messages": 699.5,
+            "written": 211914
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "05-retired-artifact-sweep"
+      ],
+      "profile": "cautious",
+      "estimate": 170330,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 4,
+        "startup": 75760,
+        "read_union": 24964,
+        "cards": [
+          {
+            "card": 5,
+            "card_text": 1356,
+            "reads": {
+              "file:pattern/PATTERN-hub-containment.md": 84,
+              "file:tools/sandbox/SANDBOX-FABRIC-SUITE.md": 7524,
+              "package:internal/fabriccli": 2000,
+              "package:internal/fabricengine": 2000,
+              "package:pattern": 2000,
+              "package:tools/sandbox": 2000,
+              "tests:internal/fabriccli": 2000,
+              "tests:internal/fabricengine": 2000,
+              "tests:pattern": 2000,
+              "tests:tools/sandbox": 2000
+            },
+            "messages": 227.5,
+            "written": 69606
+          }
+        ]
+      }
+    }
+  ],
+  "currentBatch": 1,
+  "masterStrand": "551ece777914475d09ccc79e2d5ceaf1",
+  "masterSessionId": "88cba410-86ac-4b1f-a0de-2d502785e9e2",
+  "masterEngine": "claude",
+  "batches": {
+    "1": {
+      "slug": "hub-workspace-file",
+      "cards": [
+        "01-hub-workspace-file"
+      ],
+      "cardHashes": {
+        "01-hub-workspace-file": "aa09fd74b60345621e2b904faa93371d073d383a3c57953848b1d5ee8b0f6460"
+      },
+      "startSha": "f431a94168a1ebc61d6a2fba92a308b132a2ebda",
+      "kind": "fork",
+      "spawnedAt": "2026-10-19T15:40:27Z",
+      "sessionId": "88cba410-86ac-4b1f-a0de-2d502785e9e2",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
+    }
+  }
+}
