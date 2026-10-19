@@ -97,3 +97,13 @@ fans:
     - api-design
     - concurrency
     - docs-consistency
+  # The Discussion writer runs the reviewer's procedure lenses before review
+  # (operator decision 2026-10-19, note writer-reviewer-lens-align).
+  twill-discussion:
+    - interactions
+    - existing-paths
+    - bound-breaker
+    - walkthrough
+    - goal-scope
+    - board-fit
+    - leanness
