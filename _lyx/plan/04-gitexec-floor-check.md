@@ -12,14 +12,14 @@
 - `cmd/lyx#logGitKill`
 
 **Create:**
-- `plan:internal/gitexec#CheckFloor` -> `func CheckFloor() error`
-- `plan:internal/gitexec#floorCache` -> `type floorCache struct`
-- `plan:internal/gitexec#floorCache.check` -> `func (c *floorCache) check(probe func() (string, error)) error`
-- `plan:internal/gitexec#gitFloor` -> `var gitFloor floorCache`
-- `plan:internal/gitexec#probeGitVersion` -> `func probeGitVersion() (string, error)`
-- `plan:internal/gitexec#versionProbe` -> `var versionProbe = probeGitVersion`
-- `plan:internal/gitexec#SetVersionProbeForTest` -> `func SetVersionProbeForTest(t *testing.T, probe func() (string, error))`
-- `plan:internal/gitexec_test#TestCheckFloor` -> `func TestCheckFloor(t *testing.T)`
+- `internal/gitexec#CheckFloor`
+- `internal/gitexec#floorCache`
+- `internal/gitexec#floorCache.check`
+- `internal/gitexec#gitFloor`
+- `internal/gitexec#probeGitVersion`
+- `internal/gitexec#versionProbe`
+- `internal/gitexec#SetVersionProbeForTest`
+- `internal/gitexec_test#TestCheckFloor`
 
 **Uses:**
 - `internal/toolfloor#CheckGit`

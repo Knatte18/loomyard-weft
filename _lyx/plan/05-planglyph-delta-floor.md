@@ -6,7 +6,7 @@
 - `internal/websterengine#postBatchChecks`
 
 **Uses:**
-- `plan:internal/gitexec#CheckFloor`
+- `internal/gitexec#CheckFloor`
 
 **Intent:** D4: `Delta` calls `gitexec.CheckFloor()` after `openRepo` and before `repo.DeltaGit`, whose git spawn runs inside quarry's `internal/gitsrc` and never reaches gitexec's exec core.
 A floor error returns as `fmt.Errorf("planglyph: delta %s..%s: %w", fromSHA, toSHA, err)`, not folded into `ErrQuarryUnavailable`, since a git below the floor is no quarry outage and its message names the way forward.
