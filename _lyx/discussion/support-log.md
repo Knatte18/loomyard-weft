@@ -17,6 +17,7 @@ Answered that it reproduces here as a rare flake and is being diagnosed; recorde
 
 - `lyx gate test ./internal/creelengine -- -run 'TestScheduler_Reminders/HoldMutes' -count=300 -cpu=1,4`: 1 failure, then 2 with `-cpu=4`, the same line as the host's.
   Reading `run`, `probe` and the test's `probeWaits` gave the stale-wake race of D6.
+  A slower or busier host widens the race's window, which is why the NORCE host fails it twice in a row.
 - `lyx gate test --tags integration ./internal/fabricengine -- -run 'ForeignStateAppearingWhileWaitingForLock' -count=40`: green.
   Reading `launchBlockedOnLock` and the guard order gave the hypothesis of D7.
 
@@ -76,15 +77,34 @@ Every fork reported.
 
 ## Review rounds
 
-_No rounds yet._
+### Round 1
+
+Review BLOCKING, every finding fixed.
+- F1 BLOCKING, gitexec's probe rested on a stale import-cycle reason: gitexec logs the probe and Warns on an unparseable line.
+- F2 MEDIUM, `--skip` dropped an empty-from-start commit: kept today's result, `CherryPick` refuses it by a tree comparison before `--skip`.
+- F3 MEDIUM, tmux 3.4's `S` loop walks by name: D3 and acceptance follow the loop's order, and Constraints name the difference.
+- F4 MEDIUM, D6's strand-read marker matched other readers: the marker is a per-strand pause read.
+- F5 MEDIUM, planglyph's quarry git spawn bypassed the check: `Delta` calls gitexec's exported check.
+- F6 MEDIUM, process cache against per-test hooks: hook-built runners carry their own result, process-cache tests run serial.
+- F7 MEDIUM, no tmux floor criterion: added.
+- F8 MEDIUM, the slowed-path criterion needed a seam D7 forbade: the slowed run stays the Plan's one-off diagnostic, and the seam bound names its lock sites.
+- F9 LOW, attach re-pins without marking: the mark follows `pinGeometryOptionsLocked`.
+- F10 NIT, rejected-alternative and host prose: cut, the host sentence moved to Turn 3.
+- F11 NIT, Apple git: an at-floor and a below-floor Apple line.
+
+### Round 2
+
+Review APPROVED, every finding fixed.
+- F1 MEDIUM, a boot cannot mark an already-up prime session: D3 and acceptance say a boot marks only the session it spawns, the attach pre-flight marks an existing one, and the second-loop bound until that attach is stated; this replaces Turn 4's "the option is set on boot too" for an existing prime session.
+- F2 LOW, D2's probe count left the tree comparison's channel open: four probes, all CLI calls through `runChecked`.
 
 ## Question ledger
 
 - Q1 — Which #739 fix? Resolved (auto-pick): the six-hex run name from #745, since it is host-tested and stays in lyxtemp.
-- Q2 — How does CherryPick tell an empty pick from a conflict? Resolved (auto-pick): pick in progress, no unmerged entries, index equals HEAD; only then `--skip`.
+- Q2 — How does CherryPick tell an empty pick from a conflict? Resolved (auto-pick): pick in progress, no unmerged entries, index equals HEAD, and a tree that differs from its first parent's; only then `--skip`.
 - Q3 — What sets the floor? Resolved (auto-pick): the host's git 2.43.0 and tmux 3.4.
-- Q4 — Where does the floor check run? Resolved (auto-pick): once per process in gitexec and in reed, off Windows for tmux.
-- Q5 — What does an unparseable version do? Resolved (auto-pick): admitted, logged by reed.
+- Q4 — Where does the floor check run? Resolved (auto-pick): once per process in gitexec, which planglyph's quarry path also calls, and in reed, off Windows for tmux.
+- Q5 — What does an unparseable version do? Resolved (auto-pick): admitted with a Warn, in gitexec and reed.
 - Q6 — How is the prime's session identified? Resolved (auto-pick): a session user option set at prime session creation.
 - Q7 — Where do the audit results live? Resolved (auto-pick): `internal/toolfloor`'s `doc.go`.
 - Q8 — Is #744 a host fault? Resolved (operator decision via ly:orch to diagnose; cause auto-picked from the stress reproduction): a race in the test's synchronization.
