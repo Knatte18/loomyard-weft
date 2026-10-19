@@ -72,8 +72,9 @@ It has work only at its start and its end:
 ## Operator decision (2026-10-19): a beam has an owner machine
 
 Task `machine-handover` gives every board entry an `owner` machine and a takeover verb; beams extend it:
-- a beam carries an owner like any entry, the machine its dobby runs on;
-- adopting a beam takes every entry below it that has the same owner, since the beam's dobby starts, revives and lands them; an entry another machine owns stays there and is only listed;
+- a beam has one owner machine, the machine its dobby runs on, and every task below it goes with it: there is no per-task ownership, since handovers are rare;
+- a task lands into its parent by merging in the parent's local worktree, so a branch lands into a beam only on the machine that owns the beam;
+- adopting a beam takes it with all its children;
 - adopting the prime, the root beam, takes over the whole hub;
 - the origin check of `machine-handover` (`git ls-remote` over the warp and records repos) covers beam branches with no extra work.
 
