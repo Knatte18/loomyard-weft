@@ -84,10 +84,10 @@
 - `internal/hubforge#Hub.PairPortalLink`
 
 **Create:**
-- `plan:internal/fabricengine#TestLaunchersDir` -> `func TestLaunchersDir(t *testing.T)`
-- `plan:internal/fabricengine#TestMirroredLauncherMethods` -> `func TestMirroredLauncherMethods(t *testing.T)`
-- `plan:internal/fabricengine#TestRemoveLaunchers_ContainmentRefusalSurvivesSurfaceRefusal` -> `func TestRemoveLaunchers_ContainmentRefusalSurvivesSurfaceRefusal(t *testing.T)`
-- `plan:internal/fabricengine_test#TestPrune_ApplyRemovesLaunchers` -> `func TestPrune_ApplyRemovesLaunchers(t *testing.T)`
+- `internal/fabricengine#TestLaunchersDir`
+- `internal/fabricengine#TestMirroredLauncherMethods`
+- `internal/fabricengine#TestRemoveLaunchers_ContainmentRefusalSurvivesSurfaceRefusal`
+- `internal/fabricengine_test#TestPrune_ApplyRemovesLaunchers`
 
 **Prosa:**
 - `README.md`
