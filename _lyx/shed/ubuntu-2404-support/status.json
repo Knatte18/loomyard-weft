@@ -1,13 +1,14 @@
 {
   "current_producer": "Plan-Burler-Review",
-  "state": "running",
-  "error": "",
+  "state": "failed",
+  "error": "shedadapters: Plan-Burler-Review (burler-review): round 1 attempt 1: review: burler: shuttle run: seatengine: chair wait: shuttle: reed did not track strand \"7ddd6510d449416ce21003067960ea12\" on 2 consecutive liveness checks: reed's strand table no longer holds this run's strand — reed's bookkeeping was reset under the run (a reed remove/down, a lost or rebuilt reed.json, or a worktree renamed while the run was in flight), which says nothing about the agent: its process may still be working in its pane. Check \"lyx reed status\"",
   "pending_by": "shed",
   "pause_requested": false,
+  "pause_after": "Plan-Burler-Review",
   "activity": {
     "now": "Plan-Burler-Review",
     "last": "Plan-Bouncer → bounced to Plan-Burler-Review",
-    "wait": ""
+    "wait": "shedadapters: Plan-Burler-Review (burler-review): round 1 attempt 1: review: burler: shuttle run: seatengine: chair wait: shuttle: reed did not track strand \"7ddd6510d449416ce21003067960ea12\" on 2 consecutive liveness checks: reed's strand table no longer holds this run's strand — reed's bookkeeping was reset under the run (a reed remove/down, a lost or rebuilt reed.json, or a worktree renamed while the run was in flight), which says nothing about the agent: its process may still be working in its pane. Check \"lyx reed status\""
   },
   "history": [
     {
