@@ -1,0 +1,18 @@
+verdict: hand-on
+reason: >-
+  The refused command, `git help -m cherry-pick | col -b | grep ...`, is read-only: `git help -m` only shows a man page.
+  The refusal is a false positive in the burler guard.
+  `mutatingGitPattern` in internal/burlerengine/cluster.go (lines 24-26) lets any run of tokens come between `git` and a listed word, so `git help cherry-pick`, `git grep cherry-pick` or `git log -S tag` all count as mutating.
+  The fork transcript agent-a2dfed49a3f9fd78e.jsonl shows the reviewer ran `git help -m cherry-pick` twice to check decision D2's claim that `cherry-pick --empty` is newer than git 2.43.
+  D2 is at the centre of this task, so a re-run of the same review round is likely to check that claim with a git call that names cherry-pick again and fail the same way.
+  A plain re-launch is therefore not safe to rely on, and no goto target avoids the review row.
+  Fixing the guard is outside this task's scope, which is Ubuntu 24.04 support.
+  The guard also runs from the installed prod lyx, so a fix made inside this run would not take effect until the operator deploys.
+  The arbiter has no verb that settles this.
+verbs: []
+question: >-
+  The Discussion-Burler-Review stop is a false positive.
+  burlerengine's mutatingGitPattern flags the read-only `git help -m cherry-pick` because it matches a listed word anywhere after `git`, not only in the subcommand position.
+  This task's reviewers check cherry-pick behaviour (decision D2), so a plain re-launch will likely trip the same guard.
+  Should the guard be fixed and deployed first, with a separate task that matches only the subcommand position and tests `git help`, `git grep` and `git log -S`, before this run resumes?
+  Or should the run be re-launched as it stands and accept the risk that it stops again?

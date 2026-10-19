@@ -1,0 +1,16 @@
+{
+  "number": 1,
+  "stop_key": {
+    "current_producer": "Discussion-Burler-Review",
+    "history_length": 4,
+    "state": "failed"
+  },
+  "pause_before": "",
+  "pause_after": "",
+  "spawned_at": "2026-10-19T17:09:11.25630091+02:00",
+  "deadline": "2026-10-19T17:39:11.25630091+02:00",
+  "strand_guid": "9b4ec0bd63334daf2c0f2b9c5d6263c8",
+  "envelope_path": "/home/knatte/Code/loomyard-LYXHUB/ubuntu-2404-support/_lyx/shed/ubuntu-2404-support/drive-reports/drive-envelope-20261019-170838-153e.json",
+  "report_path": "/home/knatte/Code/loomyard-LYXHUB/ubuntu-2404-support/_lyx/shed/ubuntu-2404-support/drive-reports/drive-report-20261019-170911-0f6b.md",
+  "case_brief_path": "/home/knatte/Code/loomyard-LYXHUB/ubuntu-2404-support/_lyx/shed/ubuntu-2404-support/tackler/attempt-1/case-brief.md"
+}
