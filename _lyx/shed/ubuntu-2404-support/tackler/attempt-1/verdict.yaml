@@ -1,0 +1,3 @@
+verdict: escalate
+reason: >-
+  The stop is a producer refusal from the burler git-mutation guard. The fork ran `git help -m cherry-pick ...`, which is read-only, but mutatingGitPattern in internal/burlerengine/cluster.go (lines 24-26) matches any `git` line with a listed word such as cherry-pick as a token, so it refuses the read-only call. Cause is named, but the fix is a code change to the guard, outside the tackler's write scope, and a plain re-launch would likely hit the same refusal. A stronger agent or the run's parent needs to judge and fix the regex. See case-brief.md.
