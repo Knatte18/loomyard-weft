@@ -143,6 +143,12 @@ Decision: doc.go records allow-set-title (tmux 3.5) as a third above-floor form 
 
 Rationale: lyx already degrades here (internal/reedengine/spawn.go Warns on failure; naming_integration_test.go skips where the option is missing), so nothing on a 3.4 host breaks; the task goal is lyx working on Ubuntu 24.04, not reaching every tmux 3.5 nicety.
 
+### Added after Discussion (operator, 2026-10-19): The tmux floor stays 3.4
+
+Decision: TmuxFloor is never raised above 3.4 in this task; a feature found above the floor is kept optional with a fallback or replaced, never met by moving the floor.
+
+Rationale: The task exists so lyx runs on Ubuntu 24.04 with tmux 3.4; raising the floor removes the point of the task (operator, 2026-10-19).
+
 ## Constraints
 
 - No test installs git 2.43 or tmux 3.4: host conditions are reproduced through properties of lyx's own code, and the operator's host run after landing covers the real tools, per the operator.
