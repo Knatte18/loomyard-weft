@@ -12,27 +12,31 @@ The operator puts this high (2026-10-19).
 
 ## Design (agreed with the operator 2026-10-19)
 
-1. **A beam has one owner machine, and its children go with it** (operator decision 2026-10-19).
-   A task lands into its parent by merging in the parent's local worktree and pushing it, so a branch may land into a beam only on the machine that owns the beam, and owning a beam means owning every task below it.
-   Handovers are rare, so there is no per-task ownership.
-   Beams are not built yet and the prime is the root beam, so in this task the unit is the whole hub: one owner machine recorded on Bolt (for example `owner: neve`), shown by `lyx board`, `lyx batten status` and `lyx tender status`.
-   A machine that is not the owner starts, resumes and lands nothing, and shows the hub's runs as owned by that machine, not as stalled or landed.
-2. **Takeover is an explicit verb**, working name `lyx adopt` (the hub, today).
-   It brings every repo of the hub up to date from origin (warp, prime weft, Bolt and every live pair's branches, adding pairs this machine lacks), records this machine as owner, pushes, and resumes the hub's runs here.
-   A machine that wakes, or starts its orch, and finds the hub now owned by another machine pauses its runs instead of driving them on.
-3. **A quick check of whether anything changed on origin.**
+1. **Every entry has its own owner machine** (operator decisions 2026-10-19).
+   Each task and each beam records the machine that owns it on Bolt (for example `owner: neve`), shown by `lyx board`, `lyx batten status` and `lyx tender status`.
+   Beams are not built yet; the prime is the root beam and carries an owner like a beam.
+   A machine starts, resumes and lands only what it owns, and shows the rest as owned by that machine, not as stalled or landed.
+2. **Takeover is an explicit verb**, working name `lyx adopt`, taking exactly the entries it names: one or more tasks, the prime, or everything with `--all`.
+   Adopting a beam (today the prime) takes the beam only; its children keep their owners.
+   It brings the repos the entries need up to date from origin (warp, prime weft, Bolt and the named pairs' branches, adding pairs this machine lacks), records this machine as owner without the old owner's help, pushes, and resumes the adopted runs here.
+   A machine that wakes, or starts its orch, and finds an entry it drove now owned by another machine pauses that run instead of driving it on.
+3. **Landing needs the parent's owner.**
+   A task lands into its parent by merging in the parent's local worktree and pushing it, so it lands only on the machine that owns the parent.
+   A run whose machine does not own its parent halts before the parent-side merge, naming the parent's owner and the two ways forward: adopt the parent here, or let the owner land the run from its branch on origin.
+   A handover in which the parent's owner lands another machine's run on its own is not built here (see the beam section below).
+4. **A quick check of whether anything changed on origin.**
    `git ls-remote origin` returns every branch head in one round trip with no download; one call for the warp repo and one for the records repo (prime weft, every task weft and Bolt) cover the hub.
    The heads are compared with the local tracking refs:
    - origin moved and nothing is local only: fast-forward;
    - the branches diverged: stop and name the branch, never carry on.
    The check runs at orch start, at batten start or resume, and on wake from hibernation.
    It is the one synchronous remote operation the operator allows (`fabric-remote-async`: only the check whether branches exist on origin may be synchronous).
-4. **A rejected push is never silent** (from #737, below): it fetches, rebases and retries, and a push that still fails reaches the orch.
-5. **Open-Window counts per machine** (from #742, below), so a run adopted on a machine that never opened its window opens one there.
+5. **A rejected push is never silent** (from #737, below): it fetches, rebases and retries, and a push that still fails reaches the orch.
+6. **Open-Window counts per machine** (from #742, below), so a run adopted on a machine that never opened its window opens one there.
 
 ## Beams, not built here
 
-Beams do not exist yet, so the beam part of the design is recorded in note `orch-any-worktree` (WS 006), not built by this task: each beam has one owner machine, adopting a beam takes it with every task below it, and a branch lands into a beam only on its owner machine.
+Beams do not exist yet, so the beam part of the design is recorded in note `orch-any-worktree` (WS 006), not built by this task: each beam has its own owner machine, adopting a beam takes the beam only, and a branch lands into a beam only on its owner machine, which may land another machine's finished run from origin through a ready-to-land handover on Bolt.
 
 ## From issue #741
 
