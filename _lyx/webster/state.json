@@ -293,7 +293,7 @@
       }
     }
   ],
-  "currentBatch": 0,
+  "currentBatch": 1,
   "masterStrand": "fc4d391709e3d0b2c2dc1729dbd26db5",
   "masterSessionId": "6939c57c-46a1-443b-9c0e-40f9ed398b6c",
   "masterEngine": "claude",
@@ -309,27 +309,25 @@
         "02-toolfloor-package": "df839a9f8c1cb336afd63479ea1518c018397607b9b2578e0810bc1994ea63e0"
       },
       "startSha": "c27d4e82978ad2c477773f92a37e4b8ff0da1b22",
-      "kind": "fork",
-      "spawnedAt": "2026-10-19T18:05:02Z",
-      "sessionId": "6939c57c-46a1-443b-9c0e-40f9ed398b6c",
-      "engine": "claude",
-      "terminal": true,
-      "status": "failed",
-      "digest": {
-        "batch": "01-lyxtemp-short-run-names",
-        "status": "failed",
-        "head_sha": "d4f9f26d722247df491c361af0403646fbcccd7f",
-        "reasons": [
-          "batch 01-lyxtemp-short-run-names holds cards 1-lyxtemp-short-run-names, 2-toolfloor-package",
-          "create-not-done/2-toolfloor-package[blocking]: Create target \"plan:internal/toolfloor#TestCheck\" still does not resolve: looked up \"internal/toolfloor#TestCheck\", quarry answered not_found (the unit exists and the member is missing)"
-        ]
-      },
+      "kind": "recovery",
+      "spawnedAt": "2026-10-19T18:07:39Z",
+      "terminal": false,
+      "status": "",
       "forkTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-ubuntu-2404-support/6939c57c-46a1-443b-9c0e-40f9ed398b6c/subagents/agent-a93e2078dccd06f16.jsonl"
       ],
-      "bracketTranscripts": [
-        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-ubuntu-2404-support/6939c57c-46a1-443b-9c0e-40f9ed398b6c/subagents/agent-a93e2078dccd06f16.jsonl"
-      ]
+      "strandGuid": "0bb6d249c3b24dea43f51a9b819aff9f",
+      "shuttleRunDir": "/home/knatte/Code/loomyard-LYXHUB/ubuntu-2404-support/.lyx/shuttle/0190cbee4ab122d6287e4db9fca99e2c",
+      "eventsPath": "/home/knatte/Code/loomyard-LYXHUB/ubuntu-2404-support/.lyx/shuttle/0190cbee4ab122d6287e4db9fca99e2c/events.jsonl",
+      "eventsOffset": 2297,
+      "recoveries": 1,
+      "recoverySessions": [
+        "6da8ec3f-4b02-480b-b397-69b76c88e1d6"
+      ],
+      "recoveryEngines": {
+        "6da8ec3f-4b02-480b-b397-69b76c88e1d6": "claude"
+      },
+      "recoveryStartSha": "d4f9f26d722247df491c361af0403646fbcccd7f"
     }
   },
   "seenForkTranscripts": [
