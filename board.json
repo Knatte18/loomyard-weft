@@ -1342,6 +1342,25 @@
       "body": "## Seen (2026-10-19, run `ubuntu-2404-support`)\n\nThe plan had passed three Plan review rounds when Webster halted on card 2.\nThe fix was a small amendment to that one card, made through `lyx loom goto --to Plan-Write`.\nThe goto reset the Plan segment's budget, so the amended plan faced the full fresh review budget again (2 rounds, hard cap 3) for a change to one card.\nThe orch cut it to one round by hand in the pair's `.lyx/config/loom.local.yaml` (`plan_max_bounces: 1`, `plan_hard_max_bounces: 1`), on the operator's order.\n\n## Operator view, not a decision (2026-10-19)\n\nA lightly revised plan does not need three new review rounds.\n\n## Idea\n\nA segment re-entered for an amendment of an already reviewed artifact gets a small review budget by itself, one round by default, configurable in `loom.yaml`, instead of the full fresh budget.\nThe review of such a round may be scoped to the change against the reviewed artifact.\n",
       "created": "2026-10-19T17:36:50Z",
       "revised": "2026-10-19T17:36:50Z"
+    },
+    {
+      "id": 694,
+      "slug": "converged-bouncer-budget",
+      "title": "A stop after a converged review verdict spends no review budget, and its way forward keeps the verdict",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "shed",
+        "loom",
+        "burler"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "Plan-Bouncer commit retries after CONVERGED used up the budget; the suggested goto discarded the verdict and re-ran the review",
+      "body": "## Seen (2026-10-19, run `ubuntu-2404-support`)\n\nThe Plan review round converged (`round-1-bouncer-verdict.md`: `CONVERGED`).\nPlan-Bouncer then failed on its own commit of the approved plan (a pathspec bug, fixed on main as `7a3396d05`).\nEach retry of that commit counted against the Plan-Review segment's bounce budget, so once the fix was deployed the run blocked with \"bounce budget exhausted for Plan-Bouncer\", whose way forward named `lyx shed goto self --to Plan-Bouncer`.\nThe orch took that goto; it gave the whole segment a fresh budget, the converged round no longer counted, and the Bouncer started a new review round over an approved plan.\n\n## Idea\n\n- A stop after a converged verdict, such as a failed commit or other mechanical step of the Bouncer, does not spend the segment's review budget: retrying it re-runs only the step that failed.\n- When the budget does run out at a Bouncer whose round converged, the error names `lyx loom circling accept` and `lyx loom resume`, never a goto, since a goto discards the verdict.\n",
+      "created": "2026-10-19T17:58:16Z",
+      "revised": "2026-10-19T17:58:16Z"
     }
   ]
 }
