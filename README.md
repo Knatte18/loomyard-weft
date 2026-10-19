@@ -24,7 +24,7 @@ Held by a run; its scope is locked until the run ends.
 | # | Task | Slug | Recipe | At | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | 2 | **lyx runs and tests green on Ubuntu 24.04 (git 2.43, tmux 3.4, 10-digit uid)**<br>• Toolchain audit with minimum versions, tmux socket path for long uids, cherry-pick without --empty, tmux 3.4 session row, prime first, creel hold test<br>• `loom: discussion_hard_max_bounces 3`<br>• `loom: discussion_max_bounces 2`<br>• `loom: merge_max_bounces 1`<br>• `loom: plan_hard_max_bounces 3`<br>• `loom: plan_max_bounces 2`<br>• `loom: webster_max_bounces 1` | [`ubuntu-2404-support`](design-ubuntu-2404-support.md) | loom | failed · Discussion-Burler-Review | 1h | 40m | fabric, reed, creel |
-| 3 | **Fork git-mutation guard flags read-only 'git help' piped through col/grep as state-mutating**<br>• `darn: review_max_bounces 1` | [`fork-git-guard-readonly`](design-fork-git-guard-readonly.md) | darn | Darn-Bouncer | 16m | 15m | burler |
+| 3 | **Fork git-mutation guard flags read-only 'git help' piped through col/grep as state-mutating**<br>• `darn: review_max_bounces 1` | [`fork-git-guard-readonly`](design-fork-git-guard-readonly.md) | darn | Describe | 16m | 15m | burler |
 
 ### Ready
 
@@ -40,7 +40,7 @@ Waits only on Running or Ready entries.
 
 | # | Task | Slug | Recipe | After | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | **Origin reconcile before anything that matters, and pushes that never fail silently**<br>• ls-remote over warp and records repos at orch start, wake, batten resume, Merge-In and Finalize; fast-forward, landed-elsewhere cleanup, stop on divergence; rejected push retries and reports | [`origin-reconcile`](design-origin-reconcile.md) | loom | `ubuntu-2404-support`, `hub-workspaces` | 4h | 0m | fabric, batten, orch, creel |
+| 1 | **Origin reconcile before anything that matters, and pushes that never fail silently**<br>• ls-remote over warp and records repos at orch start, wake, batten resume, Merge-In and Finalize; fast-forward, landed-elsewhere cleanup, stop on divergence; rejected push retries and reports | [`origin-reconcile`](design-origin-reconcile.md) | loom | `ubuntu-2404-support`, `hub-workspaces` | 4h | 1m | fabric, batten, orch, creel |
 
 ### Layer B
 
@@ -50,7 +50,7 @@ Starts when every entry it names under After is done.
 
 | # | Task | Slug | Recipe | After | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | **One machine takes over from another: owner machines, lyx adopt, landing on the parent owner**<br>• Owner machine per entry, lyx adopt of named entries, landing only on the parent owner, owner outcome in the origin reconcile, Open-Window per machine | [`machine-handover`](design-machine-handover.md) | loom | `origin-reconcile` | 4h | 0m | batten, board, orch, fabric |
+| 1 | **One machine takes over from another: owner machines, lyx adopt, landing on the parent owner**<br>• Owner machine per entry, lyx adopt of named entries, landing only on the parent owner, owner outcome in the origin reconcile, Open-Window per machine | [`machine-handover`](design-machine-handover.md) | loom | `origin-reconcile` | 4h | 1m | batten, board, orch, fabric |
 
 ## Notes
 
