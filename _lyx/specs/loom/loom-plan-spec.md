@@ -1,4 +1,4 @@
-<!-- lyx-stencil: sha256=ebfc9d8af227410f4976bf9c38c5ecbff6080dfe7b541e398da34442d626d39c build=6bfaaa1448adcd5fda4ab769115846291406977a time=2026-10-16T12:19:49Z -->
+<!-- lyx-stencil: sha256=f9d5b9702e1d960bbbc75160fd2bf61950fee63a8963a5a78182ba0b0227d244 build=e14e9b4952c711cd015e7a3e5426793c32c6a9fa time=2026-10-19T14:26:31Z -->
 
 # Loom plan-spec — flat card list
 
@@ -11,7 +11,7 @@ It is validated by `Plan-Write`'s and `Plan-Burler-Fix`'s own gates over `intern
 It is reviewed by `Plan-Review`.
 
 - **Output** — the shape below, per [Card fields and order](#card-fields-and-order).
-  Consumed as Input by `Batchifier` and `Webster` (via `internal/planparser`, webster's sole parser).
+  Consumed as Input by `Webster`, the implementer row (via `internal/planparser`, webster's sole parser).
 
 ## What a card is
 
