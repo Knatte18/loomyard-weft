@@ -1,11 +1,11 @@
 {
-  "current_producer": "Darn-Write",
+  "current_producer": "Darn-Bouncer",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Darn-Write",
-    "last": "Preflight → done",
+    "now": "Darn-Bouncer",
+    "last": "Darn-Write → done",
     "wait": ""
   },
   "history": [
@@ -14,6 +14,33 @@
       "outcome": "done",
       "output": "",
       "at": "2026-10-19T15:12:09Z"
+    },
+    {
+      "producer": "Darn-Write",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYXHUB/fork-git-guard-readonly/_lyx/landing/summary.md",
+      "at": "2026-10-19T15:16:25Z",
+      "gate_attempts": 0,
+      "gate_spans": [
+        {
+          "gate": "discussion",
+          "kind": "gate",
+          "start": "2026-10-19T15:14:37.870616231Z",
+          "end": "2026-10-19T15:14:45.164293525Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-10-19T15:14:45.207721942Z",
+          "end": "2026-10-19T15:16:25.285187358Z"
+        },
+        {
+          "gate": "description",
+          "kind": "gate",
+          "start": "2026-10-19T15:16:25.334677807Z",
+          "end": "2026-10-19T15:16:25.334725286Z"
+        }
+      ]
     }
   ],
   "product": {
