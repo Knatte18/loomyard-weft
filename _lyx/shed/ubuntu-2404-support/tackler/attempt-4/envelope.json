@@ -1,0 +1,11 @@
+{
+  "verdict": "hand-back",
+  "reason": "The Plan-Burler-Review round did not fail on its own. The review session was interrupted at 19:59:01 (trace 1195735eb6c29ab0, strand bd76652e209b87db8d64e5e650ab487c, state idle-stalled, cause=interrupt), reinvoked, and finished 11 seconds later with no fork reviewers spawned. Its output file, _lyx/reviews/plan/round-1-review-20261019T175914Z.md, reads verdict APPROVED but records that the operator stopped the round on the order of the parent ly:orch, before any card was judged. The parent's stated reason is that the plan was approved in the previous round and that this round exists only because a goto reset the segment budget. The shed refused the step correctly: requested 3 fork reviewers, spawned 0. A plain re-launch would run a fresh review of a plan the parent says is already approved, against a stop order the parent gave. Whether to run that review again, or to skip it and move on, is the run's parent to decide. I could not verify the stop order itself from the logs; it is taken from the review file's own account.\n",
+  "question": "Plan-Burler-Review stopped at round 1 with 0 of 3 fork reviewers spawned, after the review was interrupted on an order from ly:orch that says the plan was approved in the previous round and that this round exists only because a goto reset the segment budget. Should this review round run again (a plain re-run of Plan-Burler-Review, which will spawn fresh reviewers), or should the plan segment be treated as already approved so the run moves on to Webster?\n",
+  "goto": "",
+  "cause": "",
+  "attempt": 4,
+  "attempt_dir": "/home/knatte/Code/loomyard-LYXHUB/ubuntu-2404-support/_lyx/shed/ubuntu-2404-support/tackler/attempt-4",
+  "verdict_path": "/home/knatte/Code/loomyard-LYXHUB/ubuntu-2404-support/_lyx/shed/ubuntu-2404-support/tackler/attempt-4/verdict.yaml",
+  "case_brief_path": ""
+}
