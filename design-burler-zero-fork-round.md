@@ -1,6 +1,6 @@
 # Burler review round hard-fails when the chair session finishes without spawning its fork reviewers
 
-`burler-zero-fork-round` · Note · bug
+`burler-zero-fork-round` · Note · bug, burler, shuttle, shed
 
 Imported from [issue #756](https://github.com/Knatte18/loomyard/issues/756).
 
