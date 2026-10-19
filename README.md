@@ -17,7 +17,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | **[WS 002] One VS Code workspace per umbrella, listing its worktrees directly**<br>• Workspace files in the hub dir; umbrella worktree first, then Bolt, then its live pairs at their anchors; no _portals; finished pairs drop out<br>• `loom: discussion_max_bounces 2`<br>• `loom: merge_max_bounces 1`<br>• `loom: plan_max_bounces 1`<br>• `loom: webster_max_bounces 1` | [`hub-workspaces`](design-hub-workspaces.md) | loom | Merge-Bouncer | 1d | 1d | fabric, ide, workspaces |
+| 1 | **[WS 002] One VS Code workspace per umbrella, listing its worktrees directly**<br>• Workspace files in the hub dir; umbrella worktree first, then Bolt, then its live pairs at their anchors; no _portals; finished pairs drop out<br>• `loom: discussion_max_bounces 2`<br>• `loom: merge_max_bounces 1`<br>• `loom: plan_max_bounces 1`<br>• `loom: webster_max_bounces 1` | [`hub-workspaces`](design-hub-workspaces.md) | loom | Publish | 1d | 1d | fabric, ide, workspaces |
 
 #### Normal priority
 
@@ -83,7 +83,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Note | Slug | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| 1 | **[WS 005] One dobby daemon per beam owns and drives its runs**<br>• Each beam (a worktree with an orch thread) gets a Go daemon, started by lyx orch start, that follows its runs status files, starts ready tasks, lands, settles mechanical stops and tells the thread only what needs judgement | [`umbrella-daemon`](design-umbrella-daemon.md) | 7d | 20m | batten, orch, shed, workspaces, loom, board |
+| 1 | **[WS 005] One dobby daemon per beam owns and drives its runs**<br>• Each beam (a worktree with an orch thread) gets a Go daemon, started by lyx orch start, that follows its runs status files, starts ready tasks, lands, settles mechanical stops and tells the thread only what needs judgement | [`umbrella-daemon`](design-umbrella-daemon.md) | 7d | 21m | batten, orch, shed, workspaces, loom, board |
 | 2 | **Align each perch writer twill lenses with its reviewer lenses, Discussion first**<br>• The Discussion writer runs emphasis lenses while its reviewer hunts design holes by procedure, and design holes are what the review still finds | [`writer-reviewer-lens-align`](design-writer-reviewer-lens-align.md) | 22h | 22h | burler, loom, config |
 
 #### Normal priority
