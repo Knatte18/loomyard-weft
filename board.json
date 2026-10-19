@@ -1333,6 +1333,26 @@
       "body": "Imported from [issue #746](https://github.com/Knatte18/loomyard/issues/746).\n\nSeen on Linux (tmux 3.4) in the loomyard hub's prime.\nThe operator closed the orch Claude session by mistake and then talked to the same session id outside reed.\n\n`lyx orch status` afterwards reported `strand_live: true` with `watcher_live: false`, while the orch strand's pane (`%3`) held only a `bash` shell (`tmux list-panes` showed `%3 0:bash bash`, so the pane also sat under a session and window named `0` and `bash`, not the prime's `loomyard:orch`).\n`lyx orch start --help` says `--continue` and `--adopt` are refused while the strand is live, so getting back needed `lyx orch stop` first.\n\nWorkaround: `lyx orch stop`, then `lyx orch start --continue`, then `lyx reed attach`.\n\nExpected:\n- A strand whose pane no longer runs its Claude session counts as dead, so `lyx orch status` shows it and `lyx orch start --continue` resumes it in one step.\n- The watcher's death is surfaced or the watcher is restarted, instead of the orch going silent.\n- The orch pane stays in the prime's reed session and window.",
       "created": "2026-10-19T14:27:09Z",
       "revised": "2026-10-19T14:27:09Z"
+    },
+    {
+      "id": 685,
+      "slug": "ubuntu-2404-toolchain",
+      "title": "Run lyx on Ubuntu 24.04's toolchain (git 2.43, tmux 3.4): audit, fix and a minimum-version check",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "fabric",
+        "reed"
+      ],
+      "issues": [
+        747
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Imported from [issue #747](https://github.com/Knatte18/loomyard/issues/747).\n\nThe operator's work laptop runs Ubuntu 24.04.5 LTS with its packaged git 2.43.0 and tmux 3.4, and lyx has to work there; see the host report #745.\nThe other development machine has newer git and tmux, so it never shows these faults, and only this host can prove a fix.\n\nKnown faults on this toolchain:\n- #743: `git cherry-pick --empty=drop` does not exist in git 2.43 (used by `gitrepo.Repo.CherryPick`, called from fabricengine's `dropSeedCommits` for Bolt), and two Bolt rebase tests fail with seed-commit conflicts.\n- #738: tmux 3.4 has no separate current-session format in `#{S:}`, so reed's session row draws every session twice with a stray comma.\n- #744 may belong here too; not yet known.\n\nThe test suite catches only what it exercises: tmux formats are set but never checked as rendered, and git or tmux flags no test runs go unseen.\n\nProposal, as one task:\n1. Audit every git and tmux invocation in the code and note the version each flag or format feature needs.\n2. Fix what fails on git 2.43 and tmux 3.4 today, plus what the audit finds, without dropping behaviour on newer versions.\n3. Add a minimum-version check for git and tmux at start-up with a clear error, so a host below the floor fails plainly instead of in odd places.\n4. Prove it with `lyx gate test ./...` and `lyx gate test --tags integration ./...` green on this host.\n\nIt needs #739 fixed first, since no test package can run on this host until then.",
+      "created": "2026-10-19T14:27:13Z",
+      "revised": "2026-10-19T14:27:13Z"
     }
   ]
 }
