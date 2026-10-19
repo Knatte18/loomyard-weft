@@ -1,0 +1,11 @@
+{
+  "verdict": "hand-back",
+  "reason": "The Webster fork for batch 01 halted at card 2 (toolfloor-package) on a rule the card itself sets, not on a bug.\nCard 2's audit requires the implementer to halt on any tmux feature whose confirmed version is above the 3.4 floor, and to name it, instead of listing it as satisfied.\nThe implementer confirmed that the `allow-set-title` option first appeared in tmux 3.5 and stopped to ask the parent.\nCard 2's text names only two above-floor forms to be replaced (`cherry-pick --empty=drop` and the `#{S:}` loop), so `allow-set-title` is a third form the plan does not account for.\nWhether to keep it, raise the floor or change the code is a design choice for the run's parent, so a plain re-launch or a goto cannot settle it.\nThe code already tolerates the missing option: internal/reedengine/spawn.go:98-101 only warns when `set-option -p allow-set-title off` fails, and internal/reedengine/naming_integration_test.go:69-73 skips its check on tmux 3.4 with the comment that 3.4 has no such option.\n",
+  "question": "Batch 01 (lyxtemp-short-run-names, toolfloor-package) halted at card 2: the audit found tmux `allow-set-title` (needs 3.5), above the 3.4 floor, and card 2 names no way to handle it.\nWhich should the plan take?\n1) Accept `allow-set-title` as an optional above-floor tmux form (Recommended): record it in card 2's audit as found, with a note that reedengine warns and continues on 3.4, and let the implementer finish card 2 without a halt.\n2) Raise `TmuxFloor` to \"3.5\": this changes the floor card 2 documents as the oldest version lyx is proven on, and it moves the 3.4 host support claim.\n3) Remove the `allow-set-title` mirror from reedengine's spawn: a code change in a card outside batch 01, which the plan would need to add.\nReply with the number; the parent then amends card 2 (or adds the card) and the batch can re-run.\n",
+  "goto": "",
+  "cause": "",
+  "attempt": 2,
+  "attempt_dir": "/home/knatte/Code/loomyard-LYXHUB/ubuntu-2404-support/_lyx/shed/ubuntu-2404-support/tackler/attempt-2",
+  "verdict_path": "/home/knatte/Code/loomyard-LYXHUB/ubuntu-2404-support/_lyx/shed/ubuntu-2404-support/tackler/attempt-2/verdict.yaml",
+  "case_brief_path": ""
+}
