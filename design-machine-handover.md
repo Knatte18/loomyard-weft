@@ -24,12 +24,17 @@ The operator puts this high (2026-10-19).
    A task lands into its parent by merging in the parent's local worktree and pushing it, so it lands only on the machine that owns the parent.
    A run whose machine does not own its parent halts before the parent-side merge, naming the parent's owner and the two ways forward: adopt the parent here, or let the owner land the run from its branch on origin.
    A handover in which the parent's owner lands another machine's run on its own is not built here (see the beam section below).
-4. **A quick check of whether anything changed on origin.**
-   `git ls-remote origin` returns every branch head in one round trip with no download; one call for the warp repo and one for the records repo (prime weft, every task weft and Bolt) cover the hub.
-   The heads are compared with the local tracking refs:
+4. **An origin reconcile before anything that matters** (agreed with the operator 2026-10-19).
+   A machine never needs to know that it was away: the reconcile is cheap enough to run before every step where a stale view does harm.
+   `git ls-remote origin` returns every branch head in one round trip with no download; one call for the warp repo and one for the records repo (prime weft, every task weft and Bolt) cover the hub, run in parallel.
+   Bolt alone is not enough: it misses task-branch commits between status writes, commits in wefts that change no status, and pushes made by hand, such as warp `main`.
+   The heads are compared with the local tracking refs, and Bolt's owners and statuses with what this machine drives:
    - origin moved and nothing is local only: fast-forward;
+   - an entry is now owned by another machine: pause its run here;
+   - an entry is `done` or gone from Bolt: it landed elsewhere, so it is never resumed; any commit on it that only this machine holds is kept under an `archive/*` tag and reported, then its local pair and run record are removed locally with no push;
    - the branches diverged: stop and name the branch, never carry on.
-   The check runs at orch start, at batten start or resume, and on wake from hibernation.
+   The operator says remote checks cost real time, so it runs rarely, never per row and never in a loop: at orch start, on wake from `lyx hibernate`, when batten resumes a run, and before Merge-In and Finalize, which talk to origin anyway; later dobby runs it at its start and before each action.
+   Measured on Neve 2026-10-19: about 0.6 s per call, about 0.7 s for both in parallel.
    It is the one synchronous remote operation the operator allows (`fabric-remote-async`: only the check whether branches exist on origin may be synchronous).
 5. **A rejected push is never silent** (from #737, below): it fetches, rebases and retries, and a push that still fails reaches the orch.
 6. **Open-Window counts per machine** (from #742, below), so a run adopted on a machine that never opened its window opens one there.
