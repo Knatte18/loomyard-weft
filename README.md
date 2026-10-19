@@ -24,16 +24,13 @@ Held by a run; its scope is locked until the run ends.
 | # | Task | Slug | Recipe | At | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | 2 | **lyx runs and tests green on Ubuntu 24.04 (git 2.43, tmux 3.4, 10-digit uid)**<br>• Toolchain audit with minimum versions, tmux socket path for long uids, cherry-pick without --empty, tmux 3.4 session row, prime first, creel hold test<br>• `loom: discussion_hard_max_bounces 3`<br>• `loom: discussion_max_bounces 2`<br>• `loom: merge_max_bounces 1`<br>• `loom: plan_hard_max_bounces 3`<br>• `loom: plan_max_bounces 2`<br>• `loom: webster_max_bounces 1` | [`ubuntu-2404-support`](design-ubuntu-2404-support.md) | loom | failed · Discussion-Burler-Review | 45m | 24m | fabric, reed, creel |
+| 3 | **Fork git-mutation guard flags read-only 'git help' piped through col/grep as state-mutating**<br>• `darn: review_max_bounces 1` | [`fork-git-guard-readonly`](design-fork-git-guard-readonly.md) | darn | Worktree-Create | 0m | 0m | burler |
 
 ### Ready
 
 Waits on nothing open; can start now.
 
-#### Normal priority
-
-| # | Task | Slug | Recipe | After | Age | Revised | Labels |
-| --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | **Fork git-mutation guard flags read-only 'git help' piped through col/grep as state-mutating**<br>• `darn: review_max_bounces 1` | [`fork-git-guard-readonly`](design-fork-git-guard-readonly.md) | darn |  | 0m | 0m | burler |
+_None._
 
 ### Layer A
 
