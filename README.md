@@ -61,8 +61,9 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 1 | **webster create-not-done check rejects a Create target the card removes itself** | [`create-target-transient`](design-create-target-transient.md) | 1d | 1d | webster, loom, quarry |
 | 2 | **orch status reports a live strand after the orch Claude session exits, so --continue is refused** | [`orch-strand-live-after-exit`](design-orch-strand-live-after-exit.md) | 4h | 4h | orch, reed |
 | 3 | **Arbiter verdict with an unquoted verbs item containing ': ' is unparseable** | [`arbiter-verdict-quoting`](design-arbiter-verdict-quoting.md) | 1h | 1h | shed, loom |
-| 4 | **A stop after a converged review verdict spends no review budget, and its way forward keeps the verdict**<br>• Plan-Bouncer commit retries after CONVERGED used up the budget; the suggested goto discarded the verdict and re-ran the review | [`converged-bouncer-budget`](design-converged-bouncer-budget.md) | 49m | 47m | shed, loom, burler |
-| 5 | **Burler review round hard-fails when the chair session finishes without spawning its fork reviewers** | [`burler-zero-fork-round`](design-burler-zero-fork-round.md) | 35m | 35m | burler, shuttle, shed |
+| 4 | **A stop after a converged review verdict spends no review budget, and its way forward keeps the verdict**<br>• Plan-Bouncer commit retries after CONVERGED used up the budget; the suggested goto discarded the verdict and re-ran the review | [`converged-bouncer-budget`](design-converged-bouncer-budget.md) | 50m | 47m | shed, loom, burler |
+| 5 | **Burler review round hard-fails when the chair session finishes without spawning its fork reviewers** | [`burler-zero-fork-round`](design-burler-zero-fork-round.md) | 36m | 36m | burler, shuttle, shed |
+| 6 | **A paused run records who paused it, a goto included** | [`paused-state-reason`](design-paused-state-reason.md) | 0m | 0m |  |
 
 ### Enhancements
 
@@ -107,7 +108,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 30 | **A halt a plan card asks for reaches the parent as a question, not as a batch failure**<br>• A card-requested halt went through recover-batch, tackler and arbiter as a failure; it should go straight to the parent and the next attempt should carry the decision | [`card-halt-is-question`](design-card-halt-is-question.md) | 1h | 1h | webster, shed, loom |
 | 31 | **A question research can settle is settled in Discussion, never deferred to Plan or an implementer**<br>• Discussion writer researches the facts its design rests on; reviewers flag a deferred research question or a halt-on-discovery rule | [`research-in-discussion`](design-research-in-discussion.md) | 1h | 1h | loom, stencil, burler |
 | 32 | **A plan or discussion re-entered for a small amendment gets one review round, not a fresh full budget**<br>• A goto back to Plan-Write for a one-card fix reset the full Plan review budget; an amendment round should get a small budget by itself | [`amend-review-budget`](design-amend-review-budget.md) | 1h | 47m | loom, burler, shed |
-| 33 | **Friction is gathered once per run, not by an agent session at every stop**<br>• Each stop started a friction session that held the driver lock; friction belongs at the end of the run | [`friction-not-per-stop`](design-friction-not-per-stop.md) | 40m | 40m | shed, loom |
+| 33 | **Friction is gathered once per run, not by an agent session at every stop**<br>• Each stop started a friction session that held the driver lock; friction belongs at the end of the run | [`friction-not-per-stop`](design-friction-not-per-stop.md) | 41m | 41m | shed, loom |
 
 #### Low priority
 
