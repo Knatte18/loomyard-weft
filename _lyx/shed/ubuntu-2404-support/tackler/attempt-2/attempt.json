@@ -1,0 +1,20 @@
+{
+  "number": 2,
+  "stop_key": {
+    "current_producer": "Webster",
+    "history_length": 23,
+    "state": "blocked"
+  },
+  "pause_before": "",
+  "pause_after": "",
+  "snapshot": {
+    "head": "c27d4e82978ad2c477773f92a37e4b8ff0da1b22",
+    "branch": "ubuntu-2404-support",
+    "dirty": {}
+  },
+  "spawned_at": "2026-10-19T19:19:56.353814365+02:00",
+  "deadline": "2026-10-19T19:29:56.353814365+02:00",
+  "envelope_path": "/home/knatte/Code/loomyard-LYXHUB/ubuntu-2404-support/_lyx/shed/ubuntu-2404-support/drive-reports/drive-envelope-20261019-191956-730a.json",
+  "report_path": "/home/knatte/Code/loomyard-LYXHUB/ubuntu-2404-support/_lyx/shed/ubuntu-2404-support/drive-reports/drive-report-20261019-191956-b5ef.md",
+  "strand_guid": "e2d023be3fc4f9b368fc5fd78b1436e4"
+}
