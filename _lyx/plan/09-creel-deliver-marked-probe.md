@@ -8,8 +8,8 @@
 - `internal/creelengine_test#TestScheduler_Injects`
 
 **Create:**
-- `plan:internal/testkit/creelfake#Delivery.PausedCalls` -> `func (d *Delivery) PausedCalls(name string) int`
-- `plan:internal/creelengine_test#env.awaitMarkedProbe` -> `func (e *env) awaitMarkedProbe(t *testing.T, receiver string, mark, seen int) (advanced time.Duration, passes int)`
+- `internal/testkit/creelfake#Delivery.PausedCalls`
+- `internal/creelengine_test#env.awaitMarkedProbe`
 
 **Uses:**
 - `internal/creelengine_test#env`
