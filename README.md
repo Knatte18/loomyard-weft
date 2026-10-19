@@ -57,6 +57,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 7 | **A run resumed on a second machine opens no terminal window on it** | [`open-window-per-machine`](design-open-window-per-machine.md) | 0m | 0m | batten |
 | 8 | **lyx needs a newer git than 2.43: cherry-pick --empty=drop and Bolt rebase tests fail** | [`git-243-cherry-pick-empty`](design-git-243-cherry-pick-empty.md) | 0m | 0m | fabric |
 | 9 | **creelengine TestScheduler_Reminders hold case fails on a second Linux host** | [`creel-reminders-hold-second-host`](design-creel-reminders-hold-second-host.md) | 0m | 0m | creel |
+| 10 | **orch status reports a live strand after the orch Claude session exits, so --continue is refused** | [`orch-strand-live-after-exit`](design-orch-strand-live-after-exit.md) | 0m | 0m | orch, reed |
 
 ### Enhancements
 

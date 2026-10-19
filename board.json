@@ -1340,6 +1340,26 @@
       "body": "Imported from [issue #744](https://github.com/Knatte18/loomyard/issues/744).\n\nSeen on a Linux host (git 2.43.0, tmux 3.4, go 1.26.9) with main at c03af73d plus the #739 lyxtemp fix, which creelengine does not read beyond its temp directory.\n`lyx gate test ./internal/creelengine` fails twice in a row:\n\n```\n--- FAIL: TestScheduler_Reminders/HoldMutesOtherSendersLetsTheOwnerPassAndEndsAtExpiry (0.03s)\n    deliver_test.go:505: typed [\"[creel] #3 from ly:BATTEN: from the owner\"]; want only the owner's notice and mail\n```\n\nThe owner's 4097-byte post under its own hold gets no reminder line; only the notice for the short post is typed.\nNot seen before on this host only because no package could run here until #739.\n\nExpected: the test passes on every host, or the reminder for the hold owner's over-long mail is typed as the test wants.",
       "created": "2026-10-19T14:27:07Z",
       "revised": "2026-10-19T14:27:07Z"
+    },
+    {
+      "id": 684,
+      "slug": "orch-strand-live-after-exit",
+      "title": "orch status reports a live strand after the orch Claude session exits, so --continue is refused",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "orch",
+        "reed"
+      ],
+      "issues": [
+        746
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Imported from [issue #746](https://github.com/Knatte18/loomyard/issues/746).\n\nSeen on Linux (tmux 3.4) in the loomyard hub's prime.\nThe operator closed the orch Claude session by mistake and then talked to the same session id outside reed.\n\n`lyx orch status` afterwards reported `strand_live: true` with `watcher_live: false`, while the orch strand's pane (`%3`) held only a `bash` shell (`tmux list-panes` showed `%3 0:bash bash`, so the pane also sat under a session and window named `0` and `bash`, not the prime's `loomyard:orch`).\n`lyx orch start --help` says `--continue` and `--adopt` are refused while the strand is live, so getting back needed `lyx orch stop` first.\n\nWorkaround: `lyx orch stop`, then `lyx orch start --continue`, then `lyx reed attach`.\n\nExpected:\n- A strand whose pane no longer runs its Claude session counts as dead, so `lyx orch status` shows it and `lyx orch start --continue` resumes it in one step.\n- The watcher's death is surfaced or the watcher is restarted, instead of the orch going silent.\n- The orch pane stays in the prime's reed session and window.",
+      "created": "2026-10-19T14:27:09Z",
+      "revised": "2026-10-19T14:27:09Z"
     }
   ]
 }
