@@ -1251,7 +1251,7 @@
       "id": 687,
       "slug": "fork-git-guard-readonly",
       "title": "Fork git-mutation guard flags read-only 'git help' piped through col/grep as state-mutating",
-      "kind": "note",
+      "kind": "task",
       "labels": [
         "bug",
         "burler"
