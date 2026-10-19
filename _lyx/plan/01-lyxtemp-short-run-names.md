@@ -8,11 +8,9 @@
 - `internal/testkit/tmuxkit#TestCheckSocketPath`
 - `internal/lyxtemp/doc.go`
 - `pattern/PATTERN-lyx-temp-root.md`
-
-**Create:**
-- `plan:internal/lyxtemp#randomRunName` -> `func randomRunName() string`
-- `plan:internal/lyxtemp#runNameAttempts` -> `const runNameAttempts = 16`
-- `plan:internal/lyxtemp#TestNewRun_RetriesATakenNameUpToTheBound` -> `func TestNewRun_RetriesATakenNameUpToTheBound(t *testing.T)`
+- `internal/lyxtemp#randomRunName`
+- `internal/lyxtemp#runNameAttempts`
+- `internal/lyxtemp#TestNewRun_RetriesATakenNameUpToTheBound`
 
 **Uses:**
 - `internal/lyxtemp#runPrefix`
@@ -21,6 +19,7 @@
 
 **Intent:** D1: a run directory is named `r` plus six random hex digits, so the longest tmux socket path under a 10-digit uid stays under the 107-byte `sun_path` limit (`/tmp/lyx-4294967295/r0a1b2c/tmux-4294967295/` plus the 61-byte key is 105 bytes).
 This card lands first, since no test package runs on the Ubuntu host before it.
+Commit `c27d4e829` already carries it, so its new members are listed as the glyphs they now resolve to; an implementer finds the work done and changes nothing.
 
 - `randomRunName` returns `runPrefix` followed by six lower-case hex digits drawn from `math/rand/v2` (no new import outside the standard library, so `TestLeafInvariant_AllowlistOnly` keeps passing).
 - `Root` gains an unexported field `runName func() string`, the name source, replaceable so a test forces a taken name; `openRoot` sets it to `randomRunName`.
