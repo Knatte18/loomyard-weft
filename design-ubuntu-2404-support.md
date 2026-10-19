@@ -1,6 +1,6 @@
 # lyx runs and tests green on Ubuntu 24.04 (git 2.43, tmux 3.4, 10-digit uid)
 
-`ubuntu-2404-support` · Task · bug, enhancement, fabric, reed, creel · failed · Plan-Burler-Review
+`ubuntu-2404-support` · Task · bug, enhancement, fabric, reed, creel · running · Plan-Bouncer
 
 ## Goal
 
