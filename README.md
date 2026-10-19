@@ -40,8 +40,17 @@ Waits only on Running or Ready entries.
 
 | # | Task | Slug | Recipe | After | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | **One machine takes over the hub from another: run owners, adopt, origin check, loud pushes**<br>• Owner machine per entry, lyx adopt of named entries, landing only on the parent owner, ls-remote origin check, loud pushes, Open-Window per machine | [`machine-handover`](design-machine-handover.md) | loom | `ubuntu-2404-support`, `hub-workspaces` | 4h | 1m | batten, board, orch, fabric, creel |
-| 2 | **Origin reconcile before anything that matters, and pushes that never fail silently**<br>• ls-remote over warp and records repos at orch start, wake, batten resume, Merge-In and Finalize; fast-forward, landed-elsewhere cleanup, stop on divergence; rejected push retries and reports | [`origin-reconcile`](design-origin-reconcile.md) | loom | `ubuntu-2404-support`, `hub-workspaces` | 4h | 0m | fabric, batten, orch, creel |
+| 1 | **Origin reconcile before anything that matters, and pushes that never fail silently**<br>• ls-remote over warp and records repos at orch start, wake, batten resume, Merge-In and Finalize; fast-forward, landed-elsewhere cleanup, stop on divergence; rejected push retries and reports | [`origin-reconcile`](design-origin-reconcile.md) | loom | `ubuntu-2404-support`, `hub-workspaces` | 4h | 0m | fabric, batten, orch, creel |
+
+### Layer B
+
+Starts when every entry it names under After is done.
+
+#### High priority
+
+| # | Task | Slug | Recipe | After | Age | Revised | Labels |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| 1 | **One machine takes over from another: owner machines, lyx adopt, landing on the parent owner**<br>• Owner machine per entry, lyx adopt of named entries, landing only on the parent owner, owner outcome in the origin reconcile, Open-Window per machine | [`machine-handover`](design-machine-handover.md) | loom | `origin-reconcile` | 4h | 0m | batten, board, orch, fabric |
 
 ## Notes
 
