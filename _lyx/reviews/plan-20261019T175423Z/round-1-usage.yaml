@@ -1,0 +1,58 @@
+round: 1
+fan: review-plan
+fix_fan: fix-plan
+fans_recorded: true
+lenses:
+    - affected-set
+    - guard-reach
+    - way-forward
+fix_lenses:
+    - fix-consistency
+    - fix-claims
+    - fix-proposal
+    - fix-affected-set
+fix_forks: 4
+review:
+    engine: claude
+    model: opus
+    effort: medium
+    start: 2026-10-19T17:32:00Z
+    end: 2026-10-19T19:45:31.038525319+02:00
+    wall_seconds: 811.038525319
+    tokens_known: true
+    fresh_tokens: 351391
+    cache_read_tokens: 18160807
+    forks: 3
+    fork_fresh_tokens: 54264
+    fork_cache_read_tokens: 4175536
+    fork_fresh_share: 0.15442626589753294
+fix:
+    engine: claude
+    model: opus
+    effort: medium
+    start: 2026-10-19T17:45:31Z
+    end: 2026-10-19T19:47:46.423750386+02:00
+    wall_seconds: 135.423750386
+    tokens_known: true
+    fresh_tokens: 116124
+    cache_read_tokens: 2025402
+seed:
+    - engine: claude
+      model: sonnet
+      effort: medium
+      start: 2026-10-19T17:31:33Z
+      end: 2026-10-19T19:32:00.126345783+02:00
+      wall_seconds: 27.126345783
+      tokens_known: true
+      fresh_tokens: 36291
+      cache_read_tokens: 142692
+judge:
+    - engine: claude
+      model: sonnet
+      effort: medium
+      start: 2026-10-19T17:47:47Z
+      end: 2026-10-19T19:48:08.12140598+02:00
+      wall_seconds: 21.12140598
+      tokens_known: true
+      fresh_tokens: 42600
+      cache_read_tokens: 157564
