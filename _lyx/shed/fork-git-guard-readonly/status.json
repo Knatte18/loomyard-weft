@@ -1,11 +1,11 @@
 {
-  "current_producer": "Darn-Bouncer",
+  "current_producer": "Darn-Burler-Review",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Darn-Bouncer",
-    "last": "Darn-Burler-Fix → bounced to Darn-Bouncer",
+    "now": "Darn-Burler-Review",
+    "last": "Darn-Bouncer → bounced to Darn-Burler-Review",
     "wait": ""
   },
   "history": [
@@ -106,6 +106,14 @@
       ],
       "budget_exempt": true,
       "routed_to": "Darn-Bouncer"
+    },
+    {
+      "producer": "Darn-Bouncer",
+      "outcome": "stuck",
+      "output": "/home/knatte/Code/loomyard-LYXHUB/fork-git-guard-readonly/_lyx/reviews/darn/round-1-bouncer-ledger.md",
+      "at": "2026-10-19T15:22:23Z",
+      "budget_exempt": true,
+      "routed_to": "Darn-Burler-Review"
     }
   ],
   "product": {
