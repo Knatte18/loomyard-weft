@@ -1323,6 +1323,25 @@
       "body": "## Seen (2026-10-19, run `ubuntu-2404-support`)\n\nThe task's goal included researching which git and tmux features lyx uses above the Ubuntu 24.04 floor (git 2.43, tmux 3.4).\nDiscussion and Plan settled two above-floor forms without auditing the full list against tmux's `CHANGES`.\nPlan card 2 (`toolfloor-package`) was given the audit itself, with a rule to halt on any third above-floor form.\nThe implementer fork did the research in about two minutes (tmux `CHANGES` plus `tmux.1` at tags 3.4 and 3.5), found `allow-set-title` (3.5), and halted.\nThe halt cost a failed batch, a recover-batch, a tackler, an orch decision and a `goto Plan-Write` with a fresh Plan review.\n\n## Operator decision (2026-10-19)\n\nA question research can settle is settled in Discussion, never deferred to Plan or to an implementer with a halt rule.\n\n## Idea\n\n- The Discussion writer stencil says so: a factual question the design rests on (versions, upstream behaviour, what the code does today) is researched and its answer, with the evidence, recorded in the discussion.\n- The Discussion reviewer finds a deferred research question: a decision or criterion that leaves a fact to be found out later, or a halt-on-discovery rule handed downstream, is a finding.\n- The Plan reviewer treats a card that carries a research step whose answer the design depends on as a finding.\n",
       "created": "2026-10-19T17:33:31Z",
       "revised": "2026-10-19T17:33:31Z"
+    },
+    {
+      "id": 693,
+      "slug": "amend-review-budget",
+      "title": "A plan or discussion re-entered for a small amendment gets one review round, not a fresh full budget",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "loom",
+        "burler",
+        "shed"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "A goto back to Plan-Write for a one-card fix reset the full Plan review budget; an amendment round should get a small budget by itself",
+      "body": "## Seen (2026-10-19, run `ubuntu-2404-support`)\n\nThe plan had passed three Plan review rounds when Webster halted on card 2.\nThe fix was a small amendment to that one card, made through `lyx loom goto --to Plan-Write`.\nThe goto reset the Plan segment's budget, so the amended plan faced the full fresh review budget again (2 rounds, hard cap 3) for a change to one card.\nThe orch cut it to one round by hand in the pair's `.lyx/config/loom.local.yaml` (`plan_max_bounces: 1`, `plan_hard_max_bounces: 1`), on the operator's order.\n\n## Operator view, not a decision (2026-10-19)\n\nA lightly revised plan does not need three new review rounds.\n\n## Idea\n\nA segment re-entered for an amendment of an already reviewed artifact gets a small review budget by itself, one round by default, configurable in `loom.yaml`, instead of the full fresh budget.\nThe review of such a round may be scoped to the change against the reviewed artifact.\n",
+      "created": "2026-10-19T17:36:50Z",
+      "revised": "2026-10-19T17:36:50Z"
     }
   ]
 }
