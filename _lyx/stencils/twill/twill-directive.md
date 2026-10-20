@@ -4,7 +4,7 @@
      {{.reviewed_files}}, {{.rubric_path}}, {{.lens_list}}, {{.final_self_check_command}}, {{.spawn_point}}, {{.severity_rule}} and {{.judge_steps}}.
      {{.judge_steps}} is filled by Directive with one of the two judge part stencils.
      It also names two optional markers, {{.writer_fork}} and {{.relaunch_rules}}, each filled by Directive with one part stencil and left empty otherwise.
-lyx-stencil: sha256=880d4b509e7663c691638670a481c24d58fcca05eb7b605a88bd784f2a03a227 build=2abb06c5ee3473f283f0b526362161487b9e6b26 time=2026-10-15T06:35:00Z -->
+lyx-stencil: sha256=3cdf50d75f0ebab100f8d1928a014855196c312204aa1e3db67870b79c94e5c4 build=a5b1d3a6f045271a411346e0dcb10070ccece573 time=2026-10-20T19:52:18Z -->
 
 ## Lens review by forks
 
@@ -14,6 +14,7 @@ lyx-stencil: sha256=880d4b509e7663c691638670a481c24d58fcca05eb7b605a88bd784f2a03
 2. Spawn every lens below in one message through the Agent tool with `subagent_type: "fork"`, one fork per lens, and never pass a `name`.
    Each fork's prompt is the fork boilerplate below plus its lens text and nothing else: no design hint, no direction to read code.
 3. Wait for every fork to return; ending your turn while forks are outstanding is allowed.
+   Edit nothing while any fork is outstanding, whatever an early report says: start judging only once the last fork has returned, judge all findings together, and only then edit.
 {{.judge_steps}}
 6. Run `{{.final_self_check_command}}` again until it passes, then end your turn.
 
