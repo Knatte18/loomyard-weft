@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-20 12:50 UTC; every age below is as of then.
+Rendered 2026-10-20 12:54 UTC; every age below is as of then.
 
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
@@ -17,7 +17,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | **Verify gates scope to the diff: tree scope for non-production diffs, scoped darn gates, whole suite at Publish**<br>• A diff that touches only a tool or docs, and every darn writer and fix round, waits on the whole suite at every verify gate | [`verify-diff-scope`](design-verify-diff-scope.md) | loom | Discussion-Burler-Review | 1d | 28m | loom, shed, config |
+| 1 | **Verify gates scope to the diff: tree scope for non-production diffs, scoped darn gates, whole suite at Publish**<br>• A diff that touches only a tool or docs, and every darn writer and fix round, waits on the whole suite at every verify gate | [`verify-diff-scope`](design-verify-diff-scope.md) | loom | Discussion-Burler-Fix | 1d | 32m | loom, shed, config |
 
 ### Ready
 
@@ -89,7 +89,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | # | Note | Slug | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | 1 | **[WS 005] One dobby daemon per beam owns and drives its runs**<br>• Each beam (a worktree with an orch thread) gets a Go daemon, started by lyx orch start, that follows its runs status files, starts ready tasks, lands, settles mechanical stops and tells the thread only what needs judgement | [`umbrella-daemon`](design-umbrella-daemon.md) | 8d | 20h | batten, orch, shed, workspaces, loom, board |
-| 2 | **Align each perch writer twill lenses with its reviewer lenses, Discussion first**<br>• The Discussion writer runs emphasis lenses while its reviewer hunts design holes by procedure, and design holes are what the review still finds | [`writer-reviewer-lens-align`](design-writer-reviewer-lens-align.md) | 1d | 19h | burler, loom, config |
+| 2 | **Align each perch writer twill lenses with its reviewer lenses, Discussion first**<br>• The Discussion writer runs emphasis lenses while its reviewer hunts design holes by procedure, and design holes are what the review still finds | [`writer-reviewer-lens-align`](design-writer-reviewer-lens-align.md) | 1d | 20h | burler, loom, config |
 
 #### Normal priority
 
@@ -121,7 +121,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 26 | **lyx batten run starts in its own window by default**<br>• Every batten run is started with --window, so the window should be the default and foreground the opt-in. | [`batten-window-default`](design-batten-window-default.md) | 1d | 1d | batten, reed, orch |
 | 27 | **A halt a plan card asks for reaches the parent as a question, not as a batch failure**<br>• A card-requested halt went through recover-batch, tackler and arbiter as a failure; it should go straight to the parent and the next attempt should carry the decision | [`card-halt-is-question`](design-card-halt-is-question.md) | 19h | 19h | webster, shed, loom |
 | 28 | **A question research can settle is settled in Discussion, never deferred to Plan or an implementer**<br>• Discussion writer researches the facts its design rests on; reviewers flag a deferred research question or a halt-on-discovery rule | [`research-in-discussion`](design-research-in-discussion.md) | 19h | 19h | loom, stencil, burler |
-| 29 | **prod pointer is shared across machines while each binary is local**<br>• A deploy on one machine moves origin/prod, leaving other machines silently behind it | [`prod-pointer-per-machine`](design-prod-pointer-per-machine.md) | 6h | 6h | deploy |
+| 29 | **prod pointer is shared across machines while each binary is local**<br>• A deploy on one machine moves origin/prod, leaving other machines silently behind it | [`prod-pointer-per-machine`](design-prod-pointer-per-machine.md) | 7h | 7h | deploy |
 | 30 | **Darn-Write verify cannot pass a failure fixed on the parent**<br>• After a Publish verify failure is sent back to Darn-Write, its verify re-runs the failed test on a branch that lacks the parent fix | [`darn-verify-parent-fix`](design-darn-verify-parent-fix.md) | 5h | 2h | batten, loom |
 
 #### Low priority
