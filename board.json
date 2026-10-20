@@ -1460,8 +1460,8 @@
       "revised": "2026-10-20T13:45:34Z",
       "run_settings": {
         "darn": {
-          "review_hard_max_bounces": 3,
-          "review_max_bounces": 2
+          "review_hard_max_bounces": 2,
+          "review_max_bounces": 1
         }
       }
     },
