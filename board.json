@@ -1356,25 +1356,6 @@
       "revised": "2026-10-20T09:09:55Z"
     },
     {
-      "id": 707,
-      "slug": "agents-commit-through-fabric",
-      "title": "Agents commit code through lyx fabric commit, not raw git commit",
-      "kind": "note",
-      "labels": [
-        "enhancement",
-        "fabric",
-        "stencil"
-      ],
-      "issues": [],
-      "priority": "low",
-      "depends_on": [],
-      "isolated": false,
-      "brief": "Darn writers and webster implementer and verify-fix forks commit with raw git commit; route them through lyx fabric commit",
-      "body": "## Seen (orch, 2026-10-20)\n\nThe darn writer (`contracts/stencils/darn/darn-template-write.md`) and webster's implementer and verify-fix forks (`webster-body-implementer.md`, `webster-body-verify-fix.md`) commit their code on the task branch with plain `git commit`; Go commits only the `_lyx` run state.\n\n## Operator view (2026-10-20)\n\n`lyx fabric commit` was made for exactly this purpose, so agents should commit through it rather than through raw git. Not urgent.\n\nToday `lyx fabric commit` takes no paths and commits only `_lyx` (plus the fabric config's pathspec) to the weft side, as `weft sync`.\n\nOperator view, later the same day: an earlier conclusion was that lyx cannot stop anyone, agents in a fabric worktree included, from committing by hand with git anyway, so fabric must cope with raw code commits in warp whatever the stencils say.\n\n## Idea\n\nThe committing stencils name `lyx fabric commit`, which then needs to commit warp code changes as well as weft, keep refusing `_lyx` paths in a code commit, and take the subject the stencil prescribes (`N: \u003cname\u003e`, `fix: \u003csummary\u003e`).",
-      "created": "2026-10-20T09:13:25Z",
-      "revised": "2026-10-20T09:21:33Z"
-    },
-    {
       "id": 708,
       "slug": "trace-id-env-literal",
       "title": "Three tests spell LYX_TRACE_ID as a literal instead of logger.TraceIDEnv",
