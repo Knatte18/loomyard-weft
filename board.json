@@ -1504,6 +1504,25 @@
       "body": "## Seen (orch, 2026-10-20)\n\nQuarry links only the Go tree-sitter grammar (`github.com/tree-sitter/tree-sitter-go` in `go.mod`), so its glyph alphabet covers Go alone.\nThe planner takes every glyph spelling from `lyx quarry`, and Plan-Review checks the glyphs a card names, so a C# hub such as NORCE Models gets no glyphs to plan with.\n\n## Idea\n\nExtend quarry with a C# alphabet: link the C# tree-sitter grammar and define C#'s glyph shapes (namespace, type, member, overloads, partial classes, nested types).\nChoose the alphabet by the hub's language, as configured in the `language` module.\n",
       "created": "2026-10-20T19:05:12Z",
       "revised": "2026-10-20T19:05:12Z"
+    },
+    {
+      "id": 720,
+      "slug": "lenses-language-sets",
+      "title": "[.NET 007] Language-specific lens sets seeded per hub",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "burler",
+        "config",
+        "dotnet"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "Every hub seeds lenses.yaml from one Go-repo template; seed by the hub language instead",
+      "body": "## Seen (orch, 2026-10-20)\n\nEach hub has its own `lenses.yaml`, seeded from the one embedded template in `internal/lenses`, and a hub can add its own lenses and fans.\nSo a new C# hub such as NORCE Models starts with the same lenses as this Go repository.\n`pattern-fit` and `code-pattern-fit` assume a `PATTERN.md`, and no lens speaks to C# or to numerical simulation code.\n\n## Idea\n\nShip language-specific lens sets beside the shared template: a hub's language, as configured in the `language` module, picks which set seeds its `lenses.yaml`.\nFor C#, for example: nullable and `IDisposable` handling, numerical stability and units.\n",
+      "created": "2026-10-20T19:05:12Z",
+      "revised": "2026-10-20T19:05:12Z"
     }
   ]
 }
