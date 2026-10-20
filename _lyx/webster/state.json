@@ -265,7 +265,7 @@
       }
     }
   ],
-  "currentBatch": 0,
+  "currentBatch": 7,
   "masterStrand": "ba6e4300d2caba22aa9ba0ee41ee0227",
   "masterSessionId": "a67d8f8f-c292-4da4-aeab-44ea1401add5",
   "masterEngine": "claude",
@@ -348,6 +348,22 @@
       "bracketTranscripts": [
         "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-verify-diff-scope/a67d8f8f-c292-4da4-aeab-44ea1401add5/subagents/agent-af6a525d6071cfbc6.jsonl"
       ]
+    },
+    "7": {
+      "slug": "darn-gate-impact-scope",
+      "cards": [
+        "07-darn-gate-impact-scope"
+      ],
+      "cardHashes": {
+        "07-darn-gate-impact-scope": "279faea53b1a4a6ec0c78e4bd8287bf7de9b19b027b610b92c49e543a3b8dc9f"
+      },
+      "startSha": "c5376ab0941dbb8a907ccf678837a53a4a347e69",
+      "kind": "fork",
+      "spawnedAt": "2026-10-20T13:53:10Z",
+      "sessionId": "a67d8f8f-c292-4da4-aeab-44ea1401add5",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
     }
   },
   "seenForkTranscripts": [
