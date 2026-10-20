@@ -2,6 +2,7 @@
   "current_producer": "Finalize",
   "state": "blocked",
   "error": "fabricengine: merge preconditions failed: worktree dirty",
+  "pending_by": "shed",
   "pause_requested": false,
   "activity": {
     "now": "Finalize",
