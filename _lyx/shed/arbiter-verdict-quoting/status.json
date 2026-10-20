@@ -2,6 +2,7 @@
   "current_producer": "Darn-Write",
   "state": "blocked",
   "error": "gate did not pass after 3 attempts; findings: /home/AD.NORCERESEARCH.NO/hanf/Code/Knatte18/loomyard-LYXHUB/arbiter-verdict-quoting/.lyx/shuttle/f536c4a306c9cc5ec16857b1c933dc71/gate-findings.md; way forward: run \"lyx loom resume\" in the task worktree, which re-spawns Darn-Write with a fresh verify budget",
+  "pending_by": "shed",
   "pause_requested": false,
   "activity": {
     "now": "Darn-Write",
