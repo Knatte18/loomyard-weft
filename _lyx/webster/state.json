@@ -1,0 +1,331 @@
+{
+  "runGuid": "25f69f01bd0c126111212f8f651665a8",
+  "planFingerprint": "caa612edacf285e18b2391bf3dd933501d1cd0e58221f72f0a00c03ef8e79932",
+  "planFileHashes": {
+    "00-overview.md": "ffe8f7b81d4637edad34deca0e572e226eaafb00bc53431ccf366b4d64e580f0",
+    "01-yamlengine-per-name-maps.md": "d470efc29731a1fa0c6c701f94ec9e7719fd830ef4209542ee00b3a1569b8e2f",
+    "02-configengine-per-name-spec.md": "3b6804b6278fff0abe0b297e0139116711f397eca5d56104ddd61056bebb1e0e",
+    "03-lenses-module.md": "b1f748b94744229c07af8e2204c968711da6bfc49e6578a88c1c0032750b5a57",
+    "04-configsync-per-name-reconcile.md": "56ce13fc6580d2ed7ac1db218451cf041a03e3c8e175bad40d5ddffa41095061",
+    "05-burler-reads-lenses.md": "3f64648c5d915646544bfb1c0638ac851a5ab5f8119d0e7ff213926e900b8fd0",
+    "06-loom-reads-lenses.md": "16e2777696895aae839ab15c9efa46331994a1f106dbb84aa2d34fd7052955c3",
+    "07-darn-reads-lenses.md": "885faab6c08d0accef359ff8cb5b66334ba8293267fc51e7ac08fa1f769b4e02",
+    "08-retire-burler-module.md": "08b99ff109b1f69f6191ea85ebeb6aadc28c8daf7d61b343a143b1a97b0da3cc"
+  },
+  "planOverviewFrameHash": "e8f9793da3a58ae32584e63754fb385b075417923a02fefcf449ac7686fe3e87",
+  "partition": [
+    {
+      "cards": [
+        "01-yamlengine-per-name-maps",
+        "02-configengine-per-name-spec"
+      ],
+      "profile": "cautious",
+      "estimate": 125650,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 1,
+        "startup": 54688,
+        "read_union": 14580,
+        "cards": [
+          {
+            "card": 1,
+            "card_text": 744,
+            "reads": {
+              "file:internal/yamlengine/doc.go": 612,
+              "package:internal/configengine": 2000,
+              "package:internal/configsync": 2000,
+              "package:internal/yamlengine": 2000,
+              "tests:internal/configengine": 2000,
+              "tests:internal/configsync": 2000,
+              "tests:internal/yamlengine": 2000
+            },
+            "messages": 139.5,
+            "written": 42594
+          },
+          {
+            "card": 2,
+            "card_text": 288,
+            "reads": {
+              "file:internal/configengine/doc.go": 936,
+              "package:internal/configengine": 2000,
+              "tests:internal/configengine": 2000
+            },
+            "messages": 45,
+            "written": 13788
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "03-lenses-module"
+      ],
+      "profile": "cautious",
+      "estimate": 175346,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 2,
+        "startup": 61688,
+        "read_union": 36204,
+        "cards": [
+          {
+            "card": 3,
+            "card_text": 1104,
+            "reads": {
+              "file:docs/overview.md": 9708,
+              "file:pattern/PATTERN-config-strictness.md": 204,
+              "file:pattern/PATTERN-leaf-packages.md": 1188,
+              "package:cmd/lyx": 2000,
+              "package:docs": 2000,
+              "package:internal/configcli": 2000,
+              "package:internal/configreg": 2000,
+              "package:internal/lenses": 2000,
+              "package:pattern": 2000,
+              "tests:cmd/lyx": 2000,
+              "tests:docs": 2000,
+              "tests:internal/configcli": 2000,
+              "tests:internal/configreg": 2000,
+              "tests:internal/lenses": 2000,
+              "tests:pattern": 2000
+            },
+            "messages": 254.5,
+            "written": 77454
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "04-configsync-per-name-reconcile"
+      ],
+      "profile": "cautious",
+      "estimate": 103152,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 3,
+        "startup": 68688,
+        "read_union": 12432,
+        "cards": [
+          {
+            "card": 4,
+            "card_text": 432,
+            "reads": {
+              "package:internal/configcli": 2000,
+              "package:internal/configsync": 2000,
+              "package:internal/hubreconcile": 2000,
+              "tests:internal/configcli": 2000,
+              "tests:internal/configsync": 2000,
+              "tests:internal/hubreconcile": 2000
+            },
+            "messages": 72,
+            "written": 22032
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "05-burler-reads-lenses"
+      ],
+      "profile": "cautious",
+      "estimate": 201092,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 4,
+        "startup": 75688,
+        "read_union": 34600,
+        "cards": [
+          {
+            "card": 5,
+            "card_text": 804,
+            "reads": {
+              "file:docs/overview.md": 9708,
+              "file:internal/burlercli/doc.go": 192,
+              "file:internal/burlercli/run.go": 3492,
+              "file:internal/burlerengine/doc.go": 4404,
+              "package:docs": 2000,
+              "package:internal/burlercli": 2000,
+              "package:internal/burlerengine": 2000,
+              "package:internal/loomcli": 2000,
+              "tests:docs": 2000,
+              "tests:internal/burlercli": 2000,
+              "tests:internal/burlerengine": 2000,
+              "tests:internal/loomcli": 2000
+            },
+            "messages": 300,
+            "written": 90804
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "06-loom-reads-lenses",
+        "07-darn-reads-lenses"
+      ],
+      "profile": "cautious",
+      "estimate": 174194,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 5,
+        "startup": 82688,
+        "read_union": 24108,
+        "cards": [
+          {
+            "card": 6,
+            "card_text": 672,
+            "reads": {
+              "file:docs/overview.md": 9708,
+              "file:internal/loomengine/template.yaml": 816,
+              "package:docs": 2000,
+              "package:internal/loomengine": 2000,
+              "tests:docs": 2000,
+              "tests:internal/loomengine": 2000
+            },
+            "messages": 176,
+            "written": 53472
+          },
+          {
+            "card": 7,
+            "card_text": 276,
+            "reads": {
+              "file:internal/darnengine/doc.go": 444,
+              "file:internal/darnengine/template.yaml": 192,
+              "package:internal/darnengine": 2000,
+              "tests:internal/darnengine": 2000
+            },
+            "messages": 45.5,
+            "written": 13926
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "08-retire-burler-module"
+      ],
+      "profile": "cautious",
+      "estimate": 172508,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 6,
+        "startup": 89688,
+        "read_union": 32528,
+        "cards": [
+          {
+            "card": 8,
+            "card_text": 792,
+            "reads": {
+              "file:internal/burlerengine/config.go": 2016,
+              "file:internal/burlerengine/config_test.go": 4140,
+              "file:internal/burlerengine/fankeys.go": 984,
+              "file:internal/burlerengine/template.yaml": 4596,
+              "package:cmd/lyx": 2000,
+              "package:internal/burlerengine": 2000,
+              "package:internal/configreg": 2000,
+              "package:internal/configsync": 2000,
+              "package:internal/hubreconcile": 2000,
+              "tests:cmd/lyx": 2000,
+              "tests:internal/burlerengine": 2000,
+              "tests:internal/configreg": 2000,
+              "tests:internal/configsync": 2000,
+              "tests:internal/hubreconcile": 2000
+            },
+            "messages": 165,
+            "written": 50292
+          }
+        ]
+      }
+    }
+  ],
+  "currentBatch": 1,
+  "masterStrand": "a36b3b375392aa5869ede4f3a39c6e62",
+  "masterSessionId": "97932407-2fd2-4ca5-b1fb-314dda63fb96",
+  "masterEngine": "claude",
+  "batches": {
+    "1": {
+      "slug": "yamlengine-per-name-maps",
+      "cards": [
+        "01-yamlengine-per-name-maps",
+        "02-configengine-per-name-spec"
+      ],
+      "cardHashes": {
+        "01-yamlengine-per-name-maps": "d470efc29731a1fa0c6c701f94ec9e7719fd830ef4209542ee00b3a1569b8e2f",
+        "02-configengine-per-name-spec": "3b6804b6278fff0abe0b297e0139116711f397eca5d56104ddd61056bebb1e0e"
+      },
+      "startSha": "01ccaf6def6f46e37b2ee157dc35ada23ce1f6e9",
+      "kind": "fork",
+      "spawnedAt": "2026-10-20T17:50:51Z",
+      "sessionId": "97932407-2fd2-4ca5-b1fb-314dda63fb96",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
+    }
+  }
+}
