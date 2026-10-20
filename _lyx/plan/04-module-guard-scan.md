@@ -1,12 +1,12 @@
 # Card 4 — module-guard-scan
 
 **Create:**
-- `plan:internal/impactset#GuardScanKind` -> `type GuardScanKind string`
-- `plan:internal/impactset#GuardMisplaced` -> `const GuardMisplaced GuardScanKind = "misplaced"`
-- `plan:internal/impactset#GuardNotIntegration` -> `const GuardNotIntegration GuardScanKind = "not-integration"`
-- `plan:internal/impactset#GuardParse` -> `const GuardParse GuardScanKind = "parse"`
-- `plan:internal/impactset#ModuleGuardTests` -> `func ModuleGuardTests(moduleDir string) (map[string][]string, error)`
-- `plan:internal/impactset#TestModuleGuardTests_OverAModule` -> `func TestModuleGuardTests_OverAModule(t *testing.T)`
+- `internal/impactset#GuardScanKind`
+- `internal/impactset#GuardMisplaced`
+- `internal/impactset#GuardNotIntegration`
+- `internal/impactset#GuardParse`
+- `internal/impactset#ModuleGuardTests`
+- `internal/impactset#TestModuleGuardTests_OverAModule`
 
 **Edit:**
 - `internal/impactset#GuardScanError`
