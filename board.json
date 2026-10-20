@@ -1504,6 +1504,25 @@
       "body": "Imported from [issue #771](https://github.com/Knatte18/loomyard/issues/771).\n\n**What happened**\nWhile measuring `lyx gate test` cache hits inside a task worktree, each new output file created under `.scratch/` changed the worktree root's directory listing.\nThe source-scan tests read that listing and Go keys its test cache on it, so those packages missed the cache and needed an extra pair of module-wide runs.\nWriting into output files created beforehand avoided the misses.\n\n**Why it is abnormal**\nThe agent prompt directs scratch files to `.scratch/` in the working directory, yet creating files there invalidates the cache the gate depends on, which skews measurements and wastes gate runs.\n\n**What to do**\nKeep `.scratch/` out of what the scans read and Go keys on, or document that scratch files must be created before the first gate run.\n\nProvenance: task `gate-fewer-new-binaries`, note `Darn-Write.md`.\n",
       "created": "2026-10-20T10:43:11Z",
       "revised": "2026-10-20T10:43:11Z"
+    },
+    {
+      "id": 715,
+      "slug": "shell-guard-heredoc-write",
+      "title": "Edit directive not enforced: file append through a shell heredoc was not refused",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "claude"
+      ],
+      "issues": [
+        772
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Imported from [issue #772](https://github.com/Knatte18/loomyard/issues/772).\n\n**What happened**\nAn agent appended a section of a markdown doc through a shell heredoc instead of Edit or Write, against the prompt's edit directive.\nThe shell guard did not refuse it; the content was later corrected with Edit.\n\n**Why it is abnormal**\nThe directive forbids scripted file rewrites, and other commands in the same session were refused by the guard, so enforcement is uneven.\n\n**What to do**\nExtend the shell guard to refuse heredoc and redirect writes (`cat \u003e\u003e file \u003c\u003cEOF`) to tracked files under the edit directive, or confirm and document the intended gap.\n\nProvenance: task `gate-fewer-new-binaries`, note `Darn-Write.md`.\n",
+      "created": "2026-10-20T10:43:14Z",
+      "revised": "2026-10-20T10:43:14Z"
     }
   ]
 }
