@@ -70,7 +70,21 @@ Seven forks returned; findings merged across lenses:
 
 ## Review rounds
 
-_No rounds yet._
+- Round 1, APPROVED with eight findings, all fixed; two correct earlier turns:
+  `tree_scope_verify` is `CategoryExecutable` and only `tree_scope` is `CategoryGuard`, correcting Turn 7;
+  Publish classifies the diff at each call rather than once per run, correcting Turn 6.
+  Also `tree_scope` became an open map, a lone `tree_scope` is accepted as scope off, and the `.`-segment and duplicate-key refusals were added (D1).
+- Round 2, APPROVED with five findings, all fixed:
+  the editor path of `lyx config darn` gains darn's loader check, which it lacked (D1);
+  the diff read reports paths verbatim, and an empty-segment tree key is refused (D2, D1);
+  the no-`{targets}` refusal covers only a non-empty command, and removing the last tree needs scope off first (D1);
+  a non-content guard-scan failure refuses naming its directory (D5).
+- Round 3, APPROVED with five findings, all fixed:
+  the no-tree refusal covers only a non-empty `tree_scope_verify`, and both keys empty load as scope off (D1);
+  the editor refusal keeps the staging copy through its own sentinel and says to copy it out before re-opening the editor (D1);
+  the key refusals name the offending keys and leave the way forward to each caller, so a `--set` refusal points at `--set` (D1);
+  the classification reads changed paths beside `ChangedPaths`, which keeps its output (D2);
+  an unreadable test file arrives as the parse kind with no line, whose way forward covers both causes (D5).
 
 ## Question ledger
 
