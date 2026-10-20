@@ -1,12 +1,13 @@
 ---
 round: 1
 focus:
-  - "internal/gatecli/prebuild.go and gateslot.Pool.PrebuiltDir: settle whether the content-addressed store is safe under concurrent gate runs (staging file, rename, refresh of modification time, pruning of an entry another run still uses) and on Windows, where a rename over an open binary can fail."
-  - "internal/gatecli/run.go: settle whether dropping LYX_TRACE_ID from go test's environment leaves any consumer of the variable inside a test run broken, and whether logger.TraceIDEnv is the only name used."
-  - "internal/loomshed/verifygate.go and publishfailure.go: settle whether the failing-test steps run before the told or derived command and the package pass after it in both the round and whole-diff form, and whether any other caller of publishFailureSteps still assumes the old single return."
-  - "Scope against the board entry: settle whether each of the four asks (integration-only verify, cached re-run on an unchanged tree, failed test first, benchmark record) is made by the diff, and whether the diff changes anything the entry does not license."
-  - "Docs landing in the same diff: settle whether doc.go of the touched packages, PATTERN-test-speed.md and docs/benchmarks/gate-test-xdr.md match the behavior, and whether claims in _lyx/landing/summary.md bear out against the diff."
-  - "Test economy: settle whether the new prebuild_test.go and the reworked gatecli subtests duplicate each other's coverage, and whether any added behavior has no test."
+  - "internal/gatecli/prebuild.go `storePrebuilt`: settle whether a concurrent prune between the existence check and `os.Chtimes` makes the run fail instead of republishing, whether the rename-race and prune paths can delete or replace an entry another running gate still uses, and whether the store path stays derived from `PrebuiltDir` with no new `.lyx` literal."
+  - "internal/gatecli test path, inside and outside a hub: settle whether the tagged run exports a stable content-named path in a hub and keeps the per-invocation `-o` path and its cleanup outside one, and whether the stripped `LYX_TRACE_ID` reaches go test's environment at every spawn site, not only the one changed."
+  - "internal/loomshed verify gate, round and whole-diff forms: settle whether a Publish failure record's failing tests run before the told or derived command in both forms, whether the `tmux` pass still follows, and whether a record with no failing tests or an unparsable one still falls through to the full command."
+  - "Verify-tier change (`CLAUDE.md`, the loom plan's `## verify:`, `pattern/PATTERN-test-speed.md`, `internal/languageconfig` doc): settle whether every place that still names an untagged `go test` tier before the `integration` run was updated, and whether PATTERN and the docs land in this diff as CLAUDE.md requires for the changed behavior."
+  - "`logger.TraceIDEnv` rename in `reedengine` and `shedverbs`: settle whether any literal `LYX_TRACE_ID` use remains in non-test or test code that should use the constant."
+  - "Test economy for the new tests (`TestStorePrebuilt`, the tagged-run tests, the loomshed ordering tests): settle whether each new behavior has coverage, and whether any new test duplicates an existing one, naming the covering test."
+  - "`_lyx/landing/summary.md` claims, including the benchmark figures in `docs/benchmarks/gate-test-xdr.md` and the `internal/shedbuild` fixture change: settle whether the diff bears out each claim."
 ---
 
-Seed from the board entry and the change description; no round has been judged.
+Focus set from the board entry's three asks: verify runs the integration tier alone, a re-run on an unchanged tree reuses passed packages, and a failed test runs first.
