@@ -1,0 +1,8 @@
+verdict: approve
+reason: >-
+  The design covers every goal and design point of the board entry, the three #737 bullets and the folded Preflight note;
+  D6's departure from removing the run record locally is stated and follows from the entry's own no-push rule.
+  Work for machine-handover, run-process-ownership, fabric-remote-async and umbrella-daemon is left to them in Scope Out, and no decision contradicts them.
+  The one peer, lenses-module, does not overlap, and no parent commits are listed.
+question: ""
+superseded: []
