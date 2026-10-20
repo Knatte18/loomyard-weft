@@ -45,6 +45,12 @@ Bound: a gate run whose binary is pruned while it still runs fails its remaining
 Decision: while a Publish failure record is present, the verify gate runs the record's failing tests, each by name in its package, before the told or derived command, and the `tmux` pass over packages after it.
 Rationale: a failure that still holds is then known in seconds, and the full tiers run only once the failing test passes.
 
+### Added after Discussion (parent, 2026-10-20): Loom plan verify also runs the integration tier alone
+
+Decision: Verify runs only the integration tier also in the loom plan's ## verify: this branch changes pattern/PATTERN-test-speed.md's Webster gate/Publish/Finalize row and the internal/languageconfig doc's example verify_tiers to build, vet under each tag, then the integration tier alone.
+
+Rationale: The board entry's verify-unit-tier-twice part names darn.yaml and the loom verify gates alike: the integration tier already runs every untagged test, and the operator approved dropping the separate unit tier on 2026-10-20.
+
 ## Constraints
 
 - `PATTERN-gate-slot`: every gate build and test runs in a `-p`-capped, `-trimpath` hub slot; the prebuild stays inside the held slot.
