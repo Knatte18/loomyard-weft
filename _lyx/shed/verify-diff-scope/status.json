@@ -1,12 +1,12 @@
 {
   "current_producer": "Finalize",
-  "state": "running",
-  "error": "",
+  "state": "blocked",
+  "error": "fabricengine: merge preconditions failed: worktree dirty",
   "pause_requested": false,
   "activity": {
     "now": "Finalize",
-    "last": "Finalize → goto",
-    "wait": ""
+    "last": "Finalize → stuck",
+    "wait": "fabricengine: merge preconditions failed: worktree dirty"
   },
   "history": [
     {
@@ -399,6 +399,12 @@
       "outcome": "goto",
       "output": "",
       "at": "2026-10-20T16:24:29Z"
+    },
+    {
+      "producer": "Finalize",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-20T16:24:33Z"
     }
   ],
   "product": {
