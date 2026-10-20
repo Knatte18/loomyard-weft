@@ -17,18 +17,15 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | **lyxbin TestRun_KillsTheGroupOnTimeout fails when Cortex XDR holds the sleeper binary past the 5 s timeout**<br>• `darn: review_hard_max_bounces 2`<br>• `darn: review_max_bounces 1` | [`lyxbin-timeout-test-xdr`](design-lyxbin-timeout-test-xdr.md) | darn | Worktree-Create | 5h | 38m | testkit |
-| 2 | **reedcli TestWatchdogReap/NeverEnteredOrphanIsStillReaped times out under Cortex XDR (1.8 s window)**<br>• `darn: review_hard_max_bounces 2`<br>• `darn: review_max_bounces 1` | [`watchdog-reap-test-xdr`](design-watchdog-reap-test-xdr.md) | darn | Worktree-Create | 5h | 38m | reed |
+| 1 | **Lenses and fans move into a lenses module of their own, listed in full in the hub file**<br>• A lenses module holds every lens and fan for reviewers, fixers and twill writers; reconcile keeps the hub file complete; the 7-lens twill-discussion fan becomes the default<br>• `loom: review_hard_max_bounces 3`<br>• `loom: review_max_bounces 2` | [`lenses-module`](design-lenses-module.md) | loom | Discussion-Write | 23h | 32m | burler, loom, config |
+| 2 | **lyxbin TestRun_KillsTheGroupOnTimeout fails when Cortex XDR holds the sleeper binary past the 5 s timeout**<br>• `darn: review_hard_max_bounces 2`<br>• `darn: review_max_bounces 1` | [`lyxbin-timeout-test-xdr`](design-lyxbin-timeout-test-xdr.md) | darn | Darn-Write | 5h | 38m | testkit |
+| 3 | **reedcli TestWatchdogReap/NeverEnteredOrphanIsStillReaped times out under Cortex XDR (1.8 s window)**<br>• `darn: review_hard_max_bounces 2`<br>• `darn: review_max_bounces 1` | [`watchdog-reap-test-xdr`](design-watchdog-reap-test-xdr.md) | darn | Darn-Write | 5h | 38m | reed |
 
 ### Ready
 
 Waits on nothing open; can start now.
 
-#### Normal priority
-
-| # | Task | Slug | Recipe | After | Age | Revised | Labels |
-| --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | **Lenses and fans move into a lenses module of their own, listed in full in the hub file**<br>• A lenses module holds every lens and fan for reviewers, fixers and twill writers; reconcile keeps the hub file complete; the 7-lens twill-discussion fan becomes the default<br>• `loom: review_hard_max_bounces 3`<br>• `loom: review_max_bounces 2` | [`lenses-module`](design-lenses-module.md) | loom |  | 23h | 32m | burler, loom, config |
+_None._
 
 ### Layer A
 
