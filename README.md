@@ -28,7 +28,9 @@ Waits on nothing open; can start now.
 
 | # | Task | Slug | Recipe | After | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | **Deploy: drop the shared prod pointer and stop flagging a foreign lyx on PATH**<br>• update-plugins.sh pushes no prod pointer, and its PATH check ignores a non-lyx binary named lyx<br>• `profile: budget` | [`deploy-prod-cleanup`](design-deploy-prod-cleanup.md) | darn |  | 13h | 0m | deploy |
+| 1 | **webster create-not-done check rejects a Create target the card removes itself**<br>• `profile: budget` | [`create-target-transient`](design-create-target-transient.md) | darn |  | 2d | 0m | webster, loom, quarry |
+| 2 | **Deploy: drop the shared prod pointer and stop flagging a foreign lyx on PATH**<br>• update-plugins.sh pushes no prod pointer, and its PATH check ignores a non-lyx binary named lyx<br>• `profile: budget` | [`deploy-prod-cleanup`](design-deploy-prod-cleanup.md) | darn |  | 13h | 0m | deploy |
+| 3 | **Shell guard: match test runs on the command, refuse heredoc writes to tracked files**<br>• The guard refuses commands that only name a refused tier, and lets heredoc writes past the edit directive<br>• `profile: budget` | [`shellguard-fixes`](design-shellguard-fixes.md) | darn |  | 8h | 0m | claude |
 
 ### Layer A
 
@@ -75,15 +77,12 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Note | Slug | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| 1 | **webster create-not-done check rejects a Create target the card removes itself** | [`create-target-transient`](design-create-target-transient.md) | 2d | 2d | webster, loom, quarry |
-| 2 | **orch status reports a live strand after the orch Claude session exits, so --continue is refused** | [`orch-strand-live-after-exit`](design-orch-strand-live-after-exit.md) | 1d | 1d | orch, reed |
-| 3 | **tender pause does not hold a verify gate's re-prompt, and creel interrupt is refused under the pause** | [`tender-pause-holds-reprompt`](design-tender-pause-holds-reprompt.md) | 8h | 8h | creel, shed |
-| 4 | **Shell guard refuses read-only commands that merely name a refused go-run tier** | [`shell-guard-text-match`](design-shell-guard-text-match.md) | 8h | 8h | claude |
-| 5 | **Scratch files under .scratch change the worktree root listing and defeat go test cache hits** | [`scratch-defeats-test-cache`](design-scratch-defeats-test-cache.md) | 8h | 5h | gate |
-| 6 | **Edit directive not enforced: file append through a shell heredoc was not refused** | [`shell-guard-heredoc-write`](design-shell-guard-heredoc-write.md) | 8h | 8h | claude |
-| 7 | **Opening an agent into reed: engine bypass mode by default, explicit engine, model and effort, and reed add points to shuttle open**<br>• reed add help shows a broken claude example (%SID% never substituted) and shuttle open keeps the interactive permission default; every agent in reed needs bypass, per engine (claude bypassPermissions, Codex --yolo) | [`reed-agent-launch-bypass`](design-reed-agent-launch-bypass.md) | 6h | 6h | reed, shuttle, claude, codex |
-| 8 | **Finalize blocks on 'worktree dirty' without naming the tree or paths, and the loom's own run record counts as dirty** | [`finalize-dirty-names-paths`](design-finalize-dirty-names-paths.md) | 4m | 4m | fabric, loom |
-| 9 | **No way to cancel a batten run that stopped before its pair exists** | [`batten-cancel-verb`](design-batten-cancel-verb.md) | 4m | 4m | batten |
+| 1 | **orch status reports a live strand after the orch Claude session exits, so --continue is refused** | [`orch-strand-live-after-exit`](design-orch-strand-live-after-exit.md) | 1d | 1d | orch, reed |
+| 2 | **tender pause does not hold a verify gate's re-prompt, and creel interrupt is refused under the pause** | [`tender-pause-holds-reprompt`](design-tender-pause-holds-reprompt.md) | 8h | 8h | creel, shed |
+| 3 | **Scratch files under .scratch change the worktree root listing and defeat go test cache hits** | [`scratch-defeats-test-cache`](design-scratch-defeats-test-cache.md) | 8h | 5h | gate |
+| 4 | **Opening an agent into reed: engine bypass mode by default, explicit engine, model and effort, and reed add points to shuttle open**<br>• reed add help shows a broken claude example (%SID% never substituted) and shuttle open keeps the interactive permission default; every agent in reed needs bypass, per engine (claude bypassPermissions, Codex --yolo) | [`reed-agent-launch-bypass`](design-reed-agent-launch-bypass.md) | 6h | 6h | reed, shuttle, claude, codex |
+| 5 | **Finalize blocks on 'worktree dirty' without naming the tree or paths, and the loom's own run record counts as dirty** | [`finalize-dirty-names-paths`](design-finalize-dirty-names-paths.md) | 4m | 4m | fabric, loom |
+| 6 | **No way to cancel a batten run that stopped before its pair exists** | [`batten-cancel-verb`](design-batten-cancel-verb.md) | 4m | 4m | batten |
 
 ### Enhancements
 
