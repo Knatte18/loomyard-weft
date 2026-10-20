@@ -29,3 +29,9 @@ So Cortex XDR holds each executable it has not seen yet for several seconds befo
 
 - Ask IT for an XDR exclusion of the Go build cache and the temp dir `go test` links its binaries into (`go env GOCACHE`, `GOTMPDIR`), or of the operator's code tree, and measure again.
 - Without an exclusion, point `GOTMPDIR` at one fixed directory so an exclusion can be narrow.
+
+## Seen (orch, 2026-10-20): the hold runs in parallel
+
+Eight freshly built binaries started at once all finished in 10.8 s together, about the time of one, against roughly 70 s one after another.
+The operator will not get an XDR exclusion from IT (2026-10-20), so the wait is hidden by parallelism instead: a higher machine-local `go_parallel` (gate default 4, the laptop has 16 threads) runs more packages' first-run holds at once.
+Against that stands the 2026-10-16 report that XDR killed VS Code on a burst of git fixture files; `bench-osl1046-xdr` should clock both tiers at more than one `go_parallel` value.
