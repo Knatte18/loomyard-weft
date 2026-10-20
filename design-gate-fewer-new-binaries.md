@@ -42,4 +42,9 @@ Go's test cache should make a re-run of an unchanged, passed package instant, so
 Operator view (2026-10-20): a re-run must not run again what already passed.
 This task finds why the cache misses and makes a re-run on an unchanged tree reuse the passed packages' results; scoping verify to touched packages stays in note `verify-diff-scope`.
 
+## A verify after a failure runs the failed test last (orch, 2026-10-20)
+
+After the Publish failure, Darn-Write's verify ran `lyx gate test ./... && lyx gate test --tags integration ./... && go test -tags tmux -run '^TestOpenWindow_RealTmux$' <pkg> && go test -tags tmux ./...`: the test that failed came third, after two full tiers.
+The failed test runs first, so a failure that still holds is known in seconds, and the full tiers run only once it passes.
+
 
