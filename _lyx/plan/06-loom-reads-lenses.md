@@ -32,14 +32,14 @@
 - `plan:internal/loomengine#writeLensesYAML` -> `func writeLensesYAML(t *testing.T, layout *lyxcwd.Location, content string)`
 
 **Uses:**
-- `plan:internal/lenses#FanList`
-- `plan:internal/lenses#FanKey`
-- `plan:internal/lenses#FanShapeError`
-- `plan:internal/lenses#ValidateFanKeys`
-- `plan:internal/lenses#Load`
-- `plan:internal/lenses#ResolveFan`
-- `plan:internal/lenses#Lens`
-- `plan:internal/lenses#Config`
+- `internal/lenses#FanList`
+- `internal/lenses#FanKey`
+- `internal/lenses#FanShapeError`
+- `internal/lenses#ValidateFanKeys`
+- `internal/lenses#Load`
+- `internal/lenses#ResolveFan`
+- `internal/lenses#Lens`
+- `internal/lenses#Config`
 
 **Intent:** loom's fan keys, `discussion_lenses` and `plan_lenses` resolve through `lenses.yaml` (Scope: loom reads lenses and fans from `lenses`).
 `Config`'s eight `*_fan` fields become `lenses.FanList`; `fanKeys` returns `[]lenses.FanKey`; `LoadConfig` maps a `*lenses.FanShapeError` onto its key and validates through `lenses.ValidateFanKeys`, so its refusals name `lenses.yaml`.

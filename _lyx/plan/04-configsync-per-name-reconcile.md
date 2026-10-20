@@ -13,7 +13,7 @@
 - `internal/configcli#TestConfigReconcileInGitRepo`
 
 **Uses:**
-- `plan:internal/lenses#ConfigTemplate`
+- `internal/lenses#ConfigTemplate`
 - `internal/configsync#writeModuleFile`
 - `internal/configsync#findResult`
 

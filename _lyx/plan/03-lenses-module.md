@@ -3,29 +3,29 @@
 **Create:**
 - `internal/lenses/template.yaml`
 - `internal/lenses/doc.go`
-- `plan:internal/lenses#configTemplate` -> `var configTemplate string`
-- `plan:internal/lenses#MaxFanLenses` -> `const MaxFanLenses = 16`
-- `plan:internal/lenses#Config` -> `type Config struct`
-- `plan:internal/lenses#Lens` -> `type Lens struct`
-- `plan:internal/lenses#ConfigTemplate` -> `func ConfigTemplate() string`
-- `plan:internal/lenses#ConfigPerNameMaps` -> `func ConfigPerNameMaps() []string`
-- `plan:internal/lenses#ConfigSpec` -> `func ConfigSpec() configengine.Spec`
-- `plan:internal/lenses#Load` -> `func Load(dirs configengine.Dirs) (Config, error)`
-- `plan:internal/lenses#ResolveFan` -> `func ResolveFan(cfg Config, name string) ([]Lens, error)`
-- `plan:internal/lenses#CheckLoad` -> `func CheckLoad(dirs configengine.Dirs) error`
-- `plan:internal/lenses#FanList` -> `type FanList []string`
-- `plan:internal/lenses#FanList.UnmarshalYAML` -> `func (l *FanList) UnmarshalYAML(node *yaml.Node) error`
-- `plan:internal/lenses#FanShapeError` -> `type FanShapeError struct`
-- `plan:internal/lenses#FanShapeError.Error` -> `func (e *FanShapeError) Error() string`
-- `plan:internal/lenses#FanKey` -> `type FanKey struct`
-- `plan:internal/lenses#ValidateFanKeys` -> `func ValidateFanKeys(dirs configengine.Dirs, module string, keys []FanKey) error`
-- `plan:internal/lenses#writeLensesYAML` -> `func writeLensesYAML(t *testing.T, baseDir, contents string)`
-- `plan:internal/lenses#TestLoad` -> `func TestLoad(t *testing.T)`
-- `plan:internal/lenses#TestResolveFan` -> `func TestResolveFan(t *testing.T)`
-- `plan:internal/lenses#TestConfigTemplate_DecodesAndIsSelfConsistent` -> `func TestConfigTemplate_DecodesAndIsSelfConsistent(t *testing.T)`
-- `plan:internal/lenses#TestCheckLoad` -> `func TestCheckLoad(t *testing.T)`
-- `plan:internal/lenses#TestLeafInvariant_AllowlistOnly` -> `func TestLeafInvariant_AllowlistOnly(t *testing.T)`
-- `plan:internal/lenses#TestMain` -> `func TestMain(m *testing.M)`
+- `internal/lenses#configTemplate`
+- `internal/lenses#MaxFanLenses`
+- `internal/lenses#Config`
+- `internal/lenses#Lens`
+- `internal/lenses#ConfigTemplate`
+- `internal/lenses#ConfigPerNameMaps`
+- `internal/lenses#ConfigSpec`
+- `internal/lenses#Load`
+- `internal/lenses#ResolveFan`
+- `internal/lenses#CheckLoad`
+- `internal/lenses#FanList`
+- `internal/lenses#FanList.UnmarshalYAML`
+- `internal/lenses#FanShapeError`
+- `internal/lenses#FanShapeError.Error`
+- `internal/lenses#FanKey`
+- `internal/lenses#ValidateFanKeys`
+- `internal/lenses#writeLensesYAML`
+- `internal/lenses#TestLoad`
+- `internal/lenses#TestResolveFan`
+- `internal/lenses#TestConfigTemplate_DecodesAndIsSelfConsistent`
+- `internal/lenses#TestCheckLoad`
+- `internal/lenses#TestLeafInvariant_AllowlistOnly`
+- `internal/lenses#TestMain`
 
 **Edit:**
 - `internal/configreg#Module`

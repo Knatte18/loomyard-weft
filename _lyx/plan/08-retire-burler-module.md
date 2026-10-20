@@ -25,7 +25,7 @@
 - `cmd/lyx#configStrictnessDegradingSet`
 
 **Uses:**
-- `plan:internal/lenses#ConfigTemplate`
+- `internal/lenses#ConfigTemplate`
 - `internal/gitkit#Git`
 - `internal/gitkit#CommitFile`
 - `internal/gitkit#LsFiles`
