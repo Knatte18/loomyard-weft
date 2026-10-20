@@ -7,7 +7,7 @@
      decision_record_path and support_log_path are required markers, naming the two discussion files the writer writes before any code.
      rejection_findings and prior_work are never empty: DarnTable fills each with (none) when it has nothing to tell.
      edit_directive is a required marker, rendered unconditionally by internal/editdirective.
-lyx-stencil: sha256=f0806857e55f046461a50c1b9fd35f2e2e153112ee1127ffd812ce54a011b291 build=c7ea67f8329b88681d80f11bf78793289856fd8a time=2026-10-15T17:54:53Z -->
+lyx-stencil: sha256=c8cc1fd289f32f9cd8a419843d661f4afc441c6969245b6a072b95d4663f23d1 build=01ccaf6def6f46e37b2ee157dc35ada23ce1f6e9 time=2026-10-20T16:38:47Z -->
 
 # Darn — make the change a board entry asks for, in one session
 
@@ -92,7 +92,7 @@ The route admits a drop of an own-entry step only: no other step is left out thr
 ## What happens after you hand off
 
 The handoff also checks the decision record and the support log, and re-prompts you in this same session with the findings.
-It then runs the repository's full verify command on the committed tree.
+It then runs a verify scoped to your diff on the committed tree.
 When it fails, you are re-prompted in this same session with its findings: fix them with new commits, then hand off again.
 A re-prompt never starts a new session or a new branch.
 
