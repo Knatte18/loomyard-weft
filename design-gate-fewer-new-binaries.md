@@ -1,4 +1,4 @@
-# Gate builds with -trimpath and verify runs the unit tests once
+# Verify runs the unit tier once, reuses passed results on a re-run, and runs a failed test first
 
 `gate-fewer-new-binaries` · Task · enhancement, config, shed
 
