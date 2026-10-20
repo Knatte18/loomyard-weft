@@ -5,12 +5,14 @@
 ## Done (2026-10-20)
 
 The before and after measurement of `-trimpath` is in `docs/benchmarks/gate-test-xdr.md`.
+The `go_parallel` sweep at 4, 8 and 12 is in the same file (`03af4c75`): no value gave a real gain, 8 was 6 % under 4 while two runs at 4 differed by 36 s, and no run failed, so `go_parallel` stays 4.
 
-## Next: a `-p` sweep (operator, 2026-10-20)
+## Seen in the sweep
 
-Cortex XDR holds each unseen test binary 8-10 s with idle CPU, and holds run in parallel, so with `go_parallel: 4` at most four binaries wait at once and a verify after a change to a widely imported package, such as `internal/logger`, takes about 6 min on OSL-1046.
-A higher `-p` overlaps more holds, but the integration tests then run more packages at once, and they create and tear down many git repositories (366 s sys against 322 s user in the uncached before-run), so contention or flaky timeouts may cancel the gain.
+With `-trimpath` the build is reproducible: a fresh `GOCACHE` links byte-identical test binaries whose hashes XDR already knows, so it holds none of them.
+The sweep forced new hashes with a random `-ldflags=-B` build ID, and even then few packages were held; `internal/fabricengine` (117-175 s) bounds the tier's wall time, and the rise at 8 and 12 is contention.
 
-Once `gate-fewer-new-binaries` has landed and the machine is quiet, clock one uncached integration tier (`lyx gate test --tags integration ./... -- -count=1`, with new binaries for XDR, for example after a change to `internal/logger` or a cleared build cache) at `go_parallel` 4, 8 and 12, recording wall, user and sys time and every failing or flaky test.
-Set `go_parallel` to the fastest value with no new failures, and log the numbers in `docs/benchmarks/gate-test-xdr.md`.
-Operator view: the worst case is that XDR stops the whole run.
+## Still open
+
+The case the sweep set out to cover is unmeasured: a refill after a real change to a widely imported package, such as `internal/logger`, which showed about 50 held packages and a verify of about 6 min.
+Whether a higher `-p` overlaps those holds needs one such run at 4 and one at 8.
