@@ -23,31 +23,50 @@ Held by a run; its scope is locked until the run ends.
 
 Waits on nothing open; can start now.
 
-#### High priority
-
-| # | Task | Slug | Recipe | After | Age | Revised | Labels |
-| --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | **Origin reconcile before anything that matters, and pushes that never fail silently**<br>• ls-remote over warp and records repos at orch start, wake, batten resume, Merge-In and Finalize; fast-forward, landed-elsewhere cleanup, stop on divergence; rejected push retries and reports | [`origin-reconcile`](design-origin-reconcile.md) | loom |  | 3d | 9h | fabric, batten, orch, creel, shed |
-| 2 | **Goto, resume and stops keep what a run already settled**<br>• Goto as a controlled re-entry: converged verdicts, spent review budget and the pause reason survive a goto or stop; no friction session per stop; a zero-fork review round is retried | [`run-reentry`](design-run-reentry.md) | loom |  | 22h | 6h | shed, loom, burler, shuttle |
+_None._
 
 ### Layer A
 
 Waits only on Running or Ready entries.
+
+#### Normal priority
+
+| # | Task | Slug | Recipe | After | Age | Revised | Labels |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| 1 | **Lenses and fans move into a lenses module of their own, listed in full in the hub file**<br>• A lenses module holds every lens and fan for reviewers, fixers and twill writers; reconcile keeps the hub file complete; the 7-lens twill-discussion fan becomes the default<br>• `loom: review_hard_max_bounces 3`<br>• `loom: review_max_bounces 2` | [`lenses-module`](design-lenses-module.md) | loom | `verify-diff-scope` | 23h | 0m | burler, loom, config |
+| 2 | **lyxbin TestRun_KillsTheGroupOnTimeout fails when Cortex XDR holds the sleeper binary past the 5 s timeout**<br>• `darn: review_hard_max_bounces 2`<br>• `darn: review_max_bounces 1` | [`lyxbin-timeout-test-xdr`](design-lyxbin-timeout-test-xdr.md) | darn | `verify-diff-scope` | 5h | 6m | testkit |
+| 3 | **reedcli TestWatchdogReap/NeverEnteredOrphanIsStillReaped times out under Cortex XDR (1.8 s window)**<br>• `darn: review_hard_max_bounces 2`<br>• `darn: review_max_bounces 1` | [`watchdog-reap-test-xdr`](design-watchdog-reap-test-xdr.md) | darn | `verify-diff-scope` | 5h | 6m | reed |
+
+### Layer B
+
+Starts when every entry it names under After is done.
+
+#### High priority
+
+| # | Task | Slug | Recipe | After | Age | Revised | Labels |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| 1 | **Origin reconcile before anything that matters, and pushes that never fail silently**<br>• ls-remote over warp and records repos at orch start, wake, batten resume, Merge-In and Finalize; fast-forward, landed-elsewhere cleanup, stop on divergence; rejected push retries and reports | [`origin-reconcile`](design-origin-reconcile.md) | loom | `watchdog-reap-test-xdr`, `lyxbin-timeout-test-xdr` | 3d | 0m | fabric, batten, orch, creel, shed |
+| 2 | **Goto, resume and stops keep what a run already settled**<br>• Goto as a controlled re-entry: converged verdicts, spent review budget and the pause reason survive a goto or stop; no friction session per stop; a zero-fork review round is retried | [`run-reentry`](design-run-reentry.md) | loom | `watchdog-reap-test-xdr`, `lyxbin-timeout-test-xdr`, `lenses-module` | 22h | 0m | shed, loom, burler, shuttle |
+
+### Layer C
+
+Starts when every entry it names under After is done.
 
 #### High priority
 
 | # | Task | Slug | Recipe | After | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | 1 | **One machine takes over from another: owner machines, lyx adopt, landing on the parent owner**<br>• Owner machine per entry, lyx adopt of named entries, landing only on the parent owner, owner outcome in the origin reconcile, Open-Window per machine | [`machine-handover`](design-machine-handover.md) | loom | `origin-reconcile` | 1d | 1d | batten, board, orch, fabric |
-| 2 | **Every process a run spawns has one owner that ends them all**<br>• Owner records for run processes; pause, reed down, fabric remove and teardown end the whole group; tender status shows orphans; batten abandon ends a dead run; a hub pause reaches background work | [`run-process-ownership`](design-run-process-ownership.md) | loom | `run-reentry`, `origin-reconcile` | 5d | 9h | batten, fabric, loom, shed, shuttle, webster |
 
-#### Normal priority
+### Layer D
+
+Starts when every entry it names under After is done.
+
+#### High priority
 
 | # | Task | Slug | Recipe | After | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 3 | **Lenses and fans move into a lenses module of their own, listed in full in the hub file**<br>• A lenses module holds every lens and fan for reviewers, fixers and twill writers; reconcile keeps the hub file complete; the 7-lens twill-discussion fan becomes the default<br>• `loom: review_hard_max_bounces 3`<br>• `loom: review_max_bounces 2` | [`lenses-module`](design-lenses-module.md) | loom | `verify-diff-scope` | 23h | 0m | burler, loom, config |
-| 4 | **lyxbin TestRun_KillsTheGroupOnTimeout fails when Cortex XDR holds the sleeper binary past the 5 s timeout**<br>• `darn: review_hard_max_bounces 2`<br>• `darn: review_max_bounces 1` | [`lyxbin-timeout-test-xdr`](design-lyxbin-timeout-test-xdr.md) | darn | `verify-diff-scope` | 5h | 6m | testkit |
-| 5 | **reedcli TestWatchdogReap/NeverEnteredOrphanIsStillReaped times out under Cortex XDR (1.8 s window)**<br>• `darn: review_hard_max_bounces 2`<br>• `darn: review_max_bounces 1` | [`watchdog-reap-test-xdr`](design-watchdog-reap-test-xdr.md) | darn | `verify-diff-scope` | 5h | 6m | reed |
+| 1 | **Every process a run spawns has one owner that ends them all**<br>• Owner records for run processes; pause, reed down, fabric remove and teardown end the whole group; tender status shows orphans; batten abandon ends a dead run; a hub pause reaches background work | [`run-process-ownership`](design-run-process-ownership.md) | loom | `run-reentry`, `origin-reconcile`, `machine-handover` | 5d | 0m | batten, fabric, loom, shed, shuttle, webster |
 
 ## Notes
 

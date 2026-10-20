@@ -2,6 +2,8 @@
 
 `origin-reconcile` · Task · bug, enhancement, fabric, batten, orch, creel, shed
 
+Depends on: [`watchdog-reap-test-xdr`](design-watchdog-reap-test-xdr.md), [`lyxbin-timeout-test-xdr`](design-lyxbin-timeout-test-xdr.md)
+
 ## Goal
 
 A machine never acts on a stale view of origin, and a push that origin rejects is never silent.
