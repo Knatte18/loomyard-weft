@@ -26,3 +26,7 @@ The operator expected darn's writer gate to run only what the change touched, as
 Today darn's one verify gate runs the hub's whole `verify` command (`darn.yaml`), at Darn-Write and at each Darn-Review fix round, then Publish runs it again when the tree changed, plus `publish_verify`; loom too runs its plan-level `## verify:` whole once per Webster attempt, but scoped gates run per card and per batch before it.
 On OSL-1046 with Cortex XDR a whole run takes about 7.5 min, so a darn task pays it two or three times.
 Idea: darn's writer and fix-round gates run the tests of the packages the diff touches and their reverse dependencies, and the whole suite runs once, at Publish.
+
+## Order (operator, 2026-10-20)
+
+This stays its own task, run after `gate-fewer-new-binaries` and a new OSL-1046 measurement, so the gain of each change is measured apart.
