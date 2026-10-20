@@ -17,7 +17,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | **Verify runs the unit tier once, reuses passed results on a re-run, and runs a failed test first**<br>• -trimpath makes unchanged test binaries byte-identical across worktrees so XDR passes them at once, and verify runs only the integration tier, which includes the unit tests<br>• `darn: review_hard_max_bounces 1`<br>• `darn: review_max_bounces 1` | [`gate-fewer-new-binaries`](design-gate-fewer-new-binaries.md) | darn | Darn-Bouncer | 3h | 1h | config, shed |
+| 1 | **Verify runs the unit tier once, reuses passed results on a re-run, and runs a failed test first**<br>• -trimpath makes unchanged test binaries byte-identical across worktrees so XDR passes them at once, and verify runs only the integration tier, which includes the unit tests<br>• `darn: review_hard_max_bounces 1`<br>• `darn: review_max_bounces 1` | [`gate-fewer-new-binaries`](design-gate-fewer-new-binaries.md) | darn | Describe | 3h | 1h | config, shed |
 
 ### Ready
 
@@ -128,7 +128,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 35 | **[WS 007] An anchor per umbrella**<br>• Let an umbrella work in its own subdirectory of the repository, inherited by its tasks; hard to change now | [`umbrella-anchor`](design-umbrella-anchor.md) | 1d | 1d | fabric, config, workspaces |
 | 36 | **reed warns on every strand launch on tmux 3.4 about allow-set-title**<br>• The optional allow-set-title fallback is right, but its Warn repeats per pane on a supported tmux | [`allow-set-title-warn-noise`](design-allow-set-title-warn-noise.md) | 3h | 3h | reed |
 | 37 | **Agents commit code through lyx fabric commit, not raw git commit**<br>• Darn writers and webster implementer and verify-fix forks commit with raw git commit; route them through lyx fabric commit | [`agents-commit-through-fabric`](design-agents-commit-through-fabric.md) | 31m | 23m | fabric, stencil |
-| 38 | **Three tests spell LYX_TRACE_ID as a literal instead of logger.TraceIDEnv**<br>• gate-fewer-new-binaries named the trace id variable through logger.TraceIDEnv at its sites but left three test files with the literal | [`trace-id-env-literal`](design-trace-id-env-literal.md) | 9m | 9m | reed, shuttle |
+| 38 | **Three tests spell LYX_TRACE_ID as a literal instead of logger.TraceIDEnv**<br>• gate-fewer-new-binaries named the trace id variable through logger.TraceIDEnv at its sites but left three test files with the literal | [`trace-id-env-literal`](design-trace-id-env-literal.md) | 10m | 10m | reed, shuttle |
 
 ### Features
 
