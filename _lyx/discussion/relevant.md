@@ -1,0 +1,24 @@
+# Relevant files — origin-reconcile
+
+- `internal/fabricengine/doc.go` — documents the detached coalescing push, the push lock, the push retry, Bolt's pull-first and seed-commit drop
+- `internal/fabricengine/pull.go` `Fabric.Pull`, `Fabric.weftHasUpstream` — the weft arm that warns past a failed fast-forward and returns ok
+- `internal/fabricengine/coalesce.go` `unpushedOutcome`, `CoalescePushRequest`, `CoalescePushBothAt` — where a rejected push becomes a Warn and nil
+- `internal/fabricengine/bolt.go` `Bolt.PushRecorded`, `Bolt.PullThenCommitWritten`, `Bolt.pullFirst` — Bolt's fast-forward, seed drop and push retry the records replay generalises
+- `internal/fabricengine/remoteleftover.go` — existing ls-remote calls and parsing for a pair's branches
+- `internal/fabricengine/cleanupremotewarp.go` — existing ls-remote over every head of a repo
+- `internal/fabricengine/remove.go` — Remove's archive-tag push, which the landed-elsewhere removal skips
+- `internal/fabricengine/spawn.go` — the detached push spawn
+- `internal/pairteardown/doc.go` — the teardown sequence, quiet rule and RefuseWhenBusy policy
+- `internal/pairteardown/teardown.go` `Request` — gains the local mode
+- `internal/gitrepo/push.go` — push primitives and rejection errors
+- `internal/gitexec/transport.go` `IsTransportFailure` — classifies a transport failure of a remote git call
+- `internal/loomcli/commitrecords.go` `commitRecordsVerb`, `pushFailureWayForward` — an existing way forward for a rejected push
+- `internal/loomcli/wiring.go` `loomCommitStatusDeps` — status commit and push wiring of a run
+- `internal/hibernateengine/doc.go` — the wake sequence, owned pause entry and creel notice as program `HIBERNATE`
+- `internal/orchengine/doc.go` — `lyx orch start`'s bootstrap
+- `internal/orchcli/doc.go` — orch verbs and start note
+- `internal/battenshed/doc.go` — batten's run rows and resume behaviour
+- `internal/landingshed/doc.go` — Merge-In and Finalize, the parent lock and the moved-parent reroute
+- `internal/cleanupcli/doc.go` — `lyx cleanup`'s segments, which today judge runs without fetching
+- `internal/tenderengine/doc.go` — pause entries and tender status
+- `internal/creelengine/seam.go` `ProgramSender` — how a Go program signs creel mail
