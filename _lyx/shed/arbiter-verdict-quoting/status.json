@@ -78,6 +78,22 @@
       "at": "2026-10-20T06:48:08Z",
       "budget_exempt": true,
       "routed_to": "Run-Shed"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "child running → blocked at Darn-Write",
+      "at": "2026-10-20T07:16:07Z",
+      "budget_exempt": true,
+      "routed_to": "Run-Shed"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "child blocked → running at Darn-Write",
+      "at": "2026-10-20T07:18:42Z",
+      "budget_exempt": true,
+      "routed_to": "Run-Shed"
     }
   ]
 }
