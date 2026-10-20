@@ -1395,6 +1395,24 @@
       "body": "## Seen (2026-10-20)\n\n- `update-plugins.sh` (`tools/deploy/main.go`) builds `lyx` into the machine's Go bin dir, syncs the plugins, then pushes `HEAD` to `origin/prod`.\n- `prod` is one pointer on origin, shared by every machine, while each machine's installed binary is local.\n- On the Kubuntu machine a deploy moved `prod` to `a1f435dc`; the work laptop still ran a binary built from `c03af73d` while `prod` claimed `a1f435dc`.\n  Nothing on either machine shows that the laptop is behind `prod`.\n\n## Idea\n\n`prod` cannot say what a given machine runs, so it is the wrong record for \"what is deployed\".\nOptions to weigh:\n\n- Keep the deployed commit per machine (a local stamp beside the binary, which `lyx` already knows as its build revision), and let `prod` mean only \"newest commit cleared for production\".\n- Have `lyx` (or `tender status`, or orch start) warn when the installed binary is behind `origin/prod`, naming `update-plugins.sh` as the way to catch up.\n- Drop the pushed `prod` pointer altogether if nothing needs a shared one.\n",
       "created": "2026-10-20T05:53:31Z",
       "revised": "2026-10-20T05:53:31Z"
+    },
+    {
+      "id": 699,
+      "slug": "allow-set-title-warn-noise",
+      "title": "reed warns on every strand launch on tmux 3.4 about allow-set-title",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "reed"
+      ],
+      "issues": [],
+      "priority": "low",
+      "depends_on": [],
+      "isolated": false,
+      "brief": "The optional allow-set-title fallback is right, but its Warn repeats per pane on a supported tmux",
+      "body": "## Seen (2026-10-20)\n\n- On the work laptop (Ubuntu 24.04, tmux 3.4), `lyx orch start --continue` printed one `WARN reed: could not turn off allow-set-title, the pane title may drift … invalid option: allow-set-title` per strand pane it launched.\n- `internal/toolfloor/doc.go` keeps `allow-set-title` (tmux 3.5) optional on purpose: `internal/reedengine/spawn.go` Warns and continues, and `lyx reed list` reports title drift.\n- The fallback is correct; the Warn is noise, repeated for every strand on every launch on a supported tmux.\n\n## Idea\n\nDetect the tmux version once (the floor check already knows it) and skip the `set-option` below 3.5, logging the fallback once per process at debug or info, instead of a Warn per pane.\n",
+      "created": "2026-10-20T05:56:09Z",
+      "revised": "2026-10-20T05:56:09Z"
     }
   ]
 }
