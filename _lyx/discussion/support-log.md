@@ -54,7 +54,7 @@ Seven forks ran; every one returned a report.
 
 ## Review rounds
 
-_No rounds yet._
+- Round 1: one BLOCKING finding, the old-binary re-seed reverting a migrated `lenses.yaml` through the template-default overwrite, fixed by D4's no-overwrite bound; the rest tightened D1, D2, D3, D4 and D6's bounds and added criteria.
 
 ## Question ledger
 
@@ -67,3 +67,6 @@ _No rounds yet._
 - Q7 (auto-pick): does the post-landing hub migration need its own route? Picked none: `hubreconcile.Ensure` runs the walk at the first start verb after deploy, and the orch's reconcile confirms it.
 - Q8 (auto-pick): hub-wide or per-worktree? Picked per-worktree, as burler is today.
 - Q9 (auto-pick): must a dry run report the apply pass's additions? Picked no; it reports the moves, and the bound is in D4.
+- Q10 (auto-pick, round 1): where is a bad fan written by `--set` refused? Picked the `lenses` module's `CheckLoad` resolving every fan, so `--set` rolls the write back instead of every loom or darn load naming the fan refusing later.
+- Q11 (auto-pick, round 1): what does the kept-target line show for the two lens moves? Picked the dropped and kept keys without their mappings, since a one-line render of every lens's prose cannot be read; a base layer's dropped values stay in Bolt's history.
+- Q12 (auto-pick, round 1): do the two lens moves keep the template-default overwrite? Picked no: it lets an old binary's re-seed revert a migrated `lenses.yaml` at every alternation, while dropping it costs only a `lenses.yaml` written before the first post-deploy walk, a one-time window D4 states with its way forward.
