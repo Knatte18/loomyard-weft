@@ -1,0 +1,8 @@
+verdict: approve
+reason: >-
+  The diff meets every point of the board entry as amended by the parent's Added after Discussion entry.
+  Verify runs the integration tier alone in CLAUDE.md, the PATTERN-test-speed plan verify row, the languageconfig example and the impacted-set round command.
+  The trace id is stripped and the prebuilt lyx path is content-addressed so re-runs hit the cache, a Publish failure's failing tests run before the verify command, and the OSL-1046 before and after numbers are recorded.
+  The open risks name no parent correction, and lyx loom peers lists no peers or parent commits.
+question: ""
+superseded: []
