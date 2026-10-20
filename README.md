@@ -19,13 +19,13 @@ Held by a run; its scope is locked until the run ends.
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | 1 | **Origin reconcile before anything that matters, and pushes that never fail silently**<br>• ls-remote over warp and records repos at orch start, wake, batten resume, Merge-In and Finalize; fast-forward, landed-elsewhere cleanup, stop on divergence; rejected push retries and reports | [`origin-reconcile`](design-origin-reconcile.md) | loom | Plan-Burler-Fix | 3d | 3h | fabric, batten, orch, creel, shed |
 | 2 | **Goto, resume and stops keep what a run already settled**<br>• Goto as a controlled re-entry: converged verdicts, spent review budget and the pause reason survive a goto or stop; no friction session per stop; a zero-fork review round is retried | [`run-reentry`](design-run-reentry.md) | loom | Plan-Write | 1d | 3h | shed, loom, burler, shuttle |
-| 3 | **A hub lenses.yaml keeps only what the hub tuned, so template edits reach it**<br>• Reconcile drops per-name entries equal to the template and stops copying the template in<br>• `profile: budget` | [`lenses-template-frozen`](design-lenses-template-frozen.md) | darn | Worktree-Create | 11m | 0m | config, burler |
+| 3 | **A hub lenses.yaml keeps only what the hub tuned, so template edits reach it**<br>• Reconcile drops per-name entries equal to the template and stops copying the template in<br>• `profile: budget` | [`lenses-template-frozen`](design-lenses-template-frozen.md) | darn | Darn-Write | 11m | 0m | config, burler |
 
 #### Normal priority
 
 | # | Task | Slug | Recipe | At | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 4 | **A writer edits nothing until every lens fork has returned**<br>• Writers start fixing on the first fork report; judge all findings together first<br>• `profile: budget` | [`fork-findings-wait-all`](design-fork-findings-wait-all.md) | darn | Worktree-Create | 6m | 6m | stencil, burler, loom |
+| 4 | **A writer edits nothing until every lens fork has returned**<br>• Writers start fixing on the first fork report; judge all findings together first<br>• `profile: budget` | [`fork-findings-wait-all`](design-fork-findings-wait-all.md) | darn | Darn-Write | 6m | 6m | stencil, burler, loom |
 
 ### Ready
 
@@ -71,7 +71,7 @@ Starts when every entry it names under After is done.
 
 | # | Task | Slug | Recipe | After | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | **Every process a run spawns has one owner that ends them all**<br>• Owner records for run processes; pause, reed down, fabric remove and teardown end the whole group; tender status shows orphans; batten abandon ends a dead run; a hub pause reaches background work | [`run-process-ownership`](design-run-process-ownership.md) | loom | `run-reentry`, `origin-reconcile`, `machine-handover`, `create-target-transient`, `tender-pause-holds-reprompt` | 5d | 20m | batten, fabric, loom, shed, shuttle, webster |
+| 1 | **Every process a run spawns has one owner that ends them all**<br>• Owner records for run processes; pause, reed down, fabric remove and teardown end the whole group; tender status shows orphans; batten abandon ends a dead run; a hub pause reaches background work | [`run-process-ownership`](design-run-process-ownership.md) | loom | `run-reentry`, `origin-reconcile`, `machine-handover`, `create-target-transient`, `tender-pause-holds-reprompt` | 5d | 21m | batten, fabric, loom, shed, shuttle, webster |
 
 #### Normal priority
 
