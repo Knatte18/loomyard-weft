@@ -2,8 +2,6 @@
 
 `fork-findings-wait-all` · Task · enhancement, stencil, burler, loom
 
-Depends on: [`writer-reviewer-lens-align`](design-writer-reviewer-lens-align.md)
-
 ## Seen (operator, 2026-10-20)
 
 A writer that spawned its lens forks started editing as soon as the first fork returned, before the rest had reported.
