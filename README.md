@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-20 06:01 UTC; every age below is as of then.
+Rendered 2026-10-20 06:02 UTC; every age below is as of then.
 
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
@@ -8,6 +8,16 @@ An entry waits only on the open entries it names under After, so the entries in 
 ## Tasks
 
 Concrete and claimable; only a task can run.
+
+### Running
+
+Held by a run; its scope is locked until the run ends.
+
+#### Normal priority
+
+| # | Task | Slug | Recipe | At | Age | Revised | Labels |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| 1 | **Arbiter verdict with an unquoted verbs item containing ': ' is unparseable**<br>• `darn: review_hard_max_bounces 1`<br>• `darn: review_max_bounces 1` | [`arbiter-verdict-quoting`](design-arbiter-verdict-quoting.md) | darn | Worktree-Create | 12h | 0m | shed, loom |
 
 ### Ready
 
@@ -24,7 +34,6 @@ Waits on nothing open; can start now.
 | # | Task | Slug | Recipe | After | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | 2 | **Lenses and fans move into a lenses module of their own, listed in full in the hub file**<br>• A lenses module holds every lens and fan for reviewers, fixers and twill writers; reconcile keeps the hub file complete; the 7-lens twill-discussion fan becomes the default<br>• `loom: review_hard_max_bounces 3`<br>• `loom: review_max_bounces 2` | [`lenses-module`](design-lenses-module.md) | loom |  | 13h | 12h | burler, loom, config |
-| 3 | **Arbiter verdict with an unquoted verbs item containing ': ' is unparseable** | [`arbiter-verdict-quoting`](design-arbiter-verdict-quoting.md) | loom |  | 12h | 12h | shed, loom |
 
 ### Layer A
 
