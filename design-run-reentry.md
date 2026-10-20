@@ -2,7 +2,7 @@
 
 `run-reentry` · Task · bug, enhancement, shed, loom, burler, shuttle
 
-Depends on: [`watchdog-reap-test-xdr`](design-watchdog-reap-test-xdr.md), [`lyxbin-timeout-test-xdr`](design-lyxbin-timeout-test-xdr.md), [`lenses-module`](design-lenses-module.md)
+Depends on: [`watchdog-reap-test-xdr`](design-watchdog-reap-test-xdr.md), [`lenses-module`](design-lenses-module.md)
 
 ## Goal
 
