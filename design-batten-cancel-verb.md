@@ -1,6 +1,6 @@
 # No way to cancel a batten run that stopped before its pair exists
 
-`batten-cancel-verb` · Note · bug, batten
+`batten-cancel-verb` · Task · bug, batten
 
 Imported from [issue #775](https://github.com/Knatte18/loomyard/issues/775).
 
