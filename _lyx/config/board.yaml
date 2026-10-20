@@ -28,3 +28,4 @@ labels:
     workspaces: 'umbrella tasks: project worktrees with their own orch thread, VS Code workspaces and pairs under them'
     deploy: update-plugins.sh, deploy-dev and the prod pointer (tools/deploy)
     dotnet: 'support for .NET/C# hubs: gate, verify tiers, scoping and baselines for a C# repository such as NORCE Models'
+    gate: lyx gate test, the gate-slot pool and the verify test tiers
