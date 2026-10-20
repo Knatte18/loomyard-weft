@@ -1,0 +1,294 @@
+{
+  "runGuid": "e7abee37e8f30f8e95e38936d83c4602",
+  "planFingerprint": "b79dfcd64bfc71b8d7d33cf7ef1b8ab8a7709a0032ef46ad1761e57a4a6a1748",
+  "planFileHashes": {
+    "00-overview.md": "bce4493c168f2ac4da03ea503483e88dc79da07a0339008b4dc8aac304073e72",
+    "01-both-sides-diff-read.md": "0e24cc6fd72e9a303369567183051b1b3d67245e7d41f9468869fa13ad74cff4",
+    "02-darn-tree-scope-config.md": "8d8041b54992a3c74139dc915f2cc506c0527848cbe35ec68d4f5fbbe12d26a4",
+    "03-editor-save-load-check.md": "c8ba6484e3179fa2c189aee08e0986e0d4b6ff8330ff39add9a701c36ceabe49",
+    "04-module-guard-scan.md": "10908cc5c25deefa4d80812e12933f2e76563199c9003893094b1aa56e30bb36",
+    "05-derived-command-gate-test.md": "224a4b63da648082f6263011379f699e76a10af7b8adc6db98061dec9a5511d5",
+    "06-gate-test-guards.md": "11614034e157890c03f29a97c974634f2ead77c226178c47e58c852d6b653112",
+    "07-darn-gate-impact-scope.md": "8fd6737920043a269a9fe995674a2533a60418d181d90e0457d57d6eb230a451",
+    "08-darn-landing-tree-scope.md": "ea504af0a6aa993c1de169235f03b6702d0071f4e209da30108e88a836043e0f",
+    "09-darn-verify-prose.md": "a86c346f955de345524e68a942bcaa47f005c35752890ccda5ea4bdd89c5c099"
+  },
+  "planOverviewFrameHash": "2f49e9b33597451b14a94ecb16aed90f9d34ae5991ec70049234dbea11b1eff1",
+  "partition": [
+    {
+      "cards": [
+        "01-both-sides-diff-read",
+        "02-darn-tree-scope-config",
+        "03-editor-save-load-check"
+      ],
+      "profile": "cautious",
+      "estimate": 161838,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 1,
+        "startup": 54556,
+        "read_union": 23000,
+        "cards": [
+          {
+            "card": 1,
+            "card_text": 264,
+            "reads": {
+              "package:internal/fabricengine": 2000,
+              "tests:internal/fabricengine": 2000
+            },
+            "messages": 112,
+            "written": 33864
+          },
+          {
+            "card": 2,
+            "card_text": 768,
+            "reads": {
+              "file:internal/darnengine/doc.go": 276,
+              "file:internal/darnengine/template.yaml": 168,
+              "package:internal/configreg": 2000,
+              "package:internal/configsync": 2000,
+              "package:internal/darnengine": 2000,
+              "tests:internal/configreg": 2000,
+              "tests:internal/configsync": 2000,
+              "tests:internal/darnengine": 2000
+            },
+            "messages": 107.5,
+            "written": 33018
+          },
+          {
+            "card": 3,
+            "card_text": 600,
+            "reads": {
+              "file:internal/configcli/doc.go": 924,
+              "package:internal/configcli": 2000,
+              "tests:internal/configcli": 2000
+            },
+            "messages": 56,
+            "written": 17400
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "04-module-guard-scan",
+        "05-derived-command-gate-test",
+        "06-gate-test-guards"
+      ],
+      "profile": "cautious",
+      "estimate": 151386,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 2,
+        "startup": 61556,
+        "read_union": 28492,
+        "cards": [
+          {
+            "card": 4,
+            "card_text": 456,
+            "reads": {
+              "file:internal/impactset/doc.go": 408,
+              "package:internal/impactset": 2000,
+              "tests:internal/impactset": 2000
+            },
+            "messages": 68,
+            "written": 20856
+          },
+          {
+            "card": 5,
+            "card_text": 372,
+            "reads": {
+              "file:docs/overview.md": 9672,
+              "file:internal/impactset/doc.go": 408,
+              "package:docs": 2000,
+              "package:internal/impactset": 2000,
+              "package:internal/loomshed": 2000,
+              "tests:docs": 2000,
+              "tests:internal/impactset": 2000,
+              "tests:internal/loomshed": 2000
+            },
+            "messages": 63,
+            "written": 19272
+          },
+          {
+            "card": 6,
+            "card_text": 660,
+            "reads": {
+              "file:docs/overview.md": 9672,
+              "file:internal/gatecli/doc.go": 924,
+              "package:docs": 2000,
+              "package:internal/gatecli": 2000,
+              "tests:docs": 2000,
+              "tests:internal/gatecli": 2000
+            },
+            "messages": 68.5,
+            "written": 21210
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "07-darn-gate-impact-scope"
+      ],
+      "profile": "cautious",
+      "estimate": 188238,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 3,
+        "startup": 68556,
+        "read_union": 42132,
+        "cards": [
+          {
+            "card": 7,
+            "card_text": 1200,
+            "reads": {
+              "file:contracts/recipes/darn-recipe.yaml": 2628,
+              "file:contracts/specs/shed-recipe-spec.md": 1476,
+              "file:internal/loomshed/doc.go": 828,
+              "package:contracts/recipes": 2000,
+              "package:contracts/specs": 2000,
+              "package:internal/loomcli": 2000,
+              "package:internal/loomengine": 2000,
+              "package:internal/loomrecipe": 2000,
+              "package:internal/loomshed": 2000,
+              "package:internal/shedrecipe": 2000,
+              "package:internal/testkit/envkit": 2000,
+              "package:internal/webstercli": 2000,
+              "tests:contracts/recipes": 2000,
+              "tests:contracts/specs": 2000,
+              "tests:internal/loomcli": 2000,
+              "tests:internal/loomengine": 2000,
+              "tests:internal/loomrecipe": 2000,
+              "tests:internal/loomshed": 2000,
+              "tests:internal/shedrecipe": 2000,
+              "tests:internal/testkit/envkit": 2000,
+              "tests:internal/webstercli": 2000
+            },
+            "messages": 254.5,
+            "written": 77550
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "08-darn-landing-tree-scope",
+        "09-darn-verify-prose"
+      ],
+      "profile": "cautious",
+      "estimate": 162028,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 4,
+        "startup": 75556,
+        "read_union": 38892,
+        "cards": [
+          {
+            "card": 8,
+            "card_text": 600,
+            "reads": {
+              "file:internal/landingshed/doc.go": 1836,
+              "package:internal/landingshed": 2000,
+              "package:internal/loomcli": 2000,
+              "package:internal/testkit/envkit": 2000,
+              "tests:internal/landingshed": 2000,
+              "tests:internal/loomcli": 2000,
+              "tests:internal/testkit/envkit": 2000
+            },
+            "messages": 132,
+            "written": 40200
+          },
+          {
+            "card": 9,
+            "card_text": 180,
+            "reads": {
+              "file:contracts/stencils/darn/darn-template-write.md": 1188,
+              "file:docs/overview.md": 9672,
+              "file:pattern/PATTERN-test-speed.md": 1140,
+              "file:pattern/PATTERN-verified-tree.md": 276,
+              "package:contracts/stencils/darn": 2000,
+              "package:docs": 2000,
+              "package:pattern": 2000,
+              "tests:contracts/stencils/darn": 2000,
+              "tests:docs": 2000,
+              "tests:pattern": 2000
+            },
+            "messages": 24,
+            "written": 7380
+          }
+        ]
+      }
+    }
+  ],
+  "currentBatch": 1,
+  "masterStrand": "ba6e4300d2caba22aa9ba0ee41ee0227",
+  "masterSessionId": "a67d8f8f-c292-4da4-aeab-44ea1401add5",
+  "masterEngine": "claude",
+  "batches": {
+    "1": {
+      "slug": "both-sides-diff-read",
+      "cards": [
+        "01-both-sides-diff-read",
+        "02-darn-tree-scope-config",
+        "03-editor-save-load-check"
+      ],
+      "cardHashes": {
+        "01-both-sides-diff-read": "0e24cc6fd72e9a303369567183051b1b3d67245e7d41f9468869fa13ad74cff4",
+        "02-darn-tree-scope-config": "8d8041b54992a3c74139dc915f2cc506c0527848cbe35ec68d4f5fbbe12d26a4",
+        "03-editor-save-load-check": "c8ba6484e3179fa2c189aee08e0986e0d4b6ff8330ff39add9a701c36ceabe49"
+      },
+      "startSha": "03af4c755e8b814ef5d384b1ca55fdbe33282ca2",
+      "kind": "fork",
+      "spawnedAt": "2026-10-20T13:35:12Z",
+      "sessionId": "a67d8f8f-c292-4da4-aeab-44ea1401add5",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
+    }
+  }
+}
