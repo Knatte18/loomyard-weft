@@ -54,6 +54,22 @@
       "at": "2026-10-20T16:24:30Z",
       "budget_exempt": true,
       "routed_to": "Run-Shed"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "child running → blocked at Finalize",
+      "at": "2026-10-20T16:24:34Z",
+      "budget_exempt": true,
+      "routed_to": "Run-Shed"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "child blocked → running at Merge-In",
+      "at": "2026-10-20T16:30:33Z",
+      "budget_exempt": true,
+      "routed_to": "Run-Shed"
     }
   ]
 }
