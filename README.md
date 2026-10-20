@@ -17,7 +17,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | **Verify runs the unit tier once, reuses passed results on a re-run, and runs a failed test first**<br>• -trimpath makes unchanged test binaries byte-identical across worktrees so XDR passes them at once, and verify runs only the integration tier, which includes the unit tests<br>• `darn: review_hard_max_bounces 1`<br>• `darn: review_max_bounces 1` | [`gate-fewer-new-binaries`](design-gate-fewer-new-binaries.md) | darn | Merge-In | 3h | 1h | config, shed |
+| 1 | **Verify runs the unit tier once, reuses passed results on a re-run, and runs a failed test first**<br>• -trimpath makes unchanged test binaries byte-identical across worktrees so XDR passes them at once, and verify runs only the integration tier, which includes the unit tests<br>• `darn: review_hard_max_bounces 1`<br>• `darn: review_max_bounces 1` | [`gate-fewer-new-binaries`](design-gate-fewer-new-binaries.md) | darn | Publish | 3h | 1h | config, shed |
 
 ### Ready
 
