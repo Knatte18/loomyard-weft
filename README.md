@@ -80,6 +80,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 7 | **Edit directive not enforced: file append through a shell heredoc was not refused** | [`shell-guard-heredoc-write`](design-shell-guard-heredoc-write.md) | 8h | 8h | claude |
 | 8 | **Opening an agent into reed: engine bypass mode by default, explicit engine, model and effort, and reed add points to shuttle open**<br>• reed add help shows a broken claude example (%SID% never substituted) and shuttle open keeps the interactive permission default; every agent in reed needs bypass, per engine (claude bypassPermissions, Codex --yolo) | [`reed-agent-launch-bypass`](design-reed-agent-launch-bypass.md) | 6h | 6h | reed, shuttle, claude, codex |
 | 9 | **Finalize blocks on 'worktree dirty' without naming the tree or paths, and the loom's own run record counts as dirty** | [`finalize-dirty-names-paths`](design-finalize-dirty-names-paths.md) | 0m | 0m | fabric, loom |
+| 10 | **No way to cancel a batten run that stopped before its pair exists** | [`batten-cancel-verb`](design-batten-cancel-verb.md) | 0m | 0m | batten |
 
 ### Enhancements
 
