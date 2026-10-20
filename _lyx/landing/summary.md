@@ -1,33 +1,35 @@
-# Gate the arbiter's verdict.yaml so an unparseable one is rewritten
+# Gate the arbiter's verdict.yaml so an unreadable one is rewritten live
 
-An arbiter that wrote a `verbs` item holding `: ` as a plain scalar produced a `verdict.yaml` that read as a map.
-`lyx loom arbiter` then handed on with cause `unparseable`, although the verbs had already run and only the resume was missing.
-The verdict is now checked while the arbiter is still live, and the arbiter is asked to rewrite it.
+An arbiter that wrote a `verdict.yaml` the reader rejects used to end its turn and lose the verdict.
+A `verbs` item such as `lyx loom decision add ... --title "D6 refined: card 9's ..."` left unquoted reads as a YAML map, so the verbs had already run when the driver handed on with cause `unparseable`, and only the resume was missing.
+Now the file is checked while the arbiter is still live, and the arbiter is re-prompted with the reader's error to rewrite it.
 
 Closes #754
 
 ## What changes
 
-- The arbiter's run carries a shuttle gate that runs `ReadArbiterVerdict` on the attempt's verdict path.
-  An absent file passes, so missing-verdict handling stays where it was.
-  A file that fails to parse or fails the reader's checks re-prompts the arbiter with the reader's error and the path to rewrite.
-- Both the arbiter's start and its attach to a live arbiter carry the gate.
-- The arbiter stencil (`loom-template-arbiter.md`) tells the arbiter to write `reason`, `question` and each `verbs` item as a literal block scalar (`|-`), with an example, and says an unreadable verdict comes back for a rewrite.
-- `internal/loomcli/doc.go` and `internal/shuttleengine/doc.go` name the gate and the new attach form.
+- `internal/loomcli`: `arbiterVerdictGate` returns a `GateSpec` with one `verdict` entry that runs `loomengine.ReadArbiterVerdict` on the attempt's verdict path.
+  An absent file passes, so the missing-verdict handling stays where it was.
+  A file that does not read fails, and the findings carry the reader's error and the path to rewrite.
+  `arbiter.go` passes the gate on both the fresh start and the attach to a live arbiter.
+- The arbiter stencil (`contracts/stencils/loom/loom-template-arbiter.md`) tells the arbiter to write `reason`, `question` and each `verbs` item as a literal block scalar (`|-`), with an example, and that an unreadable verdict comes back for a rewrite.
+- `internal/sheddriver`: `AgentShuttle.Start` and `AttachIfLive` take a `shuttleengine.GateSpec`; the tackler passes an empty one, so its run is unchanged.
+- `internal/shuttleengine`: new `Runner.AttachIfLiveGated`, the gated form of `AttachIfLive`.
+- The `internal/loomcli` and `internal/shuttleengine` package docs name the gate and the new method.
 
 ## Design decisions
 
-- The gate is pass-on-cap with a budget of 2 re-prompts (`arbiterVerdictGateAttempts`).
-  A verdict still unreadable after that reaches `conclude`, which hands on with cause `unparseable` as before, so the gate adds re-prompts within the arbiter's deadline and lets nothing through that `conclude` would refuse.
-- The gate checks the whole verdict through the reader, not only `verbs`, and does not depend on the arbiter remembering to self-check.
-- `sheddriver.AgentShuttle`'s `Start` and `AttachIfLive` now take a `shuttleengine.GateSpec`, and `RunnerShuttle` passes it to `Runner.StartGated` and the new `Runner.AttachIfLiveGated`.
-  `AttachIfLiveGated` is `AttachIfLive` with a gate and, like it, removes nothing on any path.
-- The tackler passes an empty spec, so its run is unchanged.
-  Its own `verdict.yaml` can break the same way and stays ungated; that is a separate change.
-- Block scalars were chosen over quoting because they take any text verbatim, with no escaping rule to get wrong.
-- The branch merges main's `OpenWindow` read-back fix (#761), which removes the `TestOpenWindow_RealTmux/ClosesWhenItsCommandExitsAtOnce` flake that failed this branch's verify; the branch's own copy of that fix is reverted in favor of main's.
+- The gate checks the whole verdict with the reader `lyx loom arbiter` concludes with, so it covers every key and does not rely on the arbiter remembering to self-check.
+- The entry is pass-on-cap with 2 re-prompts.
+  A verdict still unreadable after that reaches `conclude` and hands on with cause `unparseable` as before, so the gate lets nothing through that `conclude` would refuse.
+- Block scalars were chosen over quoting because they take any text verbatim, with no escaping rule to get right.
+- `AttachIfLiveGated` removes no superseded strand on any path, like `AttachIfLive`; a test pins this.
+- The gate closure reads only the verdict file and names no provider.
 
-## To check by hand
+## Not done
 
-- Not run end to end: a real arbiter session writing an unquoted `verbs` item and being re-prompted.
-- Gate coverage on the attach-to-live path was a review finding; confirm the test in `internal/shuttleengine/gate_test.go` and the arbiter attach test in `internal/loomcli/arbiter_test.go` pin it.
+- The tackler's own `verdict.yaml` can break the same way and stays ungated.
+
+## Check by hand
+
+- Nothing run beyond the unit tests; no live arbiter was driven against a deliberately broken verdict.
