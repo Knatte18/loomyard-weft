@@ -1,6 +1,6 @@
 # Verify gates scope to the diff: tree scope for non-production diffs, scoped darn gates, whole suite at Publish
 
-`verify-diff-scope` · Task · enhancement, loom, shed, config · running · Webster-Bouncer
+`verify-diff-scope` · Task · enhancement, loom, shed, config · running · Webster-Burler-Review
 
 ## Seen
 
