@@ -8,7 +8,7 @@
 
 ## Drop the `prod` pointer
 
-Seen 2026-10-20 ([issue #731](https://github.com/Knatte18/loomyard/issues/731)):
+Seen 2026-10-20:
 
 - `update-plugins.sh` builds `lyx` into the machine's Go bin dir, syncs the plugins, then pushes `HEAD` to `origin/prod`.
 - `prod` is one pointer on origin, shared by every machine, while each machine's installed binary is local.
