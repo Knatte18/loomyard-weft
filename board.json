@@ -1486,6 +1486,24 @@
       "body": "Imported from [issue #770](https://github.com/Knatte18/loomyard/issues/770).\n\n**What happened**\nThe shell guard that refuses raw `tmux`-tier `go test` runs matches the command text anywhere.\nA plain `grep` for the tier's flag string in test files, and a heredoc that drafted test code containing that string, were both refused as if they were test runs.\n\n**Why it is abnormal**\nNeither command runs a test.\nThe guard blocks legitimate reads and file drafting, and the agent has to search with a pattern that avoids the literal.\n\n**What to do**\nMatch the guard on the command's executable and arguments (a real `go test` invocation), not on text inside grep patterns, heredoc bodies or quoted arguments.\n\nProvenance: task `gate-fewer-new-binaries`, note `Darn-Write.md`.\n",
       "created": "2026-10-20T10:43:09Z",
       "revised": "2026-10-20T10:43:09Z"
+    },
+    {
+      "id": 714,
+      "slug": "scratch-defeats-test-cache",
+      "title": "Scratch files under .scratch change the worktree root listing and defeat go test cache hits",
+      "kind": "note",
+      "labels": [
+        "bug"
+      ],
+      "issues": [
+        771
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Imported from [issue #771](https://github.com/Knatte18/loomyard/issues/771).\n\n**What happened**\nWhile measuring `lyx gate test` cache hits inside a task worktree, each new output file created under `.scratch/` changed the worktree root's directory listing.\nThe source-scan tests read that listing and Go keys its test cache on it, so those packages missed the cache and needed an extra pair of module-wide runs.\nWriting into output files created beforehand avoided the misses.\n\n**Why it is abnormal**\nThe agent prompt directs scratch files to `.scratch/` in the working directory, yet creating files there invalidates the cache the gate depends on, which skews measurements and wastes gate runs.\n\n**What to do**\nKeep `.scratch/` out of what the scans read and Go keys on, or document that scratch files must be created before the first gate run.\n\nProvenance: task `gate-fewer-new-binaries`, note `Darn-Write.md`.\n",
+      "created": "2026-10-20T10:43:11Z",
+      "revised": "2026-10-20T10:43:11Z"
     }
   ]
 }

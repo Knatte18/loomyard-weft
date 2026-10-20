@@ -69,6 +69,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 5 | **lyxbin TestRun_KillsTheGroupOnTimeout fails when Cortex XDR holds the sleeper binary past the 5 s timeout** | [`lyxbin-timeout-test-xdr`](design-lyxbin-timeout-test-xdr.md) | 0m | 0m |  |
 | 6 | **reedcli TestWatchdogReap/NeverEnteredOrphanIsStillReaped times out under Cortex XDR (1.8 s window)** | [`watchdog-reap-test-xdr`](design-watchdog-reap-test-xdr.md) | 0m | 0m | reed |
 | 7 | **Shell guard refuses read-only commands that merely name a refused go-run tier** | [`shell-guard-text-match`](design-shell-guard-text-match.md) | 0m | 0m | claude |
+| 8 | **Scratch files under .scratch change the worktree root listing and defeat go test cache hits** | [`scratch-defeats-test-cache`](design-scratch-defeats-test-cache.md) | 0m | 0m |  |
 
 ### Enhancements
 
