@@ -2,7 +2,7 @@
 
 `batten-cancel-verb` · Task · bug, batten
 
-Depends on: [`origin-reconcile`](design-origin-reconcile.md), [`machine-handover`](design-machine-handover.md), [`darn-verify-fixes`](design-darn-verify-fixes.md)
+Depends on: [`run-process-ownership`](design-run-process-ownership.md), [`darn-verify-fixes`](design-darn-verify-fixes.md)
 
 Imported from [issue #775](https://github.com/Knatte18/loomyard/issues/775).
 
