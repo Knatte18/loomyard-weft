@@ -265,7 +265,7 @@
       }
     }
   ],
-  "currentBatch": 0,
+  "currentBatch": 8,
   "masterStrand": "ba6e4300d2caba22aa9ba0ee41ee0227",
   "masterSessionId": "a67d8f8f-c292-4da4-aeab-44ea1401add5",
   "masterEngine": "claude",
@@ -378,6 +378,24 @@
       "bracketTranscripts": [
         "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-verify-diff-scope/a67d8f8f-c292-4da4-aeab-44ea1401add5/subagents/agent-aa33a95d53584c556.jsonl"
       ]
+    },
+    "8": {
+      "slug": "darn-landing-tree-scope",
+      "cards": [
+        "08-darn-landing-tree-scope",
+        "09-darn-verify-prose"
+      ],
+      "cardHashes": {
+        "08-darn-landing-tree-scope": "917bae705643704b13bc236d318a232b5f650e4b94a9204eb81af3681feec266",
+        "09-darn-verify-prose": "a86c346f955de345524e68a942bcaa47f005c35752890ccda5ea4bdd89c5c099"
+      },
+      "startSha": "2a25846bfe753dd55b31109fef36fff8f12d3c06",
+      "kind": "fork",
+      "spawnedAt": "2026-10-20T15:57:55Z",
+      "sessionId": "a67d8f8f-c292-4da4-aeab-44ea1401add5",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
     }
   },
   "seenForkTranscripts": [
