@@ -1,0 +1,6 @@
+verdict: approve
+reason: |-
+  The diff covers every point of the board entry and nothing beyond it: the stencil asks for block scalars, and a shuttle gate on the arbiter's start and attach runs the verdict reader and re-prompts the arbiter before exit.
+  The carried-over Darn-Review risk is answered by a test in the diff and names no parent correction, and lyx loom peers lists no peer run or parent commit to overlap.
+question: ""
+superseded: []
