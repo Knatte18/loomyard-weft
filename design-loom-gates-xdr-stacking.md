@@ -35,4 +35,5 @@ What remains is measuring the hold's share of a few ordinary loom runs on OSL-10
 ## Seen (orch, 2026-10-20): first loom run on OSL-1046 after the gate fixes
 
 `lenses-module` took 1h50m from start to landing on OSL-1046 (`lyx report timing`): discussion 26m50s, plan 42m50s, webster 35m32s, merge 22s, publish-finalize 4m06s.
-The operator puts a typical loom run on Neve, which has no XDR, at about 2 hours, so this run shows no XDR penalty at whole-run scale.
+The operator puts a typical loom run on Neve, which has no XDR, at about 2 hours, so this one run is in line with Neve.
+One run settles nothing: compare the mean of several loom runs on each machine before drawing a conclusion.
