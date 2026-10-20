@@ -1,0 +1,14 @@
+{
+  "verdict": "resume",
+  "reason": "Cause is circling at round 3 of Discussion-Review.\nThe returned finding F1 (key amendment-inherits-spent-count) is correct:\nstepLocked in internal/shedengine/run.go compares episodeStuckCount over st.History, read before the seed is appended, and the seed Stuck is not BudgetExempt, so a seed over a spent episode would block.\nIt is a different mechanism from the one round 2 fixed, though, and the round 3 fixer has already put the fix into D6 (decision-record.md lines 143-146, plan-writer note at line 259, with an acceptance criterion).\nThe fix is converging: BLOCKING findings went 4, 1, 0 over rounds 1-3 and gating findings 12, 2, 2.\nThe fixer fixed all seven round 3 findings, with none disputed or deferred.\nThe round is below the hard cap: discussion_hard_max_bounces is 0 in the hub's _board/_lyx/config/loom.yaml, so review_hard_max_bounces 4 applies, the board entry names no profile, and the run's weft config sets no bounce key.\nThe rule for circling says continue, so round 4 runs with the focus already written at round-4-focus.md.",
+  "question": "",
+  "goto": "",
+  "verbs": [
+    "lyx loom circling continue run-reentry"
+  ],
+  "cause": "",
+  "attempt": 1,
+  "attempt_dir": "/home/AD.NORCERESEARCH.NO/hanf/Code/Knatte18/loomyard-LYXHUB/run-reentry/_lyx/shed/run-reentry/arbiter/attempt-1",
+  "verdict_path": "/home/AD.NORCERESEARCH.NO/hanf/Code/Knatte18/loomyard-LYXHUB/run-reentry/_lyx/shed/run-reentry/arbiter/attempt-1/verdict.yaml",
+  "relaunch": "lyx shed step run-reentry --until-stop --arbiter-attempt 1"
+}
