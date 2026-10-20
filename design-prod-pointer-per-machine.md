@@ -17,3 +17,8 @@ Options to weigh:
 - Keep the deployed commit per machine (a local stamp beside the binary, which `lyx` already knows as its build revision), and let `prod` mean only "newest commit cleared for production".
 - Have `lyx` (or `tender status`, or orch start) warn when the installed binary is behind `origin/prod`, naming `update-plugins.sh` as the way to catch up.
 - Drop the pushed `prod` pointer altogether if nothing needs a shared one.
+
+## Operator decision (2026-10-20)
+
+Drop the pushed `prod` pointer: with deploys on two machines it says nothing about what either machine runs.
+Only `tools/deploy` writes it and no lyx code reads it; `CLAUDE.md`'s Production section and the orch rules that name `prod` follow.
