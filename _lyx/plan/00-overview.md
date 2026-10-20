@@ -1,6 +1,6 @@
 ---
 format: 5
-approved: false
+approved: true
 language: go
 ---
 
@@ -25,9 +25,6 @@ Reconcile keeps `lenses.yaml` complete per name and never prunes a lens or fan, 
 - A per-name map is declared once on the module's `configengine.Spec` (`PerNameMaps`) and mirrored on `configreg.Module` (`PerNameMaps`) beside `OpenMaps`, so configsync reads it from the module as it reads open maps, and the registry fingerprint covers it.
 - A name under a per-name map that the template lacks is reported in its own list, `kept` from yamlengine and `Result.KeptExtra` from configsync, never in `removed`.
 - `internal/lenses` stands beside burler's old config until card 8, so each card builds on its own; card 8 deletes burler's copy only once every reader has switched.
-- D4 says a dry run reports the two moves "but not the additions".
-  The moves report no additions, but a dry run over an absent board `lenses.yaml` under seeding has the module loop report the template seed's names as added, as `ReconcileHubWideAt` does for every absent repo default it would seed (`internal/configsync#ReconcileHubWideAt`, the absent-file branch).
-  Suppressing that report for one module would add a special case the record does not ask for, so card 8 pins what the dry run reports instead.
 
 ## PATTERN changes
 
