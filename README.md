@@ -18,6 +18,8 @@ Held by a run; its scope is locked until the run ends.
 | # | Task | Slug | Recipe | At | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | 1 | **Verify gates scope to the diff: tree scope for non-production diffs, scoped darn gates, whole suite at Publish**<br>• A diff that touches only a tool or docs, and every darn writer and fix round, waits on the whole suite at every verify gate | [`verify-diff-scope`](design-verify-diff-scope.md) | loom | Webster | 1d | 3h | loom, shed, config |
+| 2 | **lyxbin TestRun_KillsTheGroupOnTimeout fails when Cortex XDR holds the sleeper binary past the 5 s timeout**<br>• `darn: review_hard_max_bounces 2`<br>• `darn: review_max_bounces 1` | [`lyxbin-timeout-test-xdr`](design-lyxbin-timeout-test-xdr.md) | darn | Worktree-Create | 5h | 0m | testkit |
+| 3 | **reedcli TestWatchdogReap/NeverEnteredOrphanIsStillReaped times out under Cortex XDR (1.8 s window)**<br>• `darn: review_hard_max_bounces 2`<br>• `darn: review_max_bounces 1` | [`watchdog-reap-test-xdr`](design-watchdog-reap-test-xdr.md) | darn | Worktree-Create | 5h | 0m | reed |
 
 ### Ready
 
@@ -35,7 +37,6 @@ Waits on nothing open; can start now.
 | # | Task | Slug | Recipe | After | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | 3 | **Lenses and fans move into a lenses module of their own, listed in full in the hub file**<br>• A lenses module holds every lens and fan for reviewers, fixers and twill writers; reconcile keeps the hub file complete; the 7-lens twill-discussion fan becomes the default<br>• `loom: review_hard_max_bounces 3`<br>• `loom: review_max_bounces 2` | [`lenses-module`](design-lenses-module.md) | loom |  | 23h | 22h | burler, loom, config |
-| 4 | **reedcli TestWatchdogReap/NeverEnteredOrphanIsStillReaped times out under Cortex XDR (1.8 s window)**<br>• `darn: review_hard_max_bounces 2`<br>• `darn: review_max_bounces 1` | [`watchdog-reap-test-xdr`](design-watchdog-reap-test-xdr.md) | darn |  | 5h | 0m | reed |
 
 ### Layer A
 
@@ -47,12 +48,6 @@ Waits only on Running or Ready entries.
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | 1 | **One machine takes over from another: owner machines, lyx adopt, landing on the parent owner**<br>• Owner machine per entry, lyx adopt of named entries, landing only on the parent owner, owner outcome in the origin reconcile, Open-Window per machine | [`machine-handover`](design-machine-handover.md) | loom | `origin-reconcile` | 1d | 1d | batten, board, orch, fabric |
 | 2 | **Every process a run spawns has one owner that ends them all**<br>• Owner records for run processes; pause, reed down, fabric remove and teardown end the whole group; tender status shows orphans; batten abandon ends a dead run; a hub pause reaches background work | [`run-process-ownership`](design-run-process-ownership.md) | loom | `run-reentry`, `origin-reconcile` | 5d | 9h | batten, fabric, loom, shed, shuttle, webster |
-
-#### Normal priority
-
-| # | Task | Slug | Recipe | After | Age | Revised | Labels |
-| --- | --- | --- | --- | --- | --- | --- | --- |
-| 3 | **lyxbin TestRun_KillsTheGroupOnTimeout fails when Cortex XDR holds the sleeper binary past the 5 s timeout**<br>• `darn: review_hard_max_bounces 2`<br>• `darn: review_max_bounces 1` | [`lyxbin-timeout-test-xdr`](design-lyxbin-timeout-test-xdr.md) | darn | `verify-diff-scope` | 5h | 2h | testkit |
 
 ## Notes
 
