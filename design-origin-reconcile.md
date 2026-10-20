@@ -1,6 +1,6 @@
 # Origin reconcile before anything that matters, and pushes that never fail silently
 
-`origin-reconcile` · Task · bug, enhancement, fabric, batten, orch, creel, shed
+`origin-reconcile` · Task · bug, enhancement, fabric, batten, orch, creel, shed · running · Worktree-Create
 
 ## Goal
 

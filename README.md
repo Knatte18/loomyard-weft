@@ -13,21 +13,23 @@ Concrete and claimable; only a task can run.
 
 Held by a run; its scope is locked until the run ends.
 
+#### High priority
+
+| # | Task | Slug | Recipe | At | Age | Revised | Labels |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| 1 | **Origin reconcile before anything that matters, and pushes that never fail silently**<br>• ls-remote over warp and records repos at orch start, wake, batten resume, Merge-In and Finalize; fast-forward, landed-elsewhere cleanup, stop on divergence; rejected push retries and reports | [`origin-reconcile`](design-origin-reconcile.md) | loom | Worktree-Create | 3d | 52m | fabric, batten, orch, creel, shed |
+
 #### Normal priority
 
 | # | Task | Slug | Recipe | At | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | **Lenses and fans move into a lenses module of their own, listed in full in the hub file**<br>• A lenses module holds every lens and fan for reviewers, fixers and twill writers; reconcile keeps the hub file complete; the 7-lens twill-discussion fan becomes the default<br>• `loom: review_hard_max_bounces 3`<br>• `loom: review_max_bounces 2` | [`lenses-module`](design-lenses-module.md) | loom | Discussion-Bouncer | 1d | 52m | burler, loom, config |
+| 2 | **Lenses and fans move into a lenses module of their own, listed in full in the hub file**<br>• A lenses module holds every lens and fan for reviewers, fixers and twill writers; reconcile keeps the hub file complete; the 7-lens twill-discussion fan becomes the default<br>• `loom: review_hard_max_bounces 3`<br>• `loom: review_max_bounces 2` | [`lenses-module`](design-lenses-module.md) | loom | Discussion-Bouncer | 1d | 52m | burler, loom, config |
 
 ### Ready
 
 Waits on nothing open; can start now.
 
-#### High priority
-
-| # | Task | Slug | Recipe | After | Age | Revised | Labels |
-| --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | **Origin reconcile before anything that matters, and pushes that never fail silently**<br>• ls-remote over warp and records repos at orch start, wake, batten resume, Merge-In and Finalize; fast-forward, landed-elsewhere cleanup, stop on divergence; rejected push retries and reports | [`origin-reconcile`](design-origin-reconcile.md) | loom |  | 3d | 52m | fabric, batten, orch, creel, shed |
+_None._
 
 ### Layer A
 
