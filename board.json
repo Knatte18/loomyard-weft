@@ -1319,7 +1319,8 @@
       "brief": "",
       "body": "Imported from [issue #771](https://github.com/Knatte18/loomyard/issues/771).\n\n**What happened**\nWhile measuring `lyx gate test` cache hits inside a task worktree, each new output file created under `.scratch/` changed the worktree root's directory listing.\nThe source-scan tests read that listing and Go keys its test cache on it, so those packages missed the cache and needed an extra pair of module-wide runs.\nWriting into output files created beforehand avoided the misses.\n\n**Why it is abnormal**\nThe agent prompt directs scratch files to `.scratch/` in the working directory, yet creating files there invalidates the cache the gate depends on, which skews measurements and wastes gate runs.\n\n**What to do**\nKeep `.scratch/` out of what the scans read and Go keys on, or document that scratch files must be created before the first gate run.\n\nProvenance: task `gate-fewer-new-binaries`, note `Darn-Write.md`.\n",
       "created": "2026-10-20T10:43:11Z",
-      "revised": "2026-10-20T13:40:27Z"
+      "revised": "2026-10-20T13:40:27Z",
+      "profile": "light"
     },
     {
       "id": 716,
@@ -1337,7 +1338,8 @@
       "brief": "go_parallel and slots can only be set hub-wide on Bolt, so a value tuned for one machine reaches every machine",
       "body": "## Seen (2026-10-20, `go_parallel` sweep on OSL-1046)\n\nEvery gate key is hub-wide: `lyx config gate --layer local` refuses `go_parallel`, and gate has no worktree layer.\nThe only layer that takes it is the default one on Bolt, so the sweep's values 8 and 12 reached Neve too while it ran on OSL-1046.\nThe two machines differ in what bounds a run: Cortex XDR holds new binaries on OSL-1046, and Neve has no endpoint security.\n\n## Idea\n\n`go_parallel`, and possibly `slots`, take a machine-local override that a run on that machine reads and Bolt never carries.\n",
       "created": "2026-10-20T11:06:17Z",
-      "revised": "2026-10-20T11:06:17Z"
+      "revised": "2026-10-20T11:06:17Z",
+      "profile": "light"
     },
     {
       "id": 717,
@@ -1430,12 +1432,18 @@
       "issues": [
         776
       ],
-      "depends_on": [],
+      "depends_on": [
+        "origin-reconcile",
+        "machine-handover",
+        "run-reentry",
+        "darn-verify-fixes"
+      ],
       "isolated": false,
       "brief": "",
       "body": "Imported from [issue #776](https://github.com/Knatte18/loomyard/issues/776).\n\n**What happened**\n\nA loom run reached Finalize after Publish, PR-Align and PR-Gate were all done.\nFinalize went stuck and the run halted `blocked` with anomaly `escalation-to-human` and this message:\n\n```\nfabricengine: merge preconditions failed: worktree dirty\n```\n\nThe loom driver took a `goto` on Finalize and re-stepped it, and Finalize went stuck again with the same message, so a second halt note was written.\nThe halt notes' `parent fabric status:` section listed the dirty tracked paths in the parent pair:\n\n- first halt: `docs/overview.md`\n- second halt: `docs/overview.md` and `_lyx/shed/\u003cslug\u003e/status.json` in the weft (run-record) repo\n\n**Why it is abnormal**\n\n1. The `fabricengine` message says only \"worktree dirty\".\n   It names neither the tree it checked nor the dirty paths, so the operator has to find them in the halt note's separate `parent fabric status:` section, or by hand.\n2. `_lyx/shed/\u003cslug\u003e/status.json` is lyx's own run record.\n   It appeared as a dirty tracked path in the parent's weft checkout between the two Finalize attempts, so lyx's own bookkeeping can make its own merge precondition fail.\n   Whether the retry itself wrote it or it was already pending, the run record should not block the merge it describes.\n3. The retry (`goto` then a second stuck) re-ran the same precondition without any change to the dirty state, so it could not succeed and only produced a second halt note.\n\n**What to do**\n\n- Make the `merge preconditions failed` error name the checked tree and list the dirty paths.\n- Exclude lyx's own run-record paths (`_lyx/shed/**`) from the Finalize dirty-tree precondition, or commit them before the check.\n- Do not re-step Finalize automatically when the precondition failure is unchanged; halt once.\n\nProvenance: task `verify-diff-scope`; notes `loom-halt.md`, `loom-halt-2.md`.\n",
       "created": "2026-10-20T19:12:14Z",
-      "revised": "2026-10-20T19:12:14Z"
+      "revised": "2026-10-20T19:19:16Z",
+      "profile": "light"
     },
     {
       "id": 722,
@@ -1449,12 +1457,17 @@
       "issues": [
         775
       ],
-      "depends_on": [],
+      "depends_on": [
+        "origin-reconcile",
+        "machine-handover",
+        "darn-verify-fixes"
+      ],
       "isolated": false,
       "brief": "",
       "body": "Imported from [issue #775](https://github.com/Knatte18/loomyard/issues/775).\n\nSeen on OSL-1046 (2026-10-20): two batten runs (watchdog-reap-test-xdr, lyxbin-timeout-test-xdr) were started from a prime with uncommitted changes. Worktree-Create went stuck on \"source worktree has uncommitted changes\", the driver spawned one tackler per run, and both runs ended blocked with no pair created. The operator then cancelled both runs.\n\nThere is no verb for that: lyx batten cleanup skips blocked runs, lyx batten pause only adds a pause, and lyx board set-status clears the board entry but leaves the batten records. So the reed overview keeps showing both as blocked, and the only way out is removing _lyx/shed/\u003cslug\u003e and .lyx/shed/\u003cslug\u003e by hand and committing the records side.\n\nTwo gaps:\n- A cancel (abandon) verb for a batten run, at least one that has not created a pair, which removes its records and scratch and clears the board status.\n- Worktree-Create's dirty-source stop is a precondition the operator or orch must fix, so it should halt with that way forward instead of spawning a tackler that cannot settle it.\n\nWorkaround: remove the two run directories by literal path and commit the records side with lyx fabric commit, done only while no other run is landing so the prime's records side is not dirty during a Land row.",
       "created": "2026-10-20T19:12:16Z",
-      "revised": "2026-10-20T19:12:16Z"
+      "revised": "2026-10-20T19:19:16Z",
+      "profile": "light"
     },
     {
       "id": 723,

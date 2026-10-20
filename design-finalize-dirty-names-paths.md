@@ -2,6 +2,8 @@
 
 `finalize-dirty-names-paths` · Task · bug, fabric, loom
 
+Depends on: [`origin-reconcile`](design-origin-reconcile.md), [`machine-handover`](design-machine-handover.md), [`run-reentry`](design-run-reentry.md), [`darn-verify-fixes`](design-darn-verify-fixes.md)
+
 Imported from [issue #776](https://github.com/Knatte18/loomyard/issues/776).
 
 **What happened**
