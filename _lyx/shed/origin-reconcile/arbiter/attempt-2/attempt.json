@@ -1,0 +1,15 @@
+{
+  "number": 2,
+  "stop_key": {
+    "current_producer": "Discussion-Bouncer",
+    "history_length": 17,
+    "state": "awaiting"
+  },
+  "pause_before": "",
+  "pause_after": "",
+  "spawned_at": "2026-10-20T20:06:50.938323655+02:00",
+  "deadline": "2026-10-20T20:36:50.938323655+02:00",
+  "strand_guid": "709b0800c2a1e6b57b6f43c5ce28cd2d",
+  "envelope_path": "/home/AD.NORCERESEARCH.NO/hanf/Code/Knatte18/loomyard-LYXHUB/origin-reconcile/_lyx/shed/origin-reconcile/drive-reports/drive-envelope-20261020-200650-7ba1.json",
+  "report_path": "/home/AD.NORCERESEARCH.NO/hanf/Code/Knatte18/loomyard-LYXHUB/origin-reconcile/_lyx/shed/origin-reconcile/drive-reports/drive-report-20261020-200650-d04a.md"
+}
