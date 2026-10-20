@@ -25,7 +25,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 4 | **A writer edits nothing until every lens fork has returned**<br>• Writers start fixing on the first fork report; judge all findings together first<br>• `profile: budget` | [`fork-findings-wait-all`](design-fork-findings-wait-all.md) | darn | Darn-Burler-Fix | 14m | 13m | stencil, burler, loom |
+| 4 | **A writer edits nothing until every lens fork has returned**<br>• Writers start fixing on the first fork report; judge all findings together first<br>• `profile: budget` | [`fork-findings-wait-all`](design-fork-findings-wait-all.md) | darn | Darn-Bouncer | 14m | 13m | stencil, burler, loom |
 
 ### Ready
 
