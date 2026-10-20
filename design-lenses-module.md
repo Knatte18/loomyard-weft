@@ -1,6 +1,6 @@
 # Lenses and fans move into a lenses module of their own, listed in full in the hub file
 
-`lenses-module` · Task · enhancement, burler, loom, config · running · Plan-Bouncer
+`lenses-module` · Task · enhancement, burler, loom, config · running · Webster
 
 ## Seen (2026-10-19)
 
