@@ -1,0 +1,16 @@
+{
+  "number": 1,
+  "stop_key": {
+    "current_producer": "Finalize",
+    "history_length": 35,
+    "state": "blocked"
+  },
+  "pause_before": "",
+  "pause_after": "",
+  "spawned_at": "2026-10-20T18:25:30.354223085+02:00",
+  "deadline": "2026-10-20T18:55:30.354223085+02:00",
+  "strand_guid": "523565a20ca1682974e46117cffab8ab",
+  "envelope_path": "/home/AD.NORCERESEARCH.NO/hanf/Code/Knatte18/loomyard-LYXHUB/verify-diff-scope/_lyx/shed/verify-diff-scope/drive-reports/drive-envelope-20261020-182433-e018.json",
+  "report_path": "/home/AD.NORCERESEARCH.NO/hanf/Code/Knatte18/loomyard-LYXHUB/verify-diff-scope/_lyx/shed/verify-diff-scope/drive-reports/drive-report-20261020-182530-c177.md",
+  "case_brief_path": "/home/AD.NORCERESEARCH.NO/hanf/Code/Knatte18/loomyard-LYXHUB/verify-diff-scope/_lyx/shed/verify-diff-scope/tackler/attempt-2/case-brief.md"
+}
