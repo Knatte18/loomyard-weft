@@ -2,6 +2,8 @@
 
 `batten-cancel-verb` · Task · bug, batten
 
+Depends on: [`origin-reconcile`](design-origin-reconcile.md), [`machine-handover`](design-machine-handover.md), [`darn-verify-fixes`](design-darn-verify-fixes.md)
+
 Imported from [issue #775](https://github.com/Knatte18/loomyard/issues/775).
 
 Seen on OSL-1046 (2026-10-20): two batten runs (watchdog-reap-test-xdr, lyxbin-timeout-test-xdr) were started from a prime with uncommitted changes. Worktree-Create went stuck on "source worktree has uncommitted changes", the driver spawned one tackler per run, and both runs ended blocked with no pair created. The operator then cancelled both runs.
