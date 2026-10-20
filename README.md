@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-20 13:44 UTC; every age below is as of then.
+Rendered 2026-10-20 13:45 UTC; every age below is as of then.
 
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
@@ -35,8 +35,8 @@ Waits on nothing open; can start now.
 | # | Task | Slug | Recipe | After | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | 3 | **Lenses and fans move into a lenses module of their own, listed in full in the hub file**<br>• A lenses module holds every lens and fan for reviewers, fixers and twill writers; reconcile keeps the hub file complete; the 7-lens twill-discussion fan becomes the default<br>• `loom: review_hard_max_bounces 3`<br>• `loom: review_max_bounces 2` | [`lenses-module`](design-lenses-module.md) | loom |  | 20h | 20h | burler, loom, config |
-| 4 | **lyxbin TestRun_KillsTheGroupOnTimeout fails when Cortex XDR holds the sleeper binary past the 5 s timeout**<br>• `loom: review_hard_max_bounces 3`<br>• `loom: review_max_bounces 2` | [`lyxbin-timeout-test-xdr`](design-lyxbin-timeout-test-xdr.md) | loom |  | 3h | 4m | testkit |
-| 5 | **reedcli TestWatchdogReap/NeverEnteredOrphanIsStillReaped times out under Cortex XDR (1.8 s window)**<br>• `loom: review_hard_max_bounces 3`<br>• `loom: review_max_bounces 2` | [`watchdog-reap-test-xdr`](design-watchdog-reap-test-xdr.md) | loom |  | 3h | 3h | reed |
+| 4 | **lyxbin TestRun_KillsTheGroupOnTimeout fails when Cortex XDR holds the sleeper binary past the 5 s timeout**<br>• `loom: review_hard_max_bounces 3`<br>• `loom: review_max_bounces 2` | [`lyxbin-timeout-test-xdr`](design-lyxbin-timeout-test-xdr.md) | loom |  | 3h | 5m | testkit |
+| 5 | **reedcli TestWatchdogReap/NeverEnteredOrphanIsStillReaped times out under Cortex XDR (1.8 s window)**<br>• `darn: review_hard_max_bounces 3`<br>• `darn: review_max_bounces 2` | [`watchdog-reap-test-xdr`](design-watchdog-reap-test-xdr.md) | darn |  | 3h | 0m | reed |
 
 ### Layer A
 
@@ -61,7 +61,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | --- | --- | --- | --- | --- | --- |
 | 1 | **Prototype reed status buttons in a throwaway tmux server**<br>• A fresh agent tries the menu button, follow toggle and extra button line by hand before reed-status-buttons becomes a task | [`reed-status-buttons-prototype`](design-reed-status-buttons-prototype.md) | 5d | 5d | reed |
 | 2 | **Classify Plan lens and review findings to make the Plan writer get it right first**<br>• Find what Plan lenses and Plan-Burler-Review keep catching, and stop each recurring class at the writer | [`plan-writer-finding-classes`](design-plan-writer-finding-classes.md) | 4d | 3d | loom, burler, stencil, shed |
-| 3 | **Recurring test-suite time and growth audit**<br>• Re-run cmd/testtiming against test-suite-timing.md to watch suite growth | [`test-time-audit-recurring`](design-test-time-audit-recurring.md) | 1d | 1d |  |
+| 3 | **Recurring test-suite time and growth audit**<br>• Re-run cmd/testtiming against test-suite-timing.md to watch suite growth | [`test-time-audit-recurring`](design-test-time-audit-recurring.md) | 2d | 2d |  |
 | 4 | **Audit the use of the twill and lens review setup at every perch**<br>• After about ten loom runs, measure what the lens fans and twill fixers catch per perch against their cost, and set the standard review rounds from it | [`review-setup-audit`](design-review-setup-audit.md) | 1d | 1d | burler, loom, report |
 | 5 | **Audit: ideas from tree-sitter-analyzer for quarry and its use in lyx**<br>• What the Python tree-sitter-analyzer offers that quarry or lyx could use if built in Go, what already exists, and what would not pay off | [`tsa-quarry-audit`](design-tsa-quarry-audit.md) | 1d | 1d | quarry, webster, burler, loom |
 | 6 | **Audit: Discussion and Plan quality before and after the twill writers**<br>• Plan round-1 findings fell about half with the twill Plan writer; Discussion is the same or slightly better; fork0 and the code list added no further gain | [`twill-writer-quality-audit`](design-twill-writer-quality-audit.md) | 1d | 1d | loom, burler, stencil |
@@ -79,9 +79,9 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 3 | **tender pause does not hold a verify gate's re-prompt, and creel interrupt is refused under the pause** | [`tender-pause-holds-reprompt`](design-tender-pause-holds-reprompt.md) | 3h | 3h | creel, shed |
 | 4 | **update-plugins warns about /usr/bin/lyx, which is the LyX document processor, not a stray lyx** | [`deploy-foreign-lyx-warning`](design-deploy-foreign-lyx-warning.md) | 3h | 3h | deploy |
 | 5 | **Shell guard refuses read-only commands that merely name a refused go-run tier** | [`shell-guard-text-match`](design-shell-guard-text-match.md) | 3h | 3h | claude |
-| 6 | **Scratch files under .scratch change the worktree root listing and defeat go test cache hits** | [`scratch-defeats-test-cache`](design-scratch-defeats-test-cache.md) | 3h | 4m | gate |
+| 6 | **Scratch files under .scratch change the worktree root listing and defeat go test cache hits** | [`scratch-defeats-test-cache`](design-scratch-defeats-test-cache.md) | 3h | 5m | gate |
 | 7 | **Edit directive not enforced: file append through a shell heredoc was not refused** | [`shell-guard-heredoc-write`](design-shell-guard-heredoc-write.md) | 3h | 3h | claude |
-| 8 | **Opening an agent into reed: engine bypass mode by default, explicit engine, model and effort, and reed add points to shuttle open**<br>• reed add help shows a broken claude example (%SID% never substituted) and shuttle open keeps the interactive permission default; every agent in reed needs bypass, per engine (claude bypassPermissions, Codex --yolo) | [`reed-agent-launch-bypass`](design-reed-agent-launch-bypass.md) | 34m | 32m | reed, shuttle, claude, codex |
+| 8 | **Opening an agent into reed: engine bypass mode by default, explicit engine, model and effort, and reed add points to shuttle open**<br>• reed add help shows a broken claude example (%SID% never substituted) and shuttle open keeps the interactive permission default; every agent in reed needs bypass, per engine (claude bypassPermissions, Codex --yolo) | [`reed-agent-launch-bypass`](design-reed-agent-launch-bypass.md) | 35m | 33m | reed, shuttle, claude, codex |
 
 ### Enhancements
 
