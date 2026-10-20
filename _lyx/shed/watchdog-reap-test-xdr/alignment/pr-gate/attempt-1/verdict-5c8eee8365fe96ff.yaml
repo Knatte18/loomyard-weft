@@ -1,0 +1,7 @@
+verdict: approve
+reason: >-
+  The diff replaces every cadence-derived success wait in TestWatchdogReap, including the failing NeverEnteredOrphanIsStillReaped one,
+  with a fixed 30 s polled bound that tolerates a slow host, as the board entry asks; it changes no production code and keeps the early-reap check short.
+  No open risk names a parent correction, the only peer (lenses-module) does not overlap, and no parent commits are listed.
+question: ""
+superseded: []
