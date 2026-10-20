@@ -1,16 +1,22 @@
 {
-  "current_producer": "Seed-Child",
+  "current_producer": "Open-Window",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Seed-Child",
-    "last": "Worktree-Create → done",
+    "now": "Open-Window",
+    "last": "Seed-Child → done",
     "wait": ""
   },
   "history": [
     {
       "producer": "Worktree-Create",
+      "outcome": "done",
+      "output": "",
+      "at": "2026-10-20T16:40:52Z"
+    },
+    {
+      "producer": "Seed-Child",
       "outcome": "done",
       "output": "",
       "at": "2026-10-20T16:40:52Z"
