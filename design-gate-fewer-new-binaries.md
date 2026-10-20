@@ -1,6 +1,6 @@
 # Verify runs the unit tier once, reuses passed results on a re-run, and runs a failed test first
 
-`gate-fewer-new-binaries` · Task · enhancement, config, shed · running · Darn-Bouncer
+`gate-fewer-new-binaries` · Task · enhancement, config, shed · running · Describe
 
 ## Goal
 
