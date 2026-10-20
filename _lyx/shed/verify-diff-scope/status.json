@@ -1,12 +1,11 @@
 {
-  "current_producer": "Finalize",
+  "current_producer": "Merge-In",
   "state": "running",
   "error": "",
-  "pending_by": "shed",
   "pause_requested": false,
   "activity": {
-    "now": "Finalize",
-    "last": "Finalize → stuck",
+    "now": "Merge-In",
+    "last": "Finalize → rerouted to Merge-In",
     "wait": ""
   },
   "history": [
@@ -406,6 +405,14 @@
       "outcome": "stuck",
       "output": "",
       "at": "2026-10-20T16:24:33Z"
+    },
+    {
+      "producer": "Finalize",
+      "outcome": "reroute",
+      "output": "",
+      "at": "2026-10-20T16:30:33Z",
+      "routed_to": "Merge-In",
+      "by": "shed"
     }
   ],
   "product": {
