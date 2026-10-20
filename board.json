@@ -1565,7 +1565,7 @@
       "id": 727,
       "slug": "fork-findings-wait-all",
       "title": "A writer edits nothing until every lens fork has returned",
-      "kind": "note",
+      "kind": "task",
       "labels": [
         "enhancement",
         "stencil",
