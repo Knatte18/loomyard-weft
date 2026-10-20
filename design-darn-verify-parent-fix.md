@@ -1,6 +1,6 @@
 # Darn-Write verify cannot pass a failure fixed on the parent
 
-`darn-verify-parent-fix` · Note · enhancement, batten
+`darn-verify-parent-fix` · Note · enhancement, batten, loom
 
 ## Seen (2026-10-20, arbiter-verdict-quoting)
 
