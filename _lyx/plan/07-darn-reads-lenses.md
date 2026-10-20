@@ -9,10 +9,10 @@
 - `internal/darnengine#TestLoadConfig`
 
 **Uses:**
-- `plan:internal/lenses#FanList`
-- `plan:internal/lenses#FanKey`
-- `plan:internal/lenses#FanShapeError`
-- `plan:internal/lenses#ValidateFanKeys`
+- `internal/lenses#FanList`
+- `internal/lenses#FanKey`
+- `internal/lenses#FanShapeError`
+- `internal/lenses#ValidateFanKeys`
 
 **Intent:** darn's fan keys resolve through `lenses.yaml` (Scope: darn reads lenses and fans from `lenses`).
 `Config`'s `ReviewerFan` and `FixerFan` become `lenses.FanList`, and their field comment names `lenses.yaml`; `LoadConfig` maps a `*lenses.FanShapeError` onto its key and validates both keys through `lenses.ValidateFanKeys`, so an entry naming an unresolvable fan is refused with `define the fan in lenses.yaml`; its doc comment names `lenses.yaml`.

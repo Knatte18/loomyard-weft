@@ -1,16 +1,16 @@
 {
   "runGuid": "25f69f01bd0c126111212f8f651665a8",
-  "planFingerprint": "caa612edacf285e18b2391bf3dd933501d1cd0e58221f72f0a00c03ef8e79932",
+  "planFingerprint": "a0269dd079d867129f8d296ed1ee6af3b2c704302698d869752ee605d26fd8ee",
   "planFileHashes": {
     "00-overview.md": "ffe8f7b81d4637edad34deca0e572e226eaafb00bc53431ccf366b4d64e580f0",
     "01-yamlengine-per-name-maps.md": "d470efc29731a1fa0c6c701f94ec9e7719fd830ef4209542ee00b3a1569b8e2f",
     "02-configengine-per-name-spec.md": "3b6804b6278fff0abe0b297e0139116711f397eca5d56104ddd61056bebb1e0e",
-    "03-lenses-module.md": "b1f748b94744229c07af8e2204c968711da6bfc49e6578a88c1c0032750b5a57",
-    "04-configsync-per-name-reconcile.md": "56ce13fc6580d2ed7ac1db218451cf041a03e3c8e175bad40d5ddffa41095061",
-    "05-burler-reads-lenses.md": "3f64648c5d915646544bfb1c0638ac851a5ab5f8119d0e7ff213926e900b8fd0",
-    "06-loom-reads-lenses.md": "16e2777696895aae839ab15c9efa46331994a1f106dbb84aa2d34fd7052955c3",
-    "07-darn-reads-lenses.md": "885faab6c08d0accef359ff8cb5b66334ba8293267fc51e7ac08fa1f769b4e02",
-    "08-retire-burler-module.md": "08b99ff109b1f69f6191ea85ebeb6aadc28c8daf7d61b343a143b1a97b0da3cc"
+    "03-lenses-module.md": "de6a5d663895bdfb931be446612aa28430be1259de0daba8fd12e982b36cddb3",
+    "04-configsync-per-name-reconcile.md": "e41d1d4512f474d013bd9283ba82dfc5072d120a8641416fe6c7edb14c5e96a6",
+    "05-burler-reads-lenses.md": "d0f6bebc4f748ae33b9b4fc189e76d19d36c92e2b6fb92cce7d435b464c7be5b",
+    "06-loom-reads-lenses.md": "66afaf8867862b237d5025d4a90e9b884be52bb6de434f4fab7cfa1b4aab13d4",
+    "07-darn-reads-lenses.md": "eef7e9e0575a2f236caf0ab270d85a0eded81d2a030f0e001f60c8d8c330d09c",
+    "08-retire-burler-module.md": "daf9860b80bd5a8100605f68f3d56237e0a0d3b094ce1887a76004d16c6162a4"
   },
   "planOverviewFrameHash": "e8f9793da3a58ae32584e63754fb385b075417923a02fefcf449ac7686fe3e87",
   "partition": [
@@ -304,7 +304,7 @@
       }
     }
   ],
-  "currentBatch": 3,
+  "currentBatch": 0,
   "masterStrand": "a36b3b375392aa5869ede4f3a39c6e62",
   "masterSessionId": "97932407-2fd2-4ca5-b1fb-314dda63fb96",
   "masterEngine": "claude",
@@ -356,18 +356,40 @@
         "03-lenses-module"
       ],
       "cardHashes": {
-        "03-lenses-module": "b1f748b94744229c07af8e2204c968711da6bfc49e6578a88c1c0032750b5a57"
+        "03-lenses-module": "de6a5d663895bdfb931be446612aa28430be1259de0daba8fd12e982b36cddb3"
       },
       "startSha": "3bc5aa978e8896139bb85dfedde06e2c9bfcff07",
       "kind": "fork",
       "spawnedAt": "2026-10-20T17:57:24Z",
       "sessionId": "97932407-2fd2-4ca5-b1fb-314dda63fb96",
       "engine": "claude",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "03-lenses-module",
+        "status": "done",
+        "head_sha": "116e1a866886380bd532fb8fdf0dd2b2ace133e8",
+        "deviations": [
+          "internal/configcli/configcli.go",
+          "internal/configreg/configreg.go",
+          "internal/lenses/config.go",
+          "internal/lenses/config_test.go",
+          "internal/lenses/leaf_enforcement_test.go"
+        ]
+      },
+      "cardShas": [
+        "116e1a866886380bd532fb8fdf0dd2b2ace133e8"
+      ],
+      "forkTranscripts": [
+        "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-lenses-module/97932407-2fd2-4ca5-b1fb-314dda63fb96/subagents/agent-aaea7d08128dc97c0.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-lenses-module/97932407-2fd2-4ca5-b1fb-314dda63fb96/subagents/agent-aaea7d08128dc97c0.jsonl"
+      ]
     }
   },
   "seenForkTranscripts": [
-    "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-lenses-module/97932407-2fd2-4ca5-b1fb-314dda63fb96/subagents/agent-a12c70e9be2d7879e.jsonl"
+    "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-lenses-module/97932407-2fd2-4ca5-b1fb-314dda63fb96/subagents/agent-a12c70e9be2d7879e.jsonl",
+    "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-lenses-module/97932407-2fd2-4ca5-b1fb-314dda63fb96/subagents/agent-aaea7d08128dc97c0.jsonl"
   ]
 }

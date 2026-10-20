@@ -43,11 +43,11 @@
 - `internal/burlercli#TestRunCmd`
 
 **Uses:**
-- `plan:internal/lenses#Config`
-- `plan:internal/lenses#Lens`
-- `plan:internal/lenses#Load`
-- `plan:internal/lenses#ResolveFan`
-- `plan:internal/lenses#MaxFanLenses`
+- `internal/lenses#Config`
+- `internal/lenses#Lens`
+- `internal/lenses#Load`
+- `internal/lenses#ResolveFan`
+- `internal/lenses#MaxFanLenses`
 
 **Intent:** burler's round logic consumes the lenses module's types and load, and holds no lens or fan data of its own (D1).
 `Engine.cfg` and `New`'s `cfg` become `lenses.Config`; `Profile`'s resolved `clusterLenses` and `fixLenses` become `[]lenses.Lens`; `validateReview`, `validateFix`, `resolveRecordedFan`, `applyClusterExclude`, `dropLenses`, `lensList` and `lensNames` take the moved types, their `lenses` parameters and locals renamed so none shadows the package.
