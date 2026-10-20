@@ -1378,12 +1378,19 @@
       "issues": [
         761
       ],
+      "recipe": "darn",
       "depends_on": [],
       "isolated": false,
       "brief": "",
       "body": "Imported from [issue #761](https://github.com/Knatte18/loomyard/issues/761).\n\n## Seen (2026-10-20, OSL-1046: Ubuntu 24.04, tmux 3.4, Cortex XDR)\n\nThe darn run `arbiter-verdict-quoting` failed its Publish verify only on `internal/reedengine` `TestOpenWindow_RealTmux/ClosesWhenItsCommandExitsAtOnce`, with `window @3 read \"on\"`.\nThe branch does not touch `internal/reedengine`, and the full verify (both tiers) had passed on the same head `43c40f29` minutes earlier at Darn-Write.\nIt looks like a race in `OpenWindow`'s `remain-on-exit` read-back when the window's command exits at once.\n\nOn this machine Cortex XDR holds every newly built binary 8-10 s before it runs, so timing differs a lot from other machines; that may widen the race.\n\nBatten sent the first Publish failure back to Darn-Write as designed; the darn writer cannot run the tmux tier (see board note `darn-verify-tier-unrunnable`), made no change and handed back for a Publish retry.\n\n## Expected\n\nThe test is deterministic: `OpenWindow` and its test do not depend on whether the command has already exited when `remain-on-exit` is read back.",
       "created": "2026-10-20T06:38:48Z",
-      "revised": "2026-10-20T06:38:48Z"
+      "revised": "2026-10-20T06:42:02Z",
+      "run_settings": {
+        "darn": {
+          "review_hard_max_bounces": 1,
+          "review_max_bounces": 1
+        }
+      }
     }
   ]
 }
