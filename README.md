@@ -25,7 +25,7 @@ Waits on nothing open; can start now.
 | # | Task | Slug | Recipe | After | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | 3 | **Lenses and fans move into a lenses module of their own, listed in full in the hub file**<br>• A lenses module holds every lens and fan for reviewers, fixers and twill writers; reconcile keeps the hub file complete; the 7-lens twill-discussion fan becomes the default<br>• `loom: review_hard_max_bounces 3`<br>• `loom: review_max_bounces 2` | [`lenses-module`](design-lenses-module.md) | loom |  | 15h | 15h | burler, loom, config |
-| 4 | **Gate builds with -trimpath and verify runs the unit tests once**<br>• -trimpath makes unchanged test binaries byte-identical across worktrees so XDR passes them at once, and verify runs only the integration tier, which includes the unit tests<br>• `darn: review_hard_max_bounces 1`<br>• `darn: review_max_bounces 1` | [`gate-fewer-new-binaries`](design-gate-fewer-new-binaries.md) | darn |  | 2h | 0m | config, shed |
+| 4 | **Verify runs the unit tier once, reuses passed results on a re-run, and runs a failed test first**<br>• -trimpath makes unchanged test binaries byte-identical across worktrees so XDR passes them at once, and verify runs only the integration tier, which includes the unit tests<br>• `darn: review_hard_max_bounces 1`<br>• `darn: review_max_bounces 1` | [`gate-fewer-new-binaries`](design-gate-fewer-new-binaries.md) | darn |  | 2h | 0m | config, shed |
 
 ### Layer A
 
