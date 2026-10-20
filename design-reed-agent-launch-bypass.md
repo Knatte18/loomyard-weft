@@ -1,4 +1,4 @@
-# An agent launched into reed starts in its engine bypass mode by default, and reed add points agent launches to shuttle open
+# Opening an agent into reed: engine bypass mode by default, explicit engine, model and effort, and reed add points to shuttle open
 
 `reed-agent-launch-bypass` · Note · bug, reed, shuttle, claude, codex
 
@@ -24,3 +24,14 @@ Gaps that let this happen:
 
 Expected: every agent session lyx launches into reed starts with its engine's bypass mode without a flag, `lyx shuttle open --role <name>` included, and `reed add`'s help sends an agent launch to `lyx shuttle open`.
 This is per engine, not claude-only: claude takes `--permission-mode bypassPermissions`, and when Codex arrives as an engine it gets its own equivalent, which the operator understands to be `--yolo`.
+
+## Operator ask (2026-10-20): open the agent you want
+
+With both claude and codex as engines, opening an operator agent must let the operator choose the engine, the model and the effort level, and show what was chosen; `lyx shuttle open` today is too much a matter of chance in what one gets.
+
+What exists: `--model` takes a model spec (`internal/modelspec`), either an alias with items, `<alias>[<effort>]`, or the escape form `<engine>:<model-id>[<effort>]`, so engine, model and effort can already be named.
+What is missing:
+
+- None of this is discoverable from `lyx shuttle open --help`, which says only "model spec; empty defers to the provider default", with no grammar, no aliases and no effort.
+- Without `--model` the engine and model are whatever the provider defaults to, and the command's output does not say which engine, model and effort the session got.
+- A way to list the choices, the registry's aliases with their engine, model and default effort, from the command itself.
