@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-20 19:23 UTC; every age below is as of then.
+Rendered 2026-10-20 19:25 UTC; every age below is as of then.
 
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
@@ -24,20 +24,26 @@ Held by a run; its scope is locked until the run ends.
 
 Waits on nothing open; can start now.
 
+#### High priority
+
+| # | Task | Slug | Recipe | After | Age | Revised | Labels |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| 1 | **Align each perch writer twill lenses with its reviewer lenses, Discussion first**<br>• The Discussion writer runs emphasis lenses while its reviewer hunts design holes by procedure, and design holes are what the review still finds | [`writer-reviewer-lens-align`](design-writer-reviewer-lens-align.md) | loom |  | 2d | 1d | burler, loom, config |
+
 #### Normal priority
 
 | # | Task | Slug | Recipe | After | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | **webster create-not-done check rejects a Create target the card removes itself**<br>• `profile: budget` | [`create-target-transient`](design-create-target-transient.md) | darn |  | 2d | 6m | webster, loom, quarry |
-| 2 | **Scratch files under .scratch change the worktree root listing and defeat go test cache hits**<br>• `profile: light` | [`scratch-defeats-test-cache`](design-scratch-defeats-test-cache.md) | loom |  | 8h | 5h | gate |
-| 3 | **Deploy: drop the shared prod pointer and stop flagging a foreign lyx on PATH**<br>• update-plugins.sh pushes no prod pointer, and its PATH check ignores a non-lyx binary named lyx<br>• `profile: budget` | [`deploy-prod-cleanup`](design-deploy-prod-cleanup.md) | darn |  | 13h | 6m | deploy |
-| 4 | **Shell guard: match test runs on the command, refuse heredoc writes to tracked files**<br>• The guard refuses commands that only name a refused tier, and lets heredoc writes past the edit directive<br>• `profile: budget` | [`shellguard-fixes`](design-shellguard-fixes.md) | darn |  | 8h | 6m | claude |
+| 2 | **webster create-not-done check rejects a Create target the card removes itself**<br>• `profile: budget` | [`create-target-transient`](design-create-target-transient.md) | darn |  | 2d | 8m | webster, loom, quarry |
+| 3 | **Scratch files under .scratch change the worktree root listing and defeat go test cache hits**<br>• `profile: light` | [`scratch-defeats-test-cache`](design-scratch-defeats-test-cache.md) | loom |  | 8h | 5h | gate |
+| 4 | **Deploy: drop the shared prod pointer and stop flagging a foreign lyx on PATH**<br>• update-plugins.sh pushes no prod pointer, and its PATH check ignores a non-lyx binary named lyx<br>• `profile: budget` | [`deploy-prod-cleanup`](design-deploy-prod-cleanup.md) | darn |  | 13h | 8m | deploy |
+| 5 | **Shell guard: match test runs on the command, refuse heredoc writes to tracked files**<br>• The guard refuses commands that only name a refused tier, and lets heredoc writes past the edit directive<br>• `profile: budget` | [`shellguard-fixes`](design-shellguard-fixes.md) | darn |  | 8h | 8m | claude |
 
 #### Low priority
 
 | # | Task | Slug | Recipe | After | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 5 | **Gate settings per machine**<br>• go_parallel and slots can only be set hub-wide on Bolt, so a value tuned for one machine reaches every machine<br>• `profile: light` | [`gate-machine-local-config`](design-gate-machine-local-config.md) | loom |  | 8h | 8h | config |
+| 6 | **Gate settings per machine**<br>• go_parallel and slots can only be set hub-wide on Bolt, so a value tuned for one machine reaches every machine<br>• `profile: light` | [`gate-machine-local-config`](design-gate-machine-local-config.md) | loom |  | 8h | 8h | config |
 
 ### Layer A
 
@@ -53,8 +59,8 @@ Waits only on Running or Ready entries.
 
 | # | Task | Slug | Recipe | After | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 2 | **tender pause does not hold a verify gate's re-prompt, and creel interrupt is refused under the pause**<br>• `profile: light` | [`tender-pause-holds-reprompt`](design-tender-pause-holds-reprompt.md) | loom | `origin-reconcile`, `run-reentry` | 8h | 4m | creel, shed |
-| 3 | **Darn-Write stops looping on verify failures it cannot own, and the two flaky reed tests behind them**<br>• A verify failure in a tier Darn-Write may not run, or one the parent already fixed, no longer loops and escalates<br>• `profile: light` | [`darn-verify-fixes`](design-darn-verify-fixes.md) | loom | `run-reentry`, `origin-reconcile` | 3d | 4m | batten, loom, shed, reed |
+| 2 | **tender pause does not hold a verify gate's re-prompt, and creel interrupt is refused under the pause**<br>• `profile: light` | [`tender-pause-holds-reprompt`](design-tender-pause-holds-reprompt.md) | loom | `origin-reconcile`, `run-reentry` | 8h | 6m | creel, shed |
+| 3 | **Darn-Write stops looping on verify failures it cannot own, and the two flaky reed tests behind them**<br>• A verify failure in a tier Darn-Write may not run, or one the parent already fixed, no longer loops and escalates<br>• `profile: light` | [`darn-verify-fixes`](design-darn-verify-fixes.md) | loom | `run-reentry`, `origin-reconcile` | 3d | 6m | batten, loom, shed, reed |
 
 ### Layer B
 
@@ -64,13 +70,13 @@ Starts when every entry it names under After is done.
 
 | # | Task | Slug | Recipe | After | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | **Every process a run spawns has one owner that ends them all**<br>• Owner records for run processes; pause, reed down, fabric remove and teardown end the whole group; tender status shows orphans; batten abandon ends a dead run; a hub pause reaches background work | [`run-process-ownership`](design-run-process-ownership.md) | loom | `run-reentry`, `origin-reconcile`, `machine-handover`, `create-target-transient`, `tender-pause-holds-reprompt` | 5d | 4m | batten, fabric, loom, shed, shuttle, webster |
+| 1 | **Every process a run spawns has one owner that ends them all**<br>• Owner records for run processes; pause, reed down, fabric remove and teardown end the whole group; tender status shows orphans; batten abandon ends a dead run; a hub pause reaches background work | [`run-process-ownership`](design-run-process-ownership.md) | loom | `run-reentry`, `origin-reconcile`, `machine-handover`, `create-target-transient`, `tender-pause-holds-reprompt` | 5d | 6m | batten, fabric, loom, shed, shuttle, webster |
 
 #### Normal priority
 
 | # | Task | Slug | Recipe | After | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 2 | **Finalize blocks on 'worktree dirty' without naming the tree or paths, and the loom's own run record counts as dirty**<br>• `profile: light` | [`finalize-dirty-names-paths`](design-finalize-dirty-names-paths.md) | loom | `origin-reconcile`, `machine-handover`, `run-reentry`, `darn-verify-fixes` | 11m | 4m | fabric, loom |
+| 2 | **Finalize blocks on 'worktree dirty' without naming the tree or paths, and the loom's own run record counts as dirty**<br>• `profile: light` | [`finalize-dirty-names-paths`](design-finalize-dirty-names-paths.md) | loom | `origin-reconcile`, `machine-handover`, `run-reentry`, `darn-verify-fixes` | 13m | 6m | fabric, loom |
 
 ### Layer C
 
@@ -80,7 +86,7 @@ Starts when every entry it names under After is done.
 
 | # | Task | Slug | Recipe | After | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | **No way to cancel a batten run that stopped before its pair exists**<br>• `profile: light` | [`batten-cancel-verb`](design-batten-cancel-verb.md) | loom | `run-process-ownership`, `darn-verify-fixes` | 11m | 4m | batten |
+| 1 | **No way to cancel a batten run that stopped before its pair exists**<br>• `profile: light` | [`batten-cancel-verb`](design-batten-cancel-verb.md) | loom | `run-process-ownership`, `darn-verify-fixes` | 13m | 6m | batten |
 
 ## Notes
 
@@ -117,50 +123,49 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | # | Note | Slug | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | 1 | **[WS 005] One dobby daemon per beam owns and drives its runs**<br>• Each beam (a worktree with an orch thread) gets a Go daemon, started by lyx orch start, that follows its runs status files, starts ready tasks, lands, settles mechanical stops and tells the thread only what needs judgement | [`umbrella-daemon`](design-umbrella-daemon.md) | 8d | 1d | batten, orch, shed, workspaces, loom, board |
-| 2 | **Align each perch writer twill lenses with its reviewer lenses, Discussion first**<br>• The Discussion writer runs emphasis lenses while its reviewer hunts design holes by procedure, and design holes are what the review still finds | [`writer-reviewer-lens-align`](design-writer-reviewer-lens-align.md) | 2d | 1d | burler, loom, config |
 
 #### Normal priority
 
 | # | Note | Slug | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| 3 | **Codex CLI as a second shuttle engine: hands-on spike, then codexengine**<br>• Codex CLI as a second engine to offload Claude tokens: short hands-on tests first, then a codexengine for single-session roles | [`codex-engine`](design-codex-engine.md) | 2w | 5d | shuttle, codex |
-| 4 | **finalize: the discrepancy-document conflict shape**<br>• Divergences that cannot be a git conflict get a precomputed document for the resolving agent instead of markers | [`finalize-discrepancy-doc`](design-finalize-discrepancy-doc.md) | 2w | 2w | fabric, loom |
-| 5 | **[.NET 005] Verification protocol for a .NET repo: slow-suite tier, numerical-baseline capture/compare, verify timeouts and logs** | [`dotnet-verify-protocol`](design-dotnet-verify-protocol.md) | 2w | 10h | loom, webster, config, dotnet |
-| 6 | **Run verbs in one shared namespace, not under lyx loom**<br>• lyx loom decision/status/goto/approve act on darn runs too; move recipe-neutral run verbs to one shared namespace | [`run-verbs-shared`](design-run-verbs-shared.md) | 6d | 6d | shed, loom |
-| 7 | **The arbiter in shed for every shed run, batten included**<br>• The batten Go driver has a tackler but no arbiter; move the arbiter and its keys into shed beside the tackler | [`shed-arbiter-all`](design-shed-arbiter-all.md) | 5d | 5d | shed, batten, loom, config |
-| 8 | **Paste cited code into a review rounds context**<br>• Reviewers edit nothing and review a fixed commit, so code pasted at round start cannot go stale; measure it against todays reviewer | [`review-inline-code`](design-review-inline-code.md) | 9d | 4d | burler, stencil |
-| 9 | **Module labels from what a task touches, not only what it is about**<br>• Half the landings that changed the shuttle core lacked the shuttle label; derive or check module labels from the plan and the diff | [`labels-from-diff`](design-labels-from-diff.md) | 5d | 5d | board, loom |
-| 10 | **Start one task per overlapping group at a newly-ready start**<br>• When a landing makes several overlapping tasks ready at once, batten starts one per group and names the rest in its notice | [`batten-ready-overlap`](design-batten-ready-overlap.md) | 5d | 5d | batten |
-| 11 | **Git test fixtures trip Cortex XDR on the work laptop**<br>• Parallel git-heavy tests create so many files at once that Cortex XDR killed VS Code and then crashed itself, twice; tests must stay usable on a machine with endpoint protection | [`xdr-git-test-file-burst`](design-xdr-git-test-file-burst.md) | 4d | 1h | fabric |
-| 12 | **Rename the lyx binary to lyr (name clash with LyX)** | [`rename-binary-lyr`](design-rename-binary-lyr.md) | 4d | 3d | stencil, shuttle |
-| 13 | **[.NET 002] Language-neutral gate: lyx gate run takes a slot for any command**<br>• The gate slot pool covers only go test; a C# or Python hub verify bypasses it. Add lyx gate run -- cmd and per-language parallelism. | [`gate-language-neutral`](design-gate-language-neutral.md) | 3d | 10h | config, webster, shed, dotnet |
-| 14 | **Entry gate on shed rows: a check decides whether a row runs at all**<br>• Replace darn recipe edge rewrite and the switched producer flag check with one shed entry gate per row; false means Done without acting. | [`row-entry-gate`](design-row-entry-gate.md) | 3d | 2d | shed, loom, batten |
-| 15 | **Remove the Webster kick-start pack**<br>• Drop every kick-start pack layout and its code; glyphs stay in the plan and its gates | [`kickstart-pack-remove`](design-kickstart-pack-remove.md) | 3d | 2d | webster, quarry, loom |
-| 16 | **Use quarry Enclose for mechanical checks: verify failures to plan cards**<br>• Map tool-output file:line to member glyphs, then to the card and batch that changed them | [`enclose-checks`](design-enclose-checks.md) | 12d | 3d | quarry, webster, loom |
-| 17 | **lyx board rename: change an entry slug in one write**<br>• Rename an entry keeping all fields and rewriting depends_on; report prose mentions | [`board-rename`](design-board-rename.md) | 3d | 3d | board |
-| 18 | **Parallel batches: the shared pieces for Webster forks and Weaver**<br>• DAG batchifier, worktree per batch, merge-back with conflict resolution; open: keeping a fork inside its worktree | [`parallel-batch-parts`](design-parallel-batch-parts.md) | 2d | 2d | webster, fabric, loom |
-| 19 | **The orch watcher sees the note is written instead of waiting for a reply**<br>• At a context cycle the watcher checks that the orch turn ended and the note file exists, and cycles with no written reply; defer stays | [`orch-note-no-reply`](design-orch-note-no-reply.md) | 2d | 2d | orch, creel, workspaces |
-| 20 | **Move the orch rules into the hub-wide rules file**<br>• Operator step after the orch-rules-files deploy: run lyx orch rules from the prime | [`orch-rules-move`](design-orch-rules-move.md) | 2d | 2d | orch |
-| 21 | **Every remote operation runs async, and local-only fabric pairs stay an explicit choice only**<br>• Remote work goes async except the branch-exists check; batch pairs reach origin like any pair, and the local-only mode stays only as an explicit --local until a use is found or it is removed | [`fabric-remote-async`](design-fabric-remote-async.md) | 2d | 2d | fabric, batten |
-| 22 | **lyx loom decision add notifies the run live LLM producer of the new decision**<br>• With the Go driver no agent lives for the whole run, so decision add tells the working LLM producer if any, and later producers and PR-Gate catch the rest | [`decision-add-notifies`](design-decision-add-notifies.md) | 2d | 2d | loom, creel |
-| 23 | **Plan gate does not catch declared PATTERN.md growth that exceeds the headroom line** | [`plan-gate-pattern-headroom`](design-plan-gate-pattern-headroom.md) | 2d | 2d | loom, burler |
-| 24 | **Plan cards mark additive edits so shared spots stop chaining the card DAG**<br>• An Extends label for edits that only add to a ref; two Extends on one ref are no dependency; measure with plandag first | [`plan-extends-label`](design-plan-extends-label.md) | 2d | 2d | loom, webster, burler |
-| 25 | **lyx batten run starts in its own window by default**<br>• Every batten run is started with --window, so the window should be the default and foreground the opt-in. | [`batten-window-default`](design-batten-window-default.md) | 1d | 1d | batten, reed, orch |
-| 26 | **A halt a plan card asks for reaches the parent as a question, not as a batch failure**<br>• A card-requested halt went through recover-batch, tackler and arbiter as a failure; it should go straight to the parent and the next attempt should carry the decision | [`card-halt-is-question`](design-card-halt-is-question.md) | 1d | 1d | webster, shed, loom |
-| 27 | **A question research can settle is settled in Discussion, never deferred to Plan or an implementer**<br>• Discussion writer researches the facts its design rests on; reviewers flag a deferred research question or a halt-on-discovery rule | [`research-in-discussion`](design-research-in-discussion.md) | 1d | 1d | loom, stencil, burler |
-| 28 | **Cortex XDR holds stack up across a loom run's card, batch, round and whole-suite gates**<br>• Each gate that tests a just-changed package waits 8-10 s for XDR; a 10-15 card run pays that many times over | [`loom-gates-xdr-stacking`](design-loom-gates-xdr-stacking.md) | 2h | 2h | webster, loom, gate |
-| 29 | **[.NET 007] Language-specific lens sets seeded per hub**<br>• Every hub seeds lenses.yaml from one Go-repo template; seed by the hub language instead | [`lenses-language-sets`](design-lenses-language-sets.md) | 18m | 15m | burler, config, dotnet |
+| 2 | **Codex CLI as a second shuttle engine: hands-on spike, then codexengine**<br>• Codex CLI as a second engine to offload Claude tokens: short hands-on tests first, then a codexengine for single-session roles | [`codex-engine`](design-codex-engine.md) | 2w | 5d | shuttle, codex |
+| 3 | **finalize: the discrepancy-document conflict shape**<br>• Divergences that cannot be a git conflict get a precomputed document for the resolving agent instead of markers | [`finalize-discrepancy-doc`](design-finalize-discrepancy-doc.md) | 2w | 2w | fabric, loom |
+| 4 | **[.NET 005] Verification protocol for a .NET repo: slow-suite tier, numerical-baseline capture/compare, verify timeouts and logs** | [`dotnet-verify-protocol`](design-dotnet-verify-protocol.md) | 2w | 10h | loom, webster, config, dotnet |
+| 5 | **Run verbs in one shared namespace, not under lyx loom**<br>• lyx loom decision/status/goto/approve act on darn runs too; move recipe-neutral run verbs to one shared namespace | [`run-verbs-shared`](design-run-verbs-shared.md) | 6d | 6d | shed, loom |
+| 6 | **The arbiter in shed for every shed run, batten included**<br>• The batten Go driver has a tackler but no arbiter; move the arbiter and its keys into shed beside the tackler | [`shed-arbiter-all`](design-shed-arbiter-all.md) | 5d | 5d | shed, batten, loom, config |
+| 7 | **Paste cited code into a review rounds context**<br>• Reviewers edit nothing and review a fixed commit, so code pasted at round start cannot go stale; measure it against todays reviewer | [`review-inline-code`](design-review-inline-code.md) | 9d | 4d | burler, stencil |
+| 8 | **Module labels from what a task touches, not only what it is about**<br>• Half the landings that changed the shuttle core lacked the shuttle label; derive or check module labels from the plan and the diff | [`labels-from-diff`](design-labels-from-diff.md) | 5d | 5d | board, loom |
+| 9 | **Start one task per overlapping group at a newly-ready start**<br>• When a landing makes several overlapping tasks ready at once, batten starts one per group and names the rest in its notice | [`batten-ready-overlap`](design-batten-ready-overlap.md) | 5d | 5d | batten |
+| 10 | **Git test fixtures trip Cortex XDR on the work laptop**<br>• Parallel git-heavy tests create so many files at once that Cortex XDR killed VS Code and then crashed itself, twice; tests must stay usable on a machine with endpoint protection | [`xdr-git-test-file-burst`](design-xdr-git-test-file-burst.md) | 4d | 2h | fabric |
+| 11 | **Rename the lyx binary to lyr (name clash with LyX)** | [`rename-binary-lyr`](design-rename-binary-lyr.md) | 4d | 3d | stencil, shuttle |
+| 12 | **[.NET 002] Language-neutral gate: lyx gate run takes a slot for any command**<br>• The gate slot pool covers only go test; a C# or Python hub verify bypasses it. Add lyx gate run -- cmd and per-language parallelism. | [`gate-language-neutral`](design-gate-language-neutral.md) | 3d | 10h | config, webster, shed, dotnet |
+| 13 | **Entry gate on shed rows: a check decides whether a row runs at all**<br>• Replace darn recipe edge rewrite and the switched producer flag check with one shed entry gate per row; false means Done without acting. | [`row-entry-gate`](design-row-entry-gate.md) | 3d | 2d | shed, loom, batten |
+| 14 | **Remove the Webster kick-start pack**<br>• Drop every kick-start pack layout and its code; glyphs stay in the plan and its gates | [`kickstart-pack-remove`](design-kickstart-pack-remove.md) | 3d | 2d | webster, quarry, loom |
+| 15 | **Use quarry Enclose for mechanical checks: verify failures to plan cards**<br>• Map tool-output file:line to member glyphs, then to the card and batch that changed them | [`enclose-checks`](design-enclose-checks.md) | 12d | 3d | quarry, webster, loom |
+| 16 | **lyx board rename: change an entry slug in one write**<br>• Rename an entry keeping all fields and rewriting depends_on; report prose mentions | [`board-rename`](design-board-rename.md) | 3d | 3d | board |
+| 17 | **Parallel batches: the shared pieces for Webster forks and Weaver**<br>• DAG batchifier, worktree per batch, merge-back with conflict resolution; open: keeping a fork inside its worktree | [`parallel-batch-parts`](design-parallel-batch-parts.md) | 2d | 2d | webster, fabric, loom |
+| 18 | **The orch watcher sees the note is written instead of waiting for a reply**<br>• At a context cycle the watcher checks that the orch turn ended and the note file exists, and cycles with no written reply; defer stays | [`orch-note-no-reply`](design-orch-note-no-reply.md) | 2d | 2d | orch, creel, workspaces |
+| 19 | **Move the orch rules into the hub-wide rules file**<br>• Operator step after the orch-rules-files deploy: run lyx orch rules from the prime | [`orch-rules-move`](design-orch-rules-move.md) | 2d | 2d | orch |
+| 20 | **Every remote operation runs async, and local-only fabric pairs stay an explicit choice only**<br>• Remote work goes async except the branch-exists check; batch pairs reach origin like any pair, and the local-only mode stays only as an explicit --local until a use is found or it is removed | [`fabric-remote-async`](design-fabric-remote-async.md) | 2d | 2d | fabric, batten |
+| 21 | **lyx loom decision add notifies the run live LLM producer of the new decision**<br>• With the Go driver no agent lives for the whole run, so decision add tells the working LLM producer if any, and later producers and PR-Gate catch the rest | [`decision-add-notifies`](design-decision-add-notifies.md) | 2d | 2d | loom, creel |
+| 22 | **Plan gate does not catch declared PATTERN.md growth that exceeds the headroom line** | [`plan-gate-pattern-headroom`](design-plan-gate-pattern-headroom.md) | 2d | 2d | loom, burler |
+| 23 | **Plan cards mark additive edits so shared spots stop chaining the card DAG**<br>• An Extends label for edits that only add to a ref; two Extends on one ref are no dependency; measure with plandag first | [`plan-extends-label`](design-plan-extends-label.md) | 2d | 2d | loom, webster, burler |
+| 24 | **lyx batten run starts in its own window by default**<br>• Every batten run is started with --window, so the window should be the default and foreground the opt-in. | [`batten-window-default`](design-batten-window-default.md) | 1d | 1d | batten, reed, orch |
+| 25 | **A halt a plan card asks for reaches the parent as a question, not as a batch failure**<br>• A card-requested halt went through recover-batch, tackler and arbiter as a failure; it should go straight to the parent and the next attempt should carry the decision | [`card-halt-is-question`](design-card-halt-is-question.md) | 1d | 1d | webster, shed, loom |
+| 26 | **A question research can settle is settled in Discussion, never deferred to Plan or an implementer**<br>• Discussion writer researches the facts its design rests on; reviewers flag a deferred research question or a halt-on-discovery rule | [`research-in-discussion`](design-research-in-discussion.md) | 1d | 1d | loom, stencil, burler |
+| 27 | **Cortex XDR holds stack up across a loom run's card, batch, round and whole-suite gates**<br>• Each gate that tests a just-changed package waits 8-10 s for XDR; a 10-15 card run pays that many times over | [`loom-gates-xdr-stacking`](design-loom-gates-xdr-stacking.md) | 2h | 2h | webster, loom, gate |
+| 28 | **[.NET 007] Language-specific lens sets seeded per hub**<br>• Every hub seeds lenses.yaml from one Go-repo template; seed by the hub language instead | [`lenses-language-sets`](design-lenses-language-sets.md) | 20m | 17m | burler, config, dotnet |
 
 #### Low priority
 
 | # | Note | Slug | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| 30 | **Fabric's Windows path behaviour verified on a Windows host**<br>• Unverified after six hardening rounds; needs a Windows host, not design; take it only if Windows becomes relevant | [`fabric-windows`](design-fabric-windows.md) | 2w | 10d | fabric |
-| 31 | **warp-visibility: CLAUDE.local.md invisible in the Fabric repo's git history**<br>• Expose CLAUDE.local.md by symlink so nothing lyx-related shows in the Fabric repo's history; the constraints half is out of date | [`warp-visibility`](design-warp-visibility.md) | 2w |  | ide, fabric |
-| 32 | **Windows verify timeout kills the whole process tree**<br>• On Windows the verifytree timeout kills only the shell, not the process tree it started | [`verify-watchdog`](design-verify-watchdog.md) | 13d | 5d | shed |
-| 33 | **[WS 007] An anchor per umbrella**<br>• Let an umbrella work in its own subdirectory of the repository, inherited by its tasks; hard to change now | [`umbrella-anchor`](design-umbrella-anchor.md) | 2d | 2d | fabric, config, workspaces |
-| 34 | **reed warns on every strand launch on tmux 3.4 about allow-set-title**<br>• The optional allow-set-title fallback is right, but its Warn repeats per pane on a supported tmux | [`allow-set-title-warn-noise`](design-allow-set-title-warn-noise.md) | 13h | 13h | reed |
-| 35 | **Three tests spell LYX_TRACE_ID as a literal instead of logger.TraceIDEnv**<br>• gate-fewer-new-binaries named the trace id variable through logger.TraceIDEnv at its sites but left three test files with the literal | [`trace-id-env-literal`](design-trace-id-env-literal.md) | 9h | 9h | reed, shuttle |
+| 29 | **Fabric's Windows path behaviour verified on a Windows host**<br>• Unverified after six hardening rounds; needs a Windows host, not design; take it only if Windows becomes relevant | [`fabric-windows`](design-fabric-windows.md) | 2w | 10d | fabric |
+| 30 | **warp-visibility: CLAUDE.local.md invisible in the Fabric repo's git history**<br>• Expose CLAUDE.local.md by symlink so nothing lyx-related shows in the Fabric repo's history; the constraints half is out of date | [`warp-visibility`](design-warp-visibility.md) | 2w |  | ide, fabric |
+| 31 | **Windows verify timeout kills the whole process tree**<br>• On Windows the verifytree timeout kills only the shell, not the process tree it started | [`verify-watchdog`](design-verify-watchdog.md) | 13d | 5d | shed |
+| 32 | **[WS 007] An anchor per umbrella**<br>• Let an umbrella work in its own subdirectory of the repository, inherited by its tasks; hard to change now | [`umbrella-anchor`](design-umbrella-anchor.md) | 2d | 2d | fabric, config, workspaces |
+| 33 | **reed warns on every strand launch on tmux 3.4 about allow-set-title**<br>• The optional allow-set-title fallback is right, but its Warn repeats per pane on a supported tmux | [`allow-set-title-warn-noise`](design-allow-set-title-warn-noise.md) | 13h | 13h | reed |
+| 34 | **Three tests spell LYX_TRACE_ID as a literal instead of logger.TraceIDEnv**<br>• gate-fewer-new-binaries named the trace id variable through logger.TraceIDEnv at its sites but left three test files with the literal | [`trace-id-env-literal`](design-trace-id-env-literal.md) | 9h | 9h | reed, shuttle |
 
 ### Features
 
@@ -191,7 +196,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 16 | **Configurable action buttons on the reed status bar**<br>• Clickable status-bar buttons that run configured commands: VS Code, orch distill/refresh, the follow toggle and more | [`reed-status-buttons`](design-reed-status-buttons.md) | 5d | 5d | reed, config |
 | 17 | **Ideas to borrow from comparable agent orchestrators (survey, Oct 2026)** | [`orchestrator-survey-ideas`](design-orchestrator-survey-ideas.md) | 4d | 3d | burler, shed, orch, quarry, report |
 | 18 | **[.NET 004] Regression tier: baseline profiles before the run, compare at the final gate**<br>• Support a hub regression tier that writes profiles on the parent before implementation and compares after, switchable per task for expected drift. | [`regression-baseline-verify`](design-regression-baseline-verify.md) | 3d | 10h | shed, webster, batten, config, dotnet |
-| 19 | **[.NET 006] Quarry: a C# glyph alphabet**<br>• Quarry knows only Go glyphs; a C# hub needs a C# alphabet | [`quarry-csharp`](design-quarry-csharp.md) | 18m | 18m | quarry, dotnet |
+| 19 | **[.NET 006] Quarry: a C# glyph alphabet**<br>• Quarry knows only Go glyphs; a C# hub needs a C# alphabet | [`quarry-csharp`](design-quarry-csharp.md) | 20m | 20m | quarry, dotnet |
 
 #### Low priority
 
