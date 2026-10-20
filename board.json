@@ -966,7 +966,7 @@
       "id": 672,
       "slug": "writer-reviewer-lens-align",
       "title": "Align each perch writer twill lenses with its reviewer lenses, Discussion first",
-      "kind": "note",
+      "kind": "task",
       "labels": [
         "enhancement",
         "burler",
