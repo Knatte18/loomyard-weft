@@ -7,6 +7,9 @@ This change makes verify run the `integration` tier alone, keeps per-invocation 
 
 - `CLAUDE.md`'s push rule names one run, `lyx gate test --tags integration ./...`.
   The `integration` tag compiles every untagged test too; the only `!integration` files are TestMain shims whose tagged TestMain does the same setup and more, so the unit run was pure repetition.
+- The loom plan's `## verify:` follows the same rule.
+  `pattern/PATTERN-test-speed.md`'s row for Webster's gate, Publish and Finalize now reads build, vet under each tag, then the `integration` tier alone, and the example `verify_tiers` in `internal/languageconfig`'s doc drops the untagged `go test` the same way.
+  Plan writers followed the old row, so every loom run's Webster gate, Publish and Finalize ran the unit tier twice.
 - `lyx gate test` removes `LYX_TRACE_ID` from go test's environment, beside the strand name it already removes.
   Every `lyx` process mints a new trace id, so each gate run changed the cache key of every package whose code reads it through `internal/logger`.
   `logger.TraceIDEnv` now names the variable, and `reedengine` and `shedverbs` use it instead of the literal.
@@ -33,8 +36,7 @@ This change makes verify run the `integration` tier alone, keeps per-invocation 
 
 ## To do by hand
 
-- The hub's verify command lives in the board's `darn.yaml`, outside this change.
-  Set it to `lyx gate test --tags integration ./...` through `lyx config darn`; until then verify still runs both tiers.
+- The hub's `language.yaml` sets no `verify_tiers`; a hub that sets them should list the `integration` tier alone, with no untagged `go test` before it.
 - Check `internal/gatecli/prebuild_test.go` `TestStorePrebuilt` for the store's race and error paths: a pre-published entry under the content name returns the same path and leaves no `.partial-` file, and an uncreatable store makes `storePrebuilt` fail.
   The review rated their absence MEDIUM and the tests were added late.
 - Check `storePrebuilt` in `internal/gatecli/prebuild.go`: when `os.Chtimes` on an existing entry fails with not-exist because a concurrent prune removed it, it must publish the entry again instead of failing the run.
