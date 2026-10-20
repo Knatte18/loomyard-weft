@@ -1,0 +1,9 @@
+verdict: resume
+reason: |-
+  Cause is circling at round 3, below the Discussion-Review hard cap of 4 (review_hard_max_bounces 4, discussion_hard_max_bounces 0 in the hub's loom.yaml).
+  The returned findings are not wrong: F1's premise (boardCriticalSection takes board.lock with a blocking acquire) and F2's (EndSession runs t.refusal before the loop kill, internal/pairteardown/teardown.go:161) hold at HEAD, and the round-3 fixer confirmed every finding's premise.
+  The fix is converging: findings fell 22, 8, 7 and BLOCKING 5, 4, 2, each reopened key returns at a narrower sub-gap than before, and the round-3 fixer applied all seven fixes to the decision record with nothing disputed or deferred (F1's mechanism and unit of refusal now stand in D5, F2's forced-teardown snapshot in D6).
+  One more round lets the round-4 review, whose focus file targets exactly these six points, check the fixes; at round 4 the hard cap allows only accept or a hard-cap escalation.
+verbs:
+  - |-
+    lyx loom circling continue origin-reconcile
