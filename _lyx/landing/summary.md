@@ -1,25 +1,27 @@
-# lenses: twill-plan runs the review-plan lenses
+# lenses: twill-plan runs every review-plan lens
 
-The Plan writer's twill fan now runs the procedures its reviewer judges it by, so the writer finds those holes before Plan-Review does.
+The template `twill-plan` fan in `internal/lenses/template.yaml` gains `affected-set`, `guard-reach` and `way-forward`, the three lenses the `review-plan` fan judges a Plan by.
+The fan now reads `affected-set`, `guard-reach`, `way-forward`, `criteria-coverage`, `branch-coverage`, `row-reachability`, `forced-edits`, `test-economy`.
+The Plan writer thereby runs the procedures its reviewer will use and finds its own holes before the review, as the Discussion writer already does.
+The audit `twill-writer-quality-audit` found that procedure lenses halved round-1 Plan findings, while the Discussion writer, whose lenses were emphasis lenses, cut only about 20%.
 
-## Change
-
-- `internal/lenses/template.yaml`: the template `twill-plan` fan becomes `affected-set`, `guard-reach`, `way-forward`, `criteria-coverage`, `branch-coverage`, `row-reachability`, `forced-edits`, `test-economy`.
-  The three `review-plan` lenses come first, as the `review-discussion` lenses do in `twill-discussion`.
-  No lens prose changes, so the writer's copy of each reviewer lens reads the same as the reviewer's.
-- `internal/lenses/config_test.go`: `TestConfigTemplate_DecodesAndIsSelfConsistent` pins the new count and order, and checks that each template writer fan (`twill-discussion`, `twill-plan`) holds every lens of its reviewer fan (`review-discussion`, `review-plan`).
-
-The Discussion side needed no change: the template `twill-discussion` already holds every `review-discussion` lens.
+The Discussion side needs no change: the template `twill-discussion` fan already holds every `review-discussion` lens.
 
 ## Design decisions
 
-- All five existing writer lenses stay beside the three reviewer lenses, so the fan grows from five forks to eight, under `MaxFanLenses`.
-  `forced-edits` overlaps `affected-set`, but it also checks a `Create` handle's package clause, the quarry glyphs and table registrations, which no `review-plan` lens covers.
-  `branch-coverage` and `row-reachability` check test rows, which `guard-reach` does not.
-- Webster, Merge and Darn are left alone: their writers are implementers and have no writer lens key, so aligning them would mean new code, not a fan change.
+- The reviewer's lenses come first in the fan, matching the order of `twill-discussion`.
+- The five existing writer lenses stay. None of the three reviewer lenses carries their checks: `forced-edits` checks a `Create` handle's package clause, the quarry glyphs and table registrations, and `branch-coverage` and `row-reachability` check test rows, which `guard-reach` does not.
+- Lens prose is untouched, so a reviewer's lens and the writer's copy read the same.
+- The fan grows from five forks to eight per Plan-Write, which is under `MaxFanLenses`.
+- Webster, Merge and Darn are out of scope: their writers are implementers with no writer lens key, so giving them one is code, not a fan change.
 
-## Follow-up for the hub
+## Tests
 
-Reconcile keeps a `lenses.yaml` fan list unchanged.
-The hub's board `lenses.yaml` holds `twill-plan` with the old five lenses word for word, so this hub keeps running those five until that entry is deleted or edited.
-That file is not part of this change.
+`TestConfigTemplate_DecodesAndIsSelfConsistent` in `internal/lenses/config_test.go` updates the `twill-plan` count and order, and gains a check that each writer fan (`twill-discussion`, `twill-plan`) contains every lens of its reviewer fan (`review-discussion`, `review-plan`).
+
+## To check or run by hand
+
+- Reconcile keeps a file's fan lists unchanged, so the new fan reaches a hub only through a `lenses.yaml` with no `twill-plan` entry.
+  The hub's `lenses.yaml` on Bolt holds `twill-plan` verbatim with five lenses and keeps them until its entry is edited or deleted; that edit is outside this change.
+- The extra forks cost more per Plan-Write. Whether that pays is decided by comparing round-1 Plan findings over the next runs against the audit baseline.
+- `lyx gate test --tags integration ./...` was not run as part of writing this description.
