@@ -2,8 +2,6 @@
 
 `run-reentry` · Task · bug, enhancement, shed, loom, burler, shuttle
 
-Depends on: [`lenses-module`](design-lenses-module.md)
-
 ## Goal
 
 A goto, a resume or a stop keeps what the run already settled: converged verdicts, spent review budget and the reason a run is paused.
