@@ -1,6 +1,6 @@
 # tender pause does not hold a verify gate's re-prompt, and creel interrupt is refused under the pause
 
-`tender-pause-holds-reprompt` · Note · bug, creel, shed
+`tender-pause-holds-reprompt` · Task · bug, creel, shed
 
 Imported from [issue #762](https://github.com/Knatte18/loomyard/issues/762).
 
