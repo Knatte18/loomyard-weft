@@ -19,3 +19,10 @@ Why not the import graph: the compiler-visible dependents are exact, but tests a
 
 - lyx must not hard-code Go or a tree layout, so the non-production trees, the scoped command and the scan packages are config of the module that owns the recipe; their names and shape are a design choice.
 - Whether the final gate before landing stays whole-module even for such a diff; `dotnet-scoped-verify` asks the same question for a .NET repo.
+
+## Operator view, not a decision (2026-10-20): darn's own gate is scoped
+
+The operator expected darn's writer gate to run only what the change touched, as loom's card and batch gates do, and the whole suite only once at the end.
+Today darn's one verify gate runs the hub's whole `verify` command (`darn.yaml`), at Darn-Write and at each Darn-Review fix round, then Publish runs it again when the tree changed, plus `publish_verify`; loom too runs its plan-level `## verify:` whole once per Webster attempt, but scoped gates run per card and per batch before it.
+On OSL-1046 with Cortex XDR a whole run takes about 7.5 min, so a darn task pays it two or three times.
+Idea: darn's writer and fix-round gates run the tests of the packages the diff touches and their reverse dependencies, and the whole suite runs once, at Publish.
