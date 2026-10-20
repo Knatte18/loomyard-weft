@@ -1,6 +1,6 @@
-# Regression tier: baseline profiles before the run, compare at the final gate
+# [.NET 004] Regression tier: baseline profiles before the run, compare at the final gate
 
-`regression-baseline-verify` · Note · feature, shed, webster, batten, config
+`regression-baseline-verify` · Note · feature, shed, webster, batten, config, dotnet
 
 ## Seen (operator, 2026-10-17)
 

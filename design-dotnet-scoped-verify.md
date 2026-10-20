@@ -1,6 +1,6 @@
-# Scoped build and test for C# hubs on Windows
+# [.NET 003] Scoped build and test for C# hubs
 
-`dotnet-scoped-verify` · Note · feature, shed, webster
+`dotnet-scoped-verify` · Note · feature, shed, webster, dotnet
 
 ## Seen (operator, 2026-10-12)
 
