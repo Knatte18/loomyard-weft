@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-20 19:05 UTC; every age below is as of then.
+Rendered 2026-10-20 19:08 UTC; every age below is as of then.
 
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
@@ -62,7 +62,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 4 | **Audit the use of the twill and lens review setup at every perch**<br>• After about ten loom runs, measure what the lens fans and twill fixers catch per perch against their cost, and set the standard review rounds from it | [`review-setup-audit`](design-review-setup-audit.md) | 2d | 2d | burler, loom, report |
 | 5 | **Audit: ideas from tree-sitter-analyzer for quarry and its use in lyx**<br>• What the Python tree-sitter-analyzer offers that quarry or lyx could use if built in Go, what already exists, and what would not pay off | [`tsa-quarry-audit`](design-tsa-quarry-audit.md) | 2d | 2d | quarry, webster, burler, loom |
 | 6 | **Audit: Discussion and Plan quality before and after the twill writers**<br>• Plan round-1 findings fell about half with the twill Plan writer; Discussion is the same or slightly better; fork0 and the code list added no further gain | [`twill-writer-quality-audit`](design-twill-writer-quality-audit.md) | 2d | 2d | loom, burler, stencil |
-| 7 | **Sweep go_parallel on OSL-1046 with Cortex XDR**<br>• Time both gate tiers on the work laptop on a quiet machine and log them in docs beside the Neve numbers, with full hardware info | [`bench-osl1046-xdr`](design-bench-osl1046-xdr.md) | 12h | 7h |  |
+| 7 | **Sweep go_parallel on OSL-1046 with Cortex XDR**<br>• Time both gate tiers on the work laptop on a quiet machine and log them in docs beside the Neve numbers, with full hardware info | [`bench-osl1046-xdr`](design-bench-osl1046-xdr.md) | 12h | 8h |  |
 | 8 | **[.NET 001] Measure NORCE Models build and test on OSL-1046 with Cortex XDR**<br>• Clock restore, build and test of Models cold, warm and in a second checkout before building .NET support | [`dotnet-bench-osl1046`](design-dotnet-bench-osl1046.md) | 9h | 9h | dotnet |
 
 ### Bugs
@@ -122,7 +122,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 29 | **prod pointer is shared across machines while each binary is local**<br>• A deploy on one machine moves origin/prod, leaving other machines silently behind it | [`prod-pointer-per-machine`](design-prod-pointer-per-machine.md) | 13h | 13h | deploy |
 | 30 | **Darn-Write verify cannot pass a failure fixed on the parent**<br>• After a Publish verify failure is sent back to Darn-Write, its verify re-runs the failed test on a branch that lacks the parent fix | [`darn-verify-parent-fix`](design-darn-verify-parent-fix.md) | 11h | 8h | batten, loom |
 | 31 | **Cortex XDR holds stack up across a loom run's card, batch, round and whole-suite gates**<br>• Each gate that tests a just-changed package waits 8-10 s for XDR; a 10-15 card run pays that many times over | [`loom-gates-xdr-stacking`](design-loom-gates-xdr-stacking.md) | 1h | 1h | webster, loom, gate |
-| 32 | **[.NET 007] Language-specific lens sets seeded per hub**<br>• Every hub seeds lenses.yaml from one Go-repo template; seed by the hub language instead | [`lenses-language-sets`](design-lenses-language-sets.md) | 0m | 0m | burler, config, dotnet |
+| 32 | **[.NET 007] Language-specific lens sets seeded per hub**<br>• Every hub seeds lenses.yaml from one Go-repo template; seed by the hub language instead | [`lenses-language-sets`](design-lenses-language-sets.md) | 3m | 0m | burler, config, dotnet |
 
 #### Low priority
 
@@ -134,7 +134,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 36 | **[WS 007] An anchor per umbrella**<br>• Let an umbrella work in its own subdirectory of the repository, inherited by its tasks; hard to change now | [`umbrella-anchor`](design-umbrella-anchor.md) | 2d | 2d | fabric, config, workspaces |
 | 37 | **reed warns on every strand launch on tmux 3.4 about allow-set-title**<br>• The optional allow-set-title fallback is right, but its Warn repeats per pane on a supported tmux | [`allow-set-title-warn-noise`](design-allow-set-title-warn-noise.md) | 13h | 13h | reed |
 | 38 | **Three tests spell LYX_TRACE_ID as a literal instead of logger.TraceIDEnv**<br>• gate-fewer-new-binaries named the trace id variable through logger.TraceIDEnv at its sites but left three test files with the literal | [`trace-id-env-literal`](design-trace-id-env-literal.md) | 9h | 9h | reed, shuttle |
-| 39 | **Gate settings per machine**<br>• go_parallel and slots can only be set hub-wide on Bolt, so a value tuned for one machine reaches every machine | [`gate-machine-local-config`](design-gate-machine-local-config.md) | 7h | 7h | config |
+| 39 | **Gate settings per machine**<br>• go_parallel and slots can only be set hub-wide on Bolt, so a value tuned for one machine reaches every machine | [`gate-machine-local-config`](design-gate-machine-local-config.md) | 8h | 8h | config |
 
 ### Features
 
@@ -165,7 +165,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 16 | **Configurable action buttons on the reed status bar**<br>• Clickable status-bar buttons that run configured commands: VS Code, orch distill/refresh, the follow toggle and more | [`reed-status-buttons`](design-reed-status-buttons.md) | 5d | 5d | reed, config |
 | 17 | **Ideas to borrow from comparable agent orchestrators (survey, Oct 2026)** | [`orchestrator-survey-ideas`](design-orchestrator-survey-ideas.md) | 4d | 3d | burler, shed, orch, quarry, report |
 | 18 | **[.NET 004] Regression tier: baseline profiles before the run, compare at the final gate**<br>• Support a hub regression tier that writes profiles on the parent before implementation and compares after, switchable per task for expected drift. | [`regression-baseline-verify`](design-regression-baseline-verify.md) | 3d | 9h | shed, webster, batten, config, dotnet |
-| 19 | **[.NET 006] Quarry: a C# glyph alphabet**<br>• Quarry knows only Go glyphs; a C# hub needs a C# alphabet | [`quarry-csharp`](design-quarry-csharp.md) | 0m | 0m | quarry, dotnet |
+| 19 | **[.NET 006] Quarry: a C# glyph alphabet**<br>• Quarry knows only Go glyphs; a C# hub needs a C# alphabet | [`quarry-csharp`](design-quarry-csharp.md) | 3m | 3m | quarry, dotnet |
 
 #### Low priority
 
