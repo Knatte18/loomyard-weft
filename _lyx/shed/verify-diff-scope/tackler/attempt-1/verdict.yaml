@@ -1,0 +1,8 @@
+verdict: resume
+reason: >-
+  Finalize stopped on "fabricengine: merge preconditions failed: worktree dirty".
+  The guard (internal/fabricengine/mergeguards.go, pairDirtyReason) checks only the warp checkout's tracked changes (worktreeDirty with scopeTracked on f.warpPath); the weft side and untracked files are not merge participants.
+  The warp checkout at verify-diff-scope is clean now (git status --porcelain empty), and the untracked dirs in verify-diff-scope-weft (_lyx/loom, drive-reports, tackler) do not trip the guard.
+  The tracked dirt that existed at 18:23:55 is not recorded in the logs, so the cause is inferred from the guard's scope and the present clean state, not confirmed.
+  A plain re-run of Finalize from the blocked state should settle it; if the guard trips again, hand back.
+goto: Finalize
