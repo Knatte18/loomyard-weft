@@ -304,7 +304,7 @@
       }
     }
   ],
-  "currentBatch": 4,
+  "currentBatch": 0,
   "masterStrand": "a36b3b375392aa5869ede4f3a39c6e62",
   "masterSessionId": "97932407-2fd2-4ca5-b1fb-314dda63fb96",
   "masterEngine": "claude",
@@ -400,12 +400,30 @@
       "spawnedAt": "2026-10-20T18:01:38Z",
       "sessionId": "97932407-2fd2-4ca5-b1fb-314dda63fb96",
       "engine": "claude",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "04-configsync-per-name-reconcile",
+        "status": "done",
+        "head_sha": "e9937d8515f39779b3e3533eed56f90a2f372120",
+        "deviations": [
+          "internal/configsync/configsync_test.go"
+        ]
+      },
+      "cardShas": [
+        "e9937d8515f39779b3e3533eed56f90a2f372120"
+      ],
+      "forkTranscripts": [
+        "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-lenses-module/97932407-2fd2-4ca5-b1fb-314dda63fb96/subagents/agent-a33092c8170aebef8.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-lenses-module/97932407-2fd2-4ca5-b1fb-314dda63fb96/subagents/agent-a33092c8170aebef8.jsonl"
+      ]
     }
   },
   "seenForkTranscripts": [
     "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-lenses-module/97932407-2fd2-4ca5-b1fb-314dda63fb96/subagents/agent-a12c70e9be2d7879e.jsonl",
-    "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-lenses-module/97932407-2fd2-4ca5-b1fb-314dda63fb96/subagents/agent-aaea7d08128dc97c0.jsonl"
+    "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-lenses-module/97932407-2fd2-4ca5-b1fb-314dda63fb96/subagents/agent-aaea7d08128dc97c0.jsonl",
+    "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-lenses-module/97932407-2fd2-4ca5-b1fb-314dda63fb96/subagents/agent-a33092c8170aebef8.jsonl"
   ]
 }
