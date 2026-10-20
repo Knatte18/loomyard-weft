@@ -304,7 +304,7 @@
       }
     }
   ],
-  "currentBatch": 1,
+  "currentBatch": 0,
   "masterStrand": "a36b3b375392aa5869ede4f3a39c6e62",
   "masterSessionId": "97932407-2fd2-4ca5-b1fb-314dda63fb96",
   "masterEngine": "claude",
@@ -324,8 +324,34 @@
       "spawnedAt": "2026-10-20T17:50:51Z",
       "sessionId": "97932407-2fd2-4ca5-b1fb-314dda63fb96",
       "engine": "claude",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "01-yamlengine-per-name-maps",
+        "status": "done",
+        "head_sha": "3bc5aa978e8896139bb85dfedde06e2c9bfcff07",
+        "deviations": [
+          "internal/configengine/layers_test.go",
+          "internal/yamlengine/layers.go",
+          "internal/yamlengine/layers_test.go",
+          "internal/yamlengine/reconcile.go",
+          "internal/yamlengine/reconcile_test.go",
+          "internal/yamlengine/set.go",
+          "internal/yamlengine/set_test.go"
+        ]
+      },
+      "cardShas": [
+        "3bc5aa978e8896139bb85dfedde06e2c9bfcff07"
+      ],
+      "forkTranscripts": [
+        "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-lenses-module/97932407-2fd2-4ca5-b1fb-314dda63fb96/subagents/agent-a12c70e9be2d7879e.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-lenses-module/97932407-2fd2-4ca5-b1fb-314dda63fb96/subagents/agent-a12c70e9be2d7879e.jsonl"
+      ]
     }
-  }
+  },
+  "seenForkTranscripts": [
+    "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-lenses-module/97932407-2fd2-4ca5-b1fb-314dda63fb96/subagents/agent-a12c70e9be2d7879e.jsonl"
+  ]
 }
