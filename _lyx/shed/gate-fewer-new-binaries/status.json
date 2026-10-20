@@ -1,11 +1,11 @@
 {
-  "current_producer": "Describe",
+  "current_producer": "Merge-In",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Describe",
-    "last": "Darn-Bouncer → done",
+    "now": "Merge-In",
+    "last": "Describe → done",
     "wait": ""
   },
   "history": [
@@ -322,6 +322,21 @@
       "outcome": "done",
       "output": "/home/AD.NORCERESEARCH.NO/hanf/Code/Knatte18/loomyard-LYXHUB/gate-fewer-new-binaries/_lyx/reviews/darn/round-1-bouncer-ledger.md",
       "at": "2026-10-20T10:33:56Z"
+    },
+    {
+      "producer": "Describe",
+      "outcome": "done",
+      "output": "/home/AD.NORCERESEARCH.NO/hanf/Code/Knatte18/loomyard-LYXHUB/gate-fewer-new-binaries/_lyx/landing/summary.md",
+      "at": "2026-10-20T10:34:23Z",
+      "gate_attempts": 0,
+      "gate_spans": [
+        {
+          "gate": "description",
+          "kind": "gate",
+          "start": "2026-10-20T10:34:22.273675756Z",
+          "end": "2026-10-20T10:34:22.273824567Z"
+        }
+      ]
     }
   ],
   "product": {
