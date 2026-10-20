@@ -1370,7 +1370,7 @@
       "id": 705,
       "slug": "openwindow-exit-race",
       "title": "reedengine: TestOpenWindow_RealTmux/ClosesWhenItsCommandExitsAtOnce flakes: window read \"on\"",
-      "kind": "note",
+      "kind": "task",
       "labels": [
         "bug",
         "reed"
