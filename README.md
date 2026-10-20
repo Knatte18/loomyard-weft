@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-20 13:32 UTC; every age below is as of then.
+Rendered 2026-10-20 13:34 UTC; every age below is as of then.
 
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
@@ -17,7 +17,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | **Verify gates scope to the diff: tree scope for non-production diffs, scoped darn gates, whole suite at Publish**<br>• A diff that touches only a tool or docs, and every darn writer and fix round, waits on the whole suite at every verify gate | [`verify-diff-scope`](design-verify-diff-scope.md) | loom | Plan-Burler-Fix | 1d | 1h | loom, shed, config |
+| 1 | **Verify gates scope to the diff: tree scope for non-production diffs, scoped darn gates, whole suite at Publish**<br>• A diff that touches only a tool or docs, and every darn writer and fix round, waits on the whole suite at every verify gate | [`verify-diff-scope`](design-verify-diff-scope.md) | loom | Plan-Bouncer | 1d | 1h | loom, shed, config |
 
 ### Ready
 
@@ -81,7 +81,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 7 | **Shell guard refuses read-only commands that merely name a refused go-run tier** | [`shell-guard-text-match`](design-shell-guard-text-match.md) | 2h | 2h | claude |
 | 8 | **Scratch files under .scratch change the worktree root listing and defeat go test cache hits** | [`scratch-defeats-test-cache`](design-scratch-defeats-test-cache.md) | 2h | 2h |  |
 | 9 | **Edit directive not enforced: file append through a shell heredoc was not refused** | [`shell-guard-heredoc-write`](design-shell-guard-heredoc-write.md) | 2h | 2h | claude |
-| 10 | **Opening an agent into reed: engine bypass mode by default, explicit engine, model and effort, and reed add points to shuttle open**<br>• reed add help shows a broken claude example (%SID% never substituted) and shuttle open keeps the interactive permission default; every agent in reed needs bypass, per engine (claude bypassPermissions, Codex --yolo) | [`reed-agent-launch-bypass`](design-reed-agent-launch-bypass.md) | 22m | 20m | reed, shuttle, claude, codex |
+| 10 | **Opening an agent into reed: engine bypass mode by default, explicit engine, model and effort, and reed add points to shuttle open**<br>• reed add help shows a broken claude example (%SID% never substituted) and shuttle open keeps the interactive permission default; every agent in reed needs bypass, per engine (claude bypassPermissions, Codex --yolo) | [`reed-agent-launch-bypass`](design-reed-agent-launch-bypass.md) | 24m | 22m | reed, shuttle, claude, codex |
 
 ### Enhancements
 
@@ -121,7 +121,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 25 | **Plan cards mark additive edits so shared spots stop chaining the card DAG**<br>• An Extends label for edits that only add to a ref; two Extends on one ref are no dependency; measure with plandag first | [`plan-extends-label`](design-plan-extends-label.md) | 1d | 1d | loom, webster, burler |
 | 26 | **lyx batten run starts in its own window by default**<br>• Every batten run is started with --window, so the window should be the default and foreground the opt-in. | [`batten-window-default`](design-batten-window-default.md) | 1d | 1d | batten, reed, orch |
 | 27 | **A halt a plan card asks for reaches the parent as a question, not as a batch failure**<br>• A card-requested halt went through recover-batch, tackler and arbiter as a failure; it should go straight to the parent and the next attempt should carry the decision | [`card-halt-is-question`](design-card-halt-is-question.md) | 20h | 20h | webster, shed, loom |
-| 28 | **A question research can settle is settled in Discussion, never deferred to Plan or an implementer**<br>• Discussion writer researches the facts its design rests on; reviewers flag a deferred research question or a halt-on-discovery rule | [`research-in-discussion`](design-research-in-discussion.md) | 19h | 19h | loom, stencil, burler |
+| 28 | **A question research can settle is settled in Discussion, never deferred to Plan or an implementer**<br>• Discussion writer researches the facts its design rests on; reviewers flag a deferred research question or a halt-on-discovery rule | [`research-in-discussion`](design-research-in-discussion.md) | 20h | 20h | loom, stencil, burler |
 | 29 | **prod pointer is shared across machines while each binary is local**<br>• A deploy on one machine moves origin/prod, leaving other machines silently behind it | [`prod-pointer-per-machine`](design-prod-pointer-per-machine.md) | 7h | 7h | deploy |
 | 30 | **Darn-Write verify cannot pass a failure fixed on the parent**<br>• After a Publish verify failure is sent back to Darn-Write, its verify re-runs the failed test on a branch that lacks the parent fix | [`darn-verify-parent-fix`](design-darn-verify-parent-fix.md) | 6h | 2h | batten, loom |
 
