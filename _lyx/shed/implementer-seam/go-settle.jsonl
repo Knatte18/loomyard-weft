@@ -1,0 +1,1 @@
+{"stop_key":{"current_producer":"Merge-In","history_length":11,"state":"blocked"},"settler":"go-rule","action":"verify-retry","outcome":"a verify halt matching the failure record: one goto to the record's target, then re-step","at":"2026-10-19T13:03:04.351468128+02:00","target":"Darn-Write"}
