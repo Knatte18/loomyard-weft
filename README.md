@@ -17,7 +17,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | **Verify gates scope to the diff: tree scope for non-production diffs, scoped darn gates, whole suite at Publish**<br>• A diff that touches only a tool or docs, and every darn writer and fix round, waits on the whole suite at every verify gate | [`verify-diff-scope`](design-verify-diff-scope.md) | loom | Discussion-Bouncer | 1d | 10m | loom, shed, config |
+| 1 | **Verify gates scope to the diff: tree scope for non-production diffs, scoped darn gates, whole suite at Publish**<br>• A diff that touches only a tool or docs, and every darn writer and fix round, waits on the whole suite at every verify gate | [`verify-diff-scope`](design-verify-diff-scope.md) | loom | Discussion-Burler-Review | 1d | 10m | loom, shed, config |
 
 ### Ready
 
