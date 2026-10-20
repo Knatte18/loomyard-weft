@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-20 17:21 UTC; every age below is as of then.
+Rendered 2026-10-20 17:22 UTC; every age below is as of then.
 
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
@@ -123,11 +123,11 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 24 | **Plan gate does not catch declared PATTERN.md growth that exceeds the headroom line** | [`plan-gate-pattern-headroom`](design-plan-gate-pattern-headroom.md) | 1d | 1d | loom, burler |
 | 25 | **Plan cards mark additive edits so shared spots stop chaining the card DAG**<br>• An Extends label for edits that only add to a ref; two Extends on one ref are no dependency; measure with plandag first | [`plan-extends-label`](design-plan-extends-label.md) | 1d | 1d | loom, webster, burler |
 | 26 | **lyx batten run starts in its own window by default**<br>• Every batten run is started with --window, so the window should be the default and foreground the opt-in. | [`batten-window-default`](design-batten-window-default.md) | 1d | 1d | batten, reed, orch |
-| 27 | **A halt a plan card asks for reaches the parent as a question, not as a batch failure**<br>• A card-requested halt went through recover-batch, tackler and arbiter as a failure; it should go straight to the parent and the next attempt should carry the decision | [`card-halt-is-question`](design-card-halt-is-question.md) | 23h | 23h | webster, shed, loom |
+| 27 | **A halt a plan card asks for reaches the parent as a question, not as a batch failure**<br>• A card-requested halt went through recover-batch, tackler and arbiter as a failure; it should go straight to the parent and the next attempt should carry the decision | [`card-halt-is-question`](design-card-halt-is-question.md) | 1d | 1d | webster, shed, loom |
 | 28 | **A question research can settle is settled in Discussion, never deferred to Plan or an implementer**<br>• Discussion writer researches the facts its design rests on; reviewers flag a deferred research question or a halt-on-discovery rule | [`research-in-discussion`](design-research-in-discussion.md) | 23h | 23h | loom, stencil, burler |
 | 29 | **prod pointer is shared across machines while each binary is local**<br>• A deploy on one machine moves origin/prod, leaving other machines silently behind it | [`prod-pointer-per-machine`](design-prod-pointer-per-machine.md) | 11h | 11h | deploy |
 | 30 | **Darn-Write verify cannot pass a failure fixed on the parent**<br>• After a Publish verify failure is sent back to Darn-Write, its verify re-runs the failed test on a branch that lacks the parent fix | [`darn-verify-parent-fix`](design-darn-verify-parent-fix.md) | 10h | 6h | batten, loom |
-| 31 | **Cortex XDR holds stack up across a loom run's card, batch, round and whole-suite gates**<br>• Each gate that tests a just-changed package waits 8-10 s for XDR; a 10-15 card run pays that many times over | [`loom-gates-xdr-stacking`](design-loom-gates-xdr-stacking.md) | 3m | 0m | webster, loom, gate |
+| 31 | **Cortex XDR holds stack up across a loom run's card, batch, round and whole-suite gates**<br>• Each gate that tests a just-changed package waits 8-10 s for XDR; a 10-15 card run pays that many times over | [`loom-gates-xdr-stacking`](design-loom-gates-xdr-stacking.md) | 5m | 0m | webster, loom, gate |
 
 #### Low priority
 
