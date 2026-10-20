@@ -35,7 +35,6 @@ Waits on nothing open; can start now.
 | # | Task | Slug | Recipe | After | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | 3 | **Lenses and fans move into a lenses module of their own, listed in full in the hub file**<br>• A lenses module holds every lens and fan for reviewers, fixers and twill writers; reconcile keeps the hub file complete; the 7-lens twill-discussion fan becomes the default<br>• `loom: review_hard_max_bounces 3`<br>• `loom: review_max_bounces 2` | [`lenses-module`](design-lenses-module.md) | loom |  | 20h | 20h | burler, loom, config |
-| 4 | **lyxbin TestRun_KillsTheGroupOnTimeout fails when Cortex XDR holds the sleeper binary past the 5 s timeout**<br>• `darn: review_hard_max_bounces 2`<br>• `darn: review_max_bounces 1` | [`lyxbin-timeout-test-xdr`](design-lyxbin-timeout-test-xdr.md) | darn |  | 3h | 2m | testkit |
 
 ### Layer A
 
@@ -52,7 +51,8 @@ Waits only on Running or Ready entries.
 
 | # | Task | Slug | Recipe | After | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 3 | **reedcli TestWatchdogReap/NeverEnteredOrphanIsStillReaped times out under Cortex XDR (1.8 s window)**<br>• `darn: review_hard_max_bounces 2`<br>• `darn: review_max_bounces 1` | [`watchdog-reap-test-xdr`](design-watchdog-reap-test-xdr.md) | darn | `verify-diff-scope` | 3h | 0m | reed |
+| 3 | **lyxbin TestRun_KillsTheGroupOnTimeout fails when Cortex XDR holds the sleeper binary past the 5 s timeout**<br>• `darn: review_hard_max_bounces 2`<br>• `darn: review_max_bounces 1` | [`lyxbin-timeout-test-xdr`](design-lyxbin-timeout-test-xdr.md) | darn | `verify-diff-scope` | 3h | 0m | testkit |
+| 4 | **reedcli TestWatchdogReap/NeverEnteredOrphanIsStillReaped times out under Cortex XDR (1.8 s window)**<br>• `darn: review_hard_max_bounces 2`<br>• `darn: review_max_bounces 1` | [`watchdog-reap-test-xdr`](design-watchdog-reap-test-xdr.md) | darn | `verify-diff-scope` | 3h | 0m | reed |
 
 ## Notes
 
