@@ -1365,6 +1365,23 @@
           "review_max_bounces": 1
         }
       }
+    },
+    {
+      "id": 705,
+      "slug": "darn-verify-parent-fix",
+      "title": "Darn-Write verify cannot pass a failure fixed on the parent",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "batten"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "After a Publish verify failure is sent back to Darn-Write, its verify re-runs the failed test on a branch that lacks the parent fix",
+      "body": "## Seen (2026-10-20, arbiter-verdict-quoting)\n\nPublish failed on `TestOpenWindow_RealTmux`, a bug outside the branch, and batten sent the run back to Darn-Write.\nThe fix then landed on main through `openwindow-exit-race`, but Darn-Write's verify kept running the failed test on the task branch, which takes main only at Merge-In, so it failed deterministically (verify-7).\nThe orch had the writer run `lyx fabric merge-in main` by hand.\n\n## Idea\n\nWhen a verify failure is sent back to Darn-Write and the parent has moved since, merge the parent in before the verify re-runs, or route a failure in a package the branch does not touch to Merge-In instead of Darn-Write.",
+      "created": "2026-10-20T07:15:11Z",
+      "revised": "2026-10-20T07:15:11Z"
     }
   ]
 }
