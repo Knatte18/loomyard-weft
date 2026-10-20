@@ -1,0 +1,4 @@
+verdict: approve
+reason: "The design covers both operator decisions on the board entry: tree scope for non-production diffs as darn.yaml config, impact-scoped darn writer and fix-round gates, and the whole suite once at Merge-In right before Publish for production diffs. It settles the open items within the latitude the entry gives. Loom's exclusion is named and fits the entry's darn-focused decisions. It duplicates or contradicts no other board entry, and lyx loom peers lists no peer run or parent commit."
+question: ""
+superseded: []
