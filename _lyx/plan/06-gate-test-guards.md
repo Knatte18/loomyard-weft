@@ -1,7 +1,7 @@
 # Card 6 — gate-test-guards
 
 **Create:**
-- `plan:internal/gatecli#guardScanRefusal` -> `func guardScanRefusal(moduleDir string, err error) string`
+- `internal/gatecli#guardScanRefusal`
 
 **Edit:**
 - `internal/gatecli#newCommand`
@@ -13,11 +13,11 @@
 - `internal/gatecli#TestGateTest_Scenario`
 
 **Uses:**
-- `plan:internal/impactset#ModuleGuardTests`
+- `internal/impactset#ModuleGuardTests`
 - `internal/impactset#GuardScanError`
-- `plan:internal/impactset#GuardMisplaced`
-- `plan:internal/impactset#GuardNotIntegration`
-- `plan:internal/impactset#GuardParse`
+- `internal/impactset#GuardMisplaced`
+- `internal/impactset#GuardNotIntegration`
+- `internal/impactset#GuardParse`
 - `internal/gatecli#goTestArgs`
 - `internal/gatecli#startGate`
 - `internal/gatecli#runGate`
