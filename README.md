@@ -76,7 +76,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 2 | **orch status reports a live strand after the orch Claude session exits, so --continue is refused** | [`orch-strand-live-after-exit`](design-orch-strand-live-after-exit.md) | 23h | 23h | orch, reed |
 | 3 | **tender pause does not hold a verify gate's re-prompt, and creel interrupt is refused under the pause** | [`tender-pause-holds-reprompt`](design-tender-pause-holds-reprompt.md) | 2h | 2h | creel, shed |
 | 4 | **update-plugins warns about /usr/bin/lyx, which is the LyX document processor, not a stray lyx** | [`deploy-foreign-lyx-warning`](design-deploy-foreign-lyx-warning.md) | 2h | 2h | deploy |
-| 5 | **lyxbin TestRun_KillsTheGroupOnTimeout fails when Cortex XDR holds the sleeper binary past the 5 s timeout** | [`lyxbin-timeout-test-xdr`](design-lyxbin-timeout-test-xdr.md) | 2h | 2h |  |
+| 5 | **lyxbin TestRun_KillsTheGroupOnTimeout fails when Cortex XDR holds the sleeper binary past the 5 s timeout** | [`lyxbin-timeout-test-xdr`](design-lyxbin-timeout-test-xdr.md) | 2h | 0m | testkit |
 | 6 | **reedcli TestWatchdogReap/NeverEnteredOrphanIsStillReaped times out under Cortex XDR (1.8 s window)** | [`watchdog-reap-test-xdr`](design-watchdog-reap-test-xdr.md) | 2h | 2h | reed |
 | 7 | **Shell guard refuses read-only commands that merely name a refused go-run tier** | [`shell-guard-text-match`](design-shell-guard-text-match.md) | 2h | 2h | claude |
 | 8 | **Scratch files under .scratch change the worktree root listing and defeat go test cache hits** | [`scratch-defeats-test-cache`](design-scratch-defeats-test-cache.md) | 2h | 2h |  |

@@ -1,6 +1,6 @@
 # lyxbin TestRun_KillsTheGroupOnTimeout fails when Cortex XDR holds the sleeper binary past the 5 s timeout
 
-`lyxbin-timeout-test-xdr` · Note · bug
+`lyxbin-timeout-test-xdr` · Note · bug, testkit
 
 Imported from [issue #767](https://github.com/Knatte18/loomyard/issues/767).
 
