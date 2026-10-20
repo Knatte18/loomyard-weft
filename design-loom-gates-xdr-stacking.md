@@ -22,9 +22,12 @@ So the stacking is mostly the many small gates that each link a new binary, not 
 - Measure first: clock one ordinary loom run on OSL-1046 per gate kind, so the split between XDR holds and test time is known.
 - Hide the hold by overlap: after each card's commit, build in the background the test binaries that card's change made new and no later card changes again, such as reverse dependencies and guard tests, so XDR has scanned them before the batch gate or the whole suite needs them; eight fresh binaries started at once finished in about the time of one.
   A card gate's own binary cannot be built ahead, since its hash changes only once the card is written; the gain is uncertain and needs a measurement first.
-- Fewer gates that link new binaries: let the card gate on such a machine run only the lints, and leave the tests to the batch gate.
 
 ## Operator decision (2026-10-20)
 
 Webster's plan-level verify gate keeps the whole suite: Webster implements loom's large tasks, which touch much, so it checks everything before it reports done.
 Scoping that gate is not an option here; darn, for small changes, is where gates scope to the diff.
+
+The card gate keeps its tests too: a card is atomic by design, it leaves every test passing, so a failure points at exactly the card that caused it.
+Moving the tests to the batch gate would lose that, so it is not an option either.
+What remains is cutting the wait without cutting what is checked: measuring the hold's share, and overlap.
