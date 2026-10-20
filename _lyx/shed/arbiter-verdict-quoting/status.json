@@ -1,11 +1,11 @@
 {
-  "current_producer": "Darn-Burler-Review",
+  "current_producer": "Darn-Burler-Fix",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Darn-Burler-Review",
-    "last": "Darn-Bouncer → bounced to Darn-Burler-Review",
+    "now": "Darn-Burler-Fix",
+    "last": "Darn-Burler-Review → bounced to Darn-Burler-Fix",
     "wait": ""
   },
   "history": [
@@ -48,6 +48,23 @@
       "output": "",
       "at": "2026-10-20T06:14:49Z",
       "routed_to": "Darn-Burler-Review"
+    },
+    {
+      "producer": "Darn-Burler-Review",
+      "outcome": "stuck",
+      "output": "/home/AD.NORCERESEARCH.NO/hanf/Code/Knatte18/loomyard-LYXHUB/arbiter-verdict-quoting/_lyx/reviews/darn/round-1-review.md",
+      "at": "2026-10-20T06:16:08Z",
+      "gate_attempts": 0,
+      "gate_spans": [
+        {
+          "gate": "review",
+          "kind": "gate",
+          "start": "2026-10-20T06:16:08.067832778Z",
+          "end": "2026-10-20T06:16:08.068740849Z"
+        }
+      ],
+      "budget_exempt": true,
+      "routed_to": "Darn-Burler-Fix"
     }
   ],
   "product": {
