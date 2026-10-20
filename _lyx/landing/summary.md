@@ -14,6 +14,7 @@ Closes #754
 - Both the arbiter's start and its attach to a live arbiter carry the gate.
 - The arbiter stencil (`loom-template-arbiter.md`) tells the arbiter to write `reason`, `question` and each `verbs` item as a literal block scalar (`|-`), with an example, and says an unreadable verdict comes back for a rewrite.
 - `internal/loomcli/doc.go` and `internal/shuttleengine/doc.go` name the gate and the new attach form.
+
 ## Design decisions
 
 - The gate is pass-on-cap with a budget of 2 re-prompts (`arbiterVerdictGateAttempts`).
@@ -24,6 +25,8 @@ Closes #754
 - The tackler passes an empty spec, so its run is unchanged.
   Its own `verdict.yaml` can break the same way and stays ungated; that is a separate change.
 - Block scalars were chosen over quoting because they take any text verbatim, with no escaping rule to get wrong.
+- The branch merges main's `OpenWindow` read-back fix (#761), which removes the `TestOpenWindow_RealTmux/ClosesWhenItsCommandExitsAtOnce` flake that failed this branch's verify; the branch's own copy of that fix is reverted in favor of main's.
+
 ## To check by hand
 
 - Not run end to end: a real arbiter session writing an unquoted `verbs` item and being re-prompted.
