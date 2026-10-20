@@ -1,0 +1,7 @@
+verdict: approve
+reason: >-
+  The decision record covers every goal point and folded note of run-reentry (goto keeps verdicts and budget, settle re-run without budget,
+  amendment allowance in loom.yaml and darn.yaml, pause reason, zero-fork retry, no per-stop friction) and takes no work of another entry;
+  the only peer in flight, origin-reconcile, does not change the same behaviour, and it lands first by row (7 against 3).
+question: ""
+superseded: []
