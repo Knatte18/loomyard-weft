@@ -169,6 +169,13 @@ Rationale: both texts become false with this change.
   - no-targets-refusal-covers-empty-value (class consistency, severity MEDIUM, open in rounds 2, 3)
 <!-- /lyx:carry-over Discussion-Review -->
 
+<!-- lyx:carry-over Plan-Review -->
+- Plan-Review, round 2: converged; each finding below was fixed or disputed by the round's fixer, and no fresh reviewer has seen the result; the fixer report says which.
+  Review: _lyx/reviews/plan/round-2-review.md; fixer report: _lyx/reviews/plan/round-2-fixer-report.md.
+  - darn-tree-scope-drops-verify-way-forward (class scope, severity MEDIUM, open in rounds 2)
+  - landing-sites-editor-way-forward-untested (class scope, severity MEDIUM, open in rounds 2)
+<!-- /lyx:carry-over Plan-Review -->
+
 ## Acceptance criteria
 
 - With tree scope off, the writer and fix-round gates run the impact-scoped command, Merge-In runs the whole `verify`, and Publish runs `publish_verify`.
