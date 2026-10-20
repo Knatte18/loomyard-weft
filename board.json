@@ -1340,6 +1340,23 @@
       "body": "## Seen (2026-10-20)\n\nOn the work laptop OSL-1046 (AD-joined Ubuntu 24.04, Cortex XDR running), the darn verify of `arbiter-verdict-quoting` (`lyx gate test ./... \u0026\u0026 lyx gate test --tags integration ./...`) took 7.5 min (08:07:00 to 08:14:31 local), with the run's own agents active beside it.\nOn the operator's home machine Neve the integration tier alone takes 56 s (`docs/benchmarks/test-suite-weight.md`).\n\n## Operator order (2026-10-20)\n\nOnce `arbiter-verdict-quoting` has landed and the machine is quiet, clock the unit tier and the integration tier on this machine separately, and log them in `docs/benchmarks/` beside the other timings as their own \"OSL-1046 with Cortex XDR\" numbers, comparable with Neve's.\nRecord as much hardware information as possible (CPU model, cores and threads, RAM, disk type, kernel, Go version, the gate's `go_parallel` and slots) for both machines where the doc lacks it.\n",
       "created": "2026-10-20T06:16:10Z",
       "revised": "2026-10-20T06:16:10Z"
+    },
+    {
+      "id": 704,
+      "slug": "gate-trimpath",
+      "title": "Gate builds with -trimpath so unchanged test binaries are byte-identical across worktrees",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "config"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "Cortex XDR holds each unseen binary 8-10 s but passes a known hash at once; -trimpath makes an unchanged package test binary identical in every pair, so only changed packages pay",
+      "body": "## Seen (orch, 2026-10-20, OSL-1046 with Cortex XDR)\n\n- XDR holds each executable whose hash it has not seen for 8-10 s with idle CPU, and once it has judged a hash, any file with that hash runs at once: a copy of a judged binary in a new directory ran in 0.04 s.\n- Without `-trimpath`, a Go binary embeds its source directory, so the same ten-line program built in two directories gave two hashes; with `-trimpath` both builds were byte-identical.\n- The repo has 162 test packages, and each pair worktree has its own path, so every verify in a new pair links 162 test binaries per tier with hashes XDR has never seen, each paying the hold.\n\n## Idea\n\n- The gate adds `-trimpath` to the `GOFLAGS` it gives every slotted run (`internal/gateslot`, beside the `-p` cap), so a package whose code did not change links to a binary XDR already knows, in every pair and every run; only packages the change touches, and their dependents, pay the hold.\n- `-trimpath` breaks the two test helpers that find the repo root from their own source path with `runtime.Caller` (`internal/testkit/scankit`, `internal/testkit/lyxbin`); they find it by walking up from the test's working directory to `go.mod` instead.\n- `tools/deploy/main_test.go`, `tools/internal/devbin` and `internal/reedengine/selvagepane_enforcement_test.go` also call `runtime.Caller` and are checked the same way.\n- Measure a verify on OSL-1046 before and after (`bench-osl1046-xdr`).\n",
+      "created": "2026-10-20T06:29:32Z",
+      "revised": "2026-10-20T06:29:32Z"
     }
   ]
 }
