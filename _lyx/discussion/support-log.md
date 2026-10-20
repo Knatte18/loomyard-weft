@@ -94,18 +94,44 @@ Duplicates are merged; each line names the lenses that raised it.
 
 ## Review rounds
 
-_No rounds yet._
+### Round 1
+
+BLOCKING, 22 findings, every one fixed.
+The Bolt replay goes by board entry through an injected boardengine merge, since every Bolt commit rewrites `board.json` and `README.md`.
+An entry only local Bolt holds is never ended, and wake judges a paused pair as quiet.
+D5 takes the ended set from its caller and never sets aside this machine's own landing.
+A cleanup dry run reconciles judge-only, and the prime's locks are tried once, never waited on.
+fabricengine reaches teardown, liveness, notice and the board merge through caller seams.
+The failed-push record carries a `notified` flag, and a deferral writes a `deferred` record and ends the holder's loop.
+
+### Round 2
+
+BLOCKING, 8 findings, every one fixed.
+The wake reconcile's network calls pass its own request's hub pause entry; orch start and cleanup wait at the gate under an operator's hub pause.
+Records-branch locks are tried once and a held one reads busy, and the teardown's quiet wait is zero.
+Rewound and rewritten read the tracking ref's reflog since this machine's last push to it, and the cleanup dry run fetches into no ref.
+
+### Round 3
+
+BLOCKING, 7 findings, every one fixed.
+The Bolt entry merge is a boardengine entry point under the caller's locks, and a refusal sets aside one change, not a commit.
+Cleanup's teardown of an ended pair under a wake-written pause passes force for dirtiness and keeps the uncommitted paths under a local tag.
+Wake skips its reconcile while a hub entry its request does not own is live, so an operator's hub pause is never passed.
+Removal from origin is read from the fetched tip's own history, matched by `created` where local Bolt holds the slug; a rewind of origin's head separates rewound from rewritten.
+The local teardown try-acquires the teardown and weft write locks and keeps only the waits for its own loop kill, and a gone push whose entry is not yet done on origin backs off before it records.
+The Bolt entry merge applies changes through the board's validation, a refused change is set aside like a field clash, and an added entry takes a fresh id.
+The push retry and the gone path fetch Bolt before reading the ended set, and `lyx cleanup --apply` ends the driver of an ended pair under a wake-written pair pause entry.
 
 ## Question ledger
 
 - Q1 Reconcile placement — resolved, auto-pick: fabricengine (PATTERN-fabric-git).
 - Q2 Scope per call site — resolved, auto-pick: hub scope for orch start, wake and cleanup; run scope for batten resume, Merge-In and Finalize.
 - Q3 Weft divergence versus "stop on divergence" — resolved, auto-pick: replay records first, stop only on conflict; code always stops.
-- Q4 Archive tag of a landed-elsewhere run — resolved, auto-pick: local tag, reported.
+- Q4 Archive tag of a landed-elsewhere run — resolved, auto-pick: local tag, reported (namespace superseded by Q22).
 - Q5 Run record removal — resolved, auto-pick: no commit of the reconcile's own.
 - Q6 Busy driver of a landed-elsewhere run — resolved, auto-pick: reported busy, not torn down, never resumed.
 - Q7 Orch start on a stop — resolved, auto-pick: start anyway, report in the envelope and the start note.
-- Q8 Wake on a stop — resolved, auto-pick: a pair pause entry owned by the request keeps that run paused.
+- Q8 Wake on a stop — resolved, auto-pick: a plain pair pause entry, not owned by the request, lifted with `lyx resume <slug>` (superseded by Q20).
 - Q9 Batten fresh start — resolved, auto-pick: no reconcile; `Add` probes origin already.
 - Q10 `lyx cleanup` — resolved, auto-pick: reconcile first; a Bolt or prime-weft stop refuses the verb.
 - Q11 Unreachable origin — resolved, auto-pick: warn and carry on.
@@ -118,3 +144,15 @@ _No rounds yet._
 - Q18 Lock order of the push retry — resolved, auto-pick after the lens review: try-acquire the write lock under the push lock, defer when held.
 - Q19 How a woken machine knows an ended entry before replaying Bolt — resolved, auto-pick after the lens review: from the fetched origin Bolt tip.
 - Q20 Ownership of wake's pair pause entries — resolved, auto-pick after the lens review: plain entries, lifted with `lyx resume <slug>`.
+- Q21 Ended set outside the reconcile — resolved, auto-pick in review round 1: `Fabric.Pull` and the push retry read it from the origin Bolt tracking ref their fetch left, with no network call, and the Finalize-entered exclusion applies inside D5.
+- Q22 Tag namespace of set-aside commits and the ended weft tip — resolved, auto-pick in review round 1: a local `set-aside/<slug>/<sha>` prefix for both, which no archive reader matches.
+- Q23 Source of the push's gone class — resolved, auto-pick in review round 1: one `git ls-remote origin` of the branch before every push of a branch with an upstream.
+- Q24 Orch start and `lyx cleanup` under an operator's hub pause — resolved, auto-pick in review round 2: wait at the network gate until the lift, as every network call of the hub does; only the wake daemon's own reconcile passes its own request's entry.
+- Q25 Evidence of a rewind once the tracking ref moved — resolved, auto-pick in review round 2: the tracking ref's reflog from this machine's last push to it onward.
+- Q26 A dirty worktree of an ended pair whose busy driver cleanup ends — resolved, auto-pick in review round 3: force for dirtiness alone, the uncommitted paths kept under a local `set-aside/` tag and reported; a merge in progress still refuses.
+- Q27 Wake under a hub pause the request does not own — resolved, auto-pick in review round 3: the wake reconcile is skipped and the notice says why, since passing an operator's pause breaks Q24; the daemon lifts only an owned entry.
+- Q28 Rewound against rewritten — resolved, auto-pick in review round 3: origin's head an ancestor of an earlier tracking-ref value makes it rewound, otherwise rewritten; `lyx fabric pull` refuses a rewind once the reconcile's fetch moved the ref (widened by Q30 to every rewind of a task branch).
+- Q29 A gone push whose entry origin's Bolt does not yet show ended — resolved, auto-pick in review round 3: the existing backoff, then the record and mail.
+- Q30 How `lyx fabric pull` recovers a rewritten branch the reconcile already fetched — resolved, auto-pick in review round 4: its warp arm's unpushed test reads the tracking ref's reflog as D4 does, and it refuses a rewound task branch, never the prime's, so the reset reaches only commits origin once held.
+- Q31 The local teardown's remaining waits — resolved, auto-pick in review round 4: the hub workspace regeneration by try-acquire, no store gc, the snapshot under its own weft write lock try-acquire, and the loop-kill waits summed over a hub's ended pairs.
+- Q32 Wake with an unreachable origin — resolved, auto-pick in review round 4: retry both ls-remote calls within a 2-minute bound, then lift as today with an `unreachable` notice naming the reconcile to run; keeping the hub entry live would hold every offline driver after each wake.
