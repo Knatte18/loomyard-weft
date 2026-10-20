@@ -1391,6 +1391,26 @@
       "body": "## Seen (Darn-Review of `gate-fewer-new-binaries`, 2026-10-20)\n\nThe run made its sites name the trace id variable through `logger.TraceIDEnv`, and the reviewer deferred three test files outside the finding's scope that still spell it `\"LYX_TRACE_ID\"`: `internal/reedengine/lifecycle_test.go`, `internal/shuttleengines/shuttleengines_test.go` and `internal/testkit/tmuxkit/tmuxkit_integration_test.go`.\n\n## Idea\n\nThose tests use `logger.TraceIDEnv`, so a rename of the variable cannot leave them testing a name lyx no longer sets. No effect on run time.",
       "created": "2026-10-20T09:34:49Z",
       "revised": "2026-10-20T09:34:49Z"
+    },
+    {
+      "id": 709,
+      "slug": "tender-pause-holds-reprompt",
+      "title": "tender pause does not hold a verify gate's re-prompt, and creel interrupt is refused under the pause",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "creel",
+        "shed"
+      ],
+      "issues": [
+        762
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Imported from [issue #762](https://github.com/Knatte18/loomyard/issues/762).\n\n## Seen (2026-10-20, OSL-1046, darn run arbiter-verdict-quoting)\n\n1. Darn-Write's verify gate was looping on a tmux test the writer cannot fix, so the orch ran `lyx tender pause arbiter-verdict-quoting` (the darn session was idle, listed `already_idle`) and `lyx loom pause --after Darn-Write`.\n2. The verify process kept running (attempt 2, then a new attempt), since a pause holds agents and network work but not a running gate command. On the operator's order the orch killed the verify's process group.\n3. The gate then re-prompted the darn session with the failure, and the session started a new turn although `lyx tender status` listed it `paused: true` (state `busy`, cause `turn`).\n4. `lyx creel interrupt ly:arbiter-verdict-quoting:darn` was refused: \"a pause covers ...; nothing was interrupted, lift the pause first\".\n5. Workaround: running `lyx tender pause arbiter-verdict-quoting` a second time printed `already_paused: true` and `interrupted: [ly:arbiter-verdict-quoting:darn]`, and the session went idle.\n\n## Expected\n\n- A paused scope receives no new prompt from a gate, a driver or any other lyx program: a re-prompt waits for the resume, like other held work.\n- A pause also stops, or holds at its next boundary, a verify gate command running in that scope, so the operator does not have to kill processes by hand.\n- `creel interrupt` of a session the pause covers interrupts it, since stopping work is what the pause wants.",
+      "created": "2026-10-20T10:42:58Z",
+      "revised": "2026-10-20T10:42:58Z"
     }
   ]
 }
