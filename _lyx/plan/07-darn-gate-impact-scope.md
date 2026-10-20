@@ -1,9 +1,9 @@
 # Card 7 — darn-gate-impact-scope
 
 **Create:**
-- `plan:internal/loomcli#darnTreeScope` -> `func darnTreeScope(l *lyxcwd.Location) func() (string, bool, error)`
-- `plan:internal/loomshed#roundGateFixture.diffGate` -> `func (f roundGateFixture) diffGate(command, mergeBase func() (string, error), treeScope func() (string, bool, error)) (shuttleengine.GateResult, error)`
-- `plan:internal/loomcli#TestDarnTreeScope_ClassifiesAtEachCall` -> `func TestDarnTreeScope_ClassifiesAtEachCall(t *testing.T)`
+- `internal/loomcli#darnTreeScope`
+- `internal/loomshed#roundGateFixture.diffGate`
+- `internal/loomcli#TestDarnTreeScope_ClassifiesAtEachCall`
 
 **Edit:**
 - `internal/loomshed#NewVerifyGate` -> `func NewVerifyGate(worktreeRoot, verifyDir, siteLabel string, command, mergeBase func() (string, error), treeScope func() (string, bool, error), slots *gateslot.Pool) shuttleengine.Gate`
