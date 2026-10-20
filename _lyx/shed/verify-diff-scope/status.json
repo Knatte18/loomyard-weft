@@ -1,13 +1,13 @@
 {
   "current_producer": "Finalize",
-  "state": "blocked",
-  "error": "fabricengine: merge preconditions failed: worktree dirty",
+  "state": "running",
+  "error": "",
   "pending_by": "shed",
   "pause_requested": false,
   "activity": {
     "now": "Finalize",
     "last": "Finalize → stuck",
-    "wait": "fabricengine: merge preconditions failed: worktree dirty"
+    "wait": ""
   },
   "history": [
     {
