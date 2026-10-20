@@ -14,4 +14,10 @@ Two gaps:
 - A cancel (abandon) verb for a batten run, at least one that has not created a pair, which removes its records and scratch and clears the board status.
 - Worktree-Create's dirty-source stop is a precondition the operator or orch must fix, so it should halt with that way forward instead of spawning a tackler that cannot settle it.
 
+## Operator decision (2026-10-20): batten refuses a dirty source up front
+
+`lyx batten run` checks that the source worktree is clean before it does anything, and refuses with the dirty paths and the way forward when it is not: no run record, no pair and no tackler.
+The orch should not have to run `git status` before every start; batten owns that precondition.
+A dirty source never spawns a tackler, at start or at Worktree-Create.
+
 Workaround: remove the two run directories by literal path and commit the records side with lyx fabric commit, done only while no other run is landing so the prime's records side is not dirty during a Land row.
