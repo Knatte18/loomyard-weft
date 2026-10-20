@@ -1,0 +1,5 @@
+verdict: escalate
+reason: >-
+  Finalize stopped twice with "fabricengine: merge preconditions failed: worktree dirty" (18:23:55 and 18:24:33), and a goto resume already returned the same stop unchanged, so a second resume is not allowed.
+  The warp checkout is clean now, and the logs do not show what was dirty during the check, so the cause cannot be named from what was read.
+  The case brief at tackler/attempt-2/case-brief.md gives the facts, the ruled-out causes and an unverified hypothesis that a transient tracked-file change happened during the step.
