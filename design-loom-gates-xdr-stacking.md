@@ -14,11 +14,12 @@ A loom run pays that hold at every gate that tests a package the run just change
 
 Finalize and Merge-In skip their verify when the tree is the one already verified (`pattern/PATTERN-verified-tree.md`), so the stacking is in the card, batch, round and whole-suite gates, not in repeats on an unchanged tree.
 For a plan of 10-15 cards the card gates alone wait out 10-15 holds, roughly 2-3 min of nothing but XDR, before any test time.
-The darn gates were scoped to the diff in `verify-diff-scope`; loom's Webster gate and Publish still run the whole suite.
+Webster's card, batch and round gates are already scoped; only its plan-level verify gate runs the whole plan verify (`internal/loomshed/doc.go`), and Publish runs it again, which hits the cache when the parent has not moved.
+So the stacking is mostly the many small gates that each link a new binary, not an unscoped Webster.
 
 ## Ideas (orch, not decided)
 
 - Measure first: clock one ordinary loom run on OSL-1046 per gate kind, so the split between XDR holds and test time is known.
 - Hide the hold by overlap: build the binaries a gate will need (`go test -c`, or `go vet`'s compile) for every package the plan's cards touch in one parallel step up front, so XDR scans them together, as eight fresh binaries started at once finished in about the time of one.
 - Fewer gates that link new binaries: let the card gate on such a machine run only the lints, and leave the tests to the batch gate.
-- Scope loom's Webster gate as darn's writer gate is scoped, keeping the whole suite once at Publish.
+- Scope Webster's plan-level verify gate to the impacted set, keeping the whole suite once at Publish; this saves one whole-suite run only.
