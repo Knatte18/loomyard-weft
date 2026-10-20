@@ -1434,8 +1434,8 @@
       "revised": "2026-10-20T13:45:34Z",
       "run_settings": {
         "darn": {
-          "review_hard_max_bounces": 3,
-          "review_max_bounces": 2
+          "review_hard_max_bounces": 2,
+          "review_max_bounces": 1
         }
       }
     },
@@ -1561,6 +1561,24 @@
       "body": "Imported from [issue #773](https://github.com/Knatte18/loomyard/issues/773).\n\nSeen on OSL-1046 (2026-10-20): `lyx reed add --help` gives the example `lyx reed add --cmd \"claude --session-id %SID%\" --role producer`. Following it launches `claude --session-id %SID%` verbatim (see the strand's .lyx/reed/launch/\u003cguid\u003e.sh), and claude exits with \"Invalid session ID. Must be a valid UUID.\". `%SID%` appears only in the help text in internal/reedcli/add.go; nothing substitutes it.\n\nWorkaround: generate a UUID (/proc/sys/kernel/random/uuid) and pass it literally in --cmd and --resume-cmd.\n\nExpected: either reed substitutes a generated session id for %SID% in --cmd and --resume-cmd, or the help example shows a command that works as written.\n\n## Issue comment, 2026-10-20\n\nCorrection to the framing above: an operator should never have to build an agent command line for this.\nThe command for it exists: `lyx shuttle open --role \u003cname\u003e` opens an interactive LLM session in its own window, under its strand name.\nThe orch reached for `lyx reed add` instead, following its help example, and got neither a working session id nor bypass permissions.\n\nGaps that let this happen:\n\n- `lyx reed add --help` shows a claude command line as its example and does not point to `lyx shuttle open` for an agent session.\n- Bypass permissions is opt-in: `lyx shuttle open` without `--permission-mode` keeps the engine's interactive default.\n  Every agent instance that runs in reed needs bypass permissions to work correctly (operator, 2026-10-20), so no caller should have to pass it.\n\nExpected: every agent session lyx launches into reed starts with its engine's bypass mode without a flag, `lyx shuttle open --role \u003cname\u003e` included, and `reed add`'s help sends an agent launch to `lyx shuttle open`.\nThis is per engine, not claude-only: claude takes `--permission-mode bypassPermissions`, and when Codex arrives as an engine it gets its own equivalent, which the operator understands to be `--yolo`.\n\n## Operator ask (2026-10-20): open the agent you want\n\nWith both claude and codex as engines, opening an operator agent must let the operator choose the engine, the model and the effort level, and show what was chosen; `lyx shuttle open` today is too much a matter of chance in what one gets.\n\nWhat exists: `--model` takes a model spec (`internal/modelspec`), either an alias with items, `\u003calias\u003e[\u003ceffort\u003e]`, or the escape form `\u003cengine\u003e:\u003cmodel-id\u003e[\u003ceffort\u003e]`, so engine, model and effort can already be named.\nWhat is missing:\n\n- None of this is discoverable from `lyx shuttle open --help`, which says only \"model spec; empty defers to the provider default\", with no grammar, no aliases and no effort.\n- Without `--model` the engine and model are whatever the provider defaults to, and the command's output does not say which engine, model and effort the session got.\n- A way to list the choices, the registry's aliases with their engine, model and default effort, from the command itself.",
       "created": "2026-10-20T13:09:56Z",
       "revised": "2026-10-20T13:11:58Z"
+    },
+    {
+      "id": 718,
+      "slug": "orch-small-task-one-bounce",
+      "title": "The orch role gives a small task one review bounce, not two",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "orch",
+        "stencil"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "Drop the never-1 rule for small tasks now the fixer checks its own fixes through its twill fan",
+      "body": "## Seen (orch, 2026-10-20)\n\nThe orch role (`contracts/stencils/orch/orch-template-role.md`, The board) tells the orch to give a small task `review_max_bounces: 2` and `review_hard_max_bounces: 3`, \"never 1, since a second round reviews the first round's fixes\".\nThe rule also names only the `loom` key, though a darn task takes its budget under `darn`.\n\n## Operator view (2026-10-20)\n\nThe rationale no longer holds: a perch fixer that forks itself per lens of a twill fan (`darn_fixer_fan: fix-code`, and loom's fixer fan) checks its own fixes, so one round is enough for a small task.\nThe operator set the two small darn tasks `watchdog-reap-test-xdr` and `lyxbin-timeout-test-xdr` to `review_max_bounces: 1`.\n\n## Idea\n\nThe role's small-task rule sets one bounce, drops the \"never 1\" reason, and names the run_settings key for the task's recipe (`loom` or `darn`).\n",
+      "created": "2026-10-20T13:47:14Z",
+      "revised": "2026-10-20T13:47:14Z"
     }
   ]
 }
