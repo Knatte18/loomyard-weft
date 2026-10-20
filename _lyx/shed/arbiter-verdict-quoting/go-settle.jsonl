@@ -1,0 +1,2 @@
+{"stop_key":{"current_producer":"Publish","history_length":9,"state":"blocked"},"settler":"parent","action":"hand-back","outcome":"a verify halt matching the failure record under a watching batten: hand back","at":"2026-10-20T08:34:31.228094963+02:00"}
+{"stop_key":{"current_producer":"Darn-Write","history_length":11,"state":"blocked"},"settler":"go-rule","action":"hand-over","outcome":"handed over to a fresh driver","at":"2026-10-20T09:18:33.537108087+02:00","build":"a87a8a9aa1ea"}
