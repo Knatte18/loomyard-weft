@@ -1,6 +1,6 @@
 ---
 format: 5
-approved: false
+approved: true
 language: go
 ---
 
@@ -25,7 +25,7 @@ The cards build the pieces bottom-up: the both-sides diff read, the `darn.yaml` 
 ## Shared Decisions
 
 - The darn gate form is selected by a told tree-scope seam, nil for loom, replacing the `wholeDiff` flag, whose only user was darn; loom's round form is unchanged.
-- The derived command's guard steps keep per-package `-run` selection on plain `lyx gate test`, not `--guards`, so the `lyx` a task pane finds on its `PATH` runs them before the flag ships there.
+- The derived command runs its guard tests outside the set as one step, `lyx gate test --tags integration <outside guard packages> -- -run '^(<names>)$'`, the packages in sorted directory order and the names sorted and deduplicated, as webster's card-gate guard step does, so the step builds `lyx` once; it uses plain `lyx gate test`, not `--guards`, so the `lyx` a task pane finds on its `PATH` runs it before the flag ships there.
 - `go list -e` lets the module guard scan reach an unreadable test file, which it reports as the parse kind; an unreadable package directory surfaces as an enumeration entry with no directory, named in the enumeration error.
 - The criterion that the change description names the commands that turn tree scope on and off is met at Describe, outside every card: the change description is the landing's own file, written from the final diff, and no card targets it.
   Card 2 puts both commands, `lyx config darn --set tree_scope.tools=./tools/... --set tree_scope.docs= --set "tree_scope_verify=lyx gate test --tags integration --guards {targets}"` and `lyx config darn --set tree_scope_verify=`, in `internal/darnengine/doc.go`, which Describe reads from that diff.
@@ -34,5 +34,5 @@ The cards build the pieces bottom-up: the both-sides diff read, the `darn.yaml` 
 
 ```
 go build ./...
-lyx gate test --tags integration ./internal/fabricengine ./internal/darnengine ./internal/configreg ./internal/configsync ./internal/configcli ./internal/loomengine ./internal/impactset ./internal/gatecli ./internal/loomshed ./internal/shedrecipe ./internal/loomcli ./internal/landingshed ./internal/webstercli ./internal/testkit/envkit ./cmd/lyx
+lyx gate test --tags integration ./internal/fabricengine ./internal/darnengine ./internal/configreg ./internal/configsync ./internal/configcli ./internal/loomengine ./internal/impactset ./internal/gatecli ./internal/loomshed ./internal/shedrecipe ./internal/loomcli ./internal/landingshed ./internal/webstercli ./internal/testkit/envkit ./cmd/lyx ./contracts/specs ./contracts/stencils ./internal/loomrecipe ./internal/websterengine
 ```
