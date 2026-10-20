@@ -1,0 +1,4 @@
+verdict: approve
+reason: The diff of PR 774 builds the board entry's goal and decisions D1 to D6 with no change outside the recorded scope; loom changes only by the derived command's lyx gate test steps, and lyx loom peers lists no peer run and no parent commit to overlap.
+question: ""
+superseded: []
