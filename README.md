@@ -28,7 +28,7 @@ Waits on nothing open; can start now.
 
 | # | Task | Slug | Recipe | After | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | **A hub lenses.yaml copies every template entry, so template edits never reach it**<br>• Reconcile keeps verbatim template copies in the hub file; keep only what the hub tuned<br>• `profile: budget` | [`lenses-template-frozen`](design-lenses-template-frozen.md) | darn |  | 9m | 2m | config, burler |
+| 1 | **A hub lenses.yaml keeps only what the hub tuned, so template edits reach it**<br>• Reconcile drops per-name entries equal to the template and stops copying the template in<br>• `profile: budget` | [`lenses-template-frozen`](design-lenses-template-frozen.md) | darn |  | 9m | 0m | config, burler |
 
 #### Normal priority
 
@@ -211,4 +211,4 @@ Finished, awaiting `lyx board prune --apply`.
 
 | # | Entry | Slug | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| 1 | **Align each perch writer twill lenses with its reviewer lenses, Discussion first**<br>• The Discussion writer runs emphasis lenses while its reviewer hunts design holes by procedure, and design holes are what the review still finds<br>• `profile: budget` | [`writer-reviewer-lens-align`](design-writer-reviewer-lens-align.md) | 2d | 12m | burler, loom, config |
+| 1 | **Align each perch writer twill lenses with its reviewer lenses, Discussion first**<br>• The Discussion writer runs emphasis lenses while its reviewer hunts design holes by procedure, and design holes are what the review still finds<br>• `profile: budget` | [`writer-reviewer-lens-align`](design-writer-reviewer-lens-align.md) | 2d | 13m | burler, loom, config |
