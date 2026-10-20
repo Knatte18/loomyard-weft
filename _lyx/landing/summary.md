@@ -55,6 +55,8 @@ Out of scope: scoping verify to touched packages, and cache hits across worktree
 - The hub's verify command lives in the board's `darn.yaml`, outside this change.
   Set it to `lyx gate test --tags integration ./...` through `lyx config darn`; until then the hub still runs both tiers.
 - The full `lyx gate test --tags integration ./...` on a clean tree was not re-run after the last fixes; only the touched packages were.
+- The `tmux` pass of a Publish verify failed once on `internal/reedcli`'s `TestWatchdogReap/NeverEnteredOrphanIsStillReaped`, whose 1.8 s wait for the reap is too tight on a loaded host.
+  This change leaves that test alone, and it passes when re-run on its own; the flake is issue #769.
 - Other per-invocation inputs may still keep a few packages off the cache, such as `LYX_GATE_TEST_PID` and the slot variable that `internal/gatecli`'s own tests read.
 - `mill-config.yaml:123` `done_gate` still runs the untagged tier before the integration tier; it is the retired mill tool's config and was left alone.
 - Check by hand:
