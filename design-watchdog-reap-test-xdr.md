@@ -1,6 +1,6 @@
 # reedcli TestWatchdogReap/NeverEnteredOrphanIsStillReaped times out under Cortex XDR (1.8 s window)
 
-`watchdog-reap-test-xdr` · Note · bug, reed
+`watchdog-reap-test-xdr` · Task · bug, reed
 
 Imported from [issue #769](https://github.com/Knatte18/loomyard/issues/769).
 

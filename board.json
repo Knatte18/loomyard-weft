@@ -1436,7 +1436,7 @@
       "id": 712,
       "slug": "watchdog-reap-test-xdr",
       "title": "reedcli TestWatchdogReap/NeverEnteredOrphanIsStillReaped times out under Cortex XDR (1.8 s window)",
-      "kind": "note",
+      "kind": "task",
       "labels": [
         "bug",
         "reed"
