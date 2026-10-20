@@ -1291,103 +1291,6 @@
       "revised": "2026-10-19T17:33:31Z"
     },
     {
-      "id": 693,
-      "slug": "amend-review-budget",
-      "title": "A plan or discussion re-entered for a small amendment gets one review round, not a fresh full budget",
-      "kind": "note",
-      "labels": [
-        "enhancement",
-        "loom",
-        "burler",
-        "shed"
-      ],
-      "issues": [],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "A goto back to Plan-Write for a one-card fix reset the full Plan review budget; an amendment round should get a small budget by itself",
-      "body": "## Seen (2026-10-19, run `ubuntu-2404-support`)\n\nThe plan had passed three Plan review rounds when Webster halted on card 2.\nThe fix was a small amendment to that one card, made through `lyx loom goto --to Plan-Write`.\nThe goto reset the Plan segment's budget, so the amended plan faced the full fresh review budget again (2 rounds, hard cap 3) for a change to one card.\nThe orch cut it to one round by hand in the pair's `.lyx/config/loom.local.yaml` (`plan_max_bounces: 1`, `plan_hard_max_bounces: 1`), on the operator's order.\n\n## Operator view, not a decision (2026-10-19)\n\nA lightly revised plan does not need three new review rounds.\n\n## Operator decision (2026-10-19)\n\nTaking another planner round does not reset the review budget.\n\n## Idea\n\nA segment re-entered for an amendment of an already reviewed artifact keeps its spent budget and gets at most a small allowance on top, one round by default, configurable in `loom.yaml`, never the full fresh budget.\nThe review of such a round may be scoped to the change against the reviewed artifact.\n",
-      "created": "2026-10-19T17:36:50Z",
-      "revised": "2026-10-19T18:01:04Z"
-    },
-    {
-      "id": 694,
-      "slug": "converged-bouncer-budget",
-      "title": "A stop after a converged review verdict spends no review budget, and its way forward keeps the verdict",
-      "kind": "note",
-      "labels": [
-        "bug",
-        "shed",
-        "loom",
-        "burler"
-      ],
-      "issues": [],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "Plan-Bouncer commit retries after CONVERGED used up the budget; the suggested goto discarded the verdict and re-ran the review",
-      "body": "## Seen (2026-10-19, run `ubuntu-2404-support`)\n\nThe Plan review round converged (`round-1-bouncer-verdict.md`: `CONVERGED`).\nPlan-Bouncer then failed on its own commit of the approved plan (a pathspec bug, fixed on main as `7a3396d05`).\nEach retry of that commit counted against the Plan-Review segment's bounce budget, so once the fix was deployed the run blocked with \"bounce budget exhausted for Plan-Bouncer\", whose way forward named `lyx shed goto self --to Plan-Bouncer`.\nThe orch took that goto; it gave the whole segment a fresh budget, the converged round no longer counted, and the Bouncer started a new review round over an approved plan.\n\nAn order to the reviewer to write a review with no findings did not help either: burler refused the round (\"requested 3, spawned 0\") and the step failed.\n\n## Operator decisions (2026-10-19)\n\n- Goto is extremely fragile.\n- Once the plan is approved, no further review runs on it.\n\n## Idea\n\n- A stop after a converged verdict, such as a failed commit or other mechanical step of the Bouncer, does not spend the segment's review budget: retrying it re-runs only the step that failed.\n- When the budget does run out at a Bouncer whose round converged, the error names `lyx loom circling accept` and `lyx loom resume`, never a goto, since a goto discards the verdict.\n",
-      "created": "2026-10-19T17:58:16Z",
-      "revised": "2026-10-19T18:01:04Z"
-    },
-    {
-      "id": 695,
-      "slug": "friction-not-per-stop",
-      "title": "Friction is gathered once per run, not by an agent session at every stop",
-      "kind": "note",
-      "labels": [
-        "enhancement",
-        "shed",
-        "loom"
-      ],
-      "issues": [],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "Each stop started a friction session that held the driver lock; friction belongs at the end of the run",
-      "body": "## Seen (2026-10-19, run `ubuntu-2404-support`)\n\nThe run stopped many times in one evening (Webster card halt, Plan-Bouncer commit failure, the review re-run after a goto, the interrupted review).\nAt each stop the Go driver started a friction agent session (strand `\u003cshortname\u003e:\u003cslug\u003e:friction`), and often a tackler and an arbiter after it.\nThe friction session held the driver lock while it ran, so `lyx loom resume` was refused (\"driver still holds its driver lock and is settling the stop\") until it ended; one friction strand the operator stopped by hand stayed registered live and kept the step waiting until the orch removed the strand.\nSo a single wrong goto cost not only a review round but a friction session, plus tackler and arbiter sessions, per stop that followed.\n\n## Operator view, not a decision (2026-10-19)\n\nFriction does not need to run at every stop.\n\n## Idea\n\nFriction notes are gathered once, by the run's Friction-Reflect at the end, from what the stops left in the run's records; no agent session starts per stop for friction.\nA stop never waits on a friction session before the run can be resumed.\n",
-      "created": "2026-10-19T18:07:34Z",
-      "revised": "2026-10-19T18:07:34Z"
-    },
-    {
-      "id": 696,
-      "slug": "burler-zero-fork-round",
-      "title": "Burler review round hard-fails when the chair session finishes without spawning its fork reviewers",
-      "kind": "note",
-      "labels": [
-        "bug",
-        "burler",
-        "shuttle",
-        "shed"
-      ],
-      "issues": [
-        756
-      ],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "Imported from [issue #756](https://github.com/Knatte18/loomyard/issues/756).\n\n## What happened\n\nA `lyx loom run` halted `failed` at `Plan-Burler-Review` (anomaly `producer-hard-failure`) with:\n\n`shedadapters: Plan-Burler-Review (burler-review): round 1 attempt 1: review: burler: the cluster round did not produce exactly the requested number of fork reviewers (requested 3, spawned 0)`\n\nThe trace shows the review round starting with `clusterFan=review-plan forkCount=3` and `forkSubagents=true`.\nAbout three and a half minutes in, the shuttle logged `session state ... state=idle-stalled cause=interrupt` followed by `shuttle: session state disagrees` (`loop=running`, `stands=loop`).\nThe session went `busy` again a second later and, eleven seconds after that, reached `idle-done cause=done`.\nThe shuttle run then finished `outcome=done` and the burler logged `review joined reviewOutcome=done` and `seatengine: step joined chairOutcome=done advisors=0`, yet no fork reviewer had been spawned.\n\n## Why it is abnormal\n\nThe chair session reported a clean `done` while the round had spawned none of the 3 requested forks, so the run halted `failed` instead of retrying the round or reporting why the chair stopped short.\nThe interrupt and the state disagreement immediately before the finish suggest the chair's turn was cut short and its `done` was accepted without the fork count being checked first.\nThe halt message gives no indication of whether the chair never tried to fork, tried and failed, or was interrupted.\n\n## What to do\n\n- Check the fork count before accepting a chair `done`, and treat a chair that ended with zero forks as a stalled round that can be retried or nudged, not a hard failure.\n- Record in the halt note why the chair ended (interrupt, done without forks) so the cause is distinguishable.\n- Look at how an `idle-stalled cause=interrupt` followed by a quick `done` is handled in the shuttle's session-state reconciliation.\n\nProvenance: task `ubuntu-2404-support`; notes: `loom-halt.md`.\n",
-      "created": "2026-10-19T18:12:22Z",
-      "revised": "2026-10-19T18:12:30Z"
-    },
-    {
-      "id": 697,
-      "slug": "paused-state-reason",
-      "title": "A paused run records who paused it, a goto included",
-      "kind": "note",
-      "labels": [
-        "bug",
-        "shed",
-        "loom"
-      ],
-      "issues": [
-        759
-      ],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "Imported from [issue #759](https://github.com/Knatte18/loomyard/issues/759).\n\n## What happened\n\nThe Go driver found a run in state `paused` with no recorded reason, current producer `Plan-Bouncer`, 32 history entries.\nIt wrote a `go-driver-paused` friction note pointing at a `drive-reports/drive-envelope-*.json` envelope and nothing else.\nThis came right after the same run halted `failed` at `Plan-Burler-Review` (a reed \"did not track strand\" liveness failure) and the history shows a `Plan-Bouncer` stuck entry as the last record.\n\n## Why it is abnormal\n\nA paused run must say who or what paused it.\nWith no reason, neither the operator nor the driver can tell an intended pause from a lost handoff, and the driver cannot decide whether to resume.\n\n## What to do\n\n- Make every transition into `paused` record a reason (operator request, hibernate, budget, crash-resume, ...), and have the driver refuse or label a paused state that lacks one.\n- Check whether the failed-then-paused sequence at the same loom run (`Plan-Burler-Review` failure, then a `Plan-Bouncer` pause) is a path that writes `paused` without a reason.\n\nProvenance: task `ubuntu-2404-support`, notes `go-driver-paused.md`, `loom-halt.md`.\n",
-      "created": "2026-10-19T18:48:49Z",
-      "revised": "2026-10-19T18:48:54Z"
-    },
-    {
       "id": 698,
       "slug": "prod-pointer-per-machine",
       "title": "prod pointer is shared across machines while each binary is local",
@@ -1442,6 +1345,31 @@
       "body": "Imported from [issue #760](https://github.com/Knatte18/loomyard/issues/760).\n\nCleaning up a second machine after two runs landed elsewhere took over ten minutes of operator time, where fabric operations should take 10–15 seconds.\n\n## Setup\n\n- Runs `hub-workspaces` and `implementer-seam` were started on machine A, adopted on machine B (`lyx fabric add` + `lyx batten run --window`, see #741), then paused on B with `lyx batten pause` and `lyx tender pause` the next day.\n- Both runs then finished and landed from machine A.\n- On B the operator asked for the two pairs to be removed with `lyx fabric remove \u003cslug\u003e` (no `--remote`) and the prime pulled.\n\n## What was seen on B\n\n1. `lyx fabric remove hub-workspaces` waited about two minutes, then failed: `pair driver is busy: the loop is live in pair \"hub-workspaces\" … or end it with lyx reed down in the pair`.\n2. After `lyx reed down` in each pair, `remove` still hung.\n3. The process table held eleven orphaned lyx processes, about 19 hours old, all from the paused runs:\n   - per run, the driver chain `lyx loom drive` → `lyx loom step --until-stop --loop-detached=…` → `lyx loom step` (one `[lyx] \u003cdefunct\u003e` child each);\n   - `lyx fabric --weft-path \u003cprime-weft\u003e --pause-slug=hub-workspaces push`;\n   - `lyx board --board-path \u003c_board\u003e sync` and `lyx fabric --warp-path \u003cpair\u003e --weft-path \u003cpair-weft\u003e --teardown-slug hub-workspaces --pause-slug=hub-workspaces push`, with a `lyx loom step` beside them;\n   - the same `board sync` + teardown push for `implementer-seam`, spawned by the first `remove` attempt, which survived when the calling shell was stopped.\n4. Every push was parked on the tender pause.\n   Lifting the pause would have pushed stale records (`running · Plan-Bouncer` status, `Run-Shed -\u003e paused` commits) over the landed state on Bolt and the weft remote.\n5. After `kill` of those PIDs, `remove` finished at once.\n6. Separately, Bolt (`_board`) held one unpushed local `board sync` commit and the prime weft three unpushed `batten: Run-Shed -\u003e paused/running` commits, both diverged from origin; `lyx fabric pull` reported `weft pull failed, continuing to warp` (`pull --ff-only` exit 128) and no lyx verb could settle it.\n   The operator ran `git reset --hard origin/main` in `_board` and `git reset --hard origin/main-weft` in the prime weft.\n\n## Expected\n\n- `tender pause` on a run either ends its driver loop and queued pushes, or `fabric remove` ends them itself, instead of leaving processes parked indefinitely.\n- `fabric remove` recognises a pair whose run is paused, or whose board entry is done or landed on the parent, and does not wait on its driver; at most it names the PIDs it will end.\n- A queued push under a pause is dropped, not replayed, once its pair is removed.\n- A diverged local Bolt or prime weft whose local commits are only stale status/sync commits is reconciled to origin by `lyx fabric pull` (or a named verb), instead of a warning and a manual `git reset --hard`.\n- `remove` should not push an archive tag of stale records from a machine that is not the run's owner (#741).\n\n## Host\n\nUbuntu 24.04.5, git 2.43, tmux 3.4, lyx at `a1f435dc` (Ubuntu 24.04 support landed).\n\n## Issue comment, 2026-10-20\n\n## Operator note: the process model is the weakness, not only `remove`\n\nThe operator rates this a major weakness of lyx: one run leaves many independent, long-lived processes that each drive or lock shared state, with no single owner that can end them together.\n\nWhat one paused run left behind here:\n\n- a driver chain of three processes (`loom drive` → `loom step --until-stop` → `loom step`), plus zombie children;\n- parked network work, each its own process holding a pending write: weft `fabric push`, `board sync`, teardown `fabric push`;\n- children of an interrupted CLI call (`fabric remove`) that outlived their parent.\n\nTogether they:\n\n- block other verbs, which detect a \"live loop\" and wait on it (`fabric remove` waits up to two minutes and still fails);\n- hold stale writes that replay over newer remote state the moment a pause lifts;\n- survive the strand teardown (`reed down`), the pause and the calling shell, so nothing in lyx sees or ends them; only `ps` and `kill` did.\n\n### What should hold\n\n- Every process a run spawns belongs to one owner record (run or pair) with its PIDs or a process group, so `tender status` lists them and one verb ends them all.\n- `tender pause` stops work instead of parking processes indefinitely; a parked push is a record to replay, not a live process.\n- `reed down`, `fabric remove` and `batten` teardown end the pair's whole process group.\n- A child of an interrupted CLI call dies with its parent (process group or `Pdeathsig`), rather than continuing with side effects.\n- `tender status` reports orphaned lyx processes whose pair or run no longer exists, as it already does for processes on a replaced binary.\n",
       "created": "2026-10-20T05:56:20Z",
       "revised": "2026-10-20T05:56:20Z"
+    },
+    {
+      "id": 701,
+      "slug": "run-reentry",
+      "title": "Goto, resume and stops keep what a run already settled",
+      "kind": "task",
+      "labels": [
+        "bug",
+        "enhancement",
+        "shed",
+        "loom",
+        "burler",
+        "shuttle"
+      ],
+      "issues": [
+        759,
+        756
+      ],
+      "priority": "high",
+      "depends_on": [],
+      "isolated": false,
+      "brief": "Goto as a controlled re-entry: converged verdicts, spent review budget and the pause reason survive a goto or stop; no friction session per stop; a zero-fork review round is retried",
+      "body": "## Goal\n\nA goto, a resume or a stop keeps what the run already settled: converged verdicts, spent review budget and the reason a run is paused.\nThe run `ubuntu-2404-support` (2026-10-19) showed goto and the stop path as the weakest part of shed: one wrong goto cost a fresh review round over an approved plan, a friction session, tackler and arbiter sessions per later stop, and a paused state nobody could explain.\nOperator decision (2026-10-19): goto is extremely fragile; once an artifact is approved, no further review runs on it.\nOperator decision (2026-10-20): the notes below are fixed together in this one task.\n\nWhen this lands, the hub orch rule \"A review segment that already converged\" (`_board/_lyx/orch/rules.md`) is removed through `lyx orch rules`.\n\n## Goto as a controlled re-entry (orch finding, 2026-10-20)\n\n### Seen\n\n`lyx loom goto` and `lyx shed goto` move a run onto a named row and give the whole segment a fresh budget.\nThey do not know what the segment already settled: a converged verdict is discarded, the spent rounds no longer count, and the run lands in `paused` with no reason recorded.\nEvery goto-related failure in the notes below follows from that.\n\n### Idea\n\nA goto is a re-entry with defined carry-over, not a raw jump:\n\n- it keeps every verdict the target segment already reached, and a converged review is never re-run by a goto;\n- it keeps the segment's spent budget and adds at most the small amendment allowance `amend-review-budget` describes;\n- it records itself as the reason of the `paused` state it leaves;\n- it resets only what the target row needs to run again, and the goto's help and way-forward texts say what is kept and what is reset.\n\n## Note `converged-bouncer-budget`\n\n### Seen (2026-10-19, run `ubuntu-2404-support`)\n\nThe Plan review round converged (`round-1-bouncer-verdict.md`: `CONVERGED`).\nPlan-Bouncer then failed on its own commit of the approved plan (a pathspec bug, fixed on main as `7a3396d05`).\nEach retry of that commit counted against the Plan-Review segment's bounce budget, so once the fix was deployed the run blocked with \"bounce budget exhausted for Plan-Bouncer\", whose way forward named `lyx shed goto self --to Plan-Bouncer`.\nThe orch took that goto; it gave the whole segment a fresh budget, the converged round no longer counted, and the Bouncer started a new review round over an approved plan.\n\nAn order to the reviewer to write a review with no findings did not help either: burler refused the round (\"requested 3, spawned 0\") and the step failed.\n\n### Operator decisions (2026-10-19)\n\n- Goto is extremely fragile.\n- Once the plan is approved, no further review runs on it.\n\n### Idea\n\n- A stop after a converged verdict, such as a failed commit or other mechanical step of the Bouncer, does not spend the segment's review budget: retrying it re-runs only the step that failed.\n- When the budget does run out at a Bouncer whose round converged, the error names `lyx loom circling accept` and `lyx loom resume`, never a goto, since a goto discards the verdict.\n\n\n## Note `amend-review-budget`\n\n### Seen (2026-10-19, run `ubuntu-2404-support`)\n\nThe plan had passed three Plan review rounds when Webster halted on card 2.\nThe fix was a small amendment to that one card, made through `lyx loom goto --to Plan-Write`.\nThe goto reset the Plan segment's budget, so the amended plan faced the full fresh review budget again (2 rounds, hard cap 3) for a change to one card.\nThe orch cut it to one round by hand in the pair's `.lyx/config/loom.local.yaml` (`plan_max_bounces: 1`, `plan_hard_max_bounces: 1`), on the operator's order.\n\n### Operator view, not a decision (2026-10-19)\n\nA lightly revised plan does not need three new review rounds.\n\n### Operator decision (2026-10-19)\n\nTaking another planner round does not reset the review budget.\n\n### Idea\n\nA segment re-entered for an amendment of an already reviewed artifact keeps its spent budget and gets at most a small allowance on top, one round by default, configurable in `loom.yaml`, never the full fresh budget.\nThe review of such a round may be scoped to the change against the reviewed artifact.\n\n\n## Note `paused-state-reason`\n\nImported from [issue #759](https://github.com/Knatte18/loomyard/issues/759).\n\n### What happened\n\nThe Go driver found a run in state `paused` with no recorded reason, current producer `Plan-Bouncer`, 32 history entries.\nIt wrote a `go-driver-paused` friction note pointing at a `drive-reports/drive-envelope-*.json` envelope and nothing else.\nThis came right after the same run halted `failed` at `Plan-Burler-Review` (a reed \"did not track strand\" liveness failure) and the history shows a `Plan-Bouncer` stuck entry as the last record.\n\n### Why it is abnormal\n\nA paused run must say who or what paused it.\nWith no reason, neither the operator nor the driver can tell an intended pause from a lost handoff, and the driver cannot decide whether to resume.\n\n### What to do\n\n- Make every transition into `paused` record a reason (operator request, hibernate, budget, crash-resume, ...), and have the driver refuse or label a paused state that lacks one.\n- Check whether the failed-then-paused sequence at the same loom run (`Plan-Burler-Review` failure, then a `Plan-Bouncer` pause) is a path that writes `paused` without a reason.\n\nProvenance: task `ubuntu-2404-support`, notes `go-driver-paused.md`, `loom-halt.md`.\n\n\n## Note `burler-zero-fork-round`\n\nImported from [issue #756](https://github.com/Knatte18/loomyard/issues/756).\n\n### What happened\n\nA `lyx loom run` halted `failed` at `Plan-Burler-Review` (anomaly `producer-hard-failure`) with:\n\n`shedadapters: Plan-Burler-Review (burler-review): round 1 attempt 1: review: burler: the cluster round did not produce exactly the requested number of fork reviewers (requested 3, spawned 0)`\n\nThe trace shows the review round starting with `clusterFan=review-plan forkCount=3` and `forkSubagents=true`.\nAbout three and a half minutes in, the shuttle logged `session state ... state=idle-stalled cause=interrupt` followed by `shuttle: session state disagrees` (`loop=running`, `stands=loop`).\nThe session went `busy` again a second later and, eleven seconds after that, reached `idle-done cause=done`.\nThe shuttle run then finished `outcome=done` and the burler logged `review joined reviewOutcome=done` and `seatengine: step joined chairOutcome=done advisors=0`, yet no fork reviewer had been spawned.\n\n### Why it is abnormal\n\nThe chair session reported a clean `done` while the round had spawned none of the 3 requested forks, so the run halted `failed` instead of retrying the round or reporting why the chair stopped short.\nThe interrupt and the state disagreement immediately before the finish suggest the chair's turn was cut short and its `done` was accepted without the fork count being checked first.\nThe halt message gives no indication of whether the chair never tried to fork, tried and failed, or was interrupted.\n\n### What to do\n\n- Check the fork count before accepting a chair `done`, and treat a chair that ended with zero forks as a stalled round that can be retried or nudged, not a hard failure.\n- Record in the halt note why the chair ended (interrupt, done without forks) so the cause is distinguishable.\n- Look at how an `idle-stalled cause=interrupt` followed by a quick `done` is handled in the shuttle's session-state reconciliation.\n\nProvenance: task `ubuntu-2404-support`; notes: `loom-halt.md`.\n\n\n## Note `friction-not-per-stop`\n\n### Seen (2026-10-19, run `ubuntu-2404-support`)\n\nThe run stopped many times in one evening (Webster card halt, Plan-Bouncer commit failure, the review re-run after a goto, the interrupted review).\nAt each stop the Go driver started a friction agent session (strand `\u003cshortname\u003e:\u003cslug\u003e:friction`), and often a tackler and an arbiter after it.\nThe friction session held the driver lock while it ran, so `lyx loom resume` was refused (\"driver still holds its driver lock and is settling the stop\") until it ended; one friction strand the operator stopped by hand stayed registered live and kept the step waiting until the orch removed the strand.\nSo a single wrong goto cost not only a review round but a friction session, plus tackler and arbiter sessions, per stop that followed.\n\n### Operator view, not a decision (2026-10-19)\n\nFriction does not need to run at every stop.\n\n### Idea\n\nFriction notes are gathered once, by the run's Friction-Reflect at the end, from what the stops left in the run's records; no agent session starts per stop for friction.\nA stop never waits on a friction session before the run can be resumed.\n\n\n",
+      "created": "2026-10-19T17:36:50Z",
+      "revised": "2026-10-20T06:13:47Z"
     }
   ]
 }
