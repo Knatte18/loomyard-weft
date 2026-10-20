@@ -32,3 +32,13 @@ Try the aligned fan on the next three to five loom runs and compare their round-
 The hub `burler.yaml` overrides `twill-discussion` with seven lenses: `interactions`, `existing-paths`, `bound-breaker`, `walkthrough`, `goal-scope`, `board-fit`, `leanness` (Bolt commit `3f3286b8d`).
 `premises`, `pattern-fit` and `scenarios` are dropped to keep the fork count near today's six.
 It applies to every Discussion-Write that starts after the commit; measure the next three to five loom runs as above, then decide whether to keep it and whether Plan, Webster and Merge get the same treatment.
+
+## Seen (orch, 2026-10-20)
+
+`lenses-module` (landed `7cf7e67a`) made the seven-lens `twill-discussion` the template default in `internal/lenses/template.yaml`, so the Discussion side is aligned for every hub.
+At Plan the two sides still differ: `twill-plan` holds `criteria-coverage`, `branch-coverage`, `row-reachability`, `forced-edits` and `test-economy`, while `review-plan` holds `affected-set`, `guard-reach` and `way-forward`, none of which the writer runs.
+
+## Operator decision (2026-10-20): build it early
+
+The operator wants this done early, so the lenses are tuned so that each perch's writer matches its reviewer better.
+It becomes a task now, ahead of the measurement the trial above named.
