@@ -2,6 +2,12 @@ round: 2
 fan: ""
 fix_fan: fix-plan
 fans_recorded: true
+fix_lenses:
+    - fix-consistency
+    - fix-claims
+    - fix-proposal
+    - fix-affected-set
+fix_forks: 4
 review:
     engine: claude
     model: sonnet
@@ -16,3 +22,13 @@ review:
     fork_fresh_tokens: 0
     fork_cache_read_tokens: 0
     fork_fresh_share: 0
+fix:
+    engine: claude
+    model: opus
+    effort: medium
+    start: 2026-10-20T13:32:05Z
+    end: 2026-10-20T15:34:15.875868544+02:00
+    wall_seconds: 130.875868544
+    tokens_known: true
+    fresh_tokens: 92724
+    cache_read_tokens: 1580880
