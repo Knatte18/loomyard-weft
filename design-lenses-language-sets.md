@@ -10,5 +10,5 @@ So a new C# hub such as NORCE Models starts with the same lenses as this Go repo
 
 ## Idea
 
-Ship language-specific lens sets beside the shared template: a hub's language, as configured in the `language` module, picks which set seeds its `lenses.yaml`.
+Ship language-specific lens sets beside the shared template, and let the hub pick the set that seeds its `lenses.yaml`; the `language` module names no language today, so the pick needs a key of its own.
 For C#, for example: nullable and `IDisposable` handling, numerical stability and units.
