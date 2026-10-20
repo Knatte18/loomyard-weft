@@ -1,0 +1,7 @@
+verdict: approve
+reason: >-
+  The diff adds review-plan's affected-set, guard-reach and way-forward to the template twill-plan fan and pins the fan and the writer-holds-reviewer-lenses rule in the template test.
+  That is the entry's remaining Plan point, since the Discussion side landed with lenses-module.
+  It makes no change beyond the entry, the one open risk names no parent correction, and neither peer run overlaps.
+question: ""
+superseded: []
