@@ -9,6 +9,8 @@ There Millhouse's mill-go often takes about 2 hours for implementation alone, ag
 The machine runs Cortex XDR, which scans every file write and process start, and IT allows no scan exclusions, so every build and test run is slow.
 On that machine, narrowly scoped testing is what decides how long a run takes.
 
+Update (operator, 2026-10-20): the operator will also develop Models on OSL-1046, an Ubuntu 24.04 work laptop with Cortex XDR; note `dotnet-bench-osl1046` measures it there first.
+
 ## Want
 
 The verify gates in a .NET hub build and test only what a card or batch touches, as `lyx gate test` scopes Go packages here:
