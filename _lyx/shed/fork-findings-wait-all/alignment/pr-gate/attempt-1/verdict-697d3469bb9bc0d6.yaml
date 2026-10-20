@@ -1,0 +1,4 @@
+verdict: approve
+reason: The diff states the wait-for-every-fork rule in the twill directive and the burler fix self-check, extends it to the fanned cluster handler, the one other stencil whose session acts on review-fork findings, and updates the two package docs; nothing beyond the board entry is changed and no peer run or parent commit overlaps.
+question: ""
+superseded: []
