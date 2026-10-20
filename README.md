@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-20 05:56 UTC; every age below is as of then.
+Rendered 2026-10-20 06:01 UTC; every age below is as of then.
 
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
@@ -17,13 +17,14 @@ Waits on nothing open; can start now.
 
 | # | Task | Slug | Recipe | After | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | **Origin reconcile before anything that matters, and pushes that never fail silently**<br>• ls-remote over warp and records repos at orch start, wake, batten resume, Merge-In and Finalize; fast-forward, landed-elsewhere cleanup, stop on divergence; rejected push retries and reports | [`origin-reconcile`](design-origin-reconcile.md) | loom |  | 18h | 14h | fabric, batten, orch, creel |
+| 1 | **Origin reconcile before anything that matters, and pushes that never fail silently**<br>• ls-remote over warp and records repos at orch start, wake, batten resume, Merge-In and Finalize; fast-forward, landed-elsewhere cleanup, stop on divergence; rejected push retries and reports | [`origin-reconcile`](design-origin-reconcile.md) | loom |  | 19h | 14h | fabric, batten, orch, creel |
 
 #### Normal priority
 
 | # | Task | Slug | Recipe | After | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 2 | **Lenses and fans move into a lenses module of their own, listed in full in the hub file**<br>• A lenses module holds every lens and fan for reviewers, fixers and twill writers; reconcile keeps the hub file complete; the 7-lens twill-discussion fan becomes the default<br>• `loom: review_hard_max_bounces 3`<br>• `loom: review_max_bounces 2` | [`lenses-module`](design-lenses-module.md) | loom |  | 12h | 12h | burler, loom, config |
+| 2 | **Lenses and fans move into a lenses module of their own, listed in full in the hub file**<br>• A lenses module holds every lens and fan for reviewers, fixers and twill writers; reconcile keeps the hub file complete; the 7-lens twill-discussion fan becomes the default<br>• `loom: review_hard_max_bounces 3`<br>• `loom: review_max_bounces 2` | [`lenses-module`](design-lenses-module.md) | loom |  | 13h | 12h | burler, loom, config |
+| 3 | **Arbiter verdict with an unquoted verbs item containing ': ' is unparseable** | [`arbiter-verdict-quoting`](design-arbiter-verdict-quoting.md) | loom |  | 12h | 12h | shed, loom |
 
 ### Layer A
 
@@ -33,7 +34,7 @@ Waits only on Running or Ready entries.
 
 | # | Task | Slug | Recipe | After | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | **One machine takes over from another: owner machines, lyx adopt, landing on the parent owner**<br>• Owner machine per entry, lyx adopt of named entries, landing only on the parent owner, owner outcome in the origin reconcile, Open-Window per machine | [`machine-handover`](design-machine-handover.md) | loom | `origin-reconcile` | 18h | 14h | batten, board, orch, fabric |
+| 1 | **One machine takes over from another: owner machines, lyx adopt, landing on the parent owner**<br>• Owner machine per entry, lyx adopt of named entries, landing only on the parent owner, owner outcome in the origin reconcile, Open-Window per machine | [`machine-handover`](design-machine-handover.md) | loom | `origin-reconcile` | 19h | 14h | batten, board, orch, fabric |
 
 ## Notes
 
@@ -60,11 +61,10 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | --- | --- | --- | --- | --- | --- |
 | 1 | **webster create-not-done check rejects a Create target the card removes itself** | [`create-target-transient`](design-create-target-transient.md) | 1d | 1d | webster, loom, quarry |
 | 2 | **orch status reports a live strand after the orch Claude session exits, so --continue is refused** | [`orch-strand-live-after-exit`](design-orch-strand-live-after-exit.md) | 15h | 15h | orch, reed |
-| 3 | **Arbiter verdict with an unquoted verbs item containing ': ' is unparseable** | [`arbiter-verdict-quoting`](design-arbiter-verdict-quoting.md) | 12h | 12h | shed, loom |
-| 4 | **A stop after a converged review verdict spends no review budget, and its way forward keeps the verdict**<br>• Plan-Bouncer commit retries after CONVERGED used up the budget; the suggested goto discarded the verdict and re-ran the review | [`converged-bouncer-budget`](design-converged-bouncer-budget.md) | 11h | 11h | shed, loom, burler |
-| 5 | **Burler review round hard-fails when the chair session finishes without spawning its fork reviewers** | [`burler-zero-fork-round`](design-burler-zero-fork-round.md) | 11h | 11h | burler, shuttle, shed |
-| 6 | **A paused run records who paused it, a goto included** | [`paused-state-reason`](design-paused-state-reason.md) | 11h | 11h | shed, loom |
-| 7 | **fabric remove hangs on orphaned driver loops and pushes parked by a tender pause** | [`orphan-run-processes`](design-orphan-run-processes.md) | 0m | 0m | fabric, batten, loom |
+| 3 | **A stop after a converged review verdict spends no review budget, and its way forward keeps the verdict**<br>• Plan-Bouncer commit retries after CONVERGED used up the budget; the suggested goto discarded the verdict and re-ran the review | [`converged-bouncer-budget`](design-converged-bouncer-budget.md) | 12h | 12h | shed, loom, burler |
+| 4 | **Burler review round hard-fails when the chair session finishes without spawning its fork reviewers** | [`burler-zero-fork-round`](design-burler-zero-fork-round.md) | 11h | 11h | burler, shuttle, shed |
+| 5 | **A paused run records who paused it, a goto included** | [`paused-state-reason`](design-paused-state-reason.md) | 11h | 11h | shed, loom |
+| 6 | **fabric remove hangs on orphaned driver loops and pushes parked by a tender pause** | [`orphan-run-processes`](design-orphan-run-processes.md) | 5m | 5m | fabric, batten, loom |
 
 ### Enhancements
 
@@ -94,7 +94,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 15 | **Preflight pushes the weft branch synchronously and races the board sync**<br>• Preflight spent 11 s mostly in a weft push to GitHub, refused once after 8 s; push detached or serialise with the board sync. | [`preflight-weft-push-sync`](design-preflight-weft-push-sync.md) | 2d | 2d | fabric, shed |
 | 16 | **A darn writer cannot rerun a verify tier it is refused, so a flaky tier failure loops and escalates** | [`darn-verify-tier-unrunnable`](design-darn-verify-tier-unrunnable.md) | 2d | 2d | loom, shed |
 | 17 | **Remove the Webster kick-start pack**<br>• Drop every kick-start pack layout and its code; glyphs stay in the plan and its gates | [`kickstart-pack-remove`](design-kickstart-pack-remove.md) | 2d | 1d | webster, quarry, loom |
-| 18 | **Use quarry Enclose for mechanical checks: verify failures to plan cards**<br>• Map tool-output file:line to member glyphs, then to the card and batch that changed them | [`enclose-checks`](design-enclose-checks.md) | 11d | 2d | quarry, webster, loom |
+| 18 | **Use quarry Enclose for mechanical checks: verify failures to plan cards**<br>• Map tool-output file:line to member glyphs, then to the card and batch that changed them | [`enclose-checks`](design-enclose-checks.md) | 12d | 2d | quarry, webster, loom |
 | 19 | **lyx board rename: change an entry slug in one write**<br>• Rename an entry keeping all fields and rewriting depends_on; report prose mentions | [`board-rename`](design-board-rename.md) | 2d | 2d | board |
 | 20 | **Parallel batches: the shared pieces for Webster forks and Weaver**<br>• DAG batchifier, worktree per batch, merge-back with conflict resolution; open: keeping a fork inside its worktree | [`parallel-batch-parts`](design-parallel-batch-parts.md) | 1d | 1d | webster, fabric, loom |
 | 21 | **The orch watcher sees the note is written instead of waiting for a reply**<br>• At a context cycle the watcher checks that the orch turn ended and the note file exists, and cycles with no written reply; defer stays | [`orch-note-no-reply`](design-orch-note-no-reply.md) | 1d | 1d | orch, creel, workspaces |
@@ -105,12 +105,12 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 26 | **lyx loom decision add notifies the run live LLM producer of the new decision**<br>• With the Go driver no agent lives for the whole run, so decision add tells the working LLM producer if any, and later producers and PR-Gate catch the rest | [`decision-add-notifies`](design-decision-add-notifies.md) | 1d | 1d | loom, creel |
 | 27 | **Plan gate does not catch declared PATTERN.md growth that exceeds the headroom line** | [`plan-gate-pattern-headroom`](design-plan-gate-pattern-headroom.md) | 1d | 1d | loom, burler |
 | 28 | **Plan cards mark additive edits so shared spots stop chaining the card DAG**<br>• An Extends label for edits that only add to a ref; two Extends on one ref are no dependency; measure with plandag first | [`plan-extends-label`](design-plan-extends-label.md) | 1d | 1d | loom, webster, burler |
-| 29 | **lyx batten run starts in its own window by default**<br>• Every batten run is started with --window, so the window should be the default and foreground the opt-in. | [`batten-window-default`](design-batten-window-default.md) | 18h | 18h | batten, reed, orch |
+| 29 | **lyx batten run starts in its own window by default**<br>• Every batten run is started with --window, so the window should be the default and foreground the opt-in. | [`batten-window-default`](design-batten-window-default.md) | 19h | 19h | batten, reed, orch |
 | 30 | **A halt a plan card asks for reaches the parent as a question, not as a batch failure**<br>• A card-requested halt went through recover-batch, tackler and arbiter as a failure; it should go straight to the parent and the next attempt should carry the decision | [`card-halt-is-question`](design-card-halt-is-question.md) | 12h | 12h | webster, shed, loom |
 | 31 | **A question research can settle is settled in Discussion, never deferred to Plan or an implementer**<br>• Discussion writer researches the facts its design rests on; reviewers flag a deferred research question or a halt-on-discovery rule | [`research-in-discussion`](design-research-in-discussion.md) | 12h | 12h | loom, stencil, burler |
-| 32 | **A plan or discussion re-entered for a small amendment gets one review round, not a fresh full budget**<br>• A goto back to Plan-Write for a one-card fix reset the full Plan review budget; an amendment round should get a small budget by itself | [`amend-review-budget`](design-amend-review-budget.md) | 12h | 11h | loom, burler, shed |
+| 32 | **A plan or discussion re-entered for a small amendment gets one review round, not a fresh full budget**<br>• A goto back to Plan-Write for a one-card fix reset the full Plan review budget; an amendment round should get a small budget by itself | [`amend-review-budget`](design-amend-review-budget.md) | 12h | 12h | loom, burler, shed |
 | 33 | **Friction is gathered once per run, not by an agent session at every stop**<br>• Each stop started a friction session that held the driver lock; friction belongs at the end of the run | [`friction-not-per-stop`](design-friction-not-per-stop.md) | 11h | 11h | shed, loom |
-| 34 | **prod pointer is shared across machines while each binary is local**<br>• A deploy on one machine moves origin/prod, leaving other machines silently behind it | [`prod-pointer-per-machine`](design-prod-pointer-per-machine.md) | 2m | 2m | deploy |
+| 34 | **prod pointer is shared across machines while each binary is local**<br>• A deploy on one machine moves origin/prod, leaving other machines silently behind it | [`prod-pointer-per-machine`](design-prod-pointer-per-machine.md) | 8m | 8m | deploy |
 
 #### Low priority
 
@@ -121,7 +121,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 37 | **Windows verify timeout kills the whole process tree**<br>• On Windows the verifytree timeout kills only the shell, not the process tree it started | [`verify-watchdog`](design-verify-watchdog.md) | 12d | 4d | shed |
 | 38 | **A hub pause leaves background forks and shells running, so hibernate never confirms**<br>• Pause interrupts turns but not background forks or shells; sessions read busy and hibernate confirmation fails | [`pause-background-work`](design-pause-background-work.md) | 5d | 2d | shuttle, webster |
 | 39 | **[WS 007] An anchor per umbrella**<br>• Let an umbrella work in its own subdirectory of the repository, inherited by its tasks; hard to change now | [`umbrella-anchor`](design-umbrella-anchor.md) | 1d | 1d | fabric, config, workspaces |
-| 40 | **reed warns on every strand launch on tmux 3.4 about allow-set-title**<br>• The optional allow-set-title fallback is right, but its Warn repeats per pane on a supported tmux | [`allow-set-title-warn-noise`](design-allow-set-title-warn-noise.md) | 0m | 0m | reed |
+| 40 | **reed warns on every strand launch on tmux 3.4 about allow-set-title**<br>• The optional allow-set-title fallback is right, but its Warn repeats per pane on a supported tmux | [`allow-set-title-warn-noise`](design-allow-set-title-warn-noise.md) | 5m | 5m | reed |
 
 ### Features
 
