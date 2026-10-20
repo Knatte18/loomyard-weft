@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-20 13:22 UTC; every age below is as of then.
+Rendered 2026-10-20 13:25 UTC; every age below is as of then.
 
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
@@ -17,7 +17,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | **Verify gates scope to the diff: tree scope for non-production diffs, scoped darn gates, whole suite at Publish**<br>• A diff that touches only a tool or docs, and every darn writer and fix round, waits on the whole suite at every verify gate | [`verify-diff-scope`](design-verify-diff-scope.md) | loom | Plan-Burler-Fix | 1d | 1h | loom, shed, config |
+| 1 | **Verify gates scope to the diff: tree scope for non-production diffs, scoped darn gates, whole suite at Publish**<br>• A diff that touches only a tool or docs, and every darn writer and fix round, waits on the whole suite at every verify gate | [`verify-diff-scope`](design-verify-diff-scope.md) | loom | Plan-Bouncer | 1d | 1h | loom, shed, config |
 
 ### Ready
 
@@ -81,7 +81,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 7 | **Shell guard refuses read-only commands that merely name a refused go-run tier** | [`shell-guard-text-match`](design-shell-guard-text-match.md) | 2h | 2h | claude |
 | 8 | **Scratch files under .scratch change the worktree root listing and defeat go test cache hits** | [`scratch-defeats-test-cache`](design-scratch-defeats-test-cache.md) | 2h | 2h |  |
 | 9 | **Edit directive not enforced: file append through a shell heredoc was not refused** | [`shell-guard-heredoc-write`](design-shell-guard-heredoc-write.md) | 2h | 2h | claude |
-| 10 | **Opening an agent into reed: engine bypass mode by default, explicit engine, model and effort, and reed add points to shuttle open**<br>• reed add help shows a broken claude example (%SID% never substituted) and shuttle open keeps the interactive permission default; every agent in reed needs bypass, per engine (claude bypassPermissions, Codex --yolo) | [`reed-agent-launch-bypass`](design-reed-agent-launch-bypass.md) | 12m | 10m | reed, shuttle, claude, codex |
+| 10 | **Opening an agent into reed: engine bypass mode by default, explicit engine, model and effort, and reed add points to shuttle open**<br>• reed add help shows a broken claude example (%SID% never substituted) and shuttle open keeps the interactive permission default; every agent in reed needs bypass, per engine (claude bypassPermissions, Codex --yolo) | [`reed-agent-launch-bypass`](design-reed-agent-launch-bypass.md) | 16m | 13m | reed, shuttle, claude, codex |
 
 ### Enhancements
 
@@ -104,7 +104,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 8 | **Paste cited code into a review rounds context**<br>• Reviewers edit nothing and review a fixed commit, so code pasted at round start cannot go stale; measure it against todays reviewer | [`review-inline-code`](design-review-inline-code.md) | 8d | 4d | burler, stencil |
 | 9 | **Module labels from what a task touches, not only what it is about**<br>• Half the landings that changed the shuttle core lacked the shuttle label; derive or check module labels from the plan and the diff | [`labels-from-diff`](design-labels-from-diff.md) | 5d | 5d | board, loom |
 | 10 | **Start one task per overlapping group at a newly-ready start**<br>• When a landing makes several overlapping tasks ready at once, batten starts one per group and names the rest in its notice | [`batten-ready-overlap`](design-batten-ready-overlap.md) | 5d | 5d | batten |
-| 11 | **Git test fixtures trip Cortex XDR on the work laptop**<br>• Parallel git-heavy tests create so many files at once that Cortex XDR killed VS Code and then crashed itself, twice; tests must stay usable on a machine with endpoint protection | [`xdr-git-test-file-burst`](design-xdr-git-test-file-burst.md) | 3d | 6h | fabric |
+| 11 | **Git test fixtures trip Cortex XDR on the work laptop**<br>• Parallel git-heavy tests create so many files at once that Cortex XDR killed VS Code and then crashed itself, twice; tests must stay usable on a machine with endpoint protection | [`xdr-git-test-file-burst`](design-xdr-git-test-file-burst.md) | 3d | 7h | fabric |
 | 12 | **Rename the lyx binary to lyr (name clash with LyX)** | [`rename-binary-lyr`](design-rename-binary-lyr.md) | 4d | 3d | stencil, shuttle |
 | 13 | **[.NET 002] Language-neutral gate: lyx gate run takes a slot for any command**<br>• The gate slot pool covers only go test; a C# or Python hub verify bypasses it. Add lyx gate run -- cmd and per-language parallelism. | [`gate-language-neutral`](design-gate-language-neutral.md) | 3d | 4h | config, webster, shed, dotnet |
 | 14 | **Entry gate on shed rows: a check decides whether a row runs at all**<br>• Replace darn recipe edge rewrite and the switched producer flag check with one shed entry gate per row; false means Done without acting. | [`row-entry-gate`](design-row-entry-gate.md) | 3d | 2d | shed, loom, batten |
