@@ -1,0 +1,25 @@
+# Relevant code
+
+- `internal/shedengine/goto.go` `Goto`, `Relaunch`, `CheckGotoTarget`, `gotoAdmitted` — the goto and re-launch status writes D1, D2 and D4 change
+- `internal/shedengine/run.go` `episodeStuckCount`, `gotoEndsEpisode`, `effectiveMaxBounces`, `ReasonBounceBudgetExhausted` — the budget count and the budget-exhausted halt of D1 and D3, and the paused exits of D4
+- `internal/shedengine/status.go` `Status`, `HistoryEntry` — the status file that gains `pause_reason` and `budget_capped`
+- `internal/shedengine/doc.go` — the goto, budget and field-ownership contract to rewrite
+- `internal/sheddriver/driverules.go` `decideDrive` — the rule table that gains D3's hand-back and reads D4's reason
+- `internal/sheddriver/doc.go` — the driver's rule table as documented
+- `internal/shedadapters/bouncer.go` `Bouncer.Call`, `settledGeneration`, `settle`, `budgetReached`, `atHardCap`, `approveWithoutReview` — the settled-generation branch D5 and D6 replace
+- `internal/shedadapters/doc.go` — the Bouncer contract, including the "goto grants a fresh budget" line
+- `internal/shedrecipe/entries_bouncer.go` `bouncerEntry` — wires the Bouncer's seams, skip and hard cap
+- `internal/loomshed/generation.go` `PlanReviewSkippable` — PR-Rework's exempt skip that stays ahead of D6
+- `internal/reviewbudget/reviewbudget.go` `RunSoftKey`, `SoftKey`, `HardKey` — the key family D7 joins
+- `internal/loomcli/halt.go` `reflectHalt`, `loomAfterStep`, `failedHalt` — the per-stop reflection D8 removes
+- `internal/loomcli/run.go` `reflectFriction`, `reflectFrictionRow` — the Friction-Reflect row's reflection that stays
+- `internal/loomcli/cli.go` — the `lyx loom goto` help text
+- `internal/loomcli/circling.go` — the circling verbs' preconditions, which need a Bouncer escalation
+- `internal/loomcli/drivewiring.go` `driverGoto` — the driver's goto seam
+- `internal/battencli/publishretry.go` `childGoto` — batten's automatic verify goto
+- `internal/loomcli/landingdeps.go` — sets loom's verify failure target to `Webster-Burler-Review`, the row D2 admits
+- `internal/loomcli/wiring.go` `segmentBounces` — the Bouncer's `Bounces` seam, counting through `Routing.Bounces`
+- `internal/burlerengine/cluster.go` `auditClusterRound`, `ErrClusterForksMissing` — the fork-count check D9 retries
+- `internal/shedadapters/burlerreview.go` — the review row's attempt loop D9 joins
+- `contracts/recipes/loom-recipe.yaml` — the review segments, PR-Rework's route to Plan-Bouncer and the Friction-Reflect row
+- `contracts/recipes/darn-recipe.yaml` — PR-Gate's route back to Darn-Write
