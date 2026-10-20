@@ -35,7 +35,6 @@
 - `internal/configreg#TestModules_EveryTemplateKeyClassified`
 - `internal/configreg#TestFingerprint`
 - `internal/configcli#TestDispatchLayers`
-- `internal/configcli#TestPrintResolved`
 - `cmd/lyx#configStrictnessDegradingSet`
 - `pattern/PATTERN-leaf-packages.md`
 - `pattern/PATTERN-config-strictness.md`
@@ -59,10 +58,12 @@
 - `ConfigSpec` names the module `lenses`, carries the template, `PerNameMaps: ConfigPerNameMaps()` (`lenses` and `fans`), and classifies both keys `CategoryGuard`, so no local layer and no run setting holds them; it is not `HubWide`.
 - `Load` reads through `configengine.LoadOrTemplate` with `ConfigSpec()` and decodes the resolved bytes strictly into `Config` (`KnownFields`), each error prefixed `lenses: ` (D3).
   An absent base file resolves the template, and a lens or fan the stack lacks resolves to its template value through the load's fill, so `ResolveFan` reads the loaded `Config` alone with no per-name template fallback.
-- `ResolveFan` resolves a fan name into its ordered `[]Lens`, preserving order and repeats, and refuses an unknown fan naming the known fans, an empty fan, a fan longer than `MaxFanLenses` and a fan naming an undefined lens, each naming the fan.
+- `ResolveFan` resolves a fan name into its ordered `[]Lens`, preserving order and repeats, and refuses an unknown fan naming the known fans, an empty fan, a fan longer than `MaxFanLenses` and a fan naming an undefined lens, each naming the fan and each carrying the `lenses: ` prefix `Load`'s errors carry, never the `burler: ` one.
 - `CheckLoad` runs `Load`, then `ResolveFan` over every fan of the loaded config in name order, and returns every failure joined in that order, so its text is deterministic for `lyx config lenses --set`'s before-and-after comparison.
+  A `lenses.yaml` with several failing fans therefore takes every fix in one `--set`, or one `--edit`: a partial fix changes the joined failure and is rolled back.
 - `FanList`, `FanShapeError` and `FanKey` are burlerengine's fan key grammar, moved as they stand; `ValidateFanKeys` keeps its behaviour, reads the config through `Load` and resolves through `ResolveFan`, and its refusals name `lenses.yaml` (`fix lenses.yaml, or set the key to empty to run the segment solo`; `define the fan in lenses.yaml, or set the entry to ""`).
 - `doc.go` documents the module: the file, the per-name reconcile and its bound, the guard keys, the load stance, fan resolution and the fan key grammar loom and darn share.
+  Its fan resolution sentence says a `lenses.yaml` with several failing fans takes every fix in one `--set` or one `--edit`, since a partial fix changes the joined failure and is rolled back.
 - `internal/lenses` imports only the standard library, `internal/configengine` and `gopkg.in/yaml.v3`; `TestLeafInvariant_AllowlistOnly` pins that with `scankit.AssertImportAllowlistNoStale`, and `TestMain` runs the package under `tmuxkit.Main` as its siblings do.
 - `configreg.Module` gains `PerNameMaps []string`, documented beside `OpenMaps`; `fingerprintOf` hashes it after the open maps; `Modules` registers `{Name: "lenses", Template: lenses.ConfigTemplate, PerNameMaps: lenses.ConfigPerNameMaps(), CheckLoad: lenses.CheckLoad, Spec: lenses.ConfigSpec}` in sort order.
 - `PATTERN-leaf-packages`'s background gains an `internal/lenses` section with its import set; `PATTERN-config-strictness`'s background lists `lenses` among the degrading callers, and `configStrictnessDegradingSet` gains `internal/lenses`.
@@ -71,7 +72,9 @@
 Tests:
 `TestConfigTemplate_DecodesAndIsSelfConsistent` and `TestResolveFan` are burlerengine's, moved.
 `TestConfigTemplate_DecodesAndIsSelfConsistent` loads through `Load` over dirs holding no `lenses.yaml`, so it owns the criterion that a load with no file resolves every template fan; it pins `twill-discussion` to D5's seven lenses in order and its entry count from 6 to 7, and keeps its `//testtiming:keep` marker and reason.
-`TestResolveFan` keeps the unknown-fan, empty-fan, over-`MaxFanLenses` and undefined-lens refusal rows.
+`TestResolveFan` keeps the unknown-fan, empty-fan, over-`MaxFanLenses` and undefined-lens refusal rows, each asserting the `lenses: ` prefix, and its "operator-defined fan and lens win over the template" subtest.
+Its subtests "zero Config resolves from the template" and "operator file without the fan resolves it from the template" are dropped, since `ResolveFan` has no per-name template fallback: `TestConfigTemplate_DecodesAndIsSelfConsistent` owns the no-file load and `TestLoad`'s first row the per-name fill.
+Its "fan undefined in both names the fan" subtest becomes "an unknown fan names the fan", over a zero `Config`.
 `TestLoad` rows: a board-default `lenses.yaml` lacking a template lens resolves a fan naming that lens with the template's prose; a hub-only lens loads and logs no unknown-keys warning (captured with `logcapture.CaptureVerbose`); a worktree-layer lens replaces the default's per name; a local-layer `lenses` entry fails naming the local file; an unknown top-level key is refused with the `lenses: ` prefix; a lens prose holding a bare `$` loads verbatim; a lens prose holding `${env:NAME}` with `NAME` unset and no default fails the load (D3's bound).
 `TestLoad`'s rows run serially, since `logcapture.CaptureVerbose` swaps the process-global logger, as `TestLoad_LayerStack`'s do.
 `TestCheckLoad` rows: the template passes; a file with two broken fans returns both failures in name order; a malformed `lenses.yaml` returns the load's error alone and resolves no fan.
@@ -84,6 +87,6 @@ a `--set` of `lenses.mine=<prose>` and `fans.mine=[mine]` succeeds, commits once
 a `--set` leaving a fan empty (`fans.standard=[]`) is refused through the load check `CheckLoad` gives the hub-wide save and leaves the board's `lenses.yaml` byte-identical.
 The other two refusals the criterion names, a fan naming an undefined lens and one over the cap, reach the same rollback through `CheckLoad`'s fan resolution, whose kinds `TestResolveFan` and `TestCheckLoad` pin.
 The guard classification that closes the local layer is pinned by `TestModules_EveryTemplateKeyClassified`'s `lenses` entry.
-`TestPrintResolved` gains a subtest printing `lenses` over a board default seeded with the template, asserting a template lens and the `twill-discussion` fan are annotated `# default`.
+That `lyx config lenses` shows the resolved file rests on the `lenses` registration, which `TestModules_SeedOnlyAndHubWideFlags` and `TestModules_EveryTemplateKeyClassified` pin, and on `TestPrintResolved`'s existing layer-annotation subtest, which covers every module through the same `Provenance` path.
 
 **ImpactSummary:** Adds one registered module and one Module field; configreg's fingerprint and module list change, burler and every consumer stay untouched, and configsync still reconciles lenses without per-name handling until card 4.

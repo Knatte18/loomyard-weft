@@ -6,6 +6,7 @@
 - `internal/configsync#ReconcileHubWideAt`
 - `internal/configsync#reconcileSparseFile`
 - `internal/configcli#reconcileEnvelope`
+- `internal/hubreconcile#logResult`
 - `internal/configsync#TestReconcileHubWideAt_SeedsFromHubPrimeLegacyOrTemplate`
 - `internal/configsync#TestReconcileAll_SparseLayers`
 - `internal/configsync#TestReconcileAll`
@@ -22,6 +23,7 @@
 `reconcileSparseFile` passes `m.PerNameMaps` to `yamlengine.Prune` and sets `KeptExtra` from its `kept`, so a sparse layer keeps a hub-only lens or fan the same way and adds nothing.
 A file holding only kept extras needs no write: the write conditions stay on added, removed and migrated keys.
 `reconcileEnvelope` renders a non-empty `KeptExtra` as `keptExtra`, omitted when empty, as it does `keptTarget`.
+`hubreconcile`'s `logResult` logs `keptExtra` beside `keptTarget`, so a hub-only lens or fan a walk keeps appears in the walk's log of a changed module.
 
 Rows: `TestReconcileHubWideAt_SeedsFromHubPrimeLegacyOrTemplate` gains `wantAdded` and `wantKeptExtra` fields, checked against the applied result when set, and a `lenses` row whose present board default is the template with one lens and one fan removed, one lens's prose tuned, the `standard` fan shortened and one hub-only lens and fan added (built in the test from `lenses.ConfigTemplate()`):
 the applied file holds the removed lens and fan again, keeps the tuned prose, the shortened fan and both hub-only entries, `wantAdded` names `lenses.<removed>` and `fans.<removed>`, and `wantKeptExtra` names the two hub-only entries.
@@ -31,4 +33,4 @@ a dry run over a file lacking one template lens and holding one hub-only lens re
 an apply over the template plus one hub-only lens reports it in `KeptExtra`, nothing added or removed, is not applied and leaves the file byte-identical.
 `TestConfigReconcileInGitRepo` seeds a `lenses.yaml` holding a hub-only lens and asserts the `lenses` entry of the reconcile envelope carries `keptExtra` naming it, and that an entry with nothing kept carries no `keptExtra` key.
 
-**ImpactSummary:** Only the lenses module declares per-name maps, so only lenses.yaml files reconcile differently; every other module passes an empty list and keeps today's results, and the envelope gains one optional field.
+**ImpactSummary:** Only the lenses module declares per-name maps, so only lenses.yaml files reconcile differently; every other module passes an empty list and keeps today's results, the envelope gains one optional field, and the hub walk's log of a changed module gains `keptExtra`.
