@@ -15,7 +15,7 @@ The fix in the Bouncer is the main one: a settled generation is finished or re-s
 ### Turn 2 — amendment budget
 
 The Shed-level episode after a converged Done is already fresh, so the full fresh budget an amendment faced came from the Bouncer's new generation, not from Shed.
-Picked: the amendment generation's soft and hard cap come from one allowance key, clamped to the perch's caps.
+Picked: the amendment generation's soft cap is one allowance key and its hard cap one round past it, each clamped to the perch's cap.
 The PR-Rework exempt skip (`PlanReviewSkippable`) already skips an exempt rework entirely; the allowance covers the non-exempt rest, and darn's Darn-Write after a PR-Gate reject.
 
 ### Turn 3 — budget-exhausted way forward
@@ -103,7 +103,51 @@ The writer checked loom's verify-failure target in `landingdeps.go` (`Webster-Bu
 
 ## Review rounds
 
-_No rounds yet._
+### Round 1
+
+Verdict BLOCKING: four BLOCKING, seven MEDIUM, eight LOW and one NIT finding; every one fixed, none disputed or deferred.
+
+- The settle record is compared only while live: it names the current generation and no round report past its round exists, so an amendment, a verify retry and a reroute round are judged (F1).
+- The code identity excludes the `_lyx` durable tree, and the document identity excludes Go's carry-over blocks and `lyx loom decision add` entries (F2, F3).
+- An amendment's successful seed Stuck carries `generation_start`, which ends the episode, so it starts at 0 (F4).
+- D2 refuses gotos on an interrupted settle too, admits them inside an unsettled amendment, and bounds the verify bypass by the failure record's time against the settle time (F5, F6, F10, F14).
+- The amendment's hard cap is one round past the allowance; Merge-Review takes no amendment (F7, F11).
+- D3's rule sits ahead of the hand-over rule and reads a status stop's error (F8, F9).
+- D4 states the pause label's values and bound, and that an unchanged write keeps the reason (F12, F13).
+- D8 keeps `friction_timeout_min` and the halted arm; D9 retries every fork-count mismatch (F15, F16).
+- Wording fixes in D3, D5 and two criteria (F17–F21).
+- The fixer's self-check forks corrected the soft-cap description, the `generation_start` once-per-generation rule, the settle time's survival across a re-settle, the pause label's `shed` refusal, and the Merge-Review way forward.
+
+### Round 2
+
+Verdict BLOCKING: one BLOCKING, three MEDIUM and one LOW finding; every one fixed, one of them differently, none disputed or deferred.
+
+- Merge-Review's case 2 records the next generation in the generation record before its seed, so the kept settle record is no longer live (F1).
+- One settle time, written by a round-by-round or `approveWithoutReview` settle and kept by a case 1 re-settle, bounds the verify bypass (F2).
+- The amendment's seed is counted once, so its count reads 1 and the soft-cap rule runs at round A, the hard cap at round A+1 (F3).
+- The code identity is the warp working-tree diff against the merge base, kept as the full diff's hash and its zero-context patch-id; the patch-id alone was not adopted, since it misses a task-side move of code (F4).
+- D7 states the allowance's validation in `reviewbudget.CheckLocal` and `reviewbudget.CheckResolved` (F5).
+
+### Round 3
+
+Verdict APPROVED: three MEDIUM and four LOW findings; every one fixed, none disputed or deferred.
+
+- A `generation_start` Stuck skips Shed's budget comparison, so a seed over a spent episode starts the generation (F1).
+- A code segment's settled side is the stored working-tree diff the settle hashed, so an uncommitted change at the settle is never shown as new (F2).
+- A document segment's base is the weft commit holding the settled artifact, read after the Commit seam returns (F3).
+- Untracked files in an exclusion set, the run's own state and a told list of harness files, leave the code identity unchanged (F4).
+- The Merge-In test reads first-parent commits and names how a Merge-In merge is recognised, and D5 states what the patch-id rule lets through and what bounds it (F5, F6).
+- This log's Q13 and Review rounds are brought up to date (F7).
+- The fixer's self-check forks added the interrupted settle's stored document base, the stored patch to the archive and `PATTERN-tolerant-records`, the per-recipe bound of the patch-id rule, the fast-forward Merge-In, and the accepted false amendment after a task commit of hashed uncommitted work.
+
+### Round 4
+
+Verdict APPROVED: one MEDIUM and two LOW findings; every one fixed, none disputed or deferred.
+
+- A `budget_capped` entry stops the count unless a goto entry follows it directly, so a goto onto the halted run keeps the spent budget and only a resume grants a fresh one (F1).
+- The generation record is written at every seed, so a settled verdict with no settle record under a generation record is an unharvested verdict, settled through the harvest path, and the clear is kept for an older binary's directory (F2).
+- The told skip list names exact paths of harness-written files, exempts them only while untracked, and states what a change confined to them lets through (F3).
+- The fixer's self-check forks narrowed F1's goto test to a goto directly after the capped entry, so a later goto keeps a resume's grant; had case 3 harvest only an unchanged subject, against an identity each judge spawn records; wrote the generation record on `approveWithoutReview` paths; read a missing generation record as generation 1 for liveness; and dropped a false claim that the verify tiers run over the whole tree.
 
 ## Question ledger
 
@@ -119,4 +163,7 @@ _No rounds yet._
 - Q10 (auto-pick): Does the Webster reroute edge change? — No; it is outside the board entry.
 - Q11 (auto-pick): Does loom's verify retry onto a settled review row stay? — Yes, admitted by D2 for the row the failure record names.
 - Q12 (auto-pick): How does a pause say who asked? — A `--by` label on the pause verbs; D4.
-- Q13 (auto-pick): What is a code segment's subject identity? — The task's change against its merge base with the parent; D5.
+- Q13 (auto-pick): What is a code segment's subject identity? — The warp working-tree diff against the merge base with the parent, identified by the full diff's hash and its zero-context patch-id; the run's records live on the weft side, so no warp diff holds them; D5.
+- Q14 (auto-pick): Does a changed merge-in get the amendment allowance? — No; Merge-Review starts a full generation; D6.
+- Q15 (auto-pick): Does the pause label widen goto's `--by`? — No; goto's `--by` stays `shed`-only, and the pause verbs take a free label that refuses `shed`; D4.
+- Q16 (auto-pick): Does the after-halt reflection's retirement remove `friction_timeout_min`? — No; the key stays for Friction-Reflect, and only the bootstrap's comments change; D8.
