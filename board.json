@@ -1378,6 +1378,23 @@
       "body": "Imported from [issue #759](https://github.com/Knatte18/loomyard/issues/759).\n\n## What happened\n\nThe Go driver found a run in state `paused` with no recorded reason, current producer `Plan-Bouncer`, 32 history entries.\nIt wrote a `go-driver-paused` friction note pointing at a `drive-reports/drive-envelope-*.json` envelope and nothing else.\nThis came right after the same run halted `failed` at `Plan-Burler-Review` (a reed \"did not track strand\" liveness failure) and the history shows a `Plan-Bouncer` stuck entry as the last record.\n\n## Why it is abnormal\n\nA paused run must say who or what paused it.\nWith no reason, neither the operator nor the driver can tell an intended pause from a lost handoff, and the driver cannot decide whether to resume.\n\n## What to do\n\n- Make every transition into `paused` record a reason (operator request, hibernate, budget, crash-resume, ...), and have the driver refuse or label a paused state that lacks one.\n- Check whether the failed-then-paused sequence at the same loom run (`Plan-Burler-Review` failure, then a `Plan-Bouncer` pause) is a path that writes `paused` without a reason.\n\nProvenance: task `ubuntu-2404-support`, notes `go-driver-paused.md`, `loom-halt.md`.\n",
       "created": "2026-10-19T18:48:49Z",
       "revised": "2026-10-19T18:48:54Z"
+    },
+    {
+      "id": 698,
+      "slug": "prod-pointer-per-machine",
+      "title": "prod pointer is shared across machines while each binary is local",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "deploy"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "A deploy on one machine moves origin/prod, leaving other machines silently behind it",
+      "body": "## Seen (2026-10-20)\n\n- `update-plugins.sh` (`tools/deploy/main.go`) builds `lyx` into the machine's Go bin dir, syncs the plugins, then pushes `HEAD` to `origin/prod`.\n- `prod` is one pointer on origin, shared by every machine, while each machine's installed binary is local.\n- On the Kubuntu machine a deploy moved `prod` to `a1f435dc`; the work laptop still ran a binary built from `c03af73d` while `prod` claimed `a1f435dc`.\n  Nothing on either machine shows that the laptop is behind `prod`.\n\n## Idea\n\n`prod` cannot say what a given machine runs, so it is the wrong record for \"what is deployed\".\nOptions to weigh:\n\n- Keep the deployed commit per machine (a local stamp beside the binary, which `lyx` already knows as its build revision), and let `prod` mean only \"newest commit cleared for production\".\n- Have `lyx` (or `tender status`, or orch start) warn when the installed binary is behind `origin/prod`, naming `update-plugins.sh` as the way to catch up.\n- Drop the pushed `prod` pointer altogether if nothing needs a shared one.\n",
+      "created": "2026-10-20T05:53:31Z",
+      "revised": "2026-10-20T05:53:31Z"
     }
   ]
 }
