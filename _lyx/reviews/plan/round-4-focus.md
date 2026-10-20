@@ -1,0 +1,11 @@
+---
+round: 4
+focus:
+  - "Mutation envelopes: `PATTERN-mutation-record` requires a mutating verb's envelope to carry `mutations` as an array and `partial` as a bool at the top level, as `fabriccli/envelope.go` does. After this task `lyx orch start` and `lyx cleanup --apply` remove pairs, tag branches and fast-forward worktrees, and the wake daemon does the same with no envelope. Settle whether the reconcile's mutation record (removed pairs, snapshot tags, moved branches) reaches each of those surfaces in the plan's cards, and whether a planned test asserts it there."
+  - "Where a command runs: a way-forward line that names `lyx fabric push` for a records-side failed push. `RequireWarpWorktree` in `internal/fabricengine/fabric.go` refuses every fabric verb from a weft sibling. Settle whether each way-forward line the plan prescribes names a command runnable from the directory it sends the operator to, for code, records and prime records, and whether the exact-line test rows pin that directory."
+  - "Assertions at the printing hops: the way-forward line is judged in the origin reconcile judge, but it is printed by the wake notice, by the `lyx cleanup --apply` refusal and by the orch start refusal. Settle whether a planned test at each printing hop asserts the exact line the judge produced, so a hop that composed its own line would fail."
+  - "Prime flag and class rows: `pushClassified` sets the prime flag on a failed push record from the prime-worktree predicate. Settle whether a planned row pushes a rejection and an auth failure from the prime through `Fabric.PushBranch`, Finalize's parent push and Publish's Stuck reason, and asserts the prime form of the line, so a flag that is never set fails a test."
+  - "Two-sided and per-surface printing: a both-sides records push failure is an `errors.Join` of two `*PushFailedError` values, and `errors.As` resolves only the first. Settle whether every caller that appends a way-forward line prints each side's line exactly once, and whether the dirty-state line has a runnable form for a path in the hub's `_board` worktree, where `lyx fabric commit` is refused."
+---
+
+Focus for round 4 follows the carry-over of round 3's ground; every entry names a question to settle, none a verdict.
