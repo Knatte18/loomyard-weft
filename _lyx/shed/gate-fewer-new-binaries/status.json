@@ -1,12 +1,13 @@
 {
   "current_producer": "Worktree-Teardown",
-  "state": "blocked",
-  "error": "worktree removal failed (session shutdown already succeeded): the pair for \"gate-fewer-new-binaries\" was left in place because archiving its run records to the remote failed: archiving the pair's records before teardown failed: push archive tag \"archive/gate-fewer-new-binaries/88d95b1f01f5\" to \"origin\": git push origin refs/tags/archive/gate-fewer-new-binaries/88d95b1f01f5: exit 1: To https://github.com/Knatte18/loomyard-weft  ! [remote rejected]     archive/gate-fewer-new-binaries/88d95b1f01f5 -\u003e archive/gate-fewer-new-binaries/88d95b1f01f5 (failed) error: failed to push some refs to 'https://github.com/Knatte18/loomyard-weft'; fix the failure named here (most often an unreachable remote), then resume this run with \"lyx batten run gate-fewer-new-binaries\"",
+  "state": "running",
+  "error": "",
+  "pending_by": "shed",
   "pause_requested": false,
   "activity": {
     "now": "Worktree-Teardown",
     "last": "Worktree-Teardown → stuck",
-    "wait": "worktree removal failed (session shutdown already succeeded): the pair for \"gate-fewer-new-binaries\" was left in place because archiving its run records to the remote failed: archiving the pair's records before teardown failed: push archive tag \"archive/gate-fewer-new-binaries/88d95b1f01f5\" to \"origin\": git push origin refs/tags/archive/gate-fewer-new-binaries/88d95b1f01f5: exit 1: To https://github.com/Knatte18/loomyard-weft  ! [remote rejected]     archive/gate-fewer-new-binaries/88d95b1f01f5 -\u003e archive/gate-fewer-new-binaries/88d95b1f01f5 (failed) error: failed to push some refs to 'https://github.com/Knatte18/loomyard-weft'; fix the failure named here (most often an unreachable remote), then resume this run with \"lyx batten run gate-fewer-new-binaries\""
+    "wait": ""
   },
   "history": [
     {
