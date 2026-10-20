@@ -1,6 +1,6 @@
-# Language-neutral gate: lyx gate run takes a slot for any command
+# [.NET 002] Language-neutral gate: lyx gate run takes a slot for any command
 
-`gate-language-neutral` · Note · enhancement, config, webster, shed
+`gate-language-neutral` · Note · enhancement, config, webster, shed, dotnet
 
 ## Seen (orch, 2026-10-17)
 

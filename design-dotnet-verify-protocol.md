@@ -1,6 +1,6 @@
-# Verification protocol for a .NET repo: slow-suite tier, numerical-baseline capture/compare, verify timeouts and logs
+# [.NET 005] Verification protocol for a .NET repo: slow-suite tier, numerical-baseline capture/compare, verify timeouts and logs
 
-`dotnet-verify-protocol` · Note · enhancement, loom, webster, config
+`dotnet-verify-protocol` · Note · enhancement, loom, webster, config, dotnet
 
 Imported from [issue #609](https://github.com/Knatte18/loomyard/issues/609).
 
