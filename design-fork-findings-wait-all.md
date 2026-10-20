@@ -1,6 +1,6 @@
 # A writer edits nothing until every lens fork has returned
 
-`fork-findings-wait-all` · Task · enhancement, stencil, burler, loom · running · Darn-Burler-Review
+`fork-findings-wait-all` · Task · enhancement, stencil, burler, loom · running · Darn-Burler-Fix
 
 ## Seen (operator, 2026-10-20)
 
