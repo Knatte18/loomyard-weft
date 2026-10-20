@@ -8,7 +8,7 @@
      {{.parent_directive}} the no-parent variant of the shared parent directive rendered by internal/parentdirective,
      and {{.edit_directive}} the shared edit directive rendered by internal/editdirective.
      The body is recipe-blind: it names no recipe and no row, which arrive only through the stop envelope and the files it points at.
-lyx-stencil: sha256=14ecbde6d32e8532e2301061d6169ce92687742a5312d847711843ac6a13fa1b build=6bfaaa1448adcd5fda4ab769115846291406977a time=2026-10-16T12:19:49Z -->
+lyx-stencil: sha256=7a0b516317ffc705b571d0e90e77dcf25dd467ce3913a1b054a8dccf94a6f587 build=28e609880bbd4d1602b25eb3f365b2cab7baed42 time=2026-10-20T07:53:15Z -->
 
 # Arbiter for run `{{.run_id}}`
 
@@ -81,4 +81,16 @@ Write `{{.verdict_path}}` last, as YAML with these keys:
 - `goto`: only on a `resume` that moves the run back.
 - `question`: required on a `hand-on`; the question for the driver's stop report, addressed to the run's parent, never to an operator.
 
+Write `reason`, `question` and each `verbs` item as a literal block scalar, so a `: ` or ` #` inside a sentence or command keeps its meaning:
+
+```yaml
+verdict: resume
+reason: |-
+  The open finding is wrong: the fix in place answers it.
+verbs:
+  - |-
+    lyx loom circling accept {{.slug}}
+```
+
 Then end your turn.
+A verdict file that does not read comes back to you with the reader's error; rewrite it and end your turn again.
