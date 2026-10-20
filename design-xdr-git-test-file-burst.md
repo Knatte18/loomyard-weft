@@ -1,6 +1,6 @@
 # Git test fixtures trip Cortex XDR on the work laptop
 
-`xdr-git-test-file-burst` · Note · enhancement, fabric, deploy
+`xdr-git-test-file-burst` · Note · enhancement, fabric
 
 ## Seen (operator report, 2026-10-16)
 
