@@ -5,7 +5,7 @@
   "pause_requested": false,
   "activity": {
     "now": "Run-Shed",
-    "last": "Open-IDE → done",
+    "last": "Run-Shed → bounced to Run-Shed",
     "wait": ""
   },
   "history": [
@@ -38,6 +38,38 @@
       "outcome": "done",
       "output": "",
       "at": "2026-10-20T08:52:01Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "child running → blocked at Publish",
+      "at": "2026-10-20T10:14:07Z",
+      "budget_exempt": true,
+      "routed_to": "Run-Shed"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "automatic Publish verify retry: sent the child to Darn-Write",
+      "at": "2026-10-20T10:14:07Z",
+      "budget_exempt": true,
+      "routed_to": "Run-Shed"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "automatic Publish verify retry: resumed the child at Darn-Write",
+      "at": "2026-10-20T10:14:38Z",
+      "budget_exempt": true,
+      "routed_to": "Run-Shed"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "child paused → running at Darn-Write",
+      "at": "2026-10-20T10:14:40Z",
+      "budget_exempt": true,
+      "routed_to": "Run-Shed"
     }
   ]
 }
