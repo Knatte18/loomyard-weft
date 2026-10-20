@@ -2,6 +2,8 @@
 
 `lenses-module` · Task · enhancement, burler, loom, config
 
+Depends on: [`verify-diff-scope`](design-verify-diff-scope.md)
+
 ## Seen (2026-10-19)
 
 Every lens and fan lyx has lives in burler's template, `internal/burlerengine/template.yaml`: the reviewer fans (`review-discussion`, `review-plan`, `review-code`), the fixer fans (`fix-discussion`, `fix-plan`, `fix-code`), the writer twill fans (`twill-discussion`, `twill-plan`) and the older `standard`, `full`, `discussion` and `plan`, each lens with its prose.
