@@ -1,11 +1,11 @@
 {
-  "current_producer": "PR-Gate",
+  "current_producer": "Darn-Write",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "PR-Gate",
-    "last": "PR-Align → done",
+    "now": "Darn-Write",
+    "last": "PR-Gate → bounced to Darn-Write",
     "wait": ""
   },
   "history": [
@@ -133,6 +133,13 @@
       "outcome": "done",
       "output": "",
       "at": "2026-10-20T09:53:35Z"
+    },
+    {
+      "producer": "PR-Gate",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-20T09:53:36Z",
+      "routed_to": "Darn-Write"
     }
   ],
   "product": {
