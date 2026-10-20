@@ -1,0 +1,19 @@
+{
+  "current_producer": "Worktree-Create",
+  "state": "blocked",
+  "error": "source worktree has uncommitted changes",
+  "pause_requested": false,
+  "activity": {
+    "now": "Worktree-Create",
+    "last": "Worktree-Create → stuck",
+    "wait": "source worktree has uncommitted changes"
+  },
+  "history": [
+    {
+      "producer": "Worktree-Create",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-20T16:01:00Z"
+    }
+  ]
+}
