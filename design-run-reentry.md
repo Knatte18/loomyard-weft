@@ -72,6 +72,13 @@ Taking another planner round does not reset the review budget.
 A segment re-entered for an amendment of an already reviewed artifact keeps its spent budget and gets at most a small allowance on top, one round by default, configurable in `loom.yaml`, never the full fresh budget.
 The review of such a round may be scoped to the change against the reviewed artifact.
 
+### Seen again: a PR-Gate reject in darn (2026-10-20, run `gate-fewer-new-binaries`)
+
+The run had passed its review round, Merge-In and Publish when the alignment agent rejected at PR-Gate with one finding: the decision record's Scope bullet did not name the loom plan verify.
+The fix was a wording change plus two doc lines, yet the reject re-spawned Darn-Write and the run went through Darn-Bouncer and a whole new Darn-Burler-Review round, then verify and Publish again, tens of minutes on OSL-1046.
+Operator view (2026-10-20): a whole new review round after such a small fix is overkill.
+The same rule covers this re-entry: a rework after a PR-Gate reject, in darn's Darn-Write and loom's PR-Rework, keeps the review segment's spent budget, and its check may be scoped to the reject's findings and the diff since the reviewed head.
+
 
 ## Note `paused-state-reason`
 

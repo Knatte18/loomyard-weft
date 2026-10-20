@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-20 10:01 UTC; every age below is as of then.
+Rendered 2026-10-20 10:02 UTC; every age below is as of then.
 
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
@@ -28,7 +28,7 @@ Waits on nothing open; can start now.
 | # | Task | Slug | Recipe | After | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | 1 | **Origin reconcile before anything that matters, and pushes that never fail silently**<br>• ls-remote over warp and records repos at orch start, wake, batten resume, Merge-In and Finalize; fast-forward, landed-elsewhere cleanup, stop on divergence; rejected push retries and reports | [`origin-reconcile`](design-origin-reconcile.md) | loom |  | 2d | 3h | fabric, batten, orch, creel, shed |
-| 2 | **Goto, resume and stops keep what a run already settled**<br>• Goto as a controlled re-entry: converged verdicts, spent review budget and the pause reason survive a goto or stop; no friction session per stop; a zero-fork review round is retried | [`run-reentry`](design-run-reentry.md) | loom |  | 16h | 3h | shed, loom, burler, shuttle |
+| 2 | **Goto, resume and stops keep what a run already settled**<br>• Goto as a controlled re-entry: converged verdicts, spent review budget and the pause reason survive a goto or stop; no friction session per stop; a zero-fork review round is retried | [`run-reentry`](design-run-reentry.md) | loom |  | 16h | 0m | shed, loom, burler, shuttle |
 
 #### Normal priority
 
@@ -63,7 +63,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 4 | **Audit the use of the twill and lens review setup at every perch**<br>• After about ten loom runs, measure what the lens fans and twill fixers catch per perch against their cost, and set the standard review rounds from it | [`review-setup-audit`](design-review-setup-audit.md) | 1d | 1d | burler, loom, report |
 | 5 | **Audit: ideas from tree-sitter-analyzer for quarry and its use in lyx**<br>• What the Python tree-sitter-analyzer offers that quarry or lyx could use if built in Go, what already exists, and what would not pay off | [`tsa-quarry-audit`](design-tsa-quarry-audit.md) | 1d | 1d | quarry, webster, burler, loom |
 | 6 | **Audit: Discussion and Plan quality before and after the twill writers**<br>• Plan round-1 findings fell about half with the twill Plan writer; Discussion is the same or slightly better; fork0 and the code list added no further gain | [`twill-writer-quality-audit`](design-twill-writer-quality-audit.md) | 1d | 1d | loom, burler, stencil |
-| 7 | **Sweep go_parallel on OSL-1046 with Cortex XDR**<br>• Time both gate tiers on the work laptop on a quiet machine and log them in docs beside the Neve numbers, with full hardware info | [`bench-osl1046-xdr`](design-bench-osl1046-xdr.md) | 3h | 14m |  |
+| 7 | **Sweep go_parallel on OSL-1046 with Cortex XDR**<br>• Time both gate tiers on the work laptop on a quiet machine and log them in docs beside the Neve numbers, with full hardware info | [`bench-osl1046-xdr`](design-bench-osl1046-xdr.md) | 3h | 15m |  |
 | 8 | **[.NET 001] Measure NORCE Models build and test on OSL-1046 with Cortex XDR**<br>• Clock restore, build and test of Models cold, warm and in a second checkout before building .NET support | [`dotnet-bench-osl1046`](design-dotnet-bench-osl1046.md) | 52m | 52m | dotnet |
 
 ### Bugs
@@ -81,7 +81,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Note | Slug | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| 1 | **[WS 005] One dobby daemon per beam owns and drives its runs**<br>• Each beam (a worktree with an orch thread) gets a Go daemon, started by lyx orch start, that follows its runs status files, starts ready tasks, lands, settles mechanical stops and tells the thread only what needs judgement | [`umbrella-daemon`](design-umbrella-daemon.md) | 7d | 17h | batten, orch, shed, workspaces, loom, board |
+| 1 | **[WS 005] One dobby daemon per beam owns and drives its runs**<br>• Each beam (a worktree with an orch thread) gets a Go daemon, started by lyx orch start, that follows its runs status files, starts ready tasks, lands, settles mechanical stops and tells the thread only what needs judgement | [`umbrella-daemon`](design-umbrella-daemon.md) | 7d | 18h | batten, orch, shed, workspaces, loom, board |
 | 2 | **Align each perch writer twill lenses with its reviewer lenses, Discussion first**<br>• The Discussion writer runs emphasis lenses while its reviewer hunts design holes by procedure, and design holes are what the review still finds | [`writer-reviewer-lens-align`](design-writer-reviewer-lens-align.md) | 1d | 17h | burler, loom, config |
 
 #### Normal priority
@@ -90,7 +90,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | --- | --- | --- | --- | --- | --- |
 | 3 | **Codex CLI as a second shuttle engine: hands-on spike, then codexengine**<br>• Codex CLI as a second engine to offload Claude tokens: short hands-on tests first, then a codexengine for single-session roles | [`codex-engine`](design-codex-engine.md) | 2w | 4d | shuttle, codex |
 | 4 | **finalize: the discrepancy-document conflict shape**<br>• Divergences that cannot be a git conflict get a precomputed document for the resolving agent instead of markers | [`finalize-discrepancy-doc`](design-finalize-discrepancy-doc.md) | 2w | 2w | fabric, loom |
-| 5 | **[.NET 005] Verification protocol for a .NET repo: slow-suite tier, numerical-baseline capture/compare, verify timeouts and logs** | [`dotnet-verify-protocol`](design-dotnet-verify-protocol.md) | 2w | 51m | loom, webster, config, dotnet |
+| 5 | **[.NET 005] Verification protocol for a .NET repo: slow-suite tier, numerical-baseline capture/compare, verify timeouts and logs** | [`dotnet-verify-protocol`](design-dotnet-verify-protocol.md) | 2w | 52m | loom, webster, config, dotnet |
 | 6 | **Run verbs in one shared namespace, not under lyx loom**<br>• lyx loom decision/status/goto/approve act on darn runs too; move recipe-neutral run verbs to one shared namespace | [`run-verbs-shared`](design-run-verbs-shared.md) | 5d | 5d | shed, loom |
 | 7 | **The arbiter in shed for every shed run, batten included**<br>• The batten Go driver has a tackler but no arbiter; move the arbiter and its keys into shed beside the tackler | [`shed-arbiter-all`](design-shed-arbiter-all.md) | 5d | 5d | shed, batten, loom, config |
 | 8 | **Paste cited code into a review rounds context**<br>• Reviewers edit nothing and review a fixed commit, so code pasted at round start cannot go stale; measure it against todays reviewer | [`review-inline-code`](design-review-inline-code.md) | 8d | 4d | burler, stencil |
@@ -117,19 +117,18 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 29 | **A question research can settle is settled in Discussion, never deferred to Plan or an implementer**<br>• Discussion writer researches the facts its design rests on; reviewers flag a deferred research question or a halt-on-discovery rule | [`research-in-discussion`](design-research-in-discussion.md) | 16h | 16h | loom, stencil, burler |
 | 30 | **prod pointer is shared across machines while each binary is local**<br>• A deploy on one machine moves origin/prod, leaving other machines silently behind it | [`prod-pointer-per-machine`](design-prod-pointer-per-machine.md) | 4h | 4h | deploy |
 | 31 | **Darn-Write verify cannot pass a failure fixed on the parent**<br>• After a Publish verify failure is sent back to Darn-Write, its verify re-runs the failed test on a branch that lacks the parent fix | [`darn-verify-parent-fix`](design-darn-verify-parent-fix.md) | 2h | 2h | batten |
-| 32 | **A PR-Gate reject with a small fix re-runs the whole darn review segment**<br>• After PR-Gate rejects for a one-line wording fix, darn re-spawns Darn-Write and runs the full Darn-Bouncer/Burler review round, verify and Publish again | [`pr-gate-reject-small-fix`](design-pr-gate-reject-small-fix.md) | 0m | 0m | shed, burler |
 
 #### Low priority
 
 | # | Note | Slug | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| 33 | **Fabric's Windows path behaviour verified on a Windows host**<br>• Unverified after six hardening rounds; needs a Windows host, not design; take it only if Windows becomes relevant | [`fabric-windows`](design-fabric-windows.md) | 2w | 10d | fabric |
-| 34 | **warp-visibility: CLAUDE.local.md invisible in the Fabric repo's git history**<br>• Expose CLAUDE.local.md by symlink so nothing lyx-related shows in the Fabric repo's history; the constraints half is out of date | [`warp-visibility`](design-warp-visibility.md) | 2w |  | ide, fabric |
-| 35 | **Windows verify timeout kills the whole process tree**<br>• On Windows the verifytree timeout kills only the shell, not the process tree it started | [`verify-watchdog`](design-verify-watchdog.md) | 12d | 4d | shed |
-| 36 | **[WS 007] An anchor per umbrella**<br>• Let an umbrella work in its own subdirectory of the repository, inherited by its tasks; hard to change now | [`umbrella-anchor`](design-umbrella-anchor.md) | 1d | 1d | fabric, config, workspaces |
-| 37 | **reed warns on every strand launch on tmux 3.4 about allow-set-title**<br>• The optional allow-set-title fallback is right, but its Warn repeats per pane on a supported tmux | [`allow-set-title-warn-noise`](design-allow-set-title-warn-noise.md) | 4h | 4h | reed |
-| 38 | **Agents commit code through lyx fabric commit, not raw git commit**<br>• Darn writers and webster implementer and verify-fix forks commit with raw git commit; route them through lyx fabric commit | [`agents-commit-through-fabric`](design-agents-commit-through-fabric.md) | 48m | 40m | fabric, stencil |
-| 39 | **Three tests spell LYX_TRACE_ID as a literal instead of logger.TraceIDEnv**<br>• gate-fewer-new-binaries named the trace id variable through logger.TraceIDEnv at its sites but left three test files with the literal | [`trace-id-env-literal`](design-trace-id-env-literal.md) | 27m | 27m | reed, shuttle |
+| 32 | **Fabric's Windows path behaviour verified on a Windows host**<br>• Unverified after six hardening rounds; needs a Windows host, not design; take it only if Windows becomes relevant | [`fabric-windows`](design-fabric-windows.md) | 2w | 10d | fabric |
+| 33 | **warp-visibility: CLAUDE.local.md invisible in the Fabric repo's git history**<br>• Expose CLAUDE.local.md by symlink so nothing lyx-related shows in the Fabric repo's history; the constraints half is out of date | [`warp-visibility`](design-warp-visibility.md) | 2w |  | ide, fabric |
+| 34 | **Windows verify timeout kills the whole process tree**<br>• On Windows the verifytree timeout kills only the shell, not the process tree it started | [`verify-watchdog`](design-verify-watchdog.md) | 12d | 4d | shed |
+| 35 | **[WS 007] An anchor per umbrella**<br>• Let an umbrella work in its own subdirectory of the repository, inherited by its tasks; hard to change now | [`umbrella-anchor`](design-umbrella-anchor.md) | 1d | 1d | fabric, config, workspaces |
+| 36 | **reed warns on every strand launch on tmux 3.4 about allow-set-title**<br>• The optional allow-set-title fallback is right, but its Warn repeats per pane on a supported tmux | [`allow-set-title-warn-noise`](design-allow-set-title-warn-noise.md) | 4h | 4h | reed |
+| 37 | **Agents commit code through lyx fabric commit, not raw git commit**<br>• Darn writers and webster implementer and verify-fix forks commit with raw git commit; route them through lyx fabric commit | [`agents-commit-through-fabric`](design-agents-commit-through-fabric.md) | 49m | 41m | fabric, stencil |
+| 38 | **Three tests spell LYX_TRACE_ID as a literal instead of logger.TraceIDEnv**<br>• gate-fewer-new-binaries named the trace id variable through logger.TraceIDEnv at its sites but left three test files with the literal | [`trace-id-env-literal`](design-trace-id-env-literal.md) | 28m | 28m | reed, shuttle |
 
 ### Features
 
@@ -165,4 +164,4 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Note | Slug | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| 19 | **[.NET 003] Scoped build and test for C# hubs**<br>• Verify gates in a .NET hub build and test only the projects a card touches, since a scanned Windows machine makes every build slow. | [`dotnet-scoped-verify`](design-dotnet-scoped-verify.md) | 7d | 51m | shed, webster, dotnet |
+| 19 | **[.NET 003] Scoped build and test for C# hubs**<br>• Verify gates in a .NET hub build and test only the projects a card touches, since a scanned Windows machine makes every build slow. | [`dotnet-scoped-verify`](design-dotnet-scoped-verify.md) | 7d | 52m | shed, webster, dotnet |
