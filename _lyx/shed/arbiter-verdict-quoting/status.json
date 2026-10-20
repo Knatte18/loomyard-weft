@@ -1,11 +1,11 @@
 {
-  "current_producer": "Darn-Bouncer",
+  "current_producer": "Darn-Burler-Review",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Darn-Bouncer",
-    "last": "Darn-Write → done",
+    "now": "Darn-Burler-Review",
+    "last": "Darn-Bouncer → bounced to Darn-Burler-Review",
     "wait": ""
   },
   "history": [
@@ -237,6 +237,13 @@
         }
       ],
       "by": "shed"
+    },
+    {
+      "producer": "Darn-Bouncer",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-20T07:33:55Z",
+      "routed_to": "Darn-Burler-Review"
     }
   ],
   "product": {
