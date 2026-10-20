@@ -17,7 +17,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | **Arbiter verdict with an unquoted verbs item containing ': ' is unparseable**<br>• `darn: review_hard_max_bounces 1`<br>• `darn: review_max_bounces 1` | [`arbiter-verdict-quoting`](design-arbiter-verdict-quoting.md) | darn | Darn-Write | 13h | 12m | shed, loom |
+| 1 | **Arbiter verdict with an unquoted verbs item containing ': ' is unparseable**<br>• `darn: review_hard_max_bounces 1`<br>• `darn: review_max_bounces 1` | [`arbiter-verdict-quoting`](design-arbiter-verdict-quoting.md) | darn | Darn-Bouncer | 13h | 12m | shed, loom |
 
 ### Ready
 
@@ -113,7 +113,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 27 | **lyx batten run starts in its own window by default**<br>• Every batten run is started with --window, so the window should be the default and foreground the opt-in. | [`batten-window-default`](design-batten-window-default.md) | 19h | 19h | batten, reed, orch |
 | 28 | **A halt a plan card asks for reaches the parent as a question, not as a batch failure**<br>• A card-requested halt went through recover-batch, tackler and arbiter as a failure; it should go straight to the parent and the next attempt should carry the decision | [`card-halt-is-question`](design-card-halt-is-question.md) | 12h | 12h | webster, shed, loom |
 | 29 | **A question research can settle is settled in Discussion, never deferred to Plan or an implementer**<br>• Discussion writer researches the facts its design rests on; reviewers flag a deferred research question or a halt-on-discovery rule | [`research-in-discussion`](design-research-in-discussion.md) | 12h | 12h | loom, stencil, burler |
-| 30 | **prod pointer is shared across machines while each binary is local**<br>• A deploy on one machine moves origin/prod, leaving other machines silently behind it | [`prod-pointer-per-machine`](design-prod-pointer-per-machine.md) | 20m | 20m | deploy |
+| 30 | **prod pointer is shared across machines while each binary is local**<br>• A deploy on one machine moves origin/prod, leaving other machines silently behind it | [`prod-pointer-per-machine`](design-prod-pointer-per-machine.md) | 21m | 21m | deploy |
 
 #### Low priority
 
@@ -123,7 +123,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 32 | **warp-visibility: CLAUDE.local.md invisible in the Fabric repo's git history**<br>• Expose CLAUDE.local.md by symlink so nothing lyx-related shows in the Fabric repo's history; the constraints half is out of date | [`warp-visibility`](design-warp-visibility.md) | 2w |  | ide, fabric |
 | 33 | **Windows verify timeout kills the whole process tree**<br>• On Windows the verifytree timeout kills only the shell, not the process tree it started | [`verify-watchdog`](design-verify-watchdog.md) | 12d | 4d | shed |
 | 34 | **[WS 007] An anchor per umbrella**<br>• Let an umbrella work in its own subdirectory of the repository, inherited by its tasks; hard to change now | [`umbrella-anchor`](design-umbrella-anchor.md) | 1d | 1d | fabric, config, workspaces |
-| 35 | **reed warns on every strand launch on tmux 3.4 about allow-set-title**<br>• The optional allow-set-title fallback is right, but its Warn repeats per pane on a supported tmux | [`allow-set-title-warn-noise`](design-allow-set-title-warn-noise.md) | 17m | 17m | reed |
+| 35 | **reed warns on every strand launch on tmux 3.4 about allow-set-title**<br>• The optional allow-set-title fallback is right, but its Warn repeats per pane on a supported tmux | [`allow-set-title-warn-noise`](design-allow-set-title-warn-noise.md) | 18m | 18m | reed |
 
 ### Features
 
