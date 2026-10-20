@@ -1,55 +1,42 @@
-# Keep gate test results cached across re-runs and run a failed test first
+# Gate: run the integration tier once and keep test cache keys stable
 
-A verify on an unchanged tree now takes every package from Go's test cache.
-A verify after a Publish failure runs the failing test before the full command.
-On OSL-1046 the re-run of the integration-only verify took 26.6 s with all 162 packages cached.
-The two-tier verify before took 186.0 s with 99 of 324 package runs cached.
+A verify on OSL-1046 linked two sets of test binaries that Cortex XDR holds for 8-10 s each, and a re-run on an unchanged tree ran many packages again.
+This change makes verify run the `integration` tier alone, keeps per-invocation values out of what go test reads, and runs a failed test before the full command.
 
-## What changed
+## What changes
 
-- **Verify runs the `integration` tier alone.**
-  The tag compiles every untagged test too.
-  The only `//go:build !integration` files are TestMain shims whose tagged TestMain does the same setup, so the separate unit run only cost its own wall time and test binaries.
-  The hub's `darn.yaml` verify, which is hub-wide config on Bolt, was changed by the parent with the operator's approval.
-  This branch changes `CLAUDE.md`'s push rule to match.
-- **`lyx gate test` drops `LYX_TRACE_ID` from go test's environment** (`internal/gatecli/run.go`).
-  Every `lyx` process exports a new trace id, and Go keys a cached test result on every variable a test reads, so each package that logs missed the cache on every run.
-  `logger.TraceIDEnv` now names the variable.
-- **Inside a hub the prebuilt `lyx` of a tagged run lives in a content-addressed store** (`internal/gatecli/prebuild.go`, `gateslot.Pool.PrebuiltDir`).
-  The build still goes to the process run directory.
-  It is then copied into `<gate slot dir>/prebuilt/lyx-<16 hex digits of its SHA-256>` through a per-process staging file and a rename, and `gateslot.PrebuiltLyxEnv` names that copy.
-  An unchanged tree therefore exports the same path every run, since the `-trimpath` build is reproducible, and a changed `lyx` gets a new path, so no cached pass outlives it.
-  A stored binary is reused and its modification time refreshed, and each store prunes the other entries unused for two hours.
-  Outside a hub the per-invocation path stays.
-- **A shedbuild test no longer writes into its package directory** (`internal/shedbuild/load_test.go`).
-  It created and removed a fixture there, which changed `internal/shedbuild`'s modification time on every run, and every source scan that lists `internal/` missed the cache.
-  It now uses the package's own `doc.go` as the relative path that resolves.
-- **The loom verify gate runs a Publish failure's failing tests first** (`internal/loomshed/verifygate.go`, `publishfailure.go`).
-  `publishFailureSteps` now returns the failing-test steps and the `tmux` package pass separately.
-  The gate puts the failing tests before the told or derived command and the package pass after it, in both the round and the whole-diff form.
-  `PATTERN-test-speed.md`'s gate table says the same.
-- **`docs/benchmarks/gate-test-xdr.md`** gains a section with the before and after runs and the three causes of the misses.
+- `CLAUDE.md`'s push rule names one run, `lyx gate test --tags integration ./...`.
+  The `integration` tag compiles every untagged test too; the only `!integration` files are TestMain shims whose tagged TestMain does the same setup and more, so the unit run was pure repetition.
+- `lyx gate test` removes `LYX_TRACE_ID` from go test's environment, beside the strand name it already removes.
+  Every `lyx` process mints a new trace id, so each gate run changed the cache key of every package whose code reads it through `internal/logger`.
+  `logger.TraceIDEnv` now names the variable, and `reedengine` and `shedverbs` use it instead of the literal.
+- Inside a hub, a tagged `lyx gate test` publishes the prebuilt `lyx` into a store under the gate-slot directory, named by the binary's SHA-256, and exports that path.
+  Before, the path was a fresh directory per run, so every package reading it through `internal/testkit/lyxbin` missed the cache on every tagged run.
+  The path is stable while the tree is unchanged and changes with the binary, so a cached result is never reused for a changed `lyx`.
+  Outside a hub the per-invocation path and its cleanup stay.
+- The loom verify gate (`internal/loomshed`), in both its round and whole-diff forms, runs a Publish failure record's failing tests before the told or derived command.
+  The `tmux` pass over the impacted packages stays after it.
+  A failure that still holds is known in seconds, and the full tier runs only once it passes.
+- A test in `internal/shedbuild` no longer writes and removes a fixture directory, which changed the `internal/` listing that the source scans read.
+- `docs/benchmarks/gate-test-xdr.md` records the before and after on OSL-1046: a re-run on an unchanged tree ran 0 of 162 packages and took 26.6 s, against 186.0 s for the former two-tier verify.
 
 ## Design decisions
 
-- The store sits in the hub's gate-slot directory, outside every worktree.
-  Go checks only files inside the module root, so the store's own churn never changes a test's inputs.
-- The store is pruned by last use, not by count.
-  A gate run whose binary is pruned while it still runs would fail its later lyxbin tests with the stale-prebuilt error, and two hours is far past any gate run.
-- The trace id is removed rather than pinned to a constant, so no test log carries a trace id that looks real.
-  A test process mints its own; logging under go test is off unless `LYX_TRACE` is `1`.
+- Each prebuild prunes store entries other than its own whose time is older than two hours, and every reuse refreshes the entry's time.
+  A gate run whose binary is pruned while it still runs fails its remaining `lyxbin` tests with the stale-prebuilt error; the retention is far longer than a run.
+- The store path derives from the slot pool (`PrebuiltDir`), never a new `.lyx` literal, and the store is ephemeral hub state, never tracked.
+  The prebuild stays inside the held slot, and the build output still goes to the process run directory of `internal/lyxtemp`.
+- Publishing stages a `.partial-` file and renames it into place; a lost rename race keeps the winner's entry.
+- Stripping the trace id means a test process mints its own instead of joining the gate run's.
+  Logging under go test is off unless `LYX_TRACE` is `1`, so only an operator-requested trace loses the correlation.
+- Out of scope: scoping verify to touched packages (`verify-diff-scope`), and cache hits across worktrees for tests that open files of the tree, which Go keys on the file's absolute path.
 
-## Testing
+## To do by hand
 
-- `internal/gatecli`: the tagged-run subtest now checks the exported path is a `lyx-` entry of the store holding the build's content.
-  It also checks that a second run of the same build exports the same path, that a changed build exports another, and that the build directory is removed.
-  The first subtest checks that the trace id is dropped.
-  The stand-in go now writes its `-o` file.
-- `internal/gatecli/prebuild_test.go` (new, untagged) covers the content name, reuse with a refreshed time, and pruning past the retention, under an injected clock.
-- `internal/loomshed`: the step table and both integration expectations now pin the failing tests first and the package pass last.
-- Module-wide: `lyx gate test --tags integration ./...` passed four times with the branch's `lyx`, the last with every package cached.
-
-## Not covered
-
-A fresh worktree still misses for every test that opens a file of the tree, since Go keys such a result on the file's absolute path and modification time.
-Scoping verify to touched packages stays in note `verify-diff-scope`.
+- The hub's verify command lives in the board's `darn.yaml`, outside this change.
+  Set it to `lyx gate test --tags integration ./...` through `lyx config darn`; until then verify still runs both tiers.
+- Check `internal/gatecli/prebuild_test.go` `TestStorePrebuilt` for the store's race and error paths: a pre-published entry under the content name returns the same path and leaves no `.partial-` file, and an uncreatable store makes `storePrebuilt` fail.
+  The review rated their absence MEDIUM and the tests were added late.
+- Check `storePrebuilt` in `internal/gatecli/prebuild.go`: when `os.Chtimes` on an existing entry fails with not-exist because a concurrent prune removed it, it must publish the entry again instead of failing the run.
+- Check that a tagged run outside a hub exports the build's own `-o` path and removes its directory afterwards (`internal/gatecli/test_integration_test.go`).
+- Check that `internal/shedverbs/loop.go` `childEnvironment` and its test use `logger.TraceIDEnv` at every site.
