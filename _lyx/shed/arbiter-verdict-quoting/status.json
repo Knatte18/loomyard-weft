@@ -1,11 +1,11 @@
 {
-  "current_producer": "Darn-Write",
+  "current_producer": "Darn-Bouncer",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Darn-Write",
-    "last": "Preflight → done",
+    "now": "Darn-Bouncer",
+    "last": "Darn-Write → done",
     "wait": ""
   },
   "history": [
@@ -14,6 +14,33 @@
       "outcome": "done",
       "output": "",
       "at": "2026-10-20T06:02:03Z"
+    },
+    {
+      "producer": "Darn-Write",
+      "outcome": "done",
+      "output": "/home/AD.NORCERESEARCH.NO/hanf/Code/Knatte18/loomyard-LYXHUB/arbiter-verdict-quoting/_lyx/landing/summary.md",
+      "at": "2026-10-20T06:14:31Z",
+      "gate_attempts": 0,
+      "gate_spans": [
+        {
+          "gate": "discussion",
+          "kind": "gate",
+          "start": "2026-10-20T06:06:48.541902235Z",
+          "end": "2026-10-20T06:07:00.300527927Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-10-20T06:07:00.409048519Z",
+          "end": "2026-10-20T06:14:31.027463048Z"
+        },
+        {
+          "gate": "description",
+          "kind": "gate",
+          "start": "2026-10-20T06:14:31.123477594Z",
+          "end": "2026-10-20T06:14:31.123597729Z"
+        }
+      ]
     }
   ],
   "product": {
