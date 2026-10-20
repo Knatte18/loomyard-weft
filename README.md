@@ -18,7 +18,6 @@ Held by a run; its scope is locked until the run ends.
 | # | Task | Slug | Recipe | At | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | 1 | **Arbiter verdict with an unquoted verbs item containing ': ' is unparseable**<br>• `darn: review_hard_max_bounces 1`<br>• `darn: review_max_bounces 1` | [`arbiter-verdict-quoting`](design-arbiter-verdict-quoting.md) | darn | Darn-Write | 13h | 1h | shed, loom |
-| 2 | **reedengine: TestOpenWindow_RealTmux/ClosesWhenItsCommandExitsAtOnce flakes: window read "on"**<br>• `darn: review_hard_max_bounces 1`<br>• `darn: review_max_bounces 1` | [`openwindow-exit-race`](design-openwindow-exit-race.md) | darn | Finalize | 33m | 27m | reed |
 
 ### Ready
 
@@ -163,3 +162,11 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | # | Note | Slug | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | 19 | **Scoped build and test for C# hubs on Windows**<br>• Verify gates in a .NET hub build and test only the projects a card touches, since a scanned Windows machine makes every build slow. | [`dotnet-scoped-verify`](design-dotnet-scoped-verify.md) | 7d | 2d | shed, webster |
+
+## Done
+
+Finished, awaiting `lyx board prune --apply`.
+
+| # | Entry | Slug | Age | Revised | Labels |
+| --- | --- | --- | --- | --- | --- |
+| 1 | **reedengine: TestOpenWindow_RealTmux/ClosesWhenItsCommandExitsAtOnce flakes: window read "on"**<br>• `darn: review_hard_max_bounces 1`<br>• `darn: review_max_bounces 1` | [`openwindow-exit-race`](design-openwindow-exit-race.md) | 33m | 27m | reed |
