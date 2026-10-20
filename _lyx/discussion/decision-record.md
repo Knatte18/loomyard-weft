@@ -51,7 +51,7 @@ Rationale: the seam is the only path the arbiter reaches shuttle through, and an
 <!-- lyx:carry-over Darn-Review -->
 - Darn-Review, round 1: converged; each finding below was fixed or disputed by the round's fixer, and no fresh reviewer has seen the result; the fixer report says which.
   Review: _lyx/reviews/darn/round-1-review.md; fixer report: _lyx/reviews/darn/round-1-fixer-report.md.
-  - attach-gate-path-untested (class scope, severity MEDIUM, open in rounds 1)
+  - attach-if-live-gated-removes-nothing-untested (class scope, severity MEDIUM, open in rounds 1)
 <!-- /lyx:carry-over Darn-Review -->
 
 ## Acceptance criteria
