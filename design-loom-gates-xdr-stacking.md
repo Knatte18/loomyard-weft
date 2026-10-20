@@ -20,8 +20,8 @@ So the stacking is mostly the many small gates that each link a new binary, not 
 ## Ideas (orch, not decided)
 
 - Measure first: clock one ordinary loom run on OSL-1046 per gate kind, so the split between XDR holds and test time is known.
-- Hide the hold by overlap: after each card's commit, build in the background the test binaries that card's change made new and no later card changes again, such as reverse dependencies and guard tests, so XDR has scanned them before the batch gate or the whole suite needs them; eight fresh binaries started at once finished in about the time of one.
-  A card gate's own binary cannot be built ahead, since its hash changes only once the card is written; the gain is uncertain and needs a measurement first.
+- Dropped (2026-10-20): building test binaries in the background while the next card is written.
+  The build would read a working tree the next card is editing, so it can compile a half-written tree whose hashes no later gate uses, and a later card that changes a dependency changes the hashes anyway; building from the card's commit in a separate checkout costs more than it saves.
 
 ## Operator decision (2026-10-20)
 
@@ -30,4 +30,4 @@ Scoping that gate is not an option here; darn, for small changes, is where gates
 
 The card gate keeps its tests too: a card is atomic by design, it leaves every test passing, so a failure points at exactly the card that caused it.
 Moving the tests to the batch gate would lose that, so it is not an option either.
-What remains is cutting the wait without cutting what is checked: measuring the hold's share, and overlap.
+What remains is measuring the hold's share of a few ordinary loom runs on OSL-1046 before anything is built.
