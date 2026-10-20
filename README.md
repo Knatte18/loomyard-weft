@@ -17,7 +17,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | **Arbiter verdict with an unquoted verbs item containing ': ' is unparseable**<br>• `darn: review_hard_max_bounces 1`<br>• `darn: review_max_bounces 1` | [`arbiter-verdict-quoting`](design-arbiter-verdict-quoting.md) | darn | Describe | 13h | 26m | shed, loom |
+| 1 | **Arbiter verdict with an unquoted verbs item containing ': ' is unparseable**<br>• `darn: review_hard_max_bounces 1`<br>• `darn: review_max_bounces 1` | [`arbiter-verdict-quoting`](design-arbiter-verdict-quoting.md) | darn | Merge-In | 13h | 26m | shed, loom |
 
 ### Ready
 
@@ -114,7 +114,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 27 | **lyx batten run starts in its own window by default**<br>• Every batten run is started with --window, so the window should be the default and foreground the opt-in. | [`batten-window-default`](design-batten-window-default.md) | 19h | 19h | batten, reed, orch |
 | 28 | **A halt a plan card asks for reaches the parent as a question, not as a batch failure**<br>• A card-requested halt went through recover-batch, tackler and arbiter as a failure; it should go straight to the parent and the next attempt should carry the decision | [`card-halt-is-question`](design-card-halt-is-question.md) | 13h | 13h | webster, shed, loom |
 | 29 | **A question research can settle is settled in Discussion, never deferred to Plan or an implementer**<br>• Discussion writer researches the facts its design rests on; reviewers flag a deferred research question or a halt-on-discovery rule | [`research-in-discussion`](design-research-in-discussion.md) | 12h | 12h | loom, stencil, burler |
-| 30 | **prod pointer is shared across machines while each binary is local**<br>• A deploy on one machine moves origin/prod, leaving other machines silently behind it | [`prod-pointer-per-machine`](design-prod-pointer-per-machine.md) | 34m | 34m | deploy |
+| 30 | **prod pointer is shared across machines while each binary is local**<br>• A deploy on one machine moves origin/prod, leaving other machines silently behind it | [`prod-pointer-per-machine`](design-prod-pointer-per-machine.md) | 35m | 35m | deploy |
 
 #### Low priority
 
