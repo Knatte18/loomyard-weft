@@ -1,0 +1,4 @@
+verdict: approve
+reason: The diff makes TestRun_KillsTheGroupOnTimeout start its timeout only once the sleeper has written its pid file, as board entry lyxbin-timeout-test-xdr (issue 767) asks. Run's signature and timeout error are unchanged and stay under test. The one open risk names no parent correction, and no peer run or parent commit overlaps.
+question: ""
+superseded: []
