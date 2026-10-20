@@ -1,0 +1,25 @@
+# Relevant code
+
+- `internal/burlerengine/config.go` `Config`, `Lens`, `ConfigSpec`, `LoadConfig`, `ResolveFan`, `maxClusterN` — the lens and fan config that moves to `internal/lenses`
+- `internal/burlerengine/fankeys.go` `FanList`, `FanShapeError`, `FanKey`, `ValidateFanKeys` — the fan key grammar loom and darn use, which moves with it
+- `internal/burlerengine/template.yaml` — every lens and fan; becomes the `lenses` template, with `twill-discussion` changed
+- `internal/burlerengine/profile.go` `Profile` — burler's consumer of resolved lenses
+- `internal/burlerengine/doc.go` — names `burler.yaml` as the lens library
+- `internal/configreg/configreg.go` `Module`, `Modules` — burler's seed-only registration, replaced by `lenses`
+- `internal/configreg/keymove.go` `KeyMove`, `KeyMoves`, `moveRunSettings` — the declared key moves the migration joins
+- `internal/configsync/movekeys.go` `moveKeys`, `takeKey`, `moveFile.write` — applies key moves per layer and deletes an emptied source
+- `internal/configsync/configsync.go` `ReconcileHubWideAt`, `reconcileBaseWorktreeFile`, `reconcileSparseFile` — seed-only versus ordinary reconcile at each layer
+- `internal/yamlengine/reconcile.go` `Reconcile`, `carryOpenMaps` — adds, keeps and prunes keys, carrying lists whole
+- `internal/yamlengine/doc.go` — the open-map path kind the per-name maps sit beside
+- `internal/configengine/config.go` `Load`, `LoadOrTemplate` — the load stance `lenses` adopts
+- `internal/hubreconcile/doc.go` — the walk that migrates a hub after a binary change
+- `internal/loomengine/twill.go` `twillLenses` — loads the writer twill fans
+- `internal/loomengine/config.go` `fanKeys` — loom's fan keys, validated through the fan grammar
+- `internal/loomcli/wiring.go` — loads burler config for loom's review rows
+- `internal/burlercli/wiring.go` — loads burler config for `lyx burler run`
+- `internal/darnengine/config.go` — darn's fan keys and their validation
+- `internal/loomengine/template.yaml` — fan key comments naming `burler.yaml`
+- `internal/darnengine/template.yaml` — fan key comments naming `burler.yaml`
+- `pattern/PATTERN-config-strictness.md` — the load stance lists
+- `pattern/PATTERN-leaf-packages.md` — the leaf package list `internal/lenses` joins
+- `docs/overview.md` — module list and loom paragraph naming `burler.yaml`
