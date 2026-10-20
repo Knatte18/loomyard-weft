@@ -1,0 +1,14 @@
+{
+  "verdict": "resume",
+  "reason": "Cause is hard-cap at round 4 with three open design-wrong findings (F1, F2, F3); each premise holds at HEAD, and the round-4 fixer's change in the decision record answers each one, with nothing disputed or deferred.\nF1: Fabric.Pull reads hadUnpushed from HasUnpushed (`rev-list --count @{u}..HEAD`) before its own Fetch (internal/fabricengine/pull.go:255-306), as the finding says. D9 now replaces that test with D4's reflog read after the fetch, refuses a rewound task branch before the reset, keeps ErrWarpDivergedUnpushed for a commit no reflog value reaches, and D9's Bound, D4's rewritten bullet and Scope agree. An Acceptance criterion runs `lyx fabric pull` on a rewritten pair after a moving reconcile and ends with the branch recovered.\nF2: Remove does defer regenerateAfterVerb (remove.go:173, waiting up to hubWorkspaceLockWait) and runs housekeepStores' foreground gc (remove.go:305). D6 item 1 now takes the hub workspace lock by one try-acquire and skips with the existing \"lyx fabric reconcile\" warning, skips the store gc, builds the snapshot through a temporary index under its own weft write lock try-acquire, and names the two runLockWait waits as the only ones, summed over a hub's ended pairs. D4's Bound lists the same waits, and an Acceptance criterion covers the held lock and the absent gc.\nF3: D8's wake bullet now retries the ls-remote pair every 10 s within 2 min, each attempt under a 20 s deadline. Still unreachable, it moves nothing, lifts the owned entry and names `unreachable` and `lyx cleanup --apply`. The Auto-mode assumption bounds what a resumed driver can do in that window, and an Acceptance criterion covers wake with an unreachable origin.\nF4 is mechanical and is fixed too.\nNone of these widens the board entry's scope: the warp-arm change serves the entry's own `lyx fabric pull` and stop-on-divergence items and is already in the record's Scope.",
+  "question": "",
+  "goto": "",
+  "verbs": [
+    "lyx loom circling accept origin-reconcile"
+  ],
+  "cause": "",
+  "attempt": 2,
+  "attempt_dir": "/home/AD.NORCERESEARCH.NO/hanf/Code/Knatte18/loomyard-LYXHUB/origin-reconcile/_lyx/shed/origin-reconcile/arbiter/attempt-2",
+  "verdict_path": "/home/AD.NORCERESEARCH.NO/hanf/Code/Knatte18/loomyard-LYXHUB/origin-reconcile/_lyx/shed/origin-reconcile/arbiter/attempt-2/verdict.yaml",
+  "relaunch": "lyx shed step origin-reconcile --until-stop --arbiter-attempt 2"
+}
