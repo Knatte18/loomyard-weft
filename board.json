@@ -1170,23 +1170,6 @@
       "revised": "2026-10-19T17:33:31Z"
     },
     {
-      "id": 698,
-      "slug": "prod-pointer-per-machine",
-      "title": "prod pointer is shared across machines while each binary is local",
-      "kind": "note",
-      "labels": [
-        "enhancement",
-        "deploy"
-      ],
-      "issues": [],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "A deploy on one machine moves origin/prod, leaving other machines silently behind it",
-      "body": "## Seen (2026-10-20)\n\n- `update-plugins.sh` (`tools/deploy/main.go`) builds `lyx` into the machine's Go bin dir, syncs the plugins, then pushes `HEAD` to `origin/prod`.\n- `prod` is one pointer on origin, shared by every machine, while each machine's installed binary is local.\n- On the Kubuntu machine a deploy moved `prod` to `a1f435dc`; the work laptop still ran a binary built from `c03af73d` while `prod` claimed `a1f435dc`.\n  Nothing on either machine shows that the laptop is behind `prod`.\n\n## Idea\n\n`prod` cannot say what a given machine runs, so it is the wrong record for \"what is deployed\".\nOptions to weigh:\n\n- Keep the deployed commit per machine (a local stamp beside the binary, which `lyx` already knows as its build revision), and let `prod` mean only \"newest commit cleared for production\".\n- Have `lyx` (or `tender status`, or orch start) warn when the installed binary is behind `origin/prod`, naming `update-plugins.sh` as the way to catch up.\n- Drop the pushed `prod` pointer altogether if nothing needs a shared one.\n\n## Operator decision (2026-10-20)\n\nDrop the pushed `prod` pointer: with deploys on two machines it says nothing about what either machine runs.\nOnly `tools/deploy` writes it and no lyx code reads it; `CLAUDE.md`'s Production section and the orch rules that name `prod` follow.\n",
-      "created": "2026-10-20T05:53:31Z",
-      "revised": "2026-10-20T19:12:42Z"
-    },
-    {
       "id": 699,
       "slug": "allow-set-title-warn-noise",
       "title": "reed warns on every strand launch on tmux 3.4 about allow-set-title",
@@ -1351,25 +1334,6 @@
       "body": "Imported from [issue #762](https://github.com/Knatte18/loomyard/issues/762).\n\n## Seen (2026-10-20, OSL-1046, darn run arbiter-verdict-quoting)\n\n1. Darn-Write's verify gate was looping on a tmux test the writer cannot fix, so the orch ran `lyx tender pause arbiter-verdict-quoting` (the darn session was idle, listed `already_idle`) and `lyx loom pause --after Darn-Write`.\n2. The verify process kept running (attempt 2, then a new attempt), since a pause holds agents and network work but not a running gate command. On the operator's order the orch killed the verify's process group.\n3. The gate then re-prompted the darn session with the failure, and the session started a new turn although `lyx tender status` listed it `paused: true` (state `busy`, cause `turn`).\n4. `lyx creel interrupt ly:arbiter-verdict-quoting:darn` was refused: \"a pause covers ...; nothing was interrupted, lift the pause first\".\n5. Workaround: running `lyx tender pause arbiter-verdict-quoting` a second time printed `already_paused: true` and `interrupted: [ly:arbiter-verdict-quoting:darn]`, and the session went idle.\n\n## Expected\n\n- A paused scope receives no new prompt from a gate, a driver or any other lyx program: a re-prompt waits for the resume, like other held work.\n- A pause also stops, or holds at its next boundary, a verify gate command running in that scope, so the operator does not have to kill processes by hand.\n- `creel interrupt` of a session the pause covers interrupts it, since stopping work is what the pause wants.",
       "created": "2026-10-20T10:42:58Z",
       "revised": "2026-10-20T10:42:58Z"
-    },
-    {
-      "id": 710,
-      "slug": "deploy-foreign-lyx-warning",
-      "title": "update-plugins warns about /usr/bin/lyx, which is the LyX document processor, not a stray lyx",
-      "kind": "note",
-      "labels": [
-        "bug",
-        "deploy"
-      ],
-      "issues": [
-        766
-      ],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "Imported from [issue #766](https://github.com/Knatte18/loomyard/issues/766).\n\nSeen 2026-10-20 on OSL-1046 (Ubuntu 24.04): update-plugins.sh printed 'WARNING: another lyx on PATH: /usr/bin/lyx - remove it' and the same for /bin/lyx. /usr/bin/lyx is root-owned, from 2024, and is the Ubuntu LyX document processor package; /bin is a symlink to /usr/bin, so it is one file named twice. The production lyx in ~/go/bin comes first on PATH, so nothing is wrong. Workaround: ignore the warning. Expected: the check recognises a foreign binary of the same name (for instance by build info or a version probe) and does not ask to remove it, and it does not report one file twice through a symlinked directory.",
-      "created": "2026-10-20T10:43:01Z",
-      "revised": "2026-10-20T10:43:01Z"
     },
     {
       "id": 713,
@@ -1562,6 +1526,27 @@
       "body": "Imported from [issue #775](https://github.com/Knatte18/loomyard/issues/775).\n\nSeen on OSL-1046 (2026-10-20): two batten runs (watchdog-reap-test-xdr, lyxbin-timeout-test-xdr) were started from a prime with uncommitted changes. Worktree-Create went stuck on \"source worktree has uncommitted changes\", the driver spawned one tackler per run, and both runs ended blocked with no pair created. The operator then cancelled both runs.\n\nThere is no verb for that: lyx batten cleanup skips blocked runs, lyx batten pause only adds a pause, and lyx board set-status clears the board entry but leaves the batten records. So the reed overview keeps showing both as blocked, and the only way out is removing _lyx/shed/\u003cslug\u003e and .lyx/shed/\u003cslug\u003e by hand and committing the records side.\n\nTwo gaps:\n- A cancel (abandon) verb for a batten run, at least one that has not created a pair, which removes its records and scratch and clears the board status.\n- Worktree-Create's dirty-source stop is a precondition the operator or orch must fix, so it should halt with that way forward instead of spawning a tackler that cannot settle it.\n\nWorkaround: remove the two run directories by literal path and commit the records side with lyx fabric commit, done only while no other run is landing so the prime's records side is not dirty during a Land row.",
       "created": "2026-10-20T19:12:16Z",
       "revised": "2026-10-20T19:12:16Z"
+    },
+    {
+      "id": 723,
+      "slug": "deploy-prod-cleanup",
+      "title": "Deploy: drop the shared prod pointer and stop flagging a foreign lyx on PATH",
+      "kind": "task",
+      "labels": [
+        "bug",
+        "deploy"
+      ],
+      "issues": [
+        766
+      ],
+      "recipe": "darn",
+      "depends_on": [],
+      "isolated": false,
+      "brief": "update-plugins.sh pushes no prod pointer, and its PATH check ignores a non-lyx binary named lyx",
+      "body": "## Goal\n\n`update-plugins.sh` (`tools/deploy`) stops pushing a shared `prod` pointer, and its other-lyx-on-PATH check stops asking to remove a foreign binary that happens to be named `lyx`.\n\n## Drop the `prod` pointer\n\nSeen 2026-10-20 ([issue #731](https://github.com/Knatte18/loomyard/issues/731)):\n\n- `update-plugins.sh` builds `lyx` into the machine's Go bin dir, syncs the plugins, then pushes `HEAD` to `origin/prod`.\n- `prod` is one pointer on origin, shared by every machine, while each machine's installed binary is local.\n- On the Kubuntu machine a deploy moved `prod` to `a1f435dc`; the work laptop still ran a binary built from `c03af73d` while `prod` claimed `a1f435dc`.\n\nOperator decision (2026-10-20): drop the pushed `prod` pointer, since with deploys on two machines it says nothing about what either machine runs.\nOnly `tools/deploy` writes it and no lyx code reads it.\n`CLAUDE.md`'s Production section, which says the script moves `prod` and forbids moving it by hand, follows in the same commit.\nThe hub-wide orch rules on Bolt are not part of this task's diff; the orch updates them after landing if they name `prod`.\n\n## Foreign `lyx` on PATH\n\nSeen 2026-10-20 on OSL-1046 ([issue #766](https://github.com/Knatte18/loomyard/issues/766)): `update-plugins.sh` printed `WARNING: another lyx on PATH: /usr/bin/lyx - remove it`, and the same for `/bin/lyx`.\n`/usr/bin/lyx` is root-owned, from 2024, and is the Ubuntu LyX document processor package; `/bin` is a symlink to `/usr/bin`, so it is one file named twice.\nThe production `lyx` in `~/go/bin` comes first on PATH, so nothing is wrong.\n\nExpected:\n\n- the check recognises a foreign binary of the same name, for instance by its Go build info or a version probe, and does not ask to remove it;\n- it does not report one file twice through a symlinked directory.\n",
+      "created": "2026-10-20T05:53:31Z",
+      "revised": "2026-10-20T19:17:10Z",
+      "profile": "budget"
     }
   ]
 }
