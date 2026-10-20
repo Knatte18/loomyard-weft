@@ -1326,13 +1326,15 @@
         "enhancement",
         "batten"
       ],
-      "issues": [],
+      "issues": [
+        765
+      ],
       "depends_on": [],
       "isolated": false,
       "brief": "After a Publish verify failure is sent back to Darn-Write, its verify re-runs the failed test on a branch that lacks the parent fix",
-      "body": "## Seen (2026-10-20, arbiter-verdict-quoting)\n\nPublish failed on `TestOpenWindow_RealTmux`, a bug outside the branch, and batten sent the run back to Darn-Write.\nThe fix then landed on main through `openwindow-exit-race`, but Darn-Write's verify kept running the failed test on the task branch, which takes main only at Merge-In, so it failed deterministically (verify-7).\nThe orch had the writer run `lyx fabric merge-in main` by hand.\n\n## Idea\n\nWhen a verify failure is sent back to Darn-Write and the parent has moved since, merge the parent in before the verify re-runs, or route a failure in a package the branch does not touch to Merge-In instead of Darn-Write.",
+      "body": "## Seen (2026-10-20, arbiter-verdict-quoting)\n\nPublish failed on `TestOpenWindow_RealTmux`, a bug outside the branch, and batten sent the run back to Darn-Write.\nThe fix then landed on main through `openwindow-exit-race`, but Darn-Write's verify kept running the failed test on the task branch, which takes main only at Merge-In, so it failed deterministically (verify-7).\nThe orch had the writer run `lyx fabric merge-in main` by hand.\n\n## Idea\n\nWhen a verify failure is sent back to Darn-Write and the parent has moved since, merge the parent in before the verify re-runs, or route a failure in a package the branch does not touch to Merge-In instead of Darn-Write.\n\n## From issue #765\n\nImported from [issue #765](https://github.com/Knatte18/loomyard/issues/765).\n\nWhat happened: a loom run for a task unrelated to reed halted blocked at Publish.\n`publish_verify` failed after merging `main` into the task branch.\nThe verify log shows a single failing test: `internal/reedengine` `TestOpenWindow_RealTmux/ClosesWhenItsCommandExitsAtOnce`, with the message `reed: the opened window did not read remain-on-exit off: window @3 read \"on\", want nil`.\nEvery other package in the verify run passed.\nA later `lyx loom goto --to Darn-Write` and `lyx loom resume` then halted Darn-Write blocked with \"gate did not pass after 3 attempts\", and the `gate-findings.md` file the halt note names was no longer on disk.\n\nWhy it is abnormal: the failing test and the reed window code are outside what the task changed, so a task agent cannot fix it.\nThe halt's way forward sends the run back to Darn-Write, which spends gate attempts on a failure the task does not own.\nThe test also reads as timing- or merge-dependent: recent `main` history contains a reed `OpenWindow` read-back change and its revert.\n\nWhat to do:\n- Check whether `main` itself fails this test, and whether it is flaky under the load of a full-module verify.\n- Fix or stabilise the test or the `OpenWindow` read-back.\n- Consider making the Publish halt's way forward distinguish a failure in code the task did not touch from one it did.\n- Keep the gate findings file until the halt is cleared, so the halt note's path stays readable.\n\nProvenance: task `arbiter-verdict-quoting`; notes `loom-halt.md`, `loom-halt-2.md`.\n",
       "created": "2026-10-20T07:15:11Z",
-      "revised": "2026-10-20T07:15:11Z"
+      "revised": "2026-10-20T10:42:56Z"
     },
     {
       "id": 706,
