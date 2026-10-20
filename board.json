@@ -1376,6 +1376,25 @@
       "body": "## Goal\n\nMeasure what building and testing NORCE Models costs on OSL-1046 with Cortex XDR before any .NET support is built, so the measurement decides which `[.NET]` entry comes first, as the Go measurement in `docs/benchmarks/gate-test-xdr.md` did for Go.\n\n## Seen (orch, 2026-10-20)\n\n- On OSL-1046 a freshly built .NET apphost (`./out/dnbench`) was held 10.1 s by XDR, while `dotnet out/dnbench.dll` ran in 0.07 s: XDR holds new executables, and a DLL started through the known `dotnet` host was not held.\n- `dotnet test` starts its test host through `dotnet`, so the XDR cost may land on build output and MSBuild nodes rather than on test start; this is not measured.\n- For Go, most of the cost was new binaries with unseen hashes and test-cache misses, and `-trimpath` cut a cached unit run from 98.6 s to 20.3 s.\n\n## Measure\n\n- `dotnet restore`, `dotnet build` and `dotnet test` of `NORCE.Models.sln` from `src/csharp/NORCE.Models/`, cold (fresh clone or clean `bin/` and `obj/`) and warm, wall and CPU time.\n- The same in a second checkout of the same commit, to see whether identical output is reused or held again.\n- Whether deterministic builds (`ContinuousIntegrationBuild=true`, `PathMap`) make two checkouts' DLLs byte-identical, the .NET counterpart of `-trimpath`.\n- The slow tier (`-p:RunSlowTests=true`) and the baseline tier (`-p:RunBaseline=true`) once each.\n- Log the numbers in `docs/benchmarks/` beside the Go ones, with the hardware block of `gate-test-xdr.md`.\n",
       "created": "2026-10-20T09:09:55Z",
       "revised": "2026-10-20T09:09:55Z"
+    },
+    {
+      "id": 707,
+      "slug": "agents-commit-through-fabric",
+      "title": "Agents commit code through lyx fabric commit, not raw git commit",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "fabric",
+        "stencil"
+      ],
+      "issues": [],
+      "priority": "low",
+      "depends_on": [],
+      "isolated": false,
+      "brief": "Darn writers and webster implementer and verify-fix forks commit with raw git commit; route them through lyx fabric commit",
+      "body": "## Seen (orch, 2026-10-20)\n\nThe darn writer (`contracts/stencils/darn/darn-template-write.md`) and webster's implementer and verify-fix forks (`webster-body-implementer.md`, `webster-body-verify-fix.md`) commit their code on the task branch with plain `git commit`; Go commits only the `_lyx` run state.\n\n## Operator view (2026-10-20)\n\n`lyx fabric commit` was made for exactly this purpose, so agents should commit through it rather than through raw git. Not urgent.\n\n## Idea\n\nThe committing stencils name `lyx fabric commit`, which then needs to commit warp code changes as well as weft, keep refusing `_lyx` paths in a code commit, and take the subject the stencil prescribes (`N: \u003cname\u003e`, `fix: \u003csummary\u003e`).",
+      "created": "2026-10-20T09:13:25Z",
+      "revised": "2026-10-20T09:13:25Z"
     }
   ]
 }
