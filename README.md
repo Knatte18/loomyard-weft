@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-20 08:44 UTC; every age below is as of then.
+Rendered 2026-10-20 08:51 UTC; every age below is as of then.
 
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
@@ -8,6 +8,16 @@ An entry waits only on the open entries it names under After, so the entries in 
 ## Tasks
 
 Concrete and claimable; only a task can run.
+
+### Running
+
+Held by a run; its scope is locked until the run ends.
+
+#### Normal priority
+
+| # | Task | Slug | Recipe | At | Age | Revised | Labels |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| 1 | **Verify runs the unit tier once, reuses passed results on a re-run, and runs a failed test first**<br>• -trimpath makes unchanged test binaries byte-identical across worktrees so XDR passes them at once, and verify runs only the integration tier, which includes the unit tests<br>• `darn: review_hard_max_bounces 1`<br>• `darn: review_max_bounces 1` | [`gate-fewer-new-binaries`](design-gate-fewer-new-binaries.md) | darn | Worktree-Create | 2h | 7m | config, shed |
 
 ### Ready
 
@@ -25,7 +35,6 @@ Waits on nothing open; can start now.
 | # | Task | Slug | Recipe | After | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | 3 | **Lenses and fans move into a lenses module of their own, listed in full in the hub file**<br>• A lenses module holds every lens and fan for reviewers, fixers and twill writers; reconcile keeps the hub file complete; the 7-lens twill-discussion fan becomes the default<br>• `loom: review_hard_max_bounces 3`<br>• `loom: review_max_bounces 2` | [`lenses-module`](design-lenses-module.md) | loom |  | 15h | 15h | burler, loom, config |
-| 4 | **Verify runs the unit tier once, reuses passed results on a re-run, and runs a failed test first**<br>• -trimpath makes unchanged test binaries byte-identical across worktrees so XDR passes them at once, and verify runs only the integration tier, which includes the unit tests<br>• `darn: review_hard_max_bounces 1`<br>• `darn: review_max_bounces 1` | [`gate-fewer-new-binaries`](design-gate-fewer-new-binaries.md) | darn |  | 2h | 0m | config, shed |
 
 ### Layer A
 
