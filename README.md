@@ -17,7 +17,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | **Verify runs the unit tier once, reuses passed results on a re-run, and runs a failed test first**<br>• -trimpath makes unchanged test binaries byte-identical across worktrees so XDR passes them at once, and verify runs only the integration tier, which includes the unit tests<br>• `darn: review_hard_max_bounces 1`<br>• `darn: review_max_bounces 1` | [`gate-fewer-new-binaries`](design-gate-fewer-new-binaries.md) | darn | Darn-Bouncer | 4h | 1h | config, shed |
+| 1 | **Verify runs the unit tier once, reuses passed results on a re-run, and runs a failed test first**<br>• -trimpath makes unchanged test binaries byte-identical across worktrees so XDR passes them at once, and verify runs only the integration tier, which includes the unit tests<br>• `darn: review_hard_max_bounces 1`<br>• `darn: review_max_bounces 1` | [`gate-fewer-new-binaries`](design-gate-fewer-new-binaries.md) | darn | Describe | 4h | 1h | config, shed |
 
 ### Ready
 
@@ -28,7 +28,7 @@ Waits on nothing open; can start now.
 | # | Task | Slug | Recipe | After | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | 1 | **Origin reconcile before anything that matters, and pushes that never fail silently**<br>• ls-remote over warp and records repos at orch start, wake, batten resume, Merge-In and Finalize; fast-forward, landed-elsewhere cleanup, stop on divergence; rejected push retries and reports | [`origin-reconcile`](design-origin-reconcile.md) | loom |  | 2d | 4h | fabric, batten, orch, creel, shed |
-| 2 | **Goto, resume and stops keep what a run already settled**<br>• Goto as a controlled re-entry: converged verdicts, spent review budget and the pause reason survive a goto or stop; no friction session per stop; a zero-fork review round is retried | [`run-reentry`](design-run-reentry.md) | loom |  | 16h | 30m | shed, loom, burler, shuttle |
+| 2 | **Goto, resume and stops keep what a run already settled**<br>• Goto as a controlled re-entry: converged verdicts, spent review budget and the pause reason survive a goto or stop; no friction session per stop; a zero-fork review round is retried | [`run-reentry`](design-run-reentry.md) | loom |  | 16h | 31m | shed, loom, burler, shuttle |
 
 #### Normal priority
 
@@ -98,7 +98,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 10 | **Start one task per overlapping group at a newly-ready start**<br>• When a landing makes several overlapping tasks ready at once, batten starts one per group and names the rest in its notice | [`batten-ready-overlap`](design-batten-ready-overlap.md) | 4d | 4d | batten |
 | 11 | **Git test fixtures trip Cortex XDR on the work laptop**<br>• Parallel git-heavy tests create so many files at once that Cortex XDR killed VS Code and then crashed itself, twice; tests must stay usable on a machine with endpoint protection | [`xdr-git-test-file-burst`](design-xdr-git-test-file-burst.md) | 3d | 4h | fabric |
 | 12 | **Rename the lyx binary to lyr (name clash with LyX)** | [`rename-binary-lyr`](design-rename-binary-lyr.md) | 4d | 3d | stencil, shuttle |
-| 13 | **[.NET 002] Language-neutral gate: lyx gate run takes a slot for any command**<br>• The gate slot pool covers only go test; a C# or Python hub verify bypasses it. Add lyx gate run -- cmd and per-language parallelism. | [`gate-language-neutral`](design-gate-language-neutral.md) | 2d | 1h | config, webster, shed, dotnet |
+| 13 | **[.NET 002] Language-neutral gate: lyx gate run takes a slot for any command**<br>• The gate slot pool covers only go test; a C# or Python hub verify bypasses it. Add lyx gate run -- cmd and per-language parallelism. | [`gate-language-neutral`](design-gate-language-neutral.md) | 3d | 1h | config, webster, shed, dotnet |
 | 14 | **Entry gate on shed rows: a check decides whether a row runs at all**<br>• Replace darn recipe edge rewrite and the switched producer flag check with one shed entry gate per row; false means Done without acting. | [`row-entry-gate`](design-row-entry-gate.md) | 2d | 2d | shed, loom, batten |
 | 15 | **A darn writer cannot rerun a verify tier it is refused, so a flaky tier failure loops and escalates** | [`darn-verify-tier-unrunnable`](design-darn-verify-tier-unrunnable.md) | 2d | 2d | loom, shed |
 | 16 | **Remove the Webster kick-start pack**<br>• Drop every kick-start pack layout and its code; glyphs stay in the plan and its gates | [`kickstart-pack-remove`](design-kickstart-pack-remove.md) | 2d | 1d | webster, quarry, loom |
@@ -128,7 +128,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 35 | **[WS 007] An anchor per umbrella**<br>• Let an umbrella work in its own subdirectory of the repository, inherited by its tasks; hard to change now | [`umbrella-anchor`](design-umbrella-anchor.md) | 1d | 1d | fabric, config, workspaces |
 | 36 | **reed warns on every strand launch on tmux 3.4 about allow-set-title**<br>• The optional allow-set-title fallback is right, but its Warn repeats per pane on a supported tmux | [`allow-set-title-warn-noise`](design-allow-set-title-warn-noise.md) | 4h | 4h | reed |
 | 37 | **Agents commit code through lyx fabric commit, not raw git commit**<br>• Darn writers and webster implementer and verify-fix forks commit with raw git commit; route them through lyx fabric commit | [`agents-commit-through-fabric`](design-agents-commit-through-fabric.md) | 1h | 1h | fabric, stencil |
-| 38 | **Three tests spell LYX_TRACE_ID as a literal instead of logger.TraceIDEnv**<br>• gate-fewer-new-binaries named the trace id variable through logger.TraceIDEnv at its sites but left three test files with the literal | [`trace-id-env-literal`](design-trace-id-env-literal.md) | 58m | 58m | reed, shuttle |
+| 38 | **Three tests spell LYX_TRACE_ID as a literal instead of logger.TraceIDEnv**<br>• gate-fewer-new-binaries named the trace id variable through logger.TraceIDEnv at its sites but left three test files with the literal | [`trace-id-env-literal`](design-trace-id-env-literal.md) | 59m | 59m | reed, shuttle |
 
 ### Features
 
