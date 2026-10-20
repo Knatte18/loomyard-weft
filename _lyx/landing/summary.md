@@ -1,27 +1,31 @@
-# lyxbin: the group-kill test starts its timeout once the sleeper is up
+# lyxbin: start the group-kill test's timeout once the sleeper is up
 
-`TestRun_KillsTheGroupOnTimeout` in `internal/testkit/lyxbin` failed on a host running Cortex XDR, which holds an executable with an unseen hash for 8-10 s before it runs.
-The test's fixed 3 s timeout included the helper's start, so the run timed out before the sleeper wrote its pids (issue #767).
+`TestRun_KillsTheGroupOnTimeout` in `internal/testkit/lyxbin` failed on machines where an endpoint scanner such as Cortex XDR holds a freshly built helper binary for several seconds before it runs.
+The sleeper then never wrote its pids inside the test's `Run` timeout.
+The test now ends the run only after the sleeper has recorded its pids, so process start no longer counts against any deadline.
 
-## What changes
+Closes #767
 
-- `Run`'s body moves into an unexported `runUntilDone(ctx, bin, dir, args...)`.
-  It treats a context whose cause wraps `ErrTimeout` as the timeout: it kills the group and answers exit code -1 with that cause wrapped with the arguments, directory and output.
-- `Run` keeps its signature and behavior.
-  It builds its context with `context.WithTimeoutCause`, the cause being `ErrTimeout` wrapped with the timeout, so its error still names the timeout.
-- `TestRun_KillsTheGroupOnTimeout` drives `runUntilDone` with a `context.WithCancelCause` context.
-  A goroutine polls for the pid file on a 20 ms tick and cancels with `ErrTimeout` once it exists, so process start never counts against the timeout.
-  A two-minute cap bounds a sleeper that never starts, which then fails on the missing pid file as before.
-- The sleeper writes its pid file by rename, so the test never reads a half-written file.
-- The new `TestRun_TimesOutNamingTheTimeout` pins `Run`'s own clock: a 200 ms run of the sleeper answers `ErrTimeout`, exit code -1 and an error naming `200ms`.
-  It passes whether or not the sleeper starts in time, since either way it outlives the timeout.
+## Changes
 
-## Design decisions
+- `Run` keeps its signature and observable behavior.
+  Its body moves into an unexported `runUntilDone(ctx, bin, dir, args...)`, and `Run` is a thin wrapper that builds the timeout context.
+- `runUntilDone` treats a context whose cause wraps `ErrTimeout` as the timeout: it kills the group and answers exit code -1 with that cause, wrapped with the arguments, directory and output.
+  `Run` builds its context with `context.WithTimeoutCause`, so its error still names the timeout.
+- The group-kill test runs `runUntilDone` under a `context.WithCancelCause` context.
+  A goroutine polls for the pid file on a 20 ms tick and cancels with `ErrTimeout` once it exists.
+- The sleeper writes its pid file to a sibling temporary file and renames it into place, so the test never reads a partial file.
+- A new `TestRun_TimesOutNamingTheTimeout` covers `Run` itself: `ErrTimeout`, exit code -1 and an error naming the timeout, whether or not the sleeper has started.
 
-- The seam is unexported and its context is the test's to end, since no caller outside the package needs a context-taking `Run`.
-- The timeout is recognised through `context.Cause` wrapping `ErrTimeout` instead of `DeadlineExceeded`, so a cancel-cause context and a timeout context take the same path.
-- A longer fixed timeout, pre-warming the helper and retrying with growing timeouts were rejected: each still depends on how fast a fresh binary starts.
+## Design notes
 
-## Verification
+- The poll is capped at two minutes, so a sleeper that never starts fails the test on the missing pid file instead of hanging.
+  A scanner hold longer than the cap still fails the test.
+- No signal crosses the process boundary, so a short-tick poll with a deadline is the wait used, with no fixed real-time sleep standing in for it.
+- The `sleep` child is a system binary the scanner already knows, so its start is not treated as a source of delay.
+- The error text from `Run` changes in wording only: it now reads `... after <timeout>` through the cause, followed by the arguments, directory and output.
 
-`lyx gate test --tags integration ./internal/testkit/lyxbin` and the untagged `lyx gate test ./internal/testkit/lyxbin` pass, as does `lyx loom lint-comments`.
+## Not run by hand
+
+The fix was written without the scanner present.
+Running the `integration` tier of `internal/testkit/lyxbin` on a machine with Cortex XDR active would confirm it.
