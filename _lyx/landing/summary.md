@@ -1,24 +1,27 @@
-# Bound TestWatchdogReap's success waits by a fixed 30 s, not the cadence
+# Bound TestWatchdogReap's success waits by a fixed 30 s
 
-`TestWatchdogReap/NeverEnteredOrphanIsStillReaped` failed on a host running Cortex XDR with `condition not met within 1.8s`.
-The reap steps waited `DiscoveryCycle*OrphanGoneCycles*20` for an orphan session to go, a window derived from the compressed 30 ms cadence.
-Each discovery cycle spawns tmux and git, so a host whose security agent holds new process images stretches every cycle far past that cadence.
+`TestWatchdogReap` in `internal/reedcli` failed on a host running Cortex XDR.
+The `NeverEnteredOrphanIsStillReaped` step waited `DiscoveryCycle*OrphanGoneCycles*20`, 1.8 s, for the reap loop to remove an orphaned tmux session.
+Cortex XDR holds each new process image, and every discovery cycle spawns tmux and git, so a cycle runs far longer than the compressed 30 ms cadence and the window closed before the reap landed.
+
+Every wait for an outcome a step expects to succeed now uses one named constant, `reapSuccessWait` (30 s), in `internal/reedcli/watchdogreap_integration_test.go`.
+That covers the orphan-session-gone waits in each step, and the wait for a fresh session to be listed in the in-flight step, which was `DiscoveryCycle*10`.
+Only the test file changes.
 
 Closes #769
 
-## Changes
-
-- `internal/reedcli/watchdogreap_integration_test.go`: a new constant `reapSuccessWait` of 30 s bounds every wait for an outcome a step expects to succeed.
-  That covers the session-gone waits in every step and the fresh-session wait in `LoopStaysLiveDuringReap`, which waited `DiscoveryCycle*10`.
-
 ## Design decisions
 
-- A fixed, polled bound, not a scaled cadence: `waitForCondition` returns as soon as the condition holds, so a fast host pays nothing, while scaling `DiscoveryCycle` would slow every step on every host.
-- `compressedReapTiming` keeps `OrphanGoneCycles` at its production value, so every step still proves the consecutive-cycle rule.
-- Bounds that assert time running out keep their short values.
-  The early-reap check in `EndToEndAndSiblingSurvives` passes rather than fails under a stall, and the 5 s cancel deadline bounds an in-process select with no spawn on its path.
+- `waitForCondition` polls, so a fast host returns as soon as the condition holds and never pays the bound.
+  The constant lengthens only how long a broken reap takes to fail; it lets no wrong outcome pass.
+- The bound is a deadline polled against and never slept, so `PATTERN-test-speed` still holds.
+- `compressedReapTiming` keeps its compressed cadence and the production `OrphanGoneCycles`, so the test still proves the consecutive-cycle rule.
+- Two checks keep their short bounds because they assert time running out, not success.
+  The "still live before `OrphanGoneCycles` cycles" check in `EndToEndAndSiblingSurvives` passes on a stall rather than failing.
+  The cancel deadline in `LoopStaysLiveDuringReap` bounds an in-process select with no spawn on its path.
+- A host slower than 30 s still fails; raising the constant is a one-line change.
 
-## To check
+## To check by hand
 
-- `lyx gate test --tags tmux ./internal/reedcli` passed on this branch.
-- Thirty seconds is a judgment from the failing step's whole run of under 12 s, setup included; a slower host would need the constant raised.
+- `lyx gate test --tags tmux ./internal/reedcli` was not run for this description; run it to confirm `TestWatchdogReap` passes.
+- The failure was seen only under Cortex XDR, so the fix is unconfirmed on such a host until a run there passes.
