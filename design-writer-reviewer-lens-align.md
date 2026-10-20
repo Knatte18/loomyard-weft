@@ -1,6 +1,6 @@
 # Align each perch writer twill lenses with its reviewer lenses, Discussion first
 
-`writer-reviewer-lens-align` · Task · enhancement, burler, loom, config · running · Darn-Burler-Review
+`writer-reviewer-lens-align` · Task · enhancement, burler, loom, config · running · Darn-Burler-Fix
 
 ## Seen (2026-10-18)
 
