@@ -35,4 +35,11 @@ The verify command of `darn.yaml` (and the loom verify gates) is `lyx gate test 
 - Verify runs only `lyx gate test --tags integration ./...`, or the first tier stays only as a fast fail when it is measurably faster to fail there.
 - Check first whether any test is excluded by the `integration` tag (a `!integration` constraint), which would make the two runs differ.
 
+## A re-run repeats packages that already passed (orch, 2026-10-20)
+
+In `arbiter-verdict-quoting`, a Publish verify that failed on one tmux test sent the run back to Darn-Write, whose verify ran the whole suite again on an unchanged tree, minutes long on OSL-1046.
+Go's test cache should make a re-run of an unchanged, passed package instant, so something defeats it: a different pair path per worktree (which `-trimpath` may cure), a test reading an environment variable whose value changes per gate slot (the gate sets the slot lock path and `GOFLAGS` for every slotted run), files a test opens that change between runs, or a flag that turns the cache off.
+Operator view (2026-10-20): a re-run must not run again what already passed.
+This task finds why the cache misses and makes a re-run on an unchanged tree reuse the passed packages' results; scoping verify to touched packages stays in note `verify-diff-scope`.
+
 
