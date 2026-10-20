@@ -1,6 +1,6 @@
 # Scratch files under .scratch change the worktree root listing and defeat go test cache hits
 
-`scratch-defeats-test-cache` · Note · bug
+`scratch-defeats-test-cache` · Note · bug, gate
 
 Imported from [issue #771](https://github.com/Knatte18/loomyard/issues/771).
 

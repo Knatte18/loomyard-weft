@@ -79,7 +79,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 5 | **lyxbin TestRun_KillsTheGroupOnTimeout fails when Cortex XDR holds the sleeper binary past the 5 s timeout** | [`lyxbin-timeout-test-xdr`](design-lyxbin-timeout-test-xdr.md) | 2h | 0m | testkit |
 | 6 | **reedcli TestWatchdogReap/NeverEnteredOrphanIsStillReaped times out under Cortex XDR (1.8 s window)** | [`watchdog-reap-test-xdr`](design-watchdog-reap-test-xdr.md) | 2h | 2h | reed |
 | 7 | **Shell guard refuses read-only commands that merely name a refused go-run tier** | [`shell-guard-text-match`](design-shell-guard-text-match.md) | 2h | 2h | claude |
-| 8 | **Scratch files under .scratch change the worktree root listing and defeat go test cache hits** | [`scratch-defeats-test-cache`](design-scratch-defeats-test-cache.md) | 2h | 2h |  |
+| 8 | **Scratch files under .scratch change the worktree root listing and defeat go test cache hits** | [`scratch-defeats-test-cache`](design-scratch-defeats-test-cache.md) | 2h | 0m | gate |
 | 9 | **Edit directive not enforced: file append through a shell heredoc was not refused** | [`shell-guard-heredoc-write`](design-shell-guard-heredoc-write.md) | 2h | 2h | claude |
 | 10 | **Opening an agent into reed: engine bypass mode by default, explicit engine, model and effort, and reed add points to shuttle open**<br>• reed add help shows a broken claude example (%SID% never substituted) and shuttle open keeps the interactive permission default; every agent in reed needs bypass, per engine (claude bypassPermissions, Codex --yolo) | [`reed-agent-launch-bypass`](design-reed-agent-launch-bypass.md) | 30m | 28m | reed, shuttle, claude, codex |
 
