@@ -1228,7 +1228,7 @@
       "id": 690,
       "slug": "arbiter-verdict-quoting",
       "title": "Arbiter verdict with an unquoted verbs item containing ': ' is unparseable",
-      "kind": "note",
+      "kind": "task",
       "labels": [
         "bug",
         "shed",
