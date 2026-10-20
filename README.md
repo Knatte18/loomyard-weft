@@ -21,6 +21,12 @@ Held by a run; its scope is locked until the run ends.
 | 2 | **Goto, resume and stops keep what a run already settled**<br>• Goto as a controlled re-entry: converged verdicts, spent review budget and the pause reason survive a goto or stop; no friction session per stop; a zero-fork review round is retried | [`run-reentry`](design-run-reentry.md) | loom | Plan-Write | 1d | 3h | shed, loom, burler, shuttle |
 | 3 | **A hub lenses.yaml keeps only what the hub tuned, so template edits reach it**<br>• Reconcile drops per-name entries equal to the template and stops copying the template in<br>• `profile: budget` | [`lenses-template-frozen`](design-lenses-template-frozen.md) | darn | Worktree-Create | 11m | 0m | config, burler |
 
+#### Normal priority
+
+| # | Task | Slug | Recipe | At | Age | Revised | Labels |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| 4 | **A writer edits nothing until every lens fork has returned**<br>• Writers start fixing on the first fork report; judge all findings together first<br>• `profile: budget` | [`fork-findings-wait-all`](design-fork-findings-wait-all.md) | darn | Worktree-Create | 6m | 6m | stencil, burler, loom |
+
 ### Ready
 
 Waits on nothing open; can start now.
@@ -33,13 +39,12 @@ Waits on nothing open; can start now.
 | 2 | **Scratch files under .scratch change the worktree root listing and defeat go test cache hits**<br>• `profile: light` | [`scratch-defeats-test-cache`](design-scratch-defeats-test-cache.md) | loom |  | 8h | 5h | gate |
 | 3 | **Deploy: drop the shared prod pointer and stop flagging a foreign lyx on PATH**<br>• update-plugins.sh pushes no prod pointer, and its PATH check ignores a non-lyx binary named lyx<br>• `profile: budget` | [`deploy-prod-cleanup`](design-deploy-prod-cleanup.md) | darn |  | 13h | 23m | deploy |
 | 4 | **Shell guard: match test runs on the command, refuse heredoc writes to tracked files**<br>• The guard refuses commands that only name a refused tier, and lets heredoc writes past the edit directive<br>• `profile: budget` | [`shellguard-fixes`](design-shellguard-fixes.md) | darn |  | 8h | 23m | claude |
-| 5 | **A writer edits nothing until every lens fork has returned**<br>• Writers start fixing on the first fork report; judge all findings together first<br>• `profile: budget` | [`fork-findings-wait-all`](design-fork-findings-wait-all.md) | darn |  | 6m | 6m | stencil, burler, loom |
 
 #### Low priority
 
 | # | Task | Slug | Recipe | After | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 6 | **Gate settings per machine**<br>• go_parallel and slots can only be set hub-wide on Bolt, so a value tuned for one machine reaches every machine<br>• `profile: light` | [`gate-machine-local-config`](design-gate-machine-local-config.md) | loom |  | 8h | 8h | config |
+| 5 | **Gate settings per machine**<br>• go_parallel and slots can only be set hub-wide on Bolt, so a value tuned for one machine reaches every machine<br>• `profile: light` | [`gate-machine-local-config`](design-gate-machine-local-config.md) | loom |  | 8h | 8h | config |
 
 ### Layer A
 
