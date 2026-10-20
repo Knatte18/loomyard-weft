@@ -2,6 +2,8 @@
 
 `watchdog-reap-test-xdr` · Task · bug, reed · 
 
+Depends on: [`verify-diff-scope`](design-verify-diff-scope.md)
+
 Imported from [issue #769](https://github.com/Knatte18/loomyard/issues/769).
 
 Seen on OSL-1046 (Ubuntu 24.04, Cortex XDR), run gate-fewer-new-binaries, Publish verify (verify-7.log, 2026-10-20T10:14Z):
