@@ -1,0 +1,8 @@
+verdict: reject
+reason: >-
+  Scope deviation. The board entry's note verify-unit-tier-twice names the loom verify gates beside darn.yaml as running the unit tier twice, and asks verify to run the integration tier alone.
+  The diff changes only CLAUDE.md's push rule and relies on the parent's darn.yaml change.
+  pattern/PATTERN-test-speed.md:28 still tells plan writers that the plan's verify runs the untagged tier and then the integration tier.
+  The last three loom plans on Bolt each run both tiers, so Webster's gate, Publish and Finalize still run the unit tier twice.
+  The other points of the entry are met, the carried-over open risk was fixed and names no parent correction, and lyx loom peers lists no peers or parent commits.
+question: ""
