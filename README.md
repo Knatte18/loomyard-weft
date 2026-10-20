@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-20 19:33 UTC; every age below is as of then.
+Rendered 2026-10-20 19:34 UTC; every age below is as of then.
 
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
@@ -17,7 +17,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | **Align each perch writer twill lenses with its reviewer lenses, Discussion first**<br>• The Discussion writer runs emphasis lenses while its reviewer hunts design holes by procedure, and design holes are what the review still finds<br>• `profile: budget` | [`writer-reviewer-lens-align`](design-writer-reviewer-lens-align.md) | darn | Darn-Burler-Fix | 2d | 8m | burler, loom, config |
+| 1 | **Align each perch writer twill lenses with its reviewer lenses, Discussion first**<br>• The Discussion writer runs emphasis lenses while its reviewer hunts design holes by procedure, and design holes are what the review still finds<br>• `profile: budget` | [`writer-reviewer-lens-align`](design-writer-reviewer-lens-align.md) | darn | Darn-Bouncer | 2d | 8m | burler, loom, config |
 | 2 | **Origin reconcile before anything that matters, and pushes that never fail silently**<br>• ls-remote over warp and records repos at orch start, wake, batten resume, Merge-In and Finalize; fast-forward, landed-elsewhere cleanup, stop on divergence; rejected push retries and reports | [`origin-reconcile`](design-origin-reconcile.md) | loom | Plan-Burler-Review | 3d | 3h | fabric, batten, orch, creel, shed |
 | 3 | **Goto, resume and stops keep what a run already settled**<br>• Goto as a controlled re-entry: converged verdicts, spent review budget and the pause reason survive a goto or stop; no friction session per stop; a zero-fork review round is retried | [`run-reentry`](design-run-reentry.md) | loom | Plan-Write | 1d | 3h | shed, loom, burler, shuttle |
 
@@ -150,7 +150,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 26 | **A question research can settle is settled in Discussion, never deferred to Plan or an implementer**<br>• Discussion writer researches the facts its design rests on; reviewers flag a deferred research question or a halt-on-discovery rule | [`research-in-discussion`](design-research-in-discussion.md) | 1d | 1d | loom, stencil, burler |
 | 27 | **Cortex XDR holds stack up across a loom run's card, batch, round and whole-suite gates**<br>• Each gate that tests a just-changed package waits 8-10 s for XDR; a 10-15 card run pays that many times over | [`loom-gates-xdr-stacking`](design-loom-gates-xdr-stacking.md) | 2h | 2h | webster, loom, gate |
 | 28 | **[.NET 007] Language-specific lens sets seeded per hub**<br>• Every hub seeds lenses.yaml from one Go-repo template; seed by the hub language instead | [`lenses-language-sets`](design-lenses-language-sets.md) | 28m | 25m | burler, config, dotnet |
-| 29 | **A hub lenses.yaml copies every template entry, so template edits never reach it**<br>• Reconcile keeps verbatim template copies in the hub file; keep only what the hub tuned | [`lenses-template-frozen`](design-lenses-template-frozen.md) | 4m | 4m | config, burler |
+| 29 | **A hub lenses.yaml copies every template entry, so template edits never reach it**<br>• Reconcile keeps verbatim template copies in the hub file; keep only what the hub tuned | [`lenses-template-frozen`](design-lenses-template-frozen.md) | 5m | 5m | config, burler |
 | 30 | **A writer edits nothing until every lens fork has returned**<br>• Writers start fixing on the first fork report; judge all findings together first | [`fork-findings-wait-all`](design-fork-findings-wait-all.md) | 0m | 0m | stencil, burler, loom |
 
 #### Low priority
