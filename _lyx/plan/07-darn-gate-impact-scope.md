@@ -12,6 +12,10 @@
 - `internal/shedrecipe#resolveGateSpec`
 - `internal/shedrecipe#resolvePlainGateClosure`
 - `contracts/specs/shed-recipe-spec.md`
+- `contracts/recipes/darn-recipe.yaml`
+- `internal/loomrecipe#darnVerifyGatedRows`
+- `internal/loomcli#perchHardCap`
+- `internal/loomcli#TestPerchHardCap`
 - `internal/testkit/envkit#nilLegal`
 - `internal/loomcli#loomCLI.wireDarn`
 - `internal/loomengine#RecipeOverride`
@@ -33,7 +37,6 @@
 - `plan:internal/darnengine#TreeScopedCommand`
 - `plan:internal/darnengine#ErrTreeScopeKey`
 - `plan:internal/darnengine#WithEditorWayForward`
-- `internal/verifytree#Verify`
 - `plan:internal/fabricengine#Fabric.ChangedPathsBothSides`
 - `internal/impactset#Derive`
 - `internal/hubforge#CopyHub`
@@ -41,6 +44,8 @@
 - `internal/gitkit#CommitFile`
 
 **Intent:** Replace the whole-diff form of darn's Darn-Write and Darn-Burler-Fix verify gates with D3's impact-scoped form, told D2's tree classification.
+The Darn-Burler-Fix row's gate comment in `darn-recipe.yaml` is restated to say the gate runs the tree-scoped command, or the command `impactset` derives from the merge base, and runs darn.yaml's `verify` where `impactset` falls back.
+`darnVerifyGatedRows`' doc comment in `internal/loomrecipe/darnrecipe.go` is restated the same way.
 
 `NewVerifyGate`'s `wholeDiff bool` becomes `treeScope func() (string, bool, error)`: nil keeps the round form loom's Webster-Burler-Fix and Merge-Burler-Fix gates run, unchanged; non-nil selects the darn form, which the wiring tells only for a darn run.
 In the darn form, at each arrival, the gate:
@@ -56,16 +61,18 @@ The function's doc, `verifygate.go`'s header line and `doc.go`'s verify gate par
 `Env.VerifyWholeDiff` is removed and `Env.VerifyTreeScope func() (string, bool, error)` added, read by the `verify` gate and requiring `VerifyMergeBase` when set; `resolveGateSpec` passes it and its doc names it, and `shed-recipe-spec.md`'s two `verify` sentences say so.
 `nilLegal` gains `VerifyTreeScope`, since a loom run leaves it nil.
 
-`darnTreeScope(l)` returns the seam: each call loads `darn.yaml` through `darnengine.LoadConfig` over `fabricengine.ConfigDirs(l)`, answers `("", false, nil)` when tree scope is off, and otherwise reads the merge base through `pairMergeBase(l)`, the task diff through `Fabric.ChangedPathsBothSides(mergeBase, "HEAD")` and returns `darnengine.TreeScopedCommand` over them; every error is returned.
+`darnTreeScope(l)` returns the seam: each call first calls `darnengine.VerifyCommand` over `fabricengine.ConfigDirs(l)` and returns its error unchanged, since `VerifyCommand` already gives a malformed tree key the editor way forward and every other load error the verify way forward.
+It then loads the tree keys through `darnengine.LoadConfig` over the same dirs, answers `("", false, nil)` when tree scope is off, and otherwise reads the merge base through `pairMergeBase(l)`, the task diff through `Fabric.ChangedPathsBothSides(mergeBase, "HEAD")` and returns `darnengine.TreeScopedCommand` over them.
+The merge-base and diff reads' errors are returned as is, and so is that second load's, which only a config edit between the two loads reaches.
 `wireDarn` sets `c.env.VerifyCommand` to a closure over `darnengine.VerifyCommand`, so the gate's told command stays the whole `verify`, sets `c.env.VerifyTreeScope = darnTreeScope(location)`, and drops `VerifyWholeDiff`.
 Its run-start load refusal returns, for an error wrapping `darnengine.ErrTreeScopeKey`, `darnengine.WithEditorWayForward`'s error instead of appending `hubConfigWayForward`; the input that reaches it is a hub `darn.yaml` holding `./tools` under `tree_scope`.
 `lyx loom start` loads `darn.yaml` earlier, at the seed stage, through `loomengine.RecipeOverride`, as do the drive wiring's tackler read and batten's arm, so `RecipeOverride`'s darn branch returns its load error through `darnengine.WithEditorWayForward` too, and the editor way forward reaches the operator from every run-start reader.
+`perchHardCap` reads `darn.yaml` mid-run, at each Darn-Bouncer arrival, so its darn branch returns its load error through `darnengine.WithEditorWayForward` as well, and its doc comment says so.
 `wireDarn`'s doc comment names the editor way forward for a malformed tree key, and `darnwiring.go`'s header comment drops the whole-diff form.
 
 `TestVerifyGate_Scenario` and `TestGateParity_VerifyGate` pass a nil tree scope where they passed `false`, and `runGate` likewise.
 `wholeDiffGate` is replaced by `diffGate`, and `TestVerifyGate_RoundScenario`'s whole-diff steps become darn-form steps over the fixture, each told the merge base `planPass.Commit`:
 - a tree-scoped answer runs only the told scoped command, records its pass under that command with the told command's entry kept, and the told command does not run;
-- right after that pass, with no failure record present, `verifytree.Verify` at site `Merge-In` with the same scoped command on the same tree answers `StatusSkipped`, so a Merge-In after a writer-gate pass skips through the record;
 - a tree-scoped answer with a `publish_verify` failure record runs the failing tests and the scoped command with no `go test -tags tmux` step;
 - a not-scoped answer after a change to `b/b.go`, told as merge base the commit just before that change while the told command's latest recorded pass is the older `planPass.Commit` with later changes to `a/a.go` between them, records a pass of the command `impactset.Derive` gives from the told merge base and none of the different command it gives from `planPass.Commit`, with the `tmux` pass over its packages for a `publish_verify` record;
 - a not-scoped answer after a change to a non-Go, non-Markdown file outside any package runs the told command in full, with `./...` under `tmux` for a `publish_verify` record;
@@ -75,16 +82,18 @@ Its run-start load refusal returns, for an error wrapping `darnengine.ErrTreeSco
 - the comment-lint step's darn-form call fails naming `a/a.go:3` from the merge base;
 - the headroom step's darn-form call, told the parent commit as merge base, fails on the grown overview before any command runs.
 
-`TestWire_DarnRecipe` expects `VerifyTreeScope` set for a darn seed and nil for a loom seed instead of the `VerifyWholeDiff` flag, `c.env.VerifyCommand()` returning the hub's `verify` even with tree scope on, and gains a subtest: a hub `darn.yaml` with tree key `./tools` makes `wire` fail naming `./tools` and `lyx config darn`'s editor.
-`TestRecipeOverride` gains a row: a hub `darn.yaml` holding `./tools` under `tree_scope` makes the darn recipe's read fail naming `./tools` and `lyx config darn`'s editor.
+`TestWire_DarnRecipe` expects `VerifyTreeScope` set for a darn seed and nil for a loom seed instead of the `VerifyWholeDiff` flag, `c.env.VerifyCommand()` returning the hub's `verify` even with tree scope on, and gains a subtest: a hub `darn.yaml` with tree key `./tools` makes `wire` fail naming `./tools`, `lyx config darn`'s editor and the clause "then re-run the lyx command that refused".
+`TestPerchHardCap` gains a row: for `Darn-Bouncer`, a hub `darn.yaml` holding `./tools` under `tree_scope` fails naming `./tools` and `lyx config darn`'s editor.
+`TestRecipeOverride` gains a row: a hub `darn.yaml` holding `./tools` under `tree_scope` makes the darn recipe's read fail naming `./tools`, `lyx config darn`'s editor and the clause "then re-run the lyx command that refused".
 
-`TestDarnTreeScope_ClassifiesAtEachCall`, in an `integration`-tagged file, builds a hub with `hubforge.CopyHub` and a task pair with `hubforge.AddPair`, seeds the hub `darn.yaml` with `seedDarnHubConfig` holding `docs: ""` and `tools: ./tools/...` and a `tree_scope_verify` of `run {targets}`, and asserts in steps over the pair's code worktree:
+`TestDarnTreeScope_ClassifiesAtEachCall`, in an `integration`-tagged file, builds a hub with `hubforge.CopyHub` and a task pair with `hubforge.AddPair`, seeds the hub `darn.yaml` with `seedDarnHubConfig` holding a `verify` of `run all`, which the seam's `VerifyCommand` call needs non-empty, `docs: ""` and `tools: ./tools/...` and a `tree_scope_verify` of `run {targets}`, and asserts in steps over the pair's code worktree:
 - with no commit the seam answers `run ` and true;
 - after a commit to `docs/ä.md` and `tools/a.go` it answers `run ./tools/...` and true;
 - after the parent branch gains a commit to `internal/p.go` and the task merges it with no change of its own, it still answers `run ./tools/...` and true, the diff read from the merge base the merge left;
 - after the parent gains another commit and the task merges it with a resolution that adds `internal/r.go`, it answers false;
 - on a fresh pair, a commit renaming a committed `internal/x.go` to `tools/x.go` answers false, the old path counting as production;
-- with the hub `darn.yaml` holding `./tools` under `tree_scope`, the seam returns an error naming `./tools`;
+- with the hub `darn.yaml` holding `./tools` under `tree_scope`, the seam returns an error naming `./tools` and `lyx config darn`'s editor;
+- with a hub `darn.yaml` that does not unmarshal, the seam returns an error naming `lyx config darn --set verify=` and the clause "then \"lyx loom resume\"";
 - with `tree_scope_verify` emptied it answers false.
 Its merge-base and diff reads propagate raw git errors, which the refusal spec exempts as transient, and take no row.
 

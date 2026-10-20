@@ -25,10 +25,11 @@
 
 `verifySource` gains `publishSkip func() (bool, error)`, nil for loom's source.
 `darnVerifySource`'s `command` resolves at each call: the tree-scoped command when `darnTreeScope` answers tree-scoped, else `darnengine.VerifyCommand`, so Merge-In, which calls it after its merge, verifies the task's own side against the parent tip just merged, and Finalize resolves the same way and skips through the verified-tree record on the tree Merge-In verified.
+The command's tree-scope error carries `lyx config darn`'s editor way forward because it comes from `darnTreeScope`, so Merge-In's and Finalize's "read verify command" error and Publish's seam error name that editor.
 Because the writer gate records its pass under the same deterministic string, a Merge-In with no Publish failure record on the tree a writer gate passed skips through the record.
 Its `publishSkip` answers whether `darnTreeScope` classifies the diff as tree-scoped at that call.
 `landingDeps` passes it as `Deps.PublishVerifySkip`, a new `func() (bool, error)` field documented as nil for loom.
-`Publish.Call`, after `holdParent`, calls the seam when it is non-nil and `publish_verify` is set: true takes the path of an unset `publish_verify`, so no `publish_verify` runs and the Publish failure record is removed before the push; a seam error is Publish's returned error, read the way the merge-commit read fails, with nothing verified or pushed; false runs `publish_verify` as today.
+`Publish.Call`, after `holdParent`, calls the seam when it is non-nil and `publish_verify` is set: true takes the path of an unset `publish_verify`, so no `publish_verify` runs and the Publish failure record is removed before the push; a seam error is Publish's returned error, the way `holdParent` returns a parent-guard read error, with nothing verified or pushed; false runs `publish_verify` as today.
 The seam is classified at each Publish, against the merge base Merge-In's merge left, so a run tree-scoped at one Publish whose PR-Gate rework adds a production path runs `publish_verify` at the next.
 What the skip lets through is bounded by D4: a tree-scoped darn run lands with no `tmux`-tier run and with only the tree-scoped command at Merge-In, the hub's whole statement of what such a diff needs, and a nil seam, loom's, runs `publish_verify` exactly as before.
 `doc.go`'s `publish_verify` paragraphs say so.
@@ -44,5 +45,6 @@ What the skip lets through is bounded by D4: a tree-scoped darn run lands with n
 `TestPublishVerify_HardErrorsAreReturned` gains a row: a seam error is returned naming its text, with no verify and no push.
 `TestLandingDeps_EveryFieldPopulated` skips `PublishVerifySkip` in its walk, since the loom source it is told leaves it nil, and asserts it is nil there.
 `TestDarnTreeScope_ClassifiesAtEachCall` also builds `landingDeps` over `darnVerifySource` for the pair and asserts at each of Card 7's steps that `VerifyCommand()` returns the gate seam's scoped string and `PublishVerifySkip()` true where the seam answers tree-scoped, and that `VerifyCommand()` returns the hub's `verify` and `PublishVerifySkip()` false where it answers not tree-scoped, the merged production resolution, the rename and the emptied `tree_scope_verify` included.
+That sentence leaves out the step where the hub `darn.yaml` holds `./tools` under `tree_scope`, which answers neither; at that step the test asserts that `VerifyCommand()` returns an error naming `./tools`, `lyx config darn`'s editor and the clause "then re-run the lyx command that refused", and that `PublishVerifySkip()` returns that same error.
 
 **ImpactSummary:** Publish gains one optional seam that only a darn run wires; Merge-In and Finalize keep their code and read a source that now resolves per call, and every loom landing behaves as before.
