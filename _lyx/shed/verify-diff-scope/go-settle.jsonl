@@ -1,0 +1,5 @@
+{"stop_key":{"current_producer":"Finalize","history_length":33,"state":"blocked"},"settler":"tackler","action":"spawn","outcome":"tackler spawned","at":"2026-10-20T18:24:29.667069306+02:00","target":"attempt-1"}
+{"stop_key":{"current_producer":"Finalize","history_length":33,"state":"blocked"},"settler":"tackler","action":"restep","outcome":"tackler resume","at":"2026-10-20T18:24:29.703183543+02:00","target":"Finalize"}
+{"stop_key":{"current_producer":"Finalize","history_length":35,"state":"blocked"},"settler":"tackler","action":"spawn","outcome":"tackler spawned","at":"2026-10-20T18:25:30.325460007+02:00","target":"attempt-2"}
+{"stop_key":{"current_producer":"Finalize","history_length":35,"state":"blocked"},"settler":"arbiter","action":"spawn","outcome":"arbiter spawned","at":"2026-10-20T18:26:16.479670444+02:00","target":"attempt-1"}
+{"stop_key":{"current_producer":"Finalize","history_length":35,"state":"blocked"},"settler":"parent","action":"hand-back","outcome":"the arbiter handed the stop on","at":"2026-10-20T18:26:16.479987933+02:00"}
