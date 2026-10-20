@@ -1520,9 +1520,9 @@
       "depends_on": [],
       "isolated": false,
       "brief": "Every hub seeds lenses.yaml from one Go-repo template; seed by the hub language instead",
-      "body": "## Seen (orch, 2026-10-20)\n\nEach hub has its own `lenses.yaml`, seeded from the one embedded template in `internal/lenses`, and a hub can add its own lenses and fans.\nSo a new C# hub such as NORCE Models starts with the same lenses as this Go repository.\n`pattern-fit` and `code-pattern-fit` assume a `PATTERN.md`, and no lens speaks to C# or to numerical simulation code.\n\n## Idea\n\nShip language-specific lens sets beside the shared template, and let the hub pick the set that seeds its `lenses.yaml`; the `language` module names no language today, so the pick needs a key of its own.\nFor C#, for example: nullable and `IDisposable` handling, numerical stability and units.\n",
+      "body": "## Seen (orch, 2026-10-20)\n\nEach hub has its own `lenses.yaml`, seeded from the one embedded template in `internal/lenses`, and a hub can add its own lenses and fans.\nSo a new C# hub such as NORCE Models starts with the same lenses as this Go repository.\n`pattern-fit` and `code-pattern-fit` assume a `PATTERN.md`, and no lens speaks to C# or to numerical simulation code.\n\n## Seen (operator, 2026-10-20)\n\nNORCE Models states much of its internal logic in its `CLAUDE.md`, which may later move into PATTERN material.\nA lens that checks a hub's own rules has to read them where the hub keeps them.\n\n## Idea\n\nShip language-specific lens sets beside the shared template, and let the hub pick the set that seeds its `lenses.yaml`; the `language` module names no language today, so the pick needs a key of its own.\nFor C#, for example: nullable and `IDisposable` handling, numerical stability and units.\n",
       "created": "2026-10-20T19:05:12Z",
-      "revised": "2026-10-20T19:05:27Z"
+      "revised": "2026-10-20T19:08:30Z"
     }
   ]
 }
