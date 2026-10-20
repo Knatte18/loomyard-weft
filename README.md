@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-20 19:25 UTC; every age below is as of then.
+Rendered 2026-10-20 19:26 UTC; every age below is as of then.
 
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
@@ -17,33 +17,28 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | **Origin reconcile before anything that matters, and pushes that never fail silently**<br>• ls-remote over warp and records repos at orch start, wake, batten resume, Merge-In and Finalize; fast-forward, landed-elsewhere cleanup, stop on divergence; rejected push retries and reports | [`origin-reconcile`](design-origin-reconcile.md) | loom | Plan-Burler-Fix | 3d | 3h | fabric, batten, orch, creel, shed |
-| 2 | **Goto, resume and stops keep what a run already settled**<br>• Goto as a controlled re-entry: converged verdicts, spent review budget and the pause reason survive a goto or stop; no friction session per stop; a zero-fork review round is retried | [`run-reentry`](design-run-reentry.md) | loom | Discussion-Burler-Fix | 1d | 3h | shed, loom, burler, shuttle |
+| 1 | **Align each perch writer twill lenses with its reviewer lenses, Discussion first**<br>• The Discussion writer runs emphasis lenses while its reviewer hunts design holes by procedure, and design holes are what the review still finds<br>• `profile: budget` | [`writer-reviewer-lens-align`](design-writer-reviewer-lens-align.md) | darn | Worktree-Create | 2d | 0m | burler, loom, config |
+| 2 | **Origin reconcile before anything that matters, and pushes that never fail silently**<br>• ls-remote over warp and records repos at orch start, wake, batten resume, Merge-In and Finalize; fast-forward, landed-elsewhere cleanup, stop on divergence; rejected push retries and reports | [`origin-reconcile`](design-origin-reconcile.md) | loom | Plan-Burler-Fix | 3d | 3h | fabric, batten, orch, creel, shed |
+| 3 | **Goto, resume and stops keep what a run already settled**<br>• Goto as a controlled re-entry: converged verdicts, spent review budget and the pause reason survive a goto or stop; no friction session per stop; a zero-fork review round is retried | [`run-reentry`](design-run-reentry.md) | loom | Discussion-Burler-Fix | 1d | 3h | shed, loom, burler, shuttle |
 
 ### Ready
 
 Waits on nothing open; can start now.
 
-#### High priority
-
-| # | Task | Slug | Recipe | After | Age | Revised | Labels |
-| --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | **Align each perch writer twill lenses with its reviewer lenses, Discussion first**<br>• The Discussion writer runs emphasis lenses while its reviewer hunts design holes by procedure, and design holes are what the review still finds<br>• `profile: budget` | [`writer-reviewer-lens-align`](design-writer-reviewer-lens-align.md) | darn |  | 2d | 0m | burler, loom, config |
-
 #### Normal priority
 
 | # | Task | Slug | Recipe | After | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 2 | **webster create-not-done check rejects a Create target the card removes itself**<br>• `profile: budget` | [`create-target-transient`](design-create-target-transient.md) | darn |  | 2d | 8m | webster, loom, quarry |
-| 3 | **Scratch files under .scratch change the worktree root listing and defeat go test cache hits**<br>• `profile: light` | [`scratch-defeats-test-cache`](design-scratch-defeats-test-cache.md) | loom |  | 8h | 5h | gate |
-| 4 | **Deploy: drop the shared prod pointer and stop flagging a foreign lyx on PATH**<br>• update-plugins.sh pushes no prod pointer, and its PATH check ignores a non-lyx binary named lyx<br>• `profile: budget` | [`deploy-prod-cleanup`](design-deploy-prod-cleanup.md) | darn |  | 13h | 8m | deploy |
-| 5 | **Shell guard: match test runs on the command, refuse heredoc writes to tracked files**<br>• The guard refuses commands that only name a refused tier, and lets heredoc writes past the edit directive<br>• `profile: budget` | [`shellguard-fixes`](design-shellguard-fixes.md) | darn |  | 8h | 8m | claude |
+| 1 | **webster create-not-done check rejects a Create target the card removes itself**<br>• `profile: budget` | [`create-target-transient`](design-create-target-transient.md) | darn |  | 2d | 8m | webster, loom, quarry |
+| 2 | **Scratch files under .scratch change the worktree root listing and defeat go test cache hits**<br>• `profile: light` | [`scratch-defeats-test-cache`](design-scratch-defeats-test-cache.md) | loom |  | 8h | 5h | gate |
+| 3 | **Deploy: drop the shared prod pointer and stop flagging a foreign lyx on PATH**<br>• update-plugins.sh pushes no prod pointer, and its PATH check ignores a non-lyx binary named lyx<br>• `profile: budget` | [`deploy-prod-cleanup`](design-deploy-prod-cleanup.md) | darn |  | 13h | 8m | deploy |
+| 4 | **Shell guard: match test runs on the command, refuse heredoc writes to tracked files**<br>• The guard refuses commands that only name a refused tier, and lets heredoc writes past the edit directive<br>• `profile: budget` | [`shellguard-fixes`](design-shellguard-fixes.md) | darn |  | 8h | 8m | claude |
 
 #### Low priority
 
 | # | Task | Slug | Recipe | After | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 6 | **Gate settings per machine**<br>• go_parallel and slots can only be set hub-wide on Bolt, so a value tuned for one machine reaches every machine<br>• `profile: light` | [`gate-machine-local-config`](design-gate-machine-local-config.md) | loom |  | 8h | 8h | config |
+| 5 | **Gate settings per machine**<br>• go_parallel and slots can only be set hub-wide on Bolt, so a value tuned for one machine reaches every machine<br>• `profile: light` | [`gate-machine-local-config`](design-gate-machine-local-config.md) | loom |  | 8h | 8h | config |
 
 ### Layer A
 
@@ -60,7 +55,7 @@ Waits only on Running or Ready entries.
 | # | Task | Slug | Recipe | After | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | 2 | **tender pause does not hold a verify gate's re-prompt, and creel interrupt is refused under the pause**<br>• `profile: light` | [`tender-pause-holds-reprompt`](design-tender-pause-holds-reprompt.md) | loom | `origin-reconcile`, `run-reentry` | 8h | 6m | creel, shed |
-| 3 | **Darn-Write stops looping on verify failures it cannot own, and the two flaky reed tests behind them**<br>• A verify failure in a tier Darn-Write may not run, or one the parent already fixed, no longer loops and escalates<br>• `profile: light` | [`darn-verify-fixes`](design-darn-verify-fixes.md) | loom | `run-reentry`, `origin-reconcile` | 3d | 6m | batten, loom, shed, reed |
+| 3 | **Darn-Write stops looping on verify failures it cannot own, and the two flaky reed tests behind them**<br>• A verify failure in a tier Darn-Write may not run, or one the parent already fixed, no longer loops and escalates<br>• `profile: light` | [`darn-verify-fixes`](design-darn-verify-fixes.md) | loom | `run-reentry`, `origin-reconcile` | 3d | 7m | batten, loom, shed, reed |
 
 ### Layer B
 
