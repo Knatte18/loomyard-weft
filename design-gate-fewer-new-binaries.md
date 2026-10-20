@@ -4,24 +4,13 @@
 
 ## Goal
 
-Fewer test binaries that Cortex XDR has never seen, so a verify on OSL-1046 stops paying an 8-10 s hold for nearly every test package.
-Operator decision (2026-10-20): both notes below are built together as one small darn task, and measured on OSL-1046 before and after (`bench-osl1046-xdr`).
+Fewer test binaries that Cortex XDR has never seen and fewer re-runs of passed tests, so a verify on OSL-1046 stops paying an 8-10 s hold for nearly every test package.
+Measure on OSL-1046 before and after, in `docs/benchmarks/gate-test-xdr.md`.
 
-## Note `gate-trimpath`
+## Done in the prime: `-trimpath` (2026-10-20, `2d384150`, `1552ceb4`)
 
-### Seen (orch, 2026-10-20, OSL-1046 with Cortex XDR)
-
-- XDR holds each executable whose hash it has not seen for 8-10 s with idle CPU, and once it has judged a hash, any file with that hash runs at once: a copy of a judged binary in a new directory ran in 0.04 s.
-- Without `-trimpath`, a Go binary embeds its source directory, so the same ten-line program built in two directories gave two hashes; with `-trimpath` both builds were byte-identical.
-- The repo has 162 test packages, and each pair worktree has its own path, so every verify in a new pair links 162 test binaries per tier with hashes XDR has never seen, each paying the hold.
-
-### Idea
-
-- The gate adds `-trimpath` to the `GOFLAGS` it gives every slotted run (`internal/gateslot`, beside the `-p` cap), so a package whose code did not change links to a binary XDR already knows, in every pair and every run; only packages the change touches, and their dependents, pay the hold.
-- `-trimpath` breaks the two test helpers that find the repo root from their own source path with `runtime.Caller` (`internal/testkit/scankit`, `internal/testkit/lyxbin`); they find it by walking up from the test's working directory to `go.mod` instead.
-- `tools/deploy/main_test.go`, `tools/internal/devbin` and `internal/reedengine/selvagepane_enforcement_test.go` also call `runtime.Caller` and are checked the same way.
-- Measure a verify on OSL-1046 before and after (`bench-osl1046-xdr`).
-
+On the operator's call the former note `gate-trimpath` was built directly in the prime: `gateslot.GoFlags` adds `-trimpath` to every slotted run, and the `runtime.Caller` repo-root lookups were made trimpath-safe (`PATTERN-trimpath-safe-root`).
+`docs/benchmarks/gate-test-xdr.md` holds the numbers: the cached unit tier fell from 98.6 s to 20.3 s wall, the cached integration tier from 179.5 s to 112.0 s, and a copy of the tree in another directory reused 63 of 162 packages' cached results with no XDR hold.
 
 ## Note `verify-unit-tier-twice`
 
@@ -38,13 +27,15 @@ The verify command of `darn.yaml` (and the loom verify gates) is `lyx gate test 
 ## A re-run repeats packages that already passed (orch, 2026-10-20)
 
 In `arbiter-verdict-quoting`, a Publish verify that failed on one tmux test sent the run back to Darn-Write, whose verify ran the whole suite again on an unchanged tree, minutes long on OSL-1046.
-Go's test cache should make a re-run of an unchanged, passed package instant, so something defeats it: a different pair path per worktree (which `-trimpath` may cure), a test reading an environment variable whose value changes per gate slot (the gate sets the slot lock path and `GOFLAGS` for every slotted run), files a test opens that change between runs, or a flag that turns the cache off.
 Operator view (2026-10-20): a re-run must not run again what already passed.
-This task finds why the cache misses and makes a re-run on an unchanged tree reuse the passed packages' results; scoping verify to touched packages stays in note `verify-diff-scope`.
+
+The `-trimpath` measurement narrows it down:
+- Even in the prime, on an unchanged tree, a second plain run took only 97 of 162 unit packages and 76 of 162 integration packages from the cache; the rest ran again.
+- In a copy of the tree in another directory, 34 packages cached in the prime missed, among them the source scans (`internal/testkit`, `internal/pattern`, `contracts/stencils`): Go keys a cached result on the files a test opened, and every file in a fresh worktree is new to it.
+
+This task finds why the uncached packages miss on an unchanged tree (a test reading an environment variable that changes per gate slot, such as the slot lock path, files that change between runs, or a test that turns the cache off) and makes a re-run on an unchanged tree reuse the passed packages' results; scoping verify to touched packages stays in note `verify-diff-scope`.
 
 ## A verify after a failure runs the failed test last (orch, 2026-10-20)
 
 After the Publish failure, Darn-Write's verify ran `lyx gate test ./... && lyx gate test --tags integration ./... && go test -tags tmux -run '^TestOpenWindow_RealTmux$' <pkg> && go test -tags tmux ./...`: the test that failed came third, after two full tiers.
 The failed test runs first, so a failure that still holds is known in seconds, and the full tiers run only once it passes.
-
-
