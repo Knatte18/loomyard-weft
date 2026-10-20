@@ -1,12 +1,12 @@
 {
   "current_producer": "Darn-Write",
-  "state": "running",
-  "error": "",
+  "state": "failed",
+  "error": "shedadapters: Darn-Write (seats): seat run: seatengine: chair wait: shuttle: reed status failed 2 times consecutively: reed status: no reed session; run \"lyx reed up\"\nseatengine: a seat could not be stopped: strand a7d11b13cf5afd55bc6a1523d0e2a85f: shuttle: stop strand a7d11b13cf5afd55bc6a1523d0e2a85f: probe reed before removing it: no reed session; run \"lyx reed up\"; way forward: run \"lyx reed remove a7d11b13cf5afd55bc6a1523d0e2a85f\", then re-step the row",
   "pause_requested": false,
   "activity": {
     "now": "Darn-Write",
     "last": "Darn-Write → goto",
-    "wait": ""
+    "wait": "shedadapters: Darn-Write (seats): seat run: seatengine: chair wait: shuttle: reed status failed 2 times consecutively: reed status: no reed session; run \"lyx reed up\"\nseatengine: a seat could not be stopped: strand a7d11b13cf5afd55bc6a1523d0e2a85f: shuttle: stop strand a7d11b13cf5afd55bc6a1523d0e2a85f: probe reed before removing it: no reed session; run \"lyx reed up\"; way forward: run \"lyx reed remove a7d11b13cf5afd55bc6a1523d0e2a85f\", then re-step the row"
   },
   "history": [
     {
