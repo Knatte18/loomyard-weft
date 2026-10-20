@@ -67,6 +67,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 3 | **tender pause does not hold a verify gate's re-prompt, and creel interrupt is refused under the pause** | [`tender-pause-holds-reprompt`](design-tender-pause-holds-reprompt.md) | 0m | 0m | creel, shed |
 | 4 | **update-plugins warns about /usr/bin/lyx, which is the LyX document processor, not a stray lyx** | [`deploy-foreign-lyx-warning`](design-deploy-foreign-lyx-warning.md) | 0m | 0m | deploy |
 | 5 | **lyxbin TestRun_KillsTheGroupOnTimeout fails when Cortex XDR holds the sleeper binary past the 5 s timeout** | [`lyxbin-timeout-test-xdr`](design-lyxbin-timeout-test-xdr.md) | 0m | 0m |  |
+| 6 | **reedcli TestWatchdogReap/NeverEnteredOrphanIsStillReaped times out under Cortex XDR (1.8 s window)** | [`watchdog-reap-test-xdr`](design-watchdog-reap-test-xdr.md) | 0m | 0m | reed |
 
 ### Enhancements
 
