@@ -1,0 +1,11 @@
+---
+round: 4
+focus:
+  - "Amendment seed over a spent episode: check whether the decision record's claim that the seed leaves Shed's count at 1 holds when the seed Stuck is evaluated. `stepLocked` in `internal/shedengine/run.go` compares `episodeStuckCount` over the history it read before the seed is appended, unless the Stuck is `BudgetExempt`. Settle the question: when the previous generation ended at the perch's last round, or at the soft cap, and its settle was interrupted so no Done ended the episode, does a changed subject start the amendment generation, or is the seed blocked with `ReasonBounceBudgetExhausted`? Check that the Decision states what bounds any exemption it grants."
+  - "Document segment base: the discussion and plan writers never commit; the Bouncer's Commit seam commits at the settle, after the settle record is written. Settle the question: does the decision record name a base commit that actually contains the settled artifact, in the weft repo, including the first settle and the interrupted-settle case, so an amendment's reviewers see only the change since the settle?"
+  - "Code segment base against code identity: the identity is taken from the warp working tree, uncommitted tracked changes and untracked files that are not ignored included, while code segments have no Commit seam. Settle the question: do the settled side and the current side of the amendment's base read the subject the same way the identity does, so uncommitted work present at the settle is not shown as new and the untracked file that changed the identity is not hidden? Check that untracked files the run itself or the harness writes, such as a scratch file at the worktree root, have a stated exclusion."
+  - "Merge-In recognition: settle the question whether the rule that lets a Merge-In pass without re-review states an executable test for the commits since the settle commit, given that a merge of the parent brings the parent's own non-merge commits into that range, and whether the patch-id skip states what it lets through and what bounds it."
+---
+
+Each entry names a site to read and a question to settle.
+The support log's Q13 answer and Review rounds section are also worth a read against the current decision record.
