@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-20 10:42 UTC; every age below is as of then.
+Rendered 2026-10-20 10:43 UTC; every age below is as of then.
 
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
@@ -65,6 +65,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 1 | **webster create-not-done check rejects a Create target the card removes itself** | [`create-target-transient`](design-create-target-transient.md) | 1d | 1d | webster, loom, quarry |
 | 2 | **orch status reports a live strand after the orch Claude session exits, so --continue is refused** | [`orch-strand-live-after-exit`](design-orch-strand-live-after-exit.md) | 20h | 20h | orch, reed |
 | 3 | **tender pause does not hold a verify gate's re-prompt, and creel interrupt is refused under the pause** | [`tender-pause-holds-reprompt`](design-tender-pause-holds-reprompt.md) | 0m | 0m | creel, shed |
+| 4 | **update-plugins warns about /usr/bin/lyx, which is the LyX document processor, not a stray lyx** | [`deploy-foreign-lyx-warning`](design-deploy-foreign-lyx-warning.md) | 0m | 0m | deploy |
 
 ### Enhancements
 
