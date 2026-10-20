@@ -1,7 +1,7 @@
 # Card 3 — editor-save-load-check
 
 **Create:**
-- `plan:internal/configcli#errHubFileLoad` -> `var errHubFileLoad = errors.New("hub config file would not load with the edit")`
+- `internal/configcli#errHubFileLoad`
 
 **Edit:**
 - `internal/configcli#copyStagedToHub`
@@ -19,7 +19,7 @@
 - `internal/configcli#assertJSONErrContains`
 - `internal/configcli#assertJSONOkContains`
 - `internal/configcli#newLoadFailure`
-- `plan:internal/darnengine#ErrTreeScopeWithoutTrees`
+- `internal/darnengine#ErrTreeScopeWithoutTrees`
 
 **Intent:** Load a hub-wide editor save through the module's own loader, as `setHubWide` does for `--set`, so D1's refusals hold on both write paths of `lyx config darn` and of every other hub-wide module.
 

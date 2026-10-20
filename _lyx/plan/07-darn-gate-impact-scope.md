@@ -34,10 +34,10 @@
 - `internal/loomcli#seedDarnHubConfig`
 - `internal/darnengine#LoadConfig`
 - `internal/darnengine#VerifyCommand`
-- `plan:internal/darnengine#TreeScopedCommand`
-- `plan:internal/darnengine#ErrTreeScopeKey`
-- `plan:internal/darnengine#WithEditorWayForward`
-- `plan:internal/fabricengine#Fabric.ChangedPathsBothSides`
+- `internal/darnengine#TreeScopedCommand`
+- `internal/darnengine#ErrTreeScopeKey`
+- `internal/darnengine#WithEditorWayForward`
+- `internal/fabricengine#Fabric.ChangedPathsBothSides`
 - `internal/impactset#Derive`
 - `internal/hubforge#CopyHub`
 - `internal/hubforge#AddPair`

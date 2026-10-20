@@ -1,8 +1,8 @@
 # Card 1 — both-sides-diff-read
 
 **Create:**
-- `plan:internal/fabricengine#Fabric.ChangedPathsBothSides` -> `func (f *Fabric) ChangedPathsBothSides(from, to string) ([]string, error)`
-- `plan:internal/fabricengine_test#TestChangedPathsBothSides_NamesRenamesAndRawPaths` -> `func TestChangedPathsBothSides_NamesRenamesAndRawPaths(t *testing.T)`
+- `internal/fabricengine#Fabric.ChangedPathsBothSides`
+- `internal/fabricengine_test#TestChangedPathsBothSides_NamesRenamesAndRawPaths`
 
 **Uses:**
 - `internal/fabricengine#Fabric.ChangedPaths`
