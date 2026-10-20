@@ -64,6 +64,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 4 | **A stop after a converged review verdict spends no review budget, and its way forward keeps the verdict**<br>• Plan-Bouncer commit retries after CONVERGED used up the budget; the suggested goto discarded the verdict and re-ran the review | [`converged-bouncer-budget`](design-converged-bouncer-budget.md) | 11h | 11h | shed, loom, burler |
 | 5 | **Burler review round hard-fails when the chair session finishes without spawning its fork reviewers** | [`burler-zero-fork-round`](design-burler-zero-fork-round.md) | 11h | 11h | burler, shuttle, shed |
 | 6 | **A paused run records who paused it, a goto included** | [`paused-state-reason`](design-paused-state-reason.md) | 11h | 11h | shed, loom |
+| 7 | **fabric remove hangs on orphaned driver loops and pushes parked by a tender pause** | [`orphan-run-processes`](design-orphan-run-processes.md) | 0m | 0m | fabric, batten, loom |
 
 ### Enhancements
 
