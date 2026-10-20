@@ -1,0 +1,9 @@
+verdict: approve
+reason: >-
+  The diff of PR 779 at aae06ec9 carries out the board entry's goal and decisions D1-D6 with no change outside them:
+  internal/lenses owns the lenses module as a leaf, burler is deregistered and its run settings refused, per-name reconcile adds and keeps,
+  the load goes through LoadOrTemplate, the two KeepTarget key moves migrate burler.yaml, the template's twill-discussion is the seven-lens fan,
+  and the docs and PATTERN backgrounds name lenses.yaml. Both carried-over review findings are fixed in the code.
+  The only peer run, origin-reconcile, does not overlap, and no parent commit is listed.
+question: ""
+superseded: []
