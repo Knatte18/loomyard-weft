@@ -10,4 +10,4 @@ The planner takes every glyph spelling from `lyx quarry`, and Plan-Review checks
 ## Idea
 
 Extend quarry with a C# alphabet: link the C# tree-sitter grammar and define C#'s glyph shapes (namespace, type, member, overloads, partial classes, nested types).
-Choose the alphabet by the hub's language, as configured in the `language` module.
+Choose the alphabet by file extension, so a mixed repository gets both; the `language` module names skills, verify tiers and rename tools but no language, so it cannot pick the alphabet.
