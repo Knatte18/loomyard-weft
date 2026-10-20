@@ -11,10 +11,10 @@
 - `internal/landingshed#TestPublishVerify_Proceeds`
 - `internal/landingshed#TestPublishVerify_HardErrorsAreReturned`
 - `internal/loomcli#TestLandingDeps_EveryFieldPopulated`
-- `plan:internal/loomcli#TestDarnTreeScope_ClassifiesAtEachCall`
+- `internal/loomcli#TestDarnTreeScope_ClassifiesAtEachCall`
 
 **Uses:**
-- `plan:internal/loomcli#darnTreeScope`
+- `internal/loomcli#darnTreeScope`
 - `internal/darnengine#VerifyCommand`
 - `internal/landingshed#newPublishVerifyFixture`
 - `internal/landingshed#verifyGate.checkPublishVerify`
