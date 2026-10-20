@@ -1,27 +1,30 @@
-# OpenWindow counts a read-back answered by no window as gone
+# OpenWindow counts a read-back from another window as gone
 
-Fixes #761.
+`OpenWindow` no longer reports a window whose command exited at once as a `remain-on-exit` read-back mismatch.
+This removes the flake in `TestOpenWindow_RealTmux/ClosesWhenItsCommandExitsAtOnce`, which failed with `window @3 read "on"`.
 
-`OpenWindow` reads `remain-on-exit` back from the window it just opened.
-When the window's command exits at once, the window can close before that read-back.
-On tmux 3.4, `display-message -p -t @<n>` for a window that no longer exists does not fail: it exits 0, prints an empty `#{window_id}` and answers with the global option value.
-With the session's `remain-on-exit` on, `OpenWindow` read `on`, tried to kill the vanished window and returned `ErrWindowReadBack`, which is how `TestOpenWindow_RealTmux/ClosesWhenItsCommandExitsAtOnce` flaked.
+The cause is in the read-back after `new-window`.
+When the command has already exited, the window is closed by the time `display-message -p -t <window id>` runs.
+tmux 3.4 does not fail that read: it exits 0 and prints an empty `#{window_id}` with the global `remain-on-exit` value, `on`.
+`OpenWindow` treated only a failed read as "gone", so it read `on` as a mismatch and returned `ErrWindowReadBack`.
 
-## Change
-
-- `internal/reedengine/window.go`: the read-back asks for `#{window_id} #{remain-on-exit}` through the new `windowReadBackFormat`.
-  A failed read or a reply whose window id is not the new window's counts as the window being gone, and the op returns the opened window.
-  Only a reply from the new window itself with a value other than `off` still kills it and wraps `ErrWindowReadBack`.
-- `internal/reedengine/doc.go`: the detached-windows section states the id check and why.
-- `internal/reedengine/window_test.go`: the fake answers carry the window id, and a new row pins a global-scope reply (empty id, `on`) as an opened window with nothing killed.
-  `windoworder_test.go` answers the new format.
+Closes #761
 
 ## Design decisions
 
-- The id check, not a retry or delay, decides "gone": a live window always answers with its own id, so a real mismatch is still caught, and the test stays free of timing.
-- The tmux behavior was confirmed by hand on tmux 3.4 against a private socket; the tmux-tier test is unchanged, since it already covers the exit-at-once case.
+- The read-back now asks for `#{window_id} #{remain-on-exit}` (`windowReadBackFormat`).
+  A failed read, or a reply whose window id is not the new window's, counts as the window being gone, and `OpenWindow` returns the opened window.
+- Only a reply carrying the new window's own id and a value other than `off` is still a mismatch.
+  That path kills the window by id and wraps `ErrWindowReadBack`, so the bound of the widened outcome is that a live new window always answers with its own id.
+- A tmux version that fails the read on a missing target keeps working through the failed-read branch.
+- The mismatch error now quotes the parsed value instead of the whole reply.
+- `internal/reedengine/doc.go` records the read-back rule.
+- No change to the tmux-tier test, which already covers the exit-at-once case.
+- Unit tests: the fake-driven `TestOpenWindow` rows answer in the new format, and a new row covers a reply from the global scope (empty id, `on`).
+  `TestEnsureShellWindow` fakes the new format too.
 
-## Verification
+## To check by hand
 
-- `lyx gate test ./internal/reedengine` is green.
-- The tmux tier was not run in this session; the Publish run's tmux tier exercises `TestOpenWindow_RealTmux`.
+- The tmux-tier `TestOpenWindow_RealTmux` was not run here.
+  Run it on a machine with tmux, ideally 3.4 and 3.5, to confirm how each resolves a vanished `-t` target.
+  The tmux 3.4 behavior above was checked by hand on a private socket.
