@@ -9,6 +9,16 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 Concrete and claimable; only a task can run.
 
+### Running
+
+Held by a run; its scope is locked until the run ends.
+
+#### Normal priority
+
+| # | Task | Slug | Recipe | At | Age | Revised | Labels |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| 1 | **reedcli TestWatchdogReap/NeverEnteredOrphanIsStillReaped times out under Cortex XDR (1.8 s window)**<br>• `darn: review_hard_max_bounces 2`<br>• `darn: review_max_bounces 1` | [`watchdog-reap-test-xdr`](design-watchdog-reap-test-xdr.md) | darn | Worktree-Create | 5h | 38m | reed |
+
 ### Ready
 
 Waits on nothing open; can start now.
@@ -18,8 +28,7 @@ Waits on nothing open; can start now.
 | # | Task | Slug | Recipe | After | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | 1 | **Lenses and fans move into a lenses module of their own, listed in full in the hub file**<br>• A lenses module holds every lens and fan for reviewers, fixers and twill writers; reconcile keeps the hub file complete; the 7-lens twill-discussion fan becomes the default<br>• `loom: review_hard_max_bounces 3`<br>• `loom: review_max_bounces 2` | [`lenses-module`](design-lenses-module.md) | loom |  | 23h | 31m | burler, loom, config |
-| 2 | **lyxbin TestRun_KillsTheGroupOnTimeout fails when Cortex XDR holds the sleeper binary past the 5 s timeout**<br>• `darn: review_hard_max_bounces 2`<br>• `darn: review_max_bounces 1` | [`lyxbin-timeout-test-xdr`](design-lyxbin-timeout-test-xdr.md) | darn |  | 5h | 37m | testkit |
-| 3 | **reedcli TestWatchdogReap/NeverEnteredOrphanIsStillReaped times out under Cortex XDR (1.8 s window)**<br>• `darn: review_hard_max_bounces 2`<br>• `darn: review_max_bounces 1` | [`watchdog-reap-test-xdr`](design-watchdog-reap-test-xdr.md) | darn |  | 5h | 37m | reed |
+| 2 | **lyxbin TestRun_KillsTheGroupOnTimeout fails when Cortex XDR holds the sleeper binary past the 5 s timeout**<br>• `darn: review_hard_max_bounces 2`<br>• `darn: review_max_bounces 1` | [`lyxbin-timeout-test-xdr`](design-lyxbin-timeout-test-xdr.md) | darn |  | 5h | 38m | testkit |
 
 ### Layer A
 
@@ -82,7 +91,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 3 | **tender pause does not hold a verify gate's re-prompt, and creel interrupt is refused under the pause** | [`tender-pause-holds-reprompt`](design-tender-pause-holds-reprompt.md) | 5h | 5h | creel, shed |
 | 4 | **update-plugins warns about /usr/bin/lyx, which is the LyX document processor, not a stray lyx** | [`deploy-foreign-lyx-warning`](design-deploy-foreign-lyx-warning.md) | 5h | 5h | deploy |
 | 5 | **Shell guard refuses read-only commands that merely name a refused go-run tier** | [`shell-guard-text-match`](design-shell-guard-text-match.md) | 5h | 5h | claude |
-| 6 | **Scratch files under .scratch change the worktree root listing and defeat go test cache hits** | [`scratch-defeats-test-cache`](design-scratch-defeats-test-cache.md) | 5h | 2h | gate |
+| 6 | **Scratch files under .scratch change the worktree root listing and defeat go test cache hits** | [`scratch-defeats-test-cache`](design-scratch-defeats-test-cache.md) | 5h | 3h | gate |
 | 7 | **Edit directive not enforced: file append through a shell heredoc was not refused** | [`shell-guard-heredoc-write`](design-shell-guard-heredoc-write.md) | 5h | 5h | claude |
 | 8 | **Opening an agent into reed: engine bypass mode by default, explicit engine, model and effort, and reed add points to shuttle open**<br>• reed add help shows a broken claude example (%SID% never substituted) and shuttle open keeps the interactive permission default; every agent in reed needs bypass, per engine (claude bypassPermissions, Codex --yolo) | [`reed-agent-launch-bypass`](design-reed-agent-launch-bypass.md) | 3h | 3h | reed, shuttle, claude, codex |
 
