@@ -18,7 +18,7 @@ Held by a run; its scope is locked until the run ends.
 | # | Task | Slug | Recipe | At | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | 1 | **Arbiter verdict with an unquoted verbs item containing ': ' is unparseable**<br>• `darn: review_hard_max_bounces 1`<br>• `darn: review_max_bounces 1` | [`arbiter-verdict-quoting`](design-arbiter-verdict-quoting.md) | darn | Darn-Write | 13h | 1h | shed, loom |
-| 2 | **reedengine: TestOpenWindow_RealTmux/ClosesWhenItsCommandExitsAtOnce flakes: window read "on"**<br>• `darn: review_hard_max_bounces 1`<br>• `darn: review_max_bounces 1` | [`openwindow-exit-race`](design-openwindow-exit-race.md) | darn | Merge-In | 27m | 20m | reed |
+| 2 | **reedengine: TestOpenWindow_RealTmux/ClosesWhenItsCommandExitsAtOnce flakes: window read "on"**<br>• `darn: review_hard_max_bounces 1`<br>• `darn: review_max_bounces 1` | [`openwindow-exit-race`](design-openwindow-exit-race.md) | darn | Publish | 27m | 21m | reed |
 
 ### Ready
 
@@ -28,7 +28,7 @@ Waits on nothing open; can start now.
 
 | # | Task | Slug | Recipe | After | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | **Origin reconcile before anything that matters, and pushes that never fail silently**<br>• ls-remote over warp and records repos at orch start, wake, batten resume, Merge-In and Finalize; fast-forward, landed-elsewhere cleanup, stop on divergence; rejected push retries and reports | [`origin-reconcile`](design-origin-reconcile.md) | loom |  | 2d | 51m | fabric, batten, orch, creel, shed |
+| 1 | **Origin reconcile before anything that matters, and pushes that never fail silently**<br>• ls-remote over warp and records repos at orch start, wake, batten resume, Merge-In and Finalize; fast-forward, landed-elsewhere cleanup, stop on divergence; rejected push retries and reports | [`origin-reconcile`](design-origin-reconcile.md) | loom |  | 2d | 52m | fabric, batten, orch, creel, shed |
 | 2 | **Goto, resume and stops keep what a run already settled**<br>• Goto as a controlled re-entry: converged verdicts, spent review budget and the pause reason survive a goto or stop; no friction session per stop; a zero-fork review round is retried | [`run-reentry`](design-run-reentry.md) | loom |  | 13h | 52m | shed, loom, burler, shuttle |
 
 #### Normal priority
@@ -108,7 +108,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 19 | **Parallel batches: the shared pieces for Webster forks and Weaver**<br>• DAG batchifier, worktree per batch, merge-back with conflict resolution; open: keeping a fork inside its worktree | [`parallel-batch-parts`](design-parallel-batch-parts.md) | 2d | 2d | webster, fabric, loom |
 | 20 | **The orch watcher sees the note is written instead of waiting for a reply**<br>• At a context cycle the watcher checks that the orch turn ended and the note file exists, and cycles with no written reply; defer stays | [`orch-note-no-reply`](design-orch-note-no-reply.md) | 1d | 1d | orch, creel, workspaces |
 | 21 | **Move the orch rules into the hub-wide rules file**<br>• Operator step after the orch-rules-files deploy: run lyx orch rules from the prime | [`orch-rules-move`](design-orch-rules-move.md) | 1d | 1d | orch |
-| 22 | **Verify gates run only the touched trees and the repo-wide scans when a diff touches no production code**<br>• A diff that touches only a tool or docs still waits on both test tiers over the whole module at every verify gate | [`verify-diff-scope`](design-verify-diff-scope.md) | 1d | 10m | loom, shed, config |
+| 22 | **Verify gates run only the touched trees and the repo-wide scans when a diff touches no production code**<br>• A diff that touches only a tool or docs still waits on both test tiers over the whole module at every verify gate | [`verify-diff-scope`](design-verify-diff-scope.md) | 1d | 11m | loom, shed, config |
 | 23 | **Every remote operation runs async, and local-only fabric pairs stay an explicit choice only**<br>• Remote work goes async except the branch-exists check; batch pairs reach origin like any pair, and the local-only mode stays only as an explicit --local until a use is found or it is removed | [`fabric-remote-async`](design-fabric-remote-async.md) | 1d | 1d | fabric, batten |
 | 24 | **lyx loom decision add notifies the run live LLM producer of the new decision**<br>• With the Go driver no agent lives for the whole run, so decision add tells the working LLM producer if any, and later producers and PR-Gate catch the rest | [`decision-add-notifies`](design-decision-add-notifies.md) | 1d | 1d | loom, creel |
 | 25 | **Plan gate does not catch declared PATTERN.md growth that exceeds the headroom line** | [`plan-gate-pattern-headroom`](design-plan-gate-pattern-headroom.md) | 1d | 1d | loom, burler |
