@@ -26,3 +26,4 @@ labels:
     codex: the Codex CLI engine and its config
     report: 'lyx report: read-only reports over the hub records and history (internal/reportengine)'
     workspaces: 'umbrella tasks: project worktrees with their own orch thread, VS Code workspaces and pairs under them'
+    deploy: update-plugins.sh, deploy-dev and the prod pointer (tools/deploy)
