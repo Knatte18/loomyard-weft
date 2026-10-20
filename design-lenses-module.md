@@ -1,6 +1,6 @@
 # Lenses and fans move into a lenses module of their own, listed in full in the hub file
 
-`lenses-module` · Task · enhancement, burler, loom, config · running · Webster-Burler-Review
+`lenses-module` · Task · enhancement, burler, loom, config · running · Webster-Burler-Fix
 
 ## Seen (2026-10-19)
 
