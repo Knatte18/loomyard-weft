@@ -1,11 +1,11 @@
 {
-  "current_producer": "Discussion-Burler-Fix",
+  "current_producer": "Discussion-Bouncer",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Discussion-Burler-Fix",
-    "last": "Discussion-Burler-Review → bounced to Discussion-Burler-Fix",
+    "now": "Discussion-Bouncer",
+    "last": "Discussion-Burler-Fix → bounced to Discussion-Bouncer",
     "wait": ""
   },
   "history": [
@@ -154,6 +154,23 @@
       ],
       "budget_exempt": true,
       "routed_to": "Discussion-Burler-Fix"
+    },
+    {
+      "producer": "Discussion-Burler-Fix",
+      "outcome": "stuck",
+      "output": "/home/AD.NORCERESEARCH.NO/hanf/Code/Knatte18/loomyard-LYXHUB/origin-reconcile/_lyx/reviews/discussion/round-3-review.md",
+      "at": "2026-10-20T17:54:45Z",
+      "gate_attempts": 0,
+      "gate_spans": [
+        {
+          "gate": "discussion",
+          "kind": "gate",
+          "start": "2026-10-20T17:54:43.999493836Z",
+          "end": "2026-10-20T17:54:44.0000264Z"
+        }
+      ],
+      "budget_exempt": true,
+      "routed_to": "Discussion-Bouncer"
     }
   ],
   "product": {
