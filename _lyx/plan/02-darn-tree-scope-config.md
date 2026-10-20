@@ -1,11 +1,11 @@
 # Card 2 — darn-tree-scope-config
 
 **Create:**
-- `plan:internal/darnengine#ErrTreeScopeWithoutTrees` -> `var ErrTreeScopeWithoutTrees = errors.New("darn config key \"tree_scope_verify\" is set while \"tree_scope\" holds no tree")`
-- `plan:internal/darnengine#ErrTreeScopeKey` -> `var ErrTreeScopeKey = errors.New("darn config key \"tree_scope\" holds a malformed tree key")`
-- `plan:internal/darnengine#TreeScopedCommand` -> `func TreeScopedCommand(cfg Config, paths []string) (string, bool)`
-- `plan:internal/darnengine#WithEditorWayForward` -> `func WithEditorWayForward(err error) error`
-- `plan:internal/darnengine#TestTreeScopedCommand` -> `func TestTreeScopedCommand(t *testing.T)`
+- `internal/darnengine#ErrTreeScopeWithoutTrees`
+- `internal/darnengine#ErrTreeScopeKey`
+- `internal/darnengine#TreeScopedCommand`
+- `internal/darnengine#WithEditorWayForward`
+- `internal/darnengine#TestTreeScopedCommand`
 
 **Edit:**
 - `internal/darnengine#Config`
