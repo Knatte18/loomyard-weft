@@ -27,9 +27,9 @@
 - `internal/loomengine#writeBurlerYAML`
 
 **Create:**
-- `plan:internal/loomengine#seedLensesConfig` -> `func seedLensesConfig(t *testing.T, baseDir, contents string)`
-- `plan:internal/loomengine#malformedLensesYAML` -> `const malformedLensesYAML = "fans: [unclosed\n"`
-- `plan:internal/loomengine#writeLensesYAML` -> `func writeLensesYAML(t *testing.T, layout *lyxcwd.Location, content string)`
+- `internal/loomengine#seedLensesConfig`
+- `internal/loomengine#malformedLensesYAML`
+- `internal/loomengine#writeLensesYAML`
 
 **Uses:**
 - `internal/lenses#FanList`
