@@ -121,10 +121,10 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 26 | **lyx batten run starts in its own window by default**<br>• Every batten run is started with --window, so the window should be the default and foreground the opt-in. | [`batten-window-default`](design-batten-window-default.md) | 1d | 1d | batten, reed, orch |
 | 27 | **A halt a plan card asks for reaches the parent as a question, not as a batch failure**<br>• A card-requested halt went through recover-batch, tackler and arbiter as a failure; it should go straight to the parent and the next attempt should carry the decision | [`card-halt-is-question`](design-card-halt-is-question.md) | 1d | 1d | webster, shed, loom |
 | 28 | **A question research can settle is settled in Discussion, never deferred to Plan or an implementer**<br>• Discussion writer researches the facts its design rests on; reviewers flag a deferred research question or a halt-on-discovery rule | [`research-in-discussion`](design-research-in-discussion.md) | 1d | 1d | loom, stencil, burler |
-| 29 | **prod pointer is shared across machines while each binary is local**<br>• A deploy on one machine moves origin/prod, leaving other machines silently behind it | [`prod-pointer-per-machine`](design-prod-pointer-per-machine.md) | 13h | 13h | deploy |
+| 29 | **prod pointer is shared across machines while each binary is local**<br>• A deploy on one machine moves origin/prod, leaving other machines silently behind it | [`prod-pointer-per-machine`](design-prod-pointer-per-machine.md) | 13h | 0m | deploy |
 | 30 | **Darn-Write verify cannot pass a failure fixed on the parent**<br>• After a Publish verify failure is sent back to Darn-Write, its verify re-runs the failed test on a branch that lacks the parent fix | [`darn-verify-parent-fix`](design-darn-verify-parent-fix.md) | 11h | 8h | batten, loom |
 | 31 | **Cortex XDR holds stack up across a loom run's card, batch, round and whole-suite gates**<br>• Each gate that tests a just-changed package waits 8-10 s for XDR; a 10-15 card run pays that many times over | [`loom-gates-xdr-stacking`](design-loom-gates-xdr-stacking.md) | 1h | 1h | webster, loom, gate |
-| 32 | **[.NET 007] Language-specific lens sets seeded per hub**<br>• Every hub seeds lenses.yaml from one Go-repo template; seed by the hub language instead | [`lenses-language-sets`](design-lenses-language-sets.md) | 7m | 3m | burler, config, dotnet |
+| 32 | **[.NET 007] Language-specific lens sets seeded per hub**<br>• Every hub seeds lenses.yaml from one Go-repo template; seed by the hub language instead | [`lenses-language-sets`](design-lenses-language-sets.md) | 7m | 4m | burler, config, dotnet |
 
 #### Low priority
 
@@ -167,7 +167,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 16 | **Configurable action buttons on the reed status bar**<br>• Clickable status-bar buttons that run configured commands: VS Code, orch distill/refresh, the follow toggle and more | [`reed-status-buttons`](design-reed-status-buttons.md) | 5d | 5d | reed, config |
 | 17 | **Ideas to borrow from comparable agent orchestrators (survey, Oct 2026)** | [`orchestrator-survey-ideas`](design-orchestrator-survey-ideas.md) | 4d | 3d | burler, shed, orch, quarry, report |
 | 18 | **[.NET 004] Regression tier: baseline profiles before the run, compare at the final gate**<br>• Support a hub regression tier that writes profiles on the parent before implementation and compares after, switchable per task for expected drift. | [`regression-baseline-verify`](design-regression-baseline-verify.md) | 3d | 10h | shed, webster, batten, config, dotnet |
-| 19 | **[.NET 006] Quarry: a C# glyph alphabet**<br>• Quarry knows only Go glyphs; a C# hub needs a C# alphabet | [`quarry-csharp`](design-quarry-csharp.md) | 7m | 6m | quarry, dotnet |
+| 19 | **[.NET 006] Quarry: a C# glyph alphabet**<br>• Quarry knows only Go glyphs; a C# hub needs a C# alphabet | [`quarry-csharp`](design-quarry-csharp.md) | 7m | 7m | quarry, dotnet |
 
 #### Low priority
 
