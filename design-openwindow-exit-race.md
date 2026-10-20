@@ -1,6 +1,6 @@
 # reedengine: TestOpenWindow_RealTmux/ClosesWhenItsCommandExitsAtOnce flakes: window read "on"
 
-`openwindow-exit-race` · Task · bug, reed
+`openwindow-exit-race` · Task · bug, reed · running · Worktree-Create
 
 Imported from [issue #761](https://github.com/Knatte18/loomyard/issues/761).
 
