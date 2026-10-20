@@ -4,6 +4,8 @@
 
 Imported from [issue #609](https://github.com/Knatte18/loomyard/issues/609).
 
+Superseded shape (orch, 2026-10-20): the synchronous `Capture-Baseline` row below gave way to the async `Job-Start`/`Job-Join` pair of note `regression-baseline-verify` (operator decision 2026-10-17: `Job-Join` right before Webster); this note keeps the Models facts, and the two are meant to merge when the regression tier becomes a task.
+
 ## Merged from note `baseline-drift-gate` (2026-10-15)
 
 From `manifest/roadmap.md` Someday.
