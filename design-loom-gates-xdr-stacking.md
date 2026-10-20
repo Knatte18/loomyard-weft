@@ -31,3 +31,8 @@ Scoping that gate is not an option here; darn, for small changes, is where gates
 The card gate keeps its tests too: a card is atomic by design, it leaves every test passing, so a failure points at exactly the card that caused it.
 Moving the tests to the batch gate would lose that, so it is not an option either.
 What remains is measuring the hold's share of a few ordinary loom runs on OSL-1046 before anything is built.
+
+## Seen (orch, 2026-10-20): first loom run on OSL-1046 after the gate fixes
+
+`lenses-module` took 1h50m from start to landing on OSL-1046 (`lyx report timing`): discussion 26m50s, plan 42m50s, webster 35m32s, merge 22s, publish-finalize 4m06s.
+The operator puts a typical loom run on Neve, which has no XDR, at about 2 hours, so this run shows no XDR penalty at whole-run scale.
