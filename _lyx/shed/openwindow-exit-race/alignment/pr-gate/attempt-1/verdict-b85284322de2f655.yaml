@@ -1,0 +1,8 @@
+verdict: approve
+reason: |-
+  The diff makes OpenWindow's read-back carry the answering window id and count a failed read or a foreign or empty id as the window being gone, which is the board entry's expected fix, with its unit row, the fake update in windoworder_test.go and the package doc; nothing goes beyond the entry.
+  No review segment carried over a risk naming a parent correction.
+  Peer arbiter-verdict-quoting holds an unpushed commit e4b51c9c making the same behaviour change to the same reedengine lines; the behaviour matches, so it is a text conflict for whichever lands second at Merge-In, not a design conflict.
+  Landing order is unknown, since the peer's row is 0.
+question: ""
+superseded: []
