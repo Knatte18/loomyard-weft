@@ -349,12 +349,7 @@ fans:
         - goal-scope
         - board-fit
         - leanness
-    twill-plan:
-        - criteria-coverage
-        - branch-coverage
-        - row-reachability
-        - forced-edits
-        - test-economy
+    twill-plan: [affected-set, guard-reach, way-forward, criteria-coverage, branch-coverage, row-reachability, forced-edits, test-economy]
     review-discussion:
         - interactions
         - existing-paths
