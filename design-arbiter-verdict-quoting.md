@@ -1,6 +1,6 @@
 # Arbiter verdict with an unquoted verbs item containing ': ' is unparseable
 
-`arbiter-verdict-quoting` · Task · bug, shed, loom · running · Merge-In
+`arbiter-verdict-quoting` · Task · bug, shed, loom · running · Publish
 
 Imported from [issue #754](https://github.com/Knatte18/loomyard/issues/754).
 
