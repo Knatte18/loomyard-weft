@@ -35,3 +35,7 @@ So Cortex XDR holds each executable it has not seen yet for several seconds befo
 Eight freshly built binaries started at once all finished in 10.8 s together, about the time of one, against roughly 70 s one after another.
 The operator will not get an XDR exclusion from IT (2026-10-20), so the wait is hidden by parallelism instead: a higher machine-local `go_parallel` (gate default 4, the laptop has 16 threads) runs more packages' first-run holds at once.
 Against that stands the 2026-10-16 report that XDR killed VS Code on a burst of git fixture files; `bench-osl1046-xdr` should clock both tiers at more than one `go_parallel` value.
+
+## Operator decision (2026-10-20): waits
+
+The VS Code kill has not happened on OSL-1046, so this note waits; it does not go into the current batch of Cortex test-time fixes.
