@@ -2,6 +2,8 @@
 
 `run-process-ownership` · Task · bug, enhancement, batten, fabric, loom, shed, shuttle, webster
 
+Depends on: [`run-reentry`](design-run-reentry.md), [`origin-reconcile`](design-origin-reconcile.md)
+
 ## Goal
 
 Every process a run spawns has one owner, and the verbs that end, pause or tear down a run reach all of them.
