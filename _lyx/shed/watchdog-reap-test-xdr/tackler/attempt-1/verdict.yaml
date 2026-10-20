@@ -1,0 +1,8 @@
+verdict: hand-back
+reason: >-
+  Worktree-Create is blocked because the source worktree (the loomyard checkout, trace worktree_root) has uncommitted changes:
+  M contracts/stencils/orch/orch-template-role.md, M docs/overview.md, and ?? docs/loomyard-overview.svg (confirmed with git status --short, read-only).
+  A plain re-launch or a goto to Worktree-Create cannot settle this, because the tree stays dirty until someone commits, stashes or removes those changes.
+  Whether to do that, and to whom the changes belong, is a choice for the run's parent.
+question: >-
+  The source worktree has three uncommitted changes (two modified files under contracts/stencils and docs/, one untracked docs/loomyard-overview.svg), which block Worktree-Create. Should they be committed, stashed or discarded before the run resumes, and if committed, by whom?

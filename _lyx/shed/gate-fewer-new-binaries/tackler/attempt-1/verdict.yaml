@@ -1,0 +1,3 @@
+verdict: escalate
+reason: >-
+  The blocked Worktree-Teardown stop comes from a server-side rejection of the archive tag push to origin (loomyard-weft). The remote returned "[remote rejected] ... (failed)" with no reason, and the tag is absent on the remote while present locally. The cause is not named from the logs: it sits in the remote's ruleset or permissions, which needs a judge with access to the GitHub settings. A plain re-launch would hit the same rejection. See the case brief for the facts, ruled-out causes and hypothesis.
