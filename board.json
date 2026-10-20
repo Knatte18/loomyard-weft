@@ -1547,7 +1547,7 @@
       "id": 726,
       "slug": "lenses-template-frozen",
       "title": "A hub lenses.yaml copies every template entry, so template edits never reach it",
-      "kind": "note",
+      "kind": "task",
       "labels": [
         "enhancement",
         "config",

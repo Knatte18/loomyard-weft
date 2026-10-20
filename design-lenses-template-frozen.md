@@ -1,6 +1,6 @@
 # A hub lenses.yaml copies every template entry, so template edits never reach it
 
-`lenses-template-frozen` · Note · enhancement, config, burler
+`lenses-template-frozen` · Task · enhancement, config, burler
 
 ## Seen (orch, 2026-10-20)
 
