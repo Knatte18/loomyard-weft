@@ -304,7 +304,7 @@
       }
     }
   ],
-  "currentBatch": 0,
+  "currentBatch": 6,
   "masterStrand": "a36b3b375392aa5869ede4f3a39c6e62",
   "masterSessionId": "97932407-2fd2-4ca5-b1fb-314dda63fb96",
   "masterEngine": "claude",
@@ -449,6 +449,24 @@
       "bracketTranscripts": [
         "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-lenses-module/97932407-2fd2-4ca5-b1fb-314dda63fb96/subagents/agent-a1a09d2ced8732048.jsonl"
       ]
+    },
+    "6": {
+      "slug": "loom-reads-lenses",
+      "cards": [
+        "06-loom-reads-lenses",
+        "07-darn-reads-lenses"
+      ],
+      "cardHashes": {
+        "06-loom-reads-lenses": "66afaf8867862b237d5025d4a90e9b884be52bb6de434f4fab7cfa1b4aab13d4",
+        "07-darn-reads-lenses": "eef7e9e0575a2f236caf0ab270d85a0eded81d2a030f0e001f60c8d8c330d09c"
+      },
+      "startSha": "478a0056d9e3c6088104ba09b58935db6e1ce293",
+      "kind": "fork",
+      "spawnedAt": "2026-10-20T18:08:28Z",
+      "sessionId": "97932407-2fd2-4ca5-b1fb-314dda63fb96",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
     }
   },
   "seenForkTranscripts": [
