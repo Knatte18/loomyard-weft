@@ -749,7 +749,7 @@
       }
     }
   ],
-  "currentBatch": 0,
+  "currentBatch": 12,
   "masterStrand": "d26ba69a79fb575f7e87b499eb76f785",
   "masterSessionId": "b26519ba-ade7-44f6-9357-417c58fd04ba",
   "masterEngine": "claude",
@@ -831,6 +831,24 @@
       "bracketTranscripts": [
         "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-origin-reconcile/b26519ba-ade7-44f6-9357-417c58fd04ba/subagents/agent-a3cad4262ab70dc58.jsonl"
       ]
+    },
+    "12": {
+      "slug": "gate-entry-exemption",
+      "cards": [
+        "12-gate-entry-exemption",
+        "13-remove-local-mode"
+      ],
+      "cardHashes": {
+        "12-gate-entry-exemption": "e1f8842790c5764f51b50d4e92e26948a14a32af94ee2ed21b718875c8183c87",
+        "13-remove-local-mode": "6051bc8b42c7eb389f640636e564eca1c37a1f69de5fdc1a4762d45d4682301c"
+      },
+      "startSha": "3b4ac85c60423c5d903045aa67f120acbba8148e",
+      "kind": "fork",
+      "spawnedAt": "2026-10-21T07:29:32Z",
+      "sessionId": "b26519ba-ade7-44f6-9357-417c58fd04ba",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
     },
     "3": {
       "slug": "board-replay-seam",
