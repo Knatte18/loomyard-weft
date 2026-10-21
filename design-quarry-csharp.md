@@ -1,6 +1,6 @@
 # [.NET 006] Quarry: a C# glyph alphabet
 
-`quarry-csharp` · Note · feature, quarry, dotnet
+`quarry-csharp` · Task · feature, quarry, dotnet
 
 ## Seen (orch, 2026-10-20)
 
