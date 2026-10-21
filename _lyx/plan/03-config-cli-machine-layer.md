@@ -24,9 +24,9 @@
 - `internal/configcli#TestConfigOverRealHub`
 
 **Uses:**
-- `plan:internal/configengine#LayerMachine`
-- `plan:internal/configengine#MachineFile`
-- `plan:internal/configengine#MachineKeys`
+- `internal/configengine#LayerMachine`
+- `internal/configengine#MachineFile`
+- `internal/configengine#MachineKeys`
 - `internal/configcli#setChecked`
 - `internal/configcli#newLoadFailure`
 - `internal/configcli#rollBack`

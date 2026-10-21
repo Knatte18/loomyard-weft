@@ -23,10 +23,10 @@
 - `internal/configreg#TestModules_EveryTemplateKeyClassified`
 
 **Uses:**
-- `plan:internal/configengine#LayerMachine`
-- `plan:internal/configengine#CategoryMachine`
-- `plan:internal/configengine#MachineFile`
-- `plan:internal/configengine#MachineKeys`
+- `internal/configengine#LayerMachine`
+- `internal/configengine#CategoryMachine`
+- `internal/configengine#MachineFile`
+- `internal/configengine#MachineKeys`
 - `internal/configengine#LayerLocal`
 - `internal/gateslot#seedGateConfig`
 - `internal/gateslot#Lease.Env`

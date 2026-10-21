@@ -1,13 +1,13 @@
 # Card 1 — config-machine-layer
 
 **Create:**
-- `plan:internal/configengine#LayerMachine` -> `const LayerMachine Layer = "machine"`
-- `plan:internal/configengine#CategoryMachine` -> `const CategoryMachine Category = "machine"`
-- `plan:internal/configengine#MachineFile` -> `func MachineFile(board, module string) string`
-- `plan:internal/configengine#MachineKeys` -> `func MachineKeys(spec Spec) []string`
-- `plan:internal/configengine#ValidateMachine` -> `func ValidateMachine(spec Spec, doc []byte) error`
-- `plan:internal/configengine#readLayers` -> `func readLayers(dirs Dirs, spec Spec, anchorLayers bool) ([]LayerDoc, error)`
-- `plan:internal/configengine#stackLayers` -> `func stackLayers(dirs Dirs, spec Spec, anchorLayers bool) (Stack, error)`
+- `internal/configengine#LayerMachine`
+- `internal/configengine#CategoryMachine`
+- `internal/configengine#MachineFile`
+- `internal/configengine#MachineKeys`
+- `internal/configengine#ValidateMachine`
+- `internal/configengine#readLayers`
+- `internal/configengine#stackLayers`
 
 **Edit:**
 - `internal/configengine#LayerFile`

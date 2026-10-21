@@ -4,7 +4,7 @@
 - `internal/hubreconcile_test#runStaleBuildReconcile`
 
 **Uses:**
-- `plan:internal/configengine#MachineFile`
+- `internal/configengine#MachineFile`
 
 **Intent:**
 Pin decision record D5 for the hub reconcile after a binary change: `hubreconcile.Ensure` never reads, rewrites or removes a machine file.
