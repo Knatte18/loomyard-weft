@@ -81,7 +81,7 @@ _No rounds yet._
 - Q4 `busy_quit_sec` — auto-pick: stays hub-wide; not asked for.
 - Q5 Write guard — auto-pick: the default layer's prime-only guard; a machine value changes every run on the machine.
 - Q6 Commit — auto-pick: never committed, no fabric sync; it must not reach Bolt.
-- Q7 Reconcile — auto-pick, revised after the lens review: the machine file is never reconciled; loads drop retired keys, and a refused key fails the gate load with a message naming the file.
-- Q9 Machine layer applicability — auto-pick: only when both `Board` and `Anchor` are set, so hub-file checks stay machine-free.
+- Q7 Reconcile — auto-pick, revised after the lens review: the machine file is never reconciled; loads drop a retired `machine` key with no warning, and any other retired or refused key fails the gate load with a message naming the file.
+- Q9 Machine layer applicability — auto-pick: only for a hub-wide module with a `machine` key and only when both `Board` and `Anchor` are told, so hub-file checks stay machine-free, a stray machine file of another module is never read, and a worktree whose anchor has no `_lyx/` still stacks it.
 - Q10 Note `xdr-git-test-file-burst` — open for the orch: it recommends `lyx config gate --layer local --set go_parallel=1` and `slots=1`, which is refused; after landing, the working command is `lyx config gate --layer machine --set …` from the prime. This run does not edit that entry.
 - Q8 Per-worktree modules — auto-pick: no machine layer; a `machine` key there fails a registration test.
