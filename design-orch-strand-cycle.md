@@ -2,6 +2,8 @@
 
 `orch-strand-cycle` · Task · bug, enhancement, orch, reed
 
+Depends on: [`origin-reconcile`](design-origin-reconcile.md), [`run-reentry`](design-run-reentry.md), [`machine-handover`](design-machine-handover.md), [`darn-verify-fixes`](design-darn-verify-fixes.md)
+
 Three orch lifecycle fixes in one run: a dead strand counts as dead, a dead watcher restarts, and the watcher's context-cycle request needs no reply and can be withdrawn.
 
 ## 1. A strand whose engine has exited counts as dead
