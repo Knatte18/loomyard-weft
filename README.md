@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-21 13:05 UTC; every age below is as of then.
+Rendered 2026-10-21 13:06 UTC; every age below is as of then.
 
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
@@ -105,6 +105,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | --- | --- | --- | --- | --- | --- |
 | 3 | **Opening an agent into reed: engine bypass mode by default, explicit engine, model and effort, and reed add points to shuttle open**<br>• reed add help shows a broken claude example (%SID% never substituted) and shuttle open keeps the interactive permission default; every agent in reed needs bypass, per engine (claude bypassPermissions, Codex --yolo) | [`reed-agent-launch-bypass`](design-reed-agent-launch-bypass.md) | 23h | 23h | reed, shuttle, claude, codex |
 | 4 | **Diff-scoped verify gate runs an unrelated package whose test depends on host inotify limits** | [`verify-diff-scope-unrelated-pkg`](design-verify-diff-scope-unrelated-pkg.md) | 1h | 1h | gate |
+| 5 | **Shipped review rubrics name loomyard's own PATTERN files, so reviewers in other hubs search for files that do not exist** | [`stencils-repo-neutral`](design-stencils-repo-neutral.md) | 0m | 0m | stencil, loom, burler |
 
 ### Enhancements
 
