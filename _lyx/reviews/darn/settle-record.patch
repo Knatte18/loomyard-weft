@@ -1,0 +1,675 @@
+diff --git a/internal/reedcli/cli.go b/internal/reedcli/cli.go
+index 63a7f9e3..d4cd00a8 100644
+--- a/internal/reedcli/cli.go
++++ b/internal/reedcli/cli.go
+@@ -71,6 +71,9 @@ type reedCLI struct {
+ 	// watchdogListSessions is the test seam for the daemon's session listing, in its loop and in its exit re-check; nil means reedengine.ListSessions.
+ 	watchdogListSessions func(tmuxPath, socketKey string) ([]string, error)
+ 
++	// watchdogOpenWatch is the test seam for the daemon's discover signal watch; nil means reedengine.OpenFileWatch.
++	watchdogOpenWatch reedengine.FileWatchOpener
++
+ 	// downLockWait, downLockPoll, downLockProbe and downLockSleep are test seams for the wait `down` makes for the watchdog lock;
+ 	// zero or nil means watchdogDownWait, watchdogDownPoll, probeWatchdogLock and time.Sleep.
+ 	downLockWait  time.Duration
+diff --git a/internal/reedcli/doc.go b/internal/reedcli/doc.go
+index af69af3b..5948b23e 100644
+--- a/internal/reedcli/doc.go
++++ b/internal/reedcli/doc.go
+@@ -3,7 +3,7 @@
+ // The per-hub watchdog daemon (`lyx reed watchdog`) runs a discovery loop over the hub's tmux socket.
+ // Its cadence starts at five seconds, doubles up to sixty across cycles that find the session set unchanged, and returns to five seconds when the set changes.
+ // The loop also wakes on the hub-level discover signal, a file that a cold session boot touches: a consumed signal runs a cycle at once, but never sooner than five seconds after the previous cycle, so a process touching the file in a loop costs one cycle per five seconds.
+-// When the signal file cannot be watched the loop logs that once and keeps its backed-off cadence.
++// When the signal file cannot be watched, as when the inotify instance table is full, the loop logs that once, keeps its backed-off cadence and reads the file itself on each timer wake, so a stop request still lands, at that cadence.
+ // Idle exit and orphan reap each count three consecutive cycles, so at the backed-off cadence they take up to three minutes.
+ // A signal file holding the stop marker is a stop request, written by the `down` that ends the hub's server: a stop-woken cycle that lists no session exits at once, never sooner than one second after the previous cycle.
+ // After any clean exit the daemon releases its lock and lists the hub's sessions once more, and spawns a successor only when that listing finds a session, so a session that appeared during the exit is not left without a watchdog.
+diff --git a/internal/reedcli/watchdog.go b/internal/reedcli/watchdog.go
+index 5f4d9e1d..30c030ef 100644
+--- a/internal/reedcli/watchdog.go
++++ b/internal/reedcli/watchdog.go
+@@ -53,7 +53,7 @@ const watchdogHubDiscoveryCeiling = 60 * time.Second
+ // watchdogHubIdleCycles is how many consecutive idle discovery cycles (see sessionsAreIdle) the
+ // daemon tolerates before exiting.
+ //
+-// Three cycles covers a `down` followed by an `up` for a daemon whose watch failed to open and so never sees the stop,
++// Three cycles covers a `down` followed by an `up` whose boot touch replaced the stop before the daemon read it,
+ // and a transient list-sessions error, which sessionsAreIdle counts as idle.
+ const watchdogHubIdleCycles = 3
+ 
+@@ -417,7 +417,8 @@ func dispatchReap(wg *sync.WaitGroup, done chan<- string, hub, tmuxPath, shellPa
+ // The wait between cycles starts at timing.DiscoveryCycle, doubles up to timing.DiscoveryCeiling across cycles that find the session set unchanged, and returns to the base when the set changes (discoveryWake).
+ // The loop also waits on the hub-level discover signal file, opened through open: a consumed signal runs a cycle at once, never sooner than the base after the previous one.
+ // A signal file holding reedengine.DiscoverStopMarker is a stop request, whose cycle runs no sooner than timing.StopFloor after the previous one.
+-// When open fails the loop logs that once at Warn and keeps its backed-off cadence with no event wake, and never sees a stop.
++// When open fails, or the event channel closes, the loop logs that once at Warn and keeps its backed-off cadence with no event wake,
++// and each timer wake first consumes the signal file itself, so a stop request is still seen, on the cycle that wake runs.
+ //
+ // shellPath sits immediately after tmuxPath because the two are told together and travel together —
+ // both are told-not-derived values the reap pass needs. An empty shellPath is logged once at Warn,
+@@ -491,9 +492,12 @@ func runWatchdogLoop(ctx context.Context, hub, tmuxPath, shellPath string, timin
+ 	signalDir := fabricengine.HubScratchDir(hub)
+ 	signalPath := filepath.Join(signalDir, reedengine.DiscoverSignalFileName)
+ 	// A failed open leaves events nil, a channel that never delivers.
++	// unwatched is whether no watch delivers the signal's events, so each timer wake reads the file itself.
+ 	events, closeWatch, err := open(signalDir, reedengine.DiscoverSignalFileName)
++	unwatched := err != nil
++	var consumeFailure logger.Episode
+ 	if err != nil {
+-		logger.Warn("reed: watchdog could not watch the discover signal file, keeping its backed-off cadence", "hub", hub, "err", err)
++		logger.Warn("reed: watchdog could not watch the discover signal file, reading it on its backed-off cadence instead", "hub", hub, "err", err)
+ 	} else {
+ 		defer closeWatch()
+ 	}
+@@ -510,9 +514,22 @@ func runWatchdogLoop(ctx context.Context, hub, tmuxPath, shellPath string, timin
+ 		case <-ctx.Done():
+ 			return ctx.Err()
+ 		case <-timer.C:
++			if unwatched {
++				consumed, stop, err := consumeDiscoverSignal(signalPath)
++				if err != nil {
++					consumeFailure.Fail("reed: watchdog could not consume the discover signal", "hub", hub, "err", err)
++				} else {
++					consumeFailure.Recover("reed: watchdog consumes the discover signal again", "hub", hub)
++					if consumed {
++						wake.onSignal(time.Now(), stop)
++					}
++				}
++			}
+ 		case _, ok := <-events:
+ 			if !ok {
+ 				events = nil
++				unwatched = true
++				logger.Warn("reed: watchdog's discover signal watch closed, reading the file on its backed-off cadence instead", "hub", hub)
+ 				continue
+ 			}
+ 			consumed, stop, err := consumeDiscoverSignal(signalPath)
+@@ -854,7 +871,11 @@ Example:
+ 			if respawn == nil {
+ 				respawn = reedengine.SpawnWatchdog
+ 			}
+-			err = runWatchdogLoop(cmd.Context(), hubPath, tmuxPath, shellPath, timing, reedengine.OpenFileWatch, list, exeWatch(exeStat))
++			openWatch := c.watchdogOpenWatch
++			if openWatch == nil {
++				openWatch = reedengine.OpenFileWatch
++			}
++			err = runWatchdogLoop(cmd.Context(), hubPath, tmuxPath, shellPath, timing, openWatch, list, exeWatch(exeStat))
+ 			if errors.Is(err, errWatchdogBinaryReplaced) {
+ 				// The successor's lock race is lost while this process still holds the lock, so release it first;
+ 				// the deferred release that follows is a no-op on an unlocked flock.
+diff --git a/internal/reedcli/watchdog_integration_test.go b/internal/reedcli/watchdog_integration_test.go
+index d964ba93..b8b28dd5 100644
+--- a/internal/reedcli/watchdog_integration_test.go
++++ b/internal/reedcli/watchdog_integration_test.go
+@@ -12,7 +12,6 @@ package reedcli
+ import (
+ 	"bytes"
+ 	"context"
+-	"errors"
+ 	"os"
+ 	"os/exec"
+ 	"path/filepath"
+@@ -337,9 +336,9 @@ func TestWatchdogDaemon(t *testing.T) {
+ 		scenario.Cleanup(func() { _, _ = eng1.Down() })
+ 		eng2 = bootWatchdogEngine(t, pair)
+ 		scenario.Cleanup(func() { _, _ = eng2.Down() })
+-		// The watch never opens, so this loop sees no stop and keeps the idle-cycle rule that covers a down followed by an up.
++		// The watch opens but never delivers, so this loop neither wakes on nor reads the signal file, sees no stop and keeps the idle-cycle rule that covers a down followed by an up.
+ 		noWatch := func(string, ...string) (<-chan fswatch.Event, func() error, error) {
+-			return nil, nil, errors.New("watch disabled for the shared discovery loop")
++			return make(chan fswatch.Event), func() error { return nil }, nil
+ 		}
+ 		go func() {
+ 			loopDone <- runWatchdogLoop(loopCtx, h.Path, tmuxPath, eng1.ShellPath(), compressedWatchdogTiming(), noWatch, reedengine.ListSessions, nil)
+diff --git a/internal/reedcli/watchdog_test.go b/internal/reedcli/watchdog_test.go
+index 7265f47c..965dd049 100644
+--- a/internal/reedcli/watchdog_test.go
++++ b/internal/reedcli/watchdog_test.go
+@@ -21,6 +21,7 @@ import (
+ 	"time"
+ 
+ 	"github.com/Knatte18/loomyard/internal/fabricengine"
++	"github.com/Knatte18/loomyard/internal/fswatch"
+ 	"github.com/Knatte18/loomyard/internal/fsx"
+ 	"github.com/Knatte18/loomyard/internal/lock"
+ 	"github.com/Knatte18/loomyard/internal/logger"
+@@ -726,6 +727,7 @@ type listerEnv struct {
+ // Losing the lock race returns nil, respawns nothing and writes no trace file at the default verbosity.
+ // A replaced binary with a live hub releases the lock before it respawns and passes the hub, tmux and shell values and suppress true under go test.
+ // A replaced binary, an idle-cycle exit or a stop respawns only when the re-check after the loop still finds a session, and a cancelled context respawns nothing.
++// A stop is seen with or without a discover signal watch, the rows with neither failWatch nor closedWatch using the real one where it opens.
+ // Each row asserts its own trace lines.
+ // It points the process-global durable log sink at the hub's logs directory, so it is not parallel.
+ func TestWatchdogCmd_ExitsZeroBeforeOrInsteadOfLooping(t *testing.T) {
+@@ -744,6 +746,10 @@ func TestWatchdogCmd_ExitsZeroBeforeOrInsteadOfLooping(t *testing.T) {
+ 		idleCycles  int
+ 		// lister answers each session listing; nil answers idle.
+ 		lister func(env listerEnv) []string
++		// failWatch makes the discover signal watch fail to open, as a full inotify table does.
++		failWatch bool
++		// closedWatch makes the discover signal watch open on a channel that is already closed.
++		closedWatch bool
+ 		// wantRunning has the test wait for the stop-woken cycle and two more lister calls, assert the command is still running, then cancel it.
+ 		wantRunning  bool
+ 		wantRespawns int
+@@ -786,6 +792,28 @@ func TestWatchdogCmd_ExitsZeroBeforeOrInsteadOfLooping(t *testing.T) {
+ 			wantTrace:   []string{"exiting on a stop request"},
+ 			wantNoTrace: []string{"successor was spawned", "exiting after consecutive idle"},
+ 		},
++		{
++			name: "stop with an idle listing and no watch", idleCycles: manyCycles, failWatch: true,
++			lister: func(env listerEnv) []string {
++				if env.call == 1 {
++					env.writeStop()
++				}
++				return idle
++			},
++			wantTrace:   []string{"could not watch the discover signal file, reading it on its backed-off cadence instead", "exiting on a stop request"},
++			wantNoTrace: []string{"successor was spawned", "exiting after consecutive idle"},
++		},
++		{
++			name: "stop with an idle listing and a closed watch", idleCycles: manyCycles, closedWatch: true,
++			lister: func(env listerEnv) []string {
++				if env.call == 1 {
++					env.writeStop()
++				}
++				return idle
++			},
++			wantTrace:   []string{"watch closed, reading the file on its backed-off cadence instead", "exiting on a stop request"},
++			wantNoTrace: []string{"successor was spawned", "exiting after consecutive idle"},
++		},
+ 		{
+ 			name: "stop with an affirmative listing", idleCycles: manyCycles,
+ 			lister: func(env listerEnv) []string {
+@@ -907,6 +935,18 @@ func TestWatchdogCmd_ExitsZeroBeforeOrInsteadOfLooping(t *testing.T) {
+ 					return tt.lister(call), nil
+ 				},
+ 			}
++			if tt.failWatch {
++				c.watchdogOpenWatch = func(string, ...string) (<-chan fswatch.Event, func() error, error) {
++					return nil, nil, errors.New("inotify instance limit reached")
++				}
++			}
++			if tt.closedWatch {
++				c.watchdogOpenWatch = func(string, ...string) (<-chan fswatch.Event, func() error, error) {
++					closed := make(chan fswatch.Event)
++					close(closed)
++					return closed, func() error { return nil }, nil
++				}
++			}
+ 			cmd := c.watchdogCmd()
+ 			cmd.SetOut(&bytes.Buffer{})
+ 			cmd.SetArgs([]string{"--hub-path", hub, "--tmux", tmuxPath, "--shell", shellPath})
+diff --git a/internal/reedengine/doc.go b/internal/reedengine/doc.go
+index 67891ed8..a8ec552a 100644
+--- a/internal/reedengine/doc.go
++++ b/internal/reedengine/doc.go
+@@ -204,7 +204,9 @@
+ // The name is mirrored outward, never read back as truth.
+ // launchStrandLocked exports it to the strand's process as LYX_STRAND_NAME, with LYX_PARENT when a parent is told, ahead of the launch command.
+ // It also sets the pane title to the full name after `set-option -p allow-set-title off`, so the program in the pane cannot overwrite it.
+-// On tmux below 3.5 the option is missing, reed Warns and the launch goes on, and the program can then overwrite the title.
++// On tmux below 3.5 the option is missing and the program can overwrite the title.
++// The tmux floor probe's version line decides it: a parsed release below 3.5 skips the `set-option`, noted once per tmux path per process at Info.
++// On an unrecognised version line the `set-option` runs, and a failure Warns and the launch goes on.
+ // A provider session name is the other mirror, passed by the launch line as `--name`.
+ // The daemon's file-event waits (watchloop.go) go through a FileWatchOpener, whose production value OpenFileWatch wraps internal/fswatch.
+ // PasteSubmit is the pane-write transport op: one tmux invocation fills a fresh named buffer (`lyx-inject-` plus 8 hex characters) with the text, pastes it as a bracketed paste, deletes the buffer, and, when asked, sends Enter behind it.
+diff --git a/internal/reedengine/lifecycle_test.go b/internal/reedengine/lifecycle_test.go
+index f62563a5..cbbc733a 100644
+--- a/internal/reedengine/lifecycle_test.go
++++ b/internal/reedengine/lifecycle_test.go
+@@ -19,6 +19,7 @@ import (
+ 	"time"
+ 
+ 	"github.com/Knatte18/loomyard/internal/fabricengine"
++	"github.com/Knatte18/loomyard/internal/logger"
+ 	"github.com/Knatte18/loomyard/internal/reedengine/render"
+ 	"github.com/Knatte18/loomyard/internal/segmentcolor"
+ 	"github.com/Knatte18/loomyard/internal/testkit/logcapture"
+@@ -286,12 +287,12 @@ func TestStatus_ReportsOwnWindowStrandsFromTheSessionListing(t *testing.T) {
+ // TestServerBootEnv_ExcludesTraceID pins that LYX_TRACE_ID is stripped before the tmux server
+ // inherits the boot env (long-lived singleton).
+ func TestServerBootEnv_ExcludesTraceID(t *testing.T) {
+-	t.Setenv("LYX_TRACE_ID", "somevalue")
++	t.Setenv(logger.TraceIDEnv, "somevalue")
+ 
+ 	clean, _ := testScrub.Apply(os.Environ())
+ 	sawBeforeStrip := false
+ 	for _, entry := range clean {
+-		if strings.HasPrefix(entry, "LYX_TRACE_ID=") {
++		if strings.HasPrefix(entry, logger.TraceIDEnv+"=") {
+ 			sawBeforeStrip = true
+ 			break
+ 		}
+@@ -304,7 +305,7 @@ func TestServerBootEnv_ExcludesTraceID(t *testing.T) {
+ 
+ 	got := stripTraceID(clean)
+ 	for _, entry := range got {
+-		if strings.HasPrefix(entry, "LYX_TRACE_ID=") {
++		if strings.HasPrefix(entry, logger.TraceIDEnv+"=") {
+ 			t.Errorf("stripTraceID(clean) = %v, want no LYX_TRACE_ID entry", got)
+ 		}
+ 	}
+diff --git a/internal/reedengine/naming_integration_test.go b/internal/reedengine/naming_integration_test.go
+index f6a9e2b5..0480c4d9 100644
+--- a/internal/reedengine/naming_integration_test.go
++++ b/internal/reedengine/naming_integration_test.go
+@@ -66,7 +66,7 @@ func TestNaming(t *testing.T) {
+ 			t.Errorf("pane title = %q, want %q", got, want)
+ 		}
+ 
+-		// Older tmux (3.4 included) has no allow-set-title option; spawn only warns then, so the check applies only where the option exists.
++		// Spawn skips the allow-set-title option on a tmux older than 3.5, so the check applies only where the option exists.
+ 		out, err := e.tmux.output("show-options", "-p", "-v", "-t", strand.PaneID, "allow-set-title")
+ 		switch {
+ 		case err != nil && strings.Contains(err.Error(), "invalid option"):
+diff --git a/internal/reedengine/spawn.go b/internal/reedengine/spawn.go
+index d178ddbe..ac3ed036 100644
+--- a/internal/reedengine/spawn.go
++++ b/internal/reedengine/spawn.go
+@@ -97,8 +97,11 @@ func (e *Engine) launchStrandLocked(st *ReedState, s *Strand, launchCmd string)
+ 	e.killReplacedOwnWindowPaneLocked(previousPaneID, paneID)
+ 	// Both title commands are display mirrors: allow-set-title off stops the agent inside from overwriting the name,
+ 	// and no lookup or delivery ever resolves through a title, so a failure of either costs display only and never fails the launch.
+-	if err := e.tmux.run("set-option", "-p", "-t", paneID, "allow-set-title", "off"); err != nil {
+-		logger.Warn("reed: could not turn off allow-set-title, the pane title may drift", "strand", s.GUID, "pane", paneID, "err", err)
++	// A tmux known to predate allow-set-title skips the option, whose fallback the version probe has already logged once.
++	if !e.tmux.lacksAllowSetTitle() {
++		if err := e.tmux.run("set-option", "-p", "-t", paneID, "allow-set-title", "off"); err != nil {
++			logger.Warn("reed: could not turn off allow-set-title, the pane title may drift", "strand", s.GUID, "pane", paneID, "err", err)
++		}
+ 	}
+ 	if err := e.tmux.run("select-pane", "-t", paneID, "-T", s.Name); err != nil {
+ 		logger.Warn("reed: could not set the pane title", "strand", s.GUID, "pane", paneID, "name", s.Name, "err", err)
+diff --git a/internal/reedengine/spawn_test.go b/internal/reedengine/spawn_test.go
+index ee8f8c5d..f123c92b 100644
+--- a/internal/reedengine/spawn_test.go
++++ b/internal/reedengine/spawn_test.go
+@@ -628,7 +628,8 @@ func TestLaunchScriptDoesNotSurviveAFailedLaunch(t *testing.T) {
+ // The new-window argv ends with the -c flag and the told cwd, so that appending ANY trailing argument fails it, not merely a specific known-bad value:
+ // a trailing shell-command makes tmux hand the pane to /bin/sh -c, which execs a non-login shell that skips ~/.profile / ~/.bash_profile
+ // and therefore changes the pane's inherited PATH — and that pane resolves claude by bare name, so the change would stop the agent binary resolving at all.
+-// The two title commands then run in order between the window creation and the send-keys, and carry the strand's full name.
++// The two title commands then run in order between the window creation and the send-keys, and carry the strand's full name;
++// a tmux whose version predates allow-set-title runs only the select-pane, with no log naming the option.
+ //
+ //testtiming:keep pins the new-window argv ending with -c and the told cwd with no trailing shell command, which would make tmux exec a non-login shell, and the two title commands running in order between the window creation and the send-keys; its covering tests run this code without asserting it
+ func TestLaunchStrandLocked_SplitWindowAndPaneTitleCalls(t *testing.T) {
+@@ -640,7 +641,26 @@ func TestLaunchStrandLocked_SplitWindowAndPaneTitleCalls(t *testing.T) {
+ 		wantColorCall string
+ 		// failAllowSetTitle scripts the allow-set-title set-option to fail, as tmux 3.4 answers it.
+ 		failAllowSetTitle bool
++		// floorLine is the `tmux -V` line the fake reports; empty is an unknown version.
++		floorLine string
++		// skipsAllowSetTitle is whether the launch runs no allow-set-title set-option.
++		skipsAllowSetTitle bool
+ 	}{
++		{
++			name:               "TmuxWithoutAllowSetTitleSkipsItSilently",
++			strand:             Strand{GUID: "new", Name: "tst:slug:worker", Segment: "review"},
++			wantLabel:          "worker",
++			wantColorCall:      "set-option -p -t %new @strand_color colour208",
++			floorLine:          "tmux 3.4",
++			skipsAllowSetTitle: true,
++		},
++		{
++			name:          "TmuxWithAllowSetTitleSetsIt",
++			strand:        Strand{GUID: "new", Name: "tst:slug:worker", Segment: "review"},
++			wantLabel:     "worker",
++			wantColorCall: "set-option -p -t %new @strand_color colour208",
++			floorLine:     "tmux 3.5a",
++		},
+ 		{
+ 			name:              "AllowSetTitleMissingWarnsAndContinues",
+ 			strand:            Strand{GUID: "new", Name: "tst:slug:worker", Segment: "review"},
+@@ -678,6 +698,7 @@ func TestLaunchStrandLocked_SplitWindowAndPaneTitleCalls(t *testing.T) {
+ 			e := newTestEngine(t)
+ 			withInjectedExecutablePath(t, func() (string, error) { return "/opt/lyx/bin/lyx", nil })
+ 			fake := launchFake(t, e, nil)
++			e.tmux.floorLine = tt.floorLine
+ 			if tt.failAllowSetTitle {
+ 				fake.answerFunc("set-option", func(args []string) (string, error) {
+ 					if slices.Contains(args, "allow-set-title") {
+@@ -721,26 +742,21 @@ func TestLaunchStrandLocked_SplitWindowAndPaneTitleCalls(t *testing.T) {
+ 					order = append(order, strings.Join(call, " "))
+ 				}
+ 			}
+-			if len(order) < 6 {
+-				t.Fatalf("recorded calls = %v, want new-window, set-option, select-pane, the two strand options, send-keys", order)
+-			}
+-			if order[0] != "new-window" {
+-				t.Errorf("first call = %q, want new-window", order[0])
+-			}
+-			if want := "set-option -p -t %new allow-set-title off"; order[1] != want {
+-				t.Errorf("second call = %q, want %q", order[1], want)
++			want := []string{"new-window"}
++			if !tt.skipsAllowSetTitle {
++				want = append(want, "set-option -p -t %new allow-set-title off")
+ 			}
+-			if want := "select-pane -t %new -T " + tt.strand.Name; order[2] != want {
+-				t.Errorf("third call = %q, want %q", order[2], want)
++			want = append(want, "select-pane -t %new -T "+tt.strand.Name, "set-option -p -t %new @strand "+tt.wantLabel, tt.wantColorCall)
++			if len(order) <= len(want) {
++				t.Fatalf("recorded calls = %v, want %v then send-keys", order, want)
+ 			}
+-			if want := "set-option -p -t %new @strand " + tt.wantLabel; order[3] != want {
+-				t.Errorf("fourth call = %q, want %q", order[3], want)
+-			}
+-			if order[4] != tt.wantColorCall {
+-				t.Errorf("fifth call = %q, want %q", order[4], tt.wantColorCall)
++			for i, call := range want {
++				if order[i] != call {
++					t.Errorf("call %d = %q, want %q", i+1, order[i], call)
++				}
+ 			}
+-			if !strings.HasPrefix(order[5], "send-keys") {
+-				t.Errorf("sixth call = %q, want send-keys after the title and strand option commands", order[5])
++			if next := order[len(want)]; !strings.HasPrefix(next, "send-keys") {
++				t.Errorf("call %d = %q, want send-keys after the title and strand option commands", len(want)+1, next)
+ 			}
+ 		})
+ 	}
+diff --git a/internal/reedengine/tmuxfloor.go b/internal/reedengine/tmuxfloor.go
+index 6709e25e..ceebecb2 100644
+--- a/internal/reedengine/tmuxfloor.go
++++ b/internal/reedengine/tmuxfloor.go
+@@ -1,4 +1,4 @@
+-// tmuxfloor.go checks tmux's version floor once per resolved tmux path before reed spawns tmux.
++// tmuxfloor.go checks tmux's version floor once per resolved tmux path before reed spawns tmux, and keeps whether that tmux has the allow-set-title pane option.
+ 
+ package reedengine
+ 
+@@ -13,19 +13,37 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/toolfloor"
+ )
+ 
+-// tmuxFloorCache holds the process's floor answer for each resolved tmux path, so the version probe runs once per path.
++// tmuxFloorAnswer is what one tmux path's version probe decided.
++type tmuxFloorAnswer struct {
++	// floorErr is nil, or the *toolfloor.FloorError for a tmux below the floor.
++	floorErr error
++	// lacksAllowSetTitle is whether the version line parsed as a release older than toolfloor.TmuxAllowSetTitle.
++	lacksAllowSetTitle bool
++}
++
++// tmuxFloorCache holds the process's probe answer for each resolved tmux path, so the version probe runs once per path.
+ // The zero value is ready to use.
+ type tmuxFloorCache struct {
+ 	mu      sync.Mutex
+-	answers map[string]error
++	answers map[string]tmuxFloorAnswer
++}
++
++// check returns the floor answer for tmuxPath, nil or the *toolfloor.FloorError, or the probe error.
++func (c *tmuxFloorCache) check(tmuxPath string, probe func(tmuxPath string) (string, error)) error {
++	answer, err := c.answer(tmuxPath, probe)
++	if err != nil {
++		return err
++	}
++	return answer.floorErr
+ }
+ 
+-// check returns the cached answer for tmuxPath once one exists; otherwise it runs probe on tmuxPath.
++// answer returns the cached answer for tmuxPath once one exists; otherwise it runs probe on tmuxPath.
+ // tmuxPath is resolved with exec.LookPath, and the raw path is the key when it does not resolve.
+ // A probe error is returned wrapped and not cached, so the next call probes again.
+-// A line toolfloor parses is cached with its answer, nil or the *toolfloor.FloorError.
+-// An unparseable line is logged once with Warn and cached as admitted.
+-func (c *tmuxFloorCache) check(tmuxPath string, probe func(tmuxPath string) (string, error)) error {
++// A line toolfloor parses is cached with its answer.
++// An unparseable line is logged once with Warn and cached as admitted, with allow-set-title not known to be missing.
++// A parsed release without allow-set-title is logged once at Info, the one note of the pane-title fallback.
++func (c *tmuxFloorCache) answer(tmuxPath string, probe func(tmuxPath string) (string, error)) (tmuxFloorAnswer, error) {
+ 	key := tmuxPath
+ 	if resolved, err := exec.LookPath(tmuxPath); err == nil {
+ 		key = resolved
+@@ -33,21 +51,26 @@ func (c *tmuxFloorCache) check(tmuxPath string, probe func(tmuxPath string) (str
+ 	c.mu.Lock()
+ 	defer c.mu.Unlock()
+ 	if answer, ok := c.answers[key]; ok {
+-		return answer
++		return answer, nil
+ 	}
+ 	line, err := probe(tmuxPath)
+ 	if err != nil {
+-		return fmt.Errorf("check tmux version: %w", err)
++		return tmuxFloorAnswer{}, fmt.Errorf("check tmux version: %w", err)
+ 	}
+ 	parsed, floorErr := toolfloor.CheckTmux(line)
+ 	if !parsed {
+ 		logger.Warn("reed: tmux version line not recognised, admitting it", "line", line)
+ 	}
++	answer := tmuxFloorAnswer{floorErr: floorErr}
++	if parsed, has := toolfloor.TmuxHasAllowSetTitle(line); parsed && !has {
++		answer.lacksAllowSetTitle = true
++		logger.Info("reed: tmux has no allow-set-title pane option, so strand launches skip it and the agent may overwrite pane titles", "line", line, "since", toolfloor.TmuxAllowSetTitle)
++	}
+ 	if c.answers == nil {
+-		c.answers = map[string]error{}
++		c.answers = map[string]tmuxFloorAnswer{}
+ 	}
+-	c.answers[key] = floorErr
+-	return floorErr
++	c.answers[key] = answer
++	return answer, nil
+ }
+ 
+ // tmuxFloors is the process's tmux floor answers.
+@@ -93,3 +116,17 @@ func (p TmuxCmd) checkFloor() error {
+ 	}
+ 	return CheckTmuxFloor(p.tmuxPath)
+ }
++
++// lacksAllowSetTitle reports whether this command's tmux is known to predate the allow-set-title pane option, from the process's version probe.
++// A version that did not parse, a probe that could not run, Windows, and a hook-driven command whose floorLine does not parse answer false, so the caller tries the option.
++func (p TmuxCmd) lacksAllowSetTitle() bool {
++	if runtime.GOOS == "windows" {
++		return false
++	}
++	if p.execHook != nil {
++		parsed, has := toolfloor.TmuxHasAllowSetTitle(p.floorLine)
++		return parsed && !has
++	}
++	answer, err := tmuxFloors.answer(p.tmuxPath, tmuxVersionProbe)
++	return err == nil && answer.lacksAllowSetTitle
++}
+diff --git a/internal/reedengine/tmuxfloor_test.go b/internal/reedengine/tmuxfloor_test.go
+index ee0316df..9259ebb4 100644
+--- a/internal/reedengine/tmuxfloor_test.go
++++ b/internal/reedengine/tmuxfloor_test.go
+@@ -1,6 +1,6 @@
+ //go:build !windows
+ 
+-// tmuxfloor_test.go pins the tmux floor check: the runner's refusal, the per-path cache, the retry of a probe that could not run and the server spawn's refusal.
++// tmuxfloor_test.go pins the tmux floor check: the runner's refusal, the per-path cache, the retry of a probe that could not run, the allow-set-title answer and the server spawn's refusal.
+ 
+ package reedengine
+ 
+@@ -158,6 +158,38 @@ func TestTmuxFloor(t *testing.T) {
+ 		}
+ 	})
+ 
++	t.Run("AllowSetTitleAnswerComesFromTheOneProbe", func(t *testing.T) {
++		tests := []struct {
++			line        string
++			wantLacks   bool
++			wantInfoLog int
++		}{
++			{line: "tmux 3.4", wantLacks: true, wantInfoLog: 1},
++			{line: "tmux 3.5", wantLacks: false, wantInfoLog: 0},
++			{line: "tmux next-3.6", wantLacks: false, wantInfoLog: 0},
++		}
++		for _, tt := range tests {
++			logs := logcapture.CaptureVerbose(t)
++			probe := &countingProbe{line: tt.line}
++			setTmuxVersionProbeForTest(t, probe.probe)
++			cmd := NewTmuxCmd("sh", "sock")
++			if err := CheckTmuxFloor("sh"); err != nil {
++				t.Fatalf("CheckTmuxFloor on %q = %v; want nil", tt.line, err)
++			}
++			for i := 0; i < 2; i++ {
++				if got := cmd.lacksAllowSetTitle(); got != tt.wantLacks {
++					t.Errorf("lacksAllowSetTitle() on %q call %d = %v; want %v", tt.line, i+1, got, tt.wantLacks)
++				}
++			}
++			if len(probe.paths) != 1 {
++				t.Errorf("probes on %q = %d; want 1", tt.line, len(probe.paths))
++			}
++			if got := strings.Count(logs.String(), "no allow-set-title"); got != tt.wantInfoLog {
++				t.Errorf("fallback notes on %q = %d; want %d\n%s", tt.line, got, tt.wantInfoLog, logs.String())
++			}
++		}
++	})
++
+ 	t.Run("ServerSpawnRefusesBeforeRunningTmux", func(t *testing.T) {
+ 		setTmuxVersionProbeForTest(t, (&countingProbe{line: "tmux 3.3a"}).probe)
+ 		e, _ := reviveTestEngine(t)
+diff --git a/internal/shuttleengines/shuttleengines_test.go b/internal/shuttleengines/shuttleengines_test.go
+index 04c2db72..c3006a96 100644
+--- a/internal/shuttleengines/shuttleengines_test.go
++++ b/internal/shuttleengines/shuttleengines_test.go
+@@ -11,6 +11,7 @@ import (
+ 	"time"
+ 
+ 	"github.com/Knatte18/loomyard/internal/configengine"
++	"github.com/Knatte18/loomyard/internal/logger"
+ 	"github.com/Knatte18/loomyard/internal/lyxdirs"
+ 	"github.com/Knatte18/loomyard/internal/modelspec"
+ 	"github.com/Knatte18/loomyard/internal/reedengine"
+@@ -210,14 +211,14 @@ func TestEnvScrub_MatchesTmuxkitServerEnviron(t *testing.T) {
+ 
+ 	environ := []string{
+ 		"HOME=/home/x", "CLAUDECODE=1", "CLAUDE_CODE_ENTRYPOINT=cli", "CLAUDE_CODEX=keep",
+-		"LYX_TRACE_ID=abc", "LYX_STRAND_NAME=ab:orch", "LYX_PARENT=ab:driver", "LYX_OTHER=keep", "PATH=/bin",
++		logger.TraceIDEnv + "=abc", "LYX_STRAND_NAME=ab:orch", "LYX_PARENT=ab:driver", "LYX_OTHER=keep", "PATH=/bin",
+ 	}
+ 
+ 	clean, _ := EnvScrub().Apply(environ)
+ 	var want []string
+ 	for _, entry := range clean {
+ 		switch strings.SplitN(entry, "=", 2)[0] {
+-		case "LYX_TRACE_ID", "LYX_STRAND_NAME", "LYX_PARENT":
++		case logger.TraceIDEnv, "LYX_STRAND_NAME", "LYX_PARENT":
+ 		default:
+ 			want = append(want, entry)
+ 		}
+diff --git a/internal/testkit/tmuxkit/tmuxkit_integration_test.go b/internal/testkit/tmuxkit/tmuxkit_integration_test.go
+index dbd67e62..5fc1047f 100644
+--- a/internal/testkit/tmuxkit/tmuxkit_integration_test.go
++++ b/internal/testkit/tmuxkit/tmuxkit_integration_test.go
+@@ -15,6 +15,7 @@ import (
+ 	"time"
+ 
+ 	"github.com/Knatte18/loomyard/internal/agentname"
++	"github.com/Knatte18/loomyard/internal/logger"
+ 	"github.com/Knatte18/loomyard/internal/lyxtemp"
+ 	"github.com/Knatte18/loomyard/internal/proc"
+ )
+@@ -180,7 +181,7 @@ func TestSocket_StartsHermeticNonLoginServer(t *testing.T) {
+ 		t.Fatal(err)
+ 	}
+ 	t.Setenv("HOME", home)
+-	leaked := []string{"CLAUDECODE", "CLAUDE_CODE_ENTRYPOINT", "LYX_TRACE_ID", agentname.StrandNameEnv, agentname.ParentEnv}
++	leaked := []string{"CLAUDECODE", "CLAUDE_CODE_ENTRYPOINT", logger.TraceIDEnv, agentname.StrandNameEnv, agentname.ParentEnv}
+ 	for _, name := range leaked {
+ 		t.Setenv(name, "leaked")
+ 	}
+diff --git a/internal/toolfloor/doc.go b/internal/toolfloor/doc.go
+index 8949c230..7c3f5104 100644
+--- a/internal/toolfloor/doc.go
++++ b/internal/toolfloor/doc.go
+@@ -1,5 +1,6 @@
+ // Package toolfloor declares the oldest git and tmux lyx runs on, parses a tool's version line and returns the floor error.
+ // CheckGit reads `git --version` output and CheckTmux reads `tmux -V` output; each returns whether the line parsed and a *FloorError when the parsed version is below the floor.
++// TmuxHasAllowSetTitle reads `tmux -V` output for the one optional above-floor tmux feature.
+ // It spawns no process, keeps no cache and logs nothing: gitexec and reedengine run the probes, keep their own process caches and own the Warn.
+ // It imports the standard library only.
+ //
+@@ -28,8 +29,10 @@
+ // No feature lyx requires is newer than the floor.
+ // `cherry-pick --empty=drop` (git 2.45) was replaced by a plain pick that skips a change HEAD already carries and refuses a commit empty from the start.
+ // The two-format `#{S:}` loop, which tmux 3.4 does not run, was replaced by two single-format loops, the prime's session first.
+-// The one above-floor feature lyx uses is the `allow-set-title` pane option (tmux 3.5), which stays optional:
+-// the launch of a strand pane sets it to stop the agent overwriting the pane title, and on tmux 3.4 the `set-option` fails, reed Warns and continues, so the title stays one the agent can overwrite.
++// The one above-floor feature lyx uses is the `allow-set-title` pane option (tmux 3.5, TmuxAllowSetTitle), which stays optional:
++// the launch of a strand pane sets it to stop the agent overwriting the pane title.
++// TmuxHasAllowSetTitle reads the same `tmux -V` line as CheckTmux, so reed skips the `set-option` on a tmux it knows is older, logs that once at Info, and the title stays one the agent can overwrite;
++// on a version line that does not parse reed still tries the `set-option`, and a failure Warns and continues.
+ // It is never met by raising TmuxFloor.
+ //
+ // # The rule for a new feature
+diff --git a/internal/toolfloor/toolfloor.go b/internal/toolfloor/toolfloor.go
+index d1d2e219..509da95e 100644
+--- a/internal/toolfloor/toolfloor.go
++++ b/internal/toolfloor/toolfloor.go
+@@ -14,6 +14,8 @@ const (
+ 	GitFloor = "2.43.0"
+ 	// TmuxFloor is the oldest tmux lyx runs on.
+ 	TmuxFloor = "3.4"
++	// TmuxAllowSetTitle is the tmux release that added the `allow-set-title` pane option, which lyx uses where it exists.
++	TmuxAllowSetTitle = "3.5"
+ )
+ 
+ var (
+@@ -50,6 +52,16 @@ func CheckTmux(versionLine string) (parsed bool, err error) {
+ 	return check("tmux", tmuxVersionLine, TmuxFloor, versionLine)
+ }
+ 
++// TmuxHasAllowSetTitle reports whether the output of `tmux -V` names a release at or above TmuxAllowSetTitle.
++// parsed is false for a line that does not parse, and then has is false too, so the caller decides how to treat an unknown version.
++func TmuxHasAllowSetTitle(versionLine string) (parsed, has bool) {
++	match := tmuxVersionLine.FindStringSubmatch(strings.TrimSpace(versionLine))
++	if match == nil {
++		return false, false
++	}
++	return true, compareVersions(match[1], TmuxAllowSetTitle) >= 0
++}
++
+ func check(tool string, pattern *regexp.Regexp, floor, versionLine string) (bool, error) {
+ 	match := pattern.FindStringSubmatch(strings.TrimSpace(versionLine))
+ 	if match == nil {
+diff --git a/internal/toolfloor/toolfloor_test.go b/internal/toolfloor/toolfloor_test.go
+index 7258c7b1..afb2b02b 100644
+--- a/internal/toolfloor/toolfloor_test.go
++++ b/internal/toolfloor/toolfloor_test.go
+@@ -1,4 +1,4 @@
+-// toolfloor_test.go covers the version-line parsing and floor comparison of CheckGit and CheckTmux.
++// toolfloor_test.go covers the version-line parsing and floor comparison of CheckGit and CheckTmux, and the allow-set-title release check.
+ 
+ package toolfloor
+ 
+@@ -8,6 +8,32 @@ import (
+ 	"testing"
+ )
+ 
++func TestTmuxHasAllowSetTitle(t *testing.T) {
++	t.Parallel()
++	tests := []struct {
++		name      string
++		line      string
++		wantParse bool
++		wantHas   bool
++	}{
++		{name: "AtRelease", line: "tmux 3.5", wantParse: true, wantHas: true},
++		{name: "AboveReleaseWithLetter", line: "tmux 3.5a", wantParse: true, wantHas: true},
++		{name: "MultiDigitMinor", line: "tmux 3.10", wantParse: true, wantHas: true},
++		{name: "Floor", line: "tmux 3.4", wantParse: true},
++		{name: "FloorWithLetter", line: "tmux 3.4a", wantParse: true},
++		{name: "Unparseable", line: "tmux next-3.6"},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			parsed, has := TmuxHasAllowSetTitle(tt.line)
++			if parsed != tt.wantParse || has != tt.wantHas {
++				t.Errorf("TmuxHasAllowSetTitle(%q) = (%v, %v); want (%v, %v)", tt.line, parsed, has, tt.wantParse, tt.wantHas)
++			}
++		})
++	}
++}
++
+ func TestCheck(t *testing.T) {
+ 	t.Parallel()
+ 	tests := []struct {
