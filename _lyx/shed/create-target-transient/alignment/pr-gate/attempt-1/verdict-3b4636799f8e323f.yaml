@@ -1,0 +1,9 @@
+verdict: approve
+reason: >-
+  PR 784 exempts root .scratch/ Create targets from create-not-done.
+  That is the board entry's second remedy, and it fixes the reported card.
+  The doc.go and plan-spec text cover the same change, with no work beyond the entry.
+  The open risk names no parent correction.
+  No peer run or parent commit changes the same behaviour.
+question: ""
+superseded: []
