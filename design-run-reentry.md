@@ -1,6 +1,6 @@
 # Goto, resume and stops keep what a run already settled
 
-`run-reentry` · Task · bug, enhancement, shed, loom, burler, shuttle · running · Plan-Burler-Review
+`run-reentry` · Task · bug, enhancement, shed, loom, burler, shuttle · running · Plan-Burler-Fix
 
 ## Goal
 
