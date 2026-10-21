@@ -1,0 +1,668 @@
+{
+  "runGuid": "9d6de30810bf07cf4659a833fbb12acf",
+  "planFingerprint": "8bf37a45469219a6ce4c8ea004987daa450ac1f4d04ce0a964b49c36b8ffe600",
+  "planFileHashes": {
+    "00-overview.md": "da876234745248fd7e3197e7f2149f05941aac476f4253afff96409ab257b990",
+    "01-state-write-file.md": "8c9091e30d130b211534e437c45b0162397dc42122a35cd43863e3c033390de3",
+    "02-shed-budget-episode.md": "ae6d6752731f7d34144f04f60a1d3e725ed0110a8c90091b60f698e62f0c0ed4",
+    "03-shed-pause-reason.md": "4274f0ea10b4330753fe9d127e85aa030454b510f2e33160ab22e28aaec9da42",
+    "04-shed-goto-guard.md": "b867123ccf55f064fcc52baec4c341c0b56fa291b01bbc9c9ab399cbd3f62376",
+    "05-shedverbs-pause-label.md": "b0460196e1296cc7ee3a10a0b26182ead7f1bcaf8d24a0f38475120967242691",
+    "06-sheddriver-budget-handback.md": "5b08b3fd760e17332fa927130a0a86444b642bc25a9bee7c8f6b2023ae9a78d5",
+    "07-review-amend-key.md": "b803f8a70f6f33a7cf956ff77cb42ba64524e07d8108f0cadc5aec798bed5d80",
+    "08-fabric-task-patch.md": "8e508b9094abd8faea1c7875618743725aae8d0cfb2e604e0c5385f78f24b437",
+    "09-identity-text.md": "f4a34a5a79710909703207129f8ae1b3cf39f4efdd3c79cd877cc67e9f74ec11",
+    "10-settle-records.md": "0869b29add0cae64a6770f2eb383518c23a579fdac873c04c9ba95fa4f60415d",
+    "11-bouncer-reentry.md": "00edd74d527ed51a881272c823827a26c4c87897188e5401da60e8201d7ced51",
+    "12-bouncer-amendment.md": "a1bc3f70f2067523ccdfa77691a2c50adbb22f46b408fd6e24ab634a345511d7",
+    "13-recipe-bouncer-subject.md": "df797ffa12e709f4945495412682c00170d1313afb930eaa702ab77f15d660b2",
+    "14-loomshed-rework-records.md": "672337c93e16744ce7fe2652c235e10d2ff44c3d859bbc705162fc6bab1dc068",
+    "15-loom-subject-wiring.md": "6aa8272f038ac5832b8ff8f1926c028e6f5a54650d13c0545e7d3bba2103f7ab",
+    "16-loom-goto-guard.md": "be33a99f9031a547ffdd15cab9a3b85f4b97a619cd5264442dad041f44a06efd",
+    "17-budget-way-forward-texts.md": "e13d6ea6dd3149ecbf47492b9adb0afb58b395f443f5ca8166eee5c90f91464c",
+    "18-friction-no-per-stop.md": "4e37c48cd810fb7da4eaf28401f42c846b8ee442f9f790b70d57cc03859e9f3c",
+    "19-burler-forkcount-retry.md": "cdfb13254b7b12652b4e2eab4a7925bef6781ddc8accb9315c5728fb1b8f69ef",
+    "20-status-spec-docs.md": "c7efc9ad597d7068e3c9cf8d626596a99d23450bdc10bf744a6a3c951b81b103"
+  },
+  "planOverviewFrameHash": "a82077d79dd8d19698ffcb4d2f5cd0e882ede208111e8bc05226ebad8b720842",
+  "partition": [
+    {
+      "cards": [
+        "01-state-write-file",
+        "02-shed-budget-episode",
+        "03-shed-pause-reason",
+        "04-shed-goto-guard"
+      ],
+      "profile": "cautious",
+      "estimate": 180372,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 1,
+        "startup": 54952,
+        "read_union": 11864,
+        "cards": [
+          {
+            "card": 1,
+            "card_text": 144,
+            "reads": {
+              "package:internal/state": 2000,
+              "tests:internal/state": 2000
+            },
+            "messages": 14,
+            "written": 4344
+          },
+          {
+            "card": 2,
+            "card_text": 840,
+            "reads": {
+              "file:internal/shedengine/doc.go": 1908,
+              "package:internal/shedengine": 2000,
+              "tests:internal/shedengine": 2000
+            },
+            "messages": 146,
+            "written": 44640
+          },
+          {
+            "card": 3,
+            "card_text": 540,
+            "reads": {
+              "file:internal/shedengine/doc.go": 1908,
+              "package:internal/shedengine": 2000,
+              "tests:internal/shedengine": 2000
+            },
+            "messages": 138,
+            "written": 41940
+          },
+          {
+            "card": 4,
+            "card_text": 432,
+            "reads": {
+              "file:internal/shedengine/doc.go": 1908,
+              "package:internal/shedengine": 2000,
+              "tests:internal/shedengine": 2000
+            },
+            "messages": 74,
+            "written": 22632
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "05-shedverbs-pause-label",
+        "06-sheddriver-budget-handback"
+      ],
+      "profile": "cautious",
+      "estimate": 166606,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 2,
+        "startup": 61952,
+        "read_union": 23384,
+        "cards": [
+          {
+            "card": 5,
+            "card_text": 528,
+            "reads": {
+              "file:internal/shedverbs/doc.go": 1320,
+              "package:internal/battencli": 2000,
+              "package:internal/loomcli": 2000,
+              "package:internal/shedcli": 2000,
+              "package:internal/shedverbs": 2000,
+              "tests:internal/battencli": 2000,
+              "tests:internal/loomcli": 2000,
+              "tests:internal/shedcli": 2000,
+              "tests:internal/shedverbs": 2000
+            },
+            "messages": 183.5,
+            "written": 55578
+          },
+          {
+            "card": 6,
+            "card_text": 492,
+            "reads": {
+              "file:internal/sheddriver/doc.go": 1044,
+              "package:internal/sheddriver": 2000,
+              "tests:internal/sheddriver": 2000
+            },
+            "messages": 84,
+            "written": 25692
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "07-review-amend-key",
+        "08-fabric-task-patch"
+      ],
+      "profile": "cautious",
+      "estimate": 191972,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 3,
+        "startup": 68952,
+        "read_union": 39944,
+        "cards": [
+          {
+            "card": 7,
+            "card_text": 504,
+            "reads": {
+              "file:internal/darnengine/doc.go": 444,
+              "file:internal/darnengine/template.yaml": 192,
+              "file:internal/loomengine/template.yaml": 816,
+              "file:internal/reviewbudget/doc.go": 108,
+              "package:internal/configreg": 2000,
+              "package:internal/darnengine": 2000,
+              "package:internal/loomengine": 2000,
+              "package:internal/reviewbudget": 2000,
+              "tests:internal/configreg": 2000,
+              "tests:internal/darnengine": 2000,
+              "tests:internal/loomengine": 2000,
+              "tests:internal/reviewbudget": 2000
+            },
+            "messages": 136,
+            "written": 41304
+          },
+          {
+            "card": 8,
+            "card_text": 372,
+            "reads": {
+              "file:internal/fabricengine/doc.go": 17508,
+              "package:internal/fabricengine": 2000,
+              "tests:internal/fabricengine": 2000
+            },
+            "messages": 138,
+            "written": 41772
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "09-identity-text",
+        "10-settle-records",
+        "11-bouncer-reentry"
+      ],
+      "profile": "cautious",
+      "estimate": 184462,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 4,
+        "startup": 75952,
+        "read_union": 20148,
+        "cards": [
+          {
+            "card": 9,
+            "card_text": 288,
+            "reads": {
+              "file:internal/discussionparser/doc.go": 156,
+              "file:internal/planparser/doc.go": 1740,
+              "package:internal/discussionparser": 2000,
+              "package:internal/planparser": 2000,
+              "tests:internal/discussionparser": 2000,
+              "tests:internal/planparser": 2000
+            },
+            "messages": 50.5,
+            "written": 15438
+          },
+          {
+            "card": 10,
+            "card_text": 636,
+            "reads": {
+              "package:internal/shedadapters": 2000,
+              "tests:internal/shedadapters": 2000
+            },
+            "messages": 114,
+            "written": 34836
+          },
+          {
+            "card": 11,
+            "card_text": 888,
+            "reads": {
+              "file:internal/shedadapters/doc.go": 4440,
+              "package:internal/shedadapters": 2000,
+              "tests:internal/shedadapters": 2000
+            },
+            "messages": 124,
+            "written": 38088
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "12-bouncer-amendment",
+        "13-recipe-bouncer-subject"
+      ],
+      "profile": "cautious",
+      "estimate": 190378,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 5,
+        "startup": 82952,
+        "read_union": 31412,
+        "cards": [
+          {
+            "card": 12,
+            "card_text": 876,
+            "reads": {
+              "file:internal/shedadapters/doc.go": 4440,
+              "package:internal/shedadapters": 2000,
+              "tests:internal/shedadapters": 2000
+            },
+            "messages": 134,
+            "written": 41076
+          },
+          {
+            "card": 13,
+            "card_text": 588,
+            "reads": {
+              "file:contracts/stencils/loom/loom-rubric-darn-review.md": 1032,
+              "file:contracts/stencils/loom/loom-rubric-discussion-review.md": 624,
+              "file:contracts/stencils/loom/loom-rubric-plan-review.md": 1740,
+              "file:contracts/stencils/loom/loom-rubric-webster-review.md": 1308,
+              "file:internal/shedrecipe/doc.go": 804,
+              "package:contracts/stencils": 2000,
+              "package:contracts/stencils/loom": 2000,
+              "package:internal/shedrecipe": 2000,
+              "package:internal/testkit/envkit": 2000,
+              "tests:contracts/stencils": 2000,
+              "tests:contracts/stencils/loom": 2000,
+              "tests:internal/shedrecipe": 2000,
+              "tests:internal/testkit/envkit": 2000
+            },
+            "messages": 114.5,
+            "written": 34938
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "14-loomshed-rework-records"
+      ],
+      "profile": "cautious",
+      "estimate": 166832,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 6,
+        "startup": 89952,
+        "read_union": 21440,
+        "cards": [
+          {
+            "card": 14,
+            "card_text": 540,
+            "reads": {
+              "file:internal/loomshed/doc.go": 900,
+              "package:internal/battencli": 2000,
+              "package:internal/loomcli": 2000,
+              "package:internal/loomshed": 2000,
+              "package:internal/shedrecipe": 2000,
+              "package:internal/testkit/envkit": 2000,
+              "tests:internal/battencli": 2000,
+              "tests:internal/loomcli": 2000,
+              "tests:internal/loomshed": 2000,
+              "tests:internal/shedrecipe": 2000,
+              "tests:internal/testkit/envkit": 2000
+            },
+            "messages": 183,
+            "written": 55440
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "15-loom-subject-wiring"
+      ],
+      "profile": "cautious",
+      "estimate": 173550,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 7,
+        "startup": 96952,
+        "read_union": 22004,
+        "cards": [
+          {
+            "card": 15,
+            "card_text": 744,
+            "reads": {
+              "file:contracts/recipes/darn-recipe.yaml": 2640,
+              "file:contracts/recipes/loom-recipe.yaml": 7740,
+              "file:internal/loomcli/doc.go": 2880,
+              "package:contracts/recipes": 2000,
+              "package:internal/loomcli": 2000,
+              "tests:contracts/recipes": 2000,
+              "tests:internal/loomcli": 2000
+            },
+            "messages": 179.5,
+            "written": 54594
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "16-loom-goto-guard"
+      ],
+      "profile": "cautious",
+      "estimate": 148962,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 8,
+        "startup": 103952,
+        "read_union": 7420,
+        "cards": [
+          {
+            "card": 16,
+            "card_text": 540,
+            "reads": {
+              "file:internal/loomcli/doc.go": 2880,
+              "package:internal/loomcli": 2000,
+              "tests:internal/loomcli": 2000
+            },
+            "messages": 123.5,
+            "written": 37590
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "17-budget-way-forward-texts"
+      ],
+      "profile": "cautious",
+      "estimate": 195988,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 9,
+        "startup": 110952,
+        "read_union": 34816,
+        "cards": [
+          {
+            "card": 17,
+            "card_text": 420,
+            "reads": {
+              "file:contracts/stencils/orch/orch-template-role.md": 3132,
+              "file:contracts/stencils/shed/shed-template-driver.md": 2172,
+              "file:internal/loomengine/anomaly.go": 1092,
+              "package:contracts/stencils/orch": 2000,
+              "package:contracts/stencils/shed": 2000,
+              "package:internal/battencli": 2000,
+              "package:internal/loomcli": 2000,
+              "package:internal/loomengine": 2000,
+              "package:internal/shedbuild": 2000,
+              "package:internal/shedcli": 2000,
+              "tests:contracts/stencils/orch": 2000,
+              "tests:contracts/stencils/shed": 2000,
+              "tests:internal/battencli": 2000,
+              "tests:internal/loomcli": 2000,
+              "tests:internal/loomengine": 2000,
+              "tests:internal/shedbuild": 2000,
+              "tests:internal/shedcli": 2000
+            },
+            "messages": 166,
+            "written": 50220
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "18-friction-no-per-stop"
+      ],
+      "profile": "cautious",
+      "estimate": 191870,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 10,
+        "startup": 117952,
+        "read_union": 21208,
+        "cards": [
+          {
+            "card": 18,
+            "card_text": 660,
+            "reads": {
+              "file:PATTERN.md": 1452,
+              "file:internal/loomcli/doc.go": 2880,
+              "file:pattern/PATTERN-friction-capture.md": 216,
+              "package:.": 2000,
+              "package:internal/loomcli": 2000,
+              "package:internal/loomengine": 2000,
+              "package:pattern": 2000,
+              "tests:.": 2000,
+              "tests:internal/loomcli": 2000,
+              "tests:internal/loomengine": 2000,
+              "tests:pattern": 2000
+            },
+            "messages": 173.5,
+            "written": 52710
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "19-burler-forkcount-retry"
+      ],
+      "profile": "cautious",
+      "estimate": 194204,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 11,
+        "startup": 124952,
+        "read_union": 29184,
+        "cards": [
+          {
+            "card": 19,
+            "card_text": 468,
+            "reads": {
+              "file:internal/burlerengine/doc.go": 4356,
+              "file:internal/shedadapters/doc.go": 4440,
+              "file:internal/shuttleengine/doc.go": 5736,
+              "file:internal/shuttleengine/waitshadow.go": 2184,
+              "package:internal/burlerengine": 2000,
+              "package:internal/shedadapters": 2000,
+              "package:internal/shuttleengine": 2000,
+              "tests:internal/burlerengine": 2000,
+              "tests:internal/shedadapters": 2000,
+              "tests:internal/shuttleengine": 2000
+            },
+            "messages": 132,
+            "written": 40068
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "20-status-spec-docs"
+      ],
+      "profile": "cautious",
+      "estimate": 155936,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 12,
+        "startup": 131952,
+        "read_union": 19940,
+        "cards": [
+          {
+            "card": 20,
+            "card_text": 144,
+            "reads": {
+              "file:contracts/specs/loom-status-spec.md": 2076,
+              "file:docs/overview.md": 9720,
+              "package:contracts/specs": 2000,
+              "package:docs": 2000,
+              "tests:contracts/specs": 2000,
+              "tests:docs": 2000
+            },
+            "messages": 13,
+            "written": 4044
+          }
+        ]
+      }
+    }
+  ],
+  "currentBatch": 1,
+  "masterStrand": "415cff73750c47cdcf8cfe24d6282aeb",
+  "masterSessionId": "241089f3-b39a-4fe3-9203-155f51f6bb8f",
+  "masterEngine": "claude",
+  "batches": {
+    "1": {
+      "slug": "state-write-file",
+      "cards": [
+        "01-state-write-file",
+        "02-shed-budget-episode",
+        "03-shed-pause-reason",
+        "04-shed-goto-guard"
+      ],
+      "cardHashes": {
+        "01-state-write-file": "8c9091e30d130b211534e437c45b0162397dc42122a35cd43863e3c033390de3",
+        "02-shed-budget-episode": "ae6d6752731f7d34144f04f60a1d3e725ed0110a8c90091b60f698e62f0c0ed4",
+        "03-shed-pause-reason": "4274f0ea10b4330753fe9d127e85aa030454b510f2e33160ab22e28aaec9da42",
+        "04-shed-goto-guard": "b867123ccf55f064fcc52baec4c341c0b56fa291b01bbc9c9ab399cbd3f62376"
+      },
+      "startSha": "7cf7e67aa5a1b5b896781bb2c36547baebcf9189",
+      "kind": "fork",
+      "spawnedAt": "2026-10-21T06:31:25Z",
+      "sessionId": "241089f3-b39a-4fe3-9203-155f51f6bb8f",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
+    }
+  }
+}
