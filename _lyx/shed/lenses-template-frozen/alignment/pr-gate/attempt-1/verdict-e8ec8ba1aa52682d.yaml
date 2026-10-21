@@ -1,0 +1,11 @@
+verdict: approve
+reason: >-
+  The diff covers every goal point of board entry lenses-template-frozen and keeps to its Not-in-scope line.
+  Reconcile drops per-name entries equal to the template by decoded value, reports each in dropped, and stops copying template names in.
+  configsync, config reconcile and the hubreconcile walk carry and write on the drop.
+  The template header, the lenses doc and the overview row state the new behaviour.
+  The SetValues drop and the load-log filter serve the entry's goal and are not scope deviations.
+  The carried-over Darn-Review risk is addressed by d13b4618, and no risk names a parent correction.
+  Neither peer (origin-reconcile, run-reentry) overlaps, and no parent commits are listed.
+question: ""
+superseded: []
