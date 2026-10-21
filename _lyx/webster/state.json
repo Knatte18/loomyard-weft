@@ -1,6 +1,6 @@
 {
   "runGuid": "e59a896b1272fd19b65c27f685061006",
-  "planFingerprint": "8ef051b7f1bfaf182ce14da8872a61372fca3f7cf18e9bb4e7bad2cc3b20df2e",
+  "planFingerprint": "ab252b0aaece8e92b4f792c751b76ea76288c9efd02da06980cd3c5085b12ac5",
   "planFileHashes": {
     "00-overview.md": "6cb2e5e31e7d052a910a420e3559b81fb0648ad7b8b408f5eeb91a43202cc427",
     "01-loom-tuned-defaults.md": "b233f196e6192f477222b08e0f839bfd39c6583815dcabdcc6d4a3f60f39113a",
@@ -13,7 +13,7 @@
     "08-walk-strips-base-once.md": "c3fd0183bccc24abcba9956a73a50a4927f0b07a8e7abfe6fc9cead7b948c485",
     "09-reconcile-failure-warns.md": "683bd3f310e7a11b533e5f9dd84a56bfbee5e93b603c93ffa81ad2a119083889",
     "10-config-cli-sparse-hub-base.md": "b66ec88aa867b7740a087e35d8a2b8d0720af7d793282f949a2252c354d2660b",
-    "11-clone-writes-base-marker.md": "a7ffeb1f2deba2bb4634b500e869d35625e302b2d8d63070018af7a845fb31d9"
+    "11-clone-writes-base-marker.md": "ddc73b502e939396b2ba416ffc0c0e579d0fd383d99a28fe0b8efbe4c1ecf5e4"
   },
   "planOverviewFrameHash": "038ea703492af48fa2736c13cdf0751d1a03fadcbc03774907c3e60eb0b3e70c",
   "partition": [
@@ -361,7 +361,7 @@
       }
     }
   ],
-  "currentBatch": 10,
+  "currentBatch": 0,
   "masterStrand": "b2bd0fce733d2c0c68a314ffc3cf873c",
   "masterSessionId": "6d4d10e3-caa4-43c0-bf9e-5510d3521ae9",
   "masterEngine": "claude",
@@ -410,15 +410,32 @@
       ],
       "cardHashes": {
         "10-config-cli-sparse-hub-base": "b66ec88aa867b7740a087e35d8a2b8d0720af7d793282f949a2252c354d2660b",
-        "11-clone-writes-base-marker": "a7ffeb1f2deba2bb4634b500e869d35625e302b2d8d63070018af7a845fb31d9"
+        "11-clone-writes-base-marker": "ddc73b502e939396b2ba416ffc0c0e579d0fd383d99a28fe0b8efbe4c1ecf5e4"
       },
       "startSha": "cd08bdd7706fa28fc6cd98a470c776c594ef9b15",
       "kind": "fork",
       "spawnedAt": "2026-10-21T13:29:04Z",
       "sessionId": "6d4d10e3-caa4-43c0-bf9e-5510d3521ae9",
       "engine": "claude",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "10-config-cli-sparse-hub-base",
+        "status": "done",
+        "head_sha": "5bf9467b1d23b1983428fb79b1ec98f8c5cea4a9",
+        "deviations": [
+          "internal/fabriccli/clone.go"
+        ]
+      },
+      "cardShas": [
+        "5bf9467b1d23b1983428fb79b1ec98f8c5cea4a9"
+      ],
+      "forkTranscripts": [
+        "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-tuned-defaults-template/6d4d10e3-caa4-43c0-bf9e-5510d3521ae9/subagents/agent-a8ab8bf830fbda98d.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-tuned-defaults-template/6d4d10e3-caa4-43c0-bf9e-5510d3521ae9/subagents/agent-a8ab8bf830fbda98d.jsonl"
+      ]
     },
     "3": {
       "slug": "claude-orch-webster-batcher-tuned-defaults",
@@ -565,6 +582,7 @@
     "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-tuned-defaults-template/6d4d10e3-caa4-43c0-bf9e-5510d3521ae9/subagents/agent-a312554854a367a32.jsonl",
     "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-tuned-defaults-template/6d4d10e3-caa4-43c0-bf9e-5510d3521ae9/subagents/agent-a641baa30984042ed.jsonl",
     "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-tuned-defaults-template/6d4d10e3-caa4-43c0-bf9e-5510d3521ae9/subagents/agent-a54e1b7bfa243fde8.jsonl",
-    "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-tuned-defaults-template/6d4d10e3-caa4-43c0-bf9e-5510d3521ae9/subagents/agent-a18f226e5400f4c5c.jsonl"
+    "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-tuned-defaults-template/6d4d10e3-caa4-43c0-bf9e-5510d3521ae9/subagents/agent-a18f226e5400f4c5c.jsonl",
+    "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-tuned-defaults-template/6d4d10e3-caa4-43c0-bf9e-5510d3521ae9/subagents/agent-a8ab8bf830fbda98d.jsonl"
   ]
 }

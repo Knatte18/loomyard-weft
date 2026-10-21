@@ -1,7 +1,7 @@
 # Card 11 — clone-writes-base-marker
 
 **Create:**
-- `plan:internal/fabriccli_test#TestRunCLI_CloneOfAnUnmigratedWeftLeavesTheMarkerToTheWalk` -> `func TestRunCLI_CloneOfAnUnmigratedWeftLeavesTheMarkerToTheWalk(t *testing.T)`
+- `internal/fabriccli_test#TestRunCLI_CloneOfAnUnmigratedWeftLeavesTheMarkerToTheWalk`
 
 **Edit:**
 - `internal/fabriccli#CloneAndWire`
