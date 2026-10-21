@@ -297,6 +297,14 @@ Apart from the zero-test rule the operator decided after Discussion, every pick 
 - Task `darn-verify-fixes` assumes `publish_verify` and a darn session that cannot run the tmux tier; this task retires the first and lets `lyx gate test --tier 2` fix the second, so that task is re-scoped after this one lands.
 - Running task `origin-reconcile` edits `internal/landingshed` and `internal/loomcli`, which D8 also edits; expect merge-in conflicts.
 
+<!-- lyx:carry-over Plan-Review -->
+- Plan-Review, round 4: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
+  Review: _lyx/reviews/plan/round-4-review.md; fixer report: _lyx/reviews/plan/round-4-fixer-report.md.
+  - absent-gate-yaml-refused-at-wiring (class consistency, severity BLOCKING, open in rounds 4)
+  - decodeconfig-resign-arrow-missing (class consistency, severity MEDIUM, open in rounds 4)
+  - shared-fixtures-missed-by-new-behavior (class design, severity BLOCKING, open in rounds 3, 4)
+<!-- /lyx:carry-over Plan-Review -->
+
 ## Acceptance criteria
 
 - `lyx gate test` with no flags runs tier0 over the computed scope; `--tier 0 --tier 1` with `tier1` covering `[0]` runs only tier1.
