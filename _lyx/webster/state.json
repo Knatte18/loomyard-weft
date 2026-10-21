@@ -778,7 +778,7 @@
       }
     }
   ],
-  "currentBatch": 0,
+  "currentBatch": 11,
   "masterStrand": "6f56338668c07f063671518ad01fb02d",
   "masterSessionId": "9216b63a-fe9f-48ce-93a3-9e8a3200b274",
   "masterEngine": "claude",
@@ -880,28 +880,25 @@
         "11-card-verify-runner": "036f9a2000bd345ce9822e426330fad2497845a330d8ee4b4336531ca8674d39"
       },
       "startSha": "73e02b53794e9da2bad5e353da79dc135ca6a2e5",
-      "kind": "fork",
-      "spawnedAt": "2026-10-21T17:00:32Z",
-      "sessionId": "9216b63a-fe9f-48ce-93a3-9e8a3200b274",
-      "engine": "claude",
-      "terminal": true,
-      "status": "failed",
-      "digest": {
-        "batch": "11-card-verify-runner",
-        "status": "failed",
-        "head_sha": "2cda4eeba1644052c37e57579fbafe7fb6575b3b",
-        "reasons": [
-          "batch 11-card-verify-runner holds cards 11-card-verify-runner",
-          "create-not-done/11-card-verify-runner[blocking]: Create target \"plan:internal/cardverify#TestRunner\" still does not resolve: looked up \"internal/cardverify#TestRunner\", quarry answered not_found (the unit exists and the member is missing)",
-          "create-not-done/11-card-verify-runner[blocking]: Create target \"plan:internal/cardverify#TestIsGateCall\" still does not resolve: looked up \"internal/cardverify#TestIsGateCall\", quarry answered not_found (the unit exists and the member is missing)"
-        ]
-      },
+      "kind": "recovery",
+      "spawnedAt": "2026-10-21T17:08:18Z",
+      "terminal": false,
+      "status": "",
       "forkTranscripts": [
         "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-test-tiers/9216b63a-fe9f-48ce-93a3-9e8a3200b274/subagents/agent-a02b572b0557c420a.jsonl"
       ],
-      "bracketTranscripts": [
-        "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-test-tiers/9216b63a-fe9f-48ce-93a3-9e8a3200b274/subagents/agent-a02b572b0557c420a.jsonl"
-      ]
+      "strandGuid": "364b54984b0b24c1807e56c92f819581",
+      "shuttleRunDir": "/home/AD.NORCERESEARCH.NO/hanf/Code/Knatte18/loomyard-LYXHUB/test-tiers/.lyx/shuttle/2b6c09d5e6aad83ff05cac52b8c0ae59",
+      "eventsPath": "/home/AD.NORCERESEARCH.NO/hanf/Code/Knatte18/loomyard-LYXHUB/test-tiers/.lyx/shuttle/2b6c09d5e6aad83ff05cac52b8c0ae59/events.jsonl",
+      "eventsOffset": 2513,
+      "recoveries": 1,
+      "recoverySessions": [
+        "eb0eef9e-540e-4634-9c05-c3e30911cbad"
+      ],
+      "recoveryEngines": {
+        "eb0eef9e-540e-4634-9c05-c3e30911cbad": "claude"
+      },
+      "recoveryStartSha": "2cda4eeba1644052c37e57579fbafe7fb6575b3b"
     },
     "4": {
       "slug": "gate-run-log",
