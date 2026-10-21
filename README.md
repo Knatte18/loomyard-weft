@@ -22,12 +22,6 @@ Held by a run; its scope is locked until the run ends.
 | 3 | **The operator tuned loom defaults move into the lyx template, so every new hub gets them**<br>• New hubs seed neutral loom defaults; the loomyard hub tuning is the operator default and belongs in the template<br>• `profile: light` | [`tuned-defaults-template`](design-tuned-defaults-template.md) | loom | Plan-Write | 1h | 48m | config, loom |
 | 4 | **Intake reads the hub own repository, selfreport stays LoomYard-only, and the orch neither runs intake nor reviews on its own**<br>• lyx board intake takes issues from the hub warp repo, not the hard-coded Knatte18/loomyard; the orch role stops running intake by itself | [`intake-own-repo`](design-intake-own-repo.md) | darn | Darn-Burler-Fix | 40m | 35m | board, orch, selfreport, stencil |
 
-#### Normal priority
-
-| # | Task | Slug | Recipe | At | Age | Revised | Labels |
-| --- | --- | --- | --- | --- | --- | --- | --- |
-| 5 | **Reed small fixes: trace-id constant in tests, allow-set-title warn noise, watchdog stop marker without inotify**<br>• Three small reed fixes in one darn run | [`reed-small-fixes`](design-reed-small-fixes.md) | darn | Finalize | 1d | 30m | reed, shuttle |
-
 ### Ready
 
 Waits on nothing open; can start now.
@@ -104,7 +98,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | # | Note | Slug | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | 1 | **fabric add refuses an existing local branch instead of adopting it**<br>• lyx fabric add adopts origin branches but refuses a local unmarked warp branch, so main or an umbrella branch cannot get a pair | [`fabric-add-adopt-local`](design-fabric-add-adopt-local.md) | 5h | 5h | fabric, workspaces |
-| 2 | **No way to stop a live run for good: killed parts come back, the claim stays**<br>• A verb that ends a live run at once, stops reed relaunching it, clears the board claim and optionally removes the pair | [`batten-abort-live-run`](design-batten-abort-live-run.md) | 50m | 50m | batten, reed, shed |
+| 2 | **No way to stop a live run for good: killed parts come back, the claim stays**<br>• A verb that ends a live run at once, stops reed relaunching it, clears the board claim and optionally removes the pair | [`batten-abort-live-run`](design-batten-abort-live-run.md) | 51m | 51m | batten, reed, shed |
 
 #### Normal priority
 
@@ -195,3 +189,11 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | # | Note | Slug | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | 20 | **[.NET 003] Scoped build and test for C# hubs**<br>• Verify gates in a .NET hub build and test only the projects a card touches, since a scanned Windows machine makes every build slow. | [`dotnet-scoped-verify`](design-dotnet-scoped-verify.md) | 9d | 1d | shed, webster, dotnet |
+
+## Done
+
+Finished, awaiting `lyx board prune --apply`.
+
+| # | Entry | Slug | Age | Revised | Labels |
+| --- | --- | --- | --- | --- | --- |
+| 1 | **Reed small fixes: trace-id constant in tests, allow-set-title warn noise, watchdog stop marker without inotify**<br>• Three small reed fixes in one darn run | [`reed-small-fixes`](design-reed-small-fixes.md) | 1d | 30m | reed, shuttle |
