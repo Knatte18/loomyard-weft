@@ -239,6 +239,12 @@ NORCE Models (run directory `src/csharp/NORCE.Models`, facts from note `dotnet-v
 
 Rationale: the board names both hubs' tiers; the values are config, so the orch owns them, and the loomyard block doubles as the documented example.
 
+### Added after Discussion (operator, 2026-10-21): Zero discovered tests is not a failure
+
+Decision: A test run that discovers zero tests passes, in every scope: when the diff touches no tests, the run passes. There is no minimum-test floor and no separate skipped outcome; the discovered count is still logged. This replaces D7's zero-test handling and withdraws the round-1 parent review's zero-tests ruling.
+
+Rationale: The operator assumes no bug of the dropped-flag kind. The board line saying zero discovered tests is a failure came from note dotnet-verify-protocol and was never an operator decision; the orch misattributed it.
+
 ## Constraints
 
 - `PATTERN-verified-tree`: every site still runs its command through `verifytree.Verify`; its background changes (the slot moves into the gate, sites render gate calls).
