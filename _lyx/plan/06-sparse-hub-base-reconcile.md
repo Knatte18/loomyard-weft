@@ -4,6 +4,8 @@
 - `plan:internal/configsync#sparseSeed` -> `func sparseSeed(m configreg.Module, seed []byte, dropFormer bool) ([]byte, error)`
 - `plan:internal/configsync#stripBase` -> `func stripBase(m configreg.Module, current []byte) ([]byte, []string, error)`
 - `plan:internal/configsync#WriteBaseSparseMarker` -> `func WriteBaseSparseMarker(boardDir string) error`
+- `plan:internal/yamlengine#DropTemplateEqualNames` -> `func DropTemplateEqualNames(template, existing []byte, perNameMaps []string) (out []byte, dropped []string, err error)`
+- `plan:internal/yamlengine#TestDropTemplateEqualNames` -> `func TestDropTemplateEqualNames(t *testing.T)`
 - `plan:internal/configsync#TestReconcileHubWideAt_StripsAnUnmigratedBaseOnce` -> `func TestReconcileHubWideAt_StripsAnUnmigratedBaseOnce(t *testing.T)`
 
 **Edit:**
@@ -11,6 +13,7 @@
 - `internal/configsync#Result`
 - `internal/configsync#ReconcileHubWideAt`
 - `internal/configsync#retireHubWideCopy`
+- `internal/yamlengine/doc.go`
 - `internal/configsync#TestReconcileHubWideAt_SeedsFromHubPrimeLegacyOrTemplate`
 - `internal/configsync#TestReconcileHubWideAt_MigratesLegacyFabricConfig`
 - `internal/configsync#TestReconcileAll_HubWideCopy`
@@ -30,7 +33,11 @@
 A seed-only module (`configreg.Module.SeedOnly`) is reconciled exactly as today, its absent file seeded whole and a present one never rewritten.
 
 For every other module:
-- A present file runs the module's `Migrate` hook and then `yamlengine.Prune` against the template, which removes keys the template lacks and adds none; `lenses` keeps dropping a per-name entry equal to the template on every reconcile, reported in `Dropped` as today.
+- A present file runs the module's `Migrate` hook and then `yamlengine.Prune` against the template, which removes keys the template lacks and adds none.
+  `Prune` never drops a per-name entry, so for a module with `PerNameMaps`, such as `lenses`, the pruned bytes then pass through `yamlengine.DropTemplateEqualNames`, which removes each per-name entry whose value decodes equal to the template's, with the same equality `yamlengine.Reconcile` uses for its dropped report, and returns the removed paths as `P.<name>`, sorted; they are reported in `Result.Dropped`, so `lenses` keeps dropping a template-equal entry on every reconcile as today.
+  `DropTemplateEqualNames` and `mergePerNameMaps` share that one comparison, `sameValue`, and a file it leaves unchanged is returned byte for byte.
+  `internal/yamlengine/doc.go` lists `[DropTemplateEqualNames]` beside `[Prune]` in its function list, with its contract, and its Per-name maps section names it among the functions taking a perNameMaps argument.
+  `TestDropTemplateEqualNames` in `layers_test.go` is table-driven, with rows for a template-equal name dropped and reported, the same value in another quoting style dropped, a differing name kept, a name only the file holds kept, and a file with nothing to drop returned byte for byte.
   So `Added` stays empty for a present file.
   A file the prune leaves with no unit is written as `configengine.SparseBaseHeader`, never deleted.
 - An absent file seeds sparse through `sparseSeed`: from the template it is the header-only base; from the prime's copy it holds that copy's units, after `Migrate`, that differ from the current template and, while the prime worktree has no `sparse` marker of its own (`configengine.SparseMarker(primeBaseDir)` absent, `dropFormer` true), from the module's former value (`formerValuesDoc`); from the legacy files it holds their units that differ from the template.
@@ -55,7 +62,7 @@ For every other module:
 `TestReconcileAll_HubWideCopy` gains rows: a copy holding a template default over a hub file lacking that key is retired, and a copy value differing from both the template and the hub file is divergent.
 
 `TestReconcileHubWideAt_SeedsFromHubPrimeLegacyOrTemplate`'s loom rows expect the seeded or reconciled base to hold only its non-template units (`discussion_timeout_min: 480` from the prime, the header from the template) and no `review_max_bounces:`;
-a new row gives a present loom base holding only `stale_key: old` and expects the file present after the apply, holding only `configengine.SparseBaseHeader`; a new row seeds a loom default from an unmarked prime copy holding `discussion_lenses: ""` and `review_max_bounces: 99` and expects only `review_max_bounces: 99`, and a twin with the prime marked keeps both, since `""` differs from the new template; the models rows are unchanged.
+a new row gives a present loom base holding only `stale_key: old` and expects the file present after the apply, holding only `configengine.SparseBaseHeader`; a new row seeds a loom default from an unmarked prime copy holding `discussion_lenses: ""` and `review_max_bounces: 99` and expects only `review_max_bounces: 99`, and a twin with the prime marked keeps both, since `""` differs from the new template; a new row gives a present lenses base holding a template-equal lens beside a tuned one and expects, after the apply, the template-equal lens absent and reported in `Dropped`, the tuned one kept, with no `StripBase` set; the models rows are unchanged.
 `TestReconcileHubWideAt_MigratesLegacyFabricConfig`'s row that expected the template-default `pathspec` filled in expects it absent, the seeded file holding only `branch_prefix: hanf/`.
 `TestReconcileHubWideAt_StripsAnUnmigratedBaseOnce` is table-driven over a board dir whose base files are written for every registered module, with rows for: a loom base holding the current template whole plus `discussion_lenses: ""` and `darn` holding a tuned `verify`, which under `StripBase` and `Apply` ends header-only for loom, keeps darn's `verify`, reports the stripped keys and writes the marker; the same board without `StripBase` writes no strip and no marker and reports the keys as pending; a dry run with `StripBase` writes nothing; a `claude` base holding the former `prompt_cache_ttl_roles` map whole is stripped to the header, and one holding that map with one role changed keeps it, so the open map is compared whole; a board already holding the marker keeps a unit equal to a former value; a board whose per-worktree `loom` base is absent, reconciled under `StripBase` and `Apply` without `SeedDefaults` so the pass leaves it absent, strips the others but writes no marker; and a seed-only `models` base is left byte for byte.
 
@@ -68,4 +75,4 @@ a new row gives a present loom base holding only `stale_key: old` and expects th
 - `PATTERN-sparse-hub-base` — Writing a hub's base file (a hub-wide module's hub file or a per-worktree repo default, not seed-only): only the units the hub tuned, never a template fill; only `hubreconcile`'s one-time walk strip drops a unit the template holds, bar `lenses`' template-equal entries.
 ```
 
-**ImpactSummary:** `ReconcileHubWideAt`'s seed and reconcile of every non-seed-only base file and the hub-wide copy comparison; its four callers keep their calls, the walk opts into the strip in card 8, and the new PATTERN entry binds every later base writer.
+**ImpactSummary:** `ReconcileHubWideAt`'s seed and reconcile of every non-seed-only base file and the hub-wide copy comparison, plus a `yamlengine` per-name drop sharing `Reconcile`'s equality; its four callers keep their calls, the walk opts into the strip in card 8, and the new PATTERN entry binds every later base writer.
