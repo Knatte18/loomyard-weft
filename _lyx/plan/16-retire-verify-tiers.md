@@ -1,8 +1,8 @@
 # Card 16 — retire-verify-tiers
 
 **Create:**
-- `plan:internal/languageconfig#BulletListValue` -> `func BulletListValue(entries []string) string`
-- `plan:internal/languageconfig_test#TestBulletListValue` -> `func TestBulletListValue(t *testing.T)`
+- `internal/languageconfig#BulletListValue`
+- `internal/languageconfig_test#TestBulletListValue`
 
 **Edit:**
 - `internal/languageconfig#config`
