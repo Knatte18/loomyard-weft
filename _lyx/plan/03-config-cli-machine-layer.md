@@ -1,8 +1,8 @@
 # Card 3 — config-cli-machine-layer
 
 **Create:**
-- `plan:internal/configcli#setMachine` -> `func setMachine(dirs configDirs, out io.Writer, mod configreg.Module, path string, pairs []yamlengine.KV) int`
-- `plan:internal/configcli#editMachine` -> `func editMachine(dirs configDirs, out io.Writer, mod configreg.Module, path string, edit configengine.EditorFunc) int`
+- `internal/configcli#setMachine`
+- `internal/configcli#editMachine`
 
 **Edit:**
 - `internal/configcli#layerNames`
