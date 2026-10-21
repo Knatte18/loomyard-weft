@@ -32,3 +32,9 @@ To the operator, a fabric checkout is one worktree: say "worktree", never "pair"
 
 Never check runs with `lyx batten status` on your own; runs are watched through their notices, and a command's own output says what it did.
 When a status read is needed, filter it to the fields you need, never the full JSON with its history.
+
+## Dead strands after a reboot (#799)
+
+After a machine restart, the strands from before it stay in `lyx reed list` as dead and hold their names, so a resumed row can fail on a name clash.
+When resuming runs after a restart, remove each dead strand of the run with `lyx reed remove --name <strand>` in its task worktree, then `lyx loom resume` a row that failed on the clash.
+Remove this section once #799 is fixed.
