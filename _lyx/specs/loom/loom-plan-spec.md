@@ -1,4 +1,4 @@
-<!-- lyx-stencil: sha256=f9d5b9702e1d960bbbc75160fd2bf61950fee63a8963a5a78182ba0b0227d244 build=e14e9b4952c711cd015e7a3e5426793c32c6a9fa time=2026-10-19T14:26:31Z -->
+<!-- lyx-stencil: sha256=2bad4ec3b491924c650810402bbe948216c1d1aa6eaf064695389ba2ad02d17c build=0d8650911d291564872ce5810518565877db82c7 time=2026-10-21T06:13:55Z -->
 
 # Loom plan-spec — flat card list
 
@@ -132,6 +132,7 @@ A symbol no card in the plan touches needs no edge — its state never changes d
 | Prosa | file(s), no symbol target | none | not required |
 | Custom | either | none — explicit escape hatch | as applicable |
 
+A `Create` target under the repository root's git-ignored `.scratch/` is a transient draft: the card may remove it once read, and Webster's `create-not-done` check skips it.
 How cards group into execution batches is not a card property; `internal/batcher`'s package doc describes it.
 A card that renames or deletes what an earlier card targets never shares that card's batch.
 
