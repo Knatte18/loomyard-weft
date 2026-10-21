@@ -49,7 +49,7 @@ Every lens returned a report.
 - **Run the base strip in every `Apply` caller of `ReconcileHubWideAt`.**
   Those callers commit only module files, so the marker would stay uncommitted on Bolt and another machine would strip again.
 - **Treat a base holding every template key as unmigrated, to undo an older binary's refill.**
-  A heuristic over file shape; deploying the binary on every machine is the way forward.
+  A heuristic over file shape; deploying the binary on every machine prevents a refill, and removing the board marker by hand repairs one (D3).
 - **Strip seed-only modules too.**
   Their file is the operator's registry, read with no template fill by `runprofile`; a strip would change what they resolve to.
 - **Make the standalone base sparse too.**
@@ -69,4 +69,5 @@ _No rounds yet._
 - Q6 Standalone base? — auto-pick: unchanged.
 - Q7 Fill log noise? — auto-pick: no fill log for a sparse base (D5).
 - Q8 Which loomyard values are its own? — resolved by the board entry's split; `board` kinds and `language.skills` added as loomyard's own, since both name Go or lyx.
-- Q9 PATTERN entry changes? — auto-pick: none; no entry line states the base is full, and the `PATTERN-config-strictness` background is updated with the docs (D6).
+- Q9 PATTERN entry changes? — auto-pick: no existing entry line states the base is full, and the `PATTERN-config-strictness` background is updated with the docs (D6);
+  round 1 added `PATTERN-sparse-hub-base`, since D4's rule binds every writer of a hub base, a later one included.
