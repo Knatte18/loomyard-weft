@@ -1,51 +1,87 @@
 diff --git a/PATTERN.md b/PATTERN.md
-index b457af20..d48f3175 100644
+index 115dd62e..cf1db12c 100644
 --- a/PATTERN.md
 +++ b/PATTERN.md
-@@ -8,9 +8,10 @@ Structural invariants, one line per entry: when it applies and what it requires.
- - `PATTERN-told-geometry` — Writing an engine: handed its absolute paths, it derives none and never imports `internal/lyxcwd`. — [background](pattern/PATTERN-told-geometry.md)
- - `PATTERN-lyxdirs-single-declarer` — Naming `_lyx` or `.lyx` in a path: only `internal/lyxdirs` declares them, bar one variable block atop a `tools/` script.
+@@ -10,7 +10,8 @@ Structural invariants, one line per entry: when it applies and what it requires.
  - `PATTERN-lyx-temp-root` — Creating a temp file or dir: under `internal/lyxtemp`'s run dir, never `os.TempDir()`. (test) — [background](pattern/PATTERN-lyx-temp-root.md)
--- `PATTERN-durable-vs-ephemeral-state` — Adding a file: tracked under `_lyx`, never-tracked under `.lyx`, same subpath; nothing a run needs lives only under `.lyx`. — [background](pattern/PATTERN-durable-vs-ephemeral-state.md)
-+- `PATTERN-durable-vs-ephemeral-state` — Adding a file: tracked under `_lyx`, never-tracked under `.lyx`, same subpath. — [background](pattern/PATTERN-durable-vs-ephemeral-state.md)
+ - `PATTERN-durable-vs-ephemeral-state` — Adding a file: tracked under `_lyx`, never-tracked under `.lyx`, same subpath. — [background](pattern/PATTERN-durable-vs-ephemeral-state.md)
  - `PATTERN-hub-containment` — Linking hub-level containers or writing the hub workspace file: from the hub only. — [background](pattern/PATTERN-hub-containment.md)
- - `PATTERN-hub-wide-config` — A hub-level config module: `HubWide` in `configreg`, its file on the board only, its machine override beside it. — [background](pattern/PATTERN-hub-wide-config.md)
-+- `PATTERN-sparse-hub-base` — Writing a hub's base file: only the units the hub tuned, never a template fill. — [background](pattern/PATTERN-sparse-hub-base.md)
- - `PATTERN-hub-suffix` — Touching hub naming: `-LYXHUB` is the sole hub container suffix; no code recognises retired `-HUB`. (test) — [background](pattern/PATTERN-hub-suffix.md)
+-- `PATTERN-hub-wide-config` — A hub-level config module: `HubWide` in `configreg`, its file on the board only, its machine override beside it. — [background](pattern/PATTERN-hub-wide-config.md)
++- `PATTERN-hub-wide-config` — A hub-level config module: `HubWide` in `configreg`, its file on the board only. — [background](pattern/PATTERN-hub-wide-config.md)
++- `PATTERN-sparse-hub-base` — Writing a hub's base file (a hub-wide module's hub file or a per-worktree repo default, not seed-only): only the units the hub tuned, never a template fill; only `hubreconcile`'s one-time walk strip drops a unit the template holds, bar `lenses`' template-equal entries. — [background](pattern/PATTERN-sparse-hub-base.md)
+ - `PATTERN-hub-suffix` — Touching hub naming: `-LYXHUB` is the sole hub container suffix. (test) — [background](pattern/PATTERN-hub-suffix.md)
  
  ## CLI
-@@ -29,7 +30,7 @@ Structural invariants, one line per entry: when it applies and what it requires.
- - `PATTERN-fabric-git` — Running git on warp or weft: only `internal/fabricengine`, in-process, never raw git. — [background](pattern/PATTERN-fabric-git.md)
- - `PATTERN-fabric-destruction-chokepoint` — Destroying anything in fabric: only `internal/fabricengine/destroy.go`. — [background](pattern/PATTERN-fabric-destruction-chokepoint.md)
- - `PATTERN-fabric-write-containment` — Writing `_launchers` or the workspace file in `fabricengine`: via a hub `os.Root`, never raw `os` or `fslink`.
--- `PATTERN-push-both-sides` — Pushing run records from Go: the pair's code branch goes along, and a per-transition status push goes through fabric's detached push. — [background](pattern/PATTERN-push-both-sides.md)
-+- `PATTERN-push-both-sides` — Pushing run records from Go: the pair's code branch goes along, and a status push is detached. — [background](pattern/PATTERN-push-both-sides.md)
- - `PATTERN-mutation-record` — Adding a mutating fabric verb: it fills a `*Mutations` record; its result embeds `MutationRecord`. — [background](pattern/PATTERN-mutation-record.md)
- - `PATTERN-pair-teardown` — Tearing down a pair: only via `internal/pairteardown`. (test) — [background](pattern/PATTERN-pair-teardown.md)
- - `PATTERN-batten-bookend` — Creating or destroying a task worktree: its producer never runs inside it. — [background](pattern/PATTERN-batten-bookend.md)
-@@ -46,7 +47,7 @@ Structural invariants, one line per entry: when it applies and what it requires.
- 
- - `PATTERN-shed-producer-seam` — Importing into `internal/shedengine`: only stdlib, `state` and `lock`; its status and lock paths are caller-supplied.
- - `PATTERN-shed-recipe-registry` — Adding a producer: one `map[string]Constructor` in `internal/shedrecipe` behind `Lookup`, bar `Implementer`'s; no `init()`/`Register`/`lyxcwd`.
--- `PATTERN-recipe-setting-lookup` — Giving a recipe row a value: a plain one is `module.key` via `Env.Setting`, an executable one `module.key` via the owner's told lookup over the template and board default layer, a review segment's one a `SegmentSettings` field; never its own `Env` field.
-+- `PATTERN-recipe-setting-lookup` — Giving a recipe row a value: looked up by key, never its own `Env` field. — [background](pattern/PATTERN-recipe-setting-lookup.md)
- - `PATTERN-command-row` — Adding a side-action row to a recipe: a `Command` row over its config keys, its command read from the template and board default layer only, never a new engine.
- - `PATTERN-shed-verb-set` — Adding a run, step, status, pause or goto verb: generic bodies only in `internal/shedverbs`. (test) — [background](pattern/PATTERN-shed-verb-set.md)
+@@ -54,9 +55,9 @@ Structural invariants, one line per entry: when it applies and what it requires.
  - `PATTERN-shed-driver` — Driving a shed run in Go, deciding its stops or spawning a tackler: only `internal/sheddriver`. (test) — [background](pattern/PATTERN-shed-driver.md)
-@@ -86,7 +87,7 @@ Structural invariants, one line per entry: when it applies and what it requires.
- - `PATTERN-pane-binary-resolution` — Creating a strand pane or detached `lyx` window in reed: resolve `lyx` via `panebin.go` only. (test) — [background](pattern/PATTERN-pane-binary-resolution.md)
- - `PATTERN-role-skills-typed` — Loading a spawned session's skill: its spawner names it on the launch spec, lyx delivers it on the launch line or typed; no stencil asks for one. (test)
- - `PATTERN-parent-directive` — Writing a spawned role's top-level stencil: it renders the parent directive. (test) — [background](pattern/PATTERN-parent-directive.md)
--- `PATTERN-edit-directive` — Writing a spawned role's opening stencil: it renders `internal/editdirective`'s directive; orch stencils are exempt. (test) — [background](pattern/PATTERN-edit-directive.md)
-+- `PATTERN-edit-directive` — Writing a spawned role's opening stencil: it renders `internal/editdirective`'s directive. (test) — [background](pattern/PATTERN-edit-directive.md)
+ - `PATTERN-shed-run-directory` — Touching run directories or `seed.json`: `internal/shedrun` alone declares their paths, ids and `Seed`. — [background](pattern/PATTERN-shed-run-directory.md)
+ - `PATTERN-tolerant-records` — Go-written JSON records: never refuse an unknown key; rewrite via `internal/state`. (test) — [background](pattern/PATTERN-tolerant-records.md)
+-- `PATTERN-transient-stop` — Marking a failure transient: the `internal/shedengine` mark, set only at a producer or step-bootstrap boundary. — [background](pattern/PATTERN-transient-stop.md)
++- `PATTERN-transient-stop` — Marking a failure transient: the `internal/shedengine` mark. — [background](pattern/PATTERN-transient-stop.md)
+ - `PATTERN-failure-stop-visible` — An `--until-stop` failure as sole lock holder: status is non-running before the waiter returns. (test) — [background](pattern/PATTERN-failure-stop-visible.md)
+-- `PATTERN-driver-choice-single-site` — Reading a seed driver: once per recipe, in its bootstrap verbs, for the surface only. (test) — [background](pattern/PATTERN-driver-choice-single-site.md)
++- `PATTERN-driver-choice-single-site` — Reading a seed driver: once per recipe, in its bootstrap verbs. (test) — [background](pattern/PATTERN-driver-choice-single-site.md)
+ - `PATTERN-treadle-runner-seam` — Importing into `internal/treadleengine`: only its allowlist, never `burlerengine`, `lyxcwd` or an `internal/*cli` package.
+ - `PATTERN-plan-generation` — Archiving a plan: `_lyx/plan/`'s top-level files hold one generation. — [background](pattern/PATTERN-plan-generation.md)
+ - `PATTERN-ref-shape-registry` — Classifying a plan ref or `plan:` handle: `internal/planparser` alone declares and decides. (test) — [background](pattern/PATTERN-ref-shape-registry.md)
+@@ -65,15 +66,15 @@ Structural invariants, one line per entry: when it applies and what it requires.
+ - `PATTERN-verified-tree` — Running a verify command: only via `verifytree.Verify`. (test) — [background](pattern/PATTERN-verified-tree.md)
+ - `PATTERN-gate-slot` — Running a gate build or test: only in a `-p`-capped, `-trimpath` hub slot of `internal/gateslot`.
+ - `PATTERN-trimpath-safe-root` — Locating the module root in code a gate run builds: never from a `runtime.Caller` path alone, which `-trimpath` makes module-relative.
+-- `PATTERN-batcher-registry` — Choosing webster's execution unit: the batch the active `batcher.yaml` profile derives via `internal/batcher`. — [background](pattern/PATTERN-batcher-registry.md)
++- `PATTERN-batcher-registry` — Choosing webster's execution unit: the batch the active `batcher.yaml` profile derives. — [background](pattern/PATTERN-batcher-registry.md)
+ - `PATTERN-review-round` — Review and fix round: review accepted on disk before any edit, each finding fixed or disputed, end on a verdict. — [background](pattern/PATTERN-review-round.md)
+ - `PATTERN-sole-parsers` — Parsing plan, discussion, summary, recipe or halt note: only its sole parser. (test) — [background](pattern/PATTERN-sole-parsers.md)
+ 
+ ## Agents and prompts
+ 
+ - `PATTERN-agent-name` — Forming an agent name: only `internal/agentname`, once by reed. — [background](pattern/PATTERN-agent-name.md)
+-- `PATTERN-creel-store` — Writing the creel journal or reaching a pane: only `internal/creelengine`, a pane only via its `Delivery` seam. (test) — [background](pattern/PATTERN-creel-store.md)
+-- `PATTERN-stencil-ownership` — Reading a prompt or spec: at call time via `internal/stencilstore` from a told directory, never embedded. — [background](pattern/PATTERN-stencil-ownership.md)
++- `PATTERN-creel-store` — Writing the creel journal or reaching a pane: only `internal/creelengine`. (test) — [background](pattern/PATTERN-creel-store.md)
++- `PATTERN-stencil-ownership` — Reading a prompt or spec: at call time via `internal/stencilstore`, never embedded. — [background](pattern/PATTERN-stencil-ownership.md)
+ - `PATTERN-producer-pointer-rule` — Writing an instruction file: it points at another producer's format contract, never restating it.
+ - `PATTERN-friction-capture` — Halting a loom run or refusing in webster: Go writes a note, reflected at the run's end, archived once covered. (test) — [background](pattern/PATTERN-friction-capture.md)
+ - `PATTERN-completion-signal` — Finding a run unfinished in `internal/shuttleengine`: consult `allOutputFilesExist` first. (test) — [background](pattern/PATTERN-completion-signal.md)
+@@ -91,7 +92,7 @@ Structural invariants, one line per entry: when it applies and what it requires.
+ - `PATTERN-edit-directive` — Writing a spawned role's opening stencil: it renders `internal/editdirective`'s directive. (test) — [background](pattern/PATTERN-edit-directive.md)
  - `PATTERN-spawn-color` — Coloring a spawned session: its spawner names a segment on the launch spec. — [background](pattern/PATTERN-spawn-color.md)
  - `PATTERN-wait-mark-display-only` — Marking a wait on screen: only reed's `SetWaitMark`; no Go decision reads the marks. — [background](pattern/PATTERN-wait-mark-display-only.md)
- - `PATTERN-spawn-observability` — Starting an OS process from `lyx`: log the spawn, and a teardown it waits for, via `internal/logger`. — [background](pattern/PATTERN-spawn-observability.md)
+-- `PATTERN-spawn-observability` — Starting an OS process from `lyx`: log the spawn, and a teardown it waits for, via `internal/logger`. — [background](pattern/PATTERN-spawn-observability.md)
++- `PATTERN-spawn-observability` — Starting an OS process from `lyx`: log the spawn via `internal/logger`. — [background](pattern/PATTERN-spawn-observability.md)
+ 
+ ## Daemons and waits
+ 
+@@ -100,7 +101,7 @@ Structural invariants, one line per entry: when it applies and what it requires.
+ 
+ ## Packages
+ 
+-- `PATTERN-leaf-packages` — Importing into a leaf package: only its closed import set, packages and sets named in the background. — [background](pattern/PATTERN-leaf-packages.md)
++- `PATTERN-leaf-packages` — Importing into a leaf package: only its closed import set. — [background](pattern/PATTERN-leaf-packages.md)
+ 
+ ## Build and tooling
+ 
+@@ -112,12 +113,12 @@ Structural invariants, one line per entry: when it applies and what it requires.
+ 
+ - `PATTERN-test-economy` — Writing a test: it pins public-surface behavior no test covers yet, else it extends one. — [background](pattern/PATTERN-test-economy.md)
+ - `PATTERN-test-speed` — Writing a test: lowest fitting tier, injected clocks, `t.Parallel` by default. (test) — [background](pattern/PATTERN-test-speed.md)
+-- `PATTERN-test-isolation` — Testing a package: git spawners use `gitkit.HermeticGitEnv()`; tagged packages run through `tmuxkit.Main`. (test) — [background](pattern/PATTERN-test-isolation.md)
++- `PATTERN-test-isolation` — Testing a package: git spawners use `gitkit.HermeticGitEnv()`. (test) — [background](pattern/PATTERN-test-isolation.md)
+ - `PATTERN-testkit` — Sharing test support across packages: one kit under `internal/testkit/<kit>/`, imported only from tests, never duplicated. (test) — [background](pattern/PATTERN-testkit.md)
+ - `PATTERN-hubforge-fixtures` — A hub fixture no fake can test: `hubforge` via `fabriccli.CloneAndWire`, never hand-assembled or wrapped. — [background](pattern/PATTERN-hubforge-fixtures.md)
+ 
+ ## Docs
+ 
+-- `PATTERN-markdown-link-integrity` — Linking in a `.md` file under `docs/`: every inline link resolves, file part and `#anchor`. (test) — [background](pattern/PATTERN-markdown-link-integrity.md)
+-- `PATTERN-comment-line-breaks` — Writing a Go comment: one sentence per line, checked by `lyx loom lint-comments` alone. (test) — [background](pattern/PATTERN-comment-line-breaks.md)
++- `PATTERN-markdown-link-integrity` — Linking in a `.md` file under `docs/`: every inline link resolves. (test) — [background](pattern/PATTERN-markdown-link-integrity.md)
++- `PATTERN-comment-line-breaks` — Writing a Go comment: one sentence per line. (test) — [background](pattern/PATTERN-comment-line-breaks.md)
+ - `PATTERN-documentation-lifecycle` — Design docs: none for unbuilt work; a built one lives in its package's `doc.go`. — [background](pattern/PATTERN-documentation-lifecycle.md)
 diff --git a/docs/overview.md b/docs/overview.md
-index 5430bd7c..2c7f012d 100644
+index 5f015628..b6d3aec8 100644
 --- a/docs/overview.md
 +++ b/docs/overview.md
-@@ -353,7 +353,7 @@ User-facing modules each get one `lyx <module>` namespace:
+@@ -355,7 +355,7 @@ User-facing modules each get one `lyx <module>` namespace:
    ✅ Implemented.
  - **config** — bare `lyx config` lists modules and verbs, `lyx config menu` picks a module to edit interactively, and `lyx config <module>` edits that module's config;
    `lyx config reconcile` reconciles all module config files against their live templates (dry-run by default, `--apply` writes atomically) except seed-only modules (today: `models`), which are materialized once when absent and never rewritten again since the file is operator-owned;
@@ -54,7 +90,7 @@ index 5430bd7c..2c7f012d 100644
    `lyx config <module> --set key=value` (repeatable) writes one or more config values directly with no editor invocation, for scripts/agents that need a non-interactive path.
    A key under a module's declared open map adds or rewrites one entry, e.g. `lyx config board --set labels.quarry="glyphs and the quarry index"`.
    A key that takes one value or a per-round list, such as loom's `reviewer_model` and `plan_reviewer_model`, is written as a list when its value starts with `[`, e.g. `lyx config loom --set 'plan_reviewer_model=["opus[medium]", "sonnet[high]"]'`, and a bracketed value that is not a list of scalars is refused.
-@@ -395,7 +395,7 @@ User-facing modules each get one `lyx <module>` namespace:
+@@ -398,7 +398,7 @@ User-facing modules each get one `lyx <module>` namespace:
    defaults to `bug`.
    Callable from any sandbox agent context with no config. ✅ Implemented.
  - **reed** — **the window to the world**: tmux overlay + **strand** bookkeeping + render (`internal/reedcli` + `internal/reedengine` + `internal/reedengine/render`). Hosts every managed process as a strand in a window of its own or its group's, persists to `.lyx/reed.json` (`lyx reed up|add|remove|status|list|attach|switch|resume|watchdog|down`); `lyx reed add` places a strand `--anchor own-window` by default. Every strand carries a hierarchical full name ([PATTERN-agent-name](../pattern/PATTERN-agent-name.md)), mirrored into its pane title and Claude session name and exported to its process as `LYX_STRAND_NAME` and `LYX_PARENT`, with the watchdog repairing drift; `list` is the hub-wide name directory. Built on what its proof-of-concept, `muxpoc`, proved first (env hygiene, native `--resume`); `muxpoc` has since been deleted, its job done. `reed attach` and `reed watchdog` are this module's two registered interactive-handoff exceptions ([PATTERN-cli-cobra](../pattern/PATTERN-cli-cobra.md)): `attach` hands the operator's stdio to a `tmux attach-session` child in place, pre-flighting through checking tmux's floor version, booting the session if cold and checking server/session liveness, and `watchdog` is the detached per-hub name-repair and reap daemon that blocks for its process lifetime — in both cases every fallible step runs pre-flight, on the envelope, and only the terminal-handover/daemon tail itself is exempt from emitting JSON. `add` and `attach` boot this worktree's session when none is up, with `up`'s own semantics — a bare substrate, with no persisted strand relaunched — instead of refusing; every other reed verb still refuses on a cold worktree. ✅ Implemented. See the `internal/reedengine` package documentation.
@@ -63,7 +99,7 @@ index 5430bd7c..2c7f012d 100644
  - **orch** — the hub orchestrator hosted as an interactive Claude session in a reed strand of the prime worktree, cycled before its context fills (`internal/orchcli` + `internal/orchengine`; `lyx orch start|status|refresh|distill|stop|cleanup|rules`, prime only). `start` first ensures the prime's `runs` strand, which runs `lyx batten overview` as the session's overview window, and `stop` leaves it; the orchestrator has a window of its own, and the session's windows run overview, agents, shell. A detached watcher has the session write a note, then clears it and resumes it from that note (`refresh`) or compacts it in place (`distill`), never clearing or compacting without one. ✅ Implemented. See the `internal/orchengine` package documentation.
  - **webster** — the implementer module: one long-lived Master session that reads the plan and the repo's rules once, never the code, then forks one implementer per execution batch in-session (Claude Code's Agent tool), each fork reading its cards' code itself, instead of spawning a fresh reed/tmux strand per batch;
    bracket verbs (`begin-batch`/`record-batch`) drive each in-session fork (Master ends its turn while a backgrounded fork works and records the batch on the fork's completion notification, shuttle reading that turn end as waiting rather than done), and a genuine model escalation (recovery after a stuck/report-less fork) spawns a cold strand.
-@@ -656,7 +656,7 @@ User-facing modules each get one `lyx <module>` namespace:
+@@ -659,7 +659,7 @@ User-facing modules each get one `lyx <module>` namespace:
    `Worktree-Create` and `Worktree-Teardown` wait for a prime lock another run holds, polling every 2 s for up to 10 min, and halt `blocked` only once that wait runs out.
    `step` drives exactly one producer forward from the run's persisted current producer, seeding a fresh run first when none is persisted yet.
    `lyx loom step` is the single-producer primitive of the same shape over a run that is already seeded.
@@ -99,7 +135,7 @@ index cb08243a..4f47cf75 100644
        orientation: 31400   # context Merriam gains between loading its start base and spawning its first fork; the start base itself is computed from what Merriam loads
        batch_growth: 7000   # context Merriam gains per finished batch, so a fork at position k starts at the start base + orientation + (k-1) * batch_growth
 diff --git a/internal/battencli/arm.go b/internal/battencli/arm.go
-index a7b6694b..027058d3 100644
+index 36e2dc40..72d0ec55 100644
 --- a/internal/battencli/arm.go
 +++ b/internal/battencli/arm.go
 @@ -302,9 +302,7 @@ func (c *battenCLI) arm(cwd string, verb string, args []string) (shedverbs.Spec,
@@ -2547,7 +2583,7 @@ index 42287232..c734d7ca 100644
  func absentRepoDefaults(boardDir string) []string {
  	var absent []string
 diff --git a/internal/fabriccli/fabric.go b/internal/fabriccli/fabric.go
-index bad515c4..4a7b64b3 100644
+index cc849fb1..2fde4750 100644
 --- a/internal/fabriccli/fabric.go
 +++ b/internal/fabriccli/fabric.go
 @@ -685,7 +685,7 @@ func runReconcile(ctx context.Context, out io.Writer, _ []string) int {
@@ -2709,7 +2745,7 @@ index 23f57db3..26dbb7d6 100644
  // WebsterGeometry hands that pool to webster.
  // Later waves add their own siblings here rather than spawning per-engine packages or re-deriving the
 diff --git a/internal/hubreconcile/doc.go b/internal/hubreconcile/doc.go
-index 9c28defa..f01a7163 100644
+index a8127b18..ceba2be1 100644
 --- a/internal/hubreconcile/doc.go
 +++ b/internal/hubreconcile/doc.go
 @@ -1,5 +1,5 @@
@@ -2730,9 +2766,9 @@ index 9c28defa..f01a7163 100644
  // The lock wait defaults to DefaultLockWait and is an Options field; a lock still held when it runs out returns *LockTimeoutError and touches nothing.
  // The holder's own per-worktree commits wait on each pair's write lock as a plain commit does, unbounded.
  //
-@@ -20,10 +21,18 @@
- // The board commit carries the per-worktree repo defaults beside the hub-wide files.
- // Each worktree's applied files are committed in that worktree, and the board is pushed, carrying the board commit and any an earlier run left unpushed.
+@@ -21,10 +22,18 @@
+ // Each worktree's applied files are committed in that worktree, and the board's push goes to the detached `lyx board sync` every board write spawns, which carries the board commit and any an earlier run left unpushed.
+ // The walk spawns it and returns at once, so no start verb waits on a push to GitHub, and the build stamp never waits on one either.
  //
 +// # The base strip
 +//
@@ -2750,7 +2786,7 @@ index 9c28defa..f01a7163 100644
  // A file left empty is deleted, and the marker is written after the files; the files, deletions and marker go into the worktree's one reconcile commit.
  // The log line of a changed module lists the keys it stripped and the keys it inherited, the repo default's keys the file lacked and whose value differs from the template's, which the operator can pin with `lyx config <module> --set`.
  // A worktree carrying the marker is never stripped, and a pair forked from a migrated worktree inherits the marker.
-@@ -56,8 +65,12 @@
+@@ -59,8 +68,12 @@
  //
  // # Errors
  //
@@ -2765,7 +2801,7 @@ index 9c28defa..f01a7163 100644
  // # Accepted gaps
  //
 diff --git a/internal/hubreconcile/ensure_integration_test.go b/internal/hubreconcile/ensure_integration_test.go
-index 0b52341e..1abf7f3b 100644
+index a13ad1d0..1bb5461e 100644
 --- a/internal/hubreconcile/ensure_integration_test.go
 +++ b/internal/hubreconcile/ensure_integration_test.go
 @@ -24,6 +24,7 @@ import (
@@ -2773,10 +2809,10 @@ index 0b52341e..1abf7f3b 100644
  	"github.com/Knatte18/loomyard/internal/hubreconcile"
  	"github.com/Knatte18/loomyard/internal/lock"
 +	"github.com/Knatte18/loomyard/internal/loomengine"
+ 	"github.com/Knatte18/loomyard/internal/testkit/boardkit"
  	"github.com/Knatte18/loomyard/internal/testkit/logcapture"
  )
- 
-@@ -59,10 +60,14 @@ func stampKey(t *testing.T, geom hubreconcile.Geometry) (string, bool) {
+@@ -60,10 +61,14 @@ func stampKey(t *testing.T, geom hubreconcile.Geometry) (string, bool) {
  	return s.BuildKey, true
  }
  
@@ -2792,7 +2828,7 @@ index 0b52341e..1abf7f3b 100644
  	data, err := json.Marshal(map[string]string{"build_key": runningKey()})
  	if err != nil {
  		t.Fatalf("marshal stamp: %v", err)
-@@ -85,7 +90,7 @@ func seedRetiredKey(t *testing.T, recordsRoot string) {
+@@ -86,7 +91,7 @@ func seedRetiredKey(t *testing.T, recordsRoot string) {
  
  	module, _ := configreg.Lookup("batcher")
  	content := strings.Replace(module.Template(), "orientation: 31400", retiredKey+": 52000", 1)
@@ -2801,7 +2837,7 @@ index 0b52341e..1abf7f3b 100644
  	if !strings.Contains(content, retiredKey) || !strings.Contains(content, differingBatcherBudget) {
  		t.Fatalf("batcher template no longer carries the orientation and budget lines the fixture rewrites")
  	}
-@@ -95,7 +100,122 @@ func seedRetiredKey(t *testing.T, recordsRoot string) {
+@@ -96,7 +101,122 @@ func seedRetiredKey(t *testing.T, recordsRoot string) {
  // differingLoomBounces is a loom review budget that differs from the repo default's, so a loom.yaml holding it survives the strip.
  const differingLoomBounces = "review_max_bounces: 99"
  
@@ -2925,7 +2961,7 @@ index 0b52341e..1abf7f3b 100644
  func commitPreMigrationFiles(t *testing.T, recordsRoot string) {
  	t.Helper()
  
-@@ -104,11 +224,15 @@ func commitPreMigrationFiles(t *testing.T, recordsRoot string) {
+@@ -105,11 +225,15 @@ func commitPreMigrationFiles(t *testing.T, recordsRoot string) {
  			continue
  		}
  		content := module.Template()
@@ -2942,9 +2978,9 @@ index 0b52341e..1abf7f3b 100644
  		}
  		path := filepath.Join(recordsRoot, configengine.ConfigFileRel(module.Name))
  		if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
-@@ -241,21 +365,34 @@ func TestEnsure_StaleBuildReconcilesAndCommitsEveryWorktree(t *testing.T) {
- 	t.Parallel()
- 
+@@ -241,20 +365,34 @@ func pushBoardFromSecondClone(t *testing.T, board string) string {
+ // It does not call t.Parallel: it swaps the package-global detached board sync.
+ func TestEnsure_StaleBuildReconcilesAndCommitsEveryWorktree(t *testing.T) {
  	for _, tc := range []struct {
 -		name            string
 -		boardBehind     bool
@@ -2958,10 +2994,10 @@ index 0b52341e..1abf7f3b 100644
 +		{name: "board behind its upstream", run: staleRun{boardBehind: true}},
 +		{name: "loom default deleted beside a current stamp", run: staleRun{loomDefaultGone: true}},
 +		{name: "unmigrated board is stripped once and marked", run: staleRun{unmigratedBoard: true}},
++		{name: "unmigrated board behind its upstream is stripped and marked over the pulled commit", run: staleRun{boardBehind: true, unmigratedBoard: true}},
 +		{name: "marker removed beside a current stamp strips the board again", run: staleRun{markerRemoved: true}},
  	} {
  		t.Run(tc.name, func(t *testing.T) {
- 			t.Parallel()
 -			runStaleBuildReconcile(t, tc.boardBehind, tc.loomDefaultGone)
 +			runStaleBuildReconcile(t, tc.run)
  		})
@@ -2980,10 +3016,10 @@ index 0b52341e..1abf7f3b 100644
 +	markerRemoved bool
 +}
 +
- // tunedGenericMarker is the text of the tuned generic lens in todaysBurlerYAML.
- const tunedGenericMarker = "tuned generic prose"
- 
-@@ -269,13 +406,22 @@ fans:
+ // recordBoardSyncs replaces the detached board sync with a recorder of the board directories it was asked to sync, and restores it when the test ends.
+ func recordBoardSyncs(t *testing.T) *[]string {
+ 	t.Helper()
+@@ -280,13 +418,22 @@ fans:
  
  // runStaleBuildReconcile walks a stale hub and asserts every worktree and the board got one reconcile commit, with the board's pulled from upstream when boardBehind.
  // With loomDefaultGone the stamp names the running build but loom's committed repo default is deleted, and the walk reseeds and commits it on the board; batcher's default stays intact so retiredKeyPresent keeps reading it.
@@ -3007,7 +3043,7 @@ index 0b52341e..1abf7f3b 100644
  	loomDefault := configengine.ConfigFileRel("loom")
  	lensesDefault := configengine.ConfigFileRel("lenses")
  	burlerDefault := configengine.ConfigFileRel("burler")
-@@ -360,12 +506,19 @@ func runStaleBuildReconcile(t *testing.T, boardBehind, loomDefaultGone bool) {
+@@ -381,12 +528,19 @@ func runStaleBuildReconcile(t *testing.T, boardBehind, loomDefaultGone bool) {
  	if key, found := stampKey(t, geom); !found || key != runningKey() {
  		t.Errorf("stamp = (%q, %v); want the running key", key, found)
  	}
@@ -3027,7 +3063,7 @@ index 0b52341e..1abf7f3b 100644
  		loomFile := configengine.ConfigFile(records, "loom")
  		data, err := os.ReadFile(loomFile)
  		switch {
-@@ -379,6 +532,11 @@ func runStaleBuildReconcile(t *testing.T, boardBehind, loomDefaultGone bool) {
+@@ -400,6 +554,11 @@ func runStaleBuildReconcile(t *testing.T, boardBehind, loomDefaultGone bool) {
  	}
  
  	// A second walk strips nothing: it lands no new commit and leaves every per-worktree file and marker byte-identical.
@@ -3039,7 +3075,7 @@ index 0b52341e..1abf7f3b 100644
  	boardAfter := commitCount(t, h.BoardDir())
  	filesBefore := map[string]map[string]string{"prime": configFilesOf(t, h.PrimeWorktree()), "pair": configFilesOf(t, pair)}
  	if err := os.Remove(geom.StampPath()); err != nil {
-@@ -402,6 +560,74 @@ func runStaleBuildReconcile(t *testing.T, boardBehind, loomDefaultGone bool) {
+@@ -423,6 +582,74 @@ func runStaleBuildReconcile(t *testing.T, boardBehind, loomDefaultGone bool) {
  			t.Errorf("second walk changed the %s config files:\nbefore: %v\nafter: %v", name, before, filesAfter[name])
  		}
  	}
@@ -3114,7 +3150,7 @@ index 0b52341e..1abf7f3b 100644
  }
  
  func TestEnsure_CurrentStampLeavesConfigAlone(t *testing.T) {
-@@ -456,6 +682,10 @@ func TestEnsure_MidMergePairIsLeftAloneAndRetried(t *testing.T) {
+@@ -477,6 +704,10 @@ func TestEnsure_MidMergePairIsLeftAloneAndRetried(t *testing.T) {
  			if err != nil || string(after) != string(before) {
  				t.Errorf("mid-merge pair file changed (err %v)", err)
  			}
@@ -3125,7 +3161,7 @@ index 0b52341e..1abf7f3b 100644
  			if retiredKeyPresent(t, h.PrimeWorktree()) {
  				t.Errorf("the prime was not reconciled while the pair was mid-merge")
  			}
-@@ -474,6 +704,9 @@ func TestEnsure_MidMergePairIsLeftAloneAndRetried(t *testing.T) {
+@@ -495,6 +726,9 @@ func TestEnsure_MidMergePairIsLeftAloneAndRetried(t *testing.T) {
  			if retiredKeyPresent(t, pair) {
  				t.Errorf("the pair was not reconciled once its merge state cleared")
  			}
@@ -3135,7 +3171,7 @@ index 0b52341e..1abf7f3b 100644
  			if !markerTracked(t, h.PairRecordsSibling("pair-a")) {
  				t.Errorf("the retry did not strip and mark the skipped pair")
  			}
-@@ -550,6 +783,12 @@ func TestEnsure_FailedWalkNamesTheFileAndLeavesTheTreeAsItWas(t *testing.T) {
+@@ -571,6 +805,12 @@ func TestEnsure_FailedWalkNamesTheFileAndLeavesTheTreeAsItWas(t *testing.T) {
  		repair func(t *testing.T, h *hubforge.Hub)
  		// afterRepair, when set, checks the pair after the repaired walk.
  		afterRepair func(t *testing.T, h *hubforge.Hub)
@@ -3148,7 +3184,7 @@ index 0b52341e..1abf7f3b 100644
  	}{
  		{
  			name: "a declared key move is undone with the failed walk and committed by the repaired one",
-@@ -617,6 +856,33 @@ func TestEnsure_FailedWalkNamesTheFileAndLeavesTheTreeAsItWas(t *testing.T) {
+@@ -638,6 +878,33 @@ func TestEnsure_FailedWalkNamesTheFileAndLeavesTheTreeAsItWas(t *testing.T) {
  				hubforge.SeedFabricConfig(t, h, m.Template())
  			},
  		},
@@ -3182,7 +3218,7 @@ index 0b52341e..1abf7f3b 100644
  	}
  	for _, tc := range tests {
  		t.Run(tc.name, func(t *testing.T) {
-@@ -626,8 +892,14 @@ func TestEnsure_FailedWalkNamesTheFileAndLeavesTheTreeAsItWas(t *testing.T) {
+@@ -647,8 +914,14 @@ func TestEnsure_FailedWalkNamesTheFileAndLeavesTheTreeAsItWas(t *testing.T) {
  			geom := geometryOf(h)
  			worktree, repo, file := tc.breakConfig(t, h)
  			statusBefore := gitkit.GitStatusPorcelain(t, repo)
@@ -3198,7 +3234,7 @@ index 0b52341e..1abf7f3b 100644
  
  			var worktreeErr *hubreconcile.WorktreeError
  			if !errors.As(err, &worktreeErr) {
-@@ -647,6 +919,17 @@ func TestEnsure_FailedWalkNamesTheFileAndLeavesTheTreeAsItWas(t *testing.T) {
+@@ -668,6 +941,17 @@ func TestEnsure_FailedWalkNamesTheFileAndLeavesTheTreeAsItWas(t *testing.T) {
  					t.Errorf("message %q does not name lyx config %s", err.Error(), tc.module)
  				}
  			}
@@ -3216,7 +3252,7 @@ index 0b52341e..1abf7f3b 100644
  			if _, statErr := os.Stat(file); statErr != nil {
  				t.Errorf("the failed file is gone after the walk: %v", statErr)
  			}
-@@ -700,6 +983,72 @@ func TestEnsure_HeldLockTimesOutWithoutStamping(t *testing.T) {
+@@ -721,6 +1005,72 @@ func TestEnsure_HeldLockTimesOutWithoutStamping(t *testing.T) {
  	}
  }
  
@@ -3289,7 +3325,7 @@ index 0b52341e..1abf7f3b 100644
  func TestEnsure_ConcurrentCallsLandOneCommitPerBranch(t *testing.T) {
  	t.Parallel()
  
-@@ -927,6 +1276,9 @@ func TestEnsure_PairCallReconcilesDespiteAFreshStamp(t *testing.T) {
+@@ -1000,6 +1350,9 @@ func TestEnsure_PairCallReconcilesDespiteAFreshStamp(t *testing.T) {
  	if retiredKeyPresent(t, pair) {
  		t.Errorf("the pair still carries %s", retiredKey)
  	}
@@ -3300,10 +3336,10 @@ index 0b52341e..1abf7f3b 100644
  	if !retiredKeyPresent(t, h.PrimeWorktree()) {
  		t.Errorf("the pair call reconciled the prime as well")
 diff --git a/internal/hubreconcile/export_test.go b/internal/hubreconcile/export_test.go
-index e9fffd52..71256c05 100644
+index 45617c16..0d40b95d 100644
 --- a/internal/hubreconcile/export_test.go
 +++ b/internal/hubreconcile/export_test.go
-@@ -7,3 +7,8 @@ package hubreconcile
+@@ -15,3 +15,8 @@ func SetSpawnBoardSyncForTest(spawn func(boardPath string) error) (restore func(
  func EnsureWithHooks(geom Geometry, opts Options, afterEnumerate func(), beforeCommit func(worktreePath string)) error {
  	return ensure(geom, opts, walkHooks{afterEnumerate: afterEnumerate, beforeCommit: beforeCommit})
  }
@@ -3380,10 +3416,10 @@ index d91c7003..34a47d72 100644
  	return fmt.Sprintf("hubreconcile: reconcile config in %s: %s: %v; fix %s (or run \"lyx config %s\" on it), then re-run this command", e.Worktree, e.File, e.Err, e.File, e.Module)
  }
 diff --git a/internal/hubreconcile/walk.go b/internal/hubreconcile/walk.go
-index 16a55b79..2244a427 100644
+index 27ec3b3f..76d060e3 100644
 --- a/internal/hubreconcile/walk.go
 +++ b/internal/hubreconcile/walk.go
-@@ -24,6 +24,9 @@ type walkHooks struct {
+@@ -25,6 +25,9 @@ type walkHooks struct {
  	afterEnumerate func()
  	// beforeCommit runs between a worktree's config write and its commit, with the worktree root.
  	beforeCommit func(worktreePath string)
@@ -3393,7 +3429,7 @@ index 16a55b79..2244a427 100644
  }
  
  // ensure is Ensure with test hooks.
-@@ -76,9 +79,13 @@ func ensure(geom Geometry, opts Options, hooks walkHooks) error {
+@@ -77,9 +80,13 @@ func ensure(geom Geometry, opts Options, hooks walkHooks) error {
  	return writeStamp(geom.StampPath(), running)
  }
  
@@ -3409,7 +3445,7 @@ index 16a55b79..2244a427 100644
  	for _, module := range configreg.Modules() {
  		if module.HubWide {
  			continue
-@@ -116,7 +123,7 @@ func walkHub(geom Geometry, revision string, hooks walkHooks) (skipped bool, err
+@@ -117,7 +124,7 @@ func walkHub(geom Geometry, revision string, hooks walkHooks) (skipped bool, err
  		return false, fmt.Errorf("hubreconcile: no main code worktree among the hub's worktrees listed from %s", geom.WorktreePath)
  	}
  
@@ -3418,23 +3454,22 @@ index 16a55b79..2244a427 100644
  	if err != nil {
  		return false, err
  	}
-@@ -180,12 +187,13 @@ func findPrime(worktrees []fabricengine.CodeWorktree) (fabricengine.CodeWorktree
- }
+@@ -184,11 +191,12 @@ func findPrime(worktrees []fabricengine.CodeWorktree) (fabricengine.CodeWorktree
+ var spawnBoardSync = boardengine.SpawnSync
  
  // reconcileHubWide reconciles the hub-wide config at boardDir, seeded from the prime's anchor, and commits what it wrote on the board.
 +// While the board's base-sparse marker is absent the pass also strips each present base file once, and the marker it writes joins the files in the board commit.
  // The board is pulled first: when it cannot be brought up to date nothing is written and skipped is true.
 -// A reconcile or commit failure restores the board's config files to their prior bytes.
 +// A reconcile or commit failure restores the board's config files to their prior bytes and removes a marker the pass wrote.
- // The board is pushed whether or not this run committed, so a hub-wide commit an earlier run left unpushed is pushed too.
- // A push failure is logged and also reports skipped, so the stamp stays absent until the board is pushed;
- // a board with no upstream, which no pull can bring up to date and no rerun can push, is logged without being reported skipped.
+ // The board is synced by the detached board sync whether or not this run committed, so a hub-wide commit an earlier run left unpushed is pushed too.
+ // The walk never waits on that push: a refusal of it reaches the orch as a failed-push record, and a spawn failure is only logged.
 -func reconcileHubWide(boardDir, primeAnchor, label string) (skipped bool, err error) {
 +func reconcileHubWide(boardDir, primeAnchor, label string, hooks walkHooks) (skipped bool, err error) {
  	bolt := fabricengine.NewBolt(boardDir)
  	var prior map[string][]byte
  	write := fabricengine.BoltWrite{
-@@ -196,7 +204,8 @@ func reconcileHubWide(boardDir, primeAnchor, label string) (skipped bool, err er
+@@ -199,7 +207,8 @@ func reconcileHubWide(boardDir, primeAnchor, label string) (skipped bool, err er
  			if err != nil {
  				return nil, err
  			}
@@ -3444,7 +3479,7 @@ index 16a55b79..2244a427 100644
  			if err != nil {
  				return nil, err
  			}
-@@ -211,12 +220,20 @@ func reconcileHubWide(boardDir, primeAnchor, label string) (skipped bool, err er
+@@ -214,12 +223,20 @@ func reconcileHubWide(boardDir, primeAnchor, label string) (skipped bool, err er
  					written = append(written, configengine.ConfigFileRel(legacy))
  				}
  			}
@@ -3466,16 +3501,7 @@ index 16a55b79..2244a427 100644
  	}
  	if res.Skipped != "" {
  		return true, nil
-@@ -227,7 +244,7 @@ func reconcileHubWide(boardDir, primeAnchor, label string) (skipped bool, err er
- 	}
- 	tracked, err := bolt.HasUpstream()
- 	if err != nil {
--		return false, worktreeErrorFor(boardDir, err)
-+		return false, boardErrorFor(boardDir, err)
- 	}
- 	if !tracked {
- 		logger.Warn("hubreconcile: board push failed for a board with no upstream, so its commits wait for the board's next push", "board", boardDir, "committed", res.Committed, "error", pushErr)
-@@ -358,6 +375,13 @@ func worktreeErrorFor(worktree string, err error) *WorktreeError {
+@@ -351,6 +368,13 @@ func worktreeErrorFor(worktree string, err error) *WorktreeError {
  	return &WorktreeError{Worktree: worktree, Err: err}
  }
  
@@ -3489,7 +3515,7 @@ index 16a55b79..2244a427 100644
  // logResult logs one changed module.
  func logResult(worktree string, result configsync.Result) {
  	logger.Info("hubreconcile: config changed", "worktree", worktree, "module", result.Module,
-@@ -372,7 +396,7 @@ func fileExists(path string) bool {
+@@ -365,7 +389,7 @@ func fileExists(path string) bool {
  	return err == nil
  }
  
@@ -3498,7 +3524,7 @@ index 16a55b79..2244a427 100644
  // The dir's own files cover a legacy file a migration removes.
  // Any read or list failure other than absence is returned naming the path, since a snapshot missing a file could not restore it.
  func snapshotConfig(anchor string) (map[string][]byte, error) {
-@@ -393,8 +417,8 @@ func snapshotConfig(anchor string) (map[string][]byte, error) {
+@@ -386,8 +410,8 @@ func snapshotConfig(anchor string) (map[string][]byte, error) {
  		}
  		prior[path] = data
  	}
@@ -3524,8 +3550,169 @@ index be0f0c9a..af1093a2 100644
  		}
  	}
  
+diff --git a/internal/loomcli/smoke_bootstrapwiring_test.go b/internal/loomcli/smoke_bootstrapwiring_test.go
+index 174a3a74..67a0a29d 100644
+--- a/internal/loomcli/smoke_bootstrapwiring_test.go
++++ b/internal/loomcli/smoke_bootstrapwiring_test.go
+@@ -75,7 +75,7 @@ func TestSmokeStepBootstrapWiring(t *testing.T) {
+ 	// The first `step` is a genuine first seed.
+ 	// It dispatches Preflight, a pure-Go row, and nothing else.
+ 	t.Run("first seed clears friction notes", func(t *testing.T) {
+-		stdout, _, err := runLoomCLINoFatal(exe, worktree, 60*time.Second, "loom", "step")
++		stdout, _, err := runLoomCLIWithEnvNoFatal(exe, worktree, skipWalkPush, 60*time.Second, "loom", "step")
+ 		if err != nil {
+ 			t.Fatalf("first loom step: %v; output: %s", err, stdout)
+ 		}
+@@ -123,7 +123,7 @@ func TestSmokeStepBootstrapWiring(t *testing.T) {
+ 	// A resume's notes are the ones most worth reading, so this branch must leave them exactly where they are.
+ 	t.Run("re-entry keeps friction notes", func(t *testing.T) {
+ 		resumePath := plantFrictionNote(t, loc, "written-during-this-task.md")
+-		stdout, _, err := runLoomCLINoFatal(exe, worktree, 60*time.Second, "loom", "step")
++		stdout, _, err := runLoomCLIWithEnvNoFatal(exe, worktree, skipWalkPush, 60*time.Second, "loom", "step")
+ 		if err != nil {
+ 			t.Fatalf("second loom step: %v; output: %s", err, stdout)
+ 		}
+@@ -147,7 +147,7 @@ func TestSmokeStepBootstrapWiring(t *testing.T) {
+ 			t.Fatalf("WriteSeed(wrong-parent seed): %v", err)
+ 		}
+ 
+-		stdout, exit, err := runLoomCLINoFatal(exe, worktree, 60*time.Second, "loom", "step")
++		stdout, exit, err := runLoomCLIWithEnvNoFatal(exe, worktree, skipWalkPush, 60*time.Second, "loom", "step")
+ 		if err != nil || exit != 1 {
+ 			t.Fatalf("loom step over a wrong-parent seed = exit %d, err %v; want exit 1; output: %s", exit, err, stdout)
+ 		}
+@@ -159,7 +159,7 @@ func TestSmokeStepBootstrapWiring(t *testing.T) {
+ 		if err != nil || exit != 0 {
+ 			t.Fatalf("lyx shed seed after the rm = exit %d, err %v; output: %s", exit, err, stdout)
+ 		}
+-		stdout, exit, err = runLoomCLINoFatal(exe, worktree, 60*time.Second, "loom", "step")
++		stdout, exit, err = runLoomCLIWithEnvNoFatal(exe, worktree, skipWalkPush, 60*time.Second, "loom", "step")
+ 		if err != nil || exit != 0 {
+ 			t.Fatalf("loom step after the re-seed = exit %d, err %v; want it to dispatch Preflight; output: %s", exit, err, stdout)
+ 		}
+diff --git a/internal/loomcli/smoke_driverstrand_test.go b/internal/loomcli/smoke_driverstrand_test.go
+index 2d68a0ee..f8cb33ec 100644
+--- a/internal/loomcli/smoke_driverstrand_test.go
++++ b/internal/loomcli/smoke_driverstrand_test.go
+@@ -190,7 +190,7 @@ func TestSmokeDriverStrand_ReentrantAcrossThreeBootstraps(t *testing.T) {
+ 	eng := probeReedEngine(t, loc)
+ 
+ 	// (1) a first bootstrap leaves exactly one strand under the driver name, live.
+-	firstOut, firstExit, err := runLoomCLINoFatal(exe, worktree, 30*time.Second, "loom", "start", "--no-attach")
++	firstOut, firstExit, err := runLoomCLIWithEnvNoFatal(exe, worktree, skipWalkPush, 30*time.Second, "loom", "start", "--no-attach")
+ 	if err != nil {
+ 		t.Fatalf("first loom start: %v; output: %s", err, firstOut)
+ 	}
+@@ -212,7 +212,7 @@ func TestSmokeDriverStrand_ReentrantAcrossThreeBootstraps(t *testing.T) {
+ 	// strand and must not touch the live pane the first bootstrap already spawned.
+ 	// Follow is off first: a start entering a run whose driver is live is the path a parked run's resume through start takes, and it re-arms follow.
+ 	setFollow(t, eng, "off")
+-	secondOut, secondExit, err := runLoomCLINoFatal(exe, worktree, 30*time.Second, "loom", "start", "--no-attach")
++	secondOut, secondExit, err := runLoomCLIWithEnvNoFatal(exe, worktree, skipWalkPush, 30*time.Second, "loom", "start", "--no-attach")
+ 	if err != nil {
+ 		t.Fatalf("second loom start: %v; output: %s", err, secondOut)
+ 	}
+@@ -252,7 +252,7 @@ func TestSmokeDriverStrand_ReentrantAcrossThreeBootstraps(t *testing.T) {
+ 	// driverReportPath's own random suffix exists for, since two attempts composing a report path in
+ 	// the same clock second would otherwise collide and Spec.validate would refuse the second one
+ 	// outright.
+-	thirdOut, thirdExit, err := runLoomCLINoFatal(exe, worktree, 30*time.Second, "loom", "start", "--no-attach")
++	thirdOut, thirdExit, err := runLoomCLIWithEnvNoFatal(exe, worktree, skipWalkPush, 30*time.Second, "loom", "start", "--no-attach")
+ 	if err != nil {
+ 		t.Fatalf("third loom start: %v; output: %s", err, thirdOut)
+ 	}
+diff --git a/internal/loomcli/smoke_drivingsurface_test.go b/internal/loomcli/smoke_drivingsurface_test.go
+index 7170cb66..f7130c9e 100644
+--- a/internal/loomcli/smoke_drivingsurface_test.go
++++ b/internal/loomcli/smoke_drivingsurface_test.go
+@@ -82,7 +82,7 @@ func TestSmokeStatusStrandAcrossDriverSeeds(t *testing.T) {
+ 
+ 	requireNoStatusStrandAfter := func(t *testing.T, loc *lyxcwd.Location, worktree, verb string, args ...string) {
+ 		t.Helper()
+-		out, _, err := runLoomCLINoFatal(exe, worktree, verbSmokeTimeout, args...)
++		out, _, err := runLoomCLIWithEnvNoFatal(exe, worktree, skipWalkPush, verbSmokeTimeout, args...)
+ 		if err != nil {
+ 			t.Fatalf("lyx %s: %v; output: %s", verb, err, out)
+ 		}
+@@ -119,7 +119,7 @@ func TestSmokeStatusStrandAcrossDriverSeeds(t *testing.T) {
+ 				t.Fatalf("add status strand: %v", err)
+ 			}
+ 
+-			out, _, err := runLoomCLINoFatal(exe, worktree, verbSmokeTimeout, "loom", "step")
++			out, _, err := runLoomCLIWithEnvNoFatal(exe, worktree, skipWalkPush, verbSmokeTimeout, "loom", "step")
+ 			if err != nil {
+ 				t.Fatalf("lyx loom step: %v; output: %s", err, out)
+ 			}
+@@ -146,7 +146,7 @@ func TestSmokeStatusStrandAcrossDriverSeeds(t *testing.T) {
+ 			current := "=" + eng.SessionName() + ":"
+ 			before := windowID(t, eng, current)
+ 
+-			out, exit, err := runLoomCLINoFatal(exe, worktree, verbSmokeTimeout, "loom", "resume")
++			out, exit, err := runLoomCLIWithEnvNoFatal(exe, worktree, skipWalkPush, verbSmokeTimeout, "loom", "resume")
+ 			if err != nil || exit != 0 {
+ 				t.Fatalf("lyx loom resume: exit %d, err %v; output: %s", exit, err, out)
+ 			}
+@@ -192,7 +192,7 @@ func TestSmokeStatusStrandAcrossDriverSeeds(t *testing.T) {
+ 			// A second run in a reused pair starts over a session whose viewer turned follow off.
+ 			setFollow(t, eng, "off")
+ 
+-			out, _, err := runLoomCLINoFatal(exe, worktree, verbSmokeTimeout, "loom", "start", "--no-attach")
++			out, _, err := runLoomCLIWithEnvNoFatal(exe, worktree, skipWalkPush, verbSmokeTimeout, "loom", "start", "--no-attach")
+ 			if err != nil {
+ 				t.Fatalf("lyx loom start --no-attach: %v; output: %s", err, out)
+ 			}
+diff --git a/internal/loomcli/smoke_helpers_test.go b/internal/loomcli/smoke_helpers_test.go
+index 2cfef3f3..c71eb1f7 100644
+--- a/internal/loomcli/smoke_helpers_test.go
++++ b/internal/loomcli/smoke_helpers_test.go
+@@ -7,9 +7,6 @@
+ package loomcli
+ 
+ import (
+-	"context"
+-	"errors"
+-	"fmt"
+ 	"os"
+ 	"os/exec"
+ 	"path/filepath"
+@@ -48,29 +45,15 @@ func runLoomCLINoFatal(exe, dir string, timeout time.Duration, args ...string) (
+ // which would otherwise outlive the test and race TempDir's removal of the bare remote.
+ var skipBoardPush = []string{"BOARD_SKIP_PUSH=1"}
+ 
++// skipWalkPush is skipBoardPush plus the fabric push skip, for a verb that reconciles an unstamped hub.
++// The reconcile commit fires a detached push that would outlive the test and race TempDir's removal of the bare remote;
++// a test asserts the commit, never the push.
++var skipWalkPush = append([]string{"FABRIC_SKIP_PUSH=1"}, skipBoardPush...)
++
+ // runLoomCLIWithEnvNoFatal is runLoomCLINoFatal with extraEnv appended to the inherited environment of the subprocess alone,
+ // so a parallel test can set a variable such as FABRIC_SKIP_PUSH for one invocation without t.Setenv.
+ func runLoomCLIWithEnvNoFatal(exe, dir string, extraEnv []string, timeout time.Duration, args ...string) (stdout string, exitCode int, err error) {
+-	ctx, cancel := context.WithTimeout(context.Background(), timeout)
+-	defer cancel()
+-
+-	cmd := exec.CommandContext(ctx, exe, args...)
+-	cmd.Dir = dir
+-	if extraEnv != nil {
+-		cmd.Env = append(os.Environ(), extraEnv...)
+-	}
+-	out, runErr := cmd.CombinedOutput()
+-	if ctx.Err() == context.DeadlineExceeded {
+-		return string(out), -1, fmt.Errorf("lyx %v timed out after %s in %s; output so far:\n%s", args, timeout, dir, out)
+-	}
+-	if runErr == nil {
+-		return string(out), 0, nil
+-	}
+-	var exitErr *exec.ExitError
+-	if errors.As(runErr, &exitErr) {
+-		return string(out), exitErr.ExitCode(), nil
+-	}
+-	return string(out), -1, fmt.Errorf("lyx %v: %w; output:\n%s", args, runErr, out)
++	return lyxbin.RunWithEnv(exe, dir, extraEnv, timeout, args...)
+ }
+ 
+ // newWiredPairFixture builds a real fabric hub, seeds every module's config template into it, and
 diff --git a/internal/loomcli/smoke_prebootstrap_integration_test.go b/internal/loomcli/smoke_prebootstrap_integration_test.go
-index d03e438f..d0a4ec15 100644
+index fcc21d1d..0dbae281 100644
 --- a/internal/loomcli/smoke_prebootstrap_integration_test.go
 +++ b/internal/loomcli/smoke_prebootstrap_integration_test.go
 @@ -177,7 +177,7 @@ func TestLoomStatusAndPauseOnNeverBootstrappedPair(t *testing.T) {
@@ -3537,7 +3724,21 @@ index d03e438f..d0a4ec15 100644
  // Resume after the fix removes the key, commits it and writes the stamp, then refuses at reed Up before any server starts: the pair's reed config is bad.
  // The half past the reed config load, which needs a good reed config and a tmux server, is TestLoomResumeReconcilesThenRefusesWithoutLiveDriver.
  func TestLoomResumeReconcilesTheHubConfigBeforeArming(t *testing.T) {
-@@ -212,10 +212,11 @@ func TestLoomResumeReconcilesTheHubConfigBeforeArming(t *testing.T) {
+@@ -199,30 +199,27 @@ func TestLoomResumeReconcilesTheHubConfigBeforeArming(t *testing.T) {
+ 		t.Fatalf("loom status wrote the build stamp; only a start verb reconciles")
+ 	}
+ 
+-	// The reconcile commit fires a detached push that would outlive the test and race TempDir's removal of the bare remote;
+-	// the test asserts the commit, never the push.
+-	skipPush := append([]string{"FABRIC_SKIP_PUSH=1"}, skipBoardPush...)
+-
+ 	loom, _ := configreg.Lookup("loom")
+ 	gitkit.CommitFile(t, recordsDir, configengine.ConfigFileRel("loom"), "a: [unclosed\n", "fixture: broken loom.yaml")
+-	out, exit, err := runLoomCLIWithEnvNoFatal(exe, worktree, skipPush, 60*time.Second, "loom", "resume")
++	out, exit, err := runLoomCLIWithEnvNoFatal(exe, worktree, skipWalkPush, 60*time.Second, "loom", "resume")
+ 	if err != nil {
+ 		t.Fatalf("loom resume on a broken loom.yaml: %v; output: %s", err, out)
+ 	}
  	if exit != 1 {
  		t.Errorf("loom resume on a broken loom.yaml exit = %d; want 1; output: %s", exit, out)
  	}
@@ -3553,6 +3754,125 @@ index d03e438f..d0a4ec15 100644
  	}
  	if _, err := os.Stat(hubStampPath(loc)); err == nil {
  		t.Fatalf("loom resume wrote the build stamp after a failed reconcile")
+ 	}
+ 	gitkit.CommitFile(t, recordsDir, configengine.ConfigFileRel("loom"), loom.Template(), "fixture: fixed loom.yaml")
+ 
+-	if out, _, err := runLoomCLIWithEnvNoFatal(exe, worktree, skipPush, 60*time.Second, "loom", "resume"); err != nil {
++	if out, _, err := runLoomCLIWithEnvNoFatal(exe, worktree, skipWalkPush, 60*time.Second, "loom", "resume"); err != nil {
+ 		t.Fatalf("loom resume: %v; output: %s", err, out)
+ 	}
+ 
+diff --git a/internal/loomcli/smoke_resumearming_test.go b/internal/loomcli/smoke_resumearming_test.go
+index 6e0b0741..749603f8 100644
+--- a/internal/loomcli/smoke_resumearming_test.go
++++ b/internal/loomcli/smoke_resumearming_test.go
+@@ -29,7 +29,7 @@ func TestLoomResumeReconcilesThenRefusesWithoutLiveDriver(t *testing.T) {
+ 	seedAndCommitStatus(t, loc, slug)
+ 	commitRetiredBatcherKey(t, loc)
+ 
+-	out, exit, err := runLoomCLINoFatal(exe, worktree, 60*time.Second, "loom", "resume")
++	out, exit, err := runLoomCLIWithEnvNoFatal(exe, worktree, skipWalkPush, 60*time.Second, "loom", "resume")
+ 	if err != nil {
+ 		t.Fatalf("loom resume: %v; output: %s", err, out)
+ 	}
+diff --git a/internal/loomcli/smoke_starttail_test.go b/internal/loomcli/smoke_starttail_test.go
+index 3399f517..7ca1f533 100644
+--- a/internal/loomcli/smoke_starttail_test.go
++++ b/internal/loomcli/smoke_starttail_test.go
+@@ -68,7 +68,7 @@ func TestSmokeStart_NeverAttachesAndAddsNoOperatorStrand(t *testing.T) {
+ 
+ 	startOK := func(label string, args ...string) {
+ 		t.Helper()
+-		stdout, exit, err := runLoomCLINoFatal(exe, worktree, 30*time.Second, append([]string{"loom", "start"}, args...)...)
++		stdout, exit, err := runLoomCLIWithEnvNoFatal(exe, worktree, skipWalkPush, 30*time.Second, append([]string{"loom", "start"}, args...)...)
+ 		if err != nil {
+ 			t.Fatalf("%s: %v; output: %s", label, err, stdout)
+ 		}
+@@ -110,7 +110,7 @@ func TestSmokeWatchdog_NoAttachStillSpawnsTheDaemon(t *testing.T) {
+ 	_, loc, worktree, _ := newWiredPairFixture(t)
+ 	registerBootstrapTeardown(t, loc, worktree)
+ 
+-	stdout, _, err := runLoomCLINoFatal(exe, worktree, 30*time.Second, "loom", "start", "--no-attach")
++	stdout, _, err := runLoomCLIWithEnvNoFatal(exe, worktree, skipWalkPush, 30*time.Second, "loom", "start", "--no-attach")
+ 	if err != nil {
+ 		t.Fatalf("loom start --no-attach: %v; output: %s", err, stdout)
+ 	}
+diff --git a/internal/loomcli/smoke_test.go b/internal/loomcli/smoke_test.go
+index 3cf7ff63..b3b1b518 100644
+--- a/internal/loomcli/smoke_test.go
++++ b/internal/loomcli/smoke_test.go
+@@ -352,7 +352,7 @@ func TestSmokeRunStandalone(t *testing.T) {
+ 	// bootstrap once and then killing the driver, advances the machine and records that advance in the
+ 	// status file.
+ 	t.Run("advances the machine from an existing seed", func(t *testing.T) {
+-		stdout, _, err := runLoomCLINoFatal(exe, worktree, 30*time.Second, "loom", "start")
++		stdout, _, err := runLoomCLIWithEnvNoFatal(exe, worktree, skipWalkPush, 30*time.Second, "loom", "start")
+ 		if err != nil {
+ 			t.Fatalf("bootstrap: %v; output: %s", err, stdout)
+ 		}
+@@ -394,7 +394,7 @@ func TestSmokeRunStandalone(t *testing.T) {
+ 		// test's own timeout in CI; once Wait's started-gating fix let the dead pane classify fast
+ 		// (~startup_timeout_s), the same "no history entry" outcome surfaced immediately and revealed
+ 		// the stale assertion.
+-		driveOut, driveCode, err := runLoomCLINoFatal(exe, worktree, 3*time.Minute, "loom", "run")
++		driveOut, driveCode, err := runLoomCLIWithEnvNoFatal(exe, worktree, skipWalkPush, 3*time.Minute, "loom", "run")
+ 		if err != nil {
+ 			t.Fatalf("loom run: %v; output: %s", err, driveOut)
+ 		}
+@@ -511,7 +511,7 @@ func TestSmokeBootstrapLifecycle(t *testing.T) {
+ 		if !os.IsNotExist(err) {
+ 			t.Fatalf("stat status file: %v", err)
+ 		}
+-		if stdout, _, err := runLoomCLINoFatal(exe, worktree, 30*time.Second, "loom", "start"); err != nil {
++		if stdout, _, err := runLoomCLIWithEnvNoFatal(exe, worktree, skipWalkPush, 30*time.Second, "loom", "start"); err != nil {
+ 			t.Fatalf("seeding loom start: %v; output: %s", err, stdout)
+ 		}
+ 	}
+@@ -554,7 +554,7 @@ func TestSmokeBootstrapLifecycle(t *testing.T) {
+ 			wg.Add(1)
+ 			go func(i int) {
+ 				defer wg.Done()
+-				outputs[i], _, runErrs[i] = runLoomCLINoFatal(exe, worktree, 30*time.Second, "loom", "start")
++				outputs[i], _, runErrs[i] = runLoomCLIWithEnvNoFatal(exe, worktree, skipWalkPush, 30*time.Second, "loom", "start")
+ 			}(i)
+ 		}
+ 		wg.Wait()
+@@ -617,7 +617,7 @@ func TestSmokeBootstrapLifecycle(t *testing.T) {
+ 	t.Run("second invocation does not spawn a second driver", func(t *testing.T) {
+ 		firstPIDs := findDriverPIDs(worktree)
+ 
+-		stdout, _, err := runLoomCLINoFatal(exe, worktree, 30*time.Second, "loom", "start")
++		stdout, _, err := runLoomCLIWithEnvNoFatal(exe, worktree, skipWalkPush, 30*time.Second, "loom", "start")
+ 		if err != nil {
+ 			t.Fatalf("second loom start: %v; output: %s", err, stdout)
+ 		}
+@@ -677,7 +677,7 @@ func TestSmokeBootstrapLifecycle(t *testing.T) {
+ 		// The next "loom start" needs no --parent: ReadOrigin finds the just-written record on disk with a
+ 		// matching value, so resolveParentBranch reports write == false -- the exact row the finding says
+ 		// used to strand the record forever.
+-		stdout, _, err := runLoomCLINoFatal(exe, worktree, 30*time.Second, "loom", "start")
++		stdout, _, err := runLoomCLIWithEnvNoFatal(exe, worktree, skipWalkPush, 30*time.Second, "loom", "start")
+ 		if err != nil {
+ 			t.Fatalf("healing loom start: %v; output: %s", err, stdout)
+ 		}
+@@ -710,7 +710,7 @@ func TestSmokeBootstrapLifecycle(t *testing.T) {
+ 		killDriversAndClearLog(t)
+ 		poisonStatusFile(t, loc)
+ 
+-		stdout, _, err := runLoomCLINoFatal(exe, worktree, 30*time.Second, "loom", "start")
++		stdout, _, err := runLoomCLIWithEnvNoFatal(exe, worktree, skipWalkPush, 30*time.Second, "loom", "start")
+ 		if err != nil {
+ 			t.Fatalf("rigged bootstrap: %v; output: %s", err, stdout)
+ 		}
+@@ -757,7 +757,7 @@ func TestSmokeBootstrapLifecycle(t *testing.T) {
+ 		killDriversAndClearLog(t)
+ 		poisonStatusFileMalformed(t, loc)
+ 
+-		stdout, _, err := runLoomCLINoFatal(exe, worktree, 30*time.Second, "loom", "start")
++		stdout, _, err := runLoomCLIWithEnvNoFatal(exe, worktree, skipWalkPush, 30*time.Second, "loom", "start")
+ 		if err != nil {
+ 			t.Fatalf("malformed-status bootstrap: %v; output: %s", err, stdout)
+ 		}
 diff --git a/internal/loomcli/wiring_darn_test.go b/internal/loomcli/wiring_darn_test.go
 index 50208885..b135e3e6 100644
 --- a/internal/loomcli/wiring_darn_test.go
@@ -3882,10 +4202,10 @@ index e0ff5fa4..5969194a 100644
  			"sonnet": configengine.CategoryNone,
  			"opus":   configengine.CategoryNone,
 diff --git a/internal/orchcli/cli.go b/internal/orchcli/cli.go
-index 9e3348f0..7c0ace08 100644
+index d318aae9..1bf93e13 100644
 --- a/internal/orchcli/cli.go
 +++ b/internal/orchcli/cli.go
-@@ -141,9 +141,7 @@ Every verb runs from the hub's prime worktree only.`,
+@@ -143,9 +143,7 @@ Every verb runs from the hub's prime worktree only.`,
  			// Only start reconciles, and before any module config loads, so a retired key cannot refuse the verb ahead of the reconcile that removes it.
  			if cmd.Name() == "start" {
  				if geometry, inHub := hubgeom.ReconcileGeometry(location); inHub {
@@ -4005,6 +4325,19 @@ index af17e45f..968a15c6 100644
  idle_grace_s: 30  # seconds the session must stay idle after its newest event before the watcher acts; non-positive is floored back to 30
  handoff_timeout_s: 600  # seconds the session gets to write its handoff before the cycle aborts; non-positive is floored back to 600
  poll_interval_ms: 2000  # milliseconds between watcher polls; a value below 1000 is floored to 1000 with one warning (an unfloored 0 would busy-spin the watcher)
+diff --git a/internal/pattern/check.go b/internal/pattern/check.go
+index 3b72d414..68547348 100644
+--- a/internal/pattern/check.go
++++ b/internal/pattern/check.go
+@@ -24,7 +24,7 @@ const (
+ 	HeadroomBytes = MaxOverviewBytes * 95 / 100
+ 
+ 	// MaxEntryLineChars caps one entry line's length in characters.
+-	MaxEntryLineChars = 320
++	MaxEntryLineChars = 360
+ 
+ 	// entryBulletPrefix opens every entry line.
+ 	entryBulletPrefix = "- "
 diff --git a/internal/preflightshed/doc.go b/internal/preflightshed/doc.go
 index 2ec5d6fd..366e02b6 100644
 --- a/internal/preflightshed/doc.go
@@ -4295,6 +4628,116 @@ index 2125d80e..5eaf78a7 100644
 +  driver: 5m
    webster: 1h
 +  orch: 1h
+diff --git a/internal/testkit/lyxbin/lyxbin.go b/internal/testkit/lyxbin/lyxbin.go
+index 88066ebb..ee8e1cd7 100644
+--- a/internal/testkit/lyxbin/lyxbin.go
++++ b/internal/testkit/lyxbin/lyxbin.go
+@@ -133,17 +133,27 @@ var ErrTimeout = errors.New("lyxbin: the command outlived its timeout")
+ // Any exit of the command answers a nil error; the error is otherwise the start failure.
+ // It calls no testing.TB method, so a concurrent caller can use it.
+ func Run(bin, dir string, timeout time.Duration, args ...string) (output string, exitCode int, err error) {
++	return RunWithEnv(bin, dir, nil, timeout, args...)
++}
++
++// RunWithEnv is Run with extraEnv appended to the inherited environment of the child alone,
++// so a parallel test can set a variable for one invocation without t.Setenv.
++func RunWithEnv(bin, dir string, extraEnv []string, timeout time.Duration, args ...string) (output string, exitCode int, err error) {
+ 	ctx, cancel := context.WithTimeoutCause(context.Background(), timeout, fmt.Errorf("%w after %s", ErrTimeout, timeout))
+ 	defer cancel()
+-	return runUntilDone(ctx, bin, dir, args...)
++	return runUntilDone(ctx, bin, dir, extraEnv, args...)
+ }
+ 
+ // runUntilDone runs bin with args in dir, in its own process group, until it exits or ctx ends, and returns its combined output and exit code.
++// extraEnv, when non-nil, is appended to the inherited environment.
+ // A ctx whose cause wraps ErrTimeout kills the whole group and answers exit code -1 with that cause, so the caller decides when the timeout starts.
+ // Any exit of the command answers a nil error; the error is otherwise the start failure.
+-func runUntilDone(ctx context.Context, bin, dir string, args ...string) (output string, exitCode int, err error) {
++func runUntilDone(ctx context.Context, bin, dir string, extraEnv []string, args ...string) (output string, exitCode int, err error) {
+ 	cmd := exec.CommandContext(ctx, bin, args...)
+ 	cmd.Dir = dir
++	if extraEnv != nil {
++		cmd.Env = append(os.Environ(), extraEnv...)
++	}
+ 	proc.ConfigureGroupKill(cmd, func(int, error) {})
+ 	out, runErr := cmd.CombinedOutput()
+ 	if cause := context.Cause(ctx); errors.Is(cause, ErrTimeout) {
+diff --git a/internal/testkit/lyxbin/lyxbin_integration_test.go b/internal/testkit/lyxbin/lyxbin_integration_test.go
+index 558a6069..75c733e9 100644
+--- a/internal/testkit/lyxbin/lyxbin_integration_test.go
++++ b/internal/testkit/lyxbin/lyxbin_integration_test.go
+@@ -212,7 +212,7 @@ func TestRun_KillsTheGroupOnTimeout(t *testing.T) {
+ 	t.Cleanup(func() { cancel(nil) })
+ 	go cancelOnceFileExists(ctx, cancel, pidFile, 2*time.Minute)
+ 
+-	out, code, err := runUntilDone(ctx, self, t.TempDir())
++	out, code, err := runUntilDone(ctx, self, t.TempDir(), nil)
+ 
+ 	if !errors.Is(err, ErrTimeout) || code != -1 {
+ 		t.Fatalf("runUntilDone = (%q, %d, %v); want ErrTimeout and exit code -1", out, code, err)
+@@ -253,4 +253,10 @@ func TestRun_PassesTheEnvironment(t *testing.T) {
+ 	if err != nil || code != 0 || out != "from-the-test" {
+ 		t.Errorf("Run = (%q, %d, %v); want the variable's value, exit code 0 and no error", out, code, err)
+ 	}
++
++	out, code, err = RunWithEnv(self, t.TempDir(), []string{helperEchoEnv + "=from-extra-env"}, 30*time.Second)
++
++	if err != nil || code != 0 || out != "from-extra-env" {
++		t.Errorf("RunWithEnv = (%q, %d, %v); want the extraEnv value, exit code 0 and no error", out, code, err)
++	}
+ }
+diff --git a/internal/testkit/tmuxkit/tmuxkit.go b/internal/testkit/tmuxkit/tmuxkit.go
+index 01d1211a..db4c48f3 100644
+--- a/internal/testkit/tmuxkit/tmuxkit.go
++++ b/internal/testkit/tmuxkit/tmuxkit.go
+@@ -14,6 +14,7 @@
+ // After the run it sweeps the servers, killing every process their panes' sessions still hold, scans `/proc` on Linux for any process whose cwd, executable or argv references the directory, kills it and fails the package, then removes the directory on every platform, Windows included.
+ // A removal that fails is reported without changing the exit code, and a binary killed before it removes its directory leaves it for the next start's sweep.
+ // A test binary re-executed as a helper inherits that environment, and its own run directory is made beside the inherited one, never inside it, so its socket paths do not grow past the limit.
++// A socket on a reed capability-probe key is no finding in a package with either tag.
+ // A reed watchdog daemon is killed without failing the package, because it idles out on its own schedule after the test that spawned it.
+ // Before the sweep it also fails the package for a socket it finds: any socket in a test binary built without the `tmux` and `llm` tags, and in one built with either only a socket whose key no test registered.
+ // Pids, ProcArgv, ProcCwd, ProcExe, ProcPPID, ProcState, ProcComm and IsWatchdog are the read-only `/proc` probes behind that scan, exported for tests that look for processes themselves.
+@@ -143,6 +144,7 @@ func checkSockets(dir string, allowed bool) []string {
+ 		switch {
+ 		case !allowed:
+ 			findings = append(findings, fmt.Sprintf("tmuxkit: a tmux server on key %q outlived the run in a package without a tmux or llm test tag; tag the test file that starts it `tmux`", key))
++		case isReedProbeKey(key):
+ 		case !registeredKeys[key]:
+ 			findings = append(findings, fmt.Sprintf("tmuxkit: a tmux server on unregistered key %q outlived the run; register the key through Socket, KillOnCleanup or PackageServer, or tag the file `tmux`", key))
+ 		}
+@@ -150,6 +152,17 @@ func checkSockets(dir string, allowed bool) []string {
+ 	return findings
+ }
+ 
++// isReedProbeKey reports whether key has the form reed gives its capability probe's private socket: `lyx-p` and seven hex digits.
++// A test that kills a reed process mid-probe leaves that server for the sweep, so such a key is no test's leak.
++func isReedProbeKey(key string) bool {
++	digits, ok := strings.CutPrefix(key, "lyx-p")
++	if !ok || len(digits) != 7 {
++		return false
++	}
++	_, err := strconv.ParseUint(digits, 16, 32)
++	return err == nil
++}
++
+ // leftover is a process that references a package's private directory.
+ // Its cwd names the test fixture it was started in.
+ type leftover struct {
+diff --git a/internal/testkit/tmuxkit/tmuxkit_test.go b/internal/testkit/tmuxkit/tmuxkit_test.go
+index 405fca8e..0662bb93 100644
+--- a/internal/testkit/tmuxkit/tmuxkit_test.go
++++ b/internal/testkit/tmuxkit/tmuxkit_test.go
+@@ -218,6 +218,9 @@ func TestCheckSockets(t *testing.T) {
+ 			registerKey("checkreg2")
+ 			listen(t, dir, "checkreg2")
+ 		}, allowed: false, wantNamed: "checkreg2"},
++		{name: "reed probe socket with tmux allowed", setup: func(t *testing.T, dir string) { listen(t, dir, "lyx-p1a2b3c4") }, allowed: true, wantQuiet: true},
++		{name: "reed probe socket with tmux disallowed", setup: func(t *testing.T, dir string) { listen(t, dir, "lyx-p1a2b3c5") }, allowed: false, wantNamed: "lyx-p1a2b3c5"},
++		{name: "lyx-p key that is no probe key with tmux allowed", setup: func(t *testing.T, dir string) { listen(t, dir, "lyx-pnothex") }, allowed: true, wantNamed: "lyx-pnothex"},
+ 		{name: "no per-user directory", setup: func(t *testing.T, dir string) {}, allowed: false, wantQuiet: true},
+ 		{name: "per-user directory without a socket, as a client probe leaves it", setup: func(t *testing.T, dir string) {
+ 			if err := os.MkdirAll(socketDir(dir, os.Getuid()), 0o700); err != nil {
 diff --git a/internal/websterengine/config_test.go b/internal/websterengine/config_test.go
 index fc3465bd..879ca839 100644
 --- a/internal/websterengine/config_test.go
@@ -4484,20 +4927,6 @@ index 21e821ec..01bf77df 100644
    A key a sparse upper layer inherits from a file layer below it is not logged.
  - A local file refuses keys the template lacks, besides the other rules of the local layer.
  - `Load` and `LoadOrTemplate` differ only on an absent base-layer `_lyx/` or file.
-diff --git a/pattern/PATTERN-recipe-setting-lookup.md b/pattern/PATTERN-recipe-setting-lookup.md
-new file mode 100644
-index 00000000..77f5c0cd
---- /dev/null
-+++ b/pattern/PATTERN-recipe-setting-lookup.md
-@@ -0,0 +1,8 @@
-+# PATTERN-recipe-setting-lookup
-+
-+A recipe row's value is looked up by key, never carried as a field of its own on the recipe's `Env`.
-+
-+- A plain value is `module.key`, read through `Env.Setting`.
-+- An executable value is `module.key` read through the owner's told executable-key lookup, over the template and board default layer.
-+- A review segment's resolved value is a `SegmentSettings` field.
-+- A row never gets its own `Env` field.
 diff --git a/pattern/PATTERN-sparse-hub-base.md b/pattern/PATTERN-sparse-hub-base.md
 new file mode 100644
 index 00000000..71ab7aea
