@@ -1,6 +1,6 @@
 {
   "runGuid": "0fa13f93fc850a69afe141168f80dcd9",
-  "planFingerprint": "80d660a0d5b789bed739dfd532869a37d5e3cfb8cdef970ff3c324f42997ea4f",
+  "planFingerprint": "863942621354dfe734231a904e92e516e321a448eb9bbb4745b5ee9778a55e16",
   "planFileHashes": {
     "00-overview.md": "e153ea884172d07d958ca2ee1154c56d7fcde68a3d7613e582e8ee1bf3eee7e1",
     "01-failed-push-record.md": "d90ec71500ca4fd7e0b5c46d6ee119d2a38fb59fafe7b22e0468874805cd04db",
@@ -9,9 +9,9 @@
     "04-records-replay.md": "0049d94ba2c07905ebd7b91bceb007931534d99c962b7a501203361fc3e6acd9",
     "05-bolt-pullfirst-replay.md": "a10bcbe7e0295c509b76c13e1cbdfd773348d8327f2a741cd9b826aae1a6d34e",
     "06-pull-replay-reflog.md": "4823db2f756dc53f8968424e41068295c2e5c8b739baa582a2cc9a3d03cfb28c",
-    "07-land-weft-stop.md": "58cbb9fb0f804dd166ba427af29435dc1da91933869ef290bbd643b67c58bab7",
-    "08-push-auth-class.md": "7f7998e05fb123cc7cc99ed659e31d523a7125a5038098e775771ebd02928beb",
-    "09-push-retry-and-record.md": "0f992013e7b140e3ce800eb8753fe2760f37335097aac675c651e6f4f36f5123",
+    "07-land-weft-stop.md": "233de999ebd92ba87a4d0abe0b546c34144d52a31ac84eb20cb49c64e740ee88",
+    "08-push-auth-class.md": "043fd8eda1a466124b3a7e2558d97d584b6e271500e82eacf2d2646ffa49883a",
+    "09-push-retry-and-record.md": "9669ba4e1c6a0d8e2e09aa93f581336db289e6da287ef385646570bf5e827217",
     "10-failed-push-printing.md": "e3092c618e8797e1decc2a9e547d1cfa6ba41a9455139d20f88a1f692586ca71",
     "11-preflight-detached-push.md": "8b18749a75116b7e755a17821858177f328f9d2e1632c541c5e86755df0b920b",
     "12-gate-entry-exemption.md": "e1f8842790c5764f51b50d4e92e26948a14a32af94ee2ed21b718875c8183c87",
@@ -749,7 +749,7 @@
       }
     }
   ],
-  "currentBatch": 7,
+  "currentBatch": 0,
   "masterStrand": "d26ba69a79fb575f7e87b499eb76f785",
   "masterSessionId": "b26519ba-ade7-44f6-9357-417c58fd04ba",
   "masterEngine": "claude",
@@ -918,22 +918,45 @@
         "08-push-auth-class"
       ],
       "cardHashes": {
-        "07-land-weft-stop": "58cbb9fb0f804dd166ba427af29435dc1da91933869ef290bbd643b67c58bab7",
-        "08-push-auth-class": "7f7998e05fb123cc7cc99ed659e31d523a7125a5038098e775771ebd02928beb"
+        "07-land-weft-stop": "233de999ebd92ba87a4d0abe0b546c34144d52a31ac84eb20cb49c64e740ee88",
+        "08-push-auth-class": "043fd8eda1a466124b3a7e2558d97d584b6e271500e82eacf2d2646ffa49883a"
       },
       "startSha": "7ecf15b648d9416376078f3327312cf4bdab042f",
       "kind": "fork",
       "spawnedAt": "2026-10-21T06:47:33Z",
       "sessionId": "b26519ba-ade7-44f6-9357-417c58fd04ba",
       "engine": "claude",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "07-land-weft-stop",
+        "status": "done",
+        "head_sha": "3862e6aa4d8543445b5306dfacce87e484a156be",
+        "deviations": [
+          "internal/battenshed/land_test.go",
+          "internal/fabricengine/pull.go",
+          "internal/gitrepo/push.go"
+        ],
+        "departures": [
+          "7: batten: Land deploys after a weft stop and names it: PATTERN-fabric-vocabulary — the card spells weftStop and fabricengine.WeftStopError in battencli and battenshed, which a non-owner file may not carry; the stop is named recordsStop there and reached through the new neutral fabricengine exports RecordsStopMessage and NewRecordsStopError"
+        ]
+      },
+      "cardShas": [
+        "3862e6aa4d8543445b5306dfacce87e484a156be"
+      ],
+      "forkTranscripts": [
+        "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-origin-reconcile/b26519ba-ade7-44f6-9357-417c58fd04ba/subagents/agent-a48044191f7155fb8.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-origin-reconcile/b26519ba-ade7-44f6-9357-417c58fd04ba/subagents/agent-a48044191f7155fb8.jsonl"
+      ]
     }
   },
   "seenForkTranscripts": [
     "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-origin-reconcile/b26519ba-ade7-44f6-9357-417c58fd04ba/subagents/agent-a199c0788fa0d0e0c.jsonl",
     "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-origin-reconcile/b26519ba-ade7-44f6-9357-417c58fd04ba/subagents/agent-a18884e5b7b8232b1.jsonl",
     "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-origin-reconcile/b26519ba-ade7-44f6-9357-417c58fd04ba/subagents/agent-ae8b5bbfc5f1a32b2.jsonl",
-    "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-origin-reconcile/b26519ba-ade7-44f6-9357-417c58fd04ba/subagents/agent-abfc6ae2ff8e2c10c.jsonl"
+    "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-origin-reconcile/b26519ba-ade7-44f6-9357-417c58fd04ba/subagents/agent-abfc6ae2ff8e2c10c.jsonl",
+    "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-origin-reconcile/b26519ba-ade7-44f6-9357-417c58fd04ba/subagents/agent-a48044191f7155fb8.jsonl"
   ]
 }

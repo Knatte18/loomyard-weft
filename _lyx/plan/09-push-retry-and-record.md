@@ -56,8 +56,8 @@
 - `internal/fabricengine#replayWeft`
 - `internal/fabricengine#replayBolt`
 - `internal/fabricengine#readEndedSet`
-- `plan:internal/gitrepo#ErrPushAuthRefused`
-- `plan:internal/gitrepo#PushBackoffDelays`
+- `internal/gitrepo#ErrPushAuthRefused`
+- `internal/gitrepo#PushBackoffDelays`
 - `internal/fabricengine#PrimeName`
 - `internal/fabricengine#trackingReflog`
 - `internal/fabricengine#classifyRewrite`

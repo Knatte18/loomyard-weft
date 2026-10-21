@@ -1,9 +1,9 @@
 # Card 8 — push-auth-class
 
 **Create:**
-- `plan:internal/gitrepo#ErrPushAuthRefused` -> `var ErrPushAuthRefused error`
-- `plan:internal/gitrepo#authRefusalTriggers` -> `var authRefusalTriggers []string`
-- `plan:internal/gitrepo#PushBackoffDelays` -> `func PushBackoffDelays() []time.Duration`
+- `internal/gitrepo#ErrPushAuthRefused`
+- `internal/gitrepo#authRefusalTriggers`
+- `internal/gitrepo#PushBackoffDelays`
 
 **Edit:**
 - `internal/gitrepo#Repo.PushRebaseFree`
