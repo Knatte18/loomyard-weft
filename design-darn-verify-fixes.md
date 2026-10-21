@@ -2,7 +2,7 @@
 
 `darn-verify-fixes` · Task · bug, enhancement, batten, loom, shed, reed
 
-Depends on: [`run-reentry`](design-run-reentry.md), [`origin-reconcile`](design-origin-reconcile.md)
+Depends on: [`origin-reconcile`](design-origin-reconcile.md)
 
 # Goal
 
