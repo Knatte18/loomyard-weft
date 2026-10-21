@@ -1,6 +1,6 @@
 {
   "runGuid": "e59a896b1272fd19b65c27f685061006",
-  "planFingerprint": "c0805eb03c2da24b969aa3dc495d751fac8ce7b5669afb67acb351eafdab955d",
+  "planFingerprint": "8ef051b7f1bfaf182ce14da8872a61372fca3f7cf18e9bb4e7bad2cc3b20df2e",
   "planFileHashes": {
     "00-overview.md": "6cb2e5e31e7d052a910a420e3559b81fb0648ad7b8b408f5eeb91a43202cc427",
     "01-loom-tuned-defaults.md": "b233f196e6192f477222b08e0f839bfd39c6583815dcabdcc6d4a3f60f39113a",
@@ -11,7 +11,7 @@
     "06-sparse-hub-base-reconcile.md": "013dcdf54eba5abf388a63e4215deefa4c025b2518b62ceb2da67dd5f64f1c42",
     "07-sparse-key-moves.md": "e3de5098b5ac400492b91107d4529a9585441dec857f9b40980bea554fa67a28",
     "08-walk-strips-base-once.md": "c3fd0183bccc24abcba9956a73a50a4927f0b07a8e7abfe6fc9cead7b948c485",
-    "09-reconcile-failure-warns.md": "d75679d4843a7a686ddbd1fc061364ec4b113fe6b6847ae0f0dd060c95f09283",
+    "09-reconcile-failure-warns.md": "683bd3f310e7a11b533e5f9dd84a56bfbee5e93b603c93ffa81ad2a119083889",
     "10-config-cli-sparse-hub-base.md": "b66ec88aa867b7740a087e35d8a2b8d0720af7d793282f949a2252c354d2660b",
     "11-clone-writes-base-marker.md": "a7ffeb1f2deba2bb4634b500e869d35625e302b2d8d63070018af7a845fb31d9"
   },
@@ -361,7 +361,7 @@
       }
     }
   ],
-  "currentBatch": 9,
+  "currentBatch": 0,
   "masterStrand": "b2bd0fce733d2c0c68a314ffc3cf873c",
   "masterSessionId": "6d4d10e3-caa4-43c0-bf9e-5510d3521ae9",
   "masterEngine": "claude",
@@ -517,21 +517,36 @@
         "09-reconcile-failure-warns"
       ],
       "cardHashes": {
-        "09-reconcile-failure-warns": "d75679d4843a7a686ddbd1fc061364ec4b113fe6b6847ae0f0dd060c95f09283"
+        "09-reconcile-failure-warns": "683bd3f310e7a11b533e5f9dd84a56bfbee5e93b603c93ffa81ad2a119083889"
       },
       "startSha": "70e19a0cf4e3c2404abe97a7e9b7573f2c05a844",
       "kind": "fork",
       "spawnedAt": "2026-10-21T13:25:22Z",
       "sessionId": "6d4d10e3-caa4-43c0-bf9e-5510d3521ae9",
       "engine": "claude",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "09-reconcile-failure-warns",
+        "status": "done",
+        "head_sha": "cd08bdd7706fa28fc6cd98a470c776c594ef9b15"
+      },
+      "cardShas": [
+        "cd08bdd7706fa28fc6cd98a470c776c594ef9b15"
+      ],
+      "forkTranscripts": [
+        "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-tuned-defaults-template/6d4d10e3-caa4-43c0-bf9e-5510d3521ae9/subagents/agent-a18f226e5400f4c5c.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-tuned-defaults-template/6d4d10e3-caa4-43c0-bf9e-5510d3521ae9/subagents/agent-a18f226e5400f4c5c.jsonl"
+      ]
     }
   },
   "seenForkTranscripts": [
     "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-tuned-defaults-template/6d4d10e3-caa4-43c0-bf9e-5510d3521ae9/subagents/agent-a174e652f3badec71.jsonl",
     "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-tuned-defaults-template/6d4d10e3-caa4-43c0-bf9e-5510d3521ae9/subagents/agent-a312554854a367a32.jsonl",
     "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-tuned-defaults-template/6d4d10e3-caa4-43c0-bf9e-5510d3521ae9/subagents/agent-a641baa30984042ed.jsonl",
-    "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-tuned-defaults-template/6d4d10e3-caa4-43c0-bf9e-5510d3521ae9/subagents/agent-a54e1b7bfa243fde8.jsonl"
+    "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-tuned-defaults-template/6d4d10e3-caa4-43c0-bf9e-5510d3521ae9/subagents/agent-a54e1b7bfa243fde8.jsonl",
+    "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-tuned-defaults-template/6d4d10e3-caa4-43c0-bf9e-5510d3521ae9/subagents/agent-a18f226e5400f4c5c.jsonl"
   ]
 }
