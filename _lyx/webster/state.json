@@ -1,17 +1,17 @@
 {
   "runGuid": "3476077f843ddb4707251972bab14ff9",
-  "planFingerprint": "9c54567a0058f97855f0f640fb2251bcfd4b928fa76f1e135e31e38d2b9df975",
+  "planFingerprint": "8dd098362d0c90510206aa5e7a07d3f0d1d800398069ec81a7a5b4a99a05ebd8",
   "planFileHashes": {
     "00-overview.md": "d08ff6f82f6dda0c2c0cff466a40411cca3b71b43b7924f7edcf5e0fe51b9a35",
     "01-open-map-flow-values.md": "7a552f60f180c5d248f091655a21f85550e3288680c483e13964b0c891c7f379",
     "02-gate-tier-config.md": "363fdc17c75ebbc93ecc6dc97beaed48bfb1aa2e94381c7ec726397310b667b1",
     "03-gate-slot-drain.md": "7564d48dae7f76294b58f3a0c76853432180de8dfb186e9564bf313a69334a43",
-    "04-gate-run-log.md": "94386e64f107559f8ad7a261f0688e5767ab7ec2aa917ef7955f0765c55b129b",
-    "05-impactset-tree-targets.md": "32b791ac7c35f876d88d1f0ddbefc81c45aa58c0355b132ac8d3cfa494f7af1c",
-    "06-planparser-card-packages.md": "104e44596c9ea0be27ca17cc1aae61ac89138e9dde5b5676f9196ec0174560ca",
-    "07-gate-counters.md": "a493cff617d6893af38c64da258bd662d0dbccb2c18b077ab7be399a35688b42",
-    "08-gate-tier-verb.md": "21b201c2681d184443ed4b8efa3d376bdc7789fc7d53f1386a62499a067fd224",
-    "09-gate-scopes.md": "eb3bbc6213461530e83620f294817eed1e742ac13f73428ce50fcd503c152706",
+    "04-gate-run-log.md": "4e148c7bd696594a4e830da22bfb04a4259d9c62a3df407ae6fd3dcd9316b604",
+    "05-impactset-tree-targets.md": "0852d3eaa237ddba3d6a192a7b678ac5d9963c1da768cb799933543ee2897104",
+    "06-planparser-card-packages.md": "00b09c4aa05350ed340f66659fc42c10cc5fcf69259d6b0124e9ff2dcfe5bbc5",
+    "07-gate-counters.md": "d5761a9bd87dd1c6735bfe630cc55917c7e2f9767e8518f56785ae1c470cd044",
+    "08-gate-tier-verb.md": "c95f3ec81bccfa1628b63e5460668c256a8d4f8f1cf82cd7db75cad57226b667",
+    "09-gate-scopes.md": "058528f839a65fdcf7074713dfaee496f3fb57bf0425e8c877401f994c345480",
     "10-round-gate-tiers.md": "6c9cb7a48058594e78b0db143427bc12e336a05c17de26e76753ac056374675d",
     "11-card-verify-runner.md": "036f9a2000bd345ce9822e426330fad2497845a330d8ee4b4336531ca8674d39",
     "12-webster-final-gate.md": "0ccc8028cb9d4ec8fc61e20d3db1f73390ed910ec98a100deda952eebbfddecf",
@@ -778,7 +778,7 @@
       }
     }
   ],
-  "currentBatch": 4,
+  "currentBatch": 0,
   "masterStrand": "6f56338668c07f063671518ad01fb02d",
   "masterSessionId": "9216b63a-fe9f-48ce-93a3-9e8a3200b274",
   "masterEngine": "claude",
@@ -836,21 +836,45 @@
         "07-gate-counters"
       ],
       "cardHashes": {
-        "04-gate-run-log": "94386e64f107559f8ad7a261f0688e5767ab7ec2aa917ef7955f0765c55b129b",
-        "05-impactset-tree-targets": "32b791ac7c35f876d88d1f0ddbefc81c45aa58c0355b132ac8d3cfa494f7af1c",
-        "06-planparser-card-packages": "104e44596c9ea0be27ca17cc1aae61ac89138e9dde5b5676f9196ec0174560ca",
-        "07-gate-counters": "a493cff617d6893af38c64da258bd662d0dbccb2c18b077ab7be399a35688b42"
+        "04-gate-run-log": "4e148c7bd696594a4e830da22bfb04a4259d9c62a3df407ae6fd3dcd9316b604",
+        "05-impactset-tree-targets": "0852d3eaa237ddba3d6a192a7b678ac5d9963c1da768cb799933543ee2897104",
+        "06-planparser-card-packages": "00b09c4aa05350ed340f66659fc42c10cc5fcf69259d6b0124e9ff2dcfe5bbc5",
+        "07-gate-counters": "d5761a9bd87dd1c6735bfe630cc55917c7e2f9767e8518f56785ae1c470cd044"
       },
       "startSha": "9c3ba99190a63596dd97806c27ce3623f59bbada",
       "kind": "fork",
       "spawnedAt": "2026-10-21T16:12:48Z",
       "sessionId": "9216b63a-fe9f-48ce-93a3-9e8a3200b274",
       "engine": "claude",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "04-gate-run-log",
+        "status": "done",
+        "head_sha": "5247a907cd357ebf5aefa1a6daca12eacea46453",
+        "deviations": [
+          "internal/gatecli/counters.go",
+          "internal/gatecli/counters_test.go",
+          "internal/gateslot/runlog.go",
+          "internal/gateslot/runlog_test.go",
+          "internal/impactset/derive.go",
+          "internal/impactset/targets.go",
+          "internal/planparser/targetdirs.go"
+        ]
+      },
+      "cardShas": [
+        "5247a907cd357ebf5aefa1a6daca12eacea46453"
+      ],
+      "forkTranscripts": [
+        "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-test-tiers/9216b63a-fe9f-48ce-93a3-9e8a3200b274/subagents/agent-a130d938d60178dd3.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-test-tiers/9216b63a-fe9f-48ce-93a3-9e8a3200b274/subagents/agent-a130d938d60178dd3.jsonl"
+      ]
     }
   },
   "seenForkTranscripts": [
-    "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-test-tiers/9216b63a-fe9f-48ce-93a3-9e8a3200b274/subagents/agent-a7f4d0f13376f07cc.jsonl"
+    "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-test-tiers/9216b63a-fe9f-48ce-93a3-9e8a3200b274/subagents/agent-a7f4d0f13376f07cc.jsonl",
+    "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-test-tiers/9216b63a-fe9f-48ce-93a3-9e8a3200b274/subagents/agent-a130d938d60178dd3.jsonl"
   ]
 }

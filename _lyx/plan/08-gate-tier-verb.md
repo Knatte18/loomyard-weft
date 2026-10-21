@@ -41,7 +41,7 @@
 - `internal/gatecli#runTiedChild`
 - `internal/gatecli#watchdogApplies`
 - `internal/gatecli#newWatchdog`
-- `plan:internal/gatecli#newCounter`
+- `internal/gatecli#newCounter`
 - `internal/gatecli#resolveHub`
 - `internal/gatecli#absoluteDir`
 - `internal/gatecli#catchTerminatingSignals`
@@ -53,9 +53,9 @@
 - `internal/impactset#ModuleGuardTests`
 - `internal/gateslot#Pool.AcquireSlots`
 - `internal/gateslot#Lease.InheritEnv`
-- `plan:internal/gateslot#WriteRunRecord`
-- `plan:internal/gateslot#TierTimeoutLine`
-- `plan:internal/gateslot#TierSummaryLine`
+- `internal/gateslot#WriteRunRecord`
+- `internal/gateslot#TierTimeoutLine`
+- `internal/gateslot#TierSummaryLine`
 - `internal/hubforge#CopyHub`
 
 **Intent:**
