@@ -1,12 +1,13 @@
 {
   "current_producer": "Merge-In",
-  "state": "running",
-  "error": "",
+  "state": "failed",
+  "error": "shedverbs: step Merge-In interrupted (loop-exited); way forward: read loop.trace_copy and loop.stderr_path, apply the interrupted rule under loop.interrupt_policy, then re-run lyx shed step tuned-defaults-template --until-stop",
+  "pending_by": "shed",
   "pause_requested": false,
   "activity": {
     "now": "Merge-In",
     "last": "Describe → done",
-    "wait": ""
+    "wait": "shedverbs: step Merge-In interrupted (loop-exited); way forward: read loop.trace_copy and loop.stderr_path, apply the interrupted rule under loop.interrupt_policy, then re-run lyx shed step tuned-defaults-template --until-stop"
   },
   "history": [
     {
