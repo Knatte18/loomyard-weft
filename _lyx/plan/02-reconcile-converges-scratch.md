@@ -1,7 +1,7 @@
 # Card 2 — reconcile-converges-scratch
 
 **Create:**
-- `plan:internal/fabricengine_test#TestReconcile_ScratchLink` -> `func TestReconcile_ScratchLink(t *testing.T)`
+- `internal/fabricengine_test#TestReconcile_ScratchLink`
 
 **Edit:**
 - `internal/fabricengine#Topology.repairPairWiring`

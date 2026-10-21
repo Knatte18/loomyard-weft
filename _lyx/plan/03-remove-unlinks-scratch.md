@@ -1,8 +1,8 @@
 # Card 3 — remove-unlinks-scratch
 
 **Create:**
-- `plan:internal/fabricengine#unlinkScratchLink` -> `func unlinkScratchLink(rec *Mutations, l *lyxcwd.Location, slug string) error`
-- `plan:internal/fabricengine_test#TestRemove_UnlinksScratchLinkBeforeWorktreeRemoval` -> `func TestRemove_UnlinksScratchLinkBeforeWorktreeRemoval(t *testing.T)`
+- `internal/fabricengine#unlinkScratchLink`
+- `internal/fabricengine_test#TestRemove_UnlinksScratchLinkBeforeWorktreeRemoval`
 
 **Edit:**
 - `internal/fabricengine#Topology.Remove`
