@@ -1,10 +1,10 @@
 # Card 10 — round-gate-tiers
 
 **Create:**
-- `plan:internal/verifytree#FailureKindLanding` -> `const FailureKindLanding FailureKind = "landing"`
-- `plan:internal/verifytree#FailureKindPublish` -> `const FailureKindPublish FailureKind = "publish"`
-- `plan:internal/loomshed#RoundGate` -> `type RoundGate struct`
-- `plan:internal/testkit/lyxbin#PutFirstOnPath` -> `func PutFirstOnPath(t *testing.T)`
+- `internal/verifytree#FailureKindLanding`
+- `internal/verifytree#FailureKindPublish`
+- `internal/loomshed#RoundGate`
+- `internal/testkit/lyxbin#PutFirstOnPath`
 
 **Edit:**
 - `internal/verifytree#PublishFailure`
