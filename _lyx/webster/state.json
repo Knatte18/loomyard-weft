@@ -361,7 +361,7 @@
       }
     }
   ],
-  "currentBatch": 0,
+  "currentBatch": 10,
   "masterStrand": "b2bd0fce733d2c0c68a314ffc3cf873c",
   "masterSessionId": "6d4d10e3-caa4-43c0-bf9e-5510d3521ae9",
   "masterEngine": "claude",
@@ -401,6 +401,24 @@
       "bracketTranscripts": [
         "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-tuned-defaults-template/6d4d10e3-caa4-43c0-bf9e-5510d3521ae9/subagents/agent-a174e652f3badec71.jsonl"
       ]
+    },
+    "10": {
+      "slug": "config-cli-sparse-hub-base",
+      "cards": [
+        "10-config-cli-sparse-hub-base",
+        "11-clone-writes-base-marker"
+      ],
+      "cardHashes": {
+        "10-config-cli-sparse-hub-base": "b66ec88aa867b7740a087e35d8a2b8d0720af7d793282f949a2252c354d2660b",
+        "11-clone-writes-base-marker": "a7ffeb1f2deba2bb4634b500e869d35625e302b2d8d63070018af7a845fb31d9"
+      },
+      "startSha": "cd08bdd7706fa28fc6cd98a470c776c594ef9b15",
+      "kind": "fork",
+      "spawnedAt": "2026-10-21T13:29:04Z",
+      "sessionId": "6d4d10e3-caa4-43c0-bf9e-5510d3521ae9",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
     },
     "3": {
       "slug": "claude-orch-webster-batcher-tuned-defaults",
