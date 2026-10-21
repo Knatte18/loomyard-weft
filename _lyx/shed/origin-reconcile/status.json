@@ -1,11 +1,11 @@
 {
-  "current_producer": "Describe",
+  "current_producer": "Merge-In",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Describe",
-    "last": "Webster-Bouncer → done",
+    "now": "Merge-In",
+    "last": "Describe → done",
     "wait": ""
   },
   "history": [
@@ -722,6 +722,21 @@
       "outcome": "done",
       "output": "/home/AD.NORCERESEARCH.NO/hanf/Code/Knatte18/loomyard-LYXHUB/origin-reconcile/_lyx/reviews/webster/round-3-bouncer-ledger.md",
       "at": "2026-10-21T12:58:05Z"
+    },
+    {
+      "producer": "Describe",
+      "outcome": "done",
+      "output": "/home/AD.NORCERESEARCH.NO/hanf/Code/Knatte18/loomyard-LYXHUB/origin-reconcile/_lyx/landing/summary.md",
+      "at": "2026-10-21T12:58:41Z",
+      "gate_attempts": 0,
+      "gate_spans": [
+        {
+          "gate": "description",
+          "kind": "gate",
+          "start": "2026-10-21T12:58:40.726137653Z",
+          "end": "2026-10-21T12:58:40.726185288Z"
+        }
+      ]
     }
   ],
   "product": {
