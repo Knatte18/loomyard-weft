@@ -1,11 +1,11 @@
 {
-  "current_producer": "Webster",
+  "current_producer": "Webster-Bouncer",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Webster",
-    "last": "Plan-Bouncer → done",
+    "now": "Webster-Bouncer",
+    "last": "Webster → done",
     "wait": ""
   },
   "history": [
@@ -426,6 +426,33 @@
       "output": "/home/AD.NORCERESEARCH.NO/hanf/Code/Knatte18/loomyard-LYXHUB/origin-reconcile/_lyx/reviews/plan/round-4-bouncer-ledger.md",
       "at": "2026-10-21T05:46:48Z",
       "by": "shed"
+    },
+    {
+      "producer": "Webster",
+      "outcome": "done",
+      "output": "/home/AD.NORCERESEARCH.NO/hanf/Code/Knatte18/loomyard-LYXHUB/origin-reconcile/_lyx/webster/summary.md",
+      "at": "2026-10-21T11:08:22Z",
+      "gate_attempts": 1,
+      "gate_spans": [
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-10-21T10:59:40.802525942Z",
+          "end": "2026-10-21T11:04:31.763958466Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "rework",
+          "start": "2026-10-21T11:04:32.190699648Z",
+          "end": "2026-10-21T11:07:13.376672544Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-10-21T11:07:13.447509698Z",
+          "end": "2026-10-21T11:08:20.93940018Z"
+        }
+      ]
     }
   ],
   "product": {
