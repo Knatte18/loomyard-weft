@@ -52,7 +52,7 @@
 - `internal/gateslot#GoFlags`
 
 **Uses:**
-- `plan:internal/gateslot#HolderEnv`
+- `internal/gateslot#HolderEnv`
 
 **Intent:**
 Finish D13 and D1's retirement of `go_parallel`: every slot holder that is not a tier run sets its own Go flags, and the overview records the two declared PATTERN changes.
