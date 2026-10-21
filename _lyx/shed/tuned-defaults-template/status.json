@@ -1,11 +1,11 @@
 {
-  "current_producer": "Webster-Burler-Fix",
+  "current_producer": "Webster-Bouncer",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Webster-Burler-Fix",
-    "last": "Webster-Burler-Review → bounced to Webster-Burler-Fix",
+    "now": "Webster-Bouncer",
+    "last": "Webster-Burler-Fix → bounced to Webster-Bouncer",
     "wait": ""
   },
   "history": [
@@ -469,6 +469,58 @@
       ],
       "budget_exempt": true,
       "routed_to": "Webster-Burler-Fix"
+    },
+    {
+      "producer": "Webster-Burler-Fix",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-21T16:26:43Z",
+      "gate_attempts": 3,
+      "gate_spans": [
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-10-21T16:11:17.644906653Z",
+          "end": "2026-10-21T16:11:19.478100436Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "rework",
+          "start": "2026-10-21T16:11:20.039416589Z",
+          "end": "2026-10-21T16:12:30.424704639Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-10-21T16:12:30.486699784Z",
+          "end": "2026-10-21T16:13:28.300434296Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "rework",
+          "start": "2026-10-21T16:13:28.825504567Z",
+          "end": "2026-10-21T16:13:40.881513437Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-10-21T16:13:40.941619666Z",
+          "end": "2026-10-21T16:15:55.34872868Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "rework",
+          "start": "2026-10-21T16:15:55.906996383Z",
+          "end": "2026-10-21T16:22:58.144235996Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-10-21T16:22:58.198660471Z",
+          "end": "2026-10-21T16:26:42.318710543Z"
+        }
+      ],
+      "routed_to": "Webster-Bouncer"
     }
   ],
   "product": {
