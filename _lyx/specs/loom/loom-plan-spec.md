@@ -1,4 +1,4 @@
-<!-- lyx-stencil: sha256=2bad4ec3b491924c650810402bbe948216c1d1aa6eaf064695389ba2ad02d17c build=0d8650911d291564872ce5810518565877db82c7 time=2026-10-21T06:13:55Z -->
+<!-- lyx-stencil: sha256=3ed2c51eaab57d479ea322bf694322487dbc28df9ac00f220102942d52c32718 build=a8048e240b738273f9e5d627ff8fe876fb72c392 time=2026-10-21T07:10:47Z -->
 
 # Loom plan-spec — flat card list
 
@@ -477,7 +477,7 @@ The rows below stay in one fixed order regardless of which entry point runs them
     A reference is resolved by type where a load of the root module's packages answers: `go/packages` over the directories holding a file that names the member, run offline (`GOPROXY=off`, `-mod=readonly`) with test variants and the `integration`, `tmux` and `llm` tags, under a timeout, and logged.
     A typed reference is an identifier whose used object is the member, so a call on another type, through an interface or on a same-named function of another package is no reference, and a promoted call or a method value is.
     The load is skipped when the worktree root holds no `go.mod`, and covers no directory inside a nested module; a failed or timed-out load is logged and leaves every file to the scan below, never an error.
-    In a hub the load first waits for a gate slot, and a slot that cannot be acquired, as over an absent or invalid `gate.yaml`, is a failed load.
+    In a hub the load first waits for a gate slot, and a slot that cannot be acquired, as over an absent or invalid `gate.yaml` or an invalid machine override of it, is a failed load.
     The scan tokenizes every `.go` file under the worktree root, `_test.go` and build-tagged files included, and skipping directories named `testdata` or `vendor` and directories whose name starts with `.` or `_`; comments and string literals never match.
     It runs over every file the load did not check (a nested module, a file built only for another GOOS, a file that does not parse, a file in a directory the load did not reach) and, in a checked file, only on lines where an identifier named like the member has no type information.
     A package-level member is referenced inside its own package (the files of its declaring file's directory sharing its package clause) by its bare identifier not preceded by `.`, and elsewhere, an external test package of that directory and every nested module included, by an import of the member's import path (from the `go.mod` covering its directory) under the name that import binds, a `.` and the identifier, or by the bare identifier when the import is a dot import; an import's name is its alias, else the package clause or the last path element without a `/vN` suffix.
