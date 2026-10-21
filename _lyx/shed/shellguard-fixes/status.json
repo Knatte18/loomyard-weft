@@ -1,11 +1,11 @@
 {
-  "current_producer": "Darn-Write",
+  "current_producer": "Darn-Bouncer",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Darn-Write",
-    "last": "Preflight → done",
+    "now": "Darn-Bouncer",
+    "last": "Darn-Write → done",
     "wait": ""
   },
   "history": [
@@ -14,6 +14,33 @@
       "outcome": "done",
       "output": "",
       "at": "2026-10-21T05:57:56Z"
+    },
+    {
+      "producer": "Darn-Write",
+      "outcome": "done",
+      "output": "/home/AD.NORCERESEARCH.NO/hanf/Code/Knatte18/loomyard-LYXHUB/shellguard-fixes/_lyx/landing/summary.md",
+      "at": "2026-10-21T06:29:44Z",
+      "gate_attempts": 0,
+      "gate_spans": [
+        {
+          "gate": "discussion",
+          "kind": "gate",
+          "start": "2026-10-21T06:27:05.501238303Z",
+          "end": "2026-10-21T06:27:17.779746015Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-10-21T06:27:17.841147568Z",
+          "end": "2026-10-21T06:29:43.302865312Z"
+        },
+        {
+          "gate": "description",
+          "kind": "gate",
+          "start": "2026-10-21T06:29:43.427852449Z",
+          "end": "2026-10-21T06:29:43.428039635Z"
+        }
+      ]
     }
   ],
   "product": {
