@@ -17,6 +17,7 @@
 - `internal/shedverbs#TestGotoCmd_PassesToldWayForwardTexts`
 - `internal/shedverbs/doc.go`
 - `internal/loomcli#loomVerbTexts`
+- `internal/loomcli#TestStatusCmd_EnvelopeKeySet`
 - `internal/shedcli#shedVerbTexts`
 - `internal/battencli#battenVerbTexts`
 
@@ -33,9 +34,10 @@ The status envelope's generic core gains `pause_reason`, the status file's value
 
 `Spec` gains `GotoGuard shedengine.GotoGuard`, told by the arming module, and `RunGoto` passes it on `GotoRequest.Guard`; nil admits as today.
 
-The three pause help texts (`loomVerbTexts`, `shedVerbTexts`, `battenVerbTexts`) name `--by` and that the label is recorded in the paused run's `pause_reason`; `doc.go` states the label and the new core key.
+The three pause help texts (`loomVerbTexts`, `shedVerbTexts`, `battenVerbTexts`) name `--by` and that the label is recorded in the paused run's `pause_reason`, and the status help texts of `loomVerbTexts` and `battenVerbTexts`, which enumerate the envelope's keys, name `pause_reason` among them; `shedVerbTexts`' status text defers to the recipe's own status verb and names no key, so it is unchanged; no test pins the prose.
+`doc.go` states the label and the new core key.
 
-Tests: `TestPauseCmd_SetsPauseRequested` adds a bare pause with `--by operator` storing `pause_requested_by`, and a bare `--by operator` under a refusing `BarePause` hook that leaves the file unchanged; `TestPauseCmd_Conditions` adds rows for `--before X --by orch`, `--after X --by orch`, `--clear` dropping both labels, the `--by shed` refusal leaving the file unchanged, and a `--before X` over a status seeded paused with `pause_reason` `pause requested by operator`, whose write keeps that reason byte for byte; `TestStatusCmd_FoundEnvelope_GenericCore` asserts the key set includes `pause_reason` with the file's value; `TestRenderStatusHuman` adds a paused row with and without a reason; `TestGotoCmd_PassesToldWayForwardTexts` asserts a told `GotoGuard` reaches the request, its refusal leaving the file unchanged.
+Tests: `TestPauseCmd_SetsPauseRequested` adds a bare pause with `--by operator` storing `pause_requested_by`, and a bare `--by operator` under a refusing `BarePause` hook that leaves the file unchanged; `TestPauseCmd_Conditions` adds rows for `--before X --by orch`, `--after X --by orch`, `--clear` dropping both labels, the `--by shed` refusal leaving the file unchanged, and a `--before X` over a status seeded paused with `pause_reason` `pause requested by operator`, whose write keeps that reason byte for byte; `TestStatusCmd_FoundEnvelope_GenericCore` asserts the key set includes `pause_reason` with the file's value; loom's `TestStatusCmd_EnvelopeKeySet`, which refuses every key outside its `wantKeys` set, adds `pause_reason` to that set; `TestRenderStatusHuman` adds a paused row with and without a reason; `TestGotoCmd_PassesToldWayForwardTexts` asserts a told `GotoGuard` reaches the request, its refusal leaving the file unchanged.
 
 **ImpactSummary:** Additive flag and envelope key on the generic verbs used by loom, shed and batten; help texts only in the three CLI modules.
 

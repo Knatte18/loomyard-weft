@@ -7,6 +7,8 @@
 - `internal/loomcli#loomCLI.wireDarn`
 - `internal/loomcli#darnDeps`
 - `internal/loomcli#TestWriteCarryOver_Real_CommitsTheRecordAlone`
+- `internal/loomcli#TestWire_ReviewKeysReachTheEnv`
+- `internal/loomcli#TestWire_DarnRecipe`
 - `internal/loomcli/doc.go`
 - `contracts/recipes/loom-recipe.yaml`
 - `contracts/recipes/darn-recipe.yaml`
@@ -53,6 +55,7 @@ The CarryOver, Approve and Commit seams must be idempotent for case 1: `ApproveP
 `TestMergeSubject`: no merge record answers false; a record gives a subject, and a record with another merged tip changes it.
 `TestDarnRejectReview`: the file `darnDeps`' `RecordRejection` writes is read back with its path and `rejected_at`; no file reads as not found; an unparseable time is an error.
 `TestWriteCarryOver_Real_CommitsTheRecordAlone` adds a second identical call that makes no commit.
+`TestWire_ReviewKeysReachTheEnv`'s `wantSegments`, for the four loom segments, and `TestWire_DarnRecipe`'s `wantSegment`, for `Darn-Review`, compare each `SegmentSettings` whole, so each gains `AmendMaxBounces: 1`, the template default.
 
 **ImpactSummary:** loom and darn wiring tells new Env seams and settings, and both embedded recipes now name a subject on every Bouncer row, which every run and recipe build reads.
 

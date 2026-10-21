@@ -17,13 +17,13 @@
 - `contracts/stencils/orch/orch-template-role.md`
 
 **Create:**
-- `plan:internal/loomcli#loomBudgetWayForward` -> `const loomBudgetWayForward = "x"`
+- `plan:internal/loomcli#loomBudgetWayForward` -> `const loomBudgetWayForward = "run \"lyx loom resume\" in the task worktree: the resume grants the row one more budget; a goto keeps the spent budget and grants none"`
 
 **Intent:** D3's told way forward and every text that names a goto as the way to a fresh budget, rewritten to D1–D3.
 
 `ShedPaths` gains `BudgetWayForward`, copied onto `Shed.BudgetWayForward` by `NewShedFrom`.
-`loomBudgetWayForward` is `run "lyx loom resume" in the task worktree: the resume grants the row one more budget; a goto keeps the spent budget and grants none`, told by both `loomCLI.wire` and `loomCLI.wireLightweight`, so a darn run, which shares loom's wiring, names it too.
-Batten's wire tells `run "lyx batten run <slug>": the resume grants the row one more budget`.
+`loomBudgetWayForward` is `run "lyx loom resume" in the task worktree: the resume grants the row one more budget; a goto keeps the spent budget and grants none`, told by both `loomCLI.wire` and `loomCLI.wireLightweight`, so a darn run, which shares loom's wiring, names it too; loom's clause needs no run-id, since it runs in the task worktree.
+`battenCLI.wire` builds batten's clause with the run-id it is wired for, its resolved `slug` argument, as `gotoCommand` renders the run's real run-id today: `run "lyx batten run <run-id>": the resume grants the row one more budget`, with the actual value in place of `<run-id>`.
 
 The goto help texts (`loomVerbTexts`, `shedVerbTexts`, `battenVerbTexts` and batten's `Command` overview) drop "with a fresh segment budget" and "resets that row's segment bounce budget": a goto keeps the segment's settled verdicts and spent budget, resets only what the target row needs to run (the error, the transient mark, a pending resume label and, for goto alone, the pause conditions), records itself as the run's pause reason, and is refused onto a review or fix row of a settled review segment where the recipe tells that guard.
 The driver stencil's "Two stops name `lyx shed goto`" list keeps only the missing-producer stop and names the told resume clause for an exhausted budget; the orch role stencil's "A run that needs a fresh budget at a producer" bullet becomes a resume of the budget halt, with goto kept for moving a run back; `anomaly.go`'s comment on the budget prefix no longer says the reason carries a goto way forward, and `TestClassifyHalt`'s budget row text names the resume clause.

@@ -7,6 +7,7 @@
 - `internal/burlerengine#ReviewResult`
 - `internal/burlerengine#reviewResultOf`
 - `internal/burlerengine#TestEngine_Review_Outcomes`
+- `internal/burlerengine/doc.go`
 - `internal/shedadapters#BurlerReviewProducer.Call`
 - `internal/shedadapters#BurlerReviewProducer.probeLiveReview`
 - `internal/shedadapters#TestBurlerReviewProducer_Call_FailureExits`
@@ -21,7 +22,8 @@
 **Intent:** D9: a review round whose chair spawned a fork count other than the one requested is retried, and its failure says how the chair ended.
 
 `shuttleengine.Result` gains `SessionStates []SessionState`, the session states the wait's session fold recorded for the run, in order, filled by `Run.finalize` from the fold's history when the wait read any; it is a report only, and shuttle's completion test is untouched (`PATTERN-completion-signal`).
-`burlerengine.ReviewResult` gains `SessionStates`, copied from the chair's result by `reviewResultOf`, so it reaches burler on every ending, the audit error included, beside `Review.StrandGUID`.
+`burlerengine.ReviewResult` gains `SessionStates`, copied from the chair's result by `reviewResultOf`, so it reaches burler on every ending, the audit error included, beside `Review.StrandGUID`;
+`burlerengine`'s `doc.go` names `SessionStates` among the `ReviewResult` fields its "What the halves return" section lists.
 
 In `BurlerReviewProducer.Call`'s attempt loop, a review that fails with `burlerengine.ErrClusterForksMissing` (fewer forks than requested, more, or no fork audit) on attempt 1 is retried like a died or timed-out attempt: the round's outputs, the chair's review file included, are archived by the next attempt's archive step and attempt 2 runs.
 A mismatch on attempt 2 is a hard failure through the failure exit, with `forkMismatchError`'s text: both attempts' errors (each naming the requested and spawned counts), the chair's strand and its session states, for example an interrupt before `done`; the halt note carries it.

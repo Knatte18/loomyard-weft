@@ -35,7 +35,7 @@
 
 `BouncerConfig` gains `AmendAllowance int` (the run-wide `review_amend_max_bounces`), `FullGeneration bool` (true for Merge-Review, whose changed merge-in is a new subject) and `RejectReview func() (path string, rejectedAt time.Time, found bool, err error)` (the PR-Gate reject's review file, nil for none).
 
-Case 2 (a live record whose subject changed) and case 3 with a changed subject call `startGeneration`: it reads `RejectReview` and keeps the path when the reject is later than the settle record's `SettledAt`, archives the run directory as today (the records travel along), and writes the generation record with the next number and, for an amendment, the `Amendment` mark, the base (the settle record's base; after case 3 the generation record's `JudgeBase`; for code the merge base, the stored patch beside it) and the reject path; a `FullGeneration` record carries the number alone, with no mark, no base and no reject path.
+Case 2 (a live record whose subject changed) and case 3 with a changed subject call `startGeneration`: it reads `RejectReview` and keeps the path when the reject is later than the settle record's `SettledAt` in case 2, or later than the generation record's `JudgeAt` in case 3, which has no settle record, archives the run directory as today (the records travel along), and writes the generation record with the next number and, for an amendment, the `Amendment` mark, the base (the settle record's base; after case 3 the generation record's `JudgeBase`; for code the merge base, the stored patch beside it) and the reject path; a `FullGeneration` record carries the number alone, with no mark, no base and no reject path.
 A `RejectReview` error is returned as the Call's error before the archive, and a failed archive degrades as the clear's does today.
 For a Plan-Bouncer re-entry after a PR-Gate reject, the base is the settle record's, which `markSettled` replaced with the weft commit that holds the settled plan and PR-Rework's archive carried along (card 14), so the amendment is told a base containing the settled plan.
 An amendment with an allowance of 0 settles through `approveWithoutReview`, which writes its settle record; otherwise the seed runs.
@@ -64,7 +64,7 @@ a code-kind amendment's seed prompt holds the code note, naming the stored `sett
 a `RejectReview` error is returned with nothing archived, and a failed archive degrades to a Stuck with the run directory untouched;
 a Call whose seed failed after the archive is followed by a Call whose seed carries the mark, while a re-bounce Stuck carries none;
 a settle interrupted at the perch's last round with the count at the budget, then a changed subject, returns the seed's Stuck rather than a halt;
-case 3 with a changed subject starts the amendment from the generation record's `JudgeBase`;
+case 3 with a changed subject starts the amendment from the generation record's `JudgeBase`, and a reject older than its `JudgeAt` names no reject file in the note;
 a `RejectReview` later than the settle puts its path in the note, and one earlier does not.
 `TestReadRubric` adds a row for the `amendment` marker filled and blank.
 

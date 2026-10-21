@@ -43,7 +43,8 @@ A `Subject` read error is returned as the Call's error, as a failing seam is tod
 Writes.
 `recordSettle` writes the settle record (generation from the generation record, else 1; the settled round; `SettledAt` now; `Settled` false; the subject, its base and, for code, its patch) and `markSettled` sets `Settled` and, when `SettledBase` is told, replaces the base with the weft HEAD it reads.
 They run on every approved settle: `settle`'s CONVERGED branch and `acceptRound` call `recordSettle` before carry-over, Approve and Commit and `markSettled` once Commit returns; `approveWithoutReview` (the skip seam, a zero-round perch) does the same, and first writes a generation record when the directory holds none.
-`seedCall` writes the generation record at every seed, generation 1 included, when the directory holds none; `judgeCall` writes the live subject and its base into the generation record as `JudgeSubject` and `JudgeBase` before the judge spawn.
+`seedCall` writes the generation record at every seed, generation 1 included, when the directory holds none; `judgeCall` writes the live subject, its base and the spawn time into the generation record as `JudgeSubject`, `JudgeBase` and `JudgeAt` before the judge spawn.
+Every one of these writes, `recordSettle`, `markSettled`, the `seedCall` and `approveWithoutReview` generation-record writes and `judgeCall`'s, runs only when the `Subject` seam is told and `liveSubject` answers true; with a nil seam or a false answer no record is written, so a re-entry over a settled verdict takes case 4.
 
 Re-entry, at Call entry after the skip seam, at any round including 0:
 1. A live settle record whose subject is `Unchanged` against the live one: `resettle` runs carry-over for the settled round (the closing taken from the round's decision: an accept settles as accepted, else converged), skipping it for a record of round 0, which `approveWithoutReview` writes and whose settle never called carry-over; then Approve and Commit again, marks the record settled keeping its `SettledAt`, and returns Done with the settled round's ledger as the pointer when it exists; no seed, judge or review spawns and no Stuck is returned, so no budget is spent; a failing step returns its error, as today.
@@ -64,6 +65,7 @@ case 3 with an equal judge subject settles through the harvest path, writes the 
 a settle record with a round N+1 report on disk judges round N+1 and, on CONVERGED, writes a new record whose `SettledAt` is later under the advanced clock;
 a settle record made not live by an unharvested CONVERGED round N+1 already on disk at entry settles that round with no archive and no spawn;
 a `Subject` seam answering false writes no record and clears on re-entry as case 4;
+a Bouncer with a nil `Subject` leaves no `generation-record.json` after a seed and a judge;
 a `Subject` read error is returned as the Call's error, and a Commit failing again inside `resettle` returns its error with the record left unsettled.
 Case 4 over a directory with no records keeps the coverage of `TestBouncer_Clear_ApprovedRunDirClearsAndReseeds` and `TestBouncer_Clear_AfterCommitFailureSubsequentCallClears`, whose nil `Subject` keeps that path, so the table adds no row for it.
 

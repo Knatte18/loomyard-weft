@@ -6,7 +6,9 @@
 - `internal/shedrecipe#bouncerEntry`
 - `internal/shedrecipe#burlerReviewEntry`
 - `internal/shedrecipe#TestBurlerReviewEntry_RubricStencil`
+- `internal/shedrecipe/doc.go`
 - `internal/testkit/envkit#FullEnv`
+- `internal/testkit/envkit#nilLegal`
 - `contracts/stencils#rubricMarkerAllowlist`
 - `contracts/stencils#TestLoomRubrics`
 - `contracts/stencils/loom/loom-rubric-discussion-review.md`
@@ -36,6 +38,8 @@ The embedded recipes name no `subject` yet; card 15 adds the keys together with 
 The four amendment-capable rubrics gain an `## Amendment` section rendering `{{.amendment}}`: when it is not `none`, review only the change it names, and report nothing about the settled remainder; the merge rubric gets none, since Merge-Review takes no amendment.
 `contracts/stencils`' `rubricMarkerAllowlist` gains `amendment`, and `TestLoomRubrics`' doc and its per-rubric marker checks name it as the marker the four amendment-capable rubrics carry and the merge rubric does not.
 `FullEnv` fills the new seams with fakes and `AmendMaxBounces` in its segment settings, so every recipe build in the tests keeps building.
+`envkit`'s `nilLegal` gains the six new `Env` paths `DocumentSubject`, `CodeSubject`, `MergeSubject`, `MergeInOnly`, `WeftHead` and `RejectReview`, whose nil is a documented default: the first five's for a Bouncer row that names no subject, and `RejectReview`'s for a reject with no review file, so batten's wiring, which never fills a loom-only seam, and loom's wiring before card 15 keep passing the `NilSeams` audits of `TestWire_EverySeamFilled`.
+`doc.go`'s "Segment settings and row settings" paragraph names the amendment allowance among the values a segment carries, and its review-segment-rows paragraph names the Bouncer's optional `subject` key and the Env seams each value selects.
 
 `TestBouncerEntry_Subject` is one table: each of the three values reaches the Bouncer with its seams, asserted from this package through two Calls: `layoutBouncerRound1Report` lays out round 1, a first Call over `judgeSeamShuttle` settles it CONVERGED and calls the row's named seam (counted by its fake, the document seam told the resolved artifact paths), and a second Call over a shuttle that fails the row when run returns Done with no spawn; `merge` builds a full generation; a missing named seam is refused naming it; an unknown value is refused; an absent key builds as before; `AmendMaxBounces` reaches the allowance.
 `TestBurlerReviewEntry_RubricStencil` adds a row whose run directory holds an amendment generation record: the profile's rubric holds the note.
