@@ -1222,19 +1222,21 @@
       "id": 719,
       "slug": "quarry-csharp",
       "title": "[.NET 006] Quarry: a C# glyph alphabet",
-      "kind": "note",
+      "kind": "task",
       "labels": [
         "feature",
         "quarry",
         "dotnet"
       ],
       "issues": [],
+      "recipe": "loom",
+      "priority": "high",
       "depends_on": [],
       "isolated": false,
       "brief": "Quarry knows only Go glyphs; a C# hub needs a C# alphabet",
       "body": "## Seen (orch, 2026-10-20)\n\nQuarry links only the Go tree-sitter grammar (`github.com/tree-sitter/tree-sitter-go` in `go.mod`), so its glyph alphabet covers Go alone.\nThe planner takes every glyph spelling from `lyx quarry`, and Plan-Review checks the glyphs a card names, so a C# hub such as NORCE Models gets no glyphs to plan with.\n\n## Idea\n\nExtend quarry with a C# alphabet: link the C# tree-sitter grammar and define C#'s glyph shapes (namespace, type, member, overloads, partial classes, nested types).\nChoose the alphabet by file extension, so a mixed repository gets both; the `language` module names skills, verify tiers and rename tools but no language, so it cannot pick the alphabet.\n",
       "created": "2026-10-20T19:05:12Z",
-      "revised": "2026-10-20T19:05:27Z"
+      "revised": "2026-10-21T11:09:37Z"
     },
     {
       "id": 720,
@@ -1396,6 +1398,24 @@
       "brief": "All testing goes through the gate slot pool against hub-declared tiers tier0..N, with scope computed from the diff; replaces the Go-only gate",
       "body": "Every test run in a hub goes through `lyx gate test`, against numbered test tiers the hub declares in config, with the scope computed by lyx.\n\n## Seen (orch, 2026-10-17)\n\n`lyx gate test` runs only `go test`: it takes a hub gate slot, then runs `go test -p \u003cgo_parallel\u003e` over the named packages.\nA hub in another language has no gate, so its verify command (for example `dotnet test` in a C# hub) runs outside the slot pool.\nSeveral runs then build and test at once with no limit, which is what the slot pool exists to stop.\nThe slot pool in `internal/gateslot` is already language-neutral (one file lock per slot); only `lyx gate test` on top of it is Go-specific.\n\n## Operator decisions (2026-10-21)\n\n### All testing through the gate\n\n- Every test run, an agent's own and every verify gate's, goes through `lyx gate test`, so lyx controls how many run at once and can sequence heavy tiers.\n- The shell guard refuses raw test commands (`dotnet test`, `pytest`), as it already refuses raw module-wide `go test`.\n- The command keeps its name: `lyx gate` is the module, and `test` stays its verb; no rename.\n\n### Numbered tiers in config\n\n- The hub declares its tiers `tier0`, `tier1`, ... in config, each with its command (placeholders such as `{targets}` and `{parallel}`, so lyx hard-codes no tool), its parallelism, a timeout, and a minimum count of discovered tests.\n- Parallelism is per tier, in place of the Go-only `go_parallel`.\n- A tier never includes a lower one by definition: each gate names the list of tiers it runs, such as card `[0]`, final `[0,1]`, push `[0,1,2]`.\n- A tier may declare `covers: [0]` when its command runs a lower tier anyway, so a gate asking for `[0,1]` skips tier0. Go needs this: untagged files always compile, so `-tags integration` runs the untagged tests too.\n- A tier may declare it needs more slots or the whole machine, so a heavy tier is sequenced.\n\n### Scope is computed, never spelled\n\n- `lyx gate test` with no targets runs tier0 over the scope lyx computes from the diff against the parent; Go has this in `internal/impactset`.\n- `--tier N` picks another tier.\n- `--card \u003cid\u003e` takes the scope from the files the plan says the card touches.\n- Explicit targets stay possible, as the exception, such as one package while debugging.\n- Agents and gates thus get the same scope, and no agent spells a long module list.\n\n### Verify runs are bounded and observable\n\n- Zero discovered tests is a failure: a run that discovers nothing and exits green passes vacuously.\n- Every tier run has a timeout from its config, never no ceiling by default.\n- Each run logs command, cwd, start, end, wall seconds, exit code and discovered/passed/failed counts, in logs that survive teardown.\n\n## The hubs\n\n- loomyard: tier0 the untagged tests, tier1 `integration`, tier2 `tmux`, tier3 `llm`. `CLAUDE.md`'s push rule is rewritten in tiers.\n- NORCE Models: tier0 the fast unit tests, tier1 the slow-test project, tier2 the numerical baseline. Note `dotnet-verify-protocol` holds the repo facts: project root under `src/csharp/NORCE.Models/`, the gated projects' MSBuild properties, and why a plain solution run discovers only the fast suite.\n  The baseline tier needs the asynchronous run in note `regression-baseline-verify`, which is not part of this task; here it is declared and run synchronously only.\n\n## Not in this task\n\n- Test selection for C# (note `dotnet-scoped-verify`); a C# tier runs over its whole project set until then.\n- Asynchronous tiers in shed (note `regression-baseline-verify`).\n- `lyx gate status` (note `gate-status`).\n",
       "created": "2026-10-17T10:33:39Z",
+      "revised": "2026-10-21T11:09:37Z"
+    },
+    {
+      "id": 729,
+      "slug": "gate-status",
+      "title": "lyx gate status: which run and tier holds each gate slot",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "gate"
+      ],
+      "issues": [],
+      "priority": "low",
+      "depends_on": [],
+      "isolated": false,
+      "brief": "Show taken gate slots, by run and tier, and since when",
+      "body": "## Idea (operator and orch, 2026-10-21)\n\n`lyx gate test` is the gate module's only verb.\nOnce heavy test tiers are sequenced through the slot pool, a `lyx gate status` that shows which slots are taken, by which run and tier, and since when, helps see why a run waits.\nNot urgent.\n",
+      "created": "2026-10-21T11:09:37Z",
       "revised": "2026-10-21T11:09:37Z"
     }
   ]
