@@ -1,7 +1,7 @@
 # Card 18 — plan-gate-verify-checks
 
 **Create:**
-- `plan:internal/planparser#VerifyCommands` -> `func VerifyCommands(value string) []string`
+- `internal/planparser#VerifyCommands`
 
 **Edit:**
 - `internal/loomshed#PlanContext`
