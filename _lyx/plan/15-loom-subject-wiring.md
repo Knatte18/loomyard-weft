@@ -27,9 +27,9 @@
 **Uses:**
 - `plan:internal/discussionparser#IdentityText`
 - `plan:internal/planparser#IdentityText`
-- `plan:internal/fabricengine#Fabric.ReadTaskPatch`
-- `plan:internal/fabricengine#Fabric.MergeInOnly`
-- `plan:internal/fabricengine#Fabric.WeftHeadSHA`
+- `internal/fabricengine#Fabric.ReadTaskPatch`
+- `internal/fabricengine#Fabric.MergeInOnly`
+- `internal/fabricengine#Fabric.WeftHeadSHA`
 - `plan:internal/loomshed#LatestRejectReview`
 - `internal/loomcli#pairMergeBase`
 - `internal/loomcli#readRecordedParentBranch`

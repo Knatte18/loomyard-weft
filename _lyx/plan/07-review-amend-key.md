@@ -22,7 +22,7 @@
 - `internal/darnengine#templateConfig`
 
 **Create:**
-- `plan:internal/reviewbudget#RunAmendKey` -> `const RunAmendKey = "review_amend_max_bounces"`
+- `internal/reviewbudget#RunAmendKey`
 
 **Intent:** D7: one run-wide amendment allowance key, `review_amend_max_bounces`, in the review budget key family.
 
