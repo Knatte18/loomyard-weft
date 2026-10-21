@@ -1,12 +1,12 @@
 # Card 23 — wake-reconcile
 
 **Create:**
-- `plan:internal/hibernateengine#WakeReconcile` -> `type WakeReconcile struct`
-- `plan:internal/hibernateengine#WakeRun` -> `type WakeRun struct`
-- `plan:internal/hibernateengine#reconcileAtWake` -> `func reconcileAtWake(deps Deps, r Request) (lift bool, notice string, err error)`
-- `plan:internal/hibernatecli#wakeReconcile` -> `func wakeReconcile(location *lyxcwd.Location) (hibernateengine.WakeReconcile, error)`
-- `plan:internal/hibernatecli#wakeReconcileFromReport` -> `func wakeReconcileFromReport(report fabricengine.OriginReport) hibernateengine.WakeReconcile`
-- `plan:internal/hibernatecli#TestWakeReconcileFromReport` -> `func TestWakeReconcileFromReport(t *testing.T)`
+- `internal/hibernateengine#WakeReconcile`
+- `internal/hibernateengine#WakeRun`
+- `internal/hibernateengine#reconcileAtWake`
+- `internal/hibernatecli#wakeReconcile`
+- `internal/hibernatecli#wakeReconcileFromReport`
+- `internal/hibernatecli#TestWakeReconcileFromReport`
 
 **Edit:**
 - `internal/hibernateengine#Deps`
