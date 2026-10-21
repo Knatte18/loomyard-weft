@@ -9,8 +9,8 @@
 
 **Uses:**
 - `internal/pairteardown#Teardown.probeQuiet`
-- `plan:internal/fabricengine#OriginSeams`
-- `plan:internal/fabricengine#EndedTeardown`
+- `internal/fabricengine#OriginSeams`
+- `internal/fabricengine#EndedTeardown`
 
 **Intent:** D1's injected seams, built in one place every call site's CLI package uses, since `pairteardown` already imports both `fabricengine` and `reedengine`.
 `Teardown.OriginSeams` returns a `fabricengine.OriginSeams`:

@@ -7,15 +7,15 @@
 - `plan:internal/fabricengine_test#TestReconcileOrigin_Moves` -> `func TestReconcileOrigin_Moves(t *testing.T)`
 
 **Edit:**
-- `plan:internal/fabricengine#ReconcileOrigin`
+- `internal/fabricengine#ReconcileOrigin`
 
 **Uses:**
 - `internal/fabricengine#readEndedSet`
 - `internal/fabricengine#finalizeEntered`
 - `internal/fabricengine#replayWeft`
 - `internal/fabricengine#replayBolt`
-- `plan:internal/fabricengine#classifyEntry`
-- `plan:internal/fabricengine#SetOriginCallHookForTest`
+- `internal/fabricengine#classifyEntry`
+- `internal/fabricengine#SetOriginCallHookForTest`
 - `internal/testkit/boardkit#InstallReplay`
 
 **Intent:** D3's order of work and D4's moves: the moving reconcile.

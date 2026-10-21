@@ -12,7 +12,7 @@
 - `internal/orchcli#newStartHarness`
 
 **Uses:**
-- `plan:internal/fabricengine#ReconcileOrigin`
+- `internal/fabricengine#ReconcileOrigin`
 - `internal/fabricengine#FailedPushFields`
 - `plan:internal/pairteardown#HubSeamOptions`
 - `plan:internal/pairteardown#Teardown.OriginSeams`

@@ -1,42 +1,42 @@
 # Card 15 — origin-reconcile-judge
 
 **Create:**
-- `plan:internal/fabricengine#ReconcileScope` -> `type ReconcileScope struct`
-- `plan:internal/fabricengine#ReconcileOptions` -> `type ReconcileOptions struct`
-- `plan:internal/fabricengine#EndedTeardown` -> `type EndedTeardown struct`
-- `plan:internal/fabricengine#TeardownReport` -> `type TeardownReport struct`
-- `plan:internal/fabricengine#OriginSeams` -> `type OriginSeams struct`
-- `plan:internal/fabricengine#BranchState` -> `type BranchState string`
-- `plan:internal/fabricengine#BranchLevel` -> `const BranchLevel BranchState = "level"`
-- `plan:internal/fabricengine#BranchFastForward` -> `const BranchFastForward BranchState = "fast_forward"`
-- `plan:internal/fabricengine#BranchAhead` -> `const BranchAhead BranchState = "ahead"`
-- `plan:internal/fabricengine#BranchRewound` -> `const BranchRewound BranchState = "rewound"`
-- `plan:internal/fabricengine#BranchRewritten` -> `const BranchRewritten BranchState = "rewritten"`
-- `plan:internal/fabricengine#BranchDiverged` -> `const BranchDiverged BranchState = "diverged"`
-- `plan:internal/fabricengine#BranchNeedsReplay` -> `const BranchNeedsReplay BranchState = "needs_replay"`
-- `plan:internal/fabricengine#BranchGone` -> `const BranchGone BranchState = "gone"`
-- `plan:internal/fabricengine#BranchDirty` -> `const BranchDirty BranchState = "dirty"`
-- `plan:internal/fabricengine#BranchBusy` -> `const BranchBusy BranchState = "busy"`
-- `plan:internal/fabricengine#BranchLive` -> `const BranchLive BranchState = "live"`
-- `plan:internal/fabricengine#BranchOutcome` -> `type BranchOutcome struct`
-- `plan:internal/fabricengine#EntryState` -> `type EntryState string`
-- `plan:internal/fabricengine#EntryActive` -> `const EntryActive EntryState = "active"`
-- `plan:internal/fabricengine#EntryEnded` -> `const EntryEnded EntryState = "ended"`
-- `plan:internal/fabricengine#EntryStopped` -> `const EntryStopped EntryState = "stopped"`
-- `plan:internal/fabricengine#EntryOutcome` -> `type EntryOutcome struct`
-- `plan:internal/fabricengine#OriginReport` -> `type OriginReport struct`
-- `plan:internal/fabricengine#OriginReport.Summary` -> `func (r OriginReport) Summary() string`
-- `plan:internal/fabricengine#entryFacts` -> `type entryFacts struct`
-- `plan:internal/fabricengine#classifyEntry` -> `func classifyEntry(f entryFacts) EntryState`
-- `plan:internal/fabricengine#originCallHook` -> `var originCallHook func(args []string)`
-- `plan:internal/fabricengine#lsRemotePair` -> `func lsRemotePair(warpDir, recordsDir string, opts ReconcileOptions) (warp, records map[string]string, err error)`
-- `plan:internal/fabricengine#fetchMovedHeads` -> `func fetchMovedHeads(dir string, heads map[string]string, judgeOnly bool) error`
-- `plan:internal/fabricengine#judgeBranch` -> `func judgeBranch(repoDir, branch, originHead string, records bool) (BranchOutcome, error)`
-- `plan:internal/fabricengine#ReconcileOrigin` -> `func ReconcileOrigin(l *lyxcwd.Location, scope ReconcileScope, seams OriginSeams, opts ReconcileOptions) (res OriginReport, err error)`
-- `plan:internal/fabricengine#SetOriginCallHookForTest` -> `func SetOriginCallHookForTest(hook func(args []string)) (restore func())`
-- `plan:internal/fabricengine_test#TestReconcileOrigin_Judge` -> `func TestReconcileOrigin_Judge(t *testing.T)`
-- `plan:internal/gitexec#RunWithin` -> `func RunWithin(args []string, cwd string, deadline time.Duration) (string, error)`
-- `plan:internal/gitexec#runCoreWithin` -> `func runCoreWithin(args []string, cwd, stdin string, deadline time.Duration) (stdout, stderr string, exitCode int, err error)`
+- `internal/fabricengine#ReconcileScope`
+- `internal/fabricengine#ReconcileOptions`
+- `internal/fabricengine#EndedTeardown`
+- `internal/fabricengine#TeardownReport`
+- `internal/fabricengine#OriginSeams`
+- `internal/fabricengine#BranchState`
+- `internal/fabricengine#BranchLevel`
+- `internal/fabricengine#BranchFastForward`
+- `internal/fabricengine#BranchAhead`
+- `internal/fabricengine#BranchRewound`
+- `internal/fabricengine#BranchRewritten`
+- `internal/fabricengine#BranchDiverged`
+- `internal/fabricengine#BranchNeedsReplay`
+- `internal/fabricengine#BranchGone`
+- `internal/fabricengine#BranchDirty`
+- `internal/fabricengine#BranchBusy`
+- `internal/fabricengine#BranchLive`
+- `internal/fabricengine#BranchOutcome`
+- `internal/fabricengine#EntryState`
+- `internal/fabricengine#EntryActive`
+- `internal/fabricengine#EntryEnded`
+- `internal/fabricengine#EntryStopped`
+- `internal/fabricengine#EntryOutcome`
+- `internal/fabricengine#OriginReport`
+- `internal/fabricengine#OriginReport.Summary`
+- `internal/fabricengine#entryFacts`
+- `internal/fabricengine#classifyEntry`
+- `internal/fabricengine#originCallHook`
+- `internal/fabricengine#lsRemotePair`
+- `internal/fabricengine#fetchMovedHeads`
+- `internal/fabricengine#judgeBranch`
+- `internal/fabricengine#ReconcileOrigin`
+- `internal/fabricengine#SetOriginCallHookForTest`
+- `internal/fabricengine_test#TestReconcileOrigin_Judge`
+- `internal/gitexec#RunWithin`
+- `internal/gitexec#runCoreWithin`
 
 **Edit:**
 - `internal/gitexec#runCore`

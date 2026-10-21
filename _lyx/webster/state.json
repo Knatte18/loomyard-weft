@@ -1,6 +1,6 @@
 {
   "runGuid": "0fa13f93fc850a69afe141168f80dcd9",
-  "planFingerprint": "0998b8995d38bd6ce8aca7d4468b102bc96fd0b8ec5f20fa34fb1d2bf30da222",
+  "planFingerprint": "d81fda946e8b38a651e51451c1a0524d3267694c2cdf1b4b5e69de7e3f2104f9",
   "planFileHashes": {
     "00-overview.md": "e153ea884172d07d958ca2ee1154c56d7fcde68a3d7613e582e8ee1bf3eee7e1",
     "01-failed-push-record.md": "d90ec71500ca4fd7e0b5c46d6ee119d2a38fb59fafe7b22e0468874805cd04db",
@@ -17,15 +17,15 @@
     "12-gate-entry-exemption.md": "5f837e230d1ef537c3112ac89b9e8556372f7a1702524e2eefd89cf885ce0bb4",
     "13-remove-local-mode.md": "120f045b682e3f8b54245768732eca75c2a01c347712c97ac5b8b694b3815c39",
     "14-pairteardown-local-mode.md": "e025705e284a0ac160f63cf27a9dad6ad1999553089ab1c0303edb583f6b6c37",
-    "15-origin-reconcile-judge.md": "055c410a9e4ce54efff0cc8fe728067f8c289dd6a1fb7ea4ed34fed30519c709",
-    "16-origin-reconcile-moves.md": "4bd951fc5d1aaa425c7bb2a17bd5c795351e2b3121290b8d86bbf3994f9cb0c8",
-    "17-origin-reconcile-ended.md": "b05234f15ec19f653ca22a67fd65bacc702bd38d3aa199b6f2aa8d3fd428e980",
-    "18-reconcile-seams.md": "3cec60b1d2502dff6e9caea9bd91ea5b65d573d317d8017945054053f270cd4e",
-    "19-orch-start-reconcile.md": "07eead457f7e60bfd22bd4431f8eef3147c72197e74e3791f59b14bdf72432e0",
-    "20-cleanup-reconcile.md": "35d6f74132b4767d3c0bca495ab97ea3a25bc25d38e587ea20a589d424d5df94",
-    "21-batten-resume-reconcile.md": "713c47b599b7b97e3cc222cf180efaa546565b4938c54b20f84c04501d683a32",
-    "22-landing-reconcile.md": "3282158a21d0487f1a6f75bbebd97520f8a71b111905f9b2c90f0303829a8e89",
-    "23-wake-reconcile.md": "d2fd29ab4f9ddebdcac1aa3a70c5181f4af5358bb8fe8d1afbf4441c272ff92f"
+    "15-origin-reconcile-judge.md": "10043568d4a363394f5fb73df2b649fa671e5684842cee2f8706231ab380f6f2",
+    "16-origin-reconcile-moves.md": "573d14458ec3edda7dc02d9dff03b0b1bb2b355b8ba0be32b297a9b937930678",
+    "17-origin-reconcile-ended.md": "09fddce347bf45c1248abfd675b088b0ad9ed51255bb9bd4a539efd412adebda",
+    "18-reconcile-seams.md": "21498e092f9ff8ccf34637e30fac3b24542cb217c07efb8aebb6fe2bae341474",
+    "19-orch-start-reconcile.md": "c488a71688f825795583de08cea32708dbe4a3c49d38496f0619b7e1a5231a95",
+    "20-cleanup-reconcile.md": "9182e92bc86dd46b839c90bdaf79ac1768a5b7776767dfe131282e584b931117",
+    "21-batten-resume-reconcile.md": "d43822cf51f159c24428cb26b78dc7394d2d7ea06f3ba3108a7eba94d31998c2",
+    "22-landing-reconcile.md": "90950799168fc0e43c8af8d7869a57cd13a8cb14f9413df9cf6056596cd46e2a",
+    "23-wake-reconcile.md": "62631dff66c712d56a7aedf011f04cae377940bed8f5f2a46ba80757aa3d8ced"
   },
   "planOverviewFrameHash": "61b3bb7c32b3e3f99c93eac2e82d353a34e0a999db58136ad566eeafc7a1884b",
   "partition": [
@@ -749,7 +749,7 @@
       }
     }
   ],
-  "currentBatch": 15,
+  "currentBatch": 0,
   "masterStrand": "d26ba69a79fb575f7e87b499eb76f785",
   "masterSessionId": "b26519ba-ade7-44f6-9357-417c58fd04ba",
   "masterEngine": "claude",
@@ -912,15 +912,35 @@
         "15-origin-reconcile-judge"
       ],
       "cardHashes": {
-        "15-origin-reconcile-judge": "055c410a9e4ce54efff0cc8fe728067f8c289dd6a1fb7ea4ed34fed30519c709"
+        "15-origin-reconcile-judge": "10043568d4a363394f5fb73df2b649fa671e5684842cee2f8706231ab380f6f2"
       },
       "startSha": "6021fed6522c45f79e42c3605d65e4385e6a6010",
       "kind": "fork",
       "spawnedAt": "2026-10-21T07:42:47Z",
       "sessionId": "b26519ba-ade7-44f6-9357-417c58fd04ba",
       "engine": "claude",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "15-origin-reconcile-judge",
+        "status": "done",
+        "head_sha": "ab620b30124f803513983e92399a766569e2b9e1",
+        "deviations": [
+          "internal/fabricengine/export_test.go",
+          "internal/fabricengine/originreconcile.go",
+          "internal/fabricengine/originreconcile_integration_test.go",
+          "internal/gitexec/gitexec_test.go"
+        ]
+      },
+      "cardShas": [
+        "ab620b30124f803513983e92399a766569e2b9e1"
+      ],
+      "forkTranscripts": [
+        "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-origin-reconcile/b26519ba-ade7-44f6-9357-417c58fd04ba/subagents/agent-aad139ff7ea8d1cfd.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-origin-reconcile/b26519ba-ade7-44f6-9357-417c58fd04ba/subagents/agent-aad139ff7ea8d1cfd.jsonl"
+      ]
     },
     "3": {
       "slug": "board-replay-seam",
@@ -1131,6 +1151,7 @@
     "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-origin-reconcile/b26519ba-ade7-44f6-9357-417c58fd04ba/subagents/agent-a5b622c8183a50f12.jsonl",
     "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-origin-reconcile/b26519ba-ade7-44f6-9357-417c58fd04ba/subagents/agent-a3cad4262ab70dc58.jsonl",
     "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-origin-reconcile/b26519ba-ade7-44f6-9357-417c58fd04ba/subagents/agent-a49f09b18791c8bab.jsonl",
-    "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-origin-reconcile/b26519ba-ade7-44f6-9357-417c58fd04ba/subagents/agent-aeecbc3d692103cb0.jsonl"
+    "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-origin-reconcile/b26519ba-ade7-44f6-9357-417c58fd04ba/subagents/agent-aeecbc3d692103cb0.jsonl",
+    "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-origin-reconcile/b26519ba-ade7-44f6-9357-417c58fd04ba/subagents/agent-aad139ff7ea8d1cfd.jsonl"
   ]
 }
