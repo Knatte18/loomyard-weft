@@ -5,8 +5,8 @@
      It is a marker VALUE, never a template -- its only markers are the ones ReadRubric fills, and
      internal/stencil's StripLeadingComment removes this leading comment before either consumer ever
      sees it.
-     Among those markers, verify_tiers is filled by ReadRubric from the hub's language.yaml list, as bullets or none.
-lyx-stencil: sha256=a9ebeecd9b54c52df6d1a740e7c61fcb0a6693e166cb1cb893cd0f90c891b8bd build=90f613277e539c98eb07698ed58b50f705e99a77 time=2026-10-21T13:30:19Z -->
+     Among those markers, gate_tiers is filled by ReadRubric from the hub's gate.yaml tiers and gate lists, or none.
+lyx-stencil: sha256=a3671fe4b8a0503e4d0fd224999eb49fa117dd1307167e0b9984113b11295a36 build=de6b8465f50a475feb96a46f8bd30de0352919c9 time=2026-10-21T19:00:35Z -->
 
 # Plan-Review rubric
 
@@ -95,17 +95,11 @@ Do not flag any of the following as a finding:
   A card writing another entry, the entry's status or its `run_settings`, or changing board-module code is not flagged by this bullet.
 - **Card order.**
   A card that depends on something a later card does breaks the rule in `{{.specs_dir}}/loom/loom-plan-spec.md`'s "Plan vs. schedule" section; the finding names the card and the later card it depends on.
-- **Verify coverage.**
-  A package a card targets whose tests the plan's `## verify:` section does not run is a finding against the plan, its hermetic build-tagged tests included.
-  The hub's verify tiers, in the order and form the plan writer was given:
-{{.verify_tiers}}
-  A tier the list says is compiled rather than run is not a finding, and a section out of the list's order is a finding.
-  With `none`, only the coverage rule applies.
-  An entry that calls a tier compiled rather than run lets a plan leave that tier unrun, and this review accepts it.
-  Only the hub operator writes the list, because its key is Guard-classified in a board-only file.
-  Inside webster the card and batch gates still run the untagged and `-tags integration` tests over the batch's packages whatever an entry says,
-  and at landing the skip is bounded only by landing config's `publish_verify`;
-  the shell guard and the plan gate refuse what they refuse whatever an entry says.
+- **Verify lines.**
+  A card's `**Verify:**` line naming a raw test command is a finding, because the gates run the hub's tier lists over scopes lyx computes and a line that tests is one `lyx gate test --wait` call with a tier list and a scope form.
+  The hub's tiers and gate lists, as the plan writer was given them:
+{{.gate_tiers}}
+  A plan-level `## verify:` section is accepted and ignored, so it is no finding.
 - **The attack-surface question.**
   For every new verb, flag, escape hatch or routing edge, and every guard that is removed, downgraded or bypassable, the card that introduces the change states in its `**Intent:**` what it can now skip or let through and what bounds it.
   A card that introduces one with no stated bound is a finding.
