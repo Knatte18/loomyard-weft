@@ -327,12 +327,11 @@ Rationale: A branch reads rewound only when origin's head is already an ancestor
 <!-- /lyx:carry-over Plan-Review -->
 
 <!-- lyx:carry-over Webster-Review -->
-- Webster-Review, round 1: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
-  Review: _lyx/reviews/webster/round-1-review.md; fixer report: _lyx/reviews/webster/round-1-fixer-report.md.
-  - pattern-entries-rewritten-undeclared (class consistency, severity MEDIUM, open in rounds 1)
-  - reconcile-verdict-no-slug-filter (class design, severity MEDIUM, open in rounds 1)
-  - replay-tags-after-reset (class design, severity MEDIUM, open in rounds 1)
-  - unclassified-push-failure-unrecorded (class design, severity MEDIUM, open in rounds 1)
+- Webster-Review, round 3: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
+  Review: _lyx/reviews/webster/round-3-review.md; fixer report: _lyx/reviews/webster/round-3-fixer-report.md.
+  - pattern-entries-rewritten-undeclared (class consistency, severity MEDIUM, open in rounds 1, 2, 3)
+  - refused-restore-untagged (class design, severity MEDIUM, open in rounds 3)
+  - watchdog-down-up-idle-window (class design, severity BLOCKING, open in rounds 2, 3)
 <!-- /lyx:carry-over Webster-Review -->
 
 <!-- lyx:carry-over Merge-Review -->
