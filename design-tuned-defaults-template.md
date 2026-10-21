@@ -19,7 +19,8 @@ The values that differ from the template today:
 
 ## Operator decision (2026-10-21)
 
-The tuned values move into lyx's template, so they are the default and every new hub, NORCE Models included, gets them with no copying.
+The tuned values move into lyx's template, so they are the default and every new hub gets them with no copying.
+Hubs already cloned get them too: the NORCE Models hub was cloned before this, and a seeded default layer writes every key, so an explicit neutral value such as `discussion_lenses: ""` would keep overriding a changed template; the task makes existing hubs follow the template, such as by dropping seeded entries that equal the old template.
 The loomyard and quarry hubs' default layers then drop the entries that equal the template.
 Any other module whose loomyard values are the operator's general preference, rather than this repo's own, goes the same way; the task checks each.
 Note `lenses-language-sets` covers which lens set a hub seeds by language, which is separate.
