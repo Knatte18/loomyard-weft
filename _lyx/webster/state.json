@@ -1,6 +1,6 @@
 {
   "runGuid": "0fa13f93fc850a69afe141168f80dcd9",
-  "planFingerprint": "edceeeace92dea149ae3d9803d7a4d36e34a3664eab81f767014a99a2ed4f73c",
+  "planFingerprint": "82b594500ad9136edce239ddd298a47154dd69187b9772554084ecfc239e3442",
   "planFileHashes": {
     "00-overview.md": "e153ea884172d07d958ca2ee1154c56d7fcde68a3d7613e582e8ee1bf3eee7e1",
     "01-failed-push-record.md": "d90ec71500ca4fd7e0b5c46d6ee119d2a38fb59fafe7b22e0468874805cd04db",
@@ -19,13 +19,13 @@
     "14-pairteardown-local-mode.md": "e025705e284a0ac160f63cf27a9dad6ad1999553089ab1c0303edb583f6b6c37",
     "15-origin-reconcile-judge.md": "10043568d4a363394f5fb73df2b649fa671e5684842cee2f8706231ab380f6f2",
     "16-origin-reconcile-moves.md": "bc88bc7cfe4c52d33b58074c55bff8274f4bed375e7d89ca6bb3bb43534f5768",
-    "17-origin-reconcile-ended.md": "09fddce347bf45c1248abfd675b088b0ad9ed51255bb9bd4a539efd412adebda",
-    "18-reconcile-seams.md": "21498e092f9ff8ccf34637e30fac3b24542cb217c07efb8aebb6fe2bae341474",
-    "19-orch-start-reconcile.md": "c488a71688f825795583de08cea32708dbe4a3c49d38496f0619b7e1a5231a95",
-    "20-cleanup-reconcile.md": "9182e92bc86dd46b839c90bdaf79ac1768a5b7776767dfe131282e584b931117",
-    "21-batten-resume-reconcile.md": "d43822cf51f159c24428cb26b78dc7394d2d7ea06f3ba3108a7eba94d31998c2",
-    "22-landing-reconcile.md": "90950799168fc0e43c8af8d7869a57cd13a8cb14f9413df9cf6056596cd46e2a",
-    "23-wake-reconcile.md": "62631dff66c712d56a7aedf011f04cae377940bed8f5f2a46ba80757aa3d8ced"
+    "17-origin-reconcile-ended.md": "9d8863d218188e8a3449d70f11e59f70bba4858e62822a7db331196fa184323a",
+    "18-reconcile-seams.md": "21215d6a9b81dfcedd892fa6fadb118c69307c260ae70cd7254e38e745eb3c69",
+    "19-orch-start-reconcile.md": "61a79da032c4ece596bbe4550c76e624fb92e8f6da28eef0e3434aaa76042bf1",
+    "20-cleanup-reconcile.md": "6ce0f1931093403c14938a21efdea7b46a491eea96e05737d2d265942378550d",
+    "21-batten-resume-reconcile.md": "4ff3eaedd866f64df94da2fc239636b2123b50fffeb20a1c3e10791eeb17aa95",
+    "22-landing-reconcile.md": "ab5bfdd2dd61d4d37cc084ab8a57db9e56358b1412253f4930f02595e139cba5",
+    "23-wake-reconcile.md": "ea71baa1158021f492e17442113d1b8db7011737d7a6c87ecb79200e62e560c6"
   },
   "planOverviewFrameHash": "61b3bb7c32b3e3f99c93eac2e82d353a34e0a999db58136ad566eeafc7a1884b",
   "partition": [
@@ -749,7 +749,7 @@
       }
     }
   ],
-  "currentBatch": 17,
+  "currentBatch": 0,
   "masterStrand": "d26ba69a79fb575f7e87b499eb76f785",
   "masterSessionId": "b26519ba-ade7-44f6-9357-417c58fd04ba",
   "masterEngine": "claude",
@@ -986,16 +986,38 @@
         "18-reconcile-seams"
       ],
       "cardHashes": {
-        "17-origin-reconcile-ended": "09fddce347bf45c1248abfd675b088b0ad9ed51255bb9bd4a539efd412adebda",
-        "18-reconcile-seams": "21498e092f9ff8ccf34637e30fac3b24542cb217c07efb8aebb6fe2bae341474"
+        "17-origin-reconcile-ended": "9d8863d218188e8a3449d70f11e59f70bba4858e62822a7db331196fa184323a",
+        "18-reconcile-seams": "21215d6a9b81dfcedd892fa6fadb118c69307c260ae70cd7254e38e745eb3c69"
       },
       "startSha": "d292731f809b053272cb57bbed68ae5f2f3a63f9",
       "kind": "fork",
       "spawnedAt": "2026-10-21T08:11:30Z",
       "sessionId": "b26519ba-ade7-44f6-9357-417c58fd04ba",
       "engine": "claude",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "17-origin-reconcile-ended",
+        "status": "done",
+        "head_sha": "d05d0ab085d485961bb56bd9bdf9e17e7959b79a",
+        "deviations": [
+          "internal/fabricengine/originreconcile.go",
+          "internal/fabricengine/originreconcileended.go",
+          "internal/fabricengine/originreconcileended_integration_test.go",
+          "internal/fabricengine/originreconcilemoves.go",
+          "internal/pairteardown/originseams.go",
+          "internal/pairteardown/originseams_test.go"
+        ]
+      },
+      "cardShas": [
+        "d05d0ab085d485961bb56bd9bdf9e17e7959b79a"
+      ],
+      "forkTranscripts": [
+        "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-origin-reconcile/b26519ba-ade7-44f6-9357-417c58fd04ba/subagents/agent-a4f2fd934f70dc88e.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-origin-reconcile/b26519ba-ade7-44f6-9357-417c58fd04ba/subagents/agent-a4f2fd934f70dc88e.jsonl"
+      ]
     },
     "3": {
       "slug": "board-replay-seam",
@@ -1208,6 +1230,7 @@
     "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-origin-reconcile/b26519ba-ade7-44f6-9357-417c58fd04ba/subagents/agent-a49f09b18791c8bab.jsonl",
     "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-origin-reconcile/b26519ba-ade7-44f6-9357-417c58fd04ba/subagents/agent-aeecbc3d692103cb0.jsonl",
     "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-origin-reconcile/b26519ba-ade7-44f6-9357-417c58fd04ba/subagents/agent-aad139ff7ea8d1cfd.jsonl",
-    "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-origin-reconcile/b26519ba-ade7-44f6-9357-417c58fd04ba/subagents/agent-a0724417e68d492a6.jsonl"
+    "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-origin-reconcile/b26519ba-ade7-44f6-9357-417c58fd04ba/subagents/agent-a0724417e68d492a6.jsonl",
+    "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-origin-reconcile/b26519ba-ade7-44f6-9357-417c58fd04ba/subagents/agent-a4f2fd934f70dc88e.jsonl"
   ]
 }

@@ -10,8 +10,8 @@
 
 **Uses:**
 - `internal/fabricengine#ReconcileOrigin`
-- `plan:internal/pairteardown#HubSeamOptions`
-- `plan:internal/pairteardown#Teardown.OriginSeams`
+- `internal/pairteardown#HubSeamOptions`
+- `internal/pairteardown#Teardown.OriginSeams`
 - `internal/hibernateengine#PauseCaller`
 - `internal/testkit/boardkit#InstallReplay`
 

@@ -14,8 +14,8 @@
 **Uses:**
 - `internal/fabricengine#ReconcileOrigin`
 - `internal/fabricengine#FailedPushFields`
-- `plan:internal/pairteardown#HubSeamOptions`
-- `plan:internal/pairteardown#Teardown.OriginSeams`
+- `internal/pairteardown#HubSeamOptions`
+- `internal/pairteardown#Teardown.OriginSeams`
 
 **Intent:** D8's orch start: `lyx orch start` runs the hub reconcile before launching the session, and never refuses on it.
 `orchCLI` gains a `reconcile func() (fabricengine.OriginReport, error)` seam, which `Command`'s pre-run wires to `reconcileHub`: `fabricengine.ReconcileOrigin` over the hub scope with the seams of `pairteardown.New(prime).OriginSeams(pairteardown.HubSeamOptions(prime))` and zero options.
