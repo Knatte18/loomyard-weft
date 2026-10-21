@@ -1,8 +1,8 @@
 # Card 17 — origin-reconcile-ended
 
 **Create:**
-- `plan:internal/fabricengine#reconcileEnded` -> `func reconcileEnded(l *lyxcwd.Location, scope ReconcileScope, seams OriginSeams, ended EndedSet, res *OriginReport) error`
-- `plan:internal/fabricengine_test#TestReconcileOrigin_Ended` -> `func TestReconcileOrigin_Ended(t *testing.T)`
+- `internal/fabricengine#reconcileEnded`
+- `internal/fabricengine_test#TestReconcileOrigin_Ended`
 
 **Edit:**
 - `internal/fabricengine#ReconcileOrigin`

@@ -15,8 +15,8 @@
 
 **Uses:**
 - `internal/fabricengine#ReconcileOrigin`
-- `plan:internal/pairteardown#HubSeamOptions`
-- `plan:internal/pairteardown#Teardown.OriginSeams`
+- `internal/pairteardown#HubSeamOptions`
+- `internal/pairteardown#Teardown.OriginSeams`
 
 **Intent:** D8's Merge-In and Finalize: each runs the run-scope reconcile before acting on the parent (PATTERN-told-geometry: landingshed receives it as an injected seam).
 `Deps` gains `Reconcile func() (fabricengine.OriginReport, error)`, nil-is-absent like `CommitStatus`; `loomcli#landingDeps` fills it with `ReconcileOrigin` over the run scope of the task's slug, seams from `pairteardown.OriginSeams` with `HubSeamOptions`, and its drift guard keeps it filled.

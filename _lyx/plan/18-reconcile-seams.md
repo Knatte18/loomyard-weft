@@ -1,11 +1,11 @@
 # Card 18 — reconcile-seams
 
 **Create:**
-- `plan:internal/pairteardown#SeamOptions` -> `type SeamOptions struct`
-- `plan:internal/pairteardown#HubSeamOptions` -> `func HubSeamOptions(prime *lyxcwd.Location) SeamOptions`
-- `plan:internal/pairteardown#Teardown.OriginSeams` -> `func (t *Teardown) OriginSeams(opts SeamOptions) fabricengine.OriginSeams`
-- `plan:internal/pairteardown#TestTeardown_OriginSeams` -> `func TestTeardown_OriginSeams(t *testing.T)`
-- `plan:internal/pairteardown#TestHubSeamOptions` -> `func TestHubSeamOptions(t *testing.T)`
+- `internal/pairteardown#SeamOptions`
+- `internal/pairteardown#HubSeamOptions`
+- `internal/pairteardown#Teardown.OriginSeams`
+- `internal/pairteardown#TestTeardown_OriginSeams`
+- `internal/pairteardown#TestHubSeamOptions`
 
 **Uses:**
 - `internal/pairteardown#Teardown.probeQuiet`

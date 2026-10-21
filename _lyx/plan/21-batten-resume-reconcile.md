@@ -13,8 +13,8 @@
 
 **Uses:**
 - `internal/fabricengine#ReconcileOrigin`
-- `plan:internal/pairteardown#HubSeamOptions`
-- `plan:internal/pairteardown#Teardown.OriginSeams`
+- `internal/pairteardown#HubSeamOptions`
+- `internal/pairteardown#Teardown.OriginSeams`
 
 **Intent:** D8's batten resume: `lyx batten run <slug>` over an existing run record runs the run-scope reconcile first.
 `battenCLI` gains a `reconcile func(slug string) (fabricengine.OriginReport, error)` seam, which `Command` wires to `reconcileRun` (`ReconcileOrigin` over the run scope of the slug, seams from `pairteardown.OriginSeams` with `HubSeamOptions`); nil reads as no reconcile, which only struct-literal tests build.

@@ -22,8 +22,8 @@
 - `internal/fabricengine#ReconcileOptions`
 - `internal/fabricengine#OriginReport`
 - `internal/pauserecord#SetGateExempt`
-- `plan:internal/pairteardown#HubSeamOptions`
-- `plan:internal/pairteardown#Teardown.OriginSeams`
+- `internal/pairteardown#HubSeamOptions`
+- `internal/pairteardown#Teardown.OriginSeams`
 
 **Intent:** D8's wake: the hibernate daemon runs the hub reconcile after the wake and before it lifts its pause entry, through its `Deps` seams as it reaches tender today.
 `Deps` gains `Reconcile func() (WakeReconcile, error)` and `ExemptNetwork func(ref tenderengine.EntryRef) (restore func())`; the engine imports no fabricengine, so `WakeReconcile` is its own view of the report: unreachable, the D3 stop with its way forward, one `WakeRun` per stopped or ended entry (slug, stopped or ended, the stop's way forward, the busy flag, whether a parked push holds its weft's push lock, whether its stop is a branch gone on origin, landed or removed), and `Mutations []string`, one rendered line per entry of the report's mutation record.
