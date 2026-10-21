@@ -665,7 +665,7 @@
       }
     }
   ],
-  "currentBatch": 20,
+  "currentBatch": 0,
   "masterStrand": "02448d531431254d06731746ba0d5ba5",
   "masterSessionId": "3545de48-9210-4ab3-bc22-f514f7cbdd43",
   "masterEngine": "claude",
@@ -1003,8 +1003,22 @@
       "spawnedAt": "2026-10-21T08:04:41Z",
       "sessionId": "3545de48-9210-4ab3-bc22-f514f7cbdd43",
       "engine": "claude",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "20-status-spec-docs",
+        "status": "done",
+        "head_sha": "25674a058cbc250c292a88df7a875537e7a66b97"
+      },
+      "cardShas": [
+        "25674a058cbc250c292a88df7a875537e7a66b97"
+      ],
+      "forkTranscripts": [
+        "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-run-reentry/3545de48-9210-4ab3-bc22-f514f7cbdd43/subagents/agent-ad36a43f9e8d365cf.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-run-reentry/3545de48-9210-4ab3-bc22-f514f7cbdd43/subagents/agent-ad36a43f9e8d365cf.jsonl"
+      ]
     },
     "5": {
       "slug": "shedverbs-pause-label",
@@ -1132,6 +1146,7 @@
     "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-run-reentry/3545de48-9210-4ab3-bc22-f514f7cbdd43/subagents/agent-ae126b869a1fdd8de.jsonl",
     "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-run-reentry/3545de48-9210-4ab3-bc22-f514f7cbdd43/subagents/agent-a5d578a17417e195f.jsonl",
     "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-run-reentry/3545de48-9210-4ab3-bc22-f514f7cbdd43/subagents/agent-ad50edb3f7154a3fb.jsonl",
-    "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-run-reentry/3545de48-9210-4ab3-bc22-f514f7cbdd43/subagents/agent-a87e1201880a9daba.jsonl"
+    "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-run-reentry/3545de48-9210-4ab3-bc22-f514f7cbdd43/subagents/agent-a87e1201880a9daba.jsonl",
+    "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-run-reentry/3545de48-9210-4ab3-bc22-f514f7cbdd43/subagents/agent-ad36a43f9e8d365cf.jsonl"
   ]
 }
