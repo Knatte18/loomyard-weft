@@ -18,11 +18,11 @@
 - `internal/shedadapters/doc.go`
 
 **Create:**
-- `plan:internal/shedadapters#Bouncer.startNextGeneration` -> `func (b *Bouncer) startNextGeneration(ctx context.Context, settled settleRecord, base string) (shedengine.Outcome, shedengine.OutputPointer, error)`
-- `plan:internal/shedadapters#entryNewGeneration` -> `const entryNewGeneration`
-- `plan:internal/shedadapters#Bouncer.amendment` -> `func (b *Bouncer) amendment() (generationRecord, bool)`
-- `plan:internal/shedadapters#AmendmentNote` -> `func AmendmentNote(runDir string) string`
-- `plan:internal/shedadapters#TestBouncer_Amendment` -> `func TestBouncer_Amendment(t *testing.T)`
+- `internal/shedadapters#Bouncer.startNextGeneration`
+- `internal/shedadapters#entryNewGeneration`
+- `internal/shedadapters#Bouncer.amendment`
+- `internal/shedadapters#AmendmentNote`
+- `internal/shedadapters#TestBouncer_Amendment`
 
 **Uses:**
 - `internal/shedadapters#readGenerationRecord`
