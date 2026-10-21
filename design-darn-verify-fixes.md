@@ -2,8 +2,6 @@
 
 `darn-verify-fixes` · Task · bug, enhancement, batten, loom, shed, reed
 
-Depends on: [`origin-reconcile`](design-origin-reconcile.md)
-
 # Goal
 
 A verify failure that Darn-Write cannot own, one in a tier its session may not run or one the parent has already fixed, no longer loops through Darn-Write and escalates; and the two flaky reed tests behind both reports are made deterministic.
