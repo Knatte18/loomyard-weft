@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-21 16:08 UTC; every age below is as of then.
+Rendered 2026-10-21 16:26 UTC; every age below is as of then.
 
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
@@ -17,8 +17,8 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | **[.NET 002] Test tiers: every test run through lyx gate test, numbered tiers in hub config, computed scope**<br>• All testing goes through the gate slot pool against hub-declared tiers tier0..N, with scope computed from the diff; replaces the Go-only gate | [`test-tiers`](design-test-tiers.md) | loom | Webster | 4d | 4h | gate, config, shed, dotnet |
-| 2 | **The operator tuned loom defaults move into the lyx template, so every new hub gets them**<br>• New hubs seed neutral loom defaults; the loomyard hub tuning is the operator default and belongs in the template<br>• `profile: light` | [`tuned-defaults-template`](design-tuned-defaults-template.md) | loom | Webster-Burler-Fix | 4h | 4h | config, loom |
+| 1 | **[.NET 002] Test tiers: every test run through lyx gate test, numbered tiers in hub config, computed scope**<br>• All testing goes through the gate slot pool against hub-declared tiers tier0..N, with scope computed from the diff; replaces the Go-only gate | [`test-tiers`](design-test-tiers.md) | loom | Webster | 4d | 5h | gate, config, shed, dotnet |
+| 2 | **The operator tuned loom defaults move into the lyx template, so every new hub gets them**<br>• New hubs seed neutral loom defaults; the loomyard hub tuning is the operator default and belongs in the template<br>• `profile: light` | [`tuned-defaults-template`](design-tuned-defaults-template.md) | loom | Webster-Bouncer | 5h | 4h | config, loom |
 
 ### Ready
 
@@ -34,8 +34,8 @@ Waits on nothing open; can start now.
 
 | # | Task | Slug | Recipe | After | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 2 | **tender pause does not hold a verify gate's re-prompt, and creel interrupt is refused under the pause**<br>• `profile: light` | [`tender-pause-holds-reprompt`](design-tender-pause-holds-reprompt.md) | loom |  | 1d | 7h | creel, shed, webster |
-| 3 | **Darn-Write stops looping on verify failures it cannot own, and the two flaky reed tests behind them**<br>• A verify failure in a tier Darn-Write may not run, or one the parent already fixed, no longer loops and escalates<br>• `profile: light` | [`darn-verify-fixes`](design-darn-verify-fixes.md) | loom |  | 4d | 20h | batten, loom, shed, reed |
+| 2 | **tender pause does not hold a verify gate's re-prompt, and creel interrupt is refused under the pause**<br>• `profile: light` | [`tender-pause-holds-reprompt`](design-tender-pause-holds-reprompt.md) | loom |  | 1d | 8h | creel, shed, webster |
+| 3 | **Darn-Write stops looping on verify failures it cannot own, and the two flaky reed tests behind them**<br>• A verify failure in a tier Darn-Write may not run, or one the parent already fixed, no longer loops and escalates<br>• `profile: light` | [`darn-verify-fixes`](design-darn-verify-fixes.md) | loom |  | 4d | 21h | batten, loom, shed, reed |
 
 ### Layer A
 
@@ -45,13 +45,13 @@ Waits only on Running or Ready entries.
 
 | # | Task | Slug | Recipe | After | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | **Every process a run spawns has one owner that ends them all**<br>• Owner records for run processes; pause, reed down, fabric remove and teardown end the whole group; tender status shows orphans; batten abandon ends a dead run; a hub pause reaches background work | [`run-process-ownership`](design-run-process-ownership.md) | loom | `machine-handover`, `tender-pause-holds-reprompt` | 6d | 20h | batten, fabric, loom, shed, shuttle, webster |
+| 1 | **Every process a run spawns has one owner that ends them all**<br>• Owner records for run processes; pause, reed down, fabric remove and teardown end the whole group; tender status shows orphans; batten abandon ends a dead run; a hub pause reaches background work | [`run-process-ownership`](design-run-process-ownership.md) | loom | `machine-handover`, `tender-pause-holds-reprompt` | 6d | 21h | batten, fabric, loom, shed, shuttle, webster |
 
 #### Normal priority
 
 | # | Task | Slug | Recipe | After | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 2 | **Finalize blocks on 'worktree dirty' without naming the tree or paths, and the loom's own run record counts as dirty**<br>• `profile: light` | [`finalize-dirty-names-paths`](design-finalize-dirty-names-paths.md) | loom | `machine-handover`, `darn-verify-fixes` | 20h | 20h | fabric, loom |
+| 2 | **Finalize blocks on 'worktree dirty' without naming the tree or paths, and the loom's own run record counts as dirty**<br>• `profile: light` | [`finalize-dirty-names-paths`](design-finalize-dirty-names-paths.md) | loom | `machine-handover`, `darn-verify-fixes` | 21h | 21h | fabric, loom |
 
 ### Layer B
 
@@ -61,7 +61,7 @@ Starts when every entry it names under After is done.
 
 | # | Task | Slug | Recipe | After | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | **No way to cancel a batten run that stopped before its pair exists**<br>• `profile: light` | [`batten-cancel-verb`](design-batten-cancel-verb.md) | loom | `run-process-ownership`, `darn-verify-fixes` | 20h | 20h | batten |
+| 1 | **No way to cancel a batten run that stopped before its pair exists**<br>• `profile: light` | [`batten-cancel-verb`](design-batten-cancel-verb.md) | loom | `run-process-ownership`, `darn-verify-fixes` | 21h | 20h | batten |
 | 2 | **Orch lifecycle: dead strands count as dead, the watcher restarts, cycle requests need no reply and can be withdrawn**<br>• Strand liveness checks the engine process and placement, a dead orch watcher restarts, the note write is seen without a reply, and a pending distill/refresh can be withdrawn<br>• `profile: light` | [`orch-strand-cycle`](design-orch-strand-cycle.md) | loom | `machine-handover`, `darn-verify-fixes`, `run-process-ownership` | 3d | 4h | orch, reed |
 
 ## Notes
@@ -90,7 +90,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | # | Note | Slug | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | 1 | **fabric add refuses an existing local branch instead of adopting it**<br>• lyx fabric add adopts origin branches but refuses a local unmarked warp branch, so main or an umbrella branch cannot get a pair | [`fabric-add-adopt-local`](design-fabric-add-adopt-local.md) | 9h | 9h | fabric, workspaces |
-| 2 | **No way to stop a live run for good: killed parts come back, the claim stays**<br>• A verb that ends a live run at once, stops reed relaunching it, clears the board claim and optionally removes the pair | [`batten-abort-live-run`](design-batten-abort-live-run.md) | 4h | 4h | batten, reed, shed |
+| 2 | **No way to stop a live run for good: killed parts come back, the claim stays**<br>• A verb that ends a live run at once, stops reed relaunching it, clears the board claim and optionally removes the pair | [`batten-abort-live-run`](design-batten-abort-live-run.md) | 5h | 5h | batten, reed, shed |
 
 #### Normal priority
 
@@ -114,13 +114,13 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | --- | --- | --- | --- | --- | --- |
 | 2 | **Codex CLI as a second shuttle engine: hands-on spike, then codexengine**<br>• Codex CLI as a second engine to offload Claude tokens: short hands-on tests first, then a codexengine for single-session roles | [`codex-engine`](design-codex-engine.md) | 2w | 6d | shuttle, codex |
 | 3 | **finalize: the discrepancy-document conflict shape**<br>• Divergences that cannot be a git conflict get a precomputed document for the resolving agent instead of markers | [`finalize-discrepancy-doc`](design-finalize-discrepancy-doc.md) | 2w | 2w | fabric, loom |
-| 4 | **[.NET 005] Verification protocol for a .NET repo: slow-suite tier, numerical-baseline capture/compare, verify timeouts and logs** | [`dotnet-verify-protocol`](design-dotnet-verify-protocol.md) | 2w | 4h | loom, webster, config, dotnet |
+| 4 | **[.NET 005] Verification protocol for a .NET repo: slow-suite tier, numerical-baseline capture/compare, verify timeouts and logs** | [`dotnet-verify-protocol`](design-dotnet-verify-protocol.md) | 2w | 5h | loom, webster, config, dotnet |
 | 5 | **Run verbs in one shared namespace, not under lyx loom**<br>• lyx loom decision/status/goto/approve act on darn runs too; move recipe-neutral run verbs to one shared namespace | [`run-verbs-shared`](design-run-verbs-shared.md) | 6d | 6d | shed, loom |
 | 6 | **The arbiter in shed for every shed run, batten included**<br>• The batten Go driver has a tackler but no arbiter; move the arbiter and its keys into shed beside the tackler | [`shed-arbiter-all`](design-shed-arbiter-all.md) | 6d | 6d | shed, batten, loom, config |
 | 7 | **Paste cited code into a review rounds context**<br>• Reviewers edit nothing and review a fixed commit, so code pasted at round start cannot go stale; measure it against todays reviewer | [`review-inline-code`](design-review-inline-code.md) | 10d | 5d | burler, stencil |
 | 8 | **Module labels from what a task touches, not only what it is about**<br>• Half the landings that changed the shuttle core lacked the shuttle label; derive or check module labels from the plan and the diff | [`labels-from-diff`](design-labels-from-diff.md) | 6d | 6d | board, loom |
 | 9 | **Start one task per overlapping group at a newly-ready start**<br>• When a landing makes several overlapping tasks ready at once, batten starts one per group and names the rest in its notice | [`batten-ready-overlap`](design-batten-ready-overlap.md) | 6d | 6d | batten |
-| 10 | **Git test fixtures trip Cortex XDR on the work laptop**<br>• Parallel git-heavy tests create so many files at once that Cortex XDR killed VS Code and then crashed itself, twice; tests must stay usable on a machine with endpoint protection | [`xdr-git-test-file-burst`](design-xdr-git-test-file-burst.md) | 5d | 22h | fabric |
+| 10 | **Git test fixtures trip Cortex XDR on the work laptop**<br>• Parallel git-heavy tests create so many files at once that Cortex XDR killed VS Code and then crashed itself, twice; tests must stay usable on a machine with endpoint protection | [`xdr-git-test-file-burst`](design-xdr-git-test-file-burst.md) | 5d | 23h | fabric |
 | 11 | **Rename the lyx binary to lyr (name clash with LyX)** | [`rename-binary-lyr`](design-rename-binary-lyr.md) | 5d | 4d | stencil, shuttle |
 | 12 | **Entry gate on shed rows: a check decides whether a row runs at all**<br>• Replace darn recipe edge rewrite and the switched producer flag check with one shed entry gate per row; false means Done without acting. | [`row-entry-gate`](design-row-entry-gate.md) | 4d | 3d | shed, loom, batten |
 | 13 | **Remove the Webster kick-start pack**<br>• Drop every kick-start pack layout and its code; glyphs stay in the plan and its gates | [`kickstart-pack-remove`](design-kickstart-pack-remove.md) | 4d | 3d | webster, quarry, loom |
@@ -133,18 +133,18 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 20 | **lyx batten run starts in its own window by default**<br>• Every batten run is started with --window, so the window should be the default and foreground the opt-in. | [`batten-window-default`](design-batten-window-default.md) | 2d | 2d | batten, reed, orch |
 | 21 | **A halt a plan card asks for reaches the parent as a question, not as a batch failure**<br>• A card-requested halt went through recover-batch, tackler and arbiter as a failure; it should go straight to the parent and the next attempt should carry the decision | [`card-halt-is-question`](design-card-halt-is-question.md) | 1d | 1d | webster, shed, loom |
 | 22 | **A question research can settle is settled in Discussion, never deferred to Plan or an implementer**<br>• Discussion writer researches the facts its design rests on; reviewers flag a deferred research question or a halt-on-discovery rule | [`research-in-discussion`](design-research-in-discussion.md) | 1d | 1d | loom, stencil, burler |
-| 23 | **Cortex XDR holds stack up across a loom run's card, batch, round and whole-suite gates**<br>• Each gate that tests a just-changed package waits 8-10 s for XDR; a 10-15 card run pays that many times over | [`loom-gates-xdr-stacking`](design-loom-gates-xdr-stacking.md) | 22h | 20h | webster, loom, gate |
-| 24 | **[.NET 007] Language-specific lens sets seeded per hub**<br>• Every hub seeds lenses.yaml from one Go-repo template; seed by the hub language instead | [`lenses-language-sets`](design-lenses-language-sets.md) | 21h | 20h | burler, config, dotnet |
+| 23 | **Cortex XDR holds stack up across a loom run's card, batch, round and whole-suite gates**<br>• Each gate that tests a just-changed package waits 8-10 s for XDR; a 10-15 card run pays that many times over | [`loom-gates-xdr-stacking`](design-loom-gates-xdr-stacking.md) | 23h | 20h | webster, loom, gate |
+| 24 | **[.NET 007] Language-specific lens sets seeded per hub**<br>• Every hub seeds lenses.yaml from one Go-repo template; seed by the hub language instead | [`lenses-language-sets`](design-lenses-language-sets.md) | 21h | 21h | burler, config, dotnet |
 
 #### Low priority
 
 | # | Note | Slug | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| 25 | **Fabric's Windows path behaviour verified on a Windows host**<br>• Unverified after six hardening rounds; needs a Windows host, not design; take it only if Windows becomes relevant | [`fabric-windows`](design-fabric-windows.md) | 2w | 7h | fabric |
+| 25 | **Fabric's Windows path behaviour verified on a Windows host**<br>• Unverified after six hardening rounds; needs a Windows host, not design; take it only if Windows becomes relevant | [`fabric-windows`](design-fabric-windows.md) | 2w | 8h | fabric |
 | 26 | **warp-visibility: CLAUDE.local.md invisible in the Fabric repo's git history**<br>• Expose CLAUDE.local.md by symlink so nothing lyx-related shows in the Fabric repo's history; the constraints half is out of date | [`warp-visibility`](design-warp-visibility.md) | 2w |  | ide, fabric |
 | 27 | **Windows verify timeout kills the whole process tree**<br>• On Windows the verifytree timeout kills only the shell, not the process tree it started | [`verify-watchdog`](design-verify-watchdog.md) | 2w | 5d | shed |
 | 28 | **[WS 007] An anchor per umbrella**<br>• Let an umbrella work in its own subdirectory of the repository, inherited by its tasks; hard to change now | [`umbrella-anchor`](design-umbrella-anchor.md) | 3d | 3d | fabric, config, workspaces |
-| 29 | **lyx gate status: which run and tier holds each gate slot**<br>• Show taken gate slots, by run and tier, and since when | [`gate-status`](design-gate-status.md) | 4h | 4h | gate |
+| 29 | **lyx gate status: which run and tier holds each gate slot**<br>• Show taken gate slots, by run and tier, and since when | [`gate-status`](design-gate-status.md) | 5h | 5h | gate |
 
 ### Features
 
@@ -175,7 +175,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 16 | **Spawn audit log: every process lyx starts is recorded and traceable**<br>• One recorded launch path and a hub-wide spawn log with owner, argv and resource use, plus a sampler and a summary verb, so a process storm can be traced after a crash | [`spawn-audit-log`](design-spawn-audit-log.md) | 12d | 9d | reed, shuttle, config |
 | 17 | **Configurable action buttons on the reed status bar**<br>• Clickable status-bar buttons that run configured commands: VS Code, orch distill/refresh, the follow toggle and more | [`reed-status-buttons`](design-reed-status-buttons.md) | 6d | 6d | reed, config |
 | 18 | **Ideas to borrow from comparable agent orchestrators (survey, Oct 2026)** | [`orchestrator-survey-ideas`](design-orchestrator-survey-ideas.md) | 5d | 4d | burler, shed, orch, quarry, report |
-| 19 | **[.NET 004] Asynchronous test tiers in shed: the numerical baseline captured before implementation, compared at the final gate**<br>• Support a hub regression tier that writes profiles on the parent before implementation and compares after, switchable per task for expected drift. | [`regression-baseline-verify`](design-regression-baseline-verify.md) | 4d | 4h | shed, webster, batten, config, dotnet |
+| 19 | **[.NET 004] Asynchronous test tiers in shed: the numerical baseline captured before implementation, compared at the final gate**<br>• Support a hub regression tier that writes profiles on the parent before implementation and compares after, switchable per task for expected drift. | [`regression-baseline-verify`](design-regression-baseline-verify.md) | 4d | 5h | shed, webster, batten, config, dotnet |
 
 #### Low priority
 
