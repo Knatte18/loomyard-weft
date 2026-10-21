@@ -778,7 +778,7 @@
       }
     }
   ],
-  "currentBatch": 0,
+  "currentBatch": 17,
   "masterStrand": "6f56338668c07f063671518ad01fb02d",
   "masterSessionId": "9216b63a-fe9f-48ce-93a3-9e8a3200b274",
   "masterEngine": "claude",
@@ -1115,6 +1115,22 @@
       "bracketTranscripts": [
         "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-test-tiers/9216b63a-fe9f-48ce-93a3-9e8a3200b274/subagents/agent-a8c6746a4657c18b0.jsonl"
       ]
+    },
+    "17": {
+      "slug": "refuse-raw-guard",
+      "cards": [
+        "17-refuse-raw-guard"
+      ],
+      "cardHashes": {
+        "17-refuse-raw-guard": "1e0a1ad953742c9487841ad5e818153c77fa4b110feda84ed60fea031bc516a3"
+      },
+      "startSha": "b7561c5c599464b6608f306c05990a7606dc1796",
+      "kind": "fork",
+      "spawnedAt": "2026-10-21T18:01:58Z",
+      "sessionId": "9216b63a-fe9f-48ce-93a3-9e8a3200b274",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
     },
     "4": {
       "slug": "gate-run-log",
