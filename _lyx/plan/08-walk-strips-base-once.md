@@ -24,9 +24,9 @@
 
 **Uses:**
 - `internal/configsync#ReconcileHubWideAt`
-- `plan:internal/configengine#BaseSparseMarker`
-- `plan:internal/configengine#BaseSparseMarkerRel`
-- `plan:internal/configengine#SparseBaseHeader`
+- `internal/configengine#BaseSparseMarker`
+- `internal/configengine#BaseSparseMarkerRel`
+- `internal/configengine#SparseBaseHeader`
 - `internal/hubreconcile_test#newStaleHub`
 - `internal/hubreconcile_test#geometryOf`
 - `internal/hubreconcile_test#writeCurrentStamp`

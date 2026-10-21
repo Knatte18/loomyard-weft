@@ -21,12 +21,12 @@
 - `PATTERN.md`
 
 **Uses:**
-- `plan:internal/configsync#formerValuesDoc`
+- `internal/configsync#formerValuesDoc`
 - `internal/configsync#writeModuleFile`
 - `internal/configsync#findResult`
 - `internal/configsync#lensesFixture`
-- `plan:internal/configengine#SparseBaseHeader`
-- `plan:internal/configengine#BaseSparseMarker`
+- `internal/configengine#SparseBaseHeader`
+- `internal/configengine#BaseSparseMarker`
 
 **Intent:**
 `ReconcileHubWideAt` keeps every base file at the board dir sparse (D2, D4) and carries D3's one-time strip behind a walk-only option.

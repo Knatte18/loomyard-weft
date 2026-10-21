@@ -12,9 +12,9 @@
 
 **Uses:**
 - `plan:internal/configsync#WriteBaseSparseMarker`
-- `plan:internal/configengine#BaseSparseMarker`
-- `plan:internal/configengine#BaseSparseMarkerRel`
-- `plan:internal/configengine#SparseBaseHeader`
+- `internal/configengine#BaseSparseMarker`
+- `internal/configengine#BaseSparseMarkerRel`
+- `internal/configengine#SparseBaseHeader`
 - `internal/fabriccli_test#makeCLICloneWarpBare`
 - `internal/fabriccli_test#makeCLICloneWeftBare`
 - `internal/fabriccli_test#gitOutputCLI`
