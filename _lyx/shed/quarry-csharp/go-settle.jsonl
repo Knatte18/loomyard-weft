@@ -1,0 +1,4 @@
+{"stop_key":{"current_producer":"Discussion-Write","history_length":2,"state":"failed"},"settler":"go-rule","action":"hand-over","outcome":"handed over to a fresh driver","at":"2026-10-21T13:22:36.850993775+02:00","build":"860c5d0334a1"}
+{"stop_key":{"current_producer":"Discussion-Write","history_length":2,"state":"failed"},"settler":"tackler","action":"spawn","outcome":"tackler spawned","at":"2026-10-21T13:24:53.882790684+02:00","target":"attempt-1"}
+{"stop_key":{"current_producer":"Discussion-Write","history_length":2,"state":"failed"},"settler":"tackler","action":"restep","outcome":"tackler resume","at":"2026-10-21T13:24:53.961938917+02:00"}
+{"stop_key":{"current_producer":"Discussion-Write","history_length":2,"state":"failed"},"settler":"parent","action":"hand-back","outcome":"the arbiter refused the stop","at":"2026-10-21T13:26:25.325069594+02:00"}
