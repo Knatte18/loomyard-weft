@@ -1,8 +1,8 @@
 # Card 21 — batten-resume-reconcile
 
 **Create:**
-- `plan:internal/battencli#reconcileRun` -> `func reconcileRun(location *lyxcwd.Location, slug string) (fabricengine.OriginReport, error)`
-- `plan:internal/battencli#resumeRefusal` -> `func resumeRefusal(slug string, report fabricengine.OriginReport) error`
+- `internal/battencli#reconcileRun`
+- `internal/battencli#resumeRefusal`
 
 **Edit:**
 - `internal/battencli#battenCLI`
