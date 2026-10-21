@@ -1,0 +1,137 @@
+{
+  "runGuid": "3729199f80954454133c85e94dbdc509",
+  "planFingerprint": "3f0860e2ee7d87e257891d1ee1bff73c3e8db1dd33b72c1445566f6a14d21922",
+  "planFileHashes": {
+    "00-overview.md": "1a17ea8e45e6442dac7fc5462fac836fa272e2209d24d3e1f679c9ae886305c6",
+    "01-scratch-link-wiring.md": "a96c0da19bc15c310f21f32a00d06776937749f38f9f1b4307a0f8f8c642f4bb",
+    "02-reconcile-converges-scratch.md": "8b8417d4af3ba770474d47018ed8d91fe5619bc99f1a71e69ee60b32aa6db4af",
+    "03-remove-unlinks-scratch.md": "b7f6f614a6c9e90b7e05f2640ee8e00062d68200e4d803e601148a8ee6dcf6e9",
+    "04-cleanup-follows-scratch-link.md": "9bbdc01a194db35ecb7cda74a41aae55b49b175d8329df68f8f5eaa3ce5865a6"
+  },
+  "planOverviewFrameHash": "4bc56a160566289bfbf20e168625d5a1537b60785afc083cb6163e66739c4ad8",
+  "partition": [
+    {
+      "cards": [
+        "01-scratch-link-wiring"
+      ],
+      "profile": "cautious",
+      "estimate": 184386,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 1,
+        "startup": 54436,
+        "read_union": 30728,
+        "cards": [
+          {
+            "card": 1,
+            "card_text": 1572,
+            "reads": {
+              "file:internal/fabricengine/doc.go": 17508,
+              "file:internal/fabricengine/livestate_doc_test.go": 3648,
+              "package:cmd/lyx": 2000,
+              "package:internal/fabricengine": 2000,
+              "tests:cmd/lyx": 2000,
+              "tests:internal/fabricengine": 2000
+            },
+            "messages": 325.5,
+            "written": 99222
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "02-reconcile-converges-scratch",
+        "03-remove-unlinks-scratch",
+        "04-cleanup-follows-scratch-link"
+      ],
+      "profile": "cautious",
+      "estimate": 180316,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 2,
+        "startup": 61436,
+        "read_union": 27392,
+        "cards": [
+          {
+            "card": 2,
+            "card_text": 648,
+            "reads": {
+              "file:internal/fabricengine/doc.go": 17508,
+              "package:internal/fabricengine": 2000,
+              "tests:internal/fabricengine": 2000
+            },
+            "messages": 154,
+            "written": 46848
+          },
+          {
+            "card": 3,
+            "card_text": 516,
+            "reads": {
+              "file:internal/fabricengine/doc.go": 17508,
+              "package:internal/fabricengine": 2000,
+              "tests:internal/fabricengine": 2000
+            },
+            "messages": 128,
+            "written": 38916
+          },
+          {
+            "card": 4,
+            "card_text": 324,
+            "reads": {
+              "file:internal/cleanupcli/doc.go": 396,
+              "package:internal/cleanupcli": 2000,
+              "tests:internal/cleanupcli": 2000
+            },
+            "messages": 18,
+            "written": 5724
+          }
+        ]
+      }
+    }
+  ],
+  "currentBatch": 1,
+  "masterStrand": "674ef7c6cd3d1f70f2f8285e851bec2e",
+  "masterSessionId": "e125ed41-5d60-46fd-8566-0a4cfda62dc0",
+  "masterEngine": "claude",
+  "batches": {
+    "1": {
+      "slug": "scratch-link-wiring",
+      "cards": [
+        "01-scratch-link-wiring"
+      ],
+      "cardHashes": {
+        "01-scratch-link-wiring": "a96c0da19bc15c310f21f32a00d06776937749f38f9f1b4307a0f8f8c642f4bb"
+      },
+      "startSha": "0ffd168b081c8a958d63e1284547635302df36c2",
+      "kind": "fork",
+      "spawnedAt": "2026-10-21T07:51:50Z",
+      "sessionId": "e125ed41-5d60-46fd-8566-0a4cfda62dc0",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
+    }
+  }
+}
