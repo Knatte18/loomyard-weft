@@ -1,0 +1,11 @@
+{
+  "verdict": "hand-back",
+  "reason": "The producer Plan-Burler-Fix (round 3, attempt 3) was refused because the strand name \"ly:test-tiers:plan-burler-fix\" is held by a dead reed record. `lyx reed list` shows guid b03b580ab0580c259992413d25255e25 under that name with live: false, empty pane_id and empty title. No window named plan-burler-fix exists in the test-tiers tmux session. The strand this step started (guid 8c1a5f2602182344ddb5b6c0a7d4282e, window @7, pane %9) is no longer in the reed list, so it was removed. The retry therefore started as \"ly:test-tiers:plan-burler-fix-2\". The step's own error names the fix: `lyx reed remove --name ly:test-tiers:plan-burler-fix`, then re-step the row. A plain re-launch would hit the same collision, and this tackler may not run a run-changing lyx verb, so the run's parent has to clear the record.\n",
+  "question": "Plan-Burler-Fix (round 3, attempt 3) is refused because reed still holds a dead record named \"ly:test-tiers:plan-burler-fix\" (guid b03b580ab0580c259992413d25255e25, live: false, no pane, no tmux window). Please confirm that record is stale, run `lyx reed remove --name ly:test-tiers:plan-burler-fix` in the test-tiers worktree, then re-step the Plan-Burler-Fix row. Its round-3 fixer report is at _lyx/reviews/plan/round-3-fixer-report.md.\n",
+  "goto": "",
+  "cause": "",
+  "attempt": 1,
+  "attempt_dir": "/home/AD.NORCERESEARCH.NO/hanf/Code/Knatte18/loomyard-LYXHUB/test-tiers/_lyx/shed/test-tiers/tackler/attempt-1",
+  "verdict_path": "/home/AD.NORCERESEARCH.NO/hanf/Code/Knatte18/loomyard-LYXHUB/test-tiers/_lyx/shed/test-tiers/tackler/attempt-1/verdict.yaml",
+  "case_brief_path": ""
+}
