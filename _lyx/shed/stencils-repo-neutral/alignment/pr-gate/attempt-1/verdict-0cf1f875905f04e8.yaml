@@ -1,0 +1,4 @@
+verdict: approve
+reason: The diff removes every LoomYard PATTERN citation and the lyx CLI-shape rule from the shipped stencils and the deployed loom-plan-spec, and replaces the plan rubric's CLI bullet with a PATTERN-fit check against the hub's own PATTERN.md that does not apply without one, as the board entry and the operator's direction ask; no peer run or parent commit overlaps.
+question: ""
+superseded: []
