@@ -1,12 +1,12 @@
 # Card 7 — gate-counters
 
 **Create:**
-- `plan:internal/gatecli#tierCounts` -> `type tierCounts struct`
-- `plan:internal/gatecli#counter` -> `type counter interface`
-- `plan:internal/gatecli#newCounter` -> `func newCounter(kind string, out io.Writer) (counter, error)`
-- `plan:internal/gatecli#goJSONCounter` -> `type goJSONCounter struct`
-- `plan:internal/gatecli#vstestCounter` -> `type vstestCounter struct`
-- `plan:internal/gatecli#TestCounters` -> `func TestCounters(t *testing.T)`
+- `internal/gatecli#tierCounts`
+- `internal/gatecli#counter`
+- `internal/gatecli#newCounter`
+- `internal/gatecli#goJSONCounter`
+- `internal/gatecli#vstestCounter`
+- `internal/gatecli#TestCounters`
 
 **Intent:**
 Name the two counters a tier declares (D7), so every tier run reports what it discovered and a Go tier's `-json` output reads as text.

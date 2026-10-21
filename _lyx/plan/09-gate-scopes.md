@@ -13,8 +13,8 @@
 - `internal/gatecli/doc.go`
 
 **Uses:**
-- `plan:internal/impactset#DeriveTargets`
-- `plan:internal/planparser#CardPackages`
+- `internal/impactset#DeriveTargets`
+- `internal/planparser#CardPackages`
 - `internal/planparser#ParsePlan`
 - `internal/planparser#PlanDir`
 - `plan:internal/gatecli#runGuardStep`

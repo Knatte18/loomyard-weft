@@ -1,14 +1,14 @@
 # Card 4 — gate-run-log
 
 **Create:**
-- `plan:internal/gateslot#RunRecord` -> `type RunRecord struct`
-- `plan:internal/gateslot#RunLogDir` -> `func RunLogDir(gateDir string) string`
-- `plan:internal/gateslot#WriteRunRecord` -> `func WriteRunRecord(dir string, record RunRecord, output []byte, now time.Time) (string, error)`
-- `plan:internal/gateslot#TierTimeoutLine` -> `func TierTimeoutLine(tier string, timeout time.Duration) string`
-- `plan:internal/gateslot#FindTierTimeout` -> `func FindTierTimeout(log string) (tier string, ok bool)`
-- `plan:internal/gateslot#TierSummaryLine` -> `func TierSummaryLine(record RunRecord, logPath string) string`
-- `plan:internal/gateslot#FailedTier` -> `func FailedTier(log string) (tier int, ok bool)`
-- `plan:internal/gateslot#TestWriteRunRecord` -> `func TestWriteRunRecord(t *testing.T)`
+- `internal/gateslot#RunRecord`
+- `internal/gateslot#RunLogDir`
+- `internal/gateslot#WriteRunRecord`
+- `internal/gateslot#TierTimeoutLine`
+- `internal/gateslot#FindTierTimeout`
+- `internal/gateslot#TierSummaryLine`
+- `internal/gateslot#FailedTier`
+- `internal/gateslot#TestWriteRunRecord`
 
 **Edit:**
 - `internal/gateslot#TestWatchdogLine`

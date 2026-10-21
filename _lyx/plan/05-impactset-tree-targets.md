@@ -1,12 +1,12 @@
 # Card 5 — impactset-tree-targets
 
 **Create:**
-- `plan:internal/impactset#Targets` -> `type Targets struct`
-- `plan:internal/impactset#ModuleTargets` -> `type ModuleTargets struct`
-- `plan:internal/impactset#DeriveTargets` -> `func DeriveTargets(ctx context.Context, worktree, base string) (Targets, error)`
-- `plan:internal/impactset#changedPathsInTree` -> `func changedPathsInTree(ctx context.Context, worktree, base string) ([]string, error)`
-- `plan:internal/impactset#targetsFor` -> `func targetsFor(graph moduleGraph, changedPaths []string, guards map[string][]string) Targets`
-- `plan:internal/impactset#TestTargetsFor` -> `func TestTargetsFor(t *testing.T)`
+- `internal/impactset#Targets`
+- `internal/impactset#ModuleTargets`
+- `internal/impactset#DeriveTargets`
+- `internal/impactset#changedPathsInTree`
+- `internal/impactset#targetsFor`
+- `internal/impactset#TestTargetsFor`
 
 **Edit:**
 - `internal/impactset#listPackages` -> `func listPackages(ctx context.Context, worktree string) ([]pkg, error)`

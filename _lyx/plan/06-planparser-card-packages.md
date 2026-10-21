@@ -1,9 +1,9 @@
 # Card 6 — planparser-card-packages
 
 **Create:**
-- `plan:internal/planparser#ModulePackages` -> `type ModulePackages struct`
-- `plan:internal/planparser#CardPackages` -> `func CardPackages(plan *Plan, cards []Card, worktree string) []ModulePackages`
-- `plan:internal/planparser_test#TestCardPackages` -> `func TestCardPackages(t *testing.T)`
+- `internal/planparser#ModulePackages`
+- `internal/planparser#CardPackages`
+- `internal/planparser_test#TestCardPackages`
 
 **Edit:**
 - `internal/websterengine#gateScopeOf`
