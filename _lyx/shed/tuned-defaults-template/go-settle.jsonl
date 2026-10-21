@@ -1,0 +1,2 @@
+{"stop_key":{"current_producer":"Merge-In","history_length":27,"state":"failed"},"settler":"go-rule","action":"restep","outcome":"an interrupted step under the reinvoke policy: re-step","at":"2026-10-21T17:21:54.352020844+02:00"}
+{"stop_key":{"current_producer":"Publish","history_length":33,"state":"blocked"},"settler":"parent","action":"hand-back","outcome":"a verify halt matching the failure record under a watching batten: hand back","at":"2026-10-21T18:05:41.950590754+02:00"}
