@@ -335,6 +335,12 @@ Rationale: A branch reads rewound only when origin's head is already an ancestor
   - unclassified-push-failure-unrecorded (class design, severity MEDIUM, open in rounds 1)
 <!-- /lyx:carry-over Webster-Review -->
 
+<!-- lyx:carry-over Merge-Review -->
+- Merge-Review, round 1: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
+  Review: _lyx/reviews/merge/round-1-review.md; fixer report: _lyx/reviews/merge/round-1-fixer-report.md.
+  - merged-overview-drops-parent-wording (class consistency, severity MEDIUM, open in rounds 1)
+<!-- /lyx:carry-over Merge-Review -->
+
 ## Acceptance criteria
 
 - Two clones of one origin: origin moved on a weft, Bolt and warp `main` with nothing local only; a hub reconcile fast-forwards all three and reports each.
