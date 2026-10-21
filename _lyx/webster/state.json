@@ -749,7 +749,7 @@
       }
     }
   ],
-  "currentBatch": 0,
+  "currentBatch": 15,
   "masterStrand": "d26ba69a79fb575f7e87b499eb76f785",
   "masterSessionId": "b26519ba-ade7-44f6-9357-417c58fd04ba",
   "masterEngine": "claude",
@@ -905,6 +905,22 @@
       "bracketTranscripts": [
         "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-origin-reconcile/b26519ba-ade7-44f6-9357-417c58fd04ba/subagents/agent-aeecbc3d692103cb0.jsonl"
       ]
+    },
+    "15": {
+      "slug": "origin-reconcile-judge",
+      "cards": [
+        "15-origin-reconcile-judge"
+      ],
+      "cardHashes": {
+        "15-origin-reconcile-judge": "055c410a9e4ce54efff0cc8fe728067f8c289dd6a1fb7ea4ed34fed30519c709"
+      },
+      "startSha": "6021fed6522c45f79e42c3605d65e4385e6a6010",
+      "kind": "fork",
+      "spawnedAt": "2026-10-21T07:42:47Z",
+      "sessionId": "b26519ba-ade7-44f6-9357-417c58fd04ba",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
     },
     "3": {
       "slug": "board-replay-seam",
