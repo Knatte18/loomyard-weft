@@ -1,6 +1,9 @@
 {
   "number": 1,
   "judge_subject": {
-    "kind": ""
-  }
+    "kind": "document",
+    "hash": "ccc51808d1cb648fc9710efe4d3a29086a24a257e8c89e3f7b39d12dbb59add4"
+  },
+  "judge_base": "243872c6d1fca2bed8e2b9ce680eea2c7065faae",
+  "judge_at": "2026-10-21T11:58:45Z"
 }
