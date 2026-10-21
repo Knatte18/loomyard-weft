@@ -1,11 +1,11 @@
 {
-  "current_producer": "Plan-Burler-Fix",
+  "current_producer": "Plan-Bouncer",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Plan-Burler-Fix",
-    "last": "Plan-Burler-Review → bounced to Plan-Burler-Fix",
+    "now": "Plan-Bouncer",
+    "last": "Plan-Burler-Fix → bounced to Plan-Bouncer",
     "wait": ""
   },
   "history": [
@@ -258,6 +258,14 @@
       ],
       "budget_exempt": true,
       "routed_to": "Plan-Burler-Fix"
+    },
+    {
+      "producer": "Plan-Burler-Fix",
+      "outcome": "stuck",
+      "output": "/home/AD.NORCERESEARCH.NO/hanf/Code/Knatte18/loomyard-LYXHUB/tuned-defaults-template/_lyx/reviews/plan/round-2-review.md",
+      "at": "2026-10-21T12:48:39Z",
+      "budget_exempt": true,
+      "routed_to": "Plan-Bouncer"
     }
   ],
   "product": {
