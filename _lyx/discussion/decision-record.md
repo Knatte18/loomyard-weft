@@ -240,6 +240,12 @@ Rationale: the chair's `done` with no forks in issue #756 was a stalled round, n
   - rewritten-sentence-carrier-not-listed-glyph (class design, severity MEDIUM, open in rounds 4)
 <!-- /lyx:carry-over Plan-Review -->
 
+<!-- lyx:carry-over Webster-Review -->
+- Webster-Review, round 1: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
+  Review: _lyx/reviews/webster/round-1-review.md; fixer report: _lyx/reviews/webster/round-1-fixer-report.md.
+  - undeclared-pattern-overview-edits (class design, severity BLOCKING, open in rounds 1)
+<!-- /lyx:carry-over Webster-Review -->
+
 ## Acceptance criteria
 
 - A goto into a segment with Stucks in its current episode leaves the count where it stood, for Shed's block and for the Bouncer's `Bounces` seam alike; a reroute still ends its target segment's episode.
