@@ -12,7 +12,7 @@
 - `internal/fabricengine#recordsConflictWayForward`
 - `plan:internal/fabricengine#replayBolt`
 - `plan:internal/fabricengine#readEndedSet`
-- `plan:internal/testkit/boardkit#InstallReplay`
+- `internal/testkit/boardkit#InstallReplay`
 
 **Intent:** Bolt's pull-first becomes a case of D5's replay.
 `Bolt.pullFirst` keeps its fetch, its locks (`board.lock` held by the caller, `.gitrepo-push.lock` taken here) and its fast-forward of a Bolt only behind; where Bolt holds commits the moved upstream lacks it now reads the ended set from the fetched origin Bolt tip and its history (`readEndedSet`, the slugs being those the local commits origin lacks touch) and calls `replayBolt` in place of the seed-commit drop.

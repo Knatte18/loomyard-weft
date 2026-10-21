@@ -24,7 +24,7 @@
 - `internal/fabricengine#rewoundWayForward`
 - `plan:internal/fabricengine#replayWeft`
 - `plan:internal/fabricengine#readEndedSet`
-- `plan:internal/testkit/boardkit#InstallReplay`
+- `internal/testkit/boardkit#InstallReplay`
 - `internal/fabricengine_test#buildReconcileFixture`
 - `internal/fabricengine_test#rewriteWarpRemoteHistory`
 

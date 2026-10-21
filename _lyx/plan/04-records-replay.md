@@ -24,8 +24,8 @@
 - `internal/fabricengine#dropSeedCommits`
 - `internal/fabricengine#Fabric.HoldsWork`
 - `internal/fabricengine#ReadOriginFor`
-- `plan:internal/fabricengine#InstallBoardReplay`
-- `plan:internal/testkit/boardkit#InstallReplay`
+- `internal/fabricengine#InstallBoardReplay`
+- `internal/testkit/boardkit#InstallReplay`
 
 **Intent:** D5's records replay and D3 step 2's ended-set rule, one fabricengine helper pair (new file `replay.go`) that the pull, push and reconcile cards call.
 
