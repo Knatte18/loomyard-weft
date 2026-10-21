@@ -1,4 +1,4 @@
-<!-- lyx-stencil: sha256=3ed2c51eaab57d479ea322bf694322487dbc28df9ac00f220102942d52c32718 build=a8048e240b738273f9e5d627ff8fe876fb72c392 time=2026-10-21T07:10:47Z -->
+<!-- lyx-stencil: sha256=e63ca7b40a8bc8593151c03c799cfda1687683728e2141b590fe05c44f4bc64c build=90f613277e539c98eb07698ed58b50f705e99a77 time=2026-10-21T13:30:19Z -->
 
 # Loom plan-spec — flat card list
 
@@ -20,7 +20,7 @@ The smallest change that:
 1. **Compiles/builds on its own** — `go build ./...` succeeds immediately after the card's commit.
    No broken syntax, no reference to a symbol that doesn't yet exist.
 2. **Is independently committable** — a meaningful, revertible git commit on its own.
-3. **Carries the coverage for any new behavior it introduces**; the card's own targets include the test that covers it (`PATTERN-test-economy`).
+3. **Carries the coverage for any new behavior it introduces**; the card's own targets include the test that covers it.
    Pure refactors/renames may rely on existing tests instead.
    A stencil's static prose is not behavior a test covers; a stencil card carries a test only when it changes a marker, a value Go fills, reads or names, a fragment Go chooses, or a rule a scan across stencils checks.
 
