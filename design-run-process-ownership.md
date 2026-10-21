@@ -2,7 +2,7 @@
 
 `run-process-ownership` · Task · bug, enhancement, batten, fabric, loom, shed, shuttle, webster
 
-Depends on: [`run-reentry`](design-run-reentry.md), [`origin-reconcile`](design-origin-reconcile.md), [`machine-handover`](design-machine-handover.md), [`create-target-transient`](design-create-target-transient.md), [`tender-pause-holds-reprompt`](design-tender-pause-holds-reprompt.md)
+Depends on: [`run-reentry`](design-run-reentry.md), [`origin-reconcile`](design-origin-reconcile.md), [`machine-handover`](design-machine-handover.md), [`tender-pause-holds-reprompt`](design-tender-pause-holds-reprompt.md)
 
 ## Goal
 
