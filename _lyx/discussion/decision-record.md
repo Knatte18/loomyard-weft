@@ -277,6 +277,12 @@ Decision: D4's second way forward for a task branch rewound on origin is `git pu
 
 Rationale: A branch reads rewound only when origin's head is already an ancestor of the local tip, so the `ours` merge changes nothing and the hold-back still reads the tip rewound. The plain push is the fast-forward D4 meant the merge to enable, and it writes the push entry that ends the reflog test. Plan review round 4, F1.
 
+### Added after Discussion (operator, 2026-10-21): Accept Webster-Bouncer at round 4's hard cap
+
+Decision: The Webster review segment is accepted unconverged at round 4. F1 (the stale-pack reindex race) was fixed by the round-4 fixer in 03f5b28a with lyx gate test ./internal/gitrepo green; the Merge-In verify re-runs the test. F2 (undeclared PATTERN overview rewrites, decision class) and F3 (fixed) stay recorded as open.
+
+Rationale: Operator's call in chat, 2026-10-21.
+
 ## Constraints
 
 - PATTERN-fabric-git: every git call of the reconcile, the replay and the push classification is in `internal/fabricengine`; other packages call it in-process, and reach it back only through D1's seams.
