@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-21 16:00 UTC; every age below is as of then.
+Rendered 2026-10-21 16:03 UTC; every age below is as of then.
 
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
@@ -18,7 +18,7 @@ Held by a run; its scope is locked until the run ends.
 | # | Task | Slug | Recipe | At | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | 1 | **[.NET 002] Test tiers: every test run through lyx gate test, numbered tiers in hub config, computed scope**<br>• All testing goes through the gate slot pool against hub-declared tiers tier0..N, with scope computed from the diff; replaces the Go-only gate | [`test-tiers`](design-test-tiers.md) | loom | Webster | 4d | 4h | gate, config, shed, dotnet |
-| 2 | **The operator tuned loom defaults move into the lyx template, so every new hub gets them**<br>• New hubs seed neutral loom defaults; the loomyard hub tuning is the operator default and belongs in the template<br>• `profile: light` | [`tuned-defaults-template`](design-tuned-defaults-template.md) | loom | Merge-Burler-Fix | 4h | 4h | config, loom |
+| 2 | **The operator tuned loom defaults move into the lyx template, so every new hub gets them**<br>• New hubs seed neutral loom defaults; the loomyard hub tuning is the operator default and belongs in the template<br>• `profile: light` | [`tuned-defaults-template`](design-tuned-defaults-template.md) | loom | Merge-Bouncer | 4h | 4h | config, loom |
 
 ### Ready
 
@@ -106,7 +106,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Note | Slug | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| 1 | **[WS 005] One dobby daemon per beam owns and drives its runs**<br>• Each beam (a worktree with an orch thread) gets a Go daemon, started by lyx orch start, that follows its runs status files, starts ready tasks, lands, settles mechanical stops and tells the thread only what needs judgement | [`umbrella-daemon`](design-umbrella-daemon.md) | 9d | 1d | batten, orch, shed, workspaces, loom, board |
+| 1 | **[WS 005] One dobby daemon per beam owns and drives its runs**<br>• Each beam (a worktree with an orch thread) gets a Go daemon, started by lyx orch start, that follows its runs status files, starts ready tasks, lands, settles mechanical stops and tells the thread only what needs judgement | [`umbrella-daemon`](design-umbrella-daemon.md) | 9d | 2d | batten, orch, shed, workspaces, loom, board |
 
 #### Normal priority
 
