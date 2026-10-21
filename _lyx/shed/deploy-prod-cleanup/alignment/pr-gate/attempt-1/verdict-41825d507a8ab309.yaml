@@ -1,0 +1,7 @@
+verdict: approve
+reason: >-
+  The diff does what the board entry asks and no more: the prod push and its ancestry check are gone while the clean-tree and pushed-to-origin/main refusals stay,
+  CLAUDE.md and README.md stop naming prod, the PATH scan reports only Go binaries built from lyx's main package, and one file reached through linked directories is reported once.
+  The one open risk names no parent correction, and no peer run or parent commit overlaps tools/deploy, CLAUDE.md or README.md.
+question: ""
+superseded: []
