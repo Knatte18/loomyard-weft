@@ -1,6 +1,6 @@
 # Gate settings per machine
 
-`gate-machine-local-config` · Task · enhancement, config · running · Plan-Bouncer
+`gate-machine-local-config` · Task · enhancement, config · running · Webster
 
 ## Seen (2026-10-20, `go_parallel` sweep on OSL-1046)
 
