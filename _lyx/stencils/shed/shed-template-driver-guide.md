@@ -1,8 +1,8 @@
 <!-- This is the shed driver's repair guide: the reference the one-shot fork a driver spawns at an `error` or `interrupted` stop reads before it repairs or escalates.
      The driver stencil points at it by its deployed path through its guide_path marker and never paraphrases it; the guide is not an opening stencil and joins no role's list.
      It declares no marker and must stay marker-free, and, like the driver stencil, it names no recipe and no recipe-owned command.
-     Refusal text and its ways forward live in the refusal spec the driver stencil points at, never restated here.
-lyx-stencil: sha256=177d038fdf8dbd7a17a0932dcc3373823648191d9002f2d14fa5d30f47d296b9 build=f5b5218f785e8471b1394aca2b3bc88846e66a6a time=2026-10-10T12:47:33Z -->
+     Refusal text and its ways forward live in the refusal messages, never restated here.
+lyx-stencil: sha256=b17342e28ae412946dcdc970126c6022f30f97e72cf77dcf602301492b83ee3d build=90f613277e539c98eb07698ed58b50f705e99a77 time=2026-10-21T13:30:19Z -->
 
 # Repair guide for a stopped run
 
@@ -49,7 +49,7 @@ Code branches only; a stranded records branch goes through `lyx fabric cleanup`.
 - A `branch_pushed` entry alone never qualifies: it is recorded whenever an existing branch is pushed forward.
 - Never delete a branch carrying commits the trace does not attribute to the failed step.
 
-`PATTERN-fabric-git` binds `lyx`'s own code; you make no commits.
+These raw `git` calls are allowed repairs; you make no commits.
 Each deletion is a repair record like any other.
 
 ## Repair cap
