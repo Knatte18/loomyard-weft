@@ -1,0 +1,185 @@
+{
+  "runGuid": "0bf87cf3cf381f09537f68d4d32c84a9",
+  "planFingerprint": "5616229be7730c648a936265228d9c65b7afcfcdcd97fc33905e81bde80f9919",
+  "planFileHashes": {
+    "00-overview.md": "1ba2157819d3c409e5eae22757cc85ed2d9b1f6a736334bd7214f60267bb9d01",
+    "01-config-machine-layer.md": "7885087ceaa2c024d080452c401b75c91b030bb6d15a3d6c9937e05a02d87db3",
+    "02-gate-machine-keys.md": "0dcd906aa8a2b4ff4a584d71dfedfb1fd39c5b348d0ae3e6f803a94eff111c00",
+    "03-config-cli-machine-layer.md": "5332fb7bed359cd8fd83182e13fe866d103acd348fe4483008b06bf91912210f",
+    "04-ensure-leaves-machine-file.md": "39565e94a651744602006af3d00909d14aba363bc463eb000306e030be0ae9d0"
+  },
+  "planOverviewFrameHash": "ad4ec26a03d9a2b8b0a2a92b6b8ab48a68d7afbba389323cf37791534156ba6b",
+  "partition": [
+    {
+      "cards": [
+        "01-config-machine-layer"
+      ],
+      "profile": "cautious",
+      "estimate": 136432,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 1,
+        "startup": 54652,
+        "read_union": 16464,
+        "cards": [
+          {
+            "card": 1,
+            "card_text": 1416,
+            "reads": {
+              "file:PATTERN.md": 1452,
+              "file:internal/configengine/doc.go": 1032,
+              "file:pattern/PATTERN-config-layers.md": 312,
+              "file:pattern/PATTERN-durable-vs-ephemeral-state.md": 156,
+              "file:pattern/PATTERN-hub-wide-config.md": 96,
+              "package:.": 2000,
+              "package:internal/configengine": 2000,
+              "package:pattern": 2000,
+              "tests:.": 2000,
+              "tests:internal/configengine": 2000,
+              "tests:pattern": 2000
+            },
+            "messages": 213,
+            "written": 65316
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "02-gate-machine-keys"
+      ],
+      "profile": "cautious",
+      "estimate": 155640,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 2,
+        "startup": 61652,
+        "read_union": 40876,
+        "cards": [
+          {
+            "card": 2,
+            "card_text": 912,
+            "reads": {
+              "file:contracts/specs/loom-plan-spec.md": 8532,
+              "file:internal/gatecli/doc.go": 1068,
+              "file:internal/gateslot/doc.go": 552,
+              "file:internal/hubgeom/doc.go": 468,
+              "file:internal/planglyph/doc.go": 1344,
+              "package:contracts/specs": 2000,
+              "package:internal/configreg": 2000,
+              "package:internal/gatecli": 2000,
+              "package:internal/gateslot": 2000,
+              "package:internal/hubgeom": 2000,
+              "package:internal/planglyph": 2000,
+              "package:internal/websterengine": 2000,
+              "tests:contracts/specs": 2000,
+              "tests:internal/configreg": 2000,
+              "tests:internal/gatecli": 2000,
+              "tests:internal/gateslot": 2000,
+              "tests:internal/hubgeom": 2000,
+              "tests:internal/planglyph": 2000,
+              "tests:internal/websterengine": 2000
+            },
+            "messages": 174,
+            "written": 53112
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "03-config-cli-machine-layer",
+        "04-ensure-leaves-machine-file"
+      ],
+      "profile": "cautious",
+      "estimate": 140412,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 3,
+        "startup": 68652,
+        "read_union": 23976,
+        "cards": [
+          {
+            "card": 3,
+            "card_text": 1116,
+            "reads": {
+              "file:docs/overview.md": 9720,
+              "file:internal/configcli/doc.go": 972,
+              "package:docs": 2000,
+              "package:internal/configcli": 2000,
+              "tests:docs": 2000,
+              "tests:internal/configcli": 2000
+            },
+            "messages": 144,
+            "written": 44316
+          },
+          {
+            "card": 4,
+            "card_text": 168,
+            "reads": {
+              "package:internal/hubreconcile": 2000,
+              "tests:internal/hubreconcile": 2000
+            },
+            "messages": 11,
+            "written": 3468
+          }
+        ]
+      }
+    }
+  ],
+  "currentBatch": 1,
+  "masterStrand": "932668c59dc043e04c88ee91673211b2",
+  "masterSessionId": "f07398bd-4be5-48ff-a8b2-8122206ee0fa",
+  "masterEngine": "claude",
+  "batches": {
+    "1": {
+      "slug": "config-machine-layer",
+      "cards": [
+        "01-config-machine-layer"
+      ],
+      "cardHashes": {
+        "01-config-machine-layer": "7885087ceaa2c024d080452c401b75c91b030bb6d15a3d6c9937e05a02d87db3"
+      },
+      "startSha": "0ffd168b081c8a958d63e1284547635302df36c2",
+      "kind": "fork",
+      "spawnedAt": "2026-10-21T06:42:05Z",
+      "sessionId": "f07398bd-4be5-48ff-a8b2-8122206ee0fa",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
+    }
+  }
+}
