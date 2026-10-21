@@ -1,0 +1,388 @@
+{
+  "runGuid": "e59a896b1272fd19b65c27f685061006",
+  "planFingerprint": "66cb48f6e98dd6b5eda95e6a153e2419b7347c40edfb403ac787594b14124474",
+  "planFileHashes": {
+    "00-overview.md": "6cb2e5e31e7d052a910a420e3559b81fb0648ad7b8b408f5eeb91a43202cc427",
+    "01-loom-tuned-defaults.md": "b233f196e6192f477222b08e0f839bfd39c6583815dcabdcc6d4a3f60f39113a",
+    "02-shed-darn-tuned-defaults.md": "1f413cbd225b58dda200d5f2109d657a99c4ae764a38462a95f77a5a05f16f0e",
+    "03-claude-orch-webster-batcher-tuned-defaults.md": "aff67b6f7a778e01c253964347a5373c9309ff8d2fb8c4e40366f0f97e0e83a3",
+    "04-configengine-sparse-hub-base.md": "657a4dc40085dfb1a577d15c76d9b631824aa35411164904048b036a82cc383e",
+    "05-former-template-values.md": "30913b2b47103ebaba709246b5a02f5e33e24668204f5ac67ec544ccbe1de861",
+    "06-sparse-hub-base-reconcile.md": "a2b108c88240998bcdc819f44b076cb84ea066948169aa4551715eac865b9763",
+    "07-sparse-key-moves.md": "f7d038fd23abb2f4170051e136cd313a5b4a69f0b72542dddd1f07b52a319ced",
+    "08-walk-strips-base-once.md": "c712502e0b43cc21f9d389c9df7c0606d133ba6739741021f3a01547d6213c2b",
+    "09-reconcile-failure-warns.md": "d75679d4843a7a686ddbd1fc061364ec4b113fe6b6847ae0f0dd060c95f09283",
+    "10-config-cli-sparse-hub-base.md": "608ef157f92b3344634ee72bbb72abf11f24e7baf43250a55a85c2b7b2cdd327",
+    "11-clone-writes-base-marker.md": "6ac68ba4b6a326780489733e99f46cca2dfca0e92267822793caad650610e8a1"
+  },
+  "planOverviewFrameHash": "038ea703492af48fa2736c13cdf0751d1a03fadcbc03774907c3e60eb0b3e70c",
+  "partition": [
+    {
+      "cards": [
+        "01-loom-tuned-defaults",
+        "02-shed-darn-tuned-defaults"
+      ],
+      "profile": "cautious",
+      "estimate": 141386,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 1,
+        "startup": 54808,
+        "read_union": 39520,
+        "cards": [
+          {
+            "card": 1,
+            "card_text": 336,
+            "reads": {
+              "file:internal/loomengine/template.yaml": 828,
+              "package:internal/configreg": 2000,
+              "package:internal/loomengine": 2000,
+              "tests:internal/configreg": 2000,
+              "tests:internal/loomengine": 2000
+            },
+            "messages": 31,
+            "written": 9636
+          },
+          {
+            "card": 2,
+            "card_text": 372,
+            "reads": {
+              "file:docs/overview.md": 9732,
+              "file:internal/darnengine/template.yaml": 204,
+              "file:internal/sheddriver/template.yaml": 48,
+              "package:docs": 2000,
+              "package:internal/battencli": 2000,
+              "package:internal/configreg": 2000,
+              "package:internal/darnengine": 2000,
+              "package:internal/loomcli": 2000,
+              "package:internal/sheddriver": 2000,
+              "tests:docs": 2000,
+              "tests:internal/battencli": 2000,
+              "tests:internal/configreg": 2000,
+              "tests:internal/darnengine": 2000,
+              "tests:internal/loomcli": 2000,
+              "tests:internal/sheddriver": 2000
+            },
+            "messages": 123.5,
+            "written": 37422
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "03-claude-orch-webster-batcher-tuned-defaults"
+      ],
+      "profile": "cautious",
+      "estimate": 155244,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 2,
+        "startup": 61808,
+        "read_union": 44344,
+        "cards": [
+          {
+            "card": 3,
+            "card_text": 492,
+            "reads": {
+              "file:docs/overview.md": 9732,
+              "file:internal/batcher/template.yaml": 228,
+              "file:internal/orchengine/doc.go": 5592,
+              "file:internal/orchengine/template.yaml": 120,
+              "file:internal/shuttleengine/claudeengine/template.yaml": 84,
+              "file:internal/websterengine/template.yaml": 96,
+              "package:docs": 2000,
+              "package:internal/batcher": 2000,
+              "package:internal/battencli": 2000,
+              "package:internal/hubreconcile": 2000,
+              "package:internal/orchengine": 2000,
+              "package:internal/shuttleengine/claudeengine": 2000,
+              "package:internal/websterengine": 2000,
+              "tests:docs": 2000,
+              "tests:internal/batcher": 2000,
+              "tests:internal/battencli": 2000,
+              "tests:internal/hubreconcile": 2000,
+              "tests:internal/orchengine": 2000,
+              "tests:internal/shuttleengine/claudeengine": 2000,
+              "tests:internal/websterengine": 2000
+            },
+            "messages": 162,
+            "written": 49092
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "04-configengine-sparse-hub-base",
+        "05-former-template-values"
+      ],
+      "profile": "cautious",
+      "estimate": 150330,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 3,
+        "startup": 68808,
+        "read_union": 26544,
+        "cards": [
+          {
+            "card": 4,
+            "card_text": 708,
+            "reads": {
+              "file:internal/configengine/doc.go": 1212,
+              "file:pattern/PATTERN-config-strictness.md": 204,
+              "package:internal/configengine": 2000,
+              "package:internal/configreg": 2000,
+              "package:internal/modelspec": 2000,
+              "package:internal/runprofile": 2000,
+              "package:pattern": 2000,
+              "tests:internal/configengine": 2000,
+              "tests:internal/configreg": 2000,
+              "tests:internal/modelspec": 2000,
+              "tests:internal/runprofile": 2000,
+              "tests:pattern": 2000
+            },
+            "messages": 142.5,
+            "written": 43458
+          },
+          {
+            "card": 5,
+            "card_text": 420,
+            "reads": {
+              "package:internal/configsync": 2000,
+              "tests:internal/configsync": 2000
+            },
+            "messages": 37,
+            "written": 11520
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "06-sparse-hub-base-reconcile",
+        "07-sparse-key-moves",
+        "08-walk-strips-base-once"
+      ],
+      "profile": "cautious",
+      "estimate": 191628,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 4,
+        "startup": 75808,
+        "read_union": 25376,
+        "cards": [
+          {
+            "card": 6,
+            "card_text": 936,
+            "reads": {
+              "file:PATTERN.md": 1452,
+              "file:internal/yamlengine/doc.go": 888,
+              "package:.": 2000,
+              "package:internal/configsync": 2000,
+              "package:internal/hubforge": 2000,
+              "package:internal/yamlengine": 2000,
+              "tests:.": 2000,
+              "tests:internal/configsync": 2000,
+              "tests:internal/hubforge": 2000,
+              "tests:internal/yamlengine": 2000
+            },
+            "messages": 114,
+            "written": 35136
+          },
+          {
+            "card": 7,
+            "card_text": 468,
+            "reads": {
+              "package:internal/configsync": 2000,
+              "tests:internal/configsync": 2000
+            },
+            "messages": 45,
+            "written": 13968
+          },
+          {
+            "card": 8,
+            "card_text": 840,
+            "reads": {
+              "file:internal/hubreconcile/doc.go": 792,
+              "package:internal/hubreconcile": 2000,
+              "tests:internal/hubreconcile": 2000
+            },
+            "messages": 135,
+            "written": 41340
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "09-reconcile-failure-warns"
+      ],
+      "profile": "cautious",
+      "estimate": 165008,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 5,
+        "startup": 82808,
+        "read_union": 26292,
+        "cards": [
+          {
+            "card": 9,
+            "card_text": 708,
+            "reads": {
+              "file:internal/hubgeom/doc.go": 468,
+              "file:internal/hubreconcile/doc.go": 792,
+              "file:internal/preflightshed/doc.go": 324,
+              "package:internal/battencli": 2000,
+              "package:internal/hubgeom": 2000,
+              "package:internal/hubreconcile": 2000,
+              "package:internal/loomcli": 2000,
+              "package:internal/orchcli": 2000,
+              "package:internal/preflightshed": 2000,
+              "tests:internal/battencli": 2000,
+              "tests:internal/hubgeom": 2000,
+              "tests:internal/hubreconcile": 2000,
+              "tests:internal/loomcli": 2000,
+              "tests:internal/orchcli": 2000,
+              "tests:internal/preflightshed": 2000
+            },
+            "messages": 184,
+            "written": 55908
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "10-config-cli-sparse-hub-base",
+        "11-clone-writes-base-marker"
+      ],
+      "profile": "cautious",
+      "estimate": 151840,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 6,
+        "startup": 89808,
+        "read_union": 27592,
+        "cards": [
+          {
+            "card": 10,
+            "card_text": 396,
+            "reads": {
+              "file:docs/overview.md": 9732,
+              "file:internal/configcli/doc.go": 1020,
+              "package:docs": 2000,
+              "package:internal/configcli": 2000,
+              "tests:docs": 2000,
+              "tests:internal/configcli": 2000
+            },
+            "messages": 52,
+            "written": 15996
+          },
+          {
+            "card": 11,
+            "card_text": 444,
+            "reads": {
+              "package:internal/fabriccli": 2000,
+              "package:internal/hubforge": 2000,
+              "tests:internal/fabriccli": 2000,
+              "tests:internal/hubforge": 2000
+            },
+            "messages": 60,
+            "written": 18444
+          }
+        ]
+      }
+    }
+  ],
+  "currentBatch": 1,
+  "masterStrand": "b2bd0fce733d2c0c68a314ffc3cf873c",
+  "masterSessionId": "6d4d10e3-caa4-43c0-bf9e-5510d3521ae9",
+  "masterEngine": "claude",
+  "batches": {
+    "1": {
+      "slug": "loom-tuned-defaults",
+      "cards": [
+        "01-loom-tuned-defaults",
+        "02-shed-darn-tuned-defaults"
+      ],
+      "cardHashes": {
+        "01-loom-tuned-defaults": "b233f196e6192f477222b08e0f839bfd39c6583815dcabdcc6d4a3f60f39113a",
+        "02-shed-darn-tuned-defaults": "1f413cbd225b58dda200d5f2109d657a99c4ae764a38462a95f77a5a05f16f0e"
+      },
+      "startSha": "860c5d0334a144bf75c5d423272b4ec681493772",
+      "kind": "fork",
+      "spawnedAt": "2026-10-21T12:49:36Z",
+      "sessionId": "6d4d10e3-caa4-43c0-bf9e-5510d3521ae9",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
+    }
+  }
+}
