@@ -1,13 +1,13 @@
 # Card 6 — pull-replay-reflog
 
 **Create:**
-- `plan:internal/fabricengine#trackingReflog` -> `func trackingReflog(repoDir, trackingRef string) ([]string, error)`
-- `plan:internal/fabricengine#rewriteKind` -> `type rewriteKind int`
-- `plan:internal/fabricengine#classifyRewrite` -> `func classifyRewrite(repo *gitrepo.Repo, localTip, originHead string, earlier []string) (kind rewriteKind, dropped []string, err error)`
-- `plan:internal/fabricengine#ErrWarpRewound` -> `var ErrWarpRewound error`
-- `plan:internal/fabricengine#WeftStopError` -> `type WeftStopError struct`
-- `plan:internal/fabricengine#WeftStopError.Error` -> `func (e *WeftStopError) Error() string`
-- `plan:internal/fabricengine_test#TestPull_ReflogJudgesUnpushedAndRewinds` -> `func TestPull_ReflogJudgesUnpushedAndRewinds(t *testing.T)`
+- `internal/fabricengine#trackingReflog`
+- `internal/fabricengine#rewriteKind`
+- `internal/fabricengine#classifyRewrite`
+- `internal/fabricengine#ErrWarpRewound`
+- `internal/fabricengine#WeftStopError`
+- `internal/fabricengine#WeftStopError.Error`
+- `internal/fabricengine_test#TestPull_ReflogJudgesUnpushedAndRewinds`
 
 **Edit:**
 - `internal/fabricengine#Fabric.Pull`

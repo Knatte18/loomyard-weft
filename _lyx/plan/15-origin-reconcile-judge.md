@@ -47,8 +47,8 @@
 - `internal/fabricengine#rewoundWayForward`
 - `internal/fabricengine#codeDivergedWayForward`
 - `internal/fabricengine#recordsConflictWayForward`
-- `plan:internal/fabricengine#trackingReflog`
-- `plan:internal/fabricengine#classifyRewrite`
+- `internal/fabricengine#trackingReflog`
+- `internal/fabricengine#classifyRewrite`
 - `internal/fabricengine#ReadOriginFor`
 
 **Intent:** D1, D2, D4's judgment and D7: the origin reconcile entry point in fabricengine (new file `originreconcile.go`), judging only; the moves and the ended entries follow in cards 16 and 17.

@@ -59,8 +59,8 @@
 - `plan:internal/gitrepo#ErrPushAuthRefused`
 - `plan:internal/gitrepo#PushBackoffDelays`
 - `internal/fabricengine#PrimeName`
-- `plan:internal/fabricengine#trackingReflog`
-- `plan:internal/fabricengine#classifyRewrite`
+- `internal/fabricengine#trackingReflog`
+- `internal/fabricengine#classifyRewrite`
 - `internal/testkit/boardkit#InstallReplay`
 
 **Intent:** D10: every push fabricengine runs classifies a failure, recovers where it safely can, and otherwise writes the failed-push record and its one notice; D5's replay replaces `gitrepo`'s pull-rebase on every fabric push path a production caller reaches.

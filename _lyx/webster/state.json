@@ -1,6 +1,6 @@
 {
   "runGuid": "0fa13f93fc850a69afe141168f80dcd9",
-  "planFingerprint": "09982fa6906cc71c07d49abaac3d09b5cd6d1b12573a019d74f6ba7e00b8148d",
+  "planFingerprint": "80d660a0d5b789bed739dfd532869a37d5e3cfb8cdef970ff3c324f42997ea4f",
   "planFileHashes": {
     "00-overview.md": "e153ea884172d07d958ca2ee1154c56d7fcde68a3d7613e582e8ee1bf3eee7e1",
     "01-failed-push-record.md": "d90ec71500ca4fd7e0b5c46d6ee119d2a38fb59fafe7b22e0468874805cd04db",
@@ -8,16 +8,16 @@
     "03-board-replay-seam.md": "fb0879c9fe68fa4895bdadbaa9757a3db72d3b1b4961e710b1563f1a7e3e913e",
     "04-records-replay.md": "0049d94ba2c07905ebd7b91bceb007931534d99c962b7a501203361fc3e6acd9",
     "05-bolt-pullfirst-replay.md": "a10bcbe7e0295c509b76c13e1cbdfd773348d8327f2a741cd9b826aae1a6d34e",
-    "06-pull-replay-reflog.md": "5c12bae7f078ec5ab0fbf2e76ea71ce2c3567d3a4600275a95561ec740983c9e",
-    "07-land-weft-stop.md": "d4bc427f342d6f068b747737f9b49238ced5b6b7909f85fbfac4d63dda5de936",
+    "06-pull-replay-reflog.md": "4823db2f756dc53f8968424e41068295c2e5c8b739baa582a2cc9a3d03cfb28c",
+    "07-land-weft-stop.md": "58cbb9fb0f804dd166ba427af29435dc1da91933869ef290bbd643b67c58bab7",
     "08-push-auth-class.md": "7f7998e05fb123cc7cc99ed659e31d523a7125a5038098e775771ebd02928beb",
-    "09-push-retry-and-record.md": "f22388f10c3c6c37af66a88039dfc2c3fcfe6ee0832ffc13c3791260078c06ba",
+    "09-push-retry-and-record.md": "0f992013e7b140e3ce800eb8753fe2760f37335097aac675c651e6f4f36f5123",
     "10-failed-push-printing.md": "e3092c618e8797e1decc2a9e547d1cfa6ba41a9455139d20f88a1f692586ca71",
     "11-preflight-detached-push.md": "8b18749a75116b7e755a17821858177f328f9d2e1632c541c5e86755df0b920b",
     "12-gate-entry-exemption.md": "e1f8842790c5764f51b50d4e92e26948a14a32af94ee2ed21b718875c8183c87",
     "13-remove-local-mode.md": "6051bc8b42c7eb389f640636e564eca1c37a1f69de5fdc1a4762d45d4682301c",
     "14-pairteardown-local-mode.md": "d7dbfb21b30c4be2714dec0debc79ed49b9fff1b332965d12a5ad082b64c03f3",
-    "15-origin-reconcile-judge.md": "6ab6d3c469b842a80681cc7da924cce6fde384ca1bc503cfb12faaa12854beff",
+    "15-origin-reconcile-judge.md": "055c410a9e4ce54efff0cc8fe728067f8c289dd6a1fb7ea4ed34fed30519c709",
     "16-origin-reconcile-moves.md": "4bd951fc5d1aaa425c7bb2a17bd5c795351e2b3121290b8d86bbf3994f9cb0c8",
     "17-origin-reconcile-ended.md": "92f8e46ba88835c20ee705fb3b6a076165e1640c32b1153951d526e903d0d75d",
     "18-reconcile-seams.md": "3cec60b1d2502dff6e9caea9bd91ea5b65d573d317d8017945054053f270cd4e",
@@ -749,7 +749,7 @@
       }
     }
   ],
-  "currentBatch": 6,
+  "currentBatch": 0,
   "masterStrand": "d26ba69a79fb575f7e87b499eb76f785",
   "masterSessionId": "b26519ba-ade7-44f6-9357-417c58fd04ba",
   "masterEngine": "claude",
@@ -881,20 +881,41 @@
         "06-pull-replay-reflog"
       ],
       "cardHashes": {
-        "06-pull-replay-reflog": "5c12bae7f078ec5ab0fbf2e76ea71ce2c3567d3a4600275a95561ec740983c9e"
+        "06-pull-replay-reflog": "4823db2f756dc53f8968424e41068295c2e5c8b739baa582a2cc9a3d03cfb28c"
       },
       "startSha": "cc7da0f29bcf24f4b05b3a1faca0c52ee8e3b280",
       "kind": "fork",
       "spawnedAt": "2026-10-21T06:32:19Z",
       "sessionId": "b26519ba-ade7-44f6-9357-417c58fd04ba",
       "engine": "claude",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "06-pull-replay-reflog",
+        "status": "done",
+        "head_sha": "7ecf15b648d9416376078f3327312cf4bdab042f",
+        "deviations": [
+          "internal/fabricengine/export_test.go",
+          "internal/fabricengine/pull.go",
+          "internal/fabricengine/pull_integration_test.go",
+          "internal/fabricengine/reflog.go"
+        ]
+      },
+      "cardShas": [
+        "7ecf15b648d9416376078f3327312cf4bdab042f"
+      ],
+      "forkTranscripts": [
+        "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-origin-reconcile/b26519ba-ade7-44f6-9357-417c58fd04ba/subagents/agent-abfc6ae2ff8e2c10c.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-origin-reconcile/b26519ba-ade7-44f6-9357-417c58fd04ba/subagents/agent-abfc6ae2ff8e2c10c.jsonl"
+      ]
     }
   },
   "seenForkTranscripts": [
     "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-origin-reconcile/b26519ba-ade7-44f6-9357-417c58fd04ba/subagents/agent-a199c0788fa0d0e0c.jsonl",
     "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-origin-reconcile/b26519ba-ade7-44f6-9357-417c58fd04ba/subagents/agent-a18884e5b7b8232b1.jsonl",
-    "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-origin-reconcile/b26519ba-ade7-44f6-9357-417c58fd04ba/subagents/agent-ae8b5bbfc5f1a32b2.jsonl"
+    "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-origin-reconcile/b26519ba-ade7-44f6-9357-417c58fd04ba/subagents/agent-ae8b5bbfc5f1a32b2.jsonl",
+    "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-origin-reconcile/b26519ba-ade7-44f6-9357-417c58fd04ba/subagents/agent-abfc6ae2ff8e2c10c.jsonl"
   ]
 }
