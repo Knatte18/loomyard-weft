@@ -1,0 +1,8 @@
+verdict: approve
+reason: >-
+  The diff makes the warp root's .scratch a fabric-wired directory link into the weft-side .lyx, so scratch writes no longer change the root listing that source-scan tests hash into their go test cache key.
+  It carries out D1 to D6 as recorded, and the open risks carried over from Discussion-Review are settled in the code.
+  The only overlap is with origin-reconcile, which changes the same files at different places, so it is text-only.
+  This run is at row 21 and origin-reconcile at row 14, so this run lands first and origin-reconcile takes its changes at Merge-In.
+question: ""
+superseded: []
