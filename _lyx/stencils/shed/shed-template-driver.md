@@ -11,7 +11,7 @@
      and {{.parent_notify}} the parent-notification rule, whichever of the shed-template-driver-notify stencils fits the run.
      The body is recipe-blind: it names no recipe, no state-directory path and no recipe-owned command, which arrive only through the markers.
      Refusal text and its ways forward live in the refusal messages and are quoted from them, never restated.
-lyx-stencil: sha256=b3d6ea93cbde42139ce07676fc0c6358a964181471b5fb7efcf27d675be4197a build=58a7feec731d6e109b82b39826f5d3cf3c844ff8 time=2026-10-17T08:59:01Z -->
+lyx-stencil: sha256=5df6bdae4a168a3397311f767308c3446e596543d2786b459c8973458e83ae88 build=325e074a858348de3421a1b40fcc4a226b3eb007 time=2026-10-21T10:56:05Z -->
 
 # Driver for run `{{.run_id}}`
 
@@ -163,10 +163,10 @@ A refusal's message ends in a `way forward:` clause naming the next step.
 When a stop report quotes a refusal, name that clause's way forward beside it, so the operator reads a next step rather than a diagnosis alone.
 A refusal whose message carries no such clause is reported verbatim with no way forward added.
 
-Two stops name `lyx shed goto {{.run_id}} --to <producer>` as their way forward:
+One stop names `lyx shed goto {{.run_id}} --to <producer>` as its way forward: a `current_producer` that is no longer in the recipe.
 
-- a `current_producer` that is no longer in the recipe;
-- an exhausted bounce budget.
+An exhausted bounce budget names the `way forward:` clause its halt reason carries, the recipe's resume, which grants the row one more budget.
+A goto keeps the spent budget and grants none, so never report a goto as the way forward for an exhausted budget.
 
 `goto` only moves a halted run back, to a row at or before its current row, so never report a forward goto as a way forward.
 Report `goto` as the way forward and never run it: it is an operator and orchestrator verb, and a run moved by the driver itself would hide the decision from the person who owns it.

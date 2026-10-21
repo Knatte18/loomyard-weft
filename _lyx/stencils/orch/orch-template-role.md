@@ -2,7 +2,7 @@
      It may span many lines and carries four markers: command_index, filled with the operator command index; decision_note_title, filled with the decision-note title form for the placeholder slug <slug>; hub_rules, filled with the hub-wide rules file or a one-line placeholder naming its path; and orch_rules, filled with this orch's own rules file or a one-line placeholder naming its path; RenderRoleFile refuses to render without any of them.
      It names no denied recovery command and asks no agent to load a skill.
      After `/clear` lyx loads the orch's skills before the pointer arrives; a compaction keeps them.
-lyx-stencil: sha256=f4d85a61ef3ed1478939a86b4317a7a2efa23a65cf20f29779bb3e9050c1f2e6 build=01ccaf6def6f46e37b2ee157dc35ada23ce1f6e9 time=2026-10-20T16:38:47Z -->
+lyx-stencil: sha256=8fe96ffd84f3b7e2574105a89ac903c0a5dcffab97aadbda6e57439091df358f build=325e074a858348de3421a1b40fcc4a226b3eb007 time=2026-10-21T10:56:05Z -->
 # Hub orchestrator
 
 You are the hub orchestrator, running in the hub's prime worktree.
@@ -62,7 +62,8 @@ Its stop report then carries the arbiter's verdict path and question: read the v
   At or past it, or at a `hard-cap` escalation, the way forward is `lyx loom circling accept <slug>` to take the work as it stands, or raising the hard cap by the command the refusal names for the layer its value comes from.
   Either only records the decision,
   so run `lyx loom resume` in the task worktree to resume the run.
-- A run that needs a fresh budget at a producer: `lyx loom goto` or `lyx shed goto`, naming the producer.
+- A run halted on an exhausted bounce budget at a producer: run `lyx loom resume` in the task worktree, which grants the row one more budget.
+  A goto keeps the spent budget and grants none; use `lyx loom goto` or `lyx shed goto`, naming the producer, to move a run back.
   A goto leaves the run paused,
   so run `lyx loom resume` in the task worktree to resume it.
 - A Merge-In or Publish blocked on a verify that exited non-zero: batten retries the first such failure of a run itself, so a notice for one means the second failure.

@@ -5,7 +5,7 @@
      It is a marker VALUE, never a template -- it carries no top-level stencil markers of its own, and
      internal/stencil's StripLeadingComment removes this leading comment before either consumer ever
      sees it.
-lyx-stencil: sha256=e1c47413ac654511537d14b4f0f7390d160ef39fb1cbf3bd046272cd251a25dc build=6bfaaa1448adcd5fda4ab769115846291406977a time=2026-10-16T12:19:49Z -->
+lyx-stencil: sha256=2f85f920738ada9ac5a4b060b0a7131be0a32a1a34290875a725f31c69c144f5 build=325e074a858348de3421a1b40fcc4a226b3eb007 time=2026-10-21T10:56:05Z -->
 
 # Webster-Review rubric
 
@@ -100,6 +100,12 @@ Do not flag any of the following as a finding:
   - a behavior the diff adds with no coverage, naming the uncovered behavior; a stencil's static prose is exempt.
 
   A redundancy finding is raised only by naming the existing test that covers the behavior, so it cannot block on a vague suspicion.
+
+## Amendment
+
+{{.amendment}}
+
+When the note above is not `none`, this round reviews an amendment: review only the change it names, and report nothing about the settled remainder.
 
 ## Finding class
 

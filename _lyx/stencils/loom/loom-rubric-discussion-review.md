@@ -5,7 +5,7 @@
      It is a marker VALUE, never a template -- its only markers are the ones ReadRubric fills, and
      internal/stencil's StripLeadingComment removes this leading comment before either consumer ever
      sees it.
-lyx-stencil: sha256=1f453bc775022d3c4409a6e8bc94acf893070150d171dc9d241d3398a21d7172 build=c7ea67f8329b88681d80f11bf78793289856fd8a time=2026-10-15T17:54:53Z -->
+lyx-stencil: sha256=2e4d8e68f137e512b49868acfe67b0c88333175dad7db7b5c9f71f819741ae97 build=325e074a858348de3421a1b40fcc4a226b3eb007 time=2026-10-21T10:56:05Z -->
 
 # Discussion-Review rubric
 
@@ -43,6 +43,12 @@ Do not flag any of the following as a finding:
 - **The writer/reviewer symmetry note.**
   The discussion writer's own stencil is `{{.stencils_dir}}/loom/loom-template-discussion.md`, and the record rules it follows are in `{{.specs_dir}}/loom/loom-discussion-spec.md`: read them to learn what the writer was told not to gather.
   Whatever it says not to gather, this rubric must not flag as missing, or the additive bias reappears even with the writer-side fix in place.
+
+## Amendment
+
+{{.amendment}}
+
+When the note above is not `none`, this round reviews an amendment: review only the change it names, and report nothing about the settled remainder.
 
 ## Finding class
 
