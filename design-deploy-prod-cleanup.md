@@ -1,6 +1,6 @@
 # Deploy: drop the shared prod pointer and stop flagging a foreign lyx on PATH
 
-`deploy-prod-cleanup` · Task · bug, deploy · running · PR-Gate
+`deploy-prod-cleanup` · Task · bug, deploy · done
 
 ## Goal
 
