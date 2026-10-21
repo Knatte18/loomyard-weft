@@ -1,9 +1,9 @@
 # Card 10 — failed-push-printing
 
 **Create:**
-- `plan:internal/fabricengine#FailedPushFields` -> `func FailedPushFields(hubPath string) ([]map[string]any, error)`
-- `plan:internal/tendercli#TestStatus_PrintsOutstandingFailedPushes` -> `func TestStatus_PrintsOutstandingFailedPushes(t *testing.T)`
-- `plan:internal/fabriccli_test#TestStatus_PrintsOutstandingFailedPushes` -> `func TestStatus_PrintsOutstandingFailedPushes(t *testing.T)`
+- `internal/fabricengine#FailedPushFields`
+- `internal/tendercli#TestStatus_PrintsOutstandingFailedPushes`
+- `internal/fabriccli_test#TestStatus_PrintsOutstandingFailedPushes`
 
 **Edit:**
 - `internal/fabriccli#addWeftVerbs`

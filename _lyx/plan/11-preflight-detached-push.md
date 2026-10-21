@@ -1,9 +1,9 @@
 # Card 11 — preflight-detached-push
 
 **Create:**
-- `plan:internal/boardengine#SpawnSync` -> `func SpawnSync(boardPath string) error`
-- `plan:internal/hubreconcile#spawnBoardSync` -> `var spawnBoardSync func(boardPath string) error`
-- `plan:internal/hubreconcile#SetSpawnBoardSyncForTest` -> `func SetSpawnBoardSyncForTest(spawn func(boardPath string) error) (restore func())`
+- `internal/boardengine#SpawnSync`
+- `internal/hubreconcile#spawnBoardSync`
+- `internal/hubreconcile#SetSpawnBoardSyncForTest`
 
 **Edit:**
 - `internal/hubreconcile#reconcileHubWide`
