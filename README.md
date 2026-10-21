@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-21 12:08 UTC; every age below is as of then.
+Rendered 2026-10-21 12:09 UTC; every age below is as of then.
 
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
@@ -17,17 +17,17 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | **Origin reconcile before anything that matters, and pushes that never fail silently**<br>• ls-remote over warp and records repos at orch start, wake, batten resume, Merge-In and Finalize; fast-forward, landed-elsewhere cleanup, stop on divergence; rejected push retries and reports | [`origin-reconcile`](design-origin-reconcile.md) | loom | Webster-Burler-Fix | 4d | 19h | fabric, batten, orch, creel, shed |
+| 1 | **Origin reconcile before anything that matters, and pushes that never fail silently**<br>• ls-remote over warp and records repos at orch start, wake, batten resume, Merge-In and Finalize; fast-forward, landed-elsewhere cleanup, stop on divergence; rejected push retries and reports | [`origin-reconcile`](design-origin-reconcile.md) | loom | Webster-Burler-Fix | 4d | 20h | fabric, batten, orch, creel, shed |
 | 2 | **[.NET 002] Test tiers: every test run through lyx gate test, numbered tiers in hub config, computed scope**<br>• All testing goes through the gate slot pool against hub-declared tiers tier0..N, with scope computed from the diff; replaces the Go-only gate | [`test-tiers`](design-test-tiers.md) | loom | Discussion-Bouncer | 4d | 58m | gate, config, shed, dotnet |
-| 3 | **The operator tuned loom defaults move into the lyx template, so every new hub gets them**<br>• New hubs seed neutral loom defaults; the loomyard hub tuning is the operator default and belongs in the template<br>• `profile: light` | [`tuned-defaults-template`](design-tuned-defaults-template.md) | loom | Plan-Write | 52m | 39m | config, loom |
+| 3 | **The operator tuned loom defaults move into the lyx template, so every new hub gets them**<br>• New hubs seed neutral loom defaults; the loomyard hub tuning is the operator default and belongs in the template<br>• `profile: light` | [`tuned-defaults-template`](design-tuned-defaults-template.md) | loom | Plan-Write | 53m | 39m | config, loom |
 | 4 | **Intake reads the hub own repository, selfreport stays LoomYard-only, and the orch neither runs intake nor reviews on its own**<br>• lyx board intake takes issues from the hub warp repo, not the hard-coded Knatte18/loomyard; the orch role stops running intake by itself | [`intake-own-repo`](design-intake-own-repo.md) | darn | Darn-Burler-Review | 31m | 26m | board, orch, selfreport, stencil |
 
 #### Normal priority
 
 | # | Task | Slug | Recipe | At | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 5 | **lyx board rename: change an entry slug in one write**<br>• Rename an entry keeping all fields and rewriting depends_on; report prose mentions | [`board-rename`](design-board-rename.md) | darn | PR-Align | 3d | 21m | board |
-| 6 | **Reed small fixes: trace-id constant in tests, allow-set-title warn noise, watchdog stop marker without inotify**<br>• Three small reed fixes in one darn run | [`reed-small-fixes`](design-reed-small-fixes.md) | darn | Merge-In | 1d | 21m | reed, shuttle |
+| 5 | **lyx board rename: change an entry slug in one write**<br>• Rename an entry keeping all fields and rewriting depends_on; report prose mentions | [`board-rename`](design-board-rename.md) | darn | PR-Gate | 3d | 22m | board |
+| 6 | **Reed small fixes: trace-id constant in tests, allow-set-title warn noise, watchdog stop marker without inotify**<br>• Three small reed fixes in one darn run | [`reed-small-fixes`](design-reed-small-fixes.md) | darn | Merge-In | 1d | 22m | reed, shuttle |
 
 ### Ready
 
@@ -77,7 +77,7 @@ Starts when every entry it names under After is done.
 | # | Task | Slug | Recipe | After | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | 1 | **No way to cancel a batten run that stopped before its pair exists**<br>• `profile: light` | [`batten-cancel-verb`](design-batten-cancel-verb.md) | loom | `run-process-ownership`, `darn-verify-fixes` | 16h | 16h | batten |
-| 2 | **Orch lifecycle: dead strands count as dead, the watcher restarts, cycle requests need no reply and can be withdrawn**<br>• Strand liveness checks the engine process and placement, a dead orch watcher restarts, the note write is seen without a reply, and a pending distill/refresh can be withdrawn<br>• `profile: light` | [`orch-strand-cycle`](design-orch-strand-cycle.md) | loom | `origin-reconcile`, `machine-handover`, `darn-verify-fixes`, `run-process-ownership` | 2d | 11m | orch, reed |
+| 2 | **Orch lifecycle: dead strands count as dead, the watcher restarts, cycle requests need no reply and can be withdrawn**<br>• Strand liveness checks the engine process and placement, a dead orch watcher restarts, the note write is seen without a reply, and a pending distill/refresh can be withdrawn<br>• `profile: light` | [`orch-strand-cycle`](design-orch-strand-cycle.md) | loom | `origin-reconcile`, `machine-handover`, `darn-verify-fixes`, `run-process-ownership` | 2d | 12m | orch, reed |
 
 ## Notes
 
@@ -112,7 +112,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | # | Note | Slug | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | 3 | **Opening an agent into reed: engine bypass mode by default, explicit engine, model and effort, and reed add points to shuttle open**<br>• reed add help shows a broken claude example (%SID% never substituted) and shuttle open keeps the interactive permission default; every agent in reed needs bypass, per engine (claude bypassPermissions, Codex --yolo) | [`reed-agent-launch-bypass`](design-reed-agent-launch-bypass.md) | 22h | 22h | reed, shuttle, claude, codex |
-| 4 | **Diff-scoped verify gate runs an unrelated package whose test depends on host inotify limits** | [`verify-diff-scope-unrelated-pkg`](design-verify-diff-scope-unrelated-pkg.md) | 23m | 23m | gate |
+| 4 | **Diff-scoped verify gate runs an unrelated package whose test depends on host inotify limits** | [`verify-diff-scope-unrelated-pkg`](design-verify-diff-scope-unrelated-pkg.md) | 24m | 24m | gate |
 
 ### Enhancements
 
@@ -170,7 +170,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 2 | **Weaver: a cold-start implementer beside Webster, with model escalation**<br>• A second implementer built on Millhouse Builder: a fresh agent per batch with its own model, escalating the model when an agent fails; Webster stays fork-based | [`weaver`](design-weaver.md) | 10d | 2d | webster |
 | 3 | **creel stage 3: agents message through creel, not SendMessage**<br>• Parent asks, parent review, stop reports and shuttle send go through creel, so a non-Claude engine can take a role with a parent | [`creel-agents`](design-creel-agents.md) | 6d | 2d | creel, shuttle, loom, stencil, report |
 | 4 | **[WS 004] Board projects and pairs created from a parent pair**<br>• A task names its project; a project groups tasks in order and may have its own worktree; fabric and batten create a project task pair from that branch, batten verbs run from any worktree | [`pair-from-parent`](design-pair-from-parent.md) | 2d | 2d | fabric, batten, board, workspaces |
-| 5 | **[.NET 006] LoomYard uses quarry C# glyphs: version raise, alphabet by extension**<br>• LoomYard side of C# glyphs, after the quarry hub csharp-alphabet lands and is tagged | [`quarry-csharp`](design-quarry-csharp.md) | 17h | 41m | quarry, dotnet |
+| 5 | **[.NET 006] LoomYard uses quarry C# glyphs: version raise, alphabet by extension**<br>• LoomYard side of C# glyphs, after the quarry hub csharp-alphabet lands and is tagged | [`quarry-csharp`](design-quarry-csharp.md) | 17h | 42m | quarry, dotnet |
 
 #### Normal priority
 
