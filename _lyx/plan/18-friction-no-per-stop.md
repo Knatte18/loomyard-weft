@@ -1,8 +1,7 @@
 # Card 18 — friction-no-per-stop
 
 **Edit:**
-- `internal/loomcli#loomCLI.reflectHalt`
-- `internal/loomcli#loomCLI.loomAfterStep`
+- `internal/loomcli/halt.go`
 - `internal/loomcli#loomCLI.loomPostRun`
 - `internal/loomcli#loomCLI.loomAfterInterrupt`
 - `internal/loomcli#loomCLI.reflectFriction` -> `func (c *loomCLI) reflectFriction() string`

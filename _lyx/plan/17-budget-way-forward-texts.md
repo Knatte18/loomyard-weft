@@ -12,7 +12,7 @@
 - `internal/battencli#Command`
 - `internal/battencli#battenCLI.wire`
 - `internal/loomengine#TestClassifyHalt`
-- `internal/loomengine/anomaly.go`
+- `internal/loomengine#ClassifyHalt`
 - `contracts/stencils/shed/shed-template-driver.md`
 - `contracts/stencils/orch/orch-template-role.md`
 
@@ -26,7 +26,7 @@
 `battenCLI.wire` builds batten's clause with the run-id it is wired for, its resolved `slug` argument, as `gotoCommand` renders the run's real run-id today: `run "lyx batten run <run-id>": the resume grants the row one more budget`, with the actual value in place of `<run-id>`.
 
 The goto help texts (`loomVerbTexts`, `shedVerbTexts`, `battenVerbTexts` and batten's `Command` overview) drop "with a fresh segment budget" and "resets that row's segment bounce budget": a goto keeps the segment's settled verdicts and spent budget, resets only what the target row needs to run (the error, the transient mark, a pending resume label and, for goto alone, the pause conditions), records itself as the run's pause reason, and is refused onto a review or fix row of a settled review segment where the recipe tells that guard.
-The driver stencil's "Two stops name `lyx shed goto`" list keeps only the missing-producer stop and names the told resume clause for an exhausted budget; the orch role stencil's "A run that needs a fresh budget at a producer" bullet becomes a resume of the budget halt, with goto kept for moving a run back; `anomaly.go`'s comment on the budget prefix no longer says the reason carries a goto way forward, and `TestClassifyHalt`'s budget row text names the resume clause.
+The driver stencil's "Two stops name `lyx shed goto`" list keeps only the missing-producer stop and names the told resume clause for an exhausted budget; the orch role stencil's "A run that needs a fresh budget at a producer" bullet becomes a resume of the budget halt, with goto kept for moving a run back; `ClassifyHalt`'s doc comment on the budget prefix no longer says the reason carries a goto way forward, and `TestClassifyHalt`'s budget row text names the resume clause.
 
 `TestNewShed_FieldCompleteAssembly` asserts the told clause reaches the Shed, and card 2's told-`BudgetWayForward` row pins that a told clause becomes the halt's reason; the clause texts themselves are static prose, so no test pins them.
 

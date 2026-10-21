@@ -8,6 +8,8 @@
 - `internal/shedadapters#Bouncer.atHardCap`
 - `internal/shedadapters#Bouncer.settleUndecided`
 - `internal/shedadapters#Bouncer.rubricNotes`
+- `internal/shedadapters#Bouncer.settledEntry`
+- `internal/shedadapters#Bouncer.settledGeneration`
 - `internal/shedadapters#RubricNotes`
 - `internal/shedadapters#ReadRubric`
 - `internal/shedadapters#TestReadRubric`
@@ -16,7 +18,8 @@
 - `internal/shedadapters/doc.go`
 
 **Create:**
-- `plan:internal/shedadapters#Bouncer.startGeneration` -> `func (b *Bouncer) startGeneration(ctx context.Context, settled settleRecord, base string) (shedengine.Outcome, shedengine.OutputPointer, error)`
+- `plan:internal/shedadapters#Bouncer.startNextGeneration` -> `func (b *Bouncer) startNextGeneration(ctx context.Context, settled settleRecord, base string) (shedengine.Outcome, shedengine.OutputPointer, error)`
+- `plan:internal/shedadapters#entryNewGeneration` -> `const entryNewGeneration`
 - `plan:internal/shedadapters#Bouncer.amendment` -> `func (b *Bouncer) amendment() (generationRecord, bool)`
 - `plan:internal/shedadapters#AmendmentNote` -> `func AmendmentNote(runDir string) string`
 - `plan:internal/shedadapters#TestBouncer_Amendment` -> `func TestBouncer_Amendment(t *testing.T)`
@@ -35,7 +38,8 @@
 
 `BouncerConfig` gains `AmendAllowance int` (the run-wide `review_amend_max_bounces`), `FullGeneration bool` (true for Merge-Review, whose changed merge-in is a new subject) and `RejectReview func() (path string, rejectedAt time.Time, found bool, err error)` (the PR-Gate reject's review file, nil for none).
 
-Case 2 (a live record whose subject changed) and case 3 with a changed subject call `startGeneration`: it reads `RejectReview` and keeps the path when the reject is later than the settle record's `SettledAt` in case 2, or later than the generation record's `JudgeAt` in case 3, which has no settle record, archives the run directory as today (the records travel along), and writes the generation record with the next number and, for an amendment, the `Amendment` mark, the base (the settle record's base; after case 3 the generation record's `JudgeBase`; for code the merge base, the stored patch beside it) and the reject path; a `FullGeneration` record carries the number alone, with no mark, no base and no reject path.
+Case 2 (a live record whose subject changed) and case 3 with a changed subject call `startNextGeneration`, while the existing `startGeneration` keeps writing generation 1's record and is not touched: `startNextGeneration` reads `RejectReview` and keeps the path when the reject is later than the settle record's `SettledAt` in case 2, or later than the generation record's `JudgeAt` in case 3, which has no settle record, archives the run directory as today (the records travel along), and writes the generation record with the next number and, for an amendment, the `Amendment` mark, the base (the settle record's base; after case 3 the generation record's `JudgeBase`; for code the merge base, the stored patch beside it) and the reject path; a `FullGeneration` record carries the number alone, with no mark, no base and no reject path.
+`settledEntry` reports a new action, `entryNewGeneration`, appended after `entryReplay` to the existing `iota` block of actions so its value differs from the others, for a live settle record and for case 3 over a changed subject, so `Call` tells them from case 4's clear, which all three return as `entryClear` today; the docs of `settledEntry` and `settledGeneration`, and `doc.go`'s Bouncer re-entry cases ("a live record over a changed subject, and a generation record whose judge subject differs from the live one, clear and re-seed"), now describe both as starting a new generation instead of clearing.
 A `RejectReview` error is returned as the Call's error before the archive, and a failed archive degrades as the clear's does today.
 For a Plan-Bouncer re-entry after a PR-Gate reject, the base is the settle record's, which `markSettled` replaced with the weft commit that holds the settled plan and PR-Rework's archive carried along (card 14), so the amendment is told a base containing the settled plan.
 An amendment with an allowance of 0 settles through `approveWithoutReview`, which writes its settle record; otherwise the seed runs.
