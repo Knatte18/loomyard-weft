@@ -1,0 +1,7 @@
+verdict: approve
+reason: >-
+  The diff builds the machine-local override of gate's go_parallel and slots the board entry asks for, following D1-D5 of the decision record, with docs and the two declared PATTERN entries in the same change;
+  the Webster-Review BLOCKING index-line findings are fixed in the final diff, and the PATTERN headroom trim of three other index lines keeps their meaning.
+  The overlaps with run-reentry (configreg_test.go) and origin-reconcile (hubreconcile ensure_integration_test.go) are text-only; this run, at row 21, lands before both at row 11.
+question: ""
+superseded: []
