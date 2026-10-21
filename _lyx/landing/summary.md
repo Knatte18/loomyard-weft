@@ -1,30 +1,39 @@
-# Deploy pushes no prod pointer and skips a foreign lyx on PATH
+# Deploy: drop the prod pointer, skip foreign lyx on PATH
 
-`update-plugins.sh` (`tools/deploy`) stops pushing the shared `prod` pointer, and its other-lyx-on-PATH warning names only copies of lyx itself, each file once (issue #766).
+`update-plugins.sh` (`tools/deploy`) no longer pushes `HEAD` to `origin/prod`, and its other-lyx-on-PATH warning names only copies of lyx itself, each file once.
+
+`prod` was one pointer on origin shared by every machine, while each machine's installed binary is local.
+After a deploy on one machine it named a commit the other machine did not run, so it said nothing about what either ran.
+Only `tools/deploy` wrote it, and no lyx code reads it.
+
+The PATH check printed `WARNING: another lyx on PATH: /usr/bin/lyx - remove it` for the Ubuntu LyX document processor, and again for `/bin/lyx`, which is the same file through a symlinked `/bin`.
+
+Closes #766
 
 ## What changes
 
-- **No `prod` push.**
-  A production deploy no longer pushes `HEAD` to `origin/prod`, and the ancestry check that kept `prod` moving forward goes with it.
-  Each machine deploys on its own, so one pointer on origin could not say what any machine runs.
-  The refusals of a dirty tree and of a HEAD not on `origin/main` stay; the latter now lives in `pushedGate`.
-- **Foreign `lyx` on PATH.**
-  `otherLyxBinaries` (formerly `otherBinaries`) reports a file named `lyx` outside the Go bin dir only when `debug/buildinfo` reads it and its main package is `github.com/Knatte18/loomyard/cmd/lyx`.
-  The Ubuntu LyX document processor at `/usr/bin/lyx`, or any non-Go program of that name, is no longer flagged for removal.
-- **One file, one warning.**
-  Each candidate resolves through `filepath.EvalSymlinks`, and a file already seen is skipped, so `/bin` linking to `/usr/bin` reports once, and a PATH alias of the Go bin dir never reports the production binary itself.
-- `CLAUDE.md`'s Production section and `README.md` stop saying the script moves `prod`.
+- A production deploy pushes nothing to origin and prints no `Moved prod` line.
+- A deploy still refuses a dirty tree and a `HEAD` that is not on `origin/main` after a fetch.
+  Only the `prod` ancestry half of the gate is gone.
+- The PATH scan reports a `lyx` outside the Go bin dir only when it is a copy of lyx, before or after the production binary on PATH.
+- A file reached through several PATH directories is reported once, and a PATH alias of the Go bin dir reports nothing.
+- `CLAUDE.md`'s Production section and `README.md`'s production paragraph stop saying the script moves `prod`.
 
 ## Design decisions
 
-- Build info rather than a version probe identifies lyx: reading it runs nothing, where `lyx --version` would start an unknown program from PATH.
+- **Recognition by Go build info.**
+  A PATH binary counts as lyx when `debug/buildinfo` reads it and its main package path equals `lyxMainPackage` (`github.com/Knatte18/loomyard/cmd/lyx`).
+  A non-Go binary, or a Go binary of another main package, is foreign and not reported.
+  Build info is embedded in every Go binary and reading it runs nothing, unlike a version probe that would execute an unknown program.
   A lyx built from a fork with a different module path is no longer reported.
-- The existing `origin/prod` branch is left in place; deleting it is a one-time operator action.
-  The hub-wide orch rules on Bolt are outside this diff.
-- `pushedGate` has no unit test: its one decision is the result of `git merge-base --is-ancestor`, and the package's tests spawn no git.
+- **Deduplication by resolved file.**
+  Each candidate goes through `filepath.EvalSymlinks`, and a file whose resolved path was already seen is skipped, the production binary's own path included.
+  A Windows alias through a junction is deduplicated only as far as `filepath.EvalSymlinks` follows junctions.
+- **No new warning for a foreign `lyx` that shadows production.**
+  The board entry asks only that foreign binaries not be flagged for removal.
 
-## Tests
+## To do by hand
 
-`TestOtherLyxBinaries_ReportsEachLyxCopyOutsideTheDestDirOnce` replaces the fake-filesystem test with a real temp layout: copies of the test binary stand in for lyx, matched by its own build-info path, beside a shell script named `lyx`, a missing directory and `fslink` directory links aliasing a copy and the Go bin dir.
-A second row with another main package path expects no report.
-The `prod` ancestry test is removed with the check it covered.
+- The existing `origin/prod` branch is not deleted; delete it on origin when wanted.
+- The hub-wide orch rules on Bolt are outside this diff; update them if they name `prod`.
+- No production deploy was run; `update-plugins.sh` runs only when the operator runs it.
