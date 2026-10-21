@@ -314,6 +314,18 @@ Rationale: A branch reads rewound only when origin's head is already an ancestor
   - wake-unreachable-origin-lifts-pause (class decision, severity MEDIUM, open in rounds 4)
 <!-- /lyx:carry-over Discussion-Review -->
 
+<!-- lyx:carry-over Plan-Review -->
+- Plan-Review, round 4: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
+  Review: _lyx/reviews/plan/round-4-review.md; fixer report: _lyx/reviews/plan/round-4-fixer-report.md.
+  - orch-start-error-envelope-bare (class scope, severity MEDIUM, open in rounds 4)
+  - publish-not-fast-forward-skips-class-line (class consistency, severity MEDIUM, open in rounds 4)
+  - rewind-keep-local-merge-noop (class design, severity BLOCKING, open in rounds 4)
+  - tag-created-no-mutation-kind (class scope, severity MEDIUM, open in rounds 4)
+  - way-forward-line-unasserted-at-print-hops (class consistency, severity MEDIUM, open in rounds 3, 4)
+  - way-forward-lines-no-directory (class consistency, severity MEDIUM, open in rounds 4)
+  - way-forward-reentry-verb-shared-string (class design, severity MEDIUM, open in rounds 4)
+<!-- /lyx:carry-over Plan-Review -->
+
 ## Acceptance criteria
 
 - Two clones of one origin: origin moved on a weft, Bolt and warp `main` with nothing local only; a hub reconcile fast-forwards all three and reports each.
