@@ -1,11 +1,11 @@
 {
-  "current_producer": "Webster-Burler-Review",
+  "current_producer": "Webster-Burler-Fix",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Webster-Burler-Review",
-    "last": "Webster-Burler-Review → goto",
+    "now": "Webster-Burler-Fix",
+    "last": "Webster-Burler-Review → bounced to Webster-Burler-Fix",
     "wait": ""
   },
   "history": [
@@ -440,6 +440,35 @@
       "output": "",
       "at": "2026-10-21T16:06:12Z",
       "by": "shed"
+    },
+    {
+      "producer": "Webster-Burler-Review",
+      "outcome": "stuck",
+      "output": "/home/AD.NORCERESEARCH.NO/hanf/Code/Knatte18/loomyard-LYXHUB/tuned-defaults-template/_lyx/reviews/webster/round-2-review.md",
+      "at": "2026-10-21T16:08:16Z",
+      "gate_attempts": 1,
+      "gate_spans": [
+        {
+          "gate": "review",
+          "kind": "gate",
+          "start": "2026-10-21T16:07:54.141728538Z",
+          "end": "2026-10-21T16:07:54.142179138Z"
+        },
+        {
+          "gate": "review",
+          "kind": "rework",
+          "start": "2026-10-21T16:07:54.694988216Z",
+          "end": "2026-10-21T16:08:15.776717317Z"
+        },
+        {
+          "gate": "review",
+          "kind": "gate",
+          "start": "2026-10-21T16:08:15.845275654Z",
+          "end": "2026-10-21T16:08:15.847123615Z"
+        }
+      ],
+      "budget_exempt": true,
+      "routed_to": "Webster-Burler-Fix"
     }
   ],
   "product": {
