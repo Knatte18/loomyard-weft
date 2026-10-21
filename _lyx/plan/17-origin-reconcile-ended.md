@@ -9,7 +9,7 @@
 - `plan:internal/fabricengine#EndedTeardown`
 
 **Uses:**
-- `plan:internal/fabricengine#SnapshotTagged`
+- `internal/fabricengine#SnapshotTagged`
 - `internal/fabricengine#ClearPushFailure`
 - `internal/fabricengine#ListFailedPushes`
 - `internal/testkit/boardkit#InstallReplay`

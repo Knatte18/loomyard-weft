@@ -21,7 +21,7 @@
 - `plan:internal/fabricengine#ReconcileOrigin`
 - `plan:internal/fabricengine#ReconcileOptions`
 - `plan:internal/fabricengine#OriginReport`
-- `plan:internal/pauserecord#SetGateExempt`
+- `internal/pauserecord#SetGateExempt`
 - `plan:internal/pairteardown#HubSeamOptions`
 - `plan:internal/pairteardown#Teardown.OriginSeams`
 
