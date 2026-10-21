@@ -1,0 +1,15 @@
+{
+  "verdict": "resume",
+  "reason": "Cause is hard-cap at plan review round 4 with two open design-wrong findings, F1 and F4; each premise holds, and the round-4 fixer's change in the cards answers each one, with nothing disputed or deferred.\nF1: a branch reads rewound only when origin's head is an ancestor of the local tip, so the `ours` merge D4 named is a no-op and card 9's hold-back refuses the push after it; `remoteDivergenceWayForward` (internal/fabricengine/destroy.go) offers that merge for the opposite case, a remote holding commits the checkout lacks. Card 1's `rewoundWayForward` now offers `git reset --keep \u003corigin head\u003e` then `lyx fabric push`, or the raw `git push origin \u003cbranch\u003e`; card 9 says why the merge is not offered and adds both settle rows to `TestPushFailureClasses`, and card 15's rewound row reads the branch level after each settle. That departs from D4's wording, not its intent (D4 meant the push after the merge to write the reflog's push entry), so I recorded it as an arbiter decision.\nF4: card 15 now makes `BranchOutcome.WayForward` the repair step alone, with no re-entry verb, and says each hop appends its own: cleanup and `Summary` append `lyx cleanup --apply` from the prime, card 21 `lyx batten run \u003cslug\u003e`, card 22 `lyx loom resume`, card 23 per case. The rows of cards 19 to 23 pin the line verbatim followed by the hop's re-entry.\nThe other seven findings are mechanical and fixed too. Neither fix widens the board entry's scope.",
+  "question": "",
+  "goto": "",
+  "verbs": [
+    "lyx loom decision add origin-reconcile --by arbiter --title \"Rewound keep-local choice is a plain push\" --decision \"D4's second way forward for a task branch rewound on origin is `git push origin \u003cbranch\u003e` in the task worktree, not the `ours` merge of `origin/\u003cbranch\u003e`; `lyx fabric push` stays refused until the rewind is settled by that push or by `git reset --keep \u003corigin head\u003e`.\" --rationale \"A branch reads rewound only when origin's head is already an ancestor of the local tip, so the `ours` merge changes nothing and the hold-back still reads the tip rewound. The plain push is the fast-forward D4 meant the merge to enable, and it writes the push entry that ends the reflog test. Plan review round 4, F1.\"",
+    "lyx loom circling accept origin-reconcile"
+  ],
+  "cause": "",
+  "attempt": 3,
+  "attempt_dir": "/home/AD.NORCERESEARCH.NO/hanf/Code/Knatte18/loomyard-LYXHUB/origin-reconcile/_lyx/shed/origin-reconcile/arbiter/attempt-3",
+  "verdict_path": "/home/AD.NORCERESEARCH.NO/hanf/Code/Knatte18/loomyard-LYXHUB/origin-reconcile/_lyx/shed/origin-reconcile/arbiter/attempt-3/verdict.yaml",
+  "relaunch": "lyx shed step origin-reconcile --until-stop --arbiter-attempt 3"
+}
