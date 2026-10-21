@@ -1,0 +1,32 @@
+attempt: 1
+cap: 3
+failures:
+    - id: github.com/Knatte18/loomyard/internal/battencli.TestWire_EverySeamFilled
+      kind: test
+      package: github.com/Knatte18/loomyard/internal/battencli
+      tail: '    wire_seams_test.go:112: c.env.Landing.Reconcile is nil after wire(); fill it or list it in intentionallyNil with a reason'
+    - id: github.com/Knatte18/loomyard/internal/loomcli.TestLoomResumeReconcilesTheHubConfigBeforeArming
+      kind: test
+      package: github.com/Knatte18/loomyard/internal/loomcli
+      tail: '    smoke_prebootstrap_integration_test.go:236: hub build stamp after loom resume: stat /tmp/lyx-1856216086/rcbf9fd/TestLoomResumeReconcilesTheHubConfigBeforeArming1236632799/001/container/warp-bare-LYXHUB/_board/.lyx/config/build-stamp.json: no such file or directory; want it written'
+    - id: github.com/Knatte18/loomyard/internal/loomcli.TestLoomFailedReedUpRefuses/llm_driver
+      kind: test
+      package: github.com/Knatte18/loomyard/internal/loomcli
+      tail: '        testing.go:1464: TempDir RemoveAll cleanup: unlinkat /tmp/lyx-1856216086/rcbf9fd/TestLoomFailedReedUpRefusesllm_driver2759443660/001/container/warp-bare-LYXHUB: directory not empty'
+    - id: github.com/Knatte18/loomyard/internal/testkit/envkit.TestFullEnv_FillsEverySeam
+      kind: test
+      package: github.com/Knatte18/loomyard/internal/testkit/envkit
+      tail: '    envkit_test.go:16: NilSeams(FullEnv) = [Landing.Reconcile]; want none'
+    - id: github.com/Knatte18/loomyard/internal/testkit/envkit.TestNilSeams_ReportsExactPaths
+      kind: test
+      package: github.com/Knatte18/loomyard/internal/testkit/envkit
+      tail: '    envkit_test.go:69: NilSeams = [CommitPlan Landing.PushBranch Landing.Reconcile SeedChild.WriteSeed Shuttle Teardown.Remove]; want [CommitPlan Landing.PushBranch SeedChild.WriteSeed Shuttle Teardown.Remove]'
+    - id: github.com/Knatte18/loomyard/internal/testkit/envkit.TestNilSeams_SkipsNilLegalPaths
+      kind: test
+      package: github.com/Knatte18/loomyard/internal/testkit/envkit
+      tail: '    envkit_test.go:78: NilSeams = [Landing.Reconcile]; want none for nil-legal seams'
+log_path: /home/AD.NORCERESEARCH.NO/hanf/Code/Knatte18/loomyard-LYXHUB/origin-reconcile/.lyx/verify/verify-2.log
+hint:
+    - 09-push-retry-and-record
+    - 21-batten-resume-reconcile
+    - 22-landing-reconcile
