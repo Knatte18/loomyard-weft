@@ -1281,26 +1281,6 @@
       "profile": "light"
     },
     {
-      "id": 716,
-      "slug": "gate-machine-local-config",
-      "title": "Gate settings per machine",
-      "kind": "task",
-      "labels": [
-        "enhancement",
-        "config"
-      ],
-      "issues": [],
-      "priority": "low",
-      "depends_on": [],
-      "isolated": false,
-      "brief": "go_parallel and slots can only be set hub-wide on Bolt, so a value tuned for one machine reaches every machine",
-      "body": "## Seen (2026-10-20, `go_parallel` sweep on OSL-1046)\n\nEvery gate key is hub-wide: `lyx config gate --layer local` refuses `go_parallel`, and gate has no worktree layer.\nThe only layer that takes it is the default one on Bolt, so the sweep's values 8 and 12 reached Neve too while it ran on OSL-1046.\nThe two machines differ in what bounds a run: Cortex XDR holds new binaries on OSL-1046, and Neve has no endpoint security.\n\n## Idea\n\n`go_parallel`, and possibly `slots`, take a machine-local override that a run on that machine reads and Bolt never carries.\n",
-      "status": "done",
-      "created": "2026-10-20T11:06:17Z",
-      "revised": "2026-10-20T11:06:17Z",
-      "profile": "light"
-    },
-    {
       "id": 717,
       "slug": "reed-agent-launch-bypass",
       "title": "Opening an agent into reed: engine bypass mode by default, explicit engine, model and effort, and reed add points to shuttle open",
