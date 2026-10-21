@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-21 07:47 UTC; every age below is as of then.
+Rendered 2026-10-21 07:51 UTC; every age below is as of then.
 
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
@@ -24,7 +24,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 3 | **Scratch files under .scratch change the worktree root listing and defeat go test cache hits**<br>• `profile: light` | [`scratch-defeats-test-cache`](design-scratch-defeats-test-cache.md) | loom | Plan-Burler-Fix | 21h | 18h | gate |
+| 3 | **Scratch files under .scratch change the worktree root listing and defeat go test cache hits**<br>• `profile: light` | [`scratch-defeats-test-cache`](design-scratch-defeats-test-cache.md) | loom | Plan-Bouncer | 21h | 18h | gate |
 
 ### Ready
 
