@@ -749,7 +749,7 @@
       }
     }
   ],
-  "currentBatch": 0,
+  "currentBatch": 6,
   "masterStrand": "d26ba69a79fb575f7e87b499eb76f785",
   "masterSessionId": "b26519ba-ade7-44f6-9357-417c58fd04ba",
   "masterEngine": "claude",
@@ -874,6 +874,22 @@
       "bracketTranscripts": [
         "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-origin-reconcile/b26519ba-ade7-44f6-9357-417c58fd04ba/subagents/agent-ae8b5bbfc5f1a32b2.jsonl"
       ]
+    },
+    "6": {
+      "slug": "pull-replay-reflog",
+      "cards": [
+        "06-pull-replay-reflog"
+      ],
+      "cardHashes": {
+        "06-pull-replay-reflog": "5c12bae7f078ec5ab0fbf2e76ea71ce2c3567d3a4600275a95561ec740983c9e"
+      },
+      "startSha": "cc7da0f29bcf24f4b05b3a1faca0c52ee8e3b280",
+      "kind": "fork",
+      "spawnedAt": "2026-10-21T06:32:19Z",
+      "sessionId": "b26519ba-ade7-44f6-9357-417c58fd04ba",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
     }
   },
   "seenForkTranscripts": [
