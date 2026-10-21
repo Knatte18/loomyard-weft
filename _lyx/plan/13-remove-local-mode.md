@@ -21,8 +21,8 @@
 - `internal/fabricengine#CommitPendingRecordsForTest`
 
 **Uses:**
-- `plan:internal/fabricengine#setAsideTag`
-- `plan:internal/fabricengine#KindTagCreated`
+- `internal/fabricengine#setAsideTag`
+- `internal/fabricengine#KindTagCreated`
 - `internal/fabricengine#ClearPushFailure`
 - `internal/fabricengine#regenerateHubWorkspace`
 - `internal/fabricengine#WeftWriteLockPathForTest`

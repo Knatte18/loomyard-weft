@@ -10,8 +10,8 @@
 
 **Uses:**
 - `internal/fabricengine#recordsConflictWayForward`
-- `plan:internal/fabricengine#replayBolt`
-- `plan:internal/fabricengine#readEndedSet`
+- `internal/fabricengine#replayBolt`
+- `internal/fabricengine#readEndedSet`
 - `internal/testkit/boardkit#InstallReplay`
 
 **Intent:** Bolt's pull-first becomes a case of D5's replay.
