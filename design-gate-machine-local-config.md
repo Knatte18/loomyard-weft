@@ -1,6 +1,6 @@
 # Gate settings per machine
 
-`gate-machine-local-config` · Task · enhancement, config · running · Finalize
+`gate-machine-local-config` · Task · enhancement, config · done
 
 ## Seen (2026-10-20, `go_parallel` sweep on OSL-1046)
 
