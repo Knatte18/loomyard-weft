@@ -19,16 +19,13 @@ Held by a run; its scope is locked until the run ends.
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | 1 | **Origin reconcile before anything that matters, and pushes that never fail silently**<br>• ls-remote over warp and records repos at orch start, wake, batten resume, Merge-In and Finalize; fast-forward, landed-elsewhere cleanup, stop on divergence; rejected push retries and reports | [`origin-reconcile`](design-origin-reconcile.md) | loom | Webster-Burler-Fix | 3d | 19h | fabric, batten, orch, creel, shed |
 | 2 | **[.NET 002] Test tiers: every test run through lyx gate test, numbered tiers in hub config, computed scope**<br>• All testing goes through the gate slot pool against hub-declared tiers tier0..N, with scope computed from the diff; replaces the Go-only gate | [`test-tiers`](design-test-tiers.md) | loom | Discussion-Write | 4d | 18m | gate, config, shed, dotnet |
+| 3 | **The operator tuned loom defaults move into the lyx template, so every new hub gets them**<br>• New hubs seed neutral loom defaults; the loomyard hub tuning is the operator default and belongs in the template<br>• `profile: light` | [`tuned-defaults-template`](design-tuned-defaults-template.md) | loom | Worktree-Create | 13m | 0m | config, loom |
 
 ### Ready
 
 Waits on nothing open; can start now.
 
-#### High priority
-
-| # | Task | Slug | Recipe | After | Age | Revised | Labels |
-| --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | **The operator tuned loom defaults move into the lyx template, so every new hub gets them**<br>• New hubs seed neutral loom defaults; the loomyard hub tuning is the operator default and belongs in the template<br>• `profile: light` | [`tuned-defaults-template`](design-tuned-defaults-template.md) | loom |  | 13m | 0m | config, loom |
+_None._
 
 ### Layer A
 
