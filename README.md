@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-21 06:05 UTC; every age below is as of then.
+Rendered 2026-10-21 06:06 UTC; every age below is as of then.
 
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
@@ -24,7 +24,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 3 | **webster create-not-done check rejects a Create target the card removes itself**<br>• `profile: budget` | [`create-target-transient`](design-create-target-transient.md) | darn | Darn-Bouncer | 2d | 10h | webster, loom, quarry |
+| 3 | **webster create-not-done check rejects a Create target the card removes itself**<br>• `profile: budget` | [`create-target-transient`](design-create-target-transient.md) | darn | Darn-Burler-Review | 2d | 10h | webster, loom, quarry |
 | 4 | **Scratch files under .scratch change the worktree root listing and defeat go test cache hits**<br>• `profile: light` | [`scratch-defeats-test-cache`](design-scratch-defeats-test-cache.md) | loom | Discussion-Write | 19h | 16h | gate |
 | 5 | **Deploy: drop the shared prod pointer and stop flagging a foreign lyx on PATH**<br>• update-plugins.sh pushes no prod pointer, and its PATH check ignores a non-lyx binary named lyx<br>• `profile: budget` | [`deploy-prod-cleanup`](design-deploy-prod-cleanup.md) | darn | Darn-Burler-Review | 1d | 10h | deploy |
 | 6 | **Shell guard: match test runs on the command, refuse heredoc writes to tracked files**<br>• The guard refuses commands that only name a refused tier, and lets heredoc writes past the edit directive<br>• `profile: budget` | [`shellguard-fixes`](design-shellguard-fixes.md) | darn | Darn-Write | 19h | 10h | claude |
@@ -100,7 +100,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 4 | **Audit the use of the twill and lens review setup at every perch**<br>• After about ten loom runs, measure what the lens fans and twill fixers catch per perch against their cost, and set the standard review rounds from it | [`review-setup-audit`](design-review-setup-audit.md) | 2d | 2d | burler, loom, report |
 | 5 | **Audit: ideas from tree-sitter-analyzer for quarry and its use in lyx**<br>• What the Python tree-sitter-analyzer offers that quarry or lyx could use if built in Go, what already exists, and what would not pay off | [`tsa-quarry-audit`](design-tsa-quarry-audit.md) | 2d | 2d | quarry, webster, burler, loom |
 | 6 | **Audit: Discussion and Plan quality before and after the twill writers**<br>• Plan round-1 findings fell about half with the twill Plan writer; Discussion is the same or slightly better; fork0 and the code list added no further gain | [`twill-writer-quality-audit`](design-twill-writer-quality-audit.md) | 2d | 2d | loom, burler, stencil |
-| 7 | **Sweep go_parallel on OSL-1046 with Cortex XDR**<br>• Time both gate tiers on the work laptop on a quiet machine and log them in docs beside the Neve numbers, with full hardware info | [`bench-osl1046-xdr`](design-bench-osl1046-xdr.md) | 23h | 18h |  |
+| 7 | **Sweep go_parallel on OSL-1046 with Cortex XDR**<br>• Time both gate tiers on the work laptop on a quiet machine and log them in docs beside the Neve numbers, with full hardware info | [`bench-osl1046-xdr`](design-bench-osl1046-xdr.md) | 23h | 19h |  |
 | 8 | **[.NET 001] Measure NORCE Models build and test on OSL-1046 with Cortex XDR**<br>• Clock restore, build and test of Models cold, warm and in a second checkout before building .NET support | [`dotnet-bench-osl1046`](design-dotnet-bench-osl1046.md) | 20h | 20h | dotnet |
 
 ### Bugs
