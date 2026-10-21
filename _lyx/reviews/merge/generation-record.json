@@ -1,6 +1,8 @@
 {
   "number": 1,
   "judge_subject": {
-    "kind": ""
-  }
+    "kind": "merge",
+    "hash": "9a5299613a3a6f792813953aa33deca4753438ae94809a7304d2c7962bd4afb4"
+  },
+  "judge_at": "2026-10-21T11:14:29Z"
 }
