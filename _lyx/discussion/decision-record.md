@@ -305,6 +305,12 @@ Apart from the zero-test rule the operator decided after Discussion, every pick 
   - shared-fixtures-missed-by-new-behavior (class design, severity BLOCKING, open in rounds 3, 4)
 <!-- /lyx:carry-over Plan-Review -->
 
+<!-- lyx:carry-over Webster-Review -->
+- Webster-Review, round 1: converged; each finding below was fixed or disputed by the round's fixer, and no fresh reviewer has seen the result; the fixer report says which.
+  Review: _lyx/reviews/webster/round-1-review.md; fixer report: _lyx/reviews/webster/round-1-fixer-report.md.
+  - triage-section-names-retired-verify-suite (class consistency, severity MEDIUM, open in rounds 1)
+<!-- /lyx:carry-over Webster-Review -->
+
 ## Acceptance criteria
 
 - `lyx gate test` with no flags runs tier0 over the computed scope; `--tier 0 --tier 1` with `tier1` covering `[0]` runs only tier1.
