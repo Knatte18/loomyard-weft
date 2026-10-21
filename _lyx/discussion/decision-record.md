@@ -326,6 +326,15 @@ Rationale: A branch reads rewound only when origin's head is already an ancestor
   - way-forward-reentry-verb-shared-string (class design, severity MEDIUM, open in rounds 4)
 <!-- /lyx:carry-over Plan-Review -->
 
+<!-- lyx:carry-over Webster-Review -->
+- Webster-Review, round 1: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
+  Review: _lyx/reviews/webster/round-1-review.md; fixer report: _lyx/reviews/webster/round-1-fixer-report.md.
+  - pattern-entries-rewritten-undeclared (class consistency, severity MEDIUM, open in rounds 1)
+  - reconcile-verdict-no-slug-filter (class design, severity MEDIUM, open in rounds 1)
+  - replay-tags-after-reset (class design, severity MEDIUM, open in rounds 1)
+  - unclassified-push-failure-unrecorded (class design, severity MEDIUM, open in rounds 1)
+<!-- /lyx:carry-over Webster-Review -->
+
 ## Acceptance criteria
 
 - Two clones of one origin: origin moved on a weft, Bolt and warp `main` with nothing local only; a hub reconcile fast-forwards all three and reports each.
