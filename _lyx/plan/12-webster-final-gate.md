@@ -1,7 +1,7 @@
 # Card 12 — webster-final-gate
 
 **Create:**
-- `plan:internal/webstercli#TestVerifyVerb_GateConfigRefusalIsTheError` -> `func TestVerifyVerb_GateConfigRefusalIsTheError(t *testing.T)`
+- `internal/webstercli#TestVerifyVerb_GateConfigRefusalIsTheError`
 
 **Edit:**
 - `internal/websterengine#Geometry`
