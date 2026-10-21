@@ -1,11 +1,11 @@
 {
-  "current_producer": "Darn-Write",
+  "current_producer": "Darn-Bouncer",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Darn-Write",
-    "last": "Preflight → done",
+    "now": "Darn-Bouncer",
+    "last": "Darn-Write → done",
     "wait": ""
   },
   "history": [
@@ -14,6 +14,87 @@
       "outcome": "done",
       "output": "",
       "at": "2026-10-21T05:57:58Z"
+    },
+    {
+      "producer": "Darn-Write",
+      "outcome": "done",
+      "output": "/home/AD.NORCERESEARCH.NO/hanf/Code/Knatte18/loomyard-LYXHUB/create-target-transient/_lyx/landing/summary.md",
+      "at": "2026-10-21T06:05:46Z",
+      "gate_attempts": 3,
+      "gate_spans": [
+        {
+          "gate": "discussion",
+          "kind": "gate",
+          "start": "2026-10-21T06:00:09.776543416Z",
+          "end": "2026-10-21T06:00:21.82824759Z"
+        },
+        {
+          "gate": "discussion",
+          "kind": "gate",
+          "start": "2026-10-21T06:02:45.80693433Z",
+          "end": "2026-10-21T06:02:58.6958545Z"
+        },
+        {
+          "gate": "discussion",
+          "kind": "gate",
+          "start": "2026-10-21T06:03:51.618231857Z",
+          "end": "2026-10-21T06:04:03.607680026Z"
+        },
+        {
+          "gate": "discussion",
+          "kind": "gate",
+          "start": "2026-10-21T06:05:17.747385094Z",
+          "end": "2026-10-21T06:05:29.968450322Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-10-21T06:00:21.949326689Z",
+          "end": "2026-10-21T06:01:23.579634408Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "rework",
+          "start": "2026-10-21T06:01:24.092140893Z",
+          "end": "2026-10-21T06:02:45.507691793Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-10-21T06:02:59.381159188Z",
+          "end": "2026-10-21T06:03:44.035311441Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "rework",
+          "start": "2026-10-21T06:03:44.459078977Z",
+          "end": "2026-10-21T06:03:45.460563272Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-10-21T06:04:03.665305901Z",
+          "end": "2026-10-21T06:04:44.083622738Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "rework",
+          "start": "2026-10-21T06:04:44.509127171Z",
+          "end": "2026-10-21T06:05:17.652691664Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-10-21T06:05:30.078684998Z",
+          "end": "2026-10-21T06:05:45.410290559Z"
+        },
+        {
+          "gate": "description",
+          "kind": "gate",
+          "start": "2026-10-21T06:05:45.545788813Z",
+          "end": "2026-10-21T06:05:45.548245765Z"
+        }
+      ]
     }
   ],
   "product": {
