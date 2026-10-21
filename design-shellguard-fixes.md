@@ -1,6 +1,6 @@
 # Shell guard: match test runs on the command, refuse heredoc writes to tracked files
 
-`shellguard-fixes` · Task · bug, claude · running · Merge-In
+`shellguard-fixes` · Task · bug, claude · running · Publish
 
 ## Goal
 
