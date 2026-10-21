@@ -13,7 +13,7 @@
 - `plan:internal/pairteardown#HubSeamOptions`
 - `plan:internal/pairteardown#Teardown.OriginSeams`
 - `internal/hibernateengine#PauseCaller`
-- `plan:internal/testkit/boardkit#InstallReplay`
+- `internal/testkit/boardkit#InstallReplay`
 
 **Intent:** D8's `lyx cleanup`: it runs the hub reconcile before its segments.
 After the prime check, `Command`'s run calls `fabricengine.ReconcileOrigin` over the hub scope, `JudgeOnly` unless `--apply`, with the seams of `pairteardown.New(prime).OriginSeams(cleanupSeamOptions(prime))`, and puts the report on the envelope as `reconcile`, beside the top-level `mutations` (the report's `Mutations.Entries()`, always an array, empty in the dry run) and `partial` (true exactly when the envelope is an error and the record is non-empty, as `fabriccli`'s envelope derives it) pair PATTERN-mutation-record requires of a mutating verb, since `--apply`'s reconcile removes pairs, writes snapshot tags and moves branches.

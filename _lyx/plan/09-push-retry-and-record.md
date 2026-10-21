@@ -61,7 +61,7 @@
 - `internal/fabricengine#PrimeName`
 - `plan:internal/fabricengine#trackingReflog`
 - `plan:internal/fabricengine#classifyRewrite`
-- `plan:internal/testkit/boardkit#InstallReplay`
+- `internal/testkit/boardkit#InstallReplay`
 
 **Intent:** D10: every push fabricengine runs classifies a failure, recovers where it safely can, and otherwise writes the failed-push record and its one notice; D5's replay replaces `gitrepo`'s pull-rebase on every fabric push path a production caller reaches.
 `Fabric.PushWeft` and `PushWarpAt` stay on `gitrepo.PushCoalesced`, whose rejected push runs `git pull --rebase`, because no production path reaches either: only tests call them.

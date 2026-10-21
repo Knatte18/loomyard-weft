@@ -16,7 +16,7 @@
 - `plan:internal/fabricengine#replayBolt`
 - `plan:internal/fabricengine#classifyEntry`
 - `plan:internal/fabricengine#SetOriginCallHookForTest`
-- `plan:internal/testkit/boardkit#InstallReplay`
+- `internal/testkit/boardkit#InstallReplay`
 
 **Intent:** D3's order of work and D4's moves: the moving reconcile.
 After the fetches `ReconcileOrigin` reads the ended set from the fetched origin Bolt tip and its history (`readEndedSet`, over the slugs this machine holds a batten run record of and those a local records commit origin lacks touches), before any replay, so it holds whatever local Bolt did before.

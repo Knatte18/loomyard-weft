@@ -12,7 +12,7 @@
 - `plan:internal/fabricengine#SnapshotTagged`
 - `internal/fabricengine#ClearPushFailure`
 - `internal/fabricengine#ListFailedPushes`
-- `plan:internal/testkit/boardkit#InstallReplay`
+- `internal/testkit/boardkit#InstallReplay`
 
 **Intent:** D6's ended entries inside the reconcile, and D10's reconcile-side record clearing.
 An entry is ended on this machine when it is in the ended set and this machine holds a batten run record of that slug, judged from the local records before any move; a run whose local state shows its Finalize past its parent-side merge (`finalizeEntered`, card 4) is landing here and is not ended; a pair with no batten run record is never classified, and an entry only local Bolt holds is never ended.

@@ -1,17 +1,17 @@
 # Card 3 — board-replay-seam
 
 **Create:**
-- `plan:internal/fabricengine#BoardEntry` -> `type BoardEntry struct`
-- `plan:internal/fabricengine#BoardReplayRequest` -> `type BoardReplayRequest struct`
-- `plan:internal/fabricengine#BoardReplayResult` -> `type BoardReplayResult struct`
-- `plan:internal/fabricengine#BoardReplay` -> `type BoardReplay interface`
-- `plan:internal/fabricengine#InstallBoardReplay` -> `func InstallBoardReplay(r BoardReplay) (restore func())`
-- `plan:internal/boardengine#FabricReplay` -> `type FabricReplay struct`
-- `plan:internal/boardengine#FabricReplay.Entries` -> `func (FabricReplay) Entries(boardJSON []byte) ([]fabricengine.BoardEntry, error)`
-- `plan:internal/boardengine#FabricReplay.Apply` -> `func (r FabricReplay) Apply(req fabricengine.BoardReplayRequest) (fabricengine.BoardReplayResult, error)`
-- `plan:internal/boardengine#TestFabricReplay` -> `func TestFabricReplay(t *testing.T)`
-- `plan:internal/fabricengine#ErrBoardReplayMissing` -> `var ErrBoardReplayMissing error`
-- `plan:internal/testkit/boardkit#InstallReplay` -> `func InstallReplay(tb testing.TB)`
+- `internal/fabricengine#BoardEntry`
+- `internal/fabricengine#BoardReplayRequest`
+- `internal/fabricengine#BoardReplayResult`
+- `internal/fabricengine#BoardReplay`
+- `internal/fabricengine#InstallBoardReplay`
+- `internal/boardengine#FabricReplay`
+- `internal/boardengine#FabricReplay.Entries`
+- `internal/boardengine#FabricReplay.Apply`
+- `internal/boardengine#TestFabricReplay`
+- `internal/fabricengine#ErrBoardReplayMissing`
+- `internal/testkit/boardkit#InstallReplay`
 
 **Edit:**
 - `cmd/lyx#newRoot`

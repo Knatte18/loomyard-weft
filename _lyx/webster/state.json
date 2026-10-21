@@ -1,28 +1,28 @@
 {
   "runGuid": "0fa13f93fc850a69afe141168f80dcd9",
-  "planFingerprint": "5cc7ac6b9488e42015181414337b75c22cf5d22963ba5b07fb91adcf47288e1e",
+  "planFingerprint": "9e37f30233e76b92db8fbd268915b039b017467f51d39e1285f53949190e7fad",
   "planFileHashes": {
     "00-overview.md": "e153ea884172d07d958ca2ee1154c56d7fcde68a3d7613e582e8ee1bf3eee7e1",
     "01-failed-push-record.md": "d90ec71500ca4fd7e0b5c46d6ee119d2a38fb59fafe7b22e0468874805cd04db",
     "02-push-notifier-install.md": "7d7d0f216fcca35e42c1036d26dd868c5b7b7630dd5c98dfa06e4a00e1241d63",
-    "03-board-replay-seam.md": "8b89908b43dc002f1f3db4a28723ac70c889b3f0c5b0e72b2a81dcd3ee1fbc49",
-    "04-records-replay.md": "f56d46ead0b77655842815db170aaf18c0be2d3428c36d2799708f74a0e07857",
-    "05-bolt-pullfirst-replay.md": "e93d973043d13a2a86f0ed6d546a7d8d69cc1971c2ecc491bdf667fad7999901",
-    "06-pull-replay-reflog.md": "978d9e5d4ab83c6ddbf5220d72b822bd1cc07118c705a012869144169f24b855",
+    "03-board-replay-seam.md": "fb0879c9fe68fa4895bdadbaa9757a3db72d3b1b4961e710b1563f1a7e3e913e",
+    "04-records-replay.md": "f6902cda5782f6f8397faaae554b0281b12cfd5c77001648403641bbf33a3a01",
+    "05-bolt-pullfirst-replay.md": "9155ed73b9b0338827d31a5c4e308eeb2f9963c400dfc35a339fdef0ac9643e8",
+    "06-pull-replay-reflog.md": "b2f3fcef709efe342873d4440b900215194c369b475d456c1a62f731abfe2135",
     "07-land-weft-stop.md": "d4bc427f342d6f068b747737f9b49238ced5b6b7909f85fbfac4d63dda5de936",
     "08-push-auth-class.md": "7f7998e05fb123cc7cc99ed659e31d523a7125a5038098e775771ebd02928beb",
-    "09-push-retry-and-record.md": "942ac2970c9a20f73360e4ba0c5ca769311763349294c212687c5c09dc75e0ef",
+    "09-push-retry-and-record.md": "c798f53ad8079a91d44864d729d7034843089d3935c16d1fd706901508a91485",
     "10-failed-push-printing.md": "e3092c618e8797e1decc2a9e547d1cfa6ba41a9455139d20f88a1f692586ca71",
     "11-preflight-detached-push.md": "8b18749a75116b7e755a17821858177f328f9d2e1632c541c5e86755df0b920b",
     "12-gate-entry-exemption.md": "e1f8842790c5764f51b50d4e92e26948a14a32af94ee2ed21b718875c8183c87",
     "13-remove-local-mode.md": "ef2db5ee80eba8a565c16686a74659bdffd0dceb38cfb333b9c0bf1b74bb7d9b",
     "14-pairteardown-local-mode.md": "d7dbfb21b30c4be2714dec0debc79ed49b9fff1b332965d12a5ad082b64c03f3",
     "15-origin-reconcile-judge.md": "6ab6d3c469b842a80681cc7da924cce6fde384ca1bc503cfb12faaa12854beff",
-    "16-origin-reconcile-moves.md": "a4158fcc6cb68f36637cd738c04aa8d8586969068d6c04258949d66a24ff1693",
-    "17-origin-reconcile-ended.md": "368e91826f444626ece3e9dc5e869f64f6c0b577776f97036dd7853270b1a585",
+    "16-origin-reconcile-moves.md": "95787032217953e3c705f8a76e47d95c078c16fd0e671944acffd9fde408a8bb",
+    "17-origin-reconcile-ended.md": "92f8e46ba88835c20ee705fb3b6a076165e1640c32b1153951d526e903d0d75d",
     "18-reconcile-seams.md": "3cec60b1d2502dff6e9caea9bd91ea5b65d573d317d8017945054053f270cd4e",
     "19-orch-start-reconcile.md": "9305403bf3969a896ea05f23b738acead1819a70f92e9a866934f3e3f358121b",
-    "20-cleanup-reconcile.md": "3e32158c5ca16fa7270ef32728387c62ae4085c18e2dc6717a54862fb3d25cf0",
+    "20-cleanup-reconcile.md": "35d6f74132b4767d3c0bca495ab97ea3a25bc25d38e587ea20a589d424d5df94",
     "21-batten-resume-reconcile.md": "713c47b599b7b97e3cc222cf180efaa546565b4938c54b20f84c04501d683a32",
     "22-landing-reconcile.md": "3282158a21d0487f1a6f75bbebd97520f8a71b111905f9b2c90f0303829a8e89",
     "23-wake-reconcile.md": "b2e4d512a0b68d8053fa5cb5ebfe7af4d37a7103ae9865d063bdfc3a52a11581"
@@ -749,7 +749,7 @@
       }
     }
   ],
-  "currentBatch": 3,
+  "currentBatch": 0,
   "masterStrand": "d26ba69a79fb575f7e87b499eb76f785",
   "masterSessionId": "b26519ba-ade7-44f6-9357-417c58fd04ba",
   "masterEngine": "claude",
@@ -799,13 +799,27 @@
         "03-board-replay-seam"
       ],
       "cardHashes": {
-        "03-board-replay-seam": "8b89908b43dc002f1f3db4a28723ac70c889b3f0c5b0e72b2a81dcd3ee1fbc49"
+        "03-board-replay-seam": "fb0879c9fe68fa4895bdadbaa9757a3db72d3b1b4961e710b1563f1a7e3e913e"
       },
       "startSha": "150e8a0690c805694c375bc980eee17b19870616",
       "kind": "recovery",
       "spawnedAt": "2026-10-21T06:04:15Z",
-      "terminal": false,
-      "status": "",
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "03-board-replay-seam",
+        "status": "done",
+        "head_sha": "8bbeed263405786a66788b9f0c962a2dbcc987c0",
+        "deviations": [
+          "internal/boardengine/replay.go",
+          "internal/boardengine/replay_test.go",
+          "internal/fabricengine/boardreplay.go",
+          "internal/testkit/boardkit/boardkit.go"
+        ]
+      },
+      "cardShas": [
+        "8bbeed263405786a66788b9f0c962a2dbcc987c0"
+      ],
       "forkTranscripts": [
         "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-origin-reconcile/b26519ba-ade7-44f6-9357-417c58fd04ba/subagents/agent-a18884e5b7b8232b1.jsonl"
       ],
