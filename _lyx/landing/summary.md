@@ -1,24 +1,30 @@
-# Skip create-not-done for a Create target under the root `.scratch/`
+# webster: skip create-not-done for a root .scratch/ Create target
 
-Fixes #731.
+A card that names a git-ignored scratch draft as its `Create:` target and removes the draft once read no longer makes `lyx webster record-batch` refuse the batch with `create-not-done`.
+The draft typically feeds an effect outside the repo, such as a board write, so after the batch it is gone and quarry answers `not_found`.
+Before this change, a planner that followed the scratch-file cleanup rule produced a card Webster always rejected.
 
-A card could name a git-ignored scratch draft as its `Create:` target and, following the cleanup rule for scratch files, remove that draft once `lyx board upsert` had read it.
-`lyx webster record-batch` then resolved the target, got `not_found` and refused the batch with `create-not-done`, although the card had done its work.
-The card's removal step and the check could never both hold.
+`planglyph.DoneChecks` now skips a `Create` group target whose resolve key starts with `.scratch/`: it is neither resolved nor reported.
+`internal/planglyph/doc.go` and `contracts/specs/loom-plan-spec.md` state the exemption, so the planner learns that such a target is transient and may be removed by its card.
 
-`DoneChecks` in `internal/planglyph/donecheck.go` now skips a `Create` group target whose repository-root-relative resolve key starts with `.scratch/`: it is neither resolved nor judged.
-The root `.scratch/` is the directory fabric seeds into each warp repo's `.git/info/exclude`, so nothing under it can be a landed deliverable.
+Closes #731
 
 ## Design decisions
 
-- The exemption is bounded to `Create` targets under the worktree root's `.scratch/`.
-  A `.scratch/` below the root is not git-ignored and keeps its check, as do every `Delete` target and every `Rename` new side.
-  Planning-time checks such as `path-missing` are unchanged.
-- The prefix lives in an unexported constant in `planglyph`, since the two packages that already name `.scratch` keep it unexported and importing either would pull an engine into `planglyph`.
-- A new transient-target marker in the plan format and a planning-time rejection of a card that creates and removes one path were both passed over: the first needs parser and spec changes for a case one directory already identifies, and the second cannot see a removal that lives in card prose.
+- The exemption is the issue's first remedy (exempt `.scratch/` paths), not a new transient target type.
+  It needs no plan-format change and covers the reported card unchanged.
+- Only the worktree root's `.scratch/` is exempt, since that is the only one git ignores, and nothing there can be a landed deliverable.
+  Plan refs reach `DoneChecks` already canonicalized to root-relative spellings, so a prefix test on the resolve key names exactly the root directory.
+- A `.scratch/` below the root, a `Rename` new side and every `Delete` target keep their checks, and the planning-time checks such as `path-missing` are unchanged.
+- The prefix is an unexported constant in `internal/planglyph`, as in the other packages that name `.scratch`; importing one of them would pull in an unrelated engine.
+- Not added: a planning-time check rejecting a card that creates and removes one path.
 
-## Docs and tests
+## Risk
 
-- `internal/planglyph/doc.go` and the `DoneChecks` doc comment state the exemption.
-- `contracts/specs/loom-plan-spec.md` tells the planner that a root `.scratch/` `Create` target is a transient draft the card may remove.
-- `TestDoneChecks_Verdicts` gains two rows: a removed root `.scratch/` draft yields no finding, and a missing `sub/.scratch/` file still yields `create-not-done`.
+A planner could name a `.scratch/` `Create` target for a file it means to keep.
+That file is git-ignored and never lands, so the cost is a lost draft, not a false landing.
+
+## Tests
+
+`TestDoneChecks_Verdicts` gains rows for an absent root `.scratch/` target (no finding) and a non-root `sub/.scratch/` target (still `create-not-done`).
+Nothing was left to check or run by hand.
