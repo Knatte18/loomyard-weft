@@ -9,9 +9,9 @@
 - `internal/shedengine/doc.go`
 
 **Create:**
-- `plan:internal/shedengine#GotoGuard` -> `type GotoGuard func(target string) (refusal string, err error)`
-- `plan:internal/shedengine#checkGuard` -> `func checkGuard(guard GotoGuard, target, runID string) error`
-- `plan:internal/shedengine#TestGoto_Guard` -> `func TestGoto_Guard(t *testing.T)`
+- `internal/shedengine#GotoGuard`
+- `internal/shedengine#checkGuard`
+- `internal/shedengine#TestGoto_Guard`
 
 **Uses:**
 - `internal/shedengine#gotoShed`

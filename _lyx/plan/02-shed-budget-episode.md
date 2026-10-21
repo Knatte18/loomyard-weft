@@ -20,10 +20,10 @@
 - `internal/shedengine#TestStep_BudgetExhaustionNamesGotoAndGotoRestoresBudget`
 
 **Create:**
-- `plan:internal/shedengine#TestEpisodeStuckCount_Boundaries` -> `func TestEpisodeStuckCount_Boundaries(t *testing.T)`
-- `plan:internal/shedengine#TestStep_BudgetHaltResumeGrantsOneBudget` -> `func TestStep_BudgetHaltResumeGrantsOneBudget(t *testing.T)`
-- `plan:internal/shedengine#TestStep_GenerationStartSkipsBudgetComparison` -> `func TestStep_GenerationStartSkipsBudgetComparison(t *testing.T)`
-- `plan:internal/shedengine#Shed.budgetWayForward` -> `func (s *Shed) budgetWayForward() string`
+- `internal/shedengine#TestEpisodeStuckCount_Boundaries`
+- `internal/shedengine#TestStep_BudgetHaltResumeGrantsOneBudget`
+- `internal/shedengine#TestStep_GenerationStartSkipsBudgetComparison`
+- `internal/shedengine#Shed.budgetWayForward`
 
 **Uses:**
 - `internal/shedengine#gotoTestProducers`

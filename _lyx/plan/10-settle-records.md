@@ -21,7 +21,7 @@
 - `internal/shedadapters#TestArchiveRunDir`
 
 **Uses:**
-- `plan:internal/state#WriteFile`
+- `internal/state#WriteFile`
 
 **Intent:** The Bouncer's two records of D5 and D6, their liveness test and their survival across an archive, before any Bouncer path writes them.
 
