@@ -8,7 +8,7 @@
      it sits directly before the Fixer-report heading with no line of its own, so an empty value adds no byte.
      Every other marker below is a top-level {{.X}} substitution;
      stencil.Fill requires them all non-empty and there are no {{if}}/{{range}} conditionals anywhere in this file (a required marker inside a conditional branch would render silently blank when present-but-empty — see internal/stencil/stencil.go).
-lyx-stencil: sha256=8440258549e7682d6c6daa140a7982dca4f308645b7d8985eb416cd310100064 build=112cccb8f4e09be50a700c9346b294b79f649e17 time=2026-10-16T14:39:17Z -->
+lyx-stencil: sha256=01b4de978756b2faeaea2f27cfcfef9d8bb2e9eef181f9a1405f03a678e1cf29 build=90f613277e539c98eb07698ed58b50f705e99a77 time=2026-10-21T13:30:19Z -->
 
 {{.friction_directive}}
 
@@ -42,7 +42,7 @@ The other legitimate reason to leave a finding unfixed is something you genuinel
 or a capability you do not have);
 even then you must say so explicitly, with the specific reason, in the fixer-report's deferred section.
 Never leave a finding unfixed just because it looked small — small findings are usually the cheapest to fix, not a reason to skip them.
-A fix adds a test only when the finding is a coverage gap; for any other finding it corrects the existing test that asserted the wrong thing, per `PATTERN-test-economy`.
+A fix adds a test only when the finding is a coverage gap; for any other finding it corrects the existing test that asserted the wrong thing.
 
 ## Fix-scope rules — your write surface and git discipline
 

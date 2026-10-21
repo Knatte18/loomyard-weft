@@ -5,7 +5,7 @@
      It is a marker VALUE, never a template -- it carries no top-level stencil markers of its own, and
      internal/stencil's StripLeadingComment removes this leading comment before either consumer ever
      sees it.
-lyx-stencil: sha256=2f85f920738ada9ac5a4b060b0a7131be0a32a1a34290875a725f31c69c144f5 build=325e074a858348de3421a1b40fcc4a226b3eb007 time=2026-10-21T10:56:05Z -->
+lyx-stencil: sha256=b3eca81800ad4cc0c4f11d13a50ddc9c304cda49df14be17d5cff5d2aa25dd08 build=90f613277e539c98eb07698ed58b50f705e99a77 time=2026-10-21T13:30:19Z -->
 
 # Webster-Review rubric
 
@@ -92,7 +92,7 @@ Do not flag any of the following as a finding:
 - **Stencil wording.**
   A diff that changes a stencil is read against the measuring stick, the plan card's `Intent`; a rule the card did not ask to change that the diff drops, weakens or contradicts is a finding.
 - **Test economy.**
-  `PATTERN-test-economy` holds the rule; each of these is a finding, and each names what grounds it:
+  Each of these is a finding, and each names what grounds it:
   - a new test that duplicates an existing test's coverage, naming the covering test;
   - a per-helper test the public surface's test already covers, naming that public-surface test;
   - a review-fix test added for a finding that was not a coverage gap, naming that finding;

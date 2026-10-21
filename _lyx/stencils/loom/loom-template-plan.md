@@ -9,7 +9,7 @@
      twill_directive is a fourth optional marker, rendered by internal/twilldirective through internal/loomengine;
      it sits on the line that would otherwise be blank, so an empty value leaves the blank line and the prompt's bytes unchanged.
      edit_directive is a required marker, rendered unconditionally by internal/editdirective.
-lyx-stencil: sha256=1d671a2f482a9b3045f68b353dbf173cbc660e01e883931509eb357d2f1c9fa9 build=58a7feec731d6e109b82b39826f5d3cf3c844ff8 time=2026-10-17T08:59:01Z -->
+lyx-stencil: sha256=595f116943ce530420cbce7144815150cd030f8ac389760958f7ef7cc7dc40b2 build=90f613277e539c98eb07698ed58b50f705e99a77 time=2026-10-21T13:30:19Z -->
 
 # Plan — read the decision record, write a plan-format flat-card plan
 
@@ -81,7 +81,7 @@ Each card is the smallest change that:
 1. **Builds on its own** — the project builds with the repo's build immediately after the card's commit;
    never reference a symbol that no earlier card creates.
 2. **Is independently committable** — a meaningful, revertible git commit on its own.
-3. **Carries the coverage for the behavior it introduces** — the card's own targets include the test that covers it (`PATTERN-test-economy`).
+3. **Carries the coverage for the behavior it introduces** — the card's own targets include the test that covers it.
    `verify:` commands are no substitute for test coverage;
    only pure refactors/renames may rely on existing tests instead.
    A stencil's static prose is not behavior a test covers.

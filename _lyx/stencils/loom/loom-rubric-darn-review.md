@@ -5,7 +5,7 @@
      It is a marker VALUE, never a template -- it carries no top-level stencil markers of its own, and
      internal/stencil's StripLeadingComment removes this leading comment before either consumer ever
      sees it.
-lyx-stencil: sha256=0fc78232f56cd379eab6e308463254c33c12848bab363b2824a9d1bc67481a96 build=325e074a858348de3421a1b40fcc4a226b3eb007 time=2026-10-21T10:56:05Z -->
+lyx-stencil: sha256=7a5d9e83ef4eac9f78e87d3bedc82b2377bf3246a0a25d49c387b534d484e551 build=90f613277e539c98eb07698ed58b50f705e99a77 time=2026-10-21T13:30:19Z -->
 
 # Darn-Review rubric
 
@@ -71,7 +71,7 @@ Do not flag any of the following as a finding:
 - **Stencil wording.**
   A diff that changes a stencil is read against the measuring stick, the board entry as the decision record's added entries amend it; a rule the entry did not ask to change that the diff drops, weakens or contradicts is a finding.
 - **Test economy.**
-  `PATTERN-test-economy` holds the rule; each of these is a finding, and each names what grounds it:
+  Each of these is a finding, and each names what grounds it:
   - a new test that duplicates an existing test's coverage, naming the covering test;
   - a new assertion on a stencil's static prose, naming the assertion;
   - a behavior the diff adds with no coverage, naming the uncovered behavior; a stencil's static prose is exempt.
