@@ -1,0 +1,807 @@
+{
+  "runGuid": "3476077f843ddb4707251972bab14ff9",
+  "planFingerprint": "fcd4b92740f8524a2d7035fcec975e9f10d77656041026f008787e302c264fb3",
+  "planFileHashes": {
+    "00-overview.md": "d08ff6f82f6dda0c2c0cff466a40411cca3b71b43b7924f7edcf5e0fe51b9a35",
+    "01-open-map-flow-values.md": "7a552f60f180c5d248f091655a21f85550e3288680c483e13964b0c891c7f379",
+    "02-gate-tier-config.md": "0348a1c5798980396f69463ed10cbdff6ec7fd35d675761fd3bd22fa8ac23fd9",
+    "03-gate-slot-drain.md": "279293d9866ffdbcb84bef4060fa0332d4a95ae81eed63e4e03c90f62bc2cff4",
+    "04-gate-run-log.md": "94386e64f107559f8ad7a261f0688e5767ab7ec2aa917ef7955f0765c55b129b",
+    "05-impactset-tree-targets.md": "32b791ac7c35f876d88d1f0ddbefc81c45aa58c0355b132ac8d3cfa494f7af1c",
+    "06-planparser-card-packages.md": "104e44596c9ea0be27ca17cc1aae61ac89138e9dde5b5676f9196ec0174560ca",
+    "07-gate-counters.md": "a493cff617d6893af38c64da258bd662d0dbccb2c18b077ab7be399a35688b42",
+    "08-gate-tier-verb.md": "14bc4de34b2f8786addd9d59a38affd0faa4925823e2a8931a8cbdb1a31860b7",
+    "09-gate-scopes.md": "eb3bbc6213461530e83620f294817eed1e742ac13f73428ce50fcd503c152706",
+    "10-round-gate-tiers.md": "6c9cb7a48058594e78b0db143427bc12e336a05c17de26e76753ac056374675d",
+    "11-card-verify-runner.md": "036f9a2000bd345ce9822e426330fad2497845a330d8ee4b4336531ca8674d39",
+    "12-webster-final-gate.md": "0ccc8028cb9d4ec8fc61e20d3db1f73390ed910ec98a100deda952eebbfddecf",
+    "13-landing-gates.md": "bfc36163aa5f2eec4b9e8c4de5e0258fdaf5c6d814fc575037fc0331422b5a81",
+    "14-verifytree-unslotted.md": "1ca26e81dedb83492ae872b29c715661850db4cc317e6716717d51302a36e340",
+    "15-webster-prompt-gates.md": "f42e6cfbcb02a4ed04ab84164ced0530ef929cb289dea50d1fcdd6c42f0c136f",
+    "16-retire-verify-tiers.md": "2c9064b01bbcc6d41c0ae837066be1906a4f9f1970e2735900e61aec8d4aff9c",
+    "17-refuse-raw-guard.md": "1e0a1ad953742c9487841ad5e818153c77fa4b110feda84ed60fea031bc516a3",
+    "18-plan-gate-verify-checks.md": "6d7be531183a4580852f89fb3fdc7aa20a44e8e49b05e33e12ce16a290536e2a",
+    "19-non-tier-holders.md": "74939e241cdf70d6938855ce1ddcd2eb22012cef4738f9f6518734e65f0977ad"
+  },
+  "planOverviewFrameHash": "dfdbe8d70c76a98fce9f5782233c31918e41274fa3a4b296ee78238d1d90121b",
+  "partition": [
+    {
+      "cards": [
+        "01-open-map-flow-values",
+        "02-gate-tier-config",
+        "03-gate-slot-drain"
+      ],
+      "profile": "cautious",
+      "estimate": 161136,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 1,
+        "startup": 54928,
+        "read_union": 24308,
+        "cards": [
+          {
+            "card": 1,
+            "card_text": 324,
+            "reads": {
+              "file:internal/yamlengine/doc.go": 888,
+              "package:internal/yamlengine": 2000,
+              "tests:internal/yamlengine": 2000
+            },
+            "messages": 39.5,
+            "written": 12174
+          },
+          {
+            "card": 2,
+            "card_text": 972,
+            "reads": {
+              "file:internal/configcli/doc.go": 1020,
+              "file:internal/gateslot/doc.go": 564,
+              "file:internal/gateslot/template.yaml": 36,
+              "package:internal/configcli": 2000,
+              "package:internal/configreg": 2000,
+              "package:internal/gateslot": 2000,
+              "package:internal/hubgeom": 2000,
+              "tests:internal/configcli": 2000,
+              "tests:internal/configreg": 2000,
+              "tests:internal/gateslot": 2000,
+              "tests:internal/hubgeom": 2000
+            },
+            "messages": 161,
+            "written": 49272
+          },
+          {
+            "card": 3,
+            "card_text": 504,
+            "reads": {
+              "file:internal/gateslot/doc.go": 564,
+              "package:internal/gateslot": 2000,
+              "tests:internal/gateslot": 2000
+            },
+            "messages": 66.5,
+            "written": 20454
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "04-gate-run-log",
+        "05-impactset-tree-targets",
+        "06-planparser-card-packages",
+        "07-gate-counters"
+      ],
+      "profile": "cautious",
+      "estimate": 165004,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 2,
+        "startup": 61928,
+        "read_union": 22604,
+        "cards": [
+          {
+            "card": 4,
+            "card_text": 408,
+            "reads": {
+              "file:internal/gateslot/doc.go": 564,
+              "package:internal/gateslot": 2000,
+              "tests:internal/gateslot": 2000
+            },
+            "messages": 62.5,
+            "written": 19158
+          },
+          {
+            "card": 5,
+            "card_text": 504,
+            "reads": {
+              "file:internal/impactset/doc.go": 468,
+              "package:internal/impactset": 2000,
+              "tests:internal/impactset": 2000
+            },
+            "messages": 72.5,
+            "written": 22254
+          },
+          {
+            "card": 6,
+            "card_text": 396,
+            "reads": {
+              "package:internal/planparser": 2000,
+              "package:internal/websterengine": 2000,
+              "tests:internal/planparser": 2000,
+              "tests:internal/websterengine": 2000
+            },
+            "messages": 89.5,
+            "written": 27246
+          },
+          {
+            "card": 7,
+            "card_text": 264,
+            "reads": {
+              "package:internal/gatecli": 2000,
+              "tests:internal/gatecli": 2000
+            },
+            "messages": 38.5,
+            "written": 11814
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "08-gate-tier-verb",
+        "09-gate-scopes"
+      ],
+      "profile": "cautious",
+      "estimate": 182694,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 3,
+        "startup": 68928,
+        "read_union": 24708,
+        "cards": [
+          {
+            "card": 8,
+            "card_text": 1308,
+            "reads": {
+              "file:docs/overview.md": 9732,
+              "file:internal/gatecli/doc.go": 1068,
+              "package:docs": 2000,
+              "package:internal/gatecli": 2000,
+              "package:internal/verifyrun": 2000,
+              "tests:docs": 2000,
+              "tests:internal/gatecli": 2000,
+              "tests:internal/verifyrun": 2000
+            },
+            "messages": 224,
+            "written": 68508
+          },
+          {
+            "card": 9,
+            "card_text": 600,
+            "reads": {
+              "file:internal/gatecli/doc.go": 1068,
+              "package:internal/gatecli": 2000,
+              "tests:internal/gatecli": 2000
+            },
+            "messages": 66.5,
+            "written": 20550
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "10-round-gate-tiers"
+      ],
+      "profile": "cautious",
+      "estimate": 228944,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 4,
+        "startup": 75928,
+        "read_union": 45124,
+        "cards": [
+          {
+            "card": 10,
+            "card_text": 1092,
+            "reads": {
+              "file:contracts/specs/loom-status-spec.md": 2220,
+              "file:internal/impactset/doc.go": 468,
+              "file:internal/loomshed/doc.go": 948,
+              "file:internal/verifytree/doc.go": 396,
+              "package:contracts/specs": 2000,
+              "package:internal/battencli": 2000,
+              "package:internal/impactset": 2000,
+              "package:internal/loomcli": 2000,
+              "package:internal/loomshed": 2000,
+              "package:internal/shedrecipe": 2000,
+              "package:internal/testkit/envkit": 2000,
+              "package:internal/testkit/lyxbin": 2000,
+              "package:internal/verifytree": 2000,
+              "package:internal/webstercli": 2000,
+              "tests:contracts/specs": 2000,
+              "tests:internal/battencli": 2000,
+              "tests:internal/impactset": 2000,
+              "tests:internal/loomcli": 2000,
+              "tests:internal/loomshed": 2000,
+              "tests:internal/shedrecipe": 2000,
+              "tests:internal/testkit/envkit": 2000,
+              "tests:internal/testkit/lyxbin": 2000,
+              "tests:internal/verifytree": 2000,
+              "tests:internal/webstercli": 2000
+            },
+            "messages": 356,
+            "written": 107892
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "11-card-verify-runner"
+      ],
+      "profile": "cautious",
+      "estimate": 193952,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 5,
+        "startup": 82928,
+        "read_union": 35160,
+        "cards": [
+          {
+            "card": 11,
+            "card_text": 864,
+            "reads": {
+              "file:docs/overview.md": 9732,
+              "file:internal/gateslot/doc.go": 564,
+              "package:cmd/lyx": 2000,
+              "package:docs": 2000,
+              "package:internal/cardverify": 2000,
+              "package:internal/gatecli": 2000,
+              "package:internal/gateslot": 2000,
+              "package:internal/websterengine": 2000,
+              "tests:cmd/lyx": 2000,
+              "tests:docs": 2000,
+              "tests:internal/cardverify": 2000,
+              "tests:internal/gatecli": 2000,
+              "tests:internal/gateslot": 2000,
+              "tests:internal/websterengine": 2000
+            },
+            "messages": 250,
+            "written": 75864
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "12-webster-final-gate"
+      ],
+      "profile": "cautious",
+      "estimate": 182556,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 6,
+        "startup": 89928,
+        "read_union": 34884,
+        "cards": [
+          {
+            "card": 12,
+            "card_text": 744,
+            "reads": {
+              "file:contracts/specs/webster-spec.md": 900,
+              "file:internal/websterengine/doc.go": 9240,
+              "package:contracts/specs": 2000,
+              "package:internal/hubgeom": 2000,
+              "package:internal/standalonegeom": 2000,
+              "package:internal/testkit/envkit": 2000,
+              "package:internal/webstercli": 2000,
+              "package:internal/websterengine": 2000,
+              "tests:contracts/specs": 2000,
+              "tests:internal/hubgeom": 2000,
+              "tests:internal/standalonegeom": 2000,
+              "tests:internal/testkit/envkit": 2000,
+              "tests:internal/webstercli": 2000,
+              "tests:internal/websterengine": 2000
+            },
+            "messages": 190,
+            "written": 57744
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "13-landing-gates"
+      ],
+      "profile": "cautious",
+      "estimate": 302894,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 7,
+        "startup": 96928,
+        "read_union": 64984,
+        "cards": [
+          {
+            "card": 13,
+            "card_text": 1332,
+            "reads": {
+              "file:contracts/recipes/loom-recipe.yaml": 7788,
+              "file:contracts/stencils/orch/orch-template-role.md": 3144,
+              "file:docs/overview.md": 9732,
+              "file:internal/darnengine/doc.go": 444,
+              "file:internal/darnengine/template.yaml": 204,
+              "file:internal/landingshed/doc.go": 1884,
+              "file:internal/landingshed/template.yaml": 144,
+              "file:pattern/PATTERN-verified-tree.md": 312,
+              "package:contracts/recipes": 2000,
+              "package:contracts/stencils/orch": 2000,
+              "package:docs": 2000,
+              "package:internal/battencli": 2000,
+              "package:internal/configcli": 2000,
+              "package:internal/darnengine": 2000,
+              "package:internal/landingshed": 2000,
+              "package:internal/loomcli": 2000,
+              "package:internal/testkit/envkit": 2000,
+              "package:pattern": 2000,
+              "tests:contracts/recipes": 2000,
+              "tests:contracts/stencils/orch": 2000,
+              "tests:docs": 2000,
+              "tests:internal/battencli": 2000,
+              "tests:internal/configcli": 2000,
+              "tests:internal/darnengine": 2000,
+              "tests:internal/landingshed": 2000,
+              "tests:internal/loomcli": 2000,
+              "tests:internal/testkit/envkit": 2000,
+              "tests:pattern": 2000
+            },
+            "messages": 465.5,
+            "written": 140982
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "14-verifytree-unslotted"
+      ],
+      "profile": "cautious",
+      "estimate": 233024,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 8,
+        "startup": 103928,
+        "read_union": 37452,
+        "cards": [
+          {
+            "card": 14,
+            "card_text": 744,
+            "reads": {
+              "file:internal/verifytree/doc.go": 396,
+              "file:pattern/PATTERN-verified-tree.md": 312,
+              "package:internal/landingshed": 2000,
+              "package:internal/loomcli": 2000,
+              "package:internal/loomshed": 2000,
+              "package:internal/shedrecipe": 2000,
+              "package:internal/testkit/envkit": 2000,
+              "package:internal/verifytree": 2000,
+              "package:internal/webstercli": 2000,
+              "package:internal/websterengine": 2000,
+              "package:pattern": 2000,
+              "tests:internal/landingshed": 2000,
+              "tests:internal/loomcli": 2000,
+              "tests:internal/loomshed": 2000,
+              "tests:internal/shedrecipe": 2000,
+              "tests:internal/testkit/envkit": 2000,
+              "tests:internal/verifytree": 2000,
+              "tests:internal/webstercli": 2000,
+              "tests:internal/websterengine": 2000,
+              "tests:pattern": 2000
+            },
+            "messages": 303,
+            "written": 91644
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "15-webster-prompt-gates"
+      ],
+      "profile": "cautious",
+      "estimate": 313970,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 9,
+        "startup": 110928,
+        "read_union": 59120,
+        "cards": [
+          {
+            "card": 15,
+            "card_text": 1272,
+            "reads": {
+              "file:.gitattributes": 624,
+              "file:contracts/specs/loom-plan-spec.md": 8544,
+              "file:contracts/stencils/darn/darn-template-write.md": 1188,
+              "file:contracts/stencils/webster/webster-body-implementer.md": 1596,
+              "file:contracts/stencils/webster/webster-body-verify-fix.md": 672,
+              "file:contracts/stencils/webster/webster-fragment-guard-fix.md": 72,
+              "file:contracts/stencils/webster/webster-fragment-guard-scan-error.md": 84,
+              "file:contracts/stencils/webster/webster-fragment-guard-too-long.md": 84,
+              "file:contracts/stencils/webster/webster-prefix-recovery.md": 624,
+              "file:contracts/stencils/webster/webster-template-master.md": 3120,
+              "file:internal/websterengine/doc.go": 9240,
+              "package:.": 2000,
+              "package:contracts/specs": 2000,
+              "package:contracts/stencils": 2000,
+              "package:contracts/stencils/darn": 2000,
+              "package:contracts/stencils/webster": 2000,
+              "package:internal/impactset": 2000,
+              "package:internal/webstercli": 2000,
+              "package:internal/websterengine": 2000,
+              "tests:.": 2000,
+              "tests:contracts/specs": 2000,
+              "tests:contracts/stencils": 2000,
+              "tests:contracts/stencils/darn": 2000,
+              "tests:contracts/stencils/webster": 2000,
+              "tests:internal/impactset": 2000,
+              "tests:internal/webstercli": 2000,
+              "tests:internal/websterengine": 2000
+            },
+            "messages": 475.5,
+            "written": 143922
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "16-retire-verify-tiers"
+      ],
+      "profile": "cautious",
+      "estimate": 338092,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 10,
+        "startup": 117928,
+        "read_union": 75336,
+        "cards": [
+          {
+            "card": 16,
+            "card_text": 1128,
+            "reads": {
+              "file:contracts/specs/loom-plan-spec.md": 8544,
+              "file:contracts/stencils/loom/loom-rubric-plan-review.md": 1812,
+              "file:contracts/stencils/loom/loom-template-plan.md": 3456,
+              "file:contracts/stencils/loom/loom-template-rework.md": 1092,
+              "file:contracts/stencils/webster/webster-body-implementer.md": 1596,
+              "file:internal/languageconfig/doc.go": 432,
+              "file:internal/languageconfig/template.yaml": 36,
+              "file:internal/websterengine/doc.go": 9240,
+              "package:contracts/specs": 2000,
+              "package:contracts/stencils": 2000,
+              "package:contracts/stencils/loom": 2000,
+              "package:contracts/stencils/webster": 2000,
+              "package:internal/languageconfig": 2000,
+              "package:internal/loomcli": 2000,
+              "package:internal/loomengine": 2000,
+              "package:internal/shedadapters": 2000,
+              "package:internal/shedrecipe": 2000,
+              "package:internal/testkit/envkit": 2000,
+              "package:internal/webstercli": 2000,
+              "package:internal/websterengine": 2000,
+              "tests:contracts/specs": 2000,
+              "tests:contracts/stencils": 2000,
+              "tests:contracts/stencils/loom": 2000,
+              "tests:contracts/stencils/webster": 2000,
+              "tests:internal/languageconfig": 2000,
+              "tests:internal/loomcli": 2000,
+              "tests:internal/loomengine": 2000,
+              "tests:internal/shedadapters": 2000,
+              "tests:internal/shedrecipe": 2000,
+              "tests:internal/testkit/envkit": 2000,
+              "tests:internal/webstercli": 2000,
+              "tests:internal/websterengine": 2000
+            },
+            "messages": 479,
+            "written": 144828
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "17-refuse-raw-guard"
+      ],
+      "profile": "cautious",
+      "estimate": 213622,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 11,
+        "startup": 124928,
+        "read_union": 32084,
+        "cards": [
+          {
+            "card": 17,
+            "card_text": 660,
+            "reads": {
+              "file:contracts/specs/loom-plan-spec.md": 8544,
+              "file:internal/shuttleengine/claudeengine/doc.go": 2880,
+              "package:cmd/lyx": 2000,
+              "package:contracts/specs": 2000,
+              "package:internal/shellguard": 2000,
+              "package:internal/shuttleengine": 2000,
+              "package:internal/shuttleengine/claudeengine": 2000,
+              "tests:cmd/lyx": 2000,
+              "tests:contracts/specs": 2000,
+              "tests:internal/shellguard": 2000,
+              "tests:internal/shuttleengine": 2000,
+              "tests:internal/shuttleengine/claudeengine": 2000
+            },
+            "messages": 186.5,
+            "written": 56610
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "18-plan-gate-verify-checks"
+      ],
+      "profile": "cautious",
+      "estimate": 240942,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 12,
+        "startup": 131928,
+        "read_union": 49764,
+        "cards": [
+          {
+            "card": 18,
+            "card_text": 600,
+            "reads": {
+              "file:contracts/specs/loom-plan-spec.md": 8544,
+              "file:internal/planparser/doc.go": 1776,
+              "file:internal/planparser/validate.go": 14844,
+              "package:contracts/specs": 2000,
+              "package:internal/loomcli": 2000,
+              "package:internal/loomshed": 2000,
+              "package:internal/planparser": 2000,
+              "package:internal/shedrecipe": 2000,
+              "package:internal/testkit/envkit": 2000,
+              "tests:contracts/specs": 2000,
+              "tests:internal/loomcli": 2000,
+              "tests:internal/loomshed": 2000,
+              "tests:internal/planparser": 2000,
+              "tests:internal/shedrecipe": 2000,
+              "tests:internal/testkit/envkit": 2000
+            },
+            "messages": 195.5,
+            "written": 59250
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "19-non-tier-holders"
+      ],
+      "profile": "cautious",
+      "estimate": 291096,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 13,
+        "startup": 138928,
+        "read_union": 60992,
+        "cards": [
+          {
+            "card": 19,
+            "card_text": 1176,
+            "reads": {
+              "file:CLAUDE.md": 888,
+              "file:PATTERN.md": 1452,
+              "file:docs/benchmarks/running-tests.md": 1896,
+              "file:docs/overview.md": 9732,
+              "file:internal/gateslot/doc.go": 564,
+              "file:internal/gateslot/template.yaml": 36,
+              "file:pattern/PATTERN-push-both-sides.md": 96,
+              "file:pattern/PATTERN-test-speed.md": 1152,
+              "package:.": 2000,
+              "package:cmd/testtiming": 2000,
+              "package:docs": 2000,
+              "package:docs/benchmarks": 2000,
+              "package:internal/configcli": 2000,
+              "package:internal/configreg": 2000,
+              "package:internal/gatecli": 2000,
+              "package:internal/gateslot": 2000,
+              "package:internal/hubgeom": 2000,
+              "package:internal/planglyph": 2000,
+              "package:pattern": 2000,
+              "tests:.": 2000,
+              "tests:cmd/testtiming": 2000,
+              "tests:docs": 2000,
+              "tests:docs/benchmarks": 2000,
+              "tests:internal/configcli": 2000,
+              "tests:internal/configreg": 2000,
+              "tests:internal/gatecli": 2000,
+              "tests:internal/gateslot": 2000,
+              "tests:internal/hubgeom": 2000,
+              "tests:internal/planglyph": 2000,
+              "tests:pattern": 2000
+            },
+            "messages": 300,
+            "written": 91176
+          }
+        ]
+      }
+    }
+  ],
+  "currentBatch": 1,
+  "masterStrand": "6f56338668c07f063671518ad01fb02d",
+  "masterSessionId": "9216b63a-fe9f-48ce-93a3-9e8a3200b274",
+  "masterEngine": "claude",
+  "batches": {
+    "1": {
+      "slug": "open-map-flow-values",
+      "cards": [
+        "01-open-map-flow-values",
+        "02-gate-tier-config",
+        "03-gate-slot-drain"
+      ],
+      "cardHashes": {
+        "01-open-map-flow-values": "7a552f60f180c5d248f091655a21f85550e3288680c483e13964b0c891c7f379",
+        "02-gate-tier-config": "0348a1c5798980396f69463ed10cbdff6ec7fd35d675761fd3bd22fa8ac23fd9",
+        "03-gate-slot-drain": "279293d9866ffdbcb84bef4060fa0332d4a95ae81eed63e4e03c90f62bc2cff4"
+      },
+      "startSha": "860c5d0334a144bf75c5d423272b4ec681493772",
+      "kind": "fork",
+      "spawnedAt": "2026-10-21T15:58:14Z",
+      "sessionId": "9216b63a-fe9f-48ce-93a3-9e8a3200b274",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
+    }
+  }
+}
