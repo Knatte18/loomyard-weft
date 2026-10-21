@@ -1,6 +1,6 @@
 {
   "runGuid": "9d6de30810bf07cf4659a833fbb12acf",
-  "planFingerprint": "af0f7a9111e4210f259d97370a610edcfde13e26e6e7070063963eee33089cb6",
+  "planFingerprint": "74a2568f65ffc20797d392cd7b883ac80a0668f4f107bc2cae02ffd91dddaa7f",
   "planFileHashes": {
     "00-overview.md": "da876234745248fd7e3197e7f2149f05941aac476f4253afff96409ab257b990",
     "01-state-write-file.md": "cc9a6e08c521a8c5dae53bf341a2be2614c36d6352902647004d05d089ad70d4",
@@ -21,7 +21,7 @@
     "16-loom-goto-guard.md": "1c6240e3ef218bb4a5da201773ade21b7acc9737de1f5913c04733ee4cbe6d60",
     "17-budget-way-forward-texts.md": "e559f2cbd36282738bd519ae4e892b7ba2cd33351730f0738caeba9a22085931",
     "18-friction-no-per-stop.md": "de5a98f02d9382b277ce9bd0f738e2a60fc27cbd4a7036529c1b9a06551c1308",
-    "19-burler-forkcount-retry.md": "cdfb13254b7b12652b4e2eab4a7925bef6781ddc8accb9315c5728fb1b8f69ef",
+    "19-burler-forkcount-retry.md": "954461679e8adcf3f3062de53fcd2be0a979a9177ae55dac129a700d6daa8502",
     "20-status-spec-docs.md": "c7efc9ad597d7068e3c9cf8d626596a99d23450bdc10bf744a6a3c951b81b103"
   },
   "planOverviewFrameHash": "a82077d79dd8d19698ffcb4d2f5cd0e882ede208111e8bc05226ebad8b720842",
@@ -665,7 +665,7 @@
       }
     }
   ],
-  "currentBatch": 19,
+  "currentBatch": 0,
   "masterStrand": "02448d531431254d06731746ba0d5ba5",
   "masterSessionId": "3545de48-9210-4ab3-bc22-f514f7cbdd43",
   "masterEngine": "claude",
@@ -963,15 +963,32 @@
         "19-burler-forkcount-retry"
       ],
       "cardHashes": {
-        "19-burler-forkcount-retry": "cdfb13254b7b12652b4e2eab4a7925bef6781ddc8accb9315c5728fb1b8f69ef"
+        "19-burler-forkcount-retry": "954461679e8adcf3f3062de53fcd2be0a979a9177ae55dac129a700d6daa8502"
       },
       "startSha": "ab05b56589ee0ac5dc6741165685ff20e945a9a2",
       "kind": "fork",
       "spawnedAt": "2026-10-21T08:00:54Z",
       "sessionId": "3545de48-9210-4ab3-bc22-f514f7cbdd43",
       "engine": "claude",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "19-burler-forkcount-retry",
+        "status": "done",
+        "head_sha": "d47f1a883d8ca1b48244fbabb66553c7edcd50e7",
+        "deviations": [
+          "internal/shedadapters/burlerreview.go"
+        ]
+      },
+      "cardShas": [
+        "d47f1a883d8ca1b48244fbabb66553c7edcd50e7"
+      ],
+      "forkTranscripts": [
+        "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-run-reentry/3545de48-9210-4ab3-bc22-f514f7cbdd43/subagents/agent-a87e1201880a9daba.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-run-reentry/3545de48-9210-4ab3-bc22-f514f7cbdd43/subagents/agent-a87e1201880a9daba.jsonl"
+      ]
     },
     "5": {
       "slug": "shedverbs-pause-label",
@@ -1098,6 +1115,7 @@
     "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-run-reentry/3545de48-9210-4ab3-bc22-f514f7cbdd43/subagents/agent-a30780b024a89a230.jsonl",
     "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-run-reentry/3545de48-9210-4ab3-bc22-f514f7cbdd43/subagents/agent-ae126b869a1fdd8de.jsonl",
     "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-run-reentry/3545de48-9210-4ab3-bc22-f514f7cbdd43/subagents/agent-a5d578a17417e195f.jsonl",
-    "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-run-reentry/3545de48-9210-4ab3-bc22-f514f7cbdd43/subagents/agent-ad50edb3f7154a3fb.jsonl"
+    "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-run-reentry/3545de48-9210-4ab3-bc22-f514f7cbdd43/subagents/agent-ad50edb3f7154a3fb.jsonl",
+    "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-run-reentry/3545de48-9210-4ab3-bc22-f514f7cbdd43/subagents/agent-a87e1201880a9daba.jsonl"
   ]
 }

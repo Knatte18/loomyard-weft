@@ -17,7 +17,7 @@
 - `internal/shuttleengine/doc.go`
 
 **Create:**
-- `plan:internal/shedadapters#forkMismatchError` -> `func forkMismatchError(name string, round int, first, second burlerengine.ReviewResult, firstErr, secondErr error) error`
+- `internal/shedadapters#forkMismatchError`
 
 **Intent:** D9: a review round whose chair spawned a fork count other than the one requested is retried, and its failure says how the chair ended.
 
