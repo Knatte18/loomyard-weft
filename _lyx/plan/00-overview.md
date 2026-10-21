@@ -1,6 +1,6 @@
 ---
 format: 5
-approved: false
+approved: true
 language: go
 ---
 
@@ -31,5 +31,5 @@ Card 1 adds the `machine` layer and `CategoryMachine` to `configengine`, card 2 
 
 ```
 go build ./cmd/lyx
-lyx gate test --tags integration ./internal/configengine ./internal/gateslot ./internal/hubgeom ./internal/gatecli ./internal/configreg ./internal/websterengine ./internal/planglyph ./internal/configcli ./internal/hubreconcile
+lyx gate test --tags integration ./internal/configengine ./internal/gateslot ./internal/hubgeom ./internal/gatecli ./internal/configreg ./internal/websterengine ./internal/planglyph ./internal/configcli ./internal/hubreconcile ./cmd/lyx
 ```

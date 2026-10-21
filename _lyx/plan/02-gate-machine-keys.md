@@ -8,7 +8,7 @@
 - `internal/gateslot#Config`
 - `internal/gateslot#ConfigSpec`
 - `internal/gateslot#LoadConfig`
-- `internal/gateslot#withConfigWayForward` -> `func withConfigWayForward(err error, files []string) error`
+- `internal/gateslot#withConfigWayForward` -> `func withConfigWayForward(err error, files []string, local string) error`
 - `internal/gateslot/doc.go`
 - `internal/gateslot#TestLoadConfig`
 - `internal/hubgeom#GateSlots`
@@ -27,6 +27,7 @@
 - `plan:internal/configengine#CategoryMachine`
 - `plan:internal/configengine#MachineFile`
 - `plan:internal/configengine#MachineKeys`
+- `internal/configengine#LayerLocal`
 - `internal/gateslot#seedGateConfig`
 - `internal/gateslot#Lease.Env`
 
@@ -39,13 +40,15 @@ Its doc comment says the two keys take a machine override and every key stays cl
 
 `ConfigFiles(dirs)` returns the hub file, `configengine.LayerFile` of the base layer, followed by the machine file when `configengine.LayerFile(dirs, ConfigSpec(), configengine.LayerMachine)` applies and `os.Stat` of it succeeds.
 A machine file that cannot be statted for another reason is not named here, since `configengine.Layers` then fails reading it with an error that names its path.
-`LoadConfig` passes it to `withConfigWayForward` on every failure but the absent hub file, which stays `ErrConfigAbsent` with its text unchanged, a machine file present or not.
+`LoadConfig` passes it, and the local override file (`configengine.LayerFile(dirs, ConfigSpec(), configengine.LayerLocal)` when that applies, the anchor holds `_lyx/`, the geometry in which the load stacks the local layer, and `os.Stat` of it succeeds, else ""), to `withConfigWayForward` on every failure but the absent hub file, which stays `ErrConfigAbsent` with its text unchanged, a machine file present or not.
 That case is outside D3's two-file message: the failure is a missing strict base, not a value either file holds, so no step on the machine file progresses from it and the hub-file step `lyx fabric reconcile` is the one way forward; its existing clause already says what a session lyx refuses that verb from does.
 
-`withConfigWayForward(err, files)` appends, with one file (no machine file, or a `Dirs{Board}` load):
+`withConfigWayForward(err, files, local)` appends, with one file (no machine file, or a `Dirs{Board}` load):
 `; fix it with "lyx config gate" from the prime; a session that is not the prime takes none of these steps; it reports status: FAILED and the orch runs them`.
 With the machine file too:
-`; the hub file <hub> or the machine file <machine> holds the value: fix the hub file with "lyx config gate" from the prime, and the machine file with "lyx config gate --layer machine" from the prime, or, when that refuses a key the machine file holds, by removing <machine>; "lyx config gate --resolved" names the layer holding each value; a session that is not the prime takes none of these steps; it reports status: FAILED and the orch runs them`.
+`; the hub file <hub>, the machine file <machine> or the file the error names holds the value: fix the hub file with "lyx config gate" from the prime, and the machine file with "lyx config gate --layer machine" from the prime, or, when that refuses a key the machine file holds, by removing <machine>; "lyx config gate --resolved" names the layer holding each value; a session that is not the prime takes none of these steps; it reports status: FAILED and the orch runs them`.
+With a non-empty `local`, both forms insert `; remove <local>, which takes no gate key` ahead of `; a session that is not the prime`, so a failure the local override causes, which neither config step touches, has a step that fixes it, and the role clause covers it too.
+`local` is a separate argument rather than an entry of `ConfigFiles`, so `GateSlots`' wrapper below keeps naming only the hub and machine files.
 The removal is named for the case `--layer machine` cannot fix: a `--set` re-validates the merged document with the refused key still in it, and the editor needs a terminal.
 Both forms keep the substring `fix` … `"lyx config gate"` … `from the prime`, and the one-file form keeps `fix it with "lyx config gate" from the prime` whole, which `internal/verifytree`'s `verify_integration_test.go` asserts by substring.
 The removal step is a way forward from the state the failure leaves: removing the file returns every gate run of the hub on this machine to the hub file's values (D3 bound), and the role clause keeps a pair from taking it.
@@ -65,7 +68,7 @@ Docs: `gateslot/doc.go`'s `# Config` section says `slots` and `go_parallel` take
 Tests:
 - `TestLoadConfig`: the existing exact `wantErr` strings for `zero slots`, `zero go_parallel` and `negative busy_quit_sec` gain the role clause.
   New rows over a board and an anchor, the machine file written at `configengine.MachineFile(board, "gate")`: hub `go_parallel: 4` with machine `go_parallel: 8` loads 8; machine `go_parallel: 0` fails with the exact two-file message naming both paths (the `decodeConfig` path); machine `busy_quit_sec: 9` fails marked `ErrInvalid` with the exact message, which names the machine file, the key and the two-file way forward (the `configengine.Load` path); machine `cli_wait_sec: 180` fails marked `ErrInvalid` naming the machine file and the key; a `Dirs{Board}` load over the same `go_parallel: 0` machine file loads the hub's 4; a machine `go_parallel: 8` beside an absent hub file is `ErrConfigAbsent`.
-  The existing local-layer row gains `go_parallel: 9` beside `slots: 9` in a second local file, each refused naming the local file and the key; two files are needed because `ValidateLocal` returns at the first refused key.
+  The existing local-layer row gains `go_parallel: 9` beside `slots: 9` in a second local file, each refused naming the local file, the key and `remove <local>, which takes no gate key`; two files are needed because `ValidateLocal` returns at the first refused key.
 - `TestWebsterGeometry`, whose fixture anchor has no `_lyx/`, so it also pins the gate-level load from such an anchor: after the hub file holds `slots: 3\ngo_parallel: 5\nbusy_quit_sec: 9\n`, writing `slots: 1\ngo_parallel: 8\n` to the machine file makes the next `GateSlots.Limits()` return `{Slots: 1, GoParallel: 8, BusyQuit: 9s}`, and a lease acquired from the pool has `Env` carrying `-p=8` in `GOFLAGS`.
 - `TestGateTest_Scenario`: the `a gate.yaml value below 1 names lyx config gate` row's `wantError` becomes `fix it with "lyx config gate" from the prime`; a new row writes `go_parallel: 0` to the machine file and restores by removing it, and its error names the hub file, the machine file, `lyx config gate --layer machine`, `by removing` and `a session that is not the prime takes none of these steps; it reports status: FAILED and the orch runs them`; the row struct's single `wantError` becomes a list where the new row needs several.
 - `TestRerunCardVerifies_Slotted`'s exact `wantFailure` gains the role clause.

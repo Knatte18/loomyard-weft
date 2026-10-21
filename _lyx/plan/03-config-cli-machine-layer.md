@@ -43,7 +43,9 @@
 Let `lyx config` address the machine layer (decision record D4, D5).
 
 `layerNames` gains `configengine.LayerMachine`, ordered default, worktree, machine, local, so `validLayer` takes `--layer machine` and the menu's `layersHolding` marks a module whose machine file exists with `machine`, as `gate (default, machine)`.
-`dispatch`'s unknown-layer refusal becomes `unknown --layer %q; use default, worktree, machine or local`, and the comments of `validLayer` and of `configDirs`' `layer` field, which say "one of the three layer names", name the four; the `--layer` flag help in `Command` and `buildConfigLong` name `machine` (a never-tracked override under the board dir's `.lyx`, written from the prime, of a hub-wide module's `machine` keys), and `--resolved` lists `machine` among the layers.
+`dispatch`'s unknown-layer refusal becomes `unknown --layer %q; use default, worktree, machine or local`, and the comments of `validLayer` and of `configDirs`' `layer` field, which say "one of the three layer names", name the four.
+`buildConfigLong` gains only the `machine` token in its two lists, as `--layer default|worktree|machine|local` and `layer: template, default, worktree, machine or local`, since its Long text measures about 1978 of the 2000 bytes `cmd/lyx/clitree_test.go`'s `maxLongBytes` allows.
+The gloss, a never-tracked override under the board dir's `.lyx`, written from the prime, of a hub-wide module's `machine` keys, goes into the `--layer` flag help in `Command`, whose list becomes `default, worktree, machine or local`, and into `configcli/doc.go`, never into Long.
 
 `selectedLayer` refuses `--layer machine`:
 on a module that is not hub-wide with `%s is a per-worktree module and has no machine file; way forward: --layer local`, reached by `--layer machine` on `loom`;
@@ -56,6 +58,7 @@ Bound: as for the default layer, the guard stops a mistaken write by a pair or s
 It commits nothing and runs no fabric sync, and reports `edited machine override <path>; it is not committed`.
 `editMachine` snapshots the file, takes `CheckLoad` over `dirs.engineDirs()`, runs `configengine.Edit(..., LayerMachine, edit)`, which puts back a save the machine rule refuses, then refuses a save after which the stack newly fails to load through `newLoadFailure` and puts the file back to its snapshot (previous bytes, or absent when the edit created it) with `rollBack`; an abort reports `aborted: <path> unchanged`.
 It commits nothing and runs no fabric sync.
+Both report a load-check refusal through `newLoadFailure`, whose trailing `way forward: --set the key to a value it takes` is the operative step: the gate loader's two-file text embedded ahead of it reads as the cause, and its removal step may name a file `rollBack` has already removed.
 
 `noTerminalRefusal(module, layer)` names the `--layer` the refused call carried in both ways forward, as `"lyx config gate --layer machine --print"` and `"lyx config gate --layer machine --set key=value"`, and with an empty layer words them as today.
 Without it, `lyx config gate --layer machine` run with no terminal, as from an orch's shell, would be sent to `lyx config gate --set`, which writes and commits the hub file on Bolt and reaches every machine.
@@ -73,8 +76,8 @@ Tests:
   `gate --layer machine --set go_parallel=8` writes the machine file as exactly `go_parallel: 8\n`, with 0 commits and 0 syncs;
   the same write under a refusing guard, and under `hubWriteRefusal(fx.layout, taskSession)`, is refused and leaves no machine file;
   an editor edit of `gate --layer machine` under a refusing guard is refused, opens no editor and leaves no machine file;
-  `--set go_parallel=0` over a machine file holding `go_parallel: 8\n` is refused naming `go_parallel` and leaves the file as it was;
-  an editor save of `go_parallel: 0\n` is refused through the load check and leaves the seeded machine file's bytes, and over no seeded file leaves no file;
+  `--set go_parallel=0` over a machine file holding `go_parallel: 8\n` is refused naming `go_parallel`, carries `way forward: --set the key to a value it takes` after the loader's text and leaves the file as it was;
+  an editor save of `go_parallel: 0\n` is refused through the load check, carries `way forward: --set the key to a value it takes` after the loader's text and leaves the seeded machine file's bytes, and over no seeded file leaves no file;
   an editor save of `busy_quit_sec: 9\n` over a seeded machine file is refused naming `busy_quit_sec` and leaves its bytes;
   an editor that fails on `--layer machine` reports `aborted: <machine file> unchanged` and leaves the seeded bytes;
   an editor save of `slots: 1\n` writes it with 0 commits and 0 syncs;
