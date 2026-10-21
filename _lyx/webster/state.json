@@ -1,0 +1,776 @@
+{
+  "runGuid": "0fa13f93fc850a69afe141168f80dcd9",
+  "planFingerprint": "06100242470e4a2afb3237b36b04b81598a491c4b7caa82aa3f8336db14584aa",
+  "planFileHashes": {
+    "00-overview.md": "e153ea884172d07d958ca2ee1154c56d7fcde68a3d7613e582e8ee1bf3eee7e1",
+    "01-failed-push-record.md": "ae0c52aada8b0c5d88da4d28e78d625bfda69e580bc70cdf5b6a9ed16c8ba4d6",
+    "02-push-notifier-install.md": "9b957e45dc86a1d22944ed4d82492e204ab29d4b40eb9e7d2dd0174429fa17c4",
+    "03-board-replay-seam.md": "8b89908b43dc002f1f3db4a28723ac70c889b3f0c5b0e72b2a81dcd3ee1fbc49",
+    "04-records-replay.md": "f56d46ead0b77655842815db170aaf18c0be2d3428c36d2799708f74a0e07857",
+    "05-bolt-pullfirst-replay.md": "ee30afaaee23c48ccb85047513c668c54013fb55b6bc63945efc71d7400c625a",
+    "06-pull-replay-reflog.md": "6afc15dea0d830885cabebdf7bfd0be99c6ca23d590b57dbe95dae2bd67a1e91",
+    "07-land-weft-stop.md": "d4bc427f342d6f068b747737f9b49238ced5b6b7909f85fbfac4d63dda5de936",
+    "08-push-auth-class.md": "7f7998e05fb123cc7cc99ed659e31d523a7125a5038098e775771ebd02928beb",
+    "09-push-retry-and-record.md": "e9709469e42432c30fc5d3307d5dba1efe36fc639da8939569b80933d985b65b",
+    "10-failed-push-printing.md": "9561aa1f6448c2e7c615f374c8cf459c7c88240d4955bd4830b1664fa28600b5",
+    "11-preflight-detached-push.md": "8b18749a75116b7e755a17821858177f328f9d2e1632c541c5e86755df0b920b",
+    "12-gate-entry-exemption.md": "e1f8842790c5764f51b50d4e92e26948a14a32af94ee2ed21b718875c8183c87",
+    "13-remove-local-mode.md": "518dfa6e79237cd002f8a4377526aac78463abdc2f6f8cda01913c84e8aab9cf",
+    "14-pairteardown-local-mode.md": "d7dbfb21b30c4be2714dec0debc79ed49b9fff1b332965d12a5ad082b64c03f3",
+    "15-origin-reconcile-judge.md": "6766eaf9cdc338e7f908b358db44090d00b3b7d861fbc63ec7e7ffa2ffb6fbf0",
+    "16-origin-reconcile-moves.md": "a4158fcc6cb68f36637cd738c04aa8d8586969068d6c04258949d66a24ff1693",
+    "17-origin-reconcile-ended.md": "89d3495706bea2c4c985e6103c59de119b7bf28a60e2f6428ecd23bb5f8ab46c",
+    "18-reconcile-seams.md": "3cec60b1d2502dff6e9caea9bd91ea5b65d573d317d8017945054053f270cd4e",
+    "19-orch-start-reconcile.md": "9305403bf3969a896ea05f23b738acead1819a70f92e9a866934f3e3f358121b",
+    "20-cleanup-reconcile.md": "3e32158c5ca16fa7270ef32728387c62ae4085c18e2dc6717a54862fb3d25cf0",
+    "21-batten-resume-reconcile.md": "713c47b599b7b97e3cc222cf180efaa546565b4938c54b20f84c04501d683a32",
+    "22-landing-reconcile.md": "3282158a21d0487f1a6f75bbebd97520f8a71b111905f9b2c90f0303829a8e89",
+    "23-wake-reconcile.md": "b2e4d512a0b68d8053fa5cb5ebfe7af4d37a7103ae9865d063bdfc3a52a11581"
+  },
+  "planOverviewFrameHash": "61b3bb7c32b3e3f99c93eac2e82d353a34e0a999db58136ad566eeafc7a1884b",
+  "partition": [
+    {
+      "cards": [
+        "01-failed-push-record",
+        "02-push-notifier-install"
+      ],
+      "profile": "cautious",
+      "estimate": 150476,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 1,
+        "startup": 54928,
+        "read_union": 16924,
+        "cards": [
+          {
+            "card": 1,
+            "card_text": 600,
+            "reads": {
+              "package:internal/fabricengine": 2000,
+              "package:internal/lyxdirs": 2000,
+              "tests:internal/fabricengine": 2000,
+              "tests:internal/lyxdirs": 2000
+            },
+            "messages": 198,
+            "written": 60000
+          },
+          {
+            "card": 2,
+            "card_text": 324,
+            "reads": {
+              "package:cmd/lyx": 2000,
+              "package:internal/orchcli": 2000,
+              "tests:cmd/lyx": 2000,
+              "tests:internal/orchcli": 2000
+            },
+            "messages": 61,
+            "written": 18624
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "03-board-replay-seam"
+      ],
+      "profile": "cautious",
+      "estimate": 138858,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 2,
+        "startup": 61928,
+        "read_union": 16540,
+        "cards": [
+          {
+            "card": 3,
+            "card_text": 540,
+            "reads": {
+              "package:cmd/lyx": 2000,
+              "package:internal/boardengine": 2000,
+              "package:internal/fabricengine": 2000,
+              "package:internal/testkit/boardkit": 2000,
+              "tests:cmd/lyx": 2000,
+              "tests:internal/boardengine": 2000,
+              "tests:internal/fabricengine": 2000,
+              "tests:internal/testkit/boardkit": 2000
+            },
+            "messages": 199.5,
+            "written": 60390
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "04-records-replay",
+        "05-bolt-pullfirst-replay"
+      ],
+      "profile": "cautious",
+      "estimate": 190830,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 3,
+        "startup": 68928,
+        "read_union": 13872,
+        "cards": [
+          {
+            "card": 4,
+            "card_text": 708,
+            "reads": {
+              "package:internal/fabricengine": 2000,
+              "tests:internal/fabricengine": 2000
+            },
+            "messages": 196,
+            "written": 59508
+          },
+          {
+            "card": 5,
+            "card_text": 372,
+            "reads": {
+              "file:internal/hubreconcile/doc.go": 792,
+              "package:cmd/lyx": 2000,
+              "package:internal/fabricengine": 2000,
+              "package:internal/hubreconcile": 2000,
+              "tests:cmd/lyx": 2000,
+              "tests:internal/fabricengine": 2000,
+              "tests:internal/hubreconcile": 2000
+            },
+            "messages": 160.5,
+            "written": 48522
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "06-pull-replay-reflog"
+      ],
+      "profile": "cautious",
+      "estimate": 163482,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 4,
+        "startup": 75928,
+        "read_union": 26156,
+        "cards": [
+          {
+            "card": 6,
+            "card_text": 648,
+            "reads": {
+              "file:internal/fabricengine/doc.go": 17508,
+              "package:internal/fabriccli": 2000,
+              "package:internal/fabricengine": 2000,
+              "tests:internal/fabriccli": 2000,
+              "tests:internal/fabricengine": 2000
+            },
+            "messages": 202.5,
+            "written": 61398
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "07-land-weft-stop",
+        "08-push-auth-class"
+      ],
+      "profile": "cautious",
+      "estimate": 152596,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 5,
+        "startup": 82928,
+        "read_union": 20684,
+        "cards": [
+          {
+            "card": 7,
+            "card_text": 408,
+            "reads": {
+              "package:internal/battencli": 2000,
+              "package:internal/battenshed": 2000,
+              "package:internal/shedrecipe": 2000,
+              "package:internal/testkit/envkit": 2000,
+              "tests:internal/battencli": 2000,
+              "tests:internal/battenshed": 2000,
+              "tests:internal/shedrecipe": 2000,
+              "tests:internal/testkit/envkit": 2000
+            },
+            "messages": 113.5,
+            "written": 34458
+          },
+          {
+            "card": 8,
+            "card_text": 276,
+            "reads": {
+              "package:internal/gitrepo": 2000,
+              "tests:internal/gitrepo": 2000
+            },
+            "messages": 47.5,
+            "written": 14526
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "09-push-retry-and-record"
+      ],
+      "profile": "cautious",
+      "estimate": 269250,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 6,
+        "startup": 89928,
+        "read_union": 44316,
+        "cards": [
+          {
+            "card": 9,
+            "card_text": 1356,
+            "reads": {
+              "file:PATTERN.md": 1452,
+              "file:internal/fabricengine/doc.go": 17508,
+              "package:.": 2000,
+              "package:internal/fabriccli": 2000,
+              "package:internal/fabricengine": 2000,
+              "package:internal/landingshed": 2000,
+              "package:internal/loomcli": 2000,
+              "package:internal/orchcli": 2000,
+              "tests:.": 2000,
+              "tests:internal/fabriccli": 2000,
+              "tests:internal/fabricengine": 2000,
+              "tests:internal/landingshed": 2000,
+              "tests:internal/loomcli": 2000,
+              "tests:internal/orchcli": 2000
+            },
+            "messages": 445.5,
+            "written": 135006
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "10-failed-push-printing",
+        "11-preflight-detached-push"
+      ],
+      "profile": "cautious",
+      "estimate": 199436,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 7,
+        "startup": 96928,
+        "read_union": 29500,
+        "cards": [
+          {
+            "card": 10,
+            "card_text": 396,
+            "reads": {
+              "package:internal/battencli": 2000,
+              "package:internal/cleanupcli": 2000,
+              "package:internal/fabriccli": 2000,
+              "package:internal/fabricengine": 2000,
+              "package:internal/tendercli": 2000,
+              "tests:internal/battencli": 2000,
+              "tests:internal/cleanupcli": 2000,
+              "tests:internal/fabriccli": 2000,
+              "tests:internal/fabricengine": 2000,
+              "tests:internal/tendercli": 2000
+            },
+            "messages": 194,
+            "written": 58596
+          },
+          {
+            "card": 11,
+            "card_text": 312,
+            "reads": {
+              "file:internal/hubreconcile/doc.go": 792,
+              "package:internal/boardengine": 2000,
+              "package:internal/hubreconcile": 2000,
+              "tests:internal/boardengine": 2000,
+              "tests:internal/hubreconcile": 2000
+            },
+            "messages": 47,
+            "written": 14412
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "12-gate-entry-exemption",
+        "13-remove-local-mode"
+      ],
+      "profile": "cautious",
+      "estimate": 186346,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 8,
+        "startup": 103928,
+        "read_union": 9332,
+        "cards": [
+          {
+            "card": 12,
+            "card_text": 300,
+            "reads": {
+              "file:internal/pauserecord/doc.go": 396,
+              "package:internal/pauserecord": 2000,
+              "tests:internal/pauserecord": 2000
+            },
+            "messages": 44.5,
+            "written": 13650
+          },
+          {
+            "card": 13,
+            "card_text": 636,
+            "reads": {
+              "package:internal/fabricengine": 2000,
+              "tests:internal/fabricengine": 2000
+            },
+            "messages": 196,
+            "written": 59436
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "14-pairteardown-local-mode"
+      ],
+      "profile": "cautious",
+      "estimate": 129766,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 9,
+        "startup": 110928,
+        "read_union": 5140,
+        "cards": [
+          {
+            "card": 14,
+            "card_text": 348,
+            "reads": {
+              "file:internal/pairteardown/doc.go": 792,
+              "package:internal/pairteardown": 2000,
+              "tests:internal/pairteardown": 2000
+            },
+            "messages": 44.5,
+            "written": 13698
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "15-origin-reconcile-judge"
+      ],
+      "profile": "cautious",
+      "estimate": 252796,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 10,
+        "startup": 117928,
+        "read_union": 32064,
+        "cards": [
+          {
+            "card": 15,
+            "card_text": 1104,
+            "reads": {
+              "file:PATTERN.md": 1452,
+              "file:internal/fabricengine/doc.go": 17508,
+              "package:.": 2000,
+              "package:internal/fabricengine": 2000,
+              "package:internal/gitexec": 2000,
+              "tests:.": 2000,
+              "tests:internal/fabricengine": 2000,
+              "tests:internal/gitexec": 2000
+            },
+            "messages": 339,
+            "written": 102804
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "16-origin-reconcile-moves"
+      ],
+      "profile": "cautious",
+      "estimate": 170088,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 11,
+        "startup": 124928,
+        "read_union": 4480,
+        "cards": [
+          {
+            "card": 16,
+            "card_text": 480,
+            "reads": {
+              "package:internal/fabricengine": 2000,
+              "tests:internal/fabricengine": 2000
+            },
+            "messages": 134,
+            "written": 40680
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "17-origin-reconcile-ended",
+        "18-reconcile-seams"
+      ],
+      "profile": "cautious",
+      "estimate": 190166,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 12,
+        "startup": 131928,
+        "read_union": 8744,
+        "cards": [
+          {
+            "card": 17,
+            "card_text": 432,
+            "reads": {
+              "package:internal/fabricengine": 2000,
+              "tests:internal/fabricengine": 2000
+            },
+            "messages": 122,
+            "written": 37032
+          },
+          {
+            "card": 18,
+            "card_text": 312,
+            "reads": {
+              "package:internal/pairteardown": 2000,
+              "tests:internal/pairteardown": 2000
+            },
+            "messages": 40.5,
+            "written": 12462
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "19-orch-start-reconcile",
+        "20-cleanup-reconcile"
+      ],
+      "profile": "cautious",
+      "estimate": 177990,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 13,
+        "startup": 138928,
+        "read_union": 10220,
+        "cards": [
+          {
+            "card": 19,
+            "card_text": 408,
+            "reads": {
+              "file:internal/orchcli/doc.go": 1032,
+              "package:internal/orchcli": 2000,
+              "tests:internal/orchcli": 2000
+            },
+            "messages": 57.5,
+            "written": 17658
+          },
+          {
+            "card": 20,
+            "card_text": 384,
+            "reads": {
+              "file:internal/cleanupcli/doc.go": 396,
+              "package:internal/cleanupcli": 2000,
+              "tests:internal/cleanupcli": 2000
+            },
+            "messages": 36,
+            "written": 11184
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "21-batten-resume-reconcile"
+      ],
+      "profile": "cautious",
+      "estimate": 179356,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 14,
+        "startup": 145928,
+        "read_union": 10544,
+        "cards": [
+          {
+            "card": 21,
+            "card_text": 384,
+            "reads": {
+              "file:internal/battenshed/doc.go": 2160,
+              "package:internal/battencli": 2000,
+              "package:internal/battenshed": 2000,
+              "tests:internal/battencli": 2000,
+              "tests:internal/battenshed": 2000
+            },
+            "messages": 75,
+            "written": 22884
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "22-landing-reconcile"
+      ],
+      "profile": "cautious",
+      "estimate": 197702,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 15,
+        "startup": 152928,
+        "read_union": 10304,
+        "cards": [
+          {
+            "card": 22,
+            "card_text": 420,
+            "reads": {
+              "file:internal/landingshed/doc.go": 1884,
+              "package:internal/landingshed": 2000,
+              "package:internal/loomcli": 2000,
+              "tests:internal/landingshed": 2000,
+              "tests:internal/loomcli": 2000
+            },
+            "messages": 113.5,
+            "written": 34470
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "23-wake-reconcile"
+      ],
+      "profile": "cautious",
+      "estimate": 198036,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 16,
+        "startup": 159928,
+        "read_union": 9560,
+        "cards": [
+          {
+            "card": 23,
+            "card_text": 648,
+            "reads": {
+              "file:internal/hibernateengine/doc.go": 912,
+              "package:internal/hibernatecli": 2000,
+              "package:internal/hibernateengine": 2000,
+              "tests:internal/hibernatecli": 2000,
+              "tests:internal/hibernateengine": 2000
+            },
+            "messages": 93,
+            "written": 28548
+          }
+        ]
+      }
+    }
+  ],
+  "currentBatch": 1,
+  "masterStrand": "d26ba69a79fb575f7e87b499eb76f785",
+  "masterSessionId": "b26519ba-ade7-44f6-9357-417c58fd04ba",
+  "masterEngine": "claude",
+  "batches": {
+    "1": {
+      "slug": "failed-push-record",
+      "cards": [
+        "01-failed-push-record",
+        "02-push-notifier-install"
+      ],
+      "cardHashes": {
+        "01-failed-push-record": "ae0c52aada8b0c5d88da4d28e78d625bfda69e580bc70cdf5b6a9ed16c8ba4d6",
+        "02-push-notifier-install": "9b957e45dc86a1d22944ed4d82492e204ab29d4b40eb9e7d2dd0174429fa17c4"
+      },
+      "startSha": "34261a2293ae561fb63b3610b70c01613d14f16f",
+      "kind": "fork",
+      "spawnedAt": "2026-10-21T05:47:13Z",
+      "sessionId": "b26519ba-ade7-44f6-9357-417c58fd04ba",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
+    }
+  }
+}
