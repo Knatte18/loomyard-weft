@@ -17,7 +17,7 @@
 - `internal/testkit/envkit#FullEnv`
 
 **Uses:**
-- `plan:internal/fabricengine#WeftStopError`
+- `internal/fabricengine#WeftStopError`
 
 **Intent:** D9's last clause: batten's Land row, which pulls the prime after a landing, deploys after a weft stop as it does today and names the stop in its landing notice to the orch.
 `LandDeps.Pull`'s field type becomes `func(ctx context.Context) (weftStop string, err error)`: `battencli#landDeps`' closure returns the two results of `pullStopOutcome` over the pull's error.
