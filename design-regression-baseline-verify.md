@@ -1,4 +1,4 @@
-# [.NET 004] Regression tier: baseline profiles before the run, compare at the final gate
+# [.NET 004] Asynchronous test tiers in shed: the numerical baseline captured before implementation, compared at the final gate
 
 `regression-baseline-verify` · Note · feature, shed, webster, batten, config, dotnet
 
@@ -56,6 +56,12 @@ Loom's recipe could hold fixed command boxes of one type, each taking several en
 - Whether `preserve` should also run the compare per batch, to point at the card that caused drift.
 - A parent that moves during the run is merged in at Merge-In, after the baseline was taken: drift from other landed tasks then shows in the compare. Re-take the baseline at the new parent, or accept it as a known limit.
 
+## Operator decision (2026-10-21): asynchronous tiers in shed
+
+The baseline is the hub's asynchronous test tier, declared in the tier config of task `test-tiers`.
+Shed gets a row that starts an asynchronous tier in the background and records the job, and a later row that waits for it to finish; the rows between them run as usual.
+The pre-implementation capture on the parent (the addendum in note `dotnet-verify-protocol`) runs through the same pair of rows.
+
 ## Related
 
-Notes `gate-language-neutral` and `dotnet-scoped-verify`.
+Task `test-tiers` and note `dotnet-scoped-verify`.
