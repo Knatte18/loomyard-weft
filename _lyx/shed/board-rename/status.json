@@ -1,11 +1,11 @@
 {
-  "current_producer": "Darn-Write",
+  "current_producer": "Darn-Bouncer",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Darn-Write",
-    "last": "Preflight → done",
+    "now": "Darn-Bouncer",
+    "last": "Darn-Write → done",
     "wait": ""
   },
   "history": [
@@ -14,6 +14,33 @@
       "outcome": "done",
       "output": "",
       "at": "2026-10-21T11:46:52Z"
+    },
+    {
+      "producer": "Darn-Write",
+      "outcome": "done",
+      "output": "/home/AD.NORCERESEARCH.NO/hanf/Code/Knatte18/loomyard-LYXHUB/board-rename/_lyx/landing/summary.md",
+      "at": "2026-10-21T11:57:20Z",
+      "gate_attempts": 0,
+      "gate_spans": [
+        {
+          "gate": "discussion",
+          "kind": "gate",
+          "start": "2026-10-21T11:52:51.199988973Z",
+          "end": "2026-10-21T11:53:03.582331997Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-10-21T11:53:03.757779322Z",
+          "end": "2026-10-21T11:57:19.164348199Z"
+        },
+        {
+          "gate": "description",
+          "kind": "gate",
+          "start": "2026-10-21T11:57:19.316942551Z",
+          "end": "2026-10-21T11:57:19.31698478Z"
+        }
+      ]
     }
   ],
   "product": {
