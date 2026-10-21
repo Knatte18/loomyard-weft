@@ -11,8 +11,8 @@
 **Uses:**
 - `plan:internal/configsync#sparseSeed`
 - `internal/configsync#lensesFixture`
-- `plan:internal/configengine#SparseBaseHeader`
-- `plan:internal/configengine#BaseSparseMarker`
+- `internal/configengine#SparseBaseHeader`
+- `internal/configengine#BaseSparseMarker`
 
 **Intent:**
 A key move into or out of a hub's base file writes it sparse (D4's key-move bullet).

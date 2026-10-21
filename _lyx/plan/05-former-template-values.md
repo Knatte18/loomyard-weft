@@ -1,9 +1,9 @@
 # Card 5 — former-template-values
 
 **Create:**
-- `plan:internal/configsync#formerTemplateValues` -> `var formerTemplateValues map[string]map[string]string`
-- `plan:internal/configsync#formerValuesDoc` -> `func formerValuesDoc(module string) []byte`
-- `plan:internal/configsync#TestFormerTemplateValues_DifferFromTheTemplate` -> `func TestFormerTemplateValues_DifferFromTheTemplate(t *testing.T)`
+- `internal/configsync#formerTemplateValues`
+- `internal/configsync#formerValuesDoc`
+- `internal/configsync#TestFormerTemplateValues_DifferFromTheTemplate`
 
 **Edit:**
 - `internal/configsync#stripToSparse`

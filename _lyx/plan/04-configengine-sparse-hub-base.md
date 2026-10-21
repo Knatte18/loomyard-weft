@@ -1,12 +1,12 @@
 # Card 4 — configengine-sparse-hub-base
 
 **Create:**
-- `plan:internal/configengine#SparseBaseHeader` -> `const SparseBaseHeader = "# This file holds the hub's tuned values over lyx's template.\n"`
-- `plan:internal/configengine#baseSparseMarkerName` -> `const baseSparseMarkerName = "base-sparse"`
-- `plan:internal/configengine#BaseSparseMarker` -> `func BaseSparseMarker(boardDir string) string`
-- `plan:internal/configengine#BaseSparseMarkerRel` -> `func BaseSparseMarkerRel() string`
-- `plan:internal/configengine#sparseBase` -> `func sparseBase(dirs Dirs, spec Spec) bool`
-- `plan:internal/configengine#BaseScaffold` -> `func BaseScaffold(dirs Dirs, spec Spec) string`
+- `internal/configengine#SparseBaseHeader`
+- `internal/configengine#baseSparseMarkerName`
+- `internal/configengine#BaseSparseMarker`
+- `internal/configengine#BaseSparseMarkerRel`
+- `internal/configengine#sparseBase`
+- `internal/configengine#BaseScaffold`
 
 **Edit:**
 - `internal/configengine#Spec`

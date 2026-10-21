@@ -11,9 +11,9 @@
 
 **Uses:**
 - `internal/configcli#copyStagedToHub`
-- `plan:internal/configengine#BaseScaffold`
-- `plan:internal/configengine#SparseBaseHeader`
-- `plan:internal/configengine#BaseSparseMarker`
+- `internal/configengine#BaseScaffold`
+- `internal/configengine#SparseBaseHeader`
+- `internal/configengine#BaseSparseMarker`
 
 **Intent:**
 `lyx config`'s board-dir writes keep a hub base sparse (D4) and its docs state it (D6).
