@@ -14,15 +14,15 @@
 - `contracts/recipes/darn-recipe.yaml`
 
 **Create:**
-- `plan:internal/loomcli#harnessOwnFiles` -> `var harnessOwnFiles = []string{".scratch_task.json"}`
-- `plan:internal/loomcli#documentSubject` -> `func documentSubject(location *lyxcwd.Location, paths []string) (shedadapters.Subject, bool, error)`
-- `plan:internal/loomcli#codeSubject` -> `func codeSubject(location *lyxcwd.Location, runID string) (shedadapters.Subject, bool, error)`
-- `plan:internal/loomcli#mergeSubject` -> `func mergeSubject(location *lyxcwd.Location) (shedadapters.Subject, bool, error)`
-- `plan:internal/loomcli#darnRejectReview` -> `func darnRejectReview(location *lyxcwd.Location) (string, time.Time, bool, error)`
-- `plan:internal/loomcli#TestDocumentSubject` -> `func TestDocumentSubject(t *testing.T)`
-- `plan:internal/loomcli#TestCodeSubject_Real` -> `func TestCodeSubject_Real(t *testing.T)`
-- `plan:internal/loomcli#TestMergeSubject` -> `func TestMergeSubject(t *testing.T)`
-- `plan:internal/loomcli#TestDarnRejectReview` -> `func TestDarnRejectReview(t *testing.T)`
+- `internal/loomcli#harnessOwnFiles`
+- `internal/loomcli#documentSubject`
+- `internal/loomcli#codeSubject`
+- `internal/loomcli#mergeSubject`
+- `internal/loomcli#darnRejectReview`
+- `internal/loomcli#TestDocumentSubject`
+- `internal/loomcli#TestCodeSubject_Real`
+- `internal/loomcli#TestMergeSubject`
+- `internal/loomcli#TestDarnRejectReview`
 
 **Uses:**
 - `internal/discussionparser#IdentityText`
