@@ -1200,8 +1200,8 @@
     {
       "id": 719,
       "slug": "quarry-csharp",
-      "title": "[.NET 006] Quarry: a C# glyph alphabet",
-      "kind": "task",
+      "title": "[.NET 006] LoomYard uses quarry C# glyphs: version raise, alphabet by extension",
+      "kind": "note",
       "labels": [
         "feature",
         "quarry",
@@ -1212,10 +1212,10 @@
       "priority": "high",
       "depends_on": [],
       "isolated": false,
-      "brief": "Quarry knows only Go glyphs; a C# hub needs a C# alphabet",
-      "body": "## Seen (orch, 2026-10-20)\n\nQuarry links only the Go tree-sitter grammar (`github.com/tree-sitter/tree-sitter-go` in `go.mod`), so its glyph alphabet covers Go alone.\nThe planner takes every glyph spelling from `lyx quarry`, and Plan-Review checks the glyphs a card names, so a C# hub such as NORCE Models gets no glyphs to plan with.\n\n## Idea\n\nExtend quarry with a C# alphabet: link the C# tree-sitter grammar and define C#'s glyph shapes (namespace, type, member, overloads, partial classes, nested types).\nChoose the alphabet by file extension, so a mixed repository gets both; the `language` module names skills, verify tiers and rename tools but no language, so it cannot pick the alphabet.\n",
+      "brief": "LoomYard side of C# glyphs, after the quarry hub csharp-alphabet lands and is tagged",
+      "body": "## Seen (orch, 2026-10-20)\n\nQuarry knows only Go glyphs, so LoomYard's planner and Plan-Review get no glyphs in a C# hub such as NORCE Models.\n\n## Split (operator, 2026-10-21)\n\nQuarry is its own repository and hub (`Knatte18/quarry`, hub `quarry-LYXHUB`).\nThe C# grammar and glyph alphabet are built there, in that hub's task `csharp-alphabet`.\n\nThis entry is LoomYard's side only, started once `csharp-alphabet` has landed and quarry has a new version tag:\n\n- raise the quarry version in `go.mod`;\n- pick the alphabet per file, by extension, wherever LoomYard asks quarry for glyphs;\n- the planner, Plan-Review and the card kick-start get C# glyphs in a C# hub.\n\nA first run of this entry was started too early on 2026-10-21 and abandoned at Discussion-Write.\n",
       "created": "2026-10-20T19:05:12Z",
-      "revised": "2026-10-21T11:09:37Z"
+      "revised": "2026-10-21T11:27:05Z"
     },
     {
       "id": 720,
