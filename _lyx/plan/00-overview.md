@@ -1,6 +1,6 @@
 ---
 format: 5
-approved: false
+approved: true
 language: go
 ---
 
@@ -11,7 +11,7 @@ The plan builds bottom-up: the failed-push record and its notice route, the boar
 
 ## Card Index
 
-1 — failed-push-record — the failed-push record store, its once-per-episode notice through an installed notifier, and its way forward per class
+1 — failed-push-record — the failed-push record store, its once-per-episode notice through an installed notifier, and its way forward per side and class
 2 — push-notifier-install — orchcli installs the FABRIC notice route in every lyx process from the root pre-run
 3 — board-replay-seam — fabric's board seam and boardengine's by-entry Bolt replay, installed from the root pre-run
 4 — records-replay — the weft and Bolt records replay and D3's ended-set rule
@@ -54,5 +54,5 @@ The plan builds bottom-up: the failed-push record and its notice route, the boar
 
 ```
 go build ./cmd/lyx
-lyx gate test --tags integration ./cmd/lyx ./internal/lyxdirs ./internal/fabricengine ./internal/orchcli ./internal/boardengine ./internal/hubreconcile ./internal/fabriccli ./internal/battenshed ./internal/battencli ./internal/gitrepo ./internal/tendercli ./internal/cleanupcli ./internal/pauserecord ./internal/pairteardown ./internal/landingshed ./internal/loomcli ./internal/hibernateengine ./internal/hibernatecli ./internal/pattern ./internal/testkit/boardkit
+lyx gate test --tags integration ./cmd/lyx ./internal/lyxdirs ./internal/fabricengine ./internal/orchcli ./internal/boardengine ./internal/hubreconcile ./internal/fabriccli ./internal/battenshed ./internal/battencli ./internal/gitrepo ./internal/tendercli ./internal/cleanupcli ./internal/pauserecord ./internal/pairteardown ./internal/landingshed ./internal/loomcli ./internal/hibernateengine ./internal/hibernatecli ./internal/pattern ./internal/testkit/boardkit ./internal/shedrecipe ./internal/testkit/envkit ./internal/gitexec
 ```
