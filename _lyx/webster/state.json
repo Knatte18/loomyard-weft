@@ -160,7 +160,7 @@
       }
     }
   ],
-  "currentBatch": 0,
+  "currentBatch": 3,
   "masterStrand": "932668c59dc043e04c88ee91673211b2",
   "masterSessionId": "f07398bd-4be5-48ff-a8b2-8122206ee0fa",
   "masterEngine": "claude",
@@ -232,6 +232,24 @@
       "bracketTranscripts": [
         "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-gate-machine-local-config/f07398bd-4be5-48ff-a8b2-8122206ee0fa/subagents/agent-a4e6ac0aa96676941.jsonl"
       ]
+    },
+    "3": {
+      "slug": "config-cli-machine-layer",
+      "cards": [
+        "03-config-cli-machine-layer",
+        "04-ensure-leaves-machine-file"
+      ],
+      "cardHashes": {
+        "03-config-cli-machine-layer": "7116871a2d2330f121d294f5f20b103274dd4f501d2efb90c59c1e0f5a1bd3b3",
+        "04-ensure-leaves-machine-file": "6b20016106bb243bbf005794c75d59b3be0f09f33042c96f850b4628aa2e82cd"
+      },
+      "startSha": "bdb1d5201d21809373bc66008e0c74b9dc3bb4a2",
+      "kind": "fork",
+      "spawnedAt": "2026-10-21T06:50:20Z",
+      "sessionId": "f07398bd-4be5-48ff-a8b2-8122206ee0fa",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
     }
   },
   "seenForkTranscripts": [
