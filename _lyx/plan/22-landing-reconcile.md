@@ -1,7 +1,7 @@
 # Card 22 — landing-reconcile
 
 **Create:**
-- `plan:internal/landingshed#reconcileVerdict` -> `func reconcileVerdict(ctx context.Context, producer string, reconcile func() (fabricengine.OriginReport, error)) (shedengine.Outcome, shedengine.OutputPointer, error, bool)`
+- `internal/landingshed#reconcileVerdict`
 
 **Edit:**
 - `internal/landingshed#Deps`
