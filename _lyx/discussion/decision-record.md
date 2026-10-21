@@ -62,6 +62,12 @@ Rationale: `tmuxkit.ServerEnviron` is the filter the shuttleengines test pins ag
 
 - The tmux-tier test file `internal/testkit/tmuxkit/tmuxkit_integration_test.go` cannot be run here; its change is a constant substitution checked by compiling.
 
+<!-- lyx:carry-over Darn-Review -->
+- Darn-Review, round 1: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
+  Review: _lyx/reviews/darn/round-1-review.md; fixer report: _lyx/reviews/darn/round-1-fixer-report.md.
+  - unwatched-timer-warn-every-wake (class design, severity BLOCKING, open in rounds 1)
+<!-- /lyx:carry-over Darn-Review -->
+
 ## Acceptance criteria
 
 - A launch on a tmux whose version line parses below 3.5 runs no `allow-set-title` `set-option` and logs no Warn about it.
