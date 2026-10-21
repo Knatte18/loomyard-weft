@@ -13,7 +13,7 @@
 
 **Uses:**
 - `plan:internal/fabricengine#ReconcileOrigin`
-- `plan:internal/fabricengine#FailedPushFields`
+- `internal/fabricengine#FailedPushFields`
 - `plan:internal/pairteardown#HubSeamOptions`
 - `plan:internal/pairteardown#Teardown.OriginSeams`
 
