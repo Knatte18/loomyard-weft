@@ -14,8 +14,8 @@
 - `internal/loomcli/doc.go`
 
 **Create:**
-- `plan:internal/loomcli#settledSegmentGuard` -> `func settledSegmentGuard(producers []shedengine.ProducerDef, reviewsDir string, publishFailure func() (verifytree.PublishFailure, bool, error)) shedengine.GotoGuard`
-- `plan:internal/loomcli#TestSettledSegmentGuard` -> `func TestSettledSegmentGuard(t *testing.T)`
+- `internal/loomcli#settledSegmentGuard`
+- `internal/loomcli#TestSettledSegmentGuard`
 
 **Uses:**
 - `internal/shedadapters#SettleLive`
