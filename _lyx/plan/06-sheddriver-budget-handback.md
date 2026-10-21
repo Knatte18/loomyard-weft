@@ -15,7 +15,7 @@
 - `internal/sheddriver/doc.go`
 
 **Create:**
-- `plan:internal/sheddriver#budgetExhausted` -> `func budgetExhausted(stop Stop) bool`
+- `internal/sheddriver#budgetExhausted`
 
 **Intent:** D3's driver rule, D4's reading of the reason, and D2 at the tackler.
 
