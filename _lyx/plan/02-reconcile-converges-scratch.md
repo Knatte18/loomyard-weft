@@ -6,7 +6,7 @@
 **Edit:**
 - `internal/fabricengine#Topology.repairPairWiring`
 - `internal/fabricengine#applyStaleRemoval`
-- `plan:internal/fabricengine_test#TestWireJunctions_ScratchLinkRefusedAfterClassify`
+- `internal/fabricengine_test#TestWireJunctions_ScratchLinkRefusedAfterClassify`
 - `internal/fabricengine_test#TestReconcile_RecreatedWeftIsWiredInTheSamePass`
 - `internal/fabricengine_test#TestReconcile_MissingWeftRepoIsDiagnosedByName`
 - `internal/fabricengine_test#TestReconcile_CorrectJunctionsAreNoOp`
@@ -15,12 +15,12 @@
 - `internal/fabricengine/doc.go`
 
 **Uses:**
-- `plan:internal/fabricengine#wireScratchLink`
-- `plan:internal/fabricengine#wireJunctionSet`
-- `plan:internal/fabricengine#withoutRootScratchLink`
-- `plan:internal/fabricengine#scratchOutcome.detail`
-- `plan:internal/fabricengine_test#scratchShapeCases`
-- `plan:internal/fabricengine#SetScratchBeforeLinkHookForTest`
+- `internal/fabricengine#wireScratchLink`
+- `internal/fabricengine#wireJunctionSet`
+- `internal/fabricengine#withoutRootScratchLink`
+- `internal/fabricengine#scratchOutcome.detail`
+- `internal/fabricengine_test#scratchShapeCases`
+- `internal/fabricengine#SetScratchBeforeLinkHookForTest`
 - `internal/fabricengine_test#findReconcilePair`
 - `internal/testkit/logcapture#Capture`
 

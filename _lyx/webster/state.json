@@ -1,10 +1,10 @@
 {
   "runGuid": "3729199f80954454133c85e94dbdc509",
-  "planFingerprint": "3f0860e2ee7d87e257891d1ee1bff73c3e8db1dd33b72c1445566f6a14d21922",
+  "planFingerprint": "4c9a2dd2e1403f8ba49bd75040a07597b7a046743bd31ef6dbbd0926a3a13a81",
   "planFileHashes": {
     "00-overview.md": "1a17ea8e45e6442dac7fc5462fac836fa272e2209d24d3e1f679c9ae886305c6",
-    "01-scratch-link-wiring.md": "a96c0da19bc15c310f21f32a00d06776937749f38f9f1b4307a0f8f8c642f4bb",
-    "02-reconcile-converges-scratch.md": "8b8417d4af3ba770474d47018ed8d91fe5619bc99f1a71e69ee60b32aa6db4af",
+    "01-scratch-link-wiring.md": "f77256cea8ade909412d41ab254267ff8ef6fa08d1aeef72820a501d7fd5bebe",
+    "02-reconcile-converges-scratch.md": "70cf712da631026730e0428f741e07c09772cfcb7fb078703d72a09f0d15b3a1",
     "03-remove-unlinks-scratch.md": "b7f6f614a6c9e90b7e05f2640ee8e00062d68200e4d803e601148a8ee6dcf6e9",
     "04-cleanup-follows-scratch-link.md": "9bbdc01a194db35ecb7cda74a41aae55b49b175d8329df68f8f5eaa3ce5865a6"
   },
@@ -112,7 +112,7 @@
       }
     }
   ],
-  "currentBatch": 1,
+  "currentBatch": 0,
   "masterStrand": "674ef7c6cd3d1f70f2f8285e851bec2e",
   "masterSessionId": "e125ed41-5d60-46fd-8566-0a4cfda62dc0",
   "masterEngine": "claude",
@@ -123,15 +123,36 @@
         "01-scratch-link-wiring"
       ],
       "cardHashes": {
-        "01-scratch-link-wiring": "a96c0da19bc15c310f21f32a00d06776937749f38f9f1b4307a0f8f8c642f4bb"
+        "01-scratch-link-wiring": "f77256cea8ade909412d41ab254267ff8ef6fa08d1aeef72820a501d7fd5bebe"
       },
       "startSha": "0ffd168b081c8a958d63e1284547635302df36c2",
       "kind": "fork",
       "spawnedAt": "2026-10-21T07:51:50Z",
       "sessionId": "e125ed41-5d60-46fd-8566-0a4cfda62dc0",
       "engine": "claude",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "01-scratch-link-wiring",
+        "status": "done",
+        "head_sha": "7dbb0446dc838daaaac6ffce6d5fcb3533342f03",
+        "deviations": [
+          "internal/fabricengine/scratchlink.go",
+          "internal/fabricengine/scratchlink_integration_test.go"
+        ]
+      },
+      "cardShas": [
+        "7dbb0446dc838daaaac6ffce6d5fcb3533342f03"
+      ],
+      "forkTranscripts": [
+        "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-scratch-defeats-test-cache/e125ed41-5d60-46fd-8566-0a4cfda62dc0/subagents/agent-a108fa29556d3918d.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-scratch-defeats-test-cache/e125ed41-5d60-46fd-8566-0a4cfda62dc0/subagents/agent-a108fa29556d3918d.jsonl"
+      ]
     }
-  }
+  },
+  "seenForkTranscripts": [
+    "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-scratch-defeats-test-cache/e125ed41-5d60-46fd-8566-0a4cfda62dc0/subagents/agent-a108fa29556d3918d.jsonl"
+  ]
 }

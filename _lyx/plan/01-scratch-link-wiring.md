@@ -1,23 +1,23 @@
 # Card 1 — scratch-link-wiring
 
 **Create:**
-- `plan:internal/fabricengine#KindPathRenamed` -> `const KindPathRenamed Kind = "path_renamed"`
-- `plan:internal/fabricengine#scratchTargetName` -> `const scratchTargetName = "scratch"`
-- `plan:internal/fabricengine#scratchLinkTarget` -> `func scratchLinkTarget(l *lyxcwd.Location, slug string) string`
-- `plan:internal/fabricengine#scratchOutcome` -> `type scratchOutcome struct`
-- `plan:internal/fabricengine#scratchOutcome.detail` -> `func (o scratchOutcome) detail() string`
-- `plan:internal/fabricengine#wireScratchLink` -> `func wireScratchLink(rec *Mutations, l *lyxcwd.Location, slug string) scratchOutcome`
-- `plan:internal/fabricengine#seedScratchLinkExclude` -> `func seedScratchLinkExclude(rec *Mutations, worktreeDir string) (excludePath string, err error)`
-- `plan:internal/fabricengine#withoutRootScratchLink` -> `func withoutRootScratchLink(l *lyxcwd.Location, names []string) []string`
-- `plan:internal/fabricengine#scratchBeforeLinkHook` -> `var scratchBeforeLinkHook func()`
-- `plan:internal/fabricengine#wireJunctionSet` -> `func wireJunctionSet(rec *Mutations, l *lyxcwd.Location, slug string, names []string) error`
-- `plan:internal/fabricengine#SetScratchBeforeLinkHookForTest` -> `func SetScratchBeforeLinkHookForTest(t *testing.T, hook func())`
-- `plan:internal/fabricengine#scratchPathTracked` -> `var scratchPathTracked = PathTracked`
-- `plan:internal/fabricengine#SetScratchPathTrackedForTest` -> `func SetScratchPathTrackedForTest(t *testing.T, fn func(worktreeDir, relPath string) (bool, error))`
-- `plan:internal/fabricengine_test#scratchShapeCase` -> `type scratchShapeCase struct`
-- `plan:internal/fabricengine_test#scratchShapeCases` -> `var scratchShapeCases []scratchShapeCase`
-- `plan:internal/fabricengine_test#TestWireJunctions_ScratchLink` -> `func TestWireJunctions_ScratchLink(t *testing.T)`
-- `plan:internal/fabricengine_test#TestWireJunctions_ScratchLinkRefusedAfterClassify` -> `func TestWireJunctions_ScratchLinkRefusedAfterClassify(t *testing.T)`
+- `internal/fabricengine#KindPathRenamed`
+- `internal/fabricengine#scratchTargetName`
+- `internal/fabricengine#scratchLinkTarget`
+- `internal/fabricengine#scratchOutcome`
+- `internal/fabricengine#scratchOutcome.detail`
+- `internal/fabricengine#wireScratchLink`
+- `internal/fabricengine#seedScratchLinkExclude`
+- `internal/fabricengine#withoutRootScratchLink`
+- `internal/fabricengine#scratchBeforeLinkHook`
+- `internal/fabricengine#wireJunctionSet`
+- `internal/fabricengine#SetScratchBeforeLinkHookForTest`
+- `internal/fabricengine#scratchPathTracked`
+- `internal/fabricengine#SetScratchPathTrackedForTest`
+- `internal/fabricengine_test#scratchShapeCase`
+- `internal/fabricengine_test#scratchShapeCases`
+- `internal/fabricengine_test#TestWireJunctions_ScratchLink`
+- `internal/fabricengine_test#TestWireJunctions_ScratchLinkRefusedAfterClassify`
 
 **Edit:**
 - `internal/fabricengine#WireJunctionsWith`
