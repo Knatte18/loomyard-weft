@@ -11,7 +11,7 @@
 - `internal/hubforge#TestNewHub`
 
 **Uses:**
-- `plan:internal/configsync#WriteBaseSparseMarker`
+- `internal/configsync#WriteBaseSparseMarker`
 - `internal/configengine#BaseSparseMarker`
 - `internal/configengine#BaseSparseMarkerRel`
 - `internal/configengine#SparseBaseHeader`

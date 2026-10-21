@@ -1,12 +1,12 @@
 # Card 6 — sparse-hub-base-reconcile
 
 **Create:**
-- `plan:internal/configsync#sparseSeed` -> `func sparseSeed(m configreg.Module, seed []byte, dropFormer bool) ([]byte, error)`
-- `plan:internal/configsync#stripBase` -> `func stripBase(m configreg.Module, current []byte) ([]byte, []string, error)`
-- `plan:internal/configsync#WriteBaseSparseMarker` -> `func WriteBaseSparseMarker(boardDir string) error`
-- `plan:internal/yamlengine#DropTemplateEqualNames` -> `func DropTemplateEqualNames(template, existing []byte, perNameMaps []string) (out []byte, dropped []string, err error)`
-- `plan:internal/yamlengine#TestDropTemplateEqualNames` -> `func TestDropTemplateEqualNames(t *testing.T)`
-- `plan:internal/configsync#TestReconcileHubWideAt_StripsAnUnmigratedBaseOnce` -> `func TestReconcileHubWideAt_StripsAnUnmigratedBaseOnce(t *testing.T)`
+- `internal/configsync#sparseSeed`
+- `internal/configsync#stripBase`
+- `internal/configsync#WriteBaseSparseMarker`
+- `internal/yamlengine#DropTemplateEqualNames`
+- `internal/yamlengine#TestDropTemplateEqualNames`
+- `internal/configsync#TestReconcileHubWideAt_StripsAnUnmigratedBaseOnce`
 
 **Edit:**
 - `internal/configsync#HubWideOptions`

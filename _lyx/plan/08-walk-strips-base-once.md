@@ -1,8 +1,8 @@
 # Card 8 — walk-strips-base-once
 
 **Create:**
-- `plan:internal/hubreconcile_test#commitPreMigrationBase` -> `func commitPreMigrationBase(t *testing.T, boardDir string)`
-- `plan:internal/hubreconcile#EnsureFailingAfterHubWideWrite` -> `func EnsureFailingAfterHubWideWrite(geom Geometry, opts Options, failure error) error`
+- `internal/hubreconcile_test#commitPreMigrationBase`
+- `internal/hubreconcile#EnsureFailingAfterHubWideWrite`
 
 **Edit:**
 - `internal/hubreconcile#ensure`
