@@ -66,6 +66,12 @@ Rationale: the quote-aware scan has to name the single quote.
 - A grep without a DFA engine could run the quote-aware pattern slowly on a large heredoc payload.
 - An agent that writes an untracked file outside `.scratch/` through a redirect is now refused and has to use Write.
 
+<!-- lyx:carry-over Darn-Review -->
+- Darn-Review, round 1: converged; each finding below was fixed or disputed by the round's fixer, and no fresh reviewer has seen the result; the fixer report says which.
+  Review: _lyx/reviews/darn/round-1-review.md; fixer report: _lyx/reviews/darn/round-1-fixer-report.md.
+  - claudeengine-doc-stale-quote-aware-rows (class consistency, severity MEDIUM, open in rounds 1)
+<!-- /lyx:carry-over Darn-Review -->
+
 ## Acceptance criteria
 
 - `grep` with a quoted pattern naming a module-wide or tmux-tier go test, or one of the variable names, passes the raw go row.
