@@ -1,6 +1,6 @@
 # The operator tuned loom defaults move into the lyx template, so every new hub gets them
 
-`tuned-defaults-template` · Note · enhancement, config, loom
+`tuned-defaults-template` · Task · enhancement, config, loom
 
 ## Seen (orch, 2026-10-21)
 
@@ -26,5 +26,27 @@ Other modules where the loomyard hub differs from the template, each to be judge
 The tuned values move into lyx's template, so they are the default and every new hub gets them with no copying.
 Hubs already cloned get them too: the NORCE Models hub was cloned before this, and a seeded default layer writes every key, so an explicit neutral value such as `discussion_lenses: ""` would keep overriding a changed template; the task makes existing hubs follow the template, such as by dropping seeded entries that equal the old template.
 The loomyard and quarry hubs' default layers then drop the entries that equal the template.
-Any other module whose loomyard values are the operator's general preference, rather than this repo's own, goes the same way; the task checks each.
+Everything the operator tunes in loomyard is by default the template everywhere.
+
+### Split (orch, on the operator's word, 2026-10-21)
+
+Into the template, as general preference:
+
+- `loom`: every tuned value listed above;
+- `shed`: `driver_kind: go`;
+- `darn`: the reviewer and fixer models and fans;
+- `claude`: the timeouts;
+- `models`: the model entries;
+- `orch`: the token thresholds;
+- `webster`: `kickstart_pack: false`;
+- `batcher`: the budget.
+
+Kept in loomyard's own default layer, as this repo's own:
+
+- `board`: the labels, which name lyx's modules;
+- `darn.verify`, `landing.publish_verify` and `landing.deploy`: Go and lyx commands;
+- `lenses`: the lenses loomyard added;
+- `gate.slots`: a machine's setting, not the template's.
+
+After the change, loomyard's default layer holds only the kept entries.
 Note `lenses-language-sets` covers which lens set a hub seeds by language, which is separate.
