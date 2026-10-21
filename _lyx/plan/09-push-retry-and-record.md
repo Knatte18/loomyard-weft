@@ -1,17 +1,17 @@
 # Card 9 — push-retry-and-record
 
 **Create:**
-- `plan:internal/fabricengine#ErrBranchGone` -> `var ErrBranchGone error`
-- `plan:internal/fabricengine#pushClassified` -> `func pushClassified(rec *Mutations, hubPath, side, path string, opts SyncOptions, retryRecords func() (deferred bool, err error)) error`
-- `plan:internal/fabricengine#branchGoneOnOrigin` -> `func branchGoneOnOrigin(path string) (gone bool, err error)`
-- `plan:internal/fabricengine#goneEntryEnded` -> `func goneEntryEnded(hubPath, branch string) (bool, error)`
-- `plan:internal/fabricengine#retryWeftPush` -> `func retryWeftPush(rec *Mutations, hubPath, weftPath string) (deferred bool, err error)`
-- `plan:internal/fabricengine#retryBoltPush` -> `func retryBoltPush(rec *Mutations, boardDir string) (deferred bool, err error)`
-- `plan:internal/fabricengine#PushFailureRewound` -> `const PushFailureRewound PushFailureClass = "rewound"`
-- `plan:internal/fabricengine#PushFailedError` -> `type PushFailedError struct`
-- `plan:internal/fabricengine#PushFailedError.Error` -> `func (e *PushFailedError) Error() string`
-- `plan:internal/fabricengine#PushFailedError.Unwrap` -> `func (e *PushFailedError) Unwrap() error`
-- `plan:internal/fabricengine_test#TestPushFailureClasses` -> `func TestPushFailureClasses(t *testing.T)`
+- `internal/fabricengine#ErrBranchGone`
+- `internal/fabricengine#pushClassified`
+- `internal/fabricengine#branchGoneOnOrigin`
+- `internal/fabricengine#goneEntryEnded`
+- `internal/fabricengine#retryWeftPush`
+- `internal/fabricengine#retryBoltPush`
+- `internal/fabricengine#PushFailureRewound`
+- `internal/fabricengine#PushFailedError`
+- `internal/fabricengine#PushFailedError.Error`
+- `internal/fabricengine#PushFailedError.Unwrap`
+- `internal/fabricengine_test#TestPushFailureClasses`
 
 **Edit:**
 - `internal/fabricengine#SyncOptions`
