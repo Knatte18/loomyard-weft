@@ -1,8 +1,8 @@
 # Card 19 — orch-start-reconcile
 
 **Create:**
-- `plan:internal/orchcli#reconcileHub` -> `func reconcileHub(location *lyxcwd.Location) (fabricengine.OriginReport, error)`
-- `plan:internal/orchcli#TestStart_ReconcilesTheHubFirst` -> `func TestStart_ReconcilesTheHubFirst(t *testing.T)`
+- `internal/orchcli#reconcileHub`
+- `internal/orchcli#TestStart_ReconcilesTheHubFirst`
 
 **Edit:**
 - `internal/orchcli#orchCLI`

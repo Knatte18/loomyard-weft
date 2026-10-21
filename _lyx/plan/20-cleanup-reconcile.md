@@ -1,7 +1,7 @@
 # Card 20 — cleanup-reconcile
 
 **Create:**
-- `plan:internal/cleanupcli#cleanupSeamOptions` -> `func cleanupSeamOptions(prime *lyxcwd.Location) pairteardown.SeamOptions`
+- `internal/cleanupcli#cleanupSeamOptions`
 
 **Edit:**
 - `internal/cleanupcli#Command`
