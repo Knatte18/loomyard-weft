@@ -1439,6 +1439,28 @@
       "body": "## Seen (orch, 2026-10-21)\n\nThe operator wanted the live loom run `quarry-csharp`, at Discussion-Write, stopped for good and removed.\nNo verb does that, and the orch's manual stop took several rounds while the run kept coming back:\n\n1. The orch killed the `lyx batten run` and `lyx batten step` processes and the Discussion-Write Claude session.\n2. Reed relaunched the strand, since its tmux session still stood, so a new Claude session started.\n3. Killing the tmux session on the reed server ended it, but a drive-report writer then started, and loom posted \"Run quarry-csharp stopped\".\n4. `lyx batten status` still read `running` throughout, so the board claim stayed and the entry took no scope edits.\n5. `lyx fabric remove` waits up to two minutes for the driver to go quiet, which looked to the operator like a hang.\n\n`lyx batten pause` acts only at the next producer boundary, which a session waiting for its turn never reaches.\n\n## Idea\n\nOne verb, such as `lyx batten abort \u003cslug\u003e`, that ends a live run of any state at once and for good:\n\n- stops the batten and loom drivers, every strand of the run and its reed session, so reed relaunches nothing;\n- writes no drive report and posts no stop notice beyond one abort notice;\n- marks the batten record aborted and clears the board claim, so the entry takes edits again;\n- optionally removes the pair, with `--remove`, without the two-minute wait since nothing is left to go quiet.\n\nTask `batten-cancel-verb` covers a run that stopped before its pair exists; the two may become one verb.\nTask `run-process-ownership`, where every process a run spawns has one owner that ends them all, is what this verb would call.\n",
       "created": "2026-10-21T11:26:35Z",
       "revised": "2026-10-21T11:26:35Z"
+    },
+    {
+      "id": 732,
+      "slug": "intake-own-repo",
+      "title": "Intake reads the hub own repository, selfreport stays LoomYard-only, and the orch runs intake only on the operator word",
+      "kind": "task",
+      "labels": [
+        "bug",
+        "board",
+        "orch",
+        "selfreport",
+        "stencil"
+      ],
+      "issues": [],
+      "recipe": "darn",
+      "priority": "high",
+      "depends_on": [],
+      "isolated": false,
+      "brief": "lyx board intake takes issues from the hub warp repo, not the hard-coded Knatte18/loomyard; the orch role stops running intake by itself",
+      "body": "## Seen (orch, 2026-10-21)\n\nThe quarry hub's new orch ran `lyx board intake` on its own, as its role tells every orch at every wake and landing (`contracts/stencils/orch/orch-template-role.md`), and imported LoomYard issues #783 and #785 onto the quarry board.\n`lyx board intake` reads the selfreport inbox, which `internal/selfreportengine/selfreport.go` hard-codes as `Knatte18/loomyard`, whatever hub it runs in.\n\n## Operator decisions (2026-10-21)\n\n- Selfreport and intake are two different things.\n  - Selfreport reports LoomYard bugs, and only those, to `Knatte18/loomyard`, from whatever hub lyx runs in. It never reports anything about another repository.\n  - `lyx board intake` takes in every GitHub issue of the repository the hub works on: the hub's own warp repository, read from its binding or origin, never a hard-coded repository. For the quarry hub that is `Knatte18/quarry`; only the loomyard hub's intake reads `Knatte18/loomyard`.\n- A bug or other issue anyone finds in another repository, such as quarry, is filed to that repository's own issues, never through selfreport.\n- The operator controls intake: the orch role no longer runs `lyx board intake list` at wakes and landings, nor starts an intake fork on its own. The orch runs intake only when the operator asks, and the intake fork procedure stays in the role for that case.\n\n## Clean-up in this task\n\n- Every place that says or assumes intake reads the selfreport inbox is updated: `internal/boardcli`, `internal/boardengine` and `internal/selfreportengine` docs, the `ly:board` skill, and the orch role stencil.\n",
+      "created": "2026-10-21T11:37:12Z",
+      "revised": "2026-10-21T11:37:12Z"
     }
   ]
 }
