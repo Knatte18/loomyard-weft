@@ -311,6 +311,13 @@ Apart from the zero-test rule the operator decided after Discussion, every pick 
   - triage-section-names-retired-verify-suite (class consistency, severity MEDIUM, open in rounds 1)
 <!-- /lyx:carry-over Webster-Review -->
 
+<!-- lyx:carry-over Merge-Review -->
+- Merge-Review, round 1: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
+  Review: _lyx/reviews/merge/round-1-review.md; fixer report: _lyx/reviews/merge/round-1-fixer-report.md.
+  - darn-fixture-retired-verify-substring-accident (class consistency, severity MEDIUM, open in rounds 1)
+  - gates-open-map-single-set-drops-other-lists (class design, severity MEDIUM, open in rounds 1)
+<!-- /lyx:carry-over Merge-Review -->
+
 ## Acceptance criteria
 
 - `lyx gate test` with no flags runs tier0 over the computed scope; `--tier 0 --tier 1` with `tier1` covering `[0]` runs only tier1.
