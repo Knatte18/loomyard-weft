@@ -157,3 +157,9 @@ Requirements on the detached job:
 5. **It builds with the gate properties** (`-p:RunBaseline=true`, plus `-p:RunSlowTests=true` if the slow tier shares the build), and it does not hold a lock that blocks the agent's own work while it runs.
 
 With that, verification adds nothing to the critical path before implementation. The only verification time left on the critical path is the gate after each attempt and the landing tiers.
+
+## Split (orch, 2026-10-21)
+
+- Required 1 and Required 3 (a must-pass slow tier, zero discovered tests as a failure, timeouts and per-run logs) are taken into task `test-tiers`.
+- Required 2 and the addendum (baseline capture and compare, run detached) go with note `regression-baseline-verify`, as an asynchronous tier.
+- What stays here: Wanted 4 to 6 and the reviewer-rubric repo rules.
