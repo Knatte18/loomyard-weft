@@ -1,6 +1,6 @@
 # Reed small fixes: trace-id constant in tests, allow-set-title warn noise, watchdog stop marker without inotify
 
-`reed-small-fixes` · Task · bug, enhancement, reed, shuttle · running · Describe
+`reed-small-fixes` · Task · bug, enhancement, reed, shuttle · running · Merge-In
 
 ## From note `trace-id-env-literal`
 
