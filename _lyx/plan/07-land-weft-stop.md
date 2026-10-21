@@ -1,8 +1,8 @@
 # Card 7 — land-weft-stop
 
 **Create:**
-- `plan:internal/battencli#pullStopOutcome` -> `func pullStopOutcome(err error) (recordsStop string, pullErr error)`
-- `plan:internal/battencli#TestPullStopOutcome` -> `func TestPullStopOutcome(t *testing.T)`
+- `internal/battencli#pullStopOutcome`
+- `internal/battencli#TestPullStopOutcome`
 
 **Edit:**
 - `internal/battenshed#LandDeps`
