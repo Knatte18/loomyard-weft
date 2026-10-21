@@ -9,7 +9,7 @@
 - `internal/cleanupcli#TestCleanupVerb_RefusesOutsideThePrimeThenListsAndThenRemovesEverySeededLeftover`
 
 **Uses:**
-- `plan:internal/fabricengine#ReconcileOrigin`
+- `internal/fabricengine#ReconcileOrigin`
 - `plan:internal/pairteardown#HubSeamOptions`
 - `plan:internal/pairteardown#Teardown.OriginSeams`
 - `internal/hibernateengine#PauseCaller`

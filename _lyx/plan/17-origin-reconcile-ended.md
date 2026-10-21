@@ -5,8 +5,8 @@
 - `plan:internal/fabricengine_test#TestReconcileOrigin_Ended` -> `func TestReconcileOrigin_Ended(t *testing.T)`
 
 **Edit:**
-- `plan:internal/fabricengine#ReconcileOrigin`
-- `plan:internal/fabricengine#EndedTeardown`
+- `internal/fabricengine#ReconcileOrigin`
+- `internal/fabricengine#EndedTeardown`
 
 **Uses:**
 - `internal/fabricengine#SnapshotTagged`

@@ -18,9 +18,9 @@
 - `internal/hibernatecli#TestHibernateVerbs_WireTheHub`
 
 **Uses:**
-- `plan:internal/fabricengine#ReconcileOrigin`
-- `plan:internal/fabricengine#ReconcileOptions`
-- `plan:internal/fabricengine#OriginReport`
+- `internal/fabricengine#ReconcileOrigin`
+- `internal/fabricengine#ReconcileOptions`
+- `internal/fabricengine#OriginReport`
 - `internal/pauserecord#SetGateExempt`
 - `plan:internal/pairteardown#HubSeamOptions`
 - `plan:internal/pairteardown#Teardown.OriginSeams`

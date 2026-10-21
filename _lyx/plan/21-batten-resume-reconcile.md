@@ -12,7 +12,7 @@
 - `internal/battencli#TestRunCmd_ResumeDispositions`
 
 **Uses:**
-- `plan:internal/fabricengine#ReconcileOrigin`
+- `internal/fabricengine#ReconcileOrigin`
 - `plan:internal/pairteardown#HubSeamOptions`
 - `plan:internal/pairteardown#Teardown.OriginSeams`
 
