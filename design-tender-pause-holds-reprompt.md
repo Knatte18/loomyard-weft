@@ -2,7 +2,7 @@
 
 `tender-pause-holds-reprompt` · Task · bug, creel, shed, webster
 
-Depends on: [`origin-reconcile`](design-origin-reconcile.md), [`run-reentry`](design-run-reentry.md)
+Depends on: [`origin-reconcile`](design-origin-reconcile.md)
 
 Imported from [issue #762](https://github.com/Knatte18/loomyard/issues/762).
 
