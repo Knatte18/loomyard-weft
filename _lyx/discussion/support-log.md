@@ -76,9 +76,11 @@ Found: every Go verify site already calls `lyx gate test` inside its command, bu
 - Listing wall times in the change description: Describe runs before the landing gates.
 - Keeping darn's `verify` as a hand-spelled command: the `landing` list now states it.
 - Scoping `final` and loom's `landing` to the diff against the parent: it overrides the operator decision in note `loom-gates-xdr-stacking` that Webster's plan-level gate runs the whole suite.
-- Letting a narrower run that discovers zero pass with a warning: it departs from the board's operator decision and lets a card-scoped run with a dropped flag pass; the parent rejected it in round 1.
-- Checking gate-list cross-references at config load: the template and every key-by-key hub set would fail to load.
-- Keeping a `verifytree` slot for non-gate commands: requiring `tree_scope_verify` to be a `lyx gate test` call keeps one slot owner.
+- Letting a narrower run that discovers zero pass with a warning: the parent rejected it in round 1; superseded by the operator's 2026-10-21 decision that every run discovering zero passes.
+- Checking gate-list cross-references at config load: the template, whose gate lists name `tier0` while it declares no tier, would fail to load.
+- Keeping a `verifytree` slot for non-gate commands: requiring every command it runs to be one `lyx gate test --wait` call, or such calls joined by `&&`, leaves it nothing to slot.
+- Refusing every card `**Verify:**` line that is not a `lyx gate test` call: the plan gate cannot tell a build or test from another check in static text, and the line is the escape hatch for checks a tier cannot express.
+- Reporting a zero-discovery confirm-the-fix run as skipped: the operator's decision leaves no skipped outcome.
 - Moving the NORCE Models values out of the record: the board names both hubs, and the record is what the orch applies.
 
 ## Review rounds
@@ -86,6 +88,41 @@ Found: every Go verify site already calls `lyx gate test` inside its command, bu
 ### Parent review, round 1 (ly:orch, BLOCKING)
 
 - F1 (BLOCKING, D7 and its acceptance criterion: a narrower run discovering zero passed with a warning) — fixed: every run that discovers zero fails, filtered runs included; the scoper drops targets with no tests for the tier, `TestMain` alone counting as none, using a new `go`-scoper tier key `build_tags`; an empty remaining scope is skipped with nothing to test, logged as its own outcome; the departure sentence and the Bound paragraph are gone; D1, D3, D11, D12 and the acceptance criterion follow.
+
+### Discussion review, round 1 (burler, BLOCKING)
+
+- The operator's 2026-10-21 decision (zero discovered passes, no floor, no skipped outcome) folded into D7: `min_tests`, `build_tags`, the drop rule and the skipped outcome are gone from D1, D3, D7, D11, D12 and the acceptance criteria; this settles F2's floor half, F6, F7's drop half, F10 and F11.
+- F1 — fixed: the card `**Verify:**` runner keeps one slot for a line that is not one `lyx gate test --wait` call, D8 and D13.
+- F2 — fixed: under `none`, computed, `--base` and card scopes are whole and explicit targets pass verbatim, D3.
+- F3 — fixed: darn's tree-scoped landing sites, D8 table.
+- F4 — fixed: darn runs no command for an empty rendered `{targets}`, D9.
+- F5 — fixed: `--wait` required in `tree_scope_verify` and in a `**Verify:**` gate call, and the caller timeouts no longer apply to a gate call, D8, D9, D10.
+- F6 — fixed: a `{targets}`-less tier runs whole except under an empty scope, D1.
+- F7 — fixed: D3's Bound names the empty-set build it leaves to `final` and `landing`.
+- F8 — fixed: required tier keys, whole-tier writes through a flow-mapping `--set`, since the orch cannot drive the editor, and a provisional `timeout_min`, D1 and D12.
+- Self-check forks: NORCE tiers need no `all_targets`, the guard step's prebuild cost, the Goal's exceptions, darn's doc example and template comment, the auto-mode line and the trimpath constraint followed the fixes.
+- F9 — fixed: the guard step is a run of `guard_tier`, D2, D5, D11.
+- F12 — fixed: `-p={parallel}` in every loomyard tier's GOFLAGS, D12.
+- F13 — fixed: D13 for non-tier slot holders; PATTERN texts name the exceptions.
+- F14 — fixed: Merge-In and Publish name the round's base command on Site, D8.
+- F15 — fixed: `-C` only with explicit targets, D2.
+- F16 — fixed: the placeholder check runs only for a guard step not skipped, D5.
+- F17 — fixed: D2's Bound reworded.
+- F18 — fixed: D10's Bound lists what the row lets through.
+- F19 — fixed: `tree_scope_verify` may hold no shell control operator, D9.
+- F20 — fixed: pre-deploy processes and the drain, Open risks.
+- F21 — fixed: a stale machine-layer `parallel` is dropped with a warning, D1.
+- F22 — fixed: the watchdog watches Go test binaries only, D2.
+- F23 — fixed: the Webster prompts stop rendering the plan's verify section, D9.
+
+### Discussion review, round 2 (burler, BLOCKING)
+
+- F1 — fixed: the fork runs a card's `**Verify:**` through `lyx gate card-verify`, the same slotted runner as Go's re-run, D8 and D13; under `lyx gate` because forks are refused every `lyx webster` command.
+- F2 — fixed: confirm-the-fix renders each step as its own `lyx gate test --wait` call joined by `&&`, D8.
+- F3 — fixed: the `.md`-only acceptance criterion names the scoper.
+- F4 — fixed: `cmd/testtiming` holds one slot in every mode, D13 and `PATTERN-test-tiers`.
+- F5 — fixed: brace-holding flow-mapping values are double-quoted, D1 and D12.
+- F6 — fixed: in-flight `--tags` `**Verify:**` lines, Open risks.
 
 ## Question ledger
 
@@ -95,7 +132,7 @@ Found: every Go verify site already calls `lyx gate test` inside its command, bu
 - Resolved (auto-pick): slot ownership → per tier in the gate; `verifytree` takes none.
 - Resolved (auto-pick): heavy tiers → drain lock plus ordered acquisition.
 - Resolved (auto-pick): counters → `go-json` and `vstest`.
-- Resolved (parent review round 1): zero-test rule → every run that discovers zero fails; the scoper drops targets with no tests for the tier (Go via the tier's `build_tags`), and an empty remaining scope is skipped with nothing to test; floor on unfiltered whole runs.
+- Resolved (operator, 2026-10-21, replacing the parent review's round-1 ruling): zero-test rule → a run that discovers zero passes; no floor, no skipped outcome, the count is logged.
 - Resolved (auto-pick): `final` and `landing` scope → `--all`, per the operator decision in note `loom-gates-xdr-stacking`.
 - Resolved (auto-pick): gate-list cross-references → checked at use, not at load.
 - Resolved (auto-pick): computed scope diffs to the working tree.
@@ -105,3 +142,5 @@ Found: every Go verify site already calls `lyx gate test` inside its command, bu
 - Resolved (auto-pick): hub values → orch applies after deploy.
 - Resolved (auto-pick): change-description wall times → out of scope, reason in the record.
 - Resolved (auto-pick): `--tags` → retired with a refusal naming `--tier`.
+- Resolved (auto-pick): the fork's run of a card `**Verify:**` → `lyx gate card-verify`, the slotted card runner, over refusing build and test lines at the plan gate.
+- Resolved (auto-pick): `cmd/testtiming` → one slot in every mode, over exempting the timing and `-redundancy` modes from `PATTERN-gate-slot`.
