@@ -1,8 +1,8 @@
 # Card 2 — gate-machine-keys
 
 **Create:**
-- `plan:internal/gateslot#ConfigFiles` -> `func ConfigFiles(dirs configengine.Dirs) []string`
-- `plan:internal/configreg#machineKeyRefusal` -> `func machineKeyRefusal(m Module) string`
+- `internal/gateslot#ConfigFiles`
+- `internal/configreg#machineKeyRefusal`
 
 **Edit:**
 - `internal/gateslot#Config`

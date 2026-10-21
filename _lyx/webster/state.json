@@ -1,10 +1,10 @@
 {
   "runGuid": "0bf87cf3cf381f09537f68d4d32c84a9",
-  "planFingerprint": "406b35a2385688a8893d949396755432d86b40c41152e7829964ff3127439c8c",
+  "planFingerprint": "0e206cfd9ea983ac4af37e4d07cb38be46b1a04264d5cc7c93a4d986a721026c",
   "planFileHashes": {
     "00-overview.md": "1ba2157819d3c409e5eae22757cc85ed2d9b1f6a736334bd7214f60267bb9d01",
     "01-config-machine-layer.md": "9c093004f6885c26d70e1fabda7364bc26c875112d641d127f44d4d2e5c9ba83",
-    "02-gate-machine-keys.md": "b1424fc2db47367f931c00836d7a93a9596f779aa0d88cb7eaa9628cb86dfd2b",
+    "02-gate-machine-keys.md": "9683d03a3af5483c6b4bf68ac0ced3a62029e9f431eefb235cf0c232d1a2cf98",
     "03-config-cli-machine-layer.md": "7116871a2d2330f121d294f5f20b103274dd4f501d2efb90c59c1e0f5a1bd3b3",
     "04-ensure-leaves-machine-file.md": "6b20016106bb243bbf005794c75d59b3be0f09f33042c96f850b4628aa2e82cd"
   },
@@ -160,7 +160,7 @@
       }
     }
   ],
-  "currentBatch": 2,
+  "currentBatch": 0,
   "masterStrand": "932668c59dc043e04c88ee91673211b2",
   "masterSessionId": "f07398bd-4be5-48ff-a8b2-8122206ee0fa",
   "masterEngine": "claude",
@@ -206,18 +206,36 @@
         "02-gate-machine-keys"
       ],
       "cardHashes": {
-        "02-gate-machine-keys": "b1424fc2db47367f931c00836d7a93a9596f779aa0d88cb7eaa9628cb86dfd2b"
+        "02-gate-machine-keys": "9683d03a3af5483c6b4bf68ac0ced3a62029e9f431eefb235cf0c232d1a2cf98"
       },
       "startSha": "42b798c6fecf6701fdb6942e319e663d4765398b",
       "kind": "fork",
       "spawnedAt": "2026-10-21T06:47:11Z",
       "sessionId": "f07398bd-4be5-48ff-a8b2-8122206ee0fa",
       "engine": "claude",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "02-gate-machine-keys",
+        "status": "done",
+        "head_sha": "bdb1d5201d21809373bc66008e0c74b9dc3bb4a2",
+        "deviations": [
+          "internal/gateslot/config_test.go"
+        ]
+      },
+      "cardShas": [
+        "bdb1d5201d21809373bc66008e0c74b9dc3bb4a2"
+      ],
+      "forkTranscripts": [
+        "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-gate-machine-local-config/f07398bd-4be5-48ff-a8b2-8122206ee0fa/subagents/agent-a4e6ac0aa96676941.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-gate-machine-local-config/f07398bd-4be5-48ff-a8b2-8122206ee0fa/subagents/agent-a4e6ac0aa96676941.jsonl"
+      ]
     }
   },
   "seenForkTranscripts": [
-    "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-gate-machine-local-config/f07398bd-4be5-48ff-a8b2-8122206ee0fa/subagents/agent-a245d228fc6c51f7a.jsonl"
+    "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-gate-machine-local-config/f07398bd-4be5-48ff-a8b2-8122206ee0fa/subagents/agent-a245d228fc6c51f7a.jsonl",
+    "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-gate-machine-local-config/f07398bd-4be5-48ff-a8b2-8122206ee0fa/subagents/agent-a4e6ac0aa96676941.jsonl"
   ]
 }
