@@ -53,9 +53,9 @@
 **Uses:**
 - `internal/fabricengine#RecordPushFailure`
 - `internal/fabricengine#ClearPushFailure`
-- `plan:internal/fabricengine#replayWeft`
-- `plan:internal/fabricengine#replayBolt`
-- `plan:internal/fabricengine#readEndedSet`
+- `internal/fabricengine#replayWeft`
+- `internal/fabricengine#replayBolt`
+- `internal/fabricengine#readEndedSet`
 - `plan:internal/gitrepo#ErrPushAuthRefused`
 - `plan:internal/gitrepo#PushBackoffDelays`
 - `internal/fabricengine#PrimeName`

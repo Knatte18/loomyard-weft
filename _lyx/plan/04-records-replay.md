@@ -1,21 +1,21 @@
 # Card 4 — records-replay
 
 **Create:**
-- `plan:internal/fabricengine#EndedSet` -> `type EndedSet map[string]string`
-- `plan:internal/fabricengine#readEndedSet` -> `func readEndedSet(recordsRoot, boltRef string, slugs []string, localCreated map[string]string) (EndedSet, error)`
-- `plan:internal/fabricengine#finalizeEntered` -> `func finalizeEntered(l *lyxcwd.Location, slug string) bool`
-- `plan:internal/fabricengine#ReplayOutcome` -> `type ReplayOutcome struct`
-- `plan:internal/fabricengine#ErrReplayConflict` -> `var ErrReplayConflict error`
-- `plan:internal/fabricengine#ErrReplayDirty` -> `var ErrReplayDirty error`
-- `plan:internal/fabricengine#replayWeft` -> `func replayWeft(rec *Mutations, l *lyxcwd.Location, worktree, upstream string, ended EndedSet) (ReplayOutcome, error)`
-- `plan:internal/fabricengine#replayBolt` -> `func replayBolt(rec *Mutations, l *lyxcwd.Location, boardDir, upstream string, ended EndedSet) (ReplayOutcome, error)`
-- `plan:internal/fabricengine#cherryPickOnto` -> `func cherryPickOnto(rec *Mutations, req pathRequest, repo *gitrepo.Repo, onto string, commits []string) (dropped []string, err error)`
-- `plan:internal/fabricengine#setAsideTag` -> `func setAsideTag(rec *Mutations, repo *gitrepo.Repo, slug, sha string) (string, error)`
-- `plan:internal/fabricengine#ReplayWeftForTest` -> `func ReplayWeftForTest(l *lyxcwd.Location, worktree string, ended map[string]string) (ReplayOutcome, error)`
-- `plan:internal/fabricengine#ReplayBoltForTest` -> `func ReplayBoltForTest(l *lyxcwd.Location, boardDir string, ended map[string]string) (ReplayOutcome, error)`
-- `plan:internal/fabricengine#ReadEndedSetForTest` -> `func ReadEndedSetForTest(recordsRoot, boltRef string, slugs []string, localCreated map[string]string) (map[string]string, error)`
-- `plan:internal/fabricengine_test#TestRecordsReplay` -> `func TestRecordsReplay(t *testing.T)`
-- `plan:internal/fabricengine#KindTagCreated` -> `const KindTagCreated Kind = "tag_created"`
+- `internal/fabricengine#EndedSet`
+- `internal/fabricengine#readEndedSet`
+- `internal/fabricengine#finalizeEntered`
+- `internal/fabricengine#ReplayOutcome`
+- `internal/fabricengine#ErrReplayConflict`
+- `internal/fabricengine#ErrReplayDirty`
+- `internal/fabricengine#replayWeft`
+- `internal/fabricengine#replayBolt`
+- `internal/fabricengine#cherryPickOnto`
+- `internal/fabricengine#setAsideTag`
+- `internal/fabricengine#ReplayWeftForTest`
+- `internal/fabricengine#ReplayBoltForTest`
+- `internal/fabricengine#ReadEndedSetForTest`
+- `internal/fabricengine_test#TestRecordsReplay`
+- `internal/fabricengine#KindTagCreated`
 
 **Edit:**
 - `internal/fabricengine_test#manifestObservableKind`

@@ -10,10 +10,10 @@
 - `plan:internal/fabricengine#ReconcileOrigin`
 
 **Uses:**
-- `plan:internal/fabricengine#readEndedSet`
-- `plan:internal/fabricengine#finalizeEntered`
-- `plan:internal/fabricengine#replayWeft`
-- `plan:internal/fabricengine#replayBolt`
+- `internal/fabricengine#readEndedSet`
+- `internal/fabricengine#finalizeEntered`
+- `internal/fabricengine#replayWeft`
+- `internal/fabricengine#replayBolt`
 - `plan:internal/fabricengine#classifyEntry`
 - `plan:internal/fabricengine#SetOriginCallHookForTest`
 - `internal/testkit/boardkit#InstallReplay`
