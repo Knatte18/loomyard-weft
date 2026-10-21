@@ -1,17 +1,17 @@
 # Card 13 — remove-local-mode
 
 **Create:**
-- `plan:internal/fabricengine#ErrPairBusy` -> `var ErrPairBusy error`
-- `plan:internal/fabricengine#Topology.removePair` -> `func (t *Topology) removePair(l *lyxcwd.Location, slug string, force, remote, localMode bool) (res RemoveResult, err error)`
-- `plan:internal/fabricengine#Topology.RemoveLocal` -> `func (t *Topology) RemoveLocal(l *lyxcwd.Location, slug string, force bool) (res RemoveResult, err error)`
-- `plan:internal/fabricengine#Topology.SnapshotUncommitted` -> `func (t *Topology) SnapshotUncommitted(rec *Mutations, l *lyxcwd.Location, slug string) (tag string, paths []string, err error)`
-- `plan:internal/fabricengine#SnapshotTagged` -> `func SnapshotTagged(l *lyxcwd.Location, slug string) (bool, error)`
-- `plan:internal/fabricengine#housekeepHook` -> `var housekeepHook func(slug string)`
-- `plan:internal/fabricengine#SetHousekeepHookForTest` -> `func SetHousekeepHookForTest(hook func(slug string)) (restore func())`
-- `plan:internal/fabricengine#removeAfterLockHook` -> `var removeAfterLockHook func() error`
-- `plan:internal/fabricengine#SetRemoveAfterLockHookForTest` -> `func SetRemoveAfterLockHookForTest(hook func() error) (restore func())`
-- `plan:internal/fabricengine_test#TestRemoveLocal` -> `func TestRemoveLocal(t *testing.T)`
-- `plan:internal/fabricengine#commitRecordsPathsHeld` -> `func commitRecordsPathsHeld(rec *Mutations, weftPath, anchorRel string, relPaths []string, msg string, opts SyncOptions) (sha string, committed bool, err error)`
+- `internal/fabricengine#ErrPairBusy`
+- `internal/fabricengine#Topology.removePair`
+- `internal/fabricengine#Topology.RemoveLocal`
+- `internal/fabricengine#Topology.SnapshotUncommitted`
+- `internal/fabricengine#SnapshotTagged`
+- `internal/fabricengine#housekeepHook`
+- `internal/fabricengine#SetHousekeepHookForTest`
+- `internal/fabricengine#removeAfterLockHook`
+- `internal/fabricengine#SetRemoveAfterLockHookForTest`
+- `internal/fabricengine_test#TestRemoveLocal`
+- `internal/fabricengine#commitRecordsPathsHeld`
 
 **Edit:**
 - `internal/fabricengine#CommitRecordsPaths`

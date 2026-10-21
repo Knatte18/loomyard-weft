@@ -1,6 +1,6 @@
 {
   "runGuid": "0fa13f93fc850a69afe141168f80dcd9",
-  "planFingerprint": "ed1c4be07558ff55cca6aee8f30193299f760c15db30d8666f8a45336d2b620a",
+  "planFingerprint": "0998b8995d38bd6ce8aca7d4468b102bc96fd0b8ec5f20fa34fb1d2bf30da222",
   "planFileHashes": {
     "00-overview.md": "e153ea884172d07d958ca2ee1154c56d7fcde68a3d7613e582e8ee1bf3eee7e1",
     "01-failed-push-record.md": "d90ec71500ca4fd7e0b5c46d6ee119d2a38fb59fafe7b22e0468874805cd04db",
@@ -14,18 +14,18 @@
     "09-push-retry-and-record.md": "804a596065172c68e7636a43e882ac7cb8015f9b15c7f50157095ced59e1e343",
     "10-failed-push-printing.md": "1b28f5ca9daa95ef08a3d56c58880dcecefe4ac9b8eff0a9d7462938014dbcf5",
     "11-preflight-detached-push.md": "430ff5053a9f30ffc097599abf3d69f028e742ae4812151da82a6d8896a0b64d",
-    "12-gate-entry-exemption.md": "e1f8842790c5764f51b50d4e92e26948a14a32af94ee2ed21b718875c8183c87",
-    "13-remove-local-mode.md": "6051bc8b42c7eb389f640636e564eca1c37a1f69de5fdc1a4762d45d4682301c",
-    "14-pairteardown-local-mode.md": "d7dbfb21b30c4be2714dec0debc79ed49b9fff1b332965d12a5ad082b64c03f3",
+    "12-gate-entry-exemption.md": "5f837e230d1ef537c3112ac89b9e8556372f7a1702524e2eefd89cf885ce0bb4",
+    "13-remove-local-mode.md": "120f045b682e3f8b54245768732eca75c2a01c347712c97ac5b8b694b3815c39",
+    "14-pairteardown-local-mode.md": "e025705e284a0ac160f63cf27a9dad6ad1999553089ab1c0303edb583f6b6c37",
     "15-origin-reconcile-judge.md": "055c410a9e4ce54efff0cc8fe728067f8c289dd6a1fb7ea4ed34fed30519c709",
     "16-origin-reconcile-moves.md": "4bd951fc5d1aaa425c7bb2a17bd5c795351e2b3121290b8d86bbf3994f9cb0c8",
-    "17-origin-reconcile-ended.md": "92f8e46ba88835c20ee705fb3b6a076165e1640c32b1153951d526e903d0d75d",
+    "17-origin-reconcile-ended.md": "b05234f15ec19f653ca22a67fd65bacc702bd38d3aa199b6f2aa8d3fd428e980",
     "18-reconcile-seams.md": "3cec60b1d2502dff6e9caea9bd91ea5b65d573d317d8017945054053f270cd4e",
     "19-orch-start-reconcile.md": "07eead457f7e60bfd22bd4431f8eef3147c72197e74e3791f59b14bdf72432e0",
     "20-cleanup-reconcile.md": "35d6f74132b4767d3c0bca495ab97ea3a25bc25d38e587ea20a589d424d5df94",
     "21-batten-resume-reconcile.md": "713c47b599b7b97e3cc222cf180efaa546565b4938c54b20f84c04501d683a32",
     "22-landing-reconcile.md": "3282158a21d0487f1a6f75bbebd97520f8a71b111905f9b2c90f0303829a8e89",
-    "23-wake-reconcile.md": "b2e4d512a0b68d8053fa5cb5ebfe7af4d37a7103ae9865d063bdfc3a52a11581"
+    "23-wake-reconcile.md": "d2fd29ab4f9ddebdcac1aa3a70c5181f4af5358bb8fe8d1afbf4441c272ff92f"
   },
   "planOverviewFrameHash": "61b3bb7c32b3e3f99c93eac2e82d353a34e0a999db58136ad566eeafc7a1884b",
   "partition": [
@@ -749,7 +749,7 @@
       }
     }
   ],
-  "currentBatch": 12,
+  "currentBatch": 0,
   "masterStrand": "d26ba69a79fb575f7e87b499eb76f785",
   "masterSessionId": "b26519ba-ade7-44f6-9357-417c58fd04ba",
   "masterEngine": "claude",
@@ -839,16 +839,38 @@
         "13-remove-local-mode"
       ],
       "cardHashes": {
-        "12-gate-entry-exemption": "e1f8842790c5764f51b50d4e92e26948a14a32af94ee2ed21b718875c8183c87",
-        "13-remove-local-mode": "6051bc8b42c7eb389f640636e564eca1c37a1f69de5fdc1a4762d45d4682301c"
+        "12-gate-entry-exemption": "5f837e230d1ef537c3112ac89b9e8556372f7a1702524e2eefd89cf885ce0bb4",
+        "13-remove-local-mode": "120f045b682e3f8b54245768732eca75c2a01c347712c97ac5b8b694b3815c39"
       },
       "startSha": "3b4ac85c60423c5d903045aa67f120acbba8148e",
       "kind": "fork",
       "spawnedAt": "2026-10-21T07:29:32Z",
       "sessionId": "b26519ba-ade7-44f6-9357-417c58fd04ba",
       "engine": "claude",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "12-gate-entry-exemption",
+        "status": "done",
+        "head_sha": "de1440140593780afc4b352c8d96fca509b0e2a9",
+        "deviations": [
+          "internal/fabricengine/hubworkspace.go",
+          "internal/fabricengine/remove.go",
+          "internal/fabricengine/remove_localmode_integration_test.go",
+          "internal/fabricengine/snapshotuncommitted.go",
+          "internal/fabricengine/teardownlock.go",
+          "internal/pauserecord/hold.go"
+        ]
+      },
+      "cardShas": [
+        "de1440140593780afc4b352c8d96fca509b0e2a9"
+      ],
+      "forkTranscripts": [
+        "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-origin-reconcile/b26519ba-ade7-44f6-9357-417c58fd04ba/subagents/agent-a49f09b18791c8bab.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-origin-reconcile/b26519ba-ade7-44f6-9357-417c58fd04ba/subagents/agent-a49f09b18791c8bab.jsonl"
+      ]
     },
     "3": {
       "slug": "board-replay-seam",
@@ -1057,6 +1079,7 @@
     "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-origin-reconcile/b26519ba-ade7-44f6-9357-417c58fd04ba/subagents/agent-abfc6ae2ff8e2c10c.jsonl",
     "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-origin-reconcile/b26519ba-ade7-44f6-9357-417c58fd04ba/subagents/agent-a48044191f7155fb8.jsonl",
     "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-origin-reconcile/b26519ba-ade7-44f6-9357-417c58fd04ba/subagents/agent-a5b622c8183a50f12.jsonl",
-    "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-origin-reconcile/b26519ba-ade7-44f6-9357-417c58fd04ba/subagents/agent-a3cad4262ab70dc58.jsonl"
+    "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-origin-reconcile/b26519ba-ade7-44f6-9357-417c58fd04ba/subagents/agent-a3cad4262ab70dc58.jsonl",
+    "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-origin-reconcile/b26519ba-ade7-44f6-9357-417c58fd04ba/subagents/agent-a49f09b18791c8bab.jsonl"
   ]
 }

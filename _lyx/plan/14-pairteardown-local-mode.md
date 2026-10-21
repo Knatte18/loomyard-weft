@@ -9,8 +9,8 @@
 - `internal/pairteardown#TestTeardown_CallSequence`
 
 **Uses:**
-- `plan:internal/fabricengine#Topology.RemoveLocal`
-- `plan:internal/fabricengine#Topology.SnapshotUncommitted`
+- `internal/fabricengine#Topology.RemoveLocal`
+- `internal/fabricengine#Topology.SnapshotUncommitted`
 
 **Intent:** D6's teardown seam target: `internal/pairteardown` gains the local mode, which `run-process-ownership` reuses for its own non-owner removal.
 `Request` gains `Local` (remove through `Topology.RemoveLocal`: no origin step and no board write), `Snapshot` (D6's force case: keep the task and weft worktrees' uncommitted paths under a local snapshot tag before the removal) and `AfterSnapshot func() error` (run once the snapshot tag is written, which card 18 fills with the lift of the wake-written pair pause entry).

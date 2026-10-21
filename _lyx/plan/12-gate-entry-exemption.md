@@ -1,7 +1,7 @@
 # Card 12 — gate-entry-exemption
 
 **Create:**
-- `plan:internal/pauserecord#SetGateExempt` -> `func SetGateExempt(scope string, pausedAt time.Time) (restore func())`
+- `internal/pauserecord#SetGateExempt`
 
 **Edit:**
 - `internal/pauserecord#Gate`
