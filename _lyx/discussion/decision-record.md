@@ -132,6 +132,13 @@ The machine file holds at most the two gate keys, so a stale key is rare: a reti
   - validate-machine-covered-unit-refusal-wording (class consistency, severity MEDIUM, open in rounds 1)
 <!-- /lyx:carry-over Plan-Review -->
 
+<!-- lyx:carry-over Webster-Review -->
+- Webster-Review, round 1: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
+  Review: _lyx/reviews/webster/round-1-review.md; fixer report: _lyx/reviews/webster/round-1-fixer-report.md.
+  - pattern-durable-state-index-clause-dropped (class design, severity BLOCKING, open in rounds 1)
+  - pattern-push-both-sides-index-clause-dropped (class design, severity BLOCKING, open in rounds 1)
+<!-- /lyx:carry-over Webster-Review -->
+
 ## Acceptance criteria
 
 - With the hub file at `go_parallel: 4` and the machine file at `go_parallel: 8`, a worktree's gate load resolves 8 and a slot lease's `GOFLAGS` carries `-p=8`; with the machine file absent both carry 4.
