@@ -65,6 +65,12 @@ Rationale: after this change a base file lacking template names is the normal st
 - Tests elsewhere that read a reconciled or `--set` lenses file and expect every template name in it fail and need their expectations changed.
 - A hub that reconciles with an older binary after a newer one dropped its names gets them neither added nor frozen, since the older binary's reconcile re-adds them; the next newer reconcile drops them again.
 
+<!-- lyx:carry-over Darn-Review -->
+- Darn-Review, round 1: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
+  Review: _lyx/reviews/darn/round-1-review.md; fixer report: _lyx/reviews/darn/round-1-fixer-report.md.
+  - filled-keys-log-filter-untested (class design, severity MEDIUM, open in rounds 1)
+<!-- /lyx:carry-over Darn-Review -->
+
 ## Acceptance criteria
 
 - Reconcile drops a file name whose lens prose or fan list equals the template's and reports it in `dropped`; a block scalar and a quoted string with the same text count as equal.
