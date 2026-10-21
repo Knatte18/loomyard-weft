@@ -749,7 +749,7 @@
       }
     }
   ],
-  "currentBatch": 0,
+  "currentBatch": 3,
   "masterStrand": "d26ba69a79fb575f7e87b499eb76f785",
   "masterSessionId": "b26519ba-ade7-44f6-9357-417c58fd04ba",
   "masterEngine": "claude",
@@ -802,27 +802,25 @@
         "03-board-replay-seam": "8b89908b43dc002f1f3db4a28723ac70c889b3f0c5b0e72b2a81dcd3ee1fbc49"
       },
       "startSha": "150e8a0690c805694c375bc980eee17b19870616",
-      "kind": "fork",
-      "spawnedAt": "2026-10-21T05:56:22Z",
-      "sessionId": "b26519ba-ade7-44f6-9357-417c58fd04ba",
-      "engine": "claude",
-      "terminal": true,
-      "status": "failed",
-      "digest": {
-        "batch": "03-board-replay-seam",
-        "status": "failed",
-        "head_sha": "ecb1991af5fde4aa23d056cff72a59a73e36747a",
-        "reasons": [
-          "batch 03-board-replay-seam holds cards 3-board-replay-seam",
-          "create-not-done/3-board-replay-seam[blocking]: Create target \"plan:internal/boardengine#TestFabricReplay\" still does not resolve: looked up \"internal/boardengine#TestFabricReplay\", quarry answered not_found (the unit exists and the member is missing)"
-        ]
-      },
+      "kind": "recovery",
+      "spawnedAt": "2026-10-21T06:04:15Z",
+      "terminal": false,
+      "status": "",
       "forkTranscripts": [
         "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-origin-reconcile/b26519ba-ade7-44f6-9357-417c58fd04ba/subagents/agent-a18884e5b7b8232b1.jsonl"
       ],
-      "bracketTranscripts": [
-        "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-origin-reconcile/b26519ba-ade7-44f6-9357-417c58fd04ba/subagents/agent-a18884e5b7b8232b1.jsonl"
-      ]
+      "strandGuid": "2c51d741deff14c35215738797673fea",
+      "shuttleRunDir": "/home/AD.NORCERESEARCH.NO/hanf/Code/Knatte18/loomyard-LYXHUB/origin-reconcile/.lyx/shuttle/fb651a65f10b3458cfc06b832d278dbe",
+      "eventsPath": "/home/AD.NORCERESEARCH.NO/hanf/Code/Knatte18/loomyard-LYXHUB/origin-reconcile/.lyx/shuttle/fb651a65f10b3458cfc06b832d278dbe/events.jsonl",
+      "eventsOffset": 2579,
+      "recoveries": 1,
+      "recoverySessions": [
+        "6ad5986c-2f56-480e-aa72-556453b15374"
+      ],
+      "recoveryEngines": {
+        "6ad5986c-2f56-480e-aa72-556453b15374": "claude"
+      },
+      "recoveryStartSha": "ecb1991af5fde4aa23d056cff72a59a73e36747a"
     }
   },
   "seenForkTranscripts": [
