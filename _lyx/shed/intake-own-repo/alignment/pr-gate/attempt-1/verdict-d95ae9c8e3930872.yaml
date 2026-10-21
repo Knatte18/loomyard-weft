@@ -1,0 +1,11 @@
+verdict: escalate
+reason: >-
+  The diff matches the board entry except that it leaves the hub-wide orch rules' override sections in place, which the entry says are removed in the same change.
+  The Darn-Review carry-over orch-rules-override-left-in-place names this as an unrecorded parent correction:
+  the parent's deferral appears only in the decision record's Decisions section and the support log, never as an Added after Discussion entry, so only the parent can record or refuse it.
+  No peer run or parent commit conflicts; origin-reconcile overlaps text-only in two doc.go files, and this run (row 21) lands first.
+question: >-
+  The board entry for intake-own-repo says the hub-wide orch rules' override section ("Intake only on the operator's word" and "No parent reviews" in _board/_lyx/orch/rules.md) is removed in the same change, and the diff leaves it in place.
+  The decision record says you decided by message that the orch removes those sections with lyx orch rules after this task lands and deploys, but no Added after Discussion entry records it.
+  Do you record that deferral with lyx loom decision add, so the run passes PR-Gate unchanged, or refuse it and say how the removal lands with this change?
+superseded: []
