@@ -820,10 +820,10 @@ index c24d776b..6540e114 100644
  			if got := countLogLines(buf.String(), "WARN", held); got != tt.wantHeldWarns {
  				t.Errorf("WARN lines %q = %d; want %d\n%s", held, got, tt.wantHeldWarns, buf.String())
 diff --git a/internal/boardengine/doc.go b/internal/boardengine/doc.go
-index 4bdc26f3..0862d3fc 100644
+index f888fdd0..e58d83ec 100644
 --- a/internal/boardengine/doc.go
 +++ b/internal/boardengine/doc.go
-@@ -161,6 +161,15 @@
+@@ -171,6 +171,15 @@
  // apply to it — board's reads/writes to weft:main are a standalone concern, not routed through
  // fabric.Commit.
  //
@@ -12739,6 +12739,44 @@ index 5ecf2e43..aab1472b 100644
  	if !t.Run("a remote command gets the low-speed environment", func(t *testing.T) {
  		_, err := gitexec.Run([]string{"-c", "protocol.ext.allow=always", "ls-remote", "ext::" + printEnv}, repoDir)
  		var gitErr *gitexec.GitError
+diff --git a/internal/gitrepo/doc.go b/internal/gitrepo/doc.go
+index 78d67d5d..645df40e 100644
+--- a/internal/gitrepo/doc.go
++++ b/internal/gitrepo/doc.go
+@@ -314,8 +314,10 @@
+ //     per-lookup wrapper sees. Comparing against that snapshot, not only the
+ //     last stored fingerprint, lets a caller that lost a race to a
+ //     concurrent reindex still rerun. The read holds the shared lock, and
+-//     only the fingerprint check and reindex take the exclusive one, so
+-//     readers do not serialize. A genuinely absent object reindexes at most
++//     only the fingerprint check, the reindex and the index rebuild that
++//     follows it take the exclusive one, so readers do not serialize; the
++//     rebuild is forced there because go-git rebuilds its index
++//     unsynchronized on the next read. A genuinely absent object reindexes at most
+ //     once while the pack set is unchanged. The policy is reactive because
+ //     the trigger set for a proactive one cannot be enumerated reliably: the
+ //     probe observed `gc --auto` firing after ordinary commits and fetches
+diff --git a/internal/gitrepo/gogit.go b/internal/gitrepo/gogit.go
+index a367c4d3..cdc9a5fd 100644
+--- a/internal/gitrepo/gogit.go
++++ b/internal/gitrepo/gogit.go
+@@ -70,6 +70,8 @@ func readGoGit[T any](r *Repo, read func(repo *git.Repository) (T, error)) (T, e
+ 
+ // reindexIfPacksChanged reports whether the pack set differs from snapshot, the fingerprint a failed read began under, reindexing repo's storer first unless another caller already did for this pack set.
+ // It returns false, leaving the failed read's error to stand, for a storer that is not filesystem-backed and for a fingerprint it cannot read.
++// The index rebuild is forced under the exclusive lock because go-git rebuilds it unsynchronized on the next read.
++// Readers holding only the shared lock would otherwise race into a half-built index.
+ func (r *Repo) reindexIfPacksChanged(repo *git.Repository, snapshot string) bool {
+ 	storer, ok := repo.Storer.(*filesystem.Storage)
+ 	if !ok {
+@@ -85,6 +87,7 @@ func (r *Repo) reindexIfPacksChanged(repo *git.Repository, snapshot string) bool
+ 	}
+ 	if current != r.lastPackFingerprint {
+ 		storer.Reindex()
++		_ = storer.HasEncodedObject(plumbing.ZeroHash)
+ 		r.lastPackFingerprint = current
+ 		r.reindexCount++
+ 	}
 diff --git a/internal/gitrepo/push.go b/internal/gitrepo/push.go
 index c0de69c5..7cc0d58b 100644
 --- a/internal/gitrepo/push.go
@@ -15016,7 +15054,7 @@ index 9e3348f0..d318aae9 100644
  		},
  	}
 diff --git a/internal/orchcli/doc.go b/internal/orchcli/doc.go
-index 9fe4db91..1189d2d0 100644
+index 7203f59e..9680aa51 100644
 --- a/internal/orchcli/doc.go
 +++ b/internal/orchcli/doc.go
 @@ -57,6 +57,16 @@
@@ -16629,25 +16667,25 @@ index 095cb848..8b08021e 100644
 +	})
  }
 diff --git a/internal/reedcli/watchdog_integration_test.go b/internal/reedcli/watchdog_integration_test.go
-index d964ba93..1f584473 100644
+index b8b28dd5..575c72b2 100644
 --- a/internal/reedcli/watchdog_integration_test.go
 +++ b/internal/reedcli/watchdog_integration_test.go
-@@ -341,8 +341,13 @@ func TestWatchdogDaemon(t *testing.T) {
+@@ -340,8 +340,13 @@ func TestWatchdogDaemon(t *testing.T) {
  		noWatch := func(string, ...string) (<-chan fswatch.Event, func() error, error) {
- 			return nil, nil, errors.New("watch disabled for the shared discovery loop")
+ 			return make(chan fswatch.Event), func() error { return nil }, nil
  		}
-+		// This loop's idle window spans the tests' own wait budget:
++		// This loop's idle window is twice the tests' own wait budget, so it spans the Up call plus that wait:
 +		// DownThenUpDoesNotKillDaemon's down-then-up gap can pass the production window under a loaded package run,
 +		// and no subtest of this loop depends on its idle exit.
 +		timing := compressedWatchdogTiming()
-+		timing.IdleCycles = int(watchdogTestWait / watchdogTestCycle)
++		timing.IdleCycles = int(2 * watchdogTestWait / watchdogTestCycle)
  		go func() {
 -			loopDone <- runWatchdogLoop(loopCtx, h.Path, tmuxPath, eng1.ShellPath(), compressedWatchdogTiming(), noWatch, reedengine.ListSessions, nil)
 +			loopDone <- runWatchdogLoop(loopCtx, h.Path, tmuxPath, eng1.ShellPath(), timing, noWatch, reedengine.ListSessions, nil)
  		}()
  
  		// Both sessions must be discovered within a couple of discovery cycles.
-@@ -369,7 +374,7 @@ func TestWatchdogDaemon(t *testing.T) {
+@@ -368,7 +373,7 @@ func TestWatchdogDaemon(t *testing.T) {
  		return
  	}
  

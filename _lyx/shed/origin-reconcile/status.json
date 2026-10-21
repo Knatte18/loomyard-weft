@@ -1,12 +1,11 @@
 {
-  "current_producer": "Webster-Bouncer",
+  "current_producer": "Describe",
   "state": "running",
   "error": "",
-  "pending_by": "shed",
   "pause_requested": false,
   "activity": {
-    "now": "Webster-Bouncer",
-    "last": "Webster-Bouncer → awaiting",
+    "now": "Describe",
+    "last": "Webster-Bouncer → done",
     "wait": ""
   },
   "history": [
@@ -803,6 +802,13 @@
       "outcome": "awaiting",
       "output": "/home/AD.NORCERESEARCH.NO/hanf/Code/Knatte18/loomyard-LYXHUB/origin-reconcile/_lyx/reviews/webster/round-4-bouncer-ledger.md",
       "at": "2026-10-21T13:14:07Z"
+    },
+    {
+      "producer": "Webster-Bouncer",
+      "outcome": "done",
+      "output": "/home/AD.NORCERESEARCH.NO/hanf/Code/Knatte18/loomyard-LYXHUB/origin-reconcile/_lyx/reviews/webster/round-4-bouncer-ledger.md",
+      "at": "2026-10-21T13:14:58Z",
+      "by": "shed"
     }
   ],
   "product": {
