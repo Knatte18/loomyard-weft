@@ -1,0 +1,8 @@
+verdict: approve
+reason: >-
+  D7 now fails every run that discovers zero tests, whole or narrower, and meets the legitimately empty case by dropping
+  test-less targets before the run and reporting an empty scope as skipped, as round 1 asked; the rest of the design matches
+  the board entry's goal and operator decisions and keeps its exclusions. Overlaps with origin-reconcile (row 16) and
+  tuned-defaults-template (row 5) are text-only with no conflicting decision or PATTERN change; both land before this run.
+question: ""
+superseded: []
