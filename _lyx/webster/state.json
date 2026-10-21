@@ -749,7 +749,7 @@
       }
     }
   ],
-  "currentBatch": 0,
+  "currentBatch": 4,
   "masterStrand": "d26ba69a79fb575f7e87b499eb76f785",
   "masterSessionId": "b26519ba-ade7-44f6-9357-417c58fd04ba",
   "masterEngine": "claude",
@@ -835,6 +835,24 @@
         "6ad5986c-2f56-480e-aa72-556453b15374": "claude"
       },
       "recoveryStartSha": "ecb1991af5fde4aa23d056cff72a59a73e36747a"
+    },
+    "4": {
+      "slug": "records-replay",
+      "cards": [
+        "04-records-replay",
+        "05-bolt-pullfirst-replay"
+      ],
+      "cardHashes": {
+        "04-records-replay": "f6902cda5782f6f8397faaae554b0281b12cfd5c77001648403641bbf33a3a01",
+        "05-bolt-pullfirst-replay": "9155ed73b9b0338827d31a5c4e308eeb2f9963c400dfc35a339fdef0ac9643e8"
+      },
+      "startSha": "8bbeed263405786a66788b9f0c962a2dbcc987c0",
+      "kind": "fork",
+      "spawnedAt": "2026-10-21T06:09:43Z",
+      "sessionId": "b26519ba-ade7-44f6-9357-417c58fd04ba",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
     }
   },
   "seenForkTranscripts": [
