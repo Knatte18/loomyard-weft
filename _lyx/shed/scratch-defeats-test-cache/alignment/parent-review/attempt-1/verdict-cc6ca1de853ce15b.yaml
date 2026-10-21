@@ -1,0 +1,7 @@
+verdict: approve
+reason: >-
+  The design takes the board entry's first remedy, keeping .scratch churn out of the root listing the scans hash by making .scratch a fabric-wired link,
+  and covers the entry's goal with no work belonging to another entry.
+  Overlaps with origin-reconcile, shellguard-fixes and parent commit 0d86509 are text-only or compatible, with no design conflict.
+question: ""
+superseded: []
