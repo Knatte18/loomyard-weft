@@ -10,8 +10,8 @@
 
 **Uses:**
 - `plan:internal/fabricengine#SnapshotTagged`
-- `plan:internal/fabricengine#ClearPushFailure`
-- `plan:internal/fabricengine#ListFailedPushes`
+- `internal/fabricengine#ClearPushFailure`
+- `internal/fabricengine#ListFailedPushes`
 - `plan:internal/testkit/boardkit#InstallReplay`
 
 **Intent:** D6's ended entries inside the reconcile, and D10's reconcile-side record clearing.

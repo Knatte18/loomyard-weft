@@ -17,8 +17,8 @@
 - `internal/battencli#TestCleanup`
 
 **Uses:**
-- `plan:internal/fabricengine#ListFailedPushes`
-- `plan:internal/fabricengine#FailedPushWayForward`
+- `internal/fabricengine#ListFailedPushes`
+- `internal/fabricengine#FailedPushWayForward`
 
 **Intent:** D10's visibility: `lyx fabric status`, `lyx tender status` and `lyx cleanup` print the outstanding failed-push records with the way forward for their class, and `lyx cleanup --apply`'s push result stops reading a spawned push as landed.
 `FailedPushFields` renders `ListFailedPushes` as the envelope rows every verb prints: repo side, branch, class, last error line, first and last seen, count, `notified` and `way_forward` from `FailedPushWayForward`; an empty list is `[]`.

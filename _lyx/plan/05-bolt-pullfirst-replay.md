@@ -9,7 +9,7 @@
 - `cmd/lyx#TestStencilSeeding_HubScenario`
 
 **Uses:**
-- `plan:internal/fabricengine#recordsConflictWayForward`
+- `internal/fabricengine#recordsConflictWayForward`
 - `plan:internal/fabricengine#replayBolt`
 - `plan:internal/fabricengine#readEndedSet`
 - `plan:internal/testkit/boardkit#InstallReplay`

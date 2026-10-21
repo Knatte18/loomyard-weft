@@ -23,7 +23,7 @@
 **Uses:**
 - `plan:internal/fabricengine#setAsideTag`
 - `plan:internal/fabricengine#KindTagCreated`
-- `plan:internal/fabricengine#ClearPushFailure`
+- `internal/fabricengine#ClearPushFailure`
 - `internal/fabricengine#regenerateHubWorkspace`
 - `internal/fabricengine#WeftWriteLockPathForTest`
 

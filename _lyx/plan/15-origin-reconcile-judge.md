@@ -44,9 +44,9 @@
 - `PATTERN.md`
 
 **Uses:**
-- `plan:internal/fabricengine#rewoundWayForward`
-- `plan:internal/fabricengine#codeDivergedWayForward`
-- `plan:internal/fabricengine#recordsConflictWayForward`
+- `internal/fabricengine#rewoundWayForward`
+- `internal/fabricengine#codeDivergedWayForward`
+- `internal/fabricengine#recordsConflictWayForward`
 - `plan:internal/fabricengine#trackingReflog`
 - `plan:internal/fabricengine#classifyRewrite`
 - `internal/fabricengine#ReadOriginFor`

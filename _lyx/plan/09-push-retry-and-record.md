@@ -30,7 +30,7 @@
 - `internal/fabricengine_test#TestBolt_PushRecorded_DropsSeedCommitsOnRebaseConflict`
 - `internal/fabricengine#PushWarpAt`
 - `internal/fabricengine#PushWarpRebaseFreeAt`
-- `plan:internal/fabricengine#FailedPushWayForward`
+- `internal/fabricengine#FailedPushWayForward`
 - `internal/orchcli#writeHubRules`
 - `internal/orchcli#TestWriteHubRules`
 - `internal/fabriccli#reconcileFailureWayForward`
@@ -51,8 +51,8 @@
 - `internal/fabricengine#Bolt.dropSeedCommitsAfterConflict`
 
 **Uses:**
-- `plan:internal/fabricengine#RecordPushFailure`
-- `plan:internal/fabricengine#ClearPushFailure`
+- `internal/fabricengine#RecordPushFailure`
+- `internal/fabricengine#ClearPushFailure`
 - `plan:internal/fabricengine#replayWeft`
 - `plan:internal/fabricengine#replayBolt`
 - `plan:internal/fabricengine#readEndedSet`
