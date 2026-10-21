@@ -231,6 +231,12 @@ Rationale: the chair's `done` with no forks in issue #756 was a stalled round, n
   - d3-goto-after-halt-grants-budget (class design, severity MEDIUM, open in rounds 4)
 <!-- /lyx:carry-over Discussion-Review -->
 
+<!-- lyx:carry-over Plan-Review -->
+- Plan-Review, round 3: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
+  Review: _lyx/reviews/plan/round-3-review.md; fixer report: _lyx/reviews/plan/round-3-fixer-report.md.
+  - new-keys-break-exact-set-pins-and-docs (class design, severity BLOCKING, open in rounds 1, 2, 3)
+<!-- /lyx:carry-over Plan-Review -->
+
 ## Acceptance criteria
 
 - A goto into a segment with Stucks in its current episode leaves the count where it stood, for Shed's block and for the Bouncer's `Bounces` seam alike; a reroute still ends its target segment's episode.
