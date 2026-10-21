@@ -1,6 +1,6 @@
 # [.NET 002] Test tiers: every test run through lyx gate test, numbered tiers in hub config, computed scope
 
-`test-tiers` · Task · enhancement, gate, config, shed, dotnet · running · Merge-In
+`test-tiers` · Task · enhancement, gate, config, shed, dotnet · running · Merge-Bouncer
 
 Every test run in a hub goes through `lyx gate test`, against numbered test tiers the hub declares in config, with the scope computed by lyx.
 
