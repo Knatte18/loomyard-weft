@@ -4,9 +4,9 @@
 - `pattern/PATTERN-gate-slot.md`
 - `pattern/PATTERN-test-tiers.md`
 - `pattern/PATTERN-recipe-setting-lookup.md`
-- `plan:cmd/testtiming#TestTakeGateSlot` -> `func TestTakeGateSlot(t *testing.T)`
-- `plan:cmd/testtiming#withGateSlot` -> `func withGateSlot(cwd, site string, mode func(env []string, parallel int) error) error`
-- `plan:internal/planglyph#goListLoader.loadEnv` -> `func (l goListLoader) loadEnv(lease *gateslot.Lease) ([]string, error)`
+- `cmd/testtiming#TestTakeGateSlot`
+- `cmd/testtiming#withGateSlot`
+- `internal/planglyph#goListLoader.loadEnv`
 
 **Edit:**
 - `internal/gateslot#Config`
