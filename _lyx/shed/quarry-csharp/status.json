@@ -1,13 +1,13 @@
 {
   "current_producer": "Discussion-Write",
-  "state": "running",
-  "error": "",
+  "state": "failed",
+  "error": "shedadapters: Discussion-Write (seats): seat run: seatengine: strand \"ly:quarry-csharp:discussion\" started as \"ly:quarry-csharp:discussion-2\", because another strand holds that name; way forward: run \"lyx reed remove --name ly:quarry-csharp:discussion\", then re-step the row",
   "pending_by": "shed",
   "pause_requested": false,
   "activity": {
     "now": "Discussion-Write",
     "last": "Loom-Preflight → done",
-    "wait": ""
+    "wait": "shedadapters: Discussion-Write (seats): seat run: seatengine: strand \"ly:quarry-csharp:discussion\" started as \"ly:quarry-csharp:discussion-2\", because another strand holds that name; way forward: run \"lyx reed remove --name ly:quarry-csharp:discussion\", then re-step the row"
   },
   "history": [
     {
