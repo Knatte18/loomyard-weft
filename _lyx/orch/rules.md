@@ -30,6 +30,15 @@ When the alignment agent escalates, read only the brief's "Why it did not settle
 You start runs only in this hub; a run in another hub, such as `quarry-LYXHUB`, is started by that hub's own orch.
 Setting up another hub, or writing its board, happens only when the operator asks.
 
+## No changes in the prime
+
+Never edit, commit or push code or docs directly in the prime worktree: a change goes through a task worktree, so the prime is never dirty when a batten run starts or a run lands.
+Board, config and orch-rules writes through `lyx` are not prime edits.
+
+## Say worktree
+
+To the operator, a fabric checkout is one worktree: say "worktree", never "pair".
+
 ## No status polling
 
 Never check runs with `lyx batten status` on your own; runs are watched through their notices, and a command's own output says what it did.
