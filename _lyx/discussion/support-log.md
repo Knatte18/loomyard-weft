@@ -75,7 +75,7 @@ _No rounds yet._
 
 - Q1 (auto-pick): Fix in fabric wiring, the scan kit, or the agents' scratch path? Picked fabric wiring with a `.scratch` link (D1); it is the only option that leaves the agents' path and the cache's correctness alone.
 - Q2 (auto-pick): Link target? Picked `scratch` under the weft-side `.lyx`: never tracked, already excluded in the weft, torn down with the pair.
-- Q3 (auto-pick): Migrate existing real `.scratch` directories? Picked rename when the target is absent, else leave and report with the way forward (D1, D2); the prime's cited scratch content must survive, and nothing may be removed.
+- Q3 (auto-pick): Migrate existing real `.scratch` directories? Picked rename when the target is absent and git tracks nothing under `.scratch`, else leave and report with the way forward (D1, D2); the prime's cited scratch content must survive, and nothing may be removed.
 - Q8 (auto-pick, from the lens review): Which worktrees does reconcile's scratch step reach? Picked managed pairs with an existing weft root, from `repairPairWiring` (D3), so the unmanaged no-touch contract holds and no weft debris is created.
 - Q4 (auto-pick): Should a scratch problem fail wiring or refuse a run? Picked no (D2, D3); scratch is convenience and must never block a task.
 - Q5 (auto-pick): Automatic migration trigger for existing pairs? Picked none beyond `lyx fabric reconcile` and re-wiring; adding one is a requirement nobody asked for.
