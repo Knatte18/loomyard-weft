@@ -18,6 +18,10 @@
 - `internal/websterengine#TestRenderBatchGate`
 - `internal/websterengine#TestRenameBoundary_BatchesCheckAndGateTheirOwnTree`
 - `internal/websterengine_test#testCardGates`
+- `internal/websterengine_test#newBeginFixture`
+- `internal/websterengine_test#newRecoverFixtureOver`
+- `internal/websterengine_test#newRunFixtureOver`
+- `internal/webstercli#newVerbsFixture`
 - `internal/websterengine_test#forkTemplateMarkerValues`
 - `internal/websterengine_test#TestTemplates_FillRequiresEveryRequiredMarker`
 - `internal/websterengine_test#renderForkWithPack`
@@ -61,6 +65,9 @@
 - `internal/websterengine#guardSourceTwo`
 - `internal/websterengine#misplacedGuardSrc`
 - `internal/websterengine#TestScanGuardTests`
+- `internal/websterengine_test#guardFixture`
+- `internal/websterengine_test#guardSourceMarked`
+- `internal/websterengine_test#guardSourceMisplaced`
 - `internal/impactset#MaxCommandLength`
 - `contracts/stencils#WebsterFragmentGuardScanError`
 - `contracts/stencils#WebsterFragmentGuardTooLong`
@@ -84,13 +91,15 @@ the slot-busy section keeps the exit-75 rule for a call made without `--wait`;
 the raw-run paragraph names `lyx gate test` with a gate's tier list and a scope form as the one test route, never a raw test command;
 the paragraph after the self-fix test that read the plan's verify command now says the `final` gate runs at the plan level and catches what the card gates do not.
 `webster-prefix-recovery.md` and `webster-template-master.md` stop naming `## verify:` as a section to read, and the master template says the `final` gate runs at HEAD after its turn;
-`webster-body-verify-fix.md` gains a required `fix_gate` marker, filled by `RenderVerifyFixPrompt` with `GateCall("round")`, the `round` list over the computed scope, which `Run` renders from the told geometry's `GateConfig` (card 13); the fixer runs that call before it reports, in place of `lyx gate test --tags integration <the findings' packages>`.
+`webster-body-verify-fix.md` gains a required `fix_gate` marker, filled by `RenderVerifyFixPrompt` with `GateCall("round")`, the `round` list over the computed scope, which `Run` renders from the told geometry's `GateConfig` (card 12); the fixer runs that call before it reports, in place of `lyx gate test --tags integration <the findings' packages>`.
 `darn-template-write.md`'s test step names `lyx gate test --wait` with its computed scope.
 `loom-plan-spec.md`'s card-gate and batch-gate paragraphs describe the rendered calls.
 
-Tests: `TestCardGateCommand` keeps its rows recast: a card's gate call and lints, a nested-module card and a delete-only card each rendering the one `--card` call, since the gate computes their packages; a dangling `card` list refusing.
+Tests: `TestCardGateCommand` is cut to two rows: a card's gate call followed by its two lints, and a dangling `card` list refusing; its nested-module and delete-only rows go, since every card now renders the same `--card` call and `TestCardPackages` (card 6) covers their packages.
 `TestRenderCardGates_OneBulletPerCardWithAStepSubBulletEach`, `TestRenderBatchGate` and `TestRenameBoundary_BatchesCheckAndGateTheirOwnTree` assert the rendered calls; `TestScanGuardTests` and its fixtures go with the scan.
 `TestBeginBatch_PromptFile` gains a row where a dangling `batch` list refuses begin-batch with no prompt file written and no state recorded.
+It drops its guard rows (the marked-test row, the two misplaced-marker rows and the over-the-command-limit row that names `impactset.MaxCommandLength`) and recasts its remaining rows that expect the per-package `lyx gate test ./internal/alpha` step as the rendered `--card` call; `TestRecoverSpawnOrAttach` drops its row "a marked guard test renders the same guard step the begin prompt carries".
+`newBeginFixture` and `newRecoverFixtureOver`, which `newRecoverFixture` delegates to, set the `Gate` field of `BeginDeps` and `RecoverDeps` to a `gateslot.Config` declaring `tier0` and the `card` and `batch` lists, `newRunFixtureOver` tells `Geom.GateConfig` a reader over a config declaring `tier0` and a `round` list, and `newVerbsFixture` seeds `<hub>/_board/_lyx/config/gate.yaml` the same way, since `hubgeom.WebsterGeometry`'s `GateConfig` (card 12) reads it; a zero config is refused by `TierList`, so every test built on these fixtures must reach the rendered gate calls instead of that refusal.
 The prompt tests drop the `plan_verify` marker and assert the rendered gate calls and the `card-verify` step, `forkTemplateMarkerValues` stops filling `plan_verify`, and `TestTemplates_FillRequiresEveryRequiredMarker` stops requiring it;
 `.gitattributes` drops the three fragment stencils' lines; `TestStencils_TopLevelMarkers` drops the three fragments and the `plan_verify` marker and gains the verify-fix stencil's `fix_gate`; `renderVerifyFix` passes a rendered call and the prompt test asserts it.
 

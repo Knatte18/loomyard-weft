@@ -55,7 +55,7 @@ A gate call inside such a line inherits the slot (card 3), so the slot-held line
 
 `rerunCardVerifies` keeps its record-batch contract and failure lines and delegates to a `cardverify.Runner` with output discarded; `RecordDeps` carries what the runner needs, its `VerifyTimeout` kept.
 `lyx gate card-verify <card id>` reads the plan through `planparser`, refuses an unknown id naming the plan's ids, and refuses a worktree with no plan naming the way forward to run it from the task worktree whose `_lyx/plan` holds the card; it runs the card's line through the same runner with output passed through to the terminal, exits with that line's exit code, and passes a card with no `**Verify:**` with a message saying so; outside every hub it runs unslotted.
-It sits under `lyx gate`, since the fork-mode hook refuses every `lyx webster` command from a fork, with the operator audience annotation.
+It sits under `lyx gate`, since the fork-mode hook refuses every `lyx webster` command from a fork, with the role audience annotation (`clihelp.AudienceRole`), since the implementer fork's prompt names it.
 Bound: the verb runs only lines the plan's card already holds, which the plan gate checked (card 18); it adds no slot rule, since each line is either a gate call or one held slot.
 
 `cmd/lyx`'s `verifyRunAllowed` moves its entry from `internal/websterengine/cardverify.go` to the new runner file with the same reason.
@@ -65,7 +65,7 @@ Tests: the new `TestRunner` sits in an `integration`-tagged file, since it spawn
 It covers, against real shell lines and a temp pool: a passing and a non-zero line, a missing worktree, a timed-out slot-held line, a slot-held line whose GOFLAGS carry the pool's `Limits().Tier0Parallel` through `HolderEnv`, `stopAtFirst` stopping at the first failing card, and the record-batch failure line shape; it replaces the five webster `TestRerunCardVerifies_*` tests, which move here with their helper.
 One subtest puts a stub `lyx` first on `PATH` with `t.Setenv`, so it is not parallel and names that process-global state: the stub sleeps past the runner's short timeout and exits 0, and the gate-call line passes with no slot held, so no runner timeout bounds a gate call; the gate's own `--wait` row past the keep-cache-warm cap (card 8) covers the busy-hub half of the criterion.
 `TestIsGateCall` is untagged and covers the accepted call and a call without `--wait`, with `&&`, with a pipe and with `$(`.
-The new `TestGateCardVerify` sits in gatecli's `integration`-tagged file, since its lines spawn a shell: an unknown id and a missing plan refused with their ways forward, a card with no `**Verify:**` passing, a line's output reaching the verb's output with its exit code, and a run in a standalone worktree outside every hub taking no slot.
+The new `TestGateCardVerify` sits in gatecli's `integration`-tagged file, since its lines spawn a shell: an unknown id and a missing plan refused with their ways forward, a card with no `**Verify:**` passing, a line's output reaching the verb's output with its exit code, a run in a standalone worktree outside every hub taking no slot, and the verb's audience annotation being `clihelp.AudienceRole`.
 `TestLeaseEnv` gains the `HolderEnv` rows, the one place the flag rule is pinned: `-trimpath` and `-p=<n>` for a tier0 parallel above 0, `-trimpath` alone for 0, and the inheritance variable for a non-nil lease.
 `TestTemplateConfigAndLimits` asserts `Tier0Parallel` for the template (0) and for a config declaring `tier0` with a machine override, the one place that mapping is pinned.
 
