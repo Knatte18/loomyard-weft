@@ -1,10 +1,10 @@
 # Card 16 — origin-reconcile-moves
 
 **Create:**
-- `plan:internal/fabricengine#ffWorktree` -> `func ffWorktree(rec *Mutations, worktree, originHead string) (state BranchState, dirty []string, err error)`
-- `plan:internal/fabricengine#reconcileRecordsBranch` -> `func reconcileRecordsBranch(rec *Mutations, l *lyxcwd.Location, worktree, originHead string, ended EndedSet, bolt bool) (BranchOutcome, error)`
-- `plan:internal/fabricengine#tryPrimeLock` -> `func tryPrimeLock(l *lyxcwd.Location) (release func(), held bool, err error)`
-- `plan:internal/fabricengine_test#TestReconcileOrigin_Moves` -> `func TestReconcileOrigin_Moves(t *testing.T)`
+- `internal/fabricengine#ffWorktree`
+- `internal/fabricengine#reconcileRecordsBranch`
+- `internal/fabricengine#tryPrimeLock`
+- `internal/fabricengine_test#TestReconcileOrigin_Moves`
 
 **Edit:**
 - `internal/fabricengine#ReconcileOrigin`
