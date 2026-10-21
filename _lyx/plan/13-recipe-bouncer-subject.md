@@ -20,7 +20,7 @@
 - `contracts/specs/shed-recipe-spec.md`
 
 **Create:**
-- `plan:internal/shedrecipe#TestBouncerEntry_Subject` -> `func TestBouncerEntry_Subject(t *testing.T)`
+- `internal/shedrecipe#TestBouncerEntry_Subject`
 
 **Uses:**
 - `internal/shedadapters#Subject`
