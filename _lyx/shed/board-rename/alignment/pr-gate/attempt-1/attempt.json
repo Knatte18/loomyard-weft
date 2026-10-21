@@ -1,0 +1,16 @@
+{
+  "number": 1,
+  "key": "pr-792-2aa214579d2f4cc179127f7a99542519edd17f9a",
+  "point": "pr-gate",
+  "token": "ba17ad8fcb7a6936",
+  "spawned_at": "2026-10-21T14:09:06.725136176+02:00",
+  "deadline": "2026-10-21T14:29:06.725136176+02:00",
+  "strand_guid": "09561eafe47cf4050e7d84e7c0186e5a",
+  "snapshot": "4952e219be324f424ecbd317427c5085124d19051b460b44ee77dd901056d304",
+  "pr_number": 792,
+  "head_sha": "2aa214579d2f4cc179127f7a99542519edd17f9a",
+  "closed": true,
+  "closed_reason": "the alignment verdict was applied",
+  "applied": "approve",
+  "notified": false
+}

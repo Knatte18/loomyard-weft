@@ -1,0 +1,8 @@
+verdict: approve
+reason: >-
+  The diff of PR 792 builds every point of the board-rename entry and nothing outside it:
+  lyx board rename in one board write keeping every field, rewriting other entries' depends_on, refusing a run-held source and an existing, empty or too-long target, and reporting body and brief mentions.
+  The one open risk is the entry's own out-of-scope line and names no parent correction.
+  The overlaps with intake-own-repo (unknown order, row 0) and origin-reconcile (this run lands first) are text-only.
+question: ""
+superseded: []
