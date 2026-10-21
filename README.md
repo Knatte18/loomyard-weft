@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-21 13:28 UTC; every age below is as of then.
+Rendered 2026-10-21 13:30 UTC; every age below is as of then.
 
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
@@ -18,8 +18,8 @@ Held by a run; its scope is locked until the run ends.
 | # | Task | Slug | Recipe | At | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | 1 | **[.NET 002] Test tiers: every test run through lyx gate test, numbered tiers in hub config, computed scope**<br>• All testing goes through the gate slot pool against hub-declared tiers tier0..N, with scope computed from the diff; replaces the Go-only gate | [`test-tiers`](design-test-tiers.md) | loom | Plan-Burler-Fix | 4d | 2h | gate, config, shed, dotnet |
-| 2 | **The operator tuned loom defaults move into the lyx template, so every new hub gets them**<br>• New hubs seed neutral loom defaults; the loomyard hub tuning is the operator default and belongs in the template<br>• `profile: light` | [`tuned-defaults-template`](design-tuned-defaults-template.md) | loom | Webster | 2h | 1h | config, loom |
-| 3 | **Shipped review rubrics name loomyard's own PATTERN files, so reviewers in other hubs search for files that do not exist**<br>• `profile: light`<br>• `darn: review_hard_max_bounces 2`<br>• `darn: review_max_bounces 1` | [`stencils-repo-neutral`](design-stencils-repo-neutral.md) | darn | PR-Align | 22m | 22m | stencil, loom, burler |
+| 2 | **The operator tuned loom defaults move into the lyx template, so every new hub gets them**<br>• New hubs seed neutral loom defaults; the loomyard hub tuning is the operator default and belongs in the template<br>• `profile: light` | [`tuned-defaults-template`](design-tuned-defaults-template.md) | loom | Webster | 2h | 2h | config, loom |
+| 3 | **Shipped review rubrics name loomyard's own PATTERN files, so reviewers in other hubs search for files that do not exist**<br>• `profile: light`<br>• `darn: review_hard_max_bounces 2`<br>• `darn: review_max_bounces 1` | [`stencils-repo-neutral`](design-stencils-repo-neutral.md) | darn | PR-Gate | 24m | 23m | stencil, loom, burler |
 
 ### Ready
 
@@ -99,7 +99,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | --- | --- | --- | --- | --- | --- |
 | 3 | **Opening an agent into reed: engine bypass mode by default, explicit engine, model and effort, and reed add points to shuttle open**<br>• reed add help shows a broken claude example (%SID% never substituted) and shuttle open keeps the interactive permission default; every agent in reed needs bypass, per engine (claude bypassPermissions, Codex --yolo) | [`reed-agent-launch-bypass`](design-reed-agent-launch-bypass.md) | 1d | 1d | reed, shuttle, claude, codex |
 | 4 | **Diff-scoped verify gate runs an unrelated package whose test depends on host inotify limits** | [`verify-diff-scope-unrelated-pkg`](design-verify-diff-scope-unrelated-pkg.md) | 1h | 1h | gate |
-| 5 | **A review perch waits on a reviewer's background shells, and keeps waiting after they are stopped** | [`review-waits-background-shells`](design-review-waits-background-shells.md) | 22m | 22m | burler, shuttle |
+| 5 | **A review perch waits on a reviewer's background shells, and keeps waiting after they are stopped** | [`review-waits-background-shells`](design-review-waits-background-shells.md) | 24m | 24m | burler, shuttle |
 
 ### Enhancements
 
