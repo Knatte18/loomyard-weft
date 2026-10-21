@@ -112,7 +112,7 @@
       }
     }
   ],
-  "currentBatch": 0,
+  "currentBatch": 2,
   "masterStrand": "674ef7c6cd3d1f70f2f8285e851bec2e",
   "masterSessionId": "e125ed41-5d60-46fd-8566-0a4cfda62dc0",
   "masterEngine": "claude",
@@ -150,6 +150,26 @@
       "bracketTranscripts": [
         "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-scratch-defeats-test-cache/e125ed41-5d60-46fd-8566-0a4cfda62dc0/subagents/agent-a108fa29556d3918d.jsonl"
       ]
+    },
+    "2": {
+      "slug": "reconcile-converges-scratch",
+      "cards": [
+        "02-reconcile-converges-scratch",
+        "03-remove-unlinks-scratch",
+        "04-cleanup-follows-scratch-link"
+      ],
+      "cardHashes": {
+        "02-reconcile-converges-scratch": "70cf712da631026730e0428f741e07c09772cfcb7fb078703d72a09f0d15b3a1",
+        "03-remove-unlinks-scratch": "b7f6f614a6c9e90b7e05f2640ee8e00062d68200e4d803e601148a8ee6dcf6e9",
+        "04-cleanup-follows-scratch-link": "9bbdc01a194db35ecb7cda74a41aae55b49b175d8329df68f8f5eaa3ce5865a6"
+      },
+      "startSha": "7dbb0446dc838daaaac6ffce6d5fcb3533342f03",
+      "kind": "fork",
+      "spawnedAt": "2026-10-21T08:05:12Z",
+      "sessionId": "e125ed41-5d60-46fd-8566-0a4cfda62dc0",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
     }
   },
   "seenForkTranscripts": [
