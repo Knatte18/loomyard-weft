@@ -1,0 +1,4 @@
+verdict: approve
+reason: The diff of pull request 790 at 0efc0c58 implements the board goal through decisions D1-D9 with no change outside the recorded scope, and the only PATTERN edit is the declared PATTERN-friction-capture change. The overlaps with origin-reconcile and scratch-defeats-test-cache are text-only, and this run (row 21) lands first.
+question: ""
+superseded: []
