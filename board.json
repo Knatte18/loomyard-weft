@@ -829,23 +829,6 @@
       "revised": "2026-10-18T14:57:29Z"
     },
     {
-      "id": 662,
-      "slug": "orch-rules-move",
-      "title": "Move the orch rules into the hub-wide rules file",
-      "kind": "note",
-      "labels": [
-        "enhancement",
-        "orch"
-      ],
-      "issues": [],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "Operator step after the orch-rules-files deploy: run lyx orch rules from the prime",
-      "body": "This note is an operator step, run from the hub's prime worktree after the orch-rules-files task lands and the deploy has put `lyx orch rules` in production.\nIt is never promoted to a run: a task pair's call to `lyx orch rules` is refused by the orch's prime-only refusal.\n\nFrom the prime, draft the hub-wide rules file in `.scratch/` with exactly the text between the two fence lines below, then run `lyx orch rules --from \u003cdraft\u003e`.\n\n```markdown\n### Production\n\nAn exception to `CLAUDE.md`'s Production rule: after your own pushed fix, on a clean `main`, you run `update-plugins.sh` yourself and say so in your report.\n\n### Watching runs\n\nThe operator watches each run in its own terminal window, never in VS Code.\nVS Code opens only when the operator asks for it, through `lyx ide` or `batten.yaml`'s `open_ide`.\n```\n",
-      "created": "2026-10-18T15:40:21Z",
-      "revised": "2026-10-18T15:40:21Z"
-    },
-    {
       "id": 667,
       "slug": "tsa-quarry-audit",
       "title": "Audit: ideas from tree-sitter-analyzer for quarry and its use in lyx",
