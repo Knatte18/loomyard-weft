@@ -665,7 +665,7 @@
       }
     }
   ],
-  "currentBatch": 0,
+  "currentBatch": 14,
   "masterStrand": "02448d531431254d06731746ba0d5ba5",
   "masterSessionId": "3545de48-9210-4ab3-bc22-f514f7cbdd43",
   "masterEngine": "claude",
@@ -788,6 +788,22 @@
       "bracketTranscripts": [
         "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-run-reentry/3545de48-9210-4ab3-bc22-f514f7cbdd43/subagents/agent-aed4ecb9899b1d80d.jsonl"
       ]
+    },
+    "14": {
+      "slug": "loomshed-rework-records",
+      "cards": [
+        "14-loomshed-rework-records"
+      ],
+      "cardHashes": {
+        "14-loomshed-rework-records": "672337c93e16744ce7fe2652c235e10d2ff44c3d859bbc705162fc6bab1dc068"
+      },
+      "startSha": "e1e8f37e22d377ff6c1a0b393bc87ef6b43148c7",
+      "kind": "fork",
+      "spawnedAt": "2026-10-21T07:39:40Z",
+      "sessionId": "3545de48-9210-4ab3-bc22-f514f7cbdd43",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
     },
     "5": {
       "slug": "shedverbs-pause-label",
