@@ -31,7 +31,7 @@
 - `internal/webstercli#TestVerifyVerb_NoVerifySectionExitsZeroWithWarning`
 
 **Uses:**
-- `plan:internal/testkit/lyxbin#PutFirstOnPath`
+- `internal/testkit/lyxbin#PutFirstOnPath`
 
 **Intent:**
 Webster's plan-level verify gate and `lyx webster verify` run the hub's `final` gate over the whole tree (D8), never the plan's `## verify:` section (D9).
