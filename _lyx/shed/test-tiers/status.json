@@ -1,11 +1,11 @@
 {
-  "current_producer": "Discussion-Write",
+  "current_producer": "Discussion-Bouncer",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Discussion-Write",
-    "last": "Loom-Preflight → done",
+    "now": "Discussion-Bouncer",
+    "last": "Discussion-Write → done",
     "wait": ""
   },
   "history": [
@@ -20,6 +20,57 @@
       "outcome": "done",
       "output": "",
       "at": "2026-10-21T11:21:26Z"
+    },
+    {
+      "producer": "Discussion-Write",
+      "outcome": "done",
+      "output": "/home/AD.NORCERESEARCH.NO/hanf/Code/Knatte18/loomyard-LYXHUB/test-tiers/_lyx/discussion/decision-record.md",
+      "at": "2026-10-21T11:42:26Z",
+      "gate_attempts": 1,
+      "gate_spans": [
+        {
+          "gate": "discussion",
+          "kind": "gate",
+          "start": "2026-10-21T11:37:40.110865309Z",
+          "end": "2026-10-21T11:37:40.111337217Z"
+        },
+        {
+          "gate": "discussion",
+          "kind": "gate",
+          "start": "2026-10-21T11:41:29.294968063Z",
+          "end": "2026-10-21T11:41:29.29509587Z"
+        },
+        {
+          "gate": "parent-review",
+          "kind": "gate",
+          "start": "2026-10-21T11:37:40.255549953Z",
+          "end": "2026-10-21T11:38:41.82842786Z"
+        },
+        {
+          "gate": "parent-review",
+          "kind": "held",
+          "start": "2026-10-21T11:38:41.906441585Z",
+          "end": "2026-10-21T11:40:44.318092343Z"
+        },
+        {
+          "gate": "parent-review",
+          "kind": "rework",
+          "start": "2026-10-21T11:40:44.793163241Z",
+          "end": "2026-10-21T11:41:29.090889439Z"
+        },
+        {
+          "gate": "parent-review",
+          "kind": "gate",
+          "start": "2026-10-21T11:41:29.88283432Z",
+          "end": "2026-10-21T11:42:23.457628046Z"
+        },
+        {
+          "gate": "parent-review",
+          "kind": "held",
+          "start": "2026-10-21T11:42:23.50539123Z",
+          "end": "2026-10-21T11:42:25.638239175Z"
+        }
+      ]
     }
   ],
   "product": {

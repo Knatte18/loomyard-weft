@@ -1,0 +1,13 @@
+verdict: escalate
+reason: >-
+  The design matches the board entry's goal and operator decisions except D7, which departs from the entry's unconditional
+  "zero discovered tests is a failure" by letting narrower runs that discover zero pass with a warning; the record states the
+  departure and says no operator answered, and the board does not weigh the case behind it (a card or computed scope landing on a
+  test-less package), so the choice is the operator's. Overlaps with origin-reconcile (lands first) and tuned-defaults-template
+  (tie) are text-only and named in the report.
+question: >-
+  Board entry test-tiers says zero discovered tests is a failure; decision D7 in the test-tiers decision record keeps that only for
+  whole unfiltered runs (as a min_tests floor) and lets a narrower run (computed, --base, --card or explicit scope, or words after --)
+  that discovers zero tests pass with a warning, since such a scope can legitimately hold no tests. Should a narrower zero-test run
+  fail as the board says, or pass with a warning as D7 says?
+superseded: []
