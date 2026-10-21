@@ -75,6 +75,14 @@ A bug in lyx still goes to `lyx selfreport create`; a finding in another reposit
 - A hub whose warp URL is a local path or a non-GitHub host can no longer run intake at all, where it used to read `Knatte18/loomyard`; the refusal names the URL.
 - Until the orch removes the hub-wide override sections, they restate the new role; they agree with it, so no conflict arises.
 
+<!-- lyx:carry-over Darn-Review -->
+- Darn-Review, round 1: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
+  Review: _lyx/reviews/darn/round-1-review.md; fixer report: _lyx/reviews/darn/round-1-fixer-report.md.
+  - boardengine-intake-docs-stale (class design, severity MEDIUM, open in rounds 1)
+  - hubrepo-closure-untested (class design, severity MEDIUM, open in rounds 1)
+  - orch-rules-override-left-in-place (class decision, severity MEDIUM, open in rounds 1)
+<!-- /lyx:carry-over Darn-Review -->
+
 ## Acceptance criteria
 
 - `lyx board intake list`, `import` and `close` request the paths of the repository they were opened on, not `Knatte18/loomyard`.
