@@ -1,0 +1,56 @@
+# Lens review
+
+Every lens fork returned a report.
+Duplicates across lenses are merged into one line, naming each lens that raised it.
+
+## Findings
+
+- forced-edits, BLOCKING — card 13 left `contracts/stencils#rubricMarkerAllowlist` and `TestLoomRubrics` (`contracts/stencils/rubric_test.go:20`) refusing the new `amendment` marker: fixed as proposed; card 13 lists both and updates the allowlist and the per-rubric marker checks.
+- forced-edits, BLOCKING — card 14's new required `KeepReviewRecords` seam would make shedrecipe's PR-Rework rows fail `checkSeams`: fixed differently; the lens named `newTestEnv`, `reworkTestEnv` and `reworkParityFixture`, but only `internal/shedrecipe#reworkTestEnv` fills the Rework seams for rows that call the producer (`entries_prrework_test.go:21,103,170`), `newTestEnv` fills only `ArchiveWebster` and is never Called through PR-Rework, and `reworkParityFixture` runs only `NewReworkPlanGate` (`parity_test.go:866,908`); card 14 lists `reworkTestEnv` and states why the parity fixture needs no change.
+- criteria-coverage, BLOCKING — card 15's `documentSubject` read each artifact path as a file, while Plan-Bouncer's `artifact_paths` is the directory `_lyx/plan` (`contracts/recipes/loom-recipe.yaml:234-235`): fixed as proposed; a directory path hashes the overview through `planparser.IdentityText` and the top-level card files in name order, leaving out subdirectories, `lens-review.md` and other files, and `TestDocumentSubject` gains the directory rows.
+- forced-edits, MEDIUM — card 19's `SessionStates` breaks `TestWait_LogsSessionStateBesideItsClassification`'s shadowed-versus-plain `DeepEqual` (`internal/shuttleengine/waitshadow_test.go:248`) and the shadow-mode contract: fixed as proposed; the test clears `SessionStates` before comparing, and card 19 lists `waitshadow.go` and `shuttleengine/doc.go`.
+- criteria-coverage, MEDIUM — `resettle` would run carry-over for a round-0 settle that `approveWithoutReview` wrote: fixed as proposed; card 11 skips carry-over for a round-0 record, and its skip-seam and zero-round rows install a carry-over seam and assert it is never called.
+- criteria-coverage, MEDIUM — no re-entry after a zero-allowance amendment settle: fixed as proposed; card 12's allowance-0 row re-enters with an unchanged subject and asserts Done with no spawn.
+- criteria-coverage, MEDIUM — no row asserts a re-settle keeps `SettledAt`: fixed as proposed; card 11's Commit-failure row keeps the first `SettledAt` under a clock advanced between Calls.
+- criteria-coverage + branch-coverage, MEDIUM — nothing tests that `markSettled` replaces a document base with the weft HEAD read after Commit, or ties the PR-Rework carry to the amendment base: fixed as proposed; card 11 adds the `SettledBase` row (and an interrupted settle keeping the first base), and card 12 states the chain from the settle record's base through PR-Rework's carry to the amendment.
+- criteria-coverage + branch-coverage, MEDIUM — the guard inside the tackler and arbiter re-launch consumes, and the driver's hand-back with the refusal text, had no row: fixed as proposed; card 6 adds `TestConsumeTacklerAttempt`'s guard row and two `TestGoDriver_Settle` rows (a refused tackler consume, a step refusing the arbiter attempt), and card 16 adds `TestConsumeArbiterAttempt`'s guard row.
+- branch-coverage, MEDIUM — `specFor` setting `Spec.GotoGuard` was untested: fixed as proposed; card 16 extends `TestSpecFor_ScratchAndFrictionDir`.
+- criteria-coverage + branch-coverage, MEDIUM — darn's reject file (write and read side), `mergeSubject` and its no-record branch were untested: fixed as proposed; card 15 adds `TestMergeSubject` and `TestDarnRejectReview`.
+- criteria-coverage + branch-coverage, MEDIUM — the code form of `AmendmentNote` had no row: fixed as proposed; card 12 adds a code-kind amendment row asserting the stored patch and the current merge-base diff in the seed prompt.
+- criteria-coverage + branch-coverage, MEDIUM — the allowance clamps and the `HardCap` 0 fallback were unreached: fixed as proposed; card 12 adds the three rows.
+- branch-coverage + criteria-coverage, MEDIUM/LOW — the Merge-Review full generation's second Call had no row, and its record wrote a base: fixed as proposed; card 12's full-generation row asserts no mark and no base and that its second Call judges round 1 without a second archive, and the Intent writes the number alone.
+- branch-coverage, MEDIUM — the in-call cancellation arm's `pause_reason` was unpinned: fixed as proposed; card 3 extends `TestRun_CancelledDuringProducerCall`.
+- branch-coverage + row-reachability + criteria-coverage, MEDIUM — no row shows the pause verb's writes carry `pause_reason` through: fixed as proposed; card 5's `TestPauseCmd_Conditions` adds a `--before` row over a paused status holding a reason.
+- row-reachability, MEDIUM — `TestRelaunch`'s no-target and in-effect rows seeded a blocked status, so they could not fail on a cleared reason: fixed as proposed; they seed a paused status literal with a reason and both labels.
+- branch-coverage, MEDIUM — case 1 over a settled circling accept had no row: fixed as proposed; card 11 adds it.
+- branch-coverage, MEDIUM — a settled verdict on the not-live path was never shown to settle rather than clear: fixed as proposed; card 11 adds the unharvested round N+1 row.
+- branch-coverage, MEDIUM — `ReadTaskPatch`'s `/`-ended skip was unexercised: fixed as proposed; cards 8 and 15 add rows.
+- row-reachability, MEDIUM — `TestBouncerEntry_Subject` could not lay out a settle record from `shedrecipe`: fixed as proposed; the row settles through `layoutBouncerRound1Report` and `judgeSeamShuttle` first, both listed under Uses.
+- test-economy, MEDIUM — `TestDocumentSubject` repeated card 9's `TestIdentityText` rows: fixed as proposed; it keeps one row proving the strip is applied and covers only what `documentSubject` adds.
+- test-economy, MEDIUM — card 11's case-4 row repeated `TestBouncer_Clear_ApprovedRunDirClearsAndReseeds` and `TestBouncer_Clear_AfterCommitFailureSubsequentCallClears`: fixed as proposed; the row is dropped and the card names those tests.
+- test-economy, LOW — `TestSettleRecords` tested unexported helpers: fixed as proposed; its rows fold into `TestSettleLive`, and the patch bytes are asserted through `TestArchiveRunDir`.
+- test-economy, LOW — `TestLoomBudgetWayForward` pinned a constant's prose: fixed as proposed; the test is dropped, the transport staying pinned by `TestNewShed_FieldCompleteAssembly` and card 2's told-clause row.
+- test-economy, LOW — `TestStep_GenerationStartSkipsBudgetComparison` repeated the `Routing.Bounces` read of the count table: fixed differently; the lens proposed making it a row of `TestStep_ExemptStuckAfterBudgetFullySpent`, which runs on `scriptedStuckShed`, whose producer can only mark `BudgetExempt` (`internal/shedengine/budgetexempt_test.go`), so the test stays separate on its own producer and drops the `Routing.Bounces` assertion, which moves to `TestBounces_CountAndBudgetInheritance`.
+- test-economy, LOW — `TestStep_ToldRunIDNamesGotoWithRunID`'s name and doc go stale: fixed differently; instead of renaming, its budget half moves into `TestStep_BudgetHaltResumeGrantsOneBudget` as a run-id row, and the test keeps only the missing-producer refusal its name describes.
+- row-reachability, LOW — a later `SettledAt` cannot show under the fixture's frozen clock: fixed as proposed; card 11 lists `withClock` and advances it.
+- row-reachability, LOW — `scriptedStuckShed` cannot emit `GenerationStart`: fixed as proposed; card 2 lists `newTestShed`, `funcProducer` and `seedStatus`.
+- row-reachability, LOW — `KeepReviewRecords` call count contradicted `planMoves`' skip of empty directories: fixed as proposed; it is called only for moved subdirectories, and `CarryRecords` tolerates an absent source directory and absent files (card 10 row).
+- row-reachability + criteria-coverage, LOW — the writer row was ambiguous for Plan-Review (`Plan-Write` and `PR-Rework` both `on_done: Plan-Bouncer`): fixed as proposed; the first such row in list order, `Plan-Write`, is named and pinned.
+- criteria-coverage, MEDIUM/LOW — D1's `Bounces` seam after a goto and over `budget_capped` was unread: fixed as proposed; `TestBounces_CountAndBudgetInheritance` gains the rows.
+- forced-edits, LOW — `OutcomeReroute`'s doc says a reroute ends the episode as a goto does: fixed as proposed; card 2 lists it.
+- forced-edits + criteria-coverage, LOW — goto-reset wording in `shedadapters/doc.go:78`, `TestBouncer_SoftCapRule` and `NewBouncer`'s budget rule survived: fixed as proposed; card 12 lists `NewBouncer` and `TestBouncer_SoftCapRule` and rewrites the doc line.
+- forced-edits, LOW — `LoomFrictionLock`'s doc and `start.go`'s comment still describe a halt reflection: fixed as proposed; card 18 lists `LoomFrictionLock` and `loomCLI.runDriverSpawnAndWait`.
+- forced-edits, LOW — batten's consume builds a `RelaunchRequest` with no guard: fixed as proposed; card 16 states batten's consume stays guard-free.
+- branch-coverage, LOW — `Subject.Unchanged` moved-base false branches and `CarryRecords` partial files were unreached: fixed as proposed in card 10.
+- branch-coverage, LOW — `startGeneration`'s archive failure and `RejectReview` error had no row: fixed as proposed; card 12 adds both and states the error is returned before the archive.
+- branch-coverage, LOW — `Subject` read error and a failing step in `resettle` had no row: fixed as proposed in card 11.
+- branch-coverage, LOW — an erroring tackler guard had no row: fixed as proposed in card 6.
+- branch-coverage, LOW — bare `--by` under a refusing `BarePause` had no row: fixed as proposed in card 5.
+- branch-coverage, LOW — `MergeInOnly` with a merge whose second parent is not an ancestor had no row: fixed as proposed in card 8.
+- branch-coverage, LOW — loom's `CheckResolved` path for the new key was untested: fixed as proposed; card 7 adds a `TestLoadConfig_Refuses` row.
+- branch-coverage, LOW — `LatestRejectReview` over a record lacking `rejected_at` and a `KeepReviewRecords` failure had no row: fixed as proposed in card 14.
+- branch-coverage, LOW — a Publish failure record read error had no row: fixed as proposed in card 16.
+- branch-coverage, LOW — `loomAfterInterrupt` had no row: fixed as proposed; card 18 adds `TestLoomAfterInterrupt_WritesTheHaltNoteAndNoReflection`, since no test reaches the hook today.
+- branch-coverage, LOW — a fork mismatch then a died attempt 2 had no row: fixed as proposed in card 19.
+- branch-coverage, LOW — batten's told budget clause has no test: disputed, every fix worse; the clause is static prose, whose transport `TestNewShed_FieldCompleteAssembly` already pins, and a test asserting its text is the static-prose assertion `PATTERN-test-economy` and the rubric's "Test economy" bullet rule out.
+- branch-coverage, LOW — `TestRecordResumer` was not extended for `pause_reason`: disputed, premise false; `RecordResumer` marks only a blocked, failed or awaiting status (`internal/shedengine/goto.go`, `resumableHalt`), which never holds a `pause_reason` since every non-paused write clears it, and the carry-through it would show is the whole-`Status` decode that card 5's pause-verb row already pins.
