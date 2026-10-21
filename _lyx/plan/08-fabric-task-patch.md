@@ -1,12 +1,12 @@
 # Card 8 — fabric-task-patch
 
 **Create:**
-- `plan:internal/fabricengine#TaskPatch` -> `type TaskPatch struct`
-- `plan:internal/fabricengine#Fabric.ReadTaskPatch` -> `func (f *Fabric) ReadTaskPatch(base string, skip []string) (TaskPatch, error)`
-- `plan:internal/fabricengine#Fabric.MergeInOnly` -> `func (f *Fabric) MergeInOnly(since, parentTip string) (bool, error)`
-- `plan:internal/fabricengine#Fabric.WeftHeadSHA` -> `func (f *Fabric) WeftHeadSHA() (string, error)`
-- `plan:internal/fabricengine_test#TestFabric_ReadTaskPatch` -> `func TestFabric_ReadTaskPatch(t *testing.T)`
-- `plan:internal/fabricengine_test#TestFabric_MergeInOnly` -> `func TestFabric_MergeInOnly(t *testing.T)`
+- `internal/fabricengine#TaskPatch`
+- `internal/fabricengine#Fabric.ReadTaskPatch`
+- `internal/fabricengine#Fabric.MergeInOnly`
+- `internal/fabricengine#Fabric.WeftHeadSHA`
+- `internal/fabricengine_test#TestFabric_ReadTaskPatch`
+- `internal/fabricengine_test#TestFabric_MergeInOnly`
 
 **Edit:**
 - `internal/fabricengine_test#TestFabricHeadSHA_TracksWorktreeHead`
