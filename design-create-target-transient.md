@@ -1,6 +1,6 @@
 # webster create-not-done check rejects a Create target the card removes itself
 
-`create-target-transient` · Task · bug, webster, loom, quarry · running · Darn-Burler-Fix
+`create-target-transient` · Task · bug, webster, loom, quarry · running · Darn-Bouncer
 
 Imported from [issue #731](https://github.com/Knatte18/loomyard/issues/731).
 
