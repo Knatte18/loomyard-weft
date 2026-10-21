@@ -192,7 +192,8 @@ Rationale: The operator sees no reason to keep this manual; the stamp keeps the 
 <!-- lyx:carry-over Webster-Review -->
 - Webster-Review, round 1: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
   Review: _lyx/reviews/webster/round-1-review.md; fixer report: _lyx/reviews/webster/round-1-fixer-report.md.
-  - undeclared-pattern-entry-edits (class consistency, severity BLOCKING, open in rounds 1)
+  - sparse-hub-base-entry-over-line-cap (class design, severity BLOCKING, open in rounds 1)
+  - undeclared-pattern-entries-shortened (class design, severity BLOCKING, open in rounds 1)
 <!-- /lyx:carry-over Webster-Review -->
 
 ## Acceptance criteria
