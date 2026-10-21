@@ -749,7 +749,7 @@
       }
     }
   ],
-  "currentBatch": 3,
+  "currentBatch": 0,
   "masterStrand": "d26ba69a79fb575f7e87b499eb76f785",
   "masterSessionId": "b26519ba-ade7-44f6-9357-417c58fd04ba",
   "masterEngine": "claude",
@@ -806,11 +806,27 @@
       "spawnedAt": "2026-10-21T05:56:22Z",
       "sessionId": "b26519ba-ade7-44f6-9357-417c58fd04ba",
       "engine": "claude",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "failed",
+      "digest": {
+        "batch": "03-board-replay-seam",
+        "status": "failed",
+        "head_sha": "ecb1991af5fde4aa23d056cff72a59a73e36747a",
+        "reasons": [
+          "batch 03-board-replay-seam holds cards 3-board-replay-seam",
+          "create-not-done/3-board-replay-seam[blocking]: Create target \"plan:internal/boardengine#TestFabricReplay\" still does not resolve: looked up \"internal/boardengine#TestFabricReplay\", quarry answered not_found (the unit exists and the member is missing)"
+        ]
+      },
+      "forkTranscripts": [
+        "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-origin-reconcile/b26519ba-ade7-44f6-9357-417c58fd04ba/subagents/agent-a18884e5b7b8232b1.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-origin-reconcile/b26519ba-ade7-44f6-9357-417c58fd04ba/subagents/agent-a18884e5b7b8232b1.jsonl"
+      ]
     }
   },
   "seenForkTranscripts": [
-    "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-origin-reconcile/b26519ba-ade7-44f6-9357-417c58fd04ba/subagents/agent-a199c0788fa0d0e0c.jsonl"
+    "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-origin-reconcile/b26519ba-ade7-44f6-9357-417c58fd04ba/subagents/agent-a199c0788fa0d0e0c.jsonl",
+    "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-origin-reconcile/b26519ba-ade7-44f6-9357-417c58fd04ba/subagents/agent-a18884e5b7b8232b1.jsonl"
   ]
 }
