@@ -24,16 +24,15 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 3 | **webster create-not-done check rejects a Create target the card removes itself**<br>• `profile: budget` | [`create-target-transient`](design-create-target-transient.md) | darn | Finalize | 2d | 10h | webster, loom, quarry |
-| 4 | **Scratch files under .scratch change the worktree root listing and defeat go test cache hits**<br>• `profile: light` | [`scratch-defeats-test-cache`](design-scratch-defeats-test-cache.md) | loom | Discussion-Write | 19h | 16h | gate |
-| 5 | **Deploy: drop the shared prod pointer and stop flagging a foreign lyx on PATH**<br>• update-plugins.sh pushes no prod pointer, and its PATH check ignores a non-lyx binary named lyx<br>• `profile: budget` | [`deploy-prod-cleanup`](design-deploy-prod-cleanup.md) | darn | Merge-In | 1d | 10h | deploy |
-| 6 | **Shell guard: match test runs on the command, refuse heredoc writes to tracked files**<br>• The guard refuses commands that only name a refused tier, and lets heredoc writes past the edit directive<br>• `profile: budget` | [`shellguard-fixes`](design-shellguard-fixes.md) | darn | Darn-Write | 19h | 10h | claude |
+| 3 | **Scratch files under .scratch change the worktree root listing and defeat go test cache hits**<br>• `profile: light` | [`scratch-defeats-test-cache`](design-scratch-defeats-test-cache.md) | loom | Discussion-Write | 19h | 16h | gate |
+| 4 | **Deploy: drop the shared prod pointer and stop flagging a foreign lyx on PATH**<br>• update-plugins.sh pushes no prod pointer, and its PATH check ignores a non-lyx binary named lyx<br>• `profile: budget` | [`deploy-prod-cleanup`](design-deploy-prod-cleanup.md) | darn | Merge-In | 1d | 10h | deploy |
+| 5 | **Shell guard: match test runs on the command, refuse heredoc writes to tracked files**<br>• The guard refuses commands that only name a refused tier, and lets heredoc writes past the edit directive<br>• `profile: budget` | [`shellguard-fixes`](design-shellguard-fixes.md) | darn | Darn-Write | 19h | 10h | claude |
 
 #### Low priority
 
 | # | Task | Slug | Recipe | At | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 7 | **Gate settings per machine**<br>• go_parallel and slots can only be set hub-wide on Bolt, so a value tuned for one machine reaches every machine<br>• `profile: light` | [`gate-machine-local-config`](design-gate-machine-local-config.md) | loom | Discussion-Bouncer | 19h | 19h | config |
+| 6 | **Gate settings per machine**<br>• go_parallel and slots can only be set hub-wide on Bolt, so a value tuned for one machine reaches every machine<br>• `profile: light` | [`gate-machine-local-config`](design-gate-machine-local-config.md) | loom | Discussion-Bouncer | 19h | 19h | config |
 
 ### Ready
 
@@ -66,7 +65,7 @@ Starts when every entry it names under After is done.
 
 | # | Task | Slug | Recipe | After | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | **Every process a run spawns has one owner that ends them all**<br>• Owner records for run processes; pause, reed down, fabric remove and teardown end the whole group; tender status shows orphans; batten abandon ends a dead run; a hub pause reaches background work | [`run-process-ownership`](design-run-process-ownership.md) | loom | `run-reentry`, `origin-reconcile`, `machine-handover`, `create-target-transient`, `tender-pause-holds-reprompt` | 6d | 10h | batten, fabric, loom, shed, shuttle, webster |
+| 1 | **Every process a run spawns has one owner that ends them all**<br>• Owner records for run processes; pause, reed down, fabric remove and teardown end the whole group; tender status shows orphans; batten abandon ends a dead run; a hub pause reaches background work | [`run-process-ownership`](design-run-process-ownership.md) | loom | `run-reentry`, `origin-reconcile`, `machine-handover`, `tender-pause-holds-reprompt` | 6d | 10h | batten, fabric, loom, shed, shuttle, webster |
 
 #### Normal priority
 
@@ -199,3 +198,11 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | # | Note | Slug | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | 20 | **[.NET 003] Scoped build and test for C# hubs**<br>• Verify gates in a .NET hub build and test only the projects a card touches, since a scanned Windows machine makes every build slow. | [`dotnet-scoped-verify`](design-dotnet-scoped-verify.md) | 8d | 21h | shed, webster, dotnet |
+
+## Done
+
+Finished, awaiting `lyx board prune --apply`.
+
+| # | Entry | Slug | Age | Revised | Labels |
+| --- | --- | --- | --- | --- | --- |
+| 1 | **webster create-not-done check rejects a Create target the card removes itself**<br>• `profile: budget` | [`create-target-transient`](design-create-target-transient.md) | 2d | 10h | webster, loom, quarry |
