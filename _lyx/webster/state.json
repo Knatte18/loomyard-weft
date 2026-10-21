@@ -778,7 +778,7 @@
       }
     }
   ],
-  "currentBatch": 0,
+  "currentBatch": 8,
   "masterStrand": "6f56338668c07f063671518ad01fb02d",
   "masterSessionId": "9216b63a-fe9f-48ce-93a3-9e8a3200b274",
   "masterEngine": "claude",
@@ -871,6 +871,24 @@
       "bracketTranscripts": [
         "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-test-tiers/9216b63a-fe9f-48ce-93a3-9e8a3200b274/subagents/agent-a130d938d60178dd3.jsonl"
       ]
+    },
+    "8": {
+      "slug": "gate-tier-verb",
+      "cards": [
+        "08-gate-tier-verb",
+        "09-gate-scopes"
+      ],
+      "cardHashes": {
+        "08-gate-tier-verb": "c95f3ec81bccfa1628b63e5460668c256a8d4f8f1cf82cd7db75cad57226b667",
+        "09-gate-scopes": "058528f839a65fdcf7074713dfaee496f3fb57bf0425e8c877401f994c345480"
+      },
+      "startSha": "5247a907cd357ebf5aefa1a6daca12eacea46453",
+      "kind": "fork",
+      "spawnedAt": "2026-10-21T16:20:54Z",
+      "sessionId": "9216b63a-fe9f-48ce-93a3-9e8a3200b274",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
     }
   },
   "seenForkTranscripts": [
