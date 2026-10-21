@@ -57,9 +57,9 @@
       "depends_on": [],
       "isolated": false,
       "brief": "Unverified after six hardening rounds; needs a Windows host, not design; take it only if Windows becomes relevant",
-      "body": "From `manifest/roadmap.md` Someday, kept by the operator on 2026-10-03: not a priority now, taken only if Windows becomes relevant.\nFabric's Windows path behaviour (directory junctions through `internal/fslink`) is unverified after six hardening rounds; closing it needs a Windows host, not further design.\nThe design file this note once cited, `manifest/designs/fabric-windows-verification.md`, no longer exists in the repository.\n",
+      "body": "From `manifest/roadmap.md` Someday, kept by the operator on 2026-10-03: not a priority now, taken only if Windows becomes relevant.\nFabric's Windows path behaviour (directory junctions through `internal/fslink`) is unverified after six hardening rounds; closing it needs a Windows host, not further design.\nThe design file this note once cited, `manifest/designs/fabric-windows-verification.md`, no longer exists in the repository.\nCheck on a Windows host that a directory junction's own modification time stays fixed when files are created, changed or removed under its target.\nThe root `.scratch` link fabric wires into the weft `.lyx` relies on it: source-scan tests hash the module root's `.scratch` entry into their `go test` cache key, and a junction whose own time moved would defeat the cache again.\n",
       "created": "2026-10-03T17:27:16Z",
-      "revised": "2026-10-10T09:18:37Z"
+      "revised": "2026-10-21T08:11:09Z"
     },
     {
       "id": 63,
@@ -1243,7 +1243,8 @@
       "labels": [
         "bug",
         "creel",
-        "shed"
+        "shed",
+        "webster"
       ],
       "issues": [
         762
@@ -1254,9 +1255,9 @@
       ],
       "isolated": false,
       "brief": "",
-      "body": "Imported from [issue #762](https://github.com/Knatte18/loomyard/issues/762).\n\n## Seen (2026-10-20, OSL-1046, darn run arbiter-verdict-quoting)\n\n1. Darn-Write's verify gate was looping on a tmux test the writer cannot fix, so the orch ran `lyx tender pause arbiter-verdict-quoting` (the darn session was idle, listed `already_idle`) and `lyx loom pause --after Darn-Write`.\n2. The verify process kept running (attempt 2, then a new attempt), since a pause holds agents and network work but not a running gate command. On the operator's order the orch killed the verify's process group.\n3. The gate then re-prompted the darn session with the failure, and the session started a new turn although `lyx tender status` listed it `paused: true` (state `busy`, cause `turn`).\n4. `lyx creel interrupt ly:arbiter-verdict-quoting:darn` was refused: \"a pause covers ...; nothing was interrupted, lift the pause first\".\n5. Workaround: running `lyx tender pause arbiter-verdict-quoting` a second time printed `already_paused: true` and `interrupted: [ly:arbiter-verdict-quoting:darn]`, and the session went idle.\n\n## Expected\n\n- A paused scope receives no new prompt from a gate, a driver or any other lyx program: a re-prompt waits for the resume, like other held work.\n- A pause also stops, or holds at its next boundary, a verify gate command running in that scope, so the operator does not have to kill processes by hand.\n- `creel interrupt` of a session the pause covers interrupts it, since stopping work is what the pause wants.",
+      "body": "Imported from [issue #762](https://github.com/Knatte18/loomyard/issues/762).\n\n## Seen (2026-10-20, OSL-1046, darn run arbiter-verdict-quoting)\n\n1. Darn-Write's verify gate was looping on a tmux test the writer cannot fix, so the orch ran `lyx tender pause arbiter-verdict-quoting` (the darn session was idle, listed `already_idle`) and `lyx loom pause --after Darn-Write`.\n2. The verify process kept running (attempt 2, then a new attempt), since a pause holds agents and network work but not a running gate command. On the operator's order the orch killed the verify's process group.\n3. The gate then re-prompted the darn session with the failure, and the session started a new turn although `lyx tender status` listed it `paused: true` (state `busy`, cause `turn`).\n4. `lyx creel interrupt ly:arbiter-verdict-quoting:darn` was refused: \"a pause covers ...; nothing was interrupted, lift the pause first\".\n5. Workaround: running `lyx tender pause arbiter-verdict-quoting` a second time printed `already_paused: true` and `interrupted: [ly:arbiter-verdict-quoting:darn]`, and the session went idle.\n\n## Expected\n\n- A paused scope receives no new prompt from a gate, a driver or any other lyx program: a re-prompt waits for the resume, like other held work.\n- A pause also stops, or holds at its next boundary, a verify gate command running in that scope, so the operator does not have to kill processes by hand.\n- `creel interrupt` of a session the pause covers interrupts it, since stopping work is what the pause wants.\n## Seen: webster opens batches under a pause (orch, 2026-10-21)\n\nA hub pause held the two webster masters with forks in flight only as `background`: no Esc, no record.\nWhen a fork returns, Claude Code wakes Master by itself, outside creel, and nothing stops it from running `lyx webster begin-batch` and forking the next implementer.\nWebster wires the pause only into its shuttle runner (`internal/webstercli/wiring.go`), so no batch verb reads it.\n\nExpected: `lyx webster begin-batch` refuses while a pause covers the pair, with a message telling Master to end its turn, so a running batch finishes and no new one starts until the resume.\n",
       "created": "2026-10-20T10:42:58Z",
-      "revised": "2026-10-20T19:19:16Z",
+      "revised": "2026-10-21T08:12:56Z",
       "profile": "light"
     },
     {
@@ -1453,6 +1454,23 @@
       "body": "## Seen (orch, 2026-10-21)\n\n`lyx fabric add \u003cslug\u003e` adopts a pair whose warp branch exists only on origin, and a weft branch that exists locally or on origin.\nIt refuses with `ErrBranchExists` when the warp branch exists locally without the local-only mark (`internal/fabricengine/add.go`, `add`).\nSo there is no lyx way to make a pair over a branch that already lives in this clone, such as `main` or an umbrella branch, and the operator falls back to a plain `git worktree add` that lyx does not see.\n\nCase: on the Models hub, as a stopgap until umbrella tasks exist, the operator wants the prime on an umbrella branch and `main` in its own worktree `main`.\n`lyx fabric add main` is refused, because `main` exists locally.\nIt would also fail on the weft side, since `main-weft` is checked out in prime-weft, and git refuses one branch in two worktrees.\n\n## Idea\n\n`lyx fabric add` adopts an existing local warp branch the same way it adopts one from origin, instead of refusing.\nThe weft side adopts or forks `\u003cbranch\u003e-weft` as it does today.\nA branch already checked out in another worktree is refused with a message naming that worktree and `lyx fabric checkout` to move it off.\nThe adopted pair's recorded parent needs a decision: a pair over `main` or an umbrella branch has no parent in the task sense, so it may need to be recorded as a root pair that batten never lands.\n",
       "created": "2026-10-21T06:38:57Z",
       "revised": "2026-10-21T06:38:57Z"
+    },
+    {
+      "id": 727,
+      "slug": "orch-cycle-request-cancel",
+      "title": "Withdraw a pending orch distill or refresh request",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "orch"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "No verb withdraws a pending lyx orch distill/refresh; the marker had to be deleted by hand",
+      "body": "## Seen (orch, 2026-10-21)\n\nThe orch ran `lyx orch distill` while a hub pause stood.\nThe watcher starts no context cycle under a hub pause, so the request sat pending until the resume.\nThe operator wanted it withdrawn, and no verb does that: the orch deleted the marker `.lyx/orch/cycle-request` by hand.\n\n## Idea\n\nA verb that withdraws a pending `refresh` or `distill` request, such as `lyx orch distill --cancel` or `lyx orch cancel-cycle`, refusing once the cycle has started.\n`lyx orch status` could also show a pending request, and `distill`/`refresh` could say when a hub pause holds the request back.\n",
+      "created": "2026-10-21T08:27:35Z",
+      "revised": "2026-10-21T08:27:35Z"
     }
   ]
 }
