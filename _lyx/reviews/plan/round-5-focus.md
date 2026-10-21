@@ -1,0 +1,12 @@
+---
+round: 5
+focus:
+  - "Rewind settle path: card 1's `rewoundWayForward` offers a choice to keep local commits after another machine rewound origin, and card 9's hold-back refuses `lyx fabric push` while a task branch still reads rewound. Settle whether each step a rewind line prescribes, run as written, leaves the branch no longer reading rewound and lets the next `lyx fabric push` land, and whether a planned row in card 9's `TestPushFailureClasses` carries a rewound branch through a settle and then a push."
+  - "Way-forward composition: cards 15, 20, 21, 22 and 23 print `BranchOutcome.WayForward` at hops that run in different scopes (the prime for orch start and `lyx cleanup --apply`, the task worktree for Merge-In, Finalize and batten resume, the wake for a stopped pair). Settle whether the string carries only the repair step with each hop appending its own re-entry verb, so no hop prints a verb its scope refuses or two re-entries."
+  - "Exact judge line at each printing hop: orch start (card 19), batten resume (card 21), Merge-In and Finalize (card 22) each print the judge's line. Settle whether each hop's planned row would fail a hop that composed its own line, by asserting the fake report's `WayForward` verbatim rather than a branch name or a named stop."
+  - "Directory of each command a way-forward line names: `lyx fabric commit` and `lyx fabric pull` act on the pair of the worktree they run in and are refused in a weft sibling. Settle whether the dirty and rewritten lines name the directory to run in for a pair and for the prime, and whether the exact-line rows pin it."
+  - "Reconcile record reach: the reconcile's fast-forwards, set-aside tags and snapshot tags go into a mutation record that orch start, `lyx cleanup --apply` and the wake read. Settle whether every kind a card appends is declared in `internal/fabricengine`'s `Kind` and classified by its oracle test, whether orch start's error envelope after a mutating reconcile carries `mutations` and `partial`, and whether a row asserts each."
+  - "Class line reaching the caller: Publish in `internal/landingshed` branches on `gitrepo.ErrPushRejected` before its `push failed:` return, and the fabric reconcile verb appends its own line after a push failure text. Settle for each push class (`not_fast_forward`, `gone`, `rewound`, `auth`, `transport`) that the operator reads the class's way-forward line exactly once, and that a row asserts it."
+---
+
+Focus targets the open design and consistency keys of round 4 and the surfaces their fixes touch.
