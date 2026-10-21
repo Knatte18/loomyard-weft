@@ -22,8 +22,8 @@
 - `internal/loomcli#TestStep_ProducerErrorReflectsOnTheErrorEnvelope`
 
 **Create:**
-- `plan:internal/loomcli#TestStep_ProducerErrorWritesTheHaltNoteAndNoReflection` -> `func TestStep_ProducerErrorWritesTheHaltNoteAndNoReflection(t *testing.T)`
-- `plan:internal/loomcli#TestLoomAfterInterrupt_WritesTheHaltNoteAndNoReflection` -> `func TestLoomAfterInterrupt_WritesTheHaltNoteAndNoReflection(t *testing.T)`
+- `internal/loomcli#TestStep_ProducerErrorWritesTheHaltNoteAndNoReflection`
+- `internal/loomcli#TestLoomAfterInterrupt_WritesTheHaltNoteAndNoReflection`
 
 **Uses:**
 - `internal/loomcli#haltFixture`
