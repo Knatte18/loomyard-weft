@@ -1,6 +1,6 @@
 # Gate settings per machine
 
-`gate-machine-local-config` · Task · enhancement, config · running · Discussion-Burler-Fix
+`gate-machine-local-config` · Task · enhancement, config · running · Discussion-Bouncer
 
 ## Seen (2026-10-20, `go_parallel` sweep on OSL-1046)
 

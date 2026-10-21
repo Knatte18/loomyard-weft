@@ -33,7 +33,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 7 | **Gate settings per machine**<br>• go_parallel and slots can only be set hub-wide on Bolt, so a value tuned for one machine reaches every machine<br>• `profile: light` | [`gate-machine-local-config`](design-gate-machine-local-config.md) | loom | Discussion-Burler-Fix | 19h | 19h | config |
+| 7 | **Gate settings per machine**<br>• go_parallel and slots can only be set hub-wide on Bolt, so a value tuned for one machine reaches every machine<br>• `profile: light` | [`gate-machine-local-config`](design-gate-machine-local-config.md) | loom | Discussion-Bouncer | 19h | 19h | config |
 
 ### Ready
 
