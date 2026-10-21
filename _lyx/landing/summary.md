@@ -15,7 +15,7 @@ Reconcile now writes only what the file changed into each per-name map declared 
 
 `configsync.Result` gains `Dropped`, set at both base-layer reconcile sites, the hub file reconcile and the standalone worktree base, on a dry run too.
 A non-empty `Dropped` makes `--apply` rewrite the file, like `Added` does.
-`lyx config reconcile` reports it as `dropped` when non-empty, and the hub reconcile walk logs it.
+`lyx config reconcile` reports it as `dropped` when non-empty, its help text and the `configcli` module doc name the drop and the rewrite, and the hub reconcile walk logs it.
 Key moves and `Migrate` hooks still write what they move; the drop then applies to the resulting file like any other.
 
 ## Design decisions
@@ -33,7 +33,7 @@ Key moves and `Migrate` hooks still write what they move; the drop then applies 
 ## Docs
 
 The `lenses.yaml` header in `internal/lenses/template.yaml` and `internal/lenses/doc.go` now state that the file holds only tuned or added entries, that reconcile never copies a template entry in and drops a template-equal one, and that a deleted template entry resolves from the template at load without being written back.
-`internal/yamlengine/doc.go`, `internal/configengine/doc.go` and the `internal/lenses` row of `docs/overview.md` follow.
+`internal/yamlengine/doc.go`, `internal/configengine/doc.go`, `internal/configcli/doc.go`, the `PerNameMaps` field comment in `internal/configreg` and the `internal/lenses` row of `docs/overview.md` follow.
 
 ## Not in scope
 
@@ -44,5 +44,11 @@ This hub's `twill-plan`, which equals the old five-lens template fan, is deleted
 
 - `TestReconcile` rows pin the drop, style-insensitive equality, the kept tuned and file-only names in order, the empty mapping for an absent or null map, and that a second reconcile adds, drops and removes nothing.
 - `TestSetValues` rows pin that a `--set` leaves template names out and drops a name set to its template value, and `configengine`'s `TestSet` pins the written base file exactly.
+- `configengine`'s `TestLoad` rows pin that a name filled under a declared per-name map is not logged and a filled map path is.
 - The `configsync` lenses rows pin `Dropped` on a dry run and an apply, the rewritten file, a `lenses.Load` that still resolves every template lens and fan, and the key-move rows' cut files.
 - The `configcli` integration tests pin `dropped` in the `--layer default` JSON and its absence on a sparse worktree layer holding a template-equal fan, and the `hubreconcile` integration test pins that a moved `burler.yaml` no longer has the template's untuned lenses copied in.
+
+## To check by hand
+
+- Run `lyx config reconcile` without `--apply` against a hub whose `lenses.yaml` still holds the full template set, and confirm it lists each template-equal name under `dropped` and writes nothing.
+- A hub that reconciles with an older binary after this one dropped its names gets them re-added by the older binary; the next reconcile with this binary drops them again.
