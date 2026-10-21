@@ -1,8 +1,8 @@
 # Card 1 — state-write-file
 
 **Create:**
-- `plan:internal/state#WriteFile` -> `func WriteFile(path, lockPath string, data []byte) error`
-- `plan:internal/state#TestWriteFile` -> `func TestWriteFile(t *testing.T)`
+- `internal/state#WriteFile`
+- `internal/state#TestWriteFile`
 
 **Intent:** Add `WriteFile` to `internal/state`: it writes raw bytes to `path` atomically under the write lock at `lockPath`, creating the parent directory, as `WriteJSON` does for a JSON value but with no marshal and no unknown-key merge.
 The Bouncer's settle record keeps the full task diff as a patch file beside the record (D5), and `PATTERN-tolerant-records` routes every write of a record, the patch included, through `internal/state`.

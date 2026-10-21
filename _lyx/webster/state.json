@@ -1,24 +1,24 @@
 {
   "runGuid": "9d6de30810bf07cf4659a833fbb12acf",
-  "planFingerprint": "8bf37a45469219a6ce4c8ea004987daa450ac1f4d04ce0a964b49c36b8ffe600",
+  "planFingerprint": "5cdbdfc9023f3d269c3892544978451adc2abb04b708f75e22cb72aa88d4f9b4",
   "planFileHashes": {
     "00-overview.md": "da876234745248fd7e3197e7f2149f05941aac476f4253afff96409ab257b990",
-    "01-state-write-file.md": "8c9091e30d130b211534e437c45b0162397dc42122a35cd43863e3c033390de3",
-    "02-shed-budget-episode.md": "ae6d6752731f7d34144f04f60a1d3e725ed0110a8c90091b60f698e62f0c0ed4",
+    "01-state-write-file.md": "cc9a6e08c521a8c5dae53bf341a2be2614c36d6352902647004d05d089ad70d4",
+    "02-shed-budget-episode.md": "33bcf83925eddb5cbcf2d36a1ceb57a95da3c633268dd2df2c674afe9c89bbe5",
     "03-shed-pause-reason.md": "4274f0ea10b4330753fe9d127e85aa030454b510f2e33160ab22e28aaec9da42",
-    "04-shed-goto-guard.md": "b867123ccf55f064fcc52baec4c341c0b56fa291b01bbc9c9ab399cbd3f62376",
+    "04-shed-goto-guard.md": "cab14fcd2920e2a06eb3e9e356195525fe8a28a1d7db588cac8cff29c5e2e4ce",
     "05-shedverbs-pause-label.md": "b0460196e1296cc7ee3a10a0b26182ead7f1bcaf8d24a0f38475120967242691",
     "06-sheddriver-budget-handback.md": "5b08b3fd760e17332fa927130a0a86444b642bc25a9bee7c8f6b2023ae9a78d5",
     "07-review-amend-key.md": "b803f8a70f6f33a7cf956ff77cb42ba64524e07d8108f0cadc5aec798bed5d80",
     "08-fabric-task-patch.md": "8e508b9094abd8faea1c7875618743725aae8d0cfb2e604e0c5385f78f24b437",
     "09-identity-text.md": "f4a34a5a79710909703207129f8ae1b3cf39f4efdd3c79cd877cc67e9f74ec11",
-    "10-settle-records.md": "0869b29add0cae64a6770f2eb383518c23a579fdac873c04c9ba95fa4f60415d",
+    "10-settle-records.md": "d35984f5cda768b856864f0c7791c1c517e64f96b1b717bfda522895b62132fa",
     "11-bouncer-reentry.md": "00edd74d527ed51a881272c823827a26c4c87897188e5401da60e8201d7ced51",
     "12-bouncer-amendment.md": "a1bc3f70f2067523ccdfa77691a2c50adbb22f46b408fd6e24ab634a345511d7",
     "13-recipe-bouncer-subject.md": "df797ffa12e709f4945495412682c00170d1313afb930eaa702ab77f15d660b2",
     "14-loomshed-rework-records.md": "672337c93e16744ce7fe2652c235e10d2ff44c3d859bbc705162fc6bab1dc068",
     "15-loom-subject-wiring.md": "6aa8272f038ac5832b8ff8f1926c028e6f5a54650d13c0545e7d3bba2103f7ab",
-    "16-loom-goto-guard.md": "be33a99f9031a547ffdd15cab9a3b85f4b97a619cd5264442dad041f44a06efd",
+    "16-loom-goto-guard.md": "6c1c139cbbb4151d21b1f34eaaa879064bfc701e16a60b3de412c1ce972f530f",
     "17-budget-way-forward-texts.md": "e13d6ea6dd3149ecbf47492b9adb0afb58b395f443f5ca8166eee5c90f91464c",
     "18-friction-no-per-stop.md": "4e37c48cd810fb7da4eaf28401f42c846b8ee442f9f790b70d57cc03859e9f3c",
     "19-burler-forkcount-retry.md": "cdfb13254b7b12652b4e2eab4a7925bef6781ddc8accb9315c5728fb1b8f69ef",
@@ -637,7 +637,7 @@
       }
     }
   ],
-  "currentBatch": 1,
+  "currentBatch": 0,
   "masterStrand": "415cff73750c47cdcf8cfe24d6282aeb",
   "masterSessionId": "241089f3-b39a-4fe3-9203-155f51f6bb8f",
   "masterEngine": "claude",
@@ -651,16 +651,30 @@
         "04-shed-goto-guard"
       ],
       "cardHashes": {
-        "01-state-write-file": "8c9091e30d130b211534e437c45b0162397dc42122a35cd43863e3c033390de3",
-        "02-shed-budget-episode": "ae6d6752731f7d34144f04f60a1d3e725ed0110a8c90091b60f698e62f0c0ed4",
+        "01-state-write-file": "cc9a6e08c521a8c5dae53bf341a2be2614c36d6352902647004d05d089ad70d4",
+        "02-shed-budget-episode": "33bcf83925eddb5cbcf2d36a1ceb57a95da3c633268dd2df2c674afe9c89bbe5",
         "03-shed-pause-reason": "4274f0ea10b4330753fe9d127e85aa030454b510f2e33160ab22e28aaec9da42",
-        "04-shed-goto-guard": "b867123ccf55f064fcc52baec4c341c0b56fa291b01bbc9c9ab399cbd3f62376"
+        "04-shed-goto-guard": "cab14fcd2920e2a06eb3e9e356195525fe8a28a1d7db588cac8cff29c5e2e4ce"
       },
       "startSha": "7cf7e67aa5a1b5b896781bb2c36547baebcf9189",
       "kind": "recovery",
       "spawnedAt": "2026-10-21T06:40:24Z",
-      "terminal": false,
-      "status": "",
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "01-state-write-file",
+        "status": "done",
+        "head_sha": "1b97c2fdca159ea6c26dd6bc1bc58a2207f0081f",
+        "deviations": [
+          "internal/shedengine/goto_test.go",
+          "internal/shedengine/gotobudget_test.go",
+          "internal/shedengine/run.go",
+          "internal/shedengine/run_routing_test.go"
+        ]
+      },
+      "cardShas": [
+        "1b97c2fdca159ea6c26dd6bc1bc58a2207f0081f"
+      ],
       "forkTranscripts": [
         "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-run-reentry/241089f3-b39a-4fe3-9203-155f51f6bb8f/subagents/agent-a24328072b98ca1d9.jsonl"
       ],

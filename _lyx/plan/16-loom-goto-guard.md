@@ -19,7 +19,7 @@
 
 **Uses:**
 - `plan:internal/shedadapters#SettleLive`
-- `plan:internal/shedengine#GotoGuard`
+- `internal/shedengine#GotoGuard`
 
 **Intent:** D2 for loom and darn: a goto never re-runs a settled review, bar the verify retry.
 
