@@ -189,6 +189,12 @@ Rationale: The operator sees no reason to keep this manual; the stamp keeps the 
   - prime-seed-drop-contradicts-strip-nothing-callers (class consistency, severity MEDIUM, open in rounds 3)
 <!-- /lyx:carry-over Discussion-Review -->
 
+<!-- lyx:carry-over Webster-Review -->
+- Webster-Review, round 1: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
+  Review: _lyx/reviews/webster/round-1-review.md; fixer report: _lyx/reviews/webster/round-1-fixer-report.md.
+  - undeclared-pattern-entry-edits (class consistency, severity BLOCKING, open in rounds 1)
+<!-- /lyx:carry-over Webster-Review -->
+
 ## Acceptance criteria
 
 - A hub seeded with the new binary resolves every D1 value with no hub-file entry for it, its non-seed-only base files hold no unit, and its marker is committed by the clone.
