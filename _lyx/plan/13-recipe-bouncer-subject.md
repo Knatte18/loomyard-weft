@@ -24,7 +24,7 @@
 
 **Uses:**
 - `internal/shedadapters#Subject`
-- `plan:internal/shedadapters#AmendmentNote`
+- `internal/shedadapters#AmendmentNote`
 - `internal/shedrecipe#layoutBouncerRound1Report`
 - `internal/shedrecipe#judgeSeamShuttle`
 
