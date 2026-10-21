@@ -1,6 +1,6 @@
 {
   "runGuid": "3476077f843ddb4707251972bab14ff9",
-  "planFingerprint": "60e2b956e70ab73c44112925f0a382feec1c6db41c512231877c7bf7211444d7",
+  "planFingerprint": "367793edf8654811fb92fd66349f06d23ba55bba7fc4de6d28a59fa540e9d454",
   "planFileHashes": {
     "00-overview.md": "d08ff6f82f6dda0c2c0cff466a40411cca3b71b43b7924f7edcf5e0fe51b9a35",
     "01-open-map-flow-values.md": "7a552f60f180c5d248f091655a21f85550e3288680c483e13964b0c891c7f379",
@@ -20,7 +20,7 @@
     "15-webster-prompt-gates.md": "f42e6cfbcb02a4ed04ab84164ced0530ef929cb289dea50d1fcdd6c42f0c136f",
     "16-retire-verify-tiers.md": "d9da3923a7cfb45e88942f02faf9b8bdec8afafbd47dc2450b767a00a405eab6",
     "17-refuse-raw-guard.md": "bb6fda5f49a6d28e0845dad810595f467ab02ad6351fb5aac347db3a58d9bdff",
-    "18-plan-gate-verify-checks.md": "6d7be531183a4580852f89fb3fdc7aa20a44e8e49b05e33e12ce16a290536e2a",
+    "18-plan-gate-verify-checks.md": "88b32527884e6dd910159498a0116009b6bfc31093f64d70d79271ba10aefd2b",
     "19-non-tier-holders.md": "968f869d9e891e509194dc72845dcc553e8b21764baaca622b4fc9dff34435f7"
   },
   "planOverviewFrameHash": "dfdbe8d70c76a98fce9f5782233c31918e41274fa3a4b296ee78238d1d90121b",
@@ -778,7 +778,7 @@
       }
     }
   ],
-  "currentBatch": 18,
+  "currentBatch": 0,
   "masterStrand": "6f56338668c07f063671518ad01fb02d",
   "masterSessionId": "9216b63a-fe9f-48ce-93a3-9e8a3200b274",
   "masterEngine": "claude",
@@ -1158,15 +1158,33 @@
         "18-plan-gate-verify-checks"
       ],
       "cardHashes": {
-        "18-plan-gate-verify-checks": "6d7be531183a4580852f89fb3fdc7aa20a44e8e49b05e33e12ce16a290536e2a"
+        "18-plan-gate-verify-checks": "88b32527884e6dd910159498a0116009b6bfc31093f64d70d79271ba10aefd2b"
       },
       "startSha": "d0af3cf6cb23f4531ac6047e2d8ccf473e1d277f",
       "kind": "fork",
       "spawnedAt": "2026-10-21T18:08:03Z",
       "sessionId": "9216b63a-fe9f-48ce-93a3-9e8a3200b274",
       "engine": "claude",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "18-plan-gate-verify-checks",
+        "status": "done",
+        "head_sha": "d1456d10bde814797e1f133859ef8530b9be5cf9",
+        "deviations": [
+          "internal/loomcli/parity_test.go",
+          "internal/loomshed/plancontext.go"
+        ]
+      },
+      "cardShas": [
+        "d1456d10bde814797e1f133859ef8530b9be5cf9"
+      ],
+      "forkTranscripts": [
+        "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-test-tiers/9216b63a-fe9f-48ce-93a3-9e8a3200b274/subagents/agent-a8eba1d9ba2b8e7c1.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-test-tiers/9216b63a-fe9f-48ce-93a3-9e8a3200b274/subagents/agent-a8eba1d9ba2b8e7c1.jsonl"
+      ]
     },
     "4": {
       "slug": "gate-run-log",
@@ -1267,6 +1285,7 @@
     "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-test-tiers/9216b63a-fe9f-48ce-93a3-9e8a3200b274/subagents/agent-ae526bbff62c9e6d3.jsonl",
     "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-test-tiers/9216b63a-fe9f-48ce-93a3-9e8a3200b274/subagents/agent-a1a8e228bcc9301a3.jsonl",
     "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-test-tiers/9216b63a-fe9f-48ce-93a3-9e8a3200b274/subagents/agent-a8c6746a4657c18b0.jsonl",
-    "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-test-tiers/9216b63a-fe9f-48ce-93a3-9e8a3200b274/subagents/agent-a5acdc5b97bbb73de.jsonl"
+    "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-test-tiers/9216b63a-fe9f-48ce-93a3-9e8a3200b274/subagents/agent-a5acdc5b97bbb73de.jsonl",
+    "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-test-tiers/9216b63a-fe9f-48ce-93a3-9e8a3200b274/subagents/agent-a8eba1d9ba2b8e7c1.jsonl"
   ]
 }
