@@ -829,25 +829,6 @@
       "revised": "2026-10-18T14:57:29Z"
     },
     {
-      "id": 661,
-      "slug": "orch-note-no-reply",
-      "title": "The orch watcher sees the note is written instead of waiting for a reply",
-      "kind": "note",
-      "labels": [
-        "enhancement",
-        "orch",
-        "creel",
-        "workspaces"
-      ],
-      "issues": [],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "At a context cycle the watcher checks that the orch turn ended and the note file exists, and cycles with no written reply; defer stays",
-      "body": "## Seen (2026-10-18)\n\n- At a context cycle the orch watcher posts a request to write the orch note, and waits for the orch to answer `lyx creel post --reply \u003cid\u003e \"written \u003cpath\u003e\"` before it compacts or clears the session.\n- The reply costs the orch one more tool call per cycle, and the operator questioned why it is needed.\n- The watcher already reads the session's turn ends, since a soft cycle waits for the newest turn end to be quiet.\n\n## Operator decision (2026-10-18)\n\n- The watcher sees by itself that the note is written: the orch's turn has ended and the named note file exists and is not empty; it then cycles with no reply.\n- A `defer` reply to a soft request stays, since only the orch knows that work a cycle would lose is in flight.\n",
-      "created": "2026-10-18T15:13:52Z",
-      "revised": "2026-10-18T15:13:52Z"
-    },
-    {
       "id": 662,
       "slug": "orch-rules-move",
       "title": "Move the orch rules into the hub-wide rules file",
@@ -996,26 +977,6 @@
       "body": "## Seen\n\nThe orch starts every run with `lyx batten run \u003cslug\u003e --window`, and the operator confirms that this is always how runs are started.\nWithout the flag the whole lifecycle runs in the caller's foreground for hours, which blocks the orch session and can be killed by the shell timeout.\n\n## Idea\n\nMake the window the default for `lyx batten run`: start the run in its own tmux window of the prime's reed session, return at once, and run the Open-Window row.\nKeep the foreground as an explicit opt-in flag for the cases that need it, such as the window's own inner invocation and tests.\nUpdate the orch role and the `lyx batten run` help to drop `--window` from the normal path.",
       "created": "2026-10-19T11:00:53Z",
       "revised": "2026-10-19T11:00:53Z"
-    },
-    {
-      "id": 684,
-      "slug": "orch-strand-live-after-exit",
-      "title": "orch status reports a live strand after the orch Claude session exits, so --continue is refused",
-      "kind": "note",
-      "labels": [
-        "bug",
-        "orch",
-        "reed"
-      ],
-      "issues": [
-        746
-      ],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "Imported from [issue #746](https://github.com/Knatte18/loomyard/issues/746).\n\nSeen on Linux (tmux 3.4) in the loomyard hub's prime.\nThe operator closed the orch Claude session by mistake and then talked to the same session id outside reed.\n\n`lyx orch status` afterwards reported `strand_live: true` with `watcher_live: false`, while the orch strand's pane (`%3`) held only a `bash` shell (`tmux list-panes` showed `%3 0:bash bash`, so the pane also sat under a session and window named `0` and `bash`, not the prime's `loomyard:orch`).\n`lyx orch start --help` says `--continue` and `--adopt` are refused while the strand is live, so getting back needed `lyx orch stop` first.\n\nWorkaround: `lyx orch stop`, then `lyx orch start --continue`, then `lyx reed attach`.\n\nExpected:\n- A strand whose pane no longer runs its Claude session counts as dead, so `lyx orch status` shows it and `lyx orch start --continue` resumes it in one step.\n- The watcher's death is surfaced or the watcher is restarted, instead of the orch going silent.\n- The orch pane stays in the prime's reed session and window.",
-      "created": "2026-10-19T14:27:09Z",
-      "revised": "2026-10-19T14:27:09Z"
     },
     {
       "id": 686,
@@ -1457,20 +1418,26 @@
     },
     {
       "id": 727,
-      "slug": "orch-cycle-request-cancel",
-      "title": "Withdraw a pending orch distill or refresh request",
-      "kind": "note",
+      "slug": "orch-strand-cycle",
+      "title": "Orch lifecycle: dead strands count as dead, the watcher restarts, cycle requests need no reply and can be withdrawn",
+      "kind": "task",
       "labels": [
+        "bug",
         "enhancement",
-        "orch"
+        "orch",
+        "reed"
       ],
-      "issues": [],
+      "issues": [
+        746
+      ],
+      "recipe": "loom",
       "depends_on": [],
       "isolated": false,
-      "brief": "No verb withdraws a pending lyx orch distill/refresh; the marker had to be deleted by hand",
-      "body": "## Seen (orch, 2026-10-21)\n\nThe orch ran `lyx orch distill` while a hub pause stood.\nThe watcher starts no context cycle under a hub pause, so the request sat pending until the resume.\nThe operator wanted it withdrawn, and no verb does that: the orch deleted the marker `.lyx/orch/cycle-request` by hand.\n\n## Idea\n\nA verb that withdraws a pending `refresh` or `distill` request, such as `lyx orch distill --cancel` or `lyx orch cancel-cycle`, refusing once the cycle has started.\n`lyx orch status` could also show a pending request, and `distill`/`refresh` could say when a hub pause holds the request back.\n",
-      "created": "2026-10-21T08:27:35Z",
-      "revised": "2026-10-21T08:27:35Z"
+      "brief": "Strand liveness checks the engine process and placement, a dead orch watcher restarts, the note write is seen without a reply, and a pending distill/refresh can be withdrawn",
+      "body": "Three orch lifecycle fixes in one run: a dead strand counts as dead, a dead watcher restarts, and the watcher's context-cycle request needs no reply and can be withdrawn.\n\n## 1. A strand whose engine has exited counts as dead\n\nSeen on Linux (tmux 3.4) in the loomyard hub's prime ([issue #746](https://github.com/Knatte18/loomyard/issues/746)).\nThe operator closed the orch Claude session by mistake and then talked to the same session id outside reed.\n`lyx orch status` afterwards reported `strand_live: true` with `watcher_live: false`, while the orch strand's pane (`%3`) held only a `bash` shell, under a session and window named `0` and `bash`, not the prime's `loomyard:orch`.\n`lyx orch start --continue` and `--adopt` are refused while the strand is live, so getting back needed `lyx orch stop` first.\n\nToday reed counts a strand live when its recorded pane id is listed by tmux and not dead (`internal/reedengine/lifecycle.go`, the status path's `aliveIDSet`); the process in the pane is never checked.\n\n### Operator decision (2026-10-21)\n\nA strand is live only when all three hold:\n\n1. its pane exists and is not dead, as today;\n2. the pane sits in the reed session and window the strand was launched into;\n3. the pane's foreground process is the engine (`claude`), not a shell.\n\nWhen any fails, the strand is dead: `lyx orch status` shows `strand_live: false`, and `lyx orch start --continue` resumes in one step with no `lyx orch stop` first.\nThe check lives in reed and holds for every strand, not only orch's, so webster's `StrandLive` gets it too.\n\nReed never adopts a pane outside its own session.\n`start --continue` and `--adopt` always launch orch in the prime's reed window (`\u003chub\u003e:orch`); a stale pane elsewhere is left alone, and status only names it.\n\n## 2. A dead watcher restarts\n\n### Operator decision (2026-10-21)\n\nA dead orch watcher is restarted, not only reported: at `lyx orch status` and at every `lyx orch start`, and the restart is logged so it shows.\n\n## 3. The watcher sees the orch note is written, with no reply\n\nSeen (2026-10-18): at a context cycle the orch watcher posts a request to write the orch note, and waits for the orch to answer `lyx creel post --reply \u003cid\u003e \"written \u003cpath\u003e\"` before it compacts or clears the session.\nThe reply costs the orch one more tool call per cycle.\nThe watcher already reads the session's turn ends, since a soft cycle waits for the newest turn end to be quiet.\n\n### Operator decision (2026-10-18)\n\n- The watcher sees by itself that the note is written: the orch's turn has ended and the named note file exists and is not empty; it then cycles with no reply.\n- A `defer` reply to a soft request stays, since only the orch knows that work a cycle would lose is in flight.\n\n## 4. A pending cycle request can be withdrawn\n\nSeen (orch, 2026-10-21): the orch ran `lyx orch distill` while a hub pause stood.\nThe watcher starts no context cycle under a hub pause (`internal/orchengine/doc.go`), so the request sat pending until the resume.\nThe operator wanted it withdrawn, and no verb does that: the orch deleted the marker `.lyx/orch/cycle-request` by hand.\n\nWanted:\n\n- a verb that withdraws a pending `refresh` or `distill` request, refusing once the cycle has started;\n- `lyx orch status` shows a pending request;\n- `distill` and `refresh` say when a hub pause holds the request back.\n",
+      "created": "2026-10-18T15:13:52Z",
+      "revised": "2026-10-21T10:48:13Z",
+      "profile": "light"
     }
   ]
 }
