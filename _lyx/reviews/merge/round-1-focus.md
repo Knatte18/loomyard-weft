@@ -1,0 +1,13 @@
+---
+round: 1
+focus:
+  - "internal/configreg/configreg_test.go, `TestModules_EveryTemplateKeyClassified`: the task added `review_amend_max_bounces` to the `darn` `wantLocalKeys` row while the parent added the `MachineKeys` and `machineKeyRefusal` assertions in the same test. Does the merged test still hold for the `darn` and `loom` templates, and is `review_amend_max_bounces` classified consistently with the parent's reworded rule in `pattern/PATTERN-config-layers.md` (every category but None closes a key to the local layer)?"
+  - "Parent's `PATTERN-config-layers`, `PATTERN-hub-wide-config` and `PATTERN-durable-vs-ephemeral-state` machine-layer text against any config key, loader or reconcile path the task added or changed (the `review_amend_max_bounces` key in `loom.yaml` and `darn.yaml`, their templates, `Categories`, reconcile and `run_settings`): does the task's key handling still go through `configengine` and respect the machine layer's rules?"
+  - "internal/burlerengine/doc.go: the parent reworded the fork-consolidation prose (a fixer judges all fork findings together after the last fork returns; a cluster handler consolidates only once the last fork has returned) and the task edited the `ReviewResult` doc (`SessionStates`). Does the merged doc, and the code it describes, still read consistently where the two edits sit in one package, and does the task's burlerengine behavior still match the parent's reworded fork-ordering contract?"
+  - "docs/overview.md: the parent and task both edited the loom and darn config prose (`review_amend_max_bounces` next to the parent's config-layer wording), the darn re-entry sentence and the friction text. Do the merged sentences contradict each other or the parent's `PATTERN.md` overview lines, for example the friction-capture line the task shortened against the parent's other overview edits?"
+  - "PATTERN.md overview: both sides edited lines of the same file, and the task's `lyx loom lint-pattern` headroom rule applies to the merged text. Does the merged overview respect its headroom line and the single-line-per-entry form, and does every pattern line the parent changed still match its `pattern/` background file?"
+  - "Test economy: does any task test now duplicate a parent test over the same behavior (config classification, machine keys, burler fork ordering), or does a behavior of the interaction have no test, such as a key that is both a bounce-budget key and subject to the parent's layer-closing rule?"
+---
+
+Focus covers the four overlapping files and the parent's changed pattern files.
+Each entry is a question to settle against the rubric's `Do not flag` list, not a finding.
