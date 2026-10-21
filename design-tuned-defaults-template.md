@@ -17,6 +17,10 @@ The values that differ from the template today:
 - `discussion_fixer_fan: fix-discussion`, `plan_fixer_fan: fix-plan`, `webster_fixer_fan` and `merge_fixer_fan: fix-code`
 - `driver: haiku[medium]`, `discussion_max_bounces: 2`, `webster_max_bounces: 1`, `webster_auto_accept: true`
 
+The copy missed `shed.yaml`: the template seeds `driver_kind: llm`, while loomyard sets `go`, so the quarry hub's first run, `csharp-alphabet`, was seeded with an LLM driver to the operator's surprise; the orch then set `driver_kind: go` in quarry.
+
+Other modules where the loomyard hub differs from the template, each to be judged general preference or loomyard's own: `batcher` (budget), `board` (labels), `claude` (timeouts), `darn` (verify, reviewer and fixer models and fans), `gate` (slots), `landing` (publish_verify, deploy), `lenses` (added lenses), `models` (model entries), `orch` (token thresholds), `webster` (`kickstart_pack: false`).
+
 ## Operator decision (2026-10-21)
 
 The tuned values move into lyx's template, so they are the default and every new hub gets them with no copying.
