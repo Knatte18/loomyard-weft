@@ -1,6 +1,6 @@
 # lyx board rename: change an entry slug in one write
 
-`board-rename` · Task · enhancement, board · running · Darn-Burler-Fix
+`board-rename` · Task · enhancement, board · running · Darn-Bouncer
 
 ## Seen
 
