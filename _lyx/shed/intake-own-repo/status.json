@@ -1,12 +1,13 @@
 {
   "current_producer": "PR-Gate",
-  "state": "running",
-  "error": "",
+  "state": "awaiting",
+  "error": "alignment report /home/AD.NORCERESEARCH.NO/hanf/Code/Knatte18/loomyard-LYXHUB/intake-own-repo/_lyx/shed/intake-own-repo/alignment/pr-gate/attempt-1/report-d95ae9c8e3930872.md did not settle this pull request - The board entry for intake-own-repo says the hub-wide orch rules' override section (\"Intake only on the operator's word\" and \"No parent reviews\" in _board/_lyx/orch/rules.md) is removed in the same change, and the diff leaves it in place. The decision record says you decided by message that the orch removes those sections with lyx orch rules after this task lands and deploys, but no Added after Discussion entry records it. Do you record that deferral with lyx loom decision add, so the run passes PR-Gate unchanged, or refuse it and say how the removal lands with this change?; the pull request awaits review; run `lyx loom approve` to land it or `lyx loom reject` to send findings to rework: https://github.com/Knatte18/loomyard/pull/794",
+  "parent_notice": "alignment report /home/AD.NORCERESEARCH.NO/hanf/Code/Knatte18/loomyard-LYXHUB/intake-own-repo/_lyx/shed/intake-own-repo/alignment/pr-gate/attempt-1/report-d95ae9c8e3930872.md did not settle this pull request - The board entry for intake-own-repo says the hub-wide orch rules' override section (\"Intake only on the operator's word\" and \"No parent reviews\" in _board/_lyx/orch/rules.md) is removed in the same change, and the diff leaves it in place. The decision record says you decided by message that the orch removes those sections with lyx orch rules after this task lands and deploys, but no Added after Discussion entry records it. Do you record that deferral with lyx loom decision add, so the run passes PR-Gate unchanged, or refuse it and say how the removal lands with this change?",
   "pause_requested": false,
   "activity": {
     "now": "PR-Gate",
-    "last": "PR-Align → done",
-    "wait": ""
+    "last": "PR-Gate → awaiting",
+    "wait": "alignment report /home/AD.NORCERESEARCH.NO/hanf/Code/Knatte18/loomyard-LYXHUB/intake-own-repo/_lyx/shed/intake-own-repo/alignment/pr-gate/attempt-1/report-d95ae9c8e3930872.md did not settle this pull request - The board entry for intake-own-repo says the hub-wide orch rules' override section (\"Intake only on the operator's word\" and \"No parent reviews\" in _board/_lyx/orch/rules.md) is removed in the same change, and the diff leaves it in place. The decision record says you decided by message that the orch removes those sections with lyx orch rules after this task lands and deploys, but no Added after Discussion entry records it. Do you record that deferral with lyx loom decision add, so the run passes PR-Gate unchanged, or refuse it and say how the removal lands with this change?; the pull request awaits review; run `lyx loom approve` to land it or `lyx loom reject` to send findings to rework: https://github.com/Knatte18/loomyard/pull/794"
   },
   "history": [
     {
@@ -151,6 +152,12 @@
       "outcome": "done",
       "output": "",
       "at": "2026-10-21T12:29:46Z"
+    },
+    {
+      "producer": "PR-Gate",
+      "outcome": "awaiting",
+      "output": "",
+      "at": "2026-10-21T12:29:48Z"
     }
   ],
   "product": {
