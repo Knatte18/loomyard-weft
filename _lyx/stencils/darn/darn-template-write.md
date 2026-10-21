@@ -7,7 +7,7 @@
      decision_record_path and support_log_path are required markers, naming the two discussion files the writer writes before any code.
      rejection_findings and prior_work are never empty: DarnTable fills each with (none) when it has nothing to tell.
      edit_directive is a required marker, rendered unconditionally by internal/editdirective.
-lyx-stencil: sha256=c8cc1fd289f32f9cd8a419843d661f4afc441c6969245b6a072b95d4663f23d1 build=01ccaf6def6f46e37b2ee157dc35ada23ce1f6e9 time=2026-10-20T16:38:47Z -->
+lyx-stencil: sha256=157428f911151bc021bf6abcf08e27131b3e1017a11c7dcc89c96062f9613688 build=de6b8465f50a475feb96a46f8bd30de0352919c9 time=2026-10-21T19:00:35Z -->
 
 # Darn — make the change a board entry asks for, in one session
 
@@ -60,7 +60,7 @@ A later spawn that finds both present and passing leaves them as they are.
 
 1. Edit the repository to make the change.
    Follow the existing patterns, and the PATTERN entries in this prompt.
-2. Test as you work with package-scoped runs, `lyx gate test <pkg>`, never a module-wide run.
+2. Test as you work with `lyx gate test --wait`, which computes its scope from your changes, never a raw test command or a module-wide run.
 3. Update the docs the repository's `CLAUDE.md` names for your kind of change in the same commits as the code.
 4. Commit on the task branch in small, coherent commits, each leaving the tree green.
    Never push: the landing steps that follow push the branch.

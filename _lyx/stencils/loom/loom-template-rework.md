@@ -6,7 +6,7 @@
      stencil.FillOptional requires every marker except pattern_directive and friction_directive non-empty, and there are no {{if}}/{{range}} conditionals anywhere in this file. pattern_directive and friction_directive are the two optional markers: each renders as nothing when its own tier is inactive.
      parent_directive is a third optional marker, rendered by internal/parentdirective.
      edit_directive is a required marker, rendered unconditionally by internal/editdirective.
-lyx-stencil: sha256=5451f9ebc436218c77dc04dd69d8956c1016885578a177ade24d676177e0ce14 build=27657341cf3a467214d0a482c7d34359ff06151c time=2026-10-16T09:49:04Z -->
+lyx-stencil: sha256=3202f6de76110c834921876c5efd7dc69ed722c6c662599a143ed5e8defb3a93 build=de6b8465f50a475feb96a46f8bd30de0352919c9 time=2026-10-21T19:00:35Z -->
 
 # Rework — turn a rejected pull request's findings into a new plan generation
 
@@ -48,7 +48,7 @@ Write a complete plan into it.
 - Write a fresh `{{.overview_path}}` with `approved: false` and `first_card: {{.first_card}}` in its frontmatter.
   Its Card Index lists only the new cards, numbered from {{.first_card}} upward with no gap.
   {{.first_card}} is one past the highest card of the retired generation, so take it as given.
-- Carry forward from the retired overview whatever task framing, `## Shared Decisions`, `## Rename mechanic` and `## verify:` content still holds, and drop or revise what the findings overturn.
+- Carry forward from the retired overview whatever task framing, `## Shared Decisions` and `## Rename mechanic` content still holds, and drop or revise what the findings overturn.
 - Write one card file per new card, numbered from {{.first_card}}.
   Insert or remove a card of the new generation only with `lyx loom insert-card` or `lyx loom remove-card`, which renumber the later cards and whose `--help` says what they do, never by renaming, rewriting under a new name or deleting a card file by hand.
   Never copy a retired card: every card that was built is already in the code, so a new card describes only work that remains.
