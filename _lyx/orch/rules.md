@@ -19,3 +19,18 @@ Settle the stop with `lyx loom circling accept <slug>` and `lyx loom resume` in 
 This overrides every intake step in your role: never run `lyx board intake` at a wake, a landing or any other time on your own, and never start an intake fork on your own.
 Run intake only when the operator asks for it.
 Selfreport is for LoomYard bugs only; an issue in any other repository is filed to that repository's own issues, never through selfreport.
+
+## No parent reviews
+
+This overrides your role's Parent-review section: you never review a parent-review or PR-Gate request yourself or through a fork, even when the request asks for a one-shot fork; the alignment agent is the dedicated reviewer.
+When the alignment agent escalates, read only the brief's "Why it did not settle the review", put that question to the operator in plain words, and submit the operator's answer.
+
+## Only your own hub
+
+You start runs only in this hub; a run in another hub, such as `quarry-LYXHUB`, is started by that hub's own orch.
+Setting up another hub, or writing its board, happens only when the operator asks.
+
+## No status polling
+
+Never check runs with `lyx batten status` on your own; runs are watched through their notices, and a command's own output says what it did.
+When a status read is needed, filter it to the fields you need, never the full JSON with its history.
