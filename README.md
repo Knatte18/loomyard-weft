@@ -20,7 +20,7 @@ Held by a run; its scope is locked until the run ends.
 | 1 | **Origin reconcile before anything that matters, and pushes that never fail silently**<br>• ls-remote over warp and records repos at orch start, wake, batten resume, Merge-In and Finalize; fast-forward, landed-elsewhere cleanup, stop on divergence; rejected push retries and reports | [`origin-reconcile`](design-origin-reconcile.md) | loom | PR-Align | 4d | 21h | fabric, batten, orch, creel, shed |
 | 2 | **[.NET 002] Test tiers: every test run through lyx gate test, numbered tiers in hub config, computed scope**<br>• All testing goes through the gate slot pool against hub-declared tiers tier0..N, with scope computed from the diff; replaces the Go-only gate | [`test-tiers`](design-test-tiers.md) | loom | Plan-Burler-Review | 4d | 2h | gate, config, shed, dotnet |
 | 3 | **The operator tuned loom defaults move into the lyx template, so every new hub gets them**<br>• New hubs seed neutral loom defaults; the loomyard hub tuning is the operator default and belongs in the template<br>• `profile: light` | [`tuned-defaults-template`](design-tuned-defaults-template.md) | loom | Webster | 2h | 1h | config, loom |
-| 4 | **Shipped review rubrics name loomyard's own PATTERN files, so reviewers in other hubs search for files that do not exist**<br>• `profile: light`<br>• `darn: review_hard_max_bounces 2`<br>• `darn: review_max_bounces 1` | [`stencils-repo-neutral`](design-stencils-repo-neutral.md) | darn | Darn-Burler-Fix | 13m | 12m | stencil, loom, burler |
+| 4 | **Shipped review rubrics name loomyard's own PATTERN files, so reviewers in other hubs search for files that do not exist**<br>• `profile: light`<br>• `darn: review_hard_max_bounces 2`<br>• `darn: review_max_bounces 1` | [`stencils-repo-neutral`](design-stencils-repo-neutral.md) | darn | Darn-Bouncer | 13m | 13m | stencil, loom, burler |
 
 ### Ready
 
@@ -53,7 +53,7 @@ Starts when every entry it names under After is done.
 
 | # | Task | Slug | Recipe | After | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | **Every process a run spawns has one owner that ends them all**<br>• Owner records for run processes; pause, reed down, fabric remove and teardown end the whole group; tender status shows orphans; batten abandon ends a dead run; a hub pause reaches background work | [`run-process-ownership`](design-run-process-ownership.md) | loom | `origin-reconcile`, `machine-handover`, `tender-pause-holds-reprompt` | 6d | 17h | batten, fabric, loom, shed, shuttle, webster |
+| 1 | **Every process a run spawns has one owner that ends them all**<br>• Owner records for run processes; pause, reed down, fabric remove and teardown end the whole group; tender status shows orphans; batten abandon ends a dead run; a hub pause reaches background work | [`run-process-ownership`](design-run-process-ownership.md) | loom | `origin-reconcile`, `machine-handover`, `tender-pause-holds-reprompt` | 6d | 18h | batten, fabric, loom, shed, shuttle, webster |
 
 #### Normal priority
 
