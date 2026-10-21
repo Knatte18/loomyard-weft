@@ -4,3 +4,6 @@
 {"stop_key":{"current_producer":"Discussion-Bouncer","history_length":17,"state":"awaiting"},"settler":"arbiter","action":"restep","outcome":"arbiter resume","at":"2026-10-20T20:08:02.356667032+02:00"}
 {"stop_key":{"current_producer":"Plan-Bouncer","history_length":32,"state":"awaiting"},"settler":"arbiter","action":"spawn","outcome":"arbiter spawned","at":"2026-10-21T07:46:48.424186749+02:00","target":"attempt-3"}
 {"stop_key":{"current_producer":"Plan-Bouncer","history_length":32,"state":"awaiting"},"settler":"arbiter","action":"restep","outcome":"arbiter resume","at":"2026-10-21T07:46:48.424491439+02:00"}
+{"stop_key":{"current_producer":"Publish","history_length":45,"state":"blocked"},"settler":"parent","action":"hand-back","outcome":"a verify halt matching the failure record under a watching batten: hand back","at":"2026-10-21T14:03:04.113839554+02:00"}
+{"stop_key":{"current_producer":"Merge-In","history_length":54,"state":"blocked"},"settler":"parent","action":"hand-back","outcome":"a verify halt matching the failure record under a watching batten: hand back","at":"2026-10-21T15:02:57.429343478+02:00"}
+{"stop_key":{"current_producer":"Webster-Bouncer","history_length":58,"state":"awaiting"},"settler":"parent","action":"hand-back","outcome":"the arbiter refused the stop","at":"2026-10-21T15:14:07.169781593+02:00"}
