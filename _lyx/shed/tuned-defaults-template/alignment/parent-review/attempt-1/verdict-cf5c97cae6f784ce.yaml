@@ -1,0 +1,7 @@
+verdict: approve
+reason: >-
+  The design covers every point of the board entry's split: D1 moves every general-preference value into the templates, D2 to D4 make existing and new hubs follow the template, and the kept entries stay in loomyard's hub files.
+  It duplicates or contradicts no other board entry.
+  The overlaps with origin-reconcile (the walk's board push) and test-tiers (configsync and retired darn and landing keys) touch different behaviours and do not conflict; origin-reconcile lands first, and test-tiers is a tie.
+question: ""
+superseded: []
