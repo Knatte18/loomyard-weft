@@ -1,6 +1,6 @@
 # The operator tuned loom defaults move into the lyx template, so every new hub gets them
 
-`tuned-defaults-template` · Task · enhancement, config, loom · running · PR-Gate
+`tuned-defaults-template` · Task · enhancement, config, loom · running · Finalize
 
 ## Seen (orch, 2026-10-21)
 
