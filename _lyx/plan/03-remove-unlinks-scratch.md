@@ -16,7 +16,6 @@
 - `internal/fabricengine#removeLink`
 - `internal/fabricengine#ownedDriftedWiredJunction`
 - `internal/fabricengine#scratchDirName`
-- `plan:internal/fabricengine#scratchLinkTarget`
 
 **Intent:**
 `lyx fabric remove` unlinks the worktree-root `.scratch` link itself before it removes the warp worktree directory, at a root and at a subpath anchor alike (D3).
