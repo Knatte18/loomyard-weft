@@ -1,6 +1,6 @@
 # A hub lenses.yaml keeps only what the hub tuned, so template edits reach it
 
-`lenses-template-frozen` · Task · enhancement, config, burler · running · PR-Gate
+`lenses-template-frozen` · Task · enhancement, config, burler · running · Finalize
 
 ## Seen (orch, 2026-10-20)
 
