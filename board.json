@@ -1368,6 +1368,24 @@
       "body": "Imported from [issue #796](https://github.com/Knatte18/loomyard/issues/796).\n\nSeen in the quarry hub (Knatte18/quarry, run csharp-alphabet), 2026-10-21.\n\nPlan-Burler-Review finished in about 7.5 minutes and wrote _lyx/reviews/plan/round-1-review.md with verdict APPROVED. The reviewer agent then started two background shell commands (find /). The run waited on them: lyx loom status showed 'waiting: background shells running 21m'. The operator stopped both tasks in the pane ('Stop Task … stopped') and the find processes were gone, yet the run stayed on Plan-Burler-Review with no counter moving.\n\nExpected: a reviewer's background shells started after its verdict file is written never hold the row, or the row stops waiting once the shells have ended; a wait that long surfaces as a stop to the parent rather than a silent hang.\nRelated: board task run-process-ownership (process ownership); a separate issue covers why the reviewer searched for PATTERN files at all.",
       "created": "2026-10-21T13:06:10Z",
       "revised": "2026-10-21T13:06:10Z"
+    },
+    {
+      "id": 737,
+      "slug": "review-rounds-after-twill-plan",
+      "title": "Revisit late review rounds after the twill-plan lens change",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "burler",
+        "loom"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "After 4-5 loom runs past 504c5552, check whether discussion-review round 3 and plan-review round 2 still find anything",
+      "body": "## Seen\n\nThe audit `twill-writer-quality-audit` found discussion-review round 3 and plan-review round 2 useful only when an earlier round's fix was too narrow.\nSince `504c5552` (2026-10-20), the Plan writer's `twill-plan` fan runs every `review-plan` lens, as the Discussion writer's fan already runs every `review-discussion` lens, which should cut round-1 findings further.\n\n## Idea\n\nOnce 4-5 loom runs have landed after `504c5552`, compare their round-1 Plan findings against the audit's baseline, and check whether discussion-review round 3 and plan-review round 2 still find anything.\nIf they rarely do, lower the default review bounce caps for those segments.\n",
+      "created": "2026-10-21T17:16:42Z",
+      "revised": "2026-10-21T17:16:42Z"
     }
   ]
 }
