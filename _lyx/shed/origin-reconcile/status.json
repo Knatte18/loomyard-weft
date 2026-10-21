@@ -1,12 +1,13 @@
 {
   "current_producer": "Webster-Bouncer",
-  "state": "running",
-  "error": "",
+  "state": "awaiting",
+  "error": "bouncer Webster-Bouncer: round 4 escalated to the parent (cause: hard-cap); brief at /home/AD.NORCERESEARCH.NO/hanf/Code/Knatte18/loomyard-LYXHUB/origin-reconcile/_lyx/reviews/webster/round-4-escalation.md; the round is at or past the perch's hard cap, so it can only be accepted: decide with `lyx loom circling accept origin-reconcile`, then run `lyx loom resume` in the task worktree to resume",
+  "parent_notice": "Review segment of task `origin-reconcile` needs a decision: review the brief at `/home/AD.NORCERESEARCH.NO/hanf/Code/Knatte18/loomyard-LYXHUB/origin-reconcile/_lyx/reviews/webster/round-4-escalation.md` with a one-shot fork.",
   "pause_requested": false,
   "activity": {
     "now": "Webster-Bouncer",
-    "last": "Webster-Burler-Fix → bounced to Webster-Bouncer",
-    "wait": ""
+    "last": "Webster-Bouncer → awaiting",
+    "wait": "bouncer Webster-Bouncer: round 4 escalated to the parent (cause: hard-cap); brief at /home/AD.NORCERESEARCH.NO/hanf/Code/Knatte18/loomyard-LYXHUB/origin-reconcile/_lyx/reviews/webster/round-4-escalation.md; the round is at or past the perch's hard cap, so it can only be accepted: decide with `lyx loom circling accept origin-reconcile`, then run `lyx loom resume` in the task worktree to resume"
   },
   "history": [
     {
@@ -796,6 +797,12 @@
       ],
       "budget_exempt": true,
       "routed_to": "Webster-Bouncer"
+    },
+    {
+      "producer": "Webster-Bouncer",
+      "outcome": "awaiting",
+      "output": "/home/AD.NORCERESEARCH.NO/hanf/Code/Knatte18/loomyard-LYXHUB/origin-reconcile/_lyx/reviews/webster/round-4-bouncer-ledger.md",
+      "at": "2026-10-21T13:14:07Z"
     }
   ],
   "product": {
