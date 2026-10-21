@@ -1,9 +1,8 @@
 {
   "current_producer": "Webster-Burler-Review",
-  "state": "paused",
+  "state": "running",
   "error": "",
   "pause_requested": false,
-  "pause_reason": "goto to Webster-Burler-Review by orch",
   "activity": {
     "now": "Webster-Burler-Review",
     "last": "Webster-Burler-Review → goto",
