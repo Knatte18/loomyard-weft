@@ -1410,7 +1410,7 @@
       "id": 735,
       "slug": "stencils-repo-neutral",
       "title": "Shipped review rubrics name loomyard's own PATTERN files, so reviewers in other hubs search for files that do not exist",
-      "kind": "note",
+      "kind": "task",
       "labels": [
         "bug",
         "stencil",

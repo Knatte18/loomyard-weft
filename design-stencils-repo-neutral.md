@@ -1,6 +1,6 @@
 # Shipped review rubrics name loomyard's own PATTERN files, so reviewers in other hubs search for files that do not exist
 
-`stencils-repo-neutral` · Note · bug, stencil, loom, burler
+`stencils-repo-neutral` · Task · bug, stencil, loom, burler
 
 Imported from [issue #795](https://github.com/Knatte18/loomyard/issues/795).
 

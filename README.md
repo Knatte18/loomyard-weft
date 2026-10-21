@@ -25,7 +25,11 @@ Held by a run; its scope is locked until the run ends.
 
 Waits on nothing open; can start now.
 
-_None._
+#### Normal priority
+
+| # | Task | Slug | Recipe | After | Age | Revised | Labels |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| 1 | **Shipped review rubrics name loomyard's own PATTERN files, so reviewers in other hubs search for files that do not exist** | [`stencils-repo-neutral`](design-stencils-repo-neutral.md) | loom |  | 0m | 0m | stencil, loom, burler |
 
 ### Layer A
 
@@ -105,8 +109,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | --- | --- | --- | --- | --- | --- |
 | 3 | **Opening an agent into reed: engine bypass mode by default, explicit engine, model and effort, and reed add points to shuttle open**<br>• reed add help shows a broken claude example (%SID% never substituted) and shuttle open keeps the interactive permission default; every agent in reed needs bypass, per engine (claude bypassPermissions, Codex --yolo) | [`reed-agent-launch-bypass`](design-reed-agent-launch-bypass.md) | 23h | 23h | reed, shuttle, claude, codex |
 | 4 | **Diff-scoped verify gate runs an unrelated package whose test depends on host inotify limits** | [`verify-diff-scope-unrelated-pkg`](design-verify-diff-scope-unrelated-pkg.md) | 1h | 1h | gate |
-| 5 | **Shipped review rubrics name loomyard's own PATTERN files, so reviewers in other hubs search for files that do not exist** | [`stencils-repo-neutral`](design-stencils-repo-neutral.md) | 0m | 0m | stencil, loom, burler |
-| 6 | **A review perch waits on a reviewer's background shells, and keeps waiting after they are stopped** | [`review-waits-background-shells`](design-review-waits-background-shells.md) | 0m | 0m | burler, shuttle |
+| 5 | **A review perch waits on a reviewer's background shells, and keeps waiting after they are stopped** | [`review-waits-background-shells`](design-review-waits-background-shells.md) | 0m | 0m | burler, shuttle |
 
 ### Enhancements
 
