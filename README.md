@@ -27,7 +27,7 @@ Held by a run; its scope is locked until the run ends.
 | # | Task | Slug | Recipe | At | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | 5 | **lyx board rename: change an entry slug in one write**<br>• Rename an entry keeping all fields and rewriting depends_on; report prose mentions | [`board-rename`](design-board-rename.md) | darn | Describe | 3d | 18m | board |
-| 6 | **Reed small fixes: trace-id constant in tests, allow-set-title warn noise, watchdog stop marker without inotify**<br>• Three small reed fixes in one darn run | [`reed-small-fixes`](design-reed-small-fixes.md) | darn | Darn-Burler-Review | 1d | 18m | reed, shuttle |
+| 6 | **Reed small fixes: trace-id constant in tests, allow-set-title warn noise, watchdog stop marker without inotify**<br>• Three small reed fixes in one darn run | [`reed-small-fixes`](design-reed-small-fixes.md) | darn | Darn-Burler-Fix | 1d | 18m | reed, shuttle |
 
 ### Ready
 
@@ -112,7 +112,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | # | Note | Slug | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | 3 | **Opening an agent into reed: engine bypass mode by default, explicit engine, model and effort, and reed add points to shuttle open**<br>• reed add help shows a broken claude example (%SID% never substituted) and shuttle open keeps the interactive permission default; every agent in reed needs bypass, per engine (claude bypassPermissions, Codex --yolo) | [`reed-agent-launch-bypass`](design-reed-agent-launch-bypass.md) | 22h | 22h | reed, shuttle, claude, codex |
-| 4 | **Diff-scoped verify gate runs an unrelated package whose test depends on host inotify limits** | [`verify-diff-scope-unrelated-pkg`](design-verify-diff-scope-unrelated-pkg.md) | 19m | 19m | gate |
+| 4 | **Diff-scoped verify gate runs an unrelated package whose test depends on host inotify limits** | [`verify-diff-scope-unrelated-pkg`](design-verify-diff-scope-unrelated-pkg.md) | 20m | 20m | gate |
 
 ### Enhancements
 
