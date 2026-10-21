@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-21 11:14 UTC; every age below is as of then.
+Rendered 2026-10-21 11:16 UTC; every age below is as of then.
 
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
@@ -18,7 +18,7 @@ Held by a run; its scope is locked until the run ends.
 | # | Task | Slug | Recipe | At | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | 1 | **Origin reconcile before anything that matters, and pushes that never fail silently**<br>• ls-remote over warp and records repos at orch start, wake, batten resume, Merge-In and Finalize; fast-forward, landed-elsewhere cleanup, stop on divergence; rejected push retries and reports | [`origin-reconcile`](design-origin-reconcile.md) | loom | Webster-Burler-Fix | 3d | 19h | fabric, batten, orch, creel, shed |
-| 2 | **[.NET 006] Quarry: a C# glyph alphabet**<br>• Quarry knows only Go glyphs; a C# hub needs a C# alphabet | [`quarry-csharp`](design-quarry-csharp.md) | loom | Discussion-Write | 16h | 5m | quarry, dotnet |
+| 2 | **[.NET 006] Quarry: a C# glyph alphabet**<br>• Quarry knows only Go glyphs; a C# hub needs a C# alphabet | [`quarry-csharp`](design-quarry-csharp.md) | loom | Discussion-Write | 16h | 6m | quarry, dotnet |
 
 #### Normal priority
 
@@ -41,7 +41,7 @@ Waits only on Running or Ready entries.
 | # | Task | Slug | Recipe | After | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | 1 | **One machine takes over from another: owner machines, lyx adopt, landing on the parent owner**<br>• Owner machine per entry, lyx adopt of named entries, landing only on the parent owner, owner outcome in the origin reconcile, Open-Window per machine | [`machine-handover`](design-machine-handover.md) | loom | `origin-reconcile` | 2d | 1d | batten, board, orch, fabric |
-| 2 | **[.NET 002] Test tiers: every test run through lyx gate test, numbered tiers in hub config, computed scope**<br>• All testing goes through the gate slot pool against hub-declared tiers tier0..N, with scope computed from the diff; replaces the Go-only gate | [`test-tiers`](design-test-tiers.md) | loom | `scratch-defeats-test-cache` | 4d | 4m | gate, config, shed, dotnet |
+| 2 | **[.NET 002] Test tiers: every test run through lyx gate test, numbered tiers in hub config, computed scope**<br>• All testing goes through the gate slot pool against hub-declared tiers tier0..N, with scope computed from the diff; replaces the Go-only gate | [`test-tiers`](design-test-tiers.md) | loom | `scratch-defeats-test-cache` | 4d | 5m | gate, config, shed, dotnet |
 
 #### Normal priority
 
@@ -65,7 +65,7 @@ Starts when every entry it names under After is done.
 | # | Task | Slug | Recipe | After | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | 2 | **Finalize blocks on 'worktree dirty' without naming the tree or paths, and the loom's own run record counts as dirty**<br>• `profile: light` | [`finalize-dirty-names-paths`](design-finalize-dirty-names-paths.md) | loom | `origin-reconcile`, `machine-handover`, `darn-verify-fixes` | 16h | 15h | fabric, loom |
-| 3 | **Orch lifecycle: dead strands count as dead, the watcher restarts, cycle requests need no reply and can be withdrawn**<br>• Strand liveness checks the engine process and placement, a dead orch watcher restarts, the note write is seen without a reply, and a pending distill/refresh can be withdrawn<br>• `profile: light` | [`orch-strand-cycle`](design-orch-strand-cycle.md) | loom | `origin-reconcile`, `machine-handover`, `darn-verify-fixes` | 2d | 26m | orch, reed |
+| 3 | **Orch lifecycle: dead strands count as dead, the watcher restarts, cycle requests need no reply and can be withdrawn**<br>• Strand liveness checks the engine process and placement, a dead orch watcher restarts, the note write is seen without a reply, and a pending distill/refresh can be withdrawn<br>• `profile: light` | [`orch-strand-cycle`](design-orch-strand-cycle.md) | loom | `origin-reconcile`, `machine-handover`, `darn-verify-fixes` | 2d | 27m | orch, reed |
 
 ### Layer C
 
@@ -124,7 +124,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | --- | --- | --- | --- | --- | --- |
 | 2 | **Codex CLI as a second shuttle engine: hands-on spike, then codexengine**<br>• Codex CLI as a second engine to offload Claude tokens: short hands-on tests first, then a codexengine for single-session roles | [`codex-engine`](design-codex-engine.md) | 2w | 6d | shuttle, codex |
 | 3 | **finalize: the discrepancy-document conflict shape**<br>• Divergences that cannot be a git conflict get a precomputed document for the resolving agent instead of markers | [`finalize-discrepancy-doc`](design-finalize-discrepancy-doc.md) | 2w | 2w | fabric, loom |
-| 4 | **[.NET 005] Verification protocol for a .NET repo: slow-suite tier, numerical-baseline capture/compare, verify timeouts and logs** | [`dotnet-verify-protocol`](design-dotnet-verify-protocol.md) | 2w | 4m | loom, webster, config, dotnet |
+| 4 | **[.NET 005] Verification protocol for a .NET repo: slow-suite tier, numerical-baseline capture/compare, verify timeouts and logs** | [`dotnet-verify-protocol`](design-dotnet-verify-protocol.md) | 2w | 5m | loom, webster, config, dotnet |
 | 5 | **Run verbs in one shared namespace, not under lyx loom**<br>• lyx loom decision/status/goto/approve act on darn runs too; move recipe-neutral run verbs to one shared namespace | [`run-verbs-shared`](design-run-verbs-shared.md) | 6d | 6d | shed, loom |
 | 6 | **The arbiter in shed for every shed run, batten included**<br>• The batten Go driver has a tackler but no arbiter; move the arbiter and its keys into shed beside the tackler | [`shed-arbiter-all`](design-shed-arbiter-all.md) | 6d | 6d | shed, batten, loom, config |
 | 7 | **Paste cited code into a review rounds context**<br>• Reviewers edit nothing and review a fixed commit, so code pasted at round start cannot go stale; measure it against todays reviewer | [`review-inline-code`](design-review-inline-code.md) | 9d | 5d | burler, stencil |
@@ -146,18 +146,19 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 23 | **A question research can settle is settled in Discussion, never deferred to Plan or an implementer**<br>• Discussion writer researches the facts its design rests on; reviewers flag a deferred research question or a halt-on-discovery rule | [`research-in-discussion`](design-research-in-discussion.md) | 1d | 1d | loom, stencil, burler |
 | 24 | **Cortex XDR holds stack up across a loom run's card, batch, round and whole-suite gates**<br>• Each gate that tests a just-changed package waits 8-10 s for XDR; a 10-15 card run pays that many times over | [`loom-gates-xdr-stacking`](design-loom-gates-xdr-stacking.md) | 17h | 15h | webster, loom, gate |
 | 25 | **[.NET 007] Language-specific lens sets seeded per hub**<br>• Every hub seeds lenses.yaml from one Go-repo template; seed by the hub language instead | [`lenses-language-sets`](design-lenses-language-sets.md) | 16h | 16h | burler, config, dotnet |
+| 26 | **The operator tuned loom defaults move into the lyx template, so every new hub gets them**<br>• New hubs seed neutral loom defaults; the loomyard hub tuning is the operator default and belongs in the template | [`tuned-defaults-template`](design-tuned-defaults-template.md) | 0m | 0m | config, loom |
 
 #### Low priority
 
 | # | Note | Slug | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| 26 | **Fabric's Windows path behaviour verified on a Windows host**<br>• Unverified after six hardening rounds; needs a Windows host, not design; take it only if Windows becomes relevant | [`fabric-windows`](design-fabric-windows.md) | 2w | 3h | fabric |
-| 27 | **warp-visibility: CLAUDE.local.md invisible in the Fabric repo's git history**<br>• Expose CLAUDE.local.md by symlink so nothing lyx-related shows in the Fabric repo's history; the constraints half is out of date | [`warp-visibility`](design-warp-visibility.md) | 2w |  | ide, fabric |
-| 28 | **Windows verify timeout kills the whole process tree**<br>• On Windows the verifytree timeout kills only the shell, not the process tree it started | [`verify-watchdog`](design-verify-watchdog.md) | 13d | 5d | shed |
-| 29 | **[WS 007] An anchor per umbrella**<br>• Let an umbrella work in its own subdirectory of the repository, inherited by its tasks; hard to change now | [`umbrella-anchor`](design-umbrella-anchor.md) | 2d | 2d | fabric, config, workspaces |
-| 30 | **reed warns on every strand launch on tmux 3.4 about allow-set-title**<br>• The optional allow-set-title fallback is right, but its Warn repeats per pane on a supported tmux | [`allow-set-title-warn-noise`](design-allow-set-title-warn-noise.md) | 1d | 1d | reed |
-| 31 | **Three tests spell LYX_TRACE_ID as a literal instead of logger.TraceIDEnv**<br>• gate-fewer-new-binaries named the trace id variable through logger.TraceIDEnv at its sites but left three test files with the literal | [`trace-id-env-literal`](design-trace-id-env-literal.md) | 1d | 1d | reed, shuttle |
-| 32 | **lyx gate status: which run and tier holds each gate slot**<br>• Show taken gate slots, by run and tier, and since when | [`gate-status`](design-gate-status.md) | 5m | 5m | gate |
+| 27 | **Fabric's Windows path behaviour verified on a Windows host**<br>• Unverified after six hardening rounds; needs a Windows host, not design; take it only if Windows becomes relevant | [`fabric-windows`](design-fabric-windows.md) | 2w | 3h | fabric |
+| 28 | **warp-visibility: CLAUDE.local.md invisible in the Fabric repo's git history**<br>• Expose CLAUDE.local.md by symlink so nothing lyx-related shows in the Fabric repo's history; the constraints half is out of date | [`warp-visibility`](design-warp-visibility.md) | 2w |  | ide, fabric |
+| 29 | **Windows verify timeout kills the whole process tree**<br>• On Windows the verifytree timeout kills only the shell, not the process tree it started | [`verify-watchdog`](design-verify-watchdog.md) | 13d | 5d | shed |
+| 30 | **[WS 007] An anchor per umbrella**<br>• Let an umbrella work in its own subdirectory of the repository, inherited by its tasks; hard to change now | [`umbrella-anchor`](design-umbrella-anchor.md) | 2d | 2d | fabric, config, workspaces |
+| 31 | **reed warns on every strand launch on tmux 3.4 about allow-set-title**<br>• The optional allow-set-title fallback is right, but its Warn repeats per pane on a supported tmux | [`allow-set-title-warn-noise`](design-allow-set-title-warn-noise.md) | 1d | 1d | reed |
+| 32 | **Three tests spell LYX_TRACE_ID as a literal instead of logger.TraceIDEnv**<br>• gate-fewer-new-binaries named the trace id variable through logger.TraceIDEnv at its sites but left three test files with the literal | [`trace-id-env-literal`](design-trace-id-env-literal.md) | 1d | 1d | reed, shuttle |
+| 33 | **lyx gate status: which run and tier holds each gate slot**<br>• Show taken gate slots, by run and tier, and since when | [`gate-status`](design-gate-status.md) | 6m | 6m | gate |
 
 ### Features
 
@@ -187,7 +188,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 15 | **Spawn audit log: every process lyx starts is recorded and traceable**<br>• One recorded launch path and a hub-wide spawn log with owner, argv and resource use, plus a sampler and a summary verb, so a process storm can be traced after a crash | [`spawn-audit-log`](design-spawn-audit-log.md) | 12d | 8d | reed, shuttle, config |
 | 16 | **Configurable action buttons on the reed status bar**<br>• Clickable status-bar buttons that run configured commands: VS Code, orch distill/refresh, the follow toggle and more | [`reed-status-buttons`](design-reed-status-buttons.md) | 6d | 6d | reed, config |
 | 17 | **Ideas to borrow from comparable agent orchestrators (survey, Oct 2026)** | [`orchestrator-survey-ideas`](design-orchestrator-survey-ideas.md) | 5d | 4d | burler, shed, orch, quarry, report |
-| 18 | **[.NET 004] Asynchronous test tiers in shed: the numerical baseline captured before implementation, compared at the final gate**<br>• Support a hub regression tier that writes profiles on the parent before implementation and compares after, switchable per task for expected drift. | [`regression-baseline-verify`](design-regression-baseline-verify.md) | 4d | 4m | shed, webster, batten, config, dotnet |
+| 18 | **[.NET 004] Asynchronous test tiers in shed: the numerical baseline captured before implementation, compared at the final gate**<br>• Support a hub regression tier that writes profiles on the parent before implementation and compares after, switchable per task for expected drift. | [`regression-baseline-verify`](design-regression-baseline-verify.md) | 4d | 5m | shed, webster, batten, config, dotnet |
 
 #### Low priority
 
