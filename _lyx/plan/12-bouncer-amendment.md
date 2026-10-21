@@ -22,9 +22,9 @@
 - `plan:internal/shedadapters#TestBouncer_Amendment` -> `func TestBouncer_Amendment(t *testing.T)`
 
 **Uses:**
-- `plan:internal/shedadapters#readGenerationRecord`
-- `plan:internal/shedadapters#writeGenerationRecord`
-- `plan:internal/shedadapters#liveSettleRecord`
+- `internal/shedadapters#readGenerationRecord`
+- `internal/shedadapters#writeGenerationRecord`
+- `internal/shedadapters#liveSettleRecord`
 - `internal/shedadapters#newBouncerFixture`
 - `internal/shedadapters#judgeFakeShuttle`
 - `internal/shedadapters#layoutBouncerRun`

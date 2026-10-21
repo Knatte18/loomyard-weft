@@ -25,8 +25,8 @@
 - `plan:internal/loomcli#TestDarnRejectReview` -> `func TestDarnRejectReview(t *testing.T)`
 
 **Uses:**
-- `plan:internal/discussionparser#IdentityText`
-- `plan:internal/planparser#IdentityText`
+- `internal/discussionparser#IdentityText`
+- `internal/planparser#IdentityText`
 - `internal/fabricengine#Fabric.ReadTaskPatch`
 - `internal/fabricengine#Fabric.MergeInOnly`
 - `internal/fabricengine#Fabric.WeftHeadSHA`

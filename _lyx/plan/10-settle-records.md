@@ -1,20 +1,20 @@
 # Card 10 — settle-records
 
 **Create:**
-- `plan:internal/shedadapters#Subject` -> `type Subject struct`
-- `plan:internal/shedadapters#Subject.Unchanged` -> `func (s Subject) Unchanged(settled Subject, mergeInOnly func(since string) (bool, error)) (bool, error)`
-- `plan:internal/shedadapters#settleRecord` -> `type settleRecord struct`
-- `plan:internal/shedadapters#generationRecord` -> `type generationRecord struct`
-- `plan:internal/shedadapters#readSettleRecord` -> `func readSettleRecord(runDir string) (settleRecord, bool, error)`
-- `plan:internal/shedadapters#writeSettleRecord` -> `func writeSettleRecord(runDir string, rec settleRecord, patch []byte) error`
-- `plan:internal/shedadapters#readGenerationRecord` -> `func readGenerationRecord(runDir string) (generationRecord, bool, error)`
-- `plan:internal/shedadapters#writeGenerationRecord` -> `func writeGenerationRecord(runDir string, rec generationRecord) error`
-- `plan:internal/shedadapters#liveSettleRecord` -> `func liveSettleRecord(runDir string) (settleRecord, bool, error)`
-- `plan:internal/shedadapters#SettleLive` -> `func SettleLive(runDir string) (settledAt time.Time, live bool, err error)`
-- `plan:internal/shedadapters#CarryRecords` -> `func CarryRecords(fromDir, toDir string) error`
-- `plan:internal/shedadapters#TestSettleLive` -> `func TestSettleLive(t *testing.T)`
-- `plan:internal/shedadapters#TestSubject_Unchanged` -> `func TestSubject_Unchanged(t *testing.T)`
-- `plan:internal/shedadapters#TestCarryRecords` -> `func TestCarryRecords(t *testing.T)`
+- `internal/shedadapters#Subject`
+- `internal/shedadapters#Subject.Unchanged`
+- `internal/shedadapters#settleRecord`
+- `internal/shedadapters#generationRecord`
+- `internal/shedadapters#readSettleRecord`
+- `internal/shedadapters#writeSettleRecord`
+- `internal/shedadapters#readGenerationRecord`
+- `internal/shedadapters#writeGenerationRecord`
+- `internal/shedadapters#liveSettleRecord`
+- `internal/shedadapters#SettleLive`
+- `internal/shedadapters#CarryRecords`
+- `internal/shedadapters#TestSettleLive`
+- `internal/shedadapters#TestSubject_Unchanged`
+- `internal/shedadapters#TestCarryRecords`
 
 **Edit:**
 - `internal/shedadapters#archiveRunDir`
