@@ -1,12 +1,12 @@
 # Card 2 — gate-tier-config
 
 **Create:**
-- `plan:internal/gateslot#Tier` -> `type Tier struct`
-- `plan:internal/gateslot#Config.TierList` -> `func (c Config) TierList(gate string) ([]int, error)`
-- `plan:internal/gateslot#Config.Tier` -> `func (c Config) Tier(number int) (Tier, error)`
-- `plan:internal/gateslot#Config.GateCall` -> `func (c Config) GateCall(gate string, scope ...string) (string, error)`
-- `plan:internal/gateslot#Config.TiersValue` -> `func (c Config) TiersValue() string`
-- `plan:internal/gateslot#TestConfig_TierUse` -> `func TestConfig_TierUse(t *testing.T)`
+- `internal/gateslot#Tier`
+- `internal/gateslot#Config.TierList`
+- `internal/gateslot#Config.Tier`
+- `internal/gateslot#Config.GateCall`
+- `internal/gateslot#Config.TiersValue`
+- `internal/gateslot#TestConfig_TierUse`
 
 **Edit:**
 - `internal/gateslot#Config`

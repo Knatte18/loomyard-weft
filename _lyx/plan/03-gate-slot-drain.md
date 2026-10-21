@@ -1,9 +1,9 @@
 # Card 3 — gate-slot-drain
 
 **Create:**
-- `plan:internal/gateslot#Pool.AcquireSlots` -> `func (p *Pool) AcquireSlots(ctx context.Context, h Holder, count int) (*Lease, error)`
-- `plan:internal/gateslot#Lease.InheritEnv` -> `func (l *Lease) InheritEnv(base []string) []string`
-- `plan:internal/gateslot#TestAcquireSlots` -> `func TestAcquireSlots(t *testing.T)`
+- `internal/gateslot#Pool.AcquireSlots`
+- `internal/gateslot#Lease.InheritEnv`
+- `internal/gateslot#TestAcquireSlots`
 
 **Edit:**
 - `internal/gateslot#Holder`

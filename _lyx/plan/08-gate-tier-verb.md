@@ -51,8 +51,8 @@
 - `internal/gatecli#runGate`
 - `internal/gatecli#eventually`
 - `internal/impactset#ModuleGuardTests`
-- `plan:internal/gateslot#Pool.AcquireSlots`
-- `plan:internal/gateslot#Lease.InheritEnv`
+- `internal/gateslot#Pool.AcquireSlots`
+- `internal/gateslot#Lease.InheritEnv`
 - `plan:internal/gateslot#WriteRunRecord`
 - `plan:internal/gateslot#TierTimeoutLine`
 - `plan:internal/gateslot#TierSummaryLine`
