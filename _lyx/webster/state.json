@@ -637,7 +637,7 @@
       }
     }
   ],
-  "currentBatch": 0,
+  "currentBatch": 1,
   "masterStrand": "415cff73750c47cdcf8cfe24d6282aeb",
   "masterSessionId": "241089f3-b39a-4fe3-9203-155f51f6bb8f",
   "masterEngine": "claude",
@@ -657,27 +657,25 @@
         "04-shed-goto-guard": "b867123ccf55f064fcc52baec4c341c0b56fa291b01bbc9c9ab399cbd3f62376"
       },
       "startSha": "7cf7e67aa5a1b5b896781bb2c36547baebcf9189",
-      "kind": "fork",
-      "spawnedAt": "2026-10-21T06:31:25Z",
-      "sessionId": "241089f3-b39a-4fe3-9203-155f51f6bb8f",
-      "engine": "claude",
-      "terminal": true,
-      "status": "failed",
-      "digest": {
-        "batch": "01-state-write-file",
-        "status": "failed",
-        "head_sha": "9e09cd978d6d60f62346ad5d01f7a8821d78598c",
-        "reasons": [
-          "batch 01-state-write-file holds cards 1-state-write-file, 2-shed-budget-episode, 3-shed-pause-reason, 4-shed-goto-guard",
-          "create-not-done/1-state-write-file[blocking]: Create target \"plan:internal/state#TestWriteFile\" still does not resolve: looked up \"internal/state#TestWriteFile\", quarry answered not_found (the unit exists and the member is missing)"
-        ]
-      },
+      "kind": "recovery",
+      "spawnedAt": "2026-10-21T06:40:24Z",
+      "terminal": false,
+      "status": "",
       "forkTranscripts": [
         "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-run-reentry/241089f3-b39a-4fe3-9203-155f51f6bb8f/subagents/agent-a24328072b98ca1d9.jsonl"
       ],
-      "bracketTranscripts": [
-        "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-run-reentry/241089f3-b39a-4fe3-9203-155f51f6bb8f/subagents/agent-a24328072b98ca1d9.jsonl"
-      ]
+      "strandGuid": "ca74dd45656225718fd33ba03dd8c5cb",
+      "shuttleRunDir": "/home/AD.NORCERESEARCH.NO/hanf/Code/Knatte18/loomyard-LYXHUB/run-reentry/.lyx/shuttle/348340f63172c984e23db2d3109c5303",
+      "eventsPath": "/home/AD.NORCERESEARCH.NO/hanf/Code/Knatte18/loomyard-LYXHUB/run-reentry/.lyx/shuttle/348340f63172c984e23db2d3109c5303/events.jsonl",
+      "eventsOffset": 2524,
+      "recoveries": 1,
+      "recoverySessions": [
+        "225dcccb-9828-4ae8-9f4d-8d4a13035c33"
+      ],
+      "recoveryEngines": {
+        "225dcccb-9828-4ae8-9f4d-8d4a13035c33": "claude"
+      },
+      "recoveryStartSha": "9e09cd978d6d60f62346ad5d01f7a8821d78598c"
     }
   },
   "seenForkTranscripts": [
