@@ -1,46 +1,47 @@
-# Intake reads the hub's own repo; orch stops running intake and reviewing
+# Intake reads the hub's own repository; orch stops self-running intake
 
-`lyx board intake` used to list, read, comment on and close the issues of the selfreport repository, hard-coded to `Knatte18/loomyard`, whatever hub it ran in.
-The quarry hub's orch imported LoomYard issues onto the quarry board that way.
-This change gives intake the hub's own repository, keeps selfreport LoomYard-only, and takes intake and reviewing out of the orch's own initiative.
+`lyx board intake list|import|close` now works against the repository the hub works on, not the hard-coded `Knatte18/loomyard`.
+A quarry hub's intake reads `Knatte18/quarry`; only the loomyard hub's intake reads `Knatte18/loomyard`.
+Before, a quarry orch running its role's wake-time intake imported LoomYard issues onto the quarry board.
+Selfreport stays the LoomYard-only bug filer, and the orch role no longer runs intake on its own or reviews escalated requests.
+No issue is closed by this change.
 
-## Intake
+## What changes
 
-- `fabricengine.HubRepoURL(l)` returns the repository the hub works on: the `.lyx-warp` binding at the hub's board dir when recorded, else the `origin` remote of the location's warp worktree, else an error naming both sources.
-- The new package `internal/hubissues` holds intake's GitHub side.
-  A `Repo` is bound to one repository: `Open(remoteURL)` parses it with `githubclient.ParseOwnerRepo` and authenticates through `githubclient.New`, refusing a non-GitHub URL by name.
-  Its methods are the four calls intake makes: `ListOpenIssues`, `GetIssue`, `ListIssueComments` and `CommentAndClose`, with the same pagination, per-request deadline and error classification the old calls had; an API rejection now names the repository.
-- `internal/selfreportengine` loses `inbox.go` and its tests and keeps only `CreateIssue`, still filing to `Knatte18/loomyard`.
-  Its package doc says it files LoomYard bugs only, whatever hub lyx runs in.
-- `internal/boardcli` keeps the resolved location from its pre-run and opens the hub repository only when an intake verb runs, so every other board verb stays offline.
-  The handlers take the `*hubissues.Repo`, and an unresolvable repository is an error envelope.
-  The `--help` texts, `doc.go`, `docs/overview.md` and the `ly:board` skill describe intake as reading the hub's own repository, and the skill says intake runs on the operator's word.
-
-## The orch role
-
-`contracts/stencils/orch/orch-template-role.md`:
-
-- The inbox check is gone from every wake and the `landed` notice.
-  A new `## Intake` section holds the intake procedure, run only when the operator asks, with the intake fork rules unchanged.
-- Where a finding goes: a lyx bug still goes through `lyx selfreport create`; a bug in any other repository goes to that repository's own issues, never through selfreport.
-- Parent-review, PR-Gate, the arbiter hand-on bullet and the peer hand-on bullet: the orch reads only the open question (the brief's "Why it did not settle the review" line, the reason in the PR-Gate notice, or the envelope's `question`), puts it to the operator in plain words and submits or records the operator's answer.
-  It never reviews and never forks a review.
-- Acting without asking no longer lists approving, and the questions the alignment agent or the arbiter hands on are among what the orch asks the operator.
+- New package `internal/hubissues`: a `Repo` value bound to one repository, with the four intake calls (list open issues, get one, list comments, comment and close).
+  `Open(remoteURL)` parses the URL with `githubclient.ParseOwnerRepo` and builds the client with `githubclient.New`.
+  Intake no longer touches `internal/selfreportengine`.
+- `internal/selfreportengine` loses `inbox.go` and its tests, and keeps `CreateIssue`, still filing to `Knatte18/loomyard`.
+  Its docs now say it files LoomYard issues only.
+- `fabricengine.HubRepoURL` returns the hub's warp binding when one is recorded, else the `origin` URL of the location's warp worktree.
+  A hub with neither gets an error naming both sources; a URL that is not a GitHub URL is refused with a message naming it.
+- `internal/boardcli` resolves the repository only when an intake verb runs, so every other board verb stays offline.
+  An intake verb with no resolved location (the `--board-path` sync child) is refused.
+  Intake output keeps its shape.
+- Orch role stencil (`contracts/stencils/orch/orch-template-role.md`):
+  - no inbox check at wakes or on `landed`;
+  - intake runs only when the operator asks, and its fork procedure stays;
+  - a finding in another repository is filed to that repository's own issues;
+  - on a parent-review or PR-Gate escalation, and on the arbiter and peer hand-on forks, the orch puts the alignment agent's open question to the operator and submits the answer; it never reviews and never forks a review.
+- Docs follow: `docs/overview.md`, `internal/boardcli`, `internal/boardengine` and `internal/orchcli` docs and comments, the `ly:board` skill, and the new package's `doc.go`.
 
 ## Design decisions
 
-- Intake's calls got a package of their own rather than a repository parameter on selfreport's, since the board entry says intake never goes through selfreport.
-  A repository-bound `Repo` replaces the package-level client seam, so the intake tests in `hubissues` and `boardcli` now run in parallel.
-- The binding wins over origin when both exist, since it is the hub's recorded pairing; origin covers a hub that predates the binding.
-- The hub-wide orch rules' "Intake only on the operator's word" and "No parent reviews" override sections are not removed by this change, although the board entry asks for it.
-  That file lives on Bolt and is written only through `lyx orch rules`, so no task-branch commit carries it, and removing it before this role deploys would reinstate the old behaviour.
-  The parent decided by message that the orch removes the two sections with `lyx orch rules` after this task lands and deploys; it could not record that with `lyx loom decision add`, since the decision record did not exist yet, so this is an unrecorded parent correction.
-- The parent-review brief and the Bouncer escalation brief still address a one-shot fork.
-  The role now says the orch reads one line or the envelope's question from them, so they were left as they are.
+- The binding wins over origin when both exist and differ, since it is the hub's recorded pairing.
+  The origin read lives in `fabricengine`, the one package that runs git on warp.
+- A hub whose warp URL is a local path or a non-GitHub host can no longer run intake; it used to silently read `Knatte18/loomyard`.
+- A `Repo` value replaces the package-level client seam, so the moved tests run in parallel.
+  They keep the old coverage: pagination, pull request exclusion, comment order, comment-then-close, a failed close naming the posted comment, and an unresolvable token.
+- The `InboxIssue` identifier in `internal/boardengine` is unchanged; only its comments changed.
 
-## Testing
+## To do by hand
 
-- `internal/hubissues` carries the old inbox tests over to `Repo`, plus a refusal of a non-GitHub URL and a token-not-resolvable check through a failing transport.
-- `internal/boardcli`'s intake tests drive a fake hub repository at `owner/hub-repo`, and the list table gains a row for an unresolvable repository.
-- `internal/fabricengine`'s new integration test walks a copied hub from binding to origin to error.
-- `lyx gate test --tags integration` passes over `boardcli`, `hubissues`, `selfreportengine`, `selfreportcli`, `fabricengine`, `orchengine`, `orchcli` and `cmd/lyx`.
+- After this lands and deploys, remove the "Intake only on the operator's word" and "No parent reviews" override sections from the hub-wide orch rules with `lyx orch rules`.
+  That file lives on Bolt, so no task commit can carry the removal, and removing it before the new role is deployed reinstates the old behaviour.
+  Until then the sections restate the new role and do not conflict with it.
+- Run `lyx board intake list` in a quarry hub and a loomyard hub and confirm each lists its own repository's issues; the tests use stubbed clients, so no real GitHub call was made.
+- Check the stale-documentation fix for intake in `internal/boardengine/doc.go:96` and the comments in `internal/boardengine/intake.go` and `internal/boardengine/task.go` reads correctly.
+- Check that the `hubRepo` closure in `internal/boardcli/cli.go:48` is covered: the `--board-path` refusal and the no-binding-no-origin refusal go through `Command()` in `internal/boardcli/cli_test.go`, and no test pins that a non-intake verb never resolves the repository beyond the existing `list --board-path` subtest.
+- Check that the import and close handlers' unresolved-repository refusal (the `hubRepo()` error branch) leaves `board.json` unchanged, covered by rows in `internal/boardcli/intake_test.go`.
+- Check that the neither-source error asserted in `internal/fabricengine/hubrepourl_integration_test.go:44` names both the binding file and `origin`.
+- Check that the friction-findings sentence in `internal/orchcli/doc.go:47` reads correctly now that intake runs only on the operator's word.
