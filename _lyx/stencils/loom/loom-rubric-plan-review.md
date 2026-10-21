@@ -6,7 +6,7 @@
      internal/stencil's StripLeadingComment removes this leading comment before either consumer ever
      sees it.
      Among those markers, verify_tiers is filled by ReadRubric from the hub's language.yaml list, as bullets or none.
-lyx-stencil: sha256=ee7d79ecac963a0a78c9a92de905709e3b36ec6f17c5fff3285f2c95a5425393 build=58a7feec731d6e109b82b39826f5d3cf3c844ff8 time=2026-10-17T08:59:01Z -->
+lyx-stencil: sha256=e7fc883157f8210304b3875d2142ed2691cc74ec6d79f0d4aef4324070870f2c build=325e074a858348de3421a1b40fcc4a226b3eb007 time=2026-10-21T10:56:05Z -->
 
 # Plan-Review rubric
 
@@ -136,6 +136,12 @@ The directive binds writing a finding's `fix`, not a Bouncer row's focus file.
 
 A finding whose proposed glyph stands for a comment or a line it cites names the function or method whose body encloses that line, confirmed with `lyx quarry resolve` that the line lies inside the glyph's span, never the member after or near it.
 When no member span holds the line, as for a free-standing comment between declarations, it names the file's self glyph.
+
+## Amendment
+
+{{.amendment}}
+
+When the note above is not `none`, this round reviews an amendment: review only the change it names, and report nothing about the settled remainder.
 
 ## Finding class
 
