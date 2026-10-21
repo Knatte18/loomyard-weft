@@ -86,6 +86,38 @@
       "at": "2026-10-21T05:46:50Z",
       "budget_exempt": true,
       "routed_to": "Run-Shed"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "child running → blocked at Publish",
+      "at": "2026-10-21T12:03:04Z",
+      "budget_exempt": true,
+      "routed_to": "Run-Shed"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "automatic Publish verify retry: sent the child to Webster-Burler-Review",
+      "at": "2026-10-21T12:03:04Z",
+      "budget_exempt": true,
+      "routed_to": "Run-Shed"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "automatic Publish verify retry: resumed the child at Webster-Burler-Review",
+      "at": "2026-10-21T12:03:40Z",
+      "budget_exempt": true,
+      "routed_to": "Run-Shed"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "child paused → running at Webster-Burler-Review",
+      "at": "2026-10-21T12:03:42Z",
+      "budget_exempt": true,
+      "routed_to": "Run-Shed"
     }
   ]
 }
