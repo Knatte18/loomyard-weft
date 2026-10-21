@@ -55,6 +55,12 @@ Bound: the orch still writes the review file a reject needs, holding the operato
 The inbox check leaves every wake and the `landed` notice; the intake fork procedure stays as the section the orch follows when the operator asks for intake.
 A bug in lyx still goes to `lyx selfreport create`; a finding in another repository goes to that repository's own issues.
 
+### Added after Discussion (operator, 2026-10-21): The orch rules' override sections are removed after landing, outside this change
+
+Decision: The sections 'Intake only on the operator's word' and 'No parent reviews' in the hub-wide orch rules (_board/_lyx/orch/rules.md, on Bolt) are not removed by this task branch, which cannot carry a Bolt file. The orch removes them with lyx orch rules after this task lands and the new binary is deployed.
+
+Rationale: The rules file lives on Bolt, not in the warp repo; removing it before the new role is deployed would bring the old role's intake and review steps back.
+
 ## Constraints
 
 - `PATTERN-github-auth`: GitHub auth only through `internal/githubclient`.
