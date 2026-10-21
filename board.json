@@ -672,25 +672,6 @@
       "revised": "2026-10-17T14:25:08Z"
     },
     {
-      "id": 641,
-      "slug": "board-rename",
-      "title": "lyx board rename: change an entry slug in one write",
-      "kind": "task",
-      "labels": [
-        "enhancement",
-        "board"
-      ],
-      "issues": [],
-      "recipe": "darn",
-      "depends_on": [],
-      "isolated": false,
-      "brief": "Rename an entry keeping all fields and rewriting depends_on; report prose mentions",
-      "body": "## Seen\n\n`lyx board` has no verb that changes an entry's slug.\nRenaming `enclose-kickstart` to `enclose-checks` (2026-10-17) took `get --body` to a file, a `merge` with `remove_slugs` and an upsert carrying the old entry's title, brief, kind, labels and `created`, then a manual fix of the old slug in another entry's body.\n\n## Idea\n\nA verb `lyx board rename {slug, to}` that renames an entry in one atomic write, keeping its body, kind, labels, priority, issues, `created` and every other field, and rewrites the old slug in every other task's `depends_on`.\nIt refuses a run-held entry, as the run lock does for any scope change, and a target slug that exists or breaks the slug length limit.\nIt reports the entries whose body or brief still mention the old slug, since prose references are not rewritten.\n",
-      "status": "done",
-      "created": "2026-10-17T14:26:12Z",
-      "revised": "2026-10-21T11:46:43Z"
-    },
-    {
       "id": 646,
       "slug": "parallel-batch-parts",
       "title": "Parallel batches: the shared pieces for Webster forks and Weaver",
