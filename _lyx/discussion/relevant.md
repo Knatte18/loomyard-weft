@@ -1,0 +1,26 @@
+# Relevant files
+
+- `internal/gatecli/doc.go` — the current `lyx gate test` contract: prebuild, guards, slot, inheritance, watchdog, exit codes
+- `internal/gateslot/doc.go` — the slot pool, lease environment, prebuilt store and gate config the tiers extend
+- `internal/gateslot/config.go` `Config`, `ConfigSpec`, `LoadConfig`, `decodeConfig`, `Config.Limits` — the gate module's keys, categories and validation where tiers and gate lists join
+- `internal/gateslot/template.yaml` — the template that gains tiers and loses `go_parallel`
+- `internal/configengine/layers.go` `Spec`, `LayerFile` — how categories and the machine layer classify keys, relevant to per-tier `parallel`
+- `internal/impactset/doc.go` — the derivation the `go` scoper reuses, with its fallbacks and guard step
+- `internal/impactset/derive.go` — builds today's derived command, which becomes a target set
+- `internal/websterengine/doc.go` — card gate, batch gate and guard step as rendered into fork prompts
+- `internal/websterengine/cardgate.go` — renders the card and batch gates that become `--card` calls
+- `internal/websterengine/guardstep.go` — the guard step the `go` scoper absorbs
+- `internal/verifytree/doc.go` — the verify function every site calls, its slot, timeout, record and Publish failure record
+- `internal/verifytree/verify.go` `Timeout` — the 60-minute ceiling D8 narrows to non-gate commands
+- `internal/loomshed/doc.go` — the round and darn verify gate forms and the Publish failure record reruns
+- `internal/loomshed/publishfailure.go` — reruns failing tests under a tag, which becomes the failing tier
+- `internal/landingshed/doc.go` — Merge-In, Publish and Finalize verify, `publish_verify` and the darn skip seam
+- `internal/webstercli/verify.go` — `lyx webster verify`, a site that renders the `final` gate
+- `internal/languageconfig/doc.go` — `verify_tiers`, retired, and the prompts that render it
+- `internal/languageconfig/template.yaml` — the template entry to retire
+- `internal/shellguard/rows.go` `Rows`, `rawGoCommandPattern` — the raw-go row and its steer, beside which the hub-list row joins
+- `internal/shuttleengine/claudeengine/settings.go` — where rows and their switches are rendered into engine settings
+- `contracts/specs/loom-plan-spec.md` — the verify model and `## verify:` section to rewrite
+- `pattern/PATTERN-test-speed.md` — tier table and gate-per-tier section to renumber and rewrite
+- `pattern/PATTERN-verified-tree.md` — sites and slot line to update
+- `CLAUDE.md` — the push rule rewritten in tiers

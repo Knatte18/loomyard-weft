@@ -1,0 +1,8 @@
+{
+  "attempt": "/home/AD.NORCERESEARCH.NO/hanf/Code/Knatte18/loomyard-LYXHUB/test-tiers/_lyx/shed/test-tiers/alignment/parent-review/attempt-1",
+  "strand": "785553298f13989b5582b906f54839c9",
+  "spawned_at": "2026-10-21T13:38:41.827155236+02:00",
+  "state": "fallback",
+  "report": "/home/AD.NORCERESEARCH.NO/hanf/Code/Knatte18/loomyard-LYXHUB/test-tiers/_lyx/shed/test-tiers/alignment/parent-review/attempt-1/report-f682ff60c365209d.md",
+  "reason": "Board entry test-tiers says zero discovered tests is a failure; decision D7 in the test-tiers decision record keeps that only for whole unfiltered runs (as a min_tests floor) and lets a narrower run (computed, --base, --card or explicit scope, or words after --) that discovers zero tests pass with a warning, since such a scope can legitimately hold no tests. Should a narrower zero-test run fail as the board says, or pass with a warning as D7 says?"
+}
