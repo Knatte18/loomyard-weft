@@ -1,0 +1,24 @@
+# Relevant files
+
+- `internal/configsync/configsync.go` `ReconcileHubWideAt`, `ReconcileAll`, `stripToSparse`, `pendingMigration`, `retireHubWideCopy`, `legacyConfigModules`, `Result` — hub base reconcile that adds template keys today, and the worktree strip the base strip mirrors
+- `internal/configengine/doc.go` — the layer stack and the "base stays full" rule D6 rewrites
+- `internal/configengine/config.go` — the template fill and its Info log D5 changes
+- `internal/configengine/set.go` `Set`, `layerPath` — base scaffolding from the template that D4 makes sparse in a hub
+- `internal/configengine/edit.go` `scaffoldIfMissing` — base scaffolding in the editor path
+- `internal/configreg/configreg.go` `Module`, `Modules` — module flags: seed-only, hub-wide, open and per-name maps
+- `internal/hubreconcile/doc.go` — the walk, stamp, board commit and restore-on-failure the strip runs under
+- `internal/hubreconcile/walk.go` — the walk's call to `ReconcileHubWideAt` with seeding
+- `internal/fabriccli/clone.go` — clone's hub-wide reconcile with no per-worktree seeding
+- `internal/configcli/hubwide.go` — `lyx config reconcile`'s dry run and apply over the hub files
+- `internal/configcli/doc.go` — states the base stays full under a board
+- `internal/loomengine/template.yaml` — loom defaults D1 changes
+- `internal/sheddriver/template.yaml` — `driver_kind`
+- `internal/darnengine/template.yaml` — darn reviewer and fixer models and fans
+- `internal/shuttleengine/claudeengine/template.yaml` — `prompt_cache_ttl_roles`
+- `internal/shuttleengine/claudeengine/config.go` `ConfigOpenMaps` — the roles map is an open map
+- `internal/orchengine/template.yaml` — token thresholds
+- `internal/websterengine/template.yaml` — `kickstart_pack`
+- `internal/batcher/template.yaml` — the `cautious` profile's budget
+- `internal/batcher/config.go` `ConfigOpenMaps` — `profiles` is an open map
+- `internal/lenses/template.yaml` — holds the twill, review and fix fans D1's loom values name
+- `pattern/PATTERN-config-strictness.md` — states the template fill is logged; D5 and D6 change it
