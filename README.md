@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-21 13:26 UTC; every age below is as of then.
+Rendered 2026-10-21 13:28 UTC; every age below is as of then.
 
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
@@ -17,9 +17,9 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | **[.NET 002] Test tiers: every test run through lyx gate test, numbered tiers in hub config, computed scope**<br>• All testing goes through the gate slot pool against hub-declared tiers tier0..N, with scope computed from the diff; replaces the Go-only gate | [`test-tiers`](design-test-tiers.md) | loom | Plan-Burler-Review | 4d | 2h | gate, config, shed, dotnet |
+| 1 | **[.NET 002] Test tiers: every test run through lyx gate test, numbered tiers in hub config, computed scope**<br>• All testing goes through the gate slot pool against hub-declared tiers tier0..N, with scope computed from the diff; replaces the Go-only gate | [`test-tiers`](design-test-tiers.md) | loom | Plan-Burler-Fix | 4d | 2h | gate, config, shed, dotnet |
 | 2 | **The operator tuned loom defaults move into the lyx template, so every new hub gets them**<br>• New hubs seed neutral loom defaults; the loomyard hub tuning is the operator default and belongs in the template<br>• `profile: light` | [`tuned-defaults-template`](design-tuned-defaults-template.md) | loom | Webster | 2h | 1h | config, loom |
-| 3 | **Shipped review rubrics name loomyard's own PATTERN files, so reviewers in other hubs search for files that do not exist**<br>• `profile: light`<br>• `darn: review_hard_max_bounces 2`<br>• `darn: review_max_bounces 1` | [`stencils-repo-neutral`](design-stencils-repo-neutral.md) | darn | Publish | 20m | 20m | stencil, loom, burler |
+| 3 | **Shipped review rubrics name loomyard's own PATTERN files, so reviewers in other hubs search for files that do not exist**<br>• `profile: light`<br>• `darn: review_hard_max_bounces 2`<br>• `darn: review_max_bounces 1` | [`stencils-repo-neutral`](design-stencils-repo-neutral.md) | darn | Publish | 22m | 21m | stencil, loom, burler |
 
 ### Ready
 
@@ -62,7 +62,7 @@ Starts when every entry it names under After is done.
 
 | # | Task | Slug | Recipe | After | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | **No way to cancel a batten run that stopped before its pair exists**<br>• `profile: light` | [`batten-cancel-verb`](design-batten-cancel-verb.md) | loom | `run-process-ownership`, `darn-verify-fixes` | 18h | 17h | batten |
+| 1 | **No way to cancel a batten run that stopped before its pair exists**<br>• `profile: light` | [`batten-cancel-verb`](design-batten-cancel-verb.md) | loom | `run-process-ownership`, `darn-verify-fixes` | 18h | 18h | batten |
 | 2 | **Orch lifecycle: dead strands count as dead, the watcher restarts, cycle requests need no reply and can be withdrawn**<br>• Strand liveness checks the engine process and placement, a dead orch watcher restarts, the note write is seen without a reply, and a pending distill/refresh can be withdrawn<br>• `profile: light` | [`orch-strand-cycle`](design-orch-strand-cycle.md) | loom | `machine-handover`, `darn-verify-fixes`, `run-process-ownership` | 2d | 1h | orch, reed |
 
 ## Notes
@@ -99,7 +99,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | --- | --- | --- | --- | --- | --- |
 | 3 | **Opening an agent into reed: engine bypass mode by default, explicit engine, model and effort, and reed add points to shuttle open**<br>• reed add help shows a broken claude example (%SID% never substituted) and shuttle open keeps the interactive permission default; every agent in reed needs bypass, per engine (claude bypassPermissions, Codex --yolo) | [`reed-agent-launch-bypass`](design-reed-agent-launch-bypass.md) | 1d | 1d | reed, shuttle, claude, codex |
 | 4 | **Diff-scoped verify gate runs an unrelated package whose test depends on host inotify limits** | [`verify-diff-scope-unrelated-pkg`](design-verify-diff-scope-unrelated-pkg.md) | 1h | 1h | gate |
-| 5 | **A review perch waits on a reviewer's background shells, and keeps waiting after they are stopped** | [`review-waits-background-shells`](design-review-waits-background-shells.md) | 20m | 20m | burler, shuttle |
+| 5 | **A review perch waits on a reviewer's background shells, and keeps waiting after they are stopped** | [`review-waits-background-shells`](design-review-waits-background-shells.md) | 22m | 22m | burler, shuttle |
 
 ### Enhancements
 
@@ -157,7 +157,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 2 | **Weaver: a cold-start implementer beside Webster, with model escalation**<br>• A second implementer built on Millhouse Builder: a fresh agent per batch with its own model, escalating the model when an agent fails; Webster stays fork-based | [`weaver`](design-weaver.md) | 10d | 2d | webster |
 | 3 | **creel stage 3: agents message through creel, not SendMessage**<br>• Parent asks, parent review, stop reports and shuttle send go through creel, so a non-Claude engine can take a role with a parent | [`creel-agents`](design-creel-agents.md) | 6d | 2d | creel, shuttle, loom, stencil, report |
 | 4 | **[WS 004] Board projects and pairs created from a parent pair**<br>• A task names its project; a project groups tasks in order and may have its own worktree; fabric and batten create a project task pair from that branch, batten verbs run from any worktree | [`pair-from-parent`](design-pair-from-parent.md) | 2d | 2d | fabric, batten, board, workspaces |
-| 5 | **[.NET 006] LoomYard uses quarry C# glyphs: version raise, alphabet by extension**<br>• LoomYard side of C# glyphs, after the quarry hub csharp-alphabet lands and is tagged | [`quarry-csharp`](design-quarry-csharp.md) | 18h | 1h | quarry, dotnet |
+| 5 | **[.NET 006] LoomYard uses quarry C# glyphs: version raise, alphabet by extension**<br>• LoomYard side of C# glyphs, after the quarry hub csharp-alphabet lands and is tagged | [`quarry-csharp`](design-quarry-csharp.md) | 18h | 2h | quarry, dotnet |
 
 #### Normal priority
 
