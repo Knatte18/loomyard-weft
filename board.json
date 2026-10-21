@@ -1428,29 +1428,6 @@
       "body": "Imported from [issue #785](https://github.com/Knatte18/loomyard/issues/785).\n\nThe verify gate for a change confined to `internal/planglyph` ran `internal/reedcli` tests.\n`TestWatchdogCmd_ExitsZeroBeforeOrInsteadOfLooping` failed on every rerun, although the package's test closure contains no changed file.\n\nThe test consumes the watchdog's stop marker only through an inotify watch.\nThe host was near its `fs.inotify.max_user_instances` limit (about 119 of 128), so a failed watch open leaves the marker unread and the stop subtests time out.\n\nTwo things are abnormal:\n\n- The diff-scoped verify selected a package with no changed file in its closure, so an unrelated package can block a task.\n- The test fails on host inotify exhaustion instead of skipping or reporting the cause, so the failure reads as a code defect.\n\nThe writer could neither raise the host limit nor change an unrelated package in the task, so the finding went to the parent.\n\nWhat to do: check why the diff-scoping selected `internal/reedcli` for a `planglyph`-only diff, and make the watchdog test skip or fail with a clear message when the inotify watch cannot be opened.\n\nProvenance: task `create-target-transient`, note `Darn-Write.md`.\n",
       "created": "2026-10-21T11:44:45Z",
       "revised": "2026-10-21T11:44:45Z"
-    },
-    {
-      "id": 735,
-      "slug": "reed-small-fixes",
-      "title": "Reed small fixes: trace-id constant in tests, allow-set-title warn noise, watchdog stop marker without inotify",
-      "kind": "task",
-      "labels": [
-        "bug",
-        "enhancement",
-        "reed",
-        "shuttle"
-      ],
-      "issues": [
-        783
-      ],
-      "recipe": "darn",
-      "depends_on": [],
-      "isolated": false,
-      "brief": "Three small reed fixes in one darn run",
-      "body": "## From note `trace-id-env-literal`\n\n### Seen (Darn-Review of `gate-fewer-new-binaries`, 2026-10-20)\n\nThe run made its sites name the trace id variable through `logger.TraceIDEnv`, and the reviewer deferred three test files outside the finding's scope that still spell it `\"LYX_TRACE_ID\"`: `internal/reedengine/lifecycle_test.go`, `internal/shuttleengines/shuttleengines_test.go` and `internal/testkit/tmuxkit/tmuxkit_integration_test.go`.\n\n### Idea\n\nThose tests use `logger.TraceIDEnv`, so a rename of the variable cannot leave them testing a name lyx no longer sets. No effect on run time.\n## From note `allow-set-title-warn-noise`\n\n### Seen (2026-10-20)\n\n- On the work laptop (Ubuntu 24.04, tmux 3.4), `lyx orch start --continue` printed one `WARN reed: could not turn off allow-set-title, the pane title may drift … invalid option: allow-set-title` per strand pane it launched.\n- `internal/toolfloor/doc.go` keeps `allow-set-title` (tmux 3.5) optional on purpose: `internal/reedengine/spawn.go` Warns and continues, and `lyx reed list` reports title drift.\n- The fallback is correct; the Warn is noise, repeated for every strand on every launch on a supported tmux.\n\n### Idea\n\nDetect the tmux version once (the floor check already knows it) and skip the `set-option` below 3.5, logging the fallback once per process at debug or info, instead of a Warn per pane.\n\n## From note `reed-watchdog-inotify-fallback`\n\nImported from [issue #783](https://github.com/Knatte18/loomyard/issues/783).\n\nSeen (orch, 2026-10-21, OSL-1046, seven runs in flight): TestWatchdogCmd_ExitsZeroBeforeOrInsteadOfLooping fails in all three stop subtests on every rerun of `lyx gate test ./internal/reedcli` (\"marker consumed at call 0\"), blocking the verify of create-target-transient, whose diff does not reach internal/reedcli.\n\nCause, per the darn writer: fs.inotify.max_user_instances is 128 and the user holds about that many instances (VS Code, konsole windows per run, lyx processes, other desktop apps). The watchdog consumes the stop marker only through its filesystem watch (internal/reedcli/watchdog.go, the `events` branch); when the watch fails to open, `events` is nil and the marker is never read.\n\nExpected: the watchdog falls back to reading the stop marker on its timer cycle when the watch fails to open, and says so in its log, so a full inotify table neither breaks stops in production nor fails the test. The test should not depend on a free inotify instance, or should report the exhaustion as its failure cause.\n\nWorkaround: raise fs.inotify.max_user_instances (sudo sysctl) and rerun the verify.\n",
-      "status": "done",
-      "created": "2026-10-20T05:56:09Z",
-      "revised": "2026-10-21T11:46:43Z"
     }
   ]
 }
