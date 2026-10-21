@@ -16,6 +16,9 @@
 - `contracts/stencils/loom/loom-rubric-webster-review.md`
 - `contracts/stencils/loom/loom-rubric-darn-review.md`
 
+**Prosa:**
+- `contracts/specs/shed-recipe-spec.md`
+
 **Create:**
 - `plan:internal/shedrecipe#TestBouncerEntry_Subject` -> `func TestBouncerEntry_Subject(t *testing.T)`
 
@@ -40,6 +43,7 @@ The four amendment-capable rubrics gain an `## Amendment` section rendering `{{.
 `FullEnv` fills the new seams with fakes and `AmendMaxBounces` in its segment settings, so every recipe build in the tests keeps building.
 `envkit`'s `nilLegal` gains the six new `Env` paths `DocumentSubject`, `CodeSubject`, `MergeSubject`, `MergeInOnly`, `WeftHead` and `RejectReview`, whose nil is a documented default: the first five's for a Bouncer row that names no subject, and `RejectReview`'s for a reject with no review file, so batten's wiring, which never fills a loom-only seam, and loom's wiring before card 15 keep passing the `NilSeams` audits of `TestWire_EverySeamFilled`.
 `doc.go`'s "Segment settings and row settings" paragraph names the amendment allowance among the values a segment carries, and its review-segment-rows paragraph names the Bouncer's optional `subject` key and the Env seams each value selects.
+`contracts/specs/shed-recipe-spec.md`'s Bouncer-row paragraphs, which describe `commit_seam`, `skip_seam` and `carry_over` as keys that select among the seams `Env` carries, gain `subject`, with its three values `document`, `code` and `merge`, the seams each selects, the construction error for a named seam the `Env` does not carry, and the construction error for an unknown value.
 
 `TestBouncerEntry_Subject` is one table: each of the three values reaches the Bouncer with its seams, asserted from this package through two Calls: `layoutBouncerRound1Report` lays out round 1, a first Call over `judgeSeamShuttle` settles it CONVERGED and calls the row's named seam (counted by its fake, the document seam told the resolved artifact paths), and a second Call over a shuttle that fails the row when run returns Done with no spawn; `merge` builds a full generation; a missing named seam is refused naming it; an unknown value is refused; an absent key builds as before; `AmendMaxBounces` reaches the allowance.
 `TestBurlerReviewEntry_RubricStencil` adds a row whose run directory holds an amendment generation record: the profile's rubric holds the note.

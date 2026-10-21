@@ -56,6 +56,7 @@ The CarryOver, Approve and Commit seams must be idempotent for case 1: `ApproveP
 `TestDarnRejectReview`: the file `darnDeps`' `RecordRejection` writes is read back with its path and `rejected_at`; no file reads as not found; an unparseable time is an error.
 `TestWriteCarryOver_Real_CommitsTheRecordAlone` adds a second identical call that makes no commit.
 `TestWire_ReviewKeysReachTheEnv`'s `wantSegments`, for the four loom segments, and `TestWire_DarnRecipe`'s `wantSegment`, for `Darn-Review`, compare each `SegmentSettings` whole, so each gains `AmendMaxBounces: 1`, the template default.
+`TestWire_ReviewKeysReachTheEnv` also asserts `c.env.RejectReview` is non-nil after `wire()` of a loom seed, and `TestWire_DarnRecipe`'s darn-seed subtest also asserts `c.env.RejectReview` and `c.env.Darn.RecordRejection` are non-nil; both are direct field checks, since `envkit.NilSeams` skips these two paths through `nilLegal` and so cannot report them.
 
 **ImpactSummary:** loom and darn wiring tells new Env seams and settings, and both embedded recipes now name a subject on every Bouncer row, which every run and recipe build reads.
 
