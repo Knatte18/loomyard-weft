@@ -1,0 +1,4 @@
+verdict: approve
+reason: "The diff builds the board entry's goal and the decision record's D1 to D13, plus the operator's post-Discussion rule that zero discovered tests passes. It has no change the goal does not call for: the three PATTERN overview line trims are wording-only, and each dropped clause is still in its entry's background file. lyx loom peers lists no peer run and no unmerged parent commit; tuned-defaults-template and origin-reconcile have landed and are merged in."
+question: ""
+superseded: []
