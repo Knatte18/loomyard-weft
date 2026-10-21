@@ -1,6 +1,6 @@
 # Intake reads the hub own repository, selfreport stays LoomYard-only, and the orch neither runs intake nor reviews on its own
 
-`intake-own-repo` · Task · bug, board, orch, selfreport, stencil · running · PR-Gate
+`intake-own-repo` · Task · bug, board, orch, selfreport, stencil · running · Finalize
 
 ## Seen (orch, 2026-10-21)
 
