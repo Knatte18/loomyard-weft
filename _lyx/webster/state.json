@@ -665,7 +665,7 @@
       }
     }
   ],
-  "currentBatch": 0,
+  "currentBatch": 13,
   "masterStrand": "02448d531431254d06731746ba0d5ba5",
   "masterSessionId": "3545de48-9210-4ab3-bc22-f514f7cbdd43",
   "masterEngine": "claude",
@@ -754,6 +754,22 @@
       "bracketTranscripts": [
         "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-run-reentry/3545de48-9210-4ab3-bc22-f514f7cbdd43/subagents/agent-a275f797249bd3616.jsonl"
       ]
+    },
+    "13": {
+      "slug": "recipe-bouncer-subject",
+      "cards": [
+        "13-recipe-bouncer-subject"
+      ],
+      "cardHashes": {
+        "13-recipe-bouncer-subject": "f308a081636d0eae2c32194a856f50c0da345dc7382a4eb0f8f1bb3a42bc213e"
+      },
+      "startSha": "4091019fc3adf9caec4f9506ba1ec89ae12df760",
+      "kind": "fork",
+      "spawnedAt": "2026-10-21T07:34:41Z",
+      "sessionId": "3545de48-9210-4ab3-bc22-f514f7cbdd43",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
     },
     "5": {
       "slug": "shedverbs-pause-label",
