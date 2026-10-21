@@ -2,6 +2,8 @@
 
 `test-tiers` · Task · enhancement, gate, config, shed, dotnet
 
+Depends on: [`scratch-defeats-test-cache`](design-scratch-defeats-test-cache.md)
+
 Every test run in a hub goes through `lyx gate test`, against numbered test tiers the hub declares in config, with the scope computed by lyx.
 
 ## Seen (orch, 2026-10-17)

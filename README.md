@@ -34,7 +34,6 @@ Waits on nothing open; can start now.
 | # | Task | Slug | Recipe | After | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | 1 | **[.NET 006] Quarry: a C# glyph alphabet**<br>• Quarry knows only Go glyphs; a C# hub needs a C# alphabet | [`quarry-csharp`](design-quarry-csharp.md) | loom |  | 16h | 1m | quarry, dotnet |
-| 2 | **[.NET 002] Test tiers: every test run through lyx gate test, numbered tiers in hub config, computed scope**<br>• All testing goes through the gate slot pool against hub-declared tiers tier0..N, with scope computed from the diff; replaces the Go-only gate | [`test-tiers`](design-test-tiers.md) | loom |  | 4d | 1m | gate, config, shed, dotnet |
 
 ### Layer A
 
@@ -45,13 +44,14 @@ Waits only on Running or Ready entries.
 | # | Task | Slug | Recipe | After | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | 1 | **One machine takes over from another: owner machines, lyx adopt, landing on the parent owner**<br>• Owner machine per entry, lyx adopt of named entries, landing only on the parent owner, owner outcome in the origin reconcile, Open-Window per machine | [`machine-handover`](design-machine-handover.md) | loom | `origin-reconcile` | 2d | 1d | batten, board, orch, fabric |
+| 2 | **[.NET 002] Test tiers: every test run through lyx gate test, numbered tiers in hub config, computed scope**<br>• All testing goes through the gate slot pool against hub-declared tiers tier0..N, with scope computed from the diff; replaces the Go-only gate | [`test-tiers`](design-test-tiers.md) | loom | `scratch-defeats-test-cache` | 4d | 0m | gate, config, shed, dotnet |
 
 #### Normal priority
 
 | # | Task | Slug | Recipe | After | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 2 | **tender pause does not hold a verify gate's re-prompt, and creel interrupt is refused under the pause**<br>• `profile: light` | [`tender-pause-holds-reprompt`](design-tender-pause-holds-reprompt.md) | loom | `origin-reconcile` | 1d | 2h | creel, shed, webster |
-| 3 | **Darn-Write stops looping on verify failures it cannot own, and the two flaky reed tests behind them**<br>• A verify failure in a tier Darn-Write may not run, or one the parent already fixed, no longer loops and escalates<br>• `profile: light` | [`darn-verify-fixes`](design-darn-verify-fixes.md) | loom | `origin-reconcile` | 3d | 15h | batten, loom, shed, reed |
+| 3 | **tender pause does not hold a verify gate's re-prompt, and creel interrupt is refused under the pause**<br>• `profile: light` | [`tender-pause-holds-reprompt`](design-tender-pause-holds-reprompt.md) | loom | `origin-reconcile` | 1d | 2h | creel, shed, webster |
+| 4 | **Darn-Write stops looping on verify failures it cannot own, and the two flaky reed tests behind them**<br>• A verify failure in a tier Darn-Write may not run, or one the parent already fixed, no longer loops and escalates<br>• `profile: light` | [`darn-verify-fixes`](design-darn-verify-fixes.md) | loom | `origin-reconcile` | 3d | 15h | batten, loom, shed, reed |
 
 ### Layer B
 
@@ -190,7 +190,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 15 | **Spawn audit log: every process lyx starts is recorded and traceable**<br>• One recorded launch path and a hub-wide spawn log with owner, argv and resource use, plus a sampler and a summary verb, so a process storm can be traced after a crash | [`spawn-audit-log`](design-spawn-audit-log.md) | 12d | 8d | reed, shuttle, config |
 | 16 | **Configurable action buttons on the reed status bar**<br>• Clickable status-bar buttons that run configured commands: VS Code, orch distill/refresh, the follow toggle and more | [`reed-status-buttons`](design-reed-status-buttons.md) | 6d | 6d | reed, config |
 | 17 | **Ideas to borrow from comparable agent orchestrators (survey, Oct 2026)** | [`orchestrator-survey-ideas`](design-orchestrator-survey-ideas.md) | 5d | 4d | burler, shed, orch, quarry, report |
-| 18 | **[.NET 004] Regression tier: baseline profiles before the run, compare at the final gate**<br>• Support a hub regression tier that writes profiles on the parent before implementation and compares after, switchable per task for expected drift. | [`regression-baseline-verify`](design-regression-baseline-verify.md) | 4d | 1d | shed, webster, batten, config, dotnet |
+| 18 | **[.NET 004] Asynchronous test tiers in shed: the numerical baseline captured before implementation, compared at the final gate**<br>• Support a hub regression tier that writes profiles on the parent before implementation and compares after, switchable per task for expected drift. | [`regression-baseline-verify`](design-regression-baseline-verify.md) | 4d | 0m | shed, webster, batten, config, dotnet |
 
 #### Low priority
 
