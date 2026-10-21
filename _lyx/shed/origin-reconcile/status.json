@@ -118,6 +118,46 @@
       "at": "2026-10-21T12:03:42Z",
       "budget_exempt": true,
       "routed_to": "Run-Shed"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "child running → blocked at Merge-In",
+      "at": "2026-10-21T13:02:57Z",
+      "budget_exempt": true,
+      "routed_to": "Run-Shed"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "child blocked → paused at Webster-Burler-Review",
+      "at": "2026-10-21T13:03:40Z",
+      "budget_exempt": true,
+      "routed_to": "Run-Shed"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "child paused → running at Webster-Burler-Review",
+      "at": "2026-10-21T13:03:42Z",
+      "budget_exempt": true,
+      "routed_to": "Run-Shed"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "child running → awaiting at Webster-Bouncer",
+      "at": "2026-10-21T13:14:08Z",
+      "budget_exempt": true,
+      "routed_to": "Run-Shed"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "child awaiting → running at Describe",
+      "at": "2026-10-21T13:14:59Z",
+      "budget_exempt": true,
+      "routed_to": "Run-Shed"
     }
   ]
 }
