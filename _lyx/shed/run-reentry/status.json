@@ -1,11 +1,11 @@
 {
-  "current_producer": "Webster",
+  "current_producer": "Plan-Burler-Review",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Webster",
-    "last": "Plan-Bouncer → done",
+    "now": "Plan-Burler-Review",
+    "last": "Webster → rerouted to Plan-Burler-Review",
     "wait": ""
   },
   "history": [
@@ -394,6 +394,22 @@
       "outcome": "done",
       "output": "/home/AD.NORCERESEARCH.NO/hanf/Code/Knatte18/loomyard-LYXHUB/run-reentry/_lyx/reviews/plan/round-3-bouncer-ledger.md",
       "at": "2026-10-21T06:30:04Z"
+    },
+    {
+      "producer": "Webster",
+      "outcome": "reroute",
+      "output": "",
+      "at": "2026-10-21T07:12:17Z",
+      "gate_attempts": 0,
+      "gate_spans": [
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-10-21T07:12:16.17944291Z",
+          "end": "2026-10-21T07:12:16.179590151Z"
+        }
+      ],
+      "routed_to": "Plan-Burler-Review"
     }
   ],
   "product": {
