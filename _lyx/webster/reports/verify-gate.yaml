@@ -1,0 +1,4 @@
+attempt: 1
+cap: 3
+dirty:
+    - .scratch_task.json
