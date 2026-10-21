@@ -232,9 +232,12 @@ Rationale: the chair's `done` with no forks in issue #756 was a stalled round, n
 <!-- /lyx:carry-over Discussion-Review -->
 
 <!-- lyx:carry-over Plan-Review -->
-- Plan-Review, round 3: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
-  Review: _lyx/reviews/plan/round-3-review.md; fixer report: _lyx/reviews/plan/round-3-fixer-report.md.
-  - new-keys-break-exact-set-pins-and-docs (class design, severity BLOCKING, open in rounds 1, 2, 3)
+- Plan-Review, round 4: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
+  Review: _lyx/reviews/plan/round-4-review.md; fixer report: _lyx/reviews/plan/round-4-fixer-report.md.
+  - card12-start-generation-name-collision (class consistency, severity BLOCKING, open in rounds 4)
+  - new-keys-break-exact-set-pins-and-docs (class scope, severity MEDIUM, open in rounds 1, 2, 3, 4)
+  - nillegal-hides-missing-reject-fill-at-wiring (class scope, severity MEDIUM, open in rounds 4)
+  - rewritten-sentence-carrier-not-listed-glyph (class design, severity MEDIUM, open in rounds 4)
 <!-- /lyx:carry-over Plan-Review -->
 
 ## Acceptance criteria
