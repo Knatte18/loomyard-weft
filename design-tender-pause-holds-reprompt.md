@@ -1,6 +1,6 @@
 # tender pause does not hold a verify gate's re-prompt, and creel interrupt is refused under the pause
 
-`tender-pause-holds-reprompt` · Task · bug, creel, shed
+`tender-pause-holds-reprompt` · Task · bug, creel, shed, webster
 
 Depends on: [`origin-reconcile`](design-origin-reconcile.md), [`run-reentry`](design-run-reentry.md)
 
@@ -19,3 +19,10 @@ Imported from [issue #762](https://github.com/Knatte18/loomyard/issues/762).
 - A paused scope receives no new prompt from a gate, a driver or any other lyx program: a re-prompt waits for the resume, like other held work.
 - A pause also stops, or holds at its next boundary, a verify gate command running in that scope, so the operator does not have to kill processes by hand.
 - `creel interrupt` of a session the pause covers interrupts it, since stopping work is what the pause wants.
+## Seen: webster opens batches under a pause (orch, 2026-10-21)
+
+A hub pause held the two webster masters with forks in flight only as `background`: no Esc, no record.
+When a fork returns, Claude Code wakes Master by itself, outside creel, and nothing stops it from running `lyx webster begin-batch` and forking the next implementer.
+Webster wires the pause only into its shuttle runner (`internal/webstercli/wiring.go`), so no batch verb reads it.
+
+Expected: `lyx webster begin-batch` refuses while a pause covers the pair, with a message telling Master to end its turn, so a running batch finishes and no new one starts until the resume.
