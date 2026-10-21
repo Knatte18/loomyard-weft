@@ -2,8 +2,6 @@
 
 `machine-handover` · Task · bug, enhancement, batten, board, orch, fabric
 
-Depends on: [`origin-reconcile`](design-origin-reconcile.md)
-
 ## Goal
 
 Two machines of the operator work on the same hub, never at once: one machine takes over what the other was doing, easily and without a tangle.
