@@ -1,0 +1,117 @@
+diff --git a/contracts/specs/loom-plan-spec.md b/contracts/specs/loom-plan-spec.md
+index bfd30445..79488f6a 100644
+--- a/contracts/specs/loom-plan-spec.md
++++ b/contracts/specs/loom-plan-spec.md
+@@ -18,7 +18,7 @@ The smallest change that:
+ 1. **Compiles/builds on its own** — `go build ./...` succeeds immediately after the card's commit.
+    No broken syntax, no reference to a symbol that doesn't yet exist.
+ 2. **Is independently committable** — a meaningful, revertible git commit on its own.
+-3. **Carries the coverage for any new behavior it introduces**; the card's own targets include the test that covers it (`PATTERN-test-economy`).
++3. **Carries the coverage for any new behavior it introduces**; the card's own targets include the test that covers it.
+    Pure refactors/renames may rely on existing tests instead.
+    A stencil's static prose is not behavior a test covers; a stencil card carries a test only when it changes a marker, a value Go fills, reads or names, a fragment Go chooses, or a rule a scan across stencils checks.
+ 
+diff --git a/contracts/stencils/burler/burler-step-fix.md b/contracts/stencils/burler/burler-step-fix.md
+index 3ed6c2c7..efba0e74 100644
+--- a/contracts/stencils/burler/burler-step-fix.md
++++ b/contracts/stencils/burler/burler-step-fix.md
+@@ -41,7 +41,7 @@ The other legitimate reason to leave a finding unfixed is something you genuinel
+ or a capability you do not have);
+ even then you must say so explicitly, with the specific reason, in the fixer-report's deferred section.
+ Never leave a finding unfixed just because it looked small — small findings are usually the cheapest to fix, not a reason to skip them.
+-A fix adds a test only when the finding is a coverage gap; for any other finding it corrects the existing test that asserted the wrong thing, per `PATTERN-test-economy`.
++A fix adds a test only when the finding is a coverage gap; for any other finding it corrects the existing test that asserted the wrong thing.
+ 
+ ## Fix-scope rules — your write surface and git discipline
+ 
+diff --git a/contracts/stencils/loom/loom-rubric-darn-review.md b/contracts/stencils/loom/loom-rubric-darn-review.md
+index 5efbe60a..f079294a 100644
+--- a/contracts/stencils/loom/loom-rubric-darn-review.md
++++ b/contracts/stencils/loom/loom-rubric-darn-review.md
+@@ -70,7 +70,7 @@ Do not flag any of the following as a finding:
+ - **Stencil wording.**
+   A diff that changes a stencil is read against the measuring stick, the board entry as the decision record's added entries amend it; a rule the entry did not ask to change that the diff drops, weakens or contradicts is a finding.
+ - **Test economy.**
+-  `PATTERN-test-economy` holds the rule; each of these is a finding, and each names what grounds it:
++  Each of these is a finding, and each names what grounds it:
+   - a new test that duplicates an existing test's coverage, naming the covering test;
+   - a new assertion on a stencil's static prose, naming the assertion;
+   - a behavior the diff adds with no coverage, naming the uncovered behavior; a stencil's static prose is exempt.
+diff --git a/contracts/stencils/loom/loom-rubric-merge-review.md b/contracts/stencils/loom/loom-rubric-merge-review.md
+index d2935292..6d011074 100644
+--- a/contracts/stencils/loom/loom-rubric-merge-review.md
++++ b/contracts/stencils/loom/loom-rubric-merge-review.md
+@@ -54,7 +54,7 @@ Do not flag any of the following as a finding:
+ - **A pattern the parent changed.**
+   A change to `PATTERN.md` or a `pattern/` file that the task's code does not follow.
+ - **Test economy.**
+-  `PATTERN-test-economy` holds the rule; each of these is a finding, and each names what grounds it:
++  Each of these is a finding, and each names what grounds it:
+   - a test the merge made redundant with another, naming the covering test;
+   - a behavior of the interaction with no coverage, naming the uncovered behavior; a stencil's static prose is exempt.
+ 
+diff --git a/contracts/stencils/loom/loom-rubric-plan-review.md b/contracts/stencils/loom/loom-rubric-plan-review.md
+index 769a6de3..00e8cd20 100644
+--- a/contracts/stencils/loom/loom-rubric-plan-review.md
++++ b/contracts/stencils/loom/loom-rubric-plan-review.md
+@@ -56,7 +56,7 @@ Do not flag any of the following as a finding:
+   A private supporting type, or a constructor inseparable from its type, belongs in the other symbol's card;
+   a symbol that is part of a module's public surface, or reused across packages, gets its own card even when one card is its only consumer, and a helper serving one surface is bundled into that surface's card.
+ - **Test economy.**
+-  A card that plans a new test function or file for behavior an existing test already covers, or one test per symbol, is a finding; so is a card that plans an assertion on a stencil's static prose; `PATTERN-test-economy` holds the rule.
++  A card that plans a new test function or file for behavior an existing test already covers, or one test per symbol, is a finding; so is a card that plans an assertion on a stencil's static prose.
+   The finding names the existing test that covers the behavior, or, for a per-symbol test, the public-surface test that covers the symbol;
+   a vague "seems redundant" is not a finding.
+ - **Member glyphs on an `Edit` card.**
+@@ -71,8 +71,10 @@ Do not flag any of the following as a finding:
+   A `Custom` card is exempt from `path-missing` on its own targets and from `prosa-symbol-target` — which under the glyph alphabet means a `Prosa` group may only target file and unit self glyphs, with a member glyph (or anything else that fails to parse as a self glyph) the finding — so a mistyped `Custom` card silently escapes two checks the rest of the plan is held to.
+   It escapes only those two: `bare-symbol-target` and `directory-target` bind a card's flat `Targets`/`Uses` with no group scoping at all, so this round's own gate already blocks a `Custom` card carrying either — do not hunt for one here.
+   A `Custom` card whose targets could instead be expressed as a multi-label combination of the other six is a finding — the format's one-or-more-labels grammar means `Custom` is never the only way to name a mixed target list.
+-- **CLI shape.**
+-  A card that adds or reshapes a `lyx` CLI command is checked against the audience bullet of `pattern/PATTERN-cli-cobra.md`; a command shape that bullet rules out is a finding.
++- **PATTERN fit.**
++  When the repository has a `PATTERN.md`, each card is checked against its entries and against the `pattern/` background files the plan names as relevant to the change;
++  a card that breaks one of their rules is a finding, and the finding names the entry.
++  In a repository without a `PATTERN.md` this check does not apply.
+ - **Fidelity to the answer key.**
+   Every Decision and every Constraint in `_lyx/discussion/decision-record.md` is carried by some card, and no card introduces scope the answer key does not license.
+   A Decision step no card carries is accepted only when the step changes this task's own board entry's body or scope and the decision record carries an `Added after Discussion` entry recording its drop;
+diff --git a/contracts/stencils/loom/loom-rubric-webster-review.md b/contracts/stencils/loom/loom-rubric-webster-review.md
+index fa83852e..628e9427 100644
+--- a/contracts/stencils/loom/loom-rubric-webster-review.md
++++ b/contracts/stencils/loom/loom-rubric-webster-review.md
+@@ -91,7 +91,7 @@ Do not flag any of the following as a finding:
+ - **Stencil wording.**
+   A diff that changes a stencil is read against the measuring stick, the plan card's `Intent`; a rule the card did not ask to change that the diff drops, weakens or contradicts is a finding.
+ - **Test economy.**
+-  `PATTERN-test-economy` holds the rule; each of these is a finding, and each names what grounds it:
++  Each of these is a finding, and each names what grounds it:
+   - a new test that duplicates an existing test's coverage, naming the covering test;
+   - a per-helper test the public surface's test already covers, naming that public-surface test;
+   - a review-fix test added for a finding that was not a coverage gap, naming that finding;
+diff --git a/contracts/stencils/loom/loom-template-plan.md b/contracts/stencils/loom/loom-template-plan.md
+index 880d4aec..836e983b 100644
+--- a/contracts/stencils/loom/loom-template-plan.md
++++ b/contracts/stencils/loom/loom-template-plan.md
+@@ -80,7 +80,7 @@ Each card is the smallest change that:
+ 1. **Builds on its own** — the project builds with the repo's build immediately after the card's commit;
+    never reference a symbol that no earlier card creates.
+ 2. **Is independently committable** — a meaningful, revertible git commit on its own.
+-3. **Carries the coverage for the behavior it introduces** — the card's own targets include the test that covers it (`PATTERN-test-economy`).
++3. **Carries the coverage for the behavior it introduces** — the card's own targets include the test that covers it.
+    `verify:` commands are no substitute for test coverage;
+    only pure refactors/renames may rely on existing tests instead.
+    A stencil's static prose is not behavior a test covers.
+diff --git a/contracts/stencils/shed/shed-template-driver-guide.md b/contracts/stencils/shed/shed-template-driver-guide.md
+index 787b65da..b695ef96 100644
+--- a/contracts/stencils/shed/shed-template-driver-guide.md
++++ b/contracts/stencils/shed/shed-template-driver-guide.md
+@@ -48,7 +48,7 @@ Code branches only; a stranded records branch goes through `lyx fabric cleanup`.
+ - A `branch_pushed` entry alone never qualifies: it is recorded whenever an existing branch is pushed forward.
+ - Never delete a branch carrying commits the trace does not attribute to the failed step.
+ 
+-`PATTERN-fabric-git` binds `lyx`'s own code; you make no commits.
++These raw `git` calls are allowed repairs; you make no commits.
+ Each deletion is a repair record like any other.
+ 
+ ## Repair cap
