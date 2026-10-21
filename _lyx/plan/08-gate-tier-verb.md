@@ -1,14 +1,14 @@
 # Card 8 — gate-tier-verb
 
 **Create:**
-- `plan:internal/verifyrun#ShellFor` -> `func ShellFor(goos string) (name, flag string)`
-- `plan:internal/gatecli#tierRun` -> `type tierRun struct`
-- `plan:internal/gatecli#planTierRuns` -> `func planTierRuns(cfg gateslot.Config, request testRequest) ([]tierRun, error)`
-- `plan:internal/gatecli#renderTierCommand` -> `func renderTierCommand(tier gateslot.Tier, targets, args []string) (string, error)`
-- `plan:internal/gatecli#runTier` -> `func runTier(ctx context.Context, out io.Writer, run tierRun, env []string, request testRequest) tierResult`
-- `plan:internal/gatecli#tierResult` -> `type tierResult struct`
-- `plan:internal/gatecli#runGuardStep` -> `func runGuardStep(ctx context.Context, out io.Writer, cfg gateslot.Config, moduleDir string, guards map[string][]string, env []string, request testRequest) tierResult`
-- `plan:internal/gatecli#TestPlanTierRuns` -> `func TestPlanTierRuns(t *testing.T)`
+- `internal/verifyrun#ShellFor`
+- `internal/gatecli#tierRun`
+- `internal/gatecli#planTierRuns`
+- `internal/gatecli#renderTierCommand`
+- `internal/gatecli#runTier`
+- `internal/gatecli#tierResult`
+- `internal/gatecli#runGuardStep`
+- `internal/gatecli#TestPlanTierRuns`
 
 **Edit:**
 - `internal/verifyrun#run`

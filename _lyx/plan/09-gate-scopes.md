@@ -1,15 +1,15 @@
 # Card 9 — gate-scopes
 
 **Create:**
-- `plan:internal/gatecli#scope` -> `type scope struct`
-- `plan:internal/gatecli#computeScope` -> `func computeScope(ctx context.Context, cfg gateslot.Config, location *lyxcwd.Location, root string, request testRequest) (scope, error)`
-- `plan:internal/gatecli#parentMergeBase` -> `func parentMergeBase(location *lyxcwd.Location) (string, bool, error)`
-- `plan:internal/gatecli#TestGateTest_Scopes` -> `func TestGateTest_Scopes(t *testing.T)`
+- `internal/gatecli#scope`
+- `internal/gatecli#computeScope`
+- `internal/gatecli#parentMergeBase`
+- `internal/gatecli#TestGateTest_Scopes`
 
 **Edit:**
-- `plan:internal/gatecli#planTierRuns`
+- `internal/gatecli#planTierRuns`
 - `internal/gatecli#runTest`
-- `plan:internal/gatecli#TestPlanTierRuns`
+- `internal/gatecli#TestPlanTierRuns`
 - `internal/gatecli/doc.go`
 
 **Uses:**
@@ -17,7 +17,7 @@
 - `internal/planparser#CardPackages`
 - `internal/planparser#ParsePlan`
 - `internal/planparser#PlanDir`
-- `plan:internal/gatecli#runGuardStep`
+- `internal/gatecli#runGuardStep`
 - `internal/gatecli#startGate`
 - `internal/gatecli#runGate`
 - `internal/hubforge#CopyHub`
