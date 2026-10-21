@@ -1,6 +1,6 @@
 {
   "runGuid": "e59a896b1272fd19b65c27f685061006",
-  "planFingerprint": "b473d5120620086bf499ca7eed9c06460c31fd0edae6a9d91e8b21da56e5679c",
+  "planFingerprint": "c0805eb03c2da24b969aa3dc495d751fac8ce7b5669afb67acb351eafdab955d",
   "planFileHashes": {
     "00-overview.md": "6cb2e5e31e7d052a910a420e3559b81fb0648ad7b8b408f5eeb91a43202cc427",
     "01-loom-tuned-defaults.md": "b233f196e6192f477222b08e0f839bfd39c6583815dcabdcc6d4a3f60f39113a",
@@ -8,12 +8,12 @@
     "03-claude-orch-webster-batcher-tuned-defaults.md": "aff67b6f7a778e01c253964347a5373c9309ff8d2fb8c4e40366f0f97e0e83a3",
     "04-configengine-sparse-hub-base.md": "5a3e2b5cc83958aeec5b135923520edd2fa439cbad2b7dd95db37693db2db644",
     "05-former-template-values.md": "505832987aef6ecc9bef10f1d93f3ddc7717beb9e3e1a486cc83e8f0e98af147",
-    "06-sparse-hub-base-reconcile.md": "a1b4ea8dbcb1b2868f0f86467fd3153ede93b5987c0920ec1f6bd17eb549f8a0",
-    "07-sparse-key-moves.md": "6c76ab56c3e1699a57e7094e68f9c29437ccd04745fc73ebdf51ed9b1d56a396",
-    "08-walk-strips-base-once.md": "59ea549d7752276888862dcaa44f1ecccf51ca0d5a377af0ea5076e11c5369b4",
+    "06-sparse-hub-base-reconcile.md": "013dcdf54eba5abf388a63e4215deefa4c025b2518b62ceb2da67dd5f64f1c42",
+    "07-sparse-key-moves.md": "e3de5098b5ac400492b91107d4529a9585441dec857f9b40980bea554fa67a28",
+    "08-walk-strips-base-once.md": "c3fd0183bccc24abcba9956a73a50a4927f0b07a8e7abfe6fc9cead7b948c485",
     "09-reconcile-failure-warns.md": "d75679d4843a7a686ddbd1fc061364ec4b113fe6b6847ae0f0dd060c95f09283",
     "10-config-cli-sparse-hub-base.md": "b66ec88aa867b7740a087e35d8a2b8d0720af7d793282f949a2252c354d2660b",
-    "11-clone-writes-base-marker.md": "bba7c90df5a1227b2ec29fed09cf17cbdce9c8d3454d245ee0d67af6dad8af16"
+    "11-clone-writes-base-marker.md": "a7ffeb1f2deba2bb4634b500e869d35625e302b2d8d63070018af7a845fb31d9"
   },
   "planOverviewFrameHash": "038ea703492af48fa2736c13cdf0751d1a03fadcbc03774907c3e60eb0b3e70c",
   "partition": [
@@ -361,7 +361,7 @@
       }
     }
   ],
-  "currentBatch": 6,
+  "currentBatch": 0,
   "masterStrand": "b2bd0fce733d2c0c68a314ffc3cf873c",
   "masterSessionId": "6d4d10e3-caa4-43c0-bf9e-5510d3521ae9",
   "masterEngine": "claude",
@@ -478,22 +478,44 @@
         "08-walk-strips-base-once"
       ],
       "cardHashes": {
-        "06-sparse-hub-base-reconcile": "a1b4ea8dbcb1b2868f0f86467fd3153ede93b5987c0920ec1f6bd17eb549f8a0",
-        "07-sparse-key-moves": "6c76ab56c3e1699a57e7094e68f9c29437ccd04745fc73ebdf51ed9b1d56a396",
-        "08-walk-strips-base-once": "59ea549d7752276888862dcaa44f1ecccf51ca0d5a377af0ea5076e11c5369b4"
+        "06-sparse-hub-base-reconcile": "013dcdf54eba5abf388a63e4215deefa4c025b2518b62ceb2da67dd5f64f1c42",
+        "07-sparse-key-moves": "e3de5098b5ac400492b91107d4529a9585441dec857f9b40980bea554fa67a28",
+        "08-walk-strips-base-once": "c3fd0183bccc24abcba9956a73a50a4927f0b07a8e7abfe6fc9cead7b948c485"
       },
       "startSha": "0b2a0da89a75656f20b4ba9a18e5e23e73c5c046",
       "kind": "fork",
       "spawnedAt": "2026-10-21T13:05:15Z",
       "sessionId": "6d4d10e3-caa4-43c0-bf9e-5510d3521ae9",
       "engine": "claude",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "06-sparse-hub-base-reconcile",
+        "status": "done",
+        "head_sha": "70e19a0cf4e3c2404abe97a7e9b7573f2c05a844",
+        "deviations": [
+          "internal/configsync/configsync.go",
+          "internal/configsync/configsync_test.go",
+          "internal/configsync/movekeys.go",
+          "internal/hubreconcile/ensure_integration_test.go",
+          "internal/hubreconcile/walk.go"
+        ]
+      },
+      "cardShas": [
+        "70e19a0cf4e3c2404abe97a7e9b7573f2c05a844"
+      ],
+      "forkTranscripts": [
+        "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-tuned-defaults-template/6d4d10e3-caa4-43c0-bf9e-5510d3521ae9/subagents/agent-a54e1b7bfa243fde8.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-tuned-defaults-template/6d4d10e3-caa4-43c0-bf9e-5510d3521ae9/subagents/agent-a54e1b7bfa243fde8.jsonl"
+      ]
     }
   },
   "seenForkTranscripts": [
     "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-tuned-defaults-template/6d4d10e3-caa4-43c0-bf9e-5510d3521ae9/subagents/agent-a174e652f3badec71.jsonl",
     "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-tuned-defaults-template/6d4d10e3-caa4-43c0-bf9e-5510d3521ae9/subagents/agent-a312554854a367a32.jsonl",
-    "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-tuned-defaults-template/6d4d10e3-caa4-43c0-bf9e-5510d3521ae9/subagents/agent-a641baa30984042ed.jsonl"
+    "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-tuned-defaults-template/6d4d10e3-caa4-43c0-bf9e-5510d3521ae9/subagents/agent-a641baa30984042ed.jsonl",
+    "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-tuned-defaults-template/6d4d10e3-caa4-43c0-bf9e-5510d3521ae9/subagents/agent-a54e1b7bfa243fde8.jsonl"
   ]
 }

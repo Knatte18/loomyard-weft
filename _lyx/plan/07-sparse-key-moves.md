@@ -6,10 +6,10 @@
 - `internal/configsync#moveFile.takeKey`
 - `internal/configsync#moveFile.write`
 - `internal/configsync#TestReconcile_MovesKeysAcrossModules`
-- `plan:internal/configsync#TestReconcileHubWideAt_StripsAnUnmigratedBaseOnce`
+- `internal/configsync#TestReconcileHubWideAt_StripsAnUnmigratedBaseOnce`
 
 **Uses:**
-- `plan:internal/configsync#sparseSeed`
+- `internal/configsync#sparseSeed`
 - `internal/configsync#lensesFixture`
 - `internal/configengine#SparseBaseHeader`
 - `internal/configengine#BaseSparseMarker`
