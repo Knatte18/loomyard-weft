@@ -8,6 +8,7 @@
 - `internal/loomcli#loomCLI.reflectFriction` -> `func (c *loomCLI) reflectFriction() string`
 - `internal/loomcli#loomCLI.reflectFrictionRow`
 - `internal/loomcli#awaitRunLock`
+- `internal/loomcli#dispositionForHandshake`
 - `internal/loomcli#TestLoomPostRun_HaltNotes`
 - `internal/loomcli#TestStep_EscalationHaltSkipsReflectionAndKeepsBothNotes`
 - `internal/loomcli#TestReflectFriction_DepsValidationFailureReportsFailed`
@@ -35,7 +36,7 @@ Its callers, `loomAfterStep` under step, `loomPostRun` under run and `loomAfterI
 So no stop holds the driver lock for a friction session and `lyx loom resume` never waits on one.
 `reflectFriction` loses its `wait` parameter: the halt path that skipped on a held lock is gone, and the row path always waits; `reflectFrictionRow` calls it, and `run.go`'s header and comments drop the halt path.
 `friction_timeout_min` stays, bounding the row's reflection and lock wait.
-`awaitRunLock`'s doc, which names a reflection after a blocked halt, and the `awaitRunLockHalted` comment beside it are rewritten: the arm stays, since it also fires on the first poll of every resume of a halted run.
+`awaitRunLock`'s doc, which names a reflection after a blocked halt, and the `awaitRunLockHalted` paragraph of `dispositionForHandshake`'s doc, which says a blocked halt runs the friction reflection after `shedengine.Run` released the lock, are rewritten: the arm stays, since it also fires on the first poll of every resume of a halted run.
 `LoomFrictionLock`'s doc, which justifies a lock of its own by the blocked-halt reflection running outside the run lock, and the comment in `runDriverSpawnAndWait` naming a blocked halt's reflection, are rewritten: the lock now orders the Friction-Reflect row's reflections of two drivers over one friction directory.
 `TestLoomAfterInterrupt_WritesTheHaltNoteAndNoReflection` (no test reaches `loomAfterInterrupt` today): the hook writes the `loom-halt` note with the cause as reason, reports `skipped` and runs the reflection shuttle zero times.
 

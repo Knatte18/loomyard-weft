@@ -12,6 +12,7 @@
 - `internal/shedengine#TestStep_ToldRunIDNamesGotoWithRunID`
 - `internal/shedengine#TestBounces_CountAndBudgetInheritance`
 - `internal/shedengine#OutcomeReroute`
+- `internal/shedengine#Goto`
 - `internal/shedengine/doc.go`
 
 **Delete:**
@@ -39,7 +40,7 @@
 **Intent:** Shed's budget count implements D1, D3's mark and D6's mark.
 
 D1: `episodeStuckCount` no longer ends an episode at an `OutcomeGoto` entry; it skips it like any other non-Done entry, for `Goto` and `Relaunch`'s goto alike.
-A reroute still ends its target segment's episode through `gotoEndsEpisode`, which keeps that one caller; its doc comment and `OutcomeGoto`'s stop saying a goto ends an episode.
+A reroute still ends its target segment's episode through `gotoEndsEpisode`, which keeps that one caller; its doc comment and `OutcomeGoto`'s stop saying a goto ends an episode, and `Goto`'s doc comment stops saying its `OutcomeGoto` entry ends the target segment's bounce episode.
 A goto still resets what the target row needs to run; that code is untouched here.
 
 D3: `HistoryEntry` gains `BudgetCapped bool` (`json:"budget_capped,omitempty"`), set only on the Stuck entry the budget-exhausted arm of `Shed.stepLocked` appends.
@@ -51,6 +52,7 @@ The budget-exhausted reason becomes `bounce budget exhausted for <row>; way forw
 D6: `OutputPointer` and `HistoryEntry` gain `GenerationStart bool` (`json:"generation_start,omitempty"` on the entry), read only on a Stuck verdict; `stepLocked` copies it onto the appended entry.
 `episodeStuckCount` counts a row's `GenerationStart` entry and stops right after it, so the count reads 1 once the seed is recorded, whatever the previous generation spent.
 The budget arm's condition becomes `!output.BudgetExempt && !output.GenerationStart && episodeStuckCount(...) >= ...`, so a generation-start Stuck is recorded as counted but never takes `budget_capped` and never halts, even over a spent episode.
+Bound: only a producer that starts a generation sets the mark, which is the Bouncer's successful seed of a new generation (card 12), once per generation and never on a re-bounce or a degraded seed; Shed trusts the mark as it trusts `BudgetExempt`, and a generation starts only when the row's subject changed since it settled, or, with no settle record, since its last judge spawn, Merge-Review's merge-in being its subject.
 `Routing.Bounces` counts through `episodeStuckCount` and follows every rule without a change.
 
 `doc.go`'s goto, bounce-budget and history-field paragraphs are rewritten to these rules, including the two-stops-name-goto sentence, which now names only the missing-producer refusal.
