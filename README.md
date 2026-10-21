@@ -27,7 +27,7 @@ Held by a run; its scope is locked until the run ends.
 | # | Task | Slug | Recipe | At | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | 5 | **lyx board rename: change an entry slug in one write**<br>• Rename an entry keeping all fields and rewriting depends_on; report prose mentions | [`board-rename`](design-board-rename.md) | darn | Worktree-Create | 3d | 0m | board |
-| 6 | **Reed small fixes: trace-id constant in tests, allow-set-title warn noise, watchdog stop marker without inotify**<br>• Three small reed fixes in one darn run | [`reed-small-fixes`](design-reed-small-fixes.md) | darn | Worktree-Create | 1d | 0m | reed, shuttle |
+| 6 | **Reed small fixes: trace-id constant in tests, allow-set-title warn noise, watchdog stop marker without inotify**<br>• Three small reed fixes in one darn run | [`reed-small-fixes`](design-reed-small-fixes.md) | darn | Darn-Write | 1d | 0m | reed, shuttle |
 
 ### Ready
 
