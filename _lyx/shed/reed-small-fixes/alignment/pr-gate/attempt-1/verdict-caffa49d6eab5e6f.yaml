@@ -1,0 +1,4 @@
+verdict: approve
+reason: The diff covers all three points of the board entry (trace id constant in the three named test files, allow-set-title skipped below tmux 3.5 with one Info note, and the watchdog reading the stop marker on its timer when unwatched) and changes nothing the entry does not call for. The Darn-Review carry-over names no parent correction, and its open F1 is fixed in the diff. No peer run or parent commit overlaps.
+question: ""
+superseded: []
