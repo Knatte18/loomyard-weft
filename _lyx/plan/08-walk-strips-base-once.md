@@ -8,7 +8,8 @@
 - `internal/hubreconcile#ensure`
 - `internal/hubreconcile#Ensure`
 - `internal/hubreconcile#repoDefaultAbsent`
-- `internal/hubreconcile#reconcileHubWide`
+- `internal/hubreconcile#reconcileHubWide` -> `func reconcileHubWide(boardDir, primeAnchor, label string, hooks walkHooks) (skipped bool, err error)`
+- `internal/hubreconcile#walkHub`
 - `internal/hubreconcile#snapshotConfig`
 - `internal/hubreconcile#walkHooks`
 - `internal/hubreconcile#WorktreeError`
@@ -43,13 +44,13 @@ When `configengine.BaseSparseMarker(boardDir)` did not exist before the pass and
 `snapshotConfig` also snapshots `configengine.BaseSparseMarker(anchor)`, absent mapping to nil like the worktree `sparse` marker, so a failed hub-wide step, a reconcile, commit or pull-then-commit failure, restores the board's config files to their prior bytes and removes a marker the pass wrote, through the existing `failRestoringConfig`.
 A failure in a later worktree step leaves the committed board and its marker in place, and the next walk strips no base again and retries the worktrees, whose former-value drop (card 5) runs whether or not the marker exists.
 
-`walkHooks` gains `afterHubWideWrite`, a test seam run inside the board write after `ReconcileHubWideAt` returns, whose non-nil error fails the write as a commit failure would, after the files and the marker are written.
+`walkHooks` gains `afterHubWideWrite`, a test seam run inside the board write after `ReconcileHubWideAt` returns, whose non-nil error fails the write as a commit failure would, after the files and the marker are written; `walkHub` passes its hooks to `reconcileHubWide`, which takes them as a new parameter.
 `EnsureFailingAfterHubWideWrite`, in `export_test.go` beside `EnsureWithHooks`, runs the walk with that hook returning failure, so the external test package reaches the restore of a written marker.
 
 `repoDefaultAbsent` keeps its name and also reports stale when the board marker is absent, so a stamp naming the running build is stale on an unmigrated board, and a marker removed by hand with a board commit makes the next start verb's walk strip the base files again; its comment says it covers the marker, and `ensure`'s fast-path comment and `Ensure`'s doc say a matching stamp costs one file read and one stat per per-worktree repo default plus one for the marker.
 The config registry's fingerprint already covers the template text, so this change's template edits make every hub's stamp stale and its next start verb runs the walk.
 
-`WorktreeError` gains a `Board bool` field, set by `reconcileHubWide` on the error it returns, and `WorktreeError.Error` names the board-dir way forward: `lyx config <module> --layer default` for a board file, since a bare `lyx config <module>` addresses a per-worktree module's worktree file.
+`WorktreeError` gains a `Board bool` field, set by `reconcileHubWide` on the error it returns, and `WorktreeError.Error` names the board-dir way forward: run `lyx config <module> --layer default` from the hub's prime worktree for a board file, the form `reviewbudget.Route` and `configcli` already use for a board file, since a bare `lyx config <module>` addresses a per-worktree module's worktree file.
 A `WorktreeError` whose `File` is set and whose `Module` is empty, the board marker's write failure (card 6), names only the file to fix and the re-run, never a `lyx config` command.
 
 `internal/hubreconcile/doc.go`'s walk and sparse-migration sections state: the walk strips the board's base files once, while the board marker `<BoardDir>/_lyx/config/base-sparse` is absent, of units equal to the template or a former value, writes a key-less base as the header-only file, writes the marker only when every registered module's base exists, and commits files and marker in the board commit; a failed hub-wide step removes the marker the pass wrote; each unmarked worktree's strip also drops former values; the stamp is stale while the marker is absent.
