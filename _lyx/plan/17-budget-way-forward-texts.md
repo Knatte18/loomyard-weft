@@ -17,7 +17,7 @@
 - `contracts/stencils/orch/orch-template-role.md`
 
 **Create:**
-- `plan:internal/loomcli#loomBudgetWayForward` -> `const loomBudgetWayForward = "run \"lyx loom resume\" in the task worktree: the resume grants the row one more budget; a goto keeps the spent budget and grants none"`
+- `internal/loomcli#loomBudgetWayForward`
 
 **Intent:** D3's told way forward and every text that names a goto as the way to a fresh budget, rewritten to D1–D3.
 
