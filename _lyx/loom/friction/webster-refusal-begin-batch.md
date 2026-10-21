@@ -1,0 +1,9 @@
+lyx webster begin-batch refused
+
+Arguments: 12
+
+```
+webster: plan re-resolution at begin-batch reported a blocking finding (plan_conflict: tree_moved): create-already-exists/12-bouncer-amendment[blocking]: Create target "plan:internal/shedadapters#Bouncer.startGeneration" already resolves found; way forward: edit the plan so the named cards match the tree, run "lyx webster rebaseline --card NN" naming each card you edited, then begin-batch 12 again
+```
+
+plan_conflict: tree_moved
