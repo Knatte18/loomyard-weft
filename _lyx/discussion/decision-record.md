@@ -124,6 +124,14 @@ The machine file holds at most the two gate keys, so a stale key is rare: a reti
   - gate-load-failure-no-pair-way-forward (class design, severity MEDIUM, open in rounds 2)
 <!-- /lyx:carry-over Discussion-Review -->
 
+<!-- lyx:carry-over Plan-Review -->
+- Plan-Review, round 1: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
+  Review: _lyx/reviews/plan/round-1-review.md; fixer report: _lyx/reviews/plan/round-1-fixer-report.md.
+  - card1-machine-route-bound-missing (class scope, severity MEDIUM, open in rounds 1)
+  - long-cap-unbudgeted-cmd-lyx-unverified (class design, severity MEDIUM, open in rounds 1)
+  - validate-machine-covered-unit-refusal-wording (class consistency, severity MEDIUM, open in rounds 1)
+<!-- /lyx:carry-over Plan-Review -->
+
 ## Acceptance criteria
 
 - With the hub file at `go_parallel: 4` and the machine file at `go_parallel: 8`, a worktree's gate load resolves 8 and a slot lease's `GOFLAGS` carries `-p=8`; with the machine file absent both carry 4.
