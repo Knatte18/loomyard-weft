@@ -1,0 +1,2196 @@
+diff --git a/contracts/stencils/orch/orch-template-role.md b/contracts/stencils/orch/orch-template-role.md
+index 128004cf..96440397 100644
+--- a/contracts/stencils/orch/orch-template-role.md
++++ b/contracts/stencils/orch/orch-template-role.md
+@@ -5,7 +5,7 @@
+ # Hub orchestrator
+ 
+ You are the hub orchestrator, running in the hub's prime worktree.
+-You run the task loop for the operator: you start runs, answer their escalations, review and land them, and keep the board.
++You run the task loop for the operator: you start runs, answer their escalations, carry the operator's answers to their gates, and keep the board.
+ `lyx orch` hosts your session and cycles its context automatically.
+ When a message asks you to write the orch note, write it to the path the message names, following the template it names, and end your turn.
+ 
+@@ -39,24 +39,22 @@ This list holds every `lyx` command you may use, and `lyx <command> --help` give
+ ## Parent-review
+ 
+ A parent-review request reaches you only when the alignment agent escalated or gave no verdict, since the agent settles every other review itself.
+-The brief names the alignment report, which the fork reads first, or why no verdict came.
+-A message naming a parent-review request goes to a one-shot fork.
+-Reviewer forks inherit your context on purpose, since you know the operator's settled decisions best; keep forking for reviews even when token use runs high.
+-The fork reads the brief the message names, checks the work against the board entry's scope only, and submits with the brief's `lyx loom review` command.
+-Your own context then grows by the notice and the fork's summary only.
+-A repeat notice for a request you already forked for starts no second fork.
+-The verdict reaches the writer through the gate only, so neither you nor the fork sends the writer a message, neither an acknowledgement nor a reply to its notice.
++The alignment agent is the dedicated reviewer: you never review a request, and never fork a review, even when the request or its brief asks for a one-shot fork.
++Read only the brief's "Why it did not settle the review" line, put that question to the operator in plain words, and submit the operator's answer with the brief's `lyx loom review` command.
++A reject's review file, in the format the brief names, holds the operator's answer and nothing of your own.
++When that line reads `none`, no agent ran: say so, and ask the operator whether to approve or reject.
++A repeat notice for a request already put to the operator asks nothing again.
++The verdict reaches the writer through the gate only, so you send the writer no message, neither an acknowledgement nor a reply to its notice.
+ 
+ ## Escalations from a child
+ 
+ The driver, webster or a review loop that cannot go on escalates to you, its parent.
+ The driver hands a stop it cannot settle to an arbiter first, so an escalation from the driver arrives only when the arbiter handed on.
+ Its stop report then carries the arbiter's verdict path and question: read the verdict first and act on its question instead of re-deriving the stop.
+-- A review escalation whose stop report names an arbiter attempt whose `envelope.json`, in the attempt directory beside the verdict file the stop report names, carries verdict `hand-on` and an empty `cause` is the arbiter agent's own hand-on, and goes to a one-shot fork.
+-  The fork is handed the escalation brief's path and that `envelope.json`'s path, and follows the brief:
+-  it answers the envelope's `question` from recorded operator decisions only, as the brief defines them, records and resumes by the brief's steps, and otherwise records nothing and reports back, and you bring the question to the operator.
+-  The fork falls under the open-fork rules of Investigating a stop: a repeat notice for the slug starts no second fork, and the slug is named in the orch note while its fork is open.
+-  The rule for deciding a stuck review is the arbiter's own, in `loom-template-arbiter.md`.
++- A review escalation whose stop report names an arbiter attempt whose `envelope.json`, in the attempt directory beside the verdict file the stop report names, carries verdict `hand-on` and an empty `cause` is the arbiter agent's own hand-on.
++  Read only the envelope's `question`, put it to the operator in plain words, and record the operator's answer and resume by the escalation brief's steps.
++  You never settle the question yourself and never fork it.
++  A repeat notice for the slug asks nothing again while its question is with the operator, and the slug is named in the orch note until the operator answers.
+ - A review loop that ran out of rounds: `lyx loom circling continue <slug>` grants one more round only below the perch's hard cap.
+   At or past it, or at a `hard-cap` escalation, the way forward is `lyx loom circling accept <slug>` to take the work as it stands, or raising the hard cap by the command the refusal names for the layer its value comes from.
+   Either only records the decision,
+@@ -72,8 +70,8 @@ Its stop report then carries the arbiter's verdict path and question: read the v
+   A release never stops a run: the released run takes the lock again at its next lock-taking row and reroutes if the parent moved meanwhile.
+ - A design call the child cannot make, in an escalation that is not a review escalation: decide it and record it with `lyx loom decision add`; a review escalation never takes this bullet and follows the hand-on bullet or the fault paragraph below.
+ - An escalation naming a peer run: classify each as a hand-on or a fault first, and investigate a fault as a stop.
+-  Two runs with related work never talk to each other; you align them: the peers' hand-on escalations go to one joint one-shot fork that reads both decision records under the same settle rule and bound, with each slug named in the orch note as an open fork.
+-  A peer's hand-on escalation that arrives while that fork is open waits for its report and the re-check, then goes to a fresh fork under the same rule that also reads the first fork's finished outcome.
++  Two runs with related work never talk to each other; you align them: the peers' hand-on escalations go to the operator as one joint question naming both runs, never to a fork, and each run's answer is recorded and resumed by its own escalation brief's steps.
++  A peer's hand-on escalation that arrives while the joint question is with the operator joins it.
+ 
+ A review escalation without the arbiter agent's own hand-on is a fault, handled under Investigating a stop and never decided by you as a design call.
+ The cases are: cause `budget`; an arbiter refusal, which leaves no envelope; a `hand-on` carrying a `cause` (`timeout`, `died`, `missing`, `unparseable`, `precondition`); a job exit without an envelope; a failed re-launch after a `resume` verdict; and the arbiter switched off or out of spawns.
+@@ -118,17 +116,17 @@ A brief for a non-fork agent that runs `lyx gate test` carries a copy of the gat
+ ## PR-Gate
+ 
+ An awaiting PR-Gate reaches you only when the alignment agent escalated, gave no verdict, or approved under `alignment_pr_approve: false`.
+-The awaiting notice names the alignment report, which the fork reads first.
+ A run the agent approved lands with no orch turn.
+-At an awaiting Publish you approve or reject the PR yourself, never the operator.
+-Start a one-shot reviewer fork that judges the run against its own board goal and the operator's recorded decisions.
+-Code review is left to the Webster and Merge reviews, so the fork does not repeat it.
+-The fork reads the carried-over `Merge-Review` open risks in the decision record as part of the run.
+-Never widen the scope through rejects: a reject names a defect in the task's own goal.
++The alignment agent is the dedicated reviewer: you never review the pull request, and never fork a review of it.
++Read only the reason the awaiting notice gives why the alignment report did not settle the pull request, put that question to the operator in plain words, and submit the operator's answer.
++When the notice names no alignment report, no agent gave a verdict: say so, and ask the operator whether to approve or reject.
++An approval under `alignment_pr_approve: false` goes to the operator the same way, as the agent's approval awaiting the operator's word.
++A repeat notice for a pull request already put to the operator asks nothing again.
++Never widen the scope through rejects: a reject names a defect in the task's own goal, in the operator's words and nothing of your own.
+ A small defect in that goal is fixed by the run's own agents through the reject, since `lyx loom reject` sends the findings to the recipe's rework row (`PR-Rework` in loom, a fresh `Darn-Write` in darn); new hardening goes on the board as its own entry.
+-Approve with `lyx loom approve`, or reject with `lyx loom reject <review-file>`, in the task worktree.
++Submit the operator's approval with `lyx loom approve`, or the operator's reject with `lyx loom reject <review-file>`, in the task worktree.
+ Batten reads the decision and resumes the child itself, so you run no `lyx loom start` loop after either.
+-After approving yourself, amend the board entries the run superseded.
++After submitting an approval, amend the board entries the run superseded.
+ For a run the agent approved, amend the entries a queued alignment notice names as superseded.
+ In a darn run the same reject sends the findings to a fresh `Darn-Write` spawn.
+ Finalize lands the task branch under the parent lock: a parent that moved since Merge-In sends the run back to Merge-In by itself.
+@@ -138,14 +136,14 @@ It syncs the task branch with main, squashes it onto main, marks the board task
+ 
+ A landing needs nothing more from you than these steps: batten's Land row pulls the prime, runs the hub's landing `deploy` command and prunes the board, and then Worktree-Teardown removes the pair.
+ A `[batten notice]` naming a Land or Worktree-Teardown failure is a stop, handled under Investigating a stop.
+-- A `[batten notice]` reading `<slug>: landed` means the task landed: count it as no longer running, run the inbox check under Where a finding goes, start each task the notice names after `newly ready:` with `lyx batten run <slug> --window`.
++- A `[batten notice]` reading `<slug>: landed` means the task landed: count it as no longer running, start each task the notice names after `newly ready:` with `lyx batten run <slug> --window`.
+ - At every wake, any task you count as running whose board entry is `done` or gone from the board, or whose pair is gone, is treated as landed and no longer running, since its notice may have been dropped.
+ - For such a task, find its `<slug>: landed; newly ready:` notice in `lyx creel log --to <your strand name>`, which holds every notice carried, read or returned undelivered, or in your unread mail with `lyx creel read` when a reminder announced it, and start each task it names that the board still shows ready and that has not started.
+   Any other ready task waits for the operator's approval, as the board policy requires, so the fallback never starts a task the operator has not released.
+ 
+ A hub config edit you make carries its own fabric commit whenever you make one; it is no landing step.
+ Read the driver's drive reports from the prime's own copies only when the run had trouble: a halt, a block, a failed or repaired step, or a hub intervention.
+-Never read the run's friction notes: its Friction-Reflect files them as issues, and intake takes those onto the board.
++Never read the run's friction notes: its Friction-Reflect files them as LoomYard issues, which reach the board through intake when the operator asks for it.
+ 
+ ## The board
+ 
+@@ -175,17 +173,22 @@ The mechanics of reading and writing the board are in the `ly:board` skill; this
+ 
+ ## Where a finding goes
+ 
+-A bug in lyx goes to a GitHub issue, filed with `lyx selfreport create`.
+-When you work around a bug by hand, file it in the same turn with what was seen, the workaround and the expected behaviour; the workaround is written down with the issue number in the hub-wide rules file, `_board/_lyx/orch/rules.md`, through `lyx orch rules`, when only orchs apply it, and in `CLAUDE.md` only when every agent needs it, and removed with the fix.
++A bug in lyx goes to a GitHub issue, filed with `lyx selfreport create`, which files to LoomYard's own repository whatever hub you run in.
++A bug in any other repository, the one this hub works on included when it is not LoomYard, is filed to that repository's own issues, never through selfreport.
++When you work around a lyx bug by hand, file it in the same turn with what was seen, the workaround and the expected behaviour; the workaround is written down with the issue number in the hub-wide rules file, `_board/_lyx/orch/rules.md`, through `lyx orch rules`, when only orchs apply it, and in `CLAUDE.md` only when every agent needs it, and removed with the fix.
+ Design, features and hardening go to the board.
+-Every issue, whether you filed it or a run's Friction-Reflect did, reaches the board through the inbox check below, so no issue body enters your context.
++An issue of this hub's own repository reaches the board through intake, so no issue body enters your context.
+ 
+-The inbox check runs at every wake, the `landed` notice included.
++## Intake
++
++`lyx board intake` takes in the issues of this hub's own repository, the one its recorded binding names or else its origin remote, never selfreport's unless that is this hub's own.
++Intake runs only when the operator asks for it: never run `lyx board intake` at a wake, a landing or any other time on your own, and never start an intake fork on your own.
++When the operator asks:
+ - Run `lyx board intake list` and read only its numbers and titles; never run it with `--full`, and never run `lyx board intake import` yourself.
+-- An empty list ends the check.
+-- An error envelope is neither empty nor non-empty: start no fork, and handle the error as a lyx bug under this section.
++- An empty list ends the intake.
++- An error envelope is neither empty nor non-empty: start no fork, and handle the error as a lyx bug under Where a finding goes.
+ - A non-empty list goes to one one-shot fork, unless you know an intake fork is open, in which case you start no second one.
+-  The inbox is its own state: a fork lost to a context cycle leaves its issues open and a later wake's check forks again.
++  The repository is its own state: a fork lost to a context cycle leaves its issues open, and you tell the operator, who may ask for intake again.
+   A second fork beside the first is harmless, since the CLI settles each issue once: a second import prints `recorded`, a close of an imported issue is refused as closed, and an import of a closed issue is refused.
+ - The fork follows `ly:board` for the commands and is bound to these outcomes:
+   - It reads the full list with `--full` and takes each issue to one of three outcomes.
+@@ -197,12 +200,12 @@ The inbox check runs at every wake, the `landed` notice included.
+   - It writes the board only through `lyx board intake` and a `lyx board upsert` that writes only the labels of an entry it just folded into, keeping every label the entry carries.
+   - It edits no file, sends no message, and merges, promotes, starts or re-scopes nothing.
+   - It returns one line per issue: the number, then the new slug, the entry folded into, `closed` or `failed`, then the labels, the close reason or the error.
+-- A `failed` line in the fork's report is handled as a lyx bug under this section, naming the issue and, for a failed close, the `close` payload.
++- A `failed` line in the fork's report is handled as a lyx bug under Where a finding goes, naming the issue and, for a failed close, the `close` payload.
+ 
+ ## Acting without asking
+ 
+-Act and fix without asking: start the runs the operator approved, un-wedge stuck ones, approve, and handle a Land or Worktree-Teardown failure notice.
+-Ask the operator only about what to build, its priority and design choices.
++Act and fix without asking: start the runs the operator approved, un-wedge stuck ones, and handle a Land or Worktree-Teardown failure notice.
++Ask the operator only about what to build, its priority, design choices, and the review questions the alignment agent or the arbiter hands on.
+ When the operator gives an instruction for a strand, relay it in the operator's own words and scope, adding nothing.
+ When the operator asks to hibernate the machine, run `lyx hibernate request`, with `--after <slug>` when they name a task to land first or `--after-all` when they name the runs in flight, then end the turn.
+ lyx itself pauses the hub, confirms every session paused, hibernates the machine and lifts its pause on wake, and mails you a notice when it is done or failed.
+diff --git a/docs/overview.md b/docs/overview.md
+index 5430bd7c..5f015628 100644
+--- a/docs/overview.md
++++ b/docs/overview.md
+@@ -225,6 +225,7 @@ github.com/Knatte18/loomyard/
+ ├── internal/agentname/           the sole former, parser and validator of agent names (`<shortname>:<slug>:<role>`), a stdlib-only leaf
+ ├── internal/boardcli/            the board CLI command
+ ├── internal/boardengine/         the board domain kernel
++├── internal/hubissues/           the GitHub issues of the hub's own repository that `lyx board intake` lists, reads, comments on and closes
+ ├── internal/cleanupcli/          the cleanup CLI command (`lyx cleanup`, the routine cleanups of the hub prime's leftover state, a dry run by default)
+ ├── internal/fabriccli/           the fabric CLI command (git coordination of code and records)
+ ├── internal/fabricengine/        the fabric domain kernel
+@@ -244,7 +245,7 @@ github.com/Knatte18/loomyard/
+ ├── internal/ghissuescli/         the ghissues CLI command
+ ├── internal/ghissuesengine/      the ghissues domain kernel
+ ├── internal/selfreportcli/       the selfreport CLI command
+-├── internal/selfreportengine/    the selfreport domain kernel
++├── internal/selfreportengine/    the selfreport domain kernel, filing LoomYard bugs to LoomYard's own repository only
+ ├── internal/shuttleengines/      the engine registry: the named engines a shuttle config builds into a set, and the only production importer of a concrete engine
+ ├── internal/treadleengine/       generalized round-loop engine (judge/gate/round-spawn/cap/pause/lock)
+ ├── internal/shedengine/          generic outer phase-FSM: walks one flat producer list, honoring resume, crash-recovery, and pause at producer granularity
+@@ -345,7 +346,8 @@ User-facing modules each get one `lyx <module>` namespace:
+ - **board** — the task-tracker board, which is also the roadmap (`internal/boardcli` + `internal/boardengine`).
+   One `board.json` store holds every entry, and each entry is a task or a note with labels; only a task runs.
+   `types` and `labels` in `board.yaml` are maps from label to description, and `lyx board labels` prints both in file order.
+-  `lyx board intake` lists open inbox issues not yet on the board, imports one as a note or folds it into an entry, and closes noise with a stated reason.
++  `lyx board intake` lists the open issues of the hub's own GitHub repository not yet on the board, imports one as a note or folds it into an entry, and closes noise with a stated reason.
++  The hub's repository is the one its recorded binding names, else its origin remote, so only the loomyard hub's intake reads LoomYard's issues; intake never goes through selfreport.
+   The README renders Tasks split into Running, Ready (waiting on nothing open) and dependency layers whose entries can run in parallel, then Notes grouped by type label, each subsection one numbered table that links each slug to its design doc.
+   An entry may carry a priority, `high` or `low`, absent meaning normal, which orders it first or last within its subsection.
+   A task may name a run profile in its `profile` field, and `lyx board profiles` prints the hub's profiles with their settings.
+@@ -389,6 +391,7 @@ User-facing modules each get one `lyx <module>` namespace:
+   It writes only between its own markers, and a file it cannot merge safely is skipped with a reason and never fails the spawn.
+   Batten does not open it: VS Code opens only when the operator runs `lyx ide`. ✅ Implemented.
+ - **selfreport** — file bugs and enhancements against `Knatte18/loomyard` via go-github through `internal/githubclient`, filed by `lyx selfreport create <title>`, run by the operator or by an agent; the friction reflection is its only automatic caller, and no Go code files an issue itself.
++  It files LoomYard bugs only, from whatever hub lyx runs in; an issue about another repository is filed to that repository's own issues.
+   Credentials resolve from `GH_TOKEN`/`GITHUB_TOKEN` first, with the `gh` CLI (`gh auth token`) as a bounded, non-blocking fallback token source — not a hard prerequisite.
+   Target repo is hardcoded;
+   supports `--body` (or `-` for stdin) and `--label`;
+diff --git a/internal/boardcli/cli.go b/internal/boardcli/cli.go
+index b4f72c6e..d7af5a89 100644
+--- a/internal/boardcli/cli.go
++++ b/internal/boardcli/cli.go
+@@ -3,7 +3,7 @@
+ // Command() returns the root "board" command over one store, board.json, whose entries carry a kind and labels.
+ // The verbs upsert, upsert-batch, set-status, remove, get, list, list-full, merge and set-deps come from storeVerbs.
+ // promote, prune, find, labels, profiles and retire-legacy, plus the rerender and sync maintenance verbs, are built in Command itself.
+-// The intake group (list, import, close) comes from intakeCommand in intake.go.
++// The intake group (list, import, close) comes from intakeCommand in intake.go, over the hub repository the hubRepo closure opens from the resolved location.
+ // list and find take --text to print the compact listing from text.go instead of JSON.
+ // Configuration resolution happens once in a PersistentPreRunE.
+ // The config file (readme, design_prefix) is loaded from the hub's <hub>/_board/_lyx/config/board.yaml, whatever worktree the verb runs in,
+@@ -26,6 +26,7 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/clihelp"
+ 	"github.com/Knatte18/loomyard/internal/configengine"
+ 	"github.com/Knatte18/loomyard/internal/fabricengine"
++	"github.com/Knatte18/loomyard/internal/hubissues"
+ 	"github.com/Knatte18/loomyard/internal/lyxcwd"
+ 	"github.com/Knatte18/loomyard/internal/output"
+ 	"github.com/Knatte18/loomyard/internal/runprofile"
+@@ -44,6 +45,19 @@ func Command() *cobra.Command {
+ 	profiles := func() (runprofile.Profiles, error) {
+ 		return runprofile.Load(configengine.Dirs{Board: config.Path})
+ 	}
++	// location is the worktree PersistentPreRunE resolved, nil under --board-path.
++	var location *lyxcwd.Location
++	// hubRepo opens the hub's own repository's issues, resolved only when an intake verb asks.
++	hubRepo := func() (*hubissues.Repo, error) {
++		if location == nil {
++			return nil, fmt.Errorf("intake needs the hub's repository, which only a run from a hub worktree resolves: run it from a worktree of the hub")
++		}
++		url, err := fabricengine.HubRepoURL(location)
++		if err != nil {
++			return nil, err
++		}
++		return hubissues.Open(url)
++	}
+ 
+ 	cmd := &cobra.Command{
+ 		Use:   "board",
+@@ -106,6 +120,7 @@ available subcommands without requiring a git repo.
+ 				clihelp.Abort(ctx, 1)
+ 				return nil
+ 			}
++			location = layout
+ 			boardDir := fabricengine.BoardDir(layout.HubPath)
+ 
+ 			cfg, err = boardengine.LoadConfig(fabricengine.ConfigDirs(layout), "board")
+@@ -315,7 +330,7 @@ Example:
+ 		retireLegacyCmd,
+ 		rerenderCmd,
+ 		syncCmd,
+-		intakeCommand(board),
++		intakeCommand(board, hubRepo),
+ 	)
+ 
+ 	return cmd
+@@ -387,7 +402,7 @@ Optional fields:
+   "recipe"    string — recipe the task's child worktree runs, "loom" or "darn"; empty means "loom"
+   "priority"   string — "high", "normal" or "low"; absent means normal, and "normal" clears it
+   "short_name" string — short display label; falls back to the slug
+-  "issues"     array  — inbox issue numbers the entry records
++  "issues"     array  — the hub repository's issue numbers it records
+   "created"    string — RFC 3339 time the entry was added; a new entry without it gets the write's time
+   "revised"    string — RFC 3339 time its scope last changed; a scope-changing write without it gets the write's time
+   "run_settings" object — module name to config keys for the pair's local config at Seed-Child; {} clears it
+diff --git a/internal/boardcli/cli_test.go b/internal/boardcli/cli_test.go
+index 564854c4..089d79d8 100644
+--- a/internal/boardcli/cli_test.go
++++ b/internal/boardcli/cli_test.go
+@@ -1164,4 +1164,22 @@ func stepBoardPathResolution(t *testing.T, f *cliFixture) {
+ 				expectedBoardDir)
+ 		}
+ 	})
++
++	t.Run("intake_under_board_path_is_refused_naming_a_hub_worktree", func(t *testing.T) {
++		// --board-path leaves no resolved worktree, so the hub repository cannot be found;
++		// list under the same flag succeeding in the subtest above shows the other verbs never ask for it.
++		exitCode, stdout := runCLI(t, "--board-path", t.TempDir(), "intake", "list")
++		if exitCode != 1 || !strings.Contains(stdout, "worktree of the hub") {
++			t.Errorf("intake list --board-path exit %d, stdout %s; want exit 1 naming a worktree of the hub", exitCode, stdout)
++		}
++	})
++
++	t.Run("intake_resolves_the_hub_repository_through_its_binding_then_origin", func(t *testing.T) {
++		// The fixture hub records no binding and its repository has no origin remote,
++		// so the refusal comes from HubRepoURL and names the missing origin remote.
++		exitCode, stdout := runCLI(t, "intake", "list")
++		if exitCode != 1 || !strings.Contains(stdout, "no usable origin remote") {
++			t.Errorf("intake list exit %d, stdout %s; want exit 1 naming the missing origin remote", exitCode, stdout)
++		}
++	})
+ }
+diff --git a/internal/boardcli/doc.go b/internal/boardcli/doc.go
+index 7eab1228..63154017 100644
+--- a/internal/boardcli/doc.go
++++ b/internal/boardcli/doc.go
+@@ -58,7 +58,9 @@
+ // Editing a body is a file round trip: `get --body > body.md`, edit the file, then `upsert --body-file body.md`.
+ // `get`, `list-full` and the task envelope of `upsert`, `promote` and `merge` print an entry's kept keys, the board.json keys this binary does not know, while `list` and the README use known fields only.
+ //
+-// `intake list` prints `{"issues":[{"number":…,"title":…}]}` for each open inbox issue no entry records, pull requests excluded, and an empty inbox as `{"issues":[]}`.
++// The intake verbs work on the hub's own GitHub repository, read through `internal/hubissues`: the repository `fabricengine.HubRepoURL` returns, the hub's recorded binding or else its origin remote, never selfreport's repository.
++// Only an intake verb resolves that repository, so every other verb works offline.
++// `intake list` prints `{"issues":[{"number":…,"title":…}]}` for each open issue no entry records, pull requests excluded, and no open issue as `{"issues":[]}`.
+ // `--full` prints number, title, body, labels, url, comments and created_at for the same set.
+ //
+ // `intake import` prints `{"slug":…,"issue":…,"labels":[…],"dropped":[…]}`, with the slug of the entry folded into for a fold.
+diff --git a/internal/boardcli/intake.go b/internal/boardcli/intake.go
+index 111f263d..f6a2476e 100644
+--- a/internal/boardcli/intake.go
++++ b/internal/boardcli/intake.go
+@@ -1,7 +1,7 @@
+-// intake.go holds the `lyx board intake` verb group: list, import and close against the inbox repository.
++// intake.go holds the `lyx board intake` verb group: list, import and close against the hub's own repository.
+ //
+ // It does the mechanics of intake and never triages: the caller decides what each issue becomes.
+-// boardengine owns the store side and selfreportengine the GitHub side; this file only wires the two.
++// boardengine owns the store side and hubissues the GitHub side; this file only wires the two.
+ // The board is written before GitHub is touched, and GitHub is touched after the board lock is released.
+ 
+ package boardcli
+@@ -16,8 +16,8 @@ import (
+ 
+ 	"github.com/Knatte18/loomyard/internal/boardengine"
+ 	"github.com/Knatte18/loomyard/internal/clihelp"
++	"github.com/Knatte18/loomyard/internal/hubissues"
+ 	"github.com/Knatte18/loomyard/internal/output"
+-	"github.com/Knatte18/loomyard/internal/selfreportengine"
+ 	"github.com/spf13/cobra"
+ )
+ 
+@@ -31,12 +31,13 @@ var intakeImportPayload = payloadKeys{
+ // intakeClosePayload is the payload of `intake close`.
+ var intakeClosePayload = payloadKeys{required: []string{"issue", "reason"}, optional: []string{"completed"}}
+ 
+-// intakeCommand builds the `intake` group over the board that board returns.
+-func intakeCommand(board func() *boardengine.Board) *cobra.Command {
++// intakeCommand builds the `intake` group over the board that board returns and the hub repository that hubRepo opens.
++func intakeCommand(board func() *boardengine.Board, hubRepo func() (*hubissues.Repo, error)) *cobra.Command {
+ 	cmd := &cobra.Command{
+ 		Use:   "intake",
+-		Short: "bring GitHub inbox issues onto the board",
+-		Long: `intake moves issues from the inbox repository onto the board. It does the mechanics and never
++		Short: "bring the hub repository's GitHub issues onto the board",
++		Long: `intake moves issues from the hub's own GitHub repository onto the board: the repository its
++recorded binding names, else its origin remote. It does the mechanics and never
+ triages: list shows the open issues no entry records yet, import records one as a note or folds it
+ into an entry and closes it with a pointer, and close closes noise with a stated reason.`,
+ 		RunE: clihelp.GroupRunE,
+@@ -45,9 +46,9 @@ into an entry and closes it with a pointer, and close closes noise with a stated
+ 	var listFull bool
+ 	listCmd := &cobra.Command{
+ 		Use:         "list",
+-		Short:       "list open inbox issues no board entry records, to triage them",
++		Short:       "list the hub repository's open issues no board entry records, to triage them",
+ 		Annotations: map[string]string{clihelp.AudienceAnnotation: clihelp.AudienceOperator},
+-		Long: `List the open issues of the inbox repository that no board entry records, pull requests excluded.
++		Long: `List the open issues of the hub's repository that no board entry records, pull requests excluded.
+ Takes no payload.
+ 
+ Prints {"issues":[...]} with the number and title of each issue.
+@@ -59,16 +60,20 @@ Examples:
+   lyx board intake list --full`,
+ 		Args: cobra.NoArgs,
+ 		RunE: clihelp.WrapRun(func(out io.Writer, args []string) int {
+-			return intakeList(out, board(), listFull)
++			repo, err := hubRepo()
++			if err != nil {
++				return outputError(out, err.Error())
++			}
++			return intakeList(out, board(), repo, listFull)
+ 		}),
+ 	}
+ 	listCmd.Flags().BoolVar(&listFull, "full", false, "print body, labels, url, comments and created_at too")
+ 
+ 	importCmd := &cobra.Command{
+ 		Use:         "import {issue, slug|into, title?, brief?, labels?}",
+-		Short:       "import an inbox issue as a note or fold it into an entry, then close it",
++		Short:       "import a hub repository issue as a note or fold it into an entry, then close it",
+ 		Annotations: map[string]string{clihelp.AudienceAnnotation: clihelp.AudienceOperator},
+-		Long: `Record an open inbox issue on the board, then comment on it and close it as completed.
++		Long: `Record an open issue of the hub's repository on the board, then comment on it and close it as completed.
+ 
+ Fields:
+   "issue"  integer — issue number (required)
+@@ -92,15 +97,19 @@ Examples:
+ 			if len(args) == 0 {
+ 				return outputError(out, "json payload required")
+ 			}
+-			return intakeImport(out, board(), args[0])
++			repo, err := hubRepo()
++			if err != nil {
++				return outputError(out, err.Error())
++			}
++			return intakeImport(out, board(), repo, args[0])
+ 		}),
+ 	}
+ 
+ 	closeCmd := &cobra.Command{
+ 		Use:         "close {issue, reason, completed?}",
+-		Short:       "close an inbox issue that is noise, with a stated reason",
++		Short:       "close a hub repository issue that is noise, with a stated reason",
+ 		Annotations: map[string]string{clihelp.AudienceAnnotation: clihelp.AudienceOperator},
+-		Long: `Comment on an open inbox issue with the reason and close it.
++		Long: `Comment on an open issue of the hub's repository with the reason and close it.
+ It writes nothing to the board and never edits the issue's content. A pull request and an
+ already closed issue are refused. It also closes an issue left open by a failed import close.
+ 
+@@ -115,7 +124,11 @@ Example:
+ 			if len(args) == 0 {
+ 				return outputError(out, "json payload required")
+ 			}
+-			return intakeClose(out, args[0])
++			repo, err := hubRepo()
++			if err != nil {
++				return outputError(out, err.Error())
++			}
++			return intakeClose(out, repo, args[0])
+ 		}),
+ 	}
+ 
+@@ -140,13 +153,13 @@ func isImportPointer(body string) bool {
+ 	return importPointerPattern.MatchString(strings.TrimSpace(body))
+ }
+ 
+-// intakeIssueSummary is the view of an inbox issue that list prints by default.
++// intakeIssueSummary is the view of an issue that list prints by default.
+ type intakeIssueSummary struct {
+ 	Number int    `json:"number"`
+ 	Title  string `json:"title"`
+ }
+ 
+-// intakeIssueView is the view of an inbox issue that list --full prints.
++// intakeIssueView is the view of an issue that list --full prints.
+ type intakeIssueView struct {
+ 	Number    int       `json:"number"`
+ 	Title     string    `json:"title"`
+@@ -157,9 +170,9 @@ type intakeIssueView struct {
+ 	CreatedAt time.Time `json:"created_at"`
+ }
+ 
+-// intakeList prints the open inbox issues that no board entry records, as number and title unless full is set.
+-func intakeList(out io.Writer, b *boardengine.Board, full bool) int {
+-	issues, err := selfreportengine.ListOpenIssues()
++// intakeList prints the open issues of repo that no board entry records, as number and title unless full is set.
++func intakeList(out io.Writer, b *boardengine.Board, repo *hubissues.Repo, full bool) int {
++	issues, err := repo.ListOpenIssues()
+ 	if err != nil {
+ 		return outputError(out, err.Error())
+ 	}
+@@ -224,14 +237,14 @@ func decodeIssueNumber(fields map[string]json.RawMessage) (int, error) {
+ 		return 0, err
+ 	}
+ 	if number <= 0 {
+-		return 0, fmt.Errorf(`missing required field: issue, the number of an inbox issue (a positive integer)`)
++		return 0, fmt.Errorf(`missing required field: issue, the number of an issue of the hub's repository (a positive integer)`)
+ 	}
+ 	return number, nil
+ }
+ 
+ // inboxIssue converts a fetched issue and its comments, oldest first, to the boardengine view of it.
+ // A comment that is an import pointer is dropped, since lyx posted it and it carries nothing.
+-func inboxIssue(issue selfreportengine.Issue, comments []selfreportengine.IssueComment) boardengine.InboxIssue {
++func inboxIssue(issue hubissues.Issue, comments []hubissues.IssueComment) boardengine.InboxIssue {
+ 	var carried []boardengine.IssueComment
+ 	for _, comment := range comments {
+ 		if isImportPointer(comment.Body) {
+@@ -251,8 +264,8 @@ func inboxIssue(issue selfreportengine.Issue, comments []selfreportengine.IssueC
+ 	}
+ }
+ 
+-// intakeImport records the issue named by payload on the board, then comments on it and closes it as completed.
+-func intakeImport(out io.Writer, b *boardengine.Board, payload string) int {
++// intakeImport records the issue of repo named by payload on the board, then comments on it and closes it as completed.
++func intakeImport(out io.Writer, b *boardengine.Board, repo *hubissues.Repo, payload string) int {
+ 	fields, err := decodeIntakePayload(payload, intakeImportPayload)
+ 	if err != nil {
+ 		return outputError(out, err.Error())
+@@ -270,11 +283,11 @@ func intakeImport(out io.Writer, b *boardengine.Board, payload string) int {
+ 		}
+ 	}
+ 
+-	issue, err := selfreportengine.GetIssue(number)
++	issue, err := repo.GetIssue(number)
+ 	if err != nil {
+ 		return outputError(out, err.Error())
+ 	}
+-	comments, err := selfreportengine.ListIssueComments(number)
++	comments, err := repo.ListIssueComments(number)
+ 	if err != nil {
+ 		return outputError(out, err.Error())
+ 	}
+@@ -299,15 +312,15 @@ func intakeImport(out io.Writer, b *boardengine.Board, payload string) int {
+ 		"dropped": dropped,
+ 	}
+ 	comment := importPointer(result.Entry.Slug)
+-	if err := selfreportengine.CommentAndClose(number, comment, true); err != nil {
++	if err := repo.CommentAndClose(number, comment, true); err != nil {
+ 		short["close"] = map[string]any{"issue": number, "reason": comment, "completed": true}
+ 		return output.ErrFields(out, err.Error(), short)
+ 	}
+ 	return output.Ok(out, short)
+ }
+ 
+-// intakeClose comments on the open issue named by payload with the reason and closes it.
+-func intakeClose(out io.Writer, payload string) int {
++// intakeClose comments on the open issue of repo named by payload with the reason and closes it.
++func intakeClose(out io.Writer, repo *hubissues.Repo, payload string) int {
+ 	fields, err := decodeIntakePayload(payload, intakeClosePayload)
+ 	if err != nil {
+ 		return outputError(out, err.Error())
+@@ -328,7 +341,7 @@ func intakeClose(out io.Writer, payload string) int {
+ 		return outputError(out, "missing required field: reason, the comment to post before closing: say why the issue is closed")
+ 	}
+ 
+-	issue, err := selfreportengine.GetIssue(number)
++	issue, err := repo.GetIssue(number)
+ 	if err != nil {
+ 		return outputError(out, err.Error())
+ 	}
+@@ -338,7 +351,7 @@ func intakeClose(out io.Writer, payload string) int {
+ 	if issue.State != "open" {
+ 		return outputError(out, fmt.Sprintf("issue #%d is already closed (state %q, reason %q): nothing to close", number, issue.State, issue.StateReason))
+ 	}
+-	if err := selfreportengine.CommentAndClose(number, reason, completed); err != nil {
++	if err := repo.CommentAndClose(number, reason, completed); err != nil {
+ 		return outputError(out, err.Error())
+ 	}
+ 	return output.Ok(out, map[string]any{"issue": number, "completed": completed})
+diff --git a/internal/boardcli/intake_test.go b/internal/boardcli/intake_test.go
+index 659f8b9b..c8960d28 100644
+--- a/internal/boardcli/intake_test.go
++++ b/internal/boardcli/intake_test.go
+@@ -1,6 +1,5 @@
+-// intake_test.go covers the intake handlers against an httptest server through the selfreportengine.NewGitHubClient seam and a Board over a temp dir with SkipGit.
++// intake_test.go covers the intake handlers against an httptest server standing in for the hub's repository, reached through a hubissues.Repo, and a Board over a temp dir with SkipGit.
+ // No test reaches real token resolution or the network, and every refusal asserts that board.json is unchanged.
+-// No test calls t.Parallel: each swaps the package-level selfreportengine.NewGitHubClient.
+ 
+ package boardcli
+ 
+@@ -8,6 +7,7 @@ import (
+ 	"bytes"
+ 	"context"
+ 	"encoding/json"
++	"errors"
+ 	"fmt"
+ 	"net/http"
+ 	"net/http/httptest"
+@@ -22,10 +22,10 @@ import (
+ 
+ 	"github.com/Knatte18/loomyard/internal/boardengine"
+ 	"github.com/Knatte18/loomyard/internal/clihelp"
+-	"github.com/Knatte18/loomyard/internal/selfreportengine"
++	"github.com/Knatte18/loomyard/internal/hubissues"
+ )
+ 
+-const fakeIssuesPath = "/repos/Knatte18/loomyard/issues"
++const fakeIssuesPath = "/repos/owner/hub-repo/issues"
+ 
+ // fakeIssue is one issue the fake inbox serves.
+ type fakeIssue struct {
+@@ -40,8 +40,10 @@ type fakeIssue struct {
+ 	failThread bool
+ }
+ 
+-// fakeInbox is a fake GitHub inbox repository that records every mutation it receives.
++// fakeInbox is a fake GitHub hub repository that records every mutation it receives.
+ type fakeInbox struct {
++	// repo reaches the fake through a fixed-token client.
++	repo      *hubissues.Repo
+ 	issues    []fakeIssue
+ 	failClose bool
+ 	// failList makes the list endpoint answer with a server error.
+@@ -182,7 +184,7 @@ func (f *fakeInbox) list(w http.ResponseWriter, r *http.Request) {
+ 	_ = json.NewEncoder(w).Encode(views)
+ }
+ 
+-// newFakeInbox starts the fake inbox and installs it behind the NewGitHubClient seam.
++// newFakeInbox starts the fake hub repository and opens a hubissues.Repo on it.
+ func newFakeInbox(t *testing.T, issues ...fakeIssue) *fakeInbox {
+ 	t.Helper()
+ 	inbox := &fakeInbox{issues: issues}
+@@ -195,9 +197,7 @@ func newFakeInbox(t *testing.T, issues ...fakeIssue) *fakeInbox {
+ 		t.Fatalf("url.Parse: %v", err)
+ 	}
+ 	client.BaseURL = parsed
+-	orig := selfreportengine.NewGitHubClient
+-	selfreportengine.NewGitHubClient = func() (*github.Client, error) { return client, nil }
+-	t.Cleanup(func() { selfreportengine.NewGitHubClient = orig })
++	inbox.repo = hubissues.New(client, "owner", "hub-repo")
+ 	return inbox
+ }
+ 
+@@ -244,6 +244,7 @@ func runHandler(t *testing.T, fn func(out *bytes.Buffer) int) (int, map[string]a
+ }
+ 
+ func TestIntakeList_ExcludesPullRequestsRecordedAndClosedAcrossPages(t *testing.T) {
++	t.Parallel()
+ 	fullInbox := []fakeIssue{
+ 		{number: 1, state: "open", thread: []string{"one", "two"}},
+ 		{number: 2, state: "open", pullRequest: true},
+@@ -262,22 +263,28 @@ func TestIntakeList_ExcludesPullRequestsRecordedAndClosedAcrossPages(t *testing.
+ 		issues       []fakeIssue
+ 		failList     bool
+ 		corruptBoard bool
+-		args         []string
+-		wantCode     int
++		// repoErr is the error opening the hub repository returns, nil when it opens.
++		repoErr  error
++		args     []string
++		wantCode int
+ 		// wantNumbers is the expected issue numbers when the run succeeds.
+ 		wantNumbers string
+ 		// wantFull is whether the issue objects carry the full view.
+ 		wantFull bool
+ 	}{
+-		{"Compact", fullInbox, false, false, []string{"list"}, 0, "[1 5 6]", false},
+-		{"Full", fullInbox, false, false, []string{"list", "--full"}, 0, "[1 5 6]", true},
+-		{"EmptyCompact", emptyInbox, false, false, []string{"list"}, 0, "[]", false},
+-		{"EmptyFull", emptyInbox, false, false, []string{"list", "--full"}, 0, "[]", true},
+-		{"ListFailure", fullInbox, true, false, []string{"list"}, 1, "", false},
+-		{"BoardLoadFailure", fullInbox, false, true, []string{"list"}, 1, "", false},
++		{"Compact", fullInbox, false, false, nil, []string{"list"}, 0, "[1 5 6]", false},
++		{"Full", fullInbox, false, false, nil, []string{"list", "--full"}, 0, "[1 5 6]", true},
++		{"EmptyCompact", emptyInbox, false, false, nil, []string{"list"}, 0, "[]", false},
++		{"EmptyFull", emptyInbox, false, false, nil, []string{"list", "--full"}, 0, "[]", true},
++		{"ListFailure", fullInbox, true, false, nil, []string{"list"}, 1, "", false},
++		{"BoardLoadFailure", fullInbox, false, true, nil, []string{"list"}, 1, "", false},
++		{"RepositoryUnresolved", fullInbox, false, false, errors.New("no hub repository"), []string{"list"}, 1, "", false},
++		{"RepositoryUnresolvedImport", fullInbox, false, false, errors.New("no hub repository"), []string{"import", `{"issue":1,"slug":"x"}`}, 1, "", false},
++		{"RepositoryUnresolvedClose", fullInbox, false, false, errors.New("no hub repository"), []string{"close", `{"issue":1,"reason":"Noise."}`}, 1, "", false},
+ 	}
+ 	for _, tt := range tests {
+ 		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
+ 			inbox := newFakeInbox(t, tt.issues...)
+ 			inbox.failList = tt.failList
+ 			b, path := newIntakeBoard(t)
+@@ -289,8 +296,14 @@ func TestIntakeList_ExcludesPullRequestsRecordedAndClosedAcrossPages(t *testing.
+ 					t.Fatalf("corrupt board.json: %v", err)
+ 				}
+ 			}
++			boardBefore := readBoard(t, path)
+ 
+-			cmd := intakeCommand(func() *boardengine.Board { return b })
++			cmd := intakeCommand(func() *boardengine.Board { return b }, func() (*hubissues.Repo, error) {
++				if tt.repoErr != nil {
++					return nil, tt.repoErr
++				}
++				return inbox.repo, nil
++			})
+ 			var out bytes.Buffer
+ 			cmd.SetArgs(tt.args)
+ 			cmd.SetOut(&out)
+@@ -312,6 +325,14 @@ func TestIntakeList_ExcludesPullRequestsRecordedAndClosedAcrossPages(t *testing.
+ 				if _, present := envelope["issues"]; present {
+ 					t.Errorf("issues = %v, want no issues key", envelope["issues"])
+ 				}
++				if tt.repoErr != nil {
++					if got := inbox.mutations(); len(got) != 0 {
++						t.Errorf("GitHub mutations = %v, want none", got)
++					}
++					if readBoard(t, path) != boardBefore {
++						t.Error("board.json changed on an unresolved repository")
++					}
++				}
+ 				return
+ 			}
+ 
+@@ -356,11 +377,12 @@ const quotedPointerComment = "Earlier it said: Imported into the board as `old`.
+ var threadWithPointer = []string{"First comment.", " Imported into the board as `old-slug`.\n", quotedPointerComment}
+ 
+ func TestIntakeImport_NewNoteCommentsAndCloses(t *testing.T) {
++	t.Parallel()
+ 	inbox := newFakeInbox(t, fakeIssue{number: 7, state: "open", labels: []string{"bug", "stray"}, thread: threadWithPointer})
+ 	b, path := newIntakeBoard(t)
+ 
+ 	code, envelope := runHandler(t, func(out *bytes.Buffer) int {
+-		return intakeImport(out, b, `{"issue":7,"slug":"from-inbox"}`)
++		return intakeImport(out, b, inbox.repo, `{"issue":7,"slug":"from-inbox"}`)
+ 	})
+ 	if code != 0 {
+ 		t.Fatalf("exit %d: %v", code, envelope)
+@@ -398,6 +420,7 @@ func TestIntakeImport_NewNoteCommentsAndCloses(t *testing.T) {
+ }
+ 
+ func TestIntakeImport_FoldIntoEntry(t *testing.T) {
++	t.Parallel()
+ 	inbox := newFakeInbox(t, fakeIssue{number: 8, state: "open", labels: []string{"undecided"}, thread: threadWithPointer})
+ 	b, _ := newIntakeBoard(t)
+ 	if _, err := b.UpsertTask(map[string]any{"slug": "target", "labels": []string{"bug"}}); err != nil {
+@@ -405,7 +428,7 @@ func TestIntakeImport_FoldIntoEntry(t *testing.T) {
+ 	}
+ 
+ 	code, envelope := runHandler(t, func(out *bytes.Buffer) int {
+-		return intakeImport(out, b, `{"issue":8,"into":"target"}`)
++		return intakeImport(out, b, inbox.repo, `{"issue":8,"into":"target"}`)
+ 	})
+ 	if code != 0 {
+ 		t.Fatalf("exit %d: %v", code, envelope)
+@@ -437,6 +460,7 @@ func TestIntakeImport_FoldIntoEntry(t *testing.T) {
+ }
+ 
+ func TestIntakeImport_RecordedIssueIsNoOp(t *testing.T) {
++	t.Parallel()
+ 	inbox := newFakeInbox(t, fakeIssue{number: 9, state: "open"})
+ 	b, path := newIntakeBoard(t)
+ 	if _, err := b.UpsertTask(map[string]any{"slug": "has-it", "labels": []string{"bug"}, "issues": []int{9}}); err != nil {
+@@ -445,7 +469,7 @@ func TestIntakeImport_RecordedIssueIsNoOp(t *testing.T) {
+ 	before := readBoard(t, path)
+ 
+ 	code, envelope := runHandler(t, func(out *bytes.Buffer) int {
+-		return intakeImport(out, b, `{"issue":9,"slug":"again"}`)
++		return intakeImport(out, b, inbox.repo, `{"issue":9,"slug":"again"}`)
+ 	})
+ 	if code != 0 {
+ 		t.Fatalf("exit %d: %v", code, envelope)
+@@ -462,6 +486,7 @@ func TestIntakeImport_RecordedIssueIsNoOp(t *testing.T) {
+ }
+ 
+ func TestIntakeImport_RefusedBeforeAnyWrite(t *testing.T) {
++	t.Parallel()
+ 	cases := []struct {
+ 		name    string
+ 		issue   fakeIssue
+@@ -479,6 +504,7 @@ func TestIntakeImport_RefusedBeforeAnyWrite(t *testing.T) {
+ 	}
+ 	for _, tc := range cases {
+ 		t.Run(tc.name, func(t *testing.T) {
++			t.Parallel()
+ 			inbox := newFakeInbox(t, tc.issue)
+ 			b, path := newIntakeBoard(t)
+ 			if _, err := b.UpsertTask(map[string]any{"slug": "taken", "labels": []string{"bug"}}); err != nil {
+@@ -489,7 +515,7 @@ func TestIntakeImport_RefusedBeforeAnyWrite(t *testing.T) {
+ 			}
+ 			before := readBoard(t, path)
+ 
+-			code, envelope := runHandler(t, func(out *bytes.Buffer) int { return intakeImport(out, b, tc.payload) })
++			code, envelope := runHandler(t, func(out *bytes.Buffer) int { return intakeImport(out, b, inbox.repo, tc.payload) })
+ 			if code != 1 || !strings.Contains(fmt.Sprint(envelope["error"]), tc.want) {
+ 				t.Fatalf("exit %d, envelope %v, want an error containing %q", code, envelope, tc.want)
+ 			}
+@@ -504,12 +530,13 @@ func TestIntakeImport_RefusedBeforeAnyWrite(t *testing.T) {
+ }
+ 
+ func TestIntakeImport_CloseFailureReportsShortResultAndClosePayload(t *testing.T) {
++	t.Parallel()
+ 	inbox := newFakeInbox(t, fakeIssue{number: 16, state: "open", labels: []string{"bug"}})
+ 	inbox.failClose = true
+ 	b, path := newIntakeBoard(t)
+ 
+ 	code, envelope := runHandler(t, func(out *bytes.Buffer) int {
+-		return intakeImport(out, b, `{"issue":16,"slug":"half-done"}`)
++		return intakeImport(out, b, inbox.repo, `{"issue":16,"slug":"half-done"}`)
+ 	})
+ 	if code != 1 || envelope["ok"] != false {
+ 		t.Fatalf("exit %d, envelope %v, want a failure", code, envelope)
+@@ -530,6 +557,7 @@ func TestIntakeImport_CloseFailureReportsShortResultAndClosePayload(t *testing.T
+ }
+ 
+ func TestIntakeClose(t *testing.T) {
++	t.Parallel()
+ 	cases := []struct {
+ 		name       string
+ 		issue      fakeIssue
+@@ -547,11 +575,12 @@ func TestIntakeClose(t *testing.T) {
+ 	}
+ 	for _, tc := range cases {
+ 		t.Run(tc.name, func(t *testing.T) {
++			t.Parallel()
+ 			inbox := newFakeInbox(t, tc.issue)
+ 			_, path := newIntakeBoard(t)
+ 			before := readBoard(t, path)
+ 
+-			code, envelope := runHandler(t, func(out *bytes.Buffer) int { return intakeClose(out, tc.payload) })
++			code, envelope := runHandler(t, func(out *bytes.Buffer) int { return intakeClose(out, inbox.repo, tc.payload) })
+ 			if tc.want == "" {
+ 				if code != 0 {
+ 					t.Fatalf("exit %d: %v", code, envelope)
+@@ -570,6 +599,7 @@ func TestIntakeClose(t *testing.T) {
+ }
+ 
+ func TestIntakeClose_RecordedOpenIssue(t *testing.T) {
++	t.Parallel()
+ 	inbox := newFakeInbox(t, fakeIssue{number: 30, state: "open"})
+ 	b, path := newIntakeBoard(t)
+ 	if _, err := b.UpsertTask(map[string]any{"slug": "has-it", "labels": []string{"bug"}, "issues": []int{30}}); err != nil {
+@@ -578,7 +608,7 @@ func TestIntakeClose_RecordedOpenIssue(t *testing.T) {
+ 	before := readBoard(t, path)
+ 
+ 	code, envelope := runHandler(t, func(out *bytes.Buffer) int {
+-		return intakeClose(out, `{"issue":30,"reason":"Imported into the board as `+"`has-it`"+`.","completed":true}`)
++		return intakeClose(out, inbox.repo, `{"issue":30,"reason":"Imported into the board as `+"`has-it`"+`.","completed":true}`)
+ 	})
+ 	if code != 0 {
+ 		t.Fatalf("exit %d: %v", code, envelope)
+diff --git a/internal/boardengine/doc.go b/internal/boardengine/doc.go
+index 4bdc26f3..fbb2b785 100644
+--- a/internal/boardengine/doc.go
++++ b/internal/boardengine/doc.go
+@@ -93,8 +93,8 @@
+ //
+ // # Intake
+ //
+-// The board is the one list, and GitHub is the inbox that selfreport files issues to.
+-// An issue reaches the board in three steps: list the open inbox issues no entry records, import one as a note or fold it into an existing entry, then close it.
++// The board is the one list, and intake reads the hub's own GitHub repository.
++// An issue reaches the board in three steps: list the open issues of that repository no entry records, import one as a note or fold it into an existing entry, then close it.
+ // An entry records the issues it came from in its issues field, and an issue already recorded is never imported twice.
+ // A merge carries the removed entries' issues: the upserted entry's issues are its own followed by each removed entry's, in remove order, without duplicates.
+ // Import writes the board first and then comments with a pointer to the entry and closes the issue, and close alone ends a noise issue with a stated reason and touches no entry.
+diff --git a/internal/boardengine/intake.go b/internal/boardengine/intake.go
+index a737c8c8..00ee0fb7 100644
+--- a/internal/boardengine/intake.go
++++ b/internal/boardengine/intake.go
+@@ -1,4 +1,4 @@
+-// intake.go — the board side of GitHub intake: importing an inbox issue as a note or folding it into an entry.
++// intake.go — the board side of GitHub intake: importing a GitHub issue as a note or folding it into an entry.
+ //
+ // boardengine imports nothing GitHub-specific;
+ // the caller converts a fetched issue into InboxIssue and makes every network call outside the board lock.
+@@ -26,7 +26,7 @@ type InboxIssue struct {
+ 	Comments []IssueComment
+ }
+ 
+-// IssueComment is one comment on an inbox issue, its author not recorded.
++// IssueComment is one comment on a GitHub issue, its author not recorded.
+ type IssueComment struct {
+ 	Body      string
+ 	CreatedAt time.Time
+diff --git a/internal/boardengine/intake_test.go b/internal/boardengine/intake_test.go
+index 0e6855cb..77060ef2 100644
+--- a/internal/boardengine/intake_test.go
++++ b/internal/boardengine/intake_test.go
+@@ -1,4 +1,4 @@
+-// intake_test.go — unit tests for importing and folding inbox issues (intake.go).
++// intake_test.go — unit tests for importing and folding GitHub issues (intake.go).
+ //
+ // Every test runs a Board over a temp dir with a configured vocabulary and SkipGit;
+ // a refused or no-op import must leave board.json byte-identical.
+diff --git a/internal/boardengine/task.go b/internal/boardengine/task.go
+index 223e956b..3cca03a4 100644
+--- a/internal/boardengine/task.go
++++ b/internal/boardengine/task.go
+@@ -22,7 +22,7 @@ type Task struct {
+ 	Title     string   `json:"title"`
+ 	Kind      string   `json:"kind"`             // KindTask or KindNote
+ 	Labels    []string `json:"labels"`           // type and plain labels, validated against the board's Vocabulary
+-	Issues    []int    `json:"issues"`           // numbers of the inbox issues this entry records; a number is not checked against GitHub
++	Issues    []int    `json:"issues"`           // numbers of the GitHub issues this entry records; a number is not checked against GitHub
+ 	Recipe    string   `json:"recipe,omitempty"` // recipe name for the task's child worktree; empty means "loom". Resolved (and validated against the recipe vocabulary) at the seeding site, not here.
+ 	Priority  string   `json:"priority,omitempty"`
+ 	DependsOn []string `json:"depends_on"`
+diff --git a/internal/fabricengine/codebinding.go b/internal/fabricengine/codebinding.go
+index b863ead8..161549b2 100644
+--- a/internal/fabricengine/codebinding.go
++++ b/internal/fabricengine/codebinding.go
+@@ -12,6 +12,9 @@ import (
+ 	"os"
+ 	"path/filepath"
+ 	"strings"
++
++	"github.com/Knatte18/loomyard/internal/gitrepo"
++	"github.com/Knatte18/loomyard/internal/lyxcwd"
+ )
+ 
+ // ErrNoWarpBinding matches, under errors.Is, the refusal of a weft that records no warp binding when none was supplied: resolveEffectiveWarpURL's and CloneHub's one-argument form's.
+@@ -49,6 +52,21 @@ func readWarpBinding(boardDir string) (warpURL string, found bool) {
+ 	return trimmed, true
+ }
+ 
++// HubRepoURL returns the URL of the repository the hub at l works on:
++// the warp binding recorded at the hub's board dir, else the origin remote of l's warp worktree.
++// The binding wins when both exist, since it is the hub's recorded pairing.
++// It returns an error naming both sources when neither yields a URL.
++func HubRepoURL(l *lyxcwd.Location) (string, error) {
++	if recorded, found := readWarpBinding(BoardDir(l.HubPath)); found {
++		return recorded, nil
++	}
++	origin, err := gitrepo.New(l.WorktreePath()).RemoteURL("origin")
++	if err != nil {
++		return "", fmt.Errorf("the hub records no %s warp binding and its warp worktree has no usable origin remote: %w", WarpBindingFileName, err)
++	}
++	return origin, nil
++}
++
+ // writeWarpBinding writes warpURL plus a trailing newline to <boardDir>/.lyx-warp, replacing any
+ // existing content.
+ // The caller is responsible for committing the result onto weft:main through Bolt;
+diff --git a/internal/fabricengine/hubrepourl_integration_test.go b/internal/fabricengine/hubrepourl_integration_test.go
+new file mode 100644
+index 00000000..33cbf741
+--- /dev/null
++++ b/internal/fabricengine/hubrepourl_integration_test.go
+@@ -0,0 +1,54 @@
++//go:build integration
++
++// hubrepourl_integration_test.go proves HubRepoURL's source order over a copied hub:
++// the recorded warp binding first, the warp worktree's origin remote second, and an error when neither exists.
++
++package fabricengine_test
++
++import (
++	"os"
++	"path/filepath"
++	"strings"
++	"testing"
++
++	"github.com/Knatte18/loomyard/internal/fabricengine"
++	"github.com/Knatte18/loomyard/internal/gitkit"
++	"github.com/Knatte18/loomyard/internal/hubforge"
++)
++
++// TestHubRepoURL_BindingThenOriginThenError walks one hub through the three sources in turn, removing each before the next step.
++func TestHubRepoURL_BindingThenOriginThenError(t *testing.T) {
++	t.Parallel()
++
++	h := hubforge.CopyHub(t, hubforge.Shape{Anchor: "."})
++	bindingPath := filepath.Join(h.BoardDir(), fabricengine.WarpBindingFileName)
++	const bound = "https://github.com/owner/bound-repo.git"
++	if err := os.WriteFile(bindingPath, []byte(bound+"\n"), 0o644); err != nil {
++		t.Fatalf("write binding: %v", err)
++	}
++
++	got, err := fabricengine.HubRepoURL(h.Location)
++	if err != nil || got != bound {
++		t.Fatalf("HubRepoURL() with a binding = %q, %v; want %q, nil", got, err, bound)
++	}
++
++	if err := os.Remove(bindingPath); err != nil {
++		t.Fatalf("remove binding: %v", err)
++	}
++	origin := gitkit.Git(t, h.Location.WorktreePath(), "remote", "get-url", "origin")
++	got, err = fabricengine.HubRepoURL(h.Location)
++	if err != nil || got != origin {
++		t.Fatalf("HubRepoURL() without a binding = %q, %v; want the warp origin %q, nil", got, err, origin)
++	}
++
++	gitkit.MustRun(t, h.Location.WorktreePath(), "git", "remote", "remove", "origin")
++	got, err = fabricengine.HubRepoURL(h.Location)
++	if err == nil {
++		t.Fatalf("HubRepoURL() with neither source = %q, nil; want an error", got)
++	}
++	for _, source := range []string{fabricengine.WarpBindingFileName, "origin"} {
++		if !strings.Contains(err.Error(), source) {
++			t.Errorf("HubRepoURL() with neither source error = %q; want it to name %q", err, source)
++		}
++	}
++}
+diff --git a/internal/hubissues/doc.go b/internal/hubissues/doc.go
+new file mode 100644
+index 00000000..38711542
+--- /dev/null
++++ b/internal/hubissues/doc.go
+@@ -0,0 +1,9 @@
++// Package hubissues reads, comments on and closes the GitHub issues of the repository a hub works on, for `lyx board intake`.
++//
++// A Repo is bound to one repository: Open parses a remote URL into its owner and name and authenticates through githubclient.
++// The hub's own repository comes from `fabricengine.HubRepoURL`, its recorded binding or else its origin remote, so the loomyard hub's intake reads `Knatte18/loomyard` and any other hub's intake reads its own repository.
++//
++// The package never files an issue: filing LoomYard bugs is selfreport's alone, and intake never goes through selfreport.
++// Each request carries its own deadline, so a call that spans pages gives each page a fresh one.
++// A failed call is logged and returned as an operator-facing error that tells an unresolvable token, an API rejection and an unreachable GitHub apart.
++package hubissues
+diff --git a/internal/hubissues/export_test.go b/internal/hubissues/export_test.go
+new file mode 100644
+index 00000000..140081a4
+--- /dev/null
++++ b/internal/hubissues/export_test.go
+@@ -0,0 +1,10 @@
++// export_test.go exposes the per-request deadline to the external tests.
++
++package hubissues
++
++import "time"
++
++// SetPerRequest sets the deadline of each of r's requests.
++func (r *Repo) SetPerRequest(d time.Duration) {
++	r.perRequest = d
++}
+diff --git a/internal/hubissues/hubissues.go b/internal/hubissues/hubissues.go
+new file mode 100644
+index 00000000..66cb459d
+--- /dev/null
++++ b/internal/hubissues/hubissues.go
+@@ -0,0 +1,207 @@
++// hubissues.go holds Repo and its calls: listing open issues, fetching one, listing one's comments, and commenting on and closing one.
++
++package hubissues
++
++import (
++	"context"
++	"errors"
++	"fmt"
++	"strings"
++	"time"
++
++	"github.com/google/go-github/v75/github"
++
++	"github.com/Knatte18/loomyard/internal/githubclient"
++	"github.com/Knatte18/loomyard/internal/logger"
++)
++
++// callTimeout bounds each request to GitHub, including a 401-triggered credential re-resolution and replay inside githubclient's transport.
++// It matches the 30s budget githubclient's transport applies from the end of a pause hold, so no call hangs an autonomous run.
++const callTimeout = 30 * time.Second
++
++// listPageSize is the page size the list calls request, GitHub's maximum.
++const listPageSize = 100
++
++// Repo is one GitHub repository's issues, reached through an authenticated client.
++// It is safe for concurrent use.
++type Repo struct {
++	client *github.Client
++	owner  string
++	name   string
++	// perRequest is the deadline of each request.
++	perRequest time.Duration
++}
++
++// Issue is the view of an issue that intake prints and decides on.
++type Issue struct {
++	Number      int       `json:"number"`
++	Title       string    `json:"title"`
++	Body        string    `json:"body"`
++	Labels      []string  `json:"labels"`
++	URL         string    `json:"url"`
++	CreatedAt   time.Time `json:"created_at"`
++	State       string    `json:"state"`
++	StateReason string    `json:"state_reason"`
++	PullRequest bool      `json:"pull_request"`
++	// Comments is the issue's comment count as GitHub reports it on the issue itself.
++	Comments int `json:"comments"`
++}
++
++// IssueComment is one comment on an issue, its author not recorded.
++type IssueComment struct {
++	Body      string
++	CreatedAt time.Time
++}
++
++// Open returns the Repo of the GitHub repository remoteURL names, authenticated through githubclient.
++// It refuses a URL that does not name a GitHub repository, naming the URL.
++func Open(remoteURL string) (*Repo, error) {
++	owner, name, err := githubclient.ParseOwnerRepo(remoteURL)
++	if err != nil {
++		return nil, fmt.Errorf("the hub's repository %s is not a GitHub repository, so it has no issues to take in: %w", remoteURL, err)
++	}
++	client, err := githubclient.New()
++	if err != nil {
++		logger.Warn("hubissues: github call failed", "action", "new github client", "cause", err)
++		return nil, fmt.Errorf("github client unavailable: %w", err)
++	}
++	return New(client, owner, name), nil
++}
++
++// New returns the Repo owner/name reached through client, each request bounded by the package's call timeout.
++func New(client *github.Client, owner, name string) *Repo {
++	return &Repo{client: client, owner: owner, name: name, perRequest: callTimeout}
++}
++
++// FullName returns the repository as "owner/name".
++func (r *Repo) FullName() string {
++	return r.owner + "/" + r.name
++}
++
++// ListOpenIssues returns every open issue of the repository, following pagination to the last page.
++// Pull requests are excluded, although GitHub's issue list includes them.
++func (r *Repo) ListOpenIssues() ([]Issue, error) {
++	opts := &github.IssueListByRepoOptions{
++		State:       "open",
++		ListOptions: github.ListOptions{PerPage: listPageSize},
++	}
++	var issues []Issue
++	for {
++		ctx, cancel := context.WithTimeout(context.Background(), r.perRequest)
++		page, resp, err := r.client.Issues.ListByRepo(ctx, r.owner, r.name, opts)
++		cancel()
++		if err != nil {
++			return nil, r.classifyCallError("list issues", "github issue list failed", err)
++		}
++		for _, raw := range page {
++			if raw.IsPullRequest() {
++				continue
++			}
++			issues = append(issues, toIssue(raw))
++		}
++		if resp.NextPage == 0 {
++			return issues, nil
++		}
++		opts.ListOptions.Page = resp.NextPage
++	}
++}
++
++// GetIssue returns one issue or pull request of the repository, open or closed.
++func (r *Repo) GetIssue(number int) (Issue, error) {
++	ctx, cancel := context.WithTimeout(context.Background(), r.perRequest)
++	defer cancel()
++
++	raw, _, err := r.client.Issues.Get(ctx, r.owner, r.name, number)
++	if err != nil {
++		return Issue{}, r.classifyCallError("get issue", "github issue get failed", err)
++	}
++	return toIssue(raw), nil
++}
++
++// ListIssueComments returns every comment on the issue numbered number, oldest first, following pagination to the last page.
++func (r *Repo) ListIssueComments(number int) ([]IssueComment, error) {
++	sort, direction := "created", "asc"
++	opts := &github.IssueListCommentsOptions{
++		Sort:        &sort,
++		Direction:   &direction,
++		ListOptions: github.ListOptions{PerPage: listPageSize},
++	}
++	var comments []IssueComment
++	for {
++		ctx, cancel := context.WithTimeout(context.Background(), r.perRequest)
++		page, resp, err := r.client.Issues.ListComments(ctx, r.owner, r.name, number, opts)
++		cancel()
++		if err != nil {
++			return nil, r.classifyCallError("list issue comments", "github issue comment list failed", err)
++		}
++		for _, raw := range page {
++			comments = append(comments, IssueComment{Body: raw.GetBody(), CreatedAt: raw.GetCreatedAt().Time})
++		}
++		if resp.NextPage == 0 {
++			return comments, nil
++		}
++		opts.ListOptions.Page = resp.NextPage
++	}
++}
++
++// CommentAndClose posts comment on the issue, then closes it with state reason completed when completed is set and not_planned otherwise.
++// When the comment posts and the close fails, the error says the comment was posted, so a rerun is understood to post a second comment.
++func (r *Repo) CommentAndClose(number int, comment string, completed bool) error {
++	commentCtx, cancelComment := context.WithTimeout(context.Background(), r.perRequest)
++	_, _, commentErr := r.client.Issues.CreateComment(commentCtx, r.owner, r.name, number, &github.IssueComment{Body: &comment})
++	cancelComment()
++	if commentErr != nil {
++		return r.classifyCallError("comment on issue", "github issue comment failed", commentErr)
++	}
++
++	state, reason := "closed", "not_planned"
++	if completed {
++		reason = "completed"
++	}
++	closeCtx, cancelClose := context.WithTimeout(context.Background(), r.perRequest)
++	defer cancelClose()
++	_, _, closeErr := r.client.Issues.Edit(closeCtx, r.owner, r.name, number, &github.IssueRequest{State: &state, StateReason: &reason})
++	if closeErr != nil {
++		return fmt.Errorf("comment posted on issue #%d but closing it failed, so rerunning posts a second comment: %w",
++			number, r.classifyCallError("close issue", "github issue close failed", closeErr))
++	}
++	return nil
++}
++
++// toIssue converts a go-github issue to the Issue view.
++func toIssue(raw *github.Issue) Issue {
++	labels := make([]string, 0, len(raw.Labels))
++	for _, label := range raw.Labels {
++		labels = append(labels, label.GetName())
++	}
++	return Issue{
++		Number:      raw.GetNumber(),
++		Title:       raw.GetTitle(),
++		Body:        raw.GetBody(),
++		Labels:      labels,
++		URL:         raw.GetHTMLURL(),
++		CreatedAt:   raw.GetCreatedAt().Time,
++		State:       raw.GetState(),
++		StateReason: raw.GetStateReason(),
++		PullRequest: raw.IsPullRequest(),
++		Comments:    raw.GetComments(),
++	}
++}
++
++// classifyCallError logs a failed GitHub call and returns its operator-facing error.
++// action is the log's action field and apiFailure the prefix of an API rejection's message.
++func (r *Repo) classifyCallError(action, apiFailure string, callErr error) error {
++	logger.Warn("hubissues: github call failed", "action", action, "owner", r.owner, "repo", r.name, "cause", callErr)
++
++	// An unresolvable token surfaces apart from a network problem, so the operator fixes credentials rather than connectivity.
++	if errors.Is(callErr, githubclient.ErrTokenUnresolvable) {
++		return fmt.Errorf("github token not resolvable: %w", callErr)
++	}
++
++	var ghErr *github.ErrorResponse
++	if errors.As(callErr, &ghErr) {
++		return fmt.Errorf("%s on %s: %s", apiFailure, r.FullName(), strings.TrimSpace(ghErr.Message))
++	}
++
++	return fmt.Errorf("failed to reach GitHub: %w", callErr)
++}
+diff --git a/internal/hubissues/hubissues_test.go b/internal/hubissues/hubissues_test.go
+new file mode 100644
+index 00000000..b5aab138
+--- /dev/null
++++ b/internal/hubissues/hubissues_test.go
+@@ -0,0 +1,410 @@
++// hubissues_test.go covers Repo's calls against httptest servers, so no test reaches real token resolution or the network -- untagged Tier 1.
++
++package hubissues_test
++
++import (
++	"context"
++	"encoding/json"
++	"errors"
++	"fmt"
++	"io"
++	"net/http"
++	"net/http/httptest"
++	"net/url"
++	"path/filepath"
++	"strings"
++	"sync"
++	"sync/atomic"
++	"testing"
++	"time"
++
++	"github.com/google/go-github/v75/github"
++
++	"github.com/Knatte18/loomyard/internal/githubclient"
++	"github.com/Knatte18/loomyard/internal/hubissues"
++	"github.com/Knatte18/loomyard/internal/pauserecord"
++)
++
++const (
++	repoOwner  = "owner"
++	repoName   = "hub-repo"
++	issuesPath = "/repos/owner/hub-repo/issues"
++)
++
++// Top-level constants so the untagged-test sleep guard can resolve them.
++const (
++	pageDelay = 250 * time.Millisecond
++	pauseHold = 150 * time.Millisecond
++)
++
++// requestCapture is one request a test server received.
++type requestCapture struct {
++	method string
++	path   string
++	body   map[string]any
++}
++
++// captureLog collects the requests a test server receives, safe for the server's goroutines.
++type captureLog struct {
++	mu       sync.Mutex
++	requests []requestCapture
++}
++
++func (c *captureLog) add(req requestCapture) {
++	c.mu.Lock()
++	defer c.mu.Unlock()
++	c.requests = append(c.requests, req)
++}
++
++func (c *captureLog) all() []requestCapture {
++	c.mu.Lock()
++	defer c.mu.Unlock()
++	return append([]requestCapture{}, c.requests...)
++}
++
++// newRepo returns the test repository reached through a fixed-token client pointed at server, so no token is resolved.
++func newRepo(t *testing.T, server *httptest.Server) *hubissues.Repo {
++	t.Helper()
++	client := github.NewClient(nil).WithAuthToken("test-token")
++	parsed, err := url.Parse(server.URL + "/")
++	if err != nil {
++		t.Fatalf("url.Parse(%s): %v", server.URL, err)
++	}
++	client.BaseURL = parsed
++	return hubissues.New(client, repoOwner, repoName)
++}
++
++// newIssueServer returns a server that answers every request with status and respBody, recording each request in log.
++func newIssueServer(t *testing.T, status int, respBody string, log *captureLog) *httptest.Server {
++	t.Helper()
++	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
++		raw, _ := io.ReadAll(r.Body)
++		var decoded map[string]any
++		_ = json.Unmarshal(raw, &decoded)
++		log.add(requestCapture{method: r.Method, path: r.URL.Path, body: decoded})
++		w.WriteHeader(status)
++		if respBody != "" {
++			_, _ = w.Write([]byte(respBody))
++		}
++	}))
++	t.Cleanup(server.Close)
++	return server
++}
++
++func TestOpen_RefusesNonGitHubURL(t *testing.T) {
++	t.Parallel()
++	const local = "/srv/git/hub-repo.git"
++
++	repo, err := hubissues.Open(local)
++
++	if err == nil || !strings.Contains(err.Error(), local) {
++		t.Errorf("Open(%q) = %v, %v; want an error naming the URL", local, repo, err)
++	}
++}
++
++// TestListOpenIssues_PaginatesAndExcludesPullRequests follows the Link header across two pages, drops the pull request, and asserts the repository's own path and the open filter.
++func TestListOpenIssues_PaginatesAndExcludesPullRequests(t *testing.T) {
++	t.Parallel()
++	var mu sync.Mutex
++	var paths []string
++	var server *httptest.Server
++	server = httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
++		mu.Lock()
++		paths = append(paths, r.URL.Path+"?"+r.URL.RawQuery)
++		mu.Unlock()
++		if r.URL.Query().Get("page") == "2" {
++			_, _ = w.Write([]byte(`[{"number":3,"title":"three","state":"open","labels":[]}]`))
++			return
++		}
++		w.Header().Set("Link", fmt.Sprintf(`<%s%s?page=2>; rel="next"`, server.URL, issuesPath))
++		_, _ = w.Write([]byte(`[
++			{"number":1,"title":"one","body":"b","html_url":"https://x/1","state":"open","labels":[{"name":"bug"}],"created_at":"2026-01-02T03:04:05Z","comments":4},
++			{"number":2,"title":"pr","state":"open","pull_request":{"url":"https://x/pr"}}
++		]`))
++	}))
++	t.Cleanup(server.Close)
++
++	got, err := newRepo(t, server).ListOpenIssues()
++	if err != nil {
++		t.Fatalf("ListOpenIssues() error = %v; want nil", err)
++	}
++
++	if len(got) != 2 || got[0].Number != 1 || got[1].Number != 3 {
++		t.Fatalf("ListOpenIssues() = %+v; want issues 1 and 3 with the pull request excluded", got)
++	}
++	if got[0].Title != "one" || got[0].Body != "b" || got[0].URL != "https://x/1" ||
++		len(got[0].Labels) != 1 || got[0].Labels[0] != "bug" || got[0].CreatedAt.Year() != 2026 || got[0].Comments != 4 {
++		t.Errorf("ListOpenIssues()[0] = %+v; want its fields carried over, comments 4 included", got[0])
++	}
++	if got[1].Comments != 0 {
++		t.Errorf("ListOpenIssues()[1].Comments = %d; want 0 for an issue whose response omits the count", got[1].Comments)
++	}
++	if len(paths) != 2 {
++		t.Fatalf("request count = %d; want 2 pages", len(paths))
++	}
++	for _, p := range paths {
++		if !strings.HasPrefix(p, issuesPath+"?") || !strings.Contains(p, "state=open") {
++			t.Errorf("request = %q; want the %s path with state=open", p, issuesPath)
++		}
++	}
++}
++
++// TestListOpenIssues_PausedPageGetsItsOwnDeadline holds the second page under a hub pause and checks the held page still completes inside its own deadline.
++// It sets environment variables and installs the process-wide pause gate, so it does not run in parallel.
++func TestListOpenIssues_PausedPageGetsItsOwnDeadline(t *testing.T) {
++	const perRequest = 400 * time.Millisecond
++	t.Setenv("XDG_CONFIG_HOME", t.TempDir())
++	t.Setenv("LOCALAPPDATA", t.TempDir())
++	t.Setenv("GH_TOKEN", "test-token")
++	t.Setenv("GITHUB_TOKEN", "")
++
++	recordPath := filepath.Join(t.TempDir(), pauserecord.RecordFileName)
++	setLive := func(live bool) {
++		if _, err := pauserecord.Update(recordPath, time.Now(), func(r *pauserecord.Record) error {
++			r.Live = nil
++			if live {
++				r.Live = []pauserecord.Entry{{Scope: pauserecord.ScopeHub, PausedAt: time.Now()}}
++			}
++			return nil
++		}); err != nil {
++			t.Errorf("update the pause record: %v", err)
++		}
++	}
++	var sleeps atomic.Int32
++	t.Cleanup(pauserecord.InstallGate(pauserecord.Gate{
++		Geometry: pauserecord.Geometry{RecordPath: recordPath},
++		Notify:   func(string) {},
++		Sleep: func(ctx context.Context, d time.Duration) error {
++			sleeps.Add(1)
++			time.Sleep(pauseHold)
++			setLive(false)
++			return nil
++		},
++	}))
++
++	var server *httptest.Server
++	server = httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
++		if r.URL.Query().Get("page") == "2" {
++			time.Sleep(pageDelay)
++			_, _ = w.Write([]byte(`[{"number":3,"title":"three","state":"open","labels":[]}]`))
++			return
++		}
++		setLive(true)
++		time.Sleep(pageDelay)
++		w.Header().Set("Link", fmt.Sprintf(`<%s%s?page=2>; rel="next"`, server.URL, issuesPath))
++		_, _ = w.Write([]byte(`[{"number":1,"title":"one","state":"open","labels":[]}]`))
++	}))
++	t.Cleanup(server.Close)
++	client, err := githubclient.NewWithBaseURL(server.URL, nil)
++	if err != nil {
++		t.Fatalf("NewWithBaseURL(%s): %v", server.URL, err)
++	}
++	repo := hubissues.New(client, repoOwner, repoName)
++	repo.SetPerRequest(perRequest)
++
++	got, err := repo.ListOpenIssues()
++	if err != nil {
++		t.Fatalf("ListOpenIssues() with a %v deadline error = %v; want nil", perRequest, err)
++	}
++	if len(got) != 2 || got[0].Number != 1 || got[1].Number != 3 {
++		t.Fatalf("ListOpenIssues() = %+v; want issues 1 and 3", got)
++	}
++	if sleeps.Load() != 1 {
++		t.Errorf("gate waits = %d; want the second page held once", sleeps.Load())
++	}
++}
++
++// TestListIssueComments_PaginatesOldestFirst follows the Link header across two pages, asserts the comments path with the created-ascending sort, and carries bodies and creation times over in order;
++// a rejected response surfaces its message.
++func TestListIssueComments_PaginatesOldestFirst(t *testing.T) {
++	t.Parallel()
++	t.Run("TwoPagesInOrder", func(t *testing.T) {
++		t.Parallel()
++		commentsPath := issuesPath + "/5/comments"
++		var mu sync.Mutex
++		var queries []string
++		var server *httptest.Server
++		server = httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
++			if r.URL.Path != commentsPath {
++				t.Errorf("request path = %q; want %q", r.URL.Path, commentsPath)
++			}
++			mu.Lock()
++			queries = append(queries, r.URL.RawQuery)
++			mu.Unlock()
++			if r.URL.Query().Get("page") == "2" {
++				_, _ = w.Write([]byte(`[{"body":"third","created_at":"2026-03-01T00:00:00Z"}]`))
++				return
++			}
++			w.Header().Set("Link", fmt.Sprintf(`<%s%s?page=2>; rel="next"`, server.URL, commentsPath))
++			_, _ = w.Write([]byte(`[
++				{"body":"first","created_at":"2026-01-01T00:00:00Z","user":{"login":"a"}},
++				{"body":"second","created_at":"2026-02-01T00:00:00Z","user":{"login":"b"}}
++			]`))
++		}))
++		t.Cleanup(server.Close)
++
++		got, err := newRepo(t, server).ListIssueComments(5)
++		if err != nil {
++			t.Fatalf("ListIssueComments() error = %v; want nil", err)
++		}
++
++		want := []hubissues.IssueComment{
++			{Body: "first", CreatedAt: time.Date(2026, 1, 1, 0, 0, 0, 0, time.UTC)},
++			{Body: "second", CreatedAt: time.Date(2026, 2, 1, 0, 0, 0, 0, time.UTC)},
++			{Body: "third", CreatedAt: time.Date(2026, 3, 1, 0, 0, 0, 0, time.UTC)},
++		}
++		if len(got) != len(want) {
++			t.Fatalf("ListIssueComments() = %+v; want %+v", got, want)
++		}
++		for i := range want {
++			if got[i].Body != want[i].Body || !got[i].CreatedAt.Equal(want[i].CreatedAt) {
++				t.Errorf("ListIssueComments()[%d] = %+v; want %+v", i, got[i], want[i])
++			}
++		}
++		if len(queries) != 2 {
++			t.Fatalf("request count = %d; want 2 pages", len(queries))
++		}
++		if !strings.Contains(queries[0], "sort=created") || !strings.Contains(queries[0], "direction=asc") {
++			t.Errorf("first query = %q; want sort=created and direction=asc", queries[0])
++		}
++	})
++
++	t.Run("RejectedResponse", func(t *testing.T) {
++		t.Parallel()
++		server := newIssueServer(t, http.StatusNotFound, `{"message":"Not Found thing"}`, &captureLog{})
++
++		_, err := newRepo(t, server).ListIssueComments(5)
++
++		if err == nil || !strings.Contains(err.Error(), "Not Found thing") || !strings.Contains(err.Error(), "owner/hub-repo") {
++			t.Errorf("ListIssueComments() error = %v; want the response message and the repository", err)
++		}
++	})
++}
++
++// TestGetIssue_ReportsPullRequestAndClosedState checks that GetIssue returns a pull request and a closed issue without excluding either.
++func TestGetIssue_ReportsPullRequestAndClosedState(t *testing.T) {
++	t.Parallel()
++	log := &captureLog{}
++	server := newIssueServer(t, http.StatusOK,
++		`{"number":7,"title":"t","state":"closed","state_reason":"not_planned","pull_request":{"url":"https://x/pr"}}`, log)
++
++	got, err := newRepo(t, server).GetIssue(7)
++	if err != nil {
++		t.Fatalf("GetIssue() error = %v; want nil", err)
++	}
++
++	if got.Number != 7 || got.State != "closed" || got.StateReason != "not_planned" || !got.PullRequest {
++		t.Errorf("GetIssue() = %+v; want issue 7, closed, not_planned, a pull request", got)
++	}
++	captured := log.all()
++	if len(captured) != 1 || captured[0].method != http.MethodGet || captured[0].path != issuesPath+"/7" {
++		t.Errorf("requests = %+v; want one GET %s/7", captured, issuesPath)
++	}
++}
++
++// TestCommentAndClose_SendsCommentThenClose drives both state reasons and checks the order and payloads of the two requests.
++func TestCommentAndClose_SendsCommentThenClose(t *testing.T) {
++	t.Parallel()
++	tests := []struct {
++		completed bool
++		reason    string
++	}{{true, "completed"}, {false, "not_planned"}}
++	for _, tt := range tests {
++		t.Run(tt.reason, func(t *testing.T) {
++			t.Parallel()
++			log := &captureLog{}
++			server := newIssueServer(t, http.StatusOK, `{"number":9}`, log)
++
++			if err := newRepo(t, server).CommentAndClose(9, "folded into x", tt.completed); err != nil {
++				t.Fatalf("CommentAndClose() error = %v; want nil", err)
++			}
++
++			captured := log.all()
++			if len(captured) != 2 {
++				t.Fatalf("request count = %d; want 2", len(captured))
++			}
++			if captured[0].method != http.MethodPost || captured[0].path != issuesPath+"/9/comments" {
++				t.Errorf("first request = %s %s; want POST %s/9/comments", captured[0].method, captured[0].path, issuesPath)
++			}
++			if body, _ := captured[0].body["body"].(string); body != "folded into x" {
++				t.Errorf("comment body = %q; want %q", body, "folded into x")
++			}
++			if captured[1].method != http.MethodPatch || captured[1].path != issuesPath+"/9" {
++				t.Errorf("second request = %s %s; want PATCH %s/9", captured[1].method, captured[1].path, issuesPath)
++			}
++			if captured[1].body["state"] != "closed" || captured[1].body["state_reason"] != tt.reason {
++				t.Errorf("close body = %v; want state closed with reason %s", captured[1].body, tt.reason)
++			}
++		})
++	}
++}
++
++// TestCommentAndClose_FailedCommentSkipsClose checks that a rejected comment never reaches the close.
++func TestCommentAndClose_FailedCommentSkipsClose(t *testing.T) {
++	t.Parallel()
++	log := &captureLog{}
++	server := newIssueServer(t, http.StatusForbidden, `{"message":"Forbidden thing"}`, log)
++
++	err := newRepo(t, server).CommentAndClose(9, "c", true)
++
++	if err == nil || !strings.Contains(err.Error(), "Forbidden thing") {
++		t.Fatalf("CommentAndClose() error = %v; want the response message", err)
++	}
++	if got := len(log.all()); got != 1 {
++		t.Errorf("request count = %d; want 1 (no close after a failed comment)", got)
++	}
++}
++
++// TestCommentAndClose_FailedCloseNamesPostedComment checks that a close failing after a posted comment says so.
++func TestCommentAndClose_FailedCloseNamesPostedComment(t *testing.T) {
++	t.Parallel()
++	var count atomic.Int32
++	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
++		_, _ = io.Copy(io.Discard, r.Body)
++		count.Add(1)
++		if r.Method == http.MethodPatch {
++			w.WriteHeader(http.StatusUnprocessableEntity)
++			_, _ = w.Write([]byte(`{"message":"cannot close"}`))
++			return
++		}
++		_ = json.NewEncoder(w).Encode(map[string]any{"id": 1})
++	}))
++	t.Cleanup(server.Close)
++
++	err := newRepo(t, server).CommentAndClose(9, "c", false)
++
++	if err == nil {
++		t.Fatal("CommentAndClose() error = nil; want the close failure")
++	}
++	for _, want := range []string{"comment posted", "second comment", "cannot close"} {
++		if !strings.Contains(err.Error(), want) {
++			t.Errorf("CommentAndClose() error = %q; want it to contain %q", err.Error(), want)
++		}
++	}
++	if got := count.Load(); got != 2 {
++		t.Errorf("request count = %d; want comment then close", got)
++	}
++}
++
++// failingTransport fails every request with err, standing in for githubclient's transport when no token resolves.
++type failingTransport struct{ err error }
++
++func (f failingTransport) RoundTrip(*http.Request) (*http.Response, error) { return nil, f.err }
++
++// TestCalls_TokenNotResolvable checks that every call surfaces an unresolvable token as such.
++func TestCalls_TokenNotResolvable(t *testing.T) {
++	t.Parallel()
++	client := github.NewClient(&http.Client{Transport: failingTransport{err: githubclient.ErrTokenUnresolvable}})
++	repo := hubissues.New(client, repoOwner, repoName)
++
++	_, listErr := repo.ListOpenIssues()
++	_, getErr := repo.GetIssue(1)
++	_, commentsErr := repo.ListIssueComments(1)
++	closeErr := repo.CommentAndClose(1, "c", true)
++
++	for name, err := range map[string]error{"ListOpenIssues": listErr, "GetIssue": getErr, "ListIssueComments": commentsErr, "CommentAndClose": closeErr} {
++		if !errors.Is(err, githubclient.ErrTokenUnresolvable) || !strings.Contains(err.Error(), "github token not resolvable") {
++			t.Errorf("%s() error = %v; want the token-not-resolvable error", name, err)
++		}
++	}
++}
+diff --git a/internal/hubissues/testmain_test.go b/internal/hubissues/testmain_test.go
+new file mode 100644
+index 00000000..269f3c85
+--- /dev/null
++++ b/internal/hubissues/testmain_test.go
+@@ -0,0 +1,14 @@
++// testmain_test.go runs the package's tests under tmuxkit.Main, so their temp files live in the process run directory and go with it.
++
++package hubissues_test
++
++import (
++	"os"
++	"testing"
++
++	"github.com/Knatte18/loomyard/internal/testkit/tmuxkit"
++)
++
++func TestMain(m *testing.M) {
++	os.Exit(tmuxkit.Main(m))
++}
+diff --git a/internal/orchcli/doc.go b/internal/orchcli/doc.go
+index 9fe4db91..7203f59e 100644
+--- a/internal/orchcli/doc.go
++++ b/internal/orchcli/doc.go
+@@ -44,7 +44,7 @@
+ //     Never merge the parent into a task while webster is mid-batch, because record-batch then refuses the batch; a merge-in is safe only once every batch is recorded, for example at a blocked integration verify.
+ //  5. Batten's Land row lands the run: it pulls the prime, runs the hub's landing `deploy` command and prunes the board, and Worktree-Teardown then removes the pair.
+ //     The orchestrator acts on a Land or teardown failure notice and on a ready-task notice, starting the tasks it names, and deploys by hand with `update-plugins.sh` on a ready notice or at its next wake after an approval while the hub's landing `deploy` key is empty.
+-//     It reads the drive report only when the run had trouble (friction findings arrive as issues through intake) and records findings.
++//     It reads the drive report only when the run had trouble (friction findings are filed as LoomYard issues, which reach the board through intake when the operator asks for it) and records findings.
+ //
+ // # Priorities
+ //
+diff --git a/internal/selfreportengine/inbox.go b/internal/selfreportengine/inbox.go
+deleted file mode 100644
+index 7307b702..00000000
+--- a/internal/selfreportengine/inbox.go
++++ /dev/null
+@@ -1,172 +0,0 @@
+-// inbox.go holds the GitHub calls `lyx board intake` makes against the inbox repository:
+-// listing open issues, fetching one, listing one's comments, and commenting on and closing one.
+-// They share targetRepo, the NewGitHubClient seam and the error classification with CreateIssue.
+-
+-package selfreportengine
+-
+-import (
+-	"context"
+-	"fmt"
+-	"time"
+-
+-	"github.com/google/go-github/v75/github"
+-)
+-
+-// listPageSize is the page size the list calls request, GitHub's maximum.
+-const listPageSize = 100
+-
+-// Issue is the view of an inbox issue that intake prints and decides on.
+-type Issue struct {
+-	Number      int       `json:"number"`
+-	Title       string    `json:"title"`
+-	Body        string    `json:"body"`
+-	Labels      []string  `json:"labels"`
+-	URL         string    `json:"url"`
+-	CreatedAt   time.Time `json:"created_at"`
+-	State       string    `json:"state"`
+-	StateReason string    `json:"state_reason"`
+-	PullRequest bool      `json:"pull_request"`
+-	// Comments is the issue's comment count as GitHub reports it on the issue itself.
+-	Comments int `json:"comments"`
+-}
+-
+-// IssueComment is one comment on an inbox issue, its author not recorded.
+-type IssueComment struct {
+-	Body      string
+-	CreatedAt time.Time
+-}
+-
+-// ListOpenIssues returns every open issue of the inbox repository, following pagination to the last page.
+-// Pull requests are excluded, although GitHub's issue list includes them.
+-func ListOpenIssues() ([]Issue, error) {
+-	return listOpenIssues(callTimeout)
+-}
+-
+-// listOpenIssues is ListOpenIssues with perRequest as the deadline of each page request.
+-func listOpenIssues(perRequest time.Duration) ([]Issue, error) {
+-	client, owner, repo, err := repoClient()
+-	if err != nil {
+-		return nil, err
+-	}
+-
+-	opts := &github.IssueListByRepoOptions{
+-		State:       "open",
+-		ListOptions: github.ListOptions{PerPage: listPageSize},
+-	}
+-	var issues []Issue
+-	for {
+-		ctx, cancel := context.WithTimeout(context.Background(), perRequest)
+-		page, resp, listErr := client.Issues.ListByRepo(ctx, owner, repo, opts)
+-		cancel()
+-		if listErr != nil {
+-			return nil, classifyCallError("list issues", "github issue list failed", owner, repo, listErr)
+-		}
+-		for _, raw := range page {
+-			if raw.IsPullRequest() {
+-				continue
+-			}
+-			issues = append(issues, toIssue(raw))
+-		}
+-		if resp.NextPage == 0 {
+-			return issues, nil
+-		}
+-		opts.ListOptions.Page = resp.NextPage
+-	}
+-}
+-
+-// GetIssue returns one issue or pull request of the inbox repository, open or closed.
+-func GetIssue(number int) (Issue, error) {
+-	client, owner, repo, err := repoClient()
+-	if err != nil {
+-		return Issue{}, err
+-	}
+-
+-	ctx, cancel := context.WithTimeout(context.Background(), callTimeout)
+-	defer cancel()
+-
+-	raw, _, getErr := client.Issues.Get(ctx, owner, repo, number)
+-	if getErr != nil {
+-		return Issue{}, classifyCallError("get issue", "github issue get failed", owner, repo, getErr)
+-	}
+-	return toIssue(raw), nil
+-}
+-
+-// ListIssueComments returns every comment on the inbox issue numbered number, oldest first, following pagination to the last page.
+-func ListIssueComments(number int) ([]IssueComment, error) {
+-	client, owner, repo, err := repoClient()
+-	if err != nil {
+-		return nil, err
+-	}
+-
+-	sort, direction := "created", "asc"
+-	opts := &github.IssueListCommentsOptions{
+-		Sort:        &sort,
+-		Direction:   &direction,
+-		ListOptions: github.ListOptions{PerPage: listPageSize},
+-	}
+-	var comments []IssueComment
+-	for {
+-		ctx, cancel := context.WithTimeout(context.Background(), callTimeout)
+-		page, resp, listErr := client.Issues.ListComments(ctx, owner, repo, number, opts)
+-		cancel()
+-		if listErr != nil {
+-			return nil, classifyCallError("list issue comments", "github issue comment list failed", owner, repo, listErr)
+-		}
+-		for _, raw := range page {
+-			comments = append(comments, IssueComment{Body: raw.GetBody(), CreatedAt: raw.GetCreatedAt().Time})
+-		}
+-		if resp.NextPage == 0 {
+-			return comments, nil
+-		}
+-		opts.ListOptions.Page = resp.NextPage
+-	}
+-}
+-
+-// CommentAndClose posts comment on the issue, then closes it with state reason completed when completed is set and not_planned otherwise.
+-// When the comment posts and the close fails, the error says the comment was posted, so a rerun is understood to post a second comment.
+-func CommentAndClose(number int, comment string, completed bool) error {
+-	client, owner, repo, err := repoClient()
+-	if err != nil {
+-		return err
+-	}
+-
+-	commentCtx, cancelComment := context.WithTimeout(context.Background(), callTimeout)
+-	_, _, commentErr := client.Issues.CreateComment(commentCtx, owner, repo, number, &github.IssueComment{Body: &comment})
+-	cancelComment()
+-	if commentErr != nil {
+-		return classifyCallError("comment on issue", "github issue comment failed", owner, repo, commentErr)
+-	}
+-
+-	state, reason := "closed", "not_planned"
+-	if completed {
+-		reason = "completed"
+-	}
+-	closeCtx, cancelClose := context.WithTimeout(context.Background(), callTimeout)
+-	defer cancelClose()
+-	_, _, closeErr := client.Issues.Edit(closeCtx, owner, repo, number, &github.IssueRequest{State: &state, StateReason: &reason})
+-	if closeErr != nil {
+-		return fmt.Errorf("comment posted on issue #%d but closing it failed, so rerunning posts a second comment: %w",
+-			number, classifyCallError("close issue", "github issue close failed", owner, repo, closeErr))
+-	}
+-	return nil
+-}
+-
+-// toIssue converts a go-github issue to the Issue view.
+-func toIssue(raw *github.Issue) Issue {
+-	labels := make([]string, 0, len(raw.Labels))
+-	for _, label := range raw.Labels {
+-		labels = append(labels, label.GetName())
+-	}
+-	return Issue{
+-		Number:      raw.GetNumber(),
+-		Title:       raw.GetTitle(),
+-		Body:        raw.GetBody(),
+-		Labels:      labels,
+-		URL:         raw.GetHTMLURL(),
+-		CreatedAt:   raw.GetCreatedAt().Time,
+-		State:       raw.GetState(),
+-		StateReason: raw.GetStateReason(),
+-		PullRequest: raw.IsPullRequest(),
+-		Comments:    raw.GetComments(),
+-	}
+-}
+diff --git a/internal/selfreportengine/inbox_test.go b/internal/selfreportengine/inbox_test.go
+deleted file mode 100644
+index a920a1da..00000000
+--- a/internal/selfreportengine/inbox_test.go
++++ /dev/null
+@@ -1,322 +0,0 @@
+-// inbox_test.go covers the intake calls in inbox.go through the NewGitHubClient seam, against an
+-// httptest server, so no test reaches real token resolution or the network -- untagged Tier 1.
+-
+-package selfreportengine
+-
+-import (
+-	"context"
+-	"encoding/json"
+-	"errors"
+-	"fmt"
+-	"io"
+-	"net/http"
+-	"net/http/httptest"
+-	"path/filepath"
+-	"strings"
+-	"sync/atomic"
+-	"testing"
+-	"time"
+-
+-	"github.com/Knatte18/loomyard/internal/githubclient"
+-	"github.com/Knatte18/loomyard/internal/pauserecord"
+-	"github.com/google/go-github/v75/github"
+-)
+-
+-const issuesPath = "/repos/Knatte18/loomyard/issues"
+-
+-// Top-level constants so the untagged-test sleep guard can resolve them.
+-const (
+-	inboxPageDelay = 250 * time.Millisecond
+-	inboxPauseHold = 150 * time.Millisecond
+-)
+-
+-// TestListOpenIssues_PaginatesAndExcludesPullRequests follows the Link header across two pages,
+-// drops the pull request, and asserts the exact owner/repo path and the open filter.
+-func TestListOpenIssues_PaginatesAndExcludesPullRequests(t *testing.T) {
+-	var paths []string
+-	var server *httptest.Server
+-	server = httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+-		paths = append(paths, r.URL.Path+"?"+r.URL.RawQuery)
+-		if r.URL.Query().Get("page") == "2" {
+-			_, _ = w.Write([]byte(`[{"number":3,"title":"three","state":"open","labels":[]}]`))
+-			return
+-		}
+-		w.Header().Set("Link", fmt.Sprintf(`<%s%s?page=2>; rel="next"`, server.URL, issuesPath))
+-		_, _ = w.Write([]byte(`[
+-			{"number":1,"title":"one","body":"b","html_url":"https://x/1","state":"open","labels":[{"name":"bug"}],"created_at":"2026-01-02T03:04:05Z","comments":4},
+-			{"number":2,"title":"pr","state":"open","pull_request":{"url":"https://x/pr"}}
+-		]`))
+-	}))
+-	t.Cleanup(server.Close)
+-	installGitHubClient(t, server.URL)
+-
+-	got, err := ListOpenIssues()
+-	if err != nil {
+-		t.Fatalf("ListOpenIssues() error = %v; want nil", err)
+-	}
+-
+-	if len(got) != 2 || got[0].Number != 1 || got[1].Number != 3 {
+-		t.Fatalf("ListOpenIssues() = %+v; want issues 1 and 3 with the pull request excluded", got)
+-	}
+-	if got[0].Title != "one" || got[0].Body != "b" || got[0].URL != "https://x/1" ||
+-		len(got[0].Labels) != 1 || got[0].Labels[0] != "bug" || got[0].CreatedAt.Year() != 2026 || got[0].Comments != 4 {
+-		t.Errorf("ListOpenIssues()[0] = %+v; want its fields carried over, comments 4 included", got[0])
+-	}
+-	if got[1].Comments != 0 {
+-		t.Errorf("ListOpenIssues()[1].Comments = %d; want 0 for an issue whose response omits the count", got[1].Comments)
+-	}
+-	if len(paths) != 2 {
+-		t.Fatalf("request count = %d; want 2 pages", len(paths))
+-	}
+-	for _, p := range paths {
+-		if !strings.HasPrefix(p, issuesPath+"?") || !strings.Contains(p, "state=open") {
+-			t.Errorf("request = %q; want the %s path with state=open", p, issuesPath)
+-		}
+-	}
+-
+-	t.Run("a page held by a pause gets its own deadline", func(t *testing.T) {
+-		const perRequest = 400 * time.Millisecond
+-		t.Setenv("XDG_CONFIG_HOME", t.TempDir())
+-		t.Setenv("LOCALAPPDATA", t.TempDir())
+-		t.Setenv("GH_TOKEN", "test-token")
+-		t.Setenv("GITHUB_TOKEN", "")
+-
+-		recordPath := filepath.Join(t.TempDir(), pauserecord.RecordFileName)
+-		setLive := func(live bool) {
+-			if _, err := pauserecord.Update(recordPath, time.Now(), func(r *pauserecord.Record) error {
+-				r.Live = nil
+-				if live {
+-					r.Live = []pauserecord.Entry{{Scope: pauserecord.ScopeHub, PausedAt: time.Now()}}
+-				}
+-				return nil
+-			}); err != nil {
+-				t.Errorf("update the pause record: %v", err)
+-			}
+-		}
+-		var sleeps atomic.Int32
+-		t.Cleanup(pauserecord.InstallGate(pauserecord.Gate{
+-			Geometry: pauserecord.Geometry{RecordPath: recordPath},
+-			Notify:   func(string) {},
+-			Sleep: func(ctx context.Context, d time.Duration) error {
+-				sleeps.Add(1)
+-				time.Sleep(inboxPauseHold)
+-				setLive(false)
+-				return nil
+-			},
+-		}))
+-
+-		var server *httptest.Server
+-		server = httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+-			if r.URL.Query().Get("page") == "2" {
+-				time.Sleep(inboxPageDelay)
+-				_, _ = w.Write([]byte(`[{"number":3,"title":"three","state":"open","labels":[]}]`))
+-				return
+-			}
+-			setLive(true)
+-			time.Sleep(inboxPageDelay)
+-			w.Header().Set("Link", fmt.Sprintf(`<%s%s?page=2>; rel="next"`, server.URL, issuesPath))
+-			_, _ = w.Write([]byte(`[{"number":1,"title":"one","state":"open","labels":[]}]`))
+-		}))
+-		t.Cleanup(server.Close)
+-		original := NewGitHubClient
+-		NewGitHubClient = func() (*github.Client, error) { return githubclient.NewWithBaseURL(server.URL, nil) }
+-		t.Cleanup(func() { NewGitHubClient = original })
+-
+-		got, err := listOpenIssues(perRequest)
+-		if err != nil {
+-			t.Fatalf("listOpenIssues(%v) error = %v; want nil", perRequest, err)
+-		}
+-		if len(got) != 2 || got[0].Number != 1 || got[1].Number != 3 {
+-			t.Fatalf("listOpenIssues(%v) = %+v; want issues 1 and 3", perRequest, got)
+-		}
+-		if sleeps.Load() != 1 {
+-			t.Errorf("gate waits = %d; want the second page held once", sleeps.Load())
+-		}
+-	})
+-}
+-
+-// TestListIssueComments_PaginatesOldestFirst follows the Link header across two pages, asserts the exact comments path with the created-ascending sort, and carries bodies and creation times over in order;
+-// a rejected response surfaces its message.
+-// It swaps the package-level NewGitHubClient seam, so it does not run in parallel.
+-func TestListIssueComments_PaginatesOldestFirst(t *testing.T) {
+-	t.Run("two pages in order", func(t *testing.T) {
+-		commentsPath := issuesPath + "/5/comments"
+-		var queries []string
+-		var server *httptest.Server
+-		server = httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+-			if r.URL.Path != commentsPath {
+-				t.Errorf("request path = %q; want %q", r.URL.Path, commentsPath)
+-			}
+-			queries = append(queries, r.URL.RawQuery)
+-			if r.URL.Query().Get("page") == "2" {
+-				_, _ = w.Write([]byte(`[{"body":"third","created_at":"2026-03-01T00:00:00Z"}]`))
+-				return
+-			}
+-			w.Header().Set("Link", fmt.Sprintf(`<%s%s?page=2>; rel="next"`, server.URL, commentsPath))
+-			_, _ = w.Write([]byte(`[
+-				{"body":"first","created_at":"2026-01-01T00:00:00Z","user":{"login":"a"}},
+-				{"body":"second","created_at":"2026-02-01T00:00:00Z","user":{"login":"b"}}
+-			]`))
+-		}))
+-		t.Cleanup(server.Close)
+-		installGitHubClient(t, server.URL)
+-
+-		got, err := ListIssueComments(5)
+-		if err != nil {
+-			t.Fatalf("ListIssueComments() error = %v; want nil", err)
+-		}
+-
+-		want := []IssueComment{
+-			{Body: "first", CreatedAt: time.Date(2026, 1, 1, 0, 0, 0, 0, time.UTC)},
+-			{Body: "second", CreatedAt: time.Date(2026, 2, 1, 0, 0, 0, 0, time.UTC)},
+-			{Body: "third", CreatedAt: time.Date(2026, 3, 1, 0, 0, 0, 0, time.UTC)},
+-		}
+-		if len(got) != len(want) {
+-			t.Fatalf("ListIssueComments() = %+v; want %+v", got, want)
+-		}
+-		for i := range want {
+-			if got[i].Body != want[i].Body || !got[i].CreatedAt.Equal(want[i].CreatedAt) {
+-				t.Errorf("ListIssueComments()[%d] = %+v; want %+v", i, got[i], want[i])
+-			}
+-		}
+-		if len(queries) != 2 {
+-			t.Fatalf("request count = %d; want 2 pages", len(queries))
+-		}
+-		if !strings.Contains(queries[0], "sort=created") || !strings.Contains(queries[0], "direction=asc") {
+-			t.Errorf("first query = %q; want sort=created and direction=asc", queries[0])
+-		}
+-	})
+-
+-	t.Run("rejected response", func(t *testing.T) {
+-		var captured []requestCapture
+-		server := newIssueServer(t, http.StatusNotFound, `{"message":"Not Found thing"}`, &captured)
+-		installGitHubClient(t, server.URL)
+-
+-		_, err := ListIssueComments(5)
+-
+-		if err == nil || !strings.Contains(err.Error(), "Not Found thing") {
+-			t.Errorf("ListIssueComments() error = %v; want the response message", err)
+-		}
+-	})
+-}
+-
+-// TestGetIssue_ReportsPullRequestAndClosedState checks that GetIssue returns a pull request and
+-// a closed issue without excluding either.
+-func TestGetIssue_ReportsPullRequestAndClosedState(t *testing.T) {
+-	var captured []requestCapture
+-	server := newIssueServer(t, http.StatusOK,
+-		`{"number":7,"title":"t","state":"closed","state_reason":"not_planned","pull_request":{"url":"https://x/pr"}}`, &captured)
+-	installGitHubClient(t, server.URL)
+-
+-	got, err := GetIssue(7)
+-	if err != nil {
+-		t.Fatalf("GetIssue() error = %v; want nil", err)
+-	}
+-
+-	if got.Number != 7 || got.State != "closed" || got.StateReason != "not_planned" || !got.PullRequest {
+-		t.Errorf("GetIssue() = %+v; want issue 7, closed, not_planned, a pull request", got)
+-	}
+-	if len(captured) != 1 || captured[0].method != http.MethodGet || captured[0].path != issuesPath+"/7" {
+-		t.Errorf("requests = %+v; want one GET %s/7", captured, issuesPath)
+-	}
+-}
+-
+-// TestCommentAndClose_SendsCommentThenClose drives both state reasons and checks the order and
+-// payloads of the two requests.
+-func TestCommentAndClose_SendsCommentThenClose(t *testing.T) {
+-	for _, tc := range []struct {
+-		completed bool
+-		reason    string
+-	}{{true, "completed"}, {false, "not_planned"}} {
+-		t.Run(tc.reason, func(t *testing.T) {
+-			var captured []requestCapture
+-			server := newIssueServer(t, http.StatusOK, `{"number":9}`, &captured)
+-			installGitHubClient(t, server.URL)
+-
+-			if err := CommentAndClose(9, "folded into x", tc.completed); err != nil {
+-				t.Fatalf("CommentAndClose() error = %v; want nil", err)
+-			}
+-
+-			if len(captured) != 2 {
+-				t.Fatalf("request count = %d; want 2", len(captured))
+-			}
+-			if captured[0].method != http.MethodPost || captured[0].path != issuesPath+"/9/comments" {
+-				t.Errorf("first request = %s %s; want POST %s/9/comments", captured[0].method, captured[0].path, issuesPath)
+-			}
+-			if body, _ := captured[0].body["body"].(string); body != "folded into x" {
+-				t.Errorf("comment body = %q; want %q", body, "folded into x")
+-			}
+-			if captured[1].method != http.MethodPatch || captured[1].path != issuesPath+"/9" {
+-				t.Errorf("second request = %s %s; want PATCH %s/9", captured[1].method, captured[1].path, issuesPath)
+-			}
+-			if captured[1].body["state"] != "closed" || captured[1].body["state_reason"] != tc.reason {
+-				t.Errorf("close body = %v; want state closed with reason %s", captured[1].body, tc.reason)
+-			}
+-		})
+-	}
+-}
+-
+-// TestCommentAndClose_FailedCommentSkipsClose checks that a rejected comment never reaches the
+-// close.
+-func TestCommentAndClose_FailedCommentSkipsClose(t *testing.T) {
+-	var captured []requestCapture
+-	server := newIssueServer(t, http.StatusForbidden, `{"message":"Forbidden thing"}`, &captured)
+-	installGitHubClient(t, server.URL)
+-
+-	err := CommentAndClose(9, "c", true)
+-
+-	if err == nil || !strings.Contains(err.Error(), "Forbidden thing") {
+-		t.Fatalf("CommentAndClose() error = %v; want the response message", err)
+-	}
+-	if len(captured) != 1 {
+-		t.Errorf("request count = %d; want 1 (no close after a failed comment)", len(captured))
+-	}
+-}
+-
+-// TestCommentAndClose_FailedCloseNamesPostedComment checks that a close failing after a posted
+-// comment says so.
+-func TestCommentAndClose_FailedCloseNamesPostedComment(t *testing.T) {
+-	var count int
+-	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+-		_, _ = io.Copy(io.Discard, r.Body)
+-		count++
+-		if r.Method == http.MethodPatch {
+-			w.WriteHeader(http.StatusUnprocessableEntity)
+-			_, _ = w.Write([]byte(`{"message":"cannot close"}`))
+-			return
+-		}
+-		_ = json.NewEncoder(w).Encode(map[string]any{"id": 1})
+-	}))
+-	t.Cleanup(server.Close)
+-	installGitHubClient(t, server.URL)
+-
+-	err := CommentAndClose(9, "c", false)
+-
+-	if err == nil {
+-		t.Fatal("CommentAndClose() error = nil; want the close failure")
+-	}
+-	for _, want := range []string{"comment posted", "second comment", "cannot close"} {
+-		if !strings.Contains(err.Error(), want) {
+-			t.Errorf("CommentAndClose() error = %q; want it to contain %q", err.Error(), want)
+-		}
+-	}
+-	if count != 2 {
+-		t.Errorf("request count = %d; want comment then close", count)
+-	}
+-}
+-
+-// TestInboxCalls_TokenNotResolvable checks that every inbox call surfaces an unresolvable token.
+-func TestInboxCalls_TokenNotResolvable(t *testing.T) {
+-	installFailingGitHubClientFactory(t, githubclient.ErrTokenUnresolvable)
+-
+-	_, listErr := ListOpenIssues()
+-	_, getErr := GetIssue(1)
+-	_, commentsErr := ListIssueComments(1)
+-	closeErr := CommentAndClose(1, "c", true)
+-
+-	for name, err := range map[string]error{"ListOpenIssues": listErr, "GetIssue": getErr, "ListIssueComments": commentsErr, "CommentAndClose": closeErr} {
+-		if !errors.Is(err, githubclient.ErrTokenUnresolvable) {
+-			t.Errorf("%s() error = %v; want errors.Is(err, githubclient.ErrTokenUnresolvable)", name, err)
+-		}
+-	}
+-}
+diff --git a/internal/selfreportengine/selfreport.go b/internal/selfreportengine/selfreport.go
+index 6acf57de..fca3dcf7 100644
+--- a/internal/selfreportengine/selfreport.go
++++ b/internal/selfreportengine/selfreport.go
+@@ -3,8 +3,9 @@
+ // It holds everything from the selfreport module that does not belong to the cobra command layer:
+ // the NewGitHubClient seam, CreateIssue and the helpers every call shares.
+ 
+-// Package selfreportengine provides the domain kernel for filing GitHub issues, and for listing, fetching, commenting on and closing them for board intake, via githubclient's authenticated go-github client.
+-// It exposes CreateIssue for filing, the calls in inbox.go for intake, and NewGitHubClient as a swappable factory seam for testing, keeping targetRepo unexported.
++// Package selfreportengine provides the domain kernel for filing LoomYard bugs and enhancements as GitHub issues on LoomYard's own repository, via githubclient's authenticated go-github client.
++// It files to that repository whatever hub lyx runs in, and only there: an issue about another repository is filed to that repository's own issues, never through selfreport.
++// It exposes CreateIssue and NewGitHubClient as a swappable factory seam for testing, keeping targetRepo unexported.
+ package selfreportengine
+ 
+ import (
+@@ -20,7 +21,7 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/logger"
+ )
+ 
+-// targetRepo is the hardcoded "owner/repo" GitHub repository that all issues are filed against and that the intake calls in inbox.go read from, so it serves both directions, filing and intake.
++// targetRepo is the hardcoded "owner/repo" GitHub repository, LoomYard's own, that all issues are filed against.
+ // It is a constant so that tests can verify the exact owner and repo arguments passed to the Issues calls without any config-file or environment-variable indirection.
+ // githubclient resolves neither owner nor repo itself -- repoClient splits this constant and every call passes both as parameters.
+ const targetRepo = "Knatte18/loomyard"
+@@ -30,7 +31,6 @@ const targetRepo = "Knatte18/loomyard"
+ const defaultLabel = "bug"
+ 
+ // callTimeout bounds each request this package makes to GitHub, including a 401-triggered credential re-resolution and replay performed internally by githubclient's transport.
+-// A call that spans several requests derives a fresh deadline per request, so a pause hold on one request moves only that request's deadline.
+ // It matches the 30s budget githubclient's own transport applies from the end of a pause hold, so no call relies solely on a caller-supplied context.Background() to keep an autonomous run from hanging.
+ const callTimeout = 30 * time.Second
+ 
+diff --git a/plugins/ly/skills/board/SKILL.md b/plugins/ly/skills/board/SKILL.md
+index e1348f0a..689eb187 100644
+--- a/plugins/ly/skills/board/SKILL.md
++++ b/plugins/ly/skills/board/SKILL.md
+@@ -1,6 +1,6 @@
+ ---
+ name: board
+-description: Read or write the board — create or promote an entry, find or list entries, prune done ones, take in GitHub inbox issues — always through `lyx board`, never by touching `_board/*.json`.
++description: Read or write the board — create or promote an entry, find or list entries, prune done ones, take in the hub repository's GitHub issues — always through `lyx board`, never by touching `_board/*.json`.
+ ---
+ 
+ # board
+@@ -108,8 +108,10 @@ The refusal names the way to unlock an abandoned run's entry.
+ 
+ ## Intake
+ 
+-GitHub is the inbox that `selfreport` files issues to, and the board is the one list.
+-Take each open inbox issue onto the board, then close it:
++Intake takes the GitHub issues of the hub's own repository onto the board, the one list: the repository the hub's recorded binding names, else its origin remote.
++It never reads the repository `selfreport` files LoomYard bugs to, unless that is the hub's own.
++Run intake only when the operator asks for it.
++Take each open issue onto the board, then close it:
+ 
+ ```
+ lyx board intake list
