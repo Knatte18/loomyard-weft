@@ -271,6 +271,12 @@ The Preflight row's records push becomes the pair's detached push, as every othe
 
 Rationale: nothing reads the remote weft branch until Publish, and D10 makes a refused detached push visible, which removes the reason to wait on it.
 
+### Added after Discussion (arbiter, 2026-10-21): Rewound keep-local choice is a plain push
+
+Decision: D4's second way forward for a task branch rewound on origin is `git push origin <branch>` in the task worktree, not the `ours` merge of `origin/<branch>`; `lyx fabric push` stays refused until the rewind is settled by that push or by `git reset --keep <origin head>`.
+
+Rationale: A branch reads rewound only when origin's head is already an ancestor of the local tip, so the `ours` merge changes nothing and the hold-back still reads the tip rewound. The plain push is the fast-forward D4 meant the merge to enable, and it writes the push entry that ends the reflog test. Plan review round 4, F1.
+
 ## Constraints
 
 - PATTERN-fabric-git: every git call of the reconcile, the replay and the push classification is in `internal/fabricengine`; other packages call it in-process, and reach it back only through D1's seams.
