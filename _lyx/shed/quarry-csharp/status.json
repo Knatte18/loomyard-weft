@@ -1,13 +1,13 @@
 {
   "current_producer": "Discussion-Write",
-  "state": "failed",
-  "error": "shedadapters: Discussion-Write (seats): seat run: seatengine: chair wait: shuttle: reed status failed 2 times consecutively: reed status: no reed session (2 strands persisted); run \"lyx reed resume\" to rebuild, or \"lyx reed up\" for a bare substrate\nseatengine: a seat could not be stopped: strand b24879c532c2f45361a2b5c5e755c222: shuttle: stop strand b24879c532c2f45361a2b5c5e755c222: probe reed before removing it: no reed session (2 strands persisted); run \"lyx reed resume\" to rebuild, or \"lyx reed up\" for a bare substrate; way forward: run \"lyx reed remove b24879c532c2f45361a2b5c5e755c222\", then re-step the row",
+  "state": "running",
+  "error": "",
   "pending_by": "shed",
   "pause_requested": false,
   "activity": {
     "now": "Discussion-Write",
     "last": "Loom-Preflight → done",
-    "wait": "shedadapters: Discussion-Write (seats): seat run: seatengine: chair wait: shuttle: reed status failed 2 times consecutively: reed status: no reed session (2 strands persisted); run \"lyx reed resume\" to rebuild, or \"lyx reed up\" for a bare substrate\nseatengine: a seat could not be stopped: strand b24879c532c2f45361a2b5c5e755c222: shuttle: stop strand b24879c532c2f45361a2b5c5e755c222: probe reed before removing it: no reed session (2 strands persisted); run \"lyx reed resume\" to rebuild, or \"lyx reed up\" for a bare substrate; way forward: run \"lyx reed remove b24879c532c2f45361a2b5c5e755c222\", then re-step the row"
+    "wait": ""
   },
   "history": [
     {
