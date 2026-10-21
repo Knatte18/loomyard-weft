@@ -1,0 +1,7 @@
+verdict: approve
+reason: >-
+  The design gives go_parallel and slots a machine-local override in a never-tracked file beside Bolt's checkout,
+  which is exactly the entry's goal, with busy_quit_sec, other modules and machine identity kept out.
+  It duplicates and contradicts no board entry, and no peer run or parent commit changes the same behaviour or PATTERN entry.
+question: ""
+superseded: []
