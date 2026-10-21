@@ -1,0 +1,11 @@
+---
+round: 1
+focus:
+  - "internal/fabricengine/doc.go: the parent added the code identity reads (`ReadTaskPatch`, `MergeInOnly`, `RecordsHeadSHA` in taskpatch.go) and the task added the scratch link section and the `path_renamed` Kind. Settle whether the merged doc still describes the code: the mutation `Kind` list in doc.go against the enum in mutation.go, and whether the parent's `ReadTaskPatch` untracked-file listing treats the task's root `.scratch` link (a link, excluded as `/.scratch`) correctly, rather than reading it as an untracked file or following it."
+  - "The parent's `ReadTaskPatch` and `skip` semantics against the task's scratch step: a `.scratch` link whose target lives in the weft worktree must not leak into the patch bytes, SHA-256 or patch-id, nor make an identical code change hash differently between a pair wired by an older binary (real `.scratch` directory) and a reconciled one (link). Check the code path in taskpatch.go and whether any test covers the interaction."
+  - "Parent changes to `internal/testkit/envkit`, `internal/state` (`WriteFile`), `internal/shellguard` rows and `tools/deploy`: settle whether the task's scratch link code, its tests, and its `.scratch/` use (scratchlink.go and scratchlink_integration_test.go) still match their new contracts, in particular the shell guard rows' treatment of `.scratch` paths and any envkit change to how test homes and git environments are set up."
+  - "Changed pattern files (`PATTERN-config-layers`, `PATTERN-durable-vs-ephemeral-state`, `PATTERN-hub-wide-config`, `PATTERN-friction-capture`): settle whether the task's code adds or touches any config key, state location or friction path they govern. Check that the scratch target `<anchor>/.lyx/scratch` fits the durable-vs-ephemeral state placement the parent amended."
+  - "Test economy across the merge: whether a parent test (taskpatch_integration_test.go, the fabricengine reconcile tests) now duplicates a task test (scratchlink_integration_test.go), and whether `lyx fabric reconcile` or `remove` running over a pair carrying the parent's changes has a behavior with no coverage."
+---
+
+Seeded from the merge's overlap: `internal/fabricengine/doc.go` merged without conflict, and the parent's `taskpatch.go` reads the warp working tree that the task's scratch step now changes.
