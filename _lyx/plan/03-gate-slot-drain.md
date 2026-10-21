@@ -16,7 +16,6 @@
 
 **Uses:**
 - `internal/gateslot#newPool`
-- `internal/gateslot#fixedLimits`
 - `internal/gateslot#shortContext`
 
 **Intent:**
@@ -24,7 +23,8 @@ Give a tier the slots it asks for, with a drain that keeps a multi-slot tier fro
 
 `AcquireSlots(ctx, h, count)` with `count` 1 behaves as `Acquire`.
 With `count` above 1, or 0 meaning every slot (`slots: all`), it clamps the count to the current `Limits().Slots`, takes the pool's drain lock at `<Dir>/drain.lock` (an OS file lock, so process death releases it), then takes slots one at a time in ascending slot order, holding each it has while it waits for the next, and releases the drain lock once it holds all of them.
-Ascending acquisition means two multi-slot waiters never deadlock: the drain admits one at a time, and a single-slot holder always finishes within its own tier timeout.
+Ascending acquisition means two multi-slot waiters never deadlock: the drain admits one at a time, and every single-slot holder finishes.
+A tier holder finishes within its own tier timeout and a card `**Verify:**` holder within the runner's timeout; the plan glyph type load is bounded by its load, and `cmd/testtiming`, which the operator runs by hand, only by its own run, so a drain waiter queued behind a timing run waits for it.
 While another process holds the drain lock, `Acquire` waits, polling as it does for a held slot, so new single-slot acquires queue behind the drain; the drain holder's own slot takes go through the internal path that skips that check.
 A cancelled context releases every slot and the drain lock already taken and returns its error with nothing held.
 

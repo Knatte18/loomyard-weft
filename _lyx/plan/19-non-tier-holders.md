@@ -19,6 +19,10 @@
 - `internal/gateslot#TestLeaseEnv`
 - `internal/gateslot#TestLoadConfig`
 - `internal/gateslot#TestTemplateConfigAndLimits`
+- `internal/gateslot#singleSlotLimits`
+- `internal/gateslot#templateDefaults`
+- `internal/gateslot#fixedLimits`
+- `internal/gateslot#TestAcquire_ReadsLimitsAtEveryAcquire`
 - `internal/gateslot/template.yaml`
 - `internal/gateslot/doc.go`
 - `internal/planglyph#goListLoader.load`
@@ -37,6 +41,7 @@
 - `internal/gatecli#prebuildLyx`
 - `cmd/testtiming#TestMain`
 - `docs/overview.md`
+- `docs/benchmarks/running-tests.md`
 - `PATTERN.md`
 - `pattern/PATTERN-test-speed.md`
 - `pattern/PATTERN-push-both-sides.md`
@@ -78,14 +83,16 @@ The overview may not grow past its headroom line, which it already sits above, s
 
 `pattern/PATTERN-recipe-setting-lookup.md` holds that entry's current text whole, and `pattern/PATTERN-push-both-sides.md` gains the moved sentence that a per-transition status push goes through fabric's detached push; `lyx loom lint-pattern` passes with the overview no larger than at the base.
 `pattern/PATTERN-test-speed.md`'s tier table and gate-per-tier section move to the hub's tier numbers, `tier0` untagged through `tier3` `llm`, and to D8's gates and their lists, and its slot section names tier runs and the non-tier holders.
+`docs/benchmarks/running-tests.md`, a how-to guide rather than a measurement report, moves its tier section to the same numbers, `tier0` untagged through `tier3` `llm`, and its gate lines name `lyx gate test --tier <n>` in place of `--tags`.
 `CLAUDE.md`'s push rule becomes `lyx gate test --tier 0 --tier 1 --tier 2` on `main`, where no parent makes the scope whole, and its gate wording drops `--tags`.
 
-Forced edits: `TestGlyphChain_CallerCoverageTyped` builds its `Limits` with `Tier0Parallel` in place of `GoParallel`; `TestModules_EveryTemplateKeyClassified` drops `go_parallel` from the gate module's machine keys; `TestDispatchLayers` and `TestConfigOverRealHub` set `tier_parallel.tier0` on the machine layer in place of `go_parallel`; `TestGateTest_Scenario`'s machine `go_parallel` refusal row becomes the machine `tier_parallel` refusal; `prebuildLyx`'s doc stops naming `gateslot.GoFlags`; `docs/overview.md` names `slots` and `tier_parallel` as the gate's machine keys; `cmd/testtiming`'s `TestMain` calls `gitkit.HermeticGitEnv()`, and `TestTakeGateSlot` sits in an `integration`-tagged file, since its `hubforge` hub spawns git.
+Forced edits: `TestGlyphChain_CallerCoverageTyped` builds its `Limits` with `Tier0Parallel` in place of `GoParallel`; gateslot's own `Limits` literals, `singleSlotLimits` in `testmain_test.go`, `fixedLimits` and `TestAcquire_ReadsLimitsAtEveryAcquire`, drop `GoParallel`, setting `Tier0Parallel` only where a test reads it, and the package-level `templateDefaults` `Config` literal drops `GoParallel`; `TestModules_EveryTemplateKeyClassified` drops `go_parallel` from the gate module's machine keys; `TestDispatchLayers` and `TestConfigOverRealHub` set `tier_parallel.tier0` on the machine layer in place of `go_parallel`; `TestGateTest_Scenario`'s machine `go_parallel` refusal row becomes the machine `tier_parallel` refusal; `prebuildLyx`'s doc stops naming `gateslot.GoFlags`; `docs/overview.md` names `slots` and `tier_parallel` as the gate's machine keys; `cmd/testtiming`'s `TestMain` calls `gitkit.HermeticGitEnv()`, and `TestTakeGateSlot` sits in an `integration`-tagged file, since its `hubforge` hub spawns git.
 `hubreconcile`'s stale-build test seeds `go_parallel` in a machine file it only checks is left byte for byte, which a retired machine key keeps true, so it needs no edit.
 Tests: `TestLeaseEnv` drops the `Env` rows; `TestLoadConfig` gains `go_parallel` loading as retired from the hub and the machine file, and `TestTemplateConfigAndLimits` drops `GoParallel`.
 The new `TestTakeGateSlot` drives `withGateSlot` over a `hubforge` hub with a fake mode: one slot held under the `testtiming` site for as long as the mode runs and free after it returns, the mode handed GOFLAGS carrying the pool's `Limits().Tier0Parallel` through `HolderEnv` and that value as its parallelism, and outside every hub the CPU count with no slot; the flag rule itself stays pinned in `TestLeaseEnv` alone (card 11).
 `TestPrebuildLyx` asserts the prebuild inherits the held slot and acquires none.
 `TestGlyphChain_CallerCoverageTyped` gains a row asserting `loadEnv` keeps `-mod=readonly` and appends the pool's tier0 parallel through `HolderEnv`.
 `TestWebsterGeometry` drops its lease GOFLAGS assertion; the machine override's mapping stays pinned in `TestTemplateConfigAndLimits` (card 11).
+Its `Limits` literals take `Tier0Parallel` in place of `GoParallel`; the machine `go_parallel: 0` row, which asserts a load error, now loads because the key is retired, so it becomes a machine `tier_parallel: {tier0: 0}` row over a seeded `tier0`, refused naming both files; the machine override row seeds `tier_parallel.tier0`.
 
 **ImpactSummary:** the last readers of `go_parallel` and the GOFLAGS-appending lease move to `HolderEnv`; three PATTERN background files are added and four overview lines change with no net growth.

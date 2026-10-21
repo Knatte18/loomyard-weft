@@ -1,6 +1,6 @@
 ---
 format: 5
-approved: false
+approved: true
 language: go
 ---
 
@@ -22,9 +22,9 @@ The plan builds the config, the slot drain and the run log in `internal/gateslot
 9 — gate-scopes — the computed, `--base` and `--card` scopes, per-module runs, the empty set and the guard step
 10 — round-gate-tiers — the round and darn writer gates run the `round` gate; the failure record names its tier
 11 — card-verify-runner — the shared card `**Verify:**` runner, `lyx gate card-verify` and `HolderEnv`
-12 — verifytree-unslotted — `verifytree.Verify` drops its slot and timeout
-13 — webster-final-gate — webster's plan-level gate and `lyx webster verify` run the `final` gate
-14 — landing-gates — Merge-In, Finalize and Publish run `landing` and `publish`; `publish_verify` and darn `verify` retire
+12 — webster-final-gate — webster's plan-level gate and `lyx webster verify` run the `final` gate
+13 — landing-gates — Merge-In, Finalize and Publish run `landing` and `publish`; `publish_verify` and darn `verify` retire
+14 — verifytree-unslotted — `verifytree.Verify` drops its slot and timeout
 15 — webster-prompt-gates — webster prompts render `--card` gate calls and `lyx gate card-verify`
 16 — retire-verify-tiers — prompts render the hub's tiers from `gate.yaml`; `verify_tiers` and the plan verify section retire
 17 — refuse-raw-guard — the shell guard refuses the hub's `refuse_raw` commands
