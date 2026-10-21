@@ -2,6 +2,7 @@
   "current_producer": "Discussion-Write",
   "state": "failed",
   "error": "shedadapters: Discussion-Write (seats): shuttle run outcome died",
+  "pending_by": "shed",
   "pause_requested": false,
   "activity": {
     "now": "Discussion-Write",
