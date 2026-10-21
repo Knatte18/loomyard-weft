@@ -1,10 +1,10 @@
 # Card 9 — identity-text
 
 **Create:**
-- `plan:internal/discussionparser#IdentityText` -> `func IdentityText(record []byte) []byte`
-- `plan:internal/discussionparser#TestIdentityText` -> `func TestIdentityText(t *testing.T)`
-- `plan:internal/planparser#IdentityText` -> `func IdentityText(overview []byte) []byte`
-- `plan:internal/planparser#TestIdentityText` -> `func TestIdentityText(t *testing.T)`
+- `internal/discussionparser#IdentityText`
+- `internal/discussionparser#TestIdentityText`
+- `internal/planparser#IdentityText`
+- `internal/planparser#TestIdentityText`
 
 **Edit:**
 - `internal/discussionparser/doc.go`

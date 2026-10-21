@@ -20,7 +20,7 @@
 - `plan:internal/shedrecipe#TestBouncerEntry_Subject` -> `func TestBouncerEntry_Subject(t *testing.T)`
 
 **Uses:**
-- `plan:internal/shedadapters#Subject`
+- `internal/shedadapters#Subject`
 - `plan:internal/shedadapters#AmendmentNote`
 - `internal/shedrecipe#layoutBouncerRound1Report`
 - `internal/shedrecipe#judgeSeamShuttle`

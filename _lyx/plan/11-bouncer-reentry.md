@@ -12,18 +12,18 @@
 - `internal/shedadapters/doc.go`
 
 **Create:**
-- `plan:internal/shedadapters#Bouncer.recordSettle` -> `func (b *Bouncer) recordSettle(round int, subject Subject) error`
-- `plan:internal/shedadapters#Bouncer.markSettled` -> `func (b *Bouncer) markSettled() error`
-- `plan:internal/shedadapters#Bouncer.resettle` -> `func (b *Bouncer) resettle(rec settleRecord) (shedengine.Outcome, shedengine.OutputPointer, error)`
-- `plan:internal/shedadapters#Bouncer.liveSubject` -> `func (b *Bouncer) liveSubject() (Subject, bool, error)`
-- `plan:internal/shedadapters#TestBouncer_Reentry` -> `func TestBouncer_Reentry(t *testing.T)`
+- `internal/shedadapters#Bouncer.recordSettle`
+- `internal/shedadapters#Bouncer.markSettled`
+- `internal/shedadapters#Bouncer.resettle`
+- `internal/shedadapters#Bouncer.liveSubject`
+- `internal/shedadapters#TestBouncer_Reentry`
 
 **Uses:**
-- `plan:internal/shedadapters#liveSettleRecord`
-- `plan:internal/shedadapters#writeSettleRecord`
-- `plan:internal/shedadapters#readGenerationRecord`
-- `plan:internal/shedadapters#writeGenerationRecord`
-- `plan:internal/shedadapters#Subject.Unchanged`
+- `internal/shedadapters#liveSettleRecord`
+- `internal/shedadapters#writeSettleRecord`
+- `internal/shedadapters#readGenerationRecord`
+- `internal/shedadapters#writeGenerationRecord`
+- `internal/shedadapters#Subject.Unchanged`
 - `internal/shedadapters#newBouncerFixture`
 - `internal/shedadapters#judgeFakeShuttle`
 - `internal/shedadapters#layoutBouncerRun`
