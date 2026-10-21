@@ -3,16 +3,16 @@
 **Create:**
 - `internal/cardverify/doc.go`
 - `internal/cardverify/testmain_test.go`
-- `plan:internal/cardverify#Runner` -> `type Runner struct`
-- `plan:internal/cardverify#DefaultTimeout` -> `const DefaultTimeout = 10 * time.Minute`
-- `plan:internal/cardverify#Runner.RunLine` -> `func (r Runner) RunLine(line string, out io.Writer) string`
-- `plan:internal/cardverify#Runner.RunCards` -> `func (r Runner) RunCards(cards []planparser.Card, out io.Writer, stopAtFirst bool) []string`
-- `plan:internal/cardverify#IsGateCall` -> `func IsGateCall(line string) bool`
-- `plan:internal/cardverify#TestRunner` -> `func TestRunner(t *testing.T)`
-- `plan:internal/cardverify#TestIsGateCall` -> `func TestIsGateCall(t *testing.T)`
-- `plan:internal/gateslot#HolderEnv` -> `func HolderEnv(base []string, lease *Lease, tier0Parallel int) []string`
-- `plan:internal/gatecli#cardVerifyCmd` -> `func cardVerifyCmd() *cobra.Command`
-- `plan:internal/gatecli#TestGateCardVerify` -> `func TestGateCardVerify(t *testing.T)`
+- `internal/cardverify#Runner`
+- `internal/cardverify#DefaultTimeout`
+- `internal/cardverify#Runner.RunLine`
+- `internal/cardverify#Runner.RunCards`
+- `internal/cardverify#IsGateCall`
+- `internal/cardverify#TestRunner`
+- `internal/cardverify#TestIsGateCall`
+- `internal/gateslot#HolderEnv`
+- `internal/gatecli#cardVerifyCmd`
+- `internal/gatecli#TestGateCardVerify`
 
 **Edit:**
 - `internal/websterengine#rerunCardVerifies`
