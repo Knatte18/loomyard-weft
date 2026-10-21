@@ -18,7 +18,7 @@ Held by a run; its scope is locked until the run ends.
 | # | Task | Slug | Recipe | At | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | 1 | **Origin reconcile before anything that matters, and pushes that never fail silently**<br>• ls-remote over warp and records repos at orch start, wake, batten resume, Merge-In and Finalize; fast-forward, landed-elsewhere cleanup, stop on divergence; rejected push retries and reports | [`origin-reconcile`](design-origin-reconcile.md) | loom | Webster-Burler-Fix | 4d | 20h | fabric, batten, orch, creel, shed |
-| 2 | **[.NET 002] Test tiers: every test run through lyx gate test, numbered tiers in hub config, computed scope**<br>• All testing goes through the gate slot pool against hub-declared tiers tier0..N, with scope computed from the diff; replaces the Go-only gate | [`test-tiers`](design-test-tiers.md) | loom | Discussion-Bouncer | 4d | 1h | gate, config, shed, dotnet |
+| 2 | **[.NET 002] Test tiers: every test run through lyx gate test, numbered tiers in hub config, computed scope**<br>• All testing goes through the gate slot pool against hub-declared tiers tier0..N, with scope computed from the diff; replaces the Go-only gate | [`test-tiers`](design-test-tiers.md) | loom | Plan-Write | 4d | 1h | gate, config, shed, dotnet |
 | 3 | **The operator tuned loom defaults move into the lyx template, so every new hub gets them**<br>• New hubs seed neutral loom defaults; the loomyard hub tuning is the operator default and belongs in the template<br>• `profile: light` | [`tuned-defaults-template`](design-tuned-defaults-template.md) | loom | Plan-Write | 58m | 45m | config, loom |
 | 4 | **Intake reads the hub own repository, selfreport stays LoomYard-only, and the orch neither runs intake nor reviews on its own**<br>• lyx board intake takes issues from the hub warp repo, not the hard-coded Knatte18/loomyard; the orch role stops running intake by itself | [`intake-own-repo`](design-intake-own-repo.md) | darn | Darn-Burler-Fix | 37m | 32m | board, orch, selfreport, stencil |
 
@@ -26,7 +26,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 5 | **Reed small fixes: trace-id constant in tests, allow-set-title warn noise, watchdog stop marker without inotify**<br>• Three small reed fixes in one darn run | [`reed-small-fixes`](design-reed-small-fixes.md) | darn | Publish | 1d | 27m | reed, shuttle |
+| 5 | **Reed small fixes: trace-id constant in tests, allow-set-title warn noise, watchdog stop marker without inotify**<br>• Three small reed fixes in one darn run | [`reed-small-fixes`](design-reed-small-fixes.md) | darn | Publish | 1d | 28m | reed, shuttle |
 
 ### Ready
 
@@ -104,14 +104,14 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | # | Note | Slug | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | 1 | **fabric add refuses an existing local branch instead of adopting it**<br>• lyx fabric add adopts origin branches but refuses a local unmarked warp branch, so main or an umbrella branch cannot get a pair | [`fabric-add-adopt-local`](design-fabric-add-adopt-local.md) | 5h | 5h | fabric, workspaces |
-| 2 | **No way to stop a live run for good: killed parts come back, the claim stays**<br>• A verb that ends a live run at once, stops reed relaunching it, clears the board claim and optionally removes the pair | [`batten-abort-live-run`](design-batten-abort-live-run.md) | 47m | 47m | batten, reed, shed |
+| 2 | **No way to stop a live run for good: killed parts come back, the claim stays**<br>• A verb that ends a live run at once, stops reed relaunching it, clears the board claim and optionally removes the pair | [`batten-abort-live-run`](design-batten-abort-live-run.md) | 48m | 48m | batten, reed, shed |
 
 #### Normal priority
 
 | # | Note | Slug | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | 3 | **Opening an agent into reed: engine bypass mode by default, explicit engine, model and effort, and reed add points to shuttle open**<br>• reed add help shows a broken claude example (%SID% never substituted) and shuttle open keeps the interactive permission default; every agent in reed needs bypass, per engine (claude bypassPermissions, Codex --yolo) | [`reed-agent-launch-bypass`](design-reed-agent-launch-bypass.md) | 23h | 23h | reed, shuttle, claude, codex |
-| 4 | **Diff-scoped verify gate runs an unrelated package whose test depends on host inotify limits** | [`verify-diff-scope-unrelated-pkg`](design-verify-diff-scope-unrelated-pkg.md) | 29m | 29m | gate |
+| 4 | **Diff-scoped verify gate runs an unrelated package whose test depends on host inotify limits** | [`verify-diff-scope-unrelated-pkg`](design-verify-diff-scope-unrelated-pkg.md) | 30m | 30m | gate |
 
 ### Enhancements
 
