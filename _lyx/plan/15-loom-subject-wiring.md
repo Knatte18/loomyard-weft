@@ -30,7 +30,7 @@
 - `internal/fabricengine#Fabric.ReadTaskPatch`
 - `internal/fabricengine#Fabric.MergeInOnly`
 - `internal/fabricengine#Fabric.WeftHeadSHA`
-- `plan:internal/loomshed#LatestRejectReview`
+- `internal/loomshed#LatestRejectReview`
 - `internal/loomcli#pairMergeBase`
 - `internal/loomcli#readRecordedParentBranch`
 - `internal/loomcli#writeCarryOver`

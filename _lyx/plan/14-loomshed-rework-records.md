@@ -18,8 +18,8 @@
 - `internal/loomshed/doc.go`
 
 **Create:**
-- `plan:internal/loomshed#LatestRejectReview` -> `func LatestRejectReview(reworkDir string) (path string, rejectedAt time.Time, found bool, err error)`
-- `plan:internal/loomshed#TestLatestRejectReview` -> `func TestLatestRejectReview(t *testing.T)`
+- `internal/loomshed#LatestRejectReview`
+- `internal/loomshed#TestLatestRejectReview`
 
 **Intent:** The two PR-Gate reject routes back into a review segment keep what D5 and D6 need.
 
