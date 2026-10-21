@@ -361,7 +361,7 @@
       }
     }
   ],
-  "currentBatch": 3,
+  "currentBatch": 0,
   "masterStrand": "b2bd0fce733d2c0c68a314ffc3cf873c",
   "masterSessionId": "6d4d10e3-caa4-43c0-bf9e-5510d3521ae9",
   "masterEngine": "claude",
@@ -415,11 +415,29 @@
       "spawnedAt": "2026-10-21T12:56:02Z",
       "sessionId": "6d4d10e3-caa4-43c0-bf9e-5510d3521ae9",
       "engine": "claude",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "03-claude-orch-webster-batcher-tuned-defaults",
+        "status": "done",
+        "head_sha": "83651fe10f00f21b51cfa4caa029650ee1098b17",
+        "deviations": [
+          "internal/shuttleengine/claudeengine/prepare_test.go"
+        ]
+      },
+      "cardShas": [
+        "83651fe10f00f21b51cfa4caa029650ee1098b17"
+      ],
+      "forkTranscripts": [
+        "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-tuned-defaults-template/6d4d10e3-caa4-43c0-bf9e-5510d3521ae9/subagents/agent-a312554854a367a32.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-tuned-defaults-template/6d4d10e3-caa4-43c0-bf9e-5510d3521ae9/subagents/agent-a312554854a367a32.jsonl"
+      ]
     }
   },
   "seenForkTranscripts": [
-    "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-tuned-defaults-template/6d4d10e3-caa4-43c0-bf9e-5510d3521ae9/subagents/agent-a174e652f3badec71.jsonl"
+    "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-tuned-defaults-template/6d4d10e3-caa4-43c0-bf9e-5510d3521ae9/subagents/agent-a174e652f3badec71.jsonl",
+    "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-tuned-defaults-template/6d4d10e3-caa4-43c0-bf9e-5510d3521ae9/subagents/agent-a312554854a367a32.jsonl"
   ]
 }
