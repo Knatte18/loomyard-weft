@@ -1,10 +1,10 @@
 # Card 9 — reconcile-failure-warns
 
 **Create:**
-- `plan:internal/hubreconcile#EnsureOrWarn` -> `func EnsureOrWarn(geom Geometry, opts Options)`
-- `plan:internal/hubreconcile#reconcileWayForward` -> `const reconcileWayForward = ""`
-- `plan:internal/preflightshed#TestPreflight_ReconcileFailureWarnsAndGoesOnToTheCheck` -> `func TestPreflight_ReconcileFailureWarnsAndGoesOnToTheCheck(t *testing.T)`
-- `plan:internal/hubreconcile_test#TestEnsureOrWarn_WarnsWithTheWayForward` -> `func TestEnsureOrWarn_WarnsWithTheWayForward(t *testing.T)`
+- `internal/hubreconcile#EnsureOrWarn`
+- `internal/hubreconcile#reconcileWayForward`
+- `internal/preflightshed#TestPreflight_ReconcileFailureWarnsAndGoesOnToTheCheck`
+- `internal/hubreconcile_test#TestEnsureOrWarn_WarnsWithTheWayForward`
 
 **Edit:**
 - `internal/loomcli#loomCLI.arm`
