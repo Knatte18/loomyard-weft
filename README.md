@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-21 07:12 UTC; every age below is as of then.
+Rendered 2026-10-21 07:22 UTC; every age below is as of then.
 
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
@@ -18,7 +18,7 @@ Held by a run; its scope is locked until the run ends.
 | # | Task | Slug | Recipe | At | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | 1 | **Origin reconcile before anything that matters, and pushes that never fail silently**<br>• ls-remote over warp and records repos at orch start, wake, batten resume, Merge-In and Finalize; fast-forward, landed-elsewhere cleanup, stop on divergence; rejected push retries and reports | [`origin-reconcile`](design-origin-reconcile.md) | loom | Webster | 3d | 15h | fabric, batten, orch, creel, shed |
-| 2 | **Goto, resume and stops keep what a run already settled**<br>• Goto as a controlled re-entry: converged verdicts, spent review budget and the pause reason survive a goto or stop; no friction session per stop; a zero-fork review round is retried | [`run-reentry`](design-run-reentry.md) | loom | Plan-Burler-Review | 1d | 15h | shed, loom, burler, shuttle |
+| 2 | **Goto, resume and stops keep what a run already settled**<br>• Goto as a controlled re-entry: converged verdicts, spent review budget and the pause reason survive a goto or stop; no friction session per stop; a zero-fork review round is retried | [`run-reentry`](design-run-reentry.md) | loom | Plan-Burler-Fix | 1d | 15h | shed, loom, burler, shuttle |
 
 #### Normal priority
 
@@ -46,8 +46,8 @@ Waits only on Running or Ready entries.
 
 | # | Task | Slug | Recipe | After | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 2 | **tender pause does not hold a verify gate's re-prompt, and creel interrupt is refused under the pause**<br>• `profile: light` | [`tender-pause-holds-reprompt`](design-tender-pause-holds-reprompt.md) | loom | `origin-reconcile`, `run-reentry` | 20h | 11h | creel, shed |
-| 3 | **Darn-Write stops looping on verify failures it cannot own, and the two flaky reed tests behind them**<br>• A verify failure in a tier Darn-Write may not run, or one the parent already fixed, no longer loops and escalates<br>• `profile: light` | [`darn-verify-fixes`](design-darn-verify-fixes.md) | loom | `run-reentry`, `origin-reconcile` | 3d | 11h | batten, loom, shed, reed |
+| 2 | **tender pause does not hold a verify gate's re-prompt, and creel interrupt is refused under the pause**<br>• `profile: light` | [`tender-pause-holds-reprompt`](design-tender-pause-holds-reprompt.md) | loom | `origin-reconcile`, `run-reentry` | 20h | 12h | creel, shed |
+| 3 | **Darn-Write stops looping on verify failures it cannot own, and the two flaky reed tests behind them**<br>• A verify failure in a tier Darn-Write may not run, or one the parent already fixed, no longer loops and escalates<br>• `profile: light` | [`darn-verify-fixes`](design-darn-verify-fixes.md) | loom | `run-reentry`, `origin-reconcile` | 3d | 12h | batten, loom, shed, reed |
 
 ### Layer B
 
@@ -57,13 +57,13 @@ Starts when every entry it names under After is done.
 
 | # | Task | Slug | Recipe | After | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | **Every process a run spawns has one owner that ends them all**<br>• Owner records for run processes; pause, reed down, fabric remove and teardown end the whole group; tender status shows orphans; batten abandon ends a dead run; a hub pause reaches background work | [`run-process-ownership`](design-run-process-ownership.md) | loom | `run-reentry`, `origin-reconcile`, `machine-handover`, `tender-pause-holds-reprompt` | 6d | 11h | batten, fabric, loom, shed, shuttle, webster |
+| 1 | **Every process a run spawns has one owner that ends them all**<br>• Owner records for run processes; pause, reed down, fabric remove and teardown end the whole group; tender status shows orphans; batten abandon ends a dead run; a hub pause reaches background work | [`run-process-ownership`](design-run-process-ownership.md) | loom | `run-reentry`, `origin-reconcile`, `machine-handover`, `tender-pause-holds-reprompt` | 6d | 12h | batten, fabric, loom, shed, shuttle, webster |
 
 #### Normal priority
 
 | # | Task | Slug | Recipe | After | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 2 | **Finalize blocks on 'worktree dirty' without naming the tree or paths, and the loom's own run record counts as dirty**<br>• `profile: light` | [`finalize-dirty-names-paths`](design-finalize-dirty-names-paths.md) | loom | `origin-reconcile`, `machine-handover`, `run-reentry`, `darn-verify-fixes` | 12h | 11h | fabric, loom |
+| 2 | **Finalize blocks on 'worktree dirty' without naming the tree or paths, and the loom's own run record counts as dirty**<br>• `profile: light` | [`finalize-dirty-names-paths`](design-finalize-dirty-names-paths.md) | loom | `origin-reconcile`, `machine-handover`, `run-reentry`, `darn-verify-fixes` | 12h | 12h | fabric, loom |
 
 ### Layer C
 
@@ -100,7 +100,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Note | Slug | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| 1 | **fabric add refuses an existing local branch instead of adopting it**<br>• lyx fabric add adopts origin branches but refuses a local unmarked warp branch, so main or an umbrella branch cannot get a pair | [`fabric-add-adopt-local`](design-fabric-add-adopt-local.md) | 33m | 33m | fabric, workspaces |
+| 1 | **fabric add refuses an existing local branch instead of adopting it**<br>• lyx fabric add adopts origin branches but refuses a local unmarked warp branch, so main or an umbrella branch cannot get a pair | [`fabric-add-adopt-local`](design-fabric-add-adopt-local.md) | 43m | 43m | fabric, workspaces |
 
 #### Normal priority
 
@@ -132,7 +132,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 10 | **Git test fixtures trip Cortex XDR on the work laptop**<br>• Parallel git-heavy tests create so many files at once that Cortex XDR killed VS Code and then crashed itself, twice; tests must stay usable on a machine with endpoint protection | [`xdr-git-test-file-burst`](design-xdr-git-test-file-burst.md) | 4d | 13h | fabric |
 | 11 | **Rename the lyx binary to lyr (name clash with LyX)** | [`rename-binary-lyr`](design-rename-binary-lyr.md) | 5d | 3d | stencil, shuttle |
 | 12 | **[.NET 002] Language-neutral gate: lyx gate run takes a slot for any command**<br>• The gate slot pool covers only go test; a C# or Python hub verify bypasses it. Add lyx gate run -- cmd and per-language parallelism. | [`gate-language-neutral`](design-gate-language-neutral.md) | 3d | 22h | config, webster, shed, dotnet |
-| 13 | **Entry gate on shed rows: a check decides whether a row runs at all**<br>• Replace darn recipe edge rewrite and the switched producer flag check with one shed entry gate per row; false means Done without acting. | [`row-entry-gate`](design-row-entry-gate.md) | 3d | 2d | shed, loom, batten |
+| 13 | **Entry gate on shed rows: a check decides whether a row runs at all**<br>• Replace darn recipe edge rewrite and the switched producer flag check with one shed entry gate per row; false means Done without acting. | [`row-entry-gate`](design-row-entry-gate.md) | 3d | 3d | shed, loom, batten |
 | 14 | **Remove the Webster kick-start pack**<br>• Drop every kick-start pack layout and its code; glyphs stay in the plan and its gates | [`kickstart-pack-remove`](design-kickstart-pack-remove.md) | 3d | 2d | webster, quarry, loom |
 | 15 | **Use quarry Enclose for mechanical checks: verify failures to plan cards**<br>• Map tool-output file:line to member glyphs, then to the card and batch that changed them | [`enclose-checks`](design-enclose-checks.md) | 13d | 3d | quarry, webster, loom |
 | 16 | **lyx board rename: change an entry slug in one write**<br>• Rename an entry keeping all fields and rewriting depends_on; report prose mentions | [`board-rename`](design-board-rename.md) | 3d | 3d | board |
@@ -146,7 +146,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 24 | **lyx batten run starts in its own window by default**<br>• Every batten run is started with --window, so the window should be the default and foreground the opt-in. | [`batten-window-default`](design-batten-window-default.md) | 1d | 1d | batten, reed, orch |
 | 25 | **A halt a plan card asks for reaches the parent as a question, not as a batch failure**<br>• A card-requested halt went through recover-batch, tackler and arbiter as a failure; it should go straight to the parent and the next attempt should carry the decision | [`card-halt-is-question`](design-card-halt-is-question.md) | 1d | 1d | webster, shed, loom |
 | 26 | **A question research can settle is settled in Discussion, never deferred to Plan or an implementer**<br>• Discussion writer researches the facts its design rests on; reviewers flag a deferred research question or a halt-on-discovery rule | [`research-in-discussion`](design-research-in-discussion.md) | 1d | 1d | loom, stencil, burler |
-| 27 | **Cortex XDR holds stack up across a loom run's card, batch, round and whole-suite gates**<br>• Each gate that tests a just-changed package waits 8-10 s for XDR; a 10-15 card run pays that many times over | [`loom-gates-xdr-stacking`](design-loom-gates-xdr-stacking.md) | 13h | 11h | webster, loom, gate |
+| 27 | **Cortex XDR holds stack up across a loom run's card, batch, round and whole-suite gates**<br>• Each gate that tests a just-changed package waits 8-10 s for XDR; a 10-15 card run pays that many times over | [`loom-gates-xdr-stacking`](design-loom-gates-xdr-stacking.md) | 14h | 11h | webster, loom, gate |
 | 28 | **[.NET 007] Language-specific lens sets seeded per hub**<br>• Every hub seeds lenses.yaml from one Go-repo template; seed by the hub language instead | [`lenses-language-sets`](design-lenses-language-sets.md) | 12h | 12h | burler, config, dotnet |
 
 #### Low priority
