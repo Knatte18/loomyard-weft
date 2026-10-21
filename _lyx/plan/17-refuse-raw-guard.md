@@ -1,8 +1,8 @@
 # Card 17 — refuse-raw-guard
 
 **Create:**
-- `plan:internal/shellguard#refuseRawPattern` -> `func refuseRawPattern(prefixes []string) string`
-- `plan:internal/shuttleengine/claudeengine#standingDeniesFor` -> `func standingDeniesFor(refuseRaw []string) []standingDeny`
+- `internal/shellguard#refuseRawPattern`
+- `internal/shuttleengine/claudeengine#standingDeniesFor`
 
 **Edit:**
 - `internal/shellguard#Rows` -> `func Rows(foreground string, refuseRaw []string) []Row`
