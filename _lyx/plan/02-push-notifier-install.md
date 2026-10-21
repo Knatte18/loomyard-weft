@@ -1,15 +1,15 @@
 # Card 2 — push-notifier-install
 
 **Create:**
-- `plan:internal/orchcli#fabricProgram` -> `const fabricProgram = "FABRIC"`
-- `plan:internal/orchcli#InstallPushNotifier` -> `func InstallPushNotifier(ctx context.Context)`
-- `plan:internal/orchcli#TestInstallPushNotifier` -> `func TestInstallPushNotifier(t *testing.T)`
+- `internal/orchcli#fabricProgram`
+- `internal/orchcli#InstallPushNotifier`
+- `internal/orchcli#TestInstallPushNotifier`
 
 **Edit:**
 - `cmd/lyx#newRoot`
 
 **Uses:**
-- `plan:internal/fabricengine#InstallPushNotifier`
+- `internal/fabricengine#InstallPushNotifier`
 - `internal/tendercli#InstallNetworkGate`
 - `internal/orchcli#TestNotifyPrime_QueuesInThePrimeOnly`
 

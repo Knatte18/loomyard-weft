@@ -1,24 +1,24 @@
 # Card 1 — failed-push-record
 
 **Create:**
-- `plan:internal/lyxdirs#FailedPushDirName` -> `const FailedPushDirName = "failed-push"`
-- `plan:internal/fabricengine#PushFailureClass` -> `type PushFailureClass string`
-- `plan:internal/fabricengine#PushFailureNotFastForward` -> `const PushFailureNotFastForward PushFailureClass = "not_fast_forward"`
-- `plan:internal/fabricengine#PushFailureTransport` -> `const PushFailureTransport PushFailureClass = "transport"`
-- `plan:internal/fabricengine#PushFailureAuth` -> `const PushFailureAuth PushFailureClass = "auth"`
-- `plan:internal/fabricengine#PushFailureGone` -> `const PushFailureGone PushFailureClass = "gone"`
-- `plan:internal/fabricengine#PushFailureDeferred` -> `const PushFailureDeferred PushFailureClass = "deferred"`
-- `plan:internal/fabricengine#FailedPush` -> `type FailedPush struct`
-- `plan:internal/fabricengine#PushNotifier` -> `type PushNotifier func(hubPath, line string) (posted bool, err error)`
-- `plan:internal/fabricengine#InstallPushNotifier` -> `func InstallPushNotifier(n PushNotifier) (restore func())`
-- `plan:internal/fabricengine#RecordPushFailure` -> `func RecordPushFailure(hubPath string, f FailedPush, now time.Time) error`
-- `plan:internal/fabricengine#ClearPushFailure` -> `func ClearPushFailure(hubPath, repo, branch string) error`
-- `plan:internal/fabricengine#ListFailedPushes` -> `func ListFailedPushes(hubPath string) ([]FailedPush, error)`
-- `plan:internal/fabricengine#FailedPushWayForward` -> `func FailedPushWayForward(f FailedPush) string`
-- `plan:internal/fabricengine#recordsConflictWayForward` -> `func recordsConflictWayForward(worktree, branch string, paths, commits []string, pushVerb string) string`
-- `plan:internal/fabricengine#codeDivergedWayForward` -> `func codeDivergedWayForward(worktree, branch string, prime bool) string`
-- `plan:internal/fabricengine#rewoundWayForward` -> `func rewoundWayForward(worktree, branch, originHead string, dropped []string) string`
-- `plan:internal/fabricengine_test#TestFailedPushRecord` -> `func TestFailedPushRecord(t *testing.T)`
+- `internal/lyxdirs#FailedPushDirName`
+- `internal/fabricengine#PushFailureClass`
+- `internal/fabricengine#PushFailureNotFastForward`
+- `internal/fabricengine#PushFailureTransport`
+- `internal/fabricengine#PushFailureAuth`
+- `internal/fabricengine#PushFailureGone`
+- `internal/fabricengine#PushFailureDeferred`
+- `internal/fabricengine#FailedPush`
+- `internal/fabricengine#PushNotifier`
+- `internal/fabricengine#InstallPushNotifier`
+- `internal/fabricengine#RecordPushFailure`
+- `internal/fabricengine#ClearPushFailure`
+- `internal/fabricengine#ListFailedPushes`
+- `internal/fabricengine#FailedPushWayForward`
+- `internal/fabricengine#recordsConflictWayForward`
+- `internal/fabricengine#codeDivergedWayForward`
+- `internal/fabricengine#rewoundWayForward`
+- `internal/fabricengine_test#TestFailedPushRecord`
 
 **Intent:** D10's failed-push record, the store every later push card writes through.
 `lyxdirs` declares the directory name, and the record lives at `<HubScratchDir(hub)>/failed-push/`, machine-local under the board-level `.lyx`, per PATTERN-durable-vs-ephemeral-state and PATTERN-lyxdirs-single-declarer.

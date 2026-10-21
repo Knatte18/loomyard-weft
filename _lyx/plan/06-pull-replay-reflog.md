@@ -20,8 +20,8 @@
 - `internal/fabricengine/doc.go`
 
 **Uses:**
-- `plan:internal/fabricengine#recordsConflictWayForward`
-- `plan:internal/fabricengine#rewoundWayForward`
+- `internal/fabricengine#recordsConflictWayForward`
+- `internal/fabricengine#rewoundWayForward`
 - `plan:internal/fabricengine#replayWeft`
 - `plan:internal/fabricengine#readEndedSet`
 - `plan:internal/testkit/boardkit#InstallReplay`
