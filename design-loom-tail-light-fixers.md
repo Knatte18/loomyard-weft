@@ -1,6 +1,6 @@
 # Loom tail: light fixers with test gates at Merge-In, Publish and PR-Align, no Merge-Review perch
 
-`merge-in-light-fixer` · Note · enhancement, loom, burler, fabric
+`loom-tail-light-fixers` · Note · enhancement, loom, burler, fabric
 
 ## Seen
 
