@@ -17,11 +17,11 @@
 - `internal/boardengine#TestFabricReplay`
 
 **Create:**
-- `plan:internal/boardengine#Owners` -> `type Owners struct`
-- `plan:internal/boardengine#ParseOwners` -> `func ParseOwners(boardJSON []byte) (Owners, error)`
-- `plan:internal/boardengine#Owners.Effective` -> `func (o Owners) Effective(slug string, parentOf func(slug string) (string, error)) (string, error)`
-- `plan:internal/boardengine#OwnedElsewhere` -> `func OwnedElsewhere(owner, here string) bool`
-- `plan:internal/boardengine#TestOwnersEffective` -> `func TestOwnersEffective(t *testing.T)`
+- `internal/boardengine#Owners`
+- `internal/boardengine#ParseOwners`
+- `internal/boardengine#Owners.Effective`
+- `internal/boardengine#OwnedElsewhere`
+- `internal/boardengine#TestOwnersEffective`
 
 **Intent:**
 D2's records on Bolt.

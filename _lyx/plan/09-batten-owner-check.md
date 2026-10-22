@@ -30,12 +30,12 @@
 - `internal/battencli#battenCLI.checkRunStatus`
 - `plan:internal/boardengine#SetOwners`
 - `plan:internal/boardengine#ReadOwners`
-- `plan:internal/boardengine#Owners.Effective`
-- `plan:internal/boardengine#OwnedElsewhere`
+- `internal/boardengine#Owners.Effective`
+- `internal/boardengine#OwnedElsewhere`
 - `plan:internal/boardengine#ErrOwnerOriginUnreachable`
 - `plan:internal/fabricengine#EntryOwnedElsewhere`
-- `plan:internal/machinename#Name`
-- `plan:internal/fabricengine#ParentSlug`
+- `internal/machinename#Name`
+- `internal/fabricengine#ParentSlug`
 
 **Intent:**
 D3 for `lyx batten run` and `lyx batten step`, D2's first-act prime claim at batten and D9 for `lyx batten status`.

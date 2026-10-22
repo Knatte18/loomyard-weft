@@ -14,8 +14,8 @@
 - `plan:internal/boardengine#Board.EffectiveOwner` -> `func (b *Board) EffectiveOwner(slug string) (string, error)`
 
 **Uses:**
-- `plan:internal/boardengine#Owners.Effective`
-- `plan:internal/boardengine#ParseOwners`
+- `internal/boardengine#Owners.Effective`
+- `internal/boardengine#ParseOwners`
 
 **Intent:**
 D9's board views.

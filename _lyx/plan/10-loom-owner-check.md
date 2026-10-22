@@ -20,10 +20,10 @@
 - `internal/loomcli#loomCLI.refuseCovered`
 - `plan:internal/fabricengine#EntryOwnedElsewhere`
 - `plan:internal/boardengine#ReadOwners`
-- `plan:internal/boardengine#Owners.Effective`
-- `plan:internal/boardengine#OwnedElsewhere`
-- `plan:internal/machinename#Name`
-- `plan:internal/fabricengine#ParentSlug`
+- `internal/boardengine#Owners.Effective`
+- `internal/boardengine#OwnedElsewhere`
+- `internal/machinename#Name`
+- `internal/fabricengine#ParentSlug`
 
 **Intent:**
 D3 for the shed resume verbs, `lyx loom start` and `lyx loom resume`, which serve loom and darn runs alike, and through them every InnerRun spawn of `lyx loom start --no-attach` on an existing run.

@@ -7,11 +7,11 @@
 **Create:**
 - `internal/machinename/doc.go`
 - `internal/machinename/testmain_test.go`
-- `plan:internal/machinename#Name` -> `func Name() (string, error)`
-- `plan:internal/machinename#FromHostname` -> `func FromHostname(host string) (string, error)`
-- `plan:internal/machinename#TestFromHostname` -> `func TestFromHostname(t *testing.T)`
-- `plan:internal/machinename#TestLeafInvariant_AllowlistOnly` -> `func TestLeafInvariant_AllowlistOnly(t *testing.T)`
-- `plan:internal/machinename#TestSoleSource_NoOtherProductionFileReadsTheHostname` -> `func TestSoleSource_NoOtherProductionFileReadsTheHostname(t *testing.T)`
+- `internal/machinename#Name`
+- `internal/machinename#FromHostname`
+- `internal/machinename#TestFromHostname`
+- `internal/machinename#TestLeafInvariant_AllowlistOnly`
+- `internal/machinename#TestSoleSource_NoOtherProductionFileReadsTheHostname`
 
 **Uses:**
 - `internal/haltnote/leaf_enforcement_test.go`

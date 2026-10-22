@@ -17,10 +17,10 @@
 
 **Uses:**
 - `plan:internal/boardengine#ReadOwners`
-- `plan:internal/boardengine#Owners.Effective`
-- `plan:internal/boardengine#OwnedElsewhere`
-- `plan:internal/fabricengine#ParentSlug`
-- `plan:internal/machinename#Name`
+- `internal/boardengine#Owners.Effective`
+- `internal/boardengine#OwnedElsewhere`
+- `internal/fabricengine#ParentSlug`
+- `internal/machinename#Name`
 
 **Intent:**
 D9 for `lyx tender status`, so the orch never reads a run owned elsewhere as stalled or landed.
