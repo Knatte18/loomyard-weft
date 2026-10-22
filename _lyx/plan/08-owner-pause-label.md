@@ -1,4 +1,4 @@
-# Card 7 — owner-pause-label
+# Card 8 — owner-pause-label
 
 **Edit:**
 - `internal/pauserecord#Coverage`
@@ -24,4 +24,4 @@ D4's fixed label for owner pauses, so `lyx adopt` lifts exactly those and InnerR
 
 **ImpactSummary:** two leaf-level additions in pauserecord and tenderengine; existing callers leave `Caller` empty and keep today's entries.
 
-**Commit:** 7: pause: a fixed caller label for owner pauses
+**Commit:** 8: pause: a fixed caller label for owner pauses

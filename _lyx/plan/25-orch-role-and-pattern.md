@@ -1,4 +1,4 @@
-# Card 17 — orch-role-and-pattern
+# Card 25 — orch-role-and-pattern
 
 **Edit:**
 - `contracts/stencils/orch/orch-template-role.md`
@@ -15,7 +15,7 @@ The Investigating a stop section names a Finalize halt that opens `owner check:`
 `PATTERN.md` gains, in its Fabric and git section after `PATTERN-origin-reconcile`, this entry line, under `pattern.MaxEntryLineChars`:
 
 ```markdown
-- `PATTERN-owner-machine` — Starting, resuming or landing a run, or acting on it after a wake: only on a machine that does not read its entry as owned by another; owner written only by `boardengine`'s owner setter, judged against origin in `ReconcileOrigin`; machine name only from `internal/machinename`. — [background](pattern/PATTERN-owner-machine.md)
+- `PATTERN-owner-machine` — Starting, resuming or landing a run, bar a Finalize past its parent-side merge, or acting after a wake: only where its entry reads owned by no other machine; owner set only by `boardengine`'s setter; origin verdicts in `ReconcileOrigin`; name only from `internal/machinename`. — [background](pattern/PATTERN-owner-machine.md)
 ```
 
 `PATTERN.md` already stands above its headroom line, so, as the decision record's "Added after Discussion: PATTERN.md must not grow for PATTERN-owner-machine" entry decides, the branch cuts as many bytes from the wording of other entry lines as the new line adds, and the overview ends no larger than at the merge base; `lyx loom lint-pattern` passes.
@@ -24,4 +24,4 @@ The commit carries a `Pattern-Departure:` trailer citing `PATTERN-owner-machine`
 
 **ImpactSummary:** the orch role stencil and the PATTERN overview with one new background file; no code changes.
 
-**Commit:** 17: orch and PATTERN: a run owned elsewhere is that machine's
+**Commit:** 25: orch and PATTERN: a run owned elsewhere is that machine's
