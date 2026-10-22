@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-22 06:46 UTC; every age below is as of then.
+Rendered 2026-10-22 06:47 UTC; every age below is as of then.
 
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
@@ -24,13 +24,17 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 3 | **Darn-Write stops looping on verify failures it cannot own, and the flaky reed boot test behind them**<br>• A verify failure in code the task did not touch, or one the parent already fixed, no longer loops through Darn-Write; the reed boot race is made deterministic and the impacted set stops picking unreachable packages<br>• `profile: light` | [`darn-verify-fixes`](design-darn-verify-fixes.md) | loom | Plan-Write | 4d | 56m | batten, gate, loom, shed, reed |
+| 3 | **Darn-Write stops looping on verify failures it cannot own, and the flaky reed boot test behind them**<br>• A verify failure in code the task did not touch, or one the parent already fixed, no longer loops through Darn-Write; the reed boot race is made deterministic and the impacted set stops picking unreachable packages<br>• `profile: light` | [`darn-verify-fixes`](design-darn-verify-fixes.md) | loom | Plan-Write | 4d | 57m | batten, gate, loom, shed, reed |
 
 ### Ready
 
 Waits on nothing open; can start now.
 
-_None._
+#### Normal priority
+
+| # | Task | Slug | Recipe | After | Age | Revised | Labels |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| 1 | **[.NET 007] Language-specific lens sets seeded per hub**<br>• Every hub seeds lenses.yaml from one Go-repo template; seed by the hub language instead | [`lenses-language-sets`](design-lenses-language-sets.md) | loom |  | 1d | 1m | burler, config, dotnet |
 
 ### Layer A
 
@@ -40,8 +44,8 @@ Waits only on Running or Ready entries.
 
 | # | Task | Slug | Recipe | After | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | **Remove the Webster kick-start pack**<br>• Drop every kick-start pack layout and its code; glyphs stay in the plan and its gates<br>• `darn: review_hard_max_bounces 2`<br>• `darn: review_max_bounces 1` | [`kickstart-pack-remove`](design-kickstart-pack-remove.md) | darn | `quarry-csharp` | 4d | 37m | webster, quarry, loom |
-| 2 | **tender pause does not hold a verify gate's re-prompt, and creel interrupt is refused under the pause**<br>• `profile: light` | [`tender-pause-holds-reprompt`](design-tender-pause-holds-reprompt.md) | loom | `darn-verify-fixes` | 1d | 54m | creel, shed, webster |
+| 1 | **Remove the Webster kick-start pack**<br>• Drop every kick-start pack layout and its code; glyphs stay in the plan and its gates<br>• `darn: review_hard_max_bounces 2`<br>• `darn: review_max_bounces 1` | [`kickstart-pack-remove`](design-kickstart-pack-remove.md) | darn | `quarry-csharp` | 4d | 38m | webster, quarry, loom |
+| 2 | **tender pause does not hold a verify gate's re-prompt, and creel interrupt is refused under the pause**<br>• `profile: light` | [`tender-pause-holds-reprompt`](design-tender-pause-holds-reprompt.md) | loom | `darn-verify-fixes` | 1d | 55m | creel, shed, webster |
 | 3 | **Finalize blocks on 'worktree dirty' without naming the tree or paths, and the loom's own run record counts as dirty**<br>• `profile: light` | [`finalize-dirty-names-paths`](design-finalize-dirty-names-paths.md) | loom | `machine-handover`, `darn-verify-fixes` | 1d | 1d | fabric, loom |
 
 ### Layer B
@@ -113,7 +117,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 8 | **Module labels from what a task touches, not only what it is about**<br>• Half the landings that changed the shuttle core lacked the shuttle label; derive or check module labels from the plan and the diff | [`labels-from-diff`](design-labels-from-diff.md) | 6d | 6d | board, loom |
 | 9 | **Start one task per overlapping group at a newly-ready start**<br>• When a landing makes several overlapping tasks ready at once, batten starts one per group and names the rest in its notice | [`batten-ready-overlap`](design-batten-ready-overlap.md) | 6d | 6d | batten |
 | 10 | **Git test fixtures trip Cortex XDR on the work laptop**<br>• Parallel git-heavy tests create so many files at once that Cortex XDR killed VS Code and then crashed itself, twice; tests must stay usable on a machine with endpoint protection | [`xdr-git-test-file-burst`](design-xdr-git-test-file-burst.md) | 5d | 1d | fabric |
-| 11 | **Rename the lyx binary to lyr (name clash with LyX)** | [`rename-binary-lyr`](design-rename-binary-lyr.md) | 5d | 6m | stencil, shuttle |
+| 11 | **Rename the lyx binary to lyr (name clash with LyX)** | [`rename-binary-lyr`](design-rename-binary-lyr.md) | 5d | 7m | stencil, shuttle |
 | 12 | **Entry gate on shed rows: a check decides whether a row runs at all**<br>• Replace darn recipe edge rewrite and the switched producer flag check with one shed entry gate per row; false means Done without acting. | [`row-entry-gate`](design-row-entry-gate.md) | 4d | 3d | shed, loom, batten |
 | 13 | **Use quarry Enclose for mechanical checks: verify failures to plan cards**<br>• Map tool-output file:line to member glyphs, then to the card and batch that changed them | [`enclose-checks`](design-enclose-checks.md) | 2w | 4d | quarry, webster, loom |
 | 14 | **Parallel batches: the shared pieces for Webster forks and Weaver**<br>• DAG batchifier, worktree per batch, merge-back with conflict resolution; open: keeping a fork inside its worktree | [`parallel-batch-parts`](design-parallel-batch-parts.md) | 4d | 4d | webster, fabric, loom |
@@ -122,18 +126,17 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 17 | **Plan cards mark additive edits so shared spots stop chaining the card DAG**<br>• An Extends label for edits that only add to a ref; two Extends on one ref are no dependency; measure with plandag first | [`plan-extends-label`](design-plan-extends-label.md) | 3d | 3d | loom, webster, burler |
 | 18 | **lyx batten run starts in its own window by default**<br>• Every batten run is started with --window, so the window should be the default and foreground the opt-in. | [`batten-window-default`](design-batten-window-default.md) | 2d | 2d | batten, reed, orch |
 | 19 | **Cortex XDR holds stack up across a loom run's card, batch, round and whole-suite gates**<br>• Each gate that tests a just-changed package waits 8-10 s for XDR; a 10-15 card run pays that many times over | [`loom-gates-xdr-stacking`](design-loom-gates-xdr-stacking.md) | 1d | 1d | webster, loom, gate |
-| 20 | **[.NET 007] Language-specific lens sets seeded per hub**<br>• Every hub seeds lenses.yaml from one Go-repo template; seed by the hub language instead | [`lenses-language-sets`](design-lenses-language-sets.md) | 1d | 1m | burler, config, dotnet |
-| 21 | **Revisit late review rounds after the twill-plan lens change**<br>• After 4-5 loom runs past 504c5552, check whether discussion-review round 3 and plan-review round 2 still find anything | [`review-rounds-after-twill-plan`](design-review-rounds-after-twill-plan.md) | 13h | 13h | burler, loom |
-| 22 | **Test runs repeat at the end of a loom run: tier0 inside every tier, the suite four times, tmux only at Publish**<br>• Disjoint tiers, a green run that carries forward, tmux in more gates, and a faster fabricengine suite; with the 2026-10-22 tier timings | [`gate-test-repeats`](design-gate-test-repeats.md) | 58m | 58m | gate, loom, webster, fabric |
+| 20 | **Revisit late review rounds after the twill-plan lens change**<br>• After 4-5 loom runs past 504c5552, check whether discussion-review round 3 and plan-review round 2 still find anything | [`review-rounds-after-twill-plan`](design-review-rounds-after-twill-plan.md) | 13h | 13h | burler, loom |
+| 21 | **Test runs repeat at the end of a loom run: tier0 inside every tier, the suite four times, tmux only at Publish**<br>• Disjoint tiers, a green run that carries forward, tmux in more gates, and a faster fabricengine suite; with the 2026-10-22 tier timings | [`gate-test-repeats`](design-gate-test-repeats.md) | 59m | 59m | gate, loom, webster, fabric |
 
 #### Low priority
 
 | # | Note | Slug | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| 23 | **Fabric's Windows path behaviour verified on a Windows host**<br>• Unverified after six hardening rounds; needs a Windows host, not design; take it only if Windows becomes relevant | [`fabric-windows`](design-fabric-windows.md) | 2w | 22h | fabric |
-| 24 | **warp-visibility: CLAUDE.local.md invisible in the Fabric repo's git history**<br>• Expose CLAUDE.local.md by symlink so nothing lyx-related shows in the Fabric repo's history; the constraints half is out of date | [`warp-visibility`](design-warp-visibility.md) | 2w |  | ide, fabric |
-| 25 | **Windows verify timeout kills the whole process tree**<br>• On Windows the verifytree timeout kills only the shell, not the process tree it started | [`verify-watchdog`](design-verify-watchdog.md) | 2w | 6d | shed |
-| 26 | **[WS 007] An anchor per umbrella**<br>• Let an umbrella work in its own subdirectory of the repository, inherited by its tasks; hard to change now | [`umbrella-anchor`](design-umbrella-anchor.md) | 3d | 3d | fabric, config, workspaces |
+| 22 | **Fabric's Windows path behaviour verified on a Windows host**<br>• Unverified after six hardening rounds; needs a Windows host, not design; take it only if Windows becomes relevant | [`fabric-windows`](design-fabric-windows.md) | 2w | 22h | fabric |
+| 23 | **warp-visibility: CLAUDE.local.md invisible in the Fabric repo's git history**<br>• Expose CLAUDE.local.md by symlink so nothing lyx-related shows in the Fabric repo's history; the constraints half is out of date | [`warp-visibility`](design-warp-visibility.md) | 2w |  | ide, fabric |
+| 24 | **Windows verify timeout kills the whole process tree**<br>• On Windows the verifytree timeout kills only the shell, not the process tree it started | [`verify-watchdog`](design-verify-watchdog.md) | 2w | 6d | shed |
+| 25 | **[WS 007] An anchor per umbrella**<br>• Let an umbrella work in its own subdirectory of the repository, inherited by its tasks; hard to change now | [`umbrella-anchor`](design-umbrella-anchor.md) | 3d | 3d | fabric, config, workspaces |
 
 ### Features
 

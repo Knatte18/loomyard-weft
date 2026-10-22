@@ -1074,7 +1074,7 @@
       "id": 720,
       "slug": "lenses-language-sets",
       "title": "[.NET 007] Language-specific lens sets seeded per hub",
-      "kind": "note",
+      "kind": "task",
       "labels": [
         "enhancement",
         "burler",
