@@ -26,8 +26,8 @@
 **Uses:**
 - `internal/fabricengine#DropLocal`
 - `internal/fabricengine#DropLocalResult`
-- `plan:internal/battencli#ResumeInWindow`
-- `plan:internal/hubforge#CloneSecond`
+- `internal/battencli#ResumeInWindow`
+- `internal/hubforge#CloneSecond`
 - `internal/battencli#RefuseUnlessPrime`
 - `internal/fabricengine#ReconcileOrigin`
 - `internal/fabricengine#Topology.Add`

@@ -1,7 +1,7 @@
 # Card 23 — hubforge-second-clone
 
 **Create:**
-- `plan:internal/hubforge#CloneSecond` -> `func CloneSecond(tb testing.TB, h *Hub) *Hub`
+- `internal/hubforge#CloneSecond`
 
 **Uses:**
 - `internal/hubforge#CopyHub`
