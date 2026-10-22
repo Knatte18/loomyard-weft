@@ -88,7 +88,47 @@ All seven forks returned; findings judged together and merged across lenses.
 
 ## Review rounds
 
-_No rounds yet._
+### Round 1
+
+Fifteen findings, all fixed in the decision record.
+
+- F1: a pair-less run reads its owner from the pulled Bolt, as batten's start check does, with no reconcile.
+- F2: `pairteardown` takes the snapshot before an origin-mode removal too; added to Scope.
+- F3: `--remove` archives the task branch's tip on the warp origin and deletes the branch locally and on origin; a kept pair reruns after `lyx batten cancel <slug> --remove`, since `lyx fabric remove` keeps the unlanded branch.
+- F4: the cancel phase owns the `End` and calls batten's lock take through an after-end hook, so the PATTERN text holds.
+- F5: the reconcile runs judge-only.
+- F6: an ended verdict refuses as landed, or goes on when the entry left the board.
+- F7: an unreachable origin makes the cancel end-only, with or without `--remove`, since records and claim writes could land on another machine's adopted run.
+- F8 and F9: a cancel marker, checked by batten's pre-run before `armSeed` and removed last, bars starts and lets an interrupted cancel finish.
+- F10: Windows refuses at once on any live registered process.
+- F11: the verb exempts its network gate, as `lyx fabric remove` does, and holds the status lock only around the records removal.
+- F12: the split `cleanupSlug` removal takes no lock of its own.
+- F13 to F15: lock owners named, the board push placed in the detached sync, the tackler marker path corrected.
+
+### Round 2
+
+Fourteen findings, all fixed in the decision record.
+
+- F1: a second gate in batten's shed `Run` and `Step`, behind the run lock, re-reads the cancel marker and the seed, so an unregistered `step` still in its preflight cannot reseed the run.
+- F2: the tackler marker is read after the end and the lock take.
+- F3: `ErrPairNotFound` reads as done, and the task-branch archive-and-delete runs whenever a branch is left.
+- F4: D4's split keys on the task worktree, as D2's does.
+- F5: the cancel marker's liveness is a lock its writer holds, and Windows records whose pid's process was created after their registration read gone.
+- F6: the Windows refusal lists processes after the marker is written.
+- F7: a start refuses a present task worktree, and Worktree-Create maps the left-task-branch refusals to the precondition prefix, both naming the cancel with `--remove`.
+- F8: the ended refusal fires only while batten's run record is present.
+- F9: a left task branch counts as something to cancel under `--remove`.
+- F10 to F14: the marker check placed ahead of the start owner check, end-only's step 9 actions named, the held-lock refusal reworded for `lyx batten cleanup`, both diverged tips archived, and `Remote` named on the removal.
+
+### Round 3
+
+Five findings, all fixed in the decision record.
+
+- F1: the pre-drive check gains a call site inside batten's pre-run hooks' seeding closures, under the status lock, with the scratch-marker clear moved behind it; the run-lock call site stays for a resume.
+- F2: the tackler marker is claimed only for a tackler the driver had recorded; a strand started before `recordStartedTackler` is an open risk, since its prime-side name carries no slug and no waiter enforces its deadline.
+- F3: on Windows the cancel re-lists the slug's registered processes after the lock takes and refuses on any left; on Linux `End`'s survivors error does this.
+- F4: the start's pre-run refuses a left weft worktree or local weft branch as well as a task worktree.
+- F5: the nothing-left refusal names the cancel with `--remove` when a task branch is left locally.
 
 ## Question ledger
 
@@ -107,3 +147,10 @@ _No rounds yet._
 - Q11 Notice when the orch is the caller: auto-pick post it anyway.
 - Q12 Dirty probe scope: auto-pick tracked only.
 - Q13 Worktree-Create hand-back: auto-pick a shed precondition reason prefix and a driver row.
+- Q16 Unreachable origin, revised in round 1: auto-pick end-only, leaving records, claim and pair for the cancel once origin answers.
+- Q17 Task branch under `--remove`: auto-pick archive its tip on the warp origin, then delete it locally and on origin.
+- Q18 Starts during a cancel: auto-pick a cancel marker read before `armSeed`; revised in round 2: read ahead of the start owner check, and re-read behind the run lock by a pre-drive check; revised in round 3: the pre-drive check also runs inside the pre-run hooks' seeding closures.
+- Q19 Cancel marker liveness: auto-pick a lock the writer holds, over the pid, which Windows cannot tell from a reuse.
+- Q20 Windows reused pid of a registered process: auto-pick the process's creation time against the record's registration time, over its executable image, which a reuse by another `lyx` process matches.
+- Q21 Rerun after a kept-pair cancel: auto-pick a pre-run refusal on a present task worktree, since Worktree-Create adopts a complete one without the add, and the precondition halt at Worktree-Create for a task branch left once the worktree is gone; both name the cancel with `--remove`.
+- Q22 Unrecorded tackler strand: auto-pick an open risk over stopping the prime's tackler strands by name, which would end other runs' tacklers, since the prime-side name carries no slug.
