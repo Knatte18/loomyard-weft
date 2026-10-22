@@ -54,6 +54,22 @@
       "at": "2026-10-22T06:45:50Z",
       "budget_exempt": true,
       "routed_to": "Run-Shed"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "child running → failed at Plan-Burler-Fix",
+      "at": "2026-10-22T07:38:16Z",
+      "budget_exempt": true,
+      "routed_to": "Run-Shed"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "child failed → running at Plan-Burler-Fix",
+      "at": "2026-10-22T07:40:17Z",
+      "budget_exempt": true,
+      "routed_to": "Run-Shed"
     }
   ]
 }
