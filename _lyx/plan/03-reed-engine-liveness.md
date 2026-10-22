@@ -21,16 +21,16 @@
 - `internal/shuttleengine/doc.go`
 
 **Create:**
-- `plan:internal/reedengine#launchGrace` -> `const launchGrace = 30 * time.Second`
-- `plan:internal/reedengine#shellBaseName` -> `func shellBaseName(command string) string`
-- `plan:internal/reedengine#engineAliveIDs` -> `func engineAliveIDs(present []LivePane, age func(pid int) (time.Duration, bool), checkShell bool) map[string]bool`
-- `plan:internal/reedengine#Engine.engineAliveIDSet` -> `func (e *Engine) engineAliveIDSet(present []LivePane) map[string]bool`
-- `plan:internal/reedengine#TestEngineAliveIDs` -> `func TestEngineAliveIDs(t *testing.T)`
+- `internal/reedengine#launchGrace`
+- `internal/reedengine#shellBaseName`
+- `internal/reedengine#engineAliveIDs`
+- `internal/reedengine#Engine.engineAliveIDSet`
+- `internal/reedengine#TestEngineAliveIDs`
 
 **Uses:**
 - `internal/reedengine#aliveIDSet`
 - `internal/reedengine#presentPanes`
-- `plan:internal/reedengine#paneProcessAge`
+- `internal/reedengine#paneProcessAge`
 - `internal/reedengine#planResumeLaunches`
 - `internal/reedengine#newTestEngine`
 - `internal/reedengine#fakeTmux`

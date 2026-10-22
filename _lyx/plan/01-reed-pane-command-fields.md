@@ -13,9 +13,9 @@
 - `internal/reedengine/doc.go`
 
 **Create:**
-- `plan:internal/reedengine#paneTailSeparator` -> `const paneTailSeparator = "\x1f"`
-- `plan:internal/reedengine#splitPaneTail` -> `func splitPaneTail(tail string) (title, current, start string)`
-- `plan:internal/reedengine#TestParseWindowPanes` -> `func TestParseWindowPanes(t *testing.T)`
+- `internal/reedengine#paneTailSeparator`
+- `internal/reedengine#splitPaneTail`
+- `internal/reedengine#TestParseWindowPanes`
 
 **Uses:**
 - `internal/reedengine#windowPaneListingOf`

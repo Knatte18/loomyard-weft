@@ -16,7 +16,7 @@
 - `internal/reedengine#Engine.pairPaused`
 - `internal/reedengine#Engine.listStrandAndWindowPanes`
 - `internal/reedengine#presentPanes`
-- `plan:internal/reedengine#Engine.engineAliveIDSet`
+- `internal/reedengine#Engine.engineAliveIDSet`
 - `internal/reedengine#TestAddStrandUnless_NoNamedStrandAdds`
 - `internal/reedengine#TestStrandNameLocked_ExplicitNameHeldRefuses`
 - `internal/reedengine#fakeTmux`
