@@ -1,6 +1,6 @@
 {
   "runGuid": "dbe84ad8a6abd4890d28f450ad85e2e4",
-  "planFingerprint": "d0f1d22baa4081c3e1a021d9ecd757e46a92f8396acb12fc26b284f5bc0a3dba",
+  "planFingerprint": "aa4512a87caca42104d4b39968bba13e3e77e24d2e5db1339b0b615e930cfab6",
   "planFileHashes": {
     "00-overview.md": "bcaca938233a57c3a2ab53aade40f212c26fd1f2411b90f61008e76a1709e084",
     "01-proc-stat-reads.md": "d0e0234e7a678df4e43fc6d1e3aa7e6e7b76633fe8f58ab35b6fd30efc030066",
@@ -16,8 +16,8 @@
     "11-fabric-remove-reconcile.md": "a7476a687ead644b29a779c71526cc486596e786acfe1d27fdde7f228deb2d49",
     "12-reed-down-ends-owned.md": "9daf82a033f6240b04ccbf603964970024066afeac436632b33e5fb0b5caf2c2",
     "13-owned-elsewhere-end.md": "265633be7e5d94e62bb47f7d2ccb4fbddd693f77dbe2629f7c56e07a71c1ff62",
-    "14-tender-status-processes.md": "a4d97686573ee01ad83e39ff227a5ac69855597b9cdc88932b3d559aca10c5e0",
-    "15-tender-reap.md": "4a5f023fd9983b84d7ecd61b439738b9237287714c73f4f1df1a9761e563e0cb",
+    "14-tender-status-processes.md": "09531299e83305bc03e641169de73ba4d3297cff5b17b0152fa7ee1bc8a45f0b",
+    "15-tender-reap.md": "17c8eb77f4e44d21004946b6f391f53d1618715a0797d24a67ca9e5dd9198361",
     "16-hibernate-confirm-background.md": "cca8b99c73b6f1f91b4801f2f028d966a5b30d95ec6dcf6af04a262f6deddae1",
     "17-shuttle-shell-only-waiting.md": "782ca35e200500bbb2d486444b33c225dbcc301aedf0ffbfa8c30b99914758e9"
   },
@@ -675,7 +675,7 @@
       }
     }
   ],
-  "currentBatch": 14,
+  "currentBatch": 0,
   "masterStrand": "fd94635c977349faf13625dcb991f1fc",
   "masterSessionId": "50f3575b-651f-41fb-ab8d-6b29950f8b0d",
   "masterEngine": "claude",
@@ -835,15 +835,33 @@
         "14-tender-status-processes"
       ],
       "cardHashes": {
-        "14-tender-status-processes": "a4d97686573ee01ad83e39ff227a5ac69855597b9cdc88932b3d559aca10c5e0"
+        "14-tender-status-processes": "09531299e83305bc03e641169de73ba4d3297cff5b17b0152fa7ee1bc8a45f0b"
       },
       "startSha": "14515becc74201d79e8629323d8bb5b5f865def5",
       "kind": "fork",
       "spawnedAt": "2026-10-22T14:05:41Z",
       "sessionId": "50f3575b-651f-41fb-ab8d-6b29950f8b0d",
       "engine": "claude",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "14-tender-status-processes",
+        "status": "done",
+        "head_sha": "e153fd580ba4d42a5b28e183521dfae87e8b72d0",
+        "deviations": [
+          "internal/tenderengine/pause_test.go",
+          "internal/tenderengine/processes.go"
+        ]
+      },
+      "cardShas": [
+        "e153fd580ba4d42a5b28e183521dfae87e8b72d0"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-run-process-ownership/50f3575b-651f-41fb-ab8d-6b29950f8b0d/subagents/agent-a3f31070cd71dd0cd.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-run-process-ownership/50f3575b-651f-41fb-ab8d-6b29950f8b0d/subagents/agent-a3f31070cd71dd0cd.jsonl"
+      ]
     },
     "3": {
       "slug": "register-detached-spawns",
@@ -1068,6 +1086,7 @@
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-run-process-ownership/50f3575b-651f-41fb-ab8d-6b29950f8b0d/subagents/agent-ac27508d77d79cd75.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-run-process-ownership/50f3575b-651f-41fb-ab8d-6b29950f8b0d/subagents/agent-a13d5e7f1bfff5a56.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-run-process-ownership/50f3575b-651f-41fb-ab8d-6b29950f8b0d/subagents/agent-a398144db49a8ca7d.jsonl",
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-run-process-ownership/50f3575b-651f-41fb-ab8d-6b29950f8b0d/subagents/agent-a338792c654a7ba38.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-run-process-ownership/50f3575b-651f-41fb-ab8d-6b29950f8b0d/subagents/agent-a338792c654a7ba38.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-run-process-ownership/50f3575b-651f-41fb-ab8d-6b29950f8b0d/subagents/agent-a3f31070cd71dd0cd.jsonl"
   ]
 }
