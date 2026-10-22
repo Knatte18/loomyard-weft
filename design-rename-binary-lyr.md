@@ -17,3 +17,7 @@ Scope: the `cmd/lyx` build target and `binaryName()` in `tools/deploy`, docs and
 ## Operator decision (2026-10-22)
 
 The rename runs alone, with no other run in flight, since it touches nearly every file; it is promoted and started only then.
+
+## Name reopened (operator, 2026-10-22)
+
+The operator has not settled the new name: `lyd` or `lyr` is open again, so the 2026-10-17 choice of `lyr` no longer stands until the operator decides.
