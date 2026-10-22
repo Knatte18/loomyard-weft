@@ -16,6 +16,3 @@ budget:
     darn: {review_max_bounces: 1}
 docs:
     darn: {writer: "sonnet[medium]", review_max_bounces: 0}
-profiles.light:
-    loom: {discussion_hard_max_bounces: 3, discussion_max_bounces: 2, merge_max_bounces: 1, plan_hard_max_bounces: 2, plan_max_bounces: 1, webster_max_bounces: 1}
-    darn: {review_max_bounces: 1, review_hard_max_bounces: 2}
