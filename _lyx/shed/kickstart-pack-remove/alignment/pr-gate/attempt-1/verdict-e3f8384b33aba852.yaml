@@ -1,0 +1,6 @@
+verdict: approve
+reason: >-
+  The diff of PR 820 removes every kick-start pack layout with its code, stencils, config keys (retired so the hub file still loads), the card-pack verb and forkaudit's --pack-check part, keeps glyphs in the plan and its gates, and keeps the rest of forkaudit as the operator decided on 2026-10-18; nothing goes beyond the board entry.
+  The overlaps with machine-handover and tender-pause-holds-reprompt (both row 11) are text only, and this run (row 21) lands first.
+question: ""
+superseded: []
