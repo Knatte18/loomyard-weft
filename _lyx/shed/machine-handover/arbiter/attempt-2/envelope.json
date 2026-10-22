@@ -1,0 +1,14 @@
+{
+  "verdict": "resume",
+  "reason": "Cause is hard-cap at round 4, the Discussion-Review hard cap of 4, so accept is the only option. Five findings tagged design-wrong are still open: F2 to F6. The round-4 fixer answered each one in the decision record now in place, and I checked each answer against the code.\nF2: move in internal/fabricengine/originreconcilemoves.go:357 returns at needsMove before it calls pairLive (line 374), as the finding says. D5 step 1 (decision-record.md:108-110) now has adopt call LivePair of its own OriginSeams for every named owned_elsewhere slug with a local pair. The seams exist (internal/pairteardown/originseams.go:24,73), and the line-243 criterion names the hub-only HubPaused test.\nF3: finalizeEnteredRead counts a Finalize history row as entered (internal/fabricengine/replay.go:259), and withoutFinalizeEntered drops such a slug (replay.go:312). D6 now says this plainly, says the step 2b records commit is replayed, has the halt note name `lyx fabric remove \u003cslug\u003e` and leave the pause standing, and lists the leftover batten record under Open risks.\nF4: D6 now names a second signal, the child's inner status at CurrentProducer Finalize, either running or failed with a non-empty Transient, with no restep settle record. Those fields exist (internal/shedengine/status.go:134, internal/sheddriver/drive.go:269), InnerRun already reads that status (internal/battenshed/innerrun.go:62), and the release row for a stopped Finalize is in the criteria.\nF5: D7 now limits the skip to the driver's in-process re-step, sends a Spawn re-entry to D3's refusal, and states that the skip also covers the unreachable-origin halt.\nF6: the halt note now lists the local parent commits origin lacks, advises the reset only when the squash is the only one, and otherwise advises the rebase --onto.\nThe mechanical BLOCKING F1 is fixed too: the PATTERN-owner-machine text and the Goal now match D2 for unowned entries.\nNo finding is wrong, but the fix in place answers each one. I recorded the accept, so the segment passes unconverged on round 4.",
+  "question": "",
+  "goto": "",
+  "verbs": [
+    "lyx loom circling accept machine-handover"
+  ],
+  "cause": "",
+  "attempt": 2,
+  "attempt_dir": "/home/knatte/Code/loomyard-LYXHUB/machine-handover/_lyx/shed/machine-handover/arbiter/attempt-2",
+  "verdict_path": "/home/knatte/Code/loomyard-LYXHUB/machine-handover/_lyx/shed/machine-handover/arbiter/attempt-2/verdict.yaml",
+  "relaunch": "lyx shed step machine-handover --until-stop --arbiter-attempt 2"
+}
