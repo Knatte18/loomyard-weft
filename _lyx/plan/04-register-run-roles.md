@@ -28,7 +28,7 @@
 - `internal/runproc#RoleDriver`
 - `internal/runproc#RoleLoop`
 - `internal/runproc#RoleBatten`
-- `plan:internal/fabricengine#RunProcDir`
+- `internal/fabricengine#RunProcDir`
 
 **Intent:**
 D2's self-registration: a long-lived run role registers itself, so every launch path of it is covered whoever started it.

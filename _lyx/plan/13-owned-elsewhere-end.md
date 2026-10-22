@@ -34,7 +34,7 @@
 **Uses:**
 - `internal/runproc#End`
 - `internal/runproc#SurvivorsError`
-- `plan:internal/fabricengine#RunProcDir`
+- `internal/fabricengine#RunProcDir`
 - `internal/sheddriver#StopKeyOf`
 - `internal/fabricengine#ParentHoldsTaskWork`
 

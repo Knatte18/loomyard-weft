@@ -28,7 +28,7 @@
 - `internal/runproc#SurvivorsError`
 - `internal/runproc#RoleBatten`
 - `internal/runproc#RoleDriver`
-- `plan:internal/fabricengine#RunProcDir`
+- `internal/fabricengine#RunProcDir`
 
 **Intent:**
 D4's base sequence: `lyx fabric remove`, batten's Worktree-Teardown and the reconcile's removals end batten, the driver, the step loop and the pair's pushes before the loop, the session and the worktrees go, so neither batten's strand revival nor the driver's re-step races the session end.
