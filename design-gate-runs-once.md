@@ -2,6 +2,8 @@
 
 `gate-runs-once` · Task · enhancement, gate, shed, loom, webster, fabric, batten
 
+Depends on: [`loop-exit-halt-names-its-cause`](design-loop-exit-halt-names-its-cause.md), [`done-check-spaced-create-paths`](design-done-check-spaced-create-paths.md), [`retry-archive-tag-push`](design-retry-archive-tag-push.md), [`batten-cancel-verb`](design-batten-cancel-verb.md)
+
 ## Decision (operator, 2026-10-22)
 
 Three notes merged into one loom task, so each test runs once per tree and in one tier.
