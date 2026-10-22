@@ -211,6 +211,12 @@ Rationale: issue #742; the run record travels with the weft, but a terminal wind
 - The orch role's stencil reads a run owned by another machine as that machine's: not stalled, not landed, not to be resumed or cleaned up here, with `lyx adopt` as the takeover.
 Rationale: issue #741's orch read a missing pair as a landed run, and its tender status listed nothing.
 
+### Added after Discussion (parent, 2026-10-22): PATTERN.md must not grow for PATTERN-owner-machine
+
+Decision: PATTERN.md must not grow: the PATTERN-owner-machine entry line in PATTERN.md is a short form under the line cap, its full declared text lives verbatim in pattern/PATTERN-owner-machine.md, and the bytes the new line adds are cut from the wording of other PATTERN.md entry lines without changing any rule they state.
+
+Rationale: PATTERN.md is 15703 bytes at the merge base, above pattern.HeadroomBytes (15564), so the per-card headroom lint fails any growth; the declared entry text (about 900 chars) is over pattern.MaxEntryLineChars (360).
+
 ## Constraints
 
 - `PATTERN-origin-reconcile`, `PATTERN-owner-machine`: the owner verdict that gates a resume, a wake or a landing against origin is computed inside `ReconcileOrigin`.
