@@ -264,7 +264,7 @@
       }
     }
   ],
-  "currentBatch": 0,
+  "currentBatch": 5,
   "masterStrand": "e7f242d3cf12b3c4774c42b8222193df",
   "masterSessionId": "350f8e97-b5f4-48c9-b284-9ecd21278e0a",
   "masterEngine": "claude",
@@ -307,6 +307,28 @@
       "bracketTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-orch-strand-cycle/350f8e97-b5f4-48c9-b284-9ecd21278e0a/subagents/agent-a1c3818d4a383f349.jsonl"
       ]
+    },
+    "5": {
+      "slug": "reed-pane-elsewhere",
+      "cards": [
+        "05-reed-pane-elsewhere",
+        "06-reed-reclaim-dead-name",
+        "07-creel-delivery-teardown",
+        "08-orch-request-marker-lock"
+      ],
+      "cardHashes": {
+        "05-reed-pane-elsewhere": "8f41bc9101e8c36f3a7bcd3e3714f7efffc6aab465131c86983423e1449da6b5",
+        "06-reed-reclaim-dead-name": "a9bce07253a9bc7000e07f9c6b9d71e548656a1b78e121cb118163bf344d8a4d",
+        "07-creel-delivery-teardown": "ec18906e3d8b887f25a86dff9318998ee4d87a2ff7680d067a6e6c93e2e5d833",
+        "08-orch-request-marker-lock": "8e2467b43365fd5e4a08a7891be32ce23ecdcc2ca4750b95562df9f86c1c8d7b"
+      },
+      "startSha": "ee0403b26cb1cd13ab128142c8a91defa2dab2c7",
+      "kind": "fork",
+      "spawnedAt": "2026-10-22T16:41:57Z",
+      "sessionId": "350f8e97-b5f4-48c9-b284-9ecd21278e0a",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
     }
   },
   "seenForkTranscripts": [
