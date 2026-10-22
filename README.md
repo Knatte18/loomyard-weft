@@ -25,30 +25,20 @@ Held by a run; its scope is locked until the run ends.
 | # | Task | Slug | Recipe | At | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | 3 | **[.NET 007] Language-specific lens sets seeded per hub**<br>• Every hub seeds lenses.yaml from one Go-repo template; seed by the hub language instead<br>• `profile: light` | [`lenses-language-sets`](design-lenses-language-sets.md) | loom | Plan-Burler-Review | 1d | 45m | burler, config, dotnet |
-| 4 | **Darn-Write stops looping on verify failures it cannot own, and the flaky reed boot test behind them**<br>• A verify failure in code the task did not touch, or one the parent already fixed, no longer loops through Darn-Write; the reed boot race is made deterministic and the impacted set stops picking unreachable packages<br>• `profile: light` | [`darn-verify-fixes`](design-darn-verify-fixes.md) | loom | Finalize | 4d | 1h | batten, gate, loom, shed, reed |
 
 ### Ready
 
 Waits on nothing open; can start now.
 
-_None._
-
-### Layer A
-
-Waits only on Running or Ready entries.
-
 #### Normal priority
 
 | # | Task | Slug | Recipe | After | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | **Remove the Webster kick-start pack**<br>• Drop every kick-start pack layout and its code; glyphs stay in the plan and its gates<br>• `darn: review_hard_max_bounces 2`<br>• `darn: review_max_bounces 1` | [`kickstart-pack-remove`](design-kickstart-pack-remove.md) | darn | `quarry-csharp` | 4d | 1h | webster, quarry, loom |
-| 2 | **tender pause does not hold a verify gate's re-prompt, and creel interrupt is refused under the pause**<br>• `profile: light` | [`tender-pause-holds-reprompt`](design-tender-pause-holds-reprompt.md) | loom | `darn-verify-fixes` | 1d | 1h | creel, shed, webster |
-| 3 | **Finalize blocks on 'worktree dirty' without naming the tree or paths, and the loom's own run record counts as dirty**<br>• `profile: light` | [`finalize-dirty-names-paths`](design-finalize-dirty-names-paths.md) | loom | `machine-handover`, `darn-verify-fixes` | 1d | 1d | fabric, loom |
-| 4 | **Board entries get short handles (T4, B2, E7) for lookup; tasks lose priority; tighter README tables**<br>• Stored lowest-free handle per kind/type, usable in every board verb; priority only on notes; README sorted by handle with a priority column and merged age/revised<br>• `darn: review_hard_max_bounces 2`<br>• `darn: review_max_bounces 1` | [`board-entry-handles`](design-board-entry-handles.md) | darn | `machine-handover` | 22m | 22m | board |
+| 1 | **tender pause does not hold a verify gate's re-prompt, and creel interrupt is refused under the pause**<br>• `profile: light` | [`tender-pause-holds-reprompt`](design-tender-pause-holds-reprompt.md) | loom |  | 1d | 1h | creel, shed, webster |
 
-### Layer B
+### Layer A
 
-Starts when every entry it names under After is done.
+Waits only on Running or Ready entries.
 
 #### High priority
 
@@ -56,7 +46,15 @@ Starts when every entry it names under After is done.
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | 1 | **Every process a run spawns has one owner that ends them all**<br>• Owner records for run processes; pause, reed down, fabric remove and teardown end the whole group; tender status shows orphans; a hub pause reaches background work; a finished reviewer never waits on its background shells | [`run-process-ownership`](design-run-process-ownership.md) | loom | `machine-handover`, `tender-pause-holds-reprompt` | 7d | 1h | batten, burler, fabric, loom, shed, shuttle, webster |
 
-### Layer C
+#### Normal priority
+
+| # | Task | Slug | Recipe | After | Age | Revised | Labels |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| 2 | **Remove the Webster kick-start pack**<br>• Drop every kick-start pack layout and its code; glyphs stay in the plan and its gates<br>• `darn: review_hard_max_bounces 2`<br>• `darn: review_max_bounces 1` | [`kickstart-pack-remove`](design-kickstart-pack-remove.md) | darn | `quarry-csharp` | 4d | 1h | webster, quarry, loom |
+| 3 | **Finalize blocks on 'worktree dirty' without naming the tree or paths, and the loom's own run record counts as dirty**<br>• `profile: light` | [`finalize-dirty-names-paths`](design-finalize-dirty-names-paths.md) | loom | `machine-handover` | 1d | 1d | fabric, loom |
+| 4 | **Board entries get short handles (T4, B2, E7) for lookup; tasks lose priority; tighter README tables**<br>• Stored lowest-free handle per kind/type, usable in every board verb; priority only on notes; README sorted by handle with a priority column and merged age/revised<br>• `darn: review_hard_max_bounces 2`<br>• `darn: review_max_bounces 1` | [`board-entry-handles`](design-board-entry-handles.md) | darn | `machine-handover` | 22m | 22m | board |
+
+### Layer B
 
 Starts when every entry it names under After is done.
 
@@ -64,8 +62,8 @@ Starts when every entry it names under After is done.
 
 | # | Task | Slug | Recipe | After | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | **One batten verb ends a run for good, live or stopped, before or after its pair exists**<br>• Abandon or abort a batten run in any state: end its processes and strands, clear the claim, remove records and scratch, optionally the pair; batten refuses a dirty source up front<br>• `profile: light` | [`batten-cancel-verb`](design-batten-cancel-verb.md) | loom | `run-process-ownership`, `darn-verify-fixes` | 1d | 1h | batten, reed, shed |
-| 2 | **Orch lifecycle: dead strands count as dead, the watcher restarts, cycle requests need no reply and can be withdrawn**<br>• Strand liveness checks the engine process and placement, a dead orch watcher restarts, the note write is seen without a reply, and a pending distill/refresh can be withdrawn<br>• `profile: light` | [`orch-strand-cycle`](design-orch-strand-cycle.md) | loom | `machine-handover`, `darn-verify-fixes`, `run-process-ownership` | 3d | 19h | orch, reed |
+| 1 | **One batten verb ends a run for good, live or stopped, before or after its pair exists**<br>• Abandon or abort a batten run in any state: end its processes and strands, clear the claim, remove records and scratch, optionally the pair; batten refuses a dirty source up front<br>• `profile: light` | [`batten-cancel-verb`](design-batten-cancel-verb.md) | loom | `run-process-ownership` | 1d | 1h | batten, reed, shed |
+| 2 | **Orch lifecycle: dead strands count as dead, the watcher restarts, cycle requests need no reply and can be withdrawn**<br>• Strand liveness checks the engine process and placement, a dead orch watcher restarts, the note write is seen without a reply, and a pending distill/refresh can be withdrawn<br>• `profile: light` | [`orch-strand-cycle`](design-orch-strand-cycle.md) | loom | `machine-handover`, `run-process-ownership` | 3d | 19h | orch, reed |
 
 ## Notes
 
@@ -169,3 +167,11 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | # | Note | Slug | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | 19 | **[.NET 003] Scoped build and test for C# hubs**<br>• Verify gates in a .NET hub build and test only the projects a card touches, since a scanned Windows machine makes every build slow. | [`dotnet-scoped-verify`](design-dotnet-scoped-verify.md) | 9d | 1d | shed, webster, dotnet |
+
+## Done
+
+Finished, awaiting `lyx board prune --apply`.
+
+| # | Entry | Slug | Age | Revised | Labels |
+| --- | --- | --- | --- | --- | --- |
+| 1 | **Darn-Write stops looping on verify failures it cannot own, and the flaky reed boot test behind them**<br>• A verify failure in code the task did not touch, or one the parent already fixed, no longer loops through Darn-Write; the reed boot race is made deterministic and the impacted set stops picking unreachable packages<br>• `profile: light` | [`darn-verify-fixes`](design-darn-verify-fixes.md) | 4d | 1h | batten, gate, loom, shed, reed |
