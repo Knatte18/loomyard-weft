@@ -1,11 +1,11 @@
 # Card 15 — lyx tender reap ends the orphans of one fresh reading
 
 **Create:**
-- `plan:internal/tenderengine#ReapReport` -> `type ReapReport struct`
-- `plan:internal/tenderengine#Reap` -> `func Reap(deps Deps) (ReapReport, error)`
-- `plan:internal/tenderengine#TestReap` -> `func TestReap(t *testing.T)`
-- `plan:internal/tendercli#reapCmd` -> `func reapCmd() *cobra.Command`
-- `plan:internal/tendercli#refuseReapCaller` -> `func refuseReapCaller(c caller) error`
+- `internal/tenderengine#ReapReport`
+- `internal/tenderengine#Reap`
+- `internal/tenderengine#TestReap`
+- `internal/tendercli#reapCmd`
+- `internal/tendercli#refuseReapCaller`
 
 **Edit:**
 - `internal/tendercli#TestPauseAndResume_ApplyTheCallerRules`
