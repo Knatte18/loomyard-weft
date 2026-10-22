@@ -24,7 +24,9 @@ Held by a run; its scope is locked until the run ends.
 
 Waits on nothing open; can start now.
 
-_None._
+| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- | --- | --- |
+| T1 | **Each test runs once per tree: disjoint tiers, row entry gates, carried green runs, tmux in final**<br>• Tiers tagged by name, shed row entry gates, verify skipped on an already green tree, tmux in the final gate, gate time measured<br>• `profile: light` | [`gate-runs-once`](design-gate-runs-once.md) | loom |  | 5d<br>0m | gate, shed, loom, webster, fabric, batten |
 
 ### Layer A
 
@@ -54,7 +56,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | P | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| B1 |  | **Orch watcher types /compact again after a compact landed**<br>• Watcher stays in resuming after a requested compact and types a second /compact into the resumed busy turn | [`orch-compact-repeats`](design-orch-compact-repeats.md) | 1m<br>1m | orch |
+| B1 |  | **Orch watcher types /compact again after a compact landed**<br>• Watcher stays in resuming after a requested compact and types a second /compact into the resumed busy turn | [`orch-compact-repeats`](design-orch-compact-repeats.md) | 2m<br>2m | orch |
 
 ### Enhancements
 
@@ -73,7 +75,6 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | E11 |  | **Start one task per overlapping group at a newly-ready start**<br>• When a landing makes several overlapping tasks ready at once, batten starts one per group and names the rest in its notice | [`batten-ready-overlap`](design-batten-ready-overlap.md) | 7d<br>7d | batten |
 | E12 |  | **Git test fixtures trip Cortex XDR on the work laptop**<br>• Parallel git-heavy tests create so many files at once that Cortex XDR killed VS Code and then crashed itself, twice; tests must stay usable on a machine with endpoint protection | [`xdr-git-test-file-burst`](design-xdr-git-test-file-burst.md) | 5d<br>1d | fabric |
 | E13 |  | **Rename the lyx binary to lyr (name clash with LyX)** | [`rename-binary-lyr`](design-rename-binary-lyr.md) | 6d<br>4h | stencil, shuttle |
-| E14 |  | **Entry gate on shed rows: a check decides whether a row runs at all**<br>• Replace darn recipe edge rewrite and the switched producer flag check with one shed entry gate per row; false means Done without acting. | [`row-entry-gate`](design-row-entry-gate.md) | 5d<br>4d | shed, loom, batten |
 | E15 |  | **Use quarry Enclose for mechanical checks: verify failures to plan cards**<br>• Map tool-output file:line to member glyphs, then to the card and batch that changed them | [`enclose-checks`](design-enclose-checks.md) | 2w<br>5d | quarry, webster, loom |
 | E16 |  | **Parallel batches: the shared pieces for Webster forks and Weaver**<br>• DAG batchifier, worktree per batch, merge-back with conflict resolution; open: keeping a fork inside its worktree | [`parallel-batch-parts`](design-parallel-batch-parts.md) | 4d<br>4d | webster, fabric, loom |
 | E17 | L | **[WS 007] An anchor per umbrella**<br>• Let an umbrella work in its own subdirectory of the repository, inherited by its tasks; hard to change now | [`umbrella-anchor`](design-umbrella-anchor.md) | 4d<br>4d | fabric, config, workspaces |
@@ -82,9 +83,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | E20 |  | **Plan gate does not catch declared PATTERN.md growth that exceeds the headroom line** | [`plan-gate-pattern-headroom`](design-plan-gate-pattern-headroom.md) | 3d<br>3d | loom, burler |
 | E21 |  | **Plan cards mark additive edits so shared spots stop chaining the card DAG**<br>• An Extends label for edits that only add to a ref; two Extends on one ref are no dependency; measure with plandag first | [`plan-extends-label`](design-plan-extends-label.md) | 3d<br>3d | loom, webster, burler |
 | E22 |  | **lyx batten run starts in its own window by default**<br>• Every batten run is started with --window, so the window should be the default and foreground the opt-in. | [`batten-window-default`](design-batten-window-default.md) | 3d<br>3d | batten, reed, orch |
-| E23 |  | **Cortex XDR holds stack up across a loom run's card, batch, round and whole-suite gates**<br>• Each gate that tests a just-changed package waits 8-10 s for XDR; a 10-15 card run pays that many times over | [`loom-gates-xdr-stacking`](design-loom-gates-xdr-stacking.md) | 1d<br>1d | webster, loom, gate |
 | E24 |  | **Every lens fork report is kept verbatim in the run records**<br>• Save each lens fork report in a support file beside lens-review.md, so audits can read what each lens found | [`lens-fork-reports-kept`](design-lens-fork-reports-kept.md) | 1h<br>1h | burler, loom |
-| E25 |  | **Test runs repeat at the end of a loom run: tier0 inside every tier, the suite four times, tmux only at Publish**<br>• Disjoint tiers, a green run that carries forward, tmux in more gates, and a faster fabricengine suite; with the 2026-10-22 tier timings | [`gate-test-repeats`](design-gate-test-repeats.md) | 9h<br>9h | gate, loom, webster, fabric |
 | E26 |  | **A status-bar button turns automatic terminal windows for runs on or off** | [`open-window-toggle`](design-open-window-toggle.md) | 6h<br>4h | batten, reed |
 | E28 |  | **[.NET] A small public NUnit repo as sandbox hub for end-to-end C# runs** | [`csharp-sandbox-hub`](design-csharp-sandbox-hub.md) | 5h<br>1h | dotnet |
 | E29 |  | **No role may carry out a parent decision that amends a plan card mid-run** | [`plan-card-amendment-owner`](design-plan-card-amendment-owner.md) | 4h<br>4h | webster, orch, loom |
