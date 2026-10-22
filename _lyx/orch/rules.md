@@ -33,6 +33,10 @@ To the operator, a fabric checkout is one worktree: say "worktree", never "pair"
 Never check runs with `lyx batten status` on your own; runs are watched through their notices, and a command's own output says what it did.
 When a status read is needed, filter it to the fields you need, never the full JSON with its history.
 
+## The orch note only at a cycle
+
+Write the orch note only when a message asks for it at a context cycle; never update it between cycles as a running log (operator, 2026-10-22).
+
 ## Dead strands after a reboot (#799)
 
 After a machine restart, the strands from before it stay in `lyx reed list` as dead and hold their names, so a resumed row can fail on a name clash.
