@@ -1,0 +1,35 @@
+# Relevant files
+
+- `internal/reedengine/lifecycle.go` `Engine.Status` — the status path whose liveness D1 changes, and Resume's launch planning
+- `internal/reedengine/apply.go` `aliveIDSet`, `liveIDSet` — the shared liveness predicate today
+- `internal/reedengine/ownwindow.go` `presentPanes`, `listStrandAndWindowPanes`, `listReconcilePanesLocked` — session-scoped pane listings and the own-window pane set
+- `internal/reedengine/parse.go` `LivePane`, `parsePaneList` — the pane record that gains the foreground command
+- `internal/reedengine/generation.go` `parsePaneGeneration` — why pane ids are server-global and how session identity is stamped
+- `internal/reedengine/spawn.go` `Engine.launchStrandLocked` — launch, pane replacement and the place to record the launch time
+- `internal/reedengine/strand.go` `Engine.strandNameLocked`, `Engine.AddStrandUnless`, `classifyIfAbsent`, `needsLaunchOnAdd` — name forming and the add paths D6 changes
+- `internal/reedengine/state.go` `Strand`, `ReedState` — the persisted strand record
+- `internal/reedengine/panebin.go` `stageLaunchScript`, `composePaneLaunchLine` — the launch line is sourced in an interactive shell
+- `internal/reedengine/selvagepane.go` `newReapPolicy` — Selvage health reads pane-level aliveness and must not take condition 3
+- `internal/reedengine/overlay.go` — the pane list formats that gain the foreground command
+- `internal/shuttleengine/stop.go` `strandRemovable` — stop's removability rule for a present, shell-only pane
+- `internal/orchengine/creel.go` — the watcher's creel seam, including its receiver-wide withdraw
+- `internal/orchcli/stop.go` — stop's strand removal, which takes `start.lock` under D3
+- `internal/orchcli/status.go` `statusFields`, `orchCLI.statusCmd` — status envelope gaining the restart, request and placement fields
+- `internal/orchcli/start.go` — start's branches, the `--continue`/`--adopt` refusals and the watcher spawn for a live strand
+- `internal/orchcli/refresh.go` `orchCLI.requestCycle`, `orchCLI.requestCmd` — request writing shared by refresh and distill
+- `internal/orchcli/distill.go` `orchCLI.distillCmd` — distill verb
+- `internal/orchcli/spawn.go` `orchCLI.spawnWatcherProcess` — detached watcher spawn reused by the restart
+- `internal/orchengine/launch.go` `DecideStart` — start's branch decision
+- `internal/orchengine/state.go` `RequestCycle`, `CycleRequested`, `ClearCycleRequest` — the request marker
+- `internal/orchengine/watcher.go` `Watcher.tickIdle` — cycle start, marker clear and the note-reply handling D4 replaces
+- `internal/orchengine/watchloop.go` `WatcherLive`, `WaitWatcherGone` — watcher liveness through `watch.lock`
+- `internal/orchengine/doc.go` — the cycle, note gate and request rules that change
+- `internal/creelcli/delivery.go` `mapDeliveryError`, `hubDelivery.Strands`, `hubDelivery.worktreeStrands` — error mapping and the per-worktree strand listing of D7
+- `internal/creelengine/seam.go` `ErrBusy`, `ErrNotLanded` — creel's typed/not-typed contract
+- `internal/shuttleengine/send.go` `ErrSentTextInDraft`, `ErrForeignBoxText`, `ErrSubmissionNotLanded` — post-paste failures that wrap `ErrSessionBusy`
+- `internal/seatengine/engine.go` `checkName` — the name-clash refusal of #799 and #811
+- `internal/websterengine/strand.go` `StrandLive` — webster's liveness read through reed status
+- `internal/loomcli/wiring.go` `strandLive` — loom's driver liveness through reed status
+- `contracts/stencils/orch/orch-template-handoff.md` — asks for the `written` reply today
+- `contracts/stencils/orch/orch-template-handoff-soft.md` — soft request with the `defer` reply
+- `contracts/stencils/orch/orch-template-role.md` — role file naming the reply
