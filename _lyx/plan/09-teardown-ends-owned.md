@@ -1,11 +1,11 @@
 # Card 9 — Pair teardown ends the pair's owned processes before its loop and session
 
 **Create:**
-- `plan:internal/pairteardown#Teardown.endOwnedProcesses` -> `func (t *Teardown) endOwnedProcesses(slug string) ([]runproc.Ended, error)`
-- `plan:internal/pairteardown#Teardown.driverLockHeldIn` -> `func (t *Teardown) driverLockHeldIn(slug string) (bool, error)`
-- `plan:internal/pairteardown#Teardown.registeredBattenAlive` -> `func (t *Teardown) registeredBattenAlive(slug string) (bool, error)`
-- `plan:internal/pairteardown#Teardown.driverRecordPID` -> `func (t *Teardown) driverRecordPID(slug string) (int, bool)`
-- `plan:internal/pairteardown#claimHeldGone` -> `const claimHeldGone claimSettlement = "held-gone"`
+- `internal/pairteardown#Teardown.endOwnedProcesses`
+- `internal/pairteardown#Teardown.driverLockHeldIn`
+- `internal/pairteardown#Teardown.registeredBattenAlive`
+- `internal/pairteardown#Teardown.driverRecordPID`
+- `internal/pairteardown#claimHeldGone`
 
 **Edit:**
 - `internal/pairteardown#Teardown`

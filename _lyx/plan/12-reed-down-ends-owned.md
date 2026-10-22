@@ -19,8 +19,8 @@
 **Uses:**
 - `plan:internal/pairteardown#Teardown.pausedIn`
 - `plan:internal/pairteardown#Teardown.awaitRunLockOrPass`
-- `plan:internal/pairteardown#Teardown.registeredBattenAlive`
-- `plan:internal/pairteardown#Teardown.endOwnedProcesses`
+- `internal/pairteardown#Teardown.registeredBattenAlive`
+- `internal/pairteardown#Teardown.endOwnedProcesses`
 - `internal/runproc#SurvivorsError`
 - `internal/pairteardown#fakeSubstrates.teardown`
 - `internal/pairteardown#New`
