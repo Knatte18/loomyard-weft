@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-22 16:11 UTC; every age below is as of then.
+Rendered 2026-10-22 16:12 UTC; every age below is as of then.
 
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
@@ -15,7 +15,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T4 | **Orch lifecycle: dead strands count as dead, the watcher restarts, cycle requests need no reply and can be withdrawn**<br>• Strand liveness checks the engine process and placement, a dead orch watcher restarts, the note write is seen without a reply, and a pending distill/refresh can be withdrawn<br>• `profile: light` | [`orch-strand-cycle`](design-orch-strand-cycle.md) | loom | Plan-Burler-Review | neve | 4d<br>2h | orch, reed, shuttle, creel |
+| T4 | **Orch lifecycle: dead strands count as dead, the watcher restarts, cycle requests need no reply and can be withdrawn**<br>• Strand liveness checks the engine process and placement, a dead orch watcher restarts, the note write is seen without a reply, and a pending distill/refresh can be withdrawn<br>• `profile: light` | [`orch-strand-cycle`](design-orch-strand-cycle.md) | loom | Plan-Burler-Fix | neve | 4d<br>2h | orch, reed, shuttle, creel |
 
 ### Ready
 
@@ -91,7 +91,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | E26 |  | **A status-bar button turns automatic terminal windows for runs on or off** | [`open-window-toggle`](design-open-window-toggle.md) | 7h<br>5h | batten, reed |
 | E28 |  | **[.NET] A small public NUnit repo as sandbox hub for end-to-end C# runs** | [`csharp-sandbox-hub`](design-csharp-sandbox-hub.md) | 6h<br>3h | dotnet |
 | E30 |  | **Discussion scope check moves from the alignment agent into the perch lenses, with an escalating finding class** | [`discussion-alignment-into-lenses`](design-discussion-alignment-into-lenses.md) | 5h<br>5h | loom, burler, shed |
-| E31 |  | **A row before Discussion aligns the task text against the board, peers and landed work, and adjusts it** | [`entry-align-before-discussion`](design-entry-align-before-discussion.md) | 5h<br>4h | loom, batten, board |
+| E31 |  | **A row before Discussion aligns the task text against the board, peers and landed work, and adjusts it** | [`entry-align-before-discussion`](design-entry-align-before-discussion.md) | 5h<br>5h | loom, batten, board |
 | E32 |  | **Move rules about lyx behaviour out of this repo's CLAUDE.md into lyx code, doc.go and stencils** | [`claude-md-lyx-rules-out`](design-claude-md-lyx-rules-out.md) | 4h<br>4h | stencil, board, loom |
 
 ### Features
