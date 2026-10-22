@@ -41,3 +41,5 @@ The beam setup on the board: `orch-any-worktree` (umbrella tasks spawning and la
 - No perch per darn: a review per batch proved far too expensive in Millhouse, and a perch per piece is the same.
   The pieces run as darn with review off (`review_max_bounces: 0`), each still passing its own gate and tests; the whole-task perch after the last merge-back is the code review, as Webster's round over the whole diff is today.
   For scale, a darn perch costs about $1.30 per run in the audit window.
+- The pieces are speed darns: a darn profile with review off, which runs tests as it goes, the way Webster's card gate runs after every card.
+  The hub's `docs` profile already sets `review_max_bounces: 0`, but with a Sonnet writer; a speed profile keeps the default writer.
