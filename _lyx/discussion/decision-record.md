@@ -146,6 +146,12 @@ After a failed lookup Master is woken by nothing the pause sends, so it moves on
   - d4-sigterm-cancel-home-unstated (class decision, severity MEDIUM, open in rounds 2)
 <!-- /lyx:carry-over Discussion-Review -->
 
+<!-- lyx:carry-over Plan-Review -->
+- Plan-Review, round 2: converged; each finding below was fixed or disputed by the round's fixer, and no fresh reviewer has seen the result; the fixer report says which.
+  Review: _lyx/reviews/plan/round-2-review.md; fixer report: _lyx/reviews/plan/round-2-fixer-report.md.
+  - undeclared-pattern-cuts-unrecorded (class decision, severity MEDIUM, open in rounds 1, 2)
+<!-- /lyx:carry-over Plan-Review -->
+
 ## Acceptance criteria
 
 - A gated shuttle run whose gate fails at a boundary while a pause covers it sends no re-prompt and spends no attempt; after the resume it evaluates and re-prompts.
