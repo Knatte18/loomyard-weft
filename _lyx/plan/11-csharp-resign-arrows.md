@@ -32,7 +32,10 @@ For every Edit arrow on a pending card whose target `planparser.ParseRef` parses
 A `resignName` records the card, the target glyph, the head and the minted id.
 - A Go arrow keeps today's rule: an error or an id other than the target is `resign-head-mismatch`.
 - A C# arrow is accepted when the minted id equals the target apart from its parameter list: same unit, owner chain and name, and both with parentheses or both without, so a method is never re-signed into a property.
-  A naming error, another member, or a minted id that drops or adds the parameter list is `resign-head-mismatch`, whose C# detail, built in `resignHeadMismatch`, names the way forward: keep the member's parameter list in the head, or change the member's kind through a Delete and a Create.
+  A naming error, another member, or a minted id that drops or adds the parameter list is `resign-head-mismatch`, whose C# detail, built in `resignHeadMismatch`, names the way forward for its case:
+  for a minted id that drops or adds the parameter list, keep the member's parameter list in the head, or change the member's kind through a Delete and a Create;
+  for a head minting another member, a Rename pair for a name change, or a head that declares the target member;
+  for a naming error, correct the head to one quarry names under the owner chain, quoting quarry's error, and, when quarry's reason is `invalid_container` and the head writes an explicit-interface qualifier whose spelling differs from its canonical spelling through `glyph.CanonicalCSharpType`, write the qualifier in canonical spelling, quoting the canonical qualifier `glyph.CanonicalCSharpType` gives.
 Each accepted C# minted id that differs from its target joins `resolvePass`'s batched resolve target set; `not_found` is its expected answer and raises nothing, since no card names it and `statusFindings` attributes findings only to referencing cards.
 An explicit interface member's arrow, such as one on `Glyphchain.Sharp#Renderer.IProvider<int>.Value`, mints its own target id, since `csharpOwner` leaves the qualifier to the head.
 
@@ -55,11 +58,12 @@ Its rows are written as a list of cards (`cards`), so a scenario can put a delet
 Its new `csharp` rows run over the fixture:
 - `Glyphchain.Sharp#Renderer.Draw(int)` -> `public void Draw(long count)` validates clean, with no `resign-interface-method`;
 - `Glyphchain.Sharp#Renderer.Draw(int)` -> `public int Draw` drops the parameter list, and `Glyphchain.Sharp#Renderer.Title` -> `public string Title()` adds one: each is `resign-head-mismatch` whose detail names "keep the member's parameter list";
-- `Glyphchain.Sharp#Renderer.Draw(int)` -> `public void Other(int count)` names another member, and `Glyphchain.Sharp#Renderer.Draw(int)` -> `public void Draw(` fails to name: each is `resign-head-mismatch`;
+- `Glyphchain.Sharp#Renderer.Draw(int)` -> `public void Other(int count)` names another member, a `resign-head-mismatch` whose detail names "Rename pair", and `Glyphchain.Sharp#Renderer.Draw(int)` -> `public void Draw(` fails to name, a `resign-head-mismatch` whose detail names "correct the head";
 - `Glyphchain.Sharp#Renderer.Draw(int)` -> `public void Draw(string text)` is `resign-overload-collision` whose detail names `Glyphchain.Sharp#Renderer.Draw(string)` and "free signature"; it is clean when an earlier card deletes `Glyphchain.Sharp#Renderer.Draw(string)`, when the same card re-signs `Draw(string)` away to `public void Draw(char c)`, and when an earlier card renames it away to the draft `plan:Glyphchain.Sharp#Renderer.Write`;
 - card 1 declaring a Create handle with head `public void Draw(long count)` and card 2 the arrow `Glyphchain.Sharp#Renderer.Draw(int)` -> `public void Draw(long count)` is `resign-overload-collision` on card 2 whose detail names card 1;
 - card 1 renaming `Glyphchain.Sharp#Renderer.Draw(string)` to the draft `plan:Glyphchain.Sharp#Renderer.Fill`, which binds to `Fill(string)`, and card 2 re-signing `Glyphchain.Sharp#Renderer.Fill(int)` -> `public void Fill(string text)` is `resign-overload-collision` on card 2 whose detail names card 1, its minted id equal to the Rename new handle's;
 - card 1's arrow on `Draw(int)` and card 2's on `Draw(string)`, both minting `Draw(long)`, are `resign-overload-collision` on card 2 whose detail names card 1, while the same arrow on `Draw(int)` written on two cards is clean;
-- `Glyphchain.Sharp#Renderer.IProvider<int>.Value` -> `int IProvider<int>.Value { get; }` validates clean.
+- `Glyphchain.Sharp#Renderer.IProvider<int>.Value` -> `int IProvider<int>.Value { get; }` validates clean;
+- `Glyphchain.Sharp#Renderer.IPair<string,int>.First` -> `int IPair<string, int>.First { get; }`, its qualifier written with a space quarry's spelling drops, is `resign-head-mismatch` whose detail names `invalid_container` and the canonical qualifier `IPair<string,int>.`.
 
 **ImpactSummary:** re-sign naming moves from `CanonicalizeHandles` into a pass that runs before the resolve, behind the package's one guarded `quarry.Name` site; Go arrows keep their verdict, and C# arrows gain two blocking checks.

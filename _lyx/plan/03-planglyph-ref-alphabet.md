@@ -48,7 +48,9 @@ Its callers read only the bool: `CanonicalizeHandles`, `BindHandles`, `DoneCheck
 Every `glyph.Parse(lang, ...)` in those packages becomes `planparser.ParseRef(plan, ...)`, so the unexported helpers that took a `glyph.Language` take the plan instead: `collectGlyphTargets`, `collectMemberTargets`, `callerCoverageFindings`, `coverageSubjects`, `coveredByTarget`, `classifyDeleteOrderRef`, `collectEditTargets`, `laterImportFindings`, `dependencyKind` and `columnsOverlap`, with every caller updated on this card.
 `DetectDrift` parses its reloaded plan's targets through the reloaded plan.
 
-In `CanonicalizeHandles` a Create declaration's `Lang` is the language of `ParseRef` over the handle's body (the text after `plan:`); a body `ParseRef` rejects keeps today's path, its unit from `planparser.HandleUnit`, with `Lang` `glyph.Go` under `go` and `glyph.CSharp` under `csharp`, so quarry answers it `handle-name-failed` as today.
+In `CanonicalizeHandles` a Create declaration's `Lang` is the language of `ParseRef` over the handle's body (the text after `plan:`); a body `ParseRef` rejects branches on the `Lang` field of the `*glyph.ParseError` `ParseRef` returns for it, so no caller outside planparser maps a language string.
+With `glyph.Go`, under `go`, it keeps today's path, its unit from `planparser.HandleUnit` and its `Lang` that field, so quarry answers it `handle-name-failed` as today.
+With `glyph.CSharp`, under `csharp`, it makes no quarry call: it is one `handle-name-failed` whose detail carries `ParseRef`'s C# parse error and the way forward, spell the handle `plan:<namespace>#<owner.member>` in the C# alphabet with canonical parameter types.
 A re-sign arrow's declaration takes `Unit` and `Lang` from `ParseRef` over the arrow's target.
 Under `go` every result is what card 1 left.
 
@@ -62,7 +64,7 @@ Tests:
 - `TestGlyphChain_CSharp` is the C# plan table later cards extend: each row writes a `csharp` plan over a fixture copy and asserts `assertPlanGate` and `assertDispatch`.
   Each row carries the files it writes into the fixture copy (through `writeFixtureFiles`) and the exact finding set of each gate.
   This card's rows, each one Edit card validating clean at both gates: one naming `Glyphchain.Sharp#Renderer.Draw(int)` and `Glyphchain.Sharp#`, which parse as C# and resolve found; one naming the path `csharp/Renderer.cs`, kept off the member's card since `redundant-file-target` refuses a file beside a member declared in it; and one naming `README.md`, which the row writes into the fixture copy, so the path canonicalizes to `README.md#`, skips the path checks and resolves found through quarry.
-  A further row is a Create card whose draft handle body `Glyphchain.Sharp#Renderer.Bad(Int32)` `ParseRef` rejects, with head `public void Bad(int count)`: it takes the fallback declaration, unit `Glyphchain.Sharp` from `planparser.HandleUnit` and `Lang` `glyph.CSharp`, which quarry cannot name as a member outside a type, so it is one `handle-name-failed`.
+  A further row is a Create card whose draft handle body `Glyphchain.Sharp#Renderer.Bad(Int32)` `ParseRef` rejects, with head `public void Bad(int count)`: it makes no quarry call and is one `handle-name-failed` whose detail names the C# handle spelling `plan:<namespace>#<owner.member>`.
 - `TestKickstartPack` gains a `csharp` card whose Edit target `Glyphchain.Sharp#Renderer.Draw(int)` is selected and listed resolved with the fake resolve's declaration span.
 - `TestPlanGlyphLanguage` asserts the bool alone, true for `go`, `csharp` and the absent value and false for `none`.
 - `TestCollectGlyphTargets_DeduplicatesAcrossCards` calls `collectGlyphTargets(plan)`.
