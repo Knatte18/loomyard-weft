@@ -1,0 +1,1778 @@
+diff --git a/contracts/specs/refusal-spec.md b/contracts/specs/refusal-spec.md
+index 2368caeef..9fa507e07 100644
+--- a/contracts/specs/refusal-spec.md
++++ b/contracts/specs/refusal-spec.md
+@@ -10,7 +10,7 @@ A refusal has a way forward when its message names one of these:
+ 
+ 1. a `lyx` verb that makes progress from the refused state;
+ 2. a transition the run takes by itself: a re-step, the next Master retry, a failure ladder rung;
+-3. a plain `git` command in the task worktree, when no `lyx` verb covers it.
++3. a plain `git` command in a checkout the message names, when the work there is the operator's and no `lyx` verb covers it.
+ 
+ A way forward never names a command the agents' settings deny (`PATTERN-no-denied-recovery` holds the list); when a step needs one, lyx performs it itself, as `lyx webster reset` does.
+ 
+diff --git a/contracts/stencils/friction/friction-template-reflection.md b/contracts/stencils/friction/friction-template-reflection.md
+index 291a6d7b6..a34aa3969 100644
+--- a/contracts/stencils/friction/friction-template-reflection.md
++++ b/contracts/stencils/friction/friction-template-reflection.md
+@@ -44,7 +44,6 @@ intake filters later.
+ For a `loom-halt` or `loom-crash-resume` note, file an issue only when the notes, the reason or the trace show a lyx problem behind the event.
+ A halt caused by the task's own code, or a review segment that did not converge, is dropped; a process signal such as a spent budget or an escalation is not a defect.
+ A dropped event stays recoverable: the note names the trace file, the run's status and history stay on disk, and the operator can still file through `lyx selfreport create`.
+-A halt note with a `parent fabric status:` section lists the parent pair's dirty tracked paths, so attribute a dirty-tree halt to the tree that section names.
+ 
+ ## Step 3 — File each issue
+ 
+diff --git a/internal/fabricengine/diff.go b/internal/fabricengine/diff.go
+index df14298f2..680990bb7 100644
+--- a/internal/fabricengine/diff.go
++++ b/internal/fabricengine/diff.go
+@@ -110,6 +110,17 @@ func (f *Fabric) DirtyPaths() ([]string, error) {
+ 	return append(warpPaths, weftPaths...), nil
+ }
+ 
++// CodeDirtyPaths returns the code checkout's absolute path and its tracked uncommitted paths, relative to that checkout, slash-separated and sorted.
++// It is the read the dirty merge guard decides on, and it never lists the records checkout.
++// A read failure is returned wrapped.
++func (f *Fabric) CodeDirtyPaths() (checkout string, paths []string, err error) {
++	paths, err = codeDirtyPaths(f)
++	if err != nil {
++		return "", nil, fmt.Errorf("fabricengine: code checkout dirty paths: %w", err)
++	}
++	return f.warpPath, paths, nil
++}
++
+ // Status reports every currently-uncommitted path across both sides of the warp<->weft pair, merged
+ // into one side-labelled slice.
+ // Unlike Diff, there is no correspondence anchor involved — this is a live worktree read.
+diff --git a/internal/fabricengine/diff_integration_test.go b/internal/fabricengine/diff_integration_test.go
+index ec472d2b4..5c1c7d485 100644
+--- a/internal/fabricengine/diff_integration_test.go
++++ b/internal/fabricengine/diff_integration_test.go
+@@ -175,6 +175,7 @@ func TestDiff_NoWeftCorrespondence_BeforeFirstSync(t *testing.T) {
+ // The push lock file is created explicitly here because CommitWeft never writes it — only
+ // PushCoalesced does — so leaving it out would make the exclude assertion vacuous.
+ // It also covers Fabric.DirtyPaths: both sides' modified tracked paths come back absolute under their checkouts, and an untracked file does not.
++// Fabric.CodeDirtyPaths returns the code checkout and only its tracked path, relative to it.
+ func TestStatus_MergesUncommittedChangesBothSides_ExcludesWeftArtifacts(t *testing.T) {
+ 	t.Parallel()
+ 
+@@ -221,6 +222,25 @@ func TestStatus_MergesUncommittedChangesBothSides_ExcludesWeftArtifacts(t *testi
+ 		t.Errorf("DirtyPaths() = %v; want exactly the modified tracked paths %v, with the untracked %s and %s omitted", dirty, want, warpDirtyPath, pushLockPath)
+ 	}
+ 
++	checkout, codePaths, err := f.CodeDirtyPaths()
++	if err != nil {
++		t.Fatalf("CodeDirtyPaths() error = %v", err)
++	}
++	gotCheckout, err := filepath.EvalSymlinks(checkout)
++	if err != nil {
++		t.Fatalf("EvalSymlinks(%q): %v", checkout, err)
++	}
++	wantCheckout, err := filepath.EvalSymlinks(warpPath)
++	if err != nil {
++		t.Fatalf("EvalSymlinks(%q): %v", warpPath, err)
++	}
++	if gotCheckout != wantCheckout {
++		t.Errorf("CodeDirtyPaths() checkout = %q; want the code checkout %q", gotCheckout, wantCheckout)
++	}
++	if want := []string{"README"}; !slices.Equal(codePaths, want) {
++		t.Errorf("CodeDirtyPaths() paths = %v; want exactly the code side's tracked path %v", codePaths, want)
++	}
++
+ 	entries, err := f.Status()
+ 	if err != nil {
+ 		t.Fatalf("Status() error = %v", err)
+diff --git a/internal/fabricengine/doc.go b/internal/fabricengine/doc.go
+index cb3dc3008..9d937d2f1 100644
+--- a/internal/fabricengine/doc.go
++++ b/internal/fabricengine/doc.go
+@@ -684,6 +684,7 @@
+ // instead of parsing prose.
+ // `PushAnchored(l, opts, lockWait)`, `PushPairAnchored(l, opts, lockWait)`, `MergeStateActive(l)`, `MidMerge(l)` and `RequireDrivableWorktree(l)` are further vocabulary-neutral, `l`-in entry points reachable the same way `CommitAnchoredPaths` is.
+ // `MidMerge(l)` answers whether the pair carries an unfinished merge and which paths are still conflicted.
++// On an opened `*Fabric`, `Fabric.MidMerge` is the same probe over that pair's own location, and `Fabric.CodeDirtyPaths` reads the code checkout's tracked dirty paths, the list the dirty merge guard decides on.
+ // For a parked fabric merge the answer also carries the record's verb, source branch and the code side's source and start SHAs.
+ // `lyx loom start` consults it before putting a driver to work.
+ // `RequireDrivableWorktree` is `RequireWarpWorktree` under a name a non-owner may say at all — the
+@@ -1375,6 +1376,9 @@
+ // a refusal there mutates nothing, while a refusal from the sync step can already have
+ // fast-forwarded the other side.
+ //
++// **The dirty guard decides on a path list.** `pairDirtyReason` reads the code checkout's tracked dirty paths once, worktree-relative, slash-separated and sorted, and reports the dirty reason only when that list is not empty.
++// A `MergeGuardError` carrying the dirty reason carries that checkout and those paths in `Checkout` and `DirtyPaths`, outside `Error()`, which stays the fixed path-free string.
++//
+ // **The warp checkout must be on a branch.** A merge verb refuses with the guard reason `checkout is
+ // not on a branch` while the warp checkout has HEAD pointing straight at a commit. A conclude-commit
+ // landed on a detached HEAD is reachable from no ref and disappears at the next checkout, and the
+diff --git a/internal/fabricengine/merge.go b/internal/fabricengine/merge.go
+index 1969b6667..7d3084bf6 100644
+--- a/internal/fabricengine/merge.go
++++ b/internal/fabricengine/merge.go
+@@ -88,12 +88,12 @@ func (f *Fabric) recheckMergePreconditionsUnderLock() error {
+ 		return &ErrForeignMergeState{}
+ 	}
+ 
+-	dirtyReasons, err := pairDirtyReason(f)
++	dirtyReasons, dirtyPaths, err := pairDirtyReason(f)
+ 	if err != nil {
+ 		return err
+ 	}
+ 	if len(dirtyReasons) > 0 {
+-		return newMergeGuardError(dirtyReasons)
++		return newMergeGuardError(dirtyReasons).withDirt(f.warpPath, dirtyPaths)
+ 	}
+ 	return nil
+ }
+@@ -167,7 +167,7 @@ func (f *Fabric) MergeIn(source string) (res MergeResult, err error) {
+ 	}
+ 	reasons = append(reasons, inProgressReasons...)
+ 
+-	dirtyReasons, err := pairDirtyReason(f)
++	dirtyReasons, dirtyPaths, err := pairDirtyReason(f)
+ 	if err != nil {
+ 		return MergeResult{}, err
+ 	}
+@@ -183,7 +183,7 @@ func (f *Fabric) MergeIn(source string) (res MergeResult, err error) {
+ 	reasons = append(reasons, sourceReasons...)
+ 
+ 	if len(reasons) > 0 {
+-		return MergeResult{}, newMergeGuardError(reasons)
++		return MergeResult{}, newMergeGuardError(reasons).withDirt(f.warpPath, dirtyPaths)
+ 	}
+ 
+ 	// Pre-lock already-up-to-date probe: no lock taken, no record written, empty mutation record —
+@@ -373,7 +373,7 @@ func (f *Fabric) Merge(source string, opts MergeOptions) (res MergeResult, err e
+ 	}
+ 	reasons = append(reasons, inProgressReasons...)
+ 
+-	dirtyReasons, err := pairDirtyReason(f)
++	dirtyReasons, dirtyPaths, err := pairDirtyReason(f)
+ 	if err != nil {
+ 		return MergeResult{}, err
+ 	}
+@@ -395,7 +395,7 @@ func (f *Fabric) Merge(source string, opts MergeOptions) (res MergeResult, err e
+ 	reasons = append(reasons, sourceReasons...)
+ 
+ 	if len(reasons) > 0 {
+-		return MergeResult{}, newMergeGuardError(reasons)
++		return MergeResult{}, newMergeGuardError(reasons).withDirt(f.warpPath, dirtyPaths)
+ 	}
+ 
+ 	// The write lock is taken HERE, ahead of the sync step, because the sync step mutates both
+diff --git a/internal/fabricengine/merge_target_integration_test.go b/internal/fabricengine/merge_target_integration_test.go
+index ae2e14c1d..db22b17b2 100644
+--- a/internal/fabricengine/merge_target_integration_test.go
++++ b/internal/fabricengine/merge_target_integration_test.go
+@@ -262,6 +262,7 @@ func TestMerge_DirtyTargetHalts(t *testing.T) {
+ 	if len(guardErrWarp.Reasons) != 1 || guardErrWarp.Reasons[0] != "worktree dirty" {
+ 		t.Errorf("warp-dirty guard reasons = %v; want exactly [\"worktree dirty\"]", guardErrWarp.Reasons)
+ 	}
++	assertGuardDirt(t, guardErrWarp, targetWarpPath1, []string{"tracked.txt"})
+ 
+ 	if got := fabricengine.CurrentSHAForTest(t, targetWarpPath1); got != warpBefore1 {
+ 		t.Errorf("[warp dirty] target warp HEAD changed to %q; want unchanged %q", got, warpBefore1)
+diff --git a/internal/fabricengine/mergeerrors.go b/internal/fabricengine/mergeerrors.go
+index 00543d8f1..9dbad3df6 100644
+--- a/internal/fabricengine/mergeerrors.go
++++ b/internal/fabricengine/mergeerrors.go
+@@ -2,6 +2,7 @@
+ // Every message is fixed and side-free: none interpolates a branch name, path, or git error, and
+ // where a caller needs the offending branch it travels in a typed error's own field
+ // (ErrMergeInRequired.Source), never inside an Error() string.
++// MergeGuardError.Checkout and MergeGuardError.DirtyPaths carry the dirty guard's detail the same way.
+ // The closed reason set backing MergeGuardError is pinned verbatim from the discussion's
+ // safety-guards-are-aggregated-and-side-free decision; adding a member is a same-commit change to
+ // the constant list and to the vocabulary assertion covering it (mergevocab_test.go, batch 5), and
+@@ -47,13 +48,31 @@ const (
+ // The list is aggregated rather than first-failure so two scenarios differing only in which
+ // precondition failed on which side produce byte-identical errors — no failure ordering ever
+ // discloses that two subjects were checked.
+-type MergeGuardError struct{ Reasons []string }
++// Checkout and DirtyPaths carry the detail of the dirty-worktree reason, outside Error():
++// Checkout is the absolute path of the code checkout the guard read.
++// DirtyPaths lists its tracked dirty paths relative to it, slash-separated and sorted.
++// Both are set only beside that reason, and DirtyPaths is then never empty.
++type MergeGuardError struct {
++	Reasons    []string
++	Checkout   string
++	DirtyPaths []string
++}
+ 
+ // Error implements the error interface, joining the aggregated reasons with "; ".
+ func (e *MergeGuardError) Error() string {
+ 	return "fabricengine: merge preconditions failed: " + strings.Join(e.Reasons, "; ")
+ }
+ 
++// has reports whether e's aggregated reasons include reason.
++func (e *MergeGuardError) has(reason string) bool {
++	for _, r := range e.Reasons {
++		if r == reason {
++			return true
++		}
++	}
++	return false
++}
++
+ // WorktreeDirty reports whether e's aggregated reasons include the dirty-worktree guard reason.
+ // It is the supported way for a caller outside this package to recognize the condition: the
+ // guard-reason constants themselves are a closed, unexported set, pinned verbatim by this file's
+@@ -62,18 +81,31 @@ func (e *MergeGuardError) Error() string {
+ // drifting later. WorktreeDirty keeps the coupling inside the package that owns the constant, where
+ // the existing pinning tests already cover it.
+ func (e *MergeGuardError) WorktreeDirty() bool {
+-	for _, r := range e.Reasons {
+-		if r == mergeReasonWorktreeDirty {
+-			return true
+-		}
+-	}
+-	return false
++	return e.has(mergeReasonWorktreeDirty)
++}
++
++// AlreadyInProgress reports whether e's aggregated reasons include the merge-already-in-progress guard reason.
++func (e *MergeGuardError) AlreadyInProgress() bool {
++	return e.has(mergeReasonAlreadyInProgress)
+ }
+ 
+-// IsWorktreeDirtyReason reports whether text contains the dirty-worktree guard reason.
+-// It is for a caller holding a reason as plain text, such as a halt reason, and keeps the guard-reason constant inside this package like WorktreeDirty does.
+-func IsWorktreeDirtyReason(text string) bool {
+-	return strings.Contains(text, mergeReasonWorktreeDirty)
++// NotSynced reports whether e's aggregated reasons include the branch-not-synced-to-upstream guard reason.
++func (e *MergeGuardError) NotSynced() bool {
++	return e.has(mergeReasonNotSynced)
++}
++
++// DetachedHead reports whether e's aggregated reasons include the checkout-is-not-on-a-branch guard reason.
++func (e *MergeGuardError) DetachedHead() bool {
++	return e.has(mergeReasonDetachedHead)
++}
++
++// withDirt records the code checkout the dirty guard read and its dirty paths on e, when paths is not empty, and returns e.
++func (e *MergeGuardError) withDirt(checkout string, paths []string) *MergeGuardError {
++	if len(paths) > 0 {
++		e.Checkout = checkout
++		e.DirtyPaths = paths
++	}
++	return e
+ }
+ 
+ // newMergeGuardError builds a *MergeGuardError from reasons, sorting and deduplicating them first
+diff --git a/internal/fabricengine/mergeerrors_test.go b/internal/fabricengine/mergeerrors_test.go
+index 9b5c7d081..1c3a0e190 100644
+--- a/internal/fabricengine/mergeerrors_test.go
++++ b/internal/fabricengine/mergeerrors_test.go
+@@ -125,31 +125,55 @@ func assertNoVocabularyLeak(t *testing.T, label, s string) {
+ // consumer's own tier asserts it branches on the accessor.
+ func TestMergeGuardError_WorktreeDirty(t *testing.T) {
+ 	tests := []struct {
+-		name    string
+-		reasons []string
+-		want    bool
++		name       string
++		reasons    []string
++		dirty      bool
++		inProgress bool
++		notSynced  bool
++		detached   bool
+ 	}{
+ 		{
+ 			name:    "dirty reason alone",
+ 			reasons: []string{mergeReasonWorktreeDirty},
+-			want:    true,
++			dirty:   true,
+ 		},
+ 		{
+-			name:    "a different single reason",
+-			reasons: []string{mergeReasonAlreadyInProgress},
+-			want:    false,
++			name:       "a different single reason",
++			reasons:    []string{mergeReasonAlreadyInProgress},
++			inProgress: true,
+ 		},
+ 		{
+-			name:    "dirty reason alongside others",
+-			reasons: []string{mergeReasonAlreadyInProgress, mergeReasonWorktreeDirty, mergeReasonNotSynced},
+-			want:    true,
++			name:      "not-synced reason alone",
++			reasons:   []string{mergeReasonNotSynced},
++			notSynced: true,
++		},
++		{
++			name:     "detached reason alone",
++			reasons:  []string{mergeReasonDetachedHead},
++			detached: true,
++		},
++		{
++			name:       "dirty reason alongside others",
++			reasons:    []string{mergeReasonAlreadyInProgress, mergeReasonWorktreeDirty, mergeReasonNotSynced},
++			dirty:      true,
++			inProgress: true,
++			notSynced:  true,
+ 		},
+ 	}
+ 	for _, tt := range tests {
+ 		t.Run(tt.name, func(t *testing.T) {
+ 			err := &MergeGuardError{Reasons: tt.reasons}
+-			if got := err.WorktreeDirty(); got != tt.want {
+-				t.Errorf("WorktreeDirty() = %v; want %v", got, tt.want)
++			if got := err.WorktreeDirty(); got != tt.dirty {
++				t.Errorf("WorktreeDirty() = %v; want %v", got, tt.dirty)
++			}
++			if got := err.AlreadyInProgress(); got != tt.inProgress {
++				t.Errorf("AlreadyInProgress() = %v; want %v", got, tt.inProgress)
++			}
++			if got := err.NotSynced(); got != tt.notSynced {
++				t.Errorf("NotSynced() = %v; want %v", got, tt.notSynced)
++			}
++			if got := err.DetachedHead(); got != tt.detached {
++				t.Errorf("DetachedHead() = %v; want %v", got, tt.detached)
+ 			}
+ 		})
+ 	}
+diff --git a/internal/fabricengine/mergeguards.go b/internal/fabricengine/mergeguards.go
+index fd089cc53..1281e693c 100644
+--- a/internal/fabricengine/mergeguards.go
++++ b/internal/fabricengine/mergeguards.go
+@@ -13,6 +13,8 @@ package fabricengine
+ 
+ import (
+ 	"fmt"
++	"path/filepath"
++	"sort"
+ 
+ 	"github.com/Knatte18/loomyard/internal/gitrepo"
+ 	"github.com/Knatte18/loomyard/internal/logger"
+@@ -106,16 +108,35 @@ func pickMergeSourceSHA(repo *gitrepo.Repo, localSHA string, localFound bool, re
+ // The weft side is not evaluated: it is not a merge participant, so its dirtiness cannot affect a
+ // warp-only merge's correctness, and checking it could only refuse a merge that would have been
+ // right.
+-func pairDirtyReason(f *Fabric) ([]string, error) {
+-	warpDirty, _, err := worktreeDirty(scopeTracked, f.warpPath)
++// The reason is decided on the checkout's worktree-relative, sorted tracked dirty paths, which are returned beside it so a guard error can carry them.
++func pairDirtyReason(f *Fabric) ([]string, []string, error) {
++	paths, err := codeDirtyPaths(f)
+ 	if err != nil {
+-		return nil, fmt.Errorf("fabricengine: check checkout dirtiness: %w", err)
++		return nil, nil, fmt.Errorf("fabricengine: check checkout dirtiness: %w", err)
+ 	}
+ 
+-	if warpDirty {
+-		return []string{mergeReasonWorktreeDirty}, nil
++	if len(paths) > 0 {
++		return []string{mergeReasonWorktreeDirty}, paths, nil
+ 	}
+-	return nil, nil
++	return nil, nil, nil
++}
++
++// codeDirtyPaths returns the tracked uncommitted paths of f's code checkout, relative to it, slash-separated and sorted.
++func codeDirtyPaths(f *Fabric) ([]string, error) {
++	absolute, err := trackedDirtyPaths(f.warpPath)
++	if err != nil {
++		return nil, err
++	}
++	paths := make([]string, 0, len(absolute))
++	for _, p := range absolute {
++		rel, err := filepath.Rel(f.warpPath, p)
++		if err != nil {
++			return nil, fmt.Errorf("relativize %s to %s: %w", p, f.warpPath, err)
++		}
++		paths = append(paths, filepath.ToSlash(rel))
++	}
++	sort.Strings(paths)
++	return paths, nil
+ }
+ 
+ // upstreamSHAAt resolves dir's checked-out branch's upstream tracking ref to a plain SHA.
+diff --git a/internal/fabricengine/mergein_recovery_integration_test.go b/internal/fabricengine/mergein_recovery_integration_test.go
+index 5e3bcf059..908c77772 100644
+--- a/internal/fabricengine/mergein_recovery_integration_test.go
++++ b/internal/fabricengine/mergein_recovery_integration_test.go
+@@ -449,6 +449,7 @@ func TestMergeIn_DirtyWarpRefuses(t *testing.T) {
+ 	if len(guardErr.Reasons) != 1 || guardErr.Reasons[0] != "worktree dirty" {
+ 		t.Errorf("warp-dirty guard reasons = %v; want exactly [\"worktree dirty\"]", guardErr.Reasons)
+ 	}
++	assertGuardDirt(t, guardErr, h.PrimeWorktree(), []string{"dirty.txt"})
+ }
+ 
+ // TestMergeIn_DirtyWeftDoesNotRefuse used to be TestMergeIn_DirtyPair_ByteIdenticalErrorEitherSide's
+diff --git a/internal/fabricengine/mergelock_integration_test.go b/internal/fabricengine/mergelock_integration_test.go
+index a62d6f361..a82f75dec 100644
+--- a/internal/fabricengine/mergelock_integration_test.go
++++ b/internal/fabricengine/mergelock_integration_test.go
+@@ -15,6 +15,7 @@ import (
+ 	"errors"
+ 	"os"
+ 	"path/filepath"
++	"slices"
+ 	"strings"
+ 	"testing"
+ 	"time"
+@@ -375,6 +376,27 @@ func TestMerge_ForeignStateAppearingWhileWaitingForLock_Refuses(t *testing.T) {
+ 	assertForeignRefusalUnderLock(t, f, h.PrimeWorktree(), statusBefore, held, done)
+ }
+ 
++// assertGuardDirt asserts guardErr carries wantCheckout and exactly wantPaths as its dirt detail.
++// The checkout is compared after EvalSymlinks on both sides, since a temp root may be a symlink.
++func assertGuardDirt(t *testing.T, guardErr *fabricengine.MergeGuardError, wantCheckout string, wantPaths []string) {
++	t.Helper()
++
++	gotCheckout, err := filepath.EvalSymlinks(guardErr.Checkout)
++	if err != nil {
++		t.Fatalf("EvalSymlinks(%q): %v", guardErr.Checkout, err)
++	}
++	want, err := filepath.EvalSymlinks(wantCheckout)
++	if err != nil {
++		t.Fatalf("EvalSymlinks(%q): %v", wantCheckout, err)
++	}
++	if gotCheckout != want {
++		t.Errorf("guard error Checkout = %q; want %q", gotCheckout, want)
++	}
++	if !slices.Equal(guardErr.DirtyPaths, wantPaths) {
++		t.Errorf("guard error DirtyPaths = %q; want %q", guardErr.DirtyPaths, wantPaths)
++	}
++}
++
+ // TestMergeIn_PairTurningDirtyWhileWaitingForLock_RefusesPreservingDirt pins the dirty half of
+ // recheckMergePreconditionsUnderLock on MergeIn, on the destructive shape: the mid-wait tracked
+ // edit lands on a file the merge source also touches, so pre-fix the MergeStart refusal ("local
+@@ -406,6 +428,7 @@ func TestMergeIn_PairTurningDirtyWhileWaitingForLock_RefusesPreservingDirt(t *te
+ 	if len(guardErr.Reasons) != 1 || guardErr.Reasons[0] != "worktree dirty" {
+ 		t.Errorf("guard reasons = %v; want exactly [\"worktree dirty\"]", guardErr.Reasons)
+ 	}
++	assertGuardDirt(t, guardErr, h.PrimeWorktree(), []string{"overlap.txt"})
+ 	got, err := os.ReadFile(filepath.Join(h.PrimeWorktree(), "overlap.txt"))
+ 	if err != nil || string(got) != dirtyContent {
+ 		t.Errorf("overlap.txt after the refusal = (%q, %v); want the operator's edit preserved", got, err)
+@@ -444,6 +467,7 @@ func TestMerge_PairTurningDirtyWhileWaitingForLock_RefusesPreservingDirt(t *test
+ 	if len(guardErr.Reasons) != 1 || guardErr.Reasons[0] != "worktree dirty" {
+ 		t.Errorf("guard reasons = %v; want exactly [\"worktree dirty\"]", guardErr.Reasons)
+ 	}
++	assertGuardDirt(t, guardErr, h.PrimeWorktree(), []string{"overlap.txt"})
+ 	if entries := mergeRes.Mutated().Entries(); len(entries) != 0 {
+ 		t.Errorf("Merge().Mutated() = %v; want empty — the re-check must refuse before the pre-merge sync step records anything", entries)
+ 	}
+diff --git a/internal/fabricengine/mergevocab_test.go b/internal/fabricengine/mergevocab_test.go
+index 6783ff1dc..e4c7e4f3a 100644
+--- a/internal/fabricengine/mergevocab_test.go
++++ b/internal/fabricengine/mergevocab_test.go
+@@ -241,13 +241,12 @@ func TestMergeVocabulary_ErrorsAreSideFree(t *testing.T) {
+ 	for _, reason := range pinnedMergeReasons {
+ 		reasons = append(reasons, reason)
+ 	}
+-	guardErr := newMergeGuardError(reasons)
++	guardErr := newMergeGuardError(reasons).withDirt("/hub/parent", []string{"a b.go"})
+ 	assertSideFree(t, "(*MergeGuardError).Error()", guardErr.Error())
+-	if !IsWorktreeDirtyReason(guardErr.Error()) {
+-		t.Errorf("IsWorktreeDirtyReason(%q) = false; want true for a guard error carrying the dirty-worktree reason", guardErr.Error())
+-	}
+-	if other := newMergeGuardError([]string{mergeReasonNotSynced}).Error(); IsWorktreeDirtyReason(other) {
+-		t.Errorf("IsWorktreeDirtyReason(%q) = true; want false for another guard reason", other)
++	for _, detail := range []string{"/hub/parent", "a b.go"} {
++		if strings.Contains(guardErr.Error(), detail) {
++			t.Errorf("(*MergeGuardError).Error() = %q; must not contain the dirt detail %q", guardErr.Error(), detail)
++		}
+ 	}
+ 
+ 	const mergeInRequiredSource = "some-warp-branch"
+diff --git a/internal/fabricengine/midmerge.go b/internal/fabricengine/midmerge.go
+index 9d84d1f62..35840985a 100644
+--- a/internal/fabricengine/midmerge.go
++++ b/internal/fabricengine/midmerge.go
+@@ -94,3 +94,13 @@ func MidMerge(l *lyxcwd.Location) (MidMergeState, error) {
+ 	state.Conflicts = unified
+ 	return state, nil
+ }
++
++// MidMerge reports the parked or foreign merge state of f's own pair, as the package function of the same name does for a location.
++// It resolves the location from f's code checkout, so the answer is about this pair and never about the worktree the caller runs in.
++func (f *Fabric) MidMerge() (MidMergeState, error) {
++	l, err := lyxcwd.ResolveWorktree(f.warpPath)
++	if err != nil {
++		return MidMergeState{}, fmt.Errorf("fabricengine: mid-merge probe: resolve layout for %s: %w", f.warpPath, err)
++	}
++	return MidMerge(l)
++}
+diff --git a/internal/fabricengine/midmerge_integration_test.go b/internal/fabricengine/midmerge_integration_test.go
+index 2d72f26fd..13a13a145 100644
+--- a/internal/fabricengine/midmerge_integration_test.go
++++ b/internal/fabricengine/midmerge_integration_test.go
+@@ -63,6 +63,14 @@ func TestMidMerge_FabricParkedWithConflicts_Parked(t *testing.T) {
+ 		t.Errorf("MidMerge() identity = (%q, %q, start %q, source %q); want (merge-in, feature, start %q, source %q)", got.Verb, got.Source, got.StartSHA, got.SourceSHA, wantStartSHA, wantSourceSHA)
+ 	}
+ 	assertMergeBlocked(t, h.Location, true)
++
++	fromFabric, err := f.MidMerge()
++	if err != nil {
++		t.Fatalf("Fabric.MidMerge() error = %v", err)
++	}
++	if !reflect.DeepEqual(fromFabric, got) {
++		t.Errorf("Fabric.MidMerge() = %+v; want MidMerge(location) = %+v", fromFabric, got)
++	}
+ }
+ 
+ func TestMidMerge_FabricParkedResolved_ParkedNoConflicts(t *testing.T) {
+diff --git a/internal/fabricengine/weftguards_integration_test.go b/internal/fabricengine/weftguards_integration_test.go
+index 5ab34c6c1..c7e80190f 100644
+--- a/internal/fabricengine/weftguards_integration_test.go
++++ b/internal/fabricengine/weftguards_integration_test.go
+@@ -11,6 +11,7 @@
+ package fabricengine_test
+ 
+ import (
++	"errors"
+ 	"os"
+ 	"path/filepath"
+ 	"testing"
+@@ -73,6 +74,10 @@ func TestWeftGuards_DetachedWeftDoesNotRefuseWarpDetachedStillDoes(t *testing.T)
+ 
+ 	_, err := f1.MergeIn("feature")
+ 	assertSoleGuardReason(t, "MergeIn(feature) [warp detached]", err, "checkout is not on a branch")
++	var detachedErr *fabricengine.MergeGuardError
++	if errors.As(err, &detachedErr) && (detachedErr.Checkout != "" || len(detachedErr.DirtyPaths) != 0) {
++		t.Errorf("detached-warp guard error carries Checkout %q and DirtyPaths %q; want both empty beside no dirty reason", detachedErr.Checkout, detachedErr.DirtyPaths)
++	}
+ 
+ 	h2, f2, commitOnWarpBranch2, commitOnWeftBranch2, _, _ := newMergePairFixture(t, ".")
+ 	commitOnWarpBranch2("feature", "feature.txt", "feature\n", "feature: warp")
+diff --git a/internal/haltnote/haltnote.go b/internal/haltnote/haltnote.go
+index c0dd0a2dc..0ad6b0f96 100644
+--- a/internal/haltnote/haltnote.go
++++ b/internal/haltnote/haltnote.go
+@@ -13,10 +13,11 @@ import (
+ const NoteID = "loom-halt"
+ 
+ const (
+-	titlePrefix     = "loom halted "
+-	fence           = "```"
+-	historyHeader   = "history:"
+-	noHistoryLine   = "no history entries"
++	titlePrefix   = "loom halted "
++	fence         = "```"
++	historyHeader = "history:"
++	noHistoryLine = "no history entries"
++	// parentHeader opened a section older binaries wrote; Parse skips every line under it.
+ 	parentHeader    = "parent fabric status:"
+ 	rowSeparator    = " / "
+ 	noteFileName    = NoteID + ".md"
+@@ -36,8 +37,6 @@ type Note struct {
+ 	HistoryEntries int
+ 	TraceFile      string
+ 	History        []Row
+-	// ParentStatus is the rendered dirty state of the parent pair; empty writes no section.
+-	ParentStatus string
+ }
+ 
+ // Row is one history row of a halt note.
+@@ -66,9 +65,6 @@ func Render(n Note) []byte {
+ 	for _, r := range n.History {
+ 		b.WriteString("- " + r.Producer + rowSeparator + r.Outcome + rowSeparator + r.At + "\n")
+ 	}
+-	if n.ParentStatus != "" {
+-		b.WriteString("\n" + parentHeader + "\n" + n.ParentStatus + "\n")
+-	}
+ 	return []byte(b.String())
+ }
+ 
+@@ -103,10 +99,6 @@ func Parse(data []byte) (Note, error) {
+ 				n.History = append(n.History, row)
+ 			}
+ 		case parentHeader:
+-			if n.ParentStatus != "" {
+-				n.ParentStatus += "\n"
+-			}
+-			n.ParentStatus += line
+ 		default:
+ 			key, value, ok := strings.Cut(line, ": ")
+ 			if !ok {
+@@ -126,7 +118,6 @@ func Parse(data []byte) (Note, error) {
+ 			}
+ 		}
+ 	}
+-	n.ParentStatus = strings.TrimRight(n.ParentStatus, "\n")
+ 
+ 	if !sawProducer || !sawState {
+ 		return Note{}, errors.New("haltnote: note lacks its producer or state line")
+diff --git a/internal/haltnote/haltnote_test.go b/internal/haltnote/haltnote_test.go
+index a6d8ce330..a49a4db4c 100644
+--- a/internal/haltnote/haltnote_test.go
++++ b/internal/haltnote/haltnote_test.go
+@@ -34,13 +34,6 @@ func TestRenderParse(t *testing.T) {
+ 			{Producer: "Plan-Write", Outcome: "blocked", At: "2026-01-02T03:05:06Z"},
+ 		},
+ 	}
+-	withParent := Note{
+-		Producer:     "Land",
+-		State:        "failed",
+-		Reason:       "worktree is dirty",
+-		TraceFile:    "t.log",
+-		ParentStatus: "a.go\nb.go",
+-	}
+ 
+ 	tests := []struct {
+ 		name        string
+@@ -50,7 +43,6 @@ func TestRenderParse(t *testing.T) {
+ 	}{
+ 		{name: "blocked note with anomaly and history", note: blocked, golden: blockedGolden},
+ 		{name: "no history", note: Note{Producer: "P", State: "failed", Reason: "r", TraceFile: "t"}, wantContain: "history:\nno history entries\n"},
+-		{name: "parent status", note: withParent, wantContain: "\nparent fabric status:\na.go\nb.go\n"},
+ 	}
+ 	for _, tc := range tests {
+ 		t.Run(tc.name, func(t *testing.T) {
+@@ -86,6 +78,32 @@ func TestRenderParse(t *testing.T) {
+ 		}
+ 	})
+ 
++	t.Run("an older note's parent fabric status section is skipped and not re-rendered", func(t *testing.T) {
++		t.Parallel()
++		got, err := Parse([]byte(blockedGolden + "\nparent fabric status:\na.go\nb.go\n"))
++		if err != nil {
++			t.Fatalf("Parse: %v", err)
++		}
++		want := Note{
++			Producer:       "Plan-Write",
++			State:          "blocked",
++			Reason:         "the plan lacks a card",
++			Anomaly:        "process-signal",
++			HistoryEntries: 2,
++			TraceFile:      "/tmp/trace.log",
++			History: []Row{
++				{Producer: "Discussion-Write", Outcome: "done", At: "2026-01-02T03:04:05Z"},
++				{Producer: "Plan-Write", Outcome: "blocked", At: "2026-01-02T03:05:06Z"},
++			},
++		}
++		if !reflect.DeepEqual(got, want) {
++			t.Fatalf("Parse = %+v, want %+v", got, want)
++		}
++		if rendered := string(Render(got)); strings.Contains(rendered, "parent fabric status") {
++			t.Fatalf("Render %q carries a parent fabric status section; want none", rendered)
++		}
++	})
++
+ 	for name, data := range map[string]string{
+ 		"missing state":    "producer: P\nhistory_entries: 0\n",
+ 		"missing producer": "state: blocked\nhistory_entries: 0\n",
+diff --git a/internal/landingshed/doc.go b/internal/landingshed/doc.go
+index ef2e5bb56..787be80d8 100644
+--- a/internal/landingshed/doc.go
++++ b/internal/landingshed/doc.go
+@@ -45,6 +45,8 @@
+ // The catch-up merge-in stays: the local tip is checked equal to the merged tip under the lock, so it brings no parent code the merge review has not covered while still syncing the records side.
+ // After a merge-in-required error from the parent-side merge Finalize tests the parent again, and retries once only when it has not moved, which covers a parent moved by run records alone;
+ // otherwise it reroutes, so a code-side commit that arrives between the check and the parent-side merge never lands.
++// A dirty parent is Stuck naming the parent's code checkout and its tracked dirty paths, capped at 20, with the way forward per reason.
++// The run records Finalize commits at its parent-records step never count as that dirt, since the guard reads the code checkout alone, whose `_lyx` link is excluded from its index.
+ // Finalize's Done releases the lock before Friction-Reflect runs.
+ // A parent push that fails for a reason other than a transient one carries a repair note when origin's parent already holds the task's work, which an adopter-first landing leaves:
+ // it names the task's squash by the parent head's SHA, a `git reset --keep` to origin's parent when the squash is the only commit origin lacks or a `git rebase --onto` dropping it when another is listed, and then `lyx fabric remove` of the run, leaving the owner pause standing.
+diff --git a/internal/landingshed/finalize.go b/internal/landingshed/finalize.go
+index 49d69e4c8..220e0b1aa 100644
+--- a/internal/landingshed/finalize.go
++++ b/internal/landingshed/finalize.go
+@@ -20,6 +20,7 @@ import (
+ 	"context"
+ 	"errors"
+ 	"fmt"
++	"strconv"
+ 	"strings"
+ 	"time"
+ 
+@@ -49,6 +50,8 @@ type parentMerger interface {
+ 	PushBranch(opts fabricengine.SyncOptions) (fabricengine.PushResult, error)
+ 	// HeadSHA reads the parent pair's own current head commit. See fabricengine.Fabric.HeadSHA.
+ 	HeadSHA() (string, error)
++	// MidMerge reads the merge the parent pair has parked, if any. See fabricengine.Fabric.MidMerge.
++	MidMerge() (fabricengine.MidMergeState, error)
+ }
+ 
+ // The compile-time assertion that *fabricengine.Fabric satisfies parentMerger.
+@@ -267,11 +270,84 @@ func (fz *Finalize) Call(ctx context.Context) (shedengine.Outcome, shedengine.Ou
+ 	// never retry. Any other merge error is stuck with the error surfaced.
+ 	var guardErr *fabricengine.MergeGuardError
+ 	if errors.As(mergeErr, &guardErr) && guardErr.WorktreeDirty() {
+-		return fz.stuckOrCancelled(ctx, guardErr.Error())
++		return fz.stuckOrCancelled(ctx, fz.dirtyParentReason(parentHandle, guardErr))
+ 	}
+ 	return fz.stuckOrCancelled(ctx, fmt.Sprintf("parent-side merge failed: %v", mergeErr), "error", mergeErr)
+ }
+ 
++// maxListedDirtyPaths caps how many dirty paths a refusal lists before it counts the rest.
++const maxListedDirtyPaths = 20
++
++// gotoResumeWayForward is the closing step every dirty-parent way forward ends in.
++const gotoResumeWayForward = `"lyx loom goto --to Finalize" and "lyx loom resume" in the task worktree`
++
++// dirtyPathList renders paths Go-quoted and joined by ", ", the first maxListedDirtyPaths of them, ending in ", and N more" when there are more.
++// Quoting keeps a path holding a space or a comma one item, and the form holds no line break.
++func dirtyPathList(paths []string) string {
++	shown := paths
++	if len(shown) > maxListedDirtyPaths {
++		shown = shown[:maxListedDirtyPaths]
++	}
++	quoted := make([]string, len(shown))
++	for i, p := range shown {
++		quoted[i] = strconv.Quote(p)
++	}
++	list := strings.Join(quoted, ", ")
++	if more := len(paths) - len(shown); more > 0 {
++		list += fmt.Sprintf(", and %d more", more)
++	}
++	return list
++}
++
++// dirtyParentSubject names the parent's code checkout and the tracked paths dirty in it.
++func dirtyParentSubject(checkout string, paths []string) string {
++	return fmt.Sprintf("the parent's code checkout %s has uncommitted tracked paths: %s", checkout, dirtyPathList(paths))
++}
++
++// DirtyParentRefusal words a refusal that the parent's code checkout holds uncommitted tracked paths:
++// the checkout, the paths (capped, quoted) and the way forward when the dirt is the only obstacle.
++func DirtyParentRefusal(checkout string, paths []string) string {
++	return fmt.Sprintf("%s; way forward: commit or discard them in %s with plain git, then %s",
++		dirtyParentSubject(checkout, paths), checkout, gotoResumeWayForward)
++}
++
++// dirtyParentReason words the Stuck reason for a parent-side merge the dirty guard refused, in one of four forms by the other reasons the guard error carries:
++// a merge already in progress, a detached HEAD, a branch not synced to its upstream, or dirt alone.
++func (fz *Finalize) dirtyParentReason(parentHandle parentMerger, guardErr *fabricengine.MergeGuardError) string {
++	checkout := guardErr.Checkout
++	text := guardErr.Error()
++	switch {
++	case guardErr.AlreadyInProgress():
++		reason := fmt.Sprintf("%s; the parent's code checkout is %s", text, checkout)
++		wayForward := gotoResumeWayForward
++		state, err := parentHandle.MidMerge()
++		switch {
++		case err != nil:
++			logger.Warn("landingshed: read the parent pair's parked merge failed", "producer", finalizeName, "cause", err)
++			wayForward = fz.parkedMergeWayForward(checkout)
++		case state.Kind == fabricengine.MidMergeParked:
++			reason += fmt.Sprintf("; the parked fabric merge is a %s of %s in the parent pair", state.Verb, state.Source)
++			wayForward = fz.parkedMergeWayForward(checkout)
++		}
++		return reason + "; way forward: " + wayForward
++	case guardErr.DetachedHead():
++		return fmt.Sprintf("%s: %s; way forward: check out the parent branch %q in %s with plain git, and when the checkout refuses to carry the changes, set them aside first with plain git and restore them on the branch after it; then commit them on the parent branch or discard them in %s with plain git; then %s",
++			text, dirtyParentSubject(checkout, guardErr.DirtyPaths), fz.deps.ParentBranch, checkout, checkout, gotoResumeWayForward)
++	case guardErr.NotSynced():
++		return fmt.Sprintf("%s: %s; way forward: commit them on the parent branch or discard them in %s with plain git; then push or reconcile the parent branch %q in its own pair; then %s",
++			text, dirtyParentSubject(checkout, guardErr.DirtyPaths), checkout, fz.deps.ParentBranch, gotoResumeWayForward)
++	default:
++		return text + ": " + DirtyParentRefusal(checkout, guardErr.DirtyPaths)
++	}
++}
++
++// parkedMergeWayForward words the way forward out of a fabric merge parked in the parent pair.
++// "--abort" hard-resets the parent's code checkout, and a plain git commit or stash there would take the staged merge with it, so the operator saves a copy of their own change outside the checkout first.
++func (fz *Finalize) parkedMergeWayForward(checkout string) string {
++	return fmt.Sprintf(`the party that started that merge, or the orch or the operator when that party is gone, concludes it with "lyx fabric merge --continue" or discards it with "lyx fabric merge --abort" in the parent pair, then %s; "--abort" hard-resets the parent's code checkout to the merge's start, so the operator first saves a copy of any change of their own in %s outside it, since a plain git commit or stash there would take the staged merge with it; a session lyx refuses the verb from reports status: FAILED and the orch runs it`,
++		gotoResumeWayForward, checkout)
++}
++
+ // configChangeNotice composes the one-line notice about the task's per-worktree config changes, or "" when there is nothing to report or no seam is wired.
+ // Finalize never carries those files to the parent,
+ // so the notice tells the orchestrator to re-apply each change meant for the parent.
+diff --git a/internal/landingshed/finalize_integration_test.go b/internal/landingshed/finalize_integration_test.go
+index e241eda26..96f03532e 100644
+--- a/internal/landingshed/finalize_integration_test.go
++++ b/internal/landingshed/finalize_integration_test.go
+@@ -269,7 +269,7 @@ func TestFinalize_OverRealHub(t *testing.T) {
+ 	}
+ 
+ 	// Lands a fresh task with squash off, after the idempotent step so the parent already carries the earlier landing.
+-	t.Run("a non-squash landing reports the config change", func(t *testing.T) {
++	if !t.Run("a non-squash landing reports the config change", func(t *testing.T) {
+ 		hubforge.AddPair(t, h, "third-task")
+ 		thirdCode := h.PairCodeWorktree("third-task")
+ 		gitkit.CommitFile(t, thirdCode, "third.txt", "third feature\n", "task: add third.txt")
+@@ -281,6 +281,33 @@ func TestFinalize_OverRealHub(t *testing.T) {
+ 		shedfake.RequireOutcome(t, newFinalizeAt(t, "third-task", thirdCode, parentCode, resolutionShuttle(thirdCode, ""), false, changes, notify), shedengine.Done)
+ 		requireOneConfigNotice(t, notices, "third-task")
+ 		requireParentLoomConfigUnchanged(t, h, parentConfigBefore)
++	}) {
++		return
++	}
++
++	// Relies on the third step's merge-in having carried the earlier landings in cleanly.
++	t.Run("a dirty parent code checkout is Stuck naming it and its path until the dirt is discarded", func(t *testing.T) {
++		hubforge.AddPair(t, h, "fourth-task")
++		fourthCode := h.PairCodeWorktree("fourth-task")
++		gitkit.CommitFile(t, fourthCode, "fourth.txt", "fourth feature\n", "task: add fourth.txt")
++		gitkit.CommitFile(t, parentCode, "dirty.txt", "committed\n", "parent: add dirty.txt")
++		if err := os.WriteFile(filepath.Join(parentCode, "dirty.txt"), []byte("modified\n"), 0o644); err != nil {
++			t.Fatalf("modify parent dirty.txt: %v", err)
++		}
++
++		ptr := shedfake.RequireOutcome(t, newFinalizeAt(t, "fourth-task", fourthCode, parentCode, resolutionShuttle(fourthCode, ""), true, nil, nil), shedengine.Stuck)
++		resolvedParent, err := filepath.EvalSymlinks(parentCode)
++		if err != nil {
++			t.Fatalf("EvalSymlinks(%s): %v", parentCode, err)
++		}
++		for _, want := range []string{resolvedParent, `"dirty.txt"`} {
++			if !strings.Contains(ptr.Reason, want) {
++				t.Errorf("stuck reason %q does not carry %q", ptr.Reason, want)
++			}
++		}
++
++		gitkit.Git(t, parentCode, "checkout", "--", "dirty.txt")
++		shedfake.RequireOutcome(t, newFinalizeAt(t, "fourth-task", fourthCode, parentCode, resolutionShuttle(fourthCode, ""), true, nil, nil), shedengine.Done)
+ 	})
+ }
+ 
+diff --git a/internal/landingshed/finalize_test.go b/internal/landingshed/finalize_test.go
+index b5b798e88..7a650db6e 100644
+--- a/internal/landingshed/finalize_test.go
++++ b/internal/landingshed/finalize_test.go
+@@ -8,6 +8,7 @@ import (
+ 	"context"
+ 	"encoding/json"
+ 	"errors"
++	"fmt"
+ 	"net/http"
+ 	"net/http/httptest"
+ 	"net/url"
+@@ -44,6 +45,9 @@ type recordingParentMerger struct {
+ 	// order, when non-nil, receives "merge" and "push" as those calls happen, so a test can
+ 	// assert their order against other seams that append to the same slice.
+ 	order *[]string
++	// midMerge and midMergeErr script MidMerge's return.
++	midMerge    fabricengine.MidMergeState
++	midMergeErr error
+ }
+ 
+ type mergeCall struct {
+@@ -81,6 +85,10 @@ func (m *recordingParentMerger) PushBranch(opts fabricengine.SyncOptions) (fabri
+ 
+ func (m *recordingParentMerger) HeadSHA() (string, error) { return m.headSHA, m.headErr }
+ 
++func (m *recordingParentMerger) MidMerge() (fabricengine.MidMergeState, error) {
++	return m.midMerge, m.midMergeErr
++}
++
+ // requireFinalizeReason returns the stuck reason carried on ptr, failing the test when it is empty.
+ func requireFinalizeReason(t *testing.T, ptr shedengine.OutputPointer) string {
+ 	t.Helper()
+@@ -411,12 +419,28 @@ func TestFinalize_MergeInRequiredRetry(t *testing.T) {
+ 
+ // TestFinalize_StuckReasons pins, for each way a landing stops Stuck, the reason it surfaces, that the board seam is never called, and that no stuck-reason file is written.
+ func TestFinalize_StuckReasons(t *testing.T) {
+-	guardErr := &fabricengine.MergeGuardError{Reasons: []string{"worktree dirty"}}
++	numberedPaths := func(n int) []string {
++		paths := make([]string, n)
++		for i := range paths {
++			paths[i] = fmt.Sprintf("p%02d.go", i+1)
++		}
++		return paths
++	}
++	guardErr := &fabricengine.MergeGuardError{Reasons: []string{"worktree dirty"}, Checkout: "/hub/parent", DirtyPaths: []string{"a b.go", "c,d.go"}}
++	guardWith := func(reasons ...string) *fabricengine.MergeGuardError {
++		return &fabricengine.MergeGuardError{Reasons: reasons, Checkout: "/hub/parent", DirtyPaths: []string{"a b.go", "c,d.go"}}
++	}
++	const gotoResume = `lyx loom goto --to Finalize`
+ 	tests := []struct {
+ 		name      string
+ 		resolved  mergeresolve.Result
+ 		openerErr error
+ 		mergeErr  error
++		// midMerge and midMergeErr are what the parent pair's parked-merge read returns.
++		midMerge    fabricengine.MidMergeState
++		midMergeErr error
++		// wantInOrder names substrings the reason must carry, each found after the previous one.
++		wantInOrder []string
+ 		// recordsErr is what the parent run-records seam returns.
+ 		recordsErr error
+ 		wantMerges int
+@@ -454,11 +478,86 @@ func TestFinalize_StuckReasons(t *testing.T) {
+ 			wantInReason: func(d Deps) string { return d.ParentBranch },
+ 		},
+ 		{
+-			name:         "dirty-worktree guard error surfaces verbatim and is not retried",
+-			resolved:     mergeresolve.Result{Outcome: mergeresolve.OutcomeResolved},
+-			mergeErr:     guardErr,
+-			wantMerges:   1,
+-			wantInReason: func(Deps) string { return guardErr.Error() },
++			name:       "dirty-worktree guard error names the checkout and the quoted paths and is not retried",
++			resolved:   mergeresolve.Result{Outcome: mergeresolve.OutcomeResolved},
++			mergeErr:   guardErr,
++			wantMerges: 1,
++			wantInOrder: []string{guardErr.Error(), "/hub/parent", `"a b.go", "c,d.go"`,
++				"commit or discard them in /hub/parent with plain git", gotoResume, "lyx loom resume"},
++		},
++		{
++			name:            "twenty-five dirty paths list the first twenty and count the rest",
++			resolved:        mergeresolve.Result{Outcome: mergeresolve.OutcomeResolved},
++			mergeErr:        &fabricengine.MergeGuardError{Reasons: []string{"worktree dirty"}, Checkout: "/hub/parent", DirtyPaths: numberedPaths(25)},
++			wantMerges:      1,
++			wantInOrder:     []string{`"p01.go"`, `"p20.go"`, "and 5 more"},
++			wantNotInReason: `"p21.go"`,
++		},
++		{
++			name:            "twenty dirty paths are all listed with no count",
++			resolved:        mergeresolve.Result{Outcome: mergeresolve.OutcomeResolved},
++			mergeErr:        &fabricengine.MergeGuardError{Reasons: []string{"worktree dirty"}, Checkout: "/hub/parent", DirtyPaths: numberedPaths(20)},
++			wantMerges:      1,
++			wantInOrder:     []string{`"p01.go"`, `"p20.go"`},
++			wantNotInReason: "more",
++		},
++		{
++			name:            "source-not-found beside dirt keeps the dirt-only way forward",
++			resolved:        mergeresolve.Result{Outcome: mergeresolve.OutcomeResolved},
++			mergeErr:        guardWith("source branch not found", "worktree dirty"),
++			wantMerges:      1,
++			wantInOrder:     []string{"source branch not found; worktree dirty", "/hub/parent", `"a b.go"`, "commit or discard them in /hub/parent with plain git", gotoResume},
++			wantNotInReason: "source branch \"",
++		},
++		{
++			name:            "merge already in progress names the parked merge and the continue or abort way forward",
++			resolved:        mergeresolve.Result{Outcome: mergeresolve.OutcomeResolved},
++			mergeErr:        guardWith("merge already in progress", "worktree dirty"),
++			midMerge:        fabricengine.MidMergeState{Kind: fabricengine.MidMergeParked, Verb: fabricengine.MergeVerbMerge, Source: "task-x"},
++			wantMerges:      1,
++			wantInOrder:     []string{"merge already in progress; worktree dirty", "/hub/parent", "merge of task-x", "lyx fabric merge --continue", "lyx fabric merge --abort", gotoResume, "lyx loom resume", "hard-resets the parent's code checkout", "reports status: FAILED and the orch runs it"},
++			wantNotInReason: `"a b.go"`,
++		},
++		{
++			name:            "merge already in progress with an unreadable parked merge names no verb and keeps the way forward",
++			resolved:        mergeresolve.Result{Outcome: mergeresolve.OutcomeResolved},
++			mergeErr:        guardWith("merge already in progress", "worktree dirty"),
++			midMergeErr:     errors.New("probe failed"),
++			wantMerges:      1,
++			wantInOrder:     []string{"/hub/parent", "lyx fabric merge --continue", "lyx fabric merge --abort", gotoResume, "lyx loom resume"},
++			wantNotInReason: "merge of",
++		},
++		{
++			name:            "merge already in progress with no parked merge left names only the goto and the resume",
++			resolved:        mergeresolve.Result{Outcome: mergeresolve.OutcomeResolved},
++			mergeErr:        guardWith("merge already in progress", "worktree dirty"),
++			midMerge:        fabricengine.MidMergeState{Kind: fabricengine.MidMergeNone},
++			wantMerges:      1,
++			wantInOrder:     []string{"/hub/parent", gotoResume, "lyx loom resume"},
++			wantNotInReason: "merge --continue",
++		},
++		{
++			name:            "merge already in progress with a foreign merge names only the goto and the resume",
++			resolved:        mergeresolve.Result{Outcome: mergeresolve.OutcomeResolved},
++			mergeErr:        guardWith("merge already in progress", "worktree dirty"),
++			midMerge:        fabricengine.MidMergeState{Kind: fabricengine.MidMergeForeign},
++			wantMerges:      1,
++			wantInOrder:     []string{"/hub/parent", gotoResume, "lyx loom resume"},
++			wantNotInReason: "merge --continue",
++		},
++		{
++			name:        "branch not synced beside dirt names the list then commit or discard, then reconciling the parent",
++			resolved:    mergeresolve.Result{Outcome: mergeresolve.OutcomeResolved},
++			mergeErr:    guardWith("branch not synced to upstream", "worktree dirty"),
++			wantMerges:  1,
++			wantInOrder: []string{"branch not synced to upstream; worktree dirty", `"a b.go"`, "commit them on the parent branch or discard them", "push or reconcile the parent branch", gotoResume, "lyx loom resume"},
++		},
++		{
++			name:        "detached head beside dirt names checking out the parent branch first",
++			resolved:    mergeresolve.Result{Outcome: mergeresolve.OutcomeResolved},
++			mergeErr:    guardWith("checkout is not on a branch", "worktree dirty"),
++			wantMerges:  1,
++			wantInOrder: []string{`"a b.go"`, "check out the parent branch", "set them aside first", "commit them on the parent branch or discard them", gotoResume, "lyx loom resume"},
+ 		},
+ 		{
+ 			name:         "unrecognized merge error surfaces",
+@@ -493,7 +592,7 @@ func TestFinalize_StuckReasons(t *testing.T) {
+ 				deps.Reconcile = func() (fabricengine.OriginReport, error) { return *tt.report, nil }
+ 			}
+ 			res := &recordingResolver{result: tt.resolved}
+-			merger := &recordingParentMerger{}
++			merger := &recordingParentMerger{midMerge: tt.midMerge, midMergeErr: tt.midMergeErr}
+ 			if tt.mergeErr != nil {
+ 				merger.results = []mergeCallResult{{err: tt.mergeErr}}
+ 			}
+@@ -506,8 +605,19 @@ func TestFinalize_StuckReasons(t *testing.T) {
+ 
+ 			ptr := shedfake.RequireOutcome(t, fz, shedengine.Stuck)
+ 			got := requireFinalizeReason(t, ptr)
+-			if want := tt.wantInReason(deps); !strings.Contains(got, want) {
+-				t.Errorf("stuck reason %q does not carry %q", got, want)
++			if tt.wantInReason != nil {
++				if want := tt.wantInReason(deps); !strings.Contains(got, want) {
++					t.Errorf("stuck reason %q does not carry %q", got, want)
++				}
++			}
++			rest := got
++			for _, want := range tt.wantInOrder {
++				idx := strings.Index(rest, want)
++				if idx < 0 {
++					t.Errorf("stuck reason %q does not carry %q after the previous wanted text", got, want)
++					break
++				}
++				rest = rest[idx+len(want):]
+ 			}
+ 			if tt.wantNotInReason != "" && strings.Contains(got, tt.wantNotInReason) {
+ 				t.Errorf("stuck reason %q carries %q; want it free of it", got, tt.wantNotInReason)
+diff --git a/internal/loomcli/cli.go b/internal/loomcli/cli.go
+index 0bfb7e1e8..a18962930 100644
+--- a/internal/loomcli/cli.go
++++ b/internal/loomcli/cli.go
+@@ -111,9 +111,9 @@ type loomCLI struct {
+ 	// recordedParentBranch is the seam through which start and resume read the pair's recorded parent branch, to tell a parked merge-in of that branch from any other merge state.
+ 	// A test substitutes a canned branch or error.
+ 	recordedParentBranch func(*lyxcwd.Location) (string, error)
+-	// parentDirtyPaths is the seam through which a halt whose reason names a dirty worktree reads the parent pair's dirty tracked paths for its halt note.
+-	// A test substitutes canned paths or an error; a nil value adds no section.
+-	parentDirtyPaths func() ([]string, error)
++	// parentCodeDirt is the seam through which the Finalize goto guard reads the parent pair's code checkout, its tracked dirty paths and whether fabric holds a merge record on that pair.
++	// An untagged test cannot build a real parent pair, so it substitutes canned answers.
++	parentCodeDirt func() (checkout string, paths []string, mergeRecord bool, err error)
+ 	// spec is the shedverbs.Spec the pre-run fills in place (arm.go) and the four shedverbs
+ 	// verbs read at run time. It is always non-nil after newLoomCLI, so Command() can hand the
+ 	// same pointer to shedverbs.Verbs before the pre-run has ever run.
+@@ -187,7 +187,7 @@ func newLoomCLI() *loomCLI {
+ 		recordedParentBranch:  readRecordedParentBranch,
+ 		spec:                  &shedverbs.Spec{},
+ 	}
+-	c.parentDirtyPaths = c.parentDirtyPathsFromFabric
++	c.parentCodeDirt = c.parentCodeDirtFromFabric
+ 	c.ownerOf = func(l *lyxcwd.Location, slug string) (ownerVerdict, error) {
+ 		return runOwnerVerdict(l, slug, machinename.Name)
+ 	}
+diff --git a/internal/loomcli/doc.go b/internal/loomcli/doc.go
+index 379d145a5..d93f3fef9 100644
+--- a/internal/loomcli/doc.go
++++ b/internal/loomcli/doc.go
+@@ -63,7 +63,7 @@
+ //   - running: a no-op success when the driver is live or holds the run lock or the driver lock, and refused as a halted run otherwise.
+ //   - halted with the run lock or the driver lock held, or with a live driver and no park marker: refused with the kind `driver_not_parked`, to retry shortly; a held driver lock means the Go driver is still settling the stop.
+ //   - halted with a live driver and a park marker: resumed, refused with `merge_in_progress` over an unfinished merge under start's Publish and Finalize exception, and with `driver_busy` when the driver's pane would not take the resume line.
+-//   - halted with no live driver and a seed recording the Go driver: refused over an unfinished merge with `merge_in_progress`, otherwise a Go driver is spawned, which re-steps the run, and the success envelope names its pid.
++//   - halted with no live driver and a seed recording the Go driver: refused over an unfinished merge with `merge_in_progress`, otherwise a Go driver is spawned, which re-steps the run unless it starts at a blocked Finalize stop under a dirty parent code checkout, where it hands back and steps nothing, and the success envelope names its pid.
+ //   - halted with no live driver otherwise: refused over an unfinished merge with `merge_in_progress`, otherwise naming `lyx batten run <slug>` from the prime and then resume for a dead strand, and `lyx loom start` for a retiring strand or none.
+ //
+ // The driver strand is read from reed's directory, which still lists a session that died with the machine, never from the run's seed;
+@@ -144,6 +144,12 @@
+ // `lyx shed step <run-id> --until-stop --arbiter-attempt <N>` performs the verdict's goto under the run and status locks, once per attempt;
+ // a run already paused at the verdict's goto target with only goto entries since the spawn, the last naming that target, is admitted with no second goto.
+ // A guard refusal inside that re-launch refuses the attempt, and the driver hands back with the refusal text.
++//
++// The told goto guard has two arms, run in this order:
++// the Finalize arm refuses a goto onto the Finalize row while the parent's code checkout holds tracked dirt, naming the checkout, the paths and the goto and resume that retry it;
++// the settled-segment arm refuses a goto onto a review or fix row whose verdict is settled.
++// The Finalize arm admits the row when the parent pair cannot be read or holds a fabric merge record, since Finalize's own merge guard then words the problem.
++//
+ // A pair's session end ends a live arbiter strand with the pair's other strands.
+ //
+ // The Go driver reaches the arbiter through its arbiter seam, which calls this same path in-process, so eligibility, `arbiter_max_spawns`, the attempts, the applied mark and the deadlines are shared;
+@@ -173,7 +179,8 @@
+ // A done run commits its records, and one that finished with `friction: failed` also gets a report and a notice without being parked.
+ //
+ // A hand-over runs only at a binary-eligible stop, once per stop key and build, over a clean tree outside the run's records and never under a pause.
+-// It records the hand-over, leaves the stop report and the park marker, releases the driver lock and spawns a fresh `lyx loom drive` of the on-disk build, which re-steps.
++// It records the hand-over, leaves the stop report and the park marker, releases the driver lock and spawns a fresh `lyx loom drive` of the on-disk build, which re-steps;
++// a driver starting at a blocked Finalize stop first runs the Finalize arm and hands back, stepping nothing, while the parent's code checkout is dirty.
+ //
+ // A driver restarted over a halted run finds an agent attempt that no later hand-back closed and lets the agent's own call reuse it, so no second agent is spawned.
+ //
+diff --git a/internal/loomcli/drivewiring.go b/internal/loomcli/drivewiring.go
+index 7c3c3ec5f..982684ed1 100644
+--- a/internal/loomcli/drivewiring.go
++++ b/internal/loomcli/drivewiring.go
+@@ -324,6 +324,7 @@ func (c *loomCLI) goDriverDepsFor(release func() error) (sheddriver.Deps, error)
+ 				return attempt.Snapshot, err
+ 			},
+ 		},
++		StartCheck: c.finalizeGuard(),
+ 	}
+ 	return deps, nil
+ }
+diff --git a/internal/loomcli/finalizeguard.go b/internal/loomcli/finalizeguard.go
+new file mode 100644
+index 000000000..a6522d88d
+--- /dev/null
++++ b/internal/loomcli/finalizeguard.go
+@@ -0,0 +1,74 @@
++// finalizeguard.go refuses a goto onto Finalize while the parent's code checkout holds tracked dirt, and composes that arm with the run's other goto guards.
++
++package loomcli
++
++import (
++	"github.com/Knatte18/loomyard/internal/fabricengine"
++	"github.com/Knatte18/loomyard/internal/landingshed"
++	"github.com/Knatte18/loomyard/internal/logger"
++	"github.com/Knatte18/loomyard/internal/loomrecipe"
++	"github.com/Knatte18/loomyard/internal/shedengine"
++)
++
++// finalizeDirtGuard refuses a goto onto the Finalize row while the parent's code checkout holds tracked dirt, since Finalize's parent-side merge would refuse the same dirt.
++// Every other target is admitted without a parent read.
++// An isFinalize error is returned, which Shed turns into a refusal.
++// A parentDirt error is logged and admitted, since Finalize's own steps then report the real problem;
++// a fabric merge record on the parent pair and an empty path list are admitted too, since Finalize's own guard words those.
++// The guard only decides; it moves no run and writes no file.
++func finalizeDirtGuard(isFinalize func(row string) (bool, error), parentDirt func() (checkout string, paths []string, mergeRecord bool, err error)) shedengine.GotoGuard {
++	return func(target string) (string, error) {
++		finalize, err := isFinalize(target)
++		if err != nil || !finalize {
++			return "", err
++		}
++		checkout, paths, mergeRecord, err := parentDirt()
++		if err != nil {
++			logger.Warn("loom: could not read the parent's code checkout for the Finalize goto guard", "target", target, "cause", err)
++			return "", nil
++		}
++		if mergeRecord || len(paths) == 0 {
++			return "", nil
++		}
++		return landingshed.DirtyParentRefusal(checkout, paths), nil
++	}
++}
++
++// composeGotoGuards runs guards in order and returns the first refusal or error, admitting when every guard admits.
++func composeGotoGuards(guards ...shedengine.GotoGuard) shedengine.GotoGuard {
++	return func(target string) (string, error) {
++		for _, guard := range guards {
++			if refusal, err := guard(target); refusal != "" || err != nil {
++				return refusal, err
++			}
++		}
++		return "", nil
++	}
++}
++
++// parentCodeDirtFromFabric reads the parent pair's code checkout, its tracked uncommitted paths, and whether fabric holds a merge record on that pair.
++// It reads the code checkout alone, never the records checkout, and returns every read error.
++func (c *loomCLI) parentCodeDirtFromFabric() (checkout string, paths []string, mergeRecord bool, err error) {
++	parentBranch, err := c.recordedParentBranch(c.location)
++	if err != nil {
++		return "", nil, false, err
++	}
++	parent, err := fabricengine.OpenParent(c.location, parentBranch)
++	if err != nil {
++		return "", nil, false, err
++	}
++	mergeRecord, err = parent.MergeInProgress()
++	if err != nil {
++		return "", nil, false, err
++	}
++	checkout, paths, err = parent.CodeDirtyPaths()
++	if err != nil {
++		return "", nil, false, err
++	}
++	return checkout, paths, mergeRecord, nil
++}
++
++// finalizeGuard is the Finalize arm of the run's goto guard over the parent read the receiver's seam answers.
++func (c *loomCLI) finalizeGuard() shedengine.GotoGuard {
++	return finalizeDirtGuard(loomrecipe.IsFinalizeRow, c.parentCodeDirt)
++}
+diff --git a/internal/loomcli/finalizeguard_test.go b/internal/loomcli/finalizeguard_test.go
+new file mode 100644
+index 000000000..65e0ff56a
+--- /dev/null
++++ b/internal/loomcli/finalizeguard_test.go
+@@ -0,0 +1,172 @@
++package loomcli
++
++import (
++	"errors"
++	"os"
++	"path/filepath"
++	"strings"
++	"testing"
++
++	"github.com/Knatte18/loomyard/internal/loomengine"
++	"github.com/Knatte18/loomyard/internal/loomrecipe"
++	"github.com/Knatte18/loomyard/internal/lyxcwd"
++	"github.com/Knatte18/loomyard/internal/shedengine"
++)
++
++// TestFinalizeDirtGuard covers the Finalize arm composed with a later guard, then the receiver's wiring of both arms.
++func TestFinalizeDirtGuard(t *testing.T) {
++	t.Parallel()
++
++	const settledRefusal = "the Plan-Review verdict is settled"
++	dirtyCheckout, dirtyPaths := "/hub/parent", []string{"a.go", "b c.go"}
++	wantDirt := []string{"/hub/parent", `"a.go", "b c.go"`, "lyx loom goto --to Finalize", "lyx loom resume"}
++	errLater := errors.New("settle record unreadable")
++	errRecipe := errors.New("recipe parse failure")
++
++	tests := []struct {
++		name string
++		// isFinalizeErr makes the isFinalize fake fail.
++		isFinalizeErr error
++		paths         []string
++		mergeRecord   bool
++		dirtErr       error
++		target        string
++		// wantRefusal lists the substrings of the refusal; empty means the target is admitted.
++		wantRefusal []string
++		wantErr     error
++		wantReads   int
++	}{
++		{name: "Finalize over dirt", paths: dirtyPaths, target: "Finalize", wantRefusal: wantDirt, wantReads: 1},
++		{name: "Finalize over an empty list", target: "Finalize", wantReads: 1},
++		{name: "Finalize over a merge record beside dirt", paths: dirtyPaths, mergeRecord: true, target: "Finalize", wantReads: 1},
++		{name: "Finalize over a read error beside dirt", paths: dirtyPaths, dirtErr: errors.New("git failed"), target: "Finalize", wantReads: 1},
++		{name: "settled review row", paths: dirtyPaths, target: "Plan-Burler-Review", wantRefusal: []string{settledRefusal}},
++		{name: "later guard error", paths: dirtyPaths, target: "Webster-Burler-Review", wantErr: errLater},
++		{name: "Merge-In", paths: dirtyPaths, target: "Merge-In"},
++		{name: "isFinalize error", isFinalizeErr: errRecipe, paths: dirtyPaths, target: "Finalize", wantErr: errRecipe},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			reads := 0
++			parentDirt := func() (string, []string, bool, error) {
++				reads++
++				return dirtyCheckout, tt.paths, tt.mergeRecord, tt.dirtErr
++			}
++			isFinalize := loomrecipe.IsFinalizeRow
++			if tt.isFinalizeErr != nil {
++				isFinalize = func(string) (bool, error) { return false, tt.isFinalizeErr }
++			}
++			fakeSettled := func(target string) (string, error) {
++				switch target {
++				case "Plan-Burler-Review":
++					return settledRefusal, nil
++				case "Webster-Burler-Review":
++					return "", errLater
++				}
++				return "", nil
++			}
++			guard := composeGotoGuards(finalizeDirtGuard(isFinalize, parentDirt), fakeSettled)
++
++			refusal, err := guard(tt.target)
++
++			if !errors.Is(err, tt.wantErr) {
++				t.Fatalf("guard(%q) error = %v; want %v", tt.target, err, tt.wantErr)
++			}
++			if len(tt.wantRefusal) == 0 && refusal != "" {
++				t.Errorf("guard(%q) = %q; want the target admitted", tt.target, refusal)
++			}
++			for _, want := range tt.wantRefusal {
++				if !strings.Contains(refusal, want) {
++					t.Errorf("guard(%q) = %q; want it to contain %q", tt.target, refusal, want)
++				}
++			}
++			if reads != tt.wantReads {
++				t.Errorf("guard(%q) read the parent %d times; want %d", tt.target, reads, tt.wantReads)
++			}
++		})
++	}
++
++	t.Run("wiring", func(t *testing.T) {
++		t.Parallel()
++		loc := &lyxcwd.Location{HubPath: t.TempDir(), WorktreeName: "pair", AnchorRel: "."}
++		subdir, isBouncer, err := loomrecipe.BouncerRunSubdir("Plan-Bouncer")
++		if err != nil || !isBouncer {
++			t.Fatalf("BouncerRunSubdir(Plan-Bouncer) = %q, %v, %v; want a Bouncer row", subdir, isBouncer, err)
++		}
++		runDir := filepath.Join(loomengine.LoomReviewsDir(loc), subdir)
++		if err := os.MkdirAll(runDir, 0o755); err != nil {
++			t.Fatal(err)
++		}
++		settled := `{"subject":{"kind":"document"},"generation":1,"round":1,"settled_at":"2026-10-20T10:00:00Z","settled":true}`
++		if err := os.WriteFile(filepath.Join(runDir, "settle-record.json"), []byte(settled), 0o644); err != nil {
++			t.Fatal(err)
++		}
++		c := &loomCLI{
++			location: loc,
++			routing: shedengine.Routing{Producers: []shedengine.ProducerDef{
++				{Name: "Plan-Bouncer", Segment: "Plan-Review", OnStuck: "Plan-Burler-Review", OnDone: "Webster"},
++				{Name: "Plan-Burler-Review", Segment: "Plan-Review", OnStuck: "Plan-Bouncer", OnDone: "Plan-Bouncer"},
++			}},
++			parentCodeDirt: func() (string, []string, bool, error) { return dirtyCheckout, dirtyPaths, false, nil },
++		}
++
++		rows := []struct {
++			name        string
++			guard       shedengine.GotoGuard
++			target      string
++			wantRefusal []string
++		}{
++			{"whole guard refuses Finalize", c.settledGuard(), "Finalize", wantDirt},
++			{"whole guard refuses a settled review row", c.settledGuard(), "Plan-Burler-Review", []string{settledRefusal}},
++			{"Finalize arm refuses Finalize", c.finalizeGuard(), "Finalize", wantDirt},
++			{"Finalize arm admits a settled review row", c.finalizeGuard(), "Plan-Burler-Review", nil},
++		}
++		for _, row := range rows {
++			refusal, err := row.guard(row.target)
++			if err != nil {
++				t.Errorf("%s: guard(%q) error = %v", row.name, row.target, err)
++			}
++			if len(row.wantRefusal) == 0 && refusal != "" {
++				t.Errorf("%s: guard(%q) = %q; want the target admitted", row.name, row.target, refusal)
++			}
++			for _, want := range row.wantRefusal {
++				if !strings.Contains(refusal, want) {
++					t.Errorf("%s: guard(%q) = %q; want it to contain %q", row.name, row.target, refusal, want)
++				}
++			}
++		}
++	})
++
++	t.Run("production read", func(t *testing.T) {
++		t.Parallel()
++		readErrors := []struct {
++			name         string
++			parentBranch func() (func(*lyxcwd.Location) (string, error), error)
++		}{
++			{"recorded parent branch unreadable", func() (func(*lyxcwd.Location) (string, error), error) {
++				err := errors.New("the pair has no fabric origin record")
++				return parentBranchSeam(err), err
++			}},
++			{"parent pair not openable", func() (func(*lyxcwd.Location) (string, error), error) {
++				return parentBranchSeam(nil), nil
++			}},
++		}
++		for _, tt := range readErrors {
++			seam, wantErr := tt.parentBranch()
++			c := &loomCLI{
++				location:             &lyxcwd.Location{HubPath: t.TempDir(), WorktreeName: "pair", AnchorRel: "."},
++				recordedParentBranch: seam,
++			}
++			c.parentCodeDirt = c.parentCodeDirtFromFabric
++
++			_, _, _, err := c.parentCodeDirtFromFabric()
++			if err == nil || (wantErr != nil && !errors.Is(err, wantErr)) {
++				t.Errorf("%s: parentCodeDirtFromFabric() error = %v; want %v", tt.name, err, wantErr)
++			}
++			if refusal, err := c.finalizeGuard()("Finalize"); refusal != "" || err != nil {
++				t.Errorf("%s: finalizeGuard()(Finalize) = %q, %v; want admitted", tt.name, refusal, err)
++			}
++		}
++	})
++}
+diff --git a/internal/loomcli/halt.go b/internal/loomcli/halt.go
+index 53eac7558..f9fe36e24 100644
+--- a/internal/loomcli/halt.go
++++ b/internal/loomcli/halt.go
+@@ -11,7 +11,6 @@ import (
+ 	"os"
+ 	"strings"
+ 
+-	"github.com/Knatte18/loomyard/internal/fabricengine"
+ 	"github.com/Knatte18/loomyard/internal/friction"
+ 	"github.com/Knatte18/loomyard/internal/frictionengine"
+ 	"github.com/Knatte18/loomyard/internal/haltnote"
+@@ -28,20 +27,6 @@ type haltNote struct {
+ 	Reason    string
+ 	History   []shedengine.HistoryEntry
+ 	TraceFile string
+-	// ParentFabricStatus is the rendered dirty state of the parent pair, set only for a halt whose reason names a dirty worktree; empty writes no section.
+-	ParentFabricStatus string
+-}
+-
+-// renderParentFabricStatus renders the parent pair's dirty tracked paths as one path per line, or the error text when the read failed.
+-// A parent with no dirty path says so, since that clears the parent and points at the task's own tree.
+-func renderParentFabricStatus(paths []string, err error) string {
+-	if err != nil {
+-		return "could not be read: " + err.Error()
+-	}
+-	if len(paths) == 0 {
+-		return "the parent pair has no uncommitted tracked path"
+-	}
+-	return strings.Join(paths, "\n")
+ }
+ 
+ // writeHistoryRows appends the history section of a friction note: one `- <producer> / <outcome> / <at>` row per entry, or a single line saying there are none.
+@@ -74,7 +59,6 @@ func writeHaltNote(frictionDir string, n haltNote) error {
+ 		Reason:         n.Reason,
+ 		HistoryEntries: len(n.History),
+ 		TraceFile:      n.TraceFile,
+-		ParentStatus:   n.ParentFabricStatus,
+ 	}
+ 	if kind, ok := loomengine.ClassifyHalt(n.State, n.Reason); ok {
+ 		note.Anomaly = string(kind)
+@@ -97,29 +81,12 @@ func (c *loomCLI) reflectHalt(n haltNote) string {
+ 	if c.frictionDir == "" {
+ 		return frictionengine.StatusSkipped
+ 	}
+-	if c.parentDirtyPaths != nil && fabricengine.IsWorktreeDirtyReason(n.Reason) {
+-		paths, err := c.parentDirtyPaths()
+-		n.ParentFabricStatus = renderParentFabricStatus(paths, err)
+-	}
+ 	if err := writeHaltNote(c.frictionDir, n); err != nil {
+ 		logger.Warn("loom: could not write the halt note", "dir", c.frictionDir, "error", err)
+ 	}
+ 	return frictionengine.StatusSkipped
+ }
+ 
+-// parentDirtyPathsFromFabric returns the tracked uncommitted paths of the parent pair the pair's origin record names.
+-func (c *loomCLI) parentDirtyPathsFromFabric() ([]string, error) {
+-	parentBranch, err := c.recordedParentBranch(c.location)
+-	if err != nil {
+-		return nil, err
+-	}
+-	parent, err := fabricengine.OpenParent(c.location, parentBranch)
+-	if err != nil {
+-		return nil, err
+-	}
+-	return parent.DirtyPaths()
+-}
+-
+ // failedHalt reports the halt behind err when it is a `failed` one.
+ // It is never one for shedengine.ErrShedBusy,
+ // and otherwise only when the status file reads `failed` with a persisted error equal to err.Error(), which is how shedengine persists the producer-error and unrecognised-outcome arms.
+diff --git a/internal/loomcli/halt_test.go b/internal/loomcli/halt_test.go
+index 340f502a3..0b92aa737 100644
+--- a/internal/loomcli/halt_test.go
++++ b/internal/loomcli/halt_test.go
+@@ -145,36 +145,7 @@ func TestWriteHaltNote_NamesAnomalyProducerReasonAndHistory(t *testing.T) {
+ 		history  []shedengine.HistoryEntry
+ 		wantKind loomengine.AnomalyKind
+ 		want     []string
+-		// parentStatus is the note's ParentFabricStatus; empty writes no section.
+-		parentStatus string
+ 	}{
+-		{
+-			name:         "ParentPaths",
+-			state:        shedengine.StateBlocked,
+-			reason:       "parent-side merge failed: worktree dirty",
+-			history:      history,
+-			wantKind:     loomengine.AnomalyEscalation,
+-			want:         []string{"parent fabric status:\n/hub/main/a.go\n/hub/main/b.go\n"},
+-			parentStatus: renderParentFabricStatus([]string{"/hub/main/a.go", "/hub/main/b.go"}, nil),
+-		},
+-		{
+-			name:         "ParentReadError",
+-			state:        shedengine.StateBlocked,
+-			reason:       "parent-side merge failed: worktree dirty",
+-			history:      history,
+-			wantKind:     loomengine.AnomalyEscalation,
+-			want:         []string{"parent fabric status:\ncould not be read: no live pair\n"},
+-			parentStatus: renderParentFabricStatus(nil, errors.New("no live pair")),
+-		},
+-		{
+-			name:         "ParentClean",
+-			state:        shedengine.StateBlocked,
+-			reason:       "parent-side merge failed: worktree dirty",
+-			history:      history,
+-			wantKind:     loomengine.AnomalyEscalation,
+-			want:         []string{"parent fabric status:\nthe parent pair has no uncommitted tracked path\n"},
+-			parentStatus: renderParentFabricStatus(nil, nil),
+-		},
+ 		{
+ 			name:     "BudgetPrefixedBlocked",
+ 			state:    shedengine.StateBlocked,
+@@ -212,7 +183,7 @@ func TestWriteHaltNote_NamesAnomalyProducerReasonAndHistory(t *testing.T) {
+ 			t.Parallel()
+ 
+ 			dir := t.TempDir()
+-			n := haltNote{Producer: loomshed.NameWebster, State: tt.state, Reason: tt.reason, History: tt.history, TraceFile: "/logs/trace.log", ParentFabricStatus: tt.parentStatus}
++			n := haltNote{Producer: loomshed.NameWebster, State: tt.state, Reason: tt.reason, History: tt.history, TraceFile: "/logs/trace.log"}
+ 			if err := writeHaltNote(dir, n); err != nil {
+ 				t.Fatalf("writeHaltNote() = %v; want nil", err)
+ 			}
+@@ -234,8 +205,8 @@ func TestWriteHaltNote_NamesAnomalyProducerReasonAndHistory(t *testing.T) {
+ 					t.Errorf("halt note %q does not contain %q", got, w)
+ 				}
+ 			}
+-			if tt.parentStatus == "" && strings.Contains(got, "parent fabric status") {
+-				t.Errorf("halt note %q carries a parent fabric status section; want none for an empty field", got)
++			if strings.Contains(got, "parent fabric status") {
++				t.Errorf("halt note %q carries a parent fabric status section; want none", got)
+ 			}
+ 		})
+ 	}
+@@ -348,45 +319,6 @@ func TestLoomPostRun_HaltNotes(t *testing.T) {
+ 		}
+ 	})
+ 
+-	t.Run("DirtyReasonCarriesTheParentFabricStatusAndAnotherReasonDoesNot", func(t *testing.T) {
+-		t.Parallel()
+-
+-		tests := []struct {
+-			name   string
+-			reason string
+-			// wantReads is how many times the parent's dirty paths are read; zero means the note has no section.
+-			wantReads int
+-		}{
+-			{"DirtyReason", "parent-side merge failed: fabricengine: merge preconditions failed: worktree dirty", 1},
+-			{"OtherReason", "stuck", 0},
+-		}
+-		for _, tt := range tests {
+-			t.Run(tt.name, func(t *testing.T) {
+-				t.Parallel()
+-
+-				f := newHaltFixture(t)
+-				reads := 0
+-				f.c.parentDirtyPaths = func() ([]string, error) {
+-					reads++
+-					return []string{"/hub/main/a.go"}, nil
+-				}
+-				res := shedengine.Result{Outcome: shedengine.RunBlocked, HaltedProducer: loomshed.NameWebster, Reason: tt.reason}
+-
+-				f.c.loomPostRun(context.Background(), res, nil)
+-				note := readNote(t, filepath.Join(f.frictionDir, "loom-halt.md"))
+-				if reads != tt.wantReads {
+-					t.Errorf("parent dirty-paths reads = %d; want %d", reads, tt.wantReads)
+-				}
+-				if hasSection := strings.Contains(note, "parent fabric status:\n/hub/main/a.go\n"); hasSection != (tt.wantReads == 1) {
+-					t.Errorf("halt note %q: parent fabric status section present = %v; want %v", note, hasSection, tt.wantReads == 1)
+-				}
+-				if tt.wantReads == 0 && strings.Contains(note, "parent fabric status") {
+-					t.Errorf("halt note %q carries a parent fabric status section; want none", note)
+-				}
+-			})
+-		}
+-	})
+-
+ 	t.Run("FailedRunError", func(t *testing.T) {
+ 		t.Parallel()
+ 
+diff --git a/internal/loomcli/settledguard.go b/internal/loomcli/settledguard.go
+index 3a62bce4b..03103c699 100644
+--- a/internal/loomcli/settledguard.go
++++ b/internal/loomcli/settledguard.go
+@@ -15,14 +15,14 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/verifytree"
+ )
+ 
+-// settledGuard is the run's goto guard over its settled review segments, reading the Publish failure record of the task worktree.
++// settledGuard is the run's whole goto guard: the Finalize arm first, then the settled-segment arm over its settled review segments, which reads the Publish failure record of the task worktree.
+ // It needs a known location.
+ func (c *loomCLI) settledGuard() shedengine.GotoGuard {
+ 	location := c.location
+ 	verifyPaths := verifytree.NewPaths(location.WorktreePath(), verifytree.Dir(location.AnchorPath()))
+-	return settledSegmentGuard(c.routing.Producers, loomengine.LoomReviewsDir(location), func() (verifytree.PublishFailure, bool, error) {
++	return composeGotoGuards(c.finalizeGuard(), settledSegmentGuard(c.routing.Producers, loomengine.LoomReviewsDir(location), func() (verifytree.PublishFailure, bool, error) {
+ 		return verifytree.ReadPublishFailure(verifyPaths)
+-	})
++	}))
+ }
+ 
+ // settledSegmentGuard refuses a goto onto a review or fix row of a review segment whose Bouncer holds a live settle record, since such a goto would re-run a settled review.
+diff --git a/internal/loomrecipe/bouncerrows_test.go b/internal/loomrecipe/bouncerrows_test.go
+index f3a4ec6e9..9b6e5c1d7 100644
+--- a/internal/loomrecipe/bouncerrows_test.go
++++ b/internal/loomrecipe/bouncerrows_test.go
+@@ -136,6 +136,24 @@ func TestBouncerRowsCarryOverTheirOwnSegment(t *testing.T) {
+ 	}
+ }
+ 
++func TestIsFinalizeRow(t *testing.T) {
++	tests := []struct {
++		row  string
++		want bool
++	}{
++		{loomshed.NameFinalize, true},
++		{loomshed.NameMergeIn, false},
++		{loomshed.NamePRGate, false},
++		{"No-Such-Row", false},
++	}
++	for _, tt := range tests {
++		got, err := IsFinalizeRow(tt.row)
++		if err != nil || got != tt.want {
++			t.Errorf("IsFinalizeRow(%q) = %v, %v; want %v, nil", tt.row, got, err, tt.want)
++		}
++	}
++}
++
+ func TestBouncerRunSubdir(t *testing.T) {
+ 	bouncers := map[string]string{
+ 		loomshed.NameDiscussionBouncer: "discussion",
+diff --git a/internal/loomrecipe/finalizerow.go b/internal/loomrecipe/finalizerow.go
+new file mode 100644
+index 000000000..bfa3ccc35
+--- /dev/null
++++ b/internal/loomrecipe/finalizerow.go
+@@ -0,0 +1,31 @@
++// finalizerow.go answers whether a row of the embedded loom and darn recipes is the Finalize row.
++
++package loomrecipe
++
++import (
++	"fmt"
++
++	"github.com/Knatte18/loomyard/contracts/recipes"
++	"github.com/Knatte18/loomyard/internal/shedbuild"
++)
++
++// finalizeEngine is the recipe engine name the Finalize row carries.
++const finalizeEngine = "Finalize"
++
++// IsFinalizeRow reports whether the named row of the loom or darn recipe has engine Finalize.
++// The row is identified by its engine, never its name; an unknown name is false.
++// A recipe parse failure is a `loomrecipe:`-prefixed error.
++func IsFinalizeRow(row string) (bool, error) {
++	for _, source := range [][]byte{recipes.LoomRecipe, recipes.DarnRecipe} {
++		recipe, err := shedbuild.Parse(source)
++		if err != nil {
++			return false, fmt.Errorf("loomrecipe: IsFinalizeRow: %w", err)
++		}
++		for _, r := range recipe.Producers {
++			if r.Name == row {
++				return r.Engine == finalizeEngine, nil
++			}
++		}
++	}
++	return false, nil
++}
+diff --git a/internal/sheddriver/doc.go b/internal/sheddriver/doc.go
+index 36aaf7c8e..e2f643779 100644
+--- a/internal/sheddriver/doc.go
++++ b/internal/sheddriver/doc.go
+@@ -13,6 +13,7 @@
+ // `Run` steps the run through `Deps.Step` and `Deps.Goto`, which the arming module points at `shedverbs`' `--until-stop` and goto bodies, so the driver restates neither.
+ // Each step prints one stop envelope; the driver saves it under the run's drive-reports directory and decides it.
+ // Before it acts on a stop it re-reads the status: a run another process is running, or whose run lock is held, ends the driver, and a run that moved to another stop is decided afresh from its status.
++// A driver that starts at a blocked stop with no open agent attempt first asks `Deps.StartCheck` about the stop's row, once, before its first step, and a refusal hands the run back quoting it with nothing stepped.
+ // A pause covering the run holds the driver before it spawns or re-steps anything.
+ // A failure the driver cannot act on is handed back; only a failed hand-back or a cancelled context is returned as an error.
+ // `DriveVerb` holds the run's driver lock for the driver's life, removes the stale park marker and resume report, and refuses a second driver for the run at once.
+@@ -55,6 +56,7 @@
+ //   - no `Verify`: no stop is a verify halt;
+ //   - no `HandOver`: the driver reads no build and never hands over;
+ //   - no `Tamper`: a tackler verdict is acted on without comparing the worktree with its snapshot;
++//   - no `StartCheck`: a driver starting at a blocked stop steps it unchecked;
+ //   - no `Watched`: the run is never watched;
+ //   - no `CommitRecords`: a done stop commits nothing;
+ //   - no `WriteFrictionNote`: a paused stop with no reason writes none.
+diff --git a/internal/sheddriver/drive.go b/internal/sheddriver/drive.go
+index 34ec639b1..98233545d 100644
+--- a/internal/sheddriver/drive.go
++++ b/internal/sheddriver/drive.go
+@@ -94,6 +94,8 @@ type Deps struct {
+ 	HandOver *HandOverSeam
+ 	// Tamper compares the worktree with the snapshot the tackler attempt recorded; nil acts on a tackler verdict without the comparison.
+ 	Tamper *TamperSeam
++	// StartCheck judges the row a driver finds blocked at its start before it steps anything, and returns a refusal that hands the run back; nil checks nothing.
++	StartCheck func(row string) (refusal string, err error)
+ }
+ 
+ // ArbiterSeam is the stronger agent a tackler escalation, or a stop only it may judge, goes to.
+@@ -176,10 +178,19 @@ func Run(ctx context.Context, deps Deps) (Exit, error) {
+ 
+ // run steps the run and settles each stop until the driver is finished.
+ func (d *goDriver) run(ctx context.Context) error {
+-	stop, resumed, err := d.resumeOpenAttempt(ctx)
++	status, statusFound, err := d.deps.ReadStatus()
++	if err != nil {
++		return d.handBackFailure(fmt.Errorf("reading the status before the first step: %w", err))
++	}
++	stop, resumed, err := d.resumeOpenAttempt(ctx, status, statusFound)
+ 	if err != nil {
+ 		return d.handBackFailure(err)
+ 	}
++	if !resumed {
++		if handedBack, err := d.checkBlockedStart(status, statusFound); err != nil || handedBack {
++			return err
++		}
++	}
+ 	attempt := ""
+ 	for {
+ 		if err := ctx.Err(); err != nil {
+@@ -616,15 +627,29 @@ func appendToFile(path, text string) error {
+ 	return file.Close()
+ }
+ 
++// checkBlockedStart runs the start check once, before the first step, for a run whose status shows a blocked stop.
++// A refusal hands the run back at that stop with the refusal as the hand-back's rule, and a check error hands back as a failure; handedBack is true for both, and nothing is stepped.
++// An admit, a nil check and a status that is absent or not blocked leave the driver to step as usual.
++func (d *goDriver) checkBlockedStart(status shedengine.Status, statusFound bool) (handedBack bool, err error) {
++	if d.deps.StartCheck == nil || !statusFound || status.State != shedengine.StateBlocked {
++		return false, nil
++	}
++	refusal, checkErr := d.deps.StartCheck(status.CurrentProducer)
++	if checkErr != nil {
++		return true, d.handBackFailure(fmt.Errorf("the start check failed: %w", checkErr))
++	}
++	if refusal == "" {
++		return false, nil
++	}
++	return true, d.handBackAs(stopFromStatus(status), driveHandBack{Rules: []string{refusal}}, "the start check refused the blocked stop")
++}
++
+ // resumeOpenAttempt finds, once before the first step, the stop a halted run left with an agent attempt still open, so a restarted driver reuses the attempt instead of spawning a second agent.
++// It decides on status, the first status read of the driver.
+ // An attempt is open when the settle records hold no hand-back for its stop key later than its spawn: a stop the parent took and then resumed finds its attempt closed, and the driver steps.
+ // An arbiter attempt is ignored when no arbiter is wired.
+ // It returns the stop rebuilt from the envelope the attempt recorded; the rule table then sends it to the tackler or the arbiter, whose own call reuses the attempt.
+-func (d *goDriver) resumeOpenAttempt(ctx context.Context) (stop Stop, found bool, err error) {
+-	status, statusFound, err := d.deps.ReadStatus()
+-	if err != nil {
+-		return Stop{}, false, fmt.Errorf("reading the status before the first step: %w", err)
+-	}
++func (d *goDriver) resumeOpenAttempt(ctx context.Context, status shedengine.Status, statusFound bool) (stop Stop, found bool, err error) {
+ 	if !statusFound || status.State == shedengine.StateRunning || status.State == shedengine.StateDone {
+ 		return Stop{}, false, nil
+ 	}
+diff --git a/internal/sheddriver/drive_test.go b/internal/sheddriver/drive_test.go
+index 66061cde4..1c909a542 100644
+--- a/internal/sheddriver/drive_test.go
++++ b/internal/sheddriver/drive_test.go
+@@ -118,6 +118,7 @@ func TestGoDriver_Settle(t *testing.T) {
+ 		return driveEnvelopeJSON(t, map[string]any{"ok": true, "state": "blocked", "reason": shedengine.ReasonBounceBudgetExhausted + " for Build; way forward: the parent resumes"},
+ 			map[string]any{"state": "blocked", "current_producer": "Build", "history_length": 2})
+ 	}
++	const startRefusal = `the parent's code checkout /hub/parent has uncommitted tracked paths: "a.go"`
+ 	const guardRefusal = `goto target "Plan" refused: a settled review would re-run`
+ 	guardRefusedStep := func(t *testing.T) []byte {
+ 		return driveEnvelopeJSON(t, map[string]any{"ok": false, "kind": "producer", "error": guardRefusal, "arbiter_attempt": "1"},
+@@ -200,6 +201,11 @@ func TestGoDriver_Settle(t *testing.T) {
+ 		// Each no-group field leaves that optional group nil for the row.
+ 		noArbiter, noVerify, noHandOver, noTamper, noCommit bool
+ 
++		// startCheck wires the start check, which answers startRefusal and startErr.
++		startCheck   bool
++		startRefusal string
++		startErr     error
++
+ 		wantCalls    []string
+ 		wantActions  []string
+ 		wantSettlers []string
+@@ -525,6 +531,44 @@ func TestGoDriver_Settle(t *testing.T) {
+ 			noCommit:  true,
+ 			wantCalls: []string{"step"}, wantExit: ExitDone,
+ 		},
++		{
++			name:  "a blocked start the check refuses hands back quoting the refusal and steps nothing",
++			steps: []func(*testing.T) []byte{}, initialStatus: &blockedStatus, startCheck: true, startRefusal: startRefusal,
++			wantCalls: []string{"start-check:Build"}, wantActions: []string{shedrun.SettleHandBack}, wantSettlers: []string{shedrun.SettlerParent},
++			wantReports: 1, wantParked: true, wantHandBack: true, wantExit: ExitHandBack, wantReportHas: map[int][]string{1: {startRefusal}},
++		},
++		{
++			name:  "a blocked start the check admits steps as usual",
++			steps: []func(*testing.T) []byte{done}, initialStatus: &blockedStatus, startCheck: true,
++			wantCalls: []string{"start-check:Build", "step", "commit-records"}, wantExit: ExitDone,
++		},
++		{
++			name:  "a blocked start whose check fails hands back quoting the error and steps nothing",
++			steps: []func(*testing.T) []byte{}, initialStatus: &blockedStatus, startCheck: true, startErr: errors.New("parent unreadable"),
++			wantCalls: []string{"start-check:Build"}, wantActions: []string{shedrun.SettleHandBack}, wantReports: 1, wantParked: true, wantHandBack: true, wantExit: ExitHandBack,
++			wantReportHas: map[int][]string{1: {"parent unreadable"}},
++		},
++		{
++			name:  "an awaiting start runs no start check",
++			steps: []func(*testing.T) []byte{done}, initialStatus: &awaitingStatus, startCheck: true, startRefusal: startRefusal,
++			wantCalls: []string{"step", "commit-records"}, wantExit: ExitDone,
++		},
++		{
++			name:  "a start with no status file runs no start check",
++			steps: []func(*testing.T) []byte{done}, startCheck: true, startRefusal: startRefusal,
++			wantCalls: []string{"step", "commit-records"}, wantExit: ExitDone,
++		},
++		{
++			name:  "a restart with an open attempt resumes it and runs no start check",
++			steps: []func(*testing.T) []byte{}, initialStatus: &blockedStatus, restartAttempt: true, openKey: &blockedKey, openTackler: "tackler/1",
++			startCheck: true, startRefusal: startRefusal,
++			tacklerReturns: func() TacklerEnvelope {
++				envelope := tacklerOutcome(TacklerVerdictHandBack, 1)
++				envelope.AttemptDir = "reuse"
++				return envelope
++			}(),
++			wantCalls: []string{"tackler", "snapshot", "snapshot"}, wantActions: []string{shedrun.SettleHandBack}, wantReports: 2, wantParked: true, wantHandBack: true, wantExit: ExitHandBack,
++		},
+ 	}
+ 	for _, tt := range tests {
+ 		t.Run(tt.name, func(t *testing.T) {
+@@ -730,6 +774,12 @@ func TestGoDriver_Settle(t *testing.T) {
+ 			if tt.noCommit {
+ 				deps.CommitRecords = nil
+ 			}
++			if tt.startCheck {
++				deps.StartCheck = func(row string) (string, error) {
++					calls = append(calls, "start-check:"+row)
++					return tt.startRefusal, tt.startErr
++				}
++			}
+ 
+ 			exit, err := Run(context.Background(), deps)
+ 			if err != nil {
