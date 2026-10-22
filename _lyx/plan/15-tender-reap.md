@@ -17,8 +17,8 @@
 - `docs/overview.md`
 
 **Uses:**
-- `plan:internal/tenderengine#readProcesses`
-- `plan:internal/tenderengine#ProcessReport`
+- `internal/tenderengine#readProcesses`
+- `internal/tenderengine#ProcessReport`
 - `internal/runproc#End`
 - `internal/runproc#EndProcess`
 - `internal/runproc#SurvivorsError`

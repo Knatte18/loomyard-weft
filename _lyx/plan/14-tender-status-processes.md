@@ -1,11 +1,11 @@
 # Card 14 — lyx tender status lists the owned processes and the orphans
 
 **Create:**
-- `plan:internal/tenderengine#ProcessReport` -> `type ProcessReport struct`
-- `plan:internal/tenderengine#OwnedProcess` -> `type OwnedProcess struct`
-- `plan:internal/tenderengine#readProcesses` -> `func readProcesses(deps Deps, processes []proc.Process, processesErr error) ProcessReport`
-- `plan:internal/tenderengine#orphanOwner` -> `func orphanOwner(owner string, records []runproc.Record, worktreeNames map[string]bool) bool`
-- `plan:internal/tenderengine#unregisteredOrphans` -> `func unregisteredOrphans(processes []proc.Process, hubPath, executable string, worktrees []string, registered map[int]bool) []StaleProcess`
+- `internal/tenderengine#ProcessReport`
+- `internal/tenderengine#OwnedProcess`
+- `internal/tenderengine#readProcesses`
+- `internal/tenderengine#orphanOwner`
+- `internal/tenderengine#unregisteredOrphans`
 
 **Edit:**
 - `internal/tenderengine#Deps`
