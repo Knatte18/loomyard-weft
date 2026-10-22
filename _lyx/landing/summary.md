@@ -1,39 +1,37 @@
 # Report timing falls back to hub pauses when the journal is unreadable
 
-`lyx report timing` subtracts machine sleep it reads from the systemd journal.
-On a machine whose user cannot read the journal, it subtracted nothing, so sleep and held time counted as active run time.
+`lyx report timing` took machine sleep only from `journalctl`.
+When the user may not read the system journal, `journalctl` exits 0 with empty output and a permission hint on standard error, and the report read that as "no sleep".
+Sleep and held time were counted as active run time, and the `sleep_note` did not say the journal had been unreadable.
 
-## What changes
+Now an unreadable journal is told apart from one that records no sleep.
+When the journal could not be read, the verb reads the hub's pause record and hands the engine every hub-scope pause interval as the run's sleep, a live pause running to now.
+The `sleep_note` names why the journal was not read, says whether pauses stood in, and says the figures may include sleep no hub pause covers.
 
-- **Fallback idle source.**
-  When journalctl is absent from PATH, fails, or prints output that does not parse, the verb reads the hub's pause record and hands the engine every hub-scope entry's interval as the run's sleep.
-  A resumed entry runs from its pause to its resume, and a live one to the time the verb runs.
-  A hub pause holds every session of the hub, and `lyx hibernate` pauses the hub before the machine sleeps, so every sleep lyx itself takes is covered.
-- **The note says what happened.**
-  `sleep_note` now names why the journal was not read and either says the hub's pauses stand in, or that none are recorded or the record could not be read.
-  Each of these says the figures may include sleep.
-- **A readable journal behaves as before.**
-  A journal that records no sleep is a true reading: nothing is subtracted, and the pause record is not consulted.
-- **`sleepjournal.Read` gains a third result** reporting whether the journal was read, so callers tell a machine that did not sleep from one whose sleep is unknown.
-  `tools/tokencount` ignores it and keeps its output.
+Closes #803
 
 ## Design decisions
 
-- **Hub-scope entries only.**
-  The engine's sleep is machine-wide, while a pair-scope pause idles one run, and batten already counts a pair's held time as the paused phase.
+- **Hub pauses are the stand-in.**
+  A hub pause holds every session of the hub, and `lyx hibernate` pauses the hub before the machine sleeps, so its window is idle for every run.
+  Pair-scope entries are left out, because the engine's sleep is machine-wide and a pair pause idles one run only.
+- **The fallback applies only when the journal was not read.**
+  That covers `journalctl` absent, failing, a permission-denied journal, or output that does not parse.
+  A readable journal with no sleep is a true reading and never consults the pause record.
 - **The engine is untouched.**
-  It takes sleep out of every row interval and wait first, so a hub pause that batten also records as the paused phase counts once, as sleep.
-- **Fallback only on an unreadable journal.**
-  A hub pause is not machine sleep, so with a journal that answers, the journal stays the only source.
-- **Gaps in the runs' own timestamps were not used.**
-  A long gap is as often a long agent step as an idle machine, so any threshold would subtract real work.
-- Bound: the record keeps resumed entries for `pauserecord.Retention`, so a sleep with no hub pause, or older than that, still counts as run time; the note says the figures may include sleep.
+  It takes sleep out of every interval before anything else, so a pause that is also recorded as the paused phase is counted once, as sleep.
+- **`sleepjournal.Read` gains a third result, whether the journal was read, and a `stderr` parameter.**
+  Access denial is detected from the two permission messages `journalctl` prints.
+  `tools/tokencount` is updated for the new signature and captures stderr too, so it also names an unreadable journal instead of reporting no sleep.
+- **An undecodable pause record** leaves nothing out, and the note names both reasons.
+- **Bound:** the stand-in covers only the hub pauses `pauserecord.Retention` keeps.
+  A sleep taken without a hub pause, or older than the retention, still counts as run time, and the note says so.
+- The verb stays read-only: reading the record takes no lock and writes nothing, and its path comes from `hubgeom.PauseGeometry`.
+- `sleep_seconds` labels the stand-in time as sleep; the note states where it came from.
 
-## Docs
+`internal/reportcli/doc.go`, `internal/sleepjournal/doc.go` and the verb's help text describe the fallback.
 
-`internal/reportcli/doc.go`'s sleep section, the verb's help text and `internal/sleepjournal/doc.go` describe the fallback and the new result.
+## Not covered
 
-## Tests
-
-`TestTimingSleepNote` in `internal/reportcli` now drives a real pause record file: hub pauses, live and resumed, stand in for a missing journalctl while a pair pause does not; a failing journalctl with no record; an undecodable journal and record named together; and a readable journal, with or without sleep, that leaves the record unread.
-The `Read` rows in `internal/sleepjournal` assert the new read result.
+- Idle time inferred from gaps in the runs' own timestamps is not attempted.
+- Nothing was run against a machine whose journal is genuinely unreadable; the tests feed `journalctl` output, standard error and errors directly, and the integration check seeds a hub pause.
