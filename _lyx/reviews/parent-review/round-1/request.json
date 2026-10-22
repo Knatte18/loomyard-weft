@@ -1,0 +1,10 @@
+{
+  "slug": "tender-pause-holds-reprompt",
+  "round": 1,
+  "reviewer": "ly:orch",
+  "opened_at": "2026-10-22T09:42:02.86937347+02:00",
+  "decision_record": "/home/knatte/Code/loomyard-LYXHUB/tender-pause-holds-reprompt/_lyx/discussion/decision-record.md",
+  "support_log": "/home/knatte/Code/loomyard-LYXHUB/tender-pause-holds-reprompt/_lyx/discussion/support-log.md",
+  "state": "open",
+  "cap": 2
+}

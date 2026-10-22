@@ -1,0 +1,34 @@
+# Relevant files
+
+- `internal/shuttleengine/wait.go` `handleGatedBoundary`, `observePause` — gate loop that re-prompts, and its per-tick coverage reading
+- `internal/shuttleengine/send.go` `sendWithin`, `sendContext`, `boundaryIdle` — the gate's send path and send context
+- `internal/shuttleengine/run.go` `sendVerified`, `waitWhileCovered`, `Run.Send`, `Runner.Send`, `SetPause` — the typing chokepoint and the run-start pause wait
+- `internal/shuttleengine/hold.go` `continueAPIErrorStall` — automatic continue that already skips a covered run
+- `internal/shuttleengine/gate.go` `Gate`, `GateEntry`, `GateResult` — gate contract the hold leaves unchanged
+- `internal/verifytree/verify.go` `Verify` — the one verify path that gains the hold
+- `internal/verifytree/doc.go` — package doc to update with the hold and the `paused` marker state
+- `internal/verifyrun/run.go` `Run` — kills the command's process group on context cancel
+- `internal/loomshed/verifygate.go` `NewVerifyGate` — Darn and Webster-Burler-Fix verify gate site
+- `internal/websterengine/verifygate.go` — webster verify gate site
+- `internal/landingshed/verifygate.go` `newVerifyGate` — Merge-In, Finalize and Publish verify site
+- `internal/webstercli/verify.go` — `lyx webster verify` site
+- `internal/pauserecord/record.go` `Entry`, `Session`, `Coverage`, `CoveredError` — record shapes the claim helper writes
+- `internal/pauserecord/doc.go` — package doc for the new claim helper
+- `internal/tenderengine/pause.go` `claimSession` — tender's own claim of a known entry
+- `internal/tenderengine/resume.go` — resume line send that D2 handles
+- `internal/orchengine/pause.go` `recordOrchInEntry` — orch session shape in the record
+- `internal/creelengine/verbs.go` `interruptTarget` — the refusal D7 replaces
+- `internal/creelcli/delivery.go` `hubDelivery.Paused` — the seam implementation that becomes the claim
+- `internal/seatengine/notice.go` `noticeSender.deliver` — advisor notice retry loop
+- `internal/loomcli/driverresume.go` `resumeParkedDriver` — loom resume's driver line
+- `internal/loomcli/pausehold.go` `refuseCovered` — existing covered-refusal pattern
+- `internal/webstercli/beginbatch.go` — begin-batch verb that gains the refusal
+- `internal/webstercli/recoverbatch.go` — recover-batch verb that gains the refusal
+- `internal/webstercli/wiring.go` — where webster resolves its pause geometry
+- `internal/creelengine/deliver.go` `worker.locate` — delivery worker that reads `Paused`, which must stay read-only
+- `internal/proc/procgroup_linux.go` — the group SIGKILL `verifyrun`'s cancel sends today
+- `internal/gatecli/child.go` `terminatingSignalSet` — signals `lyx gate test` catches to kill its tied tree
+- `internal/reedengine/byname.go` `ResolveStrandGUID` — strand name to GUID for D8's claim
+- `internal/tendercli/deps.go` — tender runner built with no pause geometry
+- `internal/creelcli/delivery.go` `mapDeliveryError` — creel's send error mapping that gains `ErrPaused`
+- `pattern/PATTERN-verified-tree.md` — background of the entry D5 changes
