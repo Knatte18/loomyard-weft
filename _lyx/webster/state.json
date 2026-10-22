@@ -1,6 +1,6 @@
 {
   "runGuid": "dbe84ad8a6abd4890d28f450ad85e2e4",
-  "planFingerprint": "8984eedb32737805c03a51da7e329dcd3c8389e31dc175e43821282feecb0caa",
+  "planFingerprint": "ac3dd0420705587690ec3377f3f4127df36803ec9a2e593b2f78689c7423c756",
   "planFileHashes": {
     "00-overview.md": "bcaca938233a57c3a2ab53aade40f212c26fd1f2411b90f61008e76a1709e084",
     "01-proc-stat-reads.md": "d0e0234e7a678df4e43fc6d1e3aa7e6e7b76633fe8f58ab35b6fd30efc030066",
@@ -19,7 +19,7 @@
     "14-tender-status-processes.md": "09531299e83305bc03e641169de73ba4d3297cff5b17b0152fa7ee1bc8a45f0b",
     "15-tender-reap.md": "637f7f2fd57d185774796ac0fa89537706662dcf09d30e658c67b9288230c8e9",
     "16-hibernate-confirm-background.md": "7d3098d60159743704931261bef4d6f71c5f1536c94d9111b6e02825823ce6fc",
-    "17-shuttle-shell-only-waiting.md": "782ca35e200500bbb2d486444b33c225dbcc301aedf0ffbfa8c30b99914758e9"
+    "17-shuttle-shell-only-waiting.md": "fd7f9da238a2b18c350ea8ec4f315fe4e6618dcc5b18564f82b636abd7c99a26"
   },
   "planOverviewFrameHash": "928c48c2fc4d114fc603509a0d9ed213c36c628bb70dae424d7c0196a83afc4d",
   "partition": [
@@ -675,7 +675,7 @@
       }
     }
   ],
-  "currentBatch": 17,
+  "currentBatch": 0,
   "masterStrand": "fd94635c977349faf13625dcb991f1fc",
   "masterSessionId": "50f3575b-651f-41fb-ab8d-6b29950f8b0d",
   "masterEngine": "claude",
@@ -937,15 +937,33 @@
         "17-shuttle-shell-only-waiting"
       ],
       "cardHashes": {
-        "17-shuttle-shell-only-waiting": "782ca35e200500bbb2d486444b33c225dbcc301aedf0ffbfa8c30b99914758e9"
+        "17-shuttle-shell-only-waiting": "fd7f9da238a2b18c350ea8ec4f315fe4e6618dcc5b18564f82b636abd7c99a26"
       },
       "startSha": "333ba3e64476e8381ea1ea3dd1e75284b2d8042d",
       "kind": "fork",
       "spawnedAt": "2026-10-22T14:14:09Z",
       "sessionId": "50f3575b-651f-41fb-ab8d-6b29950f8b0d",
       "engine": "claude",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "17-shuttle-shell-only-waiting",
+        "status": "done",
+        "head_sha": "e6b6520bdcfa114889877f2398860d1c40062811",
+        "deviations": [
+          "internal/shuttleengine/claudeengine/corpus_test.go",
+          "internal/shuttleengine/completionsignal_enforcement_test.go"
+        ]
+      },
+      "cardShas": [
+        "e6b6520bdcfa114889877f2398860d1c40062811"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-run-process-ownership/50f3575b-651f-41fb-ab8d-6b29950f8b0d/subagents/agent-a3af08dad61cfdfa2.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-run-process-ownership/50f3575b-651f-41fb-ab8d-6b29950f8b0d/subagents/agent-a3af08dad61cfdfa2.jsonl"
+      ]
     },
     "3": {
       "slug": "register-detached-spawns",
@@ -1173,6 +1191,7 @@
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-run-process-ownership/50f3575b-651f-41fb-ab8d-6b29950f8b0d/subagents/agent-a338792c654a7ba38.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-run-process-ownership/50f3575b-651f-41fb-ab8d-6b29950f8b0d/subagents/agent-a3f31070cd71dd0cd.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-run-process-ownership/50f3575b-651f-41fb-ab8d-6b29950f8b0d/subagents/agent-a0a1220117a35baf3.jsonl",
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-run-process-ownership/50f3575b-651f-41fb-ab8d-6b29950f8b0d/subagents/agent-a848193d3261e44bf.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-run-process-ownership/50f3575b-651f-41fb-ab8d-6b29950f8b0d/subagents/agent-a848193d3261e44bf.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-run-process-ownership/50f3575b-651f-41fb-ab8d-6b29950f8b0d/subagents/agent-a3af08dad61cfdfa2.jsonl"
   ]
 }
