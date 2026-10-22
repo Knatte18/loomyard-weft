@@ -1,13 +1,13 @@
 # Card 10 — Teardown skips the driver checks for a run with nothing left to do, and waits for the run lock before ending it
 
 **Create:**
-- `plan:internal/pairteardown#Teardown.driverChecksSkipped` -> `func (t *Teardown) driverChecksSkipped(req Request) (bool, error)`
-- `plan:internal/pairteardown#Teardown.pausedIn` -> `func (t *Teardown) pausedIn(slug string) (covered, hubEntry bool, err error)`
-- `plan:internal/pairteardown#Teardown.awaitRunLockOrPass` -> `func (t *Teardown) awaitRunLockOrPass(ctx context.Context, slug string, paused, hubEntry bool, retry string) error`
-- `plan:internal/pairteardown#runLockHolderPasses` -> `func runLockHolderPasses(holder int, holderKnown bool, waiting []pauserecord.WaitingMarker, slug string, paused, parentLocked bool) bool`
-- `plan:internal/pairteardown#runLockRefusal` -> `func runLockRefusal(holder int, holderKnown bool, slug, lockPath, goos, retry string, paused, hubEntry, parentLocked bool) error`
-- `plan:internal/pairteardown#TestRunLockHolderPasses` -> `func TestRunLockHolderPasses(t *testing.T)`
-- `plan:internal/pairteardown#TestAwaitRunLockOrPass` -> `func TestAwaitRunLockOrPass(t *testing.T)`
+- `internal/pairteardown#Teardown.driverChecksSkipped`
+- `internal/pairteardown#Teardown.pausedIn`
+- `internal/pairteardown#Teardown.awaitRunLockOrPass`
+- `internal/pairteardown#runLockHolderPasses`
+- `internal/pairteardown#runLockRefusal`
+- `internal/pairteardown#TestRunLockHolderPasses`
+- `internal/pairteardown#TestAwaitRunLockOrPass`
 
 **Edit:**
 - `internal/pairteardown#Request`
