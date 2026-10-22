@@ -1,0 +1,30 @@
+# Relevant files
+
+- `internal/pattern/headroom.go` `Headroom` — the byte rule the plan gate's new projection check reuses
+- `internal/pattern/check.go` `MaxOverviewBytes`, `HeadroomBytes`, `KindOverviewHeadroom` — the cap and the headroom line
+- `internal/patternlint/lint.go` `Lint`, `WayForward`, `readOverview` — reads the overview at a base and a head; the run-time headroom lint the plan check mirrors
+- `internal/loomshed/plancontext.go` `PlanContext`, `planContextFindings`, `patternChangeMismatches` — the plan gate's context checks, where the headroom and prescription checks join
+- `internal/loomshed/verifygate.go` `NewVerifyGate`, `headroomFindings` — how the verify gate reads the merge base for the headroom lint
+- `internal/discussionparser/patternchanges.go` `PatternChange`, `ParsePatternChanges` — the declared bullets; their text is design prose, not the overview line
+- `internal/planparser/patternentry.go` — finds a card's fenced verbatim `PATTERN.md` entry lines (`pattern-entry-line-cap`)
+- `internal/planparser/plan.go` `CardType`, `Card` — the type labels the new `Extends` label joins
+- `internal/planparser/parse.go` `typeLabels` — the label table a new type label is added to
+- `internal/websterengine/sequence.go` `CheckBatchOrder`, `deriveEdges`, `backwardEdgeFinding` — the production card-dependency rule the `Extends` rule changes
+- `tools/plandag/graph.go` `buildCardGraph` — the measurement tool's matrix and edge rule
+- `tools/plandag/main.go` — the tool's documented overlap rule and outputs
+- `contracts/specs/loom-plan-spec.md` — card labels, the dependency graph and the plan gate's check table
+- `contracts/stencils/loom/loom-template-arbiter.md` — the arbiter's write surface and hand-on rules
+- `contracts/stencils/orch/orch-template-role.md` — the orch's goto and decision guidance, and its never-edit-a-task-pair rule
+- `contracts/stencils/loom/loom-template-rework.md` — how a plan writer asks its parent for an `Added after Discussion` entry
+- `contracts/recipes/loom-recipe.yaml` — the Plan-Review rows, the Plan-Burler-Review answer-key instruction naming `plan-conflict.md`, Webster's `on_reroute`, and the Merge-In and Publish rows
+- `internal/loomcli/settledguard.go` `settledSegmentGuard` — refuses a goto onto a settled segment's review row, with the Publish failure admission the amendment admission mirrors
+- `internal/shedadapters/doc.go` — the Bouncer's re-entry cases over a settled verdict: an unchanged subject re-settles, a changed one starts an amendment generation
+- `internal/websterengine/autorebaseline.go` `autoRebaseline` — the Webster row accepts a changed plan on entry
+- `internal/websterengine/doc.go` — what `Rebaseline` accepts (pending cards, failed or in-flight batch cards, cards after the last begun batch) and the plan-conflict reroute
+- `internal/websterengine/state.go` `State`, `CardSHAs` — the per-card commit trail the failure trace reads
+- `internal/websterengine/verifyparse.go` `ParseVerifyFailures`, `VerifyFailure` — failure identities and their output tails, the source of `file:line` locations
+- `internal/landingshed/doc.go` — Merge-In and Publish write the Publish failure record on a failed `landing` or `publish` call
+- `internal/verifytree/failure.go` `PublishFailure`, `WritePublishFailure`, `ReadPublishFailure` — the record the trace extends
+- `internal/loomshed/publishfailure.go` `PublishFailureNote`, `checkedPublishFailure` — renders the record for the Webster-Review rubric, the fixer's brief
+- `internal/loomcli/landingdeps.go` `failingTestsOf` — how the record's failing tests come from the log
+- `pattern/PATTERN-glyph-conversion-chokepoint.md` — the sanctioned glyph and path conversion calls, which gain Enclose
