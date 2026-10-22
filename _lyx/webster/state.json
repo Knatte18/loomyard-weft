@@ -1,6 +1,6 @@
 {
   "runGuid": "5668b0a37e0e7bbf5cb2f4476adc080e",
-  "planFingerprint": "947c4418dd3a5a0831fe035452fccc50a8e421f6f925fc57c1f7261f8df7924c",
+  "planFingerprint": "702f36122607ad8dbbb5f6cc3a4e12d2c2a9e47177a7036ed681331bd14925c2",
   "planFileHashes": {
     "00-overview.md": "e7c28037bd251ed0ed854748e125788506728ca547b20149fb1cfe353fb49300",
     "01-pauserecord-claim-session.md": "28b16fec8addb32da452e49390ac1ae737be07531ed64cff206ee9867fe1f13e",
@@ -17,8 +17,8 @@
     "12-tender-creel-runner-geometry.md": "f38e3df9c7f1010bba7535752a16ed381994bc196234b21ead4742cee73f6461",
     "13-paused-send-callers.md": "029f612d255ab1e6fc32ef9466482b7f4aa9dffe6ea7f42cb01bef1606ad9f67",
     "14-tender-resume-claims-paused.md": "59ded17daea847696c2a864835f33b8f9cf7b62877971be8c88484455e5d03bf",
-    "15-creel-interrupt-claims-covered.md": "0c8d36fd6ea108f0a9e784bc84201eb0334d269190ed2676697bfcf09e3ec3da",
-    "16-webster-batch-verbs-refuse-paused.md": "5f22ac0e620a5d60797f4ca4ddb608f10138845c5d9b596c56c66f7f873ff29a"
+    "15-creel-interrupt-claims-covered.md": "fa3360abf22480453d5b4eabea614da48b62a22c62dda4103f43cc2697ef6272",
+    "16-webster-batch-verbs-refuse-paused.md": "dccc01e6317ec58f4346010a6c5edaa9519ff4dc2dc04cacb801d9d45ac20117"
   },
   "planOverviewFrameHash": "8b4b24fc499cff5cbd8203148c14d25d266f9389345ea18ef3fd399614945426",
   "partition": [
@@ -441,7 +441,7 @@
       }
     }
   ],
-  "currentBatch": 15,
+  "currentBatch": 0,
   "masterStrand": "076d19bba614522d1bb1aeaf796e3f5b",
   "masterSessionId": "83e4b5b3-1a0e-476c-af08-7bb8cc7450d6",
   "masterEngine": "claude",
@@ -574,16 +574,36 @@
         "16-webster-batch-verbs-refuse-paused"
       ],
       "cardHashes": {
-        "15-creel-interrupt-claims-covered": "0c8d36fd6ea108f0a9e784bc84201eb0334d269190ed2676697bfcf09e3ec3da",
-        "16-webster-batch-verbs-refuse-paused": "5f22ac0e620a5d60797f4ca4ddb608f10138845c5d9b596c56c66f7f873ff29a"
+        "15-creel-interrupt-claims-covered": "fa3360abf22480453d5b4eabea614da48b62a22c62dda4103f43cc2697ef6272",
+        "16-webster-batch-verbs-refuse-paused": "dccc01e6317ec58f4346010a6c5edaa9519ff4dc2dc04cacb801d9d45ac20117"
       },
       "startSha": "cb463a2ed4eeaa7a8a2bb9adff0c6f73623c0ed2",
       "kind": "fork",
       "spawnedAt": "2026-10-22T09:41:15Z",
       "sessionId": "83e4b5b3-1a0e-476c-af08-7bb8cc7450d6",
       "engine": "claude",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "15-creel-interrupt-claims-covered",
+        "status": "done",
+        "head_sha": "19083529a7182ca58953600ec1e06b0f94f9df41",
+        "deviations": [
+          "internal/creelengine/seam.go",
+          "internal/creelengine/verbs.go",
+          "internal/testkit/creelfake/creelfake.go",
+          "internal/webstercli/batchpause_test.go"
+        ]
+      },
+      "cardShas": [
+        "19083529a7182ca58953600ec1e06b0f94f9df41"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-tender-pause-holds-reprompt/83e4b5b3-1a0e-476c-af08-7bb8cc7450d6/subagents/agent-a960d22c04af03a12.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-tender-pause-holds-reprompt/83e4b5b3-1a0e-476c-af08-7bb8cc7450d6/subagents/agent-a960d22c04af03a12.jsonl"
+      ]
     },
     "5": {
       "slug": "loomshed-verify-hold",
@@ -696,6 +716,7 @@
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-tender-pause-holds-reprompt/83e4b5b3-1a0e-476c-af08-7bb8cc7450d6/subagents/agent-a666bf7a61dd61b51.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-tender-pause-holds-reprompt/83e4b5b3-1a0e-476c-af08-7bb8cc7450d6/subagents/agent-a017007cecd8ca45e.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-tender-pause-holds-reprompt/83e4b5b3-1a0e-476c-af08-7bb8cc7450d6/subagents/agent-ac5faca8ce26ceca1.jsonl",
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-tender-pause-holds-reprompt/83e4b5b3-1a0e-476c-af08-7bb8cc7450d6/subagents/agent-a49cc0be71bf219a9.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-tender-pause-holds-reprompt/83e4b5b3-1a0e-476c-af08-7bb8cc7450d6/subagents/agent-a49cc0be71bf219a9.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-tender-pause-holds-reprompt/83e4b5b3-1a0e-476c-af08-7bb8cc7450d6/subagents/agent-a960d22c04af03a12.jsonl"
   ]
 }
