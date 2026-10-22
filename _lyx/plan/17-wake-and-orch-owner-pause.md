@@ -18,7 +18,7 @@
 - `cmd/lyx#newRoot`
 
 **Create:**
-- `plan:internal/orchcli#InstallOwnerPause` -> `func InstallOwnerPause(pause func(location *lyxcwd.Location, slug string) error)`
+- `internal/orchcli#InstallOwnerPause`
 
 **Uses:**
 - `internal/fabricengine#EntryOwnedElsewhere`

@@ -1,6 +1,6 @@
 {
   "runGuid": "c461a9b39443380311a83fc4d33ed50f",
-  "planFingerprint": "35228adf9b8eab03c3e46e38784e5e3513343ce0befbbfaf805da1e6076d1e8e",
+  "planFingerprint": "ce8a7b20c4b080f1be2401199195e3639706fcfbb510195d4813db88102adc17",
   "planFileHashes": {
     "00-overview.md": "77afa3f319e19d698c254d74586f73dc86914acdbbe19efd9691706d8cb0f2e2",
     "01-machine-name.md": "6f8baae92c139922d21018522eb416af89ee1c6d2e46166aefabd36cc00f8771",
@@ -19,7 +19,7 @@
     "14-batten-innerrun-wiring.md": "9c2829f66c6194bf92699880c872125c92c969fd6c701d29bc9d9044d55ac436",
     "15-fabric-local-only-commits.md": "39d9f5e5d2b909cbfe63442e3bd20e600ded8ee452789021d6734f035af7efd6",
     "16-finalize-owner-checks.md": "8b3ef3067e5021cfc716fed73606627d2d8d490a83e30bb68190db7f88c16c91",
-    "17-wake-and-orch-owner-pause.md": "394beae05e69f1c8a5e4e9e9f5d9fbc5f17e08c61b48faac169cf79054e5cd94",
+    "17-wake-and-orch-owner-pause.md": "c3eca582ede49df7810e1387240c89be307d20e2298d248a44608e92bb65d305",
     "18-tender-status-owners.md": "ce7b350fd0ed2e05bef3fd95ce028f25492b4b9fce376672a19af7048265f886",
     "19-reed-client-attached.md": "a15d10ab2f2881e72d6c0e72e68ae5fd674ba48dcde59488849ed57bfe999fbb",
     "20-open-window-on-resume.md": "c8ea960d2ce407d99d3caf439f5dec4e37d66ccd8004562bd14c46d48a02faa6",
@@ -729,7 +729,7 @@
       }
     }
   ],
-  "currentBatch": 17,
+  "currentBatch": 0,
   "masterStrand": "1208d44a87b5fd00e2a3266cbfc6e59c",
   "masterSessionId": "dc62cdb4-a622-4a99-88db-9438f18c990d",
   "masterEngine": "claude",
@@ -895,15 +895,34 @@
         "17-wake-and-orch-owner-pause"
       ],
       "cardHashes": {
-        "17-wake-and-orch-owner-pause": "394beae05e69f1c8a5e4e9e9f5d9fbc5f17e08c61b48faac169cf79054e5cd94"
+        "17-wake-and-orch-owner-pause": "c3eca582ede49df7810e1387240c89be307d20e2298d248a44608e92bb65d305"
       },
       "startSha": "e96fca57428948158f0d771ee15f8a4876750ecf",
       "kind": "fork",
       "spawnedAt": "2026-10-22T09:24:13Z",
       "sessionId": "dc62cdb4-a622-4a99-88db-9438f18c990d",
       "engine": "claude",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "17-wake-and-orch-owner-pause",
+        "status": "done",
+        "head_sha": "6a38b70bb1b3b894abb7ed87021f6c85270d05ae",
+        "deviations": [
+          "internal/orchcli/ownerpause.go",
+          "internal/orchcli/start.go",
+          "internal/orchcli/start_test.go"
+        ]
+      },
+      "cardShas": [
+        "6a38b70bb1b3b894abb7ed87021f6c85270d05ae"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-machine-handover/dc62cdb4-a622-4a99-88db-9438f18c990d/subagents/agent-aab6707fc46457585.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-machine-handover/dc62cdb4-a622-4a99-88db-9438f18c990d/subagents/agent-aab6707fc46457585.jsonl"
+      ]
     },
     "4": {
       "slug": "board-owner-writes",
@@ -1037,6 +1056,7 @@
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-machine-handover/dc62cdb4-a622-4a99-88db-9438f18c990d/subagents/agent-ab2e6001d2530ec76.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-machine-handover/dc62cdb4-a622-4a99-88db-9438f18c990d/subagents/agent-a0f964a1a60f9b453.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-machine-handover/dc62cdb4-a622-4a99-88db-9438f18c990d/subagents/agent-a2df58e0eb5a0a543.jsonl",
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-machine-handover/dc62cdb4-a622-4a99-88db-9438f18c990d/subagents/agent-aba6bfc82e5631573.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-machine-handover/dc62cdb4-a622-4a99-88db-9438f18c990d/subagents/agent-aba6bfc82e5631573.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-machine-handover/dc62cdb4-a622-4a99-88db-9438f18c990d/subagents/agent-aab6707fc46457585.jsonl"
   ]
 }
