@@ -2,7 +2,7 @@
 
 `plan-card-rules` · Task · enhancement, loom, webster, burler, orch, quarry
 
-Depends on: [`loop-exit-halt-names-its-cause`](design-loop-exit-halt-names-its-cause.md), [`done-check-spaced-create-paths`](design-done-check-spaced-create-paths.md), [`orch-strand-cycle`](design-orch-strand-cycle.md)
+Depends on: [`loop-exit-halt-names-its-cause`](design-loop-exit-halt-names-its-cause.md), [`orch-strand-cycle`](design-orch-strand-cycle.md)
 
 ## Decision (operator, 2026-10-22)
 
