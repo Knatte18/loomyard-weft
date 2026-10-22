@@ -637,7 +637,7 @@
       "id": 639,
       "slug": "kickstart-pack-remove",
       "title": "Remove the Webster kick-start pack",
-      "kind": "note",
+      "kind": "task",
       "labels": [
         "enhancement",
         "webster",

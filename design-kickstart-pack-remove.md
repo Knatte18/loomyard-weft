@@ -1,6 +1,6 @@
 # Remove the Webster kick-start pack
 
-`kickstart-pack-remove` · Note · enhancement, webster, quarry, loom
+`kickstart-pack-remove` · Task · enhancement, webster, quarry, loom
 
 ## Operator decision 2026-10-17
 
