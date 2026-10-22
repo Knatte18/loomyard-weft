@@ -57,6 +57,12 @@ The record is a tolerant JSON record, so an older pid file without the key reads
 
 - A step child that panics ends without an envelope and now classifies as `interrupted-stop`, though the defect is in lyx; its cause still carries the exit status, so the reflection can still tell.
 
+<!-- lyx:carry-over Darn-Review -->
+- Darn-Review, round 1: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
+  Review: _lyx/reviews/darn/round-1-review.md; fixer report: _lyx/reviews/darn/round-1-fixer-report.md.
+  - dead-loop-stale-child-named-in-flight (class design, severity MEDIUM, open in rounds 1)
+<!-- /lyx:carry-over Darn-Review -->
+
 ## Acceptance criteria
 
 - A halt note the interrupt hook writes carries `anomaly: interrupted-stop`; a `failed` halt from a producer error still carries `producer-hard-failure`.
