@@ -1,38 +1,34 @@
-# A loop-exited halt note names its cause and the in-flight step's trace
+# Loom halt note for an interrupted stop names its cause and step trace
 
-When a loom run's detached step loop died without an envelope, the halt note gave the bare reason `loop-exited`.
-It classified as `producer-hard-failure` and pointed `trace_file` at the loop log, which has no record of the exit (issue #801).
-Every interrupted stop now gets its own anomaly kind, and the dead-loop stop's note names what the waiter can see about the death.
+A `lyx loom run` whose loop process died without an envelope halted as `failed` with anomaly `producer-hard-failure`, the reason `loop-exited` and the loop log as `trace_file`.
+None of those told a reader what happened: the producer had not failed, the cause was not named, and the loop log has no record of the exit.
+Such a stop now carries its own anomaly kind, a reason that names the loop and the step that was in flight, and that step's trace file.
 
 ## What changes
 
-- `loomengine.ClassifyHalt` takes an `interrupted` flag.
-  A `failed` halt with the flag set classifies as the new `AnomalyInterrupted` (`interrupted-stop`).
-  A `failed` halt without the flag is still `producer-hard-failure`, and the flag changes no `blocked` kind.
-- `loomcli`'s interrupt hook sets the flag on its halt note.
-  This covers every stop where a step ended without an envelope: a crashed or killed child, a watchdog kill, the status-read stop and the dead-loop stop.
-- `LoopPIDRecord` gains `trace_id`, the in-flight child's trace id, written beside the child record when the child starts.
-- The dead-loop stop's `loop.detail` now names the producer that was in flight and its trace id.
-  It also says when that step's tree was still running and was killed, which is what a loop killed from outside leaves behind.
-  The interrupt hook gets `loop-exited: <detail>` as its cause, so the halt note's reason carries it.
-  It also gets the in-flight step's first trace file as `trace_file`, and falls back to the loop log only when the record names no trace id or no file is listed.
-- The envelope's error text keeps the bare `(loop-exited)` token that drivers and tests match.
-- `internal/shedverbs/doc.go` and `internal/loomcli/doc.go` describe the new pid-record key, the detail and the anomaly kind.
+- `internal/loomengine`: new anomaly kind `AnomalyInterrupted`, wire spelling `interrupted-stop`.
+  `ClassifyHalt` takes an `interrupted` flag; a `failed` state with the flag set classifies as `interrupted-stop`, without it as `producer-hard-failure` as before.
+  The flag has no effect on a blocked state.
+- `internal/loomcli`: the interrupt hook sets the flag on every halt note it writes, so the loop child that ended without an envelope, the watchdog kill, the status-read stop and the dead-loop stop all classify as `interrupted-stop`.
+- `internal/shedverbs`: `LoopPIDRecord` gains `trace_id`, written with the child record when a child starts.
+  The dead-loop stop hands the hook the cause `loop-exited: <detail>`, where the detail names the loop id, the in-flight producer and its trace id, and whether the step tree was still running and was killed.
+  The hook gets the first trace file `LoopSpec.TraceFiles` lists for that trace id as `trace_file`.
+- Docs: `internal/shedverbs/doc.go` and `internal/loomcli/doc.go` describe the new stop and note.
+
+Closes #801
 
 ## Design decisions
 
-- One kind for every interrupted stop, not one kind per cause.
-  The cause text already says whether it was a watchdog kill, an exit status or a dead loop, and the classifier stays pure on what its caller tells it.
-- The waiter does not report the loop process's own exit status or signal.
-  Only a waiter that spawned the loop sees that status, and the `LoopSpec.Spawn` seam's channel carries no value.
-  A signal handler in the loop could not catch a hard kill.
-  The loop log named in the detail still holds whatever the process printed.
-- A child that panics also ends without an envelope, so it now reads as `interrupted-stop`.
-  Its cause still carries the exit status for the reflection to judge.
+- The classifier stays pure: the caller tells it the stop was interrupted, rather than it inferring that from the reason text.
+- The recorded child counts as in flight only while the status file still reads its producer and history length.
+  A loop that died between steps names no step and keeps the loop log as `trace_file`, since the recorded child had finished.
+- The envelope's error text keeps the bare `(loop-exited)` token, because drivers and tests read it by that token; only the hook's cause is extended.
+- `LoopPIDRecord` is a tolerant record: a pid file without `trace_id` reads as no trace id and falls back to the loop log, as does a trace id with no trace file.
+- The watchdog and status-read stops share the hook and are equally not producer failures, so they take the new kind too.
+- A step child that panics also ends without an envelope and now classifies as `interrupted-stop`, though the defect is in lyx; its cause still carries the exit status.
 
-## Tests
+## To check by hand
 
-- `TestClassifyHalt` has rows for the interrupted flag on `failed`, `blocked` and `running` states.
-- `TestLoomAfterInterrupt_WritesTheHaltNoteAndNoReflection` checks for `anomaly: interrupted-stop`.
-- `TestUntilStop_DeadLoopStopsLoopExited` checks the hook's cause and trace file in three cases: a known trace id with listed files, no trace id, and a trace id with no files.
-- `TestLoopIntegration_ChildTreeDiesWithLoop` checks that a real loop writes the in-flight child's trace id into its pid record.
+Nothing ran against a real interrupted loom run.
+Interrupt a running loop, for example by killing the loop process, and read the halt note: it should show `anomaly: interrupted-stop`, a `loop-exited: ...` reason naming the step and trace id, and that step's trace file.
+The early-exit stop (a loop that exits before it records itself, in `internal/shedverbs/loopwait.go`) now hands the hook a `loop-exited: ` cause with the loop log as trace file, and no test asserts those arguments.
