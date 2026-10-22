@@ -1,0 +1,1177 @@
+diff --git a/internal/batcher/config.go b/internal/batcher/config.go
+index 19a934172..36818a8ef 100644
+--- a/internal/batcher/config.go
++++ b/internal/batcher/config.go
+@@ -1,6 +1,6 @@
+ // config.go — configuration for the batcher module.
+ //
+-// Defines the package-local config type mirroring batcher.yaml's keys, ConfigOpenMaps, ConfigSpec, and Active, which uses internal/configengine.LoadOrTemplate with ConfigSpec() to resolve batcher's layered config, degrading to the embedded template on proven absence, then builds the batchifier the active profile names.
++// Defines the package-local config type mirroring batcher.yaml's keys, ConfigPerNameMaps, ConfigSpec, and Active, which uses internal/configengine.LoadOrTemplate with ConfigSpec() to resolve batcher's layered config, degrading to the embedded template on proven absence, then builds the batchifier the active profile names.
+ // Also defines MigrateConfig, the pure rewrite that removes a batcher.yaml's retired keys.
+ 
+ package batcher
+@@ -28,7 +28,7 @@ type config struct {
+ // profile is one named entry under batcher.yaml's profiles: key.
+ // The cost parameters are pointers so a missing key is told apart from a zero.
+ // AloneAbove is the retired cost parameter, read only so a profile still carrying it is refused rather than silently ignored.
+-// file and layer are the layer file the stack took the profiles: map from, kept so a retired-key refusal names the file that carries the key.
++// file and layer are the highest layer file holding the profile, kept so a retired-key refusal names the file that carries the key.
+ type profile struct {
+ 	Batchifier string             `yaml:"batchifier"`
+ 	AloneAbove *float64           `yaml:"alone_above"`
+@@ -58,18 +58,19 @@ func retiredKeyError(file string, layer configengine.Layer, profileName, key str
+ 	return configengine.MarkInvalid(fmt.Errorf("%s profile %q carries %s, which no longer exists (%w); way forward: %s", file, profileName, key, ErrRetiredKey, wayForward))
+ }
+ 
+-// ConfigOpenMaps returns the batcher.yaml keys whose entries are the operator's own, which configengine carries whole through reconcile and --set.
+-func ConfigOpenMaps() []string {
++// ConfigPerNameMaps returns the batcher.yaml keys whose entries are named by the operator:
++// a layer's profiles add to or override the template's by name, each profile merging key by key, and a name the template lacks is kept through reconcile and --set.
++func ConfigPerNameMaps() []string {
+ 	return []string{"profiles"}
+ }
+ 
+ // ConfigSpec returns batcher's layered-load spec.
+-// Both keys, the active profile name and the profiles open map, only shape batching and meet no category, so the local layer may hold either.
++// Both keys, the active profile name and the profiles per-name map, only shape batching and meet no category, so the local layer may hold either.
+ func ConfigSpec() configengine.Spec {
+ 	return configengine.Spec{
+-		Name:     moduleName,
+-		Template: []byte(ConfigTemplate()),
+-		OpenMaps: ConfigOpenMaps(),
++		Name:        moduleName,
++		Template:    []byte(ConfigTemplate()),
++		PerNameMaps: ConfigPerNameMaps(),
+ 		Categories: map[string]configengine.Category{
+ 			"active":   configengine.CategoryNone,
+ 			"profiles": configengine.CategoryNone,
+@@ -110,7 +111,7 @@ func Active(dirs configengine.Dirs) (Batcher, error) {
+ }
+ 
+ // loadConfig loads and unmarshals batcher.yaml through the layer stack under dirs, degrading to the embedded template on proven absence.
+-// Each profile records the layer file the stack took profiles: from.
++// Each profile records the highest layer file holding it.
+ func loadConfig(dirs configengine.Dirs) (config, error) {
+ 	spec := ConfigSpec()
+ 	resolved, err := configengine.LoadOrTemplate(dirs, spec)
+@@ -129,17 +130,37 @@ func loadConfig(dirs configengine.Dirs) (config, error) {
+ 	if err != nil {
+ 		return config{}, err
+ 	}
+-	origin, ok := stack.Origins["profiles"]
+-	if !ok {
+-		return cfg, nil
++	origins, err := profileOrigins(stack.Layers)
++	if err != nil {
++		return config{}, err
+ 	}
+ 	for name, prof := range cfg.Profiles {
+-		prof.file, prof.layer = origin.Path, origin.Layer
+-		cfg.Profiles[name] = prof
++		if origin, held := origins[name]; held {
++			prof.file, prof.layer = origin.Path, origin.Layer
++			cfg.Profiles[name] = prof
++		}
+ 	}
+ 	return cfg, nil
+ }
+ 
++// profileOrigins maps each profile name a layer file holds under profiles: to the highest layer holding it.
++// A layer whose profiles: is no mapping is an error marked configengine.ErrInvalid.
++func profileOrigins(layers []configengine.LayerDoc) (map[string]configengine.LayerDoc, error) {
++	origins := map[string]configengine.LayerDoc{}
++	for _, layer := range layers {
++		var document struct {
++			Profiles map[string]yaml.Node `yaml:"profiles"`
++		}
++		if err := yaml.Unmarshal(layer.Bytes, &document); err != nil {
++			return nil, configengine.MarkInvalid(fmt.Errorf("unmarshal batcher config %s: %w", layer.Path, err))
++		}
++		for name := range document.Profiles {
++			origins[name] = layer
++		}
++	}
++	return origins, nil
++}
++
+ // unmarshalConfig decodes batcher.yaml's bytes, marking a failure configengine.ErrInvalid.
+ func unmarshalConfig(data []byte) (config, error) {
+ 	var cfg config
+diff --git a/internal/batcher/config_test.go b/internal/batcher/config_test.go
+index 063a7ebd8..4320b1c2d 100644
+--- a/internal/batcher/config_test.go
++++ b/internal/batcher/config_test.go
+@@ -52,7 +52,7 @@ func seedConfig(t *testing.T, baseDir, module, content string) {
+ 
+ // TestActive asserts Active resolves the configured profile from batcher.yaml:
+ // the template verbatim (which must itself parse as plain YAML) builds a cost batcher named after its cautious profile, an empty active: resolves identity both on the template's profiles and without a profiles: block, an identity active: resolves identity without a profiles: block, an absent batcher.yaml or an absent _lyx/ degrades to the embedded template's cautious batchifier rather than erroring, and every load error names batcher.yaml.
+-// The no-such-profile row holds only an operator profile, so it fails only while profiles: is an open map that the template's profiles are not filled into.
++// A layer's profiles add to the template's by name, each merging key by key, so the error rows tune a profile the template lacks.
+ func TestActive(t *testing.T) {
+ 	t.Parallel()
+ 	template := batcher.ConfigTemplate()
+@@ -115,10 +115,24 @@ func TestActive(t *testing.T) {
+ 		},
+ 		{
+ 			name: "noSuchProfileErrors",
++			seed: func(t *testing.T, baseDir string) {
++				seedConfig(t, baseDir, "batcher", "active: \"nope\"\nprofiles:\n  mine:\n    batchifier: identity\n")
++			},
++			wantErrWith: []string{"batcher.yaml", "nope"},
++		},
++		{
++			name: "profilesThatIsAListErrors",
++			seed: func(t *testing.T, baseDir string) {
++				seedConfig(t, baseDir, "batcher", "profiles:\n  - cautious\n")
++			},
++			wantErrWith: []string{"batcher.yaml", "profiles", "sequence"},
++		},
++		{
++			name: "operatorProfileAddsToTheTemplates",
+ 			seed: func(t *testing.T, baseDir string) {
+ 				seedConfig(t, baseDir, "batcher", "active: \"cautious\"\nprofiles:\n  mine:\n    batchifier: identity\n")
+ 			},
+-			wantErrWith: []string{"batcher.yaml", "cautious"},
++			wantName: "cautious",
+ 		},
+ 		{
+ 			name: "unknownBatchifierErrors",
+@@ -130,9 +144,10 @@ func TestActive(t *testing.T) {
+ 		{
+ 			name: "missingThresholdErrors",
+ 			seed: func(t *testing.T, baseDir string) {
+-				seedConfig(t, baseDir, "batcher", strings.Replace(template, "    budget: ", "    renamed_budget: ", 1))
++				operatorCopy := strings.NewReplacer(`active: "cautious"`, `active: "mine"`, "  cautious:", "  mine:", "    budget: ", "    renamed_budget: ").Replace(template)
++				seedConfig(t, baseDir, "batcher", operatorCopy)
+ 			},
+-			wantErrWith: []string{"batcher.yaml", "cautious", "budget"},
++			wantErrWith: []string{"batcher.yaml", "mine", "budget"},
+ 		},
+ 		{
+ 			name: "nonPositiveBudgetErrors",
+@@ -214,14 +229,25 @@ func TestActive(t *testing.T) {
+ 			wantName:     "identity",
+ 		},
+ 		{
+-			name:         "worktreeProfilesReplaceTheDefaultsWhole",
++			name:         "worktreeProfilesAddToTheDefaults",
+ 			repoDefault:  template,
+ 			worktreeFile: "profiles:\n  mine:\n    batchifier: identity\n",
+-			wantErrWith:  []string{"batcher.yaml", "cautious"},
++			wantName:     "cautious",
++		},
++		{
++			name:        "repoDefaultTuningOneKeyKeepsTheTemplatesOthers",
++			repoDefault: "profiles:\n  cautious:\n    budget: 300000\n",
++			wantName:    "cautious",
++		},
++		{
++			name:        "repoDefaultTunedKeyReachesTheProfile",
++			repoDefault: "profiles:\n  cautious:\n    max_cards: 1\n",
++			wantErrWith: []string{"batcher.yaml", "cautious", "max_cards"},
+ 		},
+ 		{
+ 			name:                   "retiredKeyInRepoDefaultNamesDefaultFileAndFabricReconcile",
+ 			repoDefault:            strings.Replace(template, "    budget: ", "    alone_above: 1200000\n    budget: ", 1),
++			worktreeFile:           "profiles:\n  mine:\n    batchifier: identity\n",
+ 			wantErrWith:            []string{"alone_above", `way forward: run "lyx fabric reconcile"`, "the orch runs it"},
+ 			wantDefaultFileInError: true,
+ 		},
+@@ -269,7 +295,7 @@ func TestActive(t *testing.T) {
+ func TestProfileWeights(t *testing.T) {
+ 	t.Parallel()
+ 	const valid = `profiles:
+-  cautious:
++  tuned:
+     weights:
+       orientation: 10
+       batch_growth: 3
+@@ -293,7 +319,7 @@ func TestProfileWeights(t *testing.T) {
+ 		{
+ 			name:    "validProfile",
+ 			config:  valid,
+-			profile: "cautious",
++			profile: "tuned",
+ 			want: batcher.Weights{
+ 				Orientation: 10, BatchGrowth: 3, ForkMessages: 2, MessageContext: 8, TargetMessages: 3, TestFileMessages: 4,
+ 				UsesMessages: 5, ContextPerLine: 0.5, PackageContext: 7, WritePerCardLine: 9,
+@@ -308,45 +334,45 @@ func TestProfileWeights(t *testing.T) {
+ 		{
+ 			name:        "missingCoefficient",
+ 			config:      strings.Replace(valid, "      package_context: 7\n", "", 1),
+-			profile:     "cautious",
++			profile:     "tuned",
+ 			wantErrWith: []string{"batcher.yaml", "package_context"},
+ 		},
+ 		{
+ 			name:        "negativeCoefficient",
+ 			config:      strings.Replace(valid, "fork_messages: 2", "fork_messages: -1", 1),
+-			profile:     "cautious",
++			profile:     "tuned",
+ 			wantErrWith: []string{"batcher.yaml", "fork_messages"},
+ 		},
+ 		{
+ 			name:        "missingOrientation",
+ 			config:      strings.Replace(valid, "      orientation: 10\n", "", 1),
+-			profile:     "cautious",
++			profile:     "tuned",
+ 			wantErrWith: []string{"batcher.yaml", "orientation"},
+ 		},
+ 		{
+ 			name:        "negativeBatchGrowth",
+ 			config:      strings.Replace(valid, "batch_growth: 3", "batch_growth: -1", 1),
+-			profile:     "cautious",
++			profile:     "tuned",
+ 			wantErrWith: []string{"batcher.yaml", "batch_growth"},
+ 		},
+ 		{
+ 			name:        "retiredStartupContext",
+ 			config:      valid + "      startup_context: 60000\n",
+-			profile:     "cautious",
+-			wantErrWith: []string{"batcher.yaml", "cautious", "startup_context"},
++			profile:     "tuned",
++			wantErrWith: []string{"batcher.yaml", "tuned", "startup_context"},
+ 			wantRetired: true,
+ 		},
+ 		{
+ 			name:        "retiredMasterBase",
+ 			config:      valid + "      master_base: 52000\n",
+-			profile:     "cautious",
+-			wantErrWith: []string{"batcher.yaml", "cautious", "master_base"},
++			profile:     "tuned",
++			wantErrWith: []string{"batcher.yaml", "tuned", "master_base"},
+ 			wantRetired: true,
+ 		},
+ 		{
+ 			name:        "unknownKey",
+ 			config:      valid + "      bogus_weight: 1\n",
+-			profile:     "cautious",
++			profile:     "tuned",
+ 			wantErrWith: []string{"batcher.yaml", "bogus_weight"},
+ 		},
+ 	}
+diff --git a/internal/batcher/doc.go b/internal/batcher/doc.go
+index 4cc7b97b4..6175da6bd 100644
+--- a/internal/batcher/doc.go
++++ b/internal/batcher/doc.go
+@@ -8,17 +8,18 @@
+ //
+ // batcher.yaml holds named profiles under profiles:, each a batchifier kind (identity or cost) with that kind's parameters;
+ // its active: key names the profile in force (see contracts/specs/loom-plan-spec.md).
+-// profiles: is an open map, keyed by names the operator chooses, so lyx config reconcile carries the operator's profiles whole;
+-// the template's identity and cautious profiles fill in only when the file holds no profiles: key.
++// profiles: is a per-name map, keyed by names the operator chooses:
++// a layer's profiles add to or override the template's identity and cautious by name, each profile merging key by key, so a layer holds only the profiles and keys it tunes.
++// `lyx config batcher --set profiles.<name>.<key>=<value>` sets one key of any profile.
+ // Active resolves the active profile at config-load time and builds it through the registry.
+ // An empty active: and active: identity resolve to the identity batcher even when no profile of that name is configured, so a batcher.yaml without profiles: keeps working;
+ // a configured profile named identity wins over that default.
+ // A load error names batcher.yaml and the offending profile or key: an active: naming no profile, an unknown batchifier kind, or a cost profile with a missing or non-positive budget, a max_cards below 2, a missing, negative or unknown weights coefficient, or a retired key.
+ // The retired keys are alone_above, and master_base and startup_context in weights:;
+-// a retired-key error wraps ErrRetiredKey, names the layer file that carries the key and ends with the way forward that file calls for:
++// a retired-key error wraps ErrRetiredKey, names the highest layer file holding the profile and ends with the way forward that file calls for:
+ // running "lyx config reconcile --apply", which migrates the profile, for a worktree or local file, and for the repo default, which only the hub-wide reconcile rewrites, running "lyx fabric reconcile", a verb a session lyx refuses it from reports status: FAILED for, so the orch runs it.
+ // Active loads batcher.yaml through the layer stack under a configengine.Dirs, ConfigSpec classifying both keys as meeting no category, so any layer may hold them;
+-// profiles is taken whole from the highest layer holding it, and a retired key in any layer reaches the retired-key refusal.
++// a retired key in any layer reaches the retired-key refusal.
+ // Every load error is marked configengine.ErrInvalid, so a caller tells a file's content from an unreadable file.
+ // MigrateConfig is that migration: a pure rewrite of a batcher.yaml document that drops the retired keys from every profile and adds weights.orientation at the template's value where a retired weights key stood and the profile had none.
+ // It touches only those keys, carries every other entry and comment through yaml node editing, and is never called by the loader.
+diff --git a/internal/configengine/doc.go b/internal/configengine/doc.go
+index 44b39fe04..a7d77dca5 100644
+--- a/internal/configengine/doc.go
++++ b/internal/configengine/doc.go
+@@ -117,9 +117,11 @@
+ //
+ // # Per-name maps
+ //
+-// A [Spec] also carries `PerNameMaps`: the dotted paths of the module's per-name maps, mappings of names each carried whole as one unit.
++// A [Spec] also carries `PerNameMaps`: the dotted paths of the module's per-name maps, mappings of names the operator owns.
+ // The unknown-keys warning and [Set], on the base and the sparse layers, pass them unchanged to yamlengine, which defines what a declared path changes;
+ // so a name under a per-name map that the template lacks is never warned as a key no loader reads, and `--set` knows `P.<name>` for any name.
+-// The load's template fill needs no declaration, and its log of filled keys leaves out a name under a per-name map, since a base file holds only the names it tuned.
+-// The local layer is unchanged.
++// It also knows `P.<name>.<key>` where the map's entries are mappings and some template entry holds the key.
++// The layer merge and the template fill need no declaration: a layer's names add to or override the template's by name, and a mapping entry merges key by key.
++// The load's log of filled keys leaves out a name under a per-name map, since a base file holds only the names it tuned.
++// The local and machine layers judge a path under a per-name map against the template entry holding the rest of it, whatever the name.
+ package configengine
+diff --git a/internal/configengine/layers.go b/internal/configengine/layers.go
+index b9156df8f..8409096b0 100644
+--- a/internal/configengine/layers.go
++++ b/internal/configengine/layers.go
+@@ -64,7 +64,7 @@ const (
+ 
+ // Spec describes one module to the layered loaders.
+ // OpenMaps are the dotted paths of the module's open maps;
+-// PerNameMaps are the dotted paths of the module's per-name maps, mappings of names each carried whole as one unit, such as a lens's prose or a fan's list;
++// PerNameMaps are the dotted paths of the module's per-name maps, mappings of names the operator owns, such as a lens's prose or a batcher profile, which a layer adds to or overrides by name;
+ // HubWide marks a module whose file lives at the hub only;
+ // WholeEntries makes each top-level key one unit, open to the local layer.
+ // JSONEntries makes a set write each pair as one whole top-level entry from a JSON object, with no template key check.
+@@ -252,6 +252,7 @@ func removeKey(node *yaml.Node, path []string) bool {
+ // ValidateLocal checks a local override document against the spec.
+ // A unit a retired key covers is judged by that key's category alone: CategoryNone admits it with no shape check, any other category refuses it.
+ // Every other unit path must exist in the template, or be a top-level key when the spec holds whole entries;
++// a path under a per-name map exists when the template holds it or, whatever the name, some template entry of that map holds the rest of it, and is judged against that entry;
+ // its shape, mapping or not, must match the template's where the template holds the path;
+ // and the longest category entry covering it must be CategoryNone, a hub-wide module also refusing a path no entry covers.
+ // A failure is marked [ErrInvalid] and names the key; an empty or comment-only document passes.
+@@ -278,7 +279,7 @@ func ValidateLocal(spec Spec, doc []byte) error {
+ 			}
+ 			continue
+ 		}
+-		templateValue := nodeAt(&templateNode, path)
++		templateValue := templateValueAt(spec, &templateNode, path)
+ 		if templateValue == nil && !spec.WholeEntries {
+ 			return MarkInvalid(fmt.Errorf("key %q is not in the %s template", path, spec.Name))
+ 		}
+@@ -304,7 +305,8 @@ const machineRemoval = "; way forward: remove it from the machine override"
+ 
+ // ValidateMachine checks a machine override document against the spec.
+ // A unit a retired key covers is admitted only when that key's category is CategoryMachine, and its value shape is never checked.
+-// Every other unit path must exist in the template and match its shape, and the longest category entry covering it must be CategoryMachine.
++// Every other unit path must exist in the template and match its shape, and the longest category entry covering it must be CategoryMachine;
++// a path under a per-name map exists when the template holds it or, whatever the name, some template entry of that map holds the rest of it, and is judged against that entry.
+ // A failure is marked [ErrInvalid], names the key and a way forward; an empty or comment-only document passes.
+ func ValidateMachine(spec Spec, doc []byte) error {
+ 	paths, err := yamlengine.LeafPaths(doc, spec.OpenMaps, spec.WholeEntries)
+@@ -329,7 +331,7 @@ func ValidateMachine(spec Spec, doc []byte) error {
+ 			}
+ 			continue
+ 		}
+-		templateValue := nodeAt(&templateNode, path)
++		templateValue := templateValueAt(spec, &templateNode, path)
+ 		if templateValue == nil {
+ 			return MarkInvalid(fmt.Errorf("key %q is not in the %s template%s", path, spec.Name, machineRemoval))
+ 		}
+@@ -350,6 +352,35 @@ func ValidateMachine(spec Spec, doc []byte) error {
+ 	return nil
+ }
+ 
++// templateValueAt returns the template node a unit path is judged against, which is the node at path when the template holds it.
++// For a path the template lacks under a per-name map P, P.<name> or P.<name>.<rest>, it is the first template entry at P, or the node at rest in the first entry holding it.
++// It returns nil when neither holds the path.
++func templateValueAt(spec Spec, template *yaml.Node, path string) *yaml.Node {
++	if node := nodeAt(template, path); node != nil {
++		return node
++	}
++	for _, perName := range spec.PerNameMaps {
++		under, found := strings.CutPrefix(path, perName+".")
++		if !found {
++			continue
++		}
++		entries := nodeAt(template, perName)
++		if entries == nil || entries.Kind != yaml.MappingNode {
++			continue
++		}
++		_, rest, _ := strings.Cut(under, ".")
++		for i := 1; i < len(entries.Content); i += 2 {
++			if rest == "" {
++				return entries.Content[i]
++			}
++			if node := nodeAt(entries.Content[i], rest); node != nil {
++				return node
++			}
++		}
++	}
++	return nil
++}
++
+ // nodeAt returns the value node of the mapping key at the dotted path in a parsed document, or nil when a step is absent or not a mapping.
+ func nodeAt(doc *yaml.Node, path string) *yaml.Node {
+ 	node := doc
+diff --git a/internal/configengine/layers_test.go b/internal/configengine/layers_test.go
+index 004102688..5027c645c 100644
+--- a/internal/configengine/layers_test.go
++++ b/internal/configengine/layers_test.go
+@@ -592,7 +592,7 @@ func TestLoad_LayerStack(t *testing.T) {
+ 	}
+ }
+ 
+-// TestValidateLocal pins the machine-layer rule, and that the local layer refuses a machine key, besides the local-layer rule: a key the template lacks, a shape mismatch, a category other than none and, for a hub-wide module, an unclassified key are refused naming the key; an open-map entry, a whole-entry alias, the longest covering entry and an empty document pass.
++// TestValidateLocal pins the machine-layer rule, and that the local layer refuses a machine key, besides the local-layer rule: a key the template lacks, a shape mismatch, a category other than none and, for a hub-wide module, an unclassified key are refused naming the key; an open-map entry, a whole-entry alias, a per-name key some template entry holds under any name, the longest covering entry and an empty document pass.
+ func TestValidateLocal(t *testing.T) {
+ 	t.Parallel()
+ 	hubWide := layerSpec()
+@@ -622,6 +622,13 @@ func TestValidateLocal(t *testing.T) {
+ 	}
+ 	const removal = "remove it from the machine override"
+ 
++	profiles := configengine.Spec{
++		Name:        "profiles",
++		Template:    []byte("profiles:\n  plain:\n    kind: identity\n  costed:\n    kind: cost\n    budget: 200\n"),
++		PerNameMaps: []string{"profiles"},
++		Categories:  map[string]configengine.Category{"profiles": configengine.CategoryNone},
++	}
++
+ 	tests := []struct {
+ 		name string
+ 		spec configengine.Spec
+@@ -666,6 +673,9 @@ func TestValidateLocal(t *testing.T) {
+ 		{name: "hub-wide unclassified key", spec: hubWide, doc: "port: 81\n", wantErr: "port"},
+ 		{name: "hub-wide executable key", spec: hubWide, doc: "run: evil\n", wantErr: "run"},
+ 		{name: "unparseable document", spec: layerSpec(), doc: "name: [unclosed\n", wantErr: "parse"},
++		{name: "per-name keys are judged against the template entry holding them whatever the name", spec: profiles, doc: "profiles:\n  wide:\n    kind: cost\n    budget: 5\n  plain:\n    budget: 9\n"},
++		{name: "per-name key no template entry holds", spec: profiles, doc: "profiles:\n  wide:\n    nope: 1\n", wantErr: "profiles.wide.nope"},
++		{name: "per-name key in another shape than the template entry's", spec: profiles, doc: "profiles:\n  wide:\n    budget:\n      a: 1\n", wantErr: "profiles.wide.budget"},
+ 	}
+ 	for _, tc := range tests {
+ 		t.Run(tc.name, func(t *testing.T) {
+diff --git a/internal/configreg/configreg.go b/internal/configreg/configreg.go
+index 52a66a2c2..d708719d4 100644
+--- a/internal/configreg/configreg.go
++++ b/internal/configreg/configreg.go
+@@ -116,7 +116,7 @@ func checkLoadNamed[T any](load func(configengine.Dirs, string) (T, error), modu
+ // Keep new entries in sort order.
+ func Modules() []Module {
+ 	modules := []Module{
+-		{Name: "batcher", Template: batcher.ConfigTemplate, OpenMaps: batcher.ConfigOpenMaps(), Migrate: batcher.MigrateConfig, CheckLoad: checkLoad(batcher.Active), Spec: batcher.ConfigSpec},
++		{Name: "batcher", Template: batcher.ConfigTemplate, PerNameMaps: batcher.ConfigPerNameMaps(), Migrate: batcher.MigrateConfig, CheckLoad: checkLoad(batcher.Active), Spec: batcher.ConfigSpec},
+ 		{Name: "batten", Template: battenshed.ConfigTemplate, CheckValues: battenshed.ValidateLocalValues, CheckLoad: checkLoad(battenshed.LoadConfig), Spec: battenshed.ConfigSpec},
+ 		{Name: "board", Template: boardengine.ConfigTemplate, OpenMaps: boardengine.ConfigOpenMaps(), HubWide: true, CheckLoad: checkLoadNamed(boardengine.LoadConfig, "board"), Spec: boardengine.ConfigSpec},
+ 		{Name: "darn", Template: darnengine.ConfigTemplate, OpenMaps: darnengine.ConfigOpenMaps(), HubWide: true, Migrate: darnengine.MigrateConfig, CheckValues: darnengine.ValidateLocalValues, CheckLoad: checkLoadNamed(darnengine.LoadConfig, "darn"), Spec: darnengine.ConfigSpec},
+diff --git a/internal/configreg/configreg_test.go b/internal/configreg/configreg_test.go
+index 6cf05bad8..dd8b0c3f1 100644
+--- a/internal/configreg/configreg_test.go
++++ b/internal/configreg/configreg_test.go
+@@ -261,7 +261,7 @@ func TestLookup(t *testing.T) {
+ 		wantFound    bool
+ 		wantOpenMaps []string
+ 	}{
+-		{"batcher", true, []string{"profiles"}},
++		{"batcher", true, nil},
+ 		{"board", true, []string{"types", "labels"}},
+ 		{"loom", true, []string{
+ 			"reviewer_model", "fixer_model",
+diff --git a/internal/configsync/configsync.go b/internal/configsync/configsync.go
+index 757960242..77b0d9e29 100644
+--- a/internal/configsync/configsync.go
++++ b/internal/configsync/configsync.go
+@@ -37,8 +37,8 @@ var legacyConfigModules = map[string][]string{
+ 	"fabric": {"warp", "weft"},
+ }
+ 
+-// formerTemplateValues maps a module name to its dotted unit to that unit's template value immediately before the tuned defaults replaced it, as YAML text.
+-// An open map is one unit, so a whole map is compared whole.
++// formerTemplateValues maps a module name to a top-level key to the template value its replaced units held immediately before the tuned defaults replaced them, as YAML text.
++// An open map is one unit, so a whole map is compared whole; under any other mapping, a per-name map included, each leaf unit is compared alone.
+ // Only the replaced units are listed; an older template generation's value is kept as tuned.
+ var formerTemplateValues = map[string]map[string]string{
+ 	"loom": formerLoomValues(),
+@@ -54,29 +54,9 @@ var formerTemplateValues = map[string]map[string]string{
+ 		"soft_threshold_tokens": "300000",
+ 		"threshold_tokens":      "400000",
+ 	},
+-	"batcher": {"profiles": formerBatcherProfiles},
++	"batcher": {"profiles": "cautious:\n  budget: 450000\n"},
+ }
+ 
+-// formerBatcherProfiles is the batcher template's profiles map before the cautious profile's budget was tuned.
+-const formerBatcherProfiles = `identity:
+-  batchifier: identity
+-cautious:
+-  batchifier: cost
+-  max_cards: 6
+-  budget: 450000
+-  weights:
+-    orientation: 31400
+-    batch_growth: 7000
+-    fork_messages: 4
+-    message_context: 300
+-    target_messages: 6
+-    test_file_messages: 0.5
+-    uses_messages: 2
+-    context_per_line: 12
+-    package_context: 2000
+-    write_per_card_line: 12
+-`
+-
+ // formerLoomValues returns loom's former template values.
+ func formerLoomValues() map[string]string {
+ 	former := map[string]string{
+diff --git a/internal/configsync/configsync_test.go b/internal/configsync/configsync_test.go
+index 8a4854e5e..f2e37593d 100644
+--- a/internal/configsync/configsync_test.go
++++ b/internal/configsync/configsync_test.go
+@@ -251,7 +251,7 @@ func TestReconcileAll(t *testing.T) {
+ 			want: map[string]moduleWant{"batcher": {
+ 				applied:         true,
+ 				migratedAll:     masterBaseRewrites,
+-				fileContains:    []string{"orientation: 31400"},
++				fileContains:    []string{"profiles: {}"},
+ 				fileNotContains: []string{"master_base"},
+ 				loadsAsBatcher:  true,
+ 			}},
+@@ -259,7 +259,7 @@ func TestReconcileAll(t *testing.T) {
+ 		{
+ 			name:  "absent batcher file is seeded from the template and not migrated",
+ 			apply: true,
+-			want:  map[string]moduleWant{"batcher": {applied: true, migratedNone: true, fileContains: []string{"orientation: 31400"}, loadsAsBatcher: true}},
++			want:  map[string]moduleWant{"batcher": {applied: true, migratedNone: true, fileContains: []string{"profiles: {}"}, loadsAsBatcher: true}},
+ 		},
+ 		{
+ 			name:  "absent seed-only file is materialized verbatim",
+@@ -1449,9 +1449,19 @@ func TestReconcileAll_MigratesToSparse(t *testing.T) {
+ 			worktreeFile: "discussion_timeout_min: 480\n", wantStripped: []string{"discussion_timeout_min"}, wantDeleted: true, wantMarker: true,
+ 		},
+ 		{
+-			name: "an open map differing in one entry is kept whole", module: "batcher", opts: migrate,
++			name: "an open map differing in one entry is kept whole", module: "claude", opts: migrate,
++			worktreeFile: "prompt_cache_ttl_roles:\n  driver: 1h\n  webster: 2h\n", wantContains: []string{"driver: 1h", "webster: 2h"}, wantMarker: true,
++		},
++		{
++			name: "a per-name map keeps only the keys differing from the layers below", module: "batcher", opts: migrate,
+ 			worktreeFile: batcherDiffering, wantContains: []string{"orientation: 31401"}, wantMarker: true,
+-			wantStripped: []string{"active"},
++			wantStripped: []string{
++				"active", "profiles.cautious.batchifier", "profiles.cautious.budget", "profiles.cautious.max_cards",
++				"profiles.cautious.weights.batch_growth", "profiles.cautious.weights.context_per_line", "profiles.cautious.weights.fork_messages",
++				"profiles.cautious.weights.message_context", "profiles.cautious.weights.package_context", "profiles.cautious.weights.target_messages",
++				"profiles.cautious.weights.test_file_messages", "profiles.cautious.weights.uses_messages", "profiles.cautious.weights.write_per_card_line",
++				"profiles.identity.batchifier",
++			},
+ 		},
+ 		{
+ 			name: "a literal equal to the expansion of a marker below is kept", module: "loom", opts: migrate,
+@@ -1581,7 +1591,7 @@ func TestReconcileAll_MigratesToSparse(t *testing.T) {
+ // TestFormerTemplateValues_DifferFromTheTemplate pins that every former value names a registered module and a unit its template holds, and differs from the template's current value, compared as YAML nodes with the module's open maps.
+ func TestFormerTemplateValues_DifferFromTheTemplate(t *testing.T) {
+ 	t.Parallel()
+-	for module, units := range formerTemplateValues {
++	for module := range formerTemplateValues {
+ 		m, ok := configreg.Lookup(module)
+ 		if !ok {
+ 			t.Errorf("formerTemplateValues names module %q, which is not registered", module)
+@@ -1592,11 +1602,15 @@ func TestFormerTemplateValues_DifferFromTheTemplate(t *testing.T) {
+ 		if err != nil {
+ 			t.Fatalf("LeafPaths(%s template): %v", module, err)
+ 		}
++		units, err := yamlengine.LeafPaths(formerValuesDoc(module), spec.OpenMaps, spec.WholeEntries)
++		if err != nil {
++			t.Fatalf("LeafPaths(%s former values): %v", module, err)
++		}
+ 		_, equal, err := yamlengine.Strip(spec.Template, formerValuesDoc(module), spec.OpenMaps, spec.WholeEntries)
+ 		if err != nil {
+ 			t.Fatalf("Strip(%s template, former values): %v", module, err)
+ 		}
+-		for unit := range units {
++		for _, unit := range units {
+ 			if !slices.Contains(held, unit) {
+ 				t.Errorf("former value %s.%s: the template holds no such unit", module, unit)
+ 			}
+diff --git a/internal/yamlengine/doc.go b/internal/yamlengine/doc.go
+index 3a7bc7eff..c6a5686c2 100644
+--- a/internal/yamlengine/doc.go
++++ b/internal/yamlengine/doc.go
+@@ -56,6 +56,7 @@
+ //
+ // Reconcile, Prune, DropTemplateEqualNames, SetValues and SetSparse each take a perNameMaps argument before the open maps, DropTemplateEqualNames taking no open maps: dotted key paths whose template value is a mapping of names, each name one unit carried whole, such as a lens's prose or a fan's list.
+ // An empty argument keeps every other behaviour byte for byte.
++// Merge, Strip, LeafPaths, AnnotateLeaves and FillMissing take no per-name maps, so they step into P name by name and into each mapping entry key by key.
+ // For a declared path P:
+ //
+ //   - Reconcile writes at P only what the file changed, since the load's fill resolves every other template name from the template:
+@@ -68,9 +69,10 @@
+ //     Nothing at or under P is reported removed, and a list under a name is never merged element by element.
+ //     A file value at P that is neither a mapping nor null is refused with the way forward `rewrite P as a map of name to value`.
+ //   - Prune keeps every name under P whole and reports a name the template lacks as kept, never removed.
+-//   - SetValues and SetSparse know P.<name> for any one dot-free name and refuse a deeper key under P and P itself.
++//   - SetValues and SetSparse know P.<name> for any one dot-free name and refuse P itself and a deeper key under P, bar one case below.
+ //     The pair sets the name to the shape the template's entries at P decide:
+-//     a string scalar under a mapping of scalars, whatever its first character, and a YAML flow list under a mapping of lists.
++//     a string scalar under a mapping of scalars, whatever its first character, a YAML flow list under a mapping of lists and a YAML flow mapping under a mapping of mappings.
++//     Under a mapping of mappings they also know P.<name>.<rest> for any name, where rest is a scalar or list path some template entry holds, and set that one key, creating the name's mapping, under that entry's tag.
+ //     SetValues also carries every name the file holds under P and the template lacks,
+ //     and leaves out every name holding the template's value once the pairs apply, as Reconcile does.
+ //     A pair under a P that holds neither a mapping nor null is refused with the same way forward.
+diff --git a/internal/yamlengine/fill.go b/internal/yamlengine/fill.go
+index 2d3ef9c4e..36f5fe4b9 100644
+--- a/internal/yamlengine/fill.go
++++ b/internal/yamlengine/fill.go
+@@ -99,6 +99,8 @@ func fillMapping(template, existing *yaml.Node, path string, keys *[]string, ope
+ 
+ 		fileValue, ok := present[keyNode.Value]
+ 		if !ok {
++			// A flow mapping holding block entries and their comments marshals as invalid YAML, so the mapping takes block style.
++			existing.Style &^= yaml.FlowStyle
+ 			existing.Content = append(existing.Content, deepCopyNode(keyNode), deepCopyNode(valueNode))
+ 			*keys = append(*keys, keyPath)
+ 			continue
+diff --git a/internal/yamlengine/fill_test.go b/internal/yamlengine/fill_test.go
+index 0c6a2aff7..c834b1ea9 100644
+--- a/internal/yamlengine/fill_test.go
++++ b/internal/yamlengine/fill_test.go
+@@ -104,6 +104,13 @@ func TestFillMissing(t *testing.T) {
+ 			wantKeys: []string{"other"},
+ 			wantMap:  map[string]any{"items": []any{}, "other": 1},
+ 		},
++		{
++			name:     "commented entries filled into a flow mapping stay valid YAML",
++			template: "profiles: # named\n  plain: # one\n    kind: identity # the kind\n",
++			existing: "profiles: {} # named\n",
++			wantKeys: []string{"profiles.plain"},
++			wantMap:  map[string]any{"profiles": map[string]any{"plain": map[string]any{"kind": "identity"}}},
++		},
+ 		{
+ 			name:      "file's extra key and order are kept",
+ 			template:  "a: 1\nb: 2\nc: 3\n",
+diff --git a/internal/yamlengine/layers.go b/internal/yamlengine/layers.go
+index e12f83360..7e29f48f0 100644
+--- a/internal/yamlengine/layers.go
++++ b/internal/yamlengine/layers.go
+@@ -158,7 +158,10 @@ func (rule unitRule) stripMapping(lower, upper *yaml.Node, path string, topLevel
+ // Each perNameMaps entry is a dotted key path whose template value is a mapping of names:
+ // P.<name> is known for any dot-free name, and the pair writes the name into the mapping at P, appending it when absent.
+ // Under a mapping of scalars the value is a string whatever its first character;
+-// under a mapping of lists it is a YAML flow list.
++// under a mapping of lists it is a YAML flow list;
++// under a mapping of mappings it is a YAML flow mapping.
++// A per-name map of mappings also knows P.<name>.<rest> for any name, where rest is a scalar or list path some template entry holds:
++// the pair writes that one key into the mapping at P.<name>, creating it, under the template entry's tag or as a flow list.
+ // A value at P that is neither a mapping nor null is an error naming P and its shape, and nothing is written.
+ func SetSparse(template, existing []byte, pairs []KV, perNameMaps []string, openMaps ...string) (SetResult, error) {
+ 	var templateNode yaml.Node
+@@ -166,7 +169,8 @@ func SetSparse(template, existing []byte, pairs []KV, perNameMaps []string, open
+ 		return SetResult{}, err
+ 	}
+ 	scalarOrListPaths := scalarOrListOpenMapPaths(&templateNode, openMaps)
+-	listPerNamePaths := listPerNameMapPaths(&templateNode, perNameMaps)
++	entryKinds := perNameEntryKinds(&templateNode, perNameMaps)
++	entryLeaves := perNameEntryLeaves(&templateNode, perNameMaps, entryKinds)
+ 	existingDoc, existingRoot, err := parseMappingRoot(existing, "existing")
+ 	if err != nil {
+ 		return SetResult{}, err
+@@ -180,8 +184,8 @@ func SetSparse(template, existing []byte, pairs []KV, perNameMaps []string, open
+ 	templateSequences := make(map[string]*yaml.Node)
+ 	collectSequencePaths(&templateNode, "", templateSequences)
+ 
+-	known := knownKeys(templateLeaves, templateSequences, openMaps, perNameMaps)
+-	if unknown := unknownKeys(pairs, templateLeaves, templateSequences, openMaps, perNameMaps); len(unknown) > 0 {
++	known := knownKeys(templateLeaves, templateSequences, openMaps, perNameMaps, entryLeaves)
++	if unknown := unknownKeys(pairs, templateLeaves, templateSequences, openMaps, perNameMaps, entryLeaves); len(unknown) > 0 {
+ 		return SetResult{Unknown: unknown, Known: known}, nil
+ 	}
+ 
+@@ -207,13 +211,24 @@ func SetSparse(template, existing []byte, pairs []KV, perNameMaps []string, open
+ 			if err != nil {
+ 				return SetResult{}, fmt.Errorf("%w: rewrite %s as a map of name to value", err, perName)
+ 			}
+-			value, err := perNameEntryNode(pair, slices.Contains(listPerNamePaths, perName))
++			value, err := perNameEntryNode(pair, entryKinds[perName])
+ 			if err != nil {
+ 				return SetResult{}, err
+ 			}
+ 			setEntry(mapping, name, value)
+ 			continue
+ 		}
++		_, isLeaf := templateLeaves[pair.Key]
++		_, isSequence := templateSequences[pair.Key]
++		if perName, entryLeaf, ok := splitPerNameEntryKey(pair.Key, perNameMaps, entryLeaves); ok && !isLeaf && !isSequence {
++			if _, err := mappingAt(existingRoot, perName); err != nil {
++				return SetResult{}, fmt.Errorf("%w: rewrite %s as a map of name to value", err, perName)
++			}
++			if err := setPerNameEntryLeaf(existingRoot, pair, entryLeaf); err != nil {
++				return SetResult{}, err
++			}
++			continue
++		}
+ 		parentPath, name := splitLastSegment(pair.Key)
+ 		parent := existingRoot
+ 		if parentPath != "" {
+@@ -247,8 +262,9 @@ func SetSparse(template, existing []byte, pairs []KV, perNameMaps []string, open
+ 	return SetResult{Merged: merged, Known: known}, nil
+ }
+ 
+-// knownKeys returns the sorted key set a template makes settable: its leaf paths, its list-valued key paths and one P.<name> per open map and per per-name map P.
+-func knownKeys(templateLeaves, templateSequences map[string]*yaml.Node, openMaps, perNameMaps []string) []string {
++// knownKeys returns the sorted key set a template makes settable: its leaf paths, its list-valued key paths, and one P.<name> per open map and per per-name map P.
++// It also holds one P.<name>.<rest> per path rest the entries of a per-name map of mappings hold, as entryLeaves lists them.
++func knownKeys(templateLeaves, templateSequences map[string]*yaml.Node, openMaps, perNameMaps []string, entryLeaves map[string]map[string]*yaml.Node) []string {
+ 	known := make([]string, 0, len(templateLeaves)+len(templateSequences)+len(openMaps)+len(perNameMaps))
+ 	for path := range templateLeaves {
+ 		known = append(known, path)
+@@ -261,21 +277,26 @@ func knownKeys(templateLeaves, templateSequences map[string]*yaml.Node, openMaps
+ 	}
+ 	for _, p := range perNameMaps {
+ 		known = append(known, p+".<name>")
++		for rest := range entryLeaves[p] {
++			known = append(known, p+".<name>."+rest)
++		}
+ 	}
+ 	sort.Strings(known)
+ 	return known
+ }
+ 
+ // unknownKeys returns the sorted, deduplicated pair keys the template neither holds nor opens.
+-// A key under a per-name map is open for one dot-free name only, so a deeper key under it is unknown.
+-func unknownKeys(pairs []KV, templateLeaves, templateSequences map[string]*yaml.Node, openMaps, perNameMaps []string) []string {
++// A key under a per-name map is open for one dot-free name only, or, when the map's entries are mappings, for a name followed by a path some entry holds, as entryLeaves lists them;
++// a deeper key under it is unknown.
++func unknownKeys(pairs []KV, templateLeaves, templateSequences map[string]*yaml.Node, openMaps, perNameMaps []string, entryLeaves map[string]map[string]*yaml.Node) []string {
+ 	var unknown []string
+ 	for _, pair := range pairs {
+ 		_, isLeaf := templateLeaves[pair.Key]
+ 		_, isSequence := templateSequences[pair.Key]
+ 		_, _, isOpen := splitOpenMapKey(pair.Key, openMaps)
+ 		_, _, isPerName := splitPerNameKey(pair.Key, perNameMaps)
+-		if !isLeaf && !isSequence && !isOpen && !isPerName {
++		_, _, isPerNameEntry := splitPerNameEntryKey(pair.Key, perNameMaps, entryLeaves)
++		if !isLeaf && !isSequence && !isOpen && !isPerName && !isPerNameEntry {
+ 			unknown = append(unknown, pair.Key)
+ 		}
+ 	}
+@@ -456,6 +477,7 @@ func DropTemplateEqualNames(template, existing []byte, perNameMaps []string) (ou
+ 		return existing, dropped, nil
+ 	}
+ 	sort.Strings(dropped)
++	liftEmptyValueComments(existingDoc)
+ 
+ 	out, err = yaml.Marshal(existingDoc)
+ 	if err != nil {
+diff --git a/internal/yamlengine/layers_test.go b/internal/yamlengine/layers_test.go
+index a7479fa34..308a86fb4 100644
+--- a/internal/yamlengine/layers_test.go
++++ b/internal/yamlengine/layers_test.go
+@@ -88,13 +88,13 @@ func TestStrip(t *testing.T) {
+ 	}
+ }
+ 
+-const sparseTemplate = "name: tmpl\nport: 80\nnested:\n    deep: 1\nlabels: {}\nlist: [a]\nplan_max_bounces: ~\nrounds: \"\"\nnames:\n    a: default a\nlists:\n    l: [x]\n"
++const sparseTemplate = "name: tmpl\nport: 80\nnested:\n    deep: 1\nlabels: {}\nlist: [a]\nplan_max_bounces: ~\nrounds: \"\"\nnames:\n    a: default a\nlists:\n    l: [x]\nprofiles:\n    plain:\n        kind: identity\n    costed:\n        kind: cost\n        budget: 200\n"
+ 
+-// TestSetSparse pins that SetSparse writes only the set keys: into empty bytes, beside an existing key, through intermediate mappings, as an open-map entry, as a per-name entry and as a flow list, with a template tag kept and an unknown or misshapen request refused.
++// TestSetSparse pins that SetSparse writes only the set keys: into empty bytes, beside an existing key, through intermediate mappings, as an open-map entry, as a per-name entry, as one key of a per-name mapping entry and as a flow list, with a template tag kept and an unknown or misshapen request refused.
+ func TestSetSparse(t *testing.T) {
+ 	t.Parallel()
+ 	openMaps := []string{"labels", "rounds"}
+-	perNameMaps := []string{"lists", "names"}
++	perNameMaps := []string{"lists", "names", "profiles"}
+ 	tests := []struct {
+ 		name        string
+ 		existing    string
+@@ -137,6 +137,13 @@ func TestSetSparse(t *testing.T) {
+ 		{name: "per-name list entry refuses a plain value", pairs: []KV{{Key: "lists.m", Value: "plain"}}, wantErr: true},
+ 		{name: "per-name map holding a list is refused", existing: "names: [a]\n", pairs: []KV{{Key: "names.x", Value: "prose"}}, wantErr: true, wantErrText: []string{"names", "sequence", "rewrite names as a map of name to value"}},
+ 		{name: "per-name deeper key is unknown", pairs: []KV{{Key: "names.x.y", Value: "v"}}, wantUnknown: []string{"names.x.y"}},
++		{name: "one key of a per-name mapping entry the template holds is written alone", pairs: []KV{{Key: "profiles.costed.budget", Value: "300"}}, want: "profiles:\n    costed:\n        budget: 300\n"},
++		{name: "one key of a per-name mapping entry the template lacks takes the template entry's tag", existing: "profiles:\n    wide:\n        kind: cost\n", pairs: []KV{{Key: "profiles.wide.budget", Value: "250"}, {Key: "profiles.plain.budget", Value: "9"}}, want: "profiles:\n    wide:\n        kind: cost\n        budget: 250\n    plain:\n        budget: 9\n"},
++		{name: "per-name mapping entry is written whole from a flow mapping", pairs: []KV{{Key: "profiles.wide", Value: "{kind: identity}"}}, want: "profiles:\n    wide:\n        kind: identity\n"},
++		{name: "per-name mapping entry refuses a plain value", pairs: []KV{{Key: "profiles.wide", Value: "identity"}}, wantErr: true, wantErrText: []string{"profiles.wide", "flow mapping"}},
++		{name: "per-name mapping entry key under a scalar entry is refused", existing: "profiles:\n    costed: x\n", pairs: []KV{{Key: "profiles.costed.budget", Value: "300"}}, wantErr: true, wantErrText: []string{"profiles.costed"}},
++		{name: "per-name mapping entry key into a per-name map that holds a list is refused", existing: "profiles: [a]\n", pairs: []KV{{Key: "profiles.costed.budget", Value: "300"}}, wantErr: true, wantErrText: []string{"profiles", "sequence"}},
++		{name: "per-name mapping entry key no template entry holds is unknown", pairs: []KV{{Key: "profiles.wide.nope", Value: "1"}}, wantUnknown: []string{"profiles.wide.nope"}},
+ 	}
+ 	for _, tc := range tests {
+ 		t.Run(tc.name, func(t *testing.T) {
+@@ -156,7 +163,7 @@ func TestSetSparse(t *testing.T) {
+ 			if !slices.Equal(got.Unknown, tc.wantUnknown) {
+ 				t.Fatalf("Unknown = %v, want %v", got.Unknown, tc.wantUnknown)
+ 			}
+-			for _, key := range []string{"labels.<name>", "list", "name", "nested.deep", "port"} {
++			for _, key := range []string{"labels.<name>", "list", "name", "nested.deep", "port", "profiles.<name>.budget"} {
+ 				if !slices.Contains(got.Known, key) {
+ 					t.Errorf("Known = %v, lacks %q", got.Known, key)
+ 				}
+@@ -235,6 +242,7 @@ func TestDropTemplateEqualNames(t *testing.T) {
+ 		{name: "differing name kept", existing: "names:\n    a: tuned a\n    b: default b\n", want: "names:\n    a: tuned a\n", wantDropped: []string{"names.b"}},
+ 		{name: "name only the file holds kept", existing: "other: 1\nnames:\n    z: mine\n", want: "other: 1\nnames:\n    z: mine\n", wantDropped: []string{}},
+ 		{name: "emptied map stays as an empty mapping", existing: "other: 1\nnames:\n    b: default b\n    a: default a\n", want: "other: 1\nnames: {}\n", wantDropped: []string{"names.a", "names.b"}},
++		{name: "emptied map under a key carrying a line comment stays valid YAML", existing: "names: # mine\n    a: default a\n", want: "names: {} # mine\n", wantDropped: []string{"names.a"}},
+ 		{name: "nothing to drop returns the file byte for byte", existing: "# head\nother:   1\nnames:\n    a: tuned   # note\n", want: "# head\nother:   1\nnames:\n    a: tuned   # note\n", wantDropped: []string{}},
+ 	}
+ 	for _, tc := range tests {
+diff --git a/internal/yamlengine/reconcile.go b/internal/yamlengine/reconcile.go
+index 98c2b5c78..2f1a94e16 100644
+--- a/internal/yamlengine/reconcile.go
++++ b/internal/yamlengine/reconcile.go
+@@ -113,6 +113,7 @@ func Reconcile(template, existing []byte, perNameMaps []string, openMaps ...stri
+ 	// whole.
+ 	applyExistingOverrides(templateLeaves, existingLeaves)
+ 	applyExistingSequences(templateSequences, existingSequences)
++	liftEmptyValueComments(&templateNode)
+ 
+ 	// Marshal the mutated template back to bytes
+ 	merged, err = yaml.Marshal(&templateNode)
+@@ -316,6 +317,24 @@ func mergePerNameMaps(templateNode, existingNode *yaml.Node, perNameMaps []strin
+ 	return added, kept, dropped, nil
+ }
+ 
++// liftEmptyValueComments moves the line comment of every mapping key under node whose value is an empty mapping or list onto that value, written in flow style.
++// A key's line comment over an empty block collection marshals as invalid YAML.
++func liftEmptyValueComments(node *yaml.Node) {
++	if node.Kind == yaml.MappingNode {
++		for i := 0; i+1 < len(node.Content); i += 2 {
++			key, value := node.Content[i], node.Content[i+1]
++			if key.LineComment == "" || value.LineComment != "" || len(value.Content) > 0 || (value.Kind != yaml.MappingNode && value.Kind != yaml.SequenceNode) {
++				continue
++			}
++			value.LineComment, key.LineComment = key.LineComment, ""
++			value.Style = yaml.FlowStyle
++		}
++	}
++	for _, child := range node.Content {
++		liftEmptyValueComments(child)
++	}
++}
++
+ // sameValue reports whether two nodes decode to the same data, whatever their style, quoting or comments.
+ // A node that does not decode equals nothing.
+ func sameValue(a, b *yaml.Node) bool {
+diff --git a/internal/yamlengine/reconcile_test.go b/internal/yamlengine/reconcile_test.go
+index 5555b77ca..afb788a28 100644
+--- a/internal/yamlengine/reconcile_test.go
++++ b/internal/yamlengine/reconcile_test.go
+@@ -219,6 +219,14 @@ func TestReconcile(t *testing.T) {
+ 			contains:    []string{"lenses: {}", "fans: {}"},
+ 			notContains: []string{"default a"},
+ 		},
++		{
++			name:        "per-name map emptied under a key carrying a line comment stays valid YAML",
++			template:    "name: tmpl\nlenses: # the lenses\n  a: default a\n",
++			existing:    "name: mine\nlenses:\n  a: default a\n",
++			perNameMaps: []string{"lenses"},
++			wantDropped: []string{"lenses.a"},
++			contains:    []string{"lenses: {} # the lenses\n"},
++		},
+ 		{
+ 			name:        "per-name map holding a list is refused with the way forward",
+ 			template:    perNameTemplate,
+diff --git a/internal/yamlengine/set.go b/internal/yamlengine/set.go
+index 7b7a5f05d..c25b96e23 100644
+--- a/internal/yamlengine/set.go
++++ b/internal/yamlengine/set.go
+@@ -69,7 +69,10 @@ type SetResult struct {
+ // P.<name> is known for any dot-free name, every name existing holds under P and the template lacks is carried onto the mapping, and the pair sets the name, appending it when absent.
+ // Once the pairs apply, every name under P holding the template's value for it is left out of Merged, a name a pair set included.
+ // Under a mapping of scalars the value is a string whatever its first character;
+-// under a mapping of lists it is a YAML flow list, and a value that is no list is an error.
++// under a mapping of lists it is a YAML flow list, and a value that is no list is an error;
++// under a mapping of mappings it is a YAML flow mapping, and a value that is no flow mapping is an error.
++// A per-name map of mappings also knows P.<name>.<rest> for any name, where rest is a scalar or list path some template entry holds:
++// the pair sets that one key in the name's mapping, creating it, under the template entry's tag or as a flow list.
+ // A pair under P whose existing value at P is neither a mapping nor null is an error naming P and its shape.
+ func SetValues(template, existing []byte, pairs []KV, perNameMaps []string, openMaps ...string) (SetResult, error) {
+ 	// Parse the template into the tree we will mutate and ultimately marshal.
+@@ -78,8 +81,15 @@ func SetValues(template, existing []byte, pairs []KV, perNameMaps []string, open
+ 		return SetResult{}, err
+ 	}
+ 
++	// The pristine template decides the per-name entry shapes and, once the pairs apply, which names hold the template's value;
++	// templateNode itself takes existing's values and names below.
++	var pristine yaml.Node
++	if err := yaml.Unmarshal(template, &pristine); err != nil {
++		return SetResult{}, err
++	}
+ 	scalarOrListPaths := scalarOrListOpenMapPaths(&templateNode, openMaps)
+-	listPerNamePaths := listPerNameMapPaths(&templateNode, perNameMaps)
++	entryKinds := perNameEntryKinds(&pristine, perNameMaps)
++	entryLeaves := perNameEntryLeaves(&pristine, perNameMaps, entryKinds)
+ 
+ 	var existingNode yaml.Node
+ 	if len(existing) > 0 {
+@@ -96,7 +106,7 @@ func SetValues(template, existing []byte, pairs []KV, perNameMaps []string, open
+ 	templateSequences := make(map[string]*yaml.Node)
+ 	collectSequencePaths(&templateNode, "", templateSequences)
+ 
+-	known := knownKeys(templateLeaves, templateSequences, openMaps, perNameMaps)
++	known := knownKeys(templateLeaves, templateSequences, openMaps, perNameMaps, entryLeaves)
+ 
+ 	// preserved collects the root-key-granularity graft step's key names
+ 	// (below), reported to the caller via SetResult.Preserved. It stays nil
+@@ -128,11 +138,11 @@ func SetValues(template, existing []byte, pairs []KV, perNameMaps []string, open
+ 	// Validate every requested key against the template's leaf set before
+ 	// mutating anything, so a single unknown key rejects the whole call
+ 	// rather than silently applying a partial write.
+-	if unknown := unknownKeys(pairs, templateLeaves, templateSequences, openMaps, perNameMaps); len(unknown) > 0 {
++	if unknown := unknownKeys(pairs, templateLeaves, templateSequences, openMaps, perNameMaps, entryLeaves); len(unknown) > 0 {
+ 		return SetResult{Unknown: unknown, Known: known}, nil
+ 	}
+ 
+-	// Every key is now guaranteed to have a real node in templateNode, since
++	// Every key but a per-name entry key is now guaranteed to have a real node in templateNode, since
+ 	// the working tree always contains every template leaf. Apply pairs in
+ 	// order so a repeated key's later value wins.
+ 	for _, pair := range pairs {
+@@ -156,7 +166,18 @@ func SetValues(template, existing []byte, pairs []KV, perNameMaps []string, open
+ 			if err := perNameShapeError(&existingNode, perName); err != nil {
+ 				return SetResult{}, err
+ 			}
+-			if err := setPerNameEntry(&templateNode, perName, name, pair, slices.Contains(listPerNamePaths, perName)); err != nil {
++			if err := setPerNameEntry(&templateNode, perName, name, pair, entryKinds[perName]); err != nil {
++				return SetResult{}, err
++			}
++			continue
++		}
++		_, isLeaf := templateLeaves[pair.Key]
++		_, isSequence := templateSequences[pair.Key]
++		if perName, entryLeaf, ok := splitPerNameEntryKey(pair.Key, perNameMaps, entryLeaves); ok && !isLeaf && !isSequence {
++			if err := perNameShapeError(&existingNode, perName); err != nil {
++				return SetResult{}, err
++			}
++			if err := setPerNameEntryLeaf(documentRoot(&templateNode), pair, entryLeaf); err != nil {
+ 				return SetResult{}, err
+ 			}
+ 			continue
+@@ -174,11 +195,8 @@ func SetValues(template, existing []byte, pairs []KV, perNameMaps []string, open
+ 		leaf.Value = pair.Value
+ 	}
+ 
+-	var pristine yaml.Node
+-	if err := yaml.Unmarshal(template, &pristine); err != nil {
+-		return SetResult{}, err
+-	}
+ 	dropTemplateNames(&templateNode, &pristine, perNameMaps)
++	liftEmptyValueComments(&templateNode)
+ 
+ 	merged, err := yaml.Marshal(&templateNode)
+ 	if err != nil {
+@@ -285,17 +303,81 @@ func splitPerNameKey(key string, perNameMaps []string) (perName, name string, ok
+ 	return "", "", false
+ }
+ 
+-// listPerNameMapPaths returns the declared per-name map paths whose template entries are lists rather than scalars.
+-// It reads the first entry, since a per-name map holds one kind of entry.
+-func listPerNameMapPaths(template *yaml.Node, perNameMaps []string) []string {
+-	var paths []string
++// perNameEntryKinds returns the kind of the template's entries at each declared per-name map path that holds one.
++// It reads the first entry, since a per-name map holds one kind of entry;
++// a path the result lacks has scalar entries.
++func perNameEntryKinds(template *yaml.Node, perNameMaps []string) map[string]yaml.Kind {
++	kinds := make(map[string]yaml.Kind, len(perNameMaps))
+ 	for _, path := range perNameMaps {
+ 		value := findValueNode(template, path)
+-		if value != nil && value.Kind == yaml.MappingNode && len(value.Content) > 1 && value.Content[1].Kind == yaml.SequenceNode {
+-			paths = append(paths, path)
++		if value != nil && value.Kind == yaml.MappingNode && len(value.Content) > 1 {
++			kinds[path] = value.Content[1].Kind
+ 		}
+ 	}
+-	return paths
++	return kinds
++}
++
++// perNameEntryLeaves returns, for each declared per-name map path whose template entries are mappings, the scalar and list paths those entries hold, relative to an entry, each mapped to the node of the first entry holding it.
++// A key P.<name>.<rest> is written after the node at rest, whatever the name.
++func perNameEntryLeaves(template *yaml.Node, perNameMaps []string, entryKinds map[string]yaml.Kind) map[string]map[string]*yaml.Node {
++	leaves := make(map[string]map[string]*yaml.Node)
++	for _, path := range perNameMaps {
++		if entryKinds[path] != yaml.MappingNode {
++			continue
++		}
++		entries := findValueNode(template, path)
++		leaves[path] = make(map[string]*yaml.Node)
++		for i := 1; i < len(entries.Content); i += 2 {
++			entryLeaves := make(map[string]*yaml.Node)
++			collectLeafPaths(entries.Content[i], entryLeaves)
++			collectSequencePaths(entries.Content[i], "", entryLeaves)
++			for rest, node := range entryLeaves {
++				if _, seen := leaves[path][rest]; !seen && !strings.Contains(rest, "[") {
++					leaves[path][rest] = node
++				}
++			}
++		}
++	}
++	return leaves
++}
++
++// splitPerNameEntryKey splits a key P.<name>.<rest> into the declared per-name map P and the template node the key is written after, for a P whose entries are mappings and a rest some template entry holds as a scalar or a list.
++// ok is false for any other key.
++func splitPerNameEntryKey(key string, perNameMaps []string, entryLeaves map[string]map[string]*yaml.Node) (perName string, leaf *yaml.Node, ok bool) {
++	for _, path := range perNameMaps {
++		rest, found := strings.CutPrefix(key, path+".")
++		if !found {
++			continue
++		}
++		if _, rest, found = strings.Cut(rest, "."); !found {
++			continue
++		}
++		if leaf, ok := entryLeaves[path][rest]; ok {
++			return path, leaf, true
++		}
++	}
++	return "", nil, false
++}
++
++// setPerNameEntryLeaf writes pair, a key P.<name>.<rest>, into the mapping at P.<name> under root, creating every missing mapping on the way, after leaf, the template entry's node at rest:
++// a YAML flow list when leaf is a list, else a scalar under the tag a set over leaf takes.
++// A non-mapping value on the way is an error naming its path.
++func setPerNameEntryLeaf(root *yaml.Node, pair KV, leaf *yaml.Node) error {
++	parentPath, name := splitLastSegment(pair.Key)
++	parent, err := mappingAt(root, parentPath)
++	if err != nil {
++		return err
++	}
++	if leaf.Kind == yaml.SequenceNode {
++		sequence := &yaml.Node{Kind: yaml.SequenceNode, Tag: "!!seq"}
++		if err := replaceSequence(sequence, pair); err != nil {
++			return err
++		}
++		setEntry(parent, name, sequence)
++		return nil
++	}
++	setEntry(parent, name, &yaml.Node{Kind: yaml.ScalarNode, Tag: scalarSetTag(leaf.Tag, pair.Value), Value: pair.Value})
++	return nil
+ }
+ 
+ // perNameShapeError returns an error naming path and its shape when root holds there a value that is neither a mapping nor null, and nil otherwise.
+@@ -307,23 +389,35 @@ func perNameShapeError(root *yaml.Node, path string) error {
+ 	return fmt.Errorf("%s holds a %s, not a map: rewrite %s as a map of name to value", path, nodeShape(value), path)
+ }
+ 
+-// perNameEntryNode returns the node pair.Value spells for an entry of a per-name map:
+-// a YAML flow list when the map's entries are lists, else a string scalar whatever its first character.
+-func perNameEntryNode(pair KV, listEntries bool) (*yaml.Node, error) {
+-	if !listEntries {
++// perNameEntryNode returns the node pair.Value spells for an entry of a per-name map whose entries are of kind entryKind:
++// a YAML flow list when they are lists, a YAML flow mapping when they are mappings, else a string scalar whatever its first character.
++// A value that is not a flow mapping, for mapping entries, is an error naming the key.
++func perNameEntryNode(pair KV, entryKind yaml.Kind) (*yaml.Node, error) {
++	switch entryKind {
++	case yaml.SequenceNode:
++		sequence := &yaml.Node{Kind: yaml.SequenceNode, Tag: "!!seq"}
++		if err := replaceSequence(sequence, pair); err != nil {
++			return nil, err
++		}
++		return sequence, nil
++	case yaml.MappingNode:
++		entry, err := openMapEntryNode(pair)
++		if err != nil {
++			return nil, err
++		}
++		if entry.Kind != yaml.MappingNode {
++			return nil, fmt.Errorf("value for %s is not a YAML flow mapping, got %q: write the entry as {key: value, ...}, or set one of its keys as %s.<key>", pair.Key, pair.Value, pair.Key)
++		}
++		return entry, nil
++	default:
+ 		return stringNode(pair.Value), nil
+ 	}
+-	sequence := &yaml.Node{Kind: yaml.SequenceNode, Tag: "!!seq"}
+-	if err := replaceSequence(sequence, pair); err != nil {
+-		return nil, err
+-	}
+-	return sequence, nil
+ }
+ 
+ // setPerNameEntry sets name in the per-name map at path perName to the entry pair spells, appending the key when absent.
+ // A null value at the path becomes an empty mapping first.
+ // The mapping is given block style, so an empty {} template value is written as a block.
+-func setPerNameEntry(root *yaml.Node, perName, name string, pair KV, listEntries bool) error {
++func setPerNameEntry(root *yaml.Node, perName, name string, pair KV, entryKind yaml.Kind) error {
+ 	mapping := findValueNode(root, perName)
+ 	if mapping == nil {
+ 		return fmt.Errorf("per-name map %s is not in the template", perName)
+@@ -334,7 +428,7 @@ func setPerNameEntry(root *yaml.Node, perName, name string, pair KV, listEntries
+ 	if mapping.Kind != yaml.MappingNode {
+ 		return fmt.Errorf("%s holds a %s, not a map: rewrite %s as a map of name to value", perName, nodeShape(mapping), perName)
+ 	}
+-	value, err := perNameEntryNode(pair, listEntries)
++	value, err := perNameEntryNode(pair, entryKind)
+ 	if err != nil {
+ 		return err
+ 	}
+diff --git a/internal/yamlengine/set_test.go b/internal/yamlengine/set_test.go
+index 05b58ab89..d461a0e1a 100644
+--- a/internal/yamlengine/set_test.go
++++ b/internal/yamlengine/set_test.go
+@@ -17,9 +17,15 @@ const (
+ 	nullBudgetTemplate = "plan_max_bounces: ~\nreview_max_bounces: 1\n"
+ 	roundListTemplate  = "plan_review: \"\" # rounds\n"
+ 	perNameSetTemplate = "names:\n  a: default a\nlists:\n  l: [x]\n"
++
++	// perNameMappingTemplate holds a per-name map whose entries are mappings, the second holding keys the first lacks.
++	perNameMappingTemplate = "profiles:\n  plain:\n    kind: identity\n  costed:\n    kind: cost\n    budget: 200\n    tags: [a]\n"
+ )
+ 
+-var perNameSetMaps = []string{"lists", "names"}
++var (
++	perNameSetMaps     = []string{"lists", "names"}
++	perNameMappingMaps = []string{"profiles"}
++)
+ 
+ func intPointer(v int) *int { return &v }
+ 
+@@ -285,6 +291,14 @@ func TestSetValues(t *testing.T) {
+ 			contains:    []string{"names: {}", "l: [y]"},
+ 			notContains: []string{"default a", "tuned a"},
+ 		},
++		{
++			name:        "per-name map emptied under a key carrying a line comment stays valid YAML",
++			template:    "names: # the names\n  a: default a\n",
++			existing:    "names:\n  a: tuned a\n",
++			pairs:       []KV{{Key: "names.a", Value: "default a"}},
++			perNameMaps: []string{"names"},
++			contains:    []string{"names: {} # the names\n"},
++		},
+ 		{
+ 			name:        "per-name map holding null becomes a mapping holding the new name",
+ 			template:    perNameSetTemplate,
+@@ -294,6 +308,31 @@ func TestSetValues(t *testing.T) {
+ 			contains:    []string{"names:\n    x: prose"},
+ 			notContains: []string{"default a"},
+ 		},
++		{
++			name:        "per-name mapping entry the template holds takes one key and keeps the rest",
++			template:    perNameMappingTemplate,
++			pairs:       []KV{{Key: "profiles.costed.budget", Value: "300"}},
++			perNameMaps: perNameMappingMaps,
++			contains:    []string{"costed:\n        kind: cost\n        budget: 300\n        tags: [a]\n"},
++			notContains: []string{"plain"},
++		},
++		{
++			name:        "per-name mapping entry keys absent from the named entry take the template entry's shape",
++			template:    perNameMappingTemplate,
++			existing:    "profiles:\n  wide:\n    kind: cost\n",
++			pairs:       []KV{{Key: "profiles.wide.budget", Value: "250"}, {Key: "profiles.plain.tags", Value: "[b]"}},
++			perNameMaps: perNameMappingMaps,
++			contains:    []string{"plain:\n        kind: identity\n        tags: [b]\n", "wide:\n        kind: cost\n        budget: 250\n"},
++			notContains: []string{"costed"},
++		},
++		{
++			name:        "per-name mapping entry is set whole from a flow mapping",
++			template:    perNameMappingTemplate,
++			pairs:       []KV{{Key: "profiles.wide", Value: "{kind: identity, budget: 5}"}},
++			perNameMaps: perNameMappingMaps,
++			contains:    []string{"wide:\n        kind: identity\n        budget: 5\n"},
++			notContains: []string{"costed", "plain"},
++		},
+ 	}
+ 
+ 	for _, tt := range tests {
+@@ -388,6 +427,14 @@ func TestSetValues_UnknownKeys(t *testing.T) {
+ 			perNameMaps: perNameSetMaps,
+ 			wantUnknown: []string{"lists", "lists.m.n", "names.x.y"},
+ 		},
++		{
++			name:        "per-name map of mappings knows an entry key for any name and refuses one no entry holds",
++			template:    perNameMappingTemplate,
++			pairs:       []KV{{Key: "profiles.wide.budget", Value: "1"}, {Key: "profiles.wide.nope", Value: "1"}},
++			perNameMaps: perNameMappingMaps,
++			wantUnknown: []string{"profiles.wide.nope"},
++			wantKnown:   "profiles.<name>.budget",
++		},
+ 	}
+ 
+ 	for _, tt := range tests {
+@@ -512,6 +559,21 @@ func TestSetValues_Refusals(t *testing.T) {
+ 			perNameMaps: perNameSetMaps,
+ 			want:        []string{"names", "sequence", "rewrite names as a map of name to value"},
+ 		},
++		{
++			name:        "plain value for a per-name mapping entry",
++			template:    perNameMappingTemplate,
++			pair:        KV{Key: "profiles.wide", Value: "identity"},
++			perNameMaps: perNameMappingMaps,
++			want:        []string{"profiles.wide", "flow mapping"},
++		},
++		{
++			name:        "entry key into a per-name mapping map that holds a list",
++			template:    perNameMappingTemplate,
++			existing:    "profiles:\n  - a\n",
++			pair:        KV{Key: "profiles.wide.budget", Value: "300"},
++			perNameMaps: perNameMappingMaps,
++			want:        []string{"profiles", "sequence"},
++		},
+ 	}
+ 
+ 	for _, tt := range tests {
