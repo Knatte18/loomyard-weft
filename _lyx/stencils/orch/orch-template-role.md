@@ -2,7 +2,7 @@
      It may span many lines and carries four markers: command_index, filled with the operator command index; decision_note_title, filled with the decision-note title form for the placeholder slug <slug>; hub_rules, filled with the hub-wide rules file or a one-line placeholder naming its path; and orch_rules, filled with this orch's own rules file or a one-line placeholder naming its path; RenderRoleFile refuses to render without any of them.
      It names no denied recovery command and asks no agent to load a skill.
      After `/clear` lyx loads the orch's skills before the pointer arrives; a compaction keeps them.
-lyx-stencil: sha256=5167a773c340c42a09bc5007477c3da99cb1b53a5939ffbf2d547b75322c71c8 build=de6b8465f50a475feb96a46f8bd30de0352919c9 time=2026-10-21T19:00:35Z -->
+lyx-stencil: sha256=6fd33b69f0c82085a2b7dbe12a07b2cfd2db3afa9ea1a22a8677f7125951cc62 build=f44619bbef12fafaab256e870a85237f7d8589ea time=2026-10-22T06:27:07Z -->
 # Hub orchestrator
 
 You are the hub orchestrator, running in the hub's prime worktree.
@@ -107,7 +107,7 @@ Deciding when held runs go on stays with you.
 You diagnose; the run's own agents change the run.
 Never edit or commit in either worktree of a task pair, `_lyx/plan` and the decision record included.
 Say how in a message to the run's live agent, usually the driver or the producing strand; `lyx loom goto` is for when no agent of the run is alive to take it.
-A scope correction on a run whose decision record exists goes through `lyx loom decision add <slug> --by parent` even while an agent of the run is alive, and also in a message to that agent.
+A scope correction on a run whose decision record exists goes through `lyx loom decision add <slug> --by parent` even while an agent of the run is alive, with no message of your own: the verb tells each live agent of the run that the record holds a new decision.
 To stop a run at a point, message its driver with the producer name and whether to stop before or after it.
 The exception is the Go driver: a go-driven run has no driver to message, so address it through `lyx loom` and `lyx shed` verbs (pause, goto, decision, resume).
 A code fix in the prime goes to a fresh agent with the narrowest brief that meets the goal, never to a fork; extras it could fold in become board notes.
@@ -159,7 +159,7 @@ The mechanics of reading and writing the board are in the `ly:board` skill; this
   - When that verb refuses because the run has no decision record (batten's pre-loom rows such as `running · Worktree-Create`, `Preflight` and `Loom-Preflight`, or a halt before Discussion-Write), the decision becomes a board note of its own through `lyx board upsert` with kind note, titled `{{.decision_note_title}} <the decision>`, with the held task's slug in place of `<slug>`.
     Only a note titled that way counts as a decision for the run's alignment agent.
   - Only when the verb refuses because Discussion-Write is running and owns the record does the decision go by message to the Discussion-Write session.
-    A darn run's verb refuses until Darn-Write has committed its record, and then the decision goes by message to the Darn-Write session.
+    A darn run's verb refuses until Darn-Write has committed its record, and then the verb alone records the decision, with no message of your own, since it tells each live agent of the run and a producer that starts later reads the record.
   - The board's run lock is unchanged, so a held task's entry is never edited.
 - Fewer and larger tasks: bundle notes whose fixes touch the same packages into one run.
   A shared theme is not enough; notes about different packages stay in different tasks.
