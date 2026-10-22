@@ -19,7 +19,7 @@
 
 **Intent:** Read quarry `v0.4.0`'s multi-alphabet answers (D6).
 
-`crossAlphabetDetail` reports whether an answer is quarry's answer for a self glyph two alphabets both match, `ambiguous` with no candidates and a non-empty `Languages` list, and renders its detail: the languages, and quarry's way out, name the file, such as `Glyphchain.Sharp/Foo.cs#`, or a member.
+`crossAlphabetDetail` reports whether an answer is quarry's answer for a self glyph two alphabets both match, `ambiguous` with no candidates and a non-empty `Languages` list, and renders its detail with no constructed path: the languages from `Languages`, and the way forward, name the file, a `.cs` file declaring the namespace or a file of the directory, as a slashed path self glyph, or a member, as `lyx quarry glyphs` lists them.
 Every reader of an ambiguous answer that renders candidates uses it in place of the empty candidate list, so no detail lists nothing:
 - `statusFindings` reports the blocking `glyph-ambiguous` with that detail;
 - `createFindings` reports the blocking `create-already-exists` with that detail;

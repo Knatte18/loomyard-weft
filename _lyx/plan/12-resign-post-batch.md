@@ -26,7 +26,8 @@
 
 `RebindResigns` takes the batch's cards and, under a glyph-enabled plan, names each card's C# arrow again through `nameResigns`' declaration rule and `nameDeclarations`.
 For every arrow whose minted id differs from its target it resolves the minted ids against `worktreeRoot` in one `resolveTargets` call:
-- an answer other than `found` is the new blocking done check `resign-not-done` for that card, its detail naming the arrow, the answer and the way forward: make the edit match the arrow's head, then `lyx webster recover-batch NN`; or correct the head to the signature the card wrote, run `lyx webster rebaseline --card NN` naming that card, then `lyx webster recover-batch NN`, the order `deleteReferencedWayForward` already names for a plan edit mid-run;
+- an answer other than `found` is the new blocking done check `resign-not-done` for that card, its detail naming the arrow, the answer and the way forward: make the edit match the arrow's head, or correct the head to the signature the card wrote and run `lyx webster rebaseline --card <card number>` naming that card;
+  the batch's `lyx webster recover-batch` step comes from websterengine's not-done way forward, which knows the batch number;
 - when every such answer is `found`, it rewrites each old glyph to its minted id plan-wide in one `plan.RewriteRefs` call, as handle binding does, so a later card naming the member by its old glyph names the minted id and resolves at its own dispatch.
 A Go arrow, an arrow whose minted id equals its target, and a `none` plan do nothing.
 An infrastructure error is wrapped in `ErrQuarryUnavailable`.

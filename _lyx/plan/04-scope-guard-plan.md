@@ -23,8 +23,8 @@ The interface method `planindex.Delta.ScopeGuard` gains the leading `plan *planp
 Under `go` every verdict is today's.
 Under `csharp` a C# member glyph target is a member, never a file or package scope, so it covers only its own symbol, and a C# namespace self glyph covers no file, per D3's bound.
 
-Tests: every existing `ScopeGuard` test passes a `go` plan, and `TestScopeGuard_FileLevelCoverage` gains a pair of rows whose only target is `Glyphchain.Sharp#` while the delta changes the file `Glyphchain.Sharp/notes.txt` with no symbol in it.
-Under `go` the target is the package directory `Glyphchain.Sharp`, which covers the file, so there is no finding; under `csharp` it is a namespace with no scope, so the file is one `scope-outside-plan`.
+Tests: every existing `ScopeGuard` test passes a `go` plan, and `TestScopeGuard_FileLevelCoverage` gains a pair of rows whose only target is the dot-free namespace self glyph `Glyphchain#` while the delta changes the file `Glyphchain/notes.txt` with no symbol in it.
+Under `go` the target is the package directory `Glyphchain`, which covers the file, so there is no finding; under `csharp` it is a namespace with no scope, so the file is one `scope-outside-plan`.
 The `csharp` row fails if the guard still reads its targets with the default Go alphabet.
 
 **ImpactSummary:** the scope guard's exported signature and its one interface method change, with both implementations and the one production caller in `postBatchChecks` on this card; the guard stays informational.
