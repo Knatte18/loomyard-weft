@@ -8,12 +8,12 @@
 - `internal/loomcli/doc.go`
 
 **Create:**
-- `plan:internal/shedrun#StartOwnedElsewhereKind` -> `const StartOwnedElsewhereKind = "owned_elsewhere"`
-- `plan:internal/loomcli#ownerVerdict` -> `type ownerVerdict struct`
-- `plan:internal/loomcli#runOwnerVerdict` -> `func runOwnerVerdict(l *lyxcwd.Location, slug string, machine func() (string, error)) (ownerVerdict, error)`
-- `plan:internal/loomcli#loomCLI.refuseOwnedElsewhere` -> `func (c *loomCLI) refuseOwnedElsewhere(ctx context.Context, out io.Writer, retry string) bool`
-- `plan:internal/loomcli#TestStartAndResume_RefuseARunOwnedElsewhere` -> `func TestStartAndResume_RefuseARunOwnedElsewhere(t *testing.T)`
-- `plan:internal/loomcli_test#TestRunOwnerVerdict` -> `func TestRunOwnerVerdict(t *testing.T)`
+- `internal/shedrun#StartOwnedElsewhereKind`
+- `internal/loomcli#ownerVerdict`
+- `internal/loomcli#runOwnerVerdict`
+- `internal/loomcli#loomCLI.refuseOwnedElsewhere`
+- `internal/loomcli#TestStartAndResume_RefuseARunOwnedElsewhere`
+- `internal/loomcli_test#TestRunOwnerVerdict`
 
 **Uses:**
 - `internal/loomcli#seedSlug`
