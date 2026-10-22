@@ -28,10 +28,10 @@
 - `internal/boardengine/doc.go`
 
 **Uses:**
-- `plan:internal/pauserecord#GateCovered`
-- `plan:internal/pauserecord#SetGateDeferral`
-- `plan:internal/fabricengine#ParentLockedFlag`
-- `plan:internal/boardengine#DeferrableSyncFlag`
+- `internal/pauserecord#GateCovered`
+- `internal/pauserecord#SetGateDeferral`
+- `internal/fabricengine#ParentLockedFlag`
+- `internal/boardengine#DeferrableSyncFlag`
 - `internal/pauserecord#InstallGate`
 - `internal/parentlock#Store.HeldBy`
 - `internal/parentlock#Dir`

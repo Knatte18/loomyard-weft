@@ -1,13 +1,13 @@
 # Card 6 — The gate of a detached push or board-sync child defers instead of waiting
 
 **Create:**
-- `plan:internal/pauserecord#GateCovered` -> `func GateCovered() bool`
-- `plan:internal/pauserecord#SetGateDeferral` -> `func SetGateDeferral(onCovered func()) (restore func())`
-- `plan:internal/tendercli#DetachedChild` -> `type DetachedChild struct`
-- `plan:internal/fabricengine#ParentLockedFlag` -> `const ParentLockedFlag = "parent-locked"`
-- `plan:internal/boardengine#DeferrableSyncFlag` -> `const DeferrableSyncFlag = "deferrable"`
-- `plan:cmd/lyx#detachedChild` -> `func detachedChild(cmd *cobra.Command) tendercli.DetachedChild`
-- `plan:cmd/lyx#TestDetachedChild` -> `func TestDetachedChild(t *testing.T)`
+- `internal/pauserecord#GateCovered`
+- `internal/pauserecord#SetGateDeferral`
+- `internal/tendercli#DetachedChild`
+- `internal/fabricengine#ParentLockedFlag`
+- `internal/boardengine#DeferrableSyncFlag`
+- `cmd/lyx#detachedChild`
+- `cmd/lyx#TestDetachedChild`
 
 **Edit:**
 - `internal/pauserecord#Gate`
