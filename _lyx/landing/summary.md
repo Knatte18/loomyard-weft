@@ -1,23 +1,35 @@
-# Discussion settles a fact the design rests on; reviewers flag a deferral
+# Settle researchable facts in Discussion; reviewers flag deferrals
 
-A factual question a design rests on is now researched and answered in Discussion, never handed to Plan or an implementer with a halt-on-discovery rule.
-The `ubuntu-2404-support` run showed the cost of the old behaviour: Plan gave a card the tmux feature audit with a rule to halt on a new above-floor form, the implementer found `allow-set-title` in minutes, and the halt cost a failed batch, a recovery, a tackler and a fresh Plan review.
+A fact the design rests on is now researched and recorded in Discussion.
+Before this change, a task could hand such a question to Plan, or to an implementer with a rule to halt on discovery.
+In run `ubuntu-2404-support`, an implementer fork found an above-floor tmux feature that way, and the halt cost a failed batch, a recovery, an orch decision and a re-plan.
+The same research done in Discussion takes minutes.
 
-## What changes
+The change is stencil prose only, under `contracts/stencils/loom/`:
 
-- `contracts/stencils/loom/loom-template-discussion.md` — Step 2 gains a rule: a question that asks a fact, not a choice (tool or dependency versions, upstream behaviour, what the code does today), is researched from the code and from upstream changelogs, manuals and docs at the versions that matter.
-  Its answer goes into the decision record's Decisions or Constraints with its evidence named by source and version.
-  Deferring it, or handing downstream a rule to halt on discovering it, is forbidden.
-  The chair stencil includes this template whole, so the seat-table lead gets the rule too.
-- `contracts/stencils/loom/loom-rubric-discussion-review.md` — a new `## Also flag` bullet: a Decision, Constraint, risk or acceptance criterion that leaves such a fact to be found out later, or a halt-on-discovery rule handed downstream, is a finding.
-- `contracts/stencils/loom/loom-rubric-plan-review.md` — a new `## Also flag` bullet: a card that leaves a fact the design depends on to be found out while it runs, or carries a halt-on-discovery rule, is a finding, fixed by researching the fact into the plan, or into the decision record through the parent when the answer changes the design.
+- `loom-template-discussion.md`: the writer's exploration step gains a rule.
+  A factual question the design rests on (a tool or dependency version, upstream behaviour, what the code does today) is researched from the code and from upstream changelogs, manuals and docs at the versions that matter.
+  Its answer goes into the decision record's Decisions or Constraints, with the evidence named by source and version.
+  The writer never leaves such a fact for Plan or an implementer, and never hands downstream a halt-on-discovery rule.
+  A question that asks a choice rather than a fact still goes to the interview.
+- `loom-rubric-discussion-review.md`: `## Also flag` gains a bullet.
+  A Decision, Constraint, risk or acceptance criterion that leaves such a fact to be found out later, or hands downstream a halt-on-discovery rule, is a finding.
+  The fix is the research done and recorded with its evidence.
+- `loom-rubric-plan-review.md`: `## Also flag` gains a bullet.
+  A card that carries a research step the design depends on, or a rule to halt when its work discovers such a fact, is a finding.
+  The finding names the fact.
+  The fix is the fact researched and recorded in the plan, or in the decision record through the parent when the answer changes the design.
 
 ## Design decisions
 
-- Step 2's existing fence (no exact signatures, `file:line` citations, interface shapes, dependency lists or exhaustive existing-pattern research) stays.
-  The new rule states that the fence excludes plan-level detail, never a fact the design rests on, so a writer cannot read the fence as licence to defer.
-  The Discussion-Review bullet likewise exempts a fact the writer was told not to gather, which keeps the rubric's writer/reviewer symmetry.
-- The Plan writer, advisor and darn stencils are unchanged.
-  The Plan-Review rubric catches a deferring card, the chair owns the record that carries the research, and a darn writer implements its own design, so it hands no fact to another session.
-- No test is added: the change is stencil prose, which `PATTERN-test-economy` keeps out of assertions.
-  Neither rubric gains a marker, so the rubric marker tests in `contracts/stencils` cover them unchanged.
+- The new writer rule widens the exploration step only to facts the design rests on.
+  The step's exclusions stay: no exact signatures, `file:line` citations, interface shapes, dependency lists or exhaustive existing-pattern research.
+  The rule says so in a sentence of its own, so "no exhaustive research" cannot be read as licence to defer a fact.
+- The Discussion rubric's bullet exempts a fact the writer was told not to gather, so the writer/reviewer symmetry the rubric keeps still holds.
+- The Plan writer stencil, the advisor stencil, the darn stencils and rubric, all Go code and the discussion spec are untouched.
+- No marker and no conditional is added to any of the three files, so the existing rubric marker tests are unaffected.
+
+## To check by hand
+
+- Nothing was run against a live Discussion or Plan session.
+  Whether a writer now researches a version-dependent fact, and whether the two reviewers raise the new findings, shows only on a real run.
