@@ -1,14 +1,14 @@
 # Card 5 — finalize-goto-guard
 
 **Create:**
-- `plan:internal/loomrecipe#finalizeEngine` -> `const finalizeEngine = "Finalize"`
-- `plan:internal/loomrecipe#IsFinalizeRow` -> `func IsFinalizeRow(row string) (bool, error)`
-- `plan:internal/loomrecipe#TestIsFinalizeRow` -> `func TestIsFinalizeRow(t *testing.T)`
-- `plan:internal/loomcli#finalizeDirtGuard` -> `func finalizeDirtGuard(isFinalize func(row string) (bool, error), parentDirt func() (checkout string, paths []string, mergeRecord bool, err error)) shedengine.GotoGuard`
-- `plan:internal/loomcli#composeGotoGuards` -> `func composeGotoGuards(guards ...shedengine.GotoGuard) shedengine.GotoGuard`
-- `plan:internal/loomcli#loomCLI.parentCodeDirtFromFabric` -> `func (c *loomCLI) parentCodeDirtFromFabric() (checkout string, paths []string, mergeRecord bool, err error)`
-- `plan:internal/loomcli#loomCLI.finalizeGuard` -> `func (c *loomCLI) finalizeGuard() shedengine.GotoGuard`
-- `plan:internal/loomcli#TestFinalizeDirtGuard` -> `func TestFinalizeDirtGuard(t *testing.T)`
+- `internal/loomrecipe#finalizeEngine`
+- `internal/loomrecipe#IsFinalizeRow`
+- `internal/loomrecipe#TestIsFinalizeRow`
+- `internal/loomcli#finalizeDirtGuard`
+- `internal/loomcli#composeGotoGuards`
+- `internal/loomcli#loomCLI.parentCodeDirtFromFabric`
+- `internal/loomcli#loomCLI.finalizeGuard`
+- `internal/loomcli#TestFinalizeDirtGuard`
 
 **Edit:**
 - `internal/loomcli#loomCLI.settledGuard`

@@ -1,7 +1,7 @@
 # Card 6 — driver-start-check
 
 **Create:**
-- `plan:internal/sheddriver#goDriver.checkBlockedStart` -> `func (d *goDriver) checkBlockedStart(status shedengine.Status, statusFound bool) (handedBack bool, err error)`
+- `internal/sheddriver#goDriver.checkBlockedStart`
 
 **Edit:**
 - `internal/sheddriver#Deps`
@@ -13,7 +13,7 @@
 - `internal/loomcli/doc.go`
 
 **Uses:**
-- `plan:internal/loomcli#loomCLI.finalizeGuard`
+- `internal/loomcli#loomCLI.finalizeGuard`
 
 **Intent:**
 D5: a Go driver that starts at a blocked stop checks the current row before its first step, so a hand-over successor, or a driver a bare `lyx loom resume` spawned, never re-runs Finalize into the same dirty-parent refusal and writes no second halt note.
