@@ -1,0 +1,14 @@
+{
+  "verdict": "resume",
+  "reason": "Round 3 stopped on hard-cap with four design-wrong findings open (F1, F2, F3, F5), and the fixer's round-3 edits to the decision record answer every one of them.\nF1: D7 now finds the field declarator as the last identifier at nesting depth zero, outside attribute lists and every (), [] and \u003c\u003e pair, before the first depth-zero comma, = or ;. This gives map for `private Dictionary\u003cstring, int\u003e map;`, pair for `(int, int) pair;` and A for `public const int A = 1, B = 2;`. An acceptance row pins the generic and tuple cases.\nF2: D7 places the re-sign rewrite after the done checks, inside or beside BindHandles' RewriteRefs call, followed by restampFingerprint before ScopeGuard and DetectDrift. It names the post-batch pass that record-batch and recover-batch share. This matches postBatchChecks in internal/websterengine/recordbatch.go, which restamps right after BindHandles and before the scope guard, and which recoverbatch.go also calls. An acceptance row pins the fingerprint case.\nF3: D7's first bullet now passes the owner chain with the interface qualifier removed. The second bullet defines the qualifier as the longest trailing run of owner-chain components the head writes, dotted and followed by a dot, immediately before the declared member name, compared in quarry's canonical spelling. This fits quarry v0.4.0's nameCSharpContainer, which refuses an owner component with type arguments, and checkMintedContainer, which reads the extra components back from the head. An acceptance row covers the nested-type case, which keeps the full owner.\nF5: resign-overload-collision gains a refusal for two re-sign arrows on different targets that mint the same id, with a way forward, and the acceptance row lists it.\nThe mechanical F4 and F6 wordings are fixed too. The round has no BLOCKING finding, the board entry asks for no operator decision here, and the accept widens no scope.",
+  "question": "",
+  "goto": "",
+  "verbs": [
+    "lyx loom circling accept quarry-csharp"
+  ],
+  "cause": "",
+  "attempt": 1,
+  "attempt_dir": "/home/knatte/Code/loomyard-LYXHUB/quarry-csharp/_lyx/shed/quarry-csharp/arbiter/attempt-1",
+  "verdict_path": "/home/knatte/Code/loomyard-LYXHUB/quarry-csharp/_lyx/shed/quarry-csharp/arbiter/attempt-1/verdict.yaml",
+  "relaunch": "lyx shed step quarry-csharp --until-stop --arbiter-attempt 1"
+}
