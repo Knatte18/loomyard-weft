@@ -1,8 +1,8 @@
 # Card 7 — shedadapters-keep-gate-findings
 
 **Create:**
-- `plan:internal/shedadapters#MultiLLMProducer.KeepGateFindings` -> `func (p *MultiLLMProducer) KeepGateFindings(path string) *MultiLLMProducer`
-- `plan:internal/shedadapters#clearGateFindings` -> `func clearGateFindings(path string)`
+- `internal/shedadapters#MultiLLMProducer.KeepGateFindings`
+- `internal/shedadapters#clearGateFindings`
 
 **Edit:**
 - `internal/shedadapters#gateFailedReason` -> `func gateFailedReason(gate *shuttleengine.GateOutcome, findingsPath string) string`

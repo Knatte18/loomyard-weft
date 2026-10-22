@@ -25,7 +25,7 @@
 - `internal/testkit/envkit#FullEnv`
 
 **Uses:**
-- `plan:internal/shedrun#GateFindingsFile`
+- `internal/shedrun#GateFindingsFile`
 
 **Intent:** D4's wiring: every gated row in `internal/shedadapters` is told its own findings-file path, so the file its Stuck reason names exists after the shuttle run has finalized, Darn-Write's writer included.
 

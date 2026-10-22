@@ -1,7 +1,7 @@
 # Card 6 — shedrun-gate-findings-file
 
 **Create:**
-- `plan:internal/shedrun#GateFindingsFile` -> `func GateFindingsFile(l *lyxcwd.Location, runID, row string) string`
+- `internal/shedrun#GateFindingsFile`
 
 **Edit:**
 - `internal/shedrun#TestPathConstructors`
