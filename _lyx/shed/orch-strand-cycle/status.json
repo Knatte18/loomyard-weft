@@ -1,11 +1,11 @@
 {
-  "current_producer": "Publish",
+  "current_producer": "PR-Align",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Publish",
-    "last": "Merge-Bouncer → done",
+    "now": "PR-Align",
+    "last": "Publish → done",
     "wait": ""
   },
   "history": [
@@ -401,6 +401,12 @@
       "outcome": "done",
       "output": "/home/knatte/Code/loomyard-LYXHUB/orch-strand-cycle/_lyx/reviews/merge/round-1-bouncer-ledger.md",
       "at": "2026-10-22T17:18:47Z"
+    },
+    {
+      "producer": "Publish",
+      "outcome": "done",
+      "output": "",
+      "at": "2026-10-22T17:19:52Z"
     }
   ],
   "product": {
