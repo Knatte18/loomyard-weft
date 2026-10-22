@@ -1,0 +1,12 @@
+verdict: approve
+reason: >-
+  The diff covers all five operator decisions in the board entry: tasks lose priority and promote clears it,
+  each entry gets a stored lowest-free handle whose letter comes from the hub's type labels,
+  every slug|id board verb also takes a handle or a bare handle,
+  the README layout is the one the entry asks for,
+  and the text listing opens with the handle.
+  It adds no work outside the entry.
+  The open risks name no unrecorded parent correction,
+  and neither peer run nor any parent commit overlaps.
+question: ""
+superseded: []
