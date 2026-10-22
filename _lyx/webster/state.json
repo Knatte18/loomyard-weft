@@ -271,7 +271,7 @@
       }
     }
   ],
-  "currentBatch": 0,
+  "currentBatch": 10,
   "masterStrand": "1048fee3537b4aaec575d7942ef226e9",
   "masterSessionId": "62778d91-f0b9-4af5-ba81-30ff7b4d0283",
   "masterEngine": "claude",
@@ -317,6 +317,24 @@
       "bracketTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-darn-verify-fixes/62778d91-f0b9-4af5-ba81-30ff7b4d0283/subagents/agent-a5f8d0e77c562cde8.jsonl"
       ]
+    },
+    "10": {
+      "slug": "darn-write-entry-reroute",
+      "cards": [
+        "10-darn-write-entry-reroute",
+        "11-shellguard-gate-test-case"
+      ],
+      "cardHashes": {
+        "10-darn-write-entry-reroute": "bb545e7c59f79d32c9cc063a09f027ec76b7e67fd5e7dcd10f626d5ae907e036",
+        "11-shellguard-gate-test-case": "6e3baf591dc8bfa2227f80513beee87120c90e939691af6c39c69a4965020804"
+      },
+      "startSha": "e9f0e6190aa53f5ad0235f367ed2e1f80c6ded31",
+      "kind": "fork",
+      "spawnedAt": "2026-10-22T07:13:23Z",
+      "sessionId": "62778d91-f0b9-4af5-ba81-30ff7b4d0283",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
     },
     "6": {
       "slug": "shedrun-gate-findings-file",
