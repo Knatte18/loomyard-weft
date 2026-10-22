@@ -1,11 +1,11 @@
 {
-  "current_producer": "Darn-Burler-Fix",
+  "current_producer": "Darn-Bouncer",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Darn-Burler-Fix",
-    "last": "Darn-Burler-Review → bounced to Darn-Burler-Fix",
+    "now": "Darn-Bouncer",
+    "last": "Darn-Burler-Fix → bounced to Darn-Bouncer",
     "wait": ""
   },
   "history": [
@@ -65,6 +65,35 @@
       ],
       "budget_exempt": true,
       "routed_to": "Darn-Burler-Fix"
+    },
+    {
+      "producer": "Darn-Burler-Fix",
+      "outcome": "stuck",
+      "output": "/home/knatte/Code/loomyard-LYXHUB/decision-add-notifies/_lyx/reviews/darn/round-1-review.md",
+      "at": "2026-10-22T06:19:17Z",
+      "gate_attempts": 1,
+      "gate_spans": [
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-10-22T06:17:18.497463188Z",
+          "end": "2026-10-22T06:17:59.175850213Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "rework",
+          "start": "2026-10-22T06:17:59.638317549Z",
+          "end": "2026-10-22T06:18:50.827034809Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-10-22T06:18:50.853698636Z",
+          "end": "2026-10-22T06:19:17.12223854Z"
+        }
+      ],
+      "budget_exempt": true,
+      "routed_to": "Darn-Bouncer"
     }
   ],
   "product": {
