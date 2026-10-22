@@ -11,8 +11,8 @@ Its text reaches Discussion-Write as it stands, so a scope that overlaps, contra
 
 A row of the run, before Discussion-Write (and before Darn-Write), aligns the task's own entry text against the rest of the board, the other in-flight runs' records (`lyx loom peers`) and the parent's recent landed commits, and adjusts the text before anything is written from it.
 
-- Mechanical fixes (a reference to work that has landed, a dependency left unnamed) are written into the entry by the row itself.
-- A change to what the task is for escalates to the orch, which takes it to the operator.
+- The row settles misalignments itself and writes the adjusted text into the entry: a reference to work that has landed, a dependency left unnamed, an overlap with other planned work trimmed or made explicit.
+- It escalates to the orch only for something larger, such as a design conflict with another run or a task that no longer makes sense; the orch is not to be disturbed by ordinary misalignments (operator, 2026-10-22).
 
 The board's run lock exists to stop the orch from editing a started run's entry, which is pointless once the run has read it (operator, 2026-10-22); it does not need to stop the run's own pre-Discussion row, since the text still matters then.
 So this row edits its own entry through an exemption the lock grants it, and `CLAUDE.md`'s rule that no step of a run changes its own entry changes with it.
