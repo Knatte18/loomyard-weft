@@ -1,0 +1,2761 @@
+diff --git a/PATTERN.md b/PATTERN.md
+index defb71db0..f36c32e69 100644
+--- a/PATTERN.md
++++ b/PATTERN.md
+@@ -1,7 +1,5 @@
+ # PATTERN
+ 
+-Structural invariants, one line per entry: when it applies and what it requires.
+-
+ ## Paths and geometry
+ 
+ - `PATTERN-cwd-resolution` — Resolving a cwd or worktree root: only `internal/lyxcwd`; nothing else calls `os.Getwd` or `git rev-parse`. — [background](pattern/PATTERN-cwd-resolution.md)
+@@ -11,7 +9,7 @@ Structural invariants, one line per entry: when it applies and what it requires.
+ - `PATTERN-durable-vs-ephemeral-state` — Adding a file: tracked under `_lyx`, never-tracked under `.lyx`, same subpath. — [background](pattern/PATTERN-durable-vs-ephemeral-state.md)
+ - `PATTERN-hub-containment` — Linking hub-level containers or writing the hub workspace file: from the hub only. — [background](pattern/PATTERN-hub-containment.md)
+ - `PATTERN-hub-wide-config` — A hub-level config module: `HubWide` in `configreg`, its file on the board only. — [background](pattern/PATTERN-hub-wide-config.md)
+-- `PATTERN-sparse-hub-base` — Writing a hub's base file: only the units the hub tuned, never a template fill; only `hubreconcile`'s one-time walk strip drops a unit the template holds. — [background](pattern/PATTERN-sparse-hub-base.md)
++- `PATTERN-sparse-hub-base` — Writing a hub's base file: only the units the hub tuned, never a template fill. — [background](pattern/PATTERN-sparse-hub-base.md)
+ - `PATTERN-hub-suffix` — Touching hub naming: `-LYXHUB` is the sole hub container suffix. (test) — [background](pattern/PATTERN-hub-suffix.md)
+ 
+ ## CLI
+@@ -19,7 +17,8 @@ Structural invariants, one line per entry: when it applies and what it requires.
+ - `PATTERN-cli-cobra` — Adding a CLI module: a cobra subtree under one root in `cmd/lyx/main.go`. (test) — [background](pattern/PATTERN-cli-cobra.md)
+ - `PATTERN-cliwire-sole-wiring` — Wiring a standalone-capable CLI: `internal/cliwire` alone resolves target dir, repo root and state. (test) — [background](pattern/PATTERN-cliwire-sole-wiring.md)
+ - `PATTERN-config-strictness` — Loading config: a caller adopts exactly one of strict `Load` or `LoadOrTemplate`, bar `runprofile`. — [background](pattern/PATTERN-config-strictness.md)
+-- `PATTERN-config-layers` — Resolving a module's config: only `configengine` reads, stacks and locates layer files, machine layer included. — [background](pattern/PATTERN-config-layers.md)
++- `PATTERN-config-layers` — Resolving a module's config: only `configengine` reads, stacks and locates layer files. — [background](pattern/PATTERN-config-layers.md)
++- `PATTERN-template-overlay` — Judging a config document against its template: only against `configengine`'s effective template, the overlay picked from the base layer.
+ - `PATTERN-binary-change-reconcile` — Reconciling a hub's config after a binary change: only via `hubreconcile.Ensure`, owner of the build stamp and hub lock.
+ - `PATTERN-refusal-way-forward` — Adding a webster, shed or loom refusal: its message names the way forward; a test reaches it. — [background](pattern/PATTERN-refusal-way-forward.md)
+ - `PATTERN-no-denied-recovery` — Naming a step in a refusal, stencil or spec: never a command the agents' settings deny. (test) — [background](pattern/PATTERN-no-denied-recovery.md)
+diff --git a/docs/overview.md b/docs/overview.md
+index 76db12c07..ec66405ac 100644
+--- a/docs/overview.md
++++ b/docs/overview.md
+@@ -268,7 +268,7 @@ github.com/Knatte18/loomyard/
+ ├── internal/landingshed/         landing's four general ShedProducers, Publish, PR-Align, PR-Gate and Finalize, shared by reference across producer lists
+ ├── internal/darnengine/          the darn recipe's hub-wide `darn.yaml` config and the verify command every darn verify reads
+ ├── internal/languageconfig/      the hub-wide `language.yaml` config: the skills every code role loads after its own, the verify tiers the plan, review and implementer prompts render, and the hub's structure-aware rename tools the Webster implementer prompt renders
+-├── internal/lenses/              the `lenses.yaml` config: the lens and fan library burler, loom and darn read, holding only the names a repo tuned while the template supplies the rest, and the fan key grammar loom and darn share
++├── internal/lenses/              the `lenses.yaml` config: the lens and fan library burler, loom and darn read, holding only the names a repo tuned while the template, with the language layer a hub picks laid over it, supplies the rest, and the fan key grammar loom and darn share
+ ├── internal/mergeresolve/        the merge-in + LLM conflict-resolution engine internal/landingshed's two producers each call
+ ├── internal/frictionengine/      the aggregation-and-reflection step loom's terminal Friction-Reflect row runs, covering every note a halt left in the friction directory; no halt or stop runs a reflection of its own; it is re-entrant across a killed driving process
+ ├── internal/hubgeom/             the hub-mode told-geometry teller that converts a resolved `lyxcwd.Location` into each engine's geometry struct
+diff --git a/internal/configcli/configcli_test.go b/internal/configcli/configcli_test.go
+index f2a63905a..12bbee6a9 100644
+--- a/internal/configcli/configcli_test.go
++++ b/internal/configcli/configcli_test.go
+@@ -1723,6 +1723,54 @@ func TestDispatchLayers(t *testing.T) {
+ 				}
+ 			},
+ 		},
++		{
++			name: "a standalone worktree's lens_set picks the csharp layer for its own load", module: "lenses", noBoard: true,
++			setFlags: []string{"lens_set=csharp"},
++			check: func(t *testing.T, fx hubFixture, out string) {
++				got, err := lenses.Load(configengine.Dirs{Anchor: fx.worktree})
++				if err != nil {
++					t.Fatalf("lenses.Load() error = %v; want the worktree file read", err)
++				}
++				scratch := t.TempDir()
++				seedModuleConfig(t, scratch, "lenses", "lens_set: csharp\n")
++				want, err := lenses.Load(configengine.Dirs{Anchor: scratch})
++				if err != nil {
++					t.Fatalf("lenses.Load(lens_set: csharp) error = %v", err)
++				}
++				neutral, err := lenses.Load(configengine.Dirs{Anchor: t.TempDir()})
++				if err != nil {
++					t.Fatalf("lenses.Load(no lenses.yaml) error = %v", err)
++				}
++				for _, name := range []string{"error-handling", "test-gaps", "performance", "api-design", "concurrency"} {
++					if got.Lenses[name] != want.Lenses[name] {
++						t.Errorf("lens %q = %q; want the csharp layer's %q", name, got.Lenses[name], want.Lenses[name])
++					}
++					if got.Lenses[name] == neutral.Lenses[name] {
++						t.Errorf("lens %q equals the neutral base's prose; want the layer applied", name)
++					}
++				}
++			},
++		},
++		{
++			name: "a hub worktree's lens_set is refused toward the default layer", module: "lenses",
++			setFlags: []string{"lens_set=csharp"}, wantCode: 1, wantErr: "--layer default",
++			check: func(t *testing.T, fx hubFixture, out string) {
++				for _, unwanted := range []string{"way forward: --set the key", "delete the lens_set line"} {
++					if strings.Contains(out, unwanted) {
++						t.Errorf("error holds %q; want only the default-layer way forward: %s", unwanted, out)
++					}
++				}
++				assertFile(t, configengine.ConfigFile(fx.worktree, "lenses"), "", true)
++			},
++		},
++		{
++			name: "default layer refuses an unknown lens_set naming the shipped layers and leaves the board file as it was", module: "lenses", layer: "default",
++			setFlags: []string{"lens_set=xyz"}, seedBoard: lensesTemplate(), wantCode: 1, wantErr: "names no shipped layer", wantCommits: 1,
++			check: func(t *testing.T, fx hubFixture, out string) {
++				assertJSONErrContains(t, out, "csharp, go, python")
++				assertFile(t, configengine.ConfigFile(fx.board, "lenses"), lensesTemplate(), false)
++			},
++		},
+ 		{
+ 			name: "no terminal still sets", module: "loom", noTerminal: true,
+ 			setFlags: []string{"discussion_timeout_min=60"}, wantSyncs: 1,
+diff --git a/internal/configcli/doc.go b/internal/configcli/doc.go
+index dcfe81fcb..9228f3cfd 100644
+--- a/internal/configcli/doc.go
++++ b/internal/configcli/doc.go
+@@ -19,7 +19,7 @@
+ // Under a board every file layer of a module that is not seed-only is sparse, the repo default included: `--set` on any layer writes only the keys set through `yamlengine.SetSparse`, and an editor edit of an absent base scaffolds `configengine.SparseBaseHeader` while an absent layer above it is scaffolded empty.
+ // `--print --layer <name>` prints that layer's file verbatim; `--print` of all modules prints each module's own file.
+ // `lyx config menu` marks each module with the layers that hold a file, as `loom (default, local)` or `gate (default, machine)`, or `(template)` when none does.
+-// `lyx config <module> --resolved` prints the merged result through `configengine.Provenance`, each unit's line comment naming the layer it came from: `template`, `default`, `worktree`, `machine` or `local`.
++// `lyx config <module> --resolved` prints the merged result through `configengine.Provenance`, each unit's line comment naming the layer it came from: `template`, `template:<value>` for a unit only the template overlay the base picks holds, `default`, `worktree`, `machine` or `local`.
+ // It is read-only, refused beside `--print`, `--set` or `--layer` and without a module, and errors on an absent base layer as the module's loader does.
+ //
+ // A write to the default or the machine layer, by `--set`, by an editor edit or through the menu, is refused from any worktree that is not the hub's prime and from a session whose `LYX_STRAND_NAME` parses as a name carrying a slug, wherever its worktree resolves.
+@@ -61,6 +61,7 @@
+ // A module whose spec sets `configengine.Spec.JSONEntries`, the run profiles of `profiles`, takes instead a top-level name and a JSON object, as in `lyx config profiles --set wide='{"darn":{"review_max_bounces":2}}'`:
+ // the object replaces that entry whole or is appended as a new one, the other entries left as they are, and a value that is not a JSON object is refused.
+ // An absent hub file starts from the template.
++// A module with a template overlay picks its layer through a selector key only the base file may hold, so a hub worktree write picking a layer the base does not pick is refused, naming `--layer default` from the prime worktree.
+ //
+ // Every `--set` write, on any layer, and every hub-wide editor save is then checked by loading the module through its own loader (`configreg.Module.CheckLoad`), and the written file is put back as it was when the load fails.
+ // A board-dir write loads the board file alone, and any other write loads the worktree's stack.
+@@ -71,7 +72,8 @@
+ // A darn save that empties `tree_scope` while `tree_scope_verify` stays non-empty, over a hub file that held a tree, is told to run `lyx config darn --set tree_scope_verify=` first and then remove the trees in the editor again.
+ //
+ // `lyx config reconcile` drops or fills keys across every module against its template, carrying each module's open maps whole;
+-// it is a dry run unless applied.
++// it judges a file against the template its base layer's picked overlay composes, so a lens entry equal to the picked layer's prose is dropped.
++// It is a dry run unless applied.
+ // A per-name map entry holding the template's value is reported under `dropped` and left out of the written file, and applying rewrites a file whenever the reconcile adds, removes or drops anything.
+ // A module that retires keys or floors a value declares a migration, which reconcile runs over its present file first;
+ // the dry run lists each rewrite under the module's `migrated` key, and applying writes the migrated file, even when the reconcile itself adds, removes and drops nothing.
+diff --git a/internal/configengine/config.go b/internal/configengine/config.go
+index 6f6ef2e93..114cb4040 100644
+--- a/internal/configengine/config.go
++++ b/internal/configengine/config.go
+@@ -215,6 +215,13 @@ func load(dirs Dirs, spec Spec, fallbackOnAbsent bool) ([]byte, error) {
+ 		logger.Info("configengine: degrading to embedded template", "module", spec.Name, "reason", degradeReason)
+ 	}
+ 
++	// Every judging below reads the effective template: the base template with the overlay the base layer picks laid over it.
++	effective, err := EffectiveTemplate(spec, baseDocument(dirs, spec, stack.Layers), dirs.Board != "")
++	if err != nil {
++		return nil, err
++	}
++	spec.Template = effective
++
+ 	if err := warnUnknownKeys(stack.Layers, spec); err != nil {
+ 		return nil, err
+ 	}
+@@ -304,6 +311,30 @@ func warnUnknownKeys(layers []LayerDoc, spec Spec) error {
+ 	return nil
+ }
+ 
++// warnedSkippedEntries holds, as file, key and entry list, every skipped-entries warning this process has logged.
++var warnedSkippedEntries sync.Map
++
++// WarnSkippedEntries logs one Warn for entries of the top-level list key that a loader skipped because they matched nothing.
++// The warning names the module, the highest layer file holding key, that file, the key and the entries.
++// A file, key and entry list already warned in this process is not warned again, so a loader in a poll loop warns once.
++// It returns the errors of [StackLayers].
++func WarnSkippedEntries(dirs Dirs, spec Spec, key string, entries []string) error {
++	stack, err := StackLayers(dirs, spec)
++	if err != nil {
++		return err
++	}
++	origin, held := stack.Origins[key]
++	if !held {
++		return nil
++	}
++	list := strings.Join(entries, ",")
++	if _, warned := warnedSkippedEntries.LoadOrStore(origin.Path+"\x00"+key+"\x00"+list, true); warned {
++		return nil
++	}
++	logger.Warn("configengine: config file lists entries that match nothing, and they are skipped", "module", spec.Name, "layer", string(origin.Layer), "file", origin.Path, "key", key, "entries", list)
++	return nil
++}
++
+ // expansionDir returns the directory whose .env and process environment expand the merged document:
+ // the board dir for a hub-wide module, else the anchor, else whichever is told.
+ func expansionDir(dirs Dirs, spec Spec) string {
+diff --git a/internal/configengine/doc.go b/internal/configengine/doc.go
+index 46b002d8e..44b39fe04 100644
+--- a/internal/configengine/doc.go
++++ b/internal/configengine/doc.go
+@@ -10,6 +10,8 @@
+ // The result is resolved through envsource's markers once, after the merge.
+ // A default- or worktree-layer file holding units the template lacks, open-map entries and retired keys aside, still loads, and is logged at Warn naming the file, the keys and the `lyx config reconcile` that removes them;
+ // the warning is logged once per file and key list in a process.
++// A loader whose module lists entries that may match nothing, such as `lenses`' `remove`, reports the unmatched ones through [WarnSkippedEntries]:
++// one Warn naming the highest layer file holding the key, once per file, key and entry list in a process.
+ //
+ // A present file whose content fails to parse, lacks a key inside a list element or fails to resolve returns an error marked [ErrInvalid];
+ // an absent base file or `_lyx/`, an unreadable file and a base directory failure stay unmarked.
+@@ -58,7 +60,8 @@
+ // A [Stack] also names, in `Origins`, the highest layer holding each top-level key.
+ // The merged document is expanded once, against `Board` for a hub-wide module and `Anchor` otherwise.
+ //
+-// [Provenance] returns the resolved document of [Load], with strictness and refusals unchanged, each unit's line comment naming the highest layer whose file holds it, or `template` when none does.
++// [Provenance] returns the resolved document of [Load], with strictness and refusals unchanged, each unit's line comment naming the highest layer whose file holds it, or `template` when none does;
++// a unit no file holds that the picked overlay document holds is labelled `template:<value>`.
+ // It is what `lyx config <module> --resolved` prints.
+ //
+ // # The local rule
+@@ -93,6 +96,25 @@
+ // They are passed unchanged to yamlengine, which defines what a declared path changes;
+ // with none declared, every caller behaves as before.
+ //
++// # Template overlay
++//
++// A [Spec] may carry an [Overlay]: a `Selector`, the name of a top-level template key, and `Documents`, each selector value mapped to an overlay document.
++// The selector's scalar value in the base layer's file picks one document, and the effective template is the spec's template with that document merged over it under the spec's open maps, so an overlay name under a per-name map replaces or adds one entry whole.
++// An absent selector or an empty value picks none, and a spec with no overlay is unchanged.
++// [EffectiveTemplate] composes it from a base document and [TemplateUnder] reads the base layer's file and does the same, so a caller judging a file above the base composes nothing itself.
++// Every judging path uses the effective template: the load's unknown-key warning, template fill and missing-key check, [BelowLayer], and [Provenance].
++// A value no document names, or a non-scalar value, is an [ErrInvalid] error naming the shipped values and the `lyx config` command that sets the selector in the base.
++// Only the base layer picks: in a hub a worktree file holding the selector with a value other than the default file's is refused when read, naming the line to delete and the `--layer default` write from the prime worktree.
++// A worktree value equal to the base's changes no selection and loads.
++//
++// The write side follows the same rule.
++// [BaseScaffold] returns the template with every per-name map emptied for a spec with a selector, so no scaffolded entry pins itself over the picked layer.
++// [Set] judges a base-layer write against the template its own document picks.
++// The selector's value is the last pair setting it, else the one the file holds.
++// A write to a layer above the base is judged against [TemplateUnder], and an unknown value fails before anything is written.
++// [Set] and [Edit] refuse a hub worktree write or save that leaves the selector holding a value other than the default file's, writing nothing or putting the file back.
++// The refusal names the line to delete when the file held the selector before.
++//
+ // # Per-name maps
+ //
+ // A [Spec] also carries `PerNameMaps`: the dotted paths of the module's per-name maps, mappings of names each carried whole as one unit.
+diff --git a/internal/configengine/edit.go b/internal/configengine/edit.go
+index cfcc057ff..4e491de9f 100644
+--- a/internal/configengine/edit.go
++++ b/internal/configengine/edit.go
+@@ -4,11 +4,13 @@
+ // YAML syntax, and loop on validation failure.
+ // Scaffolds a missing hub base with the sparse header, and any other missing base from the template, and removes a scaffolded file on abort to leave the filesystem in its
+ // pre-call state.
++// An overlay module's base scaffold holds empty per-name maps, and a hub worktree save holding the overlay selector with a value other than the base's is refused.
+ // Injected EditorFunc allows tests to drive the editor without a real process.
+ 
+ package configengine
+ 
+ import (
++	"bytes"
+ 	"errors"
+ 	"fmt"
+ 	"os"
+@@ -103,20 +105,78 @@ func scaffoldIfMissing(path, configDir, template string) (scaffolded bool, err e
+ }
+ 
+ // BaseScaffold returns the bytes an absent base layer is scaffolded with:
+-// [SparseBaseHeader] when the base is sparse over the template, else the spec's template.
++// [SparseBaseHeader] when the base is sparse over the template.
++// For a spec with an overlay selector it is the template with every per-name map emptied, else the spec's template.
++// An overlay module's scaffold holds no per-name entry, so no entry of the base template pins itself over the layer the base picks.
+ func BaseScaffold(dirs Dirs, spec Spec) string {
+ 	if sparseBase(dirs, spec) {
+ 		return SparseBaseHeader
+ 	}
++	if spec.Overlay.Selector != "" {
++		return scaffoldWithoutPerNameEntries(spec)
++	}
+ 	return string(spec.Template)
+ }
+ 
++// scaffoldWithoutPerNameEntries returns the spec's template with every per-name map emptied to {}, re-marshalled.
++// A template that fails to parse panics: an embedded template every loader parses cannot fail, so a failure is a wiring defect.
++func scaffoldWithoutPerNameEntries(spec Spec) string {
++	var template yaml.Node
++	if err := yaml.Unmarshal(spec.Template, &template); err != nil {
++		panic(fmt.Sprintf("%s config template does not parse: %v", spec.Name, err))
++	}
++	for _, path := range spec.PerNameMaps {
++		node := nodeAt(&template, path)
++		if node == nil || node.Kind != yaml.MappingNode {
++			continue
++		}
++		node.Content = nil
++		node.Style = yaml.FlowStyle
++	}
++	var out bytes.Buffer
++	encoder := yaml.NewEncoder(&out)
++	encoder.SetIndent(2)
++	if err := encoder.Encode(&template); err != nil {
++		panic(fmt.Sprintf("%s config template does not marshal: %v", spec.Name, err))
++	}
++	if err := encoder.Close(); err != nil {
++		panic(fmt.Sprintf("%s config template does not marshal: %v", spec.Name, err))
++	}
++	return out.String()
++}
++
++// hubWorktreeGuardsSelector reports whether layer is the worktree layer of a hub for a spec with an overlay selector:
++// the one layer above the base a selector value must not differ in.
++func hubWorktreeGuardsSelector(dirs Dirs, spec Spec, layer Layer) bool {
++	return spec.Overlay.Selector != "" && layer == LayerWorktree && BaseLayer(dirs, spec) == LayerDefault
++}
++
++// worktreeSelectorRefusal returns the refusal of a hub worktree document holding the selector with a value other than the default file's, or nil when it holds none.
++// heldBefore says the file held the selector before the write or edit being judged.
++func worktreeSelectorRefusal(dirs Dirs, spec Spec, path string, document []byte, heldBefore bool) error {
++	defaultPath, _ := LayerFile(dirs, spec, LayerDefault)
++	defaultBytes, err := os.ReadFile(defaultPath)
++	if err != nil && !os.IsNotExist(err) {
++		return fmt.Errorf("read config file %s: %w", defaultPath, err)
++	}
++	other, err := worktreeSelectorOther(spec, document, defaultBytes)
++	if err != nil {
++		return err
++	}
++	if other {
++		return selectorRefusal(dirs, spec, path, heldBefore)
++	}
++	return nil
++}
++
+ // Edit opens the layer's file of spec under dirs in an editor, validates the YAML syntax, and loops on validation
+ // failure.
+ // An absent base layer is scaffolded through [BaseScaffold], the header for a hub's sparse base and the template for a standalone or seed-only one; a layer above it is sparse, so an absent file is scaffolded empty.
+ // On abort, removes any scaffolded file and returns ErrAborted.
+ // Validation is syntactic only;
+-// known keys are not enforced, except that a saved local override must pass [ValidateLocal] and a saved machine override [ValidateMachine], and a refused one is put back to its previous bytes, or removed when the call created it.
++// known keys are not enforced, except that a saved local override must pass [ValidateLocal] and a saved machine override [ValidateMachine],
++// and a saved hub worktree file may not hold a spec's overlay selector with a value other than the default file's.
++// A refused save is put back to its previous bytes, or removed when the call created it.
+ func Edit(dirs Dirs, spec Spec, layer Layer, edit EditorFunc) error {
+ 	path, owner, err := layerPath(dirs, spec, layer)
+ 	if err != nil {
+@@ -129,7 +189,8 @@ func Edit(dirs Dirs, spec Spec, layer Layer, edit EditorFunc) error {
+ 	if layer == BaseLayer(dirs, spec) {
+ 		return EditPath(path, BaseScaffold(dirs, spec), edit)
+ 	}
+-	if layer != LayerLocal && layer != LayerMachine {
++	selectorGuarded := hubWorktreeGuardsSelector(dirs, spec, layer)
++	if layer != LayerLocal && layer != LayerMachine && !selectorGuarded {
+ 		return EditPath(path, "", edit)
+ 	}
+ 
+@@ -144,13 +205,18 @@ func Edit(dirs Dirs, spec Spec, layer Layer, edit EditorFunc) error {
+ 	if err != nil {
+ 		return fmt.Errorf("read config file after edit: %w", err)
+ 	}
+-	if err := validateOverride(spec, layer, saved); err != nil {
++	refusal := validateOverride(spec, layer, saved)
++	if refusal == nil && selectorGuarded {
++		_, previousHeld, _ := selectorValue(spec, previous)
++		refusal = worktreeSelectorRefusal(dirs, spec, path, saved, previousHeld)
++	}
++	if refusal != nil {
+ 		if readErr != nil {
+ 			_ = os.Remove(path)
+ 		} else {
+ 			_ = os.WriteFile(path, previous, 0o644)
+ 		}
+-		return err
++		return refusal
+ 	}
+ 	return nil
+ }
+diff --git a/internal/configengine/edit_test.go b/internal/configengine/edit_test.go
+index 503adc086..b2ddc9ea0 100644
+--- a/internal/configengine/edit_test.go
++++ b/internal/configengine/edit_test.go
+@@ -53,7 +53,60 @@ func TestEdit(t *testing.T) {
+ 		hubWide bool
+ 		// seedOnly marks the spec seed-only, so a hub's default layer scaffolds from the template.
+ 		seedOnly bool
++		// overlay swaps in overlaySpec renamed testmod.
++		overlay bool
++		// existing is the worktree file's bytes before the call; empty keeps original.
++		existing string
++		// defaultFile is the hub default file's bytes before the call; empty leaves it absent. It needs board.
++		defaultFile string
+ 	}{
++		{
++			name:    "a hub worktree edit writing the selector into an absent file is refused and leaves no file",
++			state:   baseLyx,
++			board:   true,
++			overlay: true,
++			steps:   []editStep{{write: "pick: x\n"}},
++			wantErr: "--layer default",
++		},
++		{
++			name:     "a hub worktree edit adding the selector to a file without it is refused and leaves the file",
++			state:    baseWithFile,
++			board:    true,
++			overlay:  true,
++			existing: "lenses:\n  a: Z\n",
++			steps:    []editStep{{write: "pick: x\n"}},
++			wantErr:  "--layer default",
++			wantFile: ptr("lenses:\n  a: Z\n"),
++		},
++		{
++			name:     "a hub worktree edit of a file already holding the selector is refused naming the line to delete",
++			state:    baseWithFile,
++			board:    true,
++			overlay:  true,
++			existing: "pick: x\n",
++			steps:    []editStep{{write: "pick: x\nlenses:\n  a: Z\n"}},
++			wantErr:  "delete the pick line from",
++			wantFile: ptr("pick: x\n"),
++		},
++		{
++			name:     "a hub worktree edit leaving the selector out saves",
++			state:    baseWithFile,
++			board:    true,
++			overlay:  true,
++			existing: "lenses:\n  a: Z\n",
++			steps:    []editStep{{write: "lenses:\n  a: W\n"}},
++			wantFile: ptr("lenses:\n  a: W\n"),
++		},
++		{
++			name:        "a hub worktree edit writing the selector with the default file's value saves",
++			state:       baseWithFile,
++			board:       true,
++			overlay:     true,
++			existing:    "lenses:\n  a: Z\n",
++			defaultFile: "pick: x\n",
++			steps:       []editStep{{write: "pick: x\nlenses:\n  a: Z\n"}},
++			wantFile:    ptr("pick: x\nlenses:\n  a: Z\n"),
++		},
+ 		{
+ 			name:     "absent hub base shows the sparse header and a save leaving it keeps the header-only file",
+ 			state:    baseLyx,
+@@ -203,7 +256,11 @@ func TestEdit(t *testing.T) {
+ 	for _, tt := range tests {
+ 		t.Run(tt.name, func(t *testing.T) {
+ 			t.Parallel()
+-			baseDir, path := newBase(t, tt.state, "testmod", original)
++			content := original
++			if tt.existing != "" {
++				content = tt.existing
++			}
++			baseDir, path := newBase(t, tt.state, "testmod", content)
+ 			dirs := configengine.Dirs{Anchor: baseDir}
+ 			if tt.board {
+ 				dirs.Board = t.TempDir()
+@@ -213,6 +270,15 @@ func TestEdit(t *testing.T) {
+ 					t.Fatalf("mkdir: %v", err)
+ 				}
+ 			}
++			if tt.defaultFile != "" {
++				defaultPath := configengine.ConfigFile(dirs.Board, "testmod")
++				if err := os.MkdirAll(filepath.Dir(defaultPath), 0o755); err != nil {
++					t.Fatalf("mkdir: %v", err)
++				}
++				if err := os.WriteFile(defaultPath, []byte(tt.defaultFile), 0o644); err != nil {
++					t.Fatalf("write default file: %v", err)
++				}
++			}
+ 			layer := tt.layer
+ 			if layer == "" {
+ 				layer = configengine.LayerWorktree
+@@ -235,6 +301,10 @@ func TestEdit(t *testing.T) {
+ 				}
+ 			}
+ 			spec := configengine.Spec{Name: "testmod", Template: []byte(template), Categories: tt.categories, HubWide: tt.hubWide, SeedOnly: tt.seedOnly}
++			if tt.overlay {
++				spec = overlaySpec()
++				spec.Name = "testmod"
++			}
+ 
+ 			var calls int
+ 			var saw string
+diff --git a/internal/configengine/layers.go b/internal/configengine/layers.go
+index 395229f5c..b9156df8f 100644
+--- a/internal/configengine/layers.go
++++ b/internal/configengine/layers.go
+@@ -72,6 +72,7 @@ const (
+ // RetiredKeys are the dotted keys the module no longer reads, each mapped to the category it held as a template key;
+ // they stay out of Categories and OpenMaps, the local and machine layers admit them by that category, and a load drops them from the stacked document.
+ // SeedOnly marks the module whose file is the operator's registry, seeded whole and never rewritten, so its base stays full in a hub too.
++// Overlay is the module's optional template overlay, picked by a selector key in the base layer; its zero value means none.
+ type Spec struct {
+ 	Name         string
+ 	Template     []byte
+@@ -83,6 +84,7 @@ type Spec struct {
+ 	Categories   map[string]Category
+ 	RetiredKeys  map[string]Category
+ 	SeedOnly     bool
++	Overlay      Overlay
+ }
+ 
+ // LocalFile returns the path of a module's local override file under anchor:
+@@ -399,6 +401,7 @@ func Layers(dirs Dirs, spec Spec) ([]LayerDoc, error) {
+ // the machine layer is judged on dirs alone.
+ func readLayers(dirs Dirs, spec Spec, anchorLayers bool) ([]LayerDoc, error) {
+ 	var docs []LayerDoc
++	var defaultBytes []byte
+ 	for _, layer := range []Layer{LayerDefault, LayerWorktree, LayerMachine, LayerLocal} {
+ 		if !anchorLayers && (layer == LayerWorktree || layer == LayerLocal) {
+ 			continue
+@@ -419,6 +422,19 @@ func readLayers(dirs Dirs, spec Spec, anchorLayers bool) ([]LayerDoc, error) {
+ 			return nil, MarkInvalid(fmt.Errorf("config file %s: %w", path, err))
+ 		}
+ 		switch layer {
++		case LayerDefault:
++			defaultBytes = data
++		case LayerWorktree:
++			// Only the base picks a layer: a hub worktree file holding another value than the base's would change the template the base is judged against.
++			if dirs.Board != "" && spec.Overlay.Selector != "" {
++				other, err := worktreeSelectorOther(spec, data, defaultBytes)
++				if err != nil {
++					return nil, err
++				}
++				if other {
++					return nil, selectorRefusal(dirs, spec, path, true)
++				}
++			}
+ 		case LayerMachine:
+ 			if len(units) == 0 {
+ 				continue
+@@ -446,7 +462,10 @@ func BelowLayer(dirs Dirs, spec Spec, layer Layer) ([]byte, error) {
+ 	if err != nil {
+ 		return nil, err
+ 	}
+-	merged := spec.Template
++	merged, err := EffectiveTemplate(spec, baseDocument(dirs, spec, layers), dirs.Board != "")
++	if err != nil {
++		return nil, err
++	}
+ 	for _, doc := range layers {
+ 		if layerRank(doc.Layer) >= layerRank(layer) {
+ 			break
+@@ -517,6 +536,7 @@ func stackLayers(dirs Dirs, spec Spec, anchorLayers bool) (Stack, error) {
+ 
+ // Provenance returns the module's resolved configuration with each unit's line comment naming the layer it came from:
+ // the highest layer whose document holds the unit, or the template layer when none does.
++// The template layer is labelled template:<value> when the overlay document the base picks holds the unit.
+ // It resolves through [Load], so its strictness and refusals are Load's, and an absent base layer errors rather than degrading.
+ func Provenance(dirs Dirs, spec Spec) ([]byte, error) {
+ 	resolved, err := Load(dirs, spec)
+@@ -548,15 +568,32 @@ func Provenance(dirs Dirs, spec Spec) ([]byte, error) {
+ 	if err != nil {
+ 		return nil, err
+ 	}
++	value, _, err := selectorValue(spec, baseDocument(dirs, spec, layers))
++	if err != nil {
++		return nil, err
++	}
++	overlayUnits := map[string]bool{}
++	if document, picked := spec.Overlay.Documents[value]; picked && value != "" {
++		paths, err := yamlengine.LeafPaths(document, spec.OpenMaps, spec.WholeEntries)
++		if err != nil {
++			return nil, MarkInvalid(fmt.Errorf("%s config: %s %q layer: %w", spec.Name, spec.Overlay.Selector, value, err))
++		}
++		for _, path := range paths {
++			overlayUnits[path] = true
++		}
++	}
+ 	notes := make(map[string]string, len(units))
+ 	for _, unit := range units {
+-		origin := LayerTemplate
++		origin := string(LayerTemplate)
++		if overlayUnits[unit] {
++			origin = string(LayerTemplate) + ":" + value
++		}
+ 		for _, doc := range layers {
+ 			if held[doc.Layer][unit] {
+-				origin = doc.Layer
++				origin = string(doc.Layer)
+ 			}
+ 		}
+-		notes[unit] = string(origin)
++		notes[unit] = origin
+ 	}
+ 	return yamlengine.AnnotateLeaves(resolved, notes, spec.OpenMaps, spec.WholeEntries)
+ }
+diff --git a/internal/configengine/layers_test.go b/internal/configengine/layers_test.go
+index 25e0d654d..004102688 100644
+--- a/internal/configengine/layers_test.go
++++ b/internal/configengine/layers_test.go
+@@ -43,6 +43,21 @@ func layerSpec() configengine.Spec {
+ 	}
+ }
+ 
++// overlaySpec is layerSpec with a selector key, pick, over a per-name map, lenses, and one overlay document, x, that replaces lens a and adds lens b.
++// pick and lenses are guard keys.
++func overlaySpec() configengine.Spec {
++	spec := layerSpec()
++	spec.Template = []byte(layerTemplate + "pick: \"\"\n" + perNameTail)
++	spec.PerNameMaps = []string{"lenses"}
++	spec.Categories["pick"] = configengine.CategoryGuard
++	spec.Categories["lenses"] = configengine.CategoryGuard
++	spec.Overlay = configengine.Overlay{
++		Selector:  "pick",
++		Documents: map[string][]byte{"x": []byte("lenses:\n  a: X\n  b: B\n")},
++	}
++	return spec
++}
++
+ // machineSpec is a hub-wide spec classifying port as the machine key, name as free and run as executable.
+ func machineSpec() configengine.Spec {
+ 	spec := layerSpec()
+@@ -165,8 +180,95 @@ func TestLoad_LayerStack(t *testing.T) {
+ 		wantUnknown map[configengine.Layer]string
+ 		// perNameMaps is the spec's per-name maps; a row that sets it loads over the template with perNameTail appended.
+ 		perNameMaps []string
+-		want        map[string]string
++		// overlay swaps in overlaySpec, which keeps its own template and per-name maps whatever perNameMaps holds.
++		overlay bool
++		// refusal is the substrings both loaders must refuse with, marked ErrInvalid, and refusalLacks those the refusal must not hold; a refusal row asserts nothing else.
++		refusal      []string
++		refusalLacks []string
++		want         map[string]string
+ 	}{
++		{
++			name:    "a hub default picking a layer resolves its names over the base",
++			files:   map[configengine.Layer]string{configengine.LayerDefault: "pick: x\n"},
++			overlay: true,
++			want:    map[string]string{"lenses": "map[a:X b:B]"},
++		},
++		{
++			name:     "a standalone worktree file picking a layer resolves its names and fills the one missing map",
++			geo:      geometryStandalone,
++			files:    map[configengine.Layer]string{configengine.LayerWorktree: fullDefault + "pick: x\n"},
++			overlay:  true,
++			wantFill: "lenses",
++			want:     map[string]string{"lenses": "map[a:X b:B]"},
++		},
++		{
++			name:    "a name the file holds beats the picked layer",
++			files:   map[configengine.Layer]string{configengine.LayerDefault: "pick: x\nlenses:\n  a: mine\n"},
++			overlay: true,
++			want:    map[string]string{"lenses": "map[a:mine b:B]"},
++		},
++		{
++			name: "a worktree name beats the picked layer and the layer fills the rest",
++			files: map[configengine.Layer]string{
++				configengine.LayerDefault:  "pick: x\n",
++				configengine.LayerWorktree: "lenses:\n  b: wt\n",
++			},
++			overlay: true,
++			want:    map[string]string{"lenses": "map[a:X b:wt]"},
++		},
++		{
++			name:    "a default picking no layer resolves the base",
++			files:   map[configengine.Layer]string{configengine.LayerDefault: "name: d\n"},
++			overlay: true,
++			want:    map[string]string{"lenses": "map[a:A]"},
++		},
++		{
++			name: "a hub worktree file holding the base's value loads",
++			files: map[configengine.Layer]string{
++				configengine.LayerDefault:  "name: d\n",
++				configengine.LayerWorktree: "pick: \"\"\n",
++			},
++			overlay: true,
++			want:    map[string]string{"lenses": "map[a:A]"},
++		},
++		{
++			name: "a hub worktree file picking a layer the base does not is refused",
++			files: map[configengine.Layer]string{
++				configengine.LayerDefault:  "name: d\n",
++				configengine.LayerWorktree: "pick: x\n",
++			},
++			overlay: true,
++			refusal: []string{"mod.yaml holds pick, which only the base file", "delete the pick line from", "--layer default", "the orch runs it"},
++		},
++		{
++			name:    "a hub default picking an unknown layer is refused naming the shipped ones",
++			files:   map[configengine.Layer]string{configengine.LayerDefault: "pick: nope\n"},
++			overlay: true,
++			refusal: []string{"names no shipped layer (shipped: x)", "--layer default --set pick=<name>", "the orch runs it"},
++		},
++		{
++			name:         "a standalone worktree file picking an unknown layer is refused with a way forward that needs no prime",
++			geo:          geometryStandalone,
++			files:        map[configengine.Layer]string{configengine.LayerWorktree: "pick: nope\n"},
++			overlay:      true,
++			refusal:      []string{`"lyx config mod --set pick=<name>"`},
++			refusalLacks: []string{"the orch runs it"},
++		},
++		{
++			name:    "a hub default holding a list for the selector is refused",
++			files:   map[configengine.Layer]string{configengine.LayerDefault: "pick: [x]\n"},
++			overlay: true,
++			refusal: []string{"pick", "--layer default --set pick=<name>"},
++		},
++		{
++			name: "a hub worktree file holding a list for the selector is refused",
++			files: map[configengine.Layer]string{
++				configengine.LayerDefault:  "name: d\n",
++				configengine.LayerWorktree: "pick: [x]\n",
++			},
++			overlay: true,
++			refusal: []string{"mod.yaml holds pick", "delete the pick line from"},
++		},
+ 		{
+ 			name:    "a machine value wins over the hub file",
+ 			machine: true,
+@@ -390,15 +492,40 @@ func TestLoad_LayerStack(t *testing.T) {
+ 				writeLayerFile(t, filepath.Join(fx.board, ".env"), tc.boardEnv)
+ 			}
+ 			spec := layerSpec()
++			if tc.overlay {
++				spec = overlaySpec()
++			}
+ 			if tc.machine {
+ 				spec = machineSpec()
+ 			}
+ 			spec.HubWide = tc.hubWide || tc.machine
+ 			spec.SeedOnly = tc.seedOnly
+ 			spec.RetiredKeys = tc.retired
+-			spec.PerNameMaps = tc.perNameMaps
+-			if len(tc.perNameMaps) > 0 {
+-				spec.Template = append(spec.Template, perNameTail...)
++			if !tc.overlay {
++				spec.PerNameMaps = tc.perNameMaps
++				if len(tc.perNameMaps) > 0 {
++					spec.Template = append(spec.Template, perNameTail...)
++				}
++			}
++
++			if tc.refusal != nil {
++				for loader, load := range map[string]func(configengine.Dirs, configengine.Spec) ([]byte, error){"Load": configengine.Load, "LoadOrTemplate": configengine.LoadOrTemplate} {
++					_, err := load(fx.dirs, spec)
++					if err == nil || !errors.Is(err, configengine.ErrInvalid) {
++						t.Fatalf("%s error = %v; want one marked ErrInvalid", loader, err)
++					}
++					for _, want := range tc.refusal {
++						if !strings.Contains(err.Error(), want) {
++							t.Errorf("%s error = %q; want it to hold %q", loader, err, want)
++						}
++					}
++					for _, lacks := range tc.refusalLacks {
++						if strings.Contains(err.Error(), lacks) {
++							t.Errorf("%s error = %q; want it to lack %q", loader, err, lacks)
++						}
++					}
++				}
++				return
+ 			}
+ 
+ 			var resolved []byte
+@@ -678,6 +805,30 @@ func TestLayers(t *testing.T) {
+ 			}
+ 		}
+ 
++		overlayFx := newLayerFixture(t, geometryHub, map[configengine.Layer]string{configengine.LayerDefault: "pick: x\n"})
++		below, err := configengine.BelowLayer(overlayFx.dirs, overlaySpec(), configengine.LayerWorktree)
++		if err != nil {
++			t.Fatalf("BelowLayer over the overlay spec: %v", err)
++		}
++		if got := decodeTopLevel(t, below)["lenses"]; got != "map[a:X b:B]" {
++			t.Errorf("BelowLayer over the overlay spec holds lenses %q; want map[a:X b:B]", got)
++		}
++		under, err := configengine.TemplateUnder(overlayFx.dirs, overlaySpec())
++		if err != nil {
++			t.Fatalf("TemplateUnder over the overlay spec: %v", err)
++		}
++		if got := decodeTopLevel(t, under)["lenses"]; got != "map[a:X b:B]" {
++			t.Errorf("TemplateUnder over the overlay spec holds lenses %q; want map[a:X b:B]", got)
++		}
++		noDefaultFx := newLayerFixture(t, geometryHub, nil)
++		bare, err := configengine.TemplateUnder(noDefaultFx.dirs, overlaySpec())
++		if err != nil {
++			t.Fatalf("TemplateUnder with no default file: %v", err)
++		}
++		if string(bare) != string(overlaySpec().Template) {
++			t.Errorf("TemplateUnder with no default file = %q; want the template %q", bare, overlaySpec().Template)
++		}
++
+ 		machineFx := newLayerFixture(t, geometryHub, allFour)
+ 		for _, tt := range []struct {
+ 			layer    configengine.Layer
+@@ -871,11 +1022,19 @@ func TestProvenance(t *testing.T) {
+ 		name string
+ 		geo  geometry
+ 		// machine swaps in the hub-wide spec with the machine key port.
+-		machine   bool
++		machine bool
++		// overlay swaps in overlaySpec.
++		overlay   bool
+ 		files     map[configengine.Layer]string
+ 		want      map[string]string
+ 		wantError string
+ 	}{
++		{
++			name:    "a unit only the picked overlay layer holds names it as the template layer's overlay",
++			overlay: true,
++			files:   map[configengine.Layer]string{configengine.LayerDefault: "pick: x\n"},
++			want:    map[string]string{"pick": "default", "a": "template:x", "b": "template:x", "name": "template", "port": "template", "deep": "template", "list": "template", "labels": "template", "run": "template"},
++		},
+ 		{
+ 			name:    "a machine-held unit names the machine layer",
+ 			machine: true,
+@@ -909,6 +1068,9 @@ func TestProvenance(t *testing.T) {
+ 		t.Run(tt.name, func(t *testing.T) {
+ 			fixture := newLayerFixture(t, tt.geo, tt.files)
+ 			spec := layerSpec()
++			if tt.overlay {
++				spec = overlaySpec()
++			}
+ 			if tt.machine {
+ 				spec = machineSpec()
+ 			}
+diff --git a/internal/configengine/overlay.go b/internal/configengine/overlay.go
+new file mode 100644
+index 000000000..dc5784385
+--- /dev/null
++++ b/internal/configengine/overlay.go
+@@ -0,0 +1,146 @@
++// overlay.go implements the template overlay: the one composer of a module's effective template, the base-layer selector that picks it and the refusals around that selector.
++// Every load, write and reconcile path judges a document against the effective template, never the bare spec template.
++
++package configengine
++
++import (
++	"fmt"
++	"os"
++	"sort"
++	"strings"
++
++	"gopkg.in/yaml.v3"
++
++	"github.com/Knatte18/loomyard/internal/yamlengine"
++)
++
++// Overlay describes a module's optional template overlay.
++// Selector names the top-level template key whose scalar value in the base layer picks one overlay.
++// Documents maps each selector value to its overlay document.
++// The zero Overlay means the module has none.
++type Overlay struct {
++	Selector  string
++	Documents map[string][]byte
++}
++
++// EffectiveTemplate returns the template a document is judged against:
++// the spec's template with the overlay document picked by the selector in base laid over it.
++// base is the base layer's document, nil when absent, and hub says whether the module is read inside a hub, which only picks the way forward of a refusal.
++// An unknown or non-scalar selector value is an [ErrInvalid] error naming a way forward.
++func EffectiveTemplate(spec Spec, base []byte, hub bool) ([]byte, error) {
++	value, _, err := selectorValue(spec, base)
++	if err != nil {
++		return nil, MarkInvalid(fmt.Errorf("%w; way forward: %s", err, selectorWayForward(spec, hub)))
++	}
++	return overlayTemplate(spec, value, hub)
++}
++
++// TemplateUnder returns the effective template picked by the base layer's file under dirs, an absent file picking none.
++// It is how a caller judging a file above the base obtains its template without reading a layer file itself.
++func TemplateUnder(dirs Dirs, spec Spec) ([]byte, error) {
++	path, applies := LayerFile(dirs, spec, BaseLayer(dirs, spec))
++	if !applies {
++		return spec.Template, nil
++	}
++	data, err := os.ReadFile(path)
++	if err != nil && !os.IsNotExist(err) {
++		return nil, fmt.Errorf("read config file %s: %w", path, err)
++	}
++	return EffectiveTemplate(spec, data, dirs.Board != "")
++}
++
++// overlayTemplate composes the effective template for a selector value.
++// An empty value or a spec with no overlay returns the template unchanged;
++// otherwise the value's document is merged over the template under the spec's open maps, so an overlay name under a per-name map replaces or adds one entry whole.
++func overlayTemplate(spec Spec, value string, hub bool) ([]byte, error) {
++	if value == "" || len(spec.Overlay.Documents) == 0 {
++		return spec.Template, nil
++	}
++	document, ok := spec.Overlay.Documents[value]
++	if !ok {
++		names := make([]string, 0, len(spec.Overlay.Documents))
++		for name := range spec.Overlay.Documents {
++			names = append(names, name)
++		}
++		sort.Strings(names)
++		return nil, MarkInvalid(fmt.Errorf("%s config: %s %q names no shipped layer (shipped: %s); way forward: %s", spec.Name, spec.Overlay.Selector, value, strings.Join(names, ", "), selectorWayForward(spec, hub)))
++	}
++	merged, err := yamlengine.Merge(spec.Template, document, spec.OpenMaps, spec.WholeEntries)
++	if err != nil {
++		return nil, MarkInvalid(fmt.Errorf("%s config: %s %q layer: %w", spec.Name, spec.Overlay.Selector, value, err))
++	}
++	return merged, nil
++}
++
++// selectorWayForward is the way forward of a refusal of a base-layer selector value.
++func selectorWayForward(spec Spec, hub bool) string {
++	if hub {
++		return fmt.Sprintf("run \"lyx config %s --layer default --set %s=<name>\" from the hub's prime worktree%s", spec.Name, spec.Overlay.Selector, boardDirWayForwardClause)
++	}
++	return fmt.Sprintf("run \"lyx config %s --set %s=<name>\"", spec.Name, spec.Overlay.Selector)
++}
++
++// selectorValue reads the selector's top-level scalar from doc.
++// held reports whether the key is present; an absent key or an empty value yields "".
++// A non-scalar value is an [ErrInvalid] error naming the key, to which the caller adds the way forward.
++func selectorValue(spec Spec, doc []byte) (value string, held bool, err error) {
++	selector := spec.Overlay.Selector
++	if selector == "" {
++		return "", false, nil
++	}
++	var parsed yaml.Node
++	if err := yaml.Unmarshal(doc, &parsed); err != nil {
++		return "", false, MarkInvalid(err)
++	}
++	node := nodeAt(&parsed, selector)
++	if node == nil {
++		return "", false, nil
++	}
++	if node.Kind != yaml.ScalarNode {
++		return "", true, MarkInvalid(fmt.Errorf("%s config: %s must be one layer name", spec.Name, selector))
++	}
++	if node.Tag == "!!null" {
++		return "", true, nil
++	}
++	return node.Value, true, nil
++}
++
++// selectorRefusal is the refusal of a worktree file of a hub holding a selector value other than the base's.
++// heldBefore says the file held the selector before the write or edit being refused, so its line must be deleted first.
++func selectorRefusal(dirs Dirs, spec Spec, path string, heldBefore bool) error {
++	basePath, _ := LayerFile(dirs, spec, BaseLayer(dirs, spec))
++	selector := spec.Overlay.Selector
++	var wayForward strings.Builder
++	if heldBefore {
++		fmt.Fprintf(&wayForward, "delete the %s line from %s in an editor, then ", selector, path)
++	}
++	fmt.Fprintf(&wayForward, "set it in the base with \"lyx config %s --layer default --set %s=<name>\" from the hub's prime worktree%s", spec.Name, selector, boardDirWayForwardClause)
++	return MarkInvalid(fmt.Errorf("config file %s holds %s, which only the base file %s may hold; way forward: %s", path, selector, basePath, wayForward.String()))
++}
++
++// baseDocument returns the bytes of the base layer among layers, nil when it is absent.
++func baseDocument(dirs Dirs, spec Spec, layers []LayerDoc) []byte {
++	for _, layer := range layers {
++		if layer.Layer == BaseLayer(dirs, spec) {
++			return layer.Bytes
++		}
++	}
++	return nil
++}
++
++// worktreeSelectorOther reports whether the worktree document of a hub holds the selector with a value other than the base document's.
++// A non-scalar value counts as other.
++func worktreeSelectorOther(spec Spec, worktree, base []byte) (other bool, err error) {
++	value, held, err := selectorValue(spec, worktree)
++	if err != nil {
++		return true, nil
++	}
++	if !held {
++		return false, nil
++	}
++	baseValue, _, err := selectorValue(spec, base)
++	if err != nil {
++		return false, MarkInvalid(fmt.Errorf("%w; way forward: %s", err, selectorWayForward(spec, true)))
++	}
++	return value != baseValue, nil
++}
+diff --git a/internal/configengine/set.go b/internal/configengine/set.go
+index 521bb2285..d7485d663 100644
+--- a/internal/configengine/set.go
++++ b/internal/configengine/set.go
+@@ -4,6 +4,7 @@
+ // A standalone or seed-only base scaffolds from the template like Edit does, so a fresh default-valued file is created and rolled back identically;
+ // a hub's base and every layer above it are sparse and hold only the keys set.
+ // A local write is checked against the local rule, and a machine write against the machine rule, before anything is written.
++// An overlay module's base scaffold holds empty per-name maps, and a hub worktree write picking a layer the base does not pick is refused.
+ 
+ package configengine
+ 
+@@ -35,6 +36,8 @@ func layerPath(dirs Dirs, spec Spec, layer Layer) (path, owner string, err error
+ // A standalone or seed-only base layer is scaffolded from the template when absent and written with yamlengine.SetValues, and a freshly-scaffolded file is removed on error, mirroring Edit's contract;
+ // a hub's base layer and every layer above the base are sparse, so only the keys set are written through yamlengine.SetSparse and nothing is scaffolded.
+ // A write to the local layer is checked with [ValidateLocal] first, and one to the machine layer with [ValidateMachine]; a refused one writes nothing.
++// A spec with an overlay judges the write against its effective template: the one the written base document picks, or for a layer above the base the one the base file picks;
++// an unknown selector value fails before anything is written, and a hub worktree write leaving the selector with a value other than the default file's is refused.
+ // A spec with JSONEntries writes each pair as one whole top-level entry through yamlengine.SetEntries on every layer, scaffolding an absent base layer from the template.
+ // Returns the sorted list of pre-existing keys not in the template that were preserved verbatim;
+ // nil on any error.
+@@ -46,16 +49,20 @@ func Set(dirs Dirs, spec Spec, layer Layer, pairs []yamlengine.KV) ([]string, er
+ 	if _, err := FindBaseDir(owner); err != nil {
+ 		return nil, err
+ 	}
+-	template := string(spec.Template)
++	effective, err := writeTemplate(dirs, spec, layer, path, pairs)
++	if err != nil {
++		return nil, err
++	}
++	spec.Template = effective
+ 
+ 	if spec.JSONEntries {
+ 		return nil, setEntries(spec, layer, path, layer == BaseLayer(dirs, spec), pairs)
+ 	}
+ 	if layer != BaseLayer(dirs, spec) || sparseBase(dirs, spec) {
+-		return setSparse(spec, layer, path, pairs)
++		return setSparse(dirs, spec, layer, path, pairs)
+ 	}
+ 
+-	scaffolded, err := scaffoldIfMissing(path, filepath.Dir(path), template)
++	scaffolded, err := scaffoldIfMissing(path, filepath.Dir(path), BaseScaffold(dirs, spec))
+ 	if err != nil {
+ 		return nil, err
+ 	}
+@@ -125,9 +132,32 @@ func validateOverride(spec Spec, layer Layer, doc []byte) error {
+ 	return nil
+ }
+ 
++// writeTemplate returns the effective template a write to layer is judged against.
++// A base-layer write is judged against the template its own document picks: the selector's value is the last pair setting it, else the one the file holds.
++// A write to any layer above the base is judged against the template the base layer picks.
++func writeTemplate(dirs Dirs, spec Spec, layer Layer, path string, pairs []yamlengine.KV) ([]byte, error) {
++	if spec.Overlay.Selector == "" {
++		return spec.Template, nil
++	}
++	if layer != BaseLayer(dirs, spec) {
++		return TemplateUnder(dirs, spec)
++	}
++	for i := len(pairs) - 1; i >= 0; i-- {
++		if pairs[i].Key == spec.Overlay.Selector {
++			return overlayTemplate(spec, pairs[i].Value, dirs.Board != "")
++		}
++	}
++	existing, err := os.ReadFile(path)
++	if err != nil && !os.IsNotExist(err) {
++		return nil, err
++	}
++	return EffectiveTemplate(spec, existing, dirs.Board != "")
++}
++
+ // setSparse writes pairs into the sparse layer file at path, creating it when absent.
+ // The merged document is checked against the layer's rule before it is written, so a refused write leaves the file as it was.
+-func setSparse(spec Spec, layer Layer, path string, pairs []yamlengine.KV) ([]string, error) {
++// A write to the worktree layer of a hub that would leave the overlay selector holding a value other than the default file's is refused with [selectorRefusal].
++func setSparse(dirs Dirs, spec Spec, layer Layer, path string, pairs []yamlengine.KV) ([]string, error) {
+ 	existing, err := os.ReadFile(path)
+ 	if err != nil && !os.IsNotExist(err) {
+ 		return nil, err
+@@ -140,6 +170,12 @@ func setSparse(spec Spec, layer Layer, path string, pairs []yamlengine.KV) ([]st
+ 	if len(result.Unknown) > 0 {
+ 		return nil, fmt.Errorf("unknown config key(s): %s (known: %s)", strings.Join(result.Unknown, ", "), strings.Join(result.Known, ", "))
+ 	}
++	if hubWorktreeGuardsSelector(dirs, spec, layer) {
++		_, heldBefore, _ := selectorValue(spec, existing)
++		if err := worktreeSelectorRefusal(dirs, spec, path, result.Merged, heldBefore); err != nil {
++			return nil, err
++		}
++	}
+ 	if err := validateOverride(spec, layer, result.Merged); err != nil {
+ 		return nil, err
+ 	}
+diff --git a/internal/configengine/set_test.go b/internal/configengine/set_test.go
+index 1e3d169ee..689bc2e42 100644
+--- a/internal/configengine/set_test.go
++++ b/internal/configengine/set_test.go
+@@ -53,7 +53,83 @@ func TestSet(t *testing.T) {
+ 		wantExact string
+ 		// seedOnly marks the spec seed-only, so a hub's default layer keeps its full scaffold.
+ 		seedOnly bool
++		// overlay swaps in overlaySpec renamed testmod, keeping the row's layer, board and state.
++		overlay bool
++		// errLacks are substrings the refusal must not hold.
++		errLacks []string
++		// fileLacks are substrings the written file must not hold.
++		fileLacks []string
++		// defaultFile is the hub default file's bytes before the call; empty leaves it absent. It needs board.
++		defaultFile string
+ 	}{
++		{
++			name:      "an overlay base scaffold holds no per-name entry and takes the selector",
++			state:     baseLyx,
++			overlay:   true,
++			pairs:     []yamlengine.KV{{Key: "pick", Value: "x"}},
++			contains:  []string{`pick: "x"`},
++			fileLacks: []string{"a: A"},
++		},
++		{
++			name:      "a write of the selector with a lens the picked layer holds leaves that lens out",
++			state:     baseLyx,
++			overlay:   true,
++			pairs:     []yamlengine.KV{{Key: "pick", Value: "x"}, {Key: "lenses.a", Value: "X"}},
++			contains:  []string{`pick: "x"`},
++			fileLacks: []string{"a: X"},
++		},
++		{
++			name:      "the selector is read from the file when no pair sets it",
++			state:     baseWithFile,
++			existing:  "pick: x\n",
++			overlay:   true,
++			pairs:     []yamlengine.KV{{Key: "lenses.a", Value: "X"}},
++			contains:  []string{"pick: x"},
++			fileLacks: []string{"a: X"},
++		},
++		{
++			name:    "an unknown selector value is refused and removes the scaffold",
++			state:   baseLyx,
++			overlay: true,
++			pairs:   []yamlengine.KV{{Key: "pick", Value: "nope"}},
++			wantErr: "names no shipped layer",
++		},
++		{
++			name:     "a hub worktree write of the selector into an absent file is refused without the line to delete",
++			state:    baseLyx,
++			board:    true,
++			overlay:  true,
++			pairs:    []yamlengine.KV{{Key: "pick", Value: "x"}},
++			wantErr:  "--layer default",
++			errLacks: []string{"delete the pick line"},
++		},
++		{
++			name:     "a hub worktree write into a file holding another selector value is refused naming the line to delete",
++			state:    baseWithFile,
++			existing: "pick: x\n",
++			board:    true,
++			overlay:  true,
++			pairs:    []yamlengine.KV{{Key: "lenses.a", Value: "Y"}},
++			wantErr:  "delete the pick line from",
++		},
++		{
++			name:        "a hub worktree write of the selector with the default file's value saves",
++			state:       baseLyx,
++			board:       true,
++			overlay:     true,
++			defaultFile: "pick: x\n",
++			pairs:       []yamlengine.KV{{Key: "pick", Value: "x"}},
++			contains:    []string{"pick:"},
++		},
++		{
++			name:        "a hub worktree write under a default file holding an unknown selector value is refused and leaves no file",
++			state:       baseLyx,
++			board:       true,
++			overlay:     true,
++			defaultFile: "pick: nope\n",
++			pairs:       []yamlengine.KV{{Key: "lenses.a", Value: "Y"}},
++			wantErr:     "names no shipped layer",
++		},
+ 		{
+ 			name:      "hub default layer write into an absent file writes exactly the key set",
+ 			state:     baseLyx,
+@@ -283,6 +359,13 @@ func TestSet(t *testing.T) {
+ 			if (tt.hubWide || tt.layer == configengine.LayerDefault) && !tt.boardWithoutLyx {
+ 				mustMkdirAll(t, configengine.ConfigDir(dirs.Board))
+ 			}
++			if tt.defaultFile != "" {
++				defaultPath := configengine.ConfigFile(dirs.Board, "testmod")
++				mustMkdirAll(t, filepath.Dir(defaultPath))
++				if err := os.WriteFile(defaultPath, []byte(tt.defaultFile), 0o644); err != nil {
++					t.Fatalf("write default file: %v", err)
++				}
++			}
+ 			if tt.boardOnly {
+ 				dirs.Anchor = ""
+ 			}
+@@ -310,6 +393,10 @@ func TestSet(t *testing.T) {
+ 				}
+ 			}
+ 			spec := configengine.Spec{Name: "testmod", Template: []byte(tt.template), OpenMaps: tt.openMaps, PerNameMaps: tt.perNameMaps, Categories: tt.categories, HubWide: tt.hubWide, JSONEntries: tt.jsonEntries, SeedOnly: tt.seedOnly}
++			if tt.overlay {
++				spec = overlaySpec()
++				spec.Name = "testmod"
++			}
+ 
+ 			preserved, err := configengine.Set(dirs, spec, layer, tt.pairs)
+ 
+@@ -317,6 +404,11 @@ func TestSet(t *testing.T) {
+ 				if err == nil || !strings.Contains(err.Error(), tt.wantErr) {
+ 					t.Fatalf("Set() = %v; want an error containing %q", err, tt.wantErr)
+ 				}
++				for _, lacks := range tt.errLacks {
++					if strings.Contains(err.Error(), lacks) {
++						t.Errorf("Set() error = %q; want it to lack %q", err, lacks)
++					}
++				}
+ 				if scaffolded {
+ 					if _, statErr := os.Stat(path); !os.IsNotExist(statErr) {
+ 						t.Errorf("config file still exists after the refusal; want the scaffold removed")
+@@ -341,6 +433,11 @@ func TestSet(t *testing.T) {
+ 					t.Errorf("Set() file = %q; want it to contain %q", data, want)
+ 				}
+ 			}
++			for _, lacks := range tt.fileLacks {
++				if strings.Contains(string(data), lacks) {
++					t.Errorf("Set() file = %q; want it to lack %q", data, lacks)
++				}
++			}
+ 			if tt.wantExact != "" && string(data) != tt.wantExact {
+ 				t.Errorf("Set() file = %q; want exactly %q", data, tt.wantExact)
+ 			}
+diff --git a/internal/configreg/configreg.go b/internal/configreg/configreg.go
+index bc613df70..52a66a2c2 100644
+--- a/internal/configreg/configreg.go
++++ b/internal/configreg/configreg.go
+@@ -177,7 +177,7 @@ func Names() []string {
+ 	return names
+ }
+ 
+-// Fingerprint returns a hex digest of the registry that changes whenever a registered module's name, flags, open maps, per-name maps or template text changes.
++// Fingerprint returns a hex digest of the registry that changes whenever a registered module's name, flags, open maps, per-name maps, template text, or overlay selector or overlay document changes.
+ // A change that only swaps a module's Migrate hook leaves it unchanged, since a function value has no stable bytes.
+ func Fingerprint() string {
+ 	return fingerprintOf(Modules())
+@@ -213,6 +213,24 @@ func fingerprintOf(modules []Module) string {
+ 			writeField(perNameMap)
+ 		}
+ 		writeField(m.Template())
++		if m.Spec == nil {
++			continue
++		}
++		// A layer's prose is part of what a hub reconciles against, so a binary changing only a layer changes the stamp.
++		overlay := m.Spec().Overlay
++		if overlay.Selector == "" && len(overlay.Documents) == 0 {
++			continue
++		}
++		writeField(overlay.Selector)
++		names := make([]string, 0, len(overlay.Documents))
++		for name := range overlay.Documents {
++			names = append(names, name)
++		}
++		sort.Strings(names)
++		for _, name := range names {
++			writeField(name)
++			writeField(string(overlay.Documents[name]))
++		}
+ 	}
+ 	return hex.EncodeToString(hash.Sum(nil))
+ }
+diff --git a/internal/configreg/configreg_test.go b/internal/configreg/configreg_test.go
+index 53aa2160a..6cf05bad8 100644
+--- a/internal/configreg/configreg_test.go
++++ b/internal/configreg/configreg_test.go
+@@ -81,7 +81,7 @@ func TestModules_EveryTemplateKeyClassified(t *testing.T) {
+ 		"reed":    {"debug_log", "mouse", "shell", "tmux", "tmux_conf"},
+ 		"shuttle": {"deny_python", "run_dir"},
+ 		"loom":    {"alignment", "alignment_pr_approve", "discussion_advisors", "discussion_auto_accept", "discussion_fixer_fan", "discussion_lenses", "discussion_reviewer_fan", "merge_auto_accept", "merge_fixer_fan", "merge_reviewer_fan", "parent_review_wait_min", "plan_auto_accept", "plan_fixer_fan", "plan_lenses", "plan_reviewer_fan", "skip_alignment", "webster_auto_accept", "webster_fixer_fan", "webster_reviewer_fan"},
+-		"lenses":  {"fans", "lenses"},
++		"lenses":  {"fans", "lens_set", "lenses", "remove"},
+ 	}
+ 	for _, m := range Modules() {
+ 		t.Run(m.Name, func(t *testing.T) {
+@@ -296,7 +296,7 @@ func TestLookup(t *testing.T) {
+ 	}
+ }
+ 
+-// TestFingerprint pins what the registry fingerprint is sensitive to: a module's template, flags, open maps, per-name maps and name, and not its Migrate hook.
++// TestFingerprint pins what the registry fingerprint is sensitive to: a module's template, flags, open maps, per-name maps, name and overlay documents, and not its Migrate hook or an empty overlay.
+ func TestFingerprint(t *testing.T) {
+ 	t.Parallel()
+ 	base := func() []Module {
+@@ -305,12 +305,23 @@ func TestFingerprint(t *testing.T) {
+ 			{Name: "beta", Template: func() string { return "b: 2\n" }},
+ 		}
+ 	}
++	withOverlayDocument := func(document string) func(m []Module) {
++		return func(m []Module) {
++			m[1].Spec = func() configengine.Spec {
++				return configengine.Spec{Overlay: configengine.Overlay{Selector: "pick", Documents: map[string][]byte{"x": []byte(document)}}}
++			}
++		}
++	}
+ 	tests := []struct {
+ 		name   string
+ 		mutate func(m []Module)
+ 		same   bool
+ 	}{
+ 		{"identical copy", func(m []Module) {}, true},
++		{"a Spec holding no overlay", func(m []Module) {
++			m[1].Spec = func() configengine.Spec { return configengine.Spec{} }
++		}, true},
++		{"a Spec holding an overlay document", withOverlayDocument("a: 1\n"), false},
+ 		{"changed template", func(m []Module) { m[1].Template = func() string { return "b: 3\n" } }, false},
+ 		{"flipped HubWide", func(m []Module) { m[0].HubWide = true }, false},
+ 		{"flipped SeedOnly", func(m []Module) { m[0].SeedOnly = true }, false},
+@@ -334,6 +345,13 @@ func TestFingerprint(t *testing.T) {
+ 		})
+ 	}
+ 
++	one, other := base(), base()
++	withOverlayDocument("a: 1\n")(one)
++	withOverlayDocument("a: 2\n")(other)
++	if fingerprintOf(one) == fingerprintOf(other) {
++		t.Errorf("fingerprintOf is equal for overlay documents that differ in bytes; want it to differ")
++	}
++
+ 	if got := Fingerprint(); got != fingerprintOf(Modules()) || got != Fingerprint() {
+ 		t.Errorf("Fingerprint() = %q, want it equal to fingerprintOf(Modules()) and stable across calls", got)
+ 	}
+diff --git a/internal/configsync/configsync.go b/internal/configsync/configsync.go
+index eef08d8a3..3828ee7d0 100644
+--- a/internal/configsync/configsync.go
++++ b/internal/configsync/configsync.go
+@@ -6,6 +6,8 @@
+ // only a standalone worktree base and a seed-only file stay full, and every layer above a base is sparse.
+ // ReconcileHubWideAt covers every module's file at the board dir, hub files and per-worktree repo defaults;
+ // ReconcileAll covers a worktree's sparse and local layers.
++// Every strip, prune, reconcile and template-equal drop judges a file against the effective template its base layer picks, the module's template with the overlay its selector names laid over it;
++// key-move scaffolds and the seed-only paths use the base template.
+ // Every reconcile entry point, and run-settings preparation through configreg, applies the key-move table to each layer as its first step, before any module of the layer is seeded or reconciled.
+ // Reconcile failures are *FileError values naming the file that failed.
+ 
+@@ -13,6 +15,7 @@ package configsync
+ 
+ import (
+ 	"bytes"
++	"errors"
+ 	"fmt"
+ 	"os"
+ 	"reflect"
+@@ -266,6 +269,42 @@ func (e *FileError) Unwrap() error {
+ 	return e.Err
+ }
+ 
++// effectiveTemplateOf composes the template m's base document picks, failing as a *FileError that names path, the file holding the selector value.
++func effectiveTemplateOf(m configreg.Module, base []byte, hub bool, path string) ([]byte, error) {
++	template, err := configengine.EffectiveTemplate(m.Spec(), base, hub)
++	if err != nil {
++		return nil, &FileError{Module: m.Name, Path: path, Err: err}
++	}
++	return template, nil
++}
++
++// templateUnderBase composes the template the base layer's file under dirs picks, failing as a *FileError that names that file.
++func templateUnderBase(m configreg.Module, dirs configengine.Dirs) ([]byte, error) {
++	spec := m.Spec()
++	template, err := configengine.TemplateUnder(dirs, spec)
++	if err != nil {
++		basePath, _ := configengine.LayerFile(dirs, spec, configengine.BaseLayer(dirs, spec))
++		return nil, &FileError{Module: m.Name, Path: basePath, Err: err}
++	}
++	return template, nil
++}
++
++// primeSeedError names the prime's copy of m in a seed failure its selector caused, and adds the step the refusal's way forward lacks:
++// a prime worktree file holding a selector the base does not hold is refused at load, so its line must go too.
++// The delete step is added only for a module with an overlay selector.
++// It returns err unchanged for any other failure.
++func primeSeedError(m configreg.Module, primeBaseDir string, err error) error {
++	if !errors.Is(err, configengine.ErrInvalid) {
++		return err
++	}
++	primePath := configengine.ConfigFile(primeBaseDir, m.Name)
++	selector := m.Spec().Overlay.Selector
++	if selector == "" {
++		return &FileError{Module: m.Name, Path: primePath, Err: err}
++	}
++	return &FileError{Module: m.Name, Path: primePath, Err: fmt.Errorf("%w; also delete the %s line from %s in an editor", err, selector, primePath)}
++}
++
+ // leafValues flattens a decoded YAML document into dotted key path to leaf value.
+ // Maps are descended, an empty map contributes nothing, and a list is one leaf compared whole.
+ func leafValues(prefix string, node any, into map[string]any) {
+@@ -389,6 +428,7 @@ func ReconcileAll(baseDir, boardDir string, opts Options) ([]Result, error) {
+ 	if pending != nil {
+ 		pending.write = opts.Migrate && opts.Apply
+ 	}
++	dirs := configengine.Dirs{Anchor: baseDir, Board: boardDir}
+ 	for _, m := range configreg.Modules() {
+ 		var result Result
+ 		var err error
+@@ -398,14 +438,14 @@ func ReconcileAll(baseDir, boardDir string, opts Options) ([]Result, error) {
+ 		case boardDir == "":
+ 			result, err = reconcileBaseWorktreeFile(m, baseDir, opts.Apply)
+ 		default:
+-			result, _, err = reconcileSparseFile(m, configengine.ConfigFile(baseDir, m.Name), configengine.LayerWorktree, opts.Apply, pending)
++			result, _, err = reconcileSparseFile(m, dirs, configengine.ConfigFile(baseDir, m.Name), configengine.LayerWorktree, opts.Apply, pending)
+ 		}
+ 		if err != nil {
+ 			return nil, err
+ 		}
+ 		results = append(results, result)
+ 
+-		localResult, present, err := reconcileSparseFile(m, configengine.LocalFile(baseDir, m.Name), configengine.LayerLocal, opts.Apply, nil)
++		localResult, present, err := reconcileSparseFile(m, dirs, configengine.LocalFile(baseDir, m.Name), configengine.LayerLocal, opts.Apply, nil)
+ 		if err != nil {
+ 			return nil, err
+ 		}
+@@ -495,7 +535,11 @@ func reconcileBaseWorktreeFile(m configreg.Module, baseDir string, apply bool) (
+ 		}
+ 	}
+ 
+-	merged, added, removed, kept, dropped, err := yamlengine.Reconcile([]byte(m.Template()), existing, m.PerNameMaps, m.OpenMaps...)
++	template, err := effectiveTemplateOf(m, existing, false, cfgPath)
++	if err != nil {
++		return Result{}, err
++	}
++	merged, added, removed, kept, dropped, err := yamlengine.Reconcile(template, existing, m.PerNameMaps, m.OpenMaps...)
+ 	if err != nil {
+ 		return Result{}, &FileError{Module: m.Name, Path: cfgPath, Err: fmt.Errorf("reconcile %s: %w", m.Name, err)}
+ 	}
+@@ -524,7 +568,7 @@ func reconcileBaseWorktreeFile(m configreg.Module, baseDir string, apply bool) (
+ // With a non-nil strip, the file's keys that equal what the layers below it resolve to are reported as Stripped, and removed when strip.write is set;
+ // a seed-only module takes the strip as well.
+ // A file emptied by a prune or a strip is deleted and reported applied.
+-func reconcileSparseFile(m configreg.Module, path string, layer configengine.Layer, apply bool, strip *migration) (result Result, present bool, err error) {
++func reconcileSparseFile(m configreg.Module, dirs configengine.Dirs, path string, layer configengine.Layer, apply bool, strip *migration) (result Result, present bool, err error) {
+ 	result = Result{Module: m.Name, Layer: layer}
+ 	original, err := os.ReadFile(path)
+ 	if os.IsNotExist(err) {
+@@ -545,7 +589,11 @@ func reconcileSparseFile(m configreg.Module, path string, layer configengine.Lay
+ 				return fail("migrate", err)
+ 			}
+ 		}
+-		current, result.Removed, result.KeptExtra, err = yamlengine.Prune([]byte(m.Template()), current, m.PerNameMaps, m.OpenMaps...)
++		template, err := templateUnderBase(m, dirs)
++		if err != nil {
++			return Result{}, true, err
++		}
++		current, result.Removed, result.KeptExtra, err = yamlengine.Prune(template, current, m.PerNameMaps, m.OpenMaps...)
+ 		if err != nil {
+ 			return fail("reconcile", err)
+ 		}
+@@ -605,7 +653,11 @@ func stripToSparse(m configreg.Module, dirs configengine.Dirs, original, current
+ 			repoDefault = layer.Bytes
+ 		}
+ 	}
+-	differing, _, err := yamlengine.Strip(spec.Template, repoDefault, spec.OpenMaps, spec.WholeEntries)
++	effective, err := configengine.EffectiveTemplate(spec, repoDefault, true)
++	if err != nil {
++		return nil, nil, nil, err
++	}
++	differing, _, err := yamlengine.Strip(effective, repoDefault, spec.OpenMaps, spec.WholeEntries)
+ 	if err != nil {
+ 		return nil, nil, nil, err
+ 	}
+@@ -641,11 +693,16 @@ func stripFormerValues(m configreg.Module, current []byte, removedKeys []string)
+ 	return stripped, removedKeys, nil
+ }
+ 
+-// stripBase removes from current, a base file of m, every unit equal to the template's or to a former template value of m, and returns the stripped bytes with the removed keys, sorted.
++// stripBase removes from current, units of a base file of m, every unit equal to the effective template's or to a former template value of m, and returns the stripped bytes with the removed keys, sorted.
++// base is the base document whose selector picks the effective template; it is current itself unless current is only part of the file.
+ // An open map is compared whole, and a base left with no unit comes back empty.
+-func stripBase(m configreg.Module, current []byte) ([]byte, []string, error) {
++func stripBase(m configreg.Module, base, current []byte) ([]byte, []string, error) {
+ 	spec := m.Spec()
+-	stripped, removedKeys, err := yamlengine.Strip(spec.Template, current, spec.OpenMaps, spec.WholeEntries)
++	effective, err := configengine.EffectiveTemplate(spec, base, true)
++	if err != nil {
++		return nil, nil, err
++	}
++	stripped, removedKeys, err := yamlengine.Strip(effective, current, spec.OpenMaps, spec.WholeEntries)
+ 	if err != nil {
+ 		return nil, nil, err
+ 	}
+@@ -662,15 +719,20 @@ func sparseSeed(m configreg.Module, seed []byte, dropFormer bool) ([]byte, error
+ 			return nil, fmt.Errorf("migrate %s: %w", m.Name, err)
+ 		}
+ 	}
+-	current, _, _, err := yamlengine.Prune([]byte(m.Template()), current, m.PerNameMaps, m.OpenMaps...)
++	spec := m.Spec()
++	effective, err := configengine.EffectiveTemplate(spec, current, true)
++	if err != nil {
++		return nil, fmt.Errorf("reconcile %s: %w", m.Name, err)
++	}
++	migrated := current
++	current, _, _, err = yamlengine.Prune(effective, current, m.PerNameMaps, m.OpenMaps...)
+ 	if err != nil {
+ 		return nil, fmt.Errorf("reconcile %s: %w", m.Name, err)
+ 	}
+ 	if dropFormer {
+-		current, _, err = stripBase(m, current)
++		current, _, err = stripBase(m, migrated, current)
+ 	} else {
+-		spec := m.Spec()
+-		current, _, err = yamlengine.Strip(spec.Template, current, spec.OpenMaps, spec.WholeEntries)
++		current, _, err = yamlengine.Strip(effective, current, spec.OpenMaps, spec.WholeEntries)
+ 	}
+ 	if err != nil {
+ 		return nil, fmt.Errorf("reconcile %s: %w", m.Name, err)
+@@ -730,12 +792,13 @@ func splitTopLevel(data []byte, keys []string) (picked, rest []byte, err error)
+ 
+ // stripMovedUnits strips from current, a base file of m that a key move created, only the units of the top-level keys named by movedKeys, and returns the file with the removed keys.
+ // The units a prime seed put in the file are left, since the seed already dropped what a strip drops.
++// The moved units are judged against the effective template the whole file's selector picks.
+ func stripMovedUnits(m configreg.Module, current []byte, movedKeys []string) ([]byte, []string, error) {
+ 	picked, rest, err := splitTopLevel(current, movedKeys)
+ 	if err != nil {
+ 		return nil, nil, err
+ 	}
+-	strippedPicked, removedKeys, err := stripBase(m, picked)
++	strippedPicked, removedKeys, err := stripBase(m, current, picked)
+ 	if err != nil {
+ 		return nil, nil, err
+ 	}
+@@ -884,6 +947,9 @@ func ReconcileHubWideAt(boardDir, primeBaseDir string, opts HubWideOptions) ([]R
+ 			case SeedPrime:
+ 				_, markerStat := os.Stat(configengine.SparseMarker(primeBaseDir))
+ 				mergedBytes, reconcileErr = sparseSeed(m, existing, os.IsNotExist(markerStat))
++				if reconcileErr != nil {
++					reconcileErr = primeSeedError(m, primeBaseDir, reconcileErr)
++				}
+ 			case SeedLegacy:
+ 				mergedBytes, reconcileErr = sparseSeed(m, existing, false)
+ 			default:
+@@ -897,14 +963,18 @@ func ReconcileHubWideAt(boardDir, primeBaseDir string, opts HubWideOptions) ([]R
+ 					return nil, &FileError{Module: m.Name, Path: cfgPath, Err: fmt.Errorf("migrate %s: %w", m.Name, err)}
+ 				}
+ 			}
+-			mergedBytes, removed, keptExtra, reconcileErr = yamlengine.Prune([]byte(m.Template()), mergedBytes, m.PerNameMaps, m.OpenMaps...)
++			var template []byte
++			template, reconcileErr = effectiveTemplateOf(m, mergedBytes, true, cfgPath)
++			if reconcileErr == nil {
++				mergedBytes, removed, keptExtra, reconcileErr = yamlengine.Prune(template, mergedBytes, m.PerNameMaps, m.OpenMaps...)
++			}
+ 			changed = len(removed)+len(migrated) > 0
+ 			// The strip runs before the per-name drop, so a per-name map the strip empties leaves no empty mapping behind.
+ 			if reconcileErr == nil && unmarked {
+ 				var strippedBytes []byte
+ 				switch {
+ 				case presentBefore[m.Name]:
+-					strippedBytes, stripped, reconcileErr = stripBase(m, mergedBytes)
++					strippedBytes, stripped, reconcileErr = stripBase(m, mergedBytes, mergedBytes)
+ 				case len(movedKeys[m.Name]) > 0:
+ 					strippedBytes, stripped, reconcileErr = stripMovedUnits(m, mergedBytes, movedKeys[m.Name])
+ 				}
+@@ -914,11 +984,15 @@ func ReconcileHubWideAt(boardDir, primeBaseDir string, opts HubWideOptions) ([]R
+ 				}
+ 			}
+ 			if reconcileErr == nil && len(m.PerNameMaps) > 0 {
+-				mergedBytes, dropped, reconcileErr = yamlengine.DropTemplateEqualNames([]byte(m.Template()), mergedBytes, m.PerNameMaps)
++				mergedBytes, dropped, reconcileErr = yamlengine.DropTemplateEqualNames(template, mergedBytes, m.PerNameMaps)
+ 				changed = changed || len(dropped) > 0
+ 			}
+ 		}
+ 		if reconcileErr != nil {
++			var fileErr *FileError
++			if errors.As(reconcileErr, &fileErr) {
++				return nil, fileErr
++			}
+ 			return nil, &FileError{Module: m.Name, Path: cfgPath, Err: fmt.Errorf("reconcile %s: %w", m.Name, reconcileErr)}
+ 		}
+ 
+diff --git a/internal/configsync/configsync_test.go b/internal/configsync/configsync_test.go
+index 454f2669e..8a4854e5e 100644
+--- a/internal/configsync/configsync_test.go
++++ b/internal/configsync/configsync_test.go
+@@ -52,6 +52,70 @@ func lensesFixture(t *testing.T, edit func(cfg *lenses.Config)) string {
+ 	return string(out)
+ }
+ 
++// burlerFixture returns a burler.yaml document: the template's lenses and fans decoded, changed by edit and marshalled back holding only those two keys.
++// Every key of such a document is one the burler-to-lenses moves take out, so the move leaves it empty.
++func burlerFixture(t *testing.T, edit func(cfg *lenses.Config)) string {
++	t.Helper()
++	var cfg lenses.Config
++	if err := yaml.Unmarshal([]byte(lenses.ConfigTemplate()), &cfg); err != nil {
++		t.Fatalf("decode the lenses template: %v", err)
++	}
++	edit(&cfg)
++	out, err := yaml.Marshal(struct {
++		Lenses map[string]string   `yaml:"lenses"`
++		Fans   map[string][]string `yaml:"fans"`
++	}{cfg.Lenses, cfg.Fans})
++	if err != nil {
++		t.Fatalf("marshal the burler fixture: %v", err)
++	}
++	return string(out)
++}
++
++// loadLensesWith returns lenses.Load over a scratch anchor whose lenses.yaml holds content, none when content is empty.
++func loadLensesWith(t *testing.T, content string) lenses.Config {
++	t.Helper()
++	anchor := t.TempDir()
++	writeModuleFile(t, anchor, "lenses", content)
++	cfg, err := lenses.Load(configengine.Dirs{Anchor: anchor})
++	if err != nil {
++		t.Fatalf("lenses.Load over %q: %v", content, err)
++	}
++	return cfg
++}
++
++// decodeDocument decodes a YAML document into generic values, so two documents compare regardless of key order.
++func decodeDocument(t *testing.T, data []byte) any {
++	t.Helper()
++	var document any
++	if err := yaml.Unmarshal(data, &document); err != nil {
++		t.Fatalf("decode a resolved document: %v", err)
++	}
++	return document
++}
++
++// loadLensesAt returns lenses.Load over dirs, failing the test on an error.
++func loadLensesAt(t *testing.T, dirs configengine.Dirs) lenses.Config {
++	t.Helper()
++	cfg, err := lenses.Load(dirs)
++	if err != nil {
++		t.Fatalf("lenses.Load(%+v): %v", dirs, err)
++	}
++	return cfg
++}
++
++// lensSetFixture returns a sparse lenses.yaml document that picks lensSet, none when it is empty, and holds the given lens entries.
++func lensSetFixture(t *testing.T, lensSet string, entries map[string]string) string {
++	t.Helper()
++	out, err := yaml.Marshal(struct {
++		LensSet string            `yaml:"lens_set,omitempty"`
++		Lenses  map[string]string `yaml:"lenses"`
++	}{lensSet, entries})
++	if err != nil {
++		t.Fatalf("marshal the lens-set fixture: %v", err)
++	}
++	return string(out)
++}
++
+ // moduleWant is what one ReconcileAll row expects of one module's Result and config file.
+ type moduleWant struct {
+ 	applied bool
+@@ -77,6 +141,8 @@ type moduleWant struct {
+ 	loadsAsBatcher bool
+ 	// wantLoadedLenses is what lenses.Load resolves after the run; nil skips the check.
+ 	wantLoadedLenses *lenses.Config
++	// loadUnchanged pins that lenses.Load over the base dir resolves the same before and after the run.
++	loadUnchanged bool
+ }
+ 
+ // TestReconcileAll pins what a run does to each module's file and Result: a dry run reports and writes nothing, an apply adds the template's missing keys and prunes stale ones, an absent file is seeded from the template, and a seed-only module ("models" today) is materialized verbatim exactly once and never rewritten after -- not even to resurrect a key the operator removed -- while a non-seed-only module in the same run is still pruned.
+@@ -101,6 +167,11 @@ func TestReconcileAll(t *testing.T) {
+ 	if err := yaml.Unmarshal([]byte(lensesWithHubLens), &hubLensConfig); err != nil {
+ 		t.Fatalf("decode the hub-lens fixture: %v", err)
+ 	}
++	csharpLenses, baseLenses := loadLensesWith(t, "lens_set: csharp\n").Lenses, loadLensesWith(t, "").Lenses
++	lensesCSharpPick := lensSetFixture(t, "csharp", map[string]string{
++		"concurrency":    csharpLenses["concurrency"],
++		"error-handling": baseLenses["error-handling"],
++	})
+ 
+ 	tests := []struct {
+ 		name  string
+@@ -234,6 +305,18 @@ func TestReconcileAll(t *testing.T) {
+ 				wantLoadedLenses: &hubLensConfig,
+ 			}},
+ 		},
++		{
++			name:  "apply under a standalone lens_set drops a lens equal to the layer's prose and keeps one equal to the base's",
++			seed:  map[string]string{"lenses": lensesCSharpPick},
++			apply: true,
++			want: map[string]moduleWant{"lenses": {
++				applied:         true,
++				droppedAll:      []string{"lenses.concurrency"},
++				fileContains:    []string{"error-handling:", "lens_set: csharp"},
++				fileNotContains: []string{"concurrency:"},
++				loadUnchanged:   true,
++			}},
++		},
+ 	}
+ 
+ 	// Each floored module's below-floor key: a dry run reports the raise and writes nothing, an apply writes the key at its floor.
+@@ -283,12 +366,22 @@ func TestReconcileAll(t *testing.T) {
+ 				writeModuleFile(t, baseDir, module, content)
+ 			}
+ 
++			var loadedBefore lenses.Config
++			if tt.want["lenses"].loadUnchanged {
++				loadedBefore = loadLensesAt(t, configengine.Dirs{Anchor: baseDir})
++			}
++
+ 			results, err := ReconcileAll(baseDir, "", Options{Apply: tt.apply})
+ 			if err != nil {
+ 				t.Fatalf("ReconcileAll(%v): %v", tt.apply, err)
+ 			}
+ 
+ 			for module, want := range tt.want {
++				if want.loadUnchanged {
++					if loadedAfter := loadLensesAt(t, configengine.Dirs{Anchor: baseDir}); !reflect.DeepEqual(loadedAfter, loadedBefore) {
++						t.Errorf("lenses.Load after the run differs from before: got %+v; want %+v", loadedAfter, loadedBefore)
++					}
++				}
+ 				result := findResult(results, module)
+ 				if result == nil {
+ 					t.Errorf("%s result not found", module)
+@@ -434,6 +527,10 @@ func TestReconcileHubWideAt_SeedsFromHubPrimeLegacyOrTemplate(t *testing.T) {
+ 		cfg.Fans["standard"] = []string{"hub-lens"}
+ 		cfg.Fans["hub-fan"] = []string{"generic"}
+ 	})
++	lensesCSharpPick := lensSetFixture(t, "csharp", map[string]string{
++		"concurrency":    loadLensesWith(t, "lens_set: csharp\n").Lenses["concurrency"],
++		"error-handling": loadLensesWith(t, "").Lenses["error-handling"],
++	})
+ 
+ 	tests := []struct {
+ 		name         string
+@@ -455,7 +552,27 @@ func TestReconcileHubWideAt_SeedsFromHubPrimeLegacyOrTemplate(t *testing.T) {
+ 		// wantDropped and wantNotDropped are names the applied result's Dropped must and must not hold.
+ 		wantDropped    []string
+ 		wantNotDropped []string
++		// loadUnchanged pins that lenses.Load over the board dir resolves the same before the dry run and after the apply.
++		loadUnchanged bool
+ 	}{
++		{
++			name:           "lenses default under lens_set drops a lens equal to the layer's prose and keeps one equal to the base's",
++			module:         "lenses",
++			hubFile:        lensesCSharpPick,
++			wantSeed:       SeedHub,
++			wantDropped:    []string{"lenses.concurrency"},
++			wantNotDropped: []string{"lenses.error-handling"},
++			loadUnchanged:  true,
++		},
++		{
++			name:         "lenses default absent is seeded from a prime holding lens_set and drops the layer-equal lens",
++			module:       "lenses",
++			primeFile:    lensesCSharpPick,
++			seedDefaults: true,
++			wantSeed:     SeedPrime,
++			wantContains: []string{"lens_set: csharp", "error-handling:"},
++			wantAbsent:   []string{"concurrency:"},
++		},
+ 		{
+ 			name:     "lenses default present keeps tuned and hub-only entries and drops template-equal ones",
+ 			module:   "lenses",
+@@ -649,6 +766,10 @@ func TestReconcileHubWideAt_SeedsFromHubPrimeLegacyOrTemplate(t *testing.T) {
+ 			}
+ 			writeModuleFile(t, boardDir, "warp", tt.legacyFirst)
+ 			hubPath := configengine.ConfigFile(boardDir, tt.module)
++			var loadedBefore lenses.Config
++			if tt.loadUnchanged {
++				loadedBefore = loadLensesAt(t, configengine.Dirs{Board: boardDir})
++			}
+ 
+ 			dry, err := ReconcileHubWideAt(boardDir, primeDir, HubWideOptions{SeedDefaults: tt.seedDefaults})
+ 			if err != nil {
+@@ -693,6 +814,11 @@ func TestReconcileHubWideAt_SeedsFromHubPrimeLegacyOrTemplate(t *testing.T) {
+ 					t.Errorf("applied Dropped = %v; want it not to contain %q", appliedResult.Dropped, name)
+ 				}
+ 			}
++			if tt.loadUnchanged {
++				if loadedAfter := loadLensesAt(t, configengine.Dirs{Board: boardDir}); !reflect.DeepEqual(loadedAfter, loadedBefore) {
++					t.Errorf("lenses.Load after the apply differs from before: got %+v; want %+v", loadedAfter, loadedBefore)
++				}
++			}
+ 			if tt.wantNoFile {
+ 				if _, err := os.Stat(hubPath); !os.IsNotExist(err) {
+ 					t.Errorf("default written without SeedDefaults (stat err = %v)", err)
+@@ -1277,6 +1403,7 @@ func TestReconcileAll_MigratesToSparse(t *testing.T) {
+ 	batcherDiffering := strings.Replace(batcherTemplate, "orientation: 31400", "orientation: 31401", 1)
+ 	modelsTemplate := modelspec.ConfigTemplate()
+ 	migrate := Options{Apply: true, Migrate: true}
++	lensesCSharpConcurrency := lensSetFixture(t, "", map[string]string{"concurrency": loadLensesWith(t, "lens_set: csharp\n").Lenses["concurrency"]})
+ 
+ 	tests := []struct {
+ 		name         string
+@@ -1357,6 +1484,11 @@ func TestReconcileAll_MigratesToSparse(t *testing.T) {
+ 			name: "a hub missing a repo default strips nothing", module: "loom", opts: migrate, noDefault: true,
+ 			worktreeFile: stripFile, wantFile: ptr(stripFile),
+ 		},
++		{
++			name: "a lens equal to the prose of the layer the default picks is stripped and the picked selector is inherited", module: "lenses", opts: migrate,
++			defaultFile: "lens_set: csharp\n", worktreeFile: lensesCSharpConcurrency,
++			wantStripped: []string{"lenses.concurrency"}, wantInherited: []string{"lens_set"}, wantDeleted: true, wantMarker: true,
++		},
+ 	}
+ 	for _, tt := range tests {
+ 		t.Run(tt.name, func(t *testing.T) {
+@@ -1434,10 +1566,12 @@ func TestReconcileAll_MigratesToSparse(t *testing.T) {
+ 			if err != nil {
+ 				t.Fatalf("Load after: %v", err)
+ 			}
+-			if !tt.resolutionChanges && string(after) != string(before) {
++			// A stripped per-name entry resolves from the template, so the keys may come back in another order.
++			sameResolution := reflect.DeepEqual(decodeDocument(t, before), decodeDocument(t, after))
++			if !tt.resolutionChanges && !sameResolution {
+ 				t.Errorf("resolution changed by the migration:\nbefore:\n%s\nafter:\n%s", before, after)
+ 			}
+-			if tt.resolutionChanges && string(after) == string(before) {
++			if tt.resolutionChanges && sameResolution {
+ 				t.Errorf("resolution unchanged by a strip of a former value:\n%s", after)
+ 			}
+ 		})
+@@ -1504,12 +1638,21 @@ func findLayerResult(results []Result, module string, layer configengine.Layer)
+ func TestReconcile_FailureNamesItsFile(t *testing.T) {
+ 	t.Parallel()
+ 	const unparseable = "key: [unclosed\n"
++	const unknownLensSet = "lens_set: nope\n"
+ 	tests := []struct {
+ 		name       string
+ 		run        func(baseDir, boardDir string) error
+ 		module     string
+ 		wantInBase bool
+ 		hubFile    string
++		// content is the failing file's bytes; empty keeps unparseable.
++		content string
++		// wantErr are substrings the message must hold.
++		wantErr []string
++		// worktreeFile is written as the module's file in the base dir beside a content file at the board dir.
++		worktreeFile string
++		// burlerFile is written as the board's burler.yaml.
++		burlerFile string
+ 	}{
+ 		{
+ 			name: "ReconcileAll on an unparseable per-worktree file",
+@@ -1547,6 +1690,61 @@ func TestReconcile_FailureNamesItsFile(t *testing.T) {
+ 			wantInBase: true,
+ 			hubFile:    "readme: README.md\n",
+ 		},
++		{
++			name: "ReconcileAll standalone on an unknown lens_set names its own file",
++			run: func(baseDir, boardDir string) error {
++				_, err := ReconcileAll(baseDir, "", Options{})
++				return err
++			},
++			module:     "lenses",
++			wantInBase: true,
++			content:    unknownLensSet,
++			wantErr:    []string{"names no shipped layer"},
++		},
++		{
++			name: "ReconcileAll in a hub on a worktree file under an unknown lens_set names the board file",
++			run: func(baseDir, boardDir string) error {
++				_, err := ReconcileAll(baseDir, boardDir, Options{})
++				return err
++			},
++			module:       "lenses",
++			content:      unknownLensSet,
++			worktreeFile: "fans:\n  mine:\n    - generic\n",
++			wantErr:      []string{"names no shipped layer"},
++		},
++		{
++			name: "ReconcileHubWideAt on a hub file holding an unknown lens_set names the hub file",
++			run: func(baseDir, boardDir string) error {
++				_, err := ReconcileHubWideAt(boardDir, "", HubWideOptions{})
++				return err
++			},
++			module:  "lenses",
++			content: unknownLensSet,
++			wantErr: []string{"names no shipped layer"},
++		},
++		{
++			name: "ReconcileHubWideAt seeding from a prime copy under an unknown lens_set names the prime's copy",
++			run: func(baseDir, boardDir string) error {
++				_, err := ReconcileHubWideAt(boardDir, baseDir, HubWideOptions{SeedDefaults: true})
++				return err
++			},
++			module:     "lenses",
++			wantInBase: true,
++			content:    unknownLensSet,
++			wantErr:    []string{"names no shipped layer", "delete the lens_set line from"},
++		},
++		{
++			name: "a key move seeding the board lenses.yaml from a prime copy under an unknown lens_set names the prime's copy",
++			run: func(baseDir, boardDir string) error {
++				_, err := ReconcileHubWideAt(boardDir, baseDir, HubWideOptions{SeedDefaults: true})
++				return err
++			},
++			module:     "lenses",
++			wantInBase: true,
++			content:    unknownLensSet,
++			burlerFile: "fans:\n  theirs:\n    - generic\n",
++			wantErr:    []string{"names no shipped layer", "delete the lens_set line from"},
++		},
+ 	}
+ 	for _, tt := range tests {
+ 		t.Run(tt.name, func(t *testing.T) {
+@@ -1556,8 +1754,16 @@ func TestReconcile_FailureNamesItsFile(t *testing.T) {
+ 			if tt.wantInBase {
+ 				fileDir = baseDir
+ 			}
+-			writeModuleFile(t, fileDir, tt.module, unparseable)
++			content := tt.content
++			if content == "" {
++				content = unparseable
++			}
++			writeModuleFile(t, fileDir, tt.module, content)
+ 			writeModuleFile(t, boardDir, tt.module, tt.hubFile)
++			if tt.worktreeFile != "" {
++				writeModuleFile(t, baseDir, tt.module, tt.worktreeFile)
++			}
++			writeModuleFile(t, boardDir, "burler", tt.burlerFile)
+ 
+ 			err := tt.run(baseDir, boardDir)
+ 
+@@ -1572,6 +1778,60 @@ func TestReconcile_FailureNamesItsFile(t *testing.T) {
+ 			if !strings.HasPrefix(err.Error(), wantPath+": ") {
+ 				t.Errorf("message = %q, want it to start with %q", err.Error(), wantPath+": ")
+ 			}
++			for _, want := range tt.wantErr {
++				if !strings.Contains(err.Error(), want) {
++					t.Errorf("message = %q, want it to contain %q", err.Error(), want)
++				}
++			}
++		})
++	}
++}
++
++// TestPrimeSeedError pins that an invalid-config seed failure names the prime's copy, that the extra "delete the selector line" step is added only for a module that has an overlay selector, and that any other failure is returned unchanged.
++func TestPrimeSeedError(t *testing.T) {
++	t.Parallel()
++	invalid := configengine.MarkInvalid(errors.New("names no shipped layer"))
++	other := errors.New("disk full")
++	tests := []struct {
++		name   string
++		module string
++		err    error
++		// wantFileError says the result is a *FileError naming the prime's copy; otherwise it is err itself.
++		wantFileError bool
++		wantDelete    bool
++	}{
++		{"InvalidWithSelector", "lenses", invalid, true, true},
++		{"InvalidWithoutSelector", "batcher", invalid, true, false},
++		{"OtherFailureWithSelector", "lenses", other, false, false},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			module, ok := configreg.Lookup(tt.module)
++			if !ok {
++				t.Fatalf("Lookup(%q) found no module", tt.module)
++			}
++			primeDir := t.TempDir()
++
++			got := primeSeedError(module, primeDir, tt.err)
++
++			if !tt.wantFileError {
++				if got != tt.err {
++					t.Errorf("primeSeedError() = %v; want the error unchanged", got)
++				}
++				return
++			}
++			var fileErr *FileError
++			wantPath := configengine.ConfigFile(primeDir, tt.module)
++			if !errors.As(got, &fileErr) || fileErr.Module != tt.module || fileErr.Path != wantPath {
++				t.Fatalf("primeSeedError() = %v; want a *FileError for module %q at %q", got, tt.module, wantPath)
++			}
++			if !errors.Is(got, configengine.ErrInvalid) {
++				t.Errorf("primeSeedError() = %v; want it to keep ErrInvalid", got)
++			}
++			if hasDelete := strings.Contains(got.Error(), "also delete"); hasDelete != tt.wantDelete {
++				t.Errorf("primeSeedError() = %q; delete step present = %v, want %v", got, hasDelete, tt.wantDelete)
++			}
+ 		})
+ 	}
+ }
+@@ -1584,12 +1844,12 @@ func TestReconcile_MovesKeysAcrossModules(t *testing.T) {
+ 	const templateBinary = "${env:LYX_SHUTTLE_CLAUDE:-}"
+ 	const tunedGeneric = "Tuned for the hub."
+ 	const formerRoles = "prompt_cache_ttl_roles:\n  driver: 1h\n  webster: 1h\n"
+-	burlerToday := lensesFixture(t, func(cfg *lenses.Config) {
++	burlerToday := burlerFixture(t, func(cfg *lenses.Config) {
+ 		delete(cfg.Lenses, "security")
+ 		delete(cfg.Fans, "full")
+ 		cfg.Lenses["generic"] = tunedGeneric + "\n"
+ 	})
+-	burlerOldTemplate := lensesFixture(t, func(cfg *lenses.Config) {
++	burlerOldTemplate := burlerFixture(t, func(cfg *lenses.Config) {
+ 		cfg.Fans["twill-discussion"] = cfg.Fans["twill-discussion"][:6]
+ 	})
+ 	lensesEqualTemplate := lensesFixture(t, func(cfg *lenses.Config) {})
+@@ -1598,6 +1858,7 @@ func TestReconcile_MovesKeysAcrossModules(t *testing.T) {
+ 	})
+ 	const sparseFans = "fans:\n  mine:\n    - generic\n"
+ 	const burlerFans = "fans:\n  theirs:\n    - generic\n"
++	csharpConcurrency := loadLensesWith(t, "lens_set: csharp\n").Lenses["concurrency"]
+ 	keptLenses := []string{"burler.fans dropped, lenses.fans kept", "burler.lenses dropped, lenses.lenses kept"}
+ 	movedLenses := []string{"burler.fans -> lenses.fans", "burler.lenses -> lenses.lenses"}
+ 	tests := []struct {
+@@ -1623,6 +1884,8 @@ func TestReconcile_MovesKeysAcrossModules(t *testing.T) {
+ 		added []string
+ 		// noAdded lists modules none of whose results carries an Added line.
+ 		noAdded []string
++		// stripped lists entries some result's Stripped must hold; nil skips the check.
++		stripped []string
+ 		// loadContains is what claude's resolved base+worktree stack must hold after the run.
+ 		loadContains string
+ 		// checkLoadRefuses is the file name claude's loader must refuse naming after the run.
+@@ -1799,6 +2062,18 @@ func TestReconcile_MovesKeysAcrossModules(t *testing.T) {
+ 			moved:    []string{"burler.lenses -> lenses.lenses"},
+ 			kept:     []string{"burler.fans dropped, lenses.fans kept"},
+ 		},
++		{
++			name: "moved lenses are judged under the lens_set of the lenses.yaml the move creates from the prime's seed",
++			files: map[string]string{
++				"prime:lenses": "lens_set: csharp\n",
++				"board:burler": lensSetFixture(t, "", map[string]string{"concurrency": csharpConcurrency, "hub-lens": "Hub emphasis.\n"}),
++			},
++			call:     "board",
++			contains: map[string][]string{"board:lenses": {"lens_set: csharp", "hub-lens:"}},
++			excludes: map[string][]string{"board:lenses": {"concurrency:"}},
++			stripped: []string{"lenses.concurrency"},
++			moved:    []string{"burler.lenses -> lenses.lenses"},
++		},
+ 	}
+ 	for _, tt := range tests {
+ 		t.Run(tt.name, func(t *testing.T) {
+@@ -1908,6 +2183,12 @@ func TestReconcile_MovesKeysAcrossModules(t *testing.T) {
+ 					t.Errorf("Added lines = %q; want one to be %q", addedLines, want)
+ 				}
+ 			}
++			strippedLines := lines(results, func(r Result) []string { return r.Stripped })
++			for _, want := range tt.stripped {
++				if !slices.Contains(strippedLines, want) {
++					t.Errorf("Stripped lines = %q; want one to be %q", strippedLines, want)
++				}
++			}
+ 			for _, module := range tt.noAdded {
+ 				for _, result := range results {
+ 					if result.Module == module && len(result.Added) > 0 {
+diff --git a/internal/configsync/movekeys.go b/internal/configsync/movekeys.go
+index 6bb45aa3e..0edcbf41f 100644
+--- a/internal/configsync/movekeys.go
++++ b/internal/configsync/movekeys.go
+@@ -3,6 +3,7 @@
+ package configsync
+ 
+ import (
++	"errors"
+ 	"fmt"
+ 	"os"
+ 	"path/filepath"
+@@ -118,6 +119,9 @@ func moveKeys(dir, seedDir string, layer configengine.Layer, base, apply bool) (
+ 				if prime := primeConfig(seedDir, module); prime != nil {
+ 					_, markerErr := os.Stat(configengine.SparseMarker(seedDir))
+ 					if data, err = sparseSeed(registered, prime, os.IsNotExist(markerErr)); err != nil {
++						if errors.Is(err, configengine.ErrInvalid) {
++							return nil, primeSeedError(registered, seedDir, err)
++						}
+ 						return nil, &FileError{Module: module, Path: file.path, Err: fmt.Errorf("seed %s from the prime: %w", module, err)}
+ 					}
+ 				}
+diff --git a/internal/lenses/config.go b/internal/lenses/config.go
+index 16bf8ca08..5522215b1 100644
+--- a/internal/lenses/config.go
++++ b/internal/lenses/config.go
+@@ -4,9 +4,10 @@ package lenses
+ 
+ import (
+ 	"bytes"
+-	_ "embed"
++	"embed"
+ 	"errors"
+ 	"fmt"
++	"slices"
+ 	"sort"
+ 	"strings"
+ 
+@@ -17,15 +18,45 @@ import (
+ //go:embed template.yaml
+ var configTemplate string
+ 
++// lensSetFiles holds the shipped language layers, one document per file under sets/.
++//
++//go:embed sets/*.yaml
++var lensSetFiles embed.FS
++
++// lensSets returns each shipped language layer's bytes keyed by its file's base name without .yaml.
++// It panics on a read error of the embedded tree, which cannot fail for an embedded path.
++func lensSets() map[string][]byte {
++	entries, err := lensSetFiles.ReadDir("sets")
++	if err != nil {
++		panic(fmt.Sprintf("lenses: read the embedded sets directory: %v", err))
++	}
++	sets := make(map[string][]byte, len(entries))
++	for _, entry := range entries {
++		data, err := lensSetFiles.ReadFile("sets/" + entry.Name())
++		if err != nil {
++			panic(fmt.Sprintf("lenses: read the embedded layer %s: %v", entry.Name(), err))
++		}
++		sets[strings.TrimSuffix(entry.Name(), ".yaml")] = data
++	}
++	return sets
++}
++
+ // MaxFanLenses caps the number of lenses a single fan may resolve to, the upper bound on how many parallel fork reviewers one cluster round spawns.
+ const MaxFanLenses = 16
+ 
+ // Config is the decode shape of lenses.yaml.
+ type Config struct {
++	// LensSet names the embedded language layer whose lenses and fans replace or add base entries by name; empty picks none.
++	LensSet string `yaml:"lens_set"`
+ 	// Lenses maps a lens name to its review prose.
+ 	Lenses map[string]string `yaml:"lenses"`
+ 	// Fans maps a fan name to an ordered list of lens names.
+ 	Fans map[string][]string `yaml:"fans"`
++	// Remove lists lens names Load drops from Lenses and from every fan after resolution.
++	Remove []string `yaml:"remove"`
++	// EmptiedFans maps each fan the removal emptied to the removed lens names it held, in its order.
++	// It is nil when no fan was emptied, and never decoded.
++	EmptiedFans map[string][]string `yaml:"-"`
+ }
+ 
+ // Lens is one resolved fan entry: the lens name and the review prose it contributes to a fork's prompt.
+@@ -45,22 +76,29 @@ func ConfigPerNameMaps() []string {
+ }
+ 
+ // ConfigSpec returns lenses's layered-load spec.
+-// Both keys are per-name maps and guard keys: a lens's prose and a fan's lens set are what every review fork is given, so no local override may hold them.
++// Both maps are per-name maps and guard keys: a lens's prose and a fan's lens set are what every review fork is given, so no local override may hold them.
++// lens_set is a guard key too, since the language layer it picks is the prose every review fork is given.
++// remove is a guard key as well: it lets a hub take a review lens out of every fan.
+ // The module is per-worktree, not hub-wide.
++// The language layers are the template overlay lens_set picks, read from the base layer only.
+ func ConfigSpec() configengine.Spec {
+ 	return configengine.Spec{
+ 		Name:        "lenses",
+ 		Template:    []byte(ConfigTemplate()),
+ 		PerNameMaps: ConfigPerNameMaps(),
++		Overlay:     configengine.Overlay{Selector: "lens_set", Documents: lensSets()},
+ 		Categories: map[string]configengine.Category{
+-			"lenses": configengine.CategoryGuard,
+-			"fans":   configengine.CategoryGuard,
++			"lens_set": configengine.CategoryGuard,
++			"lenses":   configengine.CategoryGuard,
++			"fans":     configengine.CategoryGuard,
++			"remove":   configengine.CategoryGuard,
+ 		},
+ 	}
+ }
+ 
+ // Load reads lenses.yaml through the layer stack under dirs and decodes the resolved document strictly.
+ // An absent base file resolves the template, and a lens or fan the stack lacks resolves to its template value, so the returned Config holds every template entry.
++// The names in remove are then dropped from the lenses and every fan, and a name matching no lens is skipped with a warning.
+ // Every error carries the "lenses: " prefix.
+ func Load(dirs configengine.Dirs) (Config, error) {
+ 	resolved, err := configengine.LoadOrTemplate(dirs, ConfigSpec())
+@@ -73,13 +111,69 @@ func Load(dirs configengine.Dirs) (Config, error) {
+ 	if err := decoder.Decode(&cfg); err != nil {
+ 		return Config{}, configengine.MarkInvalid(fmt.Errorf("lenses: parse the resolved config: %w", err))
+ 	}
++	if skipped := applyRemove(&cfg); len(skipped) > 0 {
++		if err := configengine.WarnSkippedEntries(dirs, ConfigSpec(), "remove", skipped); err != nil {
++			return Config{}, fmt.Errorf("lenses: %w", err)
++		}
++	}
+ 	return cfg, nil
+ }
+ 
++// applyRemove deletes each cfg.Remove name from cfg.Lenses and every occurrence of it from every fan.
++// A fan that had entries and is left empty moves from cfg.Fans into cfg.EmptiedFans, which is allocated only then.
++// It returns the Remove entries that named no lens, in list order.
++func applyRemove(cfg *Config) []string {
++	var skipped []string
++	removed := map[string]bool{}
++	for _, name := range cfg.Remove {
++		if removed[name] {
++			continue
++		}
++		if _, defined := cfg.Lenses[name]; !defined {
++			if !slices.Contains(skipped, name) {
++				skipped = append(skipped, name)
++			}
++			continue
++		}
++		delete(cfg.Lenses, name)
++		removed[name] = true
++	}
++	if len(removed) == 0 {
++		return skipped
++	}
++
++	for fanName, entries := range cfg.Fans {
++		kept := make([]string, 0, len(entries))
++		var dropped []string
++		for _, lensName := range entries {
++			if removed[lensName] {
++				dropped = append(dropped, lensName)
++				continue
++			}
++			kept = append(kept, lensName)
++		}
++		switch {
++		case len(dropped) == 0:
++		case len(kept) == 0:
++			if cfg.EmptiedFans == nil {
++				cfg.EmptiedFans = map[string][]string{}
++			}
++			cfg.EmptiedFans[fanName] = dropped
++			delete(cfg.Fans, fanName)
++		default:
++			cfg.Fans[fanName] = kept
++		}
++	}
++	return skipped
++}
++
+ // ResolveFan resolves a fan name into its ordered lenses, preserving order and repeats.
+-// It refuses an unknown fan, an empty fan, a fan longer than MaxFanLenses and a fan naming an undefined lens, each naming the fan and carrying the "lenses: " prefix.
++// It refuses a fan the removal emptied, an unknown fan, an empty fan, a fan longer than MaxFanLenses and a fan naming an undefined lens, each naming the fan and carrying the "lenses: " prefix.
+ // cfg is read alone, so a Config that did not come from Load resolves only the names it holds.
+ func ResolveFan(cfg Config, name string) ([]Lens, error) {
++	if removedNames, emptied := cfg.EmptiedFans[name]; emptied {
++		return nil, fmt.Errorf("lenses: fan %q is empty after remove dropped %s; way forward: drop a name from remove, or point the loom or darn fan key at another fan or \"\" for a later run", name, strings.Join(removedNames, ", "))
++	}
+ 	entries, ok := cfg.Fans[name]
+ 	if !ok {
+ 		return nil, fmt.Errorf("lenses: unknown fan %q (known fans: %s)", name, strings.Join(fanNames(cfg.Fans), ", "))
+diff --git a/internal/lenses/config_test.go b/internal/lenses/config_test.go
+index 1fb885db1..177786a73 100644
+--- a/internal/lenses/config_test.go
++++ b/internal/lenses/config_test.go
+@@ -12,6 +12,8 @@ import (
+ 	"strings"
+ 	"testing"
+ 
++	"gopkg.in/yaml.v3"
++
+ 	"github.com/Knatte18/loomyard/internal/configengine"
+ 	"github.com/Knatte18/loomyard/internal/testkit/logcapture"
+ )
+@@ -121,6 +123,71 @@ func TestLoad(t *testing.T) {
+ 		}
+ 	})
+ 
++	t.Run("remove drops a layer lens from the lenses, every fan and the hub's own fan", func(t *testing.T) {
++		boardDir, anchor := t.TempDir(), t.TempDir()
++		writeLensesYAML(t, boardDir, "lens_set: csharp\nremove: [numerics, numerics]\nfans:\n  mine: [numerics, generic]\n")
++
++		cfg, err := Load(configengine.Dirs{Anchor: anchor, Board: boardDir})
++		if err != nil {
++			t.Fatalf("Load() returned unexpected error: %v", err)
++		}
++		if _, defined := cfg.Lenses["numerics"]; defined {
++			t.Errorf("Load().Lenses holds numerics; want it removed")
++		}
++		for _, fanName := range []string{"review-code", "full"} {
++			if slices.Contains(cfg.Fans[fanName], "numerics") {
++				t.Errorf("Load().Fans[%s] = %v; want no numerics", fanName, cfg.Fans[fanName])
++			}
++		}
++		if want := []string{"generic"}; !slices.Equal(cfg.Fans["mine"], want) {
++			t.Errorf("Load().Fans[mine] = %v; want %v", cfg.Fans["mine"], want)
++		}
++	})
++
++	t.Run("a remove name matching no lens loads and warns once per process, naming a repeated name once", func(t *testing.T) {
++		anchor := t.TempDir()
++		writeLensesYAML(t, anchor, "remove: [no-such-lens, no-such-lens]\n")
++		logs := logcapture.CaptureVerbose(t)
++
++		for range 2 {
++			if _, err := Load(configengine.Dirs{Anchor: anchor}); err != nil {
++				t.Fatalf("Load() returned unexpected error: %v", err)
++			}
++		}
++		warnings := 0
++		for _, line := range strings.Split(logs.String(), "\n") {
++			if strings.Contains(line, "no-such-lens") && strings.Contains(line, configengine.ConfigFile(anchor, "lenses")) {
++				warnings++
++				if strings.Contains(line, "no-such-lens,no-such-lens") {
++					t.Errorf("warning = %q; want the repeated name listed once", line)
++				}
++			}
++		}
++		if warnings != 1 {
++			t.Errorf("Load() twice logged %d warnings naming no-such-lens and the file; want 1; log: %s", warnings, logs.String())
++		}
++	})
++
++	t.Run("the skipped-name warning names the highest layer file holding remove", func(t *testing.T) {
++		boardDir, anchor := t.TempDir(), t.TempDir()
++		writeLensesYAML(t, boardDir, "remove: [other-missing]\n")
++		writeLensesYAML(t, anchor, "lenses:\n  mine: prose\n")
++		logs := logcapture.CaptureVerbose(t)
++
++		if _, err := Load(configengine.Dirs{Anchor: anchor, Board: boardDir}); err != nil {
++			t.Fatalf("Load() returned unexpected error: %v", err)
++		}
++		var warning string
++		for _, line := range strings.Split(logs.String(), "\n") {
++			if strings.Contains(line, "other-missing") {
++				warning = line
++			}
++		}
++		if !strings.Contains(warning, configengine.ConfigFile(boardDir, "lenses")) || !strings.Contains(warning, "layer=default") || strings.Contains(warning, configengine.ConfigFile(anchor, "lenses")) {
++			t.Errorf("warning = %q; want it to name the board file and layer=default, never the worktree file", warning)
++		}
++	})
++
+ 	t.Run("a lens prose holding a bare dollar sign loads verbatim", func(t *testing.T) {
+ 		anchor := t.TempDir()
+ 		writeLensesYAML(t, anchor, "lenses:\n  cost: |\n    Check the $5 fee.\n")
+@@ -148,7 +215,9 @@ func TestLoad(t *testing.T) {
+ // TestConfigTemplate_DecodesAndIsSelfConsistent proves the embedded seed template is itself valid lenses.yaml content -- a load over dirs holding no lenses.yaml resolves it, so every template fan resolves -- and that its internal cross-references and lengths hold: every fan entry names a defined lens, and no lens carries hard-exclusion phrasing.
+ // The spike (docs/research/session-fork-spike.md, Q2) found "ignore everything else" lenses measurably suppressed cross-category coverage, so every lens is emphasis-only by design.
+ //
+-//testtiming:keep pins the seeded lens and fan counts, the defined-lens cross-references and the no-"ignore " phrasing, which the ResolveFan test covering its blocks does not assert
++// It extends the same checks to every shipped language layer: each loads under its own lens_set, its lenses and fans replace or extend the base's by name, and a layer fan keeps the base fan's entries first.
++//
++//testtiming:keep pins the seeded lens and fan counts, the defined-lens cross-references and the no-"ignore " phrasing, which the ResolveFan test covering its blocks does not assert, and the per-layer load and superset checks
+ func TestConfigTemplate_DecodesAndIsSelfConsistent(t *testing.T) {
+ 	t.Parallel()
+ 
+@@ -243,6 +312,115 @@ func TestConfigTemplate_DecodesAndIsSelfConsistent(t *testing.T) {
+ 			t.Errorf("lens %q text contains hard-exclusion phrasing (\"ignore \"): %q", name, text)
+ 		}
+ 	}
++
++	// The exemption from the emphasis line is computed from the base fans only, so a lens a layer adds to a review fan still ends with it.
++	baseProcedureLenses := map[string]bool{}
++	for fanName, entries := range cfg.Fans {
++		if strings.HasPrefix(fanName, "review-") || strings.HasPrefix(fanName, "fix-") {
++			for _, name := range entries {
++				baseProcedureLenses[name] = true
++			}
++		}
++	}
++	for layerName, document := range lensSets() {
++		t.Run("layer "+layerName, func(t *testing.T) {
++			var raw map[string]any
++			if err := yaml.Unmarshal(document, &raw); err != nil {
++				t.Fatalf("decode layer %s: %v", layerName, err)
++			}
++			for key := range raw {
++				if key != "lenses" && key != "fans" {
++					t.Errorf("layer %s holds top-level key %q; want only lenses and fans", layerName, key)
++				}
++			}
++			var layer Config
++			if err := yaml.Unmarshal(document, &layer); err != nil {
++				t.Fatalf("decode layer %s: %v", layerName, err)
++			}
++
++			anchor := t.TempDir()
++			writeLensesYAML(t, anchor, "lens_set: "+layerName+"\n")
++			dirs := configengine.Dirs{Anchor: anchor}
++			if err := CheckLoad(dirs); err != nil {
++				t.Fatalf("CheckLoad(lens_set: %s) = %v; want nil", layerName, err)
++			}
++			loaded, err := Load(dirs)
++			if err != nil {
++				t.Fatalf("Load(lens_set: %s): %v", layerName, err)
++			}
++
++			for name, text := range loaded.Lenses {
++				want, defined := layer.Lenses[name]
++				if !defined {
++					want = cfg.Lenses[name]
++				}
++				if text != want {
++					t.Errorf("lens %q under lens_set %s = %q; want %q", name, layerName, text, want)
++				}
++				if strings.Contains(text, "ignore ") {
++					t.Errorf("lens %q under lens_set %s contains hard-exclusion phrasing (\"ignore \")", name, layerName)
++				}
++			}
++			for name, entries := range loaded.Fans {
++				want, defined := layer.Fans[name]
++				if !defined {
++					want = cfg.Fans[name]
++				}
++				if !slices.Equal(entries, want) {
++					t.Errorf("fan %q under lens_set %s = %v; want %v", name, layerName, entries, want)
++				}
++			}
++			for name, text := range layer.Lenses {
++				if name != "generic" && !baseProcedureLenses[name] && !strings.HasSuffix(strings.Join(strings.Fields(text), " "), emphasisLine) {
++					t.Errorf("layer %s lens %q does not end with the emphasis line", layerName, name)
++				}
++			}
++			for name, entries := range layer.Fans {
++				baseEntries, inBase := cfg.Fans[name]
++				if !inBase {
++					continue
++				}
++				if len(entries) < len(baseEntries) || !slices.Equal(entries[:len(baseEntries)], baseEntries) {
++					t.Errorf("layer %s fan %q = %v; want it to start with the base fan %v", layerName, name, entries, baseEntries)
++					continue
++				}
++				for _, extra := range entries[len(baseEntries):] {
++					if slices.Contains(baseEntries, extra) {
++						t.Errorf("layer %s fan %q adds %q, which the base fan already holds", layerName, name, extra)
++					}
++				}
++			}
++			if layerName == "csharp" {
++				if _, ok := loaded.Lenses["numerics"]; !ok {
++					t.Errorf("lens numerics is undefined under lens_set csharp")
++				}
++				for _, fanName := range []string{"review-code", "full"} {
++					resolved, err := ResolveFan(loaded, fanName)
++					if err != nil {
++						t.Fatalf("ResolveFan(%s) under lens_set csharp: %v", fanName, err)
++					}
++					if last := resolved[len(resolved)-1].Name; last != "numerics" {
++						t.Errorf("ResolveFan(%s) under lens_set csharp ends with %q; want numerics", fanName, last)
++					}
++				}
++			}
++		})
++	}
++
++	var goConfig Config
++	if err := yaml.Unmarshal(lensSets()["go"], &goConfig); err != nil {
++		t.Fatalf("decode layer go: %v", err)
++	}
++	for _, name := range []string{"error-handling", "test-gaps", "performance", "api-design", "concurrency"} {
++		if cfg.Lenses[name] == goConfig.Lenses[name] {
++			t.Errorf("base lens %q equals the go layer's prose; want the base language-neutral", name)
++		}
++		for _, word := range []string{"goroutine", "panic"} {
++			if strings.Contains(cfg.Lenses[name], word) {
++				t.Errorf("base lens %q names %q; want no language named", name, word)
++			}
++		}
++	}
+ }
+ 
+ func TestResolveFan(t *testing.T) {
+@@ -360,6 +538,33 @@ func TestCheckLoad(t *testing.T) {
+ 		}
+ 	})
+ 
++	t.Run("a remove emptying a fan passes the check and the fan is refused at resolution", func(t *testing.T) {
++		t.Parallel()
++		anchor := t.TempDir()
++		writeLensesYAML(t, anchor, "remove: [code-correctness, code-affected-set, code-tests, code-pattern-fit]\n")
++		dirs := configengine.Dirs{Anchor: anchor}
++
++		if err := CheckLoad(dirs); err != nil {
++			t.Errorf("CheckLoad() = %v; want nil", err)
++		}
++		cfg, err := Load(dirs)
++		if err != nil {
++			t.Fatalf("Load() returned unexpected error: %v", err)
++		}
++		if _, held := cfg.Fans["review-code"]; held {
++			t.Errorf("Load().Fans holds review-code; want it moved to EmptiedFans")
++		}
++		_, err = ResolveFan(cfg, "review-code")
++		if err == nil {
++			t.Fatal("ResolveFan(review-code) = nil error; want the emptied-fan refusal")
++		}
++		for _, want := range []string{"remove", "code-correctness", "way forward"} {
++			if !strings.Contains(err.Error(), want) {
++				t.Errorf("ResolveFan(review-code) = %q; want it to contain %q", err, want)
++			}
++		}
++	})
++
+ 	t.Run("a malformed file returns the load's error alone", func(t *testing.T) {
+ 		t.Parallel()
+ 		anchor := t.TempDir()
+diff --git a/internal/lenses/doc.go b/internal/lenses/doc.go
+index 9a4d70318..0120584e0 100644
+--- a/internal/lenses/doc.go
++++ b/internal/lenses/doc.go
+@@ -7,28 +7,49 @@
+ //
+ // Both keys are per-name maps, so lenses.yaml holds only the lenses and fans the repo tuned or added, and a later template edit to any other name reaches the repo.
+ // Reconcile never copies a template lens or fan into the file,
+-// and it drops, reporting each, an entry whose prose or ordered fan list equals the template's current value, which leaves the loaded value unchanged.
++// and it drops, reporting each, an entry whose prose or ordered fan list equals the effective template's current value, which leaves the loaded value unchanged.
+ // Every other entry is kept as written, and a lens or fan the template lacks is kept and reported, never pruned.
+ // A base-layer `--set` leaves template-equal entries out the same way.
+-// A template lens or fan cannot be removed: a deleted one resolves to the template's value at the next load.
+ // A fan is turned off at the loom or darn fan key entry that names it, by pointing the entry at another fan or setting it to "".
+ //
++// A file is judged against, and a missing name filled from, the effective template: the base with the picked language layer laid over it.
++//
++// # Language layers
++//
++// The embedded files under `sets/` are language layers, each a document holding a `lenses` and a `fans` mapping, named by its file's base name.
++// The key `lens_set` in the base file picks one by that name, and `""` picks none.
++// A layer lens or fan replaces the base entry of the same name whole or adds one the base lacks, and a name the repo's own file defines still beats the layer.
++// A layer fan holds the base fan's entries first, in base order, so a layer only appends.
++// Only the base file may hold `lens_set`: the hub file in a hub, set with `lyx config lenses --layer default --set lens_set=<name>` from the hub's prime worktree.
++// A worktree file holding another value than the base's, and a name no layer carries, are refused naming that command.
++// lyx picks no layer itself.
++//
++// # Remove
++//
++// The key `remove` lists lens names.
++// After the strict decode, Load deletes each listed name from the lenses and every occurrence of it from every fan, the hub's own fans included.
++// A fan that had entries and is left empty leaves the fans and is recorded in `Config.EmptiedFans` with the removed names it held.
++// A name matching no lens is skipped with one Warn naming the highest layer file holding `remove`, logged once per file and list in a process, so a lens a later template edit or a layer switch takes away is harmless.
++// A worktree file's `remove` list replaces the hub's whole, as any list does when layers stack.
++//
+ // # Guard keys
+ //
+-// `lenses` and `fans` are guard keys, since a lens's prose and a fan's lens set are what every review fork is given.
+-// No local override layer and no run setting holds them.
++// `lenses`, `fans`, `lens_set` and `remove` are guard keys, since a lens's prose, a fan's lens set, the layer that supplies them and the lenses taken out of every fan are what every review fork is given.
++// No local override layer and no run setting holds them, and configengine reads `lens_set` from the base layer only.
++// Only a tracked base or worktree file can hold `remove`, and a shortened fan still runs its remaining lenses.
+ // The module is per-worktree, not hub-wide.
+ //
+ // # Load
+ //
+ // Load reads the layer stack through `configengine.LoadOrTemplate` and decodes the resolved document strictly, each error prefixed `lenses: `.
+-// An absent base file resolves the template, and a lens or fan the stack lacks resolves to its template value through the load's fill.
++// An absent base file resolves the template, and a lens or fan the stack lacks resolves to its effective template value through the load's fill.
+ // A lens prose holding `${env:NAME}` expands at load, and the load fails when `NAME` is unset and has no default.
+ //
+ // # Fan resolution
+ //
+ // ResolveFan reads a loaded Config alone and returns a fan's lenses in order, repeats kept.
+-// It refuses an unknown fan, an empty fan, a fan longer than MaxFanLenses and a fan naming an undefined lens.
++// It refuses a fan the removal emptied, naming the removed lenses and the way forward, an unknown fan, an empty fan, a fan longer than MaxFanLenses and a fan naming an undefined lens.
++// CheckLoad resolves only the fans a load still holds, so a `remove` that empties a fan passes it, and the fan is refused when a fan key names it.
+ // CheckLoad runs Load and then ResolveFan over every fan in name order, and joins every failure in that order.
+ // A lenses.yaml with several failing fans therefore takes every fix in one `--set` or one `--edit`, since a partial fix changes the joined failure and is rolled back.
+ //
+diff --git a/internal/lenses/sets/csharp.yaml b/internal/lenses/sets/csharp.yaml
+new file mode 100644
+index 000000000..f6eae9dca
+--- /dev/null
++++ b/internal/lenses/sets/csharp.yaml
+@@ -0,0 +1,64 @@
++# csharp.yaml — the C# language layer of lenses.yaml, picked with lens_set: csharp.
++# Its lenses replace the base's by name and its fans replace the base's by name.
++
++lenses:
++  error-handling: |
++    Focus on how failures are handled in C#: nullable reference types
++    suppressed with ! or left unchecked where null can arrive, IDisposable
++    values created without using or a matching Dispose on every path, swallowed
++    or over-broad catch blocks, exceptions rethrown with throw ex instead of
++    throw, and failure paths that leave state inconsistent. Defer to the
++    repository's own rules on argument guards and exception handling: where
++    they forbid guards or try/catch around the repository's own code, ask for
++    none. Report anything else you notice too — emphasis, never exclusion.
++  test-gaps: |
++    Focus on test coverage in the xUnit or NUnit style: behavior with no test
++    at all, missing edge and negative cases in an otherwise-tested member, a
++    [Theory] or [TestCase] data set missing an obvious case, async code tested
++    without awaiting the result, and assertions weak enough to pass even if the
++    code under test regressed. Report anything else you notice too — emphasis,
++    never exclusion.
++  performance: |
++    Focus on performance: allocations on hot paths such as boxing, closures and
++    string concatenation in loops, LINQ chains that enumerate more than once or
++    materialize needlessly, quadratic work over collections that can grow,
++    blocking on a Task where await is available, and a hand-rolled path where
++    the base class library has a direct one. Report anything else you notice
++    too — emphasis, never exclusion.
++  api-design: |
++    Focus on the public surface: naming and signature consistency with the rest
++    of the assembly, XML documentation on public members, binary and source
++    compatibility of a changed public signature across assemblies, and whether
++    parameter and return shapes make the common call easy and misuse hard.
++    Report anything else you notice too — emphasis, never exclusion.
++  concurrency: |
++    Focus on concurrency: shared state touched without a lock or a thread-safe
++    type, races between Tasks, async void and un-awaited Tasks, blocking on
++    .Result or .Wait() that can deadlock a synchronization context, lock
++    ordering, and a CancellationToken accepted but not honored. Report anything
++    else you notice too — emphasis, never exclusion.
++  numerics: |
++    Focus on numerical stability and units: floating-point values compared with
++    ==, overflow and silent loss of precision in casts and arithmetic, units
++    mixed or converted inconsistently, and physical values accepted outside
++    their possible range. Defer to the repository's own rules on guards and
++    exception handling: where they forbid guards, ask for none. Report anything
++    else you notice too — emphasis, never exclusion.
++
++fans:
++  review-code:
++    - code-correctness
++    - code-affected-set
++    - code-tests
++    - code-pattern-fit
++    - numerics
++  full:
++    - correctness
++    - error-handling
++    - test-gaps
++    - security
++    - performance
++    - api-design
++    - concurrency
++    - docs-consistency
++    - numerics
+diff --git a/internal/lenses/sets/go.yaml b/internal/lenses/sets/go.yaml
+new file mode 100644
+index 000000000..1fbfc52bc
+--- /dev/null
++++ b/internal/lenses/sets/go.yaml
+@@ -0,0 +1,31 @@
++lenses:
++  error-handling: |
++    Focus on how failures are handled: swallowed or discarded errors, wrong or
++    missing error wrapping/context, return values ignored where they carry a
++    failure signal, panics used where a returned error is more appropriate,
++    and failure paths that leave state inconsistent. Report anything else you
++    notice too — emphasis, never exclusion.
++  test-gaps: |
++    Focus on test coverage: behavior with no test at all, missing edge/negative
++    cases in an otherwise-tested function, table-driven tests missing an
++    obvious case their own table structure invites, and assertions weak enough
++    to pass even if the code under test regressed. Report anything else you
++    notice too — emphasis, never exclusion.
++  performance: |
++    Focus on performance: unnecessary allocations or copies in hot paths,
++    quadratic or worse patterns over data that can grow, blocking calls where a
++    non-blocking one is available, unbounded loops/memory/goroutines, and
++    inefficient use of the standard library where a direct alternative exists.
++    Report anything else you notice too — emphasis, never exclusion.
++  api-design: |
++    Focus on the public surface: naming and signature consistency with the rest
++    of the package, whether exported symbols are documented, backward
++    compatibility of any changed signature, and whether parameter/return
++    shapes make the common call easy and the misuse hard. Report anything else
++    you notice too — emphasis, never exclusion.
++  concurrency: |
++    Focus on concurrency: shared state touched without synchronization, races
++    between goroutines, goroutine or resource leaks on early return, deadlock
++    potential from lock ordering or blocking channel operations, and context
++    cancellation that is accepted but not actually honored. Report anything
++    else you notice too — emphasis, never exclusion.
+diff --git a/internal/lenses/sets/python.yaml b/internal/lenses/sets/python.yaml
+new file mode 100644
+index 000000000..94b33a344
+--- /dev/null
++++ b/internal/lenses/sets/python.yaml
+@@ -0,0 +1,36 @@
++# python.yaml — the Python language layer of lenses.yaml, picked with lens_set: python.
++# Its lenses replace the base's by name.
++
++lenses:
++  error-handling: |
++    Focus on how failures are handled in Python: bare or over-broad except
++    clauses, exceptions swallowed with pass, raise inside except without from,
++    a return value of None or a sentinel ignored where it carries a failure,
++    context managers missing around resources, and failure paths that leave
++    state inconsistent. Report anything else you notice too — emphasis, never
++    exclusion.
++  test-gaps: |
++    Focus on test coverage in the pytest style: behavior with no test at all,
++    missing edge and negative cases, a parametrize table missing an obvious
++    case, fixtures that leak state between tests, and assertions weak enough to
++    pass even if the code under test regressed. Report anything else you
++    notice too — emphasis, never exclusion.
++  performance: |
++    Focus on interpreter-level performance: loops that a comprehension, a
++    builtin or a library call does faster, repeated attribute or global lookups
++    in hot loops, quadratic work over growing lists such as membership tests on
++    a list, string building by repeated concatenation, and whole files or
++    result sets loaded where a generator streams. Report anything else you
++    notice too — emphasis, never exclusion.
++  api-design: |
++    Focus on the public API and typing: naming and signature consistency with
++    the rest of the module, docstrings and type hints on the public surface,
++    mutable default arguments, backward compatibility of a changed signature,
++    and whether parameter shapes make the common call easy and misuse hard.
++    Report anything else you notice too — emphasis, never exclusion.
++  concurrency: |
++    Focus on concurrency: shared state touched from threads without a lock,
++    races between threads, asyncio tasks created and never awaited, blocking
++    calls inside a coroutine, CPU-bound work that threads cannot speed up under
++    the GIL, and cancellation accepted but not honored. Report anything else
++    you notice too — emphasis, never exclusion.
+diff --git a/internal/lenses/template.yaml b/internal/lenses/template.yaml
+index 871a03e98..dbbfbe5f0 100644
+--- a/internal/lenses/template.yaml
++++ b/internal/lenses/template.yaml
+@@ -8,9 +8,15 @@
+ # and it drops an entry whose prose or ordered fan list equals the template's current value, reporting each drop, which leaves the loaded value unchanged.
+ # Any other entry is kept as written; a lens or fan the template lacks is kept and reported, never pruned.
+ #
+-# A template lens or fan cannot be removed: a deleted one resolves to the template's value at the next load.
+ # A fan is turned off at the loom or darn fan key entry that names it, by pointing the entry at another fan or setting it to "".
+ #
++# remove: lists lens names dropped after resolution from the lenses and from every fan; a fan left empty is dropped, and a name matching no lens is skipped with a warning.
++#
++# lens_set: names one embedded language layer under sets/ whose lenses and fans replace or add base entries by name; "" picks none.
++# The base names no language, and its rules lenses read the repository's own rules.
++# Only the base file may hold it: the hub file in a hub, set with "lyx config lenses --layer default --set lens_set=<name>" from the hub's prime worktree.
++# A name this file defines still beats the layer.
++#
+ # lenses: maps a lens name to emphasis-steering review prose for one fork of a
+ # cluster round. Add a repo-local lens by adding a block like this:
+ #
+@@ -34,6 +40,10 @@
+ # keeps full tool access and its inherited context regardless of which lens it
+ # carries.
+ 
++lens_set: ""
++
++remove: []
++
+ lenses:
+   generic: |
+     Review broadly with no single area of emphasis: read for correctness,
+@@ -48,17 +58,17 @@ lenses:
+     doesn't actually handle the way it looks like it does. Report anything
+     else you notice too — emphasis, never exclusion.
+   error-handling: |
+-    Focus on how failures are handled: swallowed or discarded errors, wrong or
+-    missing error wrapping/context, return values ignored where they carry a
+-    failure signal, panics used where a returned error is more appropriate,
++    Focus on how failures are handled: swallowed or discarded failures,
++    missing context on a propagated failure, a result that carries a failure
++    signal being ignored, a crash used where a reported failure fits better,
+     and failure paths that leave state inconsistent. Report anything else you
+     notice too — emphasis, never exclusion.
+   test-gaps: |
+-    Focus on test coverage: behavior with no test at all, missing edge/negative
+-    cases in an otherwise-tested function, table-driven tests missing an
+-    obvious case their own table structure invites, and assertions weak enough
+-    to pass even if the code under test regressed. Report anything else you
+-    notice too — emphasis, never exclusion.
++    Focus on test coverage: behavior with no test at all, missing edge and
++    negative cases in an otherwise-tested unit, a parameterized test missing
++    an obvious case its own table invites, and assertions weak enough to pass
++    even if the code under test regressed. Report anything else you notice
++    too — emphasis, never exclusion.
+   security: |
+     Focus on security-relevant issues: unchecked or unsanitized input, injection
+     surfaces (command, path, query), unsafe deserialization, secrets or
+@@ -66,26 +76,28 @@ lenses:
+     trusts data it should verify. Report anything else you notice too —
+     emphasis, never exclusion.
+   performance: |
+-    Focus on performance: unnecessary allocations or copies in hot paths,
+-    quadratic or worse patterns over data that can grow, blocking calls where a
+-    non-blocking one is available, unbounded loops/memory/goroutines, and
+-    inefficient use of the standard library where a direct alternative exists.
+-    Report anything else you notice too — emphasis, never exclusion.
++    Focus on performance: needless allocations or copies on hot paths,
++    quadratic or worse work over data that can grow, blocking calls where a
++    non-blocking one exists, unbounded loops, memory or concurrent tasks, and
++    a hand-rolled path where the platform's library has a direct one. Report
++    anything else you notice too — emphasis, never exclusion.
+   api-design: |
+-    Focus on the public surface: naming and signature consistency with the rest
+-    of the package, whether exported symbols are documented, backward
+-    compatibility of any changed signature, and whether parameter/return
+-    shapes make the common call easy and the misuse hard. Report anything else
+-    you notice too — emphasis, never exclusion.
++    Focus on the public surface: naming and signature consistency with the
++    rest of the code, whether the public surface is documented, backward
++    compatibility of any changed signature, and whether the shape of a call
++    makes the common case easy and misuse hard. Report anything else you
++    notice too — emphasis, never exclusion.
+   concurrency: |
+     Focus on concurrency: shared state touched without synchronization, races
+-    between goroutines, goroutine or resource leaks on early return, deadlock
+-    potential from lock ordering or blocking channel operations, and context
+-    cancellation that is accepted but not actually honored. Report anything
+-    else you notice too — emphasis, never exclusion.
++    between concurrent tasks, task or resource leaks on early return, deadlock
++    from lock ordering or blocking hand-offs, and cancellation that is
++    accepted but not honored. Report anything else you notice too — emphasis,
++    never exclusion.
+   docs-consistency: |
+     Focus on documentation drift: comments or docs that no longer match the
+-    code they describe, module docs or PATTERN entries a behavior
++    code they describe, documents of the repository's own rules (the PATTERN.md
++    entries and pattern/ background files where the repository has a
++    PATTERN.md, otherwise the rules its CLAUDE.md files state) that a behavior
+     change should have updated but didn't, stale references to removed or
+     renamed symbols, and examples that would no longer compile or run as
+     written. Report anything else you notice too — emphasis, never exclusion.
+@@ -97,9 +109,11 @@ lenses:
+     you notice too — emphasis, never exclusion.
+   pattern-fit: |
+     Focus on fit with the repo's rules: check every decision or card against
+-    the PATTERN.md entries and the pattern/ background files it touches, and
+-    flag a departure that does not name the entry it changes. Report anything
+-    else you notice too — emphasis, never exclusion.
++    the repository's own rules it touches, the PATTERN.md entries and pattern/
++    background files where the repository has a PATTERN.md, otherwise the
++    rules its CLAUDE.md files state, and flag a departure that does not name
++    the rule it changes. Report anything else you notice too — emphasis,
++    never exclusion.
+   scenarios: |
+     Focus on scenarios: failure, restart and resume, concurrency, empty state
+     and invalid input. Apply the Discussion-Review rubric's "The attack-surface
+@@ -269,9 +283,11 @@ lenses:
+     or row, open the existing tests of the same function. Apply the rubric's
+     "Test economy". Your list: per behaviour, the test that pins it, or none.
+   code-pattern-fit: |
+-    Own the diff's fit with the repository's rules. Read the repository's
+-    constraints document and the pattern files the diff touches, and check
+-    every changed file against each rule that applies to it. Apply whichever
++    Own the diff's fit with the repository's rules. Read the repository's own
++    rules, the PATTERN.md entries and the pattern/ background files the diff
++    touches where the repository has a PATTERN.md, otherwise the rules its
++    CLAUDE.md files state, and check every changed file against each rule that
++    applies to it. Apply whichever
+     of the rubric's "The repository's own rules", "Declared PATTERN changes
+     landed", "Commit messages and departures", "A broken invariant" and "A
+     pattern the parent changed" this round's rubric carries. Your list: each
