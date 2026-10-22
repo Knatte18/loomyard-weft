@@ -1,13 +1,13 @@
 {
   "current_producer": "Plan-Burler-Fix",
-  "state": "failed",
-  "error": "shedadapters: Plan-Burler-Fix (burler-fix): round 1 attempt 1: fix: burler: twill fixer fork \"/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-orch-strand-cycle/781dd9f4-82dc-4cd7-a55e-0a2b53f08417/subagents/agent-aebb1c18b39c3e054.jsonl\" ran a git-mutating command (\"S=/tmp/claude-1000/-home-knatte-Code-loomyard-LYXHUB-orch-strand-cycle/781dd9f4-82dc-4cd7-a55e-0a2b53f08417/scratchpad/repairchk; mkdir -p $S \u0026\u0026 cd $S \u0026\u0026 git init -q main \u0026\u0026 git -C main commit -q --allow-empty -m i \u0026\u0026 git -C main worktree add -q ../pair 2\u003e\u00261; mkdir -p $S/emptygit; printf 'gitdir: %s\\\\n' \\\"$S/emptygit\\\" \u003e $S/pair/.git; git -C $S/main worktree repair $S/pair; echo \\\"exit=$?\\\"; cat $S/pair/.git; git -C $S/pair rev-parse --show-toplevel; mv $S/pair/.git $S/pair/gitfile.bak; mkdir $S/pair/.git; git -C $S/main worktree repair $S/pair; echo \\\"exit=$?\\\"\") — a fork must never run a state-mutating git command; way forward: inspect the target's working-tree changes, revert what the fork wrote, and resume the run",
+  "state": "running",
+  "error": "",
   "pending_by": "shed",
   "pause_requested": false,
   "activity": {
     "now": "Plan-Burler-Fix",
     "last": "Plan-Burler-Review → bounced to Plan-Burler-Fix",
-    "wait": "shedadapters: Plan-Burler-Fix (burler-fix): round 1 attempt 1: fix: burler: twill fixer fork \"/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-orch-strand-cycle/781dd9f4-82dc-4cd7-a55e-0a2b53f08417/subagents/agent-aebb1c18b39c3e054.jsonl\" ran a git-mutating command (\"S=/tmp/claude-1000/-home-knatte-Code-loomyard-LYXHUB-orch-strand-cycle/781dd9f4-82dc-4cd7-a55e-0a2b53f08417/scratchpad/repairchk; mkdir -p $S \u0026\u0026 cd $S \u0026\u0026 git init -q main \u0026\u0026 git -C main commit -q --allow-empty -m i \u0026\u0026 git -C main worktree add -q ../pair 2\u003e\u00261; mkdir -p $S/emptygit; printf 'gitdir: %s\\\\n' \\\"$S/emptygit\\\" \u003e $S/pair/.git; git -C $S/main worktree repair $S/pair; echo \\\"exit=$?\\\"; cat $S/pair/.git; git -C $S/pair rev-parse --show-toplevel; mv $S/pair/.git $S/pair/gitfile.bak; mkdir $S/pair/.git; git -C $S/main worktree repair $S/pair; echo \\\"exit=$?\\\"\") — a fork must never run a state-mutating git command; way forward: inspect the target's working-tree changes, revert what the fork wrote, and resume the run"
+    "wait": ""
   },
   "history": [
     {
