@@ -1,0 +1,195 @@
+{
+  "runGuid": "2541d00f4e6d76b1991f62d267bdb5c1",
+  "planFingerprint": "7e3344f169e91336c6d8ee3ebb3c76ac9bafde96c00795a628f370b7f2e6bd86",
+  "planFileHashes": {
+    "00-overview.md": "28923292e6f71e7e641cbfb5a2520418601edea817a4bec1b678898b124f2a3e",
+    "01-configengine-overlay-load.md": "9e63f47ff5b5bc3571f632833d3c4fe8139cfb0ac8093dfdad0fe6f4526d2bd8",
+    "02-configengine-overlay-writes.md": "26949bef4080388782aa6c8b244c90c9d680da83519dfab06de0ec82f105facb",
+    "03-lenses-lens-set.md": "2b08cc103eee16c20ddc82d5c1363f4631d5fd29145645416a4311583d07f70f",
+    "04-lenses-language-layers.md": "3564f39087ce0b7408cc17e570c507d16e31ac242c038904c3ce0d42c7004280",
+    "05-configsync-effective-template.md": "d781c2e9771bdf681fc8dd6ef36745b5b82b72585aedb209e96bd4ddcdd4f017",
+    "06-lenses-remove.md": "05abd8c3272b395662521a2f2e6044ab3b5d6475680cae157dc74e28b5cc5831"
+  },
+  "planOverviewFrameHash": "488235ed4b0c16f51d2a01a5c698685c6d60496a6bc02841387444a938e64cf3",
+  "partition": [
+    {
+      "cards": [
+        "01-configengine-overlay-load",
+        "02-configengine-overlay-writes",
+        "03-lenses-lens-set"
+      ],
+      "profile": "cautious",
+      "estimate": 198738,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 1,
+        "startup": 54748,
+        "read_union": 53360,
+        "cards": [
+          {
+            "card": 1,
+            "card_text": 1080,
+            "reads": {
+              "file:PATTERN.md": 1500,
+              "file:internal/configcli/doc.go": 1080,
+              "file:internal/configengine/doc.go": 1236,
+              "package:.": 2000,
+              "package:internal/configcli": 2000,
+              "package:internal/configengine": 2000,
+              "tests:.": 2000,
+              "tests:internal/configcli": 2000,
+              "tests:internal/configengine": 2000
+            },
+            "messages": 123,
+            "written": 37980
+          },
+          {
+            "card": 2,
+            "card_text": 756,
+            "reads": {
+              "file:internal/configcli/doc.go": 1080,
+              "file:internal/configengine/doc.go": 1236,
+              "package:internal/configcli": 2000,
+              "package:internal/configengine": 2000,
+              "tests:internal/configcli": 2000,
+              "tests:internal/configengine": 2000
+            },
+            "messages": 75,
+            "written": 23256
+          },
+          {
+            "card": 3,
+            "card_text": 744,
+            "reads": {
+              "file:docs/overview.md": 9792,
+              "file:internal/lenses/doc.go": 528,
+              "file:internal/lenses/template.yaml": 4644,
+              "package:docs": 2000,
+              "package:internal/configreg": 2000,
+              "package:internal/configsync": 2000,
+              "package:internal/lenses": 2000,
+              "package:internal/lenses/sets": 2000,
+              "tests:docs": 2000,
+              "tests:internal/configreg": 2000,
+              "tests:internal/configsync": 2000,
+              "tests:internal/lenses": 2000,
+              "tests:internal/lenses/sets": 2000
+            },
+            "messages": 95.5,
+            "written": 29394
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "04-lenses-language-layers",
+        "05-configsync-effective-template",
+        "06-lenses-remove"
+      ],
+      "profile": "cautious",
+      "estimate": 169340,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 2,
+        "startup": 61748,
+        "read_union": 33540,
+        "cards": [
+          {
+            "card": 4,
+            "card_text": 612,
+            "reads": {
+              "file:internal/lenses/template.yaml": 4644,
+              "package:internal/configcli": 2000,
+              "package:internal/lenses": 2000,
+              "package:internal/lenses/sets": 2000,
+              "tests:internal/configcli": 2000,
+              "tests:internal/lenses": 2000,
+              "tests:internal/lenses/sets": 2000
+            },
+            "messages": 39.5,
+            "written": 12462
+          },
+          {
+            "card": 5,
+            "card_text": 828,
+            "reads": {
+              "file:internal/configcli/doc.go": 1080,
+              "package:internal/configcli": 2000,
+              "package:internal/configsync": 2000,
+              "tests:internal/configcli": 2000,
+              "tests:internal/configsync": 2000
+            },
+            "messages": 111,
+            "written": 34128
+          },
+          {
+            "card": 6,
+            "card_text": 612,
+            "reads": {
+              "file:internal/configengine/doc.go": 1236,
+              "file:internal/lenses/doc.go": 528,
+              "file:internal/lenses/template.yaml": 4644,
+              "package:internal/configengine": 2000,
+              "package:internal/configreg": 2000,
+              "package:internal/lenses": 2000,
+              "tests:internal/configengine": 2000,
+              "tests:internal/configreg": 2000,
+              "tests:internal/lenses": 2000
+            },
+            "messages": 89.5,
+            "written": 27462
+          }
+        ]
+      }
+    }
+  ],
+  "currentBatch": 1,
+  "masterStrand": "6fba0c9267611867565b95d8712a85cd",
+  "masterSessionId": "445eaaf3-cd59-4144-8078-5b4378646688",
+  "masterEngine": "claude",
+  "batches": {
+    "1": {
+      "slug": "configengine-overlay-load",
+      "cards": [
+        "01-configengine-overlay-load",
+        "02-configengine-overlay-writes",
+        "03-lenses-lens-set"
+      ],
+      "cardHashes": {
+        "01-configengine-overlay-load": "9e63f47ff5b5bc3571f632833d3c4fe8139cfb0ac8093dfdad0fe6f4526d2bd8",
+        "02-configengine-overlay-writes": "26949bef4080388782aa6c8b244c90c9d680da83519dfab06de0ec82f105facb",
+        "03-lenses-lens-set": "2b08cc103eee16c20ddc82d5c1363f4631d5fd29145645416a4311583d07f70f"
+      },
+      "startSha": "750903aef1b7474b06597cdd2d6e0aecfd85d251",
+      "kind": "fork",
+      "spawnedAt": "2026-10-22T07:48:29Z",
+      "sessionId": "445eaaf3-cd59-4144-8078-5b4378646688",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
+    }
+  }
+}
