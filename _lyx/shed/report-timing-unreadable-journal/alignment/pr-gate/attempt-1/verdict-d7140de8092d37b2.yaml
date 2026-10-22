@@ -1,0 +1,4 @@
+verdict: approve
+reason: The diff makes report timing fall back to the hub's recorded pauses when journalctl is absent, fails, prints unparseable output or denies the user access, and the sleep note says the figures may include sleep. That meets the board entry's Expected section, and the one change outside reportcli and sleepjournal, in tools/tokencount, is a caller update for the changed Read signature. The one open risk names no parent correction. Peer run-process-ownership touches pauserecord's network gate only, with no conflicting decision, so this run at row 21 lands first. darn-hard-cap-default-2 does not overlap, and no parent commits are listed.
+question: ""
+superseded: []
