@@ -33,7 +33,7 @@ Waits on nothing open; can start now.
 
 | # | Task | Slug | Recipe | After | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | **[.NET 006] LoomYard uses quarry C# glyphs: version raise, alphabet by extension**<br>• LoomYard side of C# glyphs, after the quarry hub csharp-alphabet lands and is tagged | [`quarry-csharp`](design-quarry-csharp.md) | loom |  | 1d | 18h | quarry, dotnet |
+| 1 | **[.NET 006] LoomYard uses quarry C# glyphs: version raise, alphabet by extension**<br>• LoomYard side of C# glyphs, after the quarry hub csharp-alphabet lands and is tagged<br>• `profile: light` | [`quarry-csharp`](design-quarry-csharp.md) | loom |  | 1d | 18h | quarry, dotnet |
 
 ### Layer A
 
