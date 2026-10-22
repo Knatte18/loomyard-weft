@@ -165,11 +165,3 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | # | Note | Slug | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | 19 | **[.NET 003] Scoped build and test for C# hubs**<br>• Verify gates in a .NET hub build and test only the projects a card touches, since a scanned Windows machine makes every build slow. | [`dotnet-scoped-verify`](design-dotnet-scoped-verify.md) | 9d | 2d | shed, webster, dotnet |
-
-## Done
-
-Finished, awaiting `lyx board prune --apply`.
-
-| # | Entry | Slug | Age | Revised | Labels |
-| --- | --- | --- | --- | --- | --- |
-| 1 | **Remove the Webster kick-start pack**<br>• Drop every kick-start pack layout and its code; glyphs stay in the plan and its gates<br>• `darn: review_hard_max_bounces 2`<br>• `darn: review_max_bounces 1` | [`kickstart-pack-remove`](design-kickstart-pack-remove.md) | 4d | 3h | webster, quarry, loom |
