@@ -116,6 +116,12 @@ This is accepted: the base lenses still review every area, and the task worktree
 
 Rationale: a hub's base file holds only what the hub tuned (`PATTERN-sparse-hub-base`), and choosing a layer from repository files would be language logic in code.
 
+### Added after Discussion (parent, 2026-10-22): D3 refinement: an equal lens_set in a hub worktree file is allowed
+
+Decision: D3 refinement: a hub worktree file's lens_set is refused only when its value differs from the base layer's ("" when the base lacks the key), at load and by Set and Edit alike. An equal value changes no selection, and the sparse migration strips it as equal to the layers below.
+
+Rationale: The template carries lens_set: "", so a full worktree lenses.yaml written from it holds the key (hubreconcile's commitPreMigrationFiles fixture, a standalone-reconciled file whose repo becomes a hub); refusing any key would make readLayers refuse the file inside the walk that strips it.
+
 ## Constraints
 
 - `PATTERN-config-strictness`: lenses keeps `LoadOrTemplate`.
