@@ -18,7 +18,7 @@ Held by a run; its scope is locked until the run ends.
 | # | Task | Slug | Recipe | At | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | 1 | **One machine takes over from another: owner machines, lyx adopt, landing on the parent owner**<br>• Owner machine per entry, lyx adopt of named entries, landing only on the parent owner, owner outcome in the origin reconcile, Open-Window per machine | [`machine-handover`](design-machine-handover.md) | loom | Discussion-Write | 2d | 2d | batten, board, orch, fabric |
-| 2 | **[.NET 006] LoomYard uses quarry C# glyphs: version raise, alphabet by extension**<br>• LoomYard side of C# glyphs, after the quarry hub csharp-alphabet lands and is tagged<br>• `profile: light` | [`quarry-csharp`](design-quarry-csharp.md) | loom | Loom-Preflight | 1d | 0m | quarry, dotnet |
+| 2 | **[.NET 006] LoomYard uses quarry C# glyphs: version raise, alphabet by extension**<br>• LoomYard side of C# glyphs, after the quarry hub csharp-alphabet lands and is tagged<br>• `profile: light` | [`quarry-csharp`](design-quarry-csharp.md) | loom | Discussion-Write | 1d | 0m | quarry, dotnet |
 
 #### Normal priority
 
