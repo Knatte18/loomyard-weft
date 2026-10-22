@@ -122,6 +122,12 @@ Decision: D3 refinement: a hub worktree file's lens_set is refused only when its
 
 Rationale: The template carries lens_set: "", so a full worktree lenses.yaml written from it holds the key (hubreconcile's commitPreMigrationFiles fixture, a standalone-reconciled file whose repo becomes a hub); refusing any key would make readLayers refuse the file inside the walk that strips it.
 
+### Added after Discussion (parent, 2026-10-22): Shorten PATTERN-sparse-hub-base for headroom
+
+Decision: The PATTERN-sparse-hub-base line drops its walk-strip clause, which its background file already states.
+
+Rationale: The new PATTERN-template-overlay line (171 bytes) pushes PATTERN.md past patternlint's headroom line; cutting the intro saves only about 82 bytes.
+
 ## Constraints
 
 - `PATTERN-config-strictness`: lenses keeps `LoadOrTemplate`.
@@ -167,6 +173,7 @@ Rationale: The template carries lens_set: "", so a full worktree lenses.yaml wri
 ## PATTERN changes
 
 - `PATTERN-template-overlay` — adds: Judging a config document against its template: only against `configengine`'s effective template, the overlay picked from the base layer.
+- `PATTERN-sparse-hub-base` — changes: Writing a hub's base file: only the units the hub tuned, never a template fill. — added after Discussion (parent, 2026-10-22)
 
 ## Notes for the plan writer
 
