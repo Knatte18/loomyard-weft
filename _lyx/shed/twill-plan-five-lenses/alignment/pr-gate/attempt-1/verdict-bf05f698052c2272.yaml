@@ -1,0 +1,10 @@
+verdict: approve
+reason: >-
+  The diff makes the change the board entry asks for.
+  twill-plan runs coverage, row-validity, forced-edits, guard-reach and way-forward, merged as in the operator's table.
+  affected-set stays defined for review-plan.
+  The other fans and the language layers are unchanged, and the test edits follow from the fan change.
+  The one open risk names no parent correction.
+  The only peer, run-process-ownership, touches disjoint paths and different behaviour, and no parent commits are listed.
+question: ""
+superseded: []
