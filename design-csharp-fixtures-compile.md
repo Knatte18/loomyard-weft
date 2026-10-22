@@ -1,6 +1,6 @@
 # [.NET] A test compiles the C# test fixtures, skipped without dotnet
 
-`csharp-fixtures-compile` · Task · enhancement, quarry, dotnet, testkit
+`csharp-fixtures-compile` · Task · enhancement, quarry, dotnet, testkit · running · Worktree-Create
 
 ## Seen
 

@@ -1095,8 +1095,10 @@
       "isolated": false,
       "brief": "",
       "body": "## Seen\n\n`quarry-csharp` added C# test fixtures, such as `internal/planglyph/testdata/glyphchain/csharp/Renderer.cs`.\nQuarry parses them with tree-sitter, which tolerates syntax errors, so nothing proves a fixture is valid C#: a broken fixture would still pass the glyph tests.\n\n## Idea\n\nA test compiles every `.cs` fixture under `testdata/` with `dotnet build` in a throwaway project, and skips when `dotnet` is not on `PATH`.\nIt belongs in a gate tier that the machines with .NET run, so a Go-only machine stays green.\n",
+      "status": "running · Worktree-Create",
       "created": "2026-10-22T09:23:53Z",
-      "revised": "2026-10-22T12:41:38Z"
+      "revised": "2026-10-22T12:41:38Z",
+      "owner_machine": "neve"
     },
     {
       "id": 744,
