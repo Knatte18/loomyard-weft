@@ -2,8 +2,6 @@
 
 `plan-card-rules` · Task · enhancement, loom, webster, burler, orch, quarry
 
-Depends on: [`orch-strand-cycle`](design-orch-strand-cycle.md)
-
 ## Decision (operator, 2026-10-22)
 
 Four notes merged into one loom task about the plan and its cards.
