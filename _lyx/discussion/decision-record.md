@@ -267,6 +267,12 @@ Every decision above is an autonomous pick; the support log's question ledger li
   - setowners-push-transport-row-missing (class consistency, severity MEDIUM, open in rounds 3)
 <!-- /lyx:carry-over Plan-Review -->
 
+<!-- lyx:carry-over Merge-Review -->
+- Merge-Review, round 1: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
+  Review: _lyx/reviews/merge/round-1-review.md; fixer report: _lyx/reviews/merge/round-1-fixer-report.md.
+  - pattern-md-grows-past-headroom (class design, severity BLOCKING, open in rounds 1)
+<!-- /lyx:carry-over Merge-Review -->
+
 ## Acceptance criteria
 
 - An empty hostname is an error, and no owner is written or compared with it.
