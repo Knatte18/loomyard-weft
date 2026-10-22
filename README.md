@@ -23,7 +23,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| 2 | **Finalize blocks on 'worktree dirty' without naming the tree or paths, and the loom's own run record counts as dirty**<br>• `profile: light` | [`finalize-dirty-names-paths`](design-finalize-dirty-names-paths.md) | loom | Discussion-Bouncer | neve | 1d | 1d | fabric, loom |
+| 2 | **Finalize blocks on 'worktree dirty' without naming the tree or paths, and the loom's own run record counts as dirty**<br>• `profile: light` | [`finalize-dirty-names-paths`](design-finalize-dirty-names-paths.md) | loom | Discussion-Burler-Review | neve | 1d | 1d | fabric, loom |
 | 3 | **Board entries get short handles (T4, B2, E7) for lookup; tasks lose priority; tighter README tables**<br>• Stored lowest-free handle per kind/type, usable in every board verb; priority only on notes; README sorted by handle with a priority column and merged age/revised<br>• `darn: review_hard_max_bounces 2`<br>• `darn: review_max_bounces 1` | [`board-entry-handles`](design-board-entry-handles.md) | darn | Publish | neve | 3h | 3h | board |
 
 ### Ready
