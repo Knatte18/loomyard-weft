@@ -1,6 +1,6 @@
 # A question research can settle is settled in Discussion, never deferred to Plan or an implementer
 
-`research-in-discussion` · Task · enhancement, loom, stencil, burler · running · Merge-In
+`research-in-discussion` · Task · enhancement, loom, stencil, burler · running · Publish
 
 ## Seen (2026-10-19, run `ubuntu-2404-support`)
 
