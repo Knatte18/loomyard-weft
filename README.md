@@ -25,10 +25,9 @@ Held by a run; its scope is locked until the run ends.
 | # | Task | Slug | Recipe | At | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | 3 | **lyx loom decision add notifies the run live LLM producer of the new decision**<br>• With the Go driver no agent lives for the whole run, so decision add tells the working LLM producer if any, and later producers and PR-Gate catch the rest<br>• `darn: review_hard_max_bounces 2`<br>• `darn: review_max_bounces 1` | [`decision-add-notifies`](design-decision-add-notifies.md) | darn | Darn-Burler-Fix | 3d | 10m | loom, creel |
-| 4 | **A question research can settle is settled in Discussion, never deferred to Plan or an implementer**<br>• Discussion writer researches the facts its design rests on; reviewers flag a deferred research question or a halt-on-discovery rule<br>• `darn: review_hard_max_bounces 2`<br>• `darn: review_max_bounces 1` | [`research-in-discussion`](design-research-in-discussion.md) | darn | Finalize | 2d | 10m | loom, stencil, burler |
-| 5 | **Opening an agent into reed: engine bypass mode by default, explicit engine, model and effort, and reed add points to shuttle open**<br>• reed add help shows a broken claude example (%SID% never substituted) and shuttle open keeps the interactive permission default; every agent in reed needs bypass, per engine (claude bypassPermissions, Codex --yolo)<br>• `darn: review_hard_max_bounces 2`<br>• `darn: review_max_bounces 1` | [`shuttle-open-agent-defaults`](design-shuttle-open-agent-defaults.md) | darn | Darn-Burler-Review | 1d | 10m | reed, shuttle, claude, codex |
-| 6 | **Darn-Write stops looping on verify failures it cannot own, and the flaky reed boot test behind them**<br>• A verify failure in code the task did not touch, or one the parent already fixed, no longer loops through Darn-Write; the reed boot race is made deterministic and the impacted set stops picking unreachable packages<br>• `profile: light` | [`darn-verify-fixes`](design-darn-verify-fixes.md) | loom | Discussion-Burler-Fix | 4d | 25m | batten, gate, loom, shed, reed |
-| 7 | **lyx gate test --upto N with manual tiers, and a lyx gate status verb**<br>• --upto N runs tiers 0..N skipping manual ones; gate status shows who holds each gate slot and since when<br>• `darn: review_hard_max_bounces 2`<br>• `darn: review_max_bounces 1` | [`gate-tier-verbs`](design-gate-tier-verbs.md) | darn | Darn-Write | 19h | 5m | gate |
+| 4 | **Opening an agent into reed: engine bypass mode by default, explicit engine, model and effort, and reed add points to shuttle open**<br>• reed add help shows a broken claude example (%SID% never substituted) and shuttle open keeps the interactive permission default; every agent in reed needs bypass, per engine (claude bypassPermissions, Codex --yolo)<br>• `darn: review_hard_max_bounces 2`<br>• `darn: review_max_bounces 1` | [`shuttle-open-agent-defaults`](design-shuttle-open-agent-defaults.md) | darn | Darn-Burler-Review | 1d | 10m | reed, shuttle, claude, codex |
+| 5 | **Darn-Write stops looping on verify failures it cannot own, and the flaky reed boot test behind them**<br>• A verify failure in code the task did not touch, or one the parent already fixed, no longer loops through Darn-Write; the reed boot race is made deterministic and the impacted set stops picking unreachable packages<br>• `profile: light` | [`darn-verify-fixes`](design-darn-verify-fixes.md) | loom | Discussion-Burler-Fix | 4d | 25m | batten, gate, loom, shed, reed |
+| 6 | **lyx gate test --upto N with manual tiers, and a lyx gate status verb**<br>• --upto N runs tiers 0..N skipping manual ones; gate status shows who holds each gate slot and since when<br>• `darn: review_hard_max_bounces 2`<br>• `darn: review_max_bounces 1` | [`gate-tier-verbs`](design-gate-tier-verbs.md) | darn | Darn-Write | 19h | 6m | gate |
 
 ### Ready
 
@@ -175,3 +174,11 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | # | Note | Slug | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | 19 | **[.NET 003] Scoped build and test for C# hubs**<br>• Verify gates in a .NET hub build and test only the projects a card touches, since a scanned Windows machine makes every build slow. | [`dotnet-scoped-verify`](design-dotnet-scoped-verify.md) | 9d | 1d | shed, webster, dotnet |
+
+## Done
+
+Finished, awaiting `lyx board prune --apply`.
+
+| # | Entry | Slug | Age | Revised | Labels |
+| --- | --- | --- | --- | --- | --- |
+| 1 | **A question research can settle is settled in Discussion, never deferred to Plan or an implementer**<br>• Discussion writer researches the facts its design rests on; reviewers flag a deferred research question or a halt-on-discovery rule<br>• `darn: review_hard_max_bounces 2`<br>• `darn: review_max_bounces 1` | [`research-in-discussion`](design-research-in-discussion.md) | 2d | 10m | loom, stencil, burler |
