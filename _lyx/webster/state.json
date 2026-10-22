@@ -675,7 +675,7 @@
       }
     }
   ],
-  "currentBatch": 0,
+  "currentBatch": 7,
   "masterStrand": "fd94635c977349faf13625dcb991f1fc",
   "masterSessionId": "50f3575b-651f-41fb-ab8d-6b29950f8b0d",
   "masterEngine": "claude",
@@ -834,28 +834,25 @@
         "07-detached-children-defer": "1aef806c0bdbe58fb24e3ed92eba0242911e83273d201739c3e01ad01c4cfc68"
       },
       "startSha": "2d1f7c8dc5d9d85893ebd699c70be87f91d9c87c",
-      "kind": "fork",
-      "spawnedAt": "2026-10-22T13:27:26Z",
-      "sessionId": "50f3575b-651f-41fb-ab8d-6b29950f8b0d",
-      "engine": "claude",
-      "terminal": true,
-      "status": "failed",
-      "digest": {
-        "batch": "07-detached-children-defer",
-        "status": "failed",
-        "head_sha": "b4b97c052beb4cbd4969352747ffd7fedfaba100",
-        "reasons": [
-          "batch 07-detached-children-defer holds cards 7-detached-children-defer",
-          "create-not-done/7-detached-children-defer[blocking]: Create target \"plan:internal/boardcli#TestSync_DeferrableExitsUnderACoveringPause\" still does not resolve: looked up \"internal/boardcli#TestSync_DeferrableExitsUnderACoveringPause\", quarry answered not_found (the unit exists and the member is missing)",
-          "create-not-done/7-detached-children-defer[blocking]: Create target \"plan:internal/fabricengine#TestCoalescePushRequest_CoveredCallDefers\" still does not resolve: looked up \"internal/fabricengine#TestCoalescePushRequest_CoveredCallDefers\", quarry answered not_found (the unit exists and the member is missing)"
-        ]
-      },
+      "kind": "recovery",
+      "spawnedAt": "2026-10-22T13:37:15Z",
+      "terminal": false,
+      "status": "",
       "forkTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-run-process-ownership/50f3575b-651f-41fb-ab8d-6b29950f8b0d/subagents/agent-afd5e39fd5e0ae565.jsonl"
       ],
-      "bracketTranscripts": [
-        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-run-process-ownership/50f3575b-651f-41fb-ab8d-6b29950f8b0d/subagents/agent-afd5e39fd5e0ae565.jsonl"
-      ]
+      "strandGuid": "79c84ba5c1f5b328d91bc1f6709b40da",
+      "shuttleRunDir": "/home/knatte/Code/loomyard-LYXHUB/run-process-ownership/.lyx/shuttle/d296dd857d5d033774eb794dc833790b",
+      "eventsPath": "/home/knatte/Code/loomyard-LYXHUB/run-process-ownership/.lyx/shuttle/d296dd857d5d033774eb794dc833790b/events.jsonl",
+      "eventsOffset": 2319,
+      "recoveries": 1,
+      "recoverySessions": [
+        "cd1ac658-6b88-4428-b207-c80f55ff9560"
+      ],
+      "recoveryEngines": {
+        "cd1ac658-6b88-4428-b207-c80f55ff9560": "claude"
+      },
+      "recoveryStartSha": "b4b97c052beb4cbd4969352747ffd7fedfaba100"
     }
   },
   "seenForkTranscripts": [
