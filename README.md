@@ -17,7 +17,7 @@ Held by a run; its scope is locked until the run ends.
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T1 | **Every process a run spawns has one owner that ends them all**<br>• Owner records for run processes; pause, reed down, fabric remove and teardown end the whole group; tender status shows orphans; a hub pause reaches background work; a finished reviewer never waits on its background shells | [`run-process-ownership`](design-run-process-ownership.md) | loom | Webster-Burler-Review | neve | 7d<br>8h | batten, burler, fabric, loom, shed, shuttle, webster |
 | T2 | **Config layers set one profile key and merge profile maps by name**<br>• --set of a nested profile key works, and a hub profiles map adds to the template profiles instead of hiding them | [`config-profile-map-layers`](design-config-profile-map-layers.md) | darn | Darn-Burler-Review | neve | 21m<br>19m | config, webster |
-| T5 | **report convergence: 'claim one landing commit' error for darn archive tags** | [`convergence-darn-landing-commit`](design-convergence-darn-landing-commit.md) | darn | PR-Gate | neve | 21m<br>19m | report, batten |
+| T5 | **report convergence: 'claim one landing commit' error for darn archive tags** | [`convergence-darn-landing-commit`](design-convergence-darn-landing-commit.md) | darn | Finalize | neve | 21m<br>19m | report, batten |
 
 ### Ready
 
