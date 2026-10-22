@@ -1372,6 +1372,27 @@
       "body": "Imported from [issue #823](https://github.com/Knatte18/loomyard/issues/823).\n\nWhat happened:\n`lyx webster record-batch` refused twice in one task, for batches `01` and `09`.\nBoth refusals are `create-not-done[blocking]` findings of the same form: `Create target \"plan:\u003cpkg\u003e#\u003cTestName\u003e\" still does not resolve ... quarry answered not_found (the unit exists and the member is missing)`.\nBatch `01` listed four unresolved targets across two cards (three in one package, one in another).\nBatch `09` listed one target, whose package path ends in `_test` (`internal/loomcli_test#...`), the form of an external test package.\nEach refusal archived a report under `_lyx/webster/reports/` and pointed at `lyx webster recover-batch \u003cn\u003e`.\n\nWhy it is abnormal:\nThe refusal cannot distinguish a card that never wrote the test from a quarry lookup that fails to find a test that exists.\nThe `_test`-suffixed package lookup in batch `09` is a candidate for the second case: the lookup may resolve the directory unit but not members of an external test package.\nTwo batches failing the same check in one task suggests a systematic cause, not two independent card failures.\nThe refusal text says \"the unit exists and the member is missing\" without naming which file or package quarry searched, so the operator cannot tell which case applies.\n\nWhat to do:\n- Check whether quarry resolves `plan:` targets in `_test` external test packages and in test files newly created in the same batch.\n- If the lookup is correct, make the `create-not-done` message name the files quarry searched so a genuinely missing test is told apart from a lookup miss.\n\nProvenance: task `machine-handover`; notes `webster-refusal-record-batch.md`, `webster-refusal-record-batch-2.md`.\n",
       "created": "2026-10-22T14:01:48Z",
       "revised": "2026-10-22T14:01:48Z"
+    },
+    {
+      "id": 762,
+      "handle": "B4",
+      "slug": "convergence-darn-landing-commit",
+      "title": "report convergence: 'claim one landing commit' error for darn archive tags",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "report",
+        "batten"
+      ],
+      "issues": [
+        831
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Imported from [issue #831](https://github.com/Knatte18/loomyard/issues/831).\n\nSeen (loomyard hub, Neve, 2026-10-22): `lyx report convergence --since 2026-10-20` printed a \"claim one landing commit\" error in `findings` for 9 darn runs' archive tags (research-in-discussion, shuttle-open-agent-defaults, decision-add-notifies, gate-tier-verbs, kickstart-pack-remove, board-entry-handles, gate-test-runtime-caller-paths, report-timing-unreadable-journal, darn-hard-cap-default-2), all mapped to the same commit de6b8465f, although each landed its own commit on main.\n\nWorkaround: none; those runs' landing data is missing from the report.\n\nExpected: each darn run's archive tag maps to its own landing commit, as loom runs' tags do.",
+      "created": "2026-10-22T14:01:50Z",
+      "revised": "2026-10-22T14:01:50Z"
     }
   ],
   "prime_owner": "neve"
