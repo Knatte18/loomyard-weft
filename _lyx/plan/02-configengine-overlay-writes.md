@@ -1,7 +1,7 @@
 # Card 2 — configengine-overlay-writes
 
 **Create:**
-- `plan:internal/configengine#scaffoldWithoutPerNameEntries` -> `func scaffoldWithoutPerNameEntries(spec Spec) string`
+- `internal/configengine#scaffoldWithoutPerNameEntries`
 
 **Edit:**
 - `internal/configengine#Set`
@@ -14,13 +14,13 @@
 - `internal/configcli/doc.go`
 
 **Uses:**
-- `plan:internal/configengine#Overlay`
-- `plan:internal/configengine#EffectiveTemplate`
-- `plan:internal/configengine#TemplateUnder`
-- `plan:internal/configengine#overlayTemplate`
-- `plan:internal/configengine#selectorValue`
-- `plan:internal/configengine#selectorRefusal`
-- `plan:internal/configengine_test#overlaySpec`
+- `internal/configengine#Overlay`
+- `internal/configengine#EffectiveTemplate`
+- `internal/configengine#TemplateUnder`
+- `internal/configengine#overlayTemplate`
+- `internal/configengine#selectorValue`
+- `internal/configengine#selectorRefusal`
+- `internal/configengine_test#overlaySpec`
 - `internal/configengine#scaffoldIfMissing`
 
 **Intent:**
