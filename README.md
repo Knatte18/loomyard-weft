@@ -67,6 +67,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | B2 |  | **config --set of a nested profile key fails: writes the scalar as the whole profile** | [`config-set-nested-profile-key`](design-config-set-nested-profile-key.md) | 0m<br>0m | config, webster |
 | B3 |  | **webster record-batch refuses with create-not-done: quarry not_found for planned test targets** | [`quarry-external-test-targets`](design-quarry-external-test-targets.md) | 0m<br>0m | webster, quarry |
 | B4 |  | **report convergence: 'claim one landing commit' error for darn archive tags** | [`convergence-darn-landing-commit`](design-convergence-darn-landing-commit.md) | 0m<br>0m | report, batten |
+| B5 |  | **batcher: a hub profiles map hides the template's profiles instead of adding to them** | [`batcher-hub-profiles-add`](design-batcher-hub-profiles-add.md) | 0m<br>0m | config, webster |
 
 ### Enhancements
 
@@ -98,7 +99,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | E24 |  | **Every lens fork report is kept verbatim in the run records**<br>• Save each lens fork report in a support file beside lens-review.md, so audits can read what each lens found | [`lens-fork-reports-kept`](design-lens-fork-reports-kept.md) | 44m<br>44m | burler, loom |
 | E25 |  | **Test runs repeat at the end of a loom run: tier0 inside every tier, the suite four times, tmux only at Publish**<br>• Disjoint tiers, a green run that carries forward, tmux in more gates, and a faster fabricengine suite; with the 2026-10-22 tier timings | [`gate-test-repeats`](design-gate-test-repeats.md) | 8h<br>8h | gate, loom, webster, fabric |
 | E26 |  | **A status-bar button turns automatic terminal windows for runs on or off** | [`open-window-toggle`](design-open-window-toggle.md) | 5h<br>3h | batten, reed |
-| E28 |  | **[.NET] A small public NUnit repo as sandbox hub for end-to-end C# runs** | [`csharp-sandbox-hub`](design-csharp-sandbox-hub.md) | 4h<br>59m | dotnet |
+| E28 |  | **[.NET] A small public NUnit repo as sandbox hub for end-to-end C# runs** | [`csharp-sandbox-hub`](design-csharp-sandbox-hub.md) | 4h<br>1h | dotnet |
 | E29 |  | **No role may carry out a parent decision that amends a plan card mid-run** | [`plan-card-amendment-owner`](design-plan-card-amendment-owner.md) | 3h<br>3h | webster, orch, loom |
 | E30 |  | **Discussion scope check moves from the alignment agent into the perch lenses, with an escalating finding class** | [`discussion-alignment-into-lenses`](design-discussion-alignment-into-lenses.md) | 2h<br>2h | loom, burler, shed |
 | E31 |  | **A row before Discussion aligns the task text against the board, peers and landed work, and adjusts it** | [`entry-align-before-discussion`](design-entry-align-before-discussion.md) | 2h<br>2h | loom, batten, board |
