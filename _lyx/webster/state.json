@@ -1,6 +1,6 @@
 {
   "runGuid": "7c997c016937c73cfdae3679ebf2730c",
-  "planFingerprint": "fab07a87b57831d8b513cd409667aadae1120f4099e47bfff032581852093484",
+  "planFingerprint": "7f270cde4d139b1b11db657809c13a57a06aec7eff5cfb58e07fdab699635ae9",
   "planFileHashes": {
     "00-overview.md": "a65d5cb1c169c6500828c080bc7e50e1ddd7c10adbf019a7e6d898cec23956c5",
     "01-impactset-cmd-lyx-join.md": "b1f6a24a6b9b0b65c485ee49856fe940370065f1c5425ae9df91ea69c871b77e",
@@ -12,7 +12,7 @@
     "07-shedadapters-keep-gate-findings.md": "1f7f3ebf84355d88ab5c0b30de99b879887010d651678c522b2d9b629e4f133d",
     "08-wire-gate-findings-files.md": "b6af2cf31053b812a17997d1ddc53c244edb62bf5fe3b230c0eb44ce6f5d5ede",
     "09-darn-write-reroute-edge.md": "4ecfa1352614794d2a55d2a5636dd35d36d2ca7009faf2476e2ce4b9109486fc",
-    "10-darn-write-entry-reroute.md": "bb545e7c59f79d32c9cc063a09f027ec76b7e67fd5e7dcd10f626d5ae907e036",
+    "10-darn-write-entry-reroute.md": "26e9c09d06833a3afcddcf0a9830552257c7f777f9648a7178cb9cdf8f45eef2",
     "11-shellguard-gate-test-case.md": "6e3baf591dc8bfa2227f80513beee87120c90e939691af6c39c69a4965020804"
   },
   "planOverviewFrameHash": "65607aee180cc6092015c7e1d0e1f61546ecc17c744e90205a928d24591d5c29",
@@ -271,7 +271,7 @@
       }
     }
   ],
-  "currentBatch": 10,
+  "currentBatch": 0,
   "masterStrand": "1048fee3537b4aaec575d7942ef226e9",
   "masterSessionId": "62778d91-f0b9-4af5-ba81-30ff7b4d0283",
   "masterEngine": "claude",
@@ -325,7 +325,7 @@
         "11-shellguard-gate-test-case"
       ],
       "cardHashes": {
-        "10-darn-write-entry-reroute": "bb545e7c59f79d32c9cc063a09f027ec76b7e67fd5e7dcd10f626d5ae907e036",
+        "10-darn-write-entry-reroute": "26e9c09d06833a3afcddcf0a9830552257c7f777f9648a7178cb9cdf8f45eef2",
         "11-shellguard-gate-test-case": "6e3baf591dc8bfa2227f80513beee87120c90e939691af6c39c69a4965020804"
       },
       "startSha": "e9f0e6190aa53f5ad0235f367ed2e1f80c6ded31",
@@ -333,8 +333,25 @@
       "spawnedAt": "2026-10-22T07:13:23Z",
       "sessionId": "62778d91-f0b9-4af5-ba81-30ff7b4d0283",
       "engine": "claude",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "10-darn-write-entry-reroute",
+        "status": "done",
+        "head_sha": "4f38202acd1b3d6841819bbabdb1813c268972d3",
+        "deviations": [
+          "internal/loomshed/darnwrite_test.go"
+        ]
+      },
+      "cardShas": [
+        "4f38202acd1b3d6841819bbabdb1813c268972d3"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-darn-verify-fixes/62778d91-f0b9-4af5-ba81-30ff7b4d0283/subagents/agent-a40d467c861b95711.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-darn-verify-fixes/62778d91-f0b9-4af5-ba81-30ff7b4d0283/subagents/agent-a40d467c861b95711.jsonl"
+      ]
     },
     "6": {
       "slug": "shedrun-gate-findings-file",
@@ -417,6 +434,7 @@
   "seenForkTranscripts": [
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-darn-verify-fixes/62778d91-f0b9-4af5-ba81-30ff7b4d0283/subagents/agent-a5f8d0e77c562cde8.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-darn-verify-fixes/62778d91-f0b9-4af5-ba81-30ff7b4d0283/subagents/agent-af012a2e91b032de9.jsonl",
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-darn-verify-fixes/62778d91-f0b9-4af5-ba81-30ff7b4d0283/subagents/agent-a32399c3f266d563f.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-darn-verify-fixes/62778d91-f0b9-4af5-ba81-30ff7b4d0283/subagents/agent-a32399c3f266d563f.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-darn-verify-fixes/62778d91-f0b9-4af5-ba81-30ff7b4d0283/subagents/agent-a40d467c861b95711.jsonl"
   ]
 }
