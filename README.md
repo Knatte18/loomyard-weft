@@ -17,7 +17,7 @@ Held by a run; its scope is locked until the run ends.
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T1 | **Every process a run spawns has one owner that ends them all**<br>• Owner records for run processes; pause, reed down, fabric remove and teardown end the whole group; tender status shows orphans; a hub pause reaches background work; a finished reviewer never waits on its background shells | [`run-process-ownership`](design-run-process-ownership.md) | loom | Plan-Burler-Fix | neve | 7d<br>6h | batten, burler, fabric, loom, shed, shuttle, webster |
 | T2 | **lyx report timing counts sleep as active time when the system journal is unreadable**<br>• `darn: review_hard_max_bounces 2`<br>• `darn: review_max_bounces 1` | [`report-timing-unreadable-journal`](design-report-timing-unreadable-journal.md) | darn | PR-Align | neve | 1h<br>18m | report |
-| T10 | **Darn's review hard cap defaults to 2, and the orch stencil drops hand-written small-task run settings**<br>• `profile: light` | [`darn-hard-cap-default-2`](design-darn-hard-cap-default-2.md) | darn | Darn-Bouncer | neve | 12m<br>9m | config, stencil, orch |
+| T10 | **Darn's review hard cap defaults to 2, and the orch stencil drops hand-written small-task run settings**<br>• `profile: light` | [`darn-hard-cap-default-2`](design-darn-hard-cap-default-2.md) | darn | Describe | neve | 12m<br>9m | config, stencil, orch |
 
 ### Ready
 
