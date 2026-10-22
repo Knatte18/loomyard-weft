@@ -33,7 +33,7 @@ The nested-module mapping and the `go.mod` read errors are defensive: `impactset
 It returns true when any of these holds: `tests` is empty; an identity is opaque; a test identity's package is in `packages`; a test identity's top-level test name (the part before the first `/` of the ID after `<package>.`) is listed under its package in `guards`; a package identity's package, a build failure or a crashed test binary, is in `packages`.
 
 `notOwnedRoute` returns target `Merge-In` (`loomshed.NameMergeIn`), the lead ` outside the task's impacted set, in <packages joined by ", ">,`, and this way forward:
-`if the failure also fails on the parent branch, fix it there, then run "lyx loom goto --to Merge-In", then "lyx loom resume", in the task worktree, which merges a moved parent and re-runs the failing gate; if the task did cause it, run "lyx loom goto --to Darn-Write", then "lyx loom resume", in the task worktree, where a moved parent is merged in first`.
+`fix the failure on the parent branch if it fails there too, then run "lyx loom goto --to Merge-In", then "lyx loom resume", in the task worktree, which merges a moved parent and re-runs the failing gate; or, if the task did cause it, run "lyx loom goto --to Darn-Write", then "lyx loom resume", in the task worktree, where a moved parent is merged in first`.
 When any outside package is in `binary`, the way forward ends with `; <those packages> drive the lyx binary in their tests and may reach the task's change, so when the test does not fail on the parent branch, the Darn-Write goto is the way forward`.
 Every step is a `lyx loom` verb the agents' settings allow, per `PATTERN-no-denied-recovery`.
 
@@ -61,7 +61,7 @@ Every owned row whose cause is not the failing package itself carries a record t
 - a derive error is owned, and so is a merge-base error;
 - a record whose `LogPath` names no file is owned;
 - a missing `tools/go.mod` is owned;
-- a log whose only failures, a package-level failure and a test failure, lie in `example.com/m/internal/z` and `example.com/m/internal/y` gives target `Merge-In`, the lead naming both, sorted, and the way forward naming `lyx loom goto --to Merge-In` before `lyx loom goto --to Darn-Write`, with no lyx-binary clause;
+- a log whose only failures, a package-level failure and a test failure, lie in `example.com/m/internal/z` and `example.com/m/internal/y` gives target `Merge-In`, the lead naming both, sorted, and the way forward opening with `fix the failure on the parent branch if it fails there too, then run "lyx loom goto --to Merge-In"`, so only the parent fix is conditional, and naming `lyx loom goto --to Darn-Write` after it, with no lyx-binary clause;
 - a failing test outside the set in `example.com/m/internal/lyxdriver` gives target `Merge-In` and a way forward ending with the clause that it drives the lyx binary and names the Darn-Write goto.
 The Warn rows assert nothing about the log; the route is the observable outcome.
 
