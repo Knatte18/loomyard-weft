@@ -23,7 +23,7 @@ Recommended: C#; the path checks then skip a slash-free self glyph, and resolve,
 
 ### Turn 4 — Go-only checks, handles, answer shapes
 
-Go-toolchain checks run only under `go` (D5); C# handles pass `Owner` to `Name` (D7); cross-alphabet ambiguity, `listings` and new Kinds are read (D6).
+Go-toolchain checks run only under `go` (D5); C# handles pass `Owner` to `Name` (D7); cross-alphabet ambiguity and new Kinds are read (D6).
 
 ### Turn 5 — lens review
 
@@ -65,7 +65,13 @@ Every lens returned a report.
 
 ## Review rounds
 
-_No rounds yet._
+### Round 1
+
+Verdict BLOCKING; every finding fixed, see `_lyx/reviews/discussion/round-1-fixer-report.md`.
+
+- F1–F3: `isInterfaceMethod` goes Go-only, the C# re-sign's minted id is rewritten plan-wide at record-batch, and C# Rename derivation parses the new handle and replaces the declared name token (D7).
+- F4–F8: D4 gains a resolve half; namespace pairs are refused at the plan gate; D3's bound and `ScopeGuard` are completed; the Go path reading is one planparser export; the re-sign guard states its bounds.
+- F9–F15: explicit interface owners, the listing rule cut, D1's re-sign `Lang`, one partitioning rule in D6, D5's verify-package bound, the PATTERN background file in Scope, and the Scope paragraph and an Open risk cut.
 
 ## Question ledger
 
