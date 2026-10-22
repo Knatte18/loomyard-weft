@@ -1,6 +1,6 @@
 # Orch lifecycle: dead strands count as dead, the watcher restarts, cycle requests need no reply and can be withdrawn
 
-`orch-strand-cycle` · Task · bug, enhancement, orch, reed, shuttle
+`orch-strand-cycle` · Task · bug, enhancement, orch, reed, shuttle, creel
 
 Depends on: [`run-process-ownership`](design-run-process-ownership.md)
 
@@ -98,5 +98,15 @@ The earlier fix attempts of the same row had finished (history `stuck`), so thei
 What to do: have the row's attempt teardown remove its strand, or have `seatengine` reclaim a stale strand of the same name instead of renaming and failing; if a live holder is possible, the retry path runs the `lyx reed remove` itself when the holder is provably dead.
 
 Provenance: tasks `test-tiers`, `csharp-alphabet`; notes `loom-halt.md`, `loom-halt-2.md`.
+
+## Folded in: the watcher re-sends a delivered compact (operator, 2026-10-22)
+
+Imported from [issue #828](https://github.com/Knatte18/loomyard/issues/828).
+
+Seen (loomyard hub orch, Neve, 2026-10-22): at a distill cycle the watcher's /compact inject was delivered and the session compacted, then creel logged a draft stall and sent the inject again twice; the operator interrupted both by hand.
+Meanwhile watch.log held "a creel call failed; the cycle is held until creel answers", because creel could not resolve the worktree of a run torn down mid-lookup.
+
+Expected: once a compact inject has been delivered and the session compacted, the watcher does not re-send it; a draft stall after delivery is not read as non-delivery.
+A creel strand lookup that meets a worktree removed mid-teardown skips it instead of failing the call.
 
 

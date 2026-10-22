@@ -21,7 +21,10 @@ Held by a run; its scope is locked until the run ends.
 
 Waits on nothing open; can start now.
 
-_None._
+| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- | --- | --- |
+| T2 | **Config layers set one profile key and merge profile maps by name**<br>• --set of a nested profile key works, and a hub profiles map adds to the template profiles instead of hiding them | [`config-profile-map-layers`](design-config-profile-map-layers.md) | darn |  | 2m<br>0m | config, webster |
+| T5 | **report convergence: 'claim one landing commit' error for darn archive tags** | [`convergence-darn-landing-commit`](design-convergence-darn-landing-commit.md) | darn |  | 1m<br>0m | report, batten |
 
 ### Layer A
 
@@ -29,7 +32,7 @@ Waits only on Running or Ready entries.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T4 | **Orch lifecycle: dead strands count as dead, the watcher restarts, cycle requests need no reply and can be withdrawn**<br>• Strand liveness checks the engine process and placement, a dead orch watcher restarts, the note write is seen without a reply, and a pending distill/refresh can be withdrawn<br>• `profile: light` | [`orch-strand-cycle`](design-orch-strand-cycle.md) | loom | `run-process-ownership` | 3d<br>2h | orch, reed, shuttle |
+| T4 | **Orch lifecycle: dead strands count as dead, the watcher restarts, cycle requests need no reply and can be withdrawn**<br>• Strand liveness checks the engine process and placement, a dead orch watcher restarts, the note write is seen without a reply, and a pending distill/refresh can be withdrawn<br>• `profile: light` | [`orch-strand-cycle`](design-orch-strand-cycle.md) | loom | `run-process-ownership` | 3d<br>0m | orch, reed, shuttle, creel |
 | T6 | **loom halt note for a Merge-In loop exit carries only 'loop-exited' as its reason** | [`loop-exit-halt-names-its-cause`](design-loop-exit-halt-names-its-cause.md) | darn | `run-process-ownership` | 3h<br>2h | loom, shed |
 | T7 | **webster done-check: Create paths with a space and test targets quarry does not find** | [`done-check-spaced-create-paths`](design-done-check-spaced-create-paths.md) | darn | `run-process-ownership` | 3h<br>0m | webster, quarry |
 | T8 | **Fork git guard flags read-only 'git tag --points-at' as a state-mutating command** | [`fork-git-guard-read-only-tag`](design-fork-git-guard-read-only-tag.md) | darn | `run-process-ownership` | 3h<br>2h | shed |
@@ -58,15 +61,6 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | A5 |  | **Sweep go_parallel on OSL-1046 with Cortex XDR**<br>• Time both gate tiers on the work laptop on a quiet machine and log them in docs beside the Neve numbers, with full hardware info | [`bench-osl1046-xdr`](design-bench-osl1046-xdr.md) | 2d<br>2d |  |
 | A6 |  | **Lens overlap audit: which lenses find the same defects, and a smaller set**<br>• twill-plan 8 to 5 lenses recommended; twill-discussion 7 to 4 and review-code 4 to 3 at low confidence | [`lens-overlap-audit`](design-lens-overlap-audit.md) | 43m<br>38m | burler, loom |
 | A7 |  | **Trial: batcher profile wide (budget 300k)**<br>• Hub runs a new batcher profile wide, budget 300k; check cost and fork quality before taking it into the template | [`batch-budget-300k-trial`](design-batch-budget-300k-trial.md) | 14m<br>9m | webster |
-
-### Bugs
-
-| # | P | Note | Slug | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- | --- |
-| B1 |  | **Orch watcher re-sends /compact after the compact already ran** | [`orch-watcher-no-compact-resend`](design-orch-watcher-no-compact-resend.md) | 2m<br>2m | orch, creel |
-| B2 |  | **config --set of a nested profile key fails: writes the scalar as the whole profile** | [`config-set-nested-profile-key`](design-config-set-nested-profile-key.md) | 2m<br>2m | config, webster |
-| B4 |  | **report convergence: 'claim one landing commit' error for darn archive tags** | [`convergence-darn-landing-commit`](design-convergence-darn-landing-commit.md) | 1m<br>1m | report, batten |
-| B5 |  | **batcher: a hub profiles map hides the template's profiles instead of adding to them** | [`batcher-hub-profiles-add`](design-batcher-hub-profiles-add.md) | 1m<br>1m | config, webster |
 
 ### Enhancements
 
