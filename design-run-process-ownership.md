@@ -2,7 +2,7 @@
 
 `run-process-ownership` · Task · bug, enhancement, batten, burler, fabric, loom, shed, shuttle, webster
 
-Depends on: [`machine-handover`](design-machine-handover.md), [`tender-pause-holds-reprompt`](design-tender-pause-holds-reprompt.md)
+Depends on: [`machine-handover`](design-machine-handover.md)
 
 ## Goal
 

@@ -898,8 +898,7 @@
       ],
       "priority": "high",
       "depends_on": [
-        "machine-handover",
-        "tender-pause-holds-reprompt"
+        "machine-handover"
       ],
       "isolated": false,
       "brief": "Owner records for run processes; pause, reed down, fabric remove and teardown end the whole group; tender status shows orphans; a hub pause reaches background work; a finished reviewer never waits on its background shells",
@@ -939,29 +938,6 @@
       "body": "## Goal\n\nMeasure what building and testing NORCE Models costs on OSL-1046 with Cortex XDR before any .NET support is built, so the measurement decides which `[.NET]` entry comes first, as the Go measurement in `docs/benchmarks/gate-test-xdr.md` did for Go.\n\n## Seen (orch, 2026-10-20)\n\n- On OSL-1046 a freshly built .NET apphost (`./out/dnbench`) was held 10.1 s by XDR, while `dotnet out/dnbench.dll` ran in 0.07 s: XDR holds new executables, and a DLL started through the known `dotnet` host was not held.\n- `dotnet test` starts its test host through `dotnet`, so the XDR cost may land on build output and MSBuild nodes rather than on test start; this is not measured.\n- For Go, most of the cost was new binaries with unseen hashes and test-cache misses, and `-trimpath` cut a cached unit run from 98.6 s to 20.3 s.\n\n## Measure\n\n- `dotnet restore`, `dotnet build` and `dotnet test` of `NORCE.Models.sln` from `src/csharp/NORCE.Models/`, cold (fresh clone or clean `bin/` and `obj/`) and warm, wall and CPU time.\n- The same in a second checkout of the same commit, to see whether identical output is reused or held again.\n- Whether deterministic builds (`ContinuousIntegrationBuild=true`, `PathMap`) make two checkouts' DLLs byte-identical, the .NET counterpart of `-trimpath`.\n- The slow tier (`-p:RunSlowTests=true`) and the baseline tier (`-p:RunBaseline=true`) once each.\n- Log the numbers in `docs/benchmarks/` beside the Go ones, with the hardware block of `gate-test-xdr.md`.\n",
       "created": "2026-10-20T09:09:55Z",
       "revised": "2026-10-20T09:09:55Z"
-    },
-    {
-      "id": 709,
-      "slug": "tender-pause-holds-reprompt",
-      "title": "tender pause does not hold a verify gate's re-prompt, and creel interrupt is refused under the pause",
-      "kind": "task",
-      "labels": [
-        "bug",
-        "creel",
-        "shed",
-        "webster"
-      ],
-      "issues": [
-        762
-      ],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "Imported from [issue #762](https://github.com/Knatte18/loomyard/issues/762).\n\n## Seen (2026-10-20, OSL-1046, darn run arbiter-verdict-quoting)\n\n1. Darn-Write's verify gate was looping on a tmux test the writer cannot fix, so the orch ran `lyx tender pause arbiter-verdict-quoting` (the darn session was idle, listed `already_idle`) and `lyx loom pause --after Darn-Write`.\n2. The verify process kept running (attempt 2, then a new attempt), since a pause holds agents and network work but not a running gate command. On the operator's order the orch killed the verify's process group.\n3. The gate then re-prompted the darn session with the failure, and the session started a new turn although `lyx tender status` listed it `paused: true` (state `busy`, cause `turn`).\n4. `lyx creel interrupt ly:arbiter-verdict-quoting:darn` was refused: \"a pause covers ...; nothing was interrupted, lift the pause first\".\n5. Workaround: running `lyx tender pause arbiter-verdict-quoting` a second time printed `already_paused: true` and `interrupted: [ly:arbiter-verdict-quoting:darn]`, and the session went idle.\n\n## Expected\n\n- A paused scope receives no new prompt from a gate, a driver or any other lyx program: a re-prompt waits for the resume, like other held work.\n- A pause also stops, or holds at its next boundary, a verify gate command running in that scope, so the operator does not have to kill processes by hand.\n- `creel interrupt` of a session the pause covers interrupts it, since stopping work is what the pause wants.\n## Seen: webster opens batches under a pause (orch, 2026-10-21)\n\nA hub pause held the two webster masters with forks in flight only as `background`: no Esc, no record.\nWhen a fork returns, Claude Code wakes Master by itself, outside creel, and nothing stops it from running `lyx webster begin-batch` and forking the next implementer.\nWebster wires the pause only into its shuttle runner (`internal/webstercli/wiring.go`), so no batch verb reads it.\n\nExpected: `lyx webster begin-batch` refuses while a pause covers the pair, with a message telling Master to end its turn, so a running batch finishes and no new one starts until the resume.\n",
-      "status": "done",
-      "created": "2026-10-20T10:42:58Z",
-      "revised": "2026-10-22T05:51:48Z",
-      "profile": "light"
     },
     {
       "id": 718,
