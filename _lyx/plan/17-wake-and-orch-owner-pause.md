@@ -23,7 +23,7 @@
 **Uses:**
 - `internal/fabricengine#EntryOwnedElsewhere`
 - `internal/pauserecord#OwnerCaller`
-- `plan:internal/tendercli#PauseOwnedElsewhere`
+- `internal/tendercli#PauseOwnedElsewhere`
 - `internal/boardengine#SetOwners`
 - `internal/boardengine#ReadOwners`
 - `internal/machinename#Name`

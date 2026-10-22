@@ -1,7 +1,7 @@
 # Card 13 — tender-owner-pause
 
 **Create:**
-- `plan:internal/tendercli#PauseOwnedElsewhere` -> `func PauseOwnedElsewhere(location *lyxcwd.Location, slug string) error`
+- `internal/tendercli#PauseOwnedElsewhere`
 
 **Uses:**
 - `internal/tenderengine#Pause`
