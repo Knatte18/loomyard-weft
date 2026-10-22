@@ -1,0 +1,27 @@
+# Relevant files
+
+- `internal/proc/tied.go` `TreeRecord`, `StartTied`, `KillTree`, `SelfRecord`, `HoldNamedJob`, `TerminateNamedJob` — the process record and tree kill the owner record builds on
+- `internal/proc/tied_linux.go` `killTreePlatform`, `startPlatform` — the group-id and start-time check D3 reuses
+- `internal/proc/proc_linux.go` `Detach`, `ListProcesses`, `IsAncestor`, `KillPID` — detached children lead their own session; process listing for orphans and descendants
+- `internal/proc/proc_windows.go` `StartTime`, `KillPID`, `ListProcesses` — the Windows bound of D3 and D7
+- `internal/pairteardown/doc.go` — the session-end sequence, quiet rule, local mode and caller policies D4 and D5 change
+- `internal/pairteardown/loop.go` `killLoop`, `holdLoopLock`, `awaitRunLockNamingHolder` — the loop end that `runproc.End` runs before
+- `internal/pairteardown/originseams.go` `OwnerOf` — the live-pair and owner seams D5 reads
+- `internal/shedverbs/looppid.go` `LoopPIDRecord` — the step loop's existing pid record
+- `internal/fabricengine/spawn.go` `SpawnDetachedPush`, `SpawnStatusPush`, `PushSpawn` — the detached push spawn D2 registers and D6 resumes
+- `internal/fabricengine/doc.go` — pending-flag protocol, teardown lock and the origin reconcile D5 calls
+- `internal/fabricengine/junctionnames.go` `HubScratchDir` — the directory the owner record sits under
+- `internal/boardengine/spawn.go` `SpawnSync` — the detached board sync D2 registers under the hub scope
+- `internal/loomcli/doc.go` — the Go driver's pause wait and hand-over spawn
+- `internal/loomcli/drivewiring.go` — where `lyx loom drive` is spawned detached
+- `internal/pauserecord/doc.go` — the network gate whose wait D6 skips for detached children
+- `internal/tendercli/doc.go` — caller checks and the network gate install D6 and D7 extend
+- `internal/tenderengine/doc.go` — pause, resume and status sequences D6 and D7 extend
+- `internal/hibernateengine/doc.go` — the confirmation reading D9 changes
+- `internal/shuttleengine/doc.go` — the waiting-turn-end rule and `BackgroundShellWaitMin` D10 changes
+- `internal/shuttleengine/claudeengine/background.go` `outstandingBackgroundTasks`, `payloadTask` — how a fork and a shell are told apart
+- `internal/loomcli/driverspec.go` `driverSpec` — the LLM driver never enters shuttle's `Wait`, so D11 does not cut its loop shell
+- `internal/fabriccli/doc.go` — `lyx fabric remove`'s envelope and behaviour
+- `pattern/PATTERN-pair-teardown.md` — the entry D4 and D5 change
+- `pattern/PATTERN-leaf-packages.md` — the entry `internal/runproc` joins
+- `pattern/PATTERN-spawn-observability.md` — logging rule for registration and end
