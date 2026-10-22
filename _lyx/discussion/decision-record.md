@@ -152,6 +152,12 @@ After a failed lookup Master is woken by nothing the pause sends, so it moves on
   - undeclared-pattern-cuts-unrecorded (class decision, severity MEDIUM, open in rounds 1, 2)
 <!-- /lyx:carry-over Plan-Review -->
 
+<!-- lyx:carry-over Webster-Review -->
+- Webster-Review, round 1: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
+  Review: _lyx/reviews/webster/round-1-review.md; fixer report: _lyx/reviews/webster/round-1-fixer-report.md.
+  - boundary-held-survives-turn-change (class design, severity MEDIUM, open in rounds 1)
+<!-- /lyx:carry-over Webster-Review -->
+
 ## Acceptance criteria
 
 - A gated shuttle run whose gate fails at a boundary while a pause covers it sends no re-prompt and spends no attempt; after the resume it evaluates and re-prompts.
