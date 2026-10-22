@@ -1,6 +1,6 @@
 # Finalize blocks on 'worktree dirty' without naming the tree or paths, and the loom's own run record counts as dirty
 
-`finalize-dirty-names-paths` · Task · bug, fabric, loom · running · Worktree-Create
+`finalize-dirty-names-paths` · Task · bug, fabric, loom · running · Loom-Preflight
 
 Imported from [issue #776](https://github.com/Knatte18/loomyard/issues/776).
 
