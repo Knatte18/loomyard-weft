@@ -1,11 +1,11 @@
 {
   "runGuid": "7c997c016937c73cfdae3679ebf2730c",
-  "planFingerprint": "5684c826b4503e9a9e9b2bd43e6e15911d9489b474cd5228a64aa002878a74b6",
+  "planFingerprint": "7c28cf009215ed1a251f6324503cb452cfb6397773dfd90f51d2f5ebf2aa963c",
   "planFileHashes": {
     "00-overview.md": "a65d5cb1c169c6500828c080bc7e50e1ddd7c10adbf019a7e6d898cec23956c5",
     "01-impactset-cmd-lyx-join.md": "b1f6a24a6b9b0b65c485ee49856fe940370065f1c5425ae9df91ea69c871b77e",
-    "02-landingshed-failure-route.md": "fe6109b1b65b0514edffd6b4ed9c3c2b4cd041a831c2c8a4339a14b3e761e167",
-    "03-darn-failure-classifier.md": "fa49da280ce40291126946609e1eb0f5cedc67353aab1bccdc545d82a591087e",
+    "02-landingshed-failure-route.md": "be4d13e795739e92e9be98b22b30a08d091675224c275d8404fc6018f5732f24",
+    "03-darn-failure-classifier.md": "a501a8e11af78bf29b8a2b7103c49ed2e46742dba9b3acf0ac003d413fc8c796",
     "04-batten-retry-merge-in-target.md": "ea730a53d6e5516fafc29bb54d131316eb820d8aa61a99869b81d2685872f0a8",
     "05-shuttle-gate-findings-text.md": "f060794fa69e2e127340cf4c983a75c0b7eae90531672923eb55761b2561a875",
     "06-shedrun-gate-findings-file.md": "1939fdfacea759bb5ce07c71c9d3af2ecbd56947f2ae36800f3e07c900218042",
@@ -271,7 +271,7 @@
       }
     }
   ],
-  "currentBatch": 1,
+  "currentBatch": 0,
   "masterStrand": "1048fee3537b4aaec575d7942ef226e9",
   "masterSessionId": "62778d91-f0b9-4af5-ba81-30ff7b4d0283",
   "masterEngine": "claude",
@@ -287,8 +287,8 @@
       ],
       "cardHashes": {
         "01-impactset-cmd-lyx-join": "b1f6a24a6b9b0b65c485ee49856fe940370065f1c5425ae9df91ea69c871b77e",
-        "02-landingshed-failure-route": "fe6109b1b65b0514edffd6b4ed9c3c2b4cd041a831c2c8a4339a14b3e761e167",
-        "03-darn-failure-classifier": "fa49da280ce40291126946609e1eb0f5cedc67353aab1bccdc545d82a591087e",
+        "02-landingshed-failure-route": "be4d13e795739e92e9be98b22b30a08d091675224c275d8404fc6018f5732f24",
+        "03-darn-failure-classifier": "a501a8e11af78bf29b8a2b7103c49ed2e46742dba9b3acf0ac003d413fc8c796",
         "04-batten-retry-merge-in-target": "ea730a53d6e5516fafc29bb54d131316eb820d8aa61a99869b81d2685872f0a8",
         "05-shuttle-gate-findings-text": "f060794fa69e2e127340cf4c983a75c0b7eae90531672923eb55761b2561a875"
       },
@@ -297,8 +297,29 @@
       "spawnedAt": "2026-10-22T06:56:55Z",
       "sessionId": "62778d91-f0b9-4af5-ba81-30ff7b4d0283",
       "engine": "claude",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "01-impactset-cmd-lyx-join",
+        "status": "done",
+        "head_sha": "1d3e7f86a13e2d3d9770fa96116f50adb4c33e31",
+        "deviations": [
+          "internal/battenshed/innerrun_publishretry_test.go",
+          "internal/loomcli/darnclassify.go"
+        ]
+      },
+      "cardShas": [
+        "1d3e7f86a13e2d3d9770fa96116f50adb4c33e31"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-darn-verify-fixes/62778d91-f0b9-4af5-ba81-30ff7b4d0283/subagents/agent-a5f8d0e77c562cde8.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-darn-verify-fixes/62778d91-f0b9-4af5-ba81-30ff7b4d0283/subagents/agent-a5f8d0e77c562cde8.jsonl"
+      ]
     }
-  }
+  },
+  "seenForkTranscripts": [
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-darn-verify-fixes/62778d91-f0b9-4af5-ba81-30ff7b4d0283/subagents/agent-a5f8d0e77c562cde8.jsonl"
+  ]
 }
