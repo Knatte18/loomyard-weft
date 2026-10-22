@@ -214,6 +214,14 @@ Bound: an inject left beside a draft is not retyped; shuttle's `pending-send.jso
   - empty-start-command-no-outcome (class design, severity MEDIUM, open in rounds 3)
 <!-- /lyx:carry-over Discussion-Review -->
 
+<!-- lyx:carry-over Plan-Review -->
+- Plan-Review, round 2: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
+  Review: _lyx/reviews/plan/round-2-review.md; fixer report: _lyx/reviews/plan/round-2-fixer-report.md.
+  - card5-pane-lookup-warn-every-poll (class design, severity BLOCKING, open in rounds 2)
+  - card7-skip-line-repeats-per-call (class design, severity BLOCKING, open in rounds 2)
+  - card7-worktreetorndown-per-symbol-test (class design, severity BLOCKING, open in rounds 2)
+<!-- /lyx:carry-over Plan-Review -->
+
 ## Acceptance criteria
 
 - On Linux, a strand whose engine exited and whose pane holds only its shell and lists a non-empty start command reads `live: false` once its pane is older than the grace, and `live: true` within it, whichever `lyx` binary launched it; on Windows such a strand reads live, since condition 3 is skipped there.
