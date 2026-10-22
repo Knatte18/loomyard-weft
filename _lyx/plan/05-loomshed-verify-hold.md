@@ -15,8 +15,8 @@
 - `internal/testkit/envkit#FullEnv`
 
 **Uses:**
-- `plan:internal/verifytree#NewPauseHold`
-- `plan:internal/verifytree#PauseHold`
+- `internal/verifytree#NewPauseHold`
+- `internal/verifytree#PauseHold`
 
 **Intent:**
 D5 for the loomshed verify gate, the gate of the Darn-Write, Darn-Burler-Fix and Webster-Burler-Fix rows.

@@ -9,7 +9,7 @@
 - `internal/tenderengine/doc.go`
 
 **Uses:**
-- `plan:internal/pauserecord#ClaimSession`
+- `internal/pauserecord#ClaimSession`
 - `plan:internal/shuttleengine#PausedError`
 - `internal/tenderengine#newPair`
 - `internal/tenderengine#newEnv`

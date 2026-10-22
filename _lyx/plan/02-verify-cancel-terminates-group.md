@@ -1,8 +1,8 @@
 # Card 2 — a cancelled verify command gets SIGTERM on its group, then SIGKILL
 
 **Create:**
-- `plan:internal/proc#ConfigureGroupTerminate` -> `func ConfigureGroupTerminate(cmd *exec.Cmd, killAfter time.Duration, report func(pid int, sig os.Signal, groupErr error)) (awaitGone func())`
-- `plan:internal/proc#configurePlatformGroupTerminate` -> `func configurePlatformGroupTerminate(cmd *exec.Cmd, killAfter time.Duration, report func(pid int, sig os.Signal, groupErr error)) (awaitGone func())`
+- `internal/proc#ConfigureGroupTerminate`
+- `internal/proc#configurePlatformGroupTerminate`
 
 **Edit:**
 - `internal/verifyrun#run`

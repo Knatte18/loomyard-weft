@@ -21,8 +21,8 @@
 - `internal/tendercli#InstallNetworkGate`
 
 **Uses:**
-- `plan:internal/verifytree#NewPauseHold`
-- `plan:internal/verifytree#PauseHold`
+- `internal/verifytree#NewPauseHold`
+- `internal/verifytree#PauseHold`
 - `internal/parentlock#Store.List`
 
 **Intent:**

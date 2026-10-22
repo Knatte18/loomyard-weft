@@ -12,8 +12,8 @@
 - `internal/webstercli#TestWire_StandaloneMode`
 
 **Uses:**
-- `plan:internal/verifytree#NewPauseHold`
-- `plan:internal/verifytree#PauseHold`
+- `internal/verifytree#NewPauseHold`
+- `internal/verifytree#PauseHold`
 
 **Intent:**
 D5 for the webster verify gate and the `lyx webster verify` verb.

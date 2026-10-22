@@ -13,7 +13,7 @@
 - `internal/webstercli#websterCLI.recoverBatchCmd`
 
 **Uses:**
-- `plan:internal/pauserecord#ClaimSession`
+- `internal/pauserecord#ClaimSession`
 - `internal/pauserecord#ReadCoverage`
 - `internal/webstercli#newVerbsFixture`
 - `internal/webstercli#verbsFixture`

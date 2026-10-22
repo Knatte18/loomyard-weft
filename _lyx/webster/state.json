@@ -1,24 +1,24 @@
 {
   "runGuid": "5668b0a37e0e7bbf5cb2f4476adc080e",
-  "planFingerprint": "120f2c9d3ff6a404bed4a22ac08a4ce4f00e19287e511472fa877fd91068f9bf",
+  "planFingerprint": "666c61f58b3888d14173e117b3bc3ed6b1f3c432673b350504bdcc48c71aa1e1",
   "planFileHashes": {
     "00-overview.md": "e7c28037bd251ed0ed854748e125788506728ca547b20149fb1cfe353fb49300",
-    "01-pauserecord-claim-session.md": "ceb6667306b0680fe31b166f1d53b14a890c746dc7681ff2f3019888647c14be",
-    "02-verify-cancel-terminates-group.md": "9c5ad8844e47b360307d350230d54db1bba98f458292c364c887321cd565d32c",
-    "03-verifytree-pause-hold.md": "d982659353804d9d542ad87be4bb5657569e7abceabe77500aa5578bee94cbba",
-    "04-paused-marker-readers.md": "7d35c208a027d1a77abe2bb1ea2579bf79c50f857600019062b7a83a4b517230",
-    "05-loomshed-verify-hold.md": "e38ebe70d01022bf5f4c0113f8d2f067df15e17e43bfe4812e86d67c31a6403a",
-    "06-webster-verify-hold.md": "61ec1080290bb4b8b2469678a728e0a1158be9da12c416874a62b3c9d9b1c5dc",
-    "07-landing-verify-hold.md": "e910c080631c46210d3a27583262f4352bb76c45f823a5ea52b20a9d29e4a5d0",
+    "01-pauserecord-claim-session.md": "28b16fec8addb32da452e49390ac1ae737be07531ed64cff206ee9867fe1f13e",
+    "02-verify-cancel-terminates-group.md": "e9373bc5843b4202cb7befb280314bb131b7fef3d1bcf233575a265254d9390b",
+    "03-verifytree-pause-hold.md": "8f83ded95acebdf89ee7e79423f1e8e30dd00d60e445dfc77825c627af720d7f",
+    "04-paused-marker-readers.md": "b5efd2792a38d08daa81c2acbc0949492c3fe678e5acc63d74d60060f612d742",
+    "05-loomshed-verify-hold.md": "f783dda7bce8aaec85d3f1d1f44f2e9d0f4712a3f72694d24c1f1a34e02d5b96",
+    "06-webster-verify-hold.md": "7f4f52aa3c8b226b56345b5c129992c09a658cd6c801bcda80463409a746b581",
+    "07-landing-verify-hold.md": "759093bdf55ff575228d0201d62cfc67c159ba8d54a9cd1f1bb4f17bb70bfec5",
     "08-verified-tree-hold-pattern.md": "5db60463efe40ed16dcdc2f985694cdf37ac8582f3d2365006ea5ec92d56ee8c",
     "09-shuttle-send-refuses-covered.md": "4ae8f67fe9e8f7ca7f9c1f11d0fd1bbe0d7c6a2de803cdbee16412dc893b6068",
     "10-shuttle-start-holds-paused-prompt.md": "b046f69a7d864b04a3a02c61d9d72264d34803fa4f6ea045874f754a6e8629d9",
     "11-shuttle-gate-holds-boundary.md": "5c844c85e9d890dd89bbc5026098b1df8944655e23adf7096728519ef637c36f",
     "12-tender-creel-runner-geometry.md": "0fd3e046ac2beac43dc0431d730faba01ed2a51a9b7b2415626c5a8b5f2426f6",
     "13-paused-send-callers.md": "2f5d10541307c545b186a20922e17b16abd188cb7db167d9eb739e940ef99c6c",
-    "14-tender-resume-claims-paused.md": "d3a1e7e0dff061128c19220f1521b1b756393a44fa5e558f42e5beb848a44502",
-    "15-creel-interrupt-claims-covered.md": "812d70450d8564e6a608d477aad8a63c89972ddf81c2b15fda915fdf588df41f",
-    "16-webster-batch-verbs-refuse-paused.md": "f156334dcc329c9b5d36934f9421e8a6ed8bca5d651f17c6f2c2d0ae5c324ab3"
+    "14-tender-resume-claims-paused.md": "4db1fbcfb4927f2375d3bbf89ba09ac01f75af04e6093f72704fc396b0012a52",
+    "15-creel-interrupt-claims-covered.md": "0c8d36fd6ea108f0a9e784bc84201eb0334d269190ed2676697bfcf09e3ec3da",
+    "16-webster-batch-verbs-refuse-paused.md": "5f22ac0e620a5d60797f4ca4ddb608f10138845c5d9b596c56c66f7f873ff29a"
   },
   "planOverviewFrameHash": "8b4b24fc499cff5cbd8203148c14d25d266f9389345ea18ef3fd399614945426",
   "partition": [
@@ -441,7 +441,7 @@
       }
     }
   ],
-  "currentBatch": 1,
+  "currentBatch": 0,
   "masterStrand": "076d19bba614522d1bb1aeaf796e3f5b",
   "masterSessionId": "83e4b5b3-1a0e-476c-af08-7bb8cc7450d6",
   "masterEngine": "claude",
@@ -455,18 +455,42 @@
         "04-paused-marker-readers"
       ],
       "cardHashes": {
-        "01-pauserecord-claim-session": "ceb6667306b0680fe31b166f1d53b14a890c746dc7681ff2f3019888647c14be",
-        "02-verify-cancel-terminates-group": "9c5ad8844e47b360307d350230d54db1bba98f458292c364c887321cd565d32c",
-        "03-verifytree-pause-hold": "d982659353804d9d542ad87be4bb5657569e7abceabe77500aa5578bee94cbba",
-        "04-paused-marker-readers": "7d35c208a027d1a77abe2bb1ea2579bf79c50f857600019062b7a83a4b517230"
+        "01-pauserecord-claim-session": "28b16fec8addb32da452e49390ac1ae737be07531ed64cff206ee9867fe1f13e",
+        "02-verify-cancel-terminates-group": "e9373bc5843b4202cb7befb280314bb131b7fef3d1bcf233575a265254d9390b",
+        "03-verifytree-pause-hold": "8f83ded95acebdf89ee7e79423f1e8e30dd00d60e445dfc77825c627af720d7f",
+        "04-paused-marker-readers": "b5efd2792a38d08daa81c2acbc0949492c3fe678e5acc63d74d60060f612d742"
       },
       "startSha": "684c04305156072b72eb17e54bdd4006f41e828a",
       "kind": "fork",
       "spawnedAt": "2026-10-22T08:55:09Z",
       "sessionId": "83e4b5b3-1a0e-476c-af08-7bb8cc7450d6",
       "engine": "claude",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "01-pauserecord-claim-session",
+        "status": "done",
+        "head_sha": "4f63a2176537f53e95b60ee29b460eae068eae71",
+        "deviations": [
+          "cmd/lyx/daemonwakeups_test.go",
+          "internal/proc/procgroup_linux.go",
+          "internal/verifytree/hold.go",
+          "internal/verifytree/verify.go",
+          "internal/verifytree/verify_integration_test.go"
+        ]
+      },
+      "cardShas": [
+        "4f63a2176537f53e95b60ee29b460eae068eae71"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-tender-pause-holds-reprompt/83e4b5b3-1a0e-476c-af08-7bb8cc7450d6/subagents/agent-adbf1fce734f4ca4a.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-tender-pause-holds-reprompt/83e4b5b3-1a0e-476c-af08-7bb8cc7450d6/subagents/agent-adbf1fce734f4ca4a.jsonl"
+      ]
     }
-  }
+  },
+  "seenForkTranscripts": [
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-tender-pause-holds-reprompt/83e4b5b3-1a0e-476c-af08-7bb8cc7450d6/subagents/agent-adbf1fce734f4ca4a.jsonl"
+  ]
 }

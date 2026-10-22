@@ -1,10 +1,10 @@
 # Card 3 — verifytree.Verify holds its command under a pause
 
 **Create:**
-- `plan:internal/verifytree#PauseHold` -> `type PauseHold struct`
-- `plan:internal/verifytree#NewPauseHold` -> `func NewPauseHold(geom pauserecord.Geometry, slugEntryExempt func() bool) *PauseHold`
-- `plan:internal/verifytree#MarkerStatePaused` -> `const MarkerStatePaused = "paused"`
-- `plan:internal/verifytree#TestVerify_PauseHold` -> `func TestVerify_PauseHold(t *testing.T)`
+- `internal/verifytree#PauseHold`
+- `internal/verifytree#NewPauseHold`
+- `internal/verifytree#MarkerStatePaused`
+- `internal/verifytree#TestVerify_PauseHold`
 
 **Edit:**
 - `internal/verifytree#Site`
