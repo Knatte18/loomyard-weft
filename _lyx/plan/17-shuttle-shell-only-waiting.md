@@ -1,8 +1,8 @@
 # Card 17 — Shell-only background work never holds a row its outputs settle
 
 **Create:**
-- `plan:internal/shuttleengine#Run.unawaitedShellsOnly` -> `func (run *Run) unawaitedShellsOnly(tasks []BackgroundTask) bool`
-- `plan:internal/shuttleengine/claudeengine_test#readingWaitingHeld` -> `const readingWaitingHeld = "waiting_held"`
+- `internal/shuttleengine#Run.unawaitedShellsOnly`
+- `internal/shuttleengine/claudeengine_test#readingWaitingHeld`
 
 **Edit:**
 - `internal/shuttleengine#Run`
