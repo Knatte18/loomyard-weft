@@ -14,13 +14,13 @@
 - `internal/loomcli#TestLandingDeps_EveryFieldPopulated`
 
 **Create:**
-- `plan:internal/landingshed#ParentOwnership` -> `type ParentOwnership struct`
-- `plan:internal/landingshed#OwnerHaltPrefix` -> `const OwnerHaltPrefix = "owner check: "`
-- `plan:internal/landingshed#reportVerdict` -> `func reportVerdict(ctx context.Context, producer string, report fabricengine.OriginReport) (shedengine.Outcome, shedengine.OutputPointer, error, bool)`
-- `plan:internal/landingshed#ownerHaltReason` -> `func ownerHaltReason(slug, runOwner string, parent ParentOwnership) string`
-- `plan:internal/landingshed#Finalize.ownerChecks` -> `func (fz *Finalize) ownerChecks(ctx context.Context) (shedengine.Outcome, shedengine.OutputPointer, error, bool)`
-- `plan:internal/landingshed#Finalize.adopterFirstRepair` -> `func (fz *Finalize) adopterFirstRepair(parentHandle parentMerger) string`
-- `plan:internal/landingshed#TestFinalize_OwnerChecks` -> `func TestFinalize_OwnerChecks(t *testing.T)`
+- `internal/landingshed#ParentOwnership`
+- `internal/landingshed#OwnerHaltPrefix`
+- `internal/landingshed#reportVerdict`
+- `internal/landingshed#ownerHaltReason`
+- `internal/landingshed#Finalize.ownerChecks`
+- `internal/landingshed#Finalize.adopterFirstRepair`
+- `internal/landingshed#TestFinalize_OwnerChecks`
 
 **Uses:**
 - `internal/fabricengine#Fabric.LocalOnlyCommits`
