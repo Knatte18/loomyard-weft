@@ -9,8 +9,8 @@
 - `docs/overview.md`
 
 **Create:**
-- `plan:internal/battencli#battenCLI.reopenWindow` -> `func (c *battenCLI) reopenWindow(ctx context.Context, status shedengine.Status) error`
-- `plan:internal/battencli#TestBattenPreRun_ReopensTheWindowWithNoClientAttached` -> `func TestBattenPreRun_ReopensTheWindowWithNoClientAttached(t *testing.T)`
+- `internal/battencli#battenCLI.reopenWindow`
+- `internal/battencli#TestBattenPreRun_ReopensTheWindowWithNoClientAttached`
 
 **Uses:**
 - `internal/reedengine#Engine.ClientAttached`
