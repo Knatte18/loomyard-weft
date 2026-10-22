@@ -1114,6 +1114,26 @@
       "created": "2026-10-08T05:56:26Z",
       "revised": "2026-10-22T15:00:02Z",
       "profile": "light"
+    },
+    {
+      "id": 762,
+      "handle": "E14",
+      "slug": "speed-loom-profile",
+      "title": "Speed loom profile: Discussion, Plan and Webster, with review only of the end product",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "loom",
+        "burler",
+        "config"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "A loom profile without the Discussion, Plan and Webster perches, reviewing only before landing",
+      "body": "## Idea (operator, 2026-10-22)\n\nA loom profile that keeps Discussion, Plan and Webster, so the task is scoped, bounded and planned as in loom, but reviews only the end product: no Discussion, Plan or Webster review perch, only the review before landing.\nMore thorough and structured than darn, much cheaper than full loom.\n\n## Evidence\n\n`docs/research/token-audit-2026-10-22`: review loops are about a third of task spend, and Discussion and Plan review about $8 of a loom run's roughly $23 fixed cost.\n\n## Open\n\n- Whether profile settings alone can turn the perches off (bounce caps of 0), or whether that needs the row entry gate task `gate-runs-once` builds, instead of a recipe rewrite like darn's.\n- Which review the end product gets: Merge review, or a Webster round over the whole diff.\n",
+      "created": "2026-10-22T16:08:23Z",
+      "revised": "2026-10-22T16:08:23Z"
     }
   ],
   "prime_owner": "neve"
