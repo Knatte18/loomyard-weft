@@ -12,8 +12,7 @@ On that machine, narrowly scoped testing is what decides how long a run takes.
 Update (operator, 2026-10-20): the operator will also develop Models on OSL-1046, an Ubuntu 24.04 work laptop with Cortex XDR.
 A freshly built apphost was held 10 s by XDR there, while the same DLL started through `dotnet` was not held; `dotnet test` starts its test host through `dotnet`, so no measurement is needed first (operator, 2026-10-22).
 
-Update (operator, 2026-10-22): it must also work on a Windows 11 machine: OSL-1046 goes in for service, and the operator takes up OSL-1033, a Windows 11 work laptop, again.
-Orch caution, not verified: on Windows the test platform may start `testhost.exe` from the build output rather than `testhost.dll` through `dotnet`, which would bring back XDR's hold on a freshly built executable.
+It must also work on Windows 11 (operator, 2026-10-22).
 
 ## Want
 
