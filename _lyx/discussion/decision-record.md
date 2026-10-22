@@ -274,6 +274,15 @@ Rationale: D3 reads the marker once, before the pull. A start that passed that r
   With its driver gone no deadline ends it, since shuttle classifies the deadline in the waiter's `Wait`; it stays, and can still act on the prime, until its pane is closed by hand.
   Bound: the window is the two file writes after `Shuttle.Start` returns.
 
+<!-- lyx:carry-over Discussion-Review -->
+- Discussion-Review, round 3: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
+  Review: _lyx/reviews/discussion/round-3-review.md; fixer report: _lyx/reviews/discussion/round-3-fixer-report.md.
+  - start-can-seed-during-cancel (class design, severity BLOCKING, open in rounds 1, 2, 3)
+  - tackler-started-unrecorded (class design, severity MEDIUM, open in rounds 3)
+  - weft-leftovers-not-refused-at-start (class design, severity MEDIUM, open in rounds 3)
+  - windows-end-detects-nothing (class design, severity MEDIUM, open in rounds 1, 2, 3)
+<!-- /lyx:carry-over Discussion-Review -->
+
 ## Acceptance criteria
 
 - A blocked run with no pair, as on 2026-10-20: the cancel reads the owner from the pulled Bolt with no reconcile, stops its tackler strand, removes its records run directory and scratch contents, commits and pushes the records side, clears the board status, and the runs overview no longer lists it.
