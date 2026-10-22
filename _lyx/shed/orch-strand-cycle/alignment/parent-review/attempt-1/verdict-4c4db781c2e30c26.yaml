@@ -1,0 +1,13 @@
+verdict: escalate
+reason: >-
+  The design covers every section and folded issue of the board entry and conflicts with no peer run or board entry,
+  but D1 departs, in an autonomous run with no operator answer, from the strand-liveness rule the operator decided on 2026-10-21 and wrote into the entry.
+  The record's reasons cite PATTERN-shuttle-provider-seam and a duplicate-orch hazard, so the writer cannot settle it by conforming, and the board does not say which wins.
+question: >-
+  The board entry orch-strand-cycle (operator decision 2026-10-21) says a strand is live only when its pane sits in the reed session and window it was launched into
+  and its foreground process is the engine (claude), not a shell.
+  Decision record D1 departs three ways:
+  (1) it checks the reed session only, not the window, so a pane moved to another window of the session still reads live and start launches no second orch beside it;
+  (2) it tests that the foreground command is not reed's launch shell rather than that it is claude, keeping reed engine-neutral per PATTERN-shuttle-provider-seam, so another program left running after the engine exited reads live;
+  (3) it skips the foreground check on Windows, so there an exited engine reads live as today.
+  Accept each departure, or hold the run to the entry's rule for it?

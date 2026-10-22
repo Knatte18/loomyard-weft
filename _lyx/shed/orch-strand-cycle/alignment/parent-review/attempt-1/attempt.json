@@ -1,0 +1,16 @@
+{
+  "number": 1,
+  "key": "round-1",
+  "point": "parent-review",
+  "token": "4c4db781c2e30c26",
+  "spawned_at": "2026-10-22T16:53:47.376900875+02:00",
+  "deadline": "2026-10-22T17:13:47.376900875+02:00",
+  "strand_guid": "def929c028b7eb360227eaded4ed8a18",
+  "snapshot": "f5625870030bdc15038d1cb7afcc37ba2dc12327103bc2bea99ae30326906cd9",
+  "pr_number": 0,
+  "head_sha": "",
+  "closed": true,
+  "closed_reason": "The board entry orch-strand-cycle (operator decision 2026-10-21) says a strand is live only when its pane sits in the reed session and window it was launched into and its foreground process is the engine (claude), not a shell. Decision record D1 departs three ways: (1) it checks the reed session only, not the window, so a pane moved to another window of the session still reads live and start launches no second orch beside it; (2) it tests that the foreground command is not reed's launch shell rather than that it is claude, keeping reed engine-neutral per PATTERN-shuttle-provider-seam, so another program left running after the engine exited reads live; (3) it skips the foreground check on Windows, so there an exited engine reads live as today. Accept each departure, or hold the run to the entry's rule for it?",
+  "applied": "",
+  "notified": false
+}
