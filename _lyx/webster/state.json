@@ -729,7 +729,7 @@
       }
     }
   ],
-  "currentBatch": 0,
+  "currentBatch": 1,
   "masterStrand": "1208d44a87b5fd00e2a3266cbfc6e59c",
   "masterSessionId": "dc62cdb4-a622-4a99-88db-9438f18c990d",
   "masterEngine": "claude",
@@ -747,30 +747,25 @@
         "03-fabric-parent-slug": "f7edfaf21ce2dd294f83e3dfefc96e7bc59b2b33125e84dc1cc46f195079d8aa"
       },
       "startSha": "de6b8465f50a475feb96a46f8bd30de0352919c9",
-      "kind": "fork",
-      "spawnedAt": "2026-10-22T08:10:55Z",
-      "sessionId": "dc62cdb4-a622-4a99-88db-9438f18c990d",
-      "engine": "claude",
-      "terminal": true,
-      "status": "failed",
-      "digest": {
-        "batch": "01-machine-name",
-        "status": "failed",
-        "head_sha": "1b901f4c62a619602c8bd0897ae38f0562cc85cd",
-        "reasons": [
-          "batch 01-machine-name holds cards 1-machine-name, 2-board-owner-records, 3-fabric-parent-slug",
-          "create-not-done/1-machine-name[blocking]: Create target \"plan:internal/machinename#TestFromHostname\" still does not resolve: looked up \"internal/machinename#TestFromHostname\", quarry answered not_found (the unit exists and the member is missing)",
-          "create-not-done/1-machine-name[blocking]: Create target \"plan:internal/machinename#TestLeafInvariant_AllowlistOnly\" still does not resolve: looked up \"internal/machinename#TestLeafInvariant_AllowlistOnly\", quarry answered not_found (the unit exists and the member is missing)",
-          "create-not-done/1-machine-name[blocking]: Create target \"plan:internal/machinename#TestSoleSource_NoOtherProductionFileReadsTheHostname\" still does not resolve: looked up \"internal/machinename#TestSoleSource_NoOtherProductionFileReadsTheHostname\", quarry answered not_found (the unit exists and the member is missing)",
-          "create-not-done/2-board-owner-records[blocking]: Create target \"plan:internal/boardengine#TestOwnersEffective\" still does not resolve: looked up \"internal/boardengine#TestOwnersEffective\", quarry answered not_found (the unit exists and the member is missing)"
-        ]
-      },
+      "kind": "recovery",
+      "spawnedAt": "2026-10-22T08:17:34Z",
+      "terminal": false,
+      "status": "",
       "forkTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-machine-handover/dc62cdb4-a622-4a99-88db-9438f18c990d/subagents/agent-ac9a80959f16d9559.jsonl"
       ],
-      "bracketTranscripts": [
-        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-machine-handover/dc62cdb4-a622-4a99-88db-9438f18c990d/subagents/agent-ac9a80959f16d9559.jsonl"
-      ]
+      "strandGuid": "ae76bb1f6a2dbefa066ae99dbdb7dba1",
+      "shuttleRunDir": "/home/knatte/Code/loomyard-LYXHUB/machine-handover/.lyx/shuttle/3f1410884efa86918d4a333c51ad30ce",
+      "eventsPath": "/home/knatte/Code/loomyard-LYXHUB/machine-handover/.lyx/shuttle/3f1410884efa86918d4a333c51ad30ce/events.jsonl",
+      "eventsOffset": 2264,
+      "recoveries": 1,
+      "recoverySessions": [
+        "0062664b-f22d-48b0-bceb-57b894e236a5"
+      ],
+      "recoveryEngines": {
+        "0062664b-f22d-48b0-bceb-57b894e236a5": "claude"
+      },
+      "recoveryStartSha": "1b901f4c62a619602c8bd0897ae38f0562cc85cd"
     }
   },
   "seenForkTranscripts": [
