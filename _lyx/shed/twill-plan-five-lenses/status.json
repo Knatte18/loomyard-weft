@@ -1,11 +1,11 @@
 {
-  "current_producer": "Darn-Write",
+  "current_producer": "Darn-Bouncer",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Darn-Write",
-    "last": "Preflight → done",
+    "now": "Darn-Bouncer",
+    "last": "Darn-Write → done",
     "wait": ""
   },
   "history": [
@@ -14,6 +14,33 @@
       "outcome": "done",
       "output": "",
       "at": "2026-10-22T13:26:04Z"
+    },
+    {
+      "producer": "Darn-Write",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYXHUB/twill-plan-five-lenses/_lyx/landing/summary.md",
+      "at": "2026-10-22T13:30:25Z",
+      "gate_attempts": 0,
+      "gate_spans": [
+        {
+          "gate": "discussion",
+          "kind": "gate",
+          "start": "2026-10-22T13:29:01.573165358Z",
+          "end": "2026-10-22T13:29:09.190209471Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-10-22T13:29:09.245277021Z",
+          "end": "2026-10-22T13:30:24.714696165Z"
+        },
+        {
+          "gate": "description",
+          "kind": "gate",
+          "start": "2026-10-22T13:30:24.747032497Z",
+          "end": "2026-10-22T13:30:24.747061872Z"
+        }
+      ]
     }
   ],
   "product": {
