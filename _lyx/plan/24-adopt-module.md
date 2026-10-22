@@ -24,8 +24,8 @@
 - `pattern/PATTERN-cli-cobra.md`
 
 **Uses:**
-- `plan:internal/fabricengine#DropLocal`
-- `plan:internal/fabricengine#DropLocalResult`
+- `internal/fabricengine#DropLocal`
+- `internal/fabricengine#DropLocalResult`
 - `plan:internal/battencli#ResumeInWindow`
 - `plan:internal/hubforge#CloneSecond`
 - `internal/battencli#RefuseUnlessPrime`
