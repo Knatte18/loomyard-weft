@@ -1,0 +1,14 @@
+{
+  "verdict": "resume",
+  "reason": "Plan-Bouncer stopped at round 2 on the hard cap with two design-wrong findings open, F2 (card 5 logs a failed server-wide pane lookup at Warn on every polled call) and F3 (card 7 repeats its worktree skip line on every Strands call).\nThe round-2 fixer applied both as proposed, and the fix in place answers each.\nCard 5's strandsElsewhereLocked now routes the failure through e.calleeFailures.Fail and the success through Recover, the logger.EpisodeSet that adoptPaneGenerationLocked uses in internal/reedengine/generation.go, and the card widens the field's doc at internal/reedengine/lock.go:47; its failing-lookup test row asserts no second Warn.\nCard 7 adds hubDelivery to its Edit list with a mutex-guarded memory of logged skip paths: the first skip logs at the decided Info or Warn level, repeats at Debug, and a path that resolves again or leaves the listing is forgotten; the empty-.git row asserts the repeat logs at Debug.\nhubDelivery is used by pointer (newHubDelivery in internal/creelcli/delivery.go), so the mutex field is sound.\nThe decision record's skip levels (line 175) stay as decided; only repeats drop.\nThe mechanical findings F1 and F4 are fixed as well, and validate-plan reports ok per the fixer report.",
+  "question": "",
+  "goto": "",
+  "verbs": [
+    "lyx loom circling accept orch-strand-cycle"
+  ],
+  "cause": "",
+  "attempt": 1,
+  "attempt_dir": "/home/knatte/Code/loomyard-LYXHUB/orch-strand-cycle/_lyx/shed/orch-strand-cycle/arbiter/attempt-1",
+  "verdict_path": "/home/knatte/Code/loomyard-LYXHUB/orch-strand-cycle/_lyx/shed/orch-strand-cycle/arbiter/attempt-1/verdict.yaml",
+  "relaunch": "lyx shed step orch-strand-cycle --until-stop --arbiter-attempt 1"
+}
