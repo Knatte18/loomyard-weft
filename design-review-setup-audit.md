@@ -31,6 +31,11 @@ Since late rounds still find new things, Discussion-Review round 2 also runs the
 The twill fixer stays in every round, since many late-round defects are introduced by a sloppy fixer.
 The next run of this audit checks what round 2's fan finds against a solo round 2, before Plan gets the same.
 
+## Operator view, not a decision (2026-10-22): fewer, sharper lenses
+
+Tokens could be saved by scoping each lens more precisely and having fewer of them.
+A later run of this audit, with more material, measures per lens what it finds that no other lens or the plain reviewer finds, and how much of it is real, so lenses can be merged, sharpened or dropped.
+
 ## Review rounds after twill-plan (was note `review-rounds-after-twill-plan`)
 
 The earlier audit below found discussion-review round 3 and plan-review round 2 useful only when an earlier round's fix was too narrow.
