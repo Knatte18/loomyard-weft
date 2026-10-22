@@ -1,0 +1,10 @@
+{
+  "slug": "machine-handover",
+  "round": 1,
+  "reviewer": "ly:orch",
+  "opened_at": "2026-10-22T08:07:03.822518737+02:00",
+  "decision_record": "/home/knatte/Code/loomyard-LYXHUB/machine-handover/_lyx/discussion/decision-record.md",
+  "support_log": "/home/knatte/Code/loomyard-LYXHUB/machine-handover/_lyx/discussion/support-log.md",
+  "state": "open",
+  "cap": 2
+}
