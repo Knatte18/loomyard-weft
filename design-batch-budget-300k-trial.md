@@ -11,7 +11,6 @@ Many small forks were expensive under the identity batcher.
 ## Decision (operator, 2026-10-22)
 
 `cautious` stays as it is; the hub's `batcher.yaml` adds a profile `wide`, the same as `cautious` but with `budget: 300000`, and makes it `active`.
-The hub layer also still holds a copy of `cautious` at template values, left over from a first attempt (issue #833); the operator removes it in the editor.
 
 ## Follow-up
 
