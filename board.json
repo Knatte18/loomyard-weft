@@ -1381,6 +1381,26 @@
       "body": "## Seen\n\nA task's board entry is written when it is promoted, and can sit for days while other work lands and other runs start.\nIts text reaches Discussion-Write as it stands, so a scope that overlaps, contradicts or has been overtaken by other planned or landed work is found only in the Discussion perch or by the alignment agent, after a whole Discussion has been written; a scope change costs more the later it comes.\n\n## Idea\n\nA row of the run, before Discussion-Write (and before Darn-Write), aligns the task's own entry text against the rest of the board, the other in-flight runs' records (`lyx loom peers`) and the parent's recent landed commits, and adjusts the text before anything is written from it.\n\n- The row settles misalignments itself and writes the adjusted text into the entry: a reference to work that has landed, a dependency left unnamed, an overlap with other planned work trimmed or made explicit.\n- It escalates to the orch only for something larger, such as a design conflict with another run or a task that no longer makes sense; the orch is not to be disturbed by ordinary misalignments (operator, 2026-10-22).\n\nThe board's run lock exists to stop the orch from editing a started run's entry, which is pointless once the run has read it (operator, 2026-10-22); it does not need to stop the run's own pre-Discussion row, since the text still matters then.\nSo this row edits its own entry through an exemption the lock grants it.\nThe rule in this repo's `CLAUDE.md` that no decision, card or step of a run changes the running task's own entry goes: a rule about lyx's own behaviour cannot live in one repo's `CLAUDE.md`, since it does not travel with lyx to other hubs (operator, 2026-10-22); the lock and its exemption are the mechanism, documented in their package's `doc.go`.\n\nRelated: note `discussion-alignment-into-lenses`, which drops the alignment agent at the discussion point; with this row in place the perch's `board-fit` only checks what the discussion itself added.\nOperator idea, 2026-10-22; the design is open.\n",
       "created": "2026-10-22T11:08:38Z",
       "revised": "2026-10-22T11:12:05Z"
+    },
+    {
+      "id": 755,
+      "handle": "E32",
+      "slug": "claude-md-lyx-rules-out",
+      "title": "Move rules about lyx behaviour out of this repo's CLAUDE.md into lyx code, doc.go and stencils",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "stencil",
+        "board",
+        "loom"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "## Seen\n\nThis repo's `CLAUDE.md` holds rules about how lyx itself behaves, which hold for every repo developed with lyx, not only this one.\nExamples: in \"Docs land in the same commit\", that the task that builds a design never changes its own board entry's body or scope, that the landing marks the entry done and the board prune removes it, and that no decision, card or step of a run changes the running task's own entry; in \"Production\", how Batten's Land row runs the hub's `deploy` command and how `alignment_pr_approve` withdraws the alignment agent's landing.\n\n## Idea\n\n`CLAUDE.md` is for one repo only (operator, 2026-10-22).\nGo through it and move every rule about lyx's behaviour out: what lyx enforces goes into the code and its package `doc.go`, and what agents must be told goes into the stencils lyx ships, so it reaches every hub.\nWhat stays in `CLAUDE.md` is what holds for this repo alone, such as the cgo build, `update-plugins.sh` and the push rule for `main`.\n\nThe run-lock rule is handled by note `entry-align-before-discussion`.\n",
+      "created": "2026-10-22T11:13:40Z",
+      "revised": "2026-10-22T11:13:40Z"
     }
   ],
   "prime_owner": "neve"
