@@ -1078,7 +1078,7 @@
     },
     {
       "id": 717,
-      "slug": "reed-agent-launch-bypass",
+      "slug": "shuttle-open-agent-defaults",
       "title": "Opening an agent into reed: engine bypass mode by default, explicit engine, model and effort, and reed add points to shuttle open",
       "kind": "note",
       "labels": [
