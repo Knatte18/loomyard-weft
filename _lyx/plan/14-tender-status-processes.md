@@ -24,7 +24,7 @@
 - `internal/runproc#Record`
 - `internal/runproc#HubOwner`
 - `internal/runproc#RoleBatten`
-- `plan:internal/fabricengine#RunProcDir`
+- `internal/fabricengine#RunProcDir`
 - `internal/tenderengine#staleProcesses`
 - `internal/tenderengine#fakePair`
 

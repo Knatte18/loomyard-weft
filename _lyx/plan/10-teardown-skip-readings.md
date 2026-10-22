@@ -30,7 +30,7 @@
 - `plan:internal/pauserecord#WaitingMarker`
 - `internal/runproc#List`
 - `internal/runproc#Record`
-- `plan:internal/fabricengine#RunProcDir`
+- `internal/fabricengine#RunProcDir`
 - `plan:internal/pairteardown#Teardown.registeredBattenAlive`
 - `plan:internal/pairteardown#Teardown.driverRecordPID`
 - `internal/pairteardown#awaitRunLockFree`

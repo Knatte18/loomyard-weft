@@ -1,11 +1,11 @@
 # Card 3 — Detached pushes and board syncs register under the owner D2 names
 
 **Create:**
-- `plan:internal/lyxdirs#RunProcDirName` -> `const RunProcDirName = "runproc"`
-- `plan:internal/fabricengine#RunProcDir` -> `func RunProcDir(hub string) string`
-- `plan:internal/fabricengine#startDetachedPush` -> `func startDetachedPush(exe string, req PushSpawn) error`
-- `plan:internal/fabricengine#TestStartDetachedPush_RegistersTheChild` -> `func TestStartDetachedPush_RegistersTheChild(t *testing.T)`
-- `plan:internal/boardengine#TestSpawnSync_RegistersUnderTheHubOwner` -> `func TestSpawnSync_RegistersUnderTheHubOwner(t *testing.T)`
+- `internal/lyxdirs#RunProcDirName`
+- `internal/fabricengine#RunProcDir`
+- `internal/fabricengine#startDetachedPush`
+- `internal/fabricengine#TestStartDetachedPush_RegistersTheChild`
+- `internal/boardengine#TestSpawnSync_RegistersUnderTheHubOwner`
 
 **Edit:**
 - `internal/fabricengine#SpawnDetachedPush`
