@@ -1,6 +1,6 @@
 # Fork git guard flags read-only 'git tag --points-at' as a state-mutating command
 
-`fork-git-guard-read-only-tag` · Task · bug, shed · running · Darn-Burler-Review
+`fork-git-guard-read-only-tag` · Task · bug, shed · running · Darn-Burler-Fix
 
 Imported from [issue #819](https://github.com/Knatte18/loomyard/issues/819).
 
