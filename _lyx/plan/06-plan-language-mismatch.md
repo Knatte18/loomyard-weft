@@ -1,10 +1,10 @@
 # Card 6 — plan-language-mismatch
 
 **Create:**
-- `plan:internal/planparser#PathEntryPath` -> `func PathEntryPath(ref string) (string, bool)`
-- `plan:internal/planparser#checkLanguageMismatch` -> `func checkLanguageMismatch(plan *Plan) []ValidationError`
-- `plan:internal/planglyph#languageMismatchFindings` -> `func languageMismatchFindings(plan *planparser.Plan, results []quarry.ResolveResult) []Finding`
-- `plan:internal/planparser_test#TestValidate_LanguageMismatch` -> `func TestValidate_LanguageMismatch(t *testing.T)`
+- `internal/planparser#PathEntryPath`
+- `internal/planparser#checkLanguageMismatch`
+- `internal/planglyph#languageMismatchFindings`
+- `internal/planparser_test#TestValidate_LanguageMismatch`
 
 **Edit:**
 - `internal/planparser#validate`

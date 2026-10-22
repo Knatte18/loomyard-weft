@@ -1,14 +1,14 @@
 # Card 7 — rename-namespace-pair
 
 **Create:**
-- `plan:internal/planparser#checkRenameNamespacePair` -> `func checkRenameNamespacePair(plan *Plan, worktreeRoot string) []ValidationError`
-- `plan:internal/planparser_test#TestValidate_RenameNamespacePair` -> `func TestValidate_RenameNamespacePair(t *testing.T)`
+- `internal/planparser#checkRenameNamespacePair`
+- `internal/planparser_test#TestValidate_RenameNamespacePair`
 
 **Edit:**
 - `internal/planparser#validate`
 
 **Uses:**
-- `plan:internal/planparser#PathEntryPath`
+- `internal/planparser#PathEntryPath`
 
 **Intent:** Refuse a `Rename` pair that names a C# namespace (D3), with the new blocking finding `rename-namespace-pair`.
 

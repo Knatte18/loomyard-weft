@@ -1,7 +1,7 @@
 # Card 8 — multi-alphabet-answers
 
 **Create:**
-- `plan:internal/planglyph#crossAlphabetDetail` -> `func crossAlphabetDetail(r quarry.ResolveResult) (string, bool)`
+- `internal/planglyph#crossAlphabetDetail`
 
 **Edit:**
 - `internal/planglyph#statusFindings`
