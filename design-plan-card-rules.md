@@ -1,6 +1,6 @@
 # Plan cards: headroom check, Extends label, an amendment owner, failures traced to cards
 
-`plan-card-rules` · Task · enhancement, loom, webster, burler, orch, quarry · running · Worktree-Create
+`plan-card-rules` · Task · enhancement, loom, webster, burler, orch, quarry · running · Discussion-Write
 
 ## Decision (operator, 2026-10-22)
 
