@@ -1,6 +1,6 @@
 # One machine takes over from another: owner machines, lyx adopt, landing on the parent owner
 
-`machine-handover` · Task · bug, enhancement, batten, board, orch, fabric · running · Merge-In
+`machine-handover` · Task · bug, enhancement, batten, board, orch, fabric · running · Merge-Bouncer
 
 ## Goal
 
