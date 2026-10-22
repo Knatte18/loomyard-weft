@@ -26,7 +26,7 @@ Held by a run; its scope is locked until the run ends.
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | 3 | **lyx loom decision add notifies the run live LLM producer of the new decision**<br>• With the Go driver no agent lives for the whole run, so decision add tells the working LLM producer if any, and later producers and PR-Gate catch the rest<br>• `darn: review_hard_max_bounces 2`<br>• `darn: review_max_bounces 1` | [`decision-add-notifies`](design-decision-add-notifies.md) | darn | PR-Align | 3d | 20m | loom, creel |
 | 4 | **Darn-Write stops looping on verify failures it cannot own, and the flaky reed boot test behind them**<br>• A verify failure in code the task did not touch, or one the parent already fixed, no longer loops through Darn-Write; the reed boot race is made deterministic and the impacted set stops picking unreachable packages<br>• `profile: light` | [`darn-verify-fixes`](design-darn-verify-fixes.md) | loom | Discussion-Bouncer | 4d | 36m | batten, gate, loom, shed, reed |
-| 5 | **lyx gate test --upto N with manual tiers, and a lyx gate status verb**<br>• --upto N runs tiers 0..N skipping manual ones; gate status shows who holds each gate slot and since when<br>• `darn: review_hard_max_bounces 2`<br>• `darn: review_max_bounces 1` | [`gate-tier-verbs`](design-gate-tier-verbs.md) | darn | Darn-Bouncer | 19h | 16m | gate |
+| 5 | **lyx gate test --upto N with manual tiers, and a lyx gate status verb**<br>• --upto N runs tiers 0..N skipping manual ones; gate status shows who holds each gate slot and since when<br>• `darn: review_hard_max_bounces 2`<br>• `darn: review_max_bounces 1` | [`gate-tier-verbs`](design-gate-tier-verbs.md) | darn | Describe | 19h | 16m | gate |
 
 ### Ready
 
@@ -127,7 +127,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 20 | **Cortex XDR holds stack up across a loom run's card, batch, round and whole-suite gates**<br>• Each gate that tests a just-changed package waits 8-10 s for XDR; a 10-15 card run pays that many times over | [`loom-gates-xdr-stacking`](design-loom-gates-xdr-stacking.md) | 1d | 1d | webster, loom, gate |
 | 21 | **[.NET 007] Language-specific lens sets seeded per hub**<br>• Every hub seeds lenses.yaml from one Go-repo template; seed by the hub language instead | [`lenses-language-sets`](design-lenses-language-sets.md) | 1d | 1d | burler, config, dotnet |
 | 22 | **Revisit late review rounds after the twill-plan lens change**<br>• After 4-5 loom runs past 504c5552, check whether discussion-review round 3 and plan-review round 2 still find anything | [`review-rounds-after-twill-plan`](design-review-rounds-after-twill-plan.md) | 13h | 13h | burler, loom |
-| 23 | **Test runs repeat at the end of a loom run: tier0 inside every tier, the suite four times, tmux only at Publish**<br>• Disjoint tiers, a green run that carries forward, tmux in more gates, and a faster fabricengine suite; with the 2026-10-22 tier timings | [`gate-test-repeats`](design-gate-test-repeats.md) | 37m | 37m | gate, loom, webster, fabric |
+| 23 | **Test runs repeat at the end of a loom run: tier0 inside every tier, the suite four times, tmux only at Publish**<br>• Disjoint tiers, a green run that carries forward, tmux in more gates, and a faster fabricengine suite; with the 2026-10-22 tier timings | [`gate-test-repeats`](design-gate-test-repeats.md) | 38m | 38m | gate, loom, webster, fabric |
 
 #### Low priority
 

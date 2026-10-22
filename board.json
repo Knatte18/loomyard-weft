@@ -1310,7 +1310,7 @@
       "isolated": false,
       "brief": "--upto N runs tiers 0..N skipping manual ones; gate status shows who holds each gate slot and since when",
       "body": "## Seen\n\nRunning a hub's tiers up to some level means naming each one: the loomyard push gate is `lyx gate test --tier 0 --tier 1 --tier 2`.\n`--all` already means every package, not every tier.\nThe loomyard hub's `tier3` runs real LLM sessions, spends tokens and is run by hand only, so a plain \"every tier\" flag would make it easy to start by accident.\n`lyx gate test` is the gate module's only verb: nothing shows which gate slots are taken, so a run waiting for a slot gives no reason.\n\n## Operator decision (2026-10-22)\n\n- `lyx gate test --upto N` runs every declared tier numbered 0 through N, in ascending order, dropping a tier another selected tier `covers`, as `--tier` does today.\n- A tier may carry `manual: true` in `gate.yaml`; `--upto` skips a manual tier, which runs only when named with `--tier`.\n- No separate \"every tier\" flag: `--upto` with the highest number, manual tiers left out, serves that need.\n- `lyx gate status` is a read-only verb that shows which slots of the hub's gate-slot pool are taken, by which run and tier, and since when.\n\n## Out of scope\n\nSetting `manual: true` on the loomyard hub's `tier3` is a hub config write the orch makes after landing, not part of this task.\n",
-      "status": "running · Darn-Bouncer",
+      "status": "running · Describe",
       "created": "2026-10-21T11:09:37Z",
       "revised": "2026-10-22T06:09:42Z",
       "run_settings": {
