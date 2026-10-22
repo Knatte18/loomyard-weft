@@ -1,14 +1,14 @@
 # Card 13 — An owned-elsewhere pause ends the run's processes on the machine it left
 
 **Create:**
-- `plan:internal/sheddriver#RestepRecorded` -> `func RestepRecorded(records []shedrun.SettleRecord, status shedengine.Status) bool`
-- `plan:internal/sheddriver#TestRestepRecorded` -> `func TestRestepRecorded(t *testing.T)`
-- `plan:internal/battenshed#FinalizePastMerge` -> `func FinalizePastMerge(status shedengine.Status, restepped func(shedengine.Status) (bool, error), parentHolds func() (bool, error)) (bool, error)`
-- `plan:internal/tendercli#EndOwnedElsewhere` -> `func EndOwnedElsewhere(location *lyxcwd.Location, slug string) ([]runproc.Ended, error)`
-- `plan:internal/tendercli#ownedElsewhereEnder` -> `type ownedElsewhereEnder struct`
-- `plan:internal/tendercli#ownedElsewhereEnder.run` -> `func (e ownedElsewhereEnder) run() ([]runproc.Ended, error)`
-- `plan:internal/tendercli#TestOwnedElsewhereEnder` -> `func TestOwnedElsewhereEnder(t *testing.T)`
-- `plan:internal/tendercli#endOwnedElsewhere` -> `var endOwnedElsewhere = EndOwnedElsewhere`
+- `internal/sheddriver#RestepRecorded`
+- `internal/sheddriver#TestRestepRecorded`
+- `internal/battenshed#FinalizePastMerge`
+- `internal/tendercli#EndOwnedElsewhere`
+- `internal/tendercli#ownedElsewhereEnder`
+- `internal/tendercli#ownedElsewhereEnder.run`
+- `internal/tendercli#TestOwnedElsewhereEnder`
+- `internal/tendercli#endOwnedElsewhere`
 
 **Delete:**
 - `internal/battencli#childRestepped`
