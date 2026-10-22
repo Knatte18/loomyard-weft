@@ -1,14 +1,14 @@
 # Card 9 — shuttle's typing chokepoint refuses a session a pause covers
 
 **Create:**
-- `plan:internal/shuttleengine#ErrPaused` -> `var ErrPaused = errors.New("shuttle: a pause covers the session")`
-- `plan:internal/shuttleengine#PausedError` -> `type PausedError struct`
-- `plan:internal/shuttleengine#PausedError.Error` -> `func (e *PausedError) Error() string`
-- `plan:internal/shuttleengine#PausedError.Unwrap` -> `func (e *PausedError) Unwrap() error`
-- `plan:internal/shuttleengine#Runner.targetSlug` -> `func (r *Runner) targetSlug(guid, name string) string`
-- `plan:internal/shuttleengine#Runner.pausedTarget` -> `func (r *Runner) pausedTarget(guid, name string) error`
-- `plan:internal/shuttleengine#coverScope` -> `func coverScope(t *testing.T, scope string, pausedAt time.Time) (string, func(resumedAt time.Time))`
-- `plan:internal/shuttleengine#TestSend_RefusesACoveredTarget` -> `func TestSend_RefusesACoveredTarget(t *testing.T)`
+- `internal/shuttleengine#ErrPaused`
+- `internal/shuttleengine#PausedError`
+- `internal/shuttleengine#PausedError.Error`
+- `internal/shuttleengine#PausedError.Unwrap`
+- `internal/shuttleengine#Runner.targetSlug`
+- `internal/shuttleengine#Runner.pausedTarget`
+- `internal/shuttleengine#coverScope`
+- `internal/shuttleengine#TestSend_RefusesACoveredTarget`
 - `pattern/PATTERN-pause-holds-prompts.md`
 
 **Edit:**

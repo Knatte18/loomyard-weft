@@ -10,7 +10,7 @@
 
 **Uses:**
 - `internal/pauserecord#ClaimSession`
-- `plan:internal/shuttleengine#PausedError`
+- `internal/shuttleengine#PausedError`
 - `internal/tenderengine#newPair`
 - `internal/tenderengine#newEnv`
 - `internal/tenderengine#env.seedLive`
