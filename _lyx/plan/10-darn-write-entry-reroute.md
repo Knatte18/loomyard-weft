@@ -46,7 +46,8 @@ The seams are told, never read here: `internal/loomshed` may not import `interna
 the record's `WrittenAt` parses and is at or after `RunStart`, compared as whole-second UTC, a zero `RunStart`, which `seedRunStart` returns for a seed with no stamp, counting as not this run's, since the record's run cannot be told;
 `TaskHead` equals the record's `Head`;
 `Dirty` returns no path;
-and some tip `ParentTips` returns is not an ancestor of HEAD, no tip counting as not moved.
+and some tip `ParentTips` returns is not an ancestor of HEAD.
+The seam always returns the local tip, so short of every tip being an ancestor, a failed tip or ancestor read is the only not-moved case.
 A `RunStart`, `TaskHead`, `ParentTips` or `IsAncestor` error is logged at Warn and counts as no reroute; a `Dirty` error is logged at Warn and counts as dirty; in every such case the writer runs as today.
 A reroute's reason says the parent branch moved since the verify failure the record at `recordPath` names, while the task branch and worktree have not changed since it, and that the run reroutes to Merge-In, which merges the parent and re-runs the failing gate.
 It adds that if Merge-In stops without merging, on a parent pair that is dirty, mid-merge, ahead of or diverged from its upstream, the way forward is to repair the parent pair as Merge-In's Stuck reason says before any resume, since a resume over the unrepaired pair reroutes back to the same stop; a reroute-cap halt embeds this reason, so the parent reads it before the cap halt's resume.
@@ -70,7 +71,7 @@ Tests:
 - `newDarnFixture` sets the new seams to an unmoved, clean, current state: `RunStart` before the record, `TaskHead` equal to the record's head, no dirty path, one parent tip that is an ancestor; `PublishFailure` returns no record by default, so the existing rows spawn the writer as today.
   The fixture gains a `rerouteReady` mutation that presents this run's record, HEAD at its head, a clean tree and one parent tip outside HEAD, the state that reroutes.
 - `TestDarnWrite_Call` gains the reroute row: `rerouteReady` returns `Stuck` with `Reroute` set, a reason naming Merge-In and the parent-pair repair and not containing `lyx loom resume`, no events and no session built.
-  Every writer-runs row starts from `rerouteReady` and flips one fact, so it fails if that fact were ignored: no record, a record written before the run's start, a record whose `WrittenAt` is empty, a zero `RunStart`, a HEAD past the record's head, a dirty tree, a failed status read, a failed run-start read, a failed HEAD read, no parent tip, a parent tip already in HEAD, a failed tip read and a failed ancestor read; each asserts `session` true and events `session,commit`.
+  Every writer-runs row starts from `rerouteReady` and flips one fact, so it fails if that fact were ignored: no record, a record written before the run's start, a record whose `WrittenAt` is empty, a zero `RunStart`, a HEAD past the record's head, a dirty tree, a failed status read, a failed run-start read, a failed HEAD read, a parent tip already in HEAD, a failed tip read and a failed ancestor read; each asserts `session` true and events `session,commit`.
   A row with two parent tips, the first in HEAD and the second outside it, reroutes, so the scan reads past the first tip.
   The gate-failed row asserts its reason holds the literal words `lyx loom resume` and `Merge-In` after the session's own reason, not only the constant, so the new text's Merge-In clause is pinned.
   The prior-work row reads the new seam shape; unwired-seam rows name `RunStart`, `TaskHead`, `Dirty`, `ParentTips` and `IsAncestor`.

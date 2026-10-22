@@ -19,7 +19,7 @@ Every lens fork returned a report.
 - criteria-coverage MEDIUM + branch-coverage LOW: the findings file outliving `lyx loom goto` and `lyx loom resume` was argued, not tested — fixed differently: card 8 extends `TestGotoCmd_MovesBlockedRunOntoRow` to pin that a goto leaves a scratch-directory file in place. No resume row is added, because pinning it needs a live loop process while resume removes only the loop's pid files (`internal/shedverbs/loop.go:358`).
 - branch-coverage, LOW: the helper's branch for a nil `GateFindingsFile` was unreached — fixed as proposed: card 8 runs the fixture once over an Env with the seam nil.
 - branch-coverage, LOW: `clearGateFindings`' absent-file and removal-failure branches had no row — fixed as proposed: card 7's table drives both.
-- branch-coverage, LOW: card 10's tip scan had no no-tip or second-tip row — fixed as proposed: rows for no tip and for two tips with the second outside HEAD.
+- branch-coverage, LOW: card 10's tip scan had no no-tip or second-tip row — fixed as proposed: rows for no tip and for two tips with the second outside HEAD; plan review round 1 (F3) later dropped the no-tip row as unreachable.
 - branch-coverage, LOW: card 3 had no row for a guard package whose failing test is not a listed guard — fixed as proposed: a `TestOther` row that is not owned.
 - branch-coverage, LOW: card 1's scan early return with no lyxbin package was unreached — fixed as proposed: an optional `graph` field and a row over a graph without lyxbin.
 - criteria-coverage, LOW: card 10's darn tip reader duplicated landingshed's instead of sharing it — fixed as proposed: card 10 creates `parentTipsReader`, used by `landingDeps` for `Deps.ReadParentTips` and by `darnDeps`.
