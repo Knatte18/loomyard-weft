@@ -1181,6 +1181,25 @@
       "body": "## Seen (agent study, 2026-10-22)\n\nLanded loom runs 2026-10-08 to 2026-10-22.\n\n- PR-Rework: 8 of 130 runs (6.2%), never twice in a run, none in the last 27 runs (since 2026-10-16).\n  Four rejects came from the orch or operator before PR-Align existed; four came from the alignment agent (5.6% of 72 verdicts), all valid.\n- A rework cycle cost $2.94-8.97 extra (mean $4.82) and 15-42 min (mean 23); $38.58 in total, about 0.7% of loom spend.\n  Each rework plan was one fix card; the second Plan-Review is the largest part.\n- Where the deviation entered: decision record 1, plan 3 (Plan-Review missed it), code 3 (two of them written by the Webster-Review or Merge-Review fixer), not a real deviation 1.\n- Merge-Review ran in 73% of runs since 2026-10-12, its fixer changed code in a third of those, about $0.96 per run.\n- Verify failures at Publish/Merge-In: about 38, 29 retried automatically by batten.\n\n## Idea (orch, not a decision)\n\nThe tail is not where the money goes.\nIf anything is done: a scope-alignment lens in Webster-Review and Merge-Review would catch the fixer-written deviations; a `small` reject verdict could route to a fix row instead of a new plan generation.\n",
       "created": "2026-10-22T18:02:29Z",
       "revised": "2026-10-22T18:02:29Z"
+    },
+    {
+      "id": 767,
+      "handle": "E21",
+      "slug": "pr-align-fix-row",
+      "title": "A PR-Align reject goes to a light fixer row, not a new plan generation",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "loom",
+        "burler"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "## Seen\n\nA PR-Align reject goes to PR-Rework, which writes a new plan generation and walks Plan-Review, Webster, Webster-Review, Merge-In, Merge-Review, Publish and PR-Align again.\nAudit `pr-rework-audit`: every rework plan was one fix card; a cycle cost about $4.80 and 23 min.\n\n## Idea (operator, 2026-10-22)\n\n- A reject from PR-Align goes to a new PR-Fix row: one fixer, as in a Burler fix round, fixing the code straight from the findings and the decision record.\n  The findings are concrete, so a light model such as Sonnet suits it.\n- Then verify, Publish and PR-Align again, under a bounce cap.\n- PR-Rework with a new plan stays only for a reject that changes the goal: the operator's, or one the alignment agent marks as needing a new plan.\n- Once PR-Fix exists, trial Merge-Review off (`merge_max_bounces: 0`): Merge-In's verify and PR-Align's check against landed parent commits cover it, and PR-Fix fixes what PR-Align finds.\n",
+      "created": "2026-10-22T18:11:06Z",
+      "revised": "2026-10-22T18:11:06Z"
     }
   ],
   "prime_owner": "neve"
