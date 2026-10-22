@@ -88,6 +88,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 5 | **Teardown's archive-tag push has no retry for a transient remote rejection** | [`retry-archive-tag-push`](design-retry-archive-tag-push.md) | 0m | 0m | batten, fabric |
 | 6 | **webster: done-check rejects a Create path holding a space that webster validate accepts** | [`done-check-spaced-create-paths`](design-done-check-spaced-create-paths.md) | 0m | 0m | webster, quarry |
 | 7 | **gate: runtime.Caller returns module-relative paths under lyx gate test, as with -trimpath** | [`gate-test-runtime-caller-paths`](design-gate-test-runtime-caller-paths.md) | 0m | 0m | gate |
+| 8 | **Fork git guard flags read-only 'git tag --points-at' as a state-mutating command** | [`fork-git-guard-read-only-tag`](design-fork-git-guard-read-only-tag.md) | 0m | 0m | shed |
 
 ### Enhancements
 
