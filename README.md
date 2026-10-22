@@ -25,7 +25,7 @@ Waits on nothing open; can start now.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T10 | **Darn's review hard cap defaults to 2, and the orch stencil drops hand-written small-task run settings** | [`darn-hard-cap-default-2`](design-darn-hard-cap-default-2.md) | loom |  | 2m<br>2m | config, stencil, orch |
+| T10 | **Darn's review hard cap defaults to 2, and the orch stencil drops hand-written small-task run settings**<br>• `profile: light` | [`darn-hard-cap-default-2`](design-darn-hard-cap-default-2.md) | darn |  | 2m<br>0m | config, stencil, orch |
 
 ### Layer A
 
