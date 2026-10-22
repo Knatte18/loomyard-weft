@@ -21,7 +21,10 @@ Held by a run; its scope is locked until the run ends.
 
 Waits on nothing open; can start now.
 
-_None._
+| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- | --- | --- |
+| T2 | **lyx report timing counts sleep as active time when the system journal is unreadable**<br>• `darn: review_hard_max_bounces 2`<br>• `darn: review_max_bounces 1` | [`report-timing-unreadable-journal`](design-report-timing-unreadable-journal.md) | darn |  | 1h<br>0m | report |
+| T5 | **gate: runtime.Caller returns module-relative paths under lyx gate test, as with -trimpath**<br>• `darn: review_hard_max_bounces 2`<br>• `darn: review_max_bounces 1` | [`gate-test-runtime-caller-paths`](design-gate-test-runtime-caller-paths.md) | darn |  | 1h<br>0m | gate |
 
 ### Layer A
 
@@ -31,6 +34,10 @@ Waits only on Running or Ready entries.
 | --- | --- | --- | --- | --- | --- | --- |
 | T3 | **One batten verb ends a run for good, live or stopped, before or after its pair exists**<br>• Abandon or abort a batten run in any state: end its processes and strands, clear the claim, remove records and scratch, optionally the pair; batten refuses a dirty source up front<br>• `profile: light` | [`batten-cancel-verb`](design-batten-cancel-verb.md) | loom | `run-process-ownership` | 1d<br>6h | batten, reed, shed |
 | T4 | **Orch lifecycle: dead strands count as dead, the watcher restarts, cycle requests need no reply and can be withdrawn**<br>• Strand liveness checks the engine process and placement, a dead orch watcher restarts, the note write is seen without a reply, and a pending distill/refresh can be withdrawn<br>• `profile: light` | [`orch-strand-cycle`](design-orch-strand-cycle.md) | loom | `run-process-ownership` | 3d<br>1d | orch, reed |
+| T6 | **loom halt note for a Merge-In loop exit carries only 'loop-exited' as its reason**<br>• `darn: review_hard_max_bounces 2`<br>• `darn: review_max_bounces 1` | [`loop-exit-halt-names-its-cause`](design-loop-exit-halt-names-its-cause.md) | darn | `run-process-ownership` | 1h<br>0m | loom, shed |
+| T7 | **webster: done-check rejects a Create path holding a space that webster validate accepts**<br>• `darn: review_hard_max_bounces 2`<br>• `darn: review_max_bounces 1` | [`done-check-spaced-create-paths`](design-done-check-spaced-create-paths.md) | darn | `run-process-ownership` | 1h<br>0m | webster, quarry |
+| T8 | **Fork git guard flags read-only 'git tag --points-at' as a state-mutating command**<br>• `darn: review_hard_max_bounces 2`<br>• `darn: review_max_bounces 1` | [`fork-git-guard-read-only-tag`](design-fork-git-guard-read-only-tag.md) | darn | `run-process-ownership` | 1h<br>0m | shed |
+| T9 | **Teardown's archive-tag push has no retry for a transient remote rejection**<br>• `darn: review_hard_max_bounces 2`<br>• `darn: review_max_bounces 1` | [`retry-archive-tag-push`](design-retry-archive-tag-push.md) | darn | `run-process-ownership` | 1h<br>0m | batten, fabric |
 
 ## Notes
 
@@ -53,12 +60,6 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | --- | --- | --- | --- | --- | --- |
 | B1 | H | **fabric add refuses an existing local branch instead of adopting it**<br>• lyx fabric add adopts origin branches but refuses a local unmarked warp branch, so main or an umbrella branch cannot get a pair | [`fabric-add-adopt-local`](design-fabric-add-adopt-local.md) | 1d<br>1d | fabric, workspaces |
 | B2 |  | **Dead strands from before a reboot hold their names and fail a resumed row** | [`reclaim-dead-strand-names`](design-reclaim-dead-strand-names.md) | 1h<br>1h | reed, shuttle |
-| B3 |  | **loom halt note for a Merge-In loop exit carries only 'loop-exited' as its reason** | [`loop-exit-halt-names-its-cause`](design-loop-exit-halt-names-its-cause.md) | 1h<br>1h | loom, shed |
-| B4 |  | **lyx report timing counts sleep as active time when the system journal is unreadable** | [`report-timing-unreadable-journal`](design-report-timing-unreadable-journal.md) | 1h<br>0m | report |
-| B5 |  | **Teardown's archive-tag push has no retry for a transient remote rejection** | [`retry-archive-tag-push`](design-retry-archive-tag-push.md) | 1h<br>1h | batten, fabric |
-| B6 |  | **webster: done-check rejects a Create path holding a space that webster validate accepts** | [`done-check-spaced-create-paths`](design-done-check-spaced-create-paths.md) | 1h<br>1h | webster, quarry |
-| B7 |  | **gate: runtime.Caller returns module-relative paths under lyx gate test, as with -trimpath** | [`gate-test-runtime-caller-paths`](design-gate-test-runtime-caller-paths.md) | 1h<br>1h | gate |
-| B8 |  | **Fork git guard flags read-only 'git tag --points-at' as a state-mutating command** | [`fork-git-guard-read-only-tag`](design-fork-git-guard-read-only-tag.md) | 1h<br>1h | shed |
 
 ### Enhancements
 

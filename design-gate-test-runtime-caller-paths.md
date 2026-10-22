@@ -1,6 +1,6 @@
 # gate: runtime.Caller returns module-relative paths under lyx gate test, as with -trimpath
 
-`gate-test-runtime-caller-paths` · Note · bug, gate
+`gate-test-runtime-caller-paths` · Task · bug, gate
 
 Imported from [issue #807](https://github.com/Knatte18/loomyard/issues/807).
 
@@ -36,3 +36,8 @@ Why abnormal: the gate gave no signal about the cards, so agents fell back to ra
 What to do: find what makes the slot build behave like `-trimpath` (slot env, go env file, toolchain flags) and remove it, or document it and have `lyx gate test` surface it. Having gate output name the effective trimpath/GOFLAGS state would make this diagnosable.
 
 Provenance: task `csharp-alphabet`; notes 01-csharp-canonical-type.md, 07-resolve-csharp-recovery.md, 07-resolve-csharp.md.
+
+## Operator decision (2026-10-22)
+
+The cause is known: commit 2d3841504 makes the gate add `-trimpath` to GOFLAGS on purpose, for test-cache reuse, so `runtime.Caller` returns module-relative paths.
+Keep `-trimpath`; document it and surface it in the gate's output, so a test author meets it before debugging a path.
