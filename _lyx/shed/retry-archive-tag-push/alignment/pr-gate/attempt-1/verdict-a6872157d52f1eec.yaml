@@ -1,0 +1,9 @@
+verdict: approve
+reason: >-
+  The diff covers both points of the board entry and its operator decision and nothing beyond them:
+  the retry classifier now matches the short name git prints for the full archive tag ref, the rejection class actually seen,
+  and the archive-tag push retries on its own longer schedule while the plain push primitives keep theirs.
+  Both carried-over Darn-Review findings are addressed in the diff and name no parent correction.
+  No peer run or parent commit overlaps.
+question: ""
+superseded: []
