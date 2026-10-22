@@ -1,0 +1,493 @@
+diff --git a/internal/loomcli/doc.go b/internal/loomcli/doc.go
+index e7a7e7a9c..3a9a767d7 100644
+--- a/internal/loomcli/doc.go
++++ b/internal/loomcli/doc.go
+@@ -3,6 +3,7 @@
+ // The run, step, status, pause and goto bodies are the shared `internal/shedverbs` verbs, mounted here with loom's own text.
+ // Friction-Reflect, the last row, runs the Tier 2 friction reflection under run and under step alike, before the run records done.
+ // A `blocked` or `failed` halt, and an interrupted stop, write their Go halt note and spawn no reflection, so no stop holds the driver lock for a friction session and `lyx loom resume` never waits on one; the note waits for the run's Friction-Reflect row, which reflects every note in the friction directory.
++// An interrupted stop's note carries the `interrupted-stop` anomaly kind, never `producer-hard-failure`, with the stop's cause as its reason and the in-flight step's trace file where the stop knows it.
+ // `lyx start` is the same start verb mounted a second time at the root, resolving the full engine stack exactly as `lyx loom start` does.
+ //
+ // # Start
+diff --git a/internal/loomcli/halt.go b/internal/loomcli/halt.go
+index f9fe36e24..0f3d23611 100644
+--- a/internal/loomcli/halt.go
++++ b/internal/loomcli/halt.go
+@@ -27,6 +27,8 @@ type haltNote struct {
+ 	Reason    string
+ 	History   []shedengine.HistoryEntry
+ 	TraceFile string
++	// Interrupted is true for the halt of a step that ended without an envelope.
++	Interrupted bool
+ }
+ 
+ // writeHistoryRows appends the history section of a friction note: one `- <producer> / <outcome> / <at>` row per entry, or a single line saying there are none.
+@@ -60,7 +62,7 @@ func writeHaltNote(frictionDir string, n haltNote) error {
+ 		HistoryEntries: len(n.History),
+ 		TraceFile:      n.TraceFile,
+ 	}
+-	if kind, ok := loomengine.ClassifyHalt(n.State, n.Reason); ok {
++	if kind, ok := loomengine.ClassifyHalt(n.State, n.Reason, n.Interrupted); ok {
+ 		note.Anomaly = string(kind)
+ 	}
+ 	for _, h := range n.History {
+diff --git a/internal/loomcli/halt_test.go b/internal/loomcli/halt_test.go
+index 0b92aa737..7f5dac2d5 100644
+--- a/internal/loomcli/halt_test.go
++++ b/internal/loomcli/halt_test.go
+@@ -470,7 +470,7 @@ func TestStep_ProducerErrorWritesTheHaltNoteAndNoReflection(t *testing.T) {
+ 	}
+ }
+ 
+-// TestLoomAfterInterrupt_WritesTheHaltNoteAndNoReflection asserts the interrupt hook writes the `loom-halt` note with the cause as reason, reports skipped and runs the reflection shuttle zero times.
++// TestLoomAfterInterrupt_WritesTheHaltNoteAndNoReflection asserts the interrupt hook writes the `loom-halt` note as an interrupted stop with the cause as reason, reports skipped and runs the reflection shuttle zero times.
+ func TestLoomAfterInterrupt_WritesTheHaltNoteAndNoReflection(t *testing.T) {
+ 	t.Parallel()
+ 
+@@ -487,7 +487,7 @@ func TestLoomAfterInterrupt_WritesTheHaltNoteAndNoReflection(t *testing.T) {
+ 		t.Errorf("reflection shuttle ran %d times; want 0", len(f.shuttle.Specs))
+ 	}
+ 	note := readNote(t, filepath.Join(f.frictionDir, "loom-halt.md"))
+-	for _, want := range []string{"loom halted failed at Plan-Write", "state: failed", "watchdog", "trace_file: /logs/child.log"} {
++	for _, want := range []string{"loom halted failed at Plan-Write", "state: failed", "anomaly: " + string(loomengine.AnomalyInterrupted), "watchdog", "trace_file: /logs/child.log"} {
+ 		if !strings.Contains(note, want) {
+ 			t.Errorf("halt note %q does not contain %q", note, want)
+ 		}
+diff --git a/internal/loomcli/looparm.go b/internal/loomcli/looparm.go
+index 83f4c9019..cee7fd9ea 100644
+--- a/internal/loomcli/looparm.go
++++ b/internal/loomcli/looparm.go
+@@ -171,7 +171,7 @@ func agentActivityFor(loc *lyxcwd.Location, cfg shuttleengine.Config) func() (ti
+ }
+ 
+ // loomAfterInterrupt is loom's AfterInterrupt hook and returns the envelope's "friction" key.
+-// It writes the halt note a `failed` halt writes, with the cause as the reason, and spawns no reflection, so an interrupted stop leaves a note the run's Friction-Reflect row covers.
++// It writes the halt note a `failed` halt writes, classified as an interrupted stop with the cause as the reason, and spawns no reflection, so an interrupted stop leaves a note the run's Friction-Reflect row covers.
+ // It always reports skipped.
+ func (c *loomCLI) loomAfterInterrupt(_ context.Context, producer, cause, traceFile string) string {
+ 	var history []shedengine.HistoryEntry
+@@ -179,10 +179,11 @@ func (c *loomCLI) loomAfterInterrupt(_ context.Context, producer, cause, traceFi
+ 		history = st.History
+ 	}
+ 	return c.reflectHalt(haltNote{
+-		Producer:  producer,
+-		State:     shedengine.StateFailed,
+-		Reason:    cause,
+-		History:   history,
+-		TraceFile: traceFile,
++		Producer:    producer,
++		State:       shedengine.StateFailed,
++		Reason:      cause,
++		History:     history,
++		TraceFile:   traceFile,
++		Interrupted: true,
+ 	})
+ }
+diff --git a/internal/loomengine/anomaly.go b/internal/loomengine/anomaly.go
+index dba617ed7..35c34a326 100644
+--- a/internal/loomengine/anomaly.go
++++ b/internal/loomengine/anomaly.go
+@@ -10,10 +10,10 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/shedengine"
+ )
+ 
+-// AnomalyKind identifies which of the four triggers classified an anomaly.
++// AnomalyKind identifies which trigger classified an anomaly.
+ type AnomalyKind string
+ 
+-// The four exported anomaly kinds and their exact wire spellings, each the kind token a friction note carries.
++// The exported anomaly kinds and their exact wire spellings, each the kind token a friction note carries.
+ const (
+ 	// AnomalyCrashResume is trigger 1: an entry observation showing a running state, a live
+ 	// history, and no held run lock -- a driver process that died mid-run rather than exiting
+@@ -26,6 +26,9 @@ const (
+ 	AnomalyBudgetExhausted AnomalyKind = "bounce-budget-exhausted"
+ 	// AnomalyProducerFailure is trigger 4: a failed halt, an engine-level producer error.
+ 	AnomalyProducerFailure AnomalyKind = "producer-hard-failure"
++	// AnomalyInterrupted is trigger 5: a failed halt of a step that ended without an envelope, from outside its producer:
++	// a killed or crashed step, a stalled one the watchdog killed, or a loop that died under it.
++	AnomalyInterrupted AnomalyKind = "interrupted-stop"
+ )
+ 
+ // EntryObservation carries the whole entry-time observation as data, told by the caller before
+@@ -68,21 +71,23 @@ func DetectCrashResume(entry EntryObservation) bool {
+ 	return entry.Observed && !entry.RunLockHeld && entry.State == shedengine.StateRunning && entry.HistoryLength > 0 && !entry.Vouched
+ }
+ 
+-// ClassifyHalt evaluates the three halt-kind triggers (escalation, budget-exhausted,
+-// producer-hard-failure) against a run's final state and the reason it persisted.
+-// At most one fires, since the three triggers partition state:
+-// blocked with shedengine.ReasonBounceBudgetExhausted, blocked with anything else, or failed.
++// ClassifyHalt evaluates the halt-kind triggers (escalation, budget-exhausted, producer-hard-failure, interrupted-stop) against a run's final state, the reason it persisted and whether the halt is an interrupted stop.
++// At most one fires, since the triggers partition state:
++// blocked with shedengine.ReasonBounceBudgetExhausted, blocked with anything else, failed by an interrupted stop, or failed otherwise.
++// interrupted is told by the caller that wrote the stop and changes no blocked kind.
+ // shedengine persists StateBlocked from exactly two arms, so "blocked and not budget-exhausted" is exactly the
+ // escalation arm whatever reason its producer supplied.
+ // The one text the partition still matches is the budget prefix, matched with strings.HasPrefix because the persisted reason carries the exhausted row and the told resume way forward after it:
+ // a producer reason starting with it would read as budget exhaustion, and no shipped producer returns one.
+ // Any other state reports no kind.
+-func ClassifyHalt(state shedengine.State, reason string) (AnomalyKind, bool) {
++func ClassifyHalt(state shedengine.State, reason string, interrupted bool) (AnomalyKind, bool) {
+ 	switch {
+ 	case state == shedengine.StateBlocked && strings.HasPrefix(reason, shedengine.ReasonBounceBudgetExhausted):
+ 		return AnomalyBudgetExhausted, true
+ 	case state == shedengine.StateBlocked:
+ 		return AnomalyEscalation, true
++	case state == shedengine.StateFailed && interrupted:
++		return AnomalyInterrupted, true
+ 	case state == shedengine.StateFailed:
+ 		return AnomalyProducerFailure, true
+ 	default:
+diff --git a/internal/loomengine/anomaly_test.go b/internal/loomengine/anomaly_test.go
+index bc07cee9d..170298b58 100644
+--- a/internal/loomengine/anomaly_test.go
++++ b/internal/loomengine/anomaly_test.go
+@@ -113,11 +113,12 @@ func TestDetectCrashResume(t *testing.T) {
+ 
+ func TestClassifyHalt(t *testing.T) {
+ 	tests := []struct {
+-		name     string
+-		state    shedengine.State
+-		reason   string
+-		wantKind AnomalyKind
+-		wantOK   bool
++		name        string
++		state       shedengine.State
++		reason      string
++		interrupted bool
++		wantKind    AnomalyKind
++		wantOK      bool
+ 	}{
+ 		{
+ 			name:     "BlockedGenericFallback_Escalation",
+@@ -154,6 +155,27 @@ func TestClassifyHalt(t *testing.T) {
+ 			wantKind: AnomalyProducerFailure,
+ 			wantOK:   true,
+ 		},
++		{
++			name:        "FailedInterrupted_InterruptedStop",
++			state:       shedengine.StateFailed,
++			reason:      "loop-exited: loop 1 ended without an envelope",
++			interrupted: true,
++			wantKind:    AnomalyInterrupted,
++			wantOK:      true,
++		},
++		{
++			name:        "BlockedInterrupted_Escalation",
++			state:       shedengine.StateBlocked,
++			reason:      "webster stuck on batch 3",
++			interrupted: true,
++			wantKind:    AnomalyEscalation,
++			wantOK:      true,
++		},
++		{
++			name:        "RunningInterrupted_None",
++			state:       shedengine.StateRunning,
++			interrupted: true,
++		},
+ 		{
+ 			name:   "Running_None",
+ 			state:  shedengine.StateRunning,
+@@ -178,9 +200,9 @@ func TestClassifyHalt(t *testing.T) {
+ 
+ 	for _, tt := range tests {
+ 		t.Run(tt.name, func(t *testing.T) {
+-			kind, ok := ClassifyHalt(tt.state, tt.reason)
++			kind, ok := ClassifyHalt(tt.state, tt.reason, tt.interrupted)
+ 			if kind != tt.wantKind || ok != tt.wantOK {
+-				t.Errorf("ClassifyHalt(%q, %q) = (%q, %v); want (%q, %v)", tt.state, tt.reason, kind, ok, tt.wantKind, tt.wantOK)
++				t.Errorf("ClassifyHalt(%q, %q, %v) = (%q, %v); want (%q, %v)", tt.state, tt.reason, tt.interrupted, kind, ok, tt.wantKind, tt.wantOK)
+ 			}
+ 		})
+ 	}
+diff --git a/internal/shedverbs/doc.go b/internal/shedverbs/doc.go
+index 0c01538f8..a7c0a8bc6 100644
+--- a/internal/shedverbs/doc.go
++++ b/internal/shedverbs/doc.go
+@@ -73,7 +73,7 @@
+ // A loop that cannot take the loop lock within the grace period exits at once, and its waiter, seeing its spawn exited and the lock held, adopts the holder's loop id from the pid file.
+ //
+ // The loop lock is the liveness record, held for the loop's life, and the pid file is the loop's record for the kill.
+-// The pid file holds the loop id, the loop's own pid and start time, and the in-flight child's process tree with the status file's current_producer and history_length when that child started;
++// The pid file holds the loop id, the loop's own pid and start time, and the in-flight child's process tree and trace id with the status file's current_producer and history_length when that child started;
+ // the loop writes it after taking the lock and removes it only after its envelope is on disk.
+ // The envelope file holds the loop id beside the envelope, and a waiter prints only the envelope.
+ // A waiter matches files by its adopted loop id: it prints the envelope file only when it carries that id, or the delivered record of that id, which only that loop's envelope ever reaches.
+@@ -104,6 +104,8 @@
+ //
+ // A loop that is gone without an envelope ends in the dead-loop stop.
+ // It kills what is left of the loop's step tree from the pid file's child record, writes the run failed while the status file still reads running, and reports an interrupted stop with cause loop-exited and loop.status_moved from the recorded producer and history length against the status file.
++// Its loop.detail names the loop log, the producer of the in-flight child and its trace id while the status file has not moved past that child, and whether that child's step tree was still running and was killed, which a loop killed from outside leaves behind.
++// Spec.Hooks.AfterInterrupt gets loop-exited followed by that detail as its cause, and the in-flight child's first trace file, or the loop log when the record names no trace, no file is listed for it or the status file has moved past that child.
+ // It writes that stop as the loop's envelope under the dead loop's id, delivers it and retires the pid file.
+ // A record naming no child kills nothing and reports status_moved false.
+ // Another holder of the run lock makes the stop busy: nothing is written, the pid file stays and the next invocation retries.
+diff --git a/internal/shedverbs/loop.go b/internal/shedverbs/loop.go
+index 639b2b026..2e10e6d1e 100644
+--- a/internal/shedverbs/loop.go
++++ b/internal/shedverbs/loop.go
+@@ -225,7 +225,7 @@ func runLoop(ctx context.Context, spec *Spec, loopID string, argv []string, out
+ 			before = current
+ 			lastKnown = current.CurrentProducer
+ 			res = runChild(ctx, spec, argv, traceID, idleWindow, func(child proc.TreeRecord) {
+-				pid.Child, pid.CurrentProducer, pid.HistoryLength = child, current.CurrentProducer, len(current.History)
++				pid.Child, pid.TraceID, pid.CurrentProducer, pid.HistoryLength = child, traceID, current.CurrentProducer, len(current.History)
+ 				if err := WriteLoopPIDRecord(loop.PIDPath, pid); err != nil {
+ 					logger.Warn("shed: loop could not update its pid file", "loop_id", loopID, "error", err.Error())
+ 				}
+diff --git a/internal/shedverbs/loop_integration_test.go b/internal/shedverbs/loop_integration_test.go
+index 79fd910c0..0410a70fb 100644
+--- a/internal/shedverbs/loop_integration_test.go
++++ b/internal/shedverbs/loop_integration_test.go
+@@ -19,6 +19,7 @@ import (
+ 	"time"
+ 
+ 	"github.com/Knatte18/loomyard/internal/clihelp"
++	"github.com/Knatte18/loomyard/internal/logger"
+ 	"github.com/Knatte18/loomyard/internal/proc"
+ 	"github.com/Knatte18/loomyard/internal/shedengine"
+ 	"github.com/Knatte18/loomyard/internal/state"
+@@ -73,8 +74,11 @@ func executeHelperStep(dir string, args []string) int {
+ 	return clihelp.Execute(root, os.Stdout, args)
+ }
+ 
+-// runHelperChild is a step child that starts a grandchild, records its pid and never ends on its own.
++// runHelperChild is a step child that starts a grandchild, records its pid and the trace id it runs under, and never ends on its own.
+ func runHelperChild(dir string) int {
++	if err := os.WriteFile(filepath.Join(dir, "trace.id"), []byte(os.Getenv(logger.TraceIDEnv)), 0o644); err != nil {
++		return 1
++	}
+ 	grandchild := exec.Command("sleep", "300")
+ 	if err := grandchild.Start(); err != nil {
+ 		return 1
+@@ -150,6 +154,10 @@ func TestLoopIntegration_ChildTreeDiesWithLoop(t *testing.T) {
+ 		_ = proc.KillPID(record.Loop.PID)
+ 		_ = proc.KillPID(grandchild)
+ 	})
++	childTraceID, err := os.ReadFile(filepath.Join(dir, "trace.id"))
++	if err != nil || record.TraceID == "" || record.TraceID != string(childTraceID) {
++		t.Errorf("pid record trace id = %q; want the trace id the child ran under, %q (read error %v)", record.TraceID, childTraceID, err)
++	}
+ 
+ 	if err := waiter.Process.Kill(); err != nil {
+ 		t.Fatalf("kill the waiter: %v", err)
+@@ -175,6 +183,11 @@ func TestLoopIntegration_ChildTreeDiesWithLoop(t *testing.T) {
+ 	if env["kind"] != KindInterrupted || !strings.Contains(env["error"].(string), "(loop-exited)") {
+ 		t.Errorf("second waiter kind/error = %v/%v; want the loop-exited stop", env["kind"], env["error"])
+ 	}
++	loopObj, _ := env["loop"].(map[string]any)
++	detail, _ := loopObj["detail"].(string)
++	if !strings.Contains(detail, "; step A was in flight under trace "+record.TraceID) || !strings.Contains(detail, "; its step tree was still running and was killed") {
++		t.Errorf("second waiter loop.detail = %q; want the in-flight step with its trace and the killed step tree", detail)
++	}
+ 	waitUntil(t, 30*time.Second, "the dead loop's step tree to be killed", func() bool { return processEnded(grandchild) })
+ 	if st, found, err := state.ReadJSONNoMkdir[shedengine.Status](spec.StatusPath, spec.StatusLockPath); err != nil || !found || st.State != shedengine.StateFailed {
+ 		t.Errorf("status = %+v, %v, %v; want failed", st, found, err)
+diff --git a/internal/shedverbs/looppid.go b/internal/shedverbs/looppid.go
+index 205e41751..62ce2fb0d 100644
+--- a/internal/shedverbs/looppid.go
++++ b/internal/shedverbs/looppid.go
+@@ -26,6 +26,8 @@ type LoopPIDRecord struct {
+ 	Loop proc.TreeRecord `json:"loop"`
+ 	// Child is the in-flight step child's process tree.
+ 	Child proc.TreeRecord `json:"child"`
++	// TraceID is the trace id the in-flight step child runs under; empty before the first child.
++	TraceID string `json:"trace_id,omitempty"`
+ 	// CurrentProducer is the status file's current_producer when the child started.
+ 	CurrentProducer string `json:"current_producer"`
+ 	// HistoryLength is the status file's history length when the child started.
+diff --git a/internal/shedverbs/loopwait.go b/internal/shedverbs/loopwait.go
+index 7d7bce8e5..3cb58d73b 100644
+--- a/internal/shedverbs/loopwait.go
++++ b/internal/shedverbs/loopwait.go
+@@ -413,8 +413,15 @@ func retireEnvelope(spec *Spec, file loopEnvelopeFile) {
+ 	}
+ }
+ 
++// inFlightAt reports whether the record names a child that was still in flight when the status file read status:
++// the status file still reads the producer and history length recorded when that child started.
++func (r LoopPIDRecord) inFlightAt(status shedengine.Status) bool {
++	return r.hasChild() && r.CurrentProducer == status.CurrentProducer && r.HistoryLength == len(status.History)
++}
++
+ // deadLoopStop reports a loop that is gone without an envelope, or the teardown's mark, as an interrupted stop with cause loop-exited.
+ // It first kills what is left of the loop's step tree, then writes the run failed while the status file reads running.
++// The stop's detail names the step the pid file records in flight, with its trace id, only while the status file still reads that step, and says when its step tree was still running, which a loop killed from outside leaves behind.
+ // For a dead loop it then writes the stop as the loop's envelope under its recorded id, delivers it and retires the pid file.
+ // The teardown's mark writes no envelope and stays, so every invocation until the pair is removed stops the same way and spawns nothing.
+ // Another holder of the run lock makes the stop busy: nothing is written and the pid file stays for the next invocation to retry.
+@@ -423,8 +430,17 @@ func deadLoopStop(ctx context.Context, spec *Spec, rec LoopPIDRecord, out io.Wri
+ 	detail := fmt.Sprintf("loop %s ended without an envelope; its output is in %s", rec.LoopID, spec.Loop.LogPath)
+ 	if teardown {
+ 		detail = "the pair's session end stopped the loop; no loop runs again until the pair is removed"
+-	} else if killStepTree(rec) {
+-		detail += "; its step tree was killed"
++	} else {
++		status, _ := readStatusFile(spec)
++		if rec.inFlightAt(status) {
++			detail += fmt.Sprintf("; step %s was in flight", rec.CurrentProducer)
++			if rec.TraceID != "" {
++				detail += " under trace " + rec.TraceID
++			}
++		}
++		if killStepTree(rec) {
++			detail += "; its step tree was still running and was killed"
++		}
+ 	}
+ 
+ 	envelope, busy := loopExitStop(ctx, spec, rec, detail)
+@@ -452,6 +468,7 @@ func loopExitedEarlyStop(ctx context.Context, spec *Spec, loopID string, out io.
+ 
+ // loopExitStop writes failed over a run a gone loop left reading running and builds the interrupted envelope of that stop.
+ // A status file in any other state is left as it is and the stop is reported all the same.
++// The interrupt hook gets loop-exited and detail as the cause, and the first trace file of the step rec records in flight, or the loop log when there is none or the status file has moved past that step.
+ // It reports busy, with the busy stop as its envelope, when another holder has the run lock; nothing is written then.
+ func loopExitStop(ctx context.Context, spec *Spec, rec LoopPIDRecord, detail string) (envelope []byte, busy bool) {
+ 	before, _ := readStatusFile(spec)
+@@ -476,7 +493,7 @@ func loopExitStop(ctx context.Context, spec *Spec, rec LoopPIDRecord, detail str
+ 		HistoryLength:   len(after.History),
+ 		State:           string(after.State),
+ 	}
+-	obj.StatusMoved = rec.hasChild() && (rec.CurrentProducer != after.CurrentProducer || rec.HistoryLength != len(after.History))
++	obj.StatusMoved = rec.hasChild() && !rec.inFlightAt(after)
+ 	if spec.Hooks.InterruptPolicyFor != nil {
+ 		obj.InterruptPolicy = spec.Hooks.InterruptPolicyFor(after.CurrentProducer)
+ 	}
+@@ -492,7 +509,13 @@ func loopExitStop(ctx context.Context, spec *Spec, rec LoopPIDRecord, detail str
+ 
+ 	friction := ""
+ 	if rec.LoopID != TeardownLoopID && spec.Hooks.AfterInterrupt != nil {
+-		friction = spec.Hooks.AfterInterrupt(ctx, producer, "loop-exited", spec.Loop.LogPath)
++		traceFile := spec.Loop.LogPath
++		if rec.TraceID != "" && rec.inFlightAt(before) {
++			if files := traceFilesOf(spec.Loop, rec.TraceID); len(files) > 0 {
++				traceFile = files[0]
++			}
++		}
++		friction = spec.Hooks.AfterInterrupt(ctx, producer, "loop-exited: "+detail, traceFile)
+ 	}
+ 	locations := StepLocations{TraceFile: logger.TraceFile(), FrictionDir: spec.FrictionDir, ScratchDir: spec.ScratchDir, TraceID: logger.TraceID(), RunID: spec.RunID}
+ 	step := shortStepErrFields(stepErrFields(KindInterrupted, "", friction, locations), "")
+diff --git a/internal/shedverbs/loopwait_test.go b/internal/shedverbs/loopwait_test.go
+index f0cb5b55e..07d045dd3 100644
+--- a/internal/shedverbs/loopwait_test.go
++++ b/internal/shedverbs/loopwait_test.go
+@@ -16,6 +16,7 @@ import (
+ 	"reflect"
+ 	"strings"
+ 	"sync"
++	"sync/atomic"
+ 	"testing"
+ 	"time"
+ 
+@@ -467,6 +468,76 @@ func TestUntilStop_DeadLoopStopsLoopExited(t *testing.T) {
+ 		}
+ 	})
+ 
++	t.Run("the interrupt hook gets a cause naming the in-flight step and that step's trace file", func(t *testing.T) {
++		tests := []struct {
++			name         string
++			traceID      string
++			traces       []string
++			statusMoved  bool
++			wantProducer string
++			wantCause    string
++			wantFile     func(w *waitWorld) string
++		}{
++			{
++				name:         "TraceKnown",
++				traceID:      "trace-7",
++				traces:       []string{"/logs/trace-7.log", "/logs/trace-7.1.log"},
++				wantProducer: "A",
++				wantCause:    "; step A was in flight under trace trace-7",
++				wantFile:     func(*waitWorld) string { return "/logs/trace-7.log" },
++			},
++			{
++				name:         "NoTraceID_LoopLog",
++				wantProducer: "A",
++				wantCause:    "; step A was in flight",
++				wantFile:     func(w *waitWorld) string { return w.spec.Loop.LogPath },
++			},
++			{
++				name:         "NoTraceFile_LoopLog",
++				traceID:      "trace-8",
++				wantProducer: "A",
++				wantCause:    "; step A was in flight under trace trace-8",
++				wantFile:     func(w *waitWorld) string { return w.spec.Loop.LogPath },
++			},
++			{
++				name:         "StatusMoved_NoInFlightClause_LoopLog",
++				traceID:      "trace-9",
++				traces:       []string{"/logs/trace-9.log"},
++				statusMoved:  true,
++				wantProducer: "B",
++				wantFile:     func(w *waitWorld) string { return w.spec.Loop.LogPath },
++			},
++		}
++		for _, tt := range tests {
++			t.Run(tt.name, func(t *testing.T) {
++				w := newWaitWorld(t)
++				if tt.statusMoved {
++					w.setStatus("B", shedengine.StateRunning, 1)
++				} else {
++					w.setStatus("A", shedengine.StateRunning, 0)
++				}
++				w.writePID(LoopPIDRecord{LoopID: "dead-1", Child: proc.TreeRecord{PID: 4242}, TraceID: tt.traceID, CurrentProducer: "A"})
++				w.traces[tt.traceID] = tt.traces
++				var producer, cause, file string
++				w.spec.Hooks.AfterInterrupt = func(_ context.Context, gotProducer, gotCause, gotFile string) string {
++					producer, cause, file = gotProducer, gotCause, gotFile
++					return "noted"
++				}
++
++				env, code := w.wait()
++
++				assertLoopExited(t, w, env, code)
++				wantCause := "loop-exited: loop dead-1 ended without an envelope; its output is in " + w.spec.Loop.LogPath + tt.wantCause
++				if producer != tt.wantProducer || cause != wantCause || file != tt.wantFile(w) {
++					t.Errorf("AfterInterrupt(%q, %q, %q); want (%q, %q, %q)", producer, cause, file, tt.wantProducer, wantCause, tt.wantFile(w))
++				}
++				if env["friction"] != "noted" {
++					t.Errorf("envelope friction = %v; want the hook's noted", env["friction"])
++				}
++			})
++		}
++	})
++
+ 	t.Run("a loop that dies while the watch emits nothing is seen at the next tick", func(t *testing.T) {
+ 		w := newWaitWorld(t)
+ 		live := w.startLiveLoop("live-1")
+@@ -663,12 +734,19 @@ func TestUntilStop_DeadLoopStopsLoopExited(t *testing.T) {
+ 
+ 	t.Run("a spawned loop that exits before any pid file names it is reported with its log", func(t *testing.T) {
+ 		w := newWaitWorld(t)
+-		w.spec.Loop.Spawn = func([]string) (<-chan struct{}, error) {
++		var spawnedID atomic.Value
++		w.spec.Loop.Spawn = func(argv []string) (<-chan struct{}, error) {
++			spawnedID.Store(loopIDOf(argv))
+ 			done := make(chan struct{})
+ 			close(done)
+ 			return done, nil
+ 		}
+ 		w.setStatus("B", shedengine.StateRunning, 1)
++		var cause, file string
++		w.spec.Hooks.AfterInterrupt = func(_ context.Context, _, gotCause, gotFile string) string {
++			cause, file = gotCause, gotFile
++			return ""
++		}
+ 
+ 		env, code := w.wait()
+ 
+@@ -676,6 +754,10 @@ func TestUntilStop_DeadLoopStopsLoopExited(t *testing.T) {
+ 		if detail := loopOf(t, env)["detail"].(string); !strings.Contains(detail, w.spec.Loop.LogPath) {
+ 			t.Errorf("detail = %q; want it naming the loop log %s", detail, w.spec.Loop.LogPath)
+ 		}
++		wantCause := "loop-exited: loop " + spawnedID.Load().(string) + " exited before it recorded itself; its output is in " + w.spec.Loop.LogPath
++		if cause != wantCause || file != w.spec.Loop.LogPath {
++			t.Errorf("AfterInterrupt cause/file = %q/%q; want %q/%q", cause, file, wantCause, w.spec.Loop.LogPath)
++		}
+ 		if fileExists(w.spec.Loop.EnvelopePath) || fileExists(w.spec.Loop.PIDPath) {
+ 			t.Errorf("want no loop envelope and no pid file written for a loop that never recorded itself")
+ 		}
