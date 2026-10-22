@@ -675,7 +675,7 @@
       }
     }
   ],
-  "currentBatch": 0,
+  "currentBatch": 8,
   "masterStrand": "fd94635c977349faf13625dcb991f1fc",
   "masterSessionId": "50f3575b-651f-41fb-ab8d-6b29950f8b0d",
   "masterEngine": "claude",
@@ -865,6 +865,22 @@
         "cd1ac658-6b88-4428-b207-c80f55ff9560": "claude"
       },
       "recoveryStartSha": "b4b97c052beb4cbd4969352747ffd7fedfaba100"
+    },
+    "8": {
+      "slug": "lift-spawns-owed",
+      "cards": [
+        "08-lift-spawns-owed"
+      ],
+      "cardHashes": {
+        "08-lift-spawns-owed": "b607cb2b023df565e5ca9a2763b477aef7b7b1b97b43a804e9cc81e690a69505"
+      },
+      "startSha": "2ecc69cd2ec75ec936c530280e0fed1501bac055",
+      "kind": "fork",
+      "spawnedAt": "2026-10-22T13:41:21Z",
+      "sessionId": "50f3575b-651f-41fb-ab8d-6b29950f8b0d",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
     }
   },
   "seenForkTranscripts": [
