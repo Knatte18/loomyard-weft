@@ -1,0 +1,4 @@
+verdict: approve
+reason: The diff makes the fork git guard let bare and list-mode git tag forms through while creating, deleting and signing forms stay refused, keeps every other subcommand subcommand-only, adds the issue's command line as a test row and documents the exception in doc.go, exactly as the board entry's operator decision calls for; no peer run or parent commit overlaps.
+question: ""
+superseded: []
