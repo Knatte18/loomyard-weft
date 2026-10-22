@@ -41,5 +41,16 @@ The beam setup on the board: `orch-any-worktree` (umbrella tasks spawning and la
 - No perch per darn: a review per batch proved far too expensive in Millhouse, and a perch per piece is the same.
   The pieces run as darn with review off (`review_max_bounces: 0`), each still passing its own gate and tests; the whole-task perch after the last merge-back is the code review, as Webster's round over the whole diff is today.
   For scale, a darn perch costs about $1.30 per run in the audit window.
-- The pieces are speed darns: a darn profile with review off, which runs tests as it goes, the way Webster's card gate runs after every card.
-  The hub's `docs` profile already sets `review_max_bounces: 0`, but with a Sonnet writer; a speed profile keeps the default writer.
+- The pieces run tests as they go, the way Webster's card gate runs after every card.
+
+## Piece recipe `stitch` (operator, 2026-10-22)
+
+The pieces run on their own recipe, `stitch`, derived from darn, not on a darn profile: rows go away, not only bounds.
+Alignment per piece is pointless when the piece is a closed, synchronised share of an umbrella that is aligned whole.
+
+- Kept: Preflight; the writer, on Sonnet, briefed by its pre-plan contract; Merge-In against the umbrella branch.
+- Dropped: Darn-Bouncer and the Burler review/fix rows (review off), Describe, Publish, PR-Align and PR-Gate.
+- Finalize merges into the umbrella branch under the parent lock instead of landing on `main`.
+- Friction-Reflect runs once per umbrella, not per piece.
+- A `stitch` task runs only inside an umbrella; it cannot run alone.
+- Estimate (orch, not measured): about $2-2.50 per piece against about $6 for a darn with review.
