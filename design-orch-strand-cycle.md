@@ -1,6 +1,6 @@
 # Orch lifecycle: dead strands count as dead, the watcher restarts, cycle requests need no reply and can be withdrawn
 
-`orch-strand-cycle` · Task · bug, enhancement, orch, reed
+`orch-strand-cycle` · Task · bug, enhancement, orch, reed, shuttle
 
 Depends on: [`run-process-ownership`](design-run-process-ownership.md)
 
@@ -57,3 +57,46 @@ Wanted:
 - a verb that withdraws a pending `refresh` or `distill` request, refusing once the cycle has started;
 - `lyx orch status` shows a pending request;
 - `distill` and `refresh` say when a hub pause holds the request back.
+
+## Folded in: dead strand names (operator, 2026-10-22)
+
+Note `reclaim-dead-strand-names` (issues #799, #802, #811) is folded into this task, since it is the same area: a dead strand, of any role, holds its reed name after a reboot or respawn, so a resumed row or a Burler-fix row fails on the name clash.
+A respawn reclaims a dead strand's name and registration.
+When it lands, the hub orch rules section "Dead strands after a reboot (#799)" is removed.
+The `loop-exited` halt note #811 also names is out of scope here: task `loop-exit-halt-names-its-cause` takes it.
+Its body follows.
+
+### Seen (orch, 2026-10-21, OSL-1046; issue #799)
+
+After a machine restart, both in-flight runs were resumed from the prime with `lyx batten run <slug> --window`.
+Reed still listed the strands from before the restart as dead (`live: false`), holding their names.
+
+- `test-tiers`: Plan-Burler-Fix re-spawned its fixer as `ly:test-tiers:plan-burler-fix-2`, and the row failed with `seatengine: strand "ly:test-tiers:plan-burler-fix" started as "ly:test-tiers:plan-burler-fix-2", because another strand holds that name; way forward: run "lyx reed remove --name ly:test-tiers:plan-burler-fix", then re-step the row`.
+- `tuned-defaults-template`: Merge-In's conflict agent came up as `conflict-2` beside the dead `conflict` and carried on.
+
+Workaround: `lyx reed remove --name <dead strand>` in the task worktree, then `lyx loom resume`.
+
+Expected: a strand whose pane is gone, such as every strand after a reboot, does not hold its name: a resume or a re-spawn reclaims the name of a dead strand without a manual `lyx reed remove`, and the row does not fail.
+
+### Seen in the quarry hub (issue #802)
+
+The machine slept while task `csharp-alphabet` was at the Webster producer, which killed the Webster master strand `qry:csharp-alphabet:webster` and its batch fork.
+After `lyx batten run csharp-alphabet --window` and `lyx loom resume`, Webster respawned its master as `qry:csharp-alphabet:webster-2`, since the dead strand's registration (`live: false`, no pane) stayed in `lyx reed list` and held the name.
+The orch removed the dead registration by hand with `lyx reed remove <guid>` from the task worktree.
+
+Expected: when a strand is respawned for a role whose previous strand is dead (not live, no pane), reed or the respawning caller drops the dead registration first, and the new strand keeps the canonical name, so a lookup by role name cannot hit the dead record.
+
+### Seen at Plan-Burler-Fix (issue #811)
+
+A run halted as `failed` (anomaly `producer-hard-failure`) at `Plan-Burler-Fix`, round 3 attempt 3, after two stuck plan review rounds:
+
+```
+shedadapters: Plan-Burler-Fix (burler-fix): round 3 attempt 3: fix: burler: shuttle run: seatengine: strand "ly:<slug>:plan-burler-fix" started as "ly:<slug>:plan-burler-fix-2", because another strand holds that name; way forward: run "lyx reed remove --name ly:<slug>:plan-burler-fix", then re-step the row
+```
+
+The earlier fix attempts of the same row had finished (history `stuck`), so their strand should have been released; a leftover strand from a finished attempt turns a routine retry into a hard failure that ends the run.
+What to do: have the row's attempt teardown remove its strand, or have `seatengine` reclaim a stale strand of the same name instead of renaming and failing; if a live holder is possible, the retry path runs the `lyx reed remove` itself when the holder is provably dead.
+
+Provenance: tasks `test-tiers`, `csharp-alphabet`; notes `loom-halt.md`, `loom-halt-2.md`.
+
+
