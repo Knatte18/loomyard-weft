@@ -23,7 +23,7 @@ Waits on nothing open; can start now.
 
 | # | Task | Slug | Recipe | After | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 2 | **Darn-Write stops looping on verify failures it cannot own, and the flaky reed boot test behind them**<br>• A verify failure in code the task did not touch, or one the parent already fixed, no longer loops through Darn-Write; the reed boot race is made deterministic and the impacted set stops picking unreachable packages<br>• `profile: light` | [`darn-verify-fixes`](design-darn-verify-fixes.md) | loom |  | 4d | 1m | batten, gate, loom, shed, reed |
+| 2 | **Darn-Write stops looping on verify failures it cannot own, and the flaky reed boot test behind them**<br>• A verify failure in code the task did not touch, or one the parent already fixed, no longer loops through Darn-Write; the reed boot race is made deterministic and the impacted set stops picking unreachable packages<br>• `profile: light` | [`darn-verify-fixes`](design-darn-verify-fixes.md) | loom |  | 4d | 2m | batten, gate, loom, shed, reed |
 
 ### Layer A
 
