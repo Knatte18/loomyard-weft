@@ -1,6 +1,6 @@
 # lyx report timing counts sleep as active time when the system journal is unreadable
 
-`report-timing-unreadable-journal` · Task · bug, report · running · Finalize
+`report-timing-unreadable-journal` · Task · bug, report · done
 
 Imported from [issue #803](https://github.com/Knatte18/loomyard/issues/803).
 
