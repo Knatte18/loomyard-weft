@@ -72,7 +72,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Note | Slug | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| 2 | **Dead strands from before a reboot hold their names and fail a resumed row** | [`reclaim-dead-strand-names`](design-reclaim-dead-strand-names.md) | 29m | 28m | reed, shuttle |
+| 2 | **Dead strands from before a reboot hold their names and fail a resumed row** | [`reclaim-dead-strand-names`](design-reclaim-dead-strand-names.md) | 29m | 29m | reed, shuttle |
 | 3 | **loom halt note for a Merge-In loop exit carries only 'loop-exited' as its reason** | [`loop-exit-halt-names-its-cause`](design-loop-exit-halt-names-its-cause.md) | 29m | 29m | loom, shed |
 | 4 | **lyx report timing counts sleep as active time when the system journal is unreadable** | [`report-timing-unreadable-journal`](design-report-timing-unreadable-journal.md) | 29m | 29m | report |
 | 5 | **Teardown's archive-tag push has no retry for a transient remote rejection** | [`retry-archive-tag-push`](design-retry-archive-tag-push.md) | 29m | 29m | batten, fabric |
@@ -116,15 +116,16 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 23 | **[.NET] A test compiles the C# test fixtures, skipped without dotnet** | [`csharp-fixtures-compile`](design-csharp-fixtures-compile.md) | 1h | 1h | quarry, dotnet, testkit |
 | 24 | **[.NET] A small public NUnit repo as sandbox hub for end-to-end C# runs** | [`csharp-sandbox-hub`](design-csharp-sandbox-hub.md) | 1h | 1h | dotnet |
 | 25 | **No role may carry out a parent decision that amends a plan card mid-run** | [`plan-card-amendment-owner`](design-plan-card-amendment-owner.md) | 29m | 29m | webster, orch, loom |
+| 26 | **Discussion scope check moves from the alignment agent into the perch lenses, with an escalating finding class** | [`discussion-alignment-into-lenses`](design-discussion-alignment-into-lenses.md) | 0m | 0m | loom, burler, shed |
 
 #### Low priority
 
 | # | Note | Slug | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| 26 | **Fabric's Windows path behaviour verified on a Windows host**<br>• Unverified after six hardening rounds; needs a Windows host, not design; take it only if Windows becomes relevant | [`fabric-windows`](design-fabric-windows.md) | 2w | 1d | fabric |
-| 27 | **warp-visibility: CLAUDE.local.md invisible in the Fabric repo's git history**<br>• Expose CLAUDE.local.md by symlink so nothing lyx-related shows in the Fabric repo's history; the constraints half is out of date | [`warp-visibility`](design-warp-visibility.md) | 2w |  | ide, fabric |
-| 28 | **Windows verify timeout kills the whole process tree**<br>• On Windows the verifytree timeout kills only the shell, not the process tree it started | [`verify-watchdog`](design-verify-watchdog.md) | 2w | 6d | shed |
-| 29 | **[WS 007] An anchor per umbrella**<br>• Let an umbrella work in its own subdirectory of the repository, inherited by its tasks; hard to change now | [`umbrella-anchor`](design-umbrella-anchor.md) | 3d | 3d | fabric, config, workspaces |
+| 27 | **Fabric's Windows path behaviour verified on a Windows host**<br>• Unverified after six hardening rounds; needs a Windows host, not design; take it only if Windows becomes relevant | [`fabric-windows`](design-fabric-windows.md) | 2w | 1d | fabric |
+| 28 | **warp-visibility: CLAUDE.local.md invisible in the Fabric repo's git history**<br>• Expose CLAUDE.local.md by symlink so nothing lyx-related shows in the Fabric repo's history; the constraints half is out of date | [`warp-visibility`](design-warp-visibility.md) | 2w |  | ide, fabric |
+| 29 | **Windows verify timeout kills the whole process tree**<br>• On Windows the verifytree timeout kills only the shell, not the process tree it started | [`verify-watchdog`](design-verify-watchdog.md) | 2w | 6d | shed |
+| 30 | **[WS 007] An anchor per umbrella**<br>• Let an umbrella work in its own subdirectory of the repository, inherited by its tasks; hard to change now | [`umbrella-anchor`](design-umbrella-anchor.md) | 3d | 3d | fabric, config, workspaces |
 
 ### Features
 
