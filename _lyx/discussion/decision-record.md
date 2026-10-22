@@ -57,6 +57,12 @@ Rationale: recover-batch re-runs the same done-check on the same plan, so naming
 
 - A large unit makes the searched-files list long; the detail lists them all, since a truncated list cannot show the file the operator is looking for.
 
+<!-- lyx:carry-over Darn-Review -->
+- Darn-Review, round 1: converged; each finding below was fixed or disputed by the round's fixer, and no fresh reviewer has seen the result; the fixer report says which.
+  Review: _lyx/reviews/darn/round-1-review.md; fixer report: _lyx/reviews/darn/round-1-fixer-report.md.
+  - glyph-rejected-uncheckable-branch-untested (class consistency, severity MEDIUM, open in rounds 1)
+<!-- /lyx:carry-over Darn-Review -->
+
 ## Acceptance criteria
 
 - A Create target `dir/with space/Spaced.cs` passes when the file exists and reports `create-not-done` naming the path when it does not.
