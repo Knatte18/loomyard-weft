@@ -54,6 +54,14 @@
       "at": "2026-10-22T11:31:56Z",
       "budget_exempt": true,
       "routed_to": "Run-Shed"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "child running → awaiting at Plan-Bouncer",
+      "at": "2026-10-22T12:54:04Z",
+      "budget_exempt": true,
+      "routed_to": "Run-Shed"
     }
   ]
 }
