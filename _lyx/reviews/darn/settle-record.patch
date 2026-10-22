@@ -1,0 +1,637 @@
+diff --git a/CLAUDE.md b/CLAUDE.md
+index 950f92418..6e8cfd970 100644
+--- a/CLAUDE.md
++++ b/CLAUDE.md
+@@ -34,7 +34,7 @@ and the orch thread's own `_lyx/orch/rules.md`, committed with `lyx fabric commi
+ ## Worktrees
+ 
+ - Push to `main` only from the worktree checked out on `main`; never from a task pair (`<hub>/<slug>`).
+-- Push to `main` only after `lyx gate test --tier 0 --tier 1 --tier 2` is green on `main`, where no parent makes the scope whole, run as its own Bash call as the gate rule in the session's system prompt says, the same run the verify gates make;
++- Push to `main` only after `lyx gate test --upto 2` is green on `main`, where no parent makes the scope whole, run as its own Bash call as the gate rule in the session's system prompt says, the same run the verify gates make;
+   code under `tools/` follows PATTERN and its scans like everything else.
+   A commit that changes only text no build or test reads, such as `docs/` and this file, is pushed without the test run.
+ - Work only in your own worktree: never edit, commit or push in another, and never create one, unless the user says so for that case.
+diff --git a/docs/overview.md b/docs/overview.md
+index d086b5aff..be157b714 100644
+--- a/docs/overview.md
++++ b/docs/overview.md
+@@ -229,7 +229,7 @@ github.com/Knatte18/loomyard/
+ ├── internal/cleanupcli/          the cleanup CLI command (`lyx cleanup`, the routine cleanups of the hub prime's leftover state, a dry run by default)
+ ├── internal/fabriccli/           the fabric CLI command (git coordination of code and records)
+ ├── internal/fabricengine/        the fabric domain kernel
+-├── internal/gatecli/             the gate CLI command (`lyx gate test`, the tier runner: the hub's test tiers over a scope, slotted, bounded, counted and logged)
++├── internal/gatecli/             the gate CLI command (`lyx gate test`, the tier runner: the hub's test tiers over a scope, slotted, bounded, counted and logged; `lyx gate status`, the holders of the hub's gate slots)
+ ├── internal/helpcli/             the help CLI command (`lyx help [<command>...]`, `lyx help index`)
+ ├── internal/shortcutcli/         the top-level operator shortcuts (`lyx a`, `lyx attach`, `lyx prime`, `lyx pause`, `lyx p`, `lyx resume`, `lyx r`) from one embedded file
+ ├── internal/idecli/              the ide CLI command
+diff --git a/internal/gatecli/cli.go b/internal/gatecli/cli.go
+index 8c31e1b24..a05497436 100644
+--- a/internal/gatecli/cli.go
++++ b/internal/gatecli/cli.go
+@@ -45,6 +45,7 @@ func newCommand(goBinary string, samplePeriod, slotWait, preTierCeiling, timeout
+ 
+ 	var dir, tags, base string
+ 	var tiers []int
++	var upto int
+ 	var cards []string
+ 	var all, guards, wait bool
+ 	testCmd := &cobra.Command{
+@@ -52,7 +53,8 @@ func newCommand(goBinary string, samplePeriod, slotWait, preTierCeiling, timeout
+ 		Short:       "run the hub's test tiers once their gate slots are free",
+ 		Annotations: map[string]string{clihelp.AudienceAnnotation: clihelp.AudienceOperator},
+ 		Long: fmt.Sprintf(`test runs the tiers the hub declares in gate.yaml, in ascending tier number, stopping at the first tier that fails.
+---tier N names a tier and may repeat; the default is tier0.
++--tier N names a tier and may repeat; the default is tier0 unless --upto is given.
++--upto N adds every declared tier numbered 0 through N but a manual one, which runs only when --tier names it.
+ A listed tier that another listed tier covers is dropped.
+ Each tier takes the gate slots it asks for, so the hub never runs more gate builds and tests at once than its configured slot count allows, and runs its command through the platform shell as one process tree, bounded by the tier's timeout_min once its slots are held.
+ Without --wait it waits for the slots for up to %s, under the prompt-cache lifetime.
+@@ -71,6 +73,7 @@ Examples:
+ 
+   lyx gate test --wait ./internal/foo
+   lyx gate test --tier 0 --tier 1 --all
++  lyx gate test --upto 2
+   lyx gate test --wait --card 3 --card 4
+   lyx gate test --base main
+   lyx gate test -C backend ./internal/foo ./internal/bar
+@@ -84,6 +87,7 @@ Examples:
+ 			request := testRequest{
+ 				goBinary: goBinary, samplePeriod: samplePeriod, slotWait: slotWait, preTierCeiling: preTierCeiling, timeoutUnit: timeoutUnit,
+ 				stderr: cmd.ErrOrStderr(), dir: dir, tags: tags, tiers: tiers, cards: cards, base: base, all: all, guards: guards, wait: wait, targets: args,
++				upto: upto, uptoGiven: cmd.Flags().Changed("upto"),
+ 			}
+ 			if dash := cmd.ArgsLenAtDash(); dash >= 0 {
+ 				request.targets, request.args = args[:dash], args[dash:]
+@@ -95,12 +99,14 @@ Examples:
+ 	testCmd.Flags().StringVarP(&dir, "dir", "C", "", "directory the tiers run in, with explicit targets only; defaults to each tier's own dir")
+ 	testCmd.Flags().StringVar(&tags, "tags", "", "refused: name the tier that compiles the tags with --tier")
+ 	testCmd.Flags().IntSliceVar(&tiers, "tier", nil, "tier number to run; repeatable, default 0")
++	testCmd.Flags().IntVar(&upto, "upto", 0, "run every declared tier numbered 0 through N but the manual ones")
+ 	testCmd.Flags().StringArrayVar(&cards, "card", nil, "plan card id whose packages are the scope; repeatable")
+ 	testCmd.Flags().StringVar(&base, "base", "", "revision whose diff to the working tree is the scope")
+ 	testCmd.Flags().BoolVar(&all, "all", false, "run every tier over its all_targets")
+ 	testCmd.Flags().BoolVar(&guards, "guards", false, "after the listed tiers pass, run the guard tier over every //lyx:guard test of the module")
+ 	testCmd.Flags().BoolVar(&wait, "wait", false, "block until the tiers' slots free instead of answering slot_free false after the keep-cache-warm cap")
+ 	cmd.AddCommand(testCmd)
++	cmd.AddCommand(statusCmd())
+ 	cmd.AddCommand(cardVerifyCmd())
+ 
+ 	return cmd
+@@ -137,8 +143,11 @@ type testRequest struct {
+ 	// dir is the -C value as typed; empty means the tier's own dir.
+ 	dir  string
+ 	tags string
+-	// tiers are the --tier values as typed; empty means tier0.
++	// tiers are the --tier values as typed; empty means tier0 unless uptoGiven.
+ 	tiers []int
++	// upto is the --upto value, read only when uptoGiven.
++	upto      int
++	uptoGiven bool
+ 	// cards are the --card values.
+ 	cards []string
+ 	// base is the --base revision.
+diff --git a/internal/gatecli/cli_test.go b/internal/gatecli/cli_test.go
+index c51ecd2ed..398f23135 100644
+--- a/internal/gatecli/cli_test.go
++++ b/internal/gatecli/cli_test.go
+@@ -27,6 +27,7 @@ func TestGateTest_RefusesBeforeResolvingTheHub(t *testing.T) {
+ 		{name: "-C with --card names explicit targets", args: []string{"test", "-C", "sub", "--card", "1"}, wantError: "explicit targets"},
+ 		{name: "--all with explicit targets is two scope forms", args: []string{"test", "--all", "./pkg"}, wantError: "one scope form"},
+ 		{name: "--all with --base is two scope forms", args: []string{"test", "--all", "--base", "main"}, wantError: "one scope form"},
++		{name: "a negative --upto names no tier", args: []string{"test", "--upto", "-1"}, wantError: "--upto -1 names no tier"},
+ 		{name: "-C directory does not exist", args: []string{"test", "-C", missingDir, "./pkg"}, wantError: "does not exist"},
+ 	}
+ 	for _, tc := range tests {
+diff --git a/internal/gatecli/doc.go b/internal/gatecli/doc.go
+index 897604e66..a1d897088 100644
+--- a/internal/gatecli/doc.go
++++ b/internal/gatecli/doc.go
+@@ -1,11 +1,13 @@
+-// Package gatecli provides the cobra command tree for `lyx gate`, whose verb `test` is the sanctioned route for running the hub's test tiers and whose verb `card-verify` runs a plan card's `**Verify:**` line.
++// Package gatecli provides the cobra command tree for `lyx gate`, whose verb `test` is the sanctioned route for running the hub's test tiers, whose verb `status` shows who holds the hub's gate slots and whose verb `card-verify` runs a plan card's `**Verify:**` line.
+ //
+ // The module is not standalone-capable and does not go through internal/cliwire: it has no target directory, state, plan or stencils to wire, and it resolves hub membership itself.
+ //
+ // # Verb
+ //
+-// `lyx gate test [-C <dir>] [--tier N]... [--card <id>]... [--base <rev>] [--all] [--guards] [--wait] [<targets>...] [-- <args>]` runs the tiers the hub declares in gate.yaml, in ascending tier number, and stops at the first tier that fails.
+-// `--tier` names a tier and may repeat; the default is tier0, and a tier another listed tier covers is dropped and named as covered on stderr.
++// `lyx gate test [-C <dir>] [--tier N]... [--upto N] [--card <id>]... [--base <rev>] [--all] [--guards] [--wait] [<targets>...] [-- <args>]` runs the tiers the hub declares in gate.yaml, in ascending tier number, and stops at the first tier that fails.
++// `--tier` names a tier and may repeat; the default is tier0 when neither `--tier` nor `--upto` is given, and a tier another listed tier covers is dropped and named as covered on stderr.
++// `--upto N` adds every declared tier numbered 0 through N to the `--tier` values, skipping a gap in the numbers and a tier marked `manual`, which it names on stderr unless `--tier` names it.
++// A manual tier runs only when `--tier` names it, so a tier that spends tokens never starts from a range; a negative N is refused before hub resolution.
+ // `--tags` stays a registered flag only to be refused before any slot, naming `--tier`: a tier's own command sets its build tags.
+ // The words after `--` fill each tier's `{args}`.
+ //
+@@ -24,7 +26,7 @@
+ // Explicit targets replace each run's `{targets}` verbatim and run in the `-C` directory, else in the tier's `dir`.
+ // `--all` sets `{targets}` to the tier's `all_targets`, split at spaces, and runs in the tier's `dir`.
+ // A command without `{targets}` runs once, whole, under explicit targets and under a non-empty narrower scope, and says so on stderr.
+-// Flag-shape refusals need no config and run first, before hub resolution: `--tags`, naming `--tier`; `-C` without explicit targets, naming them; and more than one scope form.
++// Flag-shape refusals need no config and run first, before hub resolution: `--tags`, naming `--tier`; a negative `--upto`; `-C` without explicit targets, naming them; and more than one scope form.
+ //
+ // # Scoper
+ //
+@@ -76,6 +78,10 @@
+ // A tier with `slots: all` holds every slot and waits behind the pool's drain.
+ // Outside a hub the tiers run unslotted.
+ //
++// `lyx gate status` reads the pool of the hub that contains the working directory and changes nothing.
++// It answers an ok envelope with `in_hub`, the pool's `slots` count, `draining`, whether a multi-slot acquire holds the drain so new single-slot runs wait while a slot is free, and `held`, one entry per held slot, oldest first, with its `slot` number, `worktree`, `site`, `tier`, `pid` and `started` time.
++// Outside every hub it answers `in_hub: false` and nothing held.
++//
+ // # Inheritance
+ //
+ // When the slot variable gateslot.InheritEnv names a slot of the pool that is held, the run goes inside that slot without acquiring, whatever slots its tiers ask for, so a verify command that calls `lyx gate test` cannot deadlock.
+diff --git a/internal/gatecli/run.go b/internal/gatecli/run.go
+index aeba7520f..2482ff7d7 100644
+--- a/internal/gatecli/run.go
++++ b/internal/gatecli/run.go
+@@ -139,6 +139,9 @@ func flagShapeRefusal(request testRequest) string {
+ 	if request.tags != "" {
+ 		return fmt.Sprintf("gate test: --tags %q is refused, since a tier's own command sets its build tags; way forward: name the tier that compiles them with --tier, for example --tier 1, and re-run the same command", request.tags)
+ 	}
++	if request.uptoGiven && request.upto < 0 {
++		return fmt.Sprintf("gate test: --upto %d names no tier; way forward: pass the highest tier number to run, 0 or more, then re-run the same command", request.upto)
++	}
+ 	forms := 0
+ 	for _, given := range []bool{len(request.targets) > 0, request.all, request.base != "", len(request.cards) > 0} {
+ 		if given {
+diff --git a/internal/gatecli/status.go b/internal/gatecli/status.go
+new file mode 100644
+index 000000000..15c0f2f5c
+--- /dev/null
++++ b/internal/gatecli/status.go
+@@ -0,0 +1,79 @@
++// status.go implements `lyx gate status`, the read-only view of which slots of the hub's gate-slot pool are held, by which run and tier, and since when.
++
++package gatecli
++
++import (
++	"context"
++	"fmt"
++	"io"
++	"time"
++
++	"github.com/spf13/cobra"
++
++	"github.com/Knatte18/loomyard/internal/clihelp"
++	"github.com/Knatte18/loomyard/internal/hubgeom"
++	"github.com/Knatte18/loomyard/internal/lyxcwd"
++	"github.com/Knatte18/loomyard/internal/output"
++)
++
++// statusCmd builds `lyx gate status`.
++func statusCmd() *cobra.Command {
++	return &cobra.Command{
++		Use:         "status",
++		Short:       "show which gate slots are held, by which run and tier, and since when",
++		Annotations: map[string]string{clihelp.AudienceAnnotation: clihelp.AudienceOperator},
++		Long: `status shows the hub's gate-slot pool: its slot count, whether a run that needs several slots holds the drain, which makes new single-slot runs wait even while a slot is free, and one entry per held slot with its slot number, the holding worktree, site and tier, its pid and when it took the slot.
++It takes no slot and changes nothing.
++Outside every hub it answers in_hub false, since the tiers run unslotted there.`,
++		Args: cobra.NoArgs,
++		RunE: func(cmd *cobra.Command, _ []string) error {
++			if clihelp.ShouldAbort(cmd.Context()) {
++				return nil
++			}
++			clihelp.SetExit(cmd.Context(), runStatus(cmd.Context(), cmd.OutOrStdout()))
++			return nil
++		},
++	}
++}
++
++// runStatus writes the status of the gate-slot pool of the hub that contains the seam cwd and returns the verb's exit code.
++func runStatus(ctx context.Context, out io.Writer) int {
++	cwd, err := lyxcwd.CwdFrom(ctx)
++	if err != nil {
++		return output.Err(out, fmt.Sprintf("gate status: cannot read the working directory: %v; way forward: re-run the same command", err))
++	}
++	location, inHub, err := resolveHub(cwd)
++	if err != nil {
++		return output.Err(out, fmt.Sprintf("gate status: %v; way forward: re-run the same command", err))
++	}
++	if !inHub {
++		return output.Ok(out, map[string]any{"in_hub": false, "held": []map[string]any{}, "message": "gate status: no hub contains this directory, so its tiers run unslotted"})
++	}
++
++	pool := hubgeom.GateSlots(location)
++	limits, err := pool.Limits()
++	if err != nil {
++		return output.Err(out, fmt.Sprintf("gate status: %v; way forward: take the step it names, then re-run the same command", err))
++	}
++	holders, err := pool.Holders()
++	if err != nil {
++		return output.Err(out, fmt.Sprintf("gate status: %v; way forward: re-run the same command", err))
++	}
++	draining, err := pool.Draining()
++	if err != nil {
++		return output.Err(out, fmt.Sprintf("gate status: read the drain lock: %v; way forward: re-run the same command", err))
++	}
++
++	held := make([]map[string]any, len(holders))
++	for i, holder := range holders {
++		held[i] = map[string]any{
++			"slot":     holder.Slot,
++			"worktree": holder.Worktree,
++			"site":     holder.Site,
++			"tier":     holder.Tier,
++			"pid":      holder.PID,
++			"started":  holder.Started.Format(time.RFC3339),
++		}
++	}
++	return output.Ok(out, map[string]any{"in_hub": true, "slots": limits.Slots, "draining": draining, "held": held})
++}
+diff --git a/internal/gatecli/test_integration_test.go b/internal/gatecli/test_integration_test.go
+index e8de620fd..1b84a5d4d 100644
+--- a/internal/gatecli/test_integration_test.go
++++ b/internal/gatecli/test_integration_test.go
+@@ -31,6 +31,7 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/gitkit"
+ 	"github.com/Knatte18/loomyard/internal/hubforge"
+ 	"github.com/Knatte18/loomyard/internal/hubgeom"
++	"github.com/Knatte18/loomyard/internal/lock"
+ 	"github.com/Knatte18/loomyard/internal/logger"
+ 	"github.com/Knatte18/loomyard/internal/lyxtemp"
+ 	"github.com/Knatte18/loomyard/internal/proc"
+@@ -512,6 +513,85 @@ func TestGateTest_Scenario(t *testing.T) {
+ 		}
+ 	})
+ 
++	t.Run("status names each held slot's number, worktree, site, tier and start, the slot count and the drain", func(t *testing.T) {
++		acquire(t, "holder one")
++		lease, err := pool.AcquireSlots(context.Background(), gateslot.Holder{Worktree: "/tiered/worktree", Site: "lyx gate test tier1", Tier: "tier1"}, 1)
++		if err != nil {
++			t.Fatalf("AcquireSlots: %v", err)
++		}
++		t.Cleanup(func() { _ = lease.Release() })
++
++		var out bytes.Buffer
++		code := RunCLIIn(prime, &out, []string{"status"})
++		var envelope struct {
++			OK       bool `json:"ok"`
++			InHub    bool `json:"in_hub"`
++			Slots    int  `json:"slots"`
++			Draining bool `json:"draining"`
++			Held     []struct {
++				Slot     int       `json:"slot"`
++				Worktree string    `json:"worktree"`
++				Site     string    `json:"site"`
++				Tier     string    `json:"tier"`
++				PID      int       `json:"pid"`
++				Started  time.Time `json:"started"`
++			} `json:"held"`
++		}
++		if err := json.Unmarshal(out.Bytes(), &envelope); err != nil {
++			t.Fatalf("status output %q is not a JSON envelope: %v", out.String(), err)
++		}
++		if code != 0 || !envelope.OK || !envelope.InHub || envelope.Slots != 2 || envelope.Draining || len(envelope.Held) != 2 {
++			t.Fatalf("status = exit %d, %+v; want exit 0, ok, in_hub, 2 slots, no drain and both holders", code, envelope)
++		}
++		first, second := envelope.Held[0], envelope.Held[1]
++		if first.Slot != 1 || first.Worktree != "/other/worktree" || first.Site != "holder one" || first.Tier != "" || first.PID != os.Getpid() || first.Started.IsZero() {
++			t.Errorf("status held[0] = %+v; want slot 1 held by holder one with no tier, this pid and a start", first)
++		}
++		if second.Slot != 2 || second.Worktree != "/tiered/worktree" || second.Site != "lyx gate test tier1" || second.Tier != "tier1" || second.Started.Before(first.Started) {
++			t.Errorf("status held[1] = %+v; want slot 2 held by the tier1 run, started no earlier than slot 1", second)
++		}
++	})
++
++	t.Run("status reports draining true while a multi-slot acquire holds the drain lock", func(t *testing.T) {
++		if err := os.MkdirAll(pool.Dir, 0o755); err != nil {
++			t.Fatal(err)
++		}
++		drain, acquired, err := lock.TryAcquireWriteLock(filepath.Join(pool.Dir, "drain.lock"))
++		if err != nil || !acquired {
++			t.Fatalf("TryAcquireWriteLock(drain) = (%v, %v); want the drain held", acquired, err)
++		}
++		t.Cleanup(func() { _ = drain.Release() })
++
++		var out bytes.Buffer
++		code := RunCLIIn(prime, &out, []string{"status"})
++		var envelope struct {
++			OK       bool `json:"ok"`
++			Draining bool `json:"draining"`
++		}
++		if err := json.Unmarshal(out.Bytes(), &envelope); err != nil {
++			t.Fatalf("status output %q is not a JSON envelope: %v", out.String(), err)
++		}
++		if code != 0 || !envelope.OK || !envelope.Draining {
++			t.Errorf("status = exit %d, %+v; want exit 0, ok and draining true", code, envelope)
++		}
++	})
++
++	t.Run("status outside every hub answers in_hub false", func(t *testing.T) {
++		var out bytes.Buffer
++		code := RunCLIIn(t.TempDir(), &out, []string{"status"})
++		var envelope struct {
++			OK    bool  `json:"ok"`
++			InHub *bool `json:"in_hub"`
++			Held  []any `json:"held"`
++		}
++		if err := json.Unmarshal(out.Bytes(), &envelope); err != nil {
++			t.Fatalf("status output %q is not a JSON envelope: %v", out.String(), err)
++		}
++		if code != 0 || !envelope.OK || envelope.InHub == nil || *envelope.InHub || len(envelope.Held) != 0 {
++			t.Errorf("status = exit %d, %q; want exit 0, ok, in_hub false and nothing held", code, out.String())
++		}
++	})
++
+ 	t.Run("--wait blocks past the cap until a slot frees", func(t *testing.T) {
+ 		first, second := acquire(t, "holder one"), acquire(t, "holder two")
+ 		g := startGate(t, gateRun{cwd: prime, args: []string{"test", "--wait", "./pkg"}, env: []string{helperSlotWaitEnv + "=50ms"}})
+diff --git a/internal/gatecli/tiers.go b/internal/gatecli/tiers.go
+index 6b1899ce8..d0b1518d4 100644
+--- a/internal/gatecli/tiers.go
++++ b/internal/gatecli/tiers.go
+@@ -60,7 +60,7 @@ func planTierRuns(cfg gateslot.Config, request testRequest, sc scope) ([]tierRun
+ 	if _, err := cfg.Tier(0); err != nil {
+ 		return nil, fmt.Errorf("gate test: %w", err)
+ 	}
+-	numbers := listedTiers(request.tiers)
++	numbers := listedTiers(cfg, request)
+ 	tiers := make(map[int]gateslot.Tier, len(numbers))
+ 	for _, number := range numbers {
+ 		tier, err := cfg.Tier(number)
+@@ -157,12 +157,31 @@ func configRefusal(format string, args ...any) error {
+ 	return fmt.Errorf("gate test: %s; way forward: fix it with \"lyx config gate\" from the prime%s", fmt.Sprintf(format, args...), roleClause)
+ }
+ 
+-// listedTiers returns the requested tier numbers ascending and without repeats, tier0 when none was requested.
+-func listedTiers(requested []int) []int {
+-	if len(requested) == 0 {
++// listedTiers returns the tier numbers request names, ascending and without repeats: the --tier values and, with --upto N, every tier cfg declares numbered 0 through N that is not manual.
++// Each manual tier --upto skips and --tier does not name is named on request.stderr when it has one.
++// With neither flag it returns tier0.
++func listedTiers(cfg gateslot.Config, request testRequest) []int {
++	if len(request.tiers) == 0 && !request.uptoGiven {
+ 		return []int{0}
+ 	}
+-	numbers := slices.Clone(requested)
++	numbers := slices.Clone(request.tiers)
++	if request.uptoGiven {
++		var declared []int
++		for key := range cfg.Tiers {
++			if number, _ := strconv.Atoi(strings.TrimPrefix(key, "tier")); number <= request.upto {
++				declared = append(declared, number)
++			}
++		}
++		sort.Ints(declared)
++		for _, number := range declared {
++			switch {
++			case !cfg.Tiers[tierName(number)].Manual:
++				numbers = append(numbers, number)
++			case !slices.Contains(request.tiers, number) && request.stderr != nil:
++				fmt.Fprintf(request.stderr, "gate test: %s is manual and runs only when --tier names it\n", tierName(number))
++			}
++		}
++	}
+ 	sort.Ints(numbers)
+ 	return slices.Compact(numbers)
+ }
+diff --git a/internal/gatecli/tiers_test.go b/internal/gatecli/tiers_test.go
+index e11e0f8d4..6fc7c8e24 100644
+--- a/internal/gatecli/tiers_test.go
++++ b/internal/gatecli/tiers_test.go
+@@ -25,6 +25,14 @@ func planConfig() gateslot.Config {
+ 	}
+ }
+ 
++// withManualTier3 makes tier1 cover nothing and declares a manual tier3, leaving tier2 undeclared.
++func withManualTier3(cfg *gateslot.Config) {
++	t1 := cfg.Tiers["tier1"]
++	t1.Covers = nil
++	cfg.Tiers["tier1"] = t1
++	cfg.Tiers["tier3"] = gateslot.Tier{Command: "llm {args}", Dir: ".", TimeoutMin: 1, Counter: "go-json", Parallel: 1, Slots: 1, Manual: true}
++}
++
+ // describe renders a run as `tier<N> <scope> dir=<dir> <targets>`, one `dir=… …` per invocation joined by ` | ` and `none` for no invocation, with ` ignores` for a command that ignores the scope and ` guard` for the guard step.
+ func describe(run tierRun) string {
+ 	parts := make([]string, len(run.invocations))
+@@ -85,6 +93,31 @@ func TestPlanTierRuns(t *testing.T) {
+ 			want:       []string{"tier1 all dir=sub ./... ./x/..."},
+ 			wantStderr: "tier0 is covered by tier1",
+ 		},
++		{
++			name:       "--upto runs the declared tiers through N and skips a manual one, naming it",
++			mutate:     withManualTier3,
++			request:    testRequest{upto: 5, uptoGiven: true},
++			want:       []string{"tier0 all dir=. ./...", "tier1 all dir=sub ./... ./x/..."},
++			wantStderr: "tier3 is manual and runs only when --tier names it",
++		},
++		{
++			name:    "--upto 0 runs tier0 alone",
++			mutate:  withManualTier3,
++			request: testRequest{upto: 0, uptoGiven: true},
++			want:    []string{"tier0 all dir=. ./..."},
++		},
++		{
++			name:    "--tier adds a manual tier beside --upto",
++			mutate:  withManualTier3,
++			request: testRequest{tiers: []int{3}, upto: 3, uptoGiven: true},
++			want:    []string{"tier0 all dir=. ./...", "tier1 all dir=sub ./... ./x/...", "tier3 all dir=."},
++		},
++		{
++			name:       "--upto drops a tier another tier in its range covers",
++			request:    testRequest{upto: 1, uptoGiven: true},
++			want:       []string{"tier1 all dir=sub ./... ./x/..."},
++			wantStderr: "tier0 is covered by tier1",
++		},
+ 		{
+ 			name:    "explicit targets run verbatim in the -C directory",
+ 			request: testRequest{tiers: []int{0}, targets: []string{"./a", "./b"}, dir: "/work/nested"},
+diff --git a/internal/gateslot/config_test.go b/internal/gateslot/config_test.go
+index 2abd7139d..e34fb0188 100644
+--- a/internal/gateslot/config_test.go
++++ b/internal/gateslot/config_test.go
+@@ -109,6 +109,14 @@ func TestLoadConfig(t *testing.T) {
+ 				c.Gates["push"] = []int{0, 1}
+ 			}), "",
+ 		},
++		{
++			"a manual tier above tier0 loads", baseKeys + `tiers: {tier0: {command: x, timeout_min: 5, counter: vstest}, tier3: {command: y, timeout_min: 5, counter: vstest, manual: true}}`,
++			hubWith(func(c *Config) {
++				c.Tiers["tier0"] = Tier{Command: "x", Dir: ".", Parallel: 1, TimeoutMin: 5, Counter: "vstest", Slots: 1}
++				c.Tiers["tier3"] = Tier{Command: "y", Dir: ".", Parallel: 1, TimeoutMin: 5, Counter: "vstest", Slots: 1, Manual: true}
++			}), "",
++		},
++		{"a manual tier0", baseKeys + `tiers: {tier0: {command: x, timeout_min: 5, counter: vstest, manual: true}}`, Config{}, `gate config key "tiers.tier0.manual": true; want false, since tier0 is the tier a call with no tier flag runs` + fixIt},
+ 		{"tier without command", baseKeys + `tiers: {tier0: {timeout_min: 5, counter: vstest}}`, Config{}, `gate config key "tiers.tier0.command": missing; want the shell command a run executes` + fixIt},
+ 		{"tier without timeout_min", baseKeys + `tiers: {tier0: {command: x, counter: vstest}}`, Config{}, `gate config key "tiers.tier0.timeout_min": missing; want at least 1` + fixIt},
+ 		{"tier with timeout_min 0", baseKeys + `tiers: {tier0: {command: x, timeout_min: 0, counter: vstest}}`, Config{}, `gate config key "tiers.tier0.timeout_min": 0; want at least 1` + fixIt},
+diff --git a/internal/gateslot/doc.go b/internal/gateslot/doc.go
+index 1a2073e73..28a30b301 100644
+--- a/internal/gateslot/doc.go
++++ b/internal/gateslot/doc.go
+@@ -19,7 +19,8 @@
+ // The Holder record names the tier run that holds a slot, so a status reader can show it.
+ //
+ // An OS lock is released by process death, so a crashed holder never leaks a slot; its holder record stays on disk but Holders trusts a record only while its lock is held.
+-// Holders reads every slot record in the directory, so a holder of a slot above a lowered count still shows.
++// Holders reads every slot record in the directory, so a holder of a slot above a lowered count still shows, and fills each Holder's slot number from its record's file name, which the record itself never carries.
++// Pool.Draining reports whether the drain lock is held, and creates no file in a pool that never had one.
+ //
+ // # Inheritance
+ //
+@@ -56,10 +57,11 @@
+ // `gates` is a per-name map from a gate name to its list of tier numbers, so a hub file that sets one gate keeps the template's list for every other, and `tier_parallel` an open map from a tier name to this machine's parallel for it.
+ // `tiers` is an executable key, since a tier command runs any shell command in a task worktree, and `gates`, `scoper`, `guard_tier` and `refuse_raw` are guard keys, so all of them are hub-file only.
+ // The machine override is a sibling map rather than a path under `tiers`, because an open map is one unit in the layer merge, so a machine layer holding part of `tiers` would replace the hub's tiers whole.
++// A tier's `manual: true` keeps it out of a `lyx gate test --upto` range, so it runs only when named by number.
+ // A declared tier's effective Parallel is its `tier_parallel` entry when one is set, from whichever layer sets it, and 1 when neither sets one; a standalone worktree has no machine layer and sets the key in its own file.
+ //
+ // LoadConfig refuses at load, naming the key and `lyx config gate`: a tier lacking `command`, `timeout_min` or `counter`, or `all_targets` when its command holds `{targets}`;
+-// `parallel` or `timeout_min` below 1, `slots` neither `all` nor at least 1, a counter other than `go-json` or `vstest`, a scoper other than `go` or `none`;
++// `manual: true` on `tier0`, the tier a call with no tier flag runs; `parallel` or `timeout_min` below 1, `slots` neither `all` nor at least 1, a counter other than `go-json` or `vstest`, a scoper other than `go` or `none`;
+ // a `covers` entry not lower than its tier's number, a tier key not spelled `tier<N>`, a `refuse_raw` entry that is not words of letters, digits, `.`, `_` and `-` separated by single spaces, and a `tier_parallel` entry that is no integer of at least 1.
+ // A `tier_parallel` entry for a tier the config does not declare is dropped with a logged warning, so a tier the hub removes leaves no entry that fails the load.
+ // Cross-references are checked at use, never at load, so the template and a hub whose gate lists name an undeclared tier both load.
+diff --git a/internal/gateslot/pool.go b/internal/gateslot/pool.go
+index 1a0a0128a..f0f6c29ae 100644
+--- a/internal/gateslot/pool.go
++++ b/internal/gateslot/pool.go
+@@ -76,6 +76,8 @@ type Holder struct {
+ 	Started time.Time `yaml:"started"`
+ 	// Tier is the tier key, such as tier0, of the tier run that holds the slot; empty for a holder that is no tier run.
+ 	Tier string `yaml:"tier,omitempty"`
++	// Slot is the number of the held slot; Holders fills it from the record's file name, and the record never carries it.
++	Slot int `yaml:"-"`
+ }
+ 
+ // Pool is the hub-wide pool of gate slots, one OS file lock per slot in Dir.
+@@ -315,7 +317,7 @@ func (p *Pool) tryAcquireSlot(number int, h Holder) (heldSlot, bool, error) {
+ 	return heldSlot{lock: fileLock, lockPath: lockPath, recordPath: recordPath}, true, nil
+ }
+ 
+-// Holders returns the holder records of the slots whose lock is held right now, oldest first.
++// Holders returns the holder records of the slots whose lock is held right now, oldest first, each with its slot number.
+ // A record is trusted only while its lock is held, so a record a crashed holder left behind is dropped; it reads every slot record in the directory, so a holder of a slot above a lowered count still shows.
+ func (p *Pool) Holders() ([]Holder, error) {
+ 	records, err := filepath.Glob(filepath.Join(p.Dir, holderGlobPattern))
+@@ -343,12 +345,22 @@ func (p *Pool) Holders() ([]Holder, error) {
+ 		if err := yaml.Unmarshal(data, &h); err != nil {
+ 			return nil, fmt.Errorf("parse gate holder record %s: %w", recordPath, err)
+ 		}
++		h.Slot, _ = strconv.Atoi(strings.TrimSuffix(strings.TrimPrefix(filepath.Base(recordPath), slotPrefix), holderSuffix))
+ 		holders = append(holders, h)
+ 	}
+ 	sort.Slice(holders, func(i, j int) bool { return holders[i].Started.Before(holders[j].Started) })
+ 	return holders, nil
+ }
+ 
++// Draining reports whether a multi-slot acquire holds the drain lock, which makes every new single-slot acquire wait even while a slot is free.
++// A pool whose drain lock file was never created is not draining, and the check creates no file there.
++func (p *Pool) Draining() (bool, error) {
++	if _, err := os.Stat(p.drainLockPath()); errors.Is(err, os.ErrNotExist) {
++		return false, nil
++	}
++	return lockIsHeld(p.drainLockPath())
++}
++
+ // Inherited reports whether slot names a lock file inside Dir whose lock is held.
+ func (p *Pool) Inherited(slot string) bool {
+ 	slot = filepath.Clean(slot)
+diff --git a/internal/gateslot/pool_test.go b/internal/gateslot/pool_test.go
+index 0905c79af..ba413776a 100644
+--- a/internal/gateslot/pool_test.go
++++ b/internal/gateslot/pool_test.go
+@@ -13,6 +13,7 @@ import (
+ 	"testing"
+ 	"time"
+ 
++	"github.com/Knatte18/loomyard/internal/lock"
+ 	"github.com/Knatte18/loomyard/internal/testkit/logcapture"
+ )
+ 
+@@ -193,8 +194,8 @@ func TestHolders_NamesLiveHoldersAndDropsRecordsOfFreeLocks(t *testing.T) {
+ 	if err != nil {
+ 		t.Fatal(err)
+ 	}
+-	if len(holders) != 1 || holders[0].Worktree != "wt" || holders[0].Site != "webster gate" || holders[0].PID != os.Getpid() || holders[0].Started.IsZero() {
+-		t.Fatalf("Holders() = %+v; want only the live holder with worktree, site, pid and start time", holders)
++	if len(holders) != 1 || holders[0].Slot != 1 || holders[0].Worktree != "wt" || holders[0].Site != "webster gate" || holders[0].PID != os.Getpid() || holders[0].Started.IsZero() {
++		t.Fatalf("Holders() = %+v; want only the live holder of slot 1 with worktree, site, pid and start time", holders)
+ 	}
+ 
+ 	if err := lease.Release(); err != nil {
+@@ -209,6 +210,35 @@ func TestHolders_NamesLiveHoldersAndDropsRecordsOfFreeLocks(t *testing.T) {
+ 	}
+ }
+ 
++func TestDraining_ReportsTheDrainLockWithoutCreatingIt(t *testing.T) {
++	t.Parallel()
++
++	pool := newPool(t, fixedLimits(2))
++	if draining, err := pool.Draining(); err != nil || draining {
++		t.Errorf("Draining() on a pool with no directory = (%v, %v); want (false, nil)", draining, err)
++	}
++	if _, err := os.Stat(pool.Dir); !errors.Is(err, os.ErrNotExist) {
++		t.Errorf("Draining() left %s behind (stat error %v); want nothing created", pool.Dir, err)
++	}
++
++	if err := os.MkdirAll(pool.Dir, 0o755); err != nil {
++		t.Fatal(err)
++	}
++	drain, acquired, err := lock.TryAcquireWriteLock(pool.drainLockPath())
++	if err != nil || !acquired {
++		t.Fatalf("TryAcquireWriteLock(drain) = (%v, %v); want the drain held", acquired, err)
++	}
++	if draining, err := pool.Draining(); err != nil || !draining {
++		t.Errorf("Draining() with the drain held = (%v, %v); want (true, nil)", draining, err)
++	}
++	if err := drain.Release(); err != nil {
++		t.Fatal(err)
++	}
++	if draining, err := pool.Draining(); err != nil || draining {
++		t.Errorf("Draining() after the drain is released = (%v, %v); want (false, nil)", draining, err)
++	}
++}
++
+ func TestInherited(t *testing.T) {
+ 	t.Parallel()
+ 
+diff --git a/internal/gateslot/template.yaml b/internal/gateslot/template.yaml
+index 4038b0e6c..1c1f1afd1 100644
+--- a/internal/gateslot/template.yaml
++++ b/internal/gateslot/template.yaml
+@@ -4,7 +4,7 @@ busy_quit_sec: 120  # seconds a Go test binary under lyx gate test may keep a CP
+ # The hub's test tiers, keyed tier0, tier1, and so on; the template declares none.
+ # A tier is written whole with one flow mapping: lyx config gate --set 'tiers.tier0={command: "go test -json {targets} {args}", all_targets: ./..., timeout_min: 60, counter: go-json}'
+ # It holds command (with {targets}, {parallel} and {args} placeholders), timeout_min (at least 1) and counter (go-json or vstest), and all_targets when the command holds {targets}.
+-# It may also hold about, dir (default .), env, parallel (at least 1, default 1), covers (lower tier numbers its command runs anyway), slots (a count of at least 1, or all; default 1) and prebuilt_lyx.
++# It may also hold about, dir (default .), env, parallel (at least 1, default 1), covers (lower tier numbers its command runs anyway), slots (a count of at least 1, or all; default 1), prebuilt_lyx and manual (true keeps a tier above tier0 out of lyx gate test --upto, so it runs only when --tier names it).
+ # Inside the mapping a value holding a brace, comma or bracket is a double-quoted string.
+ tiers: {}
+ 
+diff --git a/internal/gateslot/tiers.go b/internal/gateslot/tiers.go
+index a057380bc..3ac6ae42c 100644
+--- a/internal/gateslot/tiers.go
++++ b/internal/gateslot/tiers.go
+@@ -39,6 +39,8 @@ type Tier struct {
+ 	Slots int
+ 	// PrebuiltLyx makes a run of the tier prebuild lyx from the worktree first.
+ 	PrebuiltLyx bool
++	// Manual keeps the tier out of a tier range, so it runs only when named by number, such as a tier that spends tokens.
++	Manual bool
+ }
+ 
+ // tierFile is a tier as gate.yaml spells it, before defaults and validation.
+@@ -54,6 +56,7 @@ type tierFile struct {
+ 	Covers      []int             `yaml:"covers"`
+ 	Slots       yaml.Node         `yaml:"slots"`
+ 	PrebuiltLyx bool              `yaml:"prebuilt_lyx"`
++	Manual      bool              `yaml:"manual"`
+ }
+ 
+ // goReadGates are the gate names the Go verify sites read, in the order TiersValue lists them.
+@@ -106,6 +109,10 @@ func decodeTier(key string, number int, file tierFile) (Tier, error) {
+ 		Covers:      file.Covers,
+ 		Slots:       1,
+ 		PrebuiltLyx: file.PrebuiltLyx,
++		Manual:      file.Manual,
++	}
++	if tier.Manual && number == 0 {
++		return Tier{}, refuse("manual", "true; want false, since tier0 is the tier a call with no tier flag runs")
+ 	}
+ 	if tier.Dir == "" {
+ 		tier.Dir = "."
