@@ -1,6 +1,6 @@
 # [.NET 007] Language-specific lens sets seeded per hub
 
-`lenses-language-sets` · Task · enhancement, burler, config, dotnet · running · Loom-Preflight
+`lenses-language-sets` · Task · enhancement, burler, config, dotnet · running · Discussion-Write
 
 ## Seen (orch, 2026-10-20)
 
