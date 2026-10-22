@@ -1,0 +1,10 @@
+verdict: approve
+reason: >-
+  The diff does what the board entry asks and nothing more.
+  Interrupted stops get their own interrupted-stop anomaly kind, not producer-hard-failure.
+  The loop-exited cause names the loop, the in-flight step and its trace id, and whether its step tree was killed.
+  The halt note's trace file is the in-flight step's trace in place of the loop log.
+  The carried-over Darn-Review finding is fixed and names no parent correction.
+  The only peer, orch-strand-cycle, leaves the loop-exited halt note to this task and does not overlap.
+question: ""
+superseded: []
