@@ -1,0 +1,8 @@
+verdict: approve
+reason: >-
+  The diff builds every in-scope point of the decision record (D1 to D9, the parent's PATTERN.md no-growth decision, docs) and nothing from its Out list;
+  no carried-over finding records a broken decision, and lyx loom peers lists no peer run or parent commit, so there is no overlap.
+  D8's live client-attached check on resume makes note open-window-live-check obsolete.
+question: ""
+superseded:
+  - open-window-live-check
