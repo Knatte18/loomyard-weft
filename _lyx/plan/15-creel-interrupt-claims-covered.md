@@ -40,7 +40,8 @@ The claim comes before the key, so an interrupt that dies after it leaves the st
 `Inject` with `--interrupt` reaches the interrupt through `interruptTarget` too, so under a pause it now claims, interrupts and queues the inject, which the worker holds until the resume.
 Bound: the interrupt is let through only for a strand a live entry covers at the key, and it records the strand in that entry; no sender joins the privilege rule.
 Residual, accepted: `lyx tender resume` never takes creel's pane lock, so a resume landing between the re-read and the key leaves the strand interrupted with no resume line if its line then fails busy.
-`doc.go`'s interrupt and Pause paragraphs, `Store.Interrupt`'s doc comment and the `Long` text of `interruptCmd` and of `injectCmd`'s `--interrupt` say a covered strand is claimed into the pause and interrupted, so `lyx tender resume` gives it its line, and that the unreadable record and hold refusals stay.
+The sentence of `doc.go`'s Layering section listing what Delivery does gains claiming a covered strand into its pause for the interrupt;
+its interrupt and Pause paragraphs, `Store.Interrupt`'s doc comment and the `Long` text of `interruptCmd` and of `injectCmd`'s `--interrupt` say a covered strand is claimed into the pause and interrupted, so `lyx tender resume` gives it its line, and that the unreadable record and hold refusals stay.
 
 `hubDelivery.ClaimPause` resolves the strand's worktree and its `hubgeom.PauseGeometry`, and calls `pauserecord.ClaimSession` with the strand's slug and session: the orch strand (the prime's strand whose parsed role is `agentname.RoleOrch`) as `{GUID, Orch: true}`, the shape the orch watcher writes, so its watcher finds the orch owned and sends no Esc of its own and still posts the resume line; any other strand as `{Strand: name, GUID, Slug}`.
 `StillLive` reads the record with `pauserecord.Read` and reports whether a live entry of the claimed entry's scope and pause time remains.
