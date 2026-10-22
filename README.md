@@ -16,7 +16,7 @@ Held by a run; its scope is locked until the run ends.
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T1 | **Every process a run spawns has one owner that ends them all**<br>• Owner records for run processes; pause, reed down, fabric remove and teardown end the whole group; tender status shows orphans; a hub pause reaches background work; a finished reviewer never waits on its background shells | [`run-process-ownership`](design-run-process-ownership.md) | loom | Plan-Burler-Review | neve | 7d<br>6h | batten, burler, fabric, loom, shed, shuttle, webster |
-| T2 | **lyx report timing counts sleep as active time when the system journal is unreadable**<br>• `darn: review_hard_max_bounces 2`<br>• `darn: review_max_bounces 1` | [`report-timing-unreadable-journal`](design-report-timing-unreadable-journal.md) | darn | Darn-Bouncer | neve | 1h<br>10m | report |
+| T2 | **lyx report timing counts sleep as active time when the system journal is unreadable**<br>• `darn: review_hard_max_bounces 2`<br>• `darn: review_max_bounces 1` | [`report-timing-unreadable-journal`](design-report-timing-unreadable-journal.md) | darn | Darn-Burler-Review | neve | 1h<br>10m | report |
 | T5 | **gate: runtime.Caller returns module-relative paths under lyx gate test, as with -trimpath**<br>• `darn: review_hard_max_bounces 2`<br>• `darn: review_max_bounces 1` | [`gate-test-runtime-caller-paths`](design-gate-test-runtime-caller-paths.md) | darn | Describe | neve | 1h<br>10m | gate |
 | T10 | **Darn's review hard cap defaults to 2, and the orch stencil drops hand-written small-task run settings**<br>• `profile: light` | [`darn-hard-cap-default-2`](design-darn-hard-cap-default-2.md) | darn | Darn-Write | neve | 4m<br>1m | config, stencil, orch |
 
@@ -89,7 +89,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | E29 |  | **No role may carry out a parent decision that amends a plan card mid-run** | [`plan-card-amendment-owner`](design-plan-card-amendment-owner.md) | 1h<br>1h | webster, orch, loom |
 | E30 |  | **Discussion scope check moves from the alignment agent into the perch lenses, with an escalating finding class** | [`discussion-alignment-into-lenses`](design-discussion-alignment-into-lenses.md) | 1h<br>1h | loom, burler, shed |
 | E31 |  | **A row before Discussion aligns the task text against the board, peers and landed work, and adjusts it** | [`entry-align-before-discussion`](design-entry-align-before-discussion.md) | 1h<br>1h | loom, batten, board |
-| E32 |  | **Move rules about lyx behaviour out of this repo's CLAUDE.md into lyx code, doc.go and stencils** | [`claude-md-lyx-rules-out`](design-claude-md-lyx-rules-out.md) | 59m<br>19m | stencil, board, loom |
+| E32 |  | **Move rules about lyx behaviour out of this repo's CLAUDE.md into lyx code, doc.go and stencils** | [`claude-md-lyx-rules-out`](design-claude-md-lyx-rules-out.md) | 1h<br>19m | stencil, board, loom |
 
 ### Features
 
