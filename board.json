@@ -1272,6 +1272,25 @@
       "body": "## Seen (orch, 2026-10-22)\n\nA twill writer's lens forks each return a report, and the lead writes one line per finding into `_lyx/plan/lens-review.md`: the lens names, the severity, a short summary and how it was fixed.\nThe fork reports themselves are not kept in the run's records.\nFor a lens audit (which lenses overlap, which findings are real) the one-liners are too terse; the full reports survive only in the machine-local Claude Code transcripts under `~/.claude/projects/`, which are not in git and do not exist for runs from another machine.\n\n## Idea (operator, 2026-10-22)\n\nEvery lens fork's report is saved verbatim in a support file of its own in the run's records, beside `lens-review.md`, for the Plan and Discussion writers' twill fans and the reviewer and fixer fans alike, so later audits read what each lens found from the archive tags.\nIts format is pinned in `contracts/specs/`.\n",
       "created": "2026-10-22T13:17:21Z",
       "revised": "2026-10-22T13:17:21Z"
+    },
+    {
+      "id": 757,
+      "handle": "A6",
+      "slug": "lens-overlap-audit",
+      "title": "Lens overlap audit: which lenses find the same defects, and a smaller set",
+      "kind": "note",
+      "labels": [
+        "audit",
+        "burler",
+        "loom"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "twill-plan 8 to 5 lenses recommended; twill-discussion 7 to 4 and review-code 4 to 3 at low confidence",
+      "body": "## Question (operator, 2026-10-22)\n\nWhich lenses find the same defects, which defect areas the lenses essentially cover, and whether a smaller lens set covers the same ground.\n\n## Result (sonnet agent, 2026-10-22)\n\nSources: `_lyx/plan/lens-review.md` in the weft archive tags (94 loom runs, only 6 of them, all on 2026-10-22, with all 8 `twill-plan` lenses), the per-lens fork reports in the machine-local Claude Code transcripts (5 runs), and per-lens attribution in `round-1-review.md`.\nThe sample with the full lens set is small, lens texts changed over time, and a \"fixed\" finding only means the writer agreed; note `lens-fork-reports-kept` would give later audits better data.\n\n### `twill-plan` (8 lenses)\n\n- `affected-set` and `forced-edits` are near-duplicates: 12 of `affected-set`'s 20 findings were also raised by `forced-edits`, 5 were its alone.\n- `criteria-coverage`, `branch-coverage` and `row-reachability` overlap heavily; in one run all three reports led with the same three defects.\n- `guard-reach` and `way-forward` overlap little with anything and each raised BLOCKING findings no other lens did.\n- `test-economy` is 79% LOW and the most disputed, but its findings are unique.\n\nAgent recommendation, not a decision: 5 lenses.\n\n| Proposed lens | Replaces |\n| --- | --- |\n| `coverage` | `criteria-coverage`, `branch-coverage` |\n| `row-validity` | `row-reachability`, `test-economy`, the nil-seam part of `affected-set` |\n| `forced-edits` | `affected-set`, `forced-edits` |\n| `guard-reach` | unchanged |\n| `way-forward` | unchanged |\n\nMerging `guard-reach` and `way-forward` as well is not supported by the data.\n\n### `twill-discussion` (7 lenses), low confidence\n\nNo lens-review file exists for the Discussion writer; one run's fork reports were read in full.\nAgent recommendation, not a decision: 4 lenses, `decision-chain` (`interactions` + `walkthrough`, keeping the case-based procedure), `code-claims` (`bound-breaker` + `existing-paths`), `board-scope` (`goal-scope` + `board-fit`), `leanness`.\nIn the review fan, `bound-breaker` is the strongest lens (11 of 15 lens BLOCKING findings), `walkthrough` raised no BLOCKING.\n\n### Review fans\n\n- `review-plan` reruns the three lenses the Plan writer already ran, and still raised 35 findings in the six 2026-10-22 runs, mostly LOW and MEDIUM; whether these are bad fixes or new findings is not measured. Option: give `review-plan` the lenses the writer fan lacks.\n- `review-code`: `code-affected-set` is the weakest (one MEDIUM in 18); agent recommendation, medium-low confidence: fold it into `code-pattern-fit`, which carries 7 of 8 lens BLOCKING findings, as one `code-consistency` lens, 4 to 3.\n- `fix-*` fans: no per-lens data.\n",
+      "created": "2026-10-22T13:20:38Z",
+      "revised": "2026-10-22T13:20:38Z"
     }
   ],
   "prime_owner": "neve"
