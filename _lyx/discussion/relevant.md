@@ -1,0 +1,21 @@
+# Relevant files
+
+- `go.mod` — pins quarry `v0.2.1`, raised to `v0.4.0`
+- `internal/planparser/parse.go` `ParsePlan` — reads `language:` and fixes the canonicalization alphabet to Go
+- `internal/planparser/glyphref.go` `parseGlyph`, `planLanguage`, `Plan.GlyphLanguage`, `SymbolRenamePairs` — the plan-language to alphabet mapping D3 replaces
+- `internal/planparser/reviewclass.go` `sourceExtensions`, `isSourceTarget`, `effectiveLanguage` — per-language source extensions for `ReviewExempt`
+- `internal/planparser/validate.go` `checkLanguageRecognized` — accepts only `go` and `none` today; holds the `.go` file-unit handle rule
+- `internal/planparser/doc.go` — the `language:` key section to extend
+- `internal/planglyph/handle.go` `declSource`, `CanonicalizeHandles` — builds `quarry.Declaration` without `Lang`; Go-specific declaration derivation
+- `internal/planglyph/pack.go` `KickstartPack` — kick-start pack parses refs with the plan language
+- `internal/planglyph/callercoverage.go` `callerCoverageFindings`, `coverageSubjects` — Go-only caller coverage
+- `internal/planglyph/deleteorder.go` `classifyDeleteOrderRef`, `laterImportFindings` — Go-only import scan keyed on `.go`
+- `internal/planglyph/buildenv.go` — build-constraint partitioning of ambiguous answers, Go-only
+- `internal/planglyph/plangate.go` `collectMemberTargets` — plan gate member targets parsed with the plan language
+- `internal/planglyph/planglyph.go` `collectGlyphTargets` — collects refs for the batched resolve
+- `internal/quarrycli/glyphs.go` `newGlyphsCmd` — passes quarry's answer through unchanged
+- `internal/languageconfig/doc.go` — hub language module: skills and rename tools, no language name
+- `tools/plandag/graph.go` `columnsOverlap` — parses refs with the plan language
+- `contracts/specs/loom-plan-spec.md` — `language:` row and shape classifier rules
+- `contracts/stencils/loom/loom-template-plan.md` — planner's `lyx quarry` and glyph spelling instructions
+- `pattern/PATTERN-glyph-conversion-chokepoint.md` — the conversion chokepoint D3 extends
