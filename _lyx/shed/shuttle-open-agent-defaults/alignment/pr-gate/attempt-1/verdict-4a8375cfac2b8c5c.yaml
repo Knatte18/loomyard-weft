@@ -1,0 +1,11 @@
+verdict: approve
+reason: >-
+  The diff covers every point of the board entry, which no Added after Discussion entry amends:
+  an empty permission mode resolves to bypass inside claudeengine for runs and opened sessions,
+  reed add help drops the %SID% example and points agent launches at lyx shuttle open,
+  and shuttle open documents the model-spec grammar, reports engine, model and effort, and lists the registry with --list-models.
+  It changes nothing the entry does not call for.
+  The Darn-Review carry-over names no parent correction and is fixed in claudeengine/doc.go.
+  Peer overlaps with decision-add-notifies and gate-tier-verbs are text-only in docs/overview.md.
+question: ""
+superseded: []
