@@ -1,0 +1,702 @@
+{
+  "runGuid": "dbe84ad8a6abd4890d28f450ad85e2e4",
+  "planFingerprint": "c78a1ea802a5c096d27666bbc3fa2cef3dad567025bd40b6fc4f982b1cfc8219",
+  "planFileHashes": {
+    "00-overview.md": "bcaca938233a57c3a2ab53aade40f212c26fd1f2411b90f61008e76a1709e084",
+    "01-proc-stat-reads.md": "da605bcd300e1823e1ed6f274f47be521a12cd523d0edb5f10c438672b365b2c",
+    "02-runproc-owner-record.md": "12c1e2d4c3b04169c56bcad17b44ae3a3b6b582623c073d743899dd64cd374a2",
+    "03-register-detached-spawns.md": "bb50cf2e140b8b2a996a61664268272bb970635c926c762da98e0d5c8aa1467f",
+    "04-register-run-roles.md": "3054f64cbb589d954edaac46b3f8069796a308355dfa7ed69348f75d734d8490",
+    "05-gate-waiting-marker.md": "9efe6a3bdefb90b01cd9557b9d2a98ce88f835a84673d2840be68645e7fa3f71",
+    "06-deferrable-gate.md": "95f7029eb44e7539cd5b8ba2d870f79b9323b896ff44579e74fcaf4fef814b8f",
+    "07-detached-children-defer.md": "936332d1d6e5a03f1f27245647b4999ad26719fb5e39b0b342db38a90259424b",
+    "08-lift-spawns-owed.md": "b607cb2b023df565e5ca9a2763b477aef7b7b1b97b43a804e9cc81e690a69505",
+    "09-teardown-ends-owned.md": "9450a08d2b65fdc34d5ff9a048e4d76b5fb4dcf0eed00209d9a25be93da3b5f1",
+    "10-teardown-skip-readings.md": "5a3acf0497d636d8baf7984c844dbda88882af88da89c5b01c18f74f5a0a185d",
+    "11-fabric-remove-reconcile.md": "e8d0503d9985f430f97cd3ac4152b49dfde2a0fc5f3c9d77f593be212ba5781a",
+    "12-reed-down-ends-owned.md": "fce67b000dd0a2f433b595e6cf029f97e0ca14680191a88c87921f7351b6e24b",
+    "13-owned-elsewhere-end.md": "10f26c4be5c23cbfd2339d0e3d5d59e9372c2a5094fd555f3fe4480d9dcaff51",
+    "14-tender-status-processes.md": "01055ab4f8f1794d17955339b892ca8d812c11bb4c7a53f3fdd83954f8fd9bbc",
+    "15-tender-reap.md": "b7a28e8f3c951da7c22d1a6197f14d6c4b491191499cb2b296cdeb875839f9a4",
+    "16-hibernate-confirm-background.md": "cca8b99c73b6f1f91b4801f2f028d966a5b30d95ec6dcf6af04a262f6deddae1",
+    "17-shuttle-shell-only-waiting.md": "782ca35e200500bbb2d486444b33c225dbcc301aedf0ffbfa8c30b99914758e9"
+  },
+  "planOverviewFrameHash": "928c48c2fc4d114fc603509a0d9ed213c36c628bb70dae424d7c0196a83afc4d",
+  "partition": [
+    {
+      "cards": [
+        "01-proc-stat-reads",
+        "02-runproc-owner-record"
+      ],
+      "profile": "cautious",
+      "estimate": 159168,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 1,
+        "startup": 54856,
+        "read_union": 34376,
+        "cards": [
+          {
+            "card": 1,
+            "card_text": 432,
+            "reads": {
+              "file:internal/proc/doc.go": 168,
+              "package:internal/proc": 2000,
+              "tests:internal/proc": 2000
+            },
+            "messages": 46,
+            "written": 14232
+          },
+          {
+            "card": 2,
+            "card_text": 1104,
+            "reads": {
+              "file:PATTERN.md": 1512,
+              "file:docs/overview.md": 9864,
+              "file:pattern/PATTERN-leaf-packages.md": 1296,
+              "package:.": 2000,
+              "package:docs": 2000,
+              "package:internal/runproc": 2000,
+              "package:pattern": 2000,
+              "tests:.": 2000,
+              "tests:docs": 2000,
+              "tests:internal/runproc": 2000,
+              "tests:pattern": 2000
+            },
+            "messages": 182,
+            "written": 55704
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "03-register-detached-spawns"
+      ],
+      "profile": "cautious",
+      "estimate": 148058,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 2,
+        "startup": 61856,
+        "read_union": 31752,
+        "cards": [
+          {
+            "card": 3,
+            "card_text": 600,
+            "reads": {
+              "file:internal/fabricengine/doc.go": 19152,
+              "package:internal/boardengine": 2000,
+              "package:internal/fabricengine": 2000,
+              "package:internal/lyxdirs": 2000,
+              "tests:internal/boardengine": 2000,
+              "tests:internal/fabricengine": 2000,
+              "tests:internal/lyxdirs": 2000
+            },
+            "messages": 179.5,
+            "written": 54450
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "04-register-run-roles",
+        "05-gate-waiting-marker"
+      ],
+      "profile": "cautious",
+      "estimate": 164956,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 3,
+        "startup": 68856,
+        "read_union": 22012,
+        "cards": [
+          {
+            "card": 4,
+            "card_text": 720,
+            "reads": {
+              "file:internal/loomcli/doc.go": 2988,
+              "file:internal/shedverbs/doc.go": 1380,
+              "package:internal/battencli": 2000,
+              "package:internal/loomcli": 2000,
+              "package:internal/shedverbs": 2000,
+              "tests:internal/battencli": 2000,
+              "tests:internal/loomcli": 2000,
+              "tests:internal/shedverbs": 2000
+            },
+            "messages": 186.5,
+            "written": 56670
+          },
+          {
+            "card": 5,
+            "card_text": 468,
+            "reads": {
+              "file:internal/pauserecord/doc.go": 456,
+              "package:internal/pauserecord": 2000,
+              "tests:internal/pauserecord": 2000
+            },
+            "messages": 56.5,
+            "written": 17418
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "06-deferrable-gate"
+      ],
+      "profile": "cautious",
+      "estimate": 166224,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 4,
+        "startup": 75856,
+        "read_union": 21572,
+        "cards": [
+          {
+            "card": 6,
+            "card_text": 696,
+            "reads": {
+              "file:internal/pauserecord/doc.go": 456,
+              "file:internal/tendercli/doc.go": 420,
+              "package:cmd/lyx": 2000,
+              "package:internal/boardengine": 2000,
+              "package:internal/fabricengine": 2000,
+              "package:internal/pauserecord": 2000,
+              "package:internal/tendercli": 2000,
+              "tests:cmd/lyx": 2000,
+              "tests:internal/boardengine": 2000,
+              "tests:internal/fabricengine": 2000,
+              "tests:internal/pauserecord": 2000,
+              "tests:internal/tendercli": 2000
+            },
+            "messages": 227,
+            "written": 68796
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "07-detached-children-defer"
+      ],
+      "profile": "cautious",
+      "estimate": 204492,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 5,
+        "startup": 82856,
+        "read_union": 39484,
+        "cards": [
+          {
+            "card": 7,
+            "card_text": 852,
+            "reads": {
+              "file:internal/boardcli/doc.go": 948,
+              "file:internal/boardengine/doc.go": 2532,
+              "file:internal/fabricengine/doc.go": 19152,
+              "package:internal/boardcli": 2000,
+              "package:internal/boardengine": 2000,
+              "package:internal/fabriccli": 2000,
+              "package:internal/fabricengine": 2000,
+              "tests:internal/boardcli": 2000,
+              "tests:internal/boardengine": 2000,
+              "tests:internal/fabriccli": 2000,
+              "tests:internal/fabricengine": 2000
+            },
+            "messages": 271,
+            "written": 82152
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "08-lift-spawns-owed"
+      ],
+      "profile": "cautious",
+      "estimate": 177798,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 6,
+        "startup": 89856,
+        "read_union": 33204,
+        "cards": [
+          {
+            "card": 8,
+            "card_text": 588,
+            "reads": {
+              "file:internal/fabricengine/doc.go": 19152,
+              "file:internal/tendercli/doc.go": 420,
+              "file:internal/tenderengine/doc.go": 1044,
+              "package:internal/fabricengine": 2000,
+              "package:internal/tendercli": 2000,
+              "package:internal/tenderengine": 2000,
+              "tests:internal/fabricengine": 2000,
+              "tests:internal/tendercli": 2000,
+              "tests:internal/tenderengine": 2000
+            },
+            "messages": 180.5,
+            "written": 54738
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "09-teardown-ends-owned"
+      ],
+      "profile": "cautious",
+      "estimate": 144126,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 7,
+        "startup": 96856,
+        "read_union": 10052,
+        "cards": [
+          {
+            "card": 9,
+            "card_text": 768,
+            "reads": {
+              "file:internal/pairteardown/doc.go": 1128,
+              "file:pattern/PATTERN-pair-teardown.md": 156,
+              "package:internal/pairteardown": 2000,
+              "package:pattern": 2000,
+              "tests:internal/pairteardown": 2000,
+              "tests:pattern": 2000
+            },
+            "messages": 121.5,
+            "written": 37218
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "10-teardown-skip-readings"
+      ],
+      "profile": "cautious",
+      "estimate": 175574,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 8,
+        "startup": 103856,
+        "read_union": 24408,
+        "cards": [
+          {
+            "card": 10,
+            "card_text": 1260,
+            "reads": {
+              "file:docs/overview.md": 9864,
+              "file:internal/pairteardown/doc.go": 1128,
+              "file:pattern/PATTERN-pair-teardown.md": 156,
+              "package:docs": 2000,
+              "package:internal/pairteardown": 2000,
+              "package:pattern": 2000,
+              "tests:docs": 2000,
+              "tests:internal/pairteardown": 2000,
+              "tests:pattern": 2000
+            },
+            "messages": 153.5,
+            "written": 47310
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "11-fabric-remove-reconcile",
+        "12-reed-down-ends-owned"
+      ],
+      "profile": "cautious",
+      "estimate": 188994,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 9,
+        "startup": 110856,
+        "read_union": 15744,
+        "cards": [
+          {
+            "card": 11,
+            "card_text": 696,
+            "reads": {
+              "file:internal/fabriccli/doc.go": 864,
+              "package:internal/fabriccli": 2000,
+              "package:internal/pairteardown": 2000,
+              "tests:internal/fabriccli": 2000,
+              "tests:internal/pairteardown": 2000
+            },
+            "messages": 98.5,
+            "written": 30246
+          },
+          {
+            "card": 12,
+            "card_text": 648,
+            "reads": {
+              "file:internal/pairteardown/doc.go": 1128,
+              "file:internal/reedcli/doc.go": 408,
+              "package:internal/pairteardown": 2000,
+              "package:internal/reedcli": 2000,
+              "tests:internal/pairteardown": 2000,
+              "tests:internal/reedcli": 2000
+            },
+            "messages": 105,
+            "written": 32148
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "13-owned-elsewhere-end"
+      ],
+      "profile": "cautious",
+      "estimate": 208612,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 10,
+        "startup": 117856,
+        "read_union": 29904,
+        "cards": [
+          {
+            "card": 13,
+            "card_text": 852,
+            "reads": {
+              "file:internal/battenshed/doc.go": 2460,
+              "file:internal/hibernateengine/doc.go": 1068,
+              "file:internal/sheddriver/doc.go": 1104,
+              "file:internal/tendercli/doc.go": 420,
+              "package:internal/battencli": 2000,
+              "package:internal/battenshed": 2000,
+              "package:internal/hibernatecli": 2000,
+              "package:internal/hibernateengine": 2000,
+              "package:internal/sheddriver": 2000,
+              "package:internal/tendercli": 2000,
+              "tests:internal/battencli": 2000,
+              "tests:internal/battenshed": 2000,
+              "tests:internal/hibernatecli": 2000,
+              "tests:internal/hibernateengine": 2000,
+              "tests:internal/sheddriver": 2000,
+              "tests:internal/tendercli": 2000
+            },
+            "messages": 200,
+            "written": 60852
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "14-tender-status-processes"
+      ],
+      "profile": "cautious",
+      "estimate": 214182,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 11,
+        "startup": 124856,
+        "read_union": 27952,
+        "cards": [
+          {
+            "card": 14,
+            "card_text": 624,
+            "reads": {
+              "file:docs/overview.md": 9864,
+              "file:internal/tendercli/doc.go": 420,
+              "file:internal/tenderengine/doc.go": 1044,
+              "package:docs": 2000,
+              "package:internal/fabricengine": 2000,
+              "package:internal/tendercli": 2000,
+              "package:internal/tenderengine": 2000,
+              "tests:docs": 2000,
+              "tests:internal/fabricengine": 2000,
+              "tests:internal/tendercli": 2000,
+              "tests:internal/tenderengine": 2000
+            },
+            "messages": 202.5,
+            "written": 61374
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "15-tender-reap"
+      ],
+      "profile": "cautious",
+      "estimate": 183060,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 12,
+        "startup": 131856,
+        "read_union": 23916,
+        "cards": [
+          {
+            "card": 15,
+            "card_text": 588,
+            "reads": {
+              "file:docs/overview.md": 9864,
+              "file:internal/tendercli/doc.go": 420,
+              "file:internal/tenderengine/doc.go": 1044,
+              "package:docs": 2000,
+              "package:internal/tendercli": 2000,
+              "package:internal/tenderengine": 2000,
+              "tests:docs": 2000,
+              "tests:internal/tendercli": 2000,
+              "tests:internal/tenderengine": 2000
+            },
+            "messages": 89,
+            "written": 27288
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "16-hibernate-confirm-background"
+      ],
+      "profile": "cautious",
+      "estimate": 176322,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 13,
+        "startup": 138856,
+        "read_union": 10664,
+        "cards": [
+          {
+            "card": 16,
+            "card_text": 552,
+            "reads": {
+              "file:internal/hibernateengine/doc.go": 1068,
+              "file:internal/tenderengine/doc.go": 1044,
+              "package:internal/hibernateengine": 2000,
+              "package:internal/tenderengine": 2000,
+              "tests:internal/hibernateengine": 2000,
+              "tests:internal/tenderengine": 2000
+            },
+            "messages": 87.5,
+            "written": 26802
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "17-shuttle-shell-only-waiting"
+      ],
+      "profile": "cautious",
+      "estimate": 258058,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 14,
+        "startup": 145856,
+        "read_union": 49016,
+        "cards": [
+          {
+            "card": 17,
+            "card_text": 936,
+            "reads": {
+              "file:docs/overview.md": 9864,
+              "file:internal/shuttleengine/claudeengine/doc.go": 2964,
+              "file:internal/shuttleengine/claudeengine/testdata/corpus/master-fork-running/case.yaml": 576,
+              "file:internal/shuttleengine/doc.go": 5964,
+              "file:internal/shuttleengine/template.yaml": 144,
+              "file:internal/websterengine/doc.go": 8568,
+              "package:docs": 2000,
+              "package:internal/shuttleengine": 2000,
+              "package:internal/shuttleengine/claudeengine": 2000,
+              "package:internal/shuttleengine/claudeengine/testdata/corpus/master-fork-running": 2000,
+              "package:internal/websterengine": 2000,
+              "tests:docs": 2000,
+              "tests:internal/shuttleengine": 2000,
+              "tests:internal/shuttleengine/claudeengine": 2000,
+              "tests:internal/shuttleengine/claudeengine/testdata/corpus/master-fork-running": 2000,
+              "tests:internal/websterengine": 2000
+            },
+            "messages": 207.5,
+            "written": 63186
+          }
+        ]
+      }
+    }
+  ],
+  "currentBatch": 1,
+  "masterStrand": "fd94635c977349faf13625dcb991f1fc",
+  "masterSessionId": "50f3575b-651f-41fb-ab8d-6b29950f8b0d",
+  "masterEngine": "claude",
+  "batches": {
+    "1": {
+      "slug": "proc-stat-reads",
+      "cards": [
+        "01-proc-stat-reads",
+        "02-runproc-owner-record"
+      ],
+      "cardHashes": {
+        "01-proc-stat-reads": "da605bcd300e1823e1ed6f274f47be521a12cd523d0edb5f10c438672b365b2c",
+        "02-runproc-owner-record": "12c1e2d4c3b04169c56bcad17b44ae3a3b6b582623c073d743899dd64cd374a2"
+      },
+      "startSha": "0d953f140081e003dc3621e82ba05c1e1869a92f",
+      "kind": "fork",
+      "spawnedAt": "2026-10-22T13:06:53Z",
+      "sessionId": "50f3575b-651f-41fb-ab8d-6b29950f8b0d",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
+    }
+  }
+}
