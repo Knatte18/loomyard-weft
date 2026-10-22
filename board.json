@@ -1330,6 +1330,27 @@
       "body": "Imported from [issue #828](https://github.com/Knatte18/loomyard/issues/828).\n\nSeen (loomyard hub orch, Neve, 2026-10-22): at a requested distill cycle the watcher posted inject #121 (/compact with the keep-argument) at 12:20:53Z. creel log: sending 12:21:08 (the compact ran; the session was compacted), stalled reason=draft 12:21:21, sending again 12:21:37, aged 12:22:00, stalled draft, sending again 12:22:49, aged 12:23:04. The operator saw /compact typed into the session twice more after the compaction and had to interrupt both. orch status meanwhile showed phase=resuming. watch.log also held at 12:23:05 'a creel call failed; the cycle is held until creel answers' because creel could not resolve the worktree of a run (report-timing-unreadable-journal) that had just been torn down after landing.\n\nWorkaround: the operator interrupts the repeated /compact by hand.\n\nExpected: once a compact inject has been delivered and the session compacted, the watcher does not re-send it; a draft stall after delivery is not read as non-delivery. A creel strand lookup that meets a worktree removed mid-teardown skips it instead of failing the call.",
       "created": "2026-10-22T14:01:39Z",
       "revised": "2026-10-22T14:01:39Z"
+    },
+    {
+      "id": 760,
+      "handle": "B2",
+      "slug": "config-set-nested-profile-key",
+      "title": "config --set of a nested profile key fails: writes the scalar as the whole profile",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "config",
+        "webster"
+      ],
+      "issues": [
+        833
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Imported from [issue #833](https://github.com/Knatte18/loomyard/issues/833).\n\nSeen (2026-10-22): `lyx config batcher --layer default --set profiles.cautious.budget=300000` is refused with \"cannot unmarshal !!str `300000` into batcher.profile\", though the refusal's own known-key list names `profiles.cautious.budget`. Same for 200000 once the hub layer holds a `profiles.cautious` map.\n\nWorkaround: set the whole profile as a flow map, `--set 'profiles.cautious={batchifier: cost, ..., budget: 300000, weights: {...}}'`, which pins every key of the profile in the hub layer.\n\nExpected: a key the verb lists as known sets that one leaf, leaving the profile's other keys to the lower layers. There is also no verb to remove a key from a layer, so a pinned profile stays until the interactive editor removes it.",
+      "created": "2026-10-22T14:01:42Z",
+      "revised": "2026-10-22T14:01:42Z"
     }
   ],
   "prime_owner": "neve"
