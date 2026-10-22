@@ -357,7 +357,7 @@
       }
     }
   ],
-  "currentBatch": 0,
+  "currentBatch": 14,
   "masterStrand": "2642482185a5730eac4c6d480d816de3",
   "masterSessionId": "39d466a9-b4ba-4030-9c38-3fc3d6d86e86",
   "masterEngine": "claude",
@@ -439,6 +439,24 @@
       "bracketTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-quarry-csharp/39d466a9-b4ba-4030-9c38-3fc3d6d86e86/subagents/agent-a694afcfcd6bc5bb3.jsonl"
       ]
+    },
+    "14": {
+      "slug": "package-docs-pattern",
+      "cards": [
+        "14-package-docs-pattern",
+        "15-contracts-csharp"
+      ],
+      "cardHashes": {
+        "14-package-docs-pattern": "d7f252b99610e212ccea6a1961172754781b599ea593d07d41e1823159c86dd3",
+        "15-contracts-csharp": "634892cd76bf55e6098831e06692b925d8fce735c8118d6b28824fa5a8c1157f"
+      },
+      "startSha": "17075ded79e93c25f60c3881fae49275b29ff60c",
+      "kind": "fork",
+      "spawnedAt": "2026-10-22T08:27:56Z",
+      "sessionId": "39d466a9-b4ba-4030-9c38-3fc3d6d86e86",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
     },
     "3": {
       "slug": "planglyph-ref-alphabet",
