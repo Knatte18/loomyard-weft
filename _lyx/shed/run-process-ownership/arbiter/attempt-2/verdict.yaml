@@ -1,0 +1,9 @@
+verdict: resume
+reason: |-
+  Circling escalation at round 3 of Plan-Bouncer, below the perch's hard cap of 4 (plan_hard_max_bounces 0 takes review_hard_max_bounces 4 from internal/loomengine/template.yaml; the hub's loom.yaml and the board entry set no override).
+  The returned design-wrong finding, gone-branch-remove-refusal-loops (F2), is not wrong: classifyEntries in internal/fabricengine/originreconcile.go fills an entry's way forward with the first stopping branch of the slug, gone included, so a gone code branch listed first gives the gone text, which names `lyx fabric remove`.
+  The fix is converging: round 2 settled the pure-gone stop, round 3 narrowed the finding to a gone branch beside another stop, and the round-3 fixer applied the proposed fix. Card 11 lines 37-39 now build the way forward from report.Branches, skipping gone and the busy branches the exception leaves out, and line 51 adds the gone-first TestRemoveVerdict rows.
+  The other open keys were fixed as proposed in the same round, and the fixer disputed or deferred nothing. Round 4's focus targets exactly these keys, so one more round can confirm the fixes without widening the task's scope.
+verbs:
+  - |-
+    lyx loom circling continue run-process-ownership
