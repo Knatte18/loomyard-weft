@@ -3,19 +3,19 @@
 **Create:**
 - `internal/adoptcli/doc.go`
 - `internal/adoptcli/testmain_test.go`
-- `plan:internal/adoptcli#Command` -> `func Command() *cobra.Command`
-- `plan:internal/adoptcli#RunCLI` -> `func RunCLI(out io.Writer, args []string) int`
-- `plan:internal/adoptcli#RunCLIIn` -> `func RunCLIIn(cwd string, out io.Writer, args []string) int`
-- `plan:internal/adoptcli#request` -> `type request struct`
-- `plan:internal/adoptcli#slugOutcome` -> `type slugOutcome struct`
-- `plan:internal/adoptcli#outcome` -> `type outcome struct`
-- `plan:internal/adoptcli#adoptDeps` -> `type adoptDeps struct`
-- `plan:internal/adoptcli#adopt` -> `func adopt(deps adoptDeps, req request) (outcome, error)`
-- `plan:internal/adoptcli#hubDeps` -> `func hubDeps(prime *lyxcwd.Location) (adoptDeps, error)`
-- `plan:internal/adoptcli#hubOnlyPaused` -> `func hubOnlyPaused(recordPath string) func(slug string) (bool, error)`
-- `plan:internal/adoptcli#TestAdopt` -> `func TestAdopt(t *testing.T)`
-- `plan:internal/adoptcli#TestHubOnlyPaused` -> `func TestHubOnlyPaused(t *testing.T)`
-- `plan:internal/adoptcli_test#TestAdoptIntegration_SecondCloneTakesOver` -> `func TestAdoptIntegration_SecondCloneTakesOver(t *testing.T)`
+- `internal/adoptcli#Command`
+- `internal/adoptcli#RunCLI`
+- `internal/adoptcli#RunCLIIn`
+- `internal/adoptcli#request`
+- `internal/adoptcli#slugOutcome`
+- `internal/adoptcli#outcome`
+- `internal/adoptcli#adoptDeps`
+- `internal/adoptcli#adopt`
+- `internal/adoptcli#hubDeps`
+- `internal/adoptcli#hubOnlyPaused`
+- `internal/adoptcli#TestAdopt`
+- `internal/adoptcli#TestHubOnlyPaused`
+- `internal/adoptcli_test#TestAdoptIntegration_SecondCloneTakesOver`
 
 **Edit:**
 - `cmd/lyx#newRoot`
