@@ -1,45 +1,41 @@
-# Done-checks check glyph-less targets on disk and name quarry's search
+# webster done-check: judge spaced paths on disk, explain not_found
 
-Webster's post-batch done-checks (`planglyph.DoneChecks`) now check every target `lyx webster validate` accepts, and a failing check says enough to fix it.
+Webster's post-batch done-check no longer refuses a plan target that `lyx webster validate` accepts.
+A Create path whose directory holds a space, such as `internal/engine/testdata/csharp/tree/with space/Spaced.cs`, used to be handed to quarry, which rejected it as a glyph (`no_separator`).
+`record-batch` and `recover-batch` then both refused with `glyph-rejected`, and `recover-batch` named itself as the way forward.
+The `create-not-done` refusal also could not tell a test the card never wrote from a lookup that missed one that exists.
+
+Closes #805
+Closes #809
+Closes #823
 
 ## What changes
 
-**Targets no glyph spells are checked on disk.**
-Canonicalization turns a path-shaped card target into its self glyph through `glyph.Self`.
-A path whose directory holds a space fails that call (`unit_bad_rune`), so the target stays a plain path, and quarry then rejected it before resolution (`no_separator`).
-The batch failed `glyph-rejected` on every record and every recovery, even though the card had created the file (issues #805 and #809).
-`DoneChecks` now sends a target that is still path-shaped to a disk check instead of the batched resolve.
-A Create or Rename new side passes when the path exists, and a Delete or Rename old side passes when it does not.
-The findings keep their check IDs, and the detail names the path checked.
-The decision goes through a new shape-ledger gate, `planparser.IsDiskCheckedTarget`, so `planglyph` still makes no ref-shape decision of its own.
-
-**A `not_found` Create names what quarry searched.**
-When a Create target or Rename new side answers `not_found`, `DoneChecks` lists the worktree's declarations once through quarry's glyphs query.
-The finding then names the files declaring the looked-up unit and every declaration elsewhere carrying the same name, or states that none exists (issue #823).
-A test written in another package or under another name now reads differently from one the card never wrote.
-The listing runs only when such a finding is due, so a clean batch pays nothing.
-
-**A `glyph-rejected` done-check names the card amendment.**
-Its way forward was `lyx webster recover-batch NN`, which re-runs the same check on the same plan and fails the same way.
-It now says to amend the card's target, `lyx webster rebaseline --card NN`, then `recover-batch`.
-A record holding uncheckable entries gets the fresh-restart steps, as the delete-referenced way forward already does.
+- `internal/planglyph` `DoneChecks` judges a target that is still path-shaped after canonicalization on disk, never through quarry.
+  A Create or Rename-new path passes when the file exists at that worktree-relative path; a Delete or Rename-old path passes when nothing exists there.
+  The findings keep `create-not-done`, `delete-not-done` and `rename-not-done`, with a detail naming the disk path.
+  A stat error other than not-exist returns an error, never a pass.
+  `planparser.IsDiskCheckedTarget` holds the keep/skip policy.
+- A Create or Rename-new target quarry answers `not_found` now names, in its finding, the files declaring the looked-up unit and every declaration elsewhere in the worktree with the looked-up name, each with its glyph and file.
+  The detail lists them all, since a truncated list could hide the file the operator needs.
+- A batch failed on a `glyph-rejected` finding names the plan edit as its way forward: amend the card's target, run `lyx webster rebaseline --card NN`, then `lyx webster recover-batch NN`.
+  A record recovery would refuse as uncheckable names the fresh restart steps instead.
+- Tests pin that quarry resolves a `plan:` handle into a Go external test package (`<dir>_test`), as asked in #823.
+- `contracts/specs/loom-plan-spec.md`, and the `planglyph` and `websterengine` `doc.go` files, describe the new behavior.
 
 ## Design decisions
 
-- `webster validate` does not refuse a spaced Create path, per the operator's decision on the board entry.
-  The `loop-exited` halt reason is left to task `loop-exit-halt-names-its-cause`.
-- The disk route covers Delete and Rename sides too, since a spaced path hits the same quarry rejection there.
-- Quarry already resolves a `plan:` handle whose unit is a Go external test package (`sub_test#TestFoo`).
-  A row in `TestDoneChecks_Verdicts` now covers it, so #823's misses came from where the tests were written, which the new detail exposes.
-- The not-found detail lists every file of the unit rather than a truncated list, since the file the reader needs may be the one cut.
-  A unit file that declares nothing does not appear, because the list comes from declarations.
-- A listing error is wrapped in `ErrQuarryUnavailable`, so record-batch treats it as transient like a resolve failure, never as a verdict.
-- `TestDoneChecks_RootFilenameCreateLanded` is folded into `TestDoneChecks_Verdicts`.
-  Its second half pinned that a bare `LICENSE` target fails `glyph-rejected`, which the disk route now passes.
-- `anyMemberMissing` and `searchedDescription` join the status tripwire's allowlist.
-  Neither decides a verdict: the first only gates the listing, and the second reads `glyph.Glyph.Unit`, which the scan matches by name.
+- Per the operator decision, `lyx webster validate` is not made to refuse a spaced Create path; the done-check is made to agree with it.
+- Only keys with no `#` after canonicalization take the disk route.
+  The worktree at done-check time is the batch's committed tree, so a disk check equals "exists in the batch's commits".
+  Validate's `directory-target` already refuses a slashed extensionless path, so a directory never reaches this route as a Create.
+- The glyphs listing behind the `not_found` detail runs once, and only when such a finding is due, so a clean batch pays nothing.
+  An error from the listing returns wrapped in `ErrQuarryUnavailable`, as the resolve's own error does.
 
-## Docs
+## Out of scope
 
-`internal/planglyph/doc.go` and `internal/websterengine/doc.go` describe the disk route, the not-found detail and the new way forward.
-`contracts/specs/loom-plan-spec.md` states that a target no glyph spells is checked on disk.
+- The `loop-exited` halt reason from #809 belongs to task `loop-exit-halt-names-its-cause`.
+
+## To check by hand
+
+Not run against a real hub: a `record-batch` on a batch whose plan creates a spaced path (the `csharp-alphabet` card 9 case) and a `not_found` refusal's new detail on a real quarry hub.
