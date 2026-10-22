@@ -17,8 +17,8 @@
 - `internal/reedcli/doc.go`
 
 **Uses:**
-- `plan:internal/pairteardown#Teardown.pausedIn`
-- `plan:internal/pairteardown#Teardown.awaitRunLockOrPass`
+- `internal/pairteardown#Teardown.pausedIn`
+- `internal/pairteardown#Teardown.awaitRunLockOrPass`
 - `internal/pairteardown#Teardown.registeredBattenAlive`
 - `internal/pairteardown#Teardown.endOwnedProcesses`
 - `internal/runproc#SurvivorsError`
