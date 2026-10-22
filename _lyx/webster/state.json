@@ -441,7 +441,7 @@
       }
     }
   ],
-  "currentBatch": 0,
+  "currentBatch": 10,
   "masterStrand": "076d19bba614522d1bb1aeaf796e3f5b",
   "masterSessionId": "83e4b5b3-1a0e-476c-af08-7bb8cc7450d6",
   "masterEngine": "claude",
@@ -488,6 +488,26 @@
       "bracketTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-tender-pause-holds-reprompt/83e4b5b3-1a0e-476c-af08-7bb8cc7450d6/subagents/agent-adbf1fce734f4ca4a.jsonl"
       ]
+    },
+    "10": {
+      "slug": "shuttle-start-holds-paused-prompt",
+      "cards": [
+        "10-shuttle-start-holds-paused-prompt",
+        "11-shuttle-gate-holds-boundary",
+        "12-tender-creel-runner-geometry"
+      ],
+      "cardHashes": {
+        "10-shuttle-start-holds-paused-prompt": "d95c820884ad753ca43e03b407b564d8e5bd2a767deed9b2921341c40ac0a63e",
+        "11-shuttle-gate-holds-boundary": "3c07e7bf4e3cbc6e29d46afb202927897347da16c1faeb2b4709ec29fa6c7b9b",
+        "12-tender-creel-runner-geometry": "c8efde4ed56772272258c23026857357064b77c35b63d81ec7d076f5c4c9aa5a"
+      },
+      "startSha": "e200b86a49c67f417e88a2e8fea96a13a4c83fea",
+      "kind": "fork",
+      "spawnedAt": "2026-10-22T09:24:52Z",
+      "sessionId": "83e4b5b3-1a0e-476c-af08-7bb8cc7450d6",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
     },
     "5": {
       "slug": "loomshed-verify-hold",
