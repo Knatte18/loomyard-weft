@@ -1,0 +1,99 @@
+attempt: 1
+cap: 3
+failures:
+    - id: github.com/Knatte18/loomyard/cmd/lyx.TestCLIForm_EveryCommand
+      kind: test
+      package: github.com/Knatte18/loomyard/cmd/lyx
+      tail: ""
+    - id: github.com/Knatte18/loomyard/internal/battencli
+      kind: package
+      package: github.com/Knatte18/loomyard/internal/battencli
+      tail: |-
+        --- PASS: TestBattenIntegration_Rows/AwaitingApprovalResumeDoneTeardown_ArchivesTheRunRecords (0.26s)
+        === RUN   TestBattenIntegration_Rows/AwaitingRejectionResumesTheChildOnce
+        --- PASS: TestBattenIntegration_Rows/AwaitingRejectionResumesTheChildOnce (0.11s)
+        === RUN   TestBattenIntegration_Rows/SeedChild_IgnoresPrimesCommittedBattenRecords
+        --- PASS: TestBattenIntegration_Rows/SeedChild_IgnoresPrimesCommittedBattenRecords (0.16s)
+        === RUN   TestBattenIntegration_Rows/RealReadStatus_IgnoresPrimesCommittedStatusForTheSameSlug
+        --- PASS: TestBattenIntegration_Rows/RealReadStatus_IgnoresPrimesCommittedStatusForTheSameSlug (0.12s)
+        === RUN   TestBattenIntegration_Rows/MarkWatched_HoldsTheMarkerOnlyWhileItsNoticesReachTheDriversParent
+        --- PASS: TestBattenIntegration_Rows/MarkWatched_HoldsTheMarkerOnlyWhileItsNoticesReachTheDriversParent (0.08s)
+        === RUN   TestBattenIntegration_Rows/StopReport_ReadsTheParkMarkersContentAndTime
+        --- PASS: TestBattenIntegration_Rows/StopReport_ReadsTheParkMarkersContentAndTime (0.09s)
+        === RUN   TestBattenIntegration_Rows/TaskWorktreeSeams_RunGitOnlyUntilTheFirstResolution
+        --- PASS: TestBattenIntegration_Rows/TaskWorktreeSeams_RunGitOnlyUntilTheFirstResolution (0.08s)
+        === RUN   TestBattenIntegration_Rows/Status_FlagsAHaltedBattenOverADoneChild
+        --- PASS: TestBattenIntegration_Rows/Status_FlagsAHaltedBattenOverADoneChild (0.08s)
+        === RUN   TestBattenIntegration_Rows/CommandRows_RunTheBoardDefaultCommandsWithEverySwitchOn
+        --- PASS: TestBattenIntegration_Rows/CommandRows_RunTheBoardDefaultCommandsWithEverySwitchOn (0.12s)
+        === RUN   TestBattenIntegration_Rows/CommandRows_IgnoreACommandSetInTheTasksTrackedLayer
+        --- PASS: TestBattenIntegration_Rows/CommandRows_IgnoreACommandSetInTheTasksTrackedLayer (0.10s)
+        === RUN   TestBattenIntegration_Rows/CommandRows_FollowTheTasksLocalSwitch
+        --- PASS: TestBattenIntegration_Rows/CommandRows_FollowTheTasksLocalSwitch (0.13s)
+        === RUN   TestBattenIntegration_Rows/CommandRows_ResumeAtARowAnOlderBinaryLeftStanding
+        === RUN   TestBattenIntegration_Rows/CommandRows_ResumeAtARowAnOlderBinaryLeftStanding/Open-Window
+        --- PASS: TestBattenIntegration_Rows/CommandRows_ResumeAtARowAnOlderBinaryLeftStanding/Open-Window (0.09s)
+        === RUN   TestBattenIntegration_Rows/CommandRows_ResumeAtARowAnOlderBinaryLeftStanding/Seed-IDE
+        --- PASS: TestBattenIntegration_Rows/CommandRows_ResumeAtARowAnOlderBinaryLeftStanding/Seed-IDE (0.10s)
+        --- PASS: TestBattenIntegration_Rows/CommandRows_ResumeAtARowAnOlderBinaryLeftStanding (0.19s)
+        === RUN   TestBattenIntegration_Rows/RunRowCommand_ReportsATimeoutAndAnExitCode
+        --- PASS: TestBattenIntegration_Rows/RunRowCommand_ReportsATimeoutAndAnExitCode (0.20s)
+        === RUN   TestBattenIntegration_Rows/StartCost_CommandRowsCostUnderTheBoundBeyondTheCommitAndTheProcess
+            lifecycle_integration_test.go:1365: Seed-IDE: step 9.957077ms, commit 8.713982ms, process 0s
+            lifecycle_integration_test.go:1365: Open-Window: step 15.250894ms, commit 9.087781ms, process 2.598608ms
+        --- PASS: TestBattenIntegration_Rows/StartCost_CommandRowsCostUnderTheBoundBeyondTheCommitAndTheProcess (0.11s)
+        === RUN   TestBattenIntegration_Rows/DirtyPrime_CreateRowBlocksBeforeAnythingCreated
+        --- PASS: TestBattenIntegration_Rows/DirtyPrime_CreateRowBlocksBeforeAnythingCreated (0.01s)
+        --- PASS: TestBattenIntegration_Rows (8.11s)
+        FAIL
+        FAIL	github.com/Knatte18/loomyard/internal/battencli	8.140s
+    - id: github.com/Knatte18/loomyard/internal/testkit/envkit
+      kind: package
+      package: github.com/Knatte18/loomyard/internal/testkit/envkit
+      tail: |-
+        === RUN   TestLoadOrInitState/fresh_dir_writes_an_initial_state_and_starts_at_round_1
+        --- PASS: TestLoadOrInitState/fresh_dir_writes_an_initial_state_and_starts_at_round_1 (0.00s)
+        === RUN   TestLoadOrInitState/unfinished_state_with_matching_hash_resumes_at_the_next_round
+        === CONT  TestEnvFile_DefaultStdinIsDevNull/posix_lyx_bin_directory_shadows_decoy
+        --- PASS: TestLoadOrInitState/unfinished_state_with_matching_hash_resumes_at_the_next_round (0.00s)
+        --- PASS: TestReadSession/turn_markers_set_the_start_and_end_flags (0.00s)
+        --- PASS: TestReadSession (0.00s)
+        === RUN   TestLoadOrInitState/unfinished_state_with_a_different_hash_fails_loud
+        --- PASS: TestLoadOrInitState/unfinished_state_with_a_different_hash_fails_loud (0.00s)
+        === CONT  TestEnvFile_DefaultStdinIsDevNull/posix_lyx_bin_empty_leaves_path
+        === CONT  TestEnvFile_DefaultStdinIsDevNull/windows_without_cygpath_leaves_path
+        --- PASS: TestOpenLaunch/bypass_skips_permissions_on_every_line (0.01s)
+        === RUN   TestLoadOrInitState/terminal_state_fails_loud_regardless_of_hash
+        === RUN   TestReadWaitMarker/a_dead-pid_marker_is_skipped_in_favour_of_a_live_one_in_another_run
+        --- PASS: TestLoadOrInitState/terminal_state_fails_loud_regardless_of_hash (0.00s)
+        --- PASS: TestReadWaitMarker/a_dead-pid_marker_is_skipped_in_favour_of_a_live_one_in_another_run (0.00s)
+        === RUN   TestLoadOrInitState/terminal_state_fails_loud_even_with_a_mismatched_hash
+        --- PASS: TestLoadOrInitState/terminal_state_fails_loud_even_with_a_mismatched_hash (0.00s)
+        === RUN   TestLoadOrInitState/legacy_record_without_handoffPath_or_seedPath_resumes_cleanly
+        === CONT  TestEnvFile_DefaultStdinIsDevNull/posix_lyx_bin_unset_leaves_path
+        --- PASS: TestLoadOrInitState/legacy_record_without_handoffPath_or_seedPath_resumes_cleanly (0.00s)
+        --- PASS: TestPromptCacheLifetime/role_mapped_to_one_hour (0.00s)
+        === CONT  TestEnvFile_DefaultStdinIsDevNull/pipe_still_feeds_cat
+        === RUN   TestReadWaitMarker/only_a_dead-pid_marker_reads_as_absent
+        --- PASS: TestEnvFile_DefaultStdinIsDevNull/posix_lyx_bin_unset_leaves_path (0.00s)
+        --- PASS: TestReadWaitMarker/only_a_dead-pid_marker_reads_as_absent (0.00s)
+        === CONT  TestEnvFile_DefaultStdinIsDevNull/windows_converts_and_unsets_scratch_variable
+        === RUN   TestReadWaitMarker/a_torn_marker_is_skipped
+        --- PASS: TestPromptCacheLifetime/invalid_claude_config (0.00s)
+        --- PASS: TestReadWaitMarker/a_torn_marker_is_skipped (0.00s)
+        --- PASS: TestLoadOrInitState (0.00s)
+        === CONT  TestEnvFile_DefaultStdinIsDevNull/heredoc_still_feeds_cat
+        --- PASS: TestEnvFile_DefaultStdinIsDevNull/windows_without_cygpath_leaves_path (0.00s)
+        === RUN   TestTerminalOutcome
+        === RUN   TestTerminalOutcome/no_state_file_reports_not_terminal
+        --- PASS: TestTerminalOutcome/no_state_file_reports_not_terminal (0.00s)
+        === RUN   TestReadWaitMarker/every_live_marker_is_returned,_the_first_as_the_single_reading,_and_only_the_held_label_is_held
+        --- PASS: TestReadWaitMarker/every_live_marker_is_returned,_the_first_as_the_single_reading,_and_only_the_held_label_is_held (0.00s)
+        === RUN   TestReadWaitMarker/a_marker_that_stays_undecodable_logs_once_per_episode
+        FAIL	github.com/Knatte18/loomyard/internal/testkit/envkit	0.013s
+log_path: /home/knatte/Code/loomyard-LYXHUB/machine-handover/.lyx/verify/verify-2.log
+hint:
+    - 17-wake-and-orch-owner-pause
+    - 20-open-window-on-resume
+    - 21-fabric-drop-local
+    - 24-adopt-module
