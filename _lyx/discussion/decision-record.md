@@ -134,6 +134,12 @@ The successor finds no open attempt and calls `Step` (`run` and `handOver` in `i
 This hub deploys after every landing, so a changed build at a blocked stop is routine.
 The check sits at the driver's start, not in the rule table, because the table's only re-step without a goto is the interrupted-step rule, never a blocked stop, so a driver's first step is where a blocked Finalize re-runs unguarded.
 
+### Added after Discussion (parent, 2026-10-22): D2 adopts the shipped merge-in-progress way forward
+
+Decision: D2 adopts the merge-in-progress way forward parkedMergeWayForward ships: the party that started the parked merge, or the orch or the operator when it is gone, concludes it with "lyx fabric merge --continue" or discards it with "lyx fabric merge --abort" in the parent pair; before --abort the operator saves a copy of any change of their own outside the parent's code checkout, never committing it or stashing it with plain git.
+
+Rationale: Operator, 2026-10-22: a commit moves HEAD off the merge record's start, so sideConcludeMayHaveLanded makes --abort refuse with "merge conclude already landed", and a git stash takes the staged merge with it.
+
 ## Constraints
 
 - `MergeGuardError.Error()` stays fixed and path-free, per the closed reason set's rule in `internal/fabricengine/mergeerrors.go`; detail travels only in typed fields.
