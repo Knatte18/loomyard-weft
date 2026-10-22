@@ -1,0 +1,14 @@
+{
+  "verdict": "resume",
+  "reason": "Cause is circling at round 3. The finding that returned, F2 on key adopt-back-replays-old-owner-commits, is right: Record.Covering matches a slug-scope entry as well as a hub entry (internal/pauserecord/record.go:130-132), and OriginSeams.LivePair reads a covered pair as not live (internal/pairteardown/originseams.go:74-75). So accept is not warranted. The review is converging: round 1 raised about fifteen keys, round 2 left five open, and round 3 leaves four open, three of them new and narrow. The round-3 fixer answered all four, F2 with option (a) as proposed and F1 and F3 with grounded corrections. The run sets no review settings, so the Discussion-Review hard cap is the template's review_hard_max_bounces of 4 (discussion_hard_max_bounces 0), and round 3 is below it. One more round is allowed and warranted.",
+  "question": "",
+  "goto": "",
+  "verbs": [
+    "lyx loom circling continue machine-handover"
+  ],
+  "cause": "",
+  "attempt": 1,
+  "attempt_dir": "/home/knatte/Code/loomyard-LYXHUB/machine-handover/_lyx/shed/machine-handover/arbiter/attempt-1",
+  "verdict_path": "/home/knatte/Code/loomyard-LYXHUB/machine-handover/_lyx/shed/machine-handover/arbiter/attempt-1/verdict.yaml",
+  "relaunch": "lyx shed step machine-handover --until-stop --arbiter-attempt 1"
+}
