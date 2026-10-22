@@ -1,11 +1,11 @@
 {
-  "current_producer": "Darn-Write",
+  "current_producer": "Darn-Bouncer",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Darn-Write",
-    "last": "Preflight → done",
+    "now": "Darn-Bouncer",
+    "last": "Darn-Write → done",
     "wait": ""
   },
   "history": [
@@ -14,6 +14,33 @@
       "outcome": "done",
       "output": "",
       "at": "2026-10-22T12:03:40Z"
+    },
+    {
+      "producer": "Darn-Write",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYXHUB/report-timing-unreadable-journal/_lyx/landing/summary.md",
+      "at": "2026-10-22T12:08:30Z",
+      "gate_attempts": 0,
+      "gate_spans": [
+        {
+          "gate": "discussion",
+          "kind": "gate",
+          "start": "2026-10-22T12:08:05.394790276Z",
+          "end": "2026-10-22T12:08:13.258828007Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-10-22T12:08:13.293202924Z",
+          "end": "2026-10-22T12:08:30.171031249Z"
+        },
+        {
+          "gate": "description",
+          "kind": "gate",
+          "start": "2026-10-22T12:08:30.204181436Z",
+          "end": "2026-10-22T12:08:30.204222282Z"
+        }
+      ]
     }
   ],
   "product": {
