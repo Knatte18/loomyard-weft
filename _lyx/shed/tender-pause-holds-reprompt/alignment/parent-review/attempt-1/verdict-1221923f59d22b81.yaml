@@ -1,0 +1,8 @@
+verdict: approve
+reason: >-
+  D1-D8 cover all four Expected points of the board entry (no prompt into a paused scope, verify commands held under a pause,
+  creel interrupt of a covered session, webster begin-batch refused under a pause), leave driver chains, parked pushes and
+  background work to run-process-ownership as that entry says, and conflict with no peer run; machine-handover and
+  quarry-csharp, both further along, land first.
+question: ""
+superseded: []
