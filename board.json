@@ -1393,6 +1393,27 @@
       "body": "Imported from [issue #831](https://github.com/Knatte18/loomyard/issues/831).\n\nSeen (loomyard hub, Neve, 2026-10-22): `lyx report convergence --since 2026-10-20` printed a \"claim one landing commit\" error in `findings` for 9 darn runs' archive tags (research-in-discussion, shuttle-open-agent-defaults, decision-add-notifies, gate-tier-verbs, kickstart-pack-remove, board-entry-handles, gate-test-runtime-caller-paths, report-timing-unreadable-journal, darn-hard-cap-default-2), all mapped to the same commit de6b8465f, although each landed its own commit on main.\n\nWorkaround: none; those runs' landing data is missing from the report.\n\nExpected: each darn run's archive tag maps to its own landing commit, as loom runs' tags do.",
       "created": "2026-10-22T14:01:50Z",
       "revised": "2026-10-22T14:01:50Z"
+    },
+    {
+      "id": 763,
+      "handle": "B5",
+      "slug": "batcher-hub-profiles-add",
+      "title": "batcher: a hub profiles map hides the template's profiles instead of adding to them",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "config",
+        "webster"
+      ],
+      "issues": [
+        834
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Imported from [issue #834](https://github.com/Knatte18/loomyard/issues/834).\n\nSeen (2026-10-22): the hub's batcher.yaml added one profile, `wide`; `lyx config batcher --resolved` then listed only `wide`, and the template's `cautious` and `identity` no longer resolved. Workaround: copy `cautious` and `identity` into the hub layer with `--set 'profiles.\u003cname\u003e={...}'`, which pins their values there. Expected: a hub layer's profiles add to or override the template's by name, as the reconcile help's per-name map wording suggests.",
+      "created": "2026-10-22T14:01:53Z",
+      "revised": "2026-10-22T14:01:53Z"
     }
   ],
   "prime_owner": "neve"
