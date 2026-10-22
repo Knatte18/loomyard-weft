@@ -24,8 +24,8 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 3 | **tender pause does not hold a verify gate's re-prompt, and creel interrupt is refused under the pause**<br>• `profile: light` | [`tender-pause-holds-reprompt`](design-tender-pause-holds-reprompt.md) | loom | Discussion-Bouncer | 1d | 1h | creel, shed, webster |
-| 4 | **[.NET 007] Language-specific lens sets seeded per hub**<br>• Every hub seeds lenses.yaml from one Go-repo template; seed by the hub language instead<br>• `profile: light` | [`lenses-language-sets`](design-lenses-language-sets.md) | loom | Plan-Burler-Fix | 1d | 55m | burler, config, dotnet |
+| 3 | **tender pause does not hold a verify gate's re-prompt, and creel interrupt is refused under the pause**<br>• `profile: light` | [`tender-pause-holds-reprompt`](design-tender-pause-holds-reprompt.md) | loom | Discussion-Burler-Review | 1d | 1h | creel, shed, webster |
+| 4 | **[.NET 007] Language-specific lens sets seeded per hub**<br>• Every hub seeds lenses.yaml from one Go-repo template; seed by the hub language instead<br>• `profile: light` | [`lenses-language-sets`](design-lenses-language-sets.md) | loom | Plan-Burler-Fix | 1d | 56m | burler, config, dotnet |
 
 ### Ready
 
