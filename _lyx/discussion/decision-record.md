@@ -160,6 +160,12 @@ The check sits at the driver's start, not in the rule table, because the table's
   - merge-in-progress-arm-names-no-checkout (class consistency, severity MEDIUM, open in rounds 3)
 <!-- /lyx:carry-over Discussion-Review -->
 
+<!-- lyx:carry-over Plan-Review -->
+- Plan-Review, round 1: converged; each finding below was fixed or disputed by the round's fixer, and no fresh reviewer has seen the result; the fixer report says which.
+  Review: _lyx/reviews/plan/round-1-review.md; fixer report: _lyx/reviews/plan/round-1-fixer-report.md.
+  - card3-departs-d2-merge-in-progress-way-forward (class decision, severity MEDIUM, open in rounds 1)
+<!-- /lyx:carry-over Plan-Review -->
+
 ## Acceptance criteria
 
 - Finalize, with a parent whose code checkout has tracked dirty paths, returns Stuck with a reason holding the guard error text, the parent's code checkout path, every dirty path up to D2's cap worktree-relative, Go-quoted and joined by a comma and a space, and the way forward.
