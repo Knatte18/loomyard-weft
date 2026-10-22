@@ -18,7 +18,7 @@ Held by a run; its scope is locked until the run ends.
 | T4 | **Orch lifecycle: dead strands count as dead, the watcher restarts, cycle requests need no reply and can be withdrawn**<br>• Strand liveness checks the engine process and placement, a dead orch watcher restarts, the note write is seen without a reply, and a pending distill/refresh can be withdrawn<br>• `profile: light` | [`orch-strand-cycle`](design-orch-strand-cycle.md) | loom | Discussion-Burler-Review | neve | 3d<br>54m | orch, reed, shuttle, creel |
 | T6 | **loom halt note for a Merge-In loop exit carries only 'loop-exited' as its reason** | [`loop-exit-halt-names-its-cause`](design-loop-exit-halt-names-its-cause.md) | darn | Darn-Burler-Fix | neve | 4h<br>2h | loom, shed |
 | T7 | **webster done-check: Create paths with a space and test targets quarry does not find** | [`done-check-spaced-create-paths`](design-done-check-spaced-create-paths.md) | darn | Darn-Burler-Fix | neve | 4h<br>54m | webster, quarry |
-| T9 | **Teardown's archive-tag push has no retry for a transient remote rejection** | [`retry-archive-tag-push`](design-retry-archive-tag-push.md) | darn | Describe | neve | 4h<br>2h | batten, fabric |
+| T9 | **Teardown's archive-tag push has no retry for a transient remote rejection** | [`retry-archive-tag-push`](design-retry-archive-tag-push.md) | darn | Merge-In | neve | 4h<br>2h | batten, fabric |
 
 ### Ready
 
