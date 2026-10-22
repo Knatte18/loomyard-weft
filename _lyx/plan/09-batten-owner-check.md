@@ -33,7 +33,7 @@
 - `internal/boardengine#Owners.Effective`
 - `internal/boardengine#OwnedElsewhere`
 - `internal/boardengine#ErrOwnerOriginUnreachable`
-- `plan:internal/fabricengine#EntryOwnedElsewhere`
+- `internal/fabricengine#EntryOwnedElsewhere`
 - `internal/machinename#Name`
 - `internal/fabricengine#ParentSlug`
 

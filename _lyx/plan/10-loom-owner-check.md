@@ -18,7 +18,7 @@
 **Uses:**
 - `internal/loomcli#seedSlug`
 - `internal/loomcli#loomCLI.refuseCovered`
-- `plan:internal/fabricengine#EntryOwnedElsewhere`
+- `internal/fabricengine#EntryOwnedElsewhere`
 - `internal/boardengine#ReadOwners`
 - `internal/boardengine#Owners.Effective`
 - `internal/boardengine#OwnedElsewhere`

@@ -31,7 +31,7 @@
 - `internal/battencli#RefuseUnlessPrime`
 - `internal/fabricengine#ReconcileOrigin`
 - `internal/fabricengine#Topology.Add`
-- `plan:internal/fabricengine#EntryOwnedElsewhere`
+- `internal/fabricengine#EntryOwnedElsewhere`
 - `internal/fabricengine#ParentSlug`
 - `internal/pairteardown#HubSeamOptions`
 - `internal/pairteardown#Teardown.OriginSeams`
@@ -39,7 +39,7 @@
 - `internal/boardengine#ReadOwners`
 - `internal/tenderengine#Lift`
 - `internal/tendercli#HubDeps`
-- `plan:internal/pauserecord#OwnerCaller`
+- `internal/pauserecord#OwnerCaller`
 - `plan:internal/landingshed#OwnerHaltPrefix`
 - `internal/machinename#Name`
 

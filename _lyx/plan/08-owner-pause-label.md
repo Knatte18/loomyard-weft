@@ -11,7 +11,7 @@
 - `internal/tenderengine/doc.go`
 
 **Create:**
-- `plan:internal/pauserecord#OwnerCaller` -> `const OwnerCaller = "owner"`
+- `internal/pauserecord#OwnerCaller`
 
 **Intent:**
 D4's fixed label for owner pauses, so `lyx adopt` lifts exactly those and InnerRun tells them apart.

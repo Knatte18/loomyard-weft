@@ -5,7 +5,7 @@
 
 **Uses:**
 - `internal/tenderengine#Pause`
-- `plan:internal/pauserecord#OwnerCaller`
+- `internal/pauserecord#OwnerCaller`
 
 **Intent:**
 The one owner pause every caller uses (D6).
