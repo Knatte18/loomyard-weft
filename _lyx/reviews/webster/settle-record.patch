@@ -1,0 +1,3366 @@
+diff --git a/contracts/recipes/darn-recipe.yaml b/contracts/recipes/darn-recipe.yaml
+index 7c4400d8c..e3b16f0a6 100644
+--- a/contracts/recipes/darn-recipe.yaml
++++ b/contracts/recipes/darn-recipe.yaml
+@@ -14,6 +14,7 @@
+ # Preflight, Merge-In, Publish and Finalize carry no on_stuck: nothing in the list produces what each of them
+ # gates, so a human is the only thing that can fix them. Darn-Write and Describe carry none either:
+ # an exhausted writer gate halts the run for the parent, which resumes it with a fresh budget.
++# Darn-Write's one reroute edge sends a moved parent to Merge-In, the row that merges it.
+ # PR-Align, like Friction-Reflect, carries none either, because it never returns Stuck.
+ #
+ # Darn-Bouncer, Darn-Burler-Review and Darn-Burler-Fix are the Darn-Review perch, wired like loom's
+@@ -30,7 +31,7 @@
+ # so ly:<slug>:darn-burler-review names its segment.
+ #
+ # Merge-In follows Describe and hands straight to Publish: darn has no Merge-Review perch.
+-# Publish, PR-Gate and Finalize each declare on_reroute: Merge-In, the row a moved parent sends
++# Darn-Write, Publish, PR-Gate and Finalize each declare on_reroute: Merge-In, the row a moved parent sends
+ # them back to. An in-flight run parked on a row whose name or edges changed with Merge-In is
+ # restarted, not migrated.
+ #
+@@ -60,6 +61,9 @@ producers:
+     segment: PR-Review
+     # internal/loomrecipe rewrites this edge to Merge-In when darn.yaml's review_max_bounces is 0.
+     on_done: Darn-Bouncer
++    # A Darn-Write call that finds this run's failure record, an unmoved task branch, a clean worktree
++    # and a moved parent reroutes to Merge-In before spawning the writer.
++    on_reroute: Merge-In
+     config:
+       # gates holds this row's handoff until it is mechanically valid: each entry names a gate and
+       # re-prompts the live session up to its attempts times. The verify gate's attempts here is a
+diff --git a/docs/overview.md b/docs/overview.md
+index d086b5aff..5f797fad5 100644
+--- a/docs/overview.md
++++ b/docs/overview.md
+@@ -545,6 +545,7 @@ User-facing modules each get one `lyx <module>` namespace:
+   a darn run's tail is `Describe → Merge-In → Publish → PR-Align → PR-Gate → Finalize`, with no merge review.
+   `Merge-In` merges the parent into the task, verifies the merged tree and writes the merge record, and the perch reviews how the task's code interacts with what the parent gained.
+   `Publish`, `PR-Gate` and `Finalize` reroute to `Merge-In` when the parent moved since.
++  A darn run's `Darn-Write` also reroutes to `Merge-In` when this run's failure record is present, the branch and worktree are unchanged since it, and the parent moved.
+   `Webster` reroutes to `Plan-Burler-Review` when begin-batch left a new plan conflict.
+   `Publish` pushes the task branch after the hub's `landing` and `publish` gates, and returns Done once the PR is open, refreshing its title and body from the description.
+   `Describe` writes the change description at `_lyx/landing/summary.md`, the single source for the PR title and body and for the landing commit, whose message ends in the trailer block Go appends: `landing.yaml`'s `trailer_text`, then the `engine_trailers` text of each engine that ran a session in the task, each copied verbatim and each switchable off by an empty value.
+diff --git a/internal/battencli/wire_seams_test.go b/internal/battencli/wire_seams_test.go
+index 3a0f11406..b9aee806e 100644
+--- a/internal/battencli/wire_seams_test.go
++++ b/internal/battencli/wire_seams_test.go
+@@ -35,6 +35,7 @@ import (
+ var intentionallyNil = map[string]string{
+ 	"VerifyCommand":               "loom-only seam, batten runs no verify gate",
+ 	"Round":                       "loom-only seam, batten runs no verify gate",
++	"GateFindingsFile":            "loom-only seam, batten has no gated row that keeps findings",
+ 	"Shuttle":                     "loom-only seam, batten drives no agent itself",
+ 	"Burler":                      "loom-only seam, batten runs no review round",
+ 	"Seats":                       "loom-only seam, batten runs no seat table",
+@@ -94,6 +95,11 @@ var intentionallyNil = map[string]string{
+ 	"Darn.Commit":                 "darn-only seam, batten has no darn segment",
+ 	"Darn.LatestOutcome":          "darn-only seam, batten has no darn segment",
+ 	"Darn.PublishFailure":         "darn-only seam, batten has no darn segment",
++	"Darn.RunStart":               "darn-only seam, batten has no darn segment",
++	"Darn.TaskHead":               "darn-only seam, batten has no darn segment",
++	"Darn.Dirty":                  "darn-only seam, batten has no darn segment",
++	"Darn.ParentTips":             "darn-only seam, batten has no darn segment",
++	"Darn.IsAncestor":             "darn-only seam, batten has no darn segment",
+ }
+ 
+ func TestWire_EverySeamFilled(t *testing.T) {
+diff --git a/internal/battenshed/doc.go b/internal/battenshed/doc.go
+index 892e6a38d..469c1f4ba 100644
+--- a/internal/battenshed/doc.go
++++ b/internal/battenshed/doc.go
+@@ -128,7 +128,9 @@
+ // The `<row>-publish-retry` marker holds the retry's state and start time: `started` before the goto, `goto-done` after it, `resumed` after a resume that landed and `capped` when the retry gave up.
+ // `resumed` and `capped` each spend the run's one retry, and the marker is cleared only where batten seeds a fresh status, so a restart neither repeats a finished retry nor resets the cap.
+ // A goto refused as busy and a resume refused as not parked or as a busy pane are retried once per notice probe until the cap of thirty minutes after the start; any other goto refusal gives up at once.
+-// A retry that gave up, or a second Publish halt after the retry ran, sends the usual blocked notice with words saying so, which tells the orch the failure needs judgement.
++// The target is the record's: a darn failure outside the task's impacted set names Merge-In, so the retry re-enters Merge-In, which merges a moved parent and re-runs the failed gate.
++// A retry that gave up, or a second halt at Merge-In or Publish after the retry ran, sends the usual blocked notice with words saying so, which tells the orch the failure needs judgement.
++// The notice carries the record's reason, which for such a failure says it lies outside the task's impacted set.
+ // Any record that does not match, and any read error on the way to the decision, leaves the halt to the handling above.
+ // The retry is split between two records: a Go driver's verify retry is counted in the child's settle records, and batten's in its marker.
+ // With no marker, a blocked child at a verify row whose settle records show a Go verify retry counts as spent, so a run is never retried by both.
+diff --git a/internal/battenshed/innerrun_publishretry_test.go b/internal/battenshed/innerrun_publishretry_test.go
+index c738192ae..bfe846d99 100644
+--- a/internal/battenshed/innerrun_publishretry_test.go
++++ b/internal/battenshed/innerrun_publishretry_test.go
+@@ -18,8 +18,9 @@ import (
+ const (
+ 	retryPublishRow = "Publish"
+ 	retryMergeInRow = "Merge-In"
+-	retryTarget     = "Webster"
+-	retryHead       = "abc123"
++	// retryTarget is the default target of the harness's failure record.
++	retryTarget = "Webster"
++	retryHead   = "abc123"
+ 	// retryEarlier, retryHalting are the times of the history entries before the halt and of the halting entry.
+ 	retryEarlier = "2026-01-01T11:00:00Z"
+ 	retryHalting = "2026-01-01T11:30:00Z"
+@@ -33,6 +34,8 @@ type retryHarness struct {
+ 	scratchDir string
+ 	clock      *fakeClock
+ 	producer   shedengine.ShedProducer
++	// target is the row the failure record routes the child to; the goto, the paused state and the marker all name it.
++	target string
+ 
+ 	status    shedengine.Status
+ 	record    *ChildPublishFailure
+@@ -70,6 +73,7 @@ func newRetryHarness(t *testing.T) *retryHarness {
+ 		scratchDir: t.TempDir(),
+ 		clock:      &fakeClock{},
+ 		head:       retryHead,
++		target:     retryTarget,
+ 		record:     &ChildPublishFailure{Row: retryPublishRow, Head: retryHead, Target: retryTarget, WrittenAt: retryWritten},
+ 	}
+ 	h.blockedAtPublish()
+@@ -120,7 +124,7 @@ func (h *retryHarness) blockedAt(row string) {
+ }
+ 
+ func (h *retryHarness) pausedAtTarget() {
+-	h.status = shedengine.Status{State: shedengine.StatePaused, CurrentProducer: retryTarget, History: h.status.History}
++	h.status = shedengine.Status{State: shedengine.StatePaused, CurrentProducer: h.target, History: h.status.History}
+ }
+ 
+ // call runs one Call and returns the Stuck path, requiring an exempt Stuck.
+@@ -143,7 +147,7 @@ func (h *retryHarness) marker() string {
+ 
+ func (h *retryHarness) writeMarker(state string, started time.Time) {
+ 	h.t.Helper()
+-	if err := os.WriteFile(publishRetryFile(h.scratchDir, "innerrun"), []byte(state+" "+started.UTC().Format(time.RFC3339)+" "+retryTarget+"\n"), 0o644); err != nil {
++	if err := os.WriteFile(publishRetryFile(h.scratchDir, "innerrun"), []byte(state+" "+started.UTC().Format(time.RFC3339)+" "+h.target+"\n"), 0o644); err != nil {
+ 		h.t.Fatal(err)
+ 	}
+ }
+@@ -163,8 +167,8 @@ func (h *retryHarness) wantGotos(n int) {
+ 		h.t.Fatalf("goto calls = %v; want %d", h.gotoTargets, n)
+ 	}
+ 	for _, target := range h.gotoTargets {
+-		if target != retryTarget {
+-			h.t.Errorf("goto target = %q; want %q", target, retryTarget)
++		if target != h.target {
++			h.t.Errorf("goto target = %q; want %q", target, h.target)
+ 		}
+ 	}
+ }
+@@ -182,36 +186,57 @@ func (h *retryHarness) wantOneNotice(want ...string) {
+ 	}
+ }
+ 
+-// TestInnerRun_PublishRetrySendsTheChildToItsTargetAndResumesItOnce asserts a matching record sends the child to its target and resumes it, with no notice for the halt or the paused state,
+-// and that a second Publish halt in the run gets the blocked notice saying the retry already ran, with no second goto.
++// TestInnerRun_PublishRetrySendsTheChildToItsTargetAndResumesItOnce asserts a matching record sends the child to the record's target and resumes it, with no notice for the halt or the paused state,
++// and that a second halt at the same row gets the blocked notice saying the retry already ran and carrying the child's not-owned reason, with no second goto.
++// The rows cover a Publish halt routed to Webster, a Merge-In halt routed to Merge-In, and a Publish halt routed to Merge-In, the route of a failure outside the task's impacted set.
+ func TestInnerRun_PublishRetrySendsTheChildToItsTargetAndResumesItOnce(t *testing.T) {
+ 	t.Parallel()
+-	h := newRetryHarness(t)
+-
+-	if path := h.call(); !strings.Contains(path, "automatic Publish verify retry: sent the child to "+retryTarget) {
+-		t.Errorf("goto Call path = %q; want it to name the automatic retry and the target", path)
++	const notOwnedReason = `landing gate failed outside the task's impacted set, in github.com/Knatte18/loomyard/internal/x, after merging parent branch "main" (exit code 1)`
++	tests := []struct {
++		name   string
++		row    string
++		target string
++	}{
++		{"PublishHaltTargetsWebster", retryPublishRow, retryTarget},
++		{"MergeInHaltTargetsMergeIn", retryMergeInRow, retryMergeInRow},
++		{"PublishHaltTargetsMergeIn", retryPublishRow, retryMergeInRow},
+ 	}
+-	h.wantGotos(1)
+-	h.wantMarkerState(publishRetryGotoDone)
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			h := newRetryHarness(t)
++			h.target = tt.target
++			h.record.Row = tt.row
++			h.record.Target = tt.target
++			h.blockedAt(tt.row)
+ 
+-	h.pausedAtTarget()
+-	h.clock.advance(10 * time.Minute)
+-	if path := h.call(); !strings.Contains(path, "automatic Publish verify retry: resumed the child at "+retryTarget) {
+-		t.Errorf("resume Call path = %q; want it to name the automatic retry and the target", path)
+-	}
+-	if h.spawns != 1 {
+-		t.Errorf("Spawn calls = %d; want 1", h.spawns)
+-	}
+-	h.wantMarkerState(publishRetryResumed)
+-	if len(h.notices) != 0 {
+-		t.Fatalf("notices after the goto and the resume = %q; want none", h.notices)
+-	}
++			if path := h.call(); !strings.Contains(path, "automatic Publish verify retry: sent the child to "+tt.target) {
++				t.Errorf("goto Call path = %q; want it to name the automatic retry and the target", path)
++			}
++			h.wantGotos(1)
++			h.wantMarkerState(publishRetryGotoDone)
+ 
+-	h.blockedAtPublish()
+-	h.status.History = append(h.status.History, shedengine.HistoryEntry{Producer: retryPublishRow, Outcome: shedengine.Stuck, At: "2026-01-01T11:50:00Z"})
+-	h.call()
+-	h.wantGotos(1)
+-	h.wantOneNotice("blocked at "+retryPublishRow, "automatic Publish verify retry already ran")
++			h.pausedAtTarget()
++			h.clock.advance(10 * time.Minute)
++			if path := h.call(); !strings.Contains(path, "automatic Publish verify retry: resumed the child at "+tt.target) {
++				t.Errorf("resume Call path = %q; want it to name the automatic retry and the target", path)
++			}
++			if h.spawns != 1 {
++				t.Errorf("Spawn calls = %d; want 1", h.spawns)
++			}
++			h.wantMarkerState(publishRetryResumed)
++			if len(h.notices) != 0 {
++				t.Fatalf("notices after the goto and the resume = %q; want none", h.notices)
++			}
++
++			h.blockedAt(tt.row)
++			h.status.Error = notOwnedReason
++			h.status.History = append(h.status.History, shedengine.HistoryEntry{Producer: tt.row, Outcome: shedengine.Stuck, At: "2026-01-01T11:50:00Z"})
++			h.call()
++			h.wantGotos(1)
++			h.wantOneNotice("blocked at "+tt.row, "automatic Publish verify retry already ran", "outside the task's impacted set")
++		})
++	}
+ }
+ 
+ // TestInnerRun_PublishRetryDeclinesRecordsThatDoNotMatchTheHalt asserts a halt gets no goto and the blocked notice when its record does not belong to it.
+diff --git a/internal/impactset/derive_test.go b/internal/impactset/derive_test.go
+index 2d150effb..681ebfa87 100644
+--- a/internal/impactset/derive_test.go
++++ b/internal/impactset/derive_test.go
+@@ -9,7 +9,7 @@ import (
+ 
+ // testGraph is a small module.
+ // Package b imports a, c imports b, d is unrelated, and tmuxonly reaches a only through a test import.
+-// The command package cmd/lyx imports b, and e builds the binary in its tests.
++// The command package cmd/lyx imports b, and e builds the binary in its tests and reaches nothing else, so it joins only for a change to cmd/lyx itself.
+ func testGraph() moduleGraph {
+ 	const m = "m/"
+ 	return newModuleGraph([]pkg{
+diff --git a/internal/impactset/doc.go b/internal/impactset/doc.go
+index 6813e4c96..67fde9060 100644
+--- a/internal/impactset/doc.go
++++ b/internal/impactset/doc.go
+@@ -5,7 +5,7 @@
+ // Git runs through `gitexec.Run`, and `go list` is a logged spawn.
+ // It diffs the base to the working tree, not to HEAD:
+ // tracked changes, staged or not, a rename counted at both paths, and the untracked files git does not ignore.
+-// It returns Targets{Whole, Fallback, Base, Modules, Guards}: each ModuleTargets names a module directory, `.` for the root, and its module-relative package arguments in the order the graph lists them, every impacted package kept, test-less ones included.
++// It returns Targets{Whole, Fallback, Base, Modules, Guards, BinaryTests}: each ModuleTargets names a module directory, `.` for the root, and its module-relative package arguments in the order the graph lists them, every impacted package kept, test-less ones included.
+ // Targets also names the base it diffed from whenever that base was usable.
+ //
+ // DeriveTargets falls back to Whole, with the reason, when any of these holds:
+@@ -17,7 +17,9 @@
+ //
+ // Otherwise the set is the packages the diff changed, plus every package whose dependencies, test imports included, reach one of them, under the `integration`, `tmux` and `llm` tags.
+ // A rename or deletion maps through its old path as well as its new one.
+-// When a changed package is a dependency of `cmd/lyx`, every package whose tests import `internal/testkit/lyxbin`, which builds the binary, joins the set.
++// When the diff changes the `cmd/lyx` main package, which no test imports and so the graph cannot see, every package whose tests import `internal/testkit/lyxbin`, which builds the binary, joins the set;
++// any other change reaches those packages through the import graph only.
++// Targets.BinaryTests lists those packages, inside the set or not.
+ // A diff touching only Markdown files yields no module and no package.
+ // The context bounds the derivation: it is checked before each git read, and a cancelled context kills a stalled `go list`, while a local git read already in flight runs to its end.
+ //
+@@ -36,4 +38,5 @@
+ //
+ // Bound: a narrower run skips only packages the import graph shows unreachable.
+ // What the graph cannot see, such as a test reading another package's files, is caught by the whole runs at the sites that keep them.
++// A binary-driving test that reaches a change only through a subcommand its own package does not import leaves the narrowed run, and the whole runs at Merge-In, Publish and Finalize still run it.
+ package impactset
+diff --git a/internal/impactset/graph.go b/internal/impactset/graph.go
+index 673dc7024..5694a3ee3 100644
+--- a/internal/impactset/graph.go
++++ b/internal/impactset/graph.go
+@@ -106,7 +106,7 @@ func (g moduleGraph) reaches(p pkg, changed map[string]bool) bool {
+ }
+ 
+ // impactedSet returns the import paths of the changed packages and every package that reaches one of them.
+-// When a changed package is a dependency of the `cmd/lyx` command, it also returns every package whose tests import the binary builder.
++// When the changed packages include the `cmd/lyx` main package itself, which no test imports, it also returns every package whose tests import the binary builder.
+ func (g moduleGraph) impactedSet(changed map[string]bool) map[string]bool {
+ 	set := map[string]bool{}
+ 	for _, p := range g.byImportPath {
+@@ -114,30 +114,31 @@ func (g moduleGraph) impactedSet(changed map[string]bool) map[string]bool {
+ 			set[p.ImportPath] = true
+ 		}
+ 	}
+-	if command, ok := g.byDir[commandDir]; ok {
+-		for importPath := range g.closure([]string{command.ImportPath}) {
+-			if changed[importPath] {
+-				g.addBinaryBuildingTests(set)
+-				break
+-			}
+-		}
++	if command, ok := g.byDir[commandDir]; ok && changed[command.ImportPath] {
++		g.addBinaryBuildingTests(set)
+ 	}
+ 	return set
+ }
+ 
+-// addBinaryBuildingTests adds every package whose test files import the binary builder.
+-func (g moduleGraph) addBinaryBuildingTests(set map[string]bool) {
++// addBinaryBuildingTests adds every package whose test files import the binary builder to set.
++// It returns the sorted module-relative directories of those packages, empty when the module has no binary builder package.
++func (g moduleGraph) addBinaryBuildingTests(set map[string]bool) []string {
+ 	lyxbin, ok := g.byDir[lyxbinDir]
+ 	if !ok {
+-		return
++		return nil
+ 	}
++	var dirs []string
+ 	for _, p := range g.byImportPath {
+ 		for _, imported := range p.TestImports {
+ 			if imported == lyxbin.ImportPath {
+ 				set[p.ImportPath] = true
++				dirs = append(dirs, p.Dir)
++				break
+ 			}
+ 		}
+ 	}
++	sort.Strings(dirs)
++	return dirs
+ }
+ 
+ // packageDirs returns the directories of the import paths, sorted.
+diff --git a/internal/impactset/targets.go b/internal/impactset/targets.go
+index c964c25df..922afe7f1 100644
+--- a/internal/impactset/targets.go
++++ b/internal/impactset/targets.go
+@@ -25,6 +25,8 @@ type Targets struct {
+ 	Modules []ModuleTargets
+ 	// Guards maps the directory of each package outside the set to the sorted names of its `//lyx:guard` tests.
+ 	Guards map[string][]string
++	// BinaryTests are the sorted worktree-relative directories of every package whose tests import `internal/testkit/lyxbin`, inside the set or not; empty with Whole.
++	BinaryTests []string
+ }
+ 
+ // ModuleTargets is the impacted packages of one module.
+@@ -117,7 +119,7 @@ func targetsFor(graph moduleGraph, changedPaths []string, guards map[string][]st
+ 		return wholeTargets("", fallback)
+ 	}
+ 
+-	targets := Targets{Guards: map[string][]string{}}
++	targets := Targets{Guards: map[string][]string{}, BinaryTests: graph.addBinaryBuildingTests(map[string]bool{})}
+ 	if len(set) > 0 {
+ 		targets.Modules = []ModuleTargets{{Dir: ".", Packages: packageArgs(graph.packageDirs(set))}}
+ 	}
+diff --git a/internal/impactset/targets_test.go b/internal/impactset/targets_test.go
+index 17035d171..2399bbea7 100644
+--- a/internal/impactset/targets_test.go
++++ b/internal/impactset/targets_test.go
+@@ -15,8 +15,18 @@ func TestTargetsFor(t *testing.T) {
+ 		return []ModuleTargets{{Dir: ".", Packages: packages}}
+ 	}
+ 
++	binaryTests := []string{"internal/e"}
++	graphWithoutLyxbin := moduleGraph{byImportPath: map[string]pkg{}, byDir: map[string]pkg{}}
++	for importPath, p := range testGraph().byImportPath {
++		if p.Dir != lyxbinDir {
++			graphWithoutLyxbin.byImportPath[importPath] = p
++			graphWithoutLyxbin.byDir[p.Dir] = p
++		}
++	}
++
+ 	tests := []struct {
+ 		name    string
++		graph   *moduleGraph
+ 		changed []string
+ 		guards  map[string][]string
+ 		want    Targets
+@@ -26,44 +36,59 @@ func TestTargetsFor(t *testing.T) {
+ 			changed: []string{"internal/a/a.go"},
+ 			guards:  guards,
+ 			want: Targets{
+-				Modules: root("./cmd/lyx", "./internal/a", "./internal/b", "./internal/c", "./internal/e", "./internal/tmuxonly"),
+-				Guards:  map[string][]string{"internal/d": {"TestGuardD", "TestGuardD2"}},
++				Modules:     root("./cmd/lyx", "./internal/a", "./internal/b", "./internal/c", "./internal/tmuxonly"),
++				Guards:      map[string][]string{"internal/d": {"TestGuardD", "TestGuardD2"}},
++				BinaryTests: binaryTests,
+ 			},
+ 		},
+ 		{
+-			name:    "a change to a dependency of cmd/lyx pulls in every package that builds the binary",
++			name:    "a change to a dependency of cmd/lyx leaves out a package that reaches it only through the binary",
+ 			changed: []string{"internal/b/b.go"},
+-			want:    Targets{Modules: root("./cmd/lyx", "./internal/b", "./internal/c", "./internal/e"), Guards: map[string][]string{}},
++			want:    Targets{Modules: root("./cmd/lyx", "./internal/b", "./internal/c"), Guards: map[string][]string{}, BinaryTests: binaryTests},
++		},
++		{
++			name:    "a change to the cmd/lyx main package pulls in every package that builds the binary",
++			changed: []string{"cmd/lyx/main.go"},
++			want:    Targets{Modules: root("./cmd/lyx", "./internal/e"), Guards: map[string][]string{}, BinaryTests: binaryTests},
++		},
++		{
++			name:    "a change to the cmd/lyx main package over a module without the binary builder adds nothing",
++			graph:   &graphWithoutLyxbin,
++			changed: []string{"cmd/lyx/main.go"},
++			want:    Targets{Modules: root("./cmd/lyx"), Guards: map[string][]string{}},
+ 		},
+ 		{
+ 			name:    "a change outside cmd/lyx's dependencies leaves the binary-building packages out and keeps a test-less package",
+ 			changed: []string{"internal/d/d.go"},
+-			want:    Targets{Modules: root("./internal/d"), Guards: map[string][]string{}},
++			want:    Targets{Modules: root("./internal/d"), Guards: map[string][]string{}, BinaryTests: binaryTests},
+ 		},
+ 		{
+ 			name:    "a rename between package directories puts both in the set",
+ 			changed: []string{"internal/c/x.go", "internal/d/x.go"},
+-			want:    Targets{Modules: root("./internal/c", "./internal/d"), Guards: map[string][]string{}},
++			want:    Targets{Modules: root("./internal/c", "./internal/d"), Guards: map[string][]string{}, BinaryTests: binaryTests},
+ 		},
+ 		{
+ 			name:    "a Markdown-only diff outside any package yields no module and every guard",
+ 			changed: []string{"docs/overview.md"},
+ 			guards:  guards,
+-			want: Targets{Guards: map[string][]string{
+-				"internal/a": {"TestGuardA"},
+-				"internal/d": {"TestGuardD", "TestGuardD2"},
+-			}},
++			want: Targets{
++				Guards: map[string][]string{
++					"internal/a": {"TestGuardA"},
++					"internal/d": {"TestGuardD", "TestGuardD2"},
++				},
++				BinaryTests: binaryTests,
++			},
+ 		},
+ 		{
+ 			name:    "a guard name held by two outside packages is listed under each, once",
+ 			changed: []string{"docs/overview.md"},
+ 			guards:  map[string][]string{"internal/a": {"TestGuardX"}, "internal/d": {"TestGuardX"}},
+-			want:    Targets{Guards: map[string][]string{"internal/a": {"TestGuardX"}, "internal/d": {"TestGuardX"}}},
++			want:    Targets{Guards: map[string][]string{"internal/a": {"TestGuardX"}, "internal/d": {"TestGuardX"}}, BinaryTests: binaryTests},
+ 		},
+ 		{
+ 			name:    "a non-Go file maps to its nearest enclosing package",
+ 			changed: []string{"internal/d/testdata/x.yaml"},
+-			want:    Targets{Modules: root("./internal/d"), Guards: map[string][]string{}},
++			want:    Targets{Modules: root("./internal/d"), Guards: map[string][]string{}, BinaryTests: binaryTests},
+ 		},
+ 		{
+ 			name:    "a file outside any package that is not Markdown falls back",
+@@ -90,7 +115,11 @@ func TestTargetsFor(t *testing.T) {
+ 		t.Run(tt.name, func(t *testing.T) {
+ 			t.Parallel()
+ 
+-			if got := targetsFor(testGraph(), tt.changed, tt.guards); !reflect.DeepEqual(got, tt.want) {
++			graph := testGraph()
++			if tt.graph != nil {
++				graph = *tt.graph
++			}
++			if got := targetsFor(graph, tt.changed, tt.guards); !reflect.DeepEqual(got, tt.want) {
+ 				t.Errorf("targetsFor() = %+v; want %+v", got, tt.want)
+ 			}
+ 		})
+diff --git a/internal/landingshed/deps.go b/internal/landingshed/deps.go
+index 710eef416..9f58d08bb 100644
+--- a/internal/landingshed/deps.go
++++ b/internal/landingshed/deps.go
+@@ -209,14 +209,18 @@ type Deps struct {
+ 	// A failing call whose log names no failing tier records the highest tier of its gate, read through it.
+ 	// Told, and required wherever a failure record is written: a nil lookup would panic on a failing log with no tier summary line.
+ 	GateTiers func(gate string) ([]int, error)
+-	// VerifyFailedWayForward is the whole way-forward clause a failed-verify Stuck reason ends with when the failure record was written.
++	// VerifyFailedWayForward is the whole way-forward clause a failed-verify Stuck reason ends with when the failure record was written and ClassifyVerifyFailure is nil.
+ 	// The recipe that drives the run tells it, since the route back to a fix depends on the recipe's graph.
+ 	// Empty asks to fix forward on the task branch instead.
+ 	// internal/loomcli's landingDeps fills it, and its drift guard keeps it filled.
+ 	VerifyFailedWayForward string
+-	// VerifyFailureTarget is the row the recipe routes a failed Publish verify back to, written into the failure record's target.
++	// VerifyFailureTarget is the row the recipe routes a failed Publish verify back to, written into the failure record's target when ClassifyVerifyFailure is nil.
+ 	// Empty writes no target.
+ 	VerifyFailureTarget string
++	// ClassifyVerifyFailure chooses a failure record's target and the Stuck reason's way forward per failure.
++	// Merge-In and Publish call it when they write a failure record, with the record as written except its target, its log path naming the failing run's log.
++	// Nil keeps VerifyFailureTarget and VerifyFailedWayForward, loom's value.
++	ClassifyVerifyFailure func(ctx context.Context, failure verifytree.PublishFailure) FailureRoute
+ 	// PublishSkip reports whether Publish skips the `publish` gate for this call, so a diff the recipe verifies by its own narrower command lands without the extra tier.
+ 	// Publish calls it after taking the parent lock: true takes the path of an empty `publish` list, which removes the Publish failure record before the push;
+ 	// an error is Publish's returned error, with nothing verified or pushed; false runs the `publish` gate.
+diff --git a/internal/landingshed/doc.go b/internal/landingshed/doc.go
+index 80ba71764..b6ecf1a34 100644
+--- a/internal/landingshed/doc.go
++++ b/internal/landingshed/doc.go
+@@ -95,11 +95,13 @@
+ // A landing change is an operator or hub-orch `lyx config landing` run from the prime, committed in `_board` and effective for every pair at once.
+ //
+ // Merge-In and Publish persist their verify failure; Finalize neither writes nor removes the record.
+-// When a `landing` or `publish` call fails with a non-zero exit, Merge-In or Publish writes the verifytree Publish failure record with the failing gate as its kind, the failing tier, the row that ran the verify, the failing tests the told Deps.FailingTests parses from the log, HEAD, the told Deps.VerifyFailureTarget row, the write time in whole-second UTC, and the merge-in commit.
++// When a `landing` or `publish` call fails with a non-zero exit, Merge-In or Publish writes the verifytree Publish failure record with the failing gate as its kind, the failing tier, the row that ran the verify, the failing tests the told Deps.FailingTests parses from the log, HEAD, the target row, the write time in whole-second UTC, and the merge-in commit.
+ // The tier is the last failing tier the log's `lyx gate test` summary lines name; a log without one, such as a refusal before the first tier, takes the highest tier of the gate's list, read through the told Deps.GateTiers.
+ // The merge-in commit is HEAD after a merge-in that was not already up to date and empty otherwise; Publish reads it from Merge-In's merge record.
+ // A dirty tree, a timeout and a shell that could not start write no record, and a write failure is logged and never changes the Stuck verdict.
+-// The Stuck reason of a failed verify ends with the way-forward clause the recipe tells in Deps.VerifyFailedWayForward only when the record was written; otherwise, and when none is told, it asks to fix forward on the task branch.
++// The record's target and the reason's way forward come from the told Deps.ClassifyVerifyFailure when it is set, and from Deps.VerifyFailureTarget and Deps.VerifyFailedWayForward otherwise.
++// A not-owned route's lead names the packages before the merge clause.
++// The Stuck reason of a failed verify ends with the way-forward clause only when the record was written; otherwise, and when none is told, it asks to fix forward on the task branch.
+ // When the failed verify's log holds the CPU watchdog's line that `lyx gate test` prints after it quits a busy test binary, the reason names the window and says the goroutine stacks are in the log, before that clause.
+ // A watchdog quit of a healthy package has no code fix: the way forward is raising `busy_quit_sec` through `lyx config gate` from the prime, then resuming.
+ // An unreadable log or one without the line leaves the reason unchanged, and the checks run no flake rerun.
+diff --git a/internal/landingshed/mergein_test.go b/internal/landingshed/mergein_test.go
+index 09b0c9e45..009c39d2b 100644
+--- a/internal/landingshed/mergein_test.go
++++ b/internal/landingshed/mergein_test.go
+@@ -469,6 +469,27 @@ func TestMergeIn_PlanVerifyFailureRecord(t *testing.T) {
+ 		}
+ 	})
+ 
++	t.Run("a told classifier chooses the record's target and the reason's way forward", func(t *testing.T) {
++		t.Parallel()
++		fx := newMergeInFixture(t)
++		fx.taskHeads = []string{"t1", "m1"}
++		fx.gate.fake.result = verifytree.Result{Status: verifytree.StatusFailed, ExitCode: 1, Log: "/verify/verify-1.log"}
++		// The classifier is set on the producer's own gate: newMergeInFixture copied the fixture's value into it.
++		fx.m.gate.classify = func(context.Context, verifytree.PublishFailure) FailureRoute {
++			return FailureRoute{Target: "Merge-In", WayForward: "the told not-owned route"}
++		}
++
++		outcome, ptr := fx.call(t)
++
++		if outcome != shedengine.Stuck || !strings.HasSuffix(ptr.Reason, "way forward: the told not-owned route") {
++			t.Fatalf("Call() = %q, %+v; want Stuck ending with the classifier's way forward", outcome, ptr)
++		}
++		failure, found, err := verifytree.ReadPublishFailure(fx.gate.paths)
++		if err != nil || !found || failure.Target != "Merge-In" {
++			t.Errorf("ReadPublishFailure() = %+v, %v, %v; want a record with target Merge-In", failure, found, err)
++		}
++	})
++
+ 	t.Run("a passing verify clears an earlier failure record", func(t *testing.T) {
+ 		t.Parallel()
+ 		fx := newMergeInFixture(t)
+diff --git a/internal/landingshed/publish_verify_test.go b/internal/landingshed/publish_verify_test.go
+index 3b6005304..aec3fb26c 100644
+--- a/internal/landingshed/publish_verify_test.go
++++ b/internal/landingshed/publish_verify_test.go
+@@ -415,6 +415,39 @@ func TestPublishVerify_FailureRecord(t *testing.T) {
+ 		})
+ 	}
+ 
++	t.Run("a told classifier chooses the record's target and the reason's lead and way forward", func(t *testing.T) {
++		fx := newPublishVerifyFixture(t, gateLandingCall, gatePublishCall)
++		fx.p.deps.TaskHead = func() (string, error) { return "merged-head", nil }
++		var seen verifytree.PublishFailure
++		fx.p.gate.classify = func(_ context.Context, failure verifytree.PublishFailure) FailureRoute {
++			seen = failure
++			return FailureRoute{Target: "Merge-In", WayForward: "the told not-owned route", Lead: " outside the task's impacted set, in example.com/m/a,"}
++		}
++		fx.p.gate.recorder = &failureRecorder{
++			failingTests: func(string) []verifytree.FailedTest { return wantTests },
++			head:         fx.p.deps.TaskHead,
++		}
++		fx.gate.fake.resultByCommand = map[string]verifytree.Result{gatePublishCall: failed}
++		writeVerifyLog(t, fx.gate, plainLog)
++		failOnGitHubClient(t)
++
++		outcome, reason, err := fx.call(t)
++
++		if err != nil || outcome != shedengine.Stuck {
++			t.Fatalf("Call() = %q, %v; want Stuck, nil", outcome, err)
++		}
++		if !strings.Contains(reason, "publish gate failed outside the task's impacted set, in example.com/m/a, after merging parent branch") || !strings.HasSuffix(reason, "way forward: the told not-owned route") {
++			t.Errorf("reason %q; want the classifier's lead and way forward", reason)
++		}
++		got, ok, err := verifytree.ReadPublishFailure(fx.gate.paths)
++		if err != nil || !ok || got.Target != "Merge-In" {
++			t.Fatalf("record = %+v, %v, %v; want target Merge-In", got, ok, err)
++		}
++		if seen.Kind != verifytree.FailureKindPublish || seen.Row != "Publish" || !reflect.DeepEqual(seen.Tests, wantTests) || seen.LogPath != got.LogPath || seen.Target != "" {
++			t.Errorf("classifier saw %+v; want the record as written with an empty target", seen)
++		}
++	})
++
+ 	t.Run("a passing publish removes a present record", func(t *testing.T) {
+ 		for _, publishCommand := range []string{"", gatePublishCall} {
+ 			fx := newPublishVerifyFixture(t, gateLandingCall, publishCommand)
+diff --git a/internal/landingshed/verifygate.go b/internal/landingshed/verifygate.go
+index 5ebff017c..802bbd21b 100644
+--- a/internal/landingshed/verifygate.go
++++ b/internal/landingshed/verifygate.go
+@@ -33,15 +33,27 @@ type verifyGate struct {
+ 	tiers            func(gate string) ([]int, error)
+ 	failedWayForward string
+ 	failureTarget    string
+-	waitMark         func(label string, start time.Time) error
+-	paths            verifytree.Paths
+-	dirty            func(worktree string) ([]string, error)
+-	verify           func(ctx context.Context, p verifytree.Paths, site verifytree.Site, command string) (verifytree.Result, error)
+-	now              func() time.Time
++	// classify, when set, chooses the failure record's target and the reason's way forward per failure, in place of failedWayForward and failureTarget.
++	classify func(ctx context.Context, failure verifytree.PublishFailure) FailureRoute
++	waitMark func(label string, start time.Time) error
++	paths    verifytree.Paths
++	dirty    func(worktree string) ([]string, error)
++	verify   func(ctx context.Context, p verifytree.Paths, site verifytree.Site, command string) (verifytree.Result, error)
++	now      func() time.Time
+ 	// recorder is set only by Publish: nil leaves a failed verify unrecorded.
+ 	recorder *failureRecorder
+ }
+ 
++// FailureRoute is a classifier's answer for one failed verify: where the failure record sends the run and what the Stuck reason says about it.
++type FailureRoute struct {
++	// Target is the row written into the failure record's target.
++	Target string
++	// WayForward is the whole clause the Stuck reason ends with after `way forward: `.
++	WayForward string
++	// Lead is text the reason puts between `<gate> failed` and ` after merging parent branch`; empty for a failure the task owns.
++	Lead string
++}
++
+ // failureRecorder holds what the gate needs to write the Publish failure record.
+ // mergeCommit is set by Publish after its merge-in and read when a verify fails.
+ type failureRecorder struct {
+@@ -54,17 +66,17 @@ type failureRecorder struct {
+ // The kind is the name of the gate that failed, and the record's tier is the last failing tier the log's summary lines name;
+ // a log without one, such as a refusal before the first tier, takes the highest tier of the gate's list.
+ // A result that is not a failed run, a timeout and a shell that could not start write none, since none of them names a failing test.
+-// It reports whether it wrote the record: a write failure is logged, reported as false and changes nothing else.
+-func (g verifyGate) recordFailure(kind verifytree.FailureKind, row string, result verifytree.Result) bool {
++// The record's target and the returned route come from the told classifier, called with the record as written except its target, and from the told target and way-forward clause when there is none.
++// It returns the route and whether it wrote the record: a write failure is logged, reported as false and changes nothing else, and a result that writes no record returns the zero route.
++func (g verifyGate) recordFailure(ctx context.Context, kind verifytree.FailureKind, row string, result verifytree.Result) (FailureRoute, bool) {
+ 	if g.recorder == nil || result.Status != verifytree.StatusFailed || result.TimedOut || result.ExitCode < 0 {
+-		return false
++		return FailureRoute{}, false
+ 	}
+ 	failure := verifytree.PublishFailure{
+ 		Kind:        kind,
+ 		Row:         row,
+ 		LogPath:     result.Log,
+ 		MergeCommit: g.recorder.mergeCommit,
+-		Target:      g.failureTarget,
+ 		WrittenAt:   g.now().UTC().Format(time.RFC3339),
+ 	}
+ 	if g.recorder.head != nil {
+@@ -87,15 +99,20 @@ func (g verifyGate) recordFailure(kind verifytree.FailureKind, row string, resul
+ 		list, err := g.tiers(string(kind))
+ 		if err != nil || len(list) == 0 {
+ 			logger.Warn("landingshed: could not read the gate's tiers for the publish failure record", "gate", kind, "tiers", len(list), "cause", err)
+-			return false
++			return FailureRoute{}, false
+ 		}
+ 		failure.Tier = slices.Max(list)
+ 	}
++	route := FailureRoute{Target: g.failureTarget, WayForward: g.failedWayForward}
++	if g.classify != nil {
++		route = g.classify(ctx, failure)
++	}
++	failure.Target = route.Target
+ 	if err := verifytree.WritePublishFailure(g.paths, failure); err != nil {
+ 		logger.Warn("landingshed: could not write the publish failure record", "kind", kind, "cause", err)
+-		return false
++		return FailureRoute{}, false
+ 	}
+-	return true
++	return route, true
+ }
+ 
+ // clearFailure removes the Publish failure record of an earlier failed verify.
+@@ -118,6 +135,7 @@ func newVerifyGate(deps Deps) verifyGate {
+ 		tiers:            deps.GateTiers,
+ 		failedWayForward: deps.VerifyFailedWayForward,
+ 		failureTarget:    deps.VerifyFailureTarget,
++		classify:         deps.ClassifyVerifyFailure,
+ 		waitMark:         deps.VerifyWaitMark,
+ 		paths:            verifytree.NewPaths(deps.WorktreeRoot, deps.VerifyDir),
+ 		dirty:            verifytree.DirtyPaths,
+@@ -220,8 +238,8 @@ func (g verifyGate) check(ctx context.Context, producer, parentBranch string) (s
+ 	if err != nil {
+ 		return "", fmt.Errorf("landingshed: %s: %w", producer, err)
+ 	}
+-	recorded := g.recordFailure(verifytree.FailureKindLanding, producer, result)
+-	return g.verdict(result, "landing gate", producer, parentBranch, recorded)
++	route, recorded := g.recordFailure(ctx, verifytree.FailureKindLanding, producer, result)
++	return g.verdict(result, "landing gate", producer, parentBranch, route, recorded)
+ }
+ 
+ // checkPublishVerify runs the `publish` gate's call for producer after the landing call passed.
+@@ -250,8 +268,8 @@ func (g verifyGate) checkPublishVerify(ctx context.Context, producer, parentBran
+ 	if err != nil {
+ 		return "", fmt.Errorf("landingshed: %s: %w", producer, err)
+ 	}
+-	recorded := g.recordFailure(verifytree.FailureKindPublish, producer, result)
+-	return g.verdict(result, "publish gate", producer, parentBranch, recorded)
++	route, recorded := g.recordFailure(ctx, verifytree.FailureKindPublish, producer, result)
++	return g.verdict(result, "publish gate", producer, parentBranch, route, recorded)
+ }
+ 
+ // watchdogClause returns the clause a failed verify's reason carries when the log at logPath holds the CPU watchdog's line, and empty for an unreadable log or one without it.
+@@ -270,9 +288,10 @@ func watchdogClause(logPath string) string {
+ 
+ // verdict maps a verify result to the producer's decision, naming the gate whose call ran as what.
+ // It returns a non-empty Stuck reason for a dirty tree or a failed command, an error for an unknown status, and ("", nil) when the producer may proceed.
+-// recorded says the failure record was written; a failed command with an exit code then ends with the told way-forward clause, and otherwise, or with no clause told, asks to fix forward on the task branch.
++// recorded says the failure record was written; a failed command with an exit code then ends with route's way-forward clause, and otherwise, or with an empty clause, asks to fix forward on the task branch.
++// The route's lead follows the gate's name in that reason.
+ // After a CPU watchdog quit the reason names the window and the busy_quit_sec way forward before that clause.
+-func (g verifyGate) verdict(result verifytree.Result, what, producer, parentBranch string, recorded bool) (string, error) {
++func (g verifyGate) verdict(result verifytree.Result, what, producer, parentBranch string, route FailureRoute, recorded bool) (string, error) {
+ 	switch result.Status {
+ 	case verifytree.StatusPassed:
+ 		logger.Info("landingshed: post-merge "+what+" passed", "producer", producer, "parentBranch", parentBranch)
+@@ -288,8 +307,8 @@ func (g verifyGate) verdict(result verifytree.Result, what, producer, parentBran
+ 			return fmt.Sprintf("%s could not start after merging parent branch %q: %s; output: %s", what, parentBranch, result.Detail, result.Log), nil
+ 		}
+ 		watchdog := watchdogClause(result.Log)
+-		if recorded && g.failedWayForward != "" {
+-			return fmt.Sprintf("%s failed after merging parent branch %q (exit code %d); output: %s%s; way forward: %s", what, parentBranch, result.ExitCode, result.Log, watchdog, g.failedWayForward), nil
++		if recorded && route.WayForward != "" {
++			return fmt.Sprintf("%s failed%s after merging parent branch %q (exit code %d); output: %s%s; way forward: %s", what, route.Lead, parentBranch, result.ExitCode, result.Log, watchdog, route.WayForward), nil
+ 		}
+ 		return fmt.Sprintf("%s failed after merging parent branch %q (exit code %d); output: %s%s; fix forward on the task branch, then resume", what, parentBranch, result.ExitCode, result.Log, watchdog), nil
+ 	default:
+diff --git a/internal/loomcli/darnclassify.go b/internal/loomcli/darnclassify.go
+new file mode 100644
+index 000000000..c31a22027
+--- /dev/null
++++ b/internal/loomcli/darnclassify.go
+@@ -0,0 +1,203 @@
++// darnclassify.go classifies a failed darn verify as owned or not owned by the task, against the impacted set of the task's diff.
++// It answers the route a not-owned failure takes: back to Merge-In rather than Darn-Write.
++
++package loomcli
++
++import (
++	"context"
++	"fmt"
++	"os"
++	"path"
++	"path/filepath"
++	"slices"
++	"sort"
++	"strings"
++
++	"golang.org/x/mod/modfile"
++
++	"github.com/Knatte18/loomyard/internal/impactset"
++	"github.com/Knatte18/loomyard/internal/landingshed"
++	"github.com/Knatte18/loomyard/internal/logger"
++	"github.com/Knatte18/loomyard/internal/loomshed"
++	"github.com/Knatte18/loomyard/internal/verifytree"
++	"github.com/Knatte18/loomyard/internal/websterengine"
++)
++
++// darnFailedWayForward is the way-forward clause of a darn verify failure the task owns: the route back to Darn-Write.
++const darnFailedWayForward = `run "lyx loom goto --to Darn-Write", then "lyx loom resume", in the task worktree; the Darn-Write spawn renders the Publish failure record and its gate runs the failing tests`
++
++// notOwnedWayForward is the way-forward clause of a darn verify failure outside the task's impacted set.
++const notOwnedWayForward = `fix the failure on the parent branch if it fails there too, then run "lyx loom goto --to Merge-In", then "lyx loom resume", in the task worktree, which merges a moved parent and re-runs the failing gate; or, if the task did cause it, run "lyx loom goto --to Darn-Write", then "lyx loom resume", in the task worktree, where a moved parent is merged in first`
++
++// impactedSet is the impacted set of a diff spelled in import paths.
++type impactedSet struct {
++	// packages are the impacted packages.
++	packages map[string]bool
++	// guards maps each guard package to the names of its `//lyx:guard` tests.
++	guards map[string][]string
++	// binary are the packages whose tests import `internal/testkit/lyxbin`.
++	binary map[string]bool
++}
++
++// importPathSet maps targets onto import paths, reading each module's path from its go.mod under worktree.
++// Guards and BinaryTests are directories of the root module.
++// A go.mod that is missing, unreadable or names no module is the returned error.
++func importPathSet(worktree string, targets impactset.Targets) (impactedSet, error) {
++	set := impactedSet{packages: map[string]bool{}, guards: map[string][]string{}, binary: map[string]bool{}}
++	for _, module := range targets.Modules {
++		modulePath, err := readModulePath(worktree, module.Dir)
++		if err != nil {
++			return impactedSet{}, err
++		}
++		for _, pkg := range module.Packages {
++			set.packages[joinImportPath(modulePath, pkg)] = true
++		}
++	}
++	if len(targets.Guards) == 0 && len(targets.BinaryTests) == 0 {
++		return set, nil
++	}
++	rootPath, err := readModulePath(worktree, ".")
++	if err != nil {
++		return impactedSet{}, err
++	}
++	for dir, names := range targets.Guards {
++		set.guards[joinImportPath(rootPath, dir)] = names
++	}
++	for _, dir := range targets.BinaryTests {
++		set.binary[joinImportPath(rootPath, dir)] = true
++	}
++	return set, nil
++}
++
++// readModulePath returns the module path declared by the go.mod in moduleDir, relative to worktree.
++func readModulePath(worktree, moduleDir string) (string, error) {
++	goMod := filepath.Join(worktree, filepath.FromSlash(moduleDir), "go.mod")
++	data, err := os.ReadFile(goMod)
++	if err != nil {
++		return "", fmt.Errorf("read module path: %w", err)
++	}
++	modulePath := modfile.ModulePath(data)
++	if modulePath == "" {
++		return "", fmt.Errorf("read module path: %s declares no module", goMod)
++	}
++	return modulePath, nil
++}
++
++// joinImportPath spells the module-relative package argument or directory dir as an import path under modulePath.
++func joinImportPath(modulePath, dir string) string {
++	dir = strings.TrimPrefix(path.Clean(dir), "./")
++	if dir == "." {
++		return modulePath
++	}
++	return modulePath + "/" + dir
++}
++
++// ownedFailure reports whether the task owns a failed verify, over the identities the log yields and the tests the failure record names.
++// When it does not, it also returns the sorted distinct import paths of the failing packages, all outside the impacted set.
++// Any doubt counts as owned: no recorded test, an opaque identity, or a failure in an impacted package or in a guard test.
++func ownedFailure(failures []websterengine.VerifyFailure, tests []verifytree.FailedTest, set impactedSet) (bool, []string) {
++	outside := map[string]bool{}
++	for _, failure := range failures {
++		switch failure.Kind {
++		case websterengine.FailureKindOpaque:
++			return true, nil
++		case websterengine.FailureKindPackage:
++			if set.packages[failure.Package] {
++				return true, nil
++			}
++			outside[failure.Package] = true
++		default:
++			testName := strings.TrimPrefix(failure.ID, failure.Package+".")
++			if set.owns(failure.Package, testName) {
++				return true, nil
++			}
++			outside[failure.Package] = true
++		}
++	}
++	if len(tests) == 0 {
++		return true, nil
++	}
++	for _, test := range tests {
++		if set.owns(test.Package, test.Test) {
++			return true, nil
++		}
++		outside[test.Package] = true
++	}
++	packages := make([]string, 0, len(outside))
++	for pkg := range outside {
++		packages = append(packages, pkg)
++	}
++	sort.Strings(packages)
++	return false, packages
++}
++
++// owns reports whether a failing test of pkg lies in the impacted set or is a guard test of its package.
++// A guard matches by its top-level test name, the part of testPath before the first slash.
++func (s impactedSet) owns(pkg, testPath string) bool {
++	if s.packages[pkg] {
++		return true
++	}
++	topLevel, _, _ := strings.Cut(testPath, "/")
++	return slices.Contains(s.guards[pkg], topLevel)
++}
++
++// notOwnedRoute is the route of a failure whose failing packages, outside, lie outside the impacted set: back to Merge-In.
++// The lead names the packages before the merge clause, so a notice that keeps only the first characters of the reason still carries them.
++func notOwnedRoute(outside []string, set impactedSet) landingshed.FailureRoute {
++	wayForward := notOwnedWayForward
++	var driving []string
++	for _, pkg := range outside {
++		if set.binary[pkg] {
++			driving = append(driving, pkg)
++		}
++	}
++	if len(driving) > 0 {
++		wayForward += fmt.Sprintf("; %s drive the lyx binary in their tests and may reach the task's change, so when the test does not fail on the parent branch, the Darn-Write goto is the way forward", strings.Join(driving, ", "))
++	}
++	return landingshed.FailureRoute{
++		Target:     loomshed.NameMergeIn,
++		Lead:       fmt.Sprintf(" outside the task's impacted set, in %s,", strings.Join(outside, ", ")),
++		WayForward: wayForward,
++	}
++}
++
++// darnFailureRoute classifies the failed darn verify that failure records and answers its route.
++// The route is Darn-Write unless the log's failing packages all lie outside the impacted set of the diff from the merge base.
++// Only a failure the import graph shows unreachable from the diff skips a Darn-Write trip.
++// An unreadable log, a merge base or derivation error, a Whole answer and an unmappable set all count as owned, the first four logged at Warn.
++func darnFailureRoute(
++	ctx context.Context,
++	failure verifytree.PublishFailure,
++	worktree string,
++	mergeBase func() (string, error),
++	derive func(ctx context.Context, worktree, base string) (impactset.Targets, error),
++) landingshed.FailureRoute {
++	owned := landingshed.FailureRoute{Target: loomshed.NameDarnWrite, WayForward: darnFailedWayForward}
++	log, err := os.ReadFile(failure.LogPath)
++	if err != nil {
++		logger.Warn("loom: darn failure classified as owned: could not read the verify log", "path", failure.LogPath, "error", err)
++		return owned
++	}
++	base, err := mergeBase()
++	if err != nil {
++		logger.Warn("loom: darn failure classified as owned: could not read the merge base", "error", err)
++		return owned
++	}
++	targets, err := derive(ctx, worktree, base)
++	if err != nil {
++		logger.Warn("loom: darn failure classified as owned: could not derive the impacted set", "error", err)
++		return owned
++	}
++	if targets.Whole {
++		return owned
++	}
++	set, err := importPathSet(worktree, targets)
++	if err != nil {
++		logger.Warn("loom: darn failure classified as owned: could not map the impacted set to import paths", "error", err)
++		return owned
++	}
++	if isOwned, outside := ownedFailure(websterengine.ParseVerifyFailures(string(log)), failure.Tests, set); !isOwned {
++		return notOwnedRoute(outside, set)
++	}
++	return owned
++}
+diff --git a/internal/loomcli/darnclassify_test.go b/internal/loomcli/darnclassify_test.go
+new file mode 100644
+index 000000000..c1f60465f
+--- /dev/null
++++ b/internal/loomcli/darnclassify_test.go
+@@ -0,0 +1,212 @@
++// darnclassify_test.go covers the darn failure classifier: which failed verifies the task owns and the route a not-owned one takes.
++
++package loomcli
++
++import (
++	"context"
++	"errors"
++	"os"
++	"path/filepath"
++	"reflect"
++	"strings"
++	"testing"
++
++	"github.com/Knatte18/loomyard/internal/impactset"
++	"github.com/Knatte18/loomyard/internal/landingshed"
++	"github.com/Knatte18/loomyard/internal/verifytree"
++)
++
++func TestDarnFailureRoute(t *testing.T) {
++	t.Parallel()
++
++	const (
++		rootModule  = "example.com/m"
++		toolsModule = "example.com/tools"
++		outsideZ    = rootModule + "/internal/z"
++		outsideY    = rootModule + "/internal/y"
++		guardPkg    = rootModule + "/internal/g"
++		driverPkg   = rootModule + "/internal/lyxdriver"
++	)
++	// failedTests renders go test output for pkg whose named tests failed.
++	failedTests := func(pkg string, names ...string) string {
++		var out strings.Builder
++		for _, name := range names {
++			out.WriteString("--- FAIL: " + name + " (0.00s)\n")
++		}
++		return out.String() + "FAIL\nFAIL\t" + pkg + "\t0.01s\n"
++	}
++	buildFailed := func(pkg string) string { return "FAIL\t" + pkg + " [build failed]\n" }
++	zFailure := failedTests(outsideZ, "TestZ")
++	zTest := verifytree.FailedTest{Package: outsideZ, Test: "TestZ"}
++
++	toldTargets := impactset.Targets{
++		Modules: []impactset.ModuleTargets{
++			{Dir: ".", Packages: []string{"./internal/a", "./internal/bin"}},
++			{Dir: "tools", Packages: []string{"./x"}},
++		},
++		Guards:      map[string][]string{"internal/g": {"TestGuard"}},
++		BinaryTests: []string{"internal/lyxdriver"},
++	}
++	toldDerive := func(context.Context, string, string) (impactset.Targets, error) { return toldTargets, nil }
++	owned := landingshed.FailureRoute{Target: "Darn-Write", WayForward: darnFailedWayForward}
++	notOwned := func(lead, wayForward string) landingshed.FailureRoute {
++		return landingshed.FailureRoute{Target: "Merge-In", Lead: lead, WayForward: wayForward}
++	}
++
++	tests := []struct {
++		name string
++		// log is the verify log's content.
++		log   string
++		tests []verifytree.FailedTest
++		// derive replaces the told derivation.
++		derive func(context.Context, string, string) (impactset.Targets, error)
++		// mergeBaseErr makes the merge base reader fail.
++		mergeBaseErr bool
++		// noLog points the record at a log file that does not exist.
++		noLog bool
++		// noToolsModule removes the nested module's go.mod.
++		noToolsModule bool
++		want          landingshed.FailureRoute
++	}{
++		{
++			name:  "a failing test in an impacted package, given by import path against a module-relative argument, is owned",
++			log:   failedTests(rootModule+"/internal/a", "TestA") + zFailure,
++			tests: []verifytree.FailedTest{{Package: rootModule + "/internal/a", Test: "TestA"}, zTest},
++			want:  owned,
++		},
++		{
++			name:  "a failing test in a nested module's package is owned",
++			log:   failedTests(toolsModule+"/x", "TestX") + zFailure,
++			tests: []verifytree.FailedTest{{Package: toolsModule + "/x", Test: "TestX"}, zTest},
++			want:  owned,
++		},
++		{
++			name:  "a failing guard test outside the set is owned",
++			log:   failedTests(guardPkg, "TestGuard", "TestGuard/sub") + zFailure,
++			tests: []verifytree.FailedTest{{Package: guardPkg, Test: "TestGuard/sub"}, zTest},
++			want:  owned,
++		},
++		{
++			name:  "a failing test of a guard package that is not the listed guard is not owned",
++			log:   failedTests(guardPkg, "TestOther"),
++			tests: []verifytree.FailedTest{{Package: guardPkg, Test: "TestOther"}},
++			want:  notOwned(" outside the task's impacted set, in "+guardPkg+",", notOwnedWayForward),
++		},
++		{
++			name:  "a Whole answer is owned",
++			log:   zFailure,
++			tests: []verifytree.FailedTest{zTest},
++			derive: func(context.Context, string, string) (impactset.Targets, error) {
++				return impactset.Targets{Whole: true}, nil
++			},
++			want: owned,
++		},
++		{
++			name:  "a build failure in an impacted package is owned",
++			log:   buildFailed(rootModule+"/internal/a") + zFailure,
++			tests: []verifytree.FailedTest{zTest},
++			want:  owned,
++		},
++		{
++			name:  "an opaque identity is owned",
++			log:   "go vet: something failed\n",
++			tests: []verifytree.FailedTest{zTest},
++			want:  owned,
++		},
++		{
++			name: "a record with no failing tests is owned",
++			log:  zFailure,
++			want: owned,
++		},
++		{
++			name:  "a derive error is owned",
++			log:   zFailure,
++			tests: []verifytree.FailedTest{zTest},
++			derive: func(context.Context, string, string) (impactset.Targets, error) {
++				return impactset.Targets{}, errors.New("go list failed")
++			},
++			want: owned,
++		},
++		{
++			name:         "a merge base error is owned",
++			log:          zFailure,
++			tests:        []verifytree.FailedTest{zTest},
++			mergeBaseErr: true,
++			want:         owned,
++		},
++		{
++			name:  "a log path that names no file is owned",
++			tests: []verifytree.FailedTest{zTest},
++			noLog: true,
++			want:  owned,
++		},
++		{
++			name:          "a nested module without a go.mod is owned",
++			log:           zFailure,
++			tests:         []verifytree.FailedTest{zTest},
++			noToolsModule: true,
++			want:          owned,
++		},
++		{
++			name:  "failures only outside the set route to Merge-In, naming the packages sorted, with only the parent fix conditional",
++			log:   buildFailed(outsideY) + zFailure,
++			tests: []verifytree.FailedTest{zTest},
++			want:  notOwned(" outside the task's impacted set, in "+outsideY+", "+outsideZ+",", notOwnedWayForward),
++		},
++		{
++			name:  "a failing test in a package that drives the lyx binary names the Darn-Write goto after the binary clause",
++			log:   failedTests(driverPkg, "TestDrive"),
++			tests: []verifytree.FailedTest{{Package: driverPkg, Test: "TestDrive"}},
++			want: notOwned(
++				" outside the task's impacted set, in "+driverPkg+",",
++				notOwnedWayForward+"; "+driverPkg+" drive the lyx binary in their tests and may reach the task's change, so when the test does not fail on the parent branch, the Darn-Write goto is the way forward",
++			),
++		},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++
++			worktree := t.TempDir()
++			writeGoMod := func(dir, module string) {
++				t.Helper()
++				if err := os.MkdirAll(filepath.Join(worktree, dir), 0o755); err != nil {
++					t.Fatal(err)
++				}
++				if err := os.WriteFile(filepath.Join(worktree, dir, "go.mod"), []byte("module "+module+"\n\ngo 1.22\n"), 0o644); err != nil {
++					t.Fatal(err)
++				}
++			}
++			writeGoMod(".", rootModule)
++			if !tt.noToolsModule {
++				writeGoMod("tools", toolsModule)
++			}
++			logPath := filepath.Join(worktree, "verify.log")
++			if !tt.noLog {
++				if err := os.WriteFile(logPath, []byte(tt.log), 0o644); err != nil {
++					t.Fatal(err)
++				}
++			}
++			derive := toldDerive
++			if tt.derive != nil {
++				derive = tt.derive
++			}
++			mergeBase := func() (string, error) {
++				if tt.mergeBaseErr {
++					return "", errors.New("no merge base")
++				}
++				return "base-sha", nil
++			}
++			failure := verifytree.PublishFailure{Kind: verifytree.FailureKindLanding, Row: "Merge-In", LogPath: logPath, Tests: tt.tests}
++
++			got := darnFailureRoute(context.Background(), failure, worktree, mergeBase, derive)
++
++			if !reflect.DeepEqual(got, tt.want) {
++				t.Errorf("darnFailureRoute() = %+v; want %+v", got, tt.want)
++			}
++			if tt.want.Target == "Merge-In" && !strings.HasPrefix(got.WayForward, `fix the failure on the parent branch if it fails there too, then run "lyx loom goto --to Merge-In"`) {
++				t.Errorf("darnFailureRoute().WayForward = %q; want it to open with the conditional parent fix and the Merge-In goto", got.WayForward)
++			}
++		})
++	}
++}
+diff --git a/internal/loomcli/darnwiring.go b/internal/loomcli/darnwiring.go
+index 14e1ef492..2e951d53c 100644
+--- a/internal/loomcli/darnwiring.go
++++ b/internal/loomcli/darnwiring.go
+@@ -4,6 +4,7 @@
+ package loomcli
+ 
+ import (
++	"context"
+ 	"errors"
+ 	"fmt"
+ 	"io/fs"
+@@ -14,6 +15,7 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/burlerengine"
+ 	"github.com/Knatte18/loomyard/internal/darnengine"
+ 	"github.com/Knatte18/loomyard/internal/fabricengine"
++	"github.com/Knatte18/loomyard/internal/impactset"
+ 	"github.com/Knatte18/loomyard/internal/landingshed"
+ 	"github.com/Knatte18/loomyard/internal/logger"
+ 	"github.com/Knatte18/loomyard/internal/loomengine"
+@@ -73,8 +75,11 @@ func darnVerifySource(l *lyxcwd.Location) verifySource {
+ 			_, scoped, err := treeScope()
+ 			return scoped, err
+ 		},
+-		failedWayForward: `run "lyx loom goto --to Darn-Write", then "lyx loom resume", in the task worktree; the Darn-Write spawn renders the Publish failure record and its gate runs the failing tests`,
++		failedWayForward: darnFailedWayForward,
+ 		failureTarget:    loomshed.NameDarnWrite,
++		classify: func(ctx context.Context, failure verifytree.PublishFailure) landingshed.FailureRoute {
++			return darnFailureRoute(ctx, failure, l.WorktreePath(), pairMergeBase(l), impactset.DeriveTargets)
++		},
+ 	}
+ }
+ 
+@@ -142,7 +147,7 @@ func latestDarnOutcome(statusPath, statusLockPath string) (loomshed.DarnOutcome,
+ 		return loomshed.DarnOutcome{}, false, nil
+ 	}
+ 	for i := len(st.History) - 1; i >= 0; i-- {
+-		if st.History[i].Producer != loomshed.NameDarnWrite {
++		if st.History[i].Producer != loomshed.NameDarnWrite || st.History[i].Outcome == shedengine.OutcomeReroute {
+ 			continue
+ 		}
+ 		latest := loomshed.DarnOutcome{Outcome: st.History[i].Outcome}
+@@ -173,12 +178,39 @@ func darnDeps(l *lyxcwd.Location, runID, verifyDir string) loomshed.DarnDeps {
+ 		LatestOutcome: func() (loomshed.DarnOutcome, bool, error) {
+ 			return latestDarnOutcome(shedrun.StatusFile(l, runID), shedrun.StatusLock(l, runID))
+ 		},
+-		PublishFailure: func() (string, bool, error) {
+-			_, found, err := verifytree.ReadPublishFailure(paths)
++		PublishFailure: func() (string, verifytree.PublishFailure, bool, error) {
++			record, found, err := verifytree.ReadPublishFailure(paths)
+ 			if err != nil || !found {
+-				return "", false, err
++				return "", verifytree.PublishFailure{}, false, err
++			}
++			return paths.PublishFailure, record, true, nil
++		},
++		RunStart: func() (time.Time, error) { return seedRunStart(l) },
++		TaskHead: func() (string, error) {
++			handle, err := fabricengine.Open(l)
++			if err != nil {
++				return "", err
++			}
++			return handle.HeadSHA()
++		},
++		Dirty: func() ([]string, error) { return verifytree.DirtyPaths(l.WorktreePath()) },
++		ParentTips: func() ([]string, error) {
++			parent, err := readRecordedParentBranch(l)
++			if err != nil {
++				return nil, err
++			}
++			tips, err := parentTipsReader(l, parent)(false)
++			if err != nil {
++				return nil, err
++			}
++			return mergeableTips(tips, fabricengine.EnvSyncOptions().SkipPush), nil
++		},
++		IsAncestor: func(sha string) (bool, error) {
++			handle, err := fabricengine.Open(l)
++			if err != nil {
++				return false, err
+ 			}
+-			return paths.PublishFailure, true, nil
++			return handle.IsAncestor(sha, "HEAD")
+ 		},
+ 	}
+ }
+diff --git a/internal/loomcli/landingdeps.go b/internal/loomcli/landingdeps.go
+index a9890ab07..664a2f201 100644
+--- a/internal/loomcli/landingdeps.go
++++ b/internal/loomcli/landingdeps.go
+@@ -6,6 +6,7 @@
+ package loomcli
+ 
+ import (
++	"context"
+ 	"fmt"
+ 	"path/filepath"
+ 	"strings"
+@@ -161,6 +162,7 @@ func landingDeps(
+ 		GateTiers:              verify.gateTiers,
+ 		VerifyFailedWayForward: verify.failedWayForward,
+ 		VerifyFailureTarget:    verify.failureTarget,
++		ClassifyVerifyFailure:  verify.classify,
+ 		PublishSkip:            verify.publishSkip,
+ 		FailingTests:           failingTestsOf,
+ 		VerifyDir:              verifytree.Dir(l.AnchorPath()),
+@@ -172,13 +174,7 @@ func landingDeps(
+ 		Lock:                   lock,
+ 		RunStart:               runStart,
+ 		// The parent reads run over the task pair, opened at call time like the other fabric seams.
+-		ReadParentTips: func(fetch bool) (fabricengine.ParentTips, error) {
+-			f, err := fabricengine.Open(l)
+-			if err != nil {
+-				return fabricengine.ParentTips{}, err
+-			}
+-			return f.ReadParentTips(parentBranch, fetch)
+-		},
++		ReadParentTips: parentTipsReader(l, parentBranch),
+ 		HoldsWork: func(base, source string) (bool, error) {
+ 			f, err := fabricengine.Open(l)
+ 			if err != nil {
+@@ -206,6 +202,33 @@ func landingDeps(
+ 	}
+ }
+ 
++// parentTipsReader returns the parent-tip reader the landing and the darn rows share:
++// it opens the task pair's fabric at call time and reads parentBranch's tips, fetching the remotes first when fetch is true.
++func parentTipsReader(l *lyxcwd.Location, parentBranch string) func(fetch bool) (fabricengine.ParentTips, error) {
++	return func(fetch bool) (fabricengine.ParentTips, error) {
++		f, err := fabricengine.Open(l)
++		if err != nil {
++			return fabricengine.ParentTips{}, err
++		}
++		return f.ReadParentTips(parentBranch, fetch)
++	}
++}
++
++// mergeableTips returns the parent tips a Merge-In would merge: the local tip alone when pushes are skipped, and the local tip and the upstream tip otherwise, empty tips dropped.
++func mergeableTips(tips fabricengine.ParentTips, pushSkipped bool) []string {
++	candidates := []string{tips.Local}
++	if !pushSkipped {
++		candidates = append(candidates, tips.Upstream)
++	}
++	var merged []string
++	for _, tip := range candidates {
++		if tip != "" {
++			merged = append(merged, tip)
++		}
++	}
++	return merged
++}
++
+ // alignmentNoteFile is the alignment note's file name in the PR-Gate point's alignment directory; the attempt listing skips a file there.
+ const alignmentNoteFile = "note.json"
+ 
+@@ -329,6 +352,9 @@ type verifySource struct {
+ 	failedWayForward string
+ 	// failureTarget is the row the recipe routes a failed Publish verify back to.
+ 	failureTarget string
++	// classify chooses a failure record's target and the reason's way forward per failure, in place of failedWayForward and failureTarget.
++	// Nil for loom's source.
++	classify func(ctx context.Context, failure verifytree.PublishFailure) landingshed.FailureRoute
+ 	// publishSkip answers whether Publish skips the `publish` gate for this call, read at each Publish.
+ 	// Nil for loom's source, which never skips.
+ 	publishSkip func() (bool, error)
+diff --git a/internal/loomcli/landingdeps_test.go b/internal/loomcli/landingdeps_test.go
+index cdffe373c..1cdd00b11 100644
+--- a/internal/loomcli/landingdeps_test.go
++++ b/internal/loomcli/landingdeps_test.go
+@@ -83,13 +83,16 @@ func TestLandingDeps_EveryFieldPopulated(t *testing.T) {
+ 
+ 	v := reflect.ValueOf(deps)
+ 	typ := v.Type()
+-	// The loom source leaves the Publish skip seam nil, so the walk skips it.
++	// The loom source leaves the Publish skip and failure classifier seams nil, so the walk skips them.
+ 	if deps.PublishSkip != nil {
+ 		t.Error("landingDeps(...).PublishSkip is set for loom's verify source; want nil")
+ 	}
++	if deps.ClassifyVerifyFailure != nil {
++		t.Error("landingDeps(...).ClassifyVerifyFailure is set for loom's verify source; want nil")
++	}
+ 	for i := 0; i < v.NumField(); i++ {
+ 		field := v.Field(i)
+-		if typ.Field(i).Name == "PublishSkip" {
++		if name := typ.Field(i).Name; name == "PublishSkip" || name == "ClassifyVerifyFailure" {
+ 			continue
+ 		}
+ 		if field.IsZero() {
+@@ -433,3 +436,25 @@ func TestReportOfRunKeepsOnlyTheRunsOwnEntry(t *testing.T) {
+ 		t.Errorf("reportOfRun(report, %q) = %+v; want the other fields unchanged", "child", got)
+ 	}
+ }
++
++func TestMergeableTips(t *testing.T) {
++	t.Parallel()
++	tests := []struct {
++		name        string
++		tips        fabricengine.ParentTips
++		pushSkipped bool
++		want        []string
++	}{
++		{"SkippedPushDropsTheUpstreamTip", fabricengine.ParentTips{Local: "local", Upstream: "upstream"}, true, []string{"local"}},
++		{"UnskippedPushKeepsBothTips", fabricengine.ParentTips{Local: "local", Upstream: "upstream"}, false, []string{"local", "upstream"}},
++		{"EmptyUpstreamIsDropped", fabricengine.ParentTips{Local: "local"}, false, []string{"local"}},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			if got := mergeableTips(tt.tips, tt.pushSkipped); !slices.Equal(got, tt.want) {
++				t.Errorf("mergeableTips(%+v, %v) = %v; want %v", tt.tips, tt.pushSkipped, got, tt.want)
++			}
++		})
++	}
++}
+diff --git a/internal/loomcli/wiring.go b/internal/loomcli/wiring.go
+index 87a02e91a..dfef9472f 100644
+--- a/internal/loomcli/wiring.go
++++ b/internal/loomcli/wiring.go
+@@ -711,6 +711,9 @@ func (c *loomCLI) wire(location *lyxcwd.Location, cwd string) error {
+ 		WorktreeRoot: location.WorktreePath(),
+ 		// RunScratchDir is the directory the step envelope reports as scratch_dir.
+ 		RunScratchDir: shedrun.ScratchDir(location, c.runID),
++		GateFindingsFile: func(row string) string {
++			return shedrun.GateFindingsFile(location, c.runID, row)
++		},
+ 		VerifyDir:     verifytree.Dir(anchorPath),
+ 		VerifyCommand: planVerifySource(location).baseCommand,
+ 		Round:         roundGateSource(fabricengine.ConfigDirs(location)),
+diff --git a/internal/loomcli/wiring_darn_test.go b/internal/loomcli/wiring_darn_test.go
+index 8da1f483f..924ac8e78 100644
+--- a/internal/loomcli/wiring_darn_test.go
++++ b/internal/loomcli/wiring_darn_test.go
+@@ -46,7 +46,7 @@ func seedDarnHubConfig(t *testing.T, hub, verifyAttempts string, replacements ..
+ func TestWire_DarnRecipe(t *testing.T) {
+ 	t.Parallel()
+ 
+-	darnSeams := []string{"DarnTable", "Darn.ReadRejection", "Darn.ClearRejection", "Darn.Commit", "Darn.LatestOutcome", "Darn.PublishFailure"}
++	darnSeams := []string{"DarnTable", "Darn.ReadRejection", "Darn.ClearRejection", "Darn.Commit", "Darn.LatestOutcome", "Darn.PublishFailure", "Darn.RunStart", "Darn.TaskHead", "Darn.Dirty", "Darn.ParentTips", "Darn.IsAncestor"}
+ 
+ 	t.Run("a darn seed fills the darn seams, the verify source and the attempts", func(t *testing.T) {
+ 		t.Parallel()
+@@ -82,6 +82,9 @@ func TestWire_DarnRecipe(t *testing.T) {
+ 		if c.env.DarnVerifyAttempts != 5 {
+ 			t.Errorf("c.env.DarnVerifyAttempts = %d; want 5", c.env.DarnVerifyAttempts)
+ 		}
++		if got, want := c.env.GateFindingsFile("Darn-Write"), shedrun.GateFindingsFile(loc, c.runID, "Darn-Write"); got != want {
++			t.Errorf("c.env.GateFindingsFile(\"Darn-Write\") = %q; want %q", got, want)
++		}
+ 		if segment := c.env.Segments["Darn-Review"]; segment.MaxBounces != 1 || segment.HardMaxBounces != 4 || c.darnCfg == nil {
+ 			t.Errorf("Segments[Darn-Review] = %+v, c.darnCfg nil = %v; want the template's budget 1 and hard cap 4 and the loaded config", segment, c.darnCfg == nil)
+ 		}
+@@ -94,6 +97,9 @@ func TestWire_DarnRecipe(t *testing.T) {
+ 		if got := c.verifySource().failureTarget; got != "Darn-Write" {
+ 			t.Errorf("verifySource().failureTarget = %q; want Darn-Write", got)
+ 		}
++		if c.verifySource().classify == nil {
++			t.Error("verifySource().classify = nil; want the darn failure classifier")
++		}
+ 	})
+ 
+ 	t.Run("with tree scope on the verify gate's told command stays the hub's whole verify", func(t *testing.T) {
+@@ -244,6 +250,9 @@ func TestWire_DarnRecipe(t *testing.T) {
+ 		if got := c.verifySource().failedWayForward; !strings.Contains(got, `"lyx loom goto --to Webster-Burler-Review"`) {
+ 			t.Errorf("verifySource().failedWayForward = %q; want it to route back to the Webster-Burler-Review row", got)
+ 		}
++		if c.verifySource().classify != nil {
++			t.Error("a loom seed set verifySource().classify; want nil")
++		}
+ 	})
+ 
+ 	t.Run("a loom seed over a recorded parent branch gets the merge base reader in the round form", func(t *testing.T) {
+@@ -404,6 +413,16 @@ func TestLatestDarnOutcome(t *testing.T) {
+ 			wantFound: true,
+ 			want:      loomshed.DarnOutcome{Outcome: shedengine.Stuck, Reason: "verify gate failed"},
+ 		},
++		{
++			name:      "a Darn-Write reroute entry is skipped for the last real halt",
++			status:    &shedengine.Status{CurrentProducer: loomshed.NameDarnWrite, State: shedengine.StateBlocked, Error: "verify gate failed", History: []shedengine.HistoryEntry{{Producer: loomshed.NameDarnWrite, Outcome: shedengine.Stuck}, {Producer: loomshed.NameDarnWrite, Outcome: shedengine.OutcomeReroute}}},
++			wantFound: true,
++			want:      loomshed.DarnOutcome{Outcome: shedengine.Stuck, Reason: "verify gate failed"},
++		},
++		{
++			name:   "a lone Darn-Write reroute entry reports not found",
++			status: &shedengine.Status{CurrentProducer: loomshed.NameMergeIn, State: shedengine.StateRunning, History: []shedengine.HistoryEntry{{Producer: loomshed.NameDarnWrite, Outcome: shedengine.OutcomeReroute}}},
++		},
+ 	}
+ 	for _, tt := range tests {
+ 		t.Run(tt.name, func(t *testing.T) {
+@@ -442,16 +461,17 @@ func TestDarnDeps_PublishFailureNamesThePresentRecord(t *testing.T) {
+ 	verifyDir := t.TempDir()
+ 	deps := darnDeps(loc, shedrun.SelfRunID, verifyDir)
+ 
+-	if path, found, err := deps.PublishFailure(); err != nil || found || path != "" {
++	if path, _, found, err := deps.PublishFailure(); err != nil || found || path != "" {
+ 		t.Fatalf("PublishFailure() with no record = %q, %v, %v; want empty, false, nil", path, found, err)
+ 	}
+ 
+ 	paths := verifytree.NewPaths(loc.WorktreePath(), verifyDir)
+-	if err := verifytree.WritePublishFailure(paths, verifytree.PublishFailure{Kind: verifytree.FailureKindPlanVerify}); err != nil {
++	if err := verifytree.WritePublishFailure(paths, verifytree.PublishFailure{Kind: verifytree.FailureKindPlanVerify, Head: "abc123"}); err != nil {
+ 		t.Fatalf("WritePublishFailure() = %v; want nil", err)
+ 	}
+-	if path, found, err := deps.PublishFailure(); err != nil || !found || path != paths.PublishFailure {
+-		t.Errorf("PublishFailure() with a record = %q, %v, %v; want %q, true, nil", path, found, err, paths.PublishFailure)
++	path, record, found, err := deps.PublishFailure()
++	if err != nil || !found || path != paths.PublishFailure || record.Head != "abc123" {
++		t.Errorf("PublishFailure() with a record = %q, head %q, %v, %v; want %q, head abc123, true, nil", path, record.Head, found, err, paths.PublishFailure)
+ 	}
+ }
+ 
+diff --git a/internal/loomcli/wiring_seams_test.go b/internal/loomcli/wiring_seams_test.go
+index 0f3f6dba9..5072fa587 100644
+--- a/internal/loomcli/wiring_seams_test.go
++++ b/internal/loomcli/wiring_seams_test.go
+@@ -37,6 +37,11 @@ var intentionallyNil = map[string]string{
+ 	"Darn.Commit":                         "darn-only seam, filled by wire for a darn seed",
+ 	"Darn.LatestOutcome":                  "darn-only seam, filled by wire for a darn seed",
+ 	"Darn.PublishFailure":                 "darn-only seam, filled by wire for a darn seed",
++	"Darn.RunStart":                       "darn-only seam, filled by wire for a darn seed",
++	"Darn.TaskHead":                       "darn-only seam, filled by wire for a darn seed",
++	"Darn.Dirty":                          "darn-only seam, filled by wire for a darn seed",
++	"Darn.ParentTips":                     "darn-only seam, filled by wire for a darn seed",
++	"Darn.IsAncestor":                     "darn-only seam, filled by wire for a darn seed",
+ 	"CreateWorktree":                      "batten-only seam, filled by battencli",
+ 	"ExecutableSetting":                   "no loom or darn row is a Command row; battencli alone fills it",
+ 	"Command.TaskDir":                     "no loom or darn row is a Command row; battencli alone fills it",
+diff --git a/internal/loomrecipe/darnrecipe_test.go b/internal/loomrecipe/darnrecipe_test.go
+index 9cd8d76cf..a10961315 100644
+--- a/internal/loomrecipe/darnrecipe_test.go
++++ b/internal/loomrecipe/darnrecipe_test.go
+@@ -87,7 +87,7 @@ func setDarnBudget(env *shedrecipe.Env, budget int) {
+ 	env.Segments["Darn-Review"] = settings
+ }
+ 
+-// TestNewDarn_Routing pins PR-Gate's bounce to Darn-Write inside PR-Review, the Darn-Review perch, then Describe and Merge-In between Darn-Write and Publish with the review budget on all three perch rows, PR-Align between Publish and PR-Gate with no segment and no on_stuck, the reroute edge of the three landing rows back to Merge-In, and a review budget of 0 routing Darn-Write straight to Merge-In.
++// TestNewDarn_Routing pins PR-Gate's bounce to Darn-Write inside PR-Review, the Darn-Review perch, then Describe and Merge-In between Darn-Write and Publish with the review budget on all three perch rows, PR-Align between Publish and PR-Gate with no segment and no on_stuck, the reroute edge of Darn-Write and the three landing rows back to Merge-In, and a review budget of 0 routing Darn-Write straight to Merge-In.
+ func TestNewDarn_Routing(t *testing.T) {
+ 	build := func(t *testing.T, reviewBudget int) map[string]shedengine.ProducerDef {
+ 		t.Helper()
+@@ -130,7 +130,7 @@ func TestNewDarn_Routing(t *testing.T) {
+ 		if publish.OnDone != loomshed.NamePRAlign || align.OnDone != loomshed.NamePRGate || align.OnStuck != "" || align.Segment != "" {
+ 			t.Errorf("Publish OnDone = %q, PR-Align OnDone/OnStuck/Segment = %q/%q/%q; want %q, %q/empty/empty", publish.OnDone, align.OnDone, align.OnStuck, align.Segment, loomshed.NamePRAlign, loomshed.NamePRGate)
+ 		}
+-		for _, row := range []string{loomshed.NamePublish, loomshed.NamePRGate, loomshed.NameFinalize} {
++		for _, row := range []string{loomshed.NameDarnWrite, loomshed.NamePublish, loomshed.NamePRGate, loomshed.NameFinalize} {
+ 			if got := rows[row].OnReroute; got != loomshed.NameMergeIn {
+ 				t.Errorf("%s OnReroute = %q; want %q", row, got, loomshed.NameMergeIn)
+ 			}
+diff --git a/internal/loomshed/darnwrite.go b/internal/loomshed/darnwrite.go
+index 1a1aff168..62067654e 100644
+--- a/internal/loomshed/darnwrite.go
++++ b/internal/loomshed/darnwrite.go
+@@ -7,12 +7,15 @@ import (
+ 	"context"
+ 	"fmt"
+ 	"strings"
++	"time"
+ 
++	"github.com/Knatte18/loomyard/internal/logger"
+ 	"github.com/Knatte18/loomyard/internal/shedengine"
++	"github.com/Knatte18/loomyard/internal/verifytree"
+ )
+ 
+ // darnResumeWayForward is appended to the Reason of a Darn-Write session whose gate failed.
+-const darnResumeWayForward = "way forward: run \"lyx loom resume\" in the task worktree, which re-spawns Darn-Write with a fresh verify budget"
++const darnResumeWayForward = "way forward: run \"lyx loom resume\" in the task worktree, which re-spawns Darn-Write with a fresh verify budget, or, when the parent has moved since this run's verify failure and the task branch and worktree have not, first takes the parent in through Merge-In"
+ 
+ // DarnTold carries the two token texts the producer decides for one darn writer spawn, each empty when it has nothing to tell.
+ type DarnTold struct {
+@@ -42,8 +45,18 @@ type DarnDeps struct {
+ 	Commit func() error
+ 	// LatestOutcome returns the latest Darn-Write history entry of the run; found is false when the row has no entry yet.
+ 	LatestOutcome func() (DarnOutcome, bool, error)
+-	// PublishFailure returns the path of the Publish failure record; found is false when none is present.
+-	PublishFailure func() (string, bool, error)
++	// PublishFailure returns the Publish failure record and its path; found is false when none is present.
++	PublishFailure func() (path string, record verifytree.PublishFailure, found bool, err error)
++	// RunStart returns the run's start; the zero time when the run's seed carries no stamp.
++	RunStart func() (time.Time, error)
++	// TaskHead returns the task branch's HEAD commit.
++	TaskHead func() (string, error)
++	// Dirty returns the task worktree's uncommitted paths, read through the dirty-paths reader Merge-In's clean check uses.
++	Dirty func() ([]string, error)
++	// ParentTips returns the parent tips Merge-In would merge, read without a fetch.
++	ParentTips func() ([]string, error)
++	// IsAncestor reports whether sha is an ancestor of the task branch's HEAD.
++	IsAncestor func(sha string) (bool, error)
+ }
+ 
+ // darnWrite decorates the gated darn writer session, built per Call by session, with the Go-owned steps around it.
+@@ -64,6 +77,8 @@ func NewDarnWrite(name string, session func(DarnTold) shedengine.ShedProducer, d
+ // Call implements shedengine.ShedProducer.
+ // A failed read of the pending rejection is Stuck naming the reject command.
+ // A failed read of the latest outcome or the failure record, a Commit failure and a ClearRejection failure are returned errors, never Stuck, because re-running the session cannot fix a git or filesystem fault.
++// A failure record this run wrote, on a task branch and worktree unchanged since it and a parent that has moved, returns a rerouting Stuck before any session is built.
++// The parent is then merged in instead of the writer re-running against a failure the parent may have fixed.
+ // The commit runs on every non-empty output pointer, a gate-failed Stuck included, so a halted run leaves the work committed.
+ // A gate-failed Stuck keeps its pointer and gains the resume way forward.
+ func (p *darnWrite) Call(ctx context.Context) (shedengine.Outcome, shedengine.OutputPointer, error) {
+@@ -82,12 +97,14 @@ func (p *darnWrite) Call(ctx context.Context) (shedengine.Outcome, shedengine.Ou
+ 	if err != nil {
+ 		return "", shedengine.OutputPointer{}, fmt.Errorf("loomshed: %s: read the latest outcome: %w", p.name, err)
+ 	}
+-	failureRecord, hasRecord, err := p.deps.PublishFailure()
++	failureRecord, record, hasRecord, err := p.deps.PublishFailure()
+ 	if err != nil {
+ 		return "", shedengine.OutputPointer{}, fmt.Errorf("loomshed: %s: read the Publish failure record: %w", p.name, err)
+ 	}
+ 	if !hasRecord {
+ 		failureRecord = ""
++	} else if reason := p.rerouteReason(failureRecord, record); reason != "" {
++		return shedengine.Stuck, shedengine.OutputPointer{Reason: reason, Reroute: true}, nil
+ 	}
+ 
+ 	told := DarnTold{PriorWork: renderPriorWork(latest, found, failureRecord)}
+@@ -133,6 +150,11 @@ func (p *darnWrite) checkSeams() error {
+ 		{"Commit", p.deps.Commit == nil},
+ 		{"LatestOutcome", p.deps.LatestOutcome == nil},
+ 		{"PublishFailure", p.deps.PublishFailure == nil},
++		{"RunStart", p.deps.RunStart == nil},
++		{"TaskHead", p.deps.TaskHead == nil},
++		{"Dirty", p.deps.Dirty == nil},
++		{"ParentTips", p.deps.ParentTips == nil},
++		{"IsAncestor", p.deps.IsAncestor == nil},
+ 	}
+ 	for _, s := range seams {
+ 		if s.missing {
+@@ -142,6 +164,65 @@ func (p *darnWrite) checkSeams() error {
+ 	return nil
+ }
+ 
++// rerouteReason returns the reason to reroute to Merge-In instead of spawning the writer, or "" when the writer runs.
++// It reroutes only when the record at recordPath was written at or after the run's start, the task branch is still at the record's head, the task worktree is clean, and some parent tip is not an ancestor of HEAD.
++// A seam error counts as no reroute, except a Dirty error, which counts as a dirty tree; each is logged at Warn.
++func (p *darnWrite) rerouteReason(recordPath string, record verifytree.PublishFailure) string {
++	writtenAt, err := time.Parse(time.RFC3339, record.WrittenAt)
++	if err != nil {
++		return ""
++	}
++	runStart, err := p.deps.RunStart()
++	if err != nil {
++		logger.Warn("loomshed: could not read the run start; the Darn-Write writer runs", "row", p.name, "error", err)
++		return ""
++	}
++	if runStart.IsZero() || writtenAt.UTC().Before(runStart.UTC().Truncate(time.Second)) {
++		return ""
++	}
++	head, err := p.deps.TaskHead()
++	if err != nil {
++		logger.Warn("loomshed: could not read the task branch head; the Darn-Write writer runs", "row", p.name, "error", err)
++		return ""
++	}
++	if head != record.Head {
++		return ""
++	}
++	dirty, err := p.deps.Dirty()
++	if err != nil {
++		logger.Warn("loomshed: could not read the task worktree status; treating it as dirty", "row", p.name, "error", err)
++		return ""
++	}
++	if len(dirty) > 0 {
++		return ""
++	}
++	tips, err := p.deps.ParentTips()
++	if err != nil {
++		logger.Warn("loomshed: could not read the parent tips; the Darn-Write writer runs", "row", p.name, "error", err)
++		return ""
++	}
++	moved := false
++	for _, tip := range tips {
++		ancestor, err := p.deps.IsAncestor(tip)
++		if err != nil {
++			logger.Warn("loomshed: could not tell whether a parent tip is in HEAD; the Darn-Write writer runs", "row", p.name, "tip", tip, "error", err)
++			return ""
++		}
++		if !ancestor {
++			moved = true
++			break
++		}
++	}
++	if !moved {
++		return ""
++	}
++	return fmt.Sprintf("the parent branch moved since the verify failure recorded at %s, while the task branch and worktree have not changed since it; "+
++		"rerouting to Merge-In, which merges the parent and re-runs the failing gate; "+
++		"if Merge-In stops without merging, on a parent pair that is dirty, mid-merge, ahead of or diverged from its upstream, "+
++		"the way forward is to repair the parent pair as Merge-In's Stuck reason says before any resume, "+
++		"since a resume over the unrepaired pair reroutes back to the same stop", recordPath)
++}
++
+ // renderPriorWork returns the note that the change is already under way on the task branch, naming the latest outcome's halt reason and the failure record's path.
+ // It is empty when the row has no halt reason and no record to name.
+ func renderPriorWork(latest DarnOutcome, found bool, failureRecord string) string {
+diff --git a/internal/loomshed/darnwrite_test.go b/internal/loomshed/darnwrite_test.go
+index 6b6e6baaa..13c29e970 100644
+--- a/internal/loomshed/darnwrite_test.go
++++ b/internal/loomshed/darnwrite_test.go
+@@ -7,8 +7,25 @@ import (
+ 	"errors"
+ 	"strings"
+ 	"testing"
++	"time"
+ 
+ 	"github.com/Knatte18/loomyard/internal/shedengine"
++	"github.com/Knatte18/loomyard/internal/verifytree"
++)
++
++// The fixture's run starts at darnRunStart and its failure record is written at darnRecordWrittenAt, at the head darnRecordHead.
++var (
++	darnRunStart        = time.Date(2026, 1, 2, 9, 0, 0, 0, time.UTC)
++	darnRecordWrittenAt = darnRunStart.Add(time.Hour).Format(time.RFC3339)
++)
++
++const (
++	darnRecordHead   = "abc123"
++	darnRecordPath   = "/rec/publish-failure.md"
++	darnReadyTip     = "parent-tip"
++	darnRecordedWork = "An earlier spawn of this task already began the change, and its work is committed on the task branch.\n" +
++		"Read that work first and continue it instead of starting over.\n" +
++		"The failure record of the last Publish is at " + darnRecordPath + "; read it before you change anything."
+ )
+ 
+ // darnFixture is one Darn-Write producer setup: seams that log their calls and a fake session reporting a fixed verdict.
+@@ -28,11 +45,34 @@ func newDarnFixture() *darnFixture {
+ 		ClearRejection: func() error { f.events = append(f.events, "clear"); return nil },
+ 		Commit:         func() error { f.events = append(f.events, "commit"); return nil },
+ 		LatestOutcome:  func() (DarnOutcome, bool, error) { return DarnOutcome{}, false, nil },
+-		PublishFailure: func() (string, bool, error) { return "", false, nil },
++		PublishFailure: func() (string, verifytree.PublishFailure, bool, error) {
++			return "", verifytree.PublishFailure{}, false, nil
++		},
++		RunStart:   func() (time.Time, error) { return darnRunStart, nil },
++		TaskHead:   func() (string, error) { return darnRecordHead, nil },
++		Dirty:      func() ([]string, error) { return nil, nil },
++		ParentTips: func() ([]string, error) { return []string{darnReadyTip}, nil },
++		IsAncestor: func(string) (bool, error) { return true, nil },
+ 	}
+ 	return f
+ }
+ 
++// rerouteReady presents this run's failure record, HEAD at its head, a clean tree and one parent tip outside HEAD, the state that reroutes.
++func rerouteReady(f *darnFixture) {
++	f.deps.PublishFailure = func() (string, verifytree.PublishFailure, bool, error) {
++		return darnRecordPath, verifytree.PublishFailure{WrittenAt: darnRecordWrittenAt, Head: darnRecordHead}, true, nil
++	}
++	f.deps.IsAncestor = func(string) (bool, error) { return false, nil }
++}
++
++// writerRunsFromReady returns a mutation that starts from rerouteReady and then applies flip, so the case fails if the fact flip changes were ignored.
++func writerRunsFromReady(flip func(*darnFixture)) func(*darnFixture) {
++	return func(f *darnFixture) {
++		rerouteReady(f)
++		flip(f)
++	}
++}
++
+ func (f *darnFixture) session(told DarnTold) shedengine.ShedProducer {
+ 	f.told = append(f.told, told)
+ 	return darnSession{f: f}
+@@ -57,8 +97,13 @@ func TestDarnWrite_Call(t *testing.T) {
+ 		wantResult shedengine.Outcome
+ 		wantErr    string
+ 		wantReason string
+-		wantEvents string
+-		wantTold   DarnTold
++		// wantReasonHas lists words the reason must hold beyond wantReason.
++		wantReasonHas []string
++		// wantReasonLacks is a text the reason must not hold.
++		wantReasonLacks string
++		wantReroute     bool
++		wantEvents      string
++		wantTold        DarnTold
+ 	}{
+ 		{
+ 			name:       "first spawn tells nothing and commits",
+@@ -102,7 +147,9 @@ func TestDarnWrite_Call(t *testing.T) {
+ 				f.deps.LatestOutcome = func() (DarnOutcome, bool, error) {
+ 					return DarnOutcome{Outcome: shedengine.Stuck, Reason: "verify failed"}, true, nil
+ 				}
+-				f.deps.PublishFailure = func() (string, bool, error) { return "/rec/publish-failure.md", true, nil }
++				f.deps.PublishFailure = func() (string, verifytree.PublishFailure, bool, error) {
++					return darnRecordPath, verifytree.PublishFailure{}, true, nil
++				}
+ 			},
+ 			session:    true,
+ 			wantResult: shedengine.Done,
+@@ -119,11 +166,147 @@ func TestDarnWrite_Call(t *testing.T) {
+ 				f.outcome = shedengine.Stuck
+ 				f.pointer = shedengine.OutputPointer{Path: "/work/description.md", Reason: "verify gate failed: see /work/verify-1.log"}
+ 			},
++			session:       true,
++			wantResult:    shedengine.Stuck,
++			wantReason:    "verify gate failed: see /work/verify-1.log; " + darnResumeWayForward,
++			wantReasonHas: []string{"lyx loom resume", "Merge-In"},
++			wantEvents:    "session,commit",
++			wantTold:      DarnTold{RejectionFindings: "the reviewer's findings"},
++		},
++		{
++			name:            "this run's failure, an unmoved branch, a clean tree and a moved parent reroute to Merge-In without a writer",
++			mutate:          rerouteReady,
++			wantResult:      shedengine.Stuck,
++			wantReason:      "repair the parent pair as Merge-In's Stuck reason says",
++			wantReasonHas:   []string{darnRecordPath},
++			wantReasonLacks: "lyx loom resume",
++			wantReroute:     true,
++		},
++		{
++			name: "a second parent tip outside HEAD reroutes after the first is in it",
++			mutate: func(f *darnFixture) {
++				rerouteReady(f)
++				f.deps.ParentTips = func() ([]string, error) { return []string{"in-head", "outside"}, nil }
++				f.deps.IsAncestor = func(sha string) (bool, error) { return sha == "in-head", nil }
++			},
++			wantResult:  shedengine.Stuck,
++			wantReason:  "repair the parent pair",
++			wantReroute: true,
++		},
++		{
++			name: "no failure record runs the writer",
++			mutate: writerRunsFromReady(func(f *darnFixture) {
++				f.deps.PublishFailure = func() (string, verifytree.PublishFailure, bool, error) {
++					return "", verifytree.PublishFailure{}, false, nil
++				}
++			}),
+ 			session:    true,
+-			wantResult: shedengine.Stuck,
+-			wantReason: "verify gate failed: see /work/verify-1.log; " + darnResumeWayForward,
++			wantResult: shedengine.Done,
+ 			wantEvents: "session,commit",
+-			wantTold:   DarnTold{RejectionFindings: "the reviewer's findings"},
++		},
++		{
++			name: "a record written before the run's start runs the writer",
++			mutate: writerRunsFromReady(func(f *darnFixture) {
++				f.deps.PublishFailure = func() (string, verifytree.PublishFailure, bool, error) {
++					return darnRecordPath, verifytree.PublishFailure{WrittenAt: darnRunStart.Add(-time.Hour).Format(time.RFC3339), Head: darnRecordHead}, true, nil
++				}
++			}),
++			session:    true,
++			wantResult: shedengine.Done,
++			wantEvents: "session,commit",
++			wantTold:   DarnTold{PriorWork: darnRecordedWork},
++		},
++		{
++			name: "a record with no written_at runs the writer",
++			mutate: writerRunsFromReady(func(f *darnFixture) {
++				f.deps.PublishFailure = func() (string, verifytree.PublishFailure, bool, error) {
++					return darnRecordPath, verifytree.PublishFailure{Head: darnRecordHead}, true, nil
++				}
++			}),
++			session:    true,
++			wantResult: shedengine.Done,
++			wantEvents: "session,commit",
++			wantTold:   DarnTold{PriorWork: darnRecordedWork},
++		},
++		{
++			name:       "a zero run start runs the writer",
++			mutate:     writerRunsFromReady(func(f *darnFixture) { f.deps.RunStart = func() (time.Time, error) { return time.Time{}, nil } }),
++			session:    true,
++			wantResult: shedengine.Done,
++			wantEvents: "session,commit",
++			wantTold:   DarnTold{PriorWork: darnRecordedWork},
++		},
++		{
++			name:       "a HEAD past the record's head runs the writer",
++			mutate:     writerRunsFromReady(func(f *darnFixture) { f.deps.TaskHead = func() (string, error) { return "def456", nil } }),
++			session:    true,
++			wantResult: shedengine.Done,
++			wantEvents: "session,commit",
++			wantTold:   DarnTold{PriorWork: darnRecordedWork},
++		},
++		{
++			name:       "a dirty tree runs the writer",
++			mutate:     writerRunsFromReady(func(f *darnFixture) { f.deps.Dirty = func() ([]string, error) { return []string{"a.go"}, nil } }),
++			session:    true,
++			wantResult: shedengine.Done,
++			wantEvents: "session,commit",
++			wantTold:   DarnTold{PriorWork: darnRecordedWork},
++		},
++		{
++			name: "a failed status read runs the writer",
++			mutate: writerRunsFromReady(func(f *darnFixture) {
++				f.deps.Dirty = func() ([]string, error) { return nil, errors.New("status failed") }
++			}),
++			session:    true,
++			wantResult: shedengine.Done,
++			wantEvents: "session,commit",
++			wantTold:   DarnTold{PriorWork: darnRecordedWork},
++		},
++		{
++			name: "a failed run-start read runs the writer",
++			mutate: writerRunsFromReady(func(f *darnFixture) {
++				f.deps.RunStart = func() (time.Time, error) { return time.Time{}, errors.New("seed unreadable") }
++			}),
++			session:    true,
++			wantResult: shedengine.Done,
++			wantEvents: "session,commit",
++			wantTold:   DarnTold{PriorWork: darnRecordedWork},
++		},
++		{
++			name:       "a failed HEAD read runs the writer",
++			mutate:     writerRunsFromReady(func(f *darnFixture) { f.deps.TaskHead = func() (string, error) { return "", errors.New("no head") } }),
++			session:    true,
++			wantResult: shedengine.Done,
++			wantEvents: "session,commit",
++			wantTold:   DarnTold{PriorWork: darnRecordedWork},
++		},
++		{
++			name:       "a parent tip already in HEAD runs the writer",
++			mutate:     writerRunsFromReady(func(f *darnFixture) { f.deps.IsAncestor = func(string) (bool, error) { return true, nil } }),
++			session:    true,
++			wantResult: shedengine.Done,
++			wantEvents: "session,commit",
++			wantTold:   DarnTold{PriorWork: darnRecordedWork},
++		},
++		{
++			name: "a failed tip read runs the writer",
++			mutate: writerRunsFromReady(func(f *darnFixture) {
++				f.deps.ParentTips = func() ([]string, error) { return nil, errors.New("no tips") }
++			}),
++			session:    true,
++			wantResult: shedengine.Done,
++			wantEvents: "session,commit",
++			wantTold:   DarnTold{PriorWork: darnRecordedWork},
++		},
++		{
++			name: "a failed ancestor read runs the writer",
++			mutate: writerRunsFromReady(func(f *darnFixture) {
++				f.deps.IsAncestor = func(string) (bool, error) { return false, errors.New("merge-base failed") }
++			}),
++			session:    true,
++			wantResult: shedengine.Done,
++			wantEvents: "session,commit",
++			wantTold:   DarnTold{PriorWork: darnRecordedWork},
+ 		},
+ 		{
+ 			name: "Stuck without a pointer is neither committed nor amended",
+@@ -154,7 +337,9 @@ func TestDarnWrite_Call(t *testing.T) {
+ 		{
+ 			name: "failure record read failure is an error",
+ 			mutate: func(f *darnFixture) {
+-				f.deps.PublishFailure = func() (string, bool, error) { return "", false, errors.New("record unreadable") }
++				f.deps.PublishFailure = func() (string, verifytree.PublishFailure, bool, error) {
++					return "", verifytree.PublishFailure{}, false, errors.New("record unreadable")
++				}
+ 			},
+ 			wantErr: "record unreadable",
+ 		},
+@@ -197,6 +382,31 @@ func TestDarnWrite_Call(t *testing.T) {
+ 			mutate:  func(f *darnFixture) { f.deps.LatestOutcome = nil },
+ 			wantErr: "no LatestOutcome seam wired",
+ 		},
++		{
++			name:    "unwired RunStart seam is named",
++			mutate:  func(f *darnFixture) { f.deps.RunStart = nil },
++			wantErr: "no RunStart seam wired",
++		},
++		{
++			name:    "unwired TaskHead seam is named",
++			mutate:  func(f *darnFixture) { f.deps.TaskHead = nil },
++			wantErr: "no TaskHead seam wired",
++		},
++		{
++			name:    "unwired Dirty seam is named",
++			mutate:  func(f *darnFixture) { f.deps.Dirty = nil },
++			wantErr: "no Dirty seam wired",
++		},
++		{
++			name:    "unwired ParentTips seam is named",
++			mutate:  func(f *darnFixture) { f.deps.ParentTips = nil },
++			wantErr: "no ParentTips seam wired",
++		},
++		{
++			name:    "unwired IsAncestor seam is named",
++			mutate:  func(f *darnFixture) { f.deps.IsAncestor = nil },
++			wantErr: "no IsAncestor seam wired",
++		},
+ 	}
+ 	for _, tc := range cases {
+ 		t.Run(tc.name, func(t *testing.T) {
+@@ -219,6 +429,17 @@ func TestDarnWrite_Call(t *testing.T) {
+ 			if tc.wantReason != "" && !strings.Contains(pointer.Reason, tc.wantReason) {
+ 				t.Errorf("Call() reason = %q; want it to contain %q", pointer.Reason, tc.wantReason)
+ 			}
++			for _, word := range tc.wantReasonHas {
++				if !strings.Contains(pointer.Reason, word) {
++					t.Errorf("Call() reason = %q; want it to contain %q", pointer.Reason, word)
++				}
++			}
++			if tc.wantReasonLacks != "" && strings.Contains(pointer.Reason, tc.wantReasonLacks) {
++				t.Errorf("Call() reason = %q; want it not to contain %q", pointer.Reason, tc.wantReasonLacks)
++			}
++			if pointer.Reroute != tc.wantReroute {
++				t.Errorf("Call() Reroute = %v; want %v", pointer.Reroute, tc.wantReroute)
++			}
+ 			if got := strings.Join(f.events, ","); got != tc.wantEvents {
+ 				t.Errorf("events = %q; want %q", got, tc.wantEvents)
+ 			}
+diff --git a/internal/loomshed/doc.go b/internal/loomshed/doc.go
+index 78b597f99..9b7692e3f 100644
+--- a/internal/loomshed/doc.go
++++ b/internal/loomshed/doc.go
+@@ -68,6 +68,17 @@
+ // on Done of a spawn that was told a rejection it then records the rejection through the optional RecordRejection seam, so the darn amendment can name its findings, and removes the pending rejection.
+ // A gate-failed Stuck keeps its record and gains the resume way forward.
+ // A failed commit, record or removal is a returned error, since re-running the session cannot fix a git or filesystem fault.
++// Before any session is built, a Publish failure record this run wrote reroutes the row to Merge-In when four facts hold, checked in order:
++// the record's written_at is at or after the run's start, as whole-second UTC, with a zero start counting as not this run's;
++// the task branch is still at the record's head;
++// the task worktree has no uncommitted path;
++// and some parent tip the told ParentTips seam returns is not an ancestor of HEAD.
++// The reroute spawns no writer, commits nothing and spends no bounce budget.
++// Its reason says the parent moved since the recorded failure while the task branch and worktree did not, and that Merge-In merges the parent and re-runs the failing gate.
++// It adds that a Merge-In stuck on a parent pair that is dirty, mid-merge, ahead of or diverged from its upstream needs that pair repaired before any resume, since a resume over it reroutes back to the same stop.
++// The reroute cap halts a row rerouted back from such a stop, and the halt embeds this reason.
++// A RunStart, TaskHead, ParentTips or IsAncestor error runs the writer as today, and a Dirty error counts as a dirty tree.
++// The reroute skips the review perch and Describe only while the task branch carries no commit and the worktree no edit since the failed verify, which ran on reviewed code.
+ //
+ // The PR-Rework producer (NewPRRework) archives the plan and review run directories into the round, then recreates the review run directories and hands each archived one to the required KeepReviewRecords seam.
+ // The settle record, its patch and the generation record therefore stay where the next review re-entry compares against them, on every Call that reaches the recreation, so a re-step after a failed carry carries again.
+diff --git a/internal/shedadapters/burlerfix.go b/internal/shedadapters/burlerfix.go
+index 20977bc48..34799abe1 100644
+--- a/internal/shedadapters/burlerfix.go
++++ b/internal/shedadapters/burlerfix.go
+@@ -33,10 +33,12 @@ type BurlerFixProducer struct {
+ 	models    burlerengine.RoundModels
+ 	// requiresFans makes the producer read the round's recorded fixer fan and refuse a round that holds none.
+ 	requiresFans bool
+-	profile      burlerengine.Profile
+-	opts         burlerengine.RunOpts
+-	runDir       string
+-	now          func() time.Time
++	// gateFindingsPath, when non-empty, is the file an exhausted fixer gate's findings are kept in.
++	gateFindingsPath string
++	profile          burlerengine.Profile
++	opts             burlerengine.RunOpts
++	runDir           string
++	now              func() time.Time
+ }
+ 
+ // Compile-time proof that *BurlerFixProducer satisfies shedengine.ShedProducer.
+@@ -59,7 +61,7 @@ func NewBurlerFixProducer(name, reviewRow string, deps BurlerHalfDeps, profile b
+ 	if now == nil {
+ 		now = time.Now
+ 	}
+-	return &BurlerFixProducer{name: name, reviewRow: reviewRow, runner: deps.Runner, models: deps.Models, requiresFans: deps.RequiresFans, profile: profile, opts: opts, runDir: runDir, now: now}, nil
++	return &BurlerFixProducer{name: name, reviewRow: reviewRow, runner: deps.Runner, models: deps.Models, requiresFans: deps.RequiresFans, gateFindingsPath: deps.GateFindingsPath, profile: profile, opts: opts, runDir: runDir, now: now}, nil
+ }
+ 
+ // wayForward is the way forward every refusal that needs the round reviewed again ends with.
+@@ -254,7 +256,10 @@ func (p *BurlerFixProducer) fixedExit(ctx context.Context, round int, result bur
+ 			return "", shedengine.OutputPointer{}, cerr
+ 		}
+ 		logger.Warn("shedadapters: burler fix's gate did not pass", "producer", p.name, "engine", burlerFixEngineLabel, "round", round, "attempts", result.Gate.Attempts, "findingsPath", result.Gate.FindingsPath)
+-		return shedengine.Stuck, shedengine.OutputPointer{GateAttempts: gateAttemptsPointer(result.Gate), GateSpans: gateSpansOf(result.Gate), Reason: gateFailedReason(result.Gate)}, nil
++		return shedengine.Stuck, shedengine.OutputPointer{GateAttempts: gateAttemptsPointer(result.Gate), GateSpans: gateSpansOf(result.Gate), Reason: gateFailedReason(result.Gate, p.gateFindingsPath)}, nil
++	}
++	if result.Gate != nil {
++		clearGateFindings(p.gateFindingsPath)
+ 	}
+ 	if cerr := cancelErr(ctx, p.name, burlerFixEngineLabel); cerr != nil {
+ 		return "", shedengine.OutputPointer{}, cerr
+diff --git a/internal/shedadapters/burlerfix_test.go b/internal/shedadapters/burlerfix_test.go
+index a41d463a1..053f7730f 100644
+--- a/internal/shedadapters/burlerfix_test.go
++++ b/internal/shedadapters/burlerfix_test.go
+@@ -7,6 +7,7 @@ package shedadapters
+ import (
+ 	"context"
+ 	"errors"
++	"os"
+ 	"path/filepath"
+ 	"reflect"
+ 	"strings"
+@@ -22,7 +23,7 @@ import (
+ // newFixProducer builds a BurlerFixProducer over runDir whose review row is named "burler-review", failing the test on constructor error.
+ func newFixProducer(t *testing.T, runDir string, runner *shedfake.BurlerHalfRunner, spec halfProducerSpec) *BurlerFixProducer {
+ 	t.Helper()
+-	p, err := NewBurlerFixProducer("burler-fix", "burler-review", BurlerHalfDeps{Runner: runner, Models: spec.models, Fans: spec.fans, RequiresFans: spec.requiresFans}, spec.profile, spec.opts, runDir, spec.now)
++	p, err := NewBurlerFixProducer("burler-fix", "burler-review", BurlerHalfDeps{Runner: runner, Models: spec.models, Fans: spec.fans, RequiresFans: spec.requiresFans, GateFindingsPath: spec.gateFindingsPath}, spec.profile, spec.opts, runDir, spec.now)
+ 	if err != nil {
+ 		t.Fatalf("NewBurlerFixProducer() error = %v; want nil", err)
+ 	}
+@@ -255,10 +256,35 @@ func TestBurlerFixProducer_Call_GateFailedAndChangedReviewArchiveTheWholeRound(t
+ 		wantStuck  bool
+ 		wantErrIs  error
+ 		wantErrEnd string
++		// wantReason may hold {path}, which stands for the told findings path.
++		wantReason string
++		// keepFindings tells the producer a findings path through BurlerHalfDeps.GateFindingsPath.
++		keepFindings bool
++		// preWritten plants a file at the findings path before the call.
++		preWritten bool
++		// wantFindings is the findings file's wanted text, and "" means no file is left.
++		wantFindings string
++		// finished marks a fix whose gate passed: a hand-on that archives nothing.
++		finished bool
+ 	}{
+ 		{name: "a failed gate", result: burlerengine.FixResult{Outcome: shuttleengine.OutcomeDone, Gate: &shuttleengine.GateOutcome{Attempts: 3, Reason: "verify is red", Entries: []shuttleengine.GateEntryOutcome{
+ 			{Name: "verify", Spans: []shuttleengine.GateSpan{{Kind: shuttleengine.GateSpanGate, Start: time.Date(2026, 8, 16, 15, 0, 0, 0, time.UTC), End: time.Date(2026, 8, 16, 15, 0, 3, 0, time.UTC)}}},
+-		}}}, wantStuck: true},
++		}}}, wantStuck: true, wantReason: "verify is red", keepFindings: true},
++		{
++			name:         "a failed non-terminal gate keeps its findings in the told file",
++			result:       burlerengine.FixResult{Outcome: shuttleengine.OutcomeDone, Gate: &shuttleengine.GateOutcome{Attempts: 3, Findings: "the gate's findings", Entries: []shuttleengine.GateEntryOutcome{{Name: "verify"}}}},
++			wantStuck:    true,
++			wantReason:   "gate did not pass after 3 attempts; findings: {path}",
++			keepFindings: true,
++			wantFindings: "the gate's findings",
++		},
++		{
++			name:         "a passed gate removes a findings file left by an earlier call",
++			result:       burlerengine.FixResult{Outcome: shuttleengine.OutcomeDone, Gate: &shuttleengine.GateOutcome{Passed: true, Attempts: 1}},
++			keepFindings: true,
++			preWritten:   true,
++			finished:     true,
++		},
+ 		{name: "a changed review", err: burlerengine.ErrReviewChanged, wantErrIs: burlerengine.ErrReviewChanged, wantErrEnd: wayForwardToReview},
+ 	}
+ 	for _, tt := range tests {
+@@ -268,17 +294,41 @@ func TestBurlerFixProducer_Call_GateFailedAndChangedReviewArchiveTheWholeRound(t
+ 			writeAcceptedRound(t, runDir, 1, "d1")
+ 			runner := &shedfake.BurlerHalfRunner{FixResults: []burlerengine.FixResult{tt.result}, FixErrs: []error{tt.err}}
+ 			runner.DuringFix = func(int) { writeRoundFile(t, roundFixerReportPath(runDir, 1)) }
+-			p := newFixProducer(t, runDir, runner, newHalfSpec())
++			spec := newHalfSpec()
++			findingsPath := filepath.Join(t.TempDir(), "gate-findings", "burler-fix.md")
++			if tt.keepFindings {
++				spec.gateFindingsPath = findingsPath
++			}
++			if tt.preWritten {
++				writeRoundFile(t, findingsPath)
++			}
++			p := newFixProducer(t, runDir, runner, spec)
+ 
+ 			outcome, ptr, err := p.Call(context.Background())
+ 
++			got, readErr := os.ReadFile(findingsPath)
++			switch {
++			case tt.wantFindings == "" && readErr == nil:
++				t.Errorf("findings file holds %q; want none", got)
++			case tt.wantFindings != "" && string(got) != tt.wantFindings:
++				t.Errorf("findings file = %q (%v); want %q", got, readErr, tt.wantFindings)
++			}
++			if tt.finished {
++				if err != nil || outcome != shedengine.Stuck || ptr.Path != roundReviewPath(runDir, 1) || !ptr.BudgetExempt {
++					t.Errorf("Call() = %q, %+v, %v; want the BudgetExempt hand-on with round 1's review", outcome, ptr, err)
++				}
++				return
++			}
+ 			if tt.wantStuck {
+-				if err != nil || outcome != shedengine.Stuck || ptr.Path != "" || ptr.BudgetExempt || ptr.Reason != "verify is red" || ptr.GateAttempts == nil || *ptr.GateAttempts != 3 {
+-					t.Errorf("Call() = %q, %+v, %v; want a counted Stuck with an empty Path, the gate's reason and 3 attempts", outcome, ptr, err)
++				wantReason := strings.ReplaceAll(tt.wantReason, "{path}", findingsPath)
++				if err != nil || outcome != shedengine.Stuck || ptr.Path != "" || ptr.BudgetExempt || ptr.Reason != wantReason || ptr.GateAttempts == nil || *ptr.GateAttempts != 3 {
++					t.Errorf("Call() = %q, %+v, %v; want a counted Stuck with an empty Path, reason %q and 3 attempts", outcome, ptr, err, wantReason)
+ 				}
+-				wantSpans := []shedengine.GateSpan{{Gate: "verify", Kind: shedengine.GateSpanKindGate, Start: "2026-08-16T15:00:00Z", End: "2026-08-16T15:00:03Z"}}
+-				if !reflect.DeepEqual(ptr.GateSpans, wantSpans) {
+-					t.Errorf("Call() pointer spans = %+v; want %+v", ptr.GateSpans, wantSpans)
++				if tt.name == "a failed gate" {
++					wantSpans := []shedengine.GateSpan{{Gate: "verify", Kind: shedengine.GateSpanKindGate, Start: "2026-08-16T15:00:00Z", End: "2026-08-16T15:00:03Z"}}
++					if !reflect.DeepEqual(ptr.GateSpans, wantSpans) {
++						t.Errorf("Call() pointer spans = %+v; want %+v", ptr.GateSpans, wantSpans)
++					}
+ 				}
+ 			} else if !errors.Is(err, tt.wantErrIs) || !strings.HasSuffix(err.Error(), tt.wantErrEnd) {
+ 				t.Errorf("Call() error = %v; want it to wrap %v and end with %q", err, tt.wantErrIs, tt.wantErrEnd)
+diff --git a/internal/shedadapters/burlerreview.go b/internal/shedadapters/burlerreview.go
+index eaf1e888e..92e1c81f5 100644
+--- a/internal/shedadapters/burlerreview.go
++++ b/internal/shedadapters/burlerreview.go
+@@ -52,6 +52,9 @@ type BurlerHalfDeps struct {
+ 	Fans *RoundFans
+ 	// RequiresFans makes the fix producer read the fan names the review producer recorded, and refuse a round that holds none.
+ 	RequiresFans bool
++	// GateFindingsPath is the file an exhausted gate's findings are kept in and the Stuck reason names; the producer removes it on a call whose gate passed.
++	// Empty keeps no findings file.
++	GateFindingsPath string
+ }
+ 
+ // checkHalfProducerArgs returns the constructor error of a half producer named name under label, or nil.
+@@ -78,14 +81,16 @@ func checkHalfProducerArgs(name, label string, haveRunner bool, runDir string) e
+ //
+ // Every hand-back is BudgetExempt: the segment's budget on judged rounds is the Bouncer row's own check, and this row has no counted exit.
+ type BurlerReviewProducer struct {
+-	name    string
+-	runner  BurlerHalfRunner
+-	models  burlerengine.RoundModels
+-	fans    *RoundFans
+-	profile burlerengine.Profile
+-	opts    burlerengine.RunOpts
+-	runDir  string
+-	now     func() time.Time
++	name   string
++	runner BurlerHalfRunner
++	models burlerengine.RoundModels
++	fans   *RoundFans
++	// gateFindingsPath, when non-empty, is the file cleared once the review's gate has passed.
++	gateFindingsPath string
++	profile          burlerengine.Profile
++	opts             burlerengine.RunOpts
++	runDir           string
++	now              func() time.Time
+ }
+ 
+ // Compile-time proof that *BurlerReviewProducer satisfies shedengine.ShedProducer.
+@@ -104,7 +109,7 @@ func NewBurlerReviewProducer(name string, deps BurlerHalfDeps, profile burlereng
+ 	if now == nil {
+ 		now = time.Now
+ 	}
+-	return &BurlerReviewProducer{name: name, runner: deps.Runner, models: deps.Models, fans: deps.Fans, profile: profile, opts: opts, runDir: runDir, now: now}, nil
++	return &BurlerReviewProducer{name: name, runner: deps.Runner, models: deps.Models, fans: deps.Fans, gateFindingsPath: deps.GateFindingsPath, profile: profile, opts: opts, runDir: runDir, now: now}, nil
+ }
+ 
+ // roundProfile returns a fresh per-round copy of the stored template profile for round running under fan:
+@@ -360,6 +365,9 @@ func (p *BurlerReviewProducer) acceptedExit(ctx context.Context, round int, resu
+ 	if cerr := cancelErr(ctx, p.name, burlerReviewEngineLabel); cerr != nil {
+ 		return "", shedengine.OutputPointer{}, cerr
+ 	}
++	if result.Gate != nil && result.Gate.Passed {
++		clearGateFindings(p.gateFindingsPath)
++	}
+ 	review, _ := p.models.Pick(round)
+ 	half := reviewHalfUsage(review, result.Review)
+ 	err := mergeRoundUsage(p.runDir, round, p.now, func(u *roundUsage) {
+diff --git a/internal/shedadapters/burlerreview_test.go b/internal/shedadapters/burlerreview_test.go
+index fc2494368..6f308f5a4 100644
+--- a/internal/shedadapters/burlerreview_test.go
++++ b/internal/shedadapters/burlerreview_test.go
+@@ -34,6 +34,8 @@ type halfProducerSpec struct {
+ 	// fans and requiresFans are the deps' per-round fan lists and fix-half requirement; the zero value is a row that records no names.
+ 	fans         *RoundFans
+ 	requiresFans bool
++	// gateFindingsPath is the deps' told gate findings file; empty tells none.
++	gateFindingsPath string
+ }
+ 
+ // newHalfSpec returns a spec over the minimal profile and a fixed clock.
+@@ -44,7 +46,7 @@ func newHalfSpec() halfProducerSpec {
+ // newReviewProducer builds a BurlerReviewProducer over runDir, failing the test on constructor error.
+ func newReviewProducer(t *testing.T, runDir string, runner *shedfake.BurlerHalfRunner, spec halfProducerSpec) *BurlerReviewProducer {
+ 	t.Helper()
+-	p, err := NewBurlerReviewProducer("burler-review", BurlerHalfDeps{Runner: runner, Models: spec.models, Fans: spec.fans, RequiresFans: spec.requiresFans}, spec.profile, spec.opts, runDir, spec.now)
++	p, err := NewBurlerReviewProducer("burler-review", BurlerHalfDeps{Runner: runner, Models: spec.models, Fans: spec.fans, RequiresFans: spec.requiresFans, GateFindingsPath: spec.gateFindingsPath}, spec.profile, spec.opts, runDir, spec.now)
+ 	if err != nil {
+ 		t.Fatalf("NewBurlerReviewProducer() error = %v; want nil", err)
+ 	}
+@@ -539,10 +541,15 @@ func requireAcceptedReviewRecorded(t *testing.T, engine string) {
+ 		}},
+ 	}
+ 	runner := &shedfake.BurlerHalfRunner{ReviewResults: []burlerengine.ReviewResult{result}}
++	spec.gateFindingsPath = filepath.Join(t.TempDir(), "gate-findings", "burler-review.md")
++	writeRoundFile(t, spec.gateFindingsPath)
+ 	p := newReviewProducer(t, runDir, runner, spec)
+ 
+ 	ptr := shedfake.RequireOutcome(t, p, shedengine.Stuck)
+ 
++	if _, err := os.Stat(spec.gateFindingsPath); !os.IsNotExist(err) {
++		t.Errorf("findings file stat error = %v; want it removed by a review whose gate passed", err)
++	}
+ 	if ptr.Path != roundReviewPath(runDir, 1) || !ptr.BudgetExempt || ptr.GateAttempts == nil || *ptr.GateAttempts != 1 {
+ 		t.Errorf("Call() pointer = %+v; want round 1's review, BudgetExempt and the review gate's one attempt", ptr)
+ 	}
+diff --git a/internal/shedadapters/doc.go b/internal/shedadapters/doc.go
+index 0e726b27c..69ea9cf57 100644
+--- a/internal/shedadapters/doc.go
++++ b/internal/shedadapters/doc.go
+@@ -30,6 +30,7 @@
+ //     condition: a half producer has no independent notion of "finished," only the judge does.
+ //     Every hand-on, a finished half and an unjudged highest round, is BudgetExempt, so the Bouncer row's own budget check is the segment's one budget on judged rounds.
+ //     The fix row's gate-failed exit is counted against its own MaxBounces.
++//     Every gated producer told a findings path (MultiLLMProducer.KeepGateFindings, BurlerHalfDeps.GateFindingsPath) keeps an exhausted gate's findings in that file, names it in the Stuck reason, and removes it on a call whose gate passed.
+ //     Both rows are gate carriers: the review row's hand-on pointer carries the gate count and spans of the reviewer's review-parse gate, for a spawned and a resumed review alike, and the fix row's gate-failed and finished-fix pointers carry the fixer's.
+ //     A round names two strands, the reviewer's and the fixer's, one per row, and each attempt picks its half's model from BurlerHalfDeps.Models for the round.
+ //     A runner error wrapping burlerengine.ErrHalfNotStopped returns without archiving and without the retry, since a live half may still write the round's files.
+diff --git a/internal/shedadapters/gateattempts.go b/internal/shedadapters/gateattempts.go
+index 7f9e08b93..dbb6f5b98 100644
+--- a/internal/shedadapters/gateattempts.go
++++ b/internal/shedadapters/gateattempts.go
+@@ -1,23 +1,62 @@
+-// gateattempts.go implements the two helpers every gated producer (MultiLLMProducer, BurlerFixProducer, BurlerReviewProducer, WebsterProducer) shares to carry a gate's re-prompt count and spans onto shedengine.OutputPointer.GateAttempts and GateSpans.
++// gateattempts.go implements the helpers every gated producer (MultiLLMProducer, BurlerFixProducer, BurlerReviewProducer, WebsterProducer) shares to carry a gate's re-prompt count and spans onto shedengine.OutputPointer.GateAttempts and GateSpans.
++// It also holds the findings-file helpers: keeping an exhausted gate's findings in a told file, naming it in the Stuck reason and clearing it once a gate passes.
+ 
+ package shedadapters
+ 
+ import (
++	"errors"
+ 	"fmt"
++	"io/fs"
++	"os"
++	"path/filepath"
++	"strings"
+ 	"time"
+ 
++	"github.com/Knatte18/loomyard/internal/logger"
+ 	"github.com/Knatte18/loomyard/internal/shedengine"
+ 	"github.com/Knatte18/loomyard/internal/shuttleengine"
+ )
+ 
++// gateFindingsReasonLimit is the most characters of the gate's findings text a Stuck reason carries when the findings file could not be written.
++const gateFindingsReasonLimit = 400
++
+ // gateFailedReason is the one-line Stuck reason for a gate that did not pass, shared by both gated
+ // producers so the wording never diverges.
+-// A terminal entry's own explanation (GateOutcome.Reason) replaces the generic text.
+-func gateFailedReason(gate *shuttleengine.GateOutcome) string {
++// A terminal entry's own explanation (GateOutcome.Reason) replaces the generic text and writes no file.
++// With a non-empty findingsPath it keeps gate.Findings there, overwriting an earlier file, and names that file;
++// a failed write is logged and the reason carries the findings text, cut to one line, in place of the path.
++// With an empty findingsPath the reason names gate.FindingsPath.
++func gateFailedReason(gate *shuttleengine.GateOutcome, findingsPath string) string {
+ 	if gate.Reason != "" {
+ 		return gate.Reason
+ 	}
+-	return fmt.Sprintf("gate did not pass after %d attempts; findings: %s", gate.Attempts, gate.FindingsPath)
++	if findingsPath == "" {
++		return fmt.Sprintf("gate did not pass after %d attempts; findings: %s", gate.Attempts, gate.FindingsPath)
++	}
++	err := os.MkdirAll(filepath.Dir(findingsPath), 0o755)
++	if err == nil {
++		err = os.WriteFile(findingsPath, []byte(gate.Findings), 0o644)
++	}
++	if err != nil {
++		logger.Warn("shedadapters: gate findings were not kept", "findingsPath", findingsPath, "error", err)
++		text := strings.Join(strings.Fields(gate.Findings), " ")
++		if runes := []rune(text); len(runes) > gateFindingsReasonLimit {
++			text = string(runes[:gateFindingsReasonLimit])
++		}
++		return fmt.Sprintf("findings could not be kept at %s: %v; findings: %s", findingsPath, err, text)
++	}
++	return fmt.Sprintf("gate did not pass after %d attempts; findings: %s", gate.Attempts, findingsPath)
++}
++
++// clearGateFindings removes the gate findings file at path, so a call whose gate passed leaves none behind.
++// An empty path and an absent file are no-ops, and any other removal failure is logged and changes no verdict.
++func clearGateFindings(path string) {
++	if path == "" {
++		return
++	}
++	if err := os.Remove(path); err != nil && !errors.Is(err, fs.ErrNotExist) {
++		logger.Warn("shedadapters: gate findings file was not removed", "findingsPath", path, "error", err)
++	}
+ }
+ 
+ // gateAttemptsPointer returns a pointer to gate.Attempts, or nil when gate itself is nil (the
+diff --git a/internal/shedadapters/gateattempts_test.go b/internal/shedadapters/gateattempts_test.go
+index 74b346c87..dc3a64f7e 100644
+--- a/internal/shedadapters/gateattempts_test.go
++++ b/internal/shedadapters/gateattempts_test.go
+@@ -1,20 +1,178 @@
+ package shedadapters
+ 
+ import (
++	"os"
++	"path/filepath"
++	"strings"
+ 	"testing"
+ 
+ 	"github.com/Knatte18/loomyard/internal/shuttleengine"
+ )
+ 
+-// TestGateFailedReason_NamesAttemptsAndFindingsPath pins that both the attempt count and the
+-// findings path are interpolated, which the producers' own gate-failed fixtures (zero attempts,
+-// often no findings path) cannot tell apart from a fixed string.
++// TestGateFailedReason_NamesAttemptsAndFindingsPath pins that both the attempt count and the findings path are interpolated.
++// The producers' own gate-failed fixtures (zero attempts, often no findings path) cannot tell that apart from a fixed string.
++// It also pins that a told findings path receives the findings.
+ //
+ //testtiming:keep pins that the attempt count and the findings path are both interpolated into the gate-failed reason
+ func TestGateFailedReason_NamesAttemptsAndFindingsPath(t *testing.T) {
+-	gate := &shuttleengine.GateOutcome{Passed: false, Attempts: 3, FindingsPath: "/run/gate-findings.md"}
+-	const want = "gate did not pass after 3 attempts; findings: /run/gate-findings.md"
+-	if got := gateFailedReason(gate); got != want {
+-		t.Errorf("gateFailedReason(%+v) = %q; want %q", gate, got, want)
++	t.Parallel()
++	long := strings.Repeat("x", gateFindingsReasonLimit+50)
++	tests := []struct {
++		name string
++		gate *shuttleengine.GateOutcome
++		// path builds the told findings path under dir, and nil tells none.
++		path func(dir string) string
++		// before plants files under dir before the call.
++		before func(t *testing.T, dir string)
++		// wantReason may hold {path}, which stands for the told path.
++		wantReason string
++		// wantReasonPrefix is the start of a reason that holds an OS error text, and "" means wantReason is exact.
++		wantReasonPrefix string
++		// wantReasonSuffix is the end of that reason.
++		wantReasonSuffix string
++		// wantFile is the text the told path holds afterwards, and "" means no file is left.
++		wantFile string
++	}{
++		{
++			name:       "empty path names the gate's own findings path",
++			gate:       &shuttleengine.GateOutcome{Attempts: 3, FindingsPath: "/run/gate-findings.md", Findings: "ignored"},
++			wantReason: "gate did not pass after 3 attempts; findings: /run/gate-findings.md",
++		},
++		{
++			name:       "told path receives the findings and is named",
++			gate:       &shuttleengine.GateOutcome{Attempts: 3, FindingsPath: "/run/gate-findings.md", Findings: "first findings"},
++			path:       func(dir string) string { return filepath.Join(dir, "gate-findings", "row.md") },
++			wantReason: "gate did not pass after 3 attempts; findings: {path}",
++			wantFile:   "first findings",
++		},
++		{
++			name: "a second exhausted outcome overwrites the file",
++			gate: &shuttleengine.GateOutcome{Attempts: 2, Findings: "second findings"},
++			path: func(dir string) string { return filepath.Join(dir, "row.md") },
++			before: func(t *testing.T, dir string) {
++				t.Helper()
++				if err := os.WriteFile(filepath.Join(dir, "row.md"), []byte("first findings that are longer"), 0o644); err != nil {
++					t.Fatalf("WriteFile() error = %v", err)
++				}
++			},
++			wantReason: "gate did not pass after 2 attempts; findings: {path}",
++			wantFile:   "second findings",
++		},
++		{
++			name:       "terminal outcome returns its reason and writes no file",
++			gate:       &shuttleengine.GateOutcome{Attempts: 1, Reason: "verify is red", Findings: "never written"},
++			path:       func(dir string) string { return filepath.Join(dir, "row.md") },
++			wantReason: "verify is red",
++		},
++		{
++			name: "a path under a regular file carries the findings text instead",
++			gate: &shuttleengine.GateOutcome{Attempts: 1, Findings: "line one\n\n  line two " + long},
++			path: func(dir string) string { return filepath.Join(dir, "blocker", "row.md") },
++			before: func(t *testing.T, dir string) {
++				t.Helper()
++				if err := os.WriteFile(filepath.Join(dir, "blocker"), []byte("a file"), 0o644); err != nil {
++					t.Fatalf("WriteFile() error = %v", err)
++				}
++			},
++			wantReasonPrefix: "findings could not be kept at {path}: ",
++			wantReasonSuffix: "; findings: line one line two " + strings.Repeat("x", gateFindingsReasonLimit-len("line one line two ")),
++		},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			dir := t.TempDir()
++			path := ""
++			if tt.path != nil {
++				path = tt.path(dir)
++			}
++			if tt.before != nil {
++				tt.before(t, dir)
++			}
++
++			got := gateFailedReason(tt.gate, path)
++
++			wantReason := strings.ReplaceAll(tt.wantReason, "{path}", path)
++			if tt.wantReasonPrefix != "" {
++				prefix := strings.ReplaceAll(tt.wantReasonPrefix, "{path}", path)
++				if !strings.HasPrefix(got, prefix) || !strings.HasSuffix(got, tt.wantReasonSuffix) {
++					t.Errorf("gateFailedReason(%+v) = %q; want prefix %q and suffix %q", tt.gate, got, prefix, tt.wantReasonSuffix)
++				}
++			} else if got != wantReason {
++				t.Errorf("gateFailedReason(%+v) = %q; want %q", tt.gate, got, wantReason)
++			}
++			if path == "" {
++				return
++			}
++			content, err := os.ReadFile(path)
++			switch {
++			case tt.wantFile == "" && err == nil:
++				t.Errorf("findings file holds %q; want none", content)
++			case tt.wantFile != "" && string(content) != tt.wantFile:
++				t.Errorf("findings file = %q (%v); want %q", content, err, tt.wantFile)
++			}
++		})
++	}
++}
++
++// TestClearGateFindings pins that an existing file is removed, that an absent file or an empty path is no error,
++// and that a removal failure leaves the target in place without panicking.
++func TestClearGateFindings(t *testing.T) {
++	t.Parallel()
++	tests := []struct {
++		name string
++		// setup builds the path under dir, creating what the case needs.
++		setup func(t *testing.T, dir string) string
++		// wantGone reports whether the path must not exist afterwards.
++		wantGone bool
++	}{
++		{
++			name: "an existing file is removed",
++			setup: func(t *testing.T, dir string) string {
++				t.Helper()
++				path := filepath.Join(dir, "row.md")
++				if err := os.WriteFile(path, []byte("findings"), 0o644); err != nil {
++					t.Fatalf("WriteFile() error = %v", err)
++				}
++				return path
++			},
++			wantGone: true,
++		},
++		{
++			name:     "an absent file is no error",
++			setup:    func(t *testing.T, dir string) string { return filepath.Join(dir, "absent.md") },
++			wantGone: true,
++		},
++		{
++			name:  "an empty path does nothing",
++			setup: func(t *testing.T, dir string) string { return "" },
++		},
++		{
++			name: "a non-empty directory fails the removal and stays",
++			setup: func(t *testing.T, dir string) string {
++				t.Helper()
++				path := filepath.Join(dir, "row.md")
++				if err := os.MkdirAll(filepath.Join(path, "inner"), 0o755); err != nil {
++					t.Fatalf("MkdirAll() error = %v", err)
++				}
++				return path
++			},
++		},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			path := tt.setup(t, t.TempDir())
++
++			clearGateFindings(path)
++
++			if path == "" {
++				return
++			}
++			_, err := os.Stat(path)
++			if gone := os.IsNotExist(err); gone != tt.wantGone {
++				t.Errorf("after clearGateFindings(%q) path gone = %v; want %v", path, gone, tt.wantGone)
++			}
++		})
+ 	}
+ }
+diff --git a/internal/shedadapters/multillm.go b/internal/shedadapters/multillm.go
+index 4670ca4e7..bb7dece56 100644
+--- a/internal/shedadapters/multillm.go
++++ b/internal/shedadapters/multillm.go
+@@ -42,6 +42,8 @@ type MultiLLMProducer struct {
+ 	now    func() time.Time
+ 	// prepareFreshSpawn, when non-nil, runs on the fresh path after the probe and before the archive, and returns the prompt amendment the lead's fresh prompt ends with.
+ 	prepareFreshSpawn func() (string, error)
++	// gateFindingsPath, when non-empty, is the file an exhausted chair gate's findings are kept in.
++	gateFindingsPath string
+ }
+ 
+ var _ shedengine.ShedProducer = (*MultiLLMProducer)(nil)
+@@ -71,6 +73,14 @@ func NewMultiLLMProducerSourced(name string, tables TableSource, seats SeatRunne
+ 	return &MultiLLMProducer{name: name, tables: tables, seats: seats, now: now, prepareFreshSpawn: prepareFreshSpawn}
+ }
+ 
++// KeepGateFindings tells the producer the file path an exhausted chair gate's findings are written to and its Stuck reason names.
++// It returns the producer so a constructor call can chain it.
++// A call whose chair gate passed removes the file; an empty path keeps no findings file.
++func (p *MultiLLMProducer) KeepGateFindings(path string) *MultiLLMProducer {
++	p.gateFindingsPath = path
++	return p
++}
++
+ // Call runs one MultiLLMProducer iteration: entry-check the context, probe the table's seats, and either resume a live chair and map its result, or prepare a fresh spawn, archive every seat's stale outputs, run the table fresh and map the chair's result.
+ // The table is the source's answer, evaluated once before the probe, or the constructed table when there is no source.
+ // The probe runs before anything is archived, because archiving renames files a live seat may be about to write.
+@@ -148,7 +158,10 @@ func (p *MultiLLMProducer) mapOutcome(ctx context.Context, result seatengine.Res
+ 				return "", shedengine.OutputPointer{}, cerr
+ 			}
+ 			logger.Warn("shedadapters: chair's gate did not pass", "producer", p.name, "engine", multiLLMEngineLabel, "attempts", chair.Gate.Attempts, "findingsPath", chair.Gate.FindingsPath, "sessionID", chair.SessionID, "strandGUID", chair.StrandGUID)
+-			return shedengine.Stuck, shedengine.OutputPointer{Path: result.ChairOutputs[0], GateAttempts: gateAttemptsPointer(chair.Gate), GateSpans: gateSpansOf(chair.Gate), Reason: gateFailedReason(chair.Gate)}, nil
++			return shedengine.Stuck, shedengine.OutputPointer{Path: result.ChairOutputs[0], GateAttempts: gateAttemptsPointer(chair.Gate), GateSpans: gateSpansOf(chair.Gate), Reason: gateFailedReason(chair.Gate, p.gateFindingsPath)}, nil
++		}
++		if chair.Gate != nil {
++			clearGateFindings(p.gateFindingsPath)
+ 		}
+ 		return shedengine.Done, shedengine.OutputPointer{Path: result.ChairOutputs[0], GateAttempts: gateAttemptsPointer(chair.Gate), GateSpans: gateSpansOf(chair.Gate)}, nil
+ 
+diff --git a/internal/shedadapters/multillm_test.go b/internal/shedadapters/multillm_test.go
+index 2076e6d82..5fabd2721 100644
+--- a/internal/shedadapters/multillm_test.go
++++ b/internal/shedadapters/multillm_test.go
+@@ -266,7 +266,14 @@ func TestMultiLLMProducer_MapsTheLeadResult(t *testing.T) {
+ 		wantOutcome  shedengine.Outcome
+ 		wantAttempts *int
+ 		wantSpans    []shedengine.GateSpan
+-		wantReason   string
++		// wantReason may hold {path}, which stands for the findings path the producer is told.
++		wantReason string
++		// keepFindings tells the producer a findings path through KeepGateFindings.
++		keepFindings bool
++		// preWritten plants a file at the findings path before the call.
++		preWritten bool
++		// wantFindings is the findings file's wanted text, and "" means no file is left.
++		wantFindings string
+ 		// wantErr is a substring of the error, and "" means no error.
+ 		wantErr        string
+ 		wantNotStarted bool
+@@ -306,7 +313,25 @@ func TestMultiLLMProducer_MapsTheLeadResult(t *testing.T) {
+ 				{Gate: "plan-parse", Kind: shedengine.GateSpanKindGate, Start: "2026-08-15T09:00:00Z", End: "2026-08-15T09:00:01Z"},
+ 				{Gate: "plan-parse", Kind: shedengine.GateSpanKindRework, Start: "2026-08-15T09:00:01Z", End: "2026-08-15T09:00:09Z"},
+ 			},
+-			wantReason: "the gate said no",
++			wantReason:   "the gate said no",
++			keepFindings: true,
++		},
++		{
++			name:         "done with a failing non-terminal gate keeps its findings in the told file",
++			result:       shuttleengine.Result{Outcome: shuttleengine.OutcomeDone, Gate: &shuttleengine.GateOutcome{Passed: false, Attempts: 2, Findings: "the gate's findings"}},
++			wantOutcome:  shedengine.Stuck,
++			wantAttempts: &two,
++			wantReason:   "gate did not pass after 2 attempts; findings: {path}",
++			keepFindings: true,
++			wantFindings: "the gate's findings",
++		},
++		{
++			name:         "done with a passing gate removes a findings file left by an earlier call",
++			result:       shuttleengine.Result{Outcome: shuttleengine.OutcomeDone, Gate: &shuttleengine.GateOutcome{Passed: true, Attempts: 1}},
++			wantOutcome:  shedengine.Done,
++			wantAttempts: &one,
++			keepFindings: true,
++			preWritten:   true,
+ 		},
+ 		{name: "died", result: shuttleengine.Result{Outcome: shuttleengine.OutcomeDied}, wantErr: "shuttle run outcome died"},
+ 		{name: "timeout", result: shuttleengine.Result{Outcome: shuttleengine.OutcomeTimeout}, wantErr: "shuttle run outcome timeout"},
+@@ -332,9 +357,30 @@ func TestMultiLLMProducer_MapsTheLeadResult(t *testing.T) {
+ 			producer := NewMultiLLMProducer("multi", table, &shedfake.SeatRunner{
+ 				Results: []seatengine.Result{{Chair: tt.result, ChairOutputs: []string{output}}},
+ 			}, multiLLMFixedNow)
++			findingsPath := filepath.Join(t.TempDir(), "gate-findings", "multi.md")
++			if tt.keepFindings {
++				producer.KeepGateFindings(findingsPath)
++			}
++			if tt.preWritten {
++				if err := os.MkdirAll(filepath.Dir(findingsPath), 0o755); err != nil {
++					t.Fatalf("MkdirAll() error = %v", err)
++				}
++				if err := os.WriteFile(findingsPath, []byte("an earlier call's findings"), 0o644); err != nil {
++					t.Fatalf("WriteFile() error = %v", err)
++				}
++			}
+ 
+ 			outcome, pointer, err := producer.Call(context.Background())
+ 
++			got, readErr := os.ReadFile(findingsPath)
++			switch {
++			case tt.wantFindings == "" && readErr == nil:
++				t.Errorf("findings file holds %q, want none", got)
++			case tt.wantFindings != "" && string(got) != tt.wantFindings:
++				t.Errorf("findings file = %q (%v), want %q", got, readErr, tt.wantFindings)
++			}
++			tt.wantReason = strings.ReplaceAll(tt.wantReason, "{path}", findingsPath)
++
+ 			if tt.wantErr != "" {
+ 				if err == nil || !strings.Contains(err.Error(), tt.wantErr) {
+ 					t.Fatalf("Call() error = %v, want one containing %q", err, tt.wantErr)
+diff --git a/internal/shedrecipe/entries_burler.go b/internal/shedrecipe/entries_burler.go
+index 65eb74c75..e7866d1d6 100644
+--- a/internal/shedrecipe/entries_burler.go
++++ b/internal/shedrecipe/entries_burler.go
+@@ -44,7 +44,7 @@ func burlerRowTimeout(timeoutS int, env Env) time.Duration {
+ 	return time.Duration(timeoutS) * time.Second
+ }
+ 
+-// burlerReviewEntry is the Constructor for the "BurlerReview" registry row: it validates cfg and env, maps cfg's profile map onto a burlerengine.Profile, joins and creates the run directory this row's segment shares with its Bouncer and fix rows, and returns shedadapters.NewBurlerReviewProducer(name, shedadapters.BurlerHalfDeps{Runner: env.Burler, Models: the segment's Models}, profile, opts, runDir, env.Now).
++// burlerReviewEntry is the Constructor for the "BurlerReview" registry row: it validates cfg and env, maps cfg's profile map onto a burlerengine.Profile, joins and creates the run directory this row's segment shares with its Bouncer and fix rows, and returns shedadapters.NewBurlerReviewProducer(name, shedadapters.BurlerHalfDeps{Runner: env.Burler, Models: the segment's Models, GateFindingsPath: the row's gate findings file}, profile, opts, runDir, env.Now).
+ //
+ // The row takes no "gates" key: its only gate is the engine's review-parse entry.
+ // The row's models and review key come from its segment's SegmentSettings.
+@@ -125,14 +125,14 @@ func burlerReviewEntry(row RowIdentity, cfg Config, env Env) (shedengine.ShedPro
+ 	}
+ 
+ 	opts := burlerengine.RunOpts{Timeout: burlerRowTimeout(timeoutS, env), ReviewKey: segment.ReviewKey}
+-	producer, err := shedadapters.NewBurlerReviewProducer(row.Name, shedadapters.BurlerHalfDeps{Runner: env.Burler, Models: segment.Models, Fans: fans}, profile, opts, runDir, env.Now)
++	producer, err := shedadapters.NewBurlerReviewProducer(row.Name, shedadapters.BurlerHalfDeps{Runner: env.Burler, Models: segment.Models, Fans: fans, GateFindingsPath: env.gateFindingsPath(row.Name)}, profile, opts, runDir, env.Now)
+ 	if err != nil {
+ 		return nil, fmt.Errorf("shedrecipe: BurlerReview: %w", err)
+ 	}
+ 	return producer, nil
+ }
+ 
+-// burlerFixEntry is the Constructor for the "BurlerFix" registry row: it validates cfg and env, maps cfg's profile map onto a burlerengine.Profile through burlerFixProfile, resolves the row's "gates" Config key through resolveRowGateSpec into the RunOpts.Gate it builds, joins and creates the run directory this row's segment shares with its Bouncer and review rows, and returns shedadapters.NewBurlerFixProducer(name, review_row, shedadapters.BurlerHalfDeps{Runner: env.Burler, Models: the segment's Models}, profile, opts, runDir, env.Now).
++// burlerFixEntry is the Constructor for the "BurlerFix" registry row: it validates cfg and env, maps cfg's profile map onto a burlerengine.Profile through burlerFixProfile, resolves the row's "gates" Config key through resolveRowGateSpec into the RunOpts.Gate it builds, joins and creates the run directory this row's segment shares with its Bouncer and review rows, and returns shedadapters.NewBurlerFixProducer(name, review_row, shedadapters.BurlerHalfDeps{Runner: env.Burler, Models: the segment's Models, GateFindingsPath: the row's gate findings file}, profile, opts, runDir, env.Now).
+ //
+ // All four fix rows share this one constructor, which is why the validator is selected by the "gates" key rather than implied by the constructor:
+ // the Webster and Darn fixers name the "verify" gate, so a round that changed code ends with a passing verify, and the two review segments name their own validators.
+@@ -193,7 +193,7 @@ func burlerFixEntry(row RowIdentity, cfg Config, env Env) (shedengine.ShedProduc
+ 	if fixFanNamed {
+ 		opts.FixFanKey = fixFanRef.Key
+ 	}
+-	deps := shedadapters.BurlerHalfDeps{Runner: env.Burler, Models: segment.Models, RequiresFans: fixFanNamed}
++	deps := shedadapters.BurlerHalfDeps{Runner: env.Burler, Models: segment.Models, RequiresFans: fixFanNamed, GateFindingsPath: env.gateFindingsPath(row.Name)}
+ 	producer, err := shedadapters.NewBurlerFixProducer(row.Name, reviewRow, deps, profile, opts, runDir, env.Now)
+ 	if err != nil {
+ 		return nil, fmt.Errorf("shedrecipe: BurlerFix: %w", err)
+diff --git a/internal/shedrecipe/entries_burlerhalves_test.go b/internal/shedrecipe/entries_burlerhalves_test.go
+index c507f94b9..7c2f54890 100644
+--- a/internal/shedrecipe/entries_burlerhalves_test.go
++++ b/internal/shedrecipe/entries_burlerhalves_test.go
+@@ -12,6 +12,7 @@ import (
+ 
+ 	"github.com/Knatte18/loomyard/internal/burlerengine"
+ 	"github.com/Knatte18/loomyard/internal/segmentcolor"
++	"github.com/Knatte18/loomyard/internal/shedengine"
+ 	"github.com/Knatte18/loomyard/internal/shuttleengine"
+ 	"github.com/Knatte18/loomyard/internal/testkit/shedfake"
+ 
+@@ -47,6 +48,21 @@ func lookupEntry(t *testing.T, name string) Constructor {
+ 	return constructor
+ }
+ 
++// writeFixRound writes the accepted round 1 a fix row works on into runDir: the review, its acceptance record and the usage record.
++func writeFixRound(t *testing.T, runDir string) {
++	t.Helper()
++	if err := os.WriteFile(filepath.Join(runDir, "round-1-review.md"), []byte("review\n"), 0o644); err != nil {
++		t.Fatalf("write the round-1 review: %v", err)
++	}
++	if err := os.WriteFile(filepath.Join(runDir, "round-1-acceptance.md"), []byte("---\nround: 1\ndigest: abc\n---\n"), 0o644); err != nil {
++		t.Fatalf("write the round-1 acceptance record: %v", err)
++	}
++	// A fix row told a fixer fan key reads the names its reviewer recorded, so the round carries a record with the flag.
++	if err := os.WriteFile(filepath.Join(runDir, "round-1-usage.yaml"), []byte("round: 1\nfan: \"\"\nfix_fan: \"\"\nfans_recorded: true\n"), 0o644); err != nil {
++		t.Fatalf("write the round-1 usage record: %v", err)
++	}
++}
++
+ // captureReview constructs a BurlerReview entry from cfg and env, drives one Call so env.Burler's shedfake.BurlerHalfRunner records the Profile and RunOpts it was handed, and returns them.
+ // Call's own return values are ignored:
+ // the unscripted fake returns a zero burlerengine.ReviewResult with a nil error, which the producer's outcome switch does not recognise, so Call itself returns a non-nil error on every path here.
+@@ -75,17 +91,7 @@ func captureFix(t *testing.T, name string, cfg Config, env Env) (burlerengine.Pr
+ 		t.Fatalf("burlerFixEntry() error = %v; want nil", err)
+ 	}
+ 
+-	runDir := filepath.Join(env.RunRoot, cfg["run_subdir"].(string))
+-	if err := os.WriteFile(filepath.Join(runDir, "round-1-review.md"), []byte("review\n"), 0o644); err != nil {
+-		t.Fatalf("write the round-1 review: %v", err)
+-	}
+-	if err := os.WriteFile(filepath.Join(runDir, "round-1-acceptance.md"), []byte("---\nround: 1\ndigest: abc\n---\n"), 0o644); err != nil {
+-		t.Fatalf("write the round-1 acceptance record: %v", err)
+-	}
+-	// A fix row told a fixer fan key reads the names its reviewer recorded, so the round carries a record with the flag.
+-	if err := os.WriteFile(filepath.Join(runDir, "round-1-usage.yaml"), []byte("round: 1\nfan: \"\"\nfix_fan: \"\"\nfans_recorded: true\n"), 0o644); err != nil {
+-		t.Fatalf("write the round-1 usage record: %v", err)
+-	}
++	writeFixRound(t, filepath.Join(env.RunRoot, cfg["run_subdir"].(string)))
+ 	_, _, _ = producer.Call(context.Background())
+ 
+ 	fake := env.Burler.(*shedfake.BurlerHalfRunner)
+@@ -696,6 +702,33 @@ func TestBurlerHalfEntries_RunDirectory(t *testing.T) {
+ 		})
+ 	}
+ 
++	t.Run("ReviewWhoseGatePassedRemovesTheRowsFindingsFile", func(t *testing.T) {
++		env := newTestEnv(t)
++		withGateFindingsFile(&env, t.TempDir())
++		env.Burler = &shedfake.BurlerHalfRunner{ReviewResults: []burlerengine.ReviewResult{{
++			Outcome: shuttleengine.OutcomeDone,
++			Digest:  "digest-1",
++			Gate:    &shuttleengine.GateOutcome{Passed: true, Attempts: 1},
++		}}}
++		producer, err := burlerReviewEntry(reviewRow("review-row"), minimalReviewConfig(), env)
++		if err != nil {
++			t.Fatalf("burlerReviewEntry() error = %v; want nil", err)
++		}
++		findings := env.GateFindingsFile("review-row")
++		if err := os.MkdirAll(filepath.Dir(findings), 0o755); err != nil {
++			t.Fatalf("create the findings directory: %v", err)
++		}
++		if err := os.WriteFile(findings, []byte("an earlier call's findings"), 0o644); err != nil {
++			t.Fatalf("write the findings file: %v", err)
++		}
++
++		shedfake.RequireOutcome(t, producer, shedengine.Stuck)
++
++		if _, err := os.Stat(findings); !os.IsNotExist(err) {
++			t.Errorf("os.Stat(%q) error = %v; want the findings file removed", findings, err)
++		}
++	})
++
+ 	t.Run("SameSubdirAsBouncerResolvesToSameDir", func(t *testing.T) {
+ 		env := newTestEnv(t)
+ 		bouncerCfg := minimalBouncerConfig(t, env)
+@@ -747,6 +780,25 @@ func TestBurlerFixEntry_GateConfig(t *testing.T) {
+ 		}
+ 	})
+ 
++	t.Run("ExhaustedGateNamesTheRowsFindingsFile", func(t *testing.T) {
++		env := newTestEnv(t)
++		withGateFindingsFile(&env, t.TempDir())
++		env.Burler = &shedfake.BurlerHalfRunner{FixResults: []burlerengine.FixResult{{
++			Outcome: shuttleengine.OutcomeDone,
++			Gate:    &shuttleengine.GateOutcome{Attempts: 2, Findings: "the gate's findings"},
++		}}}
++		producer, err := burlerFixEntry(reviewRow("fix-row"), minimalFixConfig(), env)
++		if err != nil {
++			t.Fatalf("burlerFixEntry() error = %v; want nil", err)
++		}
++		runDir := filepath.Join(env.RunRoot, "review-segment")
++		writeFixRound(t, runDir)
++
++		pointer := shedfake.RequireOutcome(t, producer, shedengine.Stuck)
++
++		requireNamesFindingsFile(t, env, "fix-row", pointer.Reason)
++	})
++
+ 	t.Run("GatePlanResolvesToPlanValidator", func(t *testing.T) {
+ 		env := newTestEnv(t)
+ 		cfg := minimalFixConfig()
+diff --git a/internal/shedrecipe/entries_darnwrite.go b/internal/shedrecipe/entries_darnwrite.go
+index c93fb194b..34434b5e9 100644
+--- a/internal/shedrecipe/entries_darnwrite.go
++++ b/internal/shedrecipe/entries_darnwrite.go
+@@ -40,6 +40,11 @@ func darnWriteEntry(row RowIdentity, cfg Config, env Env) (shedengine.ShedProduc
+ 		{"Darn.Commit", dw.Commit},
+ 		{"Darn.LatestOutcome", dw.LatestOutcome},
+ 		{"Darn.PublishFailure", dw.PublishFailure},
++		{"Darn.RunStart", dw.RunStart},
++		{"Darn.TaskHead", dw.TaskHead},
++		{"Darn.Dirty", dw.Dirty},
++		{"Darn.ParentTips", dw.ParentTips},
++		{"Darn.IsAncestor", dw.IsAncestor},
+ 	}
+ 	for _, s := range seams {
+ 		if err := requireSeam("DarnWrite", s.field, s.seam); err != nil {
+@@ -55,7 +60,7 @@ func darnWriteEntry(row RowIdentity, cfg Config, env Env) (shedengine.ShedProduc
+ 			table.Gate = gate
+ 			return table, nil
+ 		}
+-		return shedadapters.NewMultiLLMProducerSourced(row.Name, tables, env.Seats, env.Now, nil)
++		return shedadapters.NewMultiLLMProducerSourced(row.Name, tables, env.Seats, env.Now, nil).KeepGateFindings(env.gateFindingsPath(row.Name))
+ 	}
+ 	return loomshed.NewDarnWrite(row.Name, session, dw), nil
+ }
+diff --git a/internal/shedrecipe/entries_darnwrite_test.go b/internal/shedrecipe/entries_darnwrite_test.go
+index a1f5eb639..f7bfd0e25 100644
+--- a/internal/shedrecipe/entries_darnwrite_test.go
++++ b/internal/shedrecipe/entries_darnwrite_test.go
+@@ -6,11 +6,13 @@ import (
+ 	"context"
+ 	"path/filepath"
+ 	"testing"
++	"time"
+ 
+ 	"github.com/Knatte18/loomyard/internal/loomshed"
+ 	"github.com/Knatte18/loomyard/internal/seatengine"
+ 	"github.com/Knatte18/loomyard/internal/segmentcolor"
+ 	"github.com/Knatte18/loomyard/internal/testkit/shedfake"
++	"github.com/Knatte18/loomyard/internal/verifytree"
+ )
+ 
+ // darnTestEnv returns newTestEnv(t) with DarnTable and every Darn seam filled.
+@@ -31,7 +33,14 @@ func darnTestEnv(t *testing.T) Env {
+ 		ClearRejection: func() error { return nil },
+ 		Commit:         func() error { return nil },
+ 		LatestOutcome:  func() (loomshed.DarnOutcome, bool, error) { return loomshed.DarnOutcome{}, false, nil },
+-		PublishFailure: func() (string, bool, error) { return "", false, nil },
++		PublishFailure: func() (string, verifytree.PublishFailure, bool, error) {
++			return "", verifytree.PublishFailure{}, false, nil
++		},
++		RunStart:   func() (time.Time, error) { return time.Time{}, nil },
++		TaskHead:   func() (string, error) { return "", nil },
++		Dirty:      func() ([]string, error) { return nil, nil },
++		ParentTips: func() ([]string, error) { return nil, nil },
++		IsAncestor: func(string) (bool, error) { return true, nil },
+ 	}
+ 	return env
+ }
+@@ -51,6 +60,11 @@ func TestDarnWriteEntry_ConstructionFailures(t *testing.T) {
+ 		{"NilCommit", "Darn.Commit", gated, func(e *Env) { e.Darn.Commit = nil }},
+ 		{"NilLatestOutcome", "Darn.LatestOutcome", gated, func(e *Env) { e.Darn.LatestOutcome = nil }},
+ 		{"NilPublishFailure", "Darn.PublishFailure", gated, func(e *Env) { e.Darn.PublishFailure = nil }},
++		{"NilRunStart", "Darn.RunStart", gated, func(e *Env) { e.Darn.RunStart = nil }},
++		{"NilTaskHead", "Darn.TaskHead", gated, func(e *Env) { e.Darn.TaskHead = nil }},
++		{"NilDirty", "Darn.Dirty", gated, func(e *Env) { e.Darn.Dirty = nil }},
++		{"NilParentTips", "Darn.ParentTips", gated, func(e *Env) { e.Darn.ParentTips = nil }},
++		{"NilIsAncestor", "Darn.IsAncestor", gated, func(e *Env) { e.Darn.IsAncestor = nil }},
+ 	}
+ 	for _, tt := range tests {
+ 		t.Run(tt.name, func(t *testing.T) {
+@@ -100,4 +114,14 @@ func TestDarnWriteEntry_HappyPath(t *testing.T) {
+ 	if len(gate) != 2 || gate[0].Name != "verify" || gate[1].Name != "description" || gate[0].Attempts != 2 || gate[1].Attempts != 2 {
+ 		t.Errorf("table gate = %+v; want the verify and description entries with 2 attempts each", gate)
+ 	}
++
++	// An exhausted gate's reason names the row's findings file, so an entry that drops the chain fails here.
++	withGateFindingsFile(&env, t.TempDir())
++	env.Seats = &shedfake.SeatRunner{Results: []seatengine.Result{failedGateResult(output)}}
++	producer, err = darnWriteEntry(RowIdentity{Name: "Row"}, cfg, env)
++	if err != nil {
++		t.Fatalf("darnWriteEntry() error = %v; want nil", err)
++	}
++	_, pointer, _ := producer.Call(context.Background())
++	requireNamesFindingsFile(t, env, "Row", pointer.Reason)
+ }
+diff --git a/internal/shedrecipe/entries_describe.go b/internal/shedrecipe/entries_describe.go
+index f204aa14e..e8ae76f76 100644
+--- a/internal/shedrecipe/entries_describe.go
++++ b/internal/shedrecipe/entries_describe.go
+@@ -11,7 +11,7 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/shedengine"
+ )
+ 
+-// describeEntry is the Constructor for the "Describe" registry row: it resolves the row's "gates" Config key through resolveGateSpec, validates Env.DescribeTable, Env.CommitDescription, and Env.Seats, then returns loomshed.NewDiscussionWrite(name, shedadapters.NewMultiLLMProducerSourced(name, tables, env.Seats, env.Now, nil), env.CommitDescription) -- a seat-table producer behind a commit decorator.
++// describeEntry is the Constructor for the "Describe" registry row: it resolves the row's "gates" Config key through resolveGateSpec, validates Env.DescribeTable, Env.CommitDescription, and Env.Seats, then returns loomshed.NewDiscussionWrite(name, shedadapters.NewMultiLLMProducerSourced(name, tables, env.Seats, env.Now, nil).KeepGateFindings(path), env.CommitDescription), path being the row's gate findings file -- a seat-table producer behind a commit decorator.
+ // Env.Shuttle is never read: the lead runs through Env.Seats.
+ //
+ // The DiscussionWrite decorator is reused rather than copied: its commit-on-non-empty-pointer rule
+@@ -46,6 +46,6 @@ func describeEntry(row RowIdentity, cfg Config, env Env) (shedengine.ShedProduce
+ 		table.Gate = gate
+ 		return table, nil
+ 	}
+-	inner := shedadapters.NewMultiLLMProducerSourced(row.Name, tables, env.Seats, env.Now, nil)
++	inner := shedadapters.NewMultiLLMProducerSourced(row.Name, tables, env.Seats, env.Now, nil).KeepGateFindings(env.gateFindingsPath(row.Name))
+ 	return loomshed.NewDiscussionWrite(row.Name, inner, env.CommitDescription), nil
+ }
+diff --git a/internal/shedrecipe/entries_describe_test.go b/internal/shedrecipe/entries_describe_test.go
+index 70f307db4..28089c5a7 100644
+--- a/internal/shedrecipe/entries_describe_test.go
++++ b/internal/shedrecipe/entries_describe_test.go
+@@ -84,4 +84,14 @@ func TestDescribeEntry_HappyPath(t *testing.T) {
+ 	if pointer.Path != env.DescriptionPath {
+ 		t.Errorf("Call() OutputPointer.Path = %q; want the lead's output %q", pointer.Path, env.DescriptionPath)
+ 	}
++
++	// An exhausted gate's reason names the row's findings file, so an entry that drops the chain fails here.
++	withGateFindingsFile(&env, t.TempDir())
++	env.Seats = &shedfake.SeatRunner{Results: []seatengine.Result{failedGateResult(env.DescriptionPath)}}
++	p, err = describeEntry(RowIdentity{Name: "Row"}, gatesCfg("description", 2), env)
++	if err != nil {
++		t.Fatalf("describeEntry() error = %v; want nil", err)
++	}
++	stuck := shedfake.RequireOutcome(t, p, shedengine.Stuck)
++	requireNamesFindingsFile(t, env, "Row", stuck.Reason)
+ }
+diff --git a/internal/shedrecipe/entries_discussionwrite.go b/internal/shedrecipe/entries_discussionwrite.go
+index 92aa59f31..1dddfacc5 100644
+--- a/internal/shedrecipe/entries_discussionwrite.go
++++ b/internal/shedrecipe/entries_discussionwrite.go
+@@ -11,7 +11,7 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/shedengine"
+ )
+ 
+-// discussionWriteEntry is the Constructor for the "DiscussionWrite" registry row: it validates Env.DiscussionTable, Env.CommitDiscussion and Env.Seats, resolves the row's "gates" Config key through resolveGateSpec, then returns loomshed.NewDiscussionWrite(name, shedadapters.NewMultiLLMProducerSourced(name, tables, env.Seats, env.Now, prepare), env.CommitDiscussion) -- a seat-table producer behind a commit decorator.
++// discussionWriteEntry is the Constructor for the "DiscussionWrite" registry row: it validates Env.DiscussionTable, Env.CommitDiscussion and Env.Seats, resolves the row's "gates" Config key through resolveGateSpec, then returns loomshed.NewDiscussionWrite(name, shedadapters.NewMultiLLMProducerSourced(name, tables, env.Seats, env.Now, prepare).KeepGateFindings(path), env.CommitDiscussion), path being the row's gate findings file -- a seat-table producer behind a commit decorator.
+ // Env.Shuttle is never read: the seats run through Env.Seats.
+ //
+ // The table arrives as a shedadapters.TableSource closure evaluated once per Call, so the seats' stencils are read at call time.
+@@ -60,6 +60,6 @@ func discussionWriteEntry(row RowIdentity, cfg Config, env Env) (shedengine.Shed
+ 		table.Gate = gate
+ 		return table, nil
+ 	}
+-	inner := shedadapters.NewMultiLLMProducerSourced(row.Name, tables, env.Seats, env.Now, prepare)
++	inner := shedadapters.NewMultiLLMProducerSourced(row.Name, tables, env.Seats, env.Now, prepare).KeepGateFindings(env.gateFindingsPath(row.Name))
+ 	return loomshed.NewDiscussionWrite(row.Name, inner, env.CommitDiscussion), nil
+ }
+diff --git a/internal/shedrecipe/entries_discussionwrite_test.go b/internal/shedrecipe/entries_discussionwrite_test.go
+index 854f1919a..b194b262b 100644
+--- a/internal/shedrecipe/entries_discussionwrite_test.go
++++ b/internal/shedrecipe/entries_discussionwrite_test.go
+@@ -44,6 +44,27 @@ func leadDoneResult(output string) seatengine.Result {
+ 	}
+ }
+ 
++// failedGateResult is a done lead writing output whose result carries an exhausted, non-terminal GateOutcome with findings text, so a gated producer keeps the findings in its row's findings file.
++func failedGateResult(output string) seatengine.Result {
++	return seatengine.Result{
++		Chair:        shuttleengine.Result{Outcome: shuttleengine.OutcomeDone, Gate: &shuttleengine.GateOutcome{Attempts: 2, Findings: "the gate's findings", FindingsPath: "/gate/own-findings.md"}},
++		ChairOutputs: []string{output},
++	}
++}
++
++// withGateFindingsFile tells env a per-row findings file under dir.
++func withGateFindingsFile(env *Env, dir string) {
++	env.GateFindingsFile = func(row string) string { return filepath.Join(dir, "gate-findings", row+".md") }
++}
++
++// requireNamesFindingsFile fails t unless reason names the findings file env tells the row named row.
++func requireNamesFindingsFile(t *testing.T, env Env, row, reason string) {
++	t.Helper()
++	if path := env.GateFindingsFile(row); !strings.Contains(reason, path) {
++		t.Errorf("Stuck reason = %q; want it to name the row's findings file %q", reason, path)
++	}
++}
++
+ // TestDiscussionWriteEntry_ConstructionFailures covers the three seams discussionWriteEntry requires and the Config rejection every entry in this package performs first.
+ func TestDiscussionWriteEntry_ConstructionFailures(t *testing.T) {
+ 	t.Parallel()
+@@ -83,6 +104,18 @@ func TestDiscussionWriteEntry_HappyPath(t *testing.T) {
+ 	if producer == nil {
+ 		t.Fatalf("discussionWriteEntry() = nil producer; want non-nil")
+ 	}
++
++	// An exhausted gate's reason names the row's findings file, so an entry that drops the chain fails here.
++	output := filepath.Join(env.WorktreeRoot, "decision-record.md")
++	withSeatTable(&env, output)
++	withGateFindingsFile(&env, t.TempDir())
++	env.Seats = &shedfake.SeatRunner{Results: []seatengine.Result{failedGateResult(output)}}
++	producer, err = discussionWriteEntry(RowIdentity{Name: "Row"}, Config{}, env)
++	if err != nil {
++		t.Fatalf("discussionWriteEntry() error = %v; want nil", err)
++	}
++	pointer := shedfake.RequireOutcome(t, producer, shedengine.Stuck)
++	requireNamesFindingsFile(t, env, "Row", pointer.Reason)
+ }
+ 
+ // TestDiscussionWriteEntry_CallDone drives the producer's Call once against a done lead and asserts the told table was evaluated once and reached the seat runner with the row's gate, the returned OutputPointer.Path is the lead's first output, and the commit closure fired exactly once.
+diff --git a/internal/shedrecipe/entries_multillm.go b/internal/shedrecipe/entries_multillm.go
+index c19062b2a..8bca4ef91 100644
+--- a/internal/shedrecipe/entries_multillm.go
++++ b/internal/shedrecipe/entries_multillm.go
+@@ -17,7 +17,7 @@ import (
+ )
+ 
+ // multiLLMEntry is the Constructor for the "MultiLLM" registry row.
+-// It validates cfg and env, builds the seat table the row describes, checks it against the told stencils directory, and returns shedadapters.NewMultiLLMProducer(name, table, env.Seats, env.Now).
++// It validates cfg and env, builds the seat table the row describes, checks it against the told stencils directory, and returns shedadapters.NewMultiLLMProducer(name, table, env.Seats, env.Now).KeepGateFindings(path), path being the row's gate findings file.
+ // Table.Validate runs here, so an unreadable stencil, an unresolvable include, a nested include and a reserved or blank value fail at construction rather than at the first Call.
+ func multiLLMEntry(row RowIdentity, cfg Config, env Env) (shedengine.ShedProducer, error) {
+ 	role, err := configString(cfg, "role", true)
+@@ -99,7 +99,7 @@ func multiLLMEntry(row RowIdentity, cfg Config, env Env) (shedengine.ShedProduce
+ 		return nil, fmt.Errorf("shedrecipe: MultiLLM: %w", err)
+ 	}
+ 
+-	return shedadapters.NewMultiLLMProducer(row.Name, table, env.Seats, env.Now), nil
++	return shedadapters.NewMultiLLMProducer(row.Name, table, env.Seats, env.Now).KeepGateFindings(env.gateFindingsPath(row.Name)), nil
+ }
+ 
+ // multiLLMSeat builds the i-th seat of a MultiLLM row from its "seats" element.
+diff --git a/internal/shedrecipe/entries_planwrite.go b/internal/shedrecipe/entries_planwrite.go
+index 3a70f6c00..7586d37c7 100644
+--- a/internal/shedrecipe/entries_planwrite.go
++++ b/internal/shedrecipe/entries_planwrite.go
+@@ -66,7 +66,7 @@ func planWriteEntry(row RowIdentity, cfg Config, env Env) (shedengine.ShedProduc
+ 		table.Gate = gate
+ 		return table, nil
+ 	}
+-	inner := shedadapters.NewMultiLLMProducerSourced(row.Name, tables, env.Seats, env.Now, rotate)
++	inner := shedadapters.NewMultiLLMProducerSourced(row.Name, tables, env.Seats, env.Now, rotate).KeepGateFindings(env.gateFindingsPath(row.Name))
+ 	return loomshed.NewPlanWrite(row.Name, inner, env.CommitPlan), nil
+ }
+ 
+diff --git a/internal/shedrecipe/entries_planwrite_test.go b/internal/shedrecipe/entries_planwrite_test.go
+index e854745ec..8599d49b5 100644
+--- a/internal/shedrecipe/entries_planwrite_test.go
++++ b/internal/shedrecipe/entries_planwrite_test.go
+@@ -124,6 +124,18 @@ func TestPlanWriteEntry_HappyPath(t *testing.T) {
+ 	if producer == nil {
+ 		t.Fatalf("planWriteEntry() = nil producer; want non-nil")
+ 	}
++
++	// An exhausted gate's reason names the row's findings file, so an entry that drops the chain fails here.
++	output := filepath.Join(env.AnchorPath, "00-overview.md")
++	withPlanTable(&env, output)
++	withGateFindingsFile(&env, t.TempDir())
++	env.Seats = &shedfake.SeatRunner{Results: []seatengine.Result{failedGateResult(output)}}
++	producer, err = planWriteEntry(RowIdentity{Name: "Row"}, Config{}, env)
++	if err != nil {
++		t.Fatalf("planWriteEntry() error = %v; want nil", err)
++	}
++	pointer := shedfake.RequireOutcome(t, producer, shedengine.Stuck)
++	requireNamesFindingsFile(t, env, "Row", pointer.Reason)
+ }
+ 
+ // TestPlanWriteEntry_CallDone drives the happy-path producer's Call once against a done lead.
+diff --git a/internal/shedrecipe/entries_prrework.go b/internal/shedrecipe/entries_prrework.go
+index 58ca459ab..6395cef5e 100644
+--- a/internal/shedrecipe/entries_prrework.go
++++ b/internal/shedrecipe/entries_prrework.go
+@@ -67,7 +67,7 @@ func prReworkEntry(row RowIdentity, cfg Config, env Env) (shedengine.ShedProduce
+ 			table.Gate = gate
+ 			return table, nil
+ 		}
+-		return shedadapters.NewMultiLLMProducerSourced(row.Name, tables, env.Seats, env.Now, nil)
++		return shedadapters.NewMultiLLMProducerSourced(row.Name, tables, env.Seats, env.Now, nil).KeepGateFindings(env.gateFindingsPath(row.Name))
+ 	}
+ 	return loomshed.NewPRRework(row.Name, session, rw), nil
+ }
+diff --git a/internal/shedrecipe/entries_prrework_test.go b/internal/shedrecipe/entries_prrework_test.go
+index 64033bb1a..d932db4d0 100644
+--- a/internal/shedrecipe/entries_prrework_test.go
++++ b/internal/shedrecipe/entries_prrework_test.go
+@@ -13,6 +13,7 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/loomshed"
+ 	"github.com/Knatte18/loomyard/internal/seatengine"
+ 	"github.com/Knatte18/loomyard/internal/segmentcolor"
++	"github.com/Knatte18/loomyard/internal/shedengine"
+ 	"github.com/Knatte18/loomyard/internal/testkit/plankit"
+ 	"github.com/Knatte18/loomyard/internal/testkit/shedfake"
+ )
+@@ -87,6 +88,25 @@ func TestPRReworkEntry_HappyPath(t *testing.T) {
+ 	if producer == nil {
+ 		t.Fatalf("prReworkEntry() = nil producer; want non-nil")
+ 	}
++
++	// An exhausted gate's reason names the row's findings file, so an entry that drops the chain fails here.
++	env := withPendingRework(t, reworkTestEnv(t))
++	output := filepath.Join(env.Rework.ReworkDir, "coverage.md")
++	env.ReworkTable = func(loomshed.ReworkTold) (seatengine.Table, error) {
++		return seatengine.Table{
++			RolePrefix: "rework",
++			Segment:    segmentcolor.Webster,
++			Seats:      []seatengine.Seat{{Stencil: "loom-template-rework", Outputs: []string{output}}},
++		}, nil
++	}
++	withGateFindingsFile(&env, t.TempDir())
++	env.Seats = &shedfake.SeatRunner{Results: []seatengine.Result{failedGateResult(output)}}
++	producer, err = prReworkEntry(RowIdentity{Name: "Row"}, Config{}, env)
++	if err != nil {
++		t.Fatalf("prReworkEntry() error = %v; want nil", err)
++	}
++	pointer := shedfake.RequireOutcome(t, producer, shedengine.Stuck)
++	requireNamesFindingsFile(t, env, "Row", pointer.Reason)
+ }
+ 
+ func TestPRReworkEntry_EvaluatesReworkTableWithToldValue(t *testing.T) {
+diff --git a/internal/shedrecipe/env.go b/internal/shedrecipe/env.go
+index 31437b06c..5de2ac788 100644
+--- a/internal/shedrecipe/env.go
++++ b/internal/shedrecipe/env.go
+@@ -35,6 +35,14 @@ func requireNonEmpty(entry, field, value string) error {
+ 	return nil
+ }
+ 
++// gateFindingsPath returns the gate findings file Env.GateFindingsFile tells the row named row, or "" when the seam is unset.
++func (e Env) gateFindingsPath(row string) string {
++	if e.GateFindingsFile == nil {
++		return ""
++	}
++	return e.GateFindingsFile(row)
++}
++
+ // requireSeam errors when seam is nil, naming entry and field.
+ //
+ // It detects a typed-nil interface value as nil too, since Env.Shuttle and Env.Burler are
+diff --git a/internal/shedrecipe/multillm_fixture_test.go b/internal/shedrecipe/multillm_fixture_test.go
+index 896165536..9dab8eca6 100644
+--- a/internal/shedrecipe/multillm_fixture_test.go
++++ b/internal/shedrecipe/multillm_fixture_test.go
+@@ -14,6 +14,7 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/seatengine"
+ 	"github.com/Knatte18/loomyard/internal/shedbuild"
+ 	"github.com/Knatte18/loomyard/internal/shedengine"
++	"github.com/Knatte18/loomyard/internal/shedrecipe"
+ 	"github.com/Knatte18/loomyard/internal/shuttleengine"
+ 	"github.com/Knatte18/loomyard/internal/stencilstore"
+ 	"github.com/Knatte18/loomyard/internal/testkit/envkit"
+@@ -94,6 +95,38 @@ func TestMultiLLMFixtureRecipe_BuildsAndRunsAgainstFakeSeats(t *testing.T) {
+ 	if !reflect.DeepEqual(seats, want) {
+ 		t.Errorf("recorded seats = %+v; want %+v", seats, want)
+ 	}
++
++	// A chair whose gate is exhausted keeps its findings in the told file and names it, or names the gate's own path when no file is told.
++	exhausted := seatengine.Result{
++		Chair:        shuttleengine.Result{Outcome: shuttleengine.OutcomeDone, Gate: &shuttleengine.GateOutcome{Attempts: 2, Findings: "the gate's findings", FindingsPath: "/gate/own-findings.md"}},
++		ChairOutputs: []string{chairOutput},
++	}
++	told := env.GateFindingsFile("Seat-Step")
++	if reason := callExhaustedChair(t, recipe, env, exhausted); reason != "gate did not pass after 2 attempts; findings: "+told {
++		t.Errorf("Call() reason with a told findings file = %q; want it to name %q", reason, told)
++	}
++	if got, err := os.ReadFile(told); err != nil || string(got) != "the gate's findings" {
++		t.Errorf("findings file = %q, %v; want the gate's findings", got, err)
++	}
++	env.GateFindingsFile = nil
++	if reason := callExhaustedChair(t, recipe, env, exhausted); reason != "gate did not pass after 2 attempts; findings: /gate/own-findings.md" {
++		t.Errorf("Call() reason with no told findings file = %q; want it to name the gate's own findings path", reason)
++	}
++}
++
++// callExhaustedChair builds recipe over env with a seat runner answering result, calls its one row and returns the Stuck reason.
++func callExhaustedChair(t *testing.T, recipe shedbuild.Recipe, env shedrecipe.Env, result seatengine.Result) string {
++	t.Helper()
++	env.Seats = &shedfake.SeatRunner{Results: []seatengine.Result{result}}
++	defs, err := shedbuild.Build(recipe, env)
++	if err != nil {
++		t.Fatalf("shedbuild.Build() error = %v; want nil", err)
++	}
++	outcome, pointer, err := defs[0].Producer.Call(context.Background())
++	if err != nil || outcome != shedengine.Stuck {
++		t.Fatalf("Call() = %q, %v; want Stuck", outcome, err)
++	}
++	return pointer.Reason
+ }
+ 
+ // writeFixtureStencil writes body as the stencil name in dir, where stencilstore reads it from.
+diff --git a/internal/shedrecipe/recipe.go b/internal/shedrecipe/recipe.go
+index 0aa2abf75..c51b291db 100644
+--- a/internal/shedrecipe/recipe.go
++++ b/internal/shedrecipe/recipe.go
+@@ -87,6 +87,9 @@ type Env struct {
+ 	// RunScratchDir is the told ephemeral shed scratch directory of the run, read by the gate resolver's "plan" and "rework-plan" gates, which record their informational findings in a file under it.
+ 	// Empty keeps those findings inline in the log.
+ 	RunScratchDir string
++	// GateFindingsFile is the told per-row file an exhausted gate's findings are kept in, read by every entry that builds a gated producer.
++	// Nil tells no row a path, which keeps the gate's own findings path in the Stuck reason.
++	GateFindingsFile func(row string) string
+ 	// VerifyDir is the told verify directory, read by the gate resolver's "verify" gate.
+ 	VerifyDir string
+ 	// VerifyCommand is the told verify-command source, read at each arrival by the gate resolver's "verify" gate, which requires it.
+diff --git a/internal/shedrun/paths.go b/internal/shedrun/paths.go
+index 7dcd8c454..a3d341a28 100644
+--- a/internal/shedrun/paths.go
++++ b/internal/shedrun/paths.go
+@@ -42,6 +42,12 @@ const settleRecordsFileName = "go-settle.jsonl"
+ // alignmentDirName is the segment under a run's directory that holds its alignment attempts, one directory per point.
+ const alignmentDirName = "alignment"
+ 
++// gateFindingsDirName is the segment under a run's scratch directory that holds one gate findings file per row.
++const gateFindingsDirName = "gate-findings"
++
++// gateFindingsFileSuffix is the suffix of a row's gate findings file, whose path GateFindingsFile returns.
++const gateFindingsFileSuffix = ".md"
++
+ // arbiterMarkerFileName is the filename of the arbiter in-flight marker, whose path ArbiterMarker returns.
+ const arbiterMarkerFileName = "arbiter-inflight.json"
+ 
+@@ -173,6 +179,14 @@ func BattenWatchedMarker(l *lyxcwd.Location, runID string) string {
+ 	return filepath.Join(ScratchDir(l, runID), BattenWatchedFileName)
+ }
+ 
++// GateFindingsFile returns the path to the ephemeral gate findings file of the row named row, under ScratchDir(l, runID).
++// There is one file per row: the row's producer writes it when its gate is exhausted,
++// and the row's next call whose gates pass removes it.
++// A goto, a resume and a pause leave the scratch directory alone, so the file outlives them.
++func GateFindingsFile(l *lyxcwd.Location, runID, row string) string {
++	return filepath.Join(ScratchDir(l, runID), gateFindingsDirName, row+gateFindingsFileSuffix)
++}
++
+ // SeedRel returns the worktree-anchor-relative form of SeedFile's path: the join of
+ // lyxdirs.LyxDirName, shedDirName, the run's directory segment under l, and "seed.json".
+ // It exists so a caller building a fabric commit pathspec for fabricengine.CommitAnchoredPaths'
+diff --git a/internal/shedrun/paths_test.go b/internal/shedrun/paths_test.go
+index bf4c2e753..65f725e43 100644
+--- a/internal/shedrun/paths_test.go
++++ b/internal/shedrun/paths_test.go
+@@ -60,6 +60,10 @@ func TestPathConstructors(t *testing.T) {
+ 			func(l *lyxcwd.Location) string { return filepath.Join(StepsDir(l, "self"), "t1.stderr.log") }},
+ 		{"ScratchDir", func(l *lyxcwd.Location) string { return ScratchDir(l, "self") },
+ 			func(l *lyxcwd.Location) string { return filepath.Join(l.AnchorPath(), ".lyx", "shed", worktreeName) }},
++		{"GateFindingsFile", func(l *lyxcwd.Location) string { return GateFindingsFile(l, "self", "Darn-Write") },
++			func(l *lyxcwd.Location) string {
++				return filepath.Join(ScratchDir(l, "self"), "gate-findings", "Darn-Write.md")
++			}},
+ 		{"RunLock", func(l *lyxcwd.Location) string { return RunLock(l, "self") },
+ 			func(l *lyxcwd.Location) string { return filepath.Join(ScratchDir(l, "self"), "run.lock") }},
+ 		{"StatusLock", func(l *lyxcwd.Location) string { return StatusLock(l, "self") },
+diff --git a/internal/shedverbs/goto_test.go b/internal/shedverbs/goto_test.go
+index ff6fe42f3..bb25c3cac 100644
+--- a/internal/shedverbs/goto_test.go
++++ b/internal/shedverbs/goto_test.go
+@@ -8,6 +8,7 @@ import (
+ 	"context"
+ 	"errors"
+ 	"os"
++	"path/filepath"
+ 	"strings"
+ 	"testing"
+ 
+@@ -50,6 +51,14 @@ func seedBlocked(t *testing.T, paths testPaths, current string) {
+ func TestGotoCmd_MovesBlockedRunOntoRow(t *testing.T) {
+ 	paths := newTestPaths(t)
+ 	seedBlocked(t, paths, "B")
++	// A goto leaves the run's scratch directory alone, so a gate findings file kept there survives it.
++	findings := filepath.Join(filepath.Dir(paths.LockPath), "gate-findings", "B.md")
++	if err := os.MkdirAll(filepath.Dir(findings), 0o755); err != nil {
++		t.Fatalf("create the findings directory: %v", err)
++	}
++	if err := os.WriteFile(findings, []byte("kept findings"), 0o644); err != nil {
++		t.Fatalf("write the findings file: %v", err)
++	}
+ 
+ 	spec := gotoSpec(paths)
+ 	spec.Caller = "orch"
+@@ -79,6 +88,9 @@ func TestGotoCmd_MovesBlockedRunOntoRow(t *testing.T) {
+ 	if len(st.History) != 1 || st.History[0].By != "orch" {
+ 		t.Errorf("History = %+v; want one goto entry labelled orch", st.History)
+ 	}
++	if kept, err := os.ReadFile(findings); err != nil || string(kept) != "kept findings" {
++		t.Errorf("findings file = %q, %v; want it left in place by the goto", kept, err)
++	}
+ 
+ 	t.Run("ByShedOverridesTheCaller", func(t *testing.T) {
+ 		paths := newTestPaths(t)
+diff --git a/internal/shellguard/rows_integration_test.go b/internal/shellguard/rows_integration_test.go
+index f933e1a40..55ed578bf 100644
+--- a/internal/shellguard/rows_integration_test.go
++++ b/internal/shellguard/rows_integration_test.go
+@@ -251,4 +251,15 @@ func TestRows_PatternsDenyAndAllow(t *testing.T) {
+ 			}
+ 		})
+ 	}
++	// The form the darn writer's publish-failure steps render for a failing tmux-tier test; no row may take it away.
++	const tmuxTierReproduce = "lyx gate test --wait --tier 2 github.com/Knatte18/loomyard/internal/x -- -run '^TestX$'"
++	for name, row := range rows {
++		t.Run(name+"_tmux_tier_reproduce_command", func(t *testing.T) {
++			t.Parallel()
++
++			if payloadDenied(t, row, tmuxTierReproduce, "") {
++				t.Errorf("row %q denies %q; want allowed", name, tmuxTierReproduce)
++			}
++		})
++	}
+ }
+diff --git a/internal/shuttleengine/doc.go b/internal/shuttleengine/doc.go
+index 9292e384a..8fe799544 100644
+--- a/internal/shuttleengine/doc.go
++++ b/internal/shuttleengine/doc.go
+@@ -360,6 +360,7 @@
+ // A gated run's GateSpec entries answer passed, failed or pending (GateResult.Pending, PassOnCap or MayHold entries only).
+ // An entry that sets GateEntry.Forked evaluates that closure in place of Gate for a run whose record carries fork authorization, copied from Spec.ForkSubagents at spawn; the record, not a later Call's Spec, also decides the fork audit.
+ // A failing result flagged GateResult.Terminal finalizes the run at once with no re-prompt, and its findings text rides GateOutcome.Reason.
++// A failed outcome carries the failing entry's findings text on GateOutcome.Findings beside that terminal reason, because finalize removes the findings file with the run directory.
+ // A failed entry with budget remaining is re-prompted with one default line naming the findings file, unless the entry sets GateEntry.Reprompt, whose rendered line is sent instead.
+ // Every send validates its text, so a renderer returning several lines, or an empty or whitespace-only line, fails the send and ends the loop with the attempts spent so far.
+ // A pending answer holds the run at a turn boundary without re-prompting or counting a failure:
+diff --git a/internal/shuttleengine/gate.go b/internal/shuttleengine/gate.go
+index 491a64211..d31c8da07 100644
+--- a/internal/shuttleengine/gate.go
++++ b/internal/shuttleengine/gate.go
+@@ -152,7 +152,11 @@ type GateOutcome struct {
+ 	// It is diagnostic text ONLY, never a path to dereference after Wait returns: the
+ 	// findings file lives in the run directory that finalize deletes on the Done cleanup every
+ 	// exhausted gate takes, so a producer that opens it is a defect.
++	// A producer that keeps the findings reads Findings.
+ 	FindingsPath string
++	// Findings is the findings text of the failing entry, empty when Passed.
++	// It rides the outcome because the findings file dies with the run directory, so it is the text a producer keeps.
++	Findings string
+ 	// Reason is the Findings text of the terminal failing result, empty otherwise.
+ 	// It rides the outcome because finalize deletes the run directory and the findings file with it, so a terminal entry's explanation reaches the producer only here.
+ 	Reason string
+diff --git a/internal/shuttleengine/gate_list_test.go b/internal/shuttleengine/gate_list_test.go
+index 046323fb9..2667e02ac 100644
+--- a/internal/shuttleengine/gate_list_test.go
++++ b/internal/shuttleengine/gate_list_test.go
+@@ -243,6 +243,9 @@ func TestGateList_FinalReports(t *testing.T) {
+ 					if result.Gate.FindingsPath != findingsPath {
+ 						t.Errorf("FindingsPath = %q, want %q", result.Gate.FindingsPath, findingsPath)
+ 					}
++					if result.Gate.Findings != "bad" {
++						t.Errorf("Findings = %q, want %q", result.Gate.Findings, "bad")
++					}
+ 					if result.Gate.Attempts != 2 || len(reed.SendTextCalls) != 2 {
+ 						t.Errorf("Attempts = %d, SendText calls = %d, want 2 and 2", result.Gate.Attempts, len(reed.SendTextCalls))
+ 					}
+diff --git a/internal/shuttleengine/wait.go b/internal/shuttleengine/wait.go
+index 33f116271..8063efb8d 100644
+--- a/internal/shuttleengine/wait.go
++++ b/internal/shuttleengine/wait.go
+@@ -1464,7 +1464,7 @@ func (run *Run) identity() Result {
+ // A non-nil error from a closure is returned verbatim, stores no memo and changes no count, per the "a gate error is never not passed" decision:
+ // a gate that could not run has found no defect, it is an infrastructure fault, not a GateResult{Passed: false}.
+ //
+-// On a failing entry the method writes GateResult.Findings to <run.runDir>/gateFindingsFileName, overwriting any previous arrival's file so the agent always reads the current complaint (the "findings always ride a file" decision), and sets GateOutcome.FindingsPath to that path when the outcome did not pass.
++// On a failing entry the method writes GateResult.Findings to <run.runDir>/gateFindingsFileName, overwriting any previous arrival's file so the agent always reads the current complaint (the "findings always ride a file" decision), and sets GateOutcome.FindingsPath to that path and GateOutcome.Findings to that text when the outcome did not pass.
+ // A write failure is a returned error, not a failed gate — findings the agent can never read cannot fix anything.
+ // Both of this method's error returns come back unwrapped, on purpose:
+ // this is a helper the two finalize/Wait call sites already wrap with their own "shuttle: gate: %w" context, so wrapping here too would double it, and it keeps this method's own negative-verdict return sites free of the completionsignal_enforcement_test.go tripwire's Errorf marker, which is reserved for the two call sites that actually finalize a run.
+@@ -1496,7 +1496,7 @@ func (run *Run) evaluateGate(final bool) (*GateOutcome, error) {
+ 	failedAt := -1
+ 	pendingAt := -1
+ 	pendingSend, pendingWayForward := "", ""
+-	findingsPath := ""
++	findingsPath, findings := "", ""
+ 	terminal, reason := false, ""
+ 	for i, entry := range run.gate {
+ 		line := GateEntryOutcome{Name: entry.Name, Attempts: run.gateSent[i]}
+@@ -1560,6 +1560,7 @@ func (run *Run) evaluateGate(final bool) (*GateOutcome, error) {
+ 			if writeErr := os.WriteFile(findingsPath, []byte(result.Findings), 0o644); writeErr != nil {
+ 				return nil, writeErr
+ 			}
++			findings = result.Findings
+ 			line.State = GateEntryFailed
+ 			failedAt = i
+ 			if !entry.PassOnCap {
+@@ -1574,6 +1575,7 @@ func (run *Run) evaluateGate(final bool) (*GateOutcome, error) {
+ 	}
+ 	if !outcome.Passed {
+ 		outcome.FindingsPath = findingsPath
++		outcome.Findings = findings
+ 		outcome.Reason = reason
+ 	}
+ 
+diff --git a/internal/testkit/envkit/envkit.go b/internal/testkit/envkit/envkit.go
+index 00e82e93f..9ebdfc988 100644
+--- a/internal/testkit/envkit/envkit.go
++++ b/internal/testkit/envkit/envkit.go
+@@ -36,6 +36,7 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/shedrecipe"
+ 	"github.com/Knatte18/loomyard/internal/summaryparser"
+ 	"github.com/Knatte18/loomyard/internal/testkit/shedfake"
++	"github.com/Knatte18/loomyard/internal/verifytree"
+ 	"github.com/Knatte18/loomyard/internal/websterengine"
+ 	"gopkg.in/yaml.v3"
+ )
+@@ -59,6 +60,7 @@ var nilLegal = map[string]bool{
+ 	"Landing.Reconcile":                 true,
+ 	"Landing.VerifyCommand":             true,
+ 	"Landing.PublishSkip":               true,
++	"Landing.ClassifyVerifyFailure":     true,
+ 	"Landing.VerifyWaitMark":            true,
+ 	"Landing.FailingTests":              true,
+ 	"Landing.Registry":                  true,
+@@ -273,6 +275,7 @@ func FullEnv(t testing.TB) shedrecipe.Env {
+ 		SpecsDir:           mustMkdir(t, filepath.Join(dir, "specs")),
+ 		RunRoot:            mustMkdir(t, filepath.Join(dir, "run-root")),
+ 		RunScratchDir:      mustMkdir(t, filepath.Join(dir, "run-scratch")),
++		GateFindingsFile:   func(row string) string { return filepath.Join(dir, "gate-findings", row+".md") },
+ 		DecisionRecordPath: filepath.Join(dir, "decision-record.md"),
+ 		PatternRecordPath:  filepath.Join(dir, "decision-record.md"),
+ 		RefuseRaw:          []string{"go test"},
+@@ -379,7 +382,14 @@ func FullEnv(t testing.TB) shedrecipe.Env {
+ 			ClearRejection: func() error { return nil },
+ 			Commit:         func() error { return nil },
+ 			LatestOutcome:  func() (loomshed.DarnOutcome, bool, error) { return loomshed.DarnOutcome{}, false, nil },
+-			PublishFailure: func() (string, bool, error) { return "", false, nil },
++			PublishFailure: func() (string, verifytree.PublishFailure, bool, error) {
++				return "", verifytree.PublishFailure{}, false, nil
++			},
++			RunStart:   func() (time.Time, error) { return time.Time{}, nil },
++			TaskHead:   func() (string, error) { return "", nil },
++			Dirty:      func() ([]string, error) { return nil, nil },
++			ParentTips: func() ([]string, error) { return nil, nil },
++			IsAncestor: func(string) (bool, error) { return true, nil },
+ 		},
+ 		PlanIndex: noFindingsIndex{},
+ 
