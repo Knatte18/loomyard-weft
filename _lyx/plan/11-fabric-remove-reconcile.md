@@ -17,7 +17,7 @@
 - `internal/fabriccli/doc.go`
 
 **Uses:**
-- `plan:internal/pauserecord#SetGateExemptAll`
+- `internal/pauserecord#SetGateExemptAll`
 - `internal/runproc#Ended`
 - `internal/pairteardown#HubSeamOptions`
 - `internal/pairteardown#Teardown.OriginSeams`

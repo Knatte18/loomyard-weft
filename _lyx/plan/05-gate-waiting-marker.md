@@ -1,10 +1,10 @@
 # Card 5 — The network gate leaves a waiting marker while it waits, and one process may pass every entry
 
 **Create:**
-- `plan:internal/pauserecord#WaitingMarker` -> `type WaitingMarker struct`
-- `plan:internal/pauserecord#WaitingDir` -> `func WaitingDir(recordPath string) string`
-- `plan:internal/pauserecord#ListWaiting` -> `func ListWaiting(recordPath string, alive func(pid int, startTime string) bool) ([]WaitingMarker, error)`
-- `plan:internal/pauserecord#SetGateExemptAll` -> `func SetGateExemptAll() (restore func())`
+- `internal/pauserecord#WaitingMarker`
+- `internal/pauserecord#WaitingDir`
+- `internal/pauserecord#ListWaiting`
+- `internal/pauserecord#SetGateExemptAll`
 
 **Edit:**
 - `internal/pauserecord#Gate`

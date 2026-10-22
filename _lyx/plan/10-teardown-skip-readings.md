@@ -26,8 +26,8 @@
 - `docs/overview.md`
 
 **Uses:**
-- `plan:internal/pauserecord#ListWaiting`
-- `plan:internal/pauserecord#WaitingMarker`
+- `internal/pauserecord#ListWaiting`
+- `internal/pauserecord#WaitingMarker`
 - `internal/runproc#List`
 - `internal/runproc#Record`
 - `internal/fabricengine#RunProcDir`
