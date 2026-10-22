@@ -441,7 +441,7 @@
       }
     }
   ],
-  "currentBatch": 13,
+  "currentBatch": 0,
   "masterStrand": "076d19bba614522d1bb1aeaf796e3f5b",
   "masterSessionId": "83e4b5b3-1a0e-476c-af08-7bb8cc7450d6",
   "masterEngine": "claude",
@@ -544,8 +544,28 @@
       "spawnedAt": "2026-10-22T09:35:25Z",
       "sessionId": "83e4b5b3-1a0e-476c-af08-7bb8cc7450d6",
       "engine": "claude",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "13-paused-send-callers",
+        "status": "done",
+        "head_sha": "cb463a2ed4eeaa7a8a2bb9adff0c6f73623c0ed2",
+        "deviations": [
+          "internal/seatengine/engine_test.go",
+          "internal/seatengine/notice.go",
+          "internal/seatengine/seatfake_test.go",
+          "internal/tenderengine/resume.go"
+        ]
+      },
+      "cardShas": [
+        "cb463a2ed4eeaa7a8a2bb9adff0c6f73623c0ed2"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-tender-pause-holds-reprompt/83e4b5b3-1a0e-476c-af08-7bb8cc7450d6/subagents/agent-a49cc0be71bf219a9.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-tender-pause-holds-reprompt/83e4b5b3-1a0e-476c-af08-7bb8cc7450d6/subagents/agent-a49cc0be71bf219a9.jsonl"
+      ]
     },
     "5": {
       "slug": "loomshed-verify-hold",
@@ -657,6 +677,7 @@
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-tender-pause-holds-reprompt/83e4b5b3-1a0e-476c-af08-7bb8cc7450d6/subagents/agent-a1e358eef5e19105f.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-tender-pause-holds-reprompt/83e4b5b3-1a0e-476c-af08-7bb8cc7450d6/subagents/agent-a666bf7a61dd61b51.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-tender-pause-holds-reprompt/83e4b5b3-1a0e-476c-af08-7bb8cc7450d6/subagents/agent-a017007cecd8ca45e.jsonl",
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-tender-pause-holds-reprompt/83e4b5b3-1a0e-476c-af08-7bb8cc7450d6/subagents/agent-ac5faca8ce26ceca1.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-tender-pause-holds-reprompt/83e4b5b3-1a0e-476c-af08-7bb8cc7450d6/subagents/agent-ac5faca8ce26ceca1.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-tender-pause-holds-reprompt/83e4b5b3-1a0e-476c-af08-7bb8cc7450d6/subagents/agent-a49cc0be71bf219a9.jsonl"
   ]
 }
