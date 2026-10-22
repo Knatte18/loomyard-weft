@@ -1,0 +1,295 @@
+{
+  "runGuid": "cc8440d390b6c2398be987135961bbce",
+  "planFingerprint": "59f31864504351cb677aa3514ae9785347d31db80df150b7b9ef1fd59880361f",
+  "planFileHashes": {
+    "00-overview.md": "9e00e1f8fd25405df24654037cc9bb07b26a7516932ad40a418e116b025d6bb5",
+    "01-reed-pane-command-fields.md": "c9ec492b0e038176c7a6082af0107f6541109536aa8c7422ff4218ff3bf080a2",
+    "02-reed-pane-age-probe.md": "9e6d8be4687f130d933921114e98a127771e826ec27fa98827ce86e991a8244a",
+    "03-reed-engine-liveness.md": "d7872cd1a30f83fdbf63bb624341cac0af0e742d360b6418039b66ffd7117da4",
+    "04-conflict-stop-shell-only.md": "dc8ffac9fa30c862f1422c51d63e2f06a40b2a5a6324d925c0dbcaa4554f7d8c",
+    "05-reed-pane-elsewhere.md": "8f41bc9101e8c36f3a7bcd3e3714f7efffc6aab465131c86983423e1449da6b5",
+    "06-reed-reclaim-dead-name.md": "011457f662dd1b8aa9081d8aae94e4d93c0e6eabed0d4dd060ad580a072bd10c",
+    "07-creel-delivery-teardown.md": "ec18906e3d8b887f25a86dff9318998ee4d87a2ff7680d067a6e6c93e2e5d833",
+    "08-orch-request-marker-lock.md": "8e2467b43365fd5e4a08a7891be32ce23ecdcc2ca4750b95562df9f86c1c8d7b",
+    "09-orch-request-pause-discount.md": "dab495a209e7887faf88e08a0d7e319e71ef2f1f3840987b8e8a29cd79fa5538",
+    "10-orch-note-gate-no-reply.md": "2521c054bf3f78367d9252654c52ecb15d82a70a0c8fd339fba024982cc71269",
+    "11-orch-compact-withdraw-queued.md": "1560af0df38327c6764c045534b3c9961876306ede97a567201d15625aeaf2b1",
+    "12-orch-withdraw-and-request-status.md": "05c9b9e833ec43663f8bcea81a3cb190ec8ad9add74c159dbe189a0a18884d46",
+    "13-orch-status-restarts-watcher.md": "da25dee6f6498f164071c4ed5283f1b20be7a876c28ce9736742f4895aa5a9b3"
+  },
+  "planOverviewFrameHash": "933fad865c3cf09c17060055cab6601248c73ac31e72c3c219737dc534d94602",
+  "partition": [
+    {
+      "cards": [
+        "01-reed-pane-command-fields",
+        "02-reed-pane-age-probe",
+        "03-reed-engine-liveness",
+        "04-conflict-stop-shell-only"
+      ],
+      "profile": "wide",
+      "estimate": 224444,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 1,
+        "startup": 54568,
+        "read_union": 32044,
+        "cards": [
+          {
+            "card": 1,
+            "card_text": 540,
+            "reads": {
+              "file:internal/reedengine/doc.go": 8016,
+              "package:internal/reedengine": 2000,
+              "tests:internal/reedengine": 2000
+            },
+            "messages": 117,
+            "written": 35640
+          },
+          {
+            "card": 2,
+            "card_text": 324,
+            "reads": {
+              "package:internal/reedengine": 2000,
+              "tests:internal/reedengine": 2000
+            },
+            "messages": 57,
+            "written": 17424
+          },
+          {
+            "card": 3,
+            "card_text": 864,
+            "reads": {
+              "file:internal/reedengine/doc.go": 8016,
+              "file:internal/shuttleengine/claudeengine/template.yaml": 96,
+              "file:internal/shuttleengine/doc.go": 6000,
+              "package:internal/reedengine": 2000,
+              "package:internal/shuttleengine": 2000,
+              "package:internal/shuttleengine/claudeengine": 2000,
+              "tests:internal/reedengine": 2000,
+              "tests:internal/shuttleengine": 2000,
+              "tests:internal/shuttleengine/claudeengine": 2000
+            },
+            "messages": 222,
+            "written": 67464
+          },
+          {
+            "card": 4,
+            "card_text": 204,
+            "reads": {
+              "package:internal/loomcli": 2000,
+              "tests:internal/loomcli": 2000
+            },
+            "messages": 57,
+            "written": 17304
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "05-reed-pane-elsewhere",
+        "06-reed-reclaim-dead-name",
+        "07-creel-delivery-teardown",
+        "08-orch-request-marker-lock"
+      ],
+      "profile": "wide",
+      "estimate": 235486,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 2,
+        "startup": 61568,
+        "read_union": 36980,
+        "cards": [
+          {
+            "card": 5,
+            "card_text": 708,
+            "reads": {
+              "file:internal/reedengine/doc.go": 8016,
+              "package:internal/reedcli": 2000,
+              "package:internal/reedengine": 2000,
+              "tests:internal/reedcli": 2000,
+              "tests:internal/reedengine": 2000
+            },
+            "messages": 155,
+            "written": 47208
+          },
+          {
+            "card": 6,
+            "card_text": 696,
+            "reads": {
+              "file:internal/reedengine/doc.go": 8016,
+              "package:internal/reedengine": 2000,
+              "tests:internal/reedengine": 2000
+            },
+            "messages": 85,
+            "written": 26196
+          },
+          {
+            "card": 7,
+            "card_text": 732,
+            "reads": {
+              "file:internal/creelcli/doc.go": 384,
+              "package:internal/creelcli": 2000,
+              "tests:internal/creelcli": 2000
+            },
+            "messages": 77.5,
+            "written": 23982
+          },
+          {
+            "card": 8,
+            "card_text": 852,
+            "reads": {
+              "file:internal/orchengine/doc.go": 5592,
+              "package:internal/orchcli": 2000,
+              "package:internal/orchengine": 2000,
+              "tests:internal/orchcli": 2000,
+              "tests:internal/orchengine": 2000
+            },
+            "messages": 129,
+            "written": 39552
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "09-orch-request-pause-discount",
+        "10-orch-note-gate-no-reply",
+        "11-orch-compact-withdraw-queued",
+        "12-orch-withdraw-and-request-status",
+        "13-orch-status-restarts-watcher"
+      ],
+      "profile": "wide",
+      "estimate": 227178,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 3,
+        "startup": 68568,
+        "read_union": 25548,
+        "cards": [
+          {
+            "card": 9,
+            "card_text": 492,
+            "reads": {
+              "file:internal/orchengine/doc.go": 5592,
+              "package:internal/orchengine": 2000,
+              "tests:internal/orchengine": 2000
+            },
+            "messages": 50.5,
+            "written": 15642
+          },
+          {
+            "card": 10,
+            "card_text": 876,
+            "reads": {
+              "file:contracts/stencils/orch/orch-template-handoff-soft.md": 72,
+              "file:contracts/stencils/orch/orch-template-handoff.md": 60,
+              "file:contracts/stencils/orch/orch-template-role.md": 3240,
+              "file:internal/orchengine/doc.go": 5592,
+              "package:contracts/stencils/orch": 2000,
+              "package:internal/orchengine": 2000,
+              "tests:contracts/stencils/orch": 2000,
+              "tests:internal/orchengine": 2000
+            },
+            "messages": 116.5,
+            "written": 35826
+          },
+          {
+            "card": 11,
+            "card_text": 528,
+            "reads": {
+              "file:internal/orchengine/doc.go": 5592,
+              "package:internal/orchengine": 2000,
+              "tests:internal/orchengine": 2000
+            },
+            "messages": 54.5,
+            "written": 16878
+          },
+          {
+            "card": 12,
+            "card_text": 672,
+            "reads": {
+              "file:internal/orchcli/doc.go": 1272,
+              "package:internal/orchcli": 2000,
+              "tests:internal/orchcli": 2000
+            },
+            "messages": 102.5,
+            "written": 31422
+          },
+          {
+            "card": 13,
+            "card_text": 744,
+            "reads": {
+              "file:internal/orchcli/doc.go": 1272,
+              "package:internal/orchcli": 2000,
+              "tests:internal/orchcli": 2000
+            },
+            "messages": 108.5,
+            "written": 33294
+          }
+        ]
+      }
+    }
+  ],
+  "currentBatch": 1,
+  "masterStrand": "e7f242d3cf12b3c4774c42b8222193df",
+  "masterSessionId": "350f8e97-b5f4-48c9-b284-9ecd21278e0a",
+  "masterEngine": "claude",
+  "batches": {
+    "1": {
+      "slug": "reed-pane-command-fields",
+      "cards": [
+        "01-reed-pane-command-fields",
+        "02-reed-pane-age-probe",
+        "03-reed-engine-liveness",
+        "04-conflict-stop-shell-only"
+      ],
+      "cardHashes": {
+        "01-reed-pane-command-fields": "c9ec492b0e038176c7a6082af0107f6541109536aa8c7422ff4218ff3bf080a2",
+        "02-reed-pane-age-probe": "9e6d8be4687f130d933921114e98a127771e826ec27fa98827ce86e991a8244a",
+        "03-reed-engine-liveness": "d7872cd1a30f83fdbf63bb624341cac0af0e742d360b6418039b66ffd7117da4",
+        "04-conflict-stop-shell-only": "dc8ffac9fa30c862f1422c51d63e2f06a40b2a5a6324d925c0dbcaa4554f7d8c"
+      },
+      "startSha": "64bba01bcc610e7179179f252242b5447c4cd9b1",
+      "kind": "fork",
+      "spawnedAt": "2026-10-22T16:34:21Z",
+      "sessionId": "350f8e97-b5f4-48c9-b284-9ecd21278e0a",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
+    }
+  }
+}
