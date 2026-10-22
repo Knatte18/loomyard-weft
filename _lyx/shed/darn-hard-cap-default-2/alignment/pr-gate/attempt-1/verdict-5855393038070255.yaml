@@ -1,0 +1,8 @@
+verdict: approve
+reason: >-
+  The diff covers every point of the board entry that a code change can make:
+  darn's template hard cap becomes 2, the light profile gets darn 1 and 2, the orch stencil drops the small-task run_settings rule in favour of naming a profile, and the docs and tests now say 2.
+  Removing the hub's own darn.yaml value is a Bolt config step after landing, not part of the diff.
+  The one carried-over Darn-Review finding was fixed, and the peer run-process-ownership does not overlap.
+question: ""
+superseded: []
