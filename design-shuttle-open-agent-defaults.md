@@ -1,6 +1,6 @@
 # Opening an agent into reed: engine bypass mode by default, explicit engine, model and effort, and reed add points to shuttle open
 
-`reed-agent-launch-bypass` · Note · bug, reed, shuttle, claude, codex
+`shuttle-open-agent-defaults` · Note · bug, reed, shuttle, claude, codex
 
 Imported from [issue #773](https://github.com/Knatte18/loomyard/issues/773).
 
