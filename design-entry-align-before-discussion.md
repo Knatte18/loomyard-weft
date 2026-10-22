@@ -15,7 +15,8 @@ A row of the run, before Discussion-Write (and before Darn-Write), aligns the ta
 - It escalates to the orch only for something larger, such as a design conflict with another run or a task that no longer makes sense; the orch is not to be disturbed by ordinary misalignments (operator, 2026-10-22).
 
 The board's run lock exists to stop the orch from editing a started run's entry, which is pointless once the run has read it (operator, 2026-10-22); it does not need to stop the run's own pre-Discussion row, since the text still matters then.
-So this row edits its own entry through an exemption the lock grants it, and `CLAUDE.md`'s rule that no step of a run changes its own entry changes with it.
+So this row edits its own entry through an exemption the lock grants it.
+The rule in this repo's `CLAUDE.md` that no decision, card or step of a run changes the running task's own entry goes: a rule about lyx's own behaviour cannot live in one repo's `CLAUDE.md`, since it does not travel with lyx to other hubs (operator, 2026-10-22); the lock and its exemption are the mechanism, documented in their package's `doc.go`.
 
 Related: note `discussion-alignment-into-lenses`, which drops the alignment agent at the discussion point; with this row in place the perch's `board-fit` only checks what the discussion itself added.
 Operator idea, 2026-10-22; the design is open.
