@@ -1187,6 +1187,24 @@
           "review_max_bounces": 1
         }
       }
+    },
+    {
+      "id": 741,
+      "slug": "open-window-live-check",
+      "title": "Open-Window opens a window whenever no terminal is attached here, instead of a recorded done",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "batten",
+        "reed"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "## Seen\n\nBatten's `Open-Window` row is recorded done once per run, so a run that goes on where its window is gone opens none.\nIssue #742 (folded into `machine-handover`, point 5) proposes counting the row per machine.\n\n## Idea\n\nRemember nothing: when a run starts or resumes, check live whether any tmux client is attached to the task worktree's reed session on this machine, and open the window when none is.\nThis covers more than a per-machine record does: a run adopted from another machine, a machine restart that closed every window, and a window the operator closed by mistake.\n\n`machine-handover` builds point 5 per machine as scoped (operator, 2026-10-22: no scope change during Webster); this note replaces that record with the live check afterwards.\nNote `open-window-toggle` adds an operator switch that decides whether the window opens at all.\n",
+      "created": "2026-10-22T08:56:02Z",
+      "revised": "2026-10-22T08:56:02Z"
     }
   ]
 }
