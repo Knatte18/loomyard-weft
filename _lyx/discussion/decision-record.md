@@ -43,6 +43,12 @@ Rationale: stderr reaches the agent at the moment of a failing run, and the log 
 
 - A `-trimpath` set on a tier's command line rather than in GOFLAGS gets no line; the command shows under `-vv` and in the run record.
 
+<!-- lyx:carry-over Darn-Review -->
+- Darn-Review, round 1: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
+  Review: _lyx/reviews/darn/round-1-review.md; fixer report: _lyx/reviews/darn/round-1-fixer-report.md.
+  - empty-scope-no-line-untested (class design, severity MEDIUM, open in rounds 1)
+<!-- /lyx:carry-over Darn-Review -->
+
 ## Acceptance criteria
 
 - A tier whose env sets `GOFLAGS` with `-trimpath` prints the line on stderr naming the tier and its GOFLAGS, and its run log holds the same line.
