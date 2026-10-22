@@ -1,29 +1,31 @@
-# Fork git guard lets read-only git tag forms through
+# burlerengine: let read-only git tag through the fork git guard
 
-A twill fixer's self-check fork that ran `git -C <target> tag --points-at HEAD` hard-failed a `Plan-Burler-Fix` round as a state-mutating git command.
-`commandRunsMutatingGit` in `internal/burlerengine/cluster.go` refused every `git tag`, because `tag` is in the mutating subcommand set and the guard reads only the subcommand word.
-The audit now judges `git tag` by its arguments and lets its listing forms through, while a `git tag` that creates, deletes or signs a tag stays refused.
+The fork git-mutation audit in `internal/burlerengine/cluster.go` refused every `git tag` by subcommand name.
+A fork that ran `git tag --points-at HEAD` to list tags halted the run as a hard failure, and the halt message sent the operator to revert a working tree the fork never touched.
+
+`commandRunsMutatingGit` now judges `git tag` by its arguments, through the new `gitTagListsOnly`.
+A `git tag` passes when it is bare, or when its arguments before any `--` hold a list-mode option and no tag-writing option.
+`git tag v1.0`, `-d`, `-a`, `-s`, `-f`, and `-l -d v1` stay refused.
 
 Closes #819
 
-## What changes
-
-- `commandRunsMutatingGit` skips a `git tag` invocation when the new `gitTagListsOnly` reports that its arguments only list tags.
-- `gitTagListsOnly` passes bare `git tag`, and a `git tag` whose arguments before any `--` hold a list-mode option and no tag-writing option.
-  - List-mode options: `-l`, `--list`, `--points-at`, `--contains`, `--no-contains`, `--merged`, `--no-merged` and `-n`, long ones also as `--name=value`, and `-n` also with its count attached, as in `-n5`.
-  - Tag-writing options: `-d`, `--delete`, `-a`, `--annotate`, `-s`, `--sign`, `-u`, `--local-user`, `-f`, `--force`, `-m`, `--message`, `-F`, `--file`, `-e` and `--edit`, long ones also as `--name=value`.
-  - The value word after `--sort` or `--format` is skipped, so `git tag -l --sort -version:refname` passes.
-- `TestCommandRunsMutatingGit` gains rows for the issue's command line, each listing form, and the mutating forms: create, delete, annotate, sign, force, a `=value` message, a delete beside `-l`, `--list` after `--` or as a `-m` value, and a short-option cluster.
-- The fork-audit paragraph in `internal/burlerengine/doc.go` states the `git tag` exception.
-
 ## Design decisions
 
-- **Only `git tag` is judged by its arguments.**
-  The operator decision on the task keeps the subcommand-only rule for every other subcommand.
-  `git branch --list` and `git stash list` still count as mutating.
-- **A tag-writing option wins over a list-mode option.**
-  `git tag -l -d v1` stays refused, so a mixed or ambiguous command errs on the refusing side.
-- **Short-option clusters are not parsed.**
-  A cluster such as `-ln` keeps the command mutating, rather than adding a short-option parser for a form forks rarely use.
-- **The halt message is unchanged.**
-  With the false positive gone, a refused fork command has written a commit, ref or working-tree change, so the twill fixer's way forward, "revert what the fork wrote", still names the recovery.
+- List-mode options are `-l`, `--list`, `--points-at`, `--contains`, `--no-contains`, `--merged`, `--no-merged` and `-n`.
+  Long ones are also recognised in `--name=value` form, and `-n` with an attached count such as `-n5`.
+  `--sort` and `--format` are skipped with their value, so a value like `-version:refname` is not read as an option.
+- Tag-writing options are `-d`, `-a`, `-s`, `-u`, `-f`, `-m`, `-F`, `-e` and their long forms.
+  One of them beside a list-mode option keeps the command refused, so an ambiguous command stays refused.
+- A `--list` after `--`, or as the value of `-m`, does not make a creating `git tag` read-only.
+- A combined short-option cluster such as `-ln` is not parsed and stays mutating.
+  This fails closed.
+- This weakens the guard for `git tag` only.
+  Every other subcommand keeps the subcommand-only rule the guard was given on purpose, so `branch` and `stash` still count as mutating whatever their arguments, and `remote` and `config` stay outside the set.
+  `git branch --list` and `git stash list` in a fork therefore still halt the run; the operator scoped them out of this change.
+- The halt message is unchanged.
+  With the false positive gone, a refused fork command does write a commit, ref or working-tree change, so "revert what the fork wrote" still names the recovery.
+
+## Tests and docs
+
+`TestCommandRunsMutatingGit` in `cluster_test.go` gains rows for the reported command line and for the read-only and mutating `git tag` forms; its existing rows keep their results.
+The fork-audit paragraph in `internal/burlerengine/doc.go` states the `git tag` exception.
