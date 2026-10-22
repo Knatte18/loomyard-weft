@@ -1090,7 +1090,7 @@
       "isolated": false,
       "brief": "",
       "body": "Imported from [issue #804](https://github.com/Knatte18/loomyard/issues/804).\n\n## Seen (orch, 2026-10-21, OSL-1046)\n\n`origin-reconcile`'s Worktree-Teardown pushes the archive tag `archive/\u003cslug\u003e/\u003csha\u003e` to the weft remote before removing the worktree.\nGitHub rejected that push with a bare `(failed)` twice, and each time the row failed and the run halted.\nThe third `lyx batten run origin-reconcile --window` pushed the tag and finished the teardown, so the failure was transient.\n\n## Workaround\n\nRe-run `lyx batten run \u003cslug\u003e --window` until the push goes through.\n\n## Expected\n\nThe archive-tag push retries a transient remote rejection a few times with backoff before failing the row, as a transient network error should not need an orch turn.\n\n## Already in place (triage, 2026-10-22)\n\n`archiveWeftTip` (`internal/fabricengine/archive.go`) already pushes through `gitrepo.PushWithRetry`, which retries a bare `(failed)` 4 times with 1 s, 2 s and 4 s backoff, and the failures happened despite it.\nOperator decision (2026-10-22): the retry gets a longer backoff, and covers the rejection class actually seen if it is not the one `PushWithRetry` retries.\n",
-      "status": "running · Darn-Write",
+      "status": "running · Darn-Bouncer",
       "created": "2026-10-22T10:33:05Z",
       "revised": "2026-10-22T12:03:01Z",
       "owner_machine": "neve"
