@@ -128,6 +128,12 @@ Decision: The PATTERN-sparse-hub-base line drops its walk-strip clause, which it
 
 Rationale: The new PATTERN-template-overlay line (171 bytes) pushes PATTERN.md past patternlint's headroom line; cutting the intro saves only about 82 bytes.
 
+### Added after Discussion (parent, 2026-10-22): Shorten PATTERN-config-layers for headroom
+
+Decision: The PATTERN-config-layers line drops its machine-layer clause, which its background file already states.
+
+Rationale: Same headroom need as the PATTERN-sparse-hub-base cut: the new PATTERN-template-overlay line must fit under patternlint's headroom line.
+
 ## Constraints
 
 - `PATTERN-config-strictness`: lenses keeps `LoadOrTemplate`.
@@ -174,6 +180,7 @@ Rationale: The new PATTERN-template-overlay line (171 bytes) pushes PATTERN.md p
 
 - `PATTERN-template-overlay` — adds: Judging a config document against its template: only against `configengine`'s effective template, the overlay picked from the base layer.
 - `PATTERN-sparse-hub-base` — changes: Writing a hub's base file: only the units the hub tuned, never a template fill. — added after Discussion (parent, 2026-10-22)
+- `PATTERN-config-layers` — changes: Resolving a module's config: only configengine reads, stacks and locates layer files. — added after Discussion (parent, 2026-10-22)
 
 ## Notes for the plan writer
 
