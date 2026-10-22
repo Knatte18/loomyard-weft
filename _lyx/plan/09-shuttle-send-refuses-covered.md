@@ -52,11 +52,13 @@ An unreadable record reads uncovered and logs one Warn per change of error, as `
 `sendVerified` calls it after `awaitIdleSession` returns and immediately before the retry check and `typeVerified`, and returns its refusal with nothing typed, since a tender pause's grace is the window in which a send waits for idle.
 `typeVerified` calls it again before each replay of its choreography (`try > 0`) and returns the refusal with that replay untyped.
 A nil `paused` reads uncovered.
-Every shuttle line but `Runner.SendConditioned`'s passes `sendVerified`, `sendSequence`'s paste path included; `SendConditioned`'s only caller, tender revive, already reads coverage itself under the record lock and is unchanged.
+Every shuttle line but `Runner.SendConditioned`'s passes `sendVerified`, `sendSequence`'s paste path included.
+`SendConditioned` builds its context with `Runner.newSendContext` and calls `typeVerified` directly, so its replays also read coverage; its only caller, tender revive, calls it only after reading the slug uncovered under the record lock, so a refusal there is a send error revive reports as it reports any other.
+`typeVerified`'s doc names that path.
 Bound: the check only refuses; it types nothing, records nothing and never waits.
 Keys stay outside it: `Interrupt`, `InterruptRestoring`, `Inject` and the pause's own Esc are key deliveries under `PATTERN-pane-text-injection`.
 `SetPause`'s doc says the geometry is also what every send judges its target's coverage by.
-`doc.go`'s Pause section gains the send refusal, its target slug, its two fallbacks and the runners told no geometry.
+`doc.go`'s Pause section gains the send refusal, its target slug, its two fallbacks, the runners told no geometry, and the start's segment-color line, which a refusal drops with a Warn as any color failure (card 10).
 Until cards 10 to 14, a caller that gets `ErrPaused` treats it as any other send failure.
 
 `coverScope` writes a live entry of `scope` paused at `pausedAt` into a fresh temp record and returns the record path and the resume function, beside `coverHub`, for a row that needs a slug entry.
@@ -78,7 +80,7 @@ The new `PATTERN.md` entry goes in the Agents and prompts section after `PATTERN
 - `PATTERN-pause-holds-prompts` — Typing a line into a covered session: shuttle's send refuses by the target's slug; its caller holds the line or claims the session; only the orch runner reads uncovered. — [background](pattern/PATTERN-pause-holds-prompts.md)
 ```
 
-Its background file `pattern/PATTERN-pause-holds-prompts.md` carries the declared entry text in full, as the rule, and lists the callers and what each does with `ErrPaused`: the gate loop holds, the run start and the deferred prompt wait and resend, the seat notice sender retries, creel holds the inject, tender resume claims the session, and `lyx loom resume` and `lyx shuttle send` refuse with the pause's way forward; and that the tender and creel runners are told the hub's geometry with an empty slug.
+Its background file `pattern/PATTERN-pause-holds-prompts.md` carries the declared entry text in full, as the rule, and lists the callers and what each does with `ErrPaused`: the gate loop holds, the run start and the deferred prompt wait and resend, the seat notice sender retries, creel holds the inject and its queued commands, tender resume claims the session, tender revive's conditioned send reports the refusal as a send error, the start's segment-color line is logged and dropped, and `lyx loom resume` and `lyx shuttle send` refuse with the pause's way forward; and that the tender and creel runners are told the hub's geometry with an empty slug.
 The overview line is shorter than the declared text because of `pattern-entry-line-cap` and the headroom; Shared Decisions records it.
 
-**ImpactSummary:** the one typing chokepoint (`sendVerified`, reached by every shuttle send but `SendConditioned`) gains a coverage refusal; only runners told a geometry can refuse, so tests and the orch runner are unchanged; one new PATTERN entry with its background.
+**ImpactSummary:** the one typing chokepoint (`sendVerified`, reached by every shuttle send but `SendConditioned`) gains a coverage refusal, and `typeVerified`'s replays, `SendConditioned`'s included, gain it too; only runners told a geometry can refuse, so tests and the orch runner are unchanged; one new PATTERN entry with its background.

@@ -28,6 +28,7 @@ D2 for the run start's prompt line, its typed skill-load line, and the deferred 
 `sendThroughPause` sends `text` through `sendVerified` over `sc`, and on a `*PausedError` waits through `waitWhileCovered` on the error's `Slug`, the slug the refusal judged, then sends again with a fresh context of the same kind, so the wait and the refusal judge the same slug; any other result returns as `sendVerified` gave it, and the wait's own error returns wrapped.
 It loops, so a second pause landing between the wait and the resend holds again.
 `loadSkillsThenPrompt` delivers its prompt line, and `loadSkillTurn` its typed skill-load line, through `sendThroughPause`, so a pause landing after the start's first wait holds the start instead of tearing it down.
+The segment-color line `typeStartupColor` types, whether `Runner.start` or `loadSkillsThenPrompt` calls it, is not held: a refusal with `ErrPaused` is logged and dropped as any other color failure is, since the color is cosmetic and starts no turn.
 `DeliverPendingPrompt`, which burler's `ResumeFix` reaches after the run start's own wait, sends its line through `sendThroughPause` under its `sendMu` hold, so `ResumeFix` never receives the refusal.
 The orch runner, told no geometry, never gets `ErrPaused`, so `lyx orch start` keeps typing its start lines under a hub entry.
 The run's deadline already excludes the paused interval through `observePause`.

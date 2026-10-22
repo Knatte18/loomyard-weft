@@ -19,10 +19,10 @@
 D4's SIGTERM-first cancel, a new cancel used only by `verifyrun`; `proc.ConfigureGroupKill` keeps its immediate group SIGKILL for `gitexec` and the `lyxbin` test kit, and its code is not touched.
 
 `ConfigureGroupTerminate` in `internal/proc/procgroup.go` delegates to `configurePlatformGroupTerminate`, defined once in each of `procgroup_linux.go` and `procgroup_windows.go`, beside `configurePlatformGroupKill`.
-On Linux it starts `cmd` in its own process group (`Setpgid`), and sets `cmd.Cancel` to send SIGTERM to the whole group (`syscall.Kill(-pid, SIGTERM)`), report it, and start a timer of its own that sends SIGKILL to the same group after `killAfter` and reports that; the cancel returns nil, so `exec` waits for the shell as usual and its own `WaitDelay` still bounds a lingering pipe holder.
+On Linux it starts `cmd` in its own process group (`Setpgid`), and sets `cmd.Cancel` to send SIGTERM to the whole group (`syscall.Kill(-pid, SIGTERM)`), report it, and start a timer of its own that sends SIGKILL to the same group after `killAfter` and reports that; a cancel whose SIGTERM was sent returns nil, so `exec` waits for the shell as usual and its own `WaitDelay` still bounds a lingering pipe holder.
 The SIGKILL is sent whether or not the shell has already exited, and never through `exec.Cmd.WaitDelay`, which kills the shell alone and only while `Wait` has not returned.
 `awaitGone` is called by the caller once `cmd.Wait` (or `Run`) has returned: when the cancel never ran it returns at once; otherwise it polls the group with `syscall.Kill(-pid, 0)` every 50 ms and returns once that answers `ESRCH` (the group is empty), stopping the timer so no late SIGKILL can reach a group that reused the pid, or once the timer has sent its SIGKILL.
-A group signal that fails is reported with its error and the shell alone is killed, as the group kill does.
+A failed group SIGTERM is a fail-loud wiring guard in `contracts/specs/refusal-spec.md`'s sense: `cmd.Cancel` runs only while the unreaped shell keeps its group alive, so no state a run produces reaches it; the cancel reports it through `report` with its error and returns that error from `cmd.Cancel`, starting no timer, and `awaitGone` then returns at once; it takes no reaching test.
 On Windows the cancel kills the shell alone and reports `ErrNoProcessGroup`, and `awaitGone` returns at once; the `verify-watchdog` board note owns that gap.
 `report` is how the caller logs, since `proc` cannot log.
 
