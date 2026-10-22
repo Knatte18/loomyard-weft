@@ -264,7 +264,7 @@
       }
     }
   ],
-  "currentBatch": 0,
+  "currentBatch": 9,
   "masterStrand": "e7f242d3cf12b3c4774c42b8222193df",
   "masterSessionId": "350f8e97-b5f4-48c9-b284-9ecd21278e0a",
   "masterEngine": "claude",
@@ -349,6 +349,30 @@
       "bracketTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-orch-strand-cycle/350f8e97-b5f4-48c9-b284-9ecd21278e0a/subagents/agent-a8b1dac902d9457b1.jsonl"
       ]
+    },
+    "9": {
+      "slug": "orch-request-pause-discount",
+      "cards": [
+        "09-orch-request-pause-discount",
+        "10-orch-note-gate-no-reply",
+        "11-orch-compact-withdraw-queued",
+        "12-orch-withdraw-and-request-status",
+        "13-orch-status-restarts-watcher"
+      ],
+      "cardHashes": {
+        "09-orch-request-pause-discount": "dab495a209e7887faf88e08a0d7e319e71ef2f1f3840987b8e8a29cd79fa5538",
+        "10-orch-note-gate-no-reply": "2521c054bf3f78367d9252654c52ecb15d82a70a0c8fd339fba024982cc71269",
+        "11-orch-compact-withdraw-queued": "1560af0df38327c6764c045534b3c9961876306ede97a567201d15625aeaf2b1",
+        "12-orch-withdraw-and-request-status": "53d8b1462f18c9946f00926f80cdae8fd07c5081a88e5fb6b02eb665dc8fb4c9",
+        "13-orch-status-restarts-watcher": "da25dee6f6498f164071c4ed5283f1b20be7a876c28ce9736742f4895aa5a9b3"
+      },
+      "startSha": "8b195c463484d3e1304b075a2ee29cba9cfd4c00",
+      "kind": "fork",
+      "spawnedAt": "2026-10-22T16:55:56Z",
+      "sessionId": "350f8e97-b5f4-48c9-b284-9ecd21278e0a",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
     }
   },
   "seenForkTranscripts": [
