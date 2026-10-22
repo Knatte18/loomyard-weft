@@ -19,7 +19,7 @@
 - `plan:internal/battenshed#OwnerVerdict`
 - `plan:internal/shedrun#StartOwnedElsewhereKind`
 - `plan:internal/fabricengine#ParentHoldsTaskWork`
-- `plan:internal/fabricengine#EntryOwnedElsewhere`
+- `internal/fabricengine#EntryOwnedElsewhere`
 - `plan:internal/tendercli#PauseOwnedElsewhere`
 
 **Intent:**

@@ -21,8 +21,8 @@
 - `plan:internal/orchcli#InstallOwnerPause` -> `func InstallOwnerPause(pause func(location *lyxcwd.Location, slug string) error)`
 
 **Uses:**
-- `plan:internal/fabricengine#EntryOwnedElsewhere`
-- `plan:internal/pauserecord#OwnerCaller`
+- `internal/fabricengine#EntryOwnedElsewhere`
+- `internal/pauserecord#OwnerCaller`
 - `plan:internal/tendercli#PauseOwnedElsewhere`
 - `internal/boardengine#SetOwners`
 - `internal/boardengine#ReadOwners`

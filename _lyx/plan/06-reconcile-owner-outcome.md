@@ -16,9 +16,9 @@
 - `internal/fabricengine/doc.go`
 
 **Create:**
-- `plan:internal/fabricengine#EntryOwnedElsewhere` -> `const EntryOwnedElsewhere EntryState = "owned_elsewhere"`
-- `plan:internal/fabricengine#OwnerReader` -> `type OwnerReader func(hubPath string, boardJSON []byte, slug string) (owner string, elsewhere bool, err error)`
-- `plan:internal/fabricengine#readOriginOwners` -> `func readOriginOwners(l *lyxcwd.Location, seams OriginSeams, targets []originTarget, outcomes []BranchOutcome, slugs []string) (map[string]string, error)`
+- `internal/fabricengine#EntryOwnedElsewhere`
+- `internal/fabricengine#OwnerReader`
+- `internal/fabricengine#readOriginOwners`
 
 **Uses:**
 - `internal/fabricengine#ClassifyEntryForTest`

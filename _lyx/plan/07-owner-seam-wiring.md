@@ -8,7 +8,7 @@
 - `internal/pairteardown/doc.go`
 
 **Create:**
-- `plan:internal/pairteardown#OwnerReader` -> `func OwnerReader(machine func() (string, error), parentOf func(hubPath, slug string) (string, error)) fabricengine.OwnerReader`
+- `internal/pairteardown#OwnerReader`
 
 **Uses:**
 - `internal/machinename#Name`
