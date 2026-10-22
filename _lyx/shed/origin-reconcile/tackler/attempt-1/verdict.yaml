@@ -1,6 +1,0 @@
-verdict: escalate
-reason: >-
-  The stop is a server-side rejection of the archive tag push to origin, with no reason text after "(failed)".
-  The remote branch is at the teardown commit and the local tag exists, so the cause is not a missing commit or an unreachable remote.
-  Whether a plain re-launch settles it depends on whether the rejection is a ruleset on archive tags or a race with the detached fabric push (pid 1999746); that needs a judgment on the remote side that I cannot make from the files and read-only commands.
-  See case-brief.md in this directory for the facts and the hypothesis.
