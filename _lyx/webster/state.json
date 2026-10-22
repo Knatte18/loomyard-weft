@@ -166,7 +166,7 @@
       }
     }
   ],
-  "currentBatch": 0,
+  "currentBatch": 4,
   "masterStrand": "6fba0c9267611867565b95d8712a85cd",
   "masterSessionId": "445eaaf3-cd59-4144-8078-5b4378646688",
   "masterEngine": "claude",
@@ -210,6 +210,26 @@
       "bracketTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-lenses-language-sets/445eaaf3-cd59-4144-8078-5b4378646688/subagents/agent-a94dc6ff0465707e2.jsonl"
       ]
+    },
+    "4": {
+      "slug": "lenses-language-layers",
+      "cards": [
+        "04-lenses-language-layers",
+        "05-configsync-effective-template",
+        "06-lenses-remove"
+      ],
+      "cardHashes": {
+        "04-lenses-language-layers": "fc49ff0c4638a0f2ee41083bbd490c46dd4d9c65cca2d94e47154d52dbf5ad7f",
+        "05-configsync-effective-template": "91533b05402e5de70c3044a1206d200e0d472fba20207ed870d2f426aec06e44",
+        "06-lenses-remove": "05abd8c3272b395662521a2f2e6044ab3b5d6475680cae157dc74e28b5cc5831"
+      },
+      "startSha": "1aa8ded33ba553931f21a23fcfe1cc0dc9bb731d",
+      "kind": "fork",
+      "spawnedAt": "2026-10-22T07:56:53Z",
+      "sessionId": "445eaaf3-cd59-4144-8078-5b4378646688",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
     }
   },
   "seenForkTranscripts": [
