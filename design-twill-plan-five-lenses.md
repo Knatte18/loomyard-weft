@@ -1,6 +1,6 @@
 # The Plan writer's twill-plan fan runs 5 lenses instead of 8
 
-`twill-plan-five-lenses` · Task · enhancement, burler, loom · running · Describe
+`twill-plan-five-lenses` · Task · enhancement, burler, loom · running · Merge-In
 
 ## Seen
 
