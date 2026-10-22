@@ -157,6 +157,13 @@ Rationale: Same headroom need as the PATTERN-sparse-hub-base cut: the new PATTER
   - worktree-template-equal-drop-in-hub-nonexistent (class consistency, severity MEDIUM, open in rounds 1, 2)
 <!-- /lyx:carry-over Discussion-Review -->
 
+<!-- lyx:carry-over Plan-Review -->
+- Plan-Review, round 1: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
+  Review: _lyx/reviews/plan/round-1-review.md; fixer report: _lyx/reviews/plan/round-1-fixer-report.md.
+  - lensesfixture-leaks-new-config-fields (class scope, severity BLOCKING, open in rounds 1)
+  - strip-moved-units-judgment-unpinned (class design, severity MEDIUM, open in rounds 1)
+<!-- /lyx:carry-over Plan-Review -->
+
 ## Acceptance criteria
 
 - With `lens_set` absent or `""`, a load resolves the base template's lenses and fans, every one language-neutral.
