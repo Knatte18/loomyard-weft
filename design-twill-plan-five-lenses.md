@@ -1,6 +1,6 @@
 # The Plan writer's twill-plan fan runs 5 lenses instead of 8
 
-`twill-plan-five-lenses` · Task · enhancement, burler, loom · running · Darn-Burler-Fix
+`twill-plan-five-lenses` · Task · enhancement, burler, loom · running · Darn-Bouncer
 
 ## Seen
 
