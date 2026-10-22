@@ -1,6 +1,6 @@
 # Teardown's archive-tag push has no retry for a transient remote rejection
 
-`retry-archive-tag-push` · Task · bug, batten, fabric · running · Merge-In
+`retry-archive-tag-push` · Task · bug, batten, fabric · running · Publish
 
 Imported from [issue #804](https://github.com/Knatte18/loomyard/issues/804).
 
