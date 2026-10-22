@@ -675,7 +675,7 @@
       }
     }
   ],
-  "currentBatch": 0,
+  "currentBatch": 10,
   "masterStrand": "fd94635c977349faf13625dcb991f1fc",
   "masterSessionId": "50f3575b-651f-41fb-ab8d-6b29950f8b0d",
   "masterEngine": "claude",
@@ -721,6 +721,22 @@
       "bracketTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-run-process-ownership/50f3575b-651f-41fb-ab8d-6b29950f8b0d/subagents/agent-ab850955ca7f4925c.jsonl"
       ]
+    },
+    "10": {
+      "slug": "teardown-skip-readings",
+      "cards": [
+        "10-teardown-skip-readings"
+      ],
+      "cardHashes": {
+        "10-teardown-skip-readings": "3283342f43ae85ae65974e0709eb94f8d5b3601f56b3c7008fa14ad833d5c937"
+      },
+      "startSha": "45c9b5c76c2809d2f18c84d26dc8bee4b6d759d4",
+      "kind": "fork",
+      "spawnedAt": "2026-10-22T13:48:12Z",
+      "sessionId": "50f3575b-651f-41fb-ab8d-6b29950f8b0d",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
     },
     "3": {
       "slug": "register-detached-spawns",
