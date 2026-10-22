@@ -5,7 +5,7 @@
      It is a marker VALUE, never a template -- its only markers are the ones ReadRubric fills, and
      internal/stencil's StripLeadingComment removes this leading comment before either consumer ever
      sees it.
-lyx-stencil: sha256=2e4d8e68f137e512b49868acfe67b0c88333175dad7db7b5c9f71f819741ae97 build=325e074a858348de3421a1b40fcc4a226b3eb007 time=2026-10-21T10:56:05Z -->
+lyx-stencil: sha256=d252a7b321b5db808791615c8e13eec39b8c976383dc82537a98fed79e17cd34 build=eb9c2605c6d5ac23da196495db12bb3fa6302386 time=2026-10-22T06:15:45Z -->
 
 # Discussion-Review rubric
 
@@ -37,6 +37,11 @@ Do not flag any of the following as a finding:
 - **The attack-surface question.**
   For every new verb, flag, escape hatch or routing edge, and every guard that is removed, downgraded or bypassable, the Decision that introduces it states what it can now skip or let through and what bounds it.
   A Decision that introduces one with no stated bound is a finding.
+- **A deferred research question.**
+  A Decision, Constraint, risk or acceptance criterion that leaves a fact the design rests on to be found out later, by Plan or an implementer, is a finding;
+  so is a rule that hands downstream a halt on discovering such a fact.
+  The fix is the research done and its answer recorded with the evidence it rests on.
+  A fact the writer was told not to gather is no such question.
 - **A Decision that edits the task's own board entry.**
   A Decision that asks the run to change this task's own board entry's body or scope, through `lyx board` or otherwise, is a finding, because the run's board lock refuses such a change.
   A Decision that writes another entry, the entry's status or its `run_settings`, or changes board-module code is not flagged by this bullet.
