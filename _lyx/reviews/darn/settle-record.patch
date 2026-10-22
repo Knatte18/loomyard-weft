@@ -1,0 +1,448 @@
+diff --git a/docs/overview.md b/docs/overview.md
+index d086b5aff..c51bdd4b2 100644
+--- a/docs/overview.md
++++ b/docs/overview.md
+@@ -399,7 +399,7 @@ User-facing modules each get one `lyx <module>` namespace:
+   defaults to `bug`.
+   Callable from any sandbox agent context with no config. ✅ Implemented.
+ - **reed** — **the window to the world**: tmux overlay + **strand** bookkeeping + render (`internal/reedcli` + `internal/reedengine` + `internal/reedengine/render`). Hosts every managed process as a strand in a window of its own or its group's, persists to `.lyx/reed.json` (`lyx reed up|add|remove|status|list|attach|switch|resume|watchdog|down`); `lyx reed add` places a strand `--anchor own-window` by default. Every strand carries a hierarchical full name ([PATTERN-agent-name](../pattern/PATTERN-agent-name.md)), mirrored into its pane title and Claude session name and exported to its process as `LYX_STRAND_NAME` and `LYX_PARENT`, with the watchdog repairing drift; `list` is the hub-wide name directory. Built on what its proof-of-concept, `muxpoc`, proved first (env hygiene, native `--resume`); `muxpoc` has since been deleted, its job done. `reed attach` and `reed watchdog` are this module's two registered interactive-handoff exceptions ([PATTERN-cli-cobra](../pattern/PATTERN-cli-cobra.md)): `attach` hands the operator's stdio to a `tmux attach-session` child in place, pre-flighting through checking tmux's floor version, booting the session if cold and checking server/session liveness, and `watchdog` is the detached per-hub name-repair and reap daemon that blocks for its process lifetime — in both cases every fallible step runs pre-flight, on the envelope, and only the terminal-handover/daemon tail itself is exempt from emitting JSON. `add` and `attach` boot this worktree's session when none is up, with `up`'s own semantics — a bare substrate, with no persisted strand relaunched — instead of refusing; every other reed verb still refuses on a cold worktree. ✅ Implemented. See the `internal/reedengine` package documentation.
+-- **shuttle** — run **one** LLM agent as an interactive tmux strand over the file contract (`internal/shuttleengine` + `internal/shuttleengine/claudeengine` + `internal/shuttleengines` + `internal/shuttlecli`; `lyx shuttle run|open|interrupt|send|state`). `lyx shuttle open` starts a named session with no turn in its own window, which closes when the session exits; `--permission-mode bypass|prompt` chooses the opened session's permission mode, empty keeping the engine's interactive default. `lyx shuttle await <path>... [--cap]` is the read-only capped wait on one or more files, the keep-cache-warm wait any agent can run, needing no hub or git repository. `lyx shuttle state` is read-only: it lists the session state of each running run (busy, idle-done, idle-stalled, idle-fresh, asking, dead or unknown, with its cause, since and history), read from the run's files, in shadow mode where no stop or notice depends on it. `Stop`-hook completion is read off an events file and classified into three outcomes — `done`/`died`/`timeout`. A turn end without every output file never ends a run: `Wait` holds it and keeps polling the same agent until the outputs exist, the pane dies or the deadline passes, whatever the agent's reason (a question, a status report, a live `AskUserQuestion` call). An autonomous run notifies its parent once per held turn end as creel mail to the orch, and once per permission or input dialog its pane shows past 60 s, and an interactive run is answered in its pane; `lyx shuttle send` ends every message with a fixed tail. Background work is read off the Stop payload's `background_tasks` first, with the transcript as the fallback when the payload carries no list; a turn end with outstanding work is waiting, not held. `Attach` waits on a held run, and on a legacy `asking` record whose strand is still live, instead of respawning beside it. `died` is narrow: it means a strand reed STILL TRACKS has a pane that is not alive, the provider never came up inside the startup window, or the provider's process is proven gone behind a live pane shell (by the process registry, or a process-ending `SessionEnd` line past the wait's first liveness tick), with `done` instead when every output file exists. Reed's strand table losing the strand entirely — a `reed down`/`remove`, a deleted or rebuilt `reed.json`, a worktree renamed under an in-flight run — is reported as a mechanism failure carrying the run's identity, never as `died`, because reed's bookkeeping going away says nothing about the agent, whose process is often still working in its pane. `PreToolUse` guardrails deny the in-process `Agent` tool in both interactive and autonomous runs (on by default, switchable off via `claude.yaml`'s `deny_agent_tool`, and narrowed in a `ForkSubagents` run to permit fork subagents while still refusing every other subagent type), and `AskUserQuestion` too when the run is autonomous (`Interactive: false`, the default); a `PreToolUse(Bash)` guardrail denies `python`, `python3` and `python3.<minor>` in command position in every run mode (on by default, switchable off via `shuttle.yaml`'s `deny_python`), and a second `PreToolUse(Bash)` guardrail, installed in every run mode with no switch, denies a raw module-wide `go test`, `go build` or `go vet`, a raw `go test` over the `tmux` or `llm` tier, and any command naming the gate-slot or strand-name environment variable, steering the session to `lyx gate test`, and a third `PreToolUse(Bash)` guardrail, installed in every run mode with no switch, denies a `sed` or `perl` in-place edit (`sed -i`, `--in-place` and its abbreviations, a short cluster holding `i`) while `sed -n` reads pass, and a fourth, installed the same way, denies an `rm` on a computed path (a command substitution or a variable expansion in the command) so no permission dialog stalls the run; the python deny's steer names `sed -n` among the readers. The engine announces each deny it installs to the session's system prompt (`--append-system-prompt`, on launch and resume), so a session knows the tool is unavailable before it tries one. The engine sets the prompt-cache TTL per role on launch and resume from `claude.yaml`'s `prompt_cache_ttl` and `prompt_cache_ttl_roles` (template: 5 minutes for `driver`, 1 hour for `webster` and `orch`, 5 minutes for every other role). The provider is swappable behind an **engine** seam; the engine is picked from the registry by `shuttle.yaml`'s `engine:` key, Claude being the one registered engine. Per-run `Model`/`Effort` knobs (`lyx shuttle run --model`/`--effort`; effort values `low|medium|high|xhigh|max`, empty = provider default) are engine-validated, not policed by `Spec.validate`. `Spec.Version` is a programmatic engine-validated version pin (claudeengine composes the pinned model id; no CLI flag — consumers drive it via the model-spec notation's `v=` param). Starting a run returns only once its provider is past its startup gates, and a provider that never comes up is torn down (run dir and last pane capture kept) and reported as an error from `Start`, or as `died`/`timeout` from `Run`. ✅ Implemented. See the `internal/shuttleengine` package documentation.
++- **shuttle** — run **one** LLM agent as an interactive tmux strand over the file contract (`internal/shuttleengine` + `internal/shuttleengine/claudeengine` + `internal/shuttleengines` + `internal/shuttlecli`; `lyx shuttle run|open|interrupt|send|state`). `lyx shuttle open` starts a named session with no turn in its own window, which closes when the session exits; `--model` takes a model spec naming the engine, model and effort, `--list-models` prints the model registry's aliases with their engine, model and default effort, and the output names the engine, model and effort the session got. Every session shuttle launches, run or opened, starts in its engine's bypass mode unless the caller passes `prompt`, which an interactive session accepts. `lyx shuttle await <path>... [--cap]` is the read-only capped wait on one or more files, the keep-cache-warm wait any agent can run, needing no hub or git repository. `lyx shuttle state` is read-only: it lists the session state of each running run (busy, idle-done, idle-stalled, idle-fresh, asking, dead or unknown, with its cause, since and history), read from the run's files, in shadow mode where no stop or notice depends on it. `Stop`-hook completion is read off an events file and classified into three outcomes — `done`/`died`/`timeout`. A turn end without every output file never ends a run: `Wait` holds it and keeps polling the same agent until the outputs exist, the pane dies or the deadline passes, whatever the agent's reason (a question, a status report, a live `AskUserQuestion` call). An autonomous run notifies its parent once per held turn end as creel mail to the orch, and once per permission or input dialog its pane shows past 60 s, and an interactive run is answered in its pane; `lyx shuttle send` ends every message with a fixed tail. Background work is read off the Stop payload's `background_tasks` first, with the transcript as the fallback when the payload carries no list; a turn end with outstanding work is waiting, not held. `Attach` waits on a held run, and on a legacy `asking` record whose strand is still live, instead of respawning beside it. `died` is narrow: it means a strand reed STILL TRACKS has a pane that is not alive, the provider never came up inside the startup window, or the provider's process is proven gone behind a live pane shell (by the process registry, or a process-ending `SessionEnd` line past the wait's first liveness tick), with `done` instead when every output file exists. Reed's strand table losing the strand entirely — a `reed down`/`remove`, a deleted or rebuilt `reed.json`, a worktree renamed under an in-flight run — is reported as a mechanism failure carrying the run's identity, never as `died`, because reed's bookkeeping going away says nothing about the agent, whose process is often still working in its pane. `PreToolUse` guardrails deny the in-process `Agent` tool in both interactive and autonomous runs (on by default, switchable off via `claude.yaml`'s `deny_agent_tool`, and narrowed in a `ForkSubagents` run to permit fork subagents while still refusing every other subagent type), and `AskUserQuestion` too when the run is autonomous (`Interactive: false`, the default); a `PreToolUse(Bash)` guardrail denies `python`, `python3` and `python3.<minor>` in command position in every run mode (on by default, switchable off via `shuttle.yaml`'s `deny_python`), and a second `PreToolUse(Bash)` guardrail, installed in every run mode with no switch, denies a raw module-wide `go test`, `go build` or `go vet`, a raw `go test` over the `tmux` or `llm` tier, and any command naming the gate-slot or strand-name environment variable, steering the session to `lyx gate test`, and a third `PreToolUse(Bash)` guardrail, installed in every run mode with no switch, denies a `sed` or `perl` in-place edit (`sed -i`, `--in-place` and its abbreviations, a short cluster holding `i`) while `sed -n` reads pass, and a fourth, installed the same way, denies an `rm` on a computed path (a command substitution or a variable expansion in the command) so no permission dialog stalls the run; the python deny's steer names `sed -n` among the readers. The engine announces each deny it installs to the session's system prompt (`--append-system-prompt`, on launch and resume), so a session knows the tool is unavailable before it tries one. The engine sets the prompt-cache TTL per role on launch and resume from `claude.yaml`'s `prompt_cache_ttl` and `prompt_cache_ttl_roles` (template: 5 minutes for `driver`, 1 hour for `webster` and `orch`, 5 minutes for every other role). The provider is swappable behind an **engine** seam; the engine is picked from the registry by `shuttle.yaml`'s `engine:` key, Claude being the one registered engine. Per-run `Model`/`Effort` knobs (`lyx shuttle run --model`/`--effort`; effort values `low|medium|high|xhigh|max`, empty = provider default) are engine-validated, not policed by `Spec.validate`. `Spec.Version` is a programmatic engine-validated version pin (claudeengine composes the pinned model id; no CLI flag — consumers drive it via the model-spec notation's `v=` param). Starting a run returns only once its provider is past its startup gates, and a provider that never comes up is torn down (run dir and last pane capture kept) and reported as an error from `Start`, or as `died`/`timeout` from `Run`. ✅ Implemented. See the `internal/shuttleengine` package documentation.
+ - **orch** — the hub orchestrator hosted as an interactive Claude session in a reed strand of the prime worktree, cycled before its context fills (`internal/orchcli` + `internal/orchengine`; `lyx orch start|status|refresh|distill|stop|cleanup|rules`, prime only). `start` first ensures the prime's `runs` strand, which runs `lyx batten overview` as the session's overview window, and `stop` leaves it; the orchestrator has a window of its own, and the session's windows run overview, agents, shell. A detached watcher has the session write a note, then clears it and resumes it from that note (`refresh`) or compacts it in place (`distill`), never clearing or compacting without one. ✅ Implemented. See the `internal/orchengine` package documentation.
+ - **webster** — the implementer module: one long-lived Master session that reads the plan and the repo's rules once, never the code, then forks one implementer per execution batch in-session (Claude Code's Agent tool), each fork reading its cards' code itself, instead of spawning a fresh reed/tmux strand per batch;
+   bracket verbs (`begin-batch`/`record-batch`) drive each in-session fork (Master ends its turn while a backgrounded fork works and records the batch on the fork's completion notification, shuttle reading that turn end as waiting rather than done), and a genuine model escalation (recovery after a stuck/report-less fork) spawns a cold strand.
+diff --git a/internal/reedcli/add.go b/internal/reedcli/add.go
+index 565f48063..fb631f710 100644
+--- a/internal/reedcli/add.go
++++ b/internal/reedcli/add.go
+@@ -60,8 +60,12 @@ strand. The flag never removes, resizes or refocuses that strand. A skip
+ exits 0 with skipped: true and an unless object holding the matched strand's
+ guid and name.
+ 
++add runs --cmd verbatim. An agent session is not opened through add: use
++lyx shuttle open --role <role>, which launches it under its strand name and
++session id in its engine's bypass mode.
++
+ Example:
+-  lyx reed add --cmd "claude --session-id %SID%" --role producer`,
++  lyx reed add --cmd "htop" --role monitor`,
+ 		RunE: func(cmd *cobra.Command, args []string) error {
+ 			if clihelp.ShouldAbort(cmd.Context()) {
+ 				return nil
+diff --git a/internal/shuttlecli/cli_test.go b/internal/shuttlecli/cli_test.go
+index fa94dbcfe..254dc3576 100644
+--- a/internal/shuttlecli/cli_test.go
++++ b/internal/shuttlecli/cli_test.go
+@@ -13,6 +13,7 @@ import (
+ 	"io"
+ 	"os"
+ 	"path/filepath"
++	"sort"
+ 	"strings"
+ 	"sync"
+ 	"testing"
+@@ -23,6 +24,7 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/reedengine"
+ 	"github.com/Knatte18/loomyard/internal/shuttleengine"
+ 	"github.com/Knatte18/loomyard/internal/testkit/shuttlefake"
++	"github.com/google/go-cmp/cmp"
+ 	"github.com/spf13/cobra"
+ )
+ 
+@@ -772,19 +774,22 @@ func (e *openRecorderEngine) OpenLaunch(spec shuttleengine.OpenSpec, cfg shuttle
+ 	return shuttleengine.Launch{Cmd: "open-cmd", ResumeCmd: "resume-cmd", SessionID: "session-1"}, e.err
+ }
+ 
+-// TestOpenCmd_ModelAliasEngine pins the engine and permission mode `open` hands Runner.Open, and that a refusal from Open reaches the error envelope.
++// TestOpenCmd_ModelAliasEngine pins the engine and permission mode `open` hands Runner.Open, the engine, model and effort its envelope reports, and that a refusal from Open reaches the error envelope.
+ func TestOpenCmd_ModelAliasEngine(t *testing.T) {
+ 	t.Parallel()
+ 	tests := []struct {
+ 		name string
+ 		args []string
+-		// wantEngine is the engine whose recorder must see the one spec.
++		// wantEngine is the engine whose recorder must see the one spec, and the engine the envelope names.
+ 		wantEngine string
++		wantModel  string
++		wantEffort string
+ 		wantMode   string
+ 		// openErr scripts the wanted engine's refusal.
+ 		openErr error
+ 	}{
+-		{name: "an alias of the claude engine", args: []string{"--role", "explore", "--model", "opus"}, wantEngine: "claude"},
++		{name: "an alias of the claude engine", args: []string{"--role", "explore", "--model", "opus"}, wantEngine: "claude", wantModel: "opus"},
++		{name: "an alias with an effort", args: []string{"--role", "explore", "--model", "opus[high]"}, wantEngine: "claude", wantModel: "opus", wantEffort: "high"},
+ 		{name: "no model leaves the set's default", args: []string{"--role", "explore"}, wantEngine: shuttlefake.EngineName},
+ 		{name: "bypass is passed through", args: []string{"--role", "explore", "--permission-mode", "bypass"}, wantEngine: shuttlefake.EngineName, wantMode: "bypass"},
+ 		{name: "prompt is passed through", args: []string{"--role", "explore", "--permission-mode", "prompt"}, wantEngine: shuttlefake.EngineName, wantMode: "prompt"},
+@@ -819,8 +824,13 @@ func TestOpenCmd_ModelAliasEngine(t *testing.T) {
+ 
+ 			envelope := parseSingleEnvelope(t, out.Bytes())
+ 			ok, _ := envelope["ok"].(bool)
+-			if tt.openErr == nil && !ok {
+-				t.Errorf("envelope = %v; want ok", envelope)
++			if tt.openErr == nil {
++				if !ok {
++					t.Errorf("envelope = %v; want ok", envelope)
++				}
++				if envelope["engine"] != tt.wantEngine || envelope["model"] != tt.wantModel || envelope["effort"] != tt.wantEffort {
++					t.Errorf("envelope = %v; want engine %q, model %q, effort %q", envelope, tt.wantEngine, tt.wantModel, tt.wantEffort)
++				}
+ 			}
+ 			if tt.openErr != nil {
+ 				if got, _ := envelope["error"].(string); ok || !strings.Contains(got, "invalid permission mode") {
+@@ -841,3 +851,92 @@ func TestOpenCmd_ModelAliasEngine(t *testing.T) {
+ 		})
+ 	}
+ }
++
++// TestOpenCmd_ListModels pins that --list-models, with no --role, prints the loaded registry sorted by alias with each alias's engine, model and default effort, and opens nothing.
++func TestOpenCmd_ListModels(t *testing.T) {
++	t.Parallel()
++	anchor := t.TempDir()
++	if err := os.MkdirAll(configengine.ConfigDir(anchor), 0o755); err != nil {
++		t.Fatalf("MkdirAll: %v", err)
++	}
++	models := "zephyr: {engine: claude, model: claude-zephyr-1, defaults: {effort: low}}\n"
++	if err := os.WriteFile(configengine.ConfigFile(anchor, "models"), []byte(models), 0o644); err != nil {
++		t.Fatalf("WriteFile: %v", err)
++	}
++	recorder := &openRecorderEngine{}
++	engines := shuttleengine.NewEngineSet(shuttlefake.EngineName, map[string]shuttleengine.Engine{shuttlefake.EngineName: recorder})
++	worktreeRoot := t.TempDir()
++	runner := shuttleengine.NewRunner(&shuttlefake.Reed{}, engines, worktreeRoot, worktreeRoot, shuttleengine.Config{RunTimeoutMin: 30})
++	c := &shuttleCLI{runner: runner, configDirs: configengine.Dirs{Anchor: anchor}}
++	cmd := c.openCmd()
++	var out bytes.Buffer
++	cmd.SetOut(&out)
++	cmd.SetArgs([]string{"--list-models"})
++	if err := cmd.Execute(); err != nil {
++		t.Fatalf("cmd.Execute() error: %v; output: %s", err, out.String())
++	}
++
++	envelope := parseSingleEnvelope(t, out.Bytes())
++	if ok, _ := envelope["ok"].(bool); !ok {
++		t.Fatalf("envelope = %v; want ok", envelope)
++	}
++	rows, _ := envelope["models"].([]any)
++	byAlias := map[string]map[string]any{}
++	var aliases []string
++	for _, row := range rows {
++		fields, _ := row.(map[string]any)
++		alias, _ := fields["alias"].(string)
++		aliases = append(aliases, alias)
++		byAlias[alias] = fields
++	}
++	if !sort.StringsAreSorted(aliases) {
++		t.Errorf("aliases = %v; want them sorted", aliases)
++	}
++	wantRows := map[string]map[string]any{
++		"zephyr": {"alias": "zephyr", "engine": "claude", "model": "claude-zephyr-1", "effort": "low"},
++		"opus":   {"alias": "opus", "engine": "claude", "model": "opus", "effort": ""},
++	}
++	for alias, want := range wantRows {
++		if diff := cmp.Diff(want, byAlias[alias]); diff != "" {
++			t.Errorf("--list-models row %q mismatch (-want +got):\n%s", alias, diff)
++		}
++	}
++	if len(recorder.specs) != 0 {
++		t.Errorf("OpenLaunch saw specs %+v; want none", recorder.specs)
++	}
++}
++
++// TestOpenCmd_ListModelsRegistryLoadFailure pins that --list-models over an unparsable models config returns an error envelope naming the flag and opens nothing.
++func TestOpenCmd_ListModelsRegistryLoadFailure(t *testing.T) {
++	t.Parallel()
++	anchor := t.TempDir()
++	if err := os.MkdirAll(configengine.ConfigDir(anchor), 0o755); err != nil {
++		t.Fatalf("MkdirAll: %v", err)
++	}
++	if err := os.WriteFile(configengine.ConfigFile(anchor, "models"), []byte("zephyr: [unclosed\n"), 0o644); err != nil {
++		t.Fatalf("WriteFile: %v", err)
++	}
++	recorder := &openRecorderEngine{}
++	engines := shuttleengine.NewEngineSet(shuttlefake.EngineName, map[string]shuttleengine.Engine{shuttlefake.EngineName: recorder})
++	worktreeRoot := t.TempDir()
++	runner := shuttleengine.NewRunner(&shuttlefake.Reed{}, engines, worktreeRoot, worktreeRoot, shuttleengine.Config{RunTimeoutMin: 30})
++	c := &shuttleCLI{runner: runner, configDirs: configengine.Dirs{Anchor: anchor}}
++	cmd := c.openCmd()
++	var out bytes.Buffer
++	cmd.SetOut(&out)
++	cmd.SetArgs([]string{"--list-models"})
++	if err := cmd.Execute(); err != nil {
++		t.Fatalf("cmd.Execute() error: %v; output: %s", err, out.String())
++	}
++
++	envelope := parseSingleEnvelope(t, out.Bytes())
++	if ok, _ := envelope["ok"].(bool); ok {
++		t.Fatalf("envelope = %v; want an error envelope", envelope)
++	}
++	if message, _ := envelope["error"].(string); !strings.Contains(message, "--list-models") {
++		t.Errorf("error = %q; want it to name --list-models", message)
++	}
++	if len(recorder.specs) != 0 {
++		t.Errorf("OpenLaunch saw specs %+v; want none", recorder.specs)
++	}
++}
+diff --git a/internal/shuttlecli/open.go b/internal/shuttlecli/open.go
+index 6a3f51479..dfb44e73f 100644
+--- a/internal/shuttlecli/open.go
++++ b/internal/shuttlecli/open.go
+@@ -1,9 +1,10 @@
+-// open.go implements the `open` shuttle verb: it opens a named LLM session with no prompt in a window of its own through c.runner.Open.
++// open.go implements the `open` shuttle verb: it opens a named LLM session with no prompt in a window of its own through c.runner.Open, or lists the model registry a --model spec resolves against.
+ 
+ package shuttlecli
+ 
+ import (
+ 	"fmt"
++	"sort"
+ 
+ 	"github.com/Knatte18/loomyard/internal/clihelp"
+ 	"github.com/Knatte18/loomyard/internal/modelspec"
+@@ -20,6 +21,7 @@ func (c *shuttleCLI) openCmd() *cobra.Command {
+ 		model          string
+ 		segment        string
+ 		permissionMode string
++		listModels     bool
+ 	)
+ 
+ 	cmd := &cobra.Command{
+@@ -31,17 +33,40 @@ returns at once. --role is required and names the strand; a second open of the
+ same role is numbered by reed.
+ The session takes no turn and writes no run record, so lyx shuttle state never
+ lists it. Its window closes when the session exits. It is refused under a pause.
+---permission-mode bypass opens the session without permission dialogs, under its
+-strand name for the role, and an unknown mode is refused before anything is created.
++
++--model chooses the engine, model and effort as a model spec, in one of two forms:
++  <alias>[<effort>]               an alias from the model registry, e.g. opus or opus[high]
++  <engine>:<model-id>[<effort>]   an engine and a provider model id, e.g. claude:claude-opus-5-5[max]
++The bracket is optional and overrides the alias's default effort; the engine
++validates the effort. Without --model the session gets the default engine and
++the provider's default model and effort.
++--list-models prints the registry's aliases with their engine, model and
++default effort, and opens nothing.
++The output names the engine, model and effort the session got, an empty model
++or effort meaning the provider default.
++
++The session opens in its engine's bypass mode, without permission dialogs.
++--permission-mode prompt opts out; an unknown mode is refused before anything
++is created.
+ 
+ Example:
+-  lyx shuttle open --role explore --model opus --permission-mode bypass`,
++  lyx shuttle open --role explore --model opus[high]`,
+ 		RunE: func(cmd *cobra.Command, args []string) error {
+ 			if clihelp.ShouldAbort(cmd.Context()) {
+ 				return nil
+ 			}
+ 			out := cmd.OutOrStdout()
+ 
++			if listModels {
++				registry, err := modelspec.LoadRegistry(c.configDirs)
++				if err != nil {
++					clihelp.SetExit(cmd.Context(), output.Err(out, fmt.Sprintf("--list-models: load the model registry: %v", err)))
++					return nil
++				}
++				clihelp.SetExit(cmd.Context(), output.Ok(out, map[string]any{"models": registryRows(registry)}))
++				return nil
++			}
++
+ 			if role == "" {
+ 				clihelp.SetExit(cmd.Context(), output.Err(out, "--role is required"))
+ 				return nil
+@@ -77,15 +102,39 @@ Example:
+ 				"guid":      result.StrandGUID,
+ 				"name":      result.StrandName,
+ 				"sessionId": result.SessionID,
++				"engine":    result.Engine,
++				"model":     spec.Model,
++				"effort":    spec.Effort,
+ 			}))
+ 			return nil
+ 		},
+ 	}
+ 
+-	cmd.Flags().StringVar(&role, "role", "", "strand role of the session (required)")
+-	cmd.Flags().StringVar(&model, "model", "", "model spec; empty defers to the provider default")
++	cmd.Flags().StringVar(&role, "role", "", "strand role of the session (required unless --list-models)")
++	cmd.Flags().StringVar(&model, "model", "", "model spec, <alias>[<effort>] or <engine>:<model-id>[<effort>]; empty defers to the provider default")
+ 	cmd.Flags().StringVar(&segment, "segment", "", "loom segment the session's window is colored by")
+-	cmd.Flags().StringVar(&permissionMode, "permission-mode", "", "permission mode of the session: bypass or prompt; empty keeps the engine's interactive default")
++	cmd.Flags().StringVar(&permissionMode, "permission-mode", "", "permission mode of the session: bypass or prompt; empty is the engine's bypass mode")
++	cmd.Flags().BoolVar(&listModels, "list-models", false, "print the model registry's aliases with their engine, model and default effort, and open nothing")
+ 
+ 	return cmd
+ }
++
++// registryRows returns one row per alias of registry, sorted by alias, each naming the alias's engine, model and default effort.
++func registryRows(registry modelspec.Registry) []map[string]string {
++	aliases := make([]string, 0, len(registry))
++	for alias := range registry {
++		aliases = append(aliases, alias)
++	}
++	sort.Strings(aliases)
++	rows := make([]map[string]string, 0, len(aliases))
++	for _, alias := range aliases {
++		entry := registry[alias]
++		rows = append(rows, map[string]string{
++			"alias":  alias,
++			"engine": entry.Engine,
++			"model":  entry.Model,
++			"effort": entry.Defaults["effort"],
++		})
++	}
++	return rows
++}
+diff --git a/internal/shuttleengine/claudeengine/command.go b/internal/shuttleengine/claudeengine/command.go
+index e09aa7a5b..f96166db7 100644
+--- a/internal/shuttleengine/claudeengine/command.go
++++ b/internal/shuttleengine/claudeengine/command.go
+@@ -61,15 +61,13 @@ const (
+ 
+ // validatePermissionMode resolves a run's or an opened session's permission mode into whether its launch lines carry --dangerously-skip-permissions.
+ // An opened session is always interactive.
+-// Empty resolves to the run mode's default: an autonomous run skips, an interactive run prompts.
+-// "bypass" skips and "prompt" adds nothing.
++// Empty and "bypass" skip in either run mode, because every session lyx launches into reed needs bypass to work unattended;
++// "prompt" adds nothing and is the per-call opt-out.
+ // "prompt" on an autonomous run is an error, since a run that prompts with nobody to answer stalls;
+ // any other value is an error naming the three legal values.
+ func validatePermissionMode(mode string, interactive bool) (skipPermissions bool, err error) {
+ 	switch mode {
+-	case "":
+-		return !interactive, nil
+-	case permissionModeBypass:
++	case "", permissionModeBypass:
+ 		return true, nil
+ 	case permissionModePrompt:
+ 		if !interactive {
+@@ -77,7 +75,7 @@ func validatePermissionMode(mode string, interactive bool) (skipPermissions bool
+ 		}
+ 		return false, nil
+ 	}
+-	return false, fmt.Errorf("claudeengine: invalid permission mode %q; valid values are \"\" (the run mode's default), %q, %q (case-sensitive)", mode, permissionModeBypass, permissionModePrompt)
++	return false, fmt.Errorf("claudeengine: invalid permission mode %q; valid values are \"\" (bypass), %q, %q (case-sensitive)", mode, permissionModeBypass, permissionModePrompt)
+ }
+ 
+ // resolveModelID translates a bare-word model plus an optional version into the final model id.
+@@ -289,7 +287,7 @@ func buildOpenCmd(sh shell.Shell, bin, sessionID, model, effort string, skipPerm
+ 
+ // OpenLaunch returns the launch of a named interactive session with no prompt.
+ // It loads claude.yaml, validates the effort and the permission mode and resolves the model and version into a model id before anything else, mints a session id, and returns the fresh line as Cmd.
+-// Bypass is opt-in per call through spec.PermissionMode;
++// Bypass is the default, and spec.PermissionMode "prompt" opts out per call;
+ // the session still loads Claude Code's own settings layers, whose deny rules and hooks Claude Code applies in bypass too, and carries no shuttle --settings or guard.
+ // "prompt" adds nothing, so it cannot override a default mode the settings set.
+ // The session takes no turn until text reaches its pane through the operator, `lyx shuttle send` or creel, each bounded by its own rules.
+diff --git a/internal/shuttleengine/claudeengine/command_test.go b/internal/shuttleengine/claudeengine/command_test.go
+index aa879b5bc..3334dfec7 100644
+--- a/internal/shuttleengine/claudeengine/command_test.go
++++ b/internal/shuttleengine/claudeengine/command_test.go
+@@ -366,13 +366,13 @@ func TestOpenLaunch(t *testing.T) {
+ 				if !strings.HasPrefix(launch.Cmd, sh.Invoke("claude")) {
+ 					t.Errorf("Cmd = %q; want it to start with the invoked binary", launch.Cmd)
+ 				}
+-				for _, banned := range []string{"--settings", "--dangerously-skip-permissions", "Read "} {
++				for _, banned := range []string{"--settings", "Read "} {
+ 					if strings.Contains(launch.Cmd, banned) {
+ 						t.Errorf("Cmd = %q; want no %q", launch.Cmd, banned)
+ 					}
+ 				}
+-				if strings.Contains(launch.ResumeCmd, "--dangerously-skip-permissions") {
+-					t.Errorf("ResumeCmd = %q; want no --dangerously-skip-permissions", launch.ResumeCmd)
++				if got := strings.Count(launch.ResumeCmd, "--dangerously-skip-permissions"); got != 2 {
++					t.Errorf("ResumeCmd = %q holds --dangerously-skip-permissions %d times; want 2, the empty mode's bypass default", launch.ResumeCmd, got)
+ 				}
+ 			},
+ 		},
+@@ -606,7 +606,7 @@ func TestValidatePermissionMode(t *testing.T) {
+ 		wantErr     bool
+ 	}{
+ 		{"", false, true, false},
+-		{"", true, false, false},
++		{"", true, true, false},
+ 		{"bypass", true, true, false},
+ 		{"bypass", false, true, false},
+ 		{"prompt", true, false, false},
+diff --git a/internal/shuttleengine/claudeengine/doc.go b/internal/shuttleengine/claudeengine/doc.go
+index 86d738e99..af4579704 100644
+--- a/internal/shuttleengine/claudeengine/doc.go
++++ b/internal/shuttleengine/claudeengine/doc.go
+@@ -234,7 +234,7 @@
+ //
+ // The open launch (Claude.OpenLaunch) starts a named interactive session with no prompt.
+ // Its line carries the session id and the strand-name reference, adds `--model` and `--effort` only when set, and passes no `--settings`, so the session takes the worktree's own settings.
+-// It carries `--dangerously-skip-permissions` when the open's permission mode is `bypass`, on the fresh and the resume line alike, and an unknown mode refuses the open.
++// It carries `--dangerously-skip-permissions` unless the open's permission mode is `prompt`, on the fresh and the resume line alike, and an unknown mode refuses the open.
+ // Its resume line falls back to a fresh start under the same id, because Claude Code keeps no transcript for a session that never took a turn and `--resume` then fails.
+ //
+ // A replay corpus of real turn ends lives under testdata/corpus, one directory per case:
+diff --git a/internal/shuttleengine/claudeengine/prepare_test.go b/internal/shuttleengine/claudeengine/prepare_test.go
+index 969042ef1..99a3efc96 100644
+--- a/internal/shuttleengine/claudeengine/prepare_test.go
++++ b/internal/shuttleengine/claudeengine/prepare_test.go
+@@ -244,7 +244,7 @@ func TestPrepare_ThreadsSpecIntoLaunchCmds(t *testing.T) {
+ 		},
+ 		{name: "empty_resume_session_id_mints_session", spec: shuttleengine.Spec{}, claude: templateConfig(t), onLaunch: flagExpectation{present: []string{"--session-id"}, absent: []string{"--resume"}}},
+ 		{name: "permission_interactive_bypass", spec: shuttleengine.Spec{PermissionMode: "bypass", Interactive: true}, claude: templateConfig(t), onBothLines: flagExpectation{present: []string{skipPermissions}}},
+-		{name: "permission_interactive_empty", spec: shuttleengine.Spec{PermissionMode: "", Interactive: true}, claude: templateConfig(t), onBothLines: flagExpectation{absent: []string{skipPermissions}}},
++		{name: "permission_interactive_empty", spec: shuttleengine.Spec{PermissionMode: "", Interactive: true}, claude: templateConfig(t), onBothLines: flagExpectation{present: []string{skipPermissions}}},
+ 		{name: "permission_autonomous_empty", spec: shuttleengine.Spec{PermissionMode: "", Interactive: false}, claude: templateConfig(t), onBothLines: flagExpectation{present: []string{skipPermissions}}},
+ 		{name: "permission_autonomous_bypass", spec: shuttleengine.Spec{PermissionMode: "bypass", Interactive: false}, claude: templateConfig(t), onBothLines: flagExpectation{present: []string{skipPermissions}}},
+ 		{name: "permission_interactive_prompt", spec: shuttleengine.Spec{PermissionMode: "prompt", Interactive: true}, claude: templateConfig(t), onBothLines: flagExpectation{absent: []string{skipPermissions}}},
+diff --git a/internal/shuttleengine/doc.go b/internal/shuttleengine/doc.go
+index 9292e384a..b78135276 100644
+--- a/internal/shuttleengine/doc.go
++++ b/internal/shuttleengine/doc.go
+@@ -176,10 +176,11 @@
+ //
+ // Spec.PermissionMode, Spec.AllowAgentTool and Spec.ResumeSessionID are caller-owned engine vocabulary, like Spec.Effort: Spec.validate never inspects them,
+ // and the engine is the sole validator and realizer.
+-// Empty PermissionMode keeps the run mode's default, AllowAgentTool left false keeps shuttle's config-driven Agent deny,
+-// and an empty ResumeSessionID mints a new session, so a caller that sets none of them sees no change.
++// Empty PermissionMode selects the engine's bypass mode in both run modes, because every session lyx launches into reed needs it.
++// AllowAgentTool left false keeps shuttle's config-driven Agent deny, and an empty ResumeSessionID mints a new session.
+ // A non-empty ResumeSessionID launches that existing session instead.
+-// OpenSpec.PermissionMode is the same vocabulary, carried blind by Runner.Open, with empty keeping the engine's interactive default.
++// OpenSpec.PermissionMode is the same vocabulary, carried blind by Runner.Open, with empty selecting bypass there too.
++// Each engine maps the default onto its own bypass flag and names its own per-call opt-out.
+ //
+ // An ungated run's strand is registered with its output files as reed's done-when list,
+ // so reed's resume drops a finished agent strand instead of reviving it;
+diff --git a/internal/shuttleengine/engine.go b/internal/shuttleengine/engine.go
+index 7bc7ccc55..c33b0b758 100644
+--- a/internal/shuttleengine/engine.go
++++ b/internal/shuttleengine/engine.go
+@@ -240,7 +240,7 @@ type OpenSpec struct {
+ 	// Segment is the loom segment the session's window is colored by.
+ 	Segment segmentcolor.Segment
+ 	// PermissionMode is the caller-owned engine vocabulary for the session's permission mode.
+-	// Empty keeps the engine's interactive default.
++	// Empty selects the engine's bypass mode.
+ 	// Open and the CLI pass it uninspected; the engine is the sole validator and realizer.
+ 	PermissionMode string
+ }
+diff --git a/internal/shuttleengine/spec.go b/internal/shuttleengine/spec.go
+index 6eba3907c..14d1e386b 100644
+--- a/internal/shuttleengine/spec.go
++++ b/internal/shuttleengine/spec.go
+@@ -50,7 +50,7 @@ type Spec struct {
+ 	// only a caller that sets it gets the allowance.
+ 	AllowAgentTool bool
+ 	// PermissionMode, when non-empty, selects the run's permission mode;
+-	// empty defers to the run mode's default.
++	// empty defers to the engine's default, its bypass mode.
+ 	// PermissionMode values are provider vocabulary, exactly like Effort — validate does NOT inspect this field at all;
+ 	// the engine is the sole validator, since only it knows which values its provider realizes.
+ 	// A value the engine cannot realize is a hard error from the engine (see claudeengine's validatePermissionMode), not from Spec.validate.
+@@ -65,7 +65,7 @@ type Spec struct {
+ 	// Autonomous runs add the AskUserQuestion PreToolUse deny;
+ 	// interactive runs do not.
+ 	// Whether the launch carries --dangerously-skip-permissions follows the resolved PermissionMode,
+-	// whose empty default skips in an autonomous run and prompts in an interactive one.
++	// whose empty default skips in both modes.
+ 	// The Agent tool deny and the python deny are included in both modes.
+ 	// The python deny is toggleable via the shuttle config's deny_python key;
+ 	// the Agent tool and AskUserQuestion denies are toggleable via the claude engine's own config.
