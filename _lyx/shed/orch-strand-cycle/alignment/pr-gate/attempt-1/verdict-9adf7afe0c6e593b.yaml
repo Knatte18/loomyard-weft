@@ -1,0 +1,9 @@
+verdict: approve
+reason: >-
+  The diff of PR 842 at 364e81d46 covers every goal point of the board entry: strand liveness with launch grace and pane-elsewhere naming,
+  watcher restart at status and start, the reply-free note gate, lyx orch withdraw with cycle_request and the pause notice,
+  dead-name reclaim, and the folded #828 fixes. It follows decisions D1 to D7, including D5's recorded departure from the entry's
+  refusal, and keeps the recorded out-of-scope items out. The carried-over review risks are recorded bounds or in-scope design details.
+  lyx loom peers lists no peer run and no parent commit, so there is no overlap.
+question: ""
+superseded: []
