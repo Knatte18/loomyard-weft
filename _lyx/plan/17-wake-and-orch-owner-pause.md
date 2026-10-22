@@ -1,4 +1,4 @@
-# Card 13 — wake-and-orch-owner-pause
+# Card 17 — wake-and-orch-owner-pause
 
 **Edit:**
 - `internal/hibernatecli#wakeReconcileFromReport`
@@ -32,11 +32,11 @@
 D4's callers of the owner outcome that hold a run: the hibernate wake and `lyx orch start`; cleanup only reports it.
 `wakeReconcileFromReport` maps each owned_elsewhere entry, which always has a local pair since the reconcile classifies only recorded local pairs, onto a `WakeRun` with the new `Owner` field set.
 `holdRuns` pauses such a run through `Deps.Pause` with `Caller` `pauserecord.OwnerCaller`, so a slug entry already standing adds none, and `runStep` words its notice step "<slug> is owned by machine <owner>: `lyx adopt <slug>` from this machine's prime takes it over here"; a failed owner pause is named, as any failed pause is, with "the next wake or `lyx orch start` pauses it again", never with `lyx tender pause`, whose entry would carry no owner label.
-The pause holds a run whose child holds the parent lock once its batten releases that lock (card 10's `OwnerHeld` release).
+The pause holds a run whose child holds the parent lock once its batten releases that lock (card 12's `OwnerHeld` release).
 `InstallOwnerPause` stores the process's owner pause, which `cmd/lyx`'s `newRoot` pre-run installs as `tendercli.PauseOwnedElsewhere`, since `tendercli` imports `orchcli` and the reverse import would cycle; `Command` copies it onto `orchCLI`'s new `pauseOwned` field.
 `orchCLI` also gains `claimPrime func() (claimed, lostTo string, err error)`, which `Command` fills over `boardengine.ReadOwners`, `boardengine.SetOwners` with `Prime` and `machinename.Name`, writing only when the board records no prime owner; a nil `claimPrime` or `pauseOwned`, as a hand-built start harness has, is skipped.
 `startCmd`, after its reconcile, first calls `claimPrime` (D2's first act), reporting the claim, a lost claim with the other machine's name, or a failure under the reconcile warnings without refusing; it then, before it touches any strand, pauses each owned_elsewhere entry of the report through `pauseOwned`, reports the paused slugs with their owners under a new `owner_pauses` envelope key and a failed or unwired pause under the reconcile warnings naming "re-run `lyx orch start`, which pauses it again", and still never refuses; the start prompt's reconcile note carries the summary's owned-elsewhere lines.
-`cleanupcli`'s doc states that `lyx cleanup` only reports an owned_elsewhere entry, through the summary, and tears no such pair down, since the reconcile's teardown covers ended entries alone (card 5's row pins it).
+`cleanupcli`'s doc states that `lyx cleanup` only reports an owned_elsewhere entry, through the summary, and tears no such pair down, since the reconcile's teardown covers ended entries alone (card 6's row pins it).
 `hibernateengine`'s and `orchcli`'s docs document the owner pause.
 `fakeWorld.pause` records the request's `Caller` on the entry it adds, falling back to `PauseCaller` when the request carries none.
 `TestWakeReconcileFromReport` gains a row: an owned_elsewhere entry becomes a run with its owner.
@@ -45,4 +45,4 @@ The pause holds a run whose child holds the parent lock once its batten releases
 
 **ImpactSummary:** the hibernate wake, orch start and the root pre-run gain the owner pause; cleanup changes doc only.
 
-**Commit:** 13: wake and orch start pause a run owned elsewhere
+**Commit:** 17: wake and orch start pause a run owned elsewhere

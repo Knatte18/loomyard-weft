@@ -1,4 +1,4 @@
-# Card 14 — tender-status-owners
+# Card 18 — tender-status-owners
 
 **Edit:**
 - `internal/tenderengine#Deps`
@@ -33,4 +33,4 @@ D9 for `lyx tender status`, so the orch never reads a run owned elsewhere as sta
 
 **ImpactSummary:** tender's status read only; pause, resume and revive are untouched.
 
-**Commit:** 14: tender: status names each pair's owner and the runs owned elsewhere
+**Commit:** 18: tender: status names each pair's owner and the runs owned elsewhere
