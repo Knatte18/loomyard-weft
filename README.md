@@ -85,6 +85,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 2 | **Dead strands from before a reboot hold their names and fail a resumed row** | [`reclaim-dead-strand-names`](design-reclaim-dead-strand-names.md) | 0m | 0m | reed, shuttle |
 | 3 | **loom halt note for a Merge-In loop exit carries only 'loop-exited' as its reason** | [`loop-exit-halt-names-its-cause`](design-loop-exit-halt-names-its-cause.md) | 0m | 0m | loom, shed |
 | 4 | **lyx report timing counts sleep as active time when the system journal is unreadable** | [`report-timing-unreadable-journal`](design-report-timing-unreadable-journal.md) | 0m | 0m | report |
+| 5 | **Teardown's archive-tag push has no retry for a transient remote rejection** | [`retry-archive-tag-push`](design-retry-archive-tag-push.md) | 0m | 0m | batten, fabric |
 
 ### Enhancements
 
