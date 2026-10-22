@@ -39,6 +39,19 @@
 4. A PR only when a human is to look at it, with its own interactive session that takes the human's feedback and fixes it.
 5. With no human in the loop, no PR is needed at all: the alignment check already ran, and no extra review of the PR is needed.
 
+## Operator view, not a decision (2026-10-22, later)
+
+- A PR is only for a human; no LYX-initiated run has had a human reviewing its PR, so without one the run goes straight to Finalize, which already lands locally (squash, push, board done).
+- An alignment check against the original scope this late is too late: Discussion and Plan should have caught it.
+  Aligning against other board tasks may matter, but is late here too.
+- So the only real work after the Webster perch is a thorough Merge-In: conflicts, tests, and fixing after the tests.
+
+Orch judgement: agreed, with two cautions.
+- What only exists at the end is the semantic overlap with commits landed since the run started (another run changed the same behaviour or made one of this run's decisions); tests do not catch it.
+  The Merge-In fixer's brief can cover it: read what the merge brought in against the decision record, and escalate a conflicting decision instead of fixing it.
+- Two of the three code deviations the alignment agent caught were written by a review loop's last fixer, which nothing reviews after it; the fix belongs in the perches, not in a late check.
+- Without a PR, Describe's text has no reader unless it becomes the squash commit message.
+
 ## Orch ideas raised in the discussion (not decisions)
 
 - One end-of-tail perch over the diff since Webster-Review approved, skipped when the tail changed nothing; it only works when no fixer runs after it.
