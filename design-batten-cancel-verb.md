@@ -2,8 +2,6 @@
 
 `batten-cancel-verb` · Task · bug, batten, reed, shed
 
-Depends on: [`orch-strand-cycle`](design-orch-strand-cycle.md)
-
 Imported from [issue #775](https://github.com/Knatte18/loomyard/issues/775).
 
 Operator decision (2026-10-22): this task owns the one verb that ends a batten run for good, whatever its state.
