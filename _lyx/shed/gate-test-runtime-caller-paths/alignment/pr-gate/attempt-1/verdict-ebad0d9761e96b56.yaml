@@ -1,0 +1,7 @@
+verdict: approve
+reason: >-
+  The diff keeps -trimpath, documents it in internal/gatecli/doc.go and prints a line naming the tier's effective GOFLAGS on stderr and in the tier's log,
+  which is exactly what the board entry's operator decision asks; it changes nothing outside internal/gatecli,
+  the Darn-Review carry-over is closed by commit 17bdf708e and names no parent correction, and no peer run or parent commit overlaps.
+question: ""
+superseded: []
