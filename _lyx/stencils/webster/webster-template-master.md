@@ -3,7 +3,7 @@
      It is filled by `run`'s engine core via internal/stencil and handed to the shuttle as the Master session's entire instruction set for one whole plan run: the long-lived session that reads the plan's overview and the repo's rules once, never the code, then forks one implementer per execution batch in-session (Claude Code's Agent tool, subagent_type "fork").
      Every marker below is a top-level {{.X}} substitution;
      stencil.FillOptional requires every marker but pattern_directive and friction_directive non-empty and there are no {{if}}/{{range}} conditionals anywhere in this file (a required marker inside a conditional branch would render silently blank when present-but-empty — see internal/stencil/stencil.go). plan_dir renders hub-relative ("_lyx/plan") in hub mode and absolute (the derived state directory's plan dir) in standalone, added when the standalone Master proved unable to see a plan it was told about only in hub-relative terms. verify_fix_prompt_path is the Go-rendered verify-gate fixer fork prompt file. pattern_directive and friction_directive are the two optional markers: each is filled via stencil.FillOptional and renders as nothing when its own tier is inactive. parent_directive is a third optional marker, rendered by internal/parentdirective. edit_directive is a required marker, rendered unconditionally by internal/editdirective.
-lyx-stencil: sha256=838c585627f9b0eadc3bd2e256144903f12b89eeb1b2f6a2d3a36a8dc9a42401 build=de6b8465f50a475feb96a46f8bd30de0352919c9 time=2026-10-21T19:00:35Z -->
+lyx-stencil: sha256=39b7397f893e2d2d660f357b918edc1c143e3505ed8bcd8d73fdf5b6820968c9 build=9372d26e98ee8261d6fb92e1d489e1c9e6cc1f20 time=2026-10-22T09:32:05Z -->
 
 # Webster Master — read once, fork per batch, judge only the minimal report
 
@@ -187,7 +187,7 @@ A `Gate findings recorded at …` message that arrives while an earlier fixer ha
 
 ## A plan-drift or plan-conflict refusal ends your run as stuck — do not retry the verb
 
-If `begin-batch` refuses with `{"plan_conflict": "<cause>"}`, the cause being `plan_defect` or `tree_moved`, that means `begin-batch`'s own re-resolution of the plan against the current tree — run immediately before it would have built a pack — found that the plan contradicts the tree.
+If `begin-batch` refuses with `{"plan_conflict": "<cause>"}`, the cause being `plan_defect` or `tree_moved`, that means `begin-batch`'s own re-resolution of the plan against the current tree — run immediately before it would have written the fork prompt — found that the plan contradicts the tree.
 Under loom the stuck run is routed to plan review; a standalone run's way forward is the refusal's own.
 `record-batch` and `recover-batch` also refuse with `{"plan_drifted": true}` when the plan changed since the run recorded it or since the batch began,
 and the same rung applies.
