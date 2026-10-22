@@ -1,6 +1,6 @@
 # report convergence: 'claim one landing commit' error for darn archive tags
 
-`convergence-darn-landing-commit` · Task · bug, report, batten · running · PR-Align
+`convergence-darn-landing-commit` · Task · bug, report, batten · running · PR-Gate
 
 Imported from [issue #831](https://github.com/Knatte18/loomyard/issues/831).
 
