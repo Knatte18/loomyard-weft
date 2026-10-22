@@ -12,7 +12,7 @@
      it sits on the line that would otherwise be blank, so an empty value leaves the blank line and the prompt's bytes unchanged.
      edit_directive is a required marker, rendered unconditionally by internal/editdirective.
      The literal `{` / `}` characters around {{.slug}} in the board-read example below are ordinary JSON punctuation, not template syntax — only `{{` begins a template action.
-lyx-stencil: sha256=c108a7de2642b12756282c6bbe975a5f1ed6ba5d5084e2b1c200ff934ea12f3d build=c7ea67f8329b88681d80f11bf78793289856fd8a time=2026-10-15T17:54:53Z -->
+lyx-stencil: sha256=dc9c5d65154cd01c194e67bb4c3515776aba9d660a60edd09721621e58b887cc build=eb9c2605c6d5ac23da196495db12bb3fa6302386 time=2026-10-22T06:15:45Z -->
 
 # Discussion — interview, then write the decision record
 
@@ -53,6 +53,13 @@ Only unresolved design questions belong in the interview.
 
 This exploration is bounded, the same way Step 3's interview categories are: at a coarse level you MAY establish which module boundary the work falls under and whether the design conflicts with an existing pattern.
 You MUST NOT gather exact signatures, `file:line` citations, interface shapes, or dependency lists, and you MUST NOT do exhaustive existing-pattern research — that class of fact is computed fresh at Plan time.
+
+A factual question the design rests on is settled here, never deferred.
+Such a question asks a fact, not a choice: which version of a tool or dependency has a feature, how an upstream project behaves, what the code does today.
+Research it now, from the code and from upstream changelogs, manuals and docs at the versions that matter, and record its answer in the decision record's Decisions or Constraints with the evidence it rests on, named by source and version.
+Never leave such a fact for Plan or an implementer to find out, and never hand downstream a rule to halt when a later step discovers it.
+The fence above still binds: it excludes plan-level detail, never a fact the design rests on.
+A question research cannot settle, because it asks a choice, belongs in the interview.
 
 ## Step 3 — Conduct the interview
 
