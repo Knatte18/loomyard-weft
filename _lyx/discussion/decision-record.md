@@ -215,6 +215,13 @@ Rationale: the board entry's three consumers already read glyphs only through qu
   - resolve-half-refuses-handle-only-go-plan (class design, severity MEDIUM, open in rounds 2)
 <!-- /lyx:carry-over Plan-Review -->
 
+<!-- lyx:carry-over Webster-Review -->
+- Webster-Review, round 1: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
+  Review: _lyx/reviews/webster/round-1-review.md; fixer report: _lyx/reviews/webster/round-1-fixer-report.md.
+  - glyph-parse-outside-planparser (class design, severity BLOCKING, open in rounds 1)
+  - undeclared-pattern-edits (class scope, severity MEDIUM, open in rounds 1)
+<!-- /lyx:carry-over Webster-Review -->
+
 ## Acceptance criteria
 
 - `go.mod` pins quarry `v0.4.0`, and every Go plan fixture yields the same findings as before.
