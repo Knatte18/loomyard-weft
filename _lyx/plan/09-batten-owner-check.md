@@ -16,14 +16,14 @@
 - `internal/battenshed/doc.go`
 
 **Create:**
-- `plan:internal/battencli#ownerSeams` -> `type ownerSeams struct`
-- `plan:internal/battencli#hubOwnerSeams` -> `func hubOwnerSeams(location *lyxcwd.Location) ownerSeams`
-- `plan:internal/battencli#battenCLI.refuseStartOwnedElsewhere` -> `func (c *battenCLI) refuseStartOwnedElsewhere() error`
-- `plan:internal/battencli#battenCLI.claimPrimeOwner` -> `func (c *battenCLI) claimPrimeOwner() error`
-- `plan:internal/battencli#battenCLI.ownerPreflight` -> `func (c *battenCLI) ownerPreflight(found bool, status shedengine.Status) error`
-- `plan:internal/battencli#ownedElsewhereRefusal` -> `func ownedElsewhereRefusal(slug, owner string) error`
-- `plan:internal/battencli#TestRefuseStartOwnedElsewhere` -> `func TestRefuseStartOwnedElsewhere(t *testing.T)`
-- `plan:internal/battencli#TestBattenStatus_CarriesTheOwner` -> `func TestBattenStatus_CarriesTheOwner(t *testing.T)`
+- `internal/battencli#ownerSeams`
+- `internal/battencli#hubOwnerSeams`
+- `internal/battencli#battenCLI.refuseStartOwnedElsewhere`
+- `internal/battencli#battenCLI.claimPrimeOwner`
+- `internal/battencli#battenCLI.ownerPreflight`
+- `internal/battencli#ownedElsewhereRefusal`
+- `internal/battencli#TestRefuseStartOwnedElsewhere`
+- `internal/battencli#TestBattenStatus_CarriesTheOwner`
 
 **Uses:**
 - `internal/battencli#newFakeReceiver`

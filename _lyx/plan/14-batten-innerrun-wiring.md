@@ -17,7 +17,7 @@
 - `internal/battencli#childRefusalKind`
 - `plan:internal/battenshed#ChildOwnedElsewhereError`
 - `plan:internal/battenshed#OwnerVerdict`
-- `plan:internal/shedrun#StartOwnedElsewhereKind`
+- `internal/shedrun#StartOwnedElsewhereKind`
 - `plan:internal/fabricengine#ParentHoldsTaskWork`
 - `internal/fabricengine#EntryOwnedElsewhere`
 - `plan:internal/tendercli#PauseOwnedElsewhere`
