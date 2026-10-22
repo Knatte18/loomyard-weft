@@ -40,7 +40,7 @@
 - `internal/tenderengine#Lift`
 - `internal/tendercli#HubDeps`
 - `internal/pauserecord#OwnerCaller`
-- `plan:internal/landingshed#OwnerHaltPrefix`
+- `internal/landingshed#OwnerHaltPrefix`
 - `internal/machinename#Name`
 
 **Intent:**
