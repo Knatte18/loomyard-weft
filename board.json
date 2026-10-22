@@ -3,6 +3,7 @@
   "entries": [
     {
       "id": 48,
+      "handle": "F1",
       "slug": "hardener",
       "title": "Hardener: an autonomous behavior-review campaign that replaces crucible",
       "kind": "note",
@@ -20,6 +21,7 @@
     },
     {
       "id": 51,
+      "handle": "F2",
       "slug": "orch-any-worktree",
       "title": "[WS 006] Umbrella tasks: project threads that spawn and land from their own worktree",
       "kind": "note",
@@ -45,6 +47,7 @@
     },
     {
       "id": 62,
+      "handle": "E1",
       "slug": "fabric-windows",
       "title": "Fabric's Windows path behaviour verified on a Windows host",
       "kind": "note",
@@ -63,6 +66,7 @@
     },
     {
       "id": 63,
+      "handle": "F3",
       "slug": "semantic-index",
       "title": "semantic-index: find code by concept, not by literal keyword",
       "kind": "note",
@@ -79,6 +83,7 @@
     },
     {
       "id": 66,
+      "handle": "F4",
       "slug": "plugin-packaging",
       "title": "Ship lyx as an installable Claude Code plugin",
       "kind": "note",
@@ -95,6 +100,7 @@
     },
     {
       "id": 68,
+      "handle": "E2",
       "slug": "codex-engine",
       "title": "Codex CLI as a second shuttle engine: hands-on spike, then codexengine",
       "kind": "note",
@@ -113,6 +119,7 @@
     },
     {
       "id": 69,
+      "handle": "F5",
       "slug": "fabric-monorepo-verbs",
       "title": "Fabric's ordinary-monorepo verb surface",
       "kind": "note",
@@ -130,6 +137,7 @@
     },
     {
       "id": 70,
+      "handle": "F6",
       "slug": "reed-slack-relay",
       "title": "Talk to the orch through Slack",
       "kind": "note",
@@ -146,6 +154,7 @@
     },
     {
       "id": 77,
+      "handle": "F7",
       "slug": "raddle",
       "title": "raddle: codeguide's woven-in successor",
       "kind": "note",
@@ -162,6 +171,7 @@
     },
     {
       "id": 80,
+      "handle": "E3",
       "slug": "warp-visibility",
       "title": "warp-visibility: CLAUDE.local.md invisible in the Fabric repo's git history",
       "kind": "note",
@@ -180,6 +190,7 @@
     },
     {
       "id": 83,
+      "handle": "F8",
       "slug": "fabric-reset-to-sha",
       "title": "fabric: two-sided reset-to-SHA verb",
       "kind": "note",
@@ -197,6 +208,7 @@
     },
     {
       "id": 84,
+      "handle": "E4",
       "slug": "finalize-discrepancy-doc",
       "title": "finalize: the discrepancy-document conflict shape",
       "kind": "note",
@@ -215,6 +227,7 @@
     },
     {
       "id": 86,
+      "handle": "F9",
       "slug": "doctor",
       "title": "doctor: a lyx diagnostics command",
       "kind": "note",
@@ -233,6 +246,7 @@
     },
     {
       "id": 87,
+      "handle": "F10",
       "slug": "session-sync",
       "title": "session sync: Claude transcripts across machines",
       "kind": "note",
@@ -249,6 +263,7 @@
     },
     {
       "id": 97,
+      "handle": "F11",
       "slug": "board-viewer",
       "title": "Interactive board view: a regenerated HTML file and a phone-friendly README",
       "kind": "note",
@@ -268,6 +283,7 @@
     },
     {
       "id": 177,
+      "handle": "E5",
       "slug": "verify-watchdog",
       "title": "Windows verify timeout kills the whole process tree",
       "kind": "note",
@@ -286,6 +302,7 @@
     },
     {
       "id": 231,
+      "handle": "F12",
       "slug": "spawn-audit-log",
       "title": "Spawn audit log: every process lyx starts is recorded and traceable",
       "kind": "note",
@@ -305,6 +322,7 @@
     },
     {
       "id": 329,
+      "handle": "F13",
       "slug": "weaver",
       "title": "Weaver: a cold-start implementer beside Webster, with model escalation",
       "kind": "note",
@@ -323,6 +341,7 @@
     },
     {
       "id": 430,
+      "handle": "F14",
       "slug": "dotnet-scoped-verify",
       "title": "[.NET 003] Scoped build and test for C# hubs",
       "kind": "note",
@@ -343,6 +362,7 @@
     },
     {
       "id": 483,
+      "handle": "E6",
       "slug": "dotnet-verify-protocol",
       "title": "[.NET 005] Verification protocol for a .NET repo: slow-suite tier, numerical-baseline capture/compare, verify timeouts and logs",
       "kind": "note",
@@ -365,6 +385,7 @@
     },
     {
       "id": 504,
+      "handle": "E7",
       "slug": "run-verbs-shared",
       "title": "Run verbs in one shared namespace, not under lyx loom",
       "kind": "note",
@@ -383,6 +404,7 @@
     },
     {
       "id": 540,
+      "handle": "F15",
       "slug": "reed-status-buttons",
       "title": "Configurable action buttons on the reed status bar",
       "kind": "note",
@@ -401,6 +423,7 @@
     },
     {
       "id": 542,
+      "handle": "E8",
       "slug": "shed-arbiter-all",
       "title": "The arbiter in shed for every shed run, batten included",
       "kind": "note",
@@ -421,6 +444,7 @@
     },
     {
       "id": 545,
+      "handle": "A1",
       "slug": "reed-status-buttons-prototype",
       "title": "Prototype reed status buttons in a throwaway tmux server",
       "kind": "note",
@@ -438,6 +462,7 @@
     },
     {
       "id": 546,
+      "handle": "E9",
       "slug": "review-inline-code",
       "title": "Paste cited code into a review rounds context",
       "kind": "note",
@@ -456,6 +481,7 @@
     },
     {
       "id": 553,
+      "handle": "F16",
       "slug": "creel-agents",
       "title": "creel stage 3: agents message through creel, not SendMessage",
       "kind": "note",
@@ -478,6 +504,7 @@
     },
     {
       "id": 554,
+      "handle": "E10",
       "slug": "labels-from-diff",
       "title": "Module labels from what a task touches, not only what it is about",
       "kind": "note",
@@ -496,6 +523,7 @@
     },
     {
       "id": 560,
+      "handle": "E11",
       "slug": "batten-ready-overlap",
       "title": "Start one task per overlapping group at a newly-ready start",
       "kind": "note",
@@ -513,6 +541,7 @@
     },
     {
       "id": 568,
+      "handle": "F17",
       "slug": "orchestrator-survey-ideas",
       "title": "Ideas to borrow from comparable agent orchestrators (survey, Oct 2026)",
       "kind": "note",
@@ -536,6 +565,7 @@
     },
     {
       "id": 616,
+      "handle": "E12",
       "slug": "xdr-git-test-file-burst",
       "title": "Git test fixtures trip Cortex XDR on the work laptop",
       "kind": "note",
@@ -553,6 +583,7 @@
     },
     {
       "id": 622,
+      "handle": "E13",
       "slug": "rename-binary-lyr",
       "title": "Rename the lyx binary to lyr (name clash with LyX)",
       "kind": "note",
@@ -573,6 +604,7 @@
     },
     {
       "id": 629,
+      "handle": "F18",
       "slug": "regression-baseline-verify",
       "title": "[.NET 004] Asynchronous test tiers in shed: the numerical baseline captured before implementation, compared at the final gate",
       "kind": "note",
@@ -594,6 +626,7 @@
     },
     {
       "id": 632,
+      "handle": "E14",
       "slug": "row-entry-gate",
       "title": "Entry gate on shed rows: a check decides whether a row runs at all",
       "kind": "note",
@@ -613,6 +646,7 @@
     },
     {
       "id": 640,
+      "handle": "E15",
       "slug": "enclose-checks",
       "title": "Use quarry Enclose for mechanical checks: verify failures to plan cards",
       "kind": "note",
@@ -632,6 +666,7 @@
     },
     {
       "id": 646,
+      "handle": "E16",
       "slug": "parallel-batch-parts",
       "title": "Parallel batches: the shared pieces for Webster forks and Weaver",
       "kind": "note",
@@ -651,6 +686,7 @@
     },
     {
       "id": 650,
+      "handle": "F19",
       "slug": "pair-from-parent",
       "title": "[WS 004] Board projects and pairs created from a parent pair",
       "kind": "note",
@@ -674,6 +710,7 @@
     },
     {
       "id": 651,
+      "handle": "E17",
       "slug": "umbrella-anchor",
       "title": "[WS 007] An anchor per umbrella",
       "kind": "note",
@@ -694,6 +731,7 @@
     },
     {
       "id": 652,
+      "handle": "A2",
       "slug": "test-time-audit-recurring",
       "title": "Recurring test-suite time and growth audit",
       "kind": "note",
@@ -710,6 +748,7 @@
     },
     {
       "id": 654,
+      "handle": "E18",
       "slug": "umbrella-daemon",
       "title": "[WS 005] One dobby daemon per beam owns and drives its runs",
       "kind": "note",
@@ -733,6 +772,7 @@
     },
     {
       "id": 659,
+      "handle": "A3",
       "slug": "review-setup-audit",
       "title": "Audit the twill and lens review setup: worth per perch, recurring finding classes, writer quality",
       "kind": "note",
@@ -756,6 +796,7 @@
     },
     {
       "id": 667,
+      "handle": "A4",
       "slug": "tsa-quarry-audit",
       "title": "Audit: ideas from tree-sitter-analyzer for quarry and its use in lyx",
       "kind": "note",
@@ -776,6 +817,7 @@
     },
     {
       "id": 668,
+      "handle": "E19",
       "slug": "fabric-remote-async",
       "title": "Every remote operation runs async, and local-only fabric pairs stay an explicit choice only",
       "kind": "note",
@@ -794,6 +836,7 @@
     },
     {
       "id": 673,
+      "handle": "E20",
       "slug": "plan-gate-pattern-headroom",
       "title": "Plan gate does not catch declared PATTERN.md growth that exceeds the headroom line",
       "kind": "note",
@@ -814,6 +857,7 @@
     },
     {
       "id": 674,
+      "handle": "E21",
       "slug": "plan-extends-label",
       "title": "Plan cards mark additive edits so shared spots stop chaining the card DAG",
       "kind": "note",
@@ -833,6 +877,7 @@
     },
     {
       "id": 676,
+      "handle": "E22",
       "slug": "batten-window-default",
       "title": "lyx batten run starts in its own window by default",
       "kind": "note",
@@ -852,6 +897,7 @@
     },
     {
       "id": 702,
+      "handle": "T1",
       "slug": "run-process-ownership",
       "title": "Every process a run spawns has one owner that ends them all",
       "kind": "task",
@@ -870,7 +916,6 @@
         760,
         796
       ],
-      "priority": "high",
       "depends_on": [],
       "isolated": false,
       "brief": "Owner records for run processes; pause, reed down, fabric remove and teardown end the whole group; tender status shows orphans; a hub pause reaches background work; a finished reviewer never waits on its background shells",
@@ -882,6 +927,7 @@
     },
     {
       "id": 703,
+      "handle": "A5",
       "slug": "bench-osl1046-xdr",
       "title": "Sweep go_parallel on OSL-1046 with Cortex XDR",
       "kind": "note",
@@ -898,6 +944,7 @@
     },
     {
       "id": 706,
+      "handle": "A6",
       "slug": "dotnet-bench-osl1046",
       "title": "[.NET 001] Measure NORCE Models build and test on OSL-1046 with Cortex XDR",
       "kind": "note",
@@ -915,6 +962,7 @@
     },
     {
       "id": 718,
+      "handle": "E23",
       "slug": "loom-gates-xdr-stacking",
       "title": "Cortex XDR holds stack up across a loom run's card, batch, round and whole-suite gates",
       "kind": "note",
@@ -934,6 +982,7 @@
     },
     {
       "id": 721,
+      "handle": "T2",
       "slug": "finalize-dirty-names-paths",
       "title": "Finalize blocks on 'worktree dirty' without naming the tree or paths, and the loom's own run record counts as dirty",
       "kind": "task",
@@ -957,6 +1006,7 @@
     },
     {
       "id": 722,
+      "handle": "T3",
       "slug": "batten-cancel-verb",
       "title": "One batten verb ends a run for good, live or stopped, before or after its pair exists",
       "kind": "task",
@@ -981,6 +1031,7 @@
     },
     {
       "id": 726,
+      "handle": "B1",
       "slug": "fabric-add-adopt-local",
       "title": "fabric add refuses an existing local branch instead of adopting it",
       "kind": "note",
@@ -1000,6 +1051,7 @@
     },
     {
       "id": 727,
+      "handle": "T4",
       "slug": "orch-strand-cycle",
       "title": "Orch lifecycle: dead strands count as dead, the watcher restarts, cycle requests need no reply and can be withdrawn",
       "kind": "task",
@@ -1025,6 +1077,7 @@
     },
     {
       "id": 737,
+      "handle": "E24",
       "slug": "review-rounds-after-twill-plan",
       "title": "Revisit late review rounds after the twill-plan lens change",
       "kind": "note",
@@ -1043,6 +1096,7 @@
     },
     {
       "id": 739,
+      "handle": "E25",
       "slug": "gate-test-repeats",
       "title": "Test runs repeat at the end of a loom run: tier0 inside every tier, the suite four times, tmux only at Publish",
       "kind": "note",
@@ -1063,6 +1117,7 @@
     },
     {
       "id": 742,
+      "handle": "E26",
       "slug": "open-window-toggle",
       "title": "A status-bar button turns automatic terminal windows for runs on or off",
       "kind": "note",
@@ -1081,6 +1136,7 @@
     },
     {
       "id": 743,
+      "handle": "E27",
       "slug": "csharp-fixtures-compile",
       "title": "[.NET] A test compiles the C# test fixtures, skipped without dotnet",
       "kind": "note",
@@ -1100,6 +1156,7 @@
     },
     {
       "id": 744,
+      "handle": "E28",
       "slug": "csharp-sandbox-hub",
       "title": "[.NET] A small public NUnit repo as sandbox hub for end-to-end C# runs",
       "kind": "note",
@@ -1117,6 +1174,7 @@
     },
     {
       "id": 745,
+      "handle": "B2",
       "slug": "reclaim-dead-strand-names",
       "title": "Dead strands from before a reboot hold their names and fail a resumed row",
       "kind": "note",
@@ -1139,6 +1197,7 @@
     },
     {
       "id": 746,
+      "handle": "B3",
       "slug": "loop-exit-halt-names-its-cause",
       "title": "loom halt note for a Merge-In loop exit carries only 'loop-exited' as its reason",
       "kind": "note",
@@ -1159,6 +1218,7 @@
     },
     {
       "id": 747,
+      "handle": "B4",
       "slug": "report-timing-unreadable-journal",
       "title": "lyx report timing counts sleep as active time when the system journal is unreadable",
       "kind": "note",
@@ -1178,6 +1238,7 @@
     },
     {
       "id": 748,
+      "handle": "B5",
       "slug": "retry-archive-tag-push",
       "title": "Teardown's archive-tag push has no retry for a transient remote rejection",
       "kind": "note",
@@ -1198,6 +1259,7 @@
     },
     {
       "id": 749,
+      "handle": "B6",
       "slug": "done-check-spaced-create-paths",
       "title": "webster: done-check rejects a Create path holding a space that webster validate accepts",
       "kind": "note",
@@ -1219,6 +1281,7 @@
     },
     {
       "id": 750,
+      "handle": "E29",
       "slug": "plan-card-amendment-owner",
       "title": "No role may carry out a parent decision that amends a plan card mid-run",
       "kind": "note",
@@ -1240,6 +1303,7 @@
     },
     {
       "id": 751,
+      "handle": "B7",
       "slug": "gate-test-runtime-caller-paths",
       "title": "gate: runtime.Caller returns module-relative paths under lyx gate test, as with -trimpath",
       "kind": "note",
@@ -1260,6 +1324,7 @@
     },
     {
       "id": 752,
+      "handle": "B8",
       "slug": "fork-git-guard-read-only-tag",
       "title": "Fork git guard flags read-only 'git tag --points-at' as a state-mutating command",
       "kind": "note",
@@ -1279,6 +1344,7 @@
     },
     {
       "id": 753,
+      "handle": "E30",
       "slug": "discussion-alignment-into-lenses",
       "title": "Discussion scope check moves from the alignment agent into the perch lenses, with an escalating finding class",
       "kind": "note",
@@ -1295,6 +1361,26 @@
       "body": "## Seen\n\nThe alignment agent runs at two points of a loom run (`internal/alignment`): `parent-review`, after Discussion-Write's mechanical gate and before the Discussion perch, and `pr-gate`, after Publish.\nAt `parent-review` it checks the discussion against the board entry, the board, the in-flight runs' records (`lyx loom peers`) and the parent's landed commits, and approves, rejects or escalates to the orch.\nThe Discussion perch already covers most of that: lens `goal-scope` (in fans `discussion` and `twill-discussion`) checks the record against its board entry, and lens `board-fit` (in `twill-discussion`) checks it against every other board entry.\nThe name is stale too: the parent no longer reviews at that point, so neither the gate nor `lyx loom review` should say parent-review.\n\n## Idea\n\nDrop the alignment agent at the discussion point and keep it at `pr-gate`, where it approves the landing and names the board entries a run superseded:\n\n- `board-fit` also reads the other in-flight runs' records through `lyx loom peers` and the parent's landed commits.\n- A lens gets a finding class that escalates to the run's parent instead of going to the fixer, for a question only the operator can settle: a design conflict with another run, or doubt about what the task is for.\n  The Bouncer routes such a finding up to the orch.\n- The `parent-review` gate and the `lyx loom review` verbs go, and with them the parent-review name.\n\nGain: one cold agent spawn fewer per loom run.\nCost: the scope check no longer runs before the first perch round, so a round can be spent polishing a record whose scope then changes.\n\nDiscussed with the operator 2026-10-22; the operator agreed to record it as a note, the design is not yet decided.\n",
       "created": "2026-10-22T11:02:23Z",
       "revised": "2026-10-22T11:02:23Z"
+    },
+    {
+      "id": 754,
+      "handle": "E31",
+      "slug": "entry-align-before-discussion",
+      "title": "A row before Discussion aligns the task text against the board, peers and landed work, and adjusts it",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "loom",
+        "batten",
+        "board"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "## Seen\n\nA task's board entry is written when it is promoted, and can sit for days while other work lands and other runs start.\nIts text reaches Discussion-Write as it stands, so a scope that overlaps, contradicts or has been overtaken by other planned or landed work is found only in the Discussion perch or by the alignment agent, after a whole Discussion has been written; a scope change costs more the later it comes.\n\n## Idea\n\nA row of the run, before Discussion-Write (and before Darn-Write), aligns the task's own entry text against the rest of the board, the other in-flight runs' records (`lyx loom peers`) and the parent's recent landed commits, and adjusts the text before anything is written from it.\n\n- Mechanical fixes (a reference to work that has landed, a dependency left unnamed) are written into the entry by the row itself.\n- A change to what the task is for escalates to the orch, which takes it to the operator.\n\nThe board's run lock exists to stop the orch from editing a started run's entry, which is pointless once the run has read it (operator, 2026-10-22); it does not need to stop the run's own pre-Discussion row, since the text still matters then.\nSo this row edits its own entry through an exemption the lock grants it, and `CLAUDE.md`'s rule that no step of a run changes its own entry changes with it.\n\nRelated: note `discussion-alignment-into-lenses`, which drops the alignment agent at the discussion point; with this row in place the perch's `board-fit` only checks what the discussion itself added.\nOperator idea, 2026-10-22; the design is open.\n",
+      "created": "2026-10-22T11:08:38Z",
+      "revised": "2026-10-22T11:08:38Z"
     }
   ],
   "prime_owner": "neve"
