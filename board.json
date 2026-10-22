@@ -1084,7 +1084,7 @@
       "isolated": false,
       "brief": "LoomYard side of C# glyphs, after the quarry hub csharp-alphabet lands and is tagged",
       "body": "## Seen (orch, 2026-10-20)\n\nQuarry knows only Go glyphs, so LoomYard's planner and Plan-Review get no glyphs in a C# hub such as NORCE Models.\n\n## Split (operator, 2026-10-21)\n\nQuarry is its own repository and hub (`Knatte18/quarry`, hub `quarry-LYXHUB`).\nThe C# grammar and glyph alphabet are built there, in that hub's task `csharp-alphabet`.\n\nThis entry is LoomYard's side only, started once `csharp-alphabet` has landed and quarry has a new version tag:\n\n- raise the quarry version in `go.mod`;\n- pick the alphabet per file, by extension, wherever LoomYard asks quarry for glyphs;\n- the planner, Plan-Review and the card kick-start get C# glyphs in a C# hub.\n\nA first run of this entry was started too early on 2026-10-21 and abandoned at Discussion-Write.\n\n## Ready (2026-10-22)\n\n`csharp-alphabet` landed in quarry as `ca716c2`, and quarry tagged it `v0.4.0` (operator decision, 2026-10-22); `go.mod` pins `v0.2.1` today, so the raise also takes in `v0.3.0`'s Enclose, which LoomYard does not use yet.\nThe quarry commit names a library break: a declaration input with a zero `Lang` is now rejected, so every LoomYard caller must set `Lang`.\nThe LoomYard packages importing quarry are `internal/planglyph`, `internal/planparser` and `internal/quarrycli`.\n",
-      "status": "running · Discussion-Burler-Review",
+      "status": "running · Discussion-Burler-Fix",
       "created": "2026-10-20T19:05:12Z",
       "revised": "2026-10-22T05:59:32Z",
       "profile": "light"
