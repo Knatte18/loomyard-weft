@@ -1244,6 +1244,26 @@
       "body": "Imported from [issue #803](https://github.com/Knatte18/loomyard/issues/803).\n\n## Seen (orch, 2026-10-21, OSL-1046)\n\n`lyx report timing` takes machine sleep windows from the system journal.\nOn this machine `journalctl` cannot read the system journal, because the AD user is in neither `adm` nor `systemd-journal`.\nThe report then subtracts no sleep, so sleep and quota waits are counted as active run time, and it says nothing about it.\n\n## Workaround\n\nNone; the numbers from this machine overstate active time.\n\n## Expected\n\nWhen the journal is unreadable, the report finds idle time another way, such as recorded tender pauses, hub-wide idle windows, or gaps in the runs' own timestamps.\nIt also states in its output that sleep could not be read and the numbers may include it.\n",
       "created": "2026-10-22T10:33:03Z",
       "revised": "2026-10-22T10:33:03Z"
+    },
+    {
+      "id": 748,
+      "slug": "retry-archive-tag-push",
+      "title": "Teardown's archive-tag push has no retry for a transient remote rejection",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "batten",
+        "fabric"
+      ],
+      "issues": [
+        804
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Imported from [issue #804](https://github.com/Knatte18/loomyard/issues/804).\n\n## Seen (orch, 2026-10-21, OSL-1046)\n\n`origin-reconcile`'s Worktree-Teardown pushes the archive tag `archive/\u003cslug\u003e/\u003csha\u003e` to the weft remote before removing the worktree.\nGitHub rejected that push with a bare `(failed)` twice, and each time the row failed and the run halted.\nThe third `lyx batten run origin-reconcile --window` pushed the tag and finished the teardown, so the failure was transient.\n\n## Workaround\n\nRe-run `lyx batten run \u003cslug\u003e --window` until the push goes through.\n\n## Expected\n\nThe archive-tag push retries a transient remote rejection a few times with backoff before failing the row, as a transient network error should not need an orch turn.\n",
+      "created": "2026-10-22T10:33:05Z",
+      "revised": "2026-10-22T10:33:05Z"
     }
   ]
 }
