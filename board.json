@@ -1185,6 +1185,26 @@
       "body": "## Seen\n\nThe C# path is tested only in unit tests over fixtures: no loom run has gone end to end on a C# repo, with a plan in C# glyphs, Webster writing C#, and the gate running `dotnet test`.\nModels, the target repo, is proprietary and is never cloned outside OSL-1046 (operator, 2026-10-22).\n\n## Idea\n\nA small public NUnit repo of our own as a C# sandbox hub, beside `lyx-test-LYXHUB`, shaped like Models: projects targeting `net9.0`, built with SDK 10 (operator, 2026-10-22), NUnit tests.\nRuns on it prove the whole C# path on Neve before OSL-1046.\n\n## Toolchain facts\n\n- OSL-1046 has SDKs 8.0.32, 9.0.21 and 10.0.13 (operator, 2026-10-22).\n- Neve is Ubuntu 26.04, whose apt carries .NET 10 only; SDK 10 builds `net9.0` projects, but running their tests needs the .NET 9 runtime, which Microsoft's `dotnet-install.sh --runtime dotnet --channel 9.0 --install-dir ~/.dotnet` installs without sudo.\n",
       "created": "2026-10-22T09:23:53Z",
       "revised": "2026-10-22T09:23:53Z"
+    },
+    {
+      "id": 745,
+      "slug": "reclaim-dead-strand-names",
+      "title": "Dead strands from before a reboot hold their names and fail a resumed row",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "reed",
+        "shuttle"
+      ],
+      "issues": [
+        799
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Imported from [issue #799](https://github.com/Knatte18/loomyard/issues/799).\n\n## Seen (orch, 2026-10-21, OSL-1046)\n\nAfter a machine restart, both in-flight runs were resumed from the prime with `lyx batten run \u003cslug\u003e --window`.\nReed still listed the strands from before the restart as dead (`live: false`), holding their names.\n\n- `test-tiers`: Plan-Burler-Fix re-spawned its fixer as `ly:test-tiers:plan-burler-fix-2`, and the row failed with `seatengine: strand \"ly:test-tiers:plan-burler-fix\" started as \"ly:test-tiers:plan-burler-fix-2\", because another strand holds that name; way forward: run \"lyx reed remove --name ly:test-tiers:plan-burler-fix\", then re-step the row`.\n- `tuned-defaults-template`: Merge-In's conflict agent came up as `conflict-2` beside the dead `conflict` and carried on.\n\n## Workaround\n\n`lyx reed remove --name \u003cdead strand\u003e` in the task worktree, then `lyx loom resume`.\n\n## Expected\n\nA strand whose pane is gone, such as every strand after a reboot, does not hold its name: a resume or a re-spawn reclaims the name of a dead strand without a manual `lyx reed remove`, and the row does not fail.",
+      "created": "2026-10-22T10:32:58Z",
+      "revised": "2026-10-22T10:32:58Z"
     }
   ]
 }
