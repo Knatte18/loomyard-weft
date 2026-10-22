@@ -1,13 +1,20 @@
-# Fixers and other checked roles on Sonnet
+# Plan and Discussion fixers on Sonnet, once findings are concrete enough
 
 `fixers-on-sonnet` · Note · enhancement, burler, claude
 
 ## Seen
 
 `docs/research/token-audit-2026-10-22`: Opus and Sonnet read cache at the same price, so a swap saves about half a role's non-cache-read cost.
-Roles whose output a later step checks: Plan and Discussion fixers about $162 over two weeks, darn writer $45, alignment $40, Webster fixer $37; together about 4% of spend.
+Over the audit window the Plan and Discussion fixers cost about $162 on Opus, the darn writer $45, alignment $40.
+The Webster and Merge fixers already run on Sonnet: the template sets `webster_fixer_model` and `merge_fixer_model` to `sonnet[medium]` since `c2d13e5ae` (2026-10-21), so the audit's $37 Opus Webster fixer spend predates that.
+`discussion_fixer_model` and `plan_fixer_model` are empty and fall back to `fixer_model`, `opus[medium]`.
+
+## Operator view, not a decision (2026-10-22)
+
+A Sonnet fixer needs findings concrete enough for Sonnet to carry out.
+For the Webster perch Sonnet is the natural fit, since Webster's own forks are Sonnet.
 
 ## Idea (orch, not decided)
 
-Run the fixers on Sonnet first, since the judge and the next round re-check them.
+Before the Plan and Discussion fixers move to Sonnet, check that their findings are concrete: each names the place and the change, not only the problem.
 A3 (`review-setup-audit`) notes a sloppy fixer causes many late-round defects, and `docs/research/model-downgrade-results.md` holds earlier downgrade results; bench before switching.
