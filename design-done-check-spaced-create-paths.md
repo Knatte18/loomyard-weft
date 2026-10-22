@@ -1,6 +1,8 @@
 # webster: done-check rejects a Create path holding a space that webster validate accepts
 
-`done-check-spaced-create-paths` · Note · bug, webster, quarry
+`done-check-spaced-create-paths` · Task · bug, webster, quarry
+
+Depends on: [`run-process-ownership`](design-run-process-ownership.md)
 
 Imported from [issue #805](https://github.com/Knatte18/loomyard/issues/805).
 
@@ -34,3 +36,8 @@ Why abnormal: the rejection is a plan-validation defect (a done-check target the
 What to do: (1) validate done-check targets at plan review so the error surfaces before implementation; (2) have recover-batch either accept a corrected target or state that the card must be amended, instead of recommending itself; (3) give the `loop-exited` hard failure a reason; (4) consider whether a bare path with a space should be auto-addressed as `<path>#` as the error message itself suggests.
 
 Provenance: task `csharp-alphabet`; notes loom-halt.md, loom-halt-2.md, webster-refusal-record-batch.md, webster-refusal-recover-batch.md.
+
+## Operator decision (2026-10-22)
+
+The done-check accepts a Create path holding a space, matching what `webster validate` already accepts; `webster validate` is not made to refuse it.
+The `loop-exited` halt reason is out of scope here: task `loop-exit-halt-names-its-cause` takes it.

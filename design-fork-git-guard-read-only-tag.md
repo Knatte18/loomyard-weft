@@ -1,6 +1,8 @@
 # Fork git guard flags read-only 'git tag --points-at' as a state-mutating command
 
-`fork-git-guard-read-only-tag` · Note · bug, shed
+`fork-git-guard-read-only-tag` · Task · bug, shed
+
+Depends on: [`run-process-ownership`](design-run-process-ownership.md)
 
 Imported from [issue #819](https://github.com/Knatte18/loomyard/issues/819).
 
@@ -29,3 +31,7 @@ Add a test for the command line above.
 Also consider that the halt message's way forward ("revert what the fork wrote") is misleading when the working tree is clean.
 
 Provenance: task `quarry-csharp`, note `loom-halt.md`.
+
+## Operator decision (2026-10-22)
+
+The fork git guard was made subcommand-only on purpose (commit 82cd60938); it now lets read-only `git tag` forms through (`--points-at`, `-l`/`--list`, `--contains`), while a `git tag` that creates or deletes a tag stays refused.

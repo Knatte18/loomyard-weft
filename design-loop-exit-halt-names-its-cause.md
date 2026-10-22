@@ -1,6 +1,8 @@
 # loom halt note for a Merge-In loop exit carries only 'loop-exited' as its reason
 
-`loop-exit-halt-names-its-cause` · Note · bug, loom, shed
+`loop-exit-halt-names-its-cause` · Task · bug, loom, shed
+
+Depends on: [`run-process-ownership`](design-run-process-ownership.md)
 
 Imported from [issue #801](https://github.com/Knatte18/loomyard/issues/801).
 
