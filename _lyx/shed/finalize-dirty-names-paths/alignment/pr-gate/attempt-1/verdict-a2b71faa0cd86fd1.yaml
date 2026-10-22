@@ -1,0 +1,14 @@
+verdict: escalate
+reason: >-
+  The diff matches the board entry's goal and decisions D1-D5 and conflicts with no peer or parent commit, except one point.
+  Finalize's merge-in-progress way forward (parkedMergeWayForward in internal/landingshed/finalize.go) tells the operator to save a copy of their change outside the checkout before --abort.
+  D2 decides they commit or set it aside with plain git.
+  The plan marks this as a departure pending an Added after Discussion entry under D2, Plan-Review carried it over open (F1), and its fixer deferred the entry to the loop owner or ly:orch.
+  The decision record at fae092b37 still has no such entry, so the change breaks a recorded decision, and adopting it is the parent's call.
+question: >-
+  Does D2 adopt the shipped merge-in-progress way forward, which has the operator save a copy of their own change outside the parent's code checkout before "lyx fabric merge --abort" instead of committing it or setting it aside with plain git?
+  The reason is that a commit moves HEAD off the merge record's start, so sideConcludeMayHaveLanded makes --abort refuse with "merge conclude already landed", and a git stash takes the staged merge with it.
+  If it does, add an Added after Discussion entry under D2 in _lyx/discussion/decision-record.md recording that, and this gate approves.
+  If not, parkedMergeWayForward returns to D2's wording.
+  The decision record leaves this open: the plan's 00-overview.md Shared Decisions bullet and _lyx/reviews/plan/round-1-fixer-report.md (deferred F1).
+superseded: []
