@@ -2,8 +2,6 @@
 
 `run-process-ownership` · Task · bug, enhancement, batten, burler, fabric, loom, shed, shuttle, webster
 
-Depends on: [`machine-handover`](design-machine-handover.md)
-
 ## Goal
 
 Every process a run spawns has one owner, and the verbs that end, pause or tear down a run reach all of them.
