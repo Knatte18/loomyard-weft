@@ -1158,35 +1158,6 @@
       "revised": "2026-10-22T12:03:01Z"
     },
     {
-      "id": 747,
-      "handle": "T2",
-      "slug": "report-timing-unreadable-journal",
-      "title": "lyx report timing counts sleep as active time when the system journal is unreadable",
-      "kind": "task",
-      "labels": [
-        "bug",
-        "report"
-      ],
-      "issues": [
-        803
-      ],
-      "recipe": "darn",
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "Imported from [issue #803](https://github.com/Knatte18/loomyard/issues/803).\n\n## Seen (orch, 2026-10-21, OSL-1046)\n\n`lyx report timing` takes machine sleep windows from the system journal.\nOn this machine `journalctl` cannot read the system journal, because the AD user is in neither `adm` nor `systemd-journal`.\nThe report then subtracts no sleep, so sleep and quota waits are counted as active run time, and it says nothing about it.\n\n## Workaround\n\nNone; the numbers from this machine overstate active time.\n\n## Expected\n\nWhen the journal is unreadable, the report finds idle time another way, such as recorded tender pauses, hub-wide idle windows, or gaps in the runs' own timestamps.\nIt also states in its output that sleep could not be read and the numbers may include it.\n\n## Already in place (triage, 2026-10-22)\n\n`internal/reportcli/doc.go`: a failing `journalctl` leaves nothing out and `sleep_note` says why, so the stated-in-output part exists; what remains is the other idle source.\n",
-      "status": "done",
-      "created": "2026-10-22T10:33:03Z",
-      "revised": "2026-10-22T12:03:01Z",
-      "run_settings": {
-        "darn": {
-          "review_hard_max_bounces": 2,
-          "review_max_bounces": 1
-        }
-      },
-      "owner_machine": "neve"
-    },
-    {
       "id": 748,
       "handle": "T9",
       "slug": "retry-archive-tag-push",
