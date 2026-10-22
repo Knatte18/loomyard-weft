@@ -262,6 +262,13 @@ Bound: only shells no awaited prefix names; forks and awaited shells keep the cu
   - reed-down-retry-step-mismatch (class consistency, severity MEDIUM, open in rounds 4)
 <!-- /lyx:carry-over Plan-Review -->
 
+<!-- lyx:carry-over Webster-Review -->
+- Webster-Review, round 1: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
+  Review: _lyx/reviews/webster/round-1-review.md; fixer report: _lyx/reviews/webster/round-1-fixer-report.md.
+  - pattern-md-unrelated-entries-shortened (class scope, severity MEDIUM, open in rounds 1)
+  - runproc-end-group-members-not-watched (class design, severity MEDIUM, open in rounds 1)
+<!-- /lyx:carry-over Webster-Review -->
+
 ## Acceptance criteria
 
 - A detached pair push, a prime records push, a board sync, `lyx loom drive`, the detached step loop and a seeded `lyx batten run` each leave a record under the owner D2 names, and a dead process's record is pruned on the next read.
