@@ -51,6 +51,12 @@ Rationale: that file is hub config on Bolt, written from the prime through `lyx 
 
 - A hub that relied on the old default of 4 now gets 2 rounds at most unless its `darn.yaml` sets a higher cap.
 
+<!-- lyx:carry-over Darn-Review -->
+- Darn-Review, round 1: converged; each finding below was fixed or disputed by the round's fixer, and no fresh reviewer has seen the result; the fixer report says which.
+  Review: _lyx/reviews/darn/round-1-review.md; fixer report: _lyx/reviews/darn/round-1-fixer-report.md.
+  - stencil-wrong-profiles-command (class consistency, severity MEDIUM, open in rounds 1)
+<!-- /lyx:carry-over Darn-Review -->
+
 ## Acceptance criteria
 
 - A darn config loaded with no hub or local value resolves `review_hard_max_bounces` to 2.
