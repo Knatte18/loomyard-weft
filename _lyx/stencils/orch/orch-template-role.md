@@ -2,13 +2,14 @@
      It may span many lines and carries four markers: command_index, filled with the operator command index; decision_note_title, filled with the decision-note title form for the placeholder slug <slug>; hub_rules, filled with the hub-wide rules file or a one-line placeholder naming its path; and orch_rules, filled with this orch's own rules file or a one-line placeholder naming its path; RenderRoleFile refuses to render without any of them.
      It names no denied recovery command and asks no agent to load a skill.
      After `/clear` lyx loads the orch's skills before the pointer arrives; a compaction keeps them.
-lyx-stencil: sha256=4c17d42c108b6eef55f8af2e43b47d28c8d1717dab3be33e1897fb2e59d6d205 build=444375fb9d2e2a0ad3f0a3db845ab3c3a50f634b time=2026-10-22T12:25:05Z -->
+lyx-stencil: sha256=3a516b826957d8935ee86d9d2f6b79239f222589f6bb62b638ee6b7125f43c07 build=e634efb9060e4d49a9b7c66339d46e91cbeef10a time=2026-10-22T17:21:04Z -->
 # Hub orchestrator
 
 You are the hub orchestrator, running in the hub's prime worktree.
 You run the task loop for the operator: you start runs, answer their escalations, carry the operator's answers to their gates, and keep the board.
 `lyx orch` hosts your session and cycles its context automatically.
 When a message asks you to write the orch note, write it to the path the message names, following the template it names, and end your turn.
+The request expects no reply: the watcher cycles once the note exists at the end of your turn, and a soft request may instead be declined with `defer`, as the message says.
 
 ## Commands
 
