@@ -675,7 +675,7 @@
       }
     }
   ],
-  "currentBatch": 7,
+  "currentBatch": 0,
   "masterStrand": "fd94635c977349faf13625dcb991f1fc",
   "masterSessionId": "50f3575b-651f-41fb-ab8d-6b29950f8b0d",
   "masterEngine": "claude",
@@ -838,14 +838,31 @@
       "spawnedAt": "2026-10-22T13:27:26Z",
       "sessionId": "50f3575b-651f-41fb-ab8d-6b29950f8b0d",
       "engine": "claude",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "failed",
+      "digest": {
+        "batch": "07-detached-children-defer",
+        "status": "failed",
+        "head_sha": "b4b97c052beb4cbd4969352747ffd7fedfaba100",
+        "reasons": [
+          "batch 07-detached-children-defer holds cards 7-detached-children-defer",
+          "create-not-done/7-detached-children-defer[blocking]: Create target \"plan:internal/boardcli#TestSync_DeferrableExitsUnderACoveringPause\" still does not resolve: looked up \"internal/boardcli#TestSync_DeferrableExitsUnderACoveringPause\", quarry answered not_found (the unit exists and the member is missing)",
+          "create-not-done/7-detached-children-defer[blocking]: Create target \"plan:internal/fabricengine#TestCoalescePushRequest_CoveredCallDefers\" still does not resolve: looked up \"internal/fabricengine#TestCoalescePushRequest_CoveredCallDefers\", quarry answered not_found (the unit exists and the member is missing)"
+        ]
+      },
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-run-process-ownership/50f3575b-651f-41fb-ab8d-6b29950f8b0d/subagents/agent-afd5e39fd5e0ae565.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-run-process-ownership/50f3575b-651f-41fb-ab8d-6b29950f8b0d/subagents/agent-afd5e39fd5e0ae565.jsonl"
+      ]
     }
   },
   "seenForkTranscripts": [
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-run-process-ownership/50f3575b-651f-41fb-ab8d-6b29950f8b0d/subagents/agent-ab850955ca7f4925c.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-run-process-ownership/50f3575b-651f-41fb-ab8d-6b29950f8b0d/subagents/agent-ab4aecd0719703a2e.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-run-process-ownership/50f3575b-651f-41fb-ab8d-6b29950f8b0d/subagents/agent-a585e171101f5bd77.jsonl",
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-run-process-ownership/50f3575b-651f-41fb-ab8d-6b29950f8b0d/subagents/agent-a365f0daade12f14e.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-run-process-ownership/50f3575b-651f-41fb-ab8d-6b29950f8b0d/subagents/agent-a365f0daade12f14e.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-run-process-ownership/50f3575b-651f-41fb-ab8d-6b29950f8b0d/subagents/agent-afd5e39fd5e0ae565.jsonl"
   ]
 }
