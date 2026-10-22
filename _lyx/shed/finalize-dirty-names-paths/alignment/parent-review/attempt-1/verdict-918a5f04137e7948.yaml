@@ -1,0 +1,10 @@
+verdict: approve
+reason: >-
+  The design covers the entry's three points and nothing beyond them.
+  D2 names the checked code checkout and its dirty paths in Finalize's stuck reason.
+  D1 rests on a premise I checked: pairDirtyReason reads only the warp checkout, and step 2b already commits the parent's records.
+  D3 removes the halt-note read that showed the run record as dirt.
+  D4 refuses a goto back into Finalize while the parent is dirty.
+  The design contradicts no board entry, and neither peer run, run-process-ownership or board-entry-handles, overlaps it.
+question: ""
+superseded: []
