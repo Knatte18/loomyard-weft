@@ -41,6 +41,7 @@ tiers:
         timeout_min: 60
         covers: [0]
         prebuilt_lyx: true
+        manual: true
 gates:
     card: [0]
     batch: [0, 1]
