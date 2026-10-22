@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-22 06:43 UTC; every age below is as of then.
+Rendered 2026-10-22 06:44 UTC; every age below is as of then.
 
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
@@ -18,7 +18,7 @@ Held by a run; its scope is locked until the run ends.
 | # | Task | Slug | Recipe | At | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | 1 | **One machine takes over from another: owner machines, lyx adopt, landing on the parent owner**<br>• Owner machine per entry, lyx adopt of named entries, landing only on the parent owner, owner outcome in the origin reconcile, Open-Window per machine | [`machine-handover`](design-machine-handover.md) | loom | Discussion-Burler-Fix | 2d | 2d | batten, board, orch, fabric |
-| 2 | **[.NET 006] LoomYard uses quarry C# glyphs: version raise, alphabet by extension**<br>• LoomYard side of C# glyphs, after the quarry hub csharp-alphabet lands and is tagged<br>• `profile: light` | [`quarry-csharp`](design-quarry-csharp.md) | loom | Discussion-Bouncer | 1d | 44m | quarry, dotnet |
+| 2 | **[.NET 006] LoomYard uses quarry C# glyphs: version raise, alphabet by extension**<br>• LoomYard side of C# glyphs, after the quarry hub csharp-alphabet lands and is tagged<br>• `profile: light` | [`quarry-csharp`](design-quarry-csharp.md) | loom | awaiting · Discussion-Bouncer | 1d | 45m | quarry, dotnet |
 
 #### Normal priority
 
@@ -113,10 +113,10 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 8 | **Module labels from what a task touches, not only what it is about**<br>• Half the landings that changed the shuttle core lacked the shuttle label; derive or check module labels from the plan and the diff | [`labels-from-diff`](design-labels-from-diff.md) | 6d | 6d | board, loom |
 | 9 | **Start one task per overlapping group at a newly-ready start**<br>• When a landing makes several overlapping tasks ready at once, batten starts one per group and names the rest in its notice | [`batten-ready-overlap`](design-batten-ready-overlap.md) | 6d | 6d | batten |
 | 10 | **Git test fixtures trip Cortex XDR on the work laptop**<br>• Parallel git-heavy tests create so many files at once that Cortex XDR killed VS Code and then crashed itself, twice; tests must stay usable on a machine with endpoint protection | [`xdr-git-test-file-burst`](design-xdr-git-test-file-burst.md) | 5d | 1d | fabric |
-| 11 | **Rename the lyx binary to lyr (name clash with LyX)** | [`rename-binary-lyr`](design-rename-binary-lyr.md) | 5d | 3m | stencil, shuttle |
+| 11 | **Rename the lyx binary to lyr (name clash with LyX)** | [`rename-binary-lyr`](design-rename-binary-lyr.md) | 5d | 4m | stencil, shuttle |
 | 12 | **Entry gate on shed rows: a check decides whether a row runs at all**<br>• Replace darn recipe edge rewrite and the switched producer flag check with one shed entry gate per row; false means Done without acting. | [`row-entry-gate`](design-row-entry-gate.md) | 4d | 3d | shed, loom, batten |
 | 13 | **Use quarry Enclose for mechanical checks: verify failures to plan cards**<br>• Map tool-output file:line to member glyphs, then to the card and batch that changed them | [`enclose-checks`](design-enclose-checks.md) | 2w | 4d | quarry, webster, loom |
-| 14 | **Parallel batches: the shared pieces for Webster forks and Weaver**<br>• DAG batchifier, worktree per batch, merge-back with conflict resolution; open: keeping a fork inside its worktree | [`parallel-batch-parts`](design-parallel-batch-parts.md) | 3d | 3d | webster, fabric, loom |
+| 14 | **Parallel batches: the shared pieces for Webster forks and Weaver**<br>• DAG batchifier, worktree per batch, merge-back with conflict resolution; open: keeping a fork inside its worktree | [`parallel-batch-parts`](design-parallel-batch-parts.md) | 4d | 4d | webster, fabric, loom |
 | 15 | **Every remote operation runs async, and local-only fabric pairs stay an explicit choice only**<br>• Remote work goes async except the branch-exists check; batch pairs reach origin like any pair, and the local-only mode stays only as an explicit --local until a use is found or it is removed | [`fabric-remote-async`](design-fabric-remote-async.md) | 3d | 3d | fabric, batten |
 | 16 | **Plan gate does not catch declared PATTERN.md growth that exceeds the headroom line** | [`plan-gate-pattern-headroom`](design-plan-gate-pattern-headroom.md) | 3d | 3d | loom, burler |
 | 17 | **Plan cards mark additive edits so shared spots stop chaining the card DAG**<br>• An Extends label for edits that only add to a ref; two Extends on one ref are no dependency; measure with plandag first | [`plan-extends-label`](design-plan-extends-label.md) | 3d | 3d | loom, webster, burler |
@@ -125,7 +125,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 20 | **Cortex XDR holds stack up across a loom run's card, batch, round and whole-suite gates**<br>• Each gate that tests a just-changed package waits 8-10 s for XDR; a 10-15 card run pays that many times over | [`loom-gates-xdr-stacking`](design-loom-gates-xdr-stacking.md) | 1d | 1d | webster, loom, gate |
 | 21 | **[.NET 007] Language-specific lens sets seeded per hub**<br>• Every hub seeds lenses.yaml from one Go-repo template; seed by the hub language instead | [`lenses-language-sets`](design-lenses-language-sets.md) | 1d | 1d | burler, config, dotnet |
 | 22 | **Revisit late review rounds after the twill-plan lens change**<br>• After 4-5 loom runs past 504c5552, check whether discussion-review round 3 and plan-review round 2 still find anything | [`review-rounds-after-twill-plan`](design-review-rounds-after-twill-plan.md) | 13h | 13h | burler, loom |
-| 23 | **Test runs repeat at the end of a loom run: tier0 inside every tier, the suite four times, tmux only at Publish**<br>• Disjoint tiers, a green run that carries forward, tmux in more gates, and a faster fabricengine suite; with the 2026-10-22 tier timings | [`gate-test-repeats`](design-gate-test-repeats.md) | 55m | 55m | gate, loom, webster, fabric |
+| 23 | **Test runs repeat at the end of a loom run: tier0 inside every tier, the suite four times, tmux only at Publish**<br>• Disjoint tiers, a green run that carries forward, tmux in more gates, and a faster fabricengine suite; with the 2026-10-22 tier timings | [`gate-test-repeats`](design-gate-test-repeats.md) | 56m | 56m | gate, loom, webster, fabric |
 
 #### Low priority
 
