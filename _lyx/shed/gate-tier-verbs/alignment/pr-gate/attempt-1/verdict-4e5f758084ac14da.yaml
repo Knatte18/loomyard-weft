@@ -1,0 +1,4 @@
+verdict: approve
+reason: "The diff delivers every point of the gate-tier-verbs board entry: --upto N over declared tiers 0 through N with covered tiers dropped, manual: true kept out of --upto and run only by --tier, no separate every-tier flag, and a read-only lyx gate status showing each held slot's run, tier and start time. It leaves the hub's tier3 config alone, as the entry rules out of scope. The one open risk names no parent correction. Peers machine-handover, quarry-csharp and darn-verify-fixes do not overlap in behaviour, and no parent commits are listed."
+question: ""
+superseded: []
