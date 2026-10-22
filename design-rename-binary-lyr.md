@@ -13,3 +13,7 @@ Checked 2026-10-17: `lyr` is no Ubuntu package name, is not installed on the ope
 Rejected: `warp` and `ply` are Ubuntu packages, `weft` and `warp` are already fabric terms here, and the four-letter weaving names (`pirn`, `sley`) are longer to type.
 
 Scope: the `cmd/lyx` build target and `binaryName()` in `tools/deploy`, docs and README, stencils and skills in the `ly` plugin that invoke `lyx`, and any scripts or launchers that call it.
+
+## Operator decision (2026-10-22)
+
+The rename runs alone, with no other run in flight, since it touches nearly every file; it is promoted and started only then.
