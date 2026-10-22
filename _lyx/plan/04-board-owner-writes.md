@@ -19,13 +19,13 @@
 - `plugins/ly/skills/board/SKILL.md`
 
 **Create:**
-- `plan:internal/boardengine#checkOwnerPayload` -> `func checkOwnerPayload(s *Store, fields map[string]any) error`
-- `plan:internal/boardengine#OwnerRequest` -> `type OwnerRequest struct`
-- `plan:internal/boardengine#OwnerWrite` -> `type OwnerWrite struct`
-- `plan:internal/boardengine#ErrOwnerOriginUnreachable` -> `var ErrOwnerOriginUnreachable = errors.New("board: origin is unreachable, so the owner write was not pushed")`
-- `plan:internal/boardengine#SetOwners` -> `func SetOwners(boardDir string, req OwnerRequest) (OwnerWrite, error)`
-- `plan:internal/boardengine#ReadOwners` -> `func ReadOwners(boardDir string) (Owners, error)`
-- `plan:internal/boardengine#TestSetOwners` -> `func TestSetOwners(t *testing.T)`
+- `internal/boardengine#checkOwnerPayload`
+- `internal/boardengine#OwnerRequest`
+- `internal/boardengine#OwnerWrite`
+- `internal/boardengine#ErrOwnerOriginUnreachable`
+- `internal/boardengine#SetOwners`
+- `internal/boardengine#ReadOwners`
+- `internal/boardengine#TestSetOwners`
 
 **Uses:**
 - `internal/fabricengine#ParentSlug`

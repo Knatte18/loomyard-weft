@@ -28,11 +28,11 @@
 **Uses:**
 - `internal/battencli#newFakeReceiver`
 - `internal/battencli#battenCLI.checkRunStatus`
-- `plan:internal/boardengine#SetOwners`
-- `plan:internal/boardengine#ReadOwners`
+- `internal/boardengine#SetOwners`
+- `internal/boardengine#ReadOwners`
 - `internal/boardengine#Owners.Effective`
 - `internal/boardengine#OwnedElsewhere`
-- `plan:internal/boardengine#ErrOwnerOriginUnreachable`
+- `internal/boardengine#ErrOwnerOriginUnreachable`
 - `plan:internal/fabricengine#EntryOwnedElsewhere`
 - `internal/machinename#Name`
 - `internal/fabricengine#ParentSlug`

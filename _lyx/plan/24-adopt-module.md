@@ -35,8 +35,8 @@
 - `internal/fabricengine#ParentSlug`
 - `internal/pairteardown#HubSeamOptions`
 - `internal/pairteardown#Teardown.OriginSeams`
-- `plan:internal/boardengine#SetOwners`
-- `plan:internal/boardengine#ReadOwners`
+- `internal/boardengine#SetOwners`
+- `internal/boardengine#ReadOwners`
 - `internal/tenderengine#Lift`
 - `internal/tendercli#HubDeps`
 - `plan:internal/pauserecord#OwnerCaller`

@@ -29,7 +29,7 @@
 - `plan:internal/fabricengine#ParentHoldsTaskWork`
 - `internal/fabricengine#ParentSlug`
 - `plan:internal/fabricengine#EntryOwnedElsewhere`
-- `plan:internal/boardengine#ReadOwners`
+- `internal/boardengine#ReadOwners`
 - `internal/boardengine#Owners.Effective`
 - `internal/boardengine#OwnedElsewhere`
 - `internal/machinename#Name`
