@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-22 15:12 UTC; every age below is as of then.
+Rendered 2026-10-22 15:13 UTC; every age below is as of then.
 
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
@@ -15,7 +15,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T4 | **Orch lifecycle: dead strands count as dead, the watcher restarts, cycle requests need no reply and can be withdrawn**<br>• Strand liveness checks the engine process and placement, a dead orch watcher restarts, the note write is seen without a reply, and a pending distill/refresh can be withdrawn<br>• `profile: light` | [`orch-strand-cycle`](design-orch-strand-cycle.md) | loom | Discussion-Bouncer | neve | 3d<br>1h | orch, reed, shuttle, creel |
+| T4 | **Orch lifecycle: dead strands count as dead, the watcher restarts, cycle requests need no reply and can be withdrawn**<br>• Strand liveness checks the engine process and placement, a dead orch watcher restarts, the note write is seen without a reply, and a pending distill/refresh can be withdrawn<br>• `profile: light` | [`orch-strand-cycle`](design-orch-strand-cycle.md) | loom | Discussion-Burler-Review | neve | 3d<br>1h | orch, reed, shuttle, creel |
 
 ### Ready
 
@@ -29,7 +29,7 @@ Waits only on Running or Ready entries.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T2 | **Plan cards: headroom check, Extends label, an amendment owner, failures traced to cards**<br>• PATTERN headroom in the plan gate, additive Extends cards, an in-run owner for card amendments, verify failures mapped to cards via Enclose<br>• `profile: light` | [`plan-card-rules`](design-plan-card-rules.md) | loom | `orch-strand-cycle` | 2w<br>12m | loom, webster, burler, orch, quarry |
+| T2 | **Plan cards: headroom check, Extends label, an amendment owner, failures traced to cards**<br>• PATTERN headroom in the plan gate, additive Extends cards, an in-run owner for card amendments, verify failures mapped to cards via Enclose<br>• `profile: light` | [`plan-card-rules`](design-plan-card-rules.md) | loom | `orch-strand-cycle` | 2w<br>13m | loom, webster, burler, orch, quarry |
 | T3 | **One batten verb ends a run for good, live or stopped, before or after its pair exists**<br>• Abandon or abort a batten run in any state: end its processes and strands, clear the claim, remove records and scratch, optionally the pair; batten refuses a dirty source up front<br>• `profile: light` | [`batten-cancel-verb`](design-batten-cancel-verb.md) | loom | `orch-strand-cycle` | 1d<br>2h | batten, reed, shed |
 
 ### Layer B
@@ -38,7 +38,7 @@ Starts when every entry it names under After is done.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T1 | **Each test runs once per tree: disjoint tiers, row entry gates, carried green runs, tmux in final**<br>• Tiers tagged by name, shed row entry gates, verify skipped on an already green tree, tmux in the final gate, gate time measured<br>• `profile: light` | [`gate-runs-once`](design-gate-runs-once.md) | loom | `batten-cancel-verb` | 5d<br>12m | gate, shed, loom, webster, fabric, batten |
+| T1 | **Each test runs once per tree: disjoint tiers, row entry gates, carried green runs, tmux in final**<br>• Tiers tagged by name, shed row entry gates, verify skipped on an already green tree, tmux in the final gate, gate time measured<br>• `profile: light` | [`gate-runs-once`](design-gate-runs-once.md) | loom | `batten-cancel-verb` | 5d<br>13m | gate, shed, loom, webster, fabric, batten |
 
 ## Notes
 
