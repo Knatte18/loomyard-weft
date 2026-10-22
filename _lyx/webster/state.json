@@ -729,7 +729,7 @@
       }
     }
   ],
-  "currentBatch": 9,
+  "currentBatch": 0,
   "masterStrand": "1208d44a87b5fd00e2a3266cbfc6e59c",
   "masterSessionId": "dc62cdb4-a622-4a99-88db-9438f18c990d",
   "masterEngine": "claude",
@@ -870,13 +870,29 @@
       "spawnedAt": "2026-10-22T08:44:44Z",
       "sessionId": "dc62cdb4-a622-4a99-88db-9438f18c990d",
       "engine": "claude",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "failed",
+      "digest": {
+        "batch": "09-batten-owner-check",
+        "status": "failed",
+        "head_sha": "86bf164f986b84c7569dfc1f90af3751b06a0cf7",
+        "reasons": [
+          "batch 09-batten-owner-check holds cards 9-batten-owner-check, 10-loom-owner-check",
+          "create-not-done/10-loom-owner-check[blocking]: Create target \"plan:internal/loomcli_test#TestRunOwnerVerdict\" still does not resolve: looked up \"internal/loomcli_test#TestRunOwnerVerdict\", quarry answered not_found (the unit exists and the member is missing)"
+        ]
+      },
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-machine-handover/dc62cdb4-a622-4a99-88db-9438f18c990d/subagents/agent-ab2e6001d2530ec76.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-machine-handover/dc62cdb4-a622-4a99-88db-9438f18c990d/subagents/agent-ab2e6001d2530ec76.jsonl"
+      ]
     }
   },
   "seenForkTranscripts": [
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-machine-handover/dc62cdb4-a622-4a99-88db-9438f18c990d/subagents/agent-ac9a80959f16d9559.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-machine-handover/dc62cdb4-a622-4a99-88db-9438f18c990d/subagents/agent-acdca8ddfe8405a94.jsonl",
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-machine-handover/dc62cdb4-a622-4a99-88db-9438f18c990d/subagents/agent-a317ef7d5aba35232.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-machine-handover/dc62cdb4-a622-4a99-88db-9438f18c990d/subagents/agent-a317ef7d5aba35232.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-machine-handover/dc62cdb4-a622-4a99-88db-9438f18c990d/subagents/agent-ab2e6001d2530ec76.jsonl"
   ]
 }
