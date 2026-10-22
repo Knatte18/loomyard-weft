@@ -2,8 +2,6 @@
 
 `retry-archive-tag-push` · Task · bug, batten, fabric
 
-Depends on: [`run-process-ownership`](design-run-process-ownership.md)
-
 Imported from [issue #804](https://github.com/Knatte18/loomyard/issues/804).
 
 ## Seen (orch, 2026-10-21, OSL-1046)
