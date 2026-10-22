@@ -34,7 +34,7 @@ Waits only on Running or Ready entries.
 
 | # | Task | Slug | Recipe | After | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | **Every process a run spawns has one owner that ends them all**<br>• Owner records for run processes; pause, reed down, fabric remove and teardown end the whole group; tender status shows orphans; batten abandon ends a dead run; a hub pause reaches background work | [`run-process-ownership`](design-run-process-ownership.md) | loom | `machine-handover`, `tender-pause-holds-reprompt` | 7d | 1d | batten, fabric, loom, shed, shuttle, webster |
+| 1 | **Every process a run spawns has one owner that ends them all**<br>• Owner records for run processes; pause, reed down, fabric remove and teardown end the whole group; tender status shows orphans; a hub pause reaches background work; a finished reviewer never waits on its background shells | [`run-process-ownership`](design-run-process-ownership.md) | loom | `machine-handover`, `tender-pause-holds-reprompt` | 7d | 0m | batten, burler, fabric, loom, shed, shuttle, webster |
 
 #### Normal priority
 
@@ -86,7 +86,6 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | --- | --- | --- | --- | --- | --- |
 | 2 | **Opening an agent into reed: engine bypass mode by default, explicit engine, model and effort, and reed add points to shuttle open**<br>• reed add help shows a broken claude example (%SID% never substituted) and shuttle open keeps the interactive permission default; every agent in reed needs bypass, per engine (claude bypassPermissions, Codex --yolo) | [`reed-agent-launch-bypass`](design-reed-agent-launch-bypass.md) | 1d | 1d | reed, shuttle, claude, codex |
 | 3 | **Diff-scoped verify gate runs an unrelated package whose test depends on host inotify limits** | [`verify-diff-scope-unrelated-pkg`](design-verify-diff-scope-unrelated-pkg.md) | 17h | 17h | gate |
-| 4 | **A review perch waits on a reviewer's background shells, and keeps waiting after they are stopped** | [`review-waits-background-shells`](design-review-waits-background-shells.md) | 16h | 16h | burler, shuttle |
 
 ### Enhancements
 
@@ -124,7 +123,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 23 | **Cortex XDR holds stack up across a loom run's card, batch, round and whole-suite gates**<br>• Each gate that tests a just-changed package waits 8-10 s for XDR; a 10-15 card run pays that many times over | [`loom-gates-xdr-stacking`](design-loom-gates-xdr-stacking.md) | 1d | 1d | webster, loom, gate |
 | 24 | **[.NET 007] Language-specific lens sets seeded per hub**<br>• Every hub seeds lenses.yaml from one Go-repo template; seed by the hub language instead | [`lenses-language-sets`](design-lenses-language-sets.md) | 1d | 1d | burler, config, dotnet |
 | 25 | **Revisit late review rounds after the twill-plan lens change**<br>• After 4-5 loom runs past 504c5552, check whether discussion-review round 3 and plan-review round 2 still find anything | [`review-rounds-after-twill-plan`](design-review-rounds-after-twill-plan.md) | 12h | 12h | burler, loom |
-| 26 | **lyx gate test --upto N, and manual tiers it skips**<br>• Run every tier up to N in one flag; a tier marked manual runs only when named | [`gate-test-upto`](design-gate-test-upto.md) | 4m | 4m | gate |
+| 26 | **lyx gate test --upto N, and manual tiers it skips**<br>• Run every tier up to N in one flag; a tier marked manual runs only when named | [`gate-test-upto`](design-gate-test-upto.md) | 5m | 5m | gate |
 
 #### Low priority
 

@@ -1,6 +1,6 @@
 # Every process a run spawns has one owner that ends them all
 
-`run-process-ownership` · Task · bug, enhancement, batten, fabric, loom, shed, shuttle, webster
+`run-process-ownership` · Task · bug, enhancement, batten, burler, fabric, loom, shed, shuttle, webster
 
 Depends on: [`machine-handover`](design-machine-handover.md), [`tender-pause-holds-reprompt`](design-tender-pause-holds-reprompt.md)
 
@@ -10,6 +10,7 @@ Every process a run spawns has one owner, and the verbs that end, pause or tear 
 On 2026-10-20 a paused run's driver chain and parked pushes outlived their pairs by 19 hours, and `lyx fabric remove` hung on them until the operator killed eleven processes by hand.
 Operator view (2026-10-20): the many independent, long-lived processes that each drive or lock shared state are a major weakness of lyx.
 Operator decision (2026-10-20): the notes below are fixed together in this one task.
+Operator decision (2026-10-22): the `batten-abandon` note moves to task `batten-cancel-verb`, which owns the one verb that ends a batten run for good and calls this task's owner record to end a live run's processes; the note `review-waits-background-shells` folds in here, since its wait is the same background-work detection as `pause-background-work`.
 
 ## Note `orphan-run-processes`
 
@@ -77,26 +78,6 @@ Together they:
 - `tender status` reports orphaned lyx processes whose pair or run no longer exists, as it already does for processes on a replaced binary.
 
 
-## Note `batten-abandon`
-
-### Seen
-
-On 2026-10-18 the records held four batten run records with no pair and no board entry:
-
-- `orch-rules-in-weft`, blocked at Worktree-Create because its slug ended in the reserved `-weft` suffix; the task reran as `orch-rules-files` and landed.
-- `plan-gate-quality` and `fabric-net-and-config-warn`, paused at Run-Shed on 2026-10-08 a minute after their start, then re-scoped on the board into other entries.
-- `webster-pack-end-of-prompt`, paused at Run-Shed on 2026-10-15, then replaced by `webster-pack-layout-switch`, which landed.
-
-Their pairs were removed with `lyx fabric remove`, but no verb ends a paused or blocked run, and `lyx batten cleanup --apply` skips every paused, blocked, awaiting or failed run.
-So the records stayed, showed as runs in the reed overview, and were removed by hand with `git rm` in the records repository.
-
-### Idea
-
-A batten verb, for example `lyx batten abandon <slug>`, ends a run that will not go on:
-it refuses while the run's driver or run lock is live, tears down the pair if one is left, releases the run's board lock, removes the run's records directory and scratch, and commits and pushes the records.
-It leaves the board entry itself alone, so a re-scope or rerun stays the caller's own step.
-
-
 ## Note `pause-background-work`
 
 ### Seen (2026-10-14)
@@ -119,6 +100,18 @@ It leaves the board entry itself alone, so a re-scope or rerun stays the caller'
 - Forks are not interrupted as a rule: Webster forks can live long (one ran 45 minutes on 2026-10-14), and cutting one off mid-batch is out of the question as a default.
 - But that 45-minute fork held 300k+ tokens of context: its batch was too long, and interrupting and restarting it with a fresh context might have been cheaper.
   This points at a separate idea: a context bound on a Webster fork that ends it and restarts the rest of the batch fresh, which also gives a pause a clean place to stop.
+
+
+## Note `review-waits-background-shells`
+
+Imported from [issue #796](https://github.com/Knatte18/loomyard/issues/796).
+
+Seen in the quarry hub (Knatte18/quarry, run csharp-alphabet), 2026-10-21.
+
+Plan-Burler-Review finished in about 7.5 minutes and wrote _lyx/reviews/plan/round-1-review.md with verdict APPROVED. The reviewer agent then started two background shell commands (find /). The run waited on them: lyx loom status showed 'waiting: background shells running 21m'. The operator stopped both tasks in the pane ('Stop Task … stopped') and the find processes were gone, yet the run stayed on Plan-Burler-Review with no counter moving.
+
+Expected: a reviewer's background shells started after its verdict file is written never hold the row, or the row stops waiting once the shells have ended; a wait that long surfaces as a stop to the parent rather than a silent hang.
+A separate issue covers why the reviewer searched for PATTERN files at all.
 
 
 
