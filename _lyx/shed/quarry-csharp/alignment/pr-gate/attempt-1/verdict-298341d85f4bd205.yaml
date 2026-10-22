@@ -1,0 +1,8 @@
+verdict: approve
+reason: >-
+  The diff carries out the board entry's goal and decisions D1-D8: quarry v0.4.0 with Lang set, language csharp, per-ref alphabet through planparser, and C# handles, re-signs and Renames.
+  It touches nothing the decision record rules out.
+  The Webster-Review BLOCKING chokepoint finding is fixed, the two restored PATTERN entries match main, and the two overview lines the headroom gate forced shorter keep their rules in their background files.
+  No peer run or parent commit overlaps.
+question: ""
+superseded: []
