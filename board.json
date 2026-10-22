@@ -942,25 +942,6 @@
       "revised": "2026-10-19T15:26:39Z"
     },
     {
-      "id": 691,
-      "slug": "card-halt-is-question",
-      "title": "A halt a plan card asks for reaches the parent as a question, not as a batch failure",
-      "kind": "note",
-      "labels": [
-        "enhancement",
-        "webster",
-        "shed",
-        "loom"
-      ],
-      "issues": [],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "A card-requested halt went through recover-batch, tackler and arbiter as a failure; it should go straight to the parent and the next attempt should carry the decision",
-      "body": "## Seen (2026-10-19, run `ubuntu-2404-support`)\n\nCard 2 (`toolfloor-package`) told its implementer to halt, with a note, on any audited git or tmux feature above the 3.4 floor besides two known forms.\nThe fork found a third (tmux `allow-set-title`, 3.5), halted as the card said, and the batch was reported `FAILED`.\nWebster then ran `recover-batch`, whose agent asked the orch the card's question directly, but ended before the answer came and refused with `batch_failed`, since the card still said halt.\nThe Go driver then spawned the tackler, which handed back because it could not find the decision; the next step was the arbiter.\nSo a halt the plan asked for travelled as a failure through three agent sessions, and the orch's answer (a parent decision in the decision record) reached none of them.\n\n## Idea\n\nA halt a card asks for is a question, not a failure.\nIt goes straight to the parent as a question: no `recover-batch`, no tackler, no arbiter.\nWebster waits for the answer, and the next attempt at the batch gets the recorded decision, so a card whose halt condition the decision settles is carried out instead of halting again.\n",
-      "created": "2026-10-19T17:21:30Z",
-      "revised": "2026-10-19T17:21:30Z"
-    },
-    {
       "id": 702,
       "slug": "run-process-ownership",
       "title": "Every process a run spawns has one owner that ends them all",
