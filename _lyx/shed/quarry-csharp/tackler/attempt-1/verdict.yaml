@@ -1,0 +1,8 @@
+verdict: escalate
+reason: |-
+  The round-2 fork was refused for running `git -C $Q tag --points-at HEAD`, a read-only listing.
+  The guard in internal/burlerengine/cluster.go (mutatingGitSubcommands, lines 24-28) counts `tag` and `branch` as mutating whatever their arguments, so this is a false positive.
+  The target repo is clean, so the fork wrote nothing.
+  The cause is a classifier defect, and fixing it needs a judgment about which listing forms are read-only, plus a test beside cluster_test.go:273.
+  A plain re-launch might avoid the command or might repeat it, and I cannot tell from the files which.
+  The case brief at _lyx/shed/quarry-csharp/tackler/attempt-1/case-brief.md has the facts and pointers.

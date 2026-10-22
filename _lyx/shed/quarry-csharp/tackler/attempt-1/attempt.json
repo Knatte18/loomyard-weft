@@ -1,0 +1,20 @@
+{
+  "number": 1,
+  "stop_key": {
+    "current_producer": "Plan-Burler-Fix",
+    "history_length": 20,
+    "state": "failed"
+  },
+  "pause_before": "",
+  "pause_after": "",
+  "snapshot": {
+    "head": "de6b8465f50a475feb96a46f8bd30de0352919c9",
+    "branch": "quarry-csharp",
+    "dirty": {}
+  },
+  "spawned_at": "2026-10-22T09:38:15.999098127+02:00",
+  "deadline": "2026-10-22T09:48:15.999098127+02:00",
+  "envelope_path": "/home/knatte/Code/loomyard-LYXHUB/quarry-csharp/_lyx/shed/quarry-csharp/drive-reports/drive-envelope-20261022-093815-54f4.json",
+  "report_path": "/home/knatte/Code/loomyard-LYXHUB/quarry-csharp/_lyx/shed/quarry-csharp/drive-reports/drive-report-20261022-093815-47d7.md",
+  "strand_guid": "026e34fcf150398fe6d0ea422b9b106c"
+}

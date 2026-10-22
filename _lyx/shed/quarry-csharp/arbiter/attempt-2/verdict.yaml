@@ -1,0 +1,17 @@
+verdict: resume
+reason: |-
+  The stop is a false positive of the fork git-mutation guard, and a plain re-launch is safe.
+  The refused fork ran `git -C $Q log -1 --format='%h %d'` and `git -C $Q tag --points-at HEAD` against the quarry repo; both only read.
+  The guard flags it because internal/burlerengine/cluster.go:24-28 lists `tag` and `branch` as mutating whatever their arguments, and commandRunsMutatingGit (cluster.go:35-52) decides on the subcommand word alone.
+  The fork wrote nothing.
+  forkViolation (cluster.go:166-189) checks write/edit calls before git commands, and a write would have been reported first.
+  The quarry repo /home/knatte/Code/quarry-LYXHUB/quarry is clean and the task worktree is clean.
+  The only working-tree changes are in quarry-csharp-weft: 12 uncommitted edits under _lyx/plan.
+  These are the round-2 twill fixer's own edits, which the archived report _lyx/reviews/plan/round-2-fixer-report-20261022T073815Z.md lists as fixing F1, F2 and F3, with a clean self-check and nothing disputed or deferred.
+  They are legitimate fixer output, not fork output, so the way forward's "revert what the fork wrote" has nothing to revert.
+  The error was the fix's first attempt (token "2", not "2b"), and the fix had joined with outcome done.
+  A re-launch respawns the round-2 fixer over the plan as it stands, and that fixer finds its findings already answered.
+  A fork could repeat the `git tag` listing, but that would only bring the same stop back and harms nothing.
+  Fixing the guard's listing exemption for `tag`/`branch` is LoomYard infrastructure outside this task's scope.
+  It belongs on the board, not in this run, and does not block the resume.
+verbs: []
