@@ -1358,7 +1358,7 @@
       "isolated": false,
       "brief": "",
       "body": "## Seen\n\nDarn's template sets `review_max_bounces: 1` but `review_hard_max_bounces: 4`, a hard cap far above its one-round default.\nThe orch role stencil works around it: \"A small task gets `run_settings` `{\"\u003crecipe\u003e\": {\"review_max_bounces\": 1, \"review_hard_max_bounces\": 2}}`\", so small darn tasks carry hand-written run settings.\nThe loomyard hub now sets `review_hard_max_bounces: 2` in its own `darn.yaml` default layer, and profile `light` carries `darn: {review_max_bounces: 1, review_hard_max_bounces: 2}` (operator, 2026-10-22).\n\n## Idea\n\nOperator decision (2026-10-22): a hard cap of 4 is far too high when one round is the default; the hard cap by default is 2.\n\n- Darn's template default for `review_hard_max_bounces` becomes 2.\n- The template's `light` profile, if it ships one, carries the darn values 1 and 2 beside its loom values.\n- The orch role stencil drops the small-task `run_settings` rule: a task that needs fewer rounds than the default names a profile, never hand-written run settings.\n- Once the template default is 2, the loomyard hub's own `review_hard_max_bounces: 2` in `darn.yaml` is redundant and is removed.\n",
-      "status": "running · Describe",
+      "status": "running · Merge-In",
       "created": "2026-10-22T12:09:21Z",
       "revised": "2026-10-22T12:11:53Z",
       "profile": "light",
