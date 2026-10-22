@@ -34,7 +34,7 @@ The guard's bound: `remove` lets a hub take a review lens out of every fan; as a
 `WarnSkippedEntries` finds, through `StackLayers`, the highest layer file holding the top-level `key`, and logs one Warn naming the module, the layer, the file, the key and the entries, at most once per process per file, key and entry list, deduplicated in `warnedSkippedEntries` as `warnUnknownKeys` dedups; it returns `StackLayers`' error.
 A skipped entry never fails a load, so a lens a later template edit or a layer switch takes away is harmless.
 
-`ResolveFan` checks `EmptiedFans` before its unknown-fan check: a fan held there is refused with `lenses: fan "<fan>" is empty after remove dropped <names>; way forward: point the fan key at another fan or "", or drop a name from remove`.
+`ResolveFan` checks `EmptiedFans` before its unknown-fan check: a fan held there is refused with `lenses: fan "<fan>" is empty after remove dropped <names>; way forward: drop a name from remove, or point the loom or darn fan key at another fan or "" for a later run`.
 `CheckLoad` is unchanged: it resolves the fans `Fans` still holds, so a `remove` that empties a fan passes it.
 
 Tests.
@@ -48,4 +48,4 @@ a board `remove: [other-missing]` under a worktree file holding only `lenses:\n 
 Docs: `internal/lenses/doc.go` replaces its "A template lens or fan cannot be removed" sentence with a `# Remove` section stating the above, its `# Guard keys` section names `remove`, and its `# Fan resolution` paragraph names the emptied-fan refusal.
 `internal/configengine/doc.go` names `WarnSkippedEntries` beside the unknown-keys warning.
 
-**ImpactSummary:** removal lives in `lenses.Load`, which every lens consumer (burler wiring, loom's twill and fan keys, darn's fan keys) already reads through, so none of them changes; `ResolveFan` gains one refusal reached only through a `Config` that `Load` emptied.
+**ImpactSummary:** removal lives in `lenses.Load`, which every lens consumer (burler wiring, loom's twill and fan keys, darn's fan keys) already reads through, so none of them changes code; `ResolveFan` gains one refusal reached only through a `Config` that `Load` emptied, and burler's `resolveRecordedFan` appends its own define-the-fan way forward to it; `configsync`'s `lensesFixture` round-trips `remove: []`, equal to the template, and `burlerFixture` marshals only `lenses` and `fans`, so the move rows' `burler.yaml` fixtures never hold `remove`.
