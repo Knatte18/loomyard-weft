@@ -1,0 +1,15 @@
+verdict: resume
+reason: |-
+  Hard-cap escalation at round 3, Discussion-Bouncer. The four open design-wrong findings are each answered by the round-3 fix now in the decision record, and the code backs each fix's claims.
+  F1 (start-can-seed-during-cancel): D3 now places the pre-drive check inside the seeding closures of battenPreRun and battenPreStepUnmarked (internal/battencli/arm.go). Those closures call state.UpdateJSON, which takes StatusLockPath, the same lock cancel step 7 holds. The marker clear moves behind the check, and a shed Run/Step call site remains for a resume. Status and seed both sit under shedrun.RunDir, so a closure that runs after step 7 finds the seed gone and writes no status.
+  F2 (tackler-started-unrecorded): the window between Shuttle.Start and recordStartedTackler is real (internal/sheddriver/tackler.go). It is now named in D4 and listed under Open risks. The fixer's two corrections are also right: hubgeom leaves NameSlug empty in the prime, and shuttle enforces the deadline only in the waiter's Wait.
+  F3 (windows-end-detects-nothing): runproc's end returns nil on Windows (internal/runproc/end.go). D4 now adds a Windows re-list after step 2's lock takes as the survivor refusal's producer, and the criterion is reworded to match.
+  F4 (weft-leftovers-not-refused-at-start): the D5 start refusal now covers a left weft worktree or local weft branch, and a new criterion covers that case.
+  F5 is mechanical and fixed.
+  One residual in the same area was not raised by the review: a start whose Bolt pull spans the cancel's steps 4 to 8 could write its claim and seed after their removal. I recorded a design call for it as an arbiter decision: re-read the marker after the pull and before the claim and seed writes. It stays within the task's scope.
+  A minor note for the plan: state.UpdateJSON runs MkdirAll on the status directory before it takes the lock, so a refused late closure could recreate an empty run directory. The implementation should avoid that.
+verbs:
+  - |-
+    lyx loom decision add batten-cancel-verb --by arbiter --title "A start re-reads the cancel marker after its board pull" --decision "On a start (no status file), armAt reads the cancel marker again after refuseStartOwnedElsewhere's Bolt pull and before claimPrimeOwner writes the claim, and once more in armSeed right before WriteSeed, refusing as D3's first marker read does. The first read before the pull stays." --rationale "D3 reads the marker once, before the pull. A start that passed that read and whose network pull spans the cancel's steps 4 to 8 then writes the claim after step 8 cleared it and the seed after step 7 removed it, and the seeding closure's refusal leaves both behind. Re-reading after the pull and before each write leaves only a local write's span, which ends before the cancel's step 7, which comes after the end and the strand stops."
+  - |-
+    lyx loom circling accept batten-cancel-verb
