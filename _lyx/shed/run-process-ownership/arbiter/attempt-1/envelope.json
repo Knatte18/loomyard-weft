@@ -1,0 +1,14 @@
+{
+  "verdict": "resume",
+  "reason": "Hard-cap escalation at round 4 of Discussion-Bouncer; the round's review reads APPROVED with three open design-wrong MEDIUM findings on two keys, and the round-4 fixer's changes in place in the decision record answer each one, checked against the code.\nF1 (d7-revival-does-not-restart-driver): D7 now names `lyx loom start` in the task worktree as the restart and states that `lyx loom resume` refuses a running child with no driver; internal/loomcli/resume.go spawns a Go driver only when status is not running and otherwise returns noLiveDriverMessage, which names `lyx loom start`.\nF2 (same key): D7 splits the restart by site; the owner-probe site keeps batten's driver-dead notice then `lyx loom start`, and the wake and `lyx orch start` sites restart only through `lyx adopt` step 5 `battencli.ResumeInWindow` (internal/adoptcli/doc.go line 40), whose batten respawns an unconfirmed running child (internal/battenshed/doc.go line 110), and a run left owned elsewhere gets no restart; the acceptance criterion pins both paths.\nF3 (d6-push-child-coverage-reading): D6 states the gate reads the parent lock record live at each call (internal/tendercli/gate.go HoldsParentLock over HeldBy), that batten releases it when the child leaves running (internal/battenshed/innerrun_parentlock.go), and decides on the reviewer's first option, a spawn-time flag bounded to Finalize's pushes and to its own slug's OwnerCaller entry; the acceptance criterion pins a push that reaches its call after the release.\nThe fix stays inside D6 and D7 and does not widen the task's scope.",
+  "question": "",
+  "goto": "",
+  "verbs": [
+    "lyx loom circling accept run-process-ownership"
+  ],
+  "cause": "",
+  "attempt": 1,
+  "attempt_dir": "/home/knatte/Code/loomyard-LYXHUB/run-process-ownership/_lyx/shed/run-process-ownership/arbiter/attempt-1",
+  "verdict_path": "/home/knatte/Code/loomyard-LYXHUB/run-process-ownership/_lyx/shed/run-process-ownership/arbiter/attempt-1/verdict.yaml",
+  "relaunch": "lyx shed step run-process-ownership --until-stop --arbiter-attempt 1"
+}
