@@ -1,69 +1,54 @@
-# Board entries get short handles; only notes keep a priority
+# Board entries get short handles (T4, B2, E7); tasks lose priority
 
-Every board entry now carries a short, stable handle such as `T4`, `B2` or `E7`, so the operator can name an entry without typing its slug.
-Only notes carry a priority, and the README tables open with the handle and are narrower.
+Every board entry now carries a short, stable handle that names it in any board verb, so the operator can say `T4` or `B2` instead of a long slug.
+README row numbers shifted whenever an entry was added or removed, and the stored `id` is shared across all kinds and runs into the hundreds, so neither named an entry reliably.
+A task's priority only distracted, since a note that became a task is prioritized by being one, and the README note tables were short of width.
 
-## Handles
+## What changes
 
-- `Task.Handle` is stored in board.json as `handle`.
-  A task's letter is `T`, and a note's is the upper-cased first letter of its type label, so the hub's `board.yaml` `types` decide the note letters.
-  The loomyard hub's `audit`, `bug`, `enhancement` and `feature` give `A`, `B`, `E` and `F`.
-- `assignHandles` (new `internal/boardengine/handles.go`) runs over the whole entry list on `Store.Load`, in `boardCriticalSection` after the mutation, and in `FabricReplay.Apply` before its save.
-  An entry keeps a stored handle of its own letter that no lower-id entry holds, and every other entry, in id order, takes the lowest free number of its letter.
-  So a handle stays while its entry lives, a freed number is given out again, and a promote or a type-label change moves the entry to the lowest free number of its new letter.
-  A board.json written before this change gets handles in id order on its first load, and the next write persists them.
-- A replayed added entry drops its local handle and takes one free on origin's board, so two machines' concurrent adds never collide.
-- A handle is not scope: the run lock and the revised date ignore it, and the replay does not merge it as a field.
-  An upsert payload carrying `handle` is refused, naming that the board assigns it.
-- `LoadConfig` refuses type labels that do not begin with a letter, that share a first letter, or that begin with `t`, naming the label to rename.
+- **Handles.** An entry's handle is a letter and a number, stored as `handle` in `board.json`.
+  A task gets `T`; a note gets the upper-cased first letter of its type label, which gives the loomyard hub's `bug`, `enhancement`, `feature` and `audit` exactly `B`, `E`, `F` and `A`.
+  A new entry gets the lowest free number of its letter, a number freed by a removed entry is given out again, and adding or removing other entries never changes a handle.
+  A promoted note drops its note handle and takes the lowest free `T`.
+  A `board.json` without handles gets them in id order on load, and the next write persists them.
+- **Lookup.** `get`, `remove`, `promote`, `rename`, `set-status`, `set-deps` and merge's `set_status` take `handle` beside `slug` and `id`, exactly one of the three.
+  A bare handle argument also works, case-insensitively, as in `lyx board get B4`.
+  A verb that needs further keys refuses a bare handle as a missing required field.
+  `depends_on`, merge's `remove_slugs` and intake import's `into` stay slug fields.
+- **Tasks carry no priority.**
+  `promote` clears the note's priority and keeps its dates.
+  An upsert or merge that leaves a task with a priority is refused, naming `promote` and `"priority":"normal"` as the ways forward.
+  A task stored with a priority loses it on load.
+- **README.**
+  The handle replaces the row number in the first column.
+  Notes stand in one table per type, sorted by handle, with a `P` column holding `H` for high, `L` for low and empty for normal.
+  Tasks keep their groups, each sorted by handle, with no priority split.
+  Age and revised share one column, age above revised (`Age<br>Revised`).
+  Done stays one table, tasks first, each kind by handle.
+  `RenderOrder` follows the same order, so `list` and `find` agree with the README.
+- **`list --text` and `find --text`** print the handle as the first column.
 
-## Lookup by handle
-
-- The engine takes a `boardengine.Handle` selector beside a slug string and a numeric id, through one `selects` matcher that `GetTask`, `RemoveTask`, `SetStatus`, `SetDeps`, `Promote` and `Rename` now share.
-  The letter matches case-insensitively.
-- In the CLI, `get`, `remove`, `promote`, `rename`, `set-status`, `set-deps` and merge's `set_status` take exactly one of `slug`, `id` or `handle`.
-  `payloadKeys.exclusive` became groups of any size for this, and the `Use` tokens read `{slug|id|handle…}`.
-- A payload argument that is a bare handle reads as `{"handle":…}`, so `lyx board get B4` works.
-  A verb that needs further keys refuses a bare handle as missing them.
-- `list --text` and `find --text` print the handle as the first column.
-
-## Priority on notes only
-
-- `normalizeTask` refuses a task carrying a priority, so an upsert, batch or merge that gives a task one is refused, naming `"priority":"normal"` and `lyx board promote` as the ways forward.
-- `Promote` clears the note's priority and keeps its dates.
-- A task stored with a priority loses it on load, in `migrateEntries`, so the run lock and the dates see no change and a run-held such task stays writable.
-  The next write drops the key.
-
-## README
-
-- The handle replaces the row number in the `#` column.
-- Each group, Running, Ready, a layer, Independent, a Notes type or Done, is one table, with no priority split and no `####` headings.
-- `RenderOrder` sorts tasks by layer and then by handle, sorts notes by handle, and puts Done's tasks before its notes, so `list` and `find` follow the same order.
-- Notes tables add a `P` column after the handle: `H` for high, `L` for low, blank for normal.
-- Age and revised share one `Age<br>Revised` column, the age above the revised.
+The module docs of `boardengine` and `boardcli` and the `ly:board` skill describe the new behavior.
 
 ## Design decisions
 
-- **Letters come from the type label's first letter, not a new config key.**
-  The operator's letters fall out of the loomyard types as they stand, so no hub config edit is needed at landing.
-  A hub whose types collide gets a refusal at config load rather than ambiguous handles.
-- **Handles are assigned on load as well as on write.**
-  Reads show handles before the first write after deployment, and the order is deterministic, so the first write persists exactly what the reads showed.
-- **Task priority is dropped on load rather than by a migration write.**
-  A one-off write would be refused by the run lock on any run-held task that still carries a priority.
-- **Only the entry selector takes a handle.**
-  `depends_on`, merge's `remove_slugs` and intake's `into` stay slugs, since they are stored or compared slug values and a handle changes on promote.
-- **The `--text` handle column is left out when no listed entry has a handle**, matching how the listing's other optional columns behave; on a real board every entry has one.
+- **One assigner.**
+  A single function assigns handles over the whole entry list, on load, in the write critical section after the mutation, and in the replay before its save.
+  An entry keeps a stored handle whose letter is its own and that no lower-id entry holds; every other entry, in id order, gets the lowest free number.
+  A note whose type label is no longer configured keeps its stored handle.
+- **Letters come from hub config.**
+  No letter list is hard-coded: the letter is the first letter of the type label in `board.yaml`.
+  `LoadConfig` therefore refuses type labels that do not begin with a letter, that share a first letter, or that begin with `t`, which `T` reserves for tasks.
+  The loomyard hub's and the template's types pass; a hub with a colliding `board.yaml` fails every board verb until a label is renamed.
+- **A handle is not scope.**
+  The run lock and the revised date ignore a handle change, so a run-held entry still takes one.
+  `handle` is not an upsert payload key, and a payload carrying it is refused because the board assigns it.
+- **Replay.**
+  An entry added by a replayed change takes a handle free on origin's board, never the local one, and the replay does not merge `handle` as a field.
+  Two machines adding entries concurrently each assign the same lowest-free handle locally, so a handle read from a local listing before the push can change once.
+- **Older binaries.** `handle` is a declared field, and an older binary keeps it as an unknown key, as the tolerant-records invariant requires.
 
-## Docs
+## To check by hand
 
-- `internal/boardengine/doc.go` gains a Handles section and rewrites the Priority and README sections.
-- `internal/boardcli/doc.go` and the verbs' `--help` describe the `handle` key and the bare argument.
-- The `ly:board` skill (`plugins/ly/skills/board/SKILL.md`) gains a Handles section, and its priority text now says notes only.
-  It reaches agents at the next `update-plugins.sh`.
-
-## Tests
-
-- New `handles_test.go` covers lowest-free assignment, stability across adds and removes, reuse of a freed number, reassignment on promote and on a type change, lookup by handle in every selector-taking write, the refused `handle` payload key, and assignment on load (a stored handle kept, a duplicate reassigned) persisted by the next write.
-- Existing tests gain rows: letter-collision refusals in `TestLoadConfig_LabelsRefused`, a dropped task priority in `TestLoad`, a held note's priority change in `TestRunLock`, a handle free on origin in `TestFabricReplay`, and the handle key, bare argument and malformed-handle refusals in the CLI lookup contract.
-- `TestPriorityRoundTrip`, `TestRenderOrder`, the README golden and the compact-listing tests are rewritten for the new rules.
+- Run `lyx board list --text` and `lyx board get B4` on a real hub board, and confirm the README renders the per-type note tables and the merged `Age<br>Revised` column as intended.
+- Confirm the loomyard hub's `board.yaml` types load without a letter-collision refusal.
