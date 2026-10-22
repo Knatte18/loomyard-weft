@@ -1,0 +1,10 @@
+{
+  "subject": {
+    "kind": "merge",
+    "hash": "21e96bcdd0454da3aefea2ab7181afdd714015b7548a8f683347198501b765cd"
+  },
+  "generation": 1,
+  "round": 1,
+  "settled_at": "2026-10-22T10:15:36Z",
+  "settled": true
+}
