@@ -1,0 +1,472 @@
+{
+  "runGuid": "5668b0a37e0e7bbf5cb2f4476adc080e",
+  "planFingerprint": "120f2c9d3ff6a404bed4a22ac08a4ce4f00e19287e511472fa877fd91068f9bf",
+  "planFileHashes": {
+    "00-overview.md": "e7c28037bd251ed0ed854748e125788506728ca547b20149fb1cfe353fb49300",
+    "01-pauserecord-claim-session.md": "ceb6667306b0680fe31b166f1d53b14a890c746dc7681ff2f3019888647c14be",
+    "02-verify-cancel-terminates-group.md": "9c5ad8844e47b360307d350230d54db1bba98f458292c364c887321cd565d32c",
+    "03-verifytree-pause-hold.md": "d982659353804d9d542ad87be4bb5657569e7abceabe77500aa5578bee94cbba",
+    "04-paused-marker-readers.md": "7d35c208a027d1a77abe2bb1ea2579bf79c50f857600019062b7a83a4b517230",
+    "05-loomshed-verify-hold.md": "e38ebe70d01022bf5f4c0113f8d2f067df15e17e43bfe4812e86d67c31a6403a",
+    "06-webster-verify-hold.md": "61ec1080290bb4b8b2469678a728e0a1158be9da12c416874a62b3c9d9b1c5dc",
+    "07-landing-verify-hold.md": "e910c080631c46210d3a27583262f4352bb76c45f823a5ea52b20a9d29e4a5d0",
+    "08-verified-tree-hold-pattern.md": "5db60463efe40ed16dcdc2f985694cdf37ac8582f3d2365006ea5ec92d56ee8c",
+    "09-shuttle-send-refuses-covered.md": "4ae8f67fe9e8f7ca7f9c1f11d0fd1bbe0d7c6a2de803cdbee16412dc893b6068",
+    "10-shuttle-start-holds-paused-prompt.md": "b046f69a7d864b04a3a02c61d9d72264d34803fa4f6ea045874f754a6e8629d9",
+    "11-shuttle-gate-holds-boundary.md": "5c844c85e9d890dd89bbc5026098b1df8944655e23adf7096728519ef637c36f",
+    "12-tender-creel-runner-geometry.md": "0fd3e046ac2beac43dc0431d730faba01ed2a51a9b7b2415626c5a8b5f2426f6",
+    "13-paused-send-callers.md": "2f5d10541307c545b186a20922e17b16abd188cb7db167d9eb739e940ef99c6c",
+    "14-tender-resume-claims-paused.md": "d3a1e7e0dff061128c19220f1521b1b756393a44fa5e558f42e5beb848a44502",
+    "15-creel-interrupt-claims-covered.md": "812d70450d8564e6a608d477aad8a63c89972ddf81c2b15fda915fdf588df41f",
+    "16-webster-batch-verbs-refuse-paused.md": "f156334dcc329c9b5d36934f9421e8a6ed8bca5d651f17c6f2c2d0ae5c324ab3"
+  },
+  "planOverviewFrameHash": "8b4b24fc499cff5cbd8203148c14d25d266f9389345ea18ef3fd399614945426",
+  "partition": [
+    {
+      "cards": [
+        "01-pauserecord-claim-session",
+        "02-verify-cancel-terminates-group",
+        "03-verifytree-pause-hold",
+        "04-paused-marker-readers"
+      ],
+      "profile": "cautious",
+      "estimate": 164420,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 1,
+        "startup": 54796,
+        "read_union": 30868,
+        "cards": [
+          {
+            "card": 1,
+            "card_text": 396,
+            "reads": {
+              "file:internal/pauserecord/doc.go": 408,
+              "package:internal/orchengine": 2000,
+              "package:internal/pauserecord": 2000,
+              "tests:internal/orchengine": 2000,
+              "tests:internal/pauserecord": 2000
+            },
+            "messages": 39,
+            "written": 12096
+          },
+          {
+            "card": 2,
+            "card_text": 456,
+            "reads": {
+              "file:internal/proc/doc.go": 120,
+              "package:internal/proc": 2000,
+              "package:internal/verifyrun": 2000,
+              "tests:internal/proc": 2000,
+              "tests:internal/verifyrun": 2000
+            },
+            "messages": 51,
+            "written": 15756
+          },
+          {
+            "card": 3,
+            "card_text": 780,
+            "reads": {
+              "file:internal/verifytree/doc.go": 384,
+              "package:internal/verifytree": 2000,
+              "tests:internal/verifytree": 2000
+            },
+            "messages": 66.5,
+            "written": 20730
+          },
+          {
+            "card": 4,
+            "card_text": 324,
+            "reads": {
+              "package:internal/battencli": 2000,
+              "package:internal/loomcli": 2000,
+              "tests:internal/battencli": 2000,
+              "tests:internal/loomcli": 2000
+            },
+            "messages": 99.5,
+            "written": 30174
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "05-loomshed-verify-hold",
+        "06-webster-verify-hold"
+      ],
+      "profile": "cautious",
+      "estimate": 177954,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 2,
+        "startup": 61796,
+        "read_union": 37900,
+        "cards": [
+          {
+            "card": 5,
+            "card_text": 384,
+            "reads": {
+              "package:internal/battencli": 2000,
+              "package:internal/loomcli": 2000,
+              "package:internal/loomshed": 2000,
+              "package:internal/shedrecipe": 2000,
+              "package:internal/testkit/envkit": 2000,
+              "package:internal/webstercli": 2000,
+              "tests:internal/battencli": 2000,
+              "tests:internal/loomcli": 2000,
+              "tests:internal/loomshed": 2000,
+              "tests:internal/shedrecipe": 2000,
+              "tests:internal/testkit/envkit": 2000,
+              "tests:internal/webstercli": 2000
+            },
+            "messages": 165.5,
+            "written": 50034
+          },
+          {
+            "card": 6,
+            "card_text": 324,
+            "reads": {
+              "file:internal/websterengine/doc.go": 9192,
+              "package:internal/webstercli": 2000,
+              "package:internal/websterengine": 2000,
+              "tests:internal/webstercli": 2000,
+              "tests:internal/websterengine": 2000
+            },
+            "messages": 93,
+            "written": 28224
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "07-landing-verify-hold"
+      ],
+      "profile": "cautious",
+      "estimate": 147276,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 3,
+        "startup": 68796,
+        "read_union": 24540,
+        "cards": [
+          {
+            "card": 7,
+            "card_text": 540,
+            "reads": {
+              "package:internal/battencli": 2000,
+              "package:internal/landingshed": 2000,
+              "package:internal/loomcli": 2000,
+              "package:internal/parentlock": 2000,
+              "package:internal/tendercli": 2000,
+              "package:internal/testkit/envkit": 2000,
+              "tests:internal/battencli": 2000,
+              "tests:internal/landingshed": 2000,
+              "tests:internal/loomcli": 2000,
+              "tests:internal/parentlock": 2000,
+              "tests:internal/tendercli": 2000,
+              "tests:internal/testkit/envkit": 2000
+            },
+            "messages": 178,
+            "written": 53940
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "08-verified-tree-hold-pattern",
+        "09-shuttle-send-refuses-covered"
+      ],
+      "profile": "cautious",
+      "estimate": 178994,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 4,
+        "startup": 75796,
+        "read_union": 26740,
+        "cards": [
+          {
+            "card": 8,
+            "card_text": 576,
+            "reads": {
+              "file:PATTERN.md": 1500,
+              "file:pattern/PATTERN-config-layers.md": 444,
+              "file:pattern/PATTERN-cwd-resolution.md": 120,
+              "file:pattern/PATTERN-friction-capture.md": 216,
+              "file:pattern/PATTERN-gogit-read-helper.md": 180,
+              "file:pattern/PATTERN-hubforge-fixtures.md": 108,
+              "file:pattern/PATTERN-mutation-record.md": 96,
+              "file:pattern/PATTERN-sparse-hub-base.md": 84,
+              "file:pattern/PATTERN-testkit.md": 300,
+              "file:pattern/PATTERN-verified-tree.md": 312,
+              "package:.": 2000,
+              "package:cmd/lyx": 2000,
+              "package:pattern": 2000,
+              "tests:.": 2000,
+              "tests:cmd/lyx": 2000,
+              "tests:pattern": 2000
+            },
+            "messages": 91.5,
+            "written": 28026
+          },
+          {
+            "card": 9,
+            "card_text": 1032,
+            "reads": {
+              "file:PATTERN.md": 1500,
+              "file:internal/shuttleengine/doc.go": 5772,
+              "package:.": 2000,
+              "package:internal/shuttleengine": 2000,
+              "package:pattern": 2000,
+              "tests:.": 2000,
+              "tests:internal/shuttleengine": 2000,
+              "tests:pattern": 2000
+            },
+            "messages": 158,
+            "written": 48432
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "10-shuttle-start-holds-paused-prompt",
+        "11-shuttle-gate-holds-boundary",
+        "12-tender-creel-runner-geometry"
+      ],
+      "profile": "cautious",
+      "estimate": 179844,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 5,
+        "startup": 82796,
+        "read_union": 23260,
+        "cards": [
+          {
+            "card": 10,
+            "card_text": 528,
+            "reads": {
+              "package:internal/shuttleengine": 2000,
+              "tests:internal/shuttleengine": 2000
+            },
+            "messages": 84,
+            "written": 25728
+          },
+          {
+            "card": 11,
+            "card_text": 576,
+            "reads": {
+              "file:internal/shuttleengine/doc.go": 5772,
+              "package:internal/shuttleengine": 2000,
+              "tests:internal/shuttleengine": 2000
+            },
+            "messages": 100,
+            "written": 30576
+          },
+          {
+            "card": 12,
+            "card_text": 384,
+            "reads": {
+              "package:internal/creelcli": 2000,
+              "package:internal/orchcli": 2000,
+              "package:internal/tendercli": 2000,
+              "tests:internal/creelcli": 2000,
+              "tests:internal/orchcli": 2000,
+              "tests:internal/tendercli": 2000
+            },
+            "messages": 57,
+            "written": 17484
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "13-paused-send-callers",
+        "14-tender-resume-claims-paused"
+      ],
+      "profile": "cautious",
+      "estimate": 167122,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 6,
+        "startup": 89796,
+        "read_union": 17968,
+        "cards": [
+          {
+            "card": 13,
+            "card_text": 504,
+            "reads": {
+              "package:internal/loomcli": 2000,
+              "package:internal/seatengine": 2000,
+              "package:internal/shuttlecli": 2000,
+              "tests:internal/loomcli": 2000,
+              "tests:internal/seatengine": 2000,
+              "tests:internal/shuttlecli": 2000
+            },
+            "messages": 141,
+            "written": 42804
+          },
+          {
+            "card": 14,
+            "card_text": 504,
+            "reads": {
+              "file:internal/tenderengine/doc.go": 960,
+              "package:internal/tenderengine": 2000,
+              "tests:internal/tenderengine": 2000
+            },
+            "messages": 53.5,
+            "written": 16554
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "15-creel-interrupt-claims-covered",
+        "16-webster-batch-verbs-refuse-paused"
+      ],
+      "profile": "cautious",
+      "estimate": 169874,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 7,
+        "startup": 96796,
+        "read_union": 19732,
+        "cards": [
+          {
+            "card": 15,
+            "card_text": 660,
+            "reads": {
+              "file:internal/creelengine/doc.go": 2436,
+              "package:internal/creelcli": 2000,
+              "package:internal/creelengine": 2000,
+              "package:internal/testkit/creelfake": 2000,
+              "tests:internal/creelcli": 2000,
+              "tests:internal/creelengine": 2000,
+              "tests:internal/testkit/creelfake": 2000
+            },
+            "messages": 109,
+            "written": 33360
+          },
+          {
+            "card": 16,
+            "card_text": 636,
+            "reads": {
+              "package:internal/webstercli": 2000,
+              "tests:internal/webstercli": 2000
+            },
+            "messages": 64.5,
+            "written": 19986
+          }
+        ]
+      }
+    }
+  ],
+  "currentBatch": 1,
+  "masterStrand": "076d19bba614522d1bb1aeaf796e3f5b",
+  "masterSessionId": "83e4b5b3-1a0e-476c-af08-7bb8cc7450d6",
+  "masterEngine": "claude",
+  "batches": {
+    "1": {
+      "slug": "pauserecord-claim-session",
+      "cards": [
+        "01-pauserecord-claim-session",
+        "02-verify-cancel-terminates-group",
+        "03-verifytree-pause-hold",
+        "04-paused-marker-readers"
+      ],
+      "cardHashes": {
+        "01-pauserecord-claim-session": "ceb6667306b0680fe31b166f1d53b14a890c746dc7681ff2f3019888647c14be",
+        "02-verify-cancel-terminates-group": "9c5ad8844e47b360307d350230d54db1bba98f458292c364c887321cd565d32c",
+        "03-verifytree-pause-hold": "d982659353804d9d542ad87be4bb5657569e7abceabe77500aa5578bee94cbba",
+        "04-paused-marker-readers": "7d35c208a027d1a77abe2bb1ea2579bf79c50f857600019062b7a83a4b517230"
+      },
+      "startSha": "684c04305156072b72eb17e54bdd4006f41e828a",
+      "kind": "fork",
+      "spawnedAt": "2026-10-22T08:55:09Z",
+      "sessionId": "83e4b5b3-1a0e-476c-af08-7bb8cc7450d6",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
+    }
+  }
+}
