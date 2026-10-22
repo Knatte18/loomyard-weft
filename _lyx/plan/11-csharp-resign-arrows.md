@@ -16,7 +16,7 @@
 - `internal/planglyph#TestGlyphChain_ResignScenarios`
 
 **Uses:**
-- `plan:internal/planglyph#writeLanguagePlan`
+- `internal/planglyph#writeLanguagePlan`
 - `internal/planglyph#resignCard`
 - `internal/planglyph#createCard`
 - `internal/planglyph#renameCard`

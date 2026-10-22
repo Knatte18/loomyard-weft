@@ -15,7 +15,7 @@
 - `plan:internal/planglyph#nameDeclarations`
 - `plan:internal/planglyph#nameResigns`
 - `internal/planglyph#copyGlyphChainFixture`
-- `plan:internal/planglyph#writeLanguagePlan`
+- `internal/planglyph#writeLanguagePlan`
 - `internal/planglyph#resignCard`
 - `internal/planglyph#readCardFile`
 - `internal/websterengine_test#recordScenario.restart`
