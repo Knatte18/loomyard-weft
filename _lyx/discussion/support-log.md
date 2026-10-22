@@ -75,17 +75,17 @@ All seven forks returned. Findings, merged across lenses:
 
 ## Review rounds
 
-_No rounds yet._
+- Round 1: the open risk on Claude Code's tool commands staying off the tty was checked on this host with `ps -t` by the round-1 reviewer and again by its fixer.
 
 ## Question ledger
 
 - Q1 liveness test — resolved, auto-pick: compare against the pane's shell; reed stays engine-neutral.
-- Q2 boot window — resolved, auto-pick: 30-second launch grace on a recorded launch time.
+- Q2 boot window — resolved, auto-pick: 30-second launch grace; round 1 of the discussion review moved it from a recorded launch time to the age of the pane's first process, since old-binary launches record none.
 - Q3 Windows — resolved, auto-pick: condition 3 skipped on Windows.
 - Q4 watcher restart at status — resolved, auto-pick: live strand only, `start.lock` try-lock.
 - Q5 note gate — resolved, auto-pick: turn end and non-empty note, from the phase's events offset.
-- Q6 withdraw race — resolved, auto-pick: state lock shared with the cycle start.
+- Q6 withdraw race — resolved, auto-pick: state lock shared with the cycle start; round 1 of the discussion review widened it to every watcher removal of the marker, and round 2 to every writer and remover of it.
 - Q7 name reclaim — resolved, auto-pick: reed's add, exact name, not hidden, not live.
 - Q8 #828 — resolved, auto-pick: post-paste errors map to `ErrNotLanded`; queued `/compact` withdrawn at the boundary; vanished worktree skipped.
-- Q9 verb name — resolved, auto-pick: `lyx orch withdraw`.
+- Q9 verb name — resolved, auto-pick: `lyx orch withdraw`; round 2 of the discussion review recorded that it never refuses, a departure from the board entry.
 - Q10 hub rules section removal — resolved, auto-pick: out of the code change; the orch removes it with `lyx orch rules` after landing, as the section itself says.
