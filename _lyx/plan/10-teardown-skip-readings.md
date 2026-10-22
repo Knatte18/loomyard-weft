@@ -28,8 +28,8 @@
 **Uses:**
 - `plan:internal/pauserecord#ListWaiting`
 - `plan:internal/pauserecord#WaitingMarker`
-- `plan:internal/runproc#List`
-- `plan:internal/runproc#Record`
+- `internal/runproc#List`
+- `internal/runproc#Record`
 - `plan:internal/fabricengine#RunProcDir`
 - `plan:internal/pairteardown#Teardown.registeredBattenAlive`
 - `plan:internal/pairteardown#Teardown.driverRecordPID`

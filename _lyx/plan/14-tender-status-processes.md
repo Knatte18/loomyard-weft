@@ -20,10 +20,10 @@
 - `docs/overview.md`
 
 **Uses:**
-- `plan:internal/runproc#Owners`
-- `plan:internal/runproc#Record`
-- `plan:internal/runproc#HubOwner`
-- `plan:internal/runproc#RoleBatten`
+- `internal/runproc#Owners`
+- `internal/runproc#Record`
+- `internal/runproc#HubOwner`
+- `internal/runproc#RoleBatten`
 - `plan:internal/fabricengine#RunProcDir`
 - `internal/tenderengine#staleProcesses`
 - `internal/tenderengine#fakePair`

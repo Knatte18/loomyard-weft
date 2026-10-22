@@ -19,10 +19,10 @@
 **Uses:**
 - `plan:internal/tenderengine#readProcesses`
 - `plan:internal/tenderengine#ProcessReport`
-- `plan:internal/runproc#End`
-- `plan:internal/runproc#EndProcess`
-- `plan:internal/runproc#SurvivorsError`
-- `plan:internal/runproc#Ended`
+- `internal/runproc#End`
+- `internal/runproc#EndProcess`
+- `internal/runproc#SurvivorsError`
+- `internal/runproc#Ended`
 - `internal/tendercli#callerOf`
 
 **Intent:**

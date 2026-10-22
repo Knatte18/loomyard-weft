@@ -21,7 +21,7 @@
 - `plan:internal/pairteardown#Teardown.awaitRunLockOrPass`
 - `plan:internal/pairteardown#Teardown.registeredBattenAlive`
 - `plan:internal/pairteardown#Teardown.endOwnedProcesses`
-- `plan:internal/runproc#SurvivorsError`
+- `internal/runproc#SurvivorsError`
 - `internal/pairteardown#fakeSubstrates.teardown`
 - `internal/pairteardown#New`
 

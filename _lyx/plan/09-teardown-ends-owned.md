@@ -22,12 +22,12 @@
 - `pattern/PATTERN-pair-teardown.md`
 
 **Uses:**
-- `plan:internal/runproc#End`
-- `plan:internal/runproc#List`
-- `plan:internal/runproc#Ended`
-- `plan:internal/runproc#SurvivorsError`
-- `plan:internal/runproc#RoleBatten`
-- `plan:internal/runproc#RoleDriver`
+- `internal/runproc#End`
+- `internal/runproc#List`
+- `internal/runproc#Ended`
+- `internal/runproc#SurvivorsError`
+- `internal/runproc#RoleBatten`
+- `internal/runproc#RoleDriver`
 - `plan:internal/fabricengine#RunProcDir`
 
 **Intent:**
