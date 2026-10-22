@@ -1,9 +1,9 @@
 # Card 16 — webster's begin-batch and recover-batch refuse under a pause and claim Master
 
 **Create:**
-- `plan:internal/webstercli#websterCLI.refuseCoveredBatch` -> `func (c *websterCLI) refuseCoveredBatch(verb, batch string) string`
-- `plan:internal/webstercli#TestBatchVerbs_RefuseUnderAPause` -> `func TestBatchVerbs_RefuseUnderAPause(t *testing.T)`
-- `plan:internal/webstercli#envMasterStrand` -> `func envMasterStrand(resolve func(name string) (string, error)) func() (name, guid string, err error)`
+- `internal/webstercli#websterCLI.refuseCoveredBatch`
+- `internal/webstercli#TestBatchVerbs_RefuseUnderAPause`
+- `internal/webstercli#envMasterStrand`
 
 **Edit:**
 - `internal/webstercli#websterCLI`

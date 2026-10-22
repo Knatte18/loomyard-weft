@@ -1,11 +1,11 @@
 # Card 15 — lyx creel interrupt claims a covered strand into the pause, then interrupts it
 
 **Create:**
-- `plan:internal/creelengine#PauseClaim` -> `type PauseClaim struct`
-- `plan:internal/creelcli#hubDelivery.ClaimPause` -> `func (d *hubDelivery) ClaimPause(strand creelengine.Strand) (creelengine.PauseClaim, error)`
-- `plan:internal/testkit/creelfake#Delivery.ClaimPause` -> `func (d *Delivery) ClaimPause(strand creelengine.Strand) (creelengine.PauseClaim, error)`
-- `plan:internal/testkit/creelfake#Delivery.SetClaimLive` -> `func (d *Delivery) SetClaimLive(name string, live func() (bool, error))`
-- `plan:internal/testkit/creelfake#Delivery.Claims` -> `func (d *Delivery) Claims() []string`
+- `internal/creelengine#PauseClaim`
+- `internal/creelcli#hubDelivery.ClaimPause`
+- `internal/testkit/creelfake#Delivery.ClaimPause`
+- `internal/testkit/creelfake#Delivery.SetClaimLive`
+- `internal/testkit/creelfake#Delivery.Claims`
 
 **Edit:**
 - `internal/creelengine#Delivery`
