@@ -1,0 +1,221 @@
+diff --git a/internal/fabricengine/add.go b/internal/fabricengine/add.go
+index 99b7e27c8..a74c95fef 100644
+--- a/internal/fabricengine/add.go
++++ b/internal/fabricengine/add.go
+@@ -420,7 +420,7 @@ func (t *Topology) add(l *lyxcwd.Location, slug string, opts AddOptions, local b
+ 		if runRecordsTracked {
+ 			commitPaths = append(commitPaths, shedrun.RunsRootRel())
+ 		}
+-		if _, _, err := CommitRecordsPaths(rec, weftPath, l.AnchorRel, commitPaths, "fabric: record parent branch for "+slug, opts); err != nil {
++		if _, _, err := CommitRecordsPaths(rec, weftPath, l.AnchorRel, commitPaths, OriginRecordSubject(slug), opts); err != nil {
+ 			_ = t.rollbackAdd(rec, l, slug, warpBranch, weftBranch, target, weftBranchAlreadyExists, warpTok, &warpPush)
+ 			return AddResult{}, fmt.Errorf("commit parent branch record: %w", err)
+ 		}
+diff --git a/internal/fabricengine/origin.go b/internal/fabricengine/origin.go
+index 3de74c5f8..53ef44b7a 100644
+--- a/internal/fabricengine/origin.go
++++ b/internal/fabricengine/origin.go
+@@ -8,6 +8,7 @@ import (
+ 	"fmt"
+ 	"os"
+ 	"path/filepath"
++	"strings"
+ 
+ 	"github.com/Knatte18/loomyard/internal/lyxcwd"
+ 	"github.com/Knatte18/loomyard/internal/lyxdirs"
+@@ -44,6 +45,25 @@ func OriginRecordRel() string {
+ 	return filepath.Join(lyxdirs.LyxDirName, originRecordDirName, originRecordFileName)
+ }
+ 
++// originRecordSubjectPrefix is the commit subject prefix of the commit that records a new pair's origin.
++const originRecordSubjectPrefix = "fabric: record parent branch for "
++
++// OriginRecordSubject returns the commit subject of the origin-record commit that opens the pair for slug.
++// That commit is the oldest commit of the pair's own records history: everything below it is the parent's.
++func OriginRecordSubject(slug string) string {
++	return originRecordSubjectPrefix + slug
++}
++
++// OriginRecordSlug returns the slug an origin-record commit subject names.
++// It is false for any other subject and for an empty slug.
++func OriginRecordSlug(subject string) (string, bool) {
++	slug, ok := strings.CutPrefix(subject, originRecordSubjectPrefix)
++	if !ok || slug == "" {
++		return "", false
++	}
++	return slug, true
++}
++
+ // OriginRecordPath returns the origin record's path for reading, through l's own anchored worktree.
+ // l.AnchorPath() already carries AnchorRel, so a caller reading through the warp junction in a
+ // subpath-anchored hub needs no extra join.
+diff --git a/internal/fabricengine/origin_integration_test.go b/internal/fabricengine/origin_integration_test.go
+index ec51f37b5..016bc9fce 100644
+--- a/internal/fabricengine/origin_integration_test.go
++++ b/internal/fabricengine/origin_integration_test.go
+@@ -68,6 +68,18 @@ func TestAdd_OriginRecord(t *testing.T) {
+ 		if !strings.Contains(shown, `"parent_branch": "main"`) {
+ 			t.Errorf("git show %s:%s = %q; want it to contain the committed parent_branch content", weftBranch, gitRelPath, shown)
+ 		}
++
++		subject, err := gitexec.Run([]string{"log", "-1", "--format=%s", weftBranch}, weftPath)
++		if err != nil {
++			t.Fatalf("git log -1 %s in %s: %v", weftBranch, weftPath, err)
++		}
++		subject = strings.TrimSpace(subject)
++		if want := fabricengine.OriginRecordSubject(slug); subject != want {
++			t.Errorf("records commit subject = %q; want %q", subject, want)
++		}
++		if want := "fabric: record parent branch for " + slug; subject != want {
++			t.Errorf("records commit subject = %q; want the literal %q", subject, want)
++		}
+ 	})
+ 
+ 	t.Run("parent worktree is the acting worktree's name", func(t *testing.T) {
+diff --git a/internal/reportengine/doc.go b/internal/reportengine/doc.go
+index ecb588a1f..32bbf9056 100644
+--- a/internal/reportengine/doc.go
++++ b/internal/reportengine/doc.go
+@@ -72,6 +72,8 @@
+ //
+ // Report.Landings lists the first-parent commits of the parent branch committed at or after Options.Since, oldest first, from one walk that reaches Options.FreshDays further back to date the owners of blamed lines.
+ // The exact join reads each selected tag's task commit from the newest task-commit trailer in the first-parent history below the tag, walked in growing pages.
++// The walk ends at the commit that opened the run's pair, named by fabricengine's origin-record subject:
++// a trailer below it is the parent's own and names a parent landing, so a run whose history holds no trailer of its own, such as a darn run, finds no task commit.
+ // The landing is the first-parent commit that is the task commit (a fast-forward), has it as a parent (a merge) or holds its tree (a squash).
+ // A fast-forwarded branch's own commits, back to the nearest older merge or exact-joined landing, belong to its landing and are neither landings nor unmapped.
+ // The time join serves a tag the exact join found no task commit for, and a slug whose pair has checkpoints after its newest tag:
+diff --git a/internal/reportengine/fake_test.go b/internal/reportengine/fake_test.go
+index 0d2dd0d87..33398d377 100644
+--- a/internal/reportengine/fake_test.go
++++ b/internal/reportengine/fake_test.go
+@@ -481,6 +481,11 @@ func (w *world) checkpoint(sha string, hour int, slug string) {
+ 	w.repo.commitOnChainWith(sha, at(hour), loomengine.LandingCheckpointSubject(slug), nil, map[string]string{recordPaths(w.t, slug).Dir + "/checkpoint-" + sha: ""})
+ }
+ 
++// pairOpening commits the origin-record commit that opens slug's pair to the records main line at hour.
++func (w *world) pairOpening(sha string, hour int, slug string) {
++	w.repo.commitOnChainWith(sha, at(hour), fabricengine.OriginRecordSubject(slug), nil, map[string]string{"origin-" + sha: ""})
++}
++
+ // parentCommit commits to the parent branch's main line at hour with the given message.
+ func (w *world) parentCommit(sha string, hour int, message string) {
+ 	w.code.commitOnChainWith(sha, at(hour), message, nil, nil)
+diff --git a/internal/reportengine/landings.go b/internal/reportengine/landings.go
+index 86c0516cf..a6509549b 100644
+--- a/internal/reportengine/landings.go
++++ b/internal/reportengine/landings.go
+@@ -150,15 +150,20 @@ func readLandings(src Sources, opts Options, report *Report) error {
+ 	return j.judgeFreshness()
+ }
+ 
+-// taskCommitBelow returns the task commit named by the newest trailer in the first-parent history of tagCommit.
+-// It walks in growing pages, re-reading from the tag, until a trailer is found or a page comes back short.
+-func (j *landingJoiner) taskCommitBelow(tagCommit string) (string, bool, error) {
++// taskCommitBelow returns the task commit named by the newest trailer in the first-parent history of tagCommit, down to the commit that opened slug's pair.
++// A trailer below that commit is the parent's and names one of the parent's landings, so the walk never reads it.
++// It walks in growing pages, re-reading from the tag, until a trailer or the pair's opening commit is found or a page comes back short.
++func (j *landingJoiner) taskCommitBelow(tagCommit, slug string) (string, bool, error) {
+ 	for limit := firstTrailerPage; ; limit *= 2 {
+ 		commits, err := j.src.Records.Log(tagCommit, gitrepo.LogQuery{FirstParent: true, Limit: limit})
+ 		if err != nil {
+ 			return "", false, fmt.Errorf("reportengine: walk the history of %s: %w", tagCommit, err)
+ 		}
+ 		for _, commit := range commits {
++			subject, _, _ := strings.Cut(commit.Message, "\n")
++			if opened, ok := fabricengine.OriginRecordSlug(subject); ok && opened == slug {
++				return "", false, nil
++			}
+ 			if sha, ok := fabricengine.TaskCommitOf(commit.Message); ok {
+ 				return sha, true, nil
+ 			}
+@@ -200,7 +205,7 @@ func (j *landingJoiner) joinExact() (map[int]bool, error) {
+ 	claims := map[int][]int{}
+ 	var order []int
+ 	for i, selected := range j.report.inputs.selected {
+-		task, found, err := j.taskCommitBelow(selected.tag.Commit)
++		task, found, err := j.taskCommitBelow(selected.tag.Commit, selected.slug)
+ 		if err != nil {
+ 			return nil, err
+ 		}
+diff --git a/internal/reportengine/landings_test.go b/internal/reportengine/landings_test.go
+index 916e568e0..436dbcf3d 100644
+--- a/internal/reportengine/landings_test.go
++++ b/internal/reportengine/landings_test.go
+@@ -240,7 +240,9 @@ func TestCompute_Landings(t *testing.T) {
+ 				w.taskCommit("T", 15)
+ 				w.parentMerge("MG", 20, "T")
+ 				w.boardCommit("bd", 1, boardTask("merged", "", "chore"))
++				w.pairOpening("open-merged", 40, "merged")
+ 				w.recordsCommit("r-trailer", 50, "T")
++				w.pairOpening("open-other", 55, "other")
+ 				for _, sha := range []string{"r-a", "r-b", "r-c"} {
+ 					w.recordsCommit(sha, 60, "")
+ 				}
+@@ -262,6 +264,7 @@ func TestCompute_Landings(t *testing.T) {
+ 				w.parentCommit("SQ", 20, "squash")
+ 				w.code.setTree("SQ", "tree-shared")
+ 				w.boardCommit("bd", 1, boardTask("squashed", "", "chore"))
++				w.pairOpening("open-squashed", 40, "squashed")
+ 				w.recordsCommit("r-trailer", 50, "T")
+ 				last := "r-trailer"
+ 				for i := 0; i < 70; i++ {
+@@ -294,6 +297,58 @@ func TestCompute_Landings(t *testing.T) {
+ 				}
+ 			},
+ 		},
++		{
++			name: "runs with no trailer above their pair-opening commits skip the parent's trailer below it and map through the time join",
++			setup: func(w *world) landingExpectation {
++				w.parentCommit("P", 5, "parent landing")
++				w.parentCommit("A", 50, "a's landing")
++				w.parentCommit("B", 90, "b's landing")
++				w.boardCommit("bd1", 1, boardTask("a", "", "chore"), boardTask("b", "", "chore"))
++				w.boardCommit("bd2", 60, boardTask("a", "done", "chore"), boardTask("b", "", "chore"))
++				w.boardCommit("bd3", 95, boardTask("a", "done", "chore"), boardTask("b", "done", "chore"))
++				w.recordsCommit("r-sync", 10, "P")
++				w.pairOpening("open-a", 20, "a")
++				w.checkpoint("cp-a", 40, "a")
++				w.pairOpening("open-b", 70, "b")
++				w.checkpoint("cp-b", 80, "b")
++				status := statusJSON(w.t, shedengine.Status{State: shedengine.StateDone, History: finalizeDone})
++				w.tagOver("a", "ta", "cp-a", at(100), seedText("darn"), status, nil)
++				w.tagOver("b", "tb", "cp-b", at(110), seedText("darn"), status, nil)
++				return landingExpectation{
++					landings: []wantLanding{
++						{commit: "P", kind: "unmapped", fresh: "no-pre-image"},
++						{commit: "A", kind: "other", slug: "a", tag: tagName("a", "ta"), join: "time"},
++						{commit: "B", kind: "other", slug: "b", tag: tagName("b", "tb"), join: "time"},
++					},
++					runLandings: map[string]string{tagName("a", "ta"): "A", tagName("b", "tb"): "B"},
++				}
++			},
++		},
++		{
++			name: "a pair-opening commit past more trailer-free commits than the first page reads still stops the walk before the parent's trailer",
++			setup: func(w *world) landingExpectation {
++				w.parentCommit("P", 5, "parent landing")
++				w.parentCommit("A", 50, "a's landing")
++				w.boardCommit("bd1", 1, boardTask("a", "", "chore"))
++				w.boardCommit("bd2", 60, boardTask("a", "done", "chore"))
++				w.recordsCommit("r-sync", 10, "P")
++				w.pairOpening("open-a", 20, "a")
++				w.checkpoint("cp-a", 40, "a")
++				last := "cp-a"
++				for i := 0; i < 70; i++ {
++					last = "r-" + strings.Repeat("y", i+1)
++					w.recordsCommit(last, 45, "")
++				}
++				w.tagOver("a", "ta", last, at(100), seedText("darn"), statusJSON(w.t, shedengine.Status{State: shedengine.StateDone, History: finalizeDone}), nil)
++				return landingExpectation{
++					landings: []wantLanding{
++						{commit: "P", kind: "unmapped", fresh: "no-pre-image"},
++						{commit: "A", kind: "other", slug: "a", tag: tagName("a", "ta"), join: "time"},
++					},
++					runLandings: map[string]string{tagName("a", "ta"): "A"},
++				}
++			},
++		},
+ 		{
+ 			name: "two runs whose exact joins claim one commit are both unmapped and the clash is a finding",
+ 			setup: func(w *world) landingExpectation {
