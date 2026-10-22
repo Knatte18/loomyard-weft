@@ -1,8 +1,8 @@
 # Card 12 — tender's and creel's runners read the hub's pause, and creel holds a paused inject
 
 **Create:**
-- `plan:internal/tendercli#TestNewShuttlePair_TellsTheHubsPauseGeometry` -> `func TestNewShuttlePair_TellsTheHubsPauseGeometry(t *testing.T)`
-- `plan:internal/orchcli#TestCLI_OrchRunnerReadsNoPause` -> `func TestCLI_OrchRunnerReadsNoPause(t *testing.T)`
+- `internal/tendercli#TestNewShuttlePair_TellsTheHubsPauseGeometry`
+- `internal/orchcli#TestCLI_OrchRunnerReadsNoPause`
 
 **Edit:**
 - `internal/tendercli#newShuttlePair`

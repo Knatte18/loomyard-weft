@@ -1,9 +1,9 @@
 # Card 11 — shuttle's gate loop holds its boundary while the run's session is covered
 
 **Create:**
-- `plan:internal/shuttleengine#TestGate_HoldsItsBoundaryWhileCovered` -> `func TestGate_HoldsItsBoundaryWhileCovered(t *testing.T)`
-- `plan:internal/shuttleengine#gateRigSettings` -> `type gateRigSettings struct`
-- `plan:internal/shuttleengine#gateRigOption` -> `type gateRigOption func(*gateRigSettings)`
+- `internal/shuttleengine#TestGate_HoldsItsBoundaryWhileCovered`
+- `internal/shuttleengine#gateRigSettings`
+- `internal/shuttleengine#gateRigOption`
 
 **Edit:**
 - `internal/shuttleengine#Run`

@@ -1,6 +1,6 @@
 {
   "runGuid": "5668b0a37e0e7bbf5cb2f4476adc080e",
-  "planFingerprint": "70474f7587f2dd2ae9a33c30697b347421079fcc6d54bb359d4d5dc61bc55fa0",
+  "planFingerprint": "947c4418dd3a5a0831fe035452fccc50a8e421f6f925fc57c1f7261f8df7924c",
   "planFileHashes": {
     "00-overview.md": "e7c28037bd251ed0ed854748e125788506728ca547b20149fb1cfe353fb49300",
     "01-pauserecord-claim-session.md": "28b16fec8addb32da452e49390ac1ae737be07531ed64cff206ee9867fe1f13e",
@@ -12,9 +12,9 @@
     "07-landing-verify-hold.md": "a094dd73aa985290300e3c2969d5430f81ef04d5ae021882b0ec26f7d0fb6055",
     "08-verified-tree-hold-pattern.md": "5db60463efe40ed16dcdc2f985694cdf37ac8582f3d2365006ea5ec92d56ee8c",
     "09-shuttle-send-refuses-covered.md": "faf7c72c12c89ce0c3106b1e96e0a64379aa4197eb5a3722ba2fbb052d49f8d2",
-    "10-shuttle-start-holds-paused-prompt.md": "d95c820884ad753ca43e03b407b564d8e5bd2a767deed9b2921341c40ac0a63e",
-    "11-shuttle-gate-holds-boundary.md": "3c07e7bf4e3cbc6e29d46afb202927897347da16c1faeb2b4709ec29fa6c7b9b",
-    "12-tender-creel-runner-geometry.md": "c8efde4ed56772272258c23026857357064b77c35b63d81ec7d076f5c4c9aa5a",
+    "10-shuttle-start-holds-paused-prompt.md": "29a7a2df2fcc6b3c71428766c767d60b818df96af4930ce8aa4f8bfaefef76d6",
+    "11-shuttle-gate-holds-boundary.md": "5fb25da6e4e74971a14b067fa41072beb43969d97efad7ee6050ef06c63dd615",
+    "12-tender-creel-runner-geometry.md": "f38e3df9c7f1010bba7535752a16ed381994bc196234b21ead4742cee73f6461",
     "13-paused-send-callers.md": "029f612d255ab1e6fc32ef9466482b7f4aa9dffe6ea7f42cb01bef1606ad9f67",
     "14-tender-resume-claims-paused.md": "59ded17daea847696c2a864835f33b8f9cf7b62877971be8c88484455e5d03bf",
     "15-creel-interrupt-claims-covered.md": "0c8d36fd6ea108f0a9e784bc84201eb0334d269190ed2676697bfcf09e3ec3da",
@@ -441,7 +441,7 @@
       }
     }
   ],
-  "currentBatch": 10,
+  "currentBatch": 0,
   "masterStrand": "076d19bba614522d1bb1aeaf796e3f5b",
   "masterSessionId": "83e4b5b3-1a0e-476c-af08-7bb8cc7450d6",
   "masterEngine": "claude",
@@ -497,17 +497,37 @@
         "12-tender-creel-runner-geometry"
       ],
       "cardHashes": {
-        "10-shuttle-start-holds-paused-prompt": "d95c820884ad753ca43e03b407b564d8e5bd2a767deed9b2921341c40ac0a63e",
-        "11-shuttle-gate-holds-boundary": "3c07e7bf4e3cbc6e29d46afb202927897347da16c1faeb2b4709ec29fa6c7b9b",
-        "12-tender-creel-runner-geometry": "c8efde4ed56772272258c23026857357064b77c35b63d81ec7d076f5c4c9aa5a"
+        "10-shuttle-start-holds-paused-prompt": "29a7a2df2fcc6b3c71428766c767d60b818df96af4930ce8aa4f8bfaefef76d6",
+        "11-shuttle-gate-holds-boundary": "5fb25da6e4e74971a14b067fa41072beb43969d97efad7ee6050ef06c63dd615",
+        "12-tender-creel-runner-geometry": "f38e3df9c7f1010bba7535752a16ed381994bc196234b21ead4742cee73f6461"
       },
       "startSha": "e200b86a49c67f417e88a2e8fea96a13a4c83fea",
       "kind": "fork",
       "spawnedAt": "2026-10-22T09:24:52Z",
       "sessionId": "83e4b5b3-1a0e-476c-af08-7bb8cc7450d6",
       "engine": "claude",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "10-shuttle-start-holds-paused-prompt",
+        "status": "done",
+        "head_sha": "5c8032958cecc42c371a048a435382ad1394f68c",
+        "deviations": [
+          "internal/shuttleengine/gate_test.go",
+          "internal/shuttleengine/pausedsend.go",
+          "internal/shuttleengine/run_test.go",
+          "internal/shuttleengine/wait.go"
+        ]
+      },
+      "cardShas": [
+        "5c8032958cecc42c371a048a435382ad1394f68c"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-tender-pause-holds-reprompt/83e4b5b3-1a0e-476c-af08-7bb8cc7450d6/subagents/agent-ac5faca8ce26ceca1.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-tender-pause-holds-reprompt/83e4b5b3-1a0e-476c-af08-7bb8cc7450d6/subagents/agent-ac5faca8ce26ceca1.jsonl"
+      ]
     },
     "5": {
       "slug": "loomshed-verify-hold",
@@ -618,6 +638,7 @@
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-tender-pause-holds-reprompt/83e4b5b3-1a0e-476c-af08-7bb8cc7450d6/subagents/agent-adbf1fce734f4ca4a.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-tender-pause-holds-reprompt/83e4b5b3-1a0e-476c-af08-7bb8cc7450d6/subagents/agent-a1e358eef5e19105f.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-tender-pause-holds-reprompt/83e4b5b3-1a0e-476c-af08-7bb8cc7450d6/subagents/agent-a666bf7a61dd61b51.jsonl",
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-tender-pause-holds-reprompt/83e4b5b3-1a0e-476c-af08-7bb8cc7450d6/subagents/agent-a017007cecd8ca45e.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-tender-pause-holds-reprompt/83e4b5b3-1a0e-476c-af08-7bb8cc7450d6/subagents/agent-a017007cecd8ca45e.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-tender-pause-holds-reprompt/83e4b5b3-1a0e-476c-af08-7bb8cc7450d6/subagents/agent-ac5faca8ce26ceca1.jsonl"
   ]
 }
