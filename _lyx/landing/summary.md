@@ -1,31 +1,41 @@
-# lyx loom decision add notifies the run's live agents
+# loom: decision add notifies the run's live LLM agents
 
-On the Go driver no session lives for a whole run, so a decision recorded with `lyx loom decision add` had no receiver of its own.
-The orch looked up the working strand with `lyx reed list` and messaged it by hand.
-The verb now tells the working agents itself.
+With the Go driver no agent lives for the whole run, so the orch had to look up the working strand and message it by hand after `lyx loom decision add`.
+The verb now does that itself.
+After it commits the entry, it types one short creel line into each live LLM agent of the target worktree, naming the decision record and the new entry's heading.
+When no agent is live, recording stays enough: a later producer reads the record when it starts, and PR-Gate's alignment agent judges the run against it.
 
-## What changes
-
-- `internal/loomcli/decision.go`: once the entry is committed, and on a darn run once the committed record is confirmed to hold it, the verb lists the target worktree's live shuttle runs through `shuttleengine.ReadAgentActivity`.
-  It posts each one creel line naming the decision record's path and the new entry's heading, telling the agent to re-read the record's `Added after Discussion` entries.
-  The line carries no decision text: the committed record stays the authority, so the line cannot pose as an instruction.
-- Skipped receivers: the tackler and the arbiter, which judge stops rather than the plan, the caller's own strand, and a run whose record names no parsable strand.
-- The notice signs as the `LOOM` program from the orch's pane or an unnamed shell, and as the caller's own strand from any other named caller (the arbiter), because creel accepts a program claim only from an orch pane or a process in no pane.
-- The success envelope gains `notified`, the strands posted to, and `notice_errors`, one `{strand, error}` item per failed post or a strand-less item for a failed listing.
-  A notice failure is logged at Warn and never fails the verb, since the entry is already committed.
-- With no live run nothing is sent: a later producer reads the record when it starts, and the alignment agent at PR-Gate judges the run against it.
-- The orch role stencil's Fixing a run section drops the separate message to the run's agent after `decision add`.
-  The darn writer stencil names the typed line as a trigger to re-read the record.
-- `docs/overview.md`, the verb's help and its file doc describe the notice.
-  The help text was condensed to stay under the CLI's long-help cap.
+The success envelope gains two fields: `notified`, the strands posted to, and `notice_errors`, one item per failure with the strand and the error.
 
 ## Design decisions
 
-- No flag turns the notice off, which settles the board entry's open question: a decision recorded only for the record still binds the live producer, and one idle-gated line is cheap.
-- Every live run of the worktree is told, not only one strand of the current producer: Go keeps no producer-to-strand map beyond the shuttle run records, and a MultiLLM row or a webster stage can hold several live sessions.
-- A webster fork working in another worktree is not a run of the target worktree and is not told.
+- **Receivers.** Every live shuttle run of the target worktree, read through `shuttleengine.ReadAgentActivity` and the registered engines, except the tackler, the arbiter, the caller's own strand and a run with no parsable strand name.
+  Go keeps no producer-to-strand map beyond the shuttle run records, so the line goes to all of them; a webster stage or MultiLLM row may hold several.
+  A webster fork in its own worktree is not told; Merriam, in the target worktree, is.
+- **No decision text in the line.** It carries the record path and the entry heading only, so the committed record stays the authority and the line cannot pose as an instruction.
+- **Signing.** From the orch's pane or an unnamed shell the notice is posted as the `LOOM` program, which creel types in full.
+  From a named non-orch caller, such as the arbiter, creel refuses a program claim, so the notice is posted as that strand.
+  If creel refuses that strand claim as coming from outside its pane (`ErrStrandClaimOutsidePane`), the post is retried once as the program, as `orchcli`'s `notifyPrime` does.
+- **A failed notice never fails the verb.** The entry is committed first, so a failed listing or post is logged at Warn, reported under `notice_errors`, and the exit code stays 0.
+  A lost notice costs at most a rework round at PR-Gate.
+- **No flag turns the notice off.** A decision recorded only for the record still binds the live producer, and one idle-gated line is cheap.
+- **Delivery is creel's.** The line goes through `internal/creelcli`'s client and is typed only when the pane is idle, so a long-busy agent may see it after finishing the work the decision concerns; PR-Gate then catches the deviation.
+- **Long help cap.** `decision add`'s help text must stay under `maxLongBytes` in `cmd/lyx/clitree_test.go`.
+  Only the notice paragraph and the Discussion-Write refusal wording were condensed to fit; the darn-run paragraph is kept in substance.
 
-## Tests
+## Docs and stencils
 
-`TestDecisionVerb_NotifiesLiveAgents` covers the receiver filter (tackler, arbiter, caller and an unnamed run skipped), the line's content, no live run, a failed listing and one failed post among several, each on a success envelope with the entry committed.
-`TestDecisionVerb_Refusals` now also asserts that a refused call, the darn lost-entry refusal included, posts nothing.
+- `internal/loomcli/decision.go` file doc and `docs/overview.md` describe the notice.
+- The orch role stencil drops the separate message to the run's agent after `decision add`, both in Fixing a run and in the board policy for a darn run.
+  The refusal while Discussion-Write owns the record still sends the decision to that session by message.
+- The darn writer stencil names the typed line as a trigger to re-read the record's `Added after Discussion` entries.
+
+## To check by hand
+
+Not run live: a real notice typed into a live agent pane.
+Tests cover the verb with fake seams, including the signing split and the fallback.
+
+- `contracts/stencils/orch/orch-template-role.md:161`: the board policy no longer sends a darn run's decision by message.
+- `internal/loomcli/decision.go:446`: `postDecisionNotice` signs as the program for an orch or unnamed caller and as the strand for a named non-orch caller; `TestPostDecisionNotice_SignsByCaller` pins it.
+- `internal/loomcli/decision.go:446`: a named non-orch caller outside a strand pane falls back to the program instead of failing every notice.
+- `internal/loomcli/decision.go:483`: the `decision add` help text keeps its unrelated paragraphs and trims only the notice paragraph to stay under the cap.
