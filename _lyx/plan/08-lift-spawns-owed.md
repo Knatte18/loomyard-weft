@@ -1,9 +1,9 @@
 # Card 8 — Every lift spawns the pushes and the board sync a pause deferred
 
 **Create:**
-- `plan:internal/fabricengine#Bolt.HasUncommitted` -> `func (b *Bolt) HasUncommitted() (bool, error)`
-- `plan:internal/tendercli#syncBoardIfOwed` -> `func syncBoardIfOwed(ahead, uncommitted func() (bool, error), spawn func() error) error`
-- `plan:internal/tendercli#TestSyncBoardIfOwed` -> `func TestSyncBoardIfOwed(t *testing.T)`
+- `internal/fabricengine#Bolt.HasUncommitted`
+- `internal/tendercli#syncBoardIfOwed`
+- `internal/tendercli#TestSyncBoardIfOwed`
 
 **Edit:**
 - `internal/tenderengine#Deps`
