@@ -729,7 +729,7 @@
       }
     }
   ],
-  "currentBatch": 0,
+  "currentBatch": 17,
   "masterStrand": "1208d44a87b5fd00e2a3266cbfc6e59c",
   "masterSessionId": "dc62cdb4-a622-4a99-88db-9438f18c990d",
   "masterEngine": "claude",
@@ -888,6 +888,22 @@
       "bracketTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-machine-handover/dc62cdb4-a622-4a99-88db-9438f18c990d/subagents/agent-aba6bfc82e5631573.jsonl"
       ]
+    },
+    "17": {
+      "slug": "wake-and-orch-owner-pause",
+      "cards": [
+        "17-wake-and-orch-owner-pause"
+      ],
+      "cardHashes": {
+        "17-wake-and-orch-owner-pause": "394beae05e69f1c8a5e4e9e9f5d9fbc5f17e08c61b48faac169cf79054e5cd94"
+      },
+      "startSha": "e96fca57428948158f0d771ee15f8a4876750ecf",
+      "kind": "fork",
+      "spawnedAt": "2026-10-22T09:24:13Z",
+      "sessionId": "dc62cdb4-a622-4a99-88db-9438f18c990d",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
     },
     "4": {
       "slug": "board-owner-writes",
