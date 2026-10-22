@@ -2,8 +2,6 @@
 
 `board-entry-handles` · Task · enhancement, board
 
-Depends on: [`machine-handover`](design-machine-handover.md)
-
 ## Seen (operator, 2026-10-22)
 
 The operator reads the board README and wants to name an entry to the orch without typing its long slug.

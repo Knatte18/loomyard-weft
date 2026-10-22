@@ -2,7 +2,7 @@
 
 `orch-strand-cycle` · Task · bug, enhancement, orch, reed
 
-Depends on: [`machine-handover`](design-machine-handover.md), [`run-process-ownership`](design-run-process-ownership.md)
+Depends on: [`run-process-ownership`](design-run-process-ownership.md)
 
 Three orch lifecycle fixes in one run: a dead strand counts as dead, a dead watcher restarts, and the watcher's context-cycle request needs no reply and can be withdrawn.
 
