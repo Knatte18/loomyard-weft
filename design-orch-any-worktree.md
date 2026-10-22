@@ -105,3 +105,18 @@ Umbrellas and `weaver` need the same primitive: create a pair from a parent pair
 Today fabric creates a pair only from the worktree it runs in, and batten only from the prime.
 That primitive is its own piece of groundwork, built before either umbrellas or Weaver.
 Weaver's batches are not umbrellas: they are not board tasks, run as cold agents for minutes rather than loom runs for days, merge locally with Haiku resolving conflicts, and have no conversational thread.
+
+## Folded in: a pair over an existing local branch (note `fabric-add-adopt-local`, 2026-10-22)
+
+`lyx fabric add <slug>` adopts a warp branch that exists only on origin, or locally with the local-only mark, but refuses `ErrBranchExists` for an unmarked local branch (`internal/fabricengine/add.go`).
+So there is no lyx way to make a pair over a branch already in this clone, such as `main` or a beam branch.
+Case (orch, 2026-10-21): on the Models hub, as a stopgap until beams exist, the operator wanted the prime on a beam branch and `main` in its own worktree `main`; `lyx fabric add main` is refused, and would also fail on the weft side while `main-weft` is checked out in prime-weft.
+
+Found in triage (2026-10-22), why it is not a small fix and waits for beams (operator agreed):
+
+- `ErrBranchExists` is relied on: `internal/adoptcli` rewords it because dropping a leftover local branch loses unpushed commits, and `internal/battencli/wire.go` reads it to catch a leftover branch from a removed pair. Lifting the refusal for batten would let an unattended run adopt a stale branch for a new task of the same slug, so adoption of a local branch is allowed only when the operator runs `lyx fabric add` directly.
+- `add` records the acting worktree's branch as the pair's parent, so `main` added from a prime on a beam branch would record the beam as `main`'s parent, the inverse of the truth, misleading every reader of that record (merge, landing).
+- How a root pair is recorded (a pair over `main` or a beam branch, which batten never lands) is the beam design's own question; the prime being the root umbrella (above) answers it here.
+
+The operator's view (2026-10-22): `add` is the verb that adopts an existing branch, local or remote, and a slug colliding with a leftover branch is the user's mistake; `fabric checkout` stays the verb that switches a worktree's branch.
+A branch checked out in another worktree is refused with a message naming that worktree and `lyx fabric checkout` to move it off.
