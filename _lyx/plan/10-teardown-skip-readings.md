@@ -31,8 +31,8 @@
 - `internal/runproc#List`
 - `internal/runproc#Record`
 - `internal/fabricengine#RunProcDir`
-- `plan:internal/pairteardown#Teardown.registeredBattenAlive`
-- `plan:internal/pairteardown#Teardown.driverRecordPID`
+- `internal/pairteardown#Teardown.registeredBattenAlive`
+- `internal/pairteardown#Teardown.driverRecordPID`
 - `internal/pairteardown#awaitRunLockFree`
 - `internal/pairteardown#Teardown.childLanded`
 - `internal/pairteardown#Teardown.readBoardClaim`
