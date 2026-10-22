@@ -15,10 +15,10 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T4 | **Orch lifecycle: dead strands count as dead, the watcher restarts, cycle requests need no reply and can be withdrawn**<br>• Strand liveness checks the engine process and placement, a dead orch watcher restarts, the note write is seen without a reply, and a pending distill/refresh can be withdrawn<br>• `profile: light` | [`orch-strand-cycle`](design-orch-strand-cycle.md) | loom | Discussion-Burler-Review | neve | 3d<br>53m | orch, reed, shuttle, creel |
+| T4 | **Orch lifecycle: dead strands count as dead, the watcher restarts, cycle requests need no reply and can be withdrawn**<br>• Strand liveness checks the engine process and placement, a dead orch watcher restarts, the note write is seen without a reply, and a pending distill/refresh can be withdrawn<br>• `profile: light` | [`orch-strand-cycle`](design-orch-strand-cycle.md) | loom | Discussion-Burler-Review | neve | 3d<br>54m | orch, reed, shuttle, creel |
 | T6 | **loom halt note for a Merge-In loop exit carries only 'loop-exited' as its reason** | [`loop-exit-halt-names-its-cause`](design-loop-exit-halt-names-its-cause.md) | darn | Darn-Burler-Fix | neve | 4h<br>2h | loom, shed |
-| T7 | **webster done-check: Create paths with a space and test targets quarry does not find** | [`done-check-spaced-create-paths`](design-done-check-spaced-create-paths.md) | darn | Darn-Burler-Fix | neve | 4h<br>53m | webster, quarry |
-| T9 | **Teardown's archive-tag push has no retry for a transient remote rejection** | [`retry-archive-tag-push`](design-retry-archive-tag-push.md) | darn | Darn-Bouncer | neve | 4h<br>2h | batten, fabric |
+| T7 | **webster done-check: Create paths with a space and test targets quarry does not find** | [`done-check-spaced-create-paths`](design-done-check-spaced-create-paths.md) | darn | Darn-Burler-Fix | neve | 4h<br>54m | webster, quarry |
+| T9 | **Teardown's archive-tag push has no retry for a transient remote rejection** | [`retry-archive-tag-push`](design-retry-archive-tag-push.md) | darn | Describe | neve | 4h<br>2h | batten, fabric |
 
 ### Ready
 
@@ -49,6 +49,12 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | A5 |  | **Sweep go_parallel on OSL-1046 with Cortex XDR**<br>• Time both gate tiers on the work laptop on a quiet machine and log them in docs beside the Neve numbers, with full hardware info | [`bench-osl1046-xdr`](design-bench-osl1046-xdr.md) | 2d<br>2d |  |
 | A6 |  | **Lens overlap audit: which lenses find the same defects, and a smaller set**<br>• twill-plan 8 to 5 lenses recommended; twill-discussion 7 to 4 and review-code 4 to 3 at low confidence | [`lens-overlap-audit`](design-lens-overlap-audit.md) | 1h<br>1h | burler, loom |
 | A7 |  | **Trial: batcher profile wide (budget 300k)**<br>• Hub runs a new batcher profile wide, budget 300k; check cost and fork quality before taking it into the template | [`batch-budget-300k-trial`](design-batch-budget-300k-trial.md) | 1h<br>1h | webster |
+
+### Bugs
+
+| # | P | Note | Slug | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- | --- |
+| B1 |  | **Orch watcher types /compact again after a compact landed**<br>• Watcher stays in resuming after a requested compact and types a second /compact into the resumed busy turn | [`orch-compact-repeats`](design-orch-compact-repeats.md) | 0m<br>0m | orch |
 
 ### Enhancements
 
