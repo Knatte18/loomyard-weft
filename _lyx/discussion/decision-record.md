@@ -65,6 +65,12 @@ The example runs a plain shell command, and the help states that an agent sessio
 
 - An operator who relied on an interactive run prompting by default now gets bypass silently; the help and docs name `prompt` as the way back.
 
+<!-- lyx:carry-over Darn-Review -->
+- Darn-Review, round 1: converged; each finding below was fixed or disputed by the round's fixer, and no fresh reviewer has seen the result; the fixer report says which.
+  Review: _lyx/reviews/darn/round-1-review.md; fixer report: _lyx/reviews/darn/round-1-fixer-report.md.
+  - claudeengine-doc-open-bypass-stale (class consistency, severity MEDIUM, open in rounds 1)
+<!-- /lyx:carry-over Darn-Review -->
+
 ## Acceptance criteria
 
 - An opened session and an interactive run with no permission mode carry the engine's bypass flag on both launch and resume lines.
