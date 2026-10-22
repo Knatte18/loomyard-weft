@@ -255,6 +255,13 @@ Bound: only shells no awaited prefix names; forks and awaited shells keep the cu
   - d7-revival-does-not-restart-driver (class design, severity MEDIUM, open in rounds 3, 4)
 <!-- /lyx:carry-over Discussion-Review -->
 
+<!-- lyx:carry-over Plan-Review -->
+- Plan-Review, round 4: converged; each finding below was fixed or disputed by the round's fixer, and no fresh reviewer has seen the result; the fixer report says which.
+  Review: _lyx/reviews/plan/round-4-review.md; fixer report: _lyx/reviews/plan/round-4-fixer-report.md.
+  - await-run-lock-or-pass-refusals-unreached (class scope, severity MEDIUM, open in rounds 4)
+  - reed-down-retry-step-mismatch (class consistency, severity MEDIUM, open in rounds 4)
+<!-- /lyx:carry-over Plan-Review -->
+
 ## Acceptance criteria
 
 - A detached pair push, a prime records push, a board sync, `lyx loom drive`, the detached step loop and a seeded `lyx batten run` each leave a record under the owner D2 names, and a dead process's record is pruned on the next read.
