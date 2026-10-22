@@ -15,12 +15,12 @@
 - `internal/orchengine#ClearCycleRequest`
 
 **Create:**
-- `plan:internal/orchengine#WithdrawCycleRequest` -> `func WithdrawCycleRequest(p Paths) (bool, error)`
-- `plan:internal/orchengine#RemoveCycleRequestIf` -> `func RemoveCycleRequestIf(p Paths, req CycleRequest) (bool, error)`
-- `plan:internal/orchengine#takeMarkerUnlocked` -> `func takeMarkerUnlocked(p Paths, req CycleRequest, pending bool) (bool, error)`
-- `plan:internal/orchengine#errMarkerChanged` -> `var errMarkerChanged = errors.New("orch: the cycle request changed since it was read")`
-- `plan:internal/orchengine#saveCycleStart` -> `func saveCycleStart(p Paths, s State, req CycleRequest, pending bool) error`
-- `plan:internal/orchengine#TestCycleRequest_MarkerChangedDuringStart` -> `func TestCycleRequest_MarkerChangedDuringStart(t *testing.T)`
+- `internal/orchengine#WithdrawCycleRequest`
+- `internal/orchengine#RemoveCycleRequestIf`
+- `internal/orchengine#takeMarkerUnlocked`
+- `internal/orchengine#errMarkerChanged`
+- `internal/orchengine#saveCycleStart`
+- `internal/orchengine#TestCycleRequest_MarkerChangedDuringStart`
 
 **Uses:**
 - `internal/orchengine#CycleRequested`

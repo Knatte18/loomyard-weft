@@ -12,9 +12,9 @@
 - `internal/creelcli/doc.go`
 
 **Create:**
-- `plan:internal/creelcli#worktreeTornDown` -> `func worktreeTornDown(path string) bool`
-- `plan:internal/creelcli#errWorktreeGone` -> `var errWorktreeGone = errors.New("creel: the worktree is gone")`
-- `plan:internal/creelcli#TestHubDelivery_SkipsAWorktreeThatNoLongerResolves` -> `func TestHubDelivery_SkipsAWorktreeThatNoLongerResolves(t *testing.T)`
+- `internal/creelcli#worktreeTornDown`
+- `internal/creelcli#errWorktreeGone`
+- `internal/creelcli#TestHubDelivery_SkipsAWorktreeThatNoLongerResolves`
 
 **Uses:**
 - `internal/creelcli#seedReedState`

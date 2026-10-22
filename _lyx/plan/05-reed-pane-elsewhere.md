@@ -13,12 +13,12 @@
 - `internal/reedcli#reedCLI.statusCmd`
 
 **Create:**
-- `plan:internal/reedengine#serverListVerb` -> `const serverListVerb = "list-panes-all"`
-- `plan:internal/reedengine#panePlacementFormat` -> `const panePlacementFormat = "#{pane_id} #{session_name} #{window_index}"`
-- `plan:internal/reedengine#TmuxCmd.panePlacements` -> `func (p TmuxCmd) panePlacements() (map[string]panePlacement, error)`
-- `plan:internal/reedengine#panePlacement` -> `type panePlacement struct`
-- `plan:internal/reedengine#Engine.strandsElsewhereLocked` -> `func (e *Engine) strandsElsewhereLocked(strands []Strand, windows []windowPane) map[string]string`
-- `plan:internal/reedengine#TestReconcileLocked_KeepsABindingFoundInAnotherSession` -> `func TestReconcileLocked_KeepsABindingFoundInAnotherSession(t *testing.T)`
+- `internal/reedengine#serverListVerb`
+- `internal/reedengine#panePlacementFormat`
+- `internal/reedengine#TmuxCmd.panePlacements`
+- `internal/reedengine#panePlacement`
+- `internal/reedengine#Engine.strandsElsewhereLocked`
+- `internal/reedengine#TestReconcileLocked_KeepsABindingFoundInAnotherSession`
 
 **Uses:**
 - `internal/reedengine#TmuxCmd.listWindowPanes`
