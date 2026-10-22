@@ -34,3 +34,10 @@ The beam setup on the board: `orch-any-worktree` (umbrella tasks spawning and la
 - How large the whole-task perch's fixes may be before they mean a piece failed.
 - Quality against full loom: each piece gets one perch instead of Plan and Webster review; measure follow-up fixes against loom runs.
 - Cost: Discussion, pre-planner, N darns and the whole-task perch against a loom run of the same size.
+
+## Review placement (operator, 2026-10-22)
+
+- The pre-plan gets a perch, but the pre-plan is far smaller than today's plan format: pieces and their contracts, not cards.
+- No perch per darn: a review per batch proved far too expensive in Millhouse, and a perch per piece is the same.
+  The pieces run as darn with review off (`review_max_bounces: 0`), each still passing its own gate and tests; the whole-task perch after the last merge-back is the code review, as Webster's round over the whole diff is today.
+  For scale, a darn perch costs about $1.30 per run in the audit window.
