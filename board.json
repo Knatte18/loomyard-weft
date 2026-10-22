@@ -1391,10 +1391,10 @@
     },
     {
       "id": 756,
-      "handle": "E33",
+      "handle": "T10",
       "slug": "darn-hard-cap-default-2",
       "title": "Darn's review hard cap defaults to 2, and the orch stencil drops hand-written small-task run settings",
-      "kind": "note",
+      "kind": "task",
       "labels": [
         "enhancement",
         "config",
