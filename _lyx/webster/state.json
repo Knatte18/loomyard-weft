@@ -1,0 +1,304 @@
+{
+  "runGuid": "7c997c016937c73cfdae3679ebf2730c",
+  "planFingerprint": "5684c826b4503e9a9e9b2bd43e6e15911d9489b474cd5228a64aa002878a74b6",
+  "planFileHashes": {
+    "00-overview.md": "a65d5cb1c169c6500828c080bc7e50e1ddd7c10adbf019a7e6d898cec23956c5",
+    "01-impactset-cmd-lyx-join.md": "b1f6a24a6b9b0b65c485ee49856fe940370065f1c5425ae9df91ea69c871b77e",
+    "02-landingshed-failure-route.md": "fe6109b1b65b0514edffd6b4ed9c3c2b4cd041a831c2c8a4339a14b3e761e167",
+    "03-darn-failure-classifier.md": "fa49da280ce40291126946609e1eb0f5cedc67353aab1bccdc545d82a591087e",
+    "04-batten-retry-merge-in-target.md": "ea730a53d6e5516fafc29bb54d131316eb820d8aa61a99869b81d2685872f0a8",
+    "05-shuttle-gate-findings-text.md": "f060794fa69e2e127340cf4c983a75c0b7eae90531672923eb55761b2561a875",
+    "06-shedrun-gate-findings-file.md": "1939fdfacea759bb5ce07c71c9d3af2ecbd56947f2ae36800f3e07c900218042",
+    "07-shedadapters-keep-gate-findings.md": "2fccb871866bd316ef1f453f0739d3336da5530cc437b58bddb8f41125369e55",
+    "08-wire-gate-findings-files.md": "02d1709b551ae49330c8edc3d357e0b4ad65f84165156fd05807c179375d7859",
+    "09-darn-write-reroute-edge.md": "4ecfa1352614794d2a55d2a5636dd35d36d2ca7009faf2476e2ce4b9109486fc",
+    "10-darn-write-entry-reroute.md": "bb545e7c59f79d32c9cc063a09f027ec76b7e67fd5e7dcd10f626d5ae907e036",
+    "11-shellguard-gate-test-case.md": "6e3baf591dc8bfa2227f80513beee87120c90e939691af6c39c69a4965020804"
+  },
+  "planOverviewFrameHash": "65607aee180cc6092015c7e1d0e1f61546ecc17c744e90205a928d24591d5c29",
+  "partition": [
+    {
+      "cards": [
+        "01-impactset-cmd-lyx-join",
+        "02-landingshed-failure-route",
+        "03-darn-failure-classifier",
+        "04-batten-retry-merge-in-target",
+        "05-shuttle-gate-findings-text"
+      ],
+      "profile": "cautious",
+      "estimate": 198832,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 1,
+        "startup": 54496,
+        "read_union": 36900,
+        "cards": [
+          {
+            "card": 1,
+            "card_text": 444,
+            "reads": {
+              "file:internal/impactset/doc.go": 468,
+              "package:internal/impactset": 2000,
+              "tests:internal/impactset": 2000
+            },
+            "messages": 45,
+            "written": 13944
+          },
+          {
+            "card": 2,
+            "card_text": 540,
+            "reads": {
+              "file:internal/landingshed/doc.go": 2016,
+              "package:internal/landingshed": 2000,
+              "tests:internal/landingshed": 2000
+            },
+            "messages": 80,
+            "written": 24540
+          },
+          {
+            "card": 3,
+            "card_text": 840,
+            "reads": {
+              "package:internal/loomcli": 2000,
+              "package:internal/testkit/envkit": 2000,
+              "tests:internal/loomcli": 2000,
+              "tests:internal/testkit/envkit": 2000
+            },
+            "messages": 122,
+            "written": 37440
+          },
+          {
+            "card": 4,
+            "card_text": 360,
+            "reads": {
+              "file:internal/battenshed/doc.go": 2232,
+              "package:internal/battenshed": 2000,
+              "tests:internal/battenshed": 2000
+            },
+            "messages": 59,
+            "written": 18060
+          },
+          {
+            "card": 5,
+            "card_text": 252,
+            "reads": {
+              "file:internal/shuttleengine/doc.go": 5748,
+              "package:internal/shuttleengine": 2000,
+              "tests:internal/shuttleengine": 2000
+            },
+            "messages": 44,
+            "written": 13452
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "06-shedrun-gate-findings-file",
+        "07-shedadapters-keep-gate-findings",
+        "08-wire-gate-findings-files"
+      ],
+      "profile": "cautious",
+      "estimate": 194202,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 2,
+        "startup": 61496,
+        "read_union": 34024,
+        "cards": [
+          {
+            "card": 6,
+            "card_text": 192,
+            "reads": {
+              "package:internal/shedrun": 2000,
+              "tests:internal/shedrun": 2000
+            },
+            "messages": 15,
+            "written": 4692
+          },
+          {
+            "card": 7,
+            "card_text": 576,
+            "reads": {
+              "file:internal/shedadapters/doc.go": 4692,
+              "package:internal/shedadapters": 2000,
+              "tests:internal/shedadapters": 2000
+            },
+            "messages": 95.5,
+            "written": 29226
+          },
+          {
+            "card": 8,
+            "card_text": 564,
+            "reads": {
+              "package:internal/battencli": 2000,
+              "package:internal/loomcli": 2000,
+              "package:internal/shedrecipe": 2000,
+              "package:internal/shedverbs": 2000,
+              "package:internal/testkit/envkit": 2000,
+              "tests:internal/battencli": 2000,
+              "tests:internal/loomcli": 2000,
+              "tests:internal/shedrecipe": 2000,
+              "tests:internal/shedverbs": 2000,
+              "tests:internal/testkit/envkit": 2000
+            },
+            "messages": 214,
+            "written": 64764
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "09-darn-write-reroute-edge"
+      ],
+      "profile": "cautious",
+      "estimate": 122530,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 3,
+        "startup": 68496,
+        "read_union": 28708,
+        "cards": [
+          {
+            "card": 9,
+            "card_text": 276,
+            "reads": {
+              "file:contracts/recipes/darn-recipe.yaml": 2652,
+              "file:docs/overview.md": 9780,
+              "package:contracts/recipes": 2000,
+              "package:docs": 2000,
+              "package:internal/loomcli": 2000,
+              "package:internal/loomrecipe": 2000,
+              "tests:contracts/recipes": 2000,
+              "tests:docs": 2000,
+              "tests:internal/loomcli": 2000,
+              "tests:internal/loomrecipe": 2000
+            },
+            "messages": 83.5,
+            "written": 25326
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "10-darn-write-entry-reroute",
+        "11-shellguard-gate-test-case"
+      ],
+      "profile": "cautious",
+      "estimate": 169384,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 4,
+        "startup": 75496,
+        "read_union": 26136,
+        "cards": [
+          {
+            "card": 10,
+            "card_text": 1020,
+            "reads": {
+              "file:internal/loomshed/doc.go": 984,
+              "package:internal/battencli": 2000,
+              "package:internal/loomcli": 2000,
+              "package:internal/loomshed": 2000,
+              "package:internal/shedrecipe": 2000,
+              "package:internal/testkit/envkit": 2000,
+              "tests:internal/battencli": 2000,
+              "tests:internal/loomcli": 2000,
+              "tests:internal/loomshed": 2000,
+              "tests:internal/shedrecipe": 2000,
+              "tests:internal/testkit/envkit": 2000
+            },
+            "messages": 214.5,
+            "written": 65370
+          },
+          {
+            "card": 11,
+            "card_text": 132,
+            "reads": {
+              "package:internal/shellguard": 2000,
+              "tests:internal/shellguard": 2000
+            },
+            "messages": 7.5,
+            "written": 2382
+          }
+        ]
+      }
+    }
+  ],
+  "currentBatch": 1,
+  "masterStrand": "1048fee3537b4aaec575d7942ef226e9",
+  "masterSessionId": "62778d91-f0b9-4af5-ba81-30ff7b4d0283",
+  "masterEngine": "claude",
+  "batches": {
+    "1": {
+      "slug": "impactset-cmd-lyx-join",
+      "cards": [
+        "01-impactset-cmd-lyx-join",
+        "02-landingshed-failure-route",
+        "03-darn-failure-classifier",
+        "04-batten-retry-merge-in-target",
+        "05-shuttle-gate-findings-text"
+      ],
+      "cardHashes": {
+        "01-impactset-cmd-lyx-join": "b1f6a24a6b9b0b65c485ee49856fe940370065f1c5425ae9df91ea69c871b77e",
+        "02-landingshed-failure-route": "fe6109b1b65b0514edffd6b4ed9c3c2b4cd041a831c2c8a4339a14b3e761e167",
+        "03-darn-failure-classifier": "fa49da280ce40291126946609e1eb0f5cedc67353aab1bccdc545d82a591087e",
+        "04-batten-retry-merge-in-target": "ea730a53d6e5516fafc29bb54d131316eb820d8aa61a99869b81d2685872f0a8",
+        "05-shuttle-gate-findings-text": "f060794fa69e2e127340cf4c983a75c0b7eae90531672923eb55761b2561a875"
+      },
+      "startSha": "de6b8465f50a475feb96a46f8bd30de0352919c9",
+      "kind": "fork",
+      "spawnedAt": "2026-10-22T06:56:55Z",
+      "sessionId": "62778d91-f0b9-4af5-ba81-30ff7b4d0283",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
+    }
+  }
+}
