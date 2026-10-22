@@ -21,7 +21,7 @@
 - `internal/planglyph#TestGlyphChain_CallerCoverage`
 
 **Uses:**
-- `plan:internal/planglyph#writeLanguagePlan`
+- `internal/planglyph#writeLanguagePlan`
 - `internal/planglyph#writeFixtureFiles`
 
 **Intent:** Run the checks that read Go source or Go toolchain semantics only when the plan's language is `go` (D5).

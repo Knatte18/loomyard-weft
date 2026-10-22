@@ -9,10 +9,10 @@
 - `internal/planglyph#doneCheckVerdicts`
 - `internal/planglyph#classifyAmbiguity`
 - `internal/planglyph#TestClassifyAmbiguity`
-- `plan:internal/planglyph#TestGlyphChain_CSharp`
+- `internal/planglyph#TestGlyphChain_CSharp`
 
 **Uses:**
-- `plan:internal/planglyph#writeLanguagePlan`
+- `internal/planglyph#writeLanguagePlan`
 - `internal/planglyph#writeFixtureFiles`
 - `internal/planglyph#createCard`
 - `internal/planglyph#deleteCard`

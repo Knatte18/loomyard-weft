@@ -2,8 +2,8 @@
 
 **Create:**
 - `internal/planglyph/testdata/glyphchain/csharp/Renderer.cs`
-- `plan:internal/planglyph#writeLanguagePlan` -> `func writeLanguagePlan(t *testing.T, language string, cards []string, sections ...plankit.Section) (string, *planparser.Plan)`
-- `plan:internal/planglyph#TestGlyphChain_CSharp` -> `func TestGlyphChain_CSharp(t *testing.T)`
+- `internal/planglyph#writeLanguagePlan`
+- `internal/planglyph#TestGlyphChain_CSharp`
 
 **Edit:**
 - `internal/planparser#Plan.GlyphLanguage` -> `func (p *Plan) GlyphLanguage() bool`

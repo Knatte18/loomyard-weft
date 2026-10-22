@@ -7,12 +7,12 @@
 **Edit:**
 - `internal/planglyph#renameDeclSource`
 - `internal/planglyph#isInterfaceMethod`
-- `plan:internal/planglyph#TestGlyphChain_CSharp`
+- `internal/planglyph#TestGlyphChain_CSharp`
 
 **Uses:**
 - `plan:internal/planglyph#declaredNameIndex`
 - `plan:internal/planglyph#csharpOwner`
-- `plan:internal/planglyph#writeLanguagePlan`
+- `internal/planglyph#writeLanguagePlan`
 - `internal/planglyph#renameCard`
 - `internal/planglyph#renameMechanic`
 - `internal/planglyph#readCardFile`

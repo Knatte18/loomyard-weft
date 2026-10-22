@@ -11,10 +11,10 @@
 - `internal/planparser#checkGlyphMalformed`
 - `internal/planglyph#resolvePass`
 - `internal/planparser_test#TestValidate_GlyphMalformed`
-- `plan:internal/planglyph#TestGlyphChain_CSharp`
+- `internal/planglyph#TestGlyphChain_CSharp`
 
 **Uses:**
-- `plan:internal/planglyph#writeLanguagePlan`
+- `internal/planglyph#writeLanguagePlan`
 
 **Intent:** Check the plan's language against its files' extensions (D4), with the new blocking finding `plan-language-mismatch`.
 
