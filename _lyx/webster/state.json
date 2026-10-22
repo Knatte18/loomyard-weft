@@ -1,14 +1,14 @@
 {
   "runGuid": "15b982c1c678143467804c3f41d06bf1",
-  "planFingerprint": "d478664b8a495bf699aad17757d75dd6482527b72a5d83fd53123902f1938d13",
+  "planFingerprint": "80c9a6efaed6386db6a45c8e9234033f8411ae837cc037c16008e4b23369715c",
   "planFileHashes": {
     "00-overview.md": "e58c557b54b0ce1f195321a09d37740ec28623bcb97c3cedad335ee2a5204997",
     "01-guard-error-carries-dirt.md": "8fe4c89a1fe92d8bfee2182b1388e641b42459a0cf67911f0c8921fc76578bff",
     "02-parent-reads.md": "9d6d86f40f805502d0158746905aefa9c6273aec59018476dc964f22c4da8b43",
     "03-finalize-dirty-reason.md": "222200e6eeabd3ba4ec73fd2ea4b61bf21f47a05590ef2188fe93f984e26a014",
     "04-halt-note-drops-parent-status.md": "e6d5493646b95f3830cc145d0e5db1b570877f494a2dcaf1d9e457e47b49ae13",
-    "05-finalize-goto-guard.md": "a1b1bc4b0da1c2b040df01e07146b77c8233f93ac8fbde7c19f2699b2664baf5",
-    "06-driver-start-check.md": "2745e6ddfc4b7096dde1b1a0d467f68d70ccf50543cfc1ec953ba61bce92521d"
+    "05-finalize-goto-guard.md": "9e3f349892a8b72e332eb0db030b7c17f58d71488f74152bc379f32e21e60fe6",
+    "06-driver-start-check.md": "682c9b4b3e21a96867bb7841feda3fecc21b0777cea1115ee81abb9f2f22fb8c"
   },
   "planOverviewFrameHash": "9810965fcb8729a881421d99661c3994a401a420143562bb6a3cc519ebb9f15d",
   "partition": [
@@ -174,7 +174,7 @@
       }
     }
   ],
-  "currentBatch": 5,
+  "currentBatch": 0,
   "masterStrand": "0466f49c0c2c78c49dff14cdde5967bf",
   "masterSessionId": "79ea0c97-eb15-42be-8939-f17d471323b8",
   "masterEngine": "claude",
@@ -257,20 +257,35 @@
         "06-driver-start-check"
       ],
       "cardHashes": {
-        "05-finalize-goto-guard": "a1b1bc4b0da1c2b040df01e07146b77c8233f93ac8fbde7c19f2699b2664baf5",
-        "06-driver-start-check": "2745e6ddfc4b7096dde1b1a0d467f68d70ccf50543cfc1ec953ba61bce92521d"
+        "05-finalize-goto-guard": "9e3f349892a8b72e332eb0db030b7c17f58d71488f74152bc379f32e21e60fe6",
+        "06-driver-start-check": "682c9b4b3e21a96867bb7841feda3fecc21b0777cea1115ee81abb9f2f22fb8c"
       },
       "startSha": "ae6feb82bbe05848970a5229610171fee34c4359",
       "kind": "fork",
       "spawnedAt": "2026-10-22T11:42:12Z",
       "sessionId": "79ea0c97-eb15-42be-8939-f17d471323b8",
       "engine": "claude",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "05-finalize-goto-guard",
+        "status": "done",
+        "head_sha": "050f7a6d97b312848ce7f4405979939e6de70a8b"
+      },
+      "cardShas": [
+        "050f7a6d97b312848ce7f4405979939e6de70a8b"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-finalize-dirty-names-paths/79ea0c97-eb15-42be-8939-f17d471323b8/subagents/agent-a60d39615fa861fc2.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-finalize-dirty-names-paths/79ea0c97-eb15-42be-8939-f17d471323b8/subagents/agent-a60d39615fa861fc2.jsonl"
+      ]
     }
   },
   "seenForkTranscripts": [
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-finalize-dirty-names-paths/79ea0c97-eb15-42be-8939-f17d471323b8/subagents/agent-ad13c0db4450928a4.jsonl",
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-finalize-dirty-names-paths/79ea0c97-eb15-42be-8939-f17d471323b8/subagents/agent-a24d91f044aeaaf7b.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-finalize-dirty-names-paths/79ea0c97-eb15-42be-8939-f17d471323b8/subagents/agent-a24d91f044aeaaf7b.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-finalize-dirty-names-paths/79ea0c97-eb15-42be-8939-f17d471323b8/subagents/agent-a60d39615fa861fc2.jsonl"
   ]
 }
