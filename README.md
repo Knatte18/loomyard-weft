@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-22 15:06 UTC; every age below is as of then.
+Rendered 2026-10-22 15:07 UTC; every age below is as of then.
 
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
@@ -15,7 +15,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T4 | **Orch lifecycle: dead strands count as dead, the watcher restarts, cycle requests need no reply and can be withdrawn**<br>• Strand liveness checks the engine process and placement, a dead orch watcher restarts, the note write is seen without a reply, and a pending distill/refresh can be withdrawn<br>• `profile: light` | [`orch-strand-cycle`](design-orch-strand-cycle.md) | loom | Discussion-Burler-Review | neve | 3d<br>1h | orch, reed, shuttle, creel |
+| T4 | **Orch lifecycle: dead strands count as dead, the watcher restarts, cycle requests need no reply and can be withdrawn**<br>• Strand liveness checks the engine process and placement, a dead orch watcher restarts, the note write is seen without a reply, and a pending distill/refresh can be withdrawn<br>• `profile: light` | [`orch-strand-cycle`](design-orch-strand-cycle.md) | loom | Discussion-Burler-Fix | neve | 3d<br>1h | orch, reed, shuttle, creel |
 | T6 | **loom halt note for a Merge-In loop exit carries only 'loop-exited' as its reason** | [`loop-exit-halt-names-its-cause`](design-loop-exit-halt-names-its-cause.md) | darn | Merge-In | neve | 4h<br>3h | loom, shed |
 
 ### Ready
@@ -30,7 +30,7 @@ Waits only on Running or Ready entries.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T2 | **Plan cards: headroom check, Extends label, an amendment owner, failures traced to cards**<br>• PATTERN headroom in the plan gate, additive Extends cards, an in-run owner for card amendments, verify failures mapped to cards via Enclose<br>• `profile: light` | [`plan-card-rules`](design-plan-card-rules.md) | loom | `loop-exit-halt-names-its-cause`, `orch-strand-cycle` | 2w<br>6m | loom, webster, burler, orch, quarry |
+| T2 | **Plan cards: headroom check, Extends label, an amendment owner, failures traced to cards**<br>• PATTERN headroom in the plan gate, additive Extends cards, an in-run owner for card amendments, verify failures mapped to cards via Enclose<br>• `profile: light` | [`plan-card-rules`](design-plan-card-rules.md) | loom | `loop-exit-halt-names-its-cause`, `orch-strand-cycle` | 2w<br>7m | loom, webster, burler, orch, quarry |
 | T3 | **One batten verb ends a run for good, live or stopped, before or after its pair exists**<br>• Abandon or abort a batten run in any state: end its processes and strands, clear the claim, remove records and scratch, optionally the pair; batten refuses a dirty source up front<br>• `profile: light` | [`batten-cancel-verb`](design-batten-cancel-verb.md) | loom | `orch-strand-cycle` | 1d<br>2h | batten, reed, shed |
 
 ### Layer B
@@ -39,7 +39,7 @@ Starts when every entry it names under After is done.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T1 | **Each test runs once per tree: disjoint tiers, row entry gates, carried green runs, tmux in final**<br>• Tiers tagged by name, shed row entry gates, verify skipped on an already green tree, tmux in the final gate, gate time measured<br>• `profile: light` | [`gate-runs-once`](design-gate-runs-once.md) | loom | `loop-exit-halt-names-its-cause`, `batten-cancel-verb` | 5d<br>6m | gate, shed, loom, webster, fabric, batten |
+| T1 | **Each test runs once per tree: disjoint tiers, row entry gates, carried green runs, tmux in final**<br>• Tiers tagged by name, shed row entry gates, verify skipped on an already green tree, tmux in the final gate, gate time measured<br>• `profile: light` | [`gate-runs-once`](design-gate-runs-once.md) | loom | `loop-exit-halt-names-its-cause`, `batten-cancel-verb` | 5d<br>7m | gate, shed, loom, webster, fabric, batten |
 
 ## Notes
 
@@ -61,7 +61,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | P | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| B1 |  | **Orch watcher types /compact again after a compact landed**<br>• Watcher stays in resuming after a requested compact and types a second /compact into the resumed busy turn | [`orch-compact-repeats`](design-orch-compact-repeats.md) | 8m<br>8m | orch |
+| B1 |  | **Orch watcher types /compact again after a compact landed**<br>• Watcher stays in resuming after a requested compact and types a second /compact into the resumed busy turn | [`orch-compact-repeats`](design-orch-compact-repeats.md) | 9m<br>9m | orch |
 
 ### Enhancements
 
@@ -78,7 +78,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | E9 |  | **Paste cited code into a review rounds context**<br>• Reviewers edit nothing and review a fixed commit, so code pasted at round start cannot go stale; measure it against todays reviewer | [`review-inline-code`](design-review-inline-code.md) | 10d<br>6d | burler, stencil |
 | E10 |  | **Module labels from what a task touches, not only what it is about**<br>• Half the landings that changed the shuttle core lacked the shuttle label; derive or check module labels from the plan and the diff | [`labels-from-diff`](design-labels-from-diff.md) | 7d<br>7d | board, loom |
 | E11 |  | **Start one task per overlapping group at a newly-ready start**<br>• When a landing makes several overlapping tasks ready at once, batten starts one per group and names the rest in its notice | [`batten-ready-overlap`](design-batten-ready-overlap.md) | 7d<br>7d | batten |
-| E12 |  | **Git test fixtures trip Cortex XDR on the work laptop**<br>• Parallel git-heavy tests create so many files at once that Cortex XDR killed VS Code and then crashed itself, twice; tests must stay usable on a machine with endpoint protection | [`xdr-git-test-file-burst`](design-xdr-git-test-file-burst.md) | 5d<br>1d | fabric |
+| E12 |  | **Git test fixtures trip Cortex XDR on the work laptop**<br>• Parallel git-heavy tests create so many files at once that Cortex XDR killed VS Code and then crashed itself, twice; tests must stay usable on a machine with endpoint protection | [`xdr-git-test-file-burst`](design-xdr-git-test-file-burst.md) | 6d<br>1d | fabric |
 | E13 |  | **Rename the lyx binary to lyr (name clash with LyX)** | [`rename-binary-lyr`](design-rename-binary-lyr.md) | 6d<br>4h | stencil, shuttle |
 | E16 |  | **Parallel batches: the shared pieces for Webster forks and Weaver**<br>• DAG batchifier, worktree per batch, merge-back with conflict resolution; open: keeping a fork inside its worktree | [`parallel-batch-parts`](design-parallel-batch-parts.md) | 4d<br>4d | webster, fabric, loom |
 | E17 | L | **[WS 007] An anchor per umbrella**<br>• Let an umbrella work in its own subdirectory of the repository, inherited by its tasks; hard to change now | [`umbrella-anchor`](design-umbrella-anchor.md) | 4d<br>4d | fabric, config, workspaces |
