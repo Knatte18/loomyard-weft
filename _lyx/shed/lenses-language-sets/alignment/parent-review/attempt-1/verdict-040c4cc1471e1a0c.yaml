@@ -1,0 +1,7 @@
+verdict: approve
+reason: >-
+  The design covers every point of the board entry's operator decision: a language-neutral base template (D1), embedded go, csharp and python layers picked by lens_set (D2, D3), add and override by name kept, and a remove key (D5), with no language detection in code.
+  Keeping the rules lenses in the base departs only from the orch's non-binding candidate list and is recorded as an auto-mode assumption.
+  No peer run (machine-handover, quarry-csharp, darn-verify-fixes) and no parent commit overlaps it.
+question: ""
+superseded: []
