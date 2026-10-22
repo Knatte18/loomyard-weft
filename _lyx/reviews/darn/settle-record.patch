@@ -1,0 +1,166 @@
+diff --git a/internal/burlerengine/cluster.go b/internal/burlerengine/cluster.go
+index e8a8a0327..3113e102e 100644
+--- a/internal/burlerengine/cluster.go
++++ b/internal/burlerengine/cluster.go
+@@ -32,9 +32,26 @@ var gitValuedGlobalOptions = map[string]bool{
+ 	"-C": true, "-c": true, "--git-dir": true, "--work-tree": true, "--namespace": true, "--config-env": true, "--attr-source": true,
+ }
+ 
++// gitTagListOptions holds the git tag options that put it in list mode, where it only reads tags.
++var gitTagListOptions = map[string]bool{
++	"-l": true, "--list": true, "--points-at": true, "--contains": true, "--no-contains": true,
++	"--merged": true, "--no-merged": true, "-n": true,
++}
++
++// gitTagWritingOptions holds the git tag options that create, delete or sign a tag.
++var gitTagWritingOptions = map[string]bool{
++	"-d": true, "--delete": true, "-a": true, "--annotate": true, "-s": true, "--sign": true,
++	"-u": true, "--local-user": true, "-f": true, "--force": true, "-m": true, "--message": true,
++	"-F": true, "--file": true, "-e": true, "--edit": true,
++}
++
++// gitTagValuedListOptions holds the git tag list-output options whose value may be the following word, so a value such as -version:refname is never read as an option.
++var gitTagValuedListOptions = map[string]bool{"--sort": true, "--format": true}
++
+ // commandRunsMutatingGit reports whether a Bash command string invokes git with a state-mutating subcommand.
+ // The command is split into segments at ;, &, | and newlines, and a segment counts when its first word is git, bare or path-prefixed.
+ // Only the subcommand word decides, so a mutating verb named as an argument, as in git help cherry-pick, never counts.
++// The one exception is git tag, which counts only when it does not merely list tags.
+ // A -h or --help among the global options or directly after the subcommand only prints usage and never counts either;
+ // further along it is an option value or an operand, as in git commit -m -h.
+ func commandRunsMutatingGit(cmd string) bool {
+@@ -46,6 +63,9 @@ func commandRunsMutatingGit(cmd string) bool {
+ 		if helpRequested || len(rest) > 0 && isHelpFlag(rest[0]) {
+ 			continue
+ 		}
++		if subcommand == "tag" && gitTagListsOnly(rest) {
++			continue
++		}
+ 		if mutatingGitSubcommands[subcommand] {
+ 			return true
+ 		}
+@@ -53,6 +73,48 @@ func commandRunsMutatingGit(cmd string) bool {
+ 	return false
+ }
+ 
++// gitTagListsOnly reports whether args, the words after git tag, only list tags.
++// Bare git tag lists, and otherwise a list-mode option must stand before any -- with no tag-writing option beside it.
++// A long option counts in its --name=value form too, and -n also with its line count attached, as in -n5.
++// Any other short-option cluster, such as -ln, is not parsed and keeps the command mutating.
++func gitTagListsOnly(args []string) bool {
++	if len(args) == 0 {
++		return true
++	}
++	listMode := false
++	for i := 0; i < len(args); i++ {
++		arg := args[i]
++		name, _, _ := strings.Cut(arg, "=")
++		switch {
++		case arg == "--":
++			return listMode
++		case gitTagWritingOptions[name]:
++			return false
++		case gitTagListOptions[name] || isGitTagLineCount(arg):
++			listMode = true
++		case gitTagValuedListOptions[arg]:
++			i++
++		case len(arg) > 2 && arg[0] == '-' && arg[1] != '-':
++			return false
++		}
++	}
++	return listMode
++}
++
++// isGitTagLineCount reports whether word is git tag's -n option with its line count attached, as in -n5.
++func isGitTagLineCount(word string) bool {
++	count, found := strings.CutPrefix(word, "-n")
++	if !found || count == "" {
++		return false
++	}
++	for _, r := range count {
++		if r < '0' || r > '9' {
++			return false
++		}
++	}
++	return true
++}
++
+ // splitShellSegments splits cmd into segments at unquoted ;, &, | and newlines, each segment a list of words.
+ // A single or double quoted run is part of one word with its quotes removed.
+ // A backslash-newline pair is removed, so a continued line stays in its segment.
+diff --git a/internal/burlerengine/cluster_test.go b/internal/burlerengine/cluster_test.go
+index a031d6b9e..bb49fea74 100644
+--- a/internal/burlerengine/cluster_test.go
++++ b/internal/burlerengine/cluster_test.go
+@@ -246,7 +246,7 @@ func TestAuditClusterRound(t *testing.T) {
+ 
+ // TestCommandRunsMutatingGit matrixes commandRunsMutatingGit against every Bash command shape the audit must classify correctly.
+ // Every listed mutating subcommand matches, tolerant of a leading path, a chain prefix, a later line and global options.
+-// Read-only subcommands whose arguments name a mutating verb, and help requests, never match.
++// Read-only subcommands whose arguments name a mutating verb, help requests and git tag's list forms never match.
+ func TestCommandRunsMutatingGit(t *testing.T) {
+ 	t.Parallel()
+ 	tests := []struct {
+@@ -271,6 +271,29 @@ func TestCommandRunsMutatingGit(t *testing.T) {
+ 		{"apply", "git apply patch.diff", true},
+ 		{"cherry-pick", "git cherry-pick abc123", true},
+ 		{"tag", "git tag v1.0", true},
++		{"tag delete", "git tag -d v1", true},
++		{"annotated tag", "git tag -a v1 -m msg", true},
++		{"signed tag", "git tag -s v1", true},
++		{"forced tag", "git tag -f v1 HEAD", true},
++		{"tag message in the = form", "git tag --message=msg v1", true},
++		{"tag delete beside a list option", "git tag -l -d v1", true},
++		{"tag -a beside a list option", "git tag -l -a v1", true},
++		{"tag -s beside a list option", "git tag -l -s v1", true},
++		{"tag -f beside a list option", "git tag -l -f v1", true},
++		{"tag --message in the = form beside a list option", "git tag -l --message=msg v1", true},
++		{"tag --delete beside a list option", "git tag -l --delete v1", true},
++		{"tag --annotate beside a list option", "git tag -l --annotate v1", true},
++		{"tag --sign beside a list option", "git tag -l --sign v1", true},
++		{"tag --force beside a list option", "git tag -l --force v1", true},
++		{"tag -u beside a list option", "git tag -l -u key v1", true},
++		{"tag --local-user beside a list option", "git tag -l --local-user key v1", true},
++		{"tag -F beside a list option", "git tag -l -F msg.txt v1", true},
++		{"tag --file beside a list option", "git tag -l --file msg.txt v1", true},
++		{"tag -e beside a list option", "git tag -l -e v1", true},
++		{"tag --edit beside a list option", "git tag -l --edit v1", true},
++		{"tag --list after a double dash is an operand", "git tag v1 -- --list", true},
++		{"tag --list as a message value", "git tag -m --list v1", true},
++		{"tag short-option cluster", "git tag -ln v1", true},
+ 		{"branch", "git branch -d old", true},
+ 		{"leading path", "/usr/bin/git commit -m x", true},
+ 		{"chained with &&", "cd internal/burler && git commit -am fix", true},
+@@ -302,6 +325,20 @@ func TestCommandRunsMutatingGit(t *testing.T) {
+ 		{"mutating verb as a log argument is not mutating", "git log --grep merge", false},
+ 		{"mutating verb as a show argument is not mutating", "git show tag", false},
+ 		{"flag before a read-only subcommand is not mutating", "git -C commit log", false},
++		{"tag --points-at after read-only commands is not mutating", "sed -n '1,40p' internal/x.go; git -C /worktree log -1 --format='%h %d' ; git -C /worktree tag --points-at HEAD", false},
++		{"bare git tag is not mutating", "git tag", false},
++		{"tag -l with a pattern is not mutating", "git tag -l 'v1.*'", false},
++		{"tag --list is not mutating", "git tag --list", false},
++		{"tag --contains is not mutating", "git tag --contains abc123", false},
++		{"tag --contains in the = form is not mutating", "git tag --contains=abc123", false},
++		{"tag --no-contains is not mutating", "git tag --no-contains abc123", false},
++		{"tag --merged is not mutating", "git tag --merged main", false},
++		{"tag --no-merged is not mutating", "git tag --no-merged main", false},
++		{"tag -n is not mutating", "git tag -n", false},
++		{"tag -n with an attached count is not mutating", "git tag -n5", false},
++		{"tag --sort value starting with a dash is not mutating", "git tag -l --sort -version:refname", false},
++		{"tag --format value starting with a dash is not mutating", "git tag -l --format -version:refname", false},
++		{"tag list option before a double dash is not mutating", "git tag -l -- v1", false},
+ 		{"git log is not mutating", "git log --oneline", false},
+ 		{"git diff is not mutating", "git diff HEAD~1", false},
+ 		{"git status is not mutating", "git status", false},
+diff --git a/internal/burlerengine/doc.go b/internal/burlerengine/doc.go
+index d1389887e..5016f07b6 100644
+--- a/internal/burlerengine/doc.go
++++ b/internal/burlerengine/doc.go
+@@ -293,6 +293,7 @@
+ // any fork with AgentCalls > 0, WriteCalls > 0, or a git-mutating Bash command is a hard error;
+ // a Bash command is git-mutating only when the subcommand word of one of its git invocations, the first non-option word after git's global options, mutates,
+ // so a mutating verb named as an argument, as in git help cherry-pick or git log --grep merge, and a -h or --help request pass;
++// git tag alone is judged by its arguments too, and passes when bare or in list mode, as in git tag --points-at HEAD, with no option that creates, deletes or signs a tag;
+ // any named spawn is a hard error.
+ // A fork that ran clean but never returned a report is sloppiness no mechanism prevents in advance.
+ // It is collected into ReviewResult.ClusterWarnings and never fails the round, since the handler's own consolidation phase already judges each fork's output on its merits.
