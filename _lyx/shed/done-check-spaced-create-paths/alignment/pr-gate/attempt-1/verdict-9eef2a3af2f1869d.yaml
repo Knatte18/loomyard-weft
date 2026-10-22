@@ -1,0 +1,10 @@
+verdict: approve
+reason: >-
+  The diff covers every in-scope point of the board entry.
+  Glyph-less done-check targets are judged on disk (#805).
+  A glyph-rejected failure names the card amendment as its way forward (#809).
+  A not_found Create names the unit's files and same-name declarations elsewhere, and a test pins external _test package resolution (#823).
+  The operator-excluded items stay out, and nothing outside the entry is changed.
+  The carried-over Darn-Review risk is closed by commit b97b9c766, and no peer run or parent commit overlaps.
+question: ""
+superseded: []
