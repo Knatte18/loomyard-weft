@@ -11,9 +11,9 @@
 - `docs/overview.md`
 
 **Create:**
-- `plan:internal/tenderengine#PairOwner` -> `type PairOwner struct`
-- `plan:internal/tendercli#pairOwners` -> `func pairOwners(owners boardengine.Owners, slugs []string, here string, parentOf func(slug string) (string, error)) ([]tenderengine.PairOwner, error)`
-- `plan:internal/tendercli#TestPairOwners` -> `func TestPairOwners(t *testing.T)`
+- `internal/tenderengine#PairOwner`
+- `internal/tendercli#pairOwners`
+- `internal/tendercli#TestPairOwners`
 
 **Uses:**
 - `internal/boardengine#ReadOwners`
