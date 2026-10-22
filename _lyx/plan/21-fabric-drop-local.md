@@ -6,9 +6,9 @@
 - `cmd/lyx#destructiveGuardMutatingResultTypes`
 
 **Create:**
-- `plan:internal/fabricengine#DropLocalResult` -> `type DropLocalResult struct`
-- `plan:internal/fabricengine#DropLocal` -> `func DropLocal(rec *Mutations, l *lyxcwd.Location, slug string) (DropLocalResult, error)`
-- `plan:internal/fabricengine_test#TestDropLocal` -> `func TestDropLocal(t *testing.T)`
+- `internal/fabricengine#DropLocalResult`
+- `internal/fabricengine#DropLocal`
+- `internal/fabricengine_test#TestDropLocal`
 
 **Intent:**
 The destruction primitive behind `lyx adopt --drop-local` (D5).
