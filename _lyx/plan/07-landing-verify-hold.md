@@ -1,10 +1,10 @@
 # Card 7 — Merge-In, Finalize and Publish tell a hold that a parent lock exempts from slug entries
 
 **Create:**
-- `plan:internal/parentlock#Store.HeldBy` -> `func (s *Store) HeldBy(slug string) (bool, error)`
-- `plan:internal/parentlock#TestStore_HeldBy` -> `func TestStore_HeldBy(t *testing.T)`
-- `plan:internal/loomcli#holdsParentLock` -> `func holdsParentLock(store *parentlock.Store, slug string) func() bool`
-- `plan:internal/loomcli#TestHoldsParentLock` -> `func TestHoldsParentLock(t *testing.T)`
+- `internal/parentlock#Store.HeldBy`
+- `internal/parentlock#TestStore_HeldBy`
+- `internal/loomcli#holdsParentLock`
+- `internal/loomcli#TestHoldsParentLock`
 
 **Edit:**
 - `internal/landingshed#Deps`
