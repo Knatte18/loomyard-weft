@@ -675,7 +675,7 @@
       }
     }
   ],
-  "currentBatch": 0,
+  "currentBatch": 9,
   "masterStrand": "fd94635c977349faf13625dcb991f1fc",
   "masterSessionId": "50f3575b-651f-41fb-ab8d-6b29950f8b0d",
   "masterEngine": "claude",
@@ -899,6 +899,22 @@
       "bracketTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-run-process-ownership/50f3575b-651f-41fb-ab8d-6b29950f8b0d/subagents/agent-ae1cc76592fad8100.jsonl"
       ]
+    },
+    "9": {
+      "slug": "teardown-ends-owned",
+      "cards": [
+        "09-teardown-ends-owned"
+      ],
+      "cardHashes": {
+        "09-teardown-ends-owned": "f56bd535e17bf10e721d0ea22e54f1f9bb706582af69c6c2bd031882c59302fa"
+      },
+      "startSha": "5f159b7ae8477658a078ac46b9c7522d5b737d96",
+      "kind": "fork",
+      "spawnedAt": "2026-10-22T13:44:47Z",
+      "sessionId": "50f3575b-651f-41fb-ab8d-6b29950f8b0d",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
     }
   },
   "seenForkTranscripts": [
