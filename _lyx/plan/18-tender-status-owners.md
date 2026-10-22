@@ -16,7 +16,7 @@
 - `plan:internal/tendercli#TestPairOwners` -> `func TestPairOwners(t *testing.T)`
 
 **Uses:**
-- `plan:internal/boardengine#ReadOwners`
+- `internal/boardengine#ReadOwners`
 - `internal/boardengine#Owners.Effective`
 - `internal/boardengine#OwnedElsewhere`
 - `internal/fabricengine#ParentSlug`

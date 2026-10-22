@@ -11,7 +11,7 @@
 - `internal/boardcli_test#TestCLI`
 
 **Create:**
-- `plan:internal/boardengine#Board.EffectiveOwner` -> `func (b *Board) EffectiveOwner(slug string) (string, error)`
+- `internal/boardengine#Board.EffectiveOwner`
 
 **Uses:**
 - `internal/boardengine#Owners.Effective`

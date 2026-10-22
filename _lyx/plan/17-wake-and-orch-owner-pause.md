@@ -24,8 +24,8 @@
 - `plan:internal/fabricengine#EntryOwnedElsewhere`
 - `plan:internal/pauserecord#OwnerCaller`
 - `plan:internal/tendercli#PauseOwnedElsewhere`
-- `plan:internal/boardengine#SetOwners`
-- `plan:internal/boardengine#ReadOwners`
+- `internal/boardengine#SetOwners`
+- `internal/boardengine#ReadOwners`
 - `internal/machinename#Name`
 
 **Intent:**
