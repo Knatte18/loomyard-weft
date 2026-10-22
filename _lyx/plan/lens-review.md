@@ -1,0 +1,33 @@
+# Lens review
+
+Every lens fork returned a report.
+
+- affected-set + forced-edits, BLOCKING: card 10's five `Darn.*` seams are missing from `internal/loomcli#intentionallyNil` (`internal/loomcli/wiring_seams_test.go:35-39`) — fixed as proposed: card 10 edits `internal/loomcli#intentionallyNil` with the five seams.
+- forced-edits, BLOCKING: batten's seam list `internal/battencli#intentionallyNil` (`internal/battencli/wire_seams_test.go:92-96`) misses card 10's `Darn.*` seams and card 8's `GateFindingsFile` — fixed as proposed: cards 8 and 10 edit it.
+- affected-set LOW + forced-edits MEDIUM: `TestWire_DarnRecipe`'s `darnSeams` (`internal/loomcli/wiring_darn_test.go:49`) does not pin the new seams — fixed as proposed: card 10 extends the list.
+- row-reachability, BLOCKING: card 2's Merge-In subtest set `fx.gate.gate.classify` after `newMergeInFixture` copied the value gate into `fx.m` (`internal/landingshed/mergein_test.go:115-127`) — fixed as proposed: the subtest sets `fx.m.gate.classify`, and the card says why.
+- way-forward, MEDIUM: the reroute reason did not point the parent at Merge-In's Stuck way forward, which D3 requires the cap halt to embed — fixed as proposed: card 10's reason names the parent-pair repair before any resume, and the reroute row asserts it.
+- way-forward, LOW: a failed findings write left the halt with no findings — fixed as proposed: card 7's reason carries the findings text, capped to one line of 400 characters, and its row asserts it.
+- test-economy, LOW: card 8's new `TestGatedRow_KeepsTheExhaustedGateFindings` repeated card 7's producer checks — fixed as proposed: dropped, and `TestMultiLLMFixtureRecipe_BuildsAndRunsAgainstFakeSeats` is extended instead.
+- test-economy + branch-coverage, MEDIUM: only `multiLLMEntry`'s wiring was reached — fixed as proposed: card 8 extends each gated entry's existing test (`TestDarnWriteEntry_HappyPath`, `TestPlanWriteEntry_HappyPath`, `TestDiscussionWriteEntry_HappyPath`, `TestPRReworkEntry_HappyPath`, `TestDescribeEntry_HappyPath`, `TestBurlerFixEntry_GateConfig`, `TestBurlerHalfEntries_RunDirectory`).
+- test-economy, LOW: `TestMergeableTips` is a test of a private helper — fixed as proposed, by the finding's second option: card 10 states why no public-surface test reaches it, since `darnDeps`' `ParentTips` opens a real fabric and `TestDarnDeps_PublishFailureNamesThePresentRecord` runs over a bare temp location (`internal/loomcli/wiring_darn_test.go:438-456`).
+- test-economy MEDIUM + criteria-coverage LOW: card 10's pending-rejection skip was a fifth reroute condition D3 does not license — fixed as proposed: the condition and its row are dropped.
+- branch-coverage, MEDIUM: card 3's unreadable-log branch had no row — fixed as proposed: a row with a `LogPath` naming no file.
+- branch-coverage, MEDIUM: card 10's `RunStart` and `TaskHead` error branches had no row — fixed as proposed: rows for both.
+- branch-coverage, MEDIUM: card 10's unparseable `WrittenAt` branch had no row — fixed as proposed: a row with an empty `WrittenAt`.
+- branch-coverage + criteria-coverage + way-forward aside, LOW: a zero `RunStart` from `seedRunStart` (`internal/loomcli/runstart.go:31-42`) let any record count as this run's — fixed as proposed: card 10 counts a zero start as not this run's and adds a row.
+- criteria-coverage MEDIUM + branch-coverage LOW: the findings file outliving `lyx loom goto` and `lyx loom resume` was argued, not tested — fixed differently: card 8 extends `TestGotoCmd_MovesBlockedRunOntoRow` to pin that a goto leaves a scratch-directory file in place. No resume row is added, because pinning it needs a live loop process while resume removes only the loop's pid files (`internal/shedverbs/loop.go:358`).
+- branch-coverage, LOW: the helper's branch for a nil `GateFindingsFile` was unreached — fixed as proposed: card 8 runs the fixture once over an Env with the seam nil.
+- branch-coverage, LOW: `clearGateFindings`' absent-file and removal-failure branches had no row — fixed as proposed: card 7's table drives both.
+- branch-coverage, LOW: card 10's tip scan had no no-tip or second-tip row — fixed as proposed: rows for no tip and for two tips with the second outside HEAD.
+- branch-coverage, LOW: card 3 had no row for a guard package whose failing test is not a listed guard — fixed as proposed: a `TestOther` row that is not owned.
+- branch-coverage, LOW: card 1's scan early return with no lyxbin package was unreached — fixed as proposed: an optional `graph` field and a row over a graph without lyxbin.
+- criteria-coverage, LOW: card 10's darn tip reader duplicated landingshed's instead of sharing it — fixed as proposed: card 10 creates `parentTipsReader`, used by `landingDeps` for `Deps.ReadParentTips` and by `darnDeps`.
+- criteria-coverage, LOW: card 10's gate-failed row compared `darnResumeWayForward` with itself — fixed as proposed: the row asserts the literal `lyx loom resume` and `Merge-In`.
+- criteria-coverage aside, LOW: no row had a second exhausted gate overwrite the findings file — fixed as proposed: card 7's table adds an overwrite row.
+- forced-edits, LOW: `gateattempts.go`'s header goes stale — fixed differently: card 7's Intent says to update the header, but the file is not listed, because `redundant-file-target` refuses a file beside its member `internal/shedadapters#gateFailedReason`.
+- guard-reach, LOW: card 3's nested-module and `go.mod` branches are reachable only through the fake `derive` (`internal/impactset/targets.go:42-43,122`) — fixed as proposed: card 3 calls them defensive and names the fake as their only reach.
+- guard-reach LOW + row-reachability MEDIUM: card 3's opaque row and error rows reached "owned" through an earlier branch — fixed as proposed: the opaque row's record names a test, and each owned row whose cause is not its package carries a failure outside the set.
+- row-reachability, MEDIUM: card 7's failed-gate rows carry a terminal `Reason` (`internal/shedadapters/multillm_test.go:300`, `burlerfix_test.go:259`), and BurlerFix had no passing row — fixed as proposed: non-terminal failed-gate rows, plus a new passed-gate BurlerFix row.
+- row-reachability, MEDIUM: card 10's writer-runs rows passed whether or not their condition was checked — fixed as proposed: a `rerouteReady` fixture state, and each row flips one fact from it.
+- row-reachability, LOW: card 5's empty-`Findings` assertion on the let-through row could not fail (`internal/shuttleengine/gate_list_test.go:278-296`) — fixed differently: the proposed new passed-outcome row is not added; the vacuous assertion is dropped, since `Findings` is set in the same `!outcome.Passed` block as `FindingsPath` (`internal/shuttleengine/wait.go:1575-1578`).
