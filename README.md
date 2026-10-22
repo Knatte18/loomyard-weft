@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-22 18:49 UTC; every age below is as of then.
+Rendered 2026-10-22 18:50 UTC; every age below is as of then.
 
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
@@ -48,7 +48,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | A6 |  | **Lens overlap audit: which lenses find the same defects, and a smaller set**<br>• twill-plan 8 to 5 lenses recommended; twill-discussion 7 to 4 and review-code 4 to 3 at low confidence | [`lens-overlap-audit`](design-lens-overlap-audit.md) | 5h<br>5h | burler, loom |
 | A7 |  | **Trial: batcher profile wide (budget 300k)**<br>• Hub runs a new batcher profile wide, budget 300k; check cost and fork quality before taking it into the template | [`batch-budget-300k-trial`](design-batch-budget-300k-trial.md) | 5h<br>4h | webster |
 | A8 |  | **Audit: loom tail rework (PR-Rework, Merge-Review, verify retries) is rare and cheap** | [`pr-rework-audit`](design-pr-rework-audit.md) | 47m<br>47m | loom, burler |
-| A9 |  | **Audit: loom from Webster out, who reviews and who fixes, and the target shape** | [`loom-tail-review`](design-loom-tail-review.md) | 38m<br>0m | loom, burler, fabric |
+| A9 |  | **Audit: loom from Webster out, who reviews and who fixes, and the target shape** | [`loom-tail-review`](design-loom-tail-review.md) | 39m<br>0m | loom, burler, fabric |
 
 ### Bugs
 

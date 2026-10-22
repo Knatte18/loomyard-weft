@@ -57,6 +57,7 @@ Orch judgement: agreed, with two cautions.
 - Tail: Webster, Webster perch, Merge-In with its fixer, Finalize.
 - Merge-In does conflicts, tests, fixing after tests, and alignment against what the merge brought in.
   Orch caution: it fixes what follows from the decision record, and escalates a real conflict between decisions rather than choosing one.
+- The alignment part runs only when the merge brought in commits that touch what the task touches (Merge-Review's `skip_seam: merge-overlap` already detects that); nothing merged in, or nothing overlapping, skips it, since alignment against the task's own scope belongs earlier.
 - A separate PR block, an ordinary producer with an entry gate on a config flag: off, the run skips it; on, it publishes the PR, a human is required, and an interactive session takes the human's feedback and fixes it before Finalize.
 
 ## Orch ideas raised in the discussion (not decisions)
