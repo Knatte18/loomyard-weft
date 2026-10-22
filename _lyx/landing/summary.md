@@ -1,35 +1,29 @@
 # The twill-plan fan runs five lenses instead of eight
 
 The Plan writer's `twill-plan` fan spawned eight lens forks, each inheriting the Plan lead's large context.
-An overlap audit found `affected-set` and `forced-edits` near-duplicates, and `criteria-coverage`, `branch-coverage` and `row-reachability` overlapping heavily.
-The fan now runs five lenses, in this order:
+A lens-overlap audit found several of them redundant, so each plan paid for forks that repeated each other's findings.
+The fan now runs `coverage`, `row-validity`, `forced-edits`, `guard-reach` and `way-forward`, in that order.
+The change is in the embedded lenses template, so every hub gets it.
 
-| Lens | Replaces |
-| --- | --- |
-| `coverage` | `criteria-coverage`, `branch-coverage` |
-| `row-validity` | `row-reachability`, `test-economy`, the zero-value or nil seam check |
-| `forced-edits` | `affected-set`, the old `forced-edits` |
-| `guard-reach` | unchanged |
-| `way-forward` | unchanged |
-
-The change is in `internal/lenses/template.yaml`, so every hub that has not redefined `twill-plan` gets it.
-No language layer under `internal/lenses/sets/` defines or orders these lenses.
-`review-plan`, `twill-discussion` and every other review and fixer fan keep their lens lists.
-
-## Lens texts
-
-The three merged lenses are written from the audit's drafts, fitted to the template's style.
-Each opens with "Own", states its procedure and ends with "Your list:", as `guard-reach` and `way-forward` do.
-Because no review or fixer fan runs them, each still ends with the emphasis line, which the template test requires of every lens outside those fans.
-`forced-edits` keeps the old text's "an external `_test` package included" detail, which the draft dropped.
+- `coverage` merges `criteria-coverage` and `branch-coverage`.
+- `row-validity` merges `row-reachability`, `test-economy` and the zero-value or nil seam check that `affected-set` carried.
+- `forced-edits` is rewritten to absorb `affected-set`'s set method: callers, asserting tests, docs, skills and fixtures, and one finding per partly covered set.
+- `guard-reach` and `way-forward` are unchanged; each raised BLOCKING findings no other lens did.
 
 ## Design decisions
 
-- `criteria-coverage`, `branch-coverage`, `row-reachability` and `test-economy` leave the template, since no fan runs them any longer.
-  `affected-set` stays defined because `review-plan` runs it.
-  A hub file whose own fan names a deleted lens would get an undefined-lens refusal; this hub's `lenses.yaml` names none.
-- The template test's perch-parity check, that a writer fan runs every lens its reviewer fan judges it by, now counts `review-plan`'s `affected-set` as covered by `twill-plan`'s `forced-edits`, the lens that absorbed it.
-  The mapping names that one pair, so any other reviewer lens still has to appear in its writer fan by name.
-- The pinned-sentence check moves to the new lens names: `coverage` keeps "A branch no planned row reaches is a finding.", `forced-edits` keeps its registration sentence, and `row-validity` pins its nil-seam sentence.
-- `internal/loomengine/plan_test.go`'s lens-review row that redefines `twill-plan` through `lenses.yaml` used `test-economy`; it now uses `generic`, which no template `twill-plan` lens shares, so the row's special-case exemption is gone.
-- The measurement reports under `docs/research/` keep the old lens names, since they record past runs.
+- `criteria-coverage`, `branch-coverage`, `row-reachability` and `test-economy` are deleted from the template, since no fan runs them any longer.
+  A hub `lenses.yaml` that still names one of them as a fan member gets an undefined-lens refusal at fan resolution; a hub-only definition of such a lens is kept and reported by reconcile.
+- `affected-set` stays defined because `review-plan` still runs it.
+  `review-plan`, `twill-discussion`, the other review fans and the fixer fans are untouched, as are the language layers under `internal/lenses/sets/`.
+- The merged texts keep the sentences `config_test.go` pins: "A branch no planned row reaches is a finding.", "uses the operand the record names, not a near one" and "a registration no card lists is a finding".
+  Each opens with "Own", ends with "Your list:" and then the emphasis line, as the template requires of a lens only writer fans run.
+- The perch-parity test (a writer fan runs every lens of its reviewer fan) now accepts `forced-edits` in place of `affected-set` for `review-plan`.
+  The mapping names that one pair; any other reviewer lens must still appear in its writer fan by name.
+- The `TestPlanTable` case that redefines `twill-plan` through `lenses.yaml` used `test-economy`, which no longer exists; it uses `generic` and no longer needs an exemption in its dropped-lens check.
+- The measurement reports under `docs/research/` still use the old lens names, as they record past runs.
+
+## Tests
+
+`config_test.go` pins the new fan order, the lens and fan counts, the perch-parity mapping and the sentences above.
+`go test` was not run by hand here.
