@@ -1,0 +1,214 @@
+diff --git a/internal/gatecli/doc.go b/internal/gatecli/doc.go
+index a1d897088..099be1c9d 100644
+--- a/internal/gatecli/doc.go
++++ b/internal/gatecli/doc.go
+@@ -107,6 +107,14 @@
+ // A write failure is logged and decides nothing.
+ // A tier that discovers no tests passes with zero counted, as a package with only a `TestMain` does.
+ //
++// # Trimpath
++//
++// A hub's tiers set `-trimpath` in their GOFLAGS on purpose, as the example below does, so a fresh worktree reuses the build and test cache.
++// Under it `runtime.Caller` reports module-relative file paths, so a test that locates its repository from one fails, though a raw `go test` passes.
++// When the last GOFLAGS entry of a tier's environment, the inherited one or the tier's own, holds an enabled `-trimpath`, the verb writes a line naming the tier, that GOFLAGS value and the way forward of locating the repository from the working directory or `go.mod`.
++// The line opens the tier's log, before its first command's output, and goes to stderr just before the tier's summary line, so it sits beside a failing run's verdict.
++// A tier with an empty scope runs no command and gets no such line, and a refused tier prints only its JSON envelope.
++//
+ // # Child lifetime
+ //
+ // A tier's shell runs through `internal/proc`'s tied child, which keeps its tree killable without signalling the shell that called the verb and ends it when the verb dies, a hard kill included.
+diff --git a/internal/gatecli/run.go b/internal/gatecli/run.go
+index 2482ff7d7..ad7821e6c 100644
+--- a/internal/gatecli/run.go
++++ b/internal/gatecli/run.go
+@@ -291,7 +291,7 @@ func (e *execution) runWithSlots(run tierRun, empty bool, body func(env []string
+ 	return e.report(run, body(env), waitStart)
+ }
+ 
+-// report writes the tier's run record and log, prints its summary line to stderr and returns its exit code; a refusal is answered instead.
++// report writes the tier's run record and log, prints its `-trimpath` line, when it has one, and its summary line to stderr and returns its exit code; a refusal is answered instead, so its stdout stays one JSON envelope.
+ // A record that cannot be written is logged and decides nothing.
+ func (e *execution) report(run tierRun, result tierResult, waitStart time.Time) int {
+ 	if result.refusal != "" {
+@@ -315,6 +315,9 @@ func (e *execution) report(run tierRun, result tierResult, waitStart time.Time)
+ 	} else {
+ 		logPath = strings.TrimSuffix(path, ".json") + ".log"
+ 	}
++	if result.trimpathNote != "" {
++		printLine(e.request.stderr, result.trimpathNote)
++	}
+ 	printLine(e.request.stderr, gateslot.TierSummaryLine(record, logPath))
+ 	return record.ExitCode
+ }
+diff --git a/internal/gatecli/scopes_integration_test.go b/internal/gatecli/scopes_integration_test.go
+index 0c9f1e531..e323a59a4 100644
+--- a/internal/gatecli/scopes_integration_test.go
++++ b/internal/gatecli/scopes_integration_test.go
+@@ -168,6 +168,9 @@ func TestGateTest_Scopes(t *testing.T) {
+ 		if run, _ := runRecordOf(t, g.stdout.String(), 0); run.Discovered != 0 || run.ExitCode != 0 || !strings.Contains(g.stdout.String(), "the scope is empty, so tier0 runs no command") {
+ 			t.Errorf("tier0 run record = %+v, stdout %q; want an empty-scope pass with nothing discovered", run, g.stdout.String())
+ 		}
++		if trimpath := trimpathLine("tier0", []string{"GOFLAGS=-trimpath -p=3"}); strings.Contains(g.stdout.String(), trimpath) {
++			t.Errorf("stdout = %q; want no -trimpath line for a tier that runs no command", g.stdout.String())
++		}
+ 		requireFree(t)
+ 	})
+ 
+diff --git a/internal/gatecli/test_integration_test.go b/internal/gatecli/test_integration_test.go
+index 1b84a5d4d..3f5e964bc 100644
+--- a/internal/gatecli/test_integration_test.go
++++ b/internal/gatecli/test_integration_test.go
+@@ -479,8 +479,12 @@ func TestGateTest_Scenario(t *testing.T) {
+ 		if got, want := filepath.Dir(summaryLogPath(t, g.stdout.String(), 0)), gateslot.RunLogDir(gateslot.Dir(h.BoardDir())); got != want {
+ 			t.Errorf("run record directory = %s; want the board's %s", got, want)
+ 		}
+-		if log != "" {
+-			t.Errorf("run log = %q; want the stand-in's empty output", log)
++		trimpath := trimpathLine("tier0", []string{"GOFLAGS=-trimpath -p=3"})
++		if want := trimpath + "\n"; log != want {
++			t.Errorf("run log = %q; want the -trimpath line and the stand-in's empty output, %q", log, want)
++		}
++		if !slices.Contains(strings.Split(g.stdout.String(), "\n"), trimpath) {
++			t.Errorf("gate output = %q; want the -trimpath line %q", g.stdout.String(), trimpath)
+ 		}
+ 		requireFree(t)
+ 	})
+@@ -1181,6 +1185,10 @@ func TestGateTest_Scenario(t *testing.T) {
+ 			if got := g.tierArgs(t); !reflect.DeepEqual(got, tc.want) {
+ 				t.Errorf("tier invocations = %q; want %q", got, tc.want)
+ 			}
++			trimpath := trimpathLine("tier0", []string{"GOFLAGS=-trimpath -p=3"})
++			if count := strings.Count(g.stdout.String(), trimpath); count != 1 {
++				t.Errorf("gate output = %q; want the -trimpath line %q once, for the listed tier alone", g.stdout.String(), trimpath)
++			}
+ 			requireFree(t)
+ 		})
+ 	}
+diff --git a/internal/gatecli/tierrun.go b/internal/gatecli/tierrun.go
+index 019084e13..575784a21 100644
+--- a/internal/gatecli/tierrun.go
++++ b/internal/gatecli/tierrun.go
+@@ -30,11 +30,14 @@ type tierResult struct {
+ 	log []byte
+ 	// refusal is set instead of an outcome when the tier could not run at all: no process started, a prebuild failed or a command could not be rendered.
+ 	refusal string
++	// trimpathNote is the line saying the tier built with `-trimpath`, empty when it did not or ran no command.
++	trimpathNote string
+ }
+ 
+ // runTier runs the tier of run in ctx with its slots held: it prebuilds `lyx` when the tier asks, then runs each invocation's command through the platform shell as a tied child, stopping at the first non-zero exit.
+ // The tier's timeout_min bounds the prebuild and every invocation together, counted from the call; a tier that outlives it has its process tree killed, exits 1 and prints and logs gateslot.TierTimeoutLine.
+ // env is the environment every command gets, before the tier's own env is added.
++// When the resulting GOFLAGS carries `-trimpath`, it logs a line saying so before the first command and returns the line for the caller to print.
+ // A run with no invocation passes at once with nothing discovered.
+ func runTier(ctx context.Context, out io.Writer, run tierRun, env []string, request testRequest) tierResult {
+ 	started := time.Now()
+@@ -50,7 +53,15 @@ func runTier(ctx context.Context, out io.Writer, run tierRun, env []string, requ
+ 	tierCtx, cancel := context.WithTimeout(ctx, timeout)
+ 	defer cancel()
+ 
+-	exit, commands, refusal := runInvocations(tierCtx, run, counter, slices.Concat(env, renderTierEnv(run.tier)), request)
++	tierEnv := slices.Concat(env, renderTierEnv(run.tier))
++	trimpathNote := ""
++	if len(run.invocations) > 0 {
++		trimpathNote = trimpathLine(tierName(run.number), tierEnv)
++	}
++	if trimpathNote != "" {
++		logBuffer.WriteString(trimpathNote + "\n")
++	}
++	exit, commands, refusal := runInvocations(tierCtx, run, counter, tierEnv, request)
+ 	if refusal != "" {
+ 		return tierResult{refusal: refusal}
+ 	}
+@@ -81,7 +92,7 @@ func runTier(ctx context.Context, out io.Writer, run tierRun, env []string, requ
+ 		record.Outcome = "failed"
+ 	}
+ 	record.Discovered, record.Passed, record.Failed, record.Skipped = counts.discovered, counts.passed, counts.failed, counts.skipped
+-	return tierResult{record: record, log: logBuffer.Bytes()}
++	return tierResult{record: record, log: logBuffer.Bytes(), trimpathNote: trimpathNote}
+ }
+ 
+ // runInvocations prebuilds `lyx` when the tier asks, then runs each invocation of run in order under ctx, stopping at the first non-zero exit.
+diff --git a/internal/gatecli/tiers.go b/internal/gatecli/tiers.go
+index d0b1518d4..c4353cb3c 100644
+--- a/internal/gatecli/tiers.go
++++ b/internal/gatecli/tiers.go
+@@ -255,3 +255,33 @@ func renderTierEnv(tier gateslot.Tier) []string {
+ 	}
+ 	return entries
+ }
++
++// trimpathLine returns the line that tells a test author the tier builds with `-trimpath`, or "" when the GOFLAGS that env gives a child carries no enabled `-trimpath`.
++// A child sees the last GOFLAGS entry of env, so that entry alone decides.
++// Under `-trimpath` `runtime.Caller` reports module-relative file paths, and the line names the way forward of locating the repository from the working directory or `go.mod`.
++func trimpathLine(tier string, env []string) string {
++	goFlags := ""
++	for _, entry := range env {
++		if value, ok := strings.CutPrefix(entry, "GOFLAGS="); ok {
++			goFlags = value
++		}
++	}
++	// go keeps the last occurrence of a repeated flag, so the last trimpath field decides.
++	enabled := false
++	for _, field := range strings.Fields(goFlags) {
++		name, value, hasValue := strings.Cut(strings.TrimLeft(field, "-"), "=")
++		if name != "trimpath" {
++			continue
++		}
++		if !hasValue {
++			enabled = true
++			continue
++		}
++		parsed, err := strconv.ParseBool(value)
++		enabled = err == nil && parsed
++	}
++	if !enabled {
++		return ""
++	}
++	return fmt.Sprintf("gate test: %s builds with GOFLAGS=%q, and -trimpath makes runtime.Caller report module-relative file paths; a test locates its repository from its working directory or go.mod, never from a runtime.Caller path alone", tier, goFlags)
++}
+diff --git a/internal/gatecli/tiers_test.go b/internal/gatecli/tiers_test.go
+index 6fc7c8e24..04424bc47 100644
+--- a/internal/gatecli/tiers_test.go
++++ b/internal/gatecli/tiers_test.go
+@@ -303,6 +303,40 @@ func TestPlanTierRuns(t *testing.T) {
+ 	}
+ }
+ 
++func TestTrimpathLine(t *testing.T) {
++	t.Parallel()
++
++	tests := []struct {
++		name      string
++		env       []string
++		wantFlags string
++	}{
++		{name: "a -trimpath field fires", env: []string{"GOFLAGS=-trimpath -p=4"}, wantFlags: "-trimpath -p=4"},
++		{name: "a double-dash field fires", env: []string{"GOFLAGS=--trimpath"}, wantFlags: "--trimpath"},
++		{name: "an explicit true fires", env: []string{"GOFLAGS=-p=2 -trimpath=true"}, wantFlags: "-p=2 -trimpath=true"},
++		{name: "an explicit 1 fires", env: []string{"GOFLAGS=-trimpath=1"}, wantFlags: "-trimpath=1"},
++		{name: "an explicit false is silent", env: []string{"GOFLAGS=-trimpath=false"}},
++		{name: "a later false overrides an earlier enable", env: []string{"GOFLAGS=-trimpath -trimpath=false"}},
++		{name: "a later enable overrides an earlier false", env: []string{"GOFLAGS=-trimpath=false -trimpath"}, wantFlags: "-trimpath=false -trimpath"},
++		{name: "a GOFLAGS without it is silent", env: []string{"GOFLAGS=-p=4 -mod=readonly"}},
++		{name: "no GOFLAGS is silent", env: []string{"A=1"}},
++		{name: "the last GOFLAGS entry wins over an inherited one", env: []string{"GOFLAGS=-trimpath", "GOFLAGS=-p=4"}},
++		{name: "a tier GOFLAGS after an inherited one fires", env: []string{"GOFLAGS=-p=4", "GOFLAGS=-trimpath -p=3"}, wantFlags: "-trimpath -p=3"},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			want := ""
++			if tt.wantFlags != "" {
++				want = fmt.Sprintf("gate test: tier0 builds with GOFLAGS=%q, and -trimpath makes runtime.Caller report module-relative file paths; a test locates its repository from its working directory or go.mod, never from a runtime.Caller path alone", tt.wantFlags)
++			}
++			if got := trimpathLine("tier0", tt.env); got != want {
++				t.Errorf("trimpathLine(tier0, %q) = %q; want %q", tt.env, got, want)
++			}
++		})
++	}
++}
++
+ func TestRenderTierCommand(t *testing.T) {
+ 	t.Parallel()
+ 
