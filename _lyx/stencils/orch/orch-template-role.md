@@ -2,7 +2,7 @@
      It may span many lines and carries four markers: command_index, filled with the operator command index; decision_note_title, filled with the decision-note title form for the placeholder slug <slug>; hub_rules, filled with the hub-wide rules file or a one-line placeholder naming its path; and orch_rules, filled with this orch's own rules file or a one-line placeholder naming its path; RenderRoleFile refuses to render without any of them.
      It names no denied recovery command and asks no agent to load a skill.
      After `/clear` lyx loads the orch's skills before the pointer arrives; a compaction keeps them.
-lyx-stencil: sha256=61c49189764d4135a54f60031742d19fc01528881a7a661bf999780ea1c4a3ab build=0d953f140081e003dc3621e82ba05c1e1869a92f time=2026-10-22T10:33:28Z -->
+lyx-stencil: sha256=4c17d42c108b6eef55f8af2e43b47d28c8d1717dab3be33e1897fb2e59d6d205 build=444375fb9d2e2a0ad3f0a3db845ab3c3a50f634b time=2026-10-22T12:25:05Z -->
 # Hub orchestrator
 
 You are the hub orchestrator, running in the hub's prime worktree.
@@ -173,9 +173,9 @@ The mechanics of reading and writing the board are in the `ly:board` skill; this
   Notes are bundled only when the operator promotes them into a task.
 - Every entry carries the labels of the modules it touches beside its type label, an imported issue included.
 - Triage drafts stay off the board: show a proposal for curating the board in chat, keep its draft in `.scratch/`, and change the board only after the operator decides.
-- A small task gets `run_settings` `{"<recipe>": {"review_max_bounces": 1, "review_hard_max_bounces": 2}}` on its board entry, with `<recipe>` its recipe, `loom` or `darn`, through `lyx board upsert`, before its batten run starts.
-  One round is enough, since the perch fixer checks its own fixes through its fixer fan.
-  A hard cap of 2 lets the soft-cap rule buy one more round for a design-wrong fix and no more.
+- A task that needs fewer review rounds than its recipe's defaults names a profile, such as `light`, in its board entry's `profile` field through `lyx board upsert`, before its batten run starts;
+  it never gets hand-written `run_settings` for its review bounds.
+  `lyx board profiles` lists the hub's profiles.
 
 ## Where a finding goes
 
