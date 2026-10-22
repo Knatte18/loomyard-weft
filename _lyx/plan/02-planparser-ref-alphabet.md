@@ -1,8 +1,8 @@
 # Card 2 — planparser-ref-alphabet
 
 **Create:**
-- `plan:internal/planparser#ParseRef` -> `func ParseRef(plan *Plan, ref string) (glyph.Glyph, error)`
-- `plan:internal/planparser#TestParseRef` -> `func TestParseRef(t *testing.T)`
+- `internal/planparser#ParseRef`
+- `internal/planparser#TestParseRef`
 
 **Delete:**
 - `internal/planparser#parseGlyph`
