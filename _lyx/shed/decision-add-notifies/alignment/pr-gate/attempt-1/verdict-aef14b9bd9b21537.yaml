@@ -1,0 +1,11 @@
+verdict: approve
+reason: >-
+  The diff does what the board entry asks and nothing more.
+  decision add notifies each live LLM run of the worktree after the commit, except the tackler, the arbiter and the caller.
+  It sends nothing when no run is live, and it adds no verb, alias or queue.
+  It adds no flag, which settles the entry's open question.
+  The orch role's Fixing a run section and its board policy both drop the separate message step.
+  Both carried-over Darn-Review findings are fixed, and neither names an unrecorded parent correction.
+  The only peer overlap is text in docs/overview.md, shared with gate-tier-verbs (unknown order) and machine-handover (this run lands first).
+question: ""
+superseded: []
