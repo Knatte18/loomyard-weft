@@ -1,11 +1,11 @@
 {
-  "current_producer": "Webster",
+  "current_producer": "Webster-Bouncer",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Webster",
-    "last": "Plan-Bouncer → done",
+    "now": "Webster-Bouncer",
+    "last": "Webster → done",
     "wait": ""
   },
   "history": [
@@ -377,6 +377,33 @@
       "outcome": "done",
       "output": "/home/knatte/Code/loomyard-LYXHUB/machine-handover/_lyx/reviews/plan/round-3-bouncer-ledger.md",
       "at": "2026-10-22T08:10:30Z"
+    },
+    {
+      "producer": "Webster",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYXHUB/machine-handover/_lyx/webster/summary.md",
+      "at": "2026-10-22T10:08:14Z",
+      "gate_attempts": 1,
+      "gate_spans": [
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-10-22T09:59:49.883995867Z",
+          "end": "2026-10-22T10:01:43.910908526Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "rework",
+          "start": "2026-10-22T10:01:44.305170522Z",
+          "end": "2026-10-22T10:05:54.038255681Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-10-22T10:05:54.063121582Z",
+          "end": "2026-10-22T10:08:12.908495674Z"
+        }
+      ]
     }
   ],
   "product": {
