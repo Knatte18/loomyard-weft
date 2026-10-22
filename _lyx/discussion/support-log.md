@@ -73,7 +73,37 @@ Every one of the seven forks returned a report. Findings, merged across lenses:
 
 ## Review rounds
 
-_No rounds yet._
+### Round 1
+
+- D7's halt message now depends on the failed check, and D5 step 5 resumes an owner-halted child when its parent is adopted here (F1).
+- Adopt stops a slug with local commits left by an earlier handover, with `--keep-local` and `--drop-local` as its ways forward.
+  Removing the pair through fabric was not named, since `lyx fabric remove` also deletes the pair's branches on origin, and the reconcile's repair steps for a diverged or rewound branch push the old commits before the takeover (F2, self-check).
+- D7 no longer says it rewords the board's "let the owner land the run"; Turn 4's goal-scope line records that rewording (F14).
+- At the self-check, a run whose Finalize already merged into the local parent keeps its lock under the owner pause, and the both-fail halt names one adopt of both entries (self-check).
+- InnerRun releases its child's parent lock on an owned_elsewhere verdict or an owner pause, so the slug pause holds the run (F3, F4).
+- InnerRun reads an owner refusal of its own child spawn as an owned_elsewhere verdict, rather than skipping the check (F5).
+- The start's check moves before the seed, its claim refuses on a failed owner write, and every owner write is re-read after its push (F6, F11).
+- D8's same-machine reopen is stated as intended (F13).
+
+### Round 2
+
+- A run whose Finalize already merged into the local parent finishes its landing push on the old machine, unheld by the owner pause, and D6 bounds that to the one push; `PATTERN-owner-machine` carries the exception (F1).
+- Adopt stops an owned_elsewhere slug whose pair reads live, and `--drop-local` refuses a live pair (F2).
+- The owner refusal reads as a verdict at InnerRun's one spawn seam, for every spawn on an existing run (F3).
+- D7's run-not-owned and both-fail halts name the `--keep-local` form of adopt here (F4).
+- D3's offline resume states its bound, and Open risks names it (F5).
+- At the self-check, the carve-out lasts only while Finalize runs, its bound names the board mark and the pull request's close, and an adopter-first landing is repaired by resetting the old machine's local parent to origin, never by merging.
+  The parent's owner's adopt and the `--keep-local` forms name their own step-1 stop and the resume's code-branch stop, and the offline bound covers either push order (self-check).
+
+### Round 4
+
+- `PATTERN-owner-machine` and the Goal gate a run on no other machine owning it, so an unowned run-held entry and a hub with no prime owner act as D2 and D3 say, and an unowned entry no run holds follows its parent's owner (F1).
+- Adopt asks `LivePair` itself for every named owned_elsewhere slug with a local pair, since the reconcile asks it only for a branch it would move (F2, narrowed at the self-check).
+- After an adopter-first landing the old machine's pair is not torn down by a reconcile, so its halt note names `lyx fabric remove <slug>` and leaves the owner pause standing over the old batten, and Open risks names the replayed records commit and the left batten record (F3, self-check).
+  After an old-machine-first landing, `lyx resume <slug>` lifts the owner pause so its Land runs (self-check).
+- D6's Finalize-running exemption reads the child's status at CurrentProducer Finalize, running or failed with a transient mark awaiting its one re-step, together with `parentHoldsTaskWork` (F4, widened at the self-check).
+- D7's past-merge skip covers the in-process re-step and the unreachable-origin halt, and a re-entry through InnerRun's `Spawn` seam meets D3's refusal (F5).
+- The halt note lists the local parent commits origin lacks and names the reset only when the squash is the only one, else a rebase dropping the squash alone by its SHA, with `git rebase --abort` on a conflict (F6, self-check).
 
 ## Question ledger
 
@@ -89,3 +119,9 @@ _No rounds yet._
 - Owner field name `owner_machine` (auto-pick at the lens review; D2).
 - Legacy run-held tasks with no owner recorded at their next resume (auto-pick at the lens review; D2, D3).
 - Orch role reading of a run owned elsewhere (auto-pick; D9).
+- InnerRun's spawns on an existing run: an owner refusal read as an owned_elsewhere verdict (auto-pick at round 1, widened at round 2; D3).
+- A run past its parent-side merge when adopted elsewhere: its landing push finishes on the old machine (auto-pick at round 2; D6).
+- Local commits from an earlier handover: adopt stops the slug, `--keep-local` keeps them and `--drop-local` archives and drops them (auto-pick at round 1; D5).
+- Open-Window on a same-machine resume with no client attached: opens, by intent (auto-pick at round 1; D8).
+- The old machine's pair after an adopter-first landing: removed by the operator as its halt note names, with `finalizeEntered` unchanged and the owner pause left standing (auto-pick at round 4; D6).
+- A Finalize past its parent-side merge at an unreachable origin: proceeds as today, the skip covering that halt (auto-pick at round 4; D7).
