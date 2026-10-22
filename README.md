@@ -65,6 +65,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | --- | --- | --- | --- | --- | --- |
 | B1 |  | **Orch watcher re-sends /compact after the compact already ran** | [`orch-watcher-no-compact-resend`](design-orch-watcher-no-compact-resend.md) | 0m<br>0m | orch, creel |
 | B2 |  | **config --set of a nested profile key fails: writes the scalar as the whole profile** | [`config-set-nested-profile-key`](design-config-set-nested-profile-key.md) | 0m<br>0m | config, webster |
+| B3 |  | **webster record-batch refuses with create-not-done: quarry not_found for planned test targets** | [`quarry-external-test-targets`](design-quarry-external-test-targets.md) | 0m<br>0m | webster, quarry |
 
 ### Enhancements
 
