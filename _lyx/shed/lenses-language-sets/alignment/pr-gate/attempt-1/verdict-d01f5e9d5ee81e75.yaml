@@ -1,0 +1,10 @@
+verdict: approve
+reason: >-
+  PR 817 at 932ae4e43 delivers the board entry's goal and the operator decision.
+  It has a language-neutral base template, embedded go, csharp and python layers picked by lens_set from the base layer only, and a remove key applied in lenses.Load.
+  It keeps every recorded decision D1 to D6, the D3 refinement and both PATTERN headroom cuts; the intro-line cut is recorded in the plan's pattern-overview-headroom decision.
+  The only peer overlap is machine-handover's own module-table line in docs/overview.md, which is shared bookkeeping.
+  This run (row 21) lands first and machine-handover (row 11) takes the change at Merge-In.
+  quarry-csharp and tender-pause-holds-reprompt do not overlap, and there are no parent commits.
+question: ""
+superseded: []
