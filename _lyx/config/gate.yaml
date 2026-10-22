@@ -43,7 +43,6 @@ tiers:
         prebuilt_lyx: true
         manual: true
 gates:
-    card: [0]
     batch: [0, 1]
     round: [0, 1]
     final: [0, 1]
