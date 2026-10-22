@@ -14,6 +14,14 @@ One audit over the same records (review files in the weft archive tags, `lyx rep
 
 Run it once about ten loom runs with the current setup have landed on Neve; runs from OSL-1046 are not gathered for it.
 
+Later the same day (operator): run it now, over the loom runs landed since `504c5552` (2026-10-20), with the runs after `research-in-discussion` and `lenses-language-sets` (2026-10-22), which change Discussion, reported apart.
+
+## Review rounds after twill-plan (was note `review-rounds-after-twill-plan`)
+
+The earlier audit below found discussion-review round 3 and plan-review round 2 useful only when an earlier round's fix was too narrow.
+Since `504c5552` (2026-10-20), the Plan writer's `twill-plan` fan runs every `review-plan` lens, as the Discussion writer's fan already runs every `review-discussion` lens, which should cut round-1 findings further.
+Compare those runs' round-1 Plan findings against the earlier audit's baseline, and check whether discussion-review round 3 and plan-review round 2 still find anything; if they rarely do, lower the default review bounce caps for those segments.
+
 ## Review setup
 
 ### Seen (2026-10-18)
