@@ -1,6 +1,6 @@
 # lyx loom decision add notifies the run live LLM producer of the new decision
 
-`decision-add-notifies` · Task · enhancement, loom, creel · running · Darn-Burler-Review
+`decision-add-notifies` · Task · enhancement, loom, creel · running · Darn-Burler-Fix
 
 ## Seen
 
