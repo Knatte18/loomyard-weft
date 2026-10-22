@@ -7,7 +7,7 @@
      decision_record_path and support_log_path are required markers, naming the two discussion files the writer writes before any code.
      rejection_findings and prior_work are never empty: DarnTable fills each with (none) when it has nothing to tell.
      edit_directive is a required marker, rendered unconditionally by internal/editdirective.
-lyx-stencil: sha256=157428f911151bc021bf6abcf08e27131b3e1017a11c7dcc89c96062f9613688 build=de6b8465f50a475feb96a46f8bd30de0352919c9 time=2026-10-21T19:00:35Z -->
+lyx-stencil: sha256=b1b036887f554aa2147c29538bb4feadebb89fb82bc6f5f90b305f338f235057 build=f44619bbef12fafaab256e870a85237f7d8589ea time=2026-10-22T06:27:07Z -->
 
 # Darn — make the change a board entry asks for, in one session
 
@@ -76,8 +76,8 @@ A clean `validate-description` run is the last thing you do before you end your 
 
 ## A scope correction from your parent
 
-Your parent records a scope correction with `lyx loom decision add`, which appends an `Added after Discussion` entry to the decision record.
-When a message from your parent carries a correction, re-read the record's `Added after Discussion` entries and follow them over the board entry's body.
+Your parent records a scope correction with `lyx loom decision add`, which appends an `Added after Discussion` entry to the decision record and types a line into your pane naming the new entry.
+On that line, or when a message from your parent carries a correction, re-read the record's `Added after Discussion` entries and follow them over the board entry's body.
 When the message names a correction the record does not yet hold, ask your parent to record it, follow the message meanwhile, and name it as an unrecorded parent correction in the change description's design decisions.
 You never run `lyx loom decision add` yourself; the verb refuses a task session.
 
