@@ -19,7 +19,7 @@
 - `plan:internal/orchcli#TestWithdraw` -> `func TestWithdraw(t *testing.T)`
 
 **Uses:**
-- `plan:internal/orchengine#WithdrawCycleRequest`
+- `internal/orchengine#WithdrawCycleRequest`
 - `internal/orchengine#CycleRequested`
 - `internal/orchengine#RequestCycle`
 - `internal/orchengine#State`

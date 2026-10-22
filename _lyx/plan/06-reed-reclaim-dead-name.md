@@ -5,8 +5,8 @@
 - `internal/reedengine/doc.go`
 
 **Create:**
-- `plan:internal/reedengine#Engine.reclaimDeadNameLocked` -> `func (e *Engine) reclaimDeadNameLocked(st *ReedState, spec AddSpec, explicitName string) error`
-- `plan:internal/reedengine#TestAddStrand_ReclaimsADeadHoldersName` -> `func TestAddStrand_ReclaimsADeadHoldersName(t *testing.T)`
+- `internal/reedengine#Engine.reclaimDeadNameLocked`
+- `internal/reedengine#TestAddStrand_ReclaimsADeadHoldersName`
 
 **Uses:**
 - `internal/reedengine#Engine.strandNameLocked`
