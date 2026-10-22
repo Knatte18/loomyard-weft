@@ -42,3 +42,8 @@ Write the orch note only when a message asks for it at a context cycle; never up
 After a machine restart, the strands from before it stay in `lyx reed list` as dead and hold their names, so a resumed row can fail on a name clash.
 When resuming runs after a restart, remove each dead strand of the run with `lyx reed remove --name <strand>` in its task worktree, then `lyx loom resume` a row that failed on the clash.
 Remove this section once #799 is fixed.
+
+## Loom only for bundles
+
+Never propose one note alone as a loom task: a loom run has a fixed cost of about half its spend whatever its size (`docs/research/token-audit-2026-10-22`).
+Fold related notes into one loom task, or propose darn for a small change, and let the operator name darn (operator, 2026-10-22).
