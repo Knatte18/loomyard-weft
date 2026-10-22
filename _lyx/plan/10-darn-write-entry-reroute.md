@@ -1,10 +1,10 @@
 # Card 10 — darn-write-entry-reroute
 
 **Create:**
-- `plan:internal/loomshed#darnWrite.rerouteReason` -> `func (p *darnWrite) rerouteReason(recordPath string, record verifytree.PublishFailure) string`
-- `plan:internal/loomcli#mergeableTips` -> `func mergeableTips(tips fabricengine.ParentTips, pushSkipped bool) []string`
-- `plan:internal/loomcli#parentTipsReader` -> `func parentTipsReader(l *lyxcwd.Location, parentBranch string) func(fetch bool) (fabricengine.ParentTips, error)`
-- `plan:internal/loomcli#TestMergeableTips` -> `func TestMergeableTips(t *testing.T)`
+- `internal/loomshed#darnWrite.rerouteReason`
+- `internal/loomcli#mergeableTips`
+- `internal/loomcli#parentTipsReader`
+- `internal/loomcli#TestMergeableTips`
 
 **Edit:**
 - `internal/loomshed#DarnDeps`
