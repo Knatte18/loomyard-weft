@@ -729,7 +729,7 @@
       }
     }
   ],
-  "currentBatch": 0,
+  "currentBatch": 14,
   "masterStrand": "1208d44a87b5fd00e2a3266cbfc6e59c",
   "masterSessionId": "dc62cdb4-a622-4a99-88db-9438f18c990d",
   "masterEngine": "claude",
@@ -820,6 +820,24 @@
       "bracketTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-machine-handover/dc62cdb4-a622-4a99-88db-9438f18c990d/subagents/agent-a0f964a1a60f9b453.jsonl"
       ]
+    },
+    "14": {
+      "slug": "batten-innerrun-wiring",
+      "cards": [
+        "14-batten-innerrun-wiring",
+        "15-fabric-local-only-commits"
+      ],
+      "cardHashes": {
+        "14-batten-innerrun-wiring": "9e3b3e3d5897b7be30ca9682a4df403521a5609630e66b4d0d62820269a6ecd8",
+        "15-fabric-local-only-commits": "086f328bf4e30f40a0f4d8e87213305a9913c42d5e8dc2d5e0c7f5f59b1b6bd5"
+      },
+      "startSha": "8172c192816df1c08064e290061e6f96fb00fd9e",
+      "kind": "fork",
+      "spawnedAt": "2026-10-22T09:13:05Z",
+      "sessionId": "dc62cdb4-a622-4a99-88db-9438f18c990d",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
     },
     "4": {
       "slug": "board-owner-writes",
