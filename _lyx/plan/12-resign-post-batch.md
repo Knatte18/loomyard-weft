@@ -1,9 +1,9 @@
 # Card 12 — resign-post-batch
 
 **Create:**
-- `plan:internal/planglyph#RebindResigns` -> `func RebindResigns(plan *planparser.Plan, cards []planparser.Card, worktreeRoot string) ([]Finding, error)`
-- `plan:internal/planglyph#index.RebindResigns` -> `func (index) RebindResigns(plan *planparser.Plan, cards []planparser.Card, worktreeRoot string) ([]Finding, error)`
-- `plan:internal/planglyph#TestRebindResigns` -> `func TestRebindResigns(t *testing.T)`
+- `internal/planglyph#RebindResigns`
+- `internal/planglyph#index.RebindResigns`
+- `internal/planglyph#TestRebindResigns`
 
 **Edit:**
 - `internal/planindex#Index`
@@ -12,8 +12,8 @@
 - `internal/websterengine_test#TestRecoverBatch_TerminalRunsTheSamePostBatchChecksAsRecordBatch`
 
 **Uses:**
-- `plan:internal/planglyph#nameDeclarations`
-- `plan:internal/planglyph#nameResigns`
+- `internal/planglyph#nameDeclarations`
+- `internal/planglyph#nameResigns`
 - `internal/planglyph#copyGlyphChainFixture`
 - `internal/planglyph#writeLanguagePlan`
 - `internal/planglyph#resignCard`

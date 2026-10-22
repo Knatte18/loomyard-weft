@@ -1,10 +1,10 @@
 # Card 11 — csharp-resign-arrows
 
 **Create:**
-- `plan:internal/planglyph#nameDeclarations` -> `func nameDeclarations(decls []quarry.Declaration) ([]quarry.NameResult, error)`
-- `plan:internal/planglyph#resignName` -> `type resignName struct`
-- `plan:internal/planglyph#nameResigns` -> `func nameResigns(plan *planparser.Plan) ([]resignName, []Finding, error)`
-- `plan:internal/planglyph#resignCollisionFindings` -> `func resignCollisionFindings(plan *planparser.Plan, names []resignName, answers map[string]quarry.ResolveResult) []Finding`
+- `internal/planglyph#nameDeclarations`
+- `internal/planglyph#resignName`
+- `internal/planglyph#nameResigns`
+- `internal/planglyph#resignCollisionFindings`
 
 **Edit:**
 - `internal/planglyph#CanonicalizeHandles`

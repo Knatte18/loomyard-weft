@@ -1,8 +1,8 @@
 # Card 10 — csharp-rename-derivation
 
 **Create:**
-- `plan:internal/planglyph#renameCSharpDecl` -> `func renameCSharpDecl(sym quarry.Symbol, identifier string) (string, bool)`
-- `plan:internal/planglyph#TestRenameCSharpDecl` -> `func TestRenameCSharpDecl(t *testing.T)`
+- `internal/planglyph#renameCSharpDecl`
+- `internal/planglyph#TestRenameCSharpDecl`
 
 **Edit:**
 - `internal/planglyph#renameDeclSource`

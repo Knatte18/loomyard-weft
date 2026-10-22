@@ -1,6 +1,6 @@
 {
   "runGuid": "442022161c583f9313adac940bc55386",
-  "planFingerprint": "46122c0a5dddb555060cc325eccbd52c5e224e17e80e624fd816432a4eab2b21",
+  "planFingerprint": "11c311499f5561232a8c56f7ec3bd85c74b032f7e95750d8d48be058708db9e5",
   "planFileHashes": {
     "00-overview.md": "555425836f1797f753d5511349280a6ad86fc6e48452b5764d4ed666a2cf294b",
     "01-quarry-v040.md": "88af358359ee1dbc516ef834ee872a2122f82072416875e0854832150d8c9484",
@@ -12,9 +12,9 @@
     "07-rename-namespace-pair.md": "45113bfeafe7fdf961329e5a03daa3d13b9ca456effa0ff59e622bb7b2acd48d",
     "08-multi-alphabet-answers.md": "6114afb0c979a68a0bbd8c48688174b66803111f1472f397841f9d9565895923",
     "09-csharp-create-handles.md": "c86a312d1bed4982820c5d86a8b13a62a7aaad130942f1460f2c450fa6e34f14",
-    "10-csharp-rename-derivation.md": "6c00cb34f46c1de604726a37bdbdfadabbfdf948fbf7c355ae0c38d01f12cfce",
-    "11-csharp-resign-arrows.md": "0e16c1c7db6ea003cbc9d6518bb21d68963564757a8ce415ff9a9123575d27b2",
-    "12-resign-post-batch.md": "c8d6045734c64034cbcb22825d6c5ea36a5529ce764b88b780f839fb123af083",
+    "10-csharp-rename-derivation.md": "5fe5f068ae2c02a75dfba5b09f25ba5f5fa93a6381592c8affe968b9ac532f5b",
+    "11-csharp-resign-arrows.md": "37d5311468a98695877421c1054dcb908cb25f677ca7d35cc8783e1975f860d6",
+    "12-resign-post-batch.md": "6fc1f98acb55bd515b0790d4c6934cba481627f371d83e12b0af35babd4732d1",
     "13-batcher-resign-boundary.md": "405e0e808eff6325eaaa0be95e86ff1b1c41c17719fd333c02a50f495593a101",
     "14-package-docs-pattern.md": "d7f252b99610e212ccea6a1961172754781b599ea593d07d41e1823159c86dd3",
     "15-contracts-csharp.md": "634892cd76bf55e6098831e06692b925d8fce735c8118d6b28824fa5a8c1157f"
@@ -357,7 +357,7 @@
       }
     }
   ],
-  "currentBatch": 10,
+  "currentBatch": 0,
   "masterStrand": "2642482185a5730eac4c6d480d816de3",
   "masterSessionId": "39d466a9-b4ba-4030-9c38-3fc3d6d86e86",
   "masterEngine": "claude",
@@ -403,9 +403,9 @@
         "13-batcher-resign-boundary"
       ],
       "cardHashes": {
-        "10-csharp-rename-derivation": "6c00cb34f46c1de604726a37bdbdfadabbfdf948fbf7c355ae0c38d01f12cfce",
-        "11-csharp-resign-arrows": "0e16c1c7db6ea003cbc9d6518bb21d68963564757a8ce415ff9a9123575d27b2",
-        "12-resign-post-batch": "c8d6045734c64034cbcb22825d6c5ea36a5529ce764b88b780f839fb123af083",
+        "10-csharp-rename-derivation": "5fe5f068ae2c02a75dfba5b09f25ba5f5fa93a6381592c8affe968b9ac532f5b",
+        "11-csharp-resign-arrows": "37d5311468a98695877421c1054dcb908cb25f677ca7d35cc8783e1975f860d6",
+        "12-resign-post-batch": "6fc1f98acb55bd515b0790d4c6934cba481627f371d83e12b0af35babd4732d1",
         "13-batcher-resign-boundary": "405e0e808eff6325eaaa0be95e86ff1b1c41c17719fd333c02a50f495593a101"
       },
       "startSha": "d7fdbb19c39797df4baef4040201942d5c1c3f0f",
@@ -413,8 +413,32 @@
       "spawnedAt": "2026-10-22T08:10:36Z",
       "sessionId": "39d466a9-b4ba-4030-9c38-3fc3d6d86e86",
       "engine": "claude",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "10-csharp-rename-derivation",
+        "status": "done",
+        "head_sha": "17075ded79e93c25f60c3881fae49275b29ff60c",
+        "deviations": [
+          "internal/batcher/boundary.go",
+          "internal/planglyph/csharphead.go",
+          "internal/planglyph/handle.go",
+          "internal/planglyph/resign.go",
+          "internal/planglyph/status_enforcement_test.go",
+          "internal/planindex/planindex.go",
+          "internal/websterengine/beginbatch_test.go",
+          "internal/websterengine/recordbatch.go"
+        ]
+      },
+      "cardShas": [
+        "17075ded79e93c25f60c3881fae49275b29ff60c"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-quarry-csharp/39d466a9-b4ba-4030-9c38-3fc3d6d86e86/subagents/agent-a694afcfcd6bc5bb3.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-quarry-csharp/39d466a9-b4ba-4030-9c38-3fc3d6d86e86/subagents/agent-a694afcfcd6bc5bb3.jsonl"
+      ]
     },
     "3": {
       "slug": "planglyph-ref-alphabet",
@@ -503,6 +527,7 @@
   "seenForkTranscripts": [
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-quarry-csharp/39d466a9-b4ba-4030-9c38-3fc3d6d86e86/subagents/agent-aef28a54195b6b574.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-quarry-csharp/39d466a9-b4ba-4030-9c38-3fc3d6d86e86/subagents/agent-a207da6c36a038b98.jsonl",
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-quarry-csharp/39d466a9-b4ba-4030-9c38-3fc3d6d86e86/subagents/agent-a95f053bb2a4a5549.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-quarry-csharp/39d466a9-b4ba-4030-9c38-3fc3d6d86e86/subagents/agent-a95f053bb2a4a5549.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-quarry-csharp/39d466a9-b4ba-4030-9c38-3fc3d6d86e86/subagents/agent-a694afcfcd6bc5bb3.jsonl"
   ]
 }
