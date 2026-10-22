@@ -1,6 +1,6 @@
 # Board entries get short handles (T4, B2, E7) for lookup; tasks lose priority; tighter README tables
 
-`board-entry-handles` · Task · enhancement, board · running · Worktree-Create
+`board-entry-handles` · Task · enhancement, board · running · Darn-Write
 
 ## Seen (operator, 2026-10-22)
 
