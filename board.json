@@ -1134,6 +1134,44 @@
       "body": "## Idea (operator, 2026-10-22)\n\nA loom profile that keeps Discussion, Plan and Webster, so the task is scoped, bounded and planned as in loom, but reviews only the end product: no Discussion, Plan or Webster review perch, only the review before landing.\nMore thorough and structured than darn, much cheaper than full loom.\n\n## Evidence\n\n`docs/research/token-audit-2026-10-22`: review loops are about a third of task spend, and Discussion and Plan review about $8 of a loom run's roughly $23 fixed cost.\n\n## Open\n\n- Whether profile settings alone can turn the perches off (bounce caps of 0), or whether that needs the row entry gate task `gate-runs-once` builds, instead of a recipe rewrite like darn's.\n- Which review the end product gets: Merge review, or a Webster round over the whole diff.\n",
       "created": "2026-10-22T16:08:23Z",
       "revised": "2026-10-22T16:08:23Z"
+    },
+    {
+      "id": 763,
+      "handle": "E15",
+      "slug": "plan-writer-context",
+      "title": "Plan writer context grows to 300k and every lens fork inherits it",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "loom",
+        "stencil"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "Fork lenses earlier or give the writer a code digest; the Plan writer is 18% of spend",
+      "body": "## Seen\n\n`docs/research/token-audit-2026-10-22`: the Plan writer is the costliest session type, about $8 per run, $1,306 with its forks over two weeks (18% of all spend).\nIt averages 81 turns at a mean context of 223k, holds 153k by its first fork and peaks around 308k, mostly from about 71 raw `sed -n`/`grep` code reads.\nEvery `twill-plan` lens fork inherits that context, about 287k per turn; since 2026-10-20 the writer and its forks cost about $18 per run.\n\n## Idea (orch, not decided)\n\nFork the lenses earlier, before the code reads pile up, or hand the writer a digest of the code it needs instead of raw reads.\nCutting a quarter of the writer's and its forks' cost saves about 4.5% of all spend; quality must be benched first.\n",
+      "created": "2026-10-22T16:08:23Z",
+      "revised": "2026-10-22T16:08:23Z"
+    },
+    {
+      "id": 764,
+      "handle": "E20",
+      "slug": "fixers-on-sonnet",
+      "title": "Fixers and other checked roles on Sonnet",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "burler",
+        "claude"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "Plan, Discussion and Webster fixers, darn writer and alignment on Sonnet save about 4% of spend",
+      "body": "## Seen\n\n`docs/research/token-audit-2026-10-22`: Opus and Sonnet read cache at the same price, so a swap saves about half a role's non-cache-read cost.\nRoles whose output a later step checks: Plan and Discussion fixers about $162 over two weeks, darn writer $45, alignment $40, Webster fixer $37; together about 4% of spend.\n\n## Idea (orch, not decided)\n\nRun the fixers on Sonnet first, since the judge and the next round re-check them.\nA3 (`review-setup-audit`) notes a sloppy fixer causes many late-round defects, and `docs/research/model-downgrade-results.md` holds earlier downgrade results; bench before switching.\n",
+      "created": "2026-10-22T16:08:23Z",
+      "revised": "2026-10-22T16:08:23Z"
     }
   ],
   "prime_owner": "neve"
