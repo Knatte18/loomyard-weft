@@ -17,10 +17,10 @@
 - `contracts/specs/refusal-spec.md`
 
 **Uses:**
-- `plan:internal/fabricengine#Fabric.MidMerge`
-- `plan:internal/fabricengine#MergeGuardError.AlreadyInProgress`
-- `plan:internal/fabricengine#MergeGuardError.NotSynced`
-- `plan:internal/fabricengine#MergeGuardError.DetachedHead`
+- `internal/fabricengine#Fabric.MidMerge`
+- `internal/fabricengine#MergeGuardError.AlreadyInProgress`
+- `internal/fabricengine#MergeGuardError.NotSynced`
+- `internal/fabricengine#MergeGuardError.DetachedHead`
 - `internal/fabricengine#MergeGuardError.WorktreeDirty`
 - `internal/landingshed#Finalize.stuckOrCancelled`
 - `internal/landingshed_test#newFinalizeAt`

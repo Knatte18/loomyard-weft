@@ -1,13 +1,13 @@
 {
   "runGuid": "15b982c1c678143467804c3f41d06bf1",
-  "planFingerprint": "21996c9f9af433e5a76f5fb736a194ee177520fab0f628a65131bd01b4327d40",
+  "planFingerprint": "8718a8979adc373106c7ca79d1748d5e0641269357f260db7cc0c55ab92fb907",
   "planFileHashes": {
     "00-overview.md": "e58c557b54b0ce1f195321a09d37740ec28623bcb97c3cedad335ee2a5204997",
-    "01-guard-error-carries-dirt.md": "53a7f5b937a11f56a75bd9fd2d527387804006f4e5b4c8573d6936b19740a9be",
-    "02-parent-reads.md": "e8676b70372ce24b46199fe1f8c929afe739c5a2d406a2cc0ad6924f564ef469",
-    "03-finalize-dirty-reason.md": "34808ce66fc1172e32aa0f4535d99141d3b06a638c18b517bd036a044ec2ec41",
+    "01-guard-error-carries-dirt.md": "8fe4c89a1fe92d8bfee2182b1388e641b42459a0cf67911f0c8921fc76578bff",
+    "02-parent-reads.md": "9d6d86f40f805502d0158746905aefa9c6273aec59018476dc964f22c4da8b43",
+    "03-finalize-dirty-reason.md": "0fb820d6e3c35647f2968229f1fe98514216fd66ed9ace1d2670de908a5f374e",
     "04-halt-note-drops-parent-status.md": "e6d5493646b95f3830cc145d0e5db1b570877f494a2dcaf1d9e457e47b49ae13",
-    "05-finalize-goto-guard.md": "a5adb033634b7290c6013c13e0f7a5337f67665a986d6b7bf652702f9c2a6eaf",
+    "05-finalize-goto-guard.md": "b4db96d3bc94a6718b38610bb442fd52c68239de07c34b85c4a3fb6ba7ca4e63",
     "06-driver-start-check.md": "2745e6ddfc4b7096dde1b1a0d467f68d70ccf50543cfc1ec953ba61bce92521d"
   },
   "planOverviewFrameHash": "9810965fcb8729a881421d99661c3994a401a420143562bb6a3cc519ebb9f15d",
@@ -174,7 +174,7 @@
       }
     }
   ],
-  "currentBatch": 1,
+  "currentBatch": 0,
   "masterStrand": "0466f49c0c2c78c49dff14cdde5967bf",
   "masterSessionId": "79ea0c97-eb15-42be-8939-f17d471323b8",
   "masterEngine": "claude",
@@ -186,16 +186,36 @@
         "02-parent-reads"
       ],
       "cardHashes": {
-        "01-guard-error-carries-dirt": "53a7f5b937a11f56a75bd9fd2d527387804006f4e5b4c8573d6936b19740a9be",
-        "02-parent-reads": "e8676b70372ce24b46199fe1f8c929afe739c5a2d406a2cc0ad6924f564ef469"
+        "01-guard-error-carries-dirt": "8fe4c89a1fe92d8bfee2182b1388e641b42459a0cf67911f0c8921fc76578bff",
+        "02-parent-reads": "9d6d86f40f805502d0158746905aefa9c6273aec59018476dc964f22c4da8b43"
       },
       "startSha": "0d953f140081e003dc3621e82ba05c1e1869a92f",
       "kind": "fork",
       "spawnedAt": "2026-10-22T11:31:45Z",
       "sessionId": "79ea0c97-eb15-42be-8939-f17d471323b8",
       "engine": "claude",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "01-guard-error-carries-dirt",
+        "status": "done",
+        "head_sha": "c17793ca734a7785352b056bc1d5132cbf153b90",
+        "deviations": [
+          "internal/fabricengine/mergelock_integration_test.go"
+        ]
+      },
+      "cardShas": [
+        "c17793ca734a7785352b056bc1d5132cbf153b90"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-finalize-dirty-names-paths/79ea0c97-eb15-42be-8939-f17d471323b8/subagents/agent-ad13c0db4450928a4.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-finalize-dirty-names-paths/79ea0c97-eb15-42be-8939-f17d471323b8/subagents/agent-ad13c0db4450928a4.jsonl"
+      ]
     }
-  }
+  },
+  "seenForkTranscripts": [
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-finalize-dirty-names-paths/79ea0c97-eb15-42be-8939-f17d471323b8/subagents/agent-ad13c0db4450928a4.jsonl"
+  ]
 }

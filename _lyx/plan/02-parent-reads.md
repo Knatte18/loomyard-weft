@@ -1,8 +1,8 @@
 # Card 2 — parent-reads
 
 **Create:**
-- `plan:internal/fabricengine#Fabric.CodeDirtyPaths` -> `func (f *Fabric) CodeDirtyPaths() (checkout string, paths []string, err error)`
-- `plan:internal/fabricengine#Fabric.MidMerge` -> `func (f *Fabric) MidMerge() (MidMergeState, error)`
+- `internal/fabricengine#Fabric.CodeDirtyPaths`
+- `internal/fabricengine#Fabric.MidMerge`
 
 **Edit:**
 - `internal/fabricengine_test#TestStatus_MergesUncommittedChangesBothSides_ExcludesWeftArtifacts`
@@ -10,7 +10,7 @@
 - `internal/fabricengine/doc.go`
 
 **Uses:**
-- `plan:internal/fabricengine#codeDirtyPaths`
+- `internal/fabricengine#codeDirtyPaths`
 - `internal/fabricengine#MidMerge`
 - `internal/fabricengine#Fabric.DirtyPaths`
 
