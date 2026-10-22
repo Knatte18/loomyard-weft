@@ -16,7 +16,6 @@ Held by a run; its scope is locked until the run ends.
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T1 | **Every process a run spawns has one owner that ends them all**<br>• Owner records for run processes; pause, reed down, fabric remove and teardown end the whole group; tender status shows orphans; a hub pause reaches background work; a finished reviewer never waits on its background shells | [`run-process-ownership`](design-run-process-ownership.md) | loom | Webster | neve | 7d<br>7h | batten, burler, fabric, loom, shed, shuttle, webster |
-| T2 | **The Plan writer's twill-plan fan runs 5 lenses instead of 8**<br>• Merge overlapping twill-plan lenses into coverage, row-validity and forced-edits, keeping guard-reach and way-forward<br>• `profile: light` | [`twill-plan-five-lenses`](design-twill-plan-five-lenses.md) | darn | Finalize | neve | 13m<br>13m | burler, loom |
 
 ### Ready
 
@@ -118,3 +117,11 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | F17 |  | **Ideas to borrow from comparable agent orchestrators (survey, Oct 2026)** | [`orchestrator-survey-ideas`](design-orchestrator-survey-ideas.md) | 6d<br>5d | burler, shed, orch, quarry, report |
 | F18 |  | **[.NET 004] Asynchronous test tiers in shed: the numerical baseline captured before implementation, compared at the final gate**<br>• Support a hub regression tier that writes profiles on the parent before implementation and compares after, switchable per task for expected drift. | [`regression-baseline-verify`](design-regression-baseline-verify.md) | 5d<br>1d | shed, webster, batten, config, dotnet |
 | F19 | H | **[WS 004] Board projects and pairs created from a parent pair**<br>• A task names its project; a project groups tasks in order and may have its own worktree; fabric and batten create a project task pair from that branch, batten verbs run from any worktree | [`pair-from-parent`](design-pair-from-parent.md) | 3d<br>3d | fabric, batten, board, workspaces |
+
+## Done
+
+Finished, awaiting `lyx board prune --apply`.
+
+| # | Entry | Slug | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- |
+| T2 | **The Plan writer's twill-plan fan runs 5 lenses instead of 8**<br>• Merge overlapping twill-plan lenses into coverage, row-validity and forced-edits, keeping guard-reach and way-forward<br>• `profile: light` | [`twill-plan-five-lenses`](design-twill-plan-five-lenses.md) | 13m<br>13m | burler, loom |
