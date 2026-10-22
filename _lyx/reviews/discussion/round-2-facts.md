@@ -1,0 +1,29 @@
+# Round 2 facts
+
+| Round | Findings | BLOCKING | MEDIUM | LOW | NIT | Highest | design | scope | decision | consistency | Gating |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 1 | 16 | 5 | 4 | 6 | 1 | BLOCKING | 7 | 0 | 2 | 7 | 7 |
+| 2 | 4 | 2 | 2 | 0 | 0 | BLOCKING | 2 | 0 | 0 | 2 | 2 |
+
+## Recurring keys (ledger rounds each key was open in)
+
+No ledger key recurs across rounds.
+
+## Keys open in an earlier round (ledger rounds each key was open in)
+
+- `d10-sixty-minute-evidence`: rounds 1
+- `d11-open-risk-shell-end`: rounds 1
+- `d5-gate-wait-unreadable`: rounds 1
+- `d7-misses-batten-owner-probe`: rounds 1
+- `d8-deleted-cwd-reaps-live-pair`: rounds 1
+- `d9-duplicates-reed-reap`: rounds 1
+- `driver-lock-recheck-callers`: rounds 1
+- `end-before-loop-kills-merge-step`: rounds 1
+- `lift-fact-names-wrong-function`: rounds 1
+- `pattern-text-vs-d5-skip-readings`: rounds 1
+- `reap-signal-unstated`: rounds 1
+- `reed-down-readings-undefined`: rounds 1
+- `remote-git-children-escape-end`: rounds 1
+- `stale-running-batten-record`: rounds 1
+- `support-log-stale-d-numbers`: rounds 1
+- `windows-remove-paused-refuses`: rounds 1
