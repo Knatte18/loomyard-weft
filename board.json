@@ -1033,28 +1033,6 @@
       "profile": "light"
     },
     {
-      "id": 720,
-      "slug": "lenses-language-sets",
-      "title": "[.NET 007] Language-specific lens sets seeded per hub",
-      "kind": "task",
-      "labels": [
-        "enhancement",
-        "burler",
-        "config",
-        "dotnet"
-      ],
-      "issues": [],
-      "recipe": "loom",
-      "depends_on": [],
-      "isolated": false,
-      "brief": "Every hub seeds lenses.yaml from one Go-repo template; seed by the hub language instead",
-      "body": "## Seen (orch, 2026-10-20)\n\nEach hub has its own `lenses.yaml`, seeded from the one embedded template in `internal/lenses`, and a hub can add its own lenses and fans.\nSo a new C# hub such as NORCE Models starts with the same lenses as this Go repository.\n`pattern-fit` and `code-pattern-fit` assume a `PATTERN.md`, and no lens speaks to C# or to numerical simulation code.\n\n## Seen (operator, 2026-10-20)\n\nNORCE Models states much of its internal logic in its `CLAUDE.md`, which may later move into PATTERN material.\nA lens that checks a hub's own rules has to read them where the hub keeps them.\n\n## Idea\n\nShip language-specific lens sets beside the shared template, and let the hub pick the set that seeds its `lenses.yaml`; the `language` module names no language today, so the pick needs a key of its own.\nFor C#, for example: nullable and `IDisposable` handling, numerical stability and units.\n\n## Seen (orch, 2026-10-22)\n\n`lenses.yaml` is sparse: a hub's file already adds lenses and fans and overrides a template lens by name.\nA template lens cannot be removed: a deleted one resolves to the template's value at the next load, so today it can only be dropped from the fans that name it.\n\n## Operator decision (2026-10-22)\n\n- A shared base, the lenses that are the same for every language, plus a predefined language layer per language (C#, Go, Python and so on) that replaces the few lenses that speak to the language itself.\n- Each repository can still add its own lenses, and remove lenses it does not want.\n\n## Orch recommendation, not a decision\n\n- The layers ship as data beside the base template, such as one small file per language, so lyx carries no language logic in code.\n- The hub picks its layer with one key in its `lenses.yaml`, such as `set: csharp`.\n- Removal is a list in the hub's `lenses.yaml`, such as `remove: [\u003clens\u003e]`.\n- Candidates for the language layer: `pattern-fit` and `code-pattern-fit` (reading the repository's rules document wherever the hub keeps it, not `PATTERN.md` by name), `error-handling`, `concurrency`, `test-gaps`, and for C# a new lens on numerical stability and units.\n",
-      "status": "done",
-      "created": "2026-10-20T19:05:12Z",
-      "revised": "2026-10-22T06:47:24Z",
-      "profile": "light"
-    },
-    {
       "id": 721,
       "slug": "finalize-dirty-names-paths",
       "title": "Finalize blocks on 'worktree dirty' without naming the tree or paths, and the loom's own run record counts as dirty",
