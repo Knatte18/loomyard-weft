@@ -1351,6 +1351,27 @@
       "body": "Imported from [issue #833](https://github.com/Knatte18/loomyard/issues/833).\n\nSeen (2026-10-22): `lyx config batcher --layer default --set profiles.cautious.budget=300000` is refused with \"cannot unmarshal !!str `300000` into batcher.profile\", though the refusal's own known-key list names `profiles.cautious.budget`. Same for 200000 once the hub layer holds a `profiles.cautious` map.\n\nWorkaround: set the whole profile as a flow map, `--set 'profiles.cautious={batchifier: cost, ..., budget: 300000, weights: {...}}'`, which pins every key of the profile in the hub layer.\n\nExpected: a key the verb lists as known sets that one leaf, leaving the profile's other keys to the lower layers. There is also no verb to remove a key from a layer, so a pinned profile stays until the interactive editor removes it.",
       "created": "2026-10-22T14:01:42Z",
       "revised": "2026-10-22T14:01:42Z"
+    },
+    {
+      "id": 761,
+      "handle": "B3",
+      "slug": "quarry-external-test-targets",
+      "title": "webster record-batch refuses with create-not-done: quarry not_found for planned test targets",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "webster",
+        "quarry"
+      ],
+      "issues": [
+        823
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Imported from [issue #823](https://github.com/Knatte18/loomyard/issues/823).\n\nWhat happened:\n`lyx webster record-batch` refused twice in one task, for batches `01` and `09`.\nBoth refusals are `create-not-done[blocking]` findings of the same form: `Create target \"plan:\u003cpkg\u003e#\u003cTestName\u003e\" still does not resolve ... quarry answered not_found (the unit exists and the member is missing)`.\nBatch `01` listed four unresolved targets across two cards (three in one package, one in another).\nBatch `09` listed one target, whose package path ends in `_test` (`internal/loomcli_test#...`), the form of an external test package.\nEach refusal archived a report under `_lyx/webster/reports/` and pointed at `lyx webster recover-batch \u003cn\u003e`.\n\nWhy it is abnormal:\nThe refusal cannot distinguish a card that never wrote the test from a quarry lookup that fails to find a test that exists.\nThe `_test`-suffixed package lookup in batch `09` is a candidate for the second case: the lookup may resolve the directory unit but not members of an external test package.\nTwo batches failing the same check in one task suggests a systematic cause, not two independent card failures.\nThe refusal text says \"the unit exists and the member is missing\" without naming which file or package quarry searched, so the operator cannot tell which case applies.\n\nWhat to do:\n- Check whether quarry resolves `plan:` targets in `_test` external test packages and in test files newly created in the same batch.\n- If the lookup is correct, make the `create-not-done` message name the files quarry searched so a genuinely missing test is told apart from a lookup miss.\n\nProvenance: task `machine-handover`; notes `webster-refusal-record-batch.md`, `webster-refusal-record-batch-2.md`.\n",
+      "created": "2026-10-22T14:01:48Z",
+      "revised": "2026-10-22T14:01:48Z"
     }
   ],
   "prime_owner": "neve"
