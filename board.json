@@ -1200,6 +1200,25 @@
       "body": "## Seen\n\nWhether batten opens a desktop terminal window on a task worktree is decided by `batten.yaml`'s `open_window`, read from the template and the board default layer only, and `lyx batten run --window` forces it on whatever that says.\nThe operator has no quick way to turn the windows off, although reed already holds every run in one instance: each run is a window of the prime's reed session.\n\n## Idea\n\nA toggle the operator flips with one click, a button in the orch tab's status bar beside `follow`, that says whether runs open their terminal window automatically.\nWhen it is off, `Open-Window` opens nothing, `--window` included, and the operator follows runs inside reed.\nThe `follow` button keeps its state in the tmux user option `@lyx_follow` (`internal/reedengine/bindings.go`), which dies with the tmux server; this switch must survive a restart, so it needs a machine-local home batten can read.\n\nOperator wish, 2026-10-22; the design is open.\nRelated: note `open-window-live-check`.\n",
       "created": "2026-10-22T08:56:02Z",
       "revised": "2026-10-22T08:56:02Z"
+    },
+    {
+      "id": 743,
+      "slug": "csharp-fixtures-compile",
+      "title": "[.NET] A test compiles the C# test fixtures, skipped without dotnet",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "quarry",
+        "dotnet",
+        "testkit"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "## Seen\n\n`quarry-csharp` added C# test fixtures, such as `internal/planglyph/testdata/glyphchain/csharp/Renderer.cs`.\nQuarry parses them with tree-sitter, which tolerates syntax errors, so nothing proves a fixture is valid C#: a broken fixture would still pass the glyph tests.\n\n## Idea\n\nA test compiles every `.cs` fixture under `testdata/` with `dotnet build` in a throwaway project, and skips when `dotnet` is not on `PATH`.\nIt belongs in a gate tier that the machines with .NET run, so a Go-only machine stays green.\n",
+      "created": "2026-10-22T09:23:53Z",
+      "revised": "2026-10-22T09:23:53Z"
     }
   ]
 }
