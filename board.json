@@ -1158,7 +1158,7 @@
       "id": 764,
       "handle": "E20",
       "slug": "fixers-on-sonnet",
-      "title": "Fixers and other checked roles on Sonnet",
+      "title": "Plan and Discussion fixers on Sonnet, once findings are concrete enough",
       "kind": "note",
       "labels": [
         "enhancement",
@@ -1168,10 +1168,10 @@
       "issues": [],
       "depends_on": [],
       "isolated": false,
-      "brief": "Plan, Discussion and Webster fixers, darn writer and alignment on Sonnet save about 4% of spend",
-      "body": "## Seen\n\n`docs/research/token-audit-2026-10-22`: Opus and Sonnet read cache at the same price, so a swap saves about half a role's non-cache-read cost.\nRoles whose output a later step checks: Plan and Discussion fixers about $162 over two weeks, darn writer $45, alignment $40, Webster fixer $37; together about 4% of spend.\n\n## Idea (orch, not decided)\n\nRun the fixers on Sonnet first, since the judge and the next round re-check them.\nA3 (`review-setup-audit`) notes a sloppy fixer causes many late-round defects, and `docs/research/model-downgrade-results.md` holds earlier downgrade results; bench before switching.\n",
+      "brief": "Webster and Merge fixers are already Sonnet; Plan and Discussion fixers need concrete findings first",
+      "body": "## Seen\n\n`docs/research/token-audit-2026-10-22`: Opus and Sonnet read cache at the same price, so a swap saves about half a role's non-cache-read cost.\nOver the audit window the Plan and Discussion fixers cost about $162 on Opus, the darn writer $45, alignment $40.\nThe Webster and Merge fixers already run on Sonnet: the template sets `webster_fixer_model` and `merge_fixer_model` to `sonnet[medium]` since `c2d13e5ae` (2026-10-21), so the audit's $37 Opus Webster fixer spend predates that.\n`discussion_fixer_model` and `plan_fixer_model` are empty and fall back to `fixer_model`, `opus[medium]`.\n\n## Operator view, not a decision (2026-10-22)\n\nA Sonnet fixer needs findings concrete enough for Sonnet to carry out.\nFor the Webster perch Sonnet is the natural fit, since Webster's own forks are Sonnet.\n\n## Idea (orch, not decided)\n\nBefore the Plan and Discussion fixers move to Sonnet, check that their findings are concrete: each names the place and the change, not only the problem.\nA3 (`review-setup-audit`) notes a sloppy fixer causes many late-round defects, and `docs/research/model-downgrade-results.md` holds earlier downgrade results; bench before switching.\n",
       "created": "2026-10-22T16:08:23Z",
-      "revised": "2026-10-22T16:08:23Z"
+      "revised": "2026-10-22T16:11:55Z"
     }
   ],
   "prime_owner": "neve"

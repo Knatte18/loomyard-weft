@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-22 16:08 UTC; every age below is as of then.
+Rendered 2026-10-22 16:11 UTC; every age below is as of then.
 
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
@@ -79,19 +79,19 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | E11 |  | **Start one task per overlapping group at a newly-ready start**<br>• When a landing makes several overlapping tasks ready at once, batten starts one per group and names the rest in its notice | [`batten-ready-overlap`](design-batten-ready-overlap.md) | 7d<br>7d | batten |
 | E12 |  | **Git test fixtures trip Cortex XDR on the work laptop**<br>• Parallel git-heavy tests create so many files at once that Cortex XDR killed VS Code and then crashed itself, twice; tests must stay usable on a machine with endpoint protection | [`xdr-git-test-file-burst`](design-xdr-git-test-file-burst.md) | 6d<br>1d | fabric |
 | E13 |  | **Rename the lyx binary to lyr (name clash with LyX)** | [`rename-binary-lyr`](design-rename-binary-lyr.md) | 6d<br>5h | stencil, shuttle |
-| E14 |  | **Speed loom profile: Discussion, Plan and Webster, with review only of the end product**<br>• A loom profile without the Discussion, Plan and Webster perches, reviewing only before landing | [`speed-loom-profile`](design-speed-loom-profile.md) | 0m<br>0m | loom, burler, config |
-| E15 |  | **Plan writer context grows to 300k and every lens fork inherits it**<br>• Fork lenses earlier or give the writer a code digest; the Plan writer is 18% of spend | [`plan-writer-context`](design-plan-writer-context.md) | 0m<br>0m | loom, stencil |
+| E14 |  | **Speed loom profile: Discussion, Plan and Webster, with review only of the end product**<br>• A loom profile without the Discussion, Plan and Webster perches, reviewing only before landing | [`speed-loom-profile`](design-speed-loom-profile.md) | 3m<br>3m | loom, burler, config |
+| E15 |  | **Plan writer context grows to 300k and every lens fork inherits it**<br>• Fork lenses earlier or give the writer a code digest; the Plan writer is 18% of spend | [`plan-writer-context`](design-plan-writer-context.md) | 3m<br>3m | loom, stencil |
 | E16 |  | **Parallel batches: the shared pieces for Webster forks and Weaver**<br>• DAG batchifier, worktree per batch, merge-back with conflict resolution; open: keeping a fork inside its worktree | [`parallel-batch-parts`](design-parallel-batch-parts.md) | 4d<br>4d | webster, fabric, loom |
 | E17 | L | **[WS 007] An anchor per umbrella**<br>• Let an umbrella work in its own subdirectory of the repository, inherited by its tasks; hard to change now | [`umbrella-anchor`](design-umbrella-anchor.md) | 4d<br>4d | fabric, config, workspaces |
 | E18 | H | **[WS 005] One dobby daemon per beam owns and drives its runs**<br>• Each beam (a worktree with an orch thread) gets a Go daemon, started by lyx orch start, that follows its runs status files, starts ready tasks, lands, settles mechanical stops and tells the thread only what needs judgement | [`umbrella-daemon`](design-umbrella-daemon.md) | 10d<br>3d | batten, orch, shed, workspaces, loom, board |
 | E19 |  | **Every remote operation runs async, and local-only fabric pairs stay an explicit choice only**<br>• Remote work goes async except the branch-exists check; batch pairs reach origin like any pair, and the local-only mode stays only as an explicit --local until a use is found or it is removed | [`fabric-remote-async`](design-fabric-remote-async.md) | 3d<br>3d | fabric, batten |
-| E20 |  | **Fixers and other checked roles on Sonnet**<br>• Plan, Discussion and Webster fixers, darn writer and alignment on Sonnet save about 4% of spend | [`fixers-on-sonnet`](design-fixers-on-sonnet.md) | 0m<br>0m | burler, claude |
+| E20 |  | **Plan and Discussion fixers on Sonnet, once findings are concrete enough**<br>• Webster and Merge fixers are already Sonnet; Plan and Discussion fixers need concrete findings first | [`fixers-on-sonnet`](design-fixers-on-sonnet.md) | 3m<br>0m | burler, claude |
 | E22 |  | **lyx batten run starts in its own window by default**<br>• Every batten run is started with --window, so the window should be the default and foreground the opt-in. | [`batten-window-default`](design-batten-window-default.md) | 3d<br>3d | batten, reed, orch |
 | E24 |  | **Every lens fork report is kept verbatim in the run records**<br>• Save each lens fork report in a support file beside lens-review.md, so audits can read what each lens found | [`lens-fork-reports-kept`](design-lens-fork-reports-kept.md) | 2h<br>2h | burler, loom |
 | E26 |  | **A status-bar button turns automatic terminal windows for runs on or off** | [`open-window-toggle`](design-open-window-toggle.md) | 7h<br>5h | batten, reed |
 | E28 |  | **[.NET] A small public NUnit repo as sandbox hub for end-to-end C# runs** | [`csharp-sandbox-hub`](design-csharp-sandbox-hub.md) | 6h<br>3h | dotnet |
 | E30 |  | **Discussion scope check moves from the alignment agent into the perch lenses, with an escalating finding class** | [`discussion-alignment-into-lenses`](design-discussion-alignment-into-lenses.md) | 5h<br>5h | loom, burler, shed |
-| E31 |  | **A row before Discussion aligns the task text against the board, peers and landed work, and adjusts it** | [`entry-align-before-discussion`](design-entry-align-before-discussion.md) | 4h<br>4h | loom, batten, board |
+| E31 |  | **A row before Discussion aligns the task text against the board, peers and landed work, and adjusts it** | [`entry-align-before-discussion`](design-entry-align-before-discussion.md) | 5h<br>4h | loom, batten, board |
 | E32 |  | **Move rules about lyx behaviour out of this repo's CLAUDE.md into lyx code, doc.go and stencils** | [`claude-md-lyx-rules-out`](design-claude-md-lyx-rules-out.md) | 4h<br>4h | stencil, board, loom |
 
 ### Features
