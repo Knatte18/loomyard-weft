@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-22 18:43 UTC; every age below is as of then.
+Rendered 2026-10-22 18:44 UTC; every age below is as of then.
 
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
@@ -48,6 +48,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | A6 |  | **Lens overlap audit: which lenses find the same defects, and a smaller set**<br>• twill-plan 8 to 5 lenses recommended; twill-discussion 7 to 4 and review-code 4 to 3 at low confidence | [`lens-overlap-audit`](design-lens-overlap-audit.md) | 5h<br>5h | burler, loom |
 | A7 |  | **Trial: batcher profile wide (budget 300k)**<br>• Hub runs a new batcher profile wide, budget 300k; check cost and fork quality before taking it into the template | [`batch-budget-300k-trial`](design-batch-budget-300k-trial.md) | 4h<br>4h | webster |
 | A8 |  | **Audit: loom tail rework (PR-Rework, Merge-Review, verify retries) is rare and cheap** | [`pr-rework-audit`](design-pr-rework-audit.md) | 41m<br>41m | loom, burler |
+| A9 |  | **Audit: loom from Webster out, who reviews and who fixes, and the target shape** | [`loom-tail-review`](design-loom-tail-review.md) | 33m<br>0m | loom, burler, fabric |
 
 ### Bugs
 
@@ -79,7 +80,6 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | E18 | H | **[WS 005] One dobby daemon per beam owns and drives its runs**<br>• Each beam (a worktree with an orch thread) gets a Go daemon, started by lyx orch start, that follows its runs status files, starts ready tasks, lands, settles mechanical stops and tells the thread only what needs judgement | [`umbrella-daemon`](design-umbrella-daemon.md) | 10d<br>3d | batten, orch, shed, workspaces, loom, board |
 | E19 |  | **Every remote operation runs async, and local-only fabric pairs stay an explicit choice only**<br>• Remote work goes async except the branch-exists check; batch pairs reach origin like any pair, and the local-only mode stays only as an explicit --local until a use is found or it is removed | [`fabric-remote-async`](design-fabric-remote-async.md) | 4d<br>4d | fabric, batten |
 | E20 |  | **Plan and Discussion fixers on Sonnet, once findings are concrete enough**<br>• Webster and Merge fixers are already Sonnet; Plan and Discussion fixers need concrete findings first | [`fixers-on-sonnet`](design-fixers-on-sonnet.md) | 2h<br>2h | burler, claude |
-| E21 |  | **Loom tail: light fixers with test gates at Merge-In, Publish and PR-Align, no Merge-Review perch** | [`loom-tail-light-fixers`](design-loom-tail-light-fixers.md) | 32m<br>21m | loom, burler, fabric |
 | E22 |  | **lyx batten run starts in its own window by default**<br>• Every batten run is started with --window, so the window should be the default and foreground the opt-in. | [`batten-window-default`](design-batten-window-default.md) | 3d<br>3d | batten, reed, orch |
 | E24 |  | **Every lens fork report is kept verbatim in the run records**<br>• Save each lens fork report in a support file beside lens-review.md, so audits can read what each lens found | [`lens-fork-reports-kept`](design-lens-fork-reports-kept.md) | 5h<br>5h | burler, loom |
 | E26 |  | **A status-bar button turns automatic terminal windows for runs on or off** | [`open-window-toggle`](design-open-window-toggle.md) | 9h<br>8h | batten, reed |
