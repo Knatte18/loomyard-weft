@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-22 08:51 UTC; every age below is as of then.
+Rendered 2026-10-22 08:52 UTC; every age below is as of then.
 
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
@@ -24,7 +24,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 3 | **tender pause does not hold a verify gate's re-prompt, and creel interrupt is refused under the pause**<br>• `profile: light` | [`tender-pause-holds-reprompt`](design-tender-pause-holds-reprompt.md) | loom | Plan-Burler-Review | 1d | 2h | creel, shed, webster |
+| 3 | **tender pause does not hold a verify gate's re-prompt, and creel interrupt is refused under the pause**<br>• `profile: light` | [`tender-pause-holds-reprompt`](design-tender-pause-holds-reprompt.md) | loom | Plan-Burler-Fix | 1d | 3h | creel, shed, webster |
 
 ### Ready
 
