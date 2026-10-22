@@ -87,6 +87,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 4 | **lyx report timing counts sleep as active time when the system journal is unreadable** | [`report-timing-unreadable-journal`](design-report-timing-unreadable-journal.md) | 0m | 0m | report |
 | 5 | **Teardown's archive-tag push has no retry for a transient remote rejection** | [`retry-archive-tag-push`](design-retry-archive-tag-push.md) | 0m | 0m | batten, fabric |
 | 6 | **webster: done-check rejects a Create path holding a space that webster validate accepts** | [`done-check-spaced-create-paths`](design-done-check-spaced-create-paths.md) | 0m | 0m | webster, quarry |
+| 7 | **gate: runtime.Caller returns module-relative paths under lyx gate test, as with -trimpath** | [`gate-test-runtime-caller-paths`](design-gate-test-runtime-caller-paths.md) | 0m | 0m | gate |
 
 ### Enhancements
 
