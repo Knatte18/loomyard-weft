@@ -1,0 +1,22 @@
+# Relevant files
+
+- `internal/battencli/cli.go` — batten's cobra tree and package doc, where the cancel verb joins
+- `internal/battencli/cleanup.go` `Cleanup`, `cleanupSlug`, `emptyScratch`, `fabricCleanupDeps` — the records and scratch removal and records commit the cancel reuses
+- `internal/battencli/refusal.go` `RefuseUnlessPrime` — the prime-only refusal every batten verb applies
+- `internal/battencli/arm.go` `armSeed` — the pre-run seed gate the dirty-source check must precede
+- `internal/battencli/paths.go` — batten's run directory, scratch and lock paths over shedrun
+- `internal/battenshed/doc.go` — batten's row behaviour: notices, revives, owner pause, Land
+- `internal/battenshed/create.go` `NewWorktreeCreate` — Worktree-Create, which passes fabric's add error through as Stuck today
+- `internal/battenshed/innerrun_owner.go` `FinalizePastMerge` — the past-merge reading the landed refusal uses
+- `internal/fabricengine/add.go` — the pair add's untyped dirty-source refusal
+- `internal/fabricengine/dirtiness.go` `worktreeDirty`, `trackedDirtyPaths` — the tracked-only probe the start check must share
+- `internal/pairteardown/doc.go` — the teardown order, skip rules, local and force modes the cancel phase sits beside
+- `internal/pairteardown/claim.go` `settleClaim` — the claim settle that holds a `running` record today
+- `internal/runproc/doc.go` — the owner record and `End`, including its Windows behaviour
+- `internal/shedengine/producer.go` `OutputPointer` — the Halt flag Worktree-Create's precondition stop uses
+- `internal/sheddriver/doc.go` — the driver's rule table, where the precondition hand-back row joins
+- `internal/sheddriver/driverules.go` `budgetExhausted` — the reason-prefix row the new row follows
+- `internal/tenderengine/doc.go` — pause entries and `Lift` by identity
+- `internal/pauserecord/hold.go` `Network`, `GateCovered` — which pause entries make a prime process wait at the network gate
+- `internal/cleanupcli/doc.go` — `lyx cleanup`'s batten segment, unchanged
+- `contracts/stencils/orch/orch-template-role.md` — the orch's run-handling line that names batten's verbs
