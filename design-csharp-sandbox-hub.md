@@ -9,10 +9,11 @@ Models, the target repo, is proprietary and is never cloned outside OSL-1046 (op
 
 ## Idea
 
-A small public NUnit repo of our own as a C# sandbox hub, beside `lyx-test-LYXHUB`, shaped like Models: projects targeting `net9.0`, built with SDK 10 (operator, 2026-10-22), NUnit tests.
+A small public NUnit repo of our own as a C# sandbox hub, beside `lyx-test-LYXHUB`, with NUnit tests, built with SDK 10 like Models.
+Its projects target `net10.0`, not Models' `net9.0`: what the sandbox proves (build, `dotnet test`, filters, incremental builds) depends on the SDK, not the target runtime, and Neve then needs no 9.0 runtime (operator, 2026-10-22).
 Runs on it prove the whole C# path on Neve before OSL-1046.
 
 ## Toolchain facts
 
 - OSL-1046 has SDKs 8.0.32, 9.0.21 and 10.0.13 (operator, 2026-10-22).
-- Neve is Ubuntu 26.04, whose apt carries .NET 10 only; SDK 10 builds `net9.0` projects, but running their tests needs the .NET 9 runtime, which Microsoft's `dotnet-install.sh --runtime dotnet --channel 9.0 --install-dir ~/.dotnet` installs without sudo.
+- Neve has SDK 10.0.113 from apt (`dotnet-sdk-10.0`, installed 2026-10-22).
