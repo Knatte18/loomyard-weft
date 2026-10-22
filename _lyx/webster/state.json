@@ -357,7 +357,7 @@
       }
     }
   ],
-  "currentBatch": 0,
+  "currentBatch": 10,
   "masterStrand": "2642482185a5730eac4c6d480d816de3",
   "masterSessionId": "39d466a9-b4ba-4030-9c38-3fc3d6d86e86",
   "masterEngine": "claude",
@@ -393,6 +393,28 @@
       "bracketTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-quarry-csharp/39d466a9-b4ba-4030-9c38-3fc3d6d86e86/subagents/agent-aef28a54195b6b574.jsonl"
       ]
+    },
+    "10": {
+      "slug": "csharp-rename-derivation",
+      "cards": [
+        "10-csharp-rename-derivation",
+        "11-csharp-resign-arrows",
+        "12-resign-post-batch",
+        "13-batcher-resign-boundary"
+      ],
+      "cardHashes": {
+        "10-csharp-rename-derivation": "6c00cb34f46c1de604726a37bdbdfadabbfdf948fbf7c355ae0c38d01f12cfce",
+        "11-csharp-resign-arrows": "0e16c1c7db6ea003cbc9d6518bb21d68963564757a8ce415ff9a9123575d27b2",
+        "12-resign-post-batch": "c8d6045734c64034cbcb22825d6c5ea36a5529ce764b88b780f839fb123af083",
+        "13-batcher-resign-boundary": "405e0e808eff6325eaaa0be95e86ff1b1c41c17719fd333c02a50f495593a101"
+      },
+      "startSha": "d7fdbb19c39797df4baef4040201942d5c1c3f0f",
+      "kind": "fork",
+      "spawnedAt": "2026-10-22T08:10:36Z",
+      "sessionId": "39d466a9-b4ba-4030-9c38-3fc3d6d86e86",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
     },
     "3": {
       "slug": "planglyph-ref-alphabet",
