@@ -1,6 +1,6 @@
 ---
 format: 5
-approved: false
+approved: true
 language: go
 ---
 
@@ -22,4 +22,4 @@ No goto onto Finalize, and no Go driver starting at a blocked Finalize stop, re-
 
 - One renderer, `landingshed.DirtyParentRefusal`, words the checkout, the path list and the dirt-only way forward for Finalize (card 3), the goto guard (card 5) and the driver's start check (card 6), so the three never drift apart.
 - Finalize reads the parent pair's parked merge through the `parentMerger` handle it already holds (`Fabric.MidMerge`), so `landingshed.Deps` gains no field.
-- D2's merge-in-progress way forward tells the operator to commit or set aside their own change with plain git before `--abort`; card 3 words it as saving a copy outside the checkout instead, because a plain `git commit` in a checkout holding a staged fabric merge concludes that merge, after which `--abort` refuses with `merge conclude already landed` (`sideConcludeMayHaveLanded`), and a `git stash` there takes the staged merge with it.
+- Departure from D2, pending an `Added after Discussion` entry under D2 in the decision record: D2's merge-in-progress way forward tells the operator to commit or set aside their own change with plain git before `--abort`, and card 3 words it as saving a copy outside the checkout instead, because a plain `git commit` in a checkout holding a staged fabric merge concludes that merge, after which `--abort` refuses with `merge conclude already landed` (`sideConcludeMayHaveLanded`), and a `git stash` there takes the staged merge with it.

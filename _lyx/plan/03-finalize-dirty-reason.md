@@ -47,6 +47,7 @@ Rendering, one function for D2, D4 and D5 (`DirtyParentRefusal`, exported so `lo
 The two non-dirt parent reasons never come together (a detached HEAD reads as synced), so forms 2 and 3 are exclusive.
 Form 2 is reached when the parent's code checkout is detached after step 3's `parentOpener` matched it by branch (`fabricengine.OpenParent` lists only a checkout on the parent branch) and before the merge's guard stage reads its HEAD; a checkout already detached at step 3 stops there with `no live pair for parent branch`, which this card leaves unchanged.
 Its reaching test is the detached row of `TestFinalize_StuckReasons` below, whose fake merger returns the guard error that state produces.
+Form 3 is reached when the guard's unfetched read of the local upstream ref shows a divergence at step 4 that step 1b3's origin reconcile did not stop, either because it arose between 1b3 and step 4 or because no reconcile is wired; its reaching test is the not-synced row of `TestFinalize_StuckReasons` below.
 Every plain-git step names a checkout the message names, which the amended spec item below admits.
 
 `contracts/specs/refusal-spec.md`'s `What a way forward is` item 3 widens from a plain `git` command in the task worktree to `a plain git command in a checkout the message names, when the work there is the operator's and no lyx verb covers it`.
@@ -66,7 +67,7 @@ Tests:
   a `branch not synced to upstream` plus `worktree dirty` row wants the error's text, the list, `commit them on the parent branch or discard them`, `push or reconcile the parent branch`, the goto and the resume, in order;
   a `checkout is not on a branch` plus `worktree dirty` row wants `check out the parent branch`, `set them aside first`, `commit them on the parent branch or discard them`, the goto and the resume, in order.
 - `TestFinalize_OverRealHub` gains a fourth step, after the third because its merge-in carries the earlier landings in cleanly: a fresh task pair with one commit, and in the parent's code checkout a committed `dirty.txt` modified and left uncommitted.
-  A Finalize from `newFinalizeAt` is Stuck with a reason holding the parent's code checkout path and `"dirty.txt"`;
+  A Finalize from `newFinalizeAt` is Stuck with a reason holding the parent's code checkout path as `filepath.EvalSymlinks(parentCode)` returns it, since the guard error's `Checkout` is the symlink-resolved path, and `"dirty.txt"`;
   after `git checkout -- dirty.txt` in the parent's code checkout a fresh Finalize is Done.
   This pins the dirt-only reason over a real guard read and the discard half of the operator-recovery criterion.
 - D1's criterion, that dirt under `_lyx/` in the parent's records checkout lets the parent-side merge land, is the existing `TestMerge_DirtyTargetHalts`, whose weft half leaves a tracked `_lyx/tracked.txt` modified in the target's records checkout and asserts `Merge` lands: Finalize's step 4 is that `Merge` call on the parent pair.

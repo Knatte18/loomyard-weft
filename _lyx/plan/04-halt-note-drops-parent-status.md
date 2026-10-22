@@ -14,6 +14,7 @@
 - `internal/haltnote#Note`
 - `internal/haltnote#Render`
 - `internal/haltnote#Parse`
+- `internal/haltnote#parentHeader`
 - `internal/haltnote#TestRenderParse`
 - `internal/loomcli#TestWriteHaltNote_NamesAnomalyProducerReasonAndHistory`
 - `internal/loomcli#TestLoomPostRun_HaltNotes`

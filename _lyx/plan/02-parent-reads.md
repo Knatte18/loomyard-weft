@@ -27,7 +27,7 @@ A resolve failure is returned wrapped; it carries no `MutationRecord`, as `MidMe
 `internal/fabricengine/doc.go` names both reads beside `MidMerge(l)` among the package's read-only probes.
 
 Tests:
-- `TestStatus_MergesUncommittedChangesBothSides_ExcludesWeftArtifacts`, whose fixture dirties a tracked `README` and an untracked file on the code side and a tracked config file on the records side, asserts `CodeDirtyPaths()` returns the code checkout and exactly `[]string{"README"}`.
+- `TestStatus_MergesUncommittedChangesBothSides_ExcludesWeftArtifacts`, whose fixture dirties a tracked `README` and an untracked file on the code side and a tracked config file on the records side, asserts `CodeDirtyPaths()` returns the code checkout, compared after `filepath.EvalSymlinks` on both sides since a temp root may be a symlink, and exactly `[]string{"README"}`.
 - `TestMidMerge_FabricParkedWithConflicts_Parked` asserts `f.MidMerge()` equals `MidMerge(h.Location)` field for field on the parked pair.
 
 **ImpactSummary:** two additive read-only methods on `Fabric` with no caller yet; the other edits are assertions added to two existing integration tests and one doc line.
