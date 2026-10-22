@@ -1,0 +1,9 @@
+verdict: approve
+reason: >-
+  The diff of PR 837 at 366897121 builds D1 to D11 as recorded: the runproc owner record and End, registration at every spawn site D2 names,
+  ending from pair teardown, reed down, fabric remove, the owned-elsewhere pauses and tender reap, the pause deferral and lift spawns,
+  tender status processes, hibernate confirmation and shuttle's shell-only wait, with docs and PATTERN updated.
+  It adds nothing the goal does not call for. The PATTERN.md overview lines shortened for headroom keep their clauses in the background files.
+  lyx loom peers lists no peer run and no parent commit, so there is no overlap.
+question: ""
+superseded: []
