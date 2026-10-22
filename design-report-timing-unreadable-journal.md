@@ -18,3 +18,7 @@ None; the numbers from this machine overstate active time.
 
 When the journal is unreadable, the report finds idle time another way, such as recorded tender pauses, hub-wide idle windows, or gaps in the runs' own timestamps.
 It also states in its output that sleep could not be read and the numbers may include it.
+
+## Already in place (triage, 2026-10-22)
+
+`internal/reportcli/doc.go`: a failing `journalctl` leaves nothing out and `sleep_note` says why, so the stated-in-output part exists; what remains is the other idle source.
