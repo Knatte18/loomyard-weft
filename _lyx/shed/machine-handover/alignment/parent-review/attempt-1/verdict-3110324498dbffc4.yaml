@@ -1,0 +1,9 @@
+verdict: approve
+reason: >-
+  D1 to D9 cover every goal and design point of the board entry, issues #741 and #742 included,
+  and keep beams, process ending, pause leaks and local warp adoption with the entries the board assigns them.
+  No peer run changes ownership, the origin reconcile, Finalize's owner check or Open-Window,
+  and the only package overlap, darn-verify-fixes in internal/landingshed, is text-only.
+  darn-verify-fixes (row 5) lands first.
+question: ""
+superseded: []
