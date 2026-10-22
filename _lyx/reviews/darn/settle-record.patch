@@ -1,0 +1,360 @@
+diff --git a/internal/fabricengine/archive.go b/internal/fabricengine/archive.go
+index d16067852..ab9f9c30b 100644
+--- a/internal/fabricengine/archive.go
++++ b/internal/fabricengine/archive.go
+@@ -7,6 +7,7 @@ import (
+ 	"errors"
+ 	"fmt"
+ 	"strings"
++	"time"
+ 
+ 	"github.com/Knatte18/loomyard/internal/gitexec"
+ 	"github.com/Knatte18/loomyard/internal/gitrepo"
+@@ -16,6 +17,12 @@ import (
+ // archiveTagSHALen is how many leading hex digits of the tip SHA the archive tag name carries.
+ const archiveTagSHALen = 12
+ 
++// archiveTagPushDelays returns the delays the archive-tag push sleeps between its attempts when the remote refuses it retryably: 2 s doubling to 32 s, six attempts in all.
++// The schedule is longer than a plain push's because a teardown archives once and holds at most the pair's own teardown lock, which only that pair's detached pushes wait on, so waiting out a remote hiccup of about a minute beats failing the row.
++func archiveTagPushDelays() []time.Duration {
++	return []time.Duration{2 * time.Second, 4 * time.Second, 8 * time.Second, 16 * time.Second, 32 * time.Second}
++}
++
+ // ArchiveTagPrefix is the short-name prefix every archive tag carries.
+ const ArchiveTagPrefix = "archive/"
+ 
+@@ -45,6 +52,7 @@ var ErrArchiveFailed = errors.New("archiving the pair's records before teardown
+ // No origin remote returns no tag, a skippedReason and no error.
+ // A branch present neither locally nor on origin returns no tag, no reason and no error, since there is nothing to archive.
+ // An existing tag of that name pointing elsewhere, and any push failure, are returned errors.
++// A push the remote refuses with a bare "(failed)" or a remote "cannot lock ref" is retried on archiveTagPushDelays before it fails.
+ // Every returned error wraps ErrArchiveFailed.
+ // KindTagPushed is recorded on rec only after the push observably succeeded.
+ func archiveWeftTip(rec *Mutations, l *lyxcwd.Location, slug, weftBranch string) (tag string, skippedReason string, err error) {
+@@ -101,7 +109,7 @@ func archiveWeftTip(rec *Mutations, l *lyxcwd.Location, slug, weftBranch string)
+ 		_, err := gitexec.Run([]string{"push", originRemoteName, tagRef}, weftRoot)
+ 		return err
+ 	}
+-	if err := gitrepo.PushWithRetry(pushTag, tagRef, nil); err != nil {
++	if err := gitrepo.PushWithRetry(pushTag, tagRef, archiveTagPushDelays(), nil); err != nil {
+ 		return "", "", fmt.Errorf("push archive tag %q to %q: %w", tag, originRemoteName, err)
+ 	}
+ 	rec.Append(KindTagPushed, weftRoot, tag)
+diff --git a/internal/fabricengine/archivetag_test.go b/internal/fabricengine/archivetag_test.go
+index 2dc132162..279974cad 100644
+--- a/internal/fabricengine/archivetag_test.go
++++ b/internal/fabricengine/archivetag_test.go
+@@ -2,7 +2,20 @@
+ 
+ package fabricengine
+ 
+-import "testing"
++import (
++	"reflect"
++	"testing"
++	"time"
++)
++
++// TestArchiveTagPushDelays pins the archive push's schedule: 2 s doubling to 32 s.
++func TestArchiveTagPushDelays(t *testing.T) {
++	t.Parallel()
++	want := []time.Duration{2 * time.Second, 4 * time.Second, 8 * time.Second, 16 * time.Second, 32 * time.Second}
++	if got := archiveTagPushDelays(); !reflect.DeepEqual(got, want) {
++		t.Errorf("archiveTagPushDelays() = %v; want %v", got, want)
++	}
++}
+ 
+ // TestArchiveTagSlug covers the accepted archive/<slug>/<sha> shape and the names that carry the prefix without a slug or tip, or another prefix.
+ func TestArchiveTagSlug(t *testing.T) {
+diff --git a/internal/fabricengine/doc.go b/internal/fabricengine/doc.go
+index 484ed9b55..e557d268c 100644
+--- a/internal/fabricengine/doc.go
++++ b/internal/fabricengine/doc.go
+@@ -607,7 +607,7 @@
+ // A plain `Add` adopts a marked warp branch too, instead of refusing `ErrBranchExists`, and as its last step clears the mark of each adopted branch, listing it in `AddResult.LocalMarkCleared`, so the adopted pair is ordinary.
+ // A rollback never deletes an adopted warp branch, and a clear that fails after an earlier one succeeded restores the earlier mark before the rollback.
+ // Every plain fabric push retries a push the server refuses on the pushed ref with a bare `(failed)` or a remote `cannot lock ref`, through gitrepo's bounded retry with exponential backoff;
+-// the archive tag push included, and every other push failure returns on the first attempt.
++// the archive tag push included, on its own longer schedule of six attempts from two seconds doubling, and every other push failure returns on the first attempt.
+ // The coalesced push logs a Warn and leaves the commits unpushed once the attempts run out.
+ // `SkipPush`/`SkipGit` skip every probe and the replacement: the pair is then live only by a local weft branch,
+ // and the warp branch forks from `HEAD`.
+diff --git a/internal/gitrepo/doc.go b/internal/gitrepo/doc.go
+index 645df40ed..91317fcfa 100644
+--- a/internal/gitrepo/doc.go
++++ b/internal/gitrepo/doc.go
+@@ -186,10 +186,11 @@
+ // push before recording that SHA anywhere.
+ // Push, PushCoalesced and PushRebaseFree also retry a push the remote refuses on the pushed branch.
+ // The two retryable forms are `! [remote rejected] <ref> -> <ref> (failed)` and a remote reason containing `cannot lock ref`.
++// A ref given in full `refs/heads/` or `refs/tags/` form also matches the short form git prints it in.
+ // A push is tried up to four times in total with a doubling backoff from one second, inside whatever lock the caller holds and without rebasing or forcing.
+ // A retryable refusal never triggers the rebase-retry.
+ // A push that exhausts the attempts returns an error wrapping ErrPushRetriesExhausted and the last push error, never ErrPushRejected.
+-// PushWithRetry exposes the same loop for a caller that runs its own push.
++// PushWithRetry exposes the same loop for a caller that runs its own push, on the backoff delays the caller passes.
+ // PushCoalesced adds cross-process coalescing on top: it acquires a
+ // single-pusher lock file, .gitrepo-push.lock, in the repo's
+ // worktree root before checking whether anything is actually unpushed, so a
+diff --git a/internal/gitrepo/push.go b/internal/gitrepo/push.go
+index 7cc0d58bf..40c3ac56e 100644
+--- a/internal/gitrepo/push.go
++++ b/internal/gitrepo/push.go
+@@ -136,7 +136,7 @@ func (r *Repo) pushPlainWithRetry() error {
+ 	return PushWithRetry(func() error {
+ 		_, err := r.runChecked("-c", "push.autoSetupRemote=true", "push")
+ 		return err
+-	}, branch, r.pushSleep)
++	}, branch, PushBackoffDelays(), r.pushSleep)
+ }
+ 
+ // PushRebaseFree runs git push without rebasing, establishing upstream via
+diff --git a/internal/gitrepo/pushretry.go b/internal/gitrepo/pushretry.go
+index 25f48cbe4..ae8e5e1af 100644
+--- a/internal/gitrepo/pushretry.go
++++ b/internal/gitrepo/pushretry.go
+@@ -18,14 +18,14 @@ import (
+ // The error also wraps the last push error, and never ErrPushRejected.
+ var ErrPushRetriesExhausted = errors.New("gitrepo: push retries exhausted")
+ 
+-// pushMaxAttempts is the total number of pushes a retryably refused push gets.
++// pushMaxAttempts is the total number of pushes the plain push primitives give a retryably refused push.
+ const pushMaxAttempts = 4
+ 
+-// pushBaseBackoff is the delay before the second attempt; each later delay doubles it.
++// pushBaseBackoff is the plain push primitives' delay before the second attempt; each later delay doubles it.
+ const pushBaseBackoff = time.Second
+ 
+-// PushBackoffDelays returns the delays PushWithRetry sleeps between its attempts, in order: pushBaseBackoff, then each doubled, one fewer than pushMaxAttempts.
+-// A caller that retries a push on its own sleeps the same delays.
++// PushBackoffDelays returns the delays the plain push primitives sleep between their attempts, in order: pushBaseBackoff, then each doubled, one fewer than pushMaxAttempts.
++// A caller that retries a push on the same schedule passes or sleeps these delays.
+ func PushBackoffDelays() []time.Duration {
+ 	delays := make([]time.Duration, 0, pushMaxAttempts-1)
+ 	delay := pushBaseBackoff
+@@ -72,22 +72,27 @@ func retryablePushRefusal(err error, ref string) (line string, retryable bool) {
+ }
+ 
+ // namesRef reports whether name is ref in its short form or its full refs/heads/ or refs/tags/ form.
++// A ref given in full form also matches its short form, which is how git prints a pushed ref.
+ func namesRef(name, ref string) bool {
++	for _, namespace := range []string{"refs/heads/", "refs/tags/"} {
++		if short, found := strings.CutPrefix(ref, namespace); found {
++			return name == ref || name == short
++		}
++	}
+ 	return name == ref || name == "refs/heads/"+ref || name == "refs/tags/"+ref
+ }
+ 
+-// PushWithRetry calls push up to pushMaxAttempts times in total, sleeping a doubling backoff between attempts, only while push fails with a retryable remote refusal of ref.
++// PushWithRetry calls push up to one time more than delays holds, sleeping each delay in order between attempts, only while push fails with a retryable remote refusal of ref.
+ // A non-retryable error returns unchanged on its attempt; an exhausted retry returns an error wrapping ErrPushRetriesExhausted and the last push error.
+ // A nil sleep sleeps the delay plus up to half of it as jitter.
+ //
+ // On the records repository the refusal `! [remote rejected] main -> main (failed)` is a ref-update race:
+ // the remote refuses a ref update that raced another update of that repository's `main` (board writes and other runs' record pushes), and the local ref is not stale.
+ // The retry is the intended path for it, and the Warn each retry logs is the signal that surfaced the race.
+-func PushWithRetry(push func() error, ref string, sleep func(time.Duration)) error {
++func PushWithRetry(push func() error, ref string, delays []time.Duration, sleep func(time.Duration)) error {
+ 	if sleep == nil {
+ 		sleep = func(delay time.Duration) { time.Sleep(delay + rand.N(delay/2+1)) }
+ 	}
+-	delay := pushBaseBackoff
+ 	for attempt := 1; ; attempt++ {
+ 		err := push()
+ 		if err == nil {
+@@ -97,11 +102,10 @@ func PushWithRetry(push func() error, ref string, sleep func(time.Duration)) err
+ 		if !retryable {
+ 			return err
+ 		}
+-		if attempt == pushMaxAttempts {
++		if attempt > len(delays) {
+ 			return fmt.Errorf("%w after %d attempts: %w", ErrPushRetriesExhausted, attempt, err)
+ 		}
+ 		logger.Warn("gitrepo: push refused, retrying", "ref", ref, "attempt", attempt, "stderr", line)
+-		sleep(delay)
+-		delay *= 2
++		sleep(delays[attempt-1])
+ 	}
+ }
+diff --git a/internal/gitrepo/pushretry_integration_test.go b/internal/gitrepo/pushretry_integration_test.go
+index aa84b9f05..43cfad330 100644
+--- a/internal/gitrepo/pushretry_integration_test.go
++++ b/internal/gitrepo/pushretry_integration_test.go
+@@ -1,6 +1,8 @@
+ //go:build integration
+ 
+-// pushretry_integration_test.go pins, against a real bare remote that refuses every pushed branch with a remote "cannot lock ref", the ordering the fake push in pushretry_test.go cannot reach: the retry exhausts before the rebase-retry or the ErrPushRejected mapping is consulted.
++// pushretry_integration_test.go pins, against a real bare remote that refuses every pushed ref with a remote "cannot lock ref", what the fake push in pushretry_test.go cannot reach:
++// the retry exhausts before the rebase-retry or the ErrPushRejected mapping is consulted,
++// and a tag pushed by its full ref is retried on the short name git prints for it.
+ 
+ package gitrepo
+ 
+@@ -13,6 +15,7 @@ import (
+ 	"testing"
+ 	"time"
+ 
++	"github.com/Knatte18/loomyard/internal/gitexec"
+ 	"github.com/Knatte18/loomyard/internal/gitkit"
+ )
+ 
+@@ -49,6 +52,40 @@ done
+ printf '0000'
+ `
+ 
++// newRefusingRemoteClone returns a clone, with one commit pushed to its bare origin's main, whose origin from then on refuses every pushed ref under refusedRefs with a remote "cannot lock ref".
++// It also returns the path of the log the refusing hook appends one line to per push.
++func newRefusingRemoteClone(t *testing.T, refusedRefs string) (clonePath, hookLog string) {
++	t.Helper()
++
++	container := t.TempDir()
++	bare := filepath.Join(container, "remote.git")
++	gitkit.MustRun(t, container, "git", "init", "--bare", "-b", "main", bare)
++	clonePath = filepath.Join(container, "clone")
++	gitkit.MustRun(t, container, "git", "clone", bare, clonePath)
++	gitkit.CommitFile(t, clonePath, "first.txt", "first", "first commit")
++	gitkit.Git(t, clonePath, "push", "origin", "HEAD:main")
++
++	hookLog = filepath.Join(container, "hook.log")
++	hook := filepath.Join(bare, "hooks", "proc-receive")
++	script := strings.ReplaceAll(procReceiveRefuseScript, hookLogPlaceholder, filepath.ToSlash(hookLog))
++	if err := os.WriteFile(hook, []byte(script), 0o755); err != nil {
++		t.Fatalf("write proc-receive hook: %v", err)
++	}
++	gitkit.Git(t, bare, "config", "receive.procReceiveRefs", refusedRefs)
++	return clonePath, hookLog
++}
++
++// hookRuns returns how many pushes the refusing hook logged at hookLog.
++func hookRuns(t *testing.T, hookLog string) int {
++	t.Helper()
++
++	logged, err := os.ReadFile(hookLog)
++	if err != nil {
++		t.Fatalf("read hook log: %v", err)
++	}
++	return strings.Count(string(logged), "run")
++}
++
+ func TestPlainPushPrimitives_ExhaustedRetryWrapsSentinelAndNeverRebases(t *testing.T) {
+ 	t.Parallel()
+ 
+@@ -62,21 +99,7 @@ func TestPlainPushPrimitives_ExhaustedRetryWrapsSentinelAndNeverRebases(t *testi
+ 		t.Run(tc.name, func(t *testing.T) {
+ 			t.Parallel()
+ 
+-			container := t.TempDir()
+-			bare := filepath.Join(container, "remote.git")
+-			gitkit.MustRun(t, container, "git", "init", "--bare", "-b", "main", bare)
+-			clonePath := filepath.Join(container, "clone")
+-			gitkit.MustRun(t, container, "git", "clone", bare, clonePath)
+-			gitkit.CommitFile(t, clonePath, "first.txt", "first", "first commit")
+-			gitkit.Git(t, clonePath, "push", "origin", "HEAD:main")
+-
+-			hookLog := filepath.Join(container, "hook.log")
+-			hook := filepath.Join(bare, "hooks", "proc-receive")
+-			script := strings.ReplaceAll(procReceiveRefuseScript, hookLogPlaceholder, filepath.ToSlash(hookLog))
+-			if err := os.WriteFile(hook, []byte(script), 0o755); err != nil {
+-				t.Fatalf("write proc-receive hook: %v", err)
+-			}
+-			gitkit.Git(t, bare, "config", "receive.procReceiveRefs", "refs/heads")
++			clonePath, hookLog := newRefusingRemoteClone(t, "refs/heads")
+ 
+ 			gitkit.CommitFile(t, clonePath, "second.txt", "second", "second commit")
+ 			headBefore := gitkit.RevParse(t, clonePath, "HEAD")
+@@ -93,11 +116,7 @@ func TestPlainPushPrimitives_ExhaustedRetryWrapsSentinelAndNeverRebases(t *testi
+ 			if errors.Is(err, ErrPushRejected) {
+ 				t.Errorf("err = %v; must not map to ErrPushRejected", err)
+ 			}
+-			logged, readErr := os.ReadFile(hookLog)
+-			if readErr != nil {
+-				t.Fatalf("read hook log: %v", readErr)
+-			}
+-			if runs := strings.Count(string(logged), "run"); runs != pushMaxAttempts {
++			if runs := hookRuns(t, hookLog); runs != pushMaxAttempts {
+ 				t.Errorf("hook ran %d times; want %d", runs, pushMaxAttempts)
+ 			}
+ 			wantSleeps := []time.Duration{time.Second, 2 * time.Second, 4 * time.Second}
+@@ -115,3 +134,28 @@ func TestPlainPushPrimitives_ExhaustedRetryWrapsSentinelAndNeverRebases(t *testi
+ 		})
+ 	}
+ }
++
++func TestPushWithRetry_RetriesARealRefusalOfATagPushedByItsFullRef(t *testing.T) {
++	t.Parallel()
++
++	clonePath, hookLog := newRefusingRemoteClone(t, "refs/tags")
++	const tagRef = "refs/tags/archive/slug/0123456789ab"
++	gitkit.Git(t, clonePath, "tag", strings.TrimPrefix(tagRef, "refs/tags/"))
++	delays := []time.Duration{time.Millisecond, 2 * time.Millisecond}
++
++	var sleeps []time.Duration
++	err := PushWithRetry(func() error {
++		_, err := gitexec.Run([]string{"push", "origin", tagRef}, clonePath)
++		return err
++	}, tagRef, delays, func(delay time.Duration) { sleeps = append(sleeps, delay) })
++
++	if !errors.Is(err, ErrPushRetriesExhausted) {
++		t.Errorf("err = %v; want it to wrap ErrPushRetriesExhausted", err)
++	}
++	if runs := hookRuns(t, hookLog); runs != len(delays)+1 {
++		t.Errorf("hook ran %d times; want %d", runs, len(delays)+1)
++	}
++	if !reflect.DeepEqual(sleeps, delays) {
++		t.Errorf("sleeps = %v; want %v", sleeps, delays)
++	}
++}
+diff --git a/internal/gitrepo/pushretry_test.go b/internal/gitrepo/pushretry_test.go
+index 4da55b03e..f019a6483 100644
+--- a/internal/gitrepo/pushretry_test.go
++++ b/internal/gitrepo/pushretry_test.go
+@@ -29,6 +29,10 @@ func TestRetryablePushRefusal_ClassifiesByTheReasonOnThePushedRefsLine(t *testin
+ 		{"bare failed with remote lines around it", pushRejection(remoteNoise + " ! [remote rejected] feat -> feat (failed)\n" + remoteNoise + "error: failed to push some refs\n"), "feat", true},
+ 		{"failed in full branch form", pushRejection(" ! [remote rejected] refs/heads/feat -> refs/heads/feat (failed)\n"), "feat", true},
+ 		{"failed in full tag form", pushRejection(" ! [remote rejected] refs/tags/v1 -> refs/tags/v1 (failed)\n"), "v1", true},
++		{"failed in short form for a full tag ref", pushRejection(" ! [remote rejected] archive/s/abc -> archive/s/abc (failed)\n"), "refs/tags/archive/s/abc", true},
++		{"failed in short form for a full branch ref", pushRejection(" ! [remote rejected] feat -> feat (failed)\n"), "refs/heads/feat", true},
++		{"failed in full form for a full tag ref", pushRejection(" ! [remote rejected] refs/tags/v1 -> refs/tags/v1 (failed)\n"), "refs/tags/v1", true},
++		{"failed for a branch of a full tag ref's name", pushRejection(" ! [remote rejected] refs/heads/v1 -> refs/heads/v1 (failed)\n"), "refs/tags/v1", false},
+ 		{"remote cannot lock ref with a spaced reason", pushRejection(" ! [remote rejected] feat -> feat (cannot lock ref 'refs/heads/feat': is at abc but expected def)\n"), "feat", true},
+ 		{"remote cannot lock ref in full form", pushRejection(" ! [remote rejected] refs/heads/feat -> refs/heads/feat (cannot lock ref 'refs/heads/feat': reference already exists)\n"), "feat", true},
+ 		{"failed for another ref", pushRejection(" ! [remote rejected] other -> other (failed)\n"), "feat", false},
+@@ -59,19 +63,23 @@ func TestPushWithRetry_RetriesOnlyRetryableRefusalsUpToTheBound(t *testing.T) {
+ 	failed := pushRejection(" ! [remote rejected] feat -> feat (failed)\n")
+ 	cannotLock := pushRejection(" ! [remote rejected] feat -> feat (cannot lock ref 'refs/heads/feat': busy)\n")
+ 	notFastForward := pushRejection(" ! [rejected] feat -> feat (non-fast-forward)\n")
++	customDelays := []time.Duration{3 * time.Second, 5 * time.Second}
+ 	for _, tc := range []struct {
+ 		name          string
+ 		results       []error
++		delays        []time.Duration
+ 		wantErr       error
+ 		wantExhausted bool
+ 		wantPushes    int
+ 		wantSleeps    []time.Duration
+ 	}{
+-		{"success first try", []error{nil}, nil, false, 1, nil},
+-		{"refusal then success", []error{failed, nil}, nil, false, 2, []time.Duration{time.Second}},
+-		{"cannot lock ref then success", []error{cannotLock, nil}, nil, false, 2, []time.Duration{time.Second}},
+-		{"persistent refusal stops at the bound", []error{failed, failed, failed, failed, failed}, failed, true, pushMaxAttempts, PushBackoffDelays()},
+-		{"non-retryable error is attempted once and returned unchanged", []error{notFastForward, nil}, notFastForward, false, 1, nil},
++		{"success first try", []error{nil}, PushBackoffDelays(), nil, false, 1, nil},
++		{"refusal then success", []error{failed, nil}, PushBackoffDelays(), nil, false, 2, []time.Duration{time.Second}},
++		{"cannot lock ref then success", []error{cannotLock, nil}, PushBackoffDelays(), nil, false, 2, []time.Duration{time.Second}},
++		{"persistent refusal stops at the bound", []error{failed, failed, failed, failed, failed}, PushBackoffDelays(), failed, true, pushMaxAttempts, PushBackoffDelays()},
++		{"persistent refusal sleeps the caller's delays", []error{failed, failed, failed, failed}, customDelays, failed, true, len(customDelays) + 1, customDelays},
++		{"empty delays make one attempt", []error{failed, failed}, nil, failed, true, 1, nil},
++		{"non-retryable error is attempted once and returned unchanged", []error{notFastForward, nil}, PushBackoffDelays(), notFastForward, false, 1, nil},
+ 	} {
+ 		t.Run(tc.name, func(t *testing.T) {
+ 			t.Parallel()
+@@ -84,7 +92,7 @@ func TestPushWithRetry_RetriesOnlyRetryableRefusalsUpToTheBound(t *testing.T) {
+ 				return err
+ 			}
+ 
+-			err := PushWithRetry(push, "feat", func(delay time.Duration) { sleeps = append(sleeps, delay) })
++			err := PushWithRetry(push, "feat", tc.delays, func(delay time.Duration) { sleeps = append(sleeps, delay) })
+ 
+ 			if pushes != tc.wantPushes {
+ 				t.Errorf("pushes = %d; want %d", pushes, tc.wantPushes)
