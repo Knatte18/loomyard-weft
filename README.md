@@ -17,17 +17,19 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | **One machine takes over from another: owner machines, lyx adopt, landing on the parent owner**<br>• Owner machine per entry, lyx adopt of named entries, landing only on the parent owner, owner outcome in the origin reconcile, Open-Window per machine | [`machine-handover`](design-machine-handover.md) | loom | Loom-Preflight | 2d | 2d | batten, board, orch, fabric |
+| 1 | **One machine takes over from another: owner machines, lyx adopt, landing on the parent owner**<br>• Owner machine per entry, lyx adopt of named entries, landing only on the parent owner, owner outcome in the origin reconcile, Open-Window per machine | [`machine-handover`](design-machine-handover.md) | loom | Discussion-Write | 2d | 2d | batten, board, orch, fabric |
+
+#### Normal priority
+
+| # | Task | Slug | Recipe | At | Age | Revised | Labels |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| 2 | **Darn-Write stops looping on verify failures it cannot own, and the flaky reed boot test behind them**<br>• A verify failure in code the task did not touch, or one the parent already fixed, no longer loops through Darn-Write; the reed boot race is made deterministic and the impacted set stops picking unreachable packages<br>• `profile: light` | [`darn-verify-fixes`](design-darn-verify-fixes.md) | loom | Discussion-Write | 4d | 2m | batten, gate, loom, shed, reed |
 
 ### Ready
 
 Waits on nothing open; can start now.
 
-#### Normal priority
-
-| # | Task | Slug | Recipe | After | Age | Revised | Labels |
-| --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | **Darn-Write stops looping on verify failures it cannot own, and the flaky reed boot test behind them**<br>• A verify failure in code the task did not touch, or one the parent already fixed, no longer loops through Darn-Write; the reed boot race is made deterministic and the impacted set stops picking unreachable packages<br>• `profile: light` | [`darn-verify-fixes`](design-darn-verify-fixes.md) | loom |  | 4d | 2m | batten, gate, loom, shed, reed |
+_None._
 
 ### Layer A
 
@@ -37,7 +39,7 @@ Waits only on Running or Ready entries.
 
 | # | Task | Slug | Recipe | After | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | **tender pause does not hold a verify gate's re-prompt, and creel interrupt is refused under the pause**<br>• `profile: light` | [`tender-pause-holds-reprompt`](design-tender-pause-holds-reprompt.md) | loom | `darn-verify-fixes` | 1d | 0m | creel, shed, webster |
+| 1 | **tender pause does not hold a verify gate's re-prompt, and creel interrupt is refused under the pause**<br>• `profile: light` | [`tender-pause-holds-reprompt`](design-tender-pause-holds-reprompt.md) | loom | `darn-verify-fixes` | 1d | 1m | creel, shed, webster |
 | 2 | **Finalize blocks on 'worktree dirty' without naming the tree or paths, and the loom's own run record counts as dirty**<br>• `profile: light` | [`finalize-dirty-names-paths`](design-finalize-dirty-names-paths.md) | loom | `machine-handover`, `darn-verify-fixes` | 1d | 1d | fabric, loom |
 
 ### Layer B
