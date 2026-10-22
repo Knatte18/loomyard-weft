@@ -729,7 +729,7 @@
       }
     }
   ],
-  "currentBatch": 0,
+  "currentBatch": 4,
   "masterStrand": "1208d44a87b5fd00e2a3266cbfc6e59c",
   "masterSessionId": "dc62cdb4-a622-4a99-88db-9438f18c990d",
   "masterEngine": "claude",
@@ -779,6 +779,24 @@
         "0062664b-f22d-48b0-bceb-57b894e236a5": "claude"
       },
       "recoveryStartSha": "1b901f4c62a619602c8bd0897ae38f0562cc85cd"
+    },
+    "4": {
+      "slug": "board-owner-writes",
+      "cards": [
+        "04-board-owner-writes",
+        "05-board-owner-views"
+      ],
+      "cardHashes": {
+        "04-board-owner-writes": "f3c438b3aa9ca969f4abb12bde26e2be9ac9c5b4e58a9cea29ade6c81c076b0c",
+        "05-board-owner-views": "4f41d880918eb829f03fc8e1ec60500846d59bcfb7cd5a22c6b18adb5c3336a1"
+      },
+      "startSha": "61ed2df2afdfbe5cb776dd714603cd7b73ce756e",
+      "kind": "fork",
+      "spawnedAt": "2026-10-22T08:21:40Z",
+      "sessionId": "dc62cdb4-a622-4a99-88db-9438f18c990d",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
     }
   },
   "seenForkTranscripts": [
