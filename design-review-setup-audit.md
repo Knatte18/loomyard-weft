@@ -16,6 +16,21 @@ Run it once about ten loom runs with the current setup have landed on Neve; runs
 
 Later the same day (operator): run it now, over the loom runs landed since `504c5552` (2026-10-20), with the runs after `research-in-discussion` and `lenses-language-sets` (2026-10-22), which change Discussion, reported apart.
 
+## Result of the first run (2026-10-22)
+
+A sonnet agent ran the audit over the 6 loom runs landed since `504c5552`; the sample is small and only `finalize-dirty-names-paths` ran Discussion after the 2026-10-22 changes.
+
+- Late rounds still pay: discussion round 3 found something real in 3 of 3 runs that reached it, plan round 2 in 3 of 3, nearly all new findings rather than too-narrow earlier fixes, so lowering caps is not supported.
+- The lens fan raised 93% of round-1 gating findings at Discussion and 58% at Plan, for about $1 a perch; a review perch costs about $10-11, mostly in its later rounds.
+- No further cut in round-1 findings from twill-plan is visible, and none is ruled out.
+- Agent recommendation, not a decision: template defaults Discussion 2 soft / 3 hard, Plan 1 soft / 2 hard, Webster 1, Merge 1 (profile `light`'s values).
+
+## Operator decision (2026-10-22): lens fan in Discussion round 2
+
+Since late rounds still find new things, Discussion-Review round 2 also runs the lens fan, and round 3 on runs solo: the hub's `loom.yaml` sets `discussion_reviewer_fan: ["review-discussion", "review-discussion", ""]`.
+The twill fixer stays in every round, since many late-round defects are introduced by a sloppy fixer.
+The next run of this audit checks what round 2's fan finds against a solo round 2, before Plan gets the same.
+
 ## Review rounds after twill-plan (was note `review-rounds-after-twill-plan`)
 
 The earlier audit below found discussion-review round 3 and plan-review round 2 useful only when an earlier round's fix was too narrow.
