@@ -15,12 +15,12 @@
 - `internal/fabricengine/doc.go`
 
 **Uses:**
-- `plan:internal/runproc#Register`
-- `plan:internal/runproc#ChildRecord`
-- `plan:internal/runproc#List`
-- `plan:internal/runproc#HubOwner`
-- `plan:internal/runproc#RolePush`
-- `plan:internal/runproc#RoleSync`
+- `internal/runproc#Register`
+- `internal/runproc#ChildRecord`
+- `internal/runproc#List`
+- `internal/runproc#HubOwner`
+- `internal/runproc#RolePush`
+- `internal/runproc#RoleSync`
 - `internal/fabricengine#HubScratchDir`
 
 **Intent:**

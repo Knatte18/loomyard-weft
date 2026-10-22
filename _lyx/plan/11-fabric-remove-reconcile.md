@@ -18,7 +18,7 @@
 
 **Uses:**
 - `plan:internal/pauserecord#SetGateExemptAll`
-- `plan:internal/runproc#Ended`
+- `internal/runproc#Ended`
 - `internal/pairteardown#HubSeamOptions`
 - `internal/pairteardown#Teardown.OriginSeams`
 - `internal/pairteardown#Teardown.taskWorktreeGone`

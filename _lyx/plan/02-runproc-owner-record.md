@@ -2,30 +2,30 @@
 
 **Create:**
 - `internal/runproc/doc.go`
-- `plan:internal/runproc#HubOwner` -> `const HubOwner = "_board"`
-- `plan:internal/runproc#RoleDriver` -> `const RoleDriver = "driver"`
-- `plan:internal/runproc#RoleLoop` -> `const RoleLoop = "loop"`
-- `plan:internal/runproc#RoleBatten` -> `const RoleBatten = "batten"`
-- `plan:internal/runproc#RolePush` -> `const RolePush = "push"`
-- `plan:internal/runproc#RoleSync` -> `const RoleSync = "sync"`
-- `plan:internal/runproc#Record` -> `type Record struct`
-- `plan:internal/runproc#ChildRecord` -> `func ChildRecord(pid int, role string, argv []string) Record`
-- `plan:internal/runproc#SelfRecord` -> `func SelfRecord(role string) Record`
-- `plan:internal/runproc#Register` -> `func Register(dir, owner string, rec Record) error`
-- `plan:internal/runproc#List` -> `func List(dir, owner string) ([]Record, error)`
-- `plan:internal/runproc#Owners` -> `func Owners(dir string) (map[string][]Record, error)`
-- `plan:internal/runproc#Ended` -> `type Ended struct`
-- `plan:internal/runproc#SurvivorsError` -> `type SurvivorsError struct`
-- `plan:internal/runproc#SurvivorsError.Error` -> `func (e *SurvivorsError) Error() string`
-- `plan:internal/runproc#End` -> `func End(dir, owner string, callerPID int) ([]Ended, error)`
-- `plan:internal/runproc#EndProcess` -> `func EndProcess(pid int, startTime, role string) ([]Ended, error)`
-- `plan:internal/runproc#ender` -> `type ender struct`
-- `plan:internal/runproc#ender.end` -> `func (e ender) end(dir, owner string, callerPID int) ([]Ended, error)`
-- `plan:internal/runproc#ender.endProcess` -> `func (e ender) endProcess(pid int, startTime, role string) ([]Ended, error)`
-- `plan:internal/runproc#lister` -> `type lister struct`
-- `plan:internal/runproc#TestRegisterAndList` -> `func TestRegisterAndList(t *testing.T)`
-- `plan:internal/runproc#TestEnd` -> `func TestEnd(t *testing.T)`
-- `plan:internal/runproc#TestLeafInvariant_AllowlistOnly` -> `func TestLeafInvariant_AllowlistOnly(t *testing.T)`
+- `internal/runproc#HubOwner`
+- `internal/runproc#RoleDriver`
+- `internal/runproc#RoleLoop`
+- `internal/runproc#RoleBatten`
+- `internal/runproc#RolePush`
+- `internal/runproc#RoleSync`
+- `internal/runproc#Record`
+- `internal/runproc#ChildRecord`
+- `internal/runproc#SelfRecord`
+- `internal/runproc#Register`
+- `internal/runproc#List`
+- `internal/runproc#Owners`
+- `internal/runproc#Ended`
+- `internal/runproc#SurvivorsError`
+- `internal/runproc#SurvivorsError.Error`
+- `internal/runproc#End`
+- `internal/runproc#EndProcess`
+- `internal/runproc#ender`
+- `internal/runproc#ender.end`
+- `internal/runproc#ender.endProcess`
+- `internal/runproc#lister`
+- `internal/runproc#TestRegisterAndList`
+- `internal/runproc#TestEnd`
+- `internal/runproc#TestLeafInvariant_AllowlistOnly`
 - `pattern/PATTERN-run-process-owner.md`
 
 **Edit:**
@@ -34,9 +34,9 @@
 - `docs/overview.md`
 
 **Uses:**
-- `plan:internal/proc#ListStats`
-- `plan:internal/proc#SignalProcess`
-- `plan:internal/proc#SignalGroup`
+- `internal/proc#ListStats`
+- `internal/proc#SignalProcess`
+- `internal/proc#SignalGroup`
 - `internal/testkit/scankit#AssertImportAllowlist`
 
 **Intent:**

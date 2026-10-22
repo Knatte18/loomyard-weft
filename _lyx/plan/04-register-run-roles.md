@@ -22,12 +22,12 @@
 - `internal/loomcli/doc.go`
 
 **Uses:**
-- `plan:internal/runproc#Register`
-- `plan:internal/runproc#SelfRecord`
-- `plan:internal/runproc#List`
-- `plan:internal/runproc#RoleDriver`
-- `plan:internal/runproc#RoleLoop`
-- `plan:internal/runproc#RoleBatten`
+- `internal/runproc#Register`
+- `internal/runproc#SelfRecord`
+- `internal/runproc#List`
+- `internal/runproc#RoleDriver`
+- `internal/runproc#RoleLoop`
+- `internal/runproc#RoleBatten`
 - `plan:internal/fabricengine#RunProcDir`
 
 **Intent:**

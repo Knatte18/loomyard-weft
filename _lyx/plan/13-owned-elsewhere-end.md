@@ -32,8 +32,8 @@
 - `internal/battenshed/doc.go`
 
 **Uses:**
-- `plan:internal/runproc#End`
-- `plan:internal/runproc#SurvivorsError`
+- `internal/runproc#End`
+- `internal/runproc#SurvivorsError`
 - `plan:internal/fabricengine#RunProcDir`
 - `internal/sheddriver#StopKeyOf`
 - `internal/fabricengine#ParentHoldsTaskWork`

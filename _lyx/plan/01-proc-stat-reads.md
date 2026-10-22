@@ -1,11 +1,11 @@
 # Card 1 — proc reads every process's parent, group, start time and state, and signals a pid or a group
 
 **Create:**
-- `plan:internal/proc#StatEntry` -> `type StatEntry struct`
-- `plan:internal/proc#ListStats` -> `func ListStats() ([]StatEntry, error)`
-- `plan:internal/proc#SignalProcess` -> `func SignalProcess(pid int, kill bool) error`
-- `plan:internal/proc#SignalGroup` -> `func SignalGroup(pgid int, kill bool) error`
-- `plan:internal/proc#TestStatReadsUnsupportedOnWindows` -> `func TestStatReadsUnsupportedOnWindows(t *testing.T)`
+- `internal/proc#StatEntry`
+- `internal/proc#ListStats`
+- `internal/proc#SignalProcess`
+- `internal/proc#SignalGroup`
+- `internal/proc#TestStatReadsUnsupportedOnWindows`
 
 **Edit:**
 - `internal/proc#TestProcessTreeReads`
