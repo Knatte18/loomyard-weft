@@ -675,7 +675,7 @@
       }
     }
   ],
-  "currentBatch": 0,
+  "currentBatch": 11,
   "masterStrand": "fd94635c977349faf13625dcb991f1fc",
   "masterSessionId": "50f3575b-651f-41fb-ab8d-6b29950f8b0d",
   "masterEngine": "claude",
@@ -756,6 +756,24 @@
       "bracketTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-run-process-ownership/50f3575b-651f-41fb-ab8d-6b29950f8b0d/subagents/agent-a13d5e7f1bfff5a56.jsonl"
       ]
+    },
+    "11": {
+      "slug": "fabric-remove-reconcile",
+      "cards": [
+        "11-fabric-remove-reconcile",
+        "12-reed-down-ends-owned"
+      ],
+      "cardHashes": {
+        "11-fabric-remove-reconcile": "8928896bb62d889fc92957cd28c41ff4ac9262ae4d440521330817a3021446fc",
+        "12-reed-down-ends-owned": "5b0066369f16d112c74549c314e0826d04a8acd2a6813eea213ef9a6eddf0dce"
+      },
+      "startSha": "5581d6e20f2a316319d3bdc8a1fc9e4b249baf53",
+      "kind": "fork",
+      "spawnedAt": "2026-10-22T13:53:47Z",
+      "sessionId": "50f3575b-651f-41fb-ab8d-6b29950f8b0d",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
     },
     "3": {
       "slug": "register-detached-spawns",
