@@ -1,0 +1,169 @@
+diff --git a/contracts/stencils/orch/orch-template-role.md b/contracts/stencils/orch/orch-template-role.md
+index 7013565df..355c65428 100644
+--- a/contracts/stencils/orch/orch-template-role.md
++++ b/contracts/stencils/orch/orch-template-role.md
+@@ -172,9 +172,9 @@ The mechanics of reading and writing the board are in the `ly:board` skill; this
+   Notes are bundled only when the operator promotes them into a task.
+ - Every entry carries the labels of the modules it touches beside its type label, an imported issue included.
+ - Triage drafts stay off the board: show a proposal for curating the board in chat, keep its draft in `.scratch/`, and change the board only after the operator decides.
+-- A small task gets `run_settings` `{"<recipe>": {"review_max_bounces": 1, "review_hard_max_bounces": 2}}` on its board entry, with `<recipe>` its recipe, `loom` or `darn`, through `lyx board upsert`, before its batten run starts.
+-  One round is enough, since the perch fixer checks its own fixes through its fixer fan.
+-  A hard cap of 2 lets the soft-cap rule buy one more round for a design-wrong fix and no more.
++- A task that needs fewer review rounds than its recipe's defaults names a profile, such as `light`, in its board entry's `profile` field through `lyx board upsert`, before its batten run starts;
++  it never gets hand-written `run_settings` for its review bounds.
++  `lyx board profiles` lists the hub's profiles.
+ 
+ ## Where a finding goes
+ 
+diff --git a/docs/overview.md b/docs/overview.md
+index 5369120b0..2dcb488a7 100644
+--- a/docs/overview.md
++++ b/docs/overview.md
+@@ -475,7 +475,7 @@ User-facing modules each get one `lyx <module>` namespace:
+   `internal/shedverbs` owns the generic `run`/`step`/`status`/`pause` verb bodies loomcli arms; `internal/loomcli` hosts only `start` and the arming glue.
+   `insert-card`, `remove-card` and `restore-renumber` are the plan-editing verbs: they add or drop one card and renumber the cards after it through `internal/planparser` under a journal that makes an interrupted call restorable, refuse a position at or before the last card webster has begun, and hold webster's state-mutation lease while they run.
+   A second embedded recipe, `contracts/recipes/darn-recipe.yaml`, drives a darn run: one gated `Darn-Write` writer that writes and validates the decision record first and, once its `discussion` gate passes, commits it, then reads the board entry, edits, tests and commits, then the `Darn-Review` perch (`Darn-Bouncer`, `Darn-Burler-Review` and `Darn-Burler-Fix`) reviews the committed diff against the board entry as amended by the record's `Added after Discussion` entries and carries its open findings into the record, then `Describe` rewrites the change description from the final diff, then Merge-In, Publish, PR-Align, PR-Gate and Finalize, with no discussion, plan, webster or merge-review rows.
+-  The perch's bounce budget is `darn.yaml`'s `review_max_bounces`, default `1`, and `0` routes `Darn-Write` straight to Merge-In, so the writer's own description stands; its hard cap is `review_hard_max_bounces`, default `4`, and `review_amend_max_bounces` is the amendment allowance a re-entered review of a changed subject runs under.
++  The perch's bounce budget is `darn.yaml`'s `review_max_bounces`, default `1`, and `0` routes `Darn-Write` straight to Merge-In, so the writer's own description stands; its hard cap is `review_hard_max_bounces`, default `2`, and `review_amend_max_bounces` is the amendment allowance a re-entered review of a changed subject runs under.
+   All three are settable per run through the task's `run_settings`.
+   `darn_reviewer_model` and `darn_fixer_model` set the perch's reviewer and fixer models, an empty one taking `loom.yaml`'s `reviewer_model` or `fixer_model`.
+   `darn_reviewer_fan` and `darn_fixer_fan` give the perch a per-round lens fan and twill fixer, empty by default and closed to the local layer.
+diff --git a/internal/darnengine/config.go b/internal/darnengine/config.go
+index d248fc3cd..1f325fca7 100644
+--- a/internal/darnengine/config.go
++++ b/internal/darnengine/config.go
+@@ -190,7 +190,7 @@ func ValidateLocalValues(document []byte) error {
+ // It validates the writer key's model-spec grammar at load time and leaves verify_attempts and review_max_bounces to their readers.
+ // darn_reviewer_model and darn_fixer_model, when set, are refused as an empty list, a value that is neither a model-spec nor a list of them, or an entry that is no model-spec.
+ // darn_reviewer_fan and darn_fixer_fan are refused as an empty list, a value that is neither a fan name nor a list of them, or an entry naming a fan lenses.yaml does not resolve.
+-// review_max_bounces and review_amend_max_bounces are refused below 0, and review_hard_max_bounces, default 4, below 1 and below review_max_bounces;
++// review_max_bounces and review_amend_max_bounces are refused below 0, and review_hard_max_bounces, default 2, below 1 and below review_max_bounces;
+ // each refusal names the command that fixes it for the layer the value comes from.
+ // It returns tree_scope keyed by trimmed tree path and refuses a malformed or repeated tree key wrapping ErrTreeScopeKey, a tree_scope_verify with no tree wrapping ErrTreeScopeWithoutTrees, a tree_scope_verify without {targets},
+ // and a tree_scope_verify that is not exactly one `lyx gate test` call holding `--wait` and no shell control operator.
+diff --git a/internal/darnengine/config_test.go b/internal/darnengine/config_test.go
+index 1cf30f604..ca4ecda74 100644
+--- a/internal/darnengine/config_test.go
++++ b/internal/darnengine/config_test.go
+@@ -34,7 +34,7 @@ func seedDarnConfig(t *testing.T, baseDir, contents string) {
+ // templateConfig returns the Config the embedded template loads as, changed by mutate.
+ func templateConfig(mutate func(*Config)) Config {
+ 	cfg := Config{
+-		Writer: "opus[medium]", WriterTimeoutMin: 180, VerifyAttempts: 3, ReviewMaxBounces: 1, ReviewHardMaxBounces: 4, ReviewAmendMaxBounces: 1,
++		Writer: "opus[medium]", WriterTimeoutMin: 180, VerifyAttempts: 3, ReviewMaxBounces: 1, ReviewHardMaxBounces: 2, ReviewAmendMaxBounces: 1,
+ 		ReviewerModel: burlerengine.ModelSpecList{"sonnet[medium]"}, FixerModel: burlerengine.ModelSpecList{"sonnet[medium]"},
+ 		ReviewerFan: lenses.FanList{"review-code", ""}, FixerFan: lenses.FanList{"fix-code"},
+ 		TreeScope: map[string]string{},
+@@ -181,7 +181,7 @@ func TestLoadConfig(t *testing.T) {
+ 		},
+ 		{
+ 			name: "hard cap below 1", seed: true,
+-			contents: strings.Replace(ConfigTemplate(), "review_hard_max_bounces: 4", "review_hard_max_bounces: 0", 1),
++			contents: strings.Replace(ConfigTemplate(), "review_hard_max_bounces: 2", "review_hard_max_bounces: 0", 1),
+ 			wantErr:  []string{"review_hard_max_bounces", "must be at least 1", "lyx config darn --set"},
+ 		},
+ 		{
+diff --git a/internal/darnengine/doc.go b/internal/darnengine/doc.go
+index bb201407d..517b1b5d8 100644
+--- a/internal/darnengine/doc.go
++++ b/internal/darnengine/doc.go
+@@ -1,6 +1,6 @@
+ // Package darnengine owns the darn recipe's hub-wide configuration and the tree scope classification every darn verify site reads.
+ //
+-// `darn.yaml` is a hub-wide config module with these keys: `writer`, the model-spec of the darn writer's session; `writer_timeout_min`, its wall-clock budget in minutes; `tree_scope` and `tree_scope_verify`, the keys that let a diff wholly under the hub's non-production trees run a narrower command, described in the tree scope paragraph below; `verify_attempts`, how many times a verify gate, the writer's or a Darn-Review fix round's, re-prompts its session before it halts the run for the parent; and `review_max_bounces`, the bounce budget of the Darn-Review perch that reviews the writer's committed diff before Publish, defaulting to 1, where 0 runs neither the review nor the Describe row after it; and `review_hard_max_bounces`, the round number at or past which that perch never continues a round, defaulting to 4; and `review_amend_max_bounces`, the review rounds an amendment generation gets after a settled Darn-Review subject changed, defaulting to 1, where 0 settles every amendment approved with no review round; and `darn_reviewer_model` and `darn_fixer_model`, the perch's per-round reviewer and fixer models in burlerengine's model-spec list grammar, where an empty key takes `loom.yaml`'s shared `reviewer_model` or `fixer_model`;
++// `darn.yaml` is a hub-wide config module with these keys: `writer`, the model-spec of the darn writer's session; `writer_timeout_min`, its wall-clock budget in minutes; `tree_scope` and `tree_scope_verify`, the keys that let a diff wholly under the hub's non-production trees run a narrower command, described in the tree scope paragraph below; `verify_attempts`, how many times a verify gate, the writer's or a Darn-Review fix round's, re-prompts its session before it halts the run for the parent; and `review_max_bounces`, the bounce budget of the Darn-Review perch that reviews the writer's committed diff before Publish, defaulting to 1, where 0 runs neither the review nor the Describe row after it; and `review_hard_max_bounces`, the round number at or past which that perch never continues a round, defaulting to 2; and `review_amend_max_bounces`, the review rounds an amendment generation gets after a settled Darn-Review subject changed, defaulting to 1, where 0 settles every amendment approved with no review round; and `darn_reviewer_model` and `darn_fixer_model`, the perch's per-round reviewer and fixer models in burlerengine's model-spec list grammar, where an empty key takes `loom.yaml`'s shared `reviewer_model` or `fixer_model`;
+ // and `darn_reviewer_fan` and `darn_fixer_fan`, the perch's per-round reviewer and fixer fans from `lenses.yaml`, in the `lenses` package's fan grammar, empty by default so every round runs solo with the single fixer.
+ // LoadConfig refuses a set model key that is an empty list, a value of another shape or an entry that is no model-spec.
+ // The two fan keys are closed to the local layer, and LoadConfig refuses an empty list, a value of another shape and an entry naming a fan `lenses.yaml` does not resolve.
+diff --git a/internal/darnengine/template.yaml b/internal/darnengine/template.yaml
+index f22f444c2..3b48c770f 100644
+--- a/internal/darnengine/template.yaml
++++ b/internal/darnengine/template.yaml
+@@ -12,5 +12,5 @@ darn_reviewer_model: sonnet[medium]  # model-spec for the Darn-Review reviewer (
+ darn_fixer_model: sonnet[medium]  # model-spec for the Darn-Review fixer, sonnet[medium] by default; empty takes loom.yaml's fixer_model, a set value (one model-spec, or a per-round list whose last entry serves every later round) replaces it for this segment
+ darn_reviewer_fan: ["review-code", ""]  # fan name from lenses.yaml, such as review-code, that turns the lens fan on for Darn-Review; one fan name, or a YAML list with one fan name per round, the last entry serving every later round; the default fans round one out over review-code and runs later rounds solo; an empty entry runs that round solo
+ darn_fixer_fan: fix-code  # fan name from lenses.yaml, such as fix-code, that has the Darn-Review fixer fork itself once per lens of the fan to check its fixes; one fan name, or a YAML list with one fan name per round, the last entry serving every later round; fix-code is the default, and an empty entry runs the single fixer for that round
+-review_hard_max_bounces: 4  # hard cap of the Darn-Review perch, settable per run through run_settings: a round numbered at or past it is accepted or escalated hard-cap, never continued; at least 1 and not below review_max_bounces
++review_hard_max_bounces: 2  # hard cap of the Darn-Review perch, settable per run through run_settings: a round numbered at or past it is accepted or escalated hard-cap, never continued; at least 1 and not below review_max_bounces
+ review_amend_max_bounces: 1  # review rounds an amendment generation gets after a settled Darn-Review subject changed, clamped to the perch's own budget; 0 settles every amendment approved with no review round; settable per run through run_settings
+diff --git a/internal/loomcli/circling_test.go b/internal/loomcli/circling_test.go
+index 525e6daf8..f906bdb3f 100644
+--- a/internal/loomcli/circling_test.go
++++ b/internal/loomcli/circling_test.go
+@@ -223,7 +223,7 @@ func TestPerchHardCap(t *testing.T) {
+ 			seed: func(t *testing.T, loc *lyxcwd.Location) {
+ 				seedDarnHubConfig(t, loc.HubPath, "3")
+ 			},
+-			wantHard:  4,
++			wantHard:  2,
+ 			wantRaise: []string{"lyx config darn --set review_hard_max_bounces=<n>"},
+ 		},
+ 		{
+diff --git a/internal/loomcli/wiring_darn_test.go b/internal/loomcli/wiring_darn_test.go
+index 924ac8e78..3564031f5 100644
+--- a/internal/loomcli/wiring_darn_test.go
++++ b/internal/loomcli/wiring_darn_test.go
+@@ -85,8 +85,8 @@ func TestWire_DarnRecipe(t *testing.T) {
+ 		if got, want := c.env.GateFindingsFile("Darn-Write"), shedrun.GateFindingsFile(loc, c.runID, "Darn-Write"); got != want {
+ 			t.Errorf("c.env.GateFindingsFile(\"Darn-Write\") = %q; want %q", got, want)
+ 		}
+-		if segment := c.env.Segments["Darn-Review"]; segment.MaxBounces != 1 || segment.HardMaxBounces != 4 || c.darnCfg == nil {
+-			t.Errorf("Segments[Darn-Review] = %+v, c.darnCfg nil = %v; want the template's budget 1 and hard cap 4 and the loaded config", segment, c.darnCfg == nil)
++		if segment := c.env.Segments["Darn-Review"]; segment.MaxBounces != 1 || segment.HardMaxBounces != 2 || c.darnCfg == nil {
++			t.Errorf("Segments[Darn-Review] = %+v, c.darnCfg nil = %v; want the template's budget 1 and hard cap 2 and the loaded config", segment, c.darnCfg == nil)
+ 		}
+ 		if command, err := c.env.VerifyCommand(); err != nil || command != wantDarnLandingCall {
+ 			t.Errorf("c.env.VerifyCommand() = %q, %v; want the landing call %q, nil", command, err, wantDarnLandingCall)
+@@ -185,7 +185,7 @@ func TestWire_DarnRecipe(t *testing.T) {
+ 				Bouncer:        c.env.Segments["Webster-Review"].Bouncer,
+ 				MaxBounces:     1,
+ 				MaxBouncesKey:  "review_max_bounces",
+-				HardMaxBounces: 4, HardMaxBouncesKey: "review_hard_max_bounces",
++				HardMaxBounces: 2, HardMaxBouncesKey: "review_hard_max_bounces",
+ 				AmendMaxBounces: 1,
+ 				ConfigFile:      "darn.yaml",
+ 			}
+diff --git a/internal/runprofile/runprofile_test.go b/internal/runprofile/runprofile_test.go
+index 80e6f1270..f686fede6 100644
+--- a/internal/runprofile/runprofile_test.go
++++ b/internal/runprofile/runprofile_test.go
+@@ -34,9 +34,14 @@ func TestLoad(t *testing.T) {
+ 		name        string
+ 		contents    *string
+ 		wantNames   []string
++		wantDarn    map[string]any
+ 		wantRefusal []string
+ 	}{
+-		{name: "no file reads the template's starting profiles", wantNames: []string{"budget", "docs", "light"}},
++		{
++			name:      "no file reads the template's starting profiles",
++			wantNames: []string{"budget", "docs", "light"},
++			wantDarn:  map[string]any{"review_max_bounces": 1, "review_hard_max_bounces": 2},
++		},
+ 		{name: "a removed starting profile stays removed", contents: new("light:\n  loom: {plan_max_bounces: 1}\nwide:\n  darn: {review_max_bounces: 2}\n"), wantNames: []string{"light", "wide"}},
+ 		{name: "a comments-only file holds no profile", contents: new("# no profiles\n"), wantNames: []string{}},
+ 		{name: "a profile that is not a mapping is refused", contents: new("light: 3\n"), wantRefusal: []string{`profile "light"`, "mapping of module name"}},
+@@ -67,6 +72,11 @@ func TestLoad(t *testing.T) {
+ 			if got := profiles.Names(); !slices.Equal(got, tt.wantNames) {
+ 				t.Errorf("Load() names = %v; want %v", got, tt.wantNames)
+ 			}
++			if tt.wantDarn != nil {
++				if got := profiles["light"]["darn"]; !reflect.DeepEqual(got, tt.wantDarn) {
++					t.Errorf("Load() light darn = %v; want %v", got, tt.wantDarn)
++				}
++			}
+ 		})
+ 	}
+ }
+diff --git a/internal/runprofile/template.yaml b/internal/runprofile/template.yaml
+index a4bd0cf8c..3b44009f8 100644
+--- a/internal/runprofile/template.yaml
++++ b/internal/runprofile/template.yaml
+@@ -10,6 +10,7 @@
+ 
+ light:
+   loom: {discussion_max_bounces: 2, discussion_hard_max_bounces: 3, plan_max_bounces: 1, plan_hard_max_bounces: 2, webster_max_bounces: 1, merge_max_bounces: 1}
++  darn: {review_max_bounces: 1, review_hard_max_bounces: 2}
+ budget:
+   loom: {discussion_max_bounces: 2, discussion_hard_max_bounces: 3, plan_max_bounces: 2, plan_hard_max_bounces: 3, webster_max_bounces: 2, merge_max_bounces: 2}
+   darn: {review_max_bounces: 1}
