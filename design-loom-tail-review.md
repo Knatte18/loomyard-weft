@@ -52,6 +52,13 @@ Orch judgement: agreed, with two cautions.
 - Two of the three code deviations the alignment agent caught were written by a review loop's last fixer, which nothing reviews after it; the fix belongs in the perches, not in a late check.
 - Without a PR, Describe's text has no reader unless it becomes the squash commit message.
 
+## Agreed direction (operator, 2026-10-22, for review tomorrow)
+
+- Tail: Webster, Webster perch, Merge-In with its fixer, Finalize.
+- Merge-In does conflicts, tests, fixing after tests, and alignment against what the merge brought in.
+  Orch caution: it fixes what follows from the decision record, and escalates a real conflict between decisions rather than choosing one.
+- A separate PR block, an ordinary producer with an entry gate on a config flag: off, the run skips it; on, it publishes the PR, a human is required, and an interactive session takes the human's feedback and fixes it before Finalize.
+
 ## Orch ideas raised in the discussion (not decisions)
 
 - One end-of-tail perch over the diff since Webster-Review approved, skipped when the tail changed nothing; it only works when no fixer runs after it.
