@@ -34,14 +34,14 @@ Recommendation taken: a flag on `decision add` writes an amendment record the se
 
 `go.mod` pins quarry v0.4.0, which has `Enclose` and `EncloseAt`; the board entry's v0.2.1 note is stale.
 A failed Merge-In or Publish verify writes the Publish failure record, and `PublishFailureNote` renders it into the Webster-Review rubric, which the reviewer and the fixer read.
-Locations come from the failure identities' tails: Go build errors carry relative paths, test failures carry bare file names, panics carry absolute paths.
+Locations come from the failure identities' tails: Go build errors carry relative paths, test failures carry bare file names, and panics carry absolute paths, or module-path-prefixed ones under the hub gate tiers' `-trimpath`.
 Recommendation taken: trace at record write time, store the cards on the record and render them in the note (D9).
 
 ### Turn 6 — lens review
 
 Seven forks reviewed the record; every one returned a report.
 
-- interactions, existing-paths, walkthrough, bound-breaker: D7 claimed Plan-Bouncer's amendment generation, but the review round makes the settle record not live, so Plan-Bouncer judges round by round on the spent budget — fixed: D7 and Open risks state the real path.
+- interactions, existing-paths, walkthrough, bound-breaker: D7 claimed Plan-Bouncer's amendment generation, but the review round makes the settle record not live, so Plan-Bouncer judges round by round on the spent budget — fixed: D7 states the real path.
 - walkthrough (BLOCKING): D2 refused every PR-Rework generation of a task that declared an entry — fixed: an entry whose bullet already differs from the merge base is satisfied.
 - bound-breaker: the amendment record was removed by a no-spawn approved settle — fixed: removal only after a judged round later than the write.
 - interactions: a stale amendment record outlives a PR-Rework generation — fixed: PR-Rework's archive removes it.
@@ -53,7 +53,7 @@ Seven forks reviewed the record; every one returned a report.
 - bound-breaker: continuation lines — fixed: the whole bullet is replaced.
 - existing-paths: `planglyph` delete-order and the batcher boundary read `Edit` only — fixed: D3 names every reader.
 - board-fit: the pair rule lived only in Webster and plandag — fixed: one function in `internal/planparser`.
-- board-fit: the arbiter stencil is recipe-blind — fixed: the amendment target comes through the stop envelope.
+- board-fit: the arbiter stencil is recipe-blind — fixed: the amendment target comes through an arbiter prompt input filled from a recipe key (D8).
 - board-fit: C# output unstated — fixed: Scope Out.
 - board-fit: `speed-loom-profile` could remove the fix loop — fixed: Open risks.
 - board-fit: `run-verbs-shared` moves the verbs later — rejected: no conflict today, and the move rewrites every `lyx loom` mention anyway.
@@ -105,5 +105,6 @@ _No rounds yet._
 - Q10 (resolved, auto-pick): Does this task bump quarry? No, v0.4.0 already ships Enclose.
 - Q11 (resolved, auto-pick): Does this task touch the hub orch rule allowing hand edits? No; it lives outside the repo, and the conflict is an Open risk.
 - Q12 (resolved, auto-pick): Should the amendment start a new Plan-Review episode so it gets an allowance? No; the existing goto routes keep the spent budget, and the parent's resume grants more (D7).
-- Q13 (resolved, auto-pick): Where does the arbiter learn the amendment target? From the stop envelope, set by loom's wiring (D8).
+- Q13 (resolved, auto-pick): Where does the arbiter learn the amendment target? From an `amendment_target` arbiter prompt input that loom's wiring fills from a recipe key once the plan is approved; the stop envelope is unchanged (D8).
 - Q14 (resolved, auto-pick): Where does the `Extends` pair rule live? In `internal/planparser`, for Webster, plandag and a later batchifier (D4).
+- Q15 (resolved, auto-pick, round 2): Is the amendment record never-tracked? No; the run's routing reads it, so it is tracked at `_lyx/loom/amendment.yaml` and committed with its decision entry (D7).
