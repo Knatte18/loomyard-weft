@@ -1,6 +1,6 @@
 ---
 format: 5
-approved: false
+approved: true
 language: go
 ---
 
@@ -29,6 +29,6 @@ The cards follow the decision record's D1 to D7 in dependency order: the pane li
 ## Shared Decisions
 
 - The engine liveness predicate is `engineAliveIDs` (card 3); every strand-liveness reader in reed takes it, and every pane-level check (Selvage health, pane options, title repair) keeps `aliveIDSet`.
-- `StrandStatus.Present`, `OwnWindow` and `PanePID` stay pane-level, so shuttle's `strandRemovable` and creel's process-to-strand mapping are unchanged by D1.
+- `StrandStatus.Present`, `OwnWindow` and `PanePID` stay pane-level, so the rule of shuttle's `strandRemovable`, whose doc comment card 3 rewords, and creel's process-to-strand mapping are unchanged by D1.
 - The orch state lock (`Paths.StateLockPath`) is the one lock every writer and remover of `cycle-request` holds (card 8); `lyx orch withdraw` (card 12) uses it through `WithdrawCycleRequest`.
 - The hub orch rules section "Dead strands after a reboot (#799)" is removed by the orch with `lyx orch rules` after landing, never by a card, since a task's code change never writes Bolt.

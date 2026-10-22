@@ -16,6 +16,9 @@
 - `internal/reedengine#TestOwnWindow_RealTmux`
 - `internal/reedengine/doc.go`
 - `internal/shuttleengine/claudeengine/template.yaml`
+- `internal/shuttleengine#strandRemovable`
+- `internal/shuttleengine#Runner.StopStepRuns`
+- `internal/shuttleengine/doc.go`
 
 **Create:**
 - `plan:internal/reedengine#launchGrace` -> `const launchGrace = 30 * time.Second`
@@ -43,10 +46,9 @@ An empty start command (a pane spawned with no `default-command` pin) or an empt
 `shellBaseName` trims spaces and one pair of surrounding `"` or `'`, takes the first space-separated word, its `filepath.Base`, and drops one leading `-`, so the login shell `-bash` and the pin `/bin/bash` (or `"/usr/bin/zsh -l"`) compare equal.
 `Engine.engineAliveIDSet` calls `engineAliveIDs(present, e.paneAge, runtime.GOOS != "windows")`, so condition 3 is skipped on Windows (a PowerShell cmdlet runs inside the shell).
 `Engine` gains the seam field `paneAge func(pid int) (time.Duration, bool)`, which `New` sets to `paneProcessAge`; a test sets it to a stub.
-A nil `paneAge`, on an `Engine` built by hand rather than through `New`, reads as "age unknown, inside the grace": `engineAliveIDSet` passes a func answering false, so condition 3 never reads such a pane dead.
 
 Readers moved from `aliveIDSet` to `engineAliveIDSet` (D1's Readers):
-- `Engine.Status`: `StrandStatus.Live` reads `engineAliveIDSet(present)`. `Present`, `OwnWindow` and `PanePID` stay pane-level: `PanePID` is still the listed pid of any pane that is not dead, since creel maps processes to strands through it, and `Present` is what shuttle's stop and the died-window removal decide on, so `strandRemovable` (internal/shuttleengine/stop.go) still removes a shell-only own-window strand with no change there. Through `Status` this reaches `lyx orch status`, `lyx orch start`, webster's `StrandLive`, loom's driver check, creel's `Strand.Live` and shuttle's wait and attach with no change in those packages.
+- `Engine.Status`: `StrandStatus.Live` reads `engineAliveIDSet(present)`. `Present`, `OwnWindow` and `PanePID` stay pane-level: `PanePID` is still the listed pid of any pane that is not dead, since creel maps processes to strands through it, and `Present` is what shuttle's stop and the died-window removal decide on, so `strandRemovable` (internal/shuttleengine/stop.go) still removes a shell-only own-window strand with no change to its rule; only its doc comment changes, to an own-window strand whose pane is present but not live, a dead pane or a shell-only one, and the two other statements of that rule, `Runner.StopStepRuns`' doc comment (internal/shuttleengine/stepstop.go) and the Stop verb section of `internal/shuttleengine/doc.go`, change the same way. Through `Status` this reaches `lyx orch status`, `lyx orch start`, webster's `StrandLive`, loom's driver check, creel's `Strand.Live` and shuttle's wait and attach with no change in those packages.
 - `directoryRows` takes the alive set as a new parameter and sets `Live`, `Title` and `Drift` only for a strand in it; `Engine.Directory` passes `e.engineAliveIDSet(present)` and the cold path passes nil. Drift stays whatever `planTitleRepairs` repairs, which reads pane-level aliveness.
 - `Engine.Resume` passes `engineAliveIDSet(presentPanes(...))` to `planResumeLaunches`, so a shell-only strand past the grace is relaunched and its old pane is killed by `killReplacedOwnWindowPaneLocked`, as D1's Consequences state.
 - `Engine.AddStrandUnless`'s `--if-absent` path passes the same set to `classifyIfAbsent`, so a shell-only match is relaunched rather than answered as a live no-op.
@@ -61,11 +63,10 @@ Tests:
 - `TestStatus_ReportsOwnWindowStrandsFromTheSessionListing` sets `e.paneAge` to a stub answering 31s for one pid, scripts its window listing line with tail `t\x1fbash\x1f/bin/bash` and adds rows: that strand reads `live: false, present: true, own: true` with its `PanePID` still the listed pid, and a strand whose tail is `t\x1fclaude\x1f/bin/bash` reads live.
   It keeps every existing row unchanged, since a tail with no separator reads both commands empty.
 - `TestDirectory_MapsEachStrandToItsRow` passes the alive set to `directoryRows` and gains a row whose pane is present and not dead but missing from the alive set, which reads dormant with an empty title.
-- `TestEngineAliveIDs` gains a row driving `Engine.engineAliveIDSet` on an `Engine` literal with a nil `paneAge`: a shell-only pane reads alive.
 - `TestAddStrand_IfAbsent_NoOps` gains a row whose name-matched own-window strand's pane lists `bash` over `/bin/bash` with `e.paneAge` stubbed to 31s: the add is no no-op, it runs `split-window` and returns the strand bound to the new pane, so a reverted `classifyIfAbsent` set fails it.
 - `TestOwnWindow_RealTmux` (tier 2, a real tmux) gains a subtest that pins the real listing and the Resume reader: an own-window strand added with an empty `Cmd` holds only its shell; with `e.paneAge` stubbed to 31s, `Status` reads it `live: false, present: true`, and `Resume` relaunches it onto a new pane id and kills the old pane, while the Selvage pane, a shell by design, keeps its pane id, so a Selvage health check moved to the engine judgment fails it.
   With the stub answering 1s, `Status` reads the same strand live.
 
-**ImpactSummary:** One predicate replaces aliveIDSet at the four strand-liveness readers inside reedengine; every consumer outside it (orch, webster, loom, creel, shuttle) gets the change through `StrandStatus.Live` with no code change, and `directoryRows` has its one production caller on this card.
+**ImpactSummary:** One predicate replaces aliveIDSet at the four strand-liveness readers inside reedengine; every consumer outside it (orch, webster, loom, creel, shuttle) gets the change through `StrandStatus.Live` with no code change, shuttle's `strandRemovable` gaining only a reworded doc comment, and `directoryRows` has its one production caller on this card.
 
 **Commit:** 3: reed reads a strand whose engine exited to the shell as dead

@@ -66,6 +66,6 @@ Tests:
 - `internal/orchengine/doc.go` states the marker rule: every writer and remover holds the state lock, the cycle start compares and removes inside the save of its first phase, a changed marker leaves a requested start idle with its hold released and a hard or soft start entered with the newer marker pending, and the stale and satisfied removals compare and remove only the request they read.
 - The existing `TestRefreshAndDistill_RequestTheirOwnMode` rows keep passing unchanged: with no watcher the marker is gone, with one it is pending.
 
-**ImpactSummary:** The marker's four writers and removers (refresh/distill's request, the cycle start, the stale removal, the satisfied removal) move under the state lock with compare-and-remove; `ClearCycleRequest`'s three production callers are all on this card, and the test fixtures that call `RequestCycle` keep its signature.
+**ImpactSummary:** The marker's four writers and removers (refresh/distill's request, the cycle start, the stale removal, the satisfied removal) move under the state lock with compare-and-remove; every production caller of `ClearCycleRequest` is on this card, and the test fixtures that call `RequestCycle` keep its signature.
 
 **Commit:** 8: the cycle request is written and removed under the orch state lock

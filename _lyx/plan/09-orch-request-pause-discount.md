@@ -21,7 +21,7 @@
 **Intent:**
 D5's third and fourth bullets: under a hub pause the watcher's `pauseTick` holds the cycle machine, so a request made under a pause longer than `handoff_timeout_s` was removed as stale, or timed out on the first handoff tick, as soon as the pause ended; the orch then deleted `.lyx/orch/cycle-request` by hand.
 
-`Watcher.unpausedSince` returns `now.Sub(from)` less `pauserecord.Excluded` of the hub coverage intervals clipped to `[from, now]`, read from the watcher's pause record as `pauserecord.Read(w.pause.RecordPath)` then `Record.CoverageOf("", now).Intervals` (empty slug: hub entries only).
+`Watcher.unpausedSince` reads the watcher's pause record with `pauserecord.Read(w.pause.RecordPath)` and returns `pauserecord.AwakeSince(from, now, coverage.Intervals)` with the `Record.CoverageOf("", now)` intervals (empty slug: hub entries only).
 A watcher told no pause record (`w.pause` nil), or a record that cannot be read, discounts nothing, matching `pauseTick`, which reads an unreadable record as uncovered.
 The record keeps a resumed entry for `pauserecord.Retention`, so a pause resumed longer ago than that no longer discounts; that is the stated bound, not new code.
 `tickIdle`'s stale-request removal compares `unpausedSince(req.RequestedAt, now)` with the handoff timeout instead of `now.Sub(req.RequestedAt)`, and logs that age.

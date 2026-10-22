@@ -36,7 +36,7 @@ A failed state read or marker removal is the error envelope, a propagated I/O er
 What it can let through, and its bound: it removes only the request marker, never a started cycle's state, and a marker present during a cycle has not started, since a cycle start consumes the marker it starts from under the state lock (card 8), so `withdrawn: true` means no cycle started from it.
 
 `orchCLI` gains `pauseRecordPath string`, set in `Command`'s `PersistentPreRunE` from `hubgeom.PauseGeometry(location).RecordPath`, a failure failing the verb as `watch` does.
-`hubPauseHolds` reads the record with `pauserecord.Read` and answers whether `Covering("")` finds a live hub entry, the entry that holds the watcher's cycle machine; an empty path or an unreadable record answers false, as the watcher reads an unreadable record uncovered.
+`hubPauseHolds` reads the record with `pauserecord.Read` and answers whether `Covering("")` finds a live hub entry, the entry that holds the watcher's cycle machine; an unreadable record answers false, as the watcher reads an unreadable record uncovered.
 
 `status` gains `cycle_request`: `cycleRequestField` answers nil when no request is pending, else an object with `mode`, `requested_at` (RFC 3339 UTC, null for an unparseable marker's zero time) and `held_by_pause` from `hubPauseHolds`.
 `requestCmd`, shared by `refresh` and `distill`, adds `held_by_pause: true` and `note: "the request waits for the hub pause to be resumed"` when the watcher is live and `hubPauseHolds` answers true; the request is still written.
