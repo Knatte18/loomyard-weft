@@ -1,0 +1,833 @@
+diff --git a/contracts/specs/loom-plan-spec.md b/contracts/specs/loom-plan-spec.md
+index a41a7b9c7..23eb922c0 100644
+--- a/contracts/specs/loom-plan-spec.md
++++ b/contracts/specs/loom-plan-spec.md
+@@ -137,6 +137,7 @@ A symbol no card in the plan touches needs no edge — its state never changes d
+ | Custom | either | none — explicit escape hatch | as applicable |
+ 
+ A `Create` target under the repository root's git-ignored `.scratch/` is a transient draft: the card may remove it once read, and Webster's `create-not-done` check skips it.
++A target no glyph spells, such as a path whose directory holds a space, stays a plain path, and Webster's done-checks judge it by whether the path exists.
+ How cards group into execution batches is not a card property; `internal/batcher`'s package doc describes it.
+ A card that renames or deletes what an earlier card targets never shares that card's batch.
+ 
+diff --git a/internal/planglyph/doc.go b/internal/planglyph/doc.go
+index a3002cf0b..9af84d0c8 100644
+--- a/internal/planglyph/doc.go
++++ b/internal/planglyph/doc.go
+@@ -128,7 +128,10 @@
+ //     supposed to build, remove, or rename it.
+ //     A Create target under the worktree root's git-ignored `.scratch/` is a transient draft its card may remove once read, so it gets no done-check;
+ //     a `.scratch/` below the root, a Rename new side and every Delete target keep theirs.
++//     A target still path-shaped after canonicalization, one no glyph spells such as a path whose directory holds a space, is judged on disk instead of resolved.
++//     Its path must exist for a Create or Rename new side and must not for a Delete or Rename old side (planparser.IsDiskCheckedTarget).
+ //     Each detail carries the lookup: the resolve key looked up beside the card's own spelling, quarry's status, for not_found whether the unit exists, and for ambiguous each candidate's file and build constraint.
++//     A Create or Rename new side answered not_found also names the files declaring its unit and every declaration of its name elsewhere in the worktree, from one glyphs listing taken only when such a finding is due.
+ //     An ambiguous answer whose candidates sit in files no single build environment selects together counts as resolved, so a Create or a Rename new side over such a member lands;
+ //     the Delete direction and a Rename old side keep blocking on any surviving declaration.
+ //     glyph-rejected is additionally DoneChecks' own
+diff --git a/internal/planglyph/donecheck.go b/internal/planglyph/donecheck.go
+index cf30ec909..2dcd5ea2d 100644
+--- a/internal/planglyph/donecheck.go
++++ b/internal/planglyph/donecheck.go
+@@ -10,9 +10,15 @@
+ package planglyph
+ 
+ import (
++	"errors"
+ 	"fmt"
++	"io/fs"
++	"os"
++	"path/filepath"
++	"slices"
+ 	"sort"
+ 	"strings"
++	"syscall"
+ 
+ 	"github.com/Knatte18/loomyard/internal/planparser"
+ 	"github.com/Knatte18/quarry/quarry"
+@@ -26,11 +32,13 @@ const scratchDirPrefix = ".scratch/"
+ // group type calls for, and the resolve key actually looked up: a plan: handle's own resolve key
+ // is its member-glyph half — the string after HandlePrefix, which by canonicalization time is the
+ // card's own expected glyph — never the literal "plan:"-prefixed token quarry cannot parse.
++// onDisk marks a key no glyph spells, which is judged by whether its worktree-relative path exists rather than resolved.
+ type doneCheckEntry struct {
+ 	card    planparser.Card
+ 	checkID string
+ 	key     string
+ 	display string
++	onDisk  bool
+ }
+ 
+ // resolveKeyFor maps a Create/Delete group's own ref to the string DoneChecks actually resolves:
+@@ -52,6 +60,9 @@ func resolveKeyFor(ref string) string {
+ // delete-not-done; and a Rename pair whose old side is still anything but not_found, or whose new
+ // side still does not resolve found or multipart, is check ID rename-not-done in either direction.
+ // A Create target under the worktree root's .scratch/ is a transient draft and is neither resolved nor judged.
++// A target still path-shaped is a path canonicalization could not spell as a glyph, such as one whose directory holds a space.
++// Quarry rejects it before resolution, so its worktree-relative path is checked on disk instead, existing for the Create direction and absent for the Delete direction.
++// A Create target or Rename new side quarry answers not_found also names, in its detail, the files declaring the looked-up unit and every declaration elsewhere in the worktree carrying the looked-up name, so a missing declaration reads apart from one written somewhere the card did not say.
+ // An answer outside quarry's four-value status vocabulary — a pre-resolution rejection, or a status
+ // this policy has not been taught — is the blocking finding glyph-rejected for that entry, failing
+ // closed exactly as statusFindings and createFindings do (see doneCheckVerdicts).
+@@ -74,8 +85,10 @@ func DoneChecks(plan *planparser.Plan, cards []planparser.Card, worktreeRoot str
+ 	var entries []doneCheckEntry
+ 	seen := make(map[string]bool)
+ 	var targets []string
+-	addTarget := func(key string) {
+-		if !seen[key] {
++	addEntry := func(c planparser.Card, checkID, key, display string) {
++		onDisk := planparser.IsDiskCheckedTarget(key)
++		entries = append(entries, doneCheckEntry{card: c, checkID: checkID, key: key, display: display, onDisk: onDisk})
++		if !onDisk && !seen[key] {
+ 			seen[key] = true
+ 			targets = append(targets, key)
+ 		}
+@@ -90,14 +103,11 @@ func DoneChecks(plan *planparser.Plan, cards []planparser.Card, worktreeRoot str
+ 					if strings.HasPrefix(key, scratchDirPrefix) {
+ 						continue
+ 					}
+-					entries = append(entries, doneCheckEntry{card: c, checkID: "create-not-done", key: key, display: ref})
+-					addTarget(key)
++					addEntry(c, "create-not-done", key, ref)
+ 				}
+ 			case planparser.CardTypeDelete:
+ 				for _, ref := range g.Refs {
+-					key := resolveKeyFor(ref)
+-					entries = append(entries, doneCheckEntry{card: c, checkID: "delete-not-done", key: key, display: ref})
+-					addTarget(key)
++					addEntry(c, "delete-not-done", resolveKeyFor(ref), ref)
+ 				}
+ 			case planparser.CardTypeRename:
+ 				// A Rename's mechanical done verdict is the Create and Delete verdicts composed:
+@@ -109,12 +119,8 @@ func DoneChecks(plan *planparser.Plan, cards []planparser.Card, worktreeRoot str
+ 				// entirely recorded clean: DoneChecks saw no Create/Delete group, BindHandles no
+ 				// declarations, and DetectDrift only inspects what the delta says DID change.
+ 				for _, p := range g.Pairs {
+-					oldKey := resolveKeyFor(p.Old)
+-					entries = append(entries, doneCheckEntry{card: c, checkID: "rename-not-done-old", key: oldKey, display: p.Old})
+-					addTarget(oldKey)
+-					newKey := resolveKeyFor(p.New)
+-					entries = append(entries, doneCheckEntry{card: c, checkID: "rename-not-done-new", key: newKey, display: p.New})
+-					addTarget(newKey)
++					addEntry(c, "rename-not-done-old", resolveKeyFor(p.Old), p.Old)
++					addEntry(c, "rename-not-done-new", resolveKeyFor(p.New), p.New)
+ 				}
+ 			}
+ 		}
+@@ -123,6 +129,9 @@ func DoneChecks(plan *planparser.Plan, cards []planparser.Card, worktreeRoot str
+ 	if len(entries) == 0 {
+ 		return nil, nil
+ 	}
++	if len(targets) == 0 {
++		return doneCheckVerdicts(plan, worktreeRoot, entries, nil, nil)
++	}
+ 	sort.Strings(targets)
+ 
+ 	repo, err := openRepo(worktreeRoot)
+@@ -135,7 +144,77 @@ func DoneChecks(plan *planparser.Plan, cards []planparser.Card, worktreeRoot str
+ 	}
+ 	index := resultByTarget(results)
+ 
+-	return doneCheckVerdicts(worktreeRoot, entries, index)
++	var declarations []quarry.Symbol
++	if anyMemberMissing(entries, index) {
++		answer, err := repo.Glyphs(".")
++		if err != nil {
++			return nil, fmt.Errorf("%w: list the worktree's declarations: %v", ErrQuarryUnavailable, err)
++		}
++		declarations = answer.Symbols
++	}
++
++	return doneCheckVerdicts(plan, worktreeRoot, entries, index, declarations)
++}
++
++// anyMemberMissing reports whether a Create target or Rename new side among entries was answered not_found in index, the one answer whose finding names the worktree's declarations.
++func anyMemberMissing(entries []doneCheckEntry, index map[string]quarry.ResolveResult) bool {
++	for _, e := range entries {
++		if e.onDisk || (e.checkID != "create-not-done" && e.checkID != "rename-not-done-new") {
++			continue
++		}
++		if r, ok := index[e.key]; ok && r.Status == quarry.StatusNotFound {
++			return true
++		}
++	}
++	return false
++}
++
++// searchedDescription names, for a key quarry answered not_found, the files among declarations that declare the key's unit and every declaration elsewhere whose own name is the key's member name, with its glyph and file.
++// It returns "" when the key does not parse as a member glyph in the plan's alphabet, since then there is no name to look for.
++func searchedDescription(plan *planparser.Plan, key string, declarations []quarry.Symbol) string {
++	wanted, err := planparser.ParseRef(plan, key)
++	if err != nil || wanted.IsSelf() {
++		return ""
++	}
++
++	var unitFiles []string
++	var elsewhere []string
++	for _, s := range declarations {
++		if s.Glyph.Unit == wanted.Unit && !slices.Contains(unitFiles, s.File) {
++			unitFiles = append(unitFiles, s.File)
++		}
++		if s.Glyph.Name == wanted.Name && s.ID != key {
++			elsewhere = append(elsewhere, fmt.Sprintf("%s in %s", s.ID, s.File))
++		}
++	}
++	sort.Strings(unitFiles)
++	sort.Strings(elsewhere)
++
++	var parts []string
++	if len(unitFiles) > 0 {
++		parts = append(parts, "quarry searched the unit's files "+strings.Join(unitFiles, ", "))
++	}
++	if len(elsewhere) > 0 {
++		parts = append(parts, fmt.Sprintf("%s is declared as %s", wanted.Name, strings.Join(elsewhere, ", ")))
++	} else {
++		parts = append(parts, fmt.Sprintf("no declaration named %s exists anywhere in the worktree", wanted.Name))
++	}
++	return strings.Join(parts, "; ")
++}
++
++// diskLookup checks key, a worktree-relative path, on disk under worktreeRoot and reports whether anything exists there together with the lookup description a finding detail carries.
++// A path whose parent component is a regular file reads as not existing.
++// An error other than the path not existing is returned, so an unreadable tree never passes a done-check.
++func diskLookup(worktreeRoot, key string) (bool, string, error) {
++	_, err := os.Lstat(filepath.Join(worktreeRoot, filepath.FromSlash(key)))
++	switch {
++	case err == nil:
++		return true, fmt.Sprintf("checked %q on disk, since no glyph spells it, and it exists", key), nil
++	case errors.Is(err, fs.ErrNotExist), errors.Is(err, syscall.ENOTDIR):
++		return false, fmt.Sprintf("checked %q on disk, since no glyph spells it, and nothing exists there", key), nil
++	default:
++		return false, "", fmt.Errorf("done-check: stat %q: %w", key, err)
++	}
+ }
+ 
+ // lookupDescription renders what a done-check looked up and what quarry answered, for a finding detail.
+@@ -156,16 +235,28 @@ func lookupDescription(key string, status quarry.Status, unitFound bool, candida
+ }
+ 
+ // doneCheckVerdicts applies the three done rules to entries against index, the batched resolve's
+-// answers keyed by target, reading ambiguous candidates' files under worktreeRoot.
++// answers keyed by target, reading ambiguous candidates' files and onDisk entries' paths under worktreeRoot.
+ // Each finding's detail names the lookup: the resolve key, quarry's status, the unit status of a
+ // missing member, and each candidate's file and build constraint for an ambiguous answer.
++// A Create or Rename new side answered not_found also names, from declarations, the worktree's listed declarations, its unit's files and every declaration of its name.
+ //
+ // It is split out from DoneChecks so the coverage guard below is reachable from a unit test: every
+ // other path into it runs a real quarry.Repo, and the one condition worth pinning -- an answer set
+ // that does not cover a target the caller asked about -- cannot be produced through one.
+-func doneCheckVerdicts(worktreeRoot string, entries []doneCheckEntry, index map[string]quarry.ResolveResult) ([]Finding, error) {
++func doneCheckVerdicts(plan *planparser.Plan, worktreeRoot string, entries []doneCheckEntry, index map[string]quarry.ResolveResult, declarations []quarry.Symbol) ([]Finding, error) {
+ 	var findings []Finding
+ 	for _, e := range entries {
++		if e.onDisk {
++			exists, lookup, err := diskLookup(worktreeRoot, e.key)
++			if err != nil {
++				return findings, err
++			}
++			if finding, failed := doneCheckFinding(e, exists, exists, lookup); failed {
++				findings = append(findings, finding)
++			}
++			continue
++		}
++
+ 		r, ok := index[e.key]
+ 		if !ok {
+ 			// Every key here was put into targets by this function itself and handed to
+@@ -217,46 +308,47 @@ func doneCheckVerdicts(worktreeRoot string, entries []doneCheckEntry, index map[
+ 		if crossDetail, crossAlphabet := crossAlphabetDetail(r); crossAlphabet {
+ 			lookup = fmt.Sprintf("looked up %q, quarry answered ambiguous: %s", e.key, crossDetail)
+ 		}
+-
+-		switch e.checkID {
+-		case "create-not-done":
+-			if !resolved {
+-				findings = append(findings, Finding{
+-					Check:    "create-not-done",
+-					Card:     e.card.ID(),
+-					Detail:   fmt.Sprintf("Create target %q still does not resolve: %s", e.display, lookup),
+-					Severity: SeverityBlocking,
+-				})
+-			}
+-		case "delete-not-done":
+-			if stillExists {
+-				findings = append(findings, Finding{
+-					Check:    "delete-not-done",
+-					Card:     e.card.ID(),
+-					Detail:   fmt.Sprintf("Delete target %q still resolves: %s", e.display, lookup),
+-					Severity: SeverityBlocking,
+-				})
+-			}
+-		case "rename-not-done-old":
+-			if stillExists {
+-				findings = append(findings, Finding{
+-					Check:    "rename-not-done",
+-					Card:     e.card.ID(),
+-					Detail:   fmt.Sprintf("Rename pair's old side %q still resolves — the rename did not happen: %s", e.display, lookup),
+-					Severity: SeverityBlocking,
+-				})
+-			}
+-		case "rename-not-done-new":
+-			if !resolved {
+-				findings = append(findings, Finding{
+-					Check:    "rename-not-done",
+-					Card:     e.card.ID(),
+-					Detail:   fmt.Sprintf("Rename pair's new side %q still does not resolve — the rename did not happen: %s", e.display, lookup),
+-					Severity: SeverityBlocking,
+-				})
++		if r.Status == quarry.StatusNotFound && (e.checkID == "create-not-done" || e.checkID == "rename-not-done-new") {
++			if searched := searchedDescription(plan, e.key, declarations); searched != "" {
++				lookup += "; " + searched
+ 			}
+ 		}
++
++		if finding, failed := doneCheckFinding(e, resolved, stillExists, lookup); failed {
++			findings = append(findings, finding)
++		}
+ 	}
+ 
+ 	return findings, nil
+ }
++
++// doneCheckFinding applies e's done rule: the Create direction fails when the target is not resolved, the Delete direction when it still exists.
++// It returns the blocking finding, its detail ending in lookup, and whether the rule failed.
++func doneCheckFinding(e doneCheckEntry, resolved, stillExists bool, lookup string) (Finding, bool) {
++	var check, detail string
++	switch e.checkID {
++	case "create-not-done":
++		if resolved {
++			return Finding{}, false
++		}
++		check, detail = "create-not-done", fmt.Sprintf("Create target %q still does not resolve: %s", e.display, lookup)
++	case "delete-not-done":
++		if !stillExists {
++			return Finding{}, false
++		}
++		check, detail = "delete-not-done", fmt.Sprintf("Delete target %q still resolves: %s", e.display, lookup)
++	case "rename-not-done-old":
++		if !stillExists {
++			return Finding{}, false
++		}
++		check, detail = "rename-not-done", fmt.Sprintf("Rename pair's old side %q still resolves — the rename did not happen: %s", e.display, lookup)
++	case "rename-not-done-new":
++		if resolved {
++			return Finding{}, false
++		}
++		check, detail = "rename-not-done", fmt.Sprintf("Rename pair's new side %q still does not resolve — the rename did not happen: %s", e.display, lookup)
++	default:
++		panic(fmt.Sprintf("planglyph: done-check entry with unknown check ID %q", e.checkID))
++	}
++	return Finding{Check: check, Card: e.card.ID(), Detail: detail, Severity: SeverityBlocking}, true
++}
+diff --git a/internal/planglyph/donecheck_resolve_test.go b/internal/planglyph/donecheck_resolve_test.go
+index fdc9b8cf5..da4cbd4f2 100644
+--- a/internal/planglyph/donecheck_resolve_test.go
++++ b/internal/planglyph/donecheck_resolve_test.go
+@@ -6,6 +6,7 @@ package planglyph
+ import (
+ 	"errors"
+ 	"path/filepath"
++	"strings"
+ 	"testing"
+ 
+ 	"github.com/Knatte18/loomyard/internal/planparser"
+@@ -14,6 +15,7 @@ import (
+ // TestDoneChecks_Verdicts covers the done-checks of Create, Delete and Rename groups against the tree the fork left behind: a landed Create, Delete or Rename passes, and a Create that never landed, a Delete that survived or a Rename never performed reports its blocking finding.
+ // A Rename's new side carries the canonical plan: handle spelling a validated plan's symbol rename always has, proving resolveKeyFor strips it.
+ // A fork that never performed its declared Rename leaves the old side still resolving and the new side still unresolvable, and BOTH halves must report rename-not-done — a check inspecting only Create and Delete groups recorded that card clean.
++// A target no glyph spells, a bare root filename or a path whose directory holds a space, is judged by whether its path exists, and a missing Create names the unit's files and where else its name is declared.
+ func TestDoneChecks_Verdicts(t *testing.T) {
+ 	t.Parallel()
+ 
+@@ -23,6 +25,8 @@ func TestDoneChecks_Verdicts(t *testing.T) {
+ 		group planparser.TargetGroup
+ 		// wantChecks is the check of each expected finding, all on card 1-one; empty means no finding.
+ 		wantChecks []string
++		// wantDetail holds substrings of the first finding's detail.
++		wantDetail []string
+ 	}{
+ 		{
+ 			name:  "Create symbol landed",
+@@ -34,6 +38,88 @@ func TestDoneChecks_Verdicts(t *testing.T) {
+ 			files:      map[string]string{"sub/a.go": "package sub\n"},
+ 			group:      planparser.TargetGroup{Type: planparser.CardTypeCreate, Refs: []string{"sub#Foo"}},
+ 			wantChecks: []string{"create-not-done"},
++			wantDetail: []string{"no declaration named Foo exists anywhere in the worktree"},
++		},
++		{
++			// The finding names the unit's files and where the name was declared instead, so a misplaced declaration reads apart from a missing one.
++			name: "Create symbol declared in another unit",
++			files: map[string]string{
++				"sub/a.go":   "package sub\n\nfunc Bar() {}\n",
++				"other/b.go": "package other\n\nfunc Foo() {}\n",
++			},
++			group:      planparser.TargetGroup{Type: planparser.CardTypeCreate, Refs: []string{"sub#Foo"}},
++			wantChecks: []string{"create-not-done"},
++			wantDetail: []string{"quarry searched the unit's files sub/a.go; Foo is declared as other#Foo in other/b.go"},
++		},
++		{
++			name: "Create test in external test package landed",
++			files: map[string]string{
++				"sub/a.go":      "package sub\n",
++				"sub/a_test.go": "package sub_test\n\nimport \"testing\"\n\nfunc TestFoo(t *testing.T) {}\n",
++			},
++			group: planparser.TargetGroup{Type: planparser.CardTypeCreate, Refs: []string{"plan:sub_test#TestFoo"}},
++		},
++		{
++			name:  "Create root filename self glyph landed",
++			files: map[string]string{"sub/a.go": "package sub\n", "LICENSE": "licence text\n"},
++			group: planparser.TargetGroup{Type: planparser.CardTypeCreate, Refs: []string{"LICENSE#"}},
++		},
++		{
++			// A path-shaped key that reached the done-check uncanonicalized is judged on disk.
++			name:  "Create bare root filename landed",
++			files: map[string]string{"sub/a.go": "package sub\n", "LICENSE": "licence text\n"},
++			group: planparser.TargetGroup{Type: planparser.CardTypeCreate, Refs: []string{"LICENSE"}},
++		},
++		{
++			// No glyph spells a path whose directory holds a space, so it is checked on disk.
++			name:  "Create spaced path landed",
++			files: map[string]string{"sub/a.go": "package sub\n", "tree/with space/Spaced.cs": "namespace Tree;\n"},
++			group: planparser.TargetGroup{Type: planparser.CardTypeCreate, Refs: []string{"tree/with space/Spaced.cs"}},
++		},
++		{
++			name:       "Create spaced path missing",
++			files:      map[string]string{"sub/a.go": "package sub\n"},
++			group:      planparser.TargetGroup{Type: planparser.CardTypeCreate, Refs: []string{"tree/with space/Spaced.cs"}},
++			wantChecks: []string{"create-not-done"},
++			wantDetail: []string{`checked "tree/with space/Spaced.cs" on disk, since no glyph spells it, and nothing exists there`},
++		},
++		{
++			name:  "Delete spaced path gone",
++			files: map[string]string{"sub/a.go": "package sub\n"},
++			group: planparser.TargetGroup{Type: planparser.CardTypeDelete, Refs: []string{"tree/with space/Spaced.cs"}},
++		},
++		{
++			// A parent component that is now a regular file stats as not-a-directory, which reads as nothing existing there.
++			name:  "Delete spaced path under a file parent gone",
++			files: map[string]string{"sub/a.go": "package sub\n", "tree/with space": "now a file\n"},
++			group: planparser.TargetGroup{Type: planparser.CardTypeDelete, Refs: []string{"tree/with space/Spaced.cs"}},
++		},
++		{
++			name:       "Delete spaced path survives",
++			files:      map[string]string{"sub/a.go": "package sub\n", "tree/with space/Spaced.cs": "namespace Tree;\n"},
++			group:      planparser.TargetGroup{Type: planparser.CardTypeDelete, Refs: []string{"tree/with space/Spaced.cs"}},
++			wantChecks: []string{"delete-not-done"},
++			wantDetail: []string{`checked "tree/with space/Spaced.cs" on disk, since no glyph spells it, and it exists`},
++		},
++		{
++			name:  "Rename spaced path landed",
++			files: map[string]string{"sub/a.go": "package sub\n", "tree/with space/New.cs": "namespace Tree;\n"},
++			group: planparser.TargetGroup{
++				Type:  planparser.CardTypeRename,
++				Refs:  []string{"tree/with space/Old.cs", "tree/with space/New.cs"},
++				Pairs: []planparser.MovePair{{Old: "tree/with space/Old.cs", New: "tree/with space/New.cs"}},
++			},
++		},
++		{
++			name:  "Rename spaced path skipped",
++			files: map[string]string{"sub/a.go": "package sub\n", "tree/with space/Old.cs": "namespace Tree;\n"},
++			group: planparser.TargetGroup{
++				Type:  planparser.CardTypeRename,
++				Refs:  []string{"tree/with space/Old.cs", "tree/with space/New.cs"},
++				Pairs: []planparser.MovePair{{Old: "tree/with space/Old.cs", New: "tree/with space/New.cs"}},
++			},
++			wantChecks: []string{"rename-not-done", "rename-not-done"},
++			wantDetail: []string{`checked "tree/with space/Old.cs" on disk, since no glyph spells it, and it exists`},
+ 		},
+ 		{
+ 			// The canonical plan: handle resolves via its stripped expected-glyph half, not the literal token.
+@@ -117,6 +203,11 @@ func TestDoneChecks_Verdicts(t *testing.T) {
+ 					t.Errorf("finding %+v; want Check %s on card 1-one", f, tc.wantChecks[i])
+ 				}
+ 			}
++			for _, want := range tc.wantDetail {
++				if !strings.Contains(got[0].Detail, want) {
++					t.Errorf("finding detail = %q; want it to contain %q", got[0].Detail, want)
++				}
++			}
+ 		})
+ 	}
+ }
+@@ -137,48 +228,3 @@ func TestDoneChecks_QuarryUnavailable(t *testing.T) {
+ 		t.Errorf("DoneChecks(...) error = %v; want errors.Is(err, ErrQuarryUnavailable)", err)
+ 	}
+ }
+-
+-// TestDoneChecks_RootFilenameCreateLanded is R9-1's planglyph-side regression: a Create group
+-// target naming a repository-root extensionless file must reach DoneChecks already canonicalized
+-// to its self glyph, which quarry resolves found once the file exists.
+-//
+-// Spelled as the bare token "LICENSE" — which is what the parser produced before R9-1's fix, and
+-// which classifyRef rule 4 explicitly admits as a legal card ref — quarry rejects the target
+-// BEFORE resolution ("a glyph needs a \"#\""), and the card is blocked forever, on every retry,
+-// even though it created exactly what it said it would. This test pins both halves: the glyph
+-// spelling passes, and the bare token is still the blocking refusal it always was, so the
+-// parser-side canonicalization is the thing keeping this correct. Since crucible round
+-// fable-high-r10's F1, the refusal is glyph-rejected — the fail-closed arm naming the rejection
+-// itself — rather than create-not-done misreading the rejection as "did not resolve".
+-func TestDoneChecks_RootFilenameCreateLanded(t *testing.T) {
+-	t.Parallel()
+-
+-	root := writeFixtureRepo(t, map[string]string{
+-		"sub/a.go": "package sub\n",
+-		"LICENSE":  "licence text\n",
+-	})
+-
+-	landed := []planparser.Card{{
+-		Number: 1, Slug: "one",
+-		TargetGroups: []planparser.TargetGroup{{Type: planparser.CardTypeCreate, Refs: []string{"LICENSE#"}}},
+-	}}
+-	got, err := DoneChecks(&planparser.Plan{}, landed, root)
+-	if err != nil {
+-		t.Fatalf("DoneChecks(canonicalized root filename) returned error: %v", err)
+-	}
+-	if len(got) != 0 {
+-		t.Errorf("DoneChecks(canonicalized root filename) = %+v; want no findings", got)
+-	}
+-
+-	bare := []planparser.Card{{
+-		Number: 1, Slug: "one",
+-		TargetGroups: []planparser.TargetGroup{{Type: planparser.CardTypeCreate, Refs: []string{"LICENSE"}}},
+-	}}
+-	stale, err := DoneChecks(&planparser.Plan{}, bare, root)
+-	if err != nil {
+-		t.Fatalf("DoneChecks(bare root filename) returned error: %v", err)
+-	}
+-	if len(stale) != 1 || stale[0].Check != "glyph-rejected" {
+-		t.Fatalf("DoneChecks(bare root filename) = %+v; want exactly one glyph-rejected — this is the failure canonicalization now prevents, named as the rejection it is", stale)
+-	}
+-}
+diff --git a/internal/planglyph/donecheck_test.go b/internal/planglyph/donecheck_test.go
+index 6ce1c365d..638d6d217 100644
+--- a/internal/planglyph/donecheck_test.go
++++ b/internal/planglyph/donecheck_test.go
+@@ -9,6 +9,7 @@ import (
+ 	"testing"
+ 
+ 	"github.com/Knatte18/loomyard/internal/planparser"
++	"github.com/Knatte18/quarry/glyph"
+ 	"github.com/Knatte18/quarry/quarry"
+ )
+ 
+@@ -27,7 +28,7 @@ func TestDoneCheckVerdicts_UncoveredTargetIsInfrastructureNotAPass(t *testing.T)
+ 		display: "internal/greet#Farewell",
+ 	}}
+ 
+-	findings, err := doneCheckVerdicts("", entries, map[string]quarry.ResolveResult{})
++	findings, err := doneCheckVerdicts(&planparser.Plan{}, "", entries, map[string]quarry.ResolveResult{}, nil)
+ 
+ 	if err == nil {
+ 		t.Fatalf("doneCheckVerdicts() with an uncovered target = (%v, nil); want a wrapped ErrQuarryUnavailable — passing the check would be a false success", findings)
+@@ -44,7 +45,7 @@ func TestDoneCheckVerdicts_UncoveredTargetIsInfrastructureNotAPass(t *testing.T)
+ }
+ 
+ // TestDoneCheckVerdicts_Rules pins the three done rules against a fully covering answer index, so the guard above cannot be satisfied by a version that simply always errors.
+-// A blocking row also pins the detail's lookup: the key, quarry's status, the unit status of a missing member, and each ambiguous candidate's file and build constraint.
++// A blocking row also pins the detail's lookup: the key, quarry's status, the unit status of a missing member, each ambiguous candidate's file and build constraint, and for a Create or Rename new side answered not_found the unit's files and the name's declarations elsewhere.
+ // An ambiguous row writes its candidate files under a temp root, where a pair partitioned by build constraints counts as resolved and so lands a Create and a Rename new side but still blocks a Delete and a Rename old side.
+ //
+ //testtiming:keep pins the ambiguous rows and the per-arm rule table, which the resolve-backed DoneChecks tests reach only for found and not_found
+@@ -63,6 +64,12 @@ func TestDoneCheckVerdicts_Rules(t *testing.T) {
+ 		"internal/greet/b.go": "//go:build amd64" + declaration,
+ 	}
+ 	candidateFiles := []string{"internal/greet/a.go", "internal/greet/b.go"}
++	// declarations is the worktree listing every row is handed: one member of the key's unit, and the key's name declared in another unit.
++	declarations := []quarry.Symbol{
++		{Glyph: glyph.Glyph{Lang: glyph.Go, Unit: "internal/greet", Name: "Other"}, ID: "internal/greet#Other", File: "internal/greet/greet.go"},
++		{Glyph: glyph.Glyph{Lang: glyph.Go, Unit: "internal/other", Name: "Thing"}, ID: "internal/other#Thing", File: "internal/other/thing.go"},
++	}
++	const searched = "quarry searched the unit's files internal/greet/greet.go; Thing is declared as internal/other#Thing in internal/other/thing.go"
+ 
+ 	tests := []struct {
+ 		name string
+@@ -80,7 +87,7 @@ func TestDoneCheckVerdicts_Rules(t *testing.T) {
+ 	}{
+ 		{"create landed", "create-not-done", quarry.StatusFound, "", nil, nil, "", nil},
+ 		{"create missing, member missing", "create-not-done", quarry.StatusNotFound, quarry.StatusFound, nil, nil, "create-not-done",
+-			[]string{key, "quarry answered not_found", "the unit exists and the member is missing"}},
++			[]string{key, "quarry answered not_found", "the unit exists and the member is missing", searched}},
+ 		{"create missing, unit missing", "create-not-done", quarry.StatusNotFound, quarry.StatusNotFound, nil, nil, "create-not-done",
+ 			[]string{key, "quarry answered not_found", "the unit is missing"}},
+ 		{"delete gone", "delete-not-done", quarry.StatusNotFound, "", nil, nil, "", nil},
+@@ -91,7 +98,7 @@ func TestDoneCheckVerdicts_Rules(t *testing.T) {
+ 			[]string{key, "quarry answered found"}},
+ 		{"rename new landed", "rename-not-done-new", quarry.StatusFound, "", nil, nil, "", nil},
+ 		{"rename new missing", "rename-not-done-new", quarry.StatusNotFound, quarry.StatusFound, nil, nil, "rename-not-done",
+-			[]string{key, "quarry answered not_found", "the unit exists and the member is missing"}},
++			[]string{key, "quarry answered not_found", "the unit exists and the member is missing", searched}},
+ 		{"multipart counts as resolved", "create-not-done", quarry.StatusMultipart, "", nil, nil, "", nil},
+ 		// Ambiguous means declarations with that name still exist, so the Delete direction blocks
+ 		// on it — the old single "resolved" boolean read ambiguous as "gone" and passed both of
+@@ -123,7 +130,7 @@ func TestDoneCheckVerdicts_Rules(t *testing.T) {
+ 			entries := []doneCheckEntry{{card: card, checkID: tt.checkID, key: key, display: key}}
+ 			index := map[string]quarry.ResolveResult{key: {Target: key, Status: tt.status, Unit: tt.unit, Candidates: candidates}}
+ 
+-			findings, err := doneCheckVerdicts(root, entries, index)
++			findings, err := doneCheckVerdicts(&planparser.Plan{}, root, entries, index, declarations)
+ 			if err != nil {
+ 				t.Fatalf("doneCheckVerdicts() error = %v; want nil", err)
+ 			}
+diff --git a/internal/planglyph/status_completeness_test.go b/internal/planglyph/status_completeness_test.go
+index 5cfc77e6b..42a22b6a7 100644
+--- a/internal/planglyph/status_completeness_test.go
++++ b/internal/planglyph/status_completeness_test.go
+@@ -78,7 +78,7 @@ func runDoneCheckVerdict(t *testing.T, checkID string, r quarry.ResolveResult) [
+ 	entries := []doneCheckEntry{{card: card, checkID: checkID, key: key, display: key}}
+ 	index := map[string]quarry.ResolveResult{key: r}
+ 
+-	findings, err := doneCheckVerdicts("", entries, index)
++	findings, err := doneCheckVerdicts(&planparser.Plan{}, "", entries, index, nil)
+ 	if err != nil {
+ 		t.Fatalf("doneCheckVerdicts(%s) error = %v; want nil", checkID, err)
+ 	}
+@@ -126,7 +126,7 @@ func TestStatusCompleteness_MatchesDoneCheckVerdicts(t *testing.T) {
+ 
+ // TestStatusCompleteness_UnreadableStatusesFailClosed pins the two unreadable shapes — the zero-value status, quarry's pre-resolution rejection carrying Error and Reason, and a synthetic out-of-vocabulary status string — to exactly one blocking glyph-rejected finding for every one of the four checkID arms, with no create, delete or rename verdict, and confirms the two shapes render the two different Detail strings unreadableStatusDetail produces for them.
+ //
+-//testtiming:keep pins the two unreadable-status Detail strings on every check arm, which TestDoneChecks_RootFilenameCreateLanded and TestCreateFindings_UnreadableStatusFailsClosed do not assert
++//testtiming:keep pins the two unreadable-status Detail strings on every check arm, which TestCreateFindings_UnreadableStatusFailsClosed does not assert
+ func TestStatusCompleteness_UnreadableStatusesFailClosed(t *testing.T) {
+ 	t.Parallel()
+ 
+diff --git a/internal/planglyph/status_enforcement_test.go b/internal/planglyph/status_enforcement_test.go
+index fab3c68a4..9cf5adfee 100644
+--- a/internal/planglyph/status_enforcement_test.go
++++ b/internal/planglyph/status_enforcement_test.go
+@@ -89,6 +89,8 @@ var allowedStatusConsumers = []scankit.Entry{
+ 	{Key: "internal/planglyph/resolve.go:unreadableStatusDetail", Why: "fail-closed status reader"},
+ 	{Key: "internal/planglyph/create.go:createFindings", Why: "fail-closed status reader"},
+ 	{Key: "internal/planglyph/donecheck.go:doneCheckVerdicts", Why: "fail-closed status reader"},
++	{Key: "internal/planglyph/donecheck.go:anyMemberMissing", Why: "decides only whether to list declarations for a finding's detail, never a verdict; any answer but not_found lists nothing"},
++	{Key: "internal/planglyph/donecheck.go:searchedDescription", Why: "reads glyph.Glyph.Unit, a name-shape match for the status vocabulary's Unit selector that is no resolve status"},
+ 	{Key: "internal/planglyph/deleteorder.go:answerSymbols", Why: "fail-closed status reader"},
+ 	{Key: "internal/planglyph/handle.go:renameDeclSource", Why: "fail-closed status reader"},
+ 	{Key: "internal/planglyph/resign.go:RebindResigns", Why: "fail-closed status reader: only found passes, every other answer is resign-not-done"},
+diff --git a/internal/planparser/glyphref.go b/internal/planparser/glyphref.go
+index 89c7ec717..c79fcaffa 100644
+--- a/internal/planparser/glyphref.go
++++ b/internal/planparser/glyphref.go
+@@ -108,3 +108,11 @@ func (p *Plan) GlyphLanguage() bool {
+ 	_, ok := planLanguage(p)
+ 	return ok
+ }
++
++// IsDiskCheckedTarget reports whether key, a canonicalized card target with any plan: handle already stripped, is still path-shaped.
++// Canonicalization spells every path it can as a self glyph, so such a key is one no glyph spells, such as a path whose directory holds a space;
++// quarry rejects it before resolution, and a done-check judges it by whether the path exists on disk.
++func IsDiskCheckedTarget(key string) bool {
++	_, disp := lookup(gateDiskCheckedTarget, key)
++	return disp == dispKeep
++}
+diff --git a/internal/planparser/glyphref_test.go b/internal/planparser/glyphref_test.go
+index ea8333cb1..3501549f6 100644
+--- a/internal/planparser/glyphref_test.go
++++ b/internal/planparser/glyphref_test.go
+@@ -81,3 +81,32 @@ func TestPlanGlyphLanguage(t *testing.T) {
+ 		})
+ 	}
+ }
++
++// TestIsDiskCheckedTarget asserts IsDiskCheckedTarget keeps exactly the path-shaped keys and skips every glyph-spelled one.
++func TestIsDiskCheckedTarget(t *testing.T) {
++	t.Parallel()
++
++	tests := []struct {
++		name string
++		key  string
++		want bool
++	}{
++		{name: "slashed path", key: "internal/foo/a.go", want: true},
++		{name: "bare root filename", key: "LICENSE", want: true},
++		{name: "spaced path", key: "tree/with space/Spaced.cs", want: true},
++		{name: "self glyph", key: "internal/foo/a.go#", want: false},
++		{name: "member glyph", key: "internal/foo#Bar", want: false},
++		{name: "glyph half of a stripped plan handle", key: "internal/foo#Thing.Bar", want: false},
++		{name: "bare symbol", key: "Thing.Bar", want: false},
++	}
++
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++
++			if got := IsDiskCheckedTarget(tt.key); got != tt.want {
++				t.Errorf("IsDiskCheckedTarget(%q) = %v; want %v", tt.key, got, tt.want)
++			}
++		})
++	}
++}
+diff --git a/internal/planparser/shape.go b/internal/planparser/shape.go
+index 1a4de1cfd..12c009c78 100644
+--- a/internal/planparser/shape.go
++++ b/internal/planparser/shape.go
+@@ -96,6 +96,8 @@ const (
+ 	gateEditTestFile refGate = "edit-test-file"
+ 	// gateUntypedFileRenamePair is SymbolRenamePairs' policy for a plan whose language has no glyph alphabet, applied identically to both sides of a Rename pair: only a path-shaped side is a candidate for a file-rename pair; every other kind is skipped, meaning "not a file-rename pair".
+ 	gateUntypedFileRenamePair refGate = "untyped-file-rename-pair"
++	// gateDiskCheckedTarget is IsDiskCheckedTarget's (glyphref.go) policy: a path-shaped done-check key, one canonicalization could not spell as a glyph, is judged on disk; every other kind is resolved and skipped here.
++	gateDiskCheckedTarget refGate = "disk-checked-target"
+ )
+ 
+ // allRefKinds is the canonical, complete list of every refKind classify.go's enum declares. The
+@@ -203,6 +205,12 @@ var ledger = map[refGate]map[refKind]disposition{
+ 		refKindGlyph:  dispSkip,
+ 		refKindHandle: dispSkip,
+ 	},
++	gateDiskCheckedTarget: {
++		refKindPath:   dispKeep,
++		refKindSymbol: dispSkip,
++		refKindGlyph:  dispSkip,
++		refKindHandle: dispSkip,
++	},
+ }
+ 
+ // lookupIn is lookup's pure core, split out for testability: it classifies ref via classifyRef,
+diff --git a/internal/websterengine/doc.go b/internal/websterengine/doc.go
+index 0061b6738..4e8917ff7 100644
+--- a/internal/websterengine/doc.go
++++ b/internal/websterengine/doc.go
+@@ -306,6 +306,7 @@
+ // when an unbegun later card's Edit code still references the target, the failure's reasons name that card and the reference,
+ // and the BatchFailedError's way forward is the plan edit (move the delete after that card, rebaseline, then recover-batch), or the reset-to-start steps when the record also lists uncheckable entries, since recover-batch would repeat the same failure.
+ // Only a reference resolved to the deleted member counts, which is the blocking finding; a method matched by name alone is informational, adds no reason and changes no way forward.
++// A glyph-rejected finding, a card target quarry rejects before resolving it, takes the same plan-edit way forward with the card's target amended instead of the delete moved, since recovery re-runs the same check on the same plan.
+ // PersistRecoveryTerminal fails a recovered batch the same way, and recover-batch runs the same check before spawning:
+ // while a blocking reference fires it refuses with ErrRecoveryDeleteReferenced, which the CLI maps to the `batch_failed` flag.
+ // At run exit the audit cross-check drops dispositioned findings, records the rest of the policy findings as run-level warnings, appended to summary.md under "Audit warnings", and demotes Master's outcome done to stuck for an undispositioned correctness finding.
+diff --git a/internal/websterengine/recordbatch.go b/internal/websterengine/recordbatch.go
+index 5c4c5c5af..2f2e555db 100644
+--- a/internal/websterengine/recordbatch.go
++++ b/internal/websterengine/recordbatch.go
+@@ -57,10 +57,11 @@ func (e *ReportArchivedError) Unwrap() []error { return []error{ErrReportArchive
+ var ErrCardNotDone = errors.New("webster: record-batch's done-checks reported a blocking finding")
+ 
+ // cardNotDoneError is the error the post-batch done-checks return: it unwraps to ErrCardNotDone and its message carries the findings' text.
+-// deleteNotDone is set when a finding is a Delete target that still resolves.
++// deleteNotDone is set when a finding is a Delete target that still resolves, and glyphRejected when quarry rejected a card's target before resolving it.
+ type cardNotDoneError struct {
+ 	reasons       []string
+ 	deleteNotDone bool
++	glyphRejected bool
+ }
+ 
+ func (e *cardNotDoneError) Error() string {
+@@ -91,6 +92,15 @@ func deleteReferencedWayForward(number int, uncheckable bool) string {
+ 	return fmt.Sprintf("move the delete to a card after the one that still references it, run `lyx webster rebaseline --card NN` naming each card you edited, then `lyx webster recover-batch %02d`", number)
+ }
+ 
++// glyphRejectedWayForward is the way forward for a batch whose card names a target quarry rejects before resolving it.
++// Recovery re-runs the same check on the same plan, so the way forward edits the card; a record recovery would refuse as uncheckable restarts the run instead.
++func glyphRejectedWayForward(number int, uncheckable bool) string {
++	if uncheckable {
++		return freshRestartSteps(stepRun)
++	}
++	return fmt.Sprintf("amend the card's target to a spelling `lyx quarry resolve` answers, run `lyx webster rebaseline --card NN` naming each card you edited, then `lyx webster recover-batch %02d`", number)
++}
++
+ // laterDeleteReferenceReasons returns one reason per blocking reference an unbegun card still has to a symbol the cards in own delete.
+ // A method matched by name alone is informational and gives no reason, since its receiver is not resolved and the later card's verify build catches a real call.
+ // An infrastructure error is wrapped in planindex.ErrQuarryUnavailable.
+@@ -131,13 +141,15 @@ type cardNotDoneInputs struct {
+ // The reasons open with the batch's id and its card list, so a finding keyed on a later card of the batch reads as the batch's own.
+ // When a finding is a Delete target that still resolves and an unbegun later card still references it, the reasons also name that reference,
+ // and the way forward is the plan edit rather than recover-batch, which would only repeat the same failure.
++// A finding whose target quarry rejected before resolving it takes the card-amending plan edit as its way forward for the same reason.
+ func failCardNotDone(in cardNotDoneInputs, cause error) (*BatchFailedError, error) {
+ 	var reasons []string
+-	var deleteNotDone bool
++	var deleteNotDone, glyphRejected bool
+ 	var notDone *cardNotDoneError
+ 	if errors.As(cause, &notDone) {
+ 		reasons = notDone.reasons
+ 		deleteNotDone = notDone.deleteNotDone
++		glyphRejected = notDone.glyphRejected
+ 	} else {
+ 		reasons = strings.Split(strings.TrimPrefix(cause.Error(), ErrCardNotDone.Error()+": "), "; ")
+ 	}
+@@ -159,6 +171,9 @@ func failCardNotDone(in cardNotDoneInputs, cause error) (*BatchFailedError, erro
+ 			wayForward = deleteReferencedWayForward(in.Number, len(in.Batch.Uncheckable) > 0)
+ 		}
+ 	}
++	if wayForward == "" && glyphRejected {
++		wayForward = glyphRejectedWayForward(in.Number, len(in.Batch.Uncheckable) > 0)
++	}
+ 	return failBatch(failBatchInput{
+ 		State:      in.State,
+ 		Batch:      in.Batch,
+@@ -811,8 +826,11 @@ func cardNotDoneFor(in postBatchInputs, findings []planindex.Finding) *cardNotDo
+ 	for _, f := range findings {
+ 		notDone.reasons = append(notDone.reasons, f.Error())
+ 		notDoneCards[f.Card] = true
+-		if f.Check == "delete-not-done" {
++		switch f.Check {
++		case "delete-not-done":
+ 			notDone.deleteNotDone = true
++		case "glyph-rejected":
++			notDone.glyphRejected = true
+ 		}
+ 	}
+ 	logBindOutcomes(in.Number, failedBindOutcomes(in.Cards, func(c planparser.Card) planindex.BindReason {
+diff --git a/internal/websterengine/recordbatch_test.go b/internal/websterengine/recordbatch_test.go
+index 8af3d56cf..dbf35ac9c 100644
+--- a/internal/websterengine/recordbatch_test.go
++++ b/internal/websterengine/recordbatch_test.go
+@@ -1633,7 +1633,7 @@ func TestRecordBatch_MissingSessionTranscriptArchivesReport(t *testing.T) {
+ }
+ 
+ // TestRecordBatch_DoneChecksBlockOnUnresolvedCreate proves card 33's wiring as card 10 reshaped it:
+-// a Create target that still does not resolve against the worktree's actual post-card tree fails the batch terminally with its findings as reasons and the report archived.
++// a Create target that still does not resolve against the worktree's actual post-card tree fails the batch terminally with its findings as reasons and the report archived, and a target quarry rejects outright names the card amendment as the way forward.
+ func TestRecordBatch_DoneChecksBlockOnUnresolvedCreate(t *testing.T) {
+ 	fx := newRecordFixture(t, []shuttleengine.ForkAudit{
+ 		{Forks: []shuttleengine.ForkReport{{TranscriptPath: "subagents/f1.jsonl", ReportReturned: true}}},
+@@ -1694,6 +1694,50 @@ func TestRecordBatch_DoneChecksBlockOnUnresolvedCreate(t *testing.T) {
+ 			t.Errorf("reasons = %q; want no finding on the unbegun cards", reasons)
+ 		}
+ 	})
++
++	// A target quarry rejects before resolution fails again on every recovery of the same plan, so the way forward amends the card first.
++	t.Run("GlyphRejectedNamesThePlanEdit", func(t *testing.T) {
++		fx := newRecordFixture(t, []shuttleengine.ForkAudit{
++			{Forks: []shuttleengine.ForkReport{{TranscriptPath: "subagents/f1.jsonl", ReportReturned: true}}},
++		})
++		writeReport(t, fx.ReportsDir, validReport(fx.HeadSHA))
++		fx.Deps.Plan.Cards[0].TargetGroups = []planparser.TargetGroup{
++			{Type: planparser.CardTypeCreate, Refs: []string{"foo.Bar"}},
++		}
++
++		_, err := websterengine.RecordBatch(fx.Deps, 1)
++		if !errors.Is(err, websterengine.ErrBatchFailed) {
++			t.Fatalf("RecordBatch() error = %v; want errors.Is(err, ErrBatchFailed)", err)
++		}
++		for _, want := range []string{"glyph-rejected", "way forward: amend the card's target", "lyx webster rebaseline --card NN", "lyx webster recover-batch 01"} {
++			if !strings.Contains(err.Error(), want) {
++				t.Errorf("RecordBatch() error = %q; want it to contain %q", err.Error(), want)
++			}
++		}
++	})
++
++	// A record recovery would refuse as uncheckable cannot be recovered, so the way forward restarts the run.
++	t.Run("GlyphRejectedWithUncheckableNamesTheFreshRestart", func(t *testing.T) {
++		fx := newRecordFixture(t, []shuttleengine.ForkAudit{
++			{Forks: []shuttleengine.ForkReport{{TranscriptPath: "subagents/f1.jsonl", ReportReturned: true}}},
++		})
++		writeReport(t, fx.ReportsDir, validReport(fx.HeadSHA))
++		fx.Deps.Plan.Cards[0].TargetGroups = []planparser.TargetGroup{
++			{Type: planparser.CardTypeCreate, Refs: []string{"foo.Bar"}},
++		}
++		fx.Deps.State.Batches[1].Uncheckable = []string{"fabric-reference: Bash command references the fabric"}
++
++		_, err := websterengine.RecordBatch(fx.Deps, 1)
++		if !errors.Is(err, websterengine.ErrBatchFailed) {
++			t.Fatalf("RecordBatch() error = %v; want errors.Is(err, ErrBatchFailed)", err)
++		}
++		if !strings.Contains(err.Error(), "way forward: 1) lyx webster reset --to start; 2) lyx webster run") {
++			t.Errorf("RecordBatch() error = %q; want it to contain the fresh-restart steps", err.Error())
++		}
++		if strings.Contains(err.Error(), "recover-batch") {
++			t.Errorf("RecordBatch() error = %q; want no recover-batch", err.Error())
++		}
++	})
+ }
+ 
+ // The bodies of internal/foo/user.go that deleteReferencedBatches takes: the function Gone called on line 4, no call, and the method Thing.Gone called on line 4.
