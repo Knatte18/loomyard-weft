@@ -1,6 +1,6 @@
 # Revisit late review rounds after the twill-plan lens change
 
-`review-rounds-after-twill-plan` · Note · enhancement, burler, loom
+`review-rounds-after-twill-plan` · Note · audit, burler, loom
 
 ## Seen
 
