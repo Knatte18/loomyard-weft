@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-22 10:03 UTC; every age below is as of then.
+Rendered 2026-10-22 10:04 UTC; every age below is as of then.
 
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
@@ -23,7 +23,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 2 | **tender pause does not hold a verify gate's re-prompt, and creel interrupt is refused under the pause**<br>• `profile: light` | [`tender-pause-holds-reprompt`](design-tender-pause-holds-reprompt.md) | loom | Webster-Bouncer | 1d | 4h | creel, shed, webster |
+| 2 | **tender pause does not hold a verify gate's re-prompt, and creel interrupt is refused under the pause**<br>• `profile: light` | [`tender-pause-holds-reprompt`](design-tender-pause-holds-reprompt.md) | loom | Describe | 1d | 4h | creel, shed, webster |
 
 ### Ready
 
@@ -118,8 +118,8 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 21 | **Test runs repeat at the end of a loom run: tier0 inside every tier, the suite four times, tmux only at Publish**<br>• Disjoint tiers, a green run that carries forward, tmux in more gates, and a faster fabricengine suite; with the 2026-10-22 tier timings | [`gate-test-repeats`](design-gate-test-repeats.md) | 4h | 4h | gate, loom, webster, fabric |
 | 22 | **Open-Window opens a window whenever no terminal is attached here, instead of a recorded done** | [`open-window-live-check`](design-open-window-live-check.md) | 1h | 1h | batten, reed |
 | 23 | **A status-bar button turns automatic terminal windows for runs on or off** | [`open-window-toggle`](design-open-window-toggle.md) | 1h | 1h | batten, reed |
-| 24 | **[.NET] A test compiles the C# test fixtures, skipped without dotnet** | [`csharp-fixtures-compile`](design-csharp-fixtures-compile.md) | 39m | 39m | quarry, dotnet, testkit |
-| 25 | **[.NET] A small public NUnit repo as sandbox hub for end-to-end C# runs** | [`csharp-sandbox-hub`](design-csharp-sandbox-hub.md) | 39m | 39m | dotnet |
+| 24 | **[.NET] A test compiles the C# test fixtures, skipped without dotnet** | [`csharp-fixtures-compile`](design-csharp-fixtures-compile.md) | 40m | 40m | quarry, dotnet, testkit |
+| 25 | **[.NET] A small public NUnit repo as sandbox hub for end-to-end C# runs** | [`csharp-sandbox-hub`](design-csharp-sandbox-hub.md) | 40m | 40m | dotnet |
 
 #### Low priority
 
