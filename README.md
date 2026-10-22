@@ -95,6 +95,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | E30 |  | **Discussion scope check moves from the alignment agent into the perch lenses, with an escalating finding class** | [`discussion-alignment-into-lenses`](design-discussion-alignment-into-lenses.md) | 1h<br>1h | loom, burler, shed |
 | E31 |  | **A row before Discussion aligns the task text against the board, peers and landed work, and adjusts it** | [`entry-align-before-discussion`](design-entry-align-before-discussion.md) | 1h<br>57m | loom, batten, board |
 | E32 |  | **Move rules about lyx behaviour out of this repo's CLAUDE.md into lyx code, doc.go and stencils** | [`claude-md-lyx-rules-out`](design-claude-md-lyx-rules-out.md) | 55m<br>15m | stencil, board, loom |
+| E33 |  | **Darn's review hard cap defaults to 2, and the orch stencil drops hand-written small-task run settings** | [`darn-hard-cap-default-2`](design-darn-hard-cap-default-2.md) | 0m<br>0m | config, stencil, orch |
 
 ### Features
 
