@@ -6,7 +6,7 @@
      internal/stencil's StripLeadingComment removes this leading comment before either consumer ever
      sees it.
      Among those markers, gate_tiers is filled by ReadRubric from the hub's gate.yaml tiers and gate lists, or none.
-lyx-stencil: sha256=1dfaa2452cacd0d5aa7e2dc6e55b8968304d03e0dc7a19053d861d4bf37836da build=eb9c2605c6d5ac23da196495db12bb3fa6302386 time=2026-10-22T06:15:45Z -->
+lyx-stencil: sha256=4c67f84ba723c8a37371533dc5e9b16f966df7facbeee694e1eac82bbdac9966 build=341556201d7b552967e71e9ba1a58d27a648e4b7 time=2026-10-22T08:58:35Z -->
 
 # Plan-Review rubric
 
@@ -61,7 +61,7 @@ Do not flag any of the following as a finding:
   The finding names the existing test that covers the behavior, or, for a per-symbol test, the public-surface test that covers the symbol;
   a vague "seems redundant" is not a finding.
 - **Member glyphs on an `Edit` card.**
-  An `Edit` card whose targets are only Go file paths of non-test files while its `Intent` names specific symbols is a finding; the finding names the member glyphs to list instead.
+  An `Edit` card whose targets are only source file paths (`.go` or `.cs`) of non-test files while its `Intent` names specific symbols is a finding; the finding names the member glyphs to list instead.
 - **The re-sign arrow.**
   An `Edit` member glyph without the re-sign arrow, while the card's `Intent` changes that member's parameters, results, type parameters or receiver, is a finding; the finding names the arrow to add.
   It never fires for an interface method or a struct field, which take no arrow.

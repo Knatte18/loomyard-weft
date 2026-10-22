@@ -9,7 +9,7 @@
      twill_directive is a fourth optional marker, rendered by internal/twilldirective through internal/loomengine;
      it sits on the line that would otherwise be blank, so an empty value leaves the blank line and the prompt's bytes unchanged.
      edit_directive is a required marker, rendered unconditionally by internal/editdirective.
-lyx-stencil: sha256=20c716f82969cce194c513e8b1762d9c80948eaf9eb8eb602232c3c82647af55 build=de6b8465f50a475feb96a46f8bd30de0352919c9 time=2026-10-21T19:00:35Z -->
+lyx-stencil: sha256=3a3908b3defebec3c15869c87fe9be396ddc7aa3d43a8a5b6a21dfba2b64d084 build=341556201d7b552967e71e9ba1a58d27a648e4b7 time=2026-10-22T08:58:35Z -->
 
 # Plan — read the decision record, write a plan-format flat-card plan
 
@@ -117,8 +117,9 @@ language: go
 Omit `root:` when there is no shared prefix.
 Card paths are always worktree-relative and clean: never absolute, never containing `..`.
 
-`language:` is `"go"` (the default — you may omit the key entirely) or `"none"`.
-Leave it at `"go"` unless the task is explicitly non-Go.
+`language:` is `"go"` (the default — you may omit the key entirely), `"csharp"` or `"none"`.
+Set `"csharp"` when the code the cards change is C#, read from the files' extension; `{{.specs_dir}}/loom/loom-plan-spec.md` holds the C# rules.
+Otherwise leave it at `"go"` unless the task is explicitly non-Go.
 
 **A symbol target is always spelled as a glyph, never as a bare `pkg.Symbol` string.** A glyph is `<unit>#<member>` — the package or file's own repository-relative path, a `#`, then the symbol's own name (e.g. `internal/boardcli#newListCmd`, or `internal/boardcli#` to name the whole package). A bare package-qualified symbol is a hard finding (`bare-symbol-target`) because it is the one spelling that cannot have come verbatim from a quarry answer — not because the form is uglier. A file path (`list.go`, `internal/boardcli/list.go`) stays a plain path — the parser canonicalizes it into its own file self glyph automatically; you never hand-write the `#`-suffixed form for a plain file.
 
