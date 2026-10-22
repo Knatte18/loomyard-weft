@@ -1,13 +1,13 @@
 # Card 11 — lyx fabric remove reconciles the run first and removes an ended or foreign run locally
 
 **Create:**
-- `plan:internal/fabriccli#removeVerdict` -> `func removeVerdict(report fabricengine.OriginReport, slug string, local localReading) (verdict fabricengine.EntryState, refusal error)`
-- `plan:internal/fabriccli#localReading` -> `type localReading struct`
-- `plan:internal/fabriccli#remover` -> `type remover struct`
-- `plan:internal/fabriccli#remover.run` -> `func (r remover) run(ctx context.Context, slug string, force, remote bool) (pairteardown.Result, error)`
-- `plan:internal/fabriccli#TestRemoveVerdict` -> `func TestRemoveVerdict(t *testing.T)`
-- `plan:internal/fabriccli#TestRemover` -> `func TestRemover(t *testing.T)`
-- `plan:internal/pairteardown#Teardown.TaskWorktreeGone` -> `func (t *Teardown) TaskWorktreeGone(slug string) (bool, error)`
+- `internal/fabriccli#removeVerdict`
+- `internal/fabriccli#localReading`
+- `internal/fabriccli#remover`
+- `internal/fabriccli#remover.run`
+- `internal/fabriccli#TestRemoveVerdict`
+- `internal/fabriccli#TestRemover`
+- `internal/pairteardown#Teardown.TaskWorktreeGone`
 
 **Edit:**
 - `internal/fabriccli#runRemoveWithFlag`

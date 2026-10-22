@@ -1,11 +1,11 @@
 # Card 12 — lyx reed down in a pair ends the owned processes first, and refuses a running unpaused run
 
 **Create:**
-- `plan:internal/pairteardown#ErrRunRunning` -> `var ErrRunRunning = errors.New("the run is running and unpaused")`
-- `plan:internal/pairteardown#Teardown.EndBeforeSessionDown` -> `func (t *Teardown) EndBeforeSessionDown(ctx context.Context, slug string) ([]runproc.Ended, error)`
-- `plan:internal/pairteardown#TestEndBeforeSessionDown` -> `func TestEndBeforeSessionDown(t *testing.T)`
-- `plan:internal/reedcli#reedCLI.endPairProcesses` -> `func (c *reedCLI) endPairProcesses(ctx context.Context) ([]runproc.Ended, error)`
-- `plan:internal/reedcli#TestEndPairProcesses` -> `func TestEndPairProcesses(t *testing.T)`
+- `internal/pairteardown#ErrRunRunning`
+- `internal/pairteardown#Teardown.EndBeforeSessionDown`
+- `internal/pairteardown#TestEndBeforeSessionDown`
+- `internal/reedcli#reedCLI.endPairProcesses`
+- `internal/reedcli#TestEndPairProcesses`
 
 **Edit:**
 - `internal/reedcli#reedCLI`
