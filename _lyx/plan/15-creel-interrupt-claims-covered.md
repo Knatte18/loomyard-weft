@@ -20,7 +20,7 @@
 - `internal/creelcli#TestHubDelivery`
 
 **Uses:**
-- `plan:internal/pauserecord#ClaimSession`
+- `internal/pauserecord#ClaimSession`
 - `internal/pauserecord#Read`
 - `internal/testkit/creelfake#Delivery.SetPaused`
 - `internal/testkit/creelfake#Delivery.Interrupts`

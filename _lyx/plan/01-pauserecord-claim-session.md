@@ -1,8 +1,8 @@
 # Card 1 — pauserecord claims one session into the covering entry
 
 **Create:**
-- `plan:internal/pauserecord#ClaimSession` -> `func ClaimSession(path, slug string, session Session, now time.Time) (Entry, bool, error)`
-- `plan:internal/pauserecord#TestClaimSession` -> `func TestClaimSession(t *testing.T)`
+- `internal/pauserecord#ClaimSession`
+- `internal/pauserecord#TestClaimSession`
 
 **Edit:**
 - `internal/pauserecord/doc.go`

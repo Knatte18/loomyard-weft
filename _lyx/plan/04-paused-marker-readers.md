@@ -9,7 +9,7 @@
 - `internal/battencli#TestReadAgentActivity_ReadsLiveRunsAndTheWaitMarker`
 
 **Uses:**
-- `plan:internal/verifytree#MarkerStatePaused`
+- `internal/verifytree#MarkerStatePaused`
 - `internal/verifytree#ReadMarker`
 
 **Intent:**
