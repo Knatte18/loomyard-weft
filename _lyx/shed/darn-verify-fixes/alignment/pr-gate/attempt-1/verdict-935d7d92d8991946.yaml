@@ -1,0 +1,9 @@
+verdict: approve
+reason: >-
+  The diff carries out D1 through D6 for the entry's open items 2 to 6 and closes item 1 on 98b171b05, as the decision record scopes it.
+  The loom recipe's fixed routing and the retry budget are unchanged, and no work outside the goal is added.
+  The carried open risks are accepted with bounds and break no decision.
+  No peer has changed paths yet and the peer list names no parent commits.
+  machine-handover, row 7, will touch landingshed's Merge-In and Finalize for owner-machine behaviour, which does not conflict with these decisions; this run at row 21 lands first.
+question: ""
+superseded: []
