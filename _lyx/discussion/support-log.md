@@ -21,9 +21,10 @@ Autonomous run: no operator answers; every pick below is the writer's own, recor
 - Classification by impacted set (D1), conservative on every uncertain case.
 - Not-owned target is Merge-In (D2), so the existing single retry merges a moved parent and re-runs a flake.
 - Item 3 as a Darn-Write entry reroute to Merge-In (D3), keeping merges in Merge-In under the parent lock.
-- Findings file kept per row under the shed run directory until the row's next Done (D4).
+- Findings file kept per row under the shed run directory until the row's next call whose gates pass (D4).
 - lyxbin join only for a change to the `cmd/lyx` main package (D5).
-- One pinning row for item 2 (D6); no reed change for item 1.
+- One pinning test case for item 2 (D6); no reed change for item 1.
+- The board's 2026-10-20 case, a failing test outside the branch, is not owned under D1 and never reaches Darn-Write.
 
 ### Turn 3 — lens review
 
@@ -37,8 +38,8 @@ Every lens returned a report.
 - bound-breaker and existing-paths, LOW/MEDIUM, D4's "next Done" never fires for the Burler rows: fixed, removal on the row's next call whose gates pass.
 - bound-breaker, LOW, D5 bound ignores tree-scoped diffs: fixed, D5 names the tree-scoped command's reach.
 - bound-breaker, LOW, 40 runs in one binary do not reproduce the original load: accepted, the record now rests item 1 on the root cause, not the run count.
-- goal-scope, MEDIUM, item 1 closed against the re-scope without saying so: fixed, Scope names the departure and why; auto-mode assumption added.
-- goal-scope and walkthrough, MEDIUM/LOW, D3 checks only at a call's start, so a mid-session parent fix still costs the gate budget: fixed as stated bounds, D3 notes the 2026-10-20 case is not owned under D1, and Open risks names the residual.
+- goal-scope, MEDIUM, item 1 closed against the re-scope without saying so: fixed, auto-mode assumption added.
+- goal-scope and walkthrough, MEDIUM/LOW, D3 checks only at a call's start, so a mid-session parent fix still costs the gate budget: fixed as stated bounds, Turn 2 notes the 2026-10-20 case is not owned under D1, and Open risks names the residual.
 - goal-scope, LOW, Q9 already answered by `gotoAdmitted`: fixed, D2 states goto admits the halted row; risk removed, Q9 resolved.
 - goal-scope, LOW, D6 adds a test the board did not ask for: rejected, a one-row pin of the behaviour item 2 relies on.
 - board-fit, MEDIUM, D3's fetch contradicts `fabric-remote-async`: fixed, D3 reads tips with no fetch; constraint and auto-mode assumption added.
@@ -74,20 +75,27 @@ Every lens returned a report.
 
 ## Review rounds
 
-_No rounds yet._
+- Round 1, BLOCKING: D3 gains a clean-tree condition and reads only the tips Merge-In would merge, and its Stuck-pair bound names the reroute cap;
+  D1 counts a log with an opaque failure, or a package-level failure in the set, as owned;
+  D1, D2 and the Goal stop calling a not-owned failure unreachable, and D2's reason flags binary-driving packages;
+  D4 names the producers as the file's writers and removers;
+  D6 pins a test case, not a guard row, in the import-path form.
+- Round 2, APPROVED: the Open risks for a writer that committed or left edits stop naming a goto to Merge-In, which `gotoAdmitted` refuses from a Darn-Write halt, and name the parent's recovery, dropping the writer's work so D3 reroutes;
+  D1's opaque rule follows the parser, which emits the opaque identity only when it finds no other, and Open risks names the mixed-log residual;
+  the `PATTERN-fabric-git` constraint names the parent-tips reader and Merge-In's dirty-paths reader.
 
 ## Question ledger
 
 - Q1 (resolved, auto-pick): Is item 1 still open? — No; `98b171b05` fixed the shared-socket probe race and 40 of 40 runs pass. No reed change.
-- Q2 (resolved, auto-pick): Can a darn session run the failing tier? — Yes, through `lyx gate test --tier 2`; pin it with one guard table row (D6).
-- Q3 (resolved, auto-pick): How does Go tell code the task touched from code it did not? — By the impacted set from the merge base, with guards, Whole fallback, empty test lists and errors counted as owned (D1).
+- Q2 (resolved, auto-pick): Can a darn session run the failing tier? — Yes, through `lyx gate test --tier 2`; pin it with one case in the guard's rows test (D6).
+- Q3 (resolved, auto-pick): How does Go tell code the task touched from code it did not? — By the impacted set from the merge base, with guards, Whole fallback, package-level failures in the set, a log yielding only the opaque identity, empty test lists and errors counted as owned (D1).
 - Q4 (resolved, auto-pick): Where does a not-owned failure go? — Merge-In, through the existing one retry, then the parent (D2).
 - Q5 (resolved, auto-pick): Where does the parent merge of item 3 happen? — Merge-In, reached by a Darn-Write entry reroute when a failure record is present and the parent moved (D3).
-- Q6 (resolved, auto-pick): Where does the findings file live and when is it cleared? — Per row under the shed run directory, removed on the row's next Done (D4).
+- Q6 (resolved, auto-pick): Where does the findings file live and when is it cleared? — Per row under the shed run directory, removed on the row's next call whose gates pass (D4).
 - Q7 (resolved, auto-pick): How is the lyxbin rule narrowed? — Join only for a change to the `cmd/lyx` main package; everything else through the import graph (D5).
 - Q8 (resolved, auto-pick): Does the classification apply to loom? — No; darn only.
 - Q9 (resolved, lens evidence): Does `lyx loom goto` accept the row the run is halted at? — Yes; `gotoAdmitted` in `internal/shedengine/goto.go` admits the reference row for paused, blocked and failed runs.
-- Q10 (resolved, auto-pick): Item 1 departs from the 2026-10-22 re-scope's open list — closed on the root cause `98b171b05` removed, stated in Scope for the parent review to overrule.
-- Q11 (resolved, auto-pick): Does D3 fetch the parent's upstream? — No, per `fabric-remote-async`; it reads the local branch and its tracking ref.
-- Q12 (resolved, auto-pick): How is D3 kept from skipping review of writer commits or acting on a stale record? — HEAD must equal the record's `head`, and the record must be written during this run.
+- Q10 (resolved, auto-pick): Item 1 departs from the 2026-10-22 re-scope's open list — closed on the root cause `98b171b05` removed, stated in the auto-mode assumptions for the parent review to overrule; the re-scope's list of landed commits does not name `98b171b05`.
+- Q11 (resolved, auto-pick): Does D3 fetch the parent's upstream? — No, per `fabric-remote-async`; it reads the tips Merge-In would merge: the local branch alone under push skip, and the local branch and its tracking ref otherwise.
+- Q12 (resolved, auto-pick): How is D3 kept from skipping review of writer commits or acting on a stale record? — HEAD must equal the record's `head`, the task worktree must be clean, and the record must be written during this run.
 - Environment note: `lyx loom validate-discussion` and the tier-2 gate run worked; nothing looked broken.
