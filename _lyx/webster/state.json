@@ -1,0 +1,201 @@
+{
+  "runGuid": "15b982c1c678143467804c3f41d06bf1",
+  "planFingerprint": "21996c9f9af433e5a76f5fb736a194ee177520fab0f628a65131bd01b4327d40",
+  "planFileHashes": {
+    "00-overview.md": "e58c557b54b0ce1f195321a09d37740ec28623bcb97c3cedad335ee2a5204997",
+    "01-guard-error-carries-dirt.md": "53a7f5b937a11f56a75bd9fd2d527387804006f4e5b4c8573d6936b19740a9be",
+    "02-parent-reads.md": "e8676b70372ce24b46199fe1f8c929afe739c5a2d406a2cc0ad6924f564ef469",
+    "03-finalize-dirty-reason.md": "34808ce66fc1172e32aa0f4535d99141d3b06a638c18b517bd036a044ec2ec41",
+    "04-halt-note-drops-parent-status.md": "e6d5493646b95f3830cc145d0e5db1b570877f494a2dcaf1d9e457e47b49ae13",
+    "05-finalize-goto-guard.md": "a5adb033634b7290c6013c13e0f7a5337f67665a986d6b7bf652702f9c2a6eaf",
+    "06-driver-start-check.md": "2745e6ddfc4b7096dde1b1a0d467f68d70ccf50543cfc1ec953ba61bce92521d"
+  },
+  "planOverviewFrameHash": "9810965fcb8729a881421d99661c3994a401a420143562bb6a3cc519ebb9f15d",
+  "partition": [
+    {
+      "cards": [
+        "01-guard-error-carries-dirt",
+        "02-parent-reads"
+      ],
+      "profile": "cautious",
+      "estimate": 185036,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 1,
+        "startup": 54448,
+        "read_union": 24220,
+        "cards": [
+          {
+            "card": 1,
+            "card_text": 672,
+            "reads": {
+              "file:internal/fabricengine/doc.go": 19152,
+              "package:internal/fabricengine": 2000,
+              "tests:internal/fabricengine": 2000
+            },
+            "messages": 219.5,
+            "written": 66522
+          },
+          {
+            "card": 2,
+            "card_text": 396,
+            "reads": {
+              "file:internal/fabricengine/doc.go": 19152,
+              "package:internal/fabricengine": 2000,
+              "tests:internal/fabricengine": 2000
+            },
+            "messages": 131.5,
+            "written": 39846
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "03-finalize-dirty-reason",
+        "04-halt-note-drops-parent-status"
+      ],
+      "profile": "cautious",
+      "estimate": 194696,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 2,
+        "startup": 61448,
+        "read_union": 28968,
+        "cards": [
+          {
+            "card": 3,
+            "card_text": 912,
+            "reads": {
+              "file:contracts/specs/refusal-spec.md": 504,
+              "file:internal/landingshed/doc.go": 2184,
+              "package:contracts/specs": 2000,
+              "package:internal/landingshed": 2000,
+              "tests:contracts/specs": 2000,
+              "tests:internal/landingshed": 2000
+            },
+            "messages": 99.5,
+            "written": 30762
+          },
+          {
+            "card": 4,
+            "card_text": 468,
+            "reads": {
+              "file:contracts/stencils/friction/friction-template-reflection.md": 900,
+              "package:contracts/stencils/friction": 2000,
+              "package:internal/fabricengine": 2000,
+              "package:internal/haltnote": 2000,
+              "package:internal/loomcli": 2000,
+              "tests:contracts/stencils/friction": 2000,
+              "tests:internal/fabricengine": 2000,
+              "tests:internal/haltnote": 2000,
+              "tests:internal/loomcli": 2000
+            },
+            "messages": 243.5,
+            "written": 73518
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "05-finalize-goto-guard",
+        "06-driver-start-check"
+      ],
+      "profile": "cautious",
+      "estimate": 160350,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 3,
+        "startup": 68448,
+        "read_union": 17472,
+        "cards": [
+          {
+            "card": 5,
+            "card_text": 840,
+            "reads": {
+              "file:internal/loomcli/doc.go": 2988,
+              "package:internal/loomcli": 2000,
+              "package:internal/loomrecipe": 2000,
+              "tests:internal/loomcli": 2000,
+              "tests:internal/loomrecipe": 2000
+            },
+            "messages": 143,
+            "written": 43740
+          },
+          {
+            "card": 6,
+            "card_text": 540,
+            "reads": {
+              "file:internal/loomcli/doc.go": 2988,
+              "file:internal/sheddriver/doc.go": 1104,
+              "package:internal/loomcli": 2000,
+              "package:internal/sheddriver": 2000,
+              "tests:internal/loomcli": 2000,
+              "tests:internal/sheddriver": 2000
+            },
+            "messages": 100.5,
+            "written": 30690
+          }
+        ]
+      }
+    }
+  ],
+  "currentBatch": 1,
+  "masterStrand": "0466f49c0c2c78c49dff14cdde5967bf",
+  "masterSessionId": "79ea0c97-eb15-42be-8939-f17d471323b8",
+  "masterEngine": "claude",
+  "batches": {
+    "1": {
+      "slug": "guard-error-carries-dirt",
+      "cards": [
+        "01-guard-error-carries-dirt",
+        "02-parent-reads"
+      ],
+      "cardHashes": {
+        "01-guard-error-carries-dirt": "53a7f5b937a11f56a75bd9fd2d527387804006f4e5b4c8573d6936b19740a9be",
+        "02-parent-reads": "e8676b70372ce24b46199fe1f8c929afe739c5a2d406a2cc0ad6924f564ef469"
+      },
+      "startSha": "0d953f140081e003dc3621e82ba05c1e1869a92f",
+      "kind": "fork",
+      "spawnedAt": "2026-10-22T11:31:45Z",
+      "sessionId": "79ea0c97-eb15-42be-8939-f17d471323b8",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
+    }
+  }
+}
