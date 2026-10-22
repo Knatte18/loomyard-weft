@@ -1,13 +1,13 @@
 # Card 1 — configengine-overlay-load
 
 **Create:**
-- `plan:internal/configengine#Overlay` -> `type Overlay struct`
-- `plan:internal/configengine#EffectiveTemplate` -> `func EffectiveTemplate(spec Spec, base []byte, hub bool) ([]byte, error)`
-- `plan:internal/configengine#TemplateUnder` -> `func TemplateUnder(dirs Dirs, spec Spec) ([]byte, error)`
-- `plan:internal/configengine#overlayTemplate` -> `func overlayTemplate(spec Spec, value string, hub bool) ([]byte, error)`
-- `plan:internal/configengine#selectorValue` -> `func selectorValue(spec Spec, doc []byte) (value string, held bool, err error)`
-- `plan:internal/configengine#selectorRefusal` -> `func selectorRefusal(dirs Dirs, spec Spec, path string, heldBefore bool) error`
-- `plan:internal/configengine_test#overlaySpec` -> `func overlaySpec() configengine.Spec`
+- `internal/configengine#Overlay`
+- `internal/configengine#EffectiveTemplate`
+- `internal/configengine#TemplateUnder`
+- `internal/configengine#overlayTemplate`
+- `internal/configengine#selectorValue`
+- `internal/configengine#selectorRefusal`
+- `internal/configengine_test#overlaySpec`
 
 **Edit:**
 - `internal/configengine#Spec`

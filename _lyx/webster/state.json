@@ -1,13 +1,13 @@
 {
   "runGuid": "2541d00f4e6d76b1991f62d267bdb5c1",
-  "planFingerprint": "7e3344f169e91336c6d8ee3ebb3c76ac9bafde96c00795a628f370b7f2e6bd86",
+  "planFingerprint": "99640c4205b0da0e24084b65c5469baa61c152ed8e1cefb15f4b7ed6319d5e69",
   "planFileHashes": {
     "00-overview.md": "28923292e6f71e7e641cbfb5a2520418601edea817a4bec1b678898b124f2a3e",
-    "01-configengine-overlay-load.md": "9e63f47ff5b5bc3571f632833d3c4fe8139cfb0ac8093dfdad0fe6f4526d2bd8",
-    "02-configengine-overlay-writes.md": "26949bef4080388782aa6c8b244c90c9d680da83519dfab06de0ec82f105facb",
-    "03-lenses-lens-set.md": "2b08cc103eee16c20ddc82d5c1363f4631d5fd29145645416a4311583d07f70f",
-    "04-lenses-language-layers.md": "3564f39087ce0b7408cc17e570c507d16e31ac242c038904c3ce0d42c7004280",
-    "05-configsync-effective-template.md": "d781c2e9771bdf681fc8dd6ef36745b5b82b72585aedb209e96bd4ddcdd4f017",
+    "01-configengine-overlay-load.md": "ebcb959f7363e4eaf30a295f475e3efe904118be8dc1da846f6524123780eb1c",
+    "02-configengine-overlay-writes.md": "22c9426fdfd275ede63e085fc88a66e5454d1a3250b5796f4708478885abb5b8",
+    "03-lenses-lens-set.md": "2d08f1f56495e138eb98119f91e7150b31401b0a277bee1d5b2e5f6ae5e232be",
+    "04-lenses-language-layers.md": "fc49ff0c4638a0f2ee41083bbd490c46dd4d9c65cca2d94e47154d52dbf5ad7f",
+    "05-configsync-effective-template.md": "91533b05402e5de70c3044a1206d200e0d472fba20207ed870d2f426aec06e44",
     "06-lenses-remove.md": "05abd8c3272b395662521a2f2e6044ab3b5d6475680cae157dc74e28b5cc5831"
   },
   "planOverviewFrameHash": "488235ed4b0c16f51d2a01a5c698685c6d60496a6bc02841387444a938e64cf3",
@@ -166,7 +166,7 @@
       }
     }
   ],
-  "currentBatch": 1,
+  "currentBatch": 0,
   "masterStrand": "6fba0c9267611867565b95d8712a85cd",
   "masterSessionId": "445eaaf3-cd59-4144-8078-5b4378646688",
   "masterEngine": "claude",
@@ -179,17 +179,40 @@
         "03-lenses-lens-set"
       ],
       "cardHashes": {
-        "01-configengine-overlay-load": "9e63f47ff5b5bc3571f632833d3c4fe8139cfb0ac8093dfdad0fe6f4526d2bd8",
-        "02-configengine-overlay-writes": "26949bef4080388782aa6c8b244c90c9d680da83519dfab06de0ec82f105facb",
-        "03-lenses-lens-set": "2b08cc103eee16c20ddc82d5c1363f4631d5fd29145645416a4311583d07f70f"
+        "01-configengine-overlay-load": "ebcb959f7363e4eaf30a295f475e3efe904118be8dc1da846f6524123780eb1c",
+        "02-configengine-overlay-writes": "22c9426fdfd275ede63e085fc88a66e5454d1a3250b5796f4708478885abb5b8",
+        "03-lenses-lens-set": "2d08f1f56495e138eb98119f91e7150b31401b0a277bee1d5b2e5f6ae5e232be"
       },
       "startSha": "750903aef1b7474b06597cdd2d6e0aecfd85d251",
       "kind": "fork",
       "spawnedAt": "2026-10-22T07:48:29Z",
       "sessionId": "445eaaf3-cd59-4144-8078-5b4378646688",
       "engine": "claude",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "01-configengine-overlay-load",
+        "status": "done",
+        "head_sha": "1aa8ded33ba553931f21a23fcfe1cc0dc9bb731d",
+        "deviations": [
+          "internal/configengine/edit.go",
+          "internal/configengine/overlay.go",
+          "internal/configengine/set.go",
+          "internal/configreg/configreg.go"
+        ]
+      },
+      "cardShas": [
+        "1aa8ded33ba553931f21a23fcfe1cc0dc9bb731d"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-lenses-language-sets/445eaaf3-cd59-4144-8078-5b4378646688/subagents/agent-a94dc6ff0465707e2.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-lenses-language-sets/445eaaf3-cd59-4144-8078-5b4378646688/subagents/agent-a94dc6ff0465707e2.jsonl"
+      ]
     }
-  }
+  },
+  "seenForkTranscripts": [
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-lenses-language-sets/445eaaf3-cd59-4144-8078-5b4378646688/subagents/agent-a94dc6ff0465707e2.jsonl"
+  ]
 }

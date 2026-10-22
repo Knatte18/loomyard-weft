@@ -10,7 +10,7 @@
 - `internal/configcli#TestDispatchLayers`
 
 **Uses:**
-- `plan:internal/lenses#lensSets`
+- `internal/lenses#lensSets`
 - `internal/lenses#loadTemplateConfig`
 - `internal/configcli#hubFixture`
 

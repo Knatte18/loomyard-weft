@@ -19,8 +19,8 @@
 - `internal/configcli/doc.go`
 
 **Uses:**
-- `plan:internal/configengine#EffectiveTemplate`
-- `plan:internal/configengine#TemplateUnder`
+- `internal/configengine#EffectiveTemplate`
+- `internal/configengine#TemplateUnder`
 - `internal/configengine#LayerFile`
 - `internal/configengine#BaseLayer`
 - `internal/configsync#writeModuleFile`

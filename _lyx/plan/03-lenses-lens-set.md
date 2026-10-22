@@ -2,9 +2,9 @@
 
 **Create:**
 - `internal/lenses/sets/go.yaml`
-- `plan:internal/configsync#burlerFixture` -> `func burlerFixture(t *testing.T, edit func(cfg *lenses.Config)) string`
-- `plan:internal/lenses#lensSetFiles` -> `var lensSetFiles embed.FS`
-- `plan:internal/lenses#lensSets` -> `func lensSets() map[string][]byte`
+- `internal/configsync#burlerFixture`
+- `internal/lenses#lensSetFiles`
+- `internal/lenses#lensSets`
 
 **Edit:**
 - `internal/lenses#Config`
@@ -19,7 +19,7 @@
 - `docs/overview.md`
 
 **Uses:**
-- `plan:internal/configengine#Overlay`
+- `internal/configengine#Overlay`
 - `internal/lenses#writeLensesYAML`
 - `internal/lenses#loadTemplateConfig`
 
