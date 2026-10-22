@@ -1,4 +1,4 @@
-<!-- lyx-stencil: sha256=c257a5c35a717dd14b35c9014cfc85c6ff54a6d02be2a72703dee51187d677fc build=341556201d7b552967e71e9ba1a58d27a648e4b7 time=2026-10-22T08:58:35Z -->
+<!-- lyx-stencil: sha256=a97eae484208fd4a8784d105cdbe01998bd9b772b48804bcbb07c4f1af29d25f build=b08ebd34a4f6fe41e3a9c8a8e45c0f88c1a3290c time=2026-10-22T15:06:38Z -->
 
 # Loom plan-spec — flat card list
 
@@ -139,6 +139,7 @@ A symbol no card in the plan touches needs no edge — its state never changes d
 | Custom | either | none — explicit escape hatch | as applicable |
 
 A `Create` target under the repository root's git-ignored `.scratch/` is a transient draft: the card may remove it once read, and Webster's `create-not-done` check skips it.
+A target no glyph spells, such as a path whose directory holds a space, stays a plain path, and Webster's done-checks judge it by whether the path exists.
 How cards group into execution batches is not a card property; `internal/batcher`'s package doc describes it.
 A card that renames or deletes what an earlier card targets never shares that card's batch.
 
