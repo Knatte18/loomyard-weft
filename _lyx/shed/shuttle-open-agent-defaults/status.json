@@ -1,11 +1,11 @@
 {
-  "current_producer": "Darn-Write",
+  "current_producer": "Darn-Bouncer",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Darn-Write",
-    "last": "Preflight → done",
+    "now": "Darn-Bouncer",
+    "last": "Darn-Write → done",
     "wait": ""
   },
   "history": [
@@ -14,6 +14,51 @@
       "outcome": "done",
       "output": "",
       "at": "2026-10-22T06:05:43Z"
+    },
+    {
+      "producer": "Darn-Write",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYXHUB/shuttle-open-agent-defaults/_lyx/landing/summary.md",
+      "at": "2026-10-22T06:13:48Z",
+      "gate_attempts": 1,
+      "gate_spans": [
+        {
+          "gate": "discussion",
+          "kind": "gate",
+          "start": "2026-10-22T06:11:09.738671996Z",
+          "end": "2026-10-22T06:11:17.04683991Z"
+        },
+        {
+          "gate": "discussion",
+          "kind": "gate",
+          "start": "2026-10-22T06:11:47.748678365Z",
+          "end": "2026-10-22T06:11:57.599328553Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-10-22T06:11:17.095001875Z",
+          "end": "2026-10-22T06:11:17.176540579Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "rework",
+          "start": "2026-10-22T06:11:17.592851568Z",
+          "end": "2026-10-22T06:11:47.715670524Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-10-22T06:11:57.66028787Z",
+          "end": "2026-10-22T06:13:47.778614714Z"
+        },
+        {
+          "gate": "description",
+          "kind": "gate",
+          "start": "2026-10-22T06:13:47.825868245Z",
+          "end": "2026-10-22T06:13:47.825899714Z"
+        }
+      ]
     }
   ],
   "product": {
