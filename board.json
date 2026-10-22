@@ -1324,6 +1324,25 @@
       "body": "Imported from [issue #807](https://github.com/Knatte18/loomyard/issues/807).\n\n## What was seen\n\nReported by the batch 07 recovery strand of run `csharp-alphabet` in the quarry hub (Knatte18/quarry).\nUnder `lyx gate test`, `runtime.Caller(0)` returns a module-relative path (`github.com/Knatte18/quarry/...`) instead of an absolute one, as a `-trimpath` build would.\nEvery test that locates its repository through it then fails with \"not an absolute path\".\nIt reproduces on `./internal/repopath`, which the batch never touched.\n`lyx gate test -vv` shows no `-trimpath` in go's arguments, so the flag probably reaches go through the slot environment.\nA raw `go test -count=1 -tags integration` over the same packages passes.\n`go env GOFLAGS` in the hub prime is empty.\n\n## Workaround\n\nNone yet: the recovery reported the batch OK on the raw run and the lints, and every later batch's gate run is expected to hit the same failure.\n\n## Expected\n\n`lyx gate test` builds as plain `go test` does, so `runtime.Caller` yields absolute file paths, or the gate documents and sets any build-path flag it adds.\n",
       "created": "2026-10-22T10:33:13Z",
       "revised": "2026-10-22T10:33:13Z"
+    },
+    {
+      "id": 752,
+      "slug": "fork-git-guard-read-only-tag",
+      "title": "Fork git guard flags read-only 'git tag --points-at' as a state-mutating command",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "shed"
+      ],
+      "issues": [
+        819
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Imported from [issue #819](https://github.com/Knatte18/loomyard/issues/819).\n\n## What happened\n\nA `lyx loom` run halted `failed` (anomaly `producer-hard-failure`) at the `Plan-Burler-Fix` producer, round 2 attempt 2.\nThe shedadapters check reported that the twill fixer fork \"ran a git-mutating command\" and named this command line:\n\n`\u003csed -n read of a source file\u003e; git -C \u003ctarget\u003e log -1 --format='%h %d' ; git -C \u003ctarget\u003e tag --points-at HEAD`\n\nEvery part of it is read-only: `sed -n` reads, `git log -1` reads, and `git tag --points-at HEAD` only lists the tags pointing at a commit.\nThe fork wrote nothing, yet the halt message says \"a fork must never run a state-mutating git command\" and tells the operator to revert what the fork wrote.\n\n## Why this is abnormal\n\nThe guard appears to classify `git tag` as mutating by subcommand name, without looking at its flags.\n`git tag --points-at`, `--list`, `-l` and `--contains` are read-only forms.\nA false positive halts the run as a hard failure and sends the operator after a revert that has nothing to revert.\nIt also wastes the review rounds already spent: the history shows the plan segment had been through several Bouncer, Burler-Review and Burler-Fix rounds.\n\n## What to do\n\nMake the fork git-mutation check distinguish read-only `git tag` forms (`--points-at`, `-l`/`--list`, `--contains`, `--merged`, `--no-merged`, `-n`) from creating or deleting forms (`git tag \u003cname\u003e`, `-d`, `-a`, `-s`, `-f`).\nCheck whether other multi-purpose git subcommands (`branch`, `stash list`, `remote`, `config --get`) have the same flaw.\nAdd a test for the command line above.\nAlso consider that the halt message's way forward (\"revert what the fork wrote\") is misleading when the working tree is clean.\n\nProvenance: task `quarry-csharp`, note `loom-halt.md`.\n",
+      "created": "2026-10-22T10:33:15Z",
+      "revised": "2026-10-22T10:33:15Z"
     }
   ]
 }
