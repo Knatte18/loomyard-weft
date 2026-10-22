@@ -1,0 +1,8 @@
+verdict: approve
+reason: >-
+  The diff fixes both points of the board entry and nothing else: --set of profiles.<name>.<key> writes that one leaf (#833),
+  and declaring profiles a per-name map makes a layer's profiles add to or override the template's by name (#834).
+  The validation, retired-key origin, configsync and yamlengine changes all follow from that declaration, and the three package docs change with it.
+  The open risks name no parent correction, and the only peer, run-process-ownership, shares no path with this diff.
+question: ""
+superseded: []
