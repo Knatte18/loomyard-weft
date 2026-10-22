@@ -25,7 +25,7 @@ Held by a run; its scope is locked until the run ends.
 | # | Task | Slug | Recipe | At | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | 3 | **tender pause does not hold a verify gate's re-prompt, and creel interrupt is refused under the pause**<br>• `profile: light` | [`tender-pause-holds-reprompt`](design-tender-pause-holds-reprompt.md) | loom | Plan-Write | 1d | 2h | creel, shed, webster |
-| 4 | **[.NET 007] Language-specific lens sets seeded per hub**<br>• Every hub seeds lenses.yaml from one Go-repo template; seed by the hub language instead<br>• `profile: light` | [`lenses-language-sets`](design-lenses-language-sets.md) | loom | Merge-Burler-Fix | 1d | 1h | burler, config, dotnet |
+| 4 | **[.NET 007] Language-specific lens sets seeded per hub**<br>• Every hub seeds lenses.yaml from one Go-repo template; seed by the hub language instead<br>• `profile: light` | [`lenses-language-sets`](design-lenses-language-sets.md) | loom | Merge-Bouncer | 1d | 1h | burler, config, dotnet |
 
 ### Ready
 
