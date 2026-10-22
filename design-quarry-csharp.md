@@ -1,6 +1,6 @@
 # [.NET 006] LoomYard uses quarry C# glyphs: version raise, alphabet by extension
 
-`quarry-csharp` · Task · feature, quarry, dotnet · running · Merge-In
+`quarry-csharp` · Task · feature, quarry, dotnet · running · Merge-Bouncer
 
 ## Seen (orch, 2026-10-20)
 
