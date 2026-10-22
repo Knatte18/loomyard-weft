@@ -1185,7 +1185,7 @@
     {
       "id": 767,
       "handle": "E21",
-      "slug": "pr-align-fix-row",
+      "slug": "merge-in-light-fixer",
       "title": "A PR-Align reject goes to a light fixer row, not a new plan generation",
       "kind": "note",
       "labels": [
