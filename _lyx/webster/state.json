@@ -357,7 +357,7 @@
       }
     }
   ],
-  "currentBatch": 0,
+  "currentBatch": 5,
   "masterStrand": "2642482185a5730eac4c6d480d816de3",
   "masterSessionId": "39d466a9-b4ba-4030-9c38-3fc3d6d86e86",
   "masterEngine": "claude",
@@ -432,6 +432,30 @@
       "bracketTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-quarry-csharp/39d466a9-b4ba-4030-9c38-3fc3d6d86e86/subagents/agent-a207da6c36a038b98.jsonl"
       ]
+    },
+    "5": {
+      "slug": "go-only-checks",
+      "cards": [
+        "05-go-only-checks",
+        "06-plan-language-mismatch",
+        "07-rename-namespace-pair",
+        "08-multi-alphabet-answers",
+        "09-csharp-create-handles"
+      ],
+      "cardHashes": {
+        "05-go-only-checks": "7ccfb281fb8101b9b0cc235d6691af1af74a6d80754fc5756c0c83bb2b661208",
+        "06-plan-language-mismatch": "304ad0209a21f53877e60fc3e17a45ff54ec0533b45b2378c561482cb4fefac8",
+        "07-rename-namespace-pair": "96e20dc853495dbaddb794d9d2c2cb4127ffe5fb15540f68adc1df8410c6d62c",
+        "08-multi-alphabet-answers": "7e0bdd0daed7a6dcf3ec30f700f87e8b5201bf47e5abdd00ed62d9e56e73dcb5",
+        "09-csharp-create-handles": "0aaf51bbf886e3de6b5811b1adebaa2d9ee63dd084c3883636903cec6250dce5"
+      },
+      "startSha": "5303ec9515410b457d3d7bf7df3de7d6d3b8e5de",
+      "kind": "fork",
+      "spawnedAt": "2026-10-22T07:57:07Z",
+      "sessionId": "39d466a9-b4ba-4030-9c38-3fc3d6d86e86",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
     }
   },
   "seenForkTranscripts": [
