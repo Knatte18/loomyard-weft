@@ -1,62 +1,48 @@
-# Batcher profiles merge by name across layers; --set sets one profile key
+# Config layers set one profile key and merge profile maps by name
 
 `batcher.yaml`'s `profiles:` now behaves as a map of names across the layer stack.
-A layer's profiles add to or override the template's `identity` and `cautious` by name, and each profile merges key by key.
-`lyx config batcher --set profiles.<name>.<key>=<value>` writes that one key.
-This fixes issues #833 and #834.
+A layer's profiles add to or override the template's by name, each profile's keys merging leaf by leaf.
+`lyx config batcher --set profiles.<name>.<key>=<value>` sets that one leaf.
 
-## The faults
+Before, `profiles` was declared an open map.
+The layer merge and the template fill carried an open map whole, so a hub layer holding `wide` hid the template's `cautious` and `identity`.
+`--set profiles.cautious.budget=300000` was refused with an unmarshal error, because the set wrote `cautious.budget` as one entry name.
 
-`profiles` was declared an open map.
-An open map is one unit: the layer merge and the template fill took it whole from the highest layer holding it.
-A hub file that added `wide` therefore hid `cautious` and `identity` (#834).
-`--set profiles.cautious.budget=300000` split the key at the open map and wrote an entry named `cautious.budget` holding the string `"300000"`.
-The load then failed to decode it into a profile (#833).
+Closes #833
+Closes #834
 
-## The change
+## What changes
 
-- **Batcher** declares `profiles` a per-name map (`ConfigPerNameMaps`), in its spec and in its `configreg` row.
-  The layer merge and the template fill already step into a per-name map name by name and into each mapping entry key by key.
-  Prune and the unknown-key warning keep a name the template lacks, and reconcile writes only the names a file changed.
-- **yamlengine** handles a per-name map whose template entries are mappings.
-  `SetValues` and `SetSparse` set `P.<name>` from a YAML flow mapping.
-  They know `P.<name>.<rest>` for any name, where `rest` is a scalar or list path some template entry holds, and write that one key under that entry's tag.
-  The known-key list names each such path as `P.<name>.<rest>`.
-- **configengine** `ValidateLocal` and `ValidateMachine` judge a path under a per-name map that the template lacks against the template entry holding the rest of the path, whatever the name.
-  A local or run-settings document can still add a profile, as it could under the open map.
-- **Batcher's retired-key refusal** names the highest layer file holding the profile, no longer the layer holding the top-level `profiles` key.
-- **configsync**: the former batcher template value narrows to the one key that was tuned, `profiles.cautious.budget: 450000`, since the unit is now a leaf.
-  The former-values test checks every unit of the former document.
+- `batcher.ConfigSpec` and its `configreg` row declare `profiles` in `PerNameMaps` and no open map; `ConfigOpenMaps` gives way to `ConfigPerNameMaps`.
+  The merge and fill already step into a per-name map by name and into each mapping entry key by key, so this fixes the load side with no new merge rule.
+- `yamlengine.SetValues` and `SetSparse` take a per-name map whose template entries are mappings:
+  - `P.<name>` sets from a YAML flow mapping and replaces the entry whole.
+  - `P.<name>.<rest>` is known for any name where `<rest>` is a scalar or list path of some template entry at `P`.
+    It writes that one leaf under the tag of the template leaf and creates the name's mapping when absent.
+    The known-key list names each such path.
+  - A deeper key no template entry holds stays unknown and is refused; per-name maps of scalars or lists keep their dot-free rule.
+- `configengine`'s `ValidateLocal` and `ValidateMachine` judge a unit `P.<name>.<rest>` whose name the template lacks against the first template entry at `P` holding `<rest>`, for existence and shape.
+  Without this, the per-name declaration would refuse a profile the template lacks in a local or run-settings document, which the open-map declaration allowed.
+- `batcher`'s loader records, for each profile, the highest layer file holding `profiles.<name>`.
+  The retired-key refusal names that file, since a profile now merges from several layers and the top-level `profiles` origin can name a file holding no part of it.
+- `configsync`'s `formerTemplateValues` entry for batcher shrinks to the one `cautious` leaf that was tuned, as a per-name map compares each leaf alone.
+- Two YAML marshalling fixes that the per-name path exposed: the fill takes block style for a flow mapping it appends block entries to, and reconcile lifts a key's line comment over an empty collection onto the value, since either marshalled as invalid YAML.
+- `doc.go` of `batcher`, `configengine` and `yamlengine` describe the new behaviour.
 
-Two pre-existing YAML emission defects surfaced once `profiles` could be emptied, and both are fixed at their source:
+## Design notes
 
-- `FillMissing` appended commented template entries into a flow-style `{}` mapping and emitted invalid YAML.
-  A mapping it appends to now takes block style.
-- `Reconcile`, `SetValues` and `DropTemplateEqualNames` emptied a per-name map under a key carrying a line comment, and wrote `key: # comment` over a bare `{}` on the next line.
-  The comment now moves onto the emptied value, giving `key: {} # comment`.
+- A per-name map holds one kind of entry, so its first template entry decides scalar, list or mapping.
+- Only a path some template entry holds is opened, and the category of `P` still decides in the local and machine checks, so per-name maps of a guard category, such as lenses' and gate's, stay closed to both layers.
+  Behaviour of per-name maps for lenses and gate is otherwise unchanged.
+- A hub `batcher.yaml` can no longer hide a template profile, since no layer deletes a key from the one below; `active:` is the only selection.
+- A retired key in a lower layer's part of a split profile is attributed to the highest layer holding that profile.
+- The registry fingerprint covers per-name maps, so hubs reconcile through `hubreconcile.Ensure` with no new code.
+  Reconcile drops a profile from a standalone `batcher.yaml` once it equals the template, and the load resolves it from there.
 
-## Design decisions
+## To check by hand
 
-- A per-name map instead of a new map kind or a change to open-map merging.
-  Changing open maps would alter every module's open maps, including loom's scalar-or-list model keys.
-- The first template entry holding a key decides its tag and shape, as the first entry already decided list or scalar entries.
-- A layer cannot hide a template profile, since no layer deletes a key from the one below.
-  `active:` remains the only selection.
+Not run here:
 
-## Effect on existing files
-
-The registry fingerprint covers per-name maps, so hubs reconcile after the binary changes.
-Reconcile then drops a profile equal to the template's from a full base, as it does for lenses.
-A standalone `batcher.yaml` seeded from the template now reads `profiles: {}`, and the load resolves both template profiles.
-The hub's copies of `cautious` and `identity` can be removed by hand, or are dropped by reconcile once they equal the template.
-
-## Tests
-
-- yamlengine: rows for per-name mapping entries in `TestSetValues`, `TestSetValues_UnknownKeys`, `TestSetValues_Refusals` and `TestSetSparse`.
-  Regression rows for the commented empty mapping in `TestReconcile`, `TestSetValues`, `TestDropTemplateEqualNames` and `TestFillMissing`.
-- configengine: `TestValidateLocal` rows for a profile the template lacks, an unknown key in it and a shape mismatch.
-- batcher: `TestActive` rows for an operator profile added beside the template's, one tuned key keeping the template's others, and a tuned key reaching the profile.
-  The retired-key row now adds a worktree profile, and still names the repo default.
-  Error rows now tune a profile the template lacks.
-- configsync: the migration row for batcher now strips every key equal to the layers below and keeps the differing one.
-  The open-map-kept-whole case moves to claude's `prompt_cache_ttl_roles`.
+- In a hub, `lyx config batcher --layer default --set profiles.cautious.budget=300000` writes only that leaf, and `--resolved` keeps the other `cautious` keys.
+- `--set profiles.wide.nope=1` is refused as unknown.
+- The hub's own `batcher.yaml` copies of `cautious` and `identity` live on Bolt and are the operator's to remove; reconcile drops them once they equal the template.
