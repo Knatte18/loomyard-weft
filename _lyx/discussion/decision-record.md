@@ -48,6 +48,13 @@ Rationale: the operator asked for a longer backoff; two failed runs before a thi
 
 - If GitHub's refusal lasts longer than a minute, the row still fails and the re-run workaround stays the path.
 
+<!-- lyx:carry-over Darn-Review -->
+- Darn-Review, round 1: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
+  Review: _lyx/reviews/darn/round-1-review.md; fixer report: _lyx/reviews/darn/round-1-fixer-report.md.
+  - archive-schedule-comment-lock-claim (class consistency, severity MEDIUM, open in rounds 1)
+  - archive-schedule-untested (class design, severity MEDIUM, open in rounds 1)
+<!-- /lyx:carry-over Darn-Review -->
+
 ## Acceptance criteria
 
 - A `(failed)` refusal line in short form is retryable for a caller that passed the full `refs/tags/` or `refs/heads/` ref.
