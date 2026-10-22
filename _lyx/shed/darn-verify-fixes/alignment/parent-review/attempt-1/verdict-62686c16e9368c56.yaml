@@ -1,0 +1,7 @@
+verdict: approve
+reason: >-
+  The design covers board items 2 to 6 of the 2026-10-22 re-scope (D1 to D6) with no work another entry owns and no contradiction of another entry; D3 follows fabric-remote-async.
+  Item 1 is closed on 98b171b05, which isolates the exact tmux probe race #714 reports, as the entry's "retry or isolate" option allows, and the record states the departure from the re-scope's open list for the operator to overrule.
+  Peer machine-handover touches internal/landingshed at Finalize, a different behaviour, landing order a tie at row 3; no other peer overlaps.
+question: ""
+superseded: []
