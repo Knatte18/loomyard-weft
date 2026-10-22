@@ -1,13 +1,13 @@
 # Card 7 — Detached pushes and board syncs exit under a pause, leaving their flags and commits for the next push
 
 **Create:**
-- `plan:internal/fabricengine#pushDeferral` -> `func pushDeferral(lockDir string, owed map[string]PushSpawn, pushed map[string]bool, exit func()) func()`
-- `plan:internal/fabricengine#exitDeferred` -> `var exitDeferred = func() { os.Exit(0) }`
-- `plan:internal/fabricengine#TestPushDeferral_PutsBackTheUnpushedFlags` -> `func TestPushDeferral_PutsBackTheUnpushedFlags(t *testing.T)`
-- `plan:internal/fabricengine#TestDetachedPush_CoveredChildExitsBeforeItsFlags` -> `func TestDetachedPush_CoveredChildExitsBeforeItsFlags(t *testing.T)`
-- `plan:internal/boardcli#TestSync_DeferrableExitsUnderACoveringPause` -> `func TestSync_DeferrableExitsUnderACoveringPause(t *testing.T)`
-- `plan:internal/boardcli#exitDeferredSync` -> `var exitDeferredSync = func() { os.Exit(0) }`
-- `plan:internal/fabricengine#TestCoalescePushRequest_CoveredCallDefers` -> `func TestCoalescePushRequest_CoveredCallDefers(t *testing.T)`
+- `internal/fabricengine#pushDeferral`
+- `internal/fabricengine#exitDeferred`
+- `internal/fabricengine#TestPushDeferral_PutsBackTheUnpushedFlags`
+- `internal/fabricengine#TestDetachedPush_CoveredChildExitsBeforeItsFlags`
+- `internal/boardcli#TestSync_DeferrableExitsUnderACoveringPause`
+- `internal/boardcli#exitDeferredSync`
+- `internal/fabricengine#TestCoalescePushRequest_CoveredCallDefers`
 
 **Edit:**
 - `internal/fabricengine#PushSpawn`
