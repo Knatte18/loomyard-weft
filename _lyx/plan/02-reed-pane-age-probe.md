@@ -1,9 +1,9 @@
 # Card 2 — Reed reads a pane's age from /proc
 
 **Create:**
-- `plan:internal/reedengine#processAge` -> `func processAge(uptime, stat string, ticksPerSecond int64) (time.Duration, error)`
-- `plan:internal/reedengine#paneProcessAge` -> `func paneProcessAge(pid int) (time.Duration, bool)`
-- `plan:internal/reedengine#TestProcessAge` -> `func TestProcessAge(t *testing.T)`
+- `internal/reedengine#processAge`
+- `internal/reedengine#paneProcessAge`
+- `internal/reedengine#TestProcessAge`
 
 **Uses:**
 - `internal/reedengine#parseStat`
