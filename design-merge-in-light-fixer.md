@@ -1,16 +1,18 @@
-# A PR-Align reject goes to a light fixer row, not a new plan generation
+# Merge-In with its own light fixer and no Merge-Review perch
 
-`merge-in-light-fixer` · Note · enhancement, loom, burler
+`merge-in-light-fixer` · Note · enhancement, loom, burler, fabric
 
 ## Seen
 
-A PR-Align reject goes to PR-Rework, which writes a new plan generation and walks Plan-Review, Webster, Webster-Review, Merge-In, Merge-Review, Publish and PR-Align again.
-Audit `pr-rework-audit`: every rework plan was one fix card; a cycle cost about $4.80 and 23 min.
+Merge-In already has its own fixer: `internal/mergeresolve` spawns a session that resolves textual conflicts and may edit other files to keep the merged tree building.
+After it come Merge-In's verify, then the Merge-Review perch (Bouncer, review, fix) over how the task's code meets what the parent gained.
+A verify failure after the merge halts the run, and batten sends it back to Webster-Burler-Review.
+Audit `pr-rework-audit`: Merge-Review ran in 73% of runs, its fixer changed code in a third of those, about $0.96 per run; one of its fixes was a scope deviation PR-Align later rejected.
 
 ## Idea (operator, 2026-10-22)
 
-- A reject from PR-Align goes to a new PR-Fix row: one fixer, as in a Burler fix round, fixing the code straight from the findings and the decision record.
-  The findings are concrete, so a light model such as Sonnet suits it.
-- Then verify, Publish and PR-Align again, under a bounce cap.
-- PR-Rework with a new plan stays only for a reject that changes the goal: the operator's, or one the alignment agent marks as needing a new plan.
-- Once PR-Fix exists, trial Merge-Review off (`merge_max_bounces: 0`): Merge-In's verify and PR-Align's check against landed parent commits cover it, and PR-Fix fixes what PR-Align finds.
+Merge-In needs no perch, only its own light fixer.
+
+- Drop the Merge-Review perch.
+- A verify failure after the merge goes to Merge-In's own light fixer (the merge-resolve session, or one like it on a light model), which fixes it in place and re-runs the verify, instead of a trip back to Webster-Burler-Review.
+- PR-Align's check against landed parent commits stays the semantic check.
