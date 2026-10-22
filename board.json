@@ -1264,6 +1264,26 @@
       "body": "Imported from [issue #804](https://github.com/Knatte18/loomyard/issues/804).\n\n## Seen (orch, 2026-10-21, OSL-1046)\n\n`origin-reconcile`'s Worktree-Teardown pushes the archive tag `archive/\u003cslug\u003e/\u003csha\u003e` to the weft remote before removing the worktree.\nGitHub rejected that push with a bare `(failed)` twice, and each time the row failed and the run halted.\nThe third `lyx batten run origin-reconcile --window` pushed the tag and finished the teardown, so the failure was transient.\n\n## Workaround\n\nRe-run `lyx batten run \u003cslug\u003e --window` until the push goes through.\n\n## Expected\n\nThe archive-tag push retries a transient remote rejection a few times with backoff before failing the row, as a transient network error should not need an orch turn.\n",
       "created": "2026-10-22T10:33:05Z",
       "revised": "2026-10-22T10:33:05Z"
+    },
+    {
+      "id": 749,
+      "slug": "done-check-spaced-create-paths",
+      "title": "webster: done-check rejects a Create path holding a space that webster validate accepts",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "webster",
+        "quarry"
+      ],
+      "issues": [
+        805
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Imported from [issue #805](https://github.com/Knatte18/loomyard/issues/805).\n\n## What was seen\n\nIn the quarry hub, run `csharp-alphabet`, card 9 of the plan lists `internal/engine/testdata/csharp/tree/with space/Spaced.cs` under Create.\nThe directory name holds a space on purpose, as fixture coverage.\n`lyx webster validate` accepts the plan.\nAfter the batch committed the file, `record-batch 7` and `recover-batch 7` both refused with `batch_failed: glyph-rejected/9-csharp-fixture-roundtrip`, done-check target rejected before resolution (\"a glyph needs a \\\"#\\\"\", `no_separator`).\n`lyx quarry resolve \"\u003cpath\u003e#\"` answers `unit_bad_rune`, since a unit may not hold a space.\nBatch 07 went terminal `failed` after one recovery, and the run blocked at Webster.\n\n## Workaround\n\nThe parent decided to amend card 9: drop the spaced path from Create, keep it in Intent, rebaseline naming card 9, and re-drive batch 07.\n\n## Expected\n\nThe done-check and the plan lint agree.\nEither the done-check checks a Create path as a file path (existence in the batch's commits) rather than resolving it as a glyph, or `lyx webster validate` refuses a Create path the done-check cannot check, so the plan is fixed before any batch runs.\n",
+      "created": "2026-10-22T10:33:08Z",
+      "revised": "2026-10-22T10:33:08Z"
     }
   ]
 }
