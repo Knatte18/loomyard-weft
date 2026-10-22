@@ -16,13 +16,13 @@
 - `internal/battenshed/doc.go`
 
 **Create:**
-- `plan:internal/battenshed#OwnerVerdict` -> `type OwnerVerdict struct`
-- `plan:internal/battenshed#ChildOwnedElsewhereError` -> `type ChildOwnedElsewhereError struct`
-- `plan:internal/battenshed#ChildOwnedElsewhereError.Error` -> `func (e *ChildOwnedElsewhereError) Error() string`
-- `plan:internal/battenshed#innerRunProducer.ownerStep` -> `func (p *innerRunProducer) ownerStep(ctx context.Context, w *childWait)`
-- `plan:internal/battenshed#innerRunProducer.ownedElsewhere` -> `func (p *innerRunProducer) ownedElsewhere(ctx context.Context, w *childWait, owner string)`
-- `plan:internal/battenshed#innerRunProducer.keepsLockForFinalize` -> `func (p *innerRunProducer) keepsLockForFinalize(status shedengine.Status) bool`
-- `plan:internal/battenshed#TestInnerRun_OwnerCheck` -> `func TestInnerRun_OwnerCheck(t *testing.T)`
+- `internal/battenshed#OwnerVerdict`
+- `internal/battenshed#ChildOwnedElsewhereError`
+- `internal/battenshed#ChildOwnedElsewhereError.Error`
+- `internal/battenshed#innerRunProducer.ownerStep`
+- `internal/battenshed#innerRunProducer.ownedElsewhere`
+- `internal/battenshed#innerRunProducer.keepsLockForFinalize`
+- `internal/battenshed#TestInnerRun_OwnerCheck`
 
 **Uses:**
 - `internal/battenshed#newInnerRunDeps`

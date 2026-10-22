@@ -15,12 +15,12 @@
 **Uses:**
 - `internal/battencli#reconcileRun`
 - `internal/battencli#childRefusalKind`
-- `plan:internal/battenshed#ChildOwnedElsewhereError`
-- `plan:internal/battenshed#OwnerVerdict`
+- `internal/battenshed#ChildOwnedElsewhereError`
+- `internal/battenshed#OwnerVerdict`
 - `internal/shedrun#StartOwnedElsewhereKind`
-- `plan:internal/fabricengine#ParentHoldsTaskWork`
+- `internal/fabricengine#ParentHoldsTaskWork`
 - `internal/fabricengine#EntryOwnedElsewhere`
-- `plan:internal/tendercli#PauseOwnedElsewhere`
+- `internal/tendercli#PauseOwnedElsewhere`
 
 **Intent:**
 Batten wires card 12's seams for a live run.

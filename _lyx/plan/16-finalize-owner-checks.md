@@ -26,7 +26,7 @@
 - `plan:internal/fabricengine#Fabric.LocalOnlyCommits`
 - `internal/landingshed#newTestDeps`
 - `internal/landingshed#stuckVerdict`
-- `plan:internal/fabricengine#ParentHoldsTaskWork`
+- `internal/fabricengine#ParentHoldsTaskWork`
 - `internal/fabricengine#ParentSlug`
 - `internal/fabricengine#EntryOwnedElsewhere`
 - `internal/boardengine#ReadOwners`

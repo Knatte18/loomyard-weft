@@ -1,7 +1,7 @@
 # Card 11 — fabric-parent-holds-task-work
 
 **Create:**
-- `plan:internal/fabricengine#ParentHoldsTaskWork` -> `func ParentHoldsTaskWork(l, pairLocation *lyxcwd.Location, slug string) (bool, error)`
+- `internal/fabricengine#ParentHoldsTaskWork`
 
 **Uses:**
 - `internal/fabricengine#parentHoldsTaskWork`
