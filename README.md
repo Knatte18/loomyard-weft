@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-22 08:10 UTC; every age below is as of then.
+Rendered 2026-10-22 08:15 UTC; every age below is as of then.
 
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
@@ -25,7 +25,7 @@ Held by a run; its scope is locked until the run ends.
 | # | Task | Slug | Recipe | At | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | 3 | **tender pause does not hold a verify gate's re-prompt, and creel interrupt is refused under the pause**<br>• `profile: light` | [`tender-pause-holds-reprompt`](design-tender-pause-holds-reprompt.md) | loom | Plan-Write | 1d | 2h | creel, shed, webster |
-| 4 | **[.NET 007] Language-specific lens sets seeded per hub**<br>• Every hub seeds lenses.yaml from one Go-repo template; seed by the hub language instead<br>• `profile: light` | [`lenses-language-sets`](design-lenses-language-sets.md) | loom | Webster-Burler-Fix | 1d | 1h | burler, config, dotnet |
+| 4 | **[.NET 007] Language-specific lens sets seeded per hub**<br>• Every hub seeds lenses.yaml from one Go-repo template; seed by the hub language instead<br>• `profile: light` | [`lenses-language-sets`](design-lenses-language-sets.md) | loom | Webster-Bouncer | 1d | 1h | burler, config, dotnet |
 
 ### Ready
 
@@ -49,7 +49,7 @@ Waits only on Running or Ready entries.
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | 2 | **Remove the Webster kick-start pack**<br>• Drop every kick-start pack layout and its code; glyphs stay in the plan and its gates<br>• `darn: review_hard_max_bounces 2`<br>• `darn: review_max_bounces 1` | [`kickstart-pack-remove`](design-kickstart-pack-remove.md) | darn | `quarry-csharp` | 4d | 2h | webster, quarry, loom |
 | 3 | **Finalize blocks on 'worktree dirty' without naming the tree or paths, and the loom's own run record counts as dirty**<br>• `profile: light` | [`finalize-dirty-names-paths`](design-finalize-dirty-names-paths.md) | loom | `machine-handover` | 1d | 1d | fabric, loom |
-| 4 | **Board entries get short handles (T4, B2, E7) for lookup; tasks lose priority; tighter README tables**<br>• Stored lowest-free handle per kind/type, usable in every board verb; priority only on notes; README sorted by handle with a priority column and merged age/revised<br>• `darn: review_hard_max_bounces 2`<br>• `darn: review_max_bounces 1` | [`board-entry-handles`](design-board-entry-handles.md) | darn | `machine-handover` | 59m | 59m | board |
+| 4 | **Board entries get short handles (T4, B2, E7) for lookup; tasks lose priority; tighter README tables**<br>• Stored lowest-free handle per kind/type, usable in every board verb; priority only on notes; README sorted by handle with a priority column and merged age/revised<br>• `darn: review_hard_max_bounces 2`<br>• `darn: review_max_bounces 1` | [`board-entry-handles`](design-board-entry-handles.md) | darn | `machine-handover` | 1h | 1h | board |
 
 ### Layer B
 
@@ -101,7 +101,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | --- | --- | --- | --- | --- | --- |
 | 2 | **Codex CLI as a second shuttle engine: hands-on spike, then codexengine**<br>• Codex CLI as a second engine to offload Claude tokens: short hands-on tests first, then a codexengine for single-session roles | [`codex-engine`](design-codex-engine.md) | 2w | 6d | shuttle, codex |
 | 3 | **finalize: the discrepancy-document conflict shape**<br>• Divergences that cannot be a git conflict get a precomputed document for the resolving agent instead of markers | [`finalize-discrepancy-doc`](design-finalize-discrepancy-doc.md) | 2w | 2w | fabric, loom |
-| 4 | **[.NET 005] Verification protocol for a .NET repo: slow-suite tier, numerical-baseline capture/compare, verify timeouts and logs** | [`dotnet-verify-protocol`](design-dotnet-verify-protocol.md) | 2w | 20h | loom, webster, config, dotnet |
+| 4 | **[.NET 005] Verification protocol for a .NET repo: slow-suite tier, numerical-baseline capture/compare, verify timeouts and logs** | [`dotnet-verify-protocol`](design-dotnet-verify-protocol.md) | 2w | 21h | loom, webster, config, dotnet |
 | 5 | **Run verbs in one shared namespace, not under lyx loom**<br>• lyx loom decision/status/goto/approve act on darn runs too; move recipe-neutral run verbs to one shared namespace | [`run-verbs-shared`](design-run-verbs-shared.md) | 7d | 7d | shed, loom |
 | 6 | **The arbiter in shed for every shed run, batten included**<br>• The batten Go driver has a tackler but no arbiter; move the arbiter and its keys into shed beside the tackler | [`shed-arbiter-all`](design-shed-arbiter-all.md) | 6d | 6d | shed, batten, loom, config |
 | 7 | **Paste cited code into a review rounds context**<br>• Reviewers edit nothing and review a fixed commit, so code pasted at round start cannot go stale; measure it against todays reviewer | [`review-inline-code`](design-review-inline-code.md) | 10d | 5d | burler, stencil |
@@ -124,7 +124,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | Note | Slug | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| 22 | **Fabric's Windows path behaviour verified on a Windows host**<br>• Unverified after six hardening rounds; needs a Windows host, not design; take it only if Windows becomes relevant | [`fabric-windows`](design-fabric-windows.md) | 2w | 23h | fabric |
+| 22 | **Fabric's Windows path behaviour verified on a Windows host**<br>• Unverified after six hardening rounds; needs a Windows host, not design; take it only if Windows becomes relevant | [`fabric-windows`](design-fabric-windows.md) | 2w | 1d | fabric |
 | 23 | **warp-visibility: CLAUDE.local.md invisible in the Fabric repo's git history**<br>• Expose CLAUDE.local.md by symlink so nothing lyx-related shows in the Fabric repo's history; the constraints half is out of date | [`warp-visibility`](design-warp-visibility.md) | 2w |  | ide, fabric |
 | 24 | **Windows verify timeout kills the whole process tree**<br>• On Windows the verifytree timeout kills only the shell, not the process tree it started | [`verify-watchdog`](design-verify-watchdog.md) | 2w | 6d | shed |
 | 25 | **[WS 007] An anchor per umbrella**<br>• Let an umbrella work in its own subdirectory of the repository, inherited by its tasks; hard to change now | [`umbrella-anchor`](design-umbrella-anchor.md) | 3d | 3d | fabric, config, workspaces |
@@ -157,7 +157,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 15 | **Spawn audit log: every process lyx starts is recorded and traceable**<br>• One recorded launch path and a hub-wide spawn log with owner, argv and resource use, plus a sampler and a summary verb, so a process storm can be traced after a crash | [`spawn-audit-log`](design-spawn-audit-log.md) | 13d | 9d | reed, shuttle, config |
 | 16 | **Configurable action buttons on the reed status bar**<br>• Clickable status-bar buttons that run configured commands: VS Code, orch distill/refresh, the follow toggle and more | [`reed-status-buttons`](design-reed-status-buttons.md) | 7d | 7d | reed, config |
 | 17 | **Ideas to borrow from comparable agent orchestrators (survey, Oct 2026)** | [`orchestrator-survey-ideas`](design-orchestrator-survey-ideas.md) | 6d | 4d | burler, shed, orch, quarry, report |
-| 18 | **[.NET 004] Asynchronous test tiers in shed: the numerical baseline captured before implementation, compared at the final gate**<br>• Support a hub regression tier that writes profiles on the parent before implementation and compares after, switchable per task for expected drift. | [`regression-baseline-verify`](design-regression-baseline-verify.md) | 4d | 20h | shed, webster, batten, config, dotnet |
+| 18 | **[.NET 004] Asynchronous test tiers in shed: the numerical baseline captured before implementation, compared at the final gate**<br>• Support a hub regression tier that writes profiles on the parent before implementation and compares after, switchable per task for expected drift. | [`regression-baseline-verify`](design-regression-baseline-verify.md) | 4d | 21h | shed, webster, batten, config, dotnet |
 
 #### Low priority
 
