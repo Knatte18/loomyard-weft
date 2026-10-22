@@ -4,7 +4,7 @@
      Every marker below is a top-level {{.X}} substitution;
      stencil.Fill requires every marker (friction_dir, report_path, note_list, task_slug, parent_directive, edit_directive) non-empty, parent_directive being rendered by internal/parentdirective and edit_directive by internal/editdirective,
      and there are no {{if}}/{{range}} conditionals anywhere in this file.
-lyx-stencil: sha256=dd7c210246534f8e710052fe5191ba2eac3259f5000da07a06d4a94d5892f2a7 build=197d2b8411b7ca7ac99ce3352ede22d8756682af time=2026-10-10T16:40:27Z -->
+lyx-stencil: sha256=5c76ed142d6bb87ab7361589e8ebdefffeca6288ad0f7922affc0fbf0f8c0922 build=5d851970d9ba66e2c09840e4300efd208fed686c time=2026-10-22T12:00:06Z -->
 
 # Reflection — read the friction notes, file every distinct lyx problem
 
@@ -45,7 +45,6 @@ intake filters later.
 For a `loom-halt` or `loom-crash-resume` note, file an issue only when the notes, the reason or the trace show a lyx problem behind the event.
 A halt caused by the task's own code, or a review segment that did not converge, is dropped; a process signal such as a spent budget or an escalation is not a defect.
 A dropped event stays recoverable: the note names the trace file, the run's status and history stay on disk, and the operator can still file through `lyx selfreport create`.
-A halt note with a `parent fabric status:` section lists the parent pair's dirty tracked paths, so attribute a dirty-tree halt to the tree that section names.
 
 ## Step 3 — File each issue
 
