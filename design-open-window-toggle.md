@@ -14,4 +14,4 @@ When it is off, `Open-Window` opens nothing, `--window` included, and the operat
 The `follow` button keeps its state in the tmux user option `@lyx_follow` (`internal/reedengine/bindings.go`), which dies with the tmux server; this switch must survive a restart, so it needs a machine-local home batten can read.
 
 Operator wish, 2026-10-22; the design is open.
-Related: note `open-window-live-check`.
+Since `machine-handover` landed, a resumed run reopens its window when no client is attached to the pair's reed session; this switch would govern that reopen too.
