@@ -1,11 +1,11 @@
 {
-  "current_producer": "Merge-Burler-Review",
+  "current_producer": "Merge-Burler-Fix",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Merge-Burler-Review",
-    "last": "Merge-Bouncer → bounced to Merge-Burler-Review",
+    "now": "Merge-Burler-Fix",
+    "last": "Merge-Burler-Review → bounced to Merge-Burler-Fix",
     "wait": ""
   },
   "history": [
@@ -341,6 +341,35 @@
       "output": "",
       "at": "2026-10-22T10:08:35Z",
       "routed_to": "Merge-Burler-Review"
+    },
+    {
+      "producer": "Merge-Burler-Review",
+      "outcome": "stuck",
+      "output": "/home/knatte/Code/loomyard-LYXHUB/tender-pause-holds-reprompt/_lyx/reviews/merge/round-1-review.md",
+      "at": "2026-10-22T10:11:21Z",
+      "gate_attempts": 1,
+      "gate_spans": [
+        {
+          "gate": "review",
+          "kind": "gate",
+          "start": "2026-10-22T10:11:09.243327739Z",
+          "end": "2026-10-22T10:11:09.243492548Z"
+        },
+        {
+          "gate": "review",
+          "kind": "rework",
+          "start": "2026-10-22T10:11:09.642979464Z",
+          "end": "2026-10-22T10:11:20.670426712Z"
+        },
+        {
+          "gate": "review",
+          "kind": "gate",
+          "start": "2026-10-22T10:11:20.692995797Z",
+          "end": "2026-10-22T10:11:20.693288294Z"
+        }
+      ],
+      "budget_exempt": true,
+      "routed_to": "Merge-Burler-Fix"
     }
   ],
   "product": {
