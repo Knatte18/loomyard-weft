@@ -2,7 +2,7 @@
 
 `finalize-dirty-names-paths` · Task · bug, fabric, loom
 
-Depends on: [`machine-handover`](design-machine-handover.md), [`darn-verify-fixes`](design-darn-verify-fixes.md)
+Depends on: [`machine-handover`](design-machine-handover.md)
 
 Imported from [issue #776](https://github.com/Knatte18/loomyard/issues/776).
 

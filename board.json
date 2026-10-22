@@ -982,9 +982,7 @@
       "issues": [
         762
       ],
-      "depends_on": [
-        "darn-verify-fixes"
-      ],
+      "depends_on": [],
       "isolated": false,
       "brief": "",
       "body": "Imported from [issue #762](https://github.com/Knatte18/loomyard/issues/762).\n\n## Seen (2026-10-20, OSL-1046, darn run arbiter-verdict-quoting)\n\n1. Darn-Write's verify gate was looping on a tmux test the writer cannot fix, so the orch ran `lyx tender pause arbiter-verdict-quoting` (the darn session was idle, listed `already_idle`) and `lyx loom pause --after Darn-Write`.\n2. The verify process kept running (attempt 2, then a new attempt), since a pause holds agents and network work but not a running gate command. On the operator's order the orch killed the verify's process group.\n3. The gate then re-prompted the darn session with the failure, and the session started a new turn although `lyx tender status` listed it `paused: true` (state `busy`, cause `turn`).\n4. `lyx creel interrupt ly:arbiter-verdict-quoting:darn` was refused: \"a pause covers ...; nothing was interrupted, lift the pause first\".\n5. Workaround: running `lyx tender pause arbiter-verdict-quoting` a second time printed `already_paused: true` and `interrupted: [ly:arbiter-verdict-quoting:darn]`, and the session went idle.\n\n## Expected\n\n- A paused scope receives no new prompt from a gate, a driver or any other lyx program: a re-prompt waits for the resume, like other held work.\n- A pause also stops, or holds at its next boundary, a verify gate command running in that scope, so the operator does not have to kill processes by hand.\n- `creel interrupt` of a session the pause covers interrupts it, since stopping work is what the pause wants.\n## Seen: webster opens batches under a pause (orch, 2026-10-21)\n\nA hub pause held the two webster masters with forks in flight only as `background`: no Esc, no record.\nWhen a fork returns, Claude Code wakes Master by itself, outside creel, and nothing stops it from running `lyx webster begin-batch` and forking the next implementer.\nWebster wires the pause only into its shuttle runner (`internal/webstercli/wiring.go`), so no batch verb reads it.\n\nExpected: `lyx webster begin-batch` refuses while a pause covers the pair, with a message telling Master to end its turn, so a running batch finishes and no new one starts until the resume.\n",
@@ -1069,8 +1067,7 @@
         776
       ],
       "depends_on": [
-        "machine-handover",
-        "darn-verify-fixes"
+        "machine-handover"
       ],
       "isolated": false,
       "brief": "",
@@ -1094,42 +1091,13 @@
         775
       ],
       "depends_on": [
-        "run-process-ownership",
-        "darn-verify-fixes"
+        "run-process-ownership"
       ],
       "isolated": false,
       "brief": "Abandon or abort a batten run in any state: end its processes and strands, clear the claim, remove records and scratch, optionally the pair; batten refuses a dirty source up front",
       "body": "Imported from [issue #775](https://github.com/Knatte18/loomyard/issues/775).\n\nOperator decision (2026-10-22): this task owns the one verb that ends a batten run for good, whatever its state.\nIt takes over the `batten-abandon` note from task `run-process-ownership`, which described the same verb, and folds in the note `batten-abort-live-run`, which extends it to a live run.\nThe verb ends a live run's processes through the owner record `run-process-ownership` builds.\n\n## Note `batten-cancel-verb`\n\nSeen on OSL-1046 (2026-10-20): two batten runs (watchdog-reap-test-xdr, lyxbin-timeout-test-xdr) were started from a prime with uncommitted changes. Worktree-Create went stuck on \"source worktree has uncommitted changes\", the driver spawned one tackler per run, and both runs ended blocked with no pair created. The operator then cancelled both runs.\n\nThere is no verb for that: lyx batten cleanup skips blocked runs, lyx batten pause only adds a pause, and lyx board set-status clears the board entry but leaves the batten records. So the reed overview keeps showing both as blocked, and the only way out is removing _lyx/shed/\u003cslug\u003e and .lyx/shed/\u003cslug\u003e by hand and committing the records side.\n\nTwo gaps:\n- A cancel (abandon) verb for a batten run, at least one that has not created a pair, which removes its records and scratch and clears the board status.\n- Worktree-Create's dirty-source stop is a precondition the operator or orch must fix, so it should halt with that way forward instead of spawning a tackler that cannot settle it.\n\n### Operator decision (2026-10-20): batten refuses a dirty source up front\n\n`lyx batten run` checks that the source worktree is clean before it does anything, and refuses with the dirty paths and the way forward when it is not: no run record, no pair and no tackler.\nThe orch should not have to run `git status` before every start; batten owns that precondition.\nA dirty source never spawns a tackler, at start or at Worktree-Create.\n\nWorkaround: remove the two run directories by literal path and commit the records side with lyx fabric commit, done only while no other run is landing so the prime's records side is not dirty during a Land row.\n\n## Note `batten-abandon` (moved from `run-process-ownership`, 2026-10-22)\n\n### Seen\n\nOn 2026-10-18 the records held four batten run records with no pair and no board entry:\n\n- `orch-rules-in-weft`, blocked at Worktree-Create because its slug ended in the reserved `-weft` suffix; the task reran as `orch-rules-files` and landed.\n- `plan-gate-quality` and `fabric-net-and-config-warn`, paused at Run-Shed on 2026-10-08 a minute after their start, then re-scoped on the board into other entries.\n- `webster-pack-end-of-prompt`, paused at Run-Shed on 2026-10-15, then replaced by `webster-pack-layout-switch`, which landed.\n\nTheir pairs were removed with `lyx fabric remove`, but no verb ends a paused or blocked run, and `lyx batten cleanup --apply` skips every paused, blocked, awaiting or failed run.\nSo the records stayed, showed as runs in the reed overview, and were removed by hand with `git rm` in the records repository.\n\n### Idea\n\nA batten verb, for example `lyx batten abandon \u003cslug\u003e`, ends a run that will not go on:\nit refuses while the run's driver or run lock is live, tears down the pair if one is left, releases the run's board lock, removes the run's records directory and scratch, and commits and pushes the records.\nIt leaves the board entry itself alone, so a re-scope or rerun stays the caller's own step.\n\n## Note `batten-abort-live-run`\n\n### Seen (orch, 2026-10-21)\n\nThe operator wanted the live loom run `quarry-csharp`, at Discussion-Write, stopped for good and removed.\nNo verb does that, and the orch's manual stop took several rounds while the run kept coming back:\n\n1. The orch killed the `lyx batten run` and `lyx batten step` processes and the Discussion-Write Claude session.\n2. Reed relaunched the strand, since its tmux session still stood, so a new Claude session started.\n3. Killing the tmux session on the reed server ended it, but a drive-report writer then started, and loom posted \"Run quarry-csharp stopped\".\n4. `lyx batten status` still read `running` throughout, so the board claim stayed and the entry took no scope edits.\n5. `lyx fabric remove` waits up to two minutes for the driver to go quiet, which looked to the operator like a hang.\n\n`lyx batten pause` acts only at the next producer boundary, which a session waiting for its turn never reaches.\n\n### Idea\n\nOne verb, such as `lyx batten abort \u003cslug\u003e`, that ends a live run of any state at once and for good:\n\n- stops the batten and loom drivers, every strand of the run and its reed session, so reed relaunches nothing;\n- writes no drive report and posts no stop notice beyond one abort notice;\n- marks the batten record aborted and clears the board claim, so the entry takes edits again;\n- optionally removes the pair, with `--remove`, without the two-minute wait since nothing is left to go quiet.\n\nThe `batten-abandon` idea refuses while the run is live and this one ends a live run, so the task settles one verb covering both, with the refusal or the abort chosen by a flag or by the run's state.\n",
       "created": "2026-10-20T19:12:16Z",
       "revised": "2026-10-22T05:40:30Z",
-      "profile": "light"
-    },
-    {
-      "id": 725,
-      "slug": "darn-verify-fixes",
-      "title": "Darn-Write stops looping on verify failures it cannot own, and the flaky reed boot test behind them",
-      "kind": "task",
-      "labels": [
-        "bug",
-        "enhancement",
-        "batten",
-        "gate",
-        "loom",
-        "shed",
-        "reed"
-      ],
-      "issues": [
-        714,
-        765,
-        785
-      ],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "A verify failure in code the task did not touch, or one the parent already fixed, no longer loops through Darn-Write; the reed boot race is made deterministic and the impacted set stops picking unreachable packages",
-      "body": "# Goal\n\nA verify failure Darn-Write cannot own, one in code the task did not touch or one the parent has already fixed, no longer loops through Darn-Write and escalates;\nthe flaky reed test behind it is made deterministic, and the impacted set stops picking a package the diff cannot reach.\n\n# Re-scoped 2026-10-22 (operator decision)\n\nLanded since this task was written, so out of scope:\n\n- `de6b8465f` retired landing's `publish_verify` and darn's `verify`: every verify site, Publish included, now runs its gate's tier list through `lyx gate test --tier N --wait`, and Publish runs the `publish` gate (the loomyard hub's `tier2`, tmux).\n- `a87a8a9aa` fixed the `TestOpenWindow_RealTmux/ClosesWhenItsCommandExitsAtOnce` flake (#765's failing test).\n- `01ccaf6de` scoped Darn-Write's and Darn-Burler-Fix's gates to the diff's impacted set; Merge-In and Finalize still run the whole tree.\n- `7ac8070a8` made the reed watchdog's stop marker work without inotify (#785's test half).\n\n# Still open\n\n## 1. `TwoWorktreesBootedConcurrently` is flaky (#714)\n\n`internal/reedengine` `TestBoot_TmuxConf/AppendingFileIsSourcedOncePerServerStart/TwoWorktreesBootedConcurrently` failed a Publish verify of a task that did not touch `internal/reedengine`, with `run list-commands: exit status 1: server exited unexpectedly`: a race in booting two tmux servers at once.\nMake it deterministic, or retry or isolate the tmux server start it races on.\n\n## 2. The writer and a tier it may not run (#714)\n\nIn #714 the Darn-Write session could not reproduce the failure, since tmux-tier go runs were refused in a darn session, so it handed off with no commit and the run escalated.\nCheck whether a darn session can now run the failing tier through `lyx gate test --tier N`; if it can, nothing is left here; if not, give it that way or have it escalate at once instead of looping through the Darn cycle.\n\n## 3. A failure the parent already fixed\n\nSeen 2026-10-20 (`arbiter-verdict-quoting`): Publish failed on a test outside the branch and batten sent the run back to Darn-Write.\nThe fix landed on main meanwhile, but Darn-Write's verify kept failing on the task branch, which takes main only at Merge-In; the orch had the writer run `lyx fabric merge-in main` by hand.\nWhen a verify failure is sent back to Darn-Write and the parent has moved since, merge the parent in before the verify re-runs.\n\n## 4. The Publish halt and code the task did not touch (#765)\n\nA Publish failure in code the task did not change sends the run back to Darn-Write, which spends gate attempts on a failure it cannot own.\nThe halt's way forward should tell a failure in code the task touched from one in code it did not.\n\n## 5. The gate findings file outlives the halt (#765)\n\nAfter `lyx loom goto --to Darn-Write` and `lyx loom resume`, Darn-Write halted with \"gate did not pass after 3 attempts\" and the `gate-findings.md` its halt note named was gone.\nKeep the gate findings file until the halt is cleared.\n\n## 6. The impacted set picks an unreachable package (#785)\n\nA gate for a change confined to `internal/planglyph` ran `internal/reedcli`'s tests, although no changed file lies in that package's test closure, so an unrelated test blocked the task.\nFind why `internal/impactset` selected `internal/reedcli` for that diff and fix the selection.\n\nProvenance: tasks `stencilstore-dev-warning-noise`, `arbiter-verdict-quoting`, `create-target-transient`; issues #714, #765, #785.\n",
-      "status": "done",
-      "created": "2026-10-17T12:04:23Z",
-      "revised": "2026-10-22T05:49:52Z",
       "profile": "light"
     },
     {
@@ -1168,7 +1136,6 @@
       "recipe": "loom",
       "depends_on": [
         "machine-handover",
-        "darn-verify-fixes",
         "run-process-ownership"
       ],
       "isolated": false,
