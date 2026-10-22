@@ -18,7 +18,7 @@
 - `internal/orchengine#Watcher.isRequestedNote`
 
 **Create:**
-- `plan:internal/orchengine#Watcher.notePassed` -> `func (w *Watcher) notePassed(st State) (bool, error)`
+- `internal/orchengine#Watcher.notePassed`
 
 **Uses:**
 - `internal/orchengine#handoffWritten`
