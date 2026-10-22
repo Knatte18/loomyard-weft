@@ -17,7 +17,7 @@ Held by a run; its scope is locked until the run ends.
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T1 | **Every process a run spawns has one owner that ends them all**<br>• Owner records for run processes; pause, reed down, fabric remove and teardown end the whole group; tender status shows orphans; a hub pause reaches background work; a finished reviewer never waits on its background shells | [`run-process-ownership`](design-run-process-ownership.md) | loom | Plan-Burler-Fix | neve | 7d<br>6h | batten, burler, fabric, loom, shed, shuttle, webster |
 | T2 | **lyx report timing counts sleep as active time when the system journal is unreadable**<br>• `darn: review_hard_max_bounces 2`<br>• `darn: review_max_bounces 1` | [`report-timing-unreadable-journal`](design-report-timing-unreadable-journal.md) | darn | PR-Align | neve | 1h<br>18m | report |
-| T10 | **Darn's review hard cap defaults to 2, and the orch stencil drops hand-written small-task run settings**<br>• `profile: light` | [`darn-hard-cap-default-2`](design-darn-hard-cap-default-2.md) | darn | Describe | neve | 12m<br>9m | config, stencil, orch |
+| T10 | **Darn's review hard cap defaults to 2, and the orch stencil drops hand-written small-task run settings**<br>• `profile: light` | [`darn-hard-cap-default-2`](design-darn-hard-cap-default-2.md) | darn | Merge-In | neve | 12m<br>10m | config, stencil, orch |
 
 ### Ready
 
@@ -43,7 +43,7 @@ Starts when every entry it names under After is done.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T3 | **One batten verb ends a run for good, live or stopped, before or after its pair exists**<br>• Abandon or abort a batten run in any state: end its processes and strands, clear the claim, remove records and scratch, optionally the pair; batten refuses a dirty source up front<br>• `profile: light` | [`batten-cancel-verb`](design-batten-cancel-verb.md) | loom | `run-process-ownership`, `orch-strand-cycle` | 1d<br>5m | batten, reed, shed |
+| T3 | **One batten verb ends a run for good, live or stopped, before or after its pair exists**<br>• Abandon or abort a batten run in any state: end its processes and strands, clear the claim, remove records and scratch, optionally the pair; batten refuses a dirty source up front<br>• `profile: light` | [`batten-cancel-verb`](design-batten-cancel-verb.md) | loom | `run-process-ownership`, `orch-strand-cycle` | 1d<br>6m | batten, reed, shed |
 
 ## Notes
 
@@ -102,7 +102,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | # | P | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | F1 |  | **Hardener: an autonomous behavior-review campaign that replaces crucible**<br>• Parked by the operator: settle the Tenter/Hardener design and build the campaign that runs a live-substrate module in a sandbox until it converges | [`hardener`](design-hardener.md) | 2w<br>6d | burler |
-| F2 | H | **[WS 006] Umbrella tasks: project threads that spawn and land from their own worktree**<br>• A larger project is an umbrella task with a long-lived pair and its own orch thread; tasks name it as parent, spawn from and land into its branch, and report to its thread; the prime is the root umbrella | [`orch-any-worktree`](design-orch-any-worktree.md) | 2w<br>7m | fabric, batten, orch, board, reed, creel, shed, workspaces |
+| F2 | H | **[WS 006] Umbrella tasks: project threads that spawn and land from their own worktree**<br>• A larger project is an umbrella task with a long-lived pair and its own orch thread; tasks name it as parent, spawn from and land into its branch, and report to its thread; the prime is the root umbrella | [`orch-any-worktree`](design-orch-any-worktree.md) | 2w<br>8m | fabric, batten, orch, board, reed, creel, shed, workspaces |
 | F3 |  | **semantic-index: find code by concept, not by literal keyword**<br>• Semantic search over docstrings and comments; doubtful today, since agents now navigate well with grep | [`semantic-index`](design-semantic-index.md) | 2w<br> | quarry |
 | F4 |  | **Ship lyx as an installable Claude Code plugin**<br>• Package lyx and its skills as one installable plugin | [`plugin-packaging`](design-plugin-packaging.md) | 2w<br> | stencil |
 | F5 |  | **Fabric's ordinary-monorepo verb surface**<br>• Against plain git, fabric still lacks log, show, branch, tag, stash, revert, restore, rm/mv, rebase, cherry-pick and blame | [`fabric-monorepo-verbs`](design-fabric-monorepo-verbs.md) | 2w<br>2w | fabric |
