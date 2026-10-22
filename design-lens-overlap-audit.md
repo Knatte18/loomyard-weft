@@ -41,3 +41,9 @@ In the review fan, `bound-breaker` is the strongest lens (11 of 15 lens BLOCKING
 - `review-plan` reruns the three lenses the Plan writer already ran, and still raised 35 findings in the six 2026-10-22 runs, mostly LOW and MEDIUM; whether these are bad fixes or new findings is not measured. Option: give `review-plan` the lenses the writer fan lacks.
 - `review-code`: `code-affected-set` is the weakest (one MEDIUM in 18); agent recommendation, medium-low confidence: fold it into `code-pattern-fit`, which carries 7 of 8 lens BLOCKING findings, as one `code-consistency` lens, 4 to 3.
 - `fix-*` fans: no per-lens data.
+
+## Follow-up (operator, 2026-10-22)
+
+- `twill-plan` goes to 5 lenses in task `twill-plan-five-lenses`.
+- A later audit looks at the Discussion writer's `twill-discussion` alone, once more runs have per-lens data (note `lens-fork-reports-kept`), and may trim it too.
+  It matters less than Plan: the Discussion lead's context is far smaller when it forks, so its lens forks cost far less.
