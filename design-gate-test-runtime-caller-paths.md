@@ -1,6 +1,6 @@
 # gate: runtime.Caller returns module-relative paths under lyx gate test, as with -trimpath
 
-`gate-test-runtime-caller-paths` · Task · bug, gate
+`gate-test-runtime-caller-paths` · Task · bug, gate · running · Worktree-Create
 
 Imported from [issue #807](https://github.com/Knatte18/loomyard/issues/807).
 
