@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-22 11:28 UTC; every age below is as of then.
+Rendered 2026-10-22 11:29 UTC; every age below is as of then.
 
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
@@ -15,7 +15,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T1 | **Every process a run spawns has one owner that ends them all**<br>• Owner records for run processes; pause, reed down, fabric remove and teardown end the whole group; tender status shows orphans; a hub pause reaches background work; a finished reviewer never waits on its background shells | [`run-process-ownership`](design-run-process-ownership.md) | loom | Discussion-Burler-Fix | neve | 7d<br>5h | batten, burler, fabric, loom, shed, shuttle, webster |
+| T1 | **Every process a run spawns has one owner that ends them all**<br>• Owner records for run processes; pause, reed down, fabric remove and teardown end the whole group; tender status shows orphans; a hub pause reaches background work; a finished reviewer never waits on its background shells | [`run-process-ownership`](design-run-process-ownership.md) | loom | Discussion-Bouncer | neve | 7d<br>5h | batten, burler, fabric, loom, shed, shuttle, webster |
 | T2 | **Finalize blocks on 'worktree dirty' without naming the tree or paths, and the loom's own run record counts as dirty**<br>• `profile: light` | [`finalize-dirty-names-paths`](design-finalize-dirty-names-paths.md) | loom | Plan-Burler-Fix | neve | 1d<br>1d | fabric, loom |
 
 ### Ready
@@ -53,13 +53,13 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | # | P | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | B1 | H | **fabric add refuses an existing local branch instead of adopting it**<br>• lyx fabric add adopts origin branches but refuses a local unmarked warp branch, so main or an umbrella branch cannot get a pair | [`fabric-add-adopt-local`](design-fabric-add-adopt-local.md) | 1d<br>1d | fabric, workspaces |
-| B2 |  | **Dead strands from before a reboot hold their names and fail a resumed row** | [`reclaim-dead-strand-names`](design-reclaim-dead-strand-names.md) | 55m<br>55m | reed, shuttle |
-| B3 |  | **loom halt note for a Merge-In loop exit carries only 'loop-exited' as its reason** | [`loop-exit-halt-names-its-cause`](design-loop-exit-halt-names-its-cause.md) | 55m<br>55m | loom, shed |
-| B4 |  | **lyx report timing counts sleep as active time when the system journal is unreadable** | [`report-timing-unreadable-journal`](design-report-timing-unreadable-journal.md) | 55m<br>55m | report |
-| B5 |  | **Teardown's archive-tag push has no retry for a transient remote rejection** | [`retry-archive-tag-push`](design-retry-archive-tag-push.md) | 55m<br>55m | batten, fabric |
-| B6 |  | **webster: done-check rejects a Create path holding a space that webster validate accepts** | [`done-check-spaced-create-paths`](design-done-check-spaced-create-paths.md) | 55m<br>55m | webster, quarry |
-| B7 |  | **gate: runtime.Caller returns module-relative paths under lyx gate test, as with -trimpath** | [`gate-test-runtime-caller-paths`](design-gate-test-runtime-caller-paths.md) | 55m<br>55m | gate |
-| B8 |  | **Fork git guard flags read-only 'git tag --points-at' as a state-mutating command** | [`fork-git-guard-read-only-tag`](design-fork-git-guard-read-only-tag.md) | 55m<br>55m | shed |
+| B2 |  | **Dead strands from before a reboot hold their names and fail a resumed row** | [`reclaim-dead-strand-names`](design-reclaim-dead-strand-names.md) | 56m<br>56m | reed, shuttle |
+| B3 |  | **loom halt note for a Merge-In loop exit carries only 'loop-exited' as its reason** | [`loop-exit-halt-names-its-cause`](design-loop-exit-halt-names-its-cause.md) | 56m<br>56m | loom, shed |
+| B4 |  | **lyx report timing counts sleep as active time when the system journal is unreadable** | [`report-timing-unreadable-journal`](design-report-timing-unreadable-journal.md) | 56m<br>56m | report |
+| B5 |  | **Teardown's archive-tag push has no retry for a transient remote rejection** | [`retry-archive-tag-push`](design-retry-archive-tag-push.md) | 56m<br>56m | batten, fabric |
+| B6 |  | **webster: done-check rejects a Create path holding a space that webster validate accepts** | [`done-check-spaced-create-paths`](design-done-check-spaced-create-paths.md) | 56m<br>56m | webster, quarry |
+| B7 |  | **gate: runtime.Caller returns module-relative paths under lyx gate test, as with -trimpath** | [`gate-test-runtime-caller-paths`](design-gate-test-runtime-caller-paths.md) | 56m<br>56m | gate |
+| B8 |  | **Fork git guard flags read-only 'git tag --points-at' as a state-mutating command** | [`fork-git-guard-read-only-tag`](design-fork-git-guard-read-only-tag.md) | 56m<br>56m | shed |
 
 ### Enhancements
 
@@ -90,13 +90,13 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | E23 |  | **Cortex XDR holds stack up across a loom run's card, batch, round and whole-suite gates**<br>• Each gate that tests a just-changed package waits 8-10 s for XDR; a 10-15 card run pays that many times over | [`loom-gates-xdr-stacking`](design-loom-gates-xdr-stacking.md) | 1d<br>1d | webster, loom, gate |
 | E24 |  | **Revisit late review rounds after the twill-plan lens change**<br>• After 4-5 loom runs past 504c5552, check whether discussion-review round 3 and plan-review round 2 still find anything | [`review-rounds-after-twill-plan`](design-review-rounds-after-twill-plan.md) | 18h<br>18h | burler, loom |
 | E25 |  | **Test runs repeat at the end of a loom run: tier0 inside every tier, the suite four times, tmux only at Publish**<br>• Disjoint tiers, a green run that carries forward, tmux in more gates, and a faster fabricengine suite; with the 2026-10-22 tier timings | [`gate-test-repeats`](design-gate-test-repeats.md) | 5h<br>5h | gate, loom, webster, fabric |
-| E26 |  | **A status-bar button turns automatic terminal windows for runs on or off** | [`open-window-toggle`](design-open-window-toggle.md) | 2h<br>55m | batten, reed |
+| E26 |  | **A status-bar button turns automatic terminal windows for runs on or off** | [`open-window-toggle`](design-open-window-toggle.md) | 2h<br>56m | batten, reed |
 | E27 |  | **[.NET] A test compiles the C# test fixtures, skipped without dotnet** | [`csharp-fixtures-compile`](design-csharp-fixtures-compile.md) | 2h<br>2h | quarry, dotnet, testkit |
 | E28 |  | **[.NET] A small public NUnit repo as sandbox hub for end-to-end C# runs** | [`csharp-sandbox-hub`](design-csharp-sandbox-hub.md) | 2h<br>2h | dotnet |
-| E29 |  | **No role may carry out a parent decision that amends a plan card mid-run** | [`plan-card-amendment-owner`](design-plan-card-amendment-owner.md) | 55m<br>55m | webster, orch, loom |
-| E30 |  | **Discussion scope check moves from the alignment agent into the perch lenses, with an escalating finding class** | [`discussion-alignment-into-lenses`](design-discussion-alignment-into-lenses.md) | 26m<br>26m | loom, burler, shed |
-| E31 |  | **A row before Discussion aligns the task text against the board, peers and landed work, and adjusts it** | [`entry-align-before-discussion`](design-entry-align-before-discussion.md) | 20m<br>16m | loom, batten, board |
-| E32 |  | **Move rules about lyx behaviour out of this repo's CLAUDE.md into lyx code, doc.go and stencils** | [`claude-md-lyx-rules-out`](design-claude-md-lyx-rules-out.md) | 15m<br>15m | stencil, board, loom |
+| E29 |  | **No role may carry out a parent decision that amends a plan card mid-run** | [`plan-card-amendment-owner`](design-plan-card-amendment-owner.md) | 56m<br>56m | webster, orch, loom |
+| E30 |  | **Discussion scope check moves from the alignment agent into the perch lenses, with an escalating finding class** | [`discussion-alignment-into-lenses`](design-discussion-alignment-into-lenses.md) | 27m<br>27m | loom, burler, shed |
+| E31 |  | **A row before Discussion aligns the task text against the board, peers and landed work, and adjusts it** | [`entry-align-before-discussion`](design-entry-align-before-discussion.md) | 21m<br>17m | loom, batten, board |
+| E32 |  | **Move rules about lyx behaviour out of this repo's CLAUDE.md into lyx code, doc.go and stencils** | [`claude-md-lyx-rules-out`](design-claude-md-lyx-rules-out.md) | 16m<br>16m | stencil, board, loom |
 
 ### Features
 
