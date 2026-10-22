@@ -1,0 +1,49 @@
+diff --git a/contracts/stencils/loom/loom-rubric-discussion-review.md b/contracts/stencils/loom/loom-rubric-discussion-review.md
+index ef42048a4..c8a52f564 100644
+--- a/contracts/stencils/loom/loom-rubric-discussion-review.md
++++ b/contracts/stencils/loom/loom-rubric-discussion-review.md
+@@ -36,6 +36,11 @@ Do not flag any of the following as a finding:
+ - **The attack-surface question.**
+   For every new verb, flag, escape hatch or routing edge, and every guard that is removed, downgraded or bypassable, the Decision that introduces it states what it can now skip or let through and what bounds it.
+   A Decision that introduces one with no stated bound is a finding.
++- **A deferred research question.**
++  A Decision, Constraint, risk or acceptance criterion that leaves a fact the design rests on to be found out later, by Plan or an implementer, is a finding;
++  so is a rule that hands downstream a halt on discovering such a fact.
++  The fix is the research done and its answer recorded with the evidence it rests on.
++  A fact the writer was told not to gather is no such question.
+ - **A Decision that edits the task's own board entry.**
+   A Decision that asks the run to change this task's own board entry's body or scope, through `lyx board` or otherwise, is a finding, because the run's board lock refuses such a change.
+   A Decision that writes another entry, the entry's status or its `run_settings`, or changes board-module code is not flagged by this bullet.
+diff --git a/contracts/stencils/loom/loom-rubric-plan-review.md b/contracts/stencils/loom/loom-rubric-plan-review.md
+index 6f84fd450..461d40814 100644
+--- a/contracts/stencils/loom/loom-rubric-plan-review.md
++++ b/contracts/stencils/loom/loom-rubric-plan-review.md
+@@ -89,6 +89,10 @@ Do not flag any of the following as a finding:
+   The live generation's round is, among `_lyx/loom/rework/round-<N>/` directories, the highest `N` whose `record.json` carries a `class` and whose `first_card` equals the `first_card` in `_lyx/plan/00-overview.md`'s frontmatter (absent means `1`).
+   With no such round (generation 0, or a fresh Plan-Write plan after an operator `goto Plan-Write`), the decision record alone is the answer key.
+   The round's `prior-generation/` archive is context only, and a finding raised against anything inside it is never legitimate.
++- **A card that carries a research step.**
++  A card that leaves a fact the design depends on to be found out while it runs, or carries a rule to halt when its work discovers such a fact, is a finding.
++  The finding names the fact;
++  its fix is the fact researched and recorded in the plan, or in the decision record through the parent when the answer changes the design.
+ - **A card that edits the task's own board entry.**
+   A card that changes this task's own board entry's body or scope is a finding, because the run's board lock refuses such a change.
+   A card writing another entry, the entry's status or its `run_settings`, or changing board-module code is not flagged by this bullet.
+diff --git a/contracts/stencils/loom/loom-template-discussion.md b/contracts/stencils/loom/loom-template-discussion.md
+index ea8d6cd91..6b26c9fe9 100644
+--- a/contracts/stencils/loom/loom-template-discussion.md
++++ b/contracts/stencils/loom/loom-template-discussion.md
+@@ -53,6 +53,13 @@ Only unresolved design questions belong in the interview.
+ This exploration is bounded, the same way Step 3's interview categories are: at a coarse level you MAY establish which module boundary the work falls under and whether the design conflicts with an existing pattern.
+ You MUST NOT gather exact signatures, `file:line` citations, interface shapes, or dependency lists, and you MUST NOT do exhaustive existing-pattern research — that class of fact is computed fresh at Plan time.
+ 
++A factual question the design rests on is settled here, never deferred.
++Such a question asks a fact, not a choice: which version of a tool or dependency has a feature, how an upstream project behaves, what the code does today.
++Research it now, from the code and from upstream changelogs, manuals and docs at the versions that matter, and record its answer in the decision record's Decisions or Constraints with the evidence it rests on, named by source and version.
++Never leave such a fact for Plan or an implementer to find out, and never hand downstream a rule to halt when a later step discovers it.
++The fence above still binds: it excludes plan-level detail, never a fact the design rests on.
++A question research cannot settle, because it asks a choice, belongs in the interview.
++
+ ## Step 3 — Conduct the interview
+ 
+ Interview relentlessly, but in **focused batches**, not one question at a time.
