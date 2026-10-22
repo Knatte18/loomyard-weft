@@ -4,11 +4,4 @@ profiles:
         max_cards: 6
         budget: 300000
         weights: {orientation: 31400, batch_growth: 7000, fork_messages: 4, message_context: 300, target_messages: 6, test_file_messages: 0.5, uses_messages: 2, context_per_line: 12, package_context: 2000, write_per_card_line: 12}
-    cautious:
-        batchifier: cost
-        max_cards: 6
-        budget: 200000
-        weights: {orientation: 31400, batch_growth: 7000, fork_messages: 4, message_context: 300, target_messages: 6, test_file_messages: 0.5, uses_messages: 2, context_per_line: 12, package_context: 2000, write_per_card_line: 12}
-    identity:
-        batchifier: identity
 active: wide
