@@ -729,7 +729,7 @@
       }
     }
   ],
-  "currentBatch": 0,
+  "currentBatch": 6,
   "masterStrand": "1208d44a87b5fd00e2a3266cbfc6e59c",
   "masterSessionId": "dc62cdb4-a622-4a99-88db-9438f18c990d",
   "masterEngine": "claude",
@@ -820,6 +820,26 @@
       "bracketTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-machine-handover/dc62cdb4-a622-4a99-88db-9438f18c990d/subagents/agent-acdca8ddfe8405a94.jsonl"
       ]
+    },
+    "6": {
+      "slug": "reconcile-owner-outcome",
+      "cards": [
+        "06-reconcile-owner-outcome",
+        "07-owner-seam-wiring",
+        "08-owner-pause-label"
+      ],
+      "cardHashes": {
+        "06-reconcile-owner-outcome": "1f88007af899eed6eb6fea6fd528cc3d9ce205dc255ef839511456dd3e5880a2",
+        "07-owner-seam-wiring": "22742add7ee2dd5003fd87c235935f72d1f58c3e5656adfa02d84c5f10a2e8d0",
+        "08-owner-pause-label": "bb9db009413a0dcb7a356a1d8676e969c718c5abc5618be08c222addc8f17762"
+      },
+      "startSha": "d6348bf502028908eae449ff9263dc5e8ca5740c",
+      "kind": "fork",
+      "spawnedAt": "2026-10-22T08:37:17Z",
+      "sessionId": "dc62cdb4-a622-4a99-88db-9438f18c990d",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
     }
   },
   "seenForkTranscripts": [
