@@ -260,6 +260,13 @@ Every decision above is an autonomous pick; the support log's question ledger li
   - owner-pattern-text-wider-than-design (class consistency, severity BLOCKING, open in rounds 3, 4)
 <!-- /lyx:carry-over Discussion-Review -->
 
+<!-- lyx:carry-over Plan-Review -->
+- Plan-Review, round 3: converged; each finding below was fixed or disputed by the round's fixer, and no fresh reviewer has seen the result; the fixer report says which.
+  Review: _lyx/reviews/plan/round-3-review.md; fixer report: _lyx/reviews/plan/round-3-fixer-report.md.
+  - setowners-pull-refusal-inputs-unnamed (class consistency, severity MEDIUM, open in rounds 3)
+  - setowners-push-transport-row-missing (class consistency, severity MEDIUM, open in rounds 3)
+<!-- /lyx:carry-over Plan-Review -->
+
 ## Acceptance criteria
 
 - An empty hostname is an error, and no owner is written or compared with it.
