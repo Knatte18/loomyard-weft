@@ -1,0 +1,8 @@
+verdict: approve
+reason: >-
+  The diff covers the entry's four goal points: a covered session gets no line, a verify command is held and stopped at the grace end, creel interrupt works on a covered strand, and webster's batch verbs refuse under a pause.
+  It does so through decisions D1-D8, keeps their out-of-scope items out, and makes the two declared PATTERN changes plus overview trims whose clauses all still sit in their background files.
+  Merge-Review's blocking finding is fixed, and the remaining carried risks are ones the decision record accepts.
+  The overlap with machine-handover is additive and does not conflict; this run (row 21) lands first and machine-handover (row 16) takes the changes at Merge-In.
+question: ""
+superseded: []
