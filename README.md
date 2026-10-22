@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-22 16:56 UTC; every age below is as of then.
+Rendered 2026-10-22 16:58 UTC; every age below is as of then.
 
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
@@ -60,7 +60,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | P | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| B1 |  | **Orch watcher types /compact again after a compact landed**<br>• Watcher stays in resuming after a requested compact and types a second /compact into the resumed busy turn | [`orch-compact-repeats`](design-orch-compact-repeats.md) | 1h<br>1h | orch |
+| B1 |  | **Orch watcher types /compact again after a compact landed**<br>• Watcher stays in resuming after a requested compact and types a second /compact into the resumed busy turn | [`orch-compact-repeats`](design-orch-compact-repeats.md) | 2h<br>2h | orch |
 
 ### Enhancements
 
@@ -79,13 +79,13 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | E11 |  | **Start one task per overlapping group at a newly-ready start**<br>• When a landing makes several overlapping tasks ready at once, batten starts one per group and names the rest in its notice | [`batten-ready-overlap`](design-batten-ready-overlap.md) | 7d<br>7d | batten |
 | E12 |  | **Git test fixtures trip Cortex XDR on the work laptop**<br>• Parallel git-heavy tests create so many files at once that Cortex XDR killed VS Code and then crashed itself, twice; tests must stay usable on a machine with endpoint protection | [`xdr-git-test-file-burst`](design-xdr-git-test-file-burst.md) | 6d<br>1d | fabric |
 | E13 |  | **Rename the lyx binary to lyr (name clash with LyX)** | [`rename-binary-lyr`](design-rename-binary-lyr.md) | 6d<br>6h | stencil, shuttle |
-| E14 |  | **Speed loom profile: Discussion, Plan and Webster, with review only of the end product**<br>• A loom profile without the Discussion, Plan and Webster perches, reviewing only before landing | [`speed-loom-profile`](design-speed-loom-profile.md) | 48m<br>48m | loom, burler, config |
-| E15 |  | **Plan writer cost: sub-planners per part, and twill versus a solo writer**<br>• The Plan writer is 18% of spend; sub-planners per part for large bundles, and a twill versus solo Opus high comparison on cost, rounds and time | [`plan-writer-context`](design-plan-writer-context.md) | 48m<br>19m | loom, stencil |
+| E14 |  | **Speed loom profile: Discussion, Plan and Webster, with review only of the end product**<br>• A loom profile without the Discussion, Plan and Webster perches, reviewing only before landing | [`speed-loom-profile`](design-speed-loom-profile.md) | 49m<br>49m | loom, burler, config |
+| E15 |  | **Plan writer cost: sub-planners per part, and twill versus a solo writer**<br>• The Plan writer is 18% of spend; sub-planners per part for large bundles, and a twill versus solo Opus high comparison on cost, rounds and time | [`plan-writer-context`](design-plan-writer-context.md) | 49m<br>20m | loom, stencil |
 | E16 |  | **Parallel batches: the shared pieces for Webster forks and Weaver**<br>• DAG batchifier, worktree per batch, merge-back with conflict resolution; open: keeping a fork inside its worktree | [`parallel-batch-parts`](design-parallel-batch-parts.md) | 4d<br>4d | webster, fabric, loom |
 | E17 | L | **[WS 007] An anchor per umbrella**<br>• Let an umbrella work in its own subdirectory of the repository, inherited by its tasks; hard to change now | [`umbrella-anchor`](design-umbrella-anchor.md) | 4d<br>4d | fabric, config, workspaces |
 | E18 | H | **[WS 005] One dobby daemon per beam owns and drives its runs**<br>• Each beam (a worktree with an orch thread) gets a Go daemon, started by lyx orch start, that follows its runs status files, starts ready tasks, lands, settles mechanical stops and tells the thread only what needs judgement | [`umbrella-daemon`](design-umbrella-daemon.md) | 10d<br>3d | batten, orch, shed, workspaces, loom, board |
 | E19 |  | **Every remote operation runs async, and local-only fabric pairs stay an explicit choice only**<br>• Remote work goes async except the branch-exists check; batch pairs reach origin like any pair, and the local-only mode stays only as an explicit --local until a use is found or it is removed | [`fabric-remote-async`](design-fabric-remote-async.md) | 3d<br>3d | fabric, batten |
-| E20 |  | **Plan and Discussion fixers on Sonnet, once findings are concrete enough**<br>• Webster and Merge fixers are already Sonnet; Plan and Discussion fixers need concrete findings first | [`fixers-on-sonnet`](design-fixers-on-sonnet.md) | 48m<br>45m | burler, claude |
+| E20 |  | **Plan and Discussion fixers on Sonnet, once findings are concrete enough**<br>• Webster and Merge fixers are already Sonnet; Plan and Discussion fixers need concrete findings first | [`fixers-on-sonnet`](design-fixers-on-sonnet.md) | 49m<br>46m | burler, claude |
 | E22 |  | **lyx batten run starts in its own window by default**<br>• Every batten run is started with --window, so the window should be the default and foreground the opt-in. | [`batten-window-default`](design-batten-window-default.md) | 3d<br>3d | batten, reed, orch |
 | E24 |  | **Every lens fork report is kept verbatim in the run records**<br>• Save each lens fork report in a support file beside lens-review.md, so audits can read what each lens found | [`lens-fork-reports-kept`](design-lens-fork-reports-kept.md) | 3h<br>3h | burler, loom |
 | E26 |  | **A status-bar button turns automatic terminal windows for runs on or off** | [`open-window-toggle`](design-open-window-toggle.md) | 8h<br>6h | batten, reed |
@@ -117,4 +117,4 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | F17 |  | **Ideas to borrow from comparable agent orchestrators (survey, Oct 2026)** | [`orchestrator-survey-ideas`](design-orchestrator-survey-ideas.md) | 6d<br>5d | burler, shed, orch, quarry, report |
 | F18 |  | **[.NET 004] Asynchronous test tiers in shed: the numerical baseline captured before implementation, compared at the final gate**<br>• Support a hub regression tier that writes profiles on the parent before implementation and compares after, switchable per task for expected drift. | [`regression-baseline-verify`](design-regression-baseline-verify.md) | 5d<br>1d | shed, webster, batten, config, dotnet |
 | F19 | H | **[WS 004] Board projects and pairs created from a parent pair**<br>• A task names its project; a project groups tasks in order and may have its own worktree; fabric and batten create a project task pair from that branch, batten verbs run from any worktree | [`pair-from-parent`](design-pair-from-parent.md) | 4d<br>4d | fabric, batten, board, workspaces |
-| F20 |  | **Large tasks: Discussion, a pre-planner, and the pieces as darn runs inside the task's beam**<br>• Discussion decides scope, a pre-planner splits it into contracted pieces, each piece runs as darn from the task's beam, a whole-task perch reviews, then align and land | [`loom-beam-darns`](design-loom-beam-darns.md) | 2m<br>0m | loom, shed, batten, workspaces, burler |
+| F20 |  | **Large tasks: Discussion, a pre-planner, and the pieces as darn runs inside the task's beam**<br>• Discussion decides scope, a pre-planner splits it into contracted pieces, each piece runs as darn from the task's beam, a whole-task perch reviews, then align and land | [`loom-beam-darns`](design-loom-beam-darns.md) | 3m<br>0m | loom, shed, batten, workspaces, burler |
