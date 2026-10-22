@@ -10,9 +10,10 @@ The machine runs Cortex XDR, which scans every file write and process start, and
 On that machine, narrowly scoped testing is what decides how long a run takes.
 
 Update (operator, 2026-10-20): the operator will also develop Models on OSL-1046, an Ubuntu 24.04 work laptop with Cortex XDR.
-A freshly built apphost was held 10 s by XDR there, while the same DLL started through `dotnet` was not held; `dotnet test` starts its test host through `dotnet`, so no measurement is needed first (operator, 2026-10-22).
 
-It must also work on Windows 11 (operator, 2026-10-22).
+Update (operator, 2026-10-22): it must also work on Windows 11.
+XDR has slowed only Go tests, which build new binaries; .NET runs through DLLs and has not been slowed, on Linux or Windows 11.
+Scoping still pays on its own: every gate tests only what is relevant, with one repo-wide check at the end of each task.
 
 ## Want
 
