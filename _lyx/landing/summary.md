@@ -1,29 +1,31 @@
-# A test compiles the C# testdata fixtures with dotnet, skipped without it
+# A test compiles the C# testdata fixtures with dotnet
 
-Quarry parses C# fixtures with tree-sitter, which tolerates syntax errors, so a broken fixture such as `internal/planglyph/testdata/glyphchain/csharp/Renderer.cs` would still pass the glyph tests.
-`TestCSharpFixtures_CompileWithDotnet` in `cmd/lyx/csharpfixtures_integration_test.go` now proves each fixture is valid C#.
-
-## What it does
-
-- Scans the module for `.cs` files under any `testdata/` directory, skipping `.git`, `_lyx`, `.lyx` and `.scratch`.
-- Builds each fixture directory as one throwaway class library in `t.TempDir()`, one parallel subtest per directory.
-  The `.csproj` includes the fixtures by absolute path with default compile items off, so the repository gets no `bin/` or `obj/`.
-- Fails on a compiler error, printing the directory and `dotnet build`'s output; warnings pass.
-- Skips when `dotnet` is not on `PATH`, so a machine without .NET stays green.
-- Fails when the scan finds no fixture, so it never passes vacuously.
+Quarry parses the C# fixtures with tree-sitter, which tolerates syntax errors, so a broken fixture still passes the glyph tests.
+`TestCSharpFixtures_CompileWithDotnet` in `cmd/lyx/csharpfixtures_integration_test.go` now compiles them with `dotnet build`, so an invalid fixture fails a test.
+The change adds only this test; no production code, gate config or fixture changes.
 
 ## Design decisions
 
-- **Tier.** The file is `//go:build integration`: it spawns `dotnet`, which untagged files may not do, and `tier1` runs in the batch, round, final and landing gates.
-  No new tag or `gate.yaml` tier: the skip already keeps Go-only machines green.
-- **Placement and guard marker.** It sits in `cmd/lyx` with the other repository scans and carries `//lyx:guard`, because it reads fixtures in other packages that the impacted set cannot connect to it.
-- **Target framework.** `net<major>.0`, with the major version read from `dotnet --version`, so the test follows whatever SDK the machine has.
-- **No leftover processes.** `dotnet build` runs with `--disable-build-servers`, so MSBuild nodes and the compiler server exit with the build.
-  The environment turns off telemetry, the banner and the first-run setup.
-  The flag needs SDK 7 or later.
-- **No fixture exclusion list.** A future fixture that is meant to be invalid C#, to exercise quarry's error tolerance, would need one added.
+- The file carries `//go:build integration`, because it spawns `dotnet` and `PATTERN-test-speed` bars spawns from untagged files.
+  A machine with .NET checks the fixtures in the gates that run the tier, and a Go-only machine skips the test and stays green.
+- The test carries `//lyx:guard`: it reads fixtures in other packages, so the impacted set cannot select it, and the marker makes the round gate run it.
+- A `.cs` file is a fixture when any directory on its module-relative path is named `testdata`.
+  The scan skips `.git`, `_lyx`, `.lyx`, `_mill`, `.scratch`, `.wiki` and `_raddle`.
+- Each fixture directory builds as one class-library project in a `t.TempDir()`, with default compile items off and the files included by absolute path.
+  Files in one directory form one compilation unit, as the glyph tests read them, while separate directories may reuse type names, and the repository tree gets no `bin/` or `obj/` output.
+- The target framework is `net<major>.0`, with `<major>` read from `dotnet --version`, so no pinned framework can fail on a machine whose SDK cannot target it.
+- `dotnet build` runs with `--disable-build-servers`, and the environment opts out of telemetry, the banner and the first-run setup, so no build server outlives the test.
+- The test skips when `dotnet` is not on `PATH`, and when `dotnet --version` fails, which a host with the runtime but no SDK does.
+  A scan that finds no fixture fails through `scankit.RequireFloor` instead of passing vacuously.
+- Compiler warnings do not fail the test; only errors do.
 
-## Verification
+## Risks
 
-With SDK 10.0.113 the test passes on the current fixture.
-With a type error put into `Renderer.cs` it fails, printing `error CS0246` for that file.
+- A future fixture meant to be invalid C#, to test quarry's error tolerance, would fail this test and would need an exclusion the test does not carry.
+- An SDK older than 7 rejects `--disable-build-servers`.
+
+## To check by hand
+
+- Run `lyx gate test --tier integration ./cmd/lyx` on a machine with .NET to see the test build every fixture directory.
+  The `integration` tier was not run on a .NET machine for this description.
+- Introduce a type error into a fixture and confirm the test fails naming the directory and the compiler output.
