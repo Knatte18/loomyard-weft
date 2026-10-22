@@ -10,6 +10,7 @@
 - `internal/configcli#TestDispatchLayers`
 
 **Uses:**
+- `plan:internal/lenses#lensSets`
 - `internal/lenses#loadTemplateConfig`
 - `internal/configcli#hubFixture`
 
@@ -38,9 +39,10 @@ It adds a `numerics` lens on numerical stability and units (floating-point compa
 Every layer lens keeps the emphasis line and no `ignore ` phrasing, which card 3's layer loop checks.
 
 Tests.
-`TestConfigTemplate_DecodesAndIsSelfConsistent` drops its card 3 assertion that the go layer's five lenses equal the base, keeping their equality with the golden file `testdata/go-lenses.yaml`;
-it adds that each of the five base lenses differs from the golden file's and holds neither `goroutine` nor `panic`, the language-neutral base the first acceptance criterion names,
+`TestConfigTemplate_DecodesAndIsSelfConsistent` drops its card 3 assertion that the go layer's five lenses equal the base;
+it adds that each of the five base lenses differs from the go layer's prose, decoded from `lensSets()["go"]`, and holds neither `goroutine` nor `panic`, the language-neutral base the first acceptance criterion names,
 and, under `lens_set: csharp`, that `numerics` is defined and `ResolveFan` of `review-code` and of `full` ends with `numerics`.
+`numerics` ends with the emphasis line: the base fans lack it, so card 3's layer loop checks it although csharp adds it to `review-code`.
 `TestDispatchLayers` gains three `lenses` rows:
 a standalone worktree (`noBoard`) with no `lenses.yaml` takes `--set lens_set=csharp`, and its check loads `lenses.Load` over the worktree and wants the five lenses equal to the csharp layer's prose, read by loading `lens_set: csharp` into a scratch anchor, and each different from `lenses.Load` over an anchor holding no `lenses.yaml`, so a composition that ignored the layer fails the row;
 a hub worktree (`layer` empty) with no worktree `lenses.yaml` takes `--set lens_set=csharp`, wants code 1 and `--layer default`, and its check asserts the error lacks `way forward: --set the key` and `delete the lens_set line` and that the worktree file is absent;

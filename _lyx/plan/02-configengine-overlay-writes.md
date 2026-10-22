@@ -36,7 +36,7 @@ so `--set lens_set=csharp` into a standalone file drops a per-name entry equal t
 For any layer above the base it is `TemplateUnder(dirs, spec)`.
 An unknown selector value fails `Set` with `overlayTemplate`'s error before anything is written, removing a file `Set` scaffolded.
 
-`setSparse` takes `dirs` and, after `SetSparse` merges and before `validateOverride`, refuses a write to the worktree layer of a hub (`BaseLayer(dirs, spec)` is the default layer) whose merged document holds the selector with a value other than the default layer file's (`""` when that file is absent or lacks the key), the D3 refinement card 1 applies at load: it returns `selectorRefusal(dirs, spec, path, heldBefore)`, `heldBefore` being whether the file's bytes before the write held the selector, and writes nothing.
+`setSparse` takes `dirs` and, after `SetSparse` merges and before `validateOverride`, refuses a write to the worktree layer of a hub (`BaseLayer(dirs, spec)` is the default layer) whose merged document holds the selector with a value other than the default layer file's (`""` when that file is absent or lacks the key), a non-scalar value counting as other, the D3 refinement card 1 applies at load: it returns `selectorRefusal(dirs, spec, path, heldBefore)`, `heldBefore` being whether the file's bytes before the write held the selector, and writes nothing.
 So `lyx config lenses --set lens_set=<name>` in a hub worktree whose file lacks the key and whose base picks another layer is refused naming only `--layer default` from the prime, and `configcli`'s `setChecked` returns that error unchanged, never followed by its load-failure way forward.
 The refusal's input after every upstream check passes is a pair setting the selector to a value the base does not hold, or any pair into a file already holding such a value.
 
@@ -50,9 +50,8 @@ a standalone file holding `pick: x\n` takes `lenses.a=X` alone and leaves `a: X`
 a standalone `pick=nope` fails with `names no shipped layer` and removes the scaffold;
 a hub worktree write of `pick=x` into an absent file fails with `--layer default`, `errLacks` `delete the pick line`, and leaves no file;
 a hub worktree write of `lenses.a=Y` into a file holding `pick: x\n` fails with `delete the pick line from` and leaves the file as it was.
-`TestEdit` gains an `overlay` row field swapping in `overlaySpec()` renamed `testmod`, an `existing` field holding the worktree file's bytes before the call (empty keeps the loop's `original`), and a `wantSawScaffold` field asserting the editor first saw `configengine.BaseScaffold(dirs, spec)`.
-Rows: an absent standalone base shows the editor `BaseScaffold`'s bytes, which hold `lenses: {}`;
-a hub worktree edit that writes `pick: x\n` into an absent file fails with `--layer default` and leaves no file;
+`TestEdit` gains an `overlay` row field swapping in `overlaySpec()` renamed `testmod`, and an `existing` field holding the worktree file's bytes before the call (empty keeps the loop's `original`).
+Rows: a hub worktree edit that writes `pick: x\n` into an absent file fails with `--layer default` and leaves no file;
 a hub worktree edit of an existing `lenses:\n  a: Z\n` file that writes `pick: x\n` fails and leaves the file as `lenses:\n  a: Z\n`;
 a hub worktree edit of an existing `pick: x\n` file that writes `pick: x\nlenses:\n  a: Z\n` fails with `delete the pick line from` and leaves the file as `pick: x\n`;
 a hub worktree edit of an existing `lenses:\n  a: Z\n` file that writes `lenses:\n  a: W\n` saves it.

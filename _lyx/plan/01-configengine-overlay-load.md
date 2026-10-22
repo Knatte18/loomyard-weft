@@ -35,7 +35,9 @@ Give `configengine` a template overlay (D4) and make every load-side judging pat
 `Overlay` is a new struct with two fields: `Selector string`, the name of the top-level template key that picks the overlay, and `Documents map[string][]byte`, each selector value mapped to its overlay document.
 `Spec` gains a field `Overlay Overlay`; its zero value means no overlay, and a spec without one loads, fills, warns and annotates byte for byte as today.
 
-`selectorValue` reads the selector's top-level scalar from a document: `held` reports whether the key is present, an absent key or `""` yields `""`, and a non-scalar value is an `ErrInvalid` error naming the key.
+`selectorValue` reads the selector's top-level scalar from a document: `held` reports whether the key is present, an absent key or `""` yields `""`, and a non-scalar value is an `ErrInvalid` error naming the key, to which its caller adds the way forward.
+On a base-layer document the caller appends the unknown-value error's way forward, set the selector to a layer name or `""` with `run "lyx config <module> --layer default --set <selector>=<name>" from the hub's prime worktree` followed by `boardDirWayForwardClause` in a hub, and `run "lyx config <module> --set <selector>=<name>"` standalone, `EffectiveTemplate` taking hub from its flag and every other caller from `dirs.Board != ""`;
+on a hub worktree document `readLayers` refuses it with `selectorRefusal(dirs, spec, path, true)`, since the base cannot hold a worktree file's value.
 `overlayTemplate` is the one composer: with value `""` or no overlay it returns `spec.Template` unchanged, and otherwise it lays `Documents[value]` over `spec.Template` with `yamlengine.Merge` under the spec's open maps, so each overlay name under a per-name map replaces or adds one entry whole.
 A value no document names is an `ErrInvalid` error: `<module> config: <selector> "<value>" names no shipped layer (shipped: <sorted names>)`, then the way forward, `run "lyx config <module> --layer default --set <selector>=<name>" from the hub's prime worktree` followed by `boardDirWayForwardClause` when `hub` is true, and `run "lyx config <module> --set <selector>=<name>"` otherwise.
 `EffectiveTemplate` is the exported entry point: it reads the selector from `base`, the base layer's document (nil when absent), and calls `overlayTemplate`.
@@ -51,6 +53,7 @@ A worktree value equal to the base's changes no selection, so it loads, and the 
 `selectorRefusal` returns an `ErrInvalid` error: `config file <path> holds <selector>, which only the base file <base path> may hold; way forward: ` then, when `heldBefore`, `delete the <selector> line from <path> in an editor, then ` and always `set it in the base with "lyx config <module> --layer default --set <selector>=<name>" from the hub's prime worktree`, followed by `boardDirWayForwardClause`.
 A local file holding a Guard-classified selector is refused by `ValidateLocal`, a check of the local layer independent of the worktree check; no machine layer stacks for a per-worktree module.
 The refusal's bound: a hub worktree file can no longer pick a layer other than the base's, and still overrides any per-name entry.
+A base write that changes the selector is not checked against any worktree file, so a hub worktree file holding the old base value, such as `lens_set: ""`, is refused at its next load, the refusal naming the deletion of its selector line.
 
 `Provenance` labels a unit `template:<value>` instead of `template` when no file layer holds it and the picked overlay document holds it, its overlay units taken with `yamlengine.LeafPaths`.
 
@@ -65,8 +68,8 @@ a hub default without `pick` under a worktree file `pick: ""` resolves `map[a:A]
 a hub worktree file `pick: x` over a default without `pick` is refused with the worktree file's path, `delete the pick line from`, `--layer default` and `the orch runs it`;
 a hub default `pick: nope` is refused with `names no shipped layer (shipped: x)`, `--layer default --set pick=<name>` and `the orch runs it`;
 a standalone worktree file `pick: nope` is refused with `"lyx config mod --set pick=<name>"`, lacking `the orch runs it`;
-a hub default `pick: [x]` is refused with `pick`;
-a local file `pick: x` over a hub default is refused with `is guard and cannot be set in a local override`, lacking `only the base file`.
+a hub default `pick: [x]` is refused with `pick` and `--layer default --set pick=<name>`;
+a hub worktree file `pick: [x]` over a default without `pick` is refused with the worktree file's path and `delete the pick line from`.
 `TestLayers`'s BelowLayer subtest adds an `overlaySpec()` fixture whose hub default holds `pick: x`, and asserts `BelowLayer` at the worktree layer decodes `lenses` as `map[a:X b:B]`, `TemplateUnder` over it decodes `lenses` the same, and `TemplateUnder` over a fixture with no default file returns `overlaySpec().Template` byte for byte.
 `TestProvenance` gains an `overlay` row field swapping in `overlaySpec()`, with a row whose default holds `pick: x\n` and wants `pick: default`, `a` and `b` `template:x`, and every other unit `template`.
 
