@@ -1,6 +1,6 @@
 # A PR-Align reject goes to a light fixer row, not a new plan generation
 
-`pr-align-fix-row` · Note · enhancement, loom, burler
+`merge-in-light-fixer` · Note · enhancement, loom, burler
 
 ## Seen
 
