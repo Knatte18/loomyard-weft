@@ -1,0 +1,384 @@
+{
+  "runGuid": "442022161c583f9313adac940bc55386",
+  "planFingerprint": "142b87cbc8512f932d44c0d60260b19eee8abfb8c120fd4665199aa3a829c564",
+  "planFileHashes": {
+    "00-overview.md": "555425836f1797f753d5511349280a6ad86fc6e48452b5764d4ed666a2cf294b",
+    "01-quarry-v040.md": "88af358359ee1dbc516ef834ee872a2122f82072416875e0854832150d8c9484",
+    "02-planparser-ref-alphabet.md": "72b2ff48273a338d948ed843b8ed3e0cbf41586bf4dc9a85face367d6177008e",
+    "03-planglyph-ref-alphabet.md": "6006b7976edaa282781673918ce79f1ef19c4de42aa951779cb1d04dad835f03",
+    "04-scope-guard-plan.md": "b74fde076ccaf29d1d1527bc8121f116004abb377299ab7aafc33ed84a190947",
+    "05-go-only-checks.md": "523073909ec5eb8a6b0b6a0dc634347c344ded4f3779724df92b03c6e1286434",
+    "06-plan-language-mismatch.md": "960390909df80cab88f20709b9920094b269dde2779c0d8ed656551f85899f21",
+    "07-rename-namespace-pair.md": "96e20dc853495dbaddb794d9d2c2cb4127ffe5fb15540f68adc1df8410c6d62c",
+    "08-multi-alphabet-answers.md": "ea23a08644d2a659fbb3f9b69d7a8e6e24c071253cbd0d00a4bf805fd6f73ac8",
+    "09-csharp-create-handles.md": "094e835aa5994b15be9edfe2e56df7fb04429aa3c885662c8595cf928ae915ad",
+    "10-csharp-rename-derivation.md": "0516d35ab3210ea5d99cec8e4d3d111c90f7626a1a915373862673bf6093340e",
+    "11-csharp-resign-arrows.md": "6bc784e88b219bbc1f482547d0c7fac6be0f46360cfe47af2e1a1ef129996d38",
+    "12-resign-post-batch.md": "72cc7f5c79c5c3c66792801f2a7d320859e59585f7ab07a4c1df47d50bd652a3",
+    "13-batcher-resign-boundary.md": "405e0e808eff6325eaaa0be95e86ff1b1c41c17719fd333c02a50f495593a101",
+    "14-package-docs-pattern.md": "d7f252b99610e212ccea6a1961172754781b599ea593d07d41e1823159c86dd3",
+    "15-contracts-csharp.md": "634892cd76bf55e6098831e06692b925d8fce735c8118d6b28824fa5a8c1157f"
+  },
+  "planOverviewFrameHash": "90d6a5e186c5031619cb06fb6d290319cad20752e1858e486f3ca745fb6fc196",
+  "partition": [
+    {
+      "cards": [
+        "01-quarry-v040",
+        "02-planparser-ref-alphabet"
+      ],
+      "profile": "cautious",
+      "estimate": 148594,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 1,
+        "startup": 54724,
+        "read_union": 15696,
+        "cards": [
+          {
+            "card": 1,
+            "card_text": 240,
+            "reads": {
+              "file:go.mod": 564,
+              "file:go.sum": 1908,
+              "package:.": 2000,
+              "package:internal/planglyph": 2000,
+              "tests:.": 2000,
+              "tests:internal/planglyph": 2000
+            },
+            "messages": 34,
+            "written": 10440
+          },
+          {
+            "card": 2,
+            "card_text": 984,
+            "reads": {
+              "package:internal/planparser": 2000,
+              "tests:internal/planparser": 2000
+            },
+            "messages": 222.5,
+            "written": 67734
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "03-planglyph-ref-alphabet",
+        "04-scope-guard-plan"
+      ],
+      "profile": "cautious",
+      "estimate": 194522,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 2,
+        "startup": 61724,
+        "read_union": 25224,
+        "cards": [
+          {
+            "card": 3,
+            "card_text": 864,
+            "reads": {
+              "package:internal/planglyph": 2000,
+              "package:internal/planglyph/testdata/glyphchain/csharp": 2000,
+              "package:internal/planparser": 2000,
+              "package:internal/websterengine": 2000,
+              "package:tools/plandag": 2000,
+              "tests:internal/planglyph": 2000,
+              "tests:internal/planglyph/testdata/glyphchain/csharp": 2000,
+              "tests:internal/planparser": 2000,
+              "tests:internal/websterengine": 2000,
+              "tests:tools/plandag": 2000
+            },
+            "messages": 238,
+            "written": 72264
+          },
+          {
+            "card": 4,
+            "card_text": 360,
+            "reads": {
+              "package:internal/planglyph": 2000,
+              "package:internal/planindex": 2000,
+              "package:internal/websterengine": 2000,
+              "tests:internal/planglyph": 2000,
+              "tests:internal/planindex": 2000,
+              "tests:internal/websterengine": 2000
+            },
+            "messages": 116.5,
+            "written": 35310
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "05-go-only-checks",
+        "06-plan-language-mismatch",
+        "07-rename-namespace-pair",
+        "08-multi-alphabet-answers",
+        "09-csharp-create-handles"
+      ],
+      "profile": "cautious",
+      "estimate": 181766,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 3,
+        "startup": 68724,
+        "read_union": 10496,
+        "cards": [
+          {
+            "card": 5,
+            "card_text": 624,
+            "reads": {
+              "package:internal/planglyph": 2000,
+              "package:internal/planparser": 2000,
+              "tests:internal/planglyph": 2000,
+              "tests:internal/planparser": 2000
+            },
+            "messages": 122.5,
+            "written": 37374
+          },
+          {
+            "card": 6,
+            "card_text": 528,
+            "reads": {
+              "package:internal/planglyph": 2000,
+              "package:internal/planparser": 2000,
+              "tests:internal/planglyph": 2000,
+              "tests:internal/planparser": 2000
+            },
+            "messages": 78.5,
+            "written": 24078
+          },
+          {
+            "card": 7,
+            "card_text": 312,
+            "reads": {
+              "package:internal/planparser": 2000,
+              "tests:internal/planparser": 2000
+            },
+            "messages": 32.5,
+            "written": 10062
+          },
+          {
+            "card": 8,
+            "card_text": 468,
+            "reads": {
+              "package:internal/planglyph": 2000,
+              "tests:internal/planglyph": 2000
+            },
+            "messages": 60,
+            "written": 18468
+          },
+          {
+            "card": 9,
+            "card_text": 564,
+            "reads": {
+              "package:internal/planglyph": 2000,
+              "tests:internal/planglyph": 2000
+            },
+            "messages": 40,
+            "written": 12564
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "10-csharp-rename-derivation",
+        "11-csharp-resign-arrows",
+        "12-resign-post-batch",
+        "13-batcher-resign-boundary"
+      ],
+      "profile": "cautious",
+      "estimate": 172832,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 4,
+        "startup": 75724,
+        "read_union": 18304,
+        "cards": [
+          {
+            "card": 10,
+            "card_text": 564,
+            "reads": {
+              "package:internal/planglyph": 2000,
+              "tests:internal/planglyph": 2000
+            },
+            "messages": 52,
+            "written": 16164
+          },
+          {
+            "card": 11,
+            "card_text": 828,
+            "reads": {
+              "package:internal/planglyph": 2000,
+              "tests:internal/planglyph": 2000
+            },
+            "messages": 88,
+            "written": 27228
+          },
+          {
+            "card": 12,
+            "card_text": 636,
+            "reads": {
+              "package:internal/planglyph": 2000,
+              "package:internal/planindex": 2000,
+              "package:internal/websterengine": 2000,
+              "tests:internal/planglyph": 2000,
+              "tests:internal/planindex": 2000,
+              "tests:internal/websterengine": 2000
+            },
+            "messages": 98.5,
+            "written": 30186
+          },
+          {
+            "card": 13,
+            "card_text": 276,
+            "reads": {
+              "package:internal/batcher": 2000,
+              "tests:internal/batcher": 2000
+            },
+            "messages": 16.5,
+            "written": 5226
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "14-package-docs-pattern",
+        "15-contracts-csharp"
+      ],
+      "profile": "cautious",
+      "estimate": 176914,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 5,
+        "startup": 82724,
+        "read_union": 61160,
+        "cards": [
+          {
+            "card": 14,
+            "card_text": 300,
+            "reads": {
+              "file:PATTERN.md": 1500,
+              "file:internal/batcher/doc.go": 912,
+              "file:internal/planglyph/doc.go": 1368,
+              "file:internal/planparser/doc.go": 1800,
+              "file:internal/websterengine/doc.go": 9192,
+              "file:pattern/PATTERN-glyph-conversion-chokepoint.md": 120,
+              "package:.": 2000,
+              "package:internal/batcher": 2000,
+              "package:internal/planglyph": 2000,
+              "package:internal/planparser": 2000,
+              "package:internal/websterengine": 2000,
+              "package:pattern": 2000,
+              "tests:.": 2000,
+              "tests:internal/batcher": 2000,
+              "tests:internal/planglyph": 2000,
+              "tests:internal/planparser": 2000,
+              "tests:internal/websterengine": 2000,
+              "tests:pattern": 2000
+            },
+            "messages": 89.5,
+            "written": 27150
+          },
+          {
+            "card": 15,
+            "card_text": 180,
+            "reads": {
+              "file:contracts/specs/loom-plan-spec.md": 8640,
+              "file:contracts/stencils/loom/loom-rubric-plan-review.md": 1764,
+              "file:contracts/stencils/loom/loom-template-plan.md": 3384,
+              "package:contracts/specs": 2000,
+              "package:contracts/stencils/loom": 2000,
+              "tests:contracts/specs": 2000,
+              "tests:contracts/stencils/loom": 2000
+            },
+            "messages": 19,
+            "written": 5880
+          }
+        ]
+      }
+    }
+  ],
+  "currentBatch": 1,
+  "masterStrand": "2642482185a5730eac4c6d480d816de3",
+  "masterSessionId": "39d466a9-b4ba-4030-9c38-3fc3d6d86e86",
+  "masterEngine": "claude",
+  "batches": {
+    "1": {
+      "slug": "quarry-v040",
+      "cards": [
+        "01-quarry-v040",
+        "02-planparser-ref-alphabet"
+      ],
+      "cardHashes": {
+        "01-quarry-v040": "88af358359ee1dbc516ef834ee872a2122f82072416875e0854832150d8c9484",
+        "02-planparser-ref-alphabet": "72b2ff48273a338d948ed843b8ed3e0cbf41586bf4dc9a85face367d6177008e"
+      },
+      "startSha": "de6b8465f50a475feb96a46f8bd30de0352919c9",
+      "kind": "fork",
+      "spawnedAt": "2026-10-22T07:44:21Z",
+      "sessionId": "39d466a9-b4ba-4030-9c38-3fc3d6d86e86",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
+    }
+  }
+}
