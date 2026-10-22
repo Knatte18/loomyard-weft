@@ -35,6 +35,7 @@ The next run of this audit checks what round 2's fan finds against a solo round 
 
 Tokens could be saved by scoping each lens more precisely and having fewer of them.
 A later run of this audit, with more material, measures per lens what it finds that no other lens or the plain reviewer finds, and how much of it is real, so lenses can be merged, sharpened or dropped.
+The Plan writer's `twill-plan` fan comes first: the Plan lead carries a large context, and each of its lens forks inherits it, while the Discussion lead's context stays small.
 
 ## Review rounds after twill-plan (was note `review-rounds-after-twill-plan`)
 
