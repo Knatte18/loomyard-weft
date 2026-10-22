@@ -1,7 +1,7 @@
 # Card 2 — landingshed-failure-route
 
 **Create:**
-- `plan:internal/landingshed#FailureRoute` -> `type FailureRoute struct`
+- `internal/landingshed#FailureRoute`
 
 **Edit:**
 - `internal/landingshed#Deps`

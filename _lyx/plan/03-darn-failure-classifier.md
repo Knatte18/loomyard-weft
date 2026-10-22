@@ -1,12 +1,12 @@
 # Card 3 — darn-failure-classifier
 
 **Create:**
-- `plan:internal/loomcli#impactedSet` -> `type impactedSet struct`
-- `plan:internal/loomcli#importPathSet` -> `func importPathSet(worktree string, targets impactset.Targets) (impactedSet, error)`
-- `plan:internal/loomcli#ownedFailure` -> `func ownedFailure(failures []websterengine.VerifyFailure, tests []verifytree.FailedTest, set impactedSet) (bool, []string)`
-- `plan:internal/loomcli#notOwnedRoute` -> `func notOwnedRoute(outside []string, set impactedSet) landingshed.FailureRoute`
-- `plan:internal/loomcli#darnFailureRoute` -> `func darnFailureRoute(ctx context.Context, failure verifytree.PublishFailure, worktree string, mergeBase func() (string, error), derive func(ctx context.Context, worktree, base string) (impactset.Targets, error)) landingshed.FailureRoute`
-- `plan:internal/loomcli#TestDarnFailureRoute` -> `func TestDarnFailureRoute(t *testing.T)`
+- `internal/loomcli#impactedSet`
+- `internal/loomcli#importPathSet`
+- `internal/loomcli#ownedFailure`
+- `internal/loomcli#notOwnedRoute`
+- `internal/loomcli#darnFailureRoute`
+- `internal/loomcli#TestDarnFailureRoute`
 
 **Edit:**
 - `internal/loomcli#verifySource`
