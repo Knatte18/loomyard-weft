@@ -1,6 +1,6 @@
 # Darn-Write stops looping on verify failures it cannot own, and the flaky reed boot test behind them
 
-`darn-verify-fixes` · Task · bug, enhancement, batten, gate, loom, shed, reed · running · Discussion-Burler-Review
+`darn-verify-fixes` · Task · bug, enhancement, batten, gate, loom, shed, reed · running · Discussion-Burler-Fix
 
 # Goal
 
