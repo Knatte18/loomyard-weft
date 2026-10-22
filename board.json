@@ -1225,6 +1225,25 @@
       "body": "Imported from [issue #801](https://github.com/Knatte18/loomyard/issues/801).\n\n**What happened**\n\nA `lyx loom run` halted with state `failed`, anomaly `producer-hard-failure`, at the `Merge-In` producer.\nThe halt note's only explanation was the single line `loop-exited`.\nIt listed the history and a `trace_file` that pointed at the loop log, not at the failing step.\n\nThe step's own trace shows the session was running and the post-merge verify later passed (`landingshed: post-merge verify passed`, then `shed: step done ... outcome=done`).\nAround the same time the log has `shuttle: session state disagrees ... loop=running state=idle-stalled cause=interrupt stands=loop`.\nThe halt looks like an interrupted driver or session, not a producer failure.\nA resume of the same run then completed `Merge-In` and the run went on to `Publish`.\n\n**Why it is abnormal**\n\n- `producer-hard-failure` names a failure of the producer, but the producer had no failure; the loop exited from outside it.\n- `loop-exited` gives no cause (interrupt, signal, crash, stall), so a reader cannot tell a defect from an operator action without digging through step traces.\n- The `trace_file` in the note is the loop log, which has no record of the exit.\n\n**What to do**\n\n- Classify a loop that exits on an interrupt or stalled-session signal as its own anomaly kind, not `producer-hard-failure`.\n- Put the cause, and the trace file of the step that was in flight, in the halt note's reason.\n\nProvenance: task `tuned-defaults-template`, from `loom-halt.md`.\n",
       "created": "2026-10-22T10:33:00Z",
       "revised": "2026-10-22T10:33:00Z"
+    },
+    {
+      "id": 747,
+      "slug": "report-timing-unreadable-journal",
+      "title": "lyx report timing counts sleep as active time when the system journal is unreadable",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "report"
+      ],
+      "issues": [
+        803
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Imported from [issue #803](https://github.com/Knatte18/loomyard/issues/803).\n\n## Seen (orch, 2026-10-21, OSL-1046)\n\n`lyx report timing` takes machine sleep windows from the system journal.\nOn this machine `journalctl` cannot read the system journal, because the AD user is in neither `adm` nor `systemd-journal`.\nThe report then subtracts no sleep, so sleep and quota waits are counted as active run time, and it says nothing about it.\n\n## Workaround\n\nNone; the numbers from this machine overstate active time.\n\n## Expected\n\nWhen the journal is unreadable, the report finds idle time another way, such as recorded tender pauses, hub-wide idle windows, or gaps in the runs' own timestamps.\nIt also states in its output that sleep could not be read and the numbers may include it.\n",
+      "created": "2026-10-22T10:33:03Z",
+      "revised": "2026-10-22T10:33:03Z"
     }
   ]
 }
