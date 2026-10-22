@@ -1,7 +1,7 @@
 # Card 5 — go-only-checks
 
 **Create:**
-- `plan:internal/planparser#Plan.GoToolchain` -> `func (p *Plan) GoToolchain() bool`
+- `internal/planparser#Plan.GoToolchain`
 
 **Edit:**
 - `internal/planparser#checkHandleMalformed`

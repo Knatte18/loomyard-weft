@@ -1,8 +1,8 @@
 # Card 9 — csharp-create-handles
 
 **Create:**
-- `plan:internal/planglyph#declaredNameIndex` -> `func declaredNameIndex(head, name string) (int, bool)`
-- `plan:internal/planglyph#csharpOwner` -> `func csharpOwner(g glyph.Glyph, head string) string`
+- `internal/planglyph#declaredNameIndex`
+- `internal/planglyph#csharpOwner`
 
 **Edit:**
 - `internal/planglyph#CanonicalizeHandles`

@@ -1,18 +1,18 @@
 {
   "runGuid": "442022161c583f9313adac940bc55386",
-  "planFingerprint": "7bf638fa7df082dde9fc35e1dea379fc7c076dac144de04d39a71327417fb780",
+  "planFingerprint": "46122c0a5dddb555060cc325eccbd52c5e224e17e80e624fd816432a4eab2b21",
   "planFileHashes": {
     "00-overview.md": "555425836f1797f753d5511349280a6ad86fc6e48452b5764d4ed666a2cf294b",
     "01-quarry-v040.md": "88af358359ee1dbc516ef834ee872a2122f82072416875e0854832150d8c9484",
     "02-planparser-ref-alphabet.md": "97b9acf9d51d44f536df9f4e008a791980999df73e76497df999f8d93b5139ff",
     "03-planglyph-ref-alphabet.md": "6d62b2855897c666ead97c2b0b32449ea4a8c5af3beed8bf6c9ffadac3c67331",
     "04-scope-guard-plan.md": "b74fde076ccaf29d1d1527bc8121f116004abb377299ab7aafc33ed84a190947",
-    "05-go-only-checks.md": "7ccfb281fb8101b9b0cc235d6691af1af74a6d80754fc5756c0c83bb2b661208",
-    "06-plan-language-mismatch.md": "304ad0209a21f53877e60fc3e17a45ff54ec0533b45b2378c561482cb4fefac8",
-    "07-rename-namespace-pair.md": "96e20dc853495dbaddb794d9d2c2cb4127ffe5fb15540f68adc1df8410c6d62c",
-    "08-multi-alphabet-answers.md": "7e0bdd0daed7a6dcf3ec30f700f87e8b5201bf47e5abdd00ed62d9e56e73dcb5",
-    "09-csharp-create-handles.md": "0aaf51bbf886e3de6b5811b1adebaa2d9ee63dd084c3883636903cec6250dce5",
-    "10-csharp-rename-derivation.md": "96f251522ba0efa76eda528c3b286590a58f00c39b7f69421b6b7211ce3e2da1",
+    "05-go-only-checks.md": "0796d58da58d2e532d649680b6abb542c3cc94c22f4a37485cc7cc23a2e1c4a5",
+    "06-plan-language-mismatch.md": "41e5f04dc94415ca1aaab42feac70eae0cd7b30ea01d546f3bd4a4f444f12a5f",
+    "07-rename-namespace-pair.md": "45113bfeafe7fdf961329e5a03daa3d13b9ca456effa0ff59e622bb7b2acd48d",
+    "08-multi-alphabet-answers.md": "6114afb0c979a68a0bbd8c48688174b66803111f1472f397841f9d9565895923",
+    "09-csharp-create-handles.md": "c86a312d1bed4982820c5d86a8b13a62a7aaad130942f1460f2c450fa6e34f14",
+    "10-csharp-rename-derivation.md": "6c00cb34f46c1de604726a37bdbdfadabbfdf948fbf7c355ae0c38d01f12cfce",
     "11-csharp-resign-arrows.md": "0e16c1c7db6ea003cbc9d6518bb21d68963564757a8ce415ff9a9123575d27b2",
     "12-resign-post-batch.md": "c8d6045734c64034cbcb22825d6c5ea36a5529ce764b88b780f839fb123af083",
     "13-batcher-resign-boundary.md": "405e0e808eff6325eaaa0be95e86ff1b1c41c17719fd333c02a50f495593a101",
@@ -357,7 +357,7 @@
       }
     }
   ],
-  "currentBatch": 5,
+  "currentBatch": 0,
   "masterStrand": "2642482185a5730eac4c6d480d816de3",
   "masterSessionId": "39d466a9-b4ba-4030-9c38-3fc3d6d86e86",
   "masterEngine": "claude",
@@ -443,23 +443,44 @@
         "09-csharp-create-handles"
       ],
       "cardHashes": {
-        "05-go-only-checks": "7ccfb281fb8101b9b0cc235d6691af1af74a6d80754fc5756c0c83bb2b661208",
-        "06-plan-language-mismatch": "304ad0209a21f53877e60fc3e17a45ff54ec0533b45b2378c561482cb4fefac8",
-        "07-rename-namespace-pair": "96e20dc853495dbaddb794d9d2c2cb4127ffe5fb15540f68adc1df8410c6d62c",
-        "08-multi-alphabet-answers": "7e0bdd0daed7a6dcf3ec30f700f87e8b5201bf47e5abdd00ed62d9e56e73dcb5",
-        "09-csharp-create-handles": "0aaf51bbf886e3de6b5811b1adebaa2d9ee63dd084c3883636903cec6250dce5"
+        "05-go-only-checks": "0796d58da58d2e532d649680b6abb542c3cc94c22f4a37485cc7cc23a2e1c4a5",
+        "06-plan-language-mismatch": "41e5f04dc94415ca1aaab42feac70eae0cd7b30ea01d546f3bd4a4f444f12a5f",
+        "07-rename-namespace-pair": "45113bfeafe7fdf961329e5a03daa3d13b9ca456effa0ff59e622bb7b2acd48d",
+        "08-multi-alphabet-answers": "6114afb0c979a68a0bbd8c48688174b66803111f1472f397841f9d9565895923",
+        "09-csharp-create-handles": "c86a312d1bed4982820c5d86a8b13a62a7aaad130942f1460f2c450fa6e34f14"
       },
       "startSha": "5303ec9515410b457d3d7bf7df3de7d6d3b8e5de",
       "kind": "fork",
       "spawnedAt": "2026-10-22T07:57:07Z",
       "sessionId": "39d466a9-b4ba-4030-9c38-3fc3d6d86e86",
       "engine": "claude",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "05-go-only-checks",
+        "status": "done",
+        "head_sha": "d7fdbb19c39797df4baef4040201942d5c1c3f0f",
+        "deviations": [
+          "internal/planglyph/buildenv.go",
+          "internal/planglyph/csharphead.go",
+          "internal/planglyph/glyphchain_test.go",
+          "internal/planglyph/languagemismatch.go"
+        ]
+      },
+      "cardShas": [
+        "d7fdbb19c39797df4baef4040201942d5c1c3f0f"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-quarry-csharp/39d466a9-b4ba-4030-9c38-3fc3d6d86e86/subagents/agent-a95f053bb2a4a5549.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-quarry-csharp/39d466a9-b4ba-4030-9c38-3fc3d6d86e86/subagents/agent-a95f053bb2a4a5549.jsonl"
+      ]
     }
   },
   "seenForkTranscripts": [
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-quarry-csharp/39d466a9-b4ba-4030-9c38-3fc3d6d86e86/subagents/agent-aef28a54195b6b574.jsonl",
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-quarry-csharp/39d466a9-b4ba-4030-9c38-3fc3d6d86e86/subagents/agent-a207da6c36a038b98.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-quarry-csharp/39d466a9-b4ba-4030-9c38-3fc3d6d86e86/subagents/agent-a207da6c36a038b98.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-quarry-csharp/39d466a9-b4ba-4030-9c38-3fc3d6d86e86/subagents/agent-a95f053bb2a4a5549.jsonl"
   ]
 }
