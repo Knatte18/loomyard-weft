@@ -1,7 +1,7 @@
 # Card 10 — a run start and the deferred prompt wait out a pause that refused their line
 
 **Create:**
-- `plan:internal/shuttleengine#Run.sendThroughPause` -> `func (run *Run) sendThroughPause(sc sendContext, text string) error`
+- `internal/shuttleengine#Run.sendThroughPause`
 
 **Edit:**
 - `internal/shuttleengine#Runner.waitWhileCovered` -> `func (r *Runner) waitWhileCovered(slug string) error`
