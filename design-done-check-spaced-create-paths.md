@@ -2,8 +2,6 @@
 
 `done-check-spaced-create-paths` · Task · bug, webster, quarry
 
-Depends on: [`run-process-ownership`](design-run-process-ownership.md)
-
 Imported from [issue #805](https://github.com/Knatte18/loomyard/issues/805).
 
 ## What was seen

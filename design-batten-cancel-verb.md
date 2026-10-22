@@ -2,7 +2,7 @@
 
 `batten-cancel-verb` · Task · bug, batten, reed, shed
 
-Depends on: [`run-process-ownership`](design-run-process-ownership.md), [`orch-strand-cycle`](design-orch-strand-cycle.md)
+Depends on: [`orch-strand-cycle`](design-orch-strand-cycle.md)
 
 Imported from [issue #775](https://github.com/Knatte18/loomyard/issues/775).
 

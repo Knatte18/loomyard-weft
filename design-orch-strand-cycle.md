@@ -2,8 +2,6 @@
 
 `orch-strand-cycle` · Task · bug, enhancement, orch, reed, shuttle, creel
 
-Depends on: [`run-process-ownership`](design-run-process-ownership.md)
-
 Three orch lifecycle fixes in one run: a dead strand counts as dead, a dead watcher restarts, and the watcher's context-cycle request needs no reply and can be withdrawn.
 
 ## 1. A strand whose engine has exited counts as dead

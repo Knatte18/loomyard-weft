@@ -2,8 +2,6 @@
 
 `fork-git-guard-read-only-tag` · Task · bug, shed
 
-Depends on: [`run-process-ownership`](design-run-process-ownership.md)
-
 Imported from [issue #819](https://github.com/Knatte18/loomyard/issues/819).
 
 ## What happened
