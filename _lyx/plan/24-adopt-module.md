@@ -32,7 +32,7 @@
 - `internal/fabricengine#ReconcileOrigin`
 - `internal/fabricengine#Topology.Add`
 - `plan:internal/fabricengine#EntryOwnedElsewhere`
-- `plan:internal/fabricengine#ParentSlug`
+- `internal/fabricengine#ParentSlug`
 - `internal/pairteardown#HubSeamOptions`
 - `internal/pairteardown#Teardown.OriginSeams`
 - `plan:internal/boardengine#SetOwners`
@@ -41,7 +41,7 @@
 - `internal/tendercli#HubDeps`
 - `plan:internal/pauserecord#OwnerCaller`
 - `plan:internal/landingshed#OwnerHaltPrefix`
-- `plan:internal/machinename#Name`
+- `internal/machinename#Name`
 
 **Intent:**
 D5: `lyx adopt <slug>...`, `lyx adopt --prime [<slug>...]` and `lyx adopt --all`, with `--keep-local` and `--drop-local`, a new top-level module with no engine of its own that calls each owning module's function in-process, as `lyx cleanup` does (`PATTERN-cli-cobra`); it runs from the hub's prime only, by `battencli.RefuseUnlessPrime`.

@@ -26,7 +26,7 @@
 - `plan:internal/tendercli#PauseOwnedElsewhere`
 - `plan:internal/boardengine#SetOwners`
 - `plan:internal/boardengine#ReadOwners`
-- `plan:internal/machinename#Name`
+- `internal/machinename#Name`
 
 **Intent:**
 D4's callers of the owner outcome that hold a run: the hibernate wake and `lyx orch start`; cleanup only reports it.

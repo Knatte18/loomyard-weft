@@ -28,9 +28,9 @@
 - `plan:internal/boardengine#TestSetOwners` -> `func TestSetOwners(t *testing.T)`
 
 **Uses:**
-- `plan:internal/fabricengine#ParentSlug`
-- `plan:internal/boardengine#ParseOwners`
-- `plan:internal/boardengine#Owners.Effective`
+- `internal/fabricengine#ParentSlug`
+- `internal/boardengine#ParseOwners`
+- `internal/boardengine#Owners.Effective`
 - `internal/boardengine#ApplySkipEnv`
 - `internal/fabricengine#Bolt.PullThenCommitWritten`
 - `internal/fabricengine#Bolt.PushRecorded`

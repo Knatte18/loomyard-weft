@@ -11,11 +11,11 @@
 - `plan:internal/pairteardown#OwnerReader` -> `func OwnerReader(machine func() (string, error), parentOf func(hubPath, slug string) (string, error)) fabricengine.OwnerReader`
 
 **Uses:**
-- `plan:internal/machinename#Name`
-- `plan:internal/boardengine#ParseOwners`
-- `plan:internal/boardengine#Owners.Effective`
-- `plan:internal/boardengine#OwnedElsewhere`
-- `plan:internal/fabricengine#ParentSlug`
+- `internal/machinename#Name`
+- `internal/boardengine#ParseOwners`
+- `internal/boardengine#Owners.Effective`
+- `internal/boardengine#OwnedElsewhere`
+- `internal/fabricengine#ParentSlug`
 
 **Intent:**
 Every reconcile call site builds its seams through `pairteardown`, so the owner reader is built here once (D4).

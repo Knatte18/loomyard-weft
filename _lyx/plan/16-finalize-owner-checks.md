@@ -27,12 +27,12 @@
 - `internal/landingshed#newTestDeps`
 - `internal/landingshed#stuckVerdict`
 - `plan:internal/fabricengine#ParentHoldsTaskWork`
-- `plan:internal/fabricengine#ParentSlug`
+- `internal/fabricengine#ParentSlug`
 - `plan:internal/fabricengine#EntryOwnedElsewhere`
 - `plan:internal/boardengine#ReadOwners`
-- `plan:internal/boardengine#Owners.Effective`
-- `plan:internal/boardengine#OwnedElsewhere`
-- `plan:internal/machinename#Name`
+- `internal/boardengine#Owners.Effective`
+- `internal/boardengine#OwnedElsewhere`
+- `internal/machinename#Name`
 
 **Intent:**
 D7: a run lands only on the machine that owns it and its parent, checked in the landing producer, so loom and darn runs and an alignment approve that lands with no orch turn all pass it; plus D6's halt note for an adopter-first landing.

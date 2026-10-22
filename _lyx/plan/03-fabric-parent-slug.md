@@ -1,8 +1,8 @@
 # Card 3 — fabric-parent-slug
 
 **Create:**
-- `plan:internal/fabricengine#ParentSlug` -> `func ParentSlug(l *lyxcwd.Location, slug string) (string, error)`
-- `plan:internal/fabricengine_test#TestParentSlug` -> `func TestParentSlug(t *testing.T)`
+- `internal/fabricengine#ParentSlug`
+- `internal/fabricengine_test#TestParentSlug`
 
 **Uses:**
 - `internal/fabricengine#ReadOriginFor`
