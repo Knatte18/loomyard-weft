@@ -1,0 +1,24 @@
+# Relevant files
+
+- `contracts/recipes/darn-recipe.yaml` — the darn row graph; Darn-Write gains the Merge-In reroute edge
+- `internal/loomcli/darnwiring.go` `darnVerifySource`, `pairMergeBase`, `darnTreeScope` — fixed darn failure target and way forward the classifier replaces, and the merge base reader it reuses
+- `internal/loomcli/landingdeps.go` — copies the verify source into landingshed's Deps, and holds loom's fixed target
+- `internal/landingshed/verifygate.go` — writes the failure record's target and builds the failed-verify Stuck reason
+- `internal/landingshed/deps.go` `Deps.VerifyFailureTarget`, `Deps.VerifyFailedWayForward` — the fixed values a classifier seam replaces
+- `internal/landingshed/doc.go` — documents the failure record write and the moved-parent guard D3 reuses
+- `internal/loomshed/darnwrite.go` `NewDarnWrite`, `darnWrite.Call`, `DarnDeps` — Darn-Write's producer where the entry reroute goes
+- `internal/loomshed/verifygate.go` — Darn-Write's round gate, which re-runs the record's failing tests
+- `internal/loomshed/publishfailure.go` `publishFailureSteps` — renders the reproduce commands D6 pins
+- `internal/verifytree/failure.go` `PublishFailure`, `FailedTest` — the failure record the classifier reads
+- `internal/battenshed/publishretry.go` `RecordMatchesHalt` — batten's one retry, driven by the record's target
+- `internal/battencli/publishretry.go` `childGoto` — the goto the retry spawns
+- `internal/sheddriver/driverules.go` `decideDrive` — the Go driver's verify retry rule
+- `internal/shedadapters/gateattempts.go` `gateFailedReason` — the reason naming the findings path that is gone
+- `internal/shuttleengine/gate.go` `GateOutcome`, `gateFindingsFileName` — the findings file and the outcome that must carry its text
+- `internal/shuttleengine/wait.go` — finalize removes the run directory on the Done cleanup
+- `internal/impactset/doc.go` — states the lyxbin rule and the narrowing bound
+- `internal/impactset/graph.go` `lyxbinDir` — where the lyxbin join is applied
+- `internal/reedengine/probe.go` `probeCapabilityLocked`, `newProbeSocketKey` — the private probe socket that fixed item 1
+- `internal/reedengine/tmuxconf_integration_test.go` — holds `TwoWorktreesBootedConcurrently`
+- `internal/shellguard/rows.go` `Rows`, `rawGoCommandPattern` — the guard rows a darn writer's gate test command passes
+- `internal/shellguard/rows_integration_test.go` — the allow table D6 extends
