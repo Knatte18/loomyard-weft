@@ -9,8 +9,13 @@ Examples: in "Docs land in the same commit", that the task that builds a design 
 
 ## Idea
 
-`CLAUDE.md` is for one repo only (operator, 2026-10-22).
-Go through it and move every rule about lyx's behaviour out: what lyx enforces goes into the code and its package `doc.go`, and what agents must be told goes into the stencils lyx ships, so it reaches every hub.
-What stays in `CLAUDE.md` is what holds for this repo alone, such as the cgo build, `update-plugins.sh` and the push rule for `main`.
+Two kinds of rule must be kept apart (operator, 2026-10-22):
+
+1. Rules for every use of lyx, in any repo: they apply locally, to the repo the hub develops.
+   They ship with lyx: what lyx enforces lives in the code and its package `doc.go`, and what agents must be told lives in the stencils lyx ships, so every hub gets them.
+2. Rules for developing LoomYard itself, here in this repo: they live in this repo's `CLAUDE.md`, such as the cgo build, `update-plugins.sh` and the push rule for `main`.
+
+Mixing them breaks other hubs: when the quarry hub was set up as a LYXHUB repo, its orch began taking in the LoomYard repo's issues instead of quarry's own, because a rule written for LoomYard development was read as a lyx rule.
+`CLAUDE.md` is for one repo only, so go through it and move every rule of kind 1 out into lyx; go through the stencils too for rules of kind 2 that name LoomYard where they should name the hub's own repo.
 
 The run-lock rule is handled by note `entry-align-before-discussion`.
