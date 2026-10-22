@@ -1,9 +1,9 @@
 # Card 6 — lenses-remove
 
 **Create:**
-- `plan:internal/configengine#WarnSkippedEntries` -> `func WarnSkippedEntries(dirs Dirs, spec Spec, key string, entries []string) error`
-- `plan:internal/configengine#warnedSkippedEntries` -> `var warnedSkippedEntries sync.Map`
-- `plan:internal/lenses#applyRemove` -> `func applyRemove(cfg *Config) []string`
+- `internal/configengine#WarnSkippedEntries`
+- `internal/configengine#warnedSkippedEntries`
+- `internal/lenses#applyRemove`
 
 **Edit:**
 - `internal/lenses#Config`

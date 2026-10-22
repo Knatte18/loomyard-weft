@@ -1,6 +1,6 @@
 {
   "runGuid": "2541d00f4e6d76b1991f62d267bdb5c1",
-  "planFingerprint": "99640c4205b0da0e24084b65c5469baa61c152ed8e1cefb15f4b7ed6319d5e69",
+  "planFingerprint": "c4e84e0737f0693bfd78b9b5a794043686dff5d3a469571f3b675120731c2266",
   "planFileHashes": {
     "00-overview.md": "28923292e6f71e7e641cbfb5a2520418601edea817a4bec1b678898b124f2a3e",
     "01-configengine-overlay-load.md": "ebcb959f7363e4eaf30a295f475e3efe904118be8dc1da846f6524123780eb1c",
@@ -8,7 +8,7 @@
     "03-lenses-lens-set.md": "2d08f1f56495e138eb98119f91e7150b31401b0a277bee1d5b2e5f6ae5e232be",
     "04-lenses-language-layers.md": "fc49ff0c4638a0f2ee41083bbd490c46dd4d9c65cca2d94e47154d52dbf5ad7f",
     "05-configsync-effective-template.md": "91533b05402e5de70c3044a1206d200e0d472fba20207ed870d2f426aec06e44",
-    "06-lenses-remove.md": "05abd8c3272b395662521a2f2e6044ab3b5d6475680cae157dc74e28b5cc5831"
+    "06-lenses-remove.md": "b9de28bc0f8e14f070a0a3c1250cf6bbcbd6fb23680022885b249ed49339f91c"
   },
   "planOverviewFrameHash": "488235ed4b0c16f51d2a01a5c698685c6d60496a6bc02841387444a938e64cf3",
   "partition": [
@@ -166,7 +166,7 @@
       }
     }
   ],
-  "currentBatch": 4,
+  "currentBatch": 0,
   "masterStrand": "6fba0c9267611867565b95d8712a85cd",
   "masterSessionId": "445eaaf3-cd59-4144-8078-5b4378646688",
   "masterEngine": "claude",
@@ -221,18 +221,37 @@
       "cardHashes": {
         "04-lenses-language-layers": "fc49ff0c4638a0f2ee41083bbd490c46dd4d9c65cca2d94e47154d52dbf5ad7f",
         "05-configsync-effective-template": "91533b05402e5de70c3044a1206d200e0d472fba20207ed870d2f426aec06e44",
-        "06-lenses-remove": "05abd8c3272b395662521a2f2e6044ab3b5d6475680cae157dc74e28b5cc5831"
+        "06-lenses-remove": "b9de28bc0f8e14f070a0a3c1250cf6bbcbd6fb23680022885b249ed49339f91c"
       },
       "startSha": "1aa8ded33ba553931f21a23fcfe1cc0dc9bb731d",
       "kind": "fork",
       "spawnedAt": "2026-10-22T07:56:53Z",
       "sessionId": "445eaaf3-cd59-4144-8078-5b4378646688",
       "engine": "claude",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "04-lenses-language-layers",
+        "status": "done",
+        "head_sha": "ad45cfb72fbed2ca589c326293ab546bbeaf1e6d",
+        "deviations": [
+          "internal/configsync/configsync.go",
+          "internal/configsync/configsync_test.go"
+        ]
+      },
+      "cardShas": [
+        "ad45cfb72fbed2ca589c326293ab546bbeaf1e6d"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-lenses-language-sets/445eaaf3-cd59-4144-8078-5b4378646688/subagents/agent-abd233f418dbe35fd.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-lenses-language-sets/445eaaf3-cd59-4144-8078-5b4378646688/subagents/agent-abd233f418dbe35fd.jsonl"
+      ]
     }
   },
   "seenForkTranscripts": [
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-lenses-language-sets/445eaaf3-cd59-4144-8078-5b4378646688/subagents/agent-a94dc6ff0465707e2.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-lenses-language-sets/445eaaf3-cd59-4144-8078-5b4378646688/subagents/agent-a94dc6ff0465707e2.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-lenses-language-sets/445eaaf3-cd59-4144-8078-5b4378646688/subagents/agent-abd233f418dbe35fd.jsonl"
   ]
 }
