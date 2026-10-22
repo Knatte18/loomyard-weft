@@ -16,7 +16,7 @@ Held by a run; its scope is locked until the run ends.
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T1 | **Every process a run spawns has one owner that ends them all**<br>• Owner records for run processes; pause, reed down, fabric remove and teardown end the whole group; tender status shows orphans; a hub pause reaches background work; a finished reviewer never waits on its background shells | [`run-process-ownership`](design-run-process-ownership.md) | loom | Webster | neve | 7d<br>7h | batten, burler, fabric, loom, shed, shuttle, webster |
-| T2 | **The Plan writer's twill-plan fan runs 5 lenses instead of 8**<br>• Merge overlapping twill-plan lenses into coverage, row-validity and forced-edits, keeping guard-reach and way-forward<br>• `profile: light` | [`twill-plan-five-lenses`](design-twill-plan-five-lenses.md) | darn | PR-Gate | neve | 13m<br>13m | burler, loom |
+| T2 | **The Plan writer's twill-plan fan runs 5 lenses instead of 8**<br>• Merge overlapping twill-plan lenses into coverage, row-validity and forced-edits, keeping guard-reach and way-forward<br>• `profile: light` | [`twill-plan-five-lenses`](design-twill-plan-five-lenses.md) | darn | Finalize | neve | 13m<br>13m | burler, loom |
 
 ### Ready
 
