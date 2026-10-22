@@ -1,4 +1,4 @@
-# webster: done-check rejects a Create path holding a space that webster validate accepts
+# webster done-check: Create paths with a space and test targets quarry does not find
 
 `done-check-spaced-create-paths` · Task · bug, webster, quarry
 
@@ -41,3 +41,16 @@ Provenance: task `csharp-alphabet`; notes loom-halt.md, loom-halt-2.md, webster-
 
 The done-check accepts a Create path holding a space, matching what `webster validate` already accepts; `webster validate` is not made to refuse it.
 The `loop-exited` halt reason is out of scope here: task `loop-exit-halt-names-its-cause` takes it.
+
+## Folded in: test targets quarry does not find (operator, 2026-10-22)
+
+Imported from [issue #823](https://github.com/Knatte18/loomyard/issues/823).
+
+In task `machine-handover`, `lyx webster record-batch` refused batches `01` and `09` with `create-not-done[blocking]`: `Create target "plan:<pkg>#<TestName>" still does not resolve ... quarry answered not_found (the unit exists and the member is missing)`.
+Batch `09`'s target sat in an external test package (`internal/loomcli_test#...`).
+The refusal cannot tell a card that never wrote the test from a lookup that misses one that exists, and names no file or package quarry searched.
+In `run-process-ownership` (2026-10-22) the same refusal named two tests the batch had written in other files than the card said.
+
+What to do:
+- Check whether quarry resolves `plan:` targets in `_test` external test packages and in test files created in the same batch.
+- Make the `create-not-done` message name the files quarry searched, so a missing test is told apart from a lookup miss or a test in another file.
