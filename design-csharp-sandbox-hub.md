@@ -17,3 +17,9 @@ Runs on it prove the whole C# path on Neve before OSL-1046.
 
 - OSL-1046 has SDKs 8.0.32, 9.0.21 and 10.0.13 (operator, 2026-10-22).
 - Neve has SDK 10.0.113 from apt (`dotnet-sdk-10.0`, installed 2026-10-22).
+
+## Set up (2026-10-22)
+
+The hub exists on Neve at `/home/knatte/Code/lyx-csharp-LYXHUB` (shortname `cs`), over the public repos `Knatte18/lyx-csharp` and `Knatte18/lyx-csharp-weft`: `LyxCsharp.sln` with three libraries and two NUnit test projects, `lens_set: csharp`, gate `tier0` running `dotnet test` without `Category=Slow` and `tier1` with it.
+No run has gone through it yet; the first run there is the end-to-end proof this note asks for.
+The first `tier1` gate run died with "Internal CLR error (0x80131506)" after 900 s and passed on a rerun; cause unknown.
