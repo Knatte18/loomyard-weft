@@ -1,0 +1,2402 @@
+diff --git a/internal/boardcli/cli.go b/internal/boardcli/cli.go
+index 06cbf1663..31a52295d 100644
+--- a/internal/boardcli/cli.go
++++ b/internal/boardcli/cli.go
+@@ -71,8 +71,10 @@ func Command() *cobra.Command {
+ 
+ The board is one store: every entry is a task or a note (its kind) and carries labels. Only a task
+ can be claimed and depend on other tasks; a note is an idea or observation. A task carries at least
+-one type label, a note exactly one, and every label must be configured in board.yaml. The README
+-renders tasks split into dependency layers and notes grouped by type. Agents read and write the
++one type label, a note exactly one, and every label must be configured in board.yaml. Every entry
++carries a handle the board assigns, T and a number for a task, a note's type letter and a number for
++a note, such as T4 or B2. The README renders tasks split into dependency layers and notes grouped by
++type, each table sorted by handle. Agents read and write the
+ board through "lyx board", never through the JSON files under _board.
+ 
+ The config file is the hub's <hub>/_board/_lyx/config/board.yaml, read whatever worktree the verb runs in.
+@@ -140,18 +142,22 @@ available subcommands without requiring a git repo.
+ 	}
+ 
+ 	promoteCmd := &cobra.Command{
+-		Use:         "promote {slug|id}",
++		Use:         "promote {slug|id|handle}",
+ 		Short:       "turn a note into a task once it is ready to be claimed",
+ 		Annotations: map[string]string{clihelp.AudienceAnnotation: clihelp.AudienceOperator},
+ 		Long: `Turn a note into a task. A task is returned unchanged, and nothing is written.
++The promoted entry loses its priority, which only a note carries, and its note handle: it takes
++the lowest free T handle.
+ Demotion goes through "lyx board upsert" with "kind":"note".
+ 
+ Fields (one of):
+-  "slug" string  — entry slug
+-  "id"   integer — entry id
++  "slug"   string  — entry slug
++  "id"     integer — entry id
++  "handle" string  — entry handle, such as B4
+ 
+-Example:
+-  lyx board promote '{"slug":"my-note"}'` + slugLimitNote(),
++Examples:
++  lyx board promote '{"slug":"my-note"}'
++  lyx board promote B4` + slugLimitNote(),
+ 		RunE: clihelp.WrapRun(func(out io.Writer, args []string) int {
+ 			if len(args) == 0 {
+ 				return outputError(out, "json payload required")
+@@ -169,10 +175,10 @@ Example:
+ 	}
+ 
+ 	renameCmd := &cobra.Command{
+-		Use:         "rename {slug|id, to}",
++		Use:         "rename {slug|id|handle, to}",
+ 		Short:       "change an entry's slug in one write, keeping every other field and rewriting depends_on",
+ 		Annotations: map[string]string{clihelp.AudienceAnnotation: clihelp.AudienceOperator},
+-		Long: `Change an entry's slug in one atomic write. The entry keeps its id, position, body, kind, labels,
++		Long: `Change an entry's slug in one atomic write. The entry keeps its id, handle, position, body, kind, labels,
+ priority, issues, dates, status and every other field, and every other entry's depends_on names the
+ new slug in place of the old one. No entry's revised date changes.
+ Refused, with nothing written, for an absent entry, an entry held by a run, and a target that is
+@@ -181,9 +187,10 @@ Body and brief text is never rewritten: "mentions" lists the entries whose body
+ the old slug as a whole word, the renamed entry included, and is [] when none does.
+ 
+ Fields:
+-  "slug" string  — current slug (mutually exclusive with "id")
+-  "id"   integer — numeric entry ID (mutually exclusive with "slug")
+-  "to"   string  — the new slug (required)
++  "slug"   string  — current slug (one of slug, id or handle)
++  "id"     integer — numeric entry ID (one of slug, id or handle)
++  "handle" string  — entry handle, such as B4 (one of slug, id or handle)
++  "to"     string  — the new slug (required)
+ 
+ Output:
+   {"ok":true,"task":{...},"mentions":["other-entry"]}
+@@ -246,7 +253,7 @@ Example:
+ 		Long: `Find tasks whose slug, title, brief or body contains the text, done tasks included.
+ The arguments are joined with single spaces into one search text. At least one argument is required.
+ Prints the same JSON as "lyx board list"; with --text it prints the compact one-line-per-task
+-listing instead (errors stay JSON); its columns are kind, priority, age, time since last revision, slug, title, labels and, when set, [status].
++listing instead (errors stay JSON); its columns are handle, kind, priority, age, time since last revision, slug, title, labels and, when set, [status].
+ --label <name> keeps only entries carrying that label; repeat it to require several (AND).
+ A label that is in neither the types nor the labels list of board.yaml and that no entry carries is refused.
+ 
+@@ -395,17 +402,20 @@ func slugLimitNote() string {
+ 	return fmt.Sprintf("\n\nA slug is at most %d characters.", boardengine.MaxSlugLength)
+ }
+ 
++// entrySelector is the group of keys of which one names the entry a payload addresses.
++var entrySelector = []string{"slug", "id", "handle"}
++
+ // lookupPayload is the payload of get, remove and promote.
+-var lookupPayload = payloadKeys{exclusive: [][2]string{{"slug", "id"}}}
++var lookupPayload = payloadKeys{exclusive: [][]string{entrySelector}}
+ 
+ // renamePayload is the payload of rename.
+-var renamePayload = payloadKeys{required: []string{"to"}, exclusive: [][2]string{{"slug", "id"}}}
++var renamePayload = payloadKeys{required: []string{"to"}, exclusive: [][]string{entrySelector}}
+ 
+ // setStatusPayload is the payload of set-status, and merge's set_status object.
+-var setStatusPayload = payloadKeys{required: []string{"status"}, exclusive: [][2]string{{"slug", "id"}}}
++var setStatusPayload = payloadKeys{required: []string{"status"}, exclusive: [][]string{entrySelector}}
+ 
+ // setDepsPayload is the payload of set-deps.
+-var setDepsPayload = payloadKeys{required: []string{"depends_on"}, exclusive: [][2]string{{"slug", "id"}}}
++var setDepsPayload = payloadKeys{required: []string{"depends_on"}, exclusive: [][]string{entrySelector}}
+ 
+ // upsertPayload is the payload of upsert, the <task> upsert-batch and merge nest; the store enforces it on every upsert path.
+ var upsertPayload = func() payloadKeys {
+@@ -447,7 +457,7 @@ Optional fields:
+   "kind"       string — "task" or "note", default "note"; only a task can be claimed or depend on tasks
+   "labels"     array  — configured labels replacing the whole list; a task needs a type label, a note exactly one
+   "recipe"    string — recipe the task's child worktree runs, "loom" or "darn"; empty means "loom"
+-  "priority"   string — "high", "normal" or "low"; absent means normal, and "normal" clears it
++  "priority"   string — a note's "high", "normal" or "low"; absent means normal, "normal" clears it, and a task carries none
+   "short_name" string — short display label; falls back to the slug
+   "issues"     array  — the hub repository's issue numbers it records
+   "created"    string — RFC 3339 time the entry was added
+@@ -571,14 +581,15 @@ Example:
+ 	// set-status subcommand: set or clear the status field of a task identified by
+ 	// slug or numeric id.
+ 	setStatusCmd := &cobra.Command{
+-		Use:         "set-status {slug|id, status}",
++		Use:         "set-status {slug|id|handle, status}",
+ 		Short:       "set or clear the status of a task",
+ 		Annotations: map[string]string{clihelp.AudienceAnnotation: clihelp.AudienceOperator},
+ 		Long: `Set or clear the lifecycle status of a task. Use null as "status" to clear it.
+ 
+ Fields:
+-  "slug"   string      — task slug (mutually exclusive with "id")
+-  "id"     integer     — numeric task ID (mutually exclusive with "slug")
++  "slug"   string      — task slug (one of slug, id or handle)
++  "id"     integer     — numeric task ID (one of slug, id or handle)
++  "handle" string      — task handle, such as T4 (one of slug, id or handle)
+   "status" string|null — new status value; null clears the current status
+ 
+ Examples:
+@@ -611,17 +622,20 @@ Examples:
+ 
+ 	// remove subcommand: remove a task by slug or numeric id.
+ 	removeCmd := &cobra.Command{
+-		Use:         "remove {slug|id}",
++		Use:         "remove {slug|id|handle}",
+ 		Short:       "remove a task",
+ 		Annotations: map[string]string{clihelp.AudienceAnnotation: clihelp.AudienceOperator},
+-		Long: `Remove a task by slug or numeric ID. Errors if the task is not found.
++		Long: `Remove a task by slug, numeric ID or handle. Errors if the task is not found.
++Its handle's number is free for the next entry of its letter.
+ 
+ Fields:
+-  "slug" string  — task slug (mutually exclusive with "id")
+-  "id"   integer — numeric task ID (mutually exclusive with "slug")
++  "slug"   string  — task slug (one of slug, id or handle)
++  "id"     integer — numeric task ID (one of slug, id or handle)
++  "handle" string  — task handle, such as T4 (one of slug, id or handle)
+ 
+-Example:
+-  lyx board remove '{"slug":"my-task"}'` + slugLimitNote(),
++Examples:
++  lyx board remove '{"slug":"my-task"}'
++  lyx board remove T4` + slugLimitNote(),
+ 		RunE: clihelp.WrapRun(func(out io.Writer, args []string) int {
+ 			if len(args) == 0 {
+ 				return outputError(out, "json payload required")
+@@ -641,10 +655,10 @@ Example:
+ 	// for a valid-but-absent target (not an error). Malformed payloads error.
+ 	var getBody bool
+ 	getCmd := &cobra.Command{
+-		Use:         "get {slug|id}",
++		Use:         "get {slug|id|handle}",
+ 		Short:       "fetch a single task, or its body alone",
+ 		Annotations: map[string]string{clihelp.AudienceAnnotation: clihelp.AudienceOperator},
+-		Long: `Fetch a single task by slug or numeric ID. Returns {"task":null} if not found (not an error).
++		Long: `Fetch a single task by slug, numeric ID or handle. Returns {"task":null} if not found (not an error).
+ The result is the envelope {"task": {...}}, which the discussion stencil reads.
+ A task's "owner_machine" is the machine that owns it: the recorded one, else the owner it reads as through its parent.
+ --body writes the entry's body alone, verbatim, with no envelope; an empty body writes nothing.
+@@ -653,11 +667,13 @@ Editing a body as a file: lyx board get ... --body > body.md, edit it, then feed
+ upsert --body-file body.md (merge --body-file takes the same file for a merged entry).
+ 
+ Fields:
+-  "slug" string  — task slug (mutually exclusive with "id")
+-  "id"   integer — numeric task ID (mutually exclusive with "slug")
++  "slug"   string  — task slug (one of slug, id or handle)
++  "id"     integer — numeric task ID (one of slug, id or handle)
++  "handle" string  — task handle, such as B4 (one of slug, id or handle)
+ 
+ Examples:
+   lyx board get '{"id":96}'
++  lyx board get B4
+   lyx board get '{"slug":"my-task"}' --body` + slugLimitNote(),
+ 		RunE: func(cmd *cobra.Command, args []string) error {
+ 			return clihelp.WrapRun(func(out io.Writer, args []string) int {
+@@ -674,7 +690,7 @@ Examples:
+ 				}
+ 				if getBody {
+ 					if !found {
+-						return outputError(out, fmt.Sprintf("no entry %v: check the slug or id with lyx board list", selector))
++						return outputError(out, fmt.Sprintf("no entry %v: check the slug, id or handle with lyx board list", selector))
+ 					}
+ 					if _, err := io.WriteString(out, task.Body); err != nil {
+ 						return outputError(out, err.Error())
+@@ -704,7 +720,7 @@ Examples:
+ 		Short:       "list all tasks with computed fields",
+ 		Annotations: map[string]string{clihelp.AudienceAnnotation: clihelp.AudienceOperator},
+ 		Long: `List all tasks in README order with their computed fields (layer, has_proposal).
+-With --text, print the compact one-line-per-task listing (kind, priority, age, time since last revision, slug, title, labels, [status])
++With --text, print the compact one-line-per-task listing (handle, kind, priority, age, time since last revision, slug, title, labels, [status])
+ instead of JSON; errors stay JSON.
+ --label <name> keeps only entries carrying that label; repeat it to require several (AND).
+ A label that is in neither the types nor the labels list of board.yaml and that no entry carries is refused.
+@@ -749,7 +765,7 @@ Examples:
+ 	// The inner set_status object is validated identically to the set-status command.
+ 	var mergeBodyFile string
+ 	mergeCmd := &cobra.Command{
+-		Use:         "merge {remove_slugs?, upsert: <task>, set_status?: {slug|id, status}}",
++		Use:         "merge {remove_slugs?, upsert: <task>, set_status?: {slug|id|handle, status}}",
+ 		Short:       "remove tasks, upsert one and set a status in one atomic write, to fold entries together",
+ 		Annotations: map[string]string{clihelp.AudienceAnnotation: clihelp.AudienceOperator},
+ 		Long: `Remove tasks, upsert a task, and optionally set status in one atomic write.
+@@ -760,8 +776,9 @@ Fields:
+   "remove_slugs" array  — slug strings to remove (optional; omit to skip)
+   "upsert"       object — task to create or update (required; same fields as "lyx board upsert")
+   "set_status"   object — status to set after upsert (optional):
+-    "slug"   string      — task slug (mutually exclusive with "id")
+-    "id"     integer     — numeric task ID (mutually exclusive with "slug")
++    "slug"   string      — task slug (one of slug, id or handle)
++    "id"     integer     — numeric task ID (one of slug, id or handle)
++    "handle" string      — task handle, such as T4 (one of slug, id or handle)
+     "status" string|null — new status; null clears
+ 
+ Flag:
+@@ -868,7 +885,7 @@ Example:
+ 	// explicit [] clears the list, distinguishing intentional clear from a typo
+ 	// that would otherwise silently wipe the task's dependency list).
+ 	setDepsCmd := &cobra.Command{
+-		Use:         "set-deps {slug|id, depends_on}",
++		Use:         "set-deps {slug|id|handle, depends_on}",
+ 		Short:       "replace a task's depends_on list",
+ 		Annotations: map[string]string{clihelp.AudienceAnnotation: clihelp.AudienceOperator},
+ 		Long: `Replace the full depends_on list for a task wholesale.
+@@ -876,8 +893,9 @@ An absent "depends_on" is an error; an explicit [] clears the list.
+ The "notice" names siblings sharing a new depends_on and a label.
+ 
+ Fields:
+-  "slug"       string  — task slug (mutually exclusive with "id")
+-  "id"         integer — numeric task ID (mutually exclusive with "slug")
++  "slug"       string  — task slug (one of slug, id or handle)
++  "id"         integer — numeric task ID (one of slug, id or handle)
++  "handle"     string  — task handle, such as T4 (one of slug, id or handle)
+   "depends_on" array   — complete list of dependency slug strings; replaces existing list (required)
+ 
+ Example:
+@@ -977,11 +995,14 @@ func writeListing(out io.Writer, tasks []boardengine.BriefTask, text bool) int {
+ 	return 0
+ }
+ 
+-// resolveLookup decodes a payload addressing one entry by slug or id, validates it against keys, and returns the selector and the decoded map.
+-// keys declares the slug|id pair and any further keys; each of its required keys must be present, and a null value counts as present.
++// resolveLookup decodes a payload addressing one entry by slug, id or handle, validates it against keys, and returns the selector and the decoded map.
++// keys declares the slug|id|handle group and any further keys; each of its required keys must be present, and a null value counts as present.
++// A raw payload that is a bare handle, such as B4, reads as {"handle":"B4"}.
+ func resolveLookup(raw []byte, keys payloadKeys) (any, map[string]any, error) {
+ 	var m map[string]any
+-	if err := json.Unmarshal(raw, &m); err != nil {
++	if _, _, ok := boardengine.ParseHandle(string(raw)); ok {
++		m = map[string]any{"handle": string(raw)}
++	} else if err := json.Unmarshal(raw, &m); err != nil {
+ 		return nil, nil, fmt.Errorf("invalid json: %v", err)
+ 	}
+ 	if err := refuseUnknownKey(keys, m); err != nil {
+@@ -999,19 +1020,33 @@ func resolveLookup(raw []byte, keys payloadKeys) (any, map[string]any, error) {
+ 	return selector, m, nil
+ }
+ 
+-// lookupSelector returns the slug string or the integral float64 id that m addresses, refusing a payload with neither key or both.
++// lookupSelector returns the slug string, the integral float64 id or the boardengine.Handle that m addresses, refusing a payload with none of the three keys or more than one.
+ func lookupSelector(m map[string]any) (any, error) {
+-	_, hasSlug := m["slug"]
+-	_, hasID := m["id"]
+-
+-	if !hasSlug && !hasID {
+-		return nil, fmt.Errorf("one of slug or id is required")
++	given := 0
++	for _, key := range entrySelector {
++		if _, ok := m[key]; ok {
++			given++
++		}
++	}
++	if given == 0 {
++		return nil, fmt.Errorf("one of slug, id or handle is required")
++	}
++	if given > 1 {
++		return nil, fmt.Errorf("only one of slug, id or handle may be given")
+ 	}
+-	if hasSlug && hasID {
+-		return nil, fmt.Errorf("only one of slug or id may be given")
++
++	if handleVal, hasHandle := m["handle"]; hasHandle {
++		handle, ok := handleVal.(string)
++		if !ok {
++			return nil, fmt.Errorf("handle must be a string")
++		}
++		if _, _, ok := boardengine.ParseHandle(handle); !ok {
++			return nil, fmt.Errorf("handle %q is not a letter followed by a number, such as T4: check it with lyx board list --text", handle)
++		}
++		return boardengine.Handle(handle), nil
+ 	}
+ 
+-	if hasSlug {
++	if _, hasSlug := m["slug"]; hasSlug {
+ 		slugStr, ok := m["slug"].(string)
+ 		if !ok || slugStr == "" {
+ 			return nil, fmt.Errorf("slug must be a non-empty string")
+diff --git a/internal/boardcli/cli_test.go b/internal/boardcli/cli_test.go
+index 0753c28a0..9b9f05ae3 100644
+--- a/internal/boardcli/cli_test.go
++++ b/internal/boardcli/cli_test.go
+@@ -597,6 +597,32 @@ func stepStrictPayloadShapes(t *testing.T, f *cliFixture) {
+ 				}
+ 			},
+ 		},
++		// merge: set_status selects its target by handle
++		{
++			name: "merge_set_status_by_handle_succeeds",
++			setup: func(t *testing.T) {
++				f.reset(t)
++				runCLI(t, "upsert", `{"slug":"old-task","title":"Old","kind":"task","labels":["bug"]}`)
++			},
++			verb:         "merge",
++			payload:      `{"upsert":{"slug":"new-task","title":"New","kind":"task","labels":["bug"]},"set_status":{"handle":"T1","status":"active"}}`,
++			wantExitCode: 0,
++			wantOK:       true,
++			assertResult: func(t *testing.T, _ map[string]any) {
++				_, out := runCLI(t, "get", `{"slug":"old-task"}`)
++				var r map[string]any
++				if err := json.Unmarshal([]byte(out), &r); err != nil {
++					t.Fatalf("parse: %v", err)
++				}
++				task, _ := r["task"].(map[string]any)
++				if task == nil {
++					t.Fatalf("old-task not found")
++				}
++				if task["status"] != "active" {
++					t.Errorf("expected status=active, got %v", task["status"])
++				}
++			},
++		},
+ 		// merge: a non-string upsert slug must produce an envelope error, not a
+ 		// store-level interface-conversion panic (which would crash the CLI).
+ 		{
+@@ -759,7 +785,7 @@ func stepLookupContract(t *testing.T, f *cliFixture) {
+ 			payload:      `{}`,
+ 			wantExitCode: 1,
+ 			wantOK:       false,
+-			wantError:    "one of slug or id is required",
++			wantError:    "one of slug, id or handle is required",
+ 		},
+ 		{
+ 			name: "get_both_keys_errors",
+@@ -767,10 +793,67 @@ func stepLookupContract(t *testing.T, f *cliFixture) {
+ 				f.reset(t)
+ 			},
+ 			verb:         "get",
+-			payload:      `{"slug":"x","id":1}`,
++			payload:      `{"slug":"x","handle":"T1"}`,
++			wantExitCode: 1,
++			wantOK:       false,
++			wantError:    "only one of slug, id or handle may be given",
++		},
++		{
++			name: "get_by_handle_key",
++			setup: func(t *testing.T) {
++				f.reset(t)
++				runCLI(t, "upsert", `{"slug":"task-a","title":"A","kind":"task","labels":["bug"]}`)
++				runCLI(t, "upsert", `{"slug":"note-b","title":"B","labels":["bug"]}`)
++			},
++			verb:         "get",
++			payload:      `{"handle":"B1"}`,
++			wantExitCode: 0,
++			wantOK:       true,
++			assertResult: func(t *testing.T, result map[string]any) {
++				task, _ := result["task"].(map[string]any)
++				if task["slug"] != "note-b" || task["handle"] != "B1" {
++					t.Errorf("get handle B1: got %v; want note-b carrying handle B1", task)
++				}
++			},
++		},
++		{
++			name: "get_by_bare_handle_in_any_case",
++			setup: func(t *testing.T) {
++				f.reset(t)
++				runCLI(t, "upsert", `{"slug":"task-a","title":"A","kind":"task","labels":["bug"]}`)
++			},
++			verb:         "get",
++			payload:      `t1`,
++			wantExitCode: 0,
++			wantOK:       true,
++			assertResult: func(t *testing.T, result map[string]any) {
++				task, _ := result["task"].(map[string]any)
++				if task["slug"] != "task-a" {
++					t.Errorf("get t1: got %v; want task-a", task)
++				}
++			},
++		},
++		{
++			name: "set_status_bare_handle_lacks_status",
++			setup: func(t *testing.T) {
++				f.reset(t)
++			},
++			verb:         "set-status",
++			payload:      `T1`,
++			wantExitCode: 1,
++			wantOK:       false,
++			wantError:    "missing required field: status",
++		},
++		{
++			name: "get_malformed_handle_errors",
++			setup: func(t *testing.T) {
++				f.reset(t)
++			},
++			verb:         "get",
++			payload:      `{"handle":"T01"}`,
+ 			wantExitCode: 1,
+ 			wantOK:       false,
+-			wantError:    "only one of slug or id may be given",
++			wantError:    `handle "T01" is not a letter followed by a number`,
+ 		},
+ 		{
+ 			name: "get_fractional_id_errors",
+@@ -940,7 +1023,7 @@ func stepLookupContract(t *testing.T, f *cliFixture) {
+ 			payload:      `{"slug":"x","id":1,"depends_on":[]}`,
+ 			wantExitCode: 1,
+ 			wantOK:       false,
+-			wantError:    "only one of slug or id may be given",
++			wantError:    "only one of slug, id or handle may be given",
+ 		},
+ 		{
+ 			name:         "get_prints_kept_keys",
+diff --git a/internal/boardcli/doc.go b/internal/boardcli/doc.go
+index 810214bb2..f96bd814f 100644
+--- a/internal/boardcli/doc.go
++++ b/internal/boardcli/doc.go
+@@ -17,11 +17,14 @@
+ // the `board` group's `Long` ends with that legend, and the operator command index's `board` line carries it as an index note.
+ // The group's note-audience annotation names the operator, the audience of every payload-taking board verb, so no other audience's index prints the note.
+ // Each parser validates against one `payloadKeys` declared beside its command, a test couples every token to its declaration, and an unknown key is refused.
+-// The addressing verbs, `set-deps` included, take a `slug` or a numeric `id`.
++// The addressing verbs, `set-deps` and merge's `set_status` included, take exactly one of a `slug`, a numeric `id` or a `handle` such as `B4`, the selector group `entrySelector` declares.
++// A payload argument that is a bare handle, in either letter case, reads as `{"handle":…}`, so `lyx board get B4` works and a verb that needs further keys refuses it as missing them.
++// `depends_on`, merge's `remove_slugs` and intake's `into` stay slugs.
+ // Every verb prints JSON through `internal/output`, one object per line, errors included.
+ // `list` and `find` take `--text` to print the compact one-line-per-entry listing instead;
+ // errors stay JSON.
+-// The listing carries a priority column after the kind, `high`, `low` or blank, only when some listed entry is not normal.
++// The listing opens with the entry's handle, a column left out only when no listed entry has one.
++// It carries a priority column after the kind, `high`, `low` or blank, only when some listed entry is not normal.
+ // Two age columns follow, the entry's age and the time since its last revision, computed as of the listing from the stored dates and blank for an unknown one;
+ // each is left out when no listed entry has that date.
+ // `list` takes `--sort age` to list the oldest entries first and `--sort revised` the longest unrevised first, with an entry lacking the date last and ties in README order.
+diff --git a/internal/boardcli/intake.go b/internal/boardcli/intake.go
+index f6a2476e8..73b711d64 100644
+--- a/internal/boardcli/intake.go
++++ b/internal/boardcli/intake.go
+@@ -25,7 +25,7 @@ import (
+ var intakeImportPayload = payloadKeys{
+ 	required:  []string{"issue"},
+ 	optional:  []string{"title", "brief", "labels"},
+-	exclusive: [][2]string{{"slug", "into"}},
++	exclusive: [][]string{{"slug", "into"}},
+ }
+ 
+ // intakeClosePayload is the payload of `intake close`.
+diff --git a/internal/boardcli/payload.go b/internal/boardcli/payload.go
+index 0a7bb30d6..d04b124b6 100644
+--- a/internal/boardcli/payload.go
++++ b/internal/boardcli/payload.go
+@@ -8,7 +8,7 @@ import (
+ )
+ 
+ // payloadLegend states the grammar of a board payload command's `{…}` Use token.
+-const payloadLegend = "A payload is one JSON object as a single quoted argument; ? marks an optional key, a|b exactly one of the two, <task> stands for upsert's payload, and an unknown key is refused."
++const payloadLegend = "A payload is one JSON object as a single quoted argument; ? marks an optional key, a|b exactly one of the keys, <task> stands for upsert's payload, and an unknown key is refused. A payload naming one entry by slug|id|handle may instead be the bare handle, such as B4."
+ 
+ // payloadKeys declares the keys one payload object accepts, exactly as its command's Use token spells them.
+ type payloadKeys struct {
+@@ -16,8 +16,8 @@ type payloadKeys struct {
+ 	required []string
+ 	// optional keys may be present.
+ 	optional []string
+-	// exclusive holds pairs of keys of which exactly one must be present.
+-	exclusive [][2]string
++	// exclusive holds groups of keys of which exactly one must be present.
++	exclusive [][]string
+ 	// nested declares, for a key whose value is an object or an array of objects, that object's own keys.
+ 	nested map[string]payloadKeys
+ }
+@@ -27,8 +27,8 @@ func (k payloadKeys) accepts(key string) bool {
+ 	if slices.Contains(k.required, key) || slices.Contains(k.optional, key) {
+ 		return true
+ 	}
+-	for _, pair := range k.exclusive {
+-		if pair[0] == key || pair[1] == key {
++	for _, group := range k.exclusive {
++		if slices.Contains(group, key) {
+ 			return true
+ 		}
+ 	}
+diff --git a/internal/boardcli/payload_test.go b/internal/boardcli/payload_test.go
+index d27cf7136..e96c3c7d6 100644
+--- a/internal/boardcli/payload_test.go
++++ b/internal/boardcli/payload_test.go
+@@ -91,7 +91,7 @@ func parsePayloadToken(use string) (payloadKeys, error) {
+ }
+ 
+ // parsePayloadObject parses one `{…}` object, whose elements split on commas outside braces and brackets.
+-// `key?` is optional, `a|b` an exclusive pair, `key: {…}` a nested object, and `<task>` or `[<task>]` the upsert declaration.
++// `key?` is optional, `a|b` an exclusive group, `key: {…}` a nested object, and `<task>` or `[<task>]` the upsert declaration.
+ func parsePayloadObject(object string) (payloadKeys, error) {
+ 	if !strings.HasPrefix(object, "{") || !strings.HasSuffix(object, "}") {
+ 		return payloadKeys{}, fmt.Errorf("%q is not one {…} object", object)
+@@ -113,8 +113,7 @@ func parsePayloadObject(object string) (payloadKeys, error) {
+ 			}
+ 			keys.nested[name] = nested
+ 		case strings.Contains(name, "|"):
+-			first, second, _ := strings.Cut(name, "|")
+-			keys.exclusive = append(keys.exclusive, [2]string{first, second})
++			keys.exclusive = append(keys.exclusive, strings.Split(name, "|"))
+ 			continue
+ 		}
+ 		if optional {
+@@ -166,7 +165,7 @@ func diffPayloadKeys(at string, parsed, declared payloadKeys) []string {
+ 	}
+ 	compare("required", parsed.required, declared.required)
+ 	compare("optional", parsed.optional, declared.optional)
+-	compare("exclusive", exclusivePairNames(parsed.exclusive), exclusivePairNames(declared.exclusive))
++	compare("exclusive", exclusiveGroupNames(parsed.exclusive), exclusiveGroupNames(declared.exclusive))
+ 
+ 	var nestedNames []string
+ 	for name := range parsed.nested {
+@@ -185,13 +184,11 @@ func diffPayloadKeys(at string, parsed, declared payloadKeys) []string {
+ 	return diffs
+ }
+ 
+-// exclusivePairNames renders each exclusive pair as `a|b` with its two keys sorted, so pair order does not matter.
+-func exclusivePairNames(pairs [][2]string) []string {
+-	names := make([]string, 0, len(pairs))
+-	for _, pair := range pairs {
+-		sorted := []string{pair[0], pair[1]}
+-		slices.Sort(sorted)
+-		names = append(names, strings.Join(sorted, "|"))
++// exclusiveGroupNames renders each exclusive group as `a|b|…` with its keys sorted, so key order does not matter.
++func exclusiveGroupNames(groups [][]string) []string {
++	names := make([]string, 0, len(groups))
++	for _, group := range groups {
++		names = append(names, strings.Join(slices.Sorted(slices.Values(group)), "|"))
+ 	}
+ 	return names
+ }
+diff --git a/internal/boardcli/text.go b/internal/boardcli/text.go
+index 58805e397..76b347681 100644
+--- a/internal/boardcli/text.go
++++ b/internal/boardcli/text.go
+@@ -13,13 +13,15 @@ import (
+ // columnGap separates the listing's columns.
+ const columnGap = "  "
+ 
+-// RenderCompact returns one line per entry, in the order given: kind, priority, age, time since last revision, slug, title and the labels joined by commas, each padded to the widest value in its column, then "[<status>]" when the entry's status is set.
++// RenderCompact returns one line per entry, in the order given: handle, kind, priority, age, time since last revision, slug, title and the labels joined by commas, each padded to the widest value in its column, then "[<status>]" when the entry's status is set.
++// The handle column is left out when no entry has a handle.
+ // The priority column holds high or low and is blank for a normal entry, and it is left out when every entry is normal.
+ // The ages are as of now, blank for an unknown date, and each age column is left out when no entry has that date.
+ // Empty input renders as the empty string.
+ func RenderCompact(tasks []boardengine.BriefTask, now time.Time) string {
+-	var kindWidth, priorityWidth, ageWidth, revisedWidth, slugWidth, titleWidth, labelsWidth int
++	var handleWidth, kindWidth, priorityWidth, ageWidth, revisedWidth, slugWidth, titleWidth, labelsWidth int
+ 	for _, t := range tasks {
++		handleWidth = max(handleWidth, utf8.RuneCountInString(t.Handle))
+ 		kindWidth = max(kindWidth, utf8.RuneCountInString(t.Kind))
+ 		priorityWidth = max(priorityWidth, utf8.RuneCountInString(t.Priority))
+ 		ageWidth = max(ageWidth, len(boardengine.FormatAge(t.Created, now)))
+@@ -31,7 +33,11 @@ func RenderCompact(tasks []boardengine.BriefTask, now time.Time) string {
+ 
+ 	var sb strings.Builder
+ 	for _, t := range tasks {
+-		line := pad(t.Kind, kindWidth) + columnGap
++		line := ""
++		if handleWidth > 0 {
++			line += pad(t.Handle, handleWidth) + columnGap
++		}
++		line += pad(t.Kind, kindWidth) + columnGap
+ 		if priorityWidth > 0 {
+ 			line += pad(t.Priority, priorityWidth) + columnGap
+ 		}
+diff --git a/internal/boardcli/text_test.go b/internal/boardcli/text_test.go
+index 79e9f2318..6c9c62016 100644
+--- a/internal/boardcli/text_test.go
++++ b/internal/boardcli/text_test.go
+@@ -12,7 +12,7 @@ import (
+ 
+ func strPtr(s string) *string { return &s }
+ 
+-// TestRenderCompact asserts the compact listing aligns columns by display width, shows the status bracket only when a status is set, shows the priority column only when an entry is high or low, shows each age column only when an entry has that date, leaves no trailing gap without labels, keeps the input order and prints nothing for no input.
++// TestRenderCompact asserts the compact listing aligns columns by display width, shows the status bracket only when a status is set, shows the handle column first only when an entry has a handle, the priority column only when an entry is high or low and each age column only when an entry has that date, leaves no trailing gap without labels, keeps the input order and prints nothing for no input.
+ //
+ //testtiming:keep pins the column alignment, multi-byte widths, status bracket, label gap and ordering of the compact listing, which its covering test asserts for one listing only
+ func TestRenderCompact(t *testing.T) {
+@@ -25,13 +25,13 @@ func TestRenderCompact(t *testing.T) {
+ 		want string
+ 	}{
+ 		{
+-			name: "columns align",
++			name: "columns align, the handle first",
+ 			in: []boardengine.BriefTask{
+-				{Kind: "task", Labels: []string{"bug"}, Slug: "a", Title: "Short", Status: strPtr("active")},
+-				{Kind: "note", Labels: []string{"enhancement", "area"}, Slug: "long-slug", Title: "Longer title", Status: strPtr("done")},
++				{Handle: "T4", Kind: "task", Labels: []string{"bug"}, Slug: "a", Title: "Short", Status: strPtr("active")},
++				{Handle: "E12", Kind: "note", Labels: []string{"enhancement", "area"}, Slug: "long-slug", Title: "Longer title", Status: strPtr("done")},
+ 			},
+-			want: "task  a          Short         bug               [active]\n" +
+-				"note  long-slug  Longer title  enhancement,area  [done]\n",
++			want: "T4   task  a          Short         bug               [active]\n" +
++				"E12  note  long-slug  Longer title  enhancement,area  [done]\n",
+ 		},
+ 		{
+ 			name: "multi-byte titles align",
+@@ -58,11 +58,11 @@ func TestRenderCompact(t *testing.T) {
+ 		{
+ 			name: "priority column only when an entry is high or low",
+ 			in: []boardengine.BriefTask{
+-				{Kind: "task", Priority: "high", Labels: []string{"bug"}, Slug: "a", Title: "One"},
++				{Kind: "note", Priority: "high", Labels: []string{"bug"}, Slug: "a", Title: "One"},
+ 				{Kind: "task", Labels: []string{"bug"}, Slug: "b", Title: "Two"},
+ 				{Kind: "note", Priority: "low", Labels: []string{"bug"}, Slug: "c", Title: "Six"},
+ 			},
+-			want: "task  high  a  One  bug\ntask        b  Two  bug\nnote  low   c  Six  bug\n",
++			want: "note  high  a  One  bug\ntask        b  Two  bug\nnote  low   c  Six  bug\n",
+ 		},
+ 		{
+ 			name: "age columns as of now, blank for an unknown date",
+diff --git a/internal/boardcli/verbs_test.go b/internal/boardcli/verbs_test.go
+index 7bff740c5..773c3286e 100644
+--- a/internal/boardcli/verbs_test.go
++++ b/internal/boardcli/verbs_test.go
+@@ -249,14 +249,14 @@ func stepListAndFindText(t *testing.T, f *cliFixture) {
+ 	mustUpsert(t, `{"slug":"soon","title":"Soon thing","kind":"task","labels":["bug"]}`)
+ 	runJSON(t, 0, "set-status", `{"slug":"soon","status":"active"}`)
+ 
+-	wantList := "task  0m  0m  soon   Soon thing   bug                    [active]\n" +
+-		"note  0m  0m  later  Later thing  enhancement,undecided\n"
++	wantList := "T1  task  0m  0m  soon   Soon thing   bug                    [active]\n" +
++		"E1  note  0m  0m  later  Later thing  enhancement,undecided\n"
+ 	exitCode, stdout := runCLI(t, "list", "--text")
+ 	if exitCode != 0 || stdout != wantList {
+ 		t.Fatalf("list --text: exit %d, stdout %q, want %q", exitCode, stdout, wantList)
+ 	}
+ 
+-	wantFind := "note  0m  0m  later  Later thing  enhancement,undecided\n"
++	wantFind := "E1  note  0m  0m  later  Later thing  enhancement,undecided\n"
+ 	exitCode, stdout = runCLI(t, "find", "--text", "later")
+ 	if exitCode != 0 || stdout != wantFind {
+ 		t.Fatalf("find --text: exit %d, stdout %q, want %q", exitCode, stdout, wantFind)
+diff --git a/internal/boardengine/board.go b/internal/boardengine/board.go
+index 73bd03a3a..216cb6b11 100644
+--- a/internal/boardengine/board.go
++++ b/internal/boardengine/board.go
+@@ -50,7 +50,7 @@ type noWrite struct{ result any }
+ type promoted struct{ task Task }
+ 
+ // boardCriticalSection runs the locked write scaffolding shared by every mutating Board method:
+-// it acquires the lock, loads the store, calls fn to mutate it, stamps the entry dates, refuses a net change to a run-held entry's scope, saves board.json, runs afterSave when non-nil, renders outputs, and spawns a detached sync.
++// it acquires the lock, loads the store, calls fn to mutate it, stamps the entry dates, assigns the handles the mutation left missing or of another letter, refuses a net change to a run-held entry's scope, saves board.json, runs afterSave when non-nil, renders outputs, and spawns a detached sync.
+ // fn returning a RenameResult judges the dates and the run lock against the loaded entries with that rename applied.
+ // afterSave runs under the lock after the save and before the render.
+ // fn returning a noWrite skips every step after the mutation.
+@@ -102,7 +102,8 @@ func (b *Board) boardCriticalSection(fn func(store *Store) (any, error), afterSa
+ 		renameSlug(loaded, r.From, r.Task.Slug)
+ 	}
+ 	stampDates(loaded, store.tasks, now, promotedSlug)
+-	// A returned entry was copied before the stamp, so it is read again to carry its dates.
++	assignHandles(store.tasks, store.vocab)
++	// A returned entry was copied before the stamp, so it is read again to carry its dates and handle.
+ 	switch r := result.(type) {
+ 	case Task:
+ 		result, _ = store.GetTask(r.Slug)
+diff --git a/internal/boardengine/board_test.go b/internal/boardengine/board_test.go
+index 733382848..6388747eb 100644
+--- a/internal/boardengine/board_test.go
++++ b/internal/boardengine/board_test.go
+@@ -702,7 +702,8 @@ func TestSetRunStatus(t *testing.T) {
+ 	}
+ }
+ 
+-// TestPriorityRoundTrip pins that every Board write path keeps an entry's priority, and that board.json names it only on a high or low entry.
++// TestPriorityRoundTrip pins that every Board write path keeps a note's priority, and that board.json names it only on a high or low note.
++// It also pins that a write giving a task a priority is refused and that a promote clears the priority.
+ //
+ //testtiming:keep pins the priority field across every facade write path and its omitempty storage on disk, which no other test asserts
+ func TestPriorityRoundTrip(t *testing.T) {
+@@ -711,8 +712,9 @@ func TestPriorityRoundTrip(t *testing.T) {
+ 	b := boardengine.New(boardengine.Config{Path: boardPath, Readme: "Home.md", DesignPrefix: "proposal-", Types: testTypes, Labels: testLabels, SkipGit: true})
+ 	for _, fields := range []map[string]any{
+ 		{"slug": "hi", "title": "Hi", "kind": "note", "labels": bugLabels, "priority": "high"},
+-		{"slug": "lo", "title": "Lo", "kind": "task", "labels": bugLabels, "priority": "low"},
+-		{"slug": "plain", "title": "Plain", "kind": "task", "labels": bugLabels, "priority": "normal"},
++		{"slug": "lo", "title": "Lo", "kind": "note", "labels": bugLabels, "priority": "low"},
++		{"slug": "plain", "title": "Plain", "kind": "note", "labels": bugLabels, "priority": "normal"},
++		{"slug": "work", "title": "Work", "kind": "task", "labels": bugLabels, "priority": "normal"},
+ 		{"slug": "gone", "title": "Gone", "kind": "task", "labels": bugLabels, "status": "done"},
+ 	} {
+ 		if _, err := b.UpsertTask(fields); err != nil {
+@@ -725,10 +727,9 @@ func TestPriorityRoundTrip(t *testing.T) {
+ 		write func() error
+ 	}{
+ 		{"set-status", func() error { return b.SetStatus("lo", strPtr("active")) }},
+-		{"run status", func() error { return b.SetRunStatus("lo", boardengine.RunStatus("running", "Webster")) }},
+-		{"clear status", func() error { return b.SetStatus("lo", nil) }},
+-		{"promote", func() error { _, err := b.Promote("hi"); return err }},
+-		{"set-deps", func() error { _, err := b.SetDeps("lo", []string{"hi"}); return err }},
++		{"run status", func() error { return b.SetRunStatus("work", boardengine.RunStatus("running", "Webster")) }},
++		{"clear status", func() error { return b.SetStatus("work", nil) }},
++		{"set-deps", func() error { _, err := b.SetDeps("work", []string{}); return err }},
+ 		{"batch", func() error {
+ 			_, err := b.UpsertTasksBatch([]map[string]any{{"slug": "hi", "brief": "batched"}, {"slug": "lo", "brief": "batched"}})
+ 			return err
+@@ -743,7 +744,7 @@ func TestPriorityRoundTrip(t *testing.T) {
+ 		if err := w.write(); err != nil {
+ 			t.Fatalf("%s: %v", w.name, err)
+ 		}
+-		for slug, want := range map[string]string{"hi": "high", "lo": "low", "plain": ""} {
++		for slug, want := range map[string]string{"hi": "high", "lo": "low", "plain": "", "work": ""} {
+ 			got, found, err := b.GetTask(slug)
+ 			if err != nil || !found || got.Priority != want {
+ 				t.Errorf("after %s: GetTask(%s) priority = %q, found %v, err %v; want %q", w.name, slug, got.Priority, found, err, want)
+@@ -751,8 +752,25 @@ func TestPriorityRoundTrip(t *testing.T) {
+ 		}
+ 	}
+ 
+-	if _, _, err := b.MergeTasks(nil, map[string]any{"slug": "hi", "priority": "urgent"}, nil); err == nil || !strings.Contains(err.Error(), `"urgent"`) {
+-		t.Errorf("MergeTasks(priority urgent) err = %v; want a refusal naming the value", err)
++	refusals := []struct {
++		name  string
++		write func() error
++		want  string
++	}{
++		{"unknown value", func() error {
++			_, _, err := b.MergeTasks(nil, map[string]any{"slug": "hi", "priority": "urgent"}, nil)
++			return err
++		}, `"urgent"`},
++		{"priority on a task", func() error { _, err := b.UpsertTask(map[string]any{"slug": "work", "priority": "high"}); return err }, "only a note carries a priority"},
++		{"a note with a priority made a task by upsert", func() error {
++			_, err := b.UpsertTask(map[string]any{"slug": "lo", "kind": "task"})
++			return err
++		}, "lyx board promote"},
++	}
++	for _, r := range refusals {
++		if err := r.write(); err == nil || !strings.Contains(err.Error(), r.want) {
++			t.Errorf("%s: err = %v; want a refusal naming %s", r.name, err, r.want)
++		}
+ 	}
+ 
+ 	raw, err := os.ReadFile(filepath.Join(boardPath, "board.json"))
+@@ -762,6 +780,11 @@ func TestPriorityRoundTrip(t *testing.T) {
+ 	if got := strings.Count(string(raw), `"priority"`); got != 2 {
+ 		t.Errorf("board.json names priority %d times; want 2, on hi and lo only:\n%s", got, raw)
+ 	}
++
++	promoted, err := b.Promote("hi")
++	if err != nil || promoted.Priority != "" {
++		t.Errorf("Promote(hi) priority = %q, err %v; want the priority cleared", promoted.Priority, err)
++	}
+ }
+ 
+ // TestEntryDates pins how every write stamps an entry's dates from the configured clock:
+diff --git a/internal/boardengine/config.go b/internal/boardengine/config.go
+index 56ff5f915..192479556 100644
+--- a/internal/boardengine/config.go
++++ b/internal/boardengine/config.go
+@@ -125,6 +125,7 @@ func ConfigSpec() configengine.Spec {
+ 
+ // LoadConfig loads and unmarshals the board module configuration strictly through the hub-wide layer stack under dirs.
+ // An absent `_lyx/` under the hub's board dir and an absent board.yaml under a present one both refuse naming the file and the `lyx fabric reconcile` way forward.
++// Type labels that would share a handle letter, with each other or with tasks, refuse naming the label to rename.
+ func LoadConfig(dirs configengine.Dirs, module string) (Config, error) {
+ 	spec := ConfigSpec()
+ 	spec.Name = module
+@@ -161,6 +162,9 @@ func LoadConfig(dirs configengine.Dirs, module string) (Config, error) {
+ 	if cfg.Labels, err = decodeLabels("labels", &raw.Labels); err != nil {
+ 		return Config{}, err
+ 	}
++	if err := validateTypeLetters(cfg.Types); err != nil {
++		return Config{}, err
++	}
+ 
+ 	return cfg, nil
+ }
+diff --git a/internal/boardengine/config_test.go b/internal/boardengine/config_test.go
+index cc24ebe4a..25ecc7404 100644
+--- a/internal/boardengine/config_test.go
++++ b/internal/boardengine/config_test.go
+@@ -166,7 +166,8 @@ labels: [urgent, later]
+ 	}
+ }
+ 
+-// TestLoadConfig_LabelsRefused asserts a scalar key and a non-scalar description are refused naming board.yaml and the key.
++// TestLoadConfig_LabelsRefused asserts a scalar key and a non-scalar description are refused naming board.yaml and the key,
++// and that type labels that would share a handle letter, with each other or with tasks, or have none are refused naming board.yaml and the label.
+ func TestLoadConfig_LabelsRefused(t *testing.T) {
+ 	tests := []struct {
+ 		name, content, key string
+@@ -174,6 +175,9 @@ func TestLoadConfig_LabelsRefused(t *testing.T) {
+ 		{"scalar labels", "labels: urgent\n", "labels"},
+ 		{"mapping description", "types:\n  bug:\n    nested: x\n", "types"},
+ 		{"sequence description", "labels:\n  area: [a, b]\n", "labels"},
++		{"types sharing a first letter", "types:\n  bug: x\n  Build: y\n", `"Build"`},
++		{"a type on the task letter", "types:\n  todo: x\n", `"todo"`},
++		{"a type not beginning with a letter", "types:\n  '1st': x\n", `"1st"`},
+ 	}
+ 	for _, tt := range tests {
+ 		t.Run(tt.name, func(t *testing.T) {
+diff --git a/internal/boardengine/dates.go b/internal/boardengine/dates.go
+index b7d325c3e..7f397a79c 100644
+--- a/internal/boardengine/dates.go
++++ b/internal/boardengine/dates.go
+@@ -18,7 +18,7 @@ func entryTime(t time.Time) time.Time {
+ // stampDates sets the dates on after, the entries a write leaves, judged against loaded, the entries it started from.
+ // A new entry gets now for whichever of Created and Revised it does not carry.
+ // An entry whose scope changed gets now as Revised unless the write set Revised itself;
+-// a status change is no revision, and neither is promotedSlug, the entry a promote made a task, so a promote keeps the note's dates.
++// a status change is no revision, and neither is promotedSlug becoming a task and losing its priority, so a promote keeps the note's dates.
+ // A dependency on a done entry that the same write removes is no revision either, so prune leaves the survivors' dates.
+ // An existing entry without a Created keeps none, since its creation is unknown.
+ func stampDates(loaded, after []Task, now time.Time, promotedSlug string) {
+@@ -43,6 +43,7 @@ func stampDates(loaded, after []Task, now time.Time, promotedSlug string) {
+ 		judged := after[i]
+ 		if judged.Slug == promotedSlug {
+ 			judged.Kind = before.Kind
++			judged.Priority = before.Priority
+ 		}
+ 		if scopeChanged(before, judged, removedDone) && after[i].Revised.Equal(before.Revised) {
+ 			after[i].Revised = now
+diff --git a/internal/boardengine/doc.go b/internal/boardengine/doc.go
+index fade6efa8..f6098e1f6 100644
+--- a/internal/boardengine/doc.go
++++ b/internal/boardengine/doc.go
+@@ -25,16 +25,27 @@
+ // A write that carries a label in neither list is refused, naming the entry, the label and board.yaml.
+ // A Board built from a bare path has no outputs configured, cannot write, and validates no label.
+ //
++// # Handles
++//
++// Every entry carries a handle, a letter and a number such as T4, B2 or E7, stored in board.json as the handle key, so the operator can name an entry without its slug.
++// The letter is T for a task, and for a note the upper-cased first letter of its type label, so the hub's board.yaml types decide the note letters;
++// LoadConfig refuses type labels that do not begin with a letter, that share a first letter, or whose letter is T.
++// The board alone assigns handles, and an upsert payload carrying one is refused.
++// One assigner runs over the whole entry list on load, in the write critical section after the mutation and in the replay before its save:
++// an entry keeps a stored handle of its own letter that no entry of lower id holds, and every other entry, in id order, takes the lowest number of its letter not in use.
++// So a handle stays while its entry lives, a removed entry's number is given out again, a promote or a type change moves the entry to the lowest free number of its new letter, and a board.json written before handles gets them in id order on load, persisted by the next write.
++// A note whose letter cannot be decided, its type label no longer configured or the board path-only, keeps its stored handle unless an entry of lower id holds it, which clears it.
++// A handle is not scope: the run lock and the revised date ignore it.
++// Every Board and Store method that takes a selector takes a Handle beside a slug string and a numeric id, matching the letter case-insensitively.
++//
+ // # Priority
+ //
+-// An entry may carry a priority, high, normal or low, and an entry without one is normal.
+-// A normal priority is stored as no key, so board.json names a priority only on a high or low entry and existing entries need no migration;
++// A note may carry a priority, high, normal or low, and a note without one is normal; a task carries none.
++// A normal priority is stored as no key, so board.json names a priority only on a high or low note;
+ // a write of "normal" clears the field, and a write of any other value is refused.
+-// Within each README group, a task layer, a Notes type subsection or Done, entries order high, normal, low, then in their order without priority;
+-// RenderOrder applies it, so `lyx board list` and `find` follow the same order.
+-// The README splits each open group, Running, Ready, a dependency layer or a Notes type subsection, into one table per priority present, in the order high, normal, low, each under a fourth-level heading, `#### High priority`, `#### Normal priority` or `#### Low priority`, one level below the group's `###` heading;
+-// a priority with no entry in the group gets no heading and no table, and Done stays one table.
+-// Priority is part of an entry's scope, so the run lock refuses a change to it on a run-held entry.
++// A write that leaves a task with a priority is refused, Promote clears the note's priority, and a task stored with one loses it on load, so the next write drops it and a run-held such task is still writable.
++// The README shows a note's priority as H or L in the Notes tables' P column, and no view orders by it.
++// Priority is part of an entry's scope, so the run lock refuses a change to it on a run-held note.
+ //
+ // # Run settings
+ //
+@@ -106,8 +117,9 @@
+ // Ready holds the open tasks with no open dependency, and is always written, as `_None._` when empty.
+ // A dependency on a done task does not count, and one on a running task does, so a task waiting on a run is not Ready.
+ // Layer A holds the tasks that wait only on Running or Ready entries, Layer B those that wait on something in Layer A, and so on; ComputeLayers names each task's subsection, and the same name is the layer field of `lyx board list`.
+-// Each open subsection holds one markdown table per priority, as the Priority section describes, numbered on from 1 across them so each entry keeps one number in its subsection, and Done is one table numbered from 1.
+-// A row holds the bold title, with the brief as a `• ` bullet under it in the same cell, then a `• ` bullet `profile: <name>` when the task names a run profile, and then one `• ` bullet per run setting, a code span such as `darn: review_max_bounces 1` with a nested key as its dotted path, sorted, so the settings stack in height and add no column, the slug linked to its design doc when the entry has a body, the Age and Revised cells, the entry's age and the time since its last revision, blank for an unknown date, and the labels that are not type labels.
++// Each subsection, Done included, is one markdown table in RenderOrder's order: a task subsection and a Notes type subsection by handle, and Done its tasks before its notes, each by handle, so `lyx board list` and `find` follow the same order.
++// A row opens with the entry's handle, and a Notes row adds the P column after it, H for a high priority, L for a low one and blank for normal.
++// The row then holds the bold title, with the brief as a `• ` bullet under it in the same cell, then a `• ` bullet `profile: <name>` when the task names a run profile, and then one `• ` bullet per run setting, a code span such as `darn: review_max_bounces 1` with a nested key as its dotted path, sorted, so the settings stack in height and add no column, the slug linked to its design doc when the entry has a body, the one `Age<br>Revised` cell, the entry's age above the time since its last revision, blank for an unknown date, and the labels that are not type labels.
+ // The Running, Ready and layer tables add a Recipe column after the slug, the recipe the task runs, `loom` when its recipe field is empty; the Notes and Done tables have none.
+ // Running adds an At column, the run status without the state when the state is `running`, and an Owner column, the entry's recorded owner machine, blank when none is recorded, and Ready and the layers add an After column, the open entries named in depends_on.
+ // A pipe in a cell is escaped and a line break becomes a space, so an entry is always one row.
+@@ -137,7 +149,7 @@
+ //
+ // # Rename
+ //
+-// Rename changes one entry's slug in one write: the entry keeps its id, its position in board.json and every other field, kept keys included, and every other entry's depends_on names the new slug in place of the old one.
++// Rename changes one entry's slug in one write: the entry keeps its id, its handle, its position in board.json and every other field, kept keys included, and every other entry's depends_on names the new slug in place of the old one.
+ // A dependency on the same entry under a new name is no scope change, so the write critical section judges the dates and the run lock against the loaded entries with the rename applied:
+ // the rename revises no entry, and a held task that depends on the renamed entry takes the rewrite.
+ // The renamed entry itself must not be held by a run, and the refusal is the run lock's *RunLockedError.
+@@ -196,7 +208,7 @@
+ //
+ // FabricReplay implements the board seam fabricengine declares for a records replay, installed process-wide by the lyx root pre-run.
+ // Apply re-applies a local board commit onto the board checked out at origin's tip, one change at a time: each added or removed entry, each changed entry's fields as one change, and each design file the commit touches.
+-// A change passes the board's own checks, the run lock included, against the board as the kept changes before it left it, and an added entry takes the next id of origin's board.json.
++// A change passes the board's own checks, the run lock included, against the board as the kept changes before it left it, and an added entry takes the next id of origin's board.json and a handle free there, never its local one.
+ // Where both sides changed the same field or design file since the merge base, or origin removed the entry, origin's side is kept and the local value is reported lost;
+ // a change a check refuses is reported refused, and so is a later change depending on an entry a refused change added.
+ // It takes neither the board lock nor the push lock, spawns no sync, and writes nothing when no change survives.
+diff --git a/internal/boardengine/handles.go b/internal/boardengine/handles.go
+new file mode 100644
+index 000000000..76953a4ef
+--- /dev/null
++++ b/internal/boardengine/handles.go
+@@ -0,0 +1,140 @@
++// handles.go — an entry's short handle, such as T4 or B2: its letter, its parse and its assignment over the whole entry list.
++
++package boardengine
++
++import (
++	"fmt"
++	"slices"
++	"strconv"
++	"strings"
++	"unicode"
++	"unicode/utf8"
++)
++
++// Handle selects an entry by its handle, beside a slug string and a numeric id, wherever a Board or Store method takes a selector.
++type Handle string
++
++// taskHandleLetter is the letter of every task's handle.
++const taskHandleLetter = "T"
++
++// typeHandleLetter is the handle letter of a note carrying the type label typeLabel: the label's first letter, upper-cased.
++func typeHandleLetter(typeLabel string) string {
++	first, _ := utf8.DecodeRuneInString(typeLabel)
++	return string(unicode.ToUpper(first))
++}
++
++// validateTypeLetters refuses type labels that would give two kinds of entry one handle letter: a label not beginning with a letter, two labels sharing a first letter, or a label whose letter is the task letter.
++func validateTypeLetters(types []Label) error {
++	owner := map[string]string{taskHandleLetter: "tasks"}
++	for _, typeLabel := range types {
++		first, _ := utf8.DecodeRuneInString(typeLabel.Name)
++		if !unicode.IsLetter(first) {
++			return fmt.Errorf("board.yaml: type label %q does not begin with a letter, and a note's handle letter is the first letter of its type: rename the type label", typeLabel.Name)
++		}
++		letter := typeHandleLetter(typeLabel.Name)
++		if taken, ok := owner[letter]; ok {
++			return fmt.Errorf("board.yaml: type label %q takes handle letter %s, which %s already take, and each type needs a letter of its own: rename one of the type labels", typeLabel.Name, letter, taken)
++		}
++		owner[letter] = fmt.Sprintf("notes of type %q", typeLabel.Name)
++	}
++	return nil
++}
++
++// ParseHandle splits handle into its upper-cased letter and its number, matching a letter case-insensitively, and reports whether handle has the shape of one letter and a positive number.
++func ParseHandle(handle string) (string, int, bool) {
++	first, size := utf8.DecodeRuneInString(handle)
++	if !unicode.IsLetter(first) {
++		return "", 0, false
++	}
++	digits := handle[size:]
++	if digits == "" || strings.TrimLeft(digits, "0123456789") != "" || digits[0] == '0' {
++		return "", 0, false
++	}
++	number, err := strconv.Atoi(digits)
++	if err != nil {
++		return "", 0, false
++	}
++	return string(unicode.ToUpper(first)), number, true
++}
++
++// handleLetter returns the handle letter t takes and whether it can be decided: the task letter for a task, and for a note the letter of its first type label;
++// a note's letter is undecided without a vocabulary or when it carries no configured type label.
++func handleLetter(t Task, vocab *Vocabulary) (string, bool) {
++	if t.Kind == KindTask {
++		return taskHandleLetter, true
++	}
++	if vocab == nil {
++		return "", false
++	}
++	for _, label := range t.Labels {
++		if vocab.IsType(label) {
++			return typeHandleLetter(label), true
++		}
++	}
++	return "", false
++}
++
++// assignHandles gives each entry of tasks whose handle is missing, of another letter or held by an entry of lower id the lowest number of its letter not in use, in id order, in place.
++// Every other handle stays, so adding or removing an entry changes no other entry's handle and a removed entry's number is given out again.
++// An entry whose letter handleLetter cannot decide keeps its stored handle, which still counts as in use, unless an entry of lower id already holds it: then the handle is cleared.
++func assignHandles(tasks []Task, vocab *Vocabulary) {
++	order := make([]int, len(tasks))
++	for i := range order {
++		order[i] = i
++	}
++	slices.SortStableFunc(order, func(a, b int) int { return tasks[a].ID - tasks[b].ID })
++
++	inUse := map[string]map[int]bool{}
++	claim := func(letter string, number int) bool {
++		if inUse[letter] == nil {
++			inUse[letter] = map[int]bool{}
++		}
++		if inUse[letter][number] {
++			return false
++		}
++		inUse[letter][number] = true
++		return true
++	}
++
++	var pending []int
++	for _, i := range order {
++		letter, decided := handleLetter(tasks[i], vocab)
++		stored, number, parsed := ParseHandle(tasks[i].Handle)
++		switch {
++		case !decided:
++			if parsed && !claim(stored, number) {
++				tasks[i].Handle = ""
++			}
++		case parsed && stored == letter && claim(letter, number):
++		default:
++			pending = append(pending, i)
++		}
++	}
++	for _, i := range pending {
++		letter, _ := handleLetter(tasks[i], vocab)
++		number := 1
++		for !claim(letter, number) {
++			number++
++		}
++		tasks[i].Handle = letter + strconv.Itoa(number)
++	}
++}
++
++// compareHandles orders two handles by letter, then by number, with an unparsable or empty handle after every parsable one.
++func compareHandles(a, b string) int {
++	letterA, numberA, okA := ParseHandle(a)
++	letterB, numberB, okB := ParseHandle(b)
++	switch {
++	case okA != okB:
++		if okA {
++			return -1
++		}
++		return 1
++	case !okA:
++		return 0
++	}
++	if c := strings.Compare(letterA, letterB); c != 0 {
++		return c
++	}
++	return numberA - numberB
++}
+diff --git a/internal/boardengine/handles_test.go b/internal/boardengine/handles_test.go
+new file mode 100644
+index 000000000..7a816e017
+--- /dev/null
++++ b/internal/boardengine/handles_test.go
+@@ -0,0 +1,176 @@
++// handles_test.go — tests of entry handles: their assignment on write and load, and the Handle selector.
++
++package boardengine_test
++
++import (
++	"os"
++	"path/filepath"
++	"strings"
++	"testing"
++
++	"github.com/Knatte18/loomyard/internal/boardengine"
++)
++
++// handlesOf returns each entry's slug mapped to its handle, as the board reads.
++func handlesOf(t *testing.T, b *boardengine.Board) map[string]string {
++	t.Helper()
++	tasks, err := b.ListTasksFull()
++	if err != nil {
++		t.Fatalf("ListTasksFull: %v", err)
++	}
++	handles := map[string]string{}
++	for _, task := range tasks {
++		handles[task.Slug] = task.Handle
++	}
++	return handles
++}
++
++// sameHandles reports whether got and want map the same slugs to the same handles.
++func sameHandles(got, want map[string]string) bool {
++	if len(got) != len(want) {
++		return false
++	}
++	for slug, handle := range want {
++		if got[slug] != handle {
++			return false
++		}
++	}
++	return true
++}
++
++// TestHandles_AssignedLowestFreeAndStable pins that a write gives a new task the lowest free T number and a new note the lowest free number of its type's letter.
++// It pins that adding or removing an entry changes no other entry's handle and that a removed entry's number is given out again.
++// It pins that a promote or a type change gives the entry the lowest free number of its new letter.
++// Each step after the first addresses its entry by Handle, so the steps also pin that every selector-taking write finds an entry by handle, its letter in either case.
++func TestHandles_AssignedLowestFreeAndStable(t *testing.T) {
++	t.Parallel()
++	b := boardengine.New(boardengine.Config{Path: t.TempDir(), Readme: "Home.md", DesignPrefix: "proposal-", Types: testTypes, Labels: testLabels, SkipGit: true})
++	upsert := func(fields map[string]any) func() error {
++		return func() error { _, err := b.UpsertTask(fields); return err }
++	}
++
++	steps := []struct {
++		name  string
++		write func() error
++		want  map[string]string
++	}{
++		{"adds", func() error {
++			for _, fields := range []map[string]any{
++				{"slug": "t-one", "kind": "task", "labels": bugLabels},
++				{"slug": "n-bug", "kind": "note", "labels": bugLabels, "priority": "high"},
++				{"slug": "t-two", "kind": "task", "labels": bugLabels},
++				{"slug": "n-idea", "kind": "note", "labels": []string{"enhancement"}},
++				{"slug": "n-bug2", "kind": "note", "labels": bugLabels},
++			} {
++				if err := upsert(fields)(); err != nil {
++					return err
++				}
++			}
++			return nil
++		}, map[string]string{"t-one": "T1", "n-bug": "B1", "t-two": "T2", "n-idea": "E1", "n-bug2": "B2"}},
++		{"remove by handle frees its number", func() error { return b.RemoveTask(boardengine.Handle("T1")) },
++			map[string]string{"n-bug": "B1", "t-two": "T2", "n-idea": "E1", "n-bug2": "B2"}},
++		{"a new task takes the freed number", upsert(map[string]any{"slug": "t-three", "kind": "task", "labels": bugLabels}),
++			map[string]string{"t-three": "T1", "n-bug": "B1", "t-two": "T2", "n-idea": "E1", "n-bug2": "B2"}},
++		{"promote by handle gives the lowest free T", func() error { _, err := b.Promote(boardengine.Handle("b1")); return err },
++			map[string]string{"t-three": "T1", "n-bug": "T3", "t-two": "T2", "n-idea": "E1", "n-bug2": "B2"}},
++		{"a new note takes the number the promote freed", upsert(map[string]any{"slug": "n-bug3", "kind": "note", "labels": bugLabels}),
++			map[string]string{"t-three": "T1", "n-bug": "T3", "t-two": "T2", "n-idea": "E1", "n-bug2": "B2", "n-bug3": "B1"}},
++		{"a type change takes the new letter", upsert(map[string]any{"slug": "n-idea", "labels": bugLabels}),
++			map[string]string{"t-three": "T1", "n-bug": "T3", "t-two": "T2", "n-idea": "B3", "n-bug2": "B2", "n-bug3": "B1"}},
++		{"set-status, set-deps and rename by handle keep every handle", func() error {
++			if err := b.SetStatus(boardengine.Handle("T2"), strPtr("active")); err != nil {
++				return err
++			}
++			if _, err := b.SetDeps(boardengine.Handle("t2"), []string{"t-three"}); err != nil {
++				return err
++			}
++			_, err := b.Rename(boardengine.Handle("B2"), "n-renamed")
++			return err
++		}, map[string]string{"t-three": "T1", "n-bug": "T3", "t-two": "T2", "n-idea": "B3", "n-renamed": "B2", "n-bug3": "B1"}},
++	}
++	for _, step := range steps {
++		if err := step.write(); err != nil {
++			t.Fatalf("%s: %v", step.name, err)
++		}
++		if got := handlesOf(t, b); !sameHandles(got, step.want) {
++			t.Fatalf("after %s: handles = %v; want %v", step.name, got, step.want)
++		}
++	}
++
++	got, found, err := b.GetTask(boardengine.Handle("t2"))
++	if err != nil || !found || got.Slug != "t-two" || got.Status == nil || *got.Status != "active" || strings.Join(got.DependsOn, ",") != "t-three" {
++		t.Errorf("GetTask(Handle t2) = %+v, found %v, err %v; want t-two, active, depending on t-three", got, found, err)
++	}
++	if _, found, _ := b.GetTask(boardengine.Handle("T9")); found {
++		t.Errorf("GetTask(Handle T9) found an entry; want none")
++	}
++	if _, err := b.UpsertTask(map[string]any{"slug": "t-two", "handle": "T7"}); err == nil || !strings.Contains(err.Error(), "assigns an entry's handle") {
++		t.Errorf("UpsertTask(handle) err = %v; want a refusal naming that the board assigns handles", err)
++	}
++}
++
++// TestHandles_AssignedOnLoad pins that a board.json written before handles reads with them, in id order, keeping a valid stored handle and reassigning a duplicate,
++// and that the first write persists them.
++func TestHandles_AssignedOnLoad(t *testing.T) {
++	t.Parallel()
++	boardPath := t.TempDir()
++	stored := `{"version":1,"entries":[
++		{"id":5,"slug":"a","kind":"task","labels":["bug"]},
++		{"id":2,"slug":"b","kind":"note","labels":["bug"]},
++		{"id":9,"slug":"c","kind":"task","labels":["bug"],"handle":"T2"},
++		{"id":1,"slug":"d","kind":"task","labels":["bug"]},
++		{"id":10,"slug":"e","kind":"task","labels":["bug"],"handle":"T2"}]}`
++	if err := os.WriteFile(filepath.Join(boardPath, "board.json"), []byte(stored), 0o644); err != nil {
++		t.Fatalf("write board.json: %v", err)
++	}
++	b := boardengine.New(boardengine.Config{Path: boardPath, Readme: "Home.md", DesignPrefix: "proposal-", Types: testTypes, Labels: testLabels, SkipGit: true})
++	want := map[string]string{"d": "T1", "b": "B1", "a": "T3", "c": "T2", "e": "T4"}
++
++	if got := handlesOf(t, b); !sameHandles(got, want) {
++		t.Errorf("handles before a write = %v; want %v", got, want)
++	}
++	brief, err := b.ListTasksBrief(nil)
++	if err != nil || len(brief) != len(want) {
++		t.Fatalf("ListTasksBrief = %+v, err %v; want %d entries", brief, err, len(want))
++	}
++	for _, entry := range brief {
++		if entry.Handle != want[entry.Slug] {
++			t.Errorf("ListTasksBrief entry %s has handle %q; want %q", entry.Slug, entry.Handle, want[entry.Slug])
++		}
++	}
++
++	if err := b.Rerender(); err != nil {
++		t.Fatalf("Rerender: %v", err)
++	}
++	raw, err := os.ReadFile(filepath.Join(boardPath, "board.json"))
++	if err != nil {
++		t.Fatalf("read board.json: %v", err)
++	}
++	if got := strings.Count(string(raw), `"handle"`); got != len(want) {
++		t.Errorf("board.json names a handle %d times after a write; want %d:\n%s", got, len(want), raw)
++	}
++	if got := handlesOf(t, b); !sameHandles(got, want) {
++		t.Errorf("handles after a write = %v; want %v", got, want)
++	}
++}
++
++// TestHandles_UndecidedLetterKeepsNoDuplicate pins that a note whose type label is no longer configured keeps its stored handle.
++// It pins that the note loses the handle when an entry of lower id already holds it.
++func TestHandles_UndecidedLetterKeepsNoDuplicate(t *testing.T) {
++	t.Parallel()
++	boardPath := t.TempDir()
++	stored := `{"version":1,"entries":[
++		{"id":1,"slug":"decided","kind":"note","labels":["bug"],"handle":"B1"},
++		{"id":2,"slug":"undecided-dup","kind":"note","labels":["removed-type"],"handle":"B1"},
++		{"id":3,"slug":"undecided-free","kind":"note","labels":["removed-type"],"handle":"R7"}]}`
++	if err := os.WriteFile(filepath.Join(boardPath, "board.json"), []byte(stored), 0o644); err != nil {
++		t.Fatalf("write board.json: %v", err)
++	}
++	b := boardengine.New(boardengine.Config{Path: boardPath, Readme: "Home.md", DesignPrefix: "proposal-", Types: testTypes, Labels: testLabels, SkipGit: true})
++	want := map[string]string{"decided": "B1", "undecided-dup": "", "undecided-free": "R7"}
++
++	if got := handlesOf(t, b); !sameHandles(got, want) {
++		t.Errorf("handles = %v; want %v", got, want)
++	}
++}
+diff --git a/internal/boardengine/layer.go b/internal/boardengine/layer.go
+index b2baa7bf2..158862d63 100644
+--- a/internal/boardengine/layer.go
++++ b/internal/boardengine/layer.go
+@@ -158,9 +158,10 @@ type TaskWithLayer struct {
+ 
+ // RenderOrder returns tasks in README order.
+ // Open tasks come first, then open notes, then done entries.
+-// Within each section, tasks and done entries order by dependency layer, then by priority, then by ID;
+-// open notes order by priority, then by layer, then by ID.
+-// Priority runs high, normal, low.
++// Open tasks order by dependency layer, then by handle;
++// open notes order by handle, so each type's notes run by number;
++// done entries put tasks before notes, each by handle.
++// A handle orders by letter, then by number, and entries with equal handles by ID.
+ func RenderOrder(tasks []Task) ([]TaskWithLayer, error) {
+ 	layerMap, err := ComputeLayers(tasks)
+ 	if err != nil {
+@@ -188,21 +189,19 @@ func RenderOrder(tasks []Task) ([]TaskWithLayer, error) {
+ 		if doneI != doneJ {
+ 			return doneJ
+ 		}
+-		if !doneI && result[i].Kind != result[j].Kind {
++		if result[i].Kind != result[j].Kind {
+ 			return result[i].Kind == KindTask
+ 		}
+-		rankI, rankJ := priorityRank(result[i].Priority), priorityRank(result[j].Priority)
+-		// An open note's README group is its type label, so priority leads its layer; a task's group is its layer.
+-		if !doneI && result[i].Kind == KindNote && rankI != rankJ {
+-			return rankI < rankJ
+-		}
+-		bucketI := bucketOrder[result[i].Layer]
+-		bucketJ := bucketOrder[result[j].Layer]
+-		if bucketI != bucketJ {
+-			return bucketI < bucketJ
++		// An open note's README group is its type label, which its handle letter already groups, so a note's layer plays no part.
++		if result[i].Kind != KindNote {
++			bucketI := bucketOrder[result[i].Layer]
++			bucketJ := bucketOrder[result[j].Layer]
++			if bucketI != bucketJ {
++				return bucketI < bucketJ
++			}
+ 		}
+-		if rankI != rankJ {
+-			return rankI < rankJ
++		if c := compareHandles(result[i].Handle, result[j].Handle); c != 0 {
++			return c < 0
+ 		}
+ 		return result[i].ID < result[j].ID
+ 	})
+diff --git a/internal/boardengine/layer_test.go b/internal/boardengine/layer_test.go
+index 4df6f1c87..1a83eea9c 100644
+--- a/internal/boardengine/layer_test.go
++++ b/internal/boardengine/layer_test.go
+@@ -180,24 +180,23 @@ func TestRenderOrder(t *testing.T) {
+ 			},
+ 		},
+ 		{
+-			name: "priority orders within a task layer, ahead of layer among notes, and within done",
++			name: "handle orders within a task layer, among notes regardless of layer and priority, and within done after tasks",
+ 			tasks: []boardengine.Task{
+-				{ID: 1, Slug: "t-low", Kind: boardengine.KindTask, Priority: boardengine.PriorityLow},
+-				{ID: 2, Slug: "t-normal", Kind: boardengine.KindTask},
+-				{ID: 3, Slug: "t-high", Kind: boardengine.KindTask, Priority: boardengine.PriorityHigh},
+-				{ID: 4, Slug: "t-after-high", Kind: boardengine.KindTask, Priority: boardengine.PriorityHigh, DependsOn: []string{"t-normal"}},
+-				{ID: 5, Slug: "n-normal", Kind: boardengine.KindNote},
+-				{ID: 6, Slug: "n-isolated-high", Kind: boardengine.KindNote, Isolated: true, Priority: boardengine.PriorityHigh},
+-				{ID: 7, Slug: "n-low", Kind: boardengine.KindNote, Priority: boardengine.PriorityLow},
+-				{ID: 8, Slug: "d-normal", Kind: boardengine.KindTask, Status: stringPtr("done")},
+-				{ID: 9, Slug: "d-high", Kind: boardengine.KindTask, Status: stringPtr("done"), Priority: boardengine.PriorityHigh},
++				{ID: 1, Handle: "T3", Slug: "t3", Kind: boardengine.KindTask},
++				{ID: 2, Handle: "T10", Slug: "t10", Kind: boardengine.KindTask},
++				{ID: 3, Handle: "T1", Slug: "t1-after", Kind: boardengine.KindTask, DependsOn: []string{"t10"}},
++				{ID: 4, Handle: "E2", Slug: "e2", Kind: boardengine.KindNote, Priority: boardengine.PriorityHigh},
++				{ID: 5, Handle: "B5", Slug: "b5-isolated", Kind: boardengine.KindNote, Isolated: true, Priority: boardengine.PriorityLow},
++				{ID: 6, Handle: "E1", Slug: "e1", Kind: boardengine.KindNote},
++				{ID: 7, Handle: "B1", Slug: "b1-done", Kind: boardengine.KindNote, Status: stringPtr("done")},
++				{ID: 8, Handle: "T9", Slug: "t9-done", Kind: boardengine.KindTask, Status: stringPtr("done")},
+ 			},
+ 			check: func(t *testing.T, result []boardengine.TaskWithLayer) {
+ 				var got []string
+ 				for _, r := range result {
+ 					got = append(got, r.Slug)
+ 				}
+-				want := []string{"t-high", "t-normal", "t-low", "t-after-high", "n-isolated-high", "n-normal", "n-low", "d-high", "d-normal"}
++				want := []string{"t3", "t10", "t1-after", "b5-isolated", "e1", "e2", "t9-done", "b1-done"}
+ 				if strings.Join(got, ",") != strings.Join(want, ",") {
+ 					t.Errorf("RenderOrder() order = %v, want %v", got, want)
+ 				}
+diff --git a/internal/boardengine/migrate.go b/internal/boardengine/migrate.go
+index f51eebd28..e10b73173 100644
+--- a/internal/boardengine/migrate.go
++++ b/internal/boardengine/migrate.go
+@@ -73,7 +73,8 @@ func legacyTypeLabels(typ *string) []string {
+ }
+ 
+ // migrateEntries converts every entry to the kind-and-labels shape.
+-// An entry with kind is untouched, an entry with tier migrates, and an entry with neither loads as a note with no labels.
++// An entry with kind keeps its fields, an entry with tier migrates, and an entry with neither loads as a note with no labels.
++// Every task loses its priority, since only a note carries one.
+ // A migrated task's dependency on an entry that migrated to a note is dropped, since a task may depend only on a task.
+ // vocab may be nil, as in store-level tests.
+ func migrateEntries(entries []storedEntry, vocab *Vocabulary) []Task {
+@@ -96,7 +97,12 @@ func migrateEntries(entries []storedEntry, vocab *Vocabulary) []Task {
+ 		}
+ 	}
+ 	for i := range out {
+-		if !migrated[i] || out[i].Kind != KindTask {
++		if out[i].Kind != KindTask {
++			continue
++		}
++		// Only a note carries a priority, so a task stored with one loses it here and at the next write.
++		out[i].Priority = ""
++		if !migrated[i] {
+ 			continue
+ 		}
+ 		out[i].DependsOn = slices.DeleteFunc(slices.Clone(out[i].DependsOn), func(dep string) bool {
+diff --git a/internal/boardengine/rename.go b/internal/boardengine/rename.go
+index df528b076..84ace02f4 100644
+--- a/internal/boardengine/rename.go
++++ b/internal/boardengine/rename.go
+@@ -19,8 +19,8 @@ type RenameResult struct {
+ 	Mentions []string
+ }
+ 
+-// Rename changes the slug of the entry selector names, a slug string or a numeric id, to to under the write lock, and replaces the old slug with to in every other entry's depends_on.
+-// The entry keeps its id, position and every other field, and no entry's dates are revised by the rename.
++// Rename changes the slug of the entry selector names, a slug string, a numeric id or a Handle, to to under the write lock, and replaces the old slug with to in every other entry's depends_on.
++// The entry keeps its id, handle, position and every other field, and no entry's dates are revised by the rename.
+ // It refuses an absent entry, an entry a run holds, and a target that is empty, longer than MaxSlugLength or already an entry's slug.
+ // Body and brief text is never rewritten; the result names the entries that still mention the old slug.
+ func (b *Board) Rename(selector any, to string) (RenameResult, error) {
+@@ -39,7 +39,7 @@ func (b *Board) Rename(selector any, to string) (RenameResult, error) {
+ func (s *Store) Rename(selector any, to string) (RenameResult, error) {
+ 	current, found := s.GetTask(selector)
+ 	if !found {
+-		return RenameResult{}, fmt.Errorf("task not found: %v: check the slug or id with lyx board list", selector)
++		return RenameResult{}, fmt.Errorf("task not found: %v: check the slug, id or handle with lyx board list", selector)
+ 	}
+ 	if IsRunStatus(current.Status) {
+ 		return RenameResult{}, &RunLockedError{Slug: current.Slug, Status: *current.Status}
+diff --git a/internal/boardengine/rename_test.go b/internal/boardengine/rename_test.go
+index ba4744073..107414356 100644
+--- a/internal/boardengine/rename_test.go
++++ b/internal/boardengine/rename_test.go
+@@ -27,7 +27,7 @@ func newRenameBoard(t *testing.T, now *time.Time) (*boardengine.Board, string) {
+ 		Clock: func() time.Time { return *now }})
+ 	entries := []map[string]any{
+ 		{"slug": "other", "title": "Other", "kind": boardengine.KindTask, "labels": bugLabels},
+-		{"slug": "old", "title": "Old", "kind": boardengine.KindTask, "labels": []string{"bug", "undecided"}, "priority": "high", "issues": []int{3},
++		{"slug": "old", "title": "Old", "kind": boardengine.KindTask, "labels": []string{"bug", "undecided"}, "issues": []int{3},
+ 			"brief": "short", "body": "The body names old here.", "recipe": "darn", "short_name": "o", "status": "active",
+ 			"run_settings": map[string]any{"darn": map[string]any{"review_max_bounces": 1}}, "profile": "light"},
+ 		{"slug": "waiter", "title": "Waiter", "kind": boardengine.KindTask, "labels": bugLabels, "depends_on": []string{"other", "old"}},
+diff --git a/internal/boardengine/render.go b/internal/boardengine/render.go
+index 025d50eeb..fca409875 100644
+--- a/internal/boardengine/render.go
++++ b/internal/boardengine/render.go
+@@ -2,9 +2,9 @@
+ //
+ // Render is a pure function: entries in, a map of filename → content out (a single README.md built by renderReadme, plus design-*.md for any entry with a body).
+ // The README reads like a roadmap: Tasks split into Running, Ready, dependency layers and Independent, Notes with one subsection per type label, then Done.
+-// Each open subsection holds one markdown table per priority present, high, normal, low, each under a `#### <Priority> priority` heading, numbered on from 1 across them, and Done one table numbered from 1;
++// Each subsection holds one markdown table in RenderOrder's order, each row opening with the entry's handle, and a Notes table adds the priority as H or L after it;
+ // the README opens with the time it was rendered,
+-// and the rows show the bold title with the brief, the run profile and each run setting as a bullet under it, the linked slug, the entry's age and time since its last revision as of that time, and the labels that are not type labels;
++// and the rows show the bold title with the brief, the run profile and each run setting as a bullet under it, the linked slug, the entry's age above its time since its last revision as of that time, and the labels that are not type labels;
+ // every Tasks table adds the recipe after the slug, loom for an empty one;
+ // Running adds where its run stands and the entry's recorded owner machine, and Ready and the layers add the open entries each waits on.
+ // The section names, their meaning lines and the table columns are declared here alone;
+@@ -125,22 +125,25 @@ const otherNotesHeading = "Other"
+ // emptySectionLine stands in for the table of a subsection that is always rendered and has no entry.
+ const emptySectionLine = "_None._"
+ 
+-// The README table columns: each table opens with the row number, the entry and the linked slug, and closes with the entry's age, the time since its last revision, and its labels.
++// The README table columns: each table opens with the handle, the entry and the linked slug, and closes with the entry's age above the time since its last revision, and its labels.
+ const (
+-	columnNumber  = "#"
+-	columnSlug    = "Slug"
+-	columnRecipe  = "Recipe"
+-	columnTask    = "Task"
+-	columnNote    = "Note"
+-	columnEntry   = "Entry"
+-	columnAt      = "At"
+-	columnOwner   = "Owner"
+-	columnAfter   = "After"
+-	columnAge     = "Age"
+-	columnRevised = "Revised"
+-	columnLabels  = "Labels"
++	columnHandle     = "#"
++	columnPriority   = "P"
++	columnSlug       = "Slug"
++	columnRecipe     = "Recipe"
++	columnTask       = "Task"
++	columnNote       = "Note"
++	columnEntry      = "Entry"
++	columnAt         = "At"
++	columnOwner      = "Owner"
++	columnAfter      = "After"
++	columnAgeRevised = "Age" + cellBreak + "Revised"
++	columnLabels     = "Labels"
+ )
+ 
++// cellBreak stacks two lines inside one table cell, where a newline would end the row.
++const cellBreak = "<br>"
++
+ // renderedTimeLayout is the UTC date and time the README states it was rendered at.
+ const renderedTimeLayout = "2006-01-02 15:04 UTC"
+ 
+@@ -151,7 +154,7 @@ const defaultRecipe = "loom"
+ const runningState = "running"
+ 
+ // cellBullet starts one detail line under the title inside one table cell; a markdown list does not render in a table cell.
+-const cellBullet = "<br>• "
++const cellBullet = cellBreak + "• "
+ 
+ // kindName is the capitalised display name of an entry kind.
+ func kindName(kind string) string {
+@@ -192,9 +195,11 @@ func metaLine(t Task, middle ...string) string {
+ }
+ 
+ // readmeTable is one README subsection's table: its middle column headers, the entry column first, and the cells under them per entry.
++// priority adds the priority column after the handle.
+ type readmeTable struct {
+-	columns []string
+-	cells   func(t Task) []string
++	columns  []string
++	cells    func(t Task) []string
++	priority bool
+ }
+ 
+ // renderReadme builds the README: a title, the render time, an intro, Tasks split into Running, Ready, dependency layers and Independent, Notes split by type label, then Done when any entry is done.
+@@ -213,38 +218,27 @@ func renderReadme(ordered []TaskWithLayer, designPrefix string, types []string,
+ 	for _, twl := range ordered {
+ 		finished[twl.Slug] = isDone(twl.Task)
+ 	}
+-	// writeTable writes one table whose rows are numbered from first.
+-	writeTable := func(entries []TaskWithLayer, table readmeTable, first int) {
++	// writeTable writes one table, a row per entry in the order given.
++	writeTable := func(entries []TaskWithLayer, table readmeTable) {
++		lead := []string{columnHandle}
++		if table.priority {
++			lead = append(lead, columnPriority)
++		}
+ 		// The slug goes second among the middle columns, right after the entry.
+-		header := append(append([]string{columnNumber}, slices.Insert(slices.Clone(table.columns), 1, columnSlug)...), columnAge, columnRevised, columnLabels)
++		header := append(append(lead, slices.Insert(slices.Clone(table.columns), 1, columnSlug)...), columnAgeRevised, columnLabels)
+ 		lines = append(lines, tableRow(header), tableRow(slices.Repeat([]string{"---"}, len(header))))
+-		for i, twl := range entries {
+-			row := append([]string{fmt.Sprint(first + i)}, slices.Insert(table.cells(twl.Task), 1, slugCell(twl.Task, designPrefix))...)
+-			row = append(row, FormatAge(twl.Created, now), FormatAge(twl.Revised, now), labelsCell(twl.Task, types))
++		for _, twl := range entries {
++			row := []string{cellText(twl.Handle)}
++			if table.priority {
++				row = append(row, priorityCell(twl.Priority))
++			}
++			row = append(row, slices.Insert(table.cells(twl.Task), 1, slugCell(twl.Task, designPrefix))...)
++			row = append(row, ageCell(twl.Task, now), labelsCell(twl.Task, types))
+ 			lines = append(lines, tableRow(row))
+ 		}
+ 		lines = append(lines, "")
+ 	}
+-	// writeGroup writes one table per priority present in an open group, high, normal, low, each under its priority heading;
+-	// the rows number on across the group's tables, so each entry keeps the number it has in the group.
+-	writeGroup := func(entries []TaskWithLayer, table readmeTable) {
+-		first := 1
+-		for _, priority := range []string{PriorityHigh, PriorityNormal, PriorityLow} {
+-			var tier []TaskWithLayer
+-			for _, twl := range entries {
+-				if priorityRank(twl.Priority) == priorityRank(priority) {
+-					tier = append(tier, twl)
+-				}
+-			}
+-			if len(tier) == 0 {
+-				continue
+-			}
+-			lines = append(lines, priorityHeading(priority), "")
+-			writeTable(tier, table, first)
+-			first += len(tier)
+-		}
+-	}
+-	waitTable := readmeTable{[]string{columnTask, columnRecipe, columnAfter}, func(t Task) []string {
++	waitTable := readmeTable{columns: []string{columnTask, columnRecipe, columnAfter}, cells: func(t Task) []string {
+ 		var after []string
+ 		for _, dep := range t.DependsOn {
+ 			if !finished[dep] {
+@@ -272,13 +266,13 @@ func renderReadme(ordered []TaskWithLayer, designPrefix string, types []string,
+ 	}
+ 	if running := byLayer(runningLayer); len(running) > 0 {
+ 		lines = append(lines, "### "+runningSection.name, "", runningSection.meaning, "")
+-		writeGroup(running, readmeTable{[]string{columnTask, columnRecipe, columnAt, columnOwner}, func(t Task) []string {
++		writeTable(running, readmeTable{columns: []string{columnTask, columnRecipe, columnAt, columnOwner}, cells: func(t Task) []string {
+ 			return []string{entryCell(t), recipeCell(t), atCell(*t.Status), cellText(t.OwnerMachine)}
+ 		}})
+ 	}
+ 	lines = append(lines, "### "+readySection.name, "", readySection.meaning, "")
+ 	if ready := byLayer(readyLayer); len(ready) > 0 {
+-		writeGroup(ready, waitTable)
++		writeTable(ready, waitTable)
+ 	} else {
+ 		lines = append(lines, emptySectionLine, "")
+ 	}
+@@ -291,7 +285,7 @@ func renderReadme(ordered []TaskWithLayer, designPrefix string, types []string,
+ 		if layer := tasks[start].Layer; layer != runningLayer && layer != readyLayer {
+ 			section := layerSection(layer)
+ 			lines = append(lines, "### "+section.name, "", section.meaning, "")
+-			writeGroup(tasks[start:end], waitTable)
++			writeTable(tasks[start:end], waitTable)
+ 		}
+ 		start = end
+ 	}
+@@ -304,7 +298,7 @@ func renderReadme(ordered []TaskWithLayer, designPrefix string, types []string,
+ 			byType[typeLabel] = append(byType[typeLabel], twl)
+ 		}
+ 	}
+-	noteTable := readmeTable{[]string{columnNote}, func(t Task) []string { return []string{entryCell(t)} }}
++	noteTable := readmeTable{columns: []string{columnNote}, cells: func(t Task) []string { return []string{entryCell(t)} }, priority: true}
+ 	for _, typeLabel := range append(slices.Clone(types), "") {
+ 		entries := byType[typeLabel]
+ 		if len(entries) == 0 {
+@@ -315,7 +309,7 @@ func renderReadme(ordered []TaskWithLayer, designPrefix string, types []string,
+ 			heading = typeHeading(typeLabel)
+ 		}
+ 		lines = append(lines, "### "+heading, "")
+-		writeGroup(entries, noteTable)
++		writeTable(entries, noteTable)
+ 	}
+ 
+ 	var done []TaskWithLayer
+@@ -326,7 +320,7 @@ func renderReadme(ordered []TaskWithLayer, designPrefix string, types []string,
+ 	}
+ 	if len(done) > 0 {
+ 		lines = append(lines, "## "+doneSection.name, "", doneSection.meaning, "")
+-		writeTable(done, readmeTable{[]string{columnEntry}, func(t Task) []string { return []string{entryCell(t)} }}, 1)
++		writeTable(done, readmeTable{columns: []string{columnEntry}, cells: func(t Task) []string { return []string{entryCell(t)} }})
+ 	}
+ 
+ 	return strings.TrimRight(strings.Join(lines, "\n"), "\n") + "\n"
+@@ -363,9 +357,24 @@ func slugCell(t Task, designPrefix string) string {
+ 	return "`" + t.Slug + "`"
+ }
+ 
+-// priorityHeading is the heading over an open group's table of one priority, one level below the group's `###` heading.
+-func priorityHeading(priority string) string {
+-	return "#### " + strings.ToUpper(priority[:1]) + priority[1:] + " priority"
++// priorityCell is H for a high priority, L for a low one and empty for normal.
++func priorityCell(priority string) string {
++	switch priority {
++	case PriorityHigh:
++		return "H"
++	case PriorityLow:
++		return "L"
++	}
++	return ""
++}
++
++// ageCell is the entry's age as of now above the time since its last revision, empty when both dates are unknown.
++func ageCell(t Task, now time.Time) string {
++	age, revised := FormatAge(t.Created, now), FormatAge(t.Revised, now)
++	if age == "" && revised == "" {
++		return ""
++	}
++	return age + cellBreak + revised
+ }
+ 
+ // entryCell is the bold title, with the brief as one bullet under it when there is one, then a code-span bullet naming the run profile when there is one and one per run setting.
+diff --git a/internal/boardengine/render_test.go b/internal/boardengine/render_test.go
+index 40f3df015..5200c6dcb 100644
+--- a/internal/boardengine/render_test.go
++++ b/internal/boardengine/render_test.go
+@@ -217,29 +217,31 @@ func TestRenderToDiskManifestCleanup(t *testing.T) {
+ // readmeTypes is the type-label order the README goldens render Notes sections in.
+ var readmeTypes = []string{"bug", "enhancement"}
+ 
+-// readmeFixture holds tasks and notes with labels, two entries with dates and the rest without, plus a done task that another task depends on, an abandoned note, a body, an isolated task, a two-layer chain, a title with a pipe, a two-line brief, a note whose type label is not in readmeTypes, a high-priority task, a low-priority note listed before a normal one of the same type, and run settings on three tasks: two keys in one module, a nested key with a pipe in its value beside a list value, and one key with no brief.
++// readmeFixture holds tasks and notes with labels, two entries with dates and the rest without, plus a done task that another task depends on, an abandoned note, a body, an isolated task, a two-layer chain, a title with a pipe, a two-line brief, a note whose type label is not in readmeTypes, a high-priority note, a low-priority note listed before a normal one of the same type, and run settings on three tasks: two keys in one module, a nested key with a pipe in its value beside a list value, and one key with no brief.
+ func readmeFixture() []boardengine.Task {
+ 	task, note := boardengine.KindTask, boardengine.KindNote
+ 	return []boardengine.Task{
+-		{ID: 1, Slug: "base", Title: "Base work", Kind: task, Labels: []string{"enhancement"}, Brief: "The foundation.", Created: renderTime.AddDate(0, 0, -40), Revised: renderTime.AddDate(0, 0, -3), RunSettings: map[string]any{"loom": map[string]any{"review_max_bounces": 2.0, "review_hard_max_bounces": 3.0}}},
+-		{ID: 2, Slug: "top", Title: "Top | work", Kind: task, Labels: []string{"bug", "area"}, Status: stringPtr("running"), Brief: "Builds on base.\nSecond brief line.", Body: "Design.\nSecond line.", DependsOn: []string{"base", "shipped"}, RunSettings: map[string]any{"darn": map[string]any{"models": map[string]any{"writer": "opus|fast"}, "skip": []any{"a&b", "<c>"}, "note": "use `x`"}}},
+-		{ID: 6, Slug: "alone", Title: "Alone work", Kind: task, Labels: []string{"enhancement"}, Isolated: true, Priority: boardengine.PriorityHigh, Recipe: "darn", Profile: "docs", RunSettings: map[string]any{"darn": map[string]any{"review_max_bounces": 1.0}}},
+-		{ID: 3, Slug: "idea", Title: "An idea", Kind: note, Labels: []string{"enhancement", "undecided"}, Priority: boardengine.PriorityLow},
+-		{ID: 8, Slug: "plain", Title: "Plain idea", Kind: note, Labels: []string{"enhancement"}},
+-		{ID: 4, Slug: "dropped", Title: "Dropped idea", Kind: note, Labels: []string{"bug"}, Status: stringPtr("abandoned"), Brief: "No longer wanted."},
+-		{ID: 7, Slug: "stray", Title: "Stray note", Kind: note, Labels: []string{"retired"}},
+-		{ID: 5, Slug: "shipped", Title: "Shipped work", Kind: task, Labels: []string{"enhancement"}, Status: stringPtr("done"), Created: renderTime.AddDate(-1, 0, -10), Revised: renderTime.AddDate(0, -5, 0)},
++		{ID: 1, Handle: "T1", Slug: "base", Title: "Base work", Kind: task, Labels: []string{"enhancement"}, Brief: "The foundation.", Created: renderTime.AddDate(0, 0, -40), Revised: renderTime.AddDate(0, 0, -3), RunSettings: map[string]any{"loom": map[string]any{"review_max_bounces": 2.0, "review_hard_max_bounces": 3.0}}},
++		{ID: 2, Handle: "T2", Slug: "top", Title: "Top | work", Kind: task, Labels: []string{"bug", "area"}, Status: stringPtr("running"), Brief: "Builds on base.\nSecond brief line.", Body: "Design.\nSecond line.", DependsOn: []string{"base", "shipped"}, RunSettings: map[string]any{"darn": map[string]any{"models": map[string]any{"writer": "opus|fast"}, "skip": []any{"a&b", "<c>"}, "note": "use `x`"}}},
++		{ID: 6, Handle: "T3", Slug: "alone", Title: "Alone work", Kind: task, Labels: []string{"enhancement"}, Isolated: true, Recipe: "darn", Profile: "docs", RunSettings: map[string]any{"darn": map[string]any{"review_max_bounces": 1.0}}},
++		{ID: 3, Handle: "E2", Slug: "idea", Title: "An idea", Kind: note, Labels: []string{"enhancement", "undecided"}, Priority: boardengine.PriorityLow},
++		{ID: 8, Handle: "E1", Slug: "plain", Title: "Plain idea", Kind: note, Labels: []string{"enhancement"}},
++		{ID: 4, Handle: "B1", Slug: "dropped", Title: "Dropped idea", Kind: note, Labels: []string{"bug"}, Status: stringPtr("abandoned"), Brief: "No longer wanted.", Priority: boardengine.PriorityHigh},
++		{ID: 7, Handle: "R1", Slug: "stray", Title: "Stray note", Kind: note, Labels: []string{"retired"}},
++		{ID: 5, Handle: "T5", Slug: "shipped", Title: "Shipped work", Kind: task, Labels: []string{"enhancement"}, Status: stringPtr("done"), Created: renderTime.AddDate(-1, 0, -10), Revised: renderTime.AddDate(0, -5, 0)},
+ 	}
+ }
+ 
+ // TestRenderReadmeGolden pins the README tables for a fixture with tasks and notes, notes grouped by type in Outputs.Types order and an Other group, a done entry, an abandoned note, a slug linked to its design doc, only non-type labels, an After cell that leaves out a done dependency, an isolated task, and a Ready task with one in Layer A after it.
+-// The same row pins that each open group splits into one table per priority present, under a `####` priority heading, high, normal, low, with no heading for an absent priority and the rows numbered on across the group's tables, that a low note follows a normal note with a higher ID, and that a pipe in a title is escaped and a line break in a brief becomes a space, so each row stays one table row.
++// The same row pins that every row opens with the entry's handle and that each group is one table sorted by handle, a note with a lower handle and a higher ID first.
++// It pins that only the Notes tables carry the priority column, H for high, L for low and blank for normal.
++// It pins that a pipe in a title is escaped and a line break in a brief becomes a space, so each row stays one table row.
+ // The same row pins that each run setting stacks as a code-span bullet in the entry cell after any brief, sorted, a nested key as its dotted path, a non-string value as JSON and a pipe escaped, adding no column.
+ // Every Tasks table pins a Recipe column after the slug, loom for an empty recipe and the stored name otherwise, and the Notes and Done tables pin its absence.
+-// Every README pins the render time at its top, and every table pins the Age and Revised columns before Labels, as of that time and blank for an unknown date.
++// Every README pins the render time at its top, and every table pins the one column before Labels holding the age above the time since revision, as of that time and blank for unknown dates.
+ // A second row pins that Ready renders _None._ when empty, and that the Done section and every empty Notes subsection are omitted when no entry is done and no note exists for them.
+ // Neither row has a run status, the first only the hand-set word "running", so neither renders a Running subsection.
+-// A third row pins that a task with a run status renders under Running, before Ready and in no layer, its At cell dropping the state `running` and keeping any other, and its Owner cell holding the recorded owner machine and blank when none is recorded.
++// A third row pins that a task with a run status renders under Running, before Ready and in no layer, ordered by handle over ID, its At cell dropping the state `running` and keeping any other, and its Owner cell holding the recorded owner machine and blank when none is recorded.
+ // The same row pins that a task waiting on a running one lands in Layer A, not Ready, still naming it under After, and that a task after that one lands in Layer B.
+ func TestRenderReadmeGolden(t *testing.T) {
+ 	t.Parallel()
+@@ -266,31 +268,25 @@ func TestRenderReadmeGolden(t *testing.T) {
+ 				"\n" +
+ 				"Waits on nothing open; can start now.\n" +
+ 				"\n" +
+-				"#### Normal priority\n" +
+-				"\n" +
+-				"| # | Task | Slug | Recipe | After | Age | Revised | Labels |\n" +
+-				"| --- | --- | --- | --- | --- | --- | --- | --- |\n" +
+-				"| 1 | **Base work**<br>• The foundation.<br>• `loom: review_hard_max_bounces 3`<br>• `loom: review_max_bounces 2` | `base` | loom |  | 5w | 3d |  |\n" +
++				"| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |\n" +
++				"| --- | --- | --- | --- | --- | --- | --- |\n" +
++				"| T1 | **Base work**<br>• The foundation.<br>• `loom: review_hard_max_bounces 3`<br>• `loom: review_max_bounces 2` | `base` | loom |  | 5w<br>3d |  |\n" +
+ 				"\n" +
+ 				"### Layer A\n" +
+ 				"\n" +
+ 				"Waits only on Running or Ready entries.\n" +
+ 				"\n" +
+-				"#### Normal priority\n" +
+-				"\n" +
+-				"| # | Task | Slug | Recipe | After | Age | Revised | Labels |\n" +
+-				"| --- | --- | --- | --- | --- | --- | --- | --- |\n" +
+-				"| 1 | **Top \\| work**<br>• Builds on base. Second brief line.<br>• `darn: models.writer opus\\|fast`<br>• `` darn: note use `x` ``<br>• `darn: skip [\"a&b\",\"<c>\"]` | [`top`](design-top.md) | loom | `base` |  |  | area |\n" +
++				"| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |\n" +
++				"| --- | --- | --- | --- | --- | --- | --- |\n" +
++				"| T2 | **Top \\| work**<br>• Builds on base. Second brief line.<br>• `darn: models.writer opus\\|fast`<br>• `` darn: note use `x` ``<br>• `darn: skip [\"a&b\",\"<c>\"]` | [`top`](design-top.md) | loom | `base` |  | area |\n" +
+ 				"\n" +
+ 				"### Independent\n" +
+ 				"\n" +
+ 				"Depends on nothing and nothing depends on it, by design.\n" +
+ 				"\n" +
+-				"#### High priority\n" +
+-				"\n" +
+-				"| # | Task | Slug | Recipe | After | Age | Revised | Labels |\n" +
+-				"| --- | --- | --- | --- | --- | --- | --- | --- |\n" +
+-				"| 1 | **Alone work**<br>• `profile: docs`<br>• `darn: review_max_bounces 1` | `alone` | darn |  |  |  |  |\n" +
++				"| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |\n" +
++				"| --- | --- | --- | --- | --- | --- | --- |\n" +
++				"| T3 | **Alone work**<br>• `profile: docs`<br>• `darn: review_max_bounces 1` | `alone` | darn |  |  |  |\n" +
+ 				"\n" +
+ 				"## Notes\n" +
+ 				"\n" +
+@@ -298,45 +294,34 @@ func TestRenderReadmeGolden(t *testing.T) {
+ 				"\n" +
+ 				"### Bugs\n" +
+ 				"\n" +
+-				"#### Normal priority\n" +
+-				"\n" +
+-				"| # | Note | Slug | Age | Revised | Labels |\n" +
++				"| # | P | Note | Slug | Age<br>Revised | Labels |\n" +
+ 				"| --- | --- | --- | --- | --- | --- |\n" +
+-				"| 1 | **Dropped idea**<br>• No longer wanted. | `dropped` |  |  |  |\n" +
++				"| B1 | H | **Dropped idea**<br>• No longer wanted. | `dropped` |  |  |\n" +
+ 				"\n" +
+ 				"### Enhancements\n" +
+ 				"\n" +
+-				"#### Normal priority\n" +
+-				"\n" +
+-				"| # | Note | Slug | Age | Revised | Labels |\n" +
+-				"| --- | --- | --- | --- | --- | --- |\n" +
+-				"| 1 | **Plain idea** | `plain` |  |  |  |\n" +
+-				"\n" +
+-				"#### Low priority\n" +
+-				"\n" +
+-				"| # | Note | Slug | Age | Revised | Labels |\n" +
++				"| # | P | Note | Slug | Age<br>Revised | Labels |\n" +
+ 				"| --- | --- | --- | --- | --- | --- |\n" +
+-				"| 2 | **An idea** | `idea` |  |  | undecided |\n" +
++				"| E1 |  | **Plain idea** | `plain` |  |  |\n" +
++				"| E2 | L | **An idea** | `idea` |  | undecided |\n" +
+ 				"\n" +
+ 				"### Other\n" +
+ 				"\n" +
+-				"#### Normal priority\n" +
+-				"\n" +
+-				"| # | Note | Slug | Age | Revised | Labels |\n" +
++				"| # | P | Note | Slug | Age<br>Revised | Labels |\n" +
+ 				"| --- | --- | --- | --- | --- | --- |\n" +
+-				"| 1 | **Stray note** | `stray` |  |  | retired |\n" +
++				"| R1 |  | **Stray note** | `stray` |  | retired |\n" +
+ 				"\n" +
+ 				"## Done\n" +
+ 				"\n" +
+ 				"Finished, awaiting `lyx board prune --apply`.\n" +
+ 				"\n" +
+-				"| # | Entry | Slug | Age | Revised | Labels |\n" +
+-				"| --- | --- | --- | --- | --- | --- |\n" +
+-				"| 1 | **Shipped work** | `shipped` | 1y | 5mo |  |\n",
++				"| # | Entry | Slug | Age<br>Revised | Labels |\n" +
++				"| --- | --- | --- | --- | --- |\n" +
++				"| T5 | **Shipped work** | `shipped` | 1y<br>5mo |  |\n",
+ 		},
+ 		{
+ 			name:  "no done section and no empty notes subsections",
+-			tasks: []boardengine.Task{{ID: 1, Slug: "a", Title: "A", Kind: boardengine.KindNote, Labels: []string{"enhancement"}}},
++			tasks: []boardengine.Task{{ID: 1, Handle: "E1", Slug: "a", Title: "A", Kind: boardengine.KindNote, Labels: []string{"enhancement"}}},
+ 			want: "# Board\n" +
+ 				"\n" +
+ 				"Rendered 2026-10-12 09:30 UTC; every age below is as of then.\n" +
+@@ -360,20 +345,18 @@ func TestRenderReadmeGolden(t *testing.T) {
+ 				"\n" +
+ 				"### Enhancements\n" +
+ 				"\n" +
+-				"#### Normal priority\n" +
+-				"\n" +
+-				"| # | Note | Slug | Age | Revised | Labels |\n" +
++				"| # | P | Note | Slug | Age<br>Revised | Labels |\n" +
+ 				"| --- | --- | --- | --- | --- | --- |\n" +
+-				"| 1 | **A** | `a` |  |  |  |\n",
++				"| E1 |  | **A** | `a` |  |  |\n",
+ 		},
+ 		{
+ 			name: "running task under Running before Ready and in no layer",
+ 			tasks: []boardengine.Task{
+-				{ID: 1, Slug: "base", Title: "Base work", Kind: boardengine.KindTask, Labels: []string{"enhancement"}},
+-				{ID: 2, Slug: "held", Title: "Held work", Kind: boardengine.KindTask, Labels: []string{"bug", "area"}, Status: stringPtr(boardengine.RunStatus("running", "Webster")), DependsOn: []string{"base"}, OwnerMachine: "box"},
+-				{ID: 3, Slug: "next", Title: "Next work", Kind: boardengine.KindTask, DependsOn: []string{"held"}},
+-				{ID: 4, Slug: "last", Title: "Last work", Kind: boardengine.KindTask, DependsOn: []string{"next"}},
+-				{ID: 5, Slug: "halted", Title: "Halted work", Kind: boardengine.KindTask, Labels: []string{"bug"}, Status: stringPtr(boardengine.RunStatus("paused", "Plan-Write")), Recipe: "darn"},
++				{ID: 1, Handle: "T1", Slug: "base", Title: "Base work", Kind: boardengine.KindTask, Labels: []string{"enhancement"}},
++				{ID: 2, Handle: "T5", Slug: "held", Title: "Held work", Kind: boardengine.KindTask, Labels: []string{"bug", "area"}, Status: stringPtr(boardengine.RunStatus("running", "Webster")), DependsOn: []string{"base"}, OwnerMachine: "box"},
++				{ID: 3, Handle: "T3", Slug: "next", Title: "Next work", Kind: boardengine.KindTask, DependsOn: []string{"held"}},
++				{ID: 4, Handle: "T4", Slug: "last", Title: "Last work", Kind: boardengine.KindTask, DependsOn: []string{"next"}},
++				{ID: 5, Handle: "T2", Slug: "halted", Title: "Halted work", Kind: boardengine.KindTask, Labels: []string{"bug"}, Status: stringPtr(boardengine.RunStatus("paused", "Plan-Write")), Recipe: "darn"},
+ 			},
+ 			want: "# Board\n" +
+ 				"\n" +
+@@ -390,42 +373,34 @@ func TestRenderReadmeGolden(t *testing.T) {
+ 				"\n" +
+ 				"Held by a run; its scope is locked until the run ends.\n" +
+ 				"\n" +
+-				"#### Normal priority\n" +
+-				"\n" +
+-				"| # | Task | Slug | Recipe | At | Owner | Age | Revised | Labels |\n" +
+-				"| --- | --- | --- | --- | --- | --- | --- | --- | --- |\n" +
+-				"| 1 | **Held work** | `held` | loom | Webster | box |  |  | area |\n" +
+-				"| 2 | **Halted work** | `halted` | darn | paused · Plan-Write |  |  |  |  |\n" +
++				"| # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |\n" +
++				"| --- | --- | --- | --- | --- | --- | --- | --- |\n" +
++				"| T2 | **Halted work** | `halted` | darn | paused · Plan-Write |  |  |  |\n" +
++				"| T5 | **Held work** | `held` | loom | Webster | box |  | area |\n" +
+ 				"\n" +
+ 				"### Ready\n" +
+ 				"\n" +
+ 				"Waits on nothing open; can start now.\n" +
+ 				"\n" +
+-				"#### Normal priority\n" +
+-				"\n" +
+-				"| # | Task | Slug | Recipe | After | Age | Revised | Labels |\n" +
+-				"| --- | --- | --- | --- | --- | --- | --- | --- |\n" +
+-				"| 1 | **Base work** | `base` | loom |  |  |  |  |\n" +
++				"| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |\n" +
++				"| --- | --- | --- | --- | --- | --- | --- |\n" +
++				"| T1 | **Base work** | `base` | loom |  |  |  |\n" +
+ 				"\n" +
+ 				"### Layer A\n" +
+ 				"\n" +
+ 				"Waits only on Running or Ready entries.\n" +
+ 				"\n" +
+-				"#### Normal priority\n" +
+-				"\n" +
+-				"| # | Task | Slug | Recipe | After | Age | Revised | Labels |\n" +
+-				"| --- | --- | --- | --- | --- | --- | --- | --- |\n" +
+-				"| 1 | **Next work** | `next` | loom | `held` |  |  |  |\n" +
++				"| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |\n" +
++				"| --- | --- | --- | --- | --- | --- | --- |\n" +
++				"| T3 | **Next work** | `next` | loom | `held` |  |  |\n" +
+ 				"\n" +
+ 				"### Layer B\n" +
+ 				"\n" +
+ 				"Starts when every entry it names under After is done.\n" +
+ 				"\n" +
+-				"#### Normal priority\n" +
+-				"\n" +
+-				"| # | Task | Slug | Recipe | After | Age | Revised | Labels |\n" +
+-				"| --- | --- | --- | --- | --- | --- | --- | --- |\n" +
+-				"| 1 | **Last work** | `last` | loom | `next` |  |  |  |\n" +
++				"| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |\n" +
++				"| --- | --- | --- | --- | --- | --- | --- |\n" +
++				"| T4 | **Last work** | `last` | loom | `next` |  |  |\n" +
+ 				"\n" +
+ 				"## Notes\n" +
+ 				"\n" +
+diff --git a/internal/boardengine/replay.go b/internal/boardengine/replay.go
+index b31a13d5d..02421ae58 100644
+--- a/internal/boardengine/replay.go
++++ b/internal/boardengine/replay.go
+@@ -34,7 +34,7 @@ type replayField struct {
+ }
+ 
+ // replayFields lists every entry field a replay merges, in the order a change reports them.
+-// Id, created, revised and unknown keys are not merged as fields: the id is origin's, the dates follow the changes, and an unknown key stays as origin holds it.
++// Id, handle, created, revised and unknown keys are not merged as fields: the id and handle are origin's, the dates follow the changes, and an unknown key stays as origin holds it.
+ var replayFields = []replayField{
+ 	{"title", func(t Task) any { return t.Title }, func(dst *Task, src Task) { dst.Title = src.Title }},
+ 	{"kind", func(t Task) any { return t.Kind }, func(dst *Task, src Task) { dst.Kind = src.Kind }},
+@@ -146,6 +146,7 @@ type replayRun struct {
+ // The hub's prime_owner record replays like an entry field, reported lost under the entry name prime.
+ // Where both sides changed the same field of an entry or the same design file since the merge base, or the change touches an entry origin removed, origin's side is kept for that change and it is reported lost.
+ // A change the board's own checks refuse, the run lock included, is reported refused and so is a later change that depends on an entry a refused change added; the rest of the commit still lands.
++// An added entry takes a handle free on origin's board, and a changed entry keeps origin's handle unless its letter changed.
+ // It saves board.json and re-renders the board's output files when anything was applied, and writes nothing otherwise.
+ // It takes no lock and spawns no sync, since its caller holds the board and push locks.
+ func (FabricReplay) Apply(req fabricengine.BoardReplayRequest) (fabricengine.BoardReplayResult, error) {
+@@ -219,6 +220,7 @@ func (FabricReplay) Apply(req fabricengine.BoardReplayRequest) (fabricengine.Boa
+ 		return run.result, nil
+ 	}
+ 	if run.applied {
++		assignHandles(store.tasks, store.vocab)
+ 		if err := store.Save(); err != nil {
+ 			return fabricengine.BoardReplayResult{}, fmt.Errorf("save store: %w", err)
+ 		}
+@@ -257,7 +259,7 @@ func (r *replayRun) refusedDependency(entry Task) (string, bool) {
+ 	return "", false
+ }
+ 
+-// addEntry appends commit's entry with a fresh id when origin holds no entry of its slug.
++// addEntry appends commit's entry with a fresh id and no handle when origin holds no entry of its slug.
+ // Where origin holds one, each field commit's entry carries differently is reported lost.
+ func (r *replayRun) addEntry(commit Task) {
+ 	if origin, _, held := r.originEntry(commit.Slug); held {
+@@ -270,6 +272,8 @@ func (r *replayRun) addEntry(commit Task) {
+ 	}
+ 	incoming := cloneTasks([]Task{commit})[0]
+ 	incoming.ID = r.store.nextID()
++	// The local handle may already be origin's for another entry; Apply assigns one free on origin's board.
++	incoming.Handle = ""
+ 	incoming.Labels, incoming.Issues, incoming.DependsOn = orEmpty(incoming.Labels), orEmpty(incoming.Issues), orEmpty(incoming.DependsOn)
+ 	if dep, refused := r.refusedDependency(incoming); refused {
+ 		r.refusedAdds[incoming.Slug] = true
+diff --git a/internal/boardengine/replay_test.go b/internal/boardengine/replay_test.go
+index cf6748a21..94b399eb6 100644
+--- a/internal/boardengine/replay_test.go
++++ b/internal/boardengine/replay_test.go
+@@ -37,6 +37,10 @@ func withTitle(title string) func(*Task) {
+ 	return func(task *Task) { task.Title = title }
+ }
+ 
++func withHandle(handle string) func(*Task) {
++	return func(task *Task) { task.Handle = handle }
++}
++
+ func withBody(body string) func(*Task) {
+ 	return func(task *Task) { task.Body = body }
+ }
+@@ -259,16 +263,19 @@ func TestFabricReplay(t *testing.T) {
+ 			wantEntries: map[string]string{"b": "B2", "x": "x"},
+ 		},
+ 		{
+-			name:        "AddedEntryTakesOriginsNextID",
++			name:        "AddedEntryTakesOriginsNextIDAndAFreeHandle",
+ 			base:        []Task{replayEntry("a")},
+-			origin:      []Task{replayEntry("a"), replayEntry("b")},
++			origin:      []Task{replayEntry("a"), replayEntry("b", withHandle("T2"))},
+ 			parent:      []Task{replayEntry("a")},
+-			commit:      []Task{replayEntry("a"), replayEntry("c")},
++			commit:      []Task{replayEntry("a"), replayEntry("c", withHandle("T2"))},
+ 			wantEntries: map[string]string{"a": "a", "b": "b", "c": "c"},
+ 			check: func(t *testing.T, _ string, got map[string]Task) {
+ 				if got["c"].ID != 2 {
+ 					t.Errorf("added entry id = %d; want 2, origin's next", got["c"].ID)
+ 				}
++				if got["b"].Handle != "T2" || got["c"].Handle != "T3" {
++					t.Errorf("handles b %q, c %q; want origin's T2 kept and the added entry on T3, free on origin", got["b"].Handle, got["c"].Handle)
++				}
+ 			},
+ 		},
+ 		{
+diff --git a/internal/boardengine/runlock_test.go b/internal/boardengine/runlock_test.go
+index d980fb853..ccae0bf04 100644
+--- a/internal/boardengine/runlock_test.go
++++ b/internal/boardengine/runlock_test.go
+@@ -50,7 +50,7 @@ func TestRunLock(t *testing.T) {
+ 		{name: "upsert title", refused: true, act: upsertLocked(map[string]any{"title": "new"})},
+ 		{name: "upsert kind", refused: true, act: upsertLocked(map[string]any{"kind": "note"})},
+ 		{name: "upsert recipe", refused: true, act: upsertLocked(map[string]any{"recipe": "other-recipe"})},
+-		{name: "upsert priority", refused: true, act: upsertLocked(map[string]any{"priority": "high"})},
++		{name: "upsert priority on a held note", refused: true, locked: map[string]any{"kind": "note"}, act: upsertLocked(map[string]any{"priority": "high"})},
+ 		{name: "upsert depends_on", refused: true, extra: []map[string]any{other}, act: upsertLocked(map[string]any{"depends_on": []string{"other"}})},
+ 		{name: "upsert status and body", refused: true, act: upsertLocked(map[string]any{"status": "done", "body": "new"})},
+ 		{name: "status blocked", refused: true, locked: map[string]any{"status": "blocked · X"}, act: upsertLocked(map[string]any{"body": "new"})},
+@@ -193,6 +193,20 @@ func TestRunLock(t *testing.T) {
+ 		})
+ 	}
+ 
++	t.Run("status write on a run-held task stored with a priority", func(t *testing.T) {
++		t.Parallel()
++		boardPath := t.TempDir()
++		b := boardengine.New(boardengine.Config{Path: boardPath, Readme: "Home.md", DesignPrefix: "proposal-", Types: testTypes, Labels: testLabels, SkipGit: true})
++		if _, err := b.UpsertTask(lockedBase); err != nil {
++			t.Fatalf("seed: %v", err)
++		}
++		addEntryKeys(t, boardPath, "locked", `"priority":"high"`)
++
++		if err := b.SetStatus("locked", strPtr("paused · X")); err != nil {
++			t.Fatalf("SetStatus on a held task stored with a priority: %v", err)
++		}
++	})
++
+ 	t.Run("run status form", func(t *testing.T) {
+ 		t.Parallel()
+ 		if got := boardengine.RunStatus("running", "Webster"); got != "running · Webster" {
+diff --git a/internal/boardengine/store.go b/internal/boardengine/store.go
+index 86fecc9e3..aa5b64a22 100644
+--- a/internal/boardengine/store.go
++++ b/internal/boardengine/store.go
+@@ -30,6 +30,7 @@ const swapLockSuffix = ".swaplock"
+ // read time.
+ type BriefTask struct {
+ 	ID          int       `json:"id"`
++	Handle      string    `json:"handle,omitempty"`
+ 	Slug        string    `json:"slug"`
+ 	Title       string    `json:"title"`
+ 	DependsOn   []string  `json:"depends_on"`
+@@ -154,6 +155,7 @@ func NewStore(boardDir string) *Store {
+ // board.json wins when it exists; otherwise the legacy files that exist are migrated in memory.
+ // Whenever a legacy file exists, its done marks are folded into the loaded entries.
+ // Entries in the old tier-and-type shape convert in memory and persist in the new shape on the next Save.
++// An entry without a handle of its own letter gets one in memory, persisted on the next Save too.
+ func (s *Store) Load() error {
+ 	s.tasks = []Task{}
+ 	s.legacyDone = nil
+@@ -220,6 +222,7 @@ func (s *Store) Load() error {
+ 			entries[i].Labels = []string{}
+ 		}
+ 	}
++	assignHandles(entries, s.vocab)
+ 	s.tasks = entries
+ 	s.legacyDone = legacyDone
+ 	s.primeOwner = primeOwner
+@@ -426,8 +429,7 @@ func isDone(t Task) bool {
+ }
+ 
+ // MergeStatusUpdate carries the resolved set_status step for a MergeTasks call.
+-// Selector is a Go string when the task is identified by slug,
+-// or float64 when identified by numeric id (JSON numbers decode as float64).
++// Selector is a Go string when the task is identified by slug, float64 when identified by numeric id (JSON numbers decode as float64), or a Handle when identified by handle.
+ // Status is nil to clear the status field.
+ type MergeStatusUpdate struct {
+ 	Selector any
+@@ -435,7 +437,7 @@ type MergeStatusUpdate struct {
+ }
+ 
+ // UpsertPayloadKeys returns the keys a task payload carries on every upsert path: the required keys and the optional ones.
+-// "id" is auto-assigned and never accepted; "phase" and "group" are retired.
++// "id" and "handle" are assigned by the board and never accepted; "phase" and "group" are retired.
+ // "owner_machine" is accepted only as the entry's effective owner, a no-op.
+ func UpsertPayloadKeys() (required, optional []string) {
+ 	return []string{"slug"}, []string{"title", "brief", "body", "depends_on", "isolated", "status", "kind", "labels", "recipe", "priority", "short_name", "issues", "created", "revised", "run_settings", "profile", "owner_machine"}
+@@ -467,6 +469,9 @@ func validateUpsertFields(fields map[string]any) error {
+ 			if k == "type" {
+ 				return fmt.Errorf("unknown field: %q (type is retired; use \"labels\")", k)
+ 			}
++			if k == "handle" {
++				return fmt.Errorf("unknown field: %q (the board assigns an entry's handle; drop it from the payload)", k)
++			}
+ 			return fmt.Errorf("unknown field: %q", k)
+ 		}
+ 	}
+@@ -527,142 +532,85 @@ func (s *Store) UpsertTask(fields map[string]any) (Task, error) {
+ 	return incoming, nil
+ }
+ 
+-// GetTask looks up a task by integer ID or slug string. Returns (Task, true) if found.
+-func (s *Store) GetTask(idOrSlug any) (Task, bool) {
+-	switch v := idOrSlug.(type) {
++// selects reports whether selector names t: an int or float64 matches its id, a string its slug and a Handle its handle, a letter matching case-insensitively.
++func selects(t Task, selector any) bool {
++	switch v := selector.(type) {
+ 	case int:
+-		for _, t := range s.tasks {
+-			if t.ID == v {
+-				return t, true
+-			}
+-		}
++		return t.ID == v
+ 	case float64:
+-		id := int(v)
+-		for _, t := range s.tasks {
+-			if t.ID == id {
+-				return t, true
+-			}
+-		}
++		return t.ID == int(v)
+ 	case string:
+-		for _, t := range s.tasks {
+-			if t.Slug == v {
+-				return t, true
+-			}
+-		}
++		return t.Slug == v
++	case Handle:
++		letter, number, ok := ParseHandle(string(v))
++		storedLetter, storedNumber, stored := ParseHandle(t.Handle)
++		return ok && stored && letter == storedLetter && number == storedNumber
+ 	}
+-	return Task{}, false
++	return false
+ }
+ 
+-// RemoveTask deletes the task by ID or slug. Returns an error if not found.
+-func (s *Store) RemoveTask(idOrSlug any) error {
+-	var slugToRemove string
+-
+-	switch v := idOrSlug.(type) {
+-	case int:
+-		for _, t := range s.tasks {
+-			if t.ID == v {
+-				slugToRemove = t.Slug
+-				break
+-			}
+-		}
+-	case float64:
+-		id := int(v)
+-		for _, t := range s.tasks {
+-			if t.ID == id {
+-				slugToRemove = t.Slug
+-				break
+-			}
+-		}
+-	case string:
+-		slugToRemove = v
+-		found := false
+-		for _, t := range s.tasks {
+-			if t.Slug == v {
+-				found = true
+-				break
+-			}
+-		}
+-		if !found {
+-			return fmt.Errorf("task not found: %v", idOrSlug)
++// index returns the position of the entry selector names, a slug string, a numeric id or a Handle, and false when no entry matches.
++func (s *Store) index(selector any) (int, bool) {
++	for i := range s.tasks {
++		if selects(s.tasks[i], selector) {
++			return i, true
+ 		}
+-	default:
+-		return fmt.Errorf("task not found: %v", idOrSlug)
+ 	}
++	return -1, false
++}
+ 
+-	if slugToRemove == "" {
+-		return fmt.Errorf("task not found: %v", idOrSlug)
++// GetTask looks up the entry selector names, a slug string, a numeric id or a Handle. Returns (Task, true) if found.
++func (s *Store) GetTask(selector any) (Task, bool) {
++	i, found := s.index(selector)
++	if !found {
++		return Task{}, false
+ 	}
++	return s.tasks[i], true
++}
+ 
+-	for i, t := range s.tasks {
+-		if t.Slug == slugToRemove {
+-			s.tasks = append(s.tasks[:i], s.tasks[i+1:]...)
+-			return nil
+-		}
++// RemoveTask deletes the entry selector names, a slug string, a numeric id or a Handle. Returns an error if not found.
++func (s *Store) RemoveTask(selector any) error {
++	i, found := s.index(selector)
++	if !found {
++		return fmt.Errorf("task not found: %v", selector)
+ 	}
+-
+-	return fmt.Errorf("task not found: %v", idOrSlug)
++	s.tasks = append(s.tasks[:i], s.tasks[i+1:]...)
++	return nil
+ }
+ 
+-// SetStatus sets or clears the status field for the task identified by idOrSlug.
+-// Returns fmt.Errorf("task not found: %v", idOrSlug) when no task matches id or slug.
+-func (s *Store) SetStatus(idOrSlug any, status *string) error {
+-	for i := range s.tasks {
+-		match := false
+-		switch v := idOrSlug.(type) {
+-		case int:
+-			match = s.tasks[i].ID == v
+-		case float64:
+-			match = s.tasks[i].ID == int(v)
+-		case string:
+-			match = s.tasks[i].Slug == v
+-		}
+-
+-		if match {
+-			incoming := s.tasks[i]
+-			incoming.Status = status
+-			if err := s.validateWrite(s.tasks, incoming); err != nil {
+-				return err
+-			}
+-			s.tasks[i].Status = status
+-			return nil
+-		}
++// SetStatus sets or clears the status field of the entry selector names, a slug string, a numeric id or a Handle.
++// Returns fmt.Errorf("task not found: %v", selector) when no entry matches.
++func (s *Store) SetStatus(selector any, status *string) error {
++	i, found := s.index(selector)
++	if !found {
++		// An error, so callers get clear feedback instead of a silent no-op.
++		return fmt.Errorf("task not found: %v", selector)
++	}
++	incoming := s.tasks[i]
++	incoming.Status = status
++	if err := s.validateWrite(s.tasks, incoming); err != nil {
++		return err
+ 	}
+-	// No task matched — error so callers get clear feedback instead of a silent no-op.
+-	return fmt.Errorf("task not found: %v", idOrSlug)
++	s.tasks[i].Status = status
++	return nil
+ }
+ 
+-// SetDeps replaces the depends_on list of the task selector names, a slug string or a numeric id, running full validation.
+-// Returns fmt.Errorf("task not found: %v", selector) when no task matches.
++// SetDeps replaces the depends_on list of the entry selector names, a slug string, a numeric id or a Handle, running full validation.
++// Returns fmt.Errorf("task not found: %v", selector) when no entry matches.
+ func (s *Store) SetDeps(selector any, dependsOn []string) error {
+-	var task *Task
+-	for i := range s.tasks {
+-		match := false
+-		switch v := selector.(type) {
+-		case int:
+-			match = s.tasks[i].ID == v
+-		case float64:
+-			match = s.tasks[i].ID == int(v)
+-		case string:
+-			match = s.tasks[i].Slug == v
+-		}
+-		if match {
+-			task = &s.tasks[i]
+-			break
+-		}
+-	}
+-
+-	if task == nil {
++	i, found := s.index(selector)
++	if !found {
+ 		return fmt.Errorf("task not found: %v", selector)
+ 	}
+ 
+-	incoming := *task
++	incoming := s.tasks[i]
+ 	incoming.DependsOn = dependsOn
+ 
+ 	if err := s.validateWrite(s.tasks, incoming); err != nil {
+ 		return err
+ 	}
+ 
+-	*task = incoming
++	s.tasks[i] = incoming
+ 	return nil
+ }
+ 
+@@ -720,6 +668,7 @@ func (s *Store) ListTasksBrief(labels []string) []BriefTask {
+ 		}
+ 		brief := BriefTask{
+ 			ID:           t.ID,
++			Handle:       t.Handle,
+ 			Slug:         t.Slug,
+ 			Title:        t.Title,
+ 			DependsOn:    t.DependsOn,
+@@ -740,7 +689,7 @@ func (s *Store) ListTasksBrief(labels []string) []BriefTask {
+ 	return result
+ }
+ 
+-// Promote makes the entry identified by idOrSlug a task.
++// Promote makes the entry identified by idOrSlug a task and clears its priority, which only a note carries.
+ // A task is returned unchanged with changed false, so the caller knows nothing was written.
+ // The promoted entry passes validateWrite, so a missing type label refuses it.
+ func (s *Store) Promote(idOrSlug any) (task Task, changed bool, err error) {
+@@ -754,6 +703,7 @@ func (s *Store) Promote(idOrSlug any) (task Task, changed bool, err error) {
+ 
+ 	incoming := current
+ 	incoming.Kind = KindTask
++	incoming.Priority = ""
+ 	if err := s.validateWrite(s.tasks, incoming); err != nil {
+ 		return Task{}, false, err
+ 	}
+diff --git a/internal/boardengine/store_test.go b/internal/boardengine/store_test.go
+index 795e9d3e8..50f098ffb 100644
+--- a/internal/boardengine/store_test.go
++++ b/internal/boardengine/store_test.go
+@@ -827,11 +827,11 @@ func TestListTasksBriefLayerAndProposal(t *testing.T) {
+ }
+ 
+ // TestListAndFindReadmeOrder verifies ListTasksBrief and Find return entries in README order:
+-// open tasks first, then open notes, done last, with priority ordering within a group, and that each listed entry carries its priority.
++// open tasks first, then open notes, done last, and that each listed entry carries its priority.
+ func TestListAndFindReadmeOrder(t *testing.T) {
+ 	s := boardengine.NewStore("")
+ 	for _, f := range []map[string]any{
+-		{"slug": "x-low", "kind": "task", "priority": "low"},
++		{"slug": "x-first", "kind": "task"},
+ 		{"slug": "x-note", "kind": "note"},
+ 		{"slug": "x-task", "kind": "task"},
+ 		{"slug": "x-note2", "kind": "note", "priority": "high"},
+@@ -845,7 +845,7 @@ func TestListAndFindReadmeOrder(t *testing.T) {
+ 		t.Fatalf("SetStatus: %v", err)
+ 	}
+ 
+-	want := "x-task,x-low:low,x-note2:high,x-note,x-done"
++	want := "x-first,x-task,x-note,x-note2:high,x-done"
+ 	slugs := func(bs []boardengine.BriefTask) string {
+ 		var out []string
+ 		for _, b := range bs {
+@@ -1185,6 +1185,17 @@ func TestLoad(t *testing.T) {
+ 				}
+ 			},
+ 		},
++		{
++			name: "a task's stored priority is dropped and a note's kept",
++			body: `{"version":1,"entries":[{"id":0,"slug":"t","kind":"task","priority":"high"},{"id":1,"slug":"n","kind":"note","priority":"low"}]}`,
++			check: func(t *testing.T, tasks []boardengine.Task) {
++				if len(tasks) != 2 || tasks[0].Priority != "" || tasks[1].Priority != boardengine.PriorityLow {
++					t.Errorf("loaded %+v; want the task without a priority and the note low", tasks)
++				}
++			},
++			save:     true,
++			wantKeys: [][3]string{{"t", "priority", ""}, {"n", "priority", `"low"`}},
++		},
+ 		{
+ 			name: "a kind with no labels key becomes an empty labels list",
+ 			body: `{"version":1,"entries":[{"id":0,"slug":"a","title":"A","kind":"note"}]}`,
+@@ -1222,6 +1233,7 @@ func TestLoad(t *testing.T) {
+   "entries": [
+     {
+       "id": 0,
++      "handle": "T1",
+       "slug": "a",
+       "title": "A",
+       "kind": "task",
+@@ -1255,6 +1267,7 @@ func TestLoad(t *testing.T) {
+   "entries": [
+     {
+       "id": 0,
++      "handle": "T1",
+       "slug": "a",
+       "title": "A",
+       "kind": "task",
+@@ -1289,6 +1302,7 @@ func TestLoad(t *testing.T) {
+     },
+     {
+       "id": 1,
++      "handle": "T2",
+       "slug": "b",
+       "title": "B",
+       "kind": "task",
+@@ -1319,6 +1333,7 @@ func TestLoad(t *testing.T) {
+     },
+     {
+       "id": 3,
++      "handle": "T3",
+       "slug": "fin",
+       "title": "Fin",
+       "kind": "task",
+diff --git a/internal/boardengine/task.go b/internal/boardengine/task.go
+index eefe03a49..0947aba57 100644
+--- a/internal/boardengine/task.go
++++ b/internal/boardengine/task.go
+@@ -17,7 +17,9 @@ import (
+ 
+ // Task is the canonical record stored in board.json.
+ type Task struct {
+-	ID        int      `json:"id"`
++	ID int `json:"id"`
++	// Handle is the entry's short name, a letter and a number such as T4 or B2, which the board assigns; empty until a load or write assigns it.
++	Handle    string   `json:"handle,omitempty"`
+ 	Slug      string   `json:"slug"`
+ 	Title     string   `json:"title"`
+ 	Kind      string   `json:"kind"`             // KindTask or KindNote
+@@ -243,7 +245,7 @@ const (
+ 	KindNote = "note"
+ )
+ 
+-// The priority values an entry accepts.
++// The priority values a note accepts; a task carries none.
+ // Task.Priority holds PriorityHigh, PriorityLow or the empty value for normal, so a write of PriorityNormal stores no key.
+ const (
+ 	PriorityHigh   = "high"
+@@ -251,19 +253,7 @@ const (
+ 	PriorityLow    = "low"
+ )
+ 
+-// priorityRank orders priority values for sorting: high before normal before low, with the empty value as normal.
+-func priorityRank(priority string) int {
+-	switch priority {
+-	case PriorityHigh:
+-		return 0
+-	case PriorityLow:
+-		return 2
+-	default:
+-		return 1
+-	}
+-}
+-
+-// normalizeTask stores a normal priority and an empty run settings object as the empty value, clears the owner of a note and stores the dates in whole UTC seconds, then checks that the Kind is one of the two kinds and the Priority one of the accepted values.
++// normalizeTask stores a normal priority and an empty run settings object as the empty value, clears the owner of a note and stores the dates in whole UTC seconds, then checks that the Kind is one of the two kinds, the Priority one of the accepted values and a task without one.
+ func normalizeTask(t *Task) error {
+ 	if t.Kind != KindTask && t.Kind != KindNote {
+ 		return fmt.Errorf("kind %q is not one of %s, %s", t.Kind, KindTask, KindNote)
+@@ -283,6 +273,10 @@ func normalizeTask(t *Task) error {
+ 		return fmt.Errorf("entry %q has priority %q, and a priority is one of %s, %s, %s: correct it, or set %q to clear it",
+ 			t.Slug, t.Priority, PriorityHigh, PriorityNormal, PriorityLow, PriorityNormal)
+ 	}
++	if t.Kind == KindTask && t.Priority != "" {
++		return fmt.Errorf("task %q has priority %q, and only a note carries a priority: set %q to clear it, or make a note a task with \"lyx board promote\", which clears it",
++			t.Slug, t.Priority, PriorityNormal)
++	}
+ 	return nil
+ }
+ 
+diff --git a/plugins/ly/skills/board/SKILL.md b/plugins/ly/skills/board/SKILL.md
+index 4784da1cc..0ac348c80 100644
+--- a/plugins/ly/skills/board/SKILL.md
++++ b/plugins/ly/skills/board/SKILL.md
+@@ -22,6 +22,17 @@ Every entry carries a `kind`:
+ A new entry without `kind` lands as a note, so claimable work must pass `kind: "task"`.
+ A note stays as written until the operator decides to build it; then suitable notes are merged into one task, promoted, and removed.
+ 
++## Handles
++
++The board gives every entry a short handle, such as `T4`, `B2` or `E7`: `T` for a task, and for a note the first letter of its type label, upper-cased.
++The number is the lowest of its letter not in use, and it stays while the entry lives; a promote or a type change gives the entry a new handle of its new letter.
++The operator names entries by handle, and every verb that takes `slug` or `id` takes `handle` instead, or the bare handle as its whole argument:
++
++```
++lyx board get B4
++lyx board set-status '{"handle":"T4","status":null}'
++```
++
+ ## Labels
+ 
+ Every entry carries `labels`, validated against two maps in the hub's `board.yaml`, each from label to description:
+@@ -47,8 +58,8 @@ Create or update an entry, demotion included:
+ lyx board upsert '{"slug":"my-task","title":"My Task","brief":"Short summary","kind":"task","labels":["enhancement"]}'
+ ```
+ 
+-An entry's optional `priority` is `high`, `normal` or `low`; absent means normal, and `"priority":"normal"` clears it.
+-It orders the entry within its README group and listing.
++A note's optional `priority` is `high`, `normal` or `low`; absent means normal, and `"priority":"normal"` clears it.
++A task carries none: a write giving a task a priority is refused, and `promote` clears a note's.
+ 
+ Read a long body from a file, or from stdin with `-`, instead of embedding it in the payload:
+ 
+@@ -93,7 +104,7 @@ lyx board find --text retry backoff
+ lyx board find --label bug retry
+ ```
+ 
+-List every entry, with `--text` for a one-line-per-entry scan that shows each entry's age and time since its last revision, `--sort age` or `--sort revised` to put the longest-lying entries first, and fetch one entry in full:
++List every entry, with `--text` for a one-line-per-entry scan that opens with each entry's handle and shows its age and time since its last revision, `--sort age` or `--sort revised` to put the longest-lying entries first, and fetch one entry in full:
+ 
+ ```
+ lyx board list --text
