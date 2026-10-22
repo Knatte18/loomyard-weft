@@ -1,11 +1,11 @@
 {
-  "current_producer": "Plan-Bouncer",
+  "current_producer": "Webster",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Plan-Bouncer",
-    "last": "Plan-Burler-Fix → bounced to Plan-Bouncer",
+    "now": "Webster",
+    "last": "Plan-Bouncer → done",
     "wait": ""
   },
   "history": [
@@ -371,6 +371,12 @@
       ],
       "budget_exempt": true,
       "routed_to": "Plan-Bouncer"
+    },
+    {
+      "producer": "Plan-Bouncer",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYXHUB/machine-handover/_lyx/reviews/plan/round-3-bouncer-ledger.md",
+      "at": "2026-10-22T08:10:30Z"
     }
   ],
   "product": {
