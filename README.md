@@ -18,19 +18,22 @@ Held by a run; its scope is locked until the run ends.
 | # | Task | Slug | Recipe | At | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | 1 | **One machine takes over from another: owner machines, lyx adopt, landing on the parent owner**<br>• Owner machine per entry, lyx adopt of named entries, landing only on the parent owner, owner outcome in the origin reconcile, Open-Window per machine | [`machine-handover`](design-machine-handover.md) | loom | Webster | 2d | 2d | batten, board, orch, fabric |
-| 2 | **[.NET 006] LoomYard uses quarry C# glyphs: version raise, alphabet by extension**<br>• LoomYard side of C# glyphs, after the quarry hub csharp-alphabet lands and is tagged<br>• `profile: light` | [`quarry-csharp`](design-quarry-csharp.md) | loom | Finalize | 1d | 2h | quarry, dotnet |
 
 #### Normal priority
 
 | # | Task | Slug | Recipe | At | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 3 | **tender pause does not hold a verify gate's re-prompt, and creel interrupt is refused under the pause**<br>• `profile: light` | [`tender-pause-holds-reprompt`](design-tender-pause-holds-reprompt.md) | loom | Webster | 1d | 3h | creel, shed, webster |
+| 2 | **tender pause does not hold a verify gate's re-prompt, and creel interrupt is refused under the pause**<br>• `profile: light` | [`tender-pause-holds-reprompt`](design-tender-pause-holds-reprompt.md) | loom | Webster | 1d | 3h | creel, shed, webster |
 
 ### Ready
 
 Waits on nothing open; can start now.
 
-_None._
+#### Normal priority
+
+| # | Task | Slug | Recipe | After | Age | Revised | Labels |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| 1 | **Remove the Webster kick-start pack**<br>• Drop every kick-start pack layout and its code; glyphs stay in the plan and its gates<br>• `darn: review_hard_max_bounces 2`<br>• `darn: review_max_bounces 1` | [`kickstart-pack-remove`](design-kickstart-pack-remove.md) | darn |  | 4d | 2h | webster, quarry, loom |
 
 ### Layer A
 
@@ -46,9 +49,8 @@ Waits only on Running or Ready entries.
 
 | # | Task | Slug | Recipe | After | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 2 | **Remove the Webster kick-start pack**<br>• Drop every kick-start pack layout and its code; glyphs stay in the plan and its gates<br>• `darn: review_hard_max_bounces 2`<br>• `darn: review_max_bounces 1` | [`kickstart-pack-remove`](design-kickstart-pack-remove.md) | darn | `quarry-csharp` | 4d | 2h | webster, quarry, loom |
-| 3 | **Finalize blocks on 'worktree dirty' without naming the tree or paths, and the loom's own run record counts as dirty**<br>• `profile: light` | [`finalize-dirty-names-paths`](design-finalize-dirty-names-paths.md) | loom | `machine-handover` | 1d | 1d | fabric, loom |
-| 4 | **Board entries get short handles (T4, B2, E7) for lookup; tasks lose priority; tighter README tables**<br>• Stored lowest-free handle per kind/type, usable in every board verb; priority only on notes; README sorted by handle with a priority column and merged age/revised<br>• `darn: review_hard_max_bounces 2`<br>• `darn: review_max_bounces 1` | [`board-entry-handles`](design-board-entry-handles.md) | darn | `machine-handover` | 1h | 1h | board |
+| 2 | **Finalize blocks on 'worktree dirty' without naming the tree or paths, and the loom's own run record counts as dirty**<br>• `profile: light` | [`finalize-dirty-names-paths`](design-finalize-dirty-names-paths.md) | loom | `machine-handover` | 1d | 1d | fabric, loom |
+| 3 | **Board entries get short handles (T4, B2, E7) for lookup; tasks lose priority; tighter README tables**<br>• Stored lowest-free handle per kind/type, usable in every board verb; priority only on notes; README sorted by handle with a priority column and merged age/revised<br>• `darn: review_hard_max_bounces 2`<br>• `darn: review_max_bounces 1` | [`board-entry-handles`](design-board-entry-handles.md) | darn | `machine-handover` | 1h | 1h | board |
 
 ### Layer B
 
@@ -165,3 +167,11 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | # | Note | Slug | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | 19 | **[.NET 003] Scoped build and test for C# hubs**<br>• Verify gates in a .NET hub build and test only the projects a card touches, since a scanned Windows machine makes every build slow. | [`dotnet-scoped-verify`](design-dotnet-scoped-verify.md) | 9d | 1d | shed, webster, dotnet |
+
+## Done
+
+Finished, awaiting `lyx board prune --apply`.
+
+| # | Entry | Slug | Age | Revised | Labels |
+| --- | --- | --- | --- | --- | --- |
+| 1 | **[.NET 006] LoomYard uses quarry C# glyphs: version raise, alphabet by extension**<br>• LoomYard side of C# glyphs, after the quarry hub csharp-alphabet lands and is tagged<br>• `profile: light` | [`quarry-csharp`](design-quarry-csharp.md) | 1d | 2h | quarry, dotnet |
