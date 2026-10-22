@@ -1312,31 +1312,6 @@
       "body": "## Seen\n\n`run-process-ownership` (2026-10-22) ran mostly one card per fork under the `cautious` profile's budget 200k: its cards estimated 145-260k alone.\nMeasured fork peaks matched the estimates overall; `batch_growth` (7k) is above the ~2k measured when batches go well.\nMany small forks were expensive under the identity batcher.\n\n## Decision (operator, 2026-10-22)\n\n`cautious` stays as it is; the hub's `batcher.yaml` adds a profile `wide`, the same as `cautious` but with `budget: 300000`, and makes it `active`.\n\n## Follow-up\n\nAfter a few loom runs, compare cost and fork quality against earlier runs; then decide whether `wide` goes into `internal/batcher/template.yaml`.\n",
       "created": "2026-10-22T13:49:01Z",
       "revised": "2026-10-22T13:54:00Z"
-    },
-    {
-      "id": 763,
-      "handle": "T2",
-      "slug": "config-profile-map-layers",
-      "title": "Config layers set one profile key and merge profile maps by name",
-      "kind": "task",
-      "labels": [
-        "bug",
-        "config",
-        "webster"
-      ],
-      "issues": [
-        833,
-        834
-      ],
-      "recipe": "darn",
-      "depends_on": [],
-      "isolated": false,
-      "brief": "--set of a nested profile key works, and a hub profiles map adds to the template profiles instead of hiding them",
-      "body": "Two faults in how config layers handle a per-name map such as `batcher.yaml`'s `profiles:`.\n\n## 1. `--set` of a nested key fails\n\nImported from [issue #833](https://github.com/Knatte18/loomyard/issues/833).\n\n`lyx config batcher --layer default --set profiles.cautious.budget=300000` is refused with \"cannot unmarshal !!str `300000` into batcher.profile\", though the refusal's own known-key list names `profiles.cautious.budget`.\n\nExpected: a key the verb lists as known sets that one leaf, leaving the profile's other keys to the lower layers.\n\n## 2. A hub profiles map hides the template's profiles\n\nImported from [issue #834](https://github.com/Knatte18/loomyard/issues/834).\n\nThe hub's `batcher.yaml` added one profile, `wide`; `lyx config batcher --resolved` then listed only `wide`, and the template's `cautious` and `identity` no longer resolved.\nWorkaround in this hub: `cautious` and `identity` are copied into the hub layer, which pins their values there.\n\nExpected: a layer's profiles add to or override the template's by name.\nOnce fixed, the hub's copies of `cautious` and `identity` can be removed (note `batch-budget-300k-trial`).\n",
-      "status": "done",
-      "created": "2026-10-22T14:01:42Z",
-      "revised": "2026-10-22T14:03:43Z",
-      "owner_machine": "neve"
     }
   ],
   "prime_owner": "neve"
