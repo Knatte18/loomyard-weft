@@ -1,11 +1,11 @@
 {
-  "current_producer": "Darn-Burler-Review",
+  "current_producer": "Darn-Burler-Fix",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Darn-Burler-Review",
-    "last": "Darn-Bouncer → bounced to Darn-Burler-Review",
+    "now": "Darn-Burler-Fix",
+    "last": "Darn-Burler-Review → bounced to Darn-Burler-Fix",
     "wait": ""
   },
   "history": [
@@ -90,6 +90,23 @@
       "at": "2026-10-22T12:13:43Z",
       "budget_exempt": true,
       "routed_to": "Darn-Burler-Review"
+    },
+    {
+      "producer": "Darn-Burler-Review",
+      "outcome": "stuck",
+      "output": "/home/knatte/Code/loomyard-LYXHUB/report-timing-unreadable-journal/_lyx/reviews/darn/round-2-review.md",
+      "at": "2026-10-22T12:14:27Z",
+      "gate_attempts": 0,
+      "gate_spans": [
+        {
+          "gate": "review",
+          "kind": "gate",
+          "start": "2026-10-22T12:14:27.234137437Z",
+          "end": "2026-10-22T12:14:27.234291916Z"
+        }
+      ],
+      "budget_exempt": true,
+      "routed_to": "Darn-Burler-Fix"
     }
   ],
   "product": {
