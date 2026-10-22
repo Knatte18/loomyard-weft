@@ -1,12 +1,11 @@
 {
-  "current_producer": "Plan-Burler-Fix",
+  "current_producer": "Plan-Bouncer",
   "state": "running",
   "error": "",
-  "pending_by": "shed",
   "pause_requested": false,
   "activity": {
-    "now": "Plan-Burler-Fix",
-    "last": "Plan-Burler-Review → bounced to Plan-Burler-Fix",
+    "now": "Plan-Bouncer",
+    "last": "Plan-Burler-Fix → bounced to Plan-Bouncer",
     "wait": ""
   },
   "history": [
@@ -217,6 +216,24 @@
       ],
       "budget_exempt": true,
       "routed_to": "Plan-Burler-Fix"
+    },
+    {
+      "producer": "Plan-Burler-Fix",
+      "outcome": "stuck",
+      "output": "/home/knatte/Code/loomyard-LYXHUB/orch-strand-cycle/_lyx/reviews/plan/round-1-review.md",
+      "at": "2026-10-22T16:19:27Z",
+      "gate_attempts": 0,
+      "gate_spans": [
+        {
+          "gate": "plan",
+          "kind": "gate",
+          "start": "2026-10-22T16:19:24.927863752Z",
+          "end": "2026-10-22T16:19:27.28589106Z"
+        }
+      ],
+      "budget_exempt": true,
+      "routed_to": "Plan-Bouncer",
+      "by": "shed"
     }
   ],
   "product": {
