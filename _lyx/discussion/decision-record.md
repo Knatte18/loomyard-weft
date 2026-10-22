@@ -58,8 +58,13 @@ The superset rule keeps a base fan edit from silently going missing in a layer.
 Any other value must name a shipped layer.
 
 The key is read only from the module's base layer: the hub file `<Board>/_lyx/config/lenses.yaml` in a hub, the worktree file standalone.
-A `lens_set` key in any layer above the base is refused at load with an `ErrInvalid` error naming the file, saying the key belongs in the base file, and naming the way forward: `lyx config lenses --layer default --set lens_set=<name>` from the hub's prime worktree in a hub, `lyx config lenses --set lens_set=<name>` standalone.
-An unknown value is refused at load with an `ErrInvalid` error naming the shipped layers and the same way forward.
+A `lens_set` key in a hub worktree file is refused at load with an `ErrInvalid` error naming the file, saying the key belongs in the base file, and naming the way forward: remove `lens_set` from the named file, then set it in the base with `lyx config lenses --layer default --set lens_set=<name>` from the hub's prime worktree.
+`configengine.Set` refuses a write that leaves the selector key in a hub worktree file before anything is written,
+and `configengine.Edit` refuses such a save after the editor writes it, putting the file back to its previous bytes or removing it when the call created it, as it does for a refused local save;
+both give the same refusal, which names the removal step only when the file held the key before the write.
+So `lyx config lenses --set lens_set=<name>` in a hub worktree gives that refusal alone, never followed by the generic load-failure way forward.
+A `lens_set` key in a local file keeps the refusal `ValidateLocal` gives every Guard key, since that check runs first; lenses, a per-worktree module, has no machine layer.
+An unknown value is refused at load with an `ErrInvalid` error naming the shipped layers and the way forward: `lyx config lenses --layer default --set lens_set=<name>` from the hub's prime worktree in a hub, `lyx config lenses --set lens_set=<name>` standalone.
 
 Rationale: every file is judged against the template the load uses, so the selector must have one source for the whole stack.
 The guard: a worktree's own `lenses.yaml` can no longer pick a layer; it still overrides any lens or fan by name.
@@ -76,13 +81,14 @@ Configengine exports the one function that composes the effective template, and 
 A path is classified by what it does, whatever verb runs it:
 
 - Every path that compares a document against the template, or composes the template with the layers below a given layer, uses the effective template: configengine's load and fallback, `Set`, `Edit`, `Provenance` and below-layer composition, and every configsync strip, prune, reconcile and template-equal drop, on a base file, a worktree file or a seed alike.
-- Only paths that list template keys or scaffold a whole template keep the base template.
+- Only paths that list template keys or scaffold a whole template keep the base template, a scaffold keeping it outside the per-name maps of an overlay module, as the next bullet says.
   The names an overlay adds, such as `numerics`, live in per-name maps, where those paths keep a name the template lacks.
+- A scaffold of a base file for a module whose spec carries an overlay, through `Set` or `Edit`, writes its per-name maps empty, as standalone reconcile already writes a fresh file, so no scaffold pins a base template entry over the picked layer.
 
 `Provenance` labels a unit the overlay supplies as `template:<lens_set>`.
 
 Rationale: reconcile's promise that a drop leaves the loaded value unchanged holds only if load and every judging path use the same template.
-Under `lens_set: csharp`, an entry equal to the csharp prose is dropped and one equal to the base prose is kept, in the hub file and in a worktree file alike.
+Under `lens_set: csharp`, an entry equal to the csharp prose is dropped and one equal to the base prose is kept, in the hub file and in a standalone worktree file alike; a hub worktree file is only pruned, and the one-time migration strip judges it against the layers below it.
 A generic spec field keeps lenses a leaf package and keeps layer resolution inside configengine (`PATTERN-config-layers`, `PATTERN-leaf-packages`).
 
 ### D5 — `remove` drops lenses after resolution
@@ -91,7 +97,8 @@ A generic spec field keeps lenses a leaf package and keeps layer resolution insi
 `lenses.Load` applies it after the resolved document is decoded, and is the only place it applies: every lens consumer reads through `lenses.Load`, and a raw read of the resolved document sees no removal.
 Each named lens leaves `Lenses`, and every occurrence leaves every fan, the hub's own fans included.
 A fan that removal leaves empty leaves `Fans`, and `ResolveFan` on it refuses with an error saying `remove` emptied it, naming the lenses removed and the way forward: point the fan key at another fan or `""`, or drop a name from `remove`.
-A `remove` entry naming no lens of the resolved document is skipped and logged at Warn naming the entry, so a lens a later template edit or a layer switch takes away never fails a load.
+A `remove` entry naming no lens of the resolved document is skipped, so a lens a later template edit or a layer switch takes away never fails a load.
+`lenses.Load` reports the skipped entries through a helper configengine exports, which logs them at Warn naming the layer file the resolved `remove` came from and each entry, once per process per file and entry list, the way `warnUnknownKeys` dedups, so a loader in a poll loop warns once.
 `CheckLoad` resolves the fans that remain.
 
 The guard: `remove` lets a hub take a review lens out of every fan.
@@ -102,7 +109,7 @@ Rationale: the operator decided each repository can remove lenses it does not wa
 ### D6 — The operator picks the layer; existing hubs move to the neutral base until then
 
 No code writes `lens_set` for a hub.
-A hub's operator sets it once with the D3 way forward, which runs `CheckLoad` and rolls back an unknown name.
+A hub's operator sets it once with D3's set command, `lyx config lenses --layer default --set lens_set=<name>` from the hub's prime worktree, which runs `CheckLoad` and rolls back an unknown name.
 This hub and the quarry hub, both Go, resolve the neutral base from landing until the operator sets `lens_set: go` on each; the orch runs it for this hub right after landing.
 This is accepted: the base lenses still review every area, and the task worktree cannot write Bolt's config.
 `pattern-fit`, `code-pattern-fit` and `docs-consistency` change prose for every hub, Go hubs under `lens_set: go` included, since D1 rewords them in the base.
@@ -113,6 +120,7 @@ Rationale: a hub's base file holds only what the hub tuned (`PATTERN-sparse-hub-
 
 - `PATTERN-config-strictness`: lenses keeps `LoadOrTemplate`.
 - Every new template key is classified in `ConfigSpec` (`TestModules_EveryTemplateKeyClassified`).
+- `PATTERN-leaf-packages`: `internal/lenses` gains no import; the `remove` Warn is logged through configengine.
 - `PATTERN-documentation-lifecycle`: the design lands in `internal/lenses/doc.go` and `internal/configengine/doc.go`.
 
 ## Auto-mode assumptions
@@ -125,19 +133,28 @@ Rationale: a hub's base file holds only what the hub tuned (`PATTERN-sparse-hub-
 
 - A `remove` that empties a fan a loom or darn fan key names passes `lyx config lenses --set`; it surfaces when loom or darn validates or resolves that fan key, at its config check or at the run's next review round.
 
+<!-- lyx:carry-over Discussion-Review -->
+- Discussion-Review, round 2: converged; each finding below was fixed or disputed by the round's fixer, and no fresh reviewer has seen the result; the fixer report says which.
+  Review: _lyx/reviews/discussion/round-2-review.md; fixer report: _lyx/reviews/discussion/round-2-fixer-report.md.
+  - worktree-template-equal-drop-in-hub-nonexistent (class consistency, severity MEDIUM, open in rounds 1, 2)
+<!-- /lyx:carry-over Discussion-Review -->
+
 ## Acceptance criteria
 
 - With `lens_set` absent or `""`, a load resolves the base template's lenses and fans, every one language-neutral.
 - With `lens_set: go`, the five overlaid lenses resolve to today's prose verbatim, and every other lens and fan to the base.
 - With `lens_set: csharp`, the five lenses resolve to the csharp prose, `numerics` is defined, and `review-code` and `full` end with `numerics`.
 - A hub-file or worktree-file lens entry beats the layer's entry of the same name.
-- Under a hub file with `lens_set: csharp`, reconciling the hub file and a worktree file each drops an entry equal to the csharp prose and keeps one equal to the base prose, and the loaded document is the same before and after.
-- An unknown `lens_set` value is refused naming the shipped layers and the way forward; a `lens_set` key in a worktree or local layer above a hub base is refused naming the file and `--layer default`.
+- Under a hub file with `lens_set: csharp`, `lyx config reconcile --layer default --apply` from the hub's prime worktree drops a hub-file lens entry equal to the csharp prose and keeps one equal to the base prose, and the loaded document is the same before and after.
+- In a standalone worktree whose file holds `lens_set: csharp`, `lyx config reconcile --apply` drops a lens entry equal to the csharp prose and keeps one equal to the base prose, and the loaded document is the same before and after.
+- An unknown `lens_set` value is refused naming the shipped layers and the way forward; a `lens_set` key in a worktree file above a hub base is refused naming the file, the removal of the key from it and `--layer default`; one in a local file is refused as a guard key.
+- In a standalone worktree with no `lenses.yaml`, `lyx config lenses --set lens_set=csharp` resolves the five lenses to the csharp prose.
 - `lyx config lenses --layer default --set lens_set=xyz` is rolled back with the unknown-value error.
+- In a hub worktree whose `lenses.yaml` holds no `lens_set`, `lyx config lenses --set lens_set=csharp` writes nothing and is refused naming `--layer default` from the prime, with no other way forward.
 - `remove: [numerics]` under `lens_set: csharp` leaves `numerics` undefined and absent from every fan.
 - `remove` that empties a fan drops the fan, `CheckLoad` passes, and `ResolveFan` on that fan names `remove` and the way forward.
-- A `remove` entry naming no lens loads, logged at Warn.
-- For every shipped layer, every fan resolves (`CheckLoad` passes), no lens text carries "ignore " phrasing, the layer holds only `lenses` and `fans` entries, and each layer fan override holds its base fan's lenses in order.
+- A `remove` entry naming no lens loads, logged at Warn once per process.
+- For every shipped layer, every fan resolves (`CheckLoad` passes), no lens text carries "ignore " phrasing, the layer holds only `lenses` and `fans` entries, and each layer fan override starts with its base fan's lenses, exactly and in base order, followed only by the layer's additions.
 - `Provenance` labels an overlay-supplied lens `template:<lens_set>`.
 - A module with no overlay in its spec loads, sets, edits and reconciles exactly as before.
 
