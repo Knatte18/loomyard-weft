@@ -1,0 +1,8 @@
+attempt: 1
+cap: 3
+failures:
+    - id: github.com/Knatte18/loomyard/internal/loomcli.TestGateParity_PlanGate/VerifyNestedModule
+      kind: test
+      package: github.com/Knatte18/loomyard/internal/loomcli
+      tail: ""
+log_path: /home/knatte/Code/loomyard-LYXHUB/quarry-csharp/.lyx/verify/verify-2.log
