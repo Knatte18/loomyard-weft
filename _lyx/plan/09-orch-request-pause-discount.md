@@ -6,8 +6,8 @@
 - `internal/orchengine/doc.go`
 
 **Create:**
-- `plan:internal/orchengine#Watcher.unpausedSince` -> `func (w *Watcher) unpausedSince(from, now time.Time) time.Duration`
-- `plan:internal/orchengine#TestCycleRequest_HubPauseTimeIsNotAge` -> `func TestCycleRequest_HubPauseTimeIsNotAge(t *testing.T)`
+- `internal/orchengine#Watcher.unpausedSince`
+- `internal/orchengine#TestCycleRequest_HubPauseTimeIsNotAge`
 
 **Uses:**
 - `internal/orchengine#Watcher.pauseTick`

@@ -16,8 +16,8 @@
 - `internal/orchcli/doc.go`
 
 **Create:**
-- `plan:internal/orchcli#orchCLI.restartWatcher` -> `func (c *orchCLI) restartWatcher(st orchengine.State) (bool, error)`
-- `plan:internal/orchcli#TestStatus_RestartsADeadWatcher` -> `func TestStatus_RestartsADeadWatcher(t *testing.T)`
+- `internal/orchcli#orchCLI.restartWatcher`
+- `internal/orchcli#TestStatus_RestartsADeadWatcher`
 
 **Uses:**
 - `internal/orchengine#Paths`

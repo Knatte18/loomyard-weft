@@ -13,10 +13,10 @@
 - `internal/orchcli/doc.go`
 
 **Create:**
-- `plan:internal/orchcli#orchCLI.withdrawCmd` -> `func (c *orchCLI) withdrawCmd() *cobra.Command`
-- `plan:internal/orchcli#orchCLI.hubPauseHolds` -> `func (c *orchCLI) hubPauseHolds() bool`
-- `plan:internal/orchcli#cycleRequestField` -> `func cycleRequestField(req orchengine.CycleRequest, pending, held bool) any`
-- `plan:internal/orchcli#TestWithdraw` -> `func TestWithdraw(t *testing.T)`
+- `internal/orchcli#orchCLI.withdrawCmd`
+- `internal/orchcli#orchCLI.hubPauseHolds`
+- `internal/orchcli#cycleRequestField`
+- `internal/orchcli#TestWithdraw`
 
 **Uses:**
 - `internal/orchengine#WithdrawCycleRequest`

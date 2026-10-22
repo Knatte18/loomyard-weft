@@ -6,8 +6,8 @@
 - `internal/orchengine/doc.go`
 
 **Create:**
-- `plan:internal/orchengine#Watcher.withdrawQueuedCompact` -> `func (w *Watcher) withdrawQueuedCompact(st *State) error`
-- `plan:internal/orchengine#TestCompact_BoundaryWithdrawsAStillQueuedCompact` -> `func TestCompact_BoundaryWithdrawsAStillQueuedCompact(t *testing.T)`
+- `internal/orchengine#Watcher.withdrawQueuedCompact`
+- `internal/orchengine#TestCompact_BoundaryWithdrawsAStillQueuedCompact`
 
 **Uses:**
 - `internal/orchengine#Watcher.resetForOtherStrand`
