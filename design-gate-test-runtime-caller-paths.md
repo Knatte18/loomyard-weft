@@ -21,3 +21,18 @@ None yet: the recovery reported the batch OK on the raw run and the lints, and e
 ## Expected
 
 `lyx gate test` builds as plain `go test` does, so `runtime.Caller` yields absolute file paths, or the gate documents and sets any build-path flag it adds.
+
+
+## From issue #808
+
+Imported from [issue #808](https://github.com/Knatte18/loomyard/issues/808).
+
+What happened: inside a gate slot, `lyx gate test` over several packages failed every test that derives a source location from `runtime.Caller(0)`. The call returned a module-relative path (`<module>/...`) instead of an absolute one, as a `-trimpath` build does, so the code under test failed with "not an absolute path". The failure reproduced on a package the batch never touched.
+
+Evidence it is environmental: `lyx gate test -vv` showed no `-trimpath` in go's args, `GOFLAGS` was empty in the agent shell, raw `go test` (with and without `-tags integration`) passed on the same packages, and the same gate run in a plain `git worktree` outside the hub passed. The cause therefore sits in the gate slot environment, which the agent strand may not read.
+
+Why abnormal: the gate gave no signal about the cards, so agents fell back to raw `go test` for verification, which bypasses the gate's purpose. The task has since changed its tests to resolve roots from the working directory, but any module using `runtime.Caller` for fixture lookup will hit this again.
+
+What to do: find what makes the slot build behave like `-trimpath` (slot env, go env file, toolchain flags) and remove it, or document it and have `lyx gate test` surface it. Having gate output name the effective trimpath/GOFLAGS state would make this diagnosable.
+
+Provenance: task `csharp-alphabet`; notes 01-csharp-canonical-type.md, 07-resolve-csharp-recovery.md, 07-resolve-csharp.md.
