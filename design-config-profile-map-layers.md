@@ -1,6 +1,6 @@
 # Config layers set one profile key and merge profile maps by name
 
-`config-profile-map-layers` · Task · bug, config, webster · running · Merge-In
+`config-profile-map-layers` · Task · bug, config, webster · running · Publish
 
 Two faults in how config layers handle a per-name map such as `batcher.yaml`'s `profiles:`.
 
