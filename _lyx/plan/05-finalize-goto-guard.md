@@ -21,7 +21,7 @@
 - `internal/loomcli#settledSegmentGuard`
 - `internal/loomcli#parentBranchSeam`
 - `internal/loomengine#LoomReviewsDir`
-- `plan:internal/landingshed#DirtyParentRefusal`
+- `internal/landingshed#DirtyParentRefusal`
 - `internal/fabricengine#Fabric.CodeDirtyPaths`
 - `internal/fabricengine#Fabric.MergeInProgress`
 - `internal/fabricengine#OpenParent`

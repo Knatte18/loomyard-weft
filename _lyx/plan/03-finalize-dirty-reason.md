@@ -1,11 +1,11 @@
 # Card 3 — finalize-dirty-reason
 
 **Create:**
-- `plan:internal/landingshed#maxListedDirtyPaths` -> `const maxListedDirtyPaths = 20`
-- `plan:internal/landingshed#dirtyPathList` -> `func dirtyPathList(paths []string) string`
-- `plan:internal/landingshed#DirtyParentRefusal` -> `func DirtyParentRefusal(checkout string, paths []string) string`
-- `plan:internal/landingshed#Finalize.dirtyParentReason` -> `func (fz *Finalize) dirtyParentReason(parentHandle parentMerger, guardErr *fabricengine.MergeGuardError) string`
-- `plan:internal/landingshed#recordingParentMerger.MidMerge` -> `func (m *recordingParentMerger) MidMerge() (fabricengine.MidMergeState, error)`
+- `internal/landingshed#maxListedDirtyPaths`
+- `internal/landingshed#dirtyPathList`
+- `internal/landingshed#DirtyParentRefusal`
+- `internal/landingshed#Finalize.dirtyParentReason`
+- `internal/landingshed#recordingParentMerger.MidMerge`
 
 **Edit:**
 - `internal/landingshed#parentMerger`
