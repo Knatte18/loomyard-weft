@@ -5,7 +5,7 @@
   "pause_requested": false,
   "activity": {
     "now": "Run-Shed",
-    "last": "Open-IDE → done",
+    "last": "Run-Shed → bounced to Run-Shed",
     "wait": ""
   },
   "history": [
@@ -38,6 +38,22 @@
       "outcome": "done",
       "output": "",
       "at": "2026-10-22T10:35:09Z"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "child running → awaiting at PR-Gate",
+      "at": "2026-10-22T11:56:27Z",
+      "budget_exempt": true,
+      "routed_to": "Run-Shed"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "child awaiting → running at Finalize",
+      "at": "2026-10-22T12:00:02Z",
+      "budget_exempt": true,
+      "routed_to": "Run-Shed"
     }
   ]
 }
