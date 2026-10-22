@@ -1121,7 +1121,7 @@
       "id": 719,
       "slug": "quarry-csharp",
       "title": "[.NET 006] LoomYard uses quarry C# glyphs: version raise, alphabet by extension",
-      "kind": "note",
+      "kind": "task",
       "labels": [
         "feature",
         "quarry",
