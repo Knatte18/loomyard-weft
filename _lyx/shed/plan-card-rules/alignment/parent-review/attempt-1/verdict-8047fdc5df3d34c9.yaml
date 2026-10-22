@@ -1,0 +1,11 @@
+verdict: approve
+reason: >-
+  The decision record covers each of the four points in the board entry's operator scope line:
+  the plan-gate headroom check (D1, D2), the Extends label with its DAG rule, its plan-review check and the plandag measurement first (D3-D6),
+  an in-run owner for plan amendments (D7, D8), and Enclose's first use only (D9).
+  Every later use the entry lists stays out.
+  It neither duplicates nor contradicts parallel-batch-parts, weaver, shed-arbiter-all, run-verbs-shared or speed-loom-profile.
+  The only peer, batten-cancel-verb, overlaps only as text, in the orch stencil and the stop-chain code at different places;
+  it is at row 5 against this run's row 3, so it lands first.
+question: ""
+superseded: []
