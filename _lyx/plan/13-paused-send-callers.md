@@ -16,8 +16,8 @@
 - `internal/shuttlecli#TestInterruptAndSendCmd_FailWithTheGuardsMessage`
 
 **Uses:**
-- `plan:internal/shuttleengine#ErrPaused`
-- `plan:internal/shuttleengine#PausedError`
+- `internal/shuttleengine#ErrPaused`
+- `internal/shuttleengine#PausedError`
 - `internal/pauserecord#CoveredError`
 - `internal/seatengine#fakeShuttle`
 - `internal/loomcli#fakeDriverSender`

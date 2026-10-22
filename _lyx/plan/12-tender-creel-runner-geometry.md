@@ -11,7 +11,7 @@
 - `internal/creelcli#TestHubDelivery`
 
 **Uses:**
-- `plan:internal/shuttleengine#ErrPaused`
+- `internal/shuttleengine#ErrPaused`
 - `internal/shuttleengine#Runner.SetPause`
 - `internal/creelcli#newStubbedDelivery`
 - `internal/creelcli#stubOps`

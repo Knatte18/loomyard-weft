@@ -16,12 +16,12 @@
 - `internal/shuttleengine/doc.go`
 
 **Uses:**
-- `plan:internal/shuttleengine#Runner.targetSlug`
-- `plan:internal/shuttleengine#ErrPaused`
+- `internal/shuttleengine#Runner.targetSlug`
+- `internal/shuttleengine#ErrPaused`
 - `internal/shuttleengine#gateRig`
 - `internal/shuttleengine#tuiReed`
 - `internal/shuttleengine#hookClock`
-- `plan:internal/shuttleengine#coverScope`
+- `internal/shuttleengine#coverScope`
 - `internal/shuttleengine#coverHub`
 
 **Intent:**

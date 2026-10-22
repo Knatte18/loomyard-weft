@@ -13,12 +13,12 @@
 - `internal/shuttleengine#TestRunner_Start_WaitsWhileAPauseCoversItsPair`
 
 **Uses:**
-- `plan:internal/shuttleengine#PausedError`
+- `internal/shuttleengine#PausedError`
 - `internal/shuttleengine#newFixture`
 - `internal/shuttleengine#readyStart`
 - `internal/shuttleengine#startSendEngine`
 - `internal/shuttleengine#startPasteEngine`
-- `plan:internal/shuttleengine#coverScope`
+- `internal/shuttleengine#coverScope`
 - `internal/shuttleengine#liftClock`
 - `internal/shuttleengine#newFakeClock`
 
