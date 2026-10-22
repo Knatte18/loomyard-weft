@@ -13,7 +13,7 @@
 - `plan:internal/battencli#TestBattenPreRun_ReopensTheWindowWithNoClientAttached` -> `func TestBattenPreRun_ReopensTheWindowWithNoClientAttached(t *testing.T)`
 
 **Uses:**
-- `plan:internal/reedengine#Engine.ClientAttached`
+- `internal/reedengine#Engine.ClientAttached`
 - `internal/shedadapters#NewCommandProducer`
 - `internal/shedadapters#CommandRow`
 - `internal/battenrecipe#NameOpenWindow`

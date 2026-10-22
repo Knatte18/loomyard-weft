@@ -1,8 +1,8 @@
 # Card 19 — reed-client-attached
 
 **Create:**
-- `plan:internal/reedengine#Engine.ClientAttached` -> `func (e *Engine) ClientAttached() (bool, error)`
-- `plan:internal/reedengine#TestClientAttached` -> `func TestClientAttached(t *testing.T)`
+- `internal/reedengine#Engine.ClientAttached`
+- `internal/reedengine#TestClientAttached`
 
 **Uses:**
 - `internal/reedengine#newAttachTestEngine`
