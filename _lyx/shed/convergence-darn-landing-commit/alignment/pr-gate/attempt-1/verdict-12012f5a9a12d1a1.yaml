@@ -1,0 +1,4 @@
+verdict: approve
+reason: The diff bounds the exact join's trailer walk at the run's own pair-opening commit, so darn tags map to their own landings through the time join, which is exactly the board entry's expected behaviour, with no out-of-scope change. The carried-over Darn-Review risk was fixed and names no parent correction, and no peer run or parent commit overlaps the changed files.
+question: ""
+superseded: []
