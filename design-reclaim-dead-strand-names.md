@@ -19,3 +19,25 @@ Reed still listed the strands from before the restart as dead (`live: false`), h
 ## Expected
 
 A strand whose pane is gone, such as every strand after a reboot, does not hold its name: a resume or a re-spawn reclaims the name of a dead strand without a manual `lyx reed remove`, and the row does not fail.
+
+## From issue #802
+
+Imported from [issue #802](https://github.com/Knatte18/loomyard/issues/802).
+
+## What was seen
+
+In the quarry hub, the machine slept while task `csharp-alphabet` was at the Webster producer.
+The sleep killed the Webster master strand `qry:csharp-alphabet:webster` and its batch fork.
+The orch ran `lyx batten run csharp-alphabet --window` and then `lyx loom resume`.
+Webster respawned its master as a new strand, `qry:csharp-alphabet:webster-2`.
+The dead strand's registration (guid `6726c0ae5bdc360f7e880256ad6153af`, `live: false`, no pane) stayed in `lyx reed list`.
+The name `qry:csharp-alphabet:webster` was still taken, so the new strand got the `-2` suffix.
+
+## Workaround
+
+The orch removed the dead registration by hand with `lyx reed remove 6726c0ae5bdc360f7e880256ad6153af` from the task worktree.
+
+## Expected
+
+When a strand is respawned for a role whose previous strand is dead (not live, no pane), reed or the respawning caller drops the dead registration first, and the new strand keeps the canonical name.
+A lookup by role name then cannot hit the dead record.
