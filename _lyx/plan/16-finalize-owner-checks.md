@@ -23,7 +23,7 @@
 - `plan:internal/landingshed#TestFinalize_OwnerChecks` -> `func TestFinalize_OwnerChecks(t *testing.T)`
 
 **Uses:**
-- `plan:internal/fabricengine#Fabric.LocalOnlyCommits`
+- `internal/fabricengine#Fabric.LocalOnlyCommits`
 - `internal/landingshed#newTestDeps`
 - `internal/landingshed#stuckVerdict`
 - `internal/fabricengine#ParentHoldsTaskWork`

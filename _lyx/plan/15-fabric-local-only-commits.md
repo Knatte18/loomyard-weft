@@ -1,8 +1,8 @@
 # Card 15 — fabric-local-only-commits
 
 **Create:**
-- `plan:internal/fabricengine#Fabric.LocalOnlyCommits` -> `func (f *Fabric) LocalOnlyCommits(branch string) ([]string, error)`
-- `plan:internal/fabricengine_test#TestLocalOnlyCommits` -> `func TestLocalOnlyCommits(t *testing.T)`
+- `internal/fabricengine#Fabric.LocalOnlyCommits`
+- `internal/fabricengine_test#TestLocalOnlyCommits`
 
 **Intent:**
 The read Finalize's adopter-first repair note lists (D6).

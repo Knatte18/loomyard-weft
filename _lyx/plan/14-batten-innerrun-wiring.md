@@ -6,11 +6,11 @@
 - `internal/battencli#TestChildSpawnError`
 
 **Create:**
-- `plan:internal/battencli#childRefusalOwner` -> `func childRefusalOwner(childOutput string) string`
-- `plan:internal/battencli#ownerVerdictOf` -> `func ownerVerdictOf(report fabricengine.OriginReport, slug string) battenshed.OwnerVerdict`
-- `plan:internal/battencli#childRestepped` -> `func childRestepped(records []shedrun.SettleRecord, status shedengine.Status) bool`
-- `plan:internal/battencli#TestOwnerVerdictOf` -> `func TestOwnerVerdictOf(t *testing.T)`
-- `plan:internal/battencli#TestChildRestepped` -> `func TestChildRestepped(t *testing.T)`
+- `internal/battencli#childRefusalOwner`
+- `internal/battencli#ownerVerdictOf`
+- `internal/battencli#childRestepped`
+- `internal/battencli#TestOwnerVerdictOf`
+- `internal/battencli#TestChildRestepped`
 
 **Uses:**
 - `internal/battencli#reconcileRun`
