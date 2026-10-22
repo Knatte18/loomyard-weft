@@ -1,7 +1,7 @@
 # Card 16 — Hibernate confirmation reads shell-only background work as settled and waits out forks
 
 **Create:**
-- `plan:internal/hibernateengine#confirmForkRereads` -> `const confirmForkRereads = 720`
+- `internal/hibernateengine#confirmForkRereads`
 
 **Edit:**
 - `internal/tenderengine#SessionStatus`
