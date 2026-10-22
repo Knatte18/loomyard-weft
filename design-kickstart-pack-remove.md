@@ -2,8 +2,6 @@
 
 `kickstart-pack-remove` · Task · enhancement, webster, quarry, loom
 
-Depends on: [`quarry-csharp`](design-quarry-csharp.md)
-
 ## Operator decision 2026-10-17
 
 Remove the Webster kick-start pack, every layout of it (inline, pack file, per card), with its code and config keys.
