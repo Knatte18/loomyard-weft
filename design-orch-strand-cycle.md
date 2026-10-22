@@ -1,6 +1,6 @@
 # Orch lifecycle: dead strands count as dead, the watcher restarts, cycle requests need no reply and can be withdrawn
 
-`orch-strand-cycle` · Task · bug, enhancement, orch, reed, shuttle, creel · running · Webster-Bouncer
+`orch-strand-cycle` · Task · bug, enhancement, orch, reed, shuttle, creel · running · Describe
 
 Three orch lifecycle fixes in one run: a dead strand counts as dead, a dead watcher restarts, and the watcher's context-cycle request needs no reply and can be withdrawn.
 
