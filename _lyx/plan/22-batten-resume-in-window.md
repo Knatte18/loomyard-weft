@@ -1,7 +1,7 @@
 # Card 22 — batten-resume-in-window
 
 **Create:**
-- `plan:internal/battencli#ResumeInWindow` -> `func ResumeInWindow(location *lyxcwd.Location, slug string) (map[string]any, error)`
+- `internal/battencli#ResumeInWindow`
 
 **Uses:**
 - `internal/battencli#battenCLI.runInWindow`
