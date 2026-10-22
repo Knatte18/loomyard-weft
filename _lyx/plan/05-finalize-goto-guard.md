@@ -22,7 +22,7 @@
 - `internal/loomcli#parentBranchSeam`
 - `internal/loomengine#LoomReviewsDir`
 - `plan:internal/landingshed#DirtyParentRefusal`
-- `plan:internal/fabricengine#Fabric.CodeDirtyPaths`
+- `internal/fabricengine#Fabric.CodeDirtyPaths`
 - `internal/fabricengine#Fabric.MergeInProgress`
 - `internal/fabricengine#OpenParent`
 

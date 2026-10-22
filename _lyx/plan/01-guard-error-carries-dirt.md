@@ -1,12 +1,12 @@
 # Card 1 — guard-error-carries-dirt
 
 **Create:**
-- `plan:internal/fabricengine#codeDirtyPaths` -> `func codeDirtyPaths(f *Fabric) ([]string, error)`
-- `plan:internal/fabricengine#MergeGuardError.has` -> `func (e *MergeGuardError) has(reason string) bool`
-- `plan:internal/fabricengine#MergeGuardError.withDirt` -> `func (e *MergeGuardError) withDirt(checkout string, paths []string) *MergeGuardError`
-- `plan:internal/fabricengine#MergeGuardError.AlreadyInProgress` -> `func (e *MergeGuardError) AlreadyInProgress() bool`
-- `plan:internal/fabricengine#MergeGuardError.NotSynced` -> `func (e *MergeGuardError) NotSynced() bool`
-- `plan:internal/fabricengine#MergeGuardError.DetachedHead` -> `func (e *MergeGuardError) DetachedHead() bool`
+- `internal/fabricengine#codeDirtyPaths`
+- `internal/fabricengine#MergeGuardError.has`
+- `internal/fabricengine#MergeGuardError.withDirt`
+- `internal/fabricengine#MergeGuardError.AlreadyInProgress`
+- `internal/fabricengine#MergeGuardError.NotSynced`
+- `internal/fabricengine#MergeGuardError.DetachedHead`
 
 **Edit:**
 - `internal/fabricengine#MergeGuardError`
