@@ -1,6 +1,6 @@
 # lyx gate test --upto N with manual tiers, and a lyx gate status verb
 
-`gate-tier-verbs` · Task · enhancement, gate · running · Darn-Burler-Review
+`gate-tier-verbs` · Task · enhancement, gate · running · Darn-Burler-Fix
 
 ## Seen
 
