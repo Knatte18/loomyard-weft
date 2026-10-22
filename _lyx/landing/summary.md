@@ -1,32 +1,40 @@
 # Gate test names a tier's -trimpath GOFLAGS beside its summary line
 
-A hub's gate tiers set `-trimpath` in their GOFLAGS on purpose, so a fresh worktree reuses the build and test cache.
-Under `-trimpath`, `runtime.Caller` reports module-relative file paths.
-A test that locates its repository from one fails under `lyx gate test` while a raw `go test` passes, and nothing in the gate's output said why (issues #807 and #808).
-`-trimpath` stays, as the operator decided, and the gate now says when a tier builds with it.
+A hub's tiers set `-trimpath` in their GOFLAGS on purpose, so a fresh worktree reuses the build and test cache.
+Under it `runtime.Caller` reports module-relative file paths, so a test that locates its repository from one fails with "not an absolute path" under `lyx gate test`, while a raw `go test` passes.
+Nothing in the gate's output said so, and agents fell back to raw `go test`.
 
-## What changes
+The gate keeps `-trimpath` and now surfaces it.
+When a tier's effective GOFLAGS carries an enabled `-trimpath`, `lyx gate test` prints one line to stderr just before the tier's summary line and writes the same line at the top of the tier's run log.
+The line names the tier, its GOFLAGS value and the way forward: locate the repository from the working directory or `go.mod`, never from a `runtime.Caller` path alone.
+`internal/gatecli/doc.go` documents the line under a new `# Trimpath` section.
 
-- `trimpathLine` in `internal/gatecli/tiers.go` reads the last `GOFLAGS` entry of a tier's environment, the inherited one or the tier's own, since that is the value the child sees.
-  It fires on a `-trimpath`, `--trimpath` or `-trimpath=true` field, and not on `-trimpath=false`.
-  The line names the tier, the GOFLAGS value, the effect on `runtime.Caller` and the way forward: locate the repository from the working directory or `go.mod`.
-- `runTier` writes the line at the top of the tier's run log, before the first command's output, and hands it back through `tierResult`.
-- `report` prints it to stderr just before the tier's summary line.
-  A refused tier never reaches that print, so its stdout stays one JSON envelope.
-  The guard step goes through the same path and gets the line too.
-- A tier with an empty scope runs no command and gets no line.
-- `internal/gatecli/doc.go` gains a `# Trimpath` section that documents why `-trimpath` stays and what the line says.
+Closes #807
+Closes #808
 
 ## Design decisions
 
-- The line goes to stderr just before the summary line, not before the first command as the decision record states.
-  Printed first, it came ahead of a refused tier's JSON envelope on stdout and broke callers that parse that envelope.
-  Next to the summary line, it also sits beside a failing run's verdict, where a reader looks.
-- The run record's JSON gains no field, because the log already carries the line.
-- A `-trimpath` passed on a tier's command line instead of in GOFLAGS gets no line, since the command already shows in the run record and under `-vv`.
+- **The child's view decides.**
+  `trimpathLine` reads the last `GOFLAGS` entry of the environment the tier's commands get: the gate's inherited environment plus the tier's own `env`.
+  A GOFLAGS inherited from an outer gate run therefore counts as well as one the tier sets.
+  Within that value the last `trimpath` field decides, and its bool value is parsed as go parses it, so `-trimpath`, `--trimpath`, `-trimpath=true` and `-trimpath=1` fire, and `-trimpath=false` or `-trimpath -trimpath=false` stay silent.
+- **Once per tier run that has an invocation.**
+  A tier with an empty scope runs no build and gets no line.
+  The `--guards` step goes through the same tier run, so it prints the line too.
+- **Beside the summary line, not before the first command.**
+  `report` prints the line, so a refused tier still prints only its JSON envelope on stdout.
+  The log gets the line before the first command's output.
+- **No run-record field.**
+  The record's JSON is unchanged; the log carries the line.
+- **Not covered.**
+  A `-trimpath` given on a tier's command line rather than in GOFLAGS gets no line; it shows under `-vv` and in the run record.
+- `-trimpath` is not removed from any GOFLAGS, the hub's `gate.yaml` or the non-tier slot holders' `gateslot.HolderEnv`.
 
-## Tests
+## To check by hand
 
-- `TestTrimpathLine` is a table over the detection forms: plain, double-dash and `=true` fire, `=false` and an absent flag stay silent, and the last GOFLAGS entry wins.
-- The `TestGateTest_Scenario` subtest whose tier sets `GOFLAGS: -trimpath -p={parallel}` now checks that the line is in the gate's output and that the run log holds exactly the line, ahead of the stand-in's empty output.
-- `lyx gate test --upto 1` passes over the computed scope and its guard step.
+Review ended without converging, and these were its findings; each was addressed by a later commit, but a reader should confirm:
+
+- `internal/gatecli/tierrun.go:57`: a tier with an empty scope and a `-trimpath` GOFLAGS prints no line; the empty-scope subtest in `internal/gatecli/scopes_integration_test.go` should assert it.
+- `internal/gatecli/tiers.go:268`: `GOFLAGS=-trimpath -trimpath=false` gets no line, as go keeps the last occurrence of a repeated flag.
+- `internal/gatecli/tiers.go:270`: other enabling spellings such as `-trimpath=1` fire the line.
+- `internal/gatecli/test_integration_test.go:1160`: the `--guards` test should pin that the guard step prints the line once per run that reached the report.
