@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-22 14:58 UTC; every age below is as of then.
+Rendered 2026-10-22 14:59 UTC; every age below is as of then.
 
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
@@ -15,9 +15,9 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T4 | **Orch lifecycle: dead strands count as dead, the watcher restarts, cycle requests need no reply and can be withdrawn**<br>• Strand liveness checks the engine process and placement, a dead orch watcher restarts, the note write is seen without a reply, and a pending distill/refresh can be withdrawn<br>• `profile: light` | [`orch-strand-cycle`](design-orch-strand-cycle.md) | loom | Discussion-Burler-Review | neve | 3d<br>54m | orch, reed, shuttle, creel |
+| T4 | **Orch lifecycle: dead strands count as dead, the watcher restarts, cycle requests need no reply and can be withdrawn**<br>• Strand liveness checks the engine process and placement, a dead orch watcher restarts, the note write is seen without a reply, and a pending distill/refresh can be withdrawn<br>• `profile: light` | [`orch-strand-cycle`](design-orch-strand-cycle.md) | loom | Discussion-Burler-Review | neve | 3d<br>55m | orch, reed, shuttle, creel |
 | T6 | **loom halt note for a Merge-In loop exit carries only 'loop-exited' as its reason** | [`loop-exit-halt-names-its-cause`](design-loop-exit-halt-names-its-cause.md) | darn | Darn-Burler-Fix | neve | 4h<br>2h | loom, shed |
-| T7 | **webster done-check: Create paths with a space and test targets quarry does not find** | [`done-check-spaced-create-paths`](design-done-check-spaced-create-paths.md) | darn | Darn-Burler-Fix | neve | 4h<br>54m | webster, quarry |
+| T7 | **webster done-check: Create paths with a space and test targets quarry does not find** | [`done-check-spaced-create-paths`](design-done-check-spaced-create-paths.md) | darn | Darn-Bouncer | neve | 4h<br>55m | webster, quarry |
 | T9 | **Teardown's archive-tag push has no retry for a transient remote rejection** | [`retry-archive-tag-push`](design-retry-archive-tag-push.md) | darn | Merge-In | neve | 4h<br>2h | batten, fabric |
 
 ### Ready
@@ -54,7 +54,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | P | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| B1 |  | **Orch watcher types /compact again after a compact landed**<br>• Watcher stays in resuming after a requested compact and types a second /compact into the resumed busy turn | [`orch-compact-repeats`](design-orch-compact-repeats.md) | 0m<br>0m | orch |
+| B1 |  | **Orch watcher types /compact again after a compact landed**<br>• Watcher stays in resuming after a requested compact and types a second /compact into the resumed busy turn | [`orch-compact-repeats`](design-orch-compact-repeats.md) | 1m<br>1m | orch |
 
 ### Enhancements
 
