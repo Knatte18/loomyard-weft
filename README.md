@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-22 06:05 UTC; every age below is as of then.
+Rendered 2026-10-22 06:06 UTC; every age below is as of then.
 
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
@@ -18,16 +18,16 @@ Held by a run; its scope is locked until the run ends.
 | # | Task | Slug | Recipe | At | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | 1 | **One machine takes over from another: owner machines, lyx adopt, landing on the parent owner**<br>• Owner machine per entry, lyx adopt of named entries, landing only on the parent owner, owner outcome in the origin reconcile, Open-Window per machine | [`machine-handover`](design-machine-handover.md) | loom | Discussion-Write | 2d | 2d | batten, board, orch, fabric |
-| 2 | **[.NET 006] LoomYard uses quarry C# glyphs: version raise, alphabet by extension**<br>• LoomYard side of C# glyphs, after the quarry hub csharp-alphabet lands and is tagged<br>• `profile: light` | [`quarry-csharp`](design-quarry-csharp.md) | loom | Discussion-Write | 1d | 6m | quarry, dotnet |
+| 2 | **[.NET 006] LoomYard uses quarry C# glyphs: version raise, alphabet by extension**<br>• LoomYard side of C# glyphs, after the quarry hub csharp-alphabet lands and is tagged<br>• `profile: light` | [`quarry-csharp`](design-quarry-csharp.md) | loom | Discussion-Write | 1d | 7m | quarry, dotnet |
 
 #### Normal priority
 
 | # | Task | Slug | Recipe | At | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 3 | **lyx loom decision add notifies the run live LLM producer of the new decision**<br>• With the Go driver no agent lives for the whole run, so decision add tells the working LLM producer if any, and later producers and PR-Gate catch the rest<br>• `darn: review_hard_max_bounces 2`<br>• `darn: review_max_bounces 1` | [`decision-add-notifies`](design-decision-add-notifies.md) | darn | Darn-Write | 3d | 0m | loom, creel |
-| 4 | **A question research can settle is settled in Discussion, never deferred to Plan or an implementer**<br>• Discussion writer researches the facts its design rests on; reviewers flag a deferred research question or a halt-on-discovery rule<br>• `darn: review_hard_max_bounces 2`<br>• `darn: review_max_bounces 1` | [`research-in-discussion`](design-research-in-discussion.md) | darn | Darn-Write | 2d | 0m | loom, stencil, burler |
-| 5 | **Opening an agent into reed: engine bypass mode by default, explicit engine, model and effort, and reed add points to shuttle open**<br>• reed add help shows a broken claude example (%SID% never substituted) and shuttle open keeps the interactive permission default; every agent in reed needs bypass, per engine (claude bypassPermissions, Codex --yolo)<br>• `darn: review_hard_max_bounces 2`<br>• `darn: review_max_bounces 1` | [`shuttle-open-agent-defaults`](design-shuttle-open-agent-defaults.md) | darn | Darn-Write | 1d | 0m | reed, shuttle, claude, codex |
-| 6 | **Darn-Write stops looping on verify failures it cannot own, and the flaky reed boot test behind them**<br>• A verify failure in code the task did not touch, or one the parent already fixed, no longer loops through Darn-Write; the reed boot race is made deterministic and the impacted set stops picking unreachable packages<br>• `profile: light` | [`darn-verify-fixes`](design-darn-verify-fixes.md) | loom | Discussion-Write | 4d | 15m | batten, gate, loom, shed, reed |
+| 3 | **lyx loom decision add notifies the run live LLM producer of the new decision**<br>• With the Go driver no agent lives for the whole run, so decision add tells the working LLM producer if any, and later producers and PR-Gate catch the rest<br>• `darn: review_hard_max_bounces 2`<br>• `darn: review_max_bounces 1` | [`decision-add-notifies`](design-decision-add-notifies.md) | darn | Darn-Write | 3d | 1m | loom, creel |
+| 4 | **A question research can settle is settled in Discussion, never deferred to Plan or an implementer**<br>• Discussion writer researches the facts its design rests on; reviewers flag a deferred research question or a halt-on-discovery rule<br>• `darn: review_hard_max_bounces 2`<br>• `darn: review_max_bounces 1` | [`research-in-discussion`](design-research-in-discussion.md) | darn | Darn-Write | 2d | 1m | loom, stencil, burler |
+| 5 | **Opening an agent into reed: engine bypass mode by default, explicit engine, model and effort, and reed add points to shuttle open**<br>• reed add help shows a broken claude example (%SID% never substituted) and shuttle open keeps the interactive permission default; every agent in reed needs bypass, per engine (claude bypassPermissions, Codex --yolo)<br>• `darn: review_hard_max_bounces 2`<br>• `darn: review_max_bounces 1` | [`shuttle-open-agent-defaults`](design-shuttle-open-agent-defaults.md) | darn | Darn-Write | 1d | 1m | reed, shuttle, claude, codex |
+| 6 | **Darn-Write stops looping on verify failures it cannot own, and the flaky reed boot test behind them**<br>• A verify failure in code the task did not touch, or one the parent already fixed, no longer loops through Darn-Write; the reed boot race is made deterministic and the impacted set stops picking unreachable packages<br>• `profile: light` | [`darn-verify-fixes`](design-darn-verify-fixes.md) | loom | Discussion-Bouncer | 4d | 16m | batten, gate, loom, shed, reed |
 
 ### Ready
 
@@ -43,7 +43,7 @@ Waits only on Running or Ready entries.
 
 | # | Task | Slug | Recipe | After | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | **tender pause does not hold a verify gate's re-prompt, and creel interrupt is refused under the pause**<br>• `profile: light` | [`tender-pause-holds-reprompt`](design-tender-pause-holds-reprompt.md) | loom | `darn-verify-fixes` | 1d | 13m | creel, shed, webster |
+| 1 | **tender pause does not hold a verify gate's re-prompt, and creel interrupt is refused under the pause**<br>• `profile: light` | [`tender-pause-holds-reprompt`](design-tender-pause-holds-reprompt.md) | loom | `darn-verify-fixes` | 1d | 14m | creel, shed, webster |
 | 2 | **Finalize blocks on 'worktree dirty' without naming the tree or paths, and the loom's own run record counts as dirty**<br>• `profile: light` | [`finalize-dirty-names-paths`](design-finalize-dirty-names-paths.md) | loom | `machine-handover`, `darn-verify-fixes` | 1d | 1d | fabric, loom |
 
 ### Layer B
@@ -54,7 +54,7 @@ Starts when every entry it names under After is done.
 
 | # | Task | Slug | Recipe | After | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | **Every process a run spawns has one owner that ends them all**<br>• Owner records for run processes; pause, reed down, fabric remove and teardown end the whole group; tender status shows orphans; a hub pause reaches background work; a finished reviewer never waits on its background shells | [`run-process-ownership`](design-run-process-ownership.md) | loom | `machine-handover`, `tender-pause-holds-reprompt` | 7d | 24m | batten, burler, fabric, loom, shed, shuttle, webster |
+| 1 | **Every process a run spawns has one owner that ends them all**<br>• Owner records for run processes; pause, reed down, fabric remove and teardown end the whole group; tender status shows orphans; a hub pause reaches background work; a finished reviewer never waits on its background shells | [`run-process-ownership`](design-run-process-ownership.md) | loom | `machine-handover`, `tender-pause-holds-reprompt` | 7d | 25m | batten, burler, fabric, loom, shed, shuttle, webster |
 
 ### Layer C
 
@@ -64,7 +64,7 @@ Starts when every entry it names under After is done.
 
 | # | Task | Slug | Recipe | After | Age | Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | **One batten verb ends a run for good, live or stopped, before or after its pair exists**<br>• Abandon or abort a batten run in any state: end its processes and strands, clear the claim, remove records and scratch, optionally the pair; batten refuses a dirty source up front<br>• `profile: light` | [`batten-cancel-verb`](design-batten-cancel-verb.md) | loom | `run-process-ownership`, `darn-verify-fixes` | 1d | 25m | batten, reed, shed |
+| 1 | **One batten verb ends a run for good, live or stopped, before or after its pair exists**<br>• Abandon or abort a batten run in any state: end its processes and strands, clear the claim, remove records and scratch, optionally the pair; batten refuses a dirty source up front<br>• `profile: light` | [`batten-cancel-verb`](design-batten-cancel-verb.md) | loom | `run-process-ownership`, `darn-verify-fixes` | 1d | 26m | batten, reed, shed |
 | 2 | **Orch lifecycle: dead strands count as dead, the watcher restarts, cycle requests need no reply and can be withdrawn**<br>• Strand liveness checks the engine process and placement, a dead orch watcher restarts, the note write is seen without a reply, and a pending distill/refresh can be withdrawn<br>• `profile: light` | [`orch-strand-cycle`](design-orch-strand-cycle.md) | loom | `machine-handover`, `darn-verify-fixes`, `run-process-ownership` | 3d | 18h | orch, reed |
 
 ## Notes
@@ -128,8 +128,8 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | 21 | **Cortex XDR holds stack up across a loom run's card, batch, round and whole-suite gates**<br>• Each gate that tests a just-changed package waits 8-10 s for XDR; a 10-15 card run pays that many times over | [`loom-gates-xdr-stacking`](design-loom-gates-xdr-stacking.md) | 1d | 1d | webster, loom, gate |
 | 22 | **[.NET 007] Language-specific lens sets seeded per hub**<br>• Every hub seeds lenses.yaml from one Go-repo template; seed by the hub language instead | [`lenses-language-sets`](design-lenses-language-sets.md) | 1d | 1d | burler, config, dotnet |
 | 23 | **Revisit late review rounds after the twill-plan lens change**<br>• After 4-5 loom runs past 504c5552, check whether discussion-review round 3 and plan-review round 2 still find anything | [`review-rounds-after-twill-plan`](design-review-rounds-after-twill-plan.md) | 12h | 12h | burler, loom |
-| 24 | **lyx gate test --upto N, and manual tiers it skips**<br>• Run every tier up to N in one flag; a tier marked manual runs only when named | [`gate-test-upto`](design-gate-test-upto.md) | 29m | 29m | gate |
-| 25 | **Test runs repeat at the end of a loom run: tier0 inside every tier, the suite four times, tmux only at Publish**<br>• Disjoint tiers, a green run that carries forward, tmux in more gates, and a faster fabricengine suite; with the 2026-10-22 tier timings | [`gate-test-repeats`](design-gate-test-repeats.md) | 17m | 17m | gate, loom, webster, fabric |
+| 24 | **lyx gate test --upto N, and manual tiers it skips**<br>• Run every tier up to N in one flag; a tier marked manual runs only when named | [`gate-test-upto`](design-gate-test-upto.md) | 30m | 30m | gate |
+| 25 | **Test runs repeat at the end of a loom run: tier0 inside every tier, the suite four times, tmux only at Publish**<br>• Disjoint tiers, a green run that carries forward, tmux in more gates, and a faster fabricengine suite; with the 2026-10-22 tier timings | [`gate-test-repeats`](design-gate-test-repeats.md) | 18m | 18m | gate, loom, webster, fabric |
 
 #### Low priority
 
