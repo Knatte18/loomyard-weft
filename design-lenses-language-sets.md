@@ -1,6 +1,6 @@
 # [.NET 007] Language-specific lens sets seeded per hub
 
-`lenses-language-sets` · Task · enhancement, burler, config, dotnet · running · Merge-Bouncer
+`lenses-language-sets` · Task · enhancement, burler, config, dotnet · running · Publish
 
 ## Seen (orch, 2026-10-20)
 
