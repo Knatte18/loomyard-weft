@@ -1,6 +1,6 @@
 # [.NET 007] Language-specific lens sets seeded per hub
 
-`lenses-language-sets` · Task · enhancement, burler, config, dotnet
+`lenses-language-sets` · Task · enhancement, burler, config, dotnet · running · Worktree-Create
 
 ## Seen (orch, 2026-10-20)
 
