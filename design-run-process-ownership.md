@@ -1,6 +1,6 @@
 # Every process a run spawns has one owner that ends them all
 
-`run-process-ownership` · Task · bug, enhancement, batten, burler, fabric, loom, shed, shuttle, webster · running · Worktree-Create
+`run-process-ownership` · Task · bug, enhancement, batten, burler, fabric, loom, shed, shuttle, webster · running · Discussion-Write
 
 ## Goal
 
