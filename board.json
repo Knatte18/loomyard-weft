@@ -1284,6 +1284,27 @@
       "body": "Imported from [issue #805](https://github.com/Knatte18/loomyard/issues/805).\n\n## What was seen\n\nIn the quarry hub, run `csharp-alphabet`, card 9 of the plan lists `internal/engine/testdata/csharp/tree/with space/Spaced.cs` under Create.\nThe directory name holds a space on purpose, as fixture coverage.\n`lyx webster validate` accepts the plan.\nAfter the batch committed the file, `record-batch 7` and `recover-batch 7` both refused with `batch_failed: glyph-rejected/9-csharp-fixture-roundtrip`, done-check target rejected before resolution (\"a glyph needs a \\\"#\\\"\", `no_separator`).\n`lyx quarry resolve \"\u003cpath\u003e#\"` answers `unit_bad_rune`, since a unit may not hold a space.\nBatch 07 went terminal `failed` after one recovery, and the run blocked at Webster.\n\n## Workaround\n\nThe parent decided to amend card 9: drop the spaced path from Create, keep it in Intent, rebaseline naming card 9, and re-drive batch 07.\n\n## Expected\n\nThe done-check and the plan lint agree.\nEither the done-check checks a Create path as a file path (existence in the batch's commits) rather than resolving it as a glyph, or `lyx webster validate` refuses a Create path the done-check cannot check, so the plan is fixed before any batch runs.\n",
       "created": "2026-10-22T10:33:08Z",
       "revised": "2026-10-22T10:33:08Z"
+    },
+    {
+      "id": 750,
+      "slug": "plan-card-amendment-owner",
+      "title": "No role may carry out a parent decision that amends a plan card mid-run",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "webster",
+        "orch",
+        "loom"
+      ],
+      "issues": [
+        806
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Imported from [issue #806](https://github.com/Knatte18/loomyard/issues/806).\n\n## What was seen\n\nIn the quarry hub, run `csharp-alphabet` blocked at Webster on a plan defect (see #805).\nThe arbiter handed on, and the orch recorded a parent decision to amend card 9 and rebaseline.\nNo role could carry the decision out: the driver edits no plan files, Webster's master edits only its contract files, the recovery strand will not edit the approved plan, the orch role forbids editing `_lyx/plan` in a task pair, and `lyx webster rebaseline` says the operator names the cards.\nThe run sat parked until the operator was asked, and the operator objected that the agents should have fixed it themselves.\n\n## Workaround\n\nOn the operator's order the orch edited card 9 and ran `lyx webster rebaseline --card 09` and `lyx loom resume`.\nA hub orch rule now lets the orch make such an edit without asking.\n\n## Expected\n\nA parent decision that amends a plan card has an owner inside the run, such as the arbiter, a plan-fix row or the orch by role, so the run goes on without the operator.\n",
+      "created": "2026-10-22T10:33:10Z",
+      "revised": "2026-10-22T10:33:10Z"
     }
   ]
 }
