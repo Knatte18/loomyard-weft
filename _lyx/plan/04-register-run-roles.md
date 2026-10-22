@@ -1,10 +1,10 @@
 # Card 4 — The Go driver, the step loops and a seeded batten register themselves under their run's slug
 
 **Create:**
-- `plan:internal/loomcli#registerRunProcess` -> `func registerRunProcess(loc *lyxcwd.Location, owner, role string)`
-- `plan:internal/loomcli#TestRegisterRunProcess` -> `func TestRegisterRunProcess(t *testing.T)`
-- `plan:internal/battencli#battenCLI.registerSeededRun` -> `func (c *battenCLI) registerSeededRun(location *lyxcwd.Location, runID, verb string)`
-- `plan:internal/battencli#TestBattenLoopSpec_OnStartRegistersTheLoop` -> `func TestBattenLoopSpec_OnStartRegistersTheLoop(t *testing.T)`
+- `internal/loomcli#registerRunProcess`
+- `internal/loomcli#TestRegisterRunProcess`
+- `internal/battencli#battenCLI.registerSeededRun`
+- `internal/battencli#TestBattenLoopSpec_OnStartRegistersTheLoop`
 
 **Edit:**
 - `internal/shedverbs#LoopSpec`
