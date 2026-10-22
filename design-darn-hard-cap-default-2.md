@@ -1,6 +1,6 @@
 # Darn's review hard cap defaults to 2, and the orch stencil drops hand-written small-task run settings
 
-`darn-hard-cap-default-2` · Task · enhancement, config, stencil, orch · running · PR-Gate
+`darn-hard-cap-default-2` · Task · enhancement, config, stencil, orch · running · Finalize
 
 ## Seen
 
