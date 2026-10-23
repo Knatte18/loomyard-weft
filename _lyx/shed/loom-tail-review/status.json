@@ -1,13 +1,13 @@
 {
-  "current_producer": "Webster",
+  "current_producer": "Webster-Bouncer",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "pause_before": "Merge-In",
   "pause_before_by": "ly:orch",
   "activity": {
-    "now": "Webster",
-    "last": "Plan-Bouncer → done",
+    "now": "Webster-Bouncer",
+    "last": "Webster → done",
     "wait": ""
   },
   "history": [
@@ -433,6 +433,33 @@
       "outcome": "done",
       "output": "/home/AD.NORCERESEARCH.NO/hanf/Code/Knatte18/loomyard-LYXHUB/loom-tail-review/_lyx/reviews/plan/round-3-bouncer-ledger.md",
       "at": "2026-10-23T12:41:28Z"
+    },
+    {
+      "producer": "Webster",
+      "outcome": "done",
+      "output": "/home/AD.NORCERESEARCH.NO/hanf/Code/Knatte18/loomyard-LYXHUB/loom-tail-review/_lyx/webster/summary.md",
+      "at": "2026-10-23T19:56:59Z",
+      "gate_attempts": 1,
+      "gate_spans": [
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-10-23T19:34:56.338489615Z",
+          "end": "2026-10-23T19:39:57.042705522Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "rework",
+          "start": "2026-10-23T19:39:57.501449972Z",
+          "end": "2026-10-23T19:49:29.382111196Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-10-23T19:49:29.442166306Z",
+          "end": "2026-10-23T19:56:56.362816406Z"
+        }
+      ]
     }
   ],
   "product": {
