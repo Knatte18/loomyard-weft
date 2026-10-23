@@ -1,49 +1,47 @@
-# Webster verify gate escalates to a cold Opus fixer
+# Webster: escalate unfixed verify failures to a cold Opus fixer
 
-A plan-level verify failure in Webster that the fixer fork does not clear now goes to a cold fixer on the recovery model (`opus[high]` by default) before the run halts.
-Before, every attempt went to a fork on Merriam's own model (`sonnet[medium]`), and nothing after the halt fixes code.
+A plan-level verify failure in Webster used to go only to fixer forks on Merriam's own model (`sonnet[medium]` by the template).
+After the last attempt the run halted to the driver and arbiter, which fix no code.
+Now a failure the fork does not clear goes to a cold fixer at the recovery role (`opus[high]` by the template) before the run halts.
 
-## What changes and why
+## What changes
 
-1. **The gate routes each failure to a fixer.**
-   `NewVerifyGate`'s closure records the routed fixer as `fixer: fork` or `fixer: cold` in `verify-gate.yaml`.
-   A failure goes cold when it is the last failure the attempt budget re-prompts, when the previous fixer added no commit above the pre-fix head, and for every failure after one that went cold.
-   The findings and the re-prompt line open with the way forward to that fixer: the fork step with the prompt file, or a backgrounded `lyx webster fix-verify`.
-   `VerifyGateNotes` carries the routing to the re-prompt renderer.
-2. **`lyx webster fix-verify` runs the cold fixer.**
-   The new role verb spawns a strand with role `verify-fixer` at `RoleRecovery`'s model choice, and blocks until it ends or `recovery_timeout_min` passes, as `recover-batch` does.
-   The fixer's final action is a reply file in Webster's scratch dir (`.lyx/webster/verify-fix-reply.md`), which is the strand's shuttle output file.
-   The verb returns `done` with the reply, or `dead` with `asking`, `timeout` or `died` and a non-zero exit.
-   Every terminal result stops the strand, and only `done` removes the run dir.
-   A call that finds a fixer still running attaches to it.
-   The verb refuses before spawning when no verify-gate report is on disk, when the recovery role's engine cannot audit forks, or when the gate config has no `round` list.
-   It also refuses under a pause that covers the pair, through the pause refusal `begin-batch` and `recover-batch` use, now generalized as `refuseCovered`.
-3. **The cold fixer is a run session like a recovery.**
-   `State.VerifyFixers` records each spawn: strand, session, engine, spawn time, events and terminal status.
-   Fixer sessions join the run's write evidence, run entry stops a fixer that is not terminal, and `reset --to start` stops every recorded fixer.
-4. **One fixing body, two prefixes.**
-   `webster-body-verify-fix` now holds only the findings and the fixing rules.
-   The new `webster-prefix-verify-fix-fork` carries the fork's in-session framing and its reply, and `webster-prefix-verify-fix-cold` carries the cold framing, the parent, edit, PATTERN and friction directives, the orientation steps and the reply file.
-   The cold prefix is the `verify-fixer` role's opening stencil in the registry, so the parent and edit directive tests cover it.
-5. **Merriam's gate-failure section** runs `fix-verify` backgrounded when the way forward names it, and on its completion, whatever the exit, rewrites its contract files and ends its turn so the gate verifies again.
-   Master's spawn now declares `lyx webster fix-verify` as an awaited shell prefix beside `recover-batch`.
-6. **The `webster.yaml` template's `verify_gate_attempts` drops from 3 to 2,** so an untuned hub runs one fork attempt, then one cold attempt.
+- The verify gate routes each failed evaluation to a fixer and records `fixer: fork` or `fixer: cold` in the verify-gate report.
+  A failure goes cold when it is the last one the attempt budget re-prompts, when an earlier failure of the same shuttle run already went cold, or when the previous fixer added no commit above the pre-fix head.
+  Otherwise it goes to the fork.
+  The findings' way-forward line and the re-prompt line name the routed fixer.
+- The `webster.yaml` template's `verify_gate_attempts` drops from 3 to 2: one fork attempt, then one cold attempt.
+  A hub that tunes the cap keeps the cold fixer as its last attempt.
+- New verb `lyx webster fix-verify` spawns the cold fixer as its own strand (strand role `verify-fixer`, model from the `recovery` key) and blocks until it ends or `recovery_timeout_min` passes, as `recover-batch` does.
+  Merriam runs it backgrounded and acts on the completion notification; the verb joins the Master spawn's awaited shell prefixes.
+- The verify-fix stencil is split into a shared body (`webster-body-verify-fix`) and two prefixes, `webster-prefix-verify-fix-fork` and `webster-prefix-verify-fix-cold`.
+  The cold prefix is the opening stencil of the `verify-fixer` role and carries the parent, edit, PATTERN and friction directives and the reply-file final action.
+- The Master template's gate-failure section tells Merriam to run `fix-verify` instead of spawning a fork when the way forward names it, then rewrite its contract files and end its turn so the gate verifies again.
+- `doc.go` for `websterengine` and `webstercli`, `docs/overview.md` and the Webster spec are updated.
 
-Docs: `internal/websterengine/doc.go` gains "The cold verify-gate fixer" section, and `internal/webstercli/doc.go`, `contracts/specs/webster-spec.md`, `contracts/specs/llm-model-spec.md` and `docs/overview.md` are updated.
+## Design decisions
 
-## Design decisions to know
-
-- The escalation sits in the gate, which already owns the attempt count and the fix-commit range.
-  The gate only names the fixer, and Merriam starts it: the gate never spawns, since a spawn there would block shuttle's wait loop for up to the recovery timeout.
-- The cold fixer reuses the `recovery` model key and `recovery_timeout_min`, so `webster.yaml` gains no new key.
-- The reply file sits in `.lyx`, never under `_lyx`, so the shared rule that a fixer never touches `_lyx` holds for both fixers.
-- Bound: `fix-verify` spawns whenever a verify-gate report exists, also after a failure the gate routed to the fork, and counts no spawn.
-  What caps the cold fixers in a run is the number of gate messages, which the attempt budget limits, and the Master template's rule to run the verb only when a message names it.
-- `state.json` gains an optional `verifyFixers` key, and a state without it loads as before.
+- The escalation lives inside the gate, which already owns the attempt count and the fix-commit range, so it can tell the last attempt and a fixer that committed nothing.
+  The tackler and arbiter cannot fix code, so escalating after the halt would not help.
+- `fix-verify` is re-entrant: a call that finds a recorded non-terminal fixer attaches and waits instead of spawning a second.
+  It reports `done` when the fixer wrote its reply file and `dead` with a reason on a turn end without a reply, a gone strand or the timeout.
+  Every terminal call stops the strand, and only `done` removes its run dir.
+  A non-done status exits non-zero.
+  It refuses, naming the way forward, when no verify-gate report exists.
+- The verb counts no spawn of its own.
+  The number of cold fixers per run is bounded by the gate messages Merriam receives, which the attempt budget caps, and by the Master template's rule to run it only when a gate message names it.
+- `State.VerifyFixers` records each spawn (strand guid, session, engine, time, events path and offset, run dir, terminal status); `state.json` gains an optional key, so older states still load.
+  Recorded sessions join the run's write evidence beside the batch recovery sessions.
+  The run-entry reclaim stops a non-terminal recorded fixer, marking it dead and saving it, and `reset --to start` stops every recorded fixer strand first.
+- The cold fixer's reply file sits in Webster's scratch dir, outside `_lyx`, and is the strand's shuttle output file.
+  Its commits pass through the same gate commit check, verify, run-exit audit and Webster-Review as the fork's.
+- No new `webster.yaml` key: the cold fixer uses `recovery` and `recovery_timeout_min`.
+- Known limits:
+  a re-prompt the shuttle could not deliver is re-evaluated on a later tick and counts one more failure, so routing may go cold one attempt early; the cap still bounds the run.
+  The cold fixer starts with only the report and the plan overview, so a failure whose cause needs the batch history may still beat it.
+- Out of scope: the tackler, the arbiter, the driver, the Merge-In fixer and the batch recovery path.
 
 ## To check by hand
 
-- A re-prompt shuttle could not deliver is evaluated again, which counts one more failure in the closure, so routing can go cold one attempt early; the cap still bounds the run.
-- A hub that tuned `verify_gate_attempts` keeps its value and gets the cold fixer only on its last attempt, or after a fixer that committed nothing.
-- No live run has exercised `fix-verify` yet: the tests drive it over the shuttle fakes.
-  The first real gate failure under the new routing is worth watching for the cold prompt's orientation and the reply file landing.
+- Run a real Webster plan whose verify gate fails twice, and confirm the second failure spawns the cold fixer through `lyx webster fix-verify` and its commits reach the next gate evaluation.
+  Tests use injected clocks and stoppers; no live tmux run was made.
