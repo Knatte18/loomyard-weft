@@ -1,0 +1,11 @@
+lyx webster record-batch refused
+
+Arguments: 01
+
+```
+webster: batch 01-fabric-merge-in-at failed: batch 01-fabric-merge-in-at holds cards 1-fabric-merge-in-at, 2-resolve-at-tip, 3-test-file-patterns, 4-reroute-cap-prefix, 5-landing-fixer-config, 6-fixer-report; create-not-done/3-test-file-patterns[blocking]: Create target "plan:internal/planparser#TestIsTestFile" still does not resolve: looked up "internal/planparser#TestIsTestFile", quarry answered not_found (the unit exists and the member is missing); quarry searched the unit's files internal/planparser/amendment.go, internal/planparser/approve.go, internal/planparser/classify.go, internal/planparser/classify_test.go, internal/planparser/edittestfile.go, internal/planparser/extends.go, internal/planparser/fabricref.go, internal/planparser/firstcard.go, internal/planparser/glyphref.go, internal/planparser/glyphref_test.go, internal/planparser/handle.go, internal/planparser/handle_test.go, internal/planparser/identity_test.go, internal/planparser/nestedmodules.go, internal/planparser/normalize.go, internal/planparser/normalize_test.go, internal/planparser/overlay.go, internal/planparser/pairrule.go, internal/planparser/pairrule_test.go, internal/planparser/parse.go, internal/planparser/patternentry.go, internal/planparser/patternentry_test.go, internal/planparser/plan.go, internal/planparser/planpath_test.go, internal/planparser/redundancy.go, internal/planparser/renumber.go, internal/planparser/restore.go, internal/planparser/reviewclass.go, internal/planparser/rewrite.go, internal/planparser/sections.go, internal/planparser/shape.go, internal/planparser/shape_enforcement_test.go, internal/planparser/shape_test.go, internal/planparser/targetdirs.go, internal/planparser/targetholds_test.go, internal/planparser/testmain_test.go, internal/planparser/validate.go, internal/planparser/verifymodule.go, internal/planparser/verifypackage.go, internal/planparser/vocabname.go; TestIsTestFile is declared as internal/planparser_test#TestIsTestFile in internal/planparser/reviewclass_test.go; report archived to /home/AD.NORCERESEARCH.NO/hanf/Code/Knatte18/loomyard-LYXHUB/loom-tail-review/_lyx/webster/reports/01-fabric-merge-in-at-20261023T125903Z.yaml; way forward: lyx webster recover-batch 01
+```
+
+batch: 01-fabric-merge-in-at
+batch_failed: true
+warnings: <nil>
