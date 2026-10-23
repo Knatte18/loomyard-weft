@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-23 06:54 UTC; every age below is as of then.
+Rendered 2026-10-23 06:56 UTC; every age below is as of then.
 
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
@@ -16,9 +16,9 @@ Held by a run; its scope is locked until the run ends.
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T2 | **Plan cards: headroom check, Extends label, an amendment owner, failures traced to cards**<br>• PATTERN headroom in the plan gate, additive Extends cards, an in-run owner for card amendments, verify failures mapped to cards via Enclose<br>• `profile: light` | [`plan-card-rules`](design-plan-card-rules.md) | loom | Plan-Burler-Fix | osl-1046 | 2w<br>15h | loom, webster, burler, orch, quarry |
-| T3 | **One batten verb ends a run for good, live or stopped, before or after its pair exists**<br>• Abandon or abort a batten run in any state: end its processes and strands, clear the claim, remove records and scratch, optionally the pair; batten refuses a dirty source up front<br>• `profile: light` | [`batten-cancel-verb`](design-batten-cancel-verb.md) | loom | Plan-Burler-Fix | osl-1046 | 2d<br>18h | batten, reed, shed |
-| T4 | **The README and lyx board list show which machine owns the prime**<br>• prime_owner is only in board.json; the README shows task owners but not the prime owner, and no board verb prints it<br>• `profile: light` | [`prime-owner-visible`](design-prime-owner-visible.md) | darn | Darn-Write | osl-1046 | 26m<br>7m | board |
-| T5 | **Orch watcher types /compact again after a compact landed**<br>• Watcher stays in resuming after a requested compact and types a second /compact into the resumed busy turn<br>• `profile: light` | [`orch-compact-repeats`](design-orch-compact-repeats.md) | darn | Darn-Write | osl-1046 | 15h<br>7m | orch |
+| T3 | **One batten verb ends a run for good, live or stopped, before or after its pair exists**<br>• Abandon or abort a batten run in any state: end its processes and strands, clear the claim, remove records and scratch, optionally the pair; batten refuses a dirty source up front<br>• `profile: light` | [`batten-cancel-verb`](design-batten-cancel-verb.md) | loom | Plan-Bouncer | osl-1046 | 2d<br>18h | batten, reed, shed |
+| T4 | **The README and lyx board list show which machine owns the prime**<br>• prime_owner is only in board.json; the README shows task owners but not the prime owner, and no board verb prints it<br>• `profile: light` | [`prime-owner-visible`](design-prime-owner-visible.md) | darn | Darn-Write | osl-1046 | 28m<br>8m | board |
+| T5 | **Orch watcher types /compact again after a compact landed**<br>• Watcher stays in resuming after a requested compact and types a second /compact into the resumed busy turn<br>• `profile: light` | [`orch-compact-repeats`](design-orch-compact-repeats.md) | darn | Darn-Write | osl-1046 | 15h<br>8m | orch |
 
 ### Ready
 
@@ -78,7 +78,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | E20 |  | **Plan and Discussion fixers on Sonnet, once findings are concrete enough**<br>• Webster and Merge fixers are already Sonnet; Plan and Discussion fixers need concrete findings first | [`fixers-on-sonnet`](design-fixers-on-sonnet.md) | 14h<br>14h | burler, claude |
 | E22 |  | **lyx batten run starts in its own window by default**<br>• Every batten run is started with --window, so the window should be the default and foreground the opt-in. | [`batten-window-default`](design-batten-window-default.md) | 3d<br>3d | batten, reed, orch |
 | E24 |  | **Every lens fork report is kept verbatim in the run records**<br>• Save each lens fork report in a support file beside lens-review.md, so audits can read what each lens found | [`lens-fork-reports-kept`](design-lens-fork-reports-kept.md) | 17h<br>17h | burler, loom |
-| E26 |  | **A status-bar button turns automatic terminal windows for runs on or off** | [`open-window-toggle`](design-open-window-toggle.md) | 21h<br>20h | batten, reed |
+| E26 |  | **A status-bar button turns automatic terminal windows for runs on or off** | [`open-window-toggle`](design-open-window-toggle.md) | 22h<br>20h | batten, reed |
 | E28 |  | **[.NET] A small public NUnit repo as sandbox hub for end-to-end C# runs** | [`csharp-sandbox-hub`](design-csharp-sandbox-hub.md) | 21h<br>17h | dotnet |
 | E30 |  | **Discussion scope check moves from the alignment agent into the perch lenses, with an escalating finding class** | [`discussion-alignment-into-lenses`](design-discussion-alignment-into-lenses.md) | 19h<br>19h | loom, burler, shed |
 | E31 |  | **A row before Discussion aligns the task text against the board, peers and landed work, and adjusts it** | [`entry-align-before-discussion`](design-entry-align-before-discussion.md) | 19h<br>19h | loom, batten, board |
