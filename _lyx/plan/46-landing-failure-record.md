@@ -23,7 +23,7 @@
 - `internal/landingshed#failureRecorder`
 - `internal/landingshed#verifyGate.recordFailure`
 - `internal/landingshed#verifyGate.clearFailure`
-- `plan:internal/landingshed#fixerRun.run`
+- `internal/landingshed#fixerRun.run`
 - `internal/landingshed#TestMergeIn_PlanVerifyFailureRecord`
 - `internal/landingshed#TestFinalizeVerify_Fail`
 - `internal/landingshed#TestVerifyGate_CheckMapsVerifyResult`

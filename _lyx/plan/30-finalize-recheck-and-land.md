@@ -17,8 +17,8 @@
 - `internal/landingshed_test#TestFinalize_OverRealHub`
 
 **Uses:**
-- `plan:internal/landingshed#fakeFixerSeats`
-- `plan:internal/landingshed#LandingStopPrefix`
+- `internal/landingshed#fakeFixerSeats`
+- `internal/landingshed#LandingStopPrefix`
 
 **Extends:**
 - `internal/landingshed/doc.go`
