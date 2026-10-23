@@ -61,7 +61,8 @@ What reads them goes with them or is updated: `lyx report convergence`, and the 
 ### Board tidy after landing
 
 PR-Align's alignment agent today names the board entries a run supersedes, and the orch amends them.
-That moves to batten: a new batten row after `Land`, outside the lock, where a cheap agent (Sonnet) reads the landed commit and the decision record against the board's notes, removes or amends the notes the landing superseded itself, and reports to the orch what it did.
+That leaves loom, darn and batten: batten's job is one task, never other board entries.
+The orch spawns a Sonnet agent at each landing that reports the notes the landing superseded (a hub-wide orch rule, not code in this task), and the orch's Go driver takes that job over once there is one.
 
 ## Open
 
