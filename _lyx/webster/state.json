@@ -1,0 +1,578 @@
+{
+  "runGuid": "6f3f62b7ba6640bed5f2f8f6f97b867c",
+  "planFingerprint": "86f49a229cba3c5633e7f79b09a9ba4b6aed76d3fc90960cc78ccf942306538e",
+  "planFileHashes": {
+    "00-overview.md": "96ea7fdd8f8d6382d0d75626814f18d9de43b47b7804ff6a64d1958c1b3b0073",
+    "01-plandag-additive-guess.md": "962c1b9cabc5c349268616d2c237b98cac722062a8f93e5bd7c82aaef68b2043",
+    "02-pattern-overview-projection.md": "7fe7b6123b9981ef433aaef9454dc9edb0a60caeddafcd203085c2edb3f79ebe",
+    "03-planparser-pattern-entry-lines.md": "454458190f9d02059cc53c0f43a65f0a12f33a410c6c77f730979f8d1dba22db",
+    "04-plan-gate-pattern-checks.md": "930519e3995f156a420df838ad90ec0c70a344854243ef9c43aea0b4c5da4a08",
+    "05-plan-gate-pattern-base-wiring.md": "2f4c7af54849e0f8908c653d2253aec170ea80edbbc37956d49a5617ae3d06b1",
+    "06-extends-label.md": "25924449245b02b4f54a519991ab8218b08b0511bdc17f01e3e1d26f895428b5",
+    "07-extends-group-readers.md": "47c5624d7e02ccd387d897d4a0e4a9abb35f811a441d50eb10e41e49a60f999d",
+    "08-card-pair-rule.md": "08757c70f0700a8ca3d8942bb0aee3d48ffce36b9e1c429f44d10856775d53c6",
+    "09-plandag-extends-mark.md": "b4023110e9f1ce5f3cb5c7fef22519eb5c3e4aa554e0d3ba390f9725ed518b90",
+    "10-plan-review-extends-guidance.md": "ab498a63d124cc88a8626b2e2c73fa96efe73ef8d96be9f2b5f6bb8b6fd2d895",
+    "11-amendment-record.md": "888ceb2c4043cd4ec8d8e0e7252532d8989298108f46d30a05c7c63d479567ff",
+    "12-settle-round-start.md": "ac59271017ea6386c8d5f58586c0aa29c240b3283b3c9a727b1ae1cc458c7405",
+    "13-decision-amends-plan.md": "e4a2eb088667030f4beedb86c6207f16ab71d4af24e8f21365b69b6d127c5522",
+    "14-settled-guard-amendment.md": "8cb68b5adc7ac5f71068b47ccac37dc57e49d340ef4f8d71b1cc0e36ef4a7db7",
+    "15-plan-commit-removes-amendment.md": "239309accd1339e0a4285c470f59f239a3557e5556eaeffa68a159b808381117",
+    "16-rework-amendment.md": "91a8961eb2601778c17f895dad47a2f985797bc52266c4d5ed1dbbc63ca7635d",
+    "17-plan-review-answer-key.md": "c3474497905ddfafe2a23487451e58174b89adef1abad17cc98468644ad80b1f",
+    "18-recipe-amendment-target.md": "61040de7f1bc5aaa3f11ab59b4bb2b4ecaa118ac2877c6774cca8260bbb5cb26",
+    "19-arbiter-amendment-target.md": "03adfa75e47c4597dc81e64f1b0429ffed3d29878932c7b740f76f6c09ccc3eb",
+    "20-orch-amendment-route.md": "78f7b2f99cf405211bc9c65a86fe17f935261f5f8f86a258d72359b9ee09e295",
+    "21-webster-conflict-amendment-way-forward.md": "519f1377782ffba8f922982351c815625fd91db68a8e11af1bda2e1750ee05d9",
+    "22-failure-trace-record.md": "5deb5f4ae5c8246cffdcead20a25a57ce525a16a95437b0484775c78e990be08",
+    "23-planglyph-enclose.md": "e2068a5310f00f767aad966e3cbd341d3448e36184abb245620a6b71529a85cd",
+    "24-planparser-target-holds.md": "c12fe69a5e8a4fc08261983ef3805e633c8314f5e858b4077cc6e28eeb5817b4",
+    "25-failuretrace-package.md": "182edd017419fe2a484c131f8ad57e3289b58c99c3b6c82e0f6de4c68b1473f8",
+    "26-landing-trace-seam.md": "78255b56e3cf436328cc85f08fc9e7406f4f58599b5a4e6837e06206c8a01725",
+    "27-publish-failure-note-trace.md": "8e5f0d29c9b2b8f0661ebeb629ee832ce86b12109c81700e5b2b20089776b038"
+  },
+  "planOverviewFrameHash": "85f0a0654e477b2eb4ad2991932cbbdb70f648dd2964e414a38c2cd930a352a1",
+  "partition": [
+    {
+      "cards": [
+        "01-plandag-additive-guess",
+        "02-pattern-overview-projection",
+        "03-planparser-pattern-entry-lines",
+        "04-plan-gate-pattern-checks",
+        "05-plan-gate-pattern-base-wiring",
+        "06-extends-label"
+      ],
+      "profile": "wide",
+      "estimate": 275678,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 1,
+        "startup": 54796,
+        "read_union": 62128,
+        "cards": [
+          {
+            "card": 1,
+            "card_text": 480,
+            "reads": {
+              "package:tools/plandag": 2000,
+              "tests:tools/plandag": 2000
+            },
+            "messages": 63,
+            "written": 19380
+          },
+          {
+            "card": 2,
+            "card_text": 396,
+            "reads": {
+              "file:internal/pattern/doc.go": 1056,
+              "package:internal/pattern": 2000,
+              "tests:internal/pattern": 2000
+            },
+            "messages": 33,
+            "written": 10296
+          },
+          {
+            "card": 3,
+            "card_text": 312,
+            "reads": {
+              "package:internal/planparser": 2000,
+              "tests:internal/planparser": 2000
+            },
+            "messages": 38.5,
+            "written": 11862
+          },
+          {
+            "card": 4,
+            "card_text": 876,
+            "reads": {
+              "file:contracts/specs/loom-plan-spec.md": 9216,
+              "file:contracts/stencils/loom/loom-template-plan.md": 3396,
+              "file:internal/loomshed/doc.go": 1116,
+              "package:contracts/specs": 2000,
+              "package:contracts/stencils/loom": 2000,
+              "package:internal/loomshed": 2000,
+              "tests:contracts/specs": 2000,
+              "tests:contracts/stencils/loom": 2000,
+              "tests:internal/loomshed": 2000
+            },
+            "messages": 106,
+            "written": 32676
+          },
+          {
+            "card": 5,
+            "card_text": 432,
+            "reads": {
+              "file:internal/patternlint/doc.go": 144,
+              "package:internal/loomcli": 2000,
+              "package:internal/loomshed": 2000,
+              "package:internal/patternlint": 2000,
+              "package:internal/shedrecipe": 2000,
+              "tests:internal/loomcli": 2000,
+              "tests:internal/loomshed": 2000,
+              "tests:internal/patternlint": 2000,
+              "tests:internal/shedrecipe": 2000
+            },
+            "messages": 117.5,
+            "written": 35682
+          },
+          {
+            "card": 6,
+            "card_text": 708,
+            "reads": {
+              "file:contracts/specs/loom-plan-spec.md": 9216,
+              "file:internal/planparser/doc.go": 2016,
+              "file:tools/sandbox/SANDBOX-WEBSTER-SUITE.md": 1980,
+              "package:contracts/specs": 2000,
+              "package:internal/planparser": 2000,
+              "package:tools/sandbox": 2000,
+              "tests:contracts/specs": 2000,
+              "tests:internal/planparser": 2000,
+              "tests:tools/sandbox": 2000
+            },
+            "messages": 160.5,
+            "written": 48858
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "07-extends-group-readers",
+        "08-card-pair-rule",
+        "09-plandag-extends-mark",
+        "10-plan-review-extends-guidance",
+        "11-amendment-record",
+        "12-settle-round-start"
+      ],
+      "profile": "wide",
+      "estimate": 251868,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 2,
+        "startup": 61796,
+        "read_union": 73744,
+        "cards": [
+          {
+            "card": 7,
+            "card_text": 312,
+            "reads": {
+              "file:internal/planglyph/doc.go": 1680,
+              "package:internal/batcher": 2000,
+              "package:internal/planglyph": 2000,
+              "tests:internal/batcher": 2000,
+              "tests:internal/planglyph": 2000
+            },
+            "messages": 44.5,
+            "written": 13662
+          },
+          {
+            "card": 8,
+            "card_text": 540,
+            "reads": {
+              "file:contracts/specs/loom-plan-spec.md": 9216,
+              "file:internal/planparser/doc.go": 2016,
+              "file:internal/websterengine/doc.go": 8592,
+              "package:contracts/specs": 2000,
+              "package:internal/planparser": 2000,
+              "package:internal/websterengine": 2000,
+              "tests:contracts/specs": 2000,
+              "tests:internal/planparser": 2000,
+              "tests:internal/websterengine": 2000
+            },
+            "messages": 132,
+            "written": 40140
+          },
+          {
+            "card": 9,
+            "card_text": 396,
+            "reads": {
+              "package:tools/plandag": 2000,
+              "tests:tools/plandag": 2000
+            },
+            "messages": 45,
+            "written": 13896
+          },
+          {
+            "card": 10,
+            "card_text": 216,
+            "reads": {
+              "file:contracts/stencils/loom/loom-rubric-plan-review.md": 1812,
+              "file:contracts/stencils/loom/loom-template-plan.md": 3396,
+              "package:contracts/stencils/loom": 2000,
+              "tests:contracts/stencils/loom": 2000
+            },
+            "messages": 12,
+            "written": 3816
+          },
+          {
+            "card": 11,
+            "card_text": 444,
+            "reads": {
+              "package:internal/loomengine": 2000,
+              "package:internal/loomshed": 2000,
+              "tests:internal/loomengine": 2000,
+              "tests:internal/loomshed": 2000
+            },
+            "messages": 79,
+            "written": 24144
+          },
+          {
+            "card": 12,
+            "card_text": 420,
+            "reads": {
+              "file:internal/shedadapters/doc.go": 4704,
+              "package:internal/shedadapters": 2000,
+              "tests:internal/shedadapters": 2000
+            },
+            "messages": 67.5,
+            "written": 20670
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "13-decision-amends-plan",
+        "14-settled-guard-amendment",
+        "15-plan-commit-removes-amendment",
+        "16-rework-amendment",
+        "17-plan-review-answer-key"
+      ],
+      "profile": "wide",
+      "estimate": 255836,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 3,
+        "startup": 68796,
+        "read_union": 44276,
+        "cards": [
+          {
+            "card": 13,
+            "card_text": 888,
+            "reads": {
+              "file:docs/overview.md": 9888,
+              "file:internal/loomcli/doc.go": 3120,
+              "package:docs": 2000,
+              "package:internal/loomcli": 2000,
+              "tests:docs": 2000,
+              "tests:internal/loomcli": 2000
+            },
+            "messages": 175,
+            "written": 53388
+          },
+          {
+            "card": 14,
+            "card_text": 348,
+            "reads": {
+              "package:internal/loomcli": 2000,
+              "tests:internal/loomcli": 2000
+            },
+            "messages": 71,
+            "written": 21648
+          },
+          {
+            "card": 15,
+            "card_text": 432,
+            "reads": {
+              "package:internal/loomcli": 2000,
+              "tests:internal/loomcli": 2000
+            },
+            "messages": 87,
+            "written": 26532
+          },
+          {
+            "card": 16,
+            "card_text": 480,
+            "reads": {
+              "file:internal/loomshed/doc.go": 1116,
+              "package:internal/loomcli": 2000,
+              "package:internal/loomshed": 2000,
+              "package:internal/testkit/envkit": 2000,
+              "tests:internal/loomcli": 2000,
+              "tests:internal/loomshed": 2000,
+              "tests:internal/testkit/envkit": 2000
+            },
+            "messages": 129,
+            "written": 39180
+          },
+          {
+            "card": 17,
+            "card_text": 216,
+            "reads": {
+              "file:contracts/recipes/loom-recipe.yaml": 7788,
+              "package:contracts/recipes": 2000,
+              "tests:contracts/recipes": 2000
+            },
+            "messages": 6,
+            "written": 2016
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "18-recipe-amendment-target",
+        "19-arbiter-amendment-target",
+        "20-orch-amendment-route",
+        "21-webster-conflict-amendment-way-forward",
+        "22-failure-trace-record"
+      ],
+      "profile": "wide",
+      "estimate": 254528,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 4,
+        "startup": 75796,
+        "read_union": 68176,
+        "cards": [
+          {
+            "card": 18,
+            "card_text": 336,
+            "reads": {
+              "file:contracts/recipes/loom-recipe.yaml": 7788,
+              "file:contracts/specs/shed-recipe-spec.md": 1560,
+              "file:internal/loomrecipe/doc.go": 420,
+              "file:internal/shedbuild/doc.go": 168,
+              "package:contracts/recipes": 2000,
+              "package:contracts/specs": 2000,
+              "package:internal/loomrecipe": 2000,
+              "package:internal/shedbuild": 2000,
+              "tests:contracts/recipes": 2000,
+              "tests:contracts/specs": 2000,
+              "tests:internal/loomrecipe": 2000,
+              "tests:internal/shedbuild": 2000
+            },
+            "messages": 64.5,
+            "written": 19686
+          },
+          {
+            "card": 19,
+            "card_text": 588,
+            "reads": {
+              "file:contracts/stencils/loom/loom-template-arbiter.md": 1140,
+              "file:internal/loomcli/doc.go": 3120,
+              "package:contracts/stencils/loom": 2000,
+              "package:internal/loomcli": 2000,
+              "tests:contracts/stencils/loom": 2000,
+              "tests:internal/loomcli": 2000
+            },
+            "messages": 127,
+            "written": 38688
+          },
+          {
+            "card": 20,
+            "card_text": 156,
+            "reads": {
+              "file:contracts/stencils/orch/orch-template-role.md": 3252,
+              "package:contracts/stencils/orch": 2000,
+              "tests:contracts/stencils/orch": 2000
+            },
+            "messages": 6,
+            "written": 1956
+          },
+          {
+            "card": 21,
+            "card_text": 288,
+            "reads": {
+              "file:internal/websterengine/doc.go": 8592,
+              "package:internal/loomcli": 2000,
+              "package:internal/shedadapters": 2000,
+              "package:internal/websterengine": 2000,
+              "tests:internal/loomcli": 2000,
+              "tests:internal/shedadapters": 2000,
+              "tests:internal/websterengine": 2000
+            },
+            "messages": 127,
+            "written": 38388
+          },
+          {
+            "card": 22,
+            "card_text": 288,
+            "reads": {
+              "file:internal/verifytree/doc.go": 480,
+              "package:internal/verifytree": 2000,
+              "tests:internal/verifytree": 2000
+            },
+            "messages": 38.5,
+            "written": 11838
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "23-planglyph-enclose",
+        "24-planparser-target-holds",
+        "25-failuretrace-package",
+        "26-landing-trace-seam",
+        "27-publish-failure-note-trace"
+      ],
+      "profile": "wide",
+      "estimate": 264540,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 5,
+        "startup": 82796,
+        "read_union": 56200,
+        "cards": [
+          {
+            "card": 23,
+            "card_text": 348,
+            "reads": {
+              "file:docs/overview.md": 9888,
+              "file:internal/planglyph/doc.go": 1680,
+              "file:pattern/PATTERN-glyph-conversion-chokepoint.md": 180,
+              "package:docs": 2000,
+              "package:internal/planglyph": 2000,
+              "package:pattern": 2000,
+              "tests:docs": 2000,
+              "tests:internal/planglyph": 2000,
+              "tests:pattern": 2000
+            },
+            "messages": 42,
+            "written": 12948
+          },
+          {
+            "card": 24,
+            "card_text": 348,
+            "reads": {
+              "package:internal/planparser": 2000,
+              "tests:internal/planparser": 2000
+            },
+            "messages": 36.5,
+            "written": 11298
+          },
+          {
+            "card": 25,
+            "card_text": 732,
+            "reads": {
+              "file:docs/overview.md": 9888,
+              "package:cmd/lyx": 2000,
+              "package:docs": 2000,
+              "package:internal/failuretrace": 2000,
+              "tests:cmd/lyx": 2000,
+              "tests:docs": 2000,
+              "tests:internal/failuretrace": 2000
+            },
+            "messages": 112,
+            "written": 34332
+          },
+          {
+            "card": 26,
+            "card_text": 432,
+            "reads": {
+              "file:internal/landingshed/doc.go": 2208,
+              "package:internal/landingshed": 2000,
+              "package:internal/loomcli": 2000,
+              "package:internal/testkit/envkit": 2000,
+              "tests:internal/landingshed": 2000,
+              "tests:internal/loomcli": 2000,
+              "tests:internal/testkit/envkit": 2000
+            },
+            "messages": 128.5,
+            "written": 38982
+          },
+          {
+            "card": 27,
+            "card_text": 384,
+            "reads": {
+              "package:internal/loomcli": 2000,
+              "package:internal/loomshed": 2000,
+              "tests:internal/loomcli": 2000,
+              "tests:internal/loomshed": 2000
+            },
+            "messages": 92,
+            "written": 27984
+          }
+        ]
+      }
+    }
+  ],
+  "currentBatch": 1,
+  "masterStrand": "5d7707be21a2f264e8cb67fdd257faf0",
+  "masterSessionId": "42b1ea9d-4ad9-4b82-a2f2-60e0b764997b",
+  "masterEngine": "claude",
+  "batches": {
+    "1": {
+      "slug": "plandag-additive-guess",
+      "cards": [
+        "01-plandag-additive-guess",
+        "02-pattern-overview-projection",
+        "03-planparser-pattern-entry-lines",
+        "04-plan-gate-pattern-checks",
+        "05-plan-gate-pattern-base-wiring",
+        "06-extends-label"
+      ],
+      "cardHashes": {
+        "01-plandag-additive-guess": "962c1b9cabc5c349268616d2c237b98cac722062a8f93e5bd7c82aaef68b2043",
+        "02-pattern-overview-projection": "7fe7b6123b9981ef433aaef9454dc9edb0a60caeddafcd203085c2edb3f79ebe",
+        "03-planparser-pattern-entry-lines": "454458190f9d02059cc53c0f43a65f0a12f33a410c6c77f730979f8d1dba22db",
+        "04-plan-gate-pattern-checks": "930519e3995f156a420df838ad90ec0c70a344854243ef9c43aea0b4c5da4a08",
+        "05-plan-gate-pattern-base-wiring": "2f4c7af54849e0f8908c653d2253aec170ea80edbbc37956d49a5617ae3d06b1",
+        "06-extends-label": "25924449245b02b4f54a519991ab8218b08b0511bdc17f01e3e1d26f895428b5"
+      },
+      "startSha": "e634efb9060e4d49a9b7c66339d46e91cbeef10a",
+      "kind": "fork",
+      "spawnedAt": "2026-10-23T07:06:22Z",
+      "sessionId": "42b1ea9d-4ad9-4b82-a2f2-60e0b764997b",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
+    }
+  }
+}
