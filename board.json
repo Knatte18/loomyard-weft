@@ -1137,10 +1137,10 @@
     },
     {
       "id": 769,
-      "handle": "E23",
+      "handle": "T2",
       "slug": "verify-fix-escalation",
       "title": "Webster verify failures the fixer fork cannot clear escalate to an Opus-high fixer",
-      "kind": "note",
+      "kind": "task",
       "labels": [
         "enhancement",
         "webster",
