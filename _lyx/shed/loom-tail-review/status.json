@@ -1,13 +1,13 @@
 {
-  "current_producer": "Plan-Write",
+  "current_producer": "Plan-Bouncer",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "pause_before": "Merge-In",
   "pause_before_by": "ly:orch",
   "activity": {
-    "now": "Plan-Write",
-    "last": "Discussion-Bouncer → done",
+    "now": "Plan-Bouncer",
+    "last": "Plan-Write → done",
     "wait": ""
   },
   "history": [
@@ -264,6 +264,45 @@
       "outcome": "done",
       "output": "/home/AD.NORCERESEARCH.NO/hanf/Code/Knatte18/loomyard-LYXHUB/loom-tail-review/_lyx/reviews/discussion/round-4-bouncer-ledger.md",
       "at": "2026-10-23T10:18:31Z"
+    },
+    {
+      "producer": "Plan-Write",
+      "outcome": "done",
+      "output": "/home/AD.NORCERESEARCH.NO/hanf/Code/Knatte18/loomyard-LYXHUB/loom-tail-review/_lyx/plan/00-overview.md",
+      "at": "2026-10-23T12:05:25Z",
+      "gate_attempts": 2,
+      "gate_spans": [
+        {
+          "gate": "plan",
+          "kind": "gate",
+          "start": "2026-10-23T11:40:57.360473427Z",
+          "end": "2026-10-23T11:41:03.990781172Z"
+        },
+        {
+          "gate": "plan",
+          "kind": "rework",
+          "start": "2026-10-23T11:41:04.568186626Z",
+          "end": "2026-10-23T11:53:00.944661227Z"
+        },
+        {
+          "gate": "plan",
+          "kind": "gate",
+          "start": "2026-10-23T11:53:01.015364296Z",
+          "end": "2026-10-23T11:53:11.308295838Z"
+        },
+        {
+          "gate": "plan",
+          "kind": "rework",
+          "start": "2026-10-23T11:54:11.878244387Z",
+          "end": "2026-10-23T12:04:59.261397192Z"
+        },
+        {
+          "gate": "plan",
+          "kind": "gate",
+          "start": "2026-10-23T12:04:59.290630587Z",
+          "end": "2026-10-23T12:05:10.151718847Z"
+        }
+      ]
     }
   ],
   "product": {
