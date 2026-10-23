@@ -45,6 +45,6 @@ tiers:
 gates:
     batch: [0, 1]
     round: [0, 1]
-    final: [0, 1]
+    final: [0, 1, 2]
     landing: [0, 1]
     publish: [2]
