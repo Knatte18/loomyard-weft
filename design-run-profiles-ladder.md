@@ -1,4 +1,4 @@
-# Run profiles as one ladder: speed, light, standard, wide
+# Run profiles as one ladder: speed, light, solid, wide
 
 `run-profiles-ladder` · Note · enhancement, config, loom
 
@@ -15,7 +15,7 @@ One ladder of profiles, the same names for darn and loom, each setting the revie
 |---|---|---|---|---|
 | speed | 0 | 0 | 1 | 0 |
 | light | 1 | 1 | 1 | 1 |
-| standard | 2 | 2 | 1 | 2 |
+| solid | 2 | 2 | 1 | 2 |
 | wide | 3 | 2 | 1 | 3 |
 
 A task needing anything else names its rounds per row by hand.
@@ -23,11 +23,10 @@ A task needing anything else names its rounds per row by hand.
 ## Operator decisions (2026-10-23)
 
 - Each profile also sets each perch's hard cap, such as its rounds plus one, so `lyx loom circling continue` can grant one more round.
-- The third rung gets a name of its own, not `standard`.
-  A hub names its default profile per recipe instead: loom's default is the third rung, darn's is `light`.
+- The third rung is named `solid`, not `standard`.
+  A hub names its default profile per recipe instead: loom's default is `solid`, darn's is `light`.
 
 ## Open
 
-- The third rung's name.
 - `docs`: the operator doubts it, since Opus does quick work well; if kept, it is a darn profile only for pure prose and config value edits, with a Sonnet writer, and its perch rounds are undecided.
 - The Code column's key is `code_max_bounces` after `loom-tail-review`, and darn's perch may merge into Code-Review (note `code-review-one-perch`), which changes which keys a profile sets.
