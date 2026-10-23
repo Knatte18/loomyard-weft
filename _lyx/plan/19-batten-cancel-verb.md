@@ -1,20 +1,20 @@
 # Card 19 — batten-cancel-verb
 
 **Create:**
-- `plan:internal/battencli#battenCLI.cancelCmd` -> `func (c *battenCLI) cancelCmd() *cobra.Command`
-- `plan:internal/battencli#hubCancelDeps` -> `func hubCancelDeps(location *lyxcwd.Location, slug string) (cancelDeps, error)`
-- `plan:internal/battencli#slugPauseRefs` -> `func slugPauseRefs(record pauserecord.Record, slug string) []tenderengine.EntryRef`
-- `plan:internal/battencli#hubPauseLive` -> `func hubPauseLive(record pauserecord.Record) bool`
-- `plan:internal/battencli#clearRunClaim` -> `func clearRunClaim(read func() (status *string, found bool, err error), write func(status *string) error) (cleared, found bool, err error)`
-- `plan:internal/battencli#stopRecordedTackler` -> `func stopRecordedTackler(markerPath string, stop func(guid string) error) (string, error)`
-- `plan:internal/battencli#takeBattenLocks` -> `func takeBattenLocks(driverLockPath, runLockPath string, wait time.Duration) (release func(), busy string, err error)`
-- `plan:internal/battencli#TestTakeBattenLocks` -> `func TestTakeBattenLocks(t *testing.T)`
-- `plan:internal/battencli#TestCancelPauseEntries` -> `func TestCancelPauseEntries(t *testing.T)`
-- `plan:internal/battencli#TestClearRunClaim` -> `func TestClearRunClaim(t *testing.T)`
-- `plan:internal/battencli#TestStopRecordedTackler` -> `func TestStopRecordedTackler(t *testing.T)`
-- `plan:internal/battencli#TestCancelCmd_RefusesBeforeAnything` -> `func TestCancelCmd_RefusesBeforeAnything(t *testing.T)`
-- `plan:internal/battencli#TestCancelIntegration_BlockedRunWithNoPair` -> `func TestCancelIntegration_BlockedRunWithNoPair(t *testing.T)`
-- `plan:internal/battencli#TestCancelIntegration_KeptPairJudgeOnly` -> `func TestCancelIntegration_KeptPairJudgeOnly(t *testing.T)`
+- `internal/battencli#battenCLI.cancelCmd`
+- `internal/battencli#hubCancelDeps`
+- `internal/battencli#slugPauseRefs`
+- `internal/battencli#hubPauseLive`
+- `internal/battencli#clearRunClaim`
+- `internal/battencli#stopRecordedTackler`
+- `internal/battencli#takeBattenLocks`
+- `internal/battencli#TestTakeBattenLocks`
+- `internal/battencli#TestCancelPauseEntries`
+- `internal/battencli#TestClearRunClaim`
+- `internal/battencli#TestStopRecordedTackler`
+- `internal/battencli#TestCancelCmd_RefusesBeforeAnything`
+- `internal/battencli#TestCancelIntegration_BlockedRunWithNoPair`
+- `internal/battencli#TestCancelIntegration_KeptPairJudgeOnly`
 
 **Edit:**
 - `internal/battencli#Command`
@@ -24,8 +24,8 @@
 - `internal/battencli#TestCommand_EveryVerbArity`
 
 **Uses:**
-- `plan:internal/battencli#cancelRun`
-- `plan:internal/battencli#childReachedParent`
+- `internal/battencli#cancelRun`
+- `internal/battencli#childReachedParent`
 - `internal/battencli#removeRunRecords`
 - `internal/battencli#takeCancelMarker`
 - `internal/battencli#readCancelMarker`
