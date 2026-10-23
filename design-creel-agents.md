@@ -97,6 +97,7 @@ The operator's concern: much added delay.
 
 - Whether Codex has messaging between sessions is not checked; the `codex-engine` spike can find out.
 - The relay need not be LLM agents: creel is already a program that types into any pane, so a cross-engine message is one `lyx creel post` by the sender, typed in full into the receiver's pane, with no relay turn.
-  Two relay agents would add two LLM turns, their tokens and their delay per message, and could garble what they forward.
+  Two relay agents would add two LLM turns and their delay per message.
+  Operator (2026-10-23): relay agents are cheap, on the cheapest models such as Haiku or Luna, and must forward verbatim; creel as designed does the same.
 - What a cross-engine post costs today is the receiver's reminder and read turn, which note `creel-carry-agent-mail` would remove.
 
