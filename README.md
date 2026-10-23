@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-23 10:01 UTC; every age below is as of then.
+Rendered 2026-10-23 10:02 UTC; every age below is as of then.
 Prime owner: `osl-1046`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -16,7 +16,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T2 | **Webster verify failures the fixer fork cannot clear escalate to an Opus-high fixer**<br>• Merriam fixes a failed verify only with forks on its own Sonnet model; a stronger fixer exists only for stuck batches<br>• `profile: darn-wide` | [`verify-fix-escalation`](design-verify-fix-escalation.md) | darn | Darn-Burler-Review | osl-1046 | 1h<br>33m | webster, loom |
+| T2 | **Webster verify failures the fixer fork cannot clear escalate to an Opus-high fixer**<br>• Merriam fixes a failed verify only with forks on its own Sonnet model; a stronger fixer exists only for stuck batches<br>• `profile: darn-wide` | [`verify-fix-escalation`](design-verify-fix-escalation.md) | darn | Darn-Burler-Fix | osl-1046 | 1h<br>33m | webster, loom |
 | T5 | **Run tail: Merge-In with alignment, Code-Perch, a PR stub and one locked Land block, for loom and darn**<br>• Loom and darn share one tail after the code: Merge-In with alignment and a thorough fixer, Code-Perch, PR block behind a flag, Finalize re-merging under the parent lock | [`loom-tail-review`](design-loom-tail-review.md) | loom | Discussion-Burler-Fix | osl-1046 | 15h<br>2h | loom, burler, shed, fabric, batten |
 
 ### Ready
@@ -79,7 +79,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | E25 |  | **Ubuntu 24.04 as a stated and checked floor: a PATTERN entry and a mechanical check**<br>• A Neve-written reed change broke on tmux 3.4; nothing states or checks the Ubuntu 24.04 floor | [`ubuntu-2404-floor`](design-ubuntu-2404-floor.md) | 1h<br>1h | reed, gate |
 | E26 |  | **A status-bar button turns automatic terminal windows for runs on or off** | [`open-window-toggle`](design-open-window-toggle.md) | 1d<br>23h | batten, reed |
 | E27 | L | **Carry agent mail into the pane in full instead of a reminder and a read turn**<br>• A reminder plus lyx creel read costs the receiver an extra turn per agent message | [`creel-carry-agent-mail`](design-creel-carry-agent-mail.md) | 1h<br>1h | creel |
-| E28 |  | **[.NET] A small public NUnit repo as sandbox hub for end-to-end C# runs** | [`csharp-sandbox-hub`](design-csharp-sandbox-hub.md) | 1d<br>20h | dotnet |
+| E28 |  | **[.NET] A small public NUnit repo as sandbox hub for end-to-end C# runs** | [`csharp-sandbox-hub`](design-csharp-sandbox-hub.md) | 1d<br>21h | dotnet |
 | E30 |  | **Discussion scope check moves from the alignment agent into the perch lenses, with an escalating finding class** | [`discussion-alignment-into-lenses`](design-discussion-alignment-into-lenses.md) | 22h<br>22h | loom, burler, shed |
 | E31 |  | **A row before Discussion aligns the task text against the board, peers and landed work, and adjusts it** | [`entry-align-before-discussion`](design-entry-align-before-discussion.md) | 22h<br>22h | loom, batten, board |
 | E32 |  | **Move rules about lyx behaviour out of this repo's CLAUDE.md into lyx code, doc.go and stencils** | [`claude-md-lyx-rules-out`](design-claude-md-lyx-rules-out.md) | 22h<br>22h | stencil, board, loom |
