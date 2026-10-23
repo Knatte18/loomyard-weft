@@ -1,6 +1,6 @@
 # Webster verify failures the fixer fork cannot clear escalate to an Opus-high fixer
 
-`verify-fix-escalation` · Task · enhancement, webster, loom
+`verify-fix-escalation` · Task · enhancement, webster, loom · running · Worktree-Create
 
 ## Seen (orch, 2026-10-23)
 
