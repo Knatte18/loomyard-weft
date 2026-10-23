@@ -1444,7 +1444,7 @@
       "isolated": false,
       "brief": "",
       "body": "Imported from [issue #845](https://github.com/Knatte18/loomyard/issues/845).\n\n## Seen (orch, 2026-10-23, OSL-1046, lyx e634efb9)\n\nThe orch watcher posted its soft cycle request #147 at 06:56:27Z while the orch was in a long turn.\nCreel delivered it when that turn ended, at 07:06:34Z, and the orch wrote the named note within a minute.\n`lyx orch status` then showed `phase: idle`, `cycle_request: null` and `last_abort_reason: \"handoff timed out\"`, and no cycle ran, so the note was written for nothing.\nThe handoff timeout counted from the post, and the ten minutes the request waited for delivery used it up.\n\n## Workaround\n\nNone by hand; the next soft request, or `lyx orch distill`, asks again.\n\n## Expected\n\nThe handoff timeout starts when the request is delivered to the orch (its creel `read` event), not when it is posted, so a request queued behind a long turn still gets the full time.\n",
-      "status": "running · Darn-Bouncer",
+      "status": "running · Darn-Burler-Review",
       "created": "2026-10-23T16:36:15Z",
       "revised": "2026-10-23T16:53:52Z",
       "profile": "light",
