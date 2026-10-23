@@ -1,6 +1,6 @@
 # The README and lyx board list show which machine owns the prime
 
-`prime-owner-visible` · Task · enhancement, board · running · Publish
+`prime-owner-visible` · Task · enhancement, board · running · Merge-In
 
 ## Seen
 
