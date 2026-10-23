@@ -2,6 +2,8 @@
 
 `code-review-one-perch` · Task · enhancement, loom, burler
 
+Depends on: [`loom-tail-review`](design-loom-tail-review.md)
+
 ## Seen (orch, 2026-10-23)
 
 Darn and loom each review the committed diff with their own perch: darn's `Darn-Review` (rows `Darn-Bouncer`, `Darn-Burler-Review`, `Darn-Burler-Fix`, keys `darn_*` in `darn.yaml`, rubric `loom-rubric-darn-review`) and loom's Webster-Review, which `loom-tail-review` renames `Code-Review` (keys `code_*` in `loom.yaml`, rubric `loom-rubric-code-review`).
