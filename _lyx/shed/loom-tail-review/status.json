@@ -1,13 +1,13 @@
 {
-  "current_producer": "Discussion-Burler-Review",
+  "current_producer": "Discussion-Burler-Fix",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "pause_before": "Merge-In",
   "pause_before_by": "ly:orch",
   "activity": {
-    "now": "Discussion-Burler-Review",
-    "last": "Discussion-Bouncer → bounced to Discussion-Burler-Review",
+    "now": "Discussion-Burler-Fix",
+    "last": "Discussion-Burler-Review → bounced to Discussion-Burler-Fix",
     "wait": ""
   },
   "history": [
@@ -121,6 +121,35 @@
       "output": "/home/AD.NORCERESEARCH.NO/hanf/Code/Knatte18/loomyard-LYXHUB/loom-tail-review/_lyx/reviews/discussion/round-1-bouncer-ledger.md",
       "at": "2026-10-23T09:41:44Z",
       "routed_to": "Discussion-Burler-Review"
+    },
+    {
+      "producer": "Discussion-Burler-Review",
+      "outcome": "stuck",
+      "output": "/home/AD.NORCERESEARCH.NO/hanf/Code/Knatte18/loomyard-LYXHUB/loom-tail-review/_lyx/reviews/discussion/round-2-review.md",
+      "at": "2026-10-23T09:50:49Z",
+      "gate_attempts": 1,
+      "gate_spans": [
+        {
+          "gate": "review",
+          "kind": "gate",
+          "start": "2026-10-23T09:50:24.700756822Z",
+          "end": "2026-10-23T09:50:24.701312955Z"
+        },
+        {
+          "gate": "review",
+          "kind": "rework",
+          "start": "2026-10-23T09:50:26.078236343Z",
+          "end": "2026-10-23T09:50:48.246270979Z"
+        },
+        {
+          "gate": "review",
+          "kind": "gate",
+          "start": "2026-10-23T09:50:48.270065089Z",
+          "end": "2026-10-23T09:50:48.271028834Z"
+        }
+      ],
+      "budget_exempt": true,
+      "routed_to": "Discussion-Burler-Fix"
     }
   ],
   "product": {
