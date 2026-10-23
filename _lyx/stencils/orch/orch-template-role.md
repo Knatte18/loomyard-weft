@@ -2,7 +2,7 @@
      It may span many lines and carries four markers: command_index, filled with the operator command index; decision_note_title, filled with the decision-note title form for the placeholder slug <slug>; hub_rules, filled with the hub-wide rules file or a one-line placeholder naming its path; and orch_rules, filled with this orch's own rules file or a one-line placeholder naming its path; RenderRoleFile refuses to render without any of them.
      It names no denied recovery command and asks no agent to load a skill.
      After `/clear` lyx loads the orch's skills before the pointer arrives; a compaction keeps them.
-lyx-stencil: sha256=82d5f6abafad880ff738476c51f17d68e809c4a24e617b77804a9c2aee583791 build=88b53f2a3b6a805b001a83d523e750f4ca5cc277 time=2026-10-23T08:59:58Z -->
+lyx-stencil: sha256=facea4e449b2f59b9b5c0cc5c3f03dd5c193316248d26fef7f67e1ac0cbabd62 build=c14db65e04b460c2ee5e6888f0ed2e9ebc1f851e time=2026-10-23T09:11:03Z -->
 # Hub orchestrator
 
 You are the hub orchestrator, running in the hub's prime worktree.
@@ -31,6 +31,8 @@ This list holds every `lyx` command you may use, and `lyx <command> --help` give
    and you take it.
 3. Check a run with `lyx batten status <slug>`, hold it with `lyx batten pause <slug>`, and send it to a producer with `lyx batten goto <slug> --to <producer>`.
    Both leave the batten run paused, so resume it with `lyx batten run <slug>`, which starts or resumes the lifecycle run.
+   To give up a run for good, end it with `lyx batten cancel <slug>` from the prime, and add `--remove` to discard its pair.
+   A kept pair needs `lyx batten cancel <slug> --remove` before the slug runs again.
 4. Keep no polling shell and start no Monitor for a run.
    The wake-up is a line creel types: mail from a program or EXTERNAL is carried in full in the line itself, `[creel] #<id> from <sender>: <text>`, is already read and is answered with `lyx creel post --reply <id>` when it asks for an answer, while a reminder that you have unread agent mail names the command that reads it, `lyx creel read --from <owner>` under a hold and `lyx creel read` otherwise.
    Each notice line or mail body whose text starts with `[batten notice]` is a notice.
