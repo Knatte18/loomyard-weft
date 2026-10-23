@@ -1,6 +1,6 @@
 {
   "runGuid": "9f527ada10a19724b2f3a87061a5ac41",
-  "planFingerprint": "2cf0747b7038bfd007d9f9ffbfed959efb0a10d6c0e14f9cb0faacb56011d662",
+  "planFingerprint": "5c921d78f55808e99df3ae01d3c9b3cf1e7729d38258ccd86f2f4dda8ab08f5f",
   "planFileHashes": {
     "00-overview.md": "468cbc840722398d268b91221206213ab77bd8345c87e77b3ea147bfef3643da",
     "01-fabric-merge-in-at.md": "5658bfb064f63d28ce9dfd6178f974b5ca5ced0a730c54dc070db9d8fc7233ed",
@@ -38,8 +38,8 @@
     "33-landing-gate-at-fix-rows.md": "828b111deaa9f33ea623e9f0fa86c4f5e96946c0c4197ffb3e660ce0012d26b3",
     "34-hand-back-mark.md": "6d44e02cee3a3feb55d97f80eca380914dfcdbc2c8740ce7bd811267e0017018",
     "35-driver-hands-back-landing-halts.md": "af03e6108aff4ff3e2d3b70a0f80eba6740095e06727187cdc7cce41fcebb97f",
-    "36-arbiter-refuses-landing-halts.md": "e6020dce9df7affc5bcb1180471e11ae6f66b57d8cb14590b9b18ef181df7ba4",
-    "37-batten-restep-skips-landing-halts.md": "6197895ecaf7c9d73271fc03b2a825cbd0acb2ec2c9594237ae30ed5eef87121",
+    "36-arbiter-refuses-landing-halts.md": "a605876b823c76e5bf07f657c1987908ba91cf122bf7b1bd961d1aa4f0e9de4e",
+    "37-batten-restep-skips-landing-halts.md": "349c2bcbaa09e9cf272fa2e78323c4b76e0bdf8a467aba21608afbe9265a6b30",
     "38-driver-stencils-hand-back.md": "c511b532f8f58631610d98a1b2eea3e87a8c905d8579dc93593bacd44e2983d4",
     "39-reroute-cap-way-forward.md": "d133ec89db2af581ede537965bfe55227c41f9385c08f25eb6390e69d3713bae",
     "40-idle-release-keeps-finalize.md": "92af46a37e22ad0e3516ac7065066a528fe38b6e76144f814103b7d7153fc8f1",
@@ -1709,7 +1709,7 @@
       }
     }
   ],
-  "currentBatch": 35,
+  "currentBatch": 0,
   "masterStrand": "84b46756278c26fa4a3d938b33a70bce",
   "masterSessionId": "15e077c7-3daf-473b-935d-c0209f975d97",
   "masterEngine": "claude",
@@ -2288,16 +2288,34 @@
       ],
       "cardHashes": {
         "35-driver-hands-back-landing-halts": "af03e6108aff4ff3e2d3b70a0f80eba6740095e06727187cdc7cce41fcebb97f",
-        "36-arbiter-refuses-landing-halts": "e6020dce9df7affc5bcb1180471e11ae6f66b57d8cb14590b9b18ef181df7ba4",
-        "37-batten-restep-skips-landing-halts": "6197895ecaf7c9d73271fc03b2a825cbd0acb2ec2c9594237ae30ed5eef87121"
+        "36-arbiter-refuses-landing-halts": "a605876b823c76e5bf07f657c1987908ba91cf122bf7b1bd961d1aa4f0e9de4e",
+        "37-batten-restep-skips-landing-halts": "349c2bcbaa09e9cf272fa2e78323c4b76e0bdf8a467aba21608afbe9265a6b30"
       },
       "startSha": "df8375218a9c1bc948a71db13e91c99ec9af46be",
       "kind": "fork",
       "spawnedAt": "2026-10-23T18:13:45Z",
       "sessionId": "15e077c7-3daf-473b-935d-c0209f975d97",
       "engine": "claude",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "35-driver-hands-back-landing-halts",
+        "status": "done",
+        "head_sha": "78bcf3f9f2d06335e2fb64d7f24bb48c19042821",
+        "deviations": [
+          "internal/battenshed/innerrun_halted_test.go",
+          "internal/sheddriver/drive.go"
+        ]
+      },
+      "cardShas": [
+        "78bcf3f9f2d06335e2fb64d7f24bb48c19042821"
+      ],
+      "forkTranscripts": [
+        "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-loom-tail-review/15e077c7-3daf-473b-935d-c0209f975d97/subagents/agent-af97eeb652d7b0d39.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-loom-tail-review/15e077c7-3daf-473b-935d-c0209f975d97/subagents/agent-af97eeb652d7b0d39.jsonl"
+      ]
     },
     "7": {
       "slug": "fixer-session-table",
@@ -2362,7 +2380,8 @@
     "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-loom-tail-review/15e077c7-3daf-473b-935d-c0209f975d97/subagents/agent-a2f2569e81110687b.jsonl",
     "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-loom-tail-review/15e077c7-3daf-473b-935d-c0209f975d97/subagents/agent-a832b32ed49909794.jsonl",
     "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-loom-tail-review/15e077c7-3daf-473b-935d-c0209f975d97/subagents/agent-a96882d7bda5b3549.jsonl",
-    "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-loom-tail-review/15e077c7-3daf-473b-935d-c0209f975d97/subagents/agent-a860c2b39c83e5604.jsonl"
+    "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-loom-tail-review/15e077c7-3daf-473b-935d-c0209f975d97/subagents/agent-a860c2b39c83e5604.jsonl",
+    "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-loom-tail-review/15e077c7-3daf-473b-935d-c0209f975d97/subagents/agent-af97eeb652d7b0d39.jsonl"
   ],
   "auditDispositions": {
     "later-card-drift:plan-references-deleted-symbol/42-landing-drops-pr-producers[blocking]: card 42 references \"internal/shedrecipe#armPRAlign\", which the delta reports deleted with no corresponding rename": "warned",

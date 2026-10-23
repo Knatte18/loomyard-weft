@@ -1,7 +1,7 @@
 # Card 37 — batten-restep-skips-landing-halts
 
 **Create:**
-- `plan:internal/battenshed#TestInnerRun_BinaryChangeSkipsALandingHalt` -> `func TestInnerRun_BinaryChangeSkipsALandingHalt(t *testing.T)`
+- `internal/battenshed#TestInnerRun_BinaryChangeSkipsALandingHalt`
 
 **Edit:**
 - `internal/battenshed#InnerRunDeps`
