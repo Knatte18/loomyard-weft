@@ -1,12 +1,12 @@
 {
   "current_producer": "Worktree-Create",
-  "state": "blocked",
-  "error": "look up branch \"orch-handoff-timeout-delivery-weft\" on \"origin\": git ls-remote --heads origin refs/heads/orch-handoff-timeout-delivery-weft: exit 128: error: git-remote-https died of signal 15",
+  "state": "running",
+  "error": "",
   "pause_requested": false,
   "activity": {
     "now": "Worktree-Create",
-    "last": "Worktree-Create → stuck",
-    "wait": "look up branch \"orch-handoff-timeout-delivery-weft\" on \"origin\": git ls-remote --heads origin refs/heads/orch-handoff-timeout-delivery-weft: exit 128: error: git-remote-https died of signal 15"
+    "last": "Worktree-Create → goto",
+    "wait": ""
   },
   "history": [
     {
@@ -14,6 +14,12 @@
       "outcome": "stuck",
       "output": "",
       "at": "2026-10-23T16:56:53Z"
+    },
+    {
+      "producer": "Worktree-Create",
+      "outcome": "goto",
+      "output": "",
+      "at": "2026-10-23T16:57:12Z"
     }
   ]
 }
