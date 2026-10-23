@@ -1,0 +1,228 @@
+diff --git a/internal/boardcli/verbs_test.go b/internal/boardcli/verbs_test.go
+index 5b28681c..cd82fdf9 100644
+--- a/internal/boardcli/verbs_test.go
++++ b/internal/boardcli/verbs_test.go
+@@ -267,7 +267,9 @@ func stepListAndFindText(t *testing.T, f *cliFixture) {
+ 	}
+ 
+ 	// A backfilled creation date reorders --sort age, oldest first, and leaves --sort revised in README order.
+-	mustUpsert(t, `{"slug":"later","created":"2026-01-02T03:04:05Z"}`)
++	// Both entries get the same revised stamp, since the upserts above can fall in different whole seconds.
++	mustUpsert(t, `{"slug":"soon","revised":"2026-02-03T04:05:06Z"}`)
++	mustUpsert(t, `{"slug":"later","created":"2026-01-02T03:04:05Z","revised":"2026-02-03T04:05:06Z"}`)
+ 	if got := slugsOf(t, runJSON(t, 0, "list", "--sort", "age")); !slices.Equal(got, []string{"later", "soon"}) {
+ 		t.Fatalf("list --sort age: slugs = %v, want [later soon]", got)
+ 	}
+diff --git a/internal/fabricengine/bolt.go b/internal/fabricengine/bolt.go
+index 20237580..38e70119 100644
+--- a/internal/fabricengine/bolt.go
++++ b/internal/fabricengine/bolt.go
+@@ -43,7 +43,7 @@ func (b *Bolt) Commit(message string, opts SyncOptions) (sha string, committed b
+ //
+ // A write error is returned unwrapped and nothing is committed.
+ // An empty path list commits nothing and returns committed == false.
+-// A path that no longer exists stages its deletion.
++// A path that no longer exists stages its deletion, and one HEAD does not hold either is left out.
+ // With opts.SkipGit, write still runs under the lock but nothing is committed.
+ // It never pushes; callers push with Push afterwards, outside the write lock.
+ func (b *Bolt) CommitWritten(message string, write func() ([]string, error), opts SyncOptions) (sha string, committed bool, err error) {
+@@ -60,7 +60,42 @@ func (b *Bolt) CommitWritten(message string, write func() ([]string, error), opt
+ 	if opts.SkipGit {
+ 		return "", false, nil
+ 	}
+-	return gitrepo.New(b.path).StageAndCommit(message, ScopedPathspec(".", writtenPaths))
++	repo := gitrepo.New(b.path)
++	stageable, err := stageablePaths(repo, b.path, writtenPaths)
++	if err != nil {
++		return "", false, err
++	}
++	return repo.StageAndCommit(message, ScopedPathspec(".", stageable))
++}
++
++// stageablePaths returns the paths, relative to the repo at root, that git can stage: each one on disk, and each missing one HEAD's tree holds, whose deletion it stages.
++// git add refuses a path that matches nothing, so a missing path HEAD does not hold, such as a name a stale local manifest kept after a pull removed the file, is left out.
++// An unborn HEAD holds no path.
++// Paths are file paths: a path HEAD holds as a directory is not recognised as held.
++func stageablePaths(repo *gitrepo.Repo, root string, paths []string) ([]string, error) {
++	head, err := repo.CurrentSHA()
++	if err != nil && !errors.Is(err, gitrepo.ErrNoCommits) {
++		return nil, fmt.Errorf("fabricengine: resolve HEAD of %s: %w", root, err)
++	}
++	var stageable []string
++	for _, path := range paths {
++		if _, err := os.Lstat(filepath.Join(root, path)); !errors.Is(err, fs.ErrNotExist) {
++			stageable = append(stageable, path)
++			continue
++		}
++		if head == "" {
++			continue
++		}
++		_, err := repo.FileAtRevision(head, filepath.ToSlash(path))
++		switch {
++		case err == nil:
++			stageable = append(stageable, path)
++		case errors.Is(err, gitrepo.ErrPathNotAtRevision):
++		default:
++			return nil, fmt.Errorf("fabricengine: read %s at %s: %w", path, head, err)
++		}
++	}
++	return stageable, nil
+ }
+ 
+ // Push pushes any unpushed commits in the Bolt's repo, replaying them onto a moved origin as PushRecorded does.
+@@ -152,7 +187,7 @@ type BoltWriteResult struct {
+ // The board write lock is held across the pull and every write.
+ // A write or commit error stops the sequence and is returned with the commits already landed kept in the result.
+ // An empty path list commits nothing.
+-// A path that no longer exists stages its deletion and is not recorded as a written file.
++// A path that no longer exists stages its deletion and is not recorded as a written file, and one HEAD does not hold either is left out of the commit.
+ // It never pushes.
+ func (b *Bolt) PullThenCommitWritten(writes []BoltWrite, rec *Mutations) (res BoltWriteResult, err error) {
+ 	l, err := lock.AcquireWriteLock(filepath.Join(b.path, BoardWriteLockFile))
+@@ -184,10 +219,14 @@ func (b *Bolt) PullThenCommitWritten(writes []BoltWrite, rec *Mutations) (res Bo
+ 			}
+ 			rec.Append(KindFileWritten, abs, "")
+ 		}
+-		if len(paths) == 0 {
++		stageable, err := stageablePaths(repo, b.path, paths)
++		if err != nil {
++			return res, err
++		}
++		if len(stageable) == 0 {
+ 			continue
+ 		}
+-		sha, committed, err := repo.StageAndCommit(write.Message, ScopedPathspec(".", paths))
++		sha, committed, err := repo.StageAndCommit(write.Message, ScopedPathspec(".", stageable))
+ 		if err != nil {
+ 			return res, err
+ 		}
+diff --git a/internal/fabricengine/bolt_integration_test.go b/internal/fabricengine/bolt_integration_test.go
+index ac843480..5e19212c 100644
+--- a/internal/fabricengine/bolt_integration_test.go
++++ b/internal/fabricengine/bolt_integration_test.go
+@@ -173,7 +173,7 @@ func TestBolt_SkipGit_ShortCircuits(t *testing.T) {
+ 
+ // TestBolt_CommitWritten asserts that CommitWritten commits only the paths write returns, leaving
+ // other dirty files for the next sync, and that a write error is returned as is with HEAD unchanged.
+-// It also pins deletion staging, the empty path list and the SkipGit gate.
++// It also pins deletion staging, a path HEAD never held being left out, an unborn HEAD, the empty path list and the SkipGit gate.
+ func TestBolt_CommitWritten(t *testing.T) {
+ 	t.Parallel()
+ 
+@@ -228,9 +228,9 @@ func TestBolt_CommitWritten(t *testing.T) {
+ 		}
+ 	})
+ 
+-	t.Run("a deleted path is committed as a deletion", func(t *testing.T) {
++	t.Run("a deleted path is committed as a deletion and one HEAD never held is left out", func(t *testing.T) {
+ 		sha, committed, err := b.CommitWritten("bolt deleted", func() ([]string, error) {
+-			return []string{"seed.md"}, os.Remove(filepath.Join(repoPath, "seed.md"))
++			return []string{"never.md", "seed.md"}, os.Remove(filepath.Join(repoPath, "seed.md"))
+ 		}, SyncOptions{})
+ 		if err != nil {
+ 			t.Fatalf("CommitWritten() error = %v; want nil", err)
+@@ -241,6 +241,40 @@ func TestBolt_CommitWritten(t *testing.T) {
+ 		if status := gitStatusPorcelain(t, repoPath); strings.Contains(status, "seed.md") {
+ 			t.Errorf("git status --porcelain = %q; want the seed.md deletion committed", status)
+ 		}
++		if got := gitkit.Git(t, repoPath, "show", "--name-status", "--format=", "HEAD"); strings.TrimSpace(got) != "D\tseed.md" {
++			t.Errorf("HEAD's changes = %q; want only the seed.md deletion", got)
++		}
++	})
++
++	t.Run("a path neither on disk nor in HEAD commits nothing", func(t *testing.T) {
++		headBefore := gitkit.RevParse(t, repoPath, "HEAD")
++
++		sha, committed, err := b.CommitWritten("bolt never", func() ([]string, error) {
++			return []string{"never.md"}, nil
++		}, SyncOptions{})
++		if err != nil || committed || sha != "" {
++			t.Errorf("CommitWritten() = (%q, %v, %v); want no commit and no error", sha, committed, err)
++		}
++		if got := gitkit.RevParse(t, repoPath, "HEAD"); got != headBefore {
++			t.Errorf("HEAD = %q; want it unchanged at %q", got, headBefore)
++		}
++	})
++
++	t.Run("a repo with no commits stages a written file and leaves out a missing one", func(t *testing.T) {
++		unborn := newBoltRepo(t, container, "unborn", bareRemote)
++
++		sha, committed, err := NewBolt(unborn).CommitWritten("bolt first", func() ([]string, error) {
++			return []string{"missing.md", "first.md"}, os.WriteFile(filepath.Join(unborn, "first.md"), []byte("first"), 0o644)
++		}, SyncOptions{})
++		if err != nil {
++			t.Fatalf("CommitWritten() error = %v; want nil", err)
++		}
++		if !committed || sha == "" {
++			t.Fatalf("CommitWritten() = (%q, %v); want a new commit", sha, committed)
++		}
++		if got := gitkit.Git(t, unborn, "show", "--name-status", "--format=", "HEAD"); strings.TrimSpace(got) != "A\tfirst.md" {
++			t.Errorf("HEAD's changes = %q; want only first.md added", got)
++		}
+ 	})
+ 
+ 	t.Run("an empty path list commits nothing", func(t *testing.T) {
+diff --git a/internal/fabricengine/boltpullfirst_integration_test.go b/internal/fabricengine/boltpullfirst_integration_test.go
+index 54a0ab7a..478894fe 100644
+--- a/internal/fabricengine/boltpullfirst_integration_test.go
++++ b/internal/fabricengine/boltpullfirst_integration_test.go
+@@ -287,7 +287,7 @@ func TestBolt_PullThenCommitWritten(t *testing.T) {
+ 		}
+ 	})
+ 
+-	t.Run("a deleted path is committed but not recorded as written", func(t *testing.T) {
++	t.Run("a deleted path is committed but not recorded as written, and one HEAD never held is left out", func(t *testing.T) {
+ 		t.Parallel()
+ 		f := newBoltFixture(t)
+ 		gitkit.CommitFile(t, f.board, "notes/old.md", "old\n", "add old")
+@@ -297,7 +297,7 @@ func TestBolt_PullThenCommitWritten(t *testing.T) {
+ 				if err := os.Remove(filepath.Join(f.board, "notes", "old.md")); err != nil {
+ 					return nil, err
+ 				}
+-				return []string{"notes/new.md", "notes/old.md"}, os.WriteFile(filepath.Join(f.board, "notes", "new.md"), []byte("new\n"), 0o644)
++				return []string{"notes/gone.md", "notes/new.md", "notes/old.md"}, os.WriteFile(filepath.Join(f.board, "notes", "new.md"), []byte("new\n"), 0o644)
+ 			},
+ 		}
+ 		rec := fabricengine.NewMutations(f.hub.Path)
+@@ -323,6 +323,28 @@ func TestBolt_PullThenCommitWritten(t *testing.T) {
+ 		}
+ 	})
+ 
++	t.Run("a write of only a path neither on disk nor in HEAD commits nothing", func(t *testing.T) {
++		t.Parallel()
++		f := newBoltFixture(t)
++		headBefore := f.head()
++		write := fabricengine.BoltWrite{
++			Message: "write ghost",
++			Write:   func() ([]string, error) { return []string{"notes/ghost.md"}, nil },
++		}
++		rec := fabricengine.NewMutations(f.hub.Path)
++
++		res, err := f.bolt.PullThenCommitWritten([]fabricengine.BoltWrite{write}, rec)
++		if err != nil {
++			t.Fatalf("PullThenCommitWritten: %v", err)
++		}
++		if res.Committed || len(res.SHAs) != 0 || res.Skipped != "" {
++			t.Errorf("result = %+v; want no commit and no skip", res)
++		}
++		if got := f.head(); got != headBefore {
++			t.Errorf("HEAD = %q; want it unchanged at %q", got, headBefore)
++		}
++	})
++
+ 	t.Run("a board with no upstream writes and commits", func(t *testing.T) {
+ 		t.Parallel()
+ 		for _, tc := range []struct {
+diff --git a/internal/fabricengine/doc.go b/internal/fabricengine/doc.go
+index aadf4917..dfab9abe 100644
+--- a/internal/fabricengine/doc.go
++++ b/internal/fabricengine/doc.go
+@@ -895,6 +895,8 @@
+ //
+ // **Pull-first.** `Bolt.PullThenCommitWritten(writes, rec)` brings Bolt up to date with its upstream before running an ordered list of writes, and commits each write's paths as its own commit.
+ // It sits beside `CommitWritten`, which stays offline-capable for `configcli`'s hub-wide edit.
++// Both stage only the paths git can stage: a written path on disk, and a missing one HEAD's tree holds, whose deletion is committed;
++// a missing path HEAD does not hold, such as an output a stale local render manifest still names after a pull removed it, is left out, since `git add` would refuse it.
+ // A Bolt with no upstream writes as before; one only behind is fast-forwarded (`repo_advanced`); one with seed commits ahead of a moved upstream has them dropped by the executor above.
+ // When Bolt cannot be brought up to date, no write runs and the result's `Skipped` names why: `fetch_failed`, `diverged` (a non-seed commit ahead of a moved upstream, a drop refused on containment or ownership, or a failed replay) or `dirty` (a tracked change blocking the reset or the fast-forward).
+ // Each skip is logged at Warn once, inside `Bolt.pullFirst`, with a detail naming the way forward; callers only read the result.
