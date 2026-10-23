@@ -1,8 +1,8 @@
 # Card 29 — finalize-gate-and-fixer
 
 **Create:**
-- `plan:internal/landingshed#Finalize.gateAndFix` -> `func (fz *Finalize) gateAndFix(ctx context.Context) (shedengine.Outcome, shedengine.OutputPointer, error, bool)`
-- `plan:internal/landingshed#TestFinalize_GateAndFixer` -> `func TestFinalize_GateAndFixer(t *testing.T)`
+- `internal/landingshed#Finalize.gateAndFix`
+- `internal/landingshed#TestFinalize_GateAndFixer`
 
 **Edit:**
 - `internal/landingshed#Finalize`
