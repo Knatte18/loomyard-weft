@@ -20,7 +20,7 @@
 - `internal/loomengine#ConfigSpec`
 - `internal/loomengine#templateConfig`
 - `internal/loomengine/template.yaml`
-- `plan:internal/loomengine#retiredLoomKeys`
+- `internal/loomengine#retiredLoomKeys`
 - `internal/loomengine#TestLoadConfig_Loads`
 - `internal/loomengine#TestMigrateConfig_RetiredKeys`
 - `internal/configreg#TestModules_EveryTemplateKeyClassified`

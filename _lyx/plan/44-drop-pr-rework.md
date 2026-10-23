@@ -49,7 +49,7 @@
 - `internal/loomengine#Config`
 - `internal/loomengine#ConfigSpec`
 - `internal/loomengine#LoadConfig`
-- `plan:internal/loomengine#retiredLoomKeys`
+- `internal/loomengine#retiredLoomKeys`
 - `internal/loomengine/template.yaml`
 - `internal/loomengine#TestLoadConfig_Loads`
 - `internal/loomengine#TestLoadConfig_Refuses`
