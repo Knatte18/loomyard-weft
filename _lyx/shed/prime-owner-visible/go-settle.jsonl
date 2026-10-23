@@ -1,0 +1,2 @@
+{"stop_key":{"current_producer":"Publish","history_length":9,"state":"blocked"},"settler":"parent","action":"hand-back","outcome":"a verify halt matching the failure record under a watching batten: hand back","at":"2026-10-23T09:16:35.753861178+02:00"}
+{"stop_key":{"current_producer":"Publish","history_length":15,"state":"blocked"},"settler":"parent","action":"hand-back","outcome":"a verify halt matching the failure record under a watching batten: hand back","at":"2026-10-23T09:22:06.008363074+02:00"}
