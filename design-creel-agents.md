@@ -82,3 +82,9 @@ Orch recommendation on the logging:
 
 - The flag's name, and whether a reply by `defer` (as in the orch's note request) counts as an answer.
 
+## Operator view, not a decision (2026-10-23): SendMessage works well
+
+Claude Code's own messaging works well between Claude sessions: a message is sure to arrive, the receiver knows how to answer, and no one waits for a pane to be idle.
+Creel's reminder and `lyx creel read` cost the receiver an extra turn per agent message (note `creel-carry-agent-mail`).
+The problem is Codex: a Claude session cannot reach a Codex session through `SendMessage`, which is why this stage exists.
+
