@@ -1,9 +1,11 @@
 ---
 round: 1
 focus:
-  - "internal/orchengine/watcher.go, withdrawQueuedCompact and tickCompacting: settle whether the re-read of the pending /compact's outcome, the errCompactInFlight retry and the handoff-timeout drop leave no path where a second /compact is typed or the phase never completes."
-  - "internal/orchengine/watcher.go: settle whether a pending /compact whose id creel never answered, and the outcomes withdrawn, injected and unconfirmed, each end the compacting phase with the boundary consumed exactly once."
-  - "internal/orchengine/fakecreel_test.go and TestCompact_BoundaryWithdrawsAStillQueuedCompact: settle whether the fake withdraws as creel does, and whether the three cases each assert the reload, not another /compact, is queued last, without duplicating an existing compact test."
-  - "internal/orchengine/doc.go: settle whether the compact-cycle section matches the diff's behavior, and whether the summary's claims about the timeout and the Debug and Warn logging are borne out."
-  - "Scope against the board entry: settle whether every change serves the entry's expected outcome, that the watcher leaves resuming and never types another /compact for the same request."
+  - "internal/reedengine separator change (parse.go, overlay.go, ownwindow.go, doc.go, tests): does every list-panes format string and every parser of the tail use the tab, with no site left on the unit separator?"
+  - "Scope of the reed change against the amended board entry and the decision record's Added after Discussion entries: is the separator fix licensed there, and does the diff touch nothing else in reedengine?"
+  - "Pane titles or commands that contain a tab: does the tail split still behave sanely, and does the change description state that bound accurately?"
+  - "Test economy in the reed test edits: do changed listings duplicate existing coverage, and is the tab behavior covered by a test?"
+  - "Change description claims about the separator (tmux 3.4 escaping, gate tier 2 run) against what the diff shows."
 ---
+
+The orchengine compact-hold change is settled; only the reed pane-listing separator amendment is new.

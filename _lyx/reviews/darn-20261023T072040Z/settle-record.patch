@@ -1,0 +1,273 @@
+diff --git a/internal/orchengine/doc.go b/internal/orchengine/doc.go
+index f22a7aec..edadbd00 100644
+--- a/internal/orchengine/doc.go
++++ b/internal/orchengine/doc.go
+@@ -228,6 +228,10 @@
+ //
+ // A boundary found while the `/compact` inject is still queued, or while creel never answered its send, means the session compacted on its own;
+ // before the phase completes the watcher withdraws its queued creel items to the orch strand, so a second compaction never follows.
++// Creel's withdraw leaves an inject a delivery attempt holds, and an attempt the session refuses as busy puts it back in the queue,
++// so the watcher reads the `/compact`'s outcome again after the withdraw, and one still queued or sending leaves the phase compacting with the step pending and the boundary unconsumed, for the next tick to withdraw again.
++// Past the handoff timeout from the phase entry the step is dropped with a warning and the phase completes.
++// Bound: a `/compact` that attempt types still compacts the session a second time.
+ // A typed `/compact` is never withdrawn, and a creel failure leaves the phase compacting with the boundary unconsumed, for the next tick to retry.
+ // The withdraw clears the resume-noticed mark of a hub-pause resume line it removed, as the reset for another strand does, and a failed clear is retried at the next tick's boundary before the phase completes.
+ // Bound: the withdraw is receiver-wide, so it also removes any other queued watcher item to the orch, which the reload that follows queues again as it needs.
+@@ -384,6 +388,9 @@
+ //     and `ClearResumeNoticed` clears, under the pause record's lock, the resume-noticed mark of each pause entry owning the strand whose resume line the withdraw removed, so a continued session gets the line posted again.
+ //     A failed withdraw or release saves no reset and leaves the watcher unbound, so the next tick runs the reset again.
+ //     A `ClearResumeNoticed` failure after the withdraw removed the resume line keeps the line in State.ResumeLineWithdrawn, so the next tick's reset still clears the mark.
++//   - A compaction boundary found while the `/compact` inject is still queued withdraws it through `withdrawQueuedCompact`, so it never compacts the session a second time.
++//     A resume line the withdraw removed has its pause-record mark cleared;
++//     a failed clear, or a failed read of the inject's outcome after the withdraw, keeps the line in State.ResumeLineWithdrawn, so a later call clears the mark although its own withdraw finds nothing.
+ //   - `lyx orch start` withdraws around a fresh launch, as the orchcli package documentation describes, and records a failed release or second round in State.FreshLaunchFailure.
+ //     While it is set, `retryFreshLaunch` runs first on every tick, after the events read and before the hold, the mailbox and the bind color:
+ //     it withdraws and releases on the orch strand, signing as the watcher's own program, and posts and queues nothing, starts no cycle and renews no hold until both succeed.
+diff --git a/internal/orchengine/fakecreel_test.go b/internal/orchengine/fakecreel_test.go
+index 0b5bbc54..e22f6b4c 100644
+--- a/internal/orchengine/fakecreel_test.go
++++ b/internal/orchengine/fakecreel_test.go
+@@ -186,11 +186,21 @@ func (f *fakeCreel) Release(receiver string) error {
+ 	return f.fail("release")
+ }
+ 
++// Withdraw settles every inject to receiver that reads queued as withdrawn, and leaves one creel is sending, as creel's withdraw leaves an inject a delivery attempt holds.
+ func (f *fakeCreel) Withdraw(receiver string) ([]CreelWithdrawn, error) {
+ 	f.calls = append(f.calls, "withdraw:"+receiver)
+ 	if err := f.fail("withdraw"); err != nil {
+ 		return nil, err
+ 	}
++	for _, inject := range f.injects {
++		if outcome, ok := f.outcomes[inject.ID]; inject.Receiver != receiver || ok && outcome.State != CreelQueued {
++			continue
++		}
++		if f.outcomes == nil {
++			f.outcomes = map[int64]CreelOutcome{}
++		}
++		f.outcomes[inject.ID] = CreelOutcome{State: CreelWithdrawnState}
++	}
+ 	return append([]CreelWithdrawn(nil), f.withdrawn...), nil
+ }
+ 
+diff --git a/internal/orchengine/state.go b/internal/orchengine/state.go
+index 45d1f1bc..66c3fb72 100644
+--- a/internal/orchengine/state.go
++++ b/internal/orchengine/state.go
+@@ -117,8 +117,8 @@ type State struct {
+ 	// FreshLaunchFailure is the error text of a withdraw or release `start` made around a fresh launch that failed; empty when none did.
+ 	// While it is set the watcher retries both on every tick and posts and queues nothing.
+ 	FreshLaunchFailure string `json:"fresh_launch_failure"`
+-	// ResumeLineWithdrawn is true when a retry's withdraw removed the resume line but clearing the pause record's noticed mark failed.
+-	// The next retry's withdraw answers an empty list, so this field stands in for the removed line until the clear succeeds.
++	// ResumeLineWithdrawn is true when a withdraw removed the resume line but the pause record's noticed mark was not cleared, because the clear failed or a creel call before it did.
++	// A later withdraw answers an empty list, so this field stands in for the removed line until the clear succeeds.
+ 	ResumeLineWithdrawn bool   `json:"resume_line_withdrawn"`
+ 	WatcherExit         string `json:"watcher_exit"` // Why the last watcher exited; empty while one runs.
+ 	// WatcherStopping is set by a watcher that has received SIGINT or SIGTERM and not yet released watch.lock,
+diff --git a/internal/orchengine/watcher.go b/internal/orchengine/watcher.go
+index acd4d6da..f5b3815b 100644
+--- a/internal/orchengine/watcher.go
++++ b/internal/orchengine/watcher.go
+@@ -57,6 +57,9 @@ var errNotBound = errors.New("orch: the watcher is not bound to the recorded str
+ // errCompactWithdrawHeld reports that withdrawing the still-queued `/compact` was held by a creel failure, so the compacting phase keeps its boundary for the next tick.
+ var errCompactWithdrawHeld = errors.New("orch: withdrawing the queued compact is held by a creel failure")
+ 
++// errCompactInFlight reports that the queued `/compact` was in a creel delivery attempt the withdraw could not remove, so the compacting phase keeps its boundary and the pending step for the next tick.
++var errCompactInFlight = errors.New("orch: the queued compact is in a creel delivery attempt")
++
+ // errResetPending reports that a phase belonging to another strand could not be reset because a creel call failed; the next tick runs the reset again.
+ var errResetPending = errors.New("orch: resetting a phase of another strand is held by a creel failure")
+ 
+@@ -1464,9 +1467,13 @@ func (w *Watcher) reloadAfterCompaction(st State, now time.Time) error {
+ // withdrawQueuedCompact withdraws the `/compact` inject still queued when the session compacted on its own, so it never compacts the session a second time.
+ // The inject counts as still queued when its step is pending, not yet typed, and either creel never answered its send or creel reads it queued or sending.
+ // The withdraw is receiver-wide: it also removes any other queued watcher item to the orch.
+-// A resume line the withdraw removed has its pause-record mark cleared; a failed clear drops the withdrawn step, keeps the line in State.ResumeLineWithdrawn and fails the call,
++// Creel's withdraw leaves an inject a delivery attempt holds, and a busy attempt puts it back in the queue, so the outcome is read again after the withdraw.
++// One still queued or sending keeps the step pending and answers errCompactInFlight, so the next call withdraws again.
++// Past the handoff timeout from the phase entry, such a step is dropped with a warning.
++// A resume line the withdraw removed has its pause-record mark cleared; a failed clear drops a withdrawn step, keeps the line in State.ResumeLineWithdrawn and fails the call,
+ // and a later call clears the mark although no withdraw runs.
+-// A creel failure is recorded through creelFailed and answered with errCompactWithdrawHeld, which leaves the phase as it was for the next call to retry.
++// A creel failure is recorded through creelFailed and answered with errCompactWithdrawHeld, which leaves the phase as it was for the next call to retry;
++// a failure of the read after the withdraw also keeps a withdrawn resume line in State.ResumeLineWithdrawn.
+ func (w *Watcher) withdrawQueuedCompact(st *State) error {
+ 	if st.Pending == nil || st.PhaseInjected {
+ 		return w.clearWithdrawnResumeLine(st)
+@@ -1490,7 +1497,25 @@ func (w *Watcher) withdrawQueuedCompact(st *State) error {
+ 	if err != nil {
+ 		return w.holdOnCreelFailure(st, err)
+ 	}
+-	st.Pending = nil
++	inFlight := false
++	if st.Pending.ID != 0 {
++		outcome, err := w.creel.InjectOutcome(st.Pending.ID)
++		if err != nil {
++			st.ResumeLineWithdrawn = st.ResumeLineWithdrawn || slices.ContainsFunc(withdrawn, func(message CreelWithdrawn) bool { return message.Subject == pauserecord.ResumeLine })
++			if saveErr := w.save(*st); saveErr != nil {
++				return saveErr
++			}
++			return w.holdOnCreelFailure(st, err)
++		}
++		inFlight = outcome.State == CreelQueued || outcome.State == CreelSending
++	}
++	if inFlight && w.clock.Now().Sub(st.PhaseEnteredAt) >= w.cfg.HandoffTimeout() {
++		logger.Warn("orch: the queued compact stayed in a delivery attempt past the handoff timeout; the reload goes on", "strandGUID", st.Strand, "id", st.Pending.ID)
++		inFlight = false
++	}
++	if !inFlight {
++		st.Pending = nil
++	}
+ 	if w.pause != nil {
+ 		if st.ResumeLineWithdrawn {
+ 			withdrawn = append(withdrawn, CreelWithdrawn{Subject: pauserecord.ResumeLine})
+@@ -1504,6 +1529,10 @@ func (w *Watcher) withdrawQueuedCompact(st *State) error {
+ 		}
+ 		st.ResumeLineWithdrawn = false
+ 	}
++	if inFlight {
++		logger.Debug("orch: the queued compact is in a delivery attempt; withdrawing again at the next tick", "strandGUID", st.Strand, "id", st.Pending.ID)
++		return errCompactInFlight
++	}
+ 	return nil
+ }
+ 
+@@ -1557,7 +1586,7 @@ func (w *Watcher) tickCompacting(st State, now time.Time) error {
+ 	if qualifying {
+ 		logger.Info("orch: compaction boundary found", "strandGUID", st.Strand, "boundaryAt", boundary.At)
+ 		if err := w.withdrawQueuedCompact(&st); err != nil {
+-			if errors.Is(err, errCompactWithdrawHeld) {
++			if errors.Is(err, errCompactWithdrawHeld) || errors.Is(err, errCompactInFlight) {
+ 				return nil
+ 			}
+ 			return err
+diff --git a/internal/orchengine/watcher_compact_test.go b/internal/orchengine/watcher_compact_test.go
+index 0fd53728..a1619035 100644
+--- a/internal/orchengine/watcher_compact_test.go
++++ b/internal/orchengine/watcher_compact_test.go
+@@ -216,21 +216,111 @@ func TestCompact_BoundaryWithdrawsAStillQueuedCompact(t *testing.T) {
+ 		return sessions[0].ResumeNoticed
+ 	}
+ 
+-	for _, state := range []CreelState{CreelQueued, CreelSending} {
+-		t.Run("A"+string(state)+"CompactIsWithdrawnAndThePhaseCompletes", func(t *testing.T) {
+-			t.Parallel()
+-			e, boundaryAt := compactingEnv(t)
+-			e.setOutcome(e.lastInjectID(), CreelOutcome{State: state})
+-			e.landBoundary(boundaryAt, 150)
+-			e.tick()
+-			if got := e.c.count(withdrawCall); got != 1 {
+-				t.Errorf("withdraws = %d, want 1; calls = %v", got, e.c.calls)
+-			}
+-			if st := e.state(); st.Phase != PhaseResuming || st.CycleCount != 1 {
+-				t.Errorf("state = %+v, want resuming after the cycle", st)
++	t.Run("AQueuedCompactIsWithdrawnAndThePhaseCompletes", func(t *testing.T) {
++		t.Parallel()
++		e, boundaryAt := compactingEnv(t)
++		e.landBoundary(boundaryAt, 150)
++		e.tick()
++		if got := e.c.count(withdrawCall); got != 1 {
++			t.Errorf("withdraws = %d, want 1; calls = %v", got, e.c.calls)
++		}
++		if st := e.state(); st.Phase != PhaseResuming || st.CycleCount != 1 {
++			t.Errorf("state = %+v, want resuming after the cycle", st)
++		}
++	})
++
++	t.Run("ACompactInADeliveryAttemptHoldsTheBoundaryUntilItSettles", func(t *testing.T) {
++		t.Parallel()
++		tests := []struct {
++			name string
++			// settled is the outcome the delivery attempt leaves before the second tick.
++			settled CreelState
++			// advance is how far the clock moves before the second tick.
++			advance       time.Duration
++			wantWithdraws int
++		}{
++			{"Typed_CompletesWithNoFurtherWithdraw", CreelInjected, 0, 1},
++			{"Unconfirmed_CompletesWithNoFurtherWithdraw", CreelUnconfirmed, 0, 1},
++			{"BackInTheQueue_IsWithdrawnAndCompletes", CreelQueued, 0, 2},
++			{"StillSendingPastTheHandoffTimeout_Completes", CreelSending, time.Hour, 2},
++		}
++		for _, tt := range tests {
++			t.Run(tt.name, func(t *testing.T) {
++				t.Parallel()
++				e, boundaryAt := compactingEnv(t)
++				compactID := e.lastInjectID()
++				e.setOutcome(compactID, CreelOutcome{State: CreelSending})
++				e.landBoundary(boundaryAt, 150)
++				e.tick()
++				st := e.state()
++				if st.Phase != PhaseCompacting || st.Pending == nil || st.Pending.ID != compactID || st.CycleCount != 0 {
++					t.Fatalf("state = %+v, want compacting with the compact %d still pending", st, compactID)
++				}
++				e.setOutcome(compactID, CreelOutcome{State: tt.settled})
++				e.clock.advance(tt.advance)
++				e.tick()
++				if got := e.c.count(withdrawCall); got != tt.wantWithdraws {
++					t.Errorf("withdraws = %d, want %d; calls = %v", got, tt.wantWithdraws, e.c.calls)
++				}
++				if st := e.state(); st.Phase != PhaseResuming || st.CycleCount != 1 {
++					t.Errorf("state = %+v, want resuming after the cycle", st)
++				}
++				if got := e.c.injects[len(e.c.injects)-1].Step.Command; got == commandCompact {
++					t.Errorf("last inject = %q, want a reload step queued after the compact", got)
++				}
++			})
++		}
++	})
++
++	t.Run("AWithdrawnResumeLineHasItsMarkClearedWhileTheCompactIsStillInFlight", func(t *testing.T) {
++		t.Parallel()
++		e, boundaryAt := compactingEnv(t)
++		e.noticedResumedEntry()
++		e.c.withdrawn = []CreelWithdrawn{{ID: 5, Subject: pauserecord.ResumeLine}}
++		compactID := e.lastInjectID()
++		e.setOutcome(compactID, CreelOutcome{State: CreelSending})
++		e.landBoundary(boundaryAt, 150)
++		e.tick()
++		if resumeNoticed(e) {
++			t.Error("the resume-noticed mark is still set after the withdraw removed the resume line")
++		}
++		if st := e.state(); st.Phase != PhaseCompacting || st.Pending == nil || st.Pending.ID != compactID || st.ResumeLineWithdrawn {
++			t.Errorf("state = %+v, want compacting with the compact %d still pending and no withdrawn line kept", st, compactID)
++		}
++	})
++
++	t.Run("AFailedReadAfterTheWithdrawKeepsTheLineAndTheNextTickClearsIt", func(t *testing.T) {
++		t.Parallel()
++		e, boundaryAt := compactingEnv(t)
++		e.noticedResumedEntry()
++		e.c.withdrawn = []CreelWithdrawn{{ID: 5, Subject: pauserecord.ResumeLine}}
++		// A tick settles the start color's outcome read, so the next tick's only reads are the compact's.
++		for _, inject := range e.c.injects {
++			if inject.Step.Command != commandCompact {
++				e.setOutcome(inject.ID, CreelOutcome{State: CreelInjected})
+ 			}
+-		})
+-	}
++		}
++		e.tick()
++		// The first read, before the withdraw, succeeds; the second, after it, fails.
++		e.c.failNext("injectoutcome", nil)
++		e.c.failNext("injectoutcome", errBoom)
++		e.landBoundary(boundaryAt, 150)
++		e.tick()
++		st := e.state()
++		if st.Phase != PhaseCompacting || st.Pending == nil || !st.ResumeLineWithdrawn || !st.StuckByCreel {
++			t.Fatalf("state = %+v, want compacting with the step pending, the withdrawn line kept and the creel failure shown", st)
++		}
++		e.tick()
++		if resumeNoticed(e) {
++			t.Error("the resume-noticed mark is still set after the next tick")
++		}
++		if got := e.c.count(withdrawCall); got != 1 {
++			t.Errorf("withdraws = %d, want only the first tick's", got)
++		}
++		if st := e.state(); st.Phase != PhaseResuming || st.ResumeLineWithdrawn {
++			t.Errorf("state = %+v, want resuming with the withdrawn line cleared", st)
++		}
++	})
+ 
+ 	t.Run("AnInjectedCompactMakesNoWithdraw", func(t *testing.T) {
+ 		t.Parallel()
