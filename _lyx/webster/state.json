@@ -1709,7 +1709,7 @@
       }
     }
   ],
-  "currentBatch": 0,
+  "currentBatch": 51,
   "masterStrand": "84b46756278c26fa4a3d938b33a70bce",
   "masterSessionId": "15e077c7-3daf-473b-935d-c0209f975d97",
   "masterEngine": "claude",
@@ -2709,6 +2709,22 @@
       "bracketTranscripts": [
         "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-loom-tail-review/15e077c7-3daf-473b-935d-c0209f975d97/subagents/agent-a2a99862cd68269b8.jsonl"
       ]
+    },
+    "51": {
+      "slug": "drop-retired-row-names",
+      "cards": [
+        "51-drop-retired-row-names"
+      ],
+      "cardHashes": {
+        "51-drop-retired-row-names": "03df0a7356e69ebcfaee3fdb8f3c425a5c5e16090a9902028bd7ad81ea9aeced"
+      },
+      "startSha": "cb2d14db30f63329126c7eb3a61da48d8797ead4",
+      "kind": "fork",
+      "spawnedAt": "2026-10-23T19:26:34Z",
+      "sessionId": "15e077c7-3daf-473b-935d-c0209f975d97",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
     },
     "7": {
       "slug": "fixer-session-table",
