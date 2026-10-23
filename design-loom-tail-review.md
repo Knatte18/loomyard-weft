@@ -1,4 +1,4 @@
-# Run tail: Merge-In with fixer before a Code-Perch, an optional PR block, and a locked re-merge at Finalize
+# Run tail: Merge-In with alignment, Code-Perch, a PR stub and one locked Land block, for loom and darn
 
 `loom-tail-review` · Note · enhancement, loom, burler, shed, fabric, batten
 
