@@ -16,13 +16,13 @@
 - `internal/testkit/envkit#LandingDeps`
 
 **Uses:**
-- `plan:internal/landingshed#newFixerRun`
-- `plan:internal/landingshed#FixCap`
-- `plan:internal/landingshed#ReadFixerAttempts`
-- `plan:internal/landingshed#RemoveFixerAttempts`
-- `plan:internal/landingshed#FixerAttemptsPath`
-- `plan:internal/landingshed#LandingStopPrefix`
-- `plan:internal/landingshed#fakeFixerSeats`
+- `internal/landingshed#newFixerRun`
+- `internal/landingshed#FixCap`
+- `internal/landingshed#ReadFixerAttempts`
+- `internal/landingshed#RemoveFixerAttempts`
+- `internal/landingshed#FixerAttemptsPath`
+- `internal/landingshed#LandingStopPrefix`
+- `internal/landingshed#fakeFixerSeats`
 
 **Extends:**
 - `internal/landingshed/doc.go`

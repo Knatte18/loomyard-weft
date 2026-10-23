@@ -1,17 +1,17 @@
 # Card 11 — fixer-run
 
 **Create:**
-- `plan:internal/landingshed#fixerSeats` -> `type fixerSeats interface`
-- `plan:internal/landingshed#fixerEnd` -> `type fixerEnd string`
-- `plan:internal/landingshed#fixerOutcome` -> `type fixerOutcome struct`
-- `plan:internal/landingshed#fixerRun` -> `type fixerRun struct`
-- `plan:internal/landingshed#newFixerRun` -> `func newFixerRun(deps Deps, row string, gate verifyGate) fixerRun`
-- `plan:internal/landingshed#fixerRun.run` -> `func (f fixerRun) run(ctx context.Context, mode FixerMode, rec FixerAttempts, cap int, tips [2]string) (fixerOutcome, FixerAttempts, error)`
-- `plan:internal/landingshed#fixerOutcome.haltReason` -> `func (o fixerOutcome) haltReason(row string) string`
-- `plan:internal/landingshed#LandingStopPrefix` -> `const LandingStopPrefix = "landing stop: "`
-- `plan:internal/landingshed#TestFixerRun_Outcomes` -> `func TestFixerRun_Outcomes(t *testing.T)`
-- `plan:internal/landingshed#fakeFixerSeats` -> `type fakeFixerSeats struct`
-- `plan:internal/landingshed#fakeFixerSeats.Run` -> `func (f *fakeFixerSeats) Run(table seatengine.Table) (seatengine.Result, error)`
+- `internal/landingshed#fixerSeats`
+- `internal/landingshed#fixerEnd`
+- `internal/landingshed#fixerOutcome`
+- `internal/landingshed#fixerRun`
+- `internal/landingshed#newFixerRun`
+- `internal/landingshed#fixerRun.run`
+- `internal/landingshed#fixerOutcome.haltReason`
+- `internal/landingshed#LandingStopPrefix`
+- `internal/landingshed#TestFixerRun_Outcomes`
+- `internal/landingshed#fakeFixerSeats`
+- `internal/landingshed#fakeFixerSeats.Run`
 
 **Edit:**
 - `internal/landingshed#Deps`
@@ -19,9 +19,9 @@
 - `internal/loomcli#intentionallyNil`
 
 **Uses:**
-- `plan:internal/landingshed#FixerTable`
+- `internal/landingshed#FixerTable`
 - `internal/landingshed#ParseFixerReport`
-- `plan:internal/landingshed#WriteFixerAttempts`
+- `internal/landingshed#WriteFixerAttempts`
 - `internal/landingshed#newGateFixture`
 - `internal/landingshed#fakeVerifyTree`
 

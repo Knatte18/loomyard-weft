@@ -15,7 +15,7 @@
 - `internal/loomcli#loomCLI.specFor`
 
 **Uses:**
-- `plan:internal/landingshed#LandingStopPrefix`
+- `internal/landingshed#LandingStopPrefix`
 - `internal/shedengine#ReasonRerouteCapReached`
 
 **Extends:**

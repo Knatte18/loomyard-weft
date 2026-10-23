@@ -1,12 +1,12 @@
 # Card 10 — fixer-attempts
 
 **Create:**
-- `plan:internal/landingshed#FixerAttempts` -> `type FixerAttempts struct`
-- `plan:internal/landingshed#FixerAttemptsPath` -> `func FixerAttemptsPath(scratchDir, row string) string`
-- `plan:internal/landingshed#ReadFixerAttempts` -> `func ReadFixerAttempts(path string, entry int) (FixerAttempts, error)`
-- `plan:internal/landingshed#WriteFixerAttempts` -> `func WriteFixerAttempts(path string, rec FixerAttempts) error`
-- `plan:internal/landingshed#RemoveFixerAttempts` -> `func RemoveFixerAttempts(path string) error`
-- `plan:internal/landingshed#TestFixerAttempts` -> `func TestFixerAttempts(t *testing.T)`
+- `internal/landingshed#FixerAttempts`
+- `internal/landingshed#FixerAttemptsPath`
+- `internal/landingshed#ReadFixerAttempts`
+- `internal/landingshed#WriteFixerAttempts`
+- `internal/landingshed#RemoveFixerAttempts`
+- `internal/landingshed#TestFixerAttempts`
 
 **Uses:**
 - `internal/landingshed#writeBytesAtomic`

@@ -2,13 +2,13 @@
 
 **Create:**
 - `contracts/stencils/landing/landing-template-fixer.md`
-- `plan:contracts/stencils#LandingTemplateFixer` -> `var LandingTemplateFixer []byte`
-- `plan:internal/landingshed#FixerMode` -> `type FixerMode string`
-- `plan:internal/landingshed#FixerModeMergeIn` -> `const FixerModeMergeIn FixerMode = "merge-in"`
-- `plan:internal/landingshed#FixerModeFinalize` -> `const FixerModeFinalize FixerMode = "finalize"`
-- `plan:internal/landingshed#FixerInputs` -> `type FixerInputs struct`
-- `plan:internal/landingshed#FixerTable` -> `func FixerTable(in FixerInputs, cfg Config, reg modelspec.Registry) (seatengine.Table, error)`
-- `plan:internal/landingshed#TestFixerTable` -> `func TestFixerTable(t *testing.T)`
+- `contracts/stencils#LandingTemplateFixer`
+- `internal/landingshed#FixerMode`
+- `internal/landingshed#FixerModeMergeIn`
+- `internal/landingshed#FixerModeFinalize`
+- `internal/landingshed#FixerInputs`
+- `internal/landingshed#FixerTable`
+- `internal/landingshed#TestFixerTable`
 
 **Extends:**
 - `contracts/stencils#entries`

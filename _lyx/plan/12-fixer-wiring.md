@@ -15,7 +15,7 @@
 - `internal/planparser#PlanLanguage`
 - `internal/planparser#IsTestFile`
 - `internal/planparser#IsAnyLanguageTestFile`
-- `plan:internal/fabricengine#Fabric.LineChange`
+- `internal/fabricengine#Fabric.LineChange`
 
 **Intent:** Fill the merge fixer's seams card 11 added, from the values the wiring already resolved, and keep `landingDeps` free of I/O and of a new argument.
 `landingDeps` fills `DecisionRecordPath` with the run's decision record, `PlanDir` with the plan directory on a loom run and "" on a darn run, `LineChange` and `TaskRemoteTip` as closures that open the task pair's fabric at call time (`TaskRemoteTip` resolves `origin/<task branch>` with no fetch and answers "" when it does not exist), `IsTestFile` with `fixerTestFileMatcher(recipe, planDir)`, and `RowEntry` with a closure that reads the run's status file under its lock and answers `rowEntry(history, row)`.

@@ -1,9 +1,9 @@
 # Card 8 — fabric-line-change
 
 **Create:**
-- `plan:internal/fabricengine#LineChange` -> `type LineChange struct`
-- `plan:internal/fabricengine#Fabric.LineChange` -> `func (f *Fabric) LineChange(from, to string) (LineChange, error)`
-- `plan:internal/fabricengine_test#TestLineChange_CountsLinesAndListsPaths` -> `func TestLineChange_CountsLinesAndListsPaths(t *testing.T)`
+- `internal/fabricengine#LineChange`
+- `internal/fabricengine#Fabric.LineChange`
+- `internal/fabricengine_test#TestLineChange_CountsLinesAndListsPaths`
 
 **Extends:**
 - `internal/fabricengine/doc.go`

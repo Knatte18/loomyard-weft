@@ -20,13 +20,13 @@
 - `internal/testkit/envkit#LandingDeps`
 
 **Uses:**
-- `plan:internal/landingshed#newFixerRun`
-- `plan:internal/landingshed#FixCap`
-- `plan:internal/landingshed#ReadFixerAttempts`
-- `plan:internal/landingshed#RemoveFixerAttempts`
-- `plan:internal/landingshed#FixerAttemptsPath`
-- `plan:internal/landingshed#LandingStopPrefix`
-- `plan:internal/landingshed#fakeFixerSeats`
+- `internal/landingshed#newFixerRun`
+- `internal/landingshed#FixCap`
+- `internal/landingshed#ReadFixerAttempts`
+- `internal/landingshed#RemoveFixerAttempts`
+- `internal/landingshed#FixerAttemptsPath`
+- `internal/landingshed#LandingStopPrefix`
+- `internal/landingshed#fakeFixerSeats`
 
 **Intent:** Merge-In runs the merge fixer in `merge-in` mode, which aligns and fixes (D4).
 After the merge, the conflict session and the post-merge clean check, `Call` runs the `landing` gate as today and then `align` instead of stopping on a failed gate.
