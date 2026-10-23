@@ -26,6 +26,12 @@ an inject creel types in that attempt cannot be stopped from the watcher, and th
 Decision: a pending `/compact` whose id creel never answered, and which the journal lookup could not adopt, is withdrawn once and dropped, as now.
 Rationale: with no id there is no outcome to read, and the tick's journal lookup has already run before the phase switch.
 
+### Added after Discussion (parent, 2026-10-23): Fix the tmux pane-tail separator on this branch
+
+Decision: This run also fixes the reed pane-tail separator, as its own commit: switch paneTailSeparator in internal/reedengine/parse.go from "\x1f" to a tab, and update the -F formats in overlay.go and ownwindow.go, the parse comment and the format line in the package doc.go to match.
+
+Rationale: tmux 3.4 escapes control characters in -F output, so the \x1f separator arrives as the literal text \037 and the tail never splits; reedcli and reedengine tests fail on main e634efb9, and every task landing on this hub hits it at verify. A tab passes through verbatim.
+
 ## Constraints
 
 - `PATTERN-log-levels`: the wait for an in-flight inject repeats each tick, so it logs at Debug, never Warn.
