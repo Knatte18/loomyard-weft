@@ -1,13 +1,13 @@
 {
-  "current_producer": "Discussion-Burler-Fix",
+  "current_producer": "Discussion-Bouncer",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "pause_before": "Merge-In",
   "pause_before_by": "ly:orch",
   "activity": {
-    "now": "Discussion-Burler-Fix",
-    "last": "Discussion-Burler-Review → bounced to Discussion-Burler-Fix",
+    "now": "Discussion-Bouncer",
+    "last": "Discussion-Burler-Fix → bounced to Discussion-Bouncer",
     "wait": ""
   },
   "history": [
@@ -241,6 +241,23 @@
       ],
       "budget_exempt": true,
       "routed_to": "Discussion-Burler-Fix"
+    },
+    {
+      "producer": "Discussion-Burler-Fix",
+      "outcome": "stuck",
+      "output": "/home/AD.NORCERESEARCH.NO/hanf/Code/Knatte18/loomyard-LYXHUB/loom-tail-review/_lyx/reviews/discussion/round-4-review.md",
+      "at": "2026-10-23T10:17:55Z",
+      "gate_attempts": 0,
+      "gate_spans": [
+        {
+          "gate": "discussion",
+          "kind": "gate",
+          "start": "2026-10-23T10:17:54.360841144Z",
+          "end": "2026-10-23T10:17:54.36134728Z"
+        }
+      ],
+      "budget_exempt": true,
+      "routed_to": "Discussion-Bouncer"
     }
   ],
   "product": {
