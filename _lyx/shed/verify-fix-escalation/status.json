@@ -1,14 +1,13 @@
 {
-  "current_producer": "Merge-In",
-  "state": "blocked",
-  "error": "landing gate failed after merging parent branch \"main\" (exit code 1); output: /home/AD.NORCERESEARCH.NO/hanf/Code/Knatte18/loomyard-LYXHUB/verify-fix-escalation/.lyx/verify/verify-4.log; way forward: run \"lyx loom goto --to Darn-Write\", then \"lyx loom resume\", in the task worktree; the Darn-Write spawn renders the Publish failure record and its gate runs the failing tests",
+  "current_producer": "Darn-Write",
+  "state": "paused",
+  "error": "",
   "pause_requested": false,
-  "pause_before": "PR-Gate",
-  "pause_before_by": "ly:orch",
+  "pause_reason": "goto to Darn-Write by shed",
   "activity": {
-    "now": "Merge-In",
-    "last": "Merge-In → stuck",
-    "wait": "landing gate failed after merging parent branch \"main\" (exit code 1); output: /home/AD.NORCERESEARCH.NO/hanf/Code/Knatte18/loomyard-LYXHUB/verify-fix-escalation/.lyx/verify/verify-4.log; way forward: run \"lyx loom goto --to Darn-Write\", then \"lyx loom resume\", in the task worktree; the Darn-Write spawn renders the Publish failure record and its gate runs the failing tests"
+    "now": "Darn-Write",
+    "last": "Darn-Write → goto",
+    "wait": ""
   },
   "history": [
     {
@@ -152,6 +151,13 @@
       "outcome": "stuck",
       "output": "",
       "at": "2026-10-23T10:58:25Z"
+    },
+    {
+      "producer": "Darn-Write",
+      "outcome": "goto",
+      "output": "",
+      "at": "2026-10-23T10:58:26Z",
+      "by": "shed"
     }
   ],
   "product": {
