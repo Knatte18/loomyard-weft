@@ -1,8 +1,8 @@
 # Card 23 — planglyph EncloseAt
 
 **Create:**
-- `plan:internal/planglyph#EncloseAt` -> `func EncloseAt(worktreeRoot, rev string, targets []string) ([]quarry.EncloseResult, error)`
-- `plan:internal/planglyph#TestEncloseAt` -> `func TestEncloseAt(t *testing.T)`
+- `internal/planglyph#EncloseAt`
+- `internal/planglyph#TestEncloseAt`
 
 **Edit:**
 - `internal/planglyph/doc.go`

@@ -8,7 +8,7 @@
 - `internal/loomshed#TestPublishFailure`
 
 **Create:**
-- `plan:internal/loomshed#tracedLocation` -> `var tracedLocation *regexp.Regexp`
+- `internal/loomshed#tracedLocation`
 
 **Intent:**
 D9: the note the Webster-Review reviewer and fixer read after a Merge-In or Publish failure names the plan cards the trace matched.

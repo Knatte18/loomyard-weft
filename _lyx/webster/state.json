@@ -1,6 +1,6 @@
 {
   "runGuid": "6f3f62b7ba6640bed5f2f8f6f97b867c",
-  "planFingerprint": "dc5a36878d8897ac9a94d47f92d35d57caa483bf863aa5c56e07e9f8bf776d60",
+  "planFingerprint": "6a03e081678049ef829c275d8e3a63ffa4f25e2cb9a68297dd0499d66abe82f3",
   "planFileHashes": {
     "00-overview.md": "96ea7fdd8f8d6382d0d75626814f18d9de43b47b7804ff6a64d1958c1b3b0073",
     "01-plandag-additive-guess.md": "3156eb48f5d1c8c39c0e64ca4a0a8d85e081a38beba3aaf480b1d8777c729b14",
@@ -25,11 +25,11 @@
     "20-orch-amendment-route.md": "78f7b2f99cf405211bc9c65a86fe17f935261f5f8f86a258d72359b9ee09e295",
     "21-webster-conflict-amendment-way-forward.md": "519f1377782ffba8f922982351c815625fd91db68a8e11af1bda2e1750ee05d9",
     "22-failure-trace-record.md": "65f7f2441e761cba2fc06c09e06bfab2e9372a0038dc93f32101edbe6ef5978a",
-    "23-planglyph-enclose.md": "e2068a5310f00f767aad966e3cbd341d3448e36184abb245620a6b71529a85cd",
-    "24-planparser-target-holds.md": "c12fe69a5e8a4fc08261983ef3805e633c8314f5e858b4077cc6e28eeb5817b4",
-    "25-failuretrace-package.md": "0074b7b056702476a6d09f11d3251d628e53515dc03645d285b374c006debed4",
-    "26-landing-trace-seam.md": "d169a68337ff0c499b74a619ce13d78d075077cd3a836856a72ef1c3846a62ba",
-    "27-publish-failure-note-trace.md": "8e5f0d29c9b2b8f0661ebeb629ee832ce86b12109c81700e5b2b20089776b038"
+    "23-planglyph-enclose.md": "00f97d3112984bb994785d0c86a61173d8720d3effaf42a215292289f39f412a",
+    "24-planparser-target-holds.md": "456454ad0383cfb82e339782c4d7892af72664ac03d669dc2cda0cf6c0bb2200",
+    "25-failuretrace-package.md": "3589691303200ab590fdad8968d76c34e24833b3611ac56beca77efec1660d4a",
+    "26-landing-trace-seam.md": "003343477fbd052d972de2a5487578636b85f71acf14967563a9b74817f1fa10",
+    "27-publish-failure-note-trace.md": "064ed8020a3adc333db7647e0c996bd51785381f37ea04702e2cff9a9898c6a9"
   },
   "planOverviewFrameHash": "85f0a0654e477b2eb4ad2991932cbbdb70f648dd2964e414a38c2cd930a352a1",
   "partition": [
@@ -543,7 +543,7 @@
       }
     }
   ],
-  "currentBatch": 23,
+  "currentBatch": 0,
   "masterStrand": "5d7707be21a2f264e8cb67fdd257faf0",
   "masterSessionId": "42b1ea9d-4ad9-4b82-a2f2-60e0b764997b",
   "masterEngine": "claude",
@@ -701,17 +701,35 @@
         "27-publish-failure-note-trace"
       ],
       "cardHashes": {
-        "23-planglyph-enclose": "e2068a5310f00f767aad966e3cbd341d3448e36184abb245620a6b71529a85cd",
-        "24-planparser-target-holds": "c12fe69a5e8a4fc08261983ef3805e633c8314f5e858b4077cc6e28eeb5817b4",
-        "25-failuretrace-package": "0074b7b056702476a6d09f11d3251d628e53515dc03645d285b374c006debed4",
-        "26-landing-trace-seam": "d169a68337ff0c499b74a619ce13d78d075077cd3a836856a72ef1c3846a62ba",
-        "27-publish-failure-note-trace": "8e5f0d29c9b2b8f0661ebeb629ee832ce86b12109c81700e5b2b20089776b038"
+        "23-planglyph-enclose": "00f97d3112984bb994785d0c86a61173d8720d3effaf42a215292289f39f412a",
+        "24-planparser-target-holds": "456454ad0383cfb82e339782c4d7892af72664ac03d669dc2cda0cf6c0bb2200",
+        "25-failuretrace-package": "3589691303200ab590fdad8968d76c34e24833b3611ac56beca77efec1660d4a",
+        "26-landing-trace-seam": "003343477fbd052d972de2a5487578636b85f71acf14967563a9b74817f1fa10",
+        "27-publish-failure-note-trace": "064ed8020a3adc333db7647e0c996bd51785381f37ea04702e2cff9a9898c6a9"
       },
       "startSha": "3df6077f1decfb080623fa6b21acb714c895ee52",
       "kind": "recovery",
       "spawnedAt": "2026-10-23T08:03:54Z",
-      "terminal": false,
-      "status": "",
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "23-planglyph-enclose",
+        "status": "done",
+        "head_sha": "507fd63bc66179516d09e2e73eaddf3cf4d434fa",
+        "deviations": [
+          "internal/failuretrace/locations.go",
+          "internal/failuretrace/locations_test.go",
+          "internal/failuretrace/trace.go",
+          "internal/failuretrace/trace_test.go",
+          "internal/landingshed/mergein_test.go",
+          "internal/loomshed/publishfailure.go",
+          "internal/loomshed/publishfailure_test.go",
+          "internal/planparser/targetdirs.go"
+        ]
+      },
+      "cardShas": [
+        "507fd63bc66179516d09e2e73eaddf3cf4d434fa"
+      ],
       "forkTranscripts": [
         "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-plan-card-rules/42b1ea9d-4ad9-4b82-a2f2-60e0b764997b/subagents/agent-af68fb5248a5ee1c4.jsonl"
       ],
