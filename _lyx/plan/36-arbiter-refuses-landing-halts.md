@@ -1,7 +1,7 @@
 # Card 36 — arbiter-refuses-landing-halts
 
 **Create:**
-- `plan:internal/arbiterstop#TestCheck_RefusesLandingHalts` -> `func TestCheck_RefusesLandingHalts(t *testing.T)`
+- `internal/arbiterstop#TestCheck_RefusesLandingHalts`
 
 **Edit:**
 - `internal/arbiterstop#Stop`
