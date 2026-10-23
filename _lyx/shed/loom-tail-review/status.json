@@ -1,11 +1,13 @@
 {
-  "current_producer": "Discussion-Write",
+  "current_producer": "Discussion-Bouncer",
   "state": "running",
   "error": "",
   "pause_requested": false,
+  "pause_before": "Merge-In",
+  "pause_before_by": "ly:orch",
   "activity": {
-    "now": "Discussion-Write",
-    "last": "Loom-Preflight → done",
+    "now": "Discussion-Bouncer",
+    "last": "Discussion-Write → done",
     "wait": ""
   },
   "history": [
@@ -20,6 +22,57 @@
       "outcome": "done",
       "output": "",
       "at": "2026-10-23T09:12:40Z"
+    },
+    {
+      "producer": "Discussion-Write",
+      "outcome": "done",
+      "output": "/home/AD.NORCERESEARCH.NO/hanf/Code/Knatte18/loomyard-LYXHUB/loom-tail-review/_lyx/discussion/decision-record.md",
+      "at": "2026-10-23T09:27:32Z",
+      "gate_attempts": 1,
+      "gate_spans": [
+        {
+          "gate": "discussion",
+          "kind": "gate",
+          "start": "2026-10-23T09:24:56.433096805Z",
+          "end": "2026-10-23T09:24:56.433811668Z"
+        },
+        {
+          "gate": "discussion",
+          "kind": "gate",
+          "start": "2026-10-23T09:26:26.182959074Z",
+          "end": "2026-10-23T09:26:26.183342373Z"
+        },
+        {
+          "gate": "parent-review",
+          "kind": "gate",
+          "start": "2026-10-23T09:24:56.535610712Z",
+          "end": "2026-10-23T09:25:58.031706399Z"
+        },
+        {
+          "gate": "parent-review",
+          "kind": "held",
+          "start": "2026-10-23T09:25:58.139200581Z",
+          "end": "2026-10-23T09:26:00.35436323Z"
+        },
+        {
+          "gate": "parent-review",
+          "kind": "rework",
+          "start": "2026-10-23T09:26:00.891632424Z",
+          "end": "2026-10-23T09:26:26.111611162Z"
+        },
+        {
+          "gate": "parent-review",
+          "kind": "gate",
+          "start": "2026-10-23T09:26:26.289866088Z",
+          "end": "2026-10-23T09:27:15.473641723Z"
+        },
+        {
+          "gate": "parent-review",
+          "kind": "held",
+          "start": "2026-10-23T09:27:15.585747667Z",
+          "end": "2026-10-23T09:27:16.892181919Z"
+        }
+      ]
     }
   ],
   "product": {

@@ -1,0 +1,4 @@
+verdict: approve
+reason: "Round 1's F1 is fixed: D8, D14, the reconcile acceptance criterion and the PATTERN-verified-tree note now remove only the publish gate kind and list and keep round for Webster's verify-gate fixer fork. The design covers the board entry's goal and Done-when for both tails, Merge-In, the Code-Perch, the PR stub, Finalize's locked block and the Gone list, with no duplication or contradiction of another entry, and lyx loom peers lists no peer run or parent commit to overlap."
+question: ""
+superseded: []

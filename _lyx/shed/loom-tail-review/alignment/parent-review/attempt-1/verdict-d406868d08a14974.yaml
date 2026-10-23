@@ -1,0 +1,3 @@
+verdict: reject
+reason: "D8 and D14 remove the round gate kind and prune gate.yaml's round list on the false premise that no site remains, but Webster's verify-gate fixer fork runs the round gate call (internal/websterengine/runlevel.go:664), so the change reaches into Webster's own gate, which the record's Out list and the board entry verify-fix-escalation hold; the board entry asks only that the publish gate go. Everything else matches the entry's goal and Done-when, and lyx loom peers lists no peer run or parent commit to overlap."
+question: ""
