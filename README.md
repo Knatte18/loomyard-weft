@@ -16,7 +16,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T3 | **adopt's owner write fails on a stale local render manifest after another machine removed design files**<br>• `profile: light` | [`adopt-owner-write-stale-manifest`](design-adopt-owner-write-stale-manifest.md) | darn | Darn-Write | osl-1046 | 34m<br>16m | board |
+| T3 | **adopt's owner write fails on a stale local render manifest after another machine removed design files**<br>• `profile: light` | [`adopt-owner-write-stale-manifest`](design-adopt-owner-write-stale-manifest.md) | darn | Darn-Bouncer | osl-1046 | 34m<br>16m | board |
 | T4 | **Orch watcher's handoff timeout counts from the post, so a request queued behind a long turn times out**<br>• `profile: light` | [`orch-handoff-timeout-delivery`](design-orch-handoff-timeout-delivery.md) | darn | Darn-Burler-Review | osl-1046 | 34m<br>16m | orch, creel |
 | T5 | **Run tail: Merge-In with alignment, Code-Perch, a PR stub and one locked Land block, for loom and darn**<br>• Loom and darn share one tail after the code: Merge-In with alignment and a thorough fixer, Code-Perch, PR block behind a flag, Finalize re-merging under the parent lock | [`loom-tail-review`](design-loom-tail-review.md) | loom | Webster | osl-1046 | 23h<br>9h | loom, burler, shed, fabric, batten |
 
