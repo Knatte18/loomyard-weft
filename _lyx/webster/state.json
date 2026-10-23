@@ -1,6 +1,6 @@
 {
   "runGuid": "9f527ada10a19724b2f3a87061a5ac41",
-  "planFingerprint": "5bcd5baf33d66dbafa8bfd7ad41b1c3df29cbc346954eac3b541afee3f6b1bed",
+  "planFingerprint": "2cf0747b7038bfd007d9f9ffbfed959efb0a10d6c0e14f9cb0faacb56011d662",
   "planFileHashes": {
     "00-overview.md": "468cbc840722398d268b91221206213ab77bd8345c87e77b3ea147bfef3643da",
     "01-fabric-merge-in-at.md": "5658bfb064f63d28ce9dfd6178f974b5ca5ced0a730c54dc070db9d8fc7233ed",
@@ -35,11 +35,11 @@
     "30-finalize-recheck-and-land.md": "2d317cb934461cfb0fcaa1babce3386d3d0357a04e3ee0e73ea1911b8292556e",
     "31-review-input-reentry.md": "6da0aa13e1e21eb92c6e0bf60385db6c7ab5ce2b8bcc854cb4130b81ec5d4b64",
     "32-merged-tip-merge-base.md": "10eb93e99ab696db6eb43d394bbf9d2b1e07193362d37a399fbc504d549ecd37",
-    "33-landing-gate-at-fix-rows.md": "9a9e94a27545c0126766cd2781b0cf18ba3f1add60a299a8efbef87988e61c6a",
-    "34-hand-back-mark.md": "6fb5a6ca6e933fa11848fed5c9a0ea0d9cd808f9c8761bb425beb65793c53a84",
-    "35-driver-hands-back-landing-halts.md": "233b01547418a22c32c854287316a4f524c034b359bd8cdaca6a0b93f10f2b94",
-    "36-arbiter-refuses-landing-halts.md": "457ad226bda11a9ff526c0c15662b84c0a6908f71c72da670c7ff0cd607e72ee",
-    "37-batten-restep-skips-landing-halts.md": "d3a50c17ab5f5c09ef1380d4f029e4063193d360cb973d787255fe50cef90551",
+    "33-landing-gate-at-fix-rows.md": "828b111deaa9f33ea623e9f0fa86c4f5e96946c0c4197ffb3e660ce0012d26b3",
+    "34-hand-back-mark.md": "6d44e02cee3a3feb55d97f80eca380914dfcdbc2c8740ce7bd811267e0017018",
+    "35-driver-hands-back-landing-halts.md": "af03e6108aff4ff3e2d3b70a0f80eba6740095e06727187cdc7cce41fcebb97f",
+    "36-arbiter-refuses-landing-halts.md": "e6020dce9df7affc5bcb1180471e11ae6f66b57d8cb14590b9b18ef181df7ba4",
+    "37-batten-restep-skips-landing-halts.md": "6197895ecaf7c9d73271fc03b2a825cbd0acb2ec2c9594237ae30ed5eef87121",
     "38-driver-stencils-hand-back.md": "c511b532f8f58631610d98a1b2eea3e87a8c905d8579dc93593bacd44e2983d4",
     "39-reroute-cap-way-forward.md": "d133ec89db2af581ede537965bfe55227c41f9385c08f25eb6390e69d3713bae",
     "40-idle-release-keeps-finalize.md": "92af46a37e22ad0e3516ac7065066a528fe38b6e76144f814103b7d7153fc8f1",
@@ -1709,7 +1709,7 @@
       }
     }
   ],
-  "currentBatch": 33,
+  "currentBatch": 0,
   "masterStrand": "84b46756278c26fa4a3d938b33a70bce",
   "masterSessionId": "15e077c7-3daf-473b-935d-c0209f975d97",
   "masterEngine": "claude",
@@ -2238,14 +2238,31 @@
         "34-hand-back-mark"
       ],
       "cardHashes": {
-        "33-landing-gate-at-fix-rows": "9a9e94a27545c0126766cd2781b0cf18ba3f1add60a299a8efbef87988e61c6a",
-        "34-hand-back-mark": "6fb5a6ca6e933fa11848fed5c9a0ea0d9cd808f9c8761bb425beb65793c53a84"
+        "33-landing-gate-at-fix-rows": "828b111deaa9f33ea623e9f0fa86c4f5e96946c0c4197ffb3e660ce0012d26b3",
+        "34-hand-back-mark": "6d44e02cee3a3feb55d97f80eca380914dfcdbc2c8740ce7bd811267e0017018"
       },
       "startSha": "efe5b17d13d2d8276d0f603d04c41e4c4b320190",
       "kind": "recovery",
       "spawnedAt": "2026-10-23T18:11:31Z",
-      "terminal": false,
-      "status": "",
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "33-landing-gate-at-fix-rows",
+        "status": "done",
+        "head_sha": "df8375218a9c1bc948a71db13e91c99ec9af46be",
+        "deviations": [
+          "internal/loomcli/status_test.go",
+          "internal/loomshed/verifygate_integration_test.go",
+          "internal/shedcli/cli_test.go",
+          "internal/shedrecipe/entries_gate.go",
+          "internal/shedverbs/loop_test.go",
+          "internal/shedverbs/spec.go",
+          "internal/webstercli/verify_parity_integration_test.go"
+        ]
+      },
+      "cardShas": [
+        "df8375218a9c1bc948a71db13e91c99ec9af46be"
+      ],
       "forkTranscripts": [
         "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-loom-tail-review/15e077c7-3daf-473b-935d-c0209f975d97/subagents/agent-a860c2b39c83e5604.jsonl"
       ],

@@ -13,7 +13,7 @@
 - `internal/loomcli#loomCLI.goDriverDepsFor`
 
 **Uses:**
-- `plan:internal/landingshed#HandsBack`
+- `internal/landingshed#HandsBack`
 
 **Extends:**
 - `internal/sheddriver/doc.go`

@@ -15,7 +15,7 @@
 - `internal/loomcli#intentionallyNil`
 
 **Uses:**
-- `plan:internal/landingshed#HandsBack`
+- `internal/landingshed#HandsBack`
 
 **Extends:**
 - `internal/battenshed/doc.go`

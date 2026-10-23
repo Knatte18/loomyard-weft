@@ -1,8 +1,8 @@
 # Card 33 — landing-gate-at-fix-rows
 
 **Create:**
-- `plan:internal/loomcli#gateListSource` -> `func gateListSource(dirs configengine.Dirs, gate string) func() (loomshed.RoundGate, error)`
-- `plan:internal/loomcli#TestGateListSource` -> `func TestGateListSource(t *testing.T)`
+- `internal/loomcli#gateListSource`
+- `internal/loomcli#TestGateListSource`
 
 **Delete:**
 - `internal/loomcli#roundGateSource`
