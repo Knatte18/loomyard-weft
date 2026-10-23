@@ -17,8 +17,8 @@ Held by a run; its scope is locked until the run ends.
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T2 | **Plan cards: headroom check, Extends label, an amendment owner, failures traced to cards**<br>• PATTERN headroom in the plan gate, additive Extends cards, an in-run owner for card amendments, verify failures mapped to cards via Enclose<br>• `profile: light` | [`plan-card-rules`](design-plan-card-rules.md) | loom | Webster | osl-1046 | 2w<br>16h | loom, webster, burler, orch, quarry |
 | T3 | **One batten verb ends a run for good, live or stopped, before or after its pair exists**<br>• Abandon or abort a batten run in any state: end its processes and strands, clear the claim, remove records and scratch, optionally the pair; batten refuses a dirty source up front<br>• `profile: light` | [`batten-cancel-verb`](design-batten-cancel-verb.md) | loom | Webster | osl-1046 | 2d<br>18h | batten, reed, shed |
-| T4 | **The README and lyx board list show which machine owns the prime**<br>• prime_owner is only in board.json; the README shows task owners but not the prime owner, and no board verb prints it<br>• `profile: light` | [`prime-owner-visible`](design-prime-owner-visible.md) | darn | Merge-In | osl-1046 | 44m<br>25m | board |
-| T5 | **Orch watcher types /compact again after a compact landed**<br>• Watcher stays in resuming after a requested compact and types a second /compact into the resumed busy turn<br>• `profile: light` | [`orch-compact-repeats`](design-orch-compact-repeats.md) | darn | blocked · Publish | osl-1046 | 16h<br>25m | orch |
+| T4 | **The README and lyx board list show which machine owns the prime**<br>• prime_owner is only in board.json; the README shows task owners but not the prime owner, and no board verb prints it<br>• `profile: light` | [`prime-owner-visible`](design-prime-owner-visible.md) | darn | Merge-In | osl-1046 | 45m<br>26m | board |
+| T5 | **Orch watcher types /compact again after a compact landed**<br>• Watcher stays in resuming after a requested compact and types a second /compact into the resumed busy turn<br>• `profile: light` | [`orch-compact-repeats`](design-orch-compact-repeats.md) | darn | Darn-Write | osl-1046 | 16h<br>26m | orch |
 
 ### Ready
 
@@ -81,14 +81,14 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | E28 |  | **[.NET] A small public NUnit repo as sandbox hub for end-to-end C# runs** | [`csharp-sandbox-hub`](design-csharp-sandbox-hub.md) | 21h<br>18h | dotnet |
 | E30 |  | **Discussion scope check moves from the alignment agent into the perch lenses, with an escalating finding class** | [`discussion-alignment-into-lenses`](design-discussion-alignment-into-lenses.md) | 20h<br>20h | loom, burler, shed |
 | E31 |  | **A row before Discussion aligns the task text against the board, peers and landed work, and adjusts it** | [`entry-align-before-discussion`](design-entry-align-before-discussion.md) | 20h<br>20h | loom, batten, board |
-| E32 |  | **Move rules about lyx behaviour out of this repo's CLAUDE.md into lyx code, doc.go and stencils** | [`claude-md-lyx-rules-out`](design-claude-md-lyx-rules-out.md) | 19h<br>19h | stencil, board, loom |
+| E32 |  | **Move rules about lyx behaviour out of this repo's CLAUDE.md into lyx code, doc.go and stencils** | [`claude-md-lyx-rules-out`](design-claude-md-lyx-rules-out.md) | 20h<br>19h | stencil, board, loom |
 
 ### Features
 
 | # | P | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | F1 |  | **Hardener: an autonomous behavior-review campaign that replaces crucible**<br>• Parked by the operator: settle the Tenter/Hardener design and build the campaign that runs a live-substrate module in a sandbox until it converges | [`hardener`](design-hardener.md) | 2w<br>6d | burler |
-| F2 | H | **[WS 006] Umbrella tasks: project threads that spawn and land from their own worktree**<br>• A larger project is an umbrella task with a long-lived pair and its own orch thread; tasks name it as parent, spawn from and land into its branch, and report to its thread; the prime is the root umbrella | [`orch-any-worktree`](design-orch-any-worktree.md) | 2w<br>18h | fabric, batten, orch, board, reed, creel, shed, workspaces |
+| F2 | H | **[WS 006] Umbrella tasks: project threads that spawn and land from their own worktree**<br>• A larger project is an umbrella task with a long-lived pair and its own orch thread; tasks name it as parent, spawn from and land into its branch, and report to its thread; the prime is the root umbrella | [`orch-any-worktree`](design-orch-any-worktree.md) | 2w<br>19h | fabric, batten, orch, board, reed, creel, shed, workspaces |
 | F3 |  | **semantic-index: find code by concept, not by literal keyword**<br>• Semantic search over docstrings and comments; doubtful today, since agents now navigate well with grep | [`semantic-index`](design-semantic-index.md) | 2w<br> | quarry |
 | F4 |  | **Ship lyx as an installable Claude Code plugin**<br>• Package lyx and its skills as one installable plugin | [`plugin-packaging`](design-plugin-packaging.md) | 2w<br> | stencil |
 | F5 |  | **Fabric's ordinary-monorepo verb surface**<br>• Against plain git, fabric still lacks log, show, branch, tag, stash, revert, restore, rm/mv, rebase, cherry-pick and blame | [`fabric-monorepo-verbs`](design-fabric-monorepo-verbs.md) | 2w<br>2w | fabric |
