@@ -13,4 +13,8 @@ Gate lines, such as `gate review 0s` under a producer line, carry no clock time,
 - Drop the written-file paths from the overview's lines.
 - Open each gate line with its clock time, as producer lines do.
 
+## Decision (operator, 2026-10-23)
+
+The overview's clock times stay in UTC, since UTC does not jump with daylight saving time; the gate lines' new times are UTC as well.
+
 The checklist is rendered in `internal/loomcli/checklist.go`.
