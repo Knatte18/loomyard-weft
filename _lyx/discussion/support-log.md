@@ -38,7 +38,7 @@ All seven forks returned a report.
 - goal-scope, BLOCKING, the darn writer's gate is not the `landing` gate: fixed, new D8.
 - goal-scope, MEDIUM, Code-Burler-Fix keeps `round` against the board's one gate after Webster: fixed in D8, which also removes the `round` gate kind; this also answers interactions LOW 5 and walkthrough LOW 4 on tmux failures surfacing under the lock.
 - goal-scope, MEDIUM, landing commit does not name the slug: fixed, `Lyx-Task: <slug>` trailer in D10.
-- goal-scope, MEDIUM, alignment narrowed to overlapping changes: fixed, D4 aligns every merge that brings parent commits in; the old open risk is replaced by the cost risk.
+- goal-scope, MEDIUM, alignment narrowed to overlapping changes: fixed, D4 aligns every merge that brings parent commits in; the old open risk is replaced by the cost risk, since the audit's Merge-Review ran in 73% of runs at about $0.96 each.
 - walkthrough, MEDIUM, large-merge test reads the merged tip after it is overwritten: fixed, D10 step 2 reads it first and step 3 writes after the judgement.
 - walkthrough, MEDIUM, interactions MEDIUM 2 and bound-breaker MEDIUM 4, the landing halts go to the tackler and arbiter under the Go driver and get fresh caps: fixed, D11 adds a hand-back row for the reroute-cap and landing-stop prefixes.
 - walkthrough, MEDIUM, and bound-breaker MEDIUM 7, no aligned tip on the first Merge-In: fixed, it reads as the task's merge base; only Merge-In writes it (also interactions LOW 4).
@@ -91,6 +91,18 @@ All seven forks returned a report.
 
 - F1 (BLOCKING, scope): fixed. Removing the `round` gate kind would have reached Webster's verify-gate fixer fork, which runs the `round` call. D8 now removes only the `publish` kind and keeps `round`. D14, the reconcile acceptance criterion and the `PATTERN-verified-tree` note now prune only `gate.yaml`'s `publish` list. The turn-5 lens line on goal-scope's MEDIUM finding holds only for the move of the post-Webster fix gates to `landing`.
 
+### Discussion review, round 2
+
+- Every finding fixed in the decision record: the Finalize lock check in both idle-release paths (F1), the given-SHA merge (F2), the LLM driver's re-launch exclusion (F3), read-time profile migration (F4), per-language test files (F5), the budget-0 deploy bound (F6), the `PRReview` engine (F7), the reroute in `PATTERN-recipe-owns-failures` (F8), the reroute-cap match limited to Finalize (F9), darn Finalize's tree-scoped command (F10), fixer turns as one unit (F11) and the effective Code-Review budget (F12).
+
+### Discussion review, round 3
+
+- Every finding fixed in the decision record: batten's owner arms and Finalize's lock re-check and halt before landing (F1), `MergeInAt` threaded through `mergeresolve.Resolve` (F2), the `hand_back` field the LLM driver's `binary_changed` sites read (F3), the language Finalize's kind cap reads (F4), D10's caps on the Merge-In fixer at a Code-Review budget of 0 (F5) and D7's reason for the `PRReview` engine (F6).
+
+### Discussion review, round 4
+
+- Every finding fixed in the decision record: the budget-0 Merge-In cap measured from the fixer baseline after the merge (F1), the Finalize fixer causes in the reroute-cap way-forward clause and the orch stencil rule (F2), the conflict session's resolution in the budget-0 deploy bound (F3), the operator's lock release among the re-check's causes (F4) and the attempt record's reset per row entry (F5).
+
 ## Question ledger
 
 - Fixer placement (session in Merge-In and Finalize vs a row) — resolved, auto-pick: session; see D4.
@@ -109,5 +121,14 @@ All seven forks returned a report.
 - `require_pr_to_base` — resolved, auto-pick: renamed `deploy_branches`.
 - Failure record — resolved, auto-pick: kept and renamed, no target, no reader but the fixer.
 - Go driver verify row — resolved, auto-pick: removed with its seam, replaced by a hand-back row.
-- Key migration — resolved, auto-pick: one table for reconcile, profiles and `run_settings`; see D14.
+- Key migration — resolved, auto-pick: one table per module, applied by reconcile to the module files and at read time to profiles and `run_settings`, `profiles.yaml` staying seed-only; see D14.
+- Merge-In's merge source — resolved, auto-pick: fabric's merge-in gains a given-SHA merge, since `MergeIn` by name merges a local tip ahead of its upstream; see D2.
+- PR-Review engine — resolved, auto-pick: a new `PRReview` engine in `internal/landingshed`, weighed against a `Command` row under `PATTERN-command-row`, which would pass on as the stub does but would let an operator set a shell command on the seat the human PR review engine will replace; see D7.
 - Hub orch rules naming the old tail — resolved: a landing step for the orch through `lyx orch rules`.
+- Batten's owner arms under a running Finalize — resolved, auto-pick: they keep releasing the lock, since a run another machine owns must not land here, and Finalize re-checks the lock before landing and halts when the record no longer names it, rather than taking the lock again while the pause stands; see D10.
+- Language of Finalize's kind cap — resolved, auto-pick: the loom plan's `language:`, the union of every declared language for darn, every file for `none` or an undeclared language; see D10.
+- Merge-In fixer at a Code-Review budget of 0 — resolved, auto-pick: D10's size and kind caps bind it, halting past them; see D4.
+- Baseline of the budget-0 Merge-In cap — resolved, auto-pick: the HEAD after the merge and conflict session, before the fixer's first turn, kept in the entry's attempt record and written afresh only after the over-cap halt the operator reviewed, so earlier fixer commits never escape the cap; see D4.
+- Lifetime of the fixer attempt record — resolved, auto-pick: one row entry, naming its entry, kept across resumes and cleared at Done and at a re-entry from another row; see D4.
+- Resume after Merge-In's spent cap — resolved, auto-pick: the operator's fix reads as the alignment, so a passing gate advances the aligned tip with no fixer, since the entry has no attempts left; see D4.
+- Causes of a released Finalize lock — resolved, auto-pick: the halt names all three, owner pause, other machine and operator release, since step 1's owner checks do not read the pause record; see D10.
