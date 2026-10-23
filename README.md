@@ -16,7 +16,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T2 | **Webster verify failures the fixer fork cannot clear escalate to an Opus-high fixer**<br>• Merriam fixes a failed verify only with forks on its own Sonnet model; a stronger fixer exists only for stuck batches<br>• `profile: darn-wide` | [`verify-fix-escalation`](design-verify-fix-escalation.md) | darn | Darn-Bouncer | osl-1046 | 1h<br>31m | webster, loom |
+| T2 | **Webster verify failures the fixer fork cannot clear escalate to an Opus-high fixer**<br>• Merriam fixes a failed verify only with forks on its own Sonnet model; a stronger fixer exists only for stuck batches<br>• `profile: darn-wide` | [`verify-fix-escalation`](design-verify-fix-escalation.md) | darn | Darn-Burler-Review | osl-1046 | 1h<br>31m | webster, loom |
 | T5 | **Run tail: Merge-In with alignment, Code-Perch, a PR stub and one locked Land block, for loom and darn**<br>• Loom and darn share one tail after the code: Merge-In with alignment and a thorough fixer, Code-Perch, PR block behind a flag, Finalize re-merging under the parent lock | [`loom-tail-review`](design-loom-tail-review.md) | loom | Discussion-Burler-Review | osl-1046 | 15h<br>2h | loom, burler, shed, fabric, batten |
 
 ### Ready
