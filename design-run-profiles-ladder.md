@@ -20,9 +20,14 @@ One ladder of profiles, the same names for darn and loom, each setting the revie
 
 A task needing anything else names its rounds per row by hand.
 
-## Open (orch)
+## Operator decisions (2026-10-23)
 
-- Hard caps: each profile also sets each perch's hard cap, such as its rounds plus one, so `lyx loom circling continue` can grant one more round.
-- `standard` equals the hub default, so the hub's own config should match it: today darn's `review_max_bounces` is 1 there, not 2.
-- `docs` also sets darn's writer to Sonnet; it stays beside the ladder or goes.
+- Each profile also sets each perch's hard cap, such as its rounds plus one, so `lyx loom circling continue` can grant one more round.
+- The third rung gets a name of its own, not `standard`.
+  A hub names its default profile per recipe instead: loom's default is the third rung, darn's is `light`.
+
+## Open
+
+- The third rung's name.
+- `docs`: the operator doubts it, since Opus does quick work well; if kept, it is a darn profile only for pure prose and config value edits, with a Sonnet writer, and its perch rounds are undecided.
 - The Code column's key is `code_max_bounces` after `loom-tail-review`, and darn's perch may merge into Code-Review (note `code-review-one-perch`), which changes which keys a profile sets.
