@@ -1,29 +1,33 @@
-# Board README and lyx board list show the prime owner
+# Show the prime's owner in the board README and lyx board list
 
 The machine that owns the hub's prime was recorded only as `prime_owner` in `board.json`.
-The README showed each running task's owner, but not the prime's, and no `lyx board` verb printed it, so an operator adopting tasks learnt who held the prime only from `lyx adopt`'s warning.
+The README showed each task's owner but not the prime's, and no `lyx board` verb printed it.
+An operator adopting tasks learnt only from `lyx adopt`'s warning that another machine still owned the prime.
+The prime's owner is now visible wherever task owners are.
 
 ## What changes
 
-- **README.** The opening paragraph gains a line under the render time: ``Prime owner: `<machine>`.``, or `Prime owner: none recorded.` when `board.json` records none.
-  `Render` and `RenderToDisk` take the prime owner beside the tasks, and every render site passes its loaded store's record: the board write path, the owner setter and the board replay.
-- **`lyx board list`.** The JSON envelope carries a top-level `prime_owner` key, always present and empty when none is recorded.
-  With `--text` the listing opens with `prime owner: <machine>`, or `prime owner: none`, before the entry lines.
-  `find --text` is unchanged.
-- **`Board.PrimeOwner`.** A new read that returns the recorded prime owner, `""` for an absent board directory.
+- The rendered board README states `Prime owner: ` and the machine in a code span after the render time, or `none recorded` when `board.json` records none.
+- `lyx board list` JSON is now `{"ok":true,"prime_owner":"<machine>","tasks":[…]}`.
+  The key is always present and empty when none is recorded.
+- `lyx board list --text` opens with `prime owner: <machine>`, or `prime owner: none`, followed by the unchanged entry lines.
+- `find`, `get` and `list-full` are unchanged, and so is how the prime owner is recorded or replayed.
+  The `find` help no longer claims list's full JSON; it says it prints the same tasks array in an envelope without `prime_owner`.
+- The `internal/boardengine` and `internal/boardcli` package docs and the board skill's list paragraph describe the new output.
 
 ## Design decisions
 
-- The prime owner shown is the recorded one, not a resolved one: the prime has no parent to inherit from.
-- `list` reads the prime owner through its own `Board.PrimeOwner` call beside `ListTasksBrief`, leaving that method's signature and callers unchanged.
-  The two reads are separate store loads; a write landing between them can only show a fresher owner.
-- The empty case is stated in the README and the text listing, so the line keeps its place and an absent record reads as a fact rather than an older binary.
+- `Render` and `RenderToDisk` take the prime owner beside the tasks, so the renderer stays a pure function of its inputs.
+  Every caller (board write, owner set, replay) passes its loaded store's `prime_owner`.
+- `list` reads the owner through a new `Board.PrimeOwner` beside `ListTasksBrief`, which keeps that function's signature and callers untouched.
+  The second load happens under the swap lock, so a write landing between the two reads can only show a fresher owner.
+- `Board.PrimeOwner` has no absent-directory branch, because `Store.Load` already reads an absent board as empty.
+- The shown value is the recorded `prime_owner`, not a resolved one, since the prime has no parent to inherit from.
+- The `board.json` shape is unchanged.
 
-## Docs
+## Check by hand
 
-`internal/boardengine/doc.go` and the `render.go` file header, `internal/boardcli/doc.go`, the `list` verb's `--help`, and the board skill's list paragraph name the new output.
-
-## Tests
-
-- `TestRenderReadmeGolden` pins the new README line for a recorded owner and for none.
-- The `TestCLI` steps `Owners` and `ListAndFindText` pin `prime_owner` in the JSON, recorded and empty, and the `--text` opening line, recorded and `none`.
+- A script parsing `list --text` line by line now sees one extra first line; no consumer in the repository does.
+- The README prime-owner line is pinned at each render site (board write, owner set, replay) by `TestPrimeOwnerReadAndRendered` and the owner-set and replay tests; confirm the line shows the right machine on a real hub's README after a write.
+- `Board.PrimeOwner` on an absent board directory returns empty; this is pinned in the engine test only, with no `lyx board list` run against a missing board directory.
+- The `find` help wording in `internal/boardcli/cli.go` matches its actual output.
