@@ -304,6 +304,12 @@ Decision: Replace the declared PATTERN-recipe-owns-failures text with the shorte
 
 Rationale: PATTERN.md is past its headroom line, so the plan may not grow it; this set nets -13 bytes, and each cut clause moves to the entry's background file or the package docs the plan already edits.
 
+### Added after Discussion (parent, 2026-10-23): Shorten PATTERN-owner-machine for the headroom
+
+Decision: Shorten the PATTERN-owner-machine overview line; the owner setter and machine-name rules move to pattern/PATTERN-owner-machine.md.
+
+Rationale: PATTERN.md is past its headroom line, so the plan may not grow it; this set nets -13 bytes, and each cut clause moves to the entry's background file or the package docs the plan already edits.
+
 ## Constraints
 
 - `PATTERN-told-geometry`: `internal/landingshed` keeps taking told paths, the fixer's included.
@@ -377,6 +383,7 @@ Every pick in D2 to D14 that the board left open is an auto-pick, recorded with 
 
 - `PATTERN-parent-lock` — changes: Moving, merging into or landing on a local parent branch: only in Finalize, under its `internal/parentlock` lock. — added after Discussion (parent, 2026-10-23)
 - `PATTERN-recipe-owns-failures` — adds: A merge or test failure at Merge-In or Finalize: its fixer, a Finalize reroute or a halt to the orch. — added after Discussion (parent, 2026-10-23)
+- `PATTERN-owner-machine` — changes: Starting, resuming or landing a run or acting on wake: only where no other machine owns its entry. — [background](pattern/PATTERN-owner-machine.md) — added after Discussion (parent, 2026-10-23)
 
 ## Notes for the plan writer
 
