@@ -9,8 +9,8 @@
 - `internal/loomrecipe/doc.go`
 
 **Create:**
-- `plan:internal/loomrecipe#AmendmentTarget` -> `func AmendmentTarget(recipe string) (string, error)`
-- `plan:internal/loomrecipe#TestAmendmentTarget` -> `func TestAmendmentTarget(t *testing.T)`
+- `internal/loomrecipe#AmendmentTarget`
+- `internal/loomrecipe#TestAmendmentTarget`
 
 **Intent:**
 D8: a new optional top-level recipe key, `amendment_target`, names the row a plan amendment routes to; loom's recipe sets it to `Plan-Burler-Review`.

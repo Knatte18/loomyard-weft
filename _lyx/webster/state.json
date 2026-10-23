@@ -1,6 +1,6 @@
 {
   "runGuid": "6f3f62b7ba6640bed5f2f8f6f97b867c",
-  "planFingerprint": "197eba1a4e7b506529777c8dce5a4aaab6c765281999a61305a2b0e4e29f973e",
+  "planFingerprint": "dc5a36878d8897ac9a94d47f92d35d57caa483bf863aa5c56e07e9f8bf776d60",
   "planFileHashes": {
     "00-overview.md": "96ea7fdd8f8d6382d0d75626814f18d9de43b47b7804ff6a64d1958c1b3b0073",
     "01-plandag-additive-guess.md": "3156eb48f5d1c8c39c0e64ca4a0a8d85e081a38beba3aaf480b1d8777c729b14",
@@ -20,15 +20,15 @@
     "15-plan-commit-removes-amendment.md": "0f78c373f32d6c93a3c3ff8cd61d8d73cff9a19b75da2a1830fab0e5fb890ad3",
     "16-rework-amendment.md": "3e12bb21be7a0ca11c58beda5676dce1be462c3d16f30718c8d4a5a1a74991dc",
     "17-plan-review-answer-key.md": "c3474497905ddfafe2a23487451e58174b89adef1abad17cc98468644ad80b1f",
-    "18-recipe-amendment-target.md": "61040de7f1bc5aaa3f11ab59b4bb2b4ecaa118ac2877c6774cca8260bbb5cb26",
-    "19-arbiter-amendment-target.md": "ff1de534123230d82487b098ace7b06ab8b18e14b2eb260e34d0c42529d59088",
+    "18-recipe-amendment-target.md": "3b591a4dc3f1cc20a2b6b36af94b22a95946d1603683a0bbb03f8b85198831c4",
+    "19-arbiter-amendment-target.md": "9c838889ac93c996988c16904251ffa04ddc0fc8e94a463a86648a0d990b61e8",
     "20-orch-amendment-route.md": "78f7b2f99cf405211bc9c65a86fe17f935261f5f8f86a258d72359b9ee09e295",
     "21-webster-conflict-amendment-way-forward.md": "519f1377782ffba8f922982351c815625fd91db68a8e11af1bda2e1750ee05d9",
-    "22-failure-trace-record.md": "5deb5f4ae5c8246cffdcead20a25a57ce525a16a95437b0484775c78e990be08",
+    "22-failure-trace-record.md": "65f7f2441e761cba2fc06c09e06bfab2e9372a0038dc93f32101edbe6ef5978a",
     "23-planglyph-enclose.md": "e2068a5310f00f767aad966e3cbd341d3448e36184abb245620a6b71529a85cd",
     "24-planparser-target-holds.md": "c12fe69a5e8a4fc08261983ef3805e633c8314f5e858b4077cc6e28eeb5817b4",
-    "25-failuretrace-package.md": "182edd017419fe2a484c131f8ad57e3289b58c99c3b6c82e0f6de4c68b1473f8",
-    "26-landing-trace-seam.md": "78255b56e3cf436328cc85f08fc9e7406f4f58599b5a4e6837e06206c8a01725",
+    "25-failuretrace-package.md": "0074b7b056702476a6d09f11d3251d628e53515dc03645d285b374c006debed4",
+    "26-landing-trace-seam.md": "d169a68337ff0c499b74a619ce13d78d075077cd3a836856a72ef1c3846a62ba",
     "27-publish-failure-note-trace.md": "8e5f0d29c9b2b8f0661ebeb629ee832ce86b12109c81700e5b2b20089776b038"
   },
   "planOverviewFrameHash": "85f0a0654e477b2eb4ad2991932cbbdb70f648dd2964e414a38c2cd930a352a1",
@@ -543,7 +543,7 @@
       }
     }
   ],
-  "currentBatch": 18,
+  "currentBatch": 0,
   "masterStrand": "5d7707be21a2f264e8cb67fdd257faf0",
   "masterSessionId": "42b1ea9d-4ad9-4b82-a2f2-60e0b764997b",
   "masterEngine": "claude",
@@ -660,19 +660,36 @@
         "22-failure-trace-record"
       ],
       "cardHashes": {
-        "18-recipe-amendment-target": "61040de7f1bc5aaa3f11ab59b4bb2b4ecaa118ac2877c6774cca8260bbb5cb26",
-        "19-arbiter-amendment-target": "ff1de534123230d82487b098ace7b06ab8b18e14b2eb260e34d0c42529d59088",
+        "18-recipe-amendment-target": "3b591a4dc3f1cc20a2b6b36af94b22a95946d1603683a0bbb03f8b85198831c4",
+        "19-arbiter-amendment-target": "9c838889ac93c996988c16904251ffa04ddc0fc8e94a463a86648a0d990b61e8",
         "20-orch-amendment-route": "78f7b2f99cf405211bc9c65a86fe17f935261f5f8f86a258d72359b9ee09e295",
         "21-webster-conflict-amendment-way-forward": "519f1377782ffba8f922982351c815625fd91db68a8e11af1bda2e1750ee05d9",
-        "22-failure-trace-record": "5deb5f4ae5c8246cffdcead20a25a57ce525a16a95437b0484775c78e990be08"
+        "22-failure-trace-record": "65f7f2441e761cba2fc06c09e06bfab2e9372a0038dc93f32101edbe6ef5978a"
       },
       "startSha": "a7d70108f036ce7919b5ea366c7d02dfbbbf1b6f",
       "kind": "fork",
       "spawnedAt": "2026-10-23T07:45:08Z",
       "sessionId": "42b1ea9d-4ad9-4b82-a2f2-60e0b764997b",
       "engine": "claude",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "18-recipe-amendment-target",
+        "status": "done",
+        "head_sha": "3df6077f1decfb080623fa6b21acb714c895ee52",
+        "deviations": [
+          "internal/loomrecipe/names.go"
+        ]
+      },
+      "cardShas": [
+        "3df6077f1decfb080623fa6b21acb714c895ee52"
+      ],
+      "forkTranscripts": [
+        "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-plan-card-rules/42b1ea9d-4ad9-4b82-a2f2-60e0b764997b/subagents/agent-abb97be7e0981734d.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-plan-card-rules/42b1ea9d-4ad9-4b82-a2f2-60e0b764997b/subagents/agent-abb97be7e0981734d.jsonl"
+      ]
     },
     "7": {
       "slug": "extends-group-readers",
@@ -725,6 +742,7 @@
   "seenForkTranscripts": [
     "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-plan-card-rules/42b1ea9d-4ad9-4b82-a2f2-60e0b764997b/subagents/agent-adcf21a00860fde6f.jsonl",
     "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-plan-card-rules/42b1ea9d-4ad9-4b82-a2f2-60e0b764997b/subagents/agent-ad3c848d95c14262a.jsonl",
-    "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-plan-card-rules/42b1ea9d-4ad9-4b82-a2f2-60e0b764997b/subagents/agent-a6ae51d3374ea2d2d.jsonl"
+    "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-plan-card-rules/42b1ea9d-4ad9-4b82-a2f2-60e0b764997b/subagents/agent-a6ae51d3374ea2d2d.jsonl",
+    "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-plan-card-rules/42b1ea9d-4ad9-4b82-a2f2-60e0b764997b/subagents/agent-abb97be7e0981734d.jsonl"
   ]
 }
