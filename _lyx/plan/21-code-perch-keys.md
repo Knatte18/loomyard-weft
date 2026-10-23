@@ -1,8 +1,8 @@
 # Card 21 — code-perch-keys
 
 **Create:**
-- `plan:internal/loomengine#retiredPerchKeyRenames` -> `var retiredPerchKeyRenames []yamlengine.KeyRename`
-- `plan:internal/loomengine#PerchCode` -> `const PerchCode Perch = "code"`
+- `internal/loomengine#retiredPerchKeyRenames`
+- `internal/loomengine#PerchCode`
 
 **Delete:**
 - `internal/loomengine#PerchWebster`
