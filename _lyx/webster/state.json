@@ -1,6 +1,6 @@
 {
   "runGuid": "9f527ada10a19724b2f3a87061a5ac41",
-  "planFingerprint": "c22069dd6f0a8f87d62edfb862f6e4ecd78f1c8ae167ec18375281fe9449b8fd",
+  "planFingerprint": "f43b5618debc1b1580d2d858e67348867d4b191d8164a718f4c6470691f40f4c",
   "planFileHashes": {
     "00-overview.md": "468cbc840722398d268b91221206213ab77bd8345c87e77b3ea147bfef3643da",
     "01-fabric-merge-in-at.md": "5658bfb064f63d28ce9dfd6178f974b5ca5ced0a730c54dc070db9d8fc7233ed",
@@ -49,7 +49,7 @@
     "44-drop-pr-rework.md": "3ef81986c4dcdd41888bd35b15c5b5833e14dfe73d11f53c1a70639e0bc84f27",
     "45-drop-pr-gate-alignment-point.md": "d9403c732d9b61079e52610e433776fd10db271d87263f54ef6b4e2a88506b15",
     "46-landing-failure-record.md": "5b1a39fbba6fae5419cef1ad8cc4ed9cb165cb64d759ece4e5662501fe5bd8e8",
-    "47-deploy-branches.md": "f2f6ddcb6101fcfc2e555017ee1aaf3faabae4f292bb2b5b44018d9833468b7e",
+    "47-deploy-branches.md": "04d80cdae58adc9d370b577e7ad729ec4b70fdff6275c79e791e18d8da27613d",
     "48-drop-publish-gate-kind.md": "930cde9450c127b56b2a9b146e5352240747d1ad6d432fc5c72768664cfe5105",
     "49-run-settings-migration-warn.md": "293af13f3d3bfe3677b503cc751748a07e431b57b5961a0d50a379ca4edae37b",
     "50-report-readers.md": "d38a23ff776a5bcc8d5d68feb95631e11ce64d4f3429a19608b176de9aa7dc8e",
@@ -1709,7 +1709,7 @@
       }
     }
   ],
-  "currentBatch": 47,
+  "currentBatch": 0,
   "masterStrand": "84b46756278c26fa4a3d938b33a70bce",
   "masterSessionId": "15e077c7-3daf-473b-935d-c0209f975d97",
   "masterEngine": "claude",
@@ -2610,15 +2610,33 @@
         "47-deploy-branches"
       ],
       "cardHashes": {
-        "47-deploy-branches": "f2f6ddcb6101fcfc2e555017ee1aaf3faabae4f292bb2b5b44018d9833468b7e"
+        "47-deploy-branches": "04d80cdae58adc9d370b577e7ad729ec4b70fdff6275c79e791e18d8da27613d"
       },
       "startSha": "5a4f5e7514a35a36a8cf7e687812bc1ffd3ba1af",
       "kind": "fork",
       "spawnedAt": "2026-10-23T19:09:30Z",
       "sessionId": "15e077c7-3daf-473b-935d-c0209f975d97",
       "engine": "claude",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "47-deploy-branches",
+        "status": "done",
+        "head_sha": "3fcbc5698a1b2b0237f03d05ad87aa7eb1f7f869",
+        "deviations": [
+          "internal/landingshed/publish_integration_test.go",
+          "internal/landingshed/seam_enforcement_test.go"
+        ]
+      },
+      "cardShas": [
+        "3fcbc5698a1b2b0237f03d05ad87aa7eb1f7f869"
+      ],
+      "forkTranscripts": [
+        "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-loom-tail-review/15e077c7-3daf-473b-935d-c0209f975d97/subagents/agent-ac5ab6bed18cd5822.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-loom-tail-review/15e077c7-3daf-473b-935d-c0209f975d97/subagents/agent-ac5ab6bed18cd5822.jsonl"
+      ]
     },
     "7": {
       "slug": "fixer-session-table",
@@ -2691,7 +2709,8 @@
     "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-loom-tail-review/15e077c7-3daf-473b-935d-c0209f975d97/subagents/agent-adcd515819dc9d493.jsonl",
     "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-loom-tail-review/15e077c7-3daf-473b-935d-c0209f975d97/subagents/agent-ad93e05a1101276c3.jsonl",
     "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-loom-tail-review/15e077c7-3daf-473b-935d-c0209f975d97/subagents/agent-ac36e460e107e64fd.jsonl",
-    "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-loom-tail-review/15e077c7-3daf-473b-935d-c0209f975d97/subagents/agent-a584b47d89c54a95d.jsonl"
+    "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-loom-tail-review/15e077c7-3daf-473b-935d-c0209f975d97/subagents/agent-a584b47d89c54a95d.jsonl",
+    "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-loom-tail-review/15e077c7-3daf-473b-935d-c0209f975d97/subagents/agent-ac5ab6bed18cd5822.jsonl"
   ],
   "auditDispositions": {
     "later-card-drift:plan-references-deleted-symbol/42-landing-drops-pr-producers[blocking]: card 42 references \"internal/shedrecipe#armPRAlign\", which the delta reports deleted with no corresponding rename": "warned",

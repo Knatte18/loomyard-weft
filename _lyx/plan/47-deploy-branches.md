@@ -1,7 +1,7 @@
 # Card 47 — deploy-branches
 
 **Create:**
-- `plan:internal/landingshed#retiredKeyRenames` -> `var retiredKeyRenames []yamlengine.KeyRename`
+- `internal/landingshed#retiredKeyRenames`
 
 **Edit:**
 - `internal/landingshed#Config`
