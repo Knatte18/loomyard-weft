@@ -1,8 +1,8 @@
 # Card 34 — hand-back-mark
 
 **Create:**
-- `plan:internal/landingshed#HandsBack` -> `func HandsBack(producer, reason string) bool`
-- `plan:internal/landingshed#TestHandsBack` -> `func TestHandsBack(t *testing.T)`
+- `internal/landingshed#HandsBack`
+- `internal/landingshed#TestHandsBack`
 
 **Edit:**
 - `internal/shedverbs#Spec`

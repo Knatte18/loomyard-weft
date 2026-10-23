@@ -11,7 +11,7 @@
 - `internal/loomcli#TestArbiterVerb_SpawnPath`
 
 **Uses:**
-- `plan:internal/landingshed#HandsBack`
+- `internal/landingshed#HandsBack`
 
 **Extends:**
 - `internal/arbiterstop/doc.go`
