@@ -1,12 +1,12 @@
 # Card 20 — pr-review-stub
 
 **Create:**
-- `plan:internal/landingshed#PRReview` -> `type PRReview struct`
-- `plan:internal/landingshed#NewPRReview` -> `func NewPRReview(name string, enabled bool) *PRReview`
-- `plan:internal/landingshed#PRReview.Call` -> `func (p *PRReview) Call(ctx context.Context) (shedengine.Outcome, shedengine.OutputPointer, error)`
-- `plan:internal/landingshed#TestPRReview_Call` -> `func TestPRReview_Call(t *testing.T)`
-- `plan:internal/shedrecipe#prReviewEntry` -> `func prReviewEntry(row RowIdentity, cfg Config, env Env) (shedengine.ShedProducer, error)`
-- `plan:internal/shedrecipe#TestPRReviewEntry` -> `func TestPRReviewEntry(t *testing.T)`
+- `internal/landingshed#PRReview`
+- `internal/landingshed#NewPRReview`
+- `internal/landingshed#PRReview.Call`
+- `internal/landingshed#TestPRReview_Call`
+- `internal/shedrecipe#prReviewEntry`
+- `internal/shedrecipe#TestPRReviewEntry`
 
 **Edit:**
 - `internal/shedrecipe#registry`
