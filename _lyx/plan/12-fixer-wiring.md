@@ -1,10 +1,10 @@
 # Card 12 — fixer-wiring
 
 **Create:**
-- `plan:internal/loomcli#rowEntry` -> `func rowEntry(history []shedengine.HistoryEntry, row string) int`
-- `plan:internal/loomcli#fixerTestFileMatcher` -> `func fixerTestFileMatcher(recipe, planDir string) func(path string) bool`
-- `plan:internal/loomcli#TestRowEntry` -> `func TestRowEntry(t *testing.T)`
-- `plan:internal/loomcli#TestFixerTestFileMatcher` -> `func TestFixerTestFileMatcher(t *testing.T)`
+- `internal/loomcli#rowEntry`
+- `internal/loomcli#fixerTestFileMatcher`
+- `internal/loomcli#TestRowEntry`
+- `internal/loomcli#TestFixerTestFileMatcher`
 
 **Edit:**
 - `internal/loomcli#landingDeps`
