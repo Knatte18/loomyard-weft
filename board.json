@@ -1205,10 +1205,10 @@
     },
     {
       "id": 768,
-      "handle": "E21",
+      "handle": "T4",
       "slug": "prime-owner-visible",
       "title": "The README and lyx board list show which machine owns the prime",
-      "kind": "note",
+      "kind": "task",
       "labels": [
         "enhancement",
         "board"
