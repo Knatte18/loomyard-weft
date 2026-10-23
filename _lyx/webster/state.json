@@ -543,7 +543,7 @@
       }
     }
   ],
-  "currentBatch": 0,
+  "currentBatch": 23,
   "masterStrand": "5d7707be21a2f264e8cb67fdd257faf0",
   "masterSessionId": "42b1ea9d-4ad9-4b82-a2f2-60e0b764997b",
   "masterEngine": "claude",
@@ -690,6 +690,30 @@
       "bracketTranscripts": [
         "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-plan-card-rules/42b1ea9d-4ad9-4b82-a2f2-60e0b764997b/subagents/agent-abb97be7e0981734d.jsonl"
       ]
+    },
+    "23": {
+      "slug": "planglyph-enclose",
+      "cards": [
+        "23-planglyph-enclose",
+        "24-planparser-target-holds",
+        "25-failuretrace-package",
+        "26-landing-trace-seam",
+        "27-publish-failure-note-trace"
+      ],
+      "cardHashes": {
+        "23-planglyph-enclose": "e2068a5310f00f767aad966e3cbd341d3448e36184abb245620a6b71529a85cd",
+        "24-planparser-target-holds": "c12fe69a5e8a4fc08261983ef3805e633c8314f5e858b4077cc6e28eeb5817b4",
+        "25-failuretrace-package": "0074b7b056702476a6d09f11d3251d628e53515dc03645d285b374c006debed4",
+        "26-landing-trace-seam": "d169a68337ff0c499b74a619ce13d78d075077cd3a836856a72ef1c3846a62ba",
+        "27-publish-failure-note-trace": "8e5f0d29c9b2b8f0661ebeb629ee832ce86b12109c81700e5b2b20089776b038"
+      },
+      "startSha": "3df6077f1decfb080623fa6b21acb714c895ee52",
+      "kind": "fork",
+      "spawnedAt": "2026-10-23T07:51:20Z",
+      "sessionId": "42b1ea9d-4ad9-4b82-a2f2-60e0b764997b",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
     },
     "7": {
       "slug": "extends-group-readers",
