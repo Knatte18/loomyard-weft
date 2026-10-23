@@ -79,6 +79,13 @@ Rationale: the gate, not Merriam, judges whether the fix worked; a dead fixer si
 - A re-prompt the shuttle could not deliver is re-evaluated on a later tick, which counts one more failure in the closure, so routing may go cold one attempt early; the cap still bounds the run.
 - The cold fixer starts from no context and only the report and the plan overview, so a failure whose cause needs the batch history may still beat it.
 
+<!-- lyx:carry-over Darn-Review -->
+- Darn-Review, round 2: converged; each finding below was fixed or disputed by the round's fixer, and no fresh reviewer has seen the result; the fixer report says which.
+  Review: _lyx/reviews/darn/round-2-review.md; fixer report: _lyx/reviews/darn/round-2-fixer-report.md.
+  - reclaim-leaves-cold-fixer-record-nonterminal (class design, severity MEDIUM, open in rounds 2)
+  - shared-fixer-body-claims-unapplied-run-exit-audit (class consistency, severity MEDIUM, open in rounds 2)
+<!-- /lyx:carry-over Darn-Review -->
+
 ## Acceptance criteria
 
 - With a cap of 2, the first failure routes to the fork and the second to the cold fixer, as the report's `fixer` field, the findings and the re-prompt line show.
