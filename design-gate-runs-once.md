@@ -4,6 +4,11 @@
 
 Depends on: [`batten-cancel-verb`](design-batten-cancel-verb.md), [`loom-tail-review`](design-loom-tail-review.md)
 
+## Order (operator, 2026-10-23)
+
+This task runs after `loom-tail-review`, which rebuilds the run tail: Publish, PR-Align, PR-Gate, PR-Rework and Merge-Review go, and Publish's gates move into Merge-In and Finalize.
+The rows and gates named below were written against the old tail; map each onto the new tail as it landed.
+
 ## Decision (operator, 2026-10-22)
 
 Three notes merged into one loom task, so each test runs once per tree and in one tier.
