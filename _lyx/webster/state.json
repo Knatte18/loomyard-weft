@@ -365,7 +365,7 @@
       }
     }
   ],
-  "currentBatch": 0,
+  "currentBatch": 6,
   "masterStrand": "59bc96a175d925311756971bd125602d",
   "masterSessionId": "50879ce8-d26c-4404-8b2c-a3daf3a8ef2c",
   "masterEngine": "claude",
@@ -415,6 +415,32 @@
       "bracketTranscripts": [
         "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-batten-cancel-verb/50879ce8-d26c-4404-8b2c-a3daf3a8ef2c/subagents/agent-a27e1fa7959dc7aa1.jsonl"
       ]
+    },
+    "6": {
+      "slug": "records-write-lock",
+      "cards": [
+        "06-records-write-lock",
+        "07-shed-locked-check-and-precondition",
+        "08-driver-precondition-row",
+        "09-worktree-create-precondition-halt",
+        "10-batten-create-precondition-mapping",
+        "11-board-runlock-names-cancel"
+      ],
+      "cardHashes": {
+        "06-records-write-lock": "5efa25d30af1d353c66e1f8c2be79305386cec0aefafdaa842e59e2694a3f56c",
+        "07-shed-locked-check-and-precondition": "022f63717ac471896bbff1063aeaadab2932d20a1325341b729c60685fb1621b",
+        "08-driver-precondition-row": "40d25087b8100a1ddf51206d3c1915ca017c95b8023e1f541dbb80abedb30091",
+        "09-worktree-create-precondition-halt": "431b96784259ec14126e0ecf27ba35ea58da065f15200a242030eb1e3d068c11",
+        "10-batten-create-precondition-mapping": "a974972769d67c4600209fdfce67ad0d106905d5cb5d2d3b5349860996fe86d6",
+        "11-board-runlock-names-cancel": "92d0a4a8db41f655f9b7539c62e772e173d4c4876d3cdf0cfd63481d748fca20"
+      },
+      "startSha": "5e321cf2ae324756727e93b62197488416bd569d",
+      "kind": "fork",
+      "spawnedAt": "2026-10-23T07:26:43Z",
+      "sessionId": "50879ce8-d26c-4404-8b2c-a3daf3a8ef2c",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
     }
   },
   "seenForkTranscripts": [
