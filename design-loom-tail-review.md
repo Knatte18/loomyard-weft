@@ -58,8 +58,15 @@ What reads them goes with them or is updated: `lyx report convergence`, and the 
 - Merge-Review ran in 73% of runs, its fixer changed code in a third, about $0.96 per run.
 - About 38 verify failures at Merge-In and Publish went back to Webster-Burler-Review.
 
+### Board tidy after landing
+
+PR-Align's alignment agent today names the board entries a run supersedes, and the orch amends them.
+That moves to batten: a new batten row after `Land`, outside the lock, where a cheap agent (Sonnet) reads the landed commit and the decision record against the board's notes, removes or amends the notes the landing superseded itself, and reports to the orch what it did.
+
 ## Open
 
-- PR-Align's alignment agent today names the board entries a run supersedes, and the orch amends them; where that moves once PR-Align is gone.
 - For the run's Discussion: the step 2 fixer's attempt cap, Finalize's caps on fix size, attempts and routes back, and what counts as a large merge.
-- A run parked on a removed row when this lands is restarted, not migrated, so this task lands while no other run is in flight.
+
+## Landing this task
+
+A run parked on a removed row when this lands is restarted, not migrated, so this task lands while no other run is in flight: the orch pauses its run before Finalize with `lyx loom pause --before Finalize` and resumes it once no other run is in flight.
