@@ -1,0 +1,561 @@
+diff --git a/internal/orchcli/creelseam.go b/internal/orchcli/creelseam.go
+index 02078653..d4794e3d 100644
+--- a/internal/orchcli/creelseam.go
++++ b/internal/orchcli/creelseam.go
+@@ -16,6 +16,7 @@ const orchWatchProgram = "ORCHWATCH"
+ // The journal events the folds read.
+ const (
+ 	eventPosted      = "posted"
++	eventRead        = "read"
+ 	eventSending     = "sending"
+ 	eventInjected    = "injected"
+ 	eventUnconfirmed = "unconfirmed"
+@@ -50,6 +51,15 @@ func (s creelSeam) Post(receiver, body string) (int64, error) {
+ 	return s.client.Post(receiver, body)
+ }
+ 
++// MailReadAt folds the journal entries of mail id into the time it was read.
++func (s creelSeam) MailReadAt(id int64) (time.Time, error) {
++	entries, err := s.client.Log(creelengine.LogFilter{ID: id})
++	if err != nil {
++		return time.Time{}, err
++	}
++	return readAtOf(id, entries), nil
++}
++
+ // ReadMailbox hands the watcher's unread messages to handle.
+ func (s creelSeam) ReadMailbox(handle func([]orchengine.CreelMessage) error) error {
+ 	return s.client.ReadAll(func(messages []creelengine.Message) error {
+@@ -145,6 +155,17 @@ func injectOutcomeOf(id int64, entries []creelengine.LogEntry) orchengine.CreelO
+ 	return outcome
+ }
+ 
++// readAtOf returns the time of the first read entry entries holds for mail id, zero when it holds none.
++// A reminder that lists the id as unread carries the id in its unread list only, so its entry is no read.
++func readAtOf(id int64, entries []creelengine.LogEntry) time.Time {
++	for _, entry := range entries {
++		if entry.ID == id && entry.Event == eventRead {
++			return entry.At
++		}
++	}
++	return time.Time{}
++}
++
+ // sentOf folds the journal entries entries holds into the posts and injects they record, oldest first.
+ func sentOf(entries []creelengine.LogEntry) []orchengine.CreelSent {
+ 	var sent []orchengine.CreelSent
+diff --git a/internal/orchcli/creelseam_test.go b/internal/orchcli/creelseam_test.go
+index 8e6f0b8f..e97de6fd 100644
+--- a/internal/orchcli/creelseam_test.go
++++ b/internal/orchcli/creelseam_test.go
+@@ -86,7 +86,7 @@ func TestCreelSeam_MapsEachCallOntoTheClient(t *testing.T) {
+ 	}
+ }
+ 
+-// TestCreelSeam_FoldsTheJournal drives InjectOutcome and Sent over scripted journal entries.
++// TestCreelSeam_FoldsTheJournal drives InjectOutcome, MailReadAt and Sent over scripted journal entries.
+ func TestCreelSeam_FoldsTheJournal(t *testing.T) {
+ 	t.Parallel()
+ 
+@@ -148,6 +148,36 @@ func TestCreelSeam_FoldsTheJournal(t *testing.T) {
+ 		})
+ 	}
+ 
++	reads := []struct {
++		name    string
++		entries []creelengine.LogEntry
++		want    time.Time
++	}{
++		{"an unread mail answers zero", []creelengine.LogEntry{{Event: "posted", ID: 7, At: at(0), Kind: "mail"}, {Event: "reminded", At: at(1), Unread: []int64{7}}}, time.Time{}},
++		{
++			"a read mail answers its first read",
++			[]creelengine.LogEntry{{Event: "posted", ID: 7, At: at(0), Kind: "mail"}, {Event: "read", ID: 7, At: at(3)}, {Event: "read", ID: 7, At: at(5)}},
++			at(3),
++		},
++		{"another mail's read is ignored", []creelengine.LogEntry{{Event: "read", ID: 8, At: at(2)}}, time.Time{}},
++	}
++	for _, tt := range reads {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			client := &fakeCreelClient{entries: tt.entries}
++			got, err := creelSeam{client: client}.MailReadAt(7)
++			if err != nil {
++				t.Fatalf("MailReadAt(7) error = %v; want nil", err)
++			}
++			if !got.Equal(tt.want) {
++				t.Errorf("MailReadAt(7) = %v; want %v", got, tt.want)
++			}
++			if want := []creelengine.LogFilter{{ID: 7}}; !reflect.DeepEqual(client.filters, want) {
++				t.Errorf("Log filters = %+v; want %+v", client.filters, want)
++			}
++		})
++	}
++
+ 	t.Run("Sent lists each post and inject the watcher sent with its step and subject", func(t *testing.T) {
+ 		t.Parallel()
+ 		client := &fakeCreelClient{shortname: "tst", entries: []creelengine.LogEntry{
+diff --git a/internal/orchcli/distill.go b/internal/orchcli/distill.go
+index 35925d60..d9aea8b0 100644
+--- a/internal/orchcli/distill.go
++++ b/internal/orchcli/distill.go
+@@ -20,8 +20,10 @@ only then does the watcher compact it in place. The envelope's watcher_live
+ tells you at once when no watcher is running to act on it; the request is then
+ withdrawn. While a hub pause holds the watcher the request waits for the
+ resume, and the envelope adds held_by_pause true with a note. A request the
+-watcher has not finished within the handoff timeout is abandoned; the timeout
+-counts no time a hub pause held the request. "lyx orch withdraw" removes a
++watcher has not started within the handoff timeout is abandoned; once it
++starts, the session gets the full handoff timeout for the note from when it
++reads the note request. Neither timeout counts time a hub pause held the
++request. "lyx orch withdraw" removes a
+ pending request, and "lyx orch status" shows it as cycle_request.`,
+ 		Args: cobra.NoArgs,
+ 		RunE: func(cmd *cobra.Command, args []string) error {
+diff --git a/internal/orchcli/doc.go b/internal/orchcli/doc.go
+index 5524e75f..8f8d3bf6 100644
+--- a/internal/orchcli/doc.go
++++ b/internal/orchcli/doc.go
+@@ -17,6 +17,8 @@
+ //
+ // `refresh` and `distill` write a request marker the watcher acts on at the session's next idle moment.
+ // A hub pause holds the watcher's cycle machine, so a request made under a pause waits for the resume, and the timeout that abandons it counts no pause time.
++// A request whose cycle has not started within the handoff timeout is abandoned;
++// once started, the session has the full handoff timeout to write its note, counted from when it reads the watcher's note request.
+ // With a live watcher and a live hub pause entry, the envelope of both verbs adds `held_by_pause: true` and a `note`, and the request is still written; with no live watcher the request is removed and the envelope carries no such key.
+ // `status` reports the marker as `cycle_request`: null while none is pending, else an object with `mode`, `requested_at` (RFC 3339 UTC, null for a marker that does not parse) and `held_by_pause`.
+ // A pause record that cannot be read counts as no pause.
+diff --git a/internal/orchcli/fakecreel_test.go b/internal/orchcli/fakecreel_test.go
+index 7bf71e3b..49fe12f5 100644
+--- a/internal/orchcli/fakecreel_test.go
++++ b/internal/orchcli/fakecreel_test.go
+@@ -25,6 +25,10 @@ func (f *fakeCreel) Post(receiver, body string) (int64, error) {
+ 	return int64(len(f.posts)), nil
+ }
+ 
++func (f *fakeCreel) MailReadAt(int64) (time.Time, error) {
++	return time.Time{}, nil
++}
++
+ func (f *fakeCreel) ReadMailbox(func([]orchengine.CreelMessage) error) error {
+ 	f.calls = append(f.calls, "read-mailbox")
+ 	return nil
+diff --git a/internal/orchcli/refresh.go b/internal/orchcli/refresh.go
+index 4474aa28..6dca6a0f 100644
+--- a/internal/orchcli/refresh.go
++++ b/internal/orchcli/refresh.go
+@@ -67,8 +67,10 @@ then does the watcher clear it and resume it from the note. The envelope's
+ watcher_live tells you at once when no watcher is running to act on it; the
+ request is then withdrawn. While a hub pause holds the watcher the request
+ waits for the resume, and the envelope adds held_by_pause true with a note.
+-A request the watcher has not finished within the handoff timeout is
+-abandoned; the timeout counts no time a hub pause held the request.
++A request the watcher has not started within the handoff timeout is
++abandoned; once it starts, the session gets the full handoff timeout for the
++note from when it reads the note request. Neither timeout counts time a hub
++pause held the request.
+ "lyx orch withdraw" removes a pending request, and "lyx orch status" shows it
+ as cycle_request.`,
+ 		Args: cobra.NoArgs,
+diff --git a/internal/orchengine/creel.go b/internal/orchengine/creel.go
+index 5790a492..8f3eedce 100644
+--- a/internal/orchengine/creel.go
++++ b/internal/orchengine/creel.go
+@@ -12,6 +12,8 @@ import "time"
+ type Creel interface {
+ 	// Post leaves body as mail for receiver and returns the message's id.
+ 	Post(receiver, body string) (int64, error)
++	// MailReadAt returns when the receiver holding mail id read it, zero while it is unread.
++	MailReadAt(id int64) (time.Time, error)
+ 	// ReadMailbox hands every unread message of the watcher's mailbox to handle without waiting; they are marked read only once handle returns nil.
+ 	// With nothing unread handle is not called.
+ 	ReadMailbox(handle func([]CreelMessage) error) error
+diff --git a/internal/orchengine/doc.go b/internal/orchengine/doc.go
+index edadbd00..86700316 100644
+--- a/internal/orchengine/doc.go
++++ b/internal/orchengine/doc.go
+@@ -185,7 +185,10 @@
+ //     A `defer` body declines a soft cycle whose note is still unwritten: the watcher records the read time in State.LastDeferral and returns to idle with the abort reason `deferred`.
+ //     In a hard or requested cycle, or once the note is written, `defer` is logged and ignored, so a `defer` read in the tick of a passing gate is ignored.
+ //     A restarted watcher whose post was persisted with no id looks it up in creel's journal, and posts the stencil matching State.CycleTrigger again only when creel journaled none.
+-//     A requested cycle's phase times out at the earlier of the phase entry and the request time plus the handoff timeout, not counting the time a hub pause held the watcher (bounded by `pauserecord.Retention`), and a session that asks a question during the note aborts it.
++//     The phase times out at the handoff timeout counted from the orch's read of the note request, the creel `read` journal entry of State.RequestID, not counting the time a hub pause held the watcher (bounded by `pauserecord.Retention`), and a session that asks a question during the note aborts it.
++//     Each tick asks creel for the read until it answers one, and records it in State.RequestReadAt, so a restarted watcher keeps counting from it.
++//     The phase does not time out while its note request has no creel read, a request not yet posted included, so a request creel holds behind a long turn gets the full time once it is delivered.
++//     Bound: the phase, and the watcher's creel hold, last as long as the orch never reaches an idle creel delivers at; the hold delays nothing while the orch is busy, and a removed strand ends the watcher.
+ //   - clearing: the resume prompt is rendered first, so a stencil failure aborts before anything is cleared.
+ //     Then `/clear` is injected as a command, and the phase waits for creel to type it, however long the orch stays busy, with the stall creel reports shown in State.Stuck.
+ //     An injected or unconfirmed `/clear` moves on to resuming, a withdrawn one returns to idle.
+@@ -199,7 +202,7 @@
+ // A step with an id has its outcome read from creel, and a restarted watcher posts or injects nothing again.
+ // A step with no id is looked up in creel's journal and adopted when found, and sent once more only when creel journaled none.
+ // A phase belonging to another strand is reset to idle (see "Delivery through creel").
+-// A handoff-requested or resuming phase that exceeds the handoff timeout aborts back to idle with LastAbortReason set.
++// A handoff-requested phase past the handoff timeout from its request's read, or a resuming phase past the handoff timeout, aborts back to idle with LastAbortReason set.
+ //
+ // # The compact cycle (compact mode)
+ //
+diff --git a/internal/orchengine/fakecreel_test.go b/internal/orchengine/fakecreel_test.go
+index e22f6b4c..26d26005 100644
+--- a/internal/orchengine/fakecreel_test.go
++++ b/internal/orchengine/fakecreel_test.go
+@@ -39,6 +39,10 @@ type fakeCreel struct {
+ 	sent []CreelSent
+ 	// withdrawn is what Withdraw answers.
+ 	withdrawn []CreelWithdrawn
++	// reads is the time MailReadAt answers by mail id; an id with none answers unread.
++	// Every post is read at the clock's time of its post unless unreadPosts is set.
++	reads       map[int64]time.Time
++	unreadPosts bool
+ 
+ 	// clock stamps the sent entries a journaled-but-failed call leaves, and the time an auto-landed inject was sent.
+ 	clock func() time.Time
+@@ -105,12 +109,30 @@ func (f *fakeCreel) Post(receiver, body string) (int64, error) {
+ 	}
+ 	id := f.newID()
+ 	f.posts = append(f.posts, fakePost{ID: id, Receiver: receiver, Body: body})
++	if !f.unreadPosts {
++		f.markRead(id, f.clock())
++	}
+ 	if f.onSend != nil {
+ 		f.onSend(true, CreelStep{}, body)
+ 	}
+ 	return id, nil
+ }
+ 
++// markRead records mail id as read at at.
++func (f *fakeCreel) markRead(id int64, at time.Time) {
++	if f.reads == nil {
++		f.reads = map[int64]time.Time{}
++	}
++	f.reads[id] = at
++}
++
++func (f *fakeCreel) MailReadAt(id int64) (time.Time, error) {
++	if err := f.fail("mailreadat"); err != nil {
++		return time.Time{}, err
++	}
++	return f.reads[id], nil
++}
++
+ func (f *fakeCreel) ReadMailbox(handle func([]CreelMessage) error) error {
+ 	f.calls = append(f.calls, "read-mailbox")
+ 	f.mailboxReads++
+diff --git a/internal/orchengine/state.go b/internal/orchengine/state.go
+index 66c3fb72..c0f05360 100644
+--- a/internal/orchengine/state.go
++++ b/internal/orchengine/state.go
+@@ -96,6 +96,9 @@ type State struct {
+ 	// RequestID is the id creel gave the posted note request; zero while none was posted.
+ 	// Only a reply to this id passes the note gate.
+ 	RequestID int64 `json:"request_id"`
++	// RequestReadAt is when the orch read the note request RequestID names; zero while it is unread or none was posted.
++	// The handoff timeout counts from it.
++	RequestReadAt time.Time `json:"request_read_at"`
+ 
+ 	PendingHandoff string `json:"pending_handoff"` // Handoff path the handoff-requested phase asked for.
+ 	PendingResume  string `json:"pending_resume"`  // Resume prompt rendered for PendingHandoff, sent verbatim by resuming.
+@@ -445,7 +448,7 @@ func ResetForFreshLaunch(s State, strand string, launchedAt time.Time) State {
+ 	s.PhaseInjected = false
+ 	s.PendingHandoff = ""
+ 	s.PendingResume = ""
+-	s.Pending, s.RequestID = nil, 0
++	s.Pending, s.RequestID, s.RequestReadAt = nil, 0, time.Time{}
+ 	s.Stuck, s.StuckByCreel = "", false
+ 	s.FreshLaunchFailure, s.ResumeLineWithdrawn = "", false
+ 	s.WatcherExit = ""
+diff --git a/internal/orchengine/state_test.go b/internal/orchengine/state_test.go
+index 723dd9d9..61600761 100644
+--- a/internal/orchengine/state_test.go
++++ b/internal/orchengine/state_test.go
+@@ -282,8 +282,11 @@ func TestResetForFreshLaunch(t *testing.T) {
+ 	deferred := time.Date(2026, 1, 2, 3, 5, 6, 0, time.UTC)
+ 	launched := time.Date(2026, 1, 2, 3, 6, 7, 0, time.UTC)
+ 	t.Run("idle", func(t *testing.T) {
+-		in := State{Phase: PhaseIdle, LastHandoff: "h", PhaseEventsOffset: 5, LastInjectionOffset: 6, CycleCount: 2, LastContextTokens: 9, LastContextKnown: true, ReloadStep: ReloadStepRetry, ReloadTypedAt: deferred, ReloadRetry: []string{"ly:board"}}
++		in := State{Phase: PhaseIdle, LastHandoff: "h", PhaseEventsOffset: 5, LastInjectionOffset: 6, CycleCount: 2, LastContextTokens: 9, LastContextKnown: true, ReloadStep: ReloadStepRetry, ReloadTypedAt: deferred, ReloadRetry: []string{"ly:board"}, RequestReadAt: deferred}
+ 		got := ResetForFreshLaunch(in, "g2", launched)
++		if !got.RequestReadAt.IsZero() {
++			t.Errorf("RequestReadAt = %v, want cleared", got.RequestReadAt)
++		}
+ 		if !got.CompactionBaseline.Equal(launched) {
+ 			t.Errorf("CompactionBaseline = %v, want the launch time %v", got.CompactionBaseline, launched)
+ 		}
+@@ -307,7 +310,7 @@ func TestResetForFreshLaunch(t *testing.T) {
+ 		}
+ 	})
+ 	t.Run("non-idle", func(t *testing.T) {
+-		in := State{CycleTrigger: TriggerSoft, LastDeferral: deferred, Phase: PhaseClearing, PhaseInjected: true, PendingHandoff: "p", PendingResume: "r", WatcherExit: "x", LastHandoff: "h", PhaseEventsOffset: 5, LastInjectionOffset: 6, Pending: &PendingStep{Command: "clear", ID: 3}, RequestID: 2, Stuck: "creel is down", StuckByCreel: true, FreshLaunchFailure: "withdraw after the fresh launch: boom"}
++		in := State{CycleTrigger: TriggerSoft, LastDeferral: deferred, Phase: PhaseClearing, PhaseInjected: true, PendingHandoff: "p", PendingResume: "r", WatcherExit: "x", LastHandoff: "h", PhaseEventsOffset: 5, LastInjectionOffset: 6, Pending: &PendingStep{Command: "clear", ID: 3}, RequestID: 2, RequestReadAt: deferred, Stuck: "creel is down", StuckByCreel: true, FreshLaunchFailure: "withdraw after the fresh launch: boom"}
+ 		got := ResetForFreshLaunch(in, "g2", launched)
+ 		if !strings.Contains(got.LastAbortReason, string(PhaseClearing)) {
+ 			t.Errorf("LastAbortReason = %q, want it to name clearing", got.LastAbortReason)
+@@ -315,8 +318,8 @@ func TestResetForFreshLaunch(t *testing.T) {
+ 		if got.Phase != PhaseIdle || got.PhaseInjected || got.PendingHandoff != "" || got.PendingResume != "" || got.WatcherExit != "" {
+ 			t.Errorf("not cleared: %+v", got)
+ 		}
+-		if got.Pending != nil || got.RequestID != 0 || got.Stuck != "" || got.StuckByCreel || got.FreshLaunchFailure != "" {
+-			t.Errorf("pending step, request id, stuck or fresh-launch failure not cleared: %+v", got)
++		if got.Pending != nil || got.RequestID != 0 || !got.RequestReadAt.IsZero() || got.Stuck != "" || got.StuckByCreel || got.FreshLaunchFailure != "" {
++			t.Errorf("pending step, request id, request read, stuck or fresh-launch failure not cleared: %+v", got)
+ 		}
+ 		if got.PhaseEventsOffset != 0 || got.LastInjectionOffset != 0 {
+ 			t.Errorf("offsets not zeroed: %+v", got)
+diff --git a/internal/orchengine/watcher.go b/internal/orchengine/watcher.go
+index f5b3815b..402ac915 100644
+--- a/internal/orchengine/watcher.go
++++ b/internal/orchengine/watcher.go
+@@ -858,7 +858,7 @@ func colorTyped(st State) bool {
+ func (w *Watcher) toIdle(st State, abortReason string) error {
+ 	st.Phase = PhaseIdle
+ 	st.PhaseInjected = false
+-	st.Pending, st.RequestID = nil, 0
++	st.Pending, st.RequestID, st.RequestReadAt = nil, 0, time.Time{}
+ 	st.PendingHandoff, st.PendingResume = "", ""
+ 	st.ReloadStep, st.ReloadTypedAt, st.ReloadRetry, st.ReloadSkipsSkills = ReloadStepSkills, time.Time{}, nil, false
+ 	st.Stuck, st.StuckByCreel = "", false
+@@ -883,7 +883,7 @@ func (w *Watcher) enter(st State, phase Phase, now time.Time) (State, error) {
+ 	st.PhaseEnteredAt = now
+ 	st.PhaseEventsOffset = w.cursor
+ 	st.PhaseInjected = false
+-	st.Pending, st.RequestID = nil, 0
++	st.Pending, st.RequestID, st.RequestReadAt = nil, 0, time.Time{}
+ 	st.Stuck, st.StuckByCreel = "", false
+ 	w.seen = phaseEvents{}
+ 	return st, w.save(st)
+@@ -1037,7 +1037,7 @@ func (w *Watcher) tickIdle(st State, now time.Time) error {
+ 	st.PhaseEnteredAt = now
+ 	st.PhaseEventsOffset = w.cursor
+ 	st.PhaseInjected = false
+-	st.Pending, st.RequestID = nil, 0
++	st.Pending, st.RequestID, st.RequestReadAt = nil, 0, time.Time{}
+ 	st.Stuck, st.StuckByCreel = "", false
+ 	if err := saveCycleStart(w.paths, st, req, requested); err != nil {
+ 		if !errors.Is(err, errMarkerChanged) {
+@@ -1089,12 +1089,12 @@ func (w *Watcher) tickHandoff(st State, now time.Time) error {
+ 	if w.seen.ask {
+ 		return w.toIdle(st, "session asked a question during the handoff")
+ 	}
+-	// A requested cycle's clock starts at the request, which predates the phase entry.
+-	started := st.PhaseEnteredAt
+-	if !st.CycleRequestedAt.IsZero() && st.CycleRequestedAt.Before(started) {
+-		started = st.CycleRequestedAt
++	readAt, err := w.requestReadAt(&st)
++	if err != nil {
++		return err
+ 	}
+-	if w.unpausedSince(started, now) >= w.cfg.HandoffTimeout() {
++	// The clock starts when the orch read the request, so a request creel held behind a long turn still gets the full time.
++	if !readAt.IsZero() && w.unpausedSince(readAt, now) >= w.cfg.HandoffTimeout() {
+ 		return w.toIdle(st, "handoff timed out")
+ 	}
+ 	passed, err := w.notePassed(st)
+@@ -1132,6 +1132,25 @@ func (w *Watcher) tickHandoff(st State, now time.Time) error {
+ 	return w.sendStep(&st, true, CreelStep{}, body, now)
+ }
+ 
++// requestReadAt returns when the orch read the posted note request, zero while it is unread, none was posted or creel could not be asked.
++// The first time creel answers a read it is recorded in State.RequestReadAt, so a restarted watcher keeps it.
++// A failed lookup is recorded through creelFailed and answers zero, holding the timeout until creel answers.
++func (w *Watcher) requestReadAt(st *State) (time.Time, error) {
++	if !st.RequestReadAt.IsZero() || st.RequestID == 0 {
++		return st.RequestReadAt, nil
++	}
++	readAt, err := w.creel.MailReadAt(st.RequestID)
++	if err != nil {
++		return time.Time{}, w.creelFailed(st, err)
++	}
++	if readAt.IsZero() {
++		return readAt, nil
++	}
++	logger.Info("orch: note request read by the orch", "strandGUID", st.Strand, "id", st.RequestID, "readAt", readAt)
++	st.RequestReadAt = readAt
++	return readAt, w.save(*st)
++}
++
+ // handoffWritten reports whether the handoff file exists and is non-empty.
+ func handoffWritten(path string) (bool, error) {
+ 	info, err := os.Stat(path)
+diff --git a/internal/orchengine/watcher_compact_test.go b/internal/orchengine/watcher_compact_test.go
+index a1619035..95c361af 100644
+--- a/internal/orchengine/watcher_compact_test.go
++++ b/internal/orchengine/watcher_compact_test.go
+@@ -759,23 +759,29 @@ func TestCompact_SoftCycleHonoursDefer(t *testing.T) {
+ }
+ 
+ func TestCycleRequest_AbandonedWithinTimeoutOfRequest(t *testing.T) {
+-	t.Run("note never written", func(t *testing.T) {
++	t.Run("note never written, timed from the note request's read", func(t *testing.T) {
+ 		e := newCompactEnv(t)
+ 		e.s.usage["a"] = 10
+-		e.s.events = []shuttleengine.Event{stop("a")}
+ 		if err := RequestCycle(e.paths, CycleCompact, e.clock.now); err != nil {
+ 			t.Fatal(err)
+ 		}
+ 		e.tick()
+-		e.clock.advance(11 * time.Second)
++		// The orch ends its turn 50s after the request, and reads the note request at once.
++		e.clock.advance(50 * time.Second)
++		e.s.events = append(e.s.events, stop("a"))
+ 		e.tick()
+ 		if e.state().Phase != PhaseHandoffRequested {
+ 			t.Fatalf("phase = %s", e.state().Phase)
+ 		}
+-		e.clock.advance(90 * time.Second)
++		e.clock.advance(99 * time.Second)
++		e.tick()
++		if st := e.state(); st.Phase != PhaseHandoffRequested {
++			t.Fatalf("phase = %s, want the timeout measured from the read of the note request, not from the request", st.Phase)
++		}
++		e.clock.advance(time.Second)
+ 		e.tick()
+ 		if st := e.state(); st.Phase != PhaseIdle || st.LastAbortReason != "handoff timed out" {
+-			t.Errorf("state = %+v, want idle after the timeout measured from the request", st)
++			t.Errorf("state = %+v, want idle after the timeout measured from the read", st)
+ 		}
+ 		e.assertCompactCalls(0)
+ 	})
+@@ -976,7 +982,7 @@ func assertIdleWithHoldReleased(t *testing.T, e *watchEnv) {
+ 	}
+ }
+ 
+-func TestCycleRequest_RestartedWatcherMeasuresFromRequestTime(t *testing.T) {
++func TestCycleRequest_RestartedWatcherMeasuresFromTheRecordedReadTime(t *testing.T) {
+ 	e := newCompactEnv(t)
+ 	e.s.usage["a"] = 10
+ 	e.s.events = []shuttleengine.Event{stop("a")}
+@@ -989,10 +995,14 @@ func TestCycleRequest_RestartedWatcherMeasuresFromRequestTime(t *testing.T) {
+ 	if e.state().Phase != PhaseHandoffRequested {
+ 		t.Fatalf("phase = %s", e.state().Phase)
+ 	}
++	readAt := e.clock.now
++	e.tick()
++	// The journal forgets the read, so only the time the first watcher recorded can time the phase out.
++	e.c.reads = nil
+ 	e.w = e.newWatcher()
+-	e.clock.advance(90 * time.Second)
++	e.clock.advance(100 * time.Second)
+ 	e.tick()
+ 	if st := e.state(); st.Phase != PhaseIdle || st.LastAbortReason != "handoff timed out" {
+-		t.Errorf("state = %+v, want the restarted watcher to time out from the request time", st)
++		t.Errorf("state = %+v, want the restarted watcher to time out from the read at %v", st, readAt)
+ 	}
+ }
+diff --git a/internal/orchengine/watcher_test.go b/internal/orchengine/watcher_test.go
+index 8bbee6bb..e63546ec 100644
+--- a/internal/orchengine/watcher_test.go
++++ b/internal/orchengine/watcher_test.go
+@@ -525,14 +525,100 @@ func TestWatcher_HandoffTurnEndWithoutFileNoClear(t *testing.T) {
+ 	}
+ }
+ 
+-func TestWatcher_HandoffTimeoutAborts(t *testing.T) {
++// TestWatcher_HandoffTimeoutCountsFromTheRequestRead drives a note phase whose request the orch reads at a scripted delay after its post, or never.
++func TestWatcher_HandoffTimeoutCountsFromTheRequestRead(t *testing.T) {
++	t.Parallel()
++	tests := []struct {
++		name string
++		// readAfter is how long after the post the orch reads the request; negative leaves it unread.
++		readAfter time.Duration
++	}{
++		{name: "ReadAtThePost", readAfter: 0},
++		{name: "ReadQueuedBehindALongTurn", readAfter: 10 * time.Minute},
++		{name: "NeverRead", readAfter: -1},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			e := newWatchEnv(t)
++			e.c.unreadPosts = true
++			// A read left in State by an earlier cycle must not survive the cycle start, or the phase would time out at once.
++			e.setState(func(st *State) { st.RequestReadAt = e.clock.now.Add(-time.Hour) })
++			e.injectHandoff()
++			id, postedAt := e.state().RequestID, e.clock.now
++			if tt.readAfter > 0 {
++				e.clock.advance(tt.readAfter)
++				e.tick()
++				if st := e.state(); st.Phase != PhaseHandoffRequested {
++					t.Fatalf("phase = %s before the read, want handoff-requested", st.Phase)
++				}
++			}
++			if tt.readAfter >= 0 {
++				e.c.markRead(id, postedAt.Add(tt.readAfter))
++			}
++			e.clock.advance(99 * time.Second)
++			e.tick()
++			if st := e.state(); st.Phase != PhaseHandoffRequested {
++				t.Fatalf("phase = %s 99s after the read, want handoff-requested", st.Phase)
++			}
++			if st := e.state(); tt.readAfter >= 0 && !st.RequestReadAt.Equal(postedAt.Add(tt.readAfter)) {
++				t.Errorf("RequestReadAt = %v; want %v", st.RequestReadAt, postedAt.Add(tt.readAfter))
++			}
++			e.clock.advance(time.Second)
++			e.tick()
++			st := e.state()
++			if tt.readAfter < 0 {
++				if st.Phase != PhaseHandoffRequested || !st.RequestReadAt.IsZero() {
++					t.Errorf("state = %+v, want an unread request still waiting", st)
++				}
++				return
++			}
++			if st.Phase != PhaseIdle || st.LastAbortReason != "handoff timed out" || e.s.count("clear") != 0 || !st.RequestReadAt.IsZero() {
++				t.Errorf("state = %+v calls = %v, want idle once the timeout from the read passed", st, e.s.calls)
++			}
++		})
++	}
++}
++
++func TestWatcher_HandoffTimeoutHoldsWhileTheReadLookupFails(t *testing.T) {
++	t.Parallel()
+ 	e := newWatchEnv(t)
++	e.c.unreadPosts = true
+ 	e.injectHandoff()
+-	e.clock.advance(101 * time.Second)
++	id, postedAt := e.state().RequestID, e.clock.now
++	e.c.markRead(id, postedAt)
++	e.clock.advance(200 * time.Second)
++	e.c.failNext("mailreadat", errBoom)
+ 	e.tick()
+ 	st := e.state()
+-	if st.Phase != PhaseIdle || st.LastAbortReason == "" || e.s.count("clear") != 0 {
+-		t.Fatalf("state = %+v calls = %v", st, e.s.calls)
++	if st.Phase != PhaseHandoffRequested || st.Stuck != errBoom.Error() || !st.StuckByCreel || !st.RequestReadAt.IsZero() {
++		t.Fatalf("state = %+v, want the phase held and the lookup failure shown in Stuck", st)
++	}
++	e.tick()
++	st = e.state()
++	if st.Phase != PhaseIdle || st.LastAbortReason != "handoff timed out" {
++		t.Errorf("state = %+v, want idle once the lookup answered a read past the timeout", st)
++	}
++}
++
++func TestWatcher_HandoffTimeoutDiscountsAHubPauseAfterTheRead(t *testing.T) {
++	t.Parallel()
++	e := newWatchEnv(t)
++	e.injectHandoff()
++	e.clock.advance(40 * time.Second)
++	e.pauseHub("", pauseGrace)
++	e.clock.advance(50 * time.Second)
++	e.resumeHub()
++	// 110s have passed since the read, 50s of them paused.
++	e.clock.advance(20 * time.Second)
++	e.tick()
++	if st := e.state(); st.Phase != PhaseHandoffRequested {
++		t.Fatalf("phase = %s, want handoff-requested with 60s unpaused since the read", st.Phase)
++	}
++	e.clock.advance(40 * time.Second)
++	e.tick()
++	if st := e.state(); st.Phase != PhaseIdle || st.LastAbortReason != "handoff timed out" {
++		t.Errorf("state = %+v, want idle once 100s unpaused passed since the read", st)
+ 	}
+ }
+ 
+@@ -556,6 +642,9 @@ func TestWatcher_HandoffCompleteClearsThenResumes(t *testing.T) {
+ 	if e.s.count("clear") != 1 {
+ 		t.Fatalf("calls = %v", e.s.calls)
+ 	}
++	if st := e.state(); !st.RequestReadAt.IsZero() {
++		t.Errorf("RequestReadAt = %v, want the note request's read cleared on entering clearing", st.RequestReadAt)
++	}
+ 	if got := e.c.count("hold:"); got < 2 || e.c.count("release:") != 0 {
+ 		t.Fatalf("holds = %d releases = %d, want the hold taken at the cycle start and renewed since", got, e.c.count("release:"))
+ 	}
