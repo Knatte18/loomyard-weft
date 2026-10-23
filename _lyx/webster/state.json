@@ -1709,7 +1709,7 @@
       }
     }
   ],
-  "currentBatch": 0,
+  "currentBatch": 24,
   "masterStrand": "84b46756278c26fa4a3d938b33a70bce",
   "masterSessionId": "15e077c7-3daf-473b-935d-c0209f975d97",
   "masterEngine": "claude",
@@ -2061,6 +2061,28 @@
       "bracketTranscripts": [
         "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-loom-tail-review/15e077c7-3daf-473b-935d-c0209f975d97/subagents/agent-a813e4c7fb12dc6e6.jsonl"
       ]
+    },
+    "24": {
+      "slug": "merge-record-aligned-tip",
+      "cards": [
+        "24-merge-record-aligned-tip",
+        "25-merge-in-unlocked",
+        "26-merge-in-fixer",
+        "27-finalize-lock-first"
+      ],
+      "cardHashes": {
+        "24-merge-record-aligned-tip": "32629f26a5f9749de536289962b66783f71c283b2df68861cdfeba01d8edaf47",
+        "25-merge-in-unlocked": "d4a0bf6a0af60f52de0f308310d7b8873935cb748c1604df3f454520f029cb34",
+        "26-merge-in-fixer": "52a97b2dfd1fb1a3f01f2e570aa51dc037aef57ef4d1531eee9646e100d8116c",
+        "27-finalize-lock-first": "a82dbfa38e01ea816be633fd1769d903a715aaa6d8617c92a52def22b8d0d352"
+      },
+      "startSha": "9e2060a4d515f7eabd514e3873ecc06cd5a54cad",
+      "kind": "fork",
+      "spawnedAt": "2026-10-23T17:05:02Z",
+      "sessionId": "15e077c7-3daf-473b-935d-c0209f975d97",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
     },
     "7": {
       "slug": "fixer-session-table",
