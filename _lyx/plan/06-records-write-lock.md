@@ -1,8 +1,8 @@
 # Card 6 — records-write-lock
 
 **Create:**
-- `plan:internal/fabricengine#HoldRecordsWriteLock` -> `func HoldRecordsWriteLock(recordsWorktreePath string, wait time.Duration) (release func() error, held bool, err error)`
-- `plan:internal/fabricengine#TestHoldRecordsWriteLock` -> `func TestHoldRecordsWriteLock(t *testing.T)`
+- `internal/fabricengine#HoldRecordsWriteLock`
+- `internal/fabricengine#TestHoldRecordsWriteLock`
 
 **Uses:**
 - `internal/fabricengine#weftWriteLockFile`

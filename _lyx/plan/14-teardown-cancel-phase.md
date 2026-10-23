@@ -24,7 +24,7 @@
 - `pattern/PATTERN-pair-teardown.md`
 
 **Uses:**
-- `plan:internal/fabricengine#HoldRecordsWriteLock`
+- `internal/fabricengine#HoldRecordsWriteLock`
 - `internal/pairteardown#runLockWait`
 - `internal/pairteardown#Teardown.holdPairLoopLock`
 - `internal/pairteardown#Teardown.endReedSession`

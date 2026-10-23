@@ -1,9 +1,9 @@
 # Card 7 — shed-locked-check-and-precondition
 
 **Create:**
-- `plan:internal/shedengine#ReasonPreconditionUnmet` -> `const ReasonPreconditionUnmet = "precondition unmet"`
-- `plan:internal/shedengine#ErrLockedCheckRefused` -> `var ErrLockedCheckRefused = errors.New("refused under the run lock")`
-- `plan:internal/shedengine#TestLockedCheck_RefusesUnderTheRunLock` -> `func TestLockedCheck_RefusesUnderTheRunLock(t *testing.T)`
+- `internal/shedengine#ReasonPreconditionUnmet`
+- `internal/shedengine#ErrLockedCheckRefused`
+- `internal/shedengine#TestLockedCheck_RefusesUnderTheRunLock`
 
 **Edit:**
 - `internal/shedengine#Shed`
