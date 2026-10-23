@@ -365,7 +365,7 @@
       }
     }
   ],
-  "currentBatch": 0,
+  "currentBatch": 18,
   "masterStrand": "59bc96a175d925311756971bd125602d",
   "masterSessionId": "50879ce8-d26c-4404-8b2c-a3daf3a8ef2c",
   "masterEngine": "claude",
@@ -466,6 +466,26 @@
       "bracketTranscripts": [
         "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-batten-cancel-verb/50879ce8-d26c-4404-8b2c-a3daf3a8ef2c/subagents/agent-afbaf15de2a7f967e.jsonl"
       ]
+    },
+    "18": {
+      "slug": "batten-cancel-core",
+      "cards": [
+        "18-batten-cancel-core",
+        "19-batten-cancel-verb",
+        "20-docs-cancel"
+      ],
+      "cardHashes": {
+        "18-batten-cancel-core": "24111d42e5d4f2791b0ddf32ef649cce59b6e0f59a08f896de0081ba6919cb84",
+        "19-batten-cancel-verb": "a3a20964e65ecf1103bf4d7869aa37fcb73ab7d43e36b5966b2da41324d9bcfa",
+        "20-docs-cancel": "b8fa0c0020e74129c3a00a1630a5f5f884ee53dae4be0602728b78d9a4a01b8c"
+      },
+      "startSha": "d8e7a6e3cc18d2afb1733b55d6ae9039b488e91a",
+      "kind": "fork",
+      "spawnedAt": "2026-10-23T07:51:03Z",
+      "sessionId": "50879ce8-d26c-4404-8b2c-a3daf3a8ef2c",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
     },
     "6": {
       "slug": "records-write-lock",
