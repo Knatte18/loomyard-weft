@@ -1,12 +1,12 @@
 {
   "current_producer": "Publish",
-  "state": "running",
-  "error": "",
+  "state": "blocked",
+  "error": "publish gate failed after merging parent branch \"main\" (exit code 1); output: /home/AD.NORCERESEARCH.NO/hanf/Code/Knatte18/loomyard-LYXHUB/prime-owner-visible/.lyx/verify/verify-4.log; way forward: run \"lyx loom goto --to Darn-Write\", then \"lyx loom resume\", in the task worktree; the Darn-Write spawn renders the Publish failure record and its gate runs the failing tests",
   "pause_requested": false,
   "activity": {
     "now": "Publish",
-    "last": "Merge-In → done",
-    "wait": ""
+    "last": "Publish → stuck",
+    "wait": "publish gate failed after merging parent branch \"main\" (exit code 1); output: /home/AD.NORCERESEARCH.NO/hanf/Code/Knatte18/loomyard-LYXHUB/prime-owner-visible/.lyx/verify/verify-4.log; way forward: run \"lyx loom goto --to Darn-Write\", then \"lyx loom resume\", in the task worktree; the Darn-Write spawn renders the Publish failure record and its gate runs the failing tests"
   },
   "history": [
     {
@@ -139,6 +139,12 @@
       "outcome": "done",
       "output": "",
       "at": "2026-10-23T07:14:45Z"
+    },
+    {
+      "producer": "Publish",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-23T07:16:35Z"
     }
   ],
   "product": {
