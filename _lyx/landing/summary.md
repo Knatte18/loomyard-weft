@@ -34,7 +34,8 @@ Now a failure the fork does not clear goes to a cold fixer at the recovery role 
   Recorded sessions join the run's write evidence beside the batch recovery sessions.
   The run-entry reclaim stops a non-terminal recorded fixer, marking it dead and saving it, and `reset --to start` stops every recorded fixer strand first.
 - The cold fixer's reply file sits in Webster's scratch dir, outside `_lyx`, and is the strand's shuttle output file.
-  Its commits pass through the same gate commit check, verify, run-exit audit and Webster-Review as the fork's.
+  Its commits pass through the same gate commit check, verify and Webster-Review as the fork's.
+  The run-exit audit reads only the forks of Master's session, so a cold fixer's writes are checked only through the contract-file write evidence, as a batch recovery strand's are.
 - No new `webster.yaml` key: the cold fixer uses `recovery` and `recovery_timeout_min`.
 - Known limits:
   a re-prompt the shuttle could not deliver is re-evaluated on a later tick and counts one more failure, so routing may go cold one attempt early; the cap still bounds the run.
