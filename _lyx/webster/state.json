@@ -1709,7 +1709,7 @@
       }
     }
   ],
-  "currentBatch": 0,
+  "currentBatch": 33,
   "masterStrand": "84b46756278c26fa4a3d938b33a70bce",
   "masterSessionId": "15e077c7-3daf-473b-935d-c0209f975d97",
   "masterEngine": "claude",
@@ -2242,27 +2242,25 @@
         "34-hand-back-mark": "6fb5a6ca6e933fa11848fed5c9a0ea0d9cd808f9c8761bb425beb65793c53a84"
       },
       "startSha": "efe5b17d13d2d8276d0f603d04c41e4c4b320190",
-      "kind": "fork",
-      "spawnedAt": "2026-10-23T18:03:34Z",
-      "sessionId": "15e077c7-3daf-473b-935d-c0209f975d97",
-      "engine": "claude",
-      "terminal": true,
-      "status": "failed",
-      "digest": {
-        "batch": "33-landing-gate-at-fix-rows",
-        "status": "failed",
-        "head_sha": "27c87d3f5c3e04bc001e7d05e33143f47e819690",
-        "reasons": [
-          "batch 33-landing-gate-at-fix-rows holds cards 33-landing-gate-at-fix-rows, 34-hand-back-mark",
-          "create-not-done/34-hand-back-mark[blocking]: Create target \"plan:internal/landingshed#TestHandsBack\" still does not resolve: looked up \"internal/landingshed#TestHandsBack\", quarry answered not_found (the unit exists and the member is missing); quarry searched the unit's files internal/landingshed/alignmentnote.go, internal/landingshed/approval.go, internal/landingshed/approval_test.go, internal/landingshed/commitstatus_test.go, internal/landingshed/config.go, internal/landingshed/config_test.go, internal/landingshed/configtemplate.go, internal/landingshed/ctx.go, internal/landingshed/deps.go, internal/landingshed/describe.go, internal/landingshed/describe_test.go, internal/landingshed/export_test.go, internal/landingshed/finalize.go, internal/landingshed/finalize_gate_test.go, internal/landingshed/finalize_merge_test.go, internal/landingshed/finalize_owner.go, internal/landingshed/finalize_owner_test.go, internal/landingshed/finalize_recheck_test.go, internal/landingshed/finalize_test.go, internal/landingshed/finalize_verify_test.go, internal/landingshed/fixcap.go, internal/landingshed/fixcap_test.go, internal/landingshed/fixer.go, internal/landingshed/fixer_test.go, internal/landingshed/fixerattempts.go, internal/landingshed/fixerattempts_test.go, internal/landingshed/fixerreport.go, internal/landingshed/fixerreport_test.go, internal/landingshed/fixerrun.go, internal/landingshed/fixerrun_test.go, internal/landingshed/guardedrows_test.go, internal/landingshed/handback.go, internal/landingshed/mergein.go, internal/landingshed/mergein_fixer_test.go, internal/landingshed/mergein_test.go, internal/landingshed/mergerecord.go, internal/landingshed/mergerecord_test.go, internal/landingshed/overlapnote.go, internal/landingshed/parentguard.go, internal/landingshed/parentguard_test.go, internal/landingshed/pralign.go, internal/landingshed/pralign_test.go, internal/landingshed/premerge.go, internal/landingshed/premerge_test.go, internal/landingshed/prgate.go, internal/landingshed/prgate_test.go, internal/landingshed/prreview.go, internal/landingshed/prreview_test.go, internal/landingshed/publish.go, internal/landingshed/publish_test.go, internal/landingshed/publish_verify_test.go, internal/landingshed/pullrequest.go, internal/landingshed/rejection.go, internal/landingshed/rejection_test.go, internal/landingshed/seam_enforcement_test.go, internal/landingshed/stuck.go, internal/landingshed/verifygate.go, internal/landingshed/verifygate_integration_test.go, internal/landingshed/verifygate_test.go; TestHandsBack is declared as internal/landingshed_test#TestHandsBack in internal/landingshed/handback_test.go"
-        ]
-      },
+      "kind": "recovery",
+      "spawnedAt": "2026-10-23T18:11:31Z",
+      "terminal": false,
+      "status": "",
       "forkTranscripts": [
         "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-loom-tail-review/15e077c7-3daf-473b-935d-c0209f975d97/subagents/agent-a860c2b39c83e5604.jsonl"
       ],
-      "bracketTranscripts": [
-        "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-loom-tail-review/15e077c7-3daf-473b-935d-c0209f975d97/subagents/agent-a860c2b39c83e5604.jsonl"
-      ]
+      "strandGuid": "8987c9943454aba7d71509be521ad32e",
+      "shuttleRunDir": "/home/AD.NORCERESEARCH.NO/hanf/Code/Knatte18/loomyard-LYXHUB/loom-tail-review/.lyx/shuttle/0ef6d43ae9990c11fac12f8b134f0853",
+      "eventsPath": "/home/AD.NORCERESEARCH.NO/hanf/Code/Knatte18/loomyard-LYXHUB/loom-tail-review/.lyx/shuttle/0ef6d43ae9990c11fac12f8b134f0853/events.jsonl",
+      "eventsOffset": 2579,
+      "recoveries": 1,
+      "recoverySessions": [
+        "4109e123-2c0b-4823-a990-35ebadaa4727"
+      ],
+      "recoveryEngines": {
+        "4109e123-2c0b-4823-a990-35ebadaa4727": "claude"
+      },
+      "recoveryStartSha": "27c87d3f5c3e04bc001e7d05e33143f47e819690"
     },
     "7": {
       "slug": "fixer-session-table",
