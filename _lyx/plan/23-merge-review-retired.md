@@ -1,9 +1,9 @@
 # Card 23 — merge-review-retired
 
 **Create:**
-- `plan:internal/yamlengine#DropKeys` -> `func DropKeys(existing []byte, keys []string) ([]byte, []string, error)`
-- `plan:internal/yamlengine#TestDropKeys` -> `func TestDropKeys(t *testing.T)`
-- `plan:internal/loomengine#retiredLoomKeys` -> `var retiredLoomKeys []string`
+- `internal/yamlengine#DropKeys`
+- `internal/yamlengine#TestDropKeys`
+- `internal/loomengine#retiredLoomKeys`
 
 **Delete:**
 - `contracts/stencils/loom/loom-rubric-merge-review.md`
