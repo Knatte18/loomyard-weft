@@ -1379,6 +1379,26 @@
       "body": "Imported from [issue #849](https://github.com/Knatte18/loomyard/issues/849).\n\nSeen (2026-10-23, loomyard hub, run plan-card-rules at Webster): the orch ran `lyx loom decision add plan-card-rules --by parent` to tell the run to port main's reed separator fix. The verb's notice reached Merriam (`ly:plan-card-rules:webster`) as creel #157 from `ly:LOOM`: 'a new decision is in the decision record .../_lyx/discussion/decision-record.md ...; re-read the record's Added after Discussion entries and follow them'. Merriam refused it: it trusts only `ly:orch` as its parent, and its stencil forbids it to read decision-record.md. So a parent decision never reaches a running Webster, although the orch role says the verb tells each live agent of the run.\n\nWorkaround: the orch messaged Merriam directly, with the decision's content spelled out.\n\nExpected: a decision recorded while Webster runs reaches Merriam in a form it acts on, for example with the decision's text inlined in the notice and a sender Merriam's stencil accepts, or Merriam's stencil admits the decision notice and the record's Added after Discussion section.\n\n## Issue comment, 2026-10-23\n\nCause, from the code: `lyx loom decision add` posts the notice through creel (`postDecisionNotice`, internal/loomcli/decision.go), signed with the program name `LOOM` (`loomProgram`, internal/loomcli/wiring.go). Creel types a post into the receiver's pane as a user turn opening `[creel] #\u003cid\u003e from ly:LOOM:`, so Merriam reads a sender that is not its parent `ly:orch` and refuses it. A second refusal follows from the text itself: it asks Merriam to read decision-record.md, which the Master stencil does not list among its reads.\n\nThe same happened in a second run (batten-cancel-verb, creel #158).\n\nA fix needs both parts: a sender Merriam accepts as its parent (or a Master stencil that admits a `LOOM` decision notice), and the decision's text inlined in the notice, with the instruction to hand it to the verify fixer fork, since Merriam edits no source.",
       "created": "2026-10-23T16:36:01Z",
       "revised": "2026-10-23T16:36:01Z"
+    },
+    {
+      "id": 782,
+      "handle": "B7",
+      "slug": "adopt-owner-write-stale-manifest",
+      "title": "adopt's owner write fails on a stale local render manifest after another machine removed design files",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "board"
+      ],
+      "issues": [
+        844
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Imported from [issue #844](https://github.com/Knatte18/loomyard/issues/844).\n\n## Seen (orch, 2026-10-23, OSL-1046, lyx e634efb9)\n\n`lyx adopt plan-card-rules` on a machine whose last local board render was two days old failed at the owner write:\n`gitrepo: git add: git add -- board.json README.md design-...md ...: exit 128: fatal: pathspec 'design-batten-abort-live-run.md' did not match any files`.\nThe other machine had since removed that entry and its design file on Bolt, and this machine had pulled Bolt.\n`renderOwnerWrite` in `internal/boardengine/ownerset.go` adds every name in the local, gitignored `.board-rendered.json` that the new render no longer writes, so a file already gone from both disk and git reaches `git add` and fails it.\nThe failed write left `board.json` and `README.md` modified and uncommitted on Bolt, and the pair was already added (partial).\n\n## Workaround\n\nRe-run `lyx adopt \u003cslug\u003e`: the failed render rewrote the manifest, so the second run's path list holds only existing files, and it committed and pushed the owner write.\n\n## Expected\n\nThe owner write commits only paths that exist or that git tracks, so a stale manifest from before a pull never fails it.\n",
+      "created": "2026-10-23T16:36:07Z",
+      "revised": "2026-10-23T16:36:07Z"
     }
   ],
   "prime_owner": "osl-1046"

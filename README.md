@@ -66,6 +66,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | B4 |  | **Burler fix loop cannot route a decision-class finding to the parent** | [`burler-decision-finding-route`](design-burler-decision-finding-route.md) | 0m<br>0m | burler, loom |
 | B5 |  | **webster record-batch fails create-not-done for Create targets declared in an external _test package** | [`record-batch-external-test-pkg`](design-record-batch-external-test-pkg.md) | 0m<br>0m | webster, quarry |
 | B6 |  | **Decision notice from lyx loom decision add is refused by Webster's Merriam** | [`merriam-refuses-decision-notice`](design-merriam-refuses-decision-notice.md) | 0m<br>0m | webster, loom, stencil, creel |
+| B7 |  | **adopt's owner write fails on a stale local render manifest after another machine removed design files** | [`adopt-owner-write-stale-manifest`](design-adopt-owner-write-stale-manifest.md) | 0m<br>0m | board |
 
 ### Enhancements
 
