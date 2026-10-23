@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-23 12:27 UTC; every age below is as of then.
+Rendered 2026-10-23 12:28 UTC; every age below is as of then.
 Prime owner: `osl-1046`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -16,8 +16,8 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T2 | **Status overview: drop file paths, time the gate lines**<br>• Make the loom-status overview readable: drop written-file paths, add clock times to gate lines<br>• `profile: light` | [`status-overview-trim`](design-status-overview-trim.md) | darn | Darn-Burler-Fix | osl-1046 | 9m<br>6m | loom |
-| T5 | **Run tail: Merge-In with alignment, Code-Perch, a PR stub and one locked Land block, for loom and darn**<br>• Loom and darn share one tail after the code: Merge-In with alignment and a thorough fixer, Code-Perch, PR block behind a flag, Finalize re-merging under the parent lock | [`loom-tail-review`](design-loom-tail-review.md) | loom | Plan-Bouncer | osl-1046 | 18h<br>4h | loom, burler, shed, fabric, batten |
+| T2 | **Status overview: drop file paths, time the gate lines**<br>• Make the loom-status overview readable: drop written-file paths, add clock times to gate lines<br>• `profile: light` | [`status-overview-trim`](design-status-overview-trim.md) | darn | Darn-Burler-Fix | osl-1046 | 10m<br>7m | loom |
+| T5 | **Run tail: Merge-In with alignment, Code-Perch, a PR stub and one locked Land block, for loom and darn**<br>• Loom and darn share one tail after the code: Merge-In with alignment and a thorough fixer, Code-Perch, PR block behind a flag, Finalize re-merging under the parent lock | [`loom-tail-review`](design-loom-tail-review.md) | loom | Plan-Burler-Review | osl-1046 | 18h<br>4h | loom, burler, shed, fabric, batten |
 
 ### Ready
 
@@ -70,7 +70,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | E8 |  | **The arbiter in shed for every shed run, batten included**<br>• The batten Go driver has a tackler but no arbiter; move the arbiter and its keys into shed beside the tackler | [`shed-arbiter-all`](design-shed-arbiter-all.md) | 8d<br>8d | shed, batten, loom, config |
 | E9 |  | **Paste cited code into a review rounds context**<br>• Reviewers edit nothing and review a fixed commit, so code pasted at round start cannot go stale; measure it against todays reviewer | [`review-inline-code`](design-review-inline-code.md) | 11d<br>7d | burler, stencil |
 | E10 |  | **Module labels from what a task touches, not only what it is about**<br>• Half the landings that changed the shuttle core lacked the shuttle label; derive or check module labels from the plan and the diff | [`labels-from-diff`](design-labels-from-diff.md) | 8d<br>8d | board, loom |
-| E11 |  | **Start one task per overlapping group at a newly-ready start**<br>• When a landing makes several overlapping tasks ready at once, batten starts one per group and names the rest in its notice | [`batten-ready-overlap`](design-batten-ready-overlap.md) | 7d<br>7d | batten |
+| E11 |  | **Start one task per overlapping group at a newly-ready start**<br>• When a landing makes several overlapping tasks ready at once, batten starts one per group and names the rest in its notice | [`batten-ready-overlap`](design-batten-ready-overlap.md) | 8d<br>8d | batten |
 | E12 |  | **Git test fixtures trip Cortex XDR on the work laptop**<br>• Parallel git-heavy tests create so many files at once that Cortex XDR killed VS Code and then crashed itself, twice; tests must stay usable on a machine with endpoint protection | [`xdr-git-test-file-burst`](design-xdr-git-test-file-burst.md) | 6d<br>2d | fabric |
 | E13 |  | **Rename the lyx binary to lyr (name clash with LyX)** | [`rename-binary-lyr`](design-rename-binary-lyr.md) | 7d<br>1d | stencil, shuttle |
 | E14 |  | **Speed loom profile: Discussion, Plan and Webster, with review only of the end product**<br>• A loom profile without the Discussion, Plan and Webster perches, reviewing only before landing | [`speed-loom-profile`](design-speed-loom-profile.md) | 20h<br>20h | loom, burler, config |
