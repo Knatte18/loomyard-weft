@@ -1,6 +1,6 @@
 {
   "runGuid": "6f3f62b7ba6640bed5f2f8f6f97b867c",
-  "planFingerprint": "e444d8249bbfc974e847cb87e836cde01fe65254d7e9baa45ec404950fca6465",
+  "planFingerprint": "197eba1a4e7b506529777c8dce5a4aaab6c765281999a61305a2b0e4e29f973e",
   "planFileHashes": {
     "00-overview.md": "96ea7fdd8f8d6382d0d75626814f18d9de43b47b7804ff6a64d1958c1b3b0073",
     "01-plandag-additive-guess.md": "3156eb48f5d1c8c39c0e64ca4a0a8d85e081a38beba3aaf480b1d8777c729b14",
@@ -15,13 +15,13 @@
     "10-plan-review-extends-guidance.md": "ab498a63d124cc88a8626b2e2c73fa96efe73ef8d96be9f2b5f6bb8b6fd2d895",
     "11-amendment-record.md": "f9bdbb40be10b2947f2d3ddc94639b7ffd920550b6eefefc765eabc87fa28c45",
     "12-settle-round-start.md": "e9b0d2fdb2bdbe8acd1a54a9fad1e53919cc7e2b32c25bd75201c0d3469104e6",
-    "13-decision-amends-plan.md": "16ee6a2b9aed1fd2b3f110672c4cc35f236c65d6e362a05e67e8bb04273cb27e",
+    "13-decision-amends-plan.md": "31c7a5d25ef2358f61d44de5d7e116418d25fcaefa2cf143c31580698646a94e",
     "14-settled-guard-amendment.md": "ddf824ae02a6d06c81985e798ce9ea83826f4ccd3c3c055667e5efbafacef6a9",
-    "15-plan-commit-removes-amendment.md": "474c1f12da5d4a4ef9ba14683ea27433d1e8013ca8103bfd92ccd5c59c9ba84d",
-    "16-rework-amendment.md": "7203cd9287906723e418cce7764f75b9ee6ac1218eb37c54eaae6aaed716715f",
+    "15-plan-commit-removes-amendment.md": "0f78c373f32d6c93a3c3ff8cd61d8d73cff9a19b75da2a1830fab0e5fb890ad3",
+    "16-rework-amendment.md": "3e12bb21be7a0ca11c58beda5676dce1be462c3d16f30718c8d4a5a1a74991dc",
     "17-plan-review-answer-key.md": "c3474497905ddfafe2a23487451e58174b89adef1abad17cc98468644ad80b1f",
     "18-recipe-amendment-target.md": "61040de7f1bc5aaa3f11ab59b4bb2b4ecaa118ac2877c6774cca8260bbb5cb26",
-    "19-arbiter-amendment-target.md": "03adfa75e47c4597dc81e64f1b0429ffed3d29878932c7b740f76f6c09ccc3eb",
+    "19-arbiter-amendment-target.md": "ff1de534123230d82487b098ace7b06ab8b18e14b2eb260e34d0c42529d59088",
     "20-orch-amendment-route.md": "78f7b2f99cf405211bc9c65a86fe17f935261f5f8f86a258d72359b9ee09e295",
     "21-webster-conflict-amendment-way-forward.md": "519f1377782ffba8f922982351c815625fd91db68a8e11af1bda2e1750ee05d9",
     "22-failure-trace-record.md": "5deb5f4ae5c8246cffdcead20a25a57ce525a16a95437b0484775c78e990be08",
@@ -543,7 +543,7 @@
       }
     }
   ],
-  "currentBatch": 13,
+  "currentBatch": 0,
   "masterStrand": "5d7707be21a2f264e8cb67fdd257faf0",
   "masterSessionId": "42b1ea9d-4ad9-4b82-a2f2-60e0b764997b",
   "masterEngine": "claude",
@@ -614,10 +614,10 @@
         "17-plan-review-answer-key"
       ],
       "cardHashes": {
-        "13-decision-amends-plan": "16ee6a2b9aed1fd2b3f110672c4cc35f236c65d6e362a05e67e8bb04273cb27e",
+        "13-decision-amends-plan": "31c7a5d25ef2358f61d44de5d7e116418d25fcaefa2cf143c31580698646a94e",
         "14-settled-guard-amendment": "ddf824ae02a6d06c81985e798ce9ea83826f4ccd3c3c055667e5efbafacef6a9",
-        "15-plan-commit-removes-amendment": "474c1f12da5d4a4ef9ba14683ea27433d1e8013ca8103bfd92ccd5c59c9ba84d",
-        "16-rework-amendment": "7203cd9287906723e418cce7764f75b9ee6ac1218eb37c54eaae6aaed716715f",
+        "15-plan-commit-removes-amendment": "0f78c373f32d6c93a3c3ff8cd61d8d73cff9a19b75da2a1830fab0e5fb890ad3",
+        "16-rework-amendment": "3e12bb21be7a0ca11c58beda5676dce1be462c3d16f30718c8d4a5a1a74991dc",
         "17-plan-review-answer-key": "c3474497905ddfafe2a23487451e58174b89adef1abad17cc98468644ad80b1f"
       },
       "startSha": "b5e2f7da6f6137c7cc668fa539ce1e50a77d9b69",
@@ -625,8 +625,30 @@
       "spawnedAt": "2026-10-23T07:34:26Z",
       "sessionId": "42b1ea9d-4ad9-4b82-a2f2-60e0b764997b",
       "engine": "claude",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "13-decision-amends-plan",
+        "status": "done",
+        "head_sha": "a7d70108f036ce7919b5ea366c7d02dfbbbf1b6f",
+        "deviations": [
+          "internal/loomcli/decision.go",
+          "internal/loomcli/decision_test.go",
+          "internal/loomcli/settledguard.go",
+          "internal/loomcli/wiring.go",
+          "internal/loomshed/generation_test.go",
+          "internal/loomshed/prrework_test.go"
+        ]
+      },
+      "cardShas": [
+        "a7d70108f036ce7919b5ea366c7d02dfbbbf1b6f"
+      ],
+      "forkTranscripts": [
+        "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-plan-card-rules/42b1ea9d-4ad9-4b82-a2f2-60e0b764997b/subagents/agent-a6ae51d3374ea2d2d.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-plan-card-rules/42b1ea9d-4ad9-4b82-a2f2-60e0b764997b/subagents/agent-a6ae51d3374ea2d2d.jsonl"
+      ]
     },
     "7": {
       "slug": "extends-group-readers",
@@ -678,6 +700,7 @@
   },
   "seenForkTranscripts": [
     "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-plan-card-rules/42b1ea9d-4ad9-4b82-a2f2-60e0b764997b/subagents/agent-adcf21a00860fde6f.jsonl",
-    "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-plan-card-rules/42b1ea9d-4ad9-4b82-a2f2-60e0b764997b/subagents/agent-ad3c848d95c14262a.jsonl"
+    "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-plan-card-rules/42b1ea9d-4ad9-4b82-a2f2-60e0b764997b/subagents/agent-ad3c848d95c14262a.jsonl",
+    "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-plan-card-rules/42b1ea9d-4ad9-4b82-a2f2-60e0b764997b/subagents/agent-a6ae51d3374ea2d2d.jsonl"
   ]
 }

@@ -19,7 +19,7 @@
 
 **Uses:**
 - `plan:internal/loomrecipe#AmendmentTarget`
-- `plan:internal/loomcli#planApprovedReader`
+- `internal/loomcli#planApprovedReader`
 
 **Intent:**
 D8: the arbiter prompt gains an input, `amendment_target`, rendered beside the envelope path; the arbiter stencil stays recipe-blind.
