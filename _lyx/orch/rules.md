@@ -47,3 +47,10 @@ Remove this section once #799 is fixed.
 
 Never propose one note alone as a loom task: a loom run has a fixed cost of about half its spend whatever its size (`docs/research/token-audit-2026-10-22`).
 Fold related notes into one loom task, or propose darn for a small change, and let the operator name darn (operator, 2026-10-22).
+
+## Board tidy after a landing
+
+Once `loom-tail-review` has landed, PR-Align no longer names the board entries a run superseded, so at every `landed` notice you spawn one fresh Sonnet agent, never a fork, with the operator's standing go-ahead (operator, 2026-10-23).
+Its brief: read the landed commit and the run's decision record against the board's notes, through `lyx board` only, edit nothing, and report each note the landing superseded whole or in part, with why.
+You put that report to the operator, and remove or amend a note only after the operator decides.
+This job moves to the orch's Go driver once there is one, which spawns the same agent.
