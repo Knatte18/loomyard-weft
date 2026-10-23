@@ -21,8 +21,9 @@ Every other target, and this target with no record or a record written before th
 
 What it lets through, and the bound: it re-opens only Plan-Review, only for an amendment written after its last judged round started or over a settle with no known round start; the fix still passes the plan gate (`done-card-edited` included) and a Plan-Bouncer judgment before Webster sees it.
 An amendment appended while a round runs is after that round's start, so it is admitted again after the round's settle.
+`WrittenAt` keeps full precision against a round start floored to the second (card 12), so a write in the start's own second reads as after it and the guard admits: the floor costs at most an extra round and never loses an amendment.
 
-`TestSettledSegmentGuard` gains rows, each with a live Plan-Review settle record carrying a round start: an amendment written after the start admits `Plan-Burler-Review`; one written before it is refused; an amendment over a settle with no round start (a round-0 settle) admits; no amendment record is refused as today; an amendment record does not admit `Plan-Burler-Fix` or another segment's review row; an unreadable amendment record is a returned error.
+`TestSettledSegmentGuard` gains rows, each with a live Plan-Review settle record carrying a whole-second round start: an amendment written after the start admits `Plan-Burler-Review`; one written before it is refused; an amendment over a settle with no round start (a round-0 settle) admits; no amendment record is refused as today; an amendment record does not admit `Plan-Burler-Fix` or another segment's review row; an unreadable amendment record is a returned error.
 Existing rows pass a reader answering no record.
 
 **ImpactSummary:** `settledSegmentGuard` has one production caller, `settledGuard`, and one test, both covered here; the guard serves loom and darn, and the darn recipe has no `Plan-Burler-Review` row, so its behavior is unchanged.

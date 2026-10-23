@@ -15,6 +15,7 @@
 - `internal/websterengine#firstSharedRef` -> `func firstSharedRef(producer, consumer planparser.Card, consumerUses bool) string`
 - `internal/websterengine_test#TestCheckBatchOrder`
 - `internal/websterengine/doc.go`
+- `internal/planparser/doc.go`
 - `contracts/specs/loom-plan-spec.md`
 
 **Uses:**
@@ -35,6 +36,7 @@ The bound D4 states: a wrongly labelled Extends drops a real dependency, which w
 `deriveEdges` keeps its two clauses and refines them per shared ref: a `Uses` entry of b matching a target of a adds the edge when `DependencyEdge(a, CardRefKind(a, ref), b, RefUse)` holds, and a target shared by a and b with `a.Number < b.Number` adds it when `DependencyEdge(a, CardRefKind(a, ref), b, CardRefKind(b, ref))` holds.
 `firstSharedRef` takes the two cards and returns the first ref that makes an edge under the same rule, so `backwardEdgeFinding` names a ref that is a real dependency; its two call sites in `backwardEdgeFinding` pass the producer, the consumer and whether the consumer's side is its `Uses`.
 `websterengine/doc.go` and `loom-plan-spec.md`'s dependency-graph text state the rule: two Extends on one ref make no edge unless both fence a line for one PATTERN entry ID.
+`planparser/doc.go` states `CardRefKind`, `DependencyEdge` and the same rule, completing the paragraph card 6 opened.
 
 Tests:
 `TestDependencyEdge`, table-driven in package `planparser`, builds cards with `TargetGroups`, `Targets`, `Uses` and `Text`: Extends against Extends (false); the same with both cards fencing ``- `PATTERN-x` …`` (true) and fencing different IDs (false); Extends against Edit (true); Uses against Extends (true); Uses against Uses (false); a groupless hand-built target against another (true); and `CardRefKind` for each label, for Uses and for an unnamed ref.
