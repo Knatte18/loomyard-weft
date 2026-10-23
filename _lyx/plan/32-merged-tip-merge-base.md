@@ -1,8 +1,8 @@
 # Card 32 — merged-tip-merge-base
 
 **Create:**
-- `plan:internal/loomcli#taskMergeBase` -> `func taskMergeBase(l *lyxcwd.Location) func() (string, error)`
-- `plan:internal/loomcli#TestTaskMergeBase_FollowsTheMergedTip` -> `func TestTaskMergeBase_FollowsTheMergedTip(t *testing.T)`
+- `internal/loomcli#taskMergeBase`
+- `internal/loomcli#TestTaskMergeBase_FollowsTheMergedTip`
 
 **Delete:**
 - `internal/loomcli#TestReviewRange_ReworkBranchListsOnlyOwnCommitsAfterHead`
