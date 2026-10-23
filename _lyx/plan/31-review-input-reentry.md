@@ -29,8 +29,8 @@
 - `internal/shedrecipe#bouncerEntry`
 - `internal/testkit/envkit#FullEnv`
 - `internal/testkit/envkit#nilLegal`
-- `plan:internal/landingshed#Finalize.mergeParent`
-- `plan:internal/landingshed#TestFinalize_MergeJudgement`
+- `internal/landingshed#Finalize.mergeParent`
+- `internal/landingshed#TestFinalize_MergeJudgement`
 - `internal/loomcli#loomCLI.wire`
 - `internal/loomcli#loomCLI.wireDarn`
 - `internal/loomcli#TestWire_DarnRecipe`

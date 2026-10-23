@@ -1,11 +1,11 @@
 # Card 28 — finalize-merge-judgement
 
 **Create:**
-- `plan:internal/landingshed#taskMerger` -> `type taskMerger interface`
-- `plan:internal/landingshed#Finalize.mergeParent` -> `func (fz *Finalize) mergeParent(ctx context.Context) (shedengine.Outcome, shedengine.OutputPointer, error, bool)`
-- `plan:internal/landingshed#Finalize.rerouteReason` -> `func (fz *Finalize) rerouteReason(cause string) string`
-- `plan:internal/landingshed#TestFinalize_MergeJudgement` -> `func TestFinalize_MergeJudgement(t *testing.T)`
-- `plan:internal/landingshed#fakeTaskMerger` -> `type fakeTaskMerger struct`
+- `internal/landingshed#taskMerger`
+- `internal/landingshed#Finalize.mergeParent`
+- `internal/landingshed#Finalize.rerouteReason`
+- `internal/landingshed#TestFinalize_MergeJudgement`
+- `internal/landingshed#fakeTaskMerger`
 
 **Delete:**
 - `internal/landingshed#Finalize.mergeInStep`

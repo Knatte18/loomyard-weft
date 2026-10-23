@@ -1,9 +1,9 @@
 # Card 30 — finalize-recheck-and-land
 
 **Create:**
-- `plan:internal/landingshed#parentGuard.stillHeld` -> `func (g parentGuard) stillHeld(producer string) (string, error)`
-- `plan:internal/landingshed#taskTrailer` -> `func taskTrailer(block, slug string) string`
-- `plan:internal/landingshed#TestFinalize_LockRecheckAndLanding` -> `func TestFinalize_LockRecheckAndLanding(t *testing.T)`
+- `internal/landingshed#parentGuard.stillHeld`
+- `internal/landingshed#taskTrailer`
+- `internal/landingshed#TestFinalize_LockRecheckAndLanding`
 
 **Delete:**
 - `internal/landingshed#Finalize.closePullRequest`
