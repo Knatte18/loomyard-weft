@@ -1,6 +1,6 @@
 {
   "runGuid": "9f527ada10a19724b2f3a87061a5ac41",
-  "planFingerprint": "31d27d60252cf698dcd3ebc31762a5480f11cdc5dfcda7cedb427e832af8d8bf",
+  "planFingerprint": "14f0811190d8e112524c23a39973d2fd0b7b89be26f51c7724d515fdb02ed264",
   "planFileHashes": {
     "00-overview.md": "468cbc840722398d268b91221206213ab77bd8345c87e77b3ea147bfef3643da",
     "01-fabric-merge-in-at.md": "5658bfb064f63d28ce9dfd6178f974b5ca5ced0a730c54dc070db9d8fc7233ed",
@@ -14,7 +14,7 @@
     "09-fix-cap.md": "f6b020c6ab1a17bc9873b09fb9069239fb709d41912ab1359d47248daeb1ba17",
     "10-fixer-attempts.md": "6e90e3534cf175732fcdcb58f555d9338a63ad1d1ceae8f3bb39337c33a31863",
     "11-fixer-run.md": "0a075bd1c6f0f5857f2e1653ed4c0cb362aa99ee3e390dd47d320eb388400925",
-    "12-fixer-wiring.md": "e4ca615557a88de865e70ee8a5259d4bd4518e7bba94450bfd8fece60c7a5997",
+    "12-fixer-wiring.md": "61d54ead5b0876fb88648dd02f7d412b7067a8b2ac00125fc61b42b4359cea3b",
     "13-darn-write-no-reroute.md": "4a6f3e5fe46758ef9584fd4b56d5b0ee8848e3d81e8bbebb71ca813e6c053b10",
     "14-settled-guard-no-verify-exception.md": "bbb458be836d5d4a025b56e6ffff67bde91e1ef8c6bbf7663b85515112c1b49d",
     "15-round-gate-drops-failure-record.md": "63ddf8070679d40e3f16e8a9d7b87fb2af9a2481e27f2a2241f72b2261474473",
@@ -1709,7 +1709,7 @@
       }
     }
   ],
-  "currentBatch": 12,
+  "currentBatch": 0,
   "masterStrand": "84b46756278c26fa4a3d938b33a70bce",
   "masterSessionId": "15e077c7-3daf-473b-935d-c0209f975d97",
   "masterEngine": "claude",
@@ -1779,7 +1779,7 @@
         "14-settled-guard-no-verify-exception"
       ],
       "cardHashes": {
-        "12-fixer-wiring": "e4ca615557a88de865e70ee8a5259d4bd4518e7bba94450bfd8fece60c7a5997",
+        "12-fixer-wiring": "61d54ead5b0876fb88648dd02f7d412b7067a8b2ac00125fc61b42b4359cea3b",
         "13-darn-write-no-reroute": "4a6f3e5fe46758ef9584fd4b56d5b0ee8848e3d81e8bbebb71ca813e6c053b10",
         "14-settled-guard-no-verify-exception": "bbb458be836d5d4a025b56e6ffff67bde91e1ef8c6bbf7663b85515112c1b49d"
       },
@@ -1788,8 +1788,27 @@
       "spawnedAt": "2026-10-23T13:26:28Z",
       "sessionId": "15e077c7-3daf-473b-935d-c0209f975d97",
       "engine": "claude",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "12-fixer-wiring",
+        "status": "done",
+        "head_sha": "ea2343073d790234f59a40820130c7ccb50c9fdc",
+        "deviations": [
+          "internal/darnengine/spec.go",
+          "internal/loomcli/landingdeps.go",
+          "internal/loomshed/darnwrite_test.go"
+        ]
+      },
+      "cardShas": [
+        "ea2343073d790234f59a40820130c7ccb50c9fdc"
+      ],
+      "forkTranscripts": [
+        "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-loom-tail-review/15e077c7-3daf-473b-935d-c0209f975d97/subagents/agent-a7b675cd5165a849e.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-loom-tail-review/15e077c7-3daf-473b-935d-c0209f975d97/subagents/agent-a7b675cd5165a849e.jsonl"
+      ]
     },
     "7": {
       "slug": "fixer-session-table",
@@ -1842,6 +1861,7 @@
   },
   "seenForkTranscripts": [
     "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-loom-tail-review/15e077c7-3daf-473b-935d-c0209f975d97/subagents/agent-abdf55aeea33a1137.jsonl",
-    "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-loom-tail-review/15e077c7-3daf-473b-935d-c0209f975d97/subagents/agent-a29ceb61ab53b3c7d.jsonl"
+    "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-loom-tail-review/15e077c7-3daf-473b-935d-c0209f975d97/subagents/agent-a29ceb61ab53b3c7d.jsonl",
+    "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-loom-tail-review/15e077c7-3daf-473b-935d-c0209f975d97/subagents/agent-a7b675cd5165a849e.jsonl"
   ]
 }
