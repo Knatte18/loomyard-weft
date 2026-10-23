@@ -6,7 +6,7 @@
 - `internal/battencli#TestCreateRefusal_LeftoverBranchRemedyNeverNamesCheckout`
 
 **Uses:**
-- `plan:internal/battenshed#PreconditionError`
+- `internal/battenshed#PreconditionError`
 - `internal/fabricengine#ErrSourceDirty`
 - `internal/fabricengine#ErrBranchExists`
 - `internal/fabricengine#ErrRemoteLeftover`

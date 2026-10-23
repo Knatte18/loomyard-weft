@@ -1,7 +1,7 @@
 # Card 8 — driver-precondition-row
 
 **Create:**
-- `plan:internal/sheddriver#preconditionUnmet` -> `func preconditionUnmet(stop Stop) bool`
+- `internal/sheddriver#preconditionUnmet`
 
 **Edit:**
 - `internal/sheddriver#decideDrive`
@@ -10,7 +10,7 @@
 
 **Uses:**
 - `internal/sheddriver#budgetExhausted`
-- `plan:internal/shedengine#ReasonPreconditionUnmet`
+- `internal/shedengine#ReasonPreconditionUnmet`
 
 **Intent:**
 Add D11's rule row: a blocked stop whose reason, or whose status error for a stop built from a status, starts with `shedengine.ReasonPreconditionUnmet` hands back, ahead of every hand-over, arbiter and tackler row.

@@ -1,6 +1,6 @@
 {
   "runGuid": "33c2003da5eebd0f91b9f0e7bd005b72",
-  "planFingerprint": "a5014e7a17d7de56adb0a68e875a30b01a4f3b921e4beb9f7de0ce5149e74dbf",
+  "planFingerprint": "c8d3053676092b21d81c971e38d1de9ec59de93106c916788a6dc6d879224088",
   "planFileHashes": {
     "00-overview.md": "5e193a8f04988356c2396f9961edb486c4111c6ca2e29d29d9063486706425e5",
     "01-cancel-marker-paths.md": "35911c1bb6d53d246ee742300e563328e25179d07e05a30a31498e2125c3c94a",
@@ -8,15 +8,15 @@
     "03-source-dirty-typed-error.md": "2c25381dcd42a0e934e3961c4228ed21215b37c3bdc145a5c393b28f5dbbf413",
     "04-pair-parts-reads.md": "ae823195842667c3415db08d06f2c2fc8f17425dd5b07bd433cd39c4e01e2785",
     "05-task-branch-discard.md": "d516ae84c013656fc8118c6f8d28da06ce59e30b7efd045790073c10b47e8fd9",
-    "06-records-write-lock.md": "5efa25d30af1d353c66e1f8c2be79305386cec0aefafdaa842e59e2694a3f56c",
-    "07-shed-locked-check-and-precondition.md": "022f63717ac471896bbff1063aeaadab2932d20a1325341b729c60685fb1621b",
-    "08-driver-precondition-row.md": "40d25087b8100a1ddf51206d3c1915ca017c95b8023e1f541dbb80abedb30091",
-    "09-worktree-create-precondition-halt.md": "431b96784259ec14126e0ecf27ba35ea58da065f15200a242030eb1e3d068c11",
-    "10-batten-create-precondition-mapping.md": "a974972769d67c4600209fdfce67ad0d106905d5cb5d2d3b5349860996fe86d6",
+    "06-records-write-lock.md": "c3ad0bff944c1d392a2738ea539fd881a972bb55f73b6b12786f471d0c360797",
+    "07-shed-locked-check-and-precondition.md": "2ee3cffa58c332ab63f6d0df16801974ea894a097e44653d7e235b34f11a8f9a",
+    "08-driver-precondition-row.md": "f2974dc0c81f5816599e8b2b8939efc884329ca1c2ce9f33ea0aa7a7ecfb55c7",
+    "09-worktree-create-precondition-halt.md": "fc05a5dcc486631be6f85766374cf688dd36aa599040c63eecaac34e08c50ed0",
+    "10-batten-create-precondition-mapping.md": "7a8f65de92a999224b4fb00cf90c6545f813b7824274e21818bfac8a3956b0c9",
     "11-board-runlock-names-cancel.md": "92d0a4a8db41f655f9b7539c62e772e173d4c4876d3cdf0cfd63481d748fca20",
     "12-cleanup-removal-split.md": "ffdbaae0e4de14ec7ee83a26d9da19f308cf655599b1f6d6173ab40f8962c702",
     "13-teardown-origin-snapshot-and-claim-mode.md": "3db7f5b8401f04414d48c14211169600bdda06fe329ffbf2cde99d92fecc826a",
-    "14-teardown-cancel-phase.md": "4b84d6d5390cdaa59ef3f1cfbdd73a82f729db1f7cb09e57239477e2a825dbc6",
+    "14-teardown-cancel-phase.md": "f8accbd1763a78425ae2cce67ee3c8a84e4d83389a2abeee82c36008c03bd2c4",
     "15-batten-cancel-marker.md": "c42b7597e61482413f49791f0f50a59b5dec16eb18e525fe981005bef1399615",
     "16-batten-start-guards.md": "8f5b6c9e157fe782b329d5f6e814803c2d93f8e8294f80824eb3601d68656c6f",
     "17-batten-pre-drive-check.md": "331f2be16d7bfd4d0b044b30df74fc5f93773eb1da2575b4dddb8bbce5500adc",
@@ -365,7 +365,7 @@
       }
     }
   ],
-  "currentBatch": 6,
+  "currentBatch": 0,
   "masterStrand": "59bc96a175d925311756971bd125602d",
   "masterSessionId": "50879ce8-d26c-4404-8b2c-a3daf3a8ef2c",
   "masterEngine": "claude",
@@ -427,11 +427,11 @@
         "11-board-runlock-names-cancel"
       ],
       "cardHashes": {
-        "06-records-write-lock": "5efa25d30af1d353c66e1f8c2be79305386cec0aefafdaa842e59e2694a3f56c",
-        "07-shed-locked-check-and-precondition": "022f63717ac471896bbff1063aeaadab2932d20a1325341b729c60685fb1621b",
-        "08-driver-precondition-row": "40d25087b8100a1ddf51206d3c1915ca017c95b8023e1f541dbb80abedb30091",
-        "09-worktree-create-precondition-halt": "431b96784259ec14126e0ecf27ba35ea58da065f15200a242030eb1e3d068c11",
-        "10-batten-create-precondition-mapping": "a974972769d67c4600209fdfce67ad0d106905d5cb5d2d3b5349860996fe86d6",
+        "06-records-write-lock": "c3ad0bff944c1d392a2738ea539fd881a972bb55f73b6b12786f471d0c360797",
+        "07-shed-locked-check-and-precondition": "2ee3cffa58c332ab63f6d0df16801974ea894a097e44653d7e235b34f11a8f9a",
+        "08-driver-precondition-row": "f2974dc0c81f5816599e8b2b8939efc884329ca1c2ce9f33ea0aa7a7ecfb55c7",
+        "09-worktree-create-precondition-halt": "fc05a5dcc486631be6f85766374cf688dd36aa599040c63eecaac34e08c50ed0",
+        "10-batten-create-precondition-mapping": "7a8f65de92a999224b4fb00cf90c6545f813b7824274e21818bfac8a3956b0c9",
         "11-board-runlock-names-cancel": "92d0a4a8db41f655f9b7539c62e772e173d4c4876d3cdf0cfd63481d748fca20"
       },
       "startSha": "5e321cf2ae324756727e93b62197488416bd569d",
@@ -439,11 +439,30 @@
       "spawnedAt": "2026-10-23T07:26:43Z",
       "sessionId": "50879ce8-d26c-4404-8b2c-a3daf3a8ef2c",
       "engine": "claude",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "06-records-write-lock",
+        "status": "done",
+        "head_sha": "ceb5c53c2d819a5d8b2751c2277256268005d618",
+        "deviations": [
+          "internal/battencli/lifecycle_integration_test.go",
+          "internal/shedengine/run.go"
+        ]
+      },
+      "cardShas": [
+        "ceb5c53c2d819a5d8b2751c2277256268005d618"
+      ],
+      "forkTranscripts": [
+        "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-batten-cancel-verb/50879ce8-d26c-4404-8b2c-a3daf3a8ef2c/subagents/agent-aed3c4b34faad4151.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-batten-cancel-verb/50879ce8-d26c-4404-8b2c-a3daf3a8ef2c/subagents/agent-aed3c4b34faad4151.jsonl"
+      ]
     }
   },
   "seenForkTranscripts": [
-    "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-batten-cancel-verb/50879ce8-d26c-4404-8b2c-a3daf3a8ef2c/subagents/agent-a27e1fa7959dc7aa1.jsonl"
+    "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-batten-cancel-verb/50879ce8-d26c-4404-8b2c-a3daf3a8ef2c/subagents/agent-a27e1fa7959dc7aa1.jsonl",
+    "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-batten-cancel-verb/50879ce8-d26c-4404-8b2c-a3daf3a8ef2c/subagents/agent-aed3c4b34faad4151.jsonl"
   ]
 }

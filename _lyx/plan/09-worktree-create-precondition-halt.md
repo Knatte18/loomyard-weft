@@ -1,9 +1,9 @@
 # Card 9 — worktree-create-precondition-halt
 
 **Create:**
-- `plan:internal/battenshed#PreconditionError` -> `type PreconditionError struct`
-- `plan:internal/battenshed#PreconditionError.Error` -> `func (e *PreconditionError) Error() string`
-- `plan:internal/battenshed#PreconditionError.Unwrap` -> `func (e *PreconditionError) Unwrap() error`
+- `internal/battenshed#PreconditionError`
+- `internal/battenshed#PreconditionError.Error`
+- `internal/battenshed#PreconditionError.Unwrap`
 
 **Edit:**
 - `internal/battenshed#worktreeCreateProducer.Call`
@@ -11,7 +11,7 @@
 - `internal/battenshed/doc.go`
 
 **Uses:**
-- `plan:internal/shedengine#ReasonPreconditionUnmet`
+- `internal/shedengine#ReasonPreconditionUnmet`
 
 **Intent:**
 Let Worktree-Create halt on a precondition no tackler can settle (D11), without battenshed importing fabric: the create closure wraps such a failure in `PreconditionError`, and the producer turns it into a precondition halt.
