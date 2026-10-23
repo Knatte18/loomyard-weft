@@ -1354,6 +1354,29 @@
       "body": "Imported from [issue #851](https://github.com/Knatte18/loomyard/issues/851).\n\n`lyx webster record-batch` marked a batch failed with blocking `create-not-done` findings even though the Create targets existed.\n\nWhat happened:\n- Each finding reads `Create target \"plan:\u003cunit\u003e#\u003cMember\u003e\" still does not resolve: ... quarry answered not_found (the unit exists and the member is missing)`.\n- The same message then says the member \"is declared as `\u003cunit\u003e_test#\u003cMember\u003e`\" in a `_test.go` file of that unit.\n- So the member exists, in the external test package (`package x_test`), and the lookup only searched the unit `\u003cunit\u003e` and its files.\n- It happened twice in one task, in two different batches, across three different units (batches of 6 and 5 cards). The refusals archived reports and pointed to `lyx webster recover-batch \u003cn\u003e`.\n\nWhy it is abnormal:\n- The refusal itself shows the tool knows where the member is declared, yet still counts the target as not done and fails the batch.\n- A plan that names a test in an external test package as a Create target cannot pass record-batch, whatever the implementer does.\n- The recovery verb is a workaround, not a fix; each batch costs a failed record plus a recovery.\n\nWhat to do:\n- Make the Create-target resolution through quarry also look up the `\u003cunit\u003e_test` package (or resolve `Test*` members across both packages of the unit) before reporting `not_found`.\n- Alternatively, make the plan validator reject or rewrite such a target to `\u003cunit\u003e_test#\u003cMember\u003e` at plan time, so the mismatch surfaces before the run.\n\nProvenance: task `plan-card-rules`; notes `webster-refusal-record-batch.md`, `webster-refusal-record-batch-2.md`.\n",
       "created": "2026-10-23T16:35:58Z",
       "revised": "2026-10-23T16:35:58Z"
+    },
+    {
+      "id": 781,
+      "handle": "B6",
+      "slug": "merriam-refuses-decision-notice",
+      "title": "Decision notice from lyx loom decision add is refused by Webster's Merriam",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "webster",
+        "loom",
+        "stencil",
+        "creel"
+      ],
+      "issues": [
+        849
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Imported from [issue #849](https://github.com/Knatte18/loomyard/issues/849).\n\nSeen (2026-10-23, loomyard hub, run plan-card-rules at Webster): the orch ran `lyx loom decision add plan-card-rules --by parent` to tell the run to port main's reed separator fix. The verb's notice reached Merriam (`ly:plan-card-rules:webster`) as creel #157 from `ly:LOOM`: 'a new decision is in the decision record .../_lyx/discussion/decision-record.md ...; re-read the record's Added after Discussion entries and follow them'. Merriam refused it: it trusts only `ly:orch` as its parent, and its stencil forbids it to read decision-record.md. So a parent decision never reaches a running Webster, although the orch role says the verb tells each live agent of the run.\n\nWorkaround: the orch messaged Merriam directly, with the decision's content spelled out.\n\nExpected: a decision recorded while Webster runs reaches Merriam in a form it acts on, for example with the decision's text inlined in the notice and a sender Merriam's stencil accepts, or Merriam's stencil admits the decision notice and the record's Added after Discussion section.\n\n## Issue comment, 2026-10-23\n\nCause, from the code: `lyx loom decision add` posts the notice through creel (`postDecisionNotice`, internal/loomcli/decision.go), signed with the program name `LOOM` (`loomProgram`, internal/loomcli/wiring.go). Creel types a post into the receiver's pane as a user turn opening `[creel] #\u003cid\u003e from ly:LOOM:`, so Merriam reads a sender that is not its parent `ly:orch` and refuses it. A second refusal follows from the text itself: it asks Merriam to read decision-record.md, which the Master stencil does not list among its reads.\n\nThe same happened in a second run (batten-cancel-verb, creel #158).\n\nA fix needs both parts: a sender Merriam accepts as its parent (or a Master stencil that admits a `LOOM` decision notice), and the decision's text inlined in the notice, with the instruction to hand it to the verify fixer fork, since Merriam edits no source.",
+      "created": "2026-10-23T16:36:01Z",
+      "revised": "2026-10-23T16:36:01Z"
     }
   ],
   "prime_owner": "osl-1046"
