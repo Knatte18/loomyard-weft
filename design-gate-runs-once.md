@@ -2,7 +2,7 @@
 
 `gate-runs-once` · Task · enhancement, gate, shed, loom, webster, fabric, batten
 
-Depends on: [`batten-cancel-verb`](design-batten-cancel-verb.md)
+Depends on: [`batten-cancel-verb`](design-batten-cancel-verb.md), [`loom-tail-review`](design-loom-tail-review.md)
 
 ## Decision (operator, 2026-10-22)
 

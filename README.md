@@ -31,8 +31,15 @@ Waits only on Running or Ready entries.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T1 | **Each test runs once per tree: disjoint tiers, row entry gates, carried green runs, tmux in final**<br>• Tiers tagged by name, shed row entry gates, verify skipped on an already green tree, tmux in the final gate, gate time measured<br>• `profile: light` | [`gate-runs-once`](design-gate-runs-once.md) | loom | `batten-cancel-verb` | 5d<br>16h | gate, shed, loom, webster, fabric, batten |
 | T5 | **Run tail: Merge-In with alignment, Code-Perch, a PR stub and one locked Land block, for loom and darn**<br>• Loom and darn share one tail after the code: Merge-In with alignment and a thorough fixer, Code-Perch, PR block behind a flag, Finalize re-merging under the parent lock | [`loom-tail-review`](design-loom-tail-review.md) | loom | `batten-cancel-verb`, `plan-card-rules` | 13h<br>0m | loom, burler, shed, fabric, batten |
+
+### Layer B
+
+Starts when every entry it names under After is done.
+
+| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- | --- | --- |
+| T1 | **Each test runs once per tree: disjoint tiers, row entry gates, carried green runs, tmux in final**<br>• Tiers tagged by name, shed row entry gates, verify skipped on an already green tree, tmux in the final gate, gate time measured<br>• `profile: light` | [`gate-runs-once`](design-gate-runs-once.md) | loom | `batten-cancel-verb`, `loom-tail-review` | 5d<br>0m | gate, shed, loom, webster, fabric, batten |
 
 ## Notes
 
