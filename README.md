@@ -63,6 +63,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | B1 |  | **Discussion check refuses a declared PATTERN text over the overview line cap**<br>• A changes or adds text past pattern.MaxEntryLineChars passes Discussion and first fails at Plan-Write | [`discussion-pattern-line-cap`](design-discussion-pattern-line-cap.md) | 5h<br>5h | loom |
 | B2 |  | **Seeded VS Code title-bar colours do not show in task worktrees**<br>• The seeder writes a palette colour, but loom-tail-review settings.json has none and no colour shows | [`ide-title-colours-missing`](design-ide-title-colours-missing.md) | 5h<br>4h | ide |
 | B3 |  | **TestSmokeStart_NeverAttachesAndAddsNoOperatorStrand flakes on records index.lock and halts Merge-In** | [`smokestart-index-lock-flake`](design-smokestart-index-lock-flake.md) | 0m<br>0m | loom, fabric |
+| B4 |  | **Burler fix loop cannot route a decision-class finding to the parent** | [`burler-decision-finding-route`](design-burler-decision-finding-route.md) | 0m<br>0m | burler, loom |
 
 ### Enhancements
 
