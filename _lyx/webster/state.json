@@ -1709,7 +1709,7 @@
       }
     }
   ],
-  "currentBatch": 0,
+  "currentBatch": 1,
   "masterStrand": "84b46756278c26fa4a3d938b33a70bce",
   "masterSessionId": "15e077c7-3daf-473b-935d-c0209f975d97",
   "masterEngine": "claude",
@@ -1733,27 +1733,25 @@
         "06-fixer-report": "ed3fd2b10833c74f86f0e07769ff98ee26b0fec3fa8d4ca0794c411f4b5902be"
       },
       "startSha": "c14db65e04b460c2ee5e6888f0ed2e9ebc1f851e",
-      "kind": "fork",
-      "spawnedAt": "2026-10-23T12:42:06Z",
-      "sessionId": "15e077c7-3daf-473b-935d-c0209f975d97",
-      "engine": "claude",
-      "terminal": true,
-      "status": "failed",
-      "digest": {
-        "batch": "01-fabric-merge-in-at",
-        "status": "failed",
-        "head_sha": "48848c6b34b27b1850a25883237bb0e6f8d6762a",
-        "reasons": [
-          "batch 01-fabric-merge-in-at holds cards 1-fabric-merge-in-at, 2-resolve-at-tip, 3-test-file-patterns, 4-reroute-cap-prefix, 5-landing-fixer-config, 6-fixer-report",
-          "create-not-done/3-test-file-patterns[blocking]: Create target \"plan:internal/planparser#TestIsTestFile\" still does not resolve: looked up \"internal/planparser#TestIsTestFile\", quarry answered not_found (the unit exists and the member is missing); quarry searched the unit's files internal/planparser/amendment.go, internal/planparser/approve.go, internal/planparser/classify.go, internal/planparser/classify_test.go, internal/planparser/edittestfile.go, internal/planparser/extends.go, internal/planparser/fabricref.go, internal/planparser/firstcard.go, internal/planparser/glyphref.go, internal/planparser/glyphref_test.go, internal/planparser/handle.go, internal/planparser/handle_test.go, internal/planparser/identity_test.go, internal/planparser/nestedmodules.go, internal/planparser/normalize.go, internal/planparser/normalize_test.go, internal/planparser/overlay.go, internal/planparser/pairrule.go, internal/planparser/pairrule_test.go, internal/planparser/parse.go, internal/planparser/patternentry.go, internal/planparser/patternentry_test.go, internal/planparser/plan.go, internal/planparser/planpath_test.go, internal/planparser/redundancy.go, internal/planparser/renumber.go, internal/planparser/restore.go, internal/planparser/reviewclass.go, internal/planparser/rewrite.go, internal/planparser/sections.go, internal/planparser/shape.go, internal/planparser/shape_enforcement_test.go, internal/planparser/shape_test.go, internal/planparser/targetdirs.go, internal/planparser/targetholds_test.go, internal/planparser/testmain_test.go, internal/planparser/validate.go, internal/planparser/verifymodule.go, internal/planparser/verifypackage.go, internal/planparser/vocabname.go; TestIsTestFile is declared as internal/planparser_test#TestIsTestFile in internal/planparser/reviewclass_test.go"
-        ]
-      },
+      "kind": "recovery",
+      "spawnedAt": "2026-10-23T12:59:14Z",
+      "terminal": false,
+      "status": "",
       "forkTranscripts": [
         "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-loom-tail-review/15e077c7-3daf-473b-935d-c0209f975d97/subagents/agent-abdf55aeea33a1137.jsonl"
       ],
-      "bracketTranscripts": [
-        "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-loom-tail-review/15e077c7-3daf-473b-935d-c0209f975d97/subagents/agent-abdf55aeea33a1137.jsonl"
-      ]
+      "strandGuid": "60db907b0a4ce4c1754b4553443c984b",
+      "shuttleRunDir": "/home/AD.NORCERESEARCH.NO/hanf/Code/Knatte18/loomyard-LYXHUB/loom-tail-review/.lyx/shuttle/60eab858de1dc68b69c7588cd28db0bf",
+      "eventsPath": "/home/AD.NORCERESEARCH.NO/hanf/Code/Knatte18/loomyard-LYXHUB/loom-tail-review/.lyx/shuttle/60eab858de1dc68b69c7588cd28db0bf/events.jsonl",
+      "eventsOffset": 2579,
+      "recoveries": 1,
+      "recoverySessions": [
+        "98dbb395-80b6-4361-ba05-d3831276ae25"
+      ],
+      "recoveryEngines": {
+        "98dbb395-80b6-4361-ba05-d3831276ae25": "claude"
+      },
+      "recoveryStartSha": "48848c6b34b27b1850a25883237bb0e6f8d6762a"
     }
   },
   "seenForkTranscripts": [
