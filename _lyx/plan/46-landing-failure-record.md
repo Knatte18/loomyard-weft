@@ -1,11 +1,11 @@
 # Card 46 — landing-failure-record
 
 **Create:**
-- `plan:internal/verifytree#LandingFailure` -> `type LandingFailure struct`
-- `plan:internal/verifytree#WriteLandingFailure` -> `func WriteLandingFailure(p Paths, f LandingFailure) error`
-- `plan:internal/verifytree#ReadLandingFailure` -> `func ReadLandingFailure(p Paths) (LandingFailure, bool, error)`
-- `plan:internal/verifytree#RemoveLandingFailure` -> `func RemoveLandingFailure(p Paths) error`
-- `plan:internal/verifytree#TestLandingFailureRecord` -> `func TestLandingFailureRecord(t *testing.T)`
+- `internal/verifytree#LandingFailure`
+- `internal/verifytree#WriteLandingFailure`
+- `internal/verifytree#ReadLandingFailure`
+- `internal/verifytree#RemoveLandingFailure`
+- `internal/verifytree#TestLandingFailureRecord`
 
 **Delete:**
 - `internal/verifytree#PublishFailure`
