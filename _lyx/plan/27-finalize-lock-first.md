@@ -1,10 +1,10 @@
 # Card 27 — finalize-lock-first
 
 **Create:**
-- `plan:internal/landingshed#Finalize.syncParent` -> `func (fz *Finalize) syncParent(ctx context.Context, parent parentMerger) (string, error)`
-- `plan:internal/landingshed#recordingParentMerger.FastForwardPair` -> `func (m *recordingParentMerger) FastForwardPair(opts fabricengine.SyncOptions) (fabricengine.FastForwardResult, error)`
-- `plan:internal/landingshed#recordingParentMerger.CodeDirtyPaths` -> `func (m *recordingParentMerger) CodeDirtyPaths() (string, []string, error)`
-- `plan:internal/landingshed#TestFinalize_LockFirstAndFastForward` -> `func TestFinalize_LockFirstAndFastForward(t *testing.T)`
+- `internal/landingshed#Finalize.syncParent`
+- `internal/landingshed#recordingParentMerger.FastForwardPair`
+- `internal/landingshed#recordingParentMerger.CodeDirtyPaths`
+- `internal/landingshed#TestFinalize_LockFirstAndFastForward`
 
 **Edit:**
 - `internal/landingshed#parentMerger`

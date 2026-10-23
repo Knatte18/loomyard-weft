@@ -1,8 +1,8 @@
 # Card 26 — merge-in-fixer
 
 **Create:**
-- `plan:internal/landingshed#MergeIn.align` -> `func (m *MergeIn) align(ctx context.Context, tip, mergeCommit string, gateReason string) (shedengine.Outcome, shedengine.OutputPointer, error, bool)`
-- `plan:internal/landingshed#TestMergeIn_Fixer` -> `func TestMergeIn_Fixer(t *testing.T)`
+- `internal/landingshed#MergeIn.align`
+- `internal/landingshed#TestMergeIn_Fixer`
 
 **Edit:**
 - `internal/landingshed#MergeIn`
