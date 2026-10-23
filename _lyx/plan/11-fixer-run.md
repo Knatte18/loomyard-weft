@@ -20,7 +20,7 @@
 
 **Uses:**
 - `plan:internal/landingshed#FixerTable`
-- `plan:internal/landingshed#ParseFixerReport`
+- `internal/landingshed#ParseFixerReport`
 - `plan:internal/landingshed#WriteFixerAttempts`
 - `internal/landingshed#newGateFixture`
 - `internal/landingshed#fakeVerifyTree`

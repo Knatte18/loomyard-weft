@@ -16,7 +16,7 @@
 
 **Uses:**
 - `plan:internal/landingshed#LandingStopPrefix`
-- `plan:internal/shedengine#ReasonRerouteCapReached`
+- `internal/shedengine#ReasonRerouteCapReached`
 
 **Extends:**
 - `internal/shedverbs/doc.go`

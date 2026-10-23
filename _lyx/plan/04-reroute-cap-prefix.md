@@ -1,7 +1,7 @@
 # Card 4 — reroute-cap-prefix
 
 **Create:**
-- `plan:internal/shedengine#ReasonRerouteCapReached` -> `const ReasonRerouteCapReached = "reroute cap reached"`
+- `internal/shedengine#ReasonRerouteCapReached`
 
 **Edit:**
 - `internal/shedengine#Shed.rerouteStuck`

@@ -1,20 +1,20 @@
 {
   "runGuid": "9f527ada10a19724b2f3a87061a5ac41",
-  "planFingerprint": "32c0d6828365b0dbc52a8616007856d7ae9816194abcd6e91d617eebf3eb55f2",
+  "planFingerprint": "89da704fa016f8ddeeb8c712c9e4be3f910b965302207b064f16e96415eb05ca",
   "planFileHashes": {
     "00-overview.md": "468cbc840722398d268b91221206213ab77bd8345c87e77b3ea147bfef3643da",
-    "01-fabric-merge-in-at.md": "2cbe0a881bf935eedabcff8c4469628595170706396fdccbb92b03afc86055af",
-    "02-resolve-at-tip.md": "bba0b4c7b9d29824929450af5ccba42f6a0bd6a26a22f047c7505d6a69cf5e23",
-    "03-test-file-patterns.md": "bc0773edfd3cb512ab4f42462ed26ab9bc7d7d8d2633e364a3ceb7f37eb6ab37",
-    "04-reroute-cap-prefix.md": "c3d70bcb3856b9afef23ae4f7665c896d01192ba2cc64b17b7fb369569513ff4",
+    "01-fabric-merge-in-at.md": "5658bfb064f63d28ce9dfd6178f974b5ca5ced0a730c54dc070db9d8fc7233ed",
+    "02-resolve-at-tip.md": "f34eeafb437eabdf3392c3f5d9d52785ed69a6771b7e14c07a5607daf09d3208",
+    "03-test-file-patterns.md": "47203b67861187f6b3bdc681ecbef3025392f39f97fd7fae19b713bac5ae5713",
+    "04-reroute-cap-prefix.md": "955eb87f2b0107c9e1fdfe1ce5f9b11159244e2122db8efb900e0951364ee520",
     "05-landing-fixer-config.md": "e6a1b7660c1fca21c1c2ae57aa9dd18831382f8a1109088672c6b7d0ba0a6988",
-    "06-fixer-report.md": "ed3fd2b10833c74f86f0e07769ff98ee26b0fec3fa8d4ca0794c411f4b5902be",
+    "06-fixer-report.md": "643995cc59e10d391347078d3a9cfec53f7ed856c3893ee3c1c92bc22e8c7408",
     "07-fixer-session-table.md": "ddf6b936b2f2426a4fb09096fa35139a83c00349db45b95f61806a456b530cd2",
     "08-fabric-line-change.md": "49b5f5cf4e205a7d2ed013b267f120f9f5473925cff637f001f262d209324b96",
     "09-fix-cap.md": "0b61d6162abb3a346eb9b6353e926a76cf82b8d583bb614ea7381420ef44e2ef",
     "10-fixer-attempts.md": "3a12d75582de5cac5358664b181371adabbaf2c146b6ba90bff5ccb8759198e2",
-    "11-fixer-run.md": "71020837d083df6251126f28524da23504124046fe051d5022ba10ec2fb61dfa",
-    "12-fixer-wiring.md": "25fa9f5ad92e5443e39ced943b7340c30728861507afc8e34723f51060587711",
+    "11-fixer-run.md": "d57c8d261535fda64e4be7f7269f214dbb9fc3d0d004c5d7a56b46c03a1a1c6d",
+    "12-fixer-wiring.md": "a9fbf2521e62cd1daa6441a3c8d6a1ff644bda29d3c3adfedee9cde842c7dca5",
     "13-darn-write-no-reroute.md": "4a6f3e5fe46758ef9584fd4b56d5b0ee8848e3d81e8bbebb71ca813e6c053b10",
     "14-settled-guard-no-verify-exception.md": "bbb458be836d5d4a025b56e6ffff67bde91e1ef8c6bbf7663b85515112c1b49d",
     "15-round-gate-drops-failure-record.md": "63ddf8070679d40e3f16e8a9d7b87fb2af9a2481e27f2a2241f72b2261474473",
@@ -36,7 +36,7 @@
     "31-review-input-reentry.md": "3e993953292065b46855ddfe2a8738f22fa682ad3ce66849476828ddd02be224",
     "32-merged-tip-merge-base.md": "3c8547aa56e9a6eea51b8ef1e8dcaa02722a4e2adb69a0e9a0dee5fc54cd4e8a",
     "33-landing-gate-at-fix-rows.md": "9a9e94a27545c0126766cd2781b0cf18ba3f1add60a299a8efbef87988e61c6a",
-    "34-hand-back-mark.md": "41edb0882968b2c23f64d1b1e433adb1b162a6955fe25c0e2978986bff68b30a",
+    "34-hand-back-mark.md": "b6b2067340a36be0cd8c1a99f2398f1b1ea14b8b1d9e25a64f78d9671da36a9a",
     "35-driver-hands-back-landing-halts.md": "233b01547418a22c32c854287316a4f524c034b359bd8cdaca6a0b93f10f2b94",
     "36-arbiter-refuses-landing-halts.md": "457ad226bda11a9ff526c0c15662b84c0a6908f71c72da670c7ff0cd607e72ee",
     "37-batten-restep-skips-landing-halts.md": "d3a50c17ab5f5c09ef1380d4f029e4063193d360cb973d787255fe50cef90551",
@@ -1709,7 +1709,7 @@
       }
     }
   ],
-  "currentBatch": 1,
+  "currentBatch": 0,
   "masterStrand": "84b46756278c26fa4a3d938b33a70bce",
   "masterSessionId": "15e077c7-3daf-473b-935d-c0209f975d97",
   "masterEngine": "claude",
@@ -1725,18 +1725,36 @@
         "06-fixer-report"
       ],
       "cardHashes": {
-        "01-fabric-merge-in-at": "2cbe0a881bf935eedabcff8c4469628595170706396fdccbb92b03afc86055af",
-        "02-resolve-at-tip": "bba0b4c7b9d29824929450af5ccba42f6a0bd6a26a22f047c7505d6a69cf5e23",
-        "03-test-file-patterns": "bc0773edfd3cb512ab4f42462ed26ab9bc7d7d8d2633e364a3ceb7f37eb6ab37",
-        "04-reroute-cap-prefix": "c3d70bcb3856b9afef23ae4f7665c896d01192ba2cc64b17b7fb369569513ff4",
+        "01-fabric-merge-in-at": "5658bfb064f63d28ce9dfd6178f974b5ca5ced0a730c54dc070db9d8fc7233ed",
+        "02-resolve-at-tip": "f34eeafb437eabdf3392c3f5d9d52785ed69a6771b7e14c07a5607daf09d3208",
+        "03-test-file-patterns": "47203b67861187f6b3bdc681ecbef3025392f39f97fd7fae19b713bac5ae5713",
+        "04-reroute-cap-prefix": "955eb87f2b0107c9e1fdfe1ce5f9b11159244e2122db8efb900e0951364ee520",
         "05-landing-fixer-config": "e6a1b7660c1fca21c1c2ae57aa9dd18831382f8a1109088672c6b7d0ba0a6988",
-        "06-fixer-report": "ed3fd2b10833c74f86f0e07769ff98ee26b0fec3fa8d4ca0794c411f4b5902be"
+        "06-fixer-report": "643995cc59e10d391347078d3a9cfec53f7ed856c3893ee3c1c92bc22e8c7408"
       },
       "startSha": "c14db65e04b460c2ee5e6888f0ed2e9ebc1f851e",
       "kind": "recovery",
       "spawnedAt": "2026-10-23T12:59:14Z",
-      "terminal": false,
-      "status": "",
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "01-fabric-merge-in-at",
+        "status": "done",
+        "head_sha": "c2ff8a15efa0831a641afb33bc9d3bac5faa88e6",
+        "deviations": [
+          "contracts/specs/specs_test.go",
+          "internal/landingshed/commitstatus_test.go",
+          "internal/landingshed/deps.go",
+          "internal/landingshed/finalize_verify_test.go",
+          "internal/landingshed/fixerreport.go",
+          "internal/landingshed/mergein_test.go",
+          "internal/landingshed/publish_test.go",
+          "internal/mergeresolve/deps.go"
+        ]
+      },
+      "cardShas": [
+        "c2ff8a15efa0831a641afb33bc9d3bac5faa88e6"
+      ],
       "forkTranscripts": [
         "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-loom-tail-review/15e077c7-3daf-473b-935d-c0209f975d97/subagents/agent-abdf55aeea33a1137.jsonl"
       ],
