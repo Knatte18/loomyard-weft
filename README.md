@@ -24,7 +24,8 @@ Waits on nothing open; can start now.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T3 | **adopt's owner write fails on a stale local render manifest after another machine removed design files** | [`adopt-owner-write-stale-manifest`](design-adopt-owner-write-stale-manifest.md) | loom |  | 17m<br>17m | board |
+| T3 | **adopt's owner write fails on a stale local render manifest after another machine removed design files**<br>• `profile: light` | [`adopt-owner-write-stale-manifest`](design-adopt-owner-write-stale-manifest.md) | darn |  | 17m<br>0m | board |
+| T4 | **Orch watcher's handoff timeout counts from the post, so a request queued behind a long turn times out**<br>• `profile: light` | [`orch-handoff-timeout-delivery`](design-orch-handoff-timeout-delivery.md) | darn |  | 17m<br>0m | orch, creel |
 
 ### Layer A
 
@@ -69,7 +70,6 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | B5 |  | **webster record-batch fails create-not-done for Create targets declared in an external _test package** | [`record-batch-external-test-pkg`](design-record-batch-external-test-pkg.md) | 17m<br>17m | webster, quarry |
 | B6 |  | **Decision notice from lyx loom decision add is refused by Webster's Merriam** | [`merriam-refuses-decision-notice`](design-merriam-refuses-decision-notice.md) | 17m<br>17m | webster, loom, stencil, creel |
 | B8 |  | **Fork git-mutation guard fails a run on git commands confined to a scratch repo** | [`fork-git-guard-scratch-repo`](design-fork-git-guard-scratch-repo.md) | 17m<br>17m | shed, burler |
-| B9 |  | **Orch watcher's handoff timeout counts from the post, so a request queued behind a long turn times out** | [`orch-handoff-timeout-delivery`](design-orch-handoff-timeout-delivery.md) | 17m<br>17m | orch, creel |
 
 ### Enhancements
 
