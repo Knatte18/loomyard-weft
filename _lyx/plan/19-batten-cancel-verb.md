@@ -26,17 +26,17 @@
 **Uses:**
 - `plan:internal/battencli#cancelRun`
 - `plan:internal/battencli#childReachedParent`
-- `plan:internal/battencli#removeRunRecords`
-- `plan:internal/battencli#takeCancelMarker`
-- `plan:internal/battencli#readCancelMarker`
+- `internal/battencli#removeRunRecords`
+- `internal/battencli#takeCancelMarker`
+- `internal/battencli#readCancelMarker`
 - `internal/battencli#refuseSelfAddress`
 - `internal/battencli#spawnStatusPush`
 - `internal/battencli#battenProgram`
 - `internal/battencli#wireForHub`
 - `internal/battencli#seedBoardTask`
 - `internal/battencli#newOverviewSource`
-- `plan:internal/pairteardown#Teardown.EndForCancel`
-- `plan:internal/pairteardown#CancelLockWait`
+- `internal/pairteardown#Teardown.EndForCancel`
+- `internal/pairteardown#CancelLockWait`
 - `internal/proc#CreationTime`
 
 **Intent:**
