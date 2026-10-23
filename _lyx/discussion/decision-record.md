@@ -192,6 +192,12 @@ A trace failure (no plan, no Webster state, a quarry error) is logged at Warn an
 Quarry v0.4.0, which `go.mod` already pins, ships `Enclose` and `EncloseAt` (`quarry/enclose.go`), so no module bump is needed.
 Reading slug and intent from the plan keeps the note's rule that no free text reaches the prompt from the record.
 
+### Added after Discussion (parent, 2026-10-23): Take main's reed pane-tail separator fix onto the branch
+
+Decision: The verify failures in internal/reedcli and internal/reedengine (TestNaming, TestStrandNamingAndList, TestOwnWindow_RealTmux) are main's known defect, not this task's: tmux 3.4 prints the pane-tail separator "\x1f" as the literal \037. Main fixed it in a1200c20 by a tab separator. The verify fixer ports the internal/reedengine part of a1200c20 (parse.go, overlay.go, ownwindow.go, doc.go and the parse, lifecycle and strand tests) as one fix: commit, identical to main's lines so Merge-In merges it cleanly, and changes nothing else in reed.
+
+Rationale: The branch was cut before a1200c20 landed; the tests fail on any branch without it, and a rerun passing is luck, not a fix.
+
 ## Constraints
 
 - `PATTERN-glyph-conversion-chokepoint`: Enclose is a location-to-glyph conversion done by quarry; it becomes the one sanctioned such call, in `internal/planglyph`, added to the entry's background file; the overview line is unchanged.
