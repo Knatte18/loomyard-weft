@@ -1,0 +1,4 @@
+verdict: approve
+reason: The diff covers every point of the board entry (the README's prime-owner line at its top, prime_owner in list JSON and a prime-owner line opening list --text) with no work beyond it. The carried-over Darn-Review finding was fixed in round 1 and names no parent correction. The only peer overlap, batten-cancel-verb in internal/boardengine/doc.go, is text-only, and this run lands first.
+question: ""
+superseded: []
