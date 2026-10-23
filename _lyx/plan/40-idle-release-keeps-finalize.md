@@ -1,8 +1,8 @@
 # Card 40 — idle-release-keeps-finalize
 
 **Create:**
-- `plan:internal/loomcli#finalizeKeepsLock` -> `func finalizeKeepsLock(statusPath, statusLockPath, verifyDir string) func() bool`
-- `plan:internal/loomcli#TestFinalizeKeepsLock` -> `func TestFinalizeKeepsLock(t *testing.T)`
+- `internal/loomcli#finalizeKeepsLock`
+- `internal/loomcli#TestFinalizeKeepsLock`
 
 **Edit:**
 - `internal/loomcli#loopIdleRelease` -> `func loopIdleRelease(locks *parentlock.Store, self func() parentlock.Owner, agents func() ([]parentlock.AgentState, error), bound time.Duration, covered func() bool, keep func() bool) func()`
