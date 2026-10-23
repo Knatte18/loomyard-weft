@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-23 10:18 UTC; every age below is as of then.
+Rendered 2026-10-23 10:22 UTC; every age below is as of then.
 Prime owner: `osl-1046`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -16,7 +16,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T2 | **Webster verify failures the fixer fork cannot clear escalate to an Opus-high fixer**<br>• Merriam fixes a failed verify only with forks on its own Sonnet model; a stronger fixer exists only for stuck batches<br>• `profile: darn-wide` | [`verify-fix-escalation`](design-verify-fix-escalation.md) | darn | Darn-Burler-Fix | osl-1046 | 1h<br>50m | webster, loom |
+| T2 | **Webster verify failures the fixer fork cannot clear escalate to an Opus-high fixer**<br>• Merriam fixes a failed verify only with forks on its own Sonnet model; a stronger fixer exists only for stuck batches<br>• `profile: darn-wide` | [`verify-fix-escalation`](design-verify-fix-escalation.md) | darn | Darn-Bouncer | osl-1046 | 1h<br>53m | webster, loom |
 | T5 | **Run tail: Merge-In with alignment, Code-Perch, a PR stub and one locked Land block, for loom and darn**<br>• Loom and darn share one tail after the code: Merge-In with alignment and a thorough fixer, Code-Perch, PR block behind a flag, Finalize re-merging under the parent lock | [`loom-tail-review`](design-loom-tail-review.md) | loom | Plan-Write | osl-1046 | 16h<br>2h | loom, burler, shed, fabric, batten |
 
 ### Ready
@@ -31,7 +31,7 @@ Waits only on Running or Ready entries.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T1 | **Each test runs once per tree: disjoint tiers, row entry gates, carried green runs, tmux in final**<br>• Tiers tagged by name, shed row entry gates, verify skipped on an already green tree, tmux in the final gate, gate time measured<br>• `profile: light` | [`gate-runs-once`](design-gate-runs-once.md) | loom | `loom-tail-review`, `verify-fix-escalation` | 5d<br>49m | gate, shed, loom, webster, fabric, batten |
+| T1 | **Each test runs once per tree: disjoint tiers, row entry gates, carried green runs, tmux in final**<br>• Tiers tagged by name, shed row entry gates, verify skipped on an already green tree, tmux in the final gate, gate time measured<br>• `profile: light` | [`gate-runs-once`](design-gate-runs-once.md) | loom | `loom-tail-review`, `verify-fix-escalation` | 5d<br>53m | gate, shed, loom, webster, fabric, batten |
 
 ## Notes
 
@@ -46,7 +46,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | A3 |  | **Audit the twill and lens review setup: worth per perch, recurring finding classes, writer quality**<br>• One audit over the review records once about ten loom runs with the current setup land on Neve | [`review-setup-audit`](design-review-setup-audit.md) | 7d<br>21h | burler, loom, report, stencil, shed |
 | A4 |  | **Audit: ideas from tree-sitter-analyzer for quarry and its use in lyx**<br>• What the Python tree-sitter-analyzer offers that quarry or lyx could use if built in Go, what already exists, and what would not pay off | [`tsa-quarry-audit`](design-tsa-quarry-audit.md) | 4d<br>4d | quarry, webster, burler, loom |
 | A5 |  | **Sweep go_parallel on OSL-1046 with Cortex XDR**<br>• Time both gate tiers on the work laptop on a quiet machine and log them in docs beside the Neve numbers, with full hardware info | [`bench-osl1046-xdr`](design-bench-osl1046-xdr.md) | 3d<br>2d |  |
-| A6 |  | **Lens overlap audit: which lenses find the same defects, and a smaller set**<br>• twill-plan 8 to 5 lenses recommended; twill-discussion 7 to 4 and review-code 4 to 3 at low confidence | [`lens-overlap-audit`](design-lens-overlap-audit.md) | 20h<br>20h | burler, loom |
+| A6 |  | **Lens overlap audit: which lenses find the same defects, and a smaller set**<br>• twill-plan 8 to 5 lenses recommended; twill-discussion 7 to 4 and review-code 4 to 3 at low confidence | [`lens-overlap-audit`](design-lens-overlap-audit.md) | 21h<br>20h | burler, loom |
 | A7 |  | **Trial: batcher profile wide (budget 300k)**<br>• Hub runs a new batcher profile wide, budget 300k; check cost and fork quality before taking it into the template | [`batch-budget-300k-trial`](design-batch-budget-300k-trial.md) | 20h<br>20h | webster |
 
 ### Enhancements
