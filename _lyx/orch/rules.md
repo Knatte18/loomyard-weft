@@ -54,3 +54,9 @@ Once `loom-tail-review` has landed, PR-Align no longer names the board entries a
 Its brief: read the landed commit and the run's decision record against the board's notes, through `lyx board` only, edit nothing, and report each note the landing superseded whole or in part, with why.
 You put that report to the operator, and remove or amend a note only after the operator decides.
 This job moves to the orch's Go driver once there is one, which spawns the same agent.
+
+## A decision for a run at Webster (#849)
+
+Merriam refuses the notice `lyx loom decision add` sends, since it comes from `ly:LOOM` and Merriam may not read the decision record.
+While a run is at Webster, record the decision with the verb as usual, then message Merriam (`<shortname>:<slug>:webster`) yourself with the decision's content spelled out.
+Remove this section once #849 is fixed.
