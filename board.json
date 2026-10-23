@@ -1228,6 +1228,25 @@
       "body": "## Seen (orch, 2026-10-23)\n\n`e634efb9` separated the reed pane tail with `\"\\x1f\"`, written and tested on Neve (Ubuntu 26.04, a newer tmux).\nOn OSL-1046 (Ubuntu 24.04, tmux 3.4), tmux prints the separator as the literal text `\\037`, so the reed naming tests and a dead-strand test failed in every run cut before `a1200c20` switched to a tab.\nEarlier tasks already made LoomYard run on Ubuntu 24.04.\nNothing states Ubuntu 24.04 as a supported floor: PATTERN names no platform floor, and the repository has no CI.\n\n## Operator view, not a decision (2026-10-23)\n\nEverything must work on Ubuntu 24.04; checking that by hand all the time is a large job.\n\n## Idea (orch, not decided)\n\n- A PATTERN entry naming the floor: Ubuntu 24.04 with its tmux 3.4, its git and its Go toolchain, so a writer and a reviewer know what an external tool's behaviour may be assumed from.\n- A mechanical check, so no one checks by hand, either:\n  - a CI job on GitHub's `ubuntu-24.04` runner, tmux from apt, that runs the tiers up to the tmux tier on every push to `main`; or\n  - the gate's tmux tier runs against a tmux 3.4 binary on every machine, so a run on Neve meets the floor's tmux too.\n- OSL-1046 runs the tmux tier in every `final` and `landing` gate since 2026-10-23, so a run there already meets the floor; the gap is runs on Neve.\n",
       "created": "2026-10-23T08:42:14Z",
       "revised": "2026-10-23T08:42:14Z"
+    },
+    {
+      "id": 771,
+      "handle": "E27",
+      "slug": "creel-carry-agent-mail",
+      "title": "Carry agent mail into the pane in full instead of a reminder and a read turn",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "creel"
+      ],
+      "issues": [],
+      "priority": "low",
+      "depends_on": [],
+      "isolated": false,
+      "brief": "A reminder plus lyx creel read costs the receiver an extra turn per agent message",
+      "body": "## Seen (2026-10-23)\n\nCreel carries a message in full into the receiver's pane only when its sender is a program or EXTERNAL.\nMail from an agent strand, and any message over 4 KiB, reaches the receiver only as a reminder line naming `lyx creel read` (`internal/creelengine/doc.go`), so the receiver spends one extra turn reading it before it can act.\nThe reminder exists so that an agent's text cannot pose as an instruction in another agent's pane.\n\n## Operator view, not a decision (2026-10-23)\n\nWith the runs' cost in focus, everything might instead be typed into the pane directly, with no reminder and read turn; to weigh later.\n\n## To weigh\n\n- The extra turn per agent message against the guard that keeps one agent's text from reading as an instruction in another agent's pane.\n- The sender line on a carried message is what made Webster's Master refuse a decision notice (issue #849), so a carried agent message would meet the same receiver judgement.\n- Note `creel-agents` moves agent messaging from SendMessage onto creel, which makes agent mail, and so this cost, more common.\n",
+      "created": "2026-10-23T08:45:46Z",
+      "revised": "2026-10-23T08:45:46Z"
     }
   ],
   "prime_owner": "osl-1046"
