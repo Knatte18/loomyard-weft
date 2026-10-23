@@ -2,13 +2,13 @@
 
 **Create:**
 - `contracts/specs/landing-fixer-report-spec.md`
-- `plan:contracts/specs#LandingFixerReportSpec` -> `var LandingFixerReportSpec []byte`
-- `plan:internal/landingshed#FixerVerdict` -> `type FixerVerdict string`
-- `plan:internal/landingshed#FixerFixed` -> `const FixerFixed FixerVerdict = "fixed"`
-- `plan:internal/landingshed#FixerEscalate` -> `const FixerEscalate FixerVerdict = "escalate"`
-- `plan:internal/landingshed#FixerReport` -> `type FixerReport struct`
-- `plan:internal/landingshed#ParseFixerReport` -> `func ParseFixerReport(path string) (FixerReport, error)`
-- `plan:internal/landingshed#TestParseFixerReport` -> `func TestParseFixerReport(t *testing.T)`
+- `contracts/specs#LandingFixerReportSpec`
+- `internal/landingshed#FixerVerdict`
+- `internal/landingshed#FixerFixed`
+- `internal/landingshed#FixerEscalate`
+- `internal/landingshed#FixerReport`
+- `internal/landingshed#ParseFixerReport`
+- `internal/landingshed#TestParseFixerReport`
 
 **Extends:**
 - `contracts/specs#entries`

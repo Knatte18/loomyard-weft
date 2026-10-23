@@ -27,8 +27,8 @@
 - `internal/landingshed#orderRecordingResolver.Resolve` -> `func (r *orderRecordingResolver) Resolve(ctx context.Context, source, tip string) (mergeresolve.Result, error)`
 
 **Create:**
-- `plan:internal/mergeresolve#fakeMergeSurface.MergeInAt` -> `func (f *fakeMergeSurface) MergeInAt(source, tip string) (fabricengine.MergeResult, error)`
-- `plan:internal/mergeresolve#TestResolve_MergesTheToldTip` -> `func TestResolve_MergesTheToldTip(t *testing.T)`
+- `internal/mergeresolve#fakeMergeSurface.MergeInAt`
+- `internal/mergeresolve#TestResolve_MergesTheToldTip`
 
 **Extends:**
 - `internal/mergeresolve/doc.go`

@@ -1,11 +1,11 @@
 # Card 3 — test-file-patterns
 
 **Create:**
-- `plan:internal/planparser#testFileMatchers` -> `var testFileMatchers map[string]func(path string) bool`
-- `plan:internal/planparser#IsTestFile` -> `func IsTestFile(language, path string) bool`
-- `plan:internal/planparser#IsAnyLanguageTestFile` -> `func IsAnyLanguageTestFile(path string) bool`
-- `plan:internal/planparser#PlanLanguage` -> `func PlanLanguage(plan *Plan) string`
-- `plan:internal/planparser#TestIsTestFile` -> `func TestIsTestFile(t *testing.T)`
+- `internal/planparser#testFileMatchers`
+- `internal/planparser#IsTestFile`
+- `internal/planparser#IsAnyLanguageTestFile`
+- `internal/planparser#PlanLanguage`
+- `internal/planparser#TestIsTestFile`
 
 **Extends:**
 - `internal/planparser/doc.go`

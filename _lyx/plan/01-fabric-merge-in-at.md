@@ -1,9 +1,9 @@
 # Card 1 — fabric-merge-in-at
 
 **Create:**
-- `plan:internal/fabricengine#Fabric.MergeInAt` -> `func (f *Fabric) MergeInAt(source, warpSHA string) (MergeResult, error)`
-- `plan:internal/fabricengine#Fabric.mergeIn` -> `func (f *Fabric) mergeIn(source, warpSHA string) (res MergeResult, err error)`
-- `plan:internal/fabricengine_test#TestMergeInAt_MergesTheGivenTipNotTheLocalOne` -> `func TestMergeInAt_MergesTheGivenTipNotTheLocalOne(t *testing.T)`
+- `internal/fabricengine#Fabric.MergeInAt`
+- `internal/fabricengine#Fabric.mergeIn`
+- `internal/fabricengine_test#TestMergeInAt_MergesTheGivenTipNotTheLocalOne`
 
 **Edit:**
 - `internal/fabricengine#Fabric.MergeIn`

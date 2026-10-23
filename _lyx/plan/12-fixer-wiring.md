@@ -12,9 +12,9 @@
 - `internal/loomcli#TestLandingDeps_EveryFieldPopulated`
 
 **Uses:**
-- `plan:internal/planparser#PlanLanguage`
-- `plan:internal/planparser#IsTestFile`
-- `plan:internal/planparser#IsAnyLanguageTestFile`
+- `internal/planparser#PlanLanguage`
+- `internal/planparser#IsTestFile`
+- `internal/planparser#IsAnyLanguageTestFile`
 - `plan:internal/fabricengine#Fabric.LineChange`
 
 **Intent:** Fill the merge fixer's seams card 11 added, from the values the wiring already resolved, and keep `landingDeps` free of I/O and of a new argument.
