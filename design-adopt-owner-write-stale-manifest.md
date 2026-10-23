@@ -1,6 +1,6 @@
 # adopt's owner write fails on a stale local render manifest after another machine removed design files
 
-`adopt-owner-write-stale-manifest` · Task · bug, board · running · Finalize
+`adopt-owner-write-stale-manifest` · Task · bug, board · done
 
 Imported from [issue #844](https://github.com/Knatte18/loomyard/issues/844).
 
