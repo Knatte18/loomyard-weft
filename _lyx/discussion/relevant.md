@@ -1,0 +1,26 @@
+# Relevant
+
+- `contracts/recipes/loom-recipe.yaml` — loom's rows and edges, every tail row this task removes, moves or renames
+- `contracts/recipes/darn-recipe.yaml` — darn's rows and edges, Darn-Write's reroute and the PR rows that go
+- `internal/landingshed/doc.go` — Merge-In, Publish, PR-Align, PR-Gate and Finalize as built, the lock, the failure record and the deploy key
+- `internal/landingshed/template.yaml` — landing config keys: `require_pr_to_base`, conflict and describe models, lock idle release
+- `internal/loomengine/template.yaml` — loom.yaml keys for the Webster-Review and Merge-Review perches and the alignment agent
+- `internal/darnengine/template.yaml` — darn.yaml keys, home of darn's PR-Review flag
+- `internal/loomrecipe/darnrecipe.go` `applyDarnReviewBudget` — darn's budget-0 rewrite to Merge-In
+- `internal/loomshed/darnwrite.go` `darnWrite.rerouteReason` — Darn-Write's reroute on a failure record, which goes
+- `internal/battenshed/doc.go` — batten's publish retry and Land's deploy gate
+- `internal/battenshed/land.go` `LandingSettings` — the deploy gate on `require_pr_to_base`
+- `internal/sheddriver/doc.go` — the Go driver's verify-halt row and its `Verify` seam
+- `internal/shedengine/reroute.go` `rerouteCap` — the reroute cap that bounds Finalize's route back
+- `internal/shedadapters/doc.go` — Bouncer re-entry over a settled verdict and amendment generations
+- `internal/verifytree/doc.go` — the Publish failure record and its readers
+- `internal/fabricengine/doc.go` — the merge surface: the weft never takes part in a merge
+- `internal/loomcli/settledguard.go` `settledSegmentGuard` — the goto guard's verify-failure exception
+- `internal/loomcli/landingdeps.go` — the landing rows' wiring, failure classification included
+- `internal/loomcli/alignmentwiring.go` — the alignment agent's wiring for PR-Align
+- `internal/loomcli/approve.go` — `lyx loom approve`, which goes
+- `internal/loomcli/reject.go` — `lyx loom reject`, which goes
+- `internal/loomcli/darnclassify.go` — darn's verify-failure target classification, which goes
+- `internal/sheddriver/driverules.go` — the hand-back rows read by reason prefix, beside which the landing-stop row goes
+- `contracts/stencils/orch/orch-template-role.md` — the orch's PR-Gate section and verify-failure rule
+- `pattern/PATTERN-verified-tree.md` — verify sites and the failure record's writers
