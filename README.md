@@ -68,6 +68,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | B6 |  | **Decision notice from lyx loom decision add is refused by Webster's Merriam** | [`merriam-refuses-decision-notice`](design-merriam-refuses-decision-notice.md) | 0m<br>0m | webster, loom, stencil, creel |
 | B7 |  | **adopt's owner write fails on a stale local render manifest after another machine removed design files** | [`adopt-owner-write-stale-manifest`](design-adopt-owner-write-stale-manifest.md) | 0m<br>0m | board |
 | B8 |  | **Fork git-mutation guard fails a run on git commands confined to a scratch repo** | [`fork-git-guard-scratch-repo`](design-fork-git-guard-scratch-repo.md) | 0m<br>0m | shed, burler |
+| B9 |  | **Orch watcher's handoff timeout counts from the post, so a request queued behind a long turn times out** | [`orch-handoff-timeout-delivery`](design-orch-handoff-timeout-delivery.md) | 0m<br>0m | orch, creel |
 
 ### Enhancements
 
