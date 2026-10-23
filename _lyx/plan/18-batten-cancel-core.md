@@ -1,15 +1,15 @@
 # Card 18 — batten-cancel-core
 
 **Create:**
-- `plan:internal/battencli#cancelDeps` -> `type cancelDeps struct`
-- `plan:internal/battencli#cancelReport` -> `type cancelReport struct`
-- `plan:internal/battencli#cancelRun` -> `func cancelRun(ctx context.Context, slug string, remove bool, deps cancelDeps) (cancelReport, error)`
-- `plan:internal/battencli#childReachedParent` -> `func childReachedParent(batten shedengine.Status, battenFound bool, child shedengine.Status, childFound bool, pastMerge bool) bool`
-- `plan:internal/battencli#liveOnWindows` -> `func liveOnWindows(records []runproc.Record, createdAt func(pid int) (time.Time, bool)) []runproc.Record`
-- `plan:internal/battencli#windowsLiveRefusal` -> `func windowsLiveRefusal(slug string, records []runproc.Record) error`
-- `plan:internal/battencli#cancelNotice` -> `func cancelNotice(report cancelReport) string`
-- `plan:internal/battencli#TestCancelRun` -> `func TestCancelRun(t *testing.T)`
-- `plan:internal/battencli#TestChildReachedParent` -> `func TestChildReachedParent(t *testing.T)`
+- `internal/battencli#cancelDeps`
+- `internal/battencli#cancelReport`
+- `internal/battencli#cancelRun`
+- `internal/battencli#childReachedParent`
+- `internal/battencli#liveOnWindows`
+- `internal/battencli#windowsLiveRefusal`
+- `internal/battencli#cancelNotice`
+- `internal/battencli#TestCancelRun`
+- `internal/battencli#TestChildReachedParent`
 
 **Edit:**
 - `internal/battencli#stoppedRefusal` -> `func stoppedRefusal(slug, act, reentry string, entry fabricengine.EntryOutcome, branches []fabricengine.BranchOutcome) error`

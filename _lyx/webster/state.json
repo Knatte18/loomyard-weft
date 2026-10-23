@@ -1,6 +1,6 @@
 {
   "runGuid": "33c2003da5eebd0f91b9f0e7bd005b72",
-  "planFingerprint": "a47d74945df6e406b0a4fae88e2824fe0f6580077092ea6aca3353aceb96a87c",
+  "planFingerprint": "e3acb8371b4ce48bc794c836b5d82ec9ae2cb5b12c290588fe6425f8b94dcc5f",
   "planFileHashes": {
     "00-overview.md": "5e193a8f04988356c2396f9961edb486c4111c6ca2e29d29d9063486706425e5",
     "01-cancel-marker-paths.md": "35911c1bb6d53d246ee742300e563328e25179d07e05a30a31498e2125c3c94a",
@@ -20,8 +20,8 @@
     "15-batten-cancel-marker.md": "210c6efa7f01833d4a33d59bc9d52a3c5dfbee8b0062a9b420eee8ef4f5c5f6b",
     "16-batten-start-guards.md": "8de9ae79b2ff73d948ea9dc52529a5c377da5443b80cfa60ee551b6ac5a35be5",
     "17-batten-pre-drive-check.md": "8f996149030861de577d0ce2a8728fecfe29e78b76c001f8a137e416c5d1b529",
-    "18-batten-cancel-core.md": "24111d42e5d4f2791b0ddf32ef649cce59b6e0f59a08f896de0081ba6919cb84",
-    "19-batten-cancel-verb.md": "a3a20964e65ecf1103bf4d7869aa37fcb73ab7d43e36b5966b2da41324d9bcfa",
+    "18-batten-cancel-core.md": "72980546284142fbe64ec2acafcdea5f57695e5925f65664ef0feed421fdfc0a",
+    "19-batten-cancel-verb.md": "595fc77463ac7d6a06c78ae182be80eb0301b971ca1cc4cee02063d01af1acbc",
     "20-docs-cancel.md": "b8fa0c0020e74129c3a00a1630a5f5f884ee53dae4be0602728b78d9a4a01b8c"
   },
   "planOverviewFrameHash": "3792a8806bac67f63adac7116af8c27a9c30a5dc37c561553d5c7d7f66b5af92",
@@ -365,7 +365,7 @@
       }
     }
   ],
-  "currentBatch": 18,
+  "currentBatch": 0,
   "masterStrand": "59bc96a175d925311756971bd125602d",
   "masterSessionId": "50879ce8-d26c-4404-8b2c-a3daf3a8ef2c",
   "masterEngine": "claude",
@@ -475,8 +475,8 @@
         "20-docs-cancel"
       ],
       "cardHashes": {
-        "18-batten-cancel-core": "24111d42e5d4f2791b0ddf32ef649cce59b6e0f59a08f896de0081ba6919cb84",
-        "19-batten-cancel-verb": "a3a20964e65ecf1103bf4d7869aa37fcb73ab7d43e36b5966b2da41324d9bcfa",
+        "18-batten-cancel-core": "72980546284142fbe64ec2acafcdea5f57695e5925f65664ef0feed421fdfc0a",
+        "19-batten-cancel-verb": "595fc77463ac7d6a06c78ae182be80eb0301b971ca1cc4cee02063d01af1acbc",
         "20-docs-cancel": "b8fa0c0020e74129c3a00a1630a5f5f884ee53dae4be0602728b78d9a4a01b8c"
       },
       "startSha": "d8e7a6e3cc18d2afb1733b55d6ae9039b488e91a",
@@ -484,8 +484,28 @@
       "spawnedAt": "2026-10-23T07:51:03Z",
       "sessionId": "50879ce8-d26c-4404-8b2c-a3daf3a8ef2c",
       "engine": "claude",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "18-batten-cancel-core",
+        "status": "done",
+        "head_sha": "c30e292da22fea3c2801262a8391ab8d2eab877b",
+        "deviations": [
+          "internal/battencli/cancel.go",
+          "internal/battencli/cancel_integration_test.go",
+          "internal/battencli/cancel_test.go",
+          "internal/battencli/cancelcmd.go"
+        ]
+      },
+      "cardShas": [
+        "c30e292da22fea3c2801262a8391ab8d2eab877b"
+      ],
+      "forkTranscripts": [
+        "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-batten-cancel-verb/50879ce8-d26c-4404-8b2c-a3daf3a8ef2c/subagents/agent-a66929860338b7fdd.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-batten-cancel-verb/50879ce8-d26c-4404-8b2c-a3daf3a8ef2c/subagents/agent-a66929860338b7fdd.jsonl"
+      ]
     },
     "6": {
       "slug": "records-write-lock",
@@ -535,6 +555,7 @@
   "seenForkTranscripts": [
     "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-batten-cancel-verb/50879ce8-d26c-4404-8b2c-a3daf3a8ef2c/subagents/agent-a27e1fa7959dc7aa1.jsonl",
     "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-batten-cancel-verb/50879ce8-d26c-4404-8b2c-a3daf3a8ef2c/subagents/agent-aed3c4b34faad4151.jsonl",
-    "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-batten-cancel-verb/50879ce8-d26c-4404-8b2c-a3daf3a8ef2c/subagents/agent-afbaf15de2a7f967e.jsonl"
+    "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-batten-cancel-verb/50879ce8-d26c-4404-8b2c-a3daf3a8ef2c/subagents/agent-afbaf15de2a7f967e.jsonl",
+    "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-batten-cancel-verb/50879ce8-d26c-4404-8b2c-a3daf3a8ef2c/subagents/agent-a66929860338b7fdd.jsonl"
   ]
 }
