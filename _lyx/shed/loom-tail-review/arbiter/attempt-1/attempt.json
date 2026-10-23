@@ -1,0 +1,15 @@
+{
+  "number": 1,
+  "stop_key": {
+    "current_producer": "Discussion-Bouncer",
+    "history_length": 13,
+    "state": "awaiting"
+  },
+  "pause_before": "Merge-In",
+  "pause_after": "",
+  "spawned_at": "2026-10-23T12:07:52.99990612+02:00",
+  "deadline": "2026-10-23T12:37:52.99990612+02:00",
+  "strand_guid": "006767b3ff53d7e8c3e7c40abfa779fd",
+  "envelope_path": "/home/AD.NORCERESEARCH.NO/hanf/Code/Knatte18/loomyard-LYXHUB/loom-tail-review/_lyx/shed/loom-tail-review/drive-reports/drive-envelope-20261023-120752-743e.json",
+  "report_path": "/home/AD.NORCERESEARCH.NO/hanf/Code/Knatte18/loomyard-LYXHUB/loom-tail-review/_lyx/shed/loom-tail-review/drive-reports/drive-report-20261023-120752-9982.md"
+}
