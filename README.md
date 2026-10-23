@@ -64,6 +64,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | B2 |  | **Seeded VS Code title-bar colours do not show in task worktrees**<br>• The seeder writes a palette colour, but loom-tail-review settings.json has none and no colour shows | [`ide-title-colours-missing`](design-ide-title-colours-missing.md) | 5h<br>4h | ide |
 | B3 |  | **TestSmokeStart_NeverAttachesAndAddsNoOperatorStrand flakes on records index.lock and halts Merge-In** | [`smokestart-index-lock-flake`](design-smokestart-index-lock-flake.md) | 0m<br>0m | loom, fabric |
 | B4 |  | **Burler fix loop cannot route a decision-class finding to the parent** | [`burler-decision-finding-route`](design-burler-decision-finding-route.md) | 0m<br>0m | burler, loom |
+| B5 |  | **webster record-batch fails create-not-done for Create targets declared in an external _test package** | [`record-batch-external-test-pkg`](design-record-batch-external-test-pkg.md) | 0m<br>0m | webster, quarry |
 
 ### Enhancements
 
