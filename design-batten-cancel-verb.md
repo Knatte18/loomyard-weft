@@ -1,6 +1,6 @@
 # One batten verb ends a run for good, live or stopped, before or after its pair exists
 
-`batten-cancel-verb` · Task · bug, batten, reed, shed · running · Merge-Bouncer
+`batten-cancel-verb` · Task · bug, batten, reed, shed · running · Merge-Burler-Review
 
 Imported from [issue #775](https://github.com/Knatte18/loomyard/issues/775).
 
