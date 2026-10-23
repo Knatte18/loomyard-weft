@@ -2,7 +2,7 @@
 
 `loom-tail-review` · Task · enhancement, loom, burler, shed, fabric, batten
 
-Depends on: [`gate-runs-once`](design-gate-runs-once.md)
+Depends on: [`gate-runs-once`](design-gate-runs-once.md), [`plan-card-rules`](design-plan-card-rules.md)
 
 ## Design (operator, 2026-10-23)
 
