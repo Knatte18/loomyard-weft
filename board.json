@@ -1449,6 +1449,24 @@
       "body": "## Seen (orch, 2026-10-23, OSL-1046)\n\nTwo batten runs started at 18:54 each hung on a git call to GitHub: `orch-handoff-timeout-delivery`'s Worktree-Create on `git ls-remote --heads origin refs/heads/\u003cslug\u003e-weft`, and `adopt-owner-write-stale-manifest`'s `lyx fabric ... push`.\nEach `git-remote-https` held one TCP connection to 140.82.121.4:443 with 395 bytes unacknowledged in its send queue, the size of a TLS opening, and no answer for over two minutes, while a fresh `git ls-remote` from the prime to the same repository answered at once.\nTCP retransmission would have held each call for about a quarter of an hour; nothing in lyx bounded it.\nEnding the two `git-remote-https` processes by hand failed the calls, and batten retried and went on.\n\n## Idea\n\nEvery git network call lyx makes carries a stall bound, such as git's `http.lowSpeedLimit` and `http.lowSpeedTime`, or a timeout on the command, and is retried once on a stall, so a dead connection costs seconds instead of minutes.\n",
       "created": "2026-10-23T16:58:17Z",
       "revised": "2026-10-23T16:58:17Z"
+    },
+    {
+      "id": 786,
+      "handle": "B9",
+      "slug": "idle-notice-misses-fork-activity",
+      "title": "Batten idle notice fires while a writer works in a fork",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "batten"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "The idle check reads no fork transcript, so a writer working through a fork reads as idle",
+      "body": "## Seen (orch, 2026-10-23)\n\nBatten sent the orch an idle notice for `loom-tail-review` (creel #182) reading \"no agent activity readable\" for 1h15m, while the run was at Plan-Write and the Plan writer's fork was writing the plan.\nThe run was healthy: Plan-Write finished and Plan-Bouncer started at 14:05 local.\nThe activity batten reads did not count the fork's own transcript, so a writer working through a fork looked idle.\n\n## Idea\n\nBatten's idle check reads a session's fork transcripts too, under `subagents/` beside the session's own transcript, and counts their writes as activity, so a writer working in a fork raises no idle notice.\n",
+      "created": "2026-10-23T17:12:42Z",
+      "revised": "2026-10-23T17:12:42Z"
     }
   ],
   "prime_owner": "osl-1046"
