@@ -1,15 +1,15 @@
 # Card 5 — task-branch-discard
 
 **Create:**
-- `plan:internal/fabricengine#DiscardResult` -> `type DiscardResult struct`
-- `plan:internal/fabricengine#Topology.DiscardTaskBranch` -> `func (t *Topology) DiscardTaskBranch(l *lyxcwd.Location, slug string) (DiscardResult, error)`
-- `plan:internal/fabricengine#archiveTaskTip` -> `func archiveTaskTip(rec *Mutations, repoDir, slug, tip string) (string, error)`
-- `plan:internal/fabricengine#deleteArchivedTaskBranch` -> `func deleteArchivedTaskBranch(rec *Mutations, repoDir, warpBranch, localTag, originTag, leaseTip string) (localDeleted, originDeleted bool, err error)`
-- `plan:internal/fabricengine#branchDirtinessArchivedTip` -> `const branchDirtinessArchivedTip branchDirtinessKind = iota`
-- `plan:internal/fabricengine#dirtyArchivedTip` -> `func dirtyArchivedTip(archiveTag string) branchDirtiness`
-- `plan:internal/fabricengine_test#TestDiscardTaskBranch` -> `func TestDiscardTaskBranch(t *testing.T)`
-- `plan:internal/fabricengine_test#TestDeleteArchivedTaskBranch` -> `func TestDeleteArchivedTaskBranch(t *testing.T)`
-- `plan:internal/fabricengine#DeleteArchivedTaskBranchForTest` -> `func DeleteArchivedTaskBranchForTest(repoDir, warpBranch, localTag, originTag, leaseTip string) (localDeleted, originDeleted bool, err error)`
+- `internal/fabricengine#DiscardResult`
+- `internal/fabricengine#Topology.DiscardTaskBranch`
+- `internal/fabricengine#archiveTaskTip`
+- `internal/fabricengine#deleteArchivedTaskBranch`
+- `internal/fabricengine#branchDirtinessArchivedTip`
+- `internal/fabricengine#dirtyArchivedTip`
+- `internal/fabricengine_test#TestDiscardTaskBranch`
+- `internal/fabricengine_test#TestDeleteArchivedTaskBranch`
+- `internal/fabricengine#DeleteArchivedTaskBranchForTest`
 
 **Edit:**
 - `internal/fabricengine#checkBranchDirtiness`

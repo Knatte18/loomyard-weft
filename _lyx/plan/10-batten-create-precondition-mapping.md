@@ -7,7 +7,7 @@
 
 **Uses:**
 - `plan:internal/battenshed#PreconditionError`
-- `plan:internal/fabricengine#ErrSourceDirty`
+- `internal/fabricengine#ErrSourceDirty`
 - `internal/fabricengine#ErrBranchExists`
 - `internal/fabricengine#ErrRemoteLeftover`
 

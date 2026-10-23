@@ -37,7 +37,7 @@
 - `internal/battencli#newOverviewSource`
 - `plan:internal/pairteardown#Teardown.EndForCancel`
 - `plan:internal/pairteardown#CancelLockWait`
-- `plan:internal/proc#CreationTime`
+- `internal/proc#CreationTime`
 
 **Intent:**
 Add the verb `lyx batten cancel <slug> [--remove]` (D1) and wire `cancelRun`'s production seams.

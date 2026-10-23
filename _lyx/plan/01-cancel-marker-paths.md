@@ -1,8 +1,8 @@
 # Card 1 — cancel-marker-paths
 
 **Create:**
-- `plan:internal/shedrun#CancelMarker` -> `func CancelMarker(l *lyxcwd.Location, runID string) string`
-- `plan:internal/shedrun#CancelMarkerLock` -> `func CancelMarkerLock(l *lyxcwd.Location, runID string) string`
+- `internal/shedrun#CancelMarker`
+- `internal/shedrun#CancelMarkerLock`
 
 **Edit:**
 - `internal/shedrun#TestPathConstructors`

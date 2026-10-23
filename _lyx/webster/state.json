@@ -1,27 +1,27 @@
 {
   "runGuid": "33c2003da5eebd0f91b9f0e7bd005b72",
-  "planFingerprint": "bfc90e5ab90baf1822daed7f152f7c026b7d5c07293d7f70cf56afc7e5660eee",
+  "planFingerprint": "a5014e7a17d7de56adb0a68e875a30b01a4f3b921e4beb9f7de0ce5149e74dbf",
   "planFileHashes": {
     "00-overview.md": "5e193a8f04988356c2396f9961edb486c4111c6ca2e29d29d9063486706425e5",
-    "01-cancel-marker-paths.md": "7916076b3e34d04bee120a7fb993d3d4d9f6a089be81d1c668706d0bcd5bbb37",
-    "02-proc-creation-time.md": "cd17c0c318e5f29f19ac313677a546d68136d472fe2fa61e5b6fd77574d20f8f",
-    "03-source-dirty-typed-error.md": "afe6320fd0beef4fe6f1ac2fbb398782aec93392ce3cf5a1abe8b48a1c7db445",
-    "04-pair-parts-reads.md": "61cee3206cadf9e1f4d0c38b80de0c378c7f14c8398d86c92c6c27ab633b7f53",
-    "05-task-branch-discard.md": "deca8a96a7ada1aaef5db0e7b30a2efe9f3c0a111475acb3a34ba49589810557",
+    "01-cancel-marker-paths.md": "35911c1bb6d53d246ee742300e563328e25179d07e05a30a31498e2125c3c94a",
+    "02-proc-creation-time.md": "aea373c0deaf917e1a887fa9e08e2544143fe7ee902313cb7d92a577120f1e73",
+    "03-source-dirty-typed-error.md": "2c25381dcd42a0e934e3961c4228ed21215b37c3bdc145a5c393b28f5dbbf413",
+    "04-pair-parts-reads.md": "ae823195842667c3415db08d06f2c2fc8f17425dd5b07bd433cd39c4e01e2785",
+    "05-task-branch-discard.md": "d516ae84c013656fc8118c6f8d28da06ce59e30b7efd045790073c10b47e8fd9",
     "06-records-write-lock.md": "5efa25d30af1d353c66e1f8c2be79305386cec0aefafdaa842e59e2694a3f56c",
     "07-shed-locked-check-and-precondition.md": "022f63717ac471896bbff1063aeaadab2932d20a1325341b729c60685fb1621b",
     "08-driver-precondition-row.md": "40d25087b8100a1ddf51206d3c1915ca017c95b8023e1f541dbb80abedb30091",
     "09-worktree-create-precondition-halt.md": "431b96784259ec14126e0ecf27ba35ea58da065f15200a242030eb1e3d068c11",
-    "10-batten-create-precondition-mapping.md": "f6403e39137a082d33e1cdb9f17bde1d4f30dca14daedb540ccd24ff97eec294",
+    "10-batten-create-precondition-mapping.md": "a974972769d67c4600209fdfce67ad0d106905d5cb5d2d3b5349860996fe86d6",
     "11-board-runlock-names-cancel.md": "92d0a4a8db41f655f9b7539c62e772e173d4c4876d3cdf0cfd63481d748fca20",
     "12-cleanup-removal-split.md": "ffdbaae0e4de14ec7ee83a26d9da19f308cf655599b1f6d6173ab40f8962c702",
     "13-teardown-origin-snapshot-and-claim-mode.md": "3db7f5b8401f04414d48c14211169600bdda06fe329ffbf2cde99d92fecc826a",
     "14-teardown-cancel-phase.md": "4b84d6d5390cdaa59ef3f1cfbdd73a82f729db1f7cb09e57239477e2a825dbc6",
-    "15-batten-cancel-marker.md": "20e198b838785756e7c8053bde9695cbe06924a39172890c86b56b37383e74ac",
-    "16-batten-start-guards.md": "91f5fd0662e97a699d0d77c51c3b01725085b47a47c532c20ebd6371a7bd8b72",
+    "15-batten-cancel-marker.md": "c42b7597e61482413f49791f0f50a59b5dec16eb18e525fe981005bef1399615",
+    "16-batten-start-guards.md": "8f5b6c9e157fe782b329d5f6e814803c2d93f8e8294f80824eb3601d68656c6f",
     "17-batten-pre-drive-check.md": "331f2be16d7bfd4d0b044b30df74fc5f93773eb1da2575b4dddb8bbce5500adc",
-    "18-batten-cancel-core.md": "4829613609affb9cc4f553fe4387917416f745f6347fde9ef33a52e51e474c34",
-    "19-batten-cancel-verb.md": "b27376f4475257467ae5c7e6bbd86cec37528b56478e531e3686c0aaef7c3042",
+    "18-batten-cancel-core.md": "5a8aaef818626c7bcbaf9e0db210f1e4b581ee4f2835234cec99515408bd4a05",
+    "19-batten-cancel-verb.md": "69e97e15798728e75a1f0452407df15859175abfe7474a9e5a7fa9c10c514371",
     "20-docs-cancel.md": "b8fa0c0020e74129c3a00a1630a5f5f884ee53dae4be0602728b78d9a4a01b8c"
   },
   "planOverviewFrameHash": "3792a8806bac67f63adac7116af8c27a9c30a5dc37c561553d5c7d7f66b5af92",
@@ -365,7 +365,7 @@
       }
     }
   ],
-  "currentBatch": 1,
+  "currentBatch": 0,
   "masterStrand": "59bc96a175d925311756971bd125602d",
   "masterSessionId": "50879ce8-d26c-4404-8b2c-a3daf3a8ef2c",
   "masterEngine": "claude",
@@ -380,19 +380,44 @@
         "05-task-branch-discard"
       ],
       "cardHashes": {
-        "01-cancel-marker-paths": "7916076b3e34d04bee120a7fb993d3d4d9f6a089be81d1c668706d0bcd5bbb37",
-        "02-proc-creation-time": "cd17c0c318e5f29f19ac313677a546d68136d472fe2fa61e5b6fd77574d20f8f",
-        "03-source-dirty-typed-error": "afe6320fd0beef4fe6f1ac2fbb398782aec93392ce3cf5a1abe8b48a1c7db445",
-        "04-pair-parts-reads": "61cee3206cadf9e1f4d0c38b80de0c378c7f14c8398d86c92c6c27ab633b7f53",
-        "05-task-branch-discard": "deca8a96a7ada1aaef5db0e7b30a2efe9f3c0a111475acb3a34ba49589810557"
+        "01-cancel-marker-paths": "35911c1bb6d53d246ee742300e563328e25179d07e05a30a31498e2125c3c94a",
+        "02-proc-creation-time": "aea373c0deaf917e1a887fa9e08e2544143fe7ee902313cb7d92a577120f1e73",
+        "03-source-dirty-typed-error": "2c25381dcd42a0e934e3961c4228ed21215b37c3bdc145a5c393b28f5dbbf413",
+        "04-pair-parts-reads": "ae823195842667c3415db08d06f2c2fc8f17425dd5b07bd433cd39c4e01e2785",
+        "05-task-branch-discard": "d516ae84c013656fc8118c6f8d28da06ce59e30b7efd045790073c10b47e8fd9"
       },
       "startSha": "e634efb9060e4d49a9b7c66339d46e91cbeef10a",
       "kind": "fork",
       "spawnedAt": "2026-10-23T06:57:26Z",
       "sessionId": "50879ce8-d26c-4404-8b2c-a3daf3a8ef2c",
       "engine": "claude",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "01-cancel-marker-paths",
+        "status": "done",
+        "head_sha": "5e321cf2ae324756727e93b62197488416bd569d",
+        "deviations": [
+          "internal/fabricengine/archive.go",
+          "internal/fabricengine/destroy.go",
+          "internal/fabricengine/export_test.go",
+          "internal/fabricengine/pairparts.go",
+          "internal/fabricengine/taskbranchdiscard.go",
+          "internal/fabricengine/taskbranchdiscard_integration_test.go"
+        ]
+      },
+      "cardShas": [
+        "5e321cf2ae324756727e93b62197488416bd569d"
+      ],
+      "forkTranscripts": [
+        "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-batten-cancel-verb/50879ce8-d26c-4404-8b2c-a3daf3a8ef2c/subagents/agent-a27e1fa7959dc7aa1.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-batten-cancel-verb/50879ce8-d26c-4404-8b2c-a3daf3a8ef2c/subagents/agent-a27e1fa7959dc7aa1.jsonl"
+      ]
     }
-  }
+  },
+  "seenForkTranscripts": [
+    "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-batten-cancel-verb/50879ce8-d26c-4404-8b2c-a3daf3a8ef2c/subagents/agent-a27e1fa7959dc7aa1.jsonl"
+  ]
 }

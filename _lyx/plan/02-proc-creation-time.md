@@ -1,8 +1,8 @@
 # Card 2 — proc-creation-time
 
 **Create:**
-- `plan:internal/proc#CreationTime` -> `func CreationTime(pid int) (time.Time, bool)`
-- `plan:internal/proc#TestCreationTime` -> `func TestCreationTime(t *testing.T)`
+- `internal/proc#CreationTime`
+- `internal/proc#TestCreationTime`
 
 **Edit:**
 - `internal/proc/doc.go`
