@@ -27,7 +27,7 @@ The run's tail after the code is written.
    2. Merge the parent in; on a conflict or a failing test, fix it.
       Run right, the parent brings nothing large here, so this is quick.
       When the merge left the tree as the one already verified, the tests are not run again (`pattern/PATTERN-verified-tree.md`).
-      The gates Publish runs today (`landing`, and `publish` with the tmux tier) move to Merge-In's test run in loom and to this test run in darn.
+      The `landing` gate is the one gate after Webster: Merge-In, Finalize and the darn writer run it, and since 2026-10-23 it holds every tier the gates run (`[0, 1, 2]`, the tmux tier included), so the `publish` gate goes.
    3. Land on the parent (squash with Describe's text as the commit message, naming the task's slug, push, board done).
       A run opens no PR unless the PR block's flag is on: the squash already lands locally, and the commit and the weft records are the run's history.
    4. Release the lock.
