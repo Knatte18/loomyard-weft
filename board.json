@@ -1208,6 +1208,24 @@
       "body": "## Seen (orch, 2026-10-23)\n\n`vscode.WriteConfig` (`internal/vscode/config.go`) writes `workbench.colorCustomizations` with a title-bar colour picked from the palette in `internal/vscode/color.go`, and writes `settings.json` only when the file is absent.\nIn the `loom-tail-review` worktree, seeded about 11:15, `.vscode/settings.json` holds every other seeded key but no `workbench.colorCustomizations`, and its modification time is 13:27, after seeding; no other lyx code writes that file.\nThe Peacock extension (`johnpapa.vscode-peacock`), which manages `workbench.colorCustomizations`, is installed on OSL-1046.\nSince `85c09cee` (2026-10-19) the operator opens a hub through one multi-root workspace file listing the prime, Bolt and every worktree.\n\n## To check\n\n- Whether Peacock removed the key.\n- Whether VS Code applies a folder's `workbench.colorCustomizations` at all in a multi-root workspace window, where window-scoped settings come from the `.code-workspace` file; if not, the colour has had no effect since `85c09cee` whenever a worktree is opened through the hub workspace.\n\n## Operator view (2026-10-23)\n\nEvery worktree's VS Code window gets a colour picked from a palette, as Millhouse does.\n",
       "created": "2026-10-23T11:34:26Z",
       "revised": "2026-10-23T11:34:26Z"
+    },
+    {
+      "id": 774,
+      "handle": "E23",
+      "slug": "ide-attach-task",
+      "title": "The seeded reed attach task in tasks.json: drop it, or bind it to a shortcut",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "ide"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "tasks.json holds one on-demand reed attach task with no shortcut",
+      "body": "## Seen (orch, 2026-10-23)\n\nThe IDE seeder writes a `.vscode/tasks.json` holding one task, `reed attach` (`writeAttachTask`, `internal/vscode/config.go`, since `6667f79d`).\nIt carries no `runOptions`, so it never runs on folder open; it runs only from \"Tasks: Run Task\".\nNo key binding runs it: the block `SeedKeybindings` writes into the user's `keybindings.json` holds only the four Alt-arrow terminal sequences reed's tmux bindings listen for.\n\n## Operator view, not a decision (2026-10-23)\n\nThe task is probably not needed; if it stays, it must not run on its own but sit on a shortcut.\n\n## Idea\n\nEither drop the task and `tasks.json` from the seed, or add a key binding to the seeded `keybindings.json` block that runs it (`workbench.action.tasks.runTask` with the task's label).\n",
+      "created": "2026-10-23T11:34:26Z",
+      "revised": "2026-10-23T11:34:26Z"
     }
   ],
   "prime_owner": "osl-1046"
