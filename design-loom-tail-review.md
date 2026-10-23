@@ -26,7 +26,8 @@ The run's tail after the code is written.
    1. Take the parent's merge lock.
    2. Merge the parent in; on a conflict or a failing test, fix it.
       Run right, the parent brings nothing large here, so this is quick.
-      When the parent has not moved since the last green test run, the tests are carried over and not run again (with `gate-runs-once`'s carried green runs).
+      When the merge left the tree as the one already verified, the tests are not run again (`pattern/PATTERN-verified-tree.md`).
+      The gates Publish runs today (`landing`, and `publish` with the tmux tier) move to Merge-In's test run in loom and to this test run in darn.
    3. Land on the parent (squash with Describe's text as the commit message, naming the task's slug, push, board done).
       A run opens no PR unless the PR block's flag is on: the squash already lands locally, and the commit and the weft records are the run's history.
    4. Release the lock.
