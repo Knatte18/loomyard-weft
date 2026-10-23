@@ -12,8 +12,9 @@ The rows and gates named below were written against the old tail; map each onto 
 ## Darn and loom symmetric (operator, 2026-10-23)
 
 Which tiers run at which row should be symmetric between darn and loom, and stated plainly for each recipe.
-Seen on `status-overview-trim` (darn): Darn-Write's `verify` gate runs the hub's `landing` tiers, 0, 1 and 2, scoped by `--base` to the diff's impact set, and Merge-In runs `landing` again over a tree Merge-In did not change, since the parent had not moved.
-In loom, Webster's `final` gate runs the same tiers over the same tree before Merge-In.
+Seen on `status-overview-trim` (darn), before `loom-tail-review` landed: Darn-Write's gate ran the `round` call, tiers 0 and 1 scoped by `--base`, and Merge-In then ran `landing`, tiers 0, 1 and 2 over the whole tree, though Merge-In changed nothing, since the parent had not moved.
+`loom-tail-review`'s D8 moves the darn writer and fix rows onto the `landing` call through `verifytree.Verify`, which skips a tree it already verified; check what is left of this once it lands.
+In loom, Webster's `final` gate runs the same tiers as `landing` over the same tree before Merge-In.
 The piece runs of an umbrella (note `loom-beam-darns`) run lighter tests than a standalone darn; that note holds that part.
 
 ## Decision (operator, 2026-10-22)
