@@ -1,30 +1,34 @@
-# Bolt writes: leave out a path neither on disk nor in HEAD
+# Bolt commits skip paths neither on disk nor in git
 
-Fixes #844.
+`lyx adopt` failed at its owner write when the local, gitignored `.board-rendered.json` still named a design file that another machine had removed on Bolt and this machine had since pulled.
+`renderOwnerWrite` adds every manifest name the new render no longer writes, so a file gone from both disk and git reached `git add`, which refuses a pathspec that matches nothing.
+The failed write left `board.json` and `README.md` modified and uncommitted on Bolt.
 
-An owner write, such as the one `lyx adopt` makes, failed at `git add` with `pathspec ... did not match any files` when this machine's local `.board-rendered.json` was older than a pull.
-`renderOwnerWrite` returns every name the previous render's manifest lists and the new render no longer writes, so a design file another machine had already removed on Bolt reached `git add`, which refuses a path matching nothing.
-The failed write also left `board.json` and `README.md` modified and uncommitted.
+`Bolt.CommitWritten` and `Bolt.PullThenCommitWritten` in `internal/fabricengine/bolt.go` now drop a returned path that is absent from disk and from HEAD's tree before staging, and commit the rest.
+Every caller of the two methods gets the fix, with no change to the render manifest or to `renderOwnerWrite`'s path list.
 
-## What changes
-
-`Bolt.CommitWritten` and `Bolt.PullThenCommitWritten` in `internal/fabricengine/bolt.go` now pass a write's paths through `stageablePaths` before staging.
-A path on disk is staged as before.
-A missing path HEAD's tree holds is staged as before, which commits its deletion.
-A missing path HEAD does not hold is left out, and an unborn HEAD holds no path.
-When nothing stageable is left, the write commits nothing.
+Closes #844
 
 ## Design decisions
 
-- The filter sits in the Bolt commit routes rather than in `renderOwnerWrite`, because that is where the paths meet git: every caller of the two methods gets it, and `boardengine` runs no git of its own.
-  Checking the manifest names against the disk inside `renderOwnerWrite` would still fail on a rendered file that was never committed.
-- "Tracked" means held by HEAD's tree, read through the existing `gitrepo.Repo.FileAtRevision`, so no new `gitrepo` read is added.
-  A path staged in the index but absent from both HEAD and disk is left out too, and its index entry waits for the next whole-board sync.
-
-## Docs
-
-The two methods' doc comments and the pull-first paragraph of `internal/fabricengine/doc.go` state the new staging rule.
+- The filter sits at the Bolt commit, not at the board render, because that is where paths meet git, and `boardengine` runs no git of its own (`PATTERN-fabric-git`).
+- A missing path counts as tracked when HEAD's tree holds it, read through `gitrepo.Repo.FileAtRevision`, which is a local go-git read with no new `gitrepo` method.
+  A missing path HEAD holds still stages its deletion, and an existing path stages as before.
+  An unborn HEAD tracks nothing.
+- The check reads HEAD, not the index.
+  A path staged as an addition and then removed from disk before the write commits is dropped, and its index entry stays for the next whole-board sync to commit.
+  This case is not expected on the board's write routes.
+- `PullThenCommitWritten` skips a write's commit when nothing stageable remains, as it already did for an empty path list.
+- The Bolt section of `internal/fabricengine/doc.go` and both methods' doc comments state the rule.
 
 ## Tests
 
-The deleted-path subtests of `TestBolt_CommitWritten` and `TestBolt_PullThenCommitWritten` now also return a path that is neither on disk nor in HEAD, and assert that the commit lands with exactly the other changes.
+The existing deleted-path subtests in `bolt_integration_test.go` and `boltpullfirst_integration_test.go` cover a path neither on disk nor in git, a missing path HEAD holds, nothing stageable, and an unborn HEAD, for both routes.
+
+`internal/boardcli/verbs_test.go` also pins the `revised` stamps in the `list --sort age` step, so the `--sort revised` order no longer depends on which whole second each upsert landed in.
+
+## To check by hand
+
+No gate run is recorded in this description.
+Run `lyx gate test ./internal/fabricengine ./internal/boardcli` before landing.
+Reproducing the original failure on a machine with a stale manifest was not done; the tests cover the same path shape.
