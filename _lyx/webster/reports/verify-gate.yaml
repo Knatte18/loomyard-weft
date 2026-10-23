@@ -1,0 +1,70 @@
+attempt: 2
+cap: 3
+failures:
+    - id: github.com/Knatte18/loomyard/internal/reedcli.TestStrandNamingAndList/HubWideDirectoryAndDrift
+      kind: test
+      package: github.com/Knatte18/loomyard/internal/reedcli
+      tail: ""
+    - id: github.com/Knatte18/loomyard/internal/reedcli.TestNaming/TaskWorktreeStrandNameTitleAndEnv
+      kind: test
+      package: github.com/Knatte18/loomyard/internal/reedcli
+      tail: ""
+    - id: github.com/Knatte18/loomyard/internal/reedcli.TestNaming/EmptySlugGivesShortnameAndRole
+      kind: test
+      package: github.com/Knatte18/loomyard/internal/reedcli
+      tail: ""
+    - id: github.com/Knatte18/loomyard/internal/reedcli.TestNaming/RepairNamesRestoresAHandChangedTitle
+      kind: test
+      package: github.com/Knatte18/loomyard/internal/reedcli
+      tail: ""
+    - id: github.com/Knatte18/loomyard/internal/reedcli.TestOwnWindow_RealTmux/ShellOnlyStrandReadsDeadPastTheGraceAndResumeRelaunchesIt
+      kind: test
+      package: github.com/Knatte18/loomyard/internal/reedcli
+      tail: ""
+    - id: github.com/Knatte18/loomyard/internal/reedengine
+      kind: package
+      package: github.com/Knatte18/loomyard/internal/reedengine
+      tail: |-
+        === CONT  TestStrandWindowTarget/DeadSelvageCorpseStillResolves
+        --- PASS: TestStrandWindowTarget/OwnWindowStrandPaneIsNotTheStrandsWindowAndReadsTheMarker (0.00s)
+        === CONT  TestStrandWindowTarget/NoSelvageRecordedResolvesTheMarkedWindow
+        --- PASS: TestBindingsBuildStamp/OpLockRepinsStaleBindings/NoStamp (0.00s)
+        --- PASS: TestBindingsBuildStamp/OpLockRepinsStaleBindings (0.00s)
+        --- PASS: TestAddStrand_ReclaimsADeadHoldersName/HolderWithAChildKeepsTheName (0.00s)
+        === CONT  TestBindingsBuildStamp/StaleRule/Own
+        --- PASS: TestStrandWindowTarget/NoMarkedWindowFallsBackToTheCurrentWindow (0.00s)
+        === CONT  TestBindingsBuildStamp/StaleRule/OwnWithTrailingNewline
+        --- PASS: TestBindingsBuildStamp/StaleRule/Own (0.00s)
+        --- PASS: TestBindingsBuildStamp/StaleRule/OwnWithTrailingNewline (0.00s)
+        === CONT  TestBindingsBuildStamp/StaleRule/Garbled
+        === CONT  TestBindingsBuildStamp/StaleRule/UnparseableTime
+        --- PASS: TestBindingsBuildStamp/StaleRule/Garbled (0.00s)
+        --- PASS: TestStrandWindowTarget/DeadSelvageCorpseStillResolves (0.00s)
+        === PAUSE TestBindingsBuildStamp/PinWritesStamp/Unstamped
+        === CONT  TestBindingsBuildStamp/PinWritesStamp/Stamped
+        === CONT  TestBindingsBuildStamp/PinWritesStamp/Unstamped
+        --- PASS: TestBindingsBuildStamp/StaleRule/UnparseableTime (0.00s)
+        --- PASS: TestStrandWindowTarget/NoSelvageRecordedResolvesTheMarkedWindow (0.00s)
+        --- PASS: TestBindingsBuildStamp/StaleRule (0.01s)
+        --- PASS: TestStrandWindowTarget (0.02s)
+        --- PASS: TestBindingsBuildStamp/PinWritesStamp/Stamped (0.00s)
+        --- PASS: TestBindingsBuildStamp/PinWritesStamp/Unstamped (0.00s)
+        --- PASS: TestBindingsBuildStamp/PinWritesStamp (0.01s)
+        --- PASS: TestBindingsBuildStamp (0.01s)
+        === RUN   TestStrandOps_RealTmux/ReplaceKeepsTheTopSlot
+        --- PASS: TestStatusFormats_SessionLoopsTakeOneFormat (0.03s)
+        --- PASS: TestAddStrand_ReclaimsADeadHoldersName/ShellOnlyHolderPastTheGraceIsReclaimedAndItsPaneKilled (0.06s)
+        --- PASS: TestAddStrand_ReclaimsADeadHoldersName (0.00s)
+        --- PASS: TestRemoveSocketFileOnceGone/socket_still_answering_after_the_wait_stays_with_no_error (0.10s)
+        --- PASS: TestRemoveSocketFileOnceGone (0.00s)
+        --- PASS: TestStrandOps_RealTmux/ReplaceKeepsTheTopSlot (1.24s)
+        === RUN   TestStrandOps_RealTmux/EmptyCmdLeavesALivePane
+        --- PASS: TestStrandOps_RealTmux/EmptyCmdLeavesALivePane (0.23s)
+        === RUN   TestStrandOps_RealTmux/ResumeDropsAFinishedStrandAndRelaunchesAnUnfinishedOne
+        --- PASS: TestStrandOps_RealTmux/ResumeDropsAFinishedStrandAndRelaunchesAnUnfinishedOne (0.40s)
+        --- PASS: TestStrandOps_RealTmux (2.02s)
+        FAIL
+        FAIL	github.com/Knatte18/loomyard/internal/reedengine	54.165s
+log_path: /home/AD.NORCERESEARCH.NO/hanf/Code/Knatte18/loomyard-LYXHUB/plan-card-rules/.lyx/verify/verify-4.log
+fix_commits:
+    - 81788dfa09965147b27f6855bff6adabcba71c4c
