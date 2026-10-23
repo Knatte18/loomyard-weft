@@ -1,9 +1,9 @@
 # Card 22 — Publish failure record trace fields
 
 **Create:**
-- `plan:internal/verifytree#CommitRange` -> `type CommitRange struct`
-- `plan:internal/verifytree#TracedCard` -> `type TracedCard struct`
-- `plan:internal/verifytree#FailureTrace` -> `type FailureTrace struct`
+- `internal/verifytree#CommitRange`
+- `internal/verifytree#TracedCard`
+- `internal/verifytree#FailureTrace`
 
 **Edit:**
 - `internal/verifytree#PublishFailure`

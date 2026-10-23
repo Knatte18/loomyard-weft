@@ -14,11 +14,11 @@
 - `contracts/stencils/loom/loom-template-arbiter.md`
 
 **Create:**
-- `plan:internal/loomcli#arbiterAmendmentTarget` -> `func arbiterAmendmentTarget(recipeTarget string, approved func() (bool, error)) string`
-- `plan:internal/loomcli#TestArbiterAmendmentTarget` -> `func TestArbiterAmendmentTarget(t *testing.T)`
+- `internal/loomcli#arbiterAmendmentTarget`
+- `internal/loomcli#TestArbiterAmendmentTarget`
 
 **Uses:**
-- `plan:internal/loomrecipe#AmendmentTarget`
+- `internal/loomrecipe#AmendmentTarget`
 - `internal/loomcli#planApprovedReader`
 
 **Intent:**

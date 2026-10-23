@@ -24,9 +24,9 @@
 - `plan:internal/planglyph#EncloseAt`
 - `internal/planglyph#Resolve`
 - `internal/planglyph#Delta`
-- `plan:internal/verifytree#FailureTrace`
-- `plan:internal/verifytree#TracedCard`
-- `plan:internal/verifytree#CommitRange`
+- `internal/verifytree#FailureTrace`
+- `internal/verifytree#TracedCard`
+- `internal/verifytree#CommitRange`
 
 **Intent:**
 D9: a new package, `internal/failuretrace`, turns a failed Merge-In or Publish verify log into the record's `cards`, `later_range` and `untraced`.

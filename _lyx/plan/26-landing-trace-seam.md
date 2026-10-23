@@ -15,7 +15,7 @@
 
 **Uses:**
 - `plan:internal/failuretrace#NewTracer`
-- `plan:internal/verifytree#FailureTrace`
+- `internal/verifytree#FailureTrace`
 
 **Intent:**
 D9: when Merge-In or Publish writes the Publish failure record on a loom run, Go also traces the failure; `landingshed` gets the trace as a told seam (PATTERN-told-geometry), wired in `internal/loomcli`.
