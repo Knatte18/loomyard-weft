@@ -1,6 +1,25 @@
 round: 1
-fan: ""
-fix_fan: ""
+fan: review-plan
+fix_fan: fix-plan
+fans_recorded: true
+lenses:
+    - affected-set
+    - guard-reach
+    - way-forward
+review:
+    engine: claude
+    model: opus
+    effort: medium
+    start: 2026-10-23T12:05:54Z
+    end: 2026-10-23T14:13:40.16326513+02:00
+    wall_seconds: 466.16326513
+    tokens_known: true
+    fresh_tokens: 374608
+    cache_read_tokens: 12757640
+    forks: 3
+    fork_fresh_tokens: 85765
+    fork_cache_read_tokens: 3093174
+    fork_fresh_share: 0.22894599154315978
 seed:
     - engine: claude
       model: sonnet
