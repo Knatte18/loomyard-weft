@@ -1,4 +1,4 @@
-# Card 17 — batten-cancel-core
+# Card 18 — batten-cancel-core
 
 **Create:**
 - `plan:internal/battencli#cancelDeps` -> `type cancelDeps struct`
@@ -26,14 +26,14 @@
 - `plan:internal/fabricengine#DiscardResult`
 
 **Intent:**
-Write the cancel's whole decision and order, D2 to D9, as `cancelRun` over injected seams in `cancel.go`, so every branch is reached by an untagged test with fakes; card 18 wires the production seams and the verb.
+Write the cancel's whole decision and order, D2 to D9, as `cancelRun` over injected seams in `cancel.go`, so every branch is reached by an untagged test with fakes; card 19 wires the production seams and the verb.
 
 `stoppedRefusal` takes the act it refuses (`resume` or `cancel`) and the re-entry it names, so the cancel's stopped refusal reads `cannot cancel <slug>: …; then run "lyx batten cancel <slug>" again` and never sends the caller to `lyx batten run`; its one caller, `resumeRefusal`, passes `resume` and today's `then re-run lyx batten run <slug>`, so the resume's refusal reads as today.
 
 `cancelDeps` holds one function field per substrate, each documented; nil fields are not allowed (the production builder fills every one, and the test fills every one):
-`HubPaused` (a live hub-scope pause entry covers the prime), `ExemptGate` (returns the restore), `TaskWorktreePresent`, `Reconcile` (the judge-only run-scope reconcile), `PullBolt`, `Owner` (this machine and the slug's effective owner on the local Bolt), `ReadStatus` (batten's status and found), `BoardStatus` (the slug's local board entry status and found), `RecordsPresent` (the records run directory exists), `ChildReachedParent` (D2's landed reading), `ReadMarker`, `TakeMarker`, `GOOS`, `LiveRecords`, `CreatedAt`, `PairParts`, `SessionLive`, `EndForCancel`, `TakeBattenLocks` (batten's prime-side driver lock and run lock, each waited for at most `pairteardown.CancelLockWait`, returning the release or the busy path), `StopTackler` (reads `shedrun.TacklerMarker` under the run's scratch and stops the strand it names; returns its guid or empty), `RemovePair`, `TaskBranchOnOrigin`, `DiscardTaskBranch`, `RemoveRecords` (takes batten's status lock, runs `removeRunRecords`, releases it before returning), `ClearClaim` (clears a run-form status; reports whether it cleared and whether an entry was found), `LiftPauses` (lifts the slug's own live slug-scope entries and returns their scopes), `SpawnPush` and `Notify`.
+`HubPaused` (a live hub-scope pause entry covers the prime), `ExemptGate` (returns the restore), `TaskWorktreePresent`, `Reconcile` (the judge-only run-scope reconcile), `PullBolt`, `Owner` (this machine and the slug's effective owner on the local Bolt), `ReadStatus` (batten's status and found), `BoardStatus` (the slug's local board entry status and found), `RecordsPresent` (the records run directory exists), `ChildReachedParent` (D2's landed reading), `ReadMarker`, `TakeMarker`, `GOOS`, `LiveRecords`, `CreatedAt`, `PairParts`, `SessionLive`, `EndForCancel`, `TakeBattenLocks` (batten's prime-side driver lock and run lock, each waited for at most `pairteardown.CancelLockWait`, returning the release or the busy path; a busy report holds no lock, so when the run lock is busy it releases the driver lock it already took before returning), `StopTackler` (reads `shedrun.TacklerMarker` under the run's scratch and stops the strand it names; returns its guid or empty), `RemovePair`, `TaskBranchOnOrigin`, `DiscardTaskBranch`, `RemoveRecords` (takes batten's status lock, runs `removeRunRecords`, releases it before returning), `ClearClaim` (clears a run-form status; reports whether it cleared and whether an entry was found), `LiftPauses` (lifts the slug's own live slug-scope entries and returns their scopes), `SpawnPush` and `Notify`.
 
-`childReachedParent` is D2's landed reading over what card 18's seam reads: batten's status, the child's status read from the task worktree, and `battenshed.FinalizePastMerge`'s answer for the child.
+`childReachedParent` is D2's landed reading over what card 19's seam reads: batten's status, the child's status read from the task worktree, and `battenshed.FinalizePastMerge`'s answer for the child.
 It is true for a child Finalize past its parent-side merge, a Finalize Done in the child's history, or batten past Run-Shed with the child done.
 With the task worktree gone the child reads not found, so only batten's own reading decides: batten whose current producer is Worktree-Teardown, which runs only after Land, reads reached whatever the child reads, since its work landed and only its teardown is left.
 
@@ -42,7 +42,7 @@ With the task worktree gone the child reads not found, so only batten's own read
 1. A live hub pause refuses: `a hub pause covers the prime; run "lyx tender resume", then "lyx batten cancel <slug>" again`.
    Then `ExemptGate`, restored on return, so no live pause holds the cancel's network calls while it holds batten's locks (as `lyx fabric remove` does; the push and board sync it spawns keep their own gates).
 2. With the task worktree present, `Reconcile`; absent, `PullBolt` then `Owner`, with no prime claim.
-   An unreachable origin (the report's `Unreachable`, or a pull error wrapping `boardengine.ErrOwnerOriginUnreachable`) makes the cancel end-only (below).
+   An unreachable origin (the report's `Unreachable`, or a pull error wrapping `boardengine.ErrOwnerOriginUnreachable`) makes the cancel end-only (below), after `Owner` is read from the local Bolt, as D2's offline bound says: owned by another machine there refuses with the owned-elsewhere wording below, with nothing ended.
    Any other reconcile or pull error refuses with the cause, `fix it, then run "lyx batten cancel <slug>" again`.
    Owned elsewhere (the reconcile's `EntryOwnedElsewhere`, or the Bolt owner another machine) refuses with the cancel's own wording: `<slug> is owned by machine <owner>; run "lyx adopt <slug>" on this machine first, or "lyx batten cancel <slug>" on <owner>`.
    A stopped entry refuses through `stoppedRefusal(slug, "cancel", "then run \"lyx batten cancel <slug>\" again", …)`.
@@ -72,6 +72,8 @@ each refusal: hub pause, reached parent, ended-done with records, owned elsewher
 a Windows refusal at the first list over a fresh marker (released with removal) and over a taken-over marker (released without removal);
 an ended entry with no records here and `remove` (removed, no refusal); an entry absent from the board (no claim to clear); `remove` with no local part left (`RemovePair` still called, its `ErrPairNotFound` read as done);
 unreachable origin from the reconcile and, separately, from a pull error wrapping `boardengine.ErrOwnerOriginUnreachable`, each with and without `remove` (end-only, marker left, nothing removed or cleared, notice naming the cancel);
+unreachable origin from the reconcile and, separately, from the pull error, each with the local Bolt's owner another machine (the owned-elsewhere refusal, no `EndForCancel` call);
+`TakeBattenLocks` reporting busy once and then succeeding (the second call made with no lock held from the first);
 a re-run after the records were removed (notice says the state is no longer readable); `RemovePair` returning `ErrPairNotFound` read as done; a gone writer's marker taken over; a failing `Notify` (the cancel succeeds, the report records the notice unposted);
 a Windows record created after its registration dropped with no `taskkill` line; the gate exemption taken before the first network seam and restored at the end; and `RemoveRecords` returning before `ClearClaim` is called.
 `TestChildReachedParent` is a table: a child Finalize past its merge, a child Finalize Done and batten past Run-Shed with the child done each read reached; batten at Worktree-Teardown with the child not found reads reached; batten at Run-Shed with the child running, batten blocked at Worktree-Create with no child, and no status at all read not reached.

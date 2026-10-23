@@ -1,4 +1,4 @@
-# Card 7 — driver-precondition-row
+# Card 8 — driver-precondition-row
 
 **Create:**
 - `plan:internal/sheddriver#preconditionUnmet` -> `func preconditionUnmet(stop Stop) bool`

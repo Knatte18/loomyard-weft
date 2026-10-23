@@ -1,6 +1,6 @@
 ---
 format: 5
-approved: false
+approved: true
 language: go
 ---
 
@@ -15,28 +15,29 @@ The cards build the leaf pieces first (shedrun paths, proc, fabric reads and rem
 1 — cancel-marker-paths — declare the cancel marker's path and lock path in shedrun
 2 — proc-creation-time — read a process's creation time by pid on Windows
 3 — source-dirty-typed-error — the pair add's typed dirty-source refusal and its exported probe
-4 — pair-parts-and-branch-discard — fabric's local pair-parts read, origin task-branch read and archive-and-delete of the task branch
-5 — records-write-lock — export the combined records write lock hold
-6 — shed-locked-check-and-precondition — shed's precondition prefix and the check Run and Step call under the run lock
-7 — driver-precondition-row — the driver hands a precondition halt back
-8 — worktree-create-precondition-halt — Worktree-Create halts on a PreconditionError
-9 — batten-create-precondition-mapping — batten maps a dirty source and a left task branch to the precondition halt
-10 — board-runlock-names-cancel — the board's run-lock refusal names the cancel
-11 — cleanup-removal-split — split batten cleanup's per-slug removal from its locks and judgement
-12 — teardown-origin-snapshot-and-claim-mode — origin-mode snapshot, a claim-leaving removal and the held-gone wording
-13 — teardown-cancel-phase — pairteardown's cancel phase
-14 — batten-cancel-marker — the cancel marker's write, read and liveness lock
-15 — batten-start-guards — the pre-run's marker, dirty-source and left-parts refusals
-16 — batten-pre-drive-check — the marker and seed re-read in the seeding closure and under shed's run lock
-17 — batten-cancel-core — the cancel's decisions and order over injected seams
-18 — batten-cancel-verb — the verb, its production seams and the judge-only reconcile
-19 — docs-cancel — overview and orch stencil name the verb
+4 — pair-parts-reads — fabric's local pair-parts read and origin task-branch read
+5 — task-branch-discard — fabric's archive-and-delete of the task branch, locally and on origin
+6 — records-write-lock — export the combined records write lock hold
+7 — shed-locked-check-and-precondition — shed's precondition prefix and the check Run and Step call under the run lock
+8 — driver-precondition-row — the driver hands a precondition halt back
+9 — worktree-create-precondition-halt — Worktree-Create halts on a PreconditionError
+10 — batten-create-precondition-mapping — batten maps a dirty source and a left task branch to the precondition halt
+11 — board-runlock-names-cancel — the board's run-lock refusal names the cancel
+12 — cleanup-removal-split — split batten cleanup's per-slug removal from its locks and judgement
+13 — teardown-origin-snapshot-and-claim-mode — origin-mode snapshot, a claim-leaving removal and the held-gone wording
+14 — teardown-cancel-phase — pairteardown's cancel phase
+15 — batten-cancel-marker — the cancel marker's write, read and liveness lock
+16 — batten-start-guards — the pre-run's marker, dirty-source and left-parts refusals
+17 — batten-pre-drive-check — the marker and seed re-read in the seeding closure and under shed's run lock
+18 — batten-cancel-core — the cancel's decisions and order over injected seams
+19 — batten-cancel-verb — the verb, its production seams and the judge-only reconcile
+20 — docs-cancel — overview and orch stencil name the verb
 
 ## Shared Decisions
 
 ### Decision: cancel-core-over-seams
 
-`cancelRun` (card 17) holds every decision and step of D2 to D9 over a struct of function seams, so one untagged table test reaches every branch, refusal and acceptance path with fakes; card 18 wires the seams over the hub, and one tier-1 integration test pins the no-pair acceptance path end to end.
+`cancelRun` (card 18) holds every decision and step of D2 to D9 over a struct of function seams, so one untagged table test reaches every branch, refusal and acceptance path with fakes; card 19 wires the seams over the hub, and one tier-1 integration test pins the no-pair acceptance path end to end.
 
 ### Decision: ended-reading-from-how
 
@@ -50,7 +51,7 @@ The strands are listed from the task worktree's reed directory, which goes with 
 
 ### Decision: start-and-drive-guards-as-seams
 
-The start guard (card 15) and the pre-drive check (card 16) read through receiver seams that `armAt` fills, with nil meaning no check, as the owner seams already do, so hand-populated receivers in the existing untagged tests, whose locations hold no seed, keep their behaviour.
+The start guard (card 16) and the pre-drive check (card 17) read through receiver seams that `armAt` fills, with nil meaning no check, as the owner seams already do, so hand-populated receivers in the existing untagged tests, whose locations hold no seed, keep their behaviour.
 
 ### Decision: windows-relist-in-the-hook
 
