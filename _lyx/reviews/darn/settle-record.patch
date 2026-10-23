@@ -1,0 +1,297 @@
+diff --git a/internal/loomcli/checklist.go b/internal/loomcli/checklist.go
+index 81a0a1ac..82f48121 100644
+--- a/internal/loomcli/checklist.go
++++ b/internal/loomcli/checklist.go
+@@ -94,8 +94,9 @@ func (c *loomCLI) checklistCmd() *cobra.Command {
+ 		Annotations: map[string]string{clihelp.AudienceAnnotation: clihelp.AudienceInternal},
+ 		Long: `checklist draws the run's frame, redrawing in place until it is signalled:
+ one line per recipe row in recipe order with its box, the time spent in it and
+-its visit count, each visited row's visit lines under it, then the state line,
+-and last the wait line with the full reason the run waits. Every line is drawn
++its visit count, each visited row's visit lines under it with no output path
++and each gate line opening with its UTC start, then the state line, and last
++the wait line with the full reason the run waits. Every line is drawn
+ uncut, so a short terminal scrolls the top away and keeps the state and wait
+ lines in view. The loom-status strand runs it. It reads files only.`,
+ 		Args: cobra.NoArgs,
+@@ -634,7 +635,8 @@ func (p *checklistArbiterPlacement) endLines() []string {
+ 	return append(lines, p.unreadable...)
+ }
+ 
+-// checklistVisitLine renders one visit as "<start> <spent> <outcome>", the time to the second except for the open visit's in whole minutes, then " x<n>" for a folded entry, " <output>" when it has one and " gate attempts <n>" when gated and the entry carried no gate span list.
++// checklistVisitLine renders one visit as "<start> <spent> <outcome>", the time to the second except for the open visit's in whole minutes, then " x<n>" for a folded entry and " gate attempts <n>" when gated and the entry carried no gate span list.
++// The visit's output is never drawn, since its path would wrap the line.
+ // A non-empty row is written before the outcome, for a list that does not sit under the row's own line.
+ // A non-empty reworkFor, the gate row whose refusal the visit was rework for, ends the line as " rework for <reworkFor>".
+ func checklistVisitLine(visit checklistVisit, row string, reworkFor string) string {
+@@ -650,9 +652,6 @@ func checklistVisitLine(visit checklistVisit, row string, reworkFor string) stri
+ 	if visit.folds > 1 {
+ 		line += fmt.Sprintf(" x%d", visit.folds)
+ 	}
+-	if visit.output != "" {
+-		line += " " + visit.output
+-	}
+ 	if visit.gateAttempts != nil && !visit.hasGateSpans {
+ 		line += fmt.Sprintf(" gate attempts %d", *visit.gateAttempts)
+ 	}
+@@ -662,7 +661,8 @@ func checklistVisitLine(visit checklistVisit, row string, reworkFor string) stri
+ 	return line
+ }
+ 
+-// checklistGateLines renders the gate spans of one history entry as one line per gate entry, in the order each name first appears: "gate <name> <gate time>", then " refused <n> rework <rework time>" when the entry re-prompted.
++// checklistGateLines renders the gate spans of one history entry as one line per gate entry, in the order each name first appears: "<start> gate <name> <gate time>", then " refused <n> rework <rework time>" when the entry re-prompted.
++// The start is the UTC hh:mm of the name's first span with a parsable start, and checklistUnknownStart when none has one.
+ // The gate time is the sum of the name's gate and held spans and the rework time the sum of its rework spans; n counts the rework spans.
+ // Each span counts its end less its start, less paused within it, floored at zero; a span whose start or end does not parse counts zero.
+ // Every span is closed, so both times are drawn to the second.
+@@ -670,6 +670,8 @@ func checklistGateLines(spans []shedengine.GateSpan, paused []pauserecord.Interv
+ 	type gateTotals struct {
+ 		gate, rework time.Duration
+ 		refusals     int
++		start        time.Time
++		startKnown   bool
+ 	}
+ 	var names []string
+ 	totals := map[string]*gateTotals{}
+@@ -683,6 +685,9 @@ func checklistGateLines(spans []shedengine.GateSpan, paused []pauserecord.Interv
+ 		var counted time.Duration
+ 		start, startKnown := parseChecklistTime(span.Start)
+ 		end, endKnown := parseChecklistTime(span.End)
++		if startKnown && !t.startKnown {
++			t.start, t.startKnown = start, true
++		}
+ 		if startKnown && endKnown && end.After(start) {
+ 			counted = end.Sub(start) - pauserecord.Excluded(paused, start, end)
+ 		}
+@@ -697,7 +702,11 @@ func checklistGateLines(spans []shedengine.GateSpan, paused []pauserecord.Interv
+ 	var lines []string
+ 	for _, name := range names {
+ 		t := totals[name]
+-		line := "gate " + name + " " + durfmt.FormatSeconds(t.gate)
++		start := checklistUnknownStart
++		if t.startKnown {
++			start = t.start.UTC().Format("15:04")
++		}
++		line := start + " gate " + name + " " + durfmt.FormatSeconds(t.gate)
+ 		if t.refusals > 0 {
+ 			line += fmt.Sprintf(" refused %d rework %s", t.refusals, durfmt.FormatSeconds(t.rework))
+ 		}
+diff --git a/internal/loomcli/checklist_test.go b/internal/loomcli/checklist_test.go
+index d6873c24..4e703a58 100644
+--- a/internal/loomcli/checklist_test.go
++++ b/internal/loomcli/checklist_test.go
+@@ -418,14 +418,14 @@ func TestRenderChecklist(t *testing.T) {
+ 			},
+ 		},
+ 		{
+-			name: "a visited row's lines show each visit with its start, time, outcome, output and gate attempts",
++			name: "a visited row's lines show each visit with its start, time, outcome and gate attempts, never its output",
+ 			rows: recipeRows("Build"),
+ 			poll: checklistStatus(shedengine.StateRunning, "Build", gatedBuild, foldedBuild),
+ 			// The folded entry spans minutes 8 to 20; the open visit starts where it ended.
+ 			nowMin: 25,
+ 			want: []string{
+ 				"[>] 1. Build 25m x5",
+-				"  10:00 5m00s done out/build.md gate attempts 2",
++				"  10:00 5m00s done gate attempts 2",
+ 				"  10:05 15m00s stuck x3",
+ 				"  10:20 5m running",
+ 				"loom running | now working", "waiting on nothing",
+@@ -461,10 +461,10 @@ func TestRenderChecklist(t *testing.T) {
+ 			},
+ 		},
+ 		{
+-			name: "a visit with spans of two entries draws one gate line per entry in first-appearance order, a held span adding into its entry's gate time",
++			name: "a visit with spans of two entries draws one gate line per entry in first-appearance order, opening with its first span's start, a held span adding into its entry's gate time",
+ 			rows: recipe,
+ 			poll: checklistStatus(shedengine.StateRunning, "Review", withGateSpans(doneEntry("Plan", 5),
+-				gateSpan("plan", shedengine.GateSpanKindGate, 0, 7),
++				shedengine.GateSpan{Gate: "plan", Kind: shedengine.GateSpanKindGate, Start: "2026-01-02T12:00:00+02:00", End: secondMark(7)},
+ 				gateSpan("plan", shedengine.GateSpanKindRework, 7, 70),
+ 				gateSpan("plan", shedengine.GateSpanKindGate, 70, 75),
+ 				gateSpan("plan", shedengine.GateSpanKindRework, 75, 197),
+@@ -473,8 +473,8 @@ func TestRenderChecklist(t *testing.T) {
+ 			nowMin: 12,
+ 			want: []string{
+ 				"[x] 1. Plan 5m00s", "  10:00 5m00s done",
+-				"    gate plan 12s refused 2 rework 3m05s",
+-				"    gate lint 10s",
++				"    10:00 gate plan 12s refused 2 rework 3m05s",
++				"    10:03 gate lint 10s",
+ 				"[>] 2. Review 7m", "  10:05 7m running",
+ 				"[ ] 3. Build",
+ 				"loom running | now working", "waiting on nothing",
+@@ -490,24 +490,26 @@ func TestRenderChecklist(t *testing.T) {
+ 			paused: []pauserecord.Interval{minuteSpan(2, 3)},
+ 			want: []string{
+ 				"[x] 1. Plan 4m00s", "  10:00 4m00s done",
+-				"    gate plan 4m00s",
++				"    10:00 gate plan 4m00s",
+ 				"[>] 2. Review 7m", "  10:05 7m running",
+ 				"[ ] 3. Build",
+ 				"loom running | now working", "waiting on nothing",
+ 			},
+ 		},
+ 		{
+-			name: "a span ending before it starts draws 0s and a span whose start does not parse adds nothing",
++			name: "a span ending before it starts draws 0s and a span whose start does not parse adds nothing and gives no start",
+ 			rows: recipe,
+ 			poll: checklistStatus(shedengine.StateRunning, "Review", withGateSpans(doneEntry("Plan", 5),
+-				gateSpan("plan", shedengine.GateSpanKindGate, 0, 20),
+ 				shedengine.GateSpan{Gate: "plan", Kind: shedengine.GateSpanKindGate, Start: "garbage", End: secondMark(50)},
+-				gateSpan("late", shedengine.GateSpanKindGate, 30, 10))),
++				gateSpan("plan", shedengine.GateSpanKindGate, 0, 20),
++				gateSpan("late", shedengine.GateSpanKindGate, 90, 10),
++				shedengine.GateSpan{Gate: "lost", Kind: shedengine.GateSpanKindGate, Start: "garbage", End: secondMark(50)})),
+ 			nowMin: 12,
+ 			want: []string{
+ 				"[x] 1. Plan 5m00s", "  10:00 5m00s done",
+-				"    gate plan 20s",
+-				"    gate late 0s",
++				"    10:00 gate plan 20s",
++				"    10:01 gate late 0s",
++				"    --:-- gate lost 0s",
+ 				"[>] 2. Review 7m", "  10:05 7m running",
+ 				"[ ] 3. Build",
+ 				"loom running | now working", "waiting on nothing",
+@@ -541,8 +543,8 @@ func TestRenderChecklist(t *testing.T) {
+ 				"[>] 2. Rev 7m rounds 1",
+ 				"  round 1 7m",
+ 				"    10:05 1m00s Rev-Bouncer bounced",
+-				"    10:06 4m00s Rev-Review done round-1-review.md",
+-				"      gate rev 9s",
++				"    10:06 4m00s Rev-Review done",
++				"      10:00 gate rev 9s",
+ 				"    10:10 2m Rev-Fix running",
+ 				"[ ] 3. Publish", "[ ] 4. PR-Review", "[ ] 5. PR-Rework",
+ 				"loom running | now working", "waiting on nothing",
+@@ -557,7 +559,7 @@ func TestRenderChecklist(t *testing.T) {
+ 			want: []string{
+ 				"recipe unreadable",
+ 				"  10:00 5m00s Plan done",
+-				"    gate plan 7s",
++				"    10:00 gate plan 7s",
+ 				"  10:05 2m Plan running",
+ 				"loom running | now working", "waiting on nothing",
+ 			},
+@@ -708,12 +710,12 @@ func TestRenderChecklist(t *testing.T) {
+ 				"[x] 2. Rev 21m00s rounds 2",
+ 				"  round 1 10m00s",
+ 				"    10:05 1m00s Rev-Bouncer bounced",
+-				"    10:06 4m00s Rev-Review done round-1-review.md",
+-				"    10:10 5m00s Rev-Fix done round-1-fixer-report.md",
++				"    10:06 4m00s Rev-Review done",
++				"    10:10 5m00s Rev-Fix done",
+ 				"  round 2 10m00s",
+ 				"    10:15 1m00s Rev-Bouncer bounced",
+-				"    10:16 4m00s Rev-Review done round-2-review.md",
+-				"    10:20 5m00s Rev-Fix done round-2-fixer-report.md",
++				"    10:16 4m00s Rev-Review done",
++				"    10:20 5m00s Rev-Fix done",
+ 				"  10:25 1m00s Rev-Bouncer done",
+ 				"[>] 3. Publish 4m", "  10:26 4m running",
+ 				"[ ] 4. PR-Review", "[ ] 5. PR-Rework",
+@@ -732,10 +734,10 @@ func TestRenderChecklist(t *testing.T) {
+ 				"[>] 2. Rev 11m rounds 2",
+ 				"  round 1 7m00s",
+ 				"    10:05 1m00s Rev-Bouncer bounced",
+-				"    10:06 4m00s Rev-Review done round-1-review.md",
+-				"    10:10 2m00s Rev-Review stuck round-1-review.md",
++				"    10:06 4m00s Rev-Review done",
++				"    10:10 2m00s Rev-Review stuck",
+ 				"  round 2 4m",
+-				"    10:12 2m00s Rev-Review stuck round-2-review.md",
++				"    10:12 2m00s Rev-Review stuck",
+ 				"    10:14 2m Rev-Fix running",
+ 				"[ ] 3. Publish", "[ ] 4. PR-Review", "[ ] 5. PR-Rework",
+ 				"loom running | now working", "waiting on nothing",
+@@ -754,11 +756,11 @@ func TestRenderChecklist(t *testing.T) {
+ 				"[>] 2. Rev 16m rounds 2",
+ 				"  round 1 10m00s",
+ 				"    10:05 1m00s Rev-Bouncer bounced",
+-				"    10:06 4m00s Rev-Review done round-1-review.md",
+-				"    10:10 5m00s Rev-Fix done round-1-fixer-report.md",
++				"    10:06 4m00s Rev-Review done",
++				"    10:10 5m00s Rev-Fix done",
+ 				"    10:16 0s Rev-Review goto",
+ 				"  round 2 6m",
+-				"    10:16 4m00s Rev-Review done round-2-review.md",
++				"    10:16 4m00s Rev-Review done",
+ 				"    10:20 2m Rev-Fix running",
+ 				"[ ] 3. Publish", "[ ] 4. PR-Review", "[ ] 5. PR-Rework",
+ 				"loom running | now working", "waiting on nothing",
+@@ -778,11 +780,11 @@ func TestRenderChecklist(t *testing.T) {
+ 				"[>] 2. Rev 17m rounds 2",
+ 				"  round 1 11m00s",
+ 				"    10:05 1m00s Rev-Bouncer bounced",
+-				"    10:06 4m00s Rev-Review done round-1-review.md",
+-				"    10:10 5m00s Rev-Fix done round-1-fixer-report.md",
++				"    10:06 4m00s Rev-Review done",
++				"    10:10 5m00s Rev-Fix done",
+ 				"    10:15 1m00s Rev-Fix reroute",
+ 				"  round 2 6m",
+-				"    10:16 4m00s Rev-Review done round-2-review.md",
++				"    10:16 4m00s Rev-Review done",
+ 				"    10:20 2m Rev-Fix running",
+ 				"[ ] 3. Publish", "[ ] 4. PR-Review", "[ ] 5. PR-Rework",
+ 				"loom running | now working", "waiting on nothing",
+@@ -816,8 +818,8 @@ func TestRenderChecklist(t *testing.T) {
+ 				"[>] 2. Rev 13m rounds 2",
+ 				"  round 1 10m00s",
+ 				"    10:05 1m00s Rev-Bouncer bounced",
+-				"    10:06 4m00s Rev-Review done round-1-review.md",
+-				"    10:10 5m00s Rev-Fix done round-1-fixer-report.md",
++				"    10:06 4m00s Rev-Review done",
++				"    10:10 5m00s Rev-Fix done",
+ 				"  round 2 3m",
+ 				"    10:15 1m00s Rev-Bouncer bounced",
+ 				"    10:16 2m Rev-Review running",
+@@ -838,8 +840,8 @@ func TestRenderChecklist(t *testing.T) {
+ 				"[-] 2. Rev 12m rounds 1",
+ 				"  round 1 12m",
+ 				"    10:05 1m00s Rev-Bouncer bounced",
+-				"    10:06 4m00s Rev-Review done round-1-review.md",
+-				"    10:10 5m00s Rev-Fix done round-1-fixer-report.md",
++				"    10:06 4m00s Rev-Review done",
++				"    10:10 5m00s Rev-Fix done",
+ 				"    10:15 1m00s Rev-Bouncer escalated",
+ 				"    10:16 1m Rev-Bouncer running",
+ 				"[ ] 3. Publish", "[ ] 4. PR-Review", "[ ] 5. PR-Rework",
+@@ -878,19 +880,19 @@ func TestRenderChecklist(t *testing.T) {
+ 				"[>] 2. Rev 14m rounds 4",
+ 				"  round 1 2m00s",
+ 				"    10:05 1m00s Rev-Bouncer bounced",
+-				"    10:06 1m00s Rev-Review done round-1-review.md",
++				"    10:06 1m00s Rev-Review done",
+ 				"  round 2 2m00s",
+ 				"    10:07 1m00s Rev-Bouncer bounced",
+-				"    10:08 1m00s Rev-Review done round-2-review.md",
++				"    10:08 1m00s Rev-Review done",
+ 				"  round 3 4m00s",
+ 				"    10:09 1m00s Rev-Bouncer bounced",
+-				"    10:10 1m00s Rev-Review done round-3-review.md",
+-				"    10:11 1m00s Rev-Fix done round-3-fixer-report.md",
++				"    10:10 1m00s Rev-Review done",
++				"    10:11 1m00s Rev-Fix done",
+ 				"    10:12 1m00s Rev-Bouncer escalated",
+ 				"    10:13 arbiter attempt 1 resume",
+ 				"  round 4 6m",
+ 				"    10:13 2m00s Rev-Bouncer bounced",
+-				"    10:15 2m00s Rev-Review done round-4-review.md",
++				"    10:15 2m00s Rev-Review done",
+ 				"    10:17 2m Rev-Fix running",
+ 				"[ ] 3. Publish", "[ ] 4. PR-Review", "[ ] 5. PR-Rework",
+ 				"loom running | now working", "waiting on nothing",
+diff --git a/internal/loomcli/doc.go b/internal/loomcli/doc.go
+index 7139b985..7023ed9b 100644
+--- a/internal/loomcli/doc.go
++++ b/internal/loomcli/doc.go
+@@ -14,7 +14,7 @@
+ // a seeded run keeps its recorded driver whatever the key says later.
+ // It brings up the worktree's tmux session;
+ // it ensures the status strand on either driver, and the per-hub watchdog daemon is spawned best-effort.
+-// The status strand runs the hidden `lyx loom checklist` verb: the session's overview window, drawing the checklist frame: the recipe's rows in order, each entry numbered after its box and a review segment taking one number, each with its box, the time spent in it, its visit count and its visit lines under it, a gate line per gate entry under a visit that recorded gate spans, the visit after a gate row's refusal marked as rework for it and its time added to the gate row's line, a review segment's rounds each carrying their total, every closed time drawn to the second and every time that includes the open visit in whole minutes, then the run's state line, with the note of what a running run waits on (the same note `lyx loom status` reports), and the wait line.
++// The status strand runs the hidden `lyx loom checklist` verb: the session's overview window, drawing the checklist frame: the recipe's rows in order, each entry numbered after its box and a review segment taking one number, each with its box, the time spent in it, its visit count and its visit lines under it, each carrying no output path, a gate line per gate entry under a visit that recorded gate spans, opening with the UTC clock time its gate entry started, the visit after a gate row's refusal marked as rework for it and its time added to the gate row's line, a review segment's rounds each carrying their total, every closed time drawn to the second and every time that includes the open visit in whole minutes, then the run's state line, with the note of what a running run waits on (the same note `lyx loom status` reports), and the wait line.
+ // A Stuck visit whose status entry records where Shed routed it reads `bounced` and an awaiting one reads `escalated`, in this window only.
+ // The verb reads the status file and the seed without arming a run, and reports no content size to reed.
+ // Right after ensuring the status strand, every start entry, a fresh run, a re-entrant start on a live run and a resume of a parked run, turns the session's follow state on and selects the run's relevant window;
