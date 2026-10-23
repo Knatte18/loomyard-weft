@@ -69,4 +69,4 @@ That moves to batten: a new batten row after `Land`, outside the lock, where a c
 
 ## Landing this task
 
-A run parked on a removed row when this lands is restarted, not migrated, so this task lands while no other run is in flight: the orch pauses its run before Finalize with `lyx loom pause --before Finalize` and resumes it once no other run is in flight.
+A run parked on a removed row when this lands is restarted, not migrated, so this task lands while no other run is in flight: the orch pauses its run before Merge-In with `lyx loom pause --before Merge-In`, since today's Merge-In takes the parent lock and holds it to Finalize, resumes it once no other run is in flight, and starts no run until it has landed.
