@@ -1,6 +1,6 @@
 {
   "runGuid": "9f527ada10a19724b2f3a87061a5ac41",
-  "planFingerprint": "5c70a131b5ff27c565bac438ba2126f73005bfb78ad9337d7632a29f9ab578cb",
+  "planFingerprint": "67844a7ed82b7fd05972d4f38e9022de3d8799bd435f62600a54b5b06cc7cb43",
   "planFileHashes": {
     "00-overview.md": "468cbc840722398d268b91221206213ab77bd8345c87e77b3ea147bfef3643da",
     "01-fabric-merge-in-at.md": "5658bfb064f63d28ce9dfd6178f974b5ca5ced0a730c54dc070db9d8fc7233ed",
@@ -24,7 +24,7 @@
     "19-landing-drops-failure-routes.md": "cc3ad13797491d285abe7ebc67880cb8248278c42d11e471ff99953abd6217ea",
     "20-pr-review-stub.md": "acf86932951a2c0c6b71e915b7465472100f396e2fdda86d0ffbd047c7e7e0dc",
     "21-code-perch-keys.md": "7f6dc7490e01e4f37ed420101690351590b33acdf6a6a730ad936766a60b3bc1",
-    "22-recipe-tails.md": "4d24be90eb18b4a1491d0b775e30a2f2ca8292edca07052e1829de31f5423d5e",
+    "22-recipe-tails.md": "b5de634e96f49490821c6a6ccd1703d9e9258a0956fb3eafe181c8524796e215",
     "23-merge-review-retired.md": "024fc904911bef08b0757ca91f261ca5b7f3344a36e1e2a5e0adce4884c8f868",
     "24-merge-record-aligned-tip.md": "32629f26a5f9749de536289962b66783f71c283b2df68861cdfeba01d8edaf47",
     "25-merge-in-unlocked.md": "d4a0bf6a0af60f52de0f308310d7b8873935cb748c1604df3f454520f029cb34",
@@ -1709,7 +1709,7 @@
       }
     }
   ],
-  "currentBatch": 22,
+  "currentBatch": 0,
   "masterStrand": "84b46756278c26fa4a3d938b33a70bce",
   "masterSessionId": "15e077c7-3daf-473b-935d-c0209f975d97",
   "masterEngine": "claude",
@@ -1972,15 +1972,58 @@
         "22-recipe-tails"
       ],
       "cardHashes": {
-        "22-recipe-tails": "4d24be90eb18b4a1491d0b775e30a2f2ca8292edca07052e1829de31f5423d5e"
+        "22-recipe-tails": "b5de634e96f49490821c6a6ccd1703d9e9258a0956fb3eafe181c8524796e215"
       },
       "startSha": "40fa1b09a7aa73f5c0182da61fa6da31749ecab9",
       "kind": "fork",
       "spawnedAt": "2026-10-23T16:41:02Z",
       "sessionId": "15e077c7-3daf-473b-935d-c0209f975d97",
       "engine": "claude",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "22-recipe-tails",
+        "status": "done",
+        "head_sha": "3ea590f78d49a489b46bacf1fc8c57e8ba61461c",
+        "deviations": [
+          "internal/loomcli/checklist_test.go",
+          "internal/loomcli/circling_test.go",
+          "internal/loomcli/peers_test.go",
+          "internal/loomcli/settledguard_test.go",
+          "internal/loomcli/wiring_darn_test.go",
+          "internal/loomcli/wiring_rework_integration_test.go",
+          "internal/loomcli/wiring_test.go",
+          "internal/loomrecipe/coverage_guard_test.go",
+          "internal/loomrecipe/darnrecipe.go",
+          "internal/loomrecipe/darnrecipe_test.go",
+          "internal/loomrecipe/sequence_test.go",
+          "internal/loomrecipe/shape_test.go",
+          "internal/shedrecipe/entries_gate_test.go",
+          "internal/shedrecipe/entries_simple.go",
+          "internal/shedrecipe/entries_simple_test.go"
+        ]
+      },
+      "cardShas": [
+        "3ea590f78d49a489b46bacf1fc8c57e8ba61461c"
+      ],
+      "forkTranscripts": [
+        "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-loom-tail-review/15e077c7-3daf-473b-935d-c0209f975d97/subagents/agent-aa480c5f220598eca.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-loom-tail-review/15e077c7-3daf-473b-935d-c0209f975d97/subagents/agent-aa480c5f220598eca.jsonl"
+      ],
+      "auditWarnings": [
+        {
+          "identity": "later-card-drift:plan-references-deleted-symbol/42-landing-drops-pr-producers[blocking]: card 42 references \"internal/shedrecipe#armPRGate\", which the delta reports deleted with no corresponding rename",
+          "class": "later-card-drift",
+          "detail": "later card: plan-references-deleted-symbol/42-landing-drops-pr-producers[blocking]: card 42 references \"internal/shedrecipe#armPRGate\", which the delta reports deleted with no corresponding rename"
+        },
+        {
+          "identity": "later-card-drift:plan-references-deleted-symbol/42-landing-drops-pr-producers[blocking]: card 42 references \"internal/shedrecipe#armPRAlign\", which the delta reports deleted with no corresponding rename",
+          "class": "later-card-drift",
+          "detail": "later card: plan-references-deleted-symbol/42-landing-drops-pr-producers[blocking]: card 42 references \"internal/shedrecipe#armPRAlign\", which the delta reports deleted with no corresponding rename"
+        }
+      ]
     },
     "7": {
       "slug": "fixer-session-table",
@@ -2038,6 +2081,11 @@
     "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-loom-tail-review/15e077c7-3daf-473b-935d-c0209f975d97/subagents/agent-ae08dde95dc6aea40.jsonl",
     "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-loom-tail-review/15e077c7-3daf-473b-935d-c0209f975d97/subagents/agent-a2c79b17b84b210f0.jsonl",
     "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-loom-tail-review/15e077c7-3daf-473b-935d-c0209f975d97/subagents/agent-a1f542babbc833d2f.jsonl",
-    "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-loom-tail-review/15e077c7-3daf-473b-935d-c0209f975d97/subagents/agent-a8d1a48466e06a962.jsonl"
-  ]
+    "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-loom-tail-review/15e077c7-3daf-473b-935d-c0209f975d97/subagents/agent-a8d1a48466e06a962.jsonl",
+    "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-loom-tail-review/15e077c7-3daf-473b-935d-c0209f975d97/subagents/agent-aa480c5f220598eca.jsonl"
+  ],
+  "auditDispositions": {
+    "later-card-drift:plan-references-deleted-symbol/42-landing-drops-pr-producers[blocking]: card 42 references \"internal/shedrecipe#armPRAlign\", which the delta reports deleted with no corresponding rename": "warned",
+    "later-card-drift:plan-references-deleted-symbol/42-landing-drops-pr-producers[blocking]: card 42 references \"internal/shedrecipe#armPRGate\", which the delta reports deleted with no corresponding rename": "warned"
+  }
 }
