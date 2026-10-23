@@ -17,3 +17,14 @@ One code review perch in both recipes, named `Code-Review` with one key set and 
 ## Operator question (2026-10-23)
 
 Why two code review perches, when both check that the code matches what was decided for the task?
+
+## Operator proposal (2026-10-23)
+
+The code perch checks the same thing in loom and darn: the code against a discussion record, and the code itself as code.
+In loom it stays as Webster-Review checks today.
+In darn the writer moves the task's description out of the board into a record file shaped like the one loom's Discussion writes, and adds its own decisions to it; the perch reads that file, not the board entry.
+
+## Open
+
+- The darn writer's own decisions are unreviewed, unlike loom's record, which the Discussion perch approves.
+  The record must keep the board's copied scope apart from the writer's additions, so the perch checks each addition against the copied scope instead of taking it as the answer key; today's darn rubric does that by treating the record's other sections as the writer's claim.
