@@ -9,6 +9,15 @@ Depends on: [`loom-tail-review`](design-loom-tail-review.md)
 This task runs after `loom-tail-review`, which rebuilds the run tail: Publish, PR-Align, PR-Gate, PR-Rework and Merge-Review go, and Publish's gates move into Merge-In and Finalize.
 The rows and gates named below were written against the old tail; map each onto the new tail as it landed.
 
+## One gate key per producer (operator decision, 2026-10-23)
+
+Every producer that runs a test gate gets its own key in `gate.yaml`'s `gates`, named after that producer, listing the tiers it runs.
+No generic gate kind stays: `landing` goes, since `Land` is batten's row and `landing.yaml` a config module, and neither runs that gate; `final` goes the same way.
+After `loom-tail-review` the generic `landing` call runs at Merge-In, Finalize, Darn-Write, Darn-Burler-Fix and Code-Burler-Fix, and Webster's end gate is `final`; each such site gets its own key.
+`card` and `batch` already name where they run and stay; whether `round` stays under that name is weighed by the same rule.
+This lets an umbrella's piece runs (note `loom-beam-darns`) run fewer tiers at their writer than a standalone darn, with no change to Merge-In or Finalize.
+`lyx config reconcile` migrates a hub's `landing`, `final` and `round` lists onto the new keys.
+
 ## Darn and loom symmetric (operator, 2026-10-23)
 
 Which tiers run at which row should be symmetric between darn and loom, and stated plainly for each recipe.
