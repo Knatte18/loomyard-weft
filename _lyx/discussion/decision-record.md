@@ -286,6 +286,12 @@ Since nothing rewrites a profile or a board entry, the Warn repeats at every rea
 
 Rationale: profiles and `run_settings` are checked against the module's keys at every write and at Seed-Child, so a rename without this table refuses every profiled start after landing.
 
+### Added after Discussion (parent, 2026-10-23): Shorten the PATTERN-parent-lock text under the overview line cap
+
+Decision: PATTERN-parent-lock's changes text is: Moving a local parent branch, or merging into it and landing on it: only in Finalize under that parent's `internal/parentlock` lock; Merge-In merges the parent into a task branch without it, and a loom conflict, a large merge or a spent or over-cap fix at Finalize reroutes, or halts where the reroute reaches no review.
+
+Rationale: The declared text is 392 runes as an overview line, past the plan gate's 360-rune pattern-entry-line-cap; the shorter text says the same.
+
 ## Constraints
 
 - `PATTERN-told-geometry`: `internal/landingshed` keeps taking told paths, the fixer's included.
@@ -357,7 +363,7 @@ Every pick in D2 to D14 that the board left open is an auto-pick, recorded with 
 
 ## PATTERN changes
 
-- `PATTERN-parent-lock` — changes: Moving a local parent branch, or merging into it and landing on it: only in Finalize under that parent's `internal/parentlock` lock; Merge-In merges the parent into a task branch without it, and a loom conflict, a large merge, a spent fixer cap or an over-cap fix at Finalize routes back through the recipe's reroute edge, or halts where that edge reaches no review.
+- `PATTERN-parent-lock` — changes: Moving a local parent branch, or merging into it and landing on it: only in Finalize under that parent's `internal/parentlock` lock; Merge-In merges the parent into a task branch without it, and a loom conflict, a large merge or a spent or over-cap fix at Finalize reroutes, or halts where the reroute reaches no review. — added after Discussion (parent, 2026-10-23)
 - `PATTERN-recipe-owns-failures` — adds: Failing a merge or test at Merge-In or Finalize: the row's own fixer fixes it, Finalize routes back through the recipe's reroute edge, or the run halts to the orch; no driver, batten, arbiter or record target routes it to another row.
 
 ## Notes for the plan writer
