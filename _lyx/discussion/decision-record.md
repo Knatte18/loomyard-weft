@@ -222,6 +222,12 @@ Reading slug and intent from the plan keeps the note's rule that no free text re
   - d9-plan-handle-targets-never-match (class decision, severity MEDIUM, open in rounds 2, 3)
 <!-- /lyx:carry-over Discussion-Review -->
 
+<!-- lyx:carry-over Plan-Review -->
+- Plan-Review, round 3: converged; each finding below was fixed or disputed by the round's fixer, and no fresh reviewer has seen the result; the fixer report says which.
+  Review: _lyx/reviews/plan/round-3-review.md; fixer report: _lyx/reviews/plan/round-3-fixer-report.md.
+  - card19-arbiter-doc-go-stale (class scope, severity MEDIUM, open in rounds 3)
+<!-- /lyx:carry-over Plan-Review -->
+
 ## Acceptance criteria
 
 - A plan whose cards' verbatim lines grow the projected overview past the headroom line from the merge base fails the plan gate with `pattern-headroom`, naming the bytes to cut; a plan whose lines replace existing bullets at equal or smaller size passes.
