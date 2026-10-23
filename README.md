@@ -1,6 +1,7 @@
 # Board
 
-Rendered 2026-10-23 08:44 UTC; every age below is as of then.
+Rendered 2026-10-23 08:45 UTC; every age below is as of then.
+Prime owner: `osl-1046`.
 
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
@@ -16,7 +17,7 @@ Held by a run; its scope is locked until the run ends.
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T2 | **Plan cards: headroom check, Extends label, an amendment owner, failures traced to cards**<br>• PATTERN headroom in the plan gate, additive Extends cards, an in-run owner for card amendments, verify failures mapped to cards via Enclose<br>• `profile: light` | [`plan-card-rules`](design-plan-card-rules.md) | loom | Webster | osl-1046 | 2w<br>17h | loom, webster, burler, orch, quarry |
-| T3 | **One batten verb ends a run for good, live or stopped, before or after its pair exists**<br>• Abandon or abort a batten run in any state: end its processes and strands, clear the claim, remove records and scratch, optionally the pair; batten refuses a dirty source up front<br>• `profile: light` | [`batten-cancel-verb`](design-batten-cancel-verb.md) | loom | Webster-Bouncer | osl-1046 | 2d<br>20h | batten, reed, shed |
+| T3 | **One batten verb ends a run for good, live or stopped, before or after its pair exists**<br>• Abandon or abort a batten run in any state: end its processes and strands, clear the claim, remove records and scratch, optionally the pair; batten refuses a dirty source up front<br>• `profile: light` | [`batten-cancel-verb`](design-batten-cancel-verb.md) | loom | Webster-Burler-Review | osl-1046 | 2d<br>20h | batten, reed, shed |
 
 ### Ready
 
