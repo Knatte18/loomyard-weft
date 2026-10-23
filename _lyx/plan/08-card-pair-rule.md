@@ -1,13 +1,13 @@
 # Card 8 — one pair rule for card dependency edges
 
 **Create:**
-- `plan:internal/planparser#RefKind` -> `type RefKind int`
-- `plan:internal/planparser#RefUse` -> `const RefUse RefKind = 1`
-- `plan:internal/planparser#RefChange` -> `const RefChange RefKind = 2`
-- `plan:internal/planparser#RefExtends` -> `const RefExtends RefKind = 3`
-- `plan:internal/planparser#CardRefKind` -> `func CardRefKind(card Card, ref string) RefKind`
-- `plan:internal/planparser#DependencyEdge` -> `func DependencyEdge(earlier Card, earlierKind RefKind, later Card, laterKind RefKind) bool`
-- `plan:internal/planparser#TestDependencyEdge` -> `func TestDependencyEdge(t *testing.T)`
+- `internal/planparser#RefKind`
+- `internal/planparser#RefUse`
+- `internal/planparser#RefChange`
+- `internal/planparser#RefExtends`
+- `internal/planparser#CardRefKind`
+- `internal/planparser#DependencyEdge`
+- `internal/planparser#TestDependencyEdge`
 
 **Edit:**
 - `internal/websterengine#deriveEdges`

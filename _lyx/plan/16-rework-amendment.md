@@ -16,9 +16,9 @@
 - `plan:internal/loomcli#TestReworkCommitPathspec` -> `func TestReworkCommitPathspec(t *testing.T)`
 
 **Uses:**
-- `plan:internal/loomshed#RemoveAmendment`
+- `internal/loomshed#RemoveAmendment`
 - `plan:internal/loomcli#amendmentPathspec`
-- `plan:internal/loomengine#LoomAmendmentRecord`
+- `internal/loomengine#LoomAmendmentRecord`
 
 **Intent:**
 D7: while the amendment record exists, Plan-Review's skip seam answers false, and PR-Rework's archive of a generation removes the record.

@@ -11,10 +11,10 @@
 
 **Uses:**
 - `plan:internal/loomcli#amendmentPathspec`
-- `plan:internal/loomshed#AmendmentSettledBy`
-- `plan:internal/loomshed#ReadAmendment`
-- `plan:internal/loomshed#RemoveAmendment`
-- `plan:internal/shedadapters#SettleRoundStart`
+- `internal/loomshed#AmendmentSettledBy`
+- `internal/loomshed#ReadAmendment`
+- `internal/loomshed#RemoveAmendment`
+- `internal/shedadapters#SettleRoundStart`
 - `internal/loomrecipe#BouncerRunSubdir`
 
 **Intent:**

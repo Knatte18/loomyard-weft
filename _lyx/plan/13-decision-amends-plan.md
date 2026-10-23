@@ -25,9 +25,9 @@
 - `plan:internal/loomcli#TestAmendmentPathspec` -> `func TestAmendmentPathspec(t *testing.T)`
 
 **Uses:**
-- `plan:internal/loomshed#AppendAmendment`
-- `plan:internal/loomengine#LoomAmendmentRecord`
-- `plan:internal/loomengine#LoomAmendmentRecordRel`
+- `internal/loomshed#AppendAmendment`
+- `internal/loomengine#LoomAmendmentRecord`
+- `internal/loomengine#LoomAmendmentRecordRel`
 - `internal/loomcli#committedHoldsEntry`
 - `internal/loomcli#goodDecisionInput`
 

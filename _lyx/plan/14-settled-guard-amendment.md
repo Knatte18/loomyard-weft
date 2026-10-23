@@ -6,9 +6,9 @@
 - `internal/loomcli#TestSettledSegmentGuard`
 
 **Uses:**
-- `plan:internal/shedadapters#SettleRoundStart`
-- `plan:internal/loomshed#ReadAmendment`
-- `plan:internal/loomengine#LoomAmendmentRecord`
+- `internal/shedadapters#SettleRoundStart`
+- `internal/loomshed#ReadAmendment`
+- `internal/loomengine#LoomAmendmentRecord`
 - `internal/loomshed#NamePlanBurlerReview`
 
 **Intent:**
