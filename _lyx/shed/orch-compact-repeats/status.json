@@ -1,11 +1,11 @@
 {
-  "current_producer": "Darn-Write",
+  "current_producer": "Darn-Bouncer",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Darn-Write",
-    "last": "Darn-Write → goto",
+    "now": "Darn-Bouncer",
+    "last": "Darn-Write → done",
     "wait": ""
   },
   "history": [
@@ -140,6 +140,33 @@
       "output": "",
       "at": "2026-10-23T07:13:19Z",
       "by": "shed"
+    },
+    {
+      "producer": "Darn-Write",
+      "outcome": "done",
+      "output": "/home/AD.NORCERESEARCH.NO/hanf/Code/Knatte18/loomyard-LYXHUB/orch-compact-repeats/_lyx/landing/summary.md",
+      "at": "2026-10-23T07:20:40Z",
+      "gate_attempts": 0,
+      "gate_spans": [
+        {
+          "gate": "discussion",
+          "kind": "gate",
+          "start": "2026-10-23T07:17:45.09880122Z",
+          "end": "2026-10-23T07:17:58.657793734Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-10-23T07:17:58.729278149Z",
+          "end": "2026-10-23T07:20:37.752662656Z"
+        },
+        {
+          "gate": "description",
+          "kind": "gate",
+          "start": "2026-10-23T07:20:38.86552735Z",
+          "end": "2026-10-23T07:20:38.865764535Z"
+        }
+      ]
     }
   ],
   "product": {
