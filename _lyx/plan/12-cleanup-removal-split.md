@@ -1,7 +1,7 @@
 # Card 12 — cleanup-removal-split
 
 **Create:**
-- `plan:internal/battencli#removeRunRecords` -> `func removeRunRecords(location *lyxcwd.Location, slug, msg string, deps cleanupDeps) (committed bool, err error)`
+- `internal/battencli#removeRunRecords`
 
 **Edit:**
 - `internal/battencli#cleanupSlug`

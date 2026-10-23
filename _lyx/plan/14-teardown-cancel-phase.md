@@ -1,17 +1,17 @@
 # Card 14 — teardown-cancel-phase
 
 **Create:**
-- `plan:internal/pairteardown#CancelLockWait` -> `const CancelLockWait = runLockWait`
-- `plan:internal/pairteardown#CancelRequest` -> `type CancelRequest struct`
-- `plan:internal/pairteardown#CancelResult` -> `type CancelResult struct`
-- `plan:internal/pairteardown#Teardown.EndForCancel` -> `func (t *Teardown) EndForCancel(ctx context.Context, req CancelRequest) (CancelResult, error)`
-- `plan:internal/pairteardown#Teardown.holdRecordsWriteLocks` -> `func (t *Teardown) holdRecordsWriteLocks(slug string) (release func() error, err error)`
-- `plan:internal/pairteardown#Teardown.stopPairStrands` -> `func (t *Teardown) stopPairStrands(slug string) ([]string, error)`
-- `plan:internal/pairteardown#liveStrandGUIDs` -> `func liveStrandGUIDs(rows []reedengine.DirectoryRow) (guids, names []string)`
-- `plan:internal/pairteardown#cancelSurvivorsError` -> `func cancelSurvivorsError(slug string, survivors []runproc.Ended, goos string) error`
-- `plan:internal/pairteardown#TestEndForCancel` -> `func TestEndForCancel(t *testing.T)`
-- `plan:internal/pairteardown#TestHoldRecordsWriteLocks` -> `func TestHoldRecordsWriteLocks(t *testing.T)`
-- `plan:internal/pairteardown#TestLiveStrandGUIDs` -> `func TestLiveStrandGUIDs(t *testing.T)`
+- `internal/pairteardown#CancelLockWait`
+- `internal/pairteardown#CancelRequest`
+- `internal/pairteardown#CancelResult`
+- `internal/pairteardown#Teardown.EndForCancel`
+- `internal/pairteardown#Teardown.holdRecordsWriteLocks`
+- `internal/pairteardown#Teardown.stopPairStrands`
+- `internal/pairteardown#liveStrandGUIDs`
+- `internal/pairteardown#cancelSurvivorsError`
+- `internal/pairteardown#TestEndForCancel`
+- `internal/pairteardown#TestHoldRecordsWriteLocks`
+- `internal/pairteardown#TestLiveStrandGUIDs`
 
 **Edit:**
 - `internal/pairteardown#Teardown`

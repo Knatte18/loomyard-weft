@@ -1,13 +1,13 @@
 # Card 16 — batten-start-guards
 
 **Create:**
-- `plan:internal/battencli#startGuard` -> `type startGuard struct`
-- `plan:internal/battencli#hubStartGuard` -> `func hubStartGuard(location *lyxcwd.Location, slug string) startGuard`
-- `plan:internal/battencli#startGuard.refuse` -> `func (g startGuard) refuse(slug, verb string, status shedengine.Status, found, taskWorktreePresent bool) error`
-- `plan:internal/battencli#battenCLI.refuseCancelMarker` -> `func (c *battenCLI) refuseCancelMarker() error`
-- `plan:internal/battencli#TestStartGuard_Refuse` -> `func TestStartGuard_Refuse(t *testing.T)`
-- `plan:internal/battencli#TestArmSeed_CancelMarkerRefusesTheWrite` -> `func TestArmSeed_CancelMarkerRefusesTheWrite(t *testing.T)`
-- `plan:internal/battencli#TestArmAt_StartGuardRefusesBeforeAnyWrite` -> `func TestArmAt_StartGuardRefusesBeforeAnyWrite(t *testing.T)`
+- `internal/battencli#startGuard`
+- `internal/battencli#hubStartGuard`
+- `internal/battencli#startGuard.refuse`
+- `internal/battencli#battenCLI.refuseCancelMarker`
+- `internal/battencli#TestStartGuard_Refuse`
+- `internal/battencli#TestArmSeed_CancelMarkerRefusesTheWrite`
+- `internal/battencli#TestArmAt_StartGuardRefusesBeforeAnyWrite`
 
 **Edit:**
 - `internal/battencli#battenCLI`
@@ -17,10 +17,10 @@
 - `internal/battencli#TestRefuseStartOwnedElsewhere`
 
 **Uses:**
-- `plan:internal/battencli#readCancelMarker`
-- `plan:internal/battencli#cancelMarkerRefusal`
+- `internal/battencli#readCancelMarker`
+- `internal/battencli#cancelMarkerRefusal`
 - `internal/battencli#fakeOwners`
-- `plan:internal/battencli#takeCancelMarker`
+- `internal/battencli#takeCancelMarker`
 - `internal/fabricengine#SourceDirtyPaths`
 - `internal/fabricengine#Topology.PairParts`
 

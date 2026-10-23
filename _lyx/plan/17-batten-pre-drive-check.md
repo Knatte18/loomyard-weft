@@ -1,8 +1,8 @@
 # Card 17 — batten-pre-drive-check
 
 **Create:**
-- `plan:internal/battencli#battenCLI.preDriveCheck` -> `func (c *battenCLI) preDriveCheck() error`
-- `plan:internal/battencli#TestPreDriveCheck` -> `func TestPreDriveCheck(t *testing.T)`
+- `internal/battencli#battenCLI.preDriveCheck`
+- `internal/battencli#TestPreDriveCheck`
 
 **Edit:**
 - `internal/battencli#battenCLI`
@@ -14,7 +14,7 @@
 
 **Uses:**
 - `internal/battencli#newFakeReceiver`
-- `plan:internal/battencli#takeCancelMarker`
+- `internal/battencli#takeCancelMarker`
 - `internal/shedengine#Shed`
 
 **Intent:**

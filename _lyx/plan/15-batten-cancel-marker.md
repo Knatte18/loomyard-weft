@@ -1,15 +1,15 @@
 # Card 15 — batten-cancel-marker
 
 **Create:**
-- `plan:internal/battencli#cancelMarker` -> `type cancelMarker struct`
-- `plan:internal/battencli#cancelMarkerReading` -> `type cancelMarkerReading struct`
-- `plan:internal/battencli#readCancelMarker` -> `func readCancelMarker(location *lyxcwd.Location, slug string) (cancelMarkerReading, error)`
-- `plan:internal/battencli#heldCancelMarker` -> `type heldCancelMarker struct`
-- `plan:internal/battencli#takeCancelMarker` -> `func takeCancelMarker(location *lyxcwd.Location, slug string, wait time.Duration) (heldCancelMarker, error)`
-- `plan:internal/battencli#heldCancelMarker.release` -> `func (h heldCancelMarker) release(remove bool) error`
-- `plan:internal/battencli#cancelMarkerRefusal` -> `func cancelMarkerRefusal(slug string, reading cancelMarkerReading) error`
-- `plan:internal/battencli#judgeCancelMarker` -> `func judgeCancelMarker(presentBefore, lockFree, presentUnderLock bool) (present, writerAlive bool)`
-- `plan:internal/battencli#TestCancelMarker` -> `func TestCancelMarker(t *testing.T)`
+- `internal/battencli#cancelMarker`
+- `internal/battencli#cancelMarkerReading`
+- `internal/battencli#readCancelMarker`
+- `internal/battencli#heldCancelMarker`
+- `internal/battencli#takeCancelMarker`
+- `internal/battencli#heldCancelMarker.release`
+- `internal/battencli#cancelMarkerRefusal`
+- `internal/battencli#judgeCancelMarker`
+- `internal/battencli#TestCancelMarker`
 
 **Uses:**
 - `internal/shedrun#CancelMarker`

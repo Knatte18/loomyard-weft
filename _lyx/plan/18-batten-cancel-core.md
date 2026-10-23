@@ -16,12 +16,12 @@
 - `internal/battencli#resumeRefusal`
 
 **Uses:**
-- `plan:internal/battencli#heldCancelMarker`
-- `plan:internal/battencli#cancelMarkerReading`
-- `plan:internal/battencli#cancelMarkerRefusal`
-- `plan:internal/pairteardown#CancelRequest`
-- `plan:internal/pairteardown#CancelResult`
-- `plan:internal/pairteardown#CancelLockWait`
+- `internal/battencli#heldCancelMarker`
+- `internal/battencli#cancelMarkerReading`
+- `internal/battencli#cancelMarkerRefusal`
+- `internal/pairteardown#CancelRequest`
+- `internal/pairteardown#CancelResult`
+- `internal/pairteardown#CancelLockWait`
 - `internal/fabricengine#PairParts`
 - `internal/fabricengine#DiscardResult`
 
