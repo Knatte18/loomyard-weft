@@ -1,0 +1,42 @@
+attempt: 1
+cap: 2
+failures:
+    - id: github.com/Knatte18/loomyard/cmd/lyx.TestDriverStencil_IsRecipeBlind
+      kind: test
+      package: github.com/Knatte18/loomyard/cmd/lyx
+      tail: ""
+    - id: github.com/Knatte18/loomyard/internal/shedbuild.TestBuild_EveryRegisteredEngineBuilds/PRReview
+      kind: test
+      package: github.com/Knatte18/loomyard/internal/shedbuild
+      tail: ""
+    - id: github.com/Knatte18/loomyard/internal/loomrecipe.TestResume_DoesNotRestartAtRowOne
+      kind: test
+      package: github.com/Knatte18/loomyard/internal/loomrecipe
+      tail: ""
+    - id: github.com/Knatte18/loomyard/internal/loomrecipe.TestResume_CrashRecoveryRecallsUnconditionally
+      kind: test
+      package: github.com/Knatte18/loomyard/internal/loomrecipe
+      tail: ""
+    - id: github.com/Knatte18/loomyard/internal/loomrecipe.TestResume_PauseStopsAtBoundaryAndClearsFlag
+      kind: test
+      package: github.com/Knatte18/loomyard/internal/loomrecipe
+      tail: ""
+    - id: github.com/Knatte18/loomyard/internal/loomrecipe.TestResume_DiscussionWriteRespawnsRatherThanReportDoneOffFileExistence
+      kind: test
+      package: github.com/Knatte18/loomyard/internal/loomrecipe
+      tail: ""
+    - id: github.com/Knatte18/loomyard/internal/loomrecipe.TestResume_LiveMatchingRunAttachesInsteadOfRespawning
+      kind: test
+      package: github.com/Knatte18/loomyard/internal/loomrecipe
+      tail: ""
+    - id: github.com/Knatte18/loomyard/internal/loomrecipe.TestSequence_FullRunBlocksAtMergeIn
+      kind: test
+      package: github.com/Knatte18/loomyard/internal/loomrecipe
+      tail: ""
+log_path: /home/AD.NORCERESEARCH.NO/hanf/Code/Knatte18/loomyard-LYXHUB/loom-tail-review/.lyx/verify/verify-2.log
+hint:
+    - 21-code-perch-keys
+    - 22-recipe-tails
+    - 43-drop-approve-reject-verbs
+    - 47-deploy-branches
+fixer: fork
