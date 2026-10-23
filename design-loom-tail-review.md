@@ -1,6 +1,6 @@
 # Run tail: Merge-In with alignment, Code-Perch, a PR stub and one locked Land block, for loom and darn
 
-`loom-tail-review` · Task · enhancement, loom, burler, shed, fabric, batten · running · Webster-Bouncer
+`loom-tail-review` · Task · enhancement, loom, burler, shed, fabric, batten · running · Webster-Burler-Review
 
 ## Design (operator, 2026-10-23)
 
