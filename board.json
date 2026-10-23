@@ -1013,26 +1013,6 @@
       "profile": "light"
     },
     {
-      "id": 762,
-      "handle": "E14",
-      "slug": "speed-loom-profile",
-      "title": "Speed loom profile: Discussion, Plan and Webster, with review only of the end product",
-      "kind": "note",
-      "labels": [
-        "enhancement",
-        "loom",
-        "burler",
-        "config"
-      ],
-      "issues": [],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "A loom profile without the Discussion, Plan and Webster perches, reviewing only before landing",
-      "body": "## Idea (operator, 2026-10-22)\n\nA loom profile that keeps Discussion, Plan and Webster, so the task is scoped, bounded and planned as in loom, but reviews only the end product: no Discussion, Plan or Webster review perch, only the review before landing.\nMore thorough and structured than darn, much cheaper than full loom.\n\n## Evidence\n\n`docs/research/token-audit-2026-10-22`: review loops are about a third of task spend, and Discussion and Plan review about $8 of a loom run's roughly $23 fixed cost.\n\n## Open\n\n- Whether profile settings alone can turn the perches off (bounce caps of 0), or whether that needs the row entry gate task `gate-runs-once` builds, instead of a recipe rewrite like darn's.\n- Which review the end product gets: Merge review, or a Webster round over the whole diff.\n",
-      "created": "2026-10-22T16:08:23Z",
-      "revised": "2026-10-22T16:08:23Z"
-    },
-    {
       "id": 763,
       "handle": "E15",
       "slug": "plan-writer-context",
@@ -1262,15 +1242,16 @@
       "labels": [
         "enhancement",
         "config",
-        "loom"
+        "loom",
+        "burler"
       ],
       "issues": [],
       "depends_on": [],
       "isolated": false,
       "brief": "Replace budget, light, docs and darn-wide with one profile ladder shared by darn and loom",
-      "body": "## Seen (2026-10-23)\n\nThe hub's run profiles, listed by `lyx board profiles`, grew one at a time and their names say little: `budget`, `light`, `docs` and `darn-wide`.\n`budget` still sets `merge_max_bounces`, a key `loom-tail-review` retires.\n\n## Operator proposal (2026-10-23)\n\nOne ladder of profiles, the same names for darn and loom, each setting the review rounds per perch; Code is 1 in every loom profile.\n\n| Profile | Discussion | Plan | Code | Darn |\n|---|---|---|---|---|\n| speed | 0 | 0 | 1 | 0 |\n| light | 1 | 1 | 1 | 1 |\n| solid | 2 | 2 | 1 | 2 |\n| wide | 3 | 2 | 1 | 3 |\n\nA task needing anything else names its rounds per row by hand.\n\n## Operator decisions (2026-10-23)\n\n- Each profile also sets each perch's hard cap, such as its rounds plus one, so `lyx loom circling continue` can grant one more round.\n- The third rung is named `solid`, not `standard`.\n  A hub names its default profile per recipe instead: loom's default is `solid`, darn's is `light`.\n\n## Open\n\n- `docs`: the operator doubts it, since Opus does quick work well; if kept, it is a darn profile only for pure prose and config value edits, with a Sonnet writer, and its perch rounds are undecided.\n- The Code column's key is `code_max_bounces` after `loom-tail-review`, and darn's perch may merge into Code-Review (note `code-review-one-perch`), which changes which keys a profile sets.\n",
-      "created": "2026-10-23T13:20:24Z",
-      "revised": "2026-10-23T13:26:13Z"
+      "body": "## Seen (2026-10-23)\n\nThe hub's run profiles, listed by `lyx board profiles`, grew one at a time and their names say little: `budget`, `light`, `docs` and `darn-wide`.\n`budget` still sets `merge_max_bounces`, a key `loom-tail-review` retires.\n\n## Operator proposal (2026-10-23)\n\nOne ladder of profiles, the same names for darn and loom, each setting the review rounds per perch; Code is 1 in every loom profile.\n\n| Profile | Discussion | Plan | Code | Darn |\n|---|---|---|---|---|\n| speed | 0 | 0 | 1 | 0 |\n| light | 1 | 1 | 1 | 1 |\n| solid | 2 | 2 | 1 | 2 |\n| wide | 3 | 2 | 1 | 3 |\n\nA task needing anything else names its rounds per row by hand.\n\n## Operator decisions (2026-10-23)\n\n- Each profile also sets each perch's hard cap, such as its rounds plus one, so `lyx loom circling continue` can grant one more round.\n- The third rung is named `solid`, not `standard`.\n  A hub names its default profile per recipe instead: loom's default is `solid`, darn's is `light`.\n- `docs` stays, as a darn profile only, for pure prose and config value edits: a Sonnet writer at medium effort and one Darn perch round.\n- The `speed` rung replaces the note `speed-loom-profile` (a loom that keeps Discussion, Plan and Webster but reviews only the end product), removed into this note.\n\n## Evidence\n\n`docs/research/token-audit-2026-10-22`: review loops are about a third of task spend, and Discussion and Plan review about $8 of a loom run's roughly $23 fixed cost.\n\n## Open\n\n- Whether a perch round count of 0, as in `speed`, turns a perch off through profile settings alone, or needs the row entry gate `gate-runs-once` builds.\n- The Code column's key is `code_max_bounces` after `loom-tail-review`, and darn's perch may merge into Code-Review (note `code-review-one-perch`), which changes which keys a profile sets.\n",
+      "created": "2026-10-22T16:08:23Z",
+      "revised": "2026-10-23T17:12:42Z"
     },
     {
       "id": 777,

@@ -68,7 +68,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | B4 |  | **Burler fix loop cannot route a decision-class finding to the parent** | [`burler-decision-finding-route`](design-burler-decision-finding-route.md) | 36m<br>36m | burler, loom |
 | B5 |  | **webster record-batch fails create-not-done for Create targets declared in an external _test package** | [`record-batch-external-test-pkg`](design-record-batch-external-test-pkg.md) | 36m<br>36m | webster, quarry |
 | B6 |  | **Decision notice from lyx loom decision add is refused by Webster's Merriam** | [`merriam-refuses-decision-notice`](design-merriam-refuses-decision-notice.md) | 36m<br>36m | webster, loom, stencil, creel |
-| B7 |  | **Git network calls get a stall bound and one retry**<br>• A git call to GitHub hung for minutes on a dead connection; bound every git network call and retry it once | [`git-remote-stall-timeout`](design-git-remote-stall-timeout.md) | 13m<br>13m | fabric, batten |
+| B7 |  | **Git network calls get a stall bound and one retry**<br>• A git call to GitHub hung for minutes on a dead connection; bound every git network call and retry it once | [`git-remote-stall-timeout`](design-git-remote-stall-timeout.md) | 14m<br>14m | fabric, batten |
 | B8 |  | **Fork git-mutation guard fails a run on git commands confined to a scratch repo** | [`fork-git-guard-scratch-repo`](design-fork-git-guard-scratch-repo.md) | 36m<br>36m | shed, burler |
 
 ### Enhancements
@@ -88,7 +88,6 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | E11 |  | **Start one task per overlapping group at a newly-ready start**<br>• When a landing makes several overlapping tasks ready at once, batten starts one per group and names the rest in its notice | [`batten-ready-overlap`](design-batten-ready-overlap.md) | 8d<br>8d | batten |
 | E12 |  | **Git test fixtures trip Cortex XDR on the work laptop**<br>• Parallel git-heavy tests create so many files at once that Cortex XDR killed VS Code and then crashed itself, twice; tests must stay usable on a machine with endpoint protection | [`xdr-git-test-file-burst`](design-xdr-git-test-file-burst.md) | 7d<br>2d | fabric |
 | E13 |  | **Rename the lyx binary to lyr (name clash with LyX)** | [`rename-binary-lyr`](design-rename-binary-lyr.md) | 7d<br>1d | stencil, shuttle |
-| E14 |  | **Speed loom profile: Discussion, Plan and Webster, with review only of the end product**<br>• A loom profile without the Discussion, Plan and Webster perches, reviewing only before landing | [`speed-loom-profile`](design-speed-loom-profile.md) | 1d<br>1d | loom, burler, config |
 | E15 |  | **Plan writer cost: sub-planners per part, and twill versus a solo writer**<br>• The Plan writer is 18% of spend; sub-planners per part for large bundles, and a twill versus solo Opus high comparison on cost, rounds and time | [`plan-writer-context`](design-plan-writer-context.md) | 1d<br>1d | loom, stencil |
 | E16 |  | **Parallel batches: the shared pieces for Webster forks and Weaver**<br>• DAG batchifier, worktree per batch, merge-back with conflict resolution; open: keeping a fork inside its worktree | [`parallel-batch-parts`](design-parallel-batch-parts.md) | 5d<br>5d | webster, fabric, loom |
 | E17 | L | **[WS 007] An anchor per umbrella**<br>• Let an umbrella work in its own subdirectory of the repository, inherited by its tasks; hard to change now | [`umbrella-anchor`](design-umbrella-anchor.md) | 5d<br>5d | fabric, config, workspaces |
@@ -107,7 +106,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | E30 |  | **Discussion scope check moves from the alignment agent into the perch lenses, with an escalating finding class** | [`discussion-alignment-into-lenses`](design-discussion-alignment-into-lenses.md) | 1d<br>1d | loom, burler, shed |
 | E31 |  | **A row before Discussion aligns the task text against the board, peers and landed work, and adjusts it** | [`entry-align-before-discussion`](design-entry-align-before-discussion.md) | 1d<br>1d | loom, batten, board |
 | E32 |  | **Move rules about lyx behaviour out of this repo's CLAUDE.md into lyx code, doc.go and stencils** | [`claude-md-lyx-rules-out`](design-claude-md-lyx-rules-out.md) | 1d<br>1d | stencil, board, loom |
-| E33 |  | **Run profiles as one ladder: speed, light, solid, wide**<br>• Replace budget, light, docs and darn-wide with one profile ladder shared by darn and loom | [`run-profiles-ladder`](design-run-profiles-ladder.md) | 3h<br>3h | config, loom |
+| E33 |  | **Run profiles as one ladder: speed, light, solid, wide**<br>• Replace budget, light, docs and darn-wide with one profile ladder shared by darn and loom | [`run-profiles-ladder`](design-run-profiles-ladder.md) | 1d<br>0m | config, loom, burler |
 
 ### Features
 
