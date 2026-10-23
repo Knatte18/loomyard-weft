@@ -2,8 +2,6 @@
 
 `loom-tail-review` · Task · enhancement, loom, burler, shed, fabric, batten
 
-Depends on: [`batten-cancel-verb`](design-batten-cancel-verb.md)
-
 ## Design (operator, 2026-10-23)
 
 The run's tail after the code is written.
