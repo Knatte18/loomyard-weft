@@ -52,6 +52,12 @@ Rationale: persisting the read time keeps it across watcher restarts and saves t
 
 - An orch stuck in one turn for hours keeps the watcher in handoff-requested for as long, where the old rule returned it to idle after the handoff timeout; the next cycle would have waited on the same turn.
 
+<!-- lyx:carry-over Darn-Review -->
+- Darn-Review, round 1: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
+  Review: _lyx/reviews/darn/round-1-review.md; fixer report: _lyx/reviews/darn/round-1-fixer-report.md.
+  - failed-mailreadat-lookup-untested (class design, severity MEDIUM, open in rounds 1)
+<!-- /lyx:carry-over Darn-Review -->
+
 ## Acceptance criteria
 
 - A note request read long after its post gets the full handoff timeout from the read: it times out only once the unpaused time since the read reaches the timeout.
