@@ -19,8 +19,8 @@
 - `contracts/specs/loom-plan-spec.md`
 
 **Uses:**
-- `plan:internal/planparser#CardPatternEntries`
-- `plan:internal/planparser#CardTypeExtends`
+- `internal/planparser#CardPatternEntries`
+- `internal/planparser#CardTypeExtends`
 - `internal/websterengine_test#oneCardBatch`
 
 **Intent:**

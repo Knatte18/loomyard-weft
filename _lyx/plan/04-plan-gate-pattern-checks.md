@@ -13,16 +13,16 @@
 - `contracts/stencils/loom/loom-template-plan.md`
 
 **Create:**
-- `plan:internal/loomshed#patternHeadroomCheck` -> `const patternHeadroomCheck = "pattern-headroom"`
-- `plan:internal/loomshed#patternRemovesPrescribedCheck` -> `const patternRemovesPrescribedCheck = "pattern-removes-prescribed"`
-- `plan:internal/loomshed#patternLineUnprescribedCheck` -> `const patternLineUnprescribedCheck = "pattern-line-unprescribed"`
-- `plan:internal/loomshed#patternPlanFindings` -> `func patternPlanFindings(plan *planparser.Plan, cards []planparser.Card, worktreeRoot string, pc PlanContext) ([]planindex.Finding, error)`
+- `internal/loomshed#patternHeadroomCheck`
+- `internal/loomshed#patternRemovesPrescribedCheck`
+- `internal/loomshed#patternLineUnprescribedCheck`
+- `internal/loomshed#patternPlanFindings`
 
 **Uses:**
 - `internal/pattern#Headroom`
-- `plan:internal/pattern#ProjectOverview`
-- `plan:internal/pattern#EntryBullet`
-- `plan:internal/planparser#CardPatternEntries`
+- `internal/pattern#ProjectOverview`
+- `internal/pattern#EntryBullet`
+- `internal/planparser#CardPatternEntries`
 - `internal/testkit/plankit#Write`
 
 **Intent:**

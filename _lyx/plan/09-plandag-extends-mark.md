@@ -14,7 +14,7 @@
 - `plan:internal/planparser#CardRefKind`
 - `plan:internal/planparser#DependencyEdge`
 - `tools/plandag#writePlan`
-- `plan:tools/plandag#additiveGuess`
+- `tools/plandag#additiveGuess`
 
 **Intent:**
 D4 and D5 in the measurement tool: plandag draws Extends cells as `E` and decides each overlapping pair with the shared pair rule, so the tool and Webster cannot drift.

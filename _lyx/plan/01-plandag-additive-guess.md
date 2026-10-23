@@ -11,8 +11,8 @@
 - `tools/plandag#TestRun_UnparseablePlanFailsWithoutOutput`
 
 **Create:**
-- `plan:tools/plandag#additiveGuess` -> `func additiveGuess(column string) bool`
-- `plan:tools/plandag#TestRun_AdditiveGuessReportsBothCriticalPaths` -> `func TestRun_AdditiveGuessReportsBothCriticalPaths(t *testing.T)`
+- `tools/plandag#additiveGuess`
+- `tools/plandag#TestRun_AdditiveGuessReportsBothCriticalPaths`
 
 **Uses:**
 - `tools/plandag#writePlan`

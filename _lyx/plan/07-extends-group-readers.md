@@ -8,7 +8,7 @@
 - `internal/planglyph/doc.go`
 
 **Uses:**
-- `plan:internal/planparser#CardTypeExtends`
+- `internal/planparser#CardTypeExtends`
 
 **Intent:**
 D3: every reader of an Edit group's targets reads an Extends group alike, in `internal/planglyph` and `internal/batcher` too.

@@ -1,10 +1,10 @@
 # Card 2 — pattern overview projection
 
 **Create:**
-- `plan:internal/pattern#ProjectOverview` -> `func ProjectOverview(overview []byte, prescribed []string, removes []string) []byte`
-- `plan:internal/pattern#EntryBullet` -> `func EntryBullet(overview []byte, id string) (string, bool)`
-- `plan:internal/pattern#TestProjectOverview` -> `func TestProjectOverview(t *testing.T)`
-- `plan:internal/pattern#TestEntryBullet` -> `func TestEntryBullet(t *testing.T)`
+- `internal/pattern#ProjectOverview`
+- `internal/pattern#EntryBullet`
+- `internal/pattern#TestProjectOverview`
+- `internal/pattern#TestEntryBullet`
 
 **Edit:**
 - `internal/pattern/doc.go`

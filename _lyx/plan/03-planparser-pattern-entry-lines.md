@@ -1,9 +1,9 @@
 # Card 3 — planparser pattern entry lines
 
 **Create:**
-- `plan:internal/planparser#PatternEntryLine` -> `type PatternEntryLine struct`
-- `plan:internal/planparser#CardPatternEntries` -> `func CardPatternEntries(card Card) []PatternEntryLine`
-- `plan:internal/planparser#TestCardPatternEntries` -> `func TestCardPatternEntries(t *testing.T)`
+- `internal/planparser#PatternEntryLine`
+- `internal/planparser#CardPatternEntries`
+- `internal/planparser#TestCardPatternEntries`
 
 **Edit:**
 - `internal/planparser#checkPatternEntryLineCap`

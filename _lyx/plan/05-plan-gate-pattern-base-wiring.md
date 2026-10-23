@@ -1,10 +1,10 @@
 # Card 5 — plan gate PATTERN base wiring
 
 **Create:**
-- `plan:internal/patternlint#OverviewAt` -> `func OverviewAt(worktree, revision string) ([]byte, error)`
-- `plan:internal/loomshed#PatternBaseReader` -> `func PatternBaseReader(worktreeRoot string, mergeBase func() (string, error)) func() ([]byte, error)`
-- `plan:internal/loomshed#TestPatternBaseReader` -> `func TestPatternBaseReader(t *testing.T)`
-- `plan:internal/loomcli#TestGateParity_PatternHeadroom` -> `func TestGateParity_PatternHeadroom(t *testing.T)`
+- `internal/patternlint#OverviewAt`
+- `internal/loomshed#PatternBaseReader`
+- `internal/loomshed#TestPatternBaseReader`
+- `internal/loomcli#TestGateParity_PatternHeadroom`
 
 **Edit:**
 - `internal/shedrecipe#planContextOf`
