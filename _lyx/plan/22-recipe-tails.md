@@ -1,12 +1,12 @@
 # Card 22 — recipe-tails
 
 **Create:**
-- `plan:internal/loomshed#NameCodeBouncer` -> `const NameCodeBouncer = "Code-Bouncer"`
-- `plan:internal/loomshed#NameCodeBurlerReview` -> `const NameCodeBurlerReview = "Code-Burler-Review"`
-- `plan:internal/loomshed#NameCodeBurlerFix` -> `const NameCodeBurlerFix = "Code-Burler-Fix"`
-- `plan:internal/loomshed#NamePRReview` -> `const NamePRReview = "PR-Review"`
+- `internal/loomshed#NameCodeBouncer`
+- `internal/loomshed#NameCodeBurlerReview`
+- `internal/loomshed#NameCodeBurlerFix`
+- `internal/loomshed#NamePRReview`
 - `contracts/stencils/loom/loom-rubric-code-review.md`
-- `plan:contracts/stencils#LoomRubricCodeReview` -> `var LoomRubricCodeReview []byte`
+- `contracts/stencils#LoomRubricCodeReview`
 
 **Delete:**
 - `contracts/stencils/loom/loom-rubric-webster-review.md`
