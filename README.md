@@ -16,16 +16,15 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T3 | **adopt's owner write fails on a stale local render manifest after another machine removed design files**<br>• `profile: light` | [`adopt-owner-write-stale-manifest`](design-adopt-owner-write-stale-manifest.md) | darn | Worktree-Create | osl-1046 | 17m<br>0m | board |
+| T3 | **adopt's owner write fails on a stale local render manifest after another machine removed design files**<br>• `profile: light` | [`adopt-owner-write-stale-manifest`](design-adopt-owner-write-stale-manifest.md) | darn | Worktree-Create | osl-1046 | 18m<br>0m | board |
+| T4 | **Orch watcher's handoff timeout counts from the post, so a request queued behind a long turn times out**<br>• `profile: light` | [`orch-handoff-timeout-delivery`](design-orch-handoff-timeout-delivery.md) | darn | Worktree-Create | osl-1046 | 17m<br>0m | orch, creel |
 | T5 | **Run tail: Merge-In with alignment, Code-Perch, a PR stub and one locked Land block, for loom and darn**<br>• Loom and darn share one tail after the code: Merge-In with alignment and a thorough fixer, Code-Perch, PR block behind a flag, Finalize re-merging under the parent lock | [`loom-tail-review`](design-loom-tail-review.md) | loom | Webster | osl-1046 | 22h<br>8h | loom, burler, shed, fabric, batten |
 
 ### Ready
 
 Waits on nothing open; can start now.
 
-| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- | --- | --- |
-| T4 | **Orch watcher's handoff timeout counts from the post, so a request queued behind a long turn times out**<br>• `profile: light` | [`orch-handoff-timeout-delivery`](design-orch-handoff-timeout-delivery.md) | darn |  | 17m<br>0m | orch, creel |
+_None._
 
 ### Layer A
 
@@ -99,7 +98,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | E22 |  | **lyx batten run starts in its own window by default**<br>• Every batten run is started with --window, so the window should be the default and foreground the opt-in. | [`batten-window-default`](design-batten-window-default.md) | 4d<br>4d | batten, reed, orch |
 | E23 |  | **The seeded reed attach task in tasks.json: drop it, or bind it to a shortcut**<br>• tasks.json holds one on-demand reed attach task with no shortcut | [`ide-attach-task`](design-ide-attach-task.md) | 5h<br>5h | ide |
 | E24 |  | **Every lens fork report is kept verbatim in the run records**<br>• Save each lens fork report in a support file beside lens-review.md, so audits can read what each lens found | [`lens-fork-reports-kept`](design-lens-fork-reports-kept.md) | 1d<br>1d | burler, loom |
-| E25 |  | **Ubuntu 24.04 as a stated and checked floor: a PATTERN entry and a mechanical check**<br>• A Neve-written reed change broke on tmux 3.4; nothing states or checks the Ubuntu 24.04 floor | [`ubuntu-2404-floor`](design-ubuntu-2404-floor.md) | 8h<br>17m | reed, gate |
+| E25 |  | **Ubuntu 24.04 as a stated and checked floor: a PATTERN entry and a mechanical check**<br>• A Neve-written reed change broke on tmux 3.4; nothing states or checks the Ubuntu 24.04 floor | [`ubuntu-2404-floor`](design-ubuntu-2404-floor.md) | 8h<br>18m | reed, gate |
 | E26 |  | **A status-bar button turns automatic terminal windows for runs on or off** | [`open-window-toggle`](design-open-window-toggle.md) | 1d<br>1d | batten, reed |
 | E27 | L | **Carry agent mail into the pane in full instead of a reminder and a read turn**<br>• A reminder plus lyx creel read costs the receiver an extra turn per agent message | [`creel-carry-agent-mail`](design-creel-carry-agent-mail.md) | 8h<br>8h | creel |
 | E28 |  | **[.NET] A small public NUnit repo as sandbox hub for end-to-end C# runs** | [`csharp-sandbox-hub`](design-csharp-sandbox-hub.md) | 1d<br>1d | dotnet |
