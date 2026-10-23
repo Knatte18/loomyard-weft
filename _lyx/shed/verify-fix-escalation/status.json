@@ -1,13 +1,13 @@
 {
-  "current_producer": "Darn-Bouncer",
+  "current_producer": "Darn-Burler-Review",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "pause_before": "PR-Gate",
   "pause_before_by": "ly:orch",
   "activity": {
-    "now": "Darn-Bouncer",
-    "last": "Darn-Burler-Fix → bounced to Darn-Bouncer",
+    "now": "Darn-Burler-Review",
+    "last": "Darn-Bouncer → bounced to Darn-Burler-Review",
     "wait": ""
   },
   "history": [
@@ -84,6 +84,13 @@
       ],
       "budget_exempt": true,
       "routed_to": "Darn-Bouncer"
+    },
+    {
+      "producer": "Darn-Bouncer",
+      "outcome": "stuck",
+      "output": "/home/AD.NORCERESEARCH.NO/hanf/Code/Knatte18/loomyard-LYXHUB/verify-fix-escalation/_lyx/reviews/darn/round-1-bouncer-ledger.md",
+      "at": "2026-10-23T10:14:08Z",
+      "routed_to": "Darn-Burler-Review"
     }
   ],
   "product": {
