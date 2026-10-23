@@ -25,6 +25,7 @@
 - `internal/shedrecipe#TestDarnWriteEntry_ConstructionFailures`
 - `internal/shedrecipe#darnTestEnv`
 - `internal/loomshed#darnFixture`
+- `internal/loomcli#TestWire_DarnRecipe`
 
 **Delete:**
 - `internal/loomshed#darnWrite.rerouteReason`
@@ -47,7 +48,7 @@
 `darnResumeWayForward` drops its clause about taking the parent in through Merge-In, since the run's Merge-In is gone from darn.
 `DarnTold` drops `RejectionFindings`; `renderPriorWork` drops the failure-record path argument and its sentence about the last Publish.
 `darnengine.DarnInputs` drops `RejectionFindings`, `DarnTable` drops the `rejection_findings` marker, and the darn writer stencil drops that marker and its lead-in sentence; `wireDarn` stops telling it.
-`loomcli.darnDeps` fills only the two seams left, so the loomcli tests of the removed seams go; `envkit.nilLegal` drops `Darn.RecordRejection`, `envkit.FullEnv` fills only the two seams, and `darnWriteEntry`'s required-seam list and its construction-failure test shrink to them, and loomcli's `intentionallyNil` drops the removed `Darn.*` seams.
+`loomcli.darnDeps` fills only the two seams left, so the loomcli tests of the removed seams go; `envkit.nilLegal` drops `Darn.RecordRejection`, `envkit.FullEnv` fills only the two seams, and `darnWriteEntry`'s required-seam list and its construction-failure test shrink to them, and loomcli's `intentionallyNil` drops the removed `Darn.*` seams; `TestWire_DarnRecipe`'s `darnSeams` list shrinks to `DarnTable`, `Darn.Commit` and `Darn.LatestOutcome`.
 
 `TestDarnWrite_Call` loses its rejection and reroute rows and keeps the prior-work, commit and gate-failure rows; `TestRenderPriorWork` loses its failure-record rows.
 

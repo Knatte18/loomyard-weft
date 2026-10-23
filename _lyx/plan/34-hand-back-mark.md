@@ -31,7 +31,7 @@ The loop's stop envelope gains `loop.hand_back`, true when the stop is blocked a
 loomcli's `specFor` tells `landingshed.HandsBack` on loom and darn runs.
 The Go driver's hand-back row, batten's re-step and the LLM driver read this same predicate or its mark in the following cards, so all three agree.
 
-`TestHandsBack` pins a landing-stop reason at Merge-In and at Finalize, the lock re-check halt at Finalize, a reroute-cap reason at Finalize, a reroute-cap reason at Webster, a landing-stop prefix at another row, and an unrelated reason at Finalize.
+`TestHandsBack` pins a landing-stop reason at Merge-In and at Finalize, the undecodable-attempt-record halt at Merge-In and at Finalize, the lock re-check halt at Finalize, a reroute-cap reason at Finalize, a reroute-cap reason at Webster, a landing-stop prefix at another row, and an unrelated reason at Finalize.
 `TestStatusCmd_FoundEnvelope_GenericCore` gains rows pinning the `hand_back` key true for a blocked Finalize reroute-cap status under the told check, false for a Webster one and false with no check told; the loop test asserts the envelope key.
 
 `loom-status-spec.md` documents the key, and both `doc.go` files name the predicate and the mark.

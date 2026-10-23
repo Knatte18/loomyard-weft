@@ -35,6 +35,7 @@
 
 **Extends:**
 - `internal/battenshed/doc.go`
+- `internal/landingshed/doc.go`
 
 **Intent:** `landing.yaml`'s `require_pr_to_base` becomes `deploy_branches`, default `["main"]`, read only by batten's Land row to decide whether to deploy; an empty list deploys nothing (D13).
 `Config.RequirePRToBase` becomes `DeployBranches`, the template key and its comment name the deploy, and `ConfigSpec` classifies the new key as `CategoryCrossPair`, as the old one was.
@@ -46,6 +47,7 @@ The deploy now runs every landing's code with the Code-Perch, or Darn-Review, as
 
 `TestMigrateConfig` pins the move with a list value, with an empty list kept empty, and with both keys present; `TestLand_Dispositions` pins a deploy for a parent in the list and none for one outside it or for an empty list.
 
-`doc.go`'s Land section names the key and the deploy's review bound.
+`battenshed`'s `doc.go` Land section names the key and the deploy's review bound.
+`landingshed`'s `doc.go` paragraph explaining `require_pr_to_base` as the pull-request switch is replaced by one stating that `deploy_branches` is read only by batten's Land row to decide the deploy, and its hub-wide landing-config paragraph names `deploy_branches` where it names `require_pr_to_base`.
 
 **ImpactSummary:** One landing.yaml key renamed with a migration; its only runtime reader is batten's Land row, and the rest are tests and help text.

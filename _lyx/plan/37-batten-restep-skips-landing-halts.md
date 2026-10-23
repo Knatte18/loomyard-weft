@@ -26,7 +26,8 @@
 battencli's wire fills the check with `landingshed.HandsBack` over the child status's current producer and error, the same predicate the Go driver's hand-back row and the LLM driver's mark read.
 The test kit and both `intentionallyNil` maps follow the new seam.
 
-`TestInnerRun_BinaryChangeSkipsALandingHalt` drives the re-step harness over a blocked Finalize reroute-cap status and a blocked Merge-In landing-stop status with a changed build and asserts no spawn and no marker, and over a blocked Webster halt asserts the re-step as today.
+`TestInnerRun_BinaryChangeSkipsALandingHalt` drives the re-step harness over one landing halt, a blocked Finalize reroute-cap status with a changed build, and asserts no spawn and no marker, and over a blocked Webster halt asserts the re-step as today;
+one landing-halt row covers every kind, since the re-step reads only the told check's answer and card 34's `TestHandsBack` pins the predicate.
 
 `doc.go`'s binary re-step paragraph names the skip.
 

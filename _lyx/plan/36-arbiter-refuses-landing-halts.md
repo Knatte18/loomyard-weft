@@ -20,7 +20,7 @@
 `Stop` gains `LandingHalt`, which `Check` sets from `landingshed.HandsBack(status.CurrentProducer, status.Error)` for a blocked status; `Eligibility` refuses a blocked stop with it set, naming the landing halt, before its other blocked-stop rule.
 A tackler or arbiter resume would grant fresh fixer attempts or three more reroutes, or spend another Opus fixer on an escalation no decision answered, which is why these halts go to the orch.
 
-`TestCheck_RefusesLandingHalts` pins a refusal ending with `HandBackWayForward` for each landing halt (a fixer-spent and an escalation halt at Merge-In, a budget-0 over-cap halt at Merge-In, a fixer-timeout halt at Finalize and a reroute-cap halt at Finalize), and eligibility for a Webster reroute-cap halt and an ordinary blocked halt.
+`TestCheck_RefusesLandingHalts` pins a refusal ending with `HandBackWayForward` for one landing halt, a blocked status at Finalize whose reason opens with `LandingStopPrefix`, since `Check` sets `LandingHalt` only through `landingshed.HandsBack`, whose own test (card 34) pins the predicate, the `LandingStopPrefix` every landing halt's reason but the reroute cap's opens with and the reroute-cap reason, and eligibility for a Webster reroute-cap halt and an ordinary blocked halt.
 The arbiter verb's spawn-path test gains a landing-halt row refused with `HandBackWayForward`, through the fixture's halt helper, which takes the halt reason.
 
 `doc.go` names the refusal.

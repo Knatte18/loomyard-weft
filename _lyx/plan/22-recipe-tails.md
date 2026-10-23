@@ -77,7 +77,8 @@ Darn-Write loses its `segment: PR-Review` and its `on_reroute`; Describe's `on_d
 Each recipe's header comment is rewritten to the new tail: which rows escalate, the reroute edges and their cap, and that a run parked on a removed row is restarted.
 
 The new row names are `loomshed` constants beside the old ones, which stay until the readers of old runs move off them; `InterruptPolicies` maps the new rows and drops the removed ones.
-The Webster-Review rubric file becomes `loom-rubric-code-review`, registered in `entries` under its new name, with its title and segment wording renamed; its review content changes with the merge-base and review-input cards.
+The Webster-Review rubric file becomes `loom-rubric-code-review`, registered in `entries` under its new name, with its title and segment wording renamed.
+Its measuring-stick section names the decision record and the plan as its answer key, its Do-not-flag rule names both as the measuring stick and never the subject, and its Also-flag section reviews the code in general, correctness beyond plan compliance, as well as against both (D5); its review range and inputs change with the merge-base and review-input cards.
 The registry drops `Publish`, `PRAlign`, `PRGate` and `PRRework`, whose entry functions and tests go, and `PRReview` leaves the coverage guard's allowlist now that a recipe names it.
 loomcli's perch tables key `Code-Bouncer` and `Code-Review`, and `wire`'s rework review subdirectories name `code` in place of `webster`.
 `envkit.FullEnv` keys its loom segment settings `Code-Review` in place of `Webster-Review`, so every test that builds the loom recipe over it still finds a budget for each review segment.
