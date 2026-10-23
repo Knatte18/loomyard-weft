@@ -1,39 +1,39 @@
 # Orch: count the handoff timeout from the orch's read of the note request
 
-Fixes #845.
+The orch watcher's handoff timeout now starts when the orch reads the note request, not when the watcher posts it.
+A soft cycle request that creel holds behind a long orch turn used to spend its handoff time waiting for delivery.
+The orch then wrote the note after the timeout had fired, the watcher had returned to idle with `last_abort_reason: "handoff timed out"`, and no cycle ran.
+Now the request gets the full handoff timeout from its delivery.
 
-The orch watcher's handoff-requested phase timed out at the handoff timeout counted from the post of the note request, or from the request time for a requested cycle.
-Creel delivers that mail only at the orch's next idle, so a request queued behind a long turn could use up its whole timeout before the orch saw it.
-The phase then returned to idle with `handoff timed out`, often just after the orch had written the note, and no cycle ran.
+Closes #845
 
-The timeout now counts from the moment the orch read the note request, the creel `read` journal entry of the request's id.
+## Changes
 
-## What changed
-
-- `orchengine.Creel` gains `MailReadAt(id)`, which answers when the receiver holding a mail read it, zero while it is unread.
-  `orchcli`'s `creelSeam` implements it by folding the journal entries for the id and taking the first `read` entry.
-  A `reminded` entry that lists the id as unread is ignored.
-- `tickHandoff` asks for the read on each tick until creel answers one, records it in the new `State.RequestReadAt` (`request_read_at`), and times the phase out once the unpaused time since the read reaches the handoff timeout.
-  The field is cleared wherever `State.RequestID` is: at the cycle start, on `enter`, on `toIdle` and in `ResetForFreshLaunch`.
-- The old rule, the earlier of the phase entry and `CycleRequestedAt`, is gone, so a requested cycle is timed from the read too.
-  `CycleRequestedAt` is still recorded.
-  The idle phase's stale-marker removal still ages a pending request from its request time, so a request whose cycle never starts is still abandoned.
-- The `orchengine` and `orchcli` package docs, and the `lyx orch refresh` and `lyx orch distill` help text, describe both timeouts.
+- `internal/orchengine`: the `Creel` seam gains `MailReadAt(id)`, the time of the mail's first creel `read` entry, zero while unread.
+- `tickHandoff` asks it on each handoff tick until creel answers a time, and records it in the new `State.RequestReadAt`.
+  A restarted watcher keeps counting from the recorded time, and a hub pause after the read is still discounted.
+- `RequestReadAt` is cleared wherever `State.RequestID` is: `toIdle`, `enter`, the cycle start in `tickIdle` and `ResetForFreshLaunch`.
+- `internal/orchcli`: `creelSeam.MailReadAt` folds creel's journal for the mail id into the first `read` entry's time.
+  The `refresh` and `distill` help text and the package doc describe the two timeouts a request meets.
+- The package doc of `internal/orchengine` describes the handoff-requested phase to match.
 
 ## Design decisions
 
-- **An unread request never times out.**
-  A request stays unread only while the orch never reaches an idle that creel delivers at, which is the same wait the clearing phase already makes for `/clear`.
-  While the orch is busy the watcher's creel hold delays nothing, a removed strand ends the watcher through its strand check, and `lyx orch status` shows the phase.
-  A backstop counted from the post would bring the bug back for any turn longer than that backstop.
-- **The read time is persisted.**
-  A restarted watcher keeps counting from the recorded read, and once the read is known the watcher stops querying the journal.
-- **A failed read lookup goes through `creelFailed`**, like every other creel call: it is recorded in `State.Stuck` and holds the timeout until creel answers.
+- The earlier clock, the earlier of the phase entry and the request time, is dropped for every trigger.
+  A requested cycle's phase no longer times out from the request time.
+- A request creel has not journaled as read never times the phase out.
+  This is the same wait the clearing phase already has for creel to type `/clear`.
+  The same holds while the phase has no confirmed request id yet.
+  The cost: an orch stuck in one turn for hours keeps the watcher in handoff-requested as long, where the old rule returned it to idle after the handoff timeout.
+  `lyx orch status` shows the phase meanwhile, and a removed strand still ends the watcher through its strand check.
+- A failed `MailReadAt` goes through `creelFailed` like every other creel call, so the phase is held and not timed out.
+- `State.RequestReadAt` is an added JSON key, read as zero from an older state file.
+- The idle phase's stale-marker removal still ages a pending request from its request time; every other phase's timeout is unchanged.
 
-## Tests
+## To check by hand
 
-- `TestWatcher_HandoffTimeoutCountsFromTheRequestRead` covers three cases: a request read at its post, a request read ten minutes after its post, which gets the full timeout from the read, and a request never read, which never times out.
-  The test also checks the recorded `RequestReadAt` and its clearing on the return to idle.
-- `TestCycleRequest_AbandonedWithinTimeoutOfRequest`'s note case now has the orch end its turn 50s after the request, and checks that the timeout counts from the read rather than from the request.
-- `TestCycleRequest_RestartedWatcherMeasuresFromTheRecordedReadTime` empties the fake journal's reads before the restart, so only the persisted read time can time the phase out.
-- `TestCreelSeam_FoldsTheJournal` gains rows for `MailReadAt`: an unread mail with a reminder listing it, the first of two reads, and another mail's read.
+- `internal/orchengine/watcher.go:1142`: a failed `MailReadAt` lookup holds the phase with `Stuck` set and `StuckByCreel` true, then counts from the read once creel answers.
+- `internal/orchengine/watcher.go:1097`: a hub pause opened after the read delays the timeout by the paused time.
+- `internal/orchengine/state_test.go:310`: `RequestReadAt` is zero after `ResetForFreshLaunch`, `enter` and the `tickIdle` cycle start, not only after `toIdle`.
+- `internal/orchengine/doc.go:190`: the doc says the phase does not time out while its note request has no creel read, a request not yet posted included.
+- Run a soft cycle request against a live orch in a long turn and confirm the cycle runs after delivery; this was not run.
