@@ -543,7 +543,7 @@
       }
     }
   ],
-  "currentBatch": 0,
+  "currentBatch": 7,
   "masterStrand": "5d7707be21a2f264e8cb67fdd257faf0",
   "masterSessionId": "42b1ea9d-4ad9-4b82-a2f2-60e0b764997b",
   "masterEngine": "claude",
@@ -603,6 +603,32 @@
         "551723de-1512-4174-8086-223b5ef1c28b": "claude"
       },
       "recoveryStartSha": "d825571bf7d145aa0944a5c499a6f5e0370a3781"
+    },
+    "7": {
+      "slug": "extends-group-readers",
+      "cards": [
+        "07-extends-group-readers",
+        "08-card-pair-rule",
+        "09-plandag-extends-mark",
+        "10-plan-review-extends-guidance",
+        "11-amendment-record",
+        "12-settle-round-start"
+      ],
+      "cardHashes": {
+        "07-extends-group-readers": "79ea45df6a75caea90d414156a76253f9e70345d89abfc6c8615df9f420672fa",
+        "08-card-pair-rule": "87c3f3ea9d542cf6ae05fab8badd7b7bf73d8f35fef7636460f6fcda4c73926c",
+        "09-plandag-extends-mark": "199235bb534aefd8c9d6ae8ea331fd770866faab778efca813898368d97a28e1",
+        "10-plan-review-extends-guidance": "ab498a63d124cc88a8626b2e2c73fa96efe73ef8d96be9f2b5f6bb8b6fd2d895",
+        "11-amendment-record": "888ceb2c4043cd4ec8d8e0e7252532d8989298108f46d30a05c7c63d479567ff",
+        "12-settle-round-start": "ac59271017ea6386c8d5f58586c0aa29c240b3283b3c9a727b1ae1cc458c7405"
+      },
+      "startSha": "95b37430900f53dd4d7a2032acf95392c943f28e",
+      "kind": "fork",
+      "spawnedAt": "2026-10-23T07:24:51Z",
+      "sessionId": "42b1ea9d-4ad9-4b82-a2f2-60e0b764997b",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
     }
   },
   "seenForkTranscripts": [
