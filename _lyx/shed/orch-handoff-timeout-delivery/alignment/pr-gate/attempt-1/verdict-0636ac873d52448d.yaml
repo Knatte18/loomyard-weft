@@ -1,0 +1,6 @@
+verdict: approve
+reason: >-
+  The diff makes the orch watcher's handoff timeout count from the orch's creel read of the note request instead of its post, as the board entry expects, with the matching help text and package docs and nothing beyond the entry.
+  The carried open risks name no parent correction, and neither in-flight peer touches internal/orchengine or internal/orchcli.
+question: ""
+superseded: []
