@@ -1,7 +1,7 @@
 # Card 39 — reroute-cap-way-forward
 
 **Create:**
-- `plan:internal/loomcli#TestLoomRerouteCapWayForward` -> `func TestLoomRerouteCapWayForward(t *testing.T)`
+- `internal/loomcli#TestLoomRerouteCapWayForward`
 
 **Edit:**
 - `internal/loomcli#loomRerouteCapWayForward`
