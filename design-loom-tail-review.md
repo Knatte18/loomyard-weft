@@ -29,7 +29,7 @@ The run's tail after the code is written.
 
 ### Darn
 
-A darn run is quick and narrow, and is not run beside work that can make it drift, so it has no Merge-In before its review: the writer (ending only when every test passes), Darn-Review as its Code-Perch, the PR block behind the same flag, and the same Land block.
+A darn run is quick and narrow, and is not run beside work that can make it drift, so it has no Merge-In before its review: the writer (ending only when every test passes), Darn-Review as its Code-Perch, the PR block behind a darn flag of its own (separate from loom's, so it is a quick skip when off), and the same Land block.
 Loom has the step 2 Merge-In because a loom run can take hours.
 
 ### Gone
