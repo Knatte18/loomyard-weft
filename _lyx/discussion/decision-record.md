@@ -292,6 +292,12 @@ Decision: PATTERN-parent-lock's changes text is: Moving a local parent branch, o
 
 Rationale: The declared text is 392 runes as an overview line, past the plan gate's 360-rune pattern-entry-line-cap; the shorter text says the same.
 
+### Added after Discussion (parent, 2026-10-23): Shorten PATTERN-parent-lock under the headroom
+
+Decision: Replace the declared PATTERN-parent-lock text with the shorter line below.
+
+Rationale: PATTERN.md is past its headroom line, so the plan may not grow it; this set nets -13 bytes, and each cut clause moves to the entry's background file or the package docs the plan already edits.
+
 ## Constraints
 
 - `PATTERN-told-geometry`: `internal/landingshed` keeps taking told paths, the fixer's included.
@@ -363,7 +369,7 @@ Every pick in D2 to D14 that the board left open is an auto-pick, recorded with 
 
 ## PATTERN changes
 
-- `PATTERN-parent-lock` — changes: Moving a local parent branch, or merging into it and landing on it: only in Finalize under that parent's `internal/parentlock` lock; Merge-In merges the parent into a task branch without it, and a loom conflict, a large merge or a spent or over-cap fix at Finalize reroutes, or halts where the reroute reaches no review. — added after Discussion (parent, 2026-10-23)
+- `PATTERN-parent-lock` — changes: Moving, merging into or landing on a local parent branch: only in Finalize, under its `internal/parentlock` lock. — added after Discussion (parent, 2026-10-23)
 - `PATTERN-recipe-owns-failures` — adds: Failing a merge or test at Merge-In or Finalize: the row's own fixer fixes it, Finalize routes back through the recipe's reroute edge, or the run halts to the orch; no driver, batten, arbiter or record target routes it to another row.
 
 ## Notes for the plan writer
