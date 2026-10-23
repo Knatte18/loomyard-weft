@@ -283,6 +283,13 @@ Rationale: D3 reads the marker once, before the pull. A start that passed that r
   - windows-end-detects-nothing (class design, severity MEDIUM, open in rounds 1, 2, 3)
 <!-- /lyx:carry-over Discussion-Review -->
 
+<!-- lyx:carry-over Plan-Review -->
+- Plan-Review, round 2: converged; each finding below was fixed or disputed by the round's fixer, and no fresh reviewer has seen the result; the fixer report says which.
+  Review: _lyx/reviews/plan/round-2-review.md; fixer report: _lyx/reviews/plan/round-2-fixer-report.md.
+  - batten-lock-seam-busy-path-untested (class scope, severity MEDIUM, open in rounds 2)
+  - reached-parent-refusal-marker-loop (class decision, severity MEDIUM, open in rounds 1, 2)
+<!-- /lyx:carry-over Plan-Review -->
+
 ## Acceptance criteria
 
 - A blocked run with no pair, as on 2026-10-20: the cancel reads the owner from the pulled Bolt with no reconcile, stops its tackler strand, removes its records run directory and scratch contents, commits and pushes the records side, clears the board status, and the runs overview no longer lists it.
