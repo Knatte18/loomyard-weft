@@ -16,6 +16,17 @@ In `plan-card-rules` the operator asked Merriam to spawn an Opus-high agent if i
 A verify failure that the fixer fork does not clear escalates in model before the run halts:
 for example, the last attempt, or the attempt after a fork that made no commit, goes to a cold fixer at the recovery role (`opus[high]`), spawned as its own strand the way `recover-batch` spawns one, with the verify-gate report as its brief.
 
+## Operator view, not a decision (2026-10-23)
+
+Sonnet medium is often too weak to find and fix such failures, and three attempts are more than needed: one Sonnet fixer attempt, then the Opus-high fixer.
+
+## Why not the tackler and the arbiter (orch, 2026-10-23)
+
+With the Go driver (`driver_kind: go` in `shed.yaml`), a stuck Webster goes to the tackler (`haiku`) and then the arbiter.
+Neither fixes code: the tackler's verdict is `resume`, `hand-back` or `escalate` (`internal/sheddriver/doc.go`), so at best it re-runs Webster with the same Sonnet fixer.
+The escalation in model has to happen inside Webster's gate, before the run halts.
+The gate already reruns a failure once before any fixer, so a flaky test does not use up the one fixer attempt.
+
 ## Related
 
 The `loom-tail-review` task makes the Merge-In fixer one Opus agent; this note is about Webster's own gate, before Merge-In.
