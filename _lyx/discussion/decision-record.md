@@ -56,6 +56,12 @@ Rationale: it keeps `ListTasksBrief`'s signature and callers untouched; the seco
 
 - A script parsing `list --text` line by line now sees one extra first line; no consumer in the repository parses it.
 
+<!-- lyx:carry-over Darn-Review -->
+- Darn-Review, round 1: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
+  Review: _lyx/reviews/darn/round-1-review.md; fixer report: _lyx/reviews/darn/round-1-fixer-report.md.
+  - readme-prime-owner-line-unpinned-at-render-sites (class design, severity MEDIUM, open in rounds 1)
+<!-- /lyx:carry-over Darn-Review -->
+
 ## Acceptance criteria
 
 - A README rendered from a board recording a prime owner states that machine at its top; one rendered from a board recording none states that none is recorded.
