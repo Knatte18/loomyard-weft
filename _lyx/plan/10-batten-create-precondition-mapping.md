@@ -1,4 +1,4 @@
-# Card 9 — batten-create-precondition-mapping
+# Card 10 — batten-create-precondition-mapping
 
 **Edit:**
 - `internal/battencli#createRefusal` -> `func createRefusal(err error, slug, taskBranch string) error`
@@ -24,4 +24,4 @@ The old leftover-branch rewording, which named `git branch -D` and `git push ori
 `battenCLI.wire`'s create closure passes the slug and the task branch.
 `TestCreateRefusal_LeftoverBranchRemedyNeverNamesCheckout` keeps its never-`lyx fabric checkout` assertion and its pass-through and nil rows, and its leftover rows now assert a `*battenshed.PreconditionError` naming `lyx batten cancel some-slug --remove`; new rows cover a bare and a wrapped `*ErrSourceDirty` naming its paths and `commit or revert`, an `*ErrRemoteLeftover` on the task branch mapped, and one on another branch passed through.
 
-**ImpactSummary:** `createRefusal` has one production caller, the create closure in `battenCLI.wire`, and one test; the halt reaches the driver only through card 8's producer branch.
+**ImpactSummary:** `createRefusal` has one production caller, the create closure in `battenCLI.wire`, and one test; the halt reaches the driver only through card 9's producer branch.

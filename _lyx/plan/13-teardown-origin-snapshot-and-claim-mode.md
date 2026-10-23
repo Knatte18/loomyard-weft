@@ -1,4 +1,4 @@
-# Card 12 — teardown-origin-snapshot-and-claim-mode
+# Card 13 — teardown-origin-snapshot-and-claim-mode
 
 **Edit:**
 - `internal/pairteardown#Request`
@@ -19,6 +19,6 @@ What it lets a caller skip: the claim settlement, which only the cancel skips, a
 `settleBoardClaim`'s held-gone warning, for a `running` batten record with no live registered batten, now names `lyx batten cancel <slug>` as the way to end the run and release the claim, in place of `lyx board set-status <slug>`; the live-batten warning keeps `lyx batten pause <slug>`.
 `TestSettleBoardClaim_RunningBattenRecordWayForward`'s gone row now wants `lyx batten cancel slug` and not `lyx board set-status`.
 `TestTeardown_CallSequence` gains rows: an origin-mode `Snapshot` request runs `snapshot` before `archive` and `remove` and carries the tag on the result; an origin-mode snapshot refusal makes no `remove` call; a `LeaveClaim` request with a run-form claim makes no `landed`, `readClaim`, `battenRun` or `write=` call anywhere in its sequence, the landed read before `archive` included.
-The `pairteardown` package doc's Board claim and Local mode sections are reworded by card 13 together with the cancel phase.
+The `pairteardown` package doc's Board claim and Local mode sections are reworded by card 14 together with the cancel phase.
 
 **ImpactSummary:** `RemovePair`'s callers are batten's Worktree-Teardown row, `Run` and the origin seams; none sets the new field or an origin-mode Snapshot, so their behaviour is unchanged, and only the held-gone warning's text changes for them.

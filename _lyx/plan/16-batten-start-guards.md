@@ -1,4 +1,4 @@
-# Card 15 — batten-start-guards
+# Card 16 — batten-start-guards
 
 **Create:**
 - `plan:internal/battencli#startGuard` -> `type startGuard struct`
@@ -37,7 +37,7 @@ Batten's pre-run refuses, before it writes anything, a run a cancel is ending (D
 2. For `run` and `step` with no status file (`found` false), or with a status whose current producer is Worktree-Create while the task worktree is absent, tracked dirty paths refuse: `the source worktree has uncommitted tracked changes: <paths>; commit or revert them in the source worktree, then run "lyx batten <verb> <slug>" again` (PATTERN-no-denied-recovery); untracked files are never listed, so they never refuse.
    A resume past Worktree-Create, or at it with the task worktree present, runs no dirty check.
 3. For `run` and `step` with no status file, a left task worktree, records worktree or local records branch refuses: `<slug> left a pair from an earlier run (<parts>); run "lyx batten cancel <slug> --remove" from the prime, which removes it, then "lyx batten <verb> <slug>"`.
-   A task branch left alone does not refuse here: the add refuses it, and Worktree-Create halts on it with the precondition reason (card 9).
+   A task branch left alone does not refuse here: the add refuses it, and Worktree-Create halts on it with the precondition reason (card 10).
    Bound: a pair made by hand with `lyx fabric add` before the first `lyx batten run` is refused the same way.
 
 A probe error refuses naming the probe and the verb's re-run.

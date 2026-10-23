@@ -1,4 +1,4 @@
-# Card 14 — batten-cancel-marker
+# Card 15 — batten-cancel-marker
 
 **Create:**
 - `plan:internal/battencli#cancelMarker` -> `type cancelMarker struct`
@@ -30,7 +30,7 @@ A marker that does not decode reads present with its fields empty, so a torn wri
 Holding it, it records whether a marker was already there (`fresh` false for a taken-over marker of a dead writer) and writes the marker with this process's pid, start time and the time now.
 `heldCancelMarker.release(remove)` removes the marker first when `remove` is true, then releases the lock, so the marker never outlives its lock while being removed.
 
-`cancelMarkerRefusal` words the refusal a driving verb or a second cancel gets: with the writer alive, `a cancel of <slug> is under way (pid <pid>, since <time>); wait for it to end`; with the writer gone, `a cancel of <slug> was interrupted; run "lyx batten cancel <slug>" from the prime to finish it`.
+`cancelMarkerRefusal` words the refusal a driving verb or a second cancel gets, each ending in a trailing `way forward:` clause (PATTERN-refusal-way-forward), since it reaches callers through shed's step verb (cards 7 and 17): with the writer alive, `a cancel of <slug> is under way (pid <pid>, since <time>); way forward: wait for the cancel (pid <pid>) to end, seeing it with "ps -p <pid>" or in Task Manager on Windows, then run the verb again`; with the writer gone, `a cancel of <slug> was interrupted; way forward: run "lyx batten cancel <slug>" from the prime to finish it`.
 
-`TestCancelMarker` is an untagged test over a temporary location: no marker reads absent; a taken marker reads present with its writer alive (the exclusive lock held on another file handle in this process) and its refusal says to wait; a second `takeCancelMarker` with a zero wait refuses; after the holder's lock is released with `remove` false the marker reads present with its writer gone, whatever pid it records, and the refusal names `lyx batten cancel <slug>`; taking it over reports `fresh` false; `release(true)` leaves no marker; an undecodable marker reads present.
+`TestCancelMarker` is an untagged test over a temporary location: no marker reads absent; a taken marker reads present with its writer alive (the exclusive lock held on another file handle in this process) and its refusal ends with the `way forward:` clause naming the wait, the pid and `ps -p <pid>`; a second `takeCancelMarker` with a zero wait refuses; after the holder's lock is released with `remove` false the marker reads present with its writer gone, whatever pid it records, and the refusal ends with the `way forward:` clause naming `lyx batten cancel <slug>`; taking it over reports `fresh` false; `release(true)` leaves no marker; an undecodable marker reads present.
 Its `judgeCancelMarker` rows pin each reading, the writer removing the marker between the first stat and the shared lock included, which the file-level rows cannot time.

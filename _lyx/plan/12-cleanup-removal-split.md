@@ -1,4 +1,4 @@
-# Card 11 — cleanup-removal-split
+# Card 12 — cleanup-removal-split
 
 **Create:**
 - `plan:internal/battencli#removeRunRecords` -> `func removeRunRecords(location *lyxcwd.Location, slug, msg string, deps cleanupDeps) (committed bool, err error)`
@@ -17,6 +17,6 @@ An already absent run directory still commits, so a removal whose commit failed 
 `cleanupSlug` keeps its lock-taking, its `judgeRunDirectory` judgement, its dry run and its skip reasons unchanged, and for an applied done candidate calls `removeRunRecords` with its existing message `batten cleanup: remove the run directory of <slug>`, mapping a removal or emptying error to its existing skip and a commit error to its existing returned error; the orphan path still calls `emptyScratch` alone.
 Cleanup still skips non-done runs.
 A pure refactor of cleanup: `TestCleanup` and the other cleanup tests pin the behaviour unchanged.
-The cancel's use, the removal of a run that is not done, is reached by card 18's integration test, since card 17's `TestCancelRun` drives the removal through a fake seam.
+The cancel's use, the removal of a run that is not done, is reached by card 19's integration test, since card 18's `TestCancelRun` drives the removal through a fake seam.
 
 **ImpactSummary:** `cleanupSlug` is reached only by `cleanup`, behind `Cleanup` and `lyx cleanup`'s batten segment; their observable behaviour is unchanged.
