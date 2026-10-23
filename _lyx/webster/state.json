@@ -1709,7 +1709,7 @@
       }
     }
   ],
-  "currentBatch": 0,
+  "currentBatch": 23,
   "masterStrand": "84b46756278c26fa4a3d938b33a70bce",
   "masterSessionId": "15e077c7-3daf-473b-935d-c0209f975d97",
   "masterEngine": "claude",
@@ -2024,6 +2024,22 @@
           "detail": "later card: plan-references-deleted-symbol/42-landing-drops-pr-producers[blocking]: card 42 references \"internal/shedrecipe#armPRAlign\", which the delta reports deleted with no corresponding rename"
         }
       ]
+    },
+    "23": {
+      "slug": "merge-review-retired",
+      "cards": [
+        "23-merge-review-retired"
+      ],
+      "cardHashes": {
+        "23-merge-review-retired": "024fc904911bef08b0757ca91f261ca5b7f3344a36e1e2a5e0adce4884c8f868"
+      },
+      "startSha": "3ea590f78d49a489b46bacf1fc8c57e8ba61461c",
+      "kind": "fork",
+      "spawnedAt": "2026-10-23T16:54:09Z",
+      "sessionId": "15e077c7-3daf-473b-935d-c0209f975d97",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
     },
     "7": {
       "slug": "fixer-session-table",
