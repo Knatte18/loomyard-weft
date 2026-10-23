@@ -18,7 +18,7 @@ Scope:
 2. Row entry gates in shed, as in the orch recommendation below: a row may name an entry check, and a skipped row is recorded with its reason.
    The switched producer's flag check and `internal/loomrecipe`'s darn edge rewrite move onto it.
 3. A green run carries forward: a verify row's entry check skips it when the same tiers were green over the same tree.
-4. The tmux tier runs in the `final` gate as well as at Publish.
+4. Done by hub config on 2026-10-23: the `final` gate runs `tier2`, the tmux tier, too.
 5. Measure a loom run's gate time per gate kind before and after, including the Cortex XDR hold's share on OSL-1046.
 
 Speeding up `internal/fabricengine`'s tests is out of scope.
