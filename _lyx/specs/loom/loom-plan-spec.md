@@ -1,4 +1,4 @@
-<!-- lyx-stencil: sha256=d29b1f49d5bdd194c0671641c3c1f28f1f3c8d98ee094599299e46b0e0fde803 build=88b53f2a3b6a805b001a83d523e750f4ca5cc277 time=2026-10-23T08:59:58Z -->
+<!-- lyx-stencil: sha256=f76cb3ac811f69c3e8dc568254f160ae128ed089c75e3ed4289ab7416bab3f5b build=6264fd937929601ab4f6b92a96c6940728422fa5 time=2026-10-23T11:06:25Z -->
 
 # Loom plan-spec — flat card list
 
@@ -308,9 +308,9 @@ and a half-done card is resumed by discarding uncommitted changes and restarting
 
 ## Pattern-Departure trailer
 
-A Webster fork, the recovery strand or the verify-fix fork that departs from its card because a PATTERN entry forbids the card's way records each departure as one trailer line in the departing commit's body, `Pattern-Departure: <PATTERN-entry-id> — <what differs from the card and why>`, in the commit message's last paragraph, where git reads trailers.
+A Webster fork, the recovery strand or a verify-gate fixer that departs from its card because a PATTERN entry forbids the card's way records each departure as one trailer line in the departing commit's body, `Pattern-Departure: <PATTERN-entry-id> — <what differs from the card and why>`, in the commit message's last paragraph, where git reads trailers.
 A departure from an entry the task declares changed in the overview's `## PATTERN changes` cites the declared new text, never the old.
-`record-batch` and `recover-batch` read the trailers of the batch's own non-merge first-parent commits into the digest's `departures`, and the verify gate reads the verify-fix fork's; Webster-Review reads them in the commit messages of its range.
+`record-batch` and `recover-batch` read the trailers of the batch's own non-merge first-parent commits into the digest's `departures`, and the verify gate reads the verify-gate fixers'; Webster-Review reads them in the commit messages of its range.
 
 ## verify model
 
