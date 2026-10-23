@@ -1011,21 +1011,23 @@
     },
     {
       "id": 759,
-      "handle": "B1",
+      "handle": "T5",
       "slug": "orch-compact-repeats",
       "title": "Orch watcher types /compact again after a compact landed",
-      "kind": "note",
+      "kind": "task",
       "labels": [
         "bug",
         "orch"
       ],
       "issues": [],
+      "recipe": "darn",
       "depends_on": [],
       "isolated": false,
       "brief": "Watcher stays in resuming after a requested compact and types a second /compact into the resumed busy turn",
       "body": "## Seen (2026-10-22, Neve)\n\nAn operator-requested compact (`cycle_requested_at` 16:52 local) compacted the orch session at 16:54, and the resume prompt reached the session.\nWhile the resumed session was working its first turn, a second `/compact` was typed into the pane and interrupted that turn; the operator reports the watcher asking for compact several times in a row.\n\n`lyx orch status` afterwards still read `phase: resuming`, with `state.json` holding:\n\n- `pending_step`: `color blue` (id 142), persisted 16:54:02;\n- `reload_step: -3`, `reload_skips_skills: true`;\n- `stuck_by_hold: true`, `stuck: \"\"`;\n- `compaction_baseline` 14:54:00Z, `cycle_mode: compact`.\n\n`watch.log` has no entry for the second compact; its last line is a 14:23 local creel hold in phase `resuming`.\n\n## Expected\n\nOnce a compact has landed and the resume prompt is delivered, the watcher leaves `resuming` and never types another `/compact` for the same request, least of all into a busy turn.\n",
       "created": "2026-10-22T14:57:56Z",
-      "revised": "2026-10-22T14:57:56Z"
+      "revised": "2026-10-23T06:47:40Z",
+      "profile": "light"
     },
     {
       "id": 760,
@@ -1214,12 +1216,14 @@
         "board"
       ],
       "issues": [],
+      "recipe": "darn",
       "depends_on": [],
       "isolated": false,
       "brief": "prime_owner is only in board.json; the README shows task owners but not the prime owner, and no board verb prints it",
       "body": "## Seen\n\nThe machine that owns the hub's prime is recorded only as `prime_owner` at the top of `board.json` on Bolt (`internal/boardengine/store.go`).\nThe rendered README shows each task's owner machine, but not the prime's, and no `lyx board` verb prints it.\nOn 2026-10-23 the operator adopted two tasks from Neve on OSL-1046 and learnt only from `lyx adopt`'s warning that Neve still owned the prime, so the runs would halt at Finalize.\n\n## Idea\n\nThe README states the prime's owner at its top, and `lyx board list` (both JSON and `--text`) prints it, so the owner of the prime is visible wherever task owners are.\n",
       "created": "2026-10-23T06:28:26Z",
-      "revised": "2026-10-23T06:28:26Z"
+      "revised": "2026-10-23T06:47:40Z",
+      "profile": "light"
     }
   ],
   "prime_owner": "osl-1046"

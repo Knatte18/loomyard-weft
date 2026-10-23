@@ -1,6 +1,6 @@
 # Orch watcher types /compact again after a compact landed
 
-`orch-compact-repeats` · Note · bug, orch
+`orch-compact-repeats` · Task · bug, orch
 
 ## Seen (2026-10-22, Neve)
 
