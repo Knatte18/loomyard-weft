@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-23 10:00 UTC; every age below is as of then.
+Rendered 2026-10-23 10:01 UTC; every age below is as of then.
 Prime owner: `osl-1046`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -16,8 +16,8 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T2 | **Webster verify failures the fixer fork cannot clear escalate to an Opus-high fixer**<br>• Merriam fixes a failed verify only with forks on its own Sonnet model; a stronger fixer exists only for stuck batches<br>• `profile: darn-wide` | [`verify-fix-escalation`](design-verify-fix-escalation.md) | darn | Darn-Burler-Review | osl-1046 | 1h<br>31m | webster, loom |
-| T5 | **Run tail: Merge-In with alignment, Code-Perch, a PR stub and one locked Land block, for loom and darn**<br>• Loom and darn share one tail after the code: Merge-In with alignment and a thorough fixer, Code-Perch, PR block behind a flag, Finalize re-merging under the parent lock | [`loom-tail-review`](design-loom-tail-review.md) | loom | Discussion-Burler-Review | osl-1046 | 15h<br>2h | loom, burler, shed, fabric, batten |
+| T2 | **Webster verify failures the fixer fork cannot clear escalate to an Opus-high fixer**<br>• Merriam fixes a failed verify only with forks on its own Sonnet model; a stronger fixer exists only for stuck batches<br>• `profile: darn-wide` | [`verify-fix-escalation`](design-verify-fix-escalation.md) | darn | Darn-Burler-Review | osl-1046 | 1h<br>33m | webster, loom |
+| T5 | **Run tail: Merge-In with alignment, Code-Perch, a PR stub and one locked Land block, for loom and darn**<br>• Loom and darn share one tail after the code: Merge-In with alignment and a thorough fixer, Code-Perch, PR block behind a flag, Finalize re-merging under the parent lock | [`loom-tail-review`](design-loom-tail-review.md) | loom | Discussion-Burler-Fix | osl-1046 | 15h<br>2h | loom, burler, shed, fabric, batten |
 
 ### Ready
 
@@ -31,7 +31,7 @@ Waits only on Running or Ready entries.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T1 | **Each test runs once per tree: disjoint tiers, row entry gates, carried green runs, tmux in final**<br>• Tiers tagged by name, shed row entry gates, verify skipped on an already green tree, tmux in the final gate, gate time measured<br>• `profile: light` | [`gate-runs-once`](design-gate-runs-once.md) | loom | `loom-tail-review`, `verify-fix-escalation` | 5d<br>31m | gate, shed, loom, webster, fabric, batten |
+| T1 | **Each test runs once per tree: disjoint tiers, row entry gates, carried green runs, tmux in final**<br>• Tiers tagged by name, shed row entry gates, verify skipped on an already green tree, tmux in the final gate, gate time measured<br>• `profile: light` | [`gate-runs-once`](design-gate-runs-once.md) | loom | `loom-tail-review`, `verify-fix-escalation` | 5d<br>33m | gate, shed, loom, webster, fabric, batten |
 
 ## Notes
 
