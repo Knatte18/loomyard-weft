@@ -1,13 +1,13 @@
 {
-  "current_producer": "Describe",
+  "current_producer": "Merge-In",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "pause_before": "PR-Gate",
   "pause_before_by": "ly:orch",
   "activity": {
-    "now": "Describe",
-    "last": "Darn-Bouncer → done",
+    "now": "Merge-In",
+    "last": "Describe → done",
     "wait": ""
   },
   "history": [
@@ -131,6 +131,21 @@
       "outcome": "done",
       "output": "/home/AD.NORCERESEARCH.NO/hanf/Code/Knatte18/loomyard-LYXHUB/verify-fix-escalation/_lyx/reviews/darn/round-2-bouncer-ledger.md",
       "at": "2026-10-23T10:55:17Z"
+    },
+    {
+      "producer": "Describe",
+      "outcome": "done",
+      "output": "/home/AD.NORCERESEARCH.NO/hanf/Code/Knatte18/loomyard-LYXHUB/verify-fix-escalation/_lyx/landing/summary.md",
+      "at": "2026-10-23T10:55:42Z",
+      "gate_attempts": 0,
+      "gate_spans": [
+        {
+          "gate": "description",
+          "kind": "gate",
+          "start": "2026-10-23T10:55:41.862592421Z",
+          "end": "2026-10-23T10:55:41.862644527Z"
+        }
+      ]
     }
   ],
   "product": {
