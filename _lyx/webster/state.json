@@ -1709,7 +1709,7 @@
       }
     }
   ],
-  "currentBatch": 0,
+  "currentBatch": 35,
   "masterStrand": "84b46756278c26fa4a3d938b33a70bce",
   "masterSessionId": "15e077c7-3daf-473b-935d-c0209f975d97",
   "masterEngine": "claude",
@@ -2278,6 +2278,26 @@
         "4109e123-2c0b-4823-a990-35ebadaa4727": "claude"
       },
       "recoveryStartSha": "27c87d3f5c3e04bc001e7d05e33143f47e819690"
+    },
+    "35": {
+      "slug": "driver-hands-back-landing-halts",
+      "cards": [
+        "35-driver-hands-back-landing-halts",
+        "36-arbiter-refuses-landing-halts",
+        "37-batten-restep-skips-landing-halts"
+      ],
+      "cardHashes": {
+        "35-driver-hands-back-landing-halts": "af03e6108aff4ff3e2d3b70a0f80eba6740095e06727187cdc7cce41fcebb97f",
+        "36-arbiter-refuses-landing-halts": "e6020dce9df7affc5bcb1180471e11ae6f66b57d8cb14590b9b18ef181df7ba4",
+        "37-batten-restep-skips-landing-halts": "6197895ecaf7c9d73271fc03b2a825cbd0acb2ec2c9594237ae30ed5eef87121"
+      },
+      "startSha": "df8375218a9c1bc948a71db13e91c99ec9af46be",
+      "kind": "fork",
+      "spawnedAt": "2026-10-23T18:13:45Z",
+      "sessionId": "15e077c7-3daf-473b-935d-c0209f975d97",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
     },
     "7": {
       "slug": "fixer-session-table",
