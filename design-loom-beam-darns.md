@@ -54,3 +54,8 @@ Alignment per piece is pointless when the piece is a closed, synchronised share 
 - Friction-Reflect runs once per umbrella, not per piece.
 - A `stitch` task runs only inside an umbrella; it cannot run alone.
 - Estimate (orch, not measured): about $2-2.50 per piece against about $6 for a darn with review.
+
+## Operator view, not a decision (2026-10-23): darn itself as the piece implementer
+
+Once `loom-tail-review` has landed, darn itself may serve as the pieces' implementer, since that task removes much of the run tail's ceremony, such as the pull request.
+Whether `stitch` then stays a recipe of its own, or becomes darn with the tail rows a piece does not need turned off, is to be weighed against what `loom-tail-review` lands.
