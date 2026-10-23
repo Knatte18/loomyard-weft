@@ -247,6 +247,12 @@ Decision: On a start (no status file), armAt reads the cancel marker again after
 
 Rationale: D3 reads the marker once, before the pull. A start that passed that read and whose network pull spans the cancel's steps 4 to 8 then writes the claim after step 8 cleared it and the seed after step 7 removed it, and the seeding closure's refusal leaves both behind. Re-reading after the pull and before each write leaves only a local write's span, which ends before the cancel's step 7, which comes after the end and the strand stops.
 
+### Added after Discussion (parent, 2026-10-23): Take main's reed pane-tail separator fix onto the branch
+
+Decision: The verify failures in internal/reedcli and internal/reedengine (TestNaming, TestStrandNamingAndList, TestOwnWindow_RealTmux) are main's known defect, not this task's: tmux 3.4 prints the pane-tail separator "\x1f" as the literal \037. Main fixed it in a1200c20 by a tab separator. The verify fixer ports the internal/reedengine part of a1200c20 (parse.go, overlay.go, ownwindow.go, doc.go and the parse, lifecycle and strand tests) as one fix: commit, identical to main's lines so Merge-In merges it cleanly, and changes nothing else in reed.
+
+Rationale: The branch was cut before a1200c20 landed; the tests fail on any branch without it, and a rerun passing is luck, not a fix.
+
 ## Constraints
 
 - PATTERN-no-denied-recovery: the dirty-source way forward says "commit or revert" and names no `git stash`.
