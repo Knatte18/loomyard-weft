@@ -1,6 +1,6 @@
 {
   "runGuid": "6f3f62b7ba6640bed5f2f8f6f97b867c",
-  "planFingerprint": "40800ef7dc55b0f8ef9520a90ce4e24d32ba2d10d3259d4308dc894bbd57a99f",
+  "planFingerprint": "e444d8249bbfc974e847cb87e836cde01fe65254d7e9baa45ec404950fca6465",
   "planFileHashes": {
     "00-overview.md": "96ea7fdd8f8d6382d0d75626814f18d9de43b47b7804ff6a64d1958c1b3b0073",
     "01-plandag-additive-guess.md": "3156eb48f5d1c8c39c0e64ca4a0a8d85e081a38beba3aaf480b1d8777c729b14",
@@ -10,15 +10,15 @@
     "05-plan-gate-pattern-base-wiring.md": "55fd685993ee444e30f05581ebdba8b8dde3f38e0f832df1e67c3f1adf011ec3",
     "06-extends-label.md": "b377a35d366b731e005114e776a7127fd6a17a967f51c39e731f3d8750d647a5",
     "07-extends-group-readers.md": "79ea45df6a75caea90d414156a76253f9e70345d89abfc6c8615df9f420672fa",
-    "08-card-pair-rule.md": "87c3f3ea9d542cf6ae05fab8badd7b7bf73d8f35fef7636460f6fcda4c73926c",
-    "09-plandag-extends-mark.md": "199235bb534aefd8c9d6ae8ea331fd770866faab778efca813898368d97a28e1",
+    "08-card-pair-rule.md": "100f87cfe69491b6538914176d0b4481cf94282f6e017c7dd269ce5daea84488",
+    "09-plandag-extends-mark.md": "04a75fb1c148f94da5f757277414e3d9a8b26ae4179d88f64b23f7eee75d075d",
     "10-plan-review-extends-guidance.md": "ab498a63d124cc88a8626b2e2c73fa96efe73ef8d96be9f2b5f6bb8b6fd2d895",
-    "11-amendment-record.md": "888ceb2c4043cd4ec8d8e0e7252532d8989298108f46d30a05c7c63d479567ff",
-    "12-settle-round-start.md": "ac59271017ea6386c8d5f58586c0aa29c240b3283b3c9a727b1ae1cc458c7405",
-    "13-decision-amends-plan.md": "e4a2eb088667030f4beedb86c6207f16ab71d4af24e8f21365b69b6d127c5522",
-    "14-settled-guard-amendment.md": "8cb68b5adc7ac5f71068b47ccac37dc57e49d340ef4f8d71b1cc0e36ef4a7db7",
-    "15-plan-commit-removes-amendment.md": "239309accd1339e0a4285c470f59f239a3557e5556eaeffa68a159b808381117",
-    "16-rework-amendment.md": "91a8961eb2601778c17f895dad47a2f985797bc52266c4d5ed1dbbc63ca7635d",
+    "11-amendment-record.md": "f9bdbb40be10b2947f2d3ddc94639b7ffd920550b6eefefc765eabc87fa28c45",
+    "12-settle-round-start.md": "e9b0d2fdb2bdbe8acd1a54a9fad1e53919cc7e2b32c25bd75201c0d3469104e6",
+    "13-decision-amends-plan.md": "16ee6a2b9aed1fd2b3f110672c4cc35f236c65d6e362a05e67e8bb04273cb27e",
+    "14-settled-guard-amendment.md": "ddf824ae02a6d06c81985e798ce9ea83826f4ccd3c3c055667e5efbafacef6a9",
+    "15-plan-commit-removes-amendment.md": "474c1f12da5d4a4ef9ba14683ea27433d1e8013ca8103bfd92ccd5c59c9ba84d",
+    "16-rework-amendment.md": "7203cd9287906723e418cce7764f75b9ee6ac1218eb37c54eaae6aaed716715f",
     "17-plan-review-answer-key.md": "c3474497905ddfafe2a23487451e58174b89adef1abad17cc98468644ad80b1f",
     "18-recipe-amendment-target.md": "61040de7f1bc5aaa3f11ab59b4bb2b4ecaa118ac2877c6774cca8260bbb5cb26",
     "19-arbiter-amendment-target.md": "03adfa75e47c4597dc81e64f1b0429ffed3d29878932c7b740f76f6c09ccc3eb",
@@ -543,7 +543,7 @@
       }
     }
   ],
-  "currentBatch": 7,
+  "currentBatch": 0,
   "masterStrand": "5d7707be21a2f264e8cb67fdd257faf0",
   "masterSessionId": "42b1ea9d-4ad9-4b82-a2f2-60e0b764997b",
   "masterEngine": "claude",
@@ -616,22 +616,44 @@
       ],
       "cardHashes": {
         "07-extends-group-readers": "79ea45df6a75caea90d414156a76253f9e70345d89abfc6c8615df9f420672fa",
-        "08-card-pair-rule": "87c3f3ea9d542cf6ae05fab8badd7b7bf73d8f35fef7636460f6fcda4c73926c",
-        "09-plandag-extends-mark": "199235bb534aefd8c9d6ae8ea331fd770866faab778efca813898368d97a28e1",
+        "08-card-pair-rule": "100f87cfe69491b6538914176d0b4481cf94282f6e017c7dd269ce5daea84488",
+        "09-plandag-extends-mark": "04a75fb1c148f94da5f757277414e3d9a8b26ae4179d88f64b23f7eee75d075d",
         "10-plan-review-extends-guidance": "ab498a63d124cc88a8626b2e2c73fa96efe73ef8d96be9f2b5f6bb8b6fd2d895",
-        "11-amendment-record": "888ceb2c4043cd4ec8d8e0e7252532d8989298108f46d30a05c7c63d479567ff",
-        "12-settle-round-start": "ac59271017ea6386c8d5f58586c0aa29c240b3283b3c9a727b1ae1cc458c7405"
+        "11-amendment-record": "f9bdbb40be10b2947f2d3ddc94639b7ffd920550b6eefefc765eabc87fa28c45",
+        "12-settle-round-start": "e9b0d2fdb2bdbe8acd1a54a9fad1e53919cc7e2b32c25bd75201c0d3469104e6"
       },
       "startSha": "95b37430900f53dd4d7a2032acf95392c943f28e",
       "kind": "fork",
       "spawnedAt": "2026-10-23T07:24:51Z",
       "sessionId": "42b1ea9d-4ad9-4b82-a2f2-60e0b764997b",
       "engine": "claude",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "07-extends-group-readers",
+        "status": "done",
+        "head_sha": "b5e2f7da6f6137c7cc668fa539ce1e50a77d9b69",
+        "deviations": [
+          "internal/loomengine/config.go",
+          "internal/planparser/pairrule.go",
+          "internal/planparser/pairrule_test.go",
+          "internal/websterengine/sequence_test.go",
+          "tools/plandag/graph.go"
+        ]
+      },
+      "cardShas": [
+        "b5e2f7da6f6137c7cc668fa539ce1e50a77d9b69"
+      ],
+      "forkTranscripts": [
+        "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-plan-card-rules/42b1ea9d-4ad9-4b82-a2f2-60e0b764997b/subagents/agent-ad3c848d95c14262a.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-plan-card-rules/42b1ea9d-4ad9-4b82-a2f2-60e0b764997b/subagents/agent-ad3c848d95c14262a.jsonl"
+      ]
     }
   },
   "seenForkTranscripts": [
-    "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-plan-card-rules/42b1ea9d-4ad9-4b82-a2f2-60e0b764997b/subagents/agent-adcf21a00860fde6f.jsonl"
+    "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-plan-card-rules/42b1ea9d-4ad9-4b82-a2f2-60e0b764997b/subagents/agent-adcf21a00860fde6f.jsonl",
+    "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-plan-card-rules/42b1ea9d-4ad9-4b82-a2f2-60e0b764997b/subagents/agent-ad3c848d95c14262a.jsonl"
   ]
 }

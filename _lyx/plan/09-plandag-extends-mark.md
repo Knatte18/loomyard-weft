@@ -1,8 +1,8 @@
 # Card 9 — plandag Extends mark
 
 **Create:**
-- `plan:tools/plandag#markExtends` -> `const markExtends mark = 'E'`
-- `plan:tools/plandag#TestRun_ExtendsCellsDropExtendsEdges` -> `func TestRun_ExtendsCellsDropExtendsEdges(t *testing.T)`
+- `tools/plandag#markExtends`
+- `tools/plandag#TestRun_ExtendsCellsDropExtendsEdges`
 
 **Edit:**
 - `tools/plandag#buildCardGraph`
@@ -11,8 +11,8 @@
 - `tools/plandag#main`
 
 **Uses:**
-- `plan:internal/planparser#CardRefKind`
-- `plan:internal/planparser#DependencyEdge`
+- `internal/planparser#CardRefKind`
+- `internal/planparser#DependencyEdge`
 - `tools/plandag#writePlan`
 - `tools/plandag#additiveGuess`
 

@@ -6,10 +6,10 @@
 - `internal/shedadapters/doc.go`
 
 **Create:**
-- `plan:internal/shedadapters#roundReviewStart` -> `func roundReviewStart(runDir string, round int) time.Time`
-- `plan:internal/shedadapters#SettleRoundStart` -> `func SettleRoundStart(runDir string) (time.Time, bool, error)`
-- `plan:internal/shedadapters#TestSettleRoundStart` -> `func TestSettleRoundStart(t *testing.T)`
-- `plan:internal/shedadapters#TestBouncer_SettleRecordsRoundStart` -> `func TestBouncer_SettleRecordsRoundStart(t *testing.T)`
+- `internal/shedadapters#roundReviewStart`
+- `internal/shedadapters#SettleRoundStart`
+- `internal/shedadapters#TestSettleRoundStart`
+- `internal/shedadapters#TestBouncer_SettleRecordsRoundStart`
 
 **Uses:**
 - `internal/shedadapters#roundUsage`

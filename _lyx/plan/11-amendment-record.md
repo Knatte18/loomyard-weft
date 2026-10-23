@@ -1,14 +1,14 @@
 # Card 11 — the plan amendment record
 
 **Create:**
-- `plan:internal/loomengine#LoomAmendmentRecordRel` -> `func LoomAmendmentRecordRel() string`
-- `plan:internal/loomengine#LoomAmendmentRecord` -> `func LoomAmendmentRecord(l *lyxcwd.Location) string`
-- `plan:internal/loomshed#AmendmentRecord` -> `type AmendmentRecord struct`
-- `plan:internal/loomshed#ReadAmendment` -> `func ReadAmendment(path string) (AmendmentRecord, bool, error)`
-- `plan:internal/loomshed#AppendAmendment` -> `func AppendAmendment(path, title string, at time.Time) error`
-- `plan:internal/loomshed#RemoveAmendment` -> `func RemoveAmendment(path string) error`
-- `plan:internal/loomshed#AmendmentSettledBy` -> `func AmendmentSettledBy(record AmendmentRecord, roundStart time.Time) bool`
-- `plan:internal/loomshed#TestAmendmentRecord` -> `func TestAmendmentRecord(t *testing.T)`
+- `internal/loomengine#LoomAmendmentRecordRel`
+- `internal/loomengine#LoomAmendmentRecord`
+- `internal/loomshed#AmendmentRecord`
+- `internal/loomshed#ReadAmendment`
+- `internal/loomshed#AppendAmendment`
+- `internal/loomshed#RemoveAmendment`
+- `internal/loomshed#AmendmentSettledBy`
+- `internal/loomshed#TestAmendmentRecord`
 
 **Edit:**
 - `internal/loomshed#loomshedAllowedImports`
