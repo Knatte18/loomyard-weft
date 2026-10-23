@@ -40,6 +40,12 @@ Rationale: the Bolt commit routes run on a board whose index matches HEAD for th
 
 - A path staged as an addition, then removed from disk before the write commits, is dropped and its index entry stays for the next whole-board sync to commit.
 
+<!-- lyx:carry-over Darn-Review -->
+- Darn-Review, round 1: converged; each finding below was fixed or disputed by the round's fixer, and no fresh reviewer has seen the result; the fixer report says which.
+  Review: _lyx/reviews/darn/round-1-review.md; fixer report: _lyx/reviews/darn/round-1-fixer-report.md.
+  - unborn-head-nothing-stageable-untested (class scope, severity MEDIUM, open in rounds 1)
+<!-- /lyx:carry-over Darn-Review -->
+
 ## Acceptance criteria
 
 - `PullThenCommitWritten` with a write returning a path neither on disk nor in git commits the write's other paths with no error.
