@@ -1,12 +1,11 @@
 {
-  "current_producer": "Publish",
+  "current_producer": "Merge-In",
   "state": "running",
   "error": "",
-  "pending_by": "shed",
   "pause_requested": false,
   "activity": {
-    "now": "Publish",
-    "last": "Publish → stuck",
+    "now": "Merge-In",
+    "last": "Publish → rerouted to Merge-In",
     "wait": ""
   },
   "history": [
@@ -213,6 +212,14 @@
       "outcome": "stuck",
       "output": "",
       "at": "2026-10-23T07:22:05Z"
+    },
+    {
+      "producer": "Publish",
+      "outcome": "reroute",
+      "output": "",
+      "at": "2026-10-23T07:28:01Z",
+      "routed_to": "Merge-In",
+      "by": "shed"
     }
   ],
   "product": {
