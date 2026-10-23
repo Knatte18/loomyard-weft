@@ -1,6 +1,8 @@
 # Run tail: Merge-In with alignment, Code-Perch, a PR stub and one locked Land block, for loom and darn
 
-`loom-tail-review` · Note · enhancement, loom, burler, shed, fabric, batten
+`loom-tail-review` · Task · enhancement, loom, burler, shed, fabric, batten
+
+Depends on: [`gate-runs-once`](design-gate-runs-once.md)
 
 ## Design (operator, 2026-10-23)
 
