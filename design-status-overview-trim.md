@@ -1,6 +1,6 @@
 # Status overview: drop file paths, time the gate lines
 
-`status-overview-trim` · Task · enhancement, loom · running · Worktree-Create
+`status-overview-trim` · Task · enhancement, loom · running · Darn-Write
 
 ## Seen (operator, 2026-10-23)
 
