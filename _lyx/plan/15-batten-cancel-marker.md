@@ -12,8 +12,8 @@
 - `plan:internal/battencli#TestCancelMarker` -> `func TestCancelMarker(t *testing.T)`
 
 **Uses:**
-- `plan:internal/shedrun#CancelMarker`
-- `plan:internal/shedrun#CancelMarkerLock`
+- `internal/shedrun#CancelMarker`
+- `internal/shedrun#CancelMarkerLock`
 
 **Intent:**
 Implement D3's cancel marker in its own file, `cancelmarker.go`: a record that a cancel of the slug is under way, whose writer's liveness is a lock it holds, never its pid.

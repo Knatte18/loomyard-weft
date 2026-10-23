@@ -1,10 +1,10 @@
 # Card 4 — pair-parts-reads
 
 **Create:**
-- `plan:internal/fabricengine#PairParts` -> `type PairParts struct`
-- `plan:internal/fabricengine#Topology.PairParts` -> `func (t *Topology) PairParts(l *lyxcwd.Location, slug string) (PairParts, error)`
-- `plan:internal/fabricengine#Topology.TaskBranchOnOrigin` -> `func (t *Topology) TaskBranchOnOrigin(l *lyxcwd.Location, slug string) (bool, error)`
-- `plan:internal/fabricengine_test#TestPairParts` -> `func TestPairParts(t *testing.T)`
+- `internal/fabricengine#PairParts`
+- `internal/fabricengine#Topology.PairParts`
+- `internal/fabricengine#Topology.TaskBranchOnOrigin`
+- `internal/fabricengine_test#TestPairParts`
 
 **Edit:**
 - `internal/fabricengine/doc.go`

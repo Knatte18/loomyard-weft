@@ -1,10 +1,10 @@
 # Card 3 — source-dirty-typed-error
 
 **Create:**
-- `plan:internal/fabricengine#ErrSourceDirty` -> `type ErrSourceDirty struct`
-- `plan:internal/fabricengine#ErrSourceDirty.Error` -> `func (e *ErrSourceDirty) Error() string`
-- `plan:internal/fabricengine#SourceDirtyPaths` -> `func SourceDirtyPaths(l *lyxcwd.Location) ([]string, error)`
-- `plan:internal/fabricengine_test#TestSourceDirtyPaths` -> `func TestSourceDirtyPaths(t *testing.T)`
+- `internal/fabricengine#ErrSourceDirty`
+- `internal/fabricengine#ErrSourceDirty.Error`
+- `internal/fabricengine#SourceDirtyPaths`
+- `internal/fabricengine_test#TestSourceDirtyPaths`
 
 **Edit:**
 - `internal/fabricengine#Topology.add`

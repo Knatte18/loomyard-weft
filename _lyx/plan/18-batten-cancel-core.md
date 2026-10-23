@@ -22,8 +22,8 @@
 - `plan:internal/pairteardown#CancelRequest`
 - `plan:internal/pairteardown#CancelResult`
 - `plan:internal/pairteardown#CancelLockWait`
-- `plan:internal/fabricengine#PairParts`
-- `plan:internal/fabricengine#DiscardResult`
+- `internal/fabricengine#PairParts`
+- `internal/fabricengine#DiscardResult`
 
 **Intent:**
 Write the cancel's whole decision and order, D2 to D9, as `cancelRun` over injected seams in `cancel.go`, so every branch is reached by an untagged test with fakes; card 19 wires the production seams and the verb.

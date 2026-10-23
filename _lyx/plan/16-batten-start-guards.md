@@ -21,8 +21,8 @@
 - `plan:internal/battencli#cancelMarkerRefusal`
 - `internal/battencli#fakeOwners`
 - `plan:internal/battencli#takeCancelMarker`
-- `plan:internal/fabricengine#SourceDirtyPaths`
-- `plan:internal/fabricengine#Topology.PairParts`
+- `internal/fabricengine#SourceDirtyPaths`
+- `internal/fabricengine#Topology.PairParts`
 
 **Intent:**
 Batten's pre-run refuses, before it writes anything, a run a cancel is ending (D3), a dirty source (D10) and a start over a left local part of a kept pair (D5).
