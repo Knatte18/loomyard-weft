@@ -1,0 +1,4 @@
+verdict: approve
+reason: The diff drops the output path from every visit line and opens each gate line with the UTC hh:mm of its first span start, or --:-- when none parses, which covers both scope points of the board entry and its UTC decision with nothing beyond them. The only peer, loom-tail-review, touches internal/loomcli at other places with no design conflict, and this run (row 21) lands first.
+question: ""
+superseded: []
