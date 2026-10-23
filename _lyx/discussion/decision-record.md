@@ -363,6 +363,12 @@ Every pick in D2 to D14 that the board left open is an auto-pick, recorded with 
   - merge-in-budget0-cap-baseline-precedes-merge (class design, severity MEDIUM, open in rounds 4)
 <!-- /lyx:carry-over Discussion-Review -->
 
+<!-- lyx:carry-over Plan-Review -->
+- Plan-Review, round 3: converged; each finding below was fixed or disputed by the round's fixer, and no fresh reviewer has seen the result; the fixer report says which.
+  Review: _lyx/reviews/plan/round-3-review.md; fixer report: _lyx/reviews/plan/round-3-fixer-report.md.
+  - card-29-over-cap-resume-failing-gate-untested (class scope, severity MEDIUM, open in rounds 3)
+<!-- /lyx:carry-over Plan-Review -->
+
 ## Acceptance criteria
 
 - The loom recipe validates with D1's order and edges, the darn recipe with D9's, and the budget-0 darn recipe with D9's rewrite; the removed rows resolve to no producer.
