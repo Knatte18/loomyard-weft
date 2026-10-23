@@ -1,0 +1,8 @@
+verdict: approve
+reason: >-
+  The diff does what the board entry asks and no more: the verify gate routes the last attempt, a failure after a fixer that committed nothing, and every later one to a cold fixer strand at the recovery role, spawned by lyx webster fix-verify with the verify-gate report as its brief.
+  verify_gate_attempts drops to 2, which gives one fork attempt, then one cold attempt, as the operator view says.
+  The two carried-over Darn-Review findings were addressed in f1bc24e7 and 62bb9db8, and neither names a parent correction.
+  The only peer, loom-tail-review (row 7, against own_row 21), lists this entry's gate and fixer as outside its scope and has changed no paths, so its design does not conflict; this run lands first and the peer takes its changes at Merge-In.
+question: ""
+superseded: []
