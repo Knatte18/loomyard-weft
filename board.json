@@ -1002,8 +1002,7 @@
       "issues": [],
       "recipe": "loom",
       "depends_on": [
-        "loom-tail-review",
-        "verify-fix-escalation"
+        "loom-tail-review"
       ],
       "isolated": false,
       "brief": "Tiers tagged by name, shed row entry gates, verify skipped on an already green tree, tmux in the final gate, gate time measured",
@@ -1135,29 +1134,6 @@
       "body": "## Seen (operator, 2026-10-23)\n\nOnce `loom-tail-review` removes PR-Align, nothing in a run names the board notes a landing superseded.\nBatten's job is one task, never other board entries, so the orch spawns a Sonnet agent at each `landed` notice that reports those notes, and the operator decides (hub-wide orch rule \"Board tidy after a landing\").\n\n## Idea\n\nWhen the orch splits into an LLM and a Go driver (the beam's daemon), the Go driver spawns that agent after each landing, in a window of the beam's reed session, and hands its report to the orch LLM.\n",
       "created": "2026-10-23T07:50:54Z",
       "revised": "2026-10-23T07:50:54Z"
-    },
-    {
-      "id": 769,
-      "handle": "T2",
-      "slug": "verify-fix-escalation",
-      "title": "Webster verify failures the fixer fork cannot clear escalate to an Opus-high fixer",
-      "kind": "task",
-      "labels": [
-        "enhancement",
-        "webster",
-        "loom"
-      ],
-      "issues": [],
-      "recipe": "darn",
-      "depends_on": [],
-      "isolated": false,
-      "brief": "Merriam fixes a failed verify only with forks on its own Sonnet model; a stronger fixer exists only for stuck batches",
-      "body": "## Seen (orch, 2026-10-23)\n\nWhen Webster's plan-level verify gate fails, Merriam spawns a fixer fork (`internal/websterengine/doc.go`, The verify-gate fixer fork).\nA fork always runs on Merriam's own model, `sonnet[medium]` by the `webster.yaml` template, and Merriam may spawn nothing but forks.\nSo every one of the `verify_gate_attempts` (3) fixes is a Sonnet-medium fork.\nAfter the last attempt Webster ends stuck; the Webster row has no `on_stuck` edge, so the run halts to the driver and the arbiter, which diagnose and resume or hand on, but fix nothing.\nThe one stronger model in Webster, `recovery: opus[high]`, is spawned only by `recover-batch` for a batch fork that reports stuck, never for a verify failure.\nIn `plan-card-rules` the operator asked Merriam to spawn an Opus-high agent if its fixer failed, and Merriam answered that it cannot.\n\n## Idea\n\nA verify failure that the fixer fork does not clear escalates in model before the run halts:\nfor example, the last attempt, or the attempt after a fork that made no commit, goes to a cold fixer at the recovery role (`opus[high]`), spawned as its own strand the way `recover-batch` spawns one, with the verify-gate report as its brief.\n\n## Operator view, not a decision (2026-10-23)\n\nSonnet medium is often too weak to find and fix such failures, and three attempts are more than needed: one Sonnet fixer attempt, then the Opus-high fixer.\n\n## Why not the tackler and the arbiter (orch, 2026-10-23)\n\nWith the Go driver (`driver_kind: go` in `shed.yaml`), a stuck Webster goes to the tackler (`haiku`) and then the arbiter.\nNeither fixes code: the tackler's verdict is `resume`, `hand-back` or `escalate` (`internal/sheddriver/doc.go`), so at best it re-runs Webster with the same Sonnet fixer.\nThe escalation in model has to happen inside Webster's gate, before the run halts.\nThe gate already reruns a failure once before any fixer, so a flaky test does not use up the one fixer attempt.\n\n## Related\n\nThe `loom-tail-review` task makes the Merge-In fixer one Opus agent; this note is about Webster's own gate, before Merge-In.\n",
-      "status": "done",
-      "created": "2026-10-23T08:25:34Z",
-      "revised": "2026-10-23T09:28:24Z",
-      "profile": "darn-wide",
-      "owner_machine": "osl-1046"
     },
     {
       "id": 770,
