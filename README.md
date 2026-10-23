@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-23 07:03 UTC; every age below is as of then.
+Rendered 2026-10-23 07:04 UTC; every age below is as of then.
 
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
@@ -17,8 +17,8 @@ Held by a run; its scope is locked until the run ends.
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T2 | **Plan cards: headroom check, Extends label, an amendment owner, failures traced to cards**<br>• PATTERN headroom in the plan gate, additive Extends cards, an in-run owner for card amendments, verify failures mapped to cards via Enclose<br>• `profile: light` | [`plan-card-rules`](design-plan-card-rules.md) | loom | Plan-Burler-Fix | osl-1046 | 2w<br>16h | loom, webster, burler, orch, quarry |
 | T3 | **One batten verb ends a run for good, live or stopped, before or after its pair exists**<br>• Abandon or abort a batten run in any state: end its processes and strands, clear the claim, remove records and scratch, optionally the pair; batten refuses a dirty source up front<br>• `profile: light` | [`batten-cancel-verb`](design-batten-cancel-verb.md) | loom | Webster | osl-1046 | 2d<br>18h | batten, reed, shed |
-| T4 | **The README and lyx board list show which machine owns the prime**<br>• prime_owner is only in board.json; the README shows task owners but not the prime owner, and no board verb prints it<br>• `profile: light` | [`prime-owner-visible`](design-prime-owner-visible.md) | darn | Darn-Write | osl-1046 | 35m<br>15m | board |
-| T5 | **Orch watcher types /compact again after a compact landed**<br>• Watcher stays in resuming after a requested compact and types a second /compact into the resumed busy turn<br>• `profile: light` | [`orch-compact-repeats`](design-orch-compact-repeats.md) | darn | Darn-Burler-Fix | osl-1046 | 16h<br>15m | orch |
+| T4 | **The README and lyx board list show which machine owns the prime**<br>• prime_owner is only in board.json; the README shows task owners but not the prime owner, and no board verb prints it<br>• `profile: light` | [`prime-owner-visible`](design-prime-owner-visible.md) | darn | Darn-Bouncer | osl-1046 | 35m<br>16m | board |
+| T5 | **Orch watcher types /compact again after a compact landed**<br>• Watcher stays in resuming after a requested compact and types a second /compact into the resumed busy turn<br>• `profile: light` | [`orch-compact-repeats`](design-orch-compact-repeats.md) | darn | Darn-Burler-Fix | osl-1046 | 16h<br>16m | orch |
 
 ### Ready
 
