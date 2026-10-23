@@ -1,59 +1,49 @@
-# Orch watcher: hold the boundary while a /compact is in flight
+# Orch watcher: wait out an in-flight /compact before reloading
 
-An operator-requested compact landed and the resume prompt reached the orch session, yet the watcher typed a second `/compact` into the resumed, busy turn and interrupted it.
-`lyx orch status` kept reading `phase: resuming` with the reload's color step still pending.
+The orch watcher no longer lets a second `/compact` reach the orch session after a compaction it asked for has landed.
+Before, such a `/compact` interrupted the resumed session's first turn, and the reload's color step waited behind it in creel's queue, leaving `lyx orch status` at `phase: resuming`.
 
-## Cause
-
-When the compacting phase finds a qualifying compaction boundary, it withdraws its own still-queued `/compact` from creel and drops the pending step.
+The cause is in the compacting phase.
+When it finds a qualifying compaction boundary it withdraws its still-queued `/compact` and dropped the pending step after any successful withdraw call.
 Creel's withdraw removes only injects in its queue and leaves one a delivery attempt holds.
-If that attempt is refused as busy, creel puts the inject back in the queue and types it at the next idle, ahead of every later watcher inject.
-The watcher had already dropped the step after any successful withdraw call, so the stale `/compact` survived and the reload's color step waited behind it.
+If the session refuses that attempt as busy, creel puts the inject back in the queue and types it at the next idle, ahead of every later watcher inject.
 
-## Change
+The fix is in `internal/orchengine/watcher.go`.
+After the withdraw, `withdrawQueuedCompact` reads the pending inject's outcome again.
+A withdrawn, injected or unconfirmed outcome lets the phase complete.
+An outcome that still reads queued or sending keeps the step pending and the boundary unconsumed, and the next tick withdraws again.
+The new `errCompactInFlight` signals this hold to `tickCompacting`.
 
-`withdrawQueuedCompact` in `internal/orchengine/watcher.go` now reads the pending inject's outcome again after the withdraw:
-
-- A withdrawn, injected or unconfirmed outcome drops the step and lets the phase complete, as before.
-- An outcome still queued or sending keeps the step pending and the boundary unconsumed, and returns `errCompactInFlight`.
-  `tickCompacting` treats it like a held withdraw, and the next tick withdraws again.
-- Past the handoff timeout from the phase entry, an in-flight step is dropped with a warning and the phase completes, so the wait cannot last forever.
-- A failed read after the withdraw is a creel failure and holds the phase.
-  If the withdraw had removed a hub-pause resume line, `State.ResumeLineWithdrawn` keeps it, so a later tick still clears the pause record's noticed mark.
-- A pending `/compact` with no id has no outcome to read and is withdrawn once and dropped, as before.
-
-The `ResumeLineWithdrawn` field comment in `state.go` and the compact-cycle paragraphs of `internal/orchengine/doc.go` describe the new behavior.
-The creel fake in `fakecreel_test.go` now models the withdraw as creel does: queued injects become withdrawn and in-flight ones stay.
-
-### Reed pane-listing separator
-
-`internal/reedengine` joined the pane title, current command and start command in its `list-panes` formats with the ASCII unit separator.
-tmux 3.4 escapes control characters in `-F` output, so the separator arrived as the literal text `\037`.
-The tail never split: titles read as `name\037bash\037/usr/bin/bash`, title drift was reported on untouched panes, and a shell-only strand never read dead.
-`paneTailSeparator` in `parse.go` is now a tab, which tmux passes through verbatim, and the formats in `overlay.go` and `ownwindow.go`, the package doc's format line and the test listings match it.
+The same commit also fixes the reed pane-tail separator.
+tmux 3.4 escapes control characters in `-F` output, so the `\x1f` separator arrived as the literal text `\037` and the pane tail never split.
+`paneTailSeparator` in `internal/reedengine/parse.go` is now a tab, which tmux passes through verbatim, and the `-F` formats in `overlay.go` and `ownwindow.go`, the parse comment and the `doc.go` format line match.
+Before this, the `reedcli` and `reedengine` tests failed on `main`.
 
 ## Design decisions
 
-- The wait logs at Debug, since it repeats every tick and is bounded by the handoff timeout.
-- Creel, shuttle's send path and the reload sequence's step order are unchanged.
-- Bound: if the delivery attempt the watcher waits on types the `/compact`, the session still compacts a second time.
-  Only creel could prevent that, and the phase completes on it as on any typed `/compact`.
-- The separator fix rides on this branch, as the parent's added decision records, because the reed tests it fixes fail on `main` and block this branch's verify.
-  A tab inside a pane title would now split the tail, as a unit separator in one did before.
+- The hold lasts while one creel delivery attempt runs, which settles as typed or back in the queue.
+  An inject creel types in that attempt cannot be stopped from the watcher, so the phase completes on it as on any typed `/compact`, and the session still compacts a second time in that case.
+  Only creel could prevent it.
+- A pending `/compact` with no id, which creel never answered and the journal lookup could not adopt, has no outcome to read.
+  It is withdrawn once and dropped, as before.
+- The hold is bounded.
+  An inject still queued or sending past the handoff timeout from the phase entry is dropped with a warning and the phase completes, so a stuck delivery cannot hold the reload indefinitely.
+- A failed read of the outcome after the withdraw is held as a creel failure, and a resume line the withdraw removed stays recorded in `State.ResumeLineWithdrawn`.
+  A later call then clears the pause record's noticed mark although its own withdraw finds nothing.
+- The wait repeats each tick, so it logs at Debug.
+- Creel's delivery worker and withdraw verb, shuttle's send path and the reload step order are unchanged.
 
 ## Tests
 
-`TestCompact_BoundaryWithdrawsAStillQueuedCompact` in `watcher_compact_test.go` covers:
+`TestCompact_BoundaryWithdrawsAStillQueuedCompact` is extended and the creel fake models the withdraw as creel does: queued injects become withdrawn, in-flight ones stay.
+It covers a boundary found while the `/compact` reads sending, then read as injected on a later tick, and read as back in the queue on a later tick.
+It also covers a failed re-read after the withdraw and the handoff-timeout drop.
+The `reedengine` tests are updated for the tab separator.
 
-- a boundary while the `/compact` is sending, which stays compacting with the step pending;
-- the later outcomes injected, unconfirmed and back in the queue, and that only the last withdraws again;
-- a withdrawn resume line with a compact still in flight;
-- a failed re-read after the withdraw, with the next tick clearing the mark.
+## Docs
 
-The existing reed parse tests and real-tmux naming and own-window tests cover the separator; `lyx gate test --tier 2 ./internal/reedengine ./internal/reedcli` passed against tmux 3.4.
-`lyx gate test ./internal/orchengine` passed.
+The compact-cycle paragraph and the withdraw bullet in `internal/orchengine/doc.go`, the `State.ResumeLineWithdrawn` comment and the pane-listing format in `internal/reedengine/doc.go` describe the new behavior.
 
 ## To check by hand
 
-- Against a live orch, request a compact while a creel delivery attempt is refused as busy, and confirm no second `/compact` reaches the pane and `lyx orch status` leaves `resuming`.
-- On a machine with an older tmux, confirm strand pane titles read without a trailing command and a shell-only strand reads dead past its grace.
+- Not run: a real orch compact cycle against a live creel, where a delivery attempt holds the `/compact` as the boundary is found.
