@@ -59,3 +59,9 @@ Alignment per piece is pointless when the piece is a closed, synchronised share 
 
 Once `loom-tail-review` has landed, darn itself may serve as the pieces' implementer, since that task removes much of the run tail's ceremony, such as the pull request.
 Whether `stitch` then stays a recipe of its own, or becomes darn with the tail rows a piece does not need turned off, is to be weighed against what `loom-tail-review` lands.
+
+## Test depth of a piece (operator, 2026-10-23)
+
+A piece run does not run the full suite a standalone darn runs before it lands.
+The umbrella runs the full suite once, after every piece has merged back.
+Which tiers a piece's own gates run is open; the tier plan per recipe is task `gate-runs-once`'s.
