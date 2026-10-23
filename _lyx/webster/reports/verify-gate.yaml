@@ -1,0 +1,68 @@
+attempt: 2
+cap: 3
+failures:
+    - id: github.com/Knatte18/loomyard/internal/reedcli.TestStrandNamingAndList/HubWideDirectoryAndDrift
+      kind: test
+      package: github.com/Knatte18/loomyard/internal/reedcli
+      tail: ""
+    - id: github.com/Knatte18/loomyard/internal/reedcli.TestNaming/TaskWorktreeStrandNameTitleAndEnv
+      kind: test
+      package: github.com/Knatte18/loomyard/internal/reedcli
+      tail: ""
+    - id: github.com/Knatte18/loomyard/internal/reedcli.TestNaming/EmptySlugGivesShortnameAndRole
+      kind: test
+      package: github.com/Knatte18/loomyard/internal/reedcli
+      tail: ""
+    - id: github.com/Knatte18/loomyard/internal/reedcli.TestNaming/RepairNamesRestoresAHandChangedTitle
+      kind: test
+      package: github.com/Knatte18/loomyard/internal/reedcli
+      tail: ""
+    - id: github.com/Knatte18/loomyard/internal/reedcli.TestOwnWindow_RealTmux/ShellOnlyStrandReadsDeadPastTheGraceAndResumeRelaunchesIt
+      kind: test
+      package: github.com/Knatte18/loomyard/internal/reedcli
+      tail: ""
+    - id: github.com/Knatte18/loomyard/internal/reedengine
+      kind: package
+      package: github.com/Knatte18/loomyard/internal/reedengine
+      tail: |-
+        === CONT  TestBindingsBuildStamp/OpLockRepinsStaleBindings/NoStamp
+        --- PASS: TestAddStrand_ReclaimsADeadHoldersName/ShellOnlyHolderInsideTheGraceKeepsTheName (0.00s)
+        === CONT  TestCapturePaneArgv/plain_read
+        --- PASS: TestBindingsBuildStamp/OpLockRepinsStaleBindings/ReadFails (0.00s)
+        === CONT  TestCapturePaneArgv/failed_plain_read
+        --- PASS: TestAddStrand_ReclaimsADeadHoldersName/LiveHolderKeepsTheNameForARoleAdd (0.00s)
+        === CONT  TestCapturePaneArgv/failed_styled_read
+        --- PASS: TestAddStrand_ReclaimsADeadHoldersName/PausedPairKeepsTheName (0.00s)
+        === CONT  TestCapturePaneArgv/styled_read
+        --- PASS: TestAddStrand_ReclaimsADeadHoldersName/HiddenHolderKeepsTheName (0.00s)
+        --- PASS: TestBindingsBuildStamp/OpLockRepinsStaleBindings/OwnBuildPinned (0.00s)
+        --- PASS: TestAddStrand_ReclaimsADeadHoldersName/HolderWithAChildKeepsTheName (0.00s)
+        --- PASS: TestBindingsBuildStamp/OpLockRepinsStaleBindings/NewerBuildPinned (0.00s)
+        --- PASS: TestBindingsBuildStamp/OpLockRepinsStaleBindings/NoStamp (0.00s)
+        --- PASS: TestBindingsBuildStamp/OpLockRepinsStaleBindings (0.00s)
+        --- PASS: TestBindingsBuildStamp (0.00s)
+        --- PASS: TestCapturePaneArgv/plain_read (0.00s)
+        --- PASS: TestAddStrand_ReclaimsADeadHoldersName/ExplicitNameReclaimsAHolderWhosePaneIsAbsent (0.00s)
+        --- PASS: TestCapturePaneArgv/failed_plain_read (0.00s)
+        --- PASS: TestCapturePaneArgv/failed_styled_read (0.00s)
+        --- PASS: TestCapturePaneArgv/styled_read (0.00s)
+        --- PASS: TestCapturePaneArgv (0.01s)
+        --- PASS: TestClientAttached/NoClients (0.01s)
+        --- PASS: TestClientAttached (0.00s)
+        --- PASS: TestWriteOps_RefuseARetiredAnchor/AddStrand_top (0.00s)
+        --- PASS: TestWriteOps_RefuseARetiredAnchor (0.00s)
+        === RUN   TestStrandOps_RealTmux/ReplaceKeepsTheTopSlot
+        --- PASS: TestStatusFormats_SessionLoopsTakeOneFormat (0.02s)
+        --- PASS: TestAddStrand_ReclaimsADeadHoldersName/ShellOnlyHolderPastTheGraceIsReclaimedAndItsPaneKilled (0.03s)
+        --- PASS: TestAddStrand_ReclaimsADeadHoldersName (0.00s)
+        --- PASS: TestRemoveSocketFileOnceGone/socket_still_answering_after_the_wait_stays_with_no_error (0.10s)
+        --- PASS: TestRemoveSocketFileOnceGone (0.00s)
+        --- PASS: TestStrandOps_RealTmux/ReplaceKeepsTheTopSlot (0.56s)
+        === RUN   TestStrandOps_RealTmux/EmptyCmdLeavesALivePane
+        --- PASS: TestStrandOps_RealTmux/EmptyCmdLeavesALivePane (0.10s)
+        === RUN   TestStrandOps_RealTmux/ResumeDropsAFinishedStrandAndRelaunchesAnUnfinishedOne
+        --- PASS: TestStrandOps_RealTmux/ResumeDropsAFinishedStrandAndRelaunchesAnUnfinishedOne (0.34s)
+        --- PASS: TestStrandOps_RealTmux (1.14s)
+        FAIL
+        FAIL	github.com/Knatte18/loomyard/internal/reedengine	57.209s
+log_path: /home/AD.NORCERESEARCH.NO/hanf/Code/Knatte18/loomyard-LYXHUB/batten-cancel-verb/.lyx/verify/verify-4.log
