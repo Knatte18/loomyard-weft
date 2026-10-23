@@ -1,17 +1,17 @@
 {
   "runGuid": "6f3f62b7ba6640bed5f2f8f6f97b867c",
-  "planFingerprint": "86f49a229cba3c5633e7f79b09a9ba4b6aed76d3fc90960cc78ccf942306538e",
+  "planFingerprint": "40800ef7dc55b0f8ef9520a90ce4e24d32ba2d10d3259d4308dc894bbd57a99f",
   "planFileHashes": {
     "00-overview.md": "96ea7fdd8f8d6382d0d75626814f18d9de43b47b7804ff6a64d1958c1b3b0073",
-    "01-plandag-additive-guess.md": "962c1b9cabc5c349268616d2c237b98cac722062a8f93e5bd7c82aaef68b2043",
-    "02-pattern-overview-projection.md": "7fe7b6123b9981ef433aaef9454dc9edb0a60caeddafcd203085c2edb3f79ebe",
-    "03-planparser-pattern-entry-lines.md": "454458190f9d02059cc53c0f43a65f0a12f33a410c6c77f730979f8d1dba22db",
-    "04-plan-gate-pattern-checks.md": "930519e3995f156a420df838ad90ec0c70a344854243ef9c43aea0b4c5da4a08",
-    "05-plan-gate-pattern-base-wiring.md": "2f4c7af54849e0f8908c653d2253aec170ea80edbbc37956d49a5617ae3d06b1",
-    "06-extends-label.md": "25924449245b02b4f54a519991ab8218b08b0511bdc17f01e3e1d26f895428b5",
-    "07-extends-group-readers.md": "47c5624d7e02ccd387d897d4a0e4a9abb35f811a441d50eb10e41e49a60f999d",
-    "08-card-pair-rule.md": "08757c70f0700a8ca3d8942bb0aee3d48ffce36b9e1c429f44d10856775d53c6",
-    "09-plandag-extends-mark.md": "b4023110e9f1ce5f3cb5c7fef22519eb5c3e4aa554e0d3ba390f9725ed518b90",
+    "01-plandag-additive-guess.md": "3156eb48f5d1c8c39c0e64ca4a0a8d85e081a38beba3aaf480b1d8777c729b14",
+    "02-pattern-overview-projection.md": "f828def714c5dbadfe43dbffda420ea307545f198f974e18ecd8a047df276a13",
+    "03-planparser-pattern-entry-lines.md": "0dc7bad9a160ad1239707f1093c3523f1567d860a9d25f64ae05e2c024891f40",
+    "04-plan-gate-pattern-checks.md": "b2b57eb0d69ff1da093af7a7453c12c74cb611cd0d7fcdf772f70f0fdb9b1dcf",
+    "05-plan-gate-pattern-base-wiring.md": "55fd685993ee444e30f05581ebdba8b8dde3f38e0f832df1e67c3f1adf011ec3",
+    "06-extends-label.md": "b377a35d366b731e005114e776a7127fd6a17a967f51c39e731f3d8750d647a5",
+    "07-extends-group-readers.md": "79ea45df6a75caea90d414156a76253f9e70345d89abfc6c8615df9f420672fa",
+    "08-card-pair-rule.md": "87c3f3ea9d542cf6ae05fab8badd7b7bf73d8f35fef7636460f6fcda4c73926c",
+    "09-plandag-extends-mark.md": "199235bb534aefd8c9d6ae8ea331fd770866faab778efca813898368d97a28e1",
     "10-plan-review-extends-guidance.md": "ab498a63d124cc88a8626b2e2c73fa96efe73ef8d96be9f2b5f6bb8b6fd2d895",
     "11-amendment-record.md": "888ceb2c4043cd4ec8d8e0e7252532d8989298108f46d30a05c7c63d479567ff",
     "12-settle-round-start.md": "ac59271017ea6386c8d5f58586c0aa29c240b3283b3c9a727b1ae1cc458c7405",
@@ -543,7 +543,7 @@
       }
     }
   ],
-  "currentBatch": 1,
+  "currentBatch": 0,
   "masterStrand": "5d7707be21a2f264e8cb67fdd257faf0",
   "masterSessionId": "42b1ea9d-4ad9-4b82-a2f2-60e0b764997b",
   "masterEngine": "claude",
@@ -559,18 +559,35 @@
         "06-extends-label"
       ],
       "cardHashes": {
-        "01-plandag-additive-guess": "962c1b9cabc5c349268616d2c237b98cac722062a8f93e5bd7c82aaef68b2043",
-        "02-pattern-overview-projection": "7fe7b6123b9981ef433aaef9454dc9edb0a60caeddafcd203085c2edb3f79ebe",
-        "03-planparser-pattern-entry-lines": "454458190f9d02059cc53c0f43a65f0a12f33a410c6c77f730979f8d1dba22db",
-        "04-plan-gate-pattern-checks": "930519e3995f156a420df838ad90ec0c70a344854243ef9c43aea0b4c5da4a08",
-        "05-plan-gate-pattern-base-wiring": "2f4c7af54849e0f8908c653d2253aec170ea80edbbc37956d49a5617ae3d06b1",
-        "06-extends-label": "25924449245b02b4f54a519991ab8218b08b0511bdc17f01e3e1d26f895428b5"
+        "01-plandag-additive-guess": "3156eb48f5d1c8c39c0e64ca4a0a8d85e081a38beba3aaf480b1d8777c729b14",
+        "02-pattern-overview-projection": "f828def714c5dbadfe43dbffda420ea307545f198f974e18ecd8a047df276a13",
+        "03-planparser-pattern-entry-lines": "0dc7bad9a160ad1239707f1093c3523f1567d860a9d25f64ae05e2c024891f40",
+        "04-plan-gate-pattern-checks": "b2b57eb0d69ff1da093af7a7453c12c74cb611cd0d7fcdf772f70f0fdb9b1dcf",
+        "05-plan-gate-pattern-base-wiring": "55fd685993ee444e30f05581ebdba8b8dde3f38e0f832df1e67c3f1adf011ec3",
+        "06-extends-label": "b377a35d366b731e005114e776a7127fd6a17a967f51c39e731f3d8750d647a5"
       },
       "startSha": "e634efb9060e4d49a9b7c66339d46e91cbeef10a",
       "kind": "recovery",
       "spawnedAt": "2026-10-23T07:22:26Z",
-      "terminal": false,
-      "status": "",
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "01-plandag-additive-guess",
+        "status": "done",
+        "head_sha": "95b37430900f53dd4d7a2032acf95392c943f28e",
+        "deviations": [
+          "internal/loomcli/parity_pattern_integration_test.go",
+          "internal/loomshed/fixture_test.go",
+          "internal/loomshed/patternplan.go",
+          "internal/pattern/projection.go",
+          "internal/planparser/extends.go",
+          "internal/planparser/parse.go",
+          "tools/plandag/render.go"
+        ]
+      },
+      "cardShas": [
+        "95b37430900f53dd4d7a2032acf95392c943f28e"
+      ],
       "forkTranscripts": [
         "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-plan-card-rules/42b1ea9d-4ad9-4b82-a2f2-60e0b764997b/subagents/agent-adcf21a00860fde6f.jsonl"
       ],

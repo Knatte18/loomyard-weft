@@ -1,11 +1,11 @@
 # Card 6 — Extends type label
 
 **Create:**
-- `plan:internal/planparser#CardTypeExtends` -> `const CardTypeExtends CardType = "Extends"`
-- `plan:internal/planparser#extendsLabel` -> `const extendsLabel = "**Extends:**"`
-- `plan:internal/planparser#checkExtendsOverlap` -> `func checkExtendsOverlap(plan *Plan) []ValidationError`
-- `plan:internal/planparser#checkExtendsResign` -> `func checkExtendsResign(plan *Plan) []ValidationError`
-- `plan:internal/planparser_test#TestValidate_ExtendsChecks` -> `func TestValidate_ExtendsChecks(t *testing.T)`
+- `internal/planparser#CardTypeExtends`
+- `internal/planparser#extendsLabel`
+- `internal/planparser#checkExtendsOverlap`
+- `internal/planparser#checkExtendsResign`
+- `internal/planparser_test#TestValidate_ExtendsChecks`
 
 **Edit:**
 - `internal/planparser#typeLabels`
