@@ -1,0 +1,8 @@
+verdict: approve
+reason: >-
+  Both Bolt commit routes now drop a returned path absent from disk and from HEAD's tree and still stage deletions of tracked paths,
+  which is what the board entry expects, with doc comments, doc.go and integration coverage for both routes.
+  The only change outside the entry is a test-only pin of revised stamps in boardcli's ListAndFindText, the verify gate's fix for a second-dependent flake.
+  Peer loom-tail-review shares only internal/fabricengine/doc.go at a different section; this run (row 21) lands first.
+question: ""
+superseded: []
