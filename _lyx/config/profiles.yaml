@@ -16,3 +16,5 @@ budget:
     darn: {review_max_bounces: 1}
 docs:
     darn: {writer: "sonnet[medium]", review_max_bounces: 0}
+darn-wide:
+    darn: {review_max_bounces: 2, review_hard_max_bounces: 3}
