@@ -1709,7 +1709,7 @@
       }
     }
   ],
-  "currentBatch": 42,
+  "currentBatch": 0,
   "masterStrand": "84b46756278c26fa4a3d938b33a70bce",
   "masterSessionId": "15e077c7-3daf-473b-935d-c0209f975d97",
   "masterEngine": "claude",
@@ -2406,8 +2406,41 @@
       "spawnedAt": "2026-10-23T18:33:59Z",
       "sessionId": "15e077c7-3daf-473b-935d-c0209f975d97",
       "engine": "claude",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "42-landing-drops-pr-producers",
+        "status": "done",
+        "head_sha": "15940ee9d0d0a7e58fc19e072094138dff5eb9c2",
+        "deviations": [
+          "internal/battencli/wire_seams_test.go",
+          "internal/landingshed/commitstatus_test.go",
+          "internal/landingshed/deps.go",
+          "internal/landingshed/finalize.go",
+          "internal/landingshed/finalize_test.go",
+          "internal/landingshed/finalize_verify_test.go",
+          "internal/landingshed/guardedrows_test.go",
+          "internal/landingshed/mergein.go",
+          "internal/landingshed/parentguard.go",
+          "internal/landingshed/publish_integration_test.go",
+          "internal/landingshed/verifygate.go",
+          "internal/landingshed/verifygate_test.go",
+          "internal/loomcli/runstart.go",
+          "internal/loomcli/runstart_test.go",
+          "internal/loomcli/wiring_publish_integration_test.go",
+          "internal/testkit/envkit/envkit.go",
+          "internal/testkit/envkit/envkit_test.go"
+        ]
+      },
+      "cardShas": [
+        "15940ee9d0d0a7e58fc19e072094138dff5eb9c2"
+      ],
+      "forkTranscripts": [
+        "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-loom-tail-review/15e077c7-3daf-473b-935d-c0209f975d97/subagents/agent-a44741042806507a7.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-loom-tail-review/15e077c7-3daf-473b-935d-c0209f975d97/subagents/agent-a44741042806507a7.jsonl"
+      ]
     },
     "7": {
       "slug": "fixer-session-table",
@@ -2475,7 +2508,8 @@
     "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-loom-tail-review/15e077c7-3daf-473b-935d-c0209f975d97/subagents/agent-a860c2b39c83e5604.jsonl",
     "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-loom-tail-review/15e077c7-3daf-473b-935d-c0209f975d97/subagents/agent-af97eeb652d7b0d39.jsonl",
     "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-loom-tail-review/15e077c7-3daf-473b-935d-c0209f975d97/subagents/agent-a1926bb3b6a229714.jsonl",
-    "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-loom-tail-review/15e077c7-3daf-473b-935d-c0209f975d97/subagents/agent-a643ba395779098c4.jsonl"
+    "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-loom-tail-review/15e077c7-3daf-473b-935d-c0209f975d97/subagents/agent-a643ba395779098c4.jsonl",
+    "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-loom-tail-review/15e077c7-3daf-473b-935d-c0209f975d97/subagents/agent-a44741042806507a7.jsonl"
   ],
   "auditDispositions": {
     "later-card-drift:plan-references-deleted-symbol/42-landing-drops-pr-producers[blocking]: card 42 references \"internal/shedrecipe#armPRAlign\", which the delta reports deleted with no corresponding rename": "warned",
