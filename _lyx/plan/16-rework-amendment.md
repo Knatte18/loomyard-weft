@@ -13,11 +13,11 @@
 - `internal/loomshed/doc.go`
 
 **Create:**
-- `plan:internal/loomcli#TestReworkCommitPathspec` -> `func TestReworkCommitPathspec(t *testing.T)`
+- `internal/loomcli#TestReworkCommitPathspec`
 
 **Uses:**
 - `internal/loomshed#RemoveAmendment`
-- `plan:internal/loomcli#amendmentPathspec`
+- `internal/loomcli#amendmentPathspec`
 - `internal/loomengine#LoomAmendmentRecord`
 
 **Intent:**

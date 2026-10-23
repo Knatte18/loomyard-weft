@@ -15,14 +15,14 @@
 - `docs/overview.md`
 
 **Create:**
-- `plan:internal/loomcli#decisionWayAmendsPlanRetry` -> `const decisionWayAmendsPlanRetry = ""`
-- `plan:internal/loomcli#decisionWayFabricCommit` -> `const decisionWayFabricCommit = ""`
-- `plan:internal/loomcli#decisionWayPlanUnparsed` -> `const decisionWayPlanUnparsed = ""`
-- `plan:internal/loomcli#errPlanUnparsed` -> `var errPlanUnparsed error`
-- `plan:internal/loomcli#amendmentPathspec` -> `func amendmentPathspec(location *lyxcwd.Location, tracked func(rel string) (bool, error)) []string`
-- `plan:internal/loomcli#planApprovedReader` -> `func planApprovedReader(anchorPath string) func() (bool, error)`
-- `plan:internal/loomcli#TestDecisionVerb_AmendsPlan` -> `func TestDecisionVerb_AmendsPlan(t *testing.T)`
-- `plan:internal/loomcli#TestAmendmentPathspec` -> `func TestAmendmentPathspec(t *testing.T)`
+- `internal/loomcli#decisionWayAmendsPlanRetry`
+- `internal/loomcli#decisionWayFabricCommit`
+- `internal/loomcli#decisionWayPlanUnparsed`
+- `internal/loomcli#errPlanUnparsed`
+- `internal/loomcli#amendmentPathspec`
+- `internal/loomcli#planApprovedReader`
+- `internal/loomcli#TestDecisionVerb_AmendsPlan`
+- `internal/loomcli#TestAmendmentPathspec`
 
 **Uses:**
 - `internal/loomshed#AppendAmendment`

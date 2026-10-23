@@ -6,11 +6,11 @@
 - `internal/loomcli#TestPlanCommitPathspec`
 
 **Create:**
-- `plan:internal/loomcli#removeSettledAmendment` -> `func removeSettledAmendment(amendmentPath, planRunDir string) error`
-- `plan:internal/loomcli#TestRemoveSettledAmendment` -> `func TestRemoveSettledAmendment(t *testing.T)`
+- `internal/loomcli#removeSettledAmendment`
+- `internal/loomcli#TestRemoveSettledAmendment`
 
 **Uses:**
-- `plan:internal/loomcli#amendmentPathspec`
+- `internal/loomcli#amendmentPathspec`
 - `internal/loomshed#AmendmentSettledBy`
 - `internal/loomshed#ReadAmendment`
 - `internal/loomshed#RemoveAmendment`
