@@ -1,8 +1,8 @@
 # Card 48 — drop-publish-gate-kind
 
 **Create:**
-- `plan:internal/gateslot#MigrateConfig` -> `func MigrateConfig(existing []byte) ([]byte, []string, error)`
-- `plan:internal/gateslot#TestMigrateConfig` -> `func TestMigrateConfig(t *testing.T)`
+- `internal/gateslot#MigrateConfig`
+- `internal/gateslot#TestMigrateConfig`
 
 **Edit:**
 - `internal/gateslot#goReadGates`
