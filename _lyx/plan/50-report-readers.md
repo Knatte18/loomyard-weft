@@ -1,8 +1,8 @@
 # Card 50 — report-readers
 
 **Create:**
-- `plan:internal/reportengine#retiredRowNames` -> `var retiredRowNames map[string]string`
-- `plan:internal/reportengine#TestReadSegments_CodeAndRetiredSubdirs` -> `func TestReadSegments_CodeAndRetiredSubdirs(t *testing.T)`
+- `internal/reportengine#retiredRowNames`
+- `internal/reportengine#TestReadSegments_CodeAndRetiredSubdirs`
 
 **Edit:**
 - `internal/reportengine#loomRowPhases`
