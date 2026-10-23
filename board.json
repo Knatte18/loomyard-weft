@@ -1209,6 +1209,25 @@
       "body": "## Seen (orch, 2026-10-23)\n\nWhen Webster's plan-level verify gate fails, Merriam spawns a fixer fork (`internal/websterengine/doc.go`, The verify-gate fixer fork).\nA fork always runs on Merriam's own model, `sonnet[medium]` by the `webster.yaml` template, and Merriam may spawn nothing but forks.\nSo every one of the `verify_gate_attempts` (3) fixes is a Sonnet-medium fork.\nAfter the last attempt Webster ends stuck; the Webster row has no `on_stuck` edge, so the run halts to the driver and the arbiter, which diagnose and resume or hand on, but fix nothing.\nThe one stronger model in Webster, `recovery: opus[high]`, is spawned only by `recover-batch` for a batch fork that reports stuck, never for a verify failure.\nIn `plan-card-rules` the operator asked Merriam to spawn an Opus-high agent if its fixer failed, and Merriam answered that it cannot.\n\n## Idea\n\nA verify failure that the fixer fork does not clear escalates in model before the run halts:\nfor example, the last attempt, or the attempt after a fork that made no commit, goes to a cold fixer at the recovery role (`opus[high]`), spawned as its own strand the way `recover-batch` spawns one, with the verify-gate report as its brief.\n\n## Operator view, not a decision (2026-10-23)\n\nSonnet medium is often too weak to find and fix such failures, and three attempts are more than needed: one Sonnet fixer attempt, then the Opus-high fixer.\n\n## Why not the tackler and the arbiter (orch, 2026-10-23)\n\nWith the Go driver (`driver_kind: go` in `shed.yaml`), a stuck Webster goes to the tackler (`haiku`) and then the arbiter.\nNeither fixes code: the tackler's verdict is `resume`, `hand-back` or `escalate` (`internal/sheddriver/doc.go`), so at best it re-runs Webster with the same Sonnet fixer.\nThe escalation in model has to happen inside Webster's gate, before the run halts.\nThe gate already reruns a failure once before any fixer, so a flaky test does not use up the one fixer attempt.\n\n## Related\n\nThe `loom-tail-review` task makes the Merge-In fixer one Opus agent; this note is about Webster's own gate, before Merge-In.\n",
       "created": "2026-10-23T08:25:34Z",
       "revised": "2026-10-23T08:27:30Z"
+    },
+    {
+      "id": 770,
+      "handle": "E25",
+      "slug": "ubuntu-2404-floor",
+      "title": "Ubuntu 24.04 as a stated and checked floor: a PATTERN entry and a mechanical check",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "reed",
+        "gate"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "A Neve-written reed change broke on tmux 3.4; nothing states or checks the Ubuntu 24.04 floor",
+      "body": "## Seen (orch, 2026-10-23)\n\n`e634efb9` separated the reed pane tail with `\"\\x1f\"`, written and tested on Neve (Ubuntu 26.04, a newer tmux).\nOn OSL-1046 (Ubuntu 24.04, tmux 3.4), tmux prints the separator as the literal text `\\037`, so the reed naming tests and a dead-strand test failed in every run cut before `a1200c20` switched to a tab.\nEarlier tasks already made LoomYard run on Ubuntu 24.04.\nNothing states Ubuntu 24.04 as a supported floor: PATTERN names no platform floor, and the repository has no CI.\n\n## Operator view, not a decision (2026-10-23)\n\nEverything must work on Ubuntu 24.04; checking that by hand all the time is a large job.\n\n## Idea (orch, not decided)\n\n- A PATTERN entry naming the floor: Ubuntu 24.04 with its tmux 3.4, its git and its Go toolchain, so a writer and a reviewer know what an external tool's behaviour may be assumed from.\n- A mechanical check, so no one checks by hand, either:\n  - a CI job on GitHub's `ubuntu-24.04` runner, tmux from apt, that runs the tiers up to the tmux tier on every push to `main`; or\n  - the gate's tmux tier runs against a tmux 3.4 binary on every machine, so a run on Neve meets the floor's tmux too.\n- OSL-1046 runs the tmux tier in every `final` and `landing` gate since 2026-10-23, so a run there already meets the floor; the gap is runs on Neve.\n",
+      "created": "2026-10-23T08:42:14Z",
+      "revised": "2026-10-23T08:42:14Z"
     }
   ],
   "prime_owner": "osl-1046"
