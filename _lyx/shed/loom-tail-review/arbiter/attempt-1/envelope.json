@@ -1,0 +1,14 @@
+{
+  "verdict": "resume",
+  "reason": "The cause is circling at round 3 of Discussion-Review, whose hard cap is 4 (discussion_hard_max_bounces 0 takes review_hard_max_bounces 4, with no hub or run override), so round 3 is below it.\nThe fix is converging: rounds 1 to 3 raised 19, 12 and 6 findings, and round 3 has no BLOCKING finding.\nThe two returned gating keys are not wrong, since the fixer confirmed their premises, but each came back narrower.\nllm-driver-relaunches-landing-halts went from \"the stencil must exclude landing halts\" to \"name a signal and two more re-step sites\".\nd13-deploy-bound-false-at-zero-review-budget went from \"restate the bound\" to \"the bound omits the Merge-In fixer\".\nThe round-3 fixer answered both in the decision record.\nThe hand_back field on the stop envelope and lyx shed status is set by a told Spec check, and the Re-launching bullet, Parking step 3 and the guide's Binary watch skip a marked stop (decision-record.md:221-225, :315).\nD4 now applies D10's size and kind caps to the merge-in fixer at a Code-Review budget of 0, and D13 names both fixers.\nThe new F1 lock key and the decision-class F2 and F4 were fixed too.\nOne more round, the hard-cap round, can confirm these fixes, so I recorded continue.",
+  "question": "",
+  "goto": "",
+  "verbs": [
+    "lyx loom circling continue loom-tail-review"
+  ],
+  "cause": "",
+  "attempt": 1,
+  "attempt_dir": "/home/AD.NORCERESEARCH.NO/hanf/Code/Knatte18/loomyard-LYXHUB/loom-tail-review/_lyx/shed/loom-tail-review/arbiter/attempt-1",
+  "verdict_path": "/home/AD.NORCERESEARCH.NO/hanf/Code/Knatte18/loomyard-LYXHUB/loom-tail-review/_lyx/shed/loom-tail-review/arbiter/attempt-1/verdict.yaml",
+  "relaunch": "lyx shed step loom-tail-review --until-stop --arbiter-attempt 1"
+}
