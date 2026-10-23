@@ -96,6 +96,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | E26 |  | **A status-bar button turns automatic terminal windows for runs on or off** | [`open-window-toggle`](design-open-window-toggle.md) | 1d<br>1d | batten, reed |
 | E27 | L | **Carry agent mail into the pane in full instead of a reminder and a read turn**<br>• A reminder plus lyx creel read costs the receiver an extra turn per agent message | [`creel-carry-agent-mail`](design-creel-carry-agent-mail.md) | 7h<br>7h | creel |
 | E28 |  | **[.NET] A small public NUnit repo as sandbox hub for end-to-end C# runs** | [`csharp-sandbox-hub`](design-csharp-sandbox-hub.md) | 1d<br>1d | dotnet |
+| E29 |  | **The watcher system should recognize halt due to session limit** | [`usage-limit-hold-quiet`](design-usage-limit-hold-quiet.md) | 0m<br>0m | shuttle, creel, orch |
 | E30 |  | **Discussion scope check moves from the alignment agent into the perch lenses, with an escalating finding class** | [`discussion-alignment-into-lenses`](design-discussion-alignment-into-lenses.md) | 1d<br>1d | loom, burler, shed |
 | E31 |  | **A row before Discussion aligns the task text against the board, peers and landed work, and adjusts it** | [`entry-align-before-discussion`](design-entry-align-before-discussion.md) | 1d<br>1d | loom, batten, board |
 | E32 |  | **Move rules about lyx behaviour out of this repo's CLAUDE.md into lyx code, doc.go and stencils** | [`claude-md-lyx-rules-out`](design-claude-md-lyx-rules-out.md) | 1d<br>1d | stencil, board, loom |
