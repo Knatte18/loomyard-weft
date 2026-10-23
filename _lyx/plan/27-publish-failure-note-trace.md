@@ -9,13 +9,13 @@
 
 **Create:**
 - `plan:internal/loomshed#tracedLocation` -> `var tracedLocation *regexp.Regexp`
-- `plan:internal/loomshed#tracedGlyph` -> `var tracedGlyph *regexp.Regexp`
 
 **Intent:**
 D9: the note the Webster-Review reviewer and fixer read after a Merge-In or Publish failure names the plan cards the trace matched.
 
-`checkedPublishFailure` shape-checks the new fields as it does the others, dropping and logging each element that fails: a traced card needs a positive number, every glyph matching `tracedGlyph` (glyph characters only, no whitespace or backtick) and every location matching `tracedLocation` (a relative path of safe characters, a colon and a line number); a commit range keeps both ends only when each is a full hex object name (`fullObjectName`), else it is emptied; an untraced entry must match `tracedLocation`.
+`checkedPublishFailure` shape-checks the new fields as it does the others, dropping and logging each element that fails: a traced card needs a positive number, every glyph non-empty and holding no whitespace, control character or backtick (`strings.ContainsFunc` over `unicode.IsSpace` and `unicode.IsControl`, and `` strings.ContainsRune(g, '`') ``), and every location matching `tracedLocation` (a relative path of safe characters, a colon and a line number); a commit range keeps both ends only when each is a full hex object name (`fullObjectName`), else it is emptied; an untraced entry must match `tracedLocation`.
 So no free text from the record reaches the prompt.
+The glyph check is a prompt-safety character check, not a glyph grammar, so no local regex reads a glyph string (PATTERN-glyph-conversion-chokepoint); `tracedLocation` reads a `path:line`, never a glyph.
 
 `PublishFailureNote` takes the plan directory and, after the failing tests, renders:
 each traced card with its number, and its slug and first `Intent` line read from the live plan at render time (`planparser.ParsePlan(planDir)`), never from the record, its matched glyphs and locations, and its batch's commit range as the range to diff when starting the fix (`git diff <from> <to>`), or that Webster holds no range for it;

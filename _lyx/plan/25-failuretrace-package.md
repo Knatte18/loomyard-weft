@@ -13,6 +13,7 @@
 
 **Edit:**
 - `docs/overview.md`
+- `cmd/lyx#treeSitterAllowedLinks`
 
 **Uses:**
 - `internal/websterengine#ParseVerifyFailures`
@@ -32,6 +33,7 @@ D9: a new package, `internal/failuretrace`, turns a failed Merge-In or Publish v
 It lives apart from `landingshed` and `loomshed`, which link no tree-sitter grammar, because it reaches quarry through `internal/planglyph`; it is told absolute paths and derives none (PATTERN-told-geometry), reads plan refs only through `internal/planparser`, and carries the package's `testmain_test.go` as its siblings do.
 `doc.go` holds the design below, the location cap and the open risk that the trace often names no card.
 `docs/overview.md`'s tree of internal packages gains `failuretrace` with a one-line purpose.
+`treeSitterAllowedLinks` gains `{Key: "internal/failuretrace", Why: "traces a failed verify through planglyph's EncloseAt"}`, since the guard in `cmd/lyx/treesitterlink_integration_test.go` fails any test binary outside it that links tree-sitter.
 
 `Locations(failures, p)` extracts `path:line` locations, Go test and build output only, from each failure identity's `Tail`: tokens `<path>.go:<line>` with an optional `:<col>`, which is dropped.
 `Placement` holds `WorktreeRoot`, `ModulePath` (from the worktree's `go.mod`, empty when unknown) and `ExistsAtHead func(rel string) bool`.
@@ -56,4 +58,4 @@ Tests, in package `failuretrace`, with fakes for the three seams:
 `TestLocations` rows: a test failure's bare `x_test.go:12` placed through its package; a build error `internal/x/y.go:3:5` placed as written; an absolute worktree path stripped; a `-trimpath` panic frame `<module>/internal/x/y.go:9` placed repo-relative; a `./y.go:4` under an opaque identity left untraced; a standard-library frame dropped; 25 distinct locations capped at 20.
 `TestTrace` rows: a build error inside a member a card targets names that card, its batch and range; an unused-import `not_found` in a file a card targets names it, and so does one in a file where a card targets only a member glyph that resolves there; a member target that resolves only at the batch start through `Delta` matches; a failing test a card creates under a `plan:` handle names that card; a batch with no `CardSHAs` element gives an empty range and, when it is the only matched batch, an empty later range; a card Webster holds no record of gets batch 0 and an empty range; a card numbered below 10 is found under its padded id, and one in a batch record without `Cards` is found through the batch's own number and slug; a member target that resolves neither at `Head` nor in `Delta` matches only by the file and unit rule; a done batch followed by later commits gives the later range from its head to `Head`; a nil plan and a nil state are each a returned error; a `.md` location, a location no card's targets hold and an opaque bare name land in `untraced` as `path:line`; an `Enclose` error is returned.
 
-**ImpactSummary:** a new package with no caller until card 26; `docs/overview.md` gains one line in its package tree.
+**ImpactSummary:** a new package with no caller until card 26; `docs/overview.md` gains one line in its package tree, and the tree-sitter link guard's list one entry.

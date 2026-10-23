@@ -20,8 +20,13 @@
 - `internal/planparser#validate`
 - `internal/planparser_test#TestParsePlan_CardFields`
 - `internal/planparser_test#TestCheckEditTestFile`
+- `internal/planparser#checkCardTypeMissing`
+- `internal/planparser#CardTypeCustom`
+- `internal/planparser#checkCustomNotAlone`
+- `internal/planparser_test#goodPlanDir`
 - `internal/planparser/doc.go`
 - `contracts/specs/loom-plan-spec.md`
+- `tools/sandbox/SANDBOX-WEBSTER-SUITE.md`
 
 **Intent:**
 D3: `**Extends:**` joins the type labels; the card only adds to each ref it names and changes nothing already there.
@@ -42,10 +47,13 @@ Reaching inputs: a card listing `internal/x#F` under both `**Extends:**` and `**
 
 `doc.go` in `internal/planparser` and `loom-plan-spec.md` describe the label: the type-label list, a `Extends` row in the Card types table (existing refs, the card only adds, `ImpactSummary` required), the two new checks in the validation-checks table, and the readers that treat it as Edit; the dependency rule follows on card 8.
 The spec's sentences that count or list the labels say eight labels, the worked example's "all seven type labels are exercised" included, which becomes "seven of the eight".
+The spec's `Custom` rule, "never combine with any of the other six", becomes "the other seven".
+The other lists and counts of the labels name Extends too: `checkCardTypeMissing`'s user-visible `card-type-missing` detail, `CardTypeCustom`'s comment ("the other six types" becomes seven), `checkCustomNotAlone`'s comment ("all seven labels" becomes eight), `goodPlanDir`'s comment ("all seven card types" becomes "seven of the eight"), `SANDBOX-WEBSTER-SUITE.md`'s seven-name set, and the `typeLabels` and `cardLabels` comments.
+`parse.go`'s package comment and the label const block's comment lie outside any member span, and `parse.go`'s file self glyph would trip `redundant-file-target` beside the `parse.go` members this card lists, so their label lists and counts change as part of the `parse.go` edit.
 
 Tests:
 `TestParsePlan_CardFields` gains rows: an Extends group parsing with `CardTypeExtends`, its refs in `Targets`, and an arrow bullet in the group's `Resigns` but not in `card.Resigns`.
 `TestCheckEditTestFile` gains a row: a `_test.go` file self glyph under Extends is refused.
 `TestValidate_ExtendsChecks`, table-driven, asserts per row the count of `extends-overlap`, `extends-resign`, `card-field-overlap`, `card-missing-field` and `path-missing`: a clean Extends card; the ref under Extends and Edit; the ref under Extends and Uses; an arrow under Extends; an Extends card without `ImpactSummary`; and an Extends path missing on disk.
 
-**ImpactSummary:** confined to `internal/planparser`: `parseEditField`'s only caller is `parseTypeLabelCase`, re-signed here; the three Edit readers widen to Extends, and no Extends label exists in any plan yet, so no current plan's findings change.
+**ImpactSummary:** confined to `internal/planparser` and the label lists in its spec and the sandbox suite doc: `parseEditField`'s only caller is `parseTypeLabelCase`, re-signed here; the three Edit readers widen to Extends, and no Extends label exists in any plan yet, so no current plan's findings change.
