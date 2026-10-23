@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-23 17:19 UTC; every age below is as of then.
+Rendered 2026-10-23 17:20 UTC; every age below is as of then.
 Prime owner: `osl-1046`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -16,7 +16,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T3 | **adopt's owner write fails on a stale local render manifest after another machine removed design files**<br>• `profile: light` | [`adopt-owner-write-stale-manifest`](design-adopt-owner-write-stale-manifest.md) | darn | Darn-Burler-Fix | osl-1046 | 43m<br>26m | board |
+| T3 | **adopt's owner write fails on a stale local render manifest after another machine removed design files**<br>• `profile: light` | [`adopt-owner-write-stale-manifest`](design-adopt-owner-write-stale-manifest.md) | darn | Darn-Burler-Fix | osl-1046 | 44m<br>26m | board |
 | T5 | **Run tail: Merge-In with alignment, Code-Perch, a PR stub and one locked Land block, for loom and darn**<br>• Loom and darn share one tail after the code: Merge-In with alignment and a thorough fixer, Code-Perch, PR block behind a flag, Finalize re-merging under the parent lock | [`loom-tail-review`](design-loom-tail-review.md) | loom | Webster | osl-1046 | 23h<br>9h | loom, burler, shed, fabric, batten |
 
 ### Ready
@@ -66,10 +66,10 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | B3 |  | **TestSmokeStart_NeverAttachesAndAddsNoOperatorStrand flakes on records index.lock and halts Merge-In** | [`smokestart-index-lock-flake`](design-smokestart-index-lock-flake.md) | 44m<br>44m | loom, fabric |
 | B4 |  | **Burler fix loop cannot route a decision-class finding to the parent** | [`burler-decision-finding-route`](design-burler-decision-finding-route.md) | 44m<br>44m | burler, loom |
 | B5 |  | **webster record-batch fails create-not-done for Create targets declared in an external _test package** | [`record-batch-external-test-pkg`](design-record-batch-external-test-pkg.md) | 44m<br>44m | webster, quarry |
-| B6 |  | **Decision notice from lyx loom decision add is refused by Webster's Merriam** | [`merriam-refuses-decision-notice`](design-merriam-refuses-decision-notice.md) | 43m<br>43m | webster, loom, stencil, creel |
-| B7 |  | **Git network calls get a stall bound and one retry**<br>• A git call to GitHub hung for minutes on a dead connection; bound every git network call and retry it once | [`git-remote-stall-timeout`](design-git-remote-stall-timeout.md) | 21m<br>21m | fabric, batten |
-| B8 |  | **Fork git-mutation guard fails a run on git commands confined to a scratch repo** | [`fork-git-guard-scratch-repo`](design-fork-git-guard-scratch-repo.md) | 43m<br>43m | shed, burler |
-| B9 |  | **Batten idle notice fires while a writer works in a fork**<br>• The idle check reads no fork transcript, so a writer working through a fork reads as idle | [`idle-notice-misses-fork-activity`](design-idle-notice-misses-fork-activity.md) | 7m<br>7m | batten |
+| B6 |  | **Decision notice from lyx loom decision add is refused by Webster's Merriam** | [`merriam-refuses-decision-notice`](design-merriam-refuses-decision-notice.md) | 44m<br>44m | webster, loom, stencil, creel |
+| B7 |  | **Git network calls get a stall bound and one retry**<br>• A git call to GitHub hung for minutes on a dead connection; bound every git network call and retry it once | [`git-remote-stall-timeout`](design-git-remote-stall-timeout.md) | 22m<br>22m | fabric, batten |
+| B8 |  | **Fork git-mutation guard fails a run on git commands confined to a scratch repo** | [`fork-git-guard-scratch-repo`](design-fork-git-guard-scratch-repo.md) | 44m<br>44m | shed, burler |
+| B9 |  | **Batten idle notice fires while a writer works in a fork**<br>• The idle check reads no fork transcript, so a writer working through a fork reads as idle | [`idle-notice-misses-fork-activity`](design-idle-notice-misses-fork-activity.md) | 8m<br>7m | batten |
 
 ### Enhancements
 
@@ -98,7 +98,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | E22 |  | **lyx batten run starts in its own window by default**<br>• Every batten run is started with --window, so the window should be the default and foreground the opt-in. | [`batten-window-default`](design-batten-window-default.md) | 4d<br>4d | batten, reed, orch |
 | E23 |  | **The seeded reed attach task in tasks.json: drop it, or bind it to a shortcut**<br>• tasks.json holds one on-demand reed attach task with no shortcut | [`ide-attach-task`](design-ide-attach-task.md) | 5h<br>5h | ide |
 | E24 |  | **Every lens fork report is kept verbatim in the run records**<br>• Save each lens fork report in a support file beside lens-review.md, so audits can read what each lens found | [`lens-fork-reports-kept`](design-lens-fork-reports-kept.md) | 1d<br>1d | burler, loom |
-| E25 |  | **Ubuntu 24.04 as a stated and checked floor: a PATTERN entry and a mechanical check**<br>• A Neve-written reed change broke on tmux 3.4; nothing states or checks the Ubuntu 24.04 floor | [`ubuntu-2404-floor`](design-ubuntu-2404-floor.md) | 8h<br>43m | reed, gate |
+| E25 |  | **Ubuntu 24.04 as a stated and checked floor: a PATTERN entry and a mechanical check**<br>• A Neve-written reed change broke on tmux 3.4; nothing states or checks the Ubuntu 24.04 floor | [`ubuntu-2404-floor`](design-ubuntu-2404-floor.md) | 8h<br>44m | reed, gate |
 | E26 |  | **A status-bar button turns automatic terminal windows for runs on or off** | [`open-window-toggle`](design-open-window-toggle.md) | 1d<br>1d | batten, reed |
 | E27 | L | **Carry agent mail into the pane in full instead of a reminder and a read turn**<br>• A reminder plus lyx creel read costs the receiver an extra turn per agent message | [`creel-carry-agent-mail`](design-creel-carry-agent-mail.md) | 8h<br>8h | creel |
 | E28 |  | **[.NET] A small public NUnit repo as sandbox hub for end-to-end C# runs** | [`csharp-sandbox-hub`](design-csharp-sandbox-hub.md) | 1d<br>1d | dotnet |
@@ -106,7 +106,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | E30 |  | **Discussion scope check moves from the alignment agent into the perch lenses, with an escalating finding class** | [`discussion-alignment-into-lenses`](design-discussion-alignment-into-lenses.md) | 1d<br>1d | loom, burler, shed |
 | E31 |  | **A row before Discussion aligns the task text against the board, peers and landed work, and adjusts it** | [`entry-align-before-discussion`](design-entry-align-before-discussion.md) | 1d<br>1d | loom, batten, board |
 | E32 |  | **Move rules about lyx behaviour out of this repo's CLAUDE.md into lyx code, doc.go and stencils** | [`claude-md-lyx-rules-out`](design-claude-md-lyx-rules-out.md) | 1d<br>1d | stencil, board, loom |
-| E33 |  | **Run profiles as one ladder: speed, light, solid, wide**<br>• Replace budget, light, docs and darn-wide with one profile ladder shared by darn and loom | [`run-profiles-ladder`](design-run-profiles-ladder.md) | 1d<br>7m | config, loom, burler |
+| E33 |  | **Run profiles as one ladder: speed, light, solid, wide**<br>• Replace budget, light, docs and darn-wide with one profile ladder shared by darn and loom | [`run-profiles-ladder`](design-run-profiles-ladder.md) | 1d<br>8m | config, loom, burler |
 
 ### Features
 
@@ -132,11 +132,3 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | F18 |  | **[.NET 004] Asynchronous test tiers in shed: the numerical baseline captured before implementation, compared at the final gate**<br>• Support a hub regression tier that writes profiles on the parent before implementation and compares after, switchable per task for expected drift. | [`regression-baseline-verify`](design-regression-baseline-verify.md) | 6d<br>2d | shed, webster, batten, config, dotnet |
 | F19 | H | **[WS 004] Board projects and pairs created from a parent pair**<br>• A task names its project; a project groups tasks in order and may have its own worktree; fabric and batten create a project task pair from that branch, batten verbs run from any worktree | [`pair-from-parent`](design-pair-from-parent.md) | 5d<br>5d | fabric, batten, board, workspaces |
 | F20 |  | **Large tasks: Discussion, a pre-planner, and the pieces as darn runs inside the task's beam**<br>• Discussion decides scope, a pre-planner splits it into contracted pieces, each piece runs as darn from the task's beam, a whole-task perch reviews, then align and land | [`loom-beam-darns`](design-loom-beam-darns.md) | 1d<br>4h | loom, shed, batten, workspaces, burler |
-
-## Done
-
-Finished, awaiting `lyx board prune --apply`.
-
-| # | Entry | Slug | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- |
-| T4 | **Orch watcher's handoff timeout counts from the post, so a request queued behind a long turn times out**<br>• `profile: light` | [`orch-handoff-timeout-delivery`](design-orch-handoff-timeout-delivery.md) | 43m<br>26m | orch, creel |
