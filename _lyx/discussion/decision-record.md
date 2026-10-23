@@ -316,6 +316,12 @@ Decision: Shorten the PATTERN-pause-holds-prompts overview line, same meaning.
 
 Rationale: PATTERN.md is past its headroom line, so the plan may not grow it; this set nets -13 bytes, and each cut clause moves to the entry's background file or the package docs the plan already edits.
 
+### Added after Discussion (parent, 2026-10-23): Shorten PATTERN-model-choice-mapping for the headroom
+
+Decision: Shorten the PATTERN-model-choice-mapping overview line, same meaning.
+
+Rationale: PATTERN.md is past its headroom line, so the plan may not grow it; this set nets -13 bytes, and each cut clause moves to the entry's background file or the package docs the plan already edits.
+
 ## Constraints
 
 - `PATTERN-told-geometry`: `internal/landingshed` keeps taking told paths, the fixer's included.
@@ -391,6 +397,7 @@ Every pick in D2 to D14 that the board left open is an auto-pick, recorded with 
 - `PATTERN-recipe-owns-failures` — adds: A merge or test failure at Merge-In or Finalize: its fixer, a Finalize reroute or a halt to the orch. — added after Discussion (parent, 2026-10-23)
 - `PATTERN-owner-machine` — changes: Starting, resuming or landing a run or acting on wake: only where no other machine owns its entry. — [background](pattern/PATTERN-owner-machine.md) — added after Discussion (parent, 2026-10-23)
 - `PATTERN-pause-holds-prompts` — changes: Typing into a covered session: shuttle refuses by slug; caller holds the line or claims the session. — [background](pattern/PATTERN-pause-holds-prompts.md) — added after Discussion (parent, 2026-10-23)
+- `PATTERN-model-choice-mapping` — changes: Mapping a model-spec onto a spawn: only via `shuttleengine.NewModelChoice`. (test) — [background](pattern/PATTERN-model-choice-mapping.md) — added after Discussion (parent, 2026-10-23)
 
 ## Notes for the plan writer
 
