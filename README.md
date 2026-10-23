@@ -17,7 +17,7 @@ Held by a run; its scope is locked until the run ends.
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T3 | **adopt's owner write fails on a stale local render manifest after another machine removed design files**<br>• `profile: light` | [`adopt-owner-write-stale-manifest`](design-adopt-owner-write-stale-manifest.md) | darn | Darn-Burler-Fix | osl-1046 | 39m<br>21m | board |
-| T4 | **Orch watcher's handoff timeout counts from the post, so a request queued behind a long turn times out**<br>• `profile: light` | [`orch-handoff-timeout-delivery`](design-orch-handoff-timeout-delivery.md) | darn | Describe | osl-1046 | 39m<br>21m | orch, creel |
+| T4 | **Orch watcher's handoff timeout counts from the post, so a request queued behind a long turn times out**<br>• `profile: light` | [`orch-handoff-timeout-delivery`](design-orch-handoff-timeout-delivery.md) | darn | Merge-In | osl-1046 | 39m<br>21m | orch, creel |
 | T5 | **Run tail: Merge-In with alignment, Code-Perch, a PR stub and one locked Land block, for loom and darn**<br>• Loom and darn share one tail after the code: Merge-In with alignment and a thorough fixer, Code-Perch, PR block behind a flag, Finalize re-merging under the parent lock | [`loom-tail-review`](design-loom-tail-review.md) | loom | Webster | osl-1046 | 23h<br>9h | loom, burler, shed, fabric, batten |
 
 ### Ready
@@ -70,7 +70,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | B6 |  | **Decision notice from lyx loom decision add is refused by Webster's Merriam** | [`merriam-refuses-decision-notice`](design-merriam-refuses-decision-notice.md) | 39m<br>39m | webster, loom, stencil, creel |
 | B7 |  | **Git network calls get a stall bound and one retry**<br>• A git call to GitHub hung for minutes on a dead connection; bound every git network call and retry it once | [`git-remote-stall-timeout`](design-git-remote-stall-timeout.md) | 17m<br>17m | fabric, batten |
 | B8 |  | **Fork git-mutation guard fails a run on git commands confined to a scratch repo** | [`fork-git-guard-scratch-repo`](design-fork-git-guard-scratch-repo.md) | 39m<br>39m | shed, burler |
-| B9 |  | **Batten idle notice fires while a writer works in a fork**<br>• The idle check reads no fork transcript, so a writer working through a fork reads as idle | [`idle-notice-misses-fork-activity`](design-idle-notice-misses-fork-activity.md) | 2m<br>2m | batten |
+| B9 |  | **Batten idle notice fires while a writer works in a fork**<br>• The idle check reads no fork transcript, so a writer working through a fork reads as idle | [`idle-notice-misses-fork-activity`](design-idle-notice-misses-fork-activity.md) | 3m<br>2m | batten |
 
 ### Enhancements
 
@@ -107,7 +107,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | E30 |  | **Discussion scope check moves from the alignment agent into the perch lenses, with an escalating finding class** | [`discussion-alignment-into-lenses`](design-discussion-alignment-into-lenses.md) | 1d<br>1d | loom, burler, shed |
 | E31 |  | **A row before Discussion aligns the task text against the board, peers and landed work, and adjusts it** | [`entry-align-before-discussion`](design-entry-align-before-discussion.md) | 1d<br>1d | loom, batten, board |
 | E32 |  | **Move rules about lyx behaviour out of this repo's CLAUDE.md into lyx code, doc.go and stencils** | [`claude-md-lyx-rules-out`](design-claude-md-lyx-rules-out.md) | 1d<br>1d | stencil, board, loom |
-| E33 |  | **Run profiles as one ladder: speed, light, solid, wide**<br>• Replace budget, light, docs and darn-wide with one profile ladder shared by darn and loom | [`run-profiles-ladder`](design-run-profiles-ladder.md) | 1d<br>2m | config, loom, burler |
+| E33 |  | **Run profiles as one ladder: speed, light, solid, wide**<br>• Replace budget, light, docs and darn-wide with one profile ladder shared by darn and loom | [`run-profiles-ladder`](design-run-profiles-ladder.md) | 1d<br>3m | config, loom, burler |
 
 ### Features
 
