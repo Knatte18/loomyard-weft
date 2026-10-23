@@ -2,7 +2,7 @@
 
 `gate-runs-once` · Task · enhancement, gate, shed, loom, webster, fabric, batten
 
-Depends on: [`loom-tail-review`](design-loom-tail-review.md)
+Depends on: [`loom-tail-review`](design-loom-tail-review.md), [`verify-fix-escalation`](design-verify-fix-escalation.md)
 
 ## Order (operator, 2026-10-23)
 
