@@ -543,7 +543,7 @@
       }
     }
   ],
-  "currentBatch": 0,
+  "currentBatch": 13,
   "masterStrand": "5d7707be21a2f264e8cb67fdd257faf0",
   "masterSessionId": "42b1ea9d-4ad9-4b82-a2f2-60e0b764997b",
   "masterEngine": "claude",
@@ -603,6 +603,30 @@
         "551723de-1512-4174-8086-223b5ef1c28b": "claude"
       },
       "recoveryStartSha": "d825571bf7d145aa0944a5c499a6f5e0370a3781"
+    },
+    "13": {
+      "slug": "decision-amends-plan",
+      "cards": [
+        "13-decision-amends-plan",
+        "14-settled-guard-amendment",
+        "15-plan-commit-removes-amendment",
+        "16-rework-amendment",
+        "17-plan-review-answer-key"
+      ],
+      "cardHashes": {
+        "13-decision-amends-plan": "16ee6a2b9aed1fd2b3f110672c4cc35f236c65d6e362a05e67e8bb04273cb27e",
+        "14-settled-guard-amendment": "ddf824ae02a6d06c81985e798ce9ea83826f4ccd3c3c055667e5efbafacef6a9",
+        "15-plan-commit-removes-amendment": "474c1f12da5d4a4ef9ba14683ea27433d1e8013ca8103bfd92ccd5c59c9ba84d",
+        "16-rework-amendment": "7203cd9287906723e418cce7764f75b9ee6ac1218eb37c54eaae6aaed716715f",
+        "17-plan-review-answer-key": "c3474497905ddfafe2a23487451e58174b89adef1abad17cc98468644ad80b1f"
+      },
+      "startSha": "b5e2f7da6f6137c7cc668fa539ce1e50a77d9b69",
+      "kind": "fork",
+      "spawnedAt": "2026-10-23T07:34:26Z",
+      "sessionId": "42b1ea9d-4ad9-4b82-a2f2-60e0b764997b",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
     },
     "7": {
       "slug": "extends-group-readers",
