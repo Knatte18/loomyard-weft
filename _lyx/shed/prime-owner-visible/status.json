@@ -1,11 +1,11 @@
 {
-  "current_producer": "Darn-Bouncer",
+  "current_producer": "Describe",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Darn-Bouncer",
-    "last": "Darn-Write → done",
+    "now": "Describe",
+    "last": "Darn-Bouncer → done",
     "wait": ""
   },
   "history": [
@@ -179,6 +179,12 @@
           "end": "2026-10-23T07:20:18.667017712Z"
         }
       ]
+    },
+    {
+      "producer": "Darn-Bouncer",
+      "outcome": "done",
+      "output": "/home/AD.NORCERESEARCH.NO/hanf/Code/Knatte18/loomyard-LYXHUB/prime-owner-visible/_lyx/reviews/darn/round-1-bouncer-ledger.md",
+      "at": "2026-10-23T07:20:21Z"
     }
   ],
   "product": {
