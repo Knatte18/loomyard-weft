@@ -70,6 +70,14 @@
       "at": "2026-10-23T07:22:06Z",
       "budget_exempt": true,
       "routed_to": "Run-Shed"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "child blocked → running at Merge-In",
+      "at": "2026-10-23T07:28:02Z",
+      "budget_exempt": true,
+      "routed_to": "Run-Shed"
     }
   ]
 }
