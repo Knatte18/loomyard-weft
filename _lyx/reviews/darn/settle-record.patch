@@ -1,0 +1,603 @@
+diff --git a/internal/boardcli/cli.go b/internal/boardcli/cli.go
+index 6531aaba..6948dc6c 100644
+--- a/internal/boardcli/cli.go
++++ b/internal/boardcli/cli.go
+@@ -258,7 +258,7 @@ Example:
+ 		Annotations: map[string]string{clihelp.AudienceAnnotation: clihelp.AudienceOperator},
+ 		Long: `Find tasks whose slug, title, brief or body contains the text, done tasks included.
+ The arguments are joined with single spaces into one search text. At least one argument is required.
+-Prints the same JSON as "lyx board list"; with --text it prints the compact one-line-per-task
++Prints the same tasks array as "lyx board list", in an envelope without prime_owner; with --text it prints the compact one-line-per-task
+ listing instead (errors stay JSON); its columns are handle, kind, priority, age, time since last revision, slug, title, labels and, when set, [status].
+ --label <name> keeps only entries carrying that label; repeat it to require several (AND).
+ A label that is in neither the types nor the labels list of board.yaml and that no entry carries is refused.
+@@ -738,8 +738,10 @@ Examples:
+ 		Use:         "list",
+ 		Short:       "list all tasks with computed fields",
+ 		Annotations: map[string]string{clihelp.AudienceAnnotation: clihelp.AudienceOperator},
+-		Long: `List all tasks in README order with their computed fields (layer, has_proposal).
+-With --text, print the compact one-line-per-task listing (handle, kind, priority, age, time since last revision, slug, title, labels, [status])
++		Long: `List all tasks in README order with their computed fields (layer, has_proposal),
++beside "prime_owner", the machine that owns the hub's prime ("" when none is recorded).
++With --text, print a "prime owner: <machine>" line ("none" when none is recorded),
++then the compact one-line-per-task listing (handle, kind, priority, age, time since last revision, slug, title, labels, [status])
+ instead of JSON; errors stay JSON.
+ --label <name> keeps only entries carrying that label; repeat it to require several (AND).
+ A label that is in neither the types nor the labels list of board.yaml and that no entry carries is refused.
+@@ -759,7 +761,17 @@ Examples:
+ 			if err := sortByDate(tasks, listSort); err != nil {
+ 				return outputError(out, err.Error())
+ 			}
+-			return writeListing(out, tasks, listText)
++			primeOwner, err := board().PrimeOwner()
++			if err != nil {
++				return outputError(out, err.Error())
++			}
++			if !listText {
++				return output.Ok(out, map[string]any{"prime_owner": primeOwner, "tasks": tasks})
++			}
++			if _, err := io.WriteString(out, primeOwnerLine(primeOwner)+RenderCompact(tasks, time.Now())); err != nil {
++				return outputError(out, err.Error())
++			}
++			return 0
+ 		}),
+ 	}
+ 	listCmd.Flags().BoolVar(&listText, "text", false, "print the compact one-line-per-task listing instead of JSON")
+diff --git a/internal/boardcli/doc.go b/internal/boardcli/doc.go
+index 203df231..e1b1b3e5 100644
+--- a/internal/boardcli/doc.go
++++ b/internal/boardcli/doc.go
+@@ -30,6 +30,7 @@
+ // It carries a priority column after the kind, `high`, `low` or blank, only when some listed entry is not normal.
+ // Two age columns follow, the entry's age and the time since its last revision, computed as of the listing from the stored dates and blank for an unknown one;
+ // each is left out when no listed entry has that date.
++// `list` names the machine that owns the hub's prime beside its entries: as the envelope's `prime_owner` key, empty when none is recorded, and with `--text` as a `prime owner: <machine>` line, `none` when none is recorded, before the entry lines.
+ // `list` takes `--sort age` to list the oldest entries first and `--sort revised` the longest unrevised first, with an entry lacking the date last and ties in README order.
+ //
+ // `upsert` takes `--body-file <path>` to read `body` from a file, or from stdin when the path is `-`.
+diff --git a/internal/boardcli/text.go b/internal/boardcli/text.go
+index 76b34768..c1694232 100644
+--- a/internal/boardcli/text.go
++++ b/internal/boardcli/text.go
+@@ -1,4 +1,4 @@
+-// text.go renders the compact one-line-per-entry listing that "list --text" and "find --text" print instead of JSON.
++// text.go renders the compact one-line-per-entry listing that "list --text" and "find --text" print instead of JSON, and the prime-owner line that opens list's.
+ 
+ package boardcli
+ 
+@@ -59,6 +59,14 @@ func RenderCompact(tasks []boardengine.BriefTask, now time.Time) string {
+ 	return sb.String()
+ }
+ 
++// primeOwnerLine is the line that opens the `list --text` listing: the machine that owns the hub's prime, or none when the board records none.
++func primeOwnerLine(primeOwner string) string {
++	if primeOwner == "" {
++		primeOwner = "none"
++	}
++	return "prime owner: " + primeOwner + "\n"
++}
++
+ // pad right-pads s with spaces to width characters, so a multi-byte character counts as one column.
+ func pad(s string, width int) string {
+ 	return s + strings.Repeat(" ", width-utf8.RuneCountInString(s))
+diff --git a/internal/boardcli/verbs_test.go b/internal/boardcli/verbs_test.go
+index 773c3286..5b28681c 100644
+--- a/internal/boardcli/verbs_test.go
++++ b/internal/boardcli/verbs_test.go
+@@ -249,12 +249,16 @@ func stepListAndFindText(t *testing.T, f *cliFixture) {
+ 	mustUpsert(t, `{"slug":"soon","title":"Soon thing","kind":"task","labels":["bug"]}`)
+ 	runJSON(t, 0, "set-status", `{"slug":"soon","status":"active"}`)
+ 
+-	wantList := "T1  task  0m  0m  soon   Soon thing   bug                    [active]\n" +
++	wantList := "prime owner: none\n" +
++		"T1  task  0m  0m  soon   Soon thing   bug                    [active]\n" +
+ 		"E1  note  0m  0m  later  Later thing  enhancement,undecided\n"
+ 	exitCode, stdout := runCLI(t, "list", "--text")
+ 	if exitCode != 0 || stdout != wantList {
+ 		t.Fatalf("list --text: exit %d, stdout %q, want %q", exitCode, stdout, wantList)
+ 	}
++	if got, present := runJSON(t, 0, "list")["prime_owner"]; !present || got != "" {
++		t.Errorf("list: prime_owner = %v (present %t), want an empty string", got, present)
++	}
+ 
+ 	wantFind := "E1  note  0m  0m  later  Later thing  enhancement,undecided\n"
+ 	exitCode, stdout = runCLI(t, "find", "--text", "later")
+@@ -343,7 +347,8 @@ func stepGetAndRemoveByID(t *testing.T, f *cliFixture) {
+ }
+ 
+ // stepOwners seeds a board.json that records a prime owner and one task's owner, straight into the file since the owner setter is not the subject, and reads the owners back through get and list.
+-// An unowned task reads as the prime's owner, an owned task as its own, and a note carries none.
++// An unowned task reads as the prime's owner, an owned task as its own, and a note carries none;
++// list prints the prime owner as prime_owner and opens its --text listing with it.
+ func stepOwners(t *testing.T, f *cliFixture) {
+ 	seedBoardFile(t, f.cwd, `{"version":1,"prime_owner":"neve","entries":[`+
+ 		`{"id":0,"slug":"plain","title":"P","kind":"task","labels":["bug"]},`+
+@@ -357,12 +362,19 @@ func stepOwners(t *testing.T, f *cliFixture) {
+ 			t.Errorf("get %s: owner_machine = %v, want %v", slug, task["owner_machine"], owner)
+ 		}
+ 	}
+-	for _, entry := range runJSON(t, 0, "list")["tasks"].([]any) {
++	listed := runJSON(t, 0, "list")
++	for _, entry := range listed["tasks"].([]any) {
+ 		task := entry.(map[string]any)
+ 		if got, slug := task["owner_machine"], task["slug"].(string); got != want[slug] {
+ 			t.Errorf("list %s: owner_machine = %v, want %v", slug, got, want[slug])
+ 		}
+ 	}
++	if got := listed["prime_owner"]; got != "neve" {
++		t.Errorf("list: prime_owner = %v, want neve", got)
++	}
++	if exitCode, stdout := runCLI(t, "list", "--text"); exitCode != 0 || !strings.HasPrefix(stdout, "prime owner: neve\n") {
++		t.Errorf("list --text: exit %d, stdout %q, want it to open with %q", exitCode, stdout, "prime owner: neve\n")
++	}
+ }
+ 
+ // formatNumber renders a decoded JSON integer without a fractional part.
+diff --git a/internal/boardengine/board.go b/internal/boardengine/board.go
+index 216cb6b1..d35ef13a 100644
+--- a/internal/boardengine/board.go
++++ b/internal/boardengine/board.go
+@@ -130,7 +130,7 @@ func (b *Board) boardCriticalSection(fn func(store *Store) (any, error), afterSa
+ 		}
+ 	}
+ 
+-	if err := RenderToDisk(b.boardPath, store.Tasks(), b.out, now); err != nil {
++	if err := RenderToDisk(b.boardPath, store.Tasks(), store.primeOwner, b.out, now); err != nil {
+ 		return nil, fmt.Errorf("render: %w", err)
+ 	}
+ 
+@@ -275,6 +275,15 @@ func (b *Board) EffectiveOwner(slug string) (string, error) {
+ 	return store.effectiveOwner(slug)
+ }
+ 
++// PrimeOwner returns the machine board.json records as owning the hub's prime, "" when none is recorded or the board directory is absent, persisting nothing.
++func (b *Board) PrimeOwner() (string, error) {
++	store, err := b.loadStore()
++	if err != nil {
++		return "", err
++	}
++	return store.primeOwner, nil
++}
++
+ // checkFilterLabels refuses a filter label that is in neither list of the vocabulary and that no entry carries.
+ // A path-only Board has no config to check against and accepts every label.
+ func (b *Board) checkFilterLabels(store *Store, labels []string) error {
+diff --git a/internal/boardengine/board_test.go b/internal/boardengine/board_test.go
+index 6388747e..1920572b 100644
+--- a/internal/boardengine/board_test.go
++++ b/internal/boardengine/board_test.go
+@@ -79,6 +79,37 @@ func TestUpsertTaskUnconfiguredOutputsFailsBeforeWriting(t *testing.T) {
+ 	}
+ }
+ 
++// TestPrimeOwnerReadAndRendered pins Board.PrimeOwner for an absent board directory and a recorded owner,
++// and that the README a write renders states the recorded prime owner.
++func TestPrimeOwnerReadAndRendered(t *testing.T) {
++	t.Parallel()
++	missing := filepath.Join(t.TempDir(), "absent")
++	absent := boardengine.New(boardengine.Config{Path: missing, Readme: "Home.md", DesignPrefix: "proposal-", Types: testTypes, Labels: testLabels, SkipGit: true})
++	if got, err := absent.PrimeOwner(); err != nil || got != "" {
++		t.Errorf("PrimeOwner() on an absent board directory = %q, %v; want empty and no error", got, err)
++	}
++
++	boardPath := t.TempDir()
++	seed := `{"version":1,"prime_owner":"neve","entries":[]}`
++	if err := os.WriteFile(filepath.Join(boardPath, "board.json"), []byte(seed), 0o644); err != nil {
++		t.Fatalf("seed board.json: %v", err)
++	}
++	w := boardengine.New(boardengine.Config{Path: boardPath, Readme: "Home.md", DesignPrefix: "proposal-", Types: testTypes, Labels: testLabels, SkipGit: true})
++	if got, err := w.PrimeOwner(); err != nil || got != "neve" {
++		t.Errorf("PrimeOwner() = %q, %v; want neve and no error", got, err)
++	}
++	if _, err := w.UpsertTask(map[string]any{"slug": "test-task", "title": "Test Task", "labels": bugLabels}); err != nil {
++		t.Fatalf("UpsertTask failed: %v", err)
++	}
++	readme, err := os.ReadFile(filepath.Join(boardPath, "Home.md"))
++	if err != nil {
++		t.Fatalf("read Home.md: %v", err)
++	}
++	if !strings.Contains(string(readme), "Prime owner: `neve`.\n") {
++		t.Errorf("Home.md = %q; want it to state the prime owner neve", readme)
++	}
++}
++
+ func TestRerender(t *testing.T) {
+ 	boardPath := t.TempDir()
+ 	cfg := boardengine.Config{Path: boardPath, Readme: "Home.md", DesignPrefix: "proposal-", Types: testTypes, Labels: testLabels, SkipGit: true}
+diff --git a/internal/boardengine/boardtest/bench_test.go b/internal/boardengine/boardtest/bench_test.go
+index 5a88c2bb..8a3fc505 100644
+--- a/internal/boardengine/boardtest/bench_test.go
++++ b/internal/boardengine/boardtest/bench_test.go
+@@ -108,7 +108,7 @@ func BenchmarkRender(b *testing.B) {
+ 			b.ReportAllocs()
+ 			b.ResetTimer()
+ 			for i := 0; i < b.N; i++ {
+-				if _, err := boardengine.Render(tasks, boardengine.Outputs{Readme: "Home.md", DesignPrefix: "proposal-"}, time.Now()); err != nil {
++				if _, err := boardengine.Render(tasks, "", boardengine.Outputs{Readme: "Home.md", DesignPrefix: "proposal-"}, time.Now()); err != nil {
+ 					b.Fatal(err)
+ 				}
+ 			}
+diff --git a/internal/boardengine/doc.go b/internal/boardengine/doc.go
+index 5c5e60fa..7cfb2775 100644
+--- a/internal/boardengine/doc.go
++++ b/internal/boardengine/doc.go
+@@ -63,6 +63,7 @@
+ //
+ // A task may carry an owner_machine: the name of the machine that may start, resume and land its run; a note never carries one, and board.json omits the key while none is recorded.
+ // The hub's prime has its own record, the top-level prime_owner key of board.json, which the board replay merges with the same origin-wins rule as an entry's owner.
++// The README states it under its render time, and Board.PrimeOwner reads it for the list view.
+ // The effective owner of an entry is what Owners.Effective resolves: the recorded owner, else for a run-held entry none, else its parent's owner, the parent pair resolved through Config.ParentOf and the prime's owner when it has none;
+ // a board with no prime owner, and a slug the board does not hold, read as owned by no other machine.
+ // Board copies Config.ParentOf onto every store it builds, so reads and writes resolve parents alike, and nil reads every parent as the prime.
+diff --git a/internal/boardengine/ownerset.go b/internal/boardengine/ownerset.go
+index a82bc942..b99aca90 100644
+--- a/internal/boardengine/ownerset.go
++++ b/internal/boardengine/ownerset.go
+@@ -186,7 +186,7 @@ func writeOwners(boardDir string, req OwnerRequest, lost map[string]string) (wri
+ 	if err := store.Save(); err != nil {
+ 		return nil, nil, fmt.Errorf("save store: %w", err)
+ 	}
+-	rendered, err := renderOwnerWrite(boardDir, store.Tasks())
++	rendered, err := renderOwnerWrite(boardDir, store.Tasks(), store.primeOwner)
+ 	if err != nil {
+ 		return nil, nil, err
+ 	}
+@@ -195,19 +195,19 @@ func writeOwners(boardDir string, req OwnerRequest, lost map[string]string) (wri
+ 
+ // renderOwnerWrite renders the board's output files when its config loads, and returns the paths the render wrote or removed.
+ // A board whose config does not load is left unrendered, and the next write renders it.
+-func renderOwnerWrite(boardDir string, tasks []Task) ([]string, error) {
++func renderOwnerWrite(boardDir string, tasks []Task, primeOwner string) ([]string, error) {
+ 	cfg, err := LoadConfig(configengine.Dirs{Board: boardDir}, "board")
+ 	if err != nil {
+ 		logger.Warn("boardengine: the owner write is not rendered, since the board config did not load", "path", boardDir, "error", err)
+ 		return nil, nil
+ 	}
+ 	now := time.Now()
+-	files, err := Render(tasks, cfg.Outputs(), now)
++	files, err := Render(tasks, primeOwner, cfg.Outputs(), now)
+ 	if err != nil {
+ 		return nil, fmt.Errorf("render: %w", err)
+ 	}
+ 	previous := readRenderManifest(boardDir)
+-	if err := RenderToDisk(boardDir, tasks, cfg.Outputs(), now); err != nil {
++	if err := RenderToDisk(boardDir, tasks, primeOwner, cfg.Outputs(), now); err != nil {
+ 		return nil, fmt.Errorf("render: %w", err)
+ 	}
+ 	var paths []string
+diff --git a/internal/boardengine/ownerset_integration_test.go b/internal/boardengine/ownerset_integration_test.go
+index ff5859e3..47a96913 100644
+--- a/internal/boardengine/ownerset_integration_test.go
++++ b/internal/boardengine/ownerset_integration_test.go
+@@ -218,6 +218,15 @@ func TestSetOwners(t *testing.T) {
+ 			if origin.Prime != tt.wantPrime {
+ 				t.Errorf("origin prime owner = %q; want %q", origin.Prime, tt.wantPrime)
+ 			}
++			if tt.wantSubject != "" {
++				readme, err := os.ReadFile(filepath.Join(f.boardDir, "README.md"))
++				if err != nil {
++					t.Fatalf("read README.md: %v", err)
++				}
++				if want := "Prime owner: `" + tt.wantPrime + "`.\n"; !strings.Contains(string(readme), want) {
++					t.Errorf("README.md = %q; want it to contain %q", readme, want)
++				}
++			}
+ 			if tt.wantClaim != "" {
+ 				tasks, err := ParseBoardTasks([]byte(gitkit.Git(t, f.bare, "show", "main:board.json")))
+ 				if err != nil {
+diff --git a/internal/boardengine/render.go b/internal/boardengine/render.go
+index fca40987..078de80d 100644
+--- a/internal/boardengine/render.go
++++ b/internal/boardengine/render.go
+@@ -3,8 +3,8 @@
+ // Render is a pure function: entries in, a map of filename → content out (a single README.md built by renderReadme, plus design-*.md for any entry with a body).
+ // The README reads like a roadmap: Tasks split into Running, Ready, dependency layers and Independent, Notes with one subsection per type label, then Done.
+ // Each subsection holds one markdown table in RenderOrder's order, each row opening with the entry's handle, and a Notes table adds the priority as H or L after it;
+-// the README opens with the time it was rendered,
+-// and the rows show the bold title with the brief, the run profile and each run setting as a bullet under it, the linked slug, the entry's age above its time since its last revision as of that time, and the labels that are not type labels;
++// the README opens with the time it was rendered and the machine that owns the hub's prime;
++// the rows show the bold title with the brief, the run profile and each run setting as a bullet under it, the linked slug, the entry's age above its time since its last revision as of that time, and the labels that are not type labels;
+ // every Tasks table adds the recipe after the slug, loom for an empty one;
+ // Running adds where its run stands and the entry's recorded owner machine, and Ready and the layers add the open entries each waits on.
+ // The section names, their meaning lines and the table columns are declared here alone;
+@@ -35,9 +35,9 @@ import (
+ // adds commit churn, and it is never itself a member of the rendered file set.
+ const renderManifestFile = ".board-rendered.json"
+ 
+-// RenderToDisk renders the entries with their ages as of now, persisting the board's output files.
+-func RenderToDisk(boardPath string, tasks []Task, out Outputs, now time.Time) error {
+-	files, err := Render(tasks, out, now)
++// RenderToDisk renders the entries and the prime owner with their ages as of now, persisting the board's output files.
++func RenderToDisk(boardPath string, tasks []Task, primeOwner string, out Outputs, now time.Time) error {
++	files, err := Render(tasks, primeOwner, out, now)
+ 	if err != nil {
+ 		return err
+ 	}
+@@ -87,15 +87,15 @@ func writeRenderManifest(boardPath string, files map[string]string) {
+ 	_ = fsx.AtomicWriteBytes(filepath.Join(boardPath, renderManifestFile), data)
+ }
+ 
+-// Render produces the board output files from the entry list, the README's ages as of now.
+-func Render(tasks []Task, out Outputs, now time.Time) (map[string]string, error) {
++// Render produces the board output files from the entry list and the machine that owns the hub's prime, "" when none is recorded, the README's ages as of now.
++func Render(tasks []Task, primeOwner string, out Outputs, now time.Time) (map[string]string, error) {
+ 	ordered, err := RenderOrder(tasks)
+ 	if err != nil {
+ 		return nil, err
+ 	}
+ 
+ 	result := map[string]string{
+-		out.Readme: renderReadme(ordered, out.DesignPrefix, out.Types, now),
++		out.Readme: renderReadme(ordered, primeOwner, out.DesignPrefix, out.Types, now),
+ 	}
+ 
+ 	for name, content := range renderDesigns(tasks, out.DesignPrefix) {
+@@ -202,12 +202,13 @@ type readmeTable struct {
+ 	priority bool
+ }
+ 
+-// renderReadme builds the README: a title, the render time, an intro, Tasks split into Running, Ready, dependency layers and Independent, Notes split by type label, then Done when any entry is done.
+-func renderReadme(ordered []TaskWithLayer, designPrefix string, types []string, now time.Time) string {
++// renderReadme builds the README: a title, the render time and prime owner, an intro, Tasks split into Running, Ready, dependency layers and Independent, Notes split by type label, then Done when any entry is done.
++func renderReadme(ordered []TaskWithLayer, primeOwner, designPrefix string, types []string, now time.Time) string {
+ 	lines := []string{
+ 		"# Board",
+ 		"",
+ 		"Rendered " + now.UTC().Format(renderedTimeLayout) + "; every age below is as of then.",
++		"Prime owner: " + primeOwnerText(primeOwner) + ".",
+ 		"",
+ 		"Tasks are grouped by dependency layer and notes by type.",
+ 		"An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.",
+@@ -326,6 +327,14 @@ func renderReadme(ordered []TaskWithLayer, designPrefix string, types []string,
+ 	return strings.TrimRight(strings.Join(lines, "\n"), "\n") + "\n"
+ }
+ 
++// primeOwnerText is the README's statement of the prime owner: the machine in a code span, or none recorded.
++func primeOwnerText(primeOwner string) string {
++	if primeOwner == "" {
++		return "none recorded"
++	}
++	return codeSpan(primeOwner)
++}
++
+ // layerSection names a computed dependency layer and says when its entries can start.
+ func layerSection(layer string) readmeSection {
+ 	switch layer {
+diff --git a/internal/boardengine/render_test.go b/internal/boardengine/render_test.go
+index 5200c6dc..cffebf09 100644
+--- a/internal/boardengine/render_test.go
++++ b/internal/boardengine/render_test.go
+@@ -51,7 +51,7 @@ func TestRenderToDiskManifestCleanup(t *testing.T) {
+ 		}
+ 		seedManifest(t, dir, []string{"prop-ghost.md"})
+ 
+-		if err := boardengine.RenderToDisk(dir, tasks, boardengine.Outputs{Readme: "Home.md", DesignPrefix: "prop-"}, renderTime); err != nil {
++		if err := boardengine.RenderToDisk(dir, tasks, "", boardengine.Outputs{Readme: "Home.md", DesignPrefix: "prop-"}, renderTime); err != nil {
+ 			t.Fatalf("RenderToDisk: %v", err)
+ 		}
+ 
+@@ -75,14 +75,14 @@ func TestRenderToDiskManifestCleanup(t *testing.T) {
+ 
+ 		// First render produces Home.md and seeds the manifest with it.
+ 		out1 := boardengine.Outputs{Readme: "Home.md", DesignPrefix: "proposal-"}
+-		if err := boardengine.RenderToDisk(dir, tasks, out1, renderTime); err != nil {
++		if err := boardengine.RenderToDisk(dir, tasks, "", out1, renderTime); err != nil {
+ 			t.Fatalf("first RenderToDisk: %v", err)
+ 		}
+ 
+ 		// Second render uses Index.md; the manifest from the first render lists Home.md,
+ 		// so it is removed because the new output set does not contain it.
+ 		out2 := boardengine.Outputs{Readme: "Index.md", DesignPrefix: "proposal-"}
+-		if err := boardengine.RenderToDisk(dir, tasks, out2, renderTime); err != nil {
++		if err := boardengine.RenderToDisk(dir, tasks, "", out2, renderTime); err != nil {
+ 			t.Fatalf("second RenderToDisk: %v", err)
+ 		}
+ 		if _, err := os.Stat(filepath.Join(dir, "Index.md")); err != nil {
+@@ -99,7 +99,7 @@ func TestRenderToDiskManifestCleanup(t *testing.T) {
+ 
+ 		// First render with prefix "proposal-" produces proposal-a.md.
+ 		out1 := boardengine.Outputs{Readme: "Home.md", DesignPrefix: "proposal-"}
+-		if err := boardengine.RenderToDisk(dir, tasks, out1, renderTime); err != nil {
++		if err := boardengine.RenderToDisk(dir, tasks, "", out1, renderTime); err != nil {
+ 			t.Fatalf("first RenderToDisk: %v", err)
+ 		}
+ 		if _, err := os.Stat(filepath.Join(dir, "proposal-a.md")); err != nil {
+@@ -109,7 +109,7 @@ func TestRenderToDiskManifestCleanup(t *testing.T) {
+ 		// Second render with prefix "task-" produces task-a.md; manifest cleanup
+ 		// removes proposal-a.md because it is no longer in the output set.
+ 		out2 := boardengine.Outputs{Readme: "Home.md", DesignPrefix: "task-"}
+-		if err := boardengine.RenderToDisk(dir, tasks, out2, renderTime); err != nil {
++		if err := boardengine.RenderToDisk(dir, tasks, "", out2, renderTime); err != nil {
+ 			t.Fatalf("second RenderToDisk: %v", err)
+ 		}
+ 		if _, err := os.Stat(filepath.Join(dir, "task-a.md")); err != nil {
+@@ -126,7 +126,7 @@ func TestRenderToDiskManifestCleanup(t *testing.T) {
+ 		out := boardengine.Outputs{Readme: "Home.md", DesignPrefix: "proposal-"}
+ 
+ 		// First render: task has a body → proposal-a.md is produced and recorded in the manifest.
+-		if err := boardengine.RenderToDisk(dir, []boardengine.Task{task}, out, renderTime); err != nil {
++		if err := boardengine.RenderToDisk(dir, []boardengine.Task{task}, "", out, renderTime); err != nil {
+ 			t.Fatalf("first RenderToDisk: %v", err)
+ 		}
+ 		if _, err := os.Stat(filepath.Join(dir, "proposal-a.md")); err != nil {
+@@ -136,7 +136,7 @@ func TestRenderToDiskManifestCleanup(t *testing.T) {
+ 		// Second render: task loses its body → proposal-a.md is absent from the new
+ 		// output set but present in the manifest, so the manifest cleanup removes it.
+ 		task.Body = ""
+-		if err := boardengine.RenderToDisk(dir, []boardengine.Task{task}, out, renderTime); err != nil {
++		if err := boardengine.RenderToDisk(dir, []boardengine.Task{task}, "", out, renderTime); err != nil {
+ 			t.Fatalf("second RenderToDisk: %v", err)
+ 		}
+ 		if _, err := os.Stat(filepath.Join(dir, "proposal-a.md")); !os.IsNotExist(err) {
+@@ -156,11 +156,11 @@ func TestRenderToDiskManifestCleanup(t *testing.T) {
+ 
+ 		out := boardengine.Outputs{Readme: "Home.md", DesignPrefix: "proposal-"}
+ 		// First render seeds the manifest with the rendered files (not NOTES.md).
+-		if err := boardengine.RenderToDisk(dir, tasks, out, renderTime); err != nil {
++		if err := boardengine.RenderToDisk(dir, tasks, "", out, renderTime); err != nil {
+ 			t.Fatalf("first RenderToDisk: %v", err)
+ 		}
+ 		// Second render triggers cleanup; NOTES.md was never in the manifest so it is untouched.
+-		if err := boardengine.RenderToDisk(dir, tasks, out, renderTime); err != nil {
++		if err := boardengine.RenderToDisk(dir, tasks, "", out, renderTime); err != nil {
+ 			t.Fatalf("second RenderToDisk: %v", err)
+ 		}
+ 		if _, err := os.Stat(readme); err != nil {
+@@ -183,7 +183,7 @@ func TestRenderToDiskManifestCleanup(t *testing.T) {
+ 
+ 		// First render with no prior manifest: nothing is removed (graceful degradation),
+ 		// and the manifest is seeded with the current output set.
+-		if err := boardengine.RenderToDisk(dir, tasks, out, renderTime); err != nil {
++		if err := boardengine.RenderToDisk(dir, tasks, "", out, renderTime); err != nil {
+ 			t.Fatalf("RenderToDisk should not fail when no manifest exists: %v", err)
+ 		}
+ 		if _, err := os.Stat(stale); err != nil {
+@@ -205,7 +205,7 @@ func TestRenderToDiskManifestCleanup(t *testing.T) {
+ 		}
+ 
+ 		out := boardengine.Outputs{Readme: "Home.md", DesignPrefix: "proposal-"}
+-		if err := boardengine.RenderToDisk(dir, tasks, out, renderTime); err != nil {
++		if err := boardengine.RenderToDisk(dir, tasks, "", out, renderTime); err != nil {
+ 			t.Errorf("RenderToDisk should not fail with a corrupt manifest: %v", err)
+ 		}
+ 		if _, err := os.Stat(filepath.Join(dir, "Home.md")); err != nil {
+@@ -238,7 +238,8 @@ func readmeFixture() []boardengine.Task {
+ // It pins that a pipe in a title is escaped and a line break in a brief becomes a space, so each row stays one table row.
+ // The same row pins that each run setting stacks as a code-span bullet in the entry cell after any brief, sorted, a nested key as its dotted path, a non-string value as JSON and a pipe escaped, adding no column.
+ // Every Tasks table pins a Recipe column after the slug, loom for an empty recipe and the stored name otherwise, and the Notes and Done tables pin its absence.
+-// Every README pins the render time at its top, and every table pins the one column before Labels holding the age above the time since revision, as of that time and blank for unknown dates.
++// Every README pins the render time at its top and the prime owner under it, the machine in a code span and none recorded when the board records none;
++// every table pins the one column before Labels holding the age above the time since revision, as of that time and blank for unknown dates.
+ // A second row pins that Ready renders _None._ when empty, and that the Done section and every empty Notes subsection are omitted when no entry is done and no note exists for them.
+ // Neither row has a run status, the first only the hand-set word "running", so neither renders a Running subsection.
+ // A third row pins that a task with a run status renders under Running, before Ready and in no layer, ordered by handle over ID, its At cell dropping the state `running` and keeping any other, and its Owner cell holding the recorded owner machine and blank when none is recorded.
+@@ -246,16 +247,19 @@ func readmeFixture() []boardengine.Task {
+ func TestRenderReadmeGolden(t *testing.T) {
+ 	t.Parallel()
+ 	tests := []struct {
+-		name  string
+-		tasks []boardengine.Task
+-		want  string
++		name       string
++		tasks      []boardengine.Task
++		primeOwner string
++		want       string
+ 	}{
+ 		{
+-			name:  "tasks, notes, done and abandoned entries",
+-			tasks: readmeFixture(),
++			name:       "tasks, notes, done and abandoned entries",
++			tasks:      readmeFixture(),
++			primeOwner: "neve",
+ 			want: "# Board\n" +
+ 				"\n" +
+ 				"Rendered 2026-10-12 09:30 UTC; every age below is as of then.\n" +
++				"Prime owner: `neve`.\n" +
+ 				"\n" +
+ 				"Tasks are grouped by dependency layer and notes by type.\n" +
+ 				"An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.\n" +
+@@ -325,6 +329,7 @@ func TestRenderReadmeGolden(t *testing.T) {
+ 			want: "# Board\n" +
+ 				"\n" +
+ 				"Rendered 2026-10-12 09:30 UTC; every age below is as of then.\n" +
++				"Prime owner: none recorded.\n" +
+ 				"\n" +
+ 				"Tasks are grouped by dependency layer and notes by type.\n" +
+ 				"An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.\n" +
+@@ -358,9 +363,11 @@ func TestRenderReadmeGolden(t *testing.T) {
+ 				{ID: 4, Handle: "T4", Slug: "last", Title: "Last work", Kind: boardengine.KindTask, DependsOn: []string{"next"}},
+ 				{ID: 5, Handle: "T2", Slug: "halted", Title: "Halted work", Kind: boardengine.KindTask, Labels: []string{"bug"}, Status: stringPtr(boardengine.RunStatus("paused", "Plan-Write")), Recipe: "darn"},
+ 			},
++			primeOwner: "neve",
+ 			want: "# Board\n" +
+ 				"\n" +
+ 				"Rendered 2026-10-12 09:30 UTC; every age below is as of then.\n" +
++				"Prime owner: `neve`.\n" +
+ 				"\n" +
+ 				"Tasks are grouped by dependency layer and notes by type.\n" +
+ 				"An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.\n" +
+@@ -410,7 +417,7 @@ func TestRenderReadmeGolden(t *testing.T) {
+ 	for _, tt := range tests {
+ 		t.Run(tt.name, func(t *testing.T) {
+ 			t.Parallel()
+-			result, err := boardengine.Render(tt.tasks, boardengine.Outputs{Readme: "README.md", DesignPrefix: "design-", Types: readmeTypes}, renderTime)
++			result, err := boardengine.Render(tt.tasks, tt.primeOwner, boardengine.Outputs{Readme: "README.md", DesignPrefix: "design-", Types: readmeTypes}, renderTime)
+ 			if err != nil {
+ 				t.Fatalf("Render: %v", err)
+ 			}
+@@ -437,7 +444,7 @@ func TestRenderDesignDocGoldens(t *testing.T) {
+ 			DependsOn: []string{"linked", "bare"}, Body: "line one\n\n  indented\nline three"},
+ 		{ID: 4, Slug: "plain", Title: "Plain", Kind: note, Labels: []string{"enhancement"}, Body: "just a body"},
+ 	}
+-	result, err := boardengine.Render(tasks, boardengine.Outputs{Readme: "README.md", DesignPrefix: "design-", Types: readmeTypes}, renderTime)
++	result, err := boardengine.Render(tasks, "", boardengine.Outputs{Readme: "README.md", DesignPrefix: "design-", Types: readmeTypes}, renderTime)
+ 	if err != nil {
+ 		t.Fatalf("Render: %v", err)
+ 	}
+@@ -486,7 +493,7 @@ func TestRenderCustomOutputs(t *testing.T) {
+ 			Readme:       "README.md",
+ 			DesignPrefix: "proposal-",
+ 		}
+-		result, err := boardengine.Render([]boardengine.Task{task}, out, renderTime)
++		result, err := boardengine.Render([]boardengine.Task{task}, "", out, renderTime)
+ 		if err != nil {
+ 			t.Fatalf("Render failed: %v", err)
+ 		}
+@@ -513,7 +520,7 @@ func TestRenderCustomOutputs(t *testing.T) {
+ 			Readme:       "Home.md",
+ 			DesignPrefix: "prop-",
+ 		}
+-		result, err := boardengine.Render([]boardengine.Task{task}, out, renderTime)
++		result, err := boardengine.Render([]boardengine.Task{task}, "", out, renderTime)
+ 		if err != nil {
+ 			t.Fatalf("Render failed: %v", err)
+ 		}
+diff --git a/internal/boardengine/replay.go b/internal/boardengine/replay.go
+index 02421ae5..75c9f792 100644
+--- a/internal/boardengine/replay.go
++++ b/internal/boardengine/replay.go
+@@ -225,7 +225,7 @@ func (FabricReplay) Apply(req fabricengine.BoardReplayRequest) (fabricengine.Boa
+ 			return fabricengine.BoardReplayResult{}, fmt.Errorf("save store: %w", err)
+ 		}
+ 	}
+-	if err := RenderToDisk(req.BoardDir, store.Tasks(), cfg.Outputs(), time.Now()); err != nil {
++	if err := RenderToDisk(req.BoardDir, store.Tasks(), store.primeOwner, cfg.Outputs(), time.Now()); err != nil {
+ 		return fabricengine.BoardReplayResult{}, fmt.Errorf("render: %w", err)
+ 	}
+ 	return run.result, nil
+diff --git a/internal/boardengine/replay_test.go b/internal/boardengine/replay_test.go
+index 94b399eb..cb743dda 100644
+--- a/internal/boardengine/replay_test.go
++++ b/internal/boardengine/replay_test.go
+@@ -477,6 +477,19 @@ func TestFabricReplay(t *testing.T) {
+ 			if stored.primeOwner != tt.wantPrime {
+ 				t.Errorf("prime_owner = %q; want %q", stored.primeOwner, tt.wantPrime)
+ 			}
++			if !tt.wantEmpty {
++				readme, err := os.ReadFile(filepath.Join(dir, "README.md"))
++				if err != nil {
++					t.Fatalf("ReadFile(README.md) = %v; want nil", err)
++				}
++				wantLine := "Prime owner: none recorded.\n"
++				if tt.wantPrime != "" {
++					wantLine = "Prime owner: `" + tt.wantPrime + "`.\n"
++				}
++				if !strings.Contains(string(readme), wantLine) {
++					t.Errorf("README.md = %q; want it to contain %q", readme, wantLine)
++				}
++			}
+ 			if tt.check != nil {
+ 				tt.check(t, dir, got)
+ 			}
+diff --git a/plugins/ly/skills/board/SKILL.md b/plugins/ly/skills/board/SKILL.md
+index 0ac348c8..fbf68006 100644
+--- a/plugins/ly/skills/board/SKILL.md
++++ b/plugins/ly/skills/board/SKILL.md
+@@ -104,6 +104,7 @@ lyx board find --text retry backoff
+ lyx board find --label bug retry
+ ```
+ 
++`list` names the machine that owns the hub's prime: `prime_owner` in its JSON, and the first line of its `--text` output.
+ List every entry, with `--text` for a one-line-per-entry scan that opens with each entry's handle and shows its age and time since its last revision, `--sort age` or `--sort revised` to put the longest-lying entries first, and fetch one entry in full:
+ 
+ ```
