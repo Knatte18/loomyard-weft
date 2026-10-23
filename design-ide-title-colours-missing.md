@@ -5,14 +5,21 @@
 ## Seen (orch, 2026-10-23)
 
 `vscode.WriteConfig` (`internal/vscode/config.go`) writes `workbench.colorCustomizations` with a title-bar colour picked from the palette in `internal/vscode/color.go`, and writes `settings.json` only when the file is absent.
-In the `loom-tail-review` worktree, seeded about 11:15, `.vscode/settings.json` holds every other seeded key but no `workbench.colorCustomizations`, and its modification time is 13:27, after seeding; no other lyx code writes that file.
-The Peacock extension (`johnpapa.vscode-peacock`), which manages `workbench.colorCustomizations`, is installed on OSL-1046.
-Since `85c09cee` (2026-10-19) the operator opens a hub through one multi-root workspace file listing the prime, Bolt and every worktree.
+In the `loom-tail-review` worktree, `.vscode/settings.json` holds every other seeded key but no `workbench.colorCustomizations`; no other lyx code writes that file.
+The operator opened VS Code on that folder: the title bar showed the seeded purple for a moment, then lost its colour, and the file's modification time is that opening.
+The Peacock extension (`johnpapa.vscode-peacock` 4.5.1) is installed on OSL-1046.
+It manages `workbench.colorCustomizations` from its own `peacock.color` setting, and its `applyColor` calls `unapplyColors`, which strips the title-bar colours, when the colour it is given is not a valid colour.
+The seeder writes no `peacock.color`.
 
-## To check
+## Likely cause, not verified
 
-- Whether Peacock removed the key.
-- Whether VS Code applies a folder's `workbench.colorCustomizations` at all in a multi-root workspace window, where window-scoped settings come from the `.code-workspace` file; if not, the colour has had no effect since `85c09cee` whenever a worktree is opened through the hub workspace.
+Peacock starts with the window, finds no `peacock.color`, and strips the colour the seeder wrote.
+Check: add `"peacock.color"` with the seeded colour to the folder's `settings.json`, or disable Peacock for that workspace, and reopen; the colour then stays if Peacock is the cause.
+
+## Idea
+
+The seeder also writes `"peacock.color": <the palette colour>`, so Peacock keeps and applies the same colour.
+Also check whether a folder's colour applies in the hub's multi-root workspace window (`85c09cee`), where window-scoped settings come from the `.code-workspace` file.
 
 ## Operator view (2026-10-23)
 
