@@ -1379,7 +1379,7 @@
       "isolated": false,
       "brief": "",
       "body": "Imported from [issue #844](https://github.com/Knatte18/loomyard/issues/844).\n\n## Seen (orch, 2026-10-23, OSL-1046, lyx e634efb9)\n\n`lyx adopt plan-card-rules` on a machine whose last local board render was two days old failed at the owner write:\n`gitrepo: git add: git add -- board.json README.md design-...md ...: exit 128: fatal: pathspec 'design-batten-abort-live-run.md' did not match any files`.\nThe other machine had since removed that entry and its design file on Bolt, and this machine had pulled Bolt.\n`renderOwnerWrite` in `internal/boardengine/ownerset.go` adds every name in the local, gitignored `.board-rendered.json` that the new render no longer writes, so a file already gone from both disk and git reaches `git add` and fails it.\nThe failed write left `board.json` and `README.md` modified and uncommitted on Bolt, and the pair was already added (partial).\n\n## Workaround\n\nRe-run `lyx adopt \u003cslug\u003e`: the failed render rewrote the manifest, so the second run's path list holds only existing files, and it committed and pushed the owner write.\n\n## Expected\n\nThe owner write commits only paths that exist or that git tracks, so a stale manifest from before a pull never fails it.\n",
-      "status": "running · Merge-In",
+      "status": "running · Publish",
       "created": "2026-10-23T16:36:07Z",
       "revised": "2026-10-23T16:53:52Z",
       "profile": "light",
