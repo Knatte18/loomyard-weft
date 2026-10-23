@@ -271,3 +271,142 @@ index 0fd53728..a1619035 100644
  
  	t.Run("AnInjectedCompactMakesNoWithdraw", func(t *testing.T) {
  		t.Parallel()
+diff --git a/internal/reedengine/doc.go b/internal/reedengine/doc.go
+index 59584d53..e8b24e69 100644
+--- a/internal/reedengine/doc.go
++++ b/internal/reedengine/doc.go
+@@ -285,10 +285,10 @@
+ //
+ // Pane enumeration: listPanes (overlay.go) always runs
+ //
+-//	list-panes -t <strand window> -F "#{pane_id} #{pane_dead} #{pane_top} #{pane_width} #{pane_height} #{pane_pid} #{pane_title}\x1f#{pane_current_command}\x1f#{pane_start_command}"
++//	list-panes -t <strand window> -F "#{pane_id} #{pane_dead} #{pane_top} #{pane_width} #{pane_height} #{pane_pid} #{pane_title}\t#{pane_current_command}\t#{pane_start_command}"
+ //
+-// and parsePaneList (parse.go) parses each output line's first six whitespace-separated fields positionally, in that exact order, into a LivePane;
+-// everything after the sixth field is one tail field, which splitPaneTail splits on the ASCII unit separator paneTailSeparator into LivePane.Title, LivePane.CurrentCommand and LivePane.StartCommand.
++// and parsePaneList (parse.go) parses each output line's first six space-separated fields positionally, in that exact order, into a LivePane;
++// everything after the sixth field is one tail field, which splitPaneTail splits on the tab paneTailSeparator into LivePane.Title, LivePane.CurrentCommand and LivePane.StartCommand.
+ // All three can hold spaces, and a tail with no separator parses as the title alone, with both commands empty.
+ // The session-wide window listing (windowPaneFormat) ends in the same tail, so both listings carry both commands.
+ // The title is a display mirror of the strand's full name, never a lookup key.
+diff --git a/internal/reedengine/lifecycle_test.go b/internal/reedengine/lifecycle_test.go
+index b97671d9..754eb05d 100644
+--- a/internal/reedengine/lifecycle_test.go
++++ b/internal/reedengine/lifecycle_test.go
+@@ -248,7 +248,7 @@ func TestStatus_ReportsOwnWindowStrandsFromTheSessionListing(t *testing.T) {
+ 	fake.answer("display-message", "$0|4321|1787000000", nil)
+ 	fake.answer("list-sessions", "worktree\n", nil)
+ 	fake.answer("list-panes", "%1 0 0 100 3 4322\n%2 0 3 100 20 4323\n", nil)
+-	fake.answerWindowPanes("@0 0 - %1 0 4322 t\n@0 0 - %2 0 4323 t\n@3 1 - %5 0 4325 t\n@3 1 - %6 1 4326 t\n@4 1 - %7 0 4327 t\x1fbash\x1f/bin/bash\n@5 1 - %8 0 4328 t\x1fclaude\x1f/bin/bash\n", nil)
++	fake.answerWindowPanes("@0 0 - %1 0 4322 t\n@0 0 - %2 0 4323 t\n@3 1 - %5 0 4325 t\n@3 1 - %6 1 4326 t\n@4 1 - %7 0 4327 t\tbash\t/bin/bash\n@5 1 - %8 0 4328 t\tclaude\t/bin/bash\n", nil)
+ 	e.paneAge = func(pid int) (time.Duration, bool) { return 31 * time.Second, true }
+ 	st := &ReedState{
+ 		SelvagePaneID:  "%1",
+diff --git a/internal/reedengine/overlay.go b/internal/reedengine/overlay.go
+index 0751fa22..12021bc8 100644
+--- a/internal/reedengine/overlay.go
++++ b/internal/reedengine/overlay.go
+@@ -335,7 +335,7 @@ func (p TmuxCmd) hasSession(name string) (bool, error) {
+ 
+ // paneListFormat is the list-panes format parsePaneList reads.
+ // The last field joins the title, the current command and the start command with paneTailSeparator.
+-const paneListFormat = "#{pane_id} #{pane_dead} #{pane_top} #{pane_width} #{pane_height} #{pane_pid} #{pane_title}\x1f#{pane_current_command}\x1f#{pane_start_command}"
++const paneListFormat = "#{pane_id} #{pane_dead} #{pane_top} #{pane_width} #{pane_height} #{pane_pid} #{pane_title}\t#{pane_current_command}\t#{pane_start_command}"
+ 
+ // listPanes returns all panes of the window windowTarget names.
+ func (p TmuxCmd) listPanes(windowTarget string) ([]LivePane, error) {
+diff --git a/internal/reedengine/ownwindow.go b/internal/reedengine/ownwindow.go
+index a4d5057d..211a01a0 100644
+--- a/internal/reedengine/ownwindow.go
++++ b/internal/reedengine/ownwindow.go
+@@ -47,7 +47,7 @@ func (w windowPane) livePane() LivePane {
+ }
+ 
+ // windowPaneFormat is the session-wide listing format of windowPane: window id, own flag, group (or "-"), pane id, dead flag, pid, then the tail joining the pane title, current command and start command with paneTailSeparator.
+-const windowPaneFormat = "#{window_id} #{?#{@lyx_own},1,0} #{?#{@lyx_group},#{@lyx_group},-} #{pane_id} #{pane_dead} #{pane_pid} #{pane_title}\x1f#{pane_current_command}\x1f#{pane_start_command}"
++const windowPaneFormat = "#{window_id} #{?#{@lyx_own},1,0} #{?#{@lyx_group},#{@lyx_group},-} #{pane_id} #{pane_dead} #{pane_pid} #{pane_title}\t#{pane_current_command}\t#{pane_start_command}"
+ 
+ // parseWindowPanes parses a windowPaneFormat listing, skipping a line it cannot parse.
+ func parseWindowPanes(out string) []windowPane {
+diff --git a/internal/reedengine/parse.go b/internal/reedengine/parse.go
+index a394a71b..00ad889a 100644
+--- a/internal/reedengine/parse.go
++++ b/internal/reedengine/parse.go
+@@ -28,8 +28,9 @@ type LivePane struct {
+ }
+ 
+ // paneTailSeparator joins the title, the current command and the start command in the last field of a pane listing line.
+-// Each of the three can hold spaces, and tmux passes the ASCII unit separator through a format verbatim.
+-const paneTailSeparator = "\x1f"
++// Each of the three can hold spaces, so the separator is a tab:
++// tmux passes a tab through a format verbatim but escapes other control characters as octal text, such as the unit separator as "\037".
++const paneTailSeparator = "\t"
+ 
+ // splitPaneTail splits the last field of a pane listing line into the title, the current command and the start command.
+ // A part the tail does not carry reads empty, so a tail holding only a title parses with both commands empty.
+diff --git a/internal/reedengine/parse_test.go b/internal/reedengine/parse_test.go
+index cd36e08b..84a34157 100644
+--- a/internal/reedengine/parse_test.go
++++ b/internal/reedengine/parse_test.go
+@@ -36,21 +36,21 @@ func TestParsePaneList(t *testing.T) {
+ 		},
+ 		{
+ 			name: "tail with a spaced title, current command and spaced start command",
+-			out:  "%1 0 0 220 15 1717 tst:slug:my worker\x1fnode\x1f/bin/bash -l\n",
++			out:  "%1 0 0 220 15 1717 tst:slug:my worker\tnode\t/bin/bash -l\n",
+ 			want: []LivePane{
+ 				{ID: "%1", Width: 220, Height: 15, PID: 1717, Title: "tst:slug:my worker", CurrentCommand: "node", StartCommand: "/bin/bash -l"},
+ 			},
+ 		},
+ 		{
+ 			name: "tail with an empty title and both commands",
+-			out:  "%1 0 0 220 15 1717 \x1fbash\x1fbash\n",
++			out:  "%1 0 0 220 15 1717 \tbash\tbash\n",
+ 			want: []LivePane{
+ 				{ID: "%1", Width: 220, Height: 15, PID: 1717, CurrentCommand: "bash", StartCommand: "bash"},
+ 			},
+ 		},
+ 		{
+ 			name: "tail ending in an empty start command",
+-			out:  "%1 0 0 220 15 1717 t\x1fbash\x1f\n",
++			out:  "%1 0 0 220 15 1717 t\tbash\t\n",
+ 			want: []LivePane{
+ 				{ID: "%1", Width: 220, Height: 15, PID: 1717, Title: "t", CurrentCommand: "bash"},
+ 			},
+@@ -118,7 +118,7 @@ func TestParsePaneList(t *testing.T) {
+ }
+ 
+ func TestParseWindowPanes(t *testing.T) {
+-	out := "@2 1 grp %5 0 4242 a title\x1fnode\x1f/bin/bash -l\n" +
++	out := "@2 1 grp %5 0 4242 a title\tnode\t/bin/bash -l\n" +
+ 		"@3 0 - %6 1 99 only a title\n" +
+ 		"@4 0 - %7\n"
+ 	want := []windowPane{
+diff --git a/internal/reedengine/strand_test.go b/internal/reedengine/strand_test.go
+index cab6e767..580a5f28 100644
+--- a/internal/reedengine/strand_test.go
++++ b/internal/reedengine/strand_test.go
+@@ -634,10 +634,10 @@ func TestAddStrand_IfAbsent_NoOps(t *testing.T) {
+ 	t.Run("ShellOnlyPaneIsRelaunched", func(t *testing.T) {
+ 		e := newTestEngine(t)
+ 		e.paneAge = func(pid int) (time.Duration, bool) { return 31 * time.Second, true }
+-		fake := installIfAbsentTmux(t, e, "%1 0 0 100 20 4321 t\x1fbash\x1f/bin/bash\n")
++		fake := installIfAbsentTmux(t, e, "%1 0 0 100 20 4321 t\tbash\t/bin/bash\n")
+ 		// The new pane shows up in the listings once it is created, so the reconcile after the launch keeps its binding.
+ 		fake.answerFunc("new-window", func(args []string) (string, error) {
+-			fake.answer("list-panes", "%9 0 0 100 20 4399 t\x1fclaude\x1f/bin/bash\n", nil)
++			fake.answer("list-panes", "%9 0 0 100 20 4399 t\tclaude\t/bin/bash\n", nil)
+ 			return "%9 @9\n", nil
+ 		})
+ 		persisted := Strand{GUID: "persisted-guid", Name: "tc:tslug:claude", PaneID: "%1", Display: render.Display{Anchor: render.AnchorOwnWindow}}
+@@ -770,8 +770,8 @@ func TestAddStrand_ReclaimsADeadHoldersName(t *testing.T) {
+ 	const holderGUID = "holder-guid"
+ 	// A pid no process holds, since a removal reaps the pane's process tree.
+ 	const absentPID = 2147483646
+-	shellOnlyListing := "@4 1 - %7 0 " + strconv.Itoa(absentPID) + " t\x1fbash\x1f/bin/bash\n"
+-	engineListing := "@4 1 - %7 0 " + strconv.Itoa(absentPID) + " t\x1fclaude\x1f/bin/bash\n"
++	shellOnlyListing := "@4 1 - %7 0 " + strconv.Itoa(absentPID) + " t\tbash\t/bin/bash\n"
++	engineListing := "@4 1 - %7 0 " + strconv.Itoa(absentPID) + " t\tclaude\t/bin/bash\n"
+ 	ownWindow := render.Display{Anchor: render.AnchorOwnWindow}
+ 	holder := func(name, paneID string, display render.Display) Strand {
+ 		return Strand{GUID: holderGUID, Name: name, PaneID: paneID, Display: display}

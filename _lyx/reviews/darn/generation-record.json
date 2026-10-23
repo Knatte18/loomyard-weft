@@ -3,6 +3,12 @@
   "amendment": true,
   "base": "e634efb9060e4d49a9b7c66339d46e91cbeef10a",
   "judge_subject": {
-    "kind": ""
-  }
+    "kind": "code",
+    "merge_base": "e634efb9060e4d49a9b7c66339d46e91cbeef10a",
+    "head": "de55116e0a6fd46e444a21eceae215eb15a52461",
+    "full_hash": "d9d9cc47f0e9d340e044d832836bedbb0b81253f0705e89f87f99cfb65efa95c",
+    "patch_id": "0ee6cbecc1234c8dfc0ec722251ecff8441bf11a"
+  },
+  "judge_base": "e634efb9060e4d49a9b7c66339d46e91cbeef10a",
+  "judge_at": "2026-10-23T07:22:50Z"
 }
