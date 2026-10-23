@@ -24,7 +24,8 @@ Waits on nothing open; can start now.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T4 | **The README and lyx board list show which machine owns the prime**<br>• prime_owner is only in board.json; the README shows task owners but not the prime owner, and no board verb prints it | [`prime-owner-visible`](design-prime-owner-visible.md) | loom |  | 19m<br>19m | board |
+| T4 | **The README and lyx board list show which machine owns the prime**<br>• prime_owner is only in board.json; the README shows task owners but not the prime owner, and no board verb prints it<br>• `profile: light` | [`prime-owner-visible`](design-prime-owner-visible.md) | darn |  | 19m<br>0m | board |
+| T5 | **Orch watcher types /compact again after a compact landed**<br>• Watcher stays in resuming after a requested compact and types a second /compact into the resumed busy turn<br>• `profile: light` | [`orch-compact-repeats`](design-orch-compact-repeats.md) | darn |  | 15h<br>0m | orch |
 
 ### Layer A
 
@@ -51,12 +52,6 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | A7 |  | **Trial: batcher profile wide (budget 300k)**<br>• Hub runs a new batcher profile wide, budget 300k; check cost and fork quality before taking it into the template | [`batch-budget-300k-trial`](design-batch-budget-300k-trial.md) | 16h<br>16h | webster |
 | A8 |  | **Audit: loom tail rework (PR-Rework, Merge-Review, verify retries) is rare and cheap** | [`pr-rework-audit`](design-pr-rework-audit.md) | 12h<br>12h | loom, burler |
 | A9 | H | **Audit: loom from Webster out, who reviews and who fixes, and the target shape** | [`loom-tail-review`](design-loom-tail-review.md) | 12h<br>11h | loom, burler, fabric |
-
-### Bugs
-
-| # | P | Note | Slug | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- | --- |
-| B1 |  | **Orch watcher types /compact again after a compact landed**<br>• Watcher stays in resuming after a requested compact and types a second /compact into the resumed busy turn | [`orch-compact-repeats`](design-orch-compact-repeats.md) | 15h<br>15h | orch |
 
 ### Enhancements
 
