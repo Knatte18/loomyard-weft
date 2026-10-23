@@ -1243,7 +1243,7 @@
       "isolated": false,
       "brief": "Make the loom-status overview readable: drop written-file paths, add clock times to gate lines",
       "body": "## Seen (operator, 2026-10-23)\n\nThe overview window of a run's reed session, the `ly:\u003cshortname\u003e:\u003cslug\u003e:loom-status` strand that shows `lyx loom status --watch`, is close to unreadable because it puts too much on one screen.\nEach producer line ends with the full absolute path of the file it wrote, such as `.../loom-tail-review/_lyx/reviews/discussion/round-3-review.md`, which wraps every line in a normal-width pane.\nGate lines, such as `gate review 0s` under a producer line, carry no clock time, while producer lines open with one.\n\n## Scope\n\n- Drop the written-file paths from the overview's lines.\n- Open each gate line with its clock time, as producer lines do.\n\n## Decision (operator, 2026-10-23)\n\nThe overview's clock times stay in UTC, since UTC does not jump with daylight saving time; the gate lines' new times are UTC as well.\n\nThe checklist is rendered in `internal/loomcli/checklist.go`.\n",
-      "status": "running · Darn-Burler-Review",
+      "status": "running · Darn-Burler-Fix",
       "created": "2026-10-23T12:18:04Z",
       "revised": "2026-10-23T12:20:54Z",
       "profile": "light",

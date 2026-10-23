@@ -1,6 +1,6 @@
 # Status overview: drop file paths, time the gate lines
 
-`status-overview-trim` · Task · enhancement, loom · running · Darn-Burler-Review
+`status-overview-trim` · Task · enhancement, loom · running · Darn-Burler-Fix
 
 ## Seen (operator, 2026-10-23)
 
