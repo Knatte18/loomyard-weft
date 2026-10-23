@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-23 16:35 UTC; every age below is as of then.
+Rendered 2026-10-23 16:36 UTC; every age below is as of then.
 Prime owner: `osl-1046`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -65,6 +65,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | B3 |  | **TestSmokeStart_NeverAttachesAndAddsNoOperatorStrand flakes on records index.lock and halts Merge-In** | [`smokestart-index-lock-flake`](design-smokestart-index-lock-flake.md) | 0m<br>0m | loom, fabric |
 | B4 |  | **Burler fix loop cannot route a decision-class finding to the parent** | [`burler-decision-finding-route`](design-burler-decision-finding-route.md) | 0m<br>0m | burler, loom |
 | B5 |  | **webster record-batch fails create-not-done for Create targets declared in an external _test package** | [`record-batch-external-test-pkg`](design-record-batch-external-test-pkg.md) | 0m<br>0m | webster, quarry |
+| B6 |  | **Decision notice from lyx loom decision add is refused by Webster's Merriam** | [`merriam-refuses-decision-notice`](design-merriam-refuses-decision-notice.md) | 0m<br>0m | webster, loom, stencil, creel |
 
 ### Enhancements
 
