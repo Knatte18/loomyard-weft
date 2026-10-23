@@ -1,8 +1,8 @@
 # Card 25 — merge-in-unlocked
 
 **Create:**
-- `plan:internal/landingshed#MergeIn.mergeTip` -> `func (m *MergeIn) mergeTip(ctx context.Context) (string, string, error)`
-- `plan:internal/landingshed#TestMergeIn_MergeTip` -> `func TestMergeIn_MergeTip(t *testing.T)`
+- `internal/landingshed#MergeIn.mergeTip`
+- `internal/landingshed#TestMergeIn_MergeTip`
 
 **Delete:**
 - `internal/landingshed#MergeIn.syncParent`
