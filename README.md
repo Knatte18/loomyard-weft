@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-23 12:20 UTC; every age below is as of then.
+Rendered 2026-10-23 12:21 UTC; every age below is as of then.
 Prime owner: `osl-1046`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -16,15 +16,14 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
+| T2 | **Status overview: drop file paths, time the gate lines**<br>• Make the loom-status overview readable: drop written-file paths, add clock times to gate lines<br>• `profile: light` | [`status-overview-trim`](design-status-overview-trim.md) | darn | Worktree-Create | osl-1046 | 2m<br>0m | loom |
 | T5 | **Run tail: Merge-In with alignment, Code-Perch, a PR stub and one locked Land block, for loom and darn**<br>• Loom and darn share one tail after the code: Merge-In with alignment and a thorough fixer, Code-Perch, PR block behind a flag, Finalize re-merging under the parent lock | [`loom-tail-review`](design-loom-tail-review.md) | loom | Plan-Burler-Review | osl-1046 | 18h<br>4h | loom, burler, shed, fabric, batten |
 
 ### Ready
 
 Waits on nothing open; can start now.
 
-| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- | --- | --- |
-| T2 | **Status overview: drop file paths, time the gate lines**<br>• Make the loom-status overview readable: drop written-file paths, add clock times to gate lines<br>• `profile: light` | [`status-overview-trim`](design-status-overview-trim.md) | darn |  | 2m<br>0m | loom |
+_None._
 
 ### Layer A
 
