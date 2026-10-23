@@ -3,13 +3,13 @@
 **Create:**
 - `internal/failuretrace/doc.go`
 - `internal/failuretrace/testmain_test.go`
-- `plan:internal/failuretrace#Placement` -> `type Placement struct`
-- `plan:internal/failuretrace#Locations` -> `func Locations(failures []websterengine.VerifyFailure, p Placement) (placed, untraced []string)`
-- `plan:internal/failuretrace#Input` -> `type Input struct`
-- `plan:internal/failuretrace#Trace` -> `func Trace(in Input) (verifytree.FailureTrace, error)`
-- `plan:internal/failuretrace#NewTracer` -> `func NewTracer(worktreeRoot, anchorPath string) func(log, head string) (verifytree.FailureTrace, error)`
-- `plan:internal/failuretrace#TestLocations` -> `func TestLocations(t *testing.T)`
-- `plan:internal/failuretrace#TestTrace` -> `func TestTrace(t *testing.T)`
+- `internal/failuretrace#Placement`
+- `internal/failuretrace#Locations`
+- `internal/failuretrace#Input`
+- `internal/failuretrace#Trace`
+- `internal/failuretrace#NewTracer`
+- `internal/failuretrace#TestLocations`
+- `internal/failuretrace#TestTrace`
 
 **Edit:**
 - `docs/overview.md`
@@ -19,9 +19,9 @@
 - `internal/websterengine#ParseVerifyFailures`
 - `internal/websterengine#State`
 - `internal/websterengine#BatchState`
-- `plan:internal/planparser#TargetHolds`
+- `internal/planparser#TargetHolds`
 - `internal/planparser#RefMember`
-- `plan:internal/planglyph#EncloseAt`
+- `internal/planglyph#EncloseAt`
 - `internal/planglyph#Resolve`
 - `internal/planglyph#Delta`
 - `internal/verifytree#FailureTrace`

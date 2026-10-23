@@ -1,8 +1,8 @@
 # Card 24 — planparser TargetHolds
 
 **Create:**
-- `plan:internal/planparser#TargetHolds` -> `func TargetHolds(plan *Plan, target, member, file string) bool`
-- `plan:internal/planparser#TestTargetHolds` -> `func TestTargetHolds(t *testing.T)`
+- `internal/planparser#TargetHolds`
+- `internal/planparser#TestTargetHolds`
 
 **Uses:**
 - `internal/planparser#RefMember`

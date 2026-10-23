@@ -14,7 +14,7 @@
 - `internal/landingshed/doc.go`
 
 **Uses:**
-- `plan:internal/failuretrace#NewTracer`
+- `internal/failuretrace#NewTracer`
 - `internal/verifytree#FailureTrace`
 
 **Intent:**
