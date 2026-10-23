@@ -52,7 +52,7 @@
 
 **Intent:** Remove the round gate's read of the failure record and the review's `publish_failure` marker with the seam that fills it (D5, D11): a landing failure is the fixer's brief now, read by no review row.
 `NewVerifyGate` no longer confirms a Publish failure: the step that prefixed the failing tests and appended a package pass of the record's tier goes, and the gate runs its told or narrowed command alone.
-The record checks and the note behind them go with it, and only `WebsterRecordNote` stays in `publishfailure.go`; the tests of the removed functions and their fixtures go, and `TestVerifyGate_Scenario` drops its failure-record rows.
+The record checks and the note behind them go with it, and only `WebsterRecordNote` stays in `publishfailure.go`; the tests of the removed functions and their fixtures go, and `TestVerifyGate_Scenario` drops its failure-record rows; `TestVerifyGate_RoundScenario` drops its failure-record rows and its `writeFailure` helper with the confirm step, so no `PublishFailure` reference is left in either for card 46's rename.
 `RubricNotes` drops `PublishFailure`, `ReadRubric` stops filling a `publish_failure` marker, `BouncerConfig` drops its `PublishFailure` seam, and `Bouncer.rubricNotes` stops reading it; `shedrecipe.Env` drops `PublishFailure`, and `bouncerEntry` and `burlerReviewEntry` stop passing it.
 `wire` stops filling it, and `envkit.nilLegal` drops its entry.
 The Webster-Review rubric loses its `## Publish failure` section and step 5 of its review range, which widened the range by the failure record's merge-in commit; `TestReadRubric` drops its `publish_failure` rows.
