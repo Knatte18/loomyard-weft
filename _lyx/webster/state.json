@@ -543,7 +543,7 @@
       }
     }
   ],
-  "currentBatch": 0,
+  "currentBatch": 23,
   "masterStrand": "5d7707be21a2f264e8cb67fdd257faf0",
   "masterSessionId": "42b1ea9d-4ad9-4b82-a2f2-60e0b764997b",
   "masterEngine": "claude",
@@ -708,29 +708,25 @@
         "27-publish-failure-note-trace": "8e5f0d29c9b2b8f0661ebeb629ee832ce86b12109c81700e5b2b20089776b038"
       },
       "startSha": "3df6077f1decfb080623fa6b21acb714c895ee52",
-      "kind": "fork",
-      "spawnedAt": "2026-10-23T07:51:20Z",
-      "sessionId": "42b1ea9d-4ad9-4b82-a2f2-60e0b764997b",
-      "engine": "claude",
-      "terminal": true,
-      "status": "failed",
-      "digest": {
-        "batch": "23-planglyph-enclose",
-        "status": "failed",
-        "head_sha": "9069d7b8810e524d138295a5280fc27093662d67",
-        "reasons": [
-          "batch 23-planglyph-enclose holds cards 23-planglyph-enclose, 24-planparser-target-holds, 25-failuretrace-package, 26-landing-trace-seam, 27-publish-failure-note-trace",
-          "create-not-done/24-planparser-target-holds[blocking]: Create target \"plan:internal/planparser#TestTargetHolds\" still does not resolve: looked up \"internal/planparser#TestTargetHolds\", quarry answered not_found (the unit exists and the member is missing); quarry searched the unit's files internal/planparser/amendment.go, internal/planparser/approve.go, internal/planparser/classify.go, internal/planparser/classify_test.go, internal/planparser/edittestfile.go, internal/planparser/extends.go, internal/planparser/fabricref.go, internal/planparser/firstcard.go, internal/planparser/glyphref.go, internal/planparser/glyphref_test.go, internal/planparser/handle.go, internal/planparser/handle_test.go, internal/planparser/identity_test.go, internal/planparser/nestedmodules.go, internal/planparser/normalize.go, internal/planparser/normalize_test.go, internal/planparser/overlay.go, internal/planparser/pairrule.go, internal/planparser/pairrule_test.go, internal/planparser/parse.go, internal/planparser/patternentry.go, internal/planparser/patternentry_test.go, internal/planparser/plan.go, internal/planparser/planpath_test.go, internal/planparser/redundancy.go, internal/planparser/renumber.go, internal/planparser/restore.go, internal/planparser/reviewclass.go, internal/planparser/rewrite.go, internal/planparser/sections.go, internal/planparser/shape.go, internal/planparser/shape_enforcement_test.go, internal/planparser/shape_test.go, internal/planparser/targetdirs.go, internal/planparser/testmain_test.go, internal/planparser/validate.go, internal/planparser/verifymodule.go, internal/planparser/verifypackage.go, internal/planparser/vocabname.go; TestTargetHolds is declared as internal/planparser_test#TestTargetHolds in internal/planparser/targetdirs_test.go",
-          "create-not-done/25-failuretrace-package[blocking]: Create target \"plan:internal/failuretrace#TestLocations\" still does not resolve: looked up \"internal/failuretrace#TestLocations\", quarry answered not_found (the unit exists and the member is missing); quarry searched the unit's files internal/failuretrace/locations.go, internal/failuretrace/trace.go; TestLocations is declared as internal/failuretrace_test#TestLocations in internal/failuretrace/locations_test.go",
-          "create-not-done/25-failuretrace-package[blocking]: Create target \"plan:internal/failuretrace#TestTrace\" still does not resolve: looked up \"internal/failuretrace#TestTrace\", quarry answered not_found (the unit exists and the member is missing); quarry searched the unit's files internal/failuretrace/locations.go, internal/failuretrace/trace.go; TestTrace is declared as internal/failuretrace_test#TestTrace in internal/failuretrace/trace_test.go"
-        ]
-      },
+      "kind": "recovery",
+      "spawnedAt": "2026-10-23T08:03:54Z",
+      "terminal": false,
+      "status": "",
       "forkTranscripts": [
         "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-plan-card-rules/42b1ea9d-4ad9-4b82-a2f2-60e0b764997b/subagents/agent-af68fb5248a5ee1c4.jsonl"
       ],
-      "bracketTranscripts": [
-        "/home/AD.NORCERESEARCH.NO/hanf/.claude/projects/-home-AD-NORCERESEARCH-NO-hanf-Code-Knatte18-loomyard-LYXHUB-plan-card-rules/42b1ea9d-4ad9-4b82-a2f2-60e0b764997b/subagents/agent-af68fb5248a5ee1c4.jsonl"
-      ]
+      "strandGuid": "f42df6bb82e7827880096079de00a565",
+      "shuttleRunDir": "/home/AD.NORCERESEARCH.NO/hanf/Code/Knatte18/loomyard-LYXHUB/plan-card-rules/.lyx/shuttle/57c328ce968ff57d87593e5d660e0314",
+      "eventsPath": "/home/AD.NORCERESEARCH.NO/hanf/Code/Knatte18/loomyard-LYXHUB/plan-card-rules/.lyx/shuttle/57c328ce968ff57d87593e5d660e0314/events.jsonl",
+      "eventsOffset": 2568,
+      "recoveries": 1,
+      "recoverySessions": [
+        "27df7995-1000-4deb-b9ac-6b97d7d9aab7"
+      ],
+      "recoveryEngines": {
+        "27df7995-1000-4deb-b9ac-6b97d7d9aab7": "claude"
+      },
+      "recoveryStartSha": "9069d7b8810e524d138295a5280fc27093662d67"
     },
     "7": {
       "slug": "extends-group-readers",
