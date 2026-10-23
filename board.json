@@ -1399,6 +1399,27 @@
       "body": "Imported from [issue #844](https://github.com/Knatte18/loomyard/issues/844).\n\n## Seen (orch, 2026-10-23, OSL-1046, lyx e634efb9)\n\n`lyx adopt plan-card-rules` on a machine whose last local board render was two days old failed at the owner write:\n`gitrepo: git add: git add -- board.json README.md design-...md ...: exit 128: fatal: pathspec 'design-batten-abort-live-run.md' did not match any files`.\nThe other machine had since removed that entry and its design file on Bolt, and this machine had pulled Bolt.\n`renderOwnerWrite` in `internal/boardengine/ownerset.go` adds every name in the local, gitignored `.board-rendered.json` that the new render no longer writes, so a file already gone from both disk and git reaches `git add` and fails it.\nThe failed write left `board.json` and `README.md` modified and uncommitted on Bolt, and the pair was already added (partial).\n\n## Workaround\n\nRe-run `lyx adopt \u003cslug\u003e`: the failed render rewrote the manifest, so the second run's path list holds only existing files, and it committed and pushed the owner write.\n\n## Expected\n\nThe owner write commits only paths that exist or that git tracks, so a stale manifest from before a pull never fails it.\n",
       "created": "2026-10-23T16:36:07Z",
       "revised": "2026-10-23T16:36:07Z"
+    },
+    {
+      "id": 783,
+      "handle": "B8",
+      "slug": "fork-git-guard-scratch-repo",
+      "title": "Fork git-mutation guard fails a run on git commands confined to a scratch repo",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "shed",
+        "burler"
+      ],
+      "issues": [
+        843
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Imported from [issue #843](https://github.com/Knatte18/loomyard/issues/843).\n\n**What happened**\n\nA loom run halted `failed` at `Plan-Burler-Fix` (anomaly `producer-hard-failure`).\nThe shedadapters check reported that the twill fixer fork \"ran a git-mutating command\" and refused with: \"a fork must never run a state-mutating git command\".\nThe flagged command was a single compound shell line.\nIt created a throwaway repository under the session's scratchpad directory (`git init`, an empty commit, `git worktree add`, `git worktree repair`) to test git behaviour, and never touched the task's own worktree or repository.\n\n**Why it is abnormal**\n\nThe guard's intent is to stop a fork from changing the target's git state.\nHere every git invocation was aimed at a repository the fork had just created in its own scratchpad, so no target state was at risk.\nThe guard appears to match on the git verbs alone without checking which repository they act on, so a harmless experiment fails the whole round and halts the run.\nThe advised recovery (\"inspect the target's working-tree changes, revert what the fork wrote\") has nothing to revert in this case.\n\n**What to do**\n\nMake the fork git-mutation check scope-aware: ignore git commands whose repository (`-C \u003cpath\u003e`, `cd \u003cpath\u003e`, or `git init \u003cpath\u003e`) resolves inside the session scratchpad or another path outside the target worktree.\nAlternatively, report the violation as a recoverable stuck state rather than a hard failure when the target's working tree and refs are unchanged after the fork.\n\nProvenance: task `orch-strand-cycle`, note `loom-halt.md`.\n",
+      "created": "2026-10-23T16:36:09Z",
+      "revised": "2026-10-23T16:36:09Z"
     }
   ],
   "prime_owner": "osl-1046"
