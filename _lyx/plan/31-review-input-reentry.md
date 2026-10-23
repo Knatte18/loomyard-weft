@@ -1,12 +1,12 @@
 # Card 31 — review-input-reentry
 
 **Create:**
-- `plan:internal/shedadapters#Bouncer.keptReviewInput` -> `func (b *Bouncer) keptReviewInput(settledAt string) (string, error)`
-- `plan:internal/landingshed#OverlapNotePath` -> `func OverlapNotePath(scratchDir string) string`
-- `plan:internal/landingshed#WriteOverlapNote` -> `func WriteOverlapNote(path string, rec MergeRecord, files []string) error`
-- `plan:internal/loomcli#fixerReportInput` -> `func fixerReportInput(scratchDir string) func() (string, time.Time, bool, error)`
-- `plan:internal/loomcli#overlapNoteInput` -> `func overlapNoteInput(scratchDir string) func() (string, time.Time, bool, error)`
-- `plan:internal/loomcli#TestReviewInputSeams` -> `func TestReviewInputSeams(t *testing.T)`
+- `internal/shedadapters#Bouncer.keptReviewInput`
+- `internal/landingshed#OverlapNotePath`
+- `internal/landingshed#WriteOverlapNote`
+- `internal/loomcli#fixerReportInput`
+- `internal/loomcli#overlapNoteInput`
+- `internal/loomcli#TestReviewInputSeams`
 
 **Delete:**
 - `internal/shedadapters#Bouncer.keptRejectReview`
