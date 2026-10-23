@@ -88,3 +88,15 @@ Claude Code's own messaging works well between Claude sessions: a message is sur
 Creel's reminder and `lyx creel read` cost the receiver an extra turn per agent message (note `creel-carry-agent-mail`).
 The problem is Codex: a Claude session cannot reach a Codex session through `SendMessage`, which is why this stage exists.
 
+### Operator idea (2026-10-23): each engine's own messaging, a relay between them
+
+Claude to Claude uses Claude's messaging, Codex to Codex uses Codex's own if it has one, and Claude to Codex goes through a relay of two hub agents, one Claude and one Codex, that only forward across.
+The operator's concern: much added delay.
+
+### Orch view on that
+
+- Whether Codex has messaging between sessions is not checked; the `codex-engine` spike can find out.
+- The relay need not be LLM agents: creel is already a program that types into any pane, so a cross-engine message is one `lyx creel post` by the sender, typed in full into the receiver's pane, with no relay turn.
+  Two relay agents would add two LLM turns, their tokens and their delay per message, and could garble what they forward.
+- What a cross-engine post costs today is the receiver's reminder and read turn, which note `creel-carry-agent-mail` would remove.
+
