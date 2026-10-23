@@ -41,6 +41,13 @@ Rationale: with no id there is no outcome to read, and the tick's journal lookup
 
 - A delivery attempt that types the `/compact` while the watcher waits still compacts the session a second time; only creel could prevent that.
 
+<!-- lyx:carry-over Darn-Review -->
+- Darn-Review, round 1: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
+  Review: _lyx/reviews/darn/round-1-review.md; fixer report: _lyx/reviews/darn/round-1-fixer-report.md.
+  - no-test-post-withdraw-reread-failure (class scope, severity MEDIUM, open in rounds 1)
+  - withdrawn-resume-line-lost-on-failed-reread (class design, severity MEDIUM, open in rounds 1)
+<!-- /lyx:carry-over Darn-Review -->
+
 ## Acceptance criteria
 
 - A boundary found while the pending `/compact` reads sending, with a withdraw that leaves it in flight, keeps the phase compacting with the step pending and the cycle count unchanged.
