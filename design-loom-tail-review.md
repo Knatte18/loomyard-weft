@@ -23,7 +23,8 @@ The run's tail after the code is written.
    2. Merge the parent in; on a conflict or a failing test, fix it.
       Run right, the parent brings nothing large here, so this is quick.
    3. When the fix changed code, run Describe again, so the commit message matches what lands.
-   4. Land on the parent (squash with Describe's text as the commit message, push, board done).
+   4. Land on the parent (squash with Describe's text as the commit message, naming the task's slug, push, board done).
+      A run opens no PR unless the PR block's flag is on: the squash already lands locally, and the commit and the weft records are the run's history.
    5. Release the lock.
 
    The lock covers only this block, so the parent cannot move between the fix and the landing, and the lock is held as briefly as possible (as Millhouse does it).
@@ -49,5 +50,4 @@ From today's tail (`contracts/recipes/loom-recipe.yaml`): Merge-Review, PR-Align
 
 ## Open
 
-- Whether a run still opens a PR and closes it at once, as a GitHub record of the run, or opens none.
 - For the run's Discussion: the step 2 fixer's attempt cap, the Land block's caps on fix size, attempts and routes back, and what counts as a large merge.
