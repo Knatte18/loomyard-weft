@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-23 06:51 UTC; every age below is as of then.
+Rendered 2026-10-23 06:54 UTC; every age below is as of then.
 
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
@@ -15,10 +15,10 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T2 | **Plan cards: headroom check, Extends label, an amendment owner, failures traced to cards**<br>• PATTERN headroom in the plan gate, additive Extends cards, an in-run owner for card amendments, verify failures mapped to cards via Enclose<br>• `profile: light` | [`plan-card-rules`](design-plan-card-rules.md) | loom | Plan-Burler-Review | osl-1046 | 2w<br>15h | loom, webster, burler, orch, quarry |
+| T2 | **Plan cards: headroom check, Extends label, an amendment owner, failures traced to cards**<br>• PATTERN headroom in the plan gate, additive Extends cards, an in-run owner for card amendments, verify failures mapped to cards via Enclose<br>• `profile: light` | [`plan-card-rules`](design-plan-card-rules.md) | loom | Plan-Burler-Fix | osl-1046 | 2w<br>15h | loom, webster, burler, orch, quarry |
 | T3 | **One batten verb ends a run for good, live or stopped, before or after its pair exists**<br>• Abandon or abort a batten run in any state: end its processes and strands, clear the claim, remove records and scratch, optionally the pair; batten refuses a dirty source up front<br>• `profile: light` | [`batten-cancel-verb`](design-batten-cancel-verb.md) | loom | Plan-Burler-Fix | osl-1046 | 2d<br>18h | batten, reed, shed |
-| T4 | **The README and lyx board list show which machine owns the prime**<br>• prime_owner is only in board.json; the README shows task owners but not the prime owner, and no board verb prints it<br>• `profile: light` | [`prime-owner-visible`](design-prime-owner-visible.md) | darn | Darn-Write | osl-1046 | 22m<br>3m | board |
-| T5 | **Orch watcher types /compact again after a compact landed**<br>• Watcher stays in resuming after a requested compact and types a second /compact into the resumed busy turn<br>• `profile: light` | [`orch-compact-repeats`](design-orch-compact-repeats.md) | darn | Darn-Write | osl-1046 | 15h<br>3m | orch |
+| T4 | **The README and lyx board list show which machine owns the prime**<br>• prime_owner is only in board.json; the README shows task owners but not the prime owner, and no board verb prints it<br>• `profile: light` | [`prime-owner-visible`](design-prime-owner-visible.md) | darn | Darn-Write | osl-1046 | 26m<br>7m | board |
+| T5 | **Orch watcher types /compact again after a compact landed**<br>• Watcher stays in resuming after a requested compact and types a second /compact into the resumed busy turn<br>• `profile: light` | [`orch-compact-repeats`](design-orch-compact-repeats.md) | darn | Darn-Write | osl-1046 | 15h<br>7m | orch |
 
 ### Ready
 
@@ -48,9 +48,9 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | A4 |  | **Audit: ideas from tree-sitter-analyzer for quarry and its use in lyx**<br>• What the Python tree-sitter-analyzer offers that quarry or lyx could use if built in Go, what already exists, and what would not pay off | [`tsa-quarry-audit`](design-tsa-quarry-audit.md) | 4d<br>4d | quarry, webster, burler, loom |
 | A5 |  | **Sweep go_parallel on OSL-1046 with Cortex XDR**<br>• Time both gate tiers on the work laptop on a quiet machine and log them in docs beside the Neve numbers, with full hardware info | [`bench-osl1046-xdr`](design-bench-osl1046-xdr.md) | 3d<br>2d |  |
 | A6 |  | **Lens overlap audit: which lenses find the same defects, and a smaller set**<br>• twill-plan 8 to 5 lenses recommended; twill-discussion 7 to 4 and review-code 4 to 3 at low confidence | [`lens-overlap-audit`](design-lens-overlap-audit.md) | 17h<br>17h | burler, loom |
-| A7 |  | **Trial: batcher profile wide (budget 300k)**<br>• Hub runs a new batcher profile wide, budget 300k; check cost and fork quality before taking it into the template | [`batch-budget-300k-trial`](design-batch-budget-300k-trial.md) | 17h<br>16h | webster |
+| A7 |  | **Trial: batcher profile wide (budget 300k)**<br>• Hub runs a new batcher profile wide, budget 300k; check cost and fork quality before taking it into the template | [`batch-budget-300k-trial`](design-batch-budget-300k-trial.md) | 17h<br>17h | webster |
 | A8 |  | **Audit: loom tail rework (PR-Rework, Merge-Review, verify retries) is rare and cheap** | [`pr-rework-audit`](design-pr-rework-audit.md) | 12h<br>12h | loom, burler |
-| A9 | H | **Audit: loom from Webster out, who reviews and who fixes, and the target shape** | [`loom-tail-review`](design-loom-tail-review.md) | 12h<br>11h | loom, burler, fabric |
+| A9 | H | **Audit: loom from Webster out, who reviews and who fixes, and the target shape** | [`loom-tail-review`](design-loom-tail-review.md) | 12h<br>12h | loom, burler, fabric |
 
 ### Enhancements
 
@@ -82,7 +82,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | E28 |  | **[.NET] A small public NUnit repo as sandbox hub for end-to-end C# runs** | [`csharp-sandbox-hub`](design-csharp-sandbox-hub.md) | 21h<br>17h | dotnet |
 | E30 |  | **Discussion scope check moves from the alignment agent into the perch lenses, with an escalating finding class** | [`discussion-alignment-into-lenses`](design-discussion-alignment-into-lenses.md) | 19h<br>19h | loom, burler, shed |
 | E31 |  | **A row before Discussion aligns the task text against the board, peers and landed work, and adjusts it** | [`entry-align-before-discussion`](design-entry-align-before-discussion.md) | 19h<br>19h | loom, batten, board |
-| E32 |  | **Move rules about lyx behaviour out of this repo's CLAUDE.md into lyx code, doc.go and stencils** | [`claude-md-lyx-rules-out`](design-claude-md-lyx-rules-out.md) | 19h<br>18h | stencil, board, loom |
+| E32 |  | **Move rules about lyx behaviour out of this repo's CLAUDE.md into lyx code, doc.go and stencils** | [`claude-md-lyx-rules-out`](design-claude-md-lyx-rules-out.md) | 19h<br>19h | stencil, board, loom |
 
 ### Features
 
@@ -104,7 +104,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | F14 | L | **[.NET 003] Scoped build and test for C# hubs**<br>• Verify gates in a .NET hub build and test only the projects a card touches, since a scanned Windows machine makes every build slow. | [`dotnet-scoped-verify`](design-dotnet-scoped-verify.md) | 10d<br>18h | shed, webster, dotnet |
 | F15 |  | **Configurable action buttons on the reed status bar**<br>• Clickable status-bar buttons that run configured commands: VS Code, orch distill/refresh, the follow toggle and more | [`reed-status-buttons`](design-reed-status-buttons.md) | 7d<br>7d | reed, config |
 | F16 | H | **creel stage 3: agents message through creel, not SendMessage**<br>• Parent asks, parent review, stop reports and shuttle send go through creel, so a non-Claude engine can take a role with a parent | [`creel-agents`](design-creel-agents.md) | 7d<br>4d | creel, shuttle, loom, stencil, report |
-| F17 |  | **Ideas to borrow from comparable agent orchestrators (survey, Oct 2026)** | [`orchestrator-survey-ideas`](design-orchestrator-survey-ideas.md) | 6d<br>5d | burler, shed, orch, quarry, report |
+| F17 |  | **Ideas to borrow from comparable agent orchestrators (survey, Oct 2026)** | [`orchestrator-survey-ideas`](design-orchestrator-survey-ideas.md) | 7d<br>5d | burler, shed, orch, quarry, report |
 | F18 |  | **[.NET 004] Asynchronous test tiers in shed: the numerical baseline captured before implementation, compared at the final gate**<br>• Support a hub regression tier that writes profiles on the parent before implementation and compares after, switchable per task for expected drift. | [`regression-baseline-verify`](design-regression-baseline-verify.md) | 5d<br>1d | shed, webster, batten, config, dotnet |
 | F19 | H | **[WS 004] Board projects and pairs created from a parent pair**<br>• A task names its project; a project groups tasks in order and may have its own worktree; fabric and batten create a project task pair from that branch, batten verbs run from any worktree | [`pair-from-parent`](design-pair-from-parent.md) | 4d<br>4d | fabric, batten, board, workspaces |
-| F20 |  | **Large tasks: Discussion, a pre-planner, and the pieces as darn runs inside the task's beam**<br>• Discussion decides scope, a pre-planner splits it into contracted pieces, each piece runs as darn from the task's beam, a whole-task perch reviews, then align and land | [`loom-beam-darns`](design-loom-beam-darns.md) | 13h<br>13h | loom, shed, batten, workspaces, burler |
+| F20 |  | **Large tasks: Discussion, a pre-planner, and the pieces as darn runs inside the task's beam**<br>• Discussion decides scope, a pre-planner splits it into contracted pieces, each piece runs as darn from the task's beam, a whole-task perch reviews, then align and land | [`loom-beam-darns`](design-loom-beam-darns.md) | 14h<br>13h | loom, shed, batten, workspaces, burler |
