@@ -14,6 +14,7 @@ Note `ubuntu-2404-floor` covers the stated floor and its mechanical check.
 
 ## Open
 
-- Which tiers: the whole `landing` list, or tier 0 and 1 only.
+- Which tiers: the tiers of the `finalize` gate key (`lyx config gate`, `gates.finalize`), or tier 0 and 1 only.
+  A tier already green for the clean tree is carried and runs nothing.
 - Whether a red suite refuses the adopt, or only reports.
 - Whether it runs in the background, so the adopt returns at once.

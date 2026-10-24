@@ -67,4 +67,4 @@ Whether `stitch` then stays a recipe of its own, or becomes darn with the tail r
 
 A piece run does not run the full suite a standalone darn runs before it lands.
 The umbrella runs the full suite once, after every piece has merged back.
-Which tiers a piece's own gates run is open; the tier plan per recipe is task `gate-runs-once`'s.
+Which tiers a piece's own gates run is open; the gate key per recipe row is stated in `internal/gateslot`'s doc (`gate-runs-once`, landed): a piece's rows read `darn-write`, `code-burler-fix` and `finalize`.

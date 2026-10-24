@@ -1,6 +1,6 @@
 # Drop the transitional tag spellings after the deploy
 
-`drop-transitional-tag-spellings` · Task · enhancement · running · Loom-Preflight
+`drop-transitional-tag-spellings` · Task · enhancement · running · Discussion-Write
 
 ## Drop the transitional tag spellings (D13 follow-up of `gate-runs-once`)
 
