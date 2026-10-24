@@ -1,12 +1,11 @@
 ---
 round: 1
 focus:
-  - "internal/shuttleengine/activity.go, ReadAgentActivity and noteWaiterlessRun: does a run that reads running with a dead waiter log one Warn, then Debug lines for the rest of the episode, and does the episode end with one Info once the run reads live or no longer running? Check `logger.EpisodeSet` Fail/Recover semantics against the acceptance criteria."
-  - "The not-found and no-pid paths: does a record with no pid, and a record with a terminal outcome, log nothing new, including no stray recovery Info when no episode was open?"
-  - "A run that goes from waiterless back to live: is the recovery line logged exactly once on the next read, and do the unreadable-record and unknown-engine episodes still behave as before?"
-  - "Scope against the decision record: the diff must not change which runs count as live, the notice text, or Batten's quiet judgement, and must not change the run record's shape."
-  - "Docs in the same diff: the `ReadAgentActivity` doc comment and `internal/shuttleengine/doc.go` match the new behavior, and PATTERN-log-levels is followed."
-  - "internal/shuttleengine/activity_test.go: does the new test cover Warn-then-Debug, the recovery Info, and the no-pid and finished-record cases, without duplicating an existing test's coverage?"
+  - "internal/shuttleengine/doc.go after the parent merge: does the new waiterless-run paragraph in the Agent activity section sit coherently beside the parent's usage-limit sentences in the held-turn-end section, with no merge damage or contradiction?"
+  - "internal/shuttleengine/activity.go `ReadAgentActivity` and `noteWaiterlessRun`: does every path that ends a waiterless-run episode (live again, terminal outcome, no pid, vanished record) call Recover on the run's own key, and does a repeating skip log Warn once and Debug after, per PATTERN-log-levels?"
+  - "internal/shuttleengine/activity_test.go: does each acceptance criterion in the decision record (Warn once, Debug on repeat, Info on live again, nothing for no-pid or finished records) have a test, without duplicating another test's coverage?"
+  - "Scope against the board entry and record: does the diff leave which runs count as live, the notice text and Batten's judgement unchanged, and keep the run record's shape as is?"
 ---
 
-Seed focus from the decision record's acceptance criteria and constraints.
+Seed focus for the amendment round: the parent merge touched only `internal/shuttleengine/doc.go`, so the doc paragraph is the first place to look.
+The remaining entries settle the logic and test coverage against the decision record's acceptance criteria.
