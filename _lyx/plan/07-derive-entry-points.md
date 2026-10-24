@@ -15,7 +15,7 @@
 - `plan:internal/dotnetimpact#narrow`
 - `plan:internal/dotnetimpact#seed`
 - `plan:internal/dotnetimpact#parseSource`
-- `plan:internal/planparser#CSharpSeed`
+- `internal/planparser#CSharpSeed`
 - `plan:internal/impactset#ChangedPaths`
 - `plan:internal/impactset#AncestorBase`
 

@@ -1,9 +1,9 @@
 # Card 3 — card seeds for the dotnet scoper from the plan parser
 
 **Create:**
-- `plan:internal/planparser#CSharpSeed` -> `type CSharpSeed struct`
-- `plan:internal/planparser#CardCSharpSeeds` -> `func CardCSharpSeeds(plan *Plan, cards []Card) []CSharpSeed`
-- `plan:internal/planparser_test#TestCardCSharpSeeds` -> `func TestCardCSharpSeeds(t *testing.T)`
+- `internal/planparser#CSharpSeed`
+- `internal/planparser#CardCSharpSeeds`
+- `internal/planparser_test#TestCardCSharpSeeds`
 
 **Extends:**
 - `internal/planparser/doc.go`

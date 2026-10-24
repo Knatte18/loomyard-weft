@@ -32,9 +32,9 @@
 - `internal/gatecli#scopesConfigWith`
 - `internal/gatecli#runRecordOf`
 - `internal/gatecli#runningGate.records`
-- `plan:internal/gateslot#BuildStep`
-- `plan:internal/gateslot#BuildSummaryLine`
-- `plan:internal/gateslot#BuildTimeoutLine`
+- `internal/gateslot#BuildStep`
+- `internal/gateslot#BuildSummaryLine`
+- `internal/gateslot#BuildTimeoutLine`
 
 **Intent:**
 Run the hub's `build` command once per `lyx gate test` call, before the opted-in tiers, inside held slots (Decision 6, Decision 7, Constraint `PATTERN-gate-slot`).

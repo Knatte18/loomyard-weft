@@ -1,9 +1,9 @@
 # Card 2 — the build step's summary and timeout lines, run record and landing failure record
 
 **Create:**
-- `plan:internal/gateslot#BuildSummaryLine` -> `func BuildSummaryLine(record RunRecord, logPath string) string`
-- `plan:internal/gateslot#BuildTimeoutLine` -> `func BuildTimeoutLine(timeout time.Duration) string`
-- `plan:internal/gateslot#buildSummaryPattern` -> `var buildSummaryPattern *regexp.Regexp`
+- `internal/gateslot#BuildSummaryLine`
+- `internal/gateslot#BuildTimeoutLine`
+- `internal/gateslot#buildSummaryPattern`
 
 **Edit:**
 - `internal/gateslot#RunRecord`
