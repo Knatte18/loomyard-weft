@@ -943,29 +943,6 @@
       "revised": "2026-10-24T06:32:58Z"
     },
     {
-      "id": 792,
-      "handle": "T7",
-      "slug": "idle-notice-no-live-run",
-      "title": "Batten idle notice says no agent activity readable while a run is live",
-      "kind": "task",
-      "labels": [
-        "bug",
-        "batten",
-        "shuttle"
-      ],
-      "issues": [],
-      "recipe": "darn",
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "## Seen (2026-10-24)\n\nThe task `idle-notice-misses-fork-activity` quoted Batten's idle notice as \"no agent activity readable\" for a writer working in a fork.\nIts fix (c5d715860) closed the fork gap in `ReadAgentActivity`, which yields \"agents idle\", not that text; Batten writes \"no agent activity readable\" only when it finds no live run at all.\nIf the quote was exact, a second cause hides a live run from the activity reader.\n\n## Idea\n\nFind which path made the reader see no live run while the writer worked, and fix it; check the run records of a run that hit the notice before closing this as a misquote.",
-      "status": "done",
-      "created": "2026-10-24T06:53:16Z",
-      "revised": "2026-10-24T08:27:15Z",
-      "profile": "light",
-      "owner_machine": "neve"
-    },
-    {
       "id": 793,
       "handle": "T2",
       "slug": "pattern-cleanup",
