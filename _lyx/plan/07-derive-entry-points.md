@@ -1,23 +1,23 @@
 # Card 7 — internal/dotnetimpact: the diff and card entry points and their fallbacks
 
 **Create:**
-- `plan:internal/dotnetimpact#DeriveDiff` -> `func DeriveDiff(ctx context.Context, worktree, dir, base string, inert func(rel string) bool) (Scope, error)`
-- `plan:internal/dotnetimpact#DeriveCards` -> `func DeriveCards(ctx context.Context, worktree, dir string, seeds []planparser.CSharpSeed, inert func(rel string) bool) (Scope, error)`
-- `plan:internal/dotnetimpact#scanTree` -> `func scanTree(dir string) (sources []sourceFile, projects []string, err error)`
-- `plan:internal/dotnetimpact#TestDeriveDiff` -> `func TestDeriveDiff(t *testing.T)`
-- `plan:internal/dotnetimpact#TestDeriveCards` -> `func TestDeriveCards(t *testing.T)`
+- `internal/dotnetimpact#DeriveDiff`
+- `internal/dotnetimpact#DeriveCards`
+- `internal/dotnetimpact#scanTree`
+- `internal/dotnetimpact#TestDeriveDiff`
+- `internal/dotnetimpact#TestDeriveCards`
 
 **Extends:**
 - `internal/dotnetimpact/doc.go`
 - `docs/overview.md`
 
 **Uses:**
-- `plan:internal/dotnetimpact#narrow`
-- `plan:internal/dotnetimpact#seed`
-- `plan:internal/dotnetimpact#parseSource`
+- `internal/dotnetimpact#narrow`
+- `internal/dotnetimpact#seed`
+- `internal/dotnetimpact#parseSource`
 - `internal/planparser#CSharpSeed`
-- `plan:internal/impactset#ChangedPaths`
-- `plan:internal/impactset#AncestorBase`
+- `internal/impactset#ChangedPaths`
+- `internal/impactset#AncestorBase`
 
 **Intent:**
 Add the two entry points `gatecli` calls under the `dotnet` scoper, told the worktree, the tier's `dir`, a base or the cards' seeds and an inert predicate over worktree-relative paths, and resolving no cwd (Decisions 1 to 3, 5).

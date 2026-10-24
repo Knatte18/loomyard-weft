@@ -1,8 +1,8 @@
 # Card 8 — the {filter} placeholder and the tier filter
 
 **Create:**
-- `plan:internal/gatecli#filterArgument` -> `func filterArgument(goos string, number int, tier gateslot.Tier, terms []string) (string, error)`
-- `plan:internal/gatecli#TestFilterArgument` -> `func TestFilterArgument(t *testing.T)`
+- `internal/gatecli#filterArgument`
+- `internal/gatecli#TestFilterArgument`
 
 **Edit:**
 - `internal/gatecli#invocation`
