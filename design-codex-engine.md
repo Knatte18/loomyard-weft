@@ -30,6 +30,7 @@ From the feasibility study (`docs/research/codex-feasibility.md`):
 In the operator's first hands-on use, Codex asked for approval of nearly every command, and "allow for later" saved an exact command line, not a prefix, so the saved list was useless.
 Codex 0.164 has the switches for it: `approval_policy = "never"` (`-a never`) with `sandbox_mode = "workspace-write"` (`-s workspace-write`) never asks and keeps writes inside the workspace, and `~/.codex/rules/*.rules` takes hand-written `prefix_rule(pattern=["git"], decision="allow")` entries.
 A `codexengine` sets the approval and sandbox mode on its launch line, as claudeengine does with its permission mode, and never relies on saved approvals.
+Operator view, not a decision: Codex's permission list should mirror Claude's, which allows broadly and forbids only destructive commands; a hand translation of `~/.claude/settings.json` sits in `~/.codex/rules/claude.rules` on Neve (2026-10-24).
 
 ## Steps
 
