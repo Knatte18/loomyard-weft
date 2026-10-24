@@ -2,8 +2,8 @@
 
 **Create:**
 - `docs/dotnet-hub.md`
-- `plan:internal/gatecli#TestGateTest_DotnetFixture` -> `func TestGateTest_DotnetFixture(t *testing.T)`
-- `plan:internal/gatecli#writeDotnetFixture` -> `func writeDotnetFixture(t *testing.T, dotnet string) (repo, packages string)`
+- `internal/gatecli#TestGateTest_DotnetFixture`
+- `internal/gatecli#writeDotnetFixture`
 
 **Extends:**
 - `docs/overview.md`

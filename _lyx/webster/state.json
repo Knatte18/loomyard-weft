@@ -1,6 +1,6 @@
 {
   "runGuid": "43cfa814d994668d0a05c57c27d1a1f7",
-  "planFingerprint": "080b2b33b3bd93136839ecbb5165a63c15292b86208f2e5a366e7264a34a83cd",
+  "planFingerprint": "45d270829dda2c7c0e358cfb404a53c521556cf75aecef33aad1fdc8f167b13f",
   "planFileHashes": {
     "00-overview.md": "c3f7c3710689673b70eef27ecf79a1e27d1650000f79d38e64f55157161feaba",
     "01-gate-config-keys.md": "d51d41c313b343c53140ce000c3b5250bfb0c1e0c0da5e00cfc409786903a9a7",
@@ -13,9 +13,9 @@
     "08-filter-placeholder.md": "3a8ecf3802099d6e2c182fc35d528596eaab25862a0a97b941ad6c785f20ec82",
     "09-dotnet-scoper.md": "9dc7eab3e550ce92f5f7b01c6a22caf3035998cadbc8e055f3d3564c3448eab7",
     "10-fingerprint-and-carry.md": "3e73b4733b528123ef6792feea66bdd4493a0f5ffba37333dfff34621f7891c3",
-    "11-inert-paths.md": "19507c7b936f4557a609897623a3c6ad41734a34c25d5016fcc61bed25583dc4",
-    "12-shared-build-step.md": "7d667e4038b4619958634ceb6f14721ed06bcb3285635d41fe02e73ac3302ee0",
-    "13-dotnet-hub-end-to-end.md": "34a47886b42a9874fc1f62de5fbe9e799571892b43baf69b3c68c572d7106dfc"
+    "11-inert-paths.md": "1bb75e6a59a2cf0e9407b90ece88714a0cb73dac291d0e605fcf78ff76869f7f",
+    "12-shared-build-step.md": "fec19926e6d7bac25629e57267aae7c8e89630d930c7edf03815e39c4ea9c786",
+    "13-dotnet-hub-end-to-end.md": "68cfb5910fcc89167e220777f39e8e5c4b25d845a0e09c8b7368e151990d67fa"
   },
   "planOverviewFrameHash": "e19afc325aa1c1d51fdcd6be7ba880e651aa07b333b66cac327702480a38a0ba",
   "partition": [
@@ -266,7 +266,7 @@
       }
     }
   ],
-  "currentBatch": 10,
+  "currentBatch": 0,
   "masterStrand": "e8d789df2077252216cf24db3cf99eef",
   "masterSessionId": "ff33c466-afe8-4cad-b93b-3ee265d7379c",
   "masterEngine": "claude",
@@ -319,17 +319,42 @@
       ],
       "cardHashes": {
         "10-fingerprint-and-carry": "3e73b4733b528123ef6792feea66bdd4493a0f5ffba37333dfff34621f7891c3",
-        "11-inert-paths": "19507c7b936f4557a609897623a3c6ad41734a34c25d5016fcc61bed25583dc4",
-        "12-shared-build-step": "7d667e4038b4619958634ceb6f14721ed06bcb3285635d41fe02e73ac3302ee0",
-        "13-dotnet-hub-end-to-end": "34a47886b42a9874fc1f62de5fbe9e799571892b43baf69b3c68c572d7106dfc"
+        "11-inert-paths": "1bb75e6a59a2cf0e9407b90ece88714a0cb73dac291d0e605fcf78ff76869f7f",
+        "12-shared-build-step": "fec19926e6d7bac25629e57267aae7c8e89630d930c7edf03815e39c4ea9c786",
+        "13-dotnet-hub-end-to-end": "68cfb5910fcc89167e220777f39e8e5c4b25d845a0e09c8b7368e151990d67fa"
       },
       "startSha": "8b551f7ef1f19ea45680656cb0a3e5f44ec08d21",
       "kind": "fork",
       "spawnedAt": "2026-10-24T16:50:39Z",
       "sessionId": "ff33c466-afe8-4cad-b93b-3ee265d7379c",
       "engine": "claude",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "10-fingerprint-and-carry",
+        "status": "done",
+        "head_sha": "14c48d3ccd18bf10a0330f76d8d5fa428185f0a7",
+        "deviations": [
+          "internal/gatecli/build.go",
+          "internal/gatecli/dotnetfixture_integration_test.go",
+          "internal/gatecli/green.go",
+          "internal/gatecli/green_test.go",
+          "internal/gatecli/run.go",
+          "internal/gatecli/scope.go",
+          "internal/gatecli/test_integration_test.go",
+          "internal/gatecli/tierrun.go",
+          "internal/gatecli/tiers_test.go"
+        ]
+      },
+      "cardShas": [
+        "14c48d3ccd18bf10a0330f76d8d5fa428185f0a7"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-dotnet-scoped-verify/ff33c466-afe8-4cad-b93b-3ee265d7379c/subagents/agent-a42e03dd530f5c89d.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-dotnet-scoped-verify/ff33c466-afe8-4cad-b93b-3ee265d7379c/subagents/agent-a42e03dd530f5c89d.jsonl"
+      ]
     },
     "4": {
       "slug": "csharp-source-scan",
@@ -387,6 +412,7 @@
   },
   "seenForkTranscripts": [
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-dotnet-scoped-verify/ff33c466-afe8-4cad-b93b-3ee265d7379c/subagents/agent-a3448c1ac66ba5a14.jsonl",
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-dotnet-scoped-verify/ff33c466-afe8-4cad-b93b-3ee265d7379c/subagents/agent-a393a595c003477a0.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-dotnet-scoped-verify/ff33c466-afe8-4cad-b93b-3ee265d7379c/subagents/agent-a393a595c003477a0.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-dotnet-scoped-verify/ff33c466-afe8-4cad-b93b-3ee265d7379c/subagents/agent-a42e03dd530f5c89d.jsonl"
   ]
 }
