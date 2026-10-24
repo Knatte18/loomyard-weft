@@ -16,6 +16,7 @@ Drop the alignment agent at the discussion point and keep it at `pr-gate`, where
 - `board-fit` also reads the other in-flight runs' records through `lyx loom peers` and the parent's landed commits.
 - A lens gets a finding class that escalates to the run's parent instead of going to the fixer, for a question only the operator can settle: a design conflict with another run, or doubt about what the task is for.
   The Bouncer routes such a finding up to the orch.
+  Since `decision-reaches-agents` (2e265a4fc) the `decision` finding class exists and the Burler fix row posts it to the parent and keeps it from the fixer; what is left is the Bouncer's routing.
 - The `parent-review` gate and the `lyx loom review` verbs go, and with them the parent-review name.
 
 Gain: one cold agent spawn fewer per loom run.
