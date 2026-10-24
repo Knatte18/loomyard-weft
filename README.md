@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-24 06:05 UTC; every age below is as of then.
+Rendered 2026-10-24 06:08 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -30,7 +30,7 @@ Waits only on Running or Ready entries.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T1 | **Each test runs once per tree: disjoint tiers, row entry gates, carried green runs, tmux in final**<br>• Tiers tagged by name, shed row entry gates, verify skipped on an already green tree, tmux in the final gate, gate time measured<br>• `profile: light` | [`gate-runs-once`](design-gate-runs-once.md) | loom | `code-review-one-perch` | 6d<br>0m | gate, shed, loom, webster, fabric, batten |
+| T1 | **Each test runs once per tree: disjoint tiers, row entry gates, carried green runs, tmux in final**<br>• Tiers tagged by name, shed row entry gates, verify skipped on an already green tree, tmux in the final gate, gate time measured<br>• `profile: light` | [`gate-runs-once`](design-gate-runs-once.md) | loom | `code-review-one-perch` | 6d<br>2m | gate, shed, loom, webster, fabric, batten |
 
 ## Notes
 
@@ -52,7 +52,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | P | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| B1 |  | **Discussion check refuses a declared PATTERN text over the overview line cap**<br>• A changes or adds text past pattern.MaxEntryLineChars passes Discussion and first fails at Plan-Write | [`discussion-pattern-line-cap`](design-discussion-pattern-line-cap.md) | 18h<br>18h | loom |
+| B1 |  | **Discussion check refuses a declared PATTERN text over the overview line cap**<br>• A changes or adds text past pattern.MaxEntryLineChars passes Discussion and first fails at Plan-Write | [`discussion-pattern-line-cap`](design-discussion-pattern-line-cap.md) | 19h<br>19h | loom |
 | B2 |  | **Seeded VS Code title-bar colours do not show in task worktrees**<br>• The seeder writes a palette colour, but loom-tail-review settings.json has none and no colour shows | [`ide-title-colours-missing`](design-ide-title-colours-missing.md) | 18h<br>18h | ide |
 | B3 |  | **TestSmokeStart_NeverAttachesAndAddsNoOperatorStrand flakes on records index.lock and halts Merge-In** | [`smokestart-index-lock-flake`](design-smokestart-index-lock-flake.md) | 13h<br>13h | loom, fabric |
 | B4 |  | **Burler fix loop cannot route a decision-class finding to the parent** | [`burler-decision-finding-route`](design-burler-decision-finding-route.md) | 13h<br>13h | burler, loom |
