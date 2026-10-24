@@ -42,6 +42,7 @@ The sole aim is to offload Claude.
 Measured 2026-10-24 over the 10 latest full loom runs (`tools/tokencount/tokencount.sh -last 10`): the reviewers and their forks cost about 25% of all spend ($184 of $741), mostly Plan review (13%) and Discussion review (9%), while Code and Merge review are under 3%.
 If a twill fan on Codex works poorly, the review runs as strong single Codex agents instead.
 Codex reviews are investigated and benched thoroughly before any of it goes into production (operator, 2026-10-24).
+Operator view, not a decision (2026-10-24): Codex's strong model Astra could also write the plan, likely single-shot rather than as a twill fan; the Plan writer and its forks are about 23% of spend, and a Codex-written plan would then be reviewed by Claude.
 
 Single-session roles that spawn no forks and only write output files: Burler review chair without a cluster fan, Burler fixer, Describe, Bouncer judge and seed, treadle, friction, merge-conflict resolver, darn writer, the alignment agent.
 Webster, twill, the orch and the Burler cluster fan depend on cross-session messaging and background-task wake-ups, and wait.
