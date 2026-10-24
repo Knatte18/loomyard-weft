@@ -1,6 +1,6 @@
 # Clean up PATTERN.md: far too many entries
 
-`pattern-cleanup` · Task · enhancement, stencil · running · Code-Burler-Review
+`pattern-cleanup` · Task · enhancement, stencil · running · Code-Burler-Fix
 
 ## Seen (2026-10-24)
 
