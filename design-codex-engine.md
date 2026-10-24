@@ -40,7 +40,9 @@ Operator view, not a decision: Codex's permission list should mirror Claude's, w
 The trust prompt is answered by a `[projects."<path>"]` table with `trust_level = "trusted"` in `~/.codex/config.toml`, the entry Codex writes itself on accept; only `-c` cannot set it.
 Decision (operator, 2026-10-24): `codexengine` writes that entry itself before launch instead of pressing Enter on the prompt.
 Tested by the orch on Codex 0.164 (2026-10-24): inside a git repository Codex keys trust on the repository root, and an entry for a parent folder (`/home/knatte/Code`) does not cover it, so the prompt still shows; a folder outside any git repository is covered by a parent entry.
-So the engine writes one entry per worktree root; whether Codex resolves a linked worktree to its own root or to the main repository's is untested.
+A list of trust entries in the operator's `~/.codex/config.toml` would grow with every worktree and need removal at teardown, which no engine-neutral owner can do (fabric knows nothing of shuttle).
+Tested instead (2026-10-24): `CODEX_HOME` pointed at a folder holding its own `config.toml` with the trust entry and a symlink to `~/.codex/auth.json` starts Codex with no trust prompt and leaves `~/.codex` untouched; Codex fills that folder with its own state.
+Proposal (orch, not a decision): `codexengine` gives each launch a `CODEX_HOME` inside the run's own worktree, with config, trust entry, rules and hooks rendered by lyx, so it goes with the worktree's teardown; its session files must then be kept elsewhere (for instance a `sessions` link to `~/.codex/sessions`) so usage readers still find them.
 
 ## Design basis (operator view, not a decision, 2026-10-24)
 
