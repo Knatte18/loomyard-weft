@@ -1,37 +1,41 @@
-# A run's agent files follow-ups as notes, never as tasks
+# A run's agent can file a note, never create or promote a task
+A run's agent session can no longer create or promote a task on the board.
+`gate-runs-once` filed a task with `lyx board upsert`, the task depended on it, the Land notice named it "newly ready", and the orch started it as a full loom run the operator never approved.
+Only the operator decides what becomes a task, and with which recipe and profile; a run may at most file a follow-up as a note, which waits on the board.
 
-Only the operator decides what becomes a task.
-A run's agent could still create one with `lyx board upsert`, and a task that depended on the running task was then reported "newly ready" at landing and started as a full run nobody approved.
-The board now refuses that write, and the writer stencils tell agents to file a follow-up as a note.
+## What changes
 
-## The board guard
-
-`boardengine.Config` gains `StrandName`, the agent name of the writing session, and boardcli sets it from `LYX_STRAND_NAME` on every verb.
-The write critical section, beside the run lock, runs `checkTaskCreation` on the net change from the loaded entries to the entries after the mutation.
-For a run agent's name, it refuses any entry that is a task afterwards while no loaded entry of its slug was a task.
-That covers a new task, `promote`, an upsert turning a note into a task, an `upsert-batch` item and a `merge` upserting a new task.
-A rename is judged with the loaded slug renamed, so it passes, as do notes, status writes and edits of existing tasks.
-The refusal names the session and the entry and gives the way forward: file the follow-up with `"kind":"note"`.
-Nothing reaches disk on a refusal.
-
-A run agent's name is one carrying a task slug under any role but `orch`.
-An empty name (the operator at a terminal), the hub orch's slug-free name and an orch thread's `<shortname>:<slug>:orch` name create tasks as before.
-The guard trusts the name its caller passes, the same bound as the existing run_settings and hub-wide config guards: it stops a mistaken write, not a determined one.
-The replay of a local board commit never runs it.
-
-## Stencils
-
-The Discussion, Plan and Darn writer stencils now say a follow-up goes on the board as a note and no decision, card or step promotes a note.
-The discussion and plan review rubrics gain a bullet that flags a Decision or card that files or promotes a task.
+- `internal/boardengine`: the write critical section refuses a board write whose net change leaves a task whose slug was not a task before.
+  A new task, a promote, a note upserted to `"kind":"task"`, an `upsert-batch` carrying a new task and a `merge` whose upserted entry is a new task all count, through every verb.
+  Notes, edits of an existing task and renames are unaffected.
+  The refusal names the session and the entry, and says to file the follow-up as a note with `"kind":"note"`.
+- `internal/boardcli`: every write verb's board carries the caller's `LYX_STRAND_NAME` through the new `boardengine.Config` field `StrandName`.
+- Stencils: the Discussion, Plan and Darn writer templates say a follow-up becomes a note, never a task, and never promotes one; the discussion and plan review rubrics flag a decision or card that files or promotes a task.
+- Docs: `internal/boardengine/doc.go`, `internal/boardcli/doc.go` and the `ly:board` skill describe the refusal.
 
 ## Design decisions
 
-- The check lives in the engine's write critical section rather than in each CLI verb, so one net-change comparison covers every write path, the way the run lock does.
-- An orch thread in a task worktree is exempt because it is the operator's own channel. This departs from the run_settings guard, which refuses every slug-bearing strand.
-- A merge from a run agent whose upserted slug is a new task is refused even when it folds existing tasks: curating tasks is the operator's call.
-- The orch role stencil is unchanged. The parent's recorded decision dropped D5, so the orch still starts newly ready tasks at once, since every task is now operator-made.
+- One net-change check, modelled on `checkRunLocks`, instead of a guard per verb.
+  A rename is judged with the loaded slug renamed, so it creates no task.
+- A run's agent is a strand name carrying a task slug under any role but the orch's, matched with `agentname.MatchesRole` so a numbered orch role such as `orch-2` is exempt.
+  An empty name (the operator at a terminal), a slug-free name (the hub orch) and an orch thread in a task worktree write as before.
+  An orch thread acts for the operator.
+- The strand name is read in `boardcli`, never in `boardengine`.
+- The guard reads only the name the caller passes: it stops a mistaken write from a run's agent, not one that clears its environment.
+- A `merge` from a run's agent whose upserted slug is a new task is refused even when it folds existing tasks.
+- The orch keeps starting each task named after `newly ready:` at once.
+  Once this guard lands, only the operator creates tasks, so every task on the board is already approved.
 
-## Tests
+## Not covered
 
-`TestTaskCreationGuard` (tier0) pins each refused write and each allowed one, including the exempt names, and checks that board.json stays byte-identical on a refusal.
-The boardcli `TestCLI` step `TaskSessionFilesNotesOnly` shows `upsert` passes the strand name through: under a task strand, a new task is refused and the same entry as a note is stored.
+A Go producer that writes the board in-process is not covered, since only the CLI sets the strand name.
+No producer creates a task today.
+
+## To check by hand
+
+Nothing was run by hand; the `boardengine` and `boardcli` tests cover the guard.
+
+- `internal/boardengine/taskguard.go:14`: confirm a numbered orch thread (`<shortname>:<slug>:orch-2`) is not refused creating a task.
+- `internal/boardengine/taskguard_test.go` `TestTaskCreationGuard`: confirm a slug-free non-orch name such as `ly:webster` has a row that creates a task and passes.
+- `plugins/ly/skills/board/SKILL.md`: confirm the new "Tasks from a run session" section states the refusal and the note way forward.
+- `internal/boardcli/verbs_test.go:109`: confirm the doc comment of `stepTaskSessionFilesNotesOnly` says the note is accepted, not stored.
