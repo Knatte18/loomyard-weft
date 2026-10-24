@@ -16,7 +16,8 @@
 - `internal/loomcli#gateCallSource` -> `func gateCallSource(dirs configengine.Dirs) func(key string) (string, error)`
 - `internal/loomcli#planVerifySource`
 - `internal/loomcli#darnVerifySource`
-- `internal/loomcli#darnTreeScope`
+- `internal/loomcli#darnTreeScope` -> `func darnTreeScope(l *lyxcwd.Location) func(gateKey string) (string, bool, error)`
+- `internal/loomcli#TestDarnTreeScope_ClassifiesAtEachCall`
 - `internal/loomcli#loomCLI.wire`
 - `internal/loomcli#loomCLI.wireDarn`
 - `internal/testkit/envkit#FullEnv`
@@ -30,6 +31,7 @@
 - `internal/webstercli#TestGateParity_VerifyGate`
 - `internal/shedrecipe#newTestEnv`
 - `internal/shedrecipe#TestResolveGateSpec_VerifyRequiresAbsoluteEnvRoots`
+- `internal/battencli#intentionallyNil`
 - `contracts/recipes/loom-recipe.yaml`
 - `contracts/recipes/darn-recipe.yaml`
 - `pattern/PATTERN-verified-tree.md`
@@ -56,6 +58,7 @@ Bound: `gate_key` selects only which key of the hub's `gate.yaml` the row runs; 
 
 `Env.VerifyCommand` becomes `func(gateKey string) (string, error)` and `Env.VerifyTreeScope` becomes `func(gateKey string) (string, bool, error)`, each a recipe-wide lookup keyed by the row's key; `Env.Round` goes, with `loomshed.RoundGate` and `envkit`'s `fixedRoundGate`.
 `envkit.FullEnv` fills the two keyed seams.
+`TestWire_DarnRecipe` and `TestWire_DefaultConfig` drop their `Round().Render` assertions with the field, and battencli's `intentionallyNil` loses its `Round` row, so `TestWire_EverySeamFilled` lists no seam `envkit.NilSeams` no longer reports.
 
 `loomshed.NewVerifyGate` loses its `round` argument.
 In the round form the told command is the site's own `--gate <key>` call, run as it is, since the gate itself derives the `diff` base (card 8).
@@ -66,10 +69,10 @@ It gains rows for a first round linting from the merge base, which fails on a fi
 `TestResolveGateSpec_ValidOneEntryPerVocabularyName` asserts the `verify` gate of a row named `Code-Burler-Fix` reads `VerifyCommand("code-burler-fix")` and that `gate_key: custom` makes it read `VerifyCommand("custom")`; `TestResolveGateSpec_Rejections` gains a row with `gate_key: 3`, refused naming the row, the key and the way forward.
 
 `gateCallSource` returns a reader of a key's call, `GateCall(key)`, loading the config at each call, and replaces `gateListSource`: `loomCLI.wire` and `loomCLI.wireDarn` set `env.VerifyCommand` to it, and `planVerifySource` and `darnVerifySource` read their keys through it as in card 1.
-`darnTreeScope` takes the key and, until card 6, ignores it and answers today's tree-scoped command.
+`darnTreeScope` takes the key and, until card 6, ignores it and answers today's tree-scoped command; `TestDarnTreeScope_ClassifiesAtEachCall` calls the returned reader with a key.
 `TestGateCallSource` replaces `TestGateListSource`: it pins that a key's call is read at each call, so an edit between two calls is seen, and that an unknown key returns the config refusal.
 
 `resolveGateSpec`'s doc comment names the keyed `env.VerifyCommand` and `env.VerifyTreeScope` in place of `env.Round`.
 The recipes' Code-Burler-Fix and Darn-Write comments, the loomshed package doc and `PATTERN-verified-tree.md` say each fix row and writer runs its own key, lints from its own latest pass or the merge base, and no longer shares Webster's end gate pass.
 
-**ImpactSummary:** Re-signs the loom verify gate and two gate resolvers, keys two Env seams by gate key and drops the round source; touches shedrecipe, loomshed, loomcli wiring and envkit.
+**ImpactSummary:** Re-signs the loom verify gate and two gate resolvers, keys two Env seams by gate key and drops the round source; touches shedrecipe, loomshed, loomcli wiring, envkit and battencli's seam list.

@@ -15,13 +15,14 @@
 - `internal/impactset#TestFindGuardTests`
 - `internal/impactset#TestTargetsFor`
 - `internal/impactset#TestModuleGuardTests_OverAModule`
+- `internal/impactset#TestDerive_OverARepository`
 - `internal/gatecli#runGuardStep` -> `func runGuardStep(ctx context.Context, out io.Writer, run tierRun, moduleDir string, guards map[string][]string, env []string, request testRequest) tierResult`
 - `internal/gatecli#scope`
 - `internal/gatecli#computeScope`
 - `internal/gatecli#scanGuards`
 - `internal/gatecli#planTierRuns`
 - `internal/gatecli#tierRun`
-- `internal/gatecli#guardRunOf`
+- `internal/gatecli#guardRunOf` -> `func guardRunOf(plan []tierRun) []tierRun`
 - `internal/gatecli#runTest`
 - `internal/gatecli#execution.runGuard`
 - `internal/gatecli#guardScanRefusal`
@@ -30,6 +31,7 @@
 - `internal/gatecli#scenarioConfig`
 - `internal/gatecli#TestPlanTierRuns`
 - `internal/gatecli#TestGateTest_Scenario`
+- `internal/gatecli#TestGateTest_Scopes`
 - `internal/gateslot#Config`
 - `internal/gateslot#configFile`
 - `internal/gateslot#ConfigSpec`
@@ -38,10 +40,11 @@
 - `internal/gateslot/template.yaml`
 - `internal/gateslot#TestMigrateConfig`
 - `internal/gateslot#TestLoadConfig`
-- `internal/loomshed#TestVerifyGate_Scenario`
+- `internal/loomshed#roundGateConfig`
 - `internal/impactset/doc.go`
 - `internal/gatecli/doc.go`
 - `internal/gateslot/doc.go`
+- `docs/overview.md`
 
 **Delete:**
 - `internal/impactset#compiledUnderIntegration`
@@ -52,6 +55,7 @@ The guard step runs per tier (D6), so guard tests in `tier0` files run under `ti
 
 `FileTier` reads a test file's `//go:build` constraint: the tier is the `N` of the `tierN` tag it names, and a file with none counts as `tier0`, so an untagged file and a transitional `tierN || integration` file (D13) both read right.
 `GuardTest` holds a guard test's `Name` and its file's `Tier`; `guardNamesInFile`, `FindGuardTests`, `ModuleGuardTests` and `Targets.Guards` carry it.
+The readers of `Targets.Guards`, found by a search for `Guards` over the module's tests, compare `GuardTest` values with their tier: `TestTargetsFor`'s wanted targets and the two `Guards` assertions of `TestDerive_OverARepository`, which expect the guard of `g` as `{Name: "TestGuard", Tier: 0}`.
 The scan's `integration` rule is replaced: a `//lyx:guard` marker is allowed in a `tier0` or `tier1` file and refused in a `tier2` or `tier3` file as `GuardWrongTier`, naming the file and line; `guardScanRefusal`'s way forward for it is to move the marked test into a `tier0` or `tier1` file.
 The input that reaches it is a `tier2` test file holding a marked `func Test…`; a `TestFindGuardTests` row reaches it, and another row asserts a marked test in a `tier1 || integration` file reads as tier 1.
 
@@ -65,7 +69,7 @@ With `guard_tier` gone, the guard scan runs in `tier0`'s `dir` (every hub declar
 `TestMigrateConfig` gains the acceptance row of a hub file holding `landing`, `final`, `round`, `card`, `batch` and `guard_tier`, reconciling to the D1 keys and scopes with no `guard_tier`, and a second pass changing nothing.
 `TestPlanTierRuns` gains rows for guard tests in `tier0` and `tier1` files planning two groups under their own tiers, for a group skipped because its tier ran whole, for a group skipped because its tier was carried whole, and for a group refused because its tier is undeclared and because its tier's command lacks `{args}`.
 `TestGateTest_Scenario` gains rows: a call running both groups; a repeat of the same call over the same tree carrying the guard groups under their `-run` args; and an `all` run after that guard pass on the same tree running the guard packages' tests, since a guard entry never covers an empty-args request.
-The config seeds in the gatecli test helpers and `TestVerifyGate_Scenario` drop `guard_tier`.
-The impactset and gatecli docs state the per-tier guard step and the new scan rule, the gatecli doc's Example block drops `guard_tier: 1` and writes its `gates` as keys, and the gateslot doc's Config section drops `guard_tier` and names it among the retired keys.
+The readers of `guard_tier` and `GuardTier`, found by a search for both over the module and `docs/`, move with it: the config seeds in the gatecli test helpers and loomshed's `roundGateConfig` drop `guard_tier`, and `TestGateTest_Scopes`'s subtest that runs the guard step through `guard_tier`'s slots is renamed and reworded to the guard step's per-tier group.
+The impactset and gatecli docs state the per-tier guard step and the new scan rule, the gatecli doc's Example block drops `guard_tier: 1` and writes its `gates` as keys, the gateslot doc's Config section drops `guard_tier` and names it among the retired keys, and `docs/overview.md`'s gate entry drops `--guards` running `guard_tier`'s command for the guard tests running per file tier.
 
 **ImpactSummary:** Re-signs the guard scan's results and the guard step to carry each test's tier and retires `guard_tier`; touches impactset, gatecli and gateslot together.

@@ -1,6 +1,6 @@
-# Card 30 — retag-internal-a-f
+# Card 29 — retag-internal-a-f
 
-**Custom:**
+**Edit:**
 - `internal/adoptcli#`
 - `internal/agentname#`
 - `internal/alignment#`
@@ -40,4 +40,6 @@
 - `internal/fsx#`
 
 **Intent:**
-Retag every test file of these packages to its one tier tag (D5), under the overview's `retag-rules` decision, as card 24 states the rules.
+Retag every test file of these packages to its one tier tag (D5), under the overview's `retag-rules` decision, as card 23 states the rules.
+
+**ImpactSummary:** Changes only the build-constraint lines of these packages' test files, splitting a shared helper file where another tier uses it; no production code or caller changes.

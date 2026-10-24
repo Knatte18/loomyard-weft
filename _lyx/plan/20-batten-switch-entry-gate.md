@@ -19,9 +19,9 @@
 - `internal/battenrecipe#TestNew_OnDoneChainAndLoadBearingEdges`
 - `internal/shedadapters/doc.go`
 - `internal/battencli/cli.go`
-
-**Create:**
-- `plan:internal/battencli#TestWireSetting_OpenTerminalForcesOpenWindow` -> `func TestWireSetting_OpenTerminalForcesOpenWindow(t *testing.T)`
+- `internal/shedbuild#engineMinimalConfig`
+- `internal/battenshed/doc.go`
+- `docs/overview.md`
 
 **Intent:**
 Batten's Open-Window, Seed-IDE and Open-IDE rows move their `switch:` to `entry_gate:` (D10), so the Command producer reads no switch.
@@ -38,9 +38,9 @@ Bound: the hidden `--open-terminal` flag forces only Open-Window's own setting f
 
 `TestCommandProducer` drops its switch rows and keeps the command rows; `TestCommandEntry` asserts a `switch` key is refused with the new way forward's text.
 `TestBattenPreRun_ReopensTheWindowWithNoClientAttached` keeps its `SwitchOff` row, now answered through `Env.Setting`, and rewrites `SwitchOffAndOpenTerminalForced` to answer `batten.open_window` true through the `Env.Setting` the forced run's wiring gives, in place of the deleted `forced` field.
-The other users of the deleted `Forced` move too: `TestWire_MarkerAndReportSeamsRefuseAnAbsentTaskWorktree` asserts the forced answer of `Env.Setting` in place of `c.env.Command.Forced`, and `stepCommandRows_FollowTheTasksLocalSwitch` forces Open-Window through `--open-terminal` in place of setting `Forced`.
+The other users of the deleted `Forced` move too: `TestWire_MarkerAndReportSeamsRefuseAnAbsentTaskWorktree` asserts the forced answer of `Env.Setting` in place of `c.env.Command.Forced`, and `stepCommandRows_FollowTheTasksLocalSwitch` forces Open-Window through `--open-terminal` in place of setting `Forced`, and asserts over its task worktree's `open_window: false` that `Env.Setting` answers `batten.open_window` false without `--open-terminal` and true with it, and that `seed_ide`'s answer is unchanged.
+The readers of the `switch` key, found by a search for it over the module's tests and docs, move too: shedbuild's `engineMinimalConfig` drops the `Command` entry's `switch` key, and the Command rows paragraphs of `internal/battenshed/doc.go` and `docs/overview.md` say each row runs only when its entry gate's `batten.yaml` setting is on and that a resume reopens the window when `batten.open_window` is on, in place of the switch.
 `TestNew_OnDoneChainAndLoadBearingEdges` asserts the built Open-Window, Seed-IDE and Open-IDE rows carry entry gates that answer false when a fake `Setting` returns false for their setting and true when it returns true.
-`TestWireSetting_OpenTerminalForcesOpenWindow` is an `integration`-tagged test, which card 28 retags `tier1`, over a hubforge fixture: it builds batten's `Env.Setting` over a task worktree whose config sets `open_window: false` and asserts it answers false without `--open-terminal` and true with it, and that `seed_ide` is unchanged.
 The shedadapters Command section and the battencli package doc in `cli.go`, with the run verb's long help, describe the entry gate in place of the switch.
 
-**ImpactSummary:** Moves batten's three Command switches into entry gates and removes the producer's switch and force; touches the recipe, the Command producer and entry, and batten's wiring.
+**ImpactSummary:** Moves batten's three Command switches into entry gates and removes the producer's switch and force; touches the recipe, the Command producer and entry, batten's wiring, shedbuild's engine fixture and the docs that describe the switch.
