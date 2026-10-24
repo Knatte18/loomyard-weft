@@ -16,7 +16,7 @@ index c9033360a..92b8c2812 100644
  ## Where a finding goes
  
 diff --git a/docs/overview.md b/docs/overview.md
-index cbe305d4b..770ad8210 100644
+index 24b004317..2ba9c0659 100644
 --- a/docs/overview.md
 +++ b/docs/overview.md
 @@ -355,7 +355,7 @@ User-facing modules each get one `lyx <module>` namespace:
