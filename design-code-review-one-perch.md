@@ -1,6 +1,6 @@
 # One code review perch for darn and loom
 
-`code-review-one-perch` · Task · enhancement, loom, burler · running · Finalize
+`code-review-one-perch` · Task · enhancement, loom, burler · done
 
 ## Seen (orch, 2026-10-23)
 
