@@ -27,8 +27,6 @@
 - `internal/shedengine#TestRenameProducers`
 - `internal/shedengine#TestComposeActivity`
 - `internal/shedengine#TestStatus_JSONRoundTrip`
-
-**Extends:**
 - `internal/shedengine/doc.go`
 
 **Intent:**
@@ -52,6 +50,8 @@ A skip write carries a pending caller label through untouched rather than handin
 `composeActivity` reads a skip as `<row> → skipped`; `episodeStuckCount` treats a skipped entry as a Done by its row, ending the episode as a Done does; `gotoAdmitted` reads a skipped entry's routed row as its `OnDone`.
 
 Bound: a gate skips only its own row, and the shed goto verb is the one bypass.
+
+The doc's existing sentences change to match: the Caller labels sentence that the next write appending a history entry hands `pending_by` to it gains the exception that a skip write appends an entry and carries the label through; the `pause_after` sentence that it fires on a routed running outcome gains that a skipped row also fires it; the bounce-budget sentence that an episode ends at a Done entry gains that a skipped entry ends it as a Done does; and the Field ownership section names `entered_row` as Shed-owned in a sentence of its own, outside the list of fields rewritten on every persist: the entry evaluation sets it, every routed write and skip clears it, `Goto` sets it to its target, a targeted `Relaunch` clears it, and the resume and halt writes keep it.
 
 `TestStep_EntryGate` drives a Shed with fake gates: a false gate records `skipped` with its reason, follows `on_done` and spends no budget; a chain of two skips runs in one step; a skip of a row whose `on_done` is empty finishes the run done; a chain longer than the list writes failed naming the rows; an evaluation error writes failed, leaves the row not entered and a resume evaluates again; a resume of an entered row re-calls it without evaluating; a Stuck routed back to its own row through a skipped row evaluates that row's gate, and so does a gated row whose `on_stuck` names itself; a `pause_before` on a gated row halts before evaluation and a gate answer changed during the pause decides; a `pause_after` on a skipped row pauses at its `on_done` row; a run resumed from blocked with a `ResumedBy` label whose first row is skipped puts the label on the next verdict's entry, not the `skipped` entry.
 `TestGoto_MovesBlockedRunToTarget` asserts the goto names its target in `entered_row`, and `TestGoto_StepResumesAtTarget` steps after a goto onto a gated-off row and asserts the row is called; `TestRelaunch` asserts a target relaunch writes the status with `entered_row` cleared and an untargeted or in-effect one leaves it as it stood; `TestRenameProducers`, `TestComposeActivity` and `TestStatus_JSONRoundTrip` cover the field, the activity text and an old status without it.

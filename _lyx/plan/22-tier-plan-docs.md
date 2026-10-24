@@ -18,5 +18,5 @@ Cards 1, 3 and 14 already brought its Config section up to the keys, the renderi
 The file comment of `internal/webstercli/verify.go` names the `webster` gate key where it names the `final` gate, and the file comment of `internal/darnengine/config_test.go` names `TreeScopedTargets` where it names the deleted `TreeScopedCommand`.
 
 `PATTERN-test-speed.md`'s tier table names each tier's tag, `tier0` through `tier3`, says tags are disjoint so each test runs in one tier, gives the one-tag rule and the `tierN || integration` transition, and replaces the gate table with the gate keys.
-`docs/overview.md` names the gate keys where it names the `landing` gate and the round gate.
+`docs/overview.md` names the gate keys where it names the `landing` gate and the round gate; the gate entry's synopsis (`lyx gate test [-C <dir>] [--tier N]... [--all] [--guards] ...`) also names `--gate <key>`, and the paragraph describing the `fabricengine_test` files as `//go:build integration`-tagged names `tier1`.
 `loom-plan-spec.md`'s verify model section describes the keys in place of the `card`, `batch`, `round`, `final` and `landing` lists, and a `**Verify:**` line that tests as one `lyx gate test --wait` call with a gate key or a tier list and a scope form.

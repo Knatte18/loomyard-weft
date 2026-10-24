@@ -61,6 +61,7 @@
 **Intent:**
 Retag every test file of these packages to its one tier tag (D5), under the overview's `retag-rules` decision, as card 23 states the rules; this is the last retagging card, so it also lands the one-tag scan (D5), which passes the repository only once every test file is retagged.
 The crucible docs' live-substrate commands, found by a search for `-tags` over the non-Go files, compile the retagged tests only under the new spelling, so `go test -tags tmux` becomes `go test -tags tier2` and `-tags llm` becomes `-tags tier3` in `crucible/README.md`, `crucible/orchestrator-prompt.md` and `crucible/review-prompt-template.md`.
+The `//go:build tmux` and `//go:build llm` prose of `crucible/README.md` and `crucible/review-prompt-template.md`, which tells a writer which tag a live test carries, names `tier2` and `tier3`, since the one-tag scan this card lands refuses a test file tagged `tmux` or `llm` alone.
 
 `TestTierTags_OneTagPerTestFile` is a `//lyx:guard` test in a new `cmd/lyx` test file tagged `tier0 || integration` (D13), walking every `_test.go` file through `scankit.Walk` (testdata directories excluded) with a scan floor.
 `tierTagFailure` parses a file with `go/parser` and fails it, naming the file and the way forward of giving it one `tierN` tag:

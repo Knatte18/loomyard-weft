@@ -16,7 +16,9 @@
 - `internal/impactset#TestTargetsFor`
 - `internal/impactset#TestModuleGuardTests_OverAModule`
 - `internal/impactset#TestDerive_OverARepository`
-- `internal/gatecli#runGuardStep` -> `func runGuardStep(ctx context.Context, out io.Writer, run tierRun, moduleDir string, guards map[string][]string, env []string, request testRequest) tierResult`
+- `internal/gatecli#guardStepRun` -> `func guardStepRun(cfg gateslot.Config, moduleDir string, tier int, guards map[string][]string, request testRequest) (tierRun, error)`
+- `internal/gatecli#guardPackages`
+- `internal/gatecli#execution`
 - `internal/gatecli#scope`
 - `internal/gatecli#computeScope`
 - `internal/gatecli#scanGuards`
@@ -28,6 +30,7 @@
 - `internal/gatecli#guardScanRefusal`
 - `internal/gatecli#planConfig`
 - `internal/gatecli#scopesConfig`
+- `internal/gatecli#scopesConfigWith`
 - `internal/gatecli#scenarioConfig`
 - `internal/gatecli#TestPlanTierRuns`
 - `internal/gatecli#TestGateTest_Scenario`
@@ -62,7 +65,8 @@ The input that reaches it is a `tier2` test file holding a marked `func Test…`
 In `gatecli`, the guard step groups the guard tests outside the scope by their file's tier and plans one guard run per group, each under that tier's command, slots, `timeout_min`, `prebuilt_lyx` and `dir`, after the listed tiers pass.
 A group whose tier the call already ran whole, or carried whole (card 7), is skipped, and a group the green record holds under its own `-run` args carries.
 A group whose tier is undeclared, or whose command lacks `{targets}` or `{args}`, is refused before any slot naming `lyx config gate`.
-`runGuardStep` runs one group's `tierRun`; `guardRunOf` returns every guard run, and `runTest` runs them in tier order, stopping at the first failure.
+`guardStepRun` builds one group's `tierRun` under the tier it is given, in place of `cfg.GuardTier`, over that group's guard map, which `guardPackages` turns into its packages and `-run` names as today; `guardRunOf` returns every guard run, and `runTest` runs them in tier order, stopping at the first failure.
+`scope.guards` and `execution.guards` carry the guard tests per tier as `map[int]map[string][]string`, tier to directory to guard names, built from the `GuardTest` values the scan returns, so each group is one tier's inner map.
 With `guard_tier` gone, the guard scan runs in `tier0`'s `dir` (every hub declares `tier0`, which `planTierRuns` already requires), or the `-C` directory with explicit targets, as `computeScope` and `scanGuards` already set it for a narrowed computed scope; `runTest` runs the scan before planning the guard groups, since the groups come from the scan's tiers.
 
 `guard_tier` is retired: `Config.GuardTier`, `configFile`'s field, the template line and its category go; `ConfigSpec` lists it among the retired keys, so the load drops it, and `MigrateConfig` prunes it, returning `guard_tier: retired, removed`.
