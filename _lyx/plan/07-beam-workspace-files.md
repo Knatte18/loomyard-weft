@@ -14,8 +14,8 @@
 - `internal/fabricengine/doc.go`
 
 **Create:**
-- `plan:internal/fabricengine#BeamWorkspacePath` -> `func BeamWorkspacePath(l *lyxcwd.Location, beam string) string`
-- `plan:internal/fabricengine#beamWorkspaceMark` -> `const beamWorkspaceMark = "lyx.generated"`
+- `internal/fabricengine#BeamWorkspacePath`
+- `internal/fabricengine#beamWorkspaceMark`
 
 **Uses:**
 - `internal/fabricengine#ReadOriginFor`

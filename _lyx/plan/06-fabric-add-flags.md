@@ -6,7 +6,7 @@
 - `internal/fabriccli#addOptionsFromEnv` -> `func addOptionsFromEnv(parent string, adoptLocal bool) fabricengine.AddOptions`
 
 **Create:**
-- `plan:internal/fabriccli_test#TestFabricAdd_ParentAndAdoptLocal` -> `func TestFabricAdd_ParentAndAdoptLocal(t *testing.T)`
+- `internal/fabriccli_test#TestFabricAdd_ParentAndAdoptLocal`
 
 **Extends:**
 - `internal/fabriccli/doc.go`

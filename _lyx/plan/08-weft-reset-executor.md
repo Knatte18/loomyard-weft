@@ -1,9 +1,9 @@
 # Card 8 — weft-reset-executor
 
 **Create:**
-- `plan:internal/fabricengine#ResetRecordsToParent` -> `func ResetRecordsToParent(rec *Mutations, l *lyxcwd.Location, slug string) (ResetRecordsResult, error)`
-- `plan:internal/fabricengine#ResetRecordsResult` -> `type ResetRecordsResult struct`
-- `plan:internal/fabricengine_test#TestResetRecordsToParent` -> `func TestResetRecordsToParent(t *testing.T)`
+- `internal/fabricengine#ResetRecordsToParent`
+- `internal/fabricengine#ResetRecordsResult`
+- `internal/fabricengine_test#TestResetRecordsToParent`
 
 **Extends:**
 - `internal/fabricengine/doc.go`
