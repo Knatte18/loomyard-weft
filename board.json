@@ -1233,7 +1233,7 @@
       "isolated": false,
       "brief": "The idle check reads no fork transcript, so a writer working through a fork reads as idle",
       "body": "## Seen (orch, 2026-10-23)\n\nBatten sent the orch an idle notice for `loom-tail-review` (creel #182) reading \"no agent activity readable\" for 1h15m, while the run was at Plan-Write and the Plan writer's fork was writing the plan.\nThe run was healthy: Plan-Write finished and Plan-Bouncer started at 14:05 local.\nThe writer's work was in its fork, so the likely cause is that the activity batten reads does not count a fork's transcript; that cause is not yet checked in the code.\n\n## Idea\n\nBatten's idle check also reads a session's fork transcripts too, under `subagents/` beside the session's own transcript, and counts their writes as activity, so a writer working in a fork raises no idle notice.\n",
-      "status": "running · Finalize",
+      "status": "done",
       "created": "2026-10-23T17:12:42Z",
       "revised": "2026-10-24T06:23:25Z",
       "profile": "light",
