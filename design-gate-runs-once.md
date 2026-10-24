@@ -1,6 +1,6 @@
 # Each test runs once per tree: disjoint tiers, row entry gates, carried green runs, tmux in final
 
-`gate-runs-once` · Task · enhancement, gate, shed, loom, webster, fabric, batten · running · Code-Burler-Fix
+`gate-runs-once` · Task · enhancement, gate, shed, loom, webster, fabric, batten · running · Code-Bouncer
 
 ## Order (operator, 2026-10-23)
 
