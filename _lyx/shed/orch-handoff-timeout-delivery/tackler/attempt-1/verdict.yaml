@@ -1,3 +1,0 @@
-verdict: resume
-reason: The Worktree-Create lookup of origin branch orch-handoff-timeout-delivery-weft failed once with git-remote-https killed by signal 15 (SIGTERM), a transient child-process kill, not a remote or auth fault. The same ls-remote now exits 0 with no output (branch absent on origin, as expected for a new task), so a re-run of Worktree-Create should get past the lookup. The earlier main push refusals were a concurrent ref move on origin and retried; they did not block the stop.
-goto: Worktree-Create
