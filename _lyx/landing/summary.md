@@ -1,36 +1,35 @@
-# webster: a dead recovery a batch-start reset cleared earns a retry
+# webster: a batch-start reset over a dead recovery earns a retry
 
-Fixes #863.
+After `lyx webster reset --to batch-start --batch NN` over a batch whose recovery ended dead, Merriam now runs `lyx webster recover-batch NN` itself instead of writing `outcome: stuck` again.
 
-When a batch's recovery ends dead with `recovery_retry: false`, lyx names `lyx webster reset --to batch-start --batch NN`, then `lyx webster recover-batch NN`, as the way forward.
-The reset clears the batch's recovery count and `RecoveryStartSHA` but leaves its record terminal and dead.
-`RecoveryRetry` returned false for any record with an empty recovery start, so after the reset `lyx webster status` still reported `recovery_retry: false`.
-Each fresh Master read that verdict, followed the stencil's dead rung and wrote `outcome: stuck` again, and the orch had to run `recover-batch` by hand.
+The reset clears the batch's recovery count and `RecoveryStartSHA` but leaves the record terminal and dead.
+`RecoveryRetry` required a non-empty start to run its commit check, so it always answered false for a reset batch.
+`status` then reported `recovery_retry: false`, and each fresh Master followed the stencil's dead rung and ended the run stuck.
+The workaround was to run `recover-batch` by hand from the task worktree.
 
-## The change
+Closes #863
 
-`RecoveryRetry` (`internal/websterengine/recoverbatch.go`) now reports true for a terminal dead recovery record with no counted recovery.
-The batch's first counted recovery is still owed in that state, as it is for a fork that reported stuck, so no commit check applies.
-A record with one counted recovery still earns a retry only when the recovery committed work of its own, and the cap of two is unchanged.
+## Changes
 
-`status`, `recover-batch`'s terminal envelope and `begin-batch`'s report-present remedy all read `RecoveryRetry`, so all three now name `recover-batch` for the reset batch.
-The begin-batch remedy's wording changed from "since the dead recovery committed work of its own" to "since the batch earns another recovery", because it now covers both cases.
+- `RecoveryRetry` (`internal/websterengine/recoverbatch.go`) returns true for a terminal dead recovery record at zero counted recoveries, with no commit check.
+  A record at one counted recovery still needs a commit of its own since the start, and a record at the cap still gets false.
+  The kind, terminal and dead checks come first, so a fork record, a non-terminal record and a stuck record at zero still get false.
+- `existingReportRemedy` in `beginbatch.go` words the retry remedy as "since the batch earns another recovery", because "committed work of its own" no longer holds for the reset case.
+- The Master stencil (`webster-template-master.md`) says `recovery_retry: true` also covers a batch whose count a reset cleared.
+  It also drops "that second recovery is the last", which was wrong for a reset batch.
+- The `doc.go` retry paragraph, the `recover-batch` long help and the `RecoveryStartSHA` field comment state the new rule.
 
 ## Design decisions
 
-- The reset's own state writes are unchanged: the batch stays terminal and dead.
-  A non-terminal recovery record would make `recover-batch` attach to the dead strand instead of spawning, and rewriting the status would contradict the batch's digest and report.
-- A dead recovery that counted nothing because its prompt rendered a new amendment also reads as retryable now.
-  The uncounted-spawn rule already allowed that re-run, and the retry is itself a counted spawn, so the cap and the commit rule still bound every later one.
+- The reset verb's own state writes are unchanged.
+  A non-terminal recovery record would make `recover-batch` attach to the dead strand instead of spawning, and rewriting the digest status would falsify the batch's report.
+  The fix is in the verdict, so `status`, `recover-batch`'s terminal envelope and `begin-batch`'s remedy all read the same rule from `RecoveryRetry`.
+- The new edge is bounded.
+  It lets through only a record at zero counted recoveries, and the retry it grants is a counted spawn, so the cap of two and the commit rule bound every later retry.
+- A dead recovery whose spawn rendered an amendment counted nothing, so it also reads as retryable at zero.
+  The existing uncounted-spawn rule already allows that re-run.
 
-## Docs and stencil
+## To check by hand
 
-- The Master stencil's dead rung now says `recovery_retry: true` also covers a batch whose count a `reset --to batch-start` cleared, and no longer calls the retry "the last".
-- `internal/websterengine/doc.go`, the `recover-batch` long help and the `RecoveryStartSHA` field comment describe the new rule.
-
-## Tests
-
-- `TestRecoveryRetry` gains a row for a reset-cleared dead record (true, zero recoveries).
-- `TestBeginBatch`'s "terminal dead record ends the run stuck" row now has one counted recovery, so it still covers the no-retry wording.
-  A new row covers the reset case naming `recover-batch` once more.
-- `TestStatusCmd` gains a row in which a reset-cleared dead batch reports `recovery_retry: true`.
+- A Master session already running when the reset lands reads the verdict only on its next `status` read, so the orch still has to `lyx loom resume` after the reset.
+  End-to-end behavior against a real dead batch was not run; the new rows in `TestRecoveryRetry`, `TestBeginBatch_Refusals` and `TestStatusCmd` cover the verdict, the remedy and the `status` field.
