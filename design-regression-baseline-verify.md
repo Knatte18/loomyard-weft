@@ -60,8 +60,26 @@ Loom's recipe could hold fixed command boxes of one type, each taking several en
 
 The baseline is the hub's asynchronous test tier, declared in the tier config of task `test-tiers`.
 Shed gets a row that starts an asynchronous tier in the background and records the job, and a later row that waits for it to finish; the rows between them run as usual.
-The pre-implementation capture on the parent (the addendum in note `dotnet-verify-protocol`) runs through the same pair of rows.
+The pre-implementation capture on the parent (the detached capture under Models baseline harness) runs through the same pair of rows.
 
 ## Related
 
-Task `test-tiers` and note `dotnet-scoped-verify`.
+Task `test-tiers` and task `dotnet-scoped-verify`, which took in note `dotnet-verify-protocol` but left its baseline part here.
+
+## Models baseline harness (from note `dotnet-verify-protocol`, issue #609, 2026-10-24)
+
+`NORCE.Models.NumericalBaseline` runs five purpose-built regression programs plus fixtures and string-compares their scrubbed console output against stored files; one run proves nothing.
+
+- **Capture:** `dotnet test NORCE.Models.NumericalBaseline -p:RunBaseline=true --nologo`, run from `src/csharp/NORCE.Models/`. With no baseline present, every fixture reports `Inconclusive` and writes `<Fixture>.<Method>.txt` plus `_source.txt` (commit, branch, dirty flag, timestamp) into the gitignored `.scratch/numerical-baseline/`; baselines are never committed.
+- **Verify:** the same command plus `-e NORCE_BASELINE_MODE=verify`. A missing baseline is a hard failure; a deviation fails with the first differing index, the baseline path and the source commit.
+- **Side capture for diagnosis:** `-e NORCE_BASELINE_DIR=<absolute dir>` writes the post-change output into a separate directory, to diff fixture by fixture.
+
+What the tool must do:
+1. Capture at the branch point, in the task worktree, before the first code change; never from a second checkout (Millhouse #1181). If code has already changed, do not capture: halt.
+2. Before reusing a baseline, check that `_source.txt`'s commit is the branch point by `git diff <commit> -- '*.cs'` being empty, not by the dirty flag.
+3. Verify at landing in verify mode; a capture-mode `Inconclusive` is never a pass.
+4. On deviation, halt for the operator with a per-fixture diff; never auto-fix, never delete or overwrite a baseline. Intended drift is common; a refresh is an explicit operator command that backs up the old directory first.
+5. Carry "no drift" or the per-fixture drift summary into the change description.
+6. Wanted: per-batch drift snapshots, diagnostic only, never a gate.
+
+Detached capture: it starts at spawn on the spawn HEAD and records that commit; implementation waits for it before the first edit; a failed or timed-out capture halts before implementation and never falls back to a later capture; it has a timeout and a log that survives teardown; it builds with the gate properties and holds no lock that blocks the agent.
