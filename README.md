@@ -6,7 +6,7 @@ Prime owner: `neve`.
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
 
-## Tasks (3)
+## Tasks (4)
 
 Concrete and claimable; only a task can run.
 
@@ -19,15 +19,22 @@ Held by a run; its scope is locked until the run ends.
 | T4 | **[.NET] Scoped build and test for C# hubs, and the Models verification wants**<br>• Verify gates in a .NET hub build and test only the projects a card touches, since a scanned Windows machine makes every build slow. | [`dotnet-scoped-verify`](design-dotnet-scoped-verify.md) | loom | Webster | neve | 2w<br>2h | shed, webster, loom, config, dotnet |
 | T9 | **Umbrella groundwork: project entries, pairs from a parent pair, and umbrella tasks that spawn and land from their own worktree**<br>• [WS 004+006] Board projects, fabric pairs from a parent pair, batten and orch from any worktree, umbrella tasks | [`umbrella-groundwork`](design-umbrella-groundwork.md) | loom | Webster | neve | 3w<br>6h | fabric, batten, orch, board, reed, creel, shed, workspaces |
 
-### Ready (1)
+### Ready (0)
 
 Waits on nothing open; can start now.
 
+_None._
+
+### Layer A (2)
+
+Waits only on Running or Ready entries.
+
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T1 | **Webster batch whose card verify needs an orch-only change dead-ends: recover-batch ends dead with 'asking', then the run halts repeatedly with growing history** | [`webster-orch-need-to-parent`](design-webster-orch-need-to-parent.md) | loom |  | 3h<br>1h | webster, loom |
+| T1 | **Webster batch whose card verify needs an orch-only change dead-ends: recover-batch ends dead with 'asking', then the run halts repeatedly with growing history**<br>• `profile: light` | [`webster-orch-need-to-parent`](design-webster-orch-need-to-parent.md) | darn | `dotnet-scoped-verify` | 3h<br>0m | webster, loom |
+| T2 | **Plan check does not project the lint-pattern step per card, so a wrong plan-review fix passes review and fails only at self-check**<br>• `profile: light` | [`plan-check-lint-pattern-per-card`](design-plan-check-lint-pattern-per-card.md) | darn | `dotnet-scoped-verify` | 3h<br>0m | loom, burler |
 
-## Notes (43)
+## Notes (42)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
 
@@ -48,13 +55,12 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | --- | --- | --- | --- | --- | --- |
 | B1 |  | **Find why a running run shows a dead waiter in the activity reader** | [`idle-notice-dead-waiter-cause`](design-idle-notice-dead-waiter-cause.md) | 7h<br>7h | batten, shuttle |
 
-### Enhancements (23)
+### Enhancements (22)
 
 | # | P | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | E1 |  | **Plan conflict from a moved tree: a small fixer before the Plan perch**<br>• A tree_moved plan conflict naming exact glyphs goes to a small card fixer, not a full Plan review round | [`plan-conflict-small-fixer`](design-plan-conflict-small-fixer.md) | 6h<br>6h | webster, loom |
 | E2 |  | **Codex CLI as a second shuttle engine: codexengine**<br>• codexengine for single-session roles, built from the 2026-10-24 spike report and claudeengine list of needs | [`codex-engine`](design-codex-engine.md) | 2w<br>4h | shuttle, codex |
-| E3 |  | **Plan check does not project the lint-pattern step per card, so a wrong plan-review fix passes review and fails only at self-check** | [`plan-check-lint-pattern-per-card`](design-plan-check-lint-pattern-per-card.md) | 3h<br>3h | loom, burler |
 | E4 |  | **finalize: the discrepancy-document conflict shape**<br>• Divergences that cannot be a git conflict get a precomputed document for the resolving agent instead of markers | [`finalize-discrepancy-doc`](design-finalize-discrepancy-doc.md) | 2w<br>2w | fabric, loom |
 | E7 |  | **Run verbs in one shared namespace, not under lyx loom**<br>• lyx loom decision/status/goto/approve act on darn runs too; move recipe-neutral run verbs to one shared namespace | [`run-verbs-shared`](design-run-verbs-shared.md) | 9d<br>9d | shed, loom |
 | E9 |  | **Paste cited code into a review rounds context**<br>• Reviewers edit nothing and review a fixed commit, so code pasted at round start cannot go stale; measure it against todays reviewer | [`review-inline-code`](design-review-inline-code.md) | 13d<br>7h | burler, stencil |
