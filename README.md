@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-24 06:23 UTC; every age below is as of then.
+Rendered 2026-10-24 06:24 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -16,13 +16,14 @@ Waits on nothing open; can start now.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T1 | **Each test runs once per tree: disjoint tiers, row entry gates, carried green runs, tmux in final**<br>• Tiers tagged by name, shed row entry gates, verify skipped on an already green tree, tmux in the final gate, gate time measured<br>• `profile: light` | [`gate-runs-once`](design-gate-runs-once.md) | loom |  | 6d<br>17m | gate, shed, loom, webster, fabric, batten |
+| T1 | **Each test runs once per tree: disjoint tiers, row entry gates, carried green runs, tmux in final**<br>• Tiers tagged by name, shed row entry gates, verify skipped on an already green tree, tmux in the final gate, gate time measured<br>• `profile: light` | [`gate-runs-once`](design-gate-runs-once.md) | loom |  | 6d<br>18m | gate, shed, loom, webster, fabric, batten |
 | T2 | **Discussion check refuses a declared PATTERN text over the overview line cap**<br>• A changes or adds text past pattern.MaxEntryLineChars passes Discussion and first fails at Plan-Write<br>• `profile: light` | [`discussion-pattern-line-cap`](design-discussion-pattern-line-cap.md) | darn |  | 19h<br>0m | loom |
 | T3 | **TestSmokeStart_NeverAttachesAndAddsNoOperatorStrand flakes on records index.lock and halts Merge-In**<br>• `profile: light` | [`smokestart-index-lock-flake`](design-smokestart-index-lock-flake.md) | darn |  | 13h<br>0m | loom, fabric |
 | T4 | **webster record-batch fails create-not-done for Create targets declared in an external _test package**<br>• `profile: light` | [`record-batch-external-test-pkg`](design-record-batch-external-test-pkg.md) | darn |  | 13h<br>0m | webster, quarry |
 | T5 | **Git network calls get a stall bound and one retry**<br>• A git call to GitHub hung for minutes on a dead connection; bound every git network call and retry it once<br>• `profile: light` | [`git-remote-stall-timeout`](design-git-remote-stall-timeout.md) | darn |  | 13h<br>0m | fabric, batten |
 | T6 | **Fork git-mutation guard fails a run on git commands confined to a scratch repo**<br>• `profile: light` | [`fork-git-guard-scratch-repo`](design-fork-git-guard-scratch-repo.md) | darn |  | 13h<br>0m | shed, burler |
 | T7 | **Batten idle notice fires while a writer works in a fork**<br>• The idle check reads no fork transcript, so a writer working through a fork reads as idle<br>• `profile: light` | [`idle-notice-misses-fork-activity`](design-idle-notice-misses-fork-activity.md) | darn |  | 13h<br>0m | batten |
+| T8 | **A parent decision reaches the agent that needs it: Burler decision findings and Merriam**<br>• Route decision-class findings to the parent, and let Merriam take the decision notice<br>• `profile: light` | [`decision-reaches-agents`](design-decision-reaches-agents.md) | darn |  | 13h<br>0m | burler, loom, webster, stencil, creel |
 
 ## Notes
 
@@ -45,8 +46,6 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | # | P | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | B2 |  | **Seeded VS Code title-bar colours do not show in task worktrees**<br>• The seeder writes a palette colour, but loom-tail-review settings.json has none and no colour shows | [`ide-title-colours-missing`](design-ide-title-colours-missing.md) | 18h<br>18h | ide |
-| B4 |  | **Burler fix loop cannot route a decision-class finding to the parent** | [`burler-decision-finding-route`](design-burler-decision-finding-route.md) | 13h<br>13h | burler, loom |
-| B6 |  | **Decision notice from lyx loom decision add is refused by Webster's Merriam** | [`merriam-refuses-decision-notice`](design-merriam-refuses-decision-notice.md) | 13h<br>13h | webster, loom, stencil, creel |
 
 ### Enhancements
 
