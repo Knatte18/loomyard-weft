@@ -3,48 +3,47 @@ scoper: go
 guard_tier: 1
 refuse_raw: ["go test"]
 tiers:
-    tier0:
-        about: untagged tests
-        command: "go test -json {targets} {args}"
-        all_targets: ./...
-        env: {GOFLAGS: "-trimpath -p={parallel}"}
-        counter: go-json
-        parallel: 4
-        timeout_min: 10
-    tier1:
-        about: integration tests with build and vet under each tag first
-        command: "go build ./... && go vet -tags integration {targets} && go vet -tags tmux {targets} && go vet -tags llm {targets} && go test -json -tags integration {targets} {args}"
-        all_targets: ./...
-        env: {GOFLAGS: "-trimpath -p={parallel}"}
-        counter: go-json
-        parallel: 4
-        timeout_min: 30
-        covers: [0]
-        prebuilt_lyx: true
-    tier2:
-        about: tmux tests
-        command: "go test -json -tags tmux {targets} {args}"
-        all_targets: ./...
-        env: {GOFLAGS: "-trimpath -p={parallel}"}
-        counter: go-json
-        parallel: 4
-        timeout_min: 30
-        covers: [0]
-        prebuilt_lyx: true
-    tier3:
-        about: llm tests run by hand only
-        command: "go test -json -tags llm {targets} {args}"
-        all_targets: ./...
-        env: {GOFLAGS: "-trimpath -p={parallel}"}
-        counter: go-json
-        parallel: 1
-        timeout_min: 60
-        covers: [0]
-        prebuilt_lyx: true
-        manual: true
+  tier0:
+    about: untagged tests
+    command: "go test -json {targets} {args}"
+    all_targets: ./...
+    env: {GOFLAGS: "-trimpath -p={parallel}"}
+    counter: go-json
+    parallel: 4
+    timeout_min: 10
+  tier1:
+    about: integration tests with build and vet under each tag first
+    command: "go build ./... && go vet -tags integration {targets} && go vet -tags tmux {targets} && go vet -tags llm {targets} && go test -json -tags integration {targets} {args}"
+    all_targets: ./...
+    env: {GOFLAGS: "-trimpath -p={parallel}"}
+    counter: go-json
+    parallel: 4
+    timeout_min: 30
+    covers: [0]
+    prebuilt_lyx: true
+  tier2:
+    about: tmux tests
+    command: "go test -json -tags tmux {targets} {args}"
+    all_targets: ./...
+    env: {GOFLAGS: "-trimpath -p={parallel}"}
+    counter: go-json
+    parallel: 4
+    timeout_min: 30
+    covers: [0]
+    prebuilt_lyx: true
+  tier3:
+    about: llm tests run by hand only
+    command: "go test -json -tags llm {targets} {args}"
+    all_targets: ./...
+    env: {GOFLAGS: "-trimpath -p={parallel}"}
+    counter: go-json
+    parallel: 1
+    timeout_min: 60
+    covers: [0]
+    prebuilt_lyx: true
+    manual: true
 gates:
-    batch: [0, 1]
-    round: [0, 1]
-    final: [0, 1, 2]
-    landing: [0, 1, 2]
-    publish: [2]
+  batch: [0, 1]
+  round: [0, 1]
+  final: [0, 1, 2]
+  landing: [0, 1, 2]
