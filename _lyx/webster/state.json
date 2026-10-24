@@ -1,0 +1,832 @@
+{
+  "runGuid": "0c92b76ecbae330c53aca040bff54a50",
+  "planFingerprint": "3abb0078dc7d64230d6d9aca122c5f10479c8237d1ed64638257651d1d2f299b",
+  "planFileHashes": {
+    "00-overview.md": "3d9b9d836b384b6275a3d06d7a0b4d9fc34547800ed42f5cb42ff03f22cfd5e6",
+    "01-fabric-slug-rule.md": "b6fa7e32634d33faf287fc1e2e0a63dba4143914964cf4d2aabb168d978247b5",
+    "02-origin-beam-mark.md": "1fd624bae14121f51ca79484726d9c607e24dd58050a816c2d9c84d14d8f0d94",
+    "03-add-options-struct.md": "4d314f6e474f003e274d61bef4821a088f0412bbd5bdbfacabde46ff8532f7f2",
+    "04-add-from-parent.md": "0c8bfb22c10c829f3502050105d83cce0a99a91435e65e0bbb77158c29b782b3",
+    "05-add-adopt-local.md": "18f9519f0c5527e75840c3737cf1a053414fd09fb6edcfed0240c86705f43a4e",
+    "06-fabric-add-flags.md": "0265485b4a94bc56cdb6f3b01040d791c46d6a2befb7f5f5b36620a7835da582",
+    "07-beam-workspace-files.md": "f7dea86902b221e3ccd34f3d74ea2ecd79a25b78bdc81f07b88f74aa9e752a42",
+    "08-weft-reset-executor.md": "0ba135dc8eaa0acb365118b226757fc9edca231df4bc970b397690b4abd82443",
+    "09-board-project-kind.md": "f594065d4a334f0392ba913b6ccb53de93d4ed07f55b50f9a5a04a8537b193d7",
+    "10-board-membership.md": "2b257bc3b91582a95d462b540cc23de1653c392ca240ac280399d138a9ae6955",
+    "11-board-beam-flag.md": "0cca4ad951cd5332835b2f735b9fdebb6ef925454f7daae77b0d7343a31601eb",
+    "12-board-parent-beam.md": "35cd68a2773078fda6e078bcee6d917e7ea50b2870202c21cb5f093212057b77",
+    "13-board-slug-seam.md": "132887bc42a6ee037b65fbf99a2ac759a11733b2ab59468326e96da06c37f381",
+    "14-board-readme-projects.md": "c9352f795b2c85c2ed67e4d1c52cbd25782d410bada222c3fd3cae5ad6ae6b8f",
+    "15-hubgeom-parent-of.md": "018cd3350d75cc8e27bb2108474080a67e5895cf6c12e155934fac44e243da87",
+    "16-delete-parent-slug.md": "e024b462a0a0474eacf36ecc5da981ce3a63aa07a63fe5c958e301cf7ffec4e3",
+    "17-boardcli-wiring.md": "74d20b39d13ebf90699f24ab12bcb24a73e16b9598d95b05da537d5b2e983606",
+    "18-hubgeom-live-orch-walk.md": "5ea801a6e1428cc5a634a3651eb016894f3de45b7e28677a591a9e26878ac0bf",
+    "19-orch-in-beam.md": "93db4c486ec53bda5c54e59352b970122050d34a06fd88138da887d50ac5ac3a",
+    "20-orch-notify-parent.md": "f4a3c829a56b19eb2f66ef80313edff50cd86fd485200a64d973cde8de2188f5",
+    "21-tender-every-orch.md": "75ae2c7ec41a2b33816abc6c68fb85be364a1413ace169bc27be65678e32efa9",
+    "22-overview-cleanup-every-orch.md": "685bd3f259804b4a1a4761ba794d017e0bb8c3a4f7fb16228e0012d9fec5b9b8",
+    "23-batten-guard.md": "1705c28a66b17e29deec46ef51207f8a3bd45068f09909c44b65e932c74013a3",
+    "24-batten-window-site.md": "ab0dcc6791dedad8061d5d777051d4090433be21f81f7cc588e689317acc13e3",
+    "25-batten-notices-walk.md": "31a3717186a402e6addb38caa015e2d5f45c1325057a0ab12957bb4a23e58422",
+    "26-land-ready-routing.md": "c3a4b898d911e72c223f7e901c256936130e9fff1e56c1d5b8958f23a18f10a0",
+    "27-batten-cleanup-skip.md": "3c4ee9b5a5269cfe42e88666faae274dd88c9f792cd5ffab0fa4ba76ec9481a8",
+    "28-worktree-create-from-beam.md": "92638d76424b42a8049d0ca4c18f068a68169b423185e178a69c3d3bc6ca99d5",
+    "29-finalize-large-merge-lands.md": "b0f516140a8ac76ccd82758216ae7e2a080e72b494f9f976a4f587a632680fce",
+    "30-beam-describe-producer.md": "65dbcf3d5d372c36ba6bb1431a493f411b667bf967ad0ab3ad179c1cb7b9a027",
+    "31-beam-recipe.md": "a166949e11435774bc7ad5df86db398358cc2f00adcc504dcdd11869671f510f",
+    "32-loomcli-beam-recipe.md": "64b063ff1934a5437f4be6912d66293c76ca4723e541dd2343a418462d9f8d37",
+    "33-batten-seed-beam.md": "b16230c8b6df486133c1abbe45448eb6820f85aa940f6d83c8725d5313faefd4",
+    "34-beam-create.md": "e771ddf42cf92dea7fd2bb99a72f84229d792451408195fb963ee3746d910b71",
+    "35-beam-promote.md": "3454b9c813388dadd2d754d92a8f1cd66be42a7d0223f90dc47993e12f8466ba",
+    "36-beam-land.md": "f179ffd2b78bb5420d83651a17995ae52d709decd4cc8d7a382780577b40a36c",
+    "37-adopt-beam.md": "a4118cae79121ba5bcea054bc41c5d29bd963df0555cc1e15bd064d05353964f"
+  },
+  "planOverviewFrameHash": "88bf9bbb8de875754fb0d763fc9040a4b9c3705b64e9ebb0a3113c4aa0052c26",
+  "partition": [
+    {
+      "cards": [
+        "01-fabric-slug-rule",
+        "02-origin-beam-mark",
+        "03-add-options-struct",
+        "04-add-from-parent"
+      ],
+      "profile": "wide",
+      "estimate": 235820,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 1,
+        "startup": 54448,
+        "read_union": 24736,
+        "cards": [
+          {
+            "card": 1,
+            "card_text": 216,
+            "reads": {
+              "file:internal/fabricengine/doc.go": 19500,
+              "package:internal/fabricengine": 2000,
+              "tests:internal/fabricengine": 2000
+            },
+            "messages": 118,
+            "written": 35616
+          },
+          {
+            "card": 2,
+            "card_text": 312,
+            "reads": {
+              "package:internal/fabricengine": 2000,
+              "tests:internal/fabricengine": 2000
+            },
+            "messages": 132,
+            "written": 39912
+          },
+          {
+            "card": 3,
+            "card_text": 192,
+            "reads": {
+              "package:internal/fabricengine": 2000,
+              "tests:internal/fabricengine": 2000
+            },
+            "messages": 118,
+            "written": 35592
+          },
+          {
+            "card": 4,
+            "card_text": 516,
+            "reads": {
+              "file:internal/fabricengine/doc.go": 19500,
+              "package:internal/fabricengine": 2000,
+              "tests:internal/fabricengine": 2000
+            },
+            "messages": 150,
+            "written": 45516
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "05-add-adopt-local",
+        "06-fabric-add-flags",
+        "07-beam-workspace-files",
+        "08-weft-reset-executor"
+      ],
+      "profile": "wide",
+      "estimate": 254718,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 2,
+        "startup": 61448,
+        "read_union": 39376,
+        "cards": [
+          {
+            "card": 5,
+            "card_text": 372,
+            "reads": {
+              "file:internal/fabricengine/doc.go": 19500,
+              "package:internal/fabricengine": 2000,
+              "tests:internal/fabricengine": 2000
+            },
+            "messages": 140,
+            "written": 42372
+          },
+          {
+            "card": 6,
+            "card_text": 288,
+            "reads": {
+              "file:internal/fabriccli/doc.go": 1092,
+              "package:internal/fabriccli": 2000,
+              "tests:internal/fabriccli": 2000
+            },
+            "messages": 43.5,
+            "written": 13338
+          },
+          {
+            "card": 7,
+            "card_text": 576,
+            "reads": {
+              "file:PATTERN.md": 624,
+              "file:internal/fabricengine/doc.go": 19500,
+              "file:pattern/PATTERN-cwd-resolution.md": 516,
+              "package:.": 2000,
+              "package:internal/fabricengine": 2000,
+              "package:pattern": 2000,
+              "tests:.": 2000,
+              "tests:internal/fabricengine": 2000,
+              "tests:pattern": 2000
+            },
+            "messages": 188,
+            "written": 56976
+          },
+          {
+            "card": 8,
+            "card_text": 408,
+            "reads": {
+              "file:internal/fabricengine/doc.go": 19500,
+              "package:internal/fabricengine": 2000,
+              "tests:internal/fabricengine": 2000
+            },
+            "messages": 136,
+            "written": 41208
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "09-board-project-kind",
+        "10-board-membership",
+        "11-board-beam-flag",
+        "12-board-parent-beam",
+        "13-board-slug-seam"
+      ],
+      "profile": "wide",
+      "estimate": 246328,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 3,
+        "startup": 68448,
+        "read_union": 9352,
+        "cards": [
+          {
+            "card": 9,
+            "card_text": 768,
+            "reads": {
+              "file:internal/boardengine/doc.go": 2724,
+              "package:internal/boardengine": 2000,
+              "tests:internal/boardengine": 2000
+            },
+            "messages": 197,
+            "written": 59868
+          },
+          {
+            "card": 10,
+            "card_text": 696,
+            "reads": {
+              "file:internal/boardengine/doc.go": 2724,
+              "package:internal/boardengine": 2000,
+              "tests:internal/boardengine": 2000
+            },
+            "messages": 139,
+            "written": 42396
+          },
+          {
+            "card": 11,
+            "card_text": 444,
+            "reads": {
+              "file:internal/boardengine/doc.go": 2724,
+              "package:internal/boardengine": 2000,
+              "tests:internal/boardengine": 2000
+            },
+            "messages": 101,
+            "written": 30744
+          },
+          {
+            "card": 12,
+            "card_text": 384,
+            "reads": {
+              "file:internal/boardengine/doc.go": 2724,
+              "package:internal/boardengine": 2000,
+              "tests:internal/boardengine": 2000
+            },
+            "messages": 61,
+            "written": 18684
+          },
+          {
+            "card": 13,
+            "card_text": 336,
+            "reads": {
+              "file:internal/boardengine/doc.go": 2724,
+              "package:internal/boardengine": 2000,
+              "tests:internal/boardengine": 2000
+            },
+            "messages": 55,
+            "written": 16836
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "14-board-readme-projects",
+        "15-hubgeom-parent-of",
+        "16-delete-parent-slug",
+        "17-boardcli-wiring",
+        "18-hubgeom-live-orch-walk"
+      ],
+      "profile": "wide",
+      "estimate": 261850,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 4,
+        "startup": 75448,
+        "read_union": 58584,
+        "cards": [
+          {
+            "card": 14,
+            "card_text": 264,
+            "reads": {
+              "file:internal/boardengine/doc.go": 2724,
+              "file:plugins/ly/skills/board/SKILL.md": 1920,
+              "package:internal/boardengine": 2000,
+              "package:plugins/ly/skills/board": 2000,
+              "tests:internal/boardengine": 2000,
+              "tests:plugins/ly/skills/board": 2000
+            },
+            "messages": 41,
+            "written": 12564
+          },
+          {
+            "card": 15,
+            "card_text": 612,
+            "reads": {
+              "file:PATTERN.md": 624,
+              "file:internal/hubgeom/doc.go": 456,
+              "file:internal/pairteardown/doc.go": 1896,
+              "file:pattern/PATTERN-owner-machine.md": 264,
+              "package:.": 2000,
+              "package:internal/adoptcli": 2000,
+              "package:internal/battencli": 2000,
+              "package:internal/boardcli": 2000,
+              "package:internal/hubgeom": 2000,
+              "package:internal/loomcli": 2000,
+              "package:internal/pairteardown": 2000,
+              "package:internal/tendercli": 2000,
+              "package:pattern": 2000,
+              "tests:.": 2000,
+              "tests:internal/adoptcli": 2000,
+              "tests:internal/battencli": 2000,
+              "tests:internal/boardcli": 2000,
+              "tests:internal/hubgeom": 2000,
+              "tests:internal/loomcli": 2000,
+              "tests:internal/pairteardown": 2000,
+              "tests:internal/tendercli": 2000,
+              "tests:pattern": 2000
+            },
+            "messages": 189,
+            "written": 57312
+          },
+          {
+            "card": 16,
+            "card_text": 132,
+            "reads": {
+              "package:internal/fabricengine": 2000,
+              "tests:internal/fabricengine": 2000
+            },
+            "messages": 112,
+            "written": 33732
+          },
+          {
+            "card": 17,
+            "card_text": 372,
+            "reads": {
+              "file:internal/boardcli/doc.go": 1032,
+              "package:internal/boardcli": 2000,
+              "tests:internal/boardcli": 2000
+            },
+            "messages": 47,
+            "written": 14472
+          },
+          {
+            "card": 18,
+            "card_text": 288,
+            "reads": {
+              "file:internal/hubgeom/doc.go": 456,
+              "package:internal/hubgeom": 2000,
+              "tests:internal/hubgeom": 2000
+            },
+            "messages": 31.5,
+            "written": 9738
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "19-orch-in-beam",
+        "20-orch-notify-parent",
+        "21-tender-every-orch"
+      ],
+      "profile": "wide",
+      "estimate": 284148,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 5,
+        "startup": 82448,
+        "read_union": 57712,
+        "cards": [
+          {
+            "card": 19,
+            "card_text": 624,
+            "reads": {
+              "file:contracts/stencils/orch/orch-template-role.md": 3240,
+              "file:docs/overview.md": 9792,
+              "file:internal/orchcli/doc.go": 1548,
+              "package:contracts/stencils/orch": 2000,
+              "package:docs": 2000,
+              "package:internal/orchcli": 2000,
+              "tests:contracts/stencils/orch": 2000,
+              "tests:docs": 2000,
+              "tests:internal/orchcli": 2000
+            },
+            "messages": 136.5,
+            "written": 41574
+          },
+          {
+            "card": 20,
+            "card_text": 564,
+            "reads": {
+              "file:internal/orchcli/doc.go": 1548,
+              "package:internal/burlercli": 2000,
+              "package:internal/loomcli": 2000,
+              "package:internal/orchcli": 2000,
+              "package:internal/webstercli": 2000,
+              "tests:internal/burlercli": 2000,
+              "tests:internal/loomcli": 2000,
+              "tests:internal/orchcli": 2000,
+              "tests:internal/webstercli": 2000
+            },
+            "messages": 167,
+            "written": 50664
+          },
+          {
+            "card": 21,
+            "card_text": 600,
+            "reads": {
+              "file:internal/orchcli/doc.go": 1548,
+              "file:internal/tenderengine/doc.go": 1344,
+              "package:internal/hibernateengine": 2000,
+              "package:internal/orchcli": 2000,
+              "package:internal/orchengine": 2000,
+              "package:internal/tendercli": 2000,
+              "package:internal/tenderengine": 2000,
+              "tests:internal/hibernateengine": 2000,
+              "tests:internal/orchcli": 2000,
+              "tests:internal/orchengine": 2000,
+              "tests:internal/tendercli": 2000,
+              "tests:internal/tenderengine": 2000
+            },
+            "messages": 170.5,
+            "written": 51750
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "22-overview-cleanup-every-orch",
+        "23-batten-guard",
+        "24-batten-window-site",
+        "25-batten-notices-walk"
+      ],
+      "profile": "wide",
+      "estimate": 281850,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 6,
+        "startup": 89448,
+        "read_union": 45768,
+        "cards": [
+          {
+            "card": 22,
+            "card_text": 288,
+            "reads": {
+              "file:internal/cleanupcli/doc.go": 636,
+              "package:internal/battencli": 2000,
+              "package:internal/cleanupcli": 2000,
+              "tests:internal/battencli": 2000,
+              "tests:internal/cleanupcli": 2000
+            },
+            "messages": 70,
+            "written": 21288
+          },
+          {
+            "card": 23,
+            "card_text": 684,
+            "reads": {
+              "file:docs/overview.md": 9792,
+              "file:internal/adoptcli/doc.go": 672,
+              "file:internal/cleanupcli/doc.go": 636,
+              "file:pattern/PATTERN-pair-teardown.md": 444,
+              "package:docs": 2000,
+              "package:internal/adoptcli": 2000,
+              "package:internal/battencli": 2000,
+              "package:internal/cleanupcli": 2000,
+              "package:pattern": 2000,
+              "tests:docs": 2000,
+              "tests:internal/adoptcli": 2000,
+              "tests:internal/battencli": 2000,
+              "tests:internal/cleanupcli": 2000,
+              "tests:pattern": 2000
+            },
+            "messages": 178.5,
+            "written": 54234
+          },
+          {
+            "card": 24,
+            "card_text": 432,
+            "reads": {
+              "file:internal/reedengine/doc.go": 8340,
+              "package:internal/battencli": 2000,
+              "package:internal/reedengine": 2000,
+              "tests:internal/battencli": 2000,
+              "tests:internal/reedengine": 2000
+            },
+            "messages": 124,
+            "written": 37632
+          },
+          {
+            "card": 25,
+            "card_text": 480,
+            "reads": {
+              "package:internal/battencli": 2000,
+              "tests:internal/battencli": 2000
+            },
+            "messages": 110,
+            "written": 33480
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "26-land-ready-routing",
+        "27-batten-cleanup-skip",
+        "28-worktree-create-from-beam",
+        "29-finalize-large-merge-lands",
+        "30-beam-describe-producer"
+      ],
+      "profile": "wide",
+      "estimate": 245746,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 7,
+        "startup": 96448,
+        "read_union": 43368,
+        "cards": [
+          {
+            "card": 26,
+            "card_text": 492,
+            "reads": {
+              "file:contracts/stencils/orch/orch-template-role.md": 3240,
+              "file:internal/battenshed/doc.go": 2400,
+              "package:contracts/stencils/orch": 2000,
+              "package:internal/battencli": 2000,
+              "package:internal/battenshed": 2000,
+              "package:internal/orchcli": 2000,
+              "tests:contracts/stencils/orch": 2000,
+              "tests:internal/battencli": 2000,
+              "tests:internal/battenshed": 2000,
+              "tests:internal/orchcli": 2000
+            },
+            "messages": 121.5,
+            "written": 36942
+          },
+          {
+            "card": 27,
+            "card_text": 204,
+            "reads": {
+              "package:internal/battencli": 2000,
+              "tests:internal/battencli": 2000
+            },
+            "messages": 52,
+            "written": 15804
+          },
+          {
+            "card": 28,
+            "card_text": 492,
+            "reads": {
+              "file:docs/overview.md": 9792,
+              "package:docs": 2000,
+              "package:internal/battencli": 2000,
+              "tests:docs": 2000,
+              "tests:internal/battencli": 2000
+            },
+            "messages": 90,
+            "written": 27492
+          },
+          {
+            "card": 29,
+            "card_text": 216,
+            "reads": {
+              "file:internal/landingshed/doc.go": 2256,
+              "package:internal/landingshed": 2000,
+              "tests:internal/landingshed": 2000
+            },
+            "messages": 40,
+            "written": 12216
+          },
+          {
+            "card": 30,
+            "card_text": 276,
+            "reads": {
+              "file:internal/landingshed/doc.go": 2256,
+              "package:internal/landingshed": 2000,
+              "tests:internal/landingshed": 2000
+            },
+            "messages": 44,
+            "written": 13476
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "31-beam-recipe",
+        "32-loomcli-beam-recipe",
+        "33-batten-seed-beam"
+      ],
+      "profile": "wide",
+      "estimate": 247116,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 8,
+        "startup": 103448,
+        "read_union": 34132,
+        "cards": [
+          {
+            "card": 31,
+            "card_text": 516,
+            "reads": {
+              "file:internal/loomrecipe/doc.go": 456,
+              "file:internal/shedrecipe/doc.go": 936,
+              "package:contracts/recipes": 2000,
+              "package:internal/loomrecipe": 2000,
+              "package:internal/shedcli": 2000,
+              "package:internal/shedrecipe": 2000,
+              "package:internal/shedrun": 2000,
+              "tests:contracts/recipes": 2000,
+              "tests:internal/loomrecipe": 2000,
+              "tests:internal/shedcli": 2000,
+              "tests:internal/shedrecipe": 2000,
+              "tests:internal/shedrun": 2000
+            },
+            "messages": 164.5,
+            "written": 49866
+          },
+          {
+            "card": 32,
+            "card_text": 432,
+            "reads": {
+              "file:internal/loomcli/doc.go": 3504,
+              "package:internal/loomcli": 2000,
+              "tests:internal/loomcli": 2000
+            },
+            "messages": 130.5,
+            "written": 39582
+          },
+          {
+            "card": 33,
+            "card_text": 288,
+            "reads": {
+              "package:internal/battencli": 2000,
+              "tests:internal/battencli": 2000
+            },
+            "messages": 66,
+            "written": 20088
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "34-beam-create",
+        "35-beam-promote",
+        "36-beam-land",
+        "37-adopt-beam"
+      ],
+      "profile": "wide",
+      "estimate": 281604,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 9,
+        "startup": 110448,
+        "read_union": 37176,
+        "cards": [
+          {
+            "card": 34,
+            "card_text": 708,
+            "reads": {
+              "file:docs/overview.md": 9792,
+              "file:pattern/PATTERN-cli-cobra.md": 432,
+              "package:cmd/lyx": 2000,
+              "package:docs": 2000,
+              "package:internal/beamcli": 2000,
+              "package:pattern": 2000,
+              "tests:cmd/lyx": 2000,
+              "tests:docs": 2000,
+              "tests:internal/beamcli": 2000,
+              "tests:pattern": 2000
+            },
+            "messages": 126.5,
+            "written": 38658
+          },
+          {
+            "card": 35,
+            "card_text": 672,
+            "reads": {
+              "package:internal/battencli": 2000,
+              "package:internal/beamcli": 2000,
+              "tests:internal/battencli": 2000,
+              "tests:internal/beamcli": 2000
+            },
+            "messages": 140,
+            "written": 42672
+          },
+          {
+            "card": 36,
+            "card_text": 696,
+            "reads": {
+              "file:docs/overview.md": 9792,
+              "package:docs": 2000,
+              "package:internal/battencli": 2000,
+              "package:internal/beamcli": 2000,
+              "tests:docs": 2000,
+              "tests:internal/battencli": 2000,
+              "tests:internal/beamcli": 2000
+            },
+            "messages": 146,
+            "written": 44496
+          },
+          {
+            "card": 37,
+            "card_text": 204,
+            "reads": {
+              "file:internal/adoptcli/doc.go": 672,
+              "package:internal/adoptcli": 2000,
+              "tests:internal/adoptcli": 2000
+            },
+            "messages": 26.5,
+            "written": 8154
+          }
+        ]
+      }
+    }
+  ],
+  "currentBatch": 1,
+  "masterStrand": "b26fdaa60c57e20a41bb8040667d0203",
+  "masterSessionId": "5c0f8a9d-af0b-4b1f-abf2-fb8d7a69e703",
+  "masterEngine": "claude",
+  "batches": {
+    "1": {
+      "slug": "fabric-slug-rule",
+      "cards": [
+        "01-fabric-slug-rule",
+        "02-origin-beam-mark",
+        "03-add-options-struct",
+        "04-add-from-parent"
+      ],
+      "cardHashes": {
+        "01-fabric-slug-rule": "b6fa7e32634d33faf287fc1e2e0a63dba4143914964cf4d2aabb168d978247b5",
+        "02-origin-beam-mark": "1fd624bae14121f51ca79484726d9c607e24dd58050a816c2d9c84d14d8f0d94",
+        "03-add-options-struct": "4d314f6e474f003e274d61bef4821a088f0412bbd5bdbfacabde46ff8532f7f2",
+        "04-add-from-parent": "0c8bfb22c10c829f3502050105d83cce0a99a91435e65e0bbb77158c29b782b3"
+      },
+      "startSha": "04aafa88c11751bdfac2b21281cf263d27b1eb4a",
+      "kind": "fork",
+      "spawnedAt": "2026-10-24T16:32:32Z",
+      "sessionId": "5c0f8a9d-af0b-4b1f-abf2-fb8d7a69e703",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
+    }
+  }
+}
