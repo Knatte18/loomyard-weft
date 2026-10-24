@@ -152,3 +152,9 @@ The operator sees that check as a job for the Go run driver:
 - The workspace texts say beam, not umbrella; the task that builds a part renames the word in what it touches.
 - The hub keeps lyx traces 3 days, not 14 (`logger.yaml` `trace_retention_days`, set on Bolt).
 - Folded in from note `board-tidy-after-landing`: the beam's Go driver spawns the board-tidy Sonnet agent after each landing, in a window of the beam's reed session, and hands its report to the orch LLM (today the orch does it, hub-wide orch rule "Board tidy after a landing").
+
+## The arbiter for every shed run (folded in from note `shed-arbiter-all`, 2026-10-24)
+
+- Seen: loom and darn fill `sheddriver`'s optional `Arbiter` seam (`internal/loomcli/drivewiring.go`), so their stop chain is rule table, tackler, arbiter, orch; batten's own run fills only the tackler (`internal/battencli/drive.go`), so a stop the tackler escalates goes straight to the orch. `shed-tackler`'s decision record put this out of scope on purpose.
+- Operator view, not a decision (2026-10-15): the stop chain is the same for every shed run, and the arbiter is there to take load off the orch. The driver kind and the stop chain's settings are settable per repo, worktree layer included.
+- Idea: move the arbiter into shed beside the tackler, its seam wired for every shed-driven recipe, batten and dobby included, its keys (`arbiter`, `arbiter_timeout_min`, `arbiter_max_spawns`, today in `loom.yaml`) in `shed.yaml` with per-module overrides; give the arbiter a description of batten's rows so it can judge a batten stop.

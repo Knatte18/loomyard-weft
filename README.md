@@ -34,7 +34,7 @@ Waits only on Running or Ready entries.
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
 | T3 | **Run profiles as one ladder: speed, light, solid, wide**<br>• Replace budget, light, docs and darn-wide with one profile ladder shared by darn and loom<br>• `profile: light` | [`run-profiles-ladder`](design-run-profiles-ladder.md) | darn | `gate-runs-once` | 1d<br>1h | config, loom, burler |
-| T4 | **[.NET] Scoped build and test for C# hubs, and the Models verification wants**<br>• Verify gates in a .NET hub build and test only the projects a card touches, since a scanned Windows machine makes every build slow. | [`dotnet-scoped-verify`](design-dotnet-scoped-verify.md) | loom | `gate-runs-once` | 2w<br>31m | shed, webster, loom, config, dotnet |
+| T4 | **[.NET] Scoped build and test for C# hubs, and the Models verification wants**<br>• Verify gates in a .NET hub build and test only the projects a card touches, since a scanned Windows machine makes every build slow. | [`dotnet-scoped-verify`](design-dotnet-scoped-verify.md) | loom | `gate-runs-once` | 2w<br>32m | shed, webster, loom, config, dotnet |
 | T6 | **Fork git-mutation guard fails a run on git commands confined to a scratch repo**<br>• `profile: light` | [`fork-git-guard-scratch-repo`](design-fork-git-guard-scratch-repo.md) | darn | `gate-runs-once` | 16h<br>2h | shed, burler |
 | T9 | **Umbrella groundwork: project entries, pairs from a parent pair, and umbrella tasks that spawn and land from their own worktree**<br>• [WS 004+006] Board projects, fabric pairs from a parent pair, batten and orch from any worktree, umbrella tasks | [`umbrella-groundwork`](design-umbrella-groundwork.md) | loom | `gate-runs-once` | 2w<br>1h | fabric, batten, orch, board, reed, creel, shed, workspaces |
 
@@ -46,7 +46,7 @@ Starts when every entry it names under After is done.
 | --- | --- | --- | --- | --- | --- | --- |
 | T2 | **Clean up PATTERN.md: far too many entries**<br>• `profile: light` | [`pattern-cleanup`](design-pattern-cleanup.md) | darn | `gate-runs-once`, `fork-git-guard-scratch-repo`, `run-profiles-ladder` | 1h<br>36m | stencil |
 
-## Notes (45)
+## Notes (44)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
 
@@ -62,7 +62,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | A7 |  | **Trial: batcher profile wide (budget 300k)**<br>• Hub runs a new batcher profile wide, budget 300k; check cost and fork quality before taking it into the template | [`batch-budget-300k-trial`](design-batch-budget-300k-trial.md) | 1d<br>1d | webster |
 | A8 |  | **Plan writer cost: sub-planners per part, and twill versus a solo writer**<br>• The Plan writer is 18% of spend; sub-planners per part for large bundles, and a twill versus solo Opus high comparison on cost, rounds and time | [`plan-writer-context`](design-plan-writer-context.md) | 1d<br>7m | loom, stencil |
 
-### Enhancements (24)
+### Enhancements (23)
 
 | # | P | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
@@ -70,20 +70,19 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | E2 |  | **Codex CLI as a second shuttle engine: hands-on spike, then codexengine**<br>• Codex CLI as a second engine to offload Claude tokens: short hands-on tests first, then a codexengine for single-session roles | [`codex-engine`](design-codex-engine.md) | 2w<br>8d | shuttle, codex |
 | E4 |  | **finalize: the discrepancy-document conflict shape**<br>• Divergences that cannot be a git conflict get a precomputed document for the resolving agent instead of markers | [`finalize-discrepancy-doc`](design-finalize-discrepancy-doc.md) | 2w<br>2w | fabric, loom |
 | E7 |  | **Run verbs in one shared namespace, not under lyx loom**<br>• lyx loom decision/status/goto/approve act on darn runs too; move recipe-neutral run verbs to one shared namespace | [`run-verbs-shared`](design-run-verbs-shared.md) | 9d<br>9d | shed, loom |
-| E8 |  | **The arbiter in shed for every shed run, batten included**<br>• The batten Go driver has a tackler but no arbiter; move the arbiter and its keys into shed beside the tackler | [`shed-arbiter-all`](design-shed-arbiter-all.md) | 9d<br>9d | shed, batten, loom, config |
 | E9 |  | **Paste cited code into a review rounds context**<br>• Reviewers edit nothing and review a fixed commit, so code pasted at round start cannot go stale; measure it against todays reviewer | [`review-inline-code`](design-review-inline-code.md) | 12d<br>8d | burler, stencil |
 | E10 |  | **Module labels from what a task touches, not only what it is about**<br>• Half the landings that changed the shuttle core lacked the shuttle label; derive or check module labels from the plan and the diff | [`labels-from-diff`](design-labels-from-diff.md) | 8d<br>8d | board, loom |
 | E13 |  | **Rename the lyx binary to lyr (name clash with LyX)** | [`rename-binary-lyr`](design-rename-binary-lyr.md) | 8d<br>1d | stencil, shuttle |
 | E14 |  | **An adopt runs the test suite on the adopting machine**<br>• Catch breaks from a machine change (Ubuntu 26.04, 24.04, Windows 11) at adopt time | [`adopt-runs-tests`](design-adopt-runs-tests.md) | 2h<br>2h | fabric, gate |
 | E16 |  | **Parallel batches: the shared pieces for Webster forks and Weaver**<br>• DAG batchifier, worktree per batch, merge-back with conflict resolution; open: keeping a fork inside its worktree | [`parallel-batch-parts`](design-parallel-batch-parts.md) | 6d<br>6d | webster, fabric, loom |
 | E17 | L | **[WS 007] An anchor per umbrella**<br>• Let a beam work in its own subdirectory of the repository, inherited by its tasks; loom-sized, best with or after umbrella-groundwork | [`umbrella-anchor`](design-umbrella-anchor.md) | 5d<br>1h | fabric, config, workspaces |
-| E18 | H | **[WS 005] One dobby daemon per beam owns and drives its runs**<br>• Each beam (a worktree with an orch thread) gets a Go daemon, started by lyx orch start, that follows its runs status files, starts ready tasks, lands, settles mechanical stops and tells the thread only what needs judgement | [`umbrella-daemon`](design-umbrella-daemon.md) | 11d<br>7m | batten, orch, shed, workspaces, loom, board |
+| E18 | H | **[WS 005] One dobby daemon per beam owns and drives its runs**<br>• Each beam (a worktree with an orch thread) gets a Go daemon, started by lyx orch start, that follows its runs status files, starts ready tasks, lands, settles mechanical stops and tells the thread only what needs judgement | [`umbrella-daemon`](design-umbrella-daemon.md) | 11d<br>0m | batten, orch, shed, workspaces, loom, board |
 | E19 |  | **Every remote operation runs async, and local-only fabric pairs stay an explicit choice only**<br>• Remote work goes async except the branch-exists check; batch pairs reach origin like any pair, and the local-only mode stays only as an explicit --local until a use is found or it is removed | [`fabric-remote-async`](design-fabric-remote-async.md) | 5d<br>5d | fabric, batten |
 | E20 |  | **Plan and Discussion fixers on Sonnet, once findings are concrete enough**<br>• Webster and Merge fixers are already Sonnet; Plan and Discussion fixers need concrete findings first | [`fixers-on-sonnet`](design-fixers-on-sonnet.md) | 1d<br>1d | burler, claude |
 | E22 |  | **lyx batten run starts in its own window by default**<br>• Every batten run is started with --window, so the window should be the default and foreground the opt-in. | [`batten-window-default`](design-batten-window-default.md) | 4d<br>4d | batten, reed, orch |
 | E25 |  | **Ubuntu 24.04 as a stated and checked floor: a PATTERN entry and a mechanical check**<br>• A Neve-written reed change broke on tmux 3.4; nothing states or checks the Ubuntu 24.04 floor | [`ubuntu-2404-floor`](design-ubuntu-2404-floor.md) | 1d<br>16h | reed, gate |
 | E26 |  | **A status-bar button turns automatic terminal windows for runs on or off** | [`open-window-toggle`](design-open-window-toggle.md) | 1d<br>1d | batten, reed |
-| E27 | L | **Carry agent mail into the pane in full instead of a reminder and a read turn**<br>• A reminder plus lyx creel read costs the receiver an extra turn per agent message | [`creel-carry-agent-mail`](design-creel-carry-agent-mail.md) | 23h<br>1h | creel |
+| E27 | L | **Carry agent mail into the pane in full instead of a reminder and a read turn**<br>• A reminder plus lyx creel read costs the receiver an extra turn per agent message | [`creel-carry-agent-mail`](design-creel-carry-agent-mail.md) | 1d<br>1h | creel |
 | E28 |  | **[.NET] A small public NUnit repo as sandbox hub for end-to-end C# runs** | [`csharp-sandbox-hub`](design-csharp-sandbox-hub.md) | 1d<br>1d | dotnet |
 | E30 |  | **Discussion scope check moves from the alignment agent into the perch lenses, with an escalating finding class** | [`discussion-alignment-into-lenses`](design-discussion-alignment-into-lenses.md) | 1d<br>1h | loom, burler, shed |
 | E31 |  | **A row before Discussion aligns the task text against the board, peers and landed work, and adjusts it** | [`entry-align-before-discussion`](design-entry-align-before-discussion.md) | 1d<br>1d | loom, batten, board |
