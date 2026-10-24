@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-24 06:25 UTC; every age below is as of then.
+Rendered 2026-10-24 06:26 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -16,20 +16,19 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T1 | **Each test runs once per tree: disjoint tiers, row entry gates, carried green runs, tmux in final**<br>• Tiers tagged by name, shed row entry gates, verify skipped on an already green tree, tmux in the final gate, gate time measured<br>• `profile: light` | [`gate-runs-once`](design-gate-runs-once.md) | loom | Discussion-Write | neve | 6d<br>19m | gate, shed, loom, webster, fabric, batten |
+| T1 | **Each test runs once per tree: disjoint tiers, row entry gates, carried green runs, tmux in final**<br>• Tiers tagged by name, shed row entry gates, verify skipped on an already green tree, tmux in the final gate, gate time measured<br>• `profile: light` | [`gate-runs-once`](design-gate-runs-once.md) | loom | Discussion-Write | neve | 6d<br>20m | gate, shed, loom, webster, fabric, batten |
 | T2 | **Discussion check refuses a declared PATTERN text over the overview line cap**<br>• A changes or adds text past pattern.MaxEntryLineChars passes Discussion and first fails at Plan-Write<br>• `profile: light` | [`discussion-pattern-line-cap`](design-discussion-pattern-line-cap.md) | darn | Darn-Write | neve | 19h<br>2m | loom |
 | T3 | **TestSmokeStart_NeverAttachesAndAddsNoOperatorStrand flakes on records index.lock and halts Merge-In**<br>• `profile: light` | [`smokestart-index-lock-flake`](design-smokestart-index-lock-flake.md) | darn | Darn-Write | neve | 13h<br>2m | loom, fabric |
 | T4 | **webster record-batch fails create-not-done for Create targets declared in an external _test package**<br>• `profile: light` | [`record-batch-external-test-pkg`](design-record-batch-external-test-pkg.md) | darn | Darn-Write | neve | 13h<br>2m | webster, quarry |
 | T5 | **Git network calls get a stall bound and one retry**<br>• A git call to GitHub hung for minutes on a dead connection; bound every git network call and retry it once<br>• `profile: light` | [`git-remote-stall-timeout`](design-git-remote-stall-timeout.md) | darn | Darn-Write | neve | 13h<br>2m | fabric, batten |
+| T7 | **Batten idle notice fires while a writer works in a fork**<br>• The idle check reads no fork transcript, so a writer working through a fork reads as idle<br>• `profile: light` | [`idle-notice-misses-fork-activity`](design-idle-notice-misses-fork-activity.md) | darn | Worktree-Create | neve | 13h<br>2m | batten |
 | T8 | **A parent decision reaches the agent that needs it: Burler decision findings and Merriam**<br>• Route decision-class findings to the parent, and let Merriam take the decision notice<br>• `profile: light` | [`decision-reaches-agents`](design-decision-reaches-agents.md) | darn | Worktree-Create | neve | 13h<br>1m | burler, loom, webster, stencil, creel |
 
 ### Ready
 
 Waits on nothing open; can start now.
 
-| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- | --- | --- |
-| T7 | **Batten idle notice fires while a writer works in a fork**<br>• The idle check reads no fork transcript, so a writer working through a fork reads as idle<br>• `profile: light` | [`idle-notice-misses-fork-activity`](design-idle-notice-misses-fork-activity.md) | darn |  | 13h<br>2m | batten |
+_None._
 
 ### Layer A
 
