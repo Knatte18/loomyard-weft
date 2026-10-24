@@ -631,13 +631,13 @@
         "workspaces"
       ],
       "issues": [],
-      "priority": "low",
+      "priority": "high",
       "depends_on": [],
       "isolated": false,
       "brief": "Let an umbrella work in its own subdirectory of the repository, inherited by its tasks; hard to change now",
       "body": "## Seen (2026-10-18)\n\nThe anchor (`fabric clone --subpath`) is set once per hub and decides where `_lyx`, `.lyx/` and config sit in every worktree of the hub.\n\n## Idea\n\nLet an umbrella (`orch-any-worktree`) have an anchor of its own, a different subdirectory of the repository, inherited by every task under it as it inherits the branch.\nFabric, batten and loom would then read the anchor from the task's umbrella rather than from the hub.\n\n## Operator view, not a decision (2026-10-18)\n\nHard to change now; a low-priority task for later.\n",
       "created": "2026-10-18T13:38:52Z",
-      "revised": "2026-10-18T14:00:34Z"
+      "revised": "2026-10-24T06:32:58Z"
     },
     {
       "id": 652,
@@ -1379,6 +1379,25 @@
       "isolated": false,
       "brief": "The row aligns the task with what the parent brought in, not only merges",
       "body": "## Seen (2026-10-24)\n\nSince `loom-tail-review` landed, loom's `Merge-In` row does more than merge: it takes the parent in, and when the parent brought commits in, or the merge conflicts or fails its gate, its fixer resolves the conflicts, makes the tests green and checks that the task's work still matches its decision record against what came in, escalating a decision that collides with landed work.\nWithout new parent commits and with a green gate it runs no fixer.\nThat second part is the old alignment check, moved in and narrowed to what the parent brought.\n`Finalize` keeps its own small merge-in under the parent lock, as a last sync.\n\n## Idea (operator, 2026-10-24)\n\nRename the row `Merge-In` to `Parent-Align`, so its name says it aligns the task with its parent, not only merges.\nThe rename covers the recipe row in loom and darn, the producer and engine names, the `merge_*` config keys it reads, the stencils and docs.\nRow names are durable resume identities, so a run parked on `Merge-In` is restarted, as the recipe already says for retired rows.\n",
+      "created": "2026-10-24T06:32:58Z",
+      "revised": "2026-10-24T06:32:58Z"
+    },
+    {
+      "id": 791,
+      "handle": "E35",
+      "slug": "landing-escalate-arbiter",
+      "title": "A landing fixer escalation goes to the arbiter before the orch",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "shed",
+        "loom"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "Merge-In and Finalize fixer escalate reports reach the arbiter first",
+      "body": "## Seen (2026-10-24)\n\nA landing-stop halt at `Merge-In` or `Finalize`, the merge fixer's `escalate` report included, goes straight to the orch: `internal/arbiterstop` marks it `LandingHalt` and skips the arbiter, and `landingshed.HandsBack` names it a hand-back.\nThe fixer escalates when a decision in the task collides with work the parent brought in, the one case with a real judgement in it; the old alignment agent rejected 4 of 72 such checks, all valid.\n\n## Idea (operator, 2026-10-24)\n\nA fixer's `escalate` at a landing row goes to the arbiter first, as other stops do: the arbiter is a strong agent that can likely settle a decision collision against the decision record and what landed, and only its hand-on reaches the orch.\nA spent cap, a failed or unusable fixer turn and an over-cap change stay as they are.\n",
       "created": "2026-10-24T06:32:58Z",
       "revised": "2026-10-24T06:32:58Z"
     }
