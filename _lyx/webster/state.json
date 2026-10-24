@@ -1335,9 +1335,9 @@
       }
     }
   ],
-  "currentBatch": 22,
-  "masterStrand": "d57e1056f169bbd5529cb9dae422d48e",
-  "masterSessionId": "8cba0c36-a89d-4fb1-85b9-8593af5afa18",
+  "currentBatch": 0,
+  "masterStrand": "204a08846d361e4757e6dfa87f5f015b",
+  "masterSessionId": "987ef1ee-76d9-4313-9782-0f9e5f09a81e",
   "masterEngine": "claude",
   "batches": {
     "1": {
@@ -1560,8 +1560,13 @@
       "startSha": "959fc277d999aa08a42e49e48acbffcabae9295d",
       "kind": "recovery",
       "spawnedAt": "2026-10-24T11:05:57Z",
-      "terminal": false,
-      "status": "",
+      "terminal": true,
+      "status": "dead",
+      "digest": {
+        "batch": "22-tier-plan-docs",
+        "status": "dead",
+        "dead_reason": "died"
+      },
       "forkTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-gate-runs-once/10aba9c6-1885-40a9-b0f0-1f9376bb6375/subagents/agent-a9d2ab51c77a8ed87.jsonl"
       ],
