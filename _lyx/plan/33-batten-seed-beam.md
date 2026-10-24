@@ -1,8 +1,8 @@
 # Card 33 — batten-seed-beam
 
 **Create:**
-- `plan:internal/battencli#boardRecipe` -> `func boardRecipe(task boardengine.Task) string`
-- `plan:internal/battencli#TestBoardRecipe` -> `func TestBoardRecipe(t *testing.T)`
+- `internal/battencli#boardRecipe`
+- `internal/battencli#TestBoardRecipe`
 
 **Edit:**
 - `internal/battencli#battenCLI.wire`
@@ -12,7 +12,7 @@
 - `internal/battencli#TestWire_WriteSeedRefusesANonLoomChildBeforeTouchingTheWorktree`
 
 **Uses:**
-- `plan:internal/shedrun#RecipeBeam`
+- `internal/shedrun#RecipeBeam`
 
 **Intent:**
 D11: batten runs its rows over a beam's landing as over a task, and Seed-Child seeds recipe `beam` for a project entry.

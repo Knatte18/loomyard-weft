@@ -1,8 +1,8 @@
 # Card 32 — loomcli-beam-recipe
 
 **Create:**
-- `plan:internal/loomcli#beamDescribeDeps` -> `func beamDescribeDeps(location *lyxcwd.Location, slug, parentBranch string) landingshed.BeamDescribeDeps`
-- `plan:internal/loomcli#TestWire_BeamRecipe` -> `func TestWire_BeamRecipe(t *testing.T)`
+- `internal/loomcli#beamDescribeDeps`
+- `internal/loomcli#TestWire_BeamRecipe`
 
 **Edit:**
 - `internal/loomcli#loomCLI.recipeRouting`
@@ -20,9 +20,9 @@
 - `internal/loomcli/doc.go`
 
 **Uses:**
-- `plan:internal/loomrecipe#NewBeam`
-- `plan:internal/loomrecipe#BeamRouting`
-- `plan:internal/shedrun#RecipeBeam`
+- `internal/loomrecipe#NewBeam`
+- `internal/loomrecipe#BeamRouting`
+- `internal/shedrun#RecipeBeam`
 - `internal/boardengine#OpenHub`
 
 **Intent:**
