@@ -1,6 +1,6 @@
 # A row before Discussion aligns the task text against the board, peers and landed work, and adjusts it
 
-`entry-align-before-discussion` · Note · enhancement, loom, batten, board
+`outdated-entry-to-parent` · Note · enhancement, loom, batten, board
 
 ## Seen
 
