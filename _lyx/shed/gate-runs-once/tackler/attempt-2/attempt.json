@@ -1,0 +1,20 @@
+{
+  "number": 2,
+  "stop_key": {
+    "current_producer": "Webster",
+    "history_length": 29,
+    "state": "blocked"
+  },
+  "pause_before": "",
+  "pause_after": "",
+  "snapshot": {
+    "head": "959fc277d999aa08a42e49e48acbffcabae9295d",
+    "branch": "gate-runs-once",
+    "dirty": {}
+  },
+  "spawned_at": "2026-10-24T13:03:45.303152409+02:00",
+  "deadline": "2026-10-24T13:13:45.303152409+02:00",
+  "envelope_path": "/home/knatte/Code/loomyard-LYXHUB/gate-runs-once/_lyx/shed/gate-runs-once/drive-reports/drive-envelope-20261024-130345-7694.json",
+  "report_path": "/home/knatte/Code/loomyard-LYXHUB/gate-runs-once/_lyx/shed/gate-runs-once/drive-reports/drive-report-20261024-130345-6712.md",
+  "strand_guid": "73f4403faff3d1c02b58bd563ecfef36"
+}
