@@ -801,7 +801,7 @@
       }
     }
   ],
-  "currentBatch": 0,
+  "currentBatch": 26,
   "masterStrand": "b26fdaa60c57e20a41bb8040667d0203",
   "masterSessionId": "5c0f8a9d-af0b-4b1f-abf2-fb8d7a69e703",
   "masterEngine": "claude",
@@ -985,6 +985,30 @@
       "bracketTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-umbrella-groundwork/5c0f8a9d-af0b-4b1f-abf2-fb8d7a69e703/subagents/agent-a2759e9387b749d05.jsonl"
       ]
+    },
+    "26": {
+      "slug": "land-ready-routing",
+      "cards": [
+        "26-land-ready-routing",
+        "27-batten-cleanup-skip",
+        "28-worktree-create-from-beam",
+        "29-finalize-large-merge-lands",
+        "30-beam-describe-producer"
+      ],
+      "cardHashes": {
+        "26-land-ready-routing": "38e5d575e58a63b34c729bf6e9d82316d6402609bf472a383f34ebc83f9b968d",
+        "27-batten-cleanup-skip": "3c4ee9b5a5269cfe42e88666faae274dd88c9f792cd5ffab0fa4ba76ec9481a8",
+        "28-worktree-create-from-beam": "5d9404a47006ccaf008ea33fe2a09cb09497995347506c8c7cdc190aae0ddcb5",
+        "29-finalize-large-merge-lands": "b0f516140a8ac76ccd82758216ae7e2a080e72b494f9f976a4f587a632680fce",
+        "30-beam-describe-producer": "65dbcf3d5d372c36ba6bb1431a493f411b667bf967ad0ab3ad179c1cb7b9a027"
+      },
+      "startSha": "35b54ed1b5a0ac34dbe9bb3f3d36c48738b99ff8",
+      "kind": "fork",
+      "spawnedAt": "2026-10-24T18:07:53Z",
+      "sessionId": "5c0f8a9d-af0b-4b1f-abf2-fb8d7a69e703",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
     },
     "5": {
       "slug": "add-adopt-local",
