@@ -1,4 +1,4 @@
-# [.NET 004] Asynchronous test tiers in shed: the numerical baseline captured before implementation, compared at the final gate
+# [.NET 004] Regression as a hub tier: Discussion sets its scope, a capture row before Webster, a Drift-Validator box after the Code perch
 
 `regression-baseline-verify` · Note · feature, shed, webster, batten, config, dotnet
 
@@ -84,18 +84,22 @@ What the tool must do:
 
 Detached capture: it starts at spawn on the spawn HEAD and records that commit; implementation waits for it before the first edit; a failed or timed-out capture halts before implementation and never falls back to a later capture; it has a timeout and a log that survives teardown; it builds with the gate properties and holds no lock that blocks the agent.
 
-## Operator view (2026-10-24): the compare is an ordinary tier
+## Operator design (2026-10-24): a Drift-Validator box
 
-The regression compare is a plain test tier of the hub, such as Models' `tier2` (`tier0` unit Tests, `tier1` SlowTests), run by the gate like any other tier.
-That the capture ran before the implementation is irrelevant to the tier: it only reads a baseline that exists.
-A failing compare is then an ordinary red tier, fixed by the gate's usual fixer, so the separate compare perch and its rows above are not needed.
-Which gates run which tiers is the hub's own `gate.yaml`, set per repository; nothing here pins it.
-The capture before implementation stays this note's async job.
+This section replaces the stations, the compare perch, the async Job-Start/Job-Join pair and the per-task `off`/`preserve`/`expect-drift` setting above.
 
-A compare has three outcomes:
+- The regression compare is a plain test tier of the hub, such as Models' `tier2` (`tier0` unit Tests, `tier1` SlowTests); which gates run which tiers is the hub's own `gate.yaml`, and Models keeps `tier2` out of Webster's gates.
+  Experience from Models: unwanted small drift is beyond Webster's Sonnet implementer; finding why takes a stronger agent with overview, tracing and logging and many varied test runs.
+- Discussion decides the regression scope, since it knows what the task changes: none (the task changes the model on purpose, so the capture and the compare are skipped), partial (it names the tests that will drift totally, and those are not run), or full (a pure refactoring, everything byte-identical).
+  It also writes down which drift it expects.
+- The capture of the baseline is an ordinary synchronous row right before Webster, skipped when Discussion said none: the regression suite is short, and Plan takes far longer.
+- After Webster and the Code perch, before Describe and Merge-In, a Drift-Validator box runs `tier2` mechanically.
+  When it passes, no LLM is spawned.
+  When it fails, the box spawns one strong agent (Opus or stronger, a config setting) that, within a budget, judges which drift is acceptable against the task and Discussion's expectation, finds the cause of the rest and fixes it until `tier2` passes; it writes its reasoning down and escalates to the orch when unsure or past its budget.
+  One agent does both judging and fixing; it is no perch.
 
-- byte-identical: passes;
-- small drift of an acceptable size: passes;
-- total drift: those regression tests are not run at all, for example when the task changes the model on purpose.
+Open:
 
-Open: how "small drift" is judged; it needs tuning and likely judgement, perhaps an LLM that judges whether a result is close enough.
+- Whether the box's own code changes need a review, since it sits after the Code perch: accept them as they are, or send the run once more through the Code perch when the box changed code.
+- How the tier reports drift to the agent: a report format pinned in `contracts/specs/`, written by the repository's compare tool.
+- The Models side: its regression project writes that report, which is work in the Models repository.
