@@ -1,6 +1,6 @@
 # Board README headings show how many entries each section holds
 
-`readme-heading-counts` · Task · enhancement, board · running · Finalize
+`readme-heading-counts` · Task · enhancement, board · done
 
 ## Seen (2026-10-24)
 

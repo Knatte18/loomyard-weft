@@ -1295,7 +1295,7 @@
       "isolated": false,
       "brief": "Each README section heading carries its entry count, e.g. Enhancements (34)",
       "body": "## Seen (2026-10-24)\n\nThe rendered board README (`internal/boardengine/render.go`) numbers entries by handle (E1, E2, ...), but handles have gaps, so no heading tells how many entries a section holds.\n\n## Change (operator, 2026-10-24)\n\n- Every section heading the README renders carries the number of entries under it in parentheses: `## Tasks (10)`, `### Running (6)`, `### Ready (1)`, each layer heading, `## Notes (62)`, `### Audits (7)`, `### Enhancements (34)`, the `Other` notes heading too.\n- The number is the count of entries listed in that section, never the highest handle number.\n- Update the render tests and the package doc for the new heading form.",
-      "status": "running · Finalize",
+      "status": "done",
       "created": "2026-10-24T06:59:36Z",
       "revised": "2026-10-24T06:59:36Z",
       "profile": "docs",
