@@ -128,10 +128,10 @@ index 2468801f9..4a0905350 100644
  	t.Run("each run is read through the engine its record names", func(t *testing.T) {
  		buf := logcapture.CaptureVerbose(t)
 diff --git a/internal/shuttleengine/doc.go b/internal/shuttleengine/doc.go
-index e45b43cf7..efb32258a 100644
+index 586416b76..7b9202516 100644
 --- a/internal/shuttleengine/doc.go
 +++ b/internal/shuttleengine/doc.go
-@@ -423,6 +423,8 @@
+@@ -426,6 +426,8 @@
  //
  // Agent activity: RunState records the pid of the process that waits on the run, which Start writes and an attach rewrites to the attaching process.
  // A run counts as live when its outcome reads running and that pid is alive; a record without a pid, from an older binary, is not live.
