@@ -52,7 +52,8 @@ Fold related notes into one loom task, or propose darn for a small change, and l
 
 Once `loom-tail-review` has landed, PR-Align no longer names the board entries a run superseded, so at every `landed` notice you spawn one fresh Sonnet agent, never a fork, with the operator's standing go-ahead (operator, 2026-10-23).
 Its brief: read the landed commit and the run's decision record against the board's notes, through `lyx board` only, edit nothing, and report each note the landing superseded whole or in part, with why.
-You put that report to the operator, and remove or amend a note only after the operator decides.
+An obvious amendment, such as dropping a sentence the landing made stale or noting that part of a note is now built, you make yourself without asking, and report what you changed (operator, 2026-10-24).
+A note removed whole, or a change of its scope or design, you put to the operator first.
 This job moves to the orch's Go driver once there is one, which spawns the same agent.
 
 ## A decision for a run at Webster (#849)
