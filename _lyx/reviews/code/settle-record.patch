@@ -1,0 +1,469 @@
+diff --git a/internal/shuttleengine/claudeengine/activity.go b/internal/shuttleengine/claudeengine/activity.go
+index 00218c1bb..e82ff7a0e 100644
+--- a/internal/shuttleengine/claudeengine/activity.go
++++ b/internal/shuttleengine/claudeengine/activity.go
+@@ -1,4 +1,5 @@
+ // activity.go implements shuttleengine.ActivityReader for Claude: the session's last activity, its forks included, and whether the newest main-chain turn end of the transcript a Stop payload names through transcript_path is an API error.
++// It also implements shuttleengine.UsageLimitReader: whether Claude Code's usage-limit classification stopped that turn end or a fork during its turn.
+ // The session's last activity is the newest of the main transcript's last write and its fork transcripts' activity;
+ // a fork's pending tool call reads active up to bashMaxTimeout past its last write, and the API-error part reads the main transcript only.
+ // The marker Claude Code writes on a synthetic API-error assistant entry stays in this file, per the Shuttle Provider-Seam Invariant.
+@@ -16,12 +17,24 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/shuttleengine"
+ )
+ 
+-var _ shuttleengine.ActivityReader = (*Claude)(nil)
++var (
++	_ shuttleengine.ActivityReader   = (*Claude)(nil)
++	_ shuttleengine.UsageLimitReader = (*Claude)(nil)
++)
++
++// usageLimitError is the classification Claude Code sets in the error field of the synthetic API-error entry it writes when the account's usage limit refuses a request.
++const usageLimitError = "rate_limit"
+ 
+-// apiErrorEntry is a transcript entry with the marker Claude Code sets on the synthetic assistant entry it writes for an API error.
++// apiErrorEntry is a transcript entry with the marker Claude Code sets on the synthetic assistant entry it writes for an API error, and that entry's error classification.
+ type apiErrorEntry struct {
+ 	transcriptEntry
+-	IsAPIErrorMessage bool `json:"isApiErrorMessage"`
++	IsAPIErrorMessage bool   `json:"isApiErrorMessage"`
++	Error             string `json:"error"`
++}
++
++// isUsageLimit reports whether e is a synthetic API-error entry the usage limit caused.
++func (e apiErrorEntry) isUsageLimit() bool {
++	return e.Type == "assistant" && e.IsAPIErrorMessage && e.Error == usageLimitError
+ }
+ 
+ // TurnEndActivity reads the transcript turnEnd's transcript_path names.
+@@ -175,3 +188,121 @@ func newestTurnEndError(data []byte) (apiError bool, text string, found bool) {
+ 	}
+ 	return false, "", false
+ }
++
++// TurnEndUsageLimited reads the transcript turnEnd's transcript_path names.
++// The usage limit stopped the turn end when the newest main-chain assistant entry that ends a turn or carries the API-error marker is a usage-limit entry.
++// It stopped a fork during the turn when a fork transcript beside it, last written after the main chain's previous turn end, has a usage-limit entry as its newest assistant entry.
++// A transcript with no previous turn end counts every fork.
++// A missing transcript_path and an unreadable transcript read as no limit.
++func (c *Claude) TurnEndUsageLimited(turnEnd shuttleengine.Event) bool {
++	var payload struct {
++		TranscriptPath string `json:"transcript_path"`
++	}
++	if err := json.Unmarshal(turnEnd.Raw, &payload); err != nil || payload.TranscriptPath == "" {
++		return false
++	}
++	f, err := os.Open(payload.TranscriptPath)
++	if err != nil {
++		return false
++	}
++	defer f.Close()
++	info, err := f.Stat()
++	if err != nil {
++		return false
++	}
++	var reading turnLimitReading
++	readBackward(f, info.Size(), initialReadChunk, func(data []byte) bool {
++		var settled bool
++		reading, settled = readTurnLimit(data)
++		return settled
++	})
++	return reading.limited || forkStoppedOnUsageLimit(payload.TranscriptPath, reading.previousTurnEndAt)
++}
++
++// turnLimitReading is what the main transcript's tail says about the usage limit at its newest turn end.
++type turnLimitReading struct {
++	// limited is true when the newest main-chain turn end is a usage-limit entry.
++	limited bool
++	// previousTurnEndAt is the time of the main-chain turn end before the newest one; zero when there is none or its time does not parse.
++	previousTurnEndAt time.Time
++}
++
++// readTurnLimit scans the complete lines of data from the last to the first for the two newest main-chain assistant entries that end a turn or carry the API-error marker.
++// settled is true once the reading cannot change: the newest is a usage-limit entry, or the one before it turned up.
++func readTurnLimit(data []byte) (reading turnLimitReading, settled bool) {
++	foundNewest := false
++	for end := len(data); end > 0; {
++		start := bytes.LastIndexByte(data[:end], '\n') + 1
++		line := bytes.TrimSpace(data[start:end])
++		end = start - 1
++		if len(line) == 0 {
++			continue
++		}
++		var e apiErrorEntry
++		if err := json.Unmarshal(line, &e); err != nil {
++			continue
++		}
++		if e.IsSidechain || e.Type != "assistant" || !(e.isTurnEnd() || e.IsAPIErrorMessage) {
++			continue
++		}
++		if !foundNewest {
++			if e.isUsageLimit() {
++				return turnLimitReading{limited: true}, true
++			}
++			foundNewest = true
++			continue
++		}
++		reading.previousTurnEndAt, _ = time.Parse(time.RFC3339, e.Timestamp)
++		return reading, true
++	}
++	return reading, false
++}
++
++// forkStoppedOnUsageLimit reports whether a fork transcript under the subagents directory beside transcriptPath, last written after since, has a usage-limit entry as its newest assistant entry.
++// A fork transcript that cannot be read is skipped.
++func forkStoppedOnUsageLimit(transcriptPath string, since time.Time) bool {
++	dir := filepath.Join(strings.TrimSuffix(transcriptPath, ".jsonl"), "subagents")
++	entries, err := os.ReadDir(dir)
++	if err != nil {
++		return false
++	}
++	for _, entry := range entries {
++		if !entry.Type().IsRegular() || filepath.Ext(entry.Name()) != ".jsonl" {
++			continue
++		}
++		info, err := entry.Info()
++		if err != nil || !info.ModTime().After(since) {
++			continue
++		}
++		if newestAssistantIsUsageLimit(filepath.Join(dir, entry.Name()), info.Size()) {
++			return true
++		}
++	}
++	return false
++}
++
++// newestAssistantIsUsageLimit reports whether the newest assistant entry of the size bytes of the transcript at path is a usage-limit entry.
++// A read error and a transcript with no assistant entry report false.
++func newestAssistantIsUsageLimit(path string, size int64) bool {
++	f, err := os.Open(path)
++	if err != nil {
++		return false
++	}
++	defer f.Close()
++	limited := false
++	readBackward(f, size, initialReadChunk, func(data []byte) bool {
++		for end := len(data); end > 0; {
++			start := bytes.LastIndexByte(data[:end], '\n') + 1
++			line := bytes.TrimSpace(data[start:end])
++			end = start - 1
++			var e apiErrorEntry
++			if len(line) == 0 || json.Unmarshal(line, &e) != nil || e.Type != "assistant" {
++				continue
++			}
++			limited = e.isUsageLimit()
++			return true
++		}
++		return false
++	})
++	return limited
++}
+diff --git a/internal/shuttleengine/claudeengine/activity_test.go b/internal/shuttleengine/claudeengine/activity_test.go
+index 2fc975c2f..23e820038 100644
+--- a/internal/shuttleengine/claudeengine/activity_test.go
++++ b/internal/shuttleengine/claudeengine/activity_test.go
+@@ -151,3 +151,81 @@ func TestTurnEndActivity(t *testing.T) {
+ 		}
+ 	})
+ }
++
++func TestTurnEndUsageLimited(t *testing.T) {
++	t.Parallel()
++
++	const (
++		earlierTurnEnd = `{"type":"assistant","timestamp":"2026-10-07T09:00:00.000Z","message":{"stop_reason":"end_turn","content":[{"type":"text","text":"first turn done"}]}}`
++		agentTurnEnd   = `{"type":"assistant","timestamp":"2026-10-07T09:20:00.000Z","message":{"stop_reason":"end_turn","content":[{"type":"text","text":"stopping here"}]}}`
++		limitTurnEnd   = `{"type":"assistant","timestamp":"2026-10-07T09:20:00.000Z","isApiErrorMessage":true,"error":"rate_limit","message":{"stop_reason":"stop_sequence","content":[{"type":"text","text":"You've hit your limit"}]}}`
++		serverTurnEnd  = `{"type":"assistant","timestamp":"2026-10-07T09:20:00.000Z","isApiErrorMessage":true,"error":"server_error","message":{"stop_reason":"stop_sequence","content":[{"type":"text","text":"API Error: 500"}]}}`
++		forkLimit      = `{"type":"assistant","isSidechain":true,"isApiErrorMessage":true,"error":"rate_limit","message":{"stop_reason":"stop_sequence","content":[{"type":"text","text":"You've hit your limit"}]}}`
++		forkServer     = `{"type":"assistant","isSidechain":true,"isApiErrorMessage":true,"error":"server_error","message":{"stop_reason":"stop_sequence","content":[{"type":"text","text":"API Error: 500"}]}}`
++		sidechainLimit = `{"type":"assistant","isSidechain":true,"timestamp":"2026-10-07T09:25:00.000Z","isApiErrorMessage":true,"error":"rate_limit","message":{"stop_reason":"stop_sequence","content":[{"type":"text","text":"You've hit your limit"}]}}`
++		forkAnswer     = `{"type":"assistant","isSidechain":true,"message":{"stop_reason":"end_turn","content":[{"type":"text","text":"found it"}]}}`
++	)
++	previousTurnEnd := time.Date(2026, 10, 7, 9, 0, 0, 0, time.UTC)
++
++	tests := []struct {
++		name       string
++		transcript []string
++		// fork is the one fork transcript's lines, none when empty, and forkWrote its write time.
++		fork      []string
++		forkWrote time.Time
++		want      bool
++	}{
++		{"a main-chain usage-limit turn end is limited", []string{earlierTurnEnd, limitTurnEnd}, nil, time.Time{}, true},
++		{"a main-chain server-error turn end is not limited", []string{earlierTurnEnd, serverTurnEnd}, nil, time.Time{}, false},
++		{"a limit an earlier turn end reported does not limit a later plain turn end", []string{earlierTurnEnd, limitTurnEnd, agentTurnEnd}, nil, time.Time{}, false},
++		{"a sidechain limit entry in the main transcript is ignored", []string{earlierTurnEnd, agentTurnEnd, sidechainLimit}, nil, time.Time{}, false},
++		{"a plain turn end with no fork is not limited", []string{earlierTurnEnd, agentTurnEnd}, nil, time.Time{}, false},
++		{"a fork stopped on the limit during the turn makes the agent's own turn end limited", []string{earlierTurnEnd, agentTurnEnd}, []string{forkLimit}, previousTurnEnd.Add(10 * time.Minute), true},
++		{"a fork stopped on the limit before the previous turn end does not count", []string{earlierTurnEnd, agentTurnEnd}, []string{forkLimit}, previousTurnEnd.Add(-time.Minute), false},
++		{"a fork that answered after a limit entry does not count", []string{earlierTurnEnd, agentTurnEnd}, []string{forkLimit, forkAnswer}, previousTurnEnd.Add(10 * time.Minute), false},
++		{"a fork stopped on a server error does not count", []string{earlierTurnEnd, agentTurnEnd}, []string{forkServer}, previousTurnEnd.Add(10 * time.Minute), false},
++		{"a first turn counts every fork", []string{agentTurnEnd}, []string{forkLimit}, previousTurnEnd.Add(-time.Hour), true},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			dir := t.TempDir()
++			path := filepath.Join(dir, "session.jsonl")
++			if err := os.WriteFile(path, []byte(strings.Join(tt.transcript, "\n")+"\n"), 0o644); err != nil {
++				t.Fatal(err)
++			}
++			if len(tt.fork) > 0 {
++				forkPath := filepath.Join(dir, "session", "subagents", "agent-1.jsonl")
++				if err := os.MkdirAll(filepath.Dir(forkPath), 0o755); err != nil {
++					t.Fatal(err)
++				}
++				if err := os.WriteFile(forkPath, []byte(strings.Join(tt.fork, "\n")+"\n"), 0o644); err != nil {
++					t.Fatal(err)
++				}
++				if err := os.Chtimes(forkPath, tt.forkWrote, tt.forkWrote); err != nil {
++					t.Fatal(err)
++				}
++			}
++
++			if got := (&Claude{}).TurnEndUsageLimited(stopEventFor(t, path)); got != tt.want {
++				t.Errorf("TurnEndUsageLimited() = %v; want %v", got, tt.want)
++			}
++		})
++	}
++
++	t.Run("a missing transcript path or file is not limited", func(t *testing.T) {
++		t.Parallel()
++		noPath, err := json.Marshal(map[string]any{"hook_event_name": "Stop"})
++		if err != nil {
++			t.Fatal(err)
++		}
++		for name, event := range map[string]shuttleengine.Event{
++			"no transcript_path": {Kind: shuttleengine.EventStop, Raw: noPath},
++			"missing file":       stopEventFor(t, filepath.Join(t.TempDir(), "absent.jsonl")),
++		} {
++			if (&Claude{}).TurnEndUsageLimited(event) {
++				t.Errorf("%s: TurnEndUsageLimited() = true; want false", name)
++			}
++		}
++	})
++}
+diff --git a/internal/shuttleengine/claudeengine/doc.go b/internal/shuttleengine/claudeengine/doc.go
+index 9b27a6f2b..bb9e419ac 100644
+--- a/internal/shuttleengine/claudeengine/doc.go
++++ b/internal/shuttleengine/claudeengine/doc.go
+@@ -141,6 +141,12 @@
+ // a sidechain entry never counts, and a later normal turn end clears the error.
+ // Every failure degrades to the zero reading.
+ //
++// The usage-limit reading (UsageLimitReader) reads Claude Code's own classification, the `error` field `rate_limit` on a synthetic `isApiErrorMessage` entry, never the entry's text or the agent's words.
++// A turn end is usage-limited when the main transcript's newest main-chain turn end is such an entry.
++// It is also usage-limited when a fork transcript under `subagents/` last written after the main chain's previous turn end has such an entry as its newest assistant entry.
++// The fork half catches an agent whose forks hit the limit and that then ends its turn itself; the time bound keeps a limit an earlier turn already met from counting again.
++// A session with no previous turn end counts every fork, and every failure reads as no limit.
++//
+ // The resume check refuses a session whose registry entry names a live pid, unless the live process's start time differs from the entry's `procStart`, which proves the pid was reused.
+ // An unreadable start time, or an entry without `procStart`, still refuses and says the pid could not be proven reused.
+ //
+diff --git a/internal/shuttleengine/doc.go b/internal/shuttleengine/doc.go
+index e45b43cf7..586416b76 100644
+--- a/internal/shuttleengine/doc.go
++++ b/internal/shuttleengine/doc.go
+@@ -101,6 +101,9 @@
+ // and ends with the start of the agent's last message.
+ // Every agent-written part is delimited, has its control and delimiter characters replaced by spaces and is cut to 200 runes, so the line is bounded and has no newline.
+ // There is one notice per held turn end.
++// A held turn end the engine's optional UsageLimitReader reads as stopped by the provider's usage limit, at the turn end or in a fork during its turn, sends no notice, defers none and leaves RunState.NotifiedOffset alone.
++// The parent cannot act while the account is limited, and a notice would reach it only as stale clutter after the reset.
++// The hold, the wait mark and the deadline are unchanged, and the next held turn end it does not read limited is notified as any other.
+ // A held turn end that is an API error across a detected sleep of at least pauserecord.SleepTolerance is first given one automatic continue line, typed through the guarded paste-submit, and sends no notice and defers none:
+ // no pause covers the run, the session state names the newest turn end an API error, and the sleep lies after the latest turn start Wait read.
+ // RunState.APIContinued is persisted before typing and cleared by the next held turn end that is not an API error, so a turn gets at most one continue.
+diff --git a/internal/shuttleengine/fakes_test.go b/internal/shuttleengine/fakes_test.go
+index 0e4ff6b1e..232573adb 100644
+--- a/internal/shuttleengine/fakes_test.go
++++ b/internal/shuttleengine/fakes_test.go
+@@ -791,18 +791,20 @@ var _ ReedOps = (*skillReed)(nil)
+ // Every signal names session-1, and the read consumes through the last complete line.
+ // ProcessLiveness answers liveness for any session id, and TurnStartInterrupt answers interrupted and interruptAt for any turn start.
+ // TurnEndActivity marks a turn end as an API error when its line is apiErrorLine.
++// TurnEndUsageLimited reads a turn end as usage-limited when its line is usageLimitLine.
+ // TurnStartProgress answers progress for any turn start.
+ // With markEvents set, ParseSessionSignals also reads "@<RFC 3339 time>" as the stamp of the next line and sets Event, with that time, on the lines the engine's ParseEvents yields an event from ("STOP:", "WAIT:" and "ASK:<message>", the last read as an ask) and on "MARK", a turn end no ParseEvents yields an event from;
+ // a read then stops before a trailing run of stamp lines with no payload after them.
+ type sessionFakeEngine struct {
+ 	waitingEngine
+ 
+-	liveness     Liveness
+-	interrupted  bool
+-	interruptAt  time.Time
+-	apiErrorLine string
+-	progress     TurnProgress
+-	markEvents   bool
++	liveness       Liveness
++	interrupted    bool
++	interruptAt    time.Time
++	apiErrorLine   string
++	usageLimitLine string
++	progress       TurnProgress
++	markEvents     bool
+ }
+ 
+ func (e *sessionFakeEngine) ParseSessionSignals(data []byte) ([]SessionSignal, int) {
+@@ -883,11 +885,16 @@ func (e *sessionFakeEngine) TurnEndActivity(turnEnd Event) TurnEndActivity {
+ 	return TurnEndActivity{APIError: true, APIErrorText: "overloaded"}
+ }
+ 
++func (e *sessionFakeEngine) TurnEndUsageLimited(turnEnd Event) bool {
++	return e.usageLimitLine != "" && strings.TrimSpace(string(turnEnd.Raw)) == e.usageLimitLine
++}
++
+ var (
+ 	_ SessionSignalParser = (*sessionFakeEngine)(nil)
+ 	_ SessionProber       = (*sessionFakeEngine)(nil)
+ 	_ ActivityReader      = (*sessionFakeEngine)(nil)
+ 	_ TurnProgressReader  = (*sessionFakeEngine)(nil)
++	_ UsageLimitReader    = (*sessionFakeEngine)(nil)
+ )
+ 
+ // openerFakeEngine is fakeEngine plus the SessionOpener capability: OpenLaunch records the spec it was given and returns the scripted launch, or the scripted error.
+diff --git a/internal/shuttleengine/hold.go b/internal/shuttleengine/hold.go
+index def242c44..e8bfb8473 100644
+--- a/internal/shuttleengine/hold.go
++++ b/internal/shuttleengine/hold.go
+@@ -1,4 +1,5 @@
+ // hold.go builds the notice an autonomous run's held turn end sends its parent, and sends it once per held turn end through the runner's notifier.
++// It also declares the optional capability that tells a held turn end the provider's usage limit caused, which sends no notice.
+ 
+ package shuttleengine
+ 
+@@ -74,6 +75,33 @@ func (run *Run) settleDeferredHold() {
+ 	run.notifyHeld(held)
+ }
+ 
++// UsageLimitReader is an optional capability beside Engine: the provider's reading of whether its usage limit stopped the session a turn end names.
++// An Engine without it reports no usage limit, so its held turn ends are notified as any other.
++type UsageLimitReader interface {
++	// TurnEndUsageLimited reports whether the provider's usage limit stopped the session turnEnd names at that turn end, or stopped one of its forks during the turn turnEnd ends.
++	// It reports false on every failure and never errors.
++	TurnEndUsageLimited(turnEnd Event) bool
++}
++
++// holdNoticePending reports whether a held turn end would be notified or queued for notice now.
++// It is false for a run notifyHeld never notifies, and for a deferred-hold run whose next turn already started.
++// A pause covering the run discards the notice only when no hold is deferred; a deferred hold is sent after the pause lifts.
++func (run *Run) holdNoticePending() bool {
++	if run.runner.notifier == nil || run.spec.Interactive || run.spec.QuietHold {
++		return false
++	}
++	if run.spec.HoldDeferral == nil {
++		return !run.covered
++	}
++	return !run.turnStartRead
++}
++
++// usageLimited reports whether the run's engine reads held as a turn end the provider's usage limit caused.
++func (run *Run) usageLimited(held *heldTurnEnd) bool {
++	reader, ok := run.engine.(UsageLimitReader)
++	return ok && reader.TurnEndUsageLimited(Event{Raw: held.raw})
++}
++
+ // apiErrorContinueLine is the one line an agent whose turn ended on an API error across a machine sleep is given to carry on.
+ const apiErrorContinueLine = "[lyx] Your last turn ended on an API error while the machine slept; it is awake again. Carry on with your task where you stopped."
+ 
+diff --git a/internal/shuttleengine/hold_test.go b/internal/shuttleengine/hold_test.go
+index 45e2f27ac..dedfe336e 100644
+--- a/internal/shuttleengine/hold_test.go
++++ b/internal/shuttleengine/hold_test.go
+@@ -79,6 +79,8 @@ func TestWait_HeldTurnEndNotice(t *testing.T) {
+ 		// apiError makes the engine read the "STOP:overloaded" turn end as an API error and the pane take the lines sent to it, and sendFails makes that send fail.
+ 		apiError  bool
+ 		sendFails bool
++		// usageLimit makes the engine read the "STOP:limit" turn end as one the provider's usage limit caused.
++		usageLimit bool
+ 		// sleepJump is the clock jump per Sleep, nonzero to reach a wait bound in a few ticks, and timeout is the run's deadline, heldTestTimeout when zero.
+ 		sleepJump time.Duration
+ 		timeout   time.Duration
+@@ -188,6 +190,35 @@ func TestWait_HeldTurnEndNotice(t *testing.T) {
+ 				}
+ 			},
+ 		},
++		{
++			name: "a usage-limited stop sends no notice, leaves the offset and holds to the deadline", events: "STOP:limit\n", usageLimit: true, strand: strandName,
++			check: func(t *testing.T, got heldRun) {
++				if len(got.notices) != 0 || got.notifiedOffset != 0 || got.result.Outcome != OutcomeTimeout {
++					t.Errorf("notices = %q, NotifiedOffset = %d, outcome = %q; want none, 0 and a hold to the deadline", got.notices, got.notifiedOffset, got.result.Outcome)
++				}
++			},
++		},
++		{
++			name: "a stop after a usage-limited one is notified", events: "STOP:limit\n", usageLimit: true, strand: strandName,
++			script: func(appendLine func(string), _ func(time.Duration)) []func() {
++				return []func(){func() { appendLine("START") }, func() { appendLine("STOP:back") }}
++			},
++			check: func(t *testing.T, got heldRun) {
++				if len(got.notices) != 1 || !strings.HasSuffix(got.notices[0], "«back»") {
++					t.Errorf("notices = %q, want one for the stop after the limit", got.notices)
++				}
++			},
++		},
++		{
++			name: "a deferred run sends no notice for a usage-limited stop after the deferral", events: "STOP:limit\n", usageLimit: true,
++			sleepJump: time.Minute, timeout: 30 * time.Minute,
++			deferral: func(*testing.T, func() time.Duration) func() bool { return func() bool { return false } },
++			check: func(t *testing.T, got heldRun) {
++				if len(got.notices) != 0 || got.result.Outcome != OutcomeTimeout {
++					t.Errorf("notices = %q, outcome = %q, want none and a wait to the deadline", got.notices, got.result.Outcome)
++				}
++			},
++		},
+ 		{
+ 			name: "an interactive run holds without notifying", events: "STOP:hello\n", interact: true,
+ 			check: func(t *testing.T, got heldRun) {
+@@ -338,6 +369,9 @@ func TestWait_HeldTurnEndNotice(t *testing.T) {
+ 			if tt.session {
+ 				engine = &sessionFakeEngine{waitingEngine: waitingEngine{outstanding: tt.outstand}}
+ 			}
++			if tt.usageLimit {
++				engine = &sessionFakeEngine{waitingEngine: waitingEngine{outstanding: tt.outstand}, usageLimitLine: "STOP:limit"}
++			}
+ 			var reed ReedOps = &fakeReed{StatusQueue: liveStrandStatus(true)}
+ 			var paneReed *echoReed
+ 			if tt.apiError {
+diff --git a/internal/shuttleengine/wait.go b/internal/shuttleengine/wait.go
+index d92c7cb29..1e9b5cced 100644
+--- a/internal/shuttleengine/wait.go
++++ b/internal/shuttleengine/wait.go
+@@ -324,6 +324,9 @@ func (run *Run) Wait() (Result, error) {
+ 				}
+ 				switch {
+ 				case continued:
++				case run.holdNoticePending() && run.usageLimited(held):
++					// The parent cannot act while the account is limited, and a notice sent now lands in its context as stale clutter after the reset.
++					logger.Info("shuttle: held turn end stopped on the usage limit; no hold notice", "strandGUID", run.state.StrandGUID, "offset", held.offset)
+ 				case run.spec.HoldDeferral == nil:
+ 					run.notifyHeld(held)
+ 				case !run.turnStartRead:
+@@ -845,7 +848,7 @@ func (run *Run) pollEventsTick() (Outcome, *heldTurnEnd, error) {
+ 	last := events[len(events)-1]
+ 	if last.Kind == EventWaiting {
+ 		run.recordWaiting(last)
+-		run.waitingTurnEnd = &heldTurnEnd{message: last.Message, offset: offsetPastEvent(data, startOffset, newOffset, last)}
++		run.waitingTurnEnd = &heldTurnEnd{message: last.Message, offset: offsetPastEvent(data, startOffset, newOffset, last), raw: last.Raw}
+ 		if len(run.waitingTasks) == 0 && len(run.gate) == 0 && allOutputFilesExist(run.spec.OutputFiles) {
+ 			return OutcomeDone, nil, nil
+ 		}
+@@ -866,7 +869,7 @@ func (run *Run) pollEventsTick() (Outcome, *heldTurnEnd, error) {
+ 	if allOutputFilesExist(run.spec.OutputFiles) {
+ 		return OutcomeDone, nil, nil
+ 	}
+-	held := &heldTurnEnd{message: last.Message, offset: offsetPastEvent(data, startOffset, newOffset, last)}
++	held := &heldTurnEnd{message: last.Message, offset: offsetPastEvent(data, startOffset, newOffset, last), raw: last.Raw}
+ 	if guardArmed && !slices.ContainsFunc(turnStarts, func(start int64) bool { return start < held.offset }) {
+ 		logger.Warn("shuttle: turn end before the prompt's turn start; not held", "strandGUID", run.state.StrandGUID, "offset", held.offset, "lastAssistantMessage", held.message)
+ 		return "", nil, nil
+@@ -938,6 +941,8 @@ type heldTurnEnd struct {
+ 	message string
+ 	// offset is the events-file byte offset just past the turn end's line.
+ 	offset int64
++	// raw is the turn end's events-file line.
++	raw []byte
+ }
+ 
+ // offsetPastEvent returns the events-file offset just past the line ev was parsed from.
