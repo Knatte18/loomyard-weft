@@ -801,7 +801,7 @@
       }
     }
   ],
-  "currentBatch": 0,
+  "currentBatch": 22,
   "masterStrand": "b26fdaa60c57e20a41bb8040667d0203",
   "masterSessionId": "5c0f8a9d-af0b-4b1f-abf2-fb8d7a69e703",
   "masterEngine": "claude",
@@ -935,6 +935,28 @@
       "bracketTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-umbrella-groundwork/5c0f8a9d-af0b-4b1f-abf2-fb8d7a69e703/subagents/agent-a147ef6d0c1201d06.jsonl"
       ]
+    },
+    "22": {
+      "slug": "overview-cleanup-every-orch",
+      "cards": [
+        "22-overview-cleanup-every-orch",
+        "23-batten-guard",
+        "24-batten-window-site",
+        "25-batten-notices-walk"
+      ],
+      "cardHashes": {
+        "22-overview-cleanup-every-orch": "ac4de3e184049ce72ca5a0e4cb71d8cf86c5672fda2a4dd0ae8dab5ef59ac0a8",
+        "23-batten-guard": "6dacbd7220cc5343ad7965d73cb2d6f9d7b37d35762791756b7928c7f976e235",
+        "24-batten-window-site": "5697d6f646caf8dec59c7d5dcf32fa6577eac92370df0db9747e98d782275820",
+        "25-batten-notices-walk": "897b615ff89edbbb55f1b7afa7c07f7eba591d63c3264bbd816d4ced351981a3"
+      },
+      "startSha": "94adcaf7e0a0b4cf73436c5f1d33cac8ee2c8d1e",
+      "kind": "fork",
+      "spawnedAt": "2026-10-24T17:51:55Z",
+      "sessionId": "5c0f8a9d-af0b-4b1f-abf2-fb8d7a69e703",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
     },
     "5": {
       "slug": "add-adopt-local",
