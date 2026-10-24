@@ -295,6 +295,12 @@ Decision: Shorten PATTERN-shed-producer-seam to: Importing into `internal/sheden
 
 Rationale: PATTERN.md is already over its headroom line and this task's entries add 510 bytes; trimming detail the background files and code already hold makes room until a PATTERN cleanup (operator, 2026-10-24).
 
+### Added after Discussion (parent, 2026-10-24): Shorten parent-lock for PATTERN headroom
+
+Decision: Shorten PATTERN-parent-lock to: Moving, merging into or landing on a local parent branch: only in Finalize, under its parent lock.
+
+Rationale: PATTERN.md is already over its headroom line and this task's entries add 510 bytes; trimming detail the background files and code already hold makes room until a PATTERN cleanup (operator, 2026-10-24).
+
 ## Constraints
 
 - The hub's tier commands must carry both tag spellings, and this hub must stop using `covers`, before Webster gates any card that retags a file; the orch applies it from the prime with `lyx config gate --set`:
@@ -379,6 +385,7 @@ Rationale: PATTERN.md is already over its headroom line and this task's entries 
 - `PATTERN-treadle-runner-seam` — changes: Importing into `internal/treadleengine`: allowlist only, never `burlerengine`, `lyxcwd` or a CLI package. — added after Discussion (parent, 2026-10-24)
 - `PATTERN-binary-change-reconcile` — changes: Reconciling a hub's config after a binary change: only via `hubreconcile.Ensure`. — added after Discussion (parent, 2026-10-24)
 - `PATTERN-shed-producer-seam` — changes: Importing into `internal/shedengine`: only stdlib, `state` and `lock`; paths are told. — added after Discussion (parent, 2026-10-24)
+- `PATTERN-parent-lock` — changes: Moving, merging into or landing on a local parent branch: only in Finalize, under its parent lock. — added after Discussion (parent, 2026-10-24)
 
 ## Notes for the plan writer
 
