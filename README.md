@@ -18,7 +18,7 @@ Held by a run; its scope is locked until the run ends.
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T1 | **Each test runs once per tree: disjoint tiers, row entry gates, carried green runs, tmux in final**<br>• Tiers tagged by name, shed row entry gates, verify skipped on an already green tree, tmux in the final gate, gate time measured<br>• `profile: light` | [`gate-runs-once`](design-gate-runs-once.md) | loom | Discussion-Burler-Fix | neve | 6d<br>48m | gate, shed, loom, webster, fabric, batten |
 | T3 | **TestSmokeStart_NeverAttachesAndAddsNoOperatorStrand flakes on records index.lock and halts Merge-In**<br>• `profile: light` | [`smokestart-index-lock-flake`](design-smokestart-index-lock-flake.md) | darn | Finalize | neve | 14h<br>31m | loom, fabric |
-| T5 | **Git network calls get a stall bound and one retry**<br>• A git call to GitHub hung for minutes on a dead connection; bound every git network call and retry it once<br>• `profile: light` | [`git-remote-stall-timeout`](design-git-remote-stall-timeout.md) | darn | Describe | neve | 13h<br>31m | fabric, batten |
+| T5 | **Git network calls get a stall bound and one retry**<br>• A git call to GitHub hung for minutes on a dead connection; bound every git network call and retry it once<br>• `profile: light` | [`git-remote-stall-timeout`](design-git-remote-stall-timeout.md) | darn | PR-Review | neve | 13h<br>31m | fabric, batten |
 | T8 | **A parent decision reaches the agent that needs it: Burler decision findings and Merriam**<br>• Route decision-class findings to the parent, and let Merriam take the decision notice<br>• `profile: light` | [`decision-reaches-agents`](design-decision-reaches-agents.md) | darn | Darn-Write | neve | 14h<br>30m | burler, loom, webster, stencil, creel |
 
 ### Ready
@@ -33,7 +33,7 @@ Waits only on Running or Ready entries.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T6 | **Fork git-mutation guard fails a run on git commands confined to a scratch repo**<br>• `profile: light` | [`fork-git-guard-scratch-repo`](design-fork-git-guard-scratch-repo.md) | darn | `gate-runs-once` | 14h<br>28m | shed, burler |
+| T6 | **Fork git-mutation guard fails a run on git commands confined to a scratch repo**<br>• `profile: light` | [`fork-git-guard-scratch-repo`](design-fork-git-guard-scratch-repo.md) | darn | `gate-runs-once` | 14h<br>29m | shed, burler |
 | T9 | **Umbrella groundwork: project entries, pairs from a parent pair, and umbrella tasks that spawn and land from their own worktree**<br>• [WS 004+006] Board projects, fabric pairs from a parent pair, batten and orch from any worktree, umbrella tasks | [`umbrella-groundwork`](design-umbrella-groundwork.md) | loom | `gate-runs-once`, `git-remote-stall-timeout` | 2w<br>27m | fabric, batten, orch, board, reed, creel, shed, workspaces |
 | T10 | **Every lens fork report is kept verbatim in the run records**<br>• Save each lens fork report in a support file beside lens-review.md, so audits can read what each lens found | [`lens-fork-reports-kept`](design-lens-fork-reports-kept.md) | darn | `decision-reaches-agents` | 1d<br>21m | burler, loom |
 
