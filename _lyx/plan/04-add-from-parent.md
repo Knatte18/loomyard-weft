@@ -6,9 +6,9 @@
 - `internal/fabricengine#Topology.Add`
 
 **Create:**
-- `plan:internal/fabricengine#resolveAddParent` -> `func resolveAddParent(l *lyxcwd.Location, cfg Config, parent string) (addParent, error)`
-- `plan:internal/fabricengine#addParent` -> `type addParent struct`
-- `plan:internal/fabricengine_test#TestAdd_FromParentPair` -> `func TestAdd_FromParentPair(t *testing.T)`
+- `internal/fabricengine#resolveAddParent`
+- `internal/fabricengine#addParent`
+- `internal/fabricengine_test#TestAdd_FromParentPair`
 
 **Extends:**
 - `internal/fabricengine/doc.go`

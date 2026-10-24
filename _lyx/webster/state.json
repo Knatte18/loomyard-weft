@@ -1,15 +1,15 @@
 {
   "runGuid": "0c92b76ecbae330c53aca040bff54a50",
-  "planFingerprint": "3abb0078dc7d64230d6d9aca122c5f10479c8237d1ed64638257651d1d2f299b",
+  "planFingerprint": "d894cf89faa1bbf259a7e6c01f8299a8c967566101f082a52eee4b5cc6fb4e57",
   "planFileHashes": {
     "00-overview.md": "3d9b9d836b384b6275a3d06d7a0b4d9fc34547800ed42f5cb42ff03f22cfd5e6",
-    "01-fabric-slug-rule.md": "b6fa7e32634d33faf287fc1e2e0a63dba4143914964cf4d2aabb168d978247b5",
-    "02-origin-beam-mark.md": "1fd624bae14121f51ca79484726d9c607e24dd58050a816c2d9c84d14d8f0d94",
-    "03-add-options-struct.md": "4d314f6e474f003e274d61bef4821a088f0412bbd5bdbfacabde46ff8532f7f2",
-    "04-add-from-parent.md": "0c8bfb22c10c829f3502050105d83cce0a99a91435e65e0bbb77158c29b782b3",
+    "01-fabric-slug-rule.md": "24afd634ad6b5f856aae6b02a3b00141d047fae902d8f00106e935ed4abec609",
+    "02-origin-beam-mark.md": "2e8b20f792b2b8fafb28e01e4aea5a22eb7699f568ec880d16be38d0f1399f3b",
+    "03-add-options-struct.md": "2d5034a369f1e1c9469dfb7d6bb6459767b09e9af69e15b0f1aa4795c7542f70",
+    "04-add-from-parent.md": "4c544f97aa28b2832c95cee1248eb7ecc236cca2ca74950da028fea4ee2ceba5",
     "05-add-adopt-local.md": "18f9519f0c5527e75840c3737cf1a053414fd09fb6edcfed0240c86705f43a4e",
     "06-fabric-add-flags.md": "0265485b4a94bc56cdb6f3b01040d791c46d6a2befb7f5f5b36620a7835da582",
-    "07-beam-workspace-files.md": "f7dea86902b221e3ccd34f3d74ea2ecd79a25b78bdc81f07b88f74aa9e752a42",
+    "07-beam-workspace-files.md": "4f1deb7a7dc6224a05769cd177c492246afa1ee0538e3aa991fbb3c0fbe8d78c",
     "08-weft-reset-executor.md": "0ba135dc8eaa0acb365118b226757fc9edca231df4bc970b397690b4abd82443",
     "09-board-project-kind.md": "f594065d4a334f0392ba913b6ccb53de93d4ed07f55b50f9a5a04a8537b193d7",
     "10-board-membership.md": "2b257bc3b91582a95d462b540cc23de1653c392ca240ac280399d138a9ae6955",
@@ -19,7 +19,7 @@
     "14-board-readme-projects.md": "c9352f795b2c85c2ed67e4d1c52cbd25782d410bada222c3fd3cae5ad6ae6b8f",
     "15-hubgeom-parent-of.md": "018cd3350d75cc8e27bb2108474080a67e5895cf6c12e155934fac44e243da87",
     "16-delete-parent-slug.md": "e024b462a0a0474eacf36ecc5da981ce3a63aa07a63fe5c958e301cf7ffec4e3",
-    "17-boardcli-wiring.md": "74d20b39d13ebf90699f24ab12bcb24a73e16b9598d95b05da537d5b2e983606",
+    "17-boardcli-wiring.md": "a067e0e59ad467e9989ebd2d681c8983f5f353a22923090cae8ad7e83d7bea82",
     "18-hubgeom-live-orch-walk.md": "5ea801a6e1428cc5a634a3651eb016894f3de45b7e28677a591a9e26878ac0bf",
     "19-orch-in-beam.md": "93db4c486ec53bda5c54e59352b970122050d34a06fd88138da887d50ac5ac3a",
     "20-orch-notify-parent.md": "f4a3c829a56b19eb2f66ef80313edff50cd86fd485200a64d973cde8de2188f5",
@@ -36,8 +36,8 @@
     "31-beam-recipe.md": "a166949e11435774bc7ad5df86db398358cc2f00adcc504dcdd11869671f510f",
     "32-loomcli-beam-recipe.md": "64b063ff1934a5437f4be6912d66293c76ca4723e541dd2343a418462d9f8d37",
     "33-batten-seed-beam.md": "b16230c8b6df486133c1abbe45448eb6820f85aa940f6d83c8725d5313faefd4",
-    "34-beam-create.md": "e771ddf42cf92dea7fd2bb99a72f84229d792451408195fb963ee3746d910b71",
-    "35-beam-promote.md": "3454b9c813388dadd2d754d92a8f1cd66be42a7d0223f90dc47993e12f8466ba",
+    "34-beam-create.md": "0f5791a64fe3ebbdcfd66c9d051f26c71ae2a7bdc53384c93883d82e90f23054",
+    "35-beam-promote.md": "86b5f5f81cad83fbcf93a4a39953dafa8b4e58bf7621317cabc4b45dc3e7cabf",
     "36-beam-land.md": "f179ffd2b78bb5420d83651a17995ae52d709decd4cc8d7a382780577b40a36c",
     "37-adopt-beam.md": "a4118cae79121ba5bcea054bc41c5d29bd963df0555cc1e15bd064d05353964f"
   },
@@ -801,7 +801,7 @@
       }
     }
   ],
-  "currentBatch": 1,
+  "currentBatch": 0,
   "masterStrand": "b26fdaa60c57e20a41bb8040667d0203",
   "masterSessionId": "5c0f8a9d-af0b-4b1f-abf2-fb8d7a69e703",
   "masterEngine": "claude",
@@ -815,18 +815,41 @@
         "04-add-from-parent"
       ],
       "cardHashes": {
-        "01-fabric-slug-rule": "b6fa7e32634d33faf287fc1e2e0a63dba4143914964cf4d2aabb168d978247b5",
-        "02-origin-beam-mark": "1fd624bae14121f51ca79484726d9c607e24dd58050a816c2d9c84d14d8f0d94",
-        "03-add-options-struct": "4d314f6e474f003e274d61bef4821a088f0412bbd5bdbfacabde46ff8532f7f2",
-        "04-add-from-parent": "0c8bfb22c10c829f3502050105d83cce0a99a91435e65e0bbb77158c29b782b3"
+        "01-fabric-slug-rule": "24afd634ad6b5f856aae6b02a3b00141d047fae902d8f00106e935ed4abec609",
+        "02-origin-beam-mark": "2e8b20f792b2b8fafb28e01e4aea5a22eb7699f568ec880d16be38d0f1399f3b",
+        "03-add-options-struct": "2d5034a369f1e1c9469dfb7d6bb6459767b09e9af69e15b0f1aa4795c7542f70",
+        "04-add-from-parent": "4c544f97aa28b2832c95cee1248eb7ecc236cca2ca74950da028fea4ee2ceba5"
       },
       "startSha": "04aafa88c11751bdfac2b21281cf263d27b1eb4a",
       "kind": "fork",
       "spawnedAt": "2026-10-24T16:32:32Z",
       "sessionId": "5c0f8a9d-af0b-4b1f-abf2-fb8d7a69e703",
       "engine": "claude",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "01-fabric-slug-rule",
+        "status": "done",
+        "head_sha": "6b98a7a26e516095743c92a30b4d76ebbf2052fc",
+        "deviations": [
+          "internal/fabricengine/addparent_integration_test.go",
+          "internal/fabricengine/markbeam_integration_test.go",
+          "internal/fabricengine/origin.go",
+          "internal/hubforge/hub.go"
+        ]
+      },
+      "cardShas": [
+        "6b98a7a26e516095743c92a30b4d76ebbf2052fc"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-umbrella-groundwork/5c0f8a9d-af0b-4b1f-abf2-fb8d7a69e703/subagents/agent-a6e41b7f8893f18a6.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-umbrella-groundwork/5c0f8a9d-af0b-4b1f-abf2-fb8d7a69e703/subagents/agent-a6e41b7f8893f18a6.jsonl"
+      ]
     }
-  }
+  },
+  "seenForkTranscripts": [
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-umbrella-groundwork/5c0f8a9d-af0b-4b1f-abf2-fb8d7a69e703/subagents/agent-a6e41b7f8893f18a6.jsonl"
+  ]
 }

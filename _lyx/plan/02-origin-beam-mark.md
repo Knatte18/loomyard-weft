@@ -5,8 +5,8 @@
 - `internal/fabricengine#TestOrigin_JSONRoundTrip`
 
 **Create:**
-- `plan:internal/fabricengine#MarkBeam` -> `func MarkBeam(rec *Mutations, l *lyxcwd.Location, slug string) (bool, error)`
-- `plan:internal/fabricengine_test#TestMarkBeam` -> `func TestMarkBeam(t *testing.T)`
+- `internal/fabricengine#MarkBeam`
+- `internal/fabricengine_test#TestMarkBeam`
 
 **Uses:**
 - `internal/fabricengine#WriteOrigin`

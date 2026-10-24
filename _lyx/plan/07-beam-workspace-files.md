@@ -19,7 +19,7 @@
 
 **Uses:**
 - `internal/fabricengine#ReadOriginFor`
-- `plan:internal/fabricengine#MarkBeam`
+- `internal/fabricengine#MarkBeam`
 - `internal/fabricengine#AddOptions`
 - `internal/hubforge#CopyHub`
 - `internal/hubforge#AddPairWith`

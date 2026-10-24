@@ -26,7 +26,7 @@
 **Uses:**
 - `internal/battencli#hubCancelDeps`
 - `internal/fabricengine#ReadOriginFor`
-- `plan:internal/fabricengine#MarkBeam`
+- `internal/fabricengine#MarkBeam`
 - `plan:internal/fabricengine#ResetRecordsToParent`
 - `internal/fabricengine#SpawnPairPush`
 - `internal/fabricengine#RegenerateHubWorkspace`

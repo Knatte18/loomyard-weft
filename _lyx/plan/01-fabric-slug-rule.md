@@ -1,7 +1,7 @@
 # Card 1 — fabric-slug-rule
 
 **Create:**
-- `plan:internal/fabricengine#ValidatePairSlug` -> `func ValidatePairSlug(slug string, junctionNames []string) error`
+- `internal/fabricengine#ValidatePairSlug`
 
 **Edit:**
 - `internal/fabricengine#TestValidateWorktreeSlug`

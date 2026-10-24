@@ -5,7 +5,7 @@
 - `internal/fabricengine#Topology.add`
 
 **Create:**
-- `plan:internal/fabricengine#AddOptions.syncOptions` -> `func (o AddOptions) syncOptions() SyncOptions`
+- `internal/fabricengine#AddOptions.syncOptions`
 
 **Intent:**
 Turn `AddOptions` from an alias of `SyncOptions` into a struct of its own, so `Add` can take the new options of cards 4 and 5 without widening `SyncOptions`, which every records helper takes.
