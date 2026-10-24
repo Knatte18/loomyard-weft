@@ -32,12 +32,13 @@ From `docs/research/codex-feasibility.md`, section 3, after the spike:
 
 1. A minimal `codexengine` for the single-session roles: Codex home, launch line, hook-fed event parsing, startup classifier, send and paste handling, completion (`Stop` or `task_complete`) and interrupt (`turn_aborted`). Medium to large; claudeengine is about 3,900 non-test lines.
 2. Skills sync into the Codex home, and the deny guardrails as Codex `PreToolUse` hooks (a hook that fails to run fails open). Medium.
-3. Forks and orch parity. Large; deferred.
+3. Forks and orch parity. Large; deferred. A twill-like fork fan is feasible, see the twill spike report.
 
 ## First candidate roles
 
 Single-session roles that spawn no forks and only write output files: Burler review chair without a cluster fan, Burler fixer, Describe, Bouncer judge and seed, treadle, friction, merge-conflict resolver, darn writer, the alignment agent.
-Webster, twill, the orch and the Burler cluster fan depend on Claude Code's Agent forks, cross-session messaging and background-task wake-ups, and wait.
+Webster, twill, the orch and the Burler cluster fan depend on cross-session messaging and background-task wake-ups, and wait.
+Forks are no longer a blocker for a fan: `docs/research/codex-twill-spike-2026-10-24/report.md` found that Codex forks (`fork_turns: "all"`) run in parallel, three at once by default, and report back to the parent, with caveats (no per-fork model, no isolation, a fan is a request not a guarantee).
 
 ## Groundwork
 
