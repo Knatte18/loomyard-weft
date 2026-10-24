@@ -1,9 +1,9 @@
 # Card 28 — worktree-create-from-beam
 
 **Create:**
-- `plan:internal/battencli#beamForkPrecondition` -> `func beamForkPrecondition(slug, beam string, beamEntry boardengine.Task, beamFound, pairPresent bool, branchOnOrigin func() (bool, error)) error`
-- `plan:internal/battencli#TestBeamForkPrecondition` -> `func TestBeamForkPrecondition(t *testing.T)`
-- `plan:internal/battencli#TestWorktreeCreate_ForksFromTheBeam` -> `func TestWorktreeCreate_ForksFromTheBeam(t *testing.T)`
+- `internal/battencli#beamForkPrecondition`
+- `internal/battencli#TestBeamForkPrecondition`
+- `internal/battencli#TestWorktreeCreate_ForksFromTheBeam`
 
 **Edit:**
 - `internal/battencli#battenCLI.wire`

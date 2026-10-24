@@ -1,10 +1,10 @@
 # Card 26 — land-ready-routing
 
 **Create:**
-- `plan:internal/battenshed#ReadyRoute` -> `type ReadyRoute struct`
-- `plan:internal/orchcli#NotifyOrchAt` -> `func NotifyOrchAt(worktree *lyxcwd.Location, program, line string) (bool, error)`
-- `plan:internal/battencli#readyRoutes` -> `func readyRoutes(ready []string, parentBeam func(slug string) string, beamOrchLive func(beam string) (bool, error)) (prime []string, beams map[string][]string, err error)`
-- `plan:internal/battencli#TestReadyRoutes` -> `func TestReadyRoutes(t *testing.T)`
+- `internal/battenshed#ReadyRoute`
+- `internal/orchcli#NotifyOrchAt`
+- `internal/battencli#readyRoutes`
+- `internal/battencli#TestReadyRoutes`
 
 **Edit:**
 - `internal/battenshed#LandDeps`

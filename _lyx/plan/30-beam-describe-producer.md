@@ -1,9 +1,9 @@
 # Card 30 — beam-describe-producer
 
 **Create:**
-- `plan:internal/landingshed#NewBeamDescribe` -> `func NewBeamDescribe(name string, deps BeamDescribeDeps) (shedengine.ShedProducer, error)`
-- `plan:internal/landingshed#BeamDescribeDeps` -> `type BeamDescribeDeps struct`
-- `plan:internal/landingshed#TestBeamDescribe` -> `func TestBeamDescribe(t *testing.T)`
+- `internal/landingshed#NewBeamDescribe`
+- `internal/landingshed#BeamDescribeDeps`
+- `internal/landingshed#TestBeamDescribe`
 
 **Extends:**
 - `internal/landingshed/doc.go`
