@@ -1,12 +1,11 @@
 diff --git a/internal/gitexec/doc.go b/internal/gitexec/doc.go
-index b3fd58642..09f19839e 100644
+index 51c5373b8..8f21da2ab 100644
 --- a/internal/gitexec/doc.go
 +++ b/internal/gitexec/doc.go
-@@ -21,6 +21,18 @@
- // IsTransportFailure reports such a timeout, and a transfer the low-speed limit stopped, as a transport failure, so a caller's existing transport handling takes over.
- // A local subcommand runs unbounded.
+@@ -23,6 +23,18 @@
  // Before the deadline starts, a remote subcommand waits while a pause covers the process, through the process's network gate: the wait counts against no deadline, and with no gate installed there is none.
-+//
+ // The hold only delays the call's start and never fails it.
+ //
 +// # Stall bound
 +//
 +// The low-speed limit covers a transfer, never the connection's setup, so a TLS handshake the remote never answers would run to curl's connect timeout or the deadline.
@@ -18,9 +17,10 @@ index b3fd58642..09f19839e 100644
 +// Bound: the stall bound covers only the wait for the remote's first answer; a connection that stalls after it is held by the low-speed limit and the deadline alone.
 +// A deadline at or under the stall bound, as RunWithin may pass, leaves the stall check unarmed.
 +// An operator's own GIT_TRACE_PACKET is overridden for a remote subcommand.
- // The hold only delays the call's start and never fails it.
- //
++//
  // # Environment
+ //
+ // Every git child inherits the process environment except GIT_DIR and GIT_WORK_TREE, which are dropped so the child follows the directory it is run in, as the in-process reads do, and one command never reads one repository and writes another.
 diff --git a/internal/gitexec/errorrender_test.go b/internal/gitexec/errorrender_test.go
 index 374058c9d..722225c4a 100644
 --- a/internal/gitexec/errorrender_test.go
@@ -62,7 +62,7 @@ index 236d7eadc..8a3eacaf2 100644
 +	t.Cleanup(func() { stallBound = previous })
 +}
 diff --git a/internal/gitexec/gitexec.go b/internal/gitexec/gitexec.go
-index 4488b44eb..794a2b4a5 100644
+index b91e18b28..cef3cb831 100644
 --- a/internal/gitexec/gitexec.go
 +++ b/internal/gitexec/gitexec.go
 @@ -19,7 +19,7 @@
@@ -155,7 +155,7 @@ index 4488b44eb..794a2b4a5 100644
 -// A remote subcommand first waits while a pause covers the process, through the installed network gate, if any, and its deadline starts only once it runs.
 +// A remote subcommand killed for a stall runs once more, since it received nothing from the remote and so changed nothing there.
 +// A remote subcommand first waits while a pause covers the process, through the installed network gate, if any, and its bounds start only once it runs.
- // Every child gets the process environment less GIT_DIR and GIT_WORK_TREE.
+ // Every child gets the process environment less GIT_DIR, GIT_WORK_TREE and GIT_OPTIONAL_LOCKS, with GIT_OPTIONAL_LOCKS=0 set.
  func runCoreWithin(args []string, cwd, stdin string, deadline time.Duration) (stdout, stderr string, exitCode int, err error) {
  	if floorErr := CheckFloor(); floorErr != nil {
  		return "", "", -1, floorErr
@@ -255,8 +255,8 @@ index 4488b44eb..794a2b4a5 100644
 +	return outBuf.String(), errBuf.String(), 0, false, nil
  }
  
- // childEnv returns the process environment without GIT_DIR and GIT_WORK_TREE, followed by extra.
-@@ -261,7 +320,7 @@ func childEnv(extra []string) []string {
+ // noOptionalLocksEnv stops a read-only git command, such as `git status`, from taking the index lock to write back a refreshed stat cache.
+@@ -266,7 +325,7 @@ func childEnv(extra []string) []string {
  
  // RunGit runs a git command and returns stdout, stderr, and exit code.
  // A git below lyx's floor returns the *toolfloor.FloorError with exit code -1, which is no *GitError.
@@ -265,7 +265,7 @@ index 4488b44eb..794a2b4a5 100644
  func RunGit(args []string, cwd string) (stdout, stderr string, exitCode int, err error) {
  	stdout, stderr, exitCode, err = runCore(args, cwd, "")
  	if err != nil {
-@@ -279,13 +338,13 @@ func RunGit(args []string, cwd string) (stdout, stderr string, exitCode int, err
+@@ -284,13 +343,13 @@ func RunGit(args []string, cwd string) (stdout, stderr string, exitCode int, err
  // alongside a *GitError; it is empty on an exec-level failure only because
  // git never ran.
  // A git below lyx's floor returns the *toolfloor.FloorError, which is no *GitError, since no git command ran.
@@ -281,7 +281,7 @@ index 4488b44eb..794a2b4a5 100644
  func RunWithin(args []string, cwd string, deadline time.Duration) (string, error) {
  	stdout, stderr, exitCode, err := runCoreWithin(args, cwd, "", deadline)
  	if err != nil {
-@@ -298,7 +357,7 @@ func RunWithin(args []string, cwd string, deadline time.Duration) (string, error
+@@ -303,7 +362,7 @@ func RunWithin(args []string, cwd string, deadline time.Duration) (string, error
  }
  
  // RunStdin is Run with stdin fed to git's standard input, for a command such as `cat-file --batch-check` that reads its operands there.
@@ -291,7 +291,7 @@ index 4488b44eb..794a2b4a5 100644
  	stdout, stderr, exitCode, err := runCore(args, cwd, stdin)
  	if err != nil {
 diff --git a/internal/gitexec/gitexec_test.go b/internal/gitexec/gitexec_test.go
-index aab1472b8..fea957492 100644
+index 4a9d29641..4ad4e504f 100644
 --- a/internal/gitexec/gitexec_test.go
 +++ b/internal/gitexec/gitexec_test.go
 @@ -18,6 +18,7 @@ import (
@@ -302,7 +302,7 @@ index aab1472b8..fea957492 100644
  	"github.com/Knatte18/loomyard/internal/pauserecord"
  	"github.com/Knatte18/loomyard/internal/proc"
  	"github.com/Knatte18/loomyard/internal/testkit/logcapture"
-@@ -226,7 +227,7 @@ func TestRun_StdoutOnError(t *testing.T) {
+@@ -245,7 +246,7 @@ func TestRun_StdoutOnError(t *testing.T) {
  }
  
  // TestRun_RemoteBounds drives the bounds on a remote git command through git's ext:: transport, a remote that accepts and never answers, with no network.
@@ -311,7 +311,7 @@ index aab1472b8..fea957492 100644
  // The ext:: command is a shell script, so the test is Unix-only.
  func TestRun_RemoteBounds(t *testing.T) {
  	if runtime.GOOS == "windows" {
-@@ -390,7 +391,101 @@ func TestRun_RemoteBounds(t *testing.T) {
+@@ -409,7 +410,101 @@ func TestRun_RemoteBounds(t *testing.T) {
  		return
  	}
  
@@ -414,7 +414,7 @@ index aab1472b8..fea957492 100644
  		_, err := gitexec.Run([]string{"-c", "protocol.ext.allow=always", "ls-remote", "ext::" + printEnv}, repoDir)
  		var gitErr *gitexec.GitError
  		if !errors.As(err, &gitErr) {
-@@ -401,11 +496,22 @@ func TestRun_RemoteBounds(t *testing.T) {
+@@ -420,11 +515,22 @@ func TestRun_RemoteBounds(t *testing.T) {
  				t.Errorf("remote command environment lacks %s; stderr: %s", want, gitErr.Stderr)
  			}
  		}
@@ -438,7 +438,7 @@ index aab1472b8..fea957492 100644
  		stdout, err := gitexec.Run([]string{"-c", "alias.slowenv=!sleep 2 && env", "slowenv"}, repoDir)
  		if err != nil {
  			t.Fatalf("Run error = %v; want a local command to run past the remote deadline", err)
-@@ -413,6 +519,9 @@ func TestRun_RemoteBounds(t *testing.T) {
+@@ -432,6 +538,9 @@ func TestRun_RemoteBounds(t *testing.T) {
  		if strings.Contains(stdout, "GIT_HTTP_LOW_SPEED") {
  			t.Errorf("local command environment holds a low-speed variable; stdout: %s", stdout)
  		}
