@@ -1,32 +1,37 @@
-# Cut PATTERN.md from 100 entries to 30
+# Cut PATTERN.md from about 100 entries to 30
 
-`PATTERN.md` is inlined into every spawned agent's prompt, and it had grown past its headroom line (15.6 KB against the 15.5 KB line).
-This change cuts it to 30 entries and 6966 bytes without dropping a rule's substance: related entries merge, package-local rules move into their package's doc, and four rules another enforced home already states leave PATTERN.
+`PATTERN.md` is inlined in every spawned agent's prompt, so its size is paid on every run.
+It had grown past its headroom line and needed 20 entries shortened to fit the last addition.
+It now holds 30 entries in about 7 KB, down from about 15.6 KB, with no rule dropped except the four listed below.
 
-## What changed
+## What changes
 
-- **Merges.** Twenty-two survivor entries absorb related ones, following the board entry's review list.
-  Each survivor's overview line now names every absorbed clause tersely, and its `pattern/` background file gains one section per absorbed entry, carrying that entry's background text with headings demoted a level.
-  For example, `PATTERN-gate-slot` now holds self-check parity, the verified tree, the trimpath-safe root and the gate carry; `PATTERN-pane-text-injection` holds the guarded interrupt, the pause hold, the orch pane and the creel store.
-- **Moves.** Twenty-one package-local rules leave PATTERN for their owning package's doc: `agentname`, `batcher`, `burlerengine`, `configreg`, `fabricengine`, `friction`, `hubreconcile`, `landingshed`, `loomcli`, `loomshed`, `lyxcwd`, `parentlock`, `planparser`, `reedengine`, `shedengine`, `shedverbs`, `treadleengine` and `tools/sandbox`.
-  Where the package doc already stated the rule, only the missing clauses were added.
-- **Drops.** `quarry-cgo`, `markdown-link-integrity`, `comment-line-breaks` and `documentation-lifecycle` leave with their background files: `CLAUDE.md`, `docslink_test` and `lyx loom lint-comments` already hold them.
-- **Citation sweep.** Every live citation of a removed ID — test failure messages, doc comments, `contracts/specs`, stencil tests, `crucible/`, `docs/overview.md` and the benchmark guides — now names the survivor ID or the owning package doc.
-  `cmd/testtiming`'s redundancy report header and its generated report point at `PATTERN-test-speed`'s test economy section.
-  Dated reports under `docs/research/` and `testdata/` corpus files keep their text.
-
-No test, scan or enforcement was removed; only the IDs their messages cite changed.
+- Related entries merge into 22 survivors, for example `config-layers`, `fabric-git`, `gate-slot`, `shed-driver`, `pane-text-injection` and `test-speed`.
+  A survivor's overview line states the whole rule tersely.
+  Its `pattern/` background file keeps its own text and gains one `##` section per absorbed entry, headings demoted one level.
+  An absorbed entry with no background file contributes its rule as a bullet.
+- 21 package-local rules move into the owning package's `doc.go`, condensed to the rule, its bounds and its enforcement.
+  The packages are `configreg`, `hubreconcile`, `lyxcwd`, `fabricengine`, `parentlock`, `shedengine`, `landingshed`, `shedverbs`, `loomcli`, `treadleengine`, `loomshed`, `planglyph`, `batcher`, `burlerengine`, `agentname`, `friction`, `reedengine` and `tools/sandbox`.
+- `quarry-cgo`, `markdown-link-integrity`, `comment-line-breaks` and `documentation-lifecycle` are dropped with their background files.
+  `CLAUDE.md` states the cgo build and the documentation lifecycle, `docslink_test` fails with a clear message on a broken docs link, and `lyx loom lint-comments` runs at every card gate.
+- Every live citation of a removed `PATTERN-` ID is swept across Go code and comments, `contracts/`, `crucible/` and `docs/`.
+  An absorbed ID becomes its survivor's ID, a moved ID names the owning package's doc, and a dropped ID names the enforcing test or `CLAUDE.md`, or is removed.
+  Test messages that cite an ID change with it; no test or scan is removed.
 
 ## Design decisions
 
-- `hub-store-gc` joins `PATTERN-fabric-git` rather than `gitrepo-client-boundary` as the review proposed, because it binds `fabricengine/housekeeping.go`.
-  The three entries added after the review join the survivor whose subject they restate: `row-entry-gate` into `shed-recipe-registry`, `gate-carry` into `gate-slot`, `tier-tags` into `test-speed`.
-- The glyph conversion rule moves into `planparser`'s package doc, not `planglyph`'s as the decision record names: `planparser` already carried the rule's "Glyph Conversion Chokepoint Invariant" section and owns every sanctioned conversion it lists.
-- `agentname` and `lyxcwd` keep their package doc in their main file, so the moved section extends that doc rather than creating a `doc.go`.
-  `configreg` had no package doc and `tools/sandbox` no command doc, so each gains a `doc.go`.
-- `fabricengine`'s doc already stated the mutation record rule in full, so the move only removes its PATTERN pointer.
+- `hub-store-gc` joins `fabric-git`, not `gitrepo-client-boundary`: it binds `fabricengine/housekeeping.go`, not `internal/gitrepo`.
+- `row-entry-gate`, `gate-carry` and `tier-tags` were added after the task's review list and join `shed-recipe-registry`, `gate-slot` and `test-speed`.
+- `shed-recipe-registry` had no background file of its own and takes the absorbed `recipe-setting-lookup` file as its base.
+- Reports under `docs/research/` and `docs/benchmarks/` and corpus files under `testdata/` keep their old `PATTERN-` citations, as records of a past run.
+- `internal/pattern`'s checker and caps are untouched.
 
 ## Risks
 
-- A moved rule no longer reaches every agent's prompt; an agent editing outside the owning package meets it only through the enforcing test's message or review.
-- A merged overview line is terse; a clause that only the background section spells out can be missed by an agent that does not open the file.
+- A moved rule is no longer in every spawned agent's prompt, so an agent outside the owning package can break a review-only rule without seeing it.
+- A merged overview line names several clauses tersely; an agent may miss a clause that only the background file spells out.
+
+## To check
+
+- No test checks that a cited `PATTERN-` ID exists.
+  Run `grep -rn 'PATTERN-' --include='*.go' --include='*.md' --include='*.yaml' .` outside `docs/research/`, `docs/benchmarks/` and `testdata/`, and confirm each ID is in `PATTERN.md`.
