@@ -241,6 +241,12 @@ Decision: Shorten PATTERN-command-row to: Adding side-action row to a recipe: a 
 
 Rationale: PATTERN.md is already over its headroom line and this task's entries add 510 bytes; trimming detail the background files and code already hold makes room until a PATTERN cleanup (operator, 2026-10-24).
 
+### Added after Discussion (parent, 2026-10-24): Shorten shed-recipe-registry for PATTERN headroom
+
+Decision: Shorten PATTERN-shed-recipe-registry to: Adding producer: one `map[string]Constructor` in `internal/shedrecipe` behind `Lookup`, bar `Implementer`'s.
+
+Rationale: PATTERN.md is already over its headroom line and this task's entries add 510 bytes; trimming detail the background files and code already hold makes room until a PATTERN cleanup (operator, 2026-10-24).
+
 ## Constraints
 
 - The hub's tier commands must carry both tag spellings, and this hub must stop using `covers`, before Webster gates any card that retags a file; the orch applies it from the prime with `lyx config gate --set`:
@@ -316,6 +322,7 @@ Rationale: PATTERN.md is already over its headroom line and this task's entries 
 - `PATTERN-gate-carry` — adds: Skipping a test tier as already green: only `lyx gate test`'s green record, over a clean tree.
 - `PATTERN-row-entry-gate` — adds: Leaving a recipe row out by config: its `entry_gate`, never a recipe rewrite or producer-side switch.
 - `PATTERN-command-row` — changes: Adding side-action row to a recipe: a `Command` row over config keys, its command from template and board default only. — added after Discussion (parent, 2026-10-24)
+- `PATTERN-shed-recipe-registry` — changes: Adding producer: one `map[string]Constructor` in `internal/shedrecipe` behind `Lookup`, bar `Implementer`'s. — added after Discussion (parent, 2026-10-24)
 
 ## Notes for the plan writer
 
