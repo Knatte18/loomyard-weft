@@ -30,4 +30,4 @@ Only 2 wide runs with a Webster record have landed (`orch-strand-cycle`, `loom-t
 
 - Too few wide runs to decide; no quality regression seen (no stuck batches, one review round).
 - In the one measured run, forks of 4-5 cards peaked at 310k and 315k, 31-39% over the batcher's estimate; cautious forks average 0.99 of estimate. If `wide` stays, the estimator needs calibrating above 200k.
-- Recheck after 6-8 more wide runs. The comparison script was `.scratch/a7/compare.sh [FROM-date]` (machine-local, not in git).
+- Recheck after 6-8 more wide runs. Rerun with `docs/research/batch-budget-trial-2026-10-24/compare.sh [FROM-date]`; its README and the 2026-10-24 baseline tables sit beside it.
