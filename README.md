@@ -43,7 +43,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | P | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| A1 |  | **Restore to PATTERN the moved rules that bind callers outside their package**<br>• Audit of pattern-cleanup: 4 moved rules bind outside code with no scan, 2 more lean back | [`pattern-restore-caller-rules`](design-pattern-restore-caller-rules.md) | 0m<br>0m |  |
+| A1 |  | **Restore to PATTERN the moved rules that bind callers outside their package**<br>• Audit of pattern-cleanup: 4 moved rules bind outside code with no scan, 2 more lean back | [`pattern-restore-caller-rules`](design-pattern-restore-caller-rules.md) | 0m<br>0m | config, shed, reed, fabric |
 | A2 |  | **Recurring test-suite time and growth audit**<br>• Re-run cmd/testtiming against test-suite-timing.md to watch suite growth | [`test-time-audit-recurring`](design-test-time-audit-recurring.md) | 6d<br>6d |  |
 | A3 |  | **Audit the twill and lens review setup: worth per perch, recurring finding classes, writer quality**<br>• One audit over the review records once about ten loom runs with the current setup land on Neve | [`review-setup-audit`](design-review-setup-audit.md) | 8d<br>2d | burler, loom, report, stencil, shed |
 | A5 |  | **Sweep go_parallel on OSL-1046 with Cortex XDR**<br>• Time both gate tiers on the work laptop on a quiet machine and log them in docs beside the Neve numbers, with full hardware info | [`bench-osl1046-xdr`](design-bench-osl1046-xdr.md) | 4d<br>4d |  |
