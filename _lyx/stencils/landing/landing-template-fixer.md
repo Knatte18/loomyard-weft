@@ -4,7 +4,7 @@
      which fills it from the lead's value map that landingshed's FixerTable builds, then hands it to shuttle as the fixing agent's whole
      prompt. Every marker below is a top-level {{.X}} substitution; stencil.FillWith requires every
      marker non-empty except the table's Optional values (plan_dir, failure_record_path and, in finalize mode, aligned_tip), parent_directive (rendered by internal/parentdirective) and edit_directive (rendered unconditionally by internal/editdirective) included, and there are no {{if}}/{{range}} conditionals anywhere in this file.
-lyx-stencil: sha256=79cea019f81088b7718cd8ad6a2cbe0397411b19af434f842172774e5c898853 build=fc75aef792c26f037d2edb86987811280e37fd67 time=2026-10-24T05:13:21Z -->
+lyx-stencil: sha256=f3ddc8254fdd7579cdc24e1886b5f170f35e959055293874a7e31351dbf845a4 build=fe9fbafc3d5904c65d19462c1364bbb4d595b1b3 time=2026-10-24T17:26:06Z -->
 
 # Merge fixer — fix the merge or the failing tests on the task branch
 
@@ -31,6 +31,8 @@ When a change of the parent conflicts with a decision of the record, do not choo
 
 In `finalize` mode fix the failing tests only.
 Judge no parent change and align nothing.
+
+When the landing failure record holds `build: true`, the gate failed in its build step before any test ran, so in either mode fix the compile error the record's log names, in place of failing tests.
 
 ## Rules
 
