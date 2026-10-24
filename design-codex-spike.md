@@ -1,6 +1,6 @@
 # Codex CLI hands-on spike: tmux driving, hooks, approvals, report
 
-`codex-spike` · Task · audit, shuttle, codex
+`codex-spike` · Task · audit, shuttle, codex · running · Worktree-Create
 
 ## Task (operator, 2026-10-24)
 
