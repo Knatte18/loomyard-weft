@@ -9,7 +9,7 @@
      twill_directive is a fourth optional marker, rendered by internal/twilldirective through internal/loomengine;
      it sits on the line that would otherwise be blank, so an empty value leaves the blank line and the prompt's bytes unchanged.
      edit_directive is a required marker, rendered unconditionally by internal/editdirective.
-lyx-stencil: sha256=2fcf909f95f1e3af96b3d4b70241b1f43ac8dbb19c84c54c8df014a2fc2601d0 build=88b53f2a3b6a805b001a83d523e750f4ca5cc277 time=2026-10-23T08:59:58Z -->
+lyx-stencil: sha256=3aeb8d0acb0f487fc4b6138188b3f5cc16fccf660fa18493a806527fe21371a1 build=d08687e6db3982b8fbe12ac8a7e83a92186a061e time=2026-10-24T15:21:41Z -->
 
 # Plan — read the decision record, write a plan-format flat-card plan
 
@@ -45,6 +45,7 @@ The route admits a drop of an own-entry step only: no other decided step is drop
 
 No card changes this task's own board entry's body or scope, because the run's board lock refuses such a change.
 The landing's status write, a `run_settings` write, a card that writes another board entry and a card that changes the board module's code stay allowed.
+A follow-up a card files goes on the board as a note, never as a task, and no card promotes a note: only the operator decides what becomes a task, and the board refuses a run's agent that creates or promotes one.
 
 ## Step 2 — Explore the codebase
 

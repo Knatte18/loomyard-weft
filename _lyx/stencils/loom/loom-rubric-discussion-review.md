@@ -5,7 +5,7 @@
      It is a marker VALUE, never a template -- its only markers are the ones ReadRubric fills, and
      internal/stencil's StripLeadingComment removes this leading comment before either consumer ever
      sees it.
-lyx-stencil: sha256=d252a7b321b5db808791615c8e13eec39b8c976383dc82537a98fed79e17cd34 build=eb9c2605c6d5ac23da196495db12bb3fa6302386 time=2026-10-22T06:15:45Z -->
+lyx-stencil: sha256=a54425991f2ca7fba5b810c580f798ee05833ab17bb987ae422c11ac022eabe1 build=d08687e6db3982b8fbe12ac8a7e83a92186a061e time=2026-10-24T15:21:41Z -->
 
 # Discussion-Review rubric
 
@@ -45,6 +45,9 @@ Do not flag any of the following as a finding:
 - **A Decision that edits the task's own board entry.**
   A Decision that asks the run to change this task's own board entry's body or scope, through `lyx board` or otherwise, is a finding, because the run's board lock refuses such a change.
   A Decision that writes another entry, the entry's status or its `run_settings`, or changes board-module code is not flagged by this bullet.
+- **A Decision that files or promotes a task.**
+  A Decision that files a follow-up as a task, or promotes a note, is a finding, because only the operator decides what becomes a task and the board refuses a run's agent that creates or promotes one.
+  Its fix files the follow-up as a note.
 - **The writer/reviewer symmetry note.**
   The discussion writer's own stencil is `{{.stencils_dir}}/loom/loom-template-discussion.md`, and the record rules it follows are in `{{.specs_dir}}/loom/loom-discussion-spec.md`: read them to learn what the writer was told not to gather.
   Whatever it says not to gather, this rubric must not flag as missing, or the additive bias reappears even with the writer-side fix in place.

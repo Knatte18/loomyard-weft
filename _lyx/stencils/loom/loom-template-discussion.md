@@ -12,7 +12,7 @@
      it sits on the line that would otherwise be blank, so an empty value leaves the blank line and the prompt's bytes unchanged.
      edit_directive is a required marker, rendered unconditionally by internal/editdirective.
      The literal `{` / `}` characters around {{.slug}} in the board-read example below are ordinary JSON punctuation, not template syntax — only `{{` begins a template action.
-lyx-stencil: sha256=dc9c5d65154cd01c194e67bb4c3515776aba9d660a60edd09721621e58b887cc build=eb9c2605c6d5ac23da196495db12bb3fa6302386 time=2026-10-22T06:15:45Z -->
+lyx-stencil: sha256=2dcbb7895858a739de2cd9b49137ee51bff9a49e1f498c77b6e39c09dfaa8091 build=d08687e6db3982b8fbe12ac8a7e83a92186a061e time=2026-10-24T15:21:41Z -->
 
 # Discussion — interview, then write the decision record
 
@@ -84,6 +84,7 @@ Apply YAGNI: do not design for a hypothetical requirement nobody asked for.
 **Leave this task's own board entry alone.**
 No decision asks the run to change this task's own board entry's body or scope, through `lyx board` or otherwise, because the run's board lock refuses such a change.
 The landing's status write, a `run_settings` write, a decision to file or change another board entry and a change to the board module's code are outside this rule.
+A follow-up a decision files goes on the board as a note, never as a task, and no decision promotes a note: only the operator decides what becomes a task, and the board refuses a run's agent that creates or promotes one.
 
 ## Step 4 — How to get answers
 
