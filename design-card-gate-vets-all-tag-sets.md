@@ -1,6 +1,6 @@
 # Card gate (--tier 0) does not vet a card's packages under the other tier tag sets, so helper dependencies across tagged files fail only in the batch gate
 
-`card-gate-vets-all-tag-sets` · Task · bug, gate, webster · running · Finalize
+`card-gate-vets-all-tag-sets` · Task · bug, gate, webster · done
 
 Imported from [issue #865](https://github.com/Knatte18/loomyard/issues/865).
 
