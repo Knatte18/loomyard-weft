@@ -49,6 +49,12 @@ Rationale: the block now holds entries of two commands; the sendSequence entries
 
 - A third-party extension the operator installs may bind `ctrl+alt+a`; the user-level binding then wins over the extension's default, which is the intended precedence.
 
+<!-- lyx:carry-over Code-Review -->
+- Code-Review, round 1: converged; each finding below was fixed or disputed by the round's fixer, and no fresh reviewer has seen the result; the fixer report says which.
+  Review: _lyx/reviews/code/round-1-review.md; fixer report: _lyx/reviews/code/round-1-fixer-report.md.
+  - overview-ide-entry-stale-attach-keybinding (class consistency, severity MEDIUM, open in rounds 1)
+<!-- /lyx:carry-over Code-Review -->
+
 ## Acceptance criteria
 
 - The seeded block holds an entry binding `ctrl+alt+a` to `workbench.action.tasks.runTask` with args equal to the generated task's label.
