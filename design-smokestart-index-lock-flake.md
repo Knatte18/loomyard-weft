@@ -1,6 +1,6 @@
 # TestSmokeStart_NeverAttachesAndAddsNoOperatorStrand flakes on records index.lock and halts Merge-In
 
-`smokestart-index-lock-flake` · Task · bug, loom, fabric · running · Worktree-Create
+`smokestart-index-lock-flake` · Task · bug, loom, fabric · running · Darn-Write
 
 Imported from [issue #856](https://github.com/Knatte18/loomyard/issues/856).
 
