@@ -54,13 +54,6 @@ Rationale: each tier's summary line already says it failed, but a reader of a lo
 
 - A caller that reads the gate's output for the first failing tier's lines now also meets later tiers' output; the summary lines and run records are per tier, so a reader keyed on them is unaffected.
 
-<!-- lyx:carry-over Code-Review -->
-- Code-Review, round 1: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
-  Review: _lyx/reviews/code/round-1-review.md; fixer report: _lyx/reviews/code/round-1-fixer-report.md.
-  - cancelled-context-halt-returns-green (class design, severity MEDIUM, open in rounds 1)
-  - failedtier-last-vs-first-failure (class design, severity MEDIUM, open in rounds 1)
-<!-- /lyx:carry-over Code-Review -->
-
 ## Acceptance criteria
 
 - A call whose first tier fails still runs its later tier, and exits with the first failing tier's code while a later tier fails with another code.
