@@ -1,6 +1,6 @@
 # Batten idle notice fires while a writer works in a fork
 
-`idle-notice-misses-fork-activity` · Task · bug, batten · running · Worktree-Create
+`idle-notice-misses-fork-activity` · Task · bug, batten · running · Darn-Write
 
 ## Seen (orch, 2026-10-23)
 
