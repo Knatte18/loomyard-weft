@@ -1,13 +1,13 @@
 {
   "current_producer": "Webster",
-  "state": "blocked",
-  "error": "Batch 22 (tier-plan-docs) is dead with recovery_retry false, so its recovery is exhausted and batches 24, 27, 28, 29, 30 and 31 were not begun.",
+  "state": "running",
+  "error": "",
   "pending_by": "shed",
   "pause_requested": false,
   "activity": {
     "now": "Webster",
     "last": "Webster → stuck",
-    "wait": "Batch 22 (tier-plan-docs) is dead with recovery_retry false, so its recovery is exhausted and batches 24, 27, 28, 29, 30 and 31 were not begun."
+    "wait": ""
   },
   "history": [
     {
