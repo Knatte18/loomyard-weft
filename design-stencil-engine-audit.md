@@ -1,6 +1,6 @@
 # Audit the Claude-specific mechanics in stencils for a second engine
 
-`stencil-engine-audit` · Task · audit, stencil, codex · running · PR-Review
+`stencil-engine-audit` · Task · audit, stencil, codex · running · Finalize
 
 ## Seen (2026-10-24)
 
