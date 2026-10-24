@@ -16,11 +16,11 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T1 | **webstercli standalone tests fail when an empty /tmp/.git exists**<br>• `profile: light` | [`webstercli-tests-ignore-tmp-git`](design-webstercli-tests-ignore-tmp-git.md) | darn | Darn-Write | neve | 9m<br>0m | webster, testkit |
+| T1 | **webstercli standalone tests fail when an empty /tmp/.git exists**<br>• `profile: light` | [`webstercli-tests-ignore-tmp-git`](design-webstercli-tests-ignore-tmp-git.md) | darn | Darn-Write | neve | 10m<br>0m | webster, testkit |
 | T2 | **Clean up PATTERN.md: far too many entries**<br>• `profile: light` | [`pattern-cleanup`](design-pattern-cleanup.md) | darn | Code-Burler-Fix | neve | 6h<br>2h | stencil |
 | T5 | **Drop the transitional tag spellings after the deploy**<br>• After the deploy: remove the guard files' \|\| integration term, the old tag spellings in the tier commands and guards, and respell the glyphchain fixture<br>• `profile: light` | [`drop-transitional-tag-spellings`](design-drop-transitional-tag-spellings.md) | darn | Code-Burler-Fix | neve | 1h<br>20m |  |
-| T7 | **lyx gate test stops at the first failing tier, so a pre-existing tier0 failure hides every later tier and the guard step**<br>• `profile: light` | [`gate-runs-past-failing-tier`](design-gate-runs-past-failing-tier.md) | darn | Worktree-Create | neve | 10m<br>0m | gate |
-| T8 | **webster: Master writes stuck after reset --to batch-start instead of running recover-batch**<br>• `profile: light` | [`webster-reset-reopens-dead-batch`](design-webster-reset-reopens-dead-batch.md) | darn | Darn-Write | neve | 9m<br>0m | webster |
+| T7 | **lyx gate test stops at the first failing tier, so a pre-existing tier0 failure hides every later tier and the guard step**<br>• `profile: light` | [`gate-runs-past-failing-tier`](design-gate-runs-past-failing-tier.md) | darn | Darn-Write | neve | 10m<br>0m | gate |
+| T8 | **webster: Master writes stuck after reset --to batch-start instead of running recover-batch**<br>• `profile: light` | [`webster-reset-reopens-dead-batch`](design-webster-reset-reopens-dead-batch.md) | darn | Darn-Write | neve | 10m<br>0m | webster |
 
 ### Ready (0)
 
@@ -38,7 +38,7 @@ Waits only on Running or Ready entries.
 | T4 | **[.NET] Scoped build and test for C# hubs, and the Models verification wants**<br>• Verify gates in a .NET hub build and test only the projects a card touches, since a scanned Windows machine makes every build slow. | [`dotnet-scoped-verify`](design-dotnet-scoped-verify.md) | loom | `pattern-cleanup` | 2w<br>2h | shed, webster, loom, config, dotnet |
 | T6 | **Fork git-mutation guard fails a run on git commands confined to a scratch repo**<br>• `profile: light` | [`fork-git-guard-scratch-repo`](design-fork-git-guard-scratch-repo.md) | darn | `pattern-cleanup` | 21h<br>2h | shed, burler |
 | T9 | **Umbrella groundwork: project entries, pairs from a parent pair, and umbrella tasks that spawn and land from their own worktree**<br>• [WS 004+006] Board projects, fabric pairs from a parent pair, batten and orch from any worktree, umbrella tasks | [`umbrella-groundwork`](design-umbrella-groundwork.md) | loom | `pattern-cleanup` | 3w<br>2h | fabric, batten, orch, board, reed, creel, shed, workspaces |
-| T10 | **webster record-batch refuses Create target when the test is declared in an external _test package**<br>• `profile: light` | [`create-target-ext-test-pkg`](design-create-target-ext-test-pkg.md) | darn | `webstercli-tests-ignore-tmp-git` | 9m<br>0m | webster, quarry |
+| T10 | **webster record-batch refuses Create target when the test is declared in an external _test package**<br>• `profile: light` | [`create-target-ext-test-pkg`](design-create-target-ext-test-pkg.md) | darn | `webstercli-tests-ignore-tmp-git` | 10m<br>0m | webster, quarry |
 | T11 | **Card gate (--tier 0) does not vet a card's packages under the other tier tag sets, so helper dependencies across tagged files fail only in the batch gate**<br>• `profile: light` | [`card-gate-vets-all-tag-sets`](design-card-gate-vets-all-tag-sets.md) | darn | `gate-runs-past-failing-tier` | 10m<br>0m | gate, webster |
 
 ## Notes (45)
@@ -62,7 +62,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | --- | --- | --- | --- | --- | --- |
 | B1 |  | **Find why a running run shows a dead waiter in the activity reader** | [`idle-notice-dead-waiter-cause`](design-idle-notice-dead-waiter-cause.md) | 4h<br>4h | batten, shuttle |
 | B2 |  | **A run never files a task, at most a note**<br>• gate-runs-once filed a follow-up task (default loom) that then auto-started; runs may file only notes | [`runs-never-write-board`](design-runs-never-write-board.md) | 23m<br>22m | board, loom, stencil |
-| B7 |  | **Webster batch whose card verify needs an orch-only change dead-ends: recover-batch ends dead with 'asking', then the run halts repeatedly with growing history** | [`webster-orch-need-to-parent`](design-webster-orch-need-to-parent.md) | 9m<br>9m | webster, loom |
+| B7 |  | **Webster batch whose card verify needs an orch-only change dead-ends: recover-batch ends dead with 'asking', then the run halts repeatedly with growing history** | [`webster-orch-need-to-parent`](design-webster-orch-need-to-parent.md) | 10m<br>10m | webster, loom |
 
 ### Enhancements (23)
 
