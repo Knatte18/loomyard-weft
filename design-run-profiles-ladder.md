@@ -40,3 +40,9 @@ A task needing anything else names its rounds per row by hand.
 - Since `code-review-one-perch` landed (2026-10-24), darn's perch is the Code-Review perch and darn reads loom's `code_*` keys (`code_max_bounces`, `code_hard_max_bounces`); `darn.review_max_bounces` and the other `darn_*`/`review_*` perch keys are retired and moved by `configcli`'s key moves.
   So the Code and Darn columns are one key: a profile cannot set Code 1 for loom and 0-3 for darn unless the key can differ per recipe, or the ladder gives up one of the two columns.
   The hub's profiles still carry the retired `darn.review_*` keys, which load through the key moves.
+
+## Operator decision (2026-10-24): one block per recipe in each profile
+
+- Each profile keeps one name for both recipes and holds a settings block per recipe: one for loom, one for darn.
+- Batten's Seed-Child writes only the block of the recipe the task runs, so the shared `code_*` keys take the loom value (Code 1) in a loom run and the Darn column's value in a darn run.
+- This keeps both columns of the ladder table without per-recipe key names; the hub's profiles are rewritten to the ladder in this form, with no retired `darn.review_*` keys left.
