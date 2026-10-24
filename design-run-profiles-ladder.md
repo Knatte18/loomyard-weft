@@ -2,8 +2,6 @@
 
 `run-profiles-ladder` · Task · enhancement, config, loom, burler
 
-Depends on: [`pattern-cleanup`](design-pattern-cleanup.md)
-
 ## Seen (2026-10-23)
 
 The hub's run profiles, listed by `lyx board profiles`, grew one at a time and their names say little: `budget`, `light`, `docs` and `darn-wide`.
