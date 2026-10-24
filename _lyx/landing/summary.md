@@ -1,31 +1,28 @@
-# Read a run's session activity before its first own turn end
+# Count a session's fork activity before a run's first own turn end
 
-`shuttleengine.ReadAgentActivity` now reads a live run's session transcript, forks included, before the run's first turn past its prompt offset ends.
-Batten's idle check and loom's loop watchdog both read agent activity through it, so a writer whose task is one long turn spent in a fork no longer reads idle since its start.
+Batten sent the orch an idle notice for a run whose Plan writer was busy in a fork.
+The writer's task was one long turn that delegated to a fork, so its events file held no turn end past the prompt offset until it finished.
+`shuttleengine.ReadAgentActivity` hands a turn end to the engine's `ActivityReader`, which already reads the session's transcript and its forks, but only a turn end past the offset was handed over.
+Until then the run read idle since its skill-load turn.
 
-## The defect
+Now, when a live run has no turn end past its prompt offset, `ReadAgentActivity` hands over the newest turn end before the offset.
+That turn end belongs to the same session and names the same transcript, so a writer working in a fork reads active and raises no notice.
 
-The Claude engine's `TurnEndActivity` already counts fork transcripts under `subagents/`, but `ReadAgentActivity` called it only with a turn end past the prompt offset, since that turn end's `transcript_path` is how the transcript is found.
-A writer that delegates its work to a fork ends no turn until the work is done, so until then its transcript and forks went unread.
-Its activity fell back to the events file, whose newest Stop is the skill-load turn before the prompt, and the run read idle from its start.
-
-## The change
-
-- `newestTurnEnd` in `internal/shuttleengine/activity.go` returns the newest turn end past the prompt offset, and, when there is none, the newest one before it, flagged as not the run's own.
-- `readRunActivity` hands either to the engine's `ActivityReader` and takes the session's last activity from it, but takes the API-error reading only from a turn end of the run's own.
-  A skill-load turn's API error therefore still never reports for the run, as the existing row "turn ends before the prompt offset are not the run's own" pins.
-- A run with no turn end at all in its events file keeps its events-file reading.
-
-A new row in `TestReadAgentActivity` pins that a run whose only turn end lies before its prompt offset reports the transcript's activity and no API error.
-The `ReadAgentActivity` doc comment and the agent-activity paragraph in `internal/shuttleengine/doc.go` describe the fallback.
+The reader's paragraph in `internal/shuttleengine/doc.go` is updated to match.
 
 ## Design decisions
 
-- The fallback uses the turn end before the offset rather than locating the transcript from the session id and pane cwd: the reader reads files only and is handed no pane cwd, and that turn end names the same session's transcript.
-- Only the last-activity time crosses over from a turn end before the offset, so the fallback can make a run read more recently active and never raises a notice or an API error.
+- Only the last-activity time is taken from a turn end before the offset.
+  Its API error is dropped, so such a turn end can make a run read more recently active but never raises an API error or a notice.
+- A turn end past the offset still wins, and the turn ends before the offset are then ignored.
+- A run with no turn end at all, or an engine without `ActivityReader`, is judged by its events file alone, as before.
+- The change sits in the provider-neutral reader, so the transcript and fork layout stays inside `internal/shuttleengine/claudeengine`.
+- `newestTurnEnd` parses the two parts of the events file separately and logs the parse recovery once per successful path, so a part that fails to parse cannot end and restart the logging episode on each poll.
+- The behavior is a new row in `TestReadAgentActivity`.
 
-## Open risk
+## Check by hand
 
-The board entry quotes the notice as "no agent activity readable", the wording batten uses when it finds no live run at all, while the gap fixed here yields "agents idle".
-The incident ran on another machine whose logs are not readable here, so if the quote is exact, a second cause hid the live run from the reader and is not addressed by this change.
-A session that reaches its prompt with no turn end before it, such as one launched with no skills, also stays unread until its first own turn end.
+- The board entry quotes the notice as "no agent activity readable", the wording batten uses when it finds no live run at all, while this gap yields "agents idle".
+  If the quote is exact, a second cause hides a live run from the reader, and this change does not address it.
+  The run ran on another machine, so its logs were not available to confirm which wording it showed.
+- A session that reached its prompt with no turn end before it, such as one launched with no skills, stays unread until its first own turn end.
