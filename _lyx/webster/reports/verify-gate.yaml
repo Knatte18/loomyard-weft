@@ -1,0 +1,16 @@
+attempt: 1
+cap: 2
+failures:
+    - id: github.com/Knatte18/loomyard/internal/shuttleengine/claudeengine.TestBuildSettings_MatchesGolden
+      kind: test
+      package: github.com/Knatte18/loomyard/internal/shuttleengine/claudeengine
+      tail: ""
+    - id: github.com/Knatte18/loomyard/cmd/lyx.TestCLIForm_EveryCommand
+      kind: test
+      package: github.com/Knatte18/loomyard/cmd/lyx
+      tail: ""
+log_path: /home/knatte/Code/loomyard-LYXHUB/gate-runs-once/.lyx/verify/verify-2.log
+hint:
+    - 22-tier-plan-docs
+    - 24-retag-fabricengine
+fixer: fork
