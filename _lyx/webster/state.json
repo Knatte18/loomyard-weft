@@ -266,7 +266,7 @@
       }
     }
   ],
-  "currentBatch": 0,
+  "currentBatch": 10,
   "masterStrand": "e8d789df2077252216cf24db3cf99eef",
   "masterSessionId": "ff33c466-afe8-4cad-b93b-3ee265d7379c",
   "masterEngine": "claude",
@@ -308,6 +308,28 @@
       "bracketTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-dotnet-scoped-verify/ff33c466-afe8-4cad-b93b-3ee265d7379c/subagents/agent-a3448c1ac66ba5a14.jsonl"
       ]
+    },
+    "10": {
+      "slug": "fingerprint-and-carry",
+      "cards": [
+        "10-fingerprint-and-carry",
+        "11-inert-paths",
+        "12-shared-build-step",
+        "13-dotnet-hub-end-to-end"
+      ],
+      "cardHashes": {
+        "10-fingerprint-and-carry": "3e73b4733b528123ef6792feea66bdd4493a0f5ffba37333dfff34621f7891c3",
+        "11-inert-paths": "19507c7b936f4557a609897623a3c6ad41734a34c25d5016fcc61bed25583dc4",
+        "12-shared-build-step": "7d667e4038b4619958634ceb6f14721ed06bcb3285635d41fe02e73ac3302ee0",
+        "13-dotnet-hub-end-to-end": "34a47886b42a9874fc1f62de5fbe9e799571892b43baf69b3c68c572d7106dfc"
+      },
+      "startSha": "8b551f7ef1f19ea45680656cb0a3e5f44ec08d21",
+      "kind": "fork",
+      "spawnedAt": "2026-10-24T16:50:39Z",
+      "sessionId": "ff33c466-afe8-4cad-b93b-3ee265d7379c",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
     },
     "4": {
       "slug": "csharp-source-scan",
