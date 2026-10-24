@@ -1,0 +1,422 @@
+diff --git a/contracts/specs/loom-plan-spec.md b/contracts/specs/loom-plan-spec.md
+index ea6ab314e..0897b5f0d 100644
+--- a/contracts/specs/loom-plan-spec.md
++++ b/contracts/specs/loom-plan-spec.md
+@@ -195,7 +195,7 @@ A ref that more than one alphabet matches is not guessed at: quarry answers it a
+ This is a deliberate, partial deviation from the design doc's own classification clause.
+ The design doc resolves ambiguity "against ground truth (`go doc` for a symbol, file existence for a path)";
+ this spec takes that clause in its **shape half only** — a process spawn (`go doc`) is barred from tier1 by the Test Tier Purity Invariant and would stop the parser being a leaf (the Planparser Sole-Parser Invariant).
+-The **file-existence half survives**, but at validation time rather than classification time, as the `path-missing` check below — existence never decides an entry's shape, only whether a path- or self-glyph-shaped entry's target is satisfied. `internal/planparser` itself never calls `quarry.Resolve` or any other `quarry.Repo` method — that belongs to `internal/planglyph`, the resolve-backed layer above it — and it performs exactly one glyph conversion in each direction: `glyph.Self` (path -> glyph, at canonicalization time) and `Glyph.UnitPath` (glyph -> path; the disk-existence checks `card-path-malformed` and `path-missing` below skip a member glyph, since member existence is `internal/planglyph`'s resolve-backed business, not this package's), plus one sanctioned adjustment of a Go unit string: `goPackageDir` maps quarry's external-test pseudo-unit `<dir>_test` to its package directory, so no derived gate argument names a `_test` directory.
++The **file-existence half survives**, but at validation time rather than classification time, as the `path-missing` check below — existence never decides an entry's shape, only whether a path- or self-glyph-shaped entry's target is satisfied. `internal/planparser` itself never calls `quarry.Resolve` or any other `quarry.Repo` method — that belongs to `internal/planglyph`, the resolve-backed layer above it — and it performs exactly one glyph conversion in each direction: `glyph.Self` (path -> glyph, at canonicalization time) and `Glyph.UnitPath` (glyph -> path; the disk-existence checks `card-path-malformed` and `path-missing` below skip a member glyph, since member existence is `internal/planglyph`'s resolve-backed business, not this package's), plus two sanctioned adjustments of a Go unit string: `goPackageDir` maps quarry's external-test pseudo-unit `<dir>_test` to its package directory, so no derived gate argument names a `_test` directory, and `GoPackageCounterpart` maps a member glyph between `<dir>` and `<dir>_test`, so a done-check or handle binding finds a test written into the package its plan did not name.
+ 
+ **Known limitation:** an unexported symbol reference whose final dot-segment happens to be all-lowercase (e.g. `shedrecipe.lookup`) misclassifies as a path under rule 3, and surfaces as a loud `path-missing` finding rather than a silent misparse.
+ The author resolves it by writing the exported name (as a glyph), or by `//`-escaping the entry so it is unambiguously a path.
+diff --git a/internal/planglyph/doc.go b/internal/planglyph/doc.go
+index 52e3ed54f..5a3de1e78 100644
+--- a/internal/planglyph/doc.go
++++ b/internal/planglyph/doc.go
+@@ -113,6 +113,7 @@
+ //   - bind-count-mismatch (blocking) — BindHandles (handle.go), a card whose own handles (its
+ //     Create declarations AND any Rename pair's still-handle-shaped New side, per planparser.OwnedHandles)
+ //     the record-batch delta matched fewer of than it owns.
++//     Under a go plan, a handle the delta matches only in its directory's other package, `<dir>_test` for `<dir>` and the reverse, binds to that glyph (planparser.GoPackageCounterpart).
+ //   - plan-references-deleted-symbol (blocking), rename-candidate (informational) — DetectDrift
+ //     (drift.go), the exact-tier and evidence-tier halves of drift detection.
+ //   - scope-outside-plan (informational) — ScopeGuard (scope.go), a symbol a completed batch's
+@@ -130,6 +131,7 @@
+ //     A target still path-shaped after canonicalization, one no glyph spells such as a path whose directory holds a space, is judged on disk instead of resolved.
+ //     Its path must exist for a Create or Rename new side and must not for a Delete or Rename old side (planparser.IsDiskCheckedTarget).
+ //     Each detail carries the lookup: the resolve key looked up beside the card's own spelling, quarry's status, for not_found whether the unit exists, and for ambiguous each candidate's file and build constraint.
++//     Under a go plan, a Create or Rename new side answered not_found is done when the worktree's glyphs listing holds its member in its directory's other package, since a plan cannot tell which package a new test file declares.
+ //     A Create or Rename new side answered not_found also names the files declaring its unit and every declaration of its name elsewhere in the worktree, from one glyphs listing taken only when such a finding is due.
+ //     An ambiguous answer whose candidates sit in files no single build environment selects together counts as resolved, so a Create or a Rename new side over such a member lands;
+ //     the Delete direction and a Rename old side keep blocking on any surviving declaration.
+diff --git a/internal/planglyph/donecheck.go b/internal/planglyph/donecheck.go
+index 2dcd5ea2d..590360538 100644
+--- a/internal/planglyph/donecheck.go
++++ b/internal/planglyph/donecheck.go
+@@ -62,6 +62,7 @@ func resolveKeyFor(ref string) string {
+ // A Create target under the worktree root's .scratch/ is a transient draft and is neither resolved nor judged.
+ // A target still path-shaped is a path canonicalization could not spell as a glyph, such as one whose directory holds a space.
+ // Quarry rejects it before resolution, so its worktree-relative path is checked on disk instead, existing for the Create direction and absent for the Delete direction.
++// Under a go plan, a Create target or Rename new side quarry answers not_found is done when its member is declared in its directory's other package, `<dir>_test` for `<dir>` and the reverse, since a plan cannot tell which package a new test file declares.
+ // A Create target or Rename new side quarry answers not_found also names, in its detail, the files declaring the looked-up unit and every declaration elsewhere in the worktree carrying the looked-up name, so a missing declaration reads apart from one written somewhere the card did not say.
+ // An answer outside quarry's four-value status vocabulary — a pre-resolution rejection, or a status
+ // this policy has not been taught — is the blocking finding glyph-rejected for that entry, failing
+@@ -169,6 +170,15 @@ func anyMemberMissing(entries []doneCheckEntry, index map[string]quarry.ResolveR
+ 	return false
+ }
+ 
++// declaredInCounterpartPackage reports whether declarations hold key's member in the other Go package of key's directory, `<dir>_test` for `<dir>` and the reverse.
++func declaredInCounterpartPackage(plan *planparser.Plan, key string, declarations []quarry.Symbol) bool {
++	counterpart, ok := planparser.GoPackageCounterpart(plan, key)
++	if !ok {
++		return false
++	}
++	return slices.ContainsFunc(declarations, func(s quarry.Symbol) bool { return s.ID == counterpart })
++}
++
+ // searchedDescription names, for a key quarry answered not_found, the files among declarations that declare the key's unit and every declaration elsewhere whose own name is the key's member name, with its glyph and file.
+ // It returns "" when the key does not parse as a member glyph in the plan's alphabet, since then there is no name to look for.
+ func searchedDescription(plan *planparser.Plan, key string, declarations []quarry.Symbol) string {
+@@ -309,6 +319,10 @@ func doneCheckVerdicts(plan *planparser.Plan, worktreeRoot string, entries []don
+ 			lookup = fmt.Sprintf("looked up %q, quarry answered ambiguous: %s", e.key, crossDetail)
+ 		}
+ 		if r.Status == quarry.StatusNotFound && (e.checkID == "create-not-done" || e.checkID == "rename-not-done-new") {
++			// A Go test written into the external test package, or the reverse, is the card's work done in its directory's other package.
++			if declaredInCounterpartPackage(plan, e.key, declarations) {
++				continue
++			}
+ 			if searched := searchedDescription(plan, e.key, declarations); searched != "" {
+ 				lookup += "; " + searched
+ 			}
+diff --git a/internal/planglyph/donecheck_resolve_test.go b/internal/planglyph/donecheck_resolve_test.go
+index da4cbd4f2..b8c2b8673 100644
+--- a/internal/planglyph/donecheck_resolve_test.go
++++ b/internal/planglyph/donecheck_resolve_test.go
+@@ -15,6 +15,7 @@ import (
+ // TestDoneChecks_Verdicts covers the done-checks of Create, Delete and Rename groups against the tree the fork left behind: a landed Create, Delete or Rename passes, and a Create that never landed, a Delete that survived or a Rename never performed reports its blocking finding.
+ // A Rename's new side carries the canonical plan: handle spelling a validated plan's symbol rename always has, proving resolveKeyFor strips it.
+ // A fork that never performed its declared Rename leaves the old side still resolving and the new side still unresolvable, and BOTH halves must report rename-not-done — a check inspecting only Create and Delete groups recorded that card clean.
++// A Create test written into its directory's other Go package, the external test package or the package itself, is done.
+ // A target no glyph spells, a bare root filename or a path whose directory holds a space, is judged by whether its path exists, and a missing Create names the unit's files and where else its name is declared.
+ func TestDoneChecks_Verdicts(t *testing.T) {
+ 	t.Parallel()
+@@ -59,6 +60,34 @@ func TestDoneChecks_Verdicts(t *testing.T) {
+ 			},
+ 			group: planparser.TargetGroup{Type: planparser.CardTypeCreate, Refs: []string{"plan:sub_test#TestFoo"}},
+ 		},
++		{
++			name: "Create package test landed in its external test package",
++			files: map[string]string{
++				"sub/a.go":      "package sub\n",
++				"sub/a_test.go": "package sub_test\n\nimport \"testing\"\n\nfunc TestFoo(t *testing.T) {}\n",
++			},
++			group: planparser.TargetGroup{Type: planparser.CardTypeCreate, Refs: []string{"plan:sub#TestFoo"}},
++		},
++		{
++			name: "Create external test landed in its package",
++			files: map[string]string{
++				"sub/a.go":      "package sub\n",
++				"sub/a_test.go": "package sub\n\nimport \"testing\"\n\nfunc TestFoo(t *testing.T) {}\n",
++			},
++			group: planparser.TargetGroup{Type: planparser.CardTypeCreate, Refs: []string{"plan:sub_test#TestFoo"}},
++		},
++		{
++			name: "Rename new side landed in the external test package",
++			files: map[string]string{
++				"sub/a.go":      "package sub\n",
++				"sub/a_test.go": "package sub_test\n\nimport \"testing\"\n\nfunc TestFoo(t *testing.T) {}\n",
++			},
++			group: planparser.TargetGroup{
++				Type:  planparser.CardTypeRename,
++				Refs:  []string{"sub#TestOld", "plan:sub#TestFoo"},
++				Pairs: []planparser.MovePair{{Old: "sub#TestOld", New: "plan:sub#TestFoo"}},
++			},
++		},
+ 		{
+ 			name:  "Create root filename self glyph landed",
+ 			files: map[string]string{"sub/a.go": "package sub\n", "LICENSE": "licence text\n"},
+diff --git a/internal/planglyph/handle.go b/internal/planglyph/handle.go
+index 65d2e261a..e25cdf499 100644
+--- a/internal/planglyph/handle.go
++++ b/internal/planglyph/handle.go
+@@ -410,6 +410,8 @@ func nameDeclarations(decls []quarry.Declaration) ([]quarry.NameResult, error) {
+ // — is matched against delta's Created symbols by Symbol.ID for a Create declaration, or against
+ // delta's Renamed pairs' own To.ID for a Rename pair's New side; the two sources are checked
+ // against different delta fields because a rename is not a create.
++// Under a go plan, an expected glyph matching neither binds to its member in the directory's other package, `<dir>_test` for `<dir>` and the reverse, when the delta holds that.
++// A delta symbol binds at most one handle of a card; a further handle reaching it counts as unmatched.
+ //
+ // A card's whole set of handles binds together or not at all: a count mismatch — a card owning N
+ // handles whose delta matches fewer — is the blocking finding bind-count-mismatch, and suppresses
+@@ -424,7 +426,7 @@ func nameDeclarations(decls []quarry.Declaration) ([]quarry.NameResult, error) {
+ // card, not only its declaring one.
+ //
+ // Next to the findings it returns one planindex.BindOutcome per handle of each card in cards, in card then handle order:
+-// a handle of a card that bound cleanly carries its glyph, a handle that matched nothing carries planindex.BindNoDeltaMatch,
++// a handle of a card that bound cleanly carries its glyph, a handle that matched no unclaimed delta symbol carries planindex.BindNoDeltaMatch,
+ // and a matched handle of a card that did not bind carries planindex.BindSiblingUnmatched.
+ // A RewriteRefs error comes back beside the findings and outcomes computed so far.
+ //
+@@ -454,6 +456,16 @@ func BindHandles(plan *planparser.Plan, planDir string, delta quarry.GitDeltaAns
+ 	bound := func(expected string) bool {
+ 		return created[expected] || renamedTo[expected]
+ 	}
++	// A Go test written into its directory's other package, the external test package or the reverse, binds to the glyph the card created there.
++	boundGlyph := func(expected string) (string, bool) {
++		if bound(expected) {
++			return expected, true
++		}
++		if counterpart, ok := planparser.GoPackageCounterpart(plan, expected); ok && bound(counterpart) {
++			return counterpart, true
++		}
++		return "", false
++	}
+ 
+ 	var findings []Finding
+ 	var outcomes []planindex.BindOutcome
+@@ -467,11 +479,13 @@ func BindHandles(plan *planparser.Plan, planDir string, delta quarry.GitDeltaAns
+ 
+ 		cardSubs := make(map[string]string, len(handles))
+ 		matched := 0
++		// A delta symbol binds one handle of the card: a second handle reaching the same glyph, through the other package's spelling, counts as unmatched.
++		claimed := make(map[string]bool, len(handles))
+ 		for _, h := range handles {
+-			expected := resolveKeyFor(h)
+-			if bound(expected) {
++			if id, ok := boundGlyph(resolveKeyFor(h)); ok && !claimed[id] {
++				claimed[id] = true
+ 				matched++
+-				cardSubs[h] = expected
++				cardSubs[h] = id
+ 			}
+ 		}
+ 
+diff --git a/internal/planglyph/handle_test.go b/internal/planglyph/handle_test.go
+index d183b2244..bd1eb04c6 100644
+--- a/internal/planglyph/handle_test.go
++++ b/internal/planglyph/handle_test.go
+@@ -605,6 +605,112 @@ func TestBindHandles_MatchedHandleRewritesDeclaringAndReferencingCard(t *testing
+ 	}
+ }
+ 
++// TestBindHandles_HandleBindsToTheOtherPackageOfItsDirectory covers a handle whose test the card wrote into its directory's other Go package:
++// it binds to the glyph the delta created there, in either direction, and the plan is rewritten to that glyph.
++func TestBindHandles_HandleBindsToTheOtherPackageOfItsDirectory(t *testing.T) {
++	t.Parallel()
++	tests := []struct {
++		name   string
++		handle string
++		// delta holds the symbols the delta created.
++		delta []string
++		// created is the glyph the handle is expected to bind to.
++		created string
++	}{
++		{name: "package handle created in the external test package", handle: "plan:sub#TestNew", delta: []string{"sub_test#TestNew"}, created: "sub_test#TestNew"},
++		{name: "external test handle created in the package", handle: "plan:sub_test#TestNew", delta: []string{"sub#TestNew"}, created: "sub#TestNew"},
++		{name: "exact match wins over the other package", handle: "plan:sub#TestNew", delta: []string{"sub_test#TestNew", "sub#TestNew"}, created: "sub#TestNew"},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			dir, plan := writePlanFixture(t, map[int]string{
++				1: "**Create:**\n- `" + tt.handle + "` -> `func TestNew(t *testing.T) {}`\n\n**Intent:** one\n",
++			})
++			var created []quarry.Symbol
++			for _, id := range tt.delta {
++				created = append(created, quarry.Symbol{ID: id})
++			}
++			delta := quarry.GitDeltaAnswer{DeltaAnswer: quarry.DeltaAnswer{Created: created}}
++
++			findings, outcomes, err := BindHandles(plan, dir, delta, plan.Cards)
++			if err != nil {
++				t.Fatalf("BindHandles(...) returned error: %v", err)
++			}
++			if len(findings) != 0 {
++				t.Fatalf("findings = %+v; want none", findings)
++			}
++			if want := []planindex.BindOutcome{{Card: 1, Handle: tt.handle, Glyph: tt.created}}; !reflect.DeepEqual(outcomes, want) {
++				t.Errorf("outcomes = %+v; want %+v", outcomes, want)
++			}
++			if got := readCardFile(t, dir, 1, "card1"); !strings.Contains(got, "- `"+tt.created+"`\n") {
++				t.Errorf("card 1 was not rewritten to %s: %s", tt.created, got)
++			}
++		})
++	}
++}
++
++// TestBindHandles_OtherPackageMatchStillCountsTowardMismatch covers a card whose handle only the other package of its directory matches:
++// the match counts as a match, so any handle left unmatched, or reaching an already bound glyph, makes bind-count-mismatch and rewrites nothing.
++func TestBindHandles_OtherPackageMatchStillCountsTowardMismatch(t *testing.T) {
++	t.Parallel()
++	tests := []struct {
++		name         string
++		handles      []string
++		created      string
++		wantOutcomes []planindex.BindOutcome
++	}{
++		{
++			name:    "one handle matched through the other package and one unmatched",
++			handles: []string{"plan:sub#TestOne", "plan:sub#TestTwo"},
++			created: "sub_test#TestOne",
++			wantOutcomes: []planindex.BindOutcome{
++				{Card: 1, Handle: "plan:sub#TestOne", Reason: planindex.BindSiblingUnmatched},
++				{Card: 1, Handle: "plan:sub#TestTwo", Reason: planindex.BindNoDeltaMatch},
++			},
++		},
++		{
++			name:    "both spellings of one member reaching a single created symbol",
++			handles: []string{"plan:sub#TestX", "plan:sub_test#TestX"},
++			created: "sub_test#TestX",
++			wantOutcomes: []planindex.BindOutcome{
++				{Card: 1, Handle: "plan:sub#TestX", Reason: planindex.BindSiblingUnmatched},
++				{Card: 1, Handle: "plan:sub_test#TestX", Reason: planindex.BindNoDeltaMatch},
++			},
++		},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			var body strings.Builder
++			body.WriteString("**Create:**\n")
++			for _, h := range tt.handles {
++				body.WriteString("- `" + h + "` -> `func Stub() {}`\n")
++			}
++			body.WriteString("\n**Intent:** one\n")
++			dir, plan := writePlanFixture(t, map[int]string{1: body.String()})
++			delta := quarry.GitDeltaAnswer{DeltaAnswer: quarry.DeltaAnswer{Created: []quarry.Symbol{{ID: tt.created}}}}
++
++			findings, outcomes, err := BindHandles(plan, dir, delta, plan.Cards)
++			if err != nil {
++				t.Fatalf("BindHandles(...) returned error: %v", err)
++			}
++			if len(findings) != 1 || findings[0].Check != "bind-count-mismatch" {
++				t.Fatalf("findings = %+v; want exactly one bind-count-mismatch", findings)
++			}
++			if !reflect.DeepEqual(outcomes, tt.wantOutcomes) {
++				t.Errorf("outcomes = %+v; want %+v", outcomes, tt.wantOutcomes)
++			}
++			got := readCardFile(t, dir, 1, "card1")
++			for _, h := range tt.handles {
++				if !strings.Contains(got, h) {
++					t.Errorf("card was rewritten despite the count mismatch, %s is gone: %s", h, got)
++				}
++			}
++		})
++	}
++}
++
+ // TestBindHandles_PartialMatchOnOneCardMismatchesAndRewritesNeither covers two handles on one card
+ // with only one delta match, producing bind-count-mismatch and rewriting neither.
+ func TestBindHandles_PartialMatchOnOneCardMismatchesAndRewritesNeither(t *testing.T) {
+diff --git a/internal/planparser/doc.go b/internal/planparser/doc.go
+index d091bae37..e78cc635c 100644
+--- a/internal/planparser/doc.go
++++ b/internal/planparser/doc.go
+@@ -17,8 +17,9 @@
+ // package uses. No `strings.TrimSuffix(s, "#")`, no reading Glyph.Unit as a disk path, and
+ // no local regex over a glyph string anywhere in this package or its callers --
+ // cmd/lyx/constraintchokepoint_test.go guards this mechanically.
+-// goPackageDir (targetdirs.go) is the one sanctioned adjustment beside Glyph.UnitPath:
+-// it maps quarry's external-test pseudo-unit `<dir>_test` to its package directory.
++// goPackageDir and GoPackageCounterpart (targetdirs.go) are the sanctioned adjustments beside Glyph.UnitPath:
++// goPackageDir maps quarry's external-test pseudo-unit `<dir>_test` to its package directory.
++// GoPackageCounterpart maps a member glyph between `<dir>` and `<dir>_test`.
+ // ParseRef (glyphref.go) is the one alphabet choice for a plan ref and for a `plan:` handle's body, so nothing outside this package passes a glyph.Language to a parse;
+ // PATTERN-glyph-conversion-chokepoint states the rule.
+ //
+@@ -79,8 +80,8 @@
+ // — never `go doc`, never a process spawn.
+ // planparser itself spawns no process and stays tier1-pure per the Test Tier Purity Invariant.
+ // glyphref.go holds the sole path->glyph call (glyph.Self), and Glyph.UnitPath is the sole glyph->path call, per the glyph-conversion-chokepoint Shared Decision.
+-// goPackageDir (targetdirs.go) stands beside Glyph.UnitPath as the external-test unit mapping.
+-// CardTargetDirs and RefScope call it.
++// goPackageDir and GoPackageCounterpart (targetdirs.go) stand beside Glyph.UnitPath as the external-test unit mappings.
++// CardTargetDirs and RefScope call goPackageDir.
+ //
+ // # The root:/// resolution rule
+ //
+diff --git a/internal/planparser/targetdirs.go b/internal/planparser/targetdirs.go
+index 458e42cd2..d3d91457a 100644
+--- a/internal/planparser/targetdirs.go
++++ b/internal/planparser/targetdirs.go
+@@ -323,7 +323,7 @@ func targetDir(plan *Plan, raw string) (dir string, namesGo, ok bool) {
+ }
+ 
+ // goPackageDir maps a Go unit string, a glyph's UnitPath result or a handle's package half, to the directory its package lives in.
+-// It is the one sanctioned adjustment of a Go unit string under PATTERN-glyph-conversion-chokepoint:
++// It is one of the two sanctioned adjustments of a Go unit string under PATTERN-glyph-conversion-chokepoint:
+ // quarry names an external test package's unit `<dir>_test`, a pseudo-unit with no directory of its own, so a last path segment ending in `_test` with no file extension comes back without that suffix.
+ // Any other unit is returned unchanged.
+ // It reads no disk, so a real package directory whose own name ends in `_test` maps to its sibling.
+@@ -334,6 +334,26 @@ func goPackageDir(unit string) string {
+ 	return strings.TrimSuffix(unit, "_test")
+ }
+ 
++// GoPackageCounterpart returns ref's member glyph in the other Go package of the same directory: `<dir>_test` for a member of `<dir>`, and `<dir>` for a member of `<dir>_test`.
++// It is the other sanctioned adjustment of a Go unit string under PATTERN-glyph-conversion-chokepoint, so a caller can find a member written into the package its plan did not name.
++// It reports false under a plan that is not go, and for a ref that is no member glyph or whose unit is a file.
++// It reads no disk, so a real package directory whose own name ends in `_test` maps to its sibling.
++func GoPackageCounterpart(plan *Plan, ref string) (string, bool) {
++	if !plan.GoToolchain() {
++		return "", false
++	}
++	parsed, err := ParseRef(plan, ref)
++	if err != nil || parsed.IsSelf() || hasFileExtension(parsed.Unit) {
++		return "", false
++	}
++	if dir := goPackageDir(parsed.Unit); dir != parsed.Unit {
++		parsed.Unit = dir
++	} else {
++		parsed.Unit += "_test"
++	}
++	return parsed.String(), true
++}
++
+ // refUnit maps one ref to the unit or path spelling it names, and whether that spelling came from a glyph.
+ // ok is false for a ref that names no unit.
+ func refUnit(plan *Plan, raw string) (unit string, fromGlyph, ok bool) {
+diff --git a/internal/planparser/targetdirs_test.go b/internal/planparser/targetdirs_test.go
+index 45a61f264..9cef8140f 100644
+--- a/internal/planparser/targetdirs_test.go
++++ b/internal/planparser/targetdirs_test.go
+@@ -197,6 +197,38 @@ func TestRefMember(t *testing.T) {
+ 	}
+ }
+ 
++func TestGoPackageCounterpart(t *testing.T) {
++	t.Parallel()
++
++	goPlan := &planparser.Plan{Language: "go"}
++	tests := []struct {
++		name   string
++		plan   *planparser.Plan
++		ref    string
++		want   string
++		wantOK bool
++	}{
++		{name: "package member maps to the external test package", plan: goPlan, ref: "internal/a#TestRun", want: "internal/a_test#TestRun", wantOK: true},
++		{name: "external test member maps to its package", plan: goPlan, ref: "internal/a_test#TestRun", want: "internal/a#TestRun", wantOK: true},
++		{name: "method member keeps its owner", plan: goPlan, ref: "internal/a#fake.Run", want: "internal/a_test#fake.Run", wantOK: true},
++		{name: "absent language reads as go", plan: &planparser.Plan{}, ref: "internal/a#TestRun", want: "internal/a_test#TestRun", wantOK: true},
++		{name: "package self glyph", plan: goPlan, ref: "internal/a#"},
++		{name: "file-unit member glyph", plan: goPlan, ref: "internal/a/a_test.go#TestRun"},
++		{name: "directory path", plan: goPlan, ref: "internal/a"},
++		{name: "csharp plan", plan: &planparser.Plan{Language: "csharp"}, ref: "Sharp.Tests#Suite.Run"},
++		{name: "plan with no glyph alphabet", plan: &planparser.Plan{Language: "none"}, ref: "internal/a#TestRun"},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			got, ok := planparser.GoPackageCounterpart(tt.plan, tt.ref)
++			if got != tt.want || ok != tt.wantOK {
++				t.Errorf("GoPackageCounterpart(%q) = %q, %v; want %q, %v", tt.ref, got, ok, tt.want, tt.wantOK)
++			}
++		})
++	}
++}
++
+ func TestRefFile(t *testing.T) {
+ 	t.Parallel()
+ 
+diff --git a/pattern/PATTERN-glyph-conversion-chokepoint.md b/pattern/PATTERN-glyph-conversion-chokepoint.md
+index ed888c1de..f628df8be 100644
+--- a/pattern/PATTERN-glyph-conversion-chokepoint.md
++++ b/pattern/PATTERN-glyph-conversion-chokepoint.md
+@@ -1,12 +1,13 @@
+ # PATTERN-glyph-conversion-chokepoint
+ 
+-loomyard performs no glyph-to-path or path-to-glyph conversion of its own, bar the one external-test unit mapping below.
++loomyard performs no glyph-to-path or path-to-glyph conversion of its own, bar the external-test unit mappings below.
+ 
+ - `glyph.Self` is the only path-to-glyph call.
+ - `Glyph.UnitPath` is the only glyph-to-path call.
+ - `glyph.Parse` plus `Glyph.String` are the only glyph grammar.
+-- `planparser`'s `goPackageDir` is the single sanctioned adjustment of a Go unit string, for the external-test pseudo-unit only.
++- `planparser`'s `goPackageDir` and `GoPackageCounterpart` are the only sanctioned adjustments of a Go unit string, for the external-test pseudo-unit only.
+   Quarry names an external test package's unit `<dir>_test`, a pseudo-path with no directory (the corner case in quarry's `docs/glyph.md`), and `Glyph.UnitPath` returns it unchanged, so some caller must map it to `<dir>`.
++  `GoPackageCounterpart` maps a member glyph between `<dir>` and `<dir>_test`, so a done-check or handle binding finds a test written into the package its plan did not name.
+ - `planparser.ParseRef` alone picks a plan ref's or handle's alphabet, from the plan's `language:`.
+   Nothing outside `internal/planparser` passes a `glyph.Language` to a parse, and `Plan.GlyphLanguage` answers only whether the plan is glyph-enabled.
+   An id quarry minted for a C# member is no plan ref, and `planparser.ParseMintedCSharpID` is the one parse of it.
