@@ -1,4 +1,4 @@
-# The seeded reed attach task in tasks.json: drop it, or bind it to a shortcut
+# The seeded reed attach task in tasks.json runs on a shortcut
 
 `ide-attach-task` · Note · enhancement, ide
 
@@ -15,3 +15,8 @@ The task is probably not needed; if it stays, it must not run on its own but sit
 ## Idea
 
 Either drop the task and `tasks.json` from the seed, or add a key binding to the seeded `keybindings.json` block that runs it (`workbench.action.tasks.runTask` with the task's label).
+
+## Operator decision (2026-10-24)
+
+Keep the task and bind it to `ctrl+alt+a` in the seeded `keybindings.json` block, unless VS Code's default keybindings already take that key; then use `ctrl+shift+alt+a`.
+The task still never runs on folder open.
