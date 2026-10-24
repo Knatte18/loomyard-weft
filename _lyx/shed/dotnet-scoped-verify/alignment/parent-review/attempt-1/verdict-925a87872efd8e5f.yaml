@@ -1,0 +1,10 @@
+verdict: approve
+reason: >-
+  The decision record covers every in-scope want of the board entry (scoped C# test selection with --filter,
+  restore and build once, warm build processes, the whole solution once at the final gate, Wanted 4 to 6 and
+  the repo rules as a hub lens) and leaves Required 1 to 3 to test-tiers and regression-baseline-verify as the
+  entry assigns. It takes no other entry's work. The only peer overlaps are text-only edits to docs/overview.md
+  shared with run-profiles-ladder and umbrella-groundwork, which land first, and no design conflicts with any
+  peer or with parent commit c9c4e7d.
+question: ""
+superseded: []
