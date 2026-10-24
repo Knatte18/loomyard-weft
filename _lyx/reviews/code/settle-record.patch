@@ -1,0 +1,172 @@
+diff --git a/docs/overview.md b/docs/overview.md
+index e7a633bd7..79fe67171 100644
+--- a/docs/overview.md
++++ b/docs/overview.md
+@@ -387,12 +387,12 @@ User-facing modules each get one `lyx <module>` namespace:
+   `lyx ide spawn <prime>` opens the hub workspace `<hub>/<RepoName>.code-workspace` (the prime, `Bolt` and every task pair) whose `settings` carry the prime's `.vscode/settings.json`.
+   The file is lyx-owned and regenerated on each prime spawn, overwriting any edit made in it;
+   a task slug still opens its bare folder.
+-  The generated `tasks.json` holds one on-demand `reed attach` task, with the `lyx` path stamped absolute at generation time, reached through "Tasks: Run Task";
++  The generated `tasks.json` holds one on-demand `reed attach` task, with the `lyx` path stamped absolute at generation time, reached through "Tasks: Run Task" or the seeded `ctrl+alt+a` key binding;
+   no task runs on folder open, so opening a worktree in VS Code starts no session and no `claude`.
+   `lyx ide spawn` and batten's Seed-IDE row write this config through one shared path.
+   `lyx ide spawn` regenerates `tasks.json` on every spawn, overwriting an untracked one, and keeps `settings.json` when present.
+   It keeps `.vscode/` out of git through the repository's shared `info/exclude` at the anchor subpath rather than `.gitignore`, and leaves a tracked `tasks.json` alone with a warning.
+-  `lyx ide spawn` also seeds a `// lyx:begin` … `// lyx:end` block into the user's VS Code `keybindings.json`, forwarding the four Alt keys of reed's tmux bindings to the integrated terminal, and reports the outcome in its JSON result.
++  `lyx ide spawn` also seeds a `// lyx:begin` … `// lyx:end` block into the user's VS Code `keybindings.json`, forwarding the four Alt keys of reed's tmux bindings to the integrated terminal and binding `ctrl+alt+a` to run the `reed attach` task, and reports the outcome in its JSON result.
+   It writes only between its own markers, and a file it cannot merge safely is skipped with a reason and never fails the spawn.
+   Batten does not open it: VS Code opens only when the operator runs `lyx ide`. ✅ Implemented.
+ - **selfreport** — file bugs and enhancements against `Knatte18/loomyard` via go-github through `internal/githubclient`, filed by `lyx selfreport create <title>`, run by the operator or by an agent; the friction reflection is its only automatic caller, and no Go code files an issue itself.
+diff --git a/internal/ideengine/spawn.go b/internal/ideengine/spawn.go
+index 6872fe820..aa777ecb6 100644
+--- a/internal/ideengine/spawn.go
++++ b/internal/ideengine/spawn.go
+@@ -35,7 +35,7 @@ var KeybindingsPath = vscode.UserKeybindingsPath
+ // When slug names the prime, Spawn regenerates the hub workspace file <hub>/<RepoName>.code-workspace, whose settings carry the prime's .vscode/settings.json, and launches that file instead;
+ // every error on that path is returned, never degraded to the bare folder.
+ // A failure to resolve the prime's name is logged and degrades to the bare-folder path.
+-// Before launching it seeds the lyx block of terminal key bindings into the user's VS Code keybindings.json and returns the outcome beside the error;
++// Before launching it seeds the lyx block of key bindings into the user's VS Code keybindings.json and returns the outcome beside the error;
+ // a skipped seed never fails the spawn.
+ func Spawn(l *lyxcwd.Location, slug string) (vscode.KeybindingsResult, error) {
+ 	worktreeDir, color, primeName, primeResolved := resolveSpawnTarget(l, slug, targetUnknown)
+diff --git a/internal/vscode/config.go b/internal/vscode/config.go
+index 7abc567d3..247c34174 100644
+--- a/internal/vscode/config.go
++++ b/internal/vscode/config.go
+@@ -1,7 +1,8 @@
+ // Package vscode generates VS Code configuration and manages VS Code-specific launch behavior for
+ // worktrees.
+ // It is responsible for config generation (settings.json and tasks.json), color-palette selection, and launching VS Code.
+-// It also seeds the marked block of terminal key bindings into the user's keybindings.json (see SeedKeybindings).
++// It also seeds the marked block of key bindings into the user's keybindings.json (see SeedKeybindings):
++// the Alt-arrow keys the integrated terminal forwards to reed's tmux bindings, and ctrl+alt+a, which runs the reed attach task.
+ // The mill values (palette, settings keys, cmd /c code) are baked in — no external Python is read.
+ //
+ // Limitation: BuildWorkspace splices the prime's settings verbatim into the hub workspace file at <hub>/<RepoName>.code-workspace, so a relative path value (starting with ./ or ../) resolves against the hub directory, no longer against the prime's own folder.
+@@ -17,7 +18,7 @@ import (
+ 
+ // WriteConfig generates VS Code configuration files in a worktree.
+ // settings.json is written only if it doesn't already exist, never clobbering operator edits.
+-// tasks.json is always written, overwriting any existing file, and holds one on-demand "reed attach" task;
++// tasks.json is always written, overwriting any existing file, and holds one "reed attach" task, run on demand or by its seeded key binding;
+ // no task runs on folder open, so opening the folder starts no session and no agent.
+ // Neither file touches .gitignore; the caller keeps .vscode/ out of git through info/exclude.
+ // lyxPath is the resolved absolute lyx path stamped into the task;
+@@ -68,14 +69,17 @@ func WriteConfig(worktreeDir, relpath, slug, color, lyxPath string) error {
+ 	return writeAttachTask(filepath.Join(vscodePath, "tasks.json"), lyxPath)
+ }
+ 
++// attachTaskLabel names the reed attach task; the seeded key binding finds the task by this label.
++const attachTaskLabel = "reed attach"
++
+ // writeAttachTask writes a tasks.json holding the single on-demand "reed attach" task, overwriting any existing file.
+-// The task carries no runOptions, so VS Code runs it only from "Tasks: Run Task", never on folder open.
++// The task carries no runOptions, so VS Code runs it only from "Tasks: Run Task" or its seeded key binding, never on folder open.
+ func writeAttachTask(tasksPath, lyxPath string) error {
+ 	tasks := map[string]any{
+ 		"version": "2.0.0",
+ 		"tasks": []map[string]any{
+ 			{
+-				"label":   "reed attach",
++				"label":   attachTaskLabel,
+ 				"type":    "shell",
+ 				"command": lyxPath,
+ 				"args":    []string{"reed", "attach"},
+diff --git a/internal/vscode/keybindings.go b/internal/vscode/keybindings.go
+index d0ff490d7..5fb60c352 100644
+--- a/internal/vscode/keybindings.go
++++ b/internal/vscode/keybindings.go
+@@ -1,5 +1,5 @@
+-// keybindings.go seeds the marked block of terminal key bindings into the user's VS Code keybindings.json,
+-// so the integrated terminal forwards the Alt keys reed's tmux bindings listen for.
++// keybindings.go seeds the marked block of key bindings into the user's VS Code keybindings.json,
++// so the integrated terminal forwards the Alt keys reed's tmux bindings listen for and one key runs the reed attach task.
+ // It holds VS Code format knowledge only: the user-file location per platform, a comment-aware JSONC merge of the block, and an atomic write.
+ 
+ package vscode
+@@ -12,6 +12,7 @@ import (
+ 	"os"
+ 	"path/filepath"
+ 	"runtime"
++	"strconv"
+ 	"strings"
+ 	"time"
+ )
+@@ -20,15 +21,19 @@ const (
+ 	keybindingsBeginMarker = "lyx:begin"
+ 	keybindingsEndMarker   = "lyx:end"
+ 	keybindingsFileName    = "keybindings.json"
++
++	terminalSendSequenceCommand = "workbench.action.terminal.sendSequence"
+ )
+ 
+-// keybindingsBlockEntries are the block's entries, one terminal sendSequence per Alt key.
+-// Each text is written as it appears in the JSON file, with its escape sequences unexpanded.
+-var keybindingsBlockEntries = []struct{ key, text string }{
+-	{"alt+up", `\u001b[1;3A`},
+-	{"alt+down", `\u001b[1;3B`},
+-	{"alt+right", `\u001b[1;3C`},
+-	{"alt+left", `\u001b[1;3D`},
++// keybindingsBlockEntries are the block's entries: one terminal sendSequence per Alt key, and the key that runs the reed attach task.
++// Each args is written as it appears in the JSON file, so a sendSequence text keeps its escape sequences unexpanded;
++// an empty when writes no when clause.
++var keybindingsBlockEntries = []struct{ key, command, args, when string }{
++	{"alt+up", terminalSendSequenceCommand, `{ "text": "\u001b[1;3A" }`, "terminalFocus"},
++	{"alt+down", terminalSendSequenceCommand, `{ "text": "\u001b[1;3B" }`, "terminalFocus"},
++	{"alt+right", terminalSendSequenceCommand, `{ "text": "\u001b[1;3C" }`, "terminalFocus"},
++	{"alt+left", terminalSendSequenceCommand, `{ "text": "\u001b[1;3D" }`, "terminalFocus"},
++	{"ctrl+alt+a", "workbench.action.tasks.runTask", strconv.Quote(attachTaskLabel), ""},
+ }
+ 
+ // KeybindingsOutcome is what SeedKeybindings did to the user's file.
+@@ -87,9 +92,11 @@ func userKeybindingsPath(goos string, getenv func(string) string, home string) (
+ func keybindingsBlock(lineEnding string) string {
+ 	lines := []string{"// " + keybindingsBeginMarker}
+ 	for _, entry := range keybindingsBlockEntries {
+-		lines = append(lines, fmt.Sprintf(
+-			`  { "key": %q, "command": "workbench.action.terminal.sendSequence", "args": { "text": "%s" }, "when": "terminalFocus" },`,
+-			entry.key, entry.text))
++		line := fmt.Sprintf(`  { "key": %q, "command": %q, "args": %s`, entry.key, entry.command, entry.args)
++		if entry.when != "" {
++			line += fmt.Sprintf(`, "when": %q`, entry.when)
++		}
++		lines = append(lines, line+" },")
+ 	}
+ 	lines = append(lines, "// "+keybindingsEndMarker)
+ 	return strings.Join(lines, lineEnding)
+diff --git a/internal/vscode/keybindings_test.go b/internal/vscode/keybindings_test.go
+index ea1dceea8..794d601bd 100644
+--- a/internal/vscode/keybindings_test.go
++++ b/internal/vscode/keybindings_test.go
+@@ -1,4 +1,4 @@
+-// keybindings_test.go covers the keybindings block merge, the seeding of the user file and the per-platform path.
++// keybindings_test.go covers the keybindings block's entries and merge, the seeding of the user file and the per-platform path.
+ 
+ package vscode
+ 
+@@ -9,6 +9,24 @@ import (
+ 	"testing"
+ )
+ 
++// TestKeybindingsBlock pins the block's entries: the Alt-arrow sendSequence keys in the terminal, and ctrl+alt+a running the reed attach task.
++func TestKeybindingsBlock(t *testing.T) {
++	t.Parallel()
++
++	want := strings.Join([]string{
++		`// lyx:begin`,
++		`  { "key": "alt+up", "command": "workbench.action.terminal.sendSequence", "args": { "text": "\u001b[1;3A" }, "when": "terminalFocus" },`,
++		`  { "key": "alt+down", "command": "workbench.action.terminal.sendSequence", "args": { "text": "\u001b[1;3B" }, "when": "terminalFocus" },`,
++		`  { "key": "alt+right", "command": "workbench.action.terminal.sendSequence", "args": { "text": "\u001b[1;3C" }, "when": "terminalFocus" },`,
++		`  { "key": "alt+left", "command": "workbench.action.terminal.sendSequence", "args": { "text": "\u001b[1;3D" }, "when": "terminalFocus" },`,
++		`  { "key": "ctrl+alt+a", "command": "workbench.action.tasks.runTask", "args": "reed attach" },`,
++		`// lyx:end`,
++	}, "\r\n")
++	if got := keybindingsBlock("\r\n"); got != want {
++		t.Errorf("keybindingsBlock(CRLF) =\n%s\nwant\n%s", got, want)
++	}
++}
++
+ func TestMergeKeybindings(t *testing.T) {
+ 	t.Parallel()
+ 
