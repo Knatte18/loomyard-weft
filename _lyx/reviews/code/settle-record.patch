@@ -1,0 +1,1206 @@
+diff --git a/contracts/stencils/webster/webster-body-implementer.md b/contracts/stencils/webster/webster-body-implementer.md
+index 26bd62676..51c36bb56 100644
+--- a/contracts/stencils/webster/webster-body-implementer.md
++++ b/contracts/stencils/webster/webster-body-implementer.md
+@@ -36,7 +36,8 @@ For EACH card file listed above, in the order listed:
+ 1. Read the card file.
+    It is your whole instruction for that card.
+    If its `**Intent:**` field is empty, fall back to that card's one-line intent from the Card Index in `_lyx/plan/00-overview.md`, matched by the same NN/slug.
+-2. A card names its targets under its own type label(s) and what it reads under `**Uses:**`; see `{{.specs_dir}}/loom/loom-plan-spec.md` for the full grammar. Make exactly the changes the card describes, in exactly the targets its type labels name.
++2. A card names its targets under its own type label(s) and what it reads under `**Uses:**`; see `{{.specs_dir}}/loom/loom-plan-spec.md` for the full grammar.
++Make exactly the changes the card describes, in exactly the targets its type labels name.
+    A deviation is a change outside the batch's card targets as the scope guard counts them: a member target covers that member, a file target every member of that file, a package target every member of the files directly in its directory, and a rename is inside when either its old or its new name is a target.
+    `**Uses:**` entries add no coverage, so a change to a member a card only reads is a deviation unless a target of some card in the batch covers it.
+    Two deviations are sanctioned, each within its bound: the guard-step fix in step 3, only in a file the guard step's failure names; and a fix to a failure the card caused, under the bounded self-fix section's two-pronged test and its attempt cap.
+@@ -78,7 +79,7 @@ If any card's gate fails, or a test the card broke fails, and you cannot fix it
+ Never clone the hub's remotes, and never run a mutating `lyx fabric` verb.
+ A scratch hub is a Go test fixture over local bare repositories (`hubforge`).
+ `lyx fabric` refuses its mutating verbs from your strand; the refusal is the rule's owner.
+-When the work itself needs a refused verb, stop and report `status: FAILED`, so the orch runs the verb.
++When the work itself needs a refused verb, stop and report `status: NEEDS_PARENT` naming the verb, so your parent runs it (see "A step only your parent can take" below).
+ 
+ The card gate steps, the batch gate steps, `lyx gate card-verify`, `lyx loom lint-comments`, `lyx loom lint-pattern` and `lyx quarry resolve` are always allowed from any strand, and none of them is a fabric reference.
+ The sandbox ban covers mutating `lyx fabric` verbs only.
+@@ -117,18 +118,29 @@ A failure the card did not cause is never yours to fix, and it is left to the pl
+ That gate runs after every batch and catches what the card gates do not, so a batch gate step that fails only on failures the batch's cards did not cause, by the two-pronged test above, does not make the report `FAILED`.
+ A misjudged failure passes the batch and is caught by the `webster` gate, which spawns a fixer when it fails.
+ 
++## A step only your parent can take
++
++Some work needs a step outside your session's reach: a hub setting such as a tier or gate list in `gate.yaml`, a `lyx fabric` verb lyx refuses from your strand, or a board write.
++No fix of yours and no recovery strand can take it, so it is never a gate failure under the self-fix bound.
++Stop at once, with every card you finished committed, and write the report with `status: NEEDS_PARENT` and a one-line `need` naming the step, specific enough for your parent to take it unasked.
++A refusal that says a session it refuses "reports status: FAILED and the orch runs it" means this for you: report `NEEDS_PARENT` naming the verb.
++Once your parent has taken the step, the batch resumes from your commits.
++
+ ## Your final action: the minimal batch-report
+ 
+-Your LAST action of this session — after every card above is committed (or you have given up per the bound above) — is writing the batch-report YAML file to `{{.report_path}}`.
++Your LAST action of this session — after every card above is committed (or you have given up per the bound above, or stopped on a step only your parent can take) — is writing the batch-report YAML file to `{{.report_path}}`.
+ Nothing you do after this file exists is read by anyone: write it last, and write it exactly once.
+-The report is deliberately minimal — `record-batch` reads ONLY these two fields:
++The report is deliberately minimal — `record-batch` reads ONLY these fields:
+ 
+ ```yaml
+-status: OK | FAILED
++status: OK | FAILED | NEEDS_PARENT
+ head_sha: <the commit SHA your worktree is at right now>
++need: <one line naming the step only your parent can take; NEEDS_PARENT only, omitted otherwise>
+ ```
+ 
+ `status` is `OK` when every card above is committed and every gate it ran, the batch gate included, passed;
+-`FAILED` when you stopped after exhausting the self-fix bound on some card or on the batch gate, whether its gate failed or a test the card broke did. `head_sha` is your worktree's current HEAD commit SHA — capture it with `git rev-parse HEAD` as your very last read before writing the report, so it reflects every commit you made.
++`FAILED` when you stopped after exhausting the self-fix bound on some card or on the batch gate, whether its gate failed or a test the card broke did;
++`NEEDS_PARENT` when you stopped on a step only your parent can take, which `need` names.
++`head_sha` is your worktree's current HEAD commit SHA — capture it with `git rev-parse HEAD` as your very last read before writing the report, so it reflects every commit you made.
+ Only a failed card gate, a failed `lyx gate card-verify` call, a failed batch gate or a test the card broke makes `status` `FAILED`, never a slot-busy exit.
+ A batch gate step that fails only on failures the batch's cards did not cause does not make it `FAILED`.
+diff --git a/contracts/stencils/webster/webster-template-master.md b/contracts/stencils/webster/webster-template-master.md
+index c8a2a814e..538cdb171 100644
+--- a/contracts/stencils/webster/webster-template-master.md
++++ b/contracts/stencils/webster/webster-template-master.md
+@@ -6,7 +6,7 @@
+ 
+ # Webster Master — read once, fork per batch, judge only the minimal report
+ 
+-> **FIRST, get your bearings against the real state on disk.** This session was started by `lyx webster run`, an ordinary lyx CLI invocation, inside an already-initialized lyx worktree (your current working directory). `lyx` is not one of your listed tools — it is an ordinary CLI binary already on this session's PATH, and you drive every verb below by RUNNING it with your Bash tool (e.g. `lyx webster begin-batch 1`). Orient yourself first: run `lyx webster status` (Bash) and `ls {{.plan_dir}}/` as your very first two actions. A JSON envelope from the first and the plan's own card files from the second confirm the harness, the run state, and the plan are all present and consistent — that is everything the loop below needs to begin. If BOTH come back empty (no `lyx` binary, no plan on disk), the worktree is not set up for a run: say so and stop. No operator answers a question here: a turn end with no running background work and no outcome file is held, with a hold notice to your parent, until a later message starts your next turn or the run's timeout, liveness check or idle kill ends it (the safe turn ends are while your own backgrounded fork or backgrounded `recover-batch` or `fix-verify` call runs, per the loop, the failure ladder and the gate-failure section below), so those two read-only checks, run at the start, are how you settle any uncertainty before driving the loop.
++> **FIRST, get your bearings against the real state on disk.** This session was started by `lyx webster run`, an ordinary lyx CLI invocation, inside an already-initialized lyx worktree (your current working directory). `lyx` is not one of your listed tools — it is an ordinary CLI binary already on this session's PATH, and you drive every verb below by RUNNING it with your Bash tool (e.g. `lyx webster begin-batch 1`). Orient yourself first: run `lyx webster status` (Bash) and `ls {{.plan_dir}}/` as your very first two actions. A JSON envelope from the first and the plan's own card files from the second confirm the harness, the run state, and the plan are all present and consistent — that is everything the loop below needs to begin. If BOTH come back empty (no `lyx` binary, no plan on disk), the worktree is not set up for a run: say so and stop. No operator answers a question here: a turn end with no running background work and no outcome file is held, with a hold notice to your parent, until a later message starts your next turn or the run's timeout, liveness check or idle kill ends it (the safe turn ends are while your own backgrounded fork or backgrounded `recover-batch` or `fix-verify` call runs, per the loop, the failure ladder and the gate-failure section below, and after you have told your parent of a batch waiting on it, per the waiting rung), so those two read-only checks, run at the start, are how you settle any uncertainty before driving the loop.
+ 
+ > **SECOND, disambiguate who you are.** This prompt is inherited by every fork you spawn, so it can reach you in one of two roles:
+ > - If your most recent instruction opens **`You are an implementer fork`** (you were just spawned via the Agent tool), you are an **IMPLEMENTER FORK**, NOT the Master. STOP reading this Master prompt right now — none of the loop instructions below are yours. Go read the file that instruction names and do exactly what it says (implement your batch's cards, write its report). NEVER run any `lyx webster` command; those are the Master's.
+@@ -64,6 +64,9 @@ Read the trail by status — a resumed session thus picks up exactly where the l
+   With `recovery_retry: true`, run `lyx webster recover-batch <NN>` once more, backgrounded, as the failure ladder below describes.
+   With `recovery_retry: false`, the run is exhausted for that batch: write `outcome: stuck` naming it (per the dead rungs of the failure ladder) and stop.
+   Do NOT skip it and do NOT begin any later batch.
++- `waiting` → the batch stopped on a step only your parent can take, named after `need:`.
++  The run was re-entered, so treat the step as taken: resume the batch with the verb named after `resume:`, a `begin-batch` followed by its fork exactly as the loop below runs it, or a backgrounded `recover-batch`, before touching any later batch.
++  A strand that still finds the step untaken reports it again, and the waiting rung of the failure ladder below handles that.
+ 
+ ## The loop: begin-batch, fork, wait for its notification, record-batch — verbatim sequence
+ 
+@@ -100,6 +103,7 @@ and you read ONLY these fields:
+ - `deviations`
+ - `departures`
+ - `dead_reason`
++- `need`
+ - `elapsed_s`
+ 
+ `deviations` is the list of files record-batch's glyph scope guard found changed outside the batch's own targets, ALWAYS informational and never a reason a batch is `stuck` on its own.
+@@ -111,10 +115,16 @@ You never read raw fork output beyond its own turn, and you never open a file to
+ - Report present, `status: done` → `record-batch` already ran above;
+   move on to the next batch.
+ - Report present, `status: stuck` → run `lyx webster recover-batch <NN>` (below).
++- `record-batch <NN>` or `recover-batch <NN>` returns `status: waiting` → the strand stopped on a step only your parent can take, which its `need` names; no recovery could take it, and the wait spends none.
++  Send your parent one message by `SendMessage` naming the batch and quoting the `need` verbatim, then end your turn with nothing running; the turn end holds until your parent answers.
++  When your parent's message says the step is taken, resume the batch where it stood: for a batch `record-batch` returned, run `lyx webster begin-batch <NN>` and fork its implementer exactly as the loop runs it;
++  for a batch `recover-batch` returned, run `lyx webster recover-batch <NN>` again, backgrounded.
++  When your parent's message says the step will not be taken, write `outcome: stuck` to `{{.outcome_path}}`, with a `stuck_reason` naming the batch and quoting the `need`, and stop.
++  Do NOT begin a later batch while one waits, and do NOT call `record-batch` for a waiting batch: it refuses, since nothing is left to record.
+ - Fork finished but wrote **no report** (`record-batch` classifies this `no_report`) → re-fork the same batch once, with the SAME prompt file and no new `begin-batch` call (the bracket is still open), end your turn again, and call `record-batch` again on its completion notification;
+   still no report → run `lyx webster recover-batch <NN>` (below).
+ - Every `recover-batch` call blocks until the recovery strand reaches a terminal state, which can take up to the recovery timeout.
+-  Run `lyx webster recover-batch <NN>` as a **backgrounded** Bash command, end your turn, and act on the command's completion notification: its output is the terminal digest, exiting non-zero when its `status` is not `done`, or a refusal.
++  Run `lyx webster recover-batch <NN>` as a **backgrounded** Bash command, end your turn, and act on the command's completion notification: its output is the terminal digest, exiting non-zero when its `status` is neither `done` nor `waiting`, or a refusal.
+   You read the digest fields, never the exit code, so the rungs below are unchanged.
+   Never run it in the foreground, never poll it and never `sleep`.
+   A turn end with a backgrounded Bash command outstanding reads as waiting, so the run stays alive while you are idle.
+diff --git a/internal/shedadapters/doc.go b/internal/shedadapters/doc.go
+index a62fac0d8..ce810ce1e 100644
+--- a/internal/shedadapters/doc.go
++++ b/internal/shedadapters/doc.go
+@@ -18,7 +18,7 @@
+ //   - WebsterProducer: Webster's own "done" outcome maps to Done, reporting Webster's summary path
+ //     (summaryparser.Path) as the pointer's path.
+ //     Its run is handed two options: Fresh is always false, and AutoRebaseline is always true, so a plan changed between steps is rebaselined on entry.
+-//     Webster's own "stuck" outcome, a websterengine.ErrPendingAuditFindings error and a websterengine.ErrAutoRebaseline error all map to Stuck with an empty Path and a Reason: Master's own stuck_reason or the run-entry refusal's text, whose way forward already ends in this row's re-entry step (NewWebsterProducer sets RunDeps.ReentryStep to "re-step the <row> row" when it is empty).
++//     Webster's own "stuck" outcome, a websterengine.ErrPendingAuditFindings error, a websterengine.ErrAutoRebaseline error and a websterengine.ErrBatchDeadEnd error all map to Stuck with an empty Path and a Reason: Master's own stuck_reason or the run-entry refusal's text, whose way forward already ends in this row's re-entry step (NewWebsterProducer sets RunDeps.ReentryStep to "re-step the <row> row" when it is empty).
+ //     A Stuck from Webster's own "stuck" outcome consults the plan-conflict record begin-batch left (websterengine.ClaimConflictRoute) after the cancellation check:
+ //     a conflict whose findings are new asks for a reroute (OutputPointer.Reroute) to the row's on_reroute target, a record repeating the last routed findings stays a plain Stuck that names the hand edit, and no record, an unreadable one or a failed write stays a plain Stuck with Master's reason.
+ //     The error outcomes never consult the record and never reroute.
+diff --git a/internal/shedadapters/webster.go b/internal/shedadapters/webster.go
+index c0c546fd7..b147c4faf 100644
+--- a/internal/shedadapters/webster.go
++++ b/internal/shedadapters/webster.go
+@@ -76,7 +76,7 @@ func (p *WebsterProducer) Call(ctx context.Context) (shedengine.Outcome, shedeng
+ 
+ 	result, err := p.run(p.deps, websterengine.RunOptions{Fresh: false, AutoRebaseline: true})
+ 	if err != nil {
+-		if errors.Is(err, websterengine.ErrPendingAuditFindings) || errors.Is(err, websterengine.ErrAutoRebaseline) {
++		if errors.Is(err, websterengine.ErrPendingAuditFindings) || errors.Is(err, websterengine.ErrAutoRebaseline) || errors.Is(err, websterengine.ErrBatchDeadEnd) {
+ 			// A halt only the operator can clear: the run blocks with the refusal's own text, whose way forward already ends in this row's re-entry step.
+ 			if cerr := cancelErr(ctx, p.name, websterEngineLabel); cerr != nil {
+ 				return "", shedengine.OutputPointer{}, cerr
+diff --git a/internal/shedadapters/webster_test.go b/internal/shedadapters/webster_test.go
+index f3de61989..d6c9c54ed 100644
+--- a/internal/shedadapters/webster_test.go
++++ b/internal/shedadapters/webster_test.go
+@@ -301,6 +301,7 @@ func TestWebsterProducer_OtherEngineErrors(t *testing.T) {
+ 		{name: "NilBatcher", err: websterengine.ErrNilBatcher},
+ 		{name: "PlainUnmatchedError", err: errors.New("webster: plan validation refused this run")},
+ 		{name: "AutoRebaselineWrap", err: autoRebaselineErr, wantStuck: true},
++		{name: "BatchDeadEnd", err: fmt.Errorf("%w: batch 01-a is dead and its recovery earns no retry; way forward: 1) lyx webster reset --to batch-start --batch 01; 2) re-step the loom row", websterengine.ErrBatchDeadEnd), wantStuck: true},
+ 	}
+ 	for _, tt := range tests {
+ 		t.Run(tt.name, func(t *testing.T) {
+@@ -323,7 +324,7 @@ func TestWebsterProducer_OtherEngineErrors(t *testing.T) {
+ 				t.Fatal("Call() error = nil; want non-nil")
+ 			}
+ 			if outcome == shedengine.Stuck {
+-				t.Errorf("Call() outcome = %q; want the error, not %q (only the pending-audit-findings and auto-rebaseline sentinels map to Stuck)", outcome, shedengine.Stuck)
++				t.Errorf("Call() outcome = %q; want the error, not %q (only the pending-audit-findings, auto-rebaseline and batch-dead-end sentinels map to Stuck)", outcome, shedengine.Stuck)
+ 			}
+ 		})
+ 	}
+diff --git a/internal/shedengine/doc.go b/internal/shedengine/doc.go
+index 6a6c0f3d5..8921a43a1 100644
+--- a/internal/shedengine/doc.go
++++ b/internal/shedengine/doc.go
+@@ -97,6 +97,8 @@
+ //
+ // A Stuck verdict whose OutputPointer.Halt is set blocks the run at its own row with the producer's Reason whatever the row's OnStuck, and is budget-exempt.
+ // It can only stop a run, never advance or route it, so a row with an OnStuck route can still halt for a human.
++// A Stuck that blocks at a row with no OnStuck is budget-exempt as well, since no budget applies there,
++// so a re-step that halts the same way again folds into the halt's entry instead of appending one.
+ // OutcomeGoto stays the goto verb's alone.
+ //
+ // # Entry gates
+diff --git a/internal/shedengine/run.go b/internal/shedengine/run.go
+index 67319e8d1..090581b92 100644
+--- a/internal/shedengine/run.go
++++ b/internal/shedengine/run.go
+@@ -335,13 +335,14 @@ func (s *Shed) stepLocked(ctx context.Context) (StepResult, error) {
+ 			return append(make([]HistoryEntry, 0, len(st.History)), st.History...)
+ 		}
+ 		return appendOrFold(st.History, HistoryEntry{
+-			Producer:        def.Name,
+-			Outcome:         outcome,
+-			Output:          output.Path,
+-			At:              nowRFC3339(),
+-			GateAttempts:    output.GateAttempts,
+-			GateSpans:       output.GateSpans,
+-			BudgetExempt:    outcome == Stuck && (output.BudgetExempt || output.Halt),
++			Producer:     def.Name,
++			Outcome:      outcome,
++			Output:       output.Path,
++			At:           nowRFC3339(),
++			GateAttempts: output.GateAttempts,
++			GateSpans:    output.GateSpans,
++			// A Stuck that blocks at a row with no OnStuck never reaches a budget, so it is exempt too, and a repeat of the same halt folds into its entry.
++			BudgetExempt:    outcome == Stuck && (output.BudgetExempt || output.Halt || def.OnStuck == ""),
+ 			RoutedTo:        routedTo,
+ 			GenerationStart: outcome == Stuck && output.GenerationStart,
+ 		})
+diff --git a/internal/shedengine/status.go b/internal/shedengine/status.go
+index a8916b3de..5b44a89c3 100644
+--- a/internal/shedengine/status.go
++++ b/internal/shedengine/status.go
+@@ -90,7 +90,7 @@ type HistoryEntry struct {
+ 	// GateSpans are the time spans this call's gate entries took, in the order they started.
+ 	// A status file written before the field existed decodes as nil, and a nil list is not written.
+ 	GateSpans []GateSpan `json:"gate_spans,omitempty"`
+-	// BudgetExempt is true on a Stuck entry the producer marked as not counted against the bounce budget.
++	// BudgetExempt is true on a Stuck entry not counted against the bounce budget: one the producer marked, a Halt, or one at a row with no OnStuck.
+ 	// A status file written before the field existed decodes as false and counts as before.
+ 	BudgetExempt bool `json:"budget_exempt,omitempty"`
+ 	// Repeats is the number of further identical calls folded into this entry, zero when none.
+diff --git a/internal/shedengine/step_fold_test.go b/internal/shedengine/step_fold_test.go
+index 5007f6c80..83c323e22 100644
+--- a/internal/shedengine/step_fold_test.go
++++ b/internal/shedengine/step_fold_test.go
+@@ -142,6 +142,30 @@ func TestStep_CountedAndExemptStucksDoNotFold(t *testing.T) {
+ 	}
+ }
+ 
++// TestStep_RepeatedBlockingHaltFolds proves a re-step of a row with no OnStuck that blocks again the same way keeps one history entry, its repeat counted, rather than appending a second.
++func TestStep_RepeatedBlockingHaltFolds(t *testing.T) {
++	shed, statusPath, _, statusLockPath := newTestShed(t)
++	shed.Producers = []ProducerDef{{
++		Name:     "Webster",
++		Producer: fixedOutcomeProducer(Stuck, ""),
++	}}
++	seedStatus(t, statusPath, statusLockPath, commonSeed("Webster"))
++
++	for range 2 {
++		if res := mustStep(t, shed); res.State != StateBlocked {
++			t.Fatalf("Step() state = %q; want %q", res.State, StateBlocked)
++		}
++	}
++
++	got := readStatus(t, statusPath, statusLockPath)
++	if len(got.History) != 1 {
++		t.Fatalf("history has %d entries; want 1: %+v", len(got.History), got.History)
++	}
++	if e := got.History[0]; e.Outcome != Stuck || !e.BudgetExempt || e.Repeats != 1 || e.LastAt == "" {
++		t.Errorf("entry = %+v; want a budget-exempt Stuck with Repeats 1 and a LastAt", e)
++	}
++}
++
+ func TestStep_AwaitingEndsAFold(t *testing.T) {
+ 	shed, statusPath, _, statusLockPath := newTestShed(t)
+ 	script := []Outcome{Stuck, Stuck, Awaiting, Stuck}
+diff --git a/internal/webstercli/recordbatch.go b/internal/webstercli/recordbatch.go
+index 8382407a8..419ffd230 100644
+--- a/internal/webstercli/recordbatch.go
++++ b/internal/webstercli/recordbatch.go
+@@ -71,6 +71,10 @@ verbatim (the pinned terse field set Master reads) plus any non-fatal
+ warnings. If the report has not landed yet, record-batch returns
+ {"no_report": true, "batch": "NN-<slug>"} and exits 0 -- a ladder signal,
+ not an error; Master re-forks once and calls record-batch again.
++A NEEDS_PARENT report records the batch waiting on its parent: the envelope
++carries "status": "waiting" and the report's "need", the report is archived,
++and no recovery is spent. A call on a waiting batch refuses, naming
++"lyx webster begin-batch NN", which resumes it once the parent has acted.
+ A batch rejected on its merits exits non-zero with {"batch_failed": true,
+ "batch": "NN-<slug>", "warnings": [...]} after its terminal failed state
+ and archived report are saved and committed; the error names
+diff --git a/internal/webstercli/recoverbatch.go b/internal/webstercli/recoverbatch.go
+index 421c2053d..72a394727 100644
+--- a/internal/webstercli/recoverbatch.go
++++ b/internal/webstercli/recoverbatch.go
+@@ -45,13 +45,23 @@ func batchSlugFor(batches []batcher.Batch, batchNumber int) string {
+ 	return ""
+ }
+ 
+-// recoveryNotDoneMessage is the error of a recover-batch call whose terminal digest is not done:
+-// the recovery did not recover the batch, and the way forward is one more recovery when the batch has one left, else ending the run stuck.
+-func recoveryNotDoneMessage(batchName string, batchNumber int, status string, retry bool) string {
++// recoveryNotDoneMessage is the error of a recover-batch call whose terminal digest is neither done nor waiting:
++// the recovery in session did not recover the batch, and the way forward is one more recovery when the batch has one left, else ending the run stuck.
++// Naming the session tells two consecutive refusals over different strands apart.
++func recoveryNotDoneMessage(batchName string, batchNumber int, status, session string, retry bool) string {
+ 	if retry {
+-		return fmt.Sprintf("webster: batch %s recovery ended %s; way forward: run `lyx webster recover-batch %d` once more", batchName, status, batchNumber)
++		return fmt.Sprintf("webster: batch %s recovery (session %s) ended %s; way forward: run `lyx webster recover-batch %d` once more", batchName, session, status, batchNumber)
+ 	}
+-	return fmt.Sprintf("webster: batch %s recovery ended %s and the batch has no recovery left; way forward: end the run stuck, naming batch %s", batchName, status, batchName)
++	return fmt.Sprintf("webster: batch %s recovery (session %s) ended %s and the batch has no recovery left; way forward: end the run stuck, naming batch %s", batchName, session, status, batchName)
++}
++
++// lastRecoverySession returns the session of the newest recovery strand st records for batch number, empty when it records none.
++func lastRecoverySession(st *websterengine.State, number int) string {
++	bs := st.Batches[number]
++	if bs == nil || len(bs.RecoverySessions) == 0 {
++		return ""
++	}
++	return bs.RecoverySessions[len(bs.RecoverySessions)-1]
+ }
+ 
+ // recoverDeps builds the websterengine.RecoverDeps for this CLI's current wiring over the loaded plan, execution batches and run state.
+@@ -92,22 +102,23 @@ func (c *websterCLI) recoverBatchCmd() *cobra.Command {
+ 		Short:       "escalate one batch to a cold recovery strand and long-poll it for a terminal digest",
+ 		Annotations: map[string]string{clihelp.AudienceAnnotation: clihelp.AudienceRole},
+ 		Long: `recover-batch <nn> spawns a cold, fresh recovery strand for a batch a fork
+-reported stuck (or never reported at all) -- or, on a re-entrant call,
+-attaches to the recovery strand a prior call already spawned. A call that
++reported stuck (or never reported at all) -- or, re-entrant, attaches to
++the strand a prior call spawned. A call that
+ spawns the recovery strand first waits for its provider to come up,
+ and every call then blocks for up to --wait watching it for a terminal
+-classification. A terminal call fabric-commits the batch report and state.json and returns the digest
+-envelope, exactly like record-batch's own terminal envelope plus "recoveries",
++classification. A terminal call fabric-commits the report and state.json and
++returns record-batch's terminal envelope plus "recoveries",
+ the batch's counted recovery spawns, and "recovery_retry", true when the
+ recovery is dead and earns another: none counted yet, or it committed
+-work of its own. A terminal digest whose status is not done (stuck or dead) exits
+-non-zero with "ok": false and the same fields, its message naming the way
++work of its own. A stuck or dead digest exits non-zero with the same fields
++and "recovery_session", the strand's session, its message naming the way
+ forward: "lyx webster recover-batch NN" once more when recovery_retry is
+-true, else ending the run stuck naming the batch. A call that would spawn a
+-third counted recovery refuses with {"recovery_exhausted": true}. A recovery
+-the post-batch checks reject takes the batch terminal failed: the failed
+-state and archived report are saved and committed, and the call exits
+-non-zero with {"batch_failed": true, "batch": "NN-<slug>", "warnings": [...]};
++true, else ending the run stuck. A NEEDS_PARENT report leaves the batch
++waiting, exiting 0 with its "need"; the next call resumes it uncounted.
++A call that would spawn a third counted recovery refuses with
++{"recovery_exhausted": true}. A recovery the post-batch checks reject takes
++the batch terminal failed, saved and committed, and exits non-zero with
++{"batch_failed": true, "batch": "NN-<slug>", "warnings": [...]};
+ "card_amended": true marks a card amended after the recovery spawned.
+ The error names "lyx webster recover-batch NN", which re-runs the batch,
+ unless a later card still references a symbol the batch deletes: a call that
+@@ -344,8 +355,12 @@ Example:
+ 				retry, recoveries := websterengine.RecoveryRetry(c.geom, fresh, batchNumber)
+ 				fields["recovery_retry"], fields["recoveries"] = retry, recoveries
+ 				fields["warnings"] = ownerlessRunWarnings(c.geom.ScratchDir, result.Warnings)
+-				if result.Digest.Status != websterengine.DigestStatusDone {
+-					clihelp.SetExit(cmd.Context(), output.ErrFields(out, recoveryNotDoneMessage(batchName, batchNumber, result.Digest.Status, retry), fields))
++				switch result.Digest.Status {
++				case websterengine.DigestStatusDone, websterengine.DigestStatusWaiting:
++				default:
++					session := lastRecoverySession(fresh, batchNumber)
++					fields["recovery_session"] = session
++					clihelp.SetExit(cmd.Context(), output.ErrFields(out, recoveryNotDoneMessage(batchName, batchNumber, result.Digest.Status, session, retry), fields))
+ 					return nil
+ 				}
+ 				clihelp.SetExit(cmd.Context(), output.Ok(out, fields))
+diff --git a/internal/webstercli/run.go b/internal/webstercli/run.go
+index bece4153f..3fe8ffb50 100644
+--- a/internal/webstercli/run.go
++++ b/internal/webstercli/run.go
+@@ -62,7 +62,9 @@ plan the run recorded (restore it with "lyx webster restore-plan"); with an
+ unchanged plan and nothing pending --fresh is a no-op and the run RESUMES
+ from state.json, so a fully-completed plan re-reports done without
+ re-driving anything -- force a from-scratch re-run of an unchanged plan by
+-editing the plan or archiving _lyx/webster/state.json aside by hand), archives any stale
++editing the plan or archiving _lyx/webster/state.json aside by hand), refuses
++a run whose batch is at a dead end (a dead recovery with no retry, or its
++recoveries spent), naming the batch-start reset, archives any stale
+ outcome.yaml/summary.md,
+ spawns a fresh Master session via shuttle (fork-authorized, never resumed),
+ and blocks until Master writes its own outcome.yaml and summary.md
+diff --git a/internal/webstercli/verbs_test.go b/internal/webstercli/verbs_test.go
+index 75c8335af..8b796d407 100644
+--- a/internal/webstercli/verbs_test.go
++++ b/internal/webstercli/verbs_test.go
+@@ -1166,11 +1166,66 @@ func TestRecoverBatchCmd_RunningThenTerminal(t *testing.T) {
+ 	if code := clihelp.Execute(fx.CLI.recoverBatchCmd(), &outStuck, []string{"1", "--wait", "1ns"}); code == 0 {
+ 		t.Fatalf("recover-batch 1 over a stuck recovery = 0; want non-zero, output: %s", outStuck.String())
+ 	}
+-	for _, want := range []string{`"ok":false`, `"status":"stuck"`, `"recovery_retry":false`, `"recoveries":2`, `"batch":"01-only"`, "end the run stuck, naming batch 01-only"} {
++	loaded, err = websterengine.LoadState(fx.CLI.geom.WebsterDir, fx.CLI.geom.ScratchDir)
++	if err != nil || loaded == nil {
++		t.Fatalf("LoadState() after the stuck recovery = %v, %v; want a state, nil", loaded, err)
++	}
++	sessions := loaded.Batches[1].RecoverySessions
++	if len(sessions) == 0 {
++		t.Fatalf("loaded.Batches[1].RecoverySessions is empty; want the spawned sessions")
++	}
++	stuckSession := sessions[len(sessions)-1]
++	for _, want := range []string{`"ok":false`, `"status":"stuck"`, `"recovery_retry":false`, `"recoveries":2`, `"batch":"01-only"`, "end the run stuck, naming batch 01-only", `"recovery_session":"` + stuckSession + `"`, "(session " + stuckSession + ")"} {
+ 		if !strings.Contains(outStuck.String(), want) {
+ 			t.Errorf("stuck recovery output missing %q; got %q", want, outStuck.String())
+ 		}
+ 	}
++
++	// A recovery that reports NEEDS_PARENT leaves the batch waiting, exits 0 and spends nothing;
++	// the next call resumes it with a fresh strand, uncounted even at two recoveries.
++	loaded.Batches[1].AmendedCards = []websterengine.AmendedCard{{Card: "01-only"}}
++	if err := websterengine.SaveState(fx.CLI.geom.WebsterDir, fx.CLI.geom.ScratchDir, loaded); err != nil {
++		t.Fatalf("SaveState() error = %v", err)
++	}
++	var outWaitSpawn strings.Builder
++	if code := clihelp.Execute(fx.CLI.recoverBatchCmd(), &outWaitSpawn, []string{"1", "--wait", "1ns"}); code != 0 || !strings.Contains(outWaitSpawn.String(), `"status":"running"`) {
++		t.Fatalf("recover-batch 1 over another new amendment = %d, output: %s; want a running respawn", code, outWaitSpawn.String())
++	}
++	reportPath := filepath.Join(fx.CLI.geom.ReportsDir, websterengine.ReportFileName(1, "only"))
++	need := "raise the tier 2 timeout in the hub gate.yaml"
++	if err := websterengine.WriteReport(reportPath, &websterengine.Report{Status: websterengine.ReportStatusNeedsParent, HeadSHA: head, Need: need}); err != nil {
++		t.Fatalf("write the waiting report: %v", err)
++	}
++	var outWaiting strings.Builder
++	if code := clihelp.Execute(fx.CLI.recoverBatchCmd(), &outWaiting, []string{"1", "--wait", "1ns"}); code != 0 {
++		t.Fatalf("recover-batch 1 over a NEEDS_PARENT report = %d; want 0, output: %s", code, outWaiting.String())
++	}
++	for _, want := range []string{`"ok":true`, `"status":"waiting"`, `"need":"` + need + `"`, `"recoveries":2`} {
++		if !strings.Contains(outWaiting.String(), want) {
++			t.Errorf("waiting recovery output missing %q; got %q", want, outWaiting.String())
++		}
++	}
++	loaded, err = websterengine.LoadState(fx.CLI.geom.WebsterDir, fx.CLI.geom.ScratchDir)
++	if err != nil || loaded == nil {
++		t.Fatalf("LoadState() after the waiting recovery = %v, %v; want a state, nil", loaded, err)
++	}
++	if bs := loaded.Batches[1]; bs.Terminal || bs.Status != websterengine.DigestStatusWaiting || bs.Recoveries != 2 {
++		t.Errorf("waiting record Terminal, Status, Recoveries = %v, %q, %d; want false, %q, 2", bs.Terminal, bs.Status, bs.Recoveries, websterengine.DigestStatusWaiting)
++	}
++	if _, err := os.Stat(reportPath); !os.IsNotExist(err) {
++		t.Errorf("stat of the waiting report = %v; want it archived", err)
++	}
++	var outResume strings.Builder
++	if code := clihelp.Execute(fx.CLI.recoverBatchCmd(), &outResume, []string{"1", "--wait", "1ns"}); code != 0 || !strings.Contains(outResume.String(), `"status":"running"`) {
++		t.Fatalf("recover-batch 1 over a waiting batch at two recoveries = %d, output: %s; want a running respawn", code, outResume.String())
++	}
++	loaded, err = websterengine.LoadState(fx.CLI.geom.WebsterDir, fx.CLI.geom.ScratchDir)
++	if err != nil || loaded == nil {
++		t.Fatalf("LoadState() after the resume = %v, %v; want a state, nil", loaded, err)
++	}
++	if got := loaded.Batches[1].Recoveries; got != 2 {
++		t.Errorf("Recoveries after the resume spawn = %d; want 2, since a resume is not counted", got)
++	}
+ }
+ 
+ // TestRunCmd_ErrRunBusySkipsRecordsBackstop proves the ErrRunBusy refusal never reaches Master's own
+diff --git a/internal/websterengine/beginbatch_test.go b/internal/websterengine/beginbatch_test.go
+index 9513ee793..6da7ca032 100644
+--- a/internal/websterengine/beginbatch_test.go
++++ b/internal/websterengine/beginbatch_test.go
+@@ -517,6 +517,20 @@ func TestBeginBatch_Record(t *testing.T) {
+ 			},
+ 			wantStart: func(*beginFixture) string { return recordedStart },
+ 		},
++		{
++			name: "a re-begin of a batch waiting on its parent resumes it in flight with its start and its recovery count",
++			prior: &websterengine.BatchState{Slug: "json-flag", Kind: "fork", StartSHA: recordedStart, Status: websterengine.DigestStatusWaiting, Recoveries: 1,
++				Digest: &websterengine.Digest{Batch: "01-json-flag", Status: websterengine.DigestStatusWaiting, Need: "raise the tier 2 timeout"}},
++			prepare: func(t *testing.T, fx *beginFixture) {
++				fx.Git.commit()
++			},
++			wantStart: func(*beginFixture) string { return recordedStart },
++			check: func(t *testing.T, fx *beginFixture, bs *websterengine.BatchState) {
++				if bs.Terminal || bs.Status != "" || bs.Digest != nil || bs.Recoveries != 1 {
++					t.Errorf("Batches[1] Terminal, Status, Digest, Recoveries = %v, %q, %v, %d; want false, \"\", nil, 1", bs.Terminal, bs.Status, bs.Digest, bs.Recoveries)
++				}
++			},
++		},
+ 		{
+ 			name:      "a re-begin over a record without a StartSHA records the head",
+ 			prior:     &websterengine.BatchState{Slug: "json-flag", Kind: "fork"},
+diff --git a/internal/websterengine/digest.go b/internal/websterengine/digest.go
+index 3c8c88d31..73b1c58d4 100644
+--- a/internal/websterengine/digest.go
++++ b/internal/websterengine/digest.go
+@@ -10,14 +10,16 @@ package websterengine
+ 
+ import "fmt"
+ 
+-// The five legal Digest.Status values.
++// The six legal Digest.Status values.
+ // failed is a batch whose report webster rejected on its merits.
++// waiting is a batch stopped on a step only the run's parent can take; it is in flight, never terminal.
+ const (
+ 	DigestStatusRunning = "running"
+ 	DigestStatusDone    = "done"
+ 	DigestStatusStuck   = "stuck"
+ 	DigestStatusDead    = "dead"
+ 	DigestStatusFailed  = "failed"
++	DigestStatusWaiting = "waiting"
+ )
+ 
+ // The three legal Digest.DeadReason values, set only when Status is DigestStatusDead.
+@@ -32,12 +34,13 @@ const (
+ // other fields populate at terminal.
+ type Digest struct {
+ 	Batch      string   `json:"batch"`
+-	Status     string   `json:"status"` // DigestStatusRunning, Done, Stuck, Dead, or Failed
++	Status     string   `json:"status"` // DigestStatusRunning, Done, Stuck, Dead, Failed, or Waiting
+ 	HeadSHA    string   `json:"head_sha,omitempty"`
+ 	Deviations []string `json:"deviations,omitempty"`  // The scope guard's files changed outside the batch's targets; informational only, never affects Status
+ 	Departures []string `json:"departures,omitempty"`  // The Pattern-Departure trailers of the batch's commits as "<subject>: <value>"; informational only, never affects Status
+ 	DeadReason string   `json:"dead_reason,omitempty"` // Set only when Status is Dead
+ 	Reasons    []string `json:"reasons,omitempty"`     // Set only when Status is Failed
++	Need       string   `json:"need,omitempty"`        // The step only the parent can take; set only when Status is Waiting
+ 	ElapsedS   int      `json:"elapsed_s,omitempty"`   // Seconds since spawn, running snapshots only
+ }
+ 
+@@ -60,18 +63,17 @@ func batchDepartures(geom Geometry, startSHA, headSHA string) ([]string, error)
+ 	return lines, nil
+ }
+ 
+-// distill computes the terminal digest for a fork-return report:
+-// OK → Done, FAILED → Stuck. HeadSHA carries through.
++// distill computes the digest for a fork-return report:
++// OK → Done, FAILED → Stuck, NEEDS_PARENT → Waiting with its Need. HeadSHA carries through.
+ // Batch is not set; the caller (Classify) assigns it.
+ // Deviations is not set either: record-batch fills it from the scope guard.
+ func distill(r *Report) Digest {
+-	status := DigestStatusStuck
+-	if r.Status == ReportStatusOK {
+-		status = DigestStatusDone
+-	}
+-
+-	return Digest{
+-		Status:  status,
+-		HeadSHA: r.HeadSHA,
++	switch r.Status {
++	case ReportStatusOK:
++		return Digest{Status: DigestStatusDone, HeadSHA: r.HeadSHA}
++	case ReportStatusNeedsParent:
++		return Digest{Status: DigestStatusWaiting, HeadSHA: r.HeadSHA, Need: r.Need}
++	default:
++		return Digest{Status: DigestStatusStuck, HeadSHA: r.HeadSHA}
+ 	}
+ }
+diff --git a/internal/websterengine/doc.go b/internal/websterengine/doc.go
+index 1e0948939..73ca17b33 100644
+--- a/internal/websterengine/doc.go
++++ b/internal/websterengine/doc.go
+@@ -57,8 +57,8 @@
+ // # Fork-return contract: OK/FAILED and a head SHA
+ //
+ // A fork's whole return contract is the minimal report shape report.go
+-// implements (Report/ParseReport/WriteReport): `status: OK` or `status:
+-// FAILED`, and the `head_sha` the fork left the worktree at.
++// implements (Report/ParseReport/WriteReport): `status: OK`, `status:
++// FAILED` or `status: NEEDS_PARENT` with its `need`, and the `head_sha` the fork left the worktree at.
+ // An older fork's `deviations` key is accepted and ignored.
+ // The digest's `deviations` list is the glyph scope guard's file list over the batch delta, the files changed outside the batch's own targets.
+ // Record-batch and recover-batch fill it.
+@@ -437,6 +437,23 @@
+ // recover-batch's terminal envelope and status's batch entries carry the count as recoveries and the verdict as recovery_retry, and the refusal wrapping ErrRecoveryExhausted carries recovery_exhausted.
+ // reset --to batch-start clears the batch's count and start, so the reset batch reads recovery_retry: true; reset --to start archives the whole record.
+ // Merriam runs another recovery on recovery_retry: true and stops stuck on false or on recovery_exhausted.
++// A dead or stuck envelope also carries recovery_session, the session of the strand the verdict is about, and its message names it.
++// Two consecutive refusals over different strands, such as either side of a batch-start reset, are thus told apart.
++// Run refuses on entry, before it spawns Master, while a recorded batch is at such a dead end: terminal and not done with its recoveries spent, or dead with no retry, in either case holding no amendment a spawn has not rendered.
++// A git read that fails while judging a dead recovery refuses with a plain error that names the re-run and the batch-start reset, never as a dead end.
++// The refusal wraps ErrBatchDeadEnd, its text depends only on the batch's record and the tree, and its way forward is the batch-start reset then the re-entry step, or the reset to start;
++// a re-entry of a run halted on the dead end therefore halts again with the same text and spends no Master session.
++//
++// # A batch waiting on its parent
++//
++// A step only the run's parent can take, such as a hub setting in `gate.yaml`, a mutating `lyx fabric` verb lyx refuses from a strand or a board write, is no card failure: no fix and no recovery strand can take it.
++// The implementer body tells a fork or recovery strand that meets one to stop and report `status: NEEDS_PARENT` with a one-line `need` naming the step.
++// record-batch, and recover-batch through PersistRecoveryTerminal, record such a report as a waiting batch (waiting.go):
++// `Terminal` stays false, `Status` is `waiting`, the digest carries the need, the report is archived, and neither the post-batch pass nor the suspect check runs.
++// The wait spends no recovery: the recovery count and start commit are unchanged, and recover-batch never attaches to a waiting record, never refuses it as exhausted and counts no spawn that resumes it.
++// Merriam tells its parent the need by message and ends its turn; once the parent says the step is taken, it resumes the batch where it stood, through begin-batch's re-begin for a fork batch and through recover-batch for a recovery batch.
++// record-batch on a waiting batch refuses naming that resume verb, and the progress trail lists a waiting batch with its need and the resume verb, so a fresh Master re-drives it.
++// recover-batch exits 0 on a waiting digest.
+ //
+ // # digest persistence carries batch context forward
+ //
+diff --git a/internal/websterengine/recordbatch.go b/internal/websterengine/recordbatch.go
+index eb27ad67e..b78a02928 100644
+--- a/internal/websterengine/recordbatch.go
++++ b/internal/websterengine/recordbatch.go
+@@ -265,6 +265,7 @@ func archiveUnattributable(deps RecordDeps, number int, slug string, cause error
+ // RecordBatch drives one record-batch call: the bracket-discipline check, incremental fork audit, fork-audit finding dispositions, transcript-attribution advance, report parse, and digest persistence.
+ // Each audit finding is dispositioned once per run: a policy finding is recorded as a warning (after its batch's card verify commands pass, when the report is OK),
+ // and a correctness finding, or a policy finding whose evidence re-run fails, fails the batch and returns a *BatchFailedError naming `lyx webster recover-batch`, alongside a RecordResult carrying the failed digest.
++// A NEEDS_PARENT report records the batch waiting with its need and archives the report, and a call on a waiting batch refuses naming the resume step.
+ // The caller persists deps.State via SaveState once RecordBatch returns, whether or not it returned a *BatchFailedError.
+ func RecordBatch(deps RecordDeps, batchNumber int) (*RecordResult, error) {
+ 	// The plan is a hard precondition, refused loudly rather than dereferenced several frames down
+@@ -301,6 +302,9 @@ func RecordBatch(deps RecordDeps, batchNumber int) (*RecordResult, error) {
+ 		}
+ 		return nil, fmt.Errorf("webster: batch %02d is already terminal (%s), so record-batch has nothing to record; way forward: %s", batchNumber, bs.Status, way)
+ 	}
++	if waitsOnParent(bs) {
++		return nil, waitingRefusal("record-batch", bs, batchNumber)
++	}
+ 
+ 	// Recovery batches are consumed by recover-batch, not record-batch.
+ 	if bs.Kind != "fork" {
+@@ -516,6 +520,16 @@ func RecordBatch(deps RecordDeps, batchNumber int) (*RecordResult, error) {
+ 		}
+ 	}
+ 
++	// A batch waiting on its parent has not finished, so it runs no post-batch pass and spends no recovery.
++	if report.Status == ReportStatusNeedsParent {
++		digest := distill(report)
++		digest.Batch = polledID
++		if err := recordWaiting(bs, &digest, deps.Geom.ReportsDir, number, slug, time.Now); err != nil {
++			return nil, err
++		}
++		return &RecordResult{Digest: &digest, Warnings: warnings}, nil
++	}
++
+ 	deviations, postWarnings, err := postBatchChecks(postBatchInputs{
+ 		Plan:      deps.Plan,
+ 		State:     deps.State,
+diff --git a/internal/websterengine/recordbatch_test.go b/internal/websterengine/recordbatch_test.go
+index 70de46a7a..d18c6f462 100644
+--- a/internal/websterengine/recordbatch_test.go
++++ b/internal/websterengine/recordbatch_test.go
+@@ -1385,6 +1385,45 @@ func TestRecordBatch_UnresolvableHeadSHARefused(t *testing.T) {
+ 	}
+ }
+ 
++// TestRecordBatch_NeedsParentWaits proves a NEEDS_PARENT report records the batch waiting with its need, in flight, its report archived and its recovery count unchanged,
++// and that record-batch on the waiting batch then refuses naming the need and begin-batch.
++func TestRecordBatch_NeedsParentWaits(t *testing.T) {
++	fx := newRecordFixture(t, []shuttleengine.ForkAudit{
++		{Forks: []shuttleengine.ForkReport{{TranscriptPath: "subagents/f1.jsonl", ReportReturned: true}}},
++	})
++	fx.Deps.State.Batches[1].Recoveries = 1
++	need := "raise the tier 2 timeout in the hub gate.yaml"
++	writeReport(t, fx.ReportsDir, "status: NEEDS_PARENT\nhead_sha: "+fx.HeadSHA+"\nneed: "+need+"\n")
++
++	result, err := websterengine.RecordBatch(fx.Deps, 1)
++	if err != nil {
++		t.Fatalf("RecordBatch() error = %v; want nil", err)
++	}
++	if result.Digest == nil || result.Digest.Status != websterengine.DigestStatusWaiting || result.Digest.Need != need || result.Digest.Batch != "01-json-flag" {
++		t.Fatalf("RecordBatch() digest = %+v; want waiting on %q for 01-json-flag", result.Digest, need)
++	}
++	bs := fx.Deps.State.Batches[1]
++	if bs.Terminal || bs.Status != websterengine.DigestStatusWaiting || bs.Recoveries != 1 || len(bs.CardSHAs) != 0 {
++		t.Errorf("Batches[1] Terminal, Status, Recoveries, CardSHAs = %v, %q, %d, %v; want false, %q, 1, none", bs.Terminal, bs.Status, bs.Recoveries, bs.CardSHAs, websterengine.DigestStatusWaiting)
++	}
++	if got := fx.Deps.State.CurrentBatch; got != 1 {
++		t.Errorf("CurrentBatch = %d; want 1, the waiting batch", got)
++	}
++	if _, err := os.Stat(filepath.Join(fx.ReportsDir, websterengine.ReportFileName(1, "json-flag"))); !os.IsNotExist(err) {
++		t.Errorf("stat of the report = %v; want it archived", err)
++	}
++
++	_, err = websterengine.RecordBatch(fx.Deps, 1)
++	if err == nil {
++		t.Fatal("RecordBatch() on a waiting batch error = nil; want the waiting refusal")
++	}
++	for _, want := range []string{"waits on its parent (" + need + ")", "way forward: once the parent has taken the step, `lyx webster begin-batch 1`"} {
++		if !strings.Contains(err.Error(), want) {
++			t.Errorf("RecordBatch() on a waiting batch error = %q; want it to contain %q", err.Error(), want)
++		}
++	}
++}
++
+ // TestRecordBatch_MalformedReportYAMLErrors proves an unparseable batch-report (here, an
+ // unrecognized status value) is a hard error, never a guessed digest.
+ func TestRecordBatch_MalformedReportYAMLErrors(t *testing.T) {
+diff --git a/internal/websterengine/recoverbatch.go b/internal/websterengine/recoverbatch.go
+index 859eeef12..400de93bc 100644
+--- a/internal/websterengine/recoverbatch.go
++++ b/internal/websterengine/recoverbatch.go
+@@ -246,7 +246,7 @@ func rendersNewAmendment(prior *BatchState) bool {
+ // the recovery prompt, and starts the recovery strand, returning a fresh BatchState.
+ // clk stamps SpawnedAt so elapsed-since-spawn is measured against the same clock.
+ // The record appends the spawned run's session id to the prior record's RecoverySessions, and records that run's engine under it in RecoveryEngines.
+-// The record counts the spawn in Recoveries unless the prompt renders an amendment no earlier spawn rendered, and carries HEAD at the spawn as RecoveryStartSHA.
++// The record counts the spawn in Recoveries unless the prompt renders an amendment no earlier spawn rendered or prior waits on its parent, and carries HEAD at the spawn as RecoveryStartSHA.
+ // HEAD is read before anything is stopped or started, so a failed read starts nothing and counts nothing.
+ func recoverSpawn(deps RecoverDeps, batch batcher.Batch, prior *BatchState, prevDigest string, clk Clock) (*BatchState, error) {
+ 	number, slug := batchIdentity(batch)
+@@ -378,7 +378,8 @@ func recoverSpawn(deps RecoverDeps, batch batcher.Batch, prior *BatchState, prev
+ 		priorTranscripts = prior.ForkTranscripts
+ 		recoveries = prior.Recoveries
+ 	}
+-	if !rendersNewAmendment(prior) {
++	// A spawn resuming a batch that waited on its parent continues the recovery that stopped, so it costs none.
++	if !rendersNewAmendment(prior) && !waitsOnParent(prior) {
+ 		recoveries++
+ 	}
+ 	recoverySessions = append(recoverySessions, runState.SessionID)
+@@ -414,29 +415,38 @@ func recoverSpawn(deps RecoverDeps, batch batcher.Batch, prior *BatchState, prev
+ // A git read that fails, a start the store does not hold included, gives false and is logged at Warn.
+ // Both recover-batch and begin-batch read it, so one rule decides the retry.
+ func RecoveryRetry(geom Geometry, st *State, n int) (retry bool, recoveries int) {
++	retry, recoveries, err := recoveryRetryRead(geom, st, n)
++	if err != nil {
++		logger.Warn("websterengine: could not tell whether the dead recovery committed, so no retry is offered", "batch", n, "error", err)
++		return false, recoveries
++	}
++	return retry, recoveries
++}
++
++// recoveryRetryRead is RecoveryRetry's rule with a failed git read returned as err, retry false, instead of folded into the verdict.
++func recoveryRetryRead(geom Geometry, st *State, n int) (retry bool, recoveries int, err error) {
+ 	var bs *BatchState
+ 	if st != nil {
+ 		bs = st.Batches[n]
+ 	}
+ 	if bs == nil {
+-		return false, 0
++		return false, 0, nil
+ 	}
+ 	recoveries = bs.Recoveries
+ 	if bs.Kind != "recovery" || !bs.Terminal || bs.Status != DigestStatusDead || recoveries >= maxRecoveries {
+-		return false, recoveries
++		return false, recoveries, nil
+ 	}
+ 	if recoveries == 0 {
+-		return true, recoveries
++		return true, recoveries, nil
+ 	}
+ 	if bs.RecoveryStartSHA == "" {
+-		return false, recoveries
++		return false, recoveries, nil
+ 	}
+ 	committed, err := committedSince(geom, bs.RecoveryStartSHA)
+ 	if err != nil {
+-		logger.Warn("websterengine: could not tell whether the dead recovery committed, so no retry is offered", "batch", n, "recoveryStartSha", bs.RecoveryStartSHA, "error", err)
+-		return false, recoveries
++		return false, recoveries, fmt.Errorf("webster: read whether the dead recovery of batch %02d committed since %s: %w", n, bs.RecoveryStartSHA, err)
+ 	}
+-	return committed, recoveries
++	return committed, recoveries, nil
+ }
+ 
+ // committedSince reports whether HEAD descends from start through a first-parent range holding a commit that is not a merge.
+@@ -475,6 +485,7 @@ func committedSince(geom Geometry, start string) (bool, error) {
+ // Before spawning, it refuses with ErrRecoveryDeleteReferenced while an unbegun later card's Edit code still references a symbol the batch's own cards delete, since a recovery cannot change the plan and would fail the same done-check again.
+ // The bound: it refuses only while that check fires for the batch's own cards against the current plan and tree;
+ // moving the delete and rebaselining clears it.
++// A record waiting on its parent is never attached to and never refused as exhausted: the spawn resumes it uncounted.
+ func RecoverSpawnOrAttach(deps RecoverDeps, batchNumber int, clk Clock) (bs *BatchState, spawned bool, err error) {
+ 	batch, err := findBatch(deps.Batches, batchNumber)
+ 	if err != nil {
+@@ -482,7 +493,7 @@ func RecoverSpawnOrAttach(deps RecoverDeps, batchNumber int, clk Clock) (bs *Bat
+ 	}
+ 
+ 	prior := deps.State.Batches[batchNumber]
+-	if prior != nil && prior.Kind == "recovery" && !prior.Terminal && prior.StrandGUID != "" {
++	if prior != nil && prior.Kind == "recovery" && !prior.Terminal && prior.StrandGUID != "" && !waitsOnParent(prior) {
+ 		return prior, false, nil
+ 	}
+ 	// The recovery key can change mid-run, so the spawn re-checks it ahead of anything that archives or stops.
+@@ -491,7 +502,7 @@ func RecoverSpawnOrAttach(deps RecoverDeps, batchNumber int, clk Clock) (bs *Bat
+ 			return nil, false, err
+ 		}
+ 	}
+-	if prior != nil && prior.Recoveries >= maxRecoveries && !rendersNewAmendment(prior) {
++	if prior != nil && prior.Recoveries >= maxRecoveries && !rendersNewAmendment(prior) && !waitsOnParent(prior) {
+ 		return nil, false, fmt.Errorf("%w: batch %02d has had %d recoveries; %s; or %s", ErrRecoveryExhausted, batchNumber, prior.Recoveries,
+ 			wayForwardSteps(resetVerb(ResetToBatchStart, batchNumber), fmt.Sprintf("lyx webster recover-batch %d", batchNumber)), freshRestartSteps(stepRun))
+ 	}
+@@ -600,6 +611,9 @@ func RecoverAwait(deps RecoverDeps, batchNumber int, bs *BatchState, wait time.D
+ // but the tree says the card is not, and webster believes the tree.
+ // The report is archived, the record is terminal failed, and the *BatchFailedError is returned with the pass's warnings,
+ // so the next recover-batch spawns a fresh strand instead of re-attaching to the finished one and failing the same checks forever.
++//
++// A waiting digest, from a strand that reported NEEDS_PARENT, runs neither the suspect check nor the pass:
++// the batch is recorded waiting with its need and its report archived, and stays in flight.
+ func PersistRecoveryTerminal(deps RecoverDeps, st *State, batchNumber int, digest *Digest) (warnings []string, err error) {
+ 	if st == nil {
+ 		return nil, fmt.Errorf("webster: recovery terminal persistence requires a loaded state; State is nil")
+@@ -618,6 +632,11 @@ func PersistRecoveryTerminal(deps RecoverDeps, st *State, batchNumber int, diges
+ 	}
+ 	number, slug := batchIdentity(batch)
+ 
++	// A recovery waiting on its parent has not finished, so the suspect check and the pass wait for the strand that resumes it.
++	if digest.Status == DigestStatusWaiting {
++		return nil, recordWaiting(bs, digest, deps.Geom.ReportsDir, number, slug, time.Now)
++	}
++
+ 	// The recovery strand's own report carries the head it committed at, already parsed into the digest.
+ 	// Both verbs reconcile that head against the worktree's HEAD under the merge-only rule and record the batch at the report's head,
+ 	// so the pass below is fed the same pair of SHAs on either path.
+diff --git a/internal/websterengine/render.go b/internal/websterengine/render.go
+index b70b76905..7f7c19b86 100644
+--- a/internal/websterengine/render.go
++++ b/internal/websterengine/render.go
+@@ -518,7 +518,8 @@ func RenderBatchIndex(batches []batcher.Batch) string {
+ // RenderProgress renders {{.progress}}'s per-batch state summary for resume, walking batches in
+ // the sequenced execution order the caller hands it and looking each one up in st's persisted
+ // BatchState entries by its own identity.
+-// Returns "none" when no batch has reached terminal state.
++// Returns "none" when no batch has reached terminal state or waits on its parent.
++// A waiting batch's line names its need and the verb that resumes it.
+ // st may be nil (as-yet-uninitialized run).
+ // Walking batches rather than cards preserves the property doc.go already relies on: every batch
+ // number is positive, so a legacy -1 record in State.Batches can never surface here.
+@@ -536,6 +537,10 @@ func RenderProgress(batches []batcher.Batch, st *State) string {
+ 		// predecessorDigestLine) already guards it. Without it this line panics INSIDE Run's Master
+ 		// prompt render, taking the run down instead of surfacing a diagnosable error.
+ 		bs, ok := st.Batches[number]
++		if waitsOnParent(bs) {
++			lines = append(lines, waitingProgressLine(bs, number, slug))
++			continue
++		}
+ 		if !ok || bs == nil || !bs.Terminal {
+ 			continue
+ 		}
+diff --git a/internal/websterengine/report.go b/internal/websterengine/report.go
+index 73427e81f..77045debc 100644
+--- a/internal/websterengine/report.go
++++ b/internal/websterengine/report.go
+@@ -3,9 +3,9 @@
+ // and the strict parser that reads it back.
+ // webster's flat card format carries no per-batch Scope, so there is nothing to
+ // justify an out-of-scope entry against;
+-// a fork simply reports whether it succeeded and the head SHA it left.
++// a fork simply reports whether it succeeded, or that it waits on a step only its parent can take, and the head SHA it left.
+ // An older fork's deviations key is still accepted and never read;
+-// ParseReport fails only on Status/HeadSHA shape violations.
++// ParseReport fails only on Status/HeadSHA/Need shape violations.
+ 
+ package websterengine
+ 
+@@ -18,19 +18,23 @@ import (
+ 	"gopkg.in/yaml.v3"
+ )
+ 
+-// The two legal Report.Status values.
++// The three legal Report.Status values.
++// NEEDS_PARENT is a batch stopped on a step only the run's parent can take, which no recovery strand could take either.
+ const (
+-	ReportStatusOK     = "OK"
+-	ReportStatusFailed = "FAILED"
++	ReportStatusOK          = "OK"
++	ReportStatusFailed      = "FAILED"
++	ReportStatusNeedsParent = "NEEDS_PARENT"
+ )
+ 
+ // Report is a fork's return contract: the in-memory form of the per-batch report YAML file a fork
+ // writes as its final action.
+ type Report struct {
+-	// Status is either ReportStatusOK or ReportStatusFailed.
++	// Status is one of ReportStatusOK, ReportStatusFailed or ReportStatusNeedsParent.
+ 	Status string `yaml:"status"`
+ 	// HeadSHA is the commit SHA the fork left the worktree at.
+ 	HeadSHA string `yaml:"head_sha"`
++	// Need is the one-line step only the parent can take, required with ReportStatusNeedsParent and refused with any other status.
++	Need string `yaml:"need,omitempty"`
+ 	// Deviations is accepted and never read: an older fork's report carries the key,
+ 	// and the known-fields decoding must keep accepting it.
+ 	Deviations []string `yaml:"deviations,omitempty"`
+@@ -41,9 +45,8 @@ func ReportFileName(number int, slug string) string {
+ 	return fmt.Sprintf("%02d-%s.yaml", number, slug)
+ }
+ 
+-// ParseReport reads and strictly decodes the fork-return report YAML file at path, then enforces
+-// strict validation: status must be ReportStatusOK or ReportStatusFailed, head_sha must be
+-// non-empty.
++// ParseReport reads and strictly decodes the fork-return report YAML file at path, then enforces strict validation.
++// Status must be one of the three legal values, head_sha must be non-empty, and need must be non-empty exactly when status is ReportStatusNeedsParent.
+ // Each violation is returned as its own distinct wrapped error.
+ func ParseReport(path string) (*Report, error) {
+ 	data, err := os.ReadFile(path)
+@@ -58,29 +61,37 @@ func ParseReport(path string) (*Report, error) {
+ 		return nil, fmt.Errorf("websterengine: report %s: %w", path, err)
+ 	}
+ 
+-	if err := validateReportFields(path, r.Status, r.HeadSHA); err != nil {
++	if err := validateReportFields(path, r); err != nil {
+ 		return nil, err
+ 	}
+ 
+ 	return &r, nil
+ }
+ 
+-// validateReportFields enforces ParseReport's status and head_sha shape.
+-func validateReportFields(path, status, headSHA string) error {
+-	switch status {
+-	case ReportStatusOK, ReportStatusFailed:
++// validateReportFields enforces ParseReport's status, head_sha and need shape.
++func validateReportFields(path string, r Report) error {
++	switch r.Status {
++	case ReportStatusOK, ReportStatusFailed, ReportStatusNeedsParent:
+ 	default:
+-		return fmt.Errorf("websterengine: report %s: unrecognized status %q; want %q or %q", path, status, ReportStatusOK, ReportStatusFailed)
++		return fmt.Errorf("websterengine: report %s: unrecognized status %q; want %q, %q or %q", path, r.Status, ReportStatusOK, ReportStatusFailed, ReportStatusNeedsParent)
+ 	}
+ 
+-	if strings.TrimSpace(headSHA) == "" {
++	if strings.TrimSpace(r.HeadSHA) == "" {
+ 		return fmt.Errorf("websterengine: report %s: missing required field %q", path, "head_sha")
+ 	}
+ 
++	hasNeed := strings.TrimSpace(r.Need) != ""
++	if r.Status == ReportStatusNeedsParent && !hasNeed {
++		return fmt.Errorf("websterengine: report %s: status %q requires a non-empty %q naming the step only the parent can take", path, r.Status, "need")
++	}
++	if r.Status != ReportStatusNeedsParent && hasNeed {
++		return fmt.Errorf("websterengine: report %s: %q is allowed only with status %q, not %q", path, "need", ReportStatusNeedsParent, r.Status)
++	}
++
+ 	return nil
+ }
+ 
+-// WriteReport serializes r's three fields to path, the per-batch report file the fork writes under
++// WriteReport serializes r's fields to path, the per-batch report file the fork writes under
+ // websterengine.ReportsDir(...).
+ // The caller supplies path;
+ // WriteReport never constructs `_lyx` tokens itself, per the Cwd Resolution Invariant.
+diff --git a/internal/websterengine/report_test.go b/internal/websterengine/report_test.go
+index fc7ede7ef..17f822684 100644
+--- a/internal/websterengine/report_test.go
++++ b/internal/websterengine/report_test.go
+@@ -1,9 +1,7 @@
+ //go:build tier0
+ 
+-// report_test.go covers Report's round-trip through WriteReport->ParseReport for both terminal
+-// statuses and both empty and populated deviation lists, plus ParseReport's strict-decode
+-// rejections: an unknown key, a missing head_sha, an unrecognized status, malformed YAML, an
+-// empty file and a missing file.
++// report_test.go covers Report's round-trip through WriteReport->ParseReport for every status and both empty and populated deviation lists.
++// It also covers ParseReport's strict-decode rejections: an unknown key, a missing head_sha, an unrecognized status, a need missing or misplaced, malformed YAML, an empty file and a missing file.
+ // Tier 1: no git, only t.TempDir().
+ 
+ package websterengine
+@@ -42,6 +40,13 @@ func TestReport_RoundTrip(t *testing.T) {
+ 				Deviations: []string{"internal/foo/bar.go", "docs/notes.md"},
+ 			},
+ 		},
++		{
++			name:     "NEEDS_PARENT with its need",
++			number:   4,
++			slug:     "needs",
++			wantFile: "04-needs.yaml",
++			want:     &Report{Status: ReportStatusNeedsParent, HeadSHA: "fed789", Need: "raise the hub's tier 2 timeout in gate.yaml"},
++		},
+ 	}
+ 	for _, tt := range tests {
+ 		t.Run(tt.name, func(t *testing.T) {
+@@ -67,6 +72,9 @@ func TestReport_RoundTrip(t *testing.T) {
+ 			if got.HeadSHA != tt.want.HeadSHA {
+ 				t.Errorf("HeadSHA = %q; want %q", got.HeadSHA, tt.want.HeadSHA)
+ 			}
++			if got.Need != tt.want.Need {
++				t.Errorf("Need = %q; want %q", got.Need, tt.want.Need)
++			}
+ 		})
+ 	}
+ }
+@@ -83,6 +91,8 @@ func TestParseReport_Rejects(t *testing.T) {
+ 		{name: "an unknown key", content: "status: OK\nhead_sha: abc123\ndeviations: []\nextra_field: surprise\n"},
+ 		{name: "a missing head_sha", content: "status: OK\nhead_sha: \"\"\ndeviations: []\n"},
+ 		{name: "an unrecognized status", content: "status: MAYBE\nhead_sha: abc123\ndeviations: []\n"},
++		{name: "NEEDS_PARENT without a need", content: "status: NEEDS_PARENT\nhead_sha: abc123\nneed: \"  \"\n"},
++		{name: "a need on an OK report", content: "status: OK\nhead_sha: abc123\nneed: change gate.yaml\n"},
+ 		{name: "malformed YAML", content: "status: [this is not a mapping\n"},
+ 		{name: "an empty file", content: ""},
+ 		{name: "a missing file", missing: true},
+diff --git a/internal/websterengine/runlevel.go b/internal/websterengine/runlevel.go
+index 5803caac0..91175a455 100644
+--- a/internal/websterengine/runlevel.go
++++ b/internal/websterengine/runlevel.go
+@@ -371,6 +371,7 @@ func countBegunForkBatches(st *State, sessionID string) int {
+ // and an undispositioned correctness finding demotes the outcome to stuck, the same way a done whose verify gate did not pass does.
+ // Run hands Merriam's spawn the plan-level verify as a must-pass gate entry named `verify` (NewVerifyGate), so a red tree re-prompts Merriam's live session and a gate that never passes ends the run stuck.
+ // Every recorded audit warning is appended to summary.md's "Audit warnings" section when that file exists.
++// A recorded batch at a dead end refuses the run with ErrBatchDeadEnd before Master is spawned, since Master would only end the run stuck on it.
+ // With RunOptions.AutoRebaseline, a changed plan is rebaselined and saved before anything else acts on the run, and the warning naming the accepted cards joins RunResult.Warnings, summary.md's "Plan rebaselined" section and a stuck outcome's reason;
+ // every error Run returns after the accepted rebaseline opens with that warning, and each plan refusal that follows it names re-stepping the row and wraps ErrAutoRebaseline.
+ func Run(deps RunDeps, opts RunOptions) (_ RunResult, err error) {
+@@ -613,6 +614,9 @@ func Run(deps RunDeps, opts RunOptions) (_ RunResult, err error) {
+ 	if len(st.PendingAuditFindings) > 0 {
+ 		return RunResult{}, pendingAuditFindingsError(deps.Engines, st, deps.Geom, deps.reentryStep())
+ 	}
++	if err := deadEndBatchError(deps.Geom, st, batches, deps.reentryStep()); err != nil {
++		return RunResult{}, err
++	}
+ 
+ 	// Validation runs HERE — after the state phase settles — rather than at entry, because its
+ 	// resolve-backed half must be scoped to the cards whose work has NOT landed yet: re-validating
+@@ -1013,6 +1017,8 @@ func verifyEveryBatchDone(websterDir, scratchDir string, batches []batcher.Batch
+ 		switch {
+ 		case !ok || bs == nil:
+ 			offenders = append(offenders, fmt.Sprintf("%02d-%s (never recorded)", number, slug))
++		case waitsOnParent(bs):
++			offenders = append(offenders, fmt.Sprintf("%02d-%s (waits on its parent: %s)", number, slug, waitingNeed(bs)))
+ 		case !bs.Terminal:
+ 			offenders = append(offenders, fmt.Sprintf("%02d-%s (begun, not recorded terminal)", number, slug))
+ 		case bs.Status != DigestStatusDone:
+@@ -1162,6 +1168,43 @@ func hasPendingFinding(st *State, id string) bool {
+ 	return false
+ }
+ 
++// ErrBatchDeadEnd is the sentinel Run returns while a recorded batch is at a dead end, one Master's failure ladder would only end the run stuck on.
++var ErrBatchDeadEnd = errors.New("webster: a batch of this run is at a dead end")
++
++// deadEndBatchError returns ErrBatchDeadEnd wrapped with the first batch, in execution order, whose record is a dead end, or nil when none is.
++// A dead end is a terminal batch not done whose recoveries are spent and that holds no amendment a spawn has not rendered,
++// or a dead recovery that earns no retry (RecoveryRetry) and holds no such amendment.
++// The text depends only on the batch's record and the tree, so a re-entry over an unchanged run refuses with the same text.
++// A git read that fails while judging a dead recovery returns a plain error naming a re-run, never a dead end.
++func deadEndBatchError(geom Geometry, st *State, batches []batcher.Batch, reentry string) error {
++	for _, b := range batches {
++		number, slug := batchIdentity(b)
++		bs := st.Batches[number]
++		if bs == nil || !bs.Terminal || bs.Status == DigestStatusDone {
++			continue
++		}
++		var why string
++		switch {
++		case bs.Recoveries >= maxRecoveries && !rendersNewAmendment(bs):
++			why = fmt.Sprintf("is %s and has had its %d recoveries", bs.Status, bs.Recoveries)
++		case bs.Status == DigestStatusDead && !rendersNewAmendment(bs):
++			retry, _, err := recoveryRetryRead(geom, st, number)
++			if err != nil {
++				return fmt.Errorf("%w; way forward: re-run %s, and if the read keeps failing, %s", err, reentry, wayForwardSteps(resetVerb(ResetToBatchStart, number), reentry))
++			}
++			if !retry {
++				why = "is dead and its recovery earns no retry"
++			}
++		}
++		if why == "" {
++			continue
++		}
++		return fmt.Errorf("%w: batch %02d-%s %s, so a Master would only end the run stuck on it; %s; or %s",
++			ErrBatchDeadEnd, number, slug, why, wayForwardSteps(resetVerb(ResetToBatchStart, number), reentry), freshRestartSteps(reentry))
++	}
++	return nil
++}
++
+ // ErrPendingAuditFindings is the sentinel Run returns while run-exit correctness findings are pending.
+ var ErrPendingAuditFindings = errors.New("webster: correctness findings from an earlier run exit are pending")
+ 
+diff --git a/internal/websterengine/runlevel_test.go b/internal/websterengine/runlevel_test.go
+index 557ce7289..49beb0b9f 100644
+--- a/internal/websterengine/runlevel_test.go
++++ b/internal/websterengine/runlevel_test.go
+@@ -214,6 +214,28 @@ type runRefusalCase struct {
+ 	check func(t *testing.T, fx *runFixture, err error)
+ }
+ 
++// deadEndRefusalCase returns a row over a run whose batch 1 is recorded as bs, a dead end, refused with ErrBatchDeadEnd and the text want.
++// Its way forward does what `lyx webster reset --to batch-start` does to the record, clearing the recovery count and start, after which the run reaches Master.
++func deadEndRefusalCase(name string, bs *websterengine.BatchState, want string) runRefusalCase {
++	return runRefusalCase{
++		name:  name,
++		cards: 1,
++		setup: func(t *testing.T, fx *runFixture) func() {
++			seedMatchingState(t, fx, &websterengine.State{Batches: map[int]*websterengine.BatchState{1: bs}})
++			return func() {
++				st := loadRunState(t, fx)
++				st.Batches[1].Recoveries, st.Batches[1].RecoveryStartSHA = 0, ""
++				if err := websterengine.SaveState(fx.Deps.Geom.WebsterDir, fx.Deps.Geom.ScratchDir, st); err != nil {
++					t.Fatalf("save the reset record: %v", err)
++				}
++			}
++		},
++		errIs:       websterengine.ErrBatchDeadEnd,
++		msgContains: []string{want, "so a Master would only end the run stuck on it"},
++		wayForward:  []string{"1) lyx webster reset --to batch-start --batch 01; 2) lyx webster run", "or 1) lyx webster reset --to start; 2) lyx webster run"},
++	}
++}
++
+ // enginesWithHiddenX returns an engine set whose engine "x" hides its fork audit and whose other engine is the fake that audits, with defaultName as the default.
+ func enginesWithHiddenX(defaultName string) shuttleengine.EngineSet {
+ 	fake := &shuttlefake.Engine{}
+@@ -522,6 +544,25 @@ func TestRun_RefusesBeforeSpawn(t *testing.T) {
+ 			errIs:      websterengine.ErrFingerprintMismatch,
+ 			wayForward: []string{"lyx webster rebaseline", "2) lyx webster run"},
+ 		},
++		deadEndRefusalCase("a dead recovery that earns no retry", &websterengine.BatchState{Slug: "batch1", Kind: "recovery", Terminal: true, Status: websterengine.DigestStatusDead, Recoveries: 1},
++			"batch 01-batch1 is dead and its recovery earns no retry"),
++		deadEndRefusalCase("a stuck batch whose recoveries are spent", &websterengine.BatchState{Slug: "batch1", Kind: "recovery", Terminal: true, Status: websterengine.DigestStatusStuck, Recoveries: 2},
++			"batch 01-batch1 is stuck and has had its 2 recoveries"),
++		{
++			name:  "a dead recovery whose start commit cannot be read is no dead end",
++			cards: 1,
++			setup: func(t *testing.T, fx *runFixture) func() {
++				seedMatchingState(t, fx, &websterengine.State{Batches: map[int]*websterengine.BatchState{1: {Slug: "batch1", Kind: "recovery", Terminal: true, Status: websterengine.DigestStatusDead, Recoveries: 1, RecoveryStartSHA: "unknown-sha"}}})
++				return nil
++			},
++			msgContains: []string{"unknown commit"},
++			wayForward:  []string{"re-run", "lyx webster reset --to batch-start --batch 01"},
++			check: func(t *testing.T, fx *runFixture, err error) {
++				if errors.Is(err, websterengine.ErrBatchDeadEnd) {
++					t.Errorf("Run() error = %v; want no ErrBatchDeadEnd for a failed git read", err)
++				}
++			},
++		},
+ 		{
+ 			name:  "an edited card names the card to rebaseline",
+ 			cards: 2,
+@@ -650,6 +691,36 @@ func TestRun_RefusesBeforeSpawn(t *testing.T) {
+ 	}
+ }
+ 
++// TestRun_DeadEndRefusalSparesRecoverableBatches asserts Run reaches Master, with no ErrBatchDeadEnd, over each recorded batch a Master or a recovery can still take.
++func TestRun_DeadEndRefusalSparesRecoverableBatches(t *testing.T) {
++	t.Parallel()
++
++	unrendered := []websterengine.AmendedCard{{Card: "01-batch1", Rendered: false}}
++	tests := []struct {
++		name string
++		bs   *websterengine.BatchState
++	}{
++		{"a dead recovery with no counted recovery", &websterengine.BatchState{Slug: "batch1", Kind: "recovery", Terminal: true, Status: websterengine.DigestStatusDead}},
++		{"a stuck batch at the cap holding an unrendered amendment", &websterengine.BatchState{Slug: "batch1", Kind: "recovery", Terminal: true, Status: websterengine.DigestStatusStuck, Recoveries: 2, AmendedCards: unrendered}},
++		{"a dead recovery at the cap holding an unrendered amendment", &websterengine.BatchState{Slug: "batch1", Kind: "recovery", Terminal: true, Status: websterengine.DigestStatusDead, Recoveries: 2, AmendedCards: unrendered}},
++		{"a done batch", doneBatch("batch1", "master-session-old")},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			fx := newRunFixture(t, 1)
++			seedMatchingState(t, fx, &websterengine.State{Batches: map[int]*websterengine.BatchState{1: tt.bs}})
++			diedMaster(t, fx, "spared")
++
++			_, err := websterengine.Run(fx.Deps, websterengine.RunOptions{})
++			if errors.Is(err, websterengine.ErrBatchDeadEnd) {
++				t.Fatalf("Run() error = %v; want no ErrBatchDeadEnd", err)
++			}
++			requireReachedMaster(t, fx, err)
++		})
++	}
++}
++
+ // TestRun_AutoRebaseline drives RunOptions.AutoRebaseline over a plan edited after batch 1 began.
+ // An accepted rebaseline is saved before Master starts, its warning rides the result, the summary and the log once, and it opens a stuck reason and every error that follows;
+ // each refusal, transient and plan refusal after it wraps ErrAutoRebaseline, names re-stepping the row and neither manual verb, and starts nothing;
+diff --git a/internal/websterengine/state.go b/internal/websterengine/state.go
+index 48d563bb7..86d80926c 100644
+--- a/internal/websterengine/state.go
++++ b/internal/websterengine/state.go
+@@ -268,8 +268,8 @@ type BatchState struct {
+ 	// Terminal reports whether this batch has reached a terminal
+ 	// classification (done, stuck, dead, or failed).
+ 	Terminal bool `json:"terminal"`
+-	// Status is the batch's terminal status once Terminal is true (done,
+-	// stuck, dead, or failed); empty while still in flight.
++	// Status is the batch's terminal status once Terminal is true (done, stuck, dead, or failed).
++	// It is empty while the batch is in flight, or waiting while the in-flight batch waits on a step only the run's parent can take.
+ 	Status string `json:"status"`
+ 	// Digest is the distilled digest record-batch persisted at terminal
+ 	// classification — the carry-forward home that lets begin-batch(N+1)
+diff --git a/internal/websterengine/template_test.go b/internal/websterengine/template_test.go
+index 0b219983c..715e931f8 100644
+--- a/internal/websterengine/template_test.go
++++ b/internal/websterengine/template_test.go
+@@ -430,7 +430,7 @@ func TestMasterTemplate_QuotesBulletLists(t *testing.T) {
+ 		heading string
+ 		want    []string
+ 	}{
+-		{"digest fields", digestSectionHeading, []string{"batch", "status", "head_sha", "deviations", "departures", "dead_reason", "elapsed_s"}},
++		{"digest fields", digestSectionHeading, []string{"batch", "status", "head_sha", "deviations", "departures", "dead_reason", "need", "elapsed_s"}},
+ 		{"outcome schema keys", outcomeKeysHeadingSub, []string{"outcome", "stuck_reason", "batches_done"}},
+ 	}
+ 	for _, tc := range cases {
+@@ -1071,6 +1071,11 @@ func TestRenderBatchLists(t *testing.T) {
+ 			3: {Slug: "webster-audit-policy", Terminal: false},
+ 		}}), "01-seam-extensions: done\n02-webster-foundation: stuck"},
+ 		{"progress follows slice order", websterengine.RenderProgress(reordered, allDone), "03-third: done\n01-first: done\n02-second: done"},
++		{"progress lists a waiting batch with its need and the verb that resumes it", websterengine.RenderProgress(inOrder, &websterengine.State{Batches: map[int]*websterengine.BatchState{
++			1: {Slug: "seam-extensions", Terminal: true, Status: "done"},
++			2: {Slug: "webster-foundation", Kind: "fork", Status: websterengine.DigestStatusWaiting, Digest: &websterengine.Digest{Status: websterengine.DigestStatusWaiting, Need: "set the tier commands"}},
++			3: {Slug: "webster-audit-policy", Kind: "recovery", Status: websterengine.DigestStatusWaiting, Digest: &websterengine.Digest{Status: websterengine.DigestStatusWaiting, Need: "run lyx fabric reconcile"}},
++		}}), "01-seam-extensions: done\n02-webster-foundation: waiting (need: set the tier commands; resume: lyx webster begin-batch 2)\n03-webster-audit-policy: waiting (need: run lyx fabric reconcile; resume: lyx webster recover-batch 3)"},
+ 		// A state.json carrying an explicit null for a batch key parses to a present-but-nil entry.
+ 		{"progress skips a nil batch record", websterengine.RenderProgress(inOrder, &websterengine.State{Batches: map[int]*websterengine.BatchState{
+ 			1: nil,
+diff --git a/internal/websterengine/waiting.go b/internal/websterengine/waiting.go
+new file mode 100644
+index 000000000..7c6ca922c
+--- /dev/null
++++ b/internal/websterengine/waiting.go
+@@ -0,0 +1,53 @@
++// waiting.go implements the batch that waits on its parent: a fork or recovery strand that stopped on a step only the run's parent can take reports NEEDS_PARENT.
++// record-batch or recover-batch then records the batch in flight with status waiting, spending no recovery.
++
++package websterengine
++
++import (
++	"fmt"
++	"time"
++)
++
++// waitsOnParent reports whether bs is an in-flight batch waiting on a step only the run's parent can take.
++func waitsOnParent(bs *BatchState) bool {
++	return bs != nil && !bs.Terminal && bs.Status == DigestStatusWaiting
++}
++
++// recordWaiting records bs as waiting on the parent with digest, archiving the report the strand wrote so a re-begin or a fresh recovery finds none.
++// The batch stays in flight with its recovery count and start commit unchanged, and the in-flight cursor stays on it.
++func recordWaiting(bs *BatchState, digest *Digest, reportsDir string, number int, slug string, now func() time.Time) error {
++	if _, err := archiveStaleReport(reportsDir, number, slug, now); err != nil {
++		return err
++	}
++	bs.Digest = digest
++	bs.Terminal = false
++	bs.Status = DigestStatusWaiting
++	return nil
++}
++
++// resumeStep is the verb that resumes waiting batch number once the parent has acted:
++// begin-batch for a fork batch, recover-batch for a recovery batch.
++func resumeStep(bs *BatchState, number int) string {
++	if bs.Kind == "recovery" {
++		return fmt.Sprintf("lyx webster recover-batch %d", number)
++	}
++	return fmt.Sprintf("lyx webster begin-batch %d", number)
++}
++
++// waitingProgressLine renders waiting batch number's progress line: its need and the verb that resumes it.
++func waitingProgressLine(bs *BatchState, number int, slug string) string {
++	return fmt.Sprintf("%02d-%s: %s (need: %s; resume: %s)", number, slug, DigestStatusWaiting, waitingNeed(bs), resumeStep(bs, number))
++}
++
++// waitingNeed returns the need waiting batch bs records, empty when its digest is absent.
++func waitingNeed(bs *BatchState) string {
++	if bs.Digest == nil {
++		return ""
++	}
++	return bs.Digest.Need
++}
++
++// waitingRefusal is the refusal of a verb that has nothing to record for waiting batch number.
++func waitingRefusal(verb string, bs *BatchState, number int) error {
++	return fmt.Errorf("webster: batch %02d waits on its parent (%s), so %s has nothing to record; way forward: once the parent has taken the step, `%s`", number, waitingNeed(bs), verb, resumeStep(bs, number))
++}
