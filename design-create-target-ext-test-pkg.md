@@ -2,6 +2,8 @@
 
 `create-target-ext-test-pkg` · Task · bug, webster, quarry
 
+Depends on: [`webstercli-tests-ignore-tmp-git`](design-webstercli-tests-ignore-tmp-git.md)
+
 Imported from [issue #861](https://github.com/Knatte18/loomyard/issues/861).
 
 **What happened**
