@@ -1,6 +1,6 @@
 # Configurable action buttons on the reed status bar
 
-`reed-status-buttons` · Note · feature, reed, config
+`reed-status-buttons` · Note · feature, reed, config, batten
 
 ## Idea
 
@@ -41,3 +41,20 @@ The operator worries that a separate line next to the others invites misclicks, 
 ## Operator view, not a decision (2026-10-15)
 
 Prototype the placement and the menu by hand in a separate throwaway tmux server, never in a live reed session, before this becomes a task.
+
+## Prototype (folded in from note `reed-status-buttons-prototype`, 2026-10-24)
+
+Operator decision (2026-10-15): a fresh agent builds the prototype when the operator says so, not before.
+- A separate throwaway tmux server (its own `-L` socket), never reed's server and never the prime's session `loomyard`.
+- A status bar shaped like reed's two lines, with one menu button opening a `display-menu` of sample actions (option 1), a follow toggle button (note `viewer-off-shell`), and a third line of action buttons, the destructive ones behind `confirm-before` (option 2).
+- The sample actions only echo or display a message; none runs a real `lyx` verb.
+- The agent opens the server in a Konsole window for the operator to click through, and tears it down when the operator is done.
+- The tmux config used goes into git under `docs/research/` through a docs-only commit, so the chosen layout can seed the task.
+
+## A terminal-window toggle (folded in from note `open-window-toggle`, 2026-10-24)
+
+Whether batten opens a desktop terminal window on a task worktree is decided by `batten.yaml`'s `open_window`, read from the template and the board default layer only, and `lyx batten run --window` forces it on whatever that says.
+The operator has no quick way to turn the windows off, although each run is a window of the prime's reed session.
+Idea: a button in the orch tab's status bar beside `follow` that says whether runs open their terminal window automatically; when it is off, `Open-Window` opens nothing, `--window` included, and the reopen of a resumed run's window too.
+The `follow` button keeps its state in the tmux user option `@lyx_follow` (`internal/reedengine/bindings.go`), which dies with the tmux server; this switch must survive a restart, so it needs a machine-local home batten can read.
+Operator wish, 2026-10-22; the design is open.

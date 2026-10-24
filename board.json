@@ -263,33 +263,16 @@
       "labels": [
         "feature",
         "reed",
-        "config"
+        "config",
+        "batten"
       ],
       "issues": [],
       "depends_on": [],
       "isolated": false,
       "brief": "Clickable status-bar buttons that run configured commands: VS Code, orch distill/refresh, the follow toggle and more",
-      "body": "## Idea\n\ntmux status lines support clickable ranges (`#[range=user|\u003cname\u003e]` with a `MouseDown1Status` binding), and reed already uses them for its window buttons.\nThe same mechanism can carry action buttons that run a command when clicked.\n\nExamples the operator named on 2026-10-15:\n\n- open the pair in VS Code (`lyx ide spawn \u003cslug\u003e`),\n- `lyx orch distill` and `lyx orch refresh` for the orch session,\n- the follow toggle of note `viewer-off-shell`,\n- \"and much else\".\n\n## Operator view, not a decision (2026-10-15)\n\nThe button set must be highly and easily configurable, not a fixed list in code.\n\n## Open design points\n\n- Where the set lives: presumably reed's module config, with a hub default and per-session overrides (the orch session needs other buttons than a task pair).\n- What a button entry holds: a label, the command, and which sessions show it.\n- How a command runs: `run-shell` in the pair's worktree, with its output and failure visible somewhere.\n- Whether the follow toggle is a built-in entry in the same set.\n\n## Placement: options discussed on 2026-10-15, none chosen\n\nReed's status bar today has two lines: line 0 holds the window buttons (overview, agents, shell), line 1 the session buttons and the time.\nThe action buttons must not mix with the window buttons.\nThe operator worries that a separate line next to the others invites misclicks, above all on actions that cannot be undone, such as `lyx orch distill` and `lyx orch refresh`.\n\n1. One menu button (my recommendation, the orch's call, not the operator's): a single button with a distinct look opens a tmux `display-menu` holding the configured actions.\n   A misclick only opens the menu.\n   The follow toggle, which is harmless to click, can sit beside it as a button of its own.\n2. A third status line of action buttons, with `confirm-before` on the destructive ones.\n   It is quicker to use, but each misclick costs a dismissal.\n3. The right side of line 1, before the time: no extra row, but cramped with many sessions and buttons.\n\n## Operator view, not a decision (2026-10-15)\n\nPrototype the placement and the menu by hand in a separate throwaway tmux server, never in a live reed session, before this becomes a task.\n",
+      "body": "## Idea\n\ntmux status lines support clickable ranges (`#[range=user|\u003cname\u003e]` with a `MouseDown1Status` binding), and reed already uses them for its window buttons.\nThe same mechanism can carry action buttons that run a command when clicked.\n\nExamples the operator named on 2026-10-15:\n\n- open the pair in VS Code (`lyx ide spawn \u003cslug\u003e`),\n- `lyx orch distill` and `lyx orch refresh` for the orch session,\n- the follow toggle of note `viewer-off-shell`,\n- \"and much else\".\n\n## Operator view, not a decision (2026-10-15)\n\nThe button set must be highly and easily configurable, not a fixed list in code.\n\n## Open design points\n\n- Where the set lives: presumably reed's module config, with a hub default and per-session overrides (the orch session needs other buttons than a task pair).\n- What a button entry holds: a label, the command, and which sessions show it.\n- How a command runs: `run-shell` in the pair's worktree, with its output and failure visible somewhere.\n- Whether the follow toggle is a built-in entry in the same set.\n\n## Placement: options discussed on 2026-10-15, none chosen\n\nReed's status bar today has two lines: line 0 holds the window buttons (overview, agents, shell), line 1 the session buttons and the time.\nThe action buttons must not mix with the window buttons.\nThe operator worries that a separate line next to the others invites misclicks, above all on actions that cannot be undone, such as `lyx orch distill` and `lyx orch refresh`.\n\n1. One menu button (my recommendation, the orch's call, not the operator's): a single button with a distinct look opens a tmux `display-menu` holding the configured actions.\n   A misclick only opens the menu.\n   The follow toggle, which is harmless to click, can sit beside it as a button of its own.\n2. A third status line of action buttons, with `confirm-before` on the destructive ones.\n   It is quicker to use, but each misclick costs a dismissal.\n3. The right side of line 1, before the time: no extra row, but cramped with many sessions and buttons.\n\n## Operator view, not a decision (2026-10-15)\n\nPrototype the placement and the menu by hand in a separate throwaway tmux server, never in a live reed session, before this becomes a task.\n\n## Prototype (folded in from note `reed-status-buttons-prototype`, 2026-10-24)\n\nOperator decision (2026-10-15): a fresh agent builds the prototype when the operator says so, not before.\n- A separate throwaway tmux server (its own `-L` socket), never reed's server and never the prime's session `loomyard`.\n- A status bar shaped like reed's two lines, with one menu button opening a `display-menu` of sample actions (option 1), a follow toggle button (note `viewer-off-shell`), and a third line of action buttons, the destructive ones behind `confirm-before` (option 2).\n- The sample actions only echo or display a message; none runs a real `lyx` verb.\n- The agent opens the server in a Konsole window for the operator to click through, and tears it down when the operator is done.\n- The tmux config used goes into git under `docs/research/` through a docs-only commit, so the chosen layout can seed the task.\n\n## A terminal-window toggle (folded in from note `open-window-toggle`, 2026-10-24)\n\nWhether batten opens a desktop terminal window on a task worktree is decided by `batten.yaml`'s `open_window`, read from the template and the board default layer only, and `lyx batten run --window` forces it on whatever that says.\nThe operator has no quick way to turn the windows off, although each run is a window of the prime's reed session.\nIdea: a button in the orch tab's status bar beside `follow` that says whether runs open their terminal window automatically; when it is off, `Open-Window` opens nothing, `--window` included, and the reopen of a resumed run's window too.\nThe `follow` button keeps its state in the tmux user option `@lyx_follow` (`internal/reedengine/bindings.go`), which dies with the tmux server; this switch must survive a restart, so it needs a machine-local home batten can read.\nOperator wish, 2026-10-22; the design is open.\n",
       "created": "2026-10-15T08:03:46Z",
-      "revised": "2026-10-15T08:08:23Z"
-    },
-    {
-      "id": 545,
-      "handle": "A1",
-      "slug": "reed-status-buttons-prototype",
-      "title": "Prototype reed status buttons in a throwaway tmux server",
-      "kind": "note",
-      "labels": [
-        "audit",
-        "reed"
-      ],
-      "issues": [],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "A fresh agent tries the menu button, follow toggle and extra button line by hand before reed-status-buttons becomes a task",
-      "body": "## Goal\n\nTry the placement options of note `reed-status-buttons` by hand before that note becomes a task.\n\n## Operator decision (2026-10-15)\n\nA fresh agent builds the prototype, but not now: it starts when the operator says so.\n\n## Scope\n\n- A separate throwaway tmux server (its own `-L` socket), never reed's server and never the prime's session `loomyard`.\n- A status bar shaped like reed's two lines, with:\n  - one menu button that opens a `display-menu` of sample actions (option 1 in `reed-status-buttons`),\n  - a follow toggle button (note `viewer-off-shell`),\n  - a third line of action buttons, the destructive ones behind `confirm-before` (option 2).\n- The sample actions only echo or display a message; none runs a real `lyx` verb.\n- The agent opens the server in a Konsole window for the operator to click through, and tears the server down when the operator is done.\n- The tmux config used goes into git under `docs/research/` through a docs-only commit, so the chosen layout can seed the task.\n",
-      "created": "2026-10-15T09:21:25Z",
-      "revised": "2026-10-15T09:21:25Z"
+      "revised": "2026-10-24T08:46:00Z"
     },
     {
       "id": 546,
@@ -601,25 +584,6 @@
       "body": "## Done (2026-10-20)\n\nThe before and after measurement of `-trimpath` is in `docs/benchmarks/gate-test-xdr.md`.\nThe `go_parallel` sweep at 4, 8 and 12 is in the same file (`03af4c75`): no value gave a real gain, 8 was 6 % under 4 while two runs at 4 differed by 36 s, and no run failed, so `go_parallel` stays 4.\n\n## Seen in the sweep\n\nWith `-trimpath` the build is reproducible: a fresh `GOCACHE` links byte-identical test binaries whose hashes XDR already knows, so it holds none of them.\nThe sweep forced new hashes with a random `-ldflags=-B` build ID, and even then few packages were held; `internal/fabricengine` (117-175 s) bounds the tier's wall time, and the rise at 8 and 12 is contention.\n\n## Still open\n\nThe case the sweep set out to cover is unmeasured: a refill after a real change to a widely imported package, such as `internal/logger`, which showed about 50 held packages and a verify of about 6 min.\nWhether a higher `-p` overlaps those holds needs one such run at 4 and one at 8.\n",
       "created": "2026-10-20T06:16:10Z",
       "revised": "2026-10-20T11:05:57Z"
-    },
-    {
-      "id": 742,
-      "handle": "E26",
-      "slug": "open-window-toggle",
-      "title": "A status-bar button turns automatic terminal windows for runs on or off",
-      "kind": "note",
-      "labels": [
-        "enhancement",
-        "batten",
-        "reed"
-      ],
-      "issues": [],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "## Seen\n\nWhether batten opens a desktop terminal window on a task worktree is decided by `batten.yaml`'s `open_window`, read from the template and the board default layer only, and `lyx batten run --window` forces it on whatever that says.\nThe operator has no quick way to turn the windows off, although reed already holds every run in one instance: each run is a window of the prime's reed session.\n\n## Idea\n\nA toggle the operator flips with one click, a button in the orch tab's status bar beside `follow`, that says whether runs open their terminal window automatically.\nWhen it is off, `Open-Window` opens nothing, `--window` included, and the operator follows runs inside reed.\nThe `follow` button keeps its state in the tmux user option `@lyx_follow` (`internal/reedengine/bindings.go`), which dies with the tmux server; this switch must survive a restart, so it needs a machine-local home batten can read.\n\nOperator wish, 2026-10-22; the design is open.\nSince `machine-handover` landed, a resumed run reopens its window when no client is attached to the pair's reed session; this switch would govern that reopen too.\n",
-      "created": "2026-10-22T08:56:02Z",
-      "revised": "2026-10-22T10:33:38Z"
     },
     {
       "id": 744,
