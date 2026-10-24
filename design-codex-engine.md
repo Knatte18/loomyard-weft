@@ -36,6 +36,10 @@ From `docs/research/codex-feasibility.md`, section 3, after the spike:
 
 ## First candidate roles
 
+Decision (operator, 2026-10-24): Codex's first role is Burler review only, so Claude plans and writes code while another model family reviews it.
+The sole aim is to offload Claude.
+If a twill fan on Codex works poorly, the review runs as strong single Codex agents instead.
+
 Single-session roles that spawn no forks and only write output files: Burler review chair without a cluster fan, Burler fixer, Describe, Bouncer judge and seed, treadle, friction, merge-conflict resolver, darn writer, the alignment agent.
 Webster, twill, the orch and the Burler cluster fan depend on cross-session messaging and background-task wake-ups, and wait.
 Forks are no longer a blocker for a fan: `docs/research/codex-twill-spike-2026-10-24/report.md` found that Codex forks (`fork_turns: "all"`) run in parallel, three at once by default, and report back to the parent, with caveats (no per-fork model, no isolation, a fan is a request not a guarantee).
