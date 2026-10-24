@@ -153,6 +153,12 @@ Merge-In is then the one whole-solution run per task; Finalize carries it from t
 The template's gate keys and loomyard's own keep their scopes.
 Rationale: the board wants the whole solution once, at the final gate; Merge-In is the first gate over the merged parent, so a run there cannot be saved, and a whole Webster end gate before it would be the second.
 
+### Added after Discussion (parent, 2026-10-24): The over-long filter bound reuses greenCommandBudget
+
+Decision: The gate's bound on a rendered filter is `greenCommandBudget` in `internal/gatecli/green.go` (6000 bytes of rendered targets), reused, not a new constant: a filter that renders past it falls back to the whole invocation, as a carried-over remainder already does. If the bound must be read outside `gatecli`, move the constant to where both readers see it rather than copying the number.
+
+Rationale: F12: one bound for one hazard, the shell refusing an overlong command line; 6000 bytes stays under cmd's 8191-character limit with room for the command around the targets.
+
 ## Constraints
 
 - `PATTERN-gate-slot`: the build step runs inside held slots of a tier run; a tier is still skipped only on `lyx gate test`'s green record and only over a clean tree, the inert carry included.
