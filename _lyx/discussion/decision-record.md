@@ -47,6 +47,12 @@ Rationale: the writer learns the rule before designing a step the board would re
 The orch role stencil's landed-notice rule starts each task named after `newly ready:` only when the operator approved its start, and otherwise proposes it to the operator.
 Rationale: a task an operator approved together with its start still starts at once, while a task nobody released waits.
 
+### Added after Discussion (parent, 2026-10-24): Drop D5: the orch keeps starting newly ready tasks at once
+
+Decision: D5 is withdrawn: the orch role stencil's landed-notice rule stays as it is, starting each task named after `newly ready:` at once. Only the operator creates tasks once this run's board guard lands, so every task on the board is operator-approved and needs no second approval to start.
+
+Rationale: Operator, 2026-10-24: tasks the operator approved start automatically; the fault was a run filing a task, which D1-D4 close.
+
 ## Constraints
 
 - PATTERN-cliwire-sole-wiring and the existing boardcli wiring: the strand name is read in boardcli, never in boardengine.
