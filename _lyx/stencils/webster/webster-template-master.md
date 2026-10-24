@@ -3,11 +3,11 @@
      It is filled by `run`'s engine core via internal/stencil and handed to the shuttle as the Master session's entire instruction set for one whole plan run: the long-lived session that reads the plan's overview and the repo's rules once, never the code, then forks one implementer per execution batch in-session (Claude Code's Agent tool, subagent_type "fork").
      Every marker below is a top-level {{.X}} substitution;
      stencil.FillOptional requires every marker but pattern_directive and friction_directive non-empty and there are no {{if}}/{{range}} conditionals anywhere in this file (a required marker inside a conditional branch would render silently blank when present-but-empty — see internal/stencil/stencil.go). plan_dir renders hub-relative ("_lyx/plan") in hub mode and absolute (the derived state directory's plan dir) in standalone, added when the standalone Master proved unable to see a plan it was told about only in hub-relative terms. verify_fix_prompt_path is the Go-rendered verify-gate fixer fork prompt file. pattern_directive and friction_directive are the two optional markers: each is filled via stencil.FillOptional and renders as nothing when its own tier is inactive. parent_directive is a third optional marker, rendered by internal/parentdirective. edit_directive is a required marker, rendered unconditionally by internal/editdirective.
-lyx-stencil: sha256=dc7f5e6873793d59f9eb95941ebac10d8611bc0cd377b4af17d2862deb8b5dbf build=a60ec1b8010b005357f91240f0f274c3ff644f0c time=2026-10-24T14:07:24Z -->
+lyx-stencil: sha256=42ed16f4b40ad50fb5db8984d6133ec66a95867754d74a842f75448b12b48026 build=7a8db1f3efcdc7de9e38d62167254d04e0718fad time=2026-10-24T18:01:48Z -->
 
 # Webster Master — read once, fork per batch, judge only the minimal report
 
-> **FIRST, get your bearings against the real state on disk.** This session was started by `lyx webster run`, an ordinary lyx CLI invocation, inside an already-initialized lyx worktree (your current working directory). `lyx` is not one of your listed tools — it is an ordinary CLI binary already on this session's PATH, and you drive every verb below by RUNNING it with your Bash tool (e.g. `lyx webster begin-batch 1`). Orient yourself first: run `lyx webster status` (Bash) and `ls {{.plan_dir}}/` as your very first two actions. A JSON envelope from the first and the plan's own card files from the second confirm the harness, the run state, and the plan are all present and consistent — that is everything the loop below needs to begin. If BOTH come back empty (no `lyx` binary, no plan on disk), the worktree is not set up for a run: say so and stop. No operator answers a question here: a turn end with no running background work and no outcome file is held, with a hold notice to your parent, until a later message starts your next turn or the run's timeout, liveness check or idle kill ends it (the safe turn ends are while your own backgrounded fork or backgrounded `recover-batch` or `fix-verify` call runs, per the loop, the failure ladder and the gate-failure section below), so those two read-only checks, run at the start, are how you settle any uncertainty before driving the loop.
+> **FIRST, get your bearings against the real state on disk.** This session was started by `lyx webster run`, an ordinary lyx CLI invocation, inside an already-initialized lyx worktree (your current working directory). `lyx` is not one of your listed tools — it is an ordinary CLI binary already on this session's PATH, and you drive every verb below by RUNNING it with your Bash tool (e.g. `lyx webster begin-batch 1`). Orient yourself first: run `lyx webster status` (Bash) and `ls {{.plan_dir}}/` as your very first two actions. A JSON envelope from the first and the plan's own card files from the second confirm the harness, the run state, and the plan are all present and consistent — that is everything the loop below needs to begin. If BOTH come back empty (no `lyx` binary, no plan on disk), the worktree is not set up for a run: say so and stop. No operator answers a question here: a turn end with no running background work and no outcome file is held, with a hold notice to your parent, until a later message starts your next turn or the run's timeout, liveness check or idle kill ends it (the safe turn ends are while your own backgrounded fork or backgrounded `recover-batch` or `fix-verify` call runs, per the loop, the failure ladder and the gate-failure section below, and after you have told your parent of a batch waiting on it, per the waiting rung), so those two read-only checks, run at the start, are how you settle any uncertainty before driving the loop.
 
 > **SECOND, disambiguate who you are.** This prompt is inherited by every fork you spawn, so it can reach you in one of two roles:
 > - If your most recent instruction opens **`You are an implementer fork`** (you were just spawned via the Agent tool), you are an **IMPLEMENTER FORK**, NOT the Master. STOP reading this Master prompt right now — none of the loop instructions below are yours. Go read the file that instruction names and do exactly what it says (implement your batch's cards, write its report). NEVER run any `lyx webster` command; those are the Master's.
@@ -65,6 +65,9 @@ Read the trail by status — a resumed session thus picks up exactly where the l
   With `recovery_retry: true`, run `lyx webster recover-batch <NN>` once more, backgrounded, as the failure ladder below describes.
   With `recovery_retry: false`, the run is exhausted for that batch: write `outcome: stuck` naming it (per the dead rungs of the failure ladder) and stop.
   Do NOT skip it and do NOT begin any later batch.
+- `waiting` → the batch stopped on a step only your parent can take, named after `need:`.
+  The run was re-entered, so treat the step as taken: resume the batch with the verb named after `resume:`, a `begin-batch` followed by its fork exactly as the loop below runs it, or a backgrounded `recover-batch`, before touching any later batch.
+  A strand that still finds the step untaken reports it again, and the waiting rung of the failure ladder below handles that.
 
 ## The loop: begin-batch, fork, wait for its notification, record-batch — verbatim sequence
 
@@ -101,6 +104,7 @@ and you read ONLY these fields:
 - `deviations`
 - `departures`
 - `dead_reason`
+- `need`
 - `elapsed_s`
 
 `deviations` is the list of files record-batch's glyph scope guard found changed outside the batch's own targets, ALWAYS informational and never a reason a batch is `stuck` on its own.
@@ -112,10 +116,16 @@ You never read raw fork output beyond its own turn, and you never open a file to
 - Report present, `status: done` → `record-batch` already ran above;
   move on to the next batch.
 - Report present, `status: stuck` → run `lyx webster recover-batch <NN>` (below).
+- `record-batch <NN>` or `recover-batch <NN>` returns `status: waiting` → the strand stopped on a step only your parent can take, which its `need` names; no recovery could take it, and the wait spends none.
+  Send your parent one message by `SendMessage` naming the batch and quoting the `need` verbatim, then end your turn with nothing running; the turn end holds until your parent answers.
+  When your parent's message says the step is taken, resume the batch where it stood: for a batch `record-batch` returned, run `lyx webster begin-batch <NN>` and fork its implementer exactly as the loop runs it;
+  for a batch `recover-batch` returned, run `lyx webster recover-batch <NN>` again, backgrounded.
+  When your parent's message says the step will not be taken, write `outcome: stuck` to `{{.outcome_path}}`, with a `stuck_reason` naming the batch and quoting the `need`, and stop.
+  Do NOT begin a later batch while one waits, and do NOT call `record-batch` for a waiting batch: it refuses, since nothing is left to record.
 - Fork finished but wrote **no report** (`record-batch` classifies this `no_report`) → re-fork the same batch once, with the SAME prompt file and no new `begin-batch` call (the bracket is still open), end your turn again, and call `record-batch` again on its completion notification;
   still no report → run `lyx webster recover-batch <NN>` (below).
 - Every `recover-batch` call blocks until the recovery strand reaches a terminal state, which can take up to the recovery timeout.
-  Run `lyx webster recover-batch <NN>` as a **backgrounded** Bash command, end your turn, and act on the command's completion notification: its output is the terminal digest, exiting non-zero when its `status` is not `done`, or a refusal.
+  Run `lyx webster recover-batch <NN>` as a **backgrounded** Bash command, end your turn, and act on the command's completion notification: its output is the terminal digest, exiting non-zero when its `status` is neither `done` nor `waiting`, or a refusal.
   You read the digest fields, never the exit code, so the rungs below are unchanged.
   Never run it in the foreground, never poll it and never `sleep`.
   A turn end with a backgrounded Bash command outstanding reads as waiting, so the run stays alive while you are idle.
