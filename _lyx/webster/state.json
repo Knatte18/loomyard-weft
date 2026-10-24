@@ -1,6 +1,6 @@
 {
   "runGuid": "0c92b76ecbae330c53aca040bff54a50",
-  "planFingerprint": "4f677f601373f04fbaaeb2afe9b189ab62949ab1cf9e8449720eb6a22d25553e",
+  "planFingerprint": "3de2f44064214f1124ddb404497931422660b5e2b75dac42251af40e2cd80108",
   "planFileHashes": {
     "00-overview.md": "3d9b9d836b384b6275a3d06d7a0b4d9fc34547800ed42f5cb42ff03f22cfd5e6",
     "01-fabric-slug-rule.md": "24afd634ad6b5f856aae6b02a3b00141d047fae902d8f00106e935ed4abec609",
@@ -28,12 +28,12 @@
     "23-batten-guard.md": "056445b6f414bf213164caeb6d534e2400e8f28e304ee377b54e771c5646f4e2",
     "24-batten-window-site.md": "f9961c6caefeb8d490dd36789720a4aaa765df1e6558fb7b6e782ab8622b7e3e",
     "25-batten-notices-walk.md": "57781f93672c8c237bc4162155924f708838e193f0a27b428a9589b5d0ab1246",
-    "26-land-ready-routing.md": "38e5d575e58a63b34c729bf6e9d82316d6402609bf472a383f34ebc83f9b968d",
+    "26-land-ready-routing.md": "0806b50efbe6a91d70367f9234c7d29c0eda699beeb214be98b18b1ba17c8441",
     "27-batten-cleanup-skip.md": "3c4ee9b5a5269cfe42e88666faae274dd88c9f792cd5ffab0fa4ba76ec9481a8",
-    "28-worktree-create-from-beam.md": "5d9404a47006ccaf008ea33fe2a09cb09497995347506c8c7cdc190aae0ddcb5",
+    "28-worktree-create-from-beam.md": "dfcced2aa33f4cb0b44e712fb3701bd2f2204ca4be25f6dfdaa746a4f346c4d8",
     "29-finalize-large-merge-lands.md": "b0f516140a8ac76ccd82758216ae7e2a080e72b494f9f976a4f587a632680fce",
-    "30-beam-describe-producer.md": "65dbcf3d5d372c36ba6bb1431a493f411b667bf967ad0ab3ad179c1cb7b9a027",
-    "31-beam-recipe.md": "a166949e11435774bc7ad5df86db398358cc2f00adcc504dcdd11869671f510f",
+    "30-beam-describe-producer.md": "0fb1824518762c59b370c96eed8afc70ec68dc6bb4ec076a75844d09ccc492e0",
+    "31-beam-recipe.md": "04dcf551be967b3a70676f3e8d0b159caab319faa81d564eeb909c7d170a4390",
     "32-loomcli-beam-recipe.md": "64b063ff1934a5437f4be6912d66293c76ca4723e541dd2343a418462d9f8d37",
     "33-batten-seed-beam.md": "b16230c8b6df486133c1abbe45448eb6820f85aa940f6d83c8725d5313faefd4",
     "34-beam-create.md": "06bc4fc6632efda95046a4515e7ed612f168b04cccf972dd410266e51897fa28",
@@ -801,7 +801,7 @@
       }
     }
   ],
-  "currentBatch": 26,
+  "currentBatch": 0,
   "masterStrand": "b26fdaa60c57e20a41bb8040667d0203",
   "masterSessionId": "5c0f8a9d-af0b-4b1f-abf2-fb8d7a69e703",
   "masterEngine": "claude",
@@ -996,19 +996,44 @@
         "30-beam-describe-producer"
       ],
       "cardHashes": {
-        "26-land-ready-routing": "38e5d575e58a63b34c729bf6e9d82316d6402609bf472a383f34ebc83f9b968d",
+        "26-land-ready-routing": "0806b50efbe6a91d70367f9234c7d29c0eda699beeb214be98b18b1ba17c8441",
         "27-batten-cleanup-skip": "3c4ee9b5a5269cfe42e88666faae274dd88c9f792cd5ffab0fa4ba76ec9481a8",
-        "28-worktree-create-from-beam": "5d9404a47006ccaf008ea33fe2a09cb09497995347506c8c7cdc190aae0ddcb5",
+        "28-worktree-create-from-beam": "dfcced2aa33f4cb0b44e712fb3701bd2f2204ca4be25f6dfdaa746a4f346c4d8",
         "29-finalize-large-merge-lands": "b0f516140a8ac76ccd82758216ae7e2a080e72b494f9f976a4f587a632680fce",
-        "30-beam-describe-producer": "65dbcf3d5d372c36ba6bb1431a493f411b667bf967ad0ab3ad179c1cb7b9a027"
+        "30-beam-describe-producer": "0fb1824518762c59b370c96eed8afc70ec68dc6bb4ec076a75844d09ccc492e0"
       },
       "startSha": "35b54ed1b5a0ac34dbe9bb3f3d36c48738b99ff8",
       "kind": "fork",
       "spawnedAt": "2026-10-24T18:07:53Z",
       "sessionId": "5c0f8a9d-af0b-4b1f-abf2-fb8d7a69e703",
       "engine": "claude",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "26-land-ready-routing",
+        "status": "done",
+        "head_sha": "01065e17caeff0fa1e7fa7c051f261e6f46c16fd",
+        "deviations": [
+          "internal/battencli/beamfork.go",
+          "internal/battencli/beamfork_integration_test.go",
+          "internal/battencli/cancel.go",
+          "internal/battencli/land.go",
+          "internal/battencli/startguard.go",
+          "internal/battenshed/land.go",
+          "internal/battenshed/land_test.go",
+          "internal/battenshed/rownotice.go",
+          "internal/landingshed/beamdescribe.go"
+        ]
+      },
+      "cardShas": [
+        "01065e17caeff0fa1e7fa7c051f261e6f46c16fd"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-umbrella-groundwork/5c0f8a9d-af0b-4b1f-abf2-fb8d7a69e703/subagents/agent-a04d60e8cc6d68ac3.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-umbrella-groundwork/5c0f8a9d-af0b-4b1f-abf2-fb8d7a69e703/subagents/agent-a04d60e8cc6d68ac3.jsonl"
+      ]
     },
     "5": {
       "slug": "add-adopt-local",
@@ -1117,6 +1142,7 @@
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-umbrella-groundwork/5c0f8a9d-af0b-4b1f-abf2-fb8d7a69e703/subagents/agent-a1325a5fc651ccd0c.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-umbrella-groundwork/5c0f8a9d-af0b-4b1f-abf2-fb8d7a69e703/subagents/agent-a870654ba47582c7c.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-umbrella-groundwork/5c0f8a9d-af0b-4b1f-abf2-fb8d7a69e703/subagents/agent-a147ef6d0c1201d06.jsonl",
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-umbrella-groundwork/5c0f8a9d-af0b-4b1f-abf2-fb8d7a69e703/subagents/agent-a2759e9387b749d05.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-umbrella-groundwork/5c0f8a9d-af0b-4b1f-abf2-fb8d7a69e703/subagents/agent-a2759e9387b749d05.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-umbrella-groundwork/5c0f8a9d-af0b-4b1f-abf2-fb8d7a69e703/subagents/agent-a04d60e8cc6d68ac3.jsonl"
   ]
 }

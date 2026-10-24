@@ -29,8 +29,8 @@
 - `internal/loomrecipe/doc.go`
 
 **Uses:**
-- `plan:internal/landingshed#NewBeamDescribe`
-- `plan:internal/landingshed#BeamDescribeDeps`
+- `internal/landingshed#NewBeamDescribe`
+- `internal/landingshed#BeamDescribeDeps`
 
 **Intent:**
 D11's landing recipe `beam`, registered as PATTERN-shed-recipe-registry requires.
