@@ -1,0 +1,61 @@
+attempt: 1
+cap: 2
+failures:
+    - id: github.com/Knatte18/loomyard/internal/boardcli
+      kind: package
+      package: github.com/Knatte18/loomyard/internal/boardcli
+      tail: |-
+        === PAUSE TestValidateLocal/longest_retired_key_admits_its_none_entry
+        === RUN   TestValidateLocal/longest_retired_key_refuses_the_guard_remainder
+        === PAUSE TestValidateLocal/longest_retired_key_refuses_the_guard_remainder
+        === RUN   TestValidateLocal/empty_document
+        === PAUSE TestValidateLocal/empty_document
+        === RUN   TestValidateLocal/comment-only_document
+        === PAUSE TestValidateLocal/comment-only_document
+        === RUN   TestValidateLocal/unclassified_keys_of_a_per-worktree_module
+        === PAUSE TestValidateLocal/unclassified_keys_of_a_per-worktree_module
+        --- PASS: TestLoad_Refusals/unparseable_file (0.00s)
+        === RUN   TestLayers/no_template_key_is_filled
+        === RUN   TestValidateLocal/open-map_entry
+        === PAUSE TestLayers/no_template_key_is_filled
+        === PAUSE TestValidateLocal/open-map_entry
+        === CONT  TestEdit
+        === RUN   TestLayers/mapping_merges_per_entry_while_scalar_and_list_are_replaced_whole
+        === PAUSE TestLayers/mapping_merges_per_entry_while_scalar_and_list_are_replaced_whole
+        === RUN   TestEdit/a_hub_worktree_edit_writing_the_selector_into_an_absent_file_is_refused_and_leaves_no_file
+        === RUN   TestLayers/whole_entry_is_replaced_whole
+        === PAUSE TestEdit/a_hub_worktree_edit_writing_the_selector_into_an_absent_file_is_refused_and_leaves_no_file
+        === PAUSE TestLayers/whole_entry_is_replaced_whole
+        === RUN   TestEdit/a_hub_worktree_edit_adding_the_selector_to_a_file_without_it_is_refused_and_leaves_the_file
+        === RUN   TestLayers/origin_names_the_highest_layer_holding_each_key
+        === PAUSE TestEdit/a_hub_worktree_edit_adding_the_selector_to_a_file_without_it_is_refused_and_leaves_the_file
+        === PAUSE TestLayers/origin_names_the_highest_layer_holding_each_key
+        === CONT  TestLoad_Refusals/key_missing_inside_a_present_list_element
+        === RUN   TestLayers/no_present_layer_gives_an_empty_doc
+        === PAUSE TestLayers/no_present_layer_gives_an_empty_doc
+        === RUN   TestValidateLocal/longest_covering_entry_is_none
+        === PAUSE TestValidateLocal/longest_covering_entry_is_none
+        === RUN   TestValidateLocal/whole-entry_alias
+        === PAUSE TestValidateLocal/whole-entry_alias
+        === RUN   TestValidateLocal/unknown_key
+        === PAUSE TestValidateLocal/unknown_key
+        === RUN   TestValidateLocal/unknown_nested_key
+        === PAUSE TestValidateLocal/unknown_nested_key
+        === RUN   TestValidateLocal/scalar_where_the_template_holds_a_mapping
+        === PAUSE TestValidateLocal/scalar_where_the_template_holds_a_mapping
+        === RUN   TestValidateLocal/mapping_where_the_template_holds_a_scalar
+        FAIL	github.com/Knatte18/loomyard/internal/boardcli	0.027s
+    - id: github.com/Knatte18/loomyard/internal/testkit/envkit.TestFullEnv_FillsEverySeam
+      kind: test
+      package: github.com/Knatte18/loomyard/internal/testkit/envkit
+      tail: ""
+    - id: github.com/Knatte18/loomyard/internal/testkit/envkit.TestNilSeams_ReportsExactPaths
+      kind: test
+      package: github.com/Knatte18/loomyard/internal/testkit/envkit
+      tail: ""
+    - id: github.com/Knatte18/loomyard/internal/testkit/envkit.TestNilSeams_SkipsNilLegalPaths
+      kind: test
+      package: github.com/Knatte18/loomyard/internal/testkit/envkit
+      tail: ""
+log_path: /home/knatte/Code/loomyard-LYXHUB/umbrella-groundwork/.lyx/verify/verify-2.log
+fixer: fork
