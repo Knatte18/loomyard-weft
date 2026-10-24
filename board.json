@@ -906,6 +906,23 @@
       "revised": "2026-10-24T16:52:32Z",
       "profile": "light",
       "owner_machine": "neve"
+    },
+    {
+      "id": 806,
+      "handle": "E3",
+      "slug": "renumber-rewrites-card-refs",
+      "title": "insert-card and remove-card could rewrite prose card references they now only report",
+      "kind": "note",
+      "labels": [
+        "enhancement"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "Renumber verbs list prose mentions of moved cards; a hand fix of every reference is costly when a renumber spans many cards",
+      "body": "Split from task plan-check-lint-pattern-per-card (issue #866).\n\n`lyx loom insert-card` and `remove-card` renumber the cards after the edit and report every prose line naming a moved card by its old number (`planparser.RenumberResult.ProseMentions`), leaving the fix to the writer.\nA renumber spanning many cards then needs every reference fixed by hand, and repeating one doubles the cost.\n\nOpen question: a prose number may already mean the new numbering, so an automatic rewrite needs a form that marks a reference unambiguously, such as a card id `\u003cN\u003e-\u003cslug\u003e`, rather than rewriting bare numbers.",
+      "created": "2026-10-24T17:35:56Z",
+      "revised": "2026-10-24T17:35:56Z"
     }
   ],
   "prime_owner": "neve"
