@@ -1,13 +1,11 @@
 ---
 round: 1
 focus:
-  - "internal/lensreport/lensreport.go and its tests: does the path pattern and the report-name predicate match D1's four record-to-report names, and recognize exactly those names (no prefix or suffix over-match, e.g. a record file or a Burler round file)?"
-  - "internal/planparser/validate.go and amendment.go: does index-file-mismatch skip only lens-review.lens-*.md, and does Plan-Write's rotation in internal/loomshed/planwrite.go move a report without naming it in the prior-plan block (D7)?"
-  - "internal/burlerengine prompt.go, fix.go, review.go and geometry.go with hubgeom and standalonegeom: is SpecsDir told through geometry and never derived, and are a solo round's and a fan-less fixer's prompts unchanged (acceptance criteria)?"
-  - "Burler stencils (burler-cluster-fan, burler-fix-self-check, burler-template-reviewer) and twill stencils: do they point at the deployed spec path without restating its format, and do the reviewer and overlay-scope fixer write surfaces name the lens reports (D3, D4, D6)?"
-  - "contracts/specs/twill-lens-report-spec.md and specs.go: is the format a fenced YAML header over the verbatim final message, with a no-report outcome and no body, and is it registered under the twill family?"
-  - "Docs and PATTERN: do doc.go files, docs/overview.md and pattern/PATTERN-leaf-packages.md land the new package and behavior, and do touched markdown files and comments follow semantic line breaks?"
-  - "Test economy: do the new tests in lensreport, planparser, loomshed, loomengine, twilldirective and burlerengine each add coverage not already given by a public-surface test, and is every added behavior covered?"
+  - "Amendment scope: the fix commits since the settle (websterengine fingerprint skip of lens reports, SpecsDir fill pins in hubgeom/standalonegeom/burlerengine, the shared reviewer template's lens-report allowance moved to the fan part, the self-check write-surface wording) and the verifytree PauseHold change. Settle which of them the answer key licenses and whether each does what its commit message claims."
+  - "websterengine fingerprint: does skipping lens report files use the same predicate as `internal/lensreport` and `planparser`, and does the new test pin both a skipped report and a still-hashed neighbor such as `lens-review.md`?"
+  - "contracts/stencils/burler: does the reviewer seat's and the fixer's write surface name the lens reports only in the fan part, so a solo round's prompt stays unchanged and no other file is allowed?"
+  - "internal/verifytree/verify_integration_test.go: is the PauseHold change in scope for this task, and does it keep the row's stop behavior covered?"
+  - "Merge-In: do the parent changes brought by the merge keep the lens report naming, the geometry `SpecsDir` and the plan-directory skips consistent with the board entry?"
 ---
 
-Seed focus from the decision record's scope and acceptance criteria; the diff is two commits over the range base.
+Seed focus for the amendment round; the base review of the whole diff against the board entry snapshot still applies.
