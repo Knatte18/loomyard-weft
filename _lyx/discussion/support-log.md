@@ -48,7 +48,7 @@ Checked `internal/proc/tied_windows.go` and `namedjob_windows.go` myself before 
 - interactions F1 second half, walkthrough 3 (timing tier narrowed or emptied): fixed; a `carry: false` tier runs whole under every form but explicit targets.
 - interactions F3, walkthrough 5 (build `{args}`): fixed; the build command takes no placeholder.
 - interactions F4 (build timeout reading): fixed; own timeout line that `verifytree` reads as timed out.
-- interactions F5 (exit code after build failure): fixed; the build is the first failing run.
+- interactions F5 (exit code after build failure): fixed; the call exits with the first failed run's code in plan order, the build counting as a run before the opted-in tier it precedes.
 - walkthrough 6 (build output): fixed; passes through like a tier's.
 - walkthrough 7 ("would pass" wording): fixed.
 - goal-scope 1 (three whole gates against "once at the final gate"): fixed; new D10 recommends `webster: diff` for a .NET hub so Merge-In is the one whole run and Finalize carries.
@@ -90,12 +90,20 @@ Checked `internal/proc/tied_windows.go` and `namedjob_windows.go` myself before 
 
 ## Review rounds
 
-_No rounds yet._
+### Round 1 — fix
+
+Facts researched for F1, F8 and F9:
+
+- MSBuild's node launcher redirects a node's stdio on Unix and gives it invalid standard handles with `bInheritHandles: false` on Windows (dotnet/msbuild `NodeLauncher.cs` at `vs17.12`); in main's launcher, newer than `vs17.12`, the escape hatches `MSBUILDENSURESTDOUTFORTASKPROCESSES` and `MSBUILDNODEWINDOW` leave a Unix node's stdio unredirected.
+- Roslyn's `TryCreateServer` starts VBCSCompiler the same way (dotnet/roslyn `BuildServerConnection.cs` at `release/dev17.12`).
+- The test platform's `VSTestTask` and its build call run only when `IsTestProject` is `true` (microsoft/vstest `Microsoft.TestPlatform.targets` at `v17.12.0`), so a gated Models project evaluated without its property tests nothing and succeeds.
+- VSTest's `TreatNoTestsAsError` defaults to false (Microsoft Learn, ".runsettings"); Microsoft.Testing.Platform exits 8 on zero tests run, ignored by `--ignore-exit-code 8` or `TESTINGPLATFORM_EXITCODE_IGNORE` (Microsoft Learn, "Microsoft.Testing.Platform exit codes").
+- Models is .NET 9 with NUnit, and its gated projects set `IsTestProject=false` unless their property is passed (board entry).
 
 ## Question ledger
 
 - Q1 Test map — auto-pick: type-name closure selecting test classes. Resolved.
-- Q2 How a missed test is caught — auto-pick: the whole gates `webster`, `merge-in`, `finalize`. Resolved.
+- Q2 How a missed test is caught — auto-pick: the whole gates `merge-in` and `finalize`, with `webster` at scope `diff` per Q12. Resolved.
 - Q3 Filter composition — auto-pick: `{filter}` placeholder and tier `filter` key. Resolved.
 - Q4 One build for several tiers — auto-pick: hub `build` step, tier `shared_build`. Resolved.
 - Q5 Restore once per run — auto-pick: implicit no-op restore in the build command; no lyx restore step. Resolved.
