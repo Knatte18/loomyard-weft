@@ -1,10 +1,10 @@
 <!-- This is the twill directive: the host-neutral block that has a writer review its own finished record through lenses, one fork per lens, before it ends.
      internal/twilldirective renders it, and the spawning module hands that renderer every host value, so this block names no file, step, verb or section of any one host.
      It declares these required markers:
-     {{.reviewed_files}}, {{.rubric_path}}, {{.lens_list}}, {{.final_self_check_command}}, {{.spawn_point}}, {{.severity_rule}} and {{.judge_steps}}.
+     {{.reviewed_files}}, {{.rubric_path}}, {{.lens_list}}, {{.final_self_check_command}}, {{.spawn_point}}, {{.severity_rule}}, {{.lens_report_path}}, {{.lens_report_spec_path}} and {{.judge_steps}}.
      {{.judge_steps}} is filled by Directive with one of the two judge part stencils.
      It also names two optional markers, {{.writer_fork}} and {{.relaunch_rules}}, each filled by Directive with one part stencil and left empty otherwise.
-lyx-stencil: sha256=3cdf50d75f0ebab100f8d1928a014855196c312204aa1e3db67870b79c94e5c4 build=a5b1d3a6f045271a411346e0dcb10070ccece573 time=2026-10-20T19:52:18Z -->
+lyx-stencil: sha256=4fad14bfaefb51dcd267c59c2eef92b967532232168605295b5eccab75027cce build=79bab47a02141f93160b00f89b273718b4033be5 time=2026-10-24T07:59:09Z -->
 
 ## Lens review by forks
 
@@ -15,6 +15,7 @@ lyx-stencil: sha256=3cdf50d75f0ebab100f8d1928a014855196c312204aa1e3db67870b79c94
    Each fork's prompt is the fork boilerplate below plus its lens text and nothing else: no design hint, no direction to read code.
 3. Wait for every fork to return; ending your turn while forks are outstanding is allowed.
    Edit nothing while any fork is outstanding, whatever an early report says: start judging only once the last fork has returned, judge all findings together, and only then edit.
+   Once the last fork has returned, and before you judge, save each fork's final message verbatim to `{{.lens_report_path}}`, with its lens name for `<lens>`, in the format `{{.lens_report_spec_path}}` defines; a fork that returned no report gets its file too.
 {{.judge_steps}}
 6. Run `{{.final_self_check_command}}` again until it passes, then end your turn.
 

@@ -1,7 +1,7 @@
 <!-- This is burler's fanned cluster-rules part: the spawn mechanics, the fork rules, the handler's holistic review and the consolidation rules the review step carries when the round names a fan.
      internal/burlerengine's clusterRulesBlock (prompt.go) reads and fills it, and the result becomes the review step's cluster_rules marker value.
-     It declares one required marker, {{.lens_list}}, the round's lenses as one bullet per lens in fan order.
-lyx-stencil: sha256=3be574d823315d612ffec564b9ba61c0402a902b0cef4dbea9dcb815a53ae10f build=a5b1d3a6f045271a411346e0dcb10070ccece573 time=2026-10-20T19:52:18Z -->
+     It declares three required markers: {{.lens_list}}, the round's lenses as one bullet per lens in fan order, {{.lens_report_path}}, the path each fork's report is saved at, and {{.lens_report_spec_path}}, the deployed spec of that report's format.
+lyx-stencil: sha256=57e5323c22c12dfabad2a5d5892709cb127e09786d2e285c839fab0fe7c6fe03 build=79bab47a02141f93160b00f89b273718b4033be5 time=2026-10-24T07:59:09Z -->
 This is a cluster round: after exploring the target fully, spawn ALL of the fork reviewers below in a SINGLE message via the Agent tool with `subagent_type: "fork"`, one per lens listed here — never pass a `name` (named forks silently lose inherited context).
 
 Lenses for this round:
@@ -19,6 +19,9 @@ Boilerplate:
 While the forks run, YOU (the handler) do your own HOLISTIC review: what no lens owns, such as the target against its fasit and its board entry, the rubric's leanness and relocation rules, architecture and PATTERN-fit, reading further only where your review needs it.
 Then prepare the ground truths and the severity rubric you will judge every finding against.
 Write nothing to the review file while any fork is outstanding, whatever an early report says: consolidate only once the last fork has returned, with every finding in view.
+
+Once the last fork has returned, and before you consolidate, save each fork's final message verbatim to `{{.lens_report_path}}`, with its lens name for `<lens>`, in the format `{{.lens_report_spec_path}}` defines; a fork that returned no report gets its file too.
+These lens reports are part of your write surface, beside the review file, and are the one exception to the "nothing else" and "no other file" of the write-surface rules in your prompt.
 
 Consolidation: judge every fork finding and your own holistic findings with EQUAL skepticism, dedup findings that describe the same defect across lenses, tag every kept finding's frontmatter with an `origin:` key (`lens:<name>` or `handler`), move false positives to a `## Rejected` prose section below the frontmatter with a one-line reason each (a rejected item never appears in `findings:`), and order kept findings by severity.
 The consolidated review is the ONE review file, and the review is complete once it is fully written to disk — consolidation is part of the review, not a separate step after it.
