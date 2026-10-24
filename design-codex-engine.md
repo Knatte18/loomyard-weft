@@ -39,6 +39,7 @@ From `docs/research/codex-feasibility.md`, section 3, after the spike:
 Decision (operator, 2026-10-24): Codex's first role is Burler review only, so Claude plans and writes code while another model family reviews it.
 The sole aim is to offload Claude.
 If a twill fan on Codex works poorly, the review runs as strong single Codex agents instead.
+Codex reviews are investigated and benched thoroughly before any of it goes into production (operator, 2026-10-24).
 
 Single-session roles that spawn no forks and only write output files: Burler review chair without a cluster fan, Burler fixer, Describe, Bouncer judge and seed, treadle, friction, merge-conflict resolver, darn writer, the alignment agent.
 Webster, twill, the orch and the Burler cluster fan depend on cross-session messaging and background-task wake-ups, and wait.
