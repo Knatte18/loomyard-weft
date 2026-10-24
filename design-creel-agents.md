@@ -20,6 +20,8 @@ Creel is a prerequisite for Codex; the Codex-readiness plan's interim `neutral-p
 - `shuttleengine/hold.go`'s hold notice names creel, not `SendMessage`.
 - The other stencils that name `SendMessage` (`seat-directive-{chair,advisor}`, `shed-template-driver-notify{,-watched}.md`, `loom-template-parent-review-delivery.md`, the orch role) move to creel where the Discussion finds it fits; what stays Claude-only is declared through `Spec.Requires`.
 
+The stencil audit (`docs/research/stencil-engine-audit-2026-10-24/report.md`) lists every stencil, spec and Go site of the message-agent mechanic.
+
 ## Risk to check in Discussion
 
 The hold notice goes to the prime orch (`orchcli.NotifyPrime`), while the parent directive names `parent_name`, which may be a loom driver strand: check per recipe that a question reaches the session that answers it.
