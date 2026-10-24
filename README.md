@@ -16,7 +16,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T4 | **[.NET] Scoped build and test for C# hubs, and the Models verification wants**<br>• Verify gates in a .NET hub build and test only the projects a card touches, since a scanned Windows machine makes every build slow. | [`dotnet-scoped-verify`](design-dotnet-scoped-verify.md) | loom | Code-Bouncer | neve | 2w<br>3h | shed, webster, loom, config, dotnet |
+| T4 | **[.NET] Scoped build and test for C# hubs, and the Models verification wants**<br>• Verify gates in a .NET hub build and test only the projects a card touches, since a scanned Windows machine makes every build slow. | [`dotnet-scoped-verify`](design-dotnet-scoped-verify.md) | loom | Describe | neve | 2w<br>3h | shed, webster, loom, config, dotnet |
 | T9 | **Umbrella groundwork: project entries, pairs from a parent pair, and umbrella tasks that spawn and land from their own worktree**<br>• [WS 004+006] Board projects, fabric pairs from a parent pair, batten and orch from any worktree, umbrella tasks | [`umbrella-groundwork`](design-umbrella-groundwork.md) | loom | Webster | neve | 3w<br>6h | fabric, batten, orch, board, reed, creel, shed, workspaces |
 
 ### Ready (0)
@@ -31,8 +31,8 @@ Waits only on Running or Ready entries.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T1 | **Webster batch whose card verify needs an orch-only change dead-ends: recover-batch ends dead with 'asking', then the run halts repeatedly with growing history**<br>• `profile: light` | [`webster-orch-need-to-parent`](design-webster-orch-need-to-parent.md) | darn | `dotnet-scoped-verify` | 3h<br>30m | webster, loom |
-| T2 | **Plan check does not project the lint-pattern step per card, so a wrong plan-review fix passes review and fails only at self-check**<br>• `profile: light` | [`plan-check-lint-pattern-per-card`](design-plan-check-lint-pattern-per-card.md) | darn | `dotnet-scoped-verify` | 3h<br>30m | loom, burler |
+| T1 | **Webster batch whose card verify needs an orch-only change dead-ends: recover-batch ends dead with 'asking', then the run halts repeatedly with growing history**<br>• `profile: light` | [`webster-orch-need-to-parent`](design-webster-orch-need-to-parent.md) | darn | `dotnet-scoped-verify` | 3h<br>31m | webster, loom |
+| T2 | **Plan check does not project the lint-pattern step per card, so a wrong plan-review fix passes review and fails only at self-check**<br>• `profile: light` | [`plan-check-lint-pattern-per-card`](design-plan-check-lint-pattern-per-card.md) | darn | `dotnet-scoped-verify` | 3h<br>31m | loom, burler |
 
 ## Notes (42)
 
@@ -62,7 +62,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | E1 |  | **Plan conflict from a moved tree: a small fixer before the Plan perch**<br>• A tree_moved plan conflict naming exact glyphs goes to a small card fixer, not a full Plan review round | [`plan-conflict-small-fixer`](design-plan-conflict-small-fixer.md) | 7h<br>7h | webster, loom |
 | E2 |  | **Codex CLI as a second shuttle engine: codexengine**<br>• codexengine for single-session roles, built from the 2026-10-24 spike report and claudeengine list of needs | [`codex-engine`](design-codex-engine.md) | 2w<br>4h | shuttle, codex |
 | E4 |  | **finalize: the discrepancy-document conflict shape**<br>• Divergences that cannot be a git conflict get a precomputed document for the resolving agent instead of markers | [`finalize-discrepancy-doc`](design-finalize-discrepancy-doc.md) | 2w<br>2w | fabric, loom |
-| E7 |  | **Run verbs in one shared namespace, not under lyx loom**<br>• lyx loom decision/status/goto/approve act on darn runs too; move recipe-neutral run verbs to one shared namespace | [`run-verbs-shared`](design-run-verbs-shared.md) | 9d<br>9d | shed, loom |
+| E7 |  | **Run verbs in one shared namespace, not under lyx loom**<br>• lyx loom decision/status/goto/approve act on darn runs too; move recipe-neutral run verbs to one shared namespace | [`run-verbs-shared`](design-run-verbs-shared.md) | 10d<br>9d | shed, loom |
 | E9 |  | **Paste cited code into a review rounds context**<br>• Reviewers edit nothing and review a fixed commit, so code pasted at round start cannot go stale; measure it against todays reviewer | [`review-inline-code`](design-review-inline-code.md) | 13d<br>8h | burler, stencil |
 | E10 |  | **Module labels from what a task touches, not only what it is about**<br>• Half the landings that changed the shuttle core lacked the shuttle label; derive or check module labels from the plan and the diff | [`labels-from-diff`](design-labels-from-diff.md) | 9d<br>9d | board, loom |
 | E13 |  | **Rename the lyx binary to lyr (name clash with LyX)** | [`rename-binary-lyr`](design-rename-binary-lyr.md) | 8d<br>2d | stencil, shuttle |
@@ -78,7 +78,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | E28 |  | **[.NET] A small public NUnit repo as sandbox hub for end-to-end C# runs** | [`csharp-sandbox-hub`](design-csharp-sandbox-hub.md) | 2d<br>2d | dotnet |
 | E30 |  | **Discussion scope check moves from the alignment agent into the perch lenses, with an escalating finding class** | [`discussion-alignment-into-lenses`](design-discussion-alignment-into-lenses.md) | 2d<br>10h | loom, burler, shed |
 | E31 |  | **A plainly outdated task entry goes to the parent: from the Discussion review in loom, from Darn-Write in darn**<br>• No pre-Discussion row: board-fit flags an outdated entry as an escalating finding; Darn-Write checks and asks the parent | [`outdated-entry-to-parent`](design-outdated-entry-to-parent.md) | 2d<br>27m | loom, stencil |
-| E32 |  | **Move rules about lyx behaviour out of this repo's CLAUDE.md into lyx code, doc.go and stencils** | [`claude-md-lyx-rules-out`](design-claude-md-lyx-rules-out.md) | 2d<br>26m | stencil, board, loom |
+| E32 |  | **Move rules about lyx behaviour out of this repo's CLAUDE.md into lyx code, doc.go and stencils** | [`claude-md-lyx-rules-out`](design-claude-md-lyx-rules-out.md) | 2d<br>27m | stencil, board, loom |
 | E34 |  | **Rename the Merge-In row to Parent-Align**<br>• The row aligns the task with what the parent brought in, not only merges | [`merge-in-parent-align`](design-merge-in-parent-align.md) | 10h<br>10h | loom, shed, stencil |
 | E35 |  | **A landing fixer escalation goes to the arbiter before the orch**<br>• Merge-In and Finalize fixer escalate reports reach the arbiter first | [`landing-escalate-arbiter`](design-landing-escalate-arbiter.md) | 10h<br>10h | shed, loom |
 
