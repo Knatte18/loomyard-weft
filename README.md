@@ -1,7 +1,6 @@
 # Board
 
-Rendered 2026-10-24 05:14 UTC; every age below is as of then.
-Prime owner: `osl-1046`.
+Rendered 2026-10-24 05:32 UTC; every age below is as of then.
 
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
@@ -16,7 +15,7 @@ Waits on nothing open; can start now.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T2 | **One code review perch for darn and loom**<br>• Darn-Review and Code-Review run the same engine over the same diff; merge them into one perch whose answer key the recipe sets<br>• `profile: darn-wide` | [`code-review-one-perch`](design-code-review-one-perch.md) | darn |  | 16h<br>15h | loom, burler |
+| T2 | **One code review perch for darn and loom**<br>• Darn-Review and Code-Review run the same engine over the same diff; merge them into one perch whose answer key the recipe sets<br>• `profile: darn-wide` | [`code-review-one-perch`](design-code-review-one-perch.md) | darn |  | 16h<br>16h | loom, burler |
 
 ### Layer A
 
@@ -24,7 +23,7 @@ Waits only on Running or Ready entries.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T1 | **Each test runs once per tree: disjoint tiers, row entry gates, carried green runs, tmux in final**<br>• Tiers tagged by name, shed row entry gates, verify skipped on an already green tree, tmux in the final gate, gate time measured<br>• `profile: light` | [`gate-runs-once`](design-gate-runs-once.md) | loom | `code-review-one-perch` | 6d<br>15h | gate, shed, loom, webster, fabric, batten |
+| T1 | **Each test runs once per tree: disjoint tiers, row entry gates, carried green runs, tmux in final**<br>• Tiers tagged by name, shed row entry gates, verify skipped on an already green tree, tmux in the final gate, gate time measured<br>• `profile: light` | [`gate-runs-once`](design-gate-runs-once.md) | loom | `code-review-one-perch` | 6d<br>16h | gate, shed, loom, webster, fabric, batten |
 
 ## Notes
 
