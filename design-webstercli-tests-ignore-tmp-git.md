@@ -1,6 +1,6 @@
 # webstercli standalone tests fail when an empty /tmp/.git exists
 
-`webstercli-tests-ignore-tmp-git` · Note · bug, webster, testkit
+`webstercli-tests-ignore-tmp-git` · Task · bug, webster, testkit
 
 Imported from [issue #862](https://github.com/Knatte18/loomyard/issues/862).
 
