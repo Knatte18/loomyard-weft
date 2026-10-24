@@ -1,3 +1,3 @@
 outcome: stuck
-stuck_reason: "Batch 22 (tier-plan-docs) is dead with recovery_retry false, so its recoveries are exhausted and no later batch may begin."
+stuck_reason: "Batch 22 (tier-plan-docs) is dead with recovery_retry false, so its recovery is exhausted and batches 24, 27, 28, 29, 30 and 31 were not begun."
 batches_done: 10

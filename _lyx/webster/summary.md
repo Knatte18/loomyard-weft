@@ -1,9 +1,11 @@
-# Webster run stopped at batch 22 (tier-plan-docs)
+# gate-runs-once: run stopped at batch 22
 
-This session found, through `lyx webster status`, ten batches done: 01, 03, 04, 05, 06, 08, 13, 15, 18 and 20.
-I read no digests this session, so no deviations or departures are reported here.
+This session resumed a run whose progress trail already held ten batches as `done`: 01, 03, 04, 05, 06, 08, 13, 15, 18 and 20.
+It ran no fork and no recovery.
+`lyx webster status` showed batch 22 (tier-plan-docs) as a terminal `dead` recovery with `recovery_retry: false`.
 
-Batch 22 (tier-plan-docs) is terminal `dead`: its recovery has run once and `recovery_retry` is false.
-The failure ladder allows no further recovery and no later batch may begin, so I forked and recovered nothing.
+The failure ladder treats that as an exhausted batch, so the run stops without beginning any later batch.
+Batches 24, 27, 28, 29, 30 and 31 were never begun, and the run is `stuck`.
 
-Not begun: 24, 27, 28, 29, 30 and 31.
+No digest was read in this session, so there are no deviations, departures or scope guard results to report.
+The earlier sessions recorded those for the done batches.
