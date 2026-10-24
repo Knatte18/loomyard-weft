@@ -1,18 +1,18 @@
 # Card 36 — beam-land
 
 **Create:**
-- `plan:internal/beamcli#land` -> `func land(deps landDeps, acting, slug string) (map[string]any, error)`
-- `plan:internal/beamcli#landDeps` -> `type landDeps struct`
-- `plan:internal/beamcli#hubLandDeps` -> `func hubLandDeps(prime *lyxcwd.Location) (landDeps, error)`
-- `plan:internal/beamcli#TestLand` -> `func TestLand(t *testing.T)`
-- `plan:internal/battencli#BeamLandRefusal` -> `func BeamLandRefusal(prime *lyxcwd.Location, slug string) error`
-- `plan:internal/battencli#beamLandRefusal` -> `func beamLandRefusal(slug string, members []beamMember, childPairs []string, orchLive, watcherLive bool) error`
-- `plan:internal/battencli#beamMember` -> `type beamMember struct`
-- `plan:internal/battencli#TestBeamLandRefusal` -> `func TestBeamLandRefusal(t *testing.T)`
-- `plan:internal/battencli#TestBeamLanding_ReachesWorktreeCreateSkip` -> `func TestBeamLanding_ReachesWorktreeCreateSkip(t *testing.T)`
+- `internal/beamcli#land`
+- `internal/beamcli#landDeps`
+- `internal/beamcli#hubLandDeps`
+- `internal/beamcli#TestLand`
+- `internal/battencli#BeamLandRefusal`
+- `internal/battencli#beamLandRefusal`
+- `internal/battencli#beamMember`
+- `internal/battencli#TestBeamLandRefusal`
+- `internal/battencli#TestBeamLanding_ReachesWorktreeCreateSkip`
 
 **Edit:**
-- `plan:internal/beamcli#Command`
+- `internal/beamcli#Command`
 - `internal/battencli#startGuard`
 - `internal/battencli#hubStartGuard`
 - `internal/battencli#startGuard.refuse`

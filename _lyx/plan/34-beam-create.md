@@ -2,14 +2,14 @@
 
 **Create:**
 - `internal/beamcli/doc.go`
-- `plan:internal/beamcli#Command` -> `func Command() *cobra.Command`
-- `plan:internal/beamcli#RunCLI` -> `func RunCLI(out io.Writer, args []string) int`
-- `plan:internal/beamcli#RunCLIIn` -> `func RunCLIIn(cwd string, out io.Writer, args []string) int`
-- `plan:internal/beamcli#createDeps` -> `type createDeps struct`
-- `plan:internal/beamcli#createResult` -> `type createResult struct`
-- `plan:internal/beamcli#create` -> `func create(deps createDeps, slug string) (createResult, error)`
-- `plan:internal/beamcli#hubCreateDeps` -> `func hubCreateDeps(prime *lyxcwd.Location) (createDeps, error)`
-- `plan:internal/beamcli#TestCreate` -> `func TestCreate(t *testing.T)`
+- `internal/beamcli#Command`
+- `internal/beamcli#RunCLI`
+- `internal/beamcli#RunCLIIn`
+- `internal/beamcli#createDeps`
+- `internal/beamcli#createResult`
+- `internal/beamcli#create`
+- `internal/beamcli#hubCreateDeps`
+- `internal/beamcli#TestCreate`
 
 **Edit:**
 - `cmd/lyx#newRoot`

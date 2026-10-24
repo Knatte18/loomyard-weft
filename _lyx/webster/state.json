@@ -1,6 +1,6 @@
 {
   "runGuid": "0c92b76ecbae330c53aca040bff54a50",
-  "planFingerprint": "48f483dcfd3d8f1e7efde5dc035673370fa571ab4e27c960cac513d9aa9dd878",
+  "planFingerprint": "0a95d02a6c77e735d695ed36d2d11f9c5f6f7cf6d916686ed628a5502fc79b2d",
   "planFileHashes": {
     "00-overview.md": "3d9b9d836b384b6275a3d06d7a0b4d9fc34547800ed42f5cb42ff03f22cfd5e6",
     "01-fabric-slug-rule.md": "24afd634ad6b5f856aae6b02a3b00141d047fae902d8f00106e935ed4abec609",
@@ -36,9 +36,9 @@
     "31-beam-recipe.md": "4558cf772ab58b588d6359cf690cc6c612ba7fadf51342f69302f71898652001",
     "32-loomcli-beam-recipe.md": "6df7aefd7b302022006d25a52f9ee12c4cb5dc77bcc3a0b216403e72689ffd6f",
     "33-batten-seed-beam.md": "6e36c6ab6280461efe071a5e41066c6d14fffb0a4eb6b6d5c8547a846a27ab21",
-    "34-beam-create.md": "06bc4fc6632efda95046a4515e7ed612f168b04cccf972dd410266e51897fa28",
-    "35-beam-promote.md": "2a4a708c79a039340140e8df4010cceefd51cd78617074547c0f88c51ee79fd5",
-    "36-beam-land.md": "24be93e6c1fb4bc96f5b00765d8229e0bcd5c2439b93424e8ee4a1d69efa5079",
+    "34-beam-create.md": "e1048b72137cd0c29e5e57f3af8d26d182f8615effa386d3b921228aa8cecfde",
+    "35-beam-promote.md": "176ff5c2cf3fb24f5c097ced042e9927c5a4a4b19039f05cd75eaa0c2eac2bf4",
+    "36-beam-land.md": "fca523e43401288b4de87134273be3fe9100a3d80ce292348fd6c7502ae916f1",
     "37-adopt-beam.md": "a4118cae79121ba5bcea054bc41c5d29bd963df0555cc1e15bd064d05353964f"
   },
   "planOverviewFrameHash": "88bf9bbb8de875754fb0d763fc9040a4b9c3705b64e9ebb0a3113c4aa0052c26",
@@ -801,7 +801,7 @@
       }
     }
   ],
-  "currentBatch": 34,
+  "currentBatch": 0,
   "masterStrand": "b26fdaa60c57e20a41bb8040667d0203",
   "masterSessionId": "5c0f8a9d-af0b-4b1f-abf2-fb8d7a69e703",
   "masterEngine": "claude",
@@ -1089,9 +1089,9 @@
         "37-adopt-beam"
       ],
       "cardHashes": {
-        "34-beam-create": "06bc4fc6632efda95046a4515e7ed612f168b04cccf972dd410266e51897fa28",
-        "35-beam-promote": "2a4a708c79a039340140e8df4010cceefd51cd78617074547c0f88c51ee79fd5",
-        "36-beam-land": "24be93e6c1fb4bc96f5b00765d8229e0bcd5c2439b93424e8ee4a1d69efa5079",
+        "34-beam-create": "e1048b72137cd0c29e5e57f3af8d26d182f8615effa386d3b921228aa8cecfde",
+        "35-beam-promote": "176ff5c2cf3fb24f5c097ced042e9927c5a4a4b19039f05cd75eaa0c2eac2bf4",
+        "36-beam-land": "fca523e43401288b4de87134273be3fe9100a3d80ce292348fd6c7502ae916f1",
         "37-adopt-beam": "a4118cae79121ba5bcea054bc41c5d29bd963df0555cc1e15bd064d05353964f"
       },
       "startSha": "bf31222b2ea77ac691b2fca87e37f7203b840c30",
@@ -1099,8 +1099,44 @@
       "spawnedAt": "2026-10-24T18:31:10Z",
       "sessionId": "5c0f8a9d-af0b-4b1f-abf2-fb8d7a69e703",
       "engine": "claude",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "34-beam-create",
+        "status": "done",
+        "head_sha": "1b6c174585410262ea282756a89c13e6e6a77fc3",
+        "deviations": [
+          "cmd/lyx/sandbox_coverage_test.go",
+          "internal/adoptcli/cli.go",
+          "internal/battencli/beamland.go",
+          "internal/battencli/cancel.go",
+          "internal/battencli/cancel_test.go",
+          "internal/battencli/cli.go",
+          "internal/battencli/promote.go",
+          "internal/battencli/promote_test.go",
+          "internal/battencli/startguard.go",
+          "internal/beamcli/cli.go",
+          "internal/beamcli/create.go",
+          "internal/beamcli/create_integration_test.go",
+          "internal/beamcli/create_test.go",
+          "internal/beamcli/deps.go",
+          "internal/beamcli/land.go",
+          "internal/beamcli/land_test.go",
+          "internal/beamcli/promote.go",
+          "internal/beamcli/promote_test.go",
+          "internal/beamcli/testmain_test.go",
+          "internal/boardcli/cli.go"
+        ]
+      },
+      "cardShas": [
+        "1b6c174585410262ea282756a89c13e6e6a77fc3"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-umbrella-groundwork/5c0f8a9d-af0b-4b1f-abf2-fb8d7a69e703/subagents/agent-ae5cee0f6755fe287.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-umbrella-groundwork/5c0f8a9d-af0b-4b1f-abf2-fb8d7a69e703/subagents/agent-ae5cee0f6755fe287.jsonl"
+      ]
     },
     "5": {
       "slug": "add-adopt-local",
@@ -1211,6 +1247,7 @@
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-umbrella-groundwork/5c0f8a9d-af0b-4b1f-abf2-fb8d7a69e703/subagents/agent-a147ef6d0c1201d06.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-umbrella-groundwork/5c0f8a9d-af0b-4b1f-abf2-fb8d7a69e703/subagents/agent-a2759e9387b749d05.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-umbrella-groundwork/5c0f8a9d-af0b-4b1f-abf2-fb8d7a69e703/subagents/agent-a04d60e8cc6d68ac3.jsonl",
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-umbrella-groundwork/5c0f8a9d-af0b-4b1f-abf2-fb8d7a69e703/subagents/agent-a99508c62dc1bd594.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-umbrella-groundwork/5c0f8a9d-af0b-4b1f-abf2-fb8d7a69e703/subagents/agent-a99508c62dc1bd594.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-umbrella-groundwork/5c0f8a9d-af0b-4b1f-abf2-fb8d7a69e703/subagents/agent-ae5cee0f6755fe287.jsonl"
   ]
 }
