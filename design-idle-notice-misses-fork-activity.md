@@ -1,6 +1,6 @@
 # Batten idle notice fires while a writer works in a fork
 
-`idle-notice-misses-fork-activity` · Task · bug, batten · running · Code-Burler-Review
+`idle-notice-misses-fork-activity` · Task · bug, batten · running · Code-Burler-Fix
 
 ## Seen (orch, 2026-10-23)
 
