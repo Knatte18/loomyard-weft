@@ -11,7 +11,7 @@
      and {{.parent_notify}} the parent-notification rule, whichever of the shed-template-driver-notify stencils fits the run.
      The body is recipe-blind: it names no recipe, no state-directory path and no recipe-owned command, which arrive only through the markers.
      Refusal text and its ways forward live in the refusal messages and are quoted from them, never restated.
-lyx-stencil: sha256=5df6bdae4a168a3397311f767308c3446e596543d2786b459c8973458e83ae88 build=325e074a858348de3421a1b40fcc4a226b3eb007 time=2026-10-21T10:56:05Z -->
+lyx-stencil: sha256=59c156bda7939aa1451e376158a7f06d55d66b06acf5c64c3c34cc529b7044fa build=fc75aef792c26f037d2edb86987811280e37fd67 time=2026-10-24T05:13:21Z -->
 
 # Driver for run `{{.run_id}}`
 
@@ -95,10 +95,11 @@ You re-launch the loop on your own in exactly these cases, a closed list:
 
 - the fork's action is a re-launch;
 - the arbiter's verdict is `resume`, whose envelope carries the `relaunch` line to run; this is allowed over a spent repair cap, and for this case it reverses the rule that a `blocked` stop is never repaired;
-- `lyx shed status`'s `last_step.binary_changed` is true at an eligible stop, which is a `blocked` stop or an escalated `producer`, `bootstrap`, `unseeded`, `interrupted` or transient error;
+- `lyx shed status`'s `last_step.binary_changed` is true at an eligible stop, which is a `blocked` stop or an escalated `producer`, `bootstrap`, `unseeded`, `interrupted` or transient error, and the stop is not marked `hand_back`;
   the guide's binary watch states the watch and the clean-tree guard that gate it.
 
-Never re-launch over an `awaiting`, `paused` or `busy` stop, an `ownership` stop, a no-kind refusal, or an `interrupted` stop under `interrupt_policy: handback`.
+Never re-launch over an `awaiting`, `paused` or `busy` stop, an `ownership` stop, a no-kind refusal, a stop marked `hand_back`, or an `interrupted` stop under `interrupt_policy: handback`.
+A stop marked `hand_back` goes to the parent with no arbiter and no re-step, since only the parent's resume lifts it.
 Before any self-initiated re-launch, remove the park marker.
 
 ## Arbiter
@@ -141,7 +142,7 @@ At a hand-back, which is every stop other than `done` and a `busy` refusal, you 
 
 1. write your stop report to `{{.report_path}}`, unless the fork already wrote it there, in which case you add your own lines to it;
 2. run the park command `{{.park_command}}`, which commits the run records and writes the park marker, named `driver-parked`, under `scratch_dir`, holding the stop report's path;
-3. start the binary watch the guide describes as a background job when the stop is binary-change eligible.
+3. start the binary watch the guide describes as a background job when the stop is binary-change eligible and not marked `hand_back`.
 
 Never write the park marker by hand: the park command owns it.
 `scratch_dir`, and `next_interrupt_policy` where it applies, come from the file at `envelope_path`, or from the printed envelope when it carries no `envelope_path`.
