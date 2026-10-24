@@ -1,12 +1,13 @@
 {
   "current_producer": "Plan-Bouncer",
-  "state": "running",
-  "error": "",
+  "state": "awaiting",
+  "error": "bouncer Plan-Bouncer: round 2 escalated to the parent (cause: hard-cap); brief at /home/knatte/Code/loomyard-LYXHUB/gate-runs-once/_lyx/reviews/plan/round-2-escalation.md; the round is at or past the perch's hard cap, so it can only be accepted: decide with `lyx loom circling accept gate-runs-once`, then run `lyx loom resume` in the task worktree to resume",
+  "parent_notice": "Review segment of task `gate-runs-once` needs a decision: review the brief at `/home/knatte/Code/loomyard-LYXHUB/gate-runs-once/_lyx/reviews/plan/round-2-escalation.md` with a one-shot fork.",
   "pause_requested": false,
   "activity": {
     "now": "Plan-Bouncer",
-    "last": "Plan-Burler-Fix → bounced to Plan-Bouncer",
-    "wait": ""
+    "last": "Plan-Bouncer → awaiting",
+    "wait": "bouncer Plan-Bouncer: round 2 escalated to the parent (cause: hard-cap); brief at /home/knatte/Code/loomyard-LYXHUB/gate-runs-once/_lyx/reviews/plan/round-2-escalation.md; the round is at or past the perch's hard cap, so it can only be accepted: decide with `lyx loom circling accept gate-runs-once`, then run `lyx loom resume` in the task worktree to resume"
   },
   "history": [
     {
@@ -278,6 +279,12 @@
       ],
       "budget_exempt": true,
       "routed_to": "Plan-Bouncer"
+    },
+    {
+      "producer": "Plan-Bouncer",
+      "outcome": "awaiting",
+      "output": "/home/knatte/Code/loomyard-LYXHUB/gate-runs-once/_lyx/reviews/plan/round-2-bouncer-ledger.md",
+      "at": "2026-10-24T08:58:38Z"
     }
   ],
   "product": {
