@@ -4,6 +4,12 @@
   "base": "5e36064a36a9ff38198089bd5811a46f46fd2b44",
   "review_input": "/home/knatte/Code/loomyard-LYXHUB/card-gate-vets-all-tag-sets/.lyx/loom/overlap-note.md",
   "judge_subject": {
-    "kind": ""
-  }
+    "kind": "code",
+    "merge_base": "04aafa88c11751bdfac2b21281cf263d27b1eb4a",
+    "head": "1d553a02ef3ffcb93dfb374838877d3f6d0487d7",
+    "full_hash": "ba2ff9575d9337113dc07290c2c259668ffc46e981c7603398c9029b3dd43c7e",
+    "patch_id": "94a411c17420fa4776d24ca2034e6a0d853ef388"
+  },
+  "judge_base": "04aafa88c11751bdfac2b21281cf263d27b1eb4a",
+  "judge_at": "2026-10-24T14:37:26Z"
 }
