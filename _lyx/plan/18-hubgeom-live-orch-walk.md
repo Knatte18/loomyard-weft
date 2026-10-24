@@ -1,9 +1,9 @@
 # Card 18 — hubgeom-live-orch-walk
 
 **Create:**
-- `plan:internal/hubgeom#NearestLiveOrch` -> `func NearestLiveOrch(from *lyxcwd.Location, live func(worktree *lyxcwd.Location) (bool, error)) (Parent, error)`
-- `plan:internal/hubgeom#nearestLive` -> `func nearestLive(start string, parentOf func(worktree string) (string, bool, error), live func(worktree string) (bool, error)) (string, error)`
-- `plan:internal/hubgeom#TestNearestLive` -> `func TestNearestLive(t *testing.T)`
+- `internal/hubgeom#NearestLiveOrch`
+- `internal/hubgeom#nearestLive`
+- `internal/hubgeom#TestNearestLive`
 
 **Extends:**
 - `internal/hubgeom/doc.go`

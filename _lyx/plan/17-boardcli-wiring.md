@@ -7,14 +7,14 @@
 - `internal/boardcli_test#TestCLI`
 
 **Create:**
-- `plan:internal/boardcli_test#stepProjects` -> `func stepProjects(t *testing.T, f *cliFixture)`
+- `internal/boardcli_test#stepProjects`
 
 **Extends:**
 - `internal/boardcli/doc.go`
 
 **Uses:**
 - `internal/fabricengine#ValidatePairSlug`
-- `plan:internal/hubgeom#ParentOf`
+- `internal/hubgeom#ParentOf`
 - `internal/boardengine#Board.ParentBeamOf`
 
 **Intent:**

@@ -27,7 +27,7 @@
 - `internal/fabricengine#AddOptions`
 - `internal/fabricengine#SpawnPairPush`
 - `internal/fabricengine#RegenerateHubWorkspace`
-- `plan:internal/hubgeom#ParentOf`
+- `internal/hubgeom#ParentOf`
 - `internal/machinename#Name`
 - `internal/fabricengine#MarkBeam`
 - `internal/fabricengine#Topology.TaskBranchOnOrigin`

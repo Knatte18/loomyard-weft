@@ -25,8 +25,8 @@
 - `plan:internal/orchcli#NotifyFrom`
 - `plan:internal/orchcli#ParentOrchRecorded`
 - `plan:internal/orchcli#OrchLive`
-- `plan:internal/hubgeom#ParentOf`
-- `plan:internal/hubgeom#NearestLiveOrch`
+- `internal/hubgeom#ParentOf`
+- `internal/hubgeom#NearestLiveOrch`
 
 **Intent:**
 D13 for batten: batten's notices are sent from the prime's location (D8) but act on a run's pair, so each delivery takes the walk from that run's pair, never from where batten runs.
