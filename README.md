@@ -18,7 +18,7 @@ Held by a run; its scope is locked until the run ends.
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T1 | **Each test runs once per tree: disjoint tiers, row entry gates, carried green runs, tmux in final**<br>• Tiers tagged by name, shed row entry gates, verify skipped on an already green tree, tmux in the final gate, gate time measured<br>• `profile: light` | [`gate-runs-once`](design-gate-runs-once.md) | loom | Plan-Burler-Review | neve | 6d<br>2h | gate, shed, loom, webster, fabric, batten |
 | T5 | **lyx loom decision add records several decisions in one call and one notice**<br>• `profile: light` | [`decision-add-batch`](design-decision-add-batch.md) | darn | Code-Burler-Fix | neve | 1h<br>20m | loom, creel |
-| T7 | **Batten idle notice says no agent activity readable while a run is live**<br>• `profile: light` | [`idle-notice-no-live-run`](design-idle-notice-no-live-run.md) | darn | Code-Burler-Review | neve | 1h<br>20m | batten, shuttle |
+| T7 | **Batten idle notice says no agent activity readable while a run is live**<br>• `profile: light` | [`idle-notice-no-live-run`](design-idle-notice-no-live-run.md) | darn | Code-Burler-Fix | neve | 1h<br>20m | batten, shuttle |
 | T8 | **The watcher system should recognize halt due to session limit**<br>• `profile: light` | [`usage-limit-hold-quiet`](design-usage-limit-hold-quiet.md) | darn | Describe | neve | 16h<br>20m | shuttle, creel, orch |
 
 ### Ready (0)
