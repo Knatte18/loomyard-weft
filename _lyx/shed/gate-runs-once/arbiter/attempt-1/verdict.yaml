@@ -1,0 +1,11 @@
+verdict: resume
+reason: |-
+  Cause hard-cap at round 2 of Plan-Bouncer. The only open design-wrong finding is retag-support-files-old-tag-spellings (F2), and the fix in place answers it.
+  The overview's retag-rules decision and card 23 now respell support-only files' constraints tag by tag: a TestMain companion's !integration becomes !tier1, integration becomes tier1, and tmux || llm becomes tier2 || tier3.
+  Against the decision record's Constraints hub commands (tier0 -tags tier0, tier1 -tags tier1,integration with vets under tier0, tier1,integration, tier2,tmux and tier3,llm, tier2 -tags tier2,tmux, tier3 -tags tier3,llm), each respelled constraint compiles under exactly the commands its old spelling did, and it still does once D13's follow-up drops the old spellings. !tier1 is false only under tier1's command, so the companions in, for example, internal/hubgeom keep yielding to the testmain_integration_test.go TestMain.
+  Card 28 gives internal/testkit/tmuxkit/allow_tmux.go (currently tmux || llm) the constraint tier2 || tier3 || tmux || llm. Card 28 also leaves planglyph's testdata tagged.go at integration on purpose, and card 31's follow-up entry removes allow_tmux.go's tmux and llm terms and respells tagged.go.
+  The other open findings are tagged mechanical, and their fixes are on the cards: card 3 lists the F1 readers (TestRenderCardGates_..., TestRebaselineCmd_..., roundGateFixture, wantDarnLandingCall), card 4 lists intentionallyNil, card 5 lists TestVerifyGate_RealVerifytreeScenario, card 14 lists TestDerive_OverARepository, and card 20 lists engineMinimalConfig, battenshed/doc.go and docs/overview.md. For F3, card 20 no longer creates TestWireSetting_OpenTerminalForcesOpenWindow. For F4, card 21 has no Extends group and edits loomrecipe/doc.go.
+  The circling accept is recorded. The driver's re-launch resumes the run.
+verbs:
+  - |-
+    lyx loom circling accept gate-runs-once
