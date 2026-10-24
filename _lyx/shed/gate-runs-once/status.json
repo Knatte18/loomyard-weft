@@ -2,6 +2,7 @@
   "current_producer": "Webster",
   "state": "blocked",
   "error": "Batch 22 (tier-plan-docs) is dead with recovery_retry false, so its recoveries are exhausted and no later batch may begin.",
+  "pending_by": "shed",
   "pause_requested": false,
   "activity": {
     "now": "Webster",
