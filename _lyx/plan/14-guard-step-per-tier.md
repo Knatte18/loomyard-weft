@@ -1,9 +1,9 @@
 # Card 14 — guard-step-per-tier
 
 **Create:**
-- `plan:internal/impactset#GuardTest` -> `type GuardTest struct`
-- `plan:internal/impactset#FileTier` -> `func FileTier(file *ast.File) int`
-- `plan:internal/impactset#GuardWrongTier` -> `const GuardWrongTier GuardScanKind = "wrong-tier"`
+- `internal/impactset#GuardTest`
+- `internal/impactset#FileTier`
+- `internal/impactset#GuardWrongTier`
 
 **Edit:**
 - `internal/impactset#FindGuardTests` -> `func FindGuardTests(worktree string, dirs []string) (map[string][]GuardTest, error)`
