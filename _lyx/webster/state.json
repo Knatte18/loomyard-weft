@@ -801,7 +801,7 @@
       }
     }
   ],
-  "currentBatch": 0,
+  "currentBatch": 31,
   "masterStrand": "b26fdaa60c57e20a41bb8040667d0203",
   "masterSessionId": "5c0f8a9d-af0b-4b1f-abf2-fb8d7a69e703",
   "masterEngine": "claude",
@@ -1034,6 +1034,26 @@
       "bracketTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-umbrella-groundwork/5c0f8a9d-af0b-4b1f-abf2-fb8d7a69e703/subagents/agent-a04d60e8cc6d68ac3.jsonl"
       ]
+    },
+    "31": {
+      "slug": "beam-recipe",
+      "cards": [
+        "31-beam-recipe",
+        "32-loomcli-beam-recipe",
+        "33-batten-seed-beam"
+      ],
+      "cardHashes": {
+        "31-beam-recipe": "04dcf551be967b3a70676f3e8d0b159caab319faa81d564eeb909c7d170a4390",
+        "32-loomcli-beam-recipe": "64b063ff1934a5437f4be6912d66293c76ca4723e541dd2343a418462d9f8d37",
+        "33-batten-seed-beam": "b16230c8b6df486133c1abbe45448eb6820f85aa940f6d83c8725d5313faefd4"
+      },
+      "startSha": "01065e17caeff0fa1e7fa7c051f261e6f46c16fd",
+      "kind": "fork",
+      "spawnedAt": "2026-10-24T18:21:12Z",
+      "sessionId": "5c0f8a9d-af0b-4b1f-abf2-fb8d7a69e703",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
     },
     "5": {
       "slug": "add-adopt-local",
