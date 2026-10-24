@@ -10,23 +10,23 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 Concrete and claimable; only a task can run.
 
-### Running (2)
+### Running (3)
 
 Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T6 | **Fork git-mutation guard fails a run on git commands confined to a scratch repo**<br>• `profile: light` | [`fork-git-guard-scratch-repo`](design-fork-git-guard-scratch-repo.md) | darn | Worktree-Create | neve | 21h<br>3h | shed, burler |
+| T9 | **Umbrella groundwork: project entries, pairs from a parent pair, and umbrella tasks that spawn and land from their own worktree**<br>• [WS 004+006] Board projects, fabric pairs from a parent pair, batten and orch from any worktree, umbrella tasks | [`umbrella-groundwork`](design-umbrella-groundwork.md) | loom | Worktree-Create | neve | 3w<br>3h | fabric, batten, orch, board, reed, creel, shed, workspaces |
 | T11 | **Card gate (--tier 0) does not vet a card's packages under the other tier tag sets, so helper dependencies across tagged files fail only in the batch gate**<br>• `profile: light` | [`card-gate-vets-all-tag-sets`](design-card-gate-vets-all-tag-sets.md) | darn | Darn-Write | neve | 48m<br>39m | gate, webster |
 
-### Ready (2)
+### Ready (1)
 
 Waits on nothing open; can start now.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
 | T3 | **Run profiles as one ladder: speed, light, solid, wide**<br>• Replace budget, light, docs and darn-wide with one profile ladder shared by darn and loom<br>• `profile: light` | [`run-profiles-ladder`](design-run-profiles-ladder.md) | darn |  | 1d<br>3h | config, loom, burler |
-| T9 | **Umbrella groundwork: project entries, pairs from a parent pair, and umbrella tasks that spawn and land from their own worktree**<br>• [WS 004+006] Board projects, fabric pairs from a parent pair, batten and orch from any worktree, umbrella tasks | [`umbrella-groundwork`](design-umbrella-groundwork.md) | loom |  | 3w<br>3h | fabric, batten, orch, board, reed, creel, shed, workspaces |
 
 ### Layer A (1)
 
