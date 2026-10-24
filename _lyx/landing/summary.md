@@ -1,35 +1,42 @@
-# Restore to PATTERN the moved rules that bind code outside their package
+# Restore six caller-binding rules to PATTERN.md
 
-The PATTERN cut in `04aafa88c` moved package-local rules out of `PATTERN.md` into their owning package's doc.
-`PATTERN.md` is inlined in every spawned agent's prompt, but a package doc is read only by an agent already working in that package.
-Six of the moved rules bind code outside their package, and no test catches a break, so they return to the overview.
+The earlier PATTERN cleanup moved package-local rules into their owning package's `doc.go`.
+Six of those rules bind code outside the owning package, and no test catches a break, so an agent working in another package no longer saw them.
+This puts them back in `PATTERN.md` as one-line overview entries, so every spawned agent gets them in its prompt.
 
 ## What changes
 
-- **Six overview entries restored**, each one line with no background file:
-  - `PATTERN-sparse-hub-base`, under CLI and config: any writer of a hub base file keeps it sparse.
-  - `PATTERN-parent-lock`, under Fabric and git: a local parent branch moves only in Finalize, under its parent lock.
-  - `PATTERN-transient-stop` and `PATTERN-friction-capture`, under Shed and loom: the transient mark's one owner and boundaries, and the Go-written friction note on a loom halt, crash-resume or webster refusal.
-  - `PATTERN-agent-name` and `PATTERN-wait-mark-display-only`, under Agents and prompts: names go through `internal/agentname`, and no Go decision reads the wait-mark pane options.
-- **Package docs cite the IDs.**
-  The rule's sentence in `internal/hubreconcile`, `internal/parentlock`, `internal/agentname`, `internal/reedengine`, `internal/shedengine` and `internal/friction` now names its restored entry.
-- **Voucher clause restored.**
-  `internal/friction/doc.go` again states that `lyx loom start` vouches for the resume it spawns, so a deliberate resume leaves no crash-resume note.
-  The cut had left that clause only in a comment in `internal/loomcli/start.go`.
+`PATTERN.md` gains six entries, each under the topic heading its subject fits:
 
-The overview grows from about 7.0 KB to about 8.1 KB, well under the headroom line.
+- `PATTERN-sparse-hub-base` under CLI and config.
+- `PATTERN-parent-lock` under Fabric and git.
+- `PATTERN-transient-stop` and `PATTERN-friction-capture` under Shed and loom.
+- `PATTERN-agent-name` and `PATTERN-wait-mark-display-only` under Agents and prompts.
+
+Each owning package's doc now cites its restored ID where it states the rule: `internal/hubreconcile`, `internal/parentlock`, `internal/shedengine`, `internal/friction`, `internal/reedengine` and `internal/agentname`.
+`internal/friction/doc.go` also states again that `lyx loom start` vouches for the resume it spawns, so a deliberate resume leaves no crash-resume note.
+That clause had survived only as a comment in `internal/loomcli/start.go`.
+
+Only comments and `PATTERN.md` change; no code behavior does.
 
 ## Design decisions
 
-- `transient-stop` and `friction-capture`, which the audit only leaned towards restoring, come back too:
-  no scan covers a mark site or a halt or refusal path outside the owning package, so they meet the same test as the other four.
-- Each entry names the package whose doc holds the detail instead of linking a background file.
-  The format checker admits only a `pattern/` link, and a background file would hold a second copy of the doc's rule.
-- Each entry keeps the `(test)` marking its removed line carried, so only `friction-capture` has one.
-- No tripwire test is added.
-  One would let a rule leave the overview later, but each needs its own scan.
-- `hub-wide-config`, `recipe-owns-failures` and `batcher-registry` stay in their package docs, as the audit judged.
+- **Overview lines only, no `[background]` link.**
+  The package doc already holds each rule's bounds and enforcement, and a background file would be a second copy.
+  The entry names the package whose doc holds the detail, and the doc cites the `PATTERN-` ID, so a grep ties the two together.
+- **`transient-stop` and `friction-capture` are restored too.**
+  The audit was unsure about them.
+  They meet the same test as the other four: no scan covers code outside the package, and review is the only guard.
+- **`(test)` marking follows enforcement.**
+  Only `PATTERN-friction-capture` carries it, as its removed line did.
+- **Left out of PATTERN.**
+  `hub-wide-config`, `recipe-owns-failures` and `batcher-registry` stay in their package docs, as the audit judged them fine.
+  Tripwire tests for the restored rules are out of scope.
+
+## Cost
+
+The overview grows by about 1 KB in every spawned agent's prompt, within the `internal/pattern` headroom line.
 
 ## To check by hand
 
-- Read each restored line against its package doc section for a clause the line contradicts.
+- Run `lyx gate test ./internal/pattern` to confirm the real-file check passes with the six new entries; this was not run here.
