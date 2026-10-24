@@ -1,0 +1,295 @@
+{
+  "runGuid": "43cfa814d994668d0a05c57c27d1a1f7",
+  "planFingerprint": "5945f949628a2df0716a27b15ea8ab793b9e7165f73e69d47eba8887d3e01208",
+  "planFileHashes": {
+    "00-overview.md": "c3f7c3710689673b70eef27ecf79a1e27d1650000f79d38e64f55157161feaba",
+    "01-gate-config-keys.md": "f7770fb899d8dbf46c40929b280f2864d1764d0e2dea05085566f8c8f4ceb3ad",
+    "02-build-run-lines.md": "dd09e6d1c96ebaca65e5eb0af67c08af1a70704d4b2259a1f4075e9bee9811c4",
+    "03-card-csharp-seeds.md": "26d1960722934539db2ce37ed2dd590abac84ed42f7c31f4ad164c9367ff7cbd",
+    "04-csharp-source-scan.md": "5fba23081737b9c4acc95d499099185df58f8df6f85e6c6790205857e48424fb",
+    "05-test-class-selection.md": "487498238ffe07eb74ccb6d38857ceb3d5d2462252ec88a897c46f635039f485",
+    "06-impactset-diff-reads.md": "dc96049e54f741102cf5f7f31adc1536fcd78d84d7a2784e7e8887fcb3f280e9",
+    "07-derive-entry-points.md": "aabb85e377a46d3cb3060310558deee81d6b0c444ce6d53d509f70ae35ea32a5",
+    "08-filter-placeholder.md": "09edffeab328b5da864d73344355be647f7f635353b2be4aa73a2ea0d1efbdfc",
+    "09-dotnet-scoper.md": "d4b703cb9209e11a154f5d990ffbe0f27a0acf61463df004293551a9143af7e3",
+    "10-fingerprint-and-carry.md": "3e73b4733b528123ef6792feea66bdd4493a0f5ffba37333dfff34621f7891c3",
+    "11-inert-paths.md": "f1fd8443167f6fb1a29b8a5073811a8f5f7990fbace825e1a698b978cf369616",
+    "12-shared-build-step.md": "43db634e105c2072f387573eb1eaae198997642f1c639b5a1a5dac04e7b7850d",
+    "13-dotnet-hub-end-to-end.md": "34a47886b42a9874fc1f62de5fbe9e799571892b43baf69b3c68c572d7106dfc"
+  },
+  "planOverviewFrameHash": "e19afc325aa1c1d51fdcd6be7ba880e651aa07b333b66cac327702480a38a0ba",
+  "partition": [
+    {
+      "cards": [
+        "01-gate-config-keys",
+        "02-build-run-lines",
+        "03-card-csharp-seeds"
+      ],
+      "profile": "wide",
+      "estimate": 175344,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 1,
+        "startup": 53872,
+        "read_union": 29132,
+        "cards": [
+          {
+            "card": 1,
+            "card_text": 588,
+            "reads": {
+              "file:internal/gateslot/doc.go": 1464,
+              "file:internal/gateslot/template.yaml": 396,
+              "package:internal/gateslot": 2000,
+              "tests:internal/gateslot": 2000
+            },
+            "messages": 105,
+            "written": 32088
+          },
+          {
+            "card": 2,
+            "card_text": 708,
+            "reads": {
+              "file:contracts/stencils/landing/landing-template-fixer.md": 516,
+              "file:internal/gateslot/doc.go": 1464,
+              "file:internal/landingshed/doc.go": 2256,
+              "file:internal/verifytree/doc.go": 540,
+              "package:contracts/stencils/landing": 2000,
+              "package:internal/gateslot": 2000,
+              "package:internal/landingshed": 2000,
+              "package:internal/verifytree": 2000,
+              "tests:contracts/stencils/landing": 2000,
+              "tests:internal/gateslot": 2000,
+              "tests:internal/landingshed": 2000,
+              "tests:internal/verifytree": 2000
+            },
+            "messages": 145.5,
+            "written": 44358
+          },
+          {
+            "card": 3,
+            "card_text": 444,
+            "reads": {
+              "file:internal/planparser/doc.go": 2220,
+              "package:internal/planparser": 2000,
+              "tests:internal/planparser": 2000
+            },
+            "messages": 51.5,
+            "written": 15894
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "04-csharp-source-scan",
+        "05-test-class-selection",
+        "06-impactset-diff-reads",
+        "07-derive-entry-points",
+        "08-filter-placeholder",
+        "09-dotnet-scoper"
+      ],
+      "profile": "wide",
+      "estimate": 194136,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 2,
+        "startup": 60872,
+        "read_union": 32464,
+        "cards": [
+          {
+            "card": 4,
+            "card_text": 372,
+            "reads": {
+              "package:internal/dotnetimpact": 2000,
+              "tests:internal/dotnetimpact": 2000
+            },
+            "messages": 48,
+            "written": 14772
+          },
+          {
+            "card": 5,
+            "card_text": 576,
+            "reads": {
+              "package:internal/dotnetimpact": 2000,
+              "tests:internal/dotnetimpact": 2000
+            },
+            "messages": 48,
+            "written": 14976
+          },
+          {
+            "card": 6,
+            "card_text": 204,
+            "reads": {
+              "file:internal/impactset/doc.go": 528,
+              "package:internal/impactset": 2000,
+              "tests:internal/impactset": 2000
+            },
+            "messages": 21,
+            "written": 6504
+          },
+          {
+            "card": 7,
+            "card_text": 612,
+            "reads": {
+              "file:docs/overview.md": 9792,
+              "package:docs": 2000,
+              "package:internal/dotnetimpact": 2000,
+              "tests:docs": 2000,
+              "tests:internal/dotnetimpact": 2000
+            },
+            "messages": 54,
+            "written": 16812
+          },
+          {
+            "card": 8,
+            "card_text": 396,
+            "reads": {
+              "file:internal/gatecli/doc.go": 3144,
+              "package:internal/gatecli": 2000,
+              "tests:internal/gatecli": 2000
+            },
+            "messages": 48.5,
+            "written": 14946
+          },
+          {
+            "card": 9,
+            "card_text": 840,
+            "reads": {
+              "file:internal/gatecli/doc.go": 3144,
+              "package:internal/gatecli": 2000,
+              "tests:internal/gatecli": 2000
+            },
+            "messages": 106.5,
+            "written": 32790
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "10-fingerprint-and-carry",
+        "11-inert-paths",
+        "12-shared-build-step",
+        "13-dotnet-hub-end-to-end"
+      ],
+      "profile": "wide",
+      "estimate": 201384,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 3,
+        "startup": 67872,
+        "read_union": 28368,
+        "cards": [
+          {
+            "card": 10,
+            "card_text": 480,
+            "reads": {
+              "file:internal/gatecli/doc.go": 3144,
+              "package:internal/gatecli": 2000,
+              "tests:internal/gatecli": 2000
+            },
+            "messages": 86.5,
+            "written": 26430
+          },
+          {
+            "card": 11,
+            "card_text": 540,
+            "reads": {
+              "file:internal/gatecli/doc.go": 3144,
+              "package:internal/gatecli": 2000,
+              "tests:internal/gatecli": 2000
+            },
+            "messages": 58.5,
+            "written": 18090
+          },
+          {
+            "card": 12,
+            "card_text": 936,
+            "reads": {
+              "file:internal/gatecli/doc.go": 3144,
+              "file:pattern/PATTERN-gate-slot.md": 888,
+              "package:internal/gatecli": 2000,
+              "package:pattern": 2000,
+              "tests:internal/gatecli": 2000,
+              "tests:pattern": 2000
+            },
+            "messages": 158.5,
+            "written": 48486
+          },
+          {
+            "card": 13,
+            "card_text": 588,
+            "reads": {
+              "file:docs/overview.md": 9792,
+              "package:docs": 2000,
+              "package:internal/gatecli": 2000,
+              "tests:docs": 2000,
+              "tests:internal/gatecli": 2000
+            },
+            "messages": 38.5,
+            "written": 12138
+          }
+        ]
+      }
+    }
+  ],
+  "currentBatch": 1,
+  "masterStrand": "e8d789df2077252216cf24db3cf99eef",
+  "masterSessionId": "ff33c466-afe8-4cad-b93b-3ee265d7379c",
+  "masterEngine": "claude",
+  "batches": {
+    "1": {
+      "slug": "gate-config-keys",
+      "cards": [
+        "01-gate-config-keys",
+        "02-build-run-lines",
+        "03-card-csharp-seeds"
+      ],
+      "cardHashes": {
+        "01-gate-config-keys": "f7770fb899d8dbf46c40929b280f2864d1764d0e2dea05085566f8c8f4ceb3ad",
+        "02-build-run-lines": "dd09e6d1c96ebaca65e5eb0af67c08af1a70704d4b2259a1f4075e9bee9811c4",
+        "03-card-csharp-seeds": "26d1960722934539db2ce37ed2dd590abac84ed42f7c31f4ad164c9367ff7cbd"
+      },
+      "startSha": "23487316c4bdb6885e1b354767dd15347c6741f2",
+      "kind": "fork",
+      "spawnedAt": "2026-10-24T16:28:59Z",
+      "sessionId": "ff33c466-afe8-4cad-b93b-3ee265d7379c",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
+    }
+  }
+}
