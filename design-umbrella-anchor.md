@@ -38,7 +38,10 @@ All beams share one hub and one board, so a separate hub per subdirectory (`fabr
 - No marker stays on Bolt: `fabric clone --subpath` writes the first `.lyx-anchor` at the root of `main-weft`, and every weft branch starts from there, so every worktree has one; `lyxcwd.resolveCore` reads the worktree's own marker, and everything that reads `Location.AnchorRel` follows.
 - The work is in the code that builds another worktree's paths from its own anchor (`warplayout.go`, `teardown.go`, `forkrecords.go`), `codebinding.go`'s own marker read, and the one-anchor keys of `_portals/`, `_launchers/` and the workspace files: each must resolve that worktree's own anchor.
 - Changing a worktree's anchor becomes a modest verb: remove its weft junctions, move its files in the weft to the new anchor and commit the new marker, recreate the junctions at the new place in the warp, and regenerate the workspace files that list it.
-  Orch notes, not decided: the warp's machine-local `<anchor>/.lyx/` moves too; the worktree has no run in flight while it moves; and a beam's change does not reach task worktrees already made under it unless the verb walks them.
+  Moving the files covers the warp's machine-local `<anchor>/.lyx/` as well.
+  No run may be in flight in the worktree while it moves (operator, 2026-10-24).
+  Operator view, not a decision: changing the anchor of a worktree that already has child worktrees is very messy, since the children keep the old one.
+- Creating a beam takes a simple option for a new anchor (such as `lyx beam create --anchor <dir>`); the default is the anchor of the worktree it is spawned from, which becomes its parent (operator, 2026-10-24).
 - To check: if a weft branch merges into its parent's weft at landing, the parent keeps its own `.lyx-anchor`, kept out of the merge as raddle is.
 
 ## Operator view, not a decision (2026-10-24): one large isolated task
