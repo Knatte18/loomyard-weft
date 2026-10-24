@@ -1,11 +1,11 @@
 # Card 25 — batten-notices-walk
 
 **Create:**
-- `plan:internal/battencli#notifyRunParent` -> `func notifyRunParent(prime *lyxcwd.Location, slug, line string) (bool, error)`
-- `plan:internal/battencli#runParentRecorded` -> `func runParentRecorded(prime *lyxcwd.Location, slug string) (bool, error)`
-- `plan:internal/battencli#noticeSite` -> `func noticeSite(prime *lyxcwd.Location, slug string, pair func() (*lyxcwd.Location, bool, error), parentOf func(slug string) (string, error)) (site *lyxcwd.Location, isPair bool, err error)`
-- `plan:internal/battencli#TestNoticeSite` -> `func TestNoticeSite(t *testing.T)`
-- `plan:internal/battencli#TestNoticesReachDriversParent` -> `func TestNoticesReachDriversParent(t *testing.T)`
+- `internal/battencli#notifyRunParent`
+- `internal/battencli#runParentRecorded`
+- `internal/battencli#noticeSite`
+- `internal/battencli#TestNoticeSite`
+- `internal/battencli#TestNoticesReachDriversParent`
 
 **Edit:**
 - `internal/battencli#rowNotices`
