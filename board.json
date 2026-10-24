@@ -1081,10 +1081,10 @@
     },
     {
       "id": 804,
-      "handle": "B6",
+      "handle": "T1",
       "slug": "webstercli-tests-ignore-tmp-git",
       "title": "webstercli standalone tests fail when an empty /tmp/.git exists",
-      "kind": "note",
+      "kind": "task",
       "labels": [
         "bug",
         "webster",
