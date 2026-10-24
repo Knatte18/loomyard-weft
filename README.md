@@ -17,7 +17,7 @@ Held by a run; its scope is locked until the run ends.
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T1 | **Each test runs once per tree: disjoint tiers, row entry gates, carried green runs, tmux in final**<br>• Tiers tagged by name, shed row entry gates, verify skipped on an already green tree, tmux in the final gate, gate time measured<br>• `profile: light` | [`gate-runs-once`](design-gate-runs-once.md) | loom | Plan-Burler-Fix | neve | 6d<br>2h | gate, shed, loom, webster, fabric, batten |
-| T5 | **lyx loom decision add records several decisions in one call and one notice**<br>• `profile: light` | [`decision-add-batch`](design-decision-add-batch.md) | darn | Describe | neve | 1h<br>24m | loom, creel |
+| T5 | **lyx loom decision add records several decisions in one call and one notice**<br>• `profile: light` | [`decision-add-batch`](design-decision-add-batch.md) | darn | PR-Review | neve | 1h<br>24m | loom, creel |
 | T7 | **Batten idle notice says no agent activity readable while a run is live**<br>• `profile: light` | [`idle-notice-no-live-run`](design-idle-notice-no-live-run.md) | darn | Code-Burler-Fix | neve | 1h<br>24m | batten, shuttle |
 | T8 | **The watcher system should recognize halt due to session limit**<br>• `profile: light` | [`usage-limit-hold-quiet`](design-usage-limit-hold-quiet.md) | darn | Finalize | neve | 16h<br>24m | shuttle, creel, orch |
 
@@ -44,7 +44,7 @@ Starts when every entry it names under After is done.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T2 | **Clean up PATTERN.md: far too many entries**<br>• `profile: light` | [`pattern-cleanup`](design-pattern-cleanup.md) | darn | `gate-runs-once`, `fork-git-guard-scratch-repo`, `run-profiles-ladder` | 1h<br>41m | stencil |
+| T2 | **Clean up PATTERN.md: far too many entries**<br>• `profile: light` | [`pattern-cleanup`](design-pattern-cleanup.md) | darn | `gate-runs-once`, `fork-git-guard-scratch-repo`, `run-profiles-ladder` | 1h<br>42m | stencil |
 
 ## Notes (42)
 
@@ -57,7 +57,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | A2 |  | **Recurring test-suite time and growth audit**<br>• Re-run cmd/testtiming against test-suite-timing.md to watch suite growth | [`test-time-audit-recurring`](design-test-time-audit-recurring.md) | 5d<br>5d |  |
 | A3 |  | **Audit the twill and lens review setup: worth per perch, recurring finding classes, writer quality**<br>• One audit over the review records once about ten loom runs with the current setup land on Neve | [`review-setup-audit`](design-review-setup-audit.md) | 8d<br>1d | burler, loom, report, stencil, shed |
 | A5 |  | **Sweep go_parallel on OSL-1046 with Cortex XDR**<br>• Time both gate tiers on the work laptop on a quiet machine and log them in docs beside the Neve numbers, with full hardware info | [`bench-osl1046-xdr`](design-bench-osl1046-xdr.md) | 4d<br>3d |  |
-| A6 |  | **Lens overlap audit: which lenses find the same defects, and a smaller set**<br>• twill-plan 8 to 5 lenses recommended; twill-discussion 7 to 4 and review-code 4 to 3 at low confidence | [`lens-overlap-audit`](design-lens-overlap-audit.md) | 1d<br>50m | burler, loom |
+| A6 |  | **Lens overlap audit: which lenses find the same defects, and a smaller set**<br>• twill-plan 8 to 5 lenses recommended; twill-discussion 7 to 4 and review-code 4 to 3 at low confidence | [`lens-overlap-audit`](design-lens-overlap-audit.md) | 1d<br>51m | burler, loom |
 | A7 |  | **Trial: batcher profile wide (budget 300k)**<br>• Hub runs a new batcher profile wide, budget 300k; check cost and fork quality before taking it into the template | [`batch-budget-300k-trial`](design-batch-budget-300k-trial.md) | 1d<br>1d | webster |
 | A8 |  | **Plan writer cost: sub-planners per part, and twill versus a solo writer**<br>• The Plan writer is 18% of spend; sub-planners per part for large bundles, and a twill versus solo Opus high comparison on cost, rounds and time | [`plan-writer-context`](design-plan-writer-context.md) | 1d<br>13m | loom, stencil |
 
@@ -65,7 +65,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | P | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| E1 |  | **Audit: ideas from tree-sitter-analyzer for quarry and its use in lyx**<br>• What the Python tree-sitter-analyzer offers that quarry or lyx could use if built in Go, what already exists, and what would not pay off | [`tsa-quarry-audit`](design-tsa-quarry-audit.md) | 5d<br>5m | quarry, webster, burler, loom |
+| E1 |  | **Audit: ideas from tree-sitter-analyzer for quarry and its use in lyx**<br>• What the Python tree-sitter-analyzer offers that quarry or lyx could use if built in Go, what already exists, and what would not pay off | [`tsa-quarry-audit`](design-tsa-quarry-audit.md) | 5d<br>6m | quarry, webster, burler, loom |
 | E2 |  | **Codex CLI as a second shuttle engine: hands-on spike, then codexengine**<br>• Codex CLI as a second engine to offload Claude tokens: short hands-on tests first, then a codexengine for single-session roles | [`codex-engine`](design-codex-engine.md) | 2w<br>8d | shuttle, codex |
 | E4 |  | **finalize: the discrepancy-document conflict shape**<br>• Divergences that cannot be a git conflict get a precomputed document for the resolving agent instead of markers | [`finalize-discrepancy-doc`](design-finalize-discrepancy-doc.md) | 2w<br>2w | fabric, loom |
 | E7 |  | **Run verbs in one shared namespace, not under lyx loom**<br>• lyx loom decision/status/goto/approve act on darn runs too; move recipe-neutral run verbs to one shared namespace | [`run-verbs-shared`](design-run-verbs-shared.md) | 9d<br>9d | shed, loom |
