@@ -1,6 +1,6 @@
 # A parent decision reaches the agent that needs it: Burler decision findings and Merriam
 
-`decision-reaches-agents` · Task · bug, burler, loom, webster, stencil, creel · running · Worktree-Create
+`decision-reaches-agents` · Task · bug, burler, loom, webster, stencil, creel · running · Darn-Write
 
 ## Part 1: Burler fix loop cannot route a decision-class finding (from `burler-decision-finding-route`)
 
