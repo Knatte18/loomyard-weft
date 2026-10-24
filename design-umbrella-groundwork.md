@@ -167,6 +167,6 @@ A branch checked out in another worktree is refused with a message naming that w
 ## Operator decision (2026-10-24): a VS Code workspace file per beam
 
 - Each beam gets its own `<repo>-<beam>.code-workspace` directly in the hub folder, beside the hub's `<repo>.code-workspace`.
-- It lists the beam's own worktree, Bolt, and the task worktrees under the beam.
-- It is written when the beam is created, kept current as its task worktrees come and go, and removed when the beam lands.
-- The hub workspace file stays as it is.
+- Each file shows one level only. A beam's file lists the beam's own worktree, its parent's worktree (the prime or the parent beam it lands into), Bolt, the beam's own task worktrees, and for each sub-beam only that sub-beam's own worktree, since the sub-beam has its own file.
+- It is written when the beam is created, kept current as its worktrees come and go, and removed when the beam lands.
+- The hub's `<repo>.code-workspace` follows the same rule: the prime, Bolt, the task worktrees directly under `main`, and each top-level beam's own worktree, never the worktrees under a beam.
