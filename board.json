@@ -131,25 +131,6 @@
       "revised": "2026-10-05T06:27:22Z"
     },
     {
-      "id": 86,
-      "handle": "F9",
-      "slug": "doctor",
-      "title": "doctor: a lyx diagnostics command",
-      "kind": "note",
-      "labels": [
-        "feature",
-        "config",
-        "board"
-      ],
-      "issues": [],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "lyx doctor checks the _lyx layout, config parse, board reachability and stale locks",
-      "body": "From `manifest/roadmap.md` Someday.\nA diagnostics command (`lyx doctor`): checks `_lyx/` layout, config parse, board reachability, stale locks.",
-      "created": "2026-10-04T12:45:43Z",
-      "revised": "2026-10-08T16:45:39Z"
-    },
-    {
       "id": 97,
       "handle": "F11",
       "slug": "board-viewer",
