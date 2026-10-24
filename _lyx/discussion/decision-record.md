@@ -55,6 +55,12 @@ Replace the hub's ad hoc run profiles (`budget`, `light`, `docs`, `darn-wide`) w
 
 - Between the binary deploy and the rewrite of the hub's `profiles.yaml`, `lyx board profiles`, a board write naming a profile and Seed-Child refuse the old file.
 
+<!-- lyx:carry-over Code-Review -->
+- Code-Review, round 1: converged; each finding below was fixed or disputed by the round's fixer, and no fresh reviewer has seen the result; the fixer report says which.
+  Review: _lyx/reviews/code/round-1-review.md; fixer report: _lyx/reviews/code/round-1-fixer-report.md.
+  - boardcli-doc-old-profiles-shape (class consistency, severity MEDIUM, open in rounds 1)
+<!-- /lyx:carry-over Code-Review -->
+
 ## Acceptance criteria
 
 - Loading the template yields `docs`, `light`, `solid`, `speed` and `wide`, and defaults `loom: solid` and `darn: light`.
