@@ -24,7 +24,7 @@
 - `plan:internal/dotnetimpact#DeriveDiff`
 - `plan:internal/dotnetimpact#DeriveCards`
 - `plan:internal/dotnetimpact#Scope`
-- `plan:internal/planparser#CardCSharpSeeds`
+- `internal/planparser#CardCSharpSeeds`
 
 **Intent:**
 Wire the `dotnet` scoper into `computeScope` for the computed, `--base` and `--card` forms (Decisions 1, 3 and 4; Constraint on the green record).

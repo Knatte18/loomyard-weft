@@ -1,12 +1,12 @@
 # Card 1 — gate config keys for the dotnet scoper, filter, shared build, carry and inert paths
 
 **Create:**
-- `plan:internal/gateslot#BuildStep` -> `type BuildStep struct`
-- `plan:internal/gateslot#buildFile` -> `type buildFile struct`
-- `plan:internal/gateslot#decodeBuild` -> `func decodeBuild(file buildFile) (BuildStep, error)`
-- `plan:internal/gateslot#Config.Inert` -> `func (c Config) Inert(rel string) bool`
-- `plan:internal/gateslot#Config.AllInert` -> `func (c Config) AllInert(paths []string) bool`
-- `plan:internal/gateslot#TestConfig_Inert` -> `func TestConfig_Inert(t *testing.T)`
+- `internal/gateslot#BuildStep`
+- `internal/gateslot#buildFile`
+- `internal/gateslot#decodeBuild`
+- `internal/gateslot#Config.Inert`
+- `internal/gateslot#Config.AllInert`
+- `internal/gateslot#TestConfig_Inert`
 
 **Edit:**
 - `internal/gateslot#Tier`

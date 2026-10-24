@@ -16,7 +16,7 @@
 - `internal/gatecli#greenRecord.newestWholeAncestor`
 - `internal/gatecli#scopesConfigWith`
 - `plan:internal/impactset#ChangedPaths`
-- `plan:internal/gateslot#Config.AllInert`
+- `internal/gateslot#Config.AllInert`
 
 **Intent:**
 Apply a hub's `inert_paths` at narrowed and whole gates alike (Decision 5); with the empty list every path below is skipped, so every scoper behaves as today.
