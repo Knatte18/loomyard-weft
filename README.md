@@ -18,7 +18,7 @@ Held by a run; its scope is locked until the run ends.
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T1 | **Each test runs once per tree: disjoint tiers, row entry gates, carried green runs, tmux in final**<br>• Tiers tagged by name, shed row entry gates, verify skipped on an already green tree, tmux in the final gate, gate time measured<br>• `profile: light` | [`gate-runs-once`](design-gate-runs-once.md) | loom | Webster | neve | 6d<br>4h | gate, shed, loom, webster, fabric, batten |
 | T5 | **Codex spike 2: a twill-like fan of forks with inherited context**<br>• Test parallel Codex subagents with fork_turns all, each writing a file, parent waiting and merging<br>• `profile: docs` | [`codex-twill-spike`](design-codex-twill-spike.md) | darn | Darn-Write | neve | 11m<br>5m | shuttle, codex |
-| T7 | **Audit the Claude-specific mechanics in stencils for a second engine**<br>• List every stencil site tied to Claude Code (forks, SendMessage, skills, tool names) and what Codex needs there<br>• `profile: docs` | [`stencil-engine-audit`](design-stencil-engine-audit.md) | darn | PR-Review | neve | 11m<br>5m | stencil, codex |
+| T7 | **Audit the Claude-specific mechanics in stencils for a second engine**<br>• List every stencil site tied to Claude Code (forks, SendMessage, skills, tool names) and what Codex needs there<br>• `profile: docs` | [`stencil-engine-audit`](design-stencil-engine-audit.md) | darn | Finalize | neve | 11m<br>5m | stencil, codex |
 
 ### Ready (0)
 
