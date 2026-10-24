@@ -1,6 +1,6 @@
 # webster record-batch fails create-not-done for Create targets declared in an external _test package
 
-`record-batch-external-test-pkg` · Note · bug, webster, quarry
+`record-batch-external-test-pkg` · Task · bug, webster, quarry
 
 Imported from [issue #851](https://github.com/Knatte18/loomyard/issues/851).
 
