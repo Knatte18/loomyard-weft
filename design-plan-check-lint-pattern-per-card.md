@@ -1,6 +1,6 @@
 # Plan check does not project the lint-pattern step per card, so a wrong plan-review fix passes review and fails only at self-check
 
-`plan-check-lint-pattern-per-card` · Task · enhancement, loom, burler · running · PR-Review
+`plan-check-lint-pattern-per-card` · Task · enhancement, loom, burler · running · Finalize
 
 Imported from [issue #866](https://github.com/Knatte18/loomyard/issues/866).
 
