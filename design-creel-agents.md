@@ -18,9 +18,9 @@ Creel is a prerequisite for Codex; the Codex-readiness plan's interim `neutral-p
 - `lyx shuttle send` and `lyx shuttle interrupt` move behind creel.
 - The parent directive (`contracts/stencils/parent/parent-directive-parent.md`), rendered for every role with a parent, says to ask through creel, not "by `SendMessage`".
 - `shuttleengine/hold.go`'s hold notice names creel, not `SendMessage`.
-- The other stencils that name `SendMessage` (`seat-directive-{chair,advisor}`, `shed-template-driver-notify{,-watched}.md`, `loom-template-parent-review-delivery.md`, the orch role) move to creel where the Discussion finds it fits; what stays Claude-only is declared through `Spec.Requires`.
+- The other stencils that name `SendMessage` (`seat-directive-{chair,advisor}`, `loom-template-discussion-advisor.md`, `shed-template-driver-notify{,-watched}.md`, `loom-template-parent-review-delivery.md`, `webster-template-master.md`, the orch role) move to creel where the Discussion finds it fits; what stays Claude-only is declared through `Spec.Requires`.
 
-The stencil audit (`docs/research/stencil-engine-audit-2026-10-24/report.md`) lists every stencil, spec and Go site of the message-agent mechanic.
+Block 7 (`message-agent`) of the stencil audit (`docs/research/stencil-engine-audit-2026-10-24/report.md`) is the full site list, stencils, specs and Go sites.
 
 ## Risk to check in Discussion
 
@@ -98,6 +98,7 @@ The operator's concern: much added delay.
 ### Orch view on that
 
 - Whether Codex has messaging between sessions is not checked; the `codex-engine` spike can find out.
+  `docs/research/codex-twill-spike-2026-10-24/report.md` saw Codex's `send_message`, `followup_task` and `interrupt_agent` tools between a parent and its subagents but did not test them; whether Codex agents can message each other is worth testing (operator, 2026-10-24).
 - The relay need not be LLM agents: creel is already a program that types into any pane, so a cross-engine message is one `lyx creel post` by the sender, typed in full into the receiver's pane, with no relay turn.
   Two relay agents would add two LLM turns and their delay per message.
   Operator (2026-10-23): relay agents are cheap, on the cheapest models such as Haiku or Luna, and must forward verbatim; creel as designed does the same.
