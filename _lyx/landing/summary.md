@@ -1,27 +1,27 @@
 # Discussion check refuses a PATTERN text over the entry line cap
 
-A decision record's `## PATTERN changes` bullet could declare an `adds` or `changes` text whose PATTERN.md entry line ran past `pattern.MaxEntryLineChars`.
-The discussion check passed it, and the run first failed at Plan-Write.
-There, `pattern-entry-line-cap` refuses the over-cap fenced line, while `pattern-changes-mismatch` and `pattern-line-unprescribed` refuse any other text, so only the parent replacing the bullet could unblock the run.
+A decision record whose `## PATTERN changes` bullet declares an `adds` or `changes` text too long for a PATTERN.md entry line used to pass Discussion and first fail at Plan-Write, where `pattern-entry-line-cap` refuses the fenced line.
+The run then waited on the parent to replace the bullet.
+`internal/discussionparser`'s `Validate` now measures the overview line each such bullet prescribes, `` - `PATTERN-<id>` — <text> ``, in runes, and reports one `pattern-change-over-cap` finding per bullet over 360.
+The finding names the entry, the line length and the cap, and gives a way forward.
 
-## What changes
-
-- `discussionparser.Validate` gains a `pattern-change-over-cap` finding.
-  It runs after `ParsePatternChanges`, once per `adds` or `changes` bullet whose overview line, `` - `<ID>` — <text> ``, is longer than the cap in runes, the same line and unit the plan gate measures.
-  The detail names the entry, the length and the cap, and its way forward says to shorten the text or move the detail to the entry's background file.
-- A bullet appended by `lyx loom decision add` is measured too, and its way forward names re-recording the entry through that verb, which replaces the bullet in place.
-- Because `AppendDecision` runs `Validate` after its write and restores the record on a finding, `lyx loom decision add --pattern-text` now refuses an over-cap text with the record unchanged.
-- `contracts/specs/loom-discussion-spec.md` states the cap in its PATTERN changes section, so Discussion-Write shortens the text before its review, and the package doc names the check.
+`lyx loom decision add --pattern-text` refuses an over-cap text through the same check: `AppendDecision` runs `Validate` after the write and restores the record on a finding.
+`contracts/specs/loom-discussion-spec.md` states the cap in its PATTERN changes section, and the package `doc.go` names the check.
 
 ## Design decisions
 
-- The length check stays out of `ParsePatternChanges`.
-  `DeclaredPatternChanges`, the plan gate's mismatch check and the dropped-bullet check all refuse on any parse finding, so a shape finding would turn an over-cap bullet into hard errors at later steps.
-  As a `Validate` finding it reaches every discussion gate, `lyx loom validate-discussion` and `AppendDecision` through one site.
-- `internal/discussionparser` declares its own unexported `patternEntryLineCap`, because its leaf test admits no non-stdlib production import.
-  An in-package test pins it equal to `pattern.MaxEntryLineChars`, so a change to either cap fails that test.
+- The check lives in `Validate`, not in `ParsePatternChanges`.
+  `Validate` is the one function the loom discussion gates, the darn gate, `lyx loom validate-discussion` and `AppendDecision` all run, so one site covers every path.
+  `ParsePatternChanges` stays a shape check, so `DeclaredPatternChanges`, the plan gate's mismatch check and the dropped-bullet check still read an over-cap bullet as well-formed.
+- The measured line is the one Plan-Write must fence, counted in runes with the text trimmed and without the appended-after-Discussion suffix, so it agrees with `pattern-entry-line-cap` on every bullet.
+- `internal/discussionparser` declares its own unexported `patternEntryLineCap` (360), because its leaf test admits only the standard library in production code and `internal/pattern` pulls in the stencil packages.
+  `TestPatternEntryLineCap_EqualsThePatternCap` pins it to `pattern.MaxEntryLineChars`, so a drift of either value fails the test.
+- A bullet appended by `lyx loom decision add` is measured like any other.
+  Its way forward tells the parent to re-record the entry with a shorter `--pattern-text`, which replaces the bullet in place.
+- A `removes` bullet prescribes no line and is never measured.
 
-## Tests
+## Risks and manual checks
 
-`TestValidate_PatternChangeOverCap` covers `adds`, `changes`, appended and multi-byte bullets one rune over the cap, the same at the cap, and a `removes` bullet that would be over the cap if it were measured.
-`TestAppendDecision_FindingRestoresRecord` gains a row for an over-cap `PatternChange`.
+- A record already holding an over-cap appended bullet now fails the discussion check until its parent re-records the entry.
+  No live run is known to hold one.
+- The tests were not run by hand.
