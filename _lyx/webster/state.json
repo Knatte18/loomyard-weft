@@ -1335,7 +1335,7 @@
       }
     }
   ],
-  "currentBatch": 0,
+  "currentBatch": 22,
   "masterStrand": "204a08846d361e4757e6dfa87f5f015b",
   "masterSessionId": "987ef1ee-76d9-4313-9782-0f9e5f09a81e",
   "masterEngine": "claude",
@@ -1559,31 +1559,28 @@
       },
       "startSha": "959fc277d999aa08a42e49e48acbffcabae9295d",
       "kind": "recovery",
-      "spawnedAt": "2026-10-24T11:05:57Z",
-      "terminal": true,
-      "status": "dead",
-      "digest": {
-        "batch": "22-tier-plan-docs",
-        "status": "dead",
-        "dead_reason": "died"
-      },
+      "spawnedAt": "2026-10-24T11:20:17Z",
+      "terminal": false,
+      "status": "",
       "forkTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-gate-runs-once/10aba9c6-1885-40a9-b0f0-1f9376bb6375/subagents/agent-a9d2ab51c77a8ed87.jsonl"
       ],
-      "strandGuid": "a2759e373bcd892c8c417e7db7bad647",
-      "shuttleRunDir": "/home/knatte/Code/loomyard-LYXHUB/gate-runs-once/.lyx/shuttle/e29100c1b083f61b4722c154063414b4",
-      "eventsPath": "/home/knatte/Code/loomyard-LYXHUB/gate-runs-once/.lyx/shuttle/e29100c1b083f61b4722c154063414b4/events.jsonl",
+      "strandGuid": "6aa3ccf99993e126da3f35a5d722d9f0",
+      "shuttleRunDir": "/home/knatte/Code/loomyard-LYXHUB/gate-runs-once/.lyx/shuttle/e5f68d19c87259ec9491366929231eab",
+      "eventsPath": "/home/knatte/Code/loomyard-LYXHUB/gate-runs-once/.lyx/shuttle/e5f68d19c87259ec9491366929231eab/events.jsonl",
       "eventsOffset": 2242,
-      "recoveries": 1,
+      "recoveries": 2,
       "recoverySessions": [
         "e983de30-6292-401c-a7a1-940a522dfa20",
-        "ae1792f8-4409-440e-993d-b82391ea3778"
+        "ae1792f8-4409-440e-993d-b82391ea3778",
+        "dc2788c4-1be4-47aa-8668-52a13d2bb5e1"
       ],
       "recoveryEngines": {
         "ae1792f8-4409-440e-993d-b82391ea3778": "claude",
+        "dc2788c4-1be4-47aa-8668-52a13d2bb5e1": "claude",
         "e983de30-6292-401c-a7a1-940a522dfa20": "claude"
       },
-      "recoveryStartSha": "959fc277d999aa08a42e49e48acbffcabae9295d"
+      "recoveryStartSha": "00d1b470bc3ec6521be694caac51ad795e9d91a4"
     },
     "3": {
       "slug": "gate-call-renders-key",
