@@ -16,7 +16,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T2 | **Clean up PATTERN.md: far too many entries**<br>• `profile: light` | [`pattern-cleanup`](design-pattern-cleanup.md) | darn | Code-Burler-Review | neve | 6h<br>2h | stencil |
+| T2 | **Clean up PATTERN.md: far too many entries**<br>• `profile: light` | [`pattern-cleanup`](design-pattern-cleanup.md) | darn | Code-Burler-Fix | neve | 6h<br>2h | stencil |
 | T5 | **Drop the transitional tag spellings after the deploy**<br>• After the deploy: remove the guard files' \|\| integration term, the old tag spellings in the tier commands and guards, and respell the glyphchain fixture<br>• `profile: light` | [`drop-transitional-tag-spellings`](design-drop-transitional-tag-spellings.md) | darn | Code-Burler-Review | neve | 1h<br>17m |  |
 
 ### Ready (0)
