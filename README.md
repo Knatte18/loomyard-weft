@@ -43,17 +43,18 @@ Starts when every entry it names under After is done.
 | --- | --- | --- | --- | --- | --- | --- |
 | T2 | **Clean up PATTERN.md: far too many entries**<br>• `profile: light` | [`pattern-cleanup`](design-pattern-cleanup.md) | darn | `gate-runs-once`, `fork-git-guard-scratch-repo`, `run-profiles-ladder` | 3h<br>2h | stencil |
 
-## Notes (43)
+## Notes (44)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
 
-### Audits (7)
+### Audits (8)
 
 | # | P | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | A1 |  | **Codex spike 2: a twill-like fan of forks with inherited context**<br>• Test parallel Codex subagents with fork_turns all, each writing a file, parent waiting and merging | [`codex-twill-spike`](design-codex-twill-spike.md) | 0m<br>0m | shuttle, codex |
 | A2 |  | **Recurring test-suite time and growth audit**<br>• Re-run cmd/testtiming against test-suite-timing.md to watch suite growth | [`test-time-audit-recurring`](design-test-time-audit-recurring.md) | 5d<br>5d |  |
 | A3 |  | **Audit the twill and lens review setup: worth per perch, recurring finding classes, writer quality**<br>• One audit over the review records once about ten loom runs with the current setup land on Neve | [`review-setup-audit`](design-review-setup-audit.md) | 8d<br>1d | burler, loom, report, stencil, shed |
+| A4 |  | **Audit the Claude-specific mechanics in stencils for a second engine**<br>• List every stencil site tied to Claude Code (forks, SendMessage, skills, tool names) and what Codex needs there | [`stencil-engine-audit`](design-stencil-engine-audit.md) | 0m<br>0m | stencil, codex |
 | A5 |  | **Sweep go_parallel on OSL-1046 with Cortex XDR**<br>• Time both gate tiers on the work laptop on a quiet machine and log them in docs beside the Neve numbers, with full hardware info | [`bench-osl1046-xdr`](design-bench-osl1046-xdr.md) | 4d<br>3d |  |
 | A6 |  | **Lens overlap audit: which lenses find the same defects, and a smaller set**<br>• twill-plan 8 to 5 lenses recommended; twill-discussion 7 to 4 and review-code 4 to 3 at low confidence | [`lens-overlap-audit`](design-lens-overlap-audit.md) | 1d<br>2h | burler, loom |
 | A7 |  | **Trial: batcher profile wide (budget 300k)**<br>• Hub runs a new batcher profile wide, budget 300k; check cost and fork quality before taking it into the template | [`batch-budget-300k-trial`](design-batch-budget-300k-trial.md) | 1d<br>1h | webster |
