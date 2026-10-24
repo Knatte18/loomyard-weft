@@ -15,3 +15,8 @@ Why abnormal: a need that only the orch can satisfy is classified as a dead reco
 What to do: let a fork's 'needs orch action' report route to the parent (a message or a distinct pause state) without consuming the recovery budget, keep recovery_retry and dead_reason consistent across consecutive recover-batch refusals, and make a re-entry of an already-halted escalation return the existing halt rather than append another stuck entry.
 
 Provenance: task gate-runs-once; notes loom-halt.md, loom-halt-2.md, loom-halt-3.md, webster-refusal-recover-batch.md, webster-refusal-recover-batch-2.md, webster-refusal-begin-batch.md
+
+## Design choice (operator left it to the orch, 2026-10-24)
+
+A fork's "needs orch action" report puts Webster into a waiting state of its own that spends no recovery budget, and the orch is told; once the orch has acted, the batch resumes where it stood.
+No distinct halt type is added.
