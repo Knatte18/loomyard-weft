@@ -1,11 +1,11 @@
 {
-  "current_producer": "Darn-Write",
+  "current_producer": "Code-Bouncer",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Darn-Write",
-    "last": "Preflight → done",
+    "now": "Code-Bouncer",
+    "last": "Darn-Write → done",
     "wait": ""
   },
   "history": [
@@ -14,6 +14,51 @@
       "outcome": "done",
       "output": "",
       "at": "2026-10-24T06:24:36Z"
+    },
+    {
+      "producer": "Darn-Write",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYXHUB/smokestart-index-lock-flake/_lyx/landing/summary.md",
+      "at": "2026-10-24T06:44:16Z",
+      "gate_attempts": 1,
+      "gate_spans": [
+        {
+          "gate": "discussion",
+          "kind": "gate",
+          "start": "2026-10-24T06:33:38.167555232Z",
+          "end": "2026-10-24T06:33:54.329905758Z"
+        },
+        {
+          "gate": "discussion",
+          "kind": "gate",
+          "start": "2026-10-24T06:41:55.827788218Z",
+          "end": "2026-10-24T06:42:12.211436111Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-10-24T06:33:54.380694638Z",
+          "end": "2026-10-24T06:38:43.574530027Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "rework",
+          "start": "2026-10-24T06:38:44.015697368Z",
+          "end": "2026-10-24T06:41:55.79739928Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-10-24T06:42:12.301782271Z",
+          "end": "2026-10-24T06:44:15.610226284Z"
+        },
+        {
+          "gate": "description",
+          "kind": "gate",
+          "start": "2026-10-24T06:44:15.72020855Z",
+          "end": "2026-10-24T06:44:15.724032068Z"
+        }
+      ]
     }
   ],
   "product": {
