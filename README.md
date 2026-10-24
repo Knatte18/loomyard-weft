@@ -6,7 +6,7 @@ Prime owner: `neve`.
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
 
-## Tasks (9)
+## Tasks (10)
 
 Concrete and claimable; only a task can run.
 
@@ -21,11 +21,13 @@ Held by a run; its scope is locked until the run ends.
 | T7 | **Batten idle notice says no agent activity readable while a run is live**<br>• `profile: light` | [`idle-notice-no-live-run`](design-idle-notice-no-live-run.md) | darn | Code-Burler-Fix | neve | 2h<br>31m | batten, shuttle |
 | T8 | **Audit: ideas from tree-sitter-analyzer for quarry and its use in lyx**<br>• What the Python tree-sitter-analyzer offers that quarry or lyx could use if built in Go, what already exists, and what would not pay off<br>• `profile: docs` | [`tsa-quarry-audit`](design-tsa-quarry-audit.md) | darn | Darn-Write | neve | 5d<br>2m | quarry, webster, burler, loom |
 
-### Ready (0)
+### Ready (1)
 
 Waits on nothing open; can start now.
 
-_None._
+| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- | --- | --- |
+| T10 | **Batcher wide-trial comparison script and results into docs/research**<br>• `profile: docs` | [`batch-trial-script-research`](design-batch-trial-script-research.md) | darn |  | 0m<br>0m | webster |
 
 ### Layer A (4)
 
