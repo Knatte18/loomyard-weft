@@ -57,6 +57,14 @@ Rationale: the board entry names the code sites; a repository-wide comment sweep
 - A task branch cut before `ed98ccf71` that still holds `integration`, `tmux` or `llm` test files runs none of them under the new tier commands until it merges `main`; the one-tag scan then fails it loudly.
 - The hub's `gate.yaml` change takes effect for every run of the hub when written, before this branch lands.
 
+<!-- lyx:carry-over Code-Review -->
+- Code-Review, round 1: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
+  Review: _lyx/reviews/code/round-1-review.md; fixer report: _lyx/reviews/code/round-1-fixer-report.md.
+  - pattern-test-isolation-retired-tag-sets (class consistency, severity MEDIUM, open in rounds 1)
+  - pattern-test-speed-transitional-guard-tag (class consistency, severity MEDIUM, open in rounds 1)
+  - retired-spelling-scan-misses-right-of-false-and (class design, severity MEDIUM, open in rounds 1)
+<!-- /lyx:carry-over Code-Review -->
+
 ## Acceptance criteria
 
 - No `//go:build` line in the repository names `integration`, `tmux` or `llm`.
