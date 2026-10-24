@@ -47,3 +47,13 @@ seed:
       tokens_known: true
       fresh_tokens: 26990
       cache_read_tokens: 167942
+judge:
+    - engine: claude
+      model: sonnet
+      effort: medium
+      start: 2026-10-24T06:48:14Z
+      end: 2026-10-24T08:48:32.743246171+02:00
+      wall_seconds: 18.743246171
+      tokens_known: true
+      fresh_tokens: 33582
+      cache_read_tokens: 154392

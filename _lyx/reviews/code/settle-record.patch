@@ -1,0 +1,200 @@
+diff --git a/internal/shuttleengine/activity.go b/internal/shuttleengine/activity.go
+index 615a1d3a0..dc00428d5 100644
+--- a/internal/shuttleengine/activity.go
++++ b/internal/shuttleengine/activity.go
+@@ -56,7 +56,8 @@ var unreadableFiles logger.EpisodeSet
+ // and an undecodable record is logged once per episode so one torn file cannot hide another run.
+ // Each run is read through the engine its record names, the set's default for a record naming none:
+ // its events past its prompt offset are parsed through that engine, and the newest turn end among them is handed to the engine's ActivityReader;
+-// a run with no turn end yet, or an engine without the capability, is judged by its events file alone.
++// a run with no turn end past the offset hands over the newest one before it, a skill-load turn end of the same session, for its last activity only, so a first turn spent in a fork still reads active.
++// A run with no turn end at all, or an engine without the capability, is judged by its events file alone.
+ // A run whose record names an engine the set does not hold is skipped and logged once per episode.
+ // An absent root returns no readings and no error.
+ func ReadAgentActivity(cfg Config, anchorPath string, engines EngineSet) ([]AgentActivity, error) {
+@@ -107,16 +108,20 @@ func readRunActivity(rs RunState, engine Engine, reader ActivityReader) AgentAct
+ 
+ 	var eventsActivity time.Time
+ 	var turnEnd *Event
++	var ownTurnEnd bool
+ 	if info, err := os.Stat(rs.EventsPath); err == nil {
+ 		eventsActivity = eventsFileActivity(rs, engine, info.ModTime())
+-		turnEnd = newestTurnEnd(rs, engine)
++		turnEnd, ownTurnEnd = newestTurnEnd(rs, engine)
+ 	}
+ 
+ 	var activity TurnEndActivity
+ 	if reader != nil && turnEnd != nil {
+ 		activity = reader.TurnEndActivity(*turnEnd)
+ 	}
+-	reading.APIError, reading.APIErrorText = activity.APIError, activity.APIErrorText
++	// A turn end before the prompt offset stands in only for the session's last activity: its API error is not the run's own.
++	if ownTurnEnd {
++		reading.APIError, reading.APIErrorText = activity.APIError, activity.APIErrorText
++	}
+ 
+ 	reading.LastActivity = activity.TranscriptModTime
+ 	if eventsActivity.After(reading.LastActivity) {
+@@ -165,25 +170,33 @@ func eventsFileActivity(rs RunState, engine Engine, modTime time.Time) time.Time
+ 	return modTime
+ }
+ 
+-// newestTurnEnd returns the newest turn end in the run's events file past its prompt offset, or nil when there is none or the file cannot be parsed.
+-func newestTurnEnd(rs RunState, engine Engine) *Event {
++// newestTurnEnd returns the newest turn end in the run's events file past its prompt offset, with own true.
++// When none follows the offset it returns the newest turn end before it, with own false: that one names the same session, so its transcript and forks can be read before the run's first own turn ends.
++// It returns nil when the file holds no turn end or cannot be parsed.
++func newestTurnEnd(rs RunState, engine Engine) (turnEnd *Event, own bool) {
+ 	data, err := os.ReadFile(rs.EventsPath)
+ 	if err != nil {
+-		return nil
+-	}
+-	if rs.PromptOffset > 0 {
+-		data = data[min(rs.PromptOffset, int64(len(data))):]
+-	}
+-	events, err := engine.ParseEvents(data)
+-	if err != nil {
+-		unreadableFiles.Fail(rs.EventsPath, "shuttle: could not parse a run's events for its activity", "eventsPath", rs.EventsPath, "cause", err)
+-		return nil
+-	}
+-	unreadableFiles.Recover(rs.EventsPath, "shuttle: run events parse again", "eventsPath", rs.EventsPath)
+-	for i := len(events) - 1; i >= 0; i-- {
+-		if events[i].Kind == EventStop || events[i].Kind == EventWaiting {
+-			return &events[i]
++		return nil, false
++	}
++	offset := min(max(rs.PromptOffset, 0), int64(len(data)))
++	for _, part := range []struct {
++		data []byte
++		own  bool
++	}{{data[offset:], true}, {data[:offset], false}} {
++		events, err := engine.ParseEvents(part.data)
++		if err != nil {
++			unreadableFiles.Fail(rs.EventsPath, "shuttle: could not parse a run's events for its activity", "eventsPath", rs.EventsPath, "cause", err)
++			return nil, false
++		}
++		for i := len(events) - 1; i >= 0; i-- {
++			if events[i].Kind == EventStop || events[i].Kind == EventWaiting {
++				// Recovery is logged only when the parts read so far have all parsed,
++				// so a part that fails cannot end and restart the episode on each poll.
++				unreadableFiles.Recover(rs.EventsPath, "shuttle: run events parse again", "eventsPath", rs.EventsPath)
++				return &events[i], part.own
++			}
+ 		}
+ 	}
+-	return nil
++	unreadableFiles.Recover(rs.EventsPath, "shuttle: run events parse again", "eventsPath", rs.EventsPath)
++	return nil, false
+ }
+diff --git a/internal/shuttleengine/activity_test.go b/internal/shuttleengine/activity_test.go
+index 9be71b6a2..2468801f9 100644
+--- a/internal/shuttleengine/activity_test.go
++++ b/internal/shuttleengine/activity_test.go
+@@ -5,6 +5,7 @@
+ package shuttleengine
+ 
+ import (
++	"errors"
+ 	"os"
+ 	"path/filepath"
+ 	"reflect"
+@@ -49,6 +50,19 @@ func (e signalActivityEngine) ParseSessionSignals(data []byte) ([]SessionSignal,
+ 	return signals, len(data)
+ }
+ 
++// failingPartEngine is a fakeEngine whose ParseEvents fails on any bytes containing failOn.
++type failingPartEngine struct {
++	*fakeEngine
++	failOn string
++}
++
++func (e *failingPartEngine) ParseEvents(data []byte) ([]Event, error) {
++	if strings.Contains(string(data), e.failOn) {
++		return nil, errors.New("failingPartEngine: scripted parse failure")
++	}
++	return e.fakeEngine.ParseEvents(data)
++}
++
+ // activityRun describes one run directory under the run-directory root.
+ type activityRun struct {
+ 	outcome      string
+@@ -154,6 +168,28 @@ func TestReadAgentActivity(t *testing.T) {
+ 			},
+ 			want: []AgentActivity{{StrandName: "hub:task:driver", LastActivity: transcriptWritten}},
+ 		},
++		{
++			name: "a first turn not yet ended reads the session's activity through the turn end before the prompt offset, without its API error",
++			runs: map[string]activityRun{"run-a": {
++				outcome: runOutcomeRunning, pid: livePID, strandName: "hub:task:driver",
++				events: "STOP:skill\n", promptOffset: int64(len("STOP:skill\n")),
++			}},
++			transcript: map[string]TurnEndActivity{
++				"skill": {TranscriptModTime: transcriptWritten, APIError: true, APIErrorText: "from the skill load"},
++			},
++			want: []AgentActivity{{StrandName: "hub:task:driver", LastActivity: transcriptWritten}},
++		},
++		{
++			name: "a prompt offset past the end of the file reads the whole file as the session's earlier activity",
++			runs: map[string]activityRun{"run-a": {
++				outcome: runOutcomeRunning, pid: livePID, strandName: "hub:task:driver",
++				events: "STOP:skill\n", promptOffset: 1000,
++			}},
++			transcript: map[string]TurnEndActivity{
++				"skill": {TranscriptModTime: transcriptWritten, APIError: true, APIErrorText: "from the skill load"},
++			},
++			want: []AgentActivity{{StrandName: "hub:task:driver", LastActivity: transcriptWritten}},
++		},
+ 		{
+ 			name: "a record without a strand name reports the strand guid",
+ 			runs: map[string]activityRun{"run-a": {outcome: runOutcomeRunning, pid: livePID, events: "STOP:turn\n"}},
+@@ -223,6 +259,33 @@ func TestReadAgentActivity(t *testing.T) {
+ 		requireFailureEpisode(t, buf.String(), "could not parse a run's events", 2, "run events parse again")
+ 	})
+ 
++	// It captures the process-global logger at Debug, so it runs serially like the test.
++	t.Run("a pre-offset part that fails to parse after the own part parsed logs one episode", func(t *testing.T) {
++		buf := logcapture.CaptureVerbose(t)
++		logger.SetVerbosity(2)
++		root := t.TempDir()
++		run := activityRun{
++			outcome: runOutcomeRunning, pid: livePID, strandName: "hub:task:driver",
++			events: "BAD\nnoise\n", promptOffset: int64(len("BAD\n")),
++		}
++		writeActivityRun(t, root, "run-a", run, created, eventsWritten)
++		engine := &failingPartEngine{fakeEngine: &fakeEngine{}, failOn: "BAD"}
++
++		for range 4 {
++			if _, err := ReadAgentActivity(Config{RunDir: root}, t.TempDir(), singleEngineSet(engine)); err != nil {
++				t.Fatal(err)
++			}
++		}
++
++		failure := "could not parse a run's events"
++		if got := countLevelLines(buf.String(), "WARN", failure); got != 1 {
++			t.Errorf("WARN lines of %q = %d, want 1; log: %s", failure, got, buf.String())
++		}
++		if got := countLevelLines(buf.String(), "INFO", "run events parse again"); got != 0 {
++			t.Errorf("INFO recovery lines = %d, want 0; log: %s", got, buf.String())
++		}
++	})
++
+ 	// It captures the process-global logger at Debug, so it runs serially like the test.
+ 	t.Run("each run is read through the engine its record names", func(t *testing.T) {
+ 		buf := logcapture.CaptureVerbose(t)
+diff --git a/internal/shuttleengine/doc.go b/internal/shuttleengine/doc.go
+index 9b3535adf..e45b43cf7 100644
+--- a/internal/shuttleengine/doc.go
++++ b/internal/shuttleengine/doc.go
+@@ -427,8 +427,10 @@
+ // the run's strand name, its last activity, and whether its newest turn end is an API error with the error's text.
+ // The last activity is the newer of the session's last activity, its forks included, and the time of the events file's newest Stop or ask line, the run's creation time when neither is readable.
+ // A Stop or ask line carrying no time, an engine without the optional SessionSignalParser capability, and a file yielding no signals count the events file's last write instead, so an idle notice, a prompt submission or a stamp line never moves it.
+-// The events past the prompt offset are parsed through the Engine, and the newest turn end goes to the optional ActivityReader capability for the session part;
+-// an engine without it, and a run with no turn end yet, are judged by the events file alone.
++// The events past the prompt offset are parsed through the Engine, and the newest turn end goes to the optional ActivityReader capability for the session part.
++// With no turn end past the offset, the newest one before it, a skill-load turn end of the same session, goes instead, for the session's last activity only and never its API error,
++// so a first turn spent in a fork reads active before it ends.
++// An engine without the capability, and a run with no turn end at all, are judged by the events file alone.
+ // Like ReadWaitMarker it reads files only, so a process that runs no shuttle may call it.
+ //
+ // Session state has two consumers: Runner.SessionIdle and the verified send's idle wait, which gate on the readiness reading built from it.
