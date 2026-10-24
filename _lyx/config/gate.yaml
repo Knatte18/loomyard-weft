@@ -5,7 +5,7 @@ refuse_raw: ["go test"]
 tiers:
   tier0:
     about: untagged tests
-    command: "go test -json {targets} {args}"
+    command: "go test -json -tags tier0 {targets} {args}"
     all_targets: ./...
     env: {GOFLAGS: "-trimpath -p={parallel}"}
     counter: go-json
@@ -13,33 +13,30 @@ tiers:
     timeout_min: 10
   tier1:
     about: integration tests with build and vet under each tag first
-    command: "go build ./... && go vet -tags integration {targets} && go vet -tags tmux {targets} && go vet -tags llm {targets} && go test -json -tags integration {targets} {args}"
+    command: "go build ./... && go vet -tags tier0 {targets} && go vet -tags tier1,integration {targets} && go vet -tags tier2,tmux {targets} && go vet -tags tier3,llm {targets} && go test -json -tags tier1,integration {targets} {args}"
     all_targets: ./...
     env: {GOFLAGS: "-trimpath -p={parallel}"}
     counter: go-json
     parallel: 4
     timeout_min: 30
-    covers: [0]
     prebuilt_lyx: true
   tier2:
     about: tmux tests
-    command: "go test -json -tags tmux {targets} {args}"
+    command: "go test -json -tags tier2,tmux {targets} {args}"
     all_targets: ./...
     env: {GOFLAGS: "-trimpath -p={parallel}"}
     counter: go-json
     parallel: 4
     timeout_min: 30
-    covers: [0]
     prebuilt_lyx: true
   tier3:
     about: llm tests run by hand only
-    command: "go test -json -tags llm {targets} {args}"
+    command: "go test -json -tags tier3,llm {targets} {args}"
     all_targets: ./...
     env: {GOFLAGS: "-trimpath -p={parallel}"}
     counter: go-json
     parallel: 1
     timeout_min: 60
-    covers: [0]
     prebuilt_lyx: true
     manual: true
 gates:
