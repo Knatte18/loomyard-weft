@@ -17,7 +17,7 @@ Held by a run; its scope is locked until the run ends.
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T2 | **Clean up PATTERN.md: far too many entries**<br>• `profile: light` | [`pattern-cleanup`](design-pattern-cleanup.md) | darn | Code-Burler-Review | neve | 6h<br>3h | stencil |
-| T7 | **lyx gate test stops at the first failing tier, so a pre-existing tier0 failure hides every later tier and the guard step**<br>• `profile: light` | [`gate-runs-past-failing-tier`](design-gate-runs-past-failing-tier.md) | darn | PR-Review | neve | 36m<br>27m | gate |
+| T7 | **lyx gate test stops at the first failing tier, so a pre-existing tier0 failure hides every later tier and the guard step**<br>• `profile: light` | [`gate-runs-past-failing-tier`](design-gate-runs-past-failing-tier.md) | darn | Finalize | neve | 36m<br>27m | gate |
 | T10 | **webster record-batch refuses Create target when the test is declared in an external _test package**<br>• `profile: light` | [`create-target-ext-test-pkg`](design-create-target-ext-test-pkg.md) | darn | Darn-Write | neve | 36m<br>27m | webster, quarry |
 
 ### Ready (0)
