@@ -16,9 +16,9 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T1 | **Restore to PATTERN the moved rules that bind callers outside their package**<br>• Audit of pattern-cleanup: 4 moved rules bind outside code with no scan, 2 more lean back<br>• `profile: light` | [`pattern-restore-caller-rules`](design-pattern-restore-caller-rules.md) | darn | Darn-Write | neve | 14m<br>2m | config, shed, reed, fabric |
+| T1 | **Restore to PATTERN the moved rules that bind callers outside their package**<br>• Audit of pattern-cleanup: 4 moved rules bind outside code with no scan, 2 more lean back<br>• `profile: light` | [`pattern-restore-caller-rules`](design-pattern-restore-caller-rules.md) | darn | Darn-Write | neve | 15m<br>3m | config, shed, reed, fabric |
 | T2 | **A run never files a task, at most a note**<br>• gate-runs-once filed a follow-up task (default loom) that then auto-started; runs may file only notes<br>• `profile: light` | [`runs-never-write-board`](design-runs-never-write-board.md) | darn | Darn-Write | neve | 1h<br>0m | board, loom, stencil |
-| T3 | **Run profiles as one ladder: speed, light, solid, wide**<br>• Replace budget, light, docs and darn-wide with one profile ladder shared by darn and loom<br>• `profile: light` | [`run-profiles-ladder`](design-run-profiles-ladder.md) | darn | Code-Burler-Review | neve | 1d<br>4h | config, loom, burler |
+| T3 | **Run profiles as one ladder: speed, light, solid, wide**<br>• Replace budget, light, docs and darn-wide with one profile ladder shared by darn and loom<br>• `profile: light` | [`run-profiles-ladder`](design-run-profiles-ladder.md) | darn | Code-Burler-Fix | neve | 1d<br>4h | config, loom, burler |
 | T4 | **[.NET] Scoped build and test for C# hubs, and the Models verification wants**<br>• Verify gates in a .NET hub build and test only the projects a card touches, since a scanned Windows machine makes every build slow. | [`dotnet-scoped-verify`](design-dotnet-scoped-verify.md) | loom | Discussion-Write | neve | 2w<br>41m | shed, webster, loom, config, dotnet |
 | T9 | **Umbrella groundwork: project entries, pairs from a parent pair, and umbrella tasks that spawn and land from their own worktree**<br>• [WS 004+006] Board projects, fabric pairs from a parent pair, batten and orch from any worktree, umbrella tasks | [`umbrella-groundwork`](design-umbrella-groundwork.md) | loom | Discussion-Burler-Fix | neve | 3w<br>4h | fabric, batten, orch, board, reed, creel, shed, workspaces |
 
@@ -48,7 +48,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | # | P | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | B1 |  | **Find why a running run shows a dead waiter in the activity reader** | [`idle-notice-dead-waiter-cause`](design-idle-notice-dead-waiter-cause.md) | 5h<br>5h | batten, shuttle |
-| B7 |  | **Webster batch whose card verify needs an orch-only change dead-ends: recover-batch ends dead with 'asking', then the run halts repeatedly with growing history** | [`webster-orch-need-to-parent`](design-webster-orch-need-to-parent.md) | 1h<br>2m | webster, loom |
+| B7 |  | **Webster batch whose card verify needs an orch-only change dead-ends: recover-batch ends dead with 'asking', then the run halts repeatedly with growing history** | [`webster-orch-need-to-parent`](design-webster-orch-need-to-parent.md) | 1h<br>3m | webster, loom |
 
 ### Enhancements (23)
 
@@ -94,4 +94,4 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | F16 | H | **creel stage 3: agents message through creel, not SendMessage**<br>• Parent asks, parent review, stop reports and shuttle send go through creel, so a non-Claude engine can take a role with a parent | [`creel-agents`](design-creel-agents.md) | 9d<br>3h | creel, shuttle, loom, stencil, report |
 | F17 |  | **Ideas to borrow from comparable agent orchestrators (survey, Oct 2026)** | [`orchestrator-survey-ideas`](design-orchestrator-survey-ideas.md) | 8d<br>5h | burler, shed, orch, quarry, report |
 | F18 |  | **[.NET 004] Asynchronous test tiers in shed: the numerical baseline captured before implementation, compared at the final gate**<br>• Support a hub regression tier that writes profiles on the parent before implementation and compares after, switchable per task for expected drift. | [`regression-baseline-verify`](design-regression-baseline-verify.md) | 7d<br>1h | shed, webster, batten, config, dotnet |
-| F20 |  | **Large tasks: Discussion, a pre-planner, and the pieces as darn runs inside the task's beam**<br>• Discussion decides scope, a pre-planner splits it into contracted pieces, each piece runs as darn from the task's beam, a whole-task perch reviews, then align and land | [`loom-beam-darns`](design-loom-beam-darns.md) | 1d<br>2m | loom, shed, batten, workspaces, burler |
+| F20 |  | **Large tasks: Discussion, a pre-planner, and the pieces as darn runs inside the task's beam**<br>• Discussion decides scope, a pre-planner splits it into contracted pieces, each piece runs as darn from the task's beam, a whole-task perch reviews, then align and land | [`loom-beam-darns`](design-loom-beam-darns.md) | 1d<br>3m | loom, shed, batten, workspaces, burler |
