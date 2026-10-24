@@ -1058,6 +1058,26 @@
       "body": "Imported from [issue #864](https://github.com/Knatte18/loomyard/issues/864).\n\nWhat happened: a pre-existing tier0 failure (a CLI-form test failing on a command's Long text over its byte cap, unrelated to the batch) made `lyx gate test` stop at the first failing tier.\nThe card gate and the batch gate therefore never reached the guard step or tier1, so a retag's tier1 compile, its vet steps under every tag set and its guard step got no check from either gate.\nThe agent covered the gap by hand with `lyx gate test --wait --tier 1 --card \u003ccard\u003e`.\n\nWhy abnormal: a failure the batch did not cause silently removes the verification of everything after it, and the gate reports no sign that those steps were skipped.\n\nWhat to do: either let the gate run later tiers and the guard step past a failing tier (reporting all failures), or state explicitly in the gate output which tiers and steps were not reached.\nA failure present at the base should not blind the gate for a batch that did not cause it.\n\nProvenance: task gate-runs-once; notes 22-tier-plan-docs-recovery.md",
       "created": "2026-10-24T13:37:39Z",
       "revised": "2026-10-24T13:37:39Z"
+    },
+    {
+      "id": 803,
+      "handle": "B5",
+      "slug": "webster-reset-reopens-dead-batch",
+      "title": "webster: Master writes stuck after reset --to batch-start instead of running recover-batch",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "webster"
+      ],
+      "issues": [
+        863
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Imported from [issue #863](https://github.com/Knatte18/loomyard/issues/863).\n\nSeen 2026-10-24 in run gate-runs-once: batch 22 ended dead (recovery_retry false). The way forward lyx prints (existingReportRemedy in internal/websterengine/beginbatch.go) is reset --to batch-start --batch 22, then lyx webster recover-batch 22. After the orch ran the reset and lyx loom resume, each fresh Master read status, saw batch 22 still dead/terminal with recovery_retry false (RecoveryRetry is always false once the reset cleared RecoveryStartSHA) and wrote outcome stuck again per webster-template-master.md; the tackler handed back twice.\n\nWorkaround: the orch ran lyx webster recover-batch 22 by hand from the task worktree, then lyx loom resume.\n\nExpected: after reset --to batch-start, the batch reads as recoverable (status or recovery_retry reflects the cleared count) and Master runs recover-batch itself, or the reset re-opens the batch so begin-batch runs it again.",
+      "created": "2026-10-24T13:37:42Z",
+      "revised": "2026-10-24T13:37:42Z"
     }
   ],
   "prime_owner": "neve"
