@@ -1,4 +1,4 @@
-<!-- lyx-stencil: sha256=cafb39d4c50780f6c09b900b3aa4f8eeaec1150fb36f4ee587b157a5b983106f build=ed98ccf71d12c07c28bc8f97c8f5d7ede7e73025 time=2026-10-24T13:05:08Z -->
+<!-- lyx-stencil: sha256=16b2f887a33a8f762ee2c45e2419973a82594dfde316bd58d9c3d5148655b9fa build=93f1c8942e059ae8e8adcea22f0345f1035daae9 time=2026-10-24T13:55:37Z -->
 
 # Loom plan-spec — flat card list
 
@@ -505,7 +505,7 @@ The rows below stay in one fixed order regardless of which entry point runs them
 34. `resign-interface-method` — an `Edit` re-sign arrow on a member glyph that resolves to a method whose signature does not open with `func`, which is how an interface method answers; its own spec is no declaration a head can re-sign.
     Emitted by `internal/planglyph`'s plan-gate pass at `ValidateFormat`, `Validate` and `ValidateRework`, never at `ValidateDispatch`, because it reads the tree; the way forward is to drop the arrow and state the signature change in the card's `Intent`.
 35. `caller-uncovered` — a member a card deletes (a `Delete:` group's member glyph) or re-signs (an `Edit:` arrow's target) that Go code still references, where no admissible card's target covers the reference.
-    A reference is resolved by type where a load of the root module's packages answers: `go/packages` over the directories holding a file that names the member, run offline (`GOPROXY=off`, `-mod=readonly`) with test variants and the `tier0` through `tier3` tags and the older `integration`, `tmux` and `llm` spellings, under a timeout, and logged.
+    A reference is resolved by type where a load of the root module's packages answers: `go/packages` over the directories holding a file that names the member, run offline (`GOPROXY=off`, `-mod=readonly`) with test variants and the `tier0` through `tier3` tags, under a timeout, and logged.
     A typed reference is an identifier whose used object is the member, so a call on another type, through an interface or on a same-named function of another package is no reference, and a promoted call or a method value is.
     The load is skipped when the worktree root holds no `go.mod`, and covers no directory inside a nested module; a failed or timed-out load is logged and leaves every file to the scan below, never an error.
     In a hub the load first waits for a gate slot, and a slot that cannot be acquired, as over an absent or invalid `gate.yaml` or an invalid machine override of it, is a failed load.
