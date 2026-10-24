@@ -1,6 +1,6 @@
 # Audit: ideas from tree-sitter-analyzer for quarry and its use in lyx
 
-`tsa-quarry-audit` · Task · audit, quarry, webster, burler, loom
+`tsa-quarry-audit` · Task · audit, quarry, webster, burler, loom · running · Worktree-Create
 
 ## Task (operator, 2026-10-24)
 
