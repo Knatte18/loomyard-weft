@@ -223,6 +223,12 @@ Rationale: F12: one bound for one hazard, the shell refusing an overlong command
   - tier-filter-key-has-no-bound (class design, severity MEDIUM, open in rounds 2)
 <!-- /lyx:carry-over Discussion-Review -->
 
+<!-- lyx:carry-over Code-Review -->
+- Code-Review, round 1: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
+  Review: _lyx/reviews/code/round-1-review.md; fixer report: _lyx/reviews/code/round-1-fixer-report.md.
+  - verbatim-string-escaped-quote-lexed-as-raw (class design, severity MEDIUM, open in rounds 1)
+<!-- /lyx:carry-over Code-Review -->
+
 ## Acceptance criteria
 
 - Under `scoper: dotnet`, a diff changing one production `.cs` file selects the test classes whose files name a type it declares or a type that transitively names one, and runs each owning test project once with `{targets}` the project and `{filter}` the composed expression.
