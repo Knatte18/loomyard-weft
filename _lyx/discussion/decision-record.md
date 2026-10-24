@@ -288,6 +288,13 @@ Rationale: F15: only standalone CLIs such as `burlercli` and `webstercli` declar
   - d13-ready-notice-reaches-barred-prime-orch (class consistency, severity MEDIUM, open in rounds 3)
 <!-- /lyx:carry-over Discussion-Review -->
 
+<!-- lyx:carry-over Plan-Review -->
+- Plan-Review, round 2: converged; each finding below was fixed or disputed by the round's fixer, and no fresh reviewer has seen the result; the fixer report says which.
+  Review: _lyx/reviews/plan/round-2-review.md; fixer report: _lyx/reviews/plan/round-2-fixer-report.md.
+  - missing-records-worktree-branch-untested (class scope, severity MEDIUM, open in rounds 2)
+  - promote-root-pair-dead-end (class consistency, severity MEDIUM, open in rounds 1, 2)
+<!-- /lyx:carry-over Plan-Review -->
+
 ## Acceptance criteria
 
 Every refusal below is reached with its way forward in its text.
