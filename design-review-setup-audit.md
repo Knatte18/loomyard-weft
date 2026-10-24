@@ -24,6 +24,7 @@ A sonnet agent ran the audit over the 6 loom runs landed since `504c5552`; the s
 - The lens fan raised 93% of round-1 gating findings at Discussion and 58% at Plan, for about $1 a perch; a review perch costs about $10-11, mostly in its later rounds.
 - No further cut in round-1 findings from twill-plan is visible, and none is ruled out.
 - Agent recommendation, not a decision: template defaults Discussion 2 soft / 3 hard, Plan 1 soft / 2 hard, Webster 1, Merge 1 (profile `light`'s values).
+  Since `fed963ec5` these are no longer `light`'s values: the ladder is `speed`, `light` (1 round per perch), `solid` (Discussion 2, Plan 2) and `wide`.
 
 ## Operator decision (2026-10-22): lens fan in Discussion round 2
 
