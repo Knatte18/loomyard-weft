@@ -1,6 +1,6 @@
 # Fork git-mutation guard fails a run on git commands confined to a scratch repo
 
-`fork-git-guard-scratch-repo` · Task · bug, shed, burler · running · Finalize
+`fork-git-guard-scratch-repo` · Task · bug, shed, burler · done
 
 Imported from [issue #843](https://github.com/Knatte18/loomyard/issues/843).
 
