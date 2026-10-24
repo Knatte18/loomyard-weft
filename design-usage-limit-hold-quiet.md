@@ -1,6 +1,6 @@
 # The watcher system should recognize halt due to session limit
 
-`usage-limit-hold-quiet` · Task · enhancement, shuttle, creel, orch · running · PR-Review
+`usage-limit-hold-quiet` · Task · enhancement, shuttle, creel, orch · running · Finalize
 
 Imported from [issue #854](https://github.com/Knatte18/loomyard/issues/854).
 
