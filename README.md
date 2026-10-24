@@ -59,7 +59,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | # | P | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | B1 |  | **Find why a running run shows a dead waiter in the activity reader** | [`idle-notice-dead-waiter-cause`](design-idle-notice-dead-waiter-cause.md) | 5h<br>5h | batten, shuttle |
-| B2 |  | **A run never files a task, at most a note**<br>• gate-runs-once filed a follow-up task (default loom) that then auto-started; runs may file only notes | [`runs-never-write-board`](design-runs-never-write-board.md) | 44m<br>42m | board, loom, stencil |
+| B2 |  | **A run never files a task, at most a note**<br>• gate-runs-once filed a follow-up task (default loom) that then auto-started; runs may file only notes | [`runs-never-write-board`](design-runs-never-write-board.md) | 44m<br>43m | board, loom, stencil |
 | B7 |  | **Webster batch whose card verify needs an orch-only change dead-ends: recover-batch ends dead with 'asking', then the run halts repeatedly with growing history** | [`webster-orch-need-to-parent`](design-webster-orch-need-to-parent.md) | 30m<br>30m | webster, loom |
 
 ### Enhancements (23)
@@ -74,7 +74,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | E9 |  | **Paste cited code into a review rounds context**<br>• Reviewers edit nothing and review a fixed commit, so code pasted at round start cannot go stale; measure it against todays reviewer | [`review-inline-code`](design-review-inline-code.md) | 12d<br>5h | burler, stencil |
 | E10 |  | **Module labels from what a task touches, not only what it is about**<br>• Half the landings that changed the shuttle core lacked the shuttle label; derive or check module labels from the plan and the diff | [`labels-from-diff`](design-labels-from-diff.md) | 9d<br>9d | board, loom |
 | E13 |  | **Rename the lyx binary to lyr (name clash with LyX)** | [`rename-binary-lyr`](design-rename-binary-lyr.md) | 8d<br>2d | stencil, shuttle |
-| E14 |  | **An adopt runs the test suite on the adopting machine**<br>• Catch breaks from a machine change (Ubuntu 26.04, 24.04, Windows 11) at adopt time | [`adopt-runs-tests`](design-adopt-runs-tests.md) | 7h<br>46m | fabric, gate |
+| E14 |  | **An adopt runs the test suite on the adopting machine**<br>• Catch breaks from a machine change (Ubuntu 26.04, 24.04, Windows 11) at adopt time | [`adopt-runs-tests`](design-adopt-runs-tests.md) | 8h<br>46m | fabric, gate |
 | E16 |  | **Parallel batches: the shared pieces for Webster forks and Weaver**<br>• DAG batchifier, worktree per batch, merge-back with conflict resolution; open: keeping a fork inside its worktree | [`parallel-batch-parts`](design-parallel-batch-parts.md) | 6d<br>6d | webster, fabric, loom |
 | E17 | L | **[WS 007] An anchor per umbrella**<br>• Let a beam work in its own subdirectory of the repository, inherited by its tasks; loom-sized, best with or after umbrella-groundwork | [`umbrella-anchor`](design-umbrella-anchor.md) | 6d<br>6h | fabric, config, workspaces |
 | E18 | H | **[WS 005] One dobby daemon per beam owns and drives its runs**<br>• Each beam (a worktree with an orch thread) gets a Go daemon, started by lyx orch start, that follows its runs status files, starts ready tasks, lands, settles mechanical stops and tells the thread only what needs judgement | [`umbrella-daemon`](design-umbrella-daemon.md) | 12d<br>5h | batten, orch, shed, workspaces, loom, board |
@@ -107,11 +107,3 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | F17 |  | **Ideas to borrow from comparable agent orchestrators (survey, Oct 2026)** | [`orchestrator-survey-ideas`](design-orchestrator-survey-ideas.md) | 8d<br>5h | burler, shed, orch, quarry, report |
 | F18 |  | **[.NET 004] Asynchronous test tiers in shed: the numerical baseline captured before implementation, compared at the final gate**<br>• Support a hub regression tier that writes profiles on the parent before implementation and compares after, switchable per task for expected drift. | [`regression-baseline-verify`](design-regression-baseline-verify.md) | 7d<br>46m | shed, webster, batten, config, dotnet |
 | F20 |  | **Large tasks: Discussion, a pre-planner, and the pieces as darn runs inside the task's beam**<br>• Discussion decides scope, a pre-planner splits it into contracted pieces, each piece runs as darn from the task's beam, a whole-task perch reviews, then align and land | [`loom-beam-darns`](design-loom-beam-darns.md) | 1d<br>46m | loom, shed, batten, workspaces, burler |
-
-## Done (1)
-
-Finished, awaiting `lyx board prune --apply`.
-
-| # | Entry | Slug | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- |
-| T8 | **webster: Master writes stuck after reset --to batch-start instead of running recover-batch**<br>• `profile: light` | [`webster-reset-reopens-dead-batch`](design-webster-reset-reopens-dead-batch.md) | 30m<br>21m | webster |
