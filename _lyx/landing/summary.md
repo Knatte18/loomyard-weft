@@ -1,41 +1,50 @@
 # Keep every lens fork report verbatim in the run records
 
-A lens fork's final message used to survive only in machine-local Claude Code transcripts.
-The lead's one-line entry in `lens-review.md` is too terse for a lens audit, and the transcripts are neither in git nor present for runs from another machine.
-Each lens fork's report is now saved verbatim in a support file of its own, beside the file its lens review is recorded in, so audits read it from the archive tags.
+A writer that reviews its work through lenses spawns one fork per lens, and each fork returns a report.
+Only a one-line-per-finding summary reached the run records; the full reports survived only in machine-local Claude Code transcripts, which are not in git and do not exist for runs from another machine.
+Now every lens fork's final message is saved verbatim in a file of its own beside the record the lens review is written to, so a lens audit reads each report from the archive tags.
 
 ## What changes
 
-- All four lens fans save their reports: the Plan-Write and Discussion-Write twill fans (`internal/twilldirective`, hosted by `internal/loomengine`), Burler's reviewer cluster fan and Burler's fixer self-check fan (`internal/burlerengine`).
-- A report is named `<record stem>.lens-<lens>.md` and sits next to its record: `_lyx/plan/lens-review.lens-<lens>.md`, `_lyx/discussion/support-log.lens-<lens>.md`, `round-<n>-review.lens-<lens>.md` and `round-<n>-fixer-report.lens-<lens>.md`.
-  Each host's existing commit already stages the directory the record sits in, so the reports reach git with no new commit path.
-- The format is pinned in the new `contracts/specs/twill-lens-report-spec.md`, registered as `twill-lens-report-spec` and deployed to the specs directory's `twill` family.
-  It is a fenced YAML header naming the lens and whether the fork returned a report, over the final message verbatim.
-  A fork that returned nothing still gets its file, with the no-report outcome and no body.
-- The writer saves every report once the last fork has returned and before it judges or edits, so the text stays verbatim.
-  The twill directive's wait step, Burler's consolidation paragraph and Burler's self-check wait step each carry the save, and each points at the deployed spec path instead of restating the format.
-- A solo Burler round and a fan-less fixer render the prompts they did before.
+All four lens fans save their reports:
+
+| Fan | Record | Report |
+| --- | --- | --- |
+| Plan-Write twill fan | `_lyx/plan/lens-review.md` | `_lyx/plan/lens-review.lens-<lens>.md` |
+| Discussion-Write twill fan | the support log | `_lyx/discussion/support-log.lens-<lens>.md` |
+| Burler reviewer cluster fan | `round-<n>-review.md` | `round-<n>-review.lens-<lens>.md` |
+| Burler fixer self-check fan | `round-<n>-fixer-report.md` | `round-<n>-fixer-report.lens-<lens>.md` |
+
+- New spec `contracts/specs/twill-lens-report-spec.md`, deployed by `lyx stencil` to the specs directory's `twill` family.
+  A report is a fenced YAML header (`lens`, and `outcome` of `reported` or `no report`) over the fork's final message, unedited.
+  A fork that returned nothing still gets its file, ending at the header.
+- The twill directive, the Burler cluster-fan stencil and the fixer self-check stencil tell the writer to save the reports once the last fork has returned and before it judges or edits anything.
+  They point at the deployed spec path instead of restating the format.
+  A solo review round and a fixer without a fan get unchanged prompts.
+- The reviewer seat's and an overlay-scope fixer's write surfaces name the report files, since both stencils otherwise forbid any file but the review or fixer-report.
+- New stdlib-only package `internal/lensreport` owns the naming: the prompt-facing path pattern for a record path, and a predicate recognizing a record's report names.
+  It is listed in `PATTERN-leaf-packages.md`.
+- `burlerengine.Geometry` gains `SpecsDir`, filled by `hubgeom` and `standalonegeom`, so the engine derives no path itself.
+- The plan directory treats reports as plan-generation files:
+  - `index-file-mismatch` skips `lens-review.lens-*.md`.
+  - Plan-Write's stale-plan rotation moves the reports with the other top-level files but never names them in the prior-plan block.
+  - webster's plan fingerprint ignores them, as it does `lens-review.md`, so saving a report cannot invalidate a plan.
+- Docs: `doc.go` of the touched packages and the twill lines of `docs/overview.md`.
 
 ## Design decisions
 
-- `internal/lensreport` is a new stdlib-only leaf package that declares the naming once.
-  It gives the prompt-facing path pattern for a record path and a predicate that recognizes a record's report names; `pattern/PATTERN-leaf-packages.md` lists it.
-- `burlerengine.Geometry` gains `SpecsDir`, filled by `hubgeom` and `standalonegeom` from the specs directory each already knows, so the engine derives no path (PATTERN-told-geometry).
-  Tests pin the fill in both builders and its forwarding through `Engine.Review` and `Engine.Fix`.
-- The reports belong to the plan generation whose lens review they back:
-  - `planparser`'s `index-file-mismatch` skips `lens-review.lens-*.md`.
-  - Plan-Write's stale-plan rotation moves the reports with the other top-level files but does not name them in the prior-plan block.
-  - `internal/websterengine`'s plan fingerprint and per-file hashes skip them, as they already skip `lens-review.md`.
-- The reviewer seat's write surface names the lens reports of a cluster round, and an overlay-scope fixer's names those of a fixer fan.
-  The shared reviewer template stays free of the lens-report allowance, so only the fan part carries it.
-- Docs updated: `doc.go` of the touched packages and the twill lines of `docs/overview.md`.
+- A report is named `<record stem>.lens-<lens>.md` and sits where each host's existing commit already stages, so it reaches git with no new commit path.
+  The reviewer and fixer fans of one round get distinct names even when they share a lens name, and neither Burler round-file parser matches the new names.
+- The writer saves the reports, not Go code: only the writer session sees a fork's final message.
+  Saving before judging keeps the text verbatim, before any fix changes what a finding cites.
+- No parser or gate reads the reports; their readers are audits.
 
 ## Known limits
 
-- Nothing parses or gates on the reports, and no check catches a writer that skips the save.
-- A Burler round redone after its stale outputs are archived overwrites a lens's report rather than archiving it; the earlier text survives only in git history.
+- A Burler round redone after an archive of its stale outputs overwrites a lens's report instead of archiving it; the earlier text survives only in git history.
+- A writer may skip the save; nothing checks that the reports exist.
 
-## Check by hand
+## To check by hand
 
-No findings are left open.
-A live twill fan and a fanned Burler round were not run end to end; confirm in one that the report files appear beside the record and are committed.
+- Nothing was run against a live twill or Burler fan; the checks are unit and prompt-rendering tests.
+  A real Plan-Write or Burler review run should be read for whether the writer saves one report per lens in the format the spec pins.
