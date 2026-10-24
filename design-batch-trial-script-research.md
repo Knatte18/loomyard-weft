@@ -1,6 +1,6 @@
 # Batcher wide-trial comparison script and results into docs/research
 
-`batch-trial-script-research` · Task · audit, webster · running · PR-Review
+`batch-trial-script-research` · Task · audit, webster · running · Finalize
 
 ## Task (operator, 2026-10-24)
 
