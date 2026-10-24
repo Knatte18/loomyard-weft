@@ -12,7 +12,7 @@
 - `internal/cleanupcli/doc.go`
 
 **Uses:**
-- `plan:internal/orchcli#HubOrchs`
+- `internal/orchcli#HubOrchs`
 - `internal/orchcli#PrimePaths`
 
 **Intent:**

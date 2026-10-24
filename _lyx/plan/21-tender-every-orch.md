@@ -23,15 +23,15 @@
 - `internal/tenderengine/doc.go`
 
 **Create:**
-- `plan:internal/tenderengine#Orch` -> `type Orch struct`
-- `plan:internal/orchcli#HubOrchs` -> `func HubOrchs(location *lyxcwd.Location) ([]*lyxcwd.Location, error)`
-- `plan:internal/orchengine#Watcher.SetOrchName` -> `func (w *Watcher) SetOrchName(name string)`
+- `internal/tenderengine#Orch`
+- `internal/orchcli#HubOrchs`
+- `internal/orchengine#Watcher.SetOrchName`
 
 **Extends:**
 - `internal/orchcli/doc.go`
 
 **Uses:**
-- `plan:internal/orchcli#OrchStrandOf`
+- `internal/orchcli#OrchStrandOf`
 - `internal/orchcli#PrimePaths`
 - `internal/fabricengine#ReadOriginFor`
 

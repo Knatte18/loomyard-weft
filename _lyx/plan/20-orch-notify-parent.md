@@ -1,13 +1,13 @@
 # Card 20 — orch-notify-parent
 
 **Create:**
-- `plan:internal/orchcli#NotifyParent` -> `func NotifyParent(pair *lyxcwd.Location, program, line string) (posted bool, err error)`
-- `plan:internal/orchcli#NotifyFrom` -> `func NotifyFrom(from *lyxcwd.Location, program, line string) (posted bool, err error)`
-- `plan:internal/orchcli#ParentOrchRecorded` -> `func ParentOrchRecorded(pair *lyxcwd.Location) (bool, error)`
-- `plan:internal/orchcli#OrchStrandOf` -> `func OrchStrandOf(worktree *lyxcwd.Location) (name string, recorded bool, err error)`
-- `plan:internal/orchcli#parentOrchStrand` -> `func parentOrchStrand(pair *lyxcwd.Location, live func(worktree *lyxcwd.Location) (bool, error)) (name string, recorded bool, err error)`
-- `plan:internal/orchcli#TestParentOrchStrand` -> `func TestParentOrchStrand(t *testing.T)`
-- `plan:internal/loomcli#TestParentRecordsCommitter_CommitsTheRecordedParent` -> `func TestParentRecordsCommitter_CommitsTheRecordedParent(t *testing.T)`
+- `internal/orchcli#NotifyParent`
+- `internal/orchcli#NotifyFrom`
+- `internal/orchcli#ParentOrchRecorded`
+- `internal/orchcli#OrchStrandOf`
+- `internal/orchcli#parentOrchStrand`
+- `internal/orchcli#TestParentOrchStrand`
+- `internal/loomcli#TestParentRecordsCommitter_CommitsTheRecordedParent`
 
 **Edit:**
 - `internal/orchcli#PrimeOrchStrand`
@@ -26,7 +26,7 @@
 **Uses:**
 - `internal/hubgeom#NearestLiveOrch`
 - `internal/hubgeom#ResolveParent`
-- `plan:internal/orchcli#OrchLive`
+- `internal/orchcli#OrchLive`
 - `internal/orchcli#notifyPrime`
 - `internal/loomcli#parentRecordsCommitter`
 - `internal/hubforge#CopyHub`

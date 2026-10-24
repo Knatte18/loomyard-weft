@@ -12,7 +12,7 @@
 - `internal/battenshed#rowNotifier.ready`
 - `internal/battenshed#TestLand_ReadyNotice`
 - `internal/battencli#landDeps`
-- `plan:internal/orchcli#TestParentOrchStrand`
+- `internal/orchcli#TestParentOrchStrand`
 
 **Extends:**
 - `internal/battenshed/doc.go`
@@ -20,8 +20,8 @@
 
 **Uses:**
 - `internal/boardengine#ParentBeam`
-- `plan:internal/orchcli#OrchLive`
-- `plan:internal/orchcli#OrchStrandOf`
+- `internal/orchcli#OrchLive`
+- `internal/orchcli#OrchStrandOf`
 - `plan:internal/battencli#notifyRunParent`
 
 **Intent:**
