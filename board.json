@@ -876,7 +876,7 @@
       "isolated": false,
       "brief": "",
       "body": "Imported from [issue #866](https://github.com/Knatte18/loomyard/issues/866).\n\nWhat happened: a plan-Burler fix moved a shortening card ahead of growth cards on the premise that each intermediate file size stays at or below the final projection.\nA card gate does not apply that bound: once a file is above `HeadroomBytes`, a card's `lint-pattern` step passes only when the card does not grow the file.\nThe move required a `remove-card` plus `insert-card` that renumbered about twenty cards and needed every prose card reference fixed by hand; the self-check then showed the last growth card still failed, and undoing it took another `remove-card` and a second pass over the references.\n\nWhy abnormal: the plan check validates only the final size against the base, so neither the original defect nor the wrong fix was visible at the review stage, and card renumbering is costly to repeat.\n\nWhat to do: make the plan check project `lint-pattern` card by card (the running size against the headroom rule), and consider renumbering helpers that update prose card references automatically.\n\nProvenance: task gate-runs-once; notes burler-plan-r1.md",
-      "status": "running · Finalize",
+      "status": "done",
       "created": "2026-10-24T13:37:34Z",
       "revised": "2026-10-24T16:52:32Z",
       "profile": "light",
