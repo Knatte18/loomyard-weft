@@ -1017,6 +1017,27 @@
       "body": "Imported from [issue #866](https://github.com/Knatte18/loomyard/issues/866).\n\nWhat happened: a plan-Burler fix moved a shortening card ahead of growth cards on the premise that each intermediate file size stays at or below the final projection.\nA card gate does not apply that bound: once a file is above `HeadroomBytes`, a card's `lint-pattern` step passes only when the card does not grow the file.\nThe move required a `remove-card` plus `insert-card` that renumbered about twenty cards and needed every prose card reference fixed by hand; the self-check then showed the last growth card still failed, and undoing it took another `remove-card` and a second pass over the references.\n\nWhy abnormal: the plan check validates only the final size against the base, so neither the original defect nor the wrong fix was visible at the review stage, and card renumbering is costly to repeat.\n\nWhat to do: make the plan check project `lint-pattern` card by card (the running size against the headroom rule), and consider renumbering helpers that update prose card references automatically.\n\nProvenance: task gate-runs-once; notes burler-plan-r1.md",
       "created": "2026-10-24T13:37:34Z",
       "revised": "2026-10-24T13:37:34Z"
+    },
+    {
+      "id": 801,
+      "handle": "B3",
+      "slug": "card-gate-vets-all-tag-sets",
+      "title": "Card gate (--tier 0) does not vet a card's packages under the other tier tag sets, so helper dependencies across tagged files fail only in the batch gate",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "gate",
+        "webster"
+      ],
+      "issues": [
+        865
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Imported from [issue #865](https://github.com/Knatte18/loomyard/issues/865).\n\nWhat happened: while retagging test files across tiers, the card gate (`--tier 0`) did not compile the card's packages under the tier1, tier2 and tier3 tag sets.\nA helper defined in a retagged tier0 file and used by a tier1 or tier2 file failed only in the batch gate's vet steps.\nEach card gate passed while the batch gate found about twenty such helpers across the cards, and fixing them cost a separate pass.\n\nWhy abnormal: the card gate is meant to catch a card's own breakage, but a tag-set compile break is invisible until the later batch gate, far from the card that caused it.\n\nWhat to do: make a card's gate step also vet the card's packages under the other tag sets (at least when the card touches build tags), so such failures surface at the card.\n\nProvenance: task gate-runs-once; notes 24-retag-fabricengine.md",
+      "created": "2026-10-24T13:37:37Z",
+      "revised": "2026-10-24T13:37:37Z"
     }
   ],
   "prime_owner": "neve"
