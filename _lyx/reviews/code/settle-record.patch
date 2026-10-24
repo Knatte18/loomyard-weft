@@ -11,17 +11,23 @@ index 772a53372..c9033360a 100644
    - When that verb refuses because the run has no decision record (batten's pre-loom rows such as `running · Worktree-Create`, `Preflight` and `Loom-Preflight`, or a halt before Discussion-Write), the decision becomes a board note of its own through `lyx board upsert` with kind note, titled `{{.decision_note_title}} <the decision>`, with the held task's slug in place of `<slug>`.
      Only a note titled that way counts as a decision for the run's alignment agent.
 diff --git a/docs/overview.md b/docs/overview.md
-index e7a633bd7..5b7e14db8 100644
+index 79fe67171..7abc438aa 100644
 --- a/docs/overview.md
 +++ b/docs/overview.md
-@@ -513,6 +513,7 @@ User-facing modules each get one `lyx <module>` namespace:
+@@ -513,10 +513,11 @@ User-facing modules each get one `lyx <module>` namespace:
    A loom run also checks the relevant list when it exists; a darn run never reads it.
    On a darn run the verb also checks the record's history for dropped `Added after Discussion` entries and commits the decision record and support log on a clean run.
    `decision add [<slug>] --by parent|operator --title <t> --decision <d> --rationale <r> [--amends-plan]` appends one design call made after the Discussion to the decision record under an `Added after Discussion` heading, re-runs the discussion check (restoring the record on a finding) and commits the record.
 +  `--from <file>` in place of the per-entry flags records a JSON array of such calls in one write and one commit, and each live agent gets one notice naming the new headings, with every entry's text inline only for webster's Merriam, which reads no record.
    The verb also works on a darn run once Darn-Write has committed its record, even while Darn-Write runs, under three checks: the record equals its committed copy, it holds every `Added after Discussion` entry its history held, and the committed record holds the appended entry afterwards.
-   `--amends-plan` marks a decision that amends the approved plan: the call also appends the entry's title to the plan amendment record, committed with the entry, and is refused on a darn run and for a plan that is not approved.
+-  `--amends-plan` marks a decision that amends the approved plan: the call also appends the entry's title to the plan amendment record, committed with the entry, and is refused on a darn run and for a plan that is not approved.
++  `--amends-plan` marks a decision that amends the approved plan: the call also appends the title of each entry to the plan amendment record, committed with the entries, and is refused on a darn run and for a plan that is not approved.
    It is refused while Discussion-Write is running, refuses a named session other than the run's recorded parent (the operator's own unnamed shell always passes) and resumes nothing.
+-  After the commit it sends each live shuttle run of the worktree, but the tackler, the arbiter and the caller, one creel line naming the record and the entry's heading, and reports the strands told under `notified` and any failed notice under `notice_errors` without failing.
++  After the commit it sends each live shuttle run of the worktree, but the tackler, the arbiter and the caller, one creel line naming the record and the heading of each entry, and reports the strands told under `notified` and any failed notice under `notice_errors` without failing.
+   `validate-plan` runs the same checks a non-twill Plan-Write run's and Plan-Burler-Fix's own gates run, standalone, with the same exit-code and findings-envelope contract, over the current worktree's plan instead of its discussion.
+   `validate-plan --rework` runs the format-only checks over a whole new plan, plus a check that its `first_card` equals the card number the caller was told.
+   `validate-plan --lens-review` runs the check a twill-spawned Plan-Write run's own gate runs: the flag-less checks plus a check that the plan directory's `lens-review.md` holds a recorded lens review.
 diff --git a/internal/discussionparser/append.go b/internal/discussionparser/append.go
 index 946cdb8be..f2bbb1591 100644
 --- a/internal/discussionparser/append.go
@@ -1138,3 +1144,16 @@ index 2d6665c36..96f2871e8 100644
  			input.amendsPlan = true
  
  			var out bytes.Buffer
+diff --git a/internal/loomcli/doc.go b/internal/loomcli/doc.go
+index db1617929..ba0bb2c77 100644
+--- a/internal/loomcli/doc.go
++++ b/internal/loomcli/doc.go
+@@ -234,7 +234,7 @@
+ // # Decision amends-plan
+ //
+ // `lyx loom decision add --amends-plan` records a decision that amends the approved plan:
+-// besides the entry, the call appends the entry's title to the tracked plan amendment record, and one commit lands both.
++// besides the entry, the call appends the title of each entry to the tracked plan amendment record, a `--from` batch appending every title in input order, and one commit lands the entries and the amendment record.
+ // The commit pathspec of the discussion artifacts names the record when it exists or git tracks it, and nothing otherwise, so git is never handed a pathspec matching nothing.
+ // The flag is refused on a darn run, which has no plan to amend, and while the current generation has no approved plan;
+ // a plan that does not parse is refused naming `lyx loom validate-plan`, and a plan or record read failure is refused with the verb's retry way forward.
