@@ -1335,7 +1335,7 @@
       }
     }
   ],
-  "currentBatch": 0,
+  "currentBatch": 22,
   "masterStrand": "749a4850b2cdeb072456c9c5b8c99ddb",
   "masterSessionId": "10aba9c6-1885-40a9-b0f0-1f9376bb6375",
   "masterEngine": "claude",
@@ -1558,26 +1558,25 @@
         "23-retag-cmd-contracts-tools": "14b5562aea7a2ce5a1155bee26a7b5fa31727f025a0025ac9a20f90a1220d20b"
       },
       "startSha": "959fc277d999aa08a42e49e48acbffcabae9295d",
-      "kind": "fork",
-      "spawnedAt": "2026-10-24T10:48:40Z",
-      "sessionId": "10aba9c6-1885-40a9-b0f0-1f9376bb6375",
-      "engine": "claude",
-      "terminal": true,
-      "status": "stuck",
-      "digest": {
-        "batch": "22-tier-plan-docs",
-        "status": "stuck",
-        "head_sha": "0421d5dd97fb11681591015e99e2c1a7f18a9420"
-      },
-      "cardShas": [
-        "0421d5dd97fb11681591015e99e2c1a7f18a9420"
-      ],
+      "kind": "recovery",
+      "spawnedAt": "2026-10-24T10:58:20Z",
+      "terminal": false,
+      "status": "",
       "forkTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-gate-runs-once/10aba9c6-1885-40a9-b0f0-1f9376bb6375/subagents/agent-a9d2ab51c77a8ed87.jsonl"
       ],
-      "bracketTranscripts": [
-        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-gate-runs-once/10aba9c6-1885-40a9-b0f0-1f9376bb6375/subagents/agent-a9d2ab51c77a8ed87.jsonl"
-      ]
+      "strandGuid": "f695924652df30c450fb0f7aa079a3cc",
+      "shuttleRunDir": "/home/knatte/Code/loomyard-LYXHUB/gate-runs-once/.lyx/shuttle/907ba5da851c5f847d4043ed06304917",
+      "eventsPath": "/home/knatte/Code/loomyard-LYXHUB/gate-runs-once/.lyx/shuttle/907ba5da851c5f847d4043ed06304917/events.jsonl",
+      "eventsOffset": 2242,
+      "recoveries": 1,
+      "recoverySessions": [
+        "e983de30-6292-401c-a7a1-940a522dfa20"
+      ],
+      "recoveryEngines": {
+        "e983de30-6292-401c-a7a1-940a522dfa20": "claude"
+      },
+      "recoveryStartSha": "0421d5dd97fb11681591015e99e2c1a7f18a9420"
     },
     "3": {
       "slug": "gate-call-renders-key",
