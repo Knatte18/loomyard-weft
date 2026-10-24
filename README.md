@@ -17,7 +17,7 @@ Held by a run; its scope is locked until the run ends.
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T3 | **Run profiles as one ladder: speed, light, solid, wide**<br>• Replace budget, light, docs and darn-wide with one profile ladder shared by darn and loom<br>• `profile: light` | [`run-profiles-ladder`](design-run-profiles-ladder.md) | darn | Darn-Write | neve | 1d<br>3h | config, loom, burler |
-| T6 | **Fork git-mutation guard fails a run on git commands confined to a scratch repo**<br>• `profile: light` | [`fork-git-guard-scratch-repo`](design-fork-git-guard-scratch-repo.md) | darn | Code-Bouncer | neve | 21h<br>3h | shed, burler |
+| T6 | **Fork git-mutation guard fails a run on git commands confined to a scratch repo**<br>• `profile: light` | [`fork-git-guard-scratch-repo`](design-fork-git-guard-scratch-repo.md) | darn | Code-Burler-Review | neve | 21h<br>3h | shed, burler |
 | T9 | **Umbrella groundwork: project entries, pairs from a parent pair, and umbrella tasks that spawn and land from their own worktree**<br>• [WS 004+006] Board projects, fabric pairs from a parent pair, batten and orch from any worktree, umbrella tasks | [`umbrella-groundwork`](design-umbrella-groundwork.md) | loom | Discussion-Write | neve | 3w<br>3h | fabric, batten, orch, board, reed, creel, shed, workspaces |
 | T11 | **Card gate (--tier 0) does not vet a card's packages under the other tier tag sets, so helper dependencies across tagged files fail only in the batch gate**<br>• `profile: light` | [`card-gate-vets-all-tag-sets`](design-card-gate-vets-all-tag-sets.md) | darn | Code-Burler-Review | neve | 57m<br>48m | gate, webster |
 
