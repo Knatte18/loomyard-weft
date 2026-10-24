@@ -1,7 +1,7 @@
 <!-- This is burler's fix self-check part: the procedure by which a twill fixer has read-only forks check its own change set before it writes the fixer-report.
      internal/burlerengine's selfCheckBlock (prompt.go) reads and fills it, and composeFixPrompt injects it as burler-step-fix's optional self_check marker value in a round whose profile names a fixer fan.
-     It declares two required markers, {{.rubric_path}} and {{.lens_list}}: the deployed fix-check rubric's path, and the fixer fan's lenses as one bullet per lens in fan order.
-lyx-stencil: sha256=da649766614ddd929ab421a4ef35a699bbf35b795b991fa3733ccc374063568b build=a5b1d3a6f045271a411346e0dcb10070ccece573 time=2026-10-20T19:52:18Z -->
+     It declares four required markers, {{.rubric_path}}, {{.lens_list}}, {{.lens_report_path}} and {{.lens_report_spec_path}}: the deployed fix-check rubric's path, the fixer fan's lenses as one bullet per lens in fan order, the path each fork's report is saved at, and the deployed spec of that report's format.
+lyx-stencil: sha256=b0a5804a5dca546bddc41aaab8e8a632999d1b2c0dcd1cae1bca4658d68b0a91 build=79bab47a02141f93160b00f89b273718b4033be5 time=2026-10-24T07:59:09Z -->
 ## Self-check of your fix by forks (BLOCKING — after every fix, before the fixer-report)
 
 Once every finding has its disposition and every change is made, and before you write the fixer-report, run this procedure once.
@@ -12,6 +12,8 @@ It checks the change set you just made, which no later step of this round review
    Each fork's prompt is the fork boilerplate below plus its lens text and nothing else: no hint at what you think is wrong, no direction to read code.
 3. Wait for every fork to return; ending your turn while forks are outstanding is allowed.
    Edit nothing while any fork is outstanding, whatever an early report says: start judging only once the last fork has returned, judge all findings together, and only then edit.
+   Once the last fork has returned, and before you judge, save each fork's final message verbatim to `{{.lens_report_path}}`, with its lens name for `<lens>`, in the format `{{.lens_report_spec_path}}` defines; a fork that returned no report gets its file too.
+   These lens reports are part of your write surface, beside the fixer-report.
 4. Judge every fork finding: merge duplicates across lenses, then weigh each finding twice, its premise and the change it proposes, and give it one of the three dispositions of the Fix-everything rule above, decided in that order.
    Severity decides how a finding is reported, not whether it is weighed.
    A change you make here obeys the same write surface and git discipline as every other fix of this round.
@@ -19,7 +21,7 @@ It checks the change set you just made, which no later step of this round review
    Name a fork that returned no report.
 
 One fork pass per fixer session: a fixer that has already made its spawn call (step 2) spawns no further forks.
-That holds when your gate re-prompts you and when you are resumed after your forks were lost: spawn nothing, judge the findings you hold, and name each lost fork as "no report".
+That holds when your gate re-prompts you and when you are resumed after your forks were lost: spawn nothing, save the reports you hold and a `no report` file for each lost fork, judge the findings you hold, and name each lost fork as "no report".
 
 Lenses:
 

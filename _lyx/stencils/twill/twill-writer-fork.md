@@ -2,7 +2,7 @@
      internal/twilldirective renders it into the twill directive, and the spawning module hands that renderer every host value, so this block names no file, step, verb or section of any one host.
      It declares these required markers:
      {{.explore_step}}, {{.input_record}}, {{.reviewed_files}}, {{.last_file}}, {{.files_dir}}, {{.format_step}}, {{.self_check_step}}, {{.self_check_command}} and {{.disposition_place}}.
-lyx-stencil: sha256=279f52a9a05486878a16ba38ff48066487086f37dc567ce6783cb87beeb10013 build=2abb06c5ee3473f283f0b526362161487b9e6b26 time=2026-10-15T06:35:00Z -->
+lyx-stencil: sha256=94e96f7a7eb7a17bc964d03ef481b05b3e805b8ada6c2ee402259e2dfd0ba88a build=79bab47a02141f93160b00f89b273718b4033be5 time=2026-10-24T07:59:09Z -->
 
 In this run one fork, fork0, writes the reviewed files: you explore, fork0 thinks and writes, and you review and finish what it wrote.
 Do these steps in place of running `{{.format_step}}` and `{{.self_check_step}}` yourself, in this order:
@@ -30,6 +30,6 @@ This session spawns fork0 at most once and the lens forks at most once: a fresh 
 - A session resumed in the same conversation before the fork0 call: go on from the first step not finished, fork0 included.
 - A session resumed while the fork0 call was in flight has lost fork0, and no second one is spawned: read every file in {{.files_dir}} in full, complete the files yourself as in the first rule, then run the lens review once.
 - A session resumed after fork0 returned and before the lens spawn call: spawn no second fork0, finish step d if unfinished, then run the lens review once.
-- A session resumed at or after the lens spawn call has lost every lens fork, and none is spawned again: resume at the first of the lens review's steps from judging the findings onward that you had not finished, with the findings already held, and record at {{.disposition_place}} that the lens review was cut short, naming each fork that had not returned as "no report".
+- A session resumed at or after the lens spawn call has lost every lens fork, and none is spawned again: resume at the first of the lens review's steps from saving the fork reports onward that you had not finished, with the reports already held, and record at {{.disposition_place}} that the lens review was cut short, naming each fork that had not returned as "no report".
 - A session that ended after {{.last_file}} existed: the run counts as finished; while the session is live the gate re-prompts it on a missing lens review or its findings, and once it is not, the gate is evaluated once over the files as they stand, so a run with no recorded lens review fails; a later resume takes the matching resumed rule.
 - A re-prompted writer spawns no fork0 and does step d first if it has not, then follows the re-prompt rule below.
