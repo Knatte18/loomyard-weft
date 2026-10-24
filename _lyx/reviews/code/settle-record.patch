@@ -1,0 +1,294 @@
+diff --git a/contracts/specs/loom-plan-spec.md b/contracts/specs/loom-plan-spec.md
+index cb65be7c2..31dc03991 100644
+--- a/contracts/specs/loom-plan-spec.md
++++ b/contracts/specs/loom-plan-spec.md
+@@ -406,14 +406,17 @@ The rows that name `internal/planglyph` as their emitter are an exception: that
+ `glyph-ambiguous` is not raised for a member declared once per mutually exclusive build-constraint set, which resolves as one member.
+ `card-fabric-reference` is the other exception: it is a `planparser` function outside both entry points, which the plan index appends to its own format validation.
+ `done-card-edited` is the third: `loomshed.ValidatePlan` appends it after the index's validation.
+-`rename-tool-missing`, `pattern-changes-mismatch`, `pattern-removes-prescribed`, `pattern-headroom` and `pattern-line-unprescribed` join it, appended by `loomshed` outside the `planparser` entry points in every mode (default, `--lens-review` and `--rework`, and the Plan-Write, Plan-Burler-Fix and PR-Rework gates).
++`rename-tool-missing`, `pattern-changes-mismatch`, `pattern-removes-prescribed`, `pattern-headroom`, `pattern-card-headroom` and `pattern-line-unprescribed` join it, appended by `loomshed` outside the `planparser` entry points in every mode (default, `--lens-review` and `--rework`, and the Plan-Write, Plan-Burler-Fix and PR-Rework gates).
+ `rename-tool-missing` is one blocking finding per symbol `Rename` pair of a card not recorded done, raised when `language.yaml` lists no `rename_tools`; its way forward is to set `rename_tools` with `lyx config language` from the prime, or recast the card.
+ A file pair raises none.
+ `pattern-changes-mismatch` is one blocking finding per entry (ID, action and text) that the decision record's `## PATTERN changes` section and the overview's section do not both declare; its way forward is to copy the record's bullets into the overview's section, one per entry, without the added-after-Discussion suffix.
+ It runs only on a loom run, and an absent record adds nothing; a record whose section is malformed is a returned error naming `lyx loom validate-discussion`, since the plan writer cannot fix the record.
+-The three PATTERN checks run only in a worktree holding a `PATTERN.md` and with a base overview told to the gate, and read the overview at the task branch's merge base with its parent, or at `HEAD` with no parent recorded.
++The four PATTERN checks run only in a worktree holding a `PATTERN.md` and with a base overview told to the gate, and read the overview at the task branch's merge base with its parent, or at `HEAD` with no parent recorded.
+ `pattern-removes-prescribed` is one blocking finding per `removes` entry of the overview's `## PATTERN changes` section that a card not recorded done fences a line for; its way forward is to drop the fenced line from the card.
+ `pattern-headroom` is one blocking finding when the overview projected from every card's fenced entry lines and the `removes` entries grows past the headroom line; its way forward is to shorten the prescribed lines or move detail into background files, and when that is not enough to record a `changes` decision that shortens other entries with `lyx loom decision add`, passing `--amends-plan` once the plan is approved.
++`pattern-card-headroom` is one blocking finding per card not recorded done whose own step grows the projected overview past the headroom line, the bound that card's `lint-pattern` gate step applies against the commit before it, so a plan whose final size passes still fails when an intermediate card does not.
++The projection starts at the worktree's overview and takes those cards in plan order; a card's step applies its fenced entry lines, then drops each `removes` entry whose backticked ID it is the first such card to name, and a `removes` entry no such card names is dropped before the first card.
++Its way forward is `pattern-headroom`'s.
+ `pattern-line-unprescribed` runs only on a loom run: it is one blocking finding per `adds` or `changes` entry that no card fences a line for and whose overview bullet still equals the base's; its way forward is to prescribe the entry's whole overview line in a fenced block on a pending card that edits `PATTERN.md`, or on a card inserted with `lyx loom insert-card` when that card is done.
+ `fabric-vocabulary-name` is the fourth: it is a `planparser` function outside both entry points, which the plan index appends to its format, rework and dispatch validation.
+ `edit-test-file` is the fifth: it is a `planparser` function outside both entry points, which the plan index appends to its format and rework validation.
+diff --git a/contracts/stencils/loom/loom-template-plan.md b/contracts/stencils/loom/loom-template-plan.md
+index 184b22f24..f402e158e 100644
+--- a/contracts/stencils/loom/loom-template-plan.md
++++ b/contracts/stencils/loom/loom-template-plan.md
+@@ -98,6 +98,8 @@ A card that prescribes an addition to a `PATTERN.md` entry line leaves the line
+ A declared `adds` or `changes` entry is prescribed verbatim as its whole overview line in a fenced block on a card that edits `PATTERN.md`.
+ A card fences only the new line, never the old one or an example, since the gate reads every fenced line that opens like an entry.
+ The plan gate measures the overview those lines project against the headroom line, so a line that grows `PATTERN.md` past it is refused.
++It also measures each card's own step in plan order, `pattern-card-headroom` in the same spec, so a later card that shortens the overview never covers an earlier card's growth: the shortening goes on the growing card or before it.
++A card that removes an entry names the entry's ID in backticks, so the gate credits the removal to that card.
+ 
+ ### On-disk layout
+ 
+diff --git a/internal/loomshed/doc.go b/internal/loomshed/doc.go
+index 1cec321b6..a2969cacf 100644
+--- a/internal/loomshed/doc.go
++++ b/internal/loomshed/doc.go
+@@ -24,11 +24,13 @@
+ // An absent record adds nothing, and a malformed record section is a returned error naming `lyx loom validate-discussion`.
+ // The zero PlanContext runs neither of those two.
+ //
+-// Three PATTERN checks follow them, in this order, each reading `PATTERN.md` in the worktree and the overview PlanContext.PatternBase returns for the task branch's merge base, or for HEAD with no parent recorded.
++// Four PATTERN checks follow them, in this order, each reading `PATTERN.md` in the worktree and the overview PlanContext.PatternBase returns for the task branch's merge base, or for HEAD with no parent recorded.
+ // `pattern-removes-prescribed` is one finding per removed entry that a card not recorded done fences a line for.
+ // `pattern-headroom` is one finding when the overview projected from every card's fenced entry lines and the removed entries grows past the headroom line.
++// `pattern-card-headroom` is one finding per card not recorded done whose own step grows past the line, the bound its card gate's `lint-pattern` step applies:
++// the projection starts at the worktree overview and takes those cards in plan order, each applying its fenced entry lines and dropping the removed entries it is the first to name in backticks, and a removed entry no such card names is dropped before the first.
+ // `pattern-line-unprescribed` runs only with a decision record path, and is one finding per added or changed entry that no card fences a line for and whose bullet equals the base's.
+-// A worktree with no `PATTERN.md`, or a nil PatternBase, runs none of the three and reads no base.
++// A worktree with no `PATTERN.md`, or a nil PatternBase, runs none of the four and reads no base.
+ //
+ // A plan gate that passes on informational findings alone records them as a count and a file path in its log line, and writes the findings, one per line, to `<gate>-informational-findings.txt` under the run's told ephemeral scratch directory.
+ // A gate told no scratch directory, such as a standalone validate, and a gate whose file cannot be written keep the findings inline in the log line.
+diff --git a/internal/loomshed/gates_test.go b/internal/loomshed/gates_test.go
+index d6bdb1777..384dc665d 100644
+--- a/internal/loomshed/gates_test.go
++++ b/internal/loomshed/gates_test.go
+@@ -647,6 +647,13 @@ func TestNewPlanGate(t *testing.T) {
+ 	longEntryA := "- `PATTERN-a` — " + strings.Repeat("l", 200)
+ 	bigEntryB := "- `PATTERN-b` — " + strings.Repeat("b", 150)
+ 	underLine := overviewOf(pattern.HeadroomBytes-100, shortEntryA, entryB)
++	// removableUnderLine grows past the line when longEntryA replaces shortEntryA, and falls back under it once bigEntryB is removed too.
++	removableUnderLine := overviewOf(pattern.HeadroomBytes-100, shortEntryA, bigEntryB)
++	const (
++		namesB  = "Delete the `PATTERN-b` bullet from PATTERN.md."
++		cardOne = "1-first-card"
++		cardTwo = "2-first-card"
++	)
+ 	smallOverview := "# PATTERN\n\n- `PATTERN-other` — o.\n"
+ 	const (
+ 		headroomWayForward     = "lyx loom decision add"
+@@ -675,21 +682,29 @@ func TestNewPlanGate(t *testing.T) {
+ 		// cardFence is fenced text on the sole card, secondFence the Text of a second card added to the parsed plan, and noRecordPath clears the context's decision record path.
+ 		cardFence, secondFence string
+ 		noRecordPath           bool
+-		// wantDetail is a fragment every finding of the three PATTERN checks must hold, the way forward its message names.
++		// wantDetail is a fragment every finding of the PATTERN checks must hold, the way forward its message names.
+ 		wantDetail                                  string
+ 		wantHeadroom, wantRemoves, wantUnprescribed int
+-		wantErr                                     bool
++		// wantCardHeadroom counts the pattern-card-headroom findings, each of which must name the card wantCardHeadroomOn.
++		wantCardHeadroom   int
++		wantCardHeadroomOn string
++		wantErr            bool
+ 	}{
+-		{name: "PatternLinesGrowingPastTheLineFromABaseUnderIt", recordSection: "absent", patternOverview: underLine, patternBase: underLine, cardFence: fenceOf(longEntryA), wantHeadroom: 1, wantDetail: headroomWayForward},
++		{name: "PatternLinesGrowingPastTheLineFromABaseUnderIt", recordSection: "absent", patternOverview: underLine, patternBase: underLine, cardFence: fenceOf(longEntryA), wantHeadroom: 1, wantCardHeadroom: 1, wantCardHeadroomOn: cardOne, wantDetail: headroomWayForward},
+ 		{name: "PatternLinesReplacingBulletsAtEqualSizePass", recordSection: "absent", patternOverview: underLine, patternBase: underLine, cardFence: fenceOf(sameSizeA)},
+ 		{name: "PatternOverviewPastTheLineWithNoRemovesIsFlagged", recordSection: "absent", patternOverview: overviewOf(pattern.HeadroomBytes+20, shortEntryA, bigEntryB), patternBase: underLine, wantHeadroom: 1, wantDetail: headroomWayForward},
+ 		{name: "PatternRemovesWithNoFencedLineShrinksTheProjection", planSection: removesB, recordSection: "absent", patternOverview: overviewOf(pattern.HeadroomBytes+20, shortEntryA, bigEntryB), patternBase: underLine},
+ 		{name: "PatternRemovesFencedLineIsFlagged", planSection: removesA, recordSection: "absent", patternOverview: underLine, patternBase: underLine, cardFence: fenceOf(sameSizeA), wantRemoves: 1, wantDetail: removesWayForward},
+ 		{name: "PatternRemovesFencedByADoneCardPasses", planSection: removesA, recordSection: "absent", doneCard: true, patternOverview: underLine, patternBase: underLine, cardFence: fenceOf(sameSizeA)},
+-		{name: "TwoCardsFencingOneIDWhereTheLaterFitsPass", recordSection: "absent", patternOverview: underLine, patternBase: underLine, cardFence: fenceOf(longEntryA), secondFence: fenceOf(sameSizeA)},
+-		{name: "TwoCardsFencingOneIDWhereTheLaterOverflowsIsFlagged", recordSection: "absent", patternOverview: underLine, patternBase: underLine, cardFence: fenceOf(sameSizeA), secondFence: fenceOf(longEntryA), wantHeadroom: 1, wantDetail: headroomWayForward},
++		{name: "TwoCardsFencingOneIDWhereTheLaterFitsFlagsOnlyTheEarlierCard", recordSection: "absent", patternOverview: underLine, patternBase: underLine, cardFence: fenceOf(longEntryA), secondFence: fenceOf(sameSizeA), wantCardHeadroom: 1, wantCardHeadroomOn: cardOne, wantDetail: headroomWayForward},
++		{name: "TwoCardsFencingOneIDWhereTheLaterOverflowsIsFlagged", recordSection: "absent", patternOverview: underLine, patternBase: underLine, cardFence: fenceOf(sameSizeA), secondFence: fenceOf(longEntryA), wantHeadroom: 1, wantCardHeadroom: 1, wantCardHeadroomOn: cardTwo, wantDetail: headroomWayForward},
++		{name: "RemovalNamedByTheGrowingCardOffsetsItsGrowth", planSection: removesB, recordSection: "absent", patternOverview: removableUnderLine, patternBase: removableUnderLine, cardFence: namesB + "\n\n" + fenceOf(longEntryA)},
++		{name: "RemovalNamedByTwoCardsIsCreditedToTheFirstNotTheLast", planSection: removesB, recordSection: "absent", patternOverview: removableUnderLine, patternBase: removableUnderLine, cardFence: namesB + "\n\n" + fenceOf(longEntryA), secondFence: namesB},
++		{name: "RemovalNamedByALaterCardFlagsTheEarlierGrowingCard", planSection: removesB, recordSection: "absent", patternOverview: removableUnderLine, patternBase: removableUnderLine, cardFence: fenceOf(longEntryA), secondFence: namesB, wantCardHeadroom: 1, wantCardHeadroomOn: cardOne, wantDetail: headroomWayForward},
++		{name: "RemovalNoCardNamesShrinksTheProjectionBeforeTheFirstCard", planSection: removesB, recordSection: "absent", patternOverview: removableUnderLine, patternBase: removableUnderLine, cardFence: fenceOf(longEntryA)},
++		{name: "DoneCardIsNeverProjected", recordSection: "absent", doneCard: true, patternOverview: underLine, patternBase: overviewOf(pattern.HeadroomBytes+200, shortEntryA, entryB), cardFence: fenceOf(longEntryA)},
+ 		{name: "TwoLinesOfOneCardWhereTheLaterFitsPass", recordSection: "absent", patternOverview: underLine, patternBase: underLine, cardFence: fenceOf(longEntryA, sameSizeA)},
+-		{name: "TwoLinesOfOneCardWhereTheLaterOverflowsIsFlagged", recordSection: "absent", patternOverview: underLine, patternBase: underLine, cardFence: fenceOf(sameSizeA, longEntryA), wantHeadroom: 1, wantDetail: headroomWayForward},
++		{name: "TwoLinesOfOneCardWhereTheLaterOverflowsIsFlagged", recordSection: "absent", patternOverview: underLine, patternBase: underLine, cardFence: fenceOf(sameSizeA, longEntryA), wantHeadroom: 1, wantCardHeadroom: 1, wantCardHeadroomOn: cardOne, wantDetail: headroomWayForward},
+ 		{name: "OverviewAlreadyHoldingTheLinesProjectsTheBaseSize", recordSection: "absent", patternOverview: overviewOf(pattern.HeadroomBytes+50, longEntryA, entryB), patternBase: overviewOf(pattern.HeadroomBytes+50, longEntryA, entryB), cardFence: fenceOf(longEntryA)},
+ 		{name: "DeclaredEntryWithNoFencedLineAndAnUnchangedBulletIsFlagged", planSection: bullet, recordSection: bullet, patternOverview: smallOverview, patternBase: smallOverview, wantUnprescribed: 1, wantDetail: unprescribedWayForward},
+ 		{name: "DeclaredEntryWithAFencedLinePasses", planSection: bullet, recordSection: bullet, patternOverview: smallOverview, patternBase: smallOverview, cardFence: fenceOf("- `PATTERN-cwd-resolution` — the new text")},
+@@ -773,16 +788,19 @@ func TestNewPlanGate(t *testing.T) {
+ 			if err != nil {
+ 				t.Fatalf("ValidatePlan() error = %v; want nil", err)
+ 			}
+-			for check, want := range map[string]int{patternHeadroomCheck: tt.wantHeadroom, patternRemovesPrescribedCheck: tt.wantRemoves, patternLineUnprescribedCheck: tt.wantUnprescribed} {
++			for check, want := range map[string]int{patternHeadroomCheck: tt.wantHeadroom, patternCardHeadroomCheck: tt.wantCardHeadroom, patternRemovesPrescribedCheck: tt.wantRemoves, patternLineUnprescribedCheck: tt.wantUnprescribed} {
+ 				if got := countCheck(findings, check); got != want {
+ 					t.Errorf("ValidatePlan() %s findings = %d; want %d (%v)", check, got, want, findings)
+ 				}
+ 			}
+ 			for _, f := range findings {
+-				isPatternCheck := f.Check == patternHeadroomCheck || f.Check == patternRemovesPrescribedCheck || f.Check == patternLineUnprescribedCheck
++				isPatternCheck := f.Check == patternHeadroomCheck || f.Check == patternCardHeadroomCheck || f.Check == patternRemovesPrescribedCheck || f.Check == patternLineUnprescribedCheck
+ 				if isPatternCheck && (f.Severity != planindex.SeverityBlocking || !strings.Contains(f.Detail, tt.wantDetail)) {
+ 					t.Errorf("ValidatePlan() %s finding = %+v; want a blocking finding whose detail holds %q", f.Check, f, tt.wantDetail)
+ 				}
++				if f.Check == patternCardHeadroomCheck && f.Card != tt.wantCardHeadroomOn {
++					t.Errorf("ValidatePlan() %s finding Card = %q; want %q", f.Check, f.Card, tt.wantCardHeadroomOn)
++				}
+ 			}
+ 			if got := countCheck(findings, renameToolMissingCheck); got != tt.wantRename {
+ 				t.Errorf("ValidatePlan() %s findings = %d; want %d (%v)", renameToolMissingCheck, got, tt.wantRename, findings)
+diff --git a/internal/loomshed/patternplan.go b/internal/loomshed/patternplan.go
+index 266599910..97d96a711 100644
+--- a/internal/loomshed/patternplan.go
++++ b/internal/loomshed/patternplan.go
+@@ -1,4 +1,4 @@
+-// patternplan.go holds the plan gate's PATTERN checks: pattern-removes-prescribed, pattern-headroom and pattern-line-unprescribed.
++// patternplan.go holds the plan gate's PATTERN checks: pattern-removes-prescribed, pattern-headroom, pattern-card-headroom and pattern-line-unprescribed.
+ // They compare the plan's fenced entry lines and its declared PATTERN changes with the overview in the worktree and at the base, so they live beside the other context checks rather than in planparser.
+ 
+ package loomshed
+@@ -8,6 +8,7 @@ import (
+ 	"fmt"
+ 	"io/fs"
+ 	"os"
++	"slices"
+ 
+ 	"github.com/Knatte18/loomyard/internal/pattern"
+ 	"github.com/Knatte18/loomyard/internal/patternlint"
+@@ -18,6 +19,12 @@ import (
+ // patternHeadroomCheck names the finding patternPlanFindings appends when the overview the plan's fenced entry lines project grows past the headroom line.
+ const patternHeadroomCheck = "pattern-headroom"
+ 
++// patternCardHeadroomCheck names the finding patternPlanFindings appends for a card whose own step grows the projected overview past the headroom line.
++const patternCardHeadroomCheck = "pattern-card-headroom"
++
++// patternHeadroomWayForward is the fix both headroom findings name.
++const patternHeadroomWayForward = "shorten the prescribed lines or move detail into the entries' background files, and when that is not enough ask the parent to record a `changes` decision that shortens other entries with `lyx loom decision add --pattern-entry ... --pattern-action changes --pattern-text ...` and prescribe those lines on a card; once the plan is approved, the parent passes `--amends-plan` as well"
++
+ // patternRemovesPrescribedCheck names the finding patternPlanFindings appends when a card fences a line for an entry the plan removes.
+ const patternRemovesPrescribedCheck = "pattern-removes-prescribed"
+ 
+@@ -27,6 +34,7 @@ const patternLineUnprescribedCheck = "pattern-line-unprescribed"
+ // patternPlanFindings returns the PATTERN checks' findings, in this order.
+ // First one pattern-removes-prescribed per removed entry that a card in cards fences a line for.
+ // Then a pattern-headroom when the overview projected from every card of plan grows past the headroom line.
++// Then one pattern-card-headroom per card in cards whose own step, projected from the worktree overview in card order, grows past the line.
+ // Last, only with pc.DecisionRecordPath set, one pattern-line-unprescribed per added or changed entry that no card fences a line for and whose bullet the worktree overview still holds as the base does.
+ // It reads nothing and returns nil when pc.PatternBase is nil or worktreeRoot holds no PATTERN.md; a read error of either overview is returned.
+ func patternPlanFindings(plan *planparser.Plan, cards []planparser.Card, worktreeRoot string, pc PlanContext) ([]planindex.Finding, error) {
+@@ -80,10 +88,11 @@ func patternPlanFindings(plan *planparser.Plan, cards []planparser.Card, worktre
+ 	if finding, over := pattern.Headroom(base, pattern.ProjectOverview(overview, prescribed, removed)); over {
+ 		findings = append(findings, planindex.Finding{
+ 			Check:    patternHeadroomCheck,
+-			Detail:   finding.Message + "; way forward: shorten the prescribed lines or move detail into the entries' background files, and when that is not enough ask the parent to record a `changes` decision that shortens other entries with `lyx loom decision add --pattern-entry ... --pattern-action changes --pattern-text ...` and prescribe those lines on a card; once the plan is approved, the parent passes `--amends-plan` as well",
++			Detail:   finding.Message + "; way forward: " + patternHeadroomWayForward,
+ 			Severity: planindex.SeverityBlocking,
+ 		})
+ 	}
++	findings = append(findings, cardHeadroomFindings(overview, cards, removed)...)
+ 
+ 	if pc.DecisionRecordPath == "" {
+ 		return findings, nil
+@@ -109,6 +118,43 @@ func patternPlanFindings(plan *planparser.Plan, cards []planparser.Card, worktre
+ 	return findings, nil
+ }
+ 
++// cardHeadroomFindings returns one pattern-card-headroom finding per card of cards whose own step grows the projected overview past the headroom line, the bound each card's lint-pattern step applies against the commit before it.
++// The projection starts at overview and takes cards in order.
++// A card's step applies its fenced entry lines, then drops each entry of removed whose ID the card is the first of cards to name;
++// a removed entry no card names is dropped before the first card, so the check never flags a step its card gate would pass.
++func cardHeadroomFindings(overview []byte, cards []planparser.Card, removed []string) []planindex.Finding {
++	removedByCard := make(map[int][]string)
++	var removedUpfront []string
++	for _, id := range removed {
++		index := slices.IndexFunc(cards, func(card planparser.Card) bool { return planparser.CardNamesPatternEntry(card, id) })
++		if index < 0 {
++			removedUpfront = append(removedUpfront, id)
++			continue
++		}
++		removedByCard[index] = append(removedByCard[index], id)
++	}
++
++	var findings []planindex.Finding
++	running := pattern.ProjectOverview(overview, nil, removedUpfront)
++	for index, card := range cards {
++		var prescribed []string
++		for _, entry := range planparser.CardPatternEntries(card) {
++			prescribed = append(prescribed, entry.Line)
++		}
++		next := pattern.ProjectOverview(running, prescribed, removedByCard[index])
++		if finding, over := pattern.Headroom(running, next); over {
++			findings = append(findings, planindex.Finding{
++				Check:    patternCardHeadroomCheck,
++				Card:     card.ID(),
++				Detail:   fmt.Sprintf("card %d: %s, so its lint-pattern step fails against the overview the cards before it leave; way forward: %s", card.Number, finding.Message, patternHeadroomWayForward),
++				Severity: planindex.SeverityBlocking,
++			})
++		}
++		running = next
++	}
++	return findings
++}
++
+ // PatternBaseReader returns the PlanContext.PatternBase reader for worktreeRoot's repository.
+ // On each call it reads PATTERN.md at the revision mergeBase answers, or at HEAD when mergeBase is nil, the standalone run with no parent recorded.
+ // A mergeBase error is returned wrapped, and an empty answer is the error of reading no revision.
+diff --git a/internal/planparser/patternentry.go b/internal/planparser/patternentry.go
+index aabca298e..618334f4e 100644
+--- a/internal/planparser/patternentry.go
++++ b/internal/planparser/patternentry.go
+@@ -67,3 +67,9 @@ func CardPatternEntries(card Card) []PatternEntryLine {
+ 	}
+ 	return entries
+ }
++
++// CardNamesPatternEntry reports whether card's text names the PATTERN entry id in backticks, anywhere in prose, a code span or a fenced block.
++// It marks the card that carries out a change to the entry which the plan states without fencing a line, such as a removal.
++func CardNamesPatternEntry(card Card, id string) bool {
++	return strings.Contains(card.Text, "`"+id+"`")
++}
+diff --git a/internal/planparser/patternentry_test.go b/internal/planparser/patternentry_test.go
+index e079ef3b1..e166471bd 100644
+--- a/internal/planparser/patternentry_test.go
++++ b/internal/planparser/patternentry_test.go
+@@ -1,6 +1,6 @@
+ //go:build tier0
+ 
+-// patternentry_test.go covers CardPatternEntries, the reader of a card's fenced PATTERN.md entry lines.
++// patternentry_test.go covers the readers of a card's PATTERN entries: its fenced entry lines and the entry IDs its text names.
+ 
+ package planparser
+ 
+@@ -66,3 +66,25 @@ func TestCardPatternEntries(t *testing.T) {
+ 		})
+ 	}
+ }
++
++func TestCardNamesPatternEntry(t *testing.T) {
++	t.Parallel()
++	tests := []struct {
++		name string
++		text string
++		want bool
++	}{
++		{"BacktickedIDInProse", "Delete the `PATTERN-a` bullet from PATTERN.md.\n", true},
++		{"IDInAFencedLine", "```\n- `PATTERN-a` — rule a.\n```\n", true},
++		{"BareIDWithoutBackticks", "Delete PATTERN-a from PATTERN.md.\n", false},
++		{"LongerIDSharingThePrefix", "Delete the `PATTERN-ab` bullet.\n", false},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			if got := CardNamesPatternEntry(Card{Text: tt.text}, "PATTERN-a"); got != tt.want {
++				t.Errorf("CardNamesPatternEntry(%q, PATTERN-a) = %v; want %v", tt.text, got, tt.want)
++			}
++		})
++	}
++}
+diff --git a/internal/planparser/plan.go b/internal/planparser/plan.go
+index 8e878848b..c446a291b 100644
+--- a/internal/planparser/plan.go
++++ b/internal/planparser/plan.go
+@@ -117,7 +117,7 @@ type Card struct {
+ 	// Slug is the card's segment, taken from the Card Index entry.
+ 	Slug string
+ 
+-	// Text is the raw text of the card's file, read only by CheckCardFabricReference and the pattern-entry-line-cap check.
++	// Text is the raw text of the card's file, read only by CheckCardFabricReference and the PATTERN entry readers of patternentry.go.
+ 	Text string
+ 
+ 	// Title is the card file's "# Card N — <name>" heading's trailing name text.
