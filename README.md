@@ -16,7 +16,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T1 | **webstercli standalone tests fail when an empty /tmp/.git exists**<br>• `profile: light` | [`webstercli-tests-ignore-tmp-git`](design-webstercli-tests-ignore-tmp-git.md) | darn | Code-Burler-Review | neve | 27m<br>18m | webster, testkit |
+| T1 | **webstercli standalone tests fail when an empty /tmp/.git exists**<br>• `profile: light` | [`webstercli-tests-ignore-tmp-git`](design-webstercli-tests-ignore-tmp-git.md) | darn | Code-Burler-Fix | neve | 27m<br>18m | webster, testkit |
 | T2 | **Clean up PATTERN.md: far too many entries**<br>• `profile: light` | [`pattern-cleanup`](design-pattern-cleanup.md) | darn | Code-Burler-Fix | neve | 6h<br>3h | stencil |
 | T7 | **lyx gate test stops at the first failing tier, so a pre-existing tier0 failure hides every later tier and the guard step**<br>• `profile: light` | [`gate-runs-past-failing-tier`](design-gate-runs-past-failing-tier.md) | darn | Code-Bouncer | neve | 27m<br>18m | gate |
 | T8 | **webster: Master writes stuck after reset --to batch-start instead of running recover-batch**<br>• `profile: light` | [`webster-reset-reopens-dead-batch`](design-webster-reset-reopens-dead-batch.md) | darn | Finalize | neve | 27m<br>18m | webster |
@@ -60,7 +60,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | # | P | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | B1 |  | **Find why a running run shows a dead waiter in the activity reader** | [`idle-notice-dead-waiter-cause`](design-idle-notice-dead-waiter-cause.md) | 4h<br>4h | batten, shuttle |
-| B2 |  | **A run never files a task, at most a note**<br>• gate-runs-once filed a follow-up task (default loom) that then auto-started; runs may file only notes | [`runs-never-write-board`](design-runs-never-write-board.md) | 41m<br>39m | board, loom, stencil |
+| B2 |  | **A run never files a task, at most a note**<br>• gate-runs-once filed a follow-up task (default loom) that then auto-started; runs may file only notes | [`runs-never-write-board`](design-runs-never-write-board.md) | 41m<br>40m | board, loom, stencil |
 | B7 |  | **Webster batch whose card verify needs an orch-only change dead-ends: recover-batch ends dead with 'asking', then the run halts repeatedly with growing history** | [`webster-orch-need-to-parent`](design-webster-orch-need-to-parent.md) | 27m<br>27m | webster, loom |
 
 ### Enhancements (23)
@@ -72,7 +72,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | E3 |  | **Plan check does not project the lint-pattern step per card, so a wrong plan-review fix passes review and fails only at self-check** | [`plan-check-lint-pattern-per-card`](design-plan-check-lint-pattern-per-card.md) | 27m<br>27m | loom, burler |
 | E4 |  | **finalize: the discrepancy-document conflict shape**<br>• Divergences that cannot be a git conflict get a precomputed document for the resolving agent instead of markers | [`finalize-discrepancy-doc`](design-finalize-discrepancy-doc.md) | 2w<br>2w | fabric, loom |
 | E7 |  | **Run verbs in one shared namespace, not under lyx loom**<br>• lyx loom decision/status/goto/approve act on darn runs too; move recipe-neutral run verbs to one shared namespace | [`run-verbs-shared`](design-run-verbs-shared.md) | 9d<br>9d | shed, loom |
-| E9 |  | **Paste cited code into a review rounds context**<br>• Reviewers edit nothing and review a fixed commit, so code pasted at round start cannot go stale; measure it against todays reviewer | [`review-inline-code`](design-review-inline-code.md) | 12d<br>4h | burler, stencil |
+| E9 |  | **Paste cited code into a review rounds context**<br>• Reviewers edit nothing and review a fixed commit, so code pasted at round start cannot go stale; measure it against todays reviewer | [`review-inline-code`](design-review-inline-code.md) | 12d<br>5h | burler, stencil |
 | E10 |  | **Module labels from what a task touches, not only what it is about**<br>• Half the landings that changed the shuttle core lacked the shuttle label; derive or check module labels from the plan and the diff | [`labels-from-diff`](design-labels-from-diff.md) | 9d<br>9d | board, loom |
 | E13 |  | **Rename the lyx binary to lyr (name clash with LyX)** | [`rename-binary-lyr`](design-rename-binary-lyr.md) | 8d<br>2d | stencil, shuttle |
 | E14 |  | **An adopt runs the test suite on the adopting machine**<br>• Catch breaks from a machine change (Ubuntu 26.04, 24.04, Windows 11) at adopt time | [`adopt-runs-tests`](design-adopt-runs-tests.md) | 7h<br>43m | fabric, gate |
@@ -105,6 +105,6 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | F13 | H | **Weaver: a cold-start implementer beside Webster, with model escalation**<br>• A second implementer built on Millhouse Builder: a fresh agent per batch with its own model, escalating the model when an agent fails; Webster stays fork-based | [`weaver`](design-weaver.md) | 13d<br>5d | webster |
 | F15 |  | **Configurable action buttons on the reed status bar**<br>• Clickable status-bar buttons that run configured commands: VS Code, orch distill/refresh, the follow toggle and more | [`reed-status-buttons`](design-reed-status-buttons.md) | 9d<br>5h | reed, config, batten |
 | F16 | H | **creel stage 3: agents message through creel, not SendMessage**<br>• Parent asks, parent review, stop reports and shuttle send go through creel, so a non-Claude engine can take a role with a parent | [`creel-agents`](design-creel-agents.md) | 9d<br>2h | creel, shuttle, loom, stencil, report |
-| F17 |  | **Ideas to borrow from comparable agent orchestrators (survey, Oct 2026)** | [`orchestrator-survey-ideas`](design-orchestrator-survey-ideas.md) | 8d<br>4h | burler, shed, orch, quarry, report |
+| F17 |  | **Ideas to borrow from comparable agent orchestrators (survey, Oct 2026)** | [`orchestrator-survey-ideas`](design-orchestrator-survey-ideas.md) | 8d<br>5h | burler, shed, orch, quarry, report |
 | F18 |  | **[.NET 004] Asynchronous test tiers in shed: the numerical baseline captured before implementation, compared at the final gate**<br>• Support a hub regression tier that writes profiles on the parent before implementation and compares after, switchable per task for expected drift. | [`regression-baseline-verify`](design-regression-baseline-verify.md) | 7d<br>43m | shed, webster, batten, config, dotnet |
 | F20 |  | **Large tasks: Discussion, a pre-planner, and the pieces as darn runs inside the task's beam**<br>• Discussion decides scope, a pre-planner splits it into contracted pieces, each piece runs as darn from the task's beam, a whole-task perch reviews, then align and land | [`loom-beam-darns`](design-loom-beam-darns.md) | 1d<br>43m | loom, shed, batten, workspaces, burler |
