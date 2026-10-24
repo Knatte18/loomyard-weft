@@ -24,8 +24,8 @@ Waits on nothing open; can start now.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T1 | **Webster batch whose card verify needs an orch-only change dead-ends: recover-batch ends dead with 'asking', then the run halts repeatedly with growing history**<br>• `profile: light` | [`webster-orch-need-to-parent`](design-webster-orch-need-to-parent.md) | darn |  | 3h<br>33m | webster, loom |
-| T2 | **Plan check does not project the lint-pattern step per card, so a wrong plan-review fix passes review and fails only at self-check**<br>• `profile: light` | [`plan-check-lint-pattern-per-card`](design-plan-check-lint-pattern-per-card.md) | darn |  | 3h<br>33m | loom, burler |
+| T1 | **Webster batch whose card verify needs an orch-only change dead-ends: recover-batch ends dead with 'asking', then the run halts repeatedly with growing history**<br>• `profile: light` | [`webster-orch-need-to-parent`](design-webster-orch-need-to-parent.md) | darn |  | 3h<br>34m | webster, loom |
+| T2 | **Plan check does not project the lint-pattern step per card, so a wrong plan-review fix passes review and fails only at self-check**<br>• `profile: light` | [`plan-check-lint-pattern-per-card`](design-plan-check-lint-pattern-per-card.md) | darn |  | 3h<br>34m | loom, burler |
 
 ## Notes (42)
 
@@ -70,8 +70,8 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | E27 | L | **Carry agent mail into the pane in full instead of a reminder and a read turn**<br>• A reminder plus lyx creel read costs the receiver an extra turn per agent message | [`creel-carry-agent-mail`](design-creel-carry-agent-mail.md) | 1d<br>10h | creel |
 | E28 |  | **[.NET] A small public NUnit repo as sandbox hub for end-to-end C# runs** | [`csharp-sandbox-hub`](design-csharp-sandbox-hub.md) | 2d<br>2d | dotnet |
 | E30 |  | **Discussion scope check moves from the alignment agent into the perch lenses, with an escalating finding class** | [`discussion-alignment-into-lenses`](design-discussion-alignment-into-lenses.md) | 2d<br>10h | loom, burler, shed |
-| E31 |  | **A plainly outdated task entry goes to the parent: from the Discussion review in loom, from Darn-Write in darn**<br>• No pre-Discussion row: board-fit flags an outdated entry as an escalating finding; Darn-Write checks and asks the parent | [`outdated-entry-to-parent`](design-outdated-entry-to-parent.md) | 2d<br>29m | loom, stencil |
-| E32 |  | **Move rules about lyx behaviour out of this repo's CLAUDE.md into lyx code, doc.go and stencils** | [`claude-md-lyx-rules-out`](design-claude-md-lyx-rules-out.md) | 2d<br>29m | stencil, board, loom |
+| E31 |  | **A plainly outdated task entry goes to the parent: from the Discussion review in loom, from Darn-Write in darn**<br>• No pre-Discussion row: board-fit flags an outdated entry as an escalating finding; Darn-Write checks and asks the parent | [`outdated-entry-to-parent`](design-outdated-entry-to-parent.md) | 2d<br>30m | loom, stencil |
+| E32 |  | **Move rules about lyx behaviour out of this repo's CLAUDE.md into lyx code, doc.go and stencils** | [`claude-md-lyx-rules-out`](design-claude-md-lyx-rules-out.md) | 2d<br>30m | stencil, board, loom |
 | E34 |  | **Rename the Merge-In row to Parent-Align**<br>• The row aligns the task with what the parent brought in, not only merges | [`merge-in-parent-align`](design-merge-in-parent-align.md) | 10h<br>10h | loom, shed, stencil |
 | E35 |  | **A landing fixer escalation goes to the arbiter before the orch**<br>• Merge-In and Finalize fixer escalate reports reach the arbiter first | [`landing-escalate-arbiter`](design-landing-escalate-arbiter.md) | 10h<br>10h | shed, loom |
 
@@ -92,11 +92,3 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | F17 |  | **Ideas to borrow from comparable agent orchestrators (survey, Oct 2026)** | [`orchestrator-survey-ideas`](design-orchestrator-survey-ideas.md) | 8d<br>8h | burler, shed, orch, quarry, report |
 | F18 |  | **[.NET 004] Regression as three Drift rows: Drift-Baseline after Discussion, Drift-Await before Webster, Drift-Verify after the Code perch**<br>• Support a hub regression tier that writes profiles on the parent before implementation and compares after, switchable per task for expected drift. | [`regression-baseline-verify`](design-regression-baseline-verify.md) | 7d<br>1h | shed, webster, batten, config, dotnet |
 | F20 |  | **Large tasks: Discussion, a pre-planner, and the pieces as darn runs inside the task's beam**<br>• Discussion decides scope, a pre-planner splits it into contracted pieces, each piece runs as darn from the task's beam, a whole-task perch reviews, then align and land | [`loom-beam-darns`](design-loom-beam-darns.md) | 2d<br>2h | loom, shed, batten, workspaces, burler |
-
-## Done (1)
-
-Finished, awaiting `lyx board prune --apply`.
-
-| # | Entry | Slug | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- |
-| T4 | **[.NET] Scoped build and test for C# hubs, and the Models verification wants**<br>• Verify gates in a .NET hub build and test only the projects a card touches, since a scanned Windows machine makes every build slow. | [`dotnet-scoped-verify`](design-dotnet-scoped-verify.md) | 2w<br>3h | shed, webster, loom, config, dotnet |
