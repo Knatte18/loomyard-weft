@@ -1141,7 +1141,7 @@
       "isolated": false,
       "brief": "",
       "body": "Imported from [issue #856](https://github.com/Knatte18/loomyard/issues/856).\n\nThe tier-2 Merge-In verify failed once on `TestSmokeStart_NeverAttachesAndAddsNoOperatorStrand` (`internal/loomcli/smoke_starttail_test.go`).\nThe second `lyx loom start` got `index.lock: File exists` on the pair's weft worktree, so a process the first start left behind still held the records index.\nThe branch under verify changed nothing in `internal/loomcli` or the records git path.\nThe test passed 5 of 5 times alone, the full tier 2 passed on the same HEAD, and no other gate log on record shows the failure.\n\nWhy it is abnormal: an unrelated flake escalated the run to a human.\nThe loom halted `blocked` at Merge-In with anomaly `escalation-to-human`: \"landing gate failed after merging parent branch \"main\" (exit code 1)\", way forward `lyx loom goto --to Darn-Write` then `lyx loom resume`.\n\nCause: the test's repeated starts do not wait for the records index lock the way `TestSmokeBootstrapLifecycle` does with `waitRecordsIndexLockGone`.\nIt will recur under load.\n\nWhat to do: make the test wait with `waitRecordsIndexLockGone` between starts, or make `lyx loom start` tolerate a concurrent records commit.\n\nProvenance: task `verify-fix-escalation`; notes `Darn-Write.md`, `loom-halt.md`.\n",
-      "status": "running · Code-Burler-Fix",
+      "status": "running · Code-Bouncer",
       "created": "2026-10-23T16:35:51Z",
       "revised": "2026-10-24T06:23:25Z",
       "profile": "light",
