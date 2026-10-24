@@ -1,6 +1,6 @@
 # A run never files a task, at most a note
 
-`runs-never-write-board` · Task · bug, board, loom, stencil · running · Finalize
+`runs-never-write-board` · Task · bug, board, loom, stencil · done
 
 ## Seen
 
