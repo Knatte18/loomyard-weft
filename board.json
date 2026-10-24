@@ -1225,7 +1225,8 @@
       "brief": "",
       "body": "Imported from [issue #856](https://github.com/Knatte18/loomyard/issues/856).\n\nThe tier-2 Merge-In verify failed once on `TestSmokeStart_NeverAttachesAndAddsNoOperatorStrand` (`internal/loomcli/smoke_starttail_test.go`).\nThe second `lyx loom start` got `index.lock: File exists` on the pair's weft worktree, so a process the first start left behind still held the records index.\nThe branch under verify changed nothing in `internal/loomcli` or the records git path.\nThe test passed 5 of 5 times alone, the full tier 2 passed on the same HEAD, and no other gate log on record shows the failure.\n\nWhy it is abnormal: an unrelated flake escalated the run to a human.\nThe loom halted `blocked` at Merge-In with anomaly `escalation-to-human`: \"landing gate failed after merging parent branch \"main\" (exit code 1)\", way forward `lyx loom goto --to Darn-Write` then `lyx loom resume`.\n\nCause: the test's repeated starts do not wait for the records index lock the way `TestSmokeBootstrapLifecycle` does with `waitRecordsIndexLockGone`.\nIt will recur under load.\n\nWhat to do: make the test wait with `waitRecordsIndexLockGone` between starts, or make `lyx loom start` tolerate a concurrent records commit.\n\nProvenance: task `verify-fix-escalation`; notes `Darn-Write.md`, `loom-halt.md`.\n",
       "created": "2026-10-23T16:35:51Z",
-      "revised": "2026-10-24T06:23:25Z"
+      "revised": "2026-10-24T06:23:25Z",
+      "profile": "light"
     },
     {
       "id": 778,
@@ -1290,7 +1291,8 @@
       "brief": "",
       "body": "Imported from [issue #851](https://github.com/Knatte18/loomyard/issues/851).\n\n`lyx webster record-batch` marked a batch failed with blocking `create-not-done` findings even though the Create targets existed.\n\nWhat happened:\n- Each finding reads `Create target \"plan:\u003cunit\u003e#\u003cMember\u003e\" still does not resolve: ... quarry answered not_found (the unit exists and the member is missing)`.\n- The same message then says the member \"is declared as `\u003cunit\u003e_test#\u003cMember\u003e`\" in a `_test.go` file of that unit.\n- So the member exists, in the external test package (`package x_test`), and the lookup only searched the unit `\u003cunit\u003e` and its files.\n- It happened twice in one task, in two different batches, across three different units (batches of 6 and 5 cards). The refusals archived reports and pointed to `lyx webster recover-batch \u003cn\u003e`.\n\nWhy it is abnormal:\n- The refusal itself shows the tool knows where the member is declared, yet still counts the target as not done and fails the batch.\n- A plan that names a test in an external test package as a Create target cannot pass record-batch, whatever the implementer does.\n- The recovery verb is a workaround, not a fix; each batch costs a failed record plus a recovery.\n\nWhat to do:\n- Make the Create-target resolution through quarry also look up the `\u003cunit\u003e_test` package (or resolve `Test*` members across both packages of the unit) before reporting `not_found`.\n- Alternatively, make the plan validator reject or rewrite such a target to `\u003cunit\u003e_test#\u003cMember\u003e` at plan time, so the mismatch surfaces before the run.\n\nProvenance: task `plan-card-rules`; notes `webster-refusal-record-batch.md`, `webster-refusal-record-batch-2.md`.\n",
       "created": "2026-10-23T16:35:58Z",
-      "revised": "2026-10-24T06:23:25Z"
+      "revised": "2026-10-24T06:23:25Z",
+      "profile": "light"
     },
     {
       "id": 781,
@@ -1335,7 +1337,8 @@
       "brief": "",
       "body": "Imported from [issue #843](https://github.com/Knatte18/loomyard/issues/843).\n\n**What happened**\n\nA loom run halted `failed` at `Plan-Burler-Fix` (anomaly `producer-hard-failure`).\nThe shedadapters check reported that the twill fixer fork \"ran a git-mutating command\" and refused with: \"a fork must never run a state-mutating git command\".\nThe flagged command was a single compound shell line.\nIt created a throwaway repository under the session's scratchpad directory (`git init`, an empty commit, `git worktree add`, `git worktree repair`) to test git behaviour, and never touched the task's own worktree or repository.\n\n**Why it is abnormal**\n\nThe guard's intent is to stop a fork from changing the target's git state.\nHere every git invocation was aimed at a repository the fork had just created in its own scratchpad, so no target state was at risk.\nThe guard appears to match on the git verbs alone without checking which repository they act on, so a harmless experiment fails the whole round and halts the run.\nThe advised recovery (\"inspect the target's working-tree changes, revert what the fork wrote\") has nothing to revert in this case.\n\n**What to do**\n\nMake the fork git-mutation check scope-aware: ignore git commands whose repository (`-C \u003cpath\u003e`, `cd \u003cpath\u003e`, or `git init \u003cpath\u003e`) resolves inside the session scratchpad or another path outside the target worktree.\nAlternatively, report the violation as a recoverable stuck state rather than a hard failure when the target's working tree and refs are unchanged after the fork.\n\nProvenance: task `orch-strand-cycle`, note `loom-halt.md`.\n",
       "created": "2026-10-23T16:36:09Z",
-      "revised": "2026-10-24T06:23:25Z"
+      "revised": "2026-10-24T06:23:25Z",
+      "profile": "light"
     },
     {
       "id": 785,
@@ -1355,7 +1358,8 @@
       "brief": "A git call to GitHub hung for minutes on a dead connection; bound every git network call and retry it once",
       "body": "## Seen (orch, 2026-10-23, OSL-1046)\n\nTwo batten runs started at 18:54 each hung on a git call to GitHub: `orch-handoff-timeout-delivery`'s Worktree-Create on `git ls-remote --heads origin refs/heads/\u003cslug\u003e-weft`, and `adopt-owner-write-stale-manifest`'s `lyx fabric ... push`.\nEach `git-remote-https` held one TCP connection to 140.82.121.4:443 with 395 bytes unacknowledged in its send queue, the size of a TLS opening, and no answer for over two minutes, while a fresh `git ls-remote` from the prime to the same repository answered at once.\nTCP retransmission would have held each call for about a quarter of an hour; nothing in lyx bounded it.\nEnding the two `git-remote-https` processes by hand failed the calls, and batten retried and went on.\n\n## Idea\n\nEvery git network call lyx makes carries a stall bound, such as git's `http.lowSpeedLimit` and `http.lowSpeedTime`, or a timeout on the command, and is retried once on a stall, so a dead connection costs seconds instead of minutes.\n",
       "created": "2026-10-23T16:58:17Z",
-      "revised": "2026-10-24T06:23:25Z"
+      "revised": "2026-10-24T06:23:25Z",
+      "profile": "light"
     },
     {
       "id": 786,
@@ -1374,7 +1378,8 @@
       "brief": "The idle check reads no fork transcript, so a writer working through a fork reads as idle",
       "body": "## Seen (orch, 2026-10-23)\n\nBatten sent the orch an idle notice for `loom-tail-review` (creel #182) reading \"no agent activity readable\" for 1h15m, while the run was at Plan-Write and the Plan writer's fork was writing the plan.\nThe run was healthy: Plan-Write finished and Plan-Bouncer started at 14:05 local.\nThe writer's work was in its fork, so the likely cause is that the activity batten reads does not count a fork's transcript; that cause is not yet checked in the code.\n\n## Idea\n\nBatten's idle check also reads a session's fork transcripts too, under `subagents/` beside the session's own transcript, and counts their writes as activity, so a writer working in a fork raises no idle notice.\n",
       "created": "2026-10-23T17:12:42Z",
-      "revised": "2026-10-24T06:23:25Z"
+      "revised": "2026-10-24T06:23:25Z",
+      "profile": "light"
     },
     {
       "id": 787,
