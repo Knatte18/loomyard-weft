@@ -631,13 +631,13 @@
         "workspaces"
       ],
       "issues": [],
-      "priority": "high",
+      "priority": "low",
       "depends_on": [],
       "isolated": false,
       "brief": "Let an umbrella work in its own subdirectory of the repository, inherited by its tasks; hard to change now",
       "body": "## Seen (2026-10-18)\n\nThe anchor (`fabric clone --subpath`) is set once per hub and decides where `_lyx`, `.lyx/` and config sit in every worktree of the hub.\n\n## Idea\n\nLet an umbrella (`orch-any-worktree`) have an anchor of its own, a different subdirectory of the repository, inherited by every task under it as it inherits the branch.\nFabric, batten and loom would then read the anchor from the task's umbrella rather than from the hub.\n\n## Operator view, not a decision (2026-10-18)\n\nHard to change now; a low-priority task for later.\n",
       "created": "2026-10-18T13:38:52Z",
-      "revised": "2026-10-24T06:32:58Z"
+      "revised": "2026-10-24T07:10:32Z"
     },
     {
       "id": 652,
