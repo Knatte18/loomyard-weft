@@ -33,6 +33,7 @@ Nothing here is a commitment; these are leads to triage.
 - **Blast-radius verdict per glyph** — [tree-sitter-analyzer](https://github.com/aimasteracc/tree-sitter-analyzer).
   Impact analysis returns SAFE/CAUTION/UNSAFE for an edit target.
   For LoomYard: a `quarry impact <glyph>` that Plan review reads, beyond the existing existence check.
+  Studied in `docs/research/tsa-quarry-2026-10-24/report.md` (idea 4): TSA's verdict envelope is not worth borrowing, `internal/impactset` already derives affected tests, and a typed reference query waits on a recorded plan-gate case.
 - **Bugfix spec with fail-on-base test** — [Kiro bugfix specs](https://kiro.dev/docs/specs/bugfix-specs/).
   Current / Expected / Unchanged behaviour in WHEN/THEN form, each becoming a test.
   For LoomYard: a bugfix stencil for Discussion-Write, plus a Go gate that the new test fails on the base commit and passes on the tip.
