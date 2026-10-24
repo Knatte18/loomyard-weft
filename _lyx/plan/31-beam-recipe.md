@@ -2,12 +2,12 @@
 
 **Create:**
 - `contracts/recipes/beam-recipe.yaml`
-- `plan:contracts/recipes#BeamRecipe` -> `var BeamRecipe []byte`
-- `plan:internal/shedrun#RecipeBeam` -> `const RecipeBeam = "beam"`
-- `plan:internal/shedrecipe#beamDescribeEntry` -> `func beamDescribeEntry(row RowIdentity, cfg Config, env Env) (shedengine.ShedProducer, error)`
-- `plan:internal/loomrecipe#NewBeam` -> `func NewBeam(env shedrecipe.Env, paths shedbuild.ShedPaths) (*shedengine.Shed, error)`
-- `plan:internal/loomrecipe#BeamRouting` -> `func BeamRouting() (shedengine.Routing, error)`
-- `plan:internal/loomrecipe#TestNewBeam` -> `func TestNewBeam(t *testing.T)`
+- `contracts/recipes#BeamRecipe`
+- `internal/shedrun#RecipeBeam`
+- `internal/shedrecipe#beamDescribeEntry`
+- `internal/loomrecipe#NewBeam`
+- `internal/loomrecipe#BeamRouting`
+- `internal/loomrecipe#TestNewBeam`
 
 **Edit:**
 - `internal/shedrun#RecipeNames`
