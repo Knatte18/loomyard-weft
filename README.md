@@ -6,7 +6,7 @@ Prime owner: `neve`.
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
 
-## Tasks (7)
+## Tasks (11)
 
 Concrete and claimable; only a task can run.
 
@@ -19,13 +19,17 @@ Held by a run; its scope is locked until the run ends.
 | T2 | **Clean up PATTERN.md: far too many entries**<br>• `profile: light` | [`pattern-cleanup`](design-pattern-cleanup.md) | darn | Code-Burler-Fix | neve | 6h<br>2h | stencil |
 | T5 | **Drop the transitional tag spellings after the deploy**<br>• After the deploy: remove the guard files' \|\| integration term, the old tag spellings in the tier commands and guards, and respell the glyphchain fixture<br>• `profile: light` | [`drop-transitional-tag-spellings`](design-drop-transitional-tag-spellings.md) | darn | Code-Burler-Review | neve | 1h<br>19m |  |
 
-### Ready (1)
+### Ready (5)
 
 Waits on nothing open; can start now.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
 | T1 | **webstercli standalone tests fail when an empty /tmp/.git exists** | [`webstercli-tests-ignore-tmp-git`](design-webstercli-tests-ignore-tmp-git.md) | loom |  | 9m<br>9m | webster, testkit |
+| T7 | **lyx gate test stops at the first failing tier, so a pre-existing tier0 failure hides every later tier and the guard step** | [`gate-runs-past-failing-tier`](design-gate-runs-past-failing-tier.md) | loom |  | 9m<br>9m | gate |
+| T8 | **webster: Master writes stuck after reset --to batch-start instead of running recover-batch** | [`webster-reset-reopens-dead-batch`](design-webster-reset-reopens-dead-batch.md) | loom |  | 9m<br>9m | webster |
+| T10 | **webster record-batch refuses Create target when the test is declared in an external _test package** | [`create-target-ext-test-pkg`](design-create-target-ext-test-pkg.md) | loom |  | 9m<br>9m | webster, quarry |
+| T11 | **Card gate (--tier 0) does not vet a card's packages under the other tier tag sets, so helper dependencies across tagged files fail only in the batch gate** | [`card-gate-vets-all-tag-sets`](design-card-gate-vets-all-tag-sets.md) | loom |  | 9m<br>9m | gate, webster |
 
 ### Layer A (4)
 
@@ -38,7 +42,7 @@ Waits only on Running or Ready entries.
 | T6 | **Fork git-mutation guard fails a run on git commands confined to a scratch repo**<br>• `profile: light` | [`fork-git-guard-scratch-repo`](design-fork-git-guard-scratch-repo.md) | darn | `pattern-cleanup` | 21h<br>2h | shed, burler |
 | T9 | **Umbrella groundwork: project entries, pairs from a parent pair, and umbrella tasks that spawn and land from their own worktree**<br>• [WS 004+006] Board projects, fabric pairs from a parent pair, batten and orch from any worktree, umbrella tasks | [`umbrella-groundwork`](design-umbrella-groundwork.md) | loom | `pattern-cleanup` | 3w<br>2h | fabric, batten, orch, board, reed, creel, shed, workspaces |
 
-## Notes (49)
+## Notes (45)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
 
@@ -53,17 +57,13 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | A7 |  | **Trial: batcher profile wide (budget 300k)**<br>• Hub runs a new batcher profile wide, budget 300k; check cost and fork quality before taking it into the template | [`batch-budget-300k-trial`](design-batch-budget-300k-trial.md) | 1d<br>4h | webster |
 | A8 |  | **Plan writer cost: sub-planners per part, and twill versus a solo writer**<br>• The Plan writer is 18% of spend; sub-planners per part for large bundles, and a twill versus solo Opus high comparison on cost, rounds and time | [`plan-writer-context`](design-plan-writer-context.md) | 1d<br>4h | loom, stencil |
 
-### Bugs (7)
+### Bugs (3)
 
 | # | P | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | B1 |  | **Find why a running run shows a dead waiter in the activity reader** | [`idle-notice-dead-waiter-cause`](design-idle-notice-dead-waiter-cause.md) | 4h<br>4h | batten, shuttle |
 | B2 |  | **A run never files a task, at most a note**<br>• gate-runs-once filed a follow-up task (default loom) that then auto-started; runs may file only notes | [`runs-never-write-board`](design-runs-never-write-board.md) | 23m<br>21m | board, loom, stencil |
-| B3 |  | **Card gate (--tier 0) does not vet a card's packages under the other tier tag sets, so helper dependencies across tagged files fail only in the batch gate** | [`card-gate-vets-all-tag-sets`](design-card-gate-vets-all-tag-sets.md) | 9m<br>9m | gate, webster |
-| B4 |  | **lyx gate test stops at the first failing tier, so a pre-existing tier0 failure hides every later tier and the guard step** | [`gate-runs-past-failing-tier`](design-gate-runs-past-failing-tier.md) | 9m<br>9m | gate |
-| B5 |  | **webster: Master writes stuck after reset --to batch-start instead of running recover-batch** | [`webster-reset-reopens-dead-batch`](design-webster-reset-reopens-dead-batch.md) | 9m<br>9m | webster |
 | B7 |  | **Webster batch whose card verify needs an orch-only change dead-ends: recover-batch ends dead with 'asking', then the run halts repeatedly with growing history** | [`webster-orch-need-to-parent`](design-webster-orch-need-to-parent.md) | 9m<br>9m | webster, loom |
-| B8 |  | **webster record-batch refuses Create target when the test is declared in an external _test package** | [`create-target-ext-test-pkg`](design-create-target-ext-test-pkg.md) | 9m<br>9m | webster, quarry |
 
 ### Enhancements (23)
 
