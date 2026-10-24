@@ -1,10 +1,9 @@
 {
   "current_producer": "Merge-In",
-  "state": "running",
+  "state": "paused",
   "error": "",
   "pause_requested": false,
-  "pause_before": "Merge-In",
-  "pause_before_by": "ly:orch",
+  "pause_reason": "paused before Merge-In, as requested by ly:orch",
   "activity": {
     "now": "Merge-In",
     "last": "Describe → done",
