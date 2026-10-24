@@ -2,8 +2,6 @@
 
 `dotnet-scoped-verify` · Task · feature, enhancement, shed, webster, loom, config, dotnet
 
-Depends on: [`card-gate-vets-all-tag-sets`](design-card-gate-vets-all-tag-sets.md)
-
 ## Scope (operator, 2026-10-24)
 
 One loom bundle of notes `dotnet-scoped-verify` and `dotnet-verify-protocol`: verify gates in a .NET hub build and test only what a change touches, plus the remaining wants of the Models verification protocol.
