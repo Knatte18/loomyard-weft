@@ -2,8 +2,6 @@
 
 `lens-fork-reports-kept` · Task · enhancement, burler, loom
 
-Depends on: [`decision-reaches-agents`](design-decision-reaches-agents.md)
-
 ## Seen (orch, 2026-10-22)
 
 A twill writer's lens forks each return a report, and the lead writes one line per finding into `_lyx/plan/lens-review.md`: the lens names, the severity, a short summary and how it was fixed.
