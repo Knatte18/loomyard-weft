@@ -999,31 +999,35 @@
         "codex"
       ],
       "issues": [],
+      "recipe": "darn",
       "depends_on": [],
       "isolated": false,
       "brief": "Test parallel Codex subagents with fork_turns all, each writing a file, parent waiting and merging",
-      "body": "## Seen (codex spike, 2026-10-24)\n\nTwill and the other fan-outs rest on Claude Code forks that inherit the parent's conversation.\nThe spike (`docs/research/codex-spike-2026-10-24/report.md`, section `/fork and subagents`) found that a Codex subagent spawned with `fork_turns: \"all\"` inherits it, while the model's own pick was `\"none\"`; each subagent writes its own rollout naming its parent; no hook fired for the subagent; the parent waits by polling.\nOnly one subagent was tried.\n\n## Idea\n\nA small docs spike: a twill-like fan in Codex, 3-4 subagents spawned with `fork_turns: \"all\"` in parallel, each writing its own file, the parent waiting and merging them.\nIt answers whether twill can run on Codex: parallelism, the wait, whether a prompt reliably gets `\"all\"`, cost of an inherited context, and how lyx would audit the forks without hooks (their rollouts).\nSame setup as the first spike: a private tmux server, the cheapest model, tiny prompts, report under `docs/research/`.\n",
+      "body": "## Seen (codex spike, 2026-10-24)\n\nTwill and the other fan-outs rest on Claude Code forks that inherit the parent's conversation.\nThe spike (`docs/research/codex-spike-2026-10-24/report.md`, section `/fork and subagents`) found that a Codex subagent spawned with `fork_turns: \"all\"` inherits it, while the model's own pick was `\"none\"`; each subagent writes its own rollout naming its parent; no hook fired for the subagent; the parent waits by polling.\nOnly one subagent was tried.\n\n## Idea\n\nA small docs spike: a twill-like fan in Codex, 3-4 subagents spawned with `fork_turns: \"all\"` in parallel, each writing its own file, the parent waiting and merging them.\nIt answers whether twill can run on Codex: parallelism, the wait, whether a prompt reliably gets `\"all\"`, cost of an inherited context, and how lyx would audit the forks without hooks (their rollouts).\n\n## Task (operator, 2026-10-24)\n\nA report only, nothing built: `docs/research/codex-twill-spike-2026-10-24/report.md`.\n- Same setup as the first spike: Codex only in a private tmux server of your own (`tmux -L codex-twill`), never in the `loomyard` session, in a throwaway git repository under `\u003ctask worktree\u003e/.scratch/`, launched with `-a never -s workspace-write`; the cheapest model and tiny prompts.\n- Never edit `~/.codex/config.toml` or `~/.codex/rules/`: give Codex its own `CODEX_HOME` under that `.scratch/` folder, holding a `config.toml` with a `[projects.\"\u003crepo root\u003e\"]` `trust_level = \"trusted\"` table and a symlink to `~/.codex/auth.json`; that skips the trust prompt (tested 2026-10-24).\n- Measure: whether 3-4 subagents run in parallel; how the parent waits and learns each is done; whether the prompt reliably gets `fork_turns: \"all\"` (try it several times); the token cost of each inherited context from the rollouts' `token_count` events; what the subagents' rollouts show for auditing them without hooks.\n- End with what twill's directive would need to say on Codex, and anything that blocks it.\n- The run changes nothing outside the new folder.\n",
       "created": "2026-10-24T10:46:36Z",
-      "revised": "2026-10-24T10:46:36Z"
+      "revised": "2026-10-24T10:52:23Z",
+      "profile": "docs"
     },
     {
       "id": 799,
-      "handle": "A4",
+      "handle": "T7",
       "slug": "stencil-engine-audit",
       "title": "Audit the Claude-specific mechanics in stencils for a second engine",
-      "kind": "note",
+      "kind": "task",
       "labels": [
         "audit",
         "stencil",
         "codex"
       ],
       "issues": [],
+      "recipe": "darn",
       "depends_on": [],
       "isolated": false,
       "brief": "List every stencil site tied to Claude Code (forks, SendMessage, skills, tool names) and what Codex needs there",
-      "body": "## Seen (2026-10-24)\n\nMost stencil text says what to review or write and is engine-neutral; the Claude-specific parts are mechanics: how a fork is spawned (the Agent tool with `subagent_type: \"fork\"`), `SendMessage`, skill loading, Claude tool names.\nStencils render through Go `text/template` (`internal/stencil/stencil.go`), which supports `{{if}}` and named includes through `{{template \"name\"}}` (`FillWith`).\n\n## Idea\n\nAudit every stencil and spec for Claude-specific mechanics and list each site with what it needs on Codex, to size the rewrite.\nOperator view, not a decision: the engine-specific parts become conditional on the engine.\nOrch recommendation, not a decision: each mechanic becomes one named include block (such as `spawn-fork`) that each engine supplies, so a stencil keeps one text instead of `{{if}}` branches at every site.\n",
+      "body": "## Seen (2026-10-24)\n\nMost stencil text says what to review or write and is engine-neutral; the Claude-specific parts are mechanics: how a fork is spawned (the Agent tool with `subagent_type: \"fork\"`), `SendMessage`, skill loading, Claude tool names.\nStencils render through Go `text/template` (`internal/stencil/stencil.go`), which supports `{{if}}` and named includes through `{{template \"name\"}}` (`FillWith`).\n\n## Idea\n\nAudit every stencil and spec for Claude-specific mechanics and list each site with what it needs on Codex, to size the rewrite.\nDecision (operator, 2026-10-24): each engine-specific mechanic becomes one named include block (such as `spawn-fork`) that each engine supplies, so a stencil keeps one text instead of `{{if}}` branches at every site.\n\n## Task (operator, 2026-10-24)\n\nA report only, nothing built: `docs/research/stencil-engine-audit-2026-10-24/report.md`.\n- Read every file under `contracts/stencils/` and `contracts/specs/`, and the Go code that renders or inlines prompt text Claude-specific (such as shuttle's prompt assembly and `internal/claudeengine`), read-only.\n- List each Claude-specific site: file and line, the mechanic (fork spawn, `SendMessage`, skill loading, a Claude tool name, background-task wake-up, Claude settings), and what Codex needs there, from `docs/research/codex-spike-2026-10-24/report.md`; mark a site with no Codex counterpart.\n- Group the sites by mechanic into the named blocks the decision above calls for, with a proposed block name and the Claude text each would hold.\n- End with a size estimate: blocks, sites, and stencils touched.\n- The run changes nothing outside the new folder.\n",
       "created": "2026-10-24T10:46:36Z",
-      "revised": "2026-10-24T10:46:36Z"
+      "revised": "2026-10-24T10:52:23Z",
+      "profile": "docs"
     }
   ],
   "prime_owner": "neve"
