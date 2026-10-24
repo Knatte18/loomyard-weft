@@ -1,0 +1,8 @@
+{
+  "recipe": "loom",
+  "driver": "go",
+  "params": {
+    "parent": "main"
+  },
+  "started_at": "2026-10-24T13:22:10Z"
+}
