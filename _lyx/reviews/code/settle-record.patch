@@ -1,0 +1,197 @@
+diff --git a/contracts/specs/loom-discussion-spec.md b/contracts/specs/loom-discussion-spec.md
+index abb4bd0cd..c85e9c781 100644
+--- a/contracts/specs/loom-discussion-spec.md
++++ b/contracts/specs/loom-discussion-spec.md
+@@ -34,6 +34,9 @@ Each entry is one bullet, with `<id>` matching `[a-z0-9-]+`:
+ - `` - `PATTERN-<id>` — removes ``
+ 
+ An entry ID is listed at most once.
++An `adds` or `changes` bullet prescribes the overview line `` - `PATTERN-<id>` — <new entry text> ``.
++The discussion check refuses that line, as a `pattern-change-over-cap` finding, when it is longer, in characters, than the PATTERN entry line cap the plan gate's `pattern-entry-line-cap` applies;
++detail that does not fit belongs in the entry's background file.
+ `lyx loom decision add` appends a bullet with the suffix ` — added after Discussion (<by>, <date>)`.
+ A record without the section is valid.
+ 
+diff --git a/internal/discussionparser/append_test.go b/internal/discussionparser/append_test.go
+index b352d324d..743cfc0b4 100644
+--- a/internal/discussionparser/append_test.go
++++ b/internal/discussionparser/append_test.go
+@@ -223,6 +223,7 @@ func TestAppendDecision_FindingRestoresRecord(t *testing.T) {
+ 	}{
+ 		{"MissingSection", strings.Replace(allSectionsContent(), "## Goal", "## Aim", 1), nil, checkSectionMissing},
+ 		{"UnknownPatternAction", allSectionsContent(), &PatternChange{ID: "PATTERN-new", Action: "renames", Text: "x"}, checkPatternChangeMalformed},
++		{"PatternTextOverCap", allSectionsContent(), &PatternChange{ID: "PATTERN-new", Action: "changes", Text: strings.Repeat("x", patternEntryLineCap)}, checkPatternChangeOverCap},
+ 	}
+ 	for _, tt := range tests {
+ 		t.Run(tt.name, func(t *testing.T) {
+diff --git a/internal/discussionparser/doc.go b/internal/discussionparser/doc.go
+index cc478765c..b11892bde 100644
+--- a/internal/discussionparser/doc.go
++++ b/internal/discussionparser/doc.go
+@@ -7,7 +7,8 @@
+ // IdentityText returns the record without the carry-over blocks and added-decision entries those two paths write, so a review segment's re-entry tells a changed record from one that only gained them.
+ // CheckAddedDecisionsKept reports the added-decision entries and appended PATTERN change bullets a record dropped that any earlier version of it held, read from told bytes.
+ // The record may carry an optional `## PATTERN changes` section listing the PATTERN entries the task adds, changes or removes.
+-// Validate checks its bullets through ParsePatternChanges, and DeclaredPatternChanges returns them rendered for the directives that show them to an agent.
++// Validate checks its bullets through ParsePatternChanges and refuses an `adds` or `changes` bullet whose PATTERN.md entry line would run past the PATTERN format checker's line cap, so the overrun fails at Discussion and at `lyx loom decision add` rather than first at the plan gate.
++// DeclaredPatternChanges returns them rendered for the directives that show them to an agent.
+ // It takes told absolute paths and declares no on-disk location of its own.
+ // loomengine's DiscussionDecisionRecord, DiscussionSupportLog and DiscussionRelevant accessors remain the sole declarers of where `_lyx/discussion/` is.
+ // Those accessors take a *lyxcwd.Location, which this stdlib-only leaf may not import.
+diff --git a/internal/discussionparser/patternchanges.go b/internal/discussionparser/patternchanges.go
+index 1c1383370..0a9fc749a 100644
+--- a/internal/discussionparser/patternchanges.go
++++ b/internal/discussionparser/patternchanges.go
+@@ -1,5 +1,5 @@
+ // patternchanges.go implements the decision record's optional `## PATTERN changes` section:
+-// ParsePatternChanges reads and checks its bullets, and DeclaredPatternChanges hands the rendered bullets to the callers that put them in front of an agent.
++// ParsePatternChanges reads and checks its bullets, patternOverCapFindings measures the entry lines they prescribe, and DeclaredPatternChanges hands the rendered bullets to the callers that put them in front of an agent.
+ 
+ package discussionparser
+ 
+@@ -146,6 +146,38 @@ func parsePatternBullet(line string) (PatternChange, string) {
+ 	return change, ""
+ }
+ 
++// checkPatternChangeOverCap names a Finding produced when an `adds` or `changes` bullet prescribes an overview line longer than a PATTERN.md entry line may be.
++const checkPatternChangeOverCap = "pattern-change-over-cap"
++
++// patternEntryLineCap is the longest a PATTERN.md entry line may be, in runes.
++// It equals the PATTERN format checker's cap, which this stdlib-only package may not import.
++const patternEntryLineCap = 360
++
++// patternOverCapFindings returns one pattern-change-over-cap finding per `adds` or `changes` change in changes whose overview line, "- `<ID>` — <text>", runs past patternEntryLineCap runes, in order.
++// A bullet `lyx loom decision add` appended is measured like any other, since the overview line it prescribes is the same.
++// A finding's Path is left empty for the caller to set.
++func patternOverCapFindings(changes []PatternChange) []Finding {
++	var findings []Finding
++	for _, c := range changes {
++		if c.Action == patternActionRemoves {
++			continue
++		}
++		length := len([]rune("- `" + c.ID + "` — " + c.Text))
++		if length <= patternEntryLineCap {
++			continue
++		}
++		wayForward := "shorten the text or move its detail to the entry's background file"
++		if c.By != "" {
++			wayForward = "the bullet was appended after the Discussion, so ask the parent to re-record the entry with a shorter `--pattern-text` through `lyx loom decision add`, which replaces the bullet"
++		}
++		findings = append(findings, Finding{
++			Check:  checkPatternChangeOverCap,
++			Detail: fmt.Sprintf("`%s` %s an overview line of %d characters, over the %d cap of a PATTERN.md entry line; way forward: %s", c.ID, c.Action, length, patternEntryLineCap, wayForward),
++		})
++	}
++	return findings
++}
++
+ // notesHeading is the optional H2 heading a new PATTERN changes section is placed before.
+ const notesHeading = "## Notes for the plan writer"
+ 
+diff --git a/internal/discussionparser/validate.go b/internal/discussionparser/validate.go
+index 858b4289c..6fb5485f6 100644
+--- a/internal/discussionparser/validate.go
++++ b/internal/discussionparser/validate.go
+@@ -58,7 +58,7 @@ var requiredDiscussionSections = []string{
+ // supportLogPath -- a not-exist yields exactly one Finding and a nil error, any other stat error
+ // returns immediately as a returned error with a nil findings slice.
+ // Then os.ReadFile decisionRecordPath, with the identical two-way split.
+-// Only then do the checks that accumulate findings run: the heading check, one Finding per missing heading, and then the optional `## PATTERN changes` section's shape check, one Finding per malformed bullet.
++// Only then do the checks that accumulate findings run: the heading check, one Finding per missing heading, and then the optional `## PATTERN changes` section's shape check, one Finding per malformed bullet, and its length check, one Finding per `adds` or `changes` bullet whose overview line is longer than a PATTERN.md entry line may be.
+ // A record without that section passes it.
+ //
+ // A clean run returns a nil (or empty) slice and a nil error. Validate never returns a non-empty
+@@ -92,7 +92,8 @@ func Validate(decisionRecordPath, supportLogPath string) ([]Finding, error) {
+ 		})
+ 	}
+ 
+-	_, patternFindings := ParsePatternChanges(data)
++	changes, patternFindings := ParsePatternChanges(data)
++	patternFindings = append(patternFindings, patternOverCapFindings(changes)...)
+ 	for _, f := range patternFindings {
+ 		f.Path = decisionRecordPath
+ 		findings = append(findings, f)
+diff --git a/internal/discussionparser/validate_test.go b/internal/discussionparser/validate_test.go
+index 8363cc600..4f533e051 100644
+--- a/internal/discussionparser/validate_test.go
++++ b/internal/discussionparser/validate_test.go
+@@ -7,6 +7,8 @@ import (
+ 	"slices"
+ 	"strings"
+ 	"testing"
++
++	"github.com/Knatte18/loomyard/internal/pattern"
+ )
+ 
+ // allSectionsContent returns a decision record body carrying every heading in
+@@ -83,6 +85,70 @@ func TestValidate_PatternChanges(t *testing.T) {
+ 	}
+ }
+ 
++// TestValidate_PatternChangeOverCap asserts an `adds` or `changes` bullet whose overview line runs past the PATTERN entry line cap in runes yields one pattern-change-over-cap finding with its way forward, and a line at the cap yields none.
++func TestValidate_PatternChangeOverCap(t *testing.T) {
++	t.Parallel()
++
++	// textFor returns a text of filler runes that makes id's overview line extra runes longer than the cap.
++	textFor := func(id, filler string, extra int) string {
++		head := len([]rune("- `" + id + "` — "))
++		return strings.Repeat(filler, patternEntryLineCap-head+extra)
++	}
++	const appended = " — added after Discussion (parent, 2026-10-24)"
++
++	tests := []struct {
++		name       string
++		bullet     string
++		wantDetail []string
++	}{
++		{"AddsOverCap", "- `PATTERN-a` — adds: " + textFor("PATTERN-a", "x", 1), []string{"`PATTERN-a` adds", "361 characters", "360 cap", "background file"}},
++		{"ChangesOverCap", "- `PATTERN-a` — changes: " + textFor("PATTERN-a", "x", 1), []string{"`PATTERN-a` changes", "361 characters"}},
++		{"AppendedOverCap", "- `PATTERN-a` — changes: " + textFor("PATTERN-a", "x", 1) + appended, []string{"361 characters", "`lyx loom decision add`"}},
++		{"MultiByteOverCap", "- `PATTERN-a` — adds: " + textFor("PATTERN-a", "é", 1), []string{"361 characters"}},
++		{"AtCap", "- `PATTERN-a` — adds: " + textFor("PATTERN-a", "x", 0), nil},
++		{"MultiByteAtCap", "- `PATTERN-a` — adds: " + textFor("PATTERN-a", "é", 0), nil},
++		{"AppendedAtCap", "- `PATTERN-a` — adds: " + textFor("PATTERN-a", "x", 0) + appended, nil},
++		{"RemovesNeverMeasured", "- `PATTERN-" + strings.Repeat("a", patternEntryLineCap) + "` — removes", nil},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			decisionPath, supportPath := writeFixture(t, t.TempDir(), allSectionsContent()+patternChangesSection(tt.bullet), "log")
++
++			findings, err := Validate(decisionPath, supportPath)
++			if err != nil {
++				t.Fatalf("Validate() error = %v; want nil", err)
++			}
++			if tt.wantDetail == nil {
++				if len(findings) != 0 {
++					t.Errorf("Validate() findings = %v; want none", findings)
++				}
++				return
++			}
++			if len(findings) != 1 {
++				t.Fatalf("Validate() findings = %v; want exactly one", findings)
++			}
++			f := findings[0]
++			if f.Check != checkPatternChangeOverCap || f.Path != decisionPath {
++				t.Errorf("finding = %+v; want check %q at %q", f, checkPatternChangeOverCap, decisionPath)
++			}
++			for _, want := range append(tt.wantDetail, "way forward:") {
++				if !strings.Contains(f.Detail, want) {
++					t.Errorf("Detail = %q; want it to contain %q", f.Detail, want)
++				}
++			}
++		})
++	}
++}
++
++// TestPatternEntryLineCap_EqualsThePatternCap asserts the package's cap is the PATTERN format checker's, so the discussion check and the plan gate refuse the same lines.
++func TestPatternEntryLineCap_EqualsThePatternCap(t *testing.T) {
++	t.Parallel()
++	if patternEntryLineCap != pattern.MaxEntryLineChars {
++		t.Errorf("patternEntryLineCap = %d; want pattern.MaxEntryLineChars = %d", patternEntryLineCap, pattern.MaxEntryLineChars)
++	}
++}
++
+ // TestDeclaredPatternChanges asserts the rendered bullets of a clean section, nil for a missing path, file or section, and an ErrPatternChangesInvalid refusal naming the validate verb for a malformed one.
+ func TestDeclaredPatternChanges(t *testing.T) {
+ 	t.Parallel()
