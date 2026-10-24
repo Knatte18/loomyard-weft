@@ -1,7 +1,7 @@
 # Card 20 — batten-switch-entry-gate
 
 **Create:**
-- `plan:internal/battencli#stepGatedOffCommandRow` -> `func stepGatedOffCommandRow(t *testing.T, c *battenCLI, row, next string)`
+- `internal/battencli#stepGatedOffCommandRow`
 
 **Edit:**
 - `contracts/recipes/batten-recipe.yaml`
