@@ -1,6 +1,6 @@
 # Keep the Plan writer audit scripts and baseline in docs/research
 
-`plan-writer-audit-scripts` · Task · audit, loom · running · Darn-Write
+`plan-writer-audit-scripts` · Task · audit, loom · running · PR-Review
 
 ## Task (operator, 2026-10-24)
 
