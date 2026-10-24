@@ -18,7 +18,7 @@ Held by a run; its scope is locked until the run ends.
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T1 | **Each test runs once per tree: disjoint tiers, row entry gates, carried green runs, tmux in final**<br>• Tiers tagged by name, shed row entry gates, verify skipped on an already green tree, tmux in the final gate, gate time measured<br>• `profile: light` | [`gate-runs-once`](design-gate-runs-once.md) | loom | Discussion-Burler-Fix | neve | 6d<br>1h | gate, shed, loom, webster, fabric, batten |
 | T2 | **Board README headings show how many entries each section holds**<br>• Each README section heading carries its entry count, e.g. Enhancements (34)<br>• `profile: docs` | [`readme-heading-counts`](design-readme-heading-counts.md) | darn | Finalize | neve | 10m<br>10m | board |
-| T10 | **Every lens fork report is kept verbatim in the run records**<br>• Save each lens fork report in a support file beside lens-review.md, so audits can read what each lens found | [`lens-fork-reports-kept`](design-lens-fork-reports-kept.md) | darn | Worktree-Create | neve | 1d<br>37m | burler, loom |
+| T10 | **Every lens fork report is kept verbatim in the run records**<br>• Save each lens fork report in a support file beside lens-review.md, so audits can read what each lens found | [`lens-fork-reports-kept`](design-lens-fork-reports-kept.md) | darn | Darn-Write | neve | 1d<br>37m | burler, loom |
 
 ### Ready
 
