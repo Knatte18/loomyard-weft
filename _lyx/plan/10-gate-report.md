@@ -1,10 +1,10 @@
 # Card 10 — gate-report
 
 **Create:**
-- `plan:internal/gateslot#ReadRunRecords` -> `func ReadRunRecords(dir string) ([]RunRecord, error)`
-- `plan:internal/gatecli#reportCmd` -> `func reportCmd() *cobra.Command`
-- `plan:internal/gatecli#runReport` -> `func runReport(out io.Writer, records []gateslot.RunRecord, slug string, since time.Time) int`
-- `plan:internal/gatecli#TestGateReport` -> `func TestGateReport(t *testing.T)`
+- `internal/gateslot#ReadRunRecords`
+- `internal/gatecli#reportCmd`
+- `internal/gatecli#runReport`
+- `internal/gatecli#TestGateReport`
 
 **Extends:**
 - `internal/gatecli#newCommand`

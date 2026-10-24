@@ -13,9 +13,9 @@
 - `internal/gateslot#TestWriteRunRecord`
 
 **Create:**
-- `plan:internal/gateslot#PackageLaunch` -> `type PackageLaunch struct`
-- `plan:internal/gatecli#goJSONCounter.Launches` -> `func (c *goJSONCounter) Launches() []gateslot.PackageLaunch`
-- `plan:internal/gatecli#vstestCounter.Launches` -> `func (c *vstestCounter) Launches() []gateslot.PackageLaunch`
+- `internal/gateslot#PackageLaunch`
+- `internal/gatecli#goJSONCounter.Launches`
+- `internal/gatecli#vstestCounter.Launches`
 
 **Extends:**
 - `internal/gatecli/doc.go`
