@@ -1,6 +1,6 @@
 # The seeded reed attach task in tasks.json runs on a shortcut
 
-`ide-attach-task` · Task · enhancement, ide · running · Darn-Write
+`ide-attach-task` · Task · enhancement, ide · running · Code-Bouncer
 
 ## Seen (orch, 2026-10-23)
 
