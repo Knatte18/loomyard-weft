@@ -35,6 +35,15 @@ The spike confirmed `-a never -s workspace-write` stops every prompt, but allow 
 A `codexengine` sets the approval and sandbox mode on its launch line, as claudeengine does with its permission mode, and never relies on saved approvals.
 Operator view, not a decision: Codex's permission list should mirror Claude's, which allows broadly and forbids only destructive commands; a hand translation of `~/.claude/settings.json` sits in `~/.codex/rules/claude.rules` on Neve (2026-10-24).
 
+## Folder trust
+
+The trust prompt is answered by a `[projects."<path>"]` table with `trust_level = "trusted"` in `~/.codex/config.toml`, the entry Codex writes itself on accept; only `-c` cannot set it.
+So a `codexengine` writes that entry for the task worktree before launch instead of pressing Enter on the prompt; whether one entry for the hub folder covers every worktree below it is untested.
+
+## Design basis (operator view, not a decision, 2026-10-24)
+
+When claudeengine was built, what an engine needs was unknown; now claudeengine shows it, so `codexengine` is designed from claudeengine's list of needs (launch, startup classifier, send, idle and busy, completion, interrupt, usage, guards), each mapped to its Codex counterpart from the spike report.
+
 ## Steps
 
 From `docs/research/codex-feasibility.md`, section 3:
