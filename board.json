@@ -895,7 +895,7 @@
       "isolated": false,
       "brief": "Save each lens fork report in a support file beside lens-review.md, so audits can read what each lens found",
       "body": "## Seen (orch, 2026-10-22)\n\nA twill writer's lens forks each return a report, and the lead writes one line per finding into `_lyx/plan/lens-review.md`: the lens names, the severity, a short summary and how it was fixed.\nThe fork reports themselves are not kept in the run's records.\nFor a lens audit (which lenses overlap, which findings are real) the one-liners are too terse; the full reports survive only in the machine-local Claude Code transcripts under `~/.claude/projects/`, which are not in git and do not exist for runs from another machine.\n\n## Idea (operator, 2026-10-22)\n\nEvery lens fork's report is saved verbatim in a support file of its own in the run's records, beside `lens-review.md`, for the Plan and Discussion writers' twill fans and the reviewer and fixer fans alike, so later audits read what each lens found from the archive tags.\nIts format is pinned in `contracts/specs/`.\n",
-      "status": "running · Describe",
+      "status": "running · PR-Review",
       "created": "2026-10-22T13:17:21Z",
       "revised": "2026-10-24T06:33:20Z",
       "owner_machine": "neve"
