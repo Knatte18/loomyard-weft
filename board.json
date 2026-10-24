@@ -1078,6 +1078,27 @@
       "body": "Imported from [issue #863](https://github.com/Knatte18/loomyard/issues/863).\n\nSeen 2026-10-24 in run gate-runs-once: batch 22 ended dead (recovery_retry false). The way forward lyx prints (existingReportRemedy in internal/websterengine/beginbatch.go) is reset --to batch-start --batch 22, then lyx webster recover-batch 22. After the orch ran the reset and lyx loom resume, each fresh Master read status, saw batch 22 still dead/terminal with recovery_retry false (RecoveryRetry is always false once the reset cleared RecoveryStartSHA) and wrote outcome stuck again per webster-template-master.md; the tackler handed back twice.\n\nWorkaround: the orch ran lyx webster recover-batch 22 by hand from the task worktree, then lyx loom resume.\n\nExpected: after reset --to batch-start, the batch reads as recoverable (status or recovery_retry reflects the cleared count) and Master runs recover-batch itself, or the reset re-opens the batch so begin-batch runs it again.",
       "created": "2026-10-24T13:37:42Z",
       "revised": "2026-10-24T13:37:42Z"
+    },
+    {
+      "id": 804,
+      "handle": "B6",
+      "slug": "webstercli-tests-ignore-tmp-git",
+      "title": "webstercli standalone tests fail when an empty /tmp/.git exists",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "webster",
+        "testkit"
+      ],
+      "issues": [
+        862
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Imported from [issue #862](https://github.com/Knatte18/loomyard/issues/862).\n\nSeen 2026-10-24 on Neve in the gate-runs-once run: an empty directory /tmp/.git (owner knatte, created 11:57, origin unknown, possibly a leaking test or tool running git init in the temp dir) made internal/webstercli's standalone wiring tests treat /tmp as the repo root; 8 tests failed with \"derived state directory ... lies inside the standalone target /tmp\".\n\nWorkaround: the orch removed the empty /tmp/.git by hand.\n\nExpected: the tests build their fixtures in t.TempDir() without walking up into a parent repo root they did not create (or set GIT_CEILING_DIRECTORIES), and whatever created /tmp/.git should not write outside its own temp dir.",
+      "created": "2026-10-24T13:37:44Z",
+      "revised": "2026-10-24T13:37:44Z"
     }
   ],
   "prime_owner": "neve"
