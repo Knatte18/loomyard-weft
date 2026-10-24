@@ -51,4 +51,4 @@ Plan writer plus its lens forks, means per run (API list price):
 - `relevant.md` use, over 32 runs with a list and a Plan-Write transcript: 85% of named files were read, but only 28% of read files were named (about 3.5 files read per file named, about 7 on large runs). Both shares are lower bounds (directory greps and quarry reads not counted).
 - So `relevant.md` works as a floor, not a boundary; most unnamed reading looks like tests and neighbouring callers, which a per-part split of the list would not remove.
 - Still open: the solo Opus high and Fable writer bench, and the split-writing variants, which need new runs.
-- Tables and scripts were in `.scratch/a8/` (machine-local, not in git).
+- Scripts, baseline tables and `results.md` are in `docs/research/plan-writer-audit-2026-10-24/`; rerun per its README.
