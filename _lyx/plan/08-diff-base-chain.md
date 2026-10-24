@@ -9,7 +9,7 @@
 - `internal/gatecli/doc.go`
 
 **Create:**
-- `plan:internal/gatecli#greenRecord.newestWholeAncestor` -> `func (r greenRecord) newestWholeAncestor(fingerprint, moduleDir string, isAncestor func(commit string) bool) (string, bool)`
+- `internal/gatecli#greenRecord.newestWholeAncestor`
 
 **Uses:**
 - `internal/gatecli#greenRecord`
