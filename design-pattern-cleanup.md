@@ -2,7 +2,7 @@
 
 `pattern-cleanup` · Task · enhancement, stencil
 
-Depends on: [`gate-runs-once`](design-gate-runs-once.md), [`fork-git-guard-scratch-repo`](design-fork-git-guard-scratch-repo.md), [`run-profiles-ladder`](design-run-profiles-ladder.md)
+Depends on: [`gate-runs-once`](design-gate-runs-once.md)
 
 ## Seen (2026-10-24)
 
