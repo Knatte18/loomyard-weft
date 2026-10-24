@@ -1104,24 +1104,6 @@
       "owner_machine": "neve"
     },
     {
-      "id": 773,
-      "handle": "B2",
-      "slug": "ide-title-colours-missing",
-      "title": "Seeded VS Code title-bar colours do not show in task worktrees",
-      "kind": "note",
-      "labels": [
-        "bug",
-        "ide"
-      ],
-      "issues": [],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "The seeder writes a palette colour, but loom-tail-review settings.json has none and no colour shows",
-      "body": "## Seen (orch, 2026-10-23)\n\n`vscode.WriteConfig` (`internal/vscode/config.go`) writes `workbench.colorCustomizations` with a title-bar colour picked from the palette in `internal/vscode/color.go`, and writes `settings.json` only when the file is absent.\nIn the `loom-tail-review` worktree, `.vscode/settings.json` holds every other seeded key but no `workbench.colorCustomizations`; no other lyx code writes that file.\nThe operator opened VS Code on that folder: the title bar showed the seeded purple for a moment, then lost its colour, and the file's modification time is that opening.\nThe Peacock extension (`johnpapa.vscode-peacock` 4.5.1) is installed on OSL-1046.\nIt manages `workbench.colorCustomizations` from its own `peacock.color` setting, and its `applyColor` calls `unapplyColors`, which strips the title-bar colours, when the colour it is given is not a valid colour.\nThe seeder writes no `peacock.color`.\n\n## Likely cause, not verified\n\nPeacock starts with the window, finds no `peacock.color`, and strips the colour the seeder wrote.\nCheck: add `\"peacock.color\"` with the seeded colour to the folder's `settings.json`, or disable Peacock for that workspace, and reopen; the colour then stays if Peacock is the cause.\n\n## Idea\n\nThe seeder also writes `\"peacock.color\": \u003cthe palette colour\u003e`, so Peacock keeps and applies the same colour.\nAlso check whether a folder's colour applies in the hub's multi-root workspace window (`85c09cee`), where window-scoped settings come from the `.code-workspace` file.\n\n## Operator view (2026-10-23)\n\nEvery worktree's VS Code window gets a colour picked from a palette, as Millhouse does.\n",
-      "created": "2026-10-23T11:34:26Z",
-      "revised": "2026-10-23T11:37:31Z"
-    },
-    {
       "id": 774,
       "handle": "E23",
       "slug": "ide-attach-task",
