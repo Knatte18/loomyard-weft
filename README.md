@@ -22,7 +22,7 @@ Held by a run; its scope is locked until the run ends.
 | T4 | **webster record-batch fails create-not-done for Create targets declared in an external _test package**<br>• `profile: light` | [`record-batch-external-test-pkg`](design-record-batch-external-test-pkg.md) | darn | Darn-Write | neve | 13h<br>2m | webster, quarry |
 | T5 | **Git network calls get a stall bound and one retry**<br>• A git call to GitHub hung for minutes on a dead connection; bound every git network call and retry it once<br>• `profile: light` | [`git-remote-stall-timeout`](design-git-remote-stall-timeout.md) | darn | Darn-Write | neve | 13h<br>2m | fabric, batten |
 | T7 | **Batten idle notice fires while a writer works in a fork**<br>• The idle check reads no fork transcript, so a writer working through a fork reads as idle<br>• `profile: light` | [`idle-notice-misses-fork-activity`](design-idle-notice-misses-fork-activity.md) | darn | Worktree-Create | neve | 13h<br>2m | batten |
-| T8 | **A parent decision reaches the agent that needs it: Burler decision findings and Merriam**<br>• Route decision-class findings to the parent, and let Merriam take the decision notice<br>• `profile: light` | [`decision-reaches-agents`](design-decision-reaches-agents.md) | darn | Worktree-Create | neve | 13h<br>1m | burler, loom, webster, stencil, creel |
+| T8 | **A parent decision reaches the agent that needs it: Burler decision findings and Merriam**<br>• Route decision-class findings to the parent, and let Merriam take the decision notice<br>• `profile: light` | [`decision-reaches-agents`](design-decision-reaches-agents.md) | darn | Darn-Write | neve | 13h<br>1m | burler, loom, webster, stencil, creel |
 
 ### Ready
 
