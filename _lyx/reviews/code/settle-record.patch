@@ -1,0 +1,104 @@
+diff --git a/internal/gitexec/doc.go b/internal/gitexec/doc.go
+index b3fd58642..51c5373b8 100644
+--- a/internal/gitexec/doc.go
++++ b/internal/gitexec/doc.go
+@@ -27,6 +27,9 @@
+ //
+ // Every git child inherits the process environment except GIT_DIR and GIT_WORK_TREE, which are dropped so the child follows the directory it is run in, as the in-process reads do, and one command never reads one repository and writes another.
+ // Bound: an operator who sets either variable to point `lyx` at another repository has it ignored; `lyx`'s own post-checkout hook already unsets them.
++// Every git child also runs with GIT_OPTIONAL_LOCKS=0, whatever the process environment sets it to, so a read-only command such as `git status` never takes the index lock to write back a refreshed stat cache.
++// Such a probe holds no lyx lock, and its index lock would otherwise fail a concurrent locked commit's `git add` on the same worktree with "index.lock: File exists".
++// Bound: a read probe leaves the stat cache unrefreshed, so a later probe may re-read files a refresh would have cached.
+ //
+ // The bounds are not configuration.
+ // A legitimate remote command that runs longer than the deadline, or moves under the low-speed limit for the low-speed time, fails as a transport failure.
+diff --git a/internal/gitexec/gitexec.go b/internal/gitexec/gitexec.go
+index 4488b44eb..b91e18b28 100644
+--- a/internal/gitexec/gitexec.go
++++ b/internal/gitexec/gitexec.go
+@@ -191,7 +191,7 @@ func runCore(args []string, cwd, stdin string) (stdout, stderr string, exitCode
+ // A remote subcommand runs under deadline, in its own process group, with lowSpeedEnv added to the environment;
+ // a local one runs unbounded.
+ // A remote subcommand first waits while a pause covers the process, through the installed network gate, if any, and its deadline starts only once it runs.
+-// Every child gets the process environment less GIT_DIR and GIT_WORK_TREE.
++// Every child gets the process environment less GIT_DIR, GIT_WORK_TREE and GIT_OPTIONAL_LOCKS, with GIT_OPTIONAL_LOCKS=0 set.
+ func runCoreWithin(args []string, cwd, stdin string, deadline time.Duration) (stdout, stderr string, exitCode int, err error) {
+ 	if floorErr := CheckFloor(); floorErr != nil {
+ 		return "", "", -1, floorErr
+@@ -245,17 +245,22 @@ func runCoreWithin(args []string, cwd, stdin string, deadline time.Duration) (st
+ 	return outBuf.String(), errBuf.String(), 0, nil
+ }
+ 
+-// childEnv returns the process environment without GIT_DIR and GIT_WORK_TREE, followed by extra.
+-// Dropping the two variables makes a git child follow the directory it is run in, so one command never reads one repository and writes another.
++// noOptionalLocksEnv stops a read-only git command, such as `git status`, from taking the index lock to write back a refreshed stat cache.
++// Such a probe runs under no lyx lock, so its index lock would otherwise fail a concurrent `git add` with "index.lock: File exists".
++const noOptionalLocksEnv = "GIT_OPTIONAL_LOCKS=0"
++
++// childEnv returns the process environment without GIT_DIR, GIT_WORK_TREE and GIT_OPTIONAL_LOCKS, followed by noOptionalLocksEnv and extra.
++// Dropping GIT_DIR and GIT_WORK_TREE makes a git child follow the directory it is run in, so one command never reads one repository and writes another.
+ func childEnv(extra []string) []string {
+ 	environ := os.Environ()
+-	env := make([]string, 0, len(environ)+len(extra))
++	env := make([]string, 0, len(environ)+1+len(extra))
+ 	for _, entry := range environ {
+-		if strings.HasPrefix(entry, "GIT_DIR=") || strings.HasPrefix(entry, "GIT_WORK_TREE=") {
++		if strings.HasPrefix(entry, "GIT_DIR=") || strings.HasPrefix(entry, "GIT_WORK_TREE=") || strings.HasPrefix(entry, "GIT_OPTIONAL_LOCKS=") {
+ 			continue
+ 		}
+ 		env = append(env, entry)
+ 	}
++	env = append(env, noOptionalLocksEnv)
+ 	return append(env, extra...)
+ }
+ 
+diff --git a/internal/gitexec/gitexec_test.go b/internal/gitexec/gitexec_test.go
+index aab1472b8..4a9d29641 100644
+--- a/internal/gitexec/gitexec_test.go
++++ b/internal/gitexec/gitexec_test.go
+@@ -82,8 +82,9 @@ func TestRunGit(t *testing.T) {
+ }
+ 
+ // TestRun pins Run's contract: a successful command returns its stdout with a nil error; a non-zero exit is recoverable via errors.As as *gitexec.GitError carrying the exit code, the args and dir it was given and non-empty stderr; and an exec-level failure — a cwd that does not exist — returns a non-nil error that errors.As does NOT match as *gitexec.GitError, the distinction every errors.As recovery site depends on.
+-// A last row sets GIT_DIR and GIT_WORK_TREE to a second repository and asserts the child still answers the directory it was run in, because git children never inherit those two variables.
+-// That row touches process-global state, the environment, so the test does not call t.Parallel; its table rows do.
++// One row sets GIT_DIR and GIT_WORK_TREE to a second repository and asserts the child still answers the directory it was run in, because git children never inherit those two variables.
++// Another sets GIT_OPTIONAL_LOCKS=1 and asserts the child sees it as 0 alone, so a read-only command never takes the index lock.
++// Those rows touch process-global state, the environment, so the test does not call t.Parallel; its table rows do.
+ func TestRun(t *testing.T) {
+ 
+ 	nonZeroArgs := []string{"log", "--format=stdout-marker", "-1"}
+@@ -176,6 +177,24 @@ func TestRun(t *testing.T) {
+ 			t.Errorf("git dir = %q; want %q, the directory the command ran in", gotDir, wantDir)
+ 		}
+ 	})
++
++	t.Run("turns optional locks off", func(t *testing.T) {
++		t.Setenv("GIT_OPTIONAL_LOCKS", "1")
++
++		got, err := gitexec.Run([]string{"-c", "alias.lyxenv=!env", "lyxenv"}, t.TempDir())
++		if err != nil {
++			t.Fatalf("Run(lyxenv) error = %v", err)
++		}
++		var values []string
++		for _, line := range strings.Split(got, "\n") {
++			if value, found := strings.CutPrefix(strings.TrimRight(line, "\r"), "GIT_OPTIONAL_LOCKS="); found {
++				values = append(values, value)
++			}
++		}
++		if !reflect.DeepEqual(values, []string{"0"}) {
++			t.Errorf("GIT_OPTIONAL_LOCKS values in the child environment = %v; want [0]", values)
++		}
++	})
+ }
+ 
+ // TestRun_StdoutOnError tests that stdout is still returned alongside a *GitError, using a command that writes to stdout and then exits non-zero:
+@@ -396,7 +415,7 @@ func TestRun_RemoteBounds(t *testing.T) {
+ 		if !errors.As(err, &gitErr) {
+ 			t.Fatalf("Run error = %v; want a *GitError from the failing ext command", err)
+ 		}
+-		for _, want := range []string{"GIT_HTTP_LOW_SPEED_LIMIT=1000", "GIT_HTTP_LOW_SPEED_TIME=60"} {
++		for _, want := range []string{"GIT_HTTP_LOW_SPEED_LIMIT=1000", "GIT_HTTP_LOW_SPEED_TIME=60", "GIT_OPTIONAL_LOCKS=0"} {
+ 			if !strings.Contains(gitErr.Stderr, want) {
+ 				t.Errorf("remote command environment lacks %s; stderr: %s", want, gitErr.Stderr)
+ 			}
