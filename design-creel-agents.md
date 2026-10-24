@@ -5,6 +5,7 @@
 ## Goal
 
 Creel stage 3: agents reach their parent and each other through creel, not Claude Code's `SendMessage`, so a non-Claude engine can take a role that has a parent.
+Needed only if Codex is to take roles beyond Burler review (operator, 2026-10-24).
 The design is in `creel-core`'s body until that task lands, then in the creel package's `doc.go`.
 
 ## Operator decision (2026-10-15)
