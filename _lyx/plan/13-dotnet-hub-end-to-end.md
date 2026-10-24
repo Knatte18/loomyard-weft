@@ -1,4 +1,4 @@
-# Card 12 — a real dotnet run end to end, and the .NET hub guide
+# Card 13 — a real dotnet run end to end, and the .NET hub guide
 
 **Create:**
 - `docs/dotnet-hub.md`

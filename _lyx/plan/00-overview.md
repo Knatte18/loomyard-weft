@@ -1,6 +1,6 @@
 ---
 format: 5
-approved: false
+approved: true
 language: go
 ---
 
@@ -16,13 +16,14 @@ The cards add the `gate.yaml` keys first, then the build step's lines and record
 3 — card-csharp-seeds — planparser's per-target C# seeds for the dotnet scoper's --card form
 4 — csharp-source-scan — internal/dotnetimpact's C# lexer and per-file source model
 5 — test-class-selection — the type-name closure, test classes, project grouping and filter terms
-6 — derive-entry-points — the diff and card entry points with their fallbacks, and impactset's exported diff reads
-7 — filter-placeholder — render {filter} from the tier filter and an invocation's terms
-8 — dotnet-scoper — wire the dotnet scoper into computeScope and the per-project invocations
-9 — fingerprint-and-carry — the new keys in the tier fingerprint, and carry: false
-10 — inert-paths — inert-only diffs run no tier, and whole gates carry over inert-only history
-11 — shared-build-step — run the build once per call inside the first opted-in tier's slots
-12 — dotnet-hub-end-to-end — a real dotnet scoped run and docs/dotnet-hub.md
+6 — impactset-diff-reads — impactset's exported diff reads ChangedPaths and AncestorBase
+7 — derive-entry-points — the diff and card entry points with their fallbacks
+8 — filter-placeholder — render {filter} from the tier filter and an invocation's terms
+9 — dotnet-scoper — wire the dotnet scoper into computeScope and the per-project invocations
+10 — fingerprint-and-carry — the new keys in the tier fingerprint, and carry: false
+11 — inert-paths — inert-only diffs run no tier, and whole gates carry over inert-only history
+12 — shared-build-step — run the build once per call inside the first opted-in tier's slots
+13 — dotnet-hub-end-to-end — a real dotnet scoped run and docs/dotnet-hub.md
 
 ## Shared Decisions
 

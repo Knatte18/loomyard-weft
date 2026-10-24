@@ -1,17 +1,14 @@
-# Card 6 — internal/dotnetimpact: the diff and card entry points and their fallbacks
+# Card 7 — internal/dotnetimpact: the diff and card entry points and their fallbacks
 
 **Create:**
 - `plan:internal/dotnetimpact#DeriveDiff` -> `func DeriveDiff(ctx context.Context, worktree, dir, base string, inert func(rel string) bool) (Scope, error)`
 - `plan:internal/dotnetimpact#DeriveCards` -> `func DeriveCards(ctx context.Context, worktree, dir string, seeds []planparser.CSharpSeed, inert func(rel string) bool) (Scope, error)`
 - `plan:internal/dotnetimpact#scanTree` -> `func scanTree(dir string) (sources []sourceFile, projects []string, err error)`
-- `plan:internal/impactset#ChangedPaths` -> `func ChangedPaths(ctx context.Context, worktree, base string) ([]string, error)`
-- `plan:internal/impactset#AncestorBase` -> `func AncestorBase(worktree, base string) (string, bool)`
 - `plan:internal/dotnetimpact#TestDeriveDiff` -> `func TestDeriveDiff(t *testing.T)`
 - `plan:internal/dotnetimpact#TestDeriveCards` -> `func TestDeriveCards(t *testing.T)`
 
 **Extends:**
 - `internal/dotnetimpact/doc.go`
-- `internal/impactset/doc.go`
 - `docs/overview.md`
 
 **Uses:**
@@ -19,12 +16,12 @@
 - `plan:internal/dotnetimpact#seed`
 - `plan:internal/dotnetimpact#parseSource`
 - `plan:internal/planparser#CSharpSeed`
+- `plan:internal/impactset#ChangedPaths`
+- `plan:internal/impactset#AncestorBase`
 
 **Intent:**
 Add the two entry points `gatecli` calls under the `dotnet` scoper, told the worktree, the tier's `dir`, a base or the cards' seeds and an inert predicate over worktree-relative paths, and resolving no cwd (Decisions 1 to 3, 5).
 Git reads go through `gitexec.Run` only (`PATTERN-gitrepo-client-boundary`), and the package spawns nothing else (`PATTERN-spawn-observability`).
-
-`impactset` exports its two diff reads for the `dotnet` scoper and, in card 10, the inert check: `ChangedPaths` is `changedPathsInTree` (tracked changes from the base to the working tree, a rename at both paths, and untracked files through `git ls-files --others --exclude-standard`), and `AncestorBase` is `resolveAncestorBase`.
 
 `scanTree` reads every `.cs` file under the `dir` through `parseSource` and lists every `.csproj`, skipping `bin/`, `obj/`, `.scratch/`, `.git`, `_lyx` and `.lyx` directories; an unreadable file or directory is its error.
 
@@ -43,13 +40,12 @@ Seeds all dropped as inert give the empty scope; otherwise the seed files and ty
 It reads no git.
 
 `doc.go` gains the entry points, every fallback with its reason, the two empty scopes and the inert drop.
-`impactset`'s doc names the two exports.
 `docs/overview.md`'s module table gains `internal/dotnetimpact`, the `dotnet` scoper's derivation, beside `internal/impactset`.
 
 Tests:
 `TestDeriveDiff` is `tier1`, over git repos written in the test with `plankit.Repo`, `git init` and `gitkit` commits: a changed production type selecting its test class; a renamed type and a deleted file seeding from the base version; an untracked `.cs` file counting as changed; an inert-only diff and an empty diff giving the empty scope; and each fallback, an empty base, a non-ancestor base, a `.csproj` change, a `.cs` change outside the `dir`, a typeless `GlobalUsings.cs`, and a rename of `notes.txt` to `Notes.cs`, whose old name is neither inert nor `.cs`, each asserting `Whole` and the reason's text.
 `TestDeriveCards` is `tier0`, over fixture trees in `t.TempDir`: a member-glyph seed selecting its owner's test class, a file seed, an inert seed dropped beside a real one, all-inert seeds giving the empty scope, and the fallbacks for a non-inert `.json` file, a deleted `.cs` file, a `.cs` file outside the `dir`, an empty seed, and an unreadable `.cs` file under the `dir` (made mode 0 by the row, which skips when run as root, since root reads it), each asserting `Whole` and the reason's text.
 A `TestDeriveCards` row also places a test class naming the seeded type in `obj/Gen.cs` and a second `.csproj` under `bin/` beside the real test project, and asserts the same one project and term as without them, so a scan that entered `bin/` or `obj/` fails it.
-A failed `git diff` or `git show` is a propagated git error, which `refusal-spec.md` exempts as transient, so no row forces one.
+A failed `git diff`, `git ls-files` or `git show`, apart from a path absent at the base, which reads as declaring no type, returns `Whole` naming the git error, as Decision 3 requires, unless `ctx` is done, when it returns `ctx`'s error, the one error above; no row forces one, since a local git read failing over a valid repository is a transient I/O failure no fixture can produce.
 
-**ImpactSummary:** two new exported wrappers in `impactset` over unchanged functions, and new members of `dotnetimpact`; no existing caller changes.
+**ImpactSummary:** new members of `dotnetimpact`; no existing caller changes.

@@ -1,4 +1,4 @@
-# Card 9 — the new keys in the tier fingerprint, and carry: false
+# Card 10 — the new keys in the tier fingerprint, and carry: false
 
 **Edit:**
 - `internal/gatecli#tierFingerprint` -> `func tierFingerprint(tier gateslot.Tier, build gateslot.BuildStep, inert []string) string`
