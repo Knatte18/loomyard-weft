@@ -1,48 +1,54 @@
-# A parent decision reaches the agent that needs it
+# Route Burler decision findings to the parent; Merriam acts on decisions
 
-Two routes kept a decision from the agent that had to act on it.
-This change fixes both.
+A decision the run's parent has to make, or has made, now reaches the agent that acts on it.
+Two paths were broken.
 
-## Burler decision-class findings go to the parent
+A Burler `decision`-class finding went to a fixer that could neither ask the parent for the decision nor record it, so it was re-raised and re-deferred every round.
+A decision recorded with `lyx loom decision add` reached Merriam as a `[creel]` line from `ly:LOOM` that its stencil refused: the sender was not its parent, and the text told it to read `decision-record.md`, which the Master stencil does not allow.
 
-A Burler fixer could neither ask for nor record a `decision`-class finding, so each round raised the finding again and the fixer deferred it again.
-The fix row now routes those findings outside the fix step:
+Closes #853
+Closes #849
 
-- `BurlerHalfDeps.NotifyParent` (fed from the new `shedrecipe.Env.NotifyParent`) gives the fix row a way to reach the run's parent.
-  Before a fresh fix starts, `BurlerFixProducer` reads the accepted review through `burlerengine.ParseCurrentReview` and posts one line listing each decision finding's id, summary and fix, the review path and the way forward, `lyx loom decision add`.
-  The resume of a live fixer posts nothing.
-  A review that does not parse, or a failed post, is logged at Warn and leaves the round's outcome unchanged.
-- The row runs the fix with the new `burlerengine.RunOpts.DecisionsRouted`.
-  `Engine.Fix` then counts decision findings as no work.
-  A review holding only those is handled like an empty one: the gates run once, and when they pass the fixer is skipped, with a report saying the findings went to the parent.
-  A spawned fixer's work line says the class is not its own, so it neither fixes, disputes nor defers those findings.
-- Loom's wiring fills the notifier with `orchcli.NotifyPrime` as the `LOOM` program, prefixed with `loom <slug>:` so the orch can tell which run sent it.
-  A row with no notifier, such as `lyx burler run`, behaves as before.
-- The orch role stencil gains a bullet for this notice: decide each call and record it, or take it to the operator.
+## Burler fix row
 
-## The decision notice reaches Merriam
+- When the fix row is told a parent notifier, it reads the round's accepted review through `burlerengine.ParseCurrentReview`.
+  If the review holds `decision`-class findings, it posts one notice to the parent.
+  The notice names each finding's id, summary and fix, the review path, and the way forward, `lyx loom decision add`.
+- The notice is posted once per fresh fix call, never when a live fixer is resumed.
+  A failed post is logged at Warn and never changes the round's outcome, since the findings stay in the review on disk.
+- A routing row excludes `decision`-class findings from the fixer's work.
+  A review whose only findings are of that class is treated as a review with no findings: the gates run once, and if they pass the fixer is skipped.
+  The report says the decision findings went to the parent.
+- A spawned fixer's work line names the class as not its own: it neither fixes, disputes nor defers such a finding.
+- A row told no notifier, such as `lyx burler run`, posts nothing and keeps every finding as fixer work.
+- Loom's wiring hands the row a notifier that posts to the prime's orch as the `LOOM` program, as the run's stop notices do.
+  The notifier reaches the row through `shedrecipe.Env`, not a row field.
 
-Merriam refused the `lyx loom decision add` notice for two reasons: it came from `ly:LOOM` rather than its parent, and it asked Merriam to read a record its stencil does not let it read.
+## Decision notice and Merriam
 
-- `decisionNoticeLine` now opens with a fixed phrase, `decisionNoticeOpening`, and carries the entry's decision and rationale inline beside the record path and heading.
-- The parent directive's parent variant, which every spawned role renders, accepts a `[creel]` line from `<shortname>:LOOM` that opens with that phrase as a message from the parent.
-  Every other session's message is still untrusted.
-  A loomcli test checks that the rendered directive quotes `decisionNoticeOpening`.
-- The webster Master stencil gains a section on parent decisions.
-  The decision reaches the code through the forks Master spawns after it, and Master reads no record to get it.
-  While its own work is still running, Master ends its turn without a tool call.
-  When no batch is left, Master tells its parent that the decision can now reach the code only through a gate fixer or a plan amendment.
-- The implementer and verify-fix bodies tell a fork that a parent decision in its context wins over its card or the plan where they differ.
+- The notice `lyx loom decision add` sends each live agent opens with a fixed phrase, names the record and the entry's heading, and inlines the entry's decision and rationale.
+  The committed record stays the authority for an agent that reads it.
+- The parent directive's parent variant admits a `[creel]` line from the `LOOM` program that opens with that phrase, as a message carrying a decision of the run's parent or the operator.
+  Every other message from a non-parent session stays untrusted.
+  Creel accepts a program claim only from an orch pane or a process in no pane, so no task agent can sign as `LOOM`.
+  The rule sits in the shared directive, so it covers every spawned role, not only Merriam.
+- The Master stencil tells Merriam that the decision reaches code through the forks it spawns afterwards, which inherit it, and that it reads no record for it.
+  While its own fork or fixer runs it ends its turn with no tool call.
+  With no batch left to begin and no fixer running, it tells its parent by `SendMessage` that the decision reaches the code only through a gate fixer or a plan amendment.
+- The webster implementer and verify-fix bodies tell a fork that a parent decision in its inherited context wins over its card where they differ.
 
-Package docs for `burlerengine`, `shedadapters`, `parentdirective`, `websterengine` and the `loomcli` decision verb describe the new behavior.
+## Design notes
 
-## Design decisions
+- Merriam edits no source, so the decision can only act through forks.
+  A fork already running when the notice arrives does not see it; the next fork does.
+- A parent that never records the call sees one notice per round while the reviewer keeps raising the finding.
+  This is bounded to one notice per round and is the intended pressure to decide.
+- Out of scope: the Bouncer's stop rule, the review rubrics, creel's sender rules, the arbiter's notice path, and how the decision record is written or checked.
 
-- The admission sits in the shared parent directive, not only in the Master stencil, so every role that receives the notice accepts it.
-  Its bound: creel accepts a program claim only from an orch pane or a process in no pane, so no task agent can sign as `LOOM`.
-- The notice still goes out as the `LOOM` program, not under the orch's strand.
-  Creel types a program post into the pane in full, but delivers a strand post as mail behind a reminder, and the operator's shell has no strand.
-- Decision findings are sent from the fix row and not through a Bouncer escalation, so the run keeps going while the parent decides.
-  A call the parent leaves open is sent again in the next round that raises it.
-- A fork that is already running when the notice arrives does not see the decision.
-  The next fork Master spawns does.
+Package docs for `burlerengine`, `shedadapters`, `parentdirective` and `websterengine` are updated.
+
+## To check by hand
+
+- Run a live Webster run, record a decision with `lyx loom decision add`, and confirm Merriam accepts the notice and a later fork acts on it.
+  Tests cover the notice text, the rendered directive and the stencils, not a live creel delivery.
+- Run a Burler review that raises a `decision`-class finding and confirm the orch receives the notice.
