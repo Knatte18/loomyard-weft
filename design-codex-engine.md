@@ -38,7 +38,9 @@ Operator view, not a decision: Codex's permission list should mirror Claude's, w
 ## Folder trust
 
 The trust prompt is answered by a `[projects."<path>"]` table with `trust_level = "trusted"` in `~/.codex/config.toml`, the entry Codex writes itself on accept; only `-c` cannot set it.
-So a `codexengine` writes that entry for the task worktree before launch instead of pressing Enter on the prompt; whether one entry for the hub folder covers every worktree below it is untested.
+Decision (operator, 2026-10-24): `codexengine` writes that entry itself before launch instead of pressing Enter on the prompt.
+Tested by the orch on Codex 0.164 (2026-10-24): inside a git repository Codex keys trust on the repository root, and an entry for a parent folder (`/home/knatte/Code`) does not cover it, so the prompt still shows; a folder outside any git repository is covered by a parent entry.
+So the engine writes one entry per worktree root; whether Codex resolves a linked worktree to its own root or to the main repository's is untested.
 
 ## Design basis (operator view, not a decision, 2026-10-24)
 
