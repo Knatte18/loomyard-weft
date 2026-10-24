@@ -1,6 +1,6 @@
 # Git network calls get a stall bound and one retry
 
-`git-remote-stall-timeout` · Note · bug, fabric, batten
+`git-remote-stall-timeout` · Task · bug, fabric, batten
 
 ## Seen (orch, 2026-10-23, OSL-1046)
 
