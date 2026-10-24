@@ -1,0 +1,8 @@
+verdict: approve
+reason: >-
+  The decision record covers all five board items, the per-producer gate keys with tiers and scope and their reconcile migration, and the per-recipe tier plan.
+  Its two departures are stated and stay within the goal: the green carry lives in lyx gate test because no verify row exists after loom-tail-review, and darn's perch uses zero_rounds with the Describe row gated, while the recipe rewrite still goes.
+  Work for regression-baseline-verify, loom-beam-darns and adopt-runs-tests stays out of scope.
+  Every peer overlap is text only, mostly D5 retagging test files, and no parent commits are listed.
+question: ""
+superseded: []
