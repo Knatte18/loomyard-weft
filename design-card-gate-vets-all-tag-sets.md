@@ -2,6 +2,8 @@
 
 `card-gate-vets-all-tag-sets` · Task · bug, gate, webster
 
+Depends on: [`gate-runs-past-failing-tier`](design-gate-runs-past-failing-tier.md)
+
 Imported from [issue #865](https://github.com/Knatte18/loomyard/issues/865).
 
 What happened: while retagging test files across tiers, the card gate (`--tier 0`) did not compile the card's packages under the tier1, tier2 and tier3 tag sets.
