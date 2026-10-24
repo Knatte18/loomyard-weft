@@ -1,0 +1,3 @@
+outcome: stuck
+stuck_reason: "Batch 22 (tier-plan-docs) is dead with recovery_retry false, so its recoveries are exhausted and no later batch may begin."
+batches_done: 10
