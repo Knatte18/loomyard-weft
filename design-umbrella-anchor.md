@@ -8,7 +8,8 @@ The anchor (`fabric clone --subpath`) is set once per hub and decides where `_ly
 
 ## Idea
 
-Let an umbrella (`orch-any-worktree`) have an anchor of its own, a different subdirectory of the repository, inherited by every task under it as it inherits the branch.
+Let an umbrella (a beam, built in dd11ab09f) have an anchor of its own, a different subdirectory of the repository, inherited by every task under it as it inherits the branch.
+Beams exist now, and all of them still use the hub's one anchor.
 Fabric, batten and loom would then read the anchor from the task's umbrella rather than from the hub.
 
 ## Operator view, not a decision (2026-10-24)
