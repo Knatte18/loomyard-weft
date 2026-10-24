@@ -163,3 +163,10 @@ Found in triage (2026-10-22), why it is not a small fix and waits for beams (ope
 
 The operator's view (2026-10-22): `add` is the verb that adopts an existing branch, local or remote, and a slug colliding with a leftover branch is the user's mistake; `fabric checkout` stays the verb that switches a worktree's branch.
 A branch checked out in another worktree is refused with a message naming that worktree and `lyx fabric checkout` to move it off.
+
+## Operator decision (2026-10-24): a VS Code workspace file per beam
+
+- Each beam gets its own `<repo>-<beam>.code-workspace` directly in the hub folder, beside the hub's `<repo>.code-workspace`.
+- It lists the beam's own worktree, Bolt, and the task worktrees under the beam.
+- It is written when the beam is created, kept current as its task worktrees come and go, and removed when the beam lands.
+- The hub workspace file stays as it is.
