@@ -68,3 +68,10 @@ Whether `stitch` then stays a recipe of its own, or becomes darn with the tail r
 A piece run does not run the full suite a standalone darn runs before it lands.
 The umbrella runs the full suite once, after every piece has merged back.
 Which tiers a piece's own gates run is open; the gate key per recipe row is stated in `internal/gateslot`'s doc (`gate-runs-once`, landed): a piece's rows read `darn-write`, `code-burler-fix` and `finalize`.
+
+## Pre-plan depth (orch, 2026-10-24, not decided)
+
+- A coarse pre-plan leaves design to the pieces, so each piece needs an Opus writer.
+- A detailed pre-plan carries the design, so Sonnet pieces may do, at the cost of a heavier pre-planner.
+- Pieces cannot be counted on to run in parallel: `tools/plandag/plandag.sh` on `loom-tail-review`'s plan found 52 cards, a critical path of 20 and a mean parallelism of 2.6.
+  A beam's gain is then mostly smaller review scopes, not wall time.
