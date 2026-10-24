@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-24 11:01 UTC; every age below is as of then.
+Rendered 2026-10-24 11:02 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -16,7 +16,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T1 | **Each test runs once per tree: disjoint tiers, row entry gates, carried green runs, tmux in final**<br>• Tiers tagged by name, shed row entry gates, verify skipped on an already green tree, tmux in the final gate, gate time measured<br>• `profile: light` | [`gate-runs-once`](design-gate-runs-once.md) | loom | Webster | neve | 6d<br>4h | gate, shed, loom, webster, fabric, batten |
+| T1 | **Each test runs once per tree: disjoint tiers, row entry gates, carried green runs, tmux in final**<br>• Tiers tagged by name, shed row entry gates, verify skipped on an already green tree, tmux in the final gate, gate time measured<br>• `profile: light` | [`gate-runs-once`](design-gate-runs-once.md) | loom | blocked · Webster | neve | 6d<br>4h | gate, shed, loom, webster, fabric, batten |
 | T5 | **Codex spike 2: a twill-like fan of forks with inherited context**<br>• Test parallel Codex subagents with fork_turns all, each writing a file, parent waiting and merging<br>• `profile: docs` | [`codex-twill-spike`](design-codex-twill-spike.md) | darn | Darn-Write | neve | 15m<br>9m | shuttle, codex |
 
 ### Ready (0)
