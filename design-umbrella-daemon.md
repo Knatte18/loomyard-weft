@@ -145,3 +145,9 @@ The operator sees that check as a job for the Go run driver:
 - stay silent when the tip changes no key (an empty file, comments only) or the parent already holds the tip's value;
 - otherwise name each changed key with its base, tip and parent values, so the parent knows exactly what to re-apply.
 
+
+## Operator decisions (2026-10-24)
+
+- The beam commands are `lyx beam create`, `lyx beam promote` and `lyx beam start`, as above.
+- The workspace texts say beam, not umbrella; the task that builds a part renames the word in what it touches.
+- The hub keeps lyx traces 3 days, not 14 (`logger.yaml` `trace_retention_days`, set on Bolt).
