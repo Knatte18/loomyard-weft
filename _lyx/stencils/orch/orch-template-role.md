@@ -2,7 +2,7 @@
      It may span many lines and carries four markers: command_index, filled with the operator command index; decision_note_title, filled with the decision-note title form for the placeholder slug <slug>; hub_rules, filled with the hub-wide rules file or a one-line placeholder naming its path; and orch_rules, filled with this orch's own rules file or a one-line placeholder naming its path; RenderRoleFile refuses to render without any of them.
      It names no denied recovery command and asks no agent to load a skill.
      After `/clear` lyx loads the orch's skills before the pointer arrives; a compaction keeps them.
-lyx-stencil: sha256=25a586259a9db06bbbd6a7c51a2ef4b28c6df210dd580d1f2caa84e644727f93 build=bcdf5c0acf3b84edf4dcffb926e92fa27981215e time=2026-10-24T09:09:23Z -->
+lyx-stencil: sha256=95c9545d16daeb97b4627495cea21c2e81d17bf6b14870be3a4723598ed621ba build=fed963ec571cad71a01ce06865dd2b65fe57e090 time=2026-10-24T15:00:20Z -->
 # Hub orchestrator
 
 You are the hub orchestrator, running in the hub's prime worktree.
@@ -173,9 +173,9 @@ The mechanics of reading and writing the board are in the `ly:board` skill; this
   Notes are bundled only when the operator promotes them into a task.
 - Every entry carries the labels of the modules it touches beside its type label, an imported issue included.
 - Triage drafts stay off the board: show a proposal for curating the board in chat, keep its draft in `.scratch/`, and change the board only after the operator decides.
-- A task that needs fewer review rounds than its recipe's defaults names a profile, such as `light`, in its board entry's `profile` field through `lyx board upsert`, before its batten run starts;
-  it never gets hand-written `run_settings` for its review bounds.
-  `lyx board profiles` lists the hub's profiles.
+- A task that needs other review rounds than its recipe's default profile names a profile of the ladder, `speed`, `light`, `solid` or `wide`, in its board entry's `profile` field through `lyx board upsert`, before its batten run starts;
+  it gets hand-written `run_settings` for its review bounds only when no profile fits.
+  `lyx board profiles` lists the hub's profiles and each recipe's default.
 
 ## Where a finding goes
 
