@@ -20,25 +20,6 @@
       "revised": "2026-10-16T08:22:15Z"
     },
     {
-      "id": 62,
-      "handle": "E1",
-      "slug": "fabric-windows",
-      "title": "Fabric's Windows path behaviour verified on a Windows host",
-      "kind": "note",
-      "labels": [
-        "enhancement",
-        "fabric"
-      ],
-      "issues": [],
-      "priority": "low",
-      "depends_on": [],
-      "isolated": false,
-      "brief": "Unverified after six hardening rounds; needs a Windows host, not design; take it only if Windows becomes relevant",
-      "body": "From `manifest/roadmap.md` Someday, kept by the operator on 2026-10-03: not a priority now, taken only if Windows becomes relevant.\nFabric's Windows path behaviour (directory junctions through `internal/fslink`) is unverified after six hardening rounds; closing it needs a Windows host, not further design.\nThe design file this note once cited, `manifest/designs/fabric-windows-verification.md`, no longer exists in the repository.\nCheck on a Windows host that a directory junction's own modification time stays fixed when files are created, changed or removed under its target.\nThe root `.scratch` link fabric wires into the weft `.lyx` relies on it: source-scan tests hash the module root's `.scratch` entry into their `go test` cache key, and a junction whose own time moved would defeat the cache again.\n",
-      "created": "2026-10-03T17:27:16Z",
-      "revised": "2026-10-21T08:11:09Z"
-    },
-    {
       "id": 63,
       "handle": "F3",
       "slug": "semantic-index",
