@@ -1266,10 +1266,10 @@
     },
     {
       "id": 794,
-      "handle": "E33",
+      "handle": "T5",
       "slug": "decision-add-batch",
       "title": "lyx loom decision add records several decisions in one call and one notice",
-      "kind": "note",
+      "kind": "task",
       "labels": [
         "enhancement",
         "loom",
