@@ -1,0 +1,117 @@
+diff --git a/PATTERN.md b/PATTERN.md
+index 3a8e7d639..a96596dd2 100644
+--- a/PATTERN.md
++++ b/PATTERN.md
+@@ -12,6 +12,7 @@
+ - `PATTERN-cli-cobra` — Adding CLI module: a cobra subtree under one root in `cmd/lyx/main.go`. (test) — [background](pattern/PATTERN-cli-cobra.md)
+ - `PATTERN-cliwire-sole-wiring` — Wiring standalone CLI: `internal/cliwire` alone resolves target dir, repo root and state. (test) — [background](pattern/PATTERN-cliwire-sole-wiring.md)
+ - `PATTERN-config-layers` — Loading config: only `configengine` reads, stacks, locates and judges layers against the template; a caller adopts one of strict `Load` or `LoadOrTemplate`, bar `runprofile`; after a binary change, only `hubreconcile.Ensure` reconciles. — [background](pattern/PATTERN-config-layers.md)
++- `PATTERN-sparse-hub-base` — Writing a hub base file, from any package: only the units the hub tuned, never a template fill; only `internal/hubreconcile`'s one-time strip drops a template-equal unit.
+ - `PATTERN-refusal-way-forward` — Adding webster, shed or loom refusal: message names the way forward and a test reaches it; no refusal, stencil or spec names a step agents' settings deny. (test) — [background](pattern/PATTERN-refusal-way-forward.md)
+ 
+ ## Fabric and git
+@@ -21,6 +22,7 @@
+ - `PATTERN-gitrepo-client-boundary` — Running git: `gitexec.Run`/`runChecked`, raw only at pinned `//gitexec:raw` sites; in `internal/gitrepo`, local reads via `readGoGit` and `dotgit`; transients via `.git/info/exclude`, never `git add -f`. (test) — [background](pattern/PATTERN-gitrepo-client-boundary.md)
+ - `PATTERN-push-both-sides` — Pushing run records from Go: code branch goes along; a push refused after retry leaves a failed-push record and creel notice. (test) — [background](pattern/PATTERN-push-both-sides.md)
+ - `PATTERN-pair-teardown` — Tearing down a pair: only via `internal/pairteardown`; a producer creating or destroying a task worktree never runs inside it. (test) — [background](pattern/PATTERN-pair-teardown.md)
++- `PATTERN-parent-lock` — Moving, merging into or landing on a local parent branch: only in a run's Finalize, under `internal/parentlock`'s lock for that parent.
+ - `PATTERN-owner-machine` — Starting, resuming or landing a run or acting on wake: `fabricengine`'s origin reconcile first, then only where no other machine owns it. — [background](pattern/PATTERN-owner-machine.md)
+ - `PATTERN-github-auth` — Calling GitHub: auth only via `internal/githubclient`, no other production package runs `gh`, and only `lyx selfreport create` files an issue. (test)
+ 
+@@ -28,6 +30,8 @@
+ 
+ - `PATTERN-shed-recipe-registry` — Adding producer or recipe row: one `Constructor` map in `internal/shedrecipe`, bar `Implementer`'s; a row's value looked up by key, a side action a `Command` row, a config-off row its `entry_gate`. — [background](pattern/PATTERN-shed-recipe-registry.md)
+ - `PATTERN-shed-driver` — Driving a shed run: generic verb bodies only in `internal/shedverbs`, the step-until-stop loop only in `internal/sheddriver`, run paths, ids and `Seed` only in `internal/shedrun`. (test) — [background](pattern/PATTERN-shed-driver.md)
++- `PATTERN-transient-stop` — Marking a failure transient: only `internal/shedengine`'s mark, translated by `internal/shedtransient` at a producer or step-bootstrap boundary; never on a gate verdict.
++- `PATTERN-friction-capture` — Halting or crash-resuming a loom run, or refusing in webster: Go writes a note via `internal/friction`; none is archived before a reflection covers it. (test)
+ - `PATTERN-tolerant-records` — Go-written JSON records: never refuse an unknown key; rewrite via `internal/state`. (test) — [background](pattern/PATTERN-tolerant-records.md)
+ - `PATTERN-gate-slot` — Running gate build, test or verify: in held `internal/gateslot` slots, verify via `verifytree.Verify`, a tier skipped only on `lyx gate test`'s green record; a gate and its self-check call one function. (test) — [background](pattern/PATTERN-gate-slot.md)
+ - `PATTERN-sole-parsers` — Parsing plan, discussion, summary, recipe or halt note, or classifying a plan ref: only its sole parser. (test) — [background](pattern/PATTERN-sole-parsers.md)
+@@ -38,6 +42,8 @@
+ - `PATTERN-parent-directive` — Writing a spawned role's stencil: it renders the parent and edit directives; its skills and color go on the launch spec, never asked of the agent. (test) — [background](pattern/PATTERN-parent-directive.md)
+ - `PATTERN-shuttle-provider-seam` — Touching a provider or shuttle run: specifics only under `internal/shuttleengine/<engine>`, model-specs via `NewModelChoice`, a strand stopped via the stop verb, a negative finish after `allOutputFilesExist`. (test) — [background](pattern/PATTERN-shuttle-provider-seam.md)
+ - `PATTERN-pane-text-injection` — Typing into an agent pane: reed's guarded paste-submit, an interrupt key only via shuttle's guards, a covered session held; the orch pane and creel journal only via creel. (test) — [background](pattern/PATTERN-pane-text-injection.md)
++- `PATTERN-agent-name` — Forming, parsing or matching an agent name: only `internal/agentname`, a strand's full name formed once by reed; a spawned role is its module's constant.
++- `PATTERN-wait-mark-display-only` — Marking a pane waiting: only reed's `SetWaitMark`; no Go decision reads `@lyx_wait` or `@lyx_wait_start`.
+ - `PATTERN-shell-guard-table` — Guarding a shell command or building a pane-shell string: only `internal/shellguard`'s table, every engine rendering every row, and `internal/shell`, importing only stdlib.
+ 
+ ## Processes and waits
+diff --git a/internal/agentname/agentname.go b/internal/agentname/agentname.go
+index c43e9e042..88354f372 100644
+--- a/internal/agentname/agentname.go
++++ b/internal/agentname/agentname.go
+@@ -2,7 +2,7 @@
+ //
+ // A full name is "<shortname>:<role>" in the prime and in a standalone run, and "<shortname>:<slug>:<role>" in a task worktree.
+ // The shortname is 2-6 characters of [a-z][a-z0-9]; the slug and the role are [a-z][a-z0-9-]*.
+-// Every other package forms, parses, validates and matches names through this one,
++// Every other package forms, parses, validates and matches names through this one (PATTERN-agent-name),
+ // and the package imports the standard library only.
+ //
+ // # Where names are formed
+diff --git a/internal/friction/doc.go b/internal/friction/doc.go
+index 1efbcaaf9..eb14e96ea 100644
+--- a/internal/friction/doc.go
++++ b/internal/friction/doc.go
+@@ -32,7 +32,8 @@
+ // The notes are the loom halt note, which names its anomaly kind and recent history and whose format internal/haltnote owns, the loom crash-resume note written at a run or step entry, and the webster refusal note.
+ // The reflection decides from them whether a lyx problem is worth an issue.
+ //
+-// With Tier 2 on, a loom halt (blocked or failed, under run or step), a loom crash-resume and every `lyx webster` refusal but validate's leave one such note.
++// With Tier 2 on, a loom halt (blocked or failed, under run or step), a loom crash-resume and every `lyx webster` refusal but validate's leave one such note (PATTERN-friction-capture).
++// `lyx loom start` vouches for the resume it spawns, so a deliberate resume never leaves a crash-resume note.
+ // A webster refusal cobra raises before the verb's RunE fires before the friction directory is resolved and is not noted.
+ // A halt spawns no reflection at the stop: the run's Friction-Reflect row covers every note in the friction directory.
+ // A note-write failure never changes the verb's exit or envelope.
+diff --git a/internal/hubreconcile/doc.go b/internal/hubreconcile/doc.go
+index 1b4dd430a..f13b7214e 100644
+--- a/internal/hubreconcile/doc.go
++++ b/internal/hubreconcile/doc.go
+@@ -31,7 +31,7 @@
+ // With the marker present the walk strips no base, so a unit later set equal to the template stays as a pin.
+ //
+ // A base file is a hub-wide module's hub file or a per-worktree module's repo default.
+-// Every write to one, by any package, holds only the units the hub tuned and never fills in a template value;
++// Every write to one, by any package, holds only the units the hub tuned and never fills in a template value (PATTERN-sparse-hub-base);
+ // only this walk's one-time strip drops a unit the template holds, behind the board marker.
+ // lenses' template-equal entries are the one exception: a per-name entry equal to the template is dropped on every reconcile.
+ //
+diff --git a/internal/parentlock/doc.go b/internal/parentlock/doc.go
+index 0d0465c49..b85428647 100644
+--- a/internal/parentlock/doc.go
++++ b/internal/parentlock/doc.go
+@@ -2,7 +2,7 @@
+ //
+ // The package is told every directory it works on and derives none beyond Dir, which spells the ephemeral directory name only through internal/lyxdirs.
+ //
+-// Moving, merging into or landing on a local parent branch happens only in a run's Finalize, under this lock for that parent.
++// Moving, merging into or landing on a local parent branch happens only in a run's Finalize, under this lock for that parent (PATTERN-parent-lock).
+ //
+ // # Record
+ //
+diff --git a/internal/reedengine/doc.go b/internal/reedengine/doc.go
+index af7d02967..7d43b2d2f 100644
+--- a/internal/reedengine/doc.go
++++ b/internal/reedengine/doc.go
+@@ -51,7 +51,7 @@
+ // The mark is display only,
+ // so reed stores nothing for it and the options die with the pane;
+ // the status bar renders it on the strand's own button, as " ⏳<label> <elapsed>m" appended to the strand's name with tmux computing the elapsed minutes at each refresh,
+-// and no Go decision reads it.
++// and no Go decision reads it (PATTERN-wait-mark-display-only).
+ // The options are set only through SetWaitMark, by shuttleengine and the landing wait-mark callback, which marks the verify and the parent lock wait with the label `parent lock <branch>`.
+ //
+ // Engine.CapturePaneStyled returns a pane's screen with its SGR attributes beside the plain CapturePane, for a caller that reads cell styles; reed interprets none of it.
+diff --git a/internal/shedengine/doc.go b/internal/shedengine/doc.go
+index 271ed124c..6a6c0f3d5 100644
+--- a/internal/shedengine/doc.go
++++ b/internal/shedengine/doc.go
+@@ -159,7 +159,7 @@
+ //
+ // # The transient mark
+ //
+-// The transient mark is declared only here (transient.go), and its class set is closed at that declaration.
++// The transient mark is declared only here (transient.go), and its class set is closed at that declaration (PATTERN-transient-stop).
+ // A lower-level package exposes its own classification, and internal/shedtransient alone translates it into the mark.
+ // The mark is set only at a producer boundary, the Shed.Transient classifier shedbuild.NewShed tells, or at a step bootstrap boundary, a PreStep hook.
+ // A producer returns a failure shedtransient classifies as a hard error rather than a verdict, so it reaches that classifier,
