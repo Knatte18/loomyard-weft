@@ -1259,10 +1259,10 @@
     },
     {
       "id": 793,
-      "handle": "E24",
+      "handle": "T2",
       "slug": "pattern-cleanup",
       "title": "Clean up PATTERN.md: far too many entries",
-      "kind": "note",
+      "kind": "task",
       "labels": [
         "enhancement",
         "stencil"
