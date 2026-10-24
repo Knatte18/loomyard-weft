@@ -4,6 +4,12 @@
   "base": "ed98ccf71d12c07c28bc8f97c8f5d7ede7e73025",
   "review_input": "/home/knatte/Code/loomyard-LYXHUB/gate-runs-past-failing-tier/.lyx/loom/overlap-note.md",
   "judge_subject": {
-    "kind": ""
-  }
+    "kind": "code",
+    "merge_base": "a60ec1b8010b005357f91240f0f274c3ff644f0c",
+    "head": "d84a4111873d9299c4ebb70acc61ddf46e58ad7c",
+    "full_hash": "b1beae1e1540b2fc206b9b68bf70a1344e2c7fd56fb8c1fb7a0ce39eedeee852",
+    "patch_id": "121fed91e1add4fc75dad3e13c897f1e820621c9"
+  },
+  "judge_base": "a60ec1b8010b005357f91240f0f274c3ff644f0c",
+  "judge_at": "2026-10-24T14:13:23Z"
 }

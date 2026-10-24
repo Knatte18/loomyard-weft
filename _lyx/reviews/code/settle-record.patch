@@ -43,7 +43,7 @@ index bca5f4b00..6ff9dac00 100644
  	cmd.AddCommand(testCmd)
  	cmd.AddCommand(statusCmd())
 diff --git a/internal/gatecli/doc.go b/internal/gatecli/doc.go
-index 1ca5f353c..e5e19269a 100644
+index e8d610bbd..550af206f 100644
 --- a/internal/gatecli/doc.go
 +++ b/internal/gatecli/doc.go
 @@ -4,7 +4,10 @@
