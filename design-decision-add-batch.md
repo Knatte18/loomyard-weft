@@ -1,6 +1,6 @@
 # lyx loom decision add records several decisions in one call and one notice
 
-`decision-add-batch` · Task · enhancement, loom, creel · running · Worktree-Create
+`decision-add-batch` · Task · enhancement, loom, creel · running · Darn-Write
 
 ## Seen (2026-10-24)
 
