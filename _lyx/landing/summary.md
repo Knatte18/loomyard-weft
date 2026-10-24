@@ -1,29 +1,40 @@
-# Record-batch: accept a Go test written in its directory's other package
+# webster record-batch: accept Create targets in the external test package
 
-`lyx webster record-batch` failed a batch with blocking `create-not-done` findings when a Create target `<dir>#TestX` was written into the external test package `<dir>_test`.
-The finding itself named the declaration it had found (`TestX is declared as <dir>_test#TestX`), and only `lyx webster recover-batch` got past it.
-A plan cannot know at plan time which package a new test file declares, so record time is where this is resolved.
-Fixes #851.
+`lyx webster record-batch` no longer fails a batch with `create-not-done` when a Go Create target was written into the other package of its directory.
+A plan naming `plan:<dir>#TestX` while the card wrote `TestX` into `<dir>_test` (or the reverse) now records clean.
+Before, quarry answered `not_found` for the named unit, and the batch was refused even though the member existed.
+The plan cannot know at plan time which package a new test file declares, so the check resolves it at record time, when the declaration is on disk.
 
-## What changes
+Closes #851
 
-- `planparser.GoPackageCounterpart` maps a Go member glyph to the same member in its directory's other package: `<dir>` to `<dir>_test`, and `<dir>_test` to `<dir>`.
-  It reports false under a non-go plan, for a self glyph and for a file-unit glyph.
-- `planglyph.DoneChecks`: under a go plan, a Create target or Rename new side answered not_found is done when the worktree's glyphs listing holds its counterpart.
-  That listing is already taken whenever such a target is not_found, so no extra resolve runs.
-  A member declared in any other unit still blocks, with the same detail as before.
-- `planglyph.BindHandles`: a handle whose expected glyph the delta does not hold binds to its counterpart when the delta holds that.
-  The plan is rewritten to the glyph the card created, so drift detection and later batches see the real declaration instead of a `bind-count-mismatch`.
+## Changes
+
+- `internal/planparser`: new exported `GoPackageCounterpart`, which maps a Go member glyph to the same member in the other package of its directory.
+  It sits beside `goPackageDir` and is built on `ParseRef` and `Glyph.String`, so the unit adjustment stays inside `planparser` as `PATTERN-glyph-conversion-chokepoint` requires.
+  It returns false under a non-go plan, for a non-member ref and for a file unit.
+- `internal/planglyph` `DoneChecks`: a Create target or Rename new side answered `not_found` counts as done when its counterpart glyph appears in the worktree declarations the check already lists for a missing member.
+  No second resolve is issued.
+- `internal/planglyph` `BindHandles`: a handle whose expected glyph matches no delta symbol binds to the counterpart glyph when the delta holds it.
+  The plan's later refs are rewritten to the glyph the card actually created, so drift detection and later batches resolve it.
+- The chokepoint pattern, the loom plan spec and the `planparser` and `planglyph` package docs name the second sanctioned unit adjustment.
 
 ## Design decisions
 
-- Both directions are handled, since a plan may equally name `<dir>_test` for a test written in-package.
-- The fix is at record time rather than a plan validator rewrite, because a new external test file does not exist yet when the plan is validated.
-- The PATTERN-glyph-conversion-chokepoint background now names `GoPackageCounterpart` beside `goPackageDir` as the only sanctioned Go unit adjustments.
-  The PATTERN.md entry is unchanged.
+- The counterpart check works in both directions, since a plan may equally name `<dir>_test` for a test written in-package.
+- Rename new sides share the `not_found` path, so they get the same treatment as Create targets.
+- A delta symbol binds at most one handle of a card.
+  A second handle that reaches the same glyph through the other package's spelling counts as unmatched, so it still surfaces as `bind-count-mismatch` rather than silently binding twice.
+- A target passes only when the same member name is declared in the same directory's other package.
+  A member declared in an unrelated unit still raises `create-not-done`.
+- C# plans are unchanged: no counterpart lookup happens.
+- A plan-time validator that rejects or rewrites such targets is out of scope.
+
+## Known limitation
+
+A real package directory whose own name ends in `_test` maps to its sibling directory's package, as `goPackageDir` already does.
+The counterpart then only passes when that sibling declares the member.
 
 ## Tests
 
-- `TestGoPackageCounterpart` covers both directions, method members, and the cases with no counterpart.
-- `TestDoneChecks_Verdicts` gains rows for a package test landed in the external test package and the reverse; the existing "declared in another unit" row still blocks.
-- `TestBindHandles_HandleBindsToTheOtherPackageOfItsDirectory` covers binding and the rewrite in both directions.
+New rows in the existing done-check, handle-binding and `targetdirs` tests cover both directions, the unrelated-unit refusal, the Rename new side, a C# plan, and the one-handle-per-delta-symbol rule.
+Nothing needs to be run by hand beyond the project gate.
