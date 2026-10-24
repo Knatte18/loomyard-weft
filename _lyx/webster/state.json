@@ -1335,7 +1335,7 @@
       }
     }
   ],
-  "currentBatch": 22,
+  "currentBatch": 0,
   "masterStrand": "204a08846d361e4757e6dfa87f5f015b",
   "masterSessionId": "987ef1ee-76d9-4313-9782-0f9e5f09a81e",
   "masterEngine": "claude",
@@ -1560,8 +1560,16 @@
       "startSha": "959fc277d999aa08a42e49e48acbffcabae9295d",
       "kind": "recovery",
       "spawnedAt": "2026-10-24T11:20:17Z",
-      "terminal": false,
-      "status": "",
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "22-tier-plan-docs",
+        "status": "done",
+        "head_sha": "00d1b470bc3ec6521be694caac51ad795e9d91a4"
+      },
+      "cardShas": [
+        "00d1b470bc3ec6521be694caac51ad795e9d91a4"
+      ],
       "forkTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-gate-runs-once/10aba9c6-1885-40a9-b0f0-1f9376bb6375/subagents/agent-a9d2ab51c77a8ed87.jsonl"
       ],
