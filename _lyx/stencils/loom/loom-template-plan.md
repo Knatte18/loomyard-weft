@@ -9,7 +9,7 @@
      twill_directive is a fourth optional marker, rendered by internal/twilldirective through internal/loomengine;
      it sits on the line that would otherwise be blank, so an empty value leaves the blank line and the prompt's bytes unchanged.
      edit_directive is a required marker, rendered unconditionally by internal/editdirective.
-lyx-stencil: sha256=3aeb8d0acb0f487fc4b6138188b3f5cc16fccf660fa18493a806527fe21371a1 build=d08687e6db3982b8fbe12ac8a7e83a92186a061e time=2026-10-24T15:21:41Z -->
+lyx-stencil: sha256=4b3f4965b82ccefaca5cf3b5a0937408306949ef7e99f6009e6189b3215636bd build=a49367dd61e78fa52ab811c1edaf1a70b6d8e001 time=2026-10-24T17:45:18Z -->
 
 # Plan — read the decision record, write a plan-format flat-card plan
 
@@ -99,6 +99,8 @@ A card that prescribes an addition to a `PATTERN.md` entry line leaves the line 
 A declared `adds` or `changes` entry is prescribed verbatim as its whole overview line in a fenced block on a card that edits `PATTERN.md`.
 A card fences only the new line, never the old one or an example, since the gate reads every fenced line that opens like an entry.
 The plan gate measures the overview those lines project against the headroom line, so a line that grows `PATTERN.md` past it is refused.
+It also measures each card's own step in plan order, `pattern-card-headroom` in the same spec, so a later card that shortens the overview never covers an earlier card's growth: the shortening goes on the growing card or before it.
+A card that removes an entry names the entry's ID in backticks, so the gate credits the removal to that card.
 
 ### On-disk layout
 
