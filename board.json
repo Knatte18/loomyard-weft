@@ -1174,29 +1174,6 @@
       "profile": "light"
     },
     {
-      "id": 785,
-      "handle": "T5",
-      "slug": "git-remote-stall-timeout",
-      "title": "Git network calls get a stall bound and one retry",
-      "kind": "task",
-      "labels": [
-        "bug",
-        "fabric",
-        "batten"
-      ],
-      "issues": [],
-      "recipe": "darn",
-      "depends_on": [],
-      "isolated": false,
-      "brief": "A git call to GitHub hung for minutes on a dead connection; bound every git network call and retry it once",
-      "body": "## Seen (orch, 2026-10-23, OSL-1046)\n\nTwo batten runs started at 18:54 each hung on a git call to GitHub: `orch-handoff-timeout-delivery`'s Worktree-Create on `git ls-remote --heads origin refs/heads/\u003cslug\u003e-weft`, and `adopt-owner-write-stale-manifest`'s `lyx fabric ... push`.\nEach `git-remote-https` held one TCP connection to 140.82.121.4:443 with 395 bytes unacknowledged in its send queue, the size of a TLS opening, and no answer for over two minutes, while a fresh `git ls-remote` from the prime to the same repository answered at once.\nTCP retransmission would have held each call for about a quarter of an hour; nothing in lyx bounded it.\nEnding the two `git-remote-https` processes by hand failed the calls, and batten retried and went on.\n\n## Idea\n\nEvery git network call lyx makes carries a stall bound, such as git's `http.lowSpeedLimit` and `http.lowSpeedTime`, or a timeout on the command, and is retried once on a stall, so a dead connection costs seconds instead of minutes.\n",
-      "status": "done",
-      "created": "2026-10-23T16:58:17Z",
-      "revised": "2026-10-24T06:23:25Z",
-      "profile": "light",
-      "owner_machine": "neve"
-    },
-    {
       "id": 787,
       "handle": "E14",
       "slug": "adopt-runs-tests",
@@ -1265,8 +1242,7 @@
         724
       ],
       "depends_on": [
-        "gate-runs-once",
-        "git-remote-stall-timeout"
+        "gate-runs-once"
       ],
       "isolated": false,
       "brief": "[WS 004+006] Board projects, fabric pairs from a parent pair, batten and orch from any worktree, umbrella tasks",

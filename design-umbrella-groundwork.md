@@ -2,7 +2,7 @@
 
 `umbrella-groundwork` · Task · feature, fabric, batten, orch, board, reed, creel, shed, workspaces
 
-Depends on: [`gate-runs-once`](design-gate-runs-once.md), [`git-remote-stall-timeout`](design-git-remote-stall-timeout.md)
+Depends on: [`gate-runs-once`](design-gate-runs-once.md)
 
 ## Bundle (operator, 2026-10-24)
 
