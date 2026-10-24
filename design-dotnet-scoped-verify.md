@@ -2,7 +2,7 @@
 
 `dotnet-scoped-verify` · Task · feature, enhancement, shed, webster, loom, config, dotnet
 
-Depends on: [`pattern-cleanup`](design-pattern-cleanup.md)
+Depends on: [`pattern-cleanup`](design-pattern-cleanup.md), [`card-gate-vets-all-tag-sets`](design-card-gate-vets-all-tag-sets.md)
 
 ## Scope (operator, 2026-10-24)
 
