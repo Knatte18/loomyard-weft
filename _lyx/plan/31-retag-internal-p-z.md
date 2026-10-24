@@ -52,8 +52,8 @@
 - `crucible/review-prompt-template.md`
 
 **Create:**
-- `plan:cmd/lyx#TestTierTags_OneTagPerTestFile` -> `func TestTierTags_OneTagPerTestFile(t *testing.T)`
-- `plan:cmd/lyx#tierTagFailure` -> `func tierTagFailure(rel string, data []byte) string`
+- `cmd/lyx#TestTierTags_OneTagPerTestFile`
+- `cmd/lyx#tierTagFailure`
 
 **Uses:**
 - `internal/testkit/scankit#`
