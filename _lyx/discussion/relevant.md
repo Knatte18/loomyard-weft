@@ -1,0 +1,31 @@
+# Relevant code
+
+- `internal/boardengine/task.go` `Task`, `KindTask`, `KindNote`, `MaxSlugLength` — the entry record the project kind and fields join
+- `internal/boardengine/doc.go` — board contract: kinds, handles, owners, run lock, README layout, rename and prune
+- `internal/boardengine/store.go` — depends_on refusals for notes, the shape D2's refusals follow
+- `internal/boardcli/cli.go` — fills `Config.ParentOf` from fabric origin records, where the slug seam and project fallback get wired
+- `internal/fabricengine/add.go` `Topology.Add`, `AddOptions`, `ErrBranchExists` — forks from the acting worktree's HEAD today; gains Parent and AdoptLocal
+- `internal/fabricengine/origin.go` `Origin` — parent branch and worktree record; gains the beam mark
+- `internal/fabricengine/slug.go` `validateWorktreeSlug` — the one slug rule the board will apply
+- `internal/fabricengine/hubworkspace.go` `RegenerateHubWorkspace`, `HubWorkspacePath` — the hub workspace file the beam files join
+- `internal/battencli/refusal.go` `RefuseUnlessPrime` — the prime-only guard batten verbs give up
+- `internal/battencli/wire.go` `CreateWorktree`, `noticesReachDriversParent`, `orchStrandRecorded`, `childSeedParams` — Worktree-Create's Add call and notice routing
+- `internal/battencli/paths.go` `BattenDir`, `StatusFile`, `PrimeRunLock` — prime-anchored batten paths that stay
+- `internal/battencli/cancel.go` `cancelDeps` — cancel's phase promote reuses; tolerates an absent board entry
+- `internal/battencli/cleanup.go` — cleanup skips non-done runs without naming cancel
+- `internal/battenshed/doc.go` — batten rows, notices and their recipient
+- `internal/battenshed/land.go` `NewLand` — skips pull and deploy for a non-prime parent
+- `internal/orchcli/refusal.go` `refuseNonPrime` — orch's prime-only guard
+- `internal/orchcli/paths.go` `PrimePaths`, `orchPaths` — orch file locations per worktree
+- `internal/orchcli/notify.go` `NotifyPrime` — notice delivery to the prime's orch
+- `internal/hubgeom/parent.go` `ResolveParent`, `decideParent` — names a pair's parent `ly:<slug>:orch`; gains the walk up
+- `internal/agentname/agentname.go` `RoleOrch`, `Format` — strand naming
+- `internal/landingshed/describe.go` `DescribeTable`, `DarnDescribeTable` — both need a decision record, hence the Go describe for a beam
+- `internal/landingshed/doc.go` — Finalize's parent lock, owner checks and merge
+- `internal/shedengine/doc.go` — a reroute from a row with no `on_reroute` fails the run, which the beam recipe's Finalize must avoid
+- `internal/orchcli/stop.go` — stop removes the strand but leaves the recorded one, hence the liveness walk
+- `contracts/recipes/darn-recipe.yaml` — darn's tail rows the beam recipe borrows Finalize from
+- `contracts/recipes/batten-recipe.yaml` — batten's rows the beam landing runs
+- `pattern/PATTERN-pair-teardown.md` — Batten bookend
+- `pattern/PATTERN-cwd-resolution.md` — hub containment and the workspace file
+- `pattern/PATTERN-owner-machine.md` — owner resolution through the parent
