@@ -1,6 +1,6 @@
 # Umbrella groundwork: project entries, pairs from a parent pair, and umbrella tasks that spawn and land from their own worktree
 
-`umbrella-groundwork` · Task · feature, fabric, batten, orch, board, reed, creel, shed, workspaces · running · Plan-Write
+`umbrella-groundwork` · Task · feature, fabric, batten, orch, board, reed, creel, shed, workspaces · running · Plan-Bouncer
 
 ## Bundle (operator, 2026-10-24)
 
