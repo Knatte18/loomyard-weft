@@ -24,7 +24,8 @@ It came out of discussing sub-planners for the Plan writer (note `plan-writer-co
 
 ## Depends on
 
-The beam setup on the board: `orch-any-worktree` (umbrella tasks spawning and landing from their own worktree) and `umbrella-daemon` (a daemon per beam that drives its runs).
+The beam setup: `orch-any-worktree` is landed (dd11ab09f: beams, pairs from a parent pair, `lyx beam create`, `promote`, `land`), and `umbrella-daemon` is still open.
+Earlier wording: `orch-any-worktree` (umbrella tasks spawning and landing from their own worktree) and `umbrella-daemon` (a daemon per beam that drives its runs).
 
 ## Open
 

@@ -211,4 +211,4 @@ That idea is superseded, not lost: it's the direct ancestor of [quarry](https://
 - `internal/websterengine`'s package documentation — the sequential model this would extend.
 - loom-plan-spec.md — already captures the cheap win (`depends-on`).
 - [quarry](https://github.com/Knatte18/quarry) — Part B's successor.
-- `orch-any-worktree` — umbrella tasks need the same create-from-parent-pair, merge-back and teardown primitive as Weaver's per-batch pairs (orch recommendation, 2026-10-18).
+- `orch-any-worktree` (landed in dd11ab09f: `lyx fabric add --parent` forks a pair from a parent pair) — umbrella tasks need the same create-from-parent-pair, merge-back and teardown primitive as Weaver's per-batch pairs (orch recommendation, 2026-10-18).
