@@ -27,7 +27,7 @@ Waits on nothing open; can start now.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T2 | **A run never files a task, at most a note**<br>• gate-runs-once filed a follow-up task (default loom) that then auto-started; runs may file only notes | [`runs-never-write-board`](design-runs-never-write-board.md) | loom |  | 1h<br>1h | board, loom, stencil |
+| T2 | **A run never files a task, at most a note**<br>• gate-runs-once filed a follow-up task (default loom) that then auto-started; runs may file only notes<br>• `profile: light` | [`runs-never-write-board`](design-runs-never-write-board.md) | darn |  | 1h<br>0m | board, loom, stencil |
 
 ## Notes (44)
 
