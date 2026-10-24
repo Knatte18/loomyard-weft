@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-24 12:40 UTC; every age below is as of then.
+Rendered 2026-10-24 12:41 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -31,7 +31,7 @@ Waits only on Running or Ready entries.
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
 | T2 | **Clean up PATTERN.md: far too many entries**<br>• `profile: light` | [`pattern-cleanup`](design-pattern-cleanup.md) | darn | `gate-runs-once` | 5h<br>1h | stencil |
-| T5 | **Drop the transitional tag spellings after the deploy**<br>• After the deploy: remove the guard files' \|\| integration term, the old tag spellings in the tier commands and guards, and respell the glyphchain fixture | [`drop-transitional-tag-spellings`](design-drop-transitional-tag-spellings.md) | loom | `gate-runs-once` | 0m<br>0m |  |
+| T5 | **Drop the transitional tag spellings after the deploy**<br>• After the deploy: remove the guard files' \|\| integration term, the old tag spellings in the tier commands and guards, and respell the glyphchain fixture | [`drop-transitional-tag-spellings`](design-drop-transitional-tag-spellings.md) | loom | `gate-runs-once` | 1m<br>1m |  |
 
 ### Layer B (4)
 
@@ -70,7 +70,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | # | P | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | E1 |  | **Plan conflict from a moved tree: a small fixer before the Plan perch**<br>• A tree_moved plan conflict naming exact glyphs goes to a small card fixer, not a full Plan review round | [`plan-conflict-small-fixer`](design-plan-conflict-small-fixer.md) | 2h<br>2h | webster, loom |
-| E2 |  | **Codex CLI as a second shuttle engine: codexengine**<br>• codexengine for single-session roles, built from the 2026-10-24 spike report and claudeengine list of needs | [`codex-engine`](design-codex-engine.md) | 2w<br>7m | shuttle, codex |
+| E2 |  | **Codex CLI as a second shuttle engine: codexengine**<br>• codexengine for single-session roles, built from the 2026-10-24 spike report and claudeengine list of needs | [`codex-engine`](design-codex-engine.md) | 2w<br>0m | shuttle, codex |
 | E4 |  | **finalize: the discrepancy-document conflict shape**<br>• Divergences that cannot be a git conflict get a precomputed document for the resolving agent instead of markers | [`finalize-discrepancy-doc`](design-finalize-discrepancy-doc.md) | 2w<br>2w | fabric, loom |
 | E7 |  | **Run verbs in one shared namespace, not under lyx loom**<br>• lyx loom decision/status/goto/approve act on darn runs too; move recipe-neutral run verbs to one shared namespace | [`run-verbs-shared`](design-run-verbs-shared.md) | 9d<br>9d | shed, loom |
 | E9 |  | **Paste cited code into a review rounds context**<br>• Reviewers edit nothing and review a fixed commit, so code pasted at round start cannot go stale; measure it against todays reviewer | [`review-inline-code`](design-review-inline-code.md) | 12d<br>3h | burler, stencil |
