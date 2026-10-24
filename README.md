@@ -16,7 +16,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T1 | **webstercli standalone tests fail when an empty /tmp/.git exists**<br>• `profile: light` | [`webstercli-tests-ignore-tmp-git`](design-webstercli-tests-ignore-tmp-git.md) | darn | Worktree-Create | neve | 9m<br>0m | webster, testkit |
+| T1 | **webstercli standalone tests fail when an empty /tmp/.git exists**<br>• `profile: light` | [`webstercli-tests-ignore-tmp-git`](design-webstercli-tests-ignore-tmp-git.md) | darn | Darn-Write | neve | 9m<br>0m | webster, testkit |
 | T2 | **Clean up PATTERN.md: far too many entries**<br>• `profile: light` | [`pattern-cleanup`](design-pattern-cleanup.md) | darn | Code-Burler-Fix | neve | 6h<br>2h | stencil |
 | T5 | **Drop the transitional tag spellings after the deploy**<br>• After the deploy: remove the guard files' \|\| integration term, the old tag spellings in the tier commands and guards, and respell the glyphchain fixture<br>• `profile: light` | [`drop-transitional-tag-spellings`](design-drop-transitional-tag-spellings.md) | darn | Code-Burler-Fix | neve | 1h<br>19m |  |
 | T8 | **webster: Master writes stuck after reset --to batch-start instead of running recover-batch**<br>• `profile: light` | [`webster-reset-reopens-dead-batch`](design-webster-reset-reopens-dead-batch.md) | darn | Worktree-Create | neve | 9m<br>0m | webster |
