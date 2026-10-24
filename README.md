@@ -6,26 +6,26 @@ Prime owner: `neve`.
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
 
-## Tasks
+## Tasks (5)
 
 Concrete and claimable; only a task can run.
 
-### Running
+### Running (2)
 
 Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T1 | **Each test runs once per tree: disjoint tiers, row entry gates, carried green runs, tmux in final**<br>• Tiers tagged by name, shed row entry gates, verify skipped on an already green tree, tmux in the final gate, gate time measured<br>• `profile: light` | [`gate-runs-once`](design-gate-runs-once.md) | loom | Discussion-Bouncer | neve | 6d<br>1h | gate, shed, loom, webster, fabric, batten |
-| T10 | **Every lens fork report is kept verbatim in the run records**<br>• Save each lens fork report in a support file beside lens-review.md, so audits can read what each lens found | [`lens-fork-reports-kept`](design-lens-fork-reports-kept.md) | darn | Darn-Write | neve | 1d<br>42m | burler, loom |
+| T1 | **Each test runs once per tree: disjoint tiers, row entry gates, carried green runs, tmux in final**<br>• Tiers tagged by name, shed row entry gates, verify skipped on an already green tree, tmux in the final gate, gate time measured<br>• `profile: light` | [`gate-runs-once`](design-gate-runs-once.md) | loom | Discussion-Burler-Review | neve | 6d<br>1h | gate, shed, loom, webster, fabric, batten |
+| T10 | **Every lens fork report is kept verbatim in the run records**<br>• Save each lens fork report in a support file beside lens-review.md, so audits can read what each lens found | [`lens-fork-reports-kept`](design-lens-fork-reports-kept.md) | darn | Darn-Write | neve | 1d<br>43m | burler, loom |
 
-### Ready
+### Ready (0)
 
 Waits on nothing open; can start now.
 
 _None._
 
-### Layer A
+### Layer A (3)
 
 Waits only on Running or Ready entries.
 
@@ -35,11 +35,11 @@ Waits only on Running or Ready entries.
 | T6 | **Fork git-mutation guard fails a run on git commands confined to a scratch repo**<br>• `profile: light` | [`fork-git-guard-scratch-repo`](design-fork-git-guard-scratch-repo.md) | darn | `gate-runs-once` | 14h<br>50m | shed, burler |
 | T9 | **Umbrella groundwork: project entries, pairs from a parent pair, and umbrella tasks that spawn and land from their own worktree**<br>• [WS 004+006] Board projects, fabric pairs from a parent pair, batten and orch from any worktree, umbrella tasks | [`umbrella-groundwork`](design-umbrella-groundwork.md) | loom | `gate-runs-once` | 2w<br>16m | fabric, batten, orch, board, reed, creel, shed, workspaces |
 
-## Notes
+## Notes (59)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
 
-### Audits
+### Audits (7)
 
 | # | P | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
@@ -51,13 +51,13 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | A6 |  | **Lens overlap audit: which lenses find the same defects, and a smaller set**<br>• twill-plan 8 to 5 lenses recommended; twill-discussion 7 to 4 and review-code 4 to 3 at low confidence | [`lens-overlap-audit`](design-lens-overlap-audit.md) | 1d<br>1d | burler, loom |
 | A7 |  | **Trial: batcher profile wide (budget 300k)**<br>• Hub runs a new batcher profile wide, budget 300k; check cost and fork quality before taking it into the template | [`batch-budget-300k-trial`](design-batch-budget-300k-trial.md) | 1d<br>1d | webster |
 
-### Bugs
+### Bugs (1)
 
 | # | P | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| B1 |  | **Batten idle notice says no agent activity readable while a run is live** | [`idle-notice-no-live-run`](design-idle-notice-no-live-run.md) | 22m<br>22m | batten, shuttle |
+| B1 |  | **Batten idle notice says no agent activity readable while a run is live** | [`idle-notice-no-live-run`](design-idle-notice-no-live-run.md) | 23m<br>23m | batten, shuttle |
 
-### Enhancements
+### Enhancements (33)
 
 | # | P | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
@@ -78,7 +78,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | E15 |  | **Plan writer cost: sub-planners per part, and twill versus a solo writer**<br>• The Plan writer is 18% of spend; sub-planners per part for large bundles, and a twill versus solo Opus high comparison on cost, rounds and time | [`plan-writer-context`](design-plan-writer-context.md) | 1d<br>1d | loom, stencil |
 | E16 |  | **Parallel batches: the shared pieces for Webster forks and Weaver**<br>• DAG batchifier, worktree per batch, merge-back with conflict resolution; open: keeping a fork inside its worktree | [`parallel-batch-parts`](design-parallel-batch-parts.md) | 6d<br>6d | webster, fabric, loom |
 | E17 | L | **[WS 007] An anchor per umbrella**<br>• Let a beam work in its own subdirectory of the repository, inherited by its tasks; loom-sized, best with or after umbrella-groundwork | [`umbrella-anchor`](design-umbrella-anchor.md) | 5d<br>3m | fabric, config, workspaces |
-| E18 | H | **[WS 005] One dobby daemon per beam owns and drives its runs**<br>• Each beam (a worktree with an orch thread) gets a Go daemon, started by lyx orch start, that follows its runs status files, starts ready tasks, lands, settles mechanical stops and tells the thread only what needs judgement | [`umbrella-daemon`](design-umbrella-daemon.md) | 11d<br>42m | batten, orch, shed, workspaces, loom, board |
+| E18 | H | **[WS 005] One dobby daemon per beam owns and drives its runs**<br>• Each beam (a worktree with an orch thread) gets a Go daemon, started by lyx orch start, that follows its runs status files, starts ready tasks, lands, settles mechanical stops and tells the thread only what needs judgement | [`umbrella-daemon`](design-umbrella-daemon.md) | 11d<br>43m | batten, orch, shed, workspaces, loom, board |
 | E19 |  | **Every remote operation runs async, and local-only fabric pairs stay an explicit choice only**<br>• Remote work goes async except the branch-exists check; batch pairs reach origin like any pair, and the local-only mode stays only as an explicit --local until a use is found or it is removed | [`fabric-remote-async`](design-fabric-remote-async.md) | 5d<br>5d | fabric, batten |
 | E20 |  | **Plan and Discussion fixers on Sonnet, once findings are concrete enough**<br>• Webster and Merge fixers are already Sonnet; Plan and Discussion fixers need concrete findings first | [`fixers-on-sonnet`](design-fixers-on-sonnet.md) | 1d<br>1d | burler, claude |
 | E21 |  | **The orch Go driver spawns the board-tidy agent after each landing** | [`board-tidy-after-landing`](design-board-tidy-after-landing.md) | 23h<br>23h | orch, board, reed |
@@ -95,7 +95,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | E34 |  | **Rename the Merge-In row to Parent-Align**<br>• The row aligns the task with what the parent brought in, not only merges | [`merge-in-parent-align`](design-merge-in-parent-align.md) | 43m<br>43m | loom, shed, stencil |
 | E35 |  | **A landing fixer escalation goes to the arbiter before the orch**<br>• Merge-In and Finalize fixer escalate reports reach the arbiter first | [`landing-escalate-arbiter`](design-landing-escalate-arbiter.md) | 43m<br>43m | shed, loom |
 
-### Features
+### Features (18)
 
 | # | P | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
@@ -116,4 +116,4 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | F16 | H | **creel stage 3: agents message through creel, not SendMessage**<br>• Parent asks, parent review, stop reports and shuttle send go through creel, so a non-Claude engine can take a role with a parent | [`creel-agents`](design-creel-agents.md) | 8d<br>22h | creel, shuttle, loom, stencil, report |
 | F17 |  | **Ideas to borrow from comparable agent orchestrators (survey, Oct 2026)** | [`orchestrator-survey-ideas`](design-orchestrator-survey-ideas.md) | 8d<br>6d | burler, shed, orch, quarry, report |
 | F18 |  | **[.NET 004] Asynchronous test tiers in shed: the numerical baseline captured before implementation, compared at the final gate**<br>• Support a hub regression tier that writes profiles on the parent before implementation and compares after, switchable per task for expected drift. | [`regression-baseline-verify`](design-regression-baseline-verify.md) | 6d<br>2d | shed, webster, batten, config, dotnet |
-| F20 |  | **Large tasks: Discussion, a pre-planner, and the pieces as darn runs inside the task's beam**<br>• Discussion decides scope, a pre-planner splits it into contracted pieces, each piece runs as darn from the task's beam, a whole-task perch reviews, then align and land | [`loom-beam-darns`](design-loom-beam-darns.md) | 1d<br>47m | loom, shed, batten, workspaces, burler |
+| F20 |  | **Large tasks: Discussion, a pre-planner, and the pieces as darn runs inside the task's beam**<br>• Discussion decides scope, a pre-planner splits it into contracted pieces, each piece runs as darn from the task's beam, a whole-task perch reviews, then align and land | [`loom-beam-darns`](design-loom-beam-darns.md) | 1d<br>48m | loom, shed, batten, workspaces, burler |
