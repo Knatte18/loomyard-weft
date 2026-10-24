@@ -1,59 +1,13 @@
 round: 1
-fan: review-code
-fix_fan: fix-code
-fans_recorded: true
-lenses:
-    - code-correctness
-    - code-affected-set
-    - code-tests
-    - code-pattern-fit
-fix_lenses:
-    - fix-code-correctness
-    - fix-consistency
-    - fix-proposal
-    - fix-affected-set
-fix_forks: 4
-review:
-    engine: claude
-    model: sonnet
-    effort: medium
-    start: 2026-10-24T07:40:57Z
-    end: 2026-10-24T09:42:22.36764941+02:00
-    wall_seconds: 85.36764941
-    tokens_known: true
-    fresh_tokens: 149453
-    cache_read_tokens: 2102292
-    forks: 4
-    fork_fresh_tokens: 35978
-    fork_cache_read_tokens: 873165
-    fork_fresh_share: 0.24073119977518015
-fix:
-    engine: claude
-    model: sonnet
-    effort: medium
-    start: 2026-10-24T07:42:23Z
-    end: 2026-10-24T09:46:40.476589718+02:00
-    wall_seconds: 257.476589718
-    tokens_known: true
-    fresh_tokens: 102720
-    cache_read_tokens: 2651470
+fan: ""
+fix_fan: ""
 seed:
     - engine: claude
       model: sonnet
       effort: medium
-      start: 2026-10-24T07:40:38Z
-      end: 2026-10-24T09:40:56.331707567+02:00
-      wall_seconds: 18.331707567
+      start: 2026-10-24T07:53:00Z
+      end: 2026-10-24T09:53:20.393548501+02:00
+      wall_seconds: 20.393548501
       tokens_known: true
-      fresh_tokens: 34901
-      cache_read_tokens: 127663
-judge:
-    - engine: claude
-      model: sonnet
-      effort: medium
-      start: 2026-10-24T07:46:41Z
-      end: 2026-10-24T09:47:00.613031545+02:00
-      wall_seconds: 19.613031545
-      tokens_known: true
-      fresh_tokens: 37516
-      cache_read_tokens: 152735
+      fresh_tokens: 37898
+      cache_read_tokens: 164936

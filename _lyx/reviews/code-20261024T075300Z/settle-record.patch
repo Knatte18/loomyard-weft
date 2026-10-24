@@ -1,0 +1,1190 @@
+diff --git a/contracts/specs/specs.go b/contracts/specs/specs.go
+index 0640daa25..e5cea2e27 100644
+--- a/contracts/specs/specs.go
++++ b/contracts/specs/specs.go
+@@ -38,6 +38,12 @@ var LoomDiscussionSpec []byte
+ //go:embed landing-fixer-report-spec.md
+ var LandingFixerReportSpec []byte
+ 
++// TwillLensReportSpec is the lens report format contract's shipped-default content.
++// Every lens review's writer saves each lens fork's report against its format.
++//
++//go:embed twill-lens-report-spec.md
++var TwillLensReportSpec []byte
++
+ // registryEntry pairs one spec's registered name with the embedded default bytes behind it.
+ type registryEntry struct {
+ 	name string
+@@ -53,6 +59,7 @@ var entries = []registryEntry{
+ 	{"loom-final-summary-spec", &LoomFinalSummarySpec},
+ 	{"loom-discussion-spec", &LoomDiscussionSpec},
+ 	{"landing-fixer-report-spec", &LandingFixerReportSpec},
++	{"twill-lens-report-spec", &TwillLensReportSpec},
+ }
+ 
+ // registry implements stencilstore.Registry over entries.
+diff --git a/contracts/specs/specs_test.go b/contracts/specs/specs_test.go
+index 767ef376f..092c1a024 100644
+--- a/contracts/specs/specs_test.go
++++ b/contracts/specs/specs_test.go
+@@ -19,7 +19,7 @@ func TestRegistry_NamesAndDefaults(t *testing.T) {
+ 
+ 	reg := Registry()
+ 
+-	want := []string{"loom-plan-spec", "loom-final-summary-spec", "loom-discussion-spec", "landing-fixer-report-spec"}
++	want := []string{"loom-plan-spec", "loom-final-summary-spec", "loom-discussion-spec", "landing-fixer-report-spec", "twill-lens-report-spec"}
+ 	got := reg.Names()
+ 	if len(got) != len(want) {
+ 		t.Fatalf("Registry().Names() = %v; want %v", got, want)
+@@ -57,6 +57,7 @@ func TestRegistry_RelPathPlacesBothUnderLoomFamily(t *testing.T) {
+ 		{"loom-final-summary-spec", "loom/loom-final-summary-spec.md"},
+ 		{"loom-discussion-spec", "loom/loom-discussion-spec.md"},
+ 		{"landing-fixer-report-spec", "landing/landing-fixer-report-spec.md"},
++		{"twill-lens-report-spec", "twill/twill-lens-report-spec.md"},
+ 	}
+ 	for _, tt := range tests {
+ 		t.Run(tt.name, func(t *testing.T) {
+diff --git a/contracts/specs/twill-lens-report-spec.md b/contracts/specs/twill-lens-report-spec.md
+new file mode 100644
+index 000000000..7d987bc38
+--- /dev/null
++++ b/contracts/specs/twill-lens-report-spec.md
+@@ -0,0 +1,35 @@
++# Lens report spec — what a lens review's writer saves of each lens fork's report
++
++> **Status: Contract — pinned.** This doc pins the format of a lens report: the file a lens review's writer saves one lens fork's final message in, so an audit of the lenses reads every report from the run records.
++
++## What it is
++
++A writer that reviews its work through lenses spawns one fork per lens, and each fork returns its report as its final message.
++Once the last fork has returned, and before it judges any finding, the writer saves each fork's report in a lens report of its own.
++Every lens fan does so: the Plan-Write and Discussion-Write writers' twill fans, Burler's reviewer fan and Burler's fixer self-check fan.
++
++## Where it is
++
++A lens report sits beside the record the writer records its lens review in, at the path its prompt names: the record's path with its extension replaced by `.lens-<lens>.md`, where `<lens>` is the lens's name.
++The record is the plan directory's `lens-review.md` for Plan-Write, the support log for Discussion-Write, the round's review file for Burler's reviewer and the round's fixer-report for Burler's fixer.
++`internal/lensreport` declares the name rule.
++
++## Format
++
++The file opens with a fenced `yaml` block of two keys:
++
++```yaml
++lens: <lens>
++outcome: reported
++```
++
++- `lens` is the lens's name, as the prompt's lens list gives it.
++- `outcome` is exactly `reported` when the fork returned a final message, or `no report` when it returned none.
++
++A blank line follows the block, and then the fork's final message, verbatim: never edited, merged with another lens's report, summarized or reformatted.
++A `no report` file ends at the block.
++
++## Readers
++
++No Go code parses a lens report.
++Its readers are audits and reviews of the lenses, which read it from the run records.
+diff --git a/contracts/stencils/burler/burler-cluster-fan.md b/contracts/stencils/burler/burler-cluster-fan.md
+index a3be2d82d..8f18c6a82 100644
+--- a/contracts/stencils/burler/burler-cluster-fan.md
++++ b/contracts/stencils/burler/burler-cluster-fan.md
+@@ -1,6 +1,6 @@
+ <!-- This is burler's fanned cluster-rules part: the spawn mechanics, the fork rules, the handler's holistic review and the consolidation rules the review step carries when the round names a fan.
+      internal/burlerengine's clusterRulesBlock (prompt.go) reads and fills it, and the result becomes the review step's cluster_rules marker value.
+-     It declares one required marker, {{.lens_list}}, the round's lenses as one bullet per lens in fan order. -->
++     It declares three required markers: {{.lens_list}}, the round's lenses as one bullet per lens in fan order, {{.lens_report_path}}, the path each fork's report is saved at, and {{.lens_report_spec_path}}, the deployed spec of that report's format. -->
+ This is a cluster round: after exploring the target fully, spawn ALL of the fork reviewers below in a SINGLE message via the Agent tool with `subagent_type: "fork"`, one per lens listed here — never pass a `name` (named forks silently lose inherited context).
+ 
+ Lenses for this round:
+@@ -19,5 +19,8 @@ While the forks run, YOU (the handler) do your own HOLISTIC review: what no lens
+ Then prepare the ground truths and the severity rubric you will judge every finding against.
+ Write nothing to the review file while any fork is outstanding, whatever an early report says: consolidate only once the last fork has returned, with every finding in view.
+ 
++Once the last fork has returned, and before you consolidate, save each fork's final message verbatim to `{{.lens_report_path}}`, with its lens name for `<lens>`, in the format `{{.lens_report_spec_path}}` defines; a fork that returned no report gets its file too.
++These lens reports are part of your write surface, beside the review file, and are the one exception to the "nothing else" and "no other file" of the write-surface rules in your prompt.
++
+ Consolidation: judge every fork finding and your own holistic findings with EQUAL skepticism, dedup findings that describe the same defect across lenses, tag every kept finding's frontmatter with an `origin:` key (`lens:<name>` or `handler`), move false positives to a `## Rejected` prose section below the frontmatter with a one-line reason each (a rejected item never appears in `findings:`), and order kept findings by severity.
+ The consolidated review is the ONE review file, and the review is complete once it is fully written to disk — consolidation is part of the review, not a separate step after it.
+diff --git a/contracts/stencils/burler/burler-fix-self-check.md b/contracts/stencils/burler/burler-fix-self-check.md
+index f916db039..2656c1ebf 100644
+--- a/contracts/stencils/burler/burler-fix-self-check.md
++++ b/contracts/stencils/burler/burler-fix-self-check.md
+@@ -1,6 +1,6 @@
+ <!-- This is burler's fix self-check part: the procedure by which a twill fixer has read-only forks check its own change set before it writes the fixer-report.
+      internal/burlerengine's selfCheckBlock (prompt.go) reads and fills it, and composeFixPrompt injects it as burler-step-fix's optional self_check marker value in a round whose profile names a fixer fan.
+-     It declares two required markers, {{.rubric_path}} and {{.lens_list}}: the deployed fix-check rubric's path, and the fixer fan's lenses as one bullet per lens in fan order. -->
++     It declares four required markers, {{.rubric_path}}, {{.lens_list}}, {{.lens_report_path}} and {{.lens_report_spec_path}}: the deployed fix-check rubric's path, the fixer fan's lenses as one bullet per lens in fan order, the path each fork's report is saved at, and the deployed spec of that report's format. -->
+ ## Self-check of your fix by forks (BLOCKING — after every fix, before the fixer-report)
+ 
+ Once every finding has its disposition and every change is made, and before you write the fixer-report, run this procedure once.
+@@ -11,6 +11,8 @@ It checks the change set you just made, which no later step of this round review
+    Each fork's prompt is the fork boilerplate below plus its lens text and nothing else: no hint at what you think is wrong, no direction to read code.
+ 3. Wait for every fork to return; ending your turn while forks are outstanding is allowed.
+    Edit nothing while any fork is outstanding, whatever an early report says: start judging only once the last fork has returned, judge all findings together, and only then edit.
++   Once the last fork has returned, and before you judge, save each fork's final message verbatim to `{{.lens_report_path}}`, with its lens name for `<lens>`, in the format `{{.lens_report_spec_path}}` defines; a fork that returned no report gets its file too.
++   These lens reports are part of your write surface, beside the fixer-report.
+ 4. Judge every fork finding: merge duplicates across lenses, then weigh each finding twice, its premise and the change it proposes, and give it one of the three dispositions of the Fix-everything rule above, decided in that order.
+    Severity decides how a finding is reported, not whether it is weighed.
+    A change you make here obeys the same write surface and git discipline as every other fix of this round.
+@@ -18,7 +20,7 @@ It checks the change set you just made, which no later step of this round review
+    Name a fork that returned no report.
+ 
+ One fork pass per fixer session: a fixer that has already made its spawn call (step 2) spawns no further forks.
+-That holds when your gate re-prompts you and when you are resumed after your forks were lost: spawn nothing, judge the findings you hold, and name each lost fork as "no report".
++That holds when your gate re-prompts you and when you are resumed after your forks were lost: spawn nothing, save the reports you hold and a `no report` file for each lost fork, judge the findings you hold, and name each lost fork as "no report".
+ 
+ Lenses:
+ 
+diff --git a/contracts/stencils/markers_test.go b/contracts/stencils/markers_test.go
+index 28fb38790..1292c7e1e 100644
+--- a/contracts/stencils/markers_test.go
++++ b/contracts/stencils/markers_test.go
+@@ -26,14 +26,14 @@ func TestStencils_TopLevelMarkers(t *testing.T) {
+ 		{"burler-focus-directive", BurlerFocusDirective, []string{"focus_path"}},
+ 		{"burler-fork-reading", BurlerForkReading, nil},
+ 		{"burler-cluster-solo", BurlerClusterSolo, nil},
+-		{"burler-cluster-fan", BurlerClusterFan, []string{"lens_list"}},
+-		{"burler-fix-self-check", BurlerFixSelfCheck, []string{"lens_list", "rubric_path"}},
++		{"burler-cluster-fan", BurlerClusterFan, []string{"lens_list", "lens_report_path", "lens_report_spec_path"}},
++		{"burler-fix-self-check", BurlerFixSelfCheck, []string{"lens_list", "lens_report_path", "lens_report_spec_path", "rubric_path"}},
+ 		{"burler-fix-check-rubric", BurlerFixCheckRubric, nil},
+ 		{"loom-template-prior-plan", LoomTemplatePriorPlan, []string{"archive_dir", "moved_files"}},
+ 		{"orch-template-role", OrchTemplateRole, []string{"command_index", "decision_note_title", "hub_rules", "orch_rules"}},
+ 		{"seat-directive-chair", SeatDirectiveChair, []string{"advisor_names", "inputs", "output_files"}},
+ 		{"seat-directive-advisor", SeatDirectiveAdvisor, []string{"chair_name", "output_files", "seat_name"}},
+-		{"twill-directive", TwillDirective, []string{"final_self_check_command", "judge_steps", "lens_list", "relaunch_rules", "reviewed_files", "rubric_path", "severity_rule", "spawn_point", "writer_fork"}},
++		{"twill-directive", TwillDirective, []string{"final_self_check_command", "judge_steps", "lens_list", "lens_report_path", "lens_report_spec_path", "relaunch_rules", "reviewed_files", "rubric_path", "severity_rule", "spawn_point", "writer_fork"}},
+ 		{"twill-judge-critical", TwillJudgeCritical, []string{"disposition_place", "dispute_evidence", "governing_input"}},
+ 		{"twill-judge-plain", TwillJudgePlain, []string{"disposition_place", "rejection_rule"}},
+ 		{"twill-writer-fork", TwillWriterFork, []string{"disposition_place", "explore_step", "files_dir", "format_step", "input_record", "last_file", "reviewed_files", "self_check_command", "self_check_step"}},
+diff --git a/contracts/stencils/twill/twill-directive.md b/contracts/stencils/twill/twill-directive.md
+index b28a2ba87..c16558b51 100644
+--- a/contracts/stencils/twill/twill-directive.md
++++ b/contracts/stencils/twill/twill-directive.md
+@@ -1,7 +1,7 @@
+ <!-- This is the twill directive: the host-neutral block that has a writer review its own finished record through lenses, one fork per lens, before it ends.
+      internal/twilldirective renders it, and the spawning module hands that renderer every host value, so this block names no file, step, verb or section of any one host.
+      It declares these required markers:
+-     {{.reviewed_files}}, {{.rubric_path}}, {{.lens_list}}, {{.final_self_check_command}}, {{.spawn_point}}, {{.severity_rule}} and {{.judge_steps}}.
++     {{.reviewed_files}}, {{.rubric_path}}, {{.lens_list}}, {{.final_self_check_command}}, {{.spawn_point}}, {{.severity_rule}}, {{.lens_report_path}}, {{.lens_report_spec_path}} and {{.judge_steps}}.
+      {{.judge_steps}} is filled by Directive with one of the two judge part stencils.
+      It also names two optional markers, {{.writer_fork}} and {{.relaunch_rules}}, each filled by Directive with one part stencil and left empty otherwise. -->
+ 
+@@ -14,6 +14,7 @@
+    Each fork's prompt is the fork boilerplate below plus its lens text and nothing else: no design hint, no direction to read code.
+ 3. Wait for every fork to return; ending your turn while forks are outstanding is allowed.
+    Edit nothing while any fork is outstanding, whatever an early report says: start judging only once the last fork has returned, judge all findings together, and only then edit.
++   Once the last fork has returned, and before you judge, save each fork's final message verbatim to `{{.lens_report_path}}`, with its lens name for `<lens>`, in the format `{{.lens_report_spec_path}}` defines; a fork that returned no report gets its file too.
+ {{.judge_steps}}
+ 6. Run `{{.final_self_check_command}}` again until it passes, then end your turn.
+ 
+diff --git a/contracts/stencils/twill/twill-relaunch.md b/contracts/stencils/twill/twill-relaunch.md
+index 24a1468de..a1b23aec3 100644
+--- a/contracts/stencils/twill/twill-relaunch.md
++++ b/contracts/stencils/twill/twill-relaunch.md
+@@ -8,5 +8,5 @@ On its next turn it reads back every reviewed file it did not write in this sess
+ It then finishes writing {{.relaunch_files}} per `{{.format_step}}`, runs `{{.self_check_command}}` per `{{.self_check_step}}` until it passes, and then runs this procedure from its first step.
+ 
+ A writer relaunched after its process died at or after its Agent call has lost every fork it spawned, and never spawns again.
+-On its next turn it resumes at the first of the steps from judging the findings onward that it had not finished, with the findings it already holds.
++On its next turn it resumes at the first of the steps from saving the fork reports onward that it had not finished, with the reports it already holds.
+ It records at `{{.disposition_place}}` that the lens review was cut short, naming each fork that had not returned as "no report".
+diff --git a/contracts/stencils/twill/twill-writer-fork.md b/contracts/stencils/twill/twill-writer-fork.md
+index 432d2620d..f50f21573 100644
+--- a/contracts/stencils/twill/twill-writer-fork.md
++++ b/contracts/stencils/twill/twill-writer-fork.md
+@@ -29,6 +29,6 @@ This session spawns fork0 at most once and the lens forks at most once: a fresh
+ - A session resumed in the same conversation before the fork0 call: go on from the first step not finished, fork0 included.
+ - A session resumed while the fork0 call was in flight has lost fork0, and no second one is spawned: read every file in {{.files_dir}} in full, complete the files yourself as in the first rule, then run the lens review once.
+ - A session resumed after fork0 returned and before the lens spawn call: spawn no second fork0, finish step d if unfinished, then run the lens review once.
+-- A session resumed at or after the lens spawn call has lost every lens fork, and none is spawned again: resume at the first of the lens review's steps from judging the findings onward that you had not finished, with the findings already held, and record at {{.disposition_place}} that the lens review was cut short, naming each fork that had not returned as "no report".
++- A session resumed at or after the lens spawn call has lost every lens fork, and none is spawned again: resume at the first of the lens review's steps from saving the fork reports onward that you had not finished, with the reports already held, and record at {{.disposition_place}} that the lens review was cut short, naming each fork that had not returned as "no report".
+ - A session that ended after {{.last_file}} existed: the run counts as finished; while the session is live the gate re-prompts it on a missing lens review or its findings, and once it is not, the gate is evaluated once over the files as they stand, so a run with no recorded lens review fails; a later resume takes the matching resumed rule.
+ - A re-prompted writer spawns no fork0 and does step d first if it has not, then follows the re-prompt rule below.
+diff --git a/docs/overview.md b/docs/overview.md
+index 4e102c6dc..e7a633bd7 100644
+--- a/docs/overview.md
++++ b/docs/overview.md
+@@ -575,6 +575,7 @@ User-facing modules each get one `lyx <module>` namespace:
+   The row keeps its name, gates and routing whatever the two keys hold.
+   The Planner producer, the same way (`contracts/stencils/loom/loom-template-plan.md`), composed by `internal/loomengine`'s `prompt.go` + `plan.go`.
+   With `plan_lenses` naming a `lenses.yaml` fan, the plan writer explores, has one fork (fork0) write and self-check the plan, reads the plan in full and self-checks it, forks itself once per lens of that fan, judges each finding as a critical fixer, and records each disposition in `lens-review.md`.
++  Every lens fan's writer, this one, the Discussion-Write lead's and Burler's reviewer and fixer alike, saves each fork's final message verbatim in a lens report beside the file its lens review is recorded in, `<record stem>.lens-<lens>.md`, in the format `contracts/specs/twill-lens-report-spec.md` pins, so an audit reads every report from the run records.
+   It runs `validate-plan --lens-review` as its last self-check, and its gate refuses Done until `lens-review.md` holds the lens review.
+   The row keeps its name, `gates` key and routing while a fork-authorized run's plan gate also requires the lens review.
+   Plan has no advisor key.
+diff --git a/internal/burlerengine/doc.go b/internal/burlerengine/doc.go
+index 4c8418415..59ee5a6f5 100644
+--- a/internal/burlerengine/doc.go
++++ b/internal/burlerengine/doc.go
+@@ -79,7 +79,7 @@
+ // Profile.FixFan names a fan from the lenses.yaml lens/fan library, and validateFix resolves it into the fixer's lenses before any spawn, so an unknown fixer fan fails the half.
+ // A profile with no FixFan is the single fixer, whose files render the same bytes as before the fan existed.
+ // With a fan, the fixer is spawned with fork subagents authorized and its fix step renders the burler-fix-self-check part before the fixer-report rule:
+-// before it writes the fixer-report, the fixer reads the deployed burler-fix-check-rubric stencil and spawns one read-only fork per lens over the change set it just made, then, editing nothing until the last fork has returned, judges all fork findings together by the fix step's own three dispositions and records them in a `## Self-check` section of the fixer-report.
++// before it writes the fixer-report, the fixer reads the deployed burler-fix-check-rubric stencil and spawns one read-only fork per lens over the change set it just made, then, editing nothing until the last fork has returned, saves each fork's final message verbatim in a lens report beside the fixer-report, judges all fork findings together by the fix step's own three dispositions and records them in a `## Self-check` section of the fixer-report.
+ // One fork pass per fixer session: a fixer re-prompted by its gate, or resumed after its forks were lost, spawns no further forks and names each lost fork as "no report".
+ // A forking fixer still carries its row's gates, because a turn end with a fork outstanding is a wait, so no gate runs while a fork is live.
+ //
+@@ -271,7 +271,8 @@
+ // A cluster round still runs its review as ONE shuttle session, the handler, in three phases.
+ // (1) the handler explores the target in full;
+ // (2) the handler spawns all N lens forks in a SINGLE message via Claude Code's built-in fork subagents (Agent tool, subagent_type "fork", always unnamed), and, while they run, performs its own HOLISTIC review — architecture, cross-file invariants, PATTERN-fit — the level no narrow lens covers;
+-// (3) once the last fork has returned, and never before, the handler consolidates every fork's returned findings together with its own holistic findings into the ONE review file:
++// (3) once the last fork has returned, and never before, the handler saves each fork's final message verbatim in a lens report beside the review file, named by internal/lensreport and written in the format of the twill-lens-report-spec spec under Geometry.SpecsDir;
++// it then consolidates every fork's returned findings together with its own holistic findings into the ONE review file:
+ // dedup across lenses, an origin: frontmatter key on every kept finding (lens:<name> or handler), a ## Rejected prose section for false positives (judged with equal skepticism, never appearing in the parsed findings), and severity ordering.
+ // All three phases are part of the review, so review-before-fix is intact exactly as in a solo round:
+ // the consolidated review is fully written to disk, and accepted, before the fix half spawns.
+diff --git a/internal/burlerengine/fix.go b/internal/burlerengine/fix.go
+index b11dac683..05272c331 100644
+--- a/internal/burlerengine/fix.go
++++ b/internal/burlerengine/fix.go
+@@ -154,7 +154,7 @@ func (e *Engine) Fix(p Profile, opts RunOpts, digest string) (FixResult, error)
+ 			return FixResult{}, fmt.Errorf("burler: materialize instruction files: %w", err)
+ 		}
+ 	}
+-	prompt, err := composeFixPrompt(e.stencilsDir, &p, frictionDirective, fixWork(p.ReviewPath, gateFindingsPath, routed > 0), paths)
++	prompt, err := composeFixPrompt(e.stencilsDir, e.geom.SpecsDir, &p, frictionDirective, fixWork(p.ReviewPath, gateFindingsPath, routed > 0), paths)
+ 	if err != nil {
+ 		return FixResult{}, err
+ 	}
+diff --git a/internal/burlerengine/fix_test.go b/internal/burlerengine/fix_test.go
+index d96dd1d0c..a9ad3b72f 100644
+--- a/internal/burlerengine/fix_test.go
++++ b/internal/burlerengine/fix_test.go
+@@ -16,6 +16,7 @@ import (
+ 
+ 	"github.com/Knatte18/loomyard/contracts/stencils"
+ 	"github.com/Knatte18/loomyard/internal/friction"
++	"github.com/Knatte18/loomyard/internal/lensreport"
+ 	"github.com/Knatte18/loomyard/internal/seatengine"
+ 	"github.com/Knatte18/loomyard/internal/segmentcolor"
+ 	"github.com/Knatte18/loomyard/internal/shuttleengine"
+@@ -119,7 +120,8 @@ func checkFixTableShapeAndFiles(t *testing.T, twill bool) {
+ 	}
+ 	shuttle := &fakeShuttle{fix: halfScript{result: shuttleengine.Result{Outcome: shuttleengine.OutcomeDone}, writes: "nothing fixed"}}
+ 	stencilsDir := newTestStencilsDir(t)
+-	e := New(shuttle, Geometry{WorktreeRoot: root, AnchorPath: root, Shortname: "tst", Slug: "slug"}, cfg, stencilsDir, "", []string{"scribe:golang-testing"})
++	specsDir := filepath.Join(root, "specs")
++	e := New(shuttle, Geometry{WorktreeRoot: root, AnchorPath: root, Shortname: "tst", Slug: "slug", SpecsDir: specsDir}, cfg, stencilsDir, "", []string{"scribe:golang-testing"})
+ 
+ 	var gateCalls int
+ 	opts := RunOpts{
+@@ -207,6 +209,9 @@ func checkFixTableShapeAndFiles(t *testing.T, twill bool) {
+ 			t.Errorf("twill fix step equals the single render; want the self-check part in it")
+ 		}
+ 		requireContains(t, fixStep, stencilstore.Path(stencilsDir, "burler-fix-check-rubric"))
++		requireContains(t, fixStep, "verbatim to `"+lensreport.PathPattern(filepath.Join(root, "fixer-report.md"))+"`")
++		requireContains(t, fixStep, "`"+stencilstore.Path(specsDir, lensreport.SpecName)+"` defines")
++		requireContains(t, findLineContaining(fixStep, "Write surface"), "and the self-check's lens reports")
+ 		styleIdx, securityIdx := strings.Index(fixStep, "- style: style prose"), strings.Index(fixStep, "- security: security prose")
+ 		if styleIdx == -1 || securityIdx == -1 || styleIdx >= securityIdx {
+ 			t.Errorf("fix step lens bullets at idx style=%d security=%d; want both present, style first", styleIdx, securityIdx)
+diff --git a/internal/burlerengine/geometry.go b/internal/burlerengine/geometry.go
+index 5d4be5025..1a368c45a 100644
+--- a/internal/burlerengine/geometry.go
++++ b/internal/burlerengine/geometry.go
+@@ -33,4 +33,6 @@ type Geometry struct {
+ 	// PatternRecordPath is the decision record whose declared PATTERN changes the review round's directive renders.
+ 	// An empty path renders none.
+ 	PatternRecordPath string
++	// SpecsDir is the deployed-specs directory a fanned half's prompt points at for the lens report format.
++	SpecsDir string
+ }
+diff --git a/internal/burlerengine/prompt.go b/internal/burlerengine/prompt.go
+index 8bd15a8fa..3451030ec 100644
+--- a/internal/burlerengine/prompt.go
++++ b/internal/burlerengine/prompt.go
+@@ -18,6 +18,7 @@ import (
+ 
+ 	"github.com/Knatte18/loomyard/internal/friction"
+ 	"github.com/Knatte18/loomyard/internal/lenses"
++	"github.com/Knatte18/loomyard/internal/lensreport"
+ 	"github.com/Knatte18/loomyard/internal/logger"
+ 	"github.com/Knatte18/loomyard/internal/stencil"
+ 	"github.com/Knatte18/loomyard/internal/stencilstore"
+@@ -99,8 +100,9 @@ func renderReviewFormat(stencilsDir string) (string, error) {
+ 
+ // composeReviewPrompt builds the review half's prompt for p: the explore step, the review step and the review-file format.
+ // patternDirective is the caller-resolved PATTERN directive for the explore step.
++// specsDir holds the deployed lens report spec a fanned round's reviewer saves its fork reports in the format of.
+ // The reviewer's files hold no fixer-side text; p is assumed already validated by validateReview.
+-func composeReviewPrompt(stencilsDir string, p *Profile, patternDirective string, paths reviewFilePaths) (halfPrompt, error) {
++func composeReviewPrompt(stencilsDir, specsDir string, p *Profile, patternDirective string, paths reviewFilePaths) (halfPrompt, error) {
+ 	exploreTemplate, err := stencilstore.Read(stencilsDir, "burler-step-1-explore")
+ 	if err != nil {
+ 		return halfPrompt{}, err
+@@ -131,7 +133,7 @@ func composeReviewPrompt(stencilsDir string, p *Profile, patternDirective string
+ 	if err != nil {
+ 		return halfPrompt{}, err
+ 	}
+-	clusterRules, err := clusterRulesBlock(stencilsDir, p)
++	clusterRules, err := clusterRulesBlock(stencilsDir, specsDir, p)
+ 	if err != nil {
+ 		return halfPrompt{}, err
+ 	}
+@@ -161,14 +163,15 @@ func composeReviewPrompt(stencilsDir string, p *Profile, patternDirective string
+ 
+ // composeFixPrompt builds the fix half's prompt for p: the review-file format and the fix step.
+ // frictionDirective is the caller-resolved Tier 2 note directive, empty when Tier 2 is off, and work is the fix step's statement of what to fix (see fixWork).
++// specsDir holds the deployed lens report spec a fixer fan's fixer saves its fork reports in the format of.
+ // The fixer's files hold no rubric, fasit, PATTERN directive, focus file, prior rounds or explore step; p is assumed already validated by validateFix.
+-func composeFixPrompt(stencilsDir string, p *Profile, frictionDirective, work string, paths fixFilePaths) (halfPrompt, error) {
++func composeFixPrompt(stencilsDir, specsDir string, p *Profile, frictionDirective, work string, paths fixFilePaths) (halfPrompt, error) {
+ 	fixTemplate, err := stencilstore.Read(stencilsDir, "burler-step-fix")
+ 	if err != nil {
+ 		return halfPrompt{}, err
+ 	}
+ 	friction.WarnIfMarkerAbsent(fixTemplate, "burler-step-fix", frictionDirective)
+-	selfCheck, err := selfCheckBlock(stencilsDir, p)
++	selfCheck, err := selfCheckBlock(stencilsDir, specsDir, p)
+ 	if err != nil {
+ 		return halfPrompt{}, err
+ 	}
+@@ -294,11 +297,15 @@ func fixScopeRules(p *Profile) string {
+ 			"Commit message format: `<module-or-target>: fix <finding-id> — <one-line " +
+ 			"what/why>`. Never push."
+ 	case FixScopeOverlay:
++		var lensReports string
++		if p.FixFan != "" {
++			lensReports = " and the self-check's lens reports"
++		}
+ 		return fmt.Sprintf(
+-			"Write surface: exactly the target paths%s plus the fixer-report (`%s`) — "+
++			"Write surface: exactly the target paths%s plus the fixer-report (`%s`)%s — "+
+ 				"nothing else — and you run no git commands at all; the loop owner commits "+
+ 				"these files at the round boundary.",
+-			namedTargetPaths(p.Target.Paths), p.FixerReportPath)
++			namedTargetPaths(p.Target.Paths), p.FixerReportPath, lensReports)
+ 	default:
+ 		// validateReview rejects every other value before composeReviewPrompt is ever
+ 		// called; this branch is unreachable in practice and exists only so
+@@ -361,13 +368,17 @@ func priorRoundsBlock(p *Profile) string {
+ }
+ 
+ // clusterRulesBlock renders the review step's cluster-rules value from the cluster stencils:
+-// the solo part's body when p carries no ClusterFan, or the fanned part filled with p's lens list when it does.
++// the solo part's body when p carries no ClusterFan, or the fanned part filled with p's lens list, the lens report path beside p's review and the lens report spec under specsDir when it does.
+ // The value carries no trailing newline, since the review step's marker sits on a line of its own.
+ // p.clusterLenses is assumed already resolved by (*Profile).validateReview — composeReviewPrompt never calls lenses.ResolveFan itself.
+-func clusterRulesBlock(stencilsDir string, p *Profile) (string, error) {
++func clusterRulesBlock(stencilsDir, specsDir string, p *Profile) (string, error) {
+ 	name, values := "burler-cluster-solo", map[string]string(nil)
+ 	if p.ClusterFan != "" {
+-		name, values = "burler-cluster-fan", map[string]string{"lens_list": lensList(p.clusterLenses)}
++		name, values = "burler-cluster-fan", map[string]string{
++			"lens_list":             lensList(p.clusterLenses),
++			"lens_report_path":      lensreport.PathPattern(p.ReviewPath),
++			"lens_report_spec_path": stencilstore.Path(specsDir, lensreport.SpecName),
++		}
+ 	}
+ 	template, err := stencilstore.Read(stencilsDir, name)
+ 	if err != nil {
+@@ -400,10 +411,10 @@ func forkReadingBlock(stencilsDir string, p *Profile) (string, error) {
+ 
+ // selfCheckBlock renders the fix self-check stencil for the fix step's optional self_check marker.
+ // A profile with no FixFan returns "" without reading anything.
+-// Otherwise the part is filled with the path of the deployed fix-check rubric and p's fixer lenses;
++// Otherwise the part is filled with the path of the deployed fix-check rubric, p's fixer lenses, the lens report path beside p's fixer-report and the lens report spec under specsDir;
+ // it ends in a blank line, which the fix step relies on to set off the heading that follows its marker.
+ // p.fixLenses is assumed already resolved by (*Profile).validateFix.
+-func selfCheckBlock(stencilsDir string, p *Profile) (string, error) {
++func selfCheckBlock(stencilsDir, specsDir string, p *Profile) (string, error) {
+ 	if p.FixFan == "" {
+ 		return "", nil
+ 	}
+@@ -412,8 +423,10 @@ func selfCheckBlock(stencilsDir string, p *Profile) (string, error) {
+ 		return "", err
+ 	}
+ 	block, err := stencil.Fill(template, map[string]string{
+-		"rubric_path": stencilstore.Path(stencilsDir, "burler-fix-check-rubric"),
+-		"lens_list":   lensList(p.fixLenses),
++		"rubric_path":           stencilstore.Path(stencilsDir, "burler-fix-check-rubric"),
++		"lens_list":             lensList(p.fixLenses),
++		"lens_report_path":      lensreport.PathPattern(p.FixerReportPath),
++		"lens_report_spec_path": stencilstore.Path(specsDir, lensreport.SpecName),
+ 	})
+ 	if err != nil {
+ 		return "", fmt.Errorf("burler: compose prompt: %w", err)
+diff --git a/internal/burlerengine/prompt_test.go b/internal/burlerengine/prompt_test.go
+index 67a6a1ffb..cbf621c3d 100644
+--- a/internal/burlerengine/prompt_test.go
++++ b/internal/burlerengine/prompt_test.go
+@@ -15,6 +15,7 @@ import (
+ 
+ 	"github.com/Knatte18/loomyard/contracts/stencils"
+ 	"github.com/Knatte18/loomyard/internal/lenses"
++	"github.com/Knatte18/loomyard/internal/lensreport"
+ 	"github.com/Knatte18/loomyard/internal/logger"
+ 	"github.com/Knatte18/loomyard/internal/seatengine"
+ 	"github.com/Knatte18/loomyard/internal/stencil"
+@@ -34,6 +35,9 @@ var (
+ 	testFixFiles    = fixFilesIn("/tmp/fix-half")
+ )
+ 
++// testSpecsDir is the placeholder deployed-specs directory every compose call in this file passes; the compose functions only render paths under it.
++const testSpecsDir = "/tmp/specs"
++
+ // The positions of the rendered instruction files in a halfPrompt's Files.
+ const (
+ 	reviewExploreFile = iota
+@@ -81,7 +85,7 @@ func newComposableProfile(t *testing.T) Profile {
+ // composeReview composes p's review half prompt over the placeholder paths, failing the test on error.
+ func composeReview(t *testing.T, stencilsDir string, p *Profile, patternDirective string) halfPrompt {
+ 	t.Helper()
+-	prompt, err := composeReviewPrompt(stencilsDir, p, patternDirective, testReviewFiles)
++	prompt, err := composeReviewPrompt(stencilsDir, testSpecsDir, p, patternDirective, testReviewFiles)
+ 	if err != nil {
+ 		t.Fatalf("composeReviewPrompt() = %v; want nil error", err)
+ 	}
+@@ -91,7 +95,7 @@ func composeReview(t *testing.T, stencilsDir string, p *Profile, patternDirectiv
+ // composeFix composes p's fix half prompt over the placeholder paths and a review's findings as the work, failing the test on error.
+ func composeFix(t *testing.T, stencilsDir string, p *Profile, frictionDirective string) halfPrompt {
+ 	t.Helper()
+-	prompt, err := composeFixPrompt(stencilsDir, p, frictionDirective, fixWork(p.ReviewPath, "", false), testFixFiles)
++	prompt, err := composeFixPrompt(stencilsDir, testSpecsDir, p, frictionDirective, fixWork(p.ReviewPath, "", false), testFixFiles)
+ 	if err != nil {
+ 		t.Fatalf("composeFixPrompt() = %v; want nil error", err)
+ 	}
+@@ -444,7 +448,7 @@ func TestComposePrompt_ClusterRules(t *testing.T) {
+ 			t.Fatalf("Remove(burler-cluster-fan) = %v; want nil", err)
+ 		}
+ 
+-		if _, err := composeReviewPrompt(stencilsDir, &p, "", testReviewFiles); err == nil || !strings.Contains(err.Error(), "burler-cluster-fan") {
++		if _, err := composeReviewPrompt(stencilsDir, testSpecsDir, &p, "", testReviewFiles); err == nil || !strings.Contains(err.Error(), "burler-cluster-fan") {
+ 			t.Errorf("composeReviewPrompt() error = %v; want the read error naming burler-cluster-fan", err)
+ 		}
+ 	})
+@@ -479,6 +483,10 @@ func TestComposePrompt_ClusterRules(t *testing.T) {
+ 			t.Errorf("review step lens bullets at idx style=%d security=%d; want both present, style first", styleIdx, securityIdx)
+ 		}
+ 
++		// The handler saves each fork's report beside the round's review, in the deployed spec's format.
++		requireContains(t, reviewStep, "verbatim to `"+lensreport.PathPattern(p.ReviewPath)+"`")
++		requireContains(t, reviewStep, "`"+stencilstore.Path(testSpecsDir, lensreport.SpecName)+"` defines")
++
+ 		// Each block helper's rendered content lands in its intended instruction file and nowhere else: fix_scope_rules is the fix step's alone, cluster_rules (the lens names) is the review step's alone, and pattern_directive/target is the explore step's alone.
+ 		requireContains(t, fixStep, "Write surface")
+ 		requireNotContains(t, explore, "Write surface")
+diff --git a/internal/burlerengine/review.go b/internal/burlerengine/review.go
+index 2c1c4b010..a649c3296 100644
+--- a/internal/burlerengine/review.go
++++ b/internal/burlerengine/review.go
+@@ -96,7 +96,7 @@ func (e *Engine) Review(p Profile, opts RunOpts) (ReviewResult, error) {
+ 	if err != nil {
+ 		return ReviewResult{}, err
+ 	}
+-	prompt, err := composeReviewPrompt(e.stencilsDir, &p, directive, reviewFilesIn(dir))
++	prompt, err := composeReviewPrompt(e.stencilsDir, e.geom.SpecsDir, &p, directive, reviewFilesIn(dir))
+ 	if err != nil {
+ 		return ReviewResult{}, err
+ 	}
+diff --git a/internal/burlerengine/review_test.go b/internal/burlerengine/review_test.go
+index 5c9f2ee2d..222f03b88 100644
+--- a/internal/burlerengine/review_test.go
++++ b/internal/burlerengine/review_test.go
+@@ -14,8 +14,10 @@ import (
+ 	"testing"
+ 	"time"
+ 
++	"github.com/Knatte18/loomyard/internal/lensreport"
+ 	"github.com/Knatte18/loomyard/internal/segmentcolor"
+ 	"github.com/Knatte18/loomyard/internal/shuttleengine"
++	"github.com/Knatte18/loomyard/internal/stencilstore"
+ )
+ 
+ // doneReview scripts a review half whose reviewer writes review and is done.
+@@ -98,7 +100,8 @@ func TestEngine_Review_TableShape(t *testing.T) {
+ 			p.LanguageSkills = tt.codeRound
+ 			p.RolePrefix = tt.rolePrefix
+ 			shuttle := doneReview(approvedReview)
+-			geom := Geometry{WorktreeRoot: root, AnchorPath: root, Shortname: "tst", Slug: "slug"}
++			specsDir := filepath.Join(root, "specs")
++			geom := Geometry{WorktreeRoot: root, AnchorPath: root, Shortname: "tst", Slug: "slug", SpecsDir: specsDir}
+ 			if tt.declaredBullet != "" {
+ 				geom.RepoRoot = root
+ 				geom.PatternRecordPath = writeDeclaredPatternRecord(t, root, tt.declaredBullet)
+@@ -108,7 +111,7 @@ func TestEngine_Review_TableShape(t *testing.T) {
+ 			// A cluster reviewer with no fork audit is refused after the spawn; the spec is what this test reads.
+ 			_, _ = e.Review(p, opts)
+ 
+-			if tt.declaredBullet != "" {
++			if tt.declaredBullet != "" || tt.clusterFan != "" {
+ 				instructions, err := filepath.Glob(filepath.Join(root, ".lyx", "burler", "review-*", "*"))
+ 				if err != nil || len(instructions) == 0 {
+ 					t.Fatalf("Glob(review instruction files) = %v, %v; want the composed files", instructions, err)
+@@ -121,9 +124,13 @@ func TestEngine_Review_TableShape(t *testing.T) {
+ 					}
+ 					all.Write(data)
+ 				}
+-				if !strings.Contains(all.String(), tt.declaredBullet) {
++				if tt.declaredBullet != "" && !strings.Contains(all.String(), tt.declaredBullet) {
+ 					t.Errorf("review instruction files lack the declared bullet %q", tt.declaredBullet)
+ 				}
++				// A fanned review names the deployed lens-report spec under the geometry's SpecsDir.
++				if wantSpec := stencilstore.Path(specsDir, lensreport.SpecName); tt.clusterFan != "" && !strings.Contains(all.String(), wantSpec) {
++					t.Errorf("review instruction files lack the lens-report spec path %q", wantSpec)
++				}
+ 			}
+ 
+ 			if want := []string{tt.wantRole}; !slices.Equal(shuttle.started, want) {
+diff --git a/internal/hubgeom/hubgeom.go b/internal/hubgeom/hubgeom.go
+index 03e37abe8..69700c167 100644
+--- a/internal/hubgeom/hubgeom.go
++++ b/internal/hubgeom/hubgeom.go
+@@ -138,5 +138,6 @@ func burlerGeometry(l *lyxcwd.Location, prime bool) burlerengine.Geometry {
+ 		ParentName:   parentNameOrEmpty(l, "burler prompts"),
+ 		Shortname:    shortname,
+ 		Slug:         slug,
++		SpecsDir:     fabricengine.SpecsDir(l.HubPath),
+ 	}
+ }
+diff --git a/internal/hubgeom/hubgeom_test.go b/internal/hubgeom/hubgeom_test.go
+index b3fa97eb2..5b145f558 100644
+--- a/internal/hubgeom/hubgeom_test.go
++++ b/internal/hubgeom/hubgeom_test.go
+@@ -161,6 +161,9 @@ func TestBurlerGeometry(t *testing.T) {
+ 	if got.RepoRoot != worktreeRoot {
+ 		t.Errorf("BurlerGeometry(l).RepoRoot = %q; want %q (l.WorktreePath(), not the anchor path)", got.RepoRoot, worktreeRoot)
+ 	}
++	if want := fabricengine.SpecsDir(hub); got.SpecsDir != want {
++		t.Errorf("BurlerGeometry(l).SpecsDir = %q; want %q", got.SpecsDir, want)
++	}
+ 	if got.WorktreeRoot == worktreeRoot {
+ 		// The subpath-anchored fixture must catch a later "simplification" that repoints BurlerGeometry's WorktreeRoot fill at l.WorktreePath(): the two only coincide when AnchorRel is ".", which this fixture deliberately is not.
+ 		t.Errorf("BurlerGeometry(l).WorktreeRoot = %q; want != WorktreeRoot %q", got.WorktreeRoot, worktreeRoot)
+diff --git a/internal/lensreport/doc.go b/internal/lensreport/doc.go
+new file mode 100644
+index 000000000..3097f72d3
+--- /dev/null
++++ b/internal/lensreport/doc.go
+@@ -0,0 +1,6 @@
++// Package lensreport names the files a lens review's writer saves each lens fork's report in, so an audit reads every report from the run records.
++// A report sits beside the record the writer records its lens review in, named from the record's stem: `<stem>.lens-<lens>.md`.
++// PathPattern renders that name for a prompt, and IsReportName tells a record's reports from the other files in its directory.
++// The writer session, not Go, writes each report, in the format the `twill-lens-report-spec` spec defines; SpecName names that spec.
++// It imports the standard library only, so every lens review host and every check of a record's directory can share the naming.
++package lensreport
+diff --git a/internal/lensreport/leaf_enforcement_test.go b/internal/lensreport/leaf_enforcement_test.go
+new file mode 100644
+index 000000000..c38c0e651
+--- /dev/null
++++ b/internal/lensreport/leaf_enforcement_test.go
+@@ -0,0 +1,13 @@
++// leaf_enforcement_test.go enforces that production code in internal/lensreport imports the standard library and nothing else.
++
++package lensreport_test
++
++import (
++	"testing"
++
++	"github.com/Knatte18/loomyard/internal/testkit/scankit"
++)
++
++func TestLeafInvariant_AllowlistOnly(t *testing.T) {
++	scankit.AssertImportAllowlist(t, "internal/lensreport")
++}
+diff --git a/internal/lensreport/lensreport.go b/internal/lensreport/lensreport.go
+new file mode 100644
+index 000000000..e811289c0
+--- /dev/null
++++ b/internal/lensreport/lensreport.go
+@@ -0,0 +1,42 @@
++// lensreport.go declares the lens report file name rule: PathPattern for a prompt, IsReportName for a directory check.
++
++package lensreport
++
++import (
++	"path/filepath"
++	"strings"
++)
++
++// SpecName is the registered name of the spec that defines a lens report's format.
++const SpecName = "twill-lens-report-spec"
++
++// lensPlaceholder is the text PathPattern puts where the lens name goes.
++const lensPlaceholder = "<lens>"
++
++// reportInfix joins a record's stem to the lens name in a report's file name.
++const reportInfix = ".lens-"
++
++// reportExt is every report's extension.
++const reportExt = ".md"
++
++// PathPattern returns the path a writer saves a lens fork's report at beside recordPath, with `<lens>` standing for the lens name.
++// The record's extension is dropped, so `x/lens-review.md` gives `x/lens-review.lens-<lens>.md`.
++func PathPattern(recordPath string) string {
++	return reportStem(recordPath) + reportInfix + lensPlaceholder + reportExt
++}
++
++// IsReportName reports whether name is the file name of a lens report beside a record whose file name is recordName.
++// Both are base names; a name with an empty lens is no report.
++func IsReportName(recordName, name string) bool {
++	lens, ok := strings.CutPrefix(name, reportStem(recordName)+reportInfix)
++	if !ok {
++		return false
++	}
++	lens, ok = strings.CutSuffix(lens, reportExt)
++	return ok && lens != ""
++}
++
++// reportStem returns path without its extension.
++func reportStem(path string) string {
++	return strings.TrimSuffix(path, filepath.Ext(path))
++}
+diff --git a/internal/lensreport/lensreport_test.go b/internal/lensreport/lensreport_test.go
+new file mode 100644
+index 000000000..73e0b87a9
+--- /dev/null
++++ b/internal/lensreport/lensreport_test.go
+@@ -0,0 +1,56 @@
++// lensreport_test.go pins the lens report path pattern and the report file name test.
++
++package lensreport_test
++
++import (
++	"path/filepath"
++	"testing"
++
++	"github.com/Knatte18/loomyard/internal/lensreport"
++)
++
++func TestPathPattern(t *testing.T) {
++	t.Parallel()
++	tests := []struct {
++		name   string
++		record string
++		want   string
++	}{
++		{"PlanLensReview", filepath.Join("a", "plan", "lens-review.md"), filepath.Join("a", "plan", "lens-review.lens-<lens>.md")},
++		{"BurlerRoundReview", filepath.Join("runs", "round-2-review.md"), filepath.Join("runs", "round-2-review.lens-<lens>.md")},
++		{"NoExtension", filepath.Join("a", "record"), filepath.Join("a", "record.lens-<lens>.md")},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			if got := lensreport.PathPattern(tt.record); got != tt.want {
++				t.Errorf("PathPattern(%q) = %q; want %q", tt.record, got, tt.want)
++			}
++		})
++	}
++}
++
++func TestIsReportName(t *testing.T) {
++	t.Parallel()
++	tests := []struct {
++		name   string
++		record string
++		file   string
++		want   bool
++	}{
++		{"ReportOfRecord", "lens-review.md", "lens-review.lens-pattern-fit.md", true},
++		{"RecordItself", "lens-review.md", "lens-review.md", false},
++		{"EmptyLens", "lens-review.md", "lens-review.lens-.md", false},
++		{"OtherExtension", "lens-review.md", "lens-review.lens-generic.txt", false},
++		{"OtherRecordsReport", "round-1-review.md", "round-1-fixer-report.lens-generic.md", false},
++		{"CardFile", "lens-review.md", "01-card.md", false},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			if got := lensreport.IsReportName(tt.record, tt.file); got != tt.want {
++				t.Errorf("IsReportName(%q, %q) = %v; want %v", tt.record, tt.file, got, tt.want)
++			}
++		})
++	}
++}
+diff --git a/internal/lensreport/testmain_test.go b/internal/lensreport/testmain_test.go
+new file mode 100644
+index 000000000..3cf2dae72
+--- /dev/null
++++ b/internal/lensreport/testmain_test.go
+@@ -0,0 +1,14 @@
++// testmain_test.go runs the package's tests under tmuxkit.Main, so their temp files live in the process run directory and go with it.
++
++package lensreport_test
++
++import (
++	"os"
++	"testing"
++
++	"github.com/Knatte18/loomyard/internal/testkit/tmuxkit"
++)
++
++func TestMain(m *testing.M) {
++	os.Exit(tmuxkit.Main(m))
++}
+diff --git a/internal/loomengine/discussiontable.go b/internal/loomengine/discussiontable.go
+index de7eff1f1..161d30f2d 100644
+--- a/internal/loomengine/discussiontable.go
++++ b/internal/loomengine/discussiontable.go
+@@ -101,7 +101,7 @@ func DiscussionTable(layout *lyxcwd.Location, dirs configengine.Dirs, stencilsDi
+ 	forks := cfg.DiscussionLenses != ""
+ 	var leadValues map[string]string
+ 	if forks {
+-		lensDirective, err := discussionLensDirective(layout, dirs, stencilsDir, cfg.DiscussionLenses)
++		lensDirective, err := discussionLensDirective(layout, dirs, stencilsDir, specsDir, cfg.DiscussionLenses)
+ 		if err != nil {
+ 			return seatengine.Table{}, fmt.Errorf("loom: DiscussionTable: %w", err)
+ 		}
+diff --git a/internal/loomengine/discussiontable_test.go b/internal/loomengine/discussiontable_test.go
+index 1c737fcb7..700c67482 100644
+--- a/internal/loomengine/discussiontable_test.go
++++ b/internal/loomengine/discussiontable_test.go
+@@ -16,6 +16,7 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/configengine"
+ 	"github.com/Knatte18/loomyard/internal/friction"
+ 	"github.com/Knatte18/loomyard/internal/lenses"
++	"github.com/Knatte18/loomyard/internal/lensreport"
+ 	"github.com/Knatte18/loomyard/internal/lyxcwd"
+ 	"github.com/Knatte18/loomyard/internal/modelspec"
+ 	"github.com/Knatte18/loomyard/internal/seatengine"
+@@ -468,6 +469,8 @@ func TestDiscussionTable(t *testing.T) {
+ 					"finishes writing `" + DiscussionDecisionRecord(layout) + "`, `" + DiscussionSupportLog(layout) + "` and `" + DiscussionRelevant(layout) + "` per",
+ 					"Fix the record, or reject the finding with a one-line reason.",
+ 					"a severity (`BLOCKING`, `MEDIUM` or `LOW`)",
++					"verbatim to `" + lensreport.PathPattern(DiscussionSupportLog(layout)) + "`",
++					"`" + stencilstore.Path(discussionTableSpecsDir, lensreport.SpecName) + "` defines",
+ 				} {
+ 					if !strings.Contains(prompt, want) {
+ 						t.Errorf("twill lead prompt lacks %q", want)
+diff --git a/internal/loomengine/plan.go b/internal/loomengine/plan.go
+index 7ffe3c23c..922fcb8b0 100644
+--- a/internal/loomengine/plan.go
++++ b/internal/loomengine/plan.go
+@@ -92,7 +92,7 @@ func PlanTable(layout *lyxcwd.Location, dirs configengine.Dirs, stencilsDir, spe
+ 	forks := cfg.PlanLenses != ""
+ 	var leadValues map[string]string
+ 	if forks {
+-		lensDirective, err := planLensDirective(layout, dirs, stencilsDir, cfg.PlanLenses)
++		lensDirective, err := planLensDirective(layout, dirs, stencilsDir, specsDir, cfg.PlanLenses)
+ 		if err != nil {
+ 			return seatengine.Table{}, fmt.Errorf("loom: PlanTable: %w", err)
+ 		}
+diff --git a/internal/loomengine/plan_test.go b/internal/loomengine/plan_test.go
+index 24655fed9..a5d5c4c93 100644
+--- a/internal/loomengine/plan_test.go
++++ b/internal/loomengine/plan_test.go
+@@ -15,6 +15,7 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/configengine"
+ 	"github.com/Knatte18/loomyard/internal/friction"
+ 	"github.com/Knatte18/loomyard/internal/lenses"
++	"github.com/Knatte18/loomyard/internal/lensreport"
+ 	"github.com/Knatte18/loomyard/internal/lyxcwd"
+ 	"github.com/Knatte18/loomyard/internal/lyxdirs"
+ 	"github.com/Knatte18/loomyard/internal/planparser"
+@@ -311,8 +312,9 @@ func TestPlanTable(t *testing.T) {
+ 					writeLensesYAML(t, layout, tt.lensesYAML)
+ 				}
+ 				stencilsDir := newTestStencilsDir(t)
++				specsDir := newTestSpecsDir(t)
+ 
+-				table, err := PlanTable(layout, configengine.Dirs{Anchor: layout.AnchorPath()}, stencilsDir, newTestSpecsDir(t), planTableConfig(templatePlanFan), reg, "none")
++				table, err := PlanTable(layout, configengine.Dirs{Anchor: layout.AnchorPath()}, stencilsDir, specsDir, planTableConfig(templatePlanFan), reg, "none")
+ 				if err != nil {
+ 					t.Fatalf("PlanTable(twill) = _, %v; want nil error", err)
+ 				}
+@@ -352,6 +354,8 @@ func TestPlanTable(t *testing.T) {
+ 					"Report defects only, never a passed check.",
+ 					"opened in this session, a `path:line` or glyph, a `PATTERN` entry, a test or caller the change would break, or the `lyx loom validate-plan` output, and what it shows",
+ 					planTwillSeverityRule,
++					"verbatim to `" + lensreport.PathPattern(filepath.Join(planparser.PlanDir(layout.AnchorPath()), planparser.LensReviewFileName)) + "`",
++					"`" + stencilstore.Path(specsDir, lensreport.SpecName) + "` defines",
+ 				} {
+ 					if !strings.Contains(prompt, want) {
+ 						t.Errorf("twill lead prompt lacks %q", want)
+diff --git a/internal/loomengine/twill.go b/internal/loomengine/twill.go
+index 6dd6e994e..e46fadd7d 100644
+--- a/internal/loomengine/twill.go
++++ b/internal/loomengine/twill.go
+@@ -8,6 +8,7 @@ import (
+ 
+ 	"github.com/Knatte18/loomyard/internal/configengine"
+ 	"github.com/Knatte18/loomyard/internal/lenses"
++	"github.com/Knatte18/loomyard/internal/lensreport"
+ 	"github.com/Knatte18/loomyard/internal/lyxcwd"
+ 	"github.com/Knatte18/loomyard/internal/planparser"
+ 	"github.com/Knatte18/loomyard/internal/stencilstore"
+@@ -45,14 +46,15 @@ func twillLenses(dirs configengine.Dirs, fan, key string) ([]twilldirective.Lens
+ }
+ 
+ // planLensDirective returns the twill directive for the Plan-Write lead's prompt, filled with the plan host's values and the lenses of the named fan, resolved through lenses.yaml's layer stack under dirs.
+-// The forks review the overview and every card file its Card Index names, and the writer records the lens review in the plan directory's lens review file.
++// The forks review the overview and every card file its Card Index names, and the writer records the lens review in the plan directory's lens review file and saves each fork's report beside it, in the format of the spec deployed under specsDir.
+ // A fan that does not resolve is refused naming the plan_lenses key.
+-func planLensDirective(layout *lyxcwd.Location, dirs configengine.Dirs, stencilsDir, fan string) (string, error) {
++func planLensDirective(layout *lyxcwd.Location, dirs configengine.Dirs, stencilsDir, specsDir, fan string) (string, error) {
+ 	fanLenses, err := twillLenses(dirs, fan, planLensesKey)
+ 	if err != nil {
+ 		return "", err
+ 	}
+ 	anchorPath := layout.AnchorPath()
++	lensReviewPath := filepath.Join(planparser.PlanDir(anchorPath), planparser.LensReviewFileName)
+ 	return twilldirective.Directive(stencilsDir, twilldirective.Values{
+ 		ReviewedFiles:         "`" + planparser.PlanOverview(anchorPath) + "` and every card file its Card Index names",
+ 		SpawnPoint:            planTwillSpawnPoint,
+@@ -63,7 +65,9 @@ func planLensDirective(layout *lyxcwd.Location, dirs configengine.Dirs, stencils
+ 		SelfCheckStep:         "Step 5",
+ 		SelfCheckCommand:      "lyx loom validate-plan",
+ 		FinalSelfCheckCommand: "lyx loom validate-plan --lens-review",
+-		DispositionPlace:      "`" + filepath.Join(planparser.PlanDir(anchorPath), planparser.LensReviewFileName) + "`",
++		DispositionPlace:      "`" + lensReviewPath + "`",
++		LensReportPath:        lensreport.PathPattern(lensReviewPath),
++		LensReportSpecPath:    stencilstore.Path(specsDir, lensreport.SpecName),
+ 		CriticalJudge: &twilldirective.CriticalJudge{
+ 			GoverningInput:  "the decision record",
+ 			DisputeEvidence: "a `path:line` or glyph, a `PATTERN` entry, a test or caller the change would break, or the `lyx loom validate-plan` output",
+@@ -79,8 +83,9 @@ func planLensDirective(layout *lyxcwd.Location, dirs configengine.Dirs, stencils
+ 
+ // discussionLensDirective returns the twill directive for the Discussion-Write prompt.
+ // The lenses come from the named fan, resolved against lenses.yaml's layer stack under dirs.
++// The writer saves each fork's report beside the support log, in the format of the spec deployed under specsDir.
+ // An unreadable lenses.yaml, or a fan that does not resolve, is refused naming the discussion_lenses key and the way forward.
+-func discussionLensDirective(layout *lyxcwd.Location, dirs configengine.Dirs, stencilsDir, fan string) (string, error) {
++func discussionLensDirective(layout *lyxcwd.Location, dirs configengine.Dirs, stencilsDir, specsDir, fan string) (string, error) {
+ 	fanLenses, err := twillLenses(dirs, fan, discussionLensesKey)
+ 	if err != nil {
+ 		return "", err
+@@ -98,5 +103,7 @@ func discussionLensDirective(layout *lyxcwd.Location, dirs configengine.Dirs, st
+ 		SelfCheckCommand:      "lyx loom validate-discussion",
+ 		FinalSelfCheckCommand: "lyx loom validate-discussion",
+ 		DispositionPlace:      "the last turn of the support log's `## Interview` section",
++		LensReportPath:        lensreport.PathPattern(DiscussionSupportLog(layout)),
++		LensReportSpecPath:    stencilstore.Path(specsDir, lensreport.SpecName),
+ 	})
+ }
+diff --git a/internal/loomshed/planwrite.go b/internal/loomshed/planwrite.go
+index 74aa9f4af..1ea66313c 100644
+--- a/internal/loomshed/planwrite.go
++++ b/internal/loomshed/planwrite.go
+@@ -111,8 +111,8 @@ func (p *planWrite) Call(ctx context.Context) (shedengine.Outcome, shedengine.Ou
+ //
+ // The closure's string result is the prompt amendment the seat producer sets as the table's Amendment, which the seat engine appends to the respawned lead's prompt: empty when nothing moved, otherwise a blank line followed by loomengine.PriorPlanBlock naming the archive directory and the moved files,
+ // so the new session knows where the prior plan went.
+-// The lens review file, planparser.LensReviewFileName, moves with the other files but is never named in the block;
+-// when it is the only stale file, the rotation still moves it and returns an empty amendment, since there is no plan to carry forward.
++// The lens review file, planparser.LensReviewFileName, and the lens reports saved beside it move with the other files but are never named in the block;
++// when they are the only stale files, the rotation still moves them and returns an empty amendment, since there is no plan to carry forward.
+ // stencilsDir is told by the caller and holds the loom-template-prior-plan stencil.
+ // The block is rendered before any file moves,
+ // and a render failure is returned as the closure's error,
+@@ -137,7 +137,7 @@ func NewPlanDirRotator(anchorPath, stencilsDir string, archiveWebster func(dest
+ 		}
+ 		var announcedFiles []string
+ 		for _, name := range staleFiles {
+-			if name != planparser.LensReviewFileName {
++			if name != planparser.LensReviewFileName && !planparser.IsLensReportFileName(name) {
+ 				announcedFiles = append(announcedFiles, name)
+ 			}
+ 		}
+diff --git a/internal/loomshed/planwrite_test.go b/internal/loomshed/planwrite_test.go
+index dbad1d9e0..8a07295d1 100644
+--- a/internal/loomshed/planwrite_test.go
++++ b/internal/loomshed/planwrite_test.go
+@@ -291,7 +291,8 @@ func TestNewPlanDirRotator(t *testing.T) {
+ 	})
+ 
+ 	t.Run("LensReviewMovesWithThePlanButIsNeverAnnounced", func(t *testing.T) {
+-		anchorPath, planDir := setupPlanDir(t, "00-overview.md", "01-card-one.md", planparser.LensReviewFileName)
++		const lensReport = "lens-review.lens-generic.md"
++		anchorPath, planDir := setupPlanDir(t, "00-overview.md", "01-card-one.md", planparser.LensReviewFileName, lensReport)
+ 
+ 		amendment, err := NewPlanDirRotator(anchorPath, seedPriorPlanStencils(t), noWebsterArchive, fixedPlanClock)()
+ 		if err != nil {
+@@ -299,7 +300,7 @@ func TestNewPlanDirRotator(t *testing.T) {
+ 		}
+ 
+ 		archiveDir := filepath.Join(planDir, planparser.ArchiveDirName(fixedPlanClock().UTC().Format(archiveTimestampFormat), ""))
+-		for _, name := range []string{"00-overview.md", "01-card-one.md", planparser.LensReviewFileName} {
++		for _, name := range []string{"00-overview.md", "01-card-one.md", planparser.LensReviewFileName, lensReport} {
+ 			if _, err := os.Stat(filepath.Join(archiveDir, name)); err != nil {
+ 				t.Errorf("Stat(archived %s) error = %v; want it moved into the archive", name, err)
+ 			}
+@@ -309,8 +310,10 @@ func TestNewPlanDirRotator(t *testing.T) {
+ 				t.Errorf("rotate() amendment = %q; want it to name %q", amendment, want)
+ 			}
+ 		}
+-		if strings.Contains(amendment, planparser.LensReviewFileName) {
+-			t.Errorf("rotate() amendment = %q; want it not to name %q", amendment, planparser.LensReviewFileName)
++		for _, unannounced := range []string{planparser.LensReviewFileName, lensReport} {
++			if strings.Contains(amendment, unannounced) {
++				t.Errorf("rotate() amendment = %q; want it not to name %q", amendment, unannounced)
++			}
+ 		}
+ 	})
+ 
+diff --git a/internal/planparser/amendment.go b/internal/planparser/amendment.go
+index b27891074..fcf14392e 100644
+--- a/internal/planparser/amendment.go
++++ b/internal/planparser/amendment.go
+@@ -13,6 +13,8 @@ import (
+ 	"fmt"
+ 	"os"
+ 	"path/filepath"
++
++	"github.com/Knatte18/loomyard/internal/lensreport"
+ )
+ 
+ // AmendmentsFileName is the fixed filename of a plan's append-only amendment log, joined onto a
+@@ -23,6 +25,12 @@ const AmendmentsFileName = "amendments.md"
+ // It is tracked with the plan's generation and never parsed or validated.
+ const LensReviewFileName = "lens-review.md"
+ 
++// IsLensReportFileName reports whether name is the file name of a lens report the twill plan writer saves beside LensReviewFileName.
++// Like the lens review, a lens report is tracked with the plan's generation and never parsed or validated.
++func IsLensReportFileName(name string) bool {
++	return lensreport.IsReportName(LensReviewFileName, name)
++}
++
+ // amendmentsFileHeading is the fixed heading AppendAmendment writes when it creates the amendments
+ // file for the first time.
+ const amendmentsFileHeading = "# Amendments\n"
+diff --git a/internal/planparser/validate.go b/internal/planparser/validate.go
+index 61df393c9..7b1e36428 100644
+--- a/internal/planparser/validate.go
++++ b/internal/planparser/validate.go
+@@ -225,6 +225,7 @@ func checkApproved(plan *Plan) []ValidationError {
+ // AmendmentsFileName (AppendAmendment).
+ // LensReviewFileName, the twill writer's lens review record, has no owner here, since no parser reads it.
+ // Named as an allowlist entry per file, not a heuristic over the filename's shape, so a future non-card file only needs one line added here.
++// The lens reports saved beside the lens review are the one family of names the scan skips by shape, through IsLensReportFileName, since their names carry the lens.
+ var knownNonCardFiles = map[string]bool{
+ 	overviewFileName:   true,
+ 	AmendmentsFileName: true,
+@@ -267,7 +268,7 @@ func checkIndexFileConsistency(plan *Plan) []ValidationError {
+ 	default:
+ 		var onDisk []string
+ 		for _, e := range entries {
+-			if e.IsDir() || !strings.HasSuffix(e.Name(), ".md") || knownNonCardFiles[e.Name()] {
++			if e.IsDir() || !strings.HasSuffix(e.Name(), ".md") || knownNonCardFiles[e.Name()] || IsLensReportFileName(e.Name()) {
+ 				continue
+ 			}
+ 			if !indexed[e.Name()] {
+diff --git a/internal/planparser/validate_test.go b/internal/planparser/validate_test.go
+index 2ce6934ae..bcc311a5c 100644
+--- a/internal/planparser/validate_test.go
++++ b/internal/planparser/validate_test.go
+@@ -297,11 +297,13 @@ func TestValidate_IndexFileMismatch(t *testing.T) {
+ 		}
+ 	})
+ 
+-	t.Run("a plan directory containing lens-review.md produces no finding", func(t *testing.T) {
++	t.Run("a plan directory containing lens-review.md and its lens reports produces no finding", func(t *testing.T) {
+ 		t.Parallel()
+ 		dir := t.TempDir()
+-		if err := os.WriteFile(filepath.Join(dir, planparser.LensReviewFileName), []byte("# Lens review\n"), 0o644); err != nil {
+-			t.Fatalf("write lens review file: %v", err)
++		for _, name := range []string{planparser.LensReviewFileName, "lens-review.lens-pattern-fit.md"} {
++			if err := os.WriteFile(filepath.Join(dir, name), []byte("# Lens review\n"), 0o644); err != nil {
++				t.Fatalf("write %s: %v", name, err)
++			}
+ 		}
+ 		plan := &planparser.Plan{
+ 			Dir: dir, Format: 5, Approved: true,
+@@ -309,7 +311,7 @@ func TestValidate_IndexFileMismatch(t *testing.T) {
+ 		}
+ 		findings := planparser.Validate(plan, t.TempDir())
+ 		if got := countFor(findings, "index-file-mismatch"); got != 0 {
+-			t.Errorf("countFor(findings, index-file-mismatch) = %d; want 0 (lens-review.md is a known non-card file)", got)
++			t.Errorf("countFor(findings, index-file-mismatch) = %d; want 0 (lens-review.md and its lens reports are known non-card files)", got)
+ 		}
+ 	})
+ }
+diff --git a/internal/standalonegeom/burlergeom.go b/internal/standalonegeom/burlergeom.go
+index 47f66c466..104fde335 100644
+--- a/internal/standalonegeom/burlergeom.go
++++ b/internal/standalonegeom/burlergeom.go
+@@ -26,5 +26,6 @@ func BurlerGeometry(target, stateDir, hash8 string) burlerengine.Geometry {
+ 		AnchorPath:   stateDir,
+ 		RepoRoot:     target,
+ 		Shortname:    agentname.StandaloneShortname(hash8),
++		SpecsDir:     SpecsDir(stateDir),
+ 	}
+ }
+diff --git a/internal/standalonegeom/standalonegeom_test.go b/internal/standalonegeom/standalonegeom_test.go
+index 5292264fe..8c2e32ddc 100644
+--- a/internal/standalonegeom/standalonegeom_test.go
++++ b/internal/standalonegeom/standalonegeom_test.go
+@@ -44,6 +44,9 @@ func TestBurlerGeometry(t *testing.T) {
+ 	if got.RepoRoot != target {
+ 		t.Errorf("BurlerGeometry().RepoRoot = %q; want %q (target)", got.RepoRoot, target)
+ 	}
++	if want := SpecsDir(stateDir); got.SpecsDir != want {
++		t.Errorf("BurlerGeometry().SpecsDir = %q; want %q", got.SpecsDir, want)
++	}
+ 	// WorktreeRoot and AnchorPath asserted in the same case: the whole reason the two-root
+ 	// split exists is that they differ here, with a fixture target not under stateDir.
+ 	if got.WorktreeRoot == got.AnchorPath {
+diff --git a/internal/twilldirective/doc.go b/internal/twilldirective/doc.go
+index 365ab173d..361dcdefc 100644
+--- a/internal/twilldirective/doc.go
++++ b/internal/twilldirective/doc.go
+@@ -9,9 +9,10 @@
+ // A host may ask for a writer-fork part through Values.WriterFork: one fork, fork0, then writes the reviewed files while the writer explores before it and reviews what it wrote after.
+ // The part replaces the relaunch paragraphs, which a host without a writer fork keeps; exactly one of the two is rendered, each from its own stencil.
+ // Exactly one judge part is rendered, each from its own stencil: the critical fixer for a host that asks for it through Values.CriticalJudge, where the writer disputes a finding on a cited ground, fixes it with its own change, or fixes it as proposed, and otherwise the judge that fixes or rejects each finding by the host's rejection rule.
++// Once the last fork has returned, and before judging, the writer saves each fork's final message verbatim in a lens report of its own, so an audit reads every report from the run records.
+ // Each fork's boilerplate tells it to review the written files through its lens as its inherited context holds them, without reading them again, and return its findings as its final message.
+ // Spawning after the write, rather than before it, lets the forks start on the finished files with nothing to wait for.
+-// The block is host-neutral: every host-specific value (the reviewed files, the spawn point, the rejection rule, for a host without a writer fork the files a relaunched writer finishes, for a host that asks for the critical judge the input a finding's premise is weighed against and the evidence kinds a dispute cites, the severity rule, the rubric, the lenses, the steps, the self-check command and the place the review is recorded) arrives through Values, so a later host can render it with its own values.
++// The block is host-neutral: every host-specific value (the reviewed files, the spawn point, the rejection rule, for a host without a writer fork the files a relaunched writer finishes, for a host that asks for the critical judge the input a finding's premise is weighed against and the evidence kinds a dispute cites, the severity rule, the rubric, the lenses, the steps, the self-check command, the place the review is recorded, and the path and format spec of the lens reports) arrives through Values, so a later host can render it with its own values.
+ //
+ // # Who renders it
+ //
+diff --git a/internal/twilldirective/twilldirective.go b/internal/twilldirective/twilldirective.go
+index adf1ba004..f90c19dd3 100644
+--- a/internal/twilldirective/twilldirective.go
++++ b/internal/twilldirective/twilldirective.go
+@@ -60,6 +60,10 @@ type Values struct {
+ 	FinalSelfCheckCommand string
+ 	// DispositionPlace names where the writer records the lens review.
+ 	DispositionPlace string
++	// LensReportPath is the path the writer saves each fork's report at, with `<lens>` standing for the lens name.
++	LensReportPath string
++	// LensReportSpecPath is the deployed spec that defines a saved report's format.
++	LensReportSpecPath string
+ 	// RelaunchFiles is the phrase naming the files a relaunched writer finishes writing, rendered verbatim with the host's own backticks; read only when WriterFork is nil.
+ 	RelaunchFiles string
+ 	// WriterFork, when set, has one fork write the reviewed files and replaces the relaunch paragraphs; nil asks for no writer fork.
+@@ -106,6 +110,8 @@ func Directive(stencilsDir string, v Values) (string, error) {
+ 		"self_check_command":       v.SelfCheckCommand,
+ 		"final_self_check_command": v.FinalSelfCheckCommand,
+ 		"disposition_place":        v.DispositionPlace,
++		"lens_report_path":         v.LensReportPath,
++		"lens_report_spec_path":    v.LensReportSpecPath,
+ 	}
+ 	if v.WriterFork != nil {
+ 		part, err := fillPart(stencilsDir, writerForkStencil, mergedValues(values, map[string]string{
+diff --git a/internal/twilldirective/twilldirective_test.go b/internal/twilldirective/twilldirective_test.go
+index b2d403c64..8d8878a43 100644
+--- a/internal/twilldirective/twilldirective_test.go
++++ b/internal/twilldirective/twilldirective_test.go
+@@ -41,6 +41,8 @@ func filledValues() Values {
+ 		SelfCheckCommand:      "lyx check --now",
+ 		FinalSelfCheckCommand: "lyx check --final",
+ 		DispositionPlace:      "the PLACE section",
++		LensReportPath:        "/abs/one.lens-<lens>.md",
++		LensReportSpecPath:    "/abs/report-spec.md",
+ 		RelaunchFiles:         "RELAUNCH-FILES",
+ 	}
+ }
+@@ -109,6 +111,8 @@ func TestDirective_RendersEveryValueVerbatim(t *testing.T) {
+ 				"- alpha: Look at A. Then at B.\n- beta: Look at C.",
+ 				"lyx check --final",
+ 				"the PLACE section",
++				"save each fork's final message verbatim to `/abs/one.lens-<lens>.md`",
++				"in the format `/abs/report-spec.md` defines",
+ 			}, tt.wants...)
+ 			for _, want := range wants {
+ 				if !strings.Contains(got, want) {
+@@ -160,6 +164,8 @@ func TestDirective_MissingValueNamesTheMarker(t *testing.T) {
+ 		{"RejectionRule without a critical judge", func(v *Values) { v.RejectionRule = "" }, "rejection_rule"},
+ 		{"SeverityRule", func(v *Values) { v.SeverityRule = "" }, "severity_rule"},
+ 		{"FinalSelfCheckCommand", func(v *Values) { v.FinalSelfCheckCommand = "" }, "final_self_check_command"},
++		{"LensReportPath", func(v *Values) { v.LensReportPath = "" }, "lens_report_path"},
++		{"LensReportSpecPath", func(v *Values) { v.LensReportSpecPath = "" }, "lens_report_spec_path"},
+ 		{"Lenses", func(v *Values) { v.Lenses = nil }, "lens_list"},
+ 		{"ExploreStep", func(v *Values) { v.WriterFork = filledWriterFork(); v.WriterFork.ExploreStep = "" }, "explore_step"},
+ 		{"InputRecord", func(v *Values) { v.WriterFork = filledWriterFork(); v.WriterFork.InputRecord = "" }, "input_record"},
+diff --git a/internal/websterengine/fingerprint.go b/internal/websterengine/fingerprint.go
+index 583f15c30..3c84ca1a3 100644
+--- a/internal/websterengine/fingerprint.go
++++ b/internal/websterengine/fingerprint.go
+@@ -24,9 +24,9 @@ import (
+ 
+ // fingerprint computes a SHA-256 digest over every "*.md" file's name and
+ // contents in planDir (sorted lexically).
+-// Non-.md entries are ignored, and so are planparser.AmendmentsFileName and planparser.LensReviewFileName.
+-// The amendment log is an append-only record OF plan changes written by the pipeline itself, and the lens review is a record ABOUT the plan written by the pipeline's writer.
+-// Neither is plan content an author wrote, so folding either into plan identity made webster's own drift repair invalidate the plan it had just repaired.
++// Non-.md entries are ignored, and so are planparser.AmendmentsFileName, planparser.LensReviewFileName and the lens reports saved beside the lens review.
++// The amendment log is an append-only record OF plan changes written by the pipeline itself, and the lens review and its lens reports are records ABOUT the plan written by the pipeline's writer.
++// None is plan content an author wrote, so folding any of them into plan identity made webster's own drift repair invalidate the plan it had just repaired.
+ func fingerprint(planDir string) (string, error) {
+ 	names, err := planFileNames(planDir)
+ 	if err != nil {
+@@ -49,7 +49,7 @@ func fingerprint(planDir string) (string, error) {
+ 	return hex.EncodeToString(h.Sum(nil)), nil
+ }
+ 
+-// planFileNames lists the plan files fingerprint covers, sorted: every ".md" file in planDir but planparser.AmendmentsFileName and planparser.LensReviewFileName, neither of which is plan content.
++// planFileNames lists the plan files fingerprint covers, sorted: every ".md" file in planDir but planparser.AmendmentsFileName, planparser.LensReviewFileName and the lens reports saved beside it, none of which is plan content.
+ func planFileNames(planDir string) ([]string, error) {
+ 	entries, err := os.ReadDir(planDir)
+ 	if err != nil {
+@@ -57,7 +57,7 @@ func planFileNames(planDir string) ([]string, error) {
+ 	}
+ 	var names []string
+ 	for _, e := range entries {
+-		if e.IsDir() || !strings.HasSuffix(e.Name(), ".md") || e.Name() == planparser.AmendmentsFileName || e.Name() == planparser.LensReviewFileName {
++		if e.IsDir() || !strings.HasSuffix(e.Name(), ".md") || e.Name() == planparser.AmendmentsFileName || e.Name() == planparser.LensReviewFileName || planparser.IsLensReportFileName(e.Name()) {
+ 			continue
+ 		}
+ 		names = append(names, e.Name())
+diff --git a/internal/websterengine/fingerprint_test.go b/internal/websterengine/fingerprint_test.go
+index efb66dfcb..97544f4be 100644
+--- a/internal/websterengine/fingerprint_test.go
++++ b/internal/websterengine/fingerprint_test.go
+@@ -10,6 +10,7 @@ import (
+ 	"errors"
+ 	"os"
+ 	"path/filepath"
++	"reflect"
+ 	"strings"
+ 	"testing"
+ 
+@@ -151,6 +152,13 @@ func TestFingerprint(t *testing.T) {
+ 				fingerprintWriteFiles(t, dir, map[string]string{planparser.LensReviewFileName: "# Lens review\n"})
+ 			},
+ 		},
++		{
++			// A lens report saved beside the lens review is a record about the plan like the review itself.
++			name: "ignores a lens report",
++			mutate: func(t *testing.T, dir string) {
++				fingerprintWriteFiles(t, dir, map[string]string{"lens-review.lens-pattern-fit.md": "# Lens report\n"})
++			},
++		},
+ 	}
+ 	for _, tt := range tests {
+ 		t.Run(tt.name, func(t *testing.T) {
+@@ -165,9 +173,23 @@ func TestFingerprint(t *testing.T) {
+ 			if err != nil {
+ 				t.Fatalf("fingerprint(before) error = %v; want nil", err)
+ 			}
++			hashesBefore, err := planFileHashes(dir)
++			if err != nil {
++				t.Fatalf("planFileHashes(before) error = %v; want nil", err)
++			}
+ 
+ 			tt.mutate(t, dir)
+ 
++			if !tt.wantChange {
++				hashesAfter, err := planFileHashes(dir)
++				if err != nil {
++					t.Fatalf("planFileHashes(after) error = %v; want nil", err)
++				}
++				if !reflect.DeepEqual(hashesAfter, hashesBefore) {
++					t.Errorf("planFileHashes changed = %v -> %v; want unchanged", hashesBefore, hashesAfter)
++				}
++			}
++
+ 			after, err := fingerprint(dir)
+ 			if err != nil {
+ 				t.Fatalf("fingerprint(after) error = %v; want nil", err)
+diff --git a/pattern/PATTERN-leaf-packages.md b/pattern/PATTERN-leaf-packages.md
+index 349ed79d4..93b71aa15 100644
+--- a/pattern/PATTERN-leaf-packages.md
++++ b/pattern/PATTERN-leaf-packages.md
+@@ -71,6 +71,10 @@ Imports only the standard library, `internal/logger`, `internal/stencil` and `in
+ 
+ Imports only the standard library.
+ 
++## `internal/lensreport`
++
++Imports only the standard library, so every lens review host and `planparser` can share the lens report naming.
++
+ ## `internal/machinename`
+ 
+ Imports only the standard library.
