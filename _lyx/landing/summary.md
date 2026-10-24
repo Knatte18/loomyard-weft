@@ -1,37 +1,39 @@
-# Git network calls fail on a stall within 30 s and retry once
+# gitexec: kill a remote git call that gets no answer in 30 s, retry once
 
-A git network call to a remote that never answers used to hold a run for minutes.
-git's `http.lowSpeedLimit`, which `gitexec` already sets, covers a transfer but not the connection's setup.
-A TLS handshake that gets no answer therefore ran to curl's connect timeout or to lyx's ten-minute deadline.
-Two batten runs hung this way, one on an ls-remote and one on a push.
+A git network call whose remote never answers now fails within seconds and runs once more, instead of holding a run for minutes on a dead connection.
+This was seen on two batten runs: a `git ls-remote` and a `lyx fabric` push each sat on a TLS opening that GitHub never acknowledged, for over two minutes.
+Git's low-speed limit covers a transfer, never the connection's setup, so nothing bounded the wait short of curl's connect timeout or the ten-minute deadline.
+
+Every git network call lyx makes already goes through `internal/gitexec`, so no call site changes.
 
 ## What changes
 
-Every remote subcommand `gitexec` runs (push, fetch, pull, clone and ls-remote) now runs under a stall bound of 30 s, on top of the existing deadline and low-speed limit.
-No call site changes, since every git network call lyx makes already goes through `gitexec`.
-
-- The remote subcommand runs with `GIT_TRACE_PACKET` pointed at a temp file in `lyxtemp`'s run directory, and the file is removed after the call.
-  git writes the file's first line only once the remote's first packet arrives.
-  This was checked against real HTTPS ls-remote and push to GitHub.
-- When the stall bound passes and the file is still empty, the call is killed through the same process-group kill the deadline uses, and run once more with fresh bounds.
+- A remote subcommand (push, fetch, pull, clone, ls-remote) runs with `GIT_TRACE_PACKET` pointed at a file under `lyxtemp`'s run directory, removed after the call.
+  git writes the trace's first line only once the remote's first packet arrives.
+  When the 30 s stall bound passes and the file is still empty, the call is killed through the existing process-group kill.
+- A call killed for a stall runs once more with a fresh deadline and stall bound, and logs one Warn naming the subcommand.
 - A second stall returns a `*GitError` with the new `Stalled` field set and `Timeout` set to the stall bound.
-  It renders as `git <args>: no answer from the remote within 30s, twice`, and `IsTransportFailure` reports it as a transport failure with no change, so callers' existing transport handling takes over.
+  `IsTransportFailure` already treats a non-zero `Timeout` as a transport failure, so callers' existing handling takes it over.
+  `GitError.Error` renders it as "no answer from the remote within 30s, twice".
+- `doc.go` gains a "Stall bound" section.
 
 ## Design decisions
 
-- The retry is safe for a push: a stalled call never received the remote's ref advertisement, so it updated nothing on the remote.
-  For the same reason, only a stall is retried. A deadline kill, a git exit and an exec failure are not.
-- The stall check runs once, at the bound, and covers only the wait for the remote's first answer.
-  A connection that stalls after the first answer is still bounded only by the low-speed limit and the deadline.
-- A deadline at or under the stall bound, as `RunWithin` may pass, leaves the stall check unarmed, so the shorter deadline governs as before.
-- The trace goes to a file path rather than an inherited file descriptor, because Go's `ExtraFiles` is unsupported on Windows.
-- An operator's own `GIT_TRACE_PACKET` is overridden for remote subcommands, and the package doc says so.
-- The retry logs one Warn naming the subcommand.
+- **Retry is safe for a push.**
+  A stalled call never received the remote's ref advertisement, so it changed nothing on the remote.
+- **Only a stall retries.**
+  A deadline kill, a git exit and an exec failure are never retried; there is at most one retry per call.
+- **The stall check covers only the wait for the first answer.**
+  A connection that stalls after it is still held by the low-speed limit and the deadline alone.
+- **`RunWithin` with a deadline at or under the stall bound leaves the check unarmed**, so such a call is killed once, at the deadline, as before.
+- **Local subcommands** get no trace file, no stall bound and no retry.
+- **An operator's own `GIT_TRACE_PACKET` is overridden** for remote subcommands lyx runs; `doc.go` says so.
+- The retry reruns the attempt only, inside the same network-gate hold, so a pause is waited on once.
 
-## Tests
+## Check by hand
 
-`TestRun_RemoteBounds` gains two rows driven through git's `ext::` transport, with the stall bound shortened:
-- A remote that never answers is killed at the stall bound and run exactly twice, and fails as a stalled transport failure.
-- A remote that sends one packet and then hangs is not stalled. It is killed once, at the deadline, with no retry.
-
-`TestGitError_Error` gains the stalled rendering.
+- Tests shorten `stallBound` and cover the stall, the answer-then-hang and the unarmed cases.
+  They were not run against a real GitHub connection.
+- The packet trace was checked to write a first line over HTTPS and local remotes.
+  A git build that writes no packet trace for some transport, SSH included, would see every call on it stall twice and fail; worth a push and a fetch over SSH if any remote uses it.
+- 30 s is chosen to be long enough for GitHub's first answer on a slow link; watch for spurious stall Warns on slow links.
