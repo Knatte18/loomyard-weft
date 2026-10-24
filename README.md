@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-24 05:35 UTC; every age below is as of then.
+Rendered 2026-10-24 06:02 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -16,7 +16,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T2 | **One code review perch for darn and loom**<br>• Darn-Review and Code-Review run the same engine over the same diff; merge them into one perch whose answer key the recipe sets<br>• `profile: darn-wide` | [`code-review-one-perch`](design-code-review-one-perch.md) | darn | Darn-Write | neve | 16h<br>16h | loom, burler |
+| T2 | **One code review perch for darn and loom**<br>• Darn-Review and Code-Review run the same engine over the same diff; merge them into one perch whose answer key the recipe sets<br>• `profile: darn-wide` | [`code-review-one-perch`](design-code-review-one-perch.md) | darn | Darn-Bouncer | neve | 17h<br>16h | loom, burler |
 
 ### Ready
 
@@ -53,13 +53,13 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | # | P | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | B1 |  | **Discussion check refuses a declared PATTERN text over the overview line cap**<br>• A changes or adds text past pattern.MaxEntryLineChars passes Discussion and first fails at Plan-Write | [`discussion-pattern-line-cap`](design-discussion-pattern-line-cap.md) | 18h<br>18h | loom |
-| B2 |  | **Seeded VS Code title-bar colours do not show in task worktrees**<br>• The seeder writes a palette colour, but loom-tail-review settings.json has none and no colour shows | [`ide-title-colours-missing`](design-ide-title-colours-missing.md) | 18h<br>17h | ide |
-| B3 |  | **TestSmokeStart_NeverAttachesAndAddsNoOperatorStrand flakes on records index.lock and halts Merge-In** | [`smokestart-index-lock-flake`](design-smokestart-index-lock-flake.md) | 12h<br>12h | loom, fabric |
-| B4 |  | **Burler fix loop cannot route a decision-class finding to the parent** | [`burler-decision-finding-route`](design-burler-decision-finding-route.md) | 12h<br>12h | burler, loom |
-| B5 |  | **webster record-batch fails create-not-done for Create targets declared in an external _test package** | [`record-batch-external-test-pkg`](design-record-batch-external-test-pkg.md) | 12h<br>12h | webster, quarry |
-| B6 |  | **Decision notice from lyx loom decision add is refused by Webster's Merriam** | [`merriam-refuses-decision-notice`](design-merriam-refuses-decision-notice.md) | 12h<br>12h | webster, loom, stencil, creel |
-| B7 |  | **Git network calls get a stall bound and one retry**<br>• A git call to GitHub hung for minutes on a dead connection; bound every git network call and retry it once | [`git-remote-stall-timeout`](design-git-remote-stall-timeout.md) | 12h<br>12h | fabric, batten |
-| B8 |  | **Fork git-mutation guard fails a run on git commands confined to a scratch repo** | [`fork-git-guard-scratch-repo`](design-fork-git-guard-scratch-repo.md) | 12h<br>12h | shed, burler |
+| B2 |  | **Seeded VS Code title-bar colours do not show in task worktrees**<br>• The seeder writes a palette colour, but loom-tail-review settings.json has none and no colour shows | [`ide-title-colours-missing`](design-ide-title-colours-missing.md) | 18h<br>18h | ide |
+| B3 |  | **TestSmokeStart_NeverAttachesAndAddsNoOperatorStrand flakes on records index.lock and halts Merge-In** | [`smokestart-index-lock-flake`](design-smokestart-index-lock-flake.md) | 13h<br>13h | loom, fabric |
+| B4 |  | **Burler fix loop cannot route a decision-class finding to the parent** | [`burler-decision-finding-route`](design-burler-decision-finding-route.md) | 13h<br>13h | burler, loom |
+| B5 |  | **webster record-batch fails create-not-done for Create targets declared in an external _test package** | [`record-batch-external-test-pkg`](design-record-batch-external-test-pkg.md) | 13h<br>13h | webster, quarry |
+| B6 |  | **Decision notice from lyx loom decision add is refused by Webster's Merriam** | [`merriam-refuses-decision-notice`](design-merriam-refuses-decision-notice.md) | 13h<br>13h | webster, loom, stencil, creel |
+| B7 |  | **Git network calls get a stall bound and one retry**<br>• A git call to GitHub hung for minutes on a dead connection; bound every git network call and retry it once | [`git-remote-stall-timeout`](design-git-remote-stall-timeout.md) | 13h<br>13h | fabric, batten |
+| B8 |  | **Fork git-mutation guard fails a run on git commands confined to a scratch repo** | [`fork-git-guard-scratch-repo`](design-fork-git-guard-scratch-repo.md) | 13h<br>13h | shed, burler |
 | B9 |  | **Batten idle notice fires while a writer works in a fork**<br>• The idle check reads no fork transcript, so a writer working through a fork reads as idle | [`idle-notice-misses-fork-activity`](design-idle-notice-misses-fork-activity.md) | 12h<br>12h | batten |
 
 ### Enhancements
@@ -85,15 +85,15 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | E18 | H | **[WS 005] One dobby daemon per beam owns and drives its runs**<br>• Each beam (a worktree with an orch thread) gets a Go daemon, started by lyx orch start, that follows its runs status files, starts ready tasks, lands, settles mechanical stops and tells the thread only what needs judgement | [`umbrella-daemon`](design-umbrella-daemon.md) | 11d<br>4d | batten, orch, shed, workspaces, loom, board |
 | E19 |  | **Every remote operation runs async, and local-only fabric pairs stay an explicit choice only**<br>• Remote work goes async except the branch-exists check; batch pairs reach origin like any pair, and the local-only mode stays only as an explicit --local until a use is found or it is removed | [`fabric-remote-async`](design-fabric-remote-async.md) | 5d<br>5d | fabric, batten |
 | E20 |  | **Plan and Discussion fixers on Sonnet, once findings are concrete enough**<br>• Webster and Merge fixers are already Sonnet; Plan and Discussion fixers need concrete findings first | [`fixers-on-sonnet`](design-fixers-on-sonnet.md) | 1d<br>1d | burler, claude |
-| E21 |  | **The orch Go driver spawns the board-tidy agent after each landing** | [`board-tidy-after-landing`](design-board-tidy-after-landing.md) | 21h<br>21h | orch, board, reed |
+| E21 |  | **The orch Go driver spawns the board-tidy agent after each landing** | [`board-tidy-after-landing`](design-board-tidy-after-landing.md) | 22h<br>22h | orch, board, reed |
 | E22 |  | **lyx batten run starts in its own window by default**<br>• Every batten run is started with --window, so the window should be the default and foreground the opt-in. | [`batten-window-default`](design-batten-window-default.md) | 4d<br>4d | batten, reed, orch |
 | E23 |  | **The seeded reed attach task in tasks.json: drop it, or bind it to a shortcut**<br>• tasks.json holds one on-demand reed attach task with no shortcut | [`ide-attach-task`](design-ide-attach-task.md) | 18h<br>18h | ide |
 | E24 |  | **Every lens fork report is kept verbatim in the run records**<br>• Save each lens fork report in a support file beside lens-review.md, so audits can read what each lens found | [`lens-fork-reports-kept`](design-lens-fork-reports-kept.md) | 1d<br>1d | burler, loom |
-| E25 |  | **Ubuntu 24.04 as a stated and checked floor: a PATTERN entry and a mechanical check**<br>• A Neve-written reed change broke on tmux 3.4; nothing states or checks the Ubuntu 24.04 floor | [`ubuntu-2404-floor`](design-ubuntu-2404-floor.md) | 20h<br>12h | reed, gate |
+| E25 |  | **Ubuntu 24.04 as a stated and checked floor: a PATTERN entry and a mechanical check**<br>• A Neve-written reed change broke on tmux 3.4; nothing states or checks the Ubuntu 24.04 floor | [`ubuntu-2404-floor`](design-ubuntu-2404-floor.md) | 21h<br>13h | reed, gate |
 | E26 |  | **A status-bar button turns automatic terminal windows for runs on or off** | [`open-window-toggle`](design-open-window-toggle.md) | 1d<br>1d | batten, reed |
-| E27 | L | **Carry agent mail into the pane in full instead of a reminder and a read turn**<br>• A reminder plus lyx creel read costs the receiver an extra turn per agent message | [`creel-carry-agent-mail`](design-creel-carry-agent-mail.md) | 20h<br>20h | creel |
+| E27 | L | **Carry agent mail into the pane in full instead of a reminder and a read turn**<br>• A reminder plus lyx creel read costs the receiver an extra turn per agent message | [`creel-carry-agent-mail`](design-creel-carry-agent-mail.md) | 21h<br>21h | creel |
 | E28 |  | **[.NET] A small public NUnit repo as sandbox hub for end-to-end C# runs** | [`csharp-sandbox-hub`](design-csharp-sandbox-hub.md) | 1d<br>1d | dotnet |
-| E29 |  | **The watcher system should recognize halt due to session limit** | [`usage-limit-hold-quiet`](design-usage-limit-hold-quiet.md) | 12h<br>12h | shuttle, creel, orch |
+| E29 |  | **The watcher system should recognize halt due to session limit** | [`usage-limit-hold-quiet`](design-usage-limit-hold-quiet.md) | 13h<br>13h | shuttle, creel, orch |
 | E30 |  | **Discussion scope check moves from the alignment agent into the perch lenses, with an escalating finding class** | [`discussion-alignment-into-lenses`](design-discussion-alignment-into-lenses.md) | 1d<br>1d | loom, burler, shed |
 | E31 |  | **A row before Discussion aligns the task text against the board, peers and landed work, and adjusts it** | [`entry-align-before-discussion`](design-entry-align-before-discussion.md) | 1d<br>1d | loom, batten, board |
 | E32 |  | **Move rules about lyx behaviour out of this repo's CLAUDE.md into lyx code, doc.go and stencils** | [`claude-md-lyx-rules-out`](design-claude-md-lyx-rules-out.md) | 1d<br>1d | stencil, board, loom |
@@ -118,8 +118,8 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | F13 | H | **Weaver: a cold-start implementer beside Webster, with model escalation**<br>• A second implementer built on Millhouse Builder: a fresh agent per batch with its own model, escalating the model when an agent fails; Webster stays fork-based | [`weaver`](design-weaver.md) | 12d<br>5d | webster |
 | F14 | L | **[.NET 003] Scoped build and test for C# hubs**<br>• Verify gates in a .NET hub build and test only the projects a card touches, since a scanned Windows machine makes every build slow. | [`dotnet-scoped-verify`](design-dotnet-scoped-verify.md) | 11d<br>1d | shed, webster, dotnet |
 | F15 |  | **Configurable action buttons on the reed status bar**<br>• Clickable status-bar buttons that run configured commands: VS Code, orch distill/refresh, the follow toggle and more | [`reed-status-buttons`](design-reed-status-buttons.md) | 8d<br>8d | reed, config |
-| F16 | H | **creel stage 3: agents message through creel, not SendMessage**<br>• Parent asks, parent review, stop reports and shuttle send go through creel, so a non-Claude engine can take a role with a parent | [`creel-agents`](design-creel-agents.md) | 8d<br>20h | creel, shuttle, loom, stencil, report |
+| F16 | H | **creel stage 3: agents message through creel, not SendMessage**<br>• Parent asks, parent review, stop reports and shuttle send go through creel, so a non-Claude engine can take a role with a parent | [`creel-agents`](design-creel-agents.md) | 8d<br>21h | creel, shuttle, loom, stencil, report |
 | F17 |  | **Ideas to borrow from comparable agent orchestrators (survey, Oct 2026)** | [`orchestrator-survey-ideas`](design-orchestrator-survey-ideas.md) | 7d<br>6d | burler, shed, orch, quarry, report |
 | F18 |  | **[.NET 004] Asynchronous test tiers in shed: the numerical baseline captured before implementation, compared at the final gate**<br>• Support a hub regression tier that writes profiles on the parent before implementation and compares after, switchable per task for expected drift. | [`regression-baseline-verify`](design-regression-baseline-verify.md) | 6d<br>2d | shed, webster, batten, config, dotnet |
 | F19 | H | **[WS 004] Board projects and pairs created from a parent pair**<br>• A task names its project; a project groups tasks in order and may have its own worktree; fabric and batten create a project task pair from that branch, batten verbs run from any worktree | [`pair-from-parent`](design-pair-from-parent.md) | 5d<br>5d | fabric, batten, board, workspaces |
-| F20 |  | **Large tasks: Discussion, a pre-planner, and the pieces as darn runs inside the task's beam**<br>• Discussion decides scope, a pre-planner splits it into contracted pieces, each piece runs as darn from the task's beam, a whole-task perch reviews, then align and land | [`loom-beam-darns`](design-loom-beam-darns.md) | 1d<br>16h | loom, shed, batten, workspaces, burler |
+| F20 |  | **Large tasks: Discussion, a pre-planner, and the pieces as darn runs inside the task's beam**<br>• Discussion decides scope, a pre-planner splits it into contracted pieces, each piece runs as darn from the task's beam, a whole-task perch reviews, then align and land | [`loom-beam-darns`](design-loom-beam-darns.md) | 1d<br>17h | loom, shed, batten, workspaces, burler |
