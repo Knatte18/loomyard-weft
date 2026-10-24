@@ -1,0 +1,219 @@
+diff --git a/contracts/stencils/webster/webster-template-master.md b/contracts/stencils/webster/webster-template-master.md
+index 0ba7f91fa..c8a2a814e 100644
+--- a/contracts/stencils/webster/webster-template-master.md
++++ b/contracts/stencils/webster/webster-template-master.md
+@@ -122,8 +122,8 @@ You never read raw fork output beyond its own turn, and you never open a file to
+ - `recover-batch <NN>` completes with a terminal `status: stuck` → the recovery itself failed.
+   You have exhausted this batch's recovery: stop the run here — write `outcome: stuck` to `{{.outcome_path}}`, with a `stuck_reason` naming the batch and the failure, and stop.
+   Do NOT re-fork it, do NOT begin the next batch (batch N+1 assumes N is committed).
+-- `recover-batch <NN>` completes with a terminal `status: dead` (any `dead_reason`) and `recovery_retry: true` → the dead recovery committed work of its own and the batch has a recovery left.
+-  Run `lyx webster recover-batch <NN>` once more, backgrounded, and act on its completion notification by these rungs; that second recovery is the last.
++- `recover-batch <NN>` completes with a terminal `status: dead` (any `dead_reason`) and `recovery_retry: true` → the batch earns another recovery: the dead recovery committed work of its own and the batch has a recovery left, or a `reset --to batch-start` cleared the batch's recovery count.
++  Run `lyx webster recover-batch <NN>` once more, backgrounded, and act on its completion notification by these rungs.
+ - `recover-batch <NN>` completes with a terminal `status: dead` and `recovery_retry: false` → the recovery itself failed and earns no retry.
+   Stop exactly as for a terminal `stuck` recovery: write `outcome: stuck` to `{{.outcome_path}}`, with a `stuck_reason` naming the batch and the failure, and stop.
+   Do NOT re-fork it, do NOT begin the next batch.
+diff --git a/internal/webstercli/cli_test.go b/internal/webstercli/cli_test.go
+index 1de2d1388..6db9b6579 100644
+--- a/internal/webstercli/cli_test.go
++++ b/internal/webstercli/cli_test.go
+@@ -838,6 +838,16 @@ func TestStatusCmd(t *testing.T) {
+ 			},
+ 			wantIn: []string{`"recoveries":1`, `"recovery_retry":false`},
+ 		},
++		{
++			name: "a dead recovery a batch-start reset cleared gives recovery_retry true",
++			state: &websterengine.State{
++				RunGUID: "guid-3",
++				Batches: map[int]*websterengine.BatchState{
++					1: {Slug: "only", Kind: "recovery", Status: websterengine.DigestStatusDead, Terminal: true},
++				},
++			},
++			wantIn: []string{`"recoveries":0`, `"recovery_retry":true`},
++		},
+ 	}
+ 	for _, tc := range cases {
+ 		t.Run(tc.name, func(t *testing.T) {
+diff --git a/internal/webstercli/recoverbatch.go b/internal/webstercli/recoverbatch.go
+index 64e7063fd..421c2053d 100644
+--- a/internal/webstercli/recoverbatch.go
++++ b/internal/webstercli/recoverbatch.go
+@@ -99,8 +99,8 @@ and every call then blocks for up to --wait watching it for a terminal
+ classification. A terminal call fabric-commits the batch report and state.json and returns the digest
+ envelope, exactly like record-batch's own terminal envelope plus "recoveries",
+ the batch's counted recovery spawns, and "recovery_retry", true when the
+-recovery is dead, committed work of its own and the batch has a recovery left
+-to run. A terminal digest whose status is not done (stuck or dead) exits
++recovery is dead and earns another: none counted yet, or it committed
++work of its own. A terminal digest whose status is not done (stuck or dead) exits
+ non-zero with "ok": false and the same fields, its message naming the way
+ forward: "lyx webster recover-batch NN" once more when recovery_retry is
+ true, else ending the run stuck naming the batch. A call that would spawn a
+diff --git a/internal/websterengine/beginbatch.go b/internal/websterengine/beginbatch.go
+index a2caea8b2..d810116f7 100644
+--- a/internal/websterengine/beginbatch.go
++++ b/internal/websterengine/beginbatch.go
+@@ -403,7 +403,7 @@ func predecessorDigestLine(batches []batcher.Batch, st *State, batchNumber int)
+ }
+ 
+ // existingReportRemedy names the one step the recorded state of batch number calls for when begin-batch finds the batch's report already on disk.
+-// retry is RecoveryRetry's verdict: a dead recovery that committed and is below the cap names recover-batch once more.
++// retry is RecoveryRetry's verdict: a dead recovery that earns a retry names recover-batch once more.
+ // A terminal record other than done is worded in recover-batch's own order: the exhausted case first, which also reports true, then a dead recovery with a retry, any other dead recovery, and a stuck or failed record.
+ func existingReportRemedy(number int, recorded *BatchState, retry bool) (string, bool) {
+ 	if !recorded.Terminal {
+@@ -421,7 +421,7 @@ func existingReportRemedy(number int, recorded *BatchState, retry bool) (string,
+ 	}
+ 	if recorded.Status == DigestStatusDead {
+ 		if retry {
+-			return fmt.Sprintf("`lyx webster recover-batch %d`, once more, since the dead recovery committed work of its own", number), false
++			return fmt.Sprintf("`lyx webster recover-batch %d`, once more, since the batch earns another recovery", number), false
+ 		}
+ 		return fmt.Sprintf("the recovery of batch %d is dead and earns no retry, so end the run stuck naming the batch", number), false
+ 	}
+diff --git a/internal/websterengine/beginbatch_test.go b/internal/websterengine/beginbatch_test.go
+index 7e3160b02..9513ee793 100644
+--- a/internal/websterengine/beginbatch_test.go
++++ b/internal/websterengine/beginbatch_test.go
+@@ -184,12 +184,23 @@ func TestBeginBatch_Refusals(t *testing.T) {
+ 			prepare: func(t *testing.T, fx *beginFixture) {
+ 				seedReport(t, fx)
+ 				fx.Deps.State.Batches = map[int]*websterengine.BatchState{
+-					1: {Slug: "json-flag", Kind: "recovery", Terminal: true, Status: "dead"},
++					1: {Slug: "json-flag", Kind: "recovery", Terminal: true, Status: "dead", Recoveries: 1},
+ 				}
+ 			},
+ 			wantText:    []string{"terminal with status dead", "way forward: the recovery of batch 1 is dead and earns no retry, so end the run stuck naming the batch"},
+ 			wantNotText: []string{"record-batch", "recover-batch", "exhausted"},
+ 		},
++		{
++			name: "a report over a dead recovery a batch-start reset cleared names recover-batch once more",
++			prepare: func(t *testing.T, fx *beginFixture) {
++				seedReport(t, fx)
++				fx.Deps.State.Batches = map[int]*websterengine.BatchState{
++					1: {Slug: "json-flag", Kind: "recovery", Terminal: true, Status: "dead"},
++				}
++			},
++			wantText:    []string{"terminal with status dead", "way forward: `lyx webster recover-batch 1`, once more, since the batch earns another recovery"},
++			wantNotText: []string{"exhausted", "record-batch"},
++		},
+ 		{
+ 			name: "a report over a dead recovery at the cap with an unrendered amendment ends the run stuck without exhausted",
+ 			prepare: func(t *testing.T, fx *beginFixture) {
+diff --git a/internal/websterengine/doc.go b/internal/websterengine/doc.go
+index 16b2d18dd..1e0948939 100644
+--- a/internal/websterengine/doc.go
++++ b/internal/websterengine/doc.go
+@@ -429,13 +429,14 @@
+ // A re-begin and a rebaseline keep the count.
+ // A spawn whose prompt renders an amendment no earlier spawn rendered does not count, so an amendment forces at most one uncounted re-run.
+ // A counted spawn is refused with ErrRecoveryExhausted once the batch has two recoveries, whoever asks, with a way forward through `reset --to batch-start` or `reset --to start`.
+-// A terminal dead recovery below the cap earns one more when it committed work of its own (RecoveryRetry):
++// A terminal dead recovery at no counted recovery earns one more, since the batch's first counted recovery is still owed; a batch-start reset leaves that state (RecoveryRetry).
++// Below the cap it otherwise earns one more only when it committed work of its own:
+ // HEAD descends from its start through a first-parent range holding a non-merge commit.
+ // An empty start, a HEAD a reset moved off the start, a range of merge-ins only and a failed git read, which is logged at Warn, all give no retry.
+ // begin-batch reads the same function, so its report-present remedy names recover-batch once more for such a batch, and its refusal over a batch at the cap wraps ErrRecoveryExhausted and carries recovery_exhausted.
+ // recover-batch's terminal envelope and status's batch entries carry the count as recoveries and the verdict as recovery_retry, and the refusal wrapping ErrRecoveryExhausted carries recovery_exhausted.
+-// reset --to batch-start clears the batch's count and start; reset --to start archives the whole record.
+-// Merriam runs the second recovery on recovery_retry: true and stops stuck on false or on recovery_exhausted.
++// reset --to batch-start clears the batch's count and start, so the reset batch reads recovery_retry: true; reset --to start archives the whole record.
++// Merriam runs another recovery on recovery_retry: true and stops stuck on false or on recovery_exhausted.
+ //
+ // # digest persistence carries batch context forward
+ //
+diff --git a/internal/websterengine/recoverbatch.go b/internal/websterengine/recoverbatch.go
+index 6380ed140..859eeef12 100644
+--- a/internal/websterengine/recoverbatch.go
++++ b/internal/websterengine/recoverbatch.go
+@@ -407,7 +407,8 @@ func recoverSpawn(deps RecoverDeps, batch batcher.Batch, prior *BatchState, prev
+ }
+ 
+ // RecoveryRetry reports whether batch n's dead recovery earns one more recovery, and how many counted recoveries the batch has.
+-// It is true for a terminal dead recovery record below the cap whose recovery committed work of its own:
++// It is true for a terminal dead recovery record with no counted recovery, the state a batch-start reset leaves, since the batch's first counted recovery is still owed.
++// Below the cap it is otherwise true only when the recovery committed work of its own:
+ // HEAD descends from the record's non-empty RecoveryStartSHA and the first-parent range from it to HEAD holds a commit that is not a merge.
+ // An empty start, a HEAD a reset moved off it and a range of merge-ins only give false.
+ // A git read that fails, a start the store does not hold included, gives false and is logged at Warn.
+@@ -421,7 +422,13 @@ func RecoveryRetry(geom Geometry, st *State, n int) (retry bool, recoveries int)
+ 		return false, 0
+ 	}
+ 	recoveries = bs.Recoveries
+-	if bs.Kind != "recovery" || !bs.Terminal || bs.Status != DigestStatusDead || recoveries >= maxRecoveries || bs.RecoveryStartSHA == "" {
++	if bs.Kind != "recovery" || !bs.Terminal || bs.Status != DigestStatusDead || recoveries >= maxRecoveries {
++		return false, recoveries
++	}
++	if recoveries == 0 {
++		return true, recoveries
++	}
++	if bs.RecoveryStartSHA == "" {
+ 		return false, recoveries
+ 	}
+ 	committed, err := committedSince(geom, bs.RecoveryStartSHA)
+diff --git a/internal/websterengine/recoverbatch_test.go b/internal/websterengine/recoverbatch_test.go
+index ab3d4c2db..75994626a 100644
+--- a/internal/websterengine/recoverbatch_test.go
++++ b/internal/websterengine/recoverbatch_test.go
+@@ -1563,8 +1563,8 @@ func TestRecoverSpawnOrAttach(t *testing.T) {
+ 	}
+ }
+ 
+-// TestRecoveryRetry asserts the one retry rule recover-batch and begin-batch read: a terminal dead recovery below the cap retries only when HEAD descends from the recovery's start through a first-parent range holding a non-merge commit.
+-// The recovery's own commits give true with the batch's recovery count; no commits of its own, a fork's earlier commits, a record with no start, a HEAD a reset moved off the start, a range of merge-ins only, the cap, and a stuck or failed recovery each give false;
++// TestRecoveryRetry asserts the one retry rule recover-batch and begin-batch read: a terminal dead recovery retries at no counted recovery, and otherwise below the cap only when HEAD descends from the recovery's start through a first-parent range holding a non-merge commit.
++// A dead recovery record a batch-start reset cleared and the recovery's own commits give true with the batch's recovery count; no commits of its own, a fork's earlier commits, a record with no start, a HEAD a reset moved off the start, a range of merge-ins only, the cap, a stuck or failed recovery, and a reset-cleared record that is not a recovery, not terminal or not dead each give false;
+ // a failed git read, a start absent from the store, gives false and a Warn line.
+ // It captures the logger's process-global output, so it and its rows run without t.Parallel.
+ func TestRecoveryRetry(t *testing.T) {
+@@ -1586,6 +1586,37 @@ func TestRecoveryRetry(t *testing.T) {
+ 			},
+ 			wantRetry: true, wantRecoveries: 1,
+ 		},
++		{
++			name: "a dead recovery a batch-start reset cleared retries",
++			setup: func(g *fakeGit) *websterengine.BatchState {
++				return deadRecovery(0, "")
++			},
++			wantRetry: true, wantRecoveries: 0,
++		},
++		{
++			name: "a fork record a batch-start reset cleared does not retry",
++			setup: func(g *fakeGit) *websterengine.BatchState {
++				rec := deadRecovery(0, "")
++				rec.Kind = "fork"
++				return rec
++			},
++		},
++		{
++			name: "a non-terminal recovery a batch-start reset cleared does not retry",
++			setup: func(g *fakeGit) *websterengine.BatchState {
++				rec := deadRecovery(0, "")
++				rec.Terminal = false
++				return rec
++			},
++		},
++		{
++			name: "a stuck recovery a batch-start reset cleared does not retry",
++			setup: func(g *fakeGit) *websterengine.BatchState {
++				rec := deadRecovery(0, "")
++				rec.Status = websterengine.DigestStatusStuck
++				return rec
++			},
++		},
+ 		{
+ 			name: "a dead recovery without commits of its own does not retry",
+ 			setup: func(g *fakeGit) *websterengine.BatchState {
+diff --git a/internal/websterengine/state.go b/internal/websterengine/state.go
+index 488945b73..48d563bb7 100644
+--- a/internal/websterengine/state.go
++++ b/internal/websterengine/state.go
+@@ -327,7 +327,7 @@ type BatchState struct {
+ 	// An id with no entry belongs to a record written before the field existed.
+ 	RecoveryEngines map[string]string `json:"recoveryEngines,omitempty"`
+ 	// RecoveryStartSHA is the repo HEAD when the record's recovery was spawned, empty for a fork record and for a record written before the field existed.
+-	// RecoveryRetry reads it to tell whether a dead recovery committed work of its own.
++	// RecoveryRetry reads it to tell whether a dead recovery at a counted recovery committed work of its own.
+ 	RecoveryStartSHA string `json:"recoveryStartSha,omitempty"`
+ }
+ 
