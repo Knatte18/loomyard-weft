@@ -1,28 +1,51 @@
-# Plan gate projects the PATTERN headroom card by card
+# Plan gate: project PATTERN headroom card by card
 
-The plan gate's `pattern-headroom` check measured only the overview the whole plan projects, against the merge base.
-Each card's own gate runs `lyx loom lint-pattern`, which measures the card's working tree against the commit before it.
-A plan whose earlier card grows `PATTERN.md` past the headroom line, with a later card shrinking it back, passed plan review and then failed at the fork's card gate, and fixing it there costs a renumber of the cards.
+The plan gate now checks each pending card's own growth of `PATTERN.md` against the headroom line, as the card gate's `lint-pattern` step does.
+Before, it validated only the final projected size, so a plan whose intermediate card grew the overview passed plan review and failed only at that card's gate.
+A plan-review fix that moved a shortening card ahead of growth cards hit exactly this, and undoing it meant renumbering about twenty cards.
 
-The new blocking check `pattern-card-headroom` closes that gap.
-It starts at the worktree's `PATTERN.md` and walks the cards not recorded done, in plan order.
-Each card's step applies its fenced entry lines with `pattern.ProjectOverview`, and `pattern.Headroom` measures the result against the overview before the step, the bound the card gate applies.
-A card whose step grows past the line gets one finding naming the card and the same way forward as `pattern-headroom`.
-The whole-plan `pattern-headroom` check stays as it was: it still catches growth already in the worktree against the base, which no pending card causes.
+Closes #866
 
-## Changes
+## What changes
 
-- `internal/loomshed/patternplan.go`: `cardHeadroomFindings` and the `pattern-card-headroom` check, appended after `pattern-headroom`; the two headroom findings share one way-forward string.
-- `internal/planparser/patternentry.go`: `CardNamesPatternEntry` reports whether a card's text names an entry's backticked ID, so the plan text stays read inside its sole parser.
-- `internal/loomshed/gates_test.go`: rows for an earlier growing card that a later card offsets, a removal credited to the growing card, to a later card and to no card, and a done card that is never projected; rows that already grew past the line now also expect the card finding.
-- Docs: `internal/loomshed/doc.go`, `contracts/specs/loom-plan-spec.md` and the plan writer's stencil `contracts/stencils/loom/loom-template-plan.md` describe the check and tell the writer to put a shortening on or before the growing card, and to name a removed entry's ID in backticks on the removing card.
+- `internal/loomshed/patternplan.go` adds the blocking check `pattern-card-headroom`.
+  It gives one finding per card not recorded done whose own step grows the projected overview past the headroom line, attributed to that card.
+- The projection starts at the worktree's `PATTERN.md` and walks the pending cards in plan order.
+  Each step applies the card's fenced entry lines with `pattern.ProjectOverview`, and `pattern.Headroom` measures the result against the overview before the step.
+- The whole-plan `pattern-headroom` check is unchanged.
+  It still catches growth already in the worktree against the merge base, which no pending card causes.
+- Both headroom findings now share one way-forward text, `patternHeadroomWayForward`.
+- `planparser.CardNamesPatternEntry` reports whether a card names an entry ID in backticks.
+- `contracts/specs/loom-plan-spec.md`, `internal/loomshed/doc.go` and the plan stencil `loom-template-plan.md` describe the new check.
+  The stencil tells plan writers that a later shortening card never covers an earlier card's growth, and that a card removing an entry names its ID in backticks.
 
 ## Design decisions
 
-- A separate check name rather than a card attached to `pattern-headroom`, so the whole-plan cut against the base and a card's cut against its predecessor stay distinguishable.
-- A plan's `removes` entry belongs to no card, so it is credited to the first pending card whose text names its backticked ID, and to the start of the walk when no pending card names it.
-  Crediting an unnamed removal at the start can only miss a card gate failure, never invent one.
-- A card that edits `PATTERN.md` in prose, outside fenced entry lines, stays invisible to both headroom checks, as before.
-- The board entry also suggested renumbering helpers that rewrite prose card references.
-  That is left out: a prose number may already mean the new numbering, so a rewrite can corrupt a correct reference.
-  It is filed as board note E3, `renumber-rewrites-card-refs`.
+- A `removes` entry of `## PATTERN changes` is applied in the step of the first pending card whose text names its backticked ID.
+  A removal no pending card names is applied before the first card.
+  The plan ties a removal to no card, so this credits the removal in the way least likely to flag a plan its card gate would pass: the check can miss a failure, never invent one.
+- A done card is never projected and never flagged; the worktree already holds its work.
+- Cards run in plan card order, so each pending card's gate sees the overview the earlier cards leave.
+
+## Not changed
+
+- Renumbering helpers that rewrite prose card references; the renumber verbs report prose mentions as before.
+- `pattern.Headroom`, `pattern.ProjectOverview` and `lyx loom lint-pattern`.
+
+## Limits to know
+
+- A card that edits `PATTERN.md` in prose, outside fenced entry lines, is invisible to both headroom checks.
+- Crediting an unnamed removal before the first card makes a card that precedes the real removing card look smaller than its gate will measure it.
+
+## Tests
+
+`internal/loomshed/gates_test.go` rows cover:
+
+- growth on an earlier card that a later card shrinks back;
+- a card whose lines net to no growth;
+- a removal credited through the card's prose;
+- a removal no card names;
+- a done card.
+
+`internal/planparser/patternentry_test.go` covers `CardNamesPatternEntry`.
+The suite was not run by hand here.
