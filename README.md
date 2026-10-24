@@ -22,15 +22,13 @@ Held by a run; its scope is locked until the run ends.
 | T4 | **webster record-batch fails create-not-done for Create targets declared in an external _test package**<br>• `profile: light` | [`record-batch-external-test-pkg`](design-record-batch-external-test-pkg.md) | darn | Darn-Write | neve | 13h<br>9m | webster, quarry |
 | T5 | **Git network calls get a stall bound and one retry**<br>• A git call to GitHub hung for minutes on a dead connection; bound every git network call and retry it once<br>• `profile: light` | [`git-remote-stall-timeout`](design-git-remote-stall-timeout.md) | darn | Darn-Write | neve | 13h<br>9m | fabric, batten |
 | T7 | **Batten idle notice fires while a writer works in a fork**<br>• The idle check reads no fork transcript, so a writer working through a fork reads as idle<br>• `profile: light` | [`idle-notice-misses-fork-activity`](design-idle-notice-misses-fork-activity.md) | darn | Darn-Write | neve | 13h<br>9m | batten |
-| T8 | **A parent decision reaches the agent that needs it: Burler decision findings and Merriam**<br>• Route decision-class findings to the parent, and let Merriam take the decision notice<br>• `profile: light` | [`decision-reaches-agents`](design-decision-reaches-agents.md) | darn | Darn-Write | neve | 13h<br>8m | burler, loom, webster, stencil, creel |
+| T8 | **A parent decision reaches the agent that needs it: Burler decision findings and Merriam**<br>• Route decision-class findings to the parent, and let Merriam take the decision notice<br>• `profile: light` | [`decision-reaches-agents`](design-decision-reaches-agents.md) | darn | Darn-Write | neve | 13h<br>9m | burler, loom, webster, stencil, creel |
 
 ### Ready
 
 Waits on nothing open; can start now.
 
-| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- | --- | --- |
-| T10 | **Every lens fork report is kept verbatim in the run records**<br>• Save each lens fork report in a support file beside lens-review.md, so audits can read what each lens found | [`lens-fork-reports-kept`](design-lens-fork-reports-kept.md) | darn |  | 1d<br>0m | burler, loom |
+_None._
 
 ### Layer A
 
@@ -39,7 +37,8 @@ Waits only on Running or Ready entries.
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
 | T6 | **Fork git-mutation guard fails a run on git commands confined to a scratch repo**<br>• `profile: light` | [`fork-git-guard-scratch-repo`](design-fork-git-guard-scratch-repo.md) | darn | `gate-runs-once` | 13h<br>7m | shed, burler |
-| T9 | **Umbrella groundwork: project entries, pairs from a parent pair, and umbrella tasks that spawn and land from their own worktree**<br>• [WS 004+006] Board projects, fabric pairs from a parent pair, batten and orch from any worktree, umbrella tasks | [`umbrella-groundwork`](design-umbrella-groundwork.md) | loom | `gate-runs-once`, `git-remote-stall-timeout`, `idle-notice-misses-fork-activity` | 2w<br>5m | fabric, batten, orch, board, reed, creel, shed, workspaces |
+| T9 | **Umbrella groundwork: project entries, pairs from a parent pair, and umbrella tasks that spawn and land from their own worktree**<br>• [WS 004+006] Board projects, fabric pairs from a parent pair, batten and orch from any worktree, umbrella tasks | [`umbrella-groundwork`](design-umbrella-groundwork.md) | loom | `gate-runs-once`, `git-remote-stall-timeout`, `idle-notice-misses-fork-activity` | 2w<br>6m | fabric, batten, orch, board, reed, creel, shed, workspaces |
+| T10 | **Every lens fork report is kept verbatim in the run records**<br>• Save each lens fork report in a support file beside lens-review.md, so audits can read what each lens found | [`lens-fork-reports-kept`](design-lens-fork-reports-kept.md) | darn | `decision-reaches-agents` | 1d<br>0m | burler, loom |
 
 ## Notes
 
@@ -74,7 +73,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | E11 |  | **Start one task per overlapping group at a newly-ready start**<br>• When a landing makes several overlapping tasks ready at once, batten starts one per group and names the rest in its notice | [`batten-ready-overlap`](design-batten-ready-overlap.md) | 8d<br>8d | batten |
 | E12 |  | **Git test fixtures trip Cortex XDR on the work laptop**<br>• Parallel git-heavy tests create so many files at once that Cortex XDR killed VS Code and then crashed itself, twice; tests must stay usable on a machine with endpoint protection | [`xdr-git-test-file-burst`](design-xdr-git-test-file-burst.md) | 7d<br>3d | fabric |
 | E13 |  | **Rename the lyx binary to lyr (name clash with LyX)** | [`rename-binary-lyr`](design-rename-binary-lyr.md) | 7d<br>1d | stencil, shuttle |
-| E14 |  | **An adopt runs the test suite on the adopting machine**<br>• Catch breaks from a machine change (Ubuntu 26.04, 24.04, Windows 11) at adopt time | [`adopt-runs-tests`](design-adopt-runs-tests.md) | 24m<br>24m | fabric, gate |
+| E14 |  | **An adopt runs the test suite on the adopting machine**<br>• Catch breaks from a machine change (Ubuntu 26.04, 24.04, Windows 11) at adopt time | [`adopt-runs-tests`](design-adopt-runs-tests.md) | 25m<br>25m | fabric, gate |
 | E15 |  | **Plan writer cost: sub-planners per part, and twill versus a solo writer**<br>• The Plan writer is 18% of spend; sub-planners per part for large bundles, and a twill versus solo Opus high comparison on cost, rounds and time | [`plan-writer-context`](design-plan-writer-context.md) | 1d<br>1d | loom, stencil |
 | E16 |  | **Parallel batches: the shared pieces for Webster forks and Weaver**<br>• DAG batchifier, worktree per batch, merge-back with conflict resolution; open: keeping a fork inside its worktree | [`parallel-batch-parts`](design-parallel-batch-parts.md) | 5d<br>5d | webster, fabric, loom |
 | E17 | H | **[WS 007] An anchor per umbrella**<br>• Let an umbrella work in its own subdirectory of the repository, inherited by its tasks; hard to change now | [`umbrella-anchor`](design-umbrella-anchor.md) | 5d<br>0m | fabric, config, workspaces |
