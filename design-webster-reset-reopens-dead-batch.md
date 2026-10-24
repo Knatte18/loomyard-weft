@@ -1,6 +1,6 @@
 # webster: Master writes stuck after reset --to batch-start instead of running recover-batch
 
-`webster-reset-reopens-dead-batch` · Task · bug, webster · running · Finalize
+`webster-reset-reopens-dead-batch` · Task · bug, webster · done
 
 Imported from [issue #863](https://github.com/Knatte18/loomyard/issues/863).
 
