@@ -1,6 +1,6 @@
 # Clean up PATTERN.md: far too many entries
 
-`pattern-cleanup` · Task · enhancement, stencil · running · PR-Review
+`pattern-cleanup` · Task · enhancement, stencil · running · Finalize
 
 ## Seen (2026-10-24)
 
