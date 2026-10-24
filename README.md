@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-24 17:35 UTC; every age below is as of then.
+Rendered 2026-10-24 17:39 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -16,8 +16,8 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T1 | **Webster batch whose card verify needs an orch-only change dead-ends: recover-batch ends dead with 'asking', then the run halts repeatedly with growing history**<br>• `profile: light` | [`webster-orch-need-to-parent`](design-webster-orch-need-to-parent.md) | darn | Darn-Write | neve | 3h<br>43m | webster, loom |
-| T2 | **Plan check does not project the lint-pattern step per card, so a wrong plan-review fix passes review and fails only at self-check**<br>• `profile: light` | [`plan-check-lint-pattern-per-card`](design-plan-check-lint-pattern-per-card.md) | darn | Darn-Write | neve | 3h<br>43m | loom, burler |
+| T1 | **Webster batch whose card verify needs an orch-only change dead-ends: recover-batch ends dead with 'asking', then the run halts repeatedly with growing history**<br>• `profile: light` | [`webster-orch-need-to-parent`](design-webster-orch-need-to-parent.md) | darn | Darn-Write | neve | 4h<br>46m | webster, loom |
+| T2 | **Plan check does not project the lint-pattern step per card, so a wrong plan-review fix passes review and fails only at self-check**<br>• `profile: light` | [`plan-check-lint-pattern-per-card`](design-plan-check-lint-pattern-per-card.md) | darn | Code-Bouncer | neve | 4h<br>46m | loom, burler |
 | T9 | **Umbrella groundwork: project entries, pairs from a parent pair, and umbrella tasks that spawn and land from their own worktree**<br>• [WS 004+006] Board projects, fabric pairs from a parent pair, batten and orch from any worktree, umbrella tasks | [`umbrella-groundwork`](design-umbrella-groundwork.md) | loom | Webster | neve | 3w<br>6h | fabric, batten, orch, board, reed, creel, shed, workspaces |
 
 ### Ready (0)
@@ -53,7 +53,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | --- | --- | --- | --- | --- | --- |
 | E1 |  | **Plan conflict from a moved tree: a small fixer before the Plan perch**<br>• A tree_moved plan conflict naming exact glyphs goes to a small card fixer, not a full Plan review round | [`plan-conflict-small-fixer`](design-plan-conflict-small-fixer.md) | 7h<br>7h | webster, loom |
 | E2 |  | **Codex CLI as a second shuttle engine: codexengine**<br>• codexengine for single-session roles, built from the 2026-10-24 spike report and claudeengine list of needs | [`codex-engine`](design-codex-engine.md) | 3w<br>4h | shuttle, codex |
-| E3 |  | **insert-card and remove-card could rewrite prose card references they now only report**<br>• Renumber verbs list prose mentions of moved cards; a hand fix of every reference is costly when a renumber spans many cards | [`renumber-rewrites-card-refs`](design-renumber-rewrites-card-refs.md) | 0m<br>0m |  |
+| E3 |  | **insert-card and remove-card could rewrite prose card references they now only report**<br>• Renumber verbs list prose mentions of moved cards; a hand fix of every reference is costly when a renumber spans many cards | [`renumber-rewrites-card-refs`](design-renumber-rewrites-card-refs.md) | 3m<br>3m |  |
 | E4 |  | **finalize: the discrepancy-document conflict shape**<br>• Divergences that cannot be a git conflict get a precomputed document for the resolving agent instead of markers | [`finalize-discrepancy-doc`](design-finalize-discrepancy-doc.md) | 2w<br>2w | fabric, loom |
 | E7 |  | **Run verbs in one shared namespace, not under lyx loom**<br>• lyx loom decision/status/goto/approve act on darn runs too; move recipe-neutral run verbs to one shared namespace | [`run-verbs-shared`](design-run-verbs-shared.md) | 10d<br>10d | shed, loom |
 | E9 |  | **Paste cited code into a review rounds context**<br>• Reviewers edit nothing and review a fixed commit, so code pasted at round start cannot go stale; measure it against todays reviewer | [`review-inline-code`](design-review-inline-code.md) | 13d<br>8h | burler, stencil |
@@ -70,8 +70,8 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | E27 | L | **Carry agent mail into the pane in full instead of a reminder and a read turn**<br>• A reminder plus lyx creel read costs the receiver an extra turn per agent message | [`creel-carry-agent-mail`](design-creel-carry-agent-mail.md) | 1d<br>10h | creel |
 | E28 |  | **[.NET] A small public NUnit repo as sandbox hub for end-to-end C# runs** | [`csharp-sandbox-hub`](design-csharp-sandbox-hub.md) | 2d<br>2d | dotnet |
 | E30 |  | **Discussion scope check moves from the alignment agent into the perch lenses, with an escalating finding class** | [`discussion-alignment-into-lenses`](design-discussion-alignment-into-lenses.md) | 2d<br>10h | loom, burler, shed |
-| E31 |  | **A plainly outdated task entry goes to the parent: from the Discussion review in loom, from Darn-Write in darn**<br>• No pre-Discussion row: board-fit flags an outdated entry as an escalating finding; Darn-Write checks and asks the parent | [`outdated-entry-to-parent`](design-outdated-entry-to-parent.md) | 2d<br>39m | loom, stencil |
-| E32 |  | **Move rules about lyx behaviour out of this repo's CLAUDE.md into lyx code, doc.go and stencils** | [`claude-md-lyx-rules-out`](design-claude-md-lyx-rules-out.md) | 2d<br>39m | stencil, board, loom |
+| E31 |  | **A plainly outdated task entry goes to the parent: from the Discussion review in loom, from Darn-Write in darn**<br>• No pre-Discussion row: board-fit flags an outdated entry as an escalating finding; Darn-Write checks and asks the parent | [`outdated-entry-to-parent`](design-outdated-entry-to-parent.md) | 2d<br>42m | loom, stencil |
+| E32 |  | **Move rules about lyx behaviour out of this repo's CLAUDE.md into lyx code, doc.go and stencils** | [`claude-md-lyx-rules-out`](design-claude-md-lyx-rules-out.md) | 2d<br>42m | stencil, board, loom |
 | E34 |  | **Rename the Merge-In row to Parent-Align**<br>• The row aligns the task with what the parent brought in, not only merges | [`merge-in-parent-align`](design-merge-in-parent-align.md) | 11h<br>11h | loom, shed, stencil |
 | E35 |  | **A landing fixer escalation goes to the arbiter before the orch**<br>• Merge-In and Finalize fixer escalate reports reach the arbiter first | [`landing-escalate-arbiter`](design-landing-escalate-arbiter.md) | 11h<br>11h | shed, loom |
 
@@ -80,7 +80,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | # | P | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | F1 |  | **Hardener: an autonomous behavior-review campaign that replaces crucible**<br>• Parked by the operator: settle the Tenter/Hardener design and build the campaign that runs a live-substrate module in a sandbox until it converges | [`hardener`](design-hardener.md) | 3w<br>8d | burler |
-| F2 | L | **warp-visibility: CLAUDE.local.md invisible in the Fabric repo's git history**<br>• Expose CLAUDE.local.md by symlink so nothing lyx-related shows in the Fabric repo's history; the constraints half is out of date | [`warp-visibility`](design-warp-visibility.md) | 2w<br>8h | ide, fabric |
+| F2 | L | **warp-visibility: CLAUDE.local.md invisible in the Fabric repo's git history**<br>• Expose CLAUDE.local.md by symlink so nothing lyx-related shows in the Fabric repo's history; the constraints half is out of date | [`warp-visibility`](design-warp-visibility.md) | 2w<br>9h | ide, fabric |
 | F5 |  | **Fabric's ordinary-monorepo verb surface**<br>• Against plain git, fabric still lacks log, show, branch, tag, stash, revert, restore, rm/mv, rebase, cherry-pick and blame | [`fabric-monorepo-verbs`](design-fabric-monorepo-verbs.md) | 3w<br>2w | fabric |
 | F6 |  | **Talk to the orch through Slack**<br>• A Slack relay so the operator can reach the orch from a phone where Claude's own app is not allowed | [`reed-slack-relay`](design-reed-slack-relay.md) | 3w<br> | reed |
 | F8 |  | **fabric: two-sided reset-to-SHA verb**<br>• The post-conclude undo the merge surface does not ship: reset to a warp SHA, resolve the paired weft SHA through the correspondence index, gate both sides | [`fabric-reset-to-sha`](design-fabric-reset-to-sha.md) | 2w<br>2w | fabric |
