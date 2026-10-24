@@ -16,10 +16,10 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T1 | **webstercli standalone tests fail when an empty /tmp/.git exists**<br>• `profile: light` | [`webstercli-tests-ignore-tmp-git`](design-webstercli-tests-ignore-tmp-git.md) | darn | Code-Burler-Fix | neve | 22m<br>13m | webster, testkit |
-| T2 | **Clean up PATTERN.md: far too many entries**<br>• `profile: light` | [`pattern-cleanup`](design-pattern-cleanup.md) | darn | Describe | neve | 6h<br>3h | stencil |
-| T7 | **lyx gate test stops at the first failing tier, so a pre-existing tier0 failure hides every later tier and the guard step**<br>• `profile: light` | [`gate-runs-past-failing-tier`](design-gate-runs-past-failing-tier.md) | darn | Code-Burler-Fix | neve | 22m<br>13m | gate |
-| T8 | **webster: Master writes stuck after reset --to batch-start instead of running recover-batch**<br>• `profile: light` | [`webster-reset-reopens-dead-batch`](design-webster-reset-reopens-dead-batch.md) | darn | Code-Burler-Review | neve | 22m<br>13m | webster |
+| T1 | **webstercli standalone tests fail when an empty /tmp/.git exists**<br>• `profile: light` | [`webstercli-tests-ignore-tmp-git`](design-webstercli-tests-ignore-tmp-git.md) | darn | Code-Burler-Fix | neve | 23m<br>13m | webster, testkit |
+| T2 | **Clean up PATTERN.md: far too many entries**<br>• `profile: light` | [`pattern-cleanup`](design-pattern-cleanup.md) | darn | PR-Review | neve | 6h<br>3h | stencil |
+| T7 | **lyx gate test stops at the first failing tier, so a pre-existing tier0 failure hides every later tier and the guard step**<br>• `profile: light` | [`gate-runs-past-failing-tier`](design-gate-runs-past-failing-tier.md) | darn | Code-Burler-Fix | neve | 23m<br>13m | gate |
+| T8 | **webster: Master writes stuck after reset --to batch-start instead of running recover-batch**<br>• `profile: light` | [`webster-reset-reopens-dead-batch`](design-webster-reset-reopens-dead-batch.md) | darn | Code-Burler-Review | neve | 23m<br>13m | webster |
 
 ### Ready (0)
 
@@ -38,7 +38,7 @@ Waits only on Running or Ready entries.
 | T6 | **Fork git-mutation guard fails a run on git commands confined to a scratch repo**<br>• `profile: light` | [`fork-git-guard-scratch-repo`](design-fork-git-guard-scratch-repo.md) | darn | `pattern-cleanup` | 21h<br>3h | shed, burler |
 | T9 | **Umbrella groundwork: project entries, pairs from a parent pair, and umbrella tasks that spawn and land from their own worktree**<br>• [WS 004+006] Board projects, fabric pairs from a parent pair, batten and orch from any worktree, umbrella tasks | [`umbrella-groundwork`](design-umbrella-groundwork.md) | loom | `pattern-cleanup` | 3w<br>3h | fabric, batten, orch, board, reed, creel, shed, workspaces |
 | T10 | **webster record-batch refuses Create target when the test is declared in an external _test package**<br>• `profile: light` | [`create-target-ext-test-pkg`](design-create-target-ext-test-pkg.md) | darn | `webstercli-tests-ignore-tmp-git` | 22m<br>13m | webster, quarry |
-| T11 | **Card gate (--tier 0) does not vet a card's packages under the other tier tag sets, so helper dependencies across tagged files fail only in the batch gate**<br>• `profile: light` | [`card-gate-vets-all-tag-sets`](design-card-gate-vets-all-tag-sets.md) | darn | `gate-runs-past-failing-tier` | 22m<br>13m | gate, webster |
+| T11 | **Card gate (--tier 0) does not vet a card's packages under the other tier tag sets, so helper dependencies across tagged files fail only in the batch gate**<br>• `profile: light` | [`card-gate-vets-all-tag-sets`](design-card-gate-vets-all-tag-sets.md) | darn | `gate-runs-past-failing-tier` | 23m<br>13m | gate, webster |
 
 ## Notes (45)
 
@@ -51,7 +51,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | A2 |  | **Recurring test-suite time and growth audit**<br>• Re-run cmd/testtiming against test-suite-timing.md to watch suite growth | [`test-time-audit-recurring`](design-test-time-audit-recurring.md) | 6d<br>6d |  |
 | A3 |  | **Audit the twill and lens review setup: worth per perch, recurring finding classes, writer quality**<br>• One audit over the review records once about ten loom runs with the current setup land on Neve | [`review-setup-audit`](design-review-setup-audit.md) | 8d<br>2d | burler, loom, report, stencil, shed |
 | A5 |  | **Sweep go_parallel on OSL-1046 with Cortex XDR**<br>• Time both gate tiers on the work laptop on a quiet machine and log them in docs beside the Neve numbers, with full hardware info | [`bench-osl1046-xdr`](design-bench-osl1046-xdr.md) | 4d<br>4d |  |
-| A6 |  | **Lens overlap audit: which lenses find the same defects, and a smaller set**<br>• twill-plan 8 to 5 lenses recommended; twill-discussion 7 to 4 and review-code 4 to 3 at low confidence | [`lens-overlap-audit`](design-lens-overlap-audit.md) | 2d<br>5h | burler, loom |
+| A6 |  | **Lens overlap audit: which lenses find the same defects, and a smaller set**<br>• twill-plan 8 to 5 lenses recommended; twill-discussion 7 to 4 and review-code 4 to 3 at low confidence | [`lens-overlap-audit`](design-lens-overlap-audit.md) | 2d<br>6h | burler, loom |
 | A7 |  | **Trial: batcher profile wide (budget 300k)**<br>• Hub runs a new batcher profile wide, budget 300k; check cost and fork quality before taking it into the template | [`batch-budget-300k-trial`](design-batch-budget-300k-trial.md) | 2d<br>4h | webster |
 | A8 |  | **Plan writer cost: sub-planners per part, and twill versus a solo writer**<br>• The Plan writer is 18% of spend; sub-planners per part for large bundles, and a twill versus solo Opus high comparison on cost, rounds and time | [`plan-writer-context`](design-plan-writer-context.md) | 1d<br>4h | loom, stencil |
 
@@ -60,7 +60,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | # | P | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | B1 |  | **Find why a running run shows a dead waiter in the activity reader** | [`idle-notice-dead-waiter-cause`](design-idle-notice-dead-waiter-cause.md) | 4h<br>4h | batten, shuttle |
-| B2 |  | **A run never files a task, at most a note**<br>• gate-runs-once filed a follow-up task (default loom) that then auto-started; runs may file only notes | [`runs-never-write-board`](design-runs-never-write-board.md) | 36m<br>34m | board, loom, stencil |
+| B2 |  | **A run never files a task, at most a note**<br>• gate-runs-once filed a follow-up task (default loom) that then auto-started; runs may file only notes | [`runs-never-write-board`](design-runs-never-write-board.md) | 36m<br>35m | board, loom, stencil |
 | B7 |  | **Webster batch whose card verify needs an orch-only change dead-ends: recover-batch ends dead with 'asking', then the run halts repeatedly with growing history** | [`webster-orch-need-to-parent`](design-webster-orch-need-to-parent.md) | 22m<br>22m | webster, loom |
 
 ### Enhancements (23)
@@ -69,7 +69,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | --- | --- | --- | --- | --- | --- |
 | E1 |  | **Plan conflict from a moved tree: a small fixer before the Plan perch**<br>• A tree_moved plan conflict naming exact glyphs goes to a small card fixer, not a full Plan review round | [`plan-conflict-small-fixer`](design-plan-conflict-small-fixer.md) | 3h<br>3h | webster, loom |
 | E2 |  | **Codex CLI as a second shuttle engine: codexengine**<br>• codexengine for single-session roles, built from the 2026-10-24 spike report and claudeengine list of needs | [`codex-engine`](design-codex-engine.md) | 2w<br>1h | shuttle, codex |
-| E3 |  | **Plan check does not project the lint-pattern step per card, so a wrong plan-review fix passes review and fails only at self-check** | [`plan-check-lint-pattern-per-card`](design-plan-check-lint-pattern-per-card.md) | 22m<br>22m | loom, burler |
+| E3 |  | **Plan check does not project the lint-pattern step per card, so a wrong plan-review fix passes review and fails only at self-check** | [`plan-check-lint-pattern-per-card`](design-plan-check-lint-pattern-per-card.md) | 23m<br>23m | loom, burler |
 | E4 |  | **finalize: the discrepancy-document conflict shape**<br>• Divergences that cannot be a git conflict get a precomputed document for the resolving agent instead of markers | [`finalize-discrepancy-doc`](design-finalize-discrepancy-doc.md) | 2w<br>2w | fabric, loom |
 | E7 |  | **Run verbs in one shared namespace, not under lyx loom**<br>• lyx loom decision/status/goto/approve act on darn runs too; move recipe-neutral run verbs to one shared namespace | [`run-verbs-shared`](design-run-verbs-shared.md) | 9d<br>9d | shed, loom |
 | E9 |  | **Paste cited code into a review rounds context**<br>• Reviewers edit nothing and review a fixed commit, so code pasted at round start cannot go stale; measure it against todays reviewer | [`review-inline-code`](design-review-inline-code.md) | 12d<br>4h | burler, stencil |
