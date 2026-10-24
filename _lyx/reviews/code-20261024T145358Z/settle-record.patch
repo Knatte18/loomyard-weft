@@ -1,0 +1,1192 @@
+diff --git a/contracts/stencils/orch/orch-template-role.md b/contracts/stencils/orch/orch-template-role.md
+index c9033360a..92b8c2812 100644
+--- a/contracts/stencils/orch/orch-template-role.md
++++ b/contracts/stencils/orch/orch-template-role.md
+@@ -172,9 +172,9 @@ The mechanics of reading and writing the board are in the `ly:board` skill; this
+   Notes are bundled only when the operator promotes them into a task.
+ - Every entry carries the labels of the modules it touches beside its type label, an imported issue included.
+ - Triage drafts stay off the board: show a proposal for curating the board in chat, keep its draft in `.scratch/`, and change the board only after the operator decides.
+-- A task that needs fewer review rounds than its recipe's defaults names a profile, such as `light`, in its board entry's `profile` field through `lyx board upsert`, before its batten run starts;
+-  it never gets hand-written `run_settings` for its review bounds.
+-  `lyx board profiles` lists the hub's profiles.
++- A task that needs other review rounds than its recipe's default profile names a profile of the ladder, `speed`, `light`, `solid` or `wide`, in its board entry's `profile` field through `lyx board upsert`, before its batten run starts;
++  it gets hand-written `run_settings` for its review bounds only when no profile fits.
++  `lyx board profiles` lists the hub's profiles and each recipe's default.
+ 
+ ## Where a finding goes
+ 
+diff --git a/docs/overview.md b/docs/overview.md
+index cbe305d4b..770ad8210 100644
+--- a/docs/overview.md
++++ b/docs/overview.md
+@@ -355,7 +355,7 @@ User-facing modules each get one `lyx <module>` namespace:
+   The hub's repository is the one its recorded binding names, else its origin remote, so only the loomyard hub's intake reads LoomYard's issues; intake never goes through selfreport.
+   The README renders Tasks split into Running, Ready (waiting on nothing open) and dependency layers whose entries can run in parallel, then Notes grouped by type label, each subsection one numbered table that links each slug to its design doc.
+   An entry may carry a priority, `high` or `low`, absent meaning normal, which orders it first or last within its subsection.
+-  A task may name a run profile in its `profile` field, and `lyx board profiles` prints the hub's profiles with their settings.
++  A task may name a run profile in its `profile` field, and `lyx board profiles` prints the hub's profiles with their settings and each recipe's default profile.
+   Agents use the board through the `ly:board` skill.
+   ✅ Implemented.
+ - **config** — bare `lyx config` lists modules and verbs, `lyx config menu` picks a module to edit interactively, and `lyx config <module>` edits that module's config;
+@@ -369,8 +369,8 @@ User-facing modules each get one `lyx <module>` namespace:
+   A hub-wide module's machine keys, such as gate's `slots` and `tier_parallel`, also take a never-tracked machine override at `<BoardDir>/.lyx/config/<module>.machine.yaml`, written from the prime beside the local override.
+   `lyx config --layer default|worktree|machine|local` picks the layer a verb addresses, and `lyx config <module> --resolved` prints the merged result with each unit annotated by its layer.
+   A board task's `run_settings` reach the pair's local layer at batten's Seed-Child, bounded by `configreg`'s `LocalKeys` and `LocalDenied`.
+-  A task's `profile` names a run profile in the hub-wide, seed-only `profiles.yaml`, whose settings Seed-Child writes under the task's `run_settings`;
+-  `lyx config profiles --set <name>='<json object>'` adds or replaces one whole profile (see [internal/runprofile](../internal/runprofile/doc.go)). ✅ Implemented.
++  A task's `profile` names a run profile in the hub-wide, seed-only `profiles.yaml`, whose block for the task's recipe Seed-Child writes under the task's `run_settings`, and a task naming none takes its recipe's default profile;
++  the starting profiles are the ladder `speed`, `light`, `solid` and `wide`, plus the darn-only `docs`, and `lyx config profiles --set <name>='<json object>'` adds or replaces one whole profile (see [internal/runprofile](../internal/runprofile/doc.go)). ✅ Implemented.
+ - **fabric** — the sole git-coordination module over the code and its records, unified over two `internal/gitrepo.Repo` instances: clone (the hub creator), dual-worktree add/remove, coordinated checkout (switches code and records together + re-points junctions), reconcile, status, prune, cleanup, records content-sync (commit/push/pull/sync/diff; in the prime, push, commit and sync push the records side only and `push` reports an unpushed code branch as `code_push_skipped`), and a merge/conflict lifecycle (`merge-in`/`merge`/`merge-stage`/`merge --continue`/`merge --abort`, mirroring git's own exit codes and surfacing conflicts as unified, worktree-relative paths; `merge-stage` marks resolved paths so `--continue`'s index gate can pass, and is the only route for a conflict under a wired junction name, which git refuses to stage through), all in one command tree (`internal/fabriccli` + `internal/fabricengine`);
+   CLI surface is `lyx fabric clone|add|list|remove|checkout|pairs|reconcile|prune|cleanup|unwire|shortname|status|commit|push|pull|sync|diff|merge-in|merge|merge-stage`.
+   `clone` takes the records URL first with the code URL optional, derived from the code binding recorded on the records main branch when omitted;
+diff --git a/internal/battencli/runsettings.go b/internal/battencli/runsettings.go
+index 58137253f..a59cc46d5 100644
+--- a/internal/battencli/runsettings.go
++++ b/internal/battencli/runsettings.go
+@@ -1,4 +1,4 @@
+-// runsettings.go — Seed-Child's prepare step: a board task's run settings laid over its run profile, with each refusal marked for the Stuck route.
++// runsettings.go — Seed-Child's prepare step: a board task's run settings laid over its run profile's block for the task's recipe, with each refusal marked for the Stuck route.
+ 
+ package battencli
+ 
+@@ -12,28 +12,31 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/runprofile"
+ )
+ 
+-// prepareRunSettings returns the local-layer document of each module a board task's run settings and run profile name, the task's keys laid over the profile's.
+-// The profile is read from the run profiles under dirs only when the task names one.
+-// An unknown profile, a profiles file that does not decode, or a refusal of the profile's or the task's settings, wraps battenshed.ErrInvalidRunSettings;
++// prepareRunSettings returns the local-layer document of each module a board task's run settings and its run profile's block for the task's recipe name, the task's keys laid over the profile's.
++// The profile is the task's own, else the recipe's default from the run profiles under dirs; with neither, the task's settings stand alone.
++// An unknown profile, a profile holding no block for the recipe, a profiles file that does not decode, or a refusal of the profile's or the task's settings, wraps battenshed.ErrInvalidRunSettings;
+ // a profiles file that cannot be read is returned as it is.
+ func prepareRunSettings(dirs configengine.Dirs, settings battenshed.RunSettings) (map[string][]byte, error) {
++	profiles, err := runprofile.Load(dirs)
++	if errors.Is(err, configengine.ErrInvalid) {
++		return nil, fmt.Errorf("%w: %s", battenshed.ErrInvalidRunSettings, err.Error())
++	}
++	if err != nil {
++		return nil, err
++	}
++	name := settings.Profile
++	if name == "" {
++		name = profiles.Default(settings.Recipe)
++	}
+ 	var documents map[string][]byte
+-	var err error
+-	if settings.Profile == "" {
++	if name == "" {
+ 		documents, err = configreg.PrepareRunSettings(settings.Settings)
+ 	} else {
+-		profiles, loadErr := runprofile.Load(dirs)
+-		if errors.Is(loadErr, configengine.ErrInvalid) {
+-			return nil, fmt.Errorf("%w: %s", battenshed.ErrInvalidRunSettings, loadErr.Error())
+-		}
+-		if loadErr != nil {
+-			return nil, loadErr
+-		}
+-		profile, lookupErr := profiles.Lookup(settings.Profile)
++		profile, lookupErr := profiles.Settings(name, settings.Recipe)
+ 		if lookupErr != nil {
+ 			return nil, fmt.Errorf("%w: %s", battenshed.ErrInvalidRunSettings, lookupErr.Error())
+ 		}
+-		documents, err = configreg.LayerRunSettings(settings.Profile, profile, settings.Settings)
++		documents, err = configreg.LayerRunSettings(name, profile, settings.Settings)
+ 	}
+ 	var refusal *configreg.RunSettingsError
+ 	if errors.As(err, &refusal) {
+diff --git a/internal/battencli/runsettings_test.go b/internal/battencli/runsettings_test.go
+index ac0056143..934810fbd 100644
+--- a/internal/battencli/runsettings_test.go
++++ b/internal/battencli/runsettings_test.go
+@@ -14,10 +14,13 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/configengine"
+ )
+ 
+-// TestPrepareRunSettings pins how Seed-Child's prepare step lays a task's run settings over its run profile, and that an unknown profile, a profiles file that does not decode, and a refused key each route to Stuck through ErrInvalidRunSettings.
++// TestPrepareRunSettings pins how Seed-Child's prepare step lays a task's run settings over its run profile's block for the task's recipe, or the recipe's default profile when the task names none.
++// It also pins that an unknown profile, a profile without the recipe's block, a profiles file that does not decode, and a refused key each route to Stuck through ErrInvalidRunSettings.
+ func TestPrepareRunSettings(t *testing.T) {
+ 	t.Parallel()
+-	const profiles = "light:\n  loom: {plan_max_bounces: 1, code_max_bounces: 1, merge_max_bounces: 1}\n"
++	const profiles = "defaults: {darn: light}\n" +
++		"light:\n  loom:\n    loom: {plan_max_bounces: 1, code_max_bounces: 1, merge_max_bounces: 1}\n  darn:\n    loom: {code_max_bounces: 2}\n" +
++		"docs:\n  darn:\n    darn: {writer: opus}\n"
+ 	tests := []struct {
+ 		name        string
+ 		profilesYML string
+@@ -26,32 +29,62 @@ func TestPrepareRunSettings(t *testing.T) {
+ 		wantStuck   []string
+ 	}{
+ 		{
+-			name:     "no profile writes the task's settings alone",
+-			settings: battenshed.RunSettings{Settings: map[string]any{"darn": map[string]any{"verify_attempts": float64(1)}}},
+-			wantDocs: map[string]string{"darn": "verify_attempts: 1\n"},
++			name:        "no profile and no default for the recipe writes the task's settings alone",
++			profilesYML: profiles,
++			settings:    battenshed.RunSettings{Recipe: "loom", Settings: map[string]any{"darn": map[string]any{"verify_attempts": float64(1)}}},
++			wantDocs:    map[string]string{"darn": "verify_attempts: 1\n"},
++		},
++		{
++			name:        "no profile takes the recipe's default profile",
++			profilesYML: profiles,
++			settings:    battenshed.RunSettings{Recipe: "darn"},
++			wantDocs:    map[string]string{"loom": "code_max_bounces: 2\n"},
+ 		},
+ 		{
+-			name:        "the task's settings lie over the profile's, and the profile's retired merge_max_bounces is dropped",
++			name:     "no profiles file takes the template's default for the recipe",
++			settings: battenshed.RunSettings{Recipe: "darn"},
++			wantDocs: map[string]string{"loom": "code_hard_max_bounces: 2\ncode_max_bounces: 1\n"},
++		},
++		{
++			name:        "the task's settings lie over the loom block, and the profile's retired merge_max_bounces is dropped",
+ 			profilesYML: profiles,
+-			settings:    battenshed.RunSettings{Profile: "light", Settings: map[string]any{"loom": map[string]any{"plan_max_bounces": float64(3)}}},
++			settings:    battenshed.RunSettings{Recipe: "loom", Profile: "light", Settings: map[string]any{"loom": map[string]any{"plan_max_bounces": float64(3)}}},
+ 			wantDocs:    map[string]string{"loom": "code_max_bounces: 1\nplan_max_bounces: 3\n"},
+ 		},
++		{
++			name:        "the same profile writes its darn block for a darn task",
++			profilesYML: profiles,
++			settings:    battenshed.RunSettings{Recipe: "darn", Profile: "light"},
++			wantDocs:    map[string]string{"loom": "code_max_bounces: 2\n"},
++		},
+ 		{
+ 			name:        "an unknown profile is Stuck naming it",
+ 			profilesYML: profiles,
+-			settings:    battenshed.RunSettings{Profile: "heavy"},
+-			wantStuck:   []string{`"heavy"`, "known: light"},
++			settings:    battenshed.RunSettings{Recipe: "loom", Profile: "heavy"},
++			wantStuck:   []string{`"heavy"`, "known: docs, light"},
++		},
++		{
++			name:        "a profile without the recipe's block is Stuck naming it",
++			profilesYML: profiles,
++			settings:    battenshed.RunSettings{Recipe: "loom", Profile: "docs"},
++			wantStuck:   []string{`"docs"`, "no loom block"},
+ 		},
+ 		{
+ 			name:        "a profiles file that does not decode is Stuck",
+ 			profilesYML: "light: 3\n",
+-			settings:    battenshed.RunSettings{Profile: "light"},
++			settings:    battenshed.RunSettings{Recipe: "loom", Profile: "light"},
++			wantStuck:   []string{`profile "light"`},
++		},
++		{
++			name:        "a profiles file that does not decode is Stuck for a task naming no profile",
++			profilesYML: "light: 3\n",
++			settings:    battenshed.RunSettings{Recipe: "loom"},
+ 			wantStuck:   []string{`profile "light"`},
+ 		},
+ 		{
+ 			name:        "a refused task key is Stuck naming it",
+ 			profilesYML: profiles,
+-			settings:    battenshed.RunSettings{Profile: "light", Settings: map[string]any{"loom": map[string]any{"no_such_key": float64(1)}}},
++			settings:    battenshed.RunSettings{Recipe: "loom", Profile: "light", Settings: map[string]any{"loom": map[string]any{"no_such_key": float64(1)}}},
+ 			wantStuck:   []string{"loom", "no_such_key"},
+ 		},
+ 	}
+diff --git a/internal/battenshed/deps.go b/internal/battenshed/deps.go
+index 7495116c6..8666461b9 100644
+--- a/internal/battenshed/deps.go
++++ b/internal/battenshed/deps.go
+@@ -32,9 +32,11 @@ var ErrUnsupportedChildRecipe = errors.New("battenshed: recipe cannot be a task
+ var ErrInvalidRunSettings = errors.New("battenshed: the board task's run settings do not validate")
+ 
+ // RunSettings is a Board task's run settings as Seed-Child reads them.
+-// Profile names the run profile whose settings lie under Settings, empty for none;
++// Recipe is the recipe the task runs, whose block of the run profile lies under Settings;
++// Profile names that run profile, empty for the recipe's default;
+ // Settings maps a module name to that module's keys.
+ type RunSettings struct {
++	Recipe   string
+ 	Profile  string
+ 	Settings map[string]any
+ }
+@@ -355,10 +357,11 @@ type SeedChildDeps struct {
+ 	// ChildDriver returns the child's driver for the recipe SeedChild resolved: the prime seed's typed child_driver, else the child recipe's driver_kind, else shed.yaml's.
+ 	// SeedChild calls it after the local overrides are written, so the recipe's driver_kind is read from the layer just written.
+ 	ChildDriver func(recipe string) (string, error)
+-	// ReadRunSettings returns the Board task's run profile and run settings, evaluated fresh on every Call.
++	// ReadRunSettings returns the Board task's run profile and run settings, evaluated fresh on every Call; SeedChild sets the Recipe it resolved.
+ 	ReadRunSettings func(ctx context.Context) (RunSettings, error)
+-	// PrepareRunSettings returns each module the settings and their profile name as its migrated local-layer document, the task's keys laid over the profile's.
+-	// An error wrapping ErrInvalidRunSettings means the profile is unknown or a key does not validate, and SeedChild routes it to Stuck; any other error is a hard error.
++	// PrepareRunSettings returns each module the settings and their profile's block for the recipe name as its migrated local-layer document, the task's keys laid over the profile's;
++	// an empty profile takes the recipe's default profile, and a recipe with none takes the task's settings alone.
++	// An error wrapping ErrInvalidRunSettings means the profile is unknown, holds no block for the recipe, or a key does not validate, and SeedChild routes it to Stuck; any other error is a hard error.
+ 	PrepareRunSettings func(settings RunSettings) (map[string][]byte, error)
+ 	// WriteLocalOverride writes one module's local-layer file in the task worktree atomically.
+ 	WriteLocalOverride func(ctx context.Context, module string, document []byte) error
+diff --git a/internal/battenshed/doc.go b/internal/battenshed/doc.go
+index c3c39afc5..bc15637cf 100644
+--- a/internal/battenshed/doc.go
++++ b/internal/battenshed/doc.go
+@@ -91,9 +91,10 @@
+ // a running child whose driver is dead and whose status file does not change returns nothing from the wait, the driver-dead notice being the only signal.
+ //
+ // Seed-Child writes the task worktree's local config layer from the board task's run settings, after reading the child driver and before the seed:
+-// it reads the task's profile and settings fresh on every Call, lays the settings over the named run profile's from the hub's `profiles.yaml` (see `internal/runprofile`) key by key, writes the local file of each module they name, then removes the local file of every other registered module with one Warn per removed file, so the layer is exactly the task's run settings over its profile.
++// it reads the task's profile and settings fresh on every Call and lays the settings key by key over one block from the hub's `profiles.yaml` (see `internal/runprofile`): the block, for the recipe the row resolved, of the task's run profile, or of the recipe's default profile when the task names none.
++// It then writes the local file of each module they name, then removes the local file of every other registered module with one Warn per removed file, so the layer is exactly the task's run settings over its profile's block.
+ // The profile is read only here, so a later change of the profile does not reach a run already seeded.
+-// An unknown profile, or a key that no longer validates (a key a later binary retired or closed to the local layer, or one written to `board.json` or `profiles.yaml` by hand), stands the row Stuck, naming the profile or the module and the key, and the way forward, correcting the task's `profile` or `run_settings` with `lyx board upsert` or the profile with `lyx config profiles`, and then `lyx batten run <slug>`; an unreadable board is Stuck as for the type, and any other prepare, write or remove failure is a hard error.
++// An unknown profile, a profile holding no block for the recipe, or a key that no longer validates (a key a later binary retired or closed to the local layer, or one written to `board.json` or `profiles.yaml` by hand), stands the row Stuck, naming the profile or the module and the key, and the way forward, correcting the task's `profile` or `run_settings` with `lyx board upsert` or the profile with `lyx config profiles`, and then `lyx batten run <slug>`; an unreadable board is Stuck as for the type, and any other prepare, write or remove failure is a hard error.
+ // A resume redoes the whole write from the current board entry, and no other row writes these files.
+ // Bound: a local file written while the row stood Stuck is discarded by the resume, so a hand edit to the pair's local layer before the resume is lost.
+ // Batten writes no seed field for run settings.
+diff --git a/internal/battenshed/seamchild.go b/internal/battenshed/seamchild.go
+index 1eafa1cd0..ea3d87152 100644
+--- a/internal/battenshed/seamchild.go
++++ b/internal/battenshed/seamchild.go
+@@ -80,7 +80,7 @@ func (p *seedChildProducer) Call(ctx context.Context) (shedengine.Outcome, shede
+ 		recipe = defaultChildRecipe
+ 	}
+ 
+-	if reason, err := p.writeRunSettings(ctx); err != nil || reason != "" {
++	if reason, err := p.writeRunSettings(ctx, recipe); err != nil || reason != "" {
+ 		if cerr := cancelErr(ctx, p.name); cerr != nil {
+ 			return "", shedengine.OutputPointer{}, cerr
+ 		}
+@@ -136,16 +136,17 @@ func (p *seedChildProducer) Call(ctx context.Context) (shedengine.Outcome, shede
+ 	return shedengine.Done, shedengine.OutputPointer{}, nil
+ }
+ 
+-// writeRunSettings makes the task worktree's local config layer equal the Board task's run settings laid over its run profile's:
++// writeRunSettings makes the task worktree's local config layer equal the Board task's run settings laid over its run profile's block for recipe:
+ // it writes the local file of each module the settings name, then removes every other module's, logging one Warn per removed file.
+-// A non-empty reason means the row stands Stuck: the board is unreadable, the profile is unknown, or a key no longer validates.
++// A non-empty reason means the row stands Stuck: the board is unreadable, the profile is unknown or holds no block for recipe, or a key no longer validates.
+ // Any other failure is returned as an error.
+ // The whole write is redone on every Call, so a Call interrupted between its writes and its removals leaves nothing the next one does not settle.
+-func (p *seedChildProducer) writeRunSettings(ctx context.Context) (reason string, err error) {
++func (p *seedChildProducer) writeRunSettings(ctx context.Context, recipe string) (reason string, err error) {
+ 	settings, err := p.deps.ReadRunSettings(ctx)
+ 	if err != nil {
+ 		return fmt.Sprintf("read Board task run settings failed: %s", err.Error()), nil
+ 	}
++	settings.Recipe = recipe
+ 	documents, err := p.deps.PrepareRunSettings(settings)
+ 	if err != nil {
+ 		if errors.Is(err, ErrInvalidRunSettings) {
+diff --git a/internal/battenshed/seamchild_test.go b/internal/battenshed/seamchild_test.go
+index 4813d0733..2f47973c7 100644
+--- a/internal/battenshed/seamchild_test.go
++++ b/internal/battenshed/seamchild_test.go
+@@ -332,13 +332,15 @@ func TestSeedChild_CancelledContext(t *testing.T) {
+ }
+ 
+ // TestSeedChild_RunSettings pins how Seed-Child settles the task worktree's local config layer from the board task's run settings:
+-// the named modules are written and the others removed before the seed, an invalid key or an unreadable board is Stuck with no seed written, a write failure is a hard error, and a Call run again after an interruption leaves the layer equal to the board's current settings.
++// the settings are prepared for the recipe the board type resolves, the named modules are written and the others removed before the seed, an invalid key or an unreadable board is Stuck with no seed written, a write failure is a hard error, and a Call run again after an interruption leaves the layer equal to the board's current settings.
+ func TestSeedChild_RunSettings(t *testing.T) {
+ 	t.Parallel()
+ 
+ 	invalid := fmt.Errorf("%w: run_settings for module %q: key %q is execute-closed", ErrInvalidRunSettings, "darn", "verify")
+ 	tests := []struct {
+ 		name         string
++		boardType    string
++		wantRecipe   string
+ 		settings     map[string]any
+ 		readErr      error
+ 		prepareErr   error
+@@ -351,6 +353,8 @@ func TestSeedChild_RunSettings(t *testing.T) {
+ 	}{
+ 		{
+ 			name:        "NamedModulesWrittenAndOthersRemovedThenTheDriverIsReadBeforeTheSeed",
++			boardType:   "darn",
++			wantRecipe:  "darn",
+ 			settings:    map[string]any{"loom": map[string]any{"a": 1}, "darn": map[string]any{"b": 2}},
+ 			wantOutcome: shedengine.Done,
+ 			wantEvents:  []string{"write darn", "write loom", "remove", "driver", "seed"},
+@@ -358,6 +362,7 @@ func TestSeedChild_RunSettings(t *testing.T) {
+ 		},
+ 		{
+ 			name:        "AbsentSettingsRemoveEveryLocalFile",
++			wantRecipe:  "loom",
+ 			wantOutcome: shedengine.Done,
+ 			wantEvents:  []string{"remove", "driver", "seed"},
+ 			wantKeep:    []string{},
+@@ -394,10 +399,12 @@ func TestSeedChild_RunSettings(t *testing.T) {
+ 			t.Parallel()
+ 
+ 			scratchDir := t.TempDir()
+-			calls, deps := newSeedChildDeps("loom", nil, "claude", nil, nil, nil, nil)
++			calls, deps := newSeedChildDeps(tt.boardType, nil, "claude", nil, nil, nil, nil)
+ 			var keep []string
++			var preparedRecipe string
+ 			deps.ReadRunSettings = func(context.Context) (RunSettings, error) { return RunSettings{Settings: tt.settings}, tt.readErr }
+ 			deps.PrepareRunSettings = func(settings RunSettings) (map[string][]byte, error) {
++				preparedRecipe = settings.Recipe
+ 				if tt.prepareErr != nil {
+ 					return nil, tt.prepareErr
+ 				}
+@@ -431,6 +438,9 @@ func TestSeedChild_RunSettings(t *testing.T) {
+ 			if tt.wantKeep != nil && !slices.Equal(keep, tt.wantKeep) {
+ 				t.Errorf("RemoveLocalOverrides keep = %v; want %v", keep, tt.wantKeep)
+ 			}
++			if tt.wantRecipe != "" && preparedRecipe != tt.wantRecipe {
++				t.Errorf("PrepareRunSettings recipe = %q; want %q", preparedRecipe, tt.wantRecipe)
++			}
+ 			if tt.wantOutcome == shedengine.Stuck {
+ 				reason := readStuckFile(t, scratchDir, "seedchild", ptr)
+ 				for _, want := range tt.wantReasonIn {
+diff --git a/internal/boardcli/cli.go b/internal/boardcli/cli.go
+index 6948dc6c2..f629a144e 100644
+--- a/internal/boardcli/cli.go
++++ b/internal/boardcli/cli.go
+@@ -364,14 +364,16 @@ Example:
+ 
+ 	profilesCmd := &cobra.Command{
+ 		Use:         "profiles",
+-		Short:       "print the hub's run profiles with their settings, to pick a task's profile",
++		Short:       "print the hub's run profiles with their settings and each recipe's default, to pick a task's profile",
+ 		Annotations: map[string]string{clihelp.AudienceAnnotation: clihelp.AudienceOperator},
+ 		Long: `Print every run profile in the hub's profiles.yaml, in name order, with its settings:
+-module name to config keys, the shape of a task's run_settings. An empty list prints as []. Takes no payload.
++one block per recipe, each module name to config keys, the shape of a task's run_settings.
++Seed-Child writes only the block of the recipe the task runs. An empty list prints as [].
++defaults maps a recipe to the profile a task of that recipe takes when it names none. Takes no payload.
+ Edit the profiles with "lyx config profiles".
+ 
+ Output:
+-  {"ok":true,"profiles":[{"name":"light","settings":{"loom":{"plan_max_bounces":1}}}]}
++  {"ok":true,"defaults":{"loom":"light"},"profiles":[{"name":"light","settings":{"loom":{"loom":{"plan_max_bounces":1}}}}]}
+ 
+ Example:
+   lyx board profiles`,
+@@ -383,9 +385,9 @@ Example:
+ 			}
+ 			entries := []map[string]any{}
+ 			for _, name := range loaded.Names() {
+-				entries = append(entries, map[string]any{"name": name, "settings": loaded[name]})
++				entries = append(entries, map[string]any{"name": name, "settings": loaded.ByName[name]})
+ 			}
+-			return output.Ok(out, map[string]any{"profiles": entries})
++			return output.Ok(out, map[string]any{"profiles": entries, "defaults": loaded.Defaults})
+ 		}),
+ 	}
+ 
+@@ -469,7 +471,7 @@ Required field:
+ Optional fields:
+   "title"      string — human-readable title
+   "brief"      string — one-line summary shown in board listings
+-  "body"       string — full markdown body
++  "body"       string — markdown body
+   "depends_on" array  — list of slug strings this task depends on
+   "isolated"   bool   — true if the task has no dependencies by design
+   "status"     string — lifecycle status (e.g. "active", "done")
+@@ -482,13 +484,13 @@ Optional fields:
+   "created"    string — RFC 3339 time the entry was added
+   "revised"    string — RFC 3339 time its scope last changed
+   "run_settings" object — module name to config keys for the pair's local config at Seed-Child; {} clears it
+-  "profile"    string — a "lyx board profiles" name, laid under run_settings at Seed-Child; "" clears it
++  "profile"    string — a "lyx board profiles" name, laid under run_settings at Seed-Child; "" takes the recipe's default
+   "owner_machine" string — the effective owner only; "lyx adopt" moves it
+ 
+ Flag:
+   --body-file <path>  read "body" from the file, or from stdin when the path is "-".
+                       Refused when the payload also carries "body",
+-                      and when the payload argument is itself "-", since stdin feeds only one.
++                      and when the payload argument is "-", since stdin feeds only one.
+ 
+ Example:
+   lyx board upsert '{"slug":"my-task","title":"My Task","brief":"Short summary","kind":"task","labels":["enhancement"]}'` + slugLimitNote(),
+diff --git a/internal/boardcli/doc.go b/internal/boardcli/doc.go
+index e1b1b3e56..e8d122caf 100644
+--- a/internal/boardcli/doc.go
++++ b/internal/boardcli/doc.go
+@@ -52,6 +52,7 @@
+ // A payload's `run_settings` is checked before the store write by `upsert`, each task of `upsert-batch` and `merge`'s upsert.
+ // It must be an object of module name to keys, and `configreg.PrepareRunSettings` migrates and validates it; a refusal names the module and the key, and the board stores the migrated result.
+ // A payload's `profile` is checked on the same paths: it must be a string, and a non-empty one must name a run profile in the hub's `profiles.yaml` (`runprofile.Load` over the board dir), else the refusal names the known profiles and the way forward; `""` clears it.
++// Whether the profile holds a block for the task's recipe is checked at Seed-Child, which resolves the recipe.
+ // A change to either stored value is refused from a session whose `LYX_STRAND_NAME` carries a task slug (`agentname.TaskSlug`), the same guard as a hub-wide config write, and names the operator or the hub orch as the way forward.
+ // The guard reads outside the write lock and stops a mistaken write, not a determined one.
+ // A change on an entry held by a run past `Worktree-Create` and `Seed-Child` still succeeds and adds a `notice` field to the envelope:
+@@ -62,7 +63,8 @@
+ // `set-deps` prints `notice` only then.
+ // `promote` and `intake import` write no `depends_on` and stay unchanged.
+ //
+-// `profiles` prints `{"profiles":[{"name":…,"settings":{…}}]}`, every run profile in the hub's `profiles.yaml` in name order with its settings, and `[]` when there is none.
++// `profiles` prints `{"ok":true,"defaults":{…},"profiles":[{"name":…,"settings":{recipe:{module:{…}}}}]}`, every run profile in the hub's `profiles.yaml` in name order with its settings per recipe, and `"profiles":[]` when there is none.
++// `defaults` maps each recipe to the profile a task of that recipe takes when it names none.
+ //
+ // `get` takes `--body` to write the entry's body alone, verbatim, with no envelope;
+ // an empty body writes nothing,
+diff --git a/internal/boardcli/verbs_test.go b/internal/boardcli/verbs_test.go
+index 02f807e10..f652f2d67 100644
+--- a/internal/boardcli/verbs_test.go
++++ b/internal/boardcli/verbs_test.go
+@@ -10,6 +10,7 @@ import (
+ 	"fmt"
+ 	"os"
+ 	"path/filepath"
++	"reflect"
+ 	"slices"
+ 	"strings"
+ 	"testing"
+@@ -567,7 +568,7 @@ func stepLabelsListShapedPrintsNamesWithEmptyDescriptions(t *testing.T, f *cliFi
+ 	}
+ }
+ 
+-// stepProfiles pins the profiles verb: with no profiles.yaml it prints the template's starting profiles with their settings in name order, and a hub file without profiles prints an empty list.
++// stepProfiles pins the profiles verb: with no profiles.yaml it prints the template's starting profiles with their settings in name order and its defaults, and a hub file without profiles prints an empty list.
+ func stepProfiles(t *testing.T, f *cliFixture) {
+ 	result := runJSON(t, 0, "profiles")
+ 	list, _ := result["profiles"].([]any)
+@@ -580,9 +581,12 @@ func stepProfiles(t *testing.T, f *cliFixture) {
+ 			t.Errorf("profile %q has no settings; got %v", name, profile)
+ 		}
+ 	}
+-	if want := []string{"budget", "docs", "light"}; !slices.Equal(names, want) {
++	if want := []string{"docs", "light", "solid", "speed", "wide"}; !slices.Equal(names, want) {
+ 		t.Errorf("profile names = %v, want %v", names, want)
+ 	}
++	if want := map[string]any{"loom": "solid", "darn": "light"}; !reflect.DeepEqual(result["defaults"], want) {
++		t.Errorf("defaults = %v, want %v", result["defaults"], want)
++	}
+ 
+ 	boardDir := fabricengine.BoardDir(filepath.Dir(f.cwd))
+ 	if err := os.WriteFile(configengine.ConfigFile(boardDir, "profiles"), []byte("# none\n"), 0o644); err != nil {
+@@ -619,7 +623,7 @@ func stepRunSettings(t *testing.T, f *cliFixture) {
+ 		{name: "a shape mismatch", payload: `{"slug":"bad","run_settings":{"loom":{"review_max_bounces":{"a":1}}}}`, wantErr: []string{"loom", "review_max_bounces"}},
+ 		{name: "a closed key", payload: `{"slug":"bad","run_settings":{"loom":{"discussion_advisors":[{"name":"critic","model":"sonnet[low]"}]}}}`, wantErr: []string{"loom", "discussion_advisors"}},
+ 		{name: "a profile that is not a string", payload: `{"slug":"bad","profile":3}`, wantErr: []string{"profile must be a string"}},
+-		{name: "an unknown profile", payload: `{"slug":"bad","profile":"heavy"}`, wantErr: []string{`"heavy"`, "known: budget, docs, light", "lyx config profiles --set heavy="}},
++		{name: "an unknown profile", payload: `{"slug":"bad","profile":"heavy"}`, wantErr: []string{`"heavy"`, "known: docs, light, solid, speed, wide", "lyx config profiles --set heavy="}},
+ 	}
+ 	for _, tt := range refusals {
+ 		t.Run("refuses "+tt.name, func(t *testing.T) {
+@@ -645,7 +649,7 @@ func stepRunSettings(t *testing.T, f *cliFixture) {
+ 		t.Run(tt.name+" refuses an unknown profile", func(t *testing.T) {
+ 			result := runJSON(t, 1, tt.verb, tt.payload)
+ 			message, _ := result["error"].(string)
+-			for _, want := range []string{`"heavy"`, "known: budget, docs, light"} {
++			for _, want := range []string{`"heavy"`, "known: docs, light, solid, speed, wide"} {
+ 				if !strings.Contains(message, want) {
+ 					t.Errorf("error %q lacks %q", message, want)
+ 				}
+@@ -711,11 +715,11 @@ func stepRunSettings(t *testing.T, f *cliFixture) {
+ 		f.reset(t)
+ 		mustUpsert(t, `{"slug":"rs","title":"RS","kind":"task","labels":["bug"],"profile":"light"}`)
+ 		runJSON(t, 0, "set-status", `{"slug":"rs","status":"running · Discussion-Write"}`)
+-		result := runJSON(t, 0, "upsert", `{"slug":"rs","profile":"budget"}`)
++		result := runJSON(t, 0, "upsert", `{"slug":"rs","profile":"solid"}`)
+ 		if notice, _ := result["notice"].(string); !strings.Contains(notice, "--layer local") {
+ 			t.Errorf("notice = %q, want it to name --layer local", notice)
+ 		}
+-		result = runJSON(t, 0, "upsert", `{"slug":"rs","profile":"budget"}`)
++		result = runJSON(t, 0, "upsert", `{"slug":"rs","profile":"solid"}`)
+ 		if notice, has := result["notice"]; has {
+ 			t.Errorf("unchanged profile returned notice %v, want none", notice)
+ 		}
+diff --git a/internal/boardengine/doc.go b/internal/boardengine/doc.go
+index 2cdc1bae2..f60b6b372 100644
+--- a/internal/boardengine/doc.go
++++ b/internal/boardengine/doc.go
+@@ -55,8 +55,8 @@
+ // A run_settings change is never a scope change, so the run lock lets a run-held entry take it.
+ // `lyx board intake` never sets the field.
+ //
+-// A task may also carry a profile: the name of a run profile in the hub's `profiles.yaml` (see `internal/runprofile`), whose settings Seed-Child writes under the task's run_settings.
+-// A write of an empty string clears it, and the README entry cell names it.
++// A task may also carry a profile: the name of a run profile in the hub's `profiles.yaml` (see `internal/runprofile`), whose block for the task's recipe Seed-Child writes under the task's run_settings.
++// A write of an empty string clears it, and the task then takes its recipe's default profile; the README entry cell names only a profile the task carries.
+ // Like run_settings, a profile change is never a scope change.
+ //
+ // # Owners
+diff --git a/internal/configcli/configcli_integration_test.go b/internal/configcli/configcli_integration_test.go
+index 71a4fcb95..36581455d 100644
+--- a/internal/configcli/configcli_integration_test.go
++++ b/internal/configcli/configcli_integration_test.go
+@@ -517,7 +517,7 @@ func TestConfigOverRealHub(t *testing.T) {
+ 		if err := os.WriteFile(gateFile, []byte("gates:\n  round: [0, 1]\n  publish: [0]\n"), 0o644); err != nil {
+ 			t.Fatalf("plant a publish gate in the board gate.yaml: %v", err)
+ 		}
+-		appendPlanted("profiles", "retired-keys:\n  loom: {webster_max_bounces: 3, merge_max_bounces: 1}\n")
++		appendPlanted("profiles", "retired-keys:\n  loom:\n    loom: {webster_max_bounces: 3, merge_max_bounces: 1}\n")
+ 		profilesFile := configengine.ConfigFile(boardDir, "profiles")
+ 		profilesBefore, err := os.ReadFile(profilesFile)
+ 		if err != nil {
+@@ -560,9 +560,9 @@ func TestConfigOverRealHub(t *testing.T) {
+ 		if err != nil {
+ 			t.Fatalf("runprofile.Load: %v", err)
+ 		}
+-		profile, err := profiles.Lookup("retired-keys")
++		profile, err := profiles.Settings("retired-keys", "loom")
+ 		if err != nil {
+-			t.Fatalf("Lookup(retired-keys): %v", err)
++			t.Fatalf("Settings(retired-keys, loom): %v", err)
+ 		}
+ 		documents, err := configreg.LayerRunSettings("retired-keys", profile, nil)
+ 		if err != nil {
+diff --git a/internal/configcli/configcli_test.go b/internal/configcli/configcli_test.go
+index dbe9560bd..a192864c7 100644
+--- a/internal/configcli/configcli_test.go
++++ b/internal/configcli/configcli_test.go
+@@ -1060,7 +1060,7 @@ func assertDarnSaveWritten(t *testing.T, fx hubFixture, hubFile, saved string) {
+ func TestDispatchSetProfiles(t *testing.T) {
+ 	t.Parallel()
+ 
+-	const seeded = "# operator notes\nlight:\n  loom: {plan_max_bounces: 1}\n"
++	const seeded = "# operator notes\nlight:\n  loom:\n    loom: {plan_max_bounces: 1}\n"
+ 	rows := []struct {
+ 		name string
+ 		// absent leaves the hub file unwritten instead of seeded.
+@@ -1074,7 +1074,7 @@ func TestDispatchSetProfiles(t *testing.T) {
+ 	}{
+ 		{
+ 			name:     "a local write is refused because no profile key is open to the local layer",
+-			setFlag:  `wide={"loom":{"code_max_bounces":2}}`,
++			setFlag:  `broad={"loom":{"loom":{"code_max_bounces":2}}}`,
+ 			layer:    "local",
+ 			wantCode: 1,
+ 			wantFile: seeded,
+@@ -1082,19 +1082,26 @@ func TestDispatchSetProfiles(t *testing.T) {
+ 		},
+ 		{
+ 			name:     "a new profile is added beside the existing one",
+-			setFlag:  `wide={"loom":{"code_max_bounces":2}}`,
+-			wantFile: "# operator notes\nlight:\n    loom: {plan_max_bounces: 1}\nwide:\n    loom: {code_max_bounces: 2}\n",
++			setFlag:  `broad={"loom":{"loom":{"code_max_bounces":2}}}`,
++			wantFile: "# operator notes\nlight:\n    loom:\n        loom: {plan_max_bounces: 1}\nbroad:\n    loom: {loom: {code_max_bounces: 2}}\n",
+ 		},
+ 		{
+ 			name:     "an existing profile is replaced whole",
+-			setFlag:  `light={"loom":{"code_max_bounces":1}}`,
+-			wantFile: "# operator notes\nlight:\n    loom: {code_max_bounces: 1}\n",
++			setFlag:  `light={"darn":{"loom":{"code_max_bounces":1}}}`,
++			wantFile: "# operator notes\nlight:\n    darn: {loom: {code_max_bounces: 1}}\n",
+ 		},
+ 		{
+ 			name:        "an absent hub file starts from the template's profiles",
+ 			absent:      true,
+-			setFlag:     `wide={"loom":{"code_max_bounces":2}}`,
+-			wantContain: []string{"light:", "budget:", "docs:", "wide:\n    loom: {code_max_bounces: 2}"},
++			setFlag:     `broad={"loom":{"loom":{"code_max_bounces":2}}}`,
++			wantContain: []string{"defaults:", "light:", "solid:", "docs:", "broad:\n    loom: {loom: {code_max_bounces: 2}}"},
++		},
++		{
++			name:     "a default naming an unknown profile is refused",
++			setFlag:  `defaults={"loom":"heavy"}`,
++			wantCode: 1,
++			wantFile: seeded,
++			wantErr:  `unknown profile "heavy"`,
+ 		},
+ 		{
+ 			name:     "a value that is not a JSON object is refused",
+@@ -1105,10 +1112,10 @@ func TestDispatchSetProfiles(t *testing.T) {
+ 		},
+ 		{
+ 			name:     "a profile key no module takes is refused",
+-			setFlag:  `odd={"loom":{"no_such_key":1}}`,
++			setFlag:  `odd={"loom":{"loom":{"no_such_key":1}}}`,
+ 			wantCode: 1,
+ 			wantFile: seeded,
+-			wantErr:  `run profile "odd"`,
++			wantErr:  `run profile "odd", recipe "loom"`,
+ 		},
+ 	}
+ 	for _, row := range rows {
+diff --git a/internal/configcli/doc.go b/internal/configcli/doc.go
+index de768d0d0..721875c0a 100644
+--- a/internal/configcli/doc.go
++++ b/internal/configcli/doc.go
+@@ -58,7 +58,7 @@
+ // An entry holding `[` or `]` must be quoted, and a bracketed value that is not such a list is refused, never written as a string.
+ // Any other key must exist in the template;
+ // pre-existing keys the template lacks are preserved and reported in a `preserved` field.
+-// A module whose spec sets `configengine.Spec.JSONEntries`, the run profiles of `profiles`, takes instead a top-level name and a JSON object, as in `lyx config profiles --set wide='{"loom":{"code_max_bounces":2}}'`:
++// A module whose spec sets `configengine.Spec.JSONEntries`, the run profiles of `profiles`, takes instead a top-level name and a JSON object, as in `lyx config profiles --set wide='{"loom":{"loom":{"code_max_bounces":2}}}'`:
+ // the object replaces that entry whole or is appended as a new one, the other entries left as they are, and a value that is not a JSON object is refused.
+ // An absent hub file starts from the template.
+ // A module with a template overlay picks its layer through a selector key only the base file may hold, so a hub worktree write picking a layer the base does not pick is refused, naming `--layer default` from the prime worktree.
+diff --git a/internal/configreg/runsettings.go b/internal/configreg/runsettings.go
+index 891fc0b41..4121c19f4 100644
+--- a/internal/configreg/runsettings.go
++++ b/internal/configreg/runsettings.go
+@@ -4,7 +4,9 @@ package configreg
+ 
+ import (
+ 	"fmt"
++	"maps"
+ 	"math"
++	"slices"
+ 	"sort"
+ 
+ 	"gopkg.in/yaml.v3"
+@@ -140,15 +142,18 @@ func checkLocalDocument(module Module, document []byte) error {
+ 	return nil
+ }
+ 
+-// checkProfiles loads the run profiles under dirs and checks each profile's settings as a task's run settings are checked, naming the profile on a refusal.
++// checkProfiles loads the run profiles under dirs and checks each recipe block of each profile as a task's run settings are checked, naming the profile and the recipe on a refusal.
+ func checkProfiles(dirs configengine.Dirs) error {
+ 	profiles, err := runprofile.Load(dirs)
+ 	if err != nil {
+ 		return err
+ 	}
+ 	for _, name := range profiles.Names() {
+-		if _, err := PrepareRunSettings(profiles[name]); err != nil {
+-			return fmt.Errorf("run profile %q: %w", name, err)
++		profile := profiles.ByName[name]
++		for _, recipe := range slices.Sorted(maps.Keys(profile)) {
++			if _, err := PrepareRunSettings(profile[recipe]); err != nil {
++				return fmt.Errorf("run profile %q, recipe %q: %w", name, recipe, err)
++			}
+ 		}
+ 	}
+ 	return nil
+diff --git a/internal/configreg/runsettings_test.go b/internal/configreg/runsettings_test.go
+index 04e105937..32456d6ea 100644
+--- a/internal/configreg/runsettings_test.go
++++ b/internal/configreg/runsettings_test.go
+@@ -463,10 +463,10 @@ func TestProfilesCheckLoad(t *testing.T) {
+ 		wantRefusal []string
+ 	}{
+ 		{name: "the template's starting profiles pass"},
+-		{name: "a valid hub file passes", hubFile: "light:\n  loom: {plan_max_bounces: 1}\n"},
+-		{name: "a profile holding the retired webster_max_bounces and merge_max_bounces passes", hubFile: "light:\n  loom: {webster_max_bounces: 1, merge_max_bounces: 1}\n"},
+-		{name: "an unknown key is refused naming the profile", hubFile: "light:\n  loom: {plan_max_bounces: 1}\nodd:\n  loom: {no_such_key: 1}\n", wantRefusal: []string{`run profile "odd"`, "no_such_key"}},
+-		{name: "an unknown module is refused naming the profile", hubFile: "odd:\n  bogus: {x: 1}\n", wantRefusal: []string{`run profile "odd"`, "bogus"}},
++		{name: "a valid hub file passes", hubFile: "light:\n  loom:\n    loom: {plan_max_bounces: 1}\n  darn:\n    darn: {writer: opus}\n"},
++		{name: "a profile holding the retired webster_max_bounces and merge_max_bounces passes", hubFile: "light:\n  loom:\n    loom: {webster_max_bounces: 1, merge_max_bounces: 1}\n"},
++		{name: "an unknown key is refused naming the profile and the recipe", hubFile: "light:\n  loom:\n    loom: {plan_max_bounces: 1}\nodd:\n  loom:\n    loom: {plan_max_bounces: 1}\n  darn:\n    loom: {no_such_key: 1}\n", wantRefusal: []string{`run profile "odd", recipe "darn"`, "no_such_key"}},
++		{name: "an unknown module is refused naming the profile and the recipe", hubFile: "odd:\n  loom:\n    bogus: {x: 1}\n", wantRefusal: []string{`run profile "odd", recipe "loom"`, "bogus"}},
+ 	}
+ 	module, _ := Lookup(runprofile.ModuleName)
+ 	for _, tt := range tests {
+diff --git a/internal/configsync/configsync_test.go b/internal/configsync/configsync_test.go
+index a04a9bde5..25e1b10ee 100644
+--- a/internal/configsync/configsync_test.go
++++ b/internal/configsync/configsync_test.go
+@@ -727,15 +727,15 @@ func TestReconcileHubWideAt_SeedsFromHubPrimeLegacyOrTemplate(t *testing.T) {
+ 			name:         "profiles absent starts from the template's starting profiles",
+ 			module:       "profiles",
+ 			wantSeed:     SeedTemplate,
+-			wantContains: []string{"light:", "budget:", "docs:"},
++			wantContains: []string{"defaults:", "light:", "solid:", "docs:"},
+ 		},
+ 		{
+ 			name:         "profiles present with a starting profile removed is never rewritten",
+ 			module:       "profiles",
+-			hubFile:      "wide:\n  darn: {review_max_bounces: 2}\n",
++			hubFile:      "broad:\n  darn:\n    loom: {code_max_bounces: 2}\n",
+ 			wantSeed:     SeedHub,
+-			wantContains: []string{"wide:"},
+-			wantAbsent:   []string{"light:", "budget:", "docs:"},
++			wantContains: []string{"broad:"},
++			wantAbsent:   []string{"defaults:", "light:", "solid:", "docs:"},
+ 		},
+ 		{
+ 			name:         "darn present keeps its tree_scope trees and their targets",
+diff --git a/internal/runprofile/doc.go b/internal/runprofile/doc.go
+index 3d7c192c9..764ed3ce0 100644
+--- a/internal/runprofile/doc.go
++++ b/internal/runprofile/doc.go
+@@ -1,16 +1,23 @@
+ // Package runprofile holds the hub's named run profiles, the `profiles` config module whose one file is `profiles.yaml` on Bolt.
+ //
+-// A profile maps a name to settings in the shape of a board task's `run_settings`, module name to that module's config keys, so one profile can cover several recipes.
++// A profile maps a recipe name, `loom` or `darn`, to that recipe's settings in the shape of a board task's `run_settings`, module name to that module's config keys.
++// One profile name serves both recipes, and each recipe's block may set the same key to its own value:
++// darn's Code-Review perch reads loom's `code_*` keys, so a profile's darn block sets `loom.code_max_bounces` for darn runs while its loom block sets it for loom runs.
++// The reserved top-level `defaults` entry maps a recipe name to the profile a task of that recipe takes when it names none.
+ // A board task names a profile in its `profile` field;
+-// batten's Seed-Child writes the profile's settings into the pair's local config layers with the task's own `run_settings` layered on top, so a later change of the profile never reaches a run already seeded.
+-// A task without a profile runs on the hub's own config.
++// batten's Seed-Child writes the block of the recipe the task runs, of the task's profile or else its recipe's default, into the pair's local config layers with the task's own `run_settings` layered on top, so a later change of the profile never reaches a run already seeded.
++// A task naming no profile, whose recipe has no default, runs on the hub's own config.
+ //
+-// The module is hub-wide and seed-only: the hub reconcile seeds an absent file with the template's starting profiles, `light`, `budget` and `docs`, and never rewrites a present one.
+-// Each profile is one whole entry, and `lyx config profiles --set <name>='<json object>'` adds or replaces one whole profile;
++// The template's starting profiles are one ladder of review rounds per perch, `speed`, `light`, `solid` and `wide`, each perch's hard cap its rounds plus one, and `docs`, a darn-only profile for prose and config value edits;
++// its defaults are `solid` for loom and `light` for darn.
++// A round count of 0 turns a perch off, since its Bouncer then settles approved with no review round.
++//
++// The module is hub-wide and seed-only: the hub reconcile seeds an absent file with the template's entries and never rewrites a present one.
++// Each profile, like `defaults`, is one whole entry, and `lyx config profiles --set <name>='<json object>'` adds or replaces one whole entry;
+ // renaming one is adding it under the new name and removing the old block in the editor, `lyx config profiles`.
+ // No key is open to the local layer.
+ //
+ // `Load` decodes the stacked file without filling it from the template, so a removed starting profile stays removed, and reads the template when no file is present.
+-// It checks only the shape;
+-// `configreg` checks each profile's keys against the modules' config as it checks a task's `run_settings`, on every write of the file and at the board write and Seed-Child that read it.
++// It checks the shape, and that each default names a profile holding its recipe's block;
++// `configreg` checks each recipe block's keys against the modules' config as it checks a task's `run_settings`, on every write of the file and at the board write and Seed-Child that read it.
+ package runprofile
+diff --git a/internal/runprofile/runprofile.go b/internal/runprofile/runprofile.go
+index 0222bf9c9..57ccfbc24 100644
+--- a/internal/runprofile/runprofile.go
++++ b/internal/runprofile/runprofile.go
+@@ -1,4 +1,4 @@
+-// runprofile.go — the profiles.yaml template, its layered-load spec, and the loader and lookup of the hub's run profiles.
++// runprofile.go — the profiles.yaml template, its layered-load spec, and the loader and lookups of the hub's run profiles and each recipe's default profile.
+ 
+ package runprofile
+ 
+@@ -20,24 +20,27 @@ import (
+ // ModuleName is the config module name of the profiles file, profiles.yaml.
+ const ModuleName = "profiles"
+ 
++// DefaultsEntry is the reserved top-level entry of profiles.yaml that maps a recipe name to the profile a task of that recipe takes when it names none.
++const DefaultsEntry = "defaults"
++
+ //go:embed template.yaml
+ var configTemplate string
+ 
+-// ConfigTemplate returns the seed content of profiles.yaml: the starting profiles a hub's first reconcile writes when the file is absent.
++// ConfigTemplate returns the seed content of profiles.yaml: the starting profiles and defaults a hub's first reconcile writes when the file is absent.
+ func ConfigTemplate() string {
+ 	return configTemplate
+ }
+ 
+ // ConfigSpec returns the module's layered-load spec.
+-// It is hub-wide, and each profile is one whole entry set from a JSON object.
+-// No profile is open to the local layer: each template profile is classified cross-pair, since every pair naming it reads it, and a hub-wide module refuses an unclassified one.
++// It is hub-wide, and each profile, like the defaults entry, is one whole entry set from a JSON object.
++// No entry is open to the local layer: each template entry is classified cross-pair, since every pair naming it reads it, and a hub-wide module refuses an unclassified one.
+ func ConfigSpec() configengine.Spec {
+-	var templateProfiles map[string]any
+-	if err := yaml.Unmarshal([]byte(ConfigTemplate()), &templateProfiles); err != nil {
++	var templateEntries map[string]any
++	if err := yaml.Unmarshal([]byte(ConfigTemplate()), &templateEntries); err != nil {
+ 		panic(fmt.Sprintf("runprofile: parse the embedded template: %v", err))
+ 	}
+-	categories := make(map[string]configengine.Category, len(templateProfiles))
+-	for name := range templateProfiles {
++	categories := make(map[string]configengine.Category, len(templateEntries))
++	for name := range templateEntries {
+ 		categories[name] = configengine.CategoryCrossPair
+ 	}
+ 	return configengine.Spec{
+@@ -51,32 +54,58 @@ func ConfigSpec() configengine.Spec {
+ 	}
+ }
+ 
+-// Profiles maps a profile name to its settings: module name to a mapping of that module's config keys, the shape of a board task's run_settings.
+-type Profiles map[string]map[string]any
++// Profile maps a recipe name to that recipe's settings: module name to a mapping of that module's config keys, the shape of a board task's run_settings.
++type Profile map[string]map[string]any
++
++// Profiles holds the hub's run profiles by name and, under Defaults, the profile name each recipe takes when a task names none.
++type Profiles struct {
++	ByName   map[string]Profile
++	Defaults map[string]string
++}
+ 
+ // Names returns the profile names in sorted order.
+ func (p Profiles) Names() []string {
+-	return slices.Sorted(maps.Keys(p))
++	return slices.Sorted(maps.Keys(p.ByName))
+ }
+ 
+-// Lookup returns the settings of the named profile.
++// Lookup returns the named profile.
+ // An unknown name is an error naming the known profiles and the way forward.
+-func (p Profiles) Lookup(name string) (map[string]any, error) {
+-	settings, ok := p[name]
++func (p Profiles) Lookup(name string) (Profile, error) {
++	profile, ok := p.ByName[name]
+ 	if !ok {
+ 		return nil, fmt.Errorf("unknown run profile %q (known: %s); way forward: name a known profile in the task's profile field, or add it with \"lyx config profiles --set %s='<json object>'\" from the hub's prime worktree", name, strings.Join(p.Names(), ", "), name)
+ 	}
++	return profile, nil
++}
++
++// Settings returns the named profile's settings for recipe, module name to keys.
++// An unknown name, or a profile holding no block for recipe, is an error naming the way forward.
++func (p Profiles) Settings(name, recipe string) (map[string]any, error) {
++	profile, err := p.Lookup(name)
++	if err != nil {
++		return nil, err
++	}
++	settings, ok := profile[recipe]
++	if !ok {
++		return nil, fmt.Errorf("run profile %q holds no %s block (it covers: %s); way forward: name a profile that covers %s in the task's profile field, or add a %s block to %q with \"lyx config profiles\" from the hub's prime worktree", name, recipe, strings.Join(slices.Sorted(maps.Keys(profile)), ", "), recipe, recipe, name)
++	}
+ 	return settings, nil
+ }
+ 
++// Default returns the profile name recipe takes when a task names none, empty when the hub names no default for it.
++func (p Profiles) Default(recipe string) string {
++	return p.Defaults[recipe]
++}
++
+ // Load reads the hub's run profiles through the layer stack under dirs.
+ // The merged layers are decoded as they stand, never filled from the template, so a profile removed from the file stays removed;
+ // with no layer file present the template's profiles are returned.
+-// Each profile must be a mapping of module name to a mapping of keys, and an error names the profile and the file.
++// Each profile must be a mapping of recipe name to a mapping of module name to a mapping of keys,
++// and each default must name a profile holding a block for its recipe; an error names the entry and the file.
+ func Load(dirs configengine.Dirs) (Profiles, error) {
+ 	stack, err := configengine.StackLayers(dirs, ConfigSpec())
+ 	if err != nil {
+-		return nil, fmt.Errorf("runprofile: %w", err)
++		return Profiles{}, fmt.Errorf("runprofile: %w", err)
+ 	}
+ 	document, source := stack.Doc, "the merged layers"
+ 	if len(stack.Layers) == 0 {
+@@ -88,28 +117,80 @@ func Load(dirs configengine.Dirs) (Profiles, error) {
+ // decode parses a profiles document into Profiles, an empty or comments-only document yielding none.
+ // source names the document in an error.
+ func decode(document []byte, source string) (Profiles, error) {
++	profiles := Profiles{ByName: map[string]Profile{}, Defaults: map[string]string{}}
+ 	var raw map[string]any
+ 	if err := yaml.NewDecoder(bytes.NewReader(document)).Decode(&raw); err != nil {
+ 		if errors.Is(err, io.EOF) {
+-			return Profiles{}, nil
++			return profiles, nil
+ 		}
+-		return nil, configengine.MarkInvalid(fmt.Errorf("runprofile: parse %s: %w", source, err))
++		return Profiles{}, configengine.MarkInvalid(fmt.Errorf("runprofile: parse %s: %w", source, err))
+ 	}
+-	profiles := make(Profiles, len(raw))
+ 	for name, value := range raw {
+ 		if name == "" {
+-			return nil, configengine.MarkInvalid(fmt.Errorf("runprofile: %s: a profile name must not be empty", source))
++			return Profiles{}, configengine.MarkInvalid(fmt.Errorf("runprofile: %s: a profile name must not be empty", source))
++		}
++		if name == DefaultsEntry {
++			continue
+ 		}
+-		modules, ok := value.(map[string]any)
++		profile, err := decodeProfile(name, value)
++		if err != nil {
++			return Profiles{}, configengine.MarkInvalid(fmt.Errorf("runprofile: %s: %w; way forward: give each profile one block per recipe, recipe name to module name to keys, with \"lyx config profiles\"", source, err))
++		}
++		profiles.ByName[name] = profile
++	}
++	if value, ok := raw[DefaultsEntry]; ok {
++		defaults, err := decodeDefaults(value, profiles)
++		if err != nil {
++			return Profiles{}, configengine.MarkInvalid(fmt.Errorf("runprofile: %s: %w; way forward: map each recipe to a profile that covers it under %s with \"lyx config profiles\"", source, err, DefaultsEntry))
++		}
++		profiles.Defaults = defaults
++	}
++	return profiles, nil
++}
++
++// decodeProfile checks that value, the profile called name, is a mapping of recipe name to a mapping of module name to a mapping of keys, and returns it.
++func decodeProfile(name string, value any) (Profile, error) {
++	recipes, ok := value.(map[string]any)
++	if !ok {
++		return nil, fmt.Errorf("profile %q must be a mapping of recipe name to settings", name)
++	}
++	profile := make(Profile, len(recipes))
++	for recipe, settings := range recipes {
++		modules, ok := settings.(map[string]any)
+ 		if !ok {
+-			return nil, configengine.MarkInvalid(fmt.Errorf("runprofile: %s: profile %q must be a mapping of module name to keys", source, name))
++			return nil, fmt.Errorf("profile %q: recipe %q must be a mapping of module name to keys", name, recipe)
+ 		}
+ 		for module, keys := range modules {
+ 			if _, ok := keys.(map[string]any); !ok {
+-				return nil, configengine.MarkInvalid(fmt.Errorf("runprofile: %s: profile %q: module %q must be a mapping of keys", source, name, module))
++				return nil, fmt.Errorf("profile %q: recipe %q: module %q must be a mapping of keys", name, recipe, module)
+ 			}
+ 		}
+-		profiles[name] = modules
++		profile[recipe] = modules
+ 	}
+-	return profiles, nil
++	return profile, nil
++}
++
++// decodeDefaults checks that value is a mapping of recipe name to the name of a profile in profiles holding a block for that recipe, and returns it.
++// The DefaultsEntry entry is never read as a profile, since decode parses it only through this function.
++func decodeDefaults(value any, profiles Profiles) (map[string]string, error) {
++	entries, ok := value.(map[string]any)
++	if !ok {
++		return nil, fmt.Errorf("%s must be a mapping of recipe name to profile name", DefaultsEntry)
++	}
++	defaults := make(map[string]string, len(entries))
++	for recipe, entry := range entries {
++		name, ok := entry.(string)
++		if !ok {
++			return nil, fmt.Errorf("%s: recipe %q must name a profile", DefaultsEntry, recipe)
++		}
++		profile, ok := profiles.ByName[name]
++		if !ok {
++			return nil, fmt.Errorf("%s: recipe %q names unknown profile %q", DefaultsEntry, recipe, name)
++		}
++		if _, ok := profile[recipe]; !ok {
++			return nil, fmt.Errorf("%s: recipe %q names profile %q, which holds no %s block", DefaultsEntry, recipe, name, recipe)
++		}
++		defaults[recipe] = name
++	}
++	return defaults, nil
+ }
+diff --git a/internal/runprofile/runprofile_test.go b/internal/runprofile/runprofile_test.go
+index f967342d0..2543daf26 100644
+--- a/internal/runprofile/runprofile_test.go
++++ b/internal/runprofile/runprofile_test.go
+@@ -1,11 +1,12 @@
+ //go:build tier0
+ 
+-// runprofile_test.go table-drives Load and Lookup against hub files under t.TempDir.
++// runprofile_test.go table-drives Load, Lookup, Settings and Default against hub files under t.TempDir.
+ 
+ package runprofile_test
+ 
+ import (
+ 	"errors"
++	"maps"
+ 	"os"
+ 	"reflect"
+ 	"slices"
+@@ -29,25 +30,35 @@ func boardWithProfiles(t *testing.T, contents string) string {
+ 	return board
+ }
+ 
+-// TestLoad pins what Load reads: the hub file as it stands, never filled from the template, the template when no file is present, and a refusal naming the profile for a wrong shape.
++// TestLoad pins what Load reads: the hub file as it stands, never filled from the template, the template when no file is present, and a refusal naming the entry for a wrong shape or a default that names no fitting profile.
+ func TestLoad(t *testing.T) {
+ 	t.Parallel()
+ 	tests := []struct {
+-		name        string
+-		contents    *string
+-		wantNames   []string
+-		wantDarn    map[string]any
+-		wantRefusal []string
++		name         string
++		contents     *string
++		wantNames    []string
++		wantDefaults map[string]string
++		wantRefusal  []string
+ 	}{
+ 		{
+-			name:      "no file reads the template's starting profiles",
+-			wantNames: []string{"budget", "docs", "light"},
+-			wantDarn:  map[string]any{"review_max_bounces": 1, "review_hard_max_bounces": 2},
++			name:         "no file reads the template's ladder, docs and defaults",
++			wantNames:    []string{"docs", "light", "solid", "speed", "wide"},
++			wantDefaults: map[string]string{"loom": "solid", "darn": "light"},
+ 		},
+-		{name: "a removed starting profile stays removed", contents: new("light:\n  loom: {plan_max_bounces: 1}\nwide:\n  darn: {review_max_bounces: 2}\n"), wantNames: []string{"light", "wide"}},
+-		{name: "a comments-only file holds no profile", contents: new("# no profiles\n"), wantNames: []string{}},
+-		{name: "a profile that is not a mapping is refused", contents: new("light: 3\n"), wantRefusal: []string{`profile "light"`, "mapping of module name"}},
+-		{name: "a module that is not a mapping is refused", contents: new("light:\n  loom: 3\n"), wantRefusal: []string{`profile "light"`, `module "loom"`}},
++		{
++			name:         "a removed starting profile stays removed",
++			contents:     new("light:\n  loom:\n    loom: {plan_max_bounces: 1}\nbroad:\n  darn:\n    loom: {code_max_bounces: 2}\n"),
++			wantNames:    []string{"broad", "light"},
++			wantDefaults: map[string]string{},
++		},
++		{name: "a comments-only file holds no profile", contents: new("# no profiles\n"), wantNames: []string{}, wantDefaults: map[string]string{}},
++		{name: "a profile that is not a mapping is refused", contents: new("light: 3\n"), wantRefusal: []string{`profile "light"`, "mapping of recipe name", "way forward"}},
++		{name: "a recipe block that is not a mapping is refused", contents: new("light:\n  loom: 3\n"), wantRefusal: []string{`profile "light"`, `recipe "loom"`}},
++		{name: "a profile in the old module-to-keys shape is refused", contents: new("light:\n  loom: {plan_max_bounces: 1}\n"), wantRefusal: []string{`profile "light"`, `recipe "loom"`, `module "plan_max_bounces"`, "lyx config profiles"}},
++		{name: "defaults that are not a mapping are refused", contents: new("defaults: solid\n"), wantRefusal: []string{"defaults must be a mapping", "way forward"}},
++		{name: "a profile named defaults is refused", contents: new("defaults:\n  loom:\n    loom: {plan_max_bounces: 1}\n"), wantRefusal: []string{`recipe "loom" must name a profile`}},
++		{name: "a default naming an unknown profile is refused", contents: new("defaults: {loom: heavy}\n"), wantRefusal: []string{`recipe "loom"`, `unknown profile "heavy"`}},
++		{name: "a default naming a profile without its recipe's block is refused", contents: new("defaults: {loom: docs}\ndocs:\n  darn:\n    darn: {writer: opus}\n"), wantRefusal: []string{`recipe "loom"`, `profile "docs"`, "no loom block"}},
+ 	}
+ 	for _, tt := range tests {
+ 		t.Run(tt.name, func(t *testing.T) {
+@@ -74,36 +85,119 @@ func TestLoad(t *testing.T) {
+ 			if got := profiles.Names(); !slices.Equal(got, tt.wantNames) {
+ 				t.Errorf("Load() names = %v; want %v", got, tt.wantNames)
+ 			}
+-			if tt.wantDarn != nil {
+-				if got := profiles["light"]["darn"]; !reflect.DeepEqual(got, tt.wantDarn) {
+-					t.Errorf("Load() light darn = %v; want %v", got, tt.wantDarn)
+-				}
++			if !maps.Equal(profiles.Defaults, tt.wantDefaults) {
++				t.Errorf("Load() defaults = %v; want %v", profiles.Defaults, tt.wantDefaults)
+ 			}
+ 		})
+ 	}
+ }
+ 
+-// TestLookup pins that a known profile returns its settings and an unknown one names the known profiles and the way forward.
+-func TestLookup(t *testing.T) {
++// TestTemplateLadder pins the template's ladder: each profile's review rounds and hard caps per perch for loom, and the Code perch's for darn, every hard cap its rounds plus one.
++func TestTemplateLadder(t *testing.T) {
+ 	t.Parallel()
+-	profiles, err := runprofile.Load(configengine.Dirs{Board: boardWithProfiles(t, "light:\n  loom: {plan_max_bounces: 1}\n")})
++	profiles, err := runprofile.Load(configengine.Dirs{})
+ 	if err != nil {
+ 		t.Fatal(err)
+ 	}
++	perch := func(rounds int) map[string]int {
++		return map[string]int{"max": rounds, "hard": rounds + 1}
++	}
++	tests := []struct {
++		profile                string
++		discussion, plan, code int
++		darnCode               int
++	}{
++		{"speed", 0, 0, 1, 0},
++		{"light", 1, 1, 1, 1},
++		{"solid", 2, 2, 1, 2},
++		{"wide", 3, 2, 1, 3},
++	}
++	for _, tt := range tests {
++		t.Run(tt.profile, func(t *testing.T) {
++			t.Parallel()
++			loom, err := profiles.Settings(tt.profile, "loom")
++			if err != nil {
++				t.Fatal(err)
++			}
++			darn, err := profiles.Settings(tt.profile, "darn")
++			if err != nil {
++				t.Fatal(err)
++			}
++			got := map[string]map[string]int{}
++			want := map[string]map[string]int{"discussion": perch(tt.discussion), "plan": perch(tt.plan), "code": perch(tt.code), "darn code": perch(tt.darnCode)}
++			for _, segment := range []string{"discussion", "plan", "code"} {
++				keys := loom["loom"].(map[string]any)
++				got[segment] = map[string]int{"max": keys[segment+"_max_bounces"].(int), "hard": keys[segment+"_hard_max_bounces"].(int)}
++			}
++			darnKeys := darn["loom"].(map[string]any)
++			got["darn code"] = map[string]int{"max": darnKeys["code_max_bounces"].(int), "hard": darnKeys["code_hard_max_bounces"].(int)}
++			if !reflect.DeepEqual(got, want) {
++				t.Errorf("Settings(%s) rounds = %v; want %v", tt.profile, got, want)
++			}
++		})
++	}
++}
+ 
+-	settings, err := profiles.Lookup("light")
+-	want := map[string]any{"loom": map[string]any{"plan_max_bounces": 1}}
++// TestTemplateDocsProfile pins the template's darn-only docs profile: a Sonnet medium writer, one Code round with its hard cap, and no loom block.
++func TestTemplateDocsProfile(t *testing.T) {
++	t.Parallel()
++	profiles, err := runprofile.Load(configengine.Dirs{})
++	if err != nil {
++		t.Fatal(err)
++	}
++	got, err := profiles.Settings("docs", "darn")
++	if err != nil {
++		t.Fatal(err)
++	}
++	want := map[string]any{
++		"darn": map[string]any{"writer": "sonnet[medium]"},
++		"loom": map[string]any{"code_max_bounces": 1, "code_hard_max_bounces": 2},
++	}
++	if !reflect.DeepEqual(got, want) {
++		t.Errorf("Settings(docs, darn) = %v; want %v", got, want)
++	}
++	if _, err := profiles.Settings("docs", "loom"); err == nil {
++		t.Error("Settings(docs, loom) error = nil; want a refusal for the missing loom block")
++	}
++}
++
++// TestSettings pins the lookups of a loaded file: a profile's block for a recipe, a refusal naming the way forward for an unknown profile or a missing recipe block, and a recipe's default.
++func TestSettings(t *testing.T) {
++	t.Parallel()
++	profiles, err := runprofile.Load(configengine.Dirs{Board: boardWithProfiles(t, "defaults: {darn: docs}\ndocs:\n  darn:\n    darn: {writer: opus}\n")})
++	if err != nil {
++		t.Fatal(err)
++	}
++
++	settings, err := profiles.Settings("docs", "darn")
++	want := map[string]any{"darn": map[string]any{"writer": "opus"}}
+ 	if err != nil || !reflect.DeepEqual(settings, want) {
+-		t.Errorf("Lookup(light) = %v, %v; want %v", settings, err, want)
++		t.Errorf("Settings(docs, darn) = %v, %v; want %v", settings, err, want)
+ 	}
+ 
+-	_, err = profiles.Lookup("heavy")
+-	if err == nil {
+-		t.Fatal("Lookup(heavy) error = nil; want a refusal")
++	refusals := []struct {
++		name, profile, recipe string
++		want                  []string
++	}{
++		{"an unknown profile", "heavy", "darn", []string{`"heavy"`, "known: docs", "lyx config profiles --set heavy="}},
++		{"a profile without the recipe's block", "docs", "loom", []string{`"docs"`, "no loom block", "covers: darn", "way forward"}},
+ 	}
+-	for _, want := range []string{`"heavy"`, "known: light", "lyx config profiles --set heavy="} {
+-		if !strings.Contains(err.Error(), want) {
+-			t.Errorf("Lookup(heavy) error = %q; want it to name %q", err, want)
++	for _, tt := range refusals {
++		if _, err := profiles.Settings(tt.profile, tt.recipe); err == nil {
++			t.Errorf("Settings(%s, %s) error = nil; want a refusal (%s)", tt.profile, tt.recipe, tt.name)
++		} else {
++			for _, want := range tt.want {
++				if !strings.Contains(err.Error(), want) {
++					t.Errorf("Settings(%s, %s) error = %q; want it to name %q", tt.profile, tt.recipe, err, want)
++				}
++			}
+ 		}
+ 	}
++
++	if got := profiles.Default("darn"); got != "docs" {
++		t.Errorf("Default(darn) = %q; want docs", got)
++	}
++	if got := profiles.Default("loom"); got != "" {
++		t.Errorf("Default(loom) = %q; want empty", got)
++	}
+ }
+diff --git a/internal/runprofile/template.yaml b/internal/runprofile/template.yaml
+index f75f0ccd5..54b31ca17 100644
+--- a/internal/runprofile/template.yaml
++++ b/internal/runprofile/template.yaml
+@@ -1,18 +1,38 @@
+-# profiles.yaml — the hub's named run profiles.
+-# Each top-level key is a profile name, and its value has the shape of a board task's run_settings:
+-# module name to that module's config keys.
+-# A task names a profile in its board entry's profile field;
+-# batten's Seed-Child writes the profile's settings into the pair's local config, with the task's own run_settings layered on top.
++# profiles.yaml — the hub's named run profiles, and the profile each recipe takes by default.
++# Each top-level key but defaults is a profile name, and its value holds one block per recipe, loom or darn;
++# a block has the shape of a board task's run_settings: module name to that module's config keys.
++# A task names a profile in its board entry's profile field, or takes its recipe's entry under defaults when it names none;
++# batten's Seed-Child writes the block of the recipe the task runs into the pair's local config, with the task's own run_settings layered on top.
++# Each perch's hard cap is its rounds plus one, so `lyx loom circling continue` can grant one more round.
+ #
+ # Seeded once when this file is absent; after that it is operator-owned and no reconcile rewrites it.
+-# Add or replace a profile with: lyx config profiles --set <name>='<json object>'
++# Add or replace a profile, or the defaults, with: lyx config profiles --set <name>='<json object>'
+ # Remove one by deleting its block in the editor: lyx config profiles
+ 
++defaults:
++  loom: solid
++  darn: light
++speed:
++  loom:
++    loom: {discussion_max_bounces: 0, discussion_hard_max_bounces: 1, plan_max_bounces: 0, plan_hard_max_bounces: 1, code_max_bounces: 1, code_hard_max_bounces: 2}
++  darn:
++    loom: {code_max_bounces: 0, code_hard_max_bounces: 1}
+ light:
+-  loom: {discussion_max_bounces: 2, discussion_hard_max_bounces: 3, plan_max_bounces: 1, plan_hard_max_bounces: 2, code_max_bounces: 1}
+-  darn: {review_max_bounces: 1, review_hard_max_bounces: 2}
+-budget:
+-  loom: {discussion_max_bounces: 2, discussion_hard_max_bounces: 3, plan_max_bounces: 2, plan_hard_max_bounces: 3, code_max_bounces: 2}
+-  darn: {review_max_bounces: 1}
++  loom:
++    loom: {discussion_max_bounces: 1, discussion_hard_max_bounces: 2, plan_max_bounces: 1, plan_hard_max_bounces: 2, code_max_bounces: 1, code_hard_max_bounces: 2}
++  darn:
++    loom: {code_max_bounces: 1, code_hard_max_bounces: 2}
++solid:
++  loom:
++    loom: {discussion_max_bounces: 2, discussion_hard_max_bounces: 3, plan_max_bounces: 2, plan_hard_max_bounces: 3, code_max_bounces: 1, code_hard_max_bounces: 2}
++  darn:
++    loom: {code_max_bounces: 2, code_hard_max_bounces: 3}
++wide:
++  loom:
++    loom: {discussion_max_bounces: 3, discussion_hard_max_bounces: 4, plan_max_bounces: 2, plan_hard_max_bounces: 3, code_max_bounces: 1, code_hard_max_bounces: 2}
++  darn:
++    loom: {code_max_bounces: 3, code_hard_max_bounces: 4}
+ docs:
+-  darn: {writer: "sonnet[medium]", review_max_bounces: 0}
++  darn:
++    darn: {writer: "sonnet[medium]"}
++    loom: {code_max_bounces: 1, code_hard_max_bounces: 2}
+diff --git a/plugins/ly/skills/board/SKILL.md b/plugins/ly/skills/board/SKILL.md
+index fbf68006e..9163b092a 100644
+--- a/plugins/ly/skills/board/SKILL.md
++++ b/plugins/ly/skills/board/SKILL.md
+@@ -44,7 +44,7 @@ Run `lyx board labels` before choosing labels: it prints both maps in file order
+ Beside its type label, every entry carries a label for each lyx module it touches; an entry that spans the whole tool takes the modules its work would change first.
+ A label in neither map is refused; add it with `lyx config board --set labels.<name>=<description>`, or edit the maps in the `lyx config board` editor.
+ A recipe name goes in `recipe`, never in a label: `loom` or `darn`, empty meaning `loom`.
+-A run profile goes in `profile`, never in `run_settings`: `lyx board profiles` prints the hub's profiles with their settings, and a task without one runs on the hub's own config.
++A run profile goes in `profile`, never in `run_settings`: `lyx board profiles` prints the hub's profiles with one settings block per recipe, and a task without one takes its recipe's default profile, listed under `defaults`.
+ 
+ ## Verbs
+ 
