@@ -20,7 +20,7 @@ Held by a run; its scope is locked until the run ends.
 | T5 | **lyx loom decision add records several decisions in one call and one notice**<br>• `profile: light` | [`decision-add-batch`](design-decision-add-batch.md) | darn | Darn-Write | neve | 1h<br>13m | loom, creel |
 | T7 | **Batten idle notice says no agent activity readable while a run is live**<br>• `profile: light` | [`idle-notice-no-live-run`](design-idle-notice-no-live-run.md) | darn | Darn-Write | neve | 1h<br>13m | batten, shuttle |
 | T8 | **The watcher system should recognize halt due to session limit**<br>• `profile: light` | [`usage-limit-hold-quiet`](design-usage-limit-hold-quiet.md) | darn | Code-Bouncer | neve | 16h<br>13m | shuttle, creel, orch |
-| T10 | **The seeded reed attach task in tasks.json runs on a shortcut**<br>• tasks.json holds one on-demand reed attach task with no shortcut<br>• `profile: light` | [`ide-attach-task`](design-ide-attach-task.md) | darn | PR-Review | neve | 21h<br>12m | ide |
+| T10 | **The seeded reed attach task in tasks.json runs on a shortcut**<br>• tasks.json holds one on-demand reed attach task with no shortcut<br>• `profile: light` | [`ide-attach-task`](design-ide-attach-task.md) | darn | Finalize | neve | 21h<br>12m | ide |
 
 ### Ready (0)
 
