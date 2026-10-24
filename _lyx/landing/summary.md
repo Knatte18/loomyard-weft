@@ -1,40 +1,40 @@
-# Card gate vets the card's packages under the other tier tags
+# gate test: a --card scope vets the card's packages under other tier tags
 
-A card's gate (`--gate card`, tier0 only) never compiled the card's packages under the other tier tags.
-So a helper defined in a `tier0` file and used by a `tier1` file broke only in the batch gate's `go vet` steps, far from the card that caused it.
-
-Now, under the `go` scoper, a `--card` scope plans a vet step between the listed tiers and the guard step.
-The step holds one vet run per declared tier whose tag `tierN` brings a `.go` file into a card package that a build without tags leaves out.
-Tiers the call lists, and tiers a listed tier covers, are left out, since their own commands already compile under that tag.
-A vet run is `go vet -tags tierN` over the card's packages, run once per module in that module's directory.
+A `lyx gate test --card` call now also runs `go vet -tags tierN` over the card's packages, so a compile break under another tier's build tag fails at the card.
+Before, a helper defined in a tier0 file and used by a tier1 or tier2 file passed every card gate and failed only in the batch gate's vet steps, which cost a separate fix pass across cards.
 
 Closes #865
 
+## What changes
+
+Under the `go` scoper, a `--card` plan gains one vet run per qualifying tier, after the listed tiers and before the guard step.
+A tier N qualifies when some `.go` file in a card package matches the build constraints under the single tag `tierN` and not under no tags, on the host's GOOS and GOARCH.
+A tier is skipped when a listed tier is N or covers N, since that tier's own command already compiles the tag set.
+No vet run is planned for the `none` scoper or for the computed, `--base`, `--all` and explicit-target forms.
+
+Each vet run is a tier run of its own:
+- It holds one gate slot and runs in the tier's module directories with the tier's `env`, `parallel` and `timeout_min`.
+- It uses the go binary the gate builds `lyx` with and goes through the go-json counter.
+- It writes a run record and a summary line with scope form `vet`, and takes part in the green record under its own fingerprint.
+- A failing vet run stops no later run, and the closing line names it `vet tierN`.
+
+Because the step reuses the existing slot, timeout, record and carry paths, PATTERN-gate-slot and PATTERN-gate-carry hold without a new path.
+
 ## Design decisions
 
-- The step is part of the gate itself and needs no `gate.yaml` key.
-  The `go` scoper already assumes `tierN` tag naming, so every hub's `card` key gets the step without a board edit.
-- Only the `--card` form plans the step.
-  The other gate keys in this hub list tier1, and tier1's command already vets each tag set.
-  The `batch` key, also of scope card, now vets tier2 and tier3 tagged files a second time, a cost of mostly cached vet runs.
-- A tier is vetted only when its tag changes a card package's file set.
-  A package with no tagged file costs nothing.
-  Bound: a break that shows only under a combination of tags is not caught at the card and is still left to the batch gate.
-- A vet run is a normal run of the plan.
-  It holds one gate slot and uses the tier's `env`, `parallel` and `timeout_min`.
-  It runs with the go command the prebuild uses, goes through the `go-json` counter (which passes plain output through), and writes a run record and summary line with scope form `vet`.
-  It carries through the green record under its own fingerprint.
-  A failure stops no later run, and the closing line names it `vet tierN`.
-- The tag scan (`tagTiers`) runs in `computeScope`'s card branch and is carried on the scope, so `planTierRuns` still never touches the disk.
-- The `test` verb's Long help is at its 2000-byte cap, so the vet step is described only in `internal/gatecli/doc.go` (new `# Vet step` section) and `docs/overview.md`.
+- The step is built into the verb, with no new `gate.yaml` key, so every hub's `card` key gains it without a config edit.
+  The `go` scoper already reads `tierN` tags for the guard scan and the empty-tier check.
+- The tag scan runs in `computeScope`'s card branch and is carried on the scope as `tagTiers`, so `planTierRuns` stays disk-free.
+- A tier that adds no file under its tag is not vetted, so a package with no tagged file costs nothing.
+- Bound: a break visible only under a combination of tags, or under a tier that adds no file, is not caught at the card and stays the batch gate's to find.
+- A hub whose tier N does not compile under `tierN`, such as a non-Go tier numbered like a Go one, gets a vet run it did not ask for; the `go` scoper already assumes the tag naming.
+- The batch key, also of scope card, gains the step for tier2 and tier3 tagged files, which tier1's command in this hub already vets, at the cost of a second, mostly cached vet.
+
+The change is in `internal/gatecli` (`scope.go`, `tiers.go`, `run.go`), with `internal/gatecli/doc.go` and `docs/overview.md` updated to describe the step.
 
 ## Tests
 
-- `TestPlanTierRuns` has new rows for the vet runs' order and modules, a tier a listed tier covers, and the `none` scoper.
-- `TestGateTest_Scopes` (tier1) has two new rows.
-  In one, the stand-in go records `vet -tags tier1` per module between tier0 and the guard step.
-  In the other, real `go vet` fails a card whose tier1 file uses a tier0-only helper: the output holds `undefined: helper`, and the closing line names `vet tier1`.
+- `tiers_test.go` covers the plan: vet runs for tagged tiers, none for listed or covered tiers.
+- `scopes_integration_test.go` covers a `--card` call over a package whose tier1 file uses a tier0 helper (non-zero exit, `vet` scope form, `vet tier1` in the closing line) and the same call over a package with no break (passes).
 
-## To check by hand
-
-A live `--gate card --card N` in a hub task whose card touches tagged test files was not run.
+Not run by hand: a `--card` gate against a real hub's card with retagged files.
