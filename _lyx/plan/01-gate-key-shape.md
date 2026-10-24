@@ -45,8 +45,8 @@
 - `internal/loomshed#roundGateFixture.round`
 
 **Create:**
-- `plan:internal/gateslot#GateKey` -> `type GateKey struct`
-- `plan:internal/gateslot#Config.Gate` -> `func (c Config) Gate(key string) (GateKey, error)`
+- `internal/gateslot#GateKey`
+- `internal/gateslot#Config.Gate`
 
 **Intent:**
 Reshape `gate.yaml`'s `gates` (D1, D2) from a name-to-list map into one key per producer, each `{tiers: [<n>...], scope: card|diff|all}`.
