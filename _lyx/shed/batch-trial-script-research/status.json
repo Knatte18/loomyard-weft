@@ -1,11 +1,11 @@
 {
-  "current_producer": "Darn-Write",
+  "current_producer": "PR-Review",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Darn-Write",
-    "last": "Preflight → done",
+    "now": "PR-Review",
+    "last": "Darn-Write → done",
     "wait": ""
   },
   "history": [
@@ -14,6 +14,33 @@
       "outcome": "done",
       "output": "",
       "at": "2026-10-24T08:58:53Z"
+    },
+    {
+      "producer": "Darn-Write",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYXHUB/batch-trial-script-research/_lyx/landing/summary.md",
+      "at": "2026-10-24T09:05:35Z",
+      "gate_attempts": 0,
+      "gate_spans": [
+        {
+          "gate": "discussion",
+          "kind": "gate",
+          "start": "2026-10-24T09:02:02.459552663Z",
+          "end": "2026-10-24T09:02:11.684938877Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-10-24T09:02:11.734339348Z",
+          "end": "2026-10-24T09:05:34.472990593Z"
+        },
+        {
+          "gate": "description",
+          "kind": "gate",
+          "start": "2026-10-24T09:05:34.510796549Z",
+          "end": "2026-10-24T09:05:34.510834901Z"
+        }
+      ]
     }
   ],
   "product": {
