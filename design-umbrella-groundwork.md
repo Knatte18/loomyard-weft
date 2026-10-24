@@ -2,8 +2,6 @@
 
 `umbrella-groundwork` · Task · feature, fabric, batten, orch, board, reed, creel, shed, workspaces
 
-Depends on: [`pattern-cleanup`](design-pattern-cleanup.md)
-
 ## Bundle (operator, 2026-10-24)
 
 One loom for the umbrella groundwork: `pair-from-parent` is the groundwork `orch-any-worktree` builds on, over the same packages.

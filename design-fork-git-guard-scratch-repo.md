@@ -2,8 +2,6 @@
 
 `fork-git-guard-scratch-repo` · Task · bug, shed, burler
 
-Depends on: [`pattern-cleanup`](design-pattern-cleanup.md)
-
 Imported from [issue #843](https://github.com/Knatte18/loomyard/issues/843).
 
 **What happened**
