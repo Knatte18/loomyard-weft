@@ -68,12 +68,6 @@ Rationale: Operator, 2026-10-24: tasks the operator approved start automatically
 
 - A Go producer that writes the board in-process is not covered, since only the CLI sets the strand name; no producer creates a task today.
 
-<!-- lyx:carry-over Code-Review -->
-- Code-Review, round 1: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
-  Review: _lyx/reviews/code/round-1-review.md; fixer report: _lyx/reviews/code/round-1-fixer-report.md.
-  - numbered-orch-thread-refused-task-creation (class design, severity MEDIUM, open in rounds 1)
-<!-- /lyx:carry-over Code-Review -->
-
 ## Acceptance criteria
 
 - From a task session's strand name, an upsert of a new task, an upsert turning a note into a task, a promote, an upsert-batch carrying a new task and a merge upserting a new task are refused, and board.json is unchanged.
