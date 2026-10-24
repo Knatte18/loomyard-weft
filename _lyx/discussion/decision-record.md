@@ -59,12 +59,6 @@ Rationale: the short notice removes the noise the board entry names, and Merriam
 
 - A Merriam strand that reed names differently from `websterengine.MerriamStrandRole` would get the short notice and lose the batch's texts.
 
-<!-- lyx:carry-over Code-Review -->
-- Code-Review, round 1: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
-  Review: _lyx/reviews/code/round-1-review.md; fixer report: _lyx/reviews/code/round-1-fixer-report.md.
-  - from-unknown-key-not-refused (class design, severity BLOCKING, open in rounds 1)
-<!-- /lyx:carry-over Code-Review -->
-
 ## Acceptance criteria
 
 - A `--from` call with several entries appends all of them under `Added after Discussion` headings, in input order, in one write, and the record is committed once.
