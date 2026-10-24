@@ -1,6 +1,6 @@
 # Batten idle notice says no agent activity readable while a run is live
 
-`idle-notice-no-live-run` · Note · bug, batten, shuttle
+`idle-notice-no-live-run` · Task · bug, batten, shuttle
 
 ## Seen (2026-10-24)
 
