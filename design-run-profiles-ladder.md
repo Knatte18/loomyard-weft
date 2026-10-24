@@ -2,6 +2,8 @@
 
 `run-profiles-ladder` · Task · enhancement, config, loom, burler
 
+Depends on: [`gate-runs-once`](design-gate-runs-once.md)
+
 ## Seen (2026-10-23)
 
 The hub's run profiles, listed by `lyx board profiles`, grew one at a time and their names say little: `budget`, `light`, `docs` and `darn-wide`.
