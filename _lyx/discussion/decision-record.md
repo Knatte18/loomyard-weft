@@ -3,7 +3,7 @@
 ## Goal
 
 Each test runs once per tree and in one tier.
-Every producer that runs a test gate names its own `gate.yaml` key, which sets its tiers and its scope.
+Every producer that runs a test gate names its own `gate.yaml` key, which sets its tiers and its scope, save darn's tree-scoped sites, whose trees set the scope (D14).
 `lyx gate test` carries a green tier forward over an unchanged tree, so a repeat on the same tree runs nothing.
 Shed rows get an entry gate that replaces darn's recipe edge rewrite and the Command rows' switch.
 A loom or darn run's gate time is measurable per gate key, launch latency included.
@@ -16,6 +16,7 @@ In:
 - `lyx gate test --gate <key>`, the per-worktree green record, the `diff` scope's base and the run record's gate key.
 - Disjoint tiers: build tags renamed to the tier names, `tier0` tagged, `guard_tier` retired, the guard step run per tier.
 - Shed row entry gates, the check form, and their two consumers: batten's Command rows and darn's Describe row.
+- Darn's `tree_scope_verify` retired for its rows' gate keys (D14).
 - `lyx gate report` over the machine's gate run records.
 - The tier plan per recipe, stated in code docs.
 - Filing the board entry that removes the guard files' transitional tag term after deploy (D13).
@@ -37,6 +38,7 @@ Webster's keys are `card`, `batch`, `webster` (its end gate, formerly `final`) a
 A recipe row that runs a test gate reads the key its config's `gate_key` names, else its row name in lower case: `merge-in`, `finalize`, `darn-write` and `code-burler-fix` for the shipped recipes.
 The merge fixer runs the key of the row that spawned it.
 `landing`, `final` and `round` are retired.
+`verifytree`'s landing failure record names the failing row's key, and a record naming the retired `landing` kind reads as the key of the row that reads it, Merge-In, Finalize or the merge fixer they spawn, since the record names no row and only those rows read it.
 The template holds every key the shipped recipes read, each `{tiers: [0]}` with the scope below.
 `lyx config reconcile` migrates a hub file: `landing`'s list becomes `merge-in`, `finalize`, `darn-write` and `code-burler-fix`, `final`'s becomes `webster`, `round`'s becomes `webster-fix`, and `card` and `batch` keep their lists.
 Each migrated key takes the scope closest to today's call: `card` for `card` and `batch`, `all` for `webster`, `merge-in` and `finalize`, `diff` for `webster-fix`, `darn-write` and `code-burler-fix`.
@@ -48,7 +50,7 @@ Rationale: operator decisions of 2026-10-23 and 2026-10-24; `gate_key` lets a re
 
 - `card`: the packages of the cards the site names.
   Only `card` and `batch` may set it; the config load refuses it on any other key, naming `lyx config gate`.
-- `diff`: per listed tier, the diff from the newest commit that is an ancestor of HEAD and whose tree the green record (D4) holds whole-green for that tier.
+- `diff`: per listed tier, the diff from the newest commit that is an ancestor of HEAD and whose tree the green record (D4) holds whole-green for that tier under the tier's current fingerprint, with empty args and the same module directory.
   Without one, the diff from the merge base with the parent branch, which is today's computed form.
   Without a parent, the tier runs whole.
   Tiers that land on the same base share one derivation.
@@ -60,11 +62,13 @@ Rationale: the board's two `diff` readings, since the last green run and since t
 
 A site renders `lyx gate test --wait --gate <key>`; the `card` and `batch` sites always add `--card <id>` per card.
 `lyx gate test` reads the key's tiers and scope from the config at run time and uses the card ids only under a `card` scope.
-It refuses `--gate` alongside `--tier`, `--upto`, `--all`, `--base` or explicit targets, and a `card` scope without `--card`, naming the key.
+It refuses `--gate` alongside `--tier`, `--upto`, `--all` or `--base`, and a `card` scope without `--card`, naming the key.
+Explicit targets beside `--gate` replace the key's scope; only darn's tree-scoped sites render them (D14).
 Without `--gate` the verb keeps its manual flags as today.
 The run record gains the gate key, empty for a manual run.
 The fix rows' and writers' verify gate keeps its own comment-lint base: the site's latest recorded pass when it is an ancestor of HEAD, else the merge base with the parent, so a first fix round lints rather than skips.
-Rationale: one place resolves scope, and the record names the key the measurement groups by; per-site commands no longer share Merge-In's recorded pass, which today gives the fix round its lint base.
+The darn form keeps today's lint from the merge base on every attempt.
+Rationale: one place resolves scope, and the record names the key the measurement groups by; per-site commands no longer share the pass of the told command, Webster's end gate, which today gives loom's fix round its lint base.
 
 ### D4. The green record carries a tier forward
 
@@ -77,10 +81,15 @@ Before acquiring slots, each listed tier subtracts what the record already holds
 a whole entry covers every target, and a package entry covers those packages under the `go` scoper.
 A tier with nothing left is carried: it takes no slot, runs no command, writes a run record marked carried, and prints its summary line in the existing shape with exit 0, marked carried.
 A tier with a remainder runs the remainder; under the `none` scoper only a whole entry carries.
+A tier whose carried part and passed remainder together cover every package its `all_targets` expand to writes a whole entry for the tree.
 An entry with empty args covers a request with empty args and the guard step's own `-run` filter; any other args need an exact match, so `-- -count=1` reruns.
-Writers serialize through a lock in the same directory; pruning drops old trees but keeps each tier's recent whole-green commits, so D2 finds an older ancestor when the newest is not one.
+The guard step writes its entries under its own `-run` args, since its filter runs only the guard tests of its packages: an exact-args match carries a repeated guard group, and such an entry never covers an empty-args request.
+Writers serialize through a lock in the same directory; pruning drops old trees but keeps each tier's 20 newest whole-green commits, so D2 finds an older ancestor when the newest is not one.
 The carry sits under `verifytree`'s command-and-tree skip, which every site keeps.
-Bound: a carried tier trusts a pass over the same tree, the same tier declaration and the same args on this worktree; a flaky test that passed once is not rerun, a Go toolchain change is not in the fingerprint, and the record never leaves the machine, so an adopted run tests afresh.
+Bound: a carried tier trusts a pass over the same tree, the same tier declaration and the same args on this worktree; a flaky test that passed once is not rerun, a Go toolchain change and inherited environment variables outside the tier's `env` are not in the fingerprint, ignored files such as `.dev-bin` are outside both the clean check and the fingerprint, so a change to ignored state a test reads over the same tree is carried, and the record never leaves the machine, so an adopted run tests afresh.
+The record is a plain file: the standing deny refuses a Bash redirect into it, as into any project file outside `.scratch/`, but Edit, Write and Bash writers such as `cp` or `tee` reach it.
+A forged or hand-edited whole entry for a tree makes every tier of every later gate on that tree carry, Merge-In and Finalize included.
+This is accepted and stated in `internal/gatecli`'s doc beside the slot variable's bound: a session that can write the worktree can equally change the code and tests under review, so the record guards only honest repeats, and no further deny is added because `cp` and `tee` would still reach it.
 Rationale: after `loom-tail-review` no verify row exists, since the gates run inside Merge-In, Finalize, Darn-Write, Code-Burler-Fix and Webster, whose other work must still run; a row entry gate cannot skip the gate alone, so board item 3 lands in the gate, where every site, the card and batch gates and manual runs included, gets it.
 
 ### D5. Disjoint tiers through tier-named tags
@@ -91,16 +100,19 @@ A test file whose constraint admits two tiers, such as `tier2 || tier3`, holds n
 The helper rules of `PATTERN-test-speed` carry over under the tier names, and a file whose helpers another tier's tests use is split.
 `cmd/lyx/tierpurity_test.go` and `cmd/lyx/llmtier_test.go` are restated with the tier names; untagged becomes `tier0`.
 A repository scan test enforces the one-tag rule, allowing D13's transitional term on guard-marked files only.
-`cmd/testtiming` and `internal/planparser`'s module-wide check use the tier tags.
+Every Go package load that lists test files under `integration,tmux,llm` moves to `tier0,tier1,tier2,tier3,integration,tmux,llm`, so a scope sees `tier0` test imports and, until D13's follow-up drops the old spellings, a branch not yet holding the retag still has its old-tagged test files seen: `internal/impactset`'s reverse-dependency graph and guard-package listing, `internal/planglyph`'s type load and `internal/planparser`'s module-wide check.
+`cmd/testtiming`'s untagged default mode runs `-tags tier0`, its `-full` maps to `tier1`, and its spawn scan's tag classification reads `tier1`, `tier2` and `tier3` beside the old spellings.
+The guards keyed on the `tmux` and `llm` tags, `internal/planparser`'s `namesGateOnlyTier` card Verify check and `internal/shellguard`'s raw go row's `-tags` alternative, match `tier2` and `tier3` beside `tmux` and `llm`.
 `covers` stays a generic tier key; this hub stops using it.
+Card order: D6 and D7 land before or with the first retag card, and the one-tag scan test lands with the last retag card, since the scan passes the repository only once every test file is retagged.
+Every card from the first retag card on tags each test file it adds with its `tierN` tag, so the last retag card's scan meets none untagged.
 Rationale: operator decision of 2026-10-22 ("every tier tagged by its own name, `tier0` included"); with tag equal to tier name, Go code maps a file to its tier with no config.
-The rename adds the already-tagged files to the edit; the measured gain of disjointness is about 20 s of package time per higher-tier run, which the operator decided for.
 
 ### D6. The guard step runs per tier
 
 Under the `go` scoper a test file's tier is the `tierN` tag in its constraint, and a file with none counts as `tier0`.
 The guard step groups the guard tests outside their own tier's scope by their file's tier and runs each group under that tier's command, slots, timeout and `prebuilt_lyx`.
-A group whose tier the call already ran whole, or carried whole, is skipped.
+A group whose tier the call already ran whole, or carried whole, is skipped, and a group the green record holds under its own `-run` args carries (D4).
 The guard scan's `integration` rule is replaced: a `//lyx:guard` marker is allowed in `tier0` and `tier1` files and refused in `tier2` and `tier3` files.
 `guard_tier` is retired: reconcile prunes it from a hub file and the load drops it.
 Rationale: disjoint tiers put most guard tests in `tier0` files, which `guard_tier: 1` no longer compiles.
@@ -110,6 +122,9 @@ Rationale: disjoint tiers put most guard tests in `tier0` files, which `guard_ti
 Under the `go` scoper, a tier run fails when a package runs zero tests while it holds a test function in a file whose constraint holds under the tier's tag on the host's GOOS and GOARCH.
 The count comes from the go-json events, so a package whose untagged `TestMain` still runs counts as zero.
 The failure names the tier, the package and `lyx config gate`, since the tier's command lacks its tag.
+A run whose args after `--` carry `-run`, `-skip`, `-list` or `-bench` is exempt, since its filter may match nothing in a package.
+The guard step's runs are not exempt: each package of a guard group holds a guard test its filter names, so a zero count there means the command lacks its tag.
+Bound: a filtered run under a command that lacks its tag passes vacuously; the site gates, which pass no args, catch it.
 Rationale: a command that drops its tag would otherwise pass vacuously; a hub without tier tags never meets the check.
 
 ### D8. Row entry gates in shed
@@ -118,12 +133,21 @@ A recipe row may carry `entry_gate`, beside its routing.
 `shedbuild` builds it into a `ProducerDef` entry-gate function over the row's checks; `shedengine` keeps its stdlib, `state` and `lock` imports.
 Shed evaluates the gate when the run enters the row: after a verdict or the run's start routes to it, before the first call.
 The status names the row it entered; a resume re-calls the current row without evaluating again when the names match, and a status without the field, or naming another row, reads as not entered.
-Routing and the tackler's relaunch leave the named row behind, so the new current row is evaluated; `lyx shed goto` names its target as entered, so it runs without evaluation; a row rename renames it.
+Every routed persist and every skip clears the entered row, so a row is entered only between its own entry evaluation and its verdict, and a route back into the entered row, through skipped rows or not, evaluates its gate.
+Per path:
+routing leaves the named row behind, so the new current row is evaluated;
+a relaunch without a target, the tackler's and the arbiter's alike, writes the status unchanged, so it re-calls the entered row without evaluation, as a resume does;
+a relaunch with a target, the tackler's and the arbiter's alike, moves the run without naming the target as entered, so the target is evaluated, except when Admit reports the target already in effect: the status is then written unchanged and the entered row is re-called without evaluation;
+every goto through the shed goto verb, whoever calls it, the operator, the orch or the Go driver's goto seam, names its target as entered, so it runs without evaluation;
+a row rename renames the entered row.
+A `pause_before` naming a row pauses the run before that row's entry gate is evaluated, so a skip chain stops at a paused row and a setting changed during the pause counts;
+the row is marked entered only once the pause check has passed and its gate holds.
+A `pause_after` naming a row its entry gate skips fires as for a Done: the run pauses at the row the skip routes to, with the reason `paused after <row>, as requested`, and the persist clears both pause conditions as a fired condition does.
 A false gate appends a `skipped` history entry with the check's text and the values it read, and follows the row's `on_done`, spending no bounce budget and ending the segment's episode as a Done does.
 Every history reader treats `skipped` as a row passed through, never as a stop or a call; the caller label stays on the verdict that led to the skip.
 Consecutive skips chain within one step; a chain longer than the producer list stops the run with an error naming the rows.
 An evaluation error leaves the row not entered and stops the step as a producer error does, status non-running included, so a resume evaluates again.
-Bound: a gate skips only its own row; it reads only settings through the told lookup and resolved segment budgets, and the operator's goto is the one bypass.
+Bound: a gate skips only its own row; it reads only settings through the told lookup and resolved segment budgets, and the shed goto verb is the one bypass.
 Rationale: operator view of 2026-10-17, one gate for every row of every recipe with no producer implementing it.
 
 ### D9. The check form
@@ -131,15 +155,18 @@ Rationale: operator view of 2026-10-17, one gate for every row of every recipe w
 `entry_gate` is one check or a list of checks, all of which must hold.
 A check is `<operand>`, `<operand> == <literal>` or `<operand> != <literal>`, with a YAML scalar literal.
 An operand is `module.key`, read through `Env.Setting` over the pair's config stack, a task's `run_settings` included, or `budget.<Segment>`, the segment's resolved soft cap from `Env.Segments`.
-A bare operand holds when its value is set and is not zero, `false`, an empty string or an empty list.
+A bare `module.key` operand reads a bool and holds when it is `true`; a bare `budget.<Segment>` operand reads a number and holds when it is non-zero.
+Any other type, such as the string `no` or the number `1` for a `module.key`, is an evaluation error naming the row, the operand, the value and the setting's `lyx config` command, so the Command producer's refusal of a non-bool switch survives the move.
 Recipe build refuses an unknown module or key, a segment with no `Env.Segments` entry, and a malformed check, each naming the row and the way forward.
+The build checks a `module.key` operand against the config registry's module templates, the known-key check `configreg.SettingLookup` makes, never through `Env.Setting`, so batten's build needs no task worktree;
+the caller tells that check as a recipe-wide `Env` function beside `Env.Setting`, so `shedrecipe` and `shedbuild` import nothing new; `Env.Setting` serves the evaluation when the row is entered.
 No or, no arithmetic, no free code.
 Rationale: orch recommendation; `budget.<Segment>` exists because a per-perch budget of null takes `review_max_bounces`, which a single setting cannot express.
 
 ### D10. The entry gate's consumers
 
 - Batten's Open-Window, Seed-IDE and Open-IDE rows move their `switch:` to `entry_gate:`, and the Command producer loses its switch read and `CommandDeps.Forced`.
-  `lyx batten run --window` becomes a value battencli's `Env.Setting` answers for `batten.open_window` for that run.
+  `lyx batten run --window` opens a window running `lyx batten run --open-terminal`, and that inner run's hidden `--open-terminal` flag is what battencli's `Env.Setting` answers `batten.open_window` true for, for that run.
 - Darn's edge rewrite for a Code-Review budget of 0 goes: the darn perch takes the same budget stamping as loom's, `zero_rounds` included, so its Bouncer settles approved at once.
   Darn's Describe row gets `entry_gate: budget.Code-Review`, so with a budget of 0 the writer's own change description stands, as today.
 
@@ -148,11 +175,14 @@ Its operator view put the darn gate on the Bouncer; this record departs from tha
 
 ### D11. `lyx gate report`
 
-`lyx gate report [--slug <slug>] [--since <date>]` reads this machine's gate run records and logs and prints, per slug and per gate key, the tier runs, carried tiers, slot wait, wall time and launch time with its share.
-Launch time per package is the gap from `go test -json`'s `start` event to the package's next event, summed over the packages that ran rather than came from the cache; its share is that sum over the summed package time.
+`lyx gate report [--slug <slug>] [--since <date>]` reads this machine's gate run records and prints, per slug and per gate key, the tier runs, carried tiers, slot wait, wall time and launch time with its share.
+`lyx gate test` keeps, per go-json tier run, a per-package launch list in the run record: for each package whose test binary ran, so neither from the cache nor without test files, the gap from `go test -json`'s `start` event to the package's next event, and the package's elapsed time from its closing event.
+The go-json counter reads both from the package-level events, decoding their `Package`, `Time` and `Elapsed` fields beside the `Action` it decodes today, and a package whose output reports `(cached)` or `[no test files]` is left out; the rendered log stays the events' output only.
+Launch time is the sum of a run's gaps; its share is that sum over the summed package time.
 The gap holds the binary's exec, any host-scanner hold such as Cortex XDR's, its init and its `TestMain` setup; the same runs on Neve, which has no XDR, give the reference to subtract.
 A record from before D3 has no key and is grouped by its tier list and scope form.
-Rationale: board item 5; the records and logs already hold every figure but the key.
+A record written before this task carries no launch list, so the report shows launch time only for the records that hold one.
+Rationale: board item 5; the records hold the slot wait start, the start, the end and the counts per tier run, and this task adds the gate key and the launch list.
 Evidence: `go doc cmd/test2json` at go1.26.8 defines `start` as "the test binary is about to be executed".
 
 ### D12. The tier plan per recipe
@@ -169,6 +199,7 @@ Evidence: `go doc cmd/test2json` at go1.26.8 defines `start` as "the test binary
 | loom, darn | Code-Burler-Fix | `code-burler-fix` | `diff` |
 | loom, darn | Finalize | `finalize` | `all` |
 | darn | Darn-Write | `darn-write` | `diff` |
+| darn | Darn-Write, Code-Burler-Fix and Finalize, diff wholly under `tree_scope` | that row's key | the touched trees' targets (D14) |
 
 Darn and loom share the rows they share, so they share keys; the writer's end gate differs by operator decision: Webster runs whole, darn's writer runs the diff.
 Rationale: the operator decision of 2026-10-23 asks for the tier plan stated plainly per recipe, and `loom-beam-darns` defers its piece tiers to it.
@@ -177,21 +208,38 @@ Rationale: the operator decision of 2026-10-23 asks for the tier plan stated pla
 
 This run's gates, and `main`'s until the operator deploys after landing, run the installed `lyx`, whose guard scan accepts a `//lyx:guard` marker only in a file that compiles with no tag or with `integration` alone.
 So a guard-marked file takes `//go:build tierN || integration` instead of `tierN`, which that scan accepts; under the new tier commands it compiles only in `tierN` once the hub drops `integration`.
-This task files a board entry, depending on this one, that removes the `|| integration` term, the scan test's allowance for it and the hub commands' old tag spellings after the deploy.
-The first retagging card's gate must report the retagged packages' tests as discovered, since D7 does not exist in the installed `lyx`.
+This task files a board entry, depending on this one, that removes the `|| integration` term, the scan test's allowance for it, and the old tag spellings in the hub commands, in D5's package loads, in `cmd/testtiming`'s spawn scan and in the two guards D5 extends after the deploy.
+The installed `lyx` also lists packages under `integration,tmux,llm`, so a retagged `tier0` test file drops out of its impact graph:
+its narrowed gates, `--base` and computed alike, miss a package reached only through a `tier0` test file's import.
+Bound: this run's whole gates, Webster's end gate and Merge-In's landing gate, both over `--all`, and `main`'s `--upto 2`, where no parent makes the scope whole, run every package and catch it; after the deploy D5's loads, which list both spellings, close the gap.
+The plan's first retagging card carries a `**Verify:**` line, which `lyx gate card-verify` runs before the card lands, that fails unless each of the hub's tier commands in `lyx config gate --resolved` names its `tierN` tag, and fails when any tier there still carries a `covers` entry, since D7 does not exist in the installed `lyx`.
+The `covers` check is needed because the installed `lyx` drops a covered tier from a call, and `tier1`'s `-tags tier1,integration` no longer compiles `tier0`-tagged files, so a kept `covers: [0]` leaves the retagged `tier0` tests in no gate.
+When it fails, the way forward is the Constraints' hub change, applied by the orch, and then a rerun of the card.
 Rationale: the installed scan refuses every narrowed gate, `main`'s `--upto 2` included, from the first disjointly tagged guard file on, and only a deploy from a green `main` replaces it.
+
+### D14. Darn's tree-scoped verify takes its row's key
+
+`darn.yaml`'s `tree_scope_verify` is retired; reconcile prunes it from a hub file, and the load drops it.
+Tree scope is then on exactly when `tree_scope` holds a tree, and removing every tree turns it off, and `ErrTreeScopeWithoutTrees` goes.
+The migration fires only while the hub file still holds the `tree_scope_verify` key: held empty, reconcile empties `tree_scope` and prunes the key, keeping an off hub off; held set, it prunes the key and keeps `tree_scope`; absent, it changes nothing, so a later reconcile never touches trees the operator adds.
+A hub whose file never wrote `tree_scope_verify` but holds trees turns tree scope on after the migration.
+For a diff wholly under `tree_scope`'s trees, Darn-Write, darn's Code-Burler-Fix and darn's Finalize render `lyx gate test --wait --gate <key> <targets>`, with the row's key and the touched trees' targets from `tree_scope` in place of the key's scope.
+When no touched tree contributes a target, the site renders no call and runs nothing, as today's empty call does.
+The `lyx config darn` refusal that asks to clear `tree_scope_verify` before emptying `tree_scope` goes with the key.
+Bound: the tiers of a tree-scoped run are the row key's, not an operator-written command's.
+Rationale: a tree-scoped run then carries its site's key into the run record and the report, and `tree_scope` keeps narrowing a diff to the trees it touched.
 
 ## Constraints
 
 - The hub's tier commands must carry both tag spellings, and this hub must stop using `covers`, before Webster gates any card that retags a file; the orch applies it from the prime with `lyx config gate --set`:
   `tier0` adds `-tags tier0`, `tier1` uses `-tags tier1,integration` and vets under `tier0`, `tier1,integration`, `tier2,tmux` and `tier3,llm`, `tier2` uses `-tags tier2,tmux`, `tier3` uses `-tags tier3,llm`, and `covers` goes from every tier.
-  Untagged files compile under any tag set, so the change is right for old and new trees alike; dropping `covers` costs an old tree one extra `tier0` run per gate until it merges the parent.
-  Nothing in the installed `lyx` checks it; the discussion's delivery to the orch is the hand-off.
+  Untagged files compile under any tag set, so these tier commands are right for old and new trees alike, though the installed `lyx`'s package loads are not (D13); dropping `covers` costs an old tree one extra `tier0` run per gate until it merges the parent.
+  Nothing in the installed `lyx` checks it; the discussion's delivery to the orch is the hand-off, and D13's `**Verify:**` line on the first retagging card catches a hub that lacks a tag or keeps a `covers` entry.
 - `PATTERN-shed-producer-seam`: the entry gate reaches `shedengine` as a function on `ProducerDef`; shedengine imports nothing new.
-- `PATTERN-recipe-setting-lookup`: the check reads through `Env.Setting` and `Env.Segments`; no row gets an `Env` field, and the `--window` force is a value of the lookup.
-- `PATTERN-tolerant-records`: the green record, the status's entered row and the `skipped` history outcome are read tolerantly; an old status without the entered row reads as not entered.
+- `PATTERN-recipe-setting-lookup`: the check reads through `Env.Setting` and `Env.Segments`, and the build's known-key check through the told template check (D9); no row gets an `Env` field, and the `--window` force is a value of the lookup.
+- `PATTERN-tolerant-records`: the green record, the run record's gate key and launch list, the status's entered row and the `skipped` history outcome are read tolerantly; an old status without the entered row reads as not entered.
 - `PATTERN-durable-vs-ephemeral-state` and `PATTERN-lyxdirs-single-declarer`: the green record is never tracked, under `.lyx`, named through `internal/lyxdirs`.
-- `PATTERN-binary-change-reconcile` and `PATTERN-hub-wide-config`: the `gates` reshape and the `guard_tier` prune run through `gateslot.MigrateConfig` in reconcile; `gate.yaml` stays hub-wide.
+- `PATTERN-binary-change-reconcile` and `PATTERN-hub-wide-config`: the `gates` reshape and the `guard_tier` prune run through `gateslot.MigrateConfig` in reconcile, and the `tree_scope_verify` prune through darn's config module's migration (D14); `gate.yaml` and `darn.yaml` stay hub-wide.
 - `PATTERN-gate-slot`: a carried tier takes no slot because it runs nothing; every tier that runs takes its slots.
 - `PATTERN-refusal-way-forward`: every new refusal names its way forward.
 - `PATTERN-sole-parsers`: the recipe's `entry_gate` is parsed only in `shedbuild`.
@@ -203,12 +251,13 @@ Rationale: the installed scan refuses every narrowed gate, `main`'s `--upto 2` i
 - Board item 3, written as a verify row's entry check, maps onto the gate's green record (D4).
 - The migrated scopes are the operator's to change later in config.
 - The measurement on OSL-1046 is the operator's run of `lyx gate report` there after deploy, within the records' 14-day retention, which keeps runs from before the landing; gate records are machine-local and this run executes on Neve.
-- `lyx shed goto` bypassing the entry gate is the operator's force.
+  The before side, from pre-landing records, gives slot wait and wall time per tier list and scope form; launch time and its share come from runs after the deploy only.
+- A goto through the shed goto verb bypassing the entry gate is a deliberate force, whoever calls it.
 
 ## Open risks
 
 - Untagged test files leave the default gopls view once tagged `tier0`; the operator's IDE seed needs `-tags=tier0,tier1,tier2,tier3` in gopls's build flags.
-- If the orch has not changed the hub's tier commands when Webster retags files, the installed `lyx`'s gates pass vacuously; D13's discovered-count check on the first retagging card is the only catch.
+- If the orch has not changed the hub's tier commands, or has left a `covers` entry, when Webster retags files, the installed `lyx`'s gates pass vacuously or run the retagged `tier0` tests in no gate; D13's `**Verify:**` line on the first retagging card, which checks both, is the only catch.
 - Another branch landing on `main` during this run with new untagged or `integration`-tagged tests fails the one-tag scan at this run's Merge-In or Finalize gate, and the merge fixer retags them within its caps.
 - A branch landing after this one with such tests fails the scan after it merges the parent, and its own fixer retags them.
 - An old `lyx` on another machine refuses the reshaped `gate.yaml` until that machine deploys, since reconcile on the first deployed machine commits it hub-wide.
@@ -220,32 +269,42 @@ Rationale: the installed scan refuses every narrowed gate, `main`'s `--upto 2` i
 
 - A hub file holding `landing`, `final`, `round`, `card`, `batch` and `guard_tier` reconciles to the D1 keys with the D1 scopes, and a second reconcile changes nothing.
 - The config load refuses a `card` scope on a key other than `card` and `batch`, naming `lyx config gate`.
-- `lyx gate test --gate <key>` runs the key's tiers over its scope; it refuses `--gate` with `--tier`, `--upto`, `--all`, `--base` or targets, and a `card` scope without `--card`.
+- `lyx gate test --gate <key>` runs the key's tiers over its scope; it refuses `--gate` with `--tier`, `--upto`, `--all` or `--base`, and a `card` scope without `--card`, and explicit targets replace the key's scope.
 - Every site named in D12 renders `--gate` with its key, a row's `gate_key` overrides its row name, and the merge fixer runs its row's key.
 - A second `--gate` run over the same clean tree carries every tier, takes no slot, writes carried run records and prints carried summary lines that `gateslot`'s summary readers parse; a dirty worktree carries nothing and writes nothing.
 - An `all` run after a green `diff` run over the same tree runs only the packages the `diff` run did not cover.
-- A changed tier command, a different tree or args other than a `-run` filter break the carry, and a tree that changes during a run records nothing.
-- A `diff` run takes its base from the newest ancestor whole-green commit, falls back to the parent merge base, and runs whole without a parent.
+- A guard-step pass writes its entry under its own `-run` args, so an `all` run after it on the same tree runs the guard packages' tests, and a repeat of the guard group carries.
+- A changed tier command or a different tree breaks the carry, any args other than the guard step's own `-run` filter break it unless they match the entry exactly, and a tree that changes during a run records nothing.
+- A `diff` run takes its base from the newest ancestor whole-green commit, falls back to the parent merge base, and runs whole without a parent; a whole entry recorded under `-- -run X` or under a since-changed tier command is never taken as a base.
+- A `diff` scope includes a package reached only through a `tier0` test file's import.
+- Darn's tree-scoped sites render `--gate` with their row's key and the touched trees' targets.
+- Reconcile of a hub file holding `tree_scope_verify` empty prunes it and empties `tree_scope`; holding it set, prunes it and keeps `tree_scope`; without it but with trees, keeps the trees; and a second reconcile of each changes nothing.
 - The one-tag scan fails a test function in an untagged file and in a file admitting two tiers, accepts `|| integration` only on a guard-marked file, and passes the repository.
 - Guard tests in `tier0` and `tier1` files run under their own tier's command; reconcile prunes `guard_tier`.
-- A tier run whose command lacks its tag fails on a package holding a test for that tier, a package with an untagged `TestMain` included, and a platform-constrained file off its platform does not fail it.
+- A card Verify line and a raw `go test` naming `-tags tier2` or `-tags tier3` are refused, as with `tmux` and `llm`.
+- A tier run whose command lacks its tag fails on a package holding a test for that tier, a package with an untagged `TestMain` included, and neither a platform-constrained file off its platform nor a `-run` filter that misses a package fails it.
 - A row whose entry gate is false is recorded `skipped` with its reason, follows `on_done`, spends no budget, and a chain of skips is followed in one step.
-- A resume of an entered row re-calls it without evaluating its gate, a tackler relaunch evaluates it, and `lyx shed goto` runs a gated-off row.
+- A resume of an entered row re-calls it without evaluating its gate, a tackler or arbiter relaunch with a goto target evaluates the target while one without a target, or with a target already in effect, re-calls the entered row, and `lyx shed goto` runs a gated-off row.
+- A Stuck routed back to its own row through a skipped row evaluates that row's gate.
+- A `pause_before` on a gated row halts the run before the gate is evaluated, and a setting changed during the pause decides the gate.
+- A `pause_after` on a skipped row pauses the run at that row's `on_done` row.
+- A bare `module.key` operand holding a non-bool, such as `no` or `1`, stops the step with an evaluation error.
+- A recipe build with an entry gate on a `module.key` operand needs no task worktree.
 - The recipe build refuses an unknown setting, an unknown segment and a malformed check.
 - Batten's Open-Window, Seed-IDE and Open-IDE rows skip when their setting is off, and `--window` runs Open-Window with its setting off.
 - A darn run with a Code-Review budget of 0 settles its Bouncer approved at once, skips Describe and keeps the writer's description; with a budget above 0 it runs as today.
-- `lyx gate report` groups old and new records per slug and key, counts carried tiers, and reports launch time from the logs' `start` events, leaving cached packages out.
+- A go-json tier run's record holds a launch entry per package whose test binary ran, and none for a cached package or one without test files.
+- `lyx gate report` groups old and new records per slug and key, counts carried tiers, reports launch time from the records' launch lists, and shows no launch time for a record without one.
 - The board holds the D13 follow-up entry, depending on this task.
 
 ## PATTERN changes
 
-- `PATTERN-test-tiers` — changes: Running hub's tests: only through `lyx gate test`; a site names its gate key, never tiers or scope.
+- `PATTERN-test-tiers` — changes: Running hub's tests: only through `lyx gate test`; a site names its gate key, never tiers or scope, except darn's tree-scoped sites, which add the touched trees' targets (D14).
 - `PATTERN-tier-tags` — adds: Tagging a test file: one `tierN` build tag, the tier that runs it; an untagged test file holds no test. (test)
 - `PATTERN-gate-carry` — adds: Skipping a test tier as already green: only `lyx gate test`'s green record, over a clean tree.
 - `PATTERN-row-entry-gate` — adds: Leaving a recipe row out by config: its `entry_gate`, never a recipe rewrite or producer-side switch.
 
 ## Notes for the plan writer
 
-- Order the cards so the one-tag scan, D6 and D7 land before or with the first retag, and plan on the Constraints' hub change being in place.
-- `verifytree`'s landing failure record names its gate as a `FailureKind`; the retired kinds map onto the new keys on read.
+- Plan on the Constraints' hub change being in place.
 - `gateslot.Config.TiersValue` renders the gate lists into prompts and changes with the shape.
