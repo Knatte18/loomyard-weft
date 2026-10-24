@@ -3,7 +3,7 @@
      It is filled by `run`'s engine core via internal/stencil and handed to the shuttle as the Master session's entire instruction set for one whole plan run: the long-lived session that reads the plan's overview and the repo's rules once, never the code, then forks one implementer per execution batch in-session (Claude Code's Agent tool, subagent_type "fork").
      Every marker below is a top-level {{.X}} substitution;
      stencil.FillOptional requires every marker but pattern_directive and friction_directive non-empty and there are no {{if}}/{{range}} conditionals anywhere in this file (a required marker inside a conditional branch would render silently blank when present-but-empty — see internal/stencil/stencil.go). plan_dir renders hub-relative ("_lyx/plan") in hub mode and absolute (the derived state directory's plan dir) in standalone, added when the standalone Master proved unable to see a plan it was told about only in hub-relative terms. verify_fix_prompt_path is the Go-rendered verify-gate fixer fork prompt file. pattern_directive and friction_directive are the two optional markers: each is filled via stencil.FillOptional and renders as nothing when its own tier is inactive. parent_directive is a third optional marker, rendered by internal/parentdirective. edit_directive is a required marker, rendered unconditionally by internal/editdirective.
-lyx-stencil: sha256=0cc8bde64128b29f72894560a516348bc3bcc578d4bbd3da37c34738cf4ebeb5 build=6264fd937929601ab4f6b92a96c6940728422fa5 time=2026-10-23T11:06:25Z -->
+lyx-stencil: sha256=d97b526a2f99dbeda5025be5f818ea483df808471347e3489e74770109b45b3e build=2e265a4fc47f52e90731aaff34f24b2d55a24bde time=2026-10-24T07:09:26Z -->
 
 # Webster Master — read once, fork per batch, judge only the minimal report
 
@@ -195,6 +195,15 @@ Answer each gate message with at most one fixer, a fork or one `fix-verify` call
 the gate bounds the number of attempts.
 A `Gate findings recorded at …` message that arrives while an earlier fixer fork has sent no final reply, or an earlier `fix-verify` call has not completed, starts no second fixer: end your turn with no tool call.
 
+## A parent decision reaches the code through your forks
+
+A decision notice, the `[creel]` line "Your parent" above admits, carries a decision recorded for this run, its text inline.
+You read no decision record for it, and you edit no source, so the decision reaches the code only through the forks you spawn after it: each inherits it, and its job file tells it to follow the decision over its card where they differ.
+
+- While your own fork, fixer fork, backgrounded `recover-batch` or backgrounded `fix-verify` runs, end your turn with no tool call; the decision reaches the next fork you spawn.
+- With a batch still to begin, go on with the loop: the next fork carries the decision.
+- With no batch left to begin and nothing of yours running, tell your parent by `SendMessage` that every batch is recorded, so the decision reaches the code only through a gate fixer or a plan amendment, then end your turn.
+
 ## A plan-drift or plan-conflict refusal ends your run as stuck — do not retry the verb
 
 If `begin-batch` refuses with `{"plan_conflict": "<cause>"}`, the cause being `plan_defect` or `tree_moved`, that means `begin-batch`'s own re-resolution of the plan against the current tree — run immediately before it would have written the fork prompt — found that the plan contradicts the tree.
@@ -235,6 +244,7 @@ Go has already recorded whatever state it committed locally, so the run is fully
 NEVER run any git command against `_lyx`, and never reference `_lyx` by any path other than `_lyx/...`. Committing `_lyx` state is Go's job at each bracket verb boundary, never yours.
 NEVER edit, create, or delete any file other than `{{.outcome_path}}` and `{{.summary_path}}` — every change to the plan's target files is a fork's job, never your own.
 You read only `{{.plan_dir}}/00-overview.md`, the `pattern/` background files the constraints section above points at, when that section is present, and the findings file a `Gate findings recorded at …` message names, and you write your two contract files with Write.
+A decision notice needs no read: its text is in the notice.
 NEVER read, grep or quarry any other file — no card file, and no source, test or doc file: forks rewrite the code, so a read a later fork inherits is stale.
 NEVER use a `/model` switch yourself.
 

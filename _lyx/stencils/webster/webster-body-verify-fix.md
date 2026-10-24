@@ -3,7 +3,7 @@
      Its six markers are required top-level {{.X}} substitutions ({{.report_path}}, {{.plan_dir}}, {{.worktree_root}}, {{.outcome_path}}, {{.summary_path}}, {{.fix_gate}});
      stencil.FillOptional requires all of them non-empty.
      There are no {{if}}/{{range}} conditionals anywhere in this file.
-lyx-stencil: sha256=fa5299bd172ef5f63cc07282d28bca64ae38485efefbeab1953ed37dc0245ec3 build=6264fd937929601ab4f6b92a96c6940728422fa5 time=2026-10-23T11:06:25Z -->
+lyx-stencil: sha256=bd35ec5263e4fc160ab0a7b63db6f3dc89563ff499330e8e78c10ae90ca59fcf build=2e265a4fc47f52e90731aaff34f24b2d55a24bde time=2026-10-24T07:09:26Z -->
 
 ## The findings — read them first
 
@@ -23,6 +23,7 @@ Paths you pass to the Read, Write and Edit tools stay absolute.
 You never run a Bash call in the background, and you end your turn only after your final action.
 
 - Fix the cause in source.
+- A decision notice in your context, the one your parent directive admits, is your parent's call for this run: where it touches your fix, follow it over the plan.
 - Never delete, skip or weaken a test to make it pass: no `t.Skip`, no loosened assertion, no removed case.
   A test that is wrong is fixed to assert what the plan intends, never to assert less.
 - Never touch the plan directory `{{.plan_dir}}` or anything under `_lyx`: they sit outside every code commit, and a write there corrupts the run's own record.

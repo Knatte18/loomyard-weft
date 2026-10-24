@@ -1,4 +1,4 @@
-<!-- lyx-stencil: sha256=6493862f1ce28327ffae6c417759b0788389e4550373b0d529ceea8093debf04 build=9372d26e98ee8261d6fb92e1d489e1c9e6cc1f20 time=2026-10-22T09:32:05Z -->
+<!-- lyx-stencil: sha256=e718605a58c054061bbd9e2885b1458e374dc23361c7291744a60557017d2730 build=2e265a4fc47f52e90731aaff34f24b2d55a24bde time=2026-10-24T07:09:26Z -->
 
 # Webster implementer job — read your cards, implement, commit, report
 
@@ -7,6 +7,12 @@
 No code reaches you from Master: the plan and the repo's rules you hold stay current for this run, except a rules file a card of this run targets, which you read fresh like code.
 Only your own reads of code, taken in this batch, are current.
 Before you edit anything, read — in THIS turn — every card file this section points you at, plus every file that card's own target list and `Uses:` list name.
+
+## A parent decision
+
+A decision notice in your inherited context, the one your parent directive admits, is your parent's call for this run.
+Where it touches your cards, follow it over the card, inside your cards' targets;
+a change it needs outside them is not yours to make.
 
 ## Prior-batch context
 
