@@ -17,7 +17,7 @@
 - `internal/reedengine/doc.go`
 
 **Uses:**
-- `plan:internal/hubgeom#ParentOf`
+- `internal/hubgeom#ParentOf`
 - `internal/hubgeom#ReedGeometry`
 
 **Intent:**

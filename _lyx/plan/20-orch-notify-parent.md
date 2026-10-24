@@ -24,7 +24,7 @@
 - `internal/orchcli/doc.go`
 
 **Uses:**
-- `plan:internal/hubgeom#NearestLiveOrch`
+- `internal/hubgeom#NearestLiveOrch`
 - `internal/hubgeom#ResolveParent`
 - `plan:internal/orchcli#OrchLive`
 - `internal/orchcli#notifyPrime`

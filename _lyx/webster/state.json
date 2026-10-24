@@ -1,6 +1,6 @@
 {
   "runGuid": "0c92b76ecbae330c53aca040bff54a50",
-  "planFingerprint": "6cc948ae64c3989b27a9df0d204c9543d8fdb9aa6183c2462f88ab6b1432e3fb",
+  "planFingerprint": "69603ac09186c838957c1cd14f3afb2d1fe247b2668a7563f38b3ade1a41f5b1",
   "planFileHashes": {
     "00-overview.md": "3d9b9d836b384b6275a3d06d7a0b4d9fc34547800ed42f5cb42ff03f22cfd5e6",
     "01-fabric-slug-rule.md": "24afd634ad6b5f856aae6b02a3b00141d047fae902d8f00106e935ed4abec609",
@@ -16,18 +16,18 @@
     "11-board-beam-flag.md": "9bc9b3dddc275c9b4be4dc1e95f7f9e69ed52b4019c43f3ad60024e41ab3e63d",
     "12-board-parent-beam.md": "8fa6dda2538b9e09fe559e01ee8308ec0bbb01b024317d8f021275ee0b4880eb",
     "13-board-slug-seam.md": "e6d8ffcab2443f34e08c490b6ab952e9a471ff9cdc51498b67fade25ab849287",
-    "14-board-readme-projects.md": "c9352f795b2c85c2ed67e4d1c52cbd25782d410bada222c3fd3cae5ad6ae6b8f",
-    "15-hubgeom-parent-of.md": "9bd6586d23d80803996961b254a1243b415932ea80db35b30493a070b12b8f9b",
+    "14-board-readme-projects.md": "faae9dd1f9a669e0ea520b068913fb39e1b146c83b487b24cc3ffbbad4665f8b",
+    "15-hubgeom-parent-of.md": "b15010c50a0c8e29ba015de4252c591abeaa08e23e5eb84840e247ad113d5059",
     "16-delete-parent-slug.md": "e024b462a0a0474eacf36ecc5da981ce3a63aa07a63fe5c958e301cf7ffec4e3",
-    "17-boardcli-wiring.md": "5578d890d89f9656e67f5b84c62bb856a158ba84bef662a902a666ae1c76e352",
-    "18-hubgeom-live-orch-walk.md": "5ea801a6e1428cc5a634a3651eb016894f3de45b7e28677a591a9e26878ac0bf",
-    "19-orch-in-beam.md": "93db4c486ec53bda5c54e59352b970122050d34a06fd88138da887d50ac5ac3a",
-    "20-orch-notify-parent.md": "f4a3c829a56b19eb2f66ef80313edff50cd86fd485200a64d973cde8de2188f5",
+    "17-boardcli-wiring.md": "99472a8b83ec42ca3cca50c741f2e7d5f1cdfdcf203211e3726244246d2c0bae",
+    "18-hubgeom-live-orch-walk.md": "e8ba81c7814bf58207270646f4ca17eaf3257358805b1aaefd44863f7a806479",
+    "19-orch-in-beam.md": "6a46f92bdc304f60f1548d9314eeb1b462b950d3aacab45587c796ae07edb7f7",
+    "20-orch-notify-parent.md": "1dfe98039e67b230376fec54e8c9b7b6673c7ff92da9ba7a1e29175a3f77da31",
     "21-tender-every-orch.md": "75ae2c7ec41a2b33816abc6c68fb85be364a1413ace169bc27be65678e32efa9",
     "22-overview-cleanup-every-orch.md": "685bd3f259804b4a1a4761ba794d017e0bb8c3a4f7fb16228e0012d9fec5b9b8",
     "23-batten-guard.md": "6dacbd7220cc5343ad7965d73cb2d6f9d7b37d35762791756b7928c7f976e235",
-    "24-batten-window-site.md": "ab0dcc6791dedad8061d5d777051d4090433be21f81f7cc588e689317acc13e3",
-    "25-batten-notices-walk.md": "31a3717186a402e6addb38caa015e2d5f45c1325057a0ab12957bb4a23e58422",
+    "24-batten-window-site.md": "5697d6f646caf8dec59c7d5dcf32fa6577eac92370df0db9747e98d782275820",
+    "25-batten-notices-walk.md": "dcb5ba701ccb5767728f3f5225ee035fa17b83c735a6b761c3eba07eb9bc6979",
     "26-land-ready-routing.md": "e5c04b11fa87092d39949cbc330b4cf27253619e7988d17c4be978ae308eac26",
     "27-batten-cleanup-skip.md": "3c4ee9b5a5269cfe42e88666faae274dd88c9f792cd5ffab0fa4ba76ec9481a8",
     "28-worktree-create-from-beam.md": "5d9404a47006ccaf008ea33fe2a09cb09497995347506c8c7cdc190aae0ddcb5",
@@ -36,9 +36,9 @@
     "31-beam-recipe.md": "a166949e11435774bc7ad5df86db398358cc2f00adcc504dcdd11869671f510f",
     "32-loomcli-beam-recipe.md": "64b063ff1934a5437f4be6912d66293c76ca4723e541dd2343a418462d9f8d37",
     "33-batten-seed-beam.md": "b16230c8b6df486133c1abbe45448eb6820f85aa940f6d83c8725d5313faefd4",
-    "34-beam-create.md": "aed92f704c9fbab8185a2d4f7275ba76060512ba787b67b3bc09f23ca427d81b",
+    "34-beam-create.md": "a60335c1055e279c1c47f674430f9cb416ae1ddc5175a90a9e236c7bf309fffb",
     "35-beam-promote.md": "2a4a708c79a039340140e8df4010cceefd51cd78617074547c0f88c51ee79fd5",
-    "36-beam-land.md": "d1a50e6b016559641f35b2a89df8e232aee6d97f2ae99c7b13f71900bfcd3b33",
+    "36-beam-land.md": "fd8ea6c098606a894d30c5522ae05a890f31ce93989fcce8f8805d51ad4b71f7",
     "37-adopt-beam.md": "a4118cae79121ba5bcea054bc41c5d29bd963df0555cc1e15bd064d05353964f"
   },
   "planOverviewFrameHash": "88bf9bbb8de875754fb0d763fc9040a4b9c3705b64e9ebb0a3113c4aa0052c26",
@@ -801,7 +801,7 @@
       }
     }
   ],
-  "currentBatch": 14,
+  "currentBatch": 0,
   "masterStrand": "b26fdaa60c57e20a41bb8040667d0203",
   "masterSessionId": "5c0f8a9d-af0b-4b1f-abf2-fb8d7a69e703",
   "masterEngine": "claude",
@@ -858,19 +858,38 @@
         "18-hubgeom-live-orch-walk"
       ],
       "cardHashes": {
-        "14-board-readme-projects": "c9352f795b2c85c2ed67e4d1c52cbd25782d410bada222c3fd3cae5ad6ae6b8f",
-        "15-hubgeom-parent-of": "9bd6586d23d80803996961b254a1243b415932ea80db35b30493a070b12b8f9b",
+        "14-board-readme-projects": "faae9dd1f9a669e0ea520b068913fb39e1b146c83b487b24cc3ffbbad4665f8b",
+        "15-hubgeom-parent-of": "b15010c50a0c8e29ba015de4252c591abeaa08e23e5eb84840e247ad113d5059",
         "16-delete-parent-slug": "e024b462a0a0474eacf36ecc5da981ce3a63aa07a63fe5c958e301cf7ffec4e3",
-        "17-boardcli-wiring": "5578d890d89f9656e67f5b84c62bb856a158ba84bef662a902a666ae1c76e352",
-        "18-hubgeom-live-orch-walk": "5ea801a6e1428cc5a634a3651eb016894f3de45b7e28677a591a9e26878ac0bf"
+        "17-boardcli-wiring": "99472a8b83ec42ca3cca50c741f2e7d5f1cdfdcf203211e3726244246d2c0bae",
+        "18-hubgeom-live-orch-walk": "e8ba81c7814bf58207270646f4ca17eaf3257358805b1aaefd44863f7a806479"
       },
       "startSha": "a8e409463e70af46ae73e40bfcba5cc3fef72926",
       "kind": "fork",
       "spawnedAt": "2026-10-24T17:26:14Z",
       "sessionId": "5c0f8a9d-af0b-4b1f-abf2-fb8d7a69e703",
       "engine": "claude",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "14-board-readme-projects",
+        "status": "done",
+        "head_sha": "dd39317f3a715c0a32bedd5a56ac327ce68fbc2b",
+        "deviations": [
+          "internal/boardcli/cli_test.go",
+          "internal/boardengine/render.go",
+          "internal/hubgeom/nearestlive.go"
+        ]
+      },
+      "cardShas": [
+        "dd39317f3a715c0a32bedd5a56ac327ce68fbc2b"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-umbrella-groundwork/5c0f8a9d-af0b-4b1f-abf2-fb8d7a69e703/subagents/agent-a870654ba47582c7c.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-umbrella-groundwork/5c0f8a9d-af0b-4b1f-abf2-fb8d7a69e703/subagents/agent-a870654ba47582c7c.jsonl"
+      ]
     },
     "5": {
       "slug": "add-adopt-local",
@@ -976,6 +995,7 @@
   "seenForkTranscripts": [
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-umbrella-groundwork/5c0f8a9d-af0b-4b1f-abf2-fb8d7a69e703/subagents/agent-a6e41b7f8893f18a6.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-umbrella-groundwork/5c0f8a9d-af0b-4b1f-abf2-fb8d7a69e703/subagents/agent-a2894a13a693cf330.jsonl",
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-umbrella-groundwork/5c0f8a9d-af0b-4b1f-abf2-fb8d7a69e703/subagents/agent-a1325a5fc651ccd0c.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-umbrella-groundwork/5c0f8a9d-af0b-4b1f-abf2-fb8d7a69e703/subagents/agent-a1325a5fc651ccd0c.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-umbrella-groundwork/5c0f8a9d-af0b-4b1f-abf2-fb8d7a69e703/subagents/agent-a870654ba47582c7c.jsonl"
   ]
 }

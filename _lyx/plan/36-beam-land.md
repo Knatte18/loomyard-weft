@@ -26,7 +26,7 @@
 
 **Uses:**
 - `internal/battencli#ResumeInWindow`
-- `plan:internal/hubgeom#ParentOf`
+- `internal/hubgeom#ParentOf`
 - `internal/fabricengine#ReadOriginFor`
 - `plan:internal/orchcli#OrchLive`
 - `plan:internal/orchcli#HubOrchs`

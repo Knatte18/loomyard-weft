@@ -6,7 +6,7 @@
 - `plugins/ly/skills/board/SKILL.md`
 
 **Create:**
-- `plan:internal/boardengine#renderProjects` -> `func renderProjects(ordered []TaskWithLayer, finished map[string]bool, primeOwner, designPrefix string, types []string, now time.Time) []string`
+- `internal/boardengine#renderProjects`
 
 **Extends:**
 - `internal/boardengine/doc.go`

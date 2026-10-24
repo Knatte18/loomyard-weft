@@ -30,7 +30,7 @@
 - `internal/hubforge#AddPairWith`
 - `internal/fabricengine#ReadOrigin`
 - `internal/boardengine#ReadOwners`
-- `plan:internal/hubgeom#ParentOf`
+- `internal/hubgeom#ParentOf`
 
 **Intent:**
 D8, orch: every `lyx orch` verb runs in the prime and in a beam, a pair whose origin record carries the beam mark (card 2), one orch per worktree.

@@ -1,8 +1,8 @@
 # Card 15 — hubgeom-parent-of
 
 **Create:**
-- `plan:internal/hubgeom#ParentOf` -> `func ParentOf(prime *lyxcwd.Location, slug string) (string, error)`
-- `plan:internal/hubgeom_test#TestParentOf` -> `func TestParentOf(t *testing.T)`
+- `internal/hubgeom#ParentOf`
+- `internal/hubgeom_test#TestParentOf`
 
 **Edit:**
 - `internal/boardcli#Command`
