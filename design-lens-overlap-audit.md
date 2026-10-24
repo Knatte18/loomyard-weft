@@ -9,7 +9,7 @@ Which lenses find the same defects, which defect areas the lenses essentially co
 ## Result (sonnet agent, 2026-10-22)
 
 Sources: `_lyx/plan/lens-review.md` in the weft archive tags (94 loom runs, only 6 of them, all on 2026-10-22, with all 8 `twill-plan` lenses), the per-lens fork reports in the machine-local Claude Code transcripts (5 runs), and per-lens attribution in `round-1-review.md`.
-The sample with the full lens set is small, lens texts changed over time, and a "fixed" finding only means the writer agreed; note `lens-fork-reports-kept` would give later audits better data.
+The sample with the full lens set is small, lens texts changed over time, and a "fixed" finding only means the writer agreed; since `lens-fork-reports-kept` landed (79bab47a0) every lens fork's report is kept verbatim beside its record (`*.lens-<lens>.md` under `_lyx/plan/`, `_lyx/discussion/` and the review rounds), so later audits have per-lens data.
 
 ### `twill-plan` (8 lenses)
 
@@ -45,5 +45,5 @@ In the review fan, `bound-breaker` is the strongest lens (11 of 15 lens BLOCKING
 ## Follow-up (operator, 2026-10-22)
 
 - `twill-plan` goes to 5 lenses in task `twill-plan-five-lenses`.
-- A later audit looks at the Discussion writer's `twill-discussion` alone, once more runs have per-lens data (note `lens-fork-reports-kept`), and may trim it too.
+- A later audit looks at the Discussion writer's `twill-discussion` alone, once enough runs made after 79bab47a0 have kept per-lens reports, and may trim it too.
   It matters less than Plan: the Discussion lead's context is far smaller when it forks, so its lens forks cost far less.
