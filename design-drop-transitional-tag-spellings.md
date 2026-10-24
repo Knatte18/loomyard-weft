@@ -1,6 +1,6 @@
 # Drop the transitional tag spellings after the deploy
 
-`drop-transitional-tag-spellings` · Task · enhancement · running · Code-Burler-Review
+`drop-transitional-tag-spellings` · Task · enhancement · running · Code-Burler-Fix
 
 ## Drop the transitional tag spellings (D13 follow-up of `gate-runs-once`)
 
