@@ -1,11 +1,11 @@
 {
-  "current_producer": "Webster",
+  "current_producer": "Merge-In",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Webster",
-    "last": "Plan-Bouncer → done",
+    "now": "Merge-In",
+    "last": "Webster → done",
     "wait": ""
   },
   "history": [
@@ -238,6 +238,33 @@
       "outcome": "done",
       "output": "/home/knatte/Code/loomyard-LYXHUB/dotnet-scoped-verify/_lyx/reviews/plan/round-2-bouncer-ledger.md",
       "at": "2026-10-24T16:28:45Z"
+    },
+    {
+      "producer": "Webster",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYXHUB/dotnet-scoped-verify/_lyx/webster/summary.md",
+      "at": "2026-10-24T17:12:18Z",
+      "gate_attempts": 1,
+      "gate_spans": [
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-10-24T17:06:56.541624947Z",
+          "end": "2026-10-24T17:09:38.357517048Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "rework",
+          "start": "2026-10-24T17:09:38.781915223Z",
+          "end": "2026-10-24T17:10:51.982452467Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-10-24T17:10:52.009157583Z",
+          "end": "2026-10-24T17:12:18.03617651Z"
+        }
+      ]
     }
   ],
   "product": {
