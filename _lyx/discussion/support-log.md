@@ -32,9 +32,10 @@ The session ran autonomously with no advisors, so each turn is a batch of questi
 ### Turn 4 — disjoint tiers
 
 - Tag naming: tier names (D5), from the operator's wording.
+  The rename adds the already-tagged files to the edit; the measured gain of disjointness is about 20 s of package time per higher-tier run, which the operator decided for.
 - Untagged support files (`TestMain`, shared helpers) must stay untagged, since every tier's build needs them; so the rule is about files holding test functions.
 - The guard step: 44 of 51 guard-marked files are untagged today and become `tier0`, which `guard_tier: 1` would not compile; settled per-tier guards and retiring `guard_tier` (D6).
-- Transition: a hub-wide tier command change is shared by every worktree; dual-tag commands are right for old and new trees, so the change is safe before landing (Constraints).
+- Transition: a hub-wide tier command change is shared by every worktree; dual-tag commands are right for old and new trees, so the change is safe before landing (Constraints); the installed `lyx`'s package loads still miss `tier0` test imports in narrowed gates until deploy, bounded by the whole gates (D13).
 - Vacuous passes: a command missing its tag runs nothing and passes; settled the D7 check.
 
 ### Turn 5 — row entry gates
@@ -46,8 +47,8 @@ The session ran autonomously with no advisors, so each turn is a batch of questi
 
 ### Turn 6 — measurement
 
-- Source: the gate run records and their logs, machine-local, 14-day retention (D11).
-- XDR share: `go test -json`'s `start` event is emitted before the test binary's exec (go doc cmd/test2json, go1.26.8), so the gap to the next event holds the hold.
+- Source: the gate run records, machine-local, 14-day retention (D11); the rendered logs hold no event times, so `lyx gate test` adds a per-package launch list to the record.
+- XDR share: `go test -json`'s `start` event is emitted before the test binary's exec (go doc cmd/test2json, go1.26.8), so the gap to the next event holds the hold; records from before this task carry no launch list.
 - Before and after on OSL-1046: the operator's report run there after deploy; noted as an auto-mode assumption.
 
 ### Turn 7 — lens review
@@ -141,7 +142,7 @@ _No rounds yet._
 - Q10 How does the hub's tier config change without breaking other worktrees? Auto-pick: dual-tag commands applied by the orch before Webster retags (Constraints). Resolved.
 - Q11 Is a vacuous-pass check needed? Auto-pick: yes, D7. Resolved.
 - Q12 When is an entry gate evaluated? Auto-pick: on entering the row, with an entered marker (D8). Resolved.
-- Q13 Does `lyx shed goto` honour the gate? Auto-pick: no, goto is the operator's force. Resolved.
+- Q13 Does `lyx shed goto` honour the gate? Auto-pick: no, the shed goto verb is a deliberate force, whoever calls it. Resolved.
 - Q14 How does darn's gate read a per-perch budget with a null fallback? Auto-pick: the `budget.<Segment>` operand (D9). Resolved.
 - Q15 Which darn rows get gated? Auto-pick: Describe only; the Bouncer takes `zero_rounds` (D10). Resolved.
 - Q16 How is `--window` forced? Auto-pick: a value of battencli's setting lookup (D10). Resolved.
@@ -149,4 +150,5 @@ _No rounds yet._
 - Q18 Who runs the OSL-1046 measurement? Auto-pick: the operator after deploy. Resolved.
 - Q19 How do retagged guard files pass the installed `lyx`'s guard scan? Auto-pick: `tierN || integration`, removed by a follow-up entry after deploy (D13). Resolved.
 - Q20 How does a recipe keeping darn's row names get its own gate keys? Auto-pick: a row config `gate_key` (D1). Resolved.
-- Q21 Does a tackler relaunch bypass the entry gate? Auto-pick: no, only the operator's goto does (D8). Resolved.
+- Q21 Does a tackler relaunch bypass the entry gate? Auto-pick: no, only the shed goto verb does, whoever calls it (D8). Resolved.
+- Q22 How does darn's tree-scoped verify name its gate key? Auto-pick: `tree_scope_verify` retires and the sites pass `--gate` with the touched trees' targets (D14). Resolved.
