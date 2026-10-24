@@ -119,7 +119,7 @@ index 16c4a3ed3..7cda6d335 100644
  // Both arguments are absolute by construction -- the flag value through ResolveToldDir, the default
  // through hubgeom/standalonegeom -- so this is a path equality, which is what makes a "." or
 diff --git a/internal/testkit/tmuxkit/tmuxkit.go b/internal/testkit/tmuxkit/tmuxkit.go
-index db4c48f3f..090cc879e 100644
+index b2372abfe..1099170c4 100644
 --- a/internal/testkit/tmuxkit/tmuxkit.go
 +++ b/internal/testkit/tmuxkit/tmuxkit.go
 @@ -11,6 +11,7 @@
@@ -164,7 +164,7 @@ index 2847602c5..21b3f03fa 100644
  			t.Errorf("%s = %q, want %q", name, got, dir)
  		}
 diff --git a/pattern/PATTERN-test-isolation.md b/pattern/PATTERN-test-isolation.md
-index e5ecfcfad..f63c44013 100644
+index 9564ee8ee..48703f3ce 100644
 --- a/pattern/PATTERN-test-isolation.md
 +++ b/pattern/PATTERN-test-isolation.md
 @@ -36,6 +36,7 @@ A test package never reaches the operator's global gitconfig or default tmux soc

@@ -4,6 +4,12 @@
   "base": "ed98ccf71d12c07c28bc8f97c8f5d7ede7e73025",
   "review_input": "/home/knatte/Code/loomyard-LYXHUB/webstercli-tests-ignore-tmp-git/.lyx/loom/overlap-note.md",
   "judge_subject": {
-    "kind": ""
-  }
+    "kind": "code",
+    "merge_base": "93f1c8942e059ae8e8adcea22f0345f1035daae9",
+    "head": "cda592416687986ae14a1538112bbbee30c5c6e6",
+    "full_hash": "41aa08ea73960541e28aa95f3b99525b79e5fbbf823c82a15e28825866ac21cc",
+    "patch_id": "e9a909292f8ad7d5f19839705d17ce4aaeef7ff5"
+  },
+  "judge_base": "93f1c8942e059ae8e8adcea22f0345f1035daae9",
+  "judge_at": "2026-10-24T14:09:52Z"
 }
