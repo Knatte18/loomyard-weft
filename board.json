@@ -986,6 +986,25 @@
       "body": "## Seen (gate-runs-once, 2026-10-24)\n\nBatch 06's fork replaced `internal/gatecli#runGuardStep` with `guardStepRun`, as a deviation; its report warned that card 14 still named the old function.\n`begin-batch 08` then refused with `plan_conflict: tree_moved` on card 14's glyph, and Webster's `on_reroute: Plan-Burler-Review` sent the run through a full Plan perch: Plan-Burler-Review, Plan-Burler-Fix and Plan-Bouncer, 11:45 to 12:01 local, before Webster resumed at batch 08.\nThe fix was one renamed glyph in one card, which the refusal named exactly.\n\n## Idea (operator, 2026-10-24)\n\nA `tree_moved` conflict whose refusal names the missing glyphs and cards goes to a small fixer agent first, not to a full review perch: it edits the named cards to match the tree, runs `lyx webster rebaseline --card NN`, and Webster begins the batch again.\nOnly a conflict the fixer cannot settle, or one that changes a card's intent, goes on to Plan-Burler-Review.\n",
       "created": "2026-10-24T10:10:14Z",
       "revised": "2026-10-24T10:10:14Z"
+    },
+    {
+      "id": 798,
+      "handle": "T5",
+      "slug": "drop-transitional-tag-spellings",
+      "title": "Drop the transitional tag spellings after the deploy",
+      "kind": "task",
+      "labels": [
+        "enhancement"
+      ],
+      "issues": [],
+      "depends_on": [
+        "gate-runs-once"
+      ],
+      "isolated": false,
+      "brief": "After the deploy: remove the guard files' || integration term, the old tag spellings in the tier commands and guards, and respell the glyphchain fixture",
+      "body": "## Drop the transitional tag spellings (D13 follow-up of `gate-runs-once`)\n\n`gate-runs-once` retags every test file to its one `tierN` tag.\nUntil the deployed `lyx` replaces the installed guard scan, a few spellings stay beside the new tags.\nAfter the deploy, remove each of these:\n\n- the guard files' `|| integration` term, and the one-tag scan's allowance for it in `cmd/lyx/tiertags_test.go`;\n- the old tag spellings in the hub's tier commands;\n- the old tag spellings in the package loads of `internal/impactset` and `internal/planglyph`;\n- the old tag spellings in `cmd/testtiming`'s spawn scan and in its `defaultRedundancyTags`;\n- the old tag spellings in the two tier-tag guards of `internal/planparser`;\n- the old tags in the tier purity guard and in the tmux isolation guard's `isolationTags` and `isolationTagSets`;\n- the `tmux` and `llm` terms of `internal/testkit/tmuxkit/allow_tmux.go`'s constraint;\n- the `integration` spelling in `internal/planglyph/testdata/glyphchain/shapes/tagged.go`, which becomes `tier1`.\n",
+      "created": "2026-10-24T12:40:23Z",
+      "revised": "2026-10-24T12:40:23Z"
     }
   ],
   "prime_owner": "neve"
