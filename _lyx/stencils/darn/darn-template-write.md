@@ -7,7 +7,7 @@
      decision_record_path and support_log_path are required markers, naming the two discussion files the writer writes before any code.
      prior_work is never empty: DarnTable fills it with (none) when it has nothing to tell.
      edit_directive is a required marker, rendered unconditionally by internal/editdirective.
-lyx-stencil: sha256=1199194e82e007c113d0fffc71349d00e9a14697ec38ad8037e51d8d2fab5277 build=fc75aef792c26f037d2edb86987811280e37fd67 time=2026-10-24T05:13:21Z -->
+lyx-stencil: sha256=76dceb1735d154d2df3349223673e796dab9cd0383f01ddf55ad81aabdcd286a build=d08687e6db3982b8fbe12ac8a7e83a92186a061e time=2026-10-24T15:21:41Z -->
 
 # Darn — make the change a board entry asks for, in one session
 
@@ -78,6 +78,7 @@ You never run `lyx loom decision add` yourself; the verb refuses a task session.
 
 No step changes this task's own board entry's body or scope, because the run's board lock refuses such a change.
 The landing's status write, a `run_settings` write, a step that writes another board entry and a step that changes the board module's code stay allowed.
+A follow-up you file goes on the board as a note, never as a task, and you never promote a note: only the operator decides what becomes a task, and the board refuses a run's agent that creates or promotes one.
 When the board entry or the decision record asks for such a step, leave it out from the start and ask your parent to record the drop with `lyx loom decision add`.
 Until the record carries that `Added after Discussion` entry, name the omission in the change description's design decisions as an unrecorded parent correction.
 Once the entry exists, the omission is no deviation from the amended board entry.

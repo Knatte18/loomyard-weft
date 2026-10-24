@@ -6,7 +6,7 @@
      internal/stencil's StripLeadingComment removes this leading comment before either consumer ever
      sees it.
      Among those markers, gate_tiers is filled by ReadRubric from the hub's gate.yaml tiers and gate lists, or none.
-lyx-stencil: sha256=da24c49f8c93f52851869b7aab2885234e0df2dd4485f3b8724d461440b0ac1a build=88b53f2a3b6a805b001a83d523e750f4ca5cc277 time=2026-10-23T08:59:58Z -->
+lyx-stencil: sha256=80c061d0eb8d66f931235223b7de3afd049112501286a1e90c71479a5f471bdf build=d08687e6db3982b8fbe12ac8a7e83a92186a061e time=2026-10-24T15:21:41Z -->
 
 # Plan-Review rubric
 
@@ -100,6 +100,9 @@ Do not flag any of the following as a finding:
 - **A card that edits the task's own board entry.**
   A card that changes this task's own board entry's body or scope is a finding, because the run's board lock refuses such a change.
   A card writing another entry, the entry's status or its `run_settings`, or changing board-module code is not flagged by this bullet.
+- **A card that files or promotes a task.**
+  A card that files a follow-up as a task, or promotes a note, is a finding, because only the operator decides what becomes a task and the board refuses a run's agent that creates or promotes one.
+  Its fix files the follow-up as a note.
 - **Card order.**
   A card that depends on something a later card does breaks the rule in `{{.specs_dir}}/loom/loom-plan-spec.md`'s "Plan vs. schedule" section; the finding names the card and the later card it depends on.
 - **Verify lines.**
