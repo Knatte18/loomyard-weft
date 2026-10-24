@@ -42,7 +42,11 @@ Decision (operator, 2026-10-24): `codexengine` writes that entry itself before l
 Tested by the orch on Codex 0.164 (2026-10-24): inside a git repository Codex keys trust on the repository root, and an entry for a parent folder (`/home/knatte/Code`) does not cover it, so the prompt still shows; a folder outside any git repository is covered by a parent entry.
 A list of trust entries in the operator's `~/.codex/config.toml` would grow with every worktree and need removal at teardown, which no engine-neutral owner can do (fabric knows nothing of shuttle).
 Tested instead (2026-10-24): `CODEX_HOME` pointed at a folder holding its own `config.toml` with the trust entry and a symlink to `~/.codex/auth.json` starts Codex with no trust prompt and leaves `~/.codex` untouched; Codex fills that folder with its own state.
-Proposal (orch, not a decision): `codexengine` gives each launch a `CODEX_HOME` inside the run's own worktree, with config, trust entry, rules and hooks rendered by lyx, so it goes with the worktree's teardown; its session files must then be kept elsewhere (for instance a `sessions` link to `~/.codex/sessions`) so usage readers still find them.
+Decision (operator, 2026-10-24), replacing a per-launch `CODEX_HOME`:
+- One shared lyx Codex home per machine (such as `~/.lyx/codex`) as every launch's `CODEX_HOME`: config, rules, hooks and skills rendered by lyx, with links to `~/.codex/auth.json` and `~/.codex/sessions`; the operator's own `~/.codex` stays untouched.
+- `codexengine` adds the launch's worktree root to that home's trust list when missing, and in the same write drops entries whose folder no longer exists, so no teardown step is needed and only shuttle knows of it.
+- Each write is a read-modify-write under an `internal/lock` file lock, written to a temp file and renamed into place, so parallel launches cannot lose an entry.
+- Codex writes `config.toml` itself too (it added a `[tui]` table in the test) and ignores the lock: lyx pre-sets those settings so Codex has nothing to write, and checks after startup that the entry is still there.
 
 ## Design basis (operator view, not a decision, 2026-10-24)
 
