@@ -20,40 +20,6 @@
       "revised": "2026-10-16T08:22:15Z"
     },
     {
-      "id": 63,
-      "handle": "F3",
-      "slug": "semantic-index",
-      "title": "semantic-index: find code by concept, not by literal keyword",
-      "kind": "note",
-      "labels": [
-        "feature",
-        "quarry"
-      ],
-      "issues": [],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "Semantic search over docstrings and comments; doubtful today, since agents now navigate well with grep",
-      "body": "From `manifest/roadmap.md` Someday, kept by the operator on 2026-10-03 as someday.\nIdea: semantic search over docstrings and comments (catalysts, embeddings, temporal decay), to find code by concept rather than literal keyword.\nOperator: millhouse's codeguide (Claude-written `.md` navigation files, designed about six months earlier) gave a large exploration speedup then, but not any more, since Claude now searches well with grep; so the value of this is uncertain.\nThe design is under `## Design`.\n\n## Design\n\n\u003e **Status: Speculative, not scoped.** Inspired by [Enzyme](https://www.enzyme.garden/blog/an-lsp-for-your-notes), a semantic search system for personal note vaults. This is the \"deferred idea\" [quarry](https://github.com/Knatte18/quarry)'s own design proposal referred to (\"a semantic/conceptual index... a separate, further-out idea, not part of this proposal\") and the relationship-table row from the original quarry proposal (\"have we written something conceptually similar, without shared vocabulary? — embeddings + temporal-decay weighting; not part of this proposal\") — now named, not yet designed in depth. Per the documentation lifecycle, if this is ever picked up the durable parts fold into the owning package's doc when it lands; if abandoned, this file is simply deleted.\n\n## The problem this responds to\n\nGrep/text-search finds literal keyword matches.\nIt cannot answer \"find code that does X\" when the code implementing X uses none of the words a caller would naturally search for — e.g. \"show me the error-handling patterns in this codebase\" when error handling is spelled out in prose inside docstrings and comments but never literally contains the word \"error\" everywhere it matters. `quarry` (see [quarry](https://github.com/Knatte18/quarry)) doesn't solve this either — it answers \"what exactly references/defines this symbol,\" a precise, compiler-derived question, not \"what have we conceptually written that's similar to this.\"\n\n## Core mechanism, adapted from Enzyme\n\nEnzyme indexes a personal notes vault;\nthe same shape maps onto a codebase's descriptive text (docstrings, comments, package `doc.go` headers):\n\n1. **Catalyst generation.**\n   Enzyme derives \"thematic questions\" from actual content per tag/link/ folder in a notes vault.\n   For code, the analogous unit is likely per-package or per-module: derive thematic questions from that package's docstrings, comments, and `doc.go` header.\n2. **Vector embedding.**\n   Catalysts are embedded as vectors, with cosine similarity precomputed against every text chunk (docstring, comment block, doc header).\n3. **Temporal decay weighting.**\n   Recently written/modified text influences the index more heavily than old, rarely-touched text — the index shifts with the codebase's current shape, not a static snapshot taken once.\n   For code specifically, \"recency\" is naturally available from git history (`git log` per file/function) — plausibly the same kind of SHA-diffing `internal/gitrepo` already does for other consumers, rather than a new mechanism.\n4. **Semantic retrieval.**\n   An agent searches catalyst vectors instead of guessing grep terms, surfacing conceptually related code across files/packages that share no literal vocabulary.\n\n## Relationship to `quarry` and `raddle` — complementary, not overlapping\n\nSame three-way split the original quarry proposal drew, now with a name for the third row:\n\n| Module | Answers | Mechanism |\n|---|---|---|\n| `quarry` | \"What exactly references/defines this symbol, right now?\" | Deterministic, compiler-derived (LSP) |\n| `raddle` | \"Where does this conceptually belong, and why?\" | LLM-authored/maintained narrative docs |\n| `semantic-index` (this) | \"Have we written something conceptually similar, without shared vocabulary?\" | Embeddings + temporal-decay weighting |\n\nNone of these three replace either of the others — different question, different mechanism.\n\n## Open questions (genuinely unscoped)\n\n- **Indexing granularity.**\n  Per-function docstring, per-file, or per-package `doc.go` — Enzyme's own granularity (tag/link/folder) doesn't map onto code 1:1;\n  needs its own design pass.\n- **Embedding provider.**\n  Self-hosted vs. API-based — cost, latency, and offline/air-gapped operation all matter differently here than for a personal notes tool.\n- **Temporal decay source.**\n  Whether it reuses `gitrepo`'s `ChangedFilesSince`/SHA machinery directly, or needs its own recency signal.\n- **Standalone vs. baked into loomyard.**\n  Same question asked of `quarry` and `raddle` — lean build-inside-first, extract only once a second concrete consumer exists.\n- **Consumer.**\n  Presumably the planner (finding existing similar implementations before writing a card) and webster forks (finding a pattern to follow) — not yet concretely designed.\n\n## Related\n\n- [quarry](https://github.com/Knatte18/quarry) — the precise, compiler-derived sibling;\n  quarry's own design proposal named this as an out-of-scope, deferred idea.\n- raddle.md — the curated-narrative sibling.\n- `internal/gitrepo` — plausible source of the temporal-decay recency signal.\n",
-      "created": "2026-10-03T17:27:16Z"
-    },
-    {
-      "id": 66,
-      "handle": "F4",
-      "slug": "plugin-packaging",
-      "title": "Ship lyx as an installable Claude Code plugin",
-      "kind": "note",
-      "labels": [
-        "feature",
-        "stencil"
-      ],
-      "issues": [],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "Package lyx and its skills as one installable plugin",
-      "body": "From `manifest/roadmap.md` Someday, kept by the operator on 2026-10-03.\nIdea: ship `lyx` as an installable Claude Code plugin.",
-      "created": "2026-10-03T17:27:16Z"
-    },
-    {
       "id": 68,
       "handle": "E2",
       "slug": "codex-engine",
@@ -406,24 +372,6 @@
       "body": "## Seen (count, 2026-10-15)\n\nOf 50 landings on `main` from 2026-10-05 to 2026-10-15 that changed non-test Go code in `internal/shuttleengine/*.go`, 47 were matched to their task through the closing PR comment, and only 24 of those carried the `shuttle` label.\nThe others carried labels for what the task was about (`reed`, `loom`, `burler`, `batten`, `stencil`), not for every package its diff touched: `run-pane-timing`, `overview-seats`, `hibernate-trigger`, `merge-review`, `twill-discusser` and `small-fixes-batch` among them.\nThe board's module labels are set by hand when an entry is written, before anyone knows which packages the work will touch.\nThe orch bundles tasks and sets `depends_on` by package overlap read from labels, so a label that misses a touched module hides an overlap.\nCounted by Haiku agents from the board history and `gh pr list`; scripts and tables in `.scratch/label-count/` in the prime, not committed.\n\n## Idea\n\n- Derive a task's module labels, or check them, from what the work touches: the plan's `Edit:`/`Create:` paths once Plan-Write has run, and the landed diff at landing.\n- At least, record the touched modules on the landed entry or in the run record, so overlap checks and reports read facts, not the labels written up front.\n- Whether a mismatch only warns, adds the label, or feeds the orch's overlap check is open.\n",
       "created": "2026-10-15T10:34:27Z",
       "revised": "2026-10-15T10:34:27Z"
-    },
-    {
-      "id": 560,
-      "handle": "E11",
-      "slug": "batten-ready-overlap",
-      "title": "Start one task per overlapping group at a newly-ready start",
-      "kind": "note",
-      "labels": [
-        "enhancement",
-        "batten"
-      ],
-      "issues": [],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "When a landing makes several overlapping tasks ready at once, batten starts one per group and names the rest in its notice",
-      "body": "Split from `sibling-overlap-check` on 2026-10-15; the operator decided only the board warning and skill rule there.\n\n## Idea\n\nWhen a landing makes several tasks ready at once, batten starts one task per group of overlapping tasks (shared module labels, later the paths of note `labels-from-diff`) and leaves the rest for the orch, naming the overlap in the notice.",
-      "created": "2026-10-15T12:28:05Z",
-      "revised": "2026-10-15T12:28:05Z"
     },
     {
       "id": 568,
