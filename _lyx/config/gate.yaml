@@ -1,6 +1,5 @@
 slots: 3 # how many gate builds and test runs the hub executes at once; a lowered count takes effect on the next acquire while a running holder finishes
 scoper: go
-guard_tier: 1
 refuse_raw: ["go test"]
 tiers:
   tier0:
@@ -40,7 +39,10 @@ tiers:
     prebuilt_lyx: true
     manual: true
 gates:
-  batch: [0, 1]
-  round: [0, 1]
-  final: [0, 1, 2]
-  landing: [0, 1, 2]
+  batch: {tiers: [0, 1], scope: card}
+  webster-fix: {tiers: [0, 1], scope: diff}
+  webster: {tiers: [0, 1, 2], scope: all}
+  merge-in: {tiers: [0, 1, 2], scope: all}
+  finalize: {tiers: [0, 1, 2], scope: all}
+  darn-write: {tiers: [0, 1, 2], scope: diff}
+  code-burler-fix: {tiers: [0, 1, 2], scope: diff}
