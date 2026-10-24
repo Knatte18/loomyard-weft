@@ -1,0 +1,11 @@
+{
+  "verdict": "hand-back",
+  "reason": "Webster stopped blocked again at batch 22-tier-plan-docs, which is dead with recovery_retry false and no recovery left.\nThis is the same cause as the attempt-1 stop at history length 28, which the parent has not answered.\nThe recover-batch friction note (_lyx/loom/friction/webster-refusal-recover-batch.md) records dead_reason asking, and _lyx/webster/outcome.yaml records the stuck reason.\nThe drive report _lyx/shed/gate-runs-once/drive-reports/drive-report-20261024-130040-5c79.md gives the cause: card 23's verify needs the hub's tier commands changed, which only the orch can do.\nA re-launch or goto to Webster cannot settle it, so this is a scope and design choice for the run's parent.",
+  "question": "Batch 22-tier-plan-docs (card 23) cannot pass its verify, because the hub's tier commands must change and only the orch can change them.\nThe run is stopped at Webster with 10 batches done and batches 24, 27, 28, 29, 30 and 31 not begun.\nThis stop repeats the attempt-1 stop, and the run has not moved since.\nWhich way forward?\n1) Change the hub tier commands as the decision record's Constraints describe, then re-launch (Recommended, if the hub can take the change).\n2) Amend card 23's verify so it no longer needs the hub tier change, then re-launch.\n3) End the run stuck at batch 22 and handle the rest by hand.",
+  "goto": "",
+  "cause": "",
+  "attempt": 2,
+  "attempt_dir": "/home/knatte/Code/loomyard-LYXHUB/gate-runs-once/_lyx/shed/gate-runs-once/tackler/attempt-2",
+  "verdict_path": "/home/knatte/Code/loomyard-LYXHUB/gate-runs-once/_lyx/shed/gate-runs-once/tackler/attempt-2/verdict.yaml",
+  "case_brief_path": ""
+}
