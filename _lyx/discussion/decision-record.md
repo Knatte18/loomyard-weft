@@ -386,11 +386,12 @@ Rationale: PATTERN.md is already over its headroom line and this task's entries 
 - Board entry `adopt-runs-tests` names the retired `landing` list.
 
 <!-- lyx:carry-over Plan-Review -->
-- Plan-Review, round 2: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
-  Review: _lyx/reviews/plan/round-2-review.md; fixer report: _lyx/reviews/plan/round-2-fixer-report.md.
-  - card-20-duplicate-forced-answer-test (class consistency, severity MEDIUM, open in rounds 2)
-  - hand-enumerated-affected-sets (class design, severity BLOCKING, open in rounds 1, 2)
-  - retag-support-files-old-tag-spellings (class design, severity MEDIUM, open in rounds 2)
+- Plan-Review, round 3: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
+  Review: _lyx/reviews/plan/round-3-review.md; fixer report: _lyx/reviews/plan/round-3-fixer-report.md.
+  - card-15-extends-should-be-edit (class consistency, severity MEDIUM, open in rounds 3)
+  - card-17-extends-should-be-edit (class consistency, severity MEDIUM, open in rounds 3)
+  - card-20-duplicate-forced-answer-test (class consistency, severity MEDIUM, open in rounds 2, 3)
+  - hand-enumerated-affected-sets (class design, severity BLOCKING, open in rounds 1, 2, 3)
 <!-- /lyx:carry-over Plan-Review -->
 
 ## Acceptance criteria
