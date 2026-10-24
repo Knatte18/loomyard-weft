@@ -36,7 +36,7 @@ Waits only on Running or Ready entries.
 | T6 | **Fork git-mutation guard fails a run on git commands confined to a scratch repo**<br>• `profile: light` | [`fork-git-guard-scratch-repo`](design-fork-git-guard-scratch-repo.md) | darn | `pattern-cleanup` | 21h<br>2h | shed, burler |
 | T9 | **Umbrella groundwork: project entries, pairs from a parent pair, and umbrella tasks that spawn and land from their own worktree**<br>• [WS 004+006] Board projects, fabric pairs from a parent pair, batten and orch from any worktree, umbrella tasks | [`umbrella-groundwork`](design-umbrella-groundwork.md) | loom | `pattern-cleanup` | 3w<br>2h | fabric, batten, orch, board, reed, creel, shed, workspaces |
 
-## Notes (46)
+## Notes (47)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
 
@@ -51,7 +51,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | A7 |  | **Trial: batcher profile wide (budget 300k)**<br>• Hub runs a new batcher profile wide, budget 300k; check cost and fork quality before taking it into the template | [`batch-budget-300k-trial`](design-batch-budget-300k-trial.md) | 1d<br>4h | webster |
 | A8 |  | **Plan writer cost: sub-planners per part, and twill versus a solo writer**<br>• The Plan writer is 18% of spend; sub-planners per part for large bundles, and a twill versus solo Opus high comparison on cost, rounds and time | [`plan-writer-context`](design-plan-writer-context.md) | 1d<br>3h | loom, stencil |
 
-### Bugs (4)
+### Bugs (5)
 
 | # | P | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
@@ -59,6 +59,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | B2 |  | **A run never files a task, at most a note**<br>• gate-runs-once filed a follow-up task (default loom) that then auto-started; runs may file only notes | [`runs-never-write-board`](design-runs-never-write-board.md) | 13m<br>12m | board, loom, stencil |
 | B3 |  | **Card gate (--tier 0) does not vet a card's packages under the other tier tag sets, so helper dependencies across tagged files fail only in the batch gate** | [`card-gate-vets-all-tag-sets`](design-card-gate-vets-all-tag-sets.md) | 0m<br>0m | gate, webster |
 | B4 |  | **lyx gate test stops at the first failing tier, so a pre-existing tier0 failure hides every later tier and the guard step** | [`gate-runs-past-failing-tier`](design-gate-runs-past-failing-tier.md) | 0m<br>0m | gate |
+| B5 |  | **webster: Master writes stuck after reset --to batch-start instead of running recover-batch** | [`webster-reset-reopens-dead-batch`](design-webster-reset-reopens-dead-batch.md) | 0m<br>0m | webster |
 
 ### Enhancements (23)
 
