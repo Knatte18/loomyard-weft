@@ -4,6 +4,12 @@
   "base": "ed98ccf71d12c07c28bc8f97c8f5d7ede7e73025",
   "review_input": "/home/knatte/Code/loomyard-LYXHUB/pattern-cleanup/.lyx/loom/overlap-note.md",
   "judge_subject": {
-    "kind": ""
-  }
+    "kind": "code",
+    "merge_base": "93f1c8942e059ae8e8adcea22f0345f1035daae9",
+    "head": "7a6539d5037ff821f632da2a5ec63aa742f08e28",
+    "full_hash": "d3260f8f8802d379934b990136041b40d803181422c57a4b16f0f637cc0966ef",
+    "patch_id": "6d8fac3001729e065daff26b4f66b529ac010e75"
+  },
+  "judge_base": "93f1c8942e059ae8e8adcea22f0345f1035daae9",
+  "judge_at": "2026-10-24T14:10:19Z"
 }

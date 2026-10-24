@@ -160,11 +160,11 @@ index 3f5ab9688..3a8e7d639 100644
 +- `PATTERN-test-speed` — Writing or running a test: via `lyx gate test` by gate key; one `tierN` tag, the lowest that fits; it pins behavior no test covers; injected clocks, `t.Parallel` by default. (test) — [background](pattern/PATTERN-test-speed.md)
 +- `PATTERN-test-isolation` — Testing package: hermetic git and `tmuxkit.Main`; shared support in one `internal/testkit/<kit>/`; hub fixtures via `hubforge`. (test) — [background](pattern/PATTERN-test-isolation.md)
 diff --git a/cmd/lyx/agentfiledissues_test.go b/cmd/lyx/agentfiledissues_test.go
-index d9d17a684..9bb4538be 100644
+index 03ef0b8b6..e8a106478 100644
 --- a/cmd/lyx/agentfiledissues_test.go
 +++ b/cmd/lyx/agentfiledissues_test.go
 @@ -1,6 +1,6 @@
- //go:build tier0 || integration
+ //go:build tier0
  
 -// agentfiledissues_test.go enforces `PATTERN-agent-filed-issues`: lyx files a GitHub issue only through `lyx selfreport create`,
 +// agentfiledissues_test.go enforces `PATTERN-github-auth`: lyx files a GitHub issue only through `lyx selfreport create`,
@@ -180,7 +180,7 @@ index d9d17a684..9bb4538be 100644
  	}
  }
 diff --git a/cmd/lyx/checkedcall_test.go b/cmd/lyx/checkedcall_test.go
-index 01c1a83a9..a4e8d0cd5 100644
+index 1940e4d9f..8363be2f5 100644
 --- a/cmd/lyx/checkedcall_test.go
 +++ b/cmd/lyx/checkedcall_test.go
 @@ -5,7 +5,7 @@
@@ -207,7 +207,7 @@ index 01c1a83a9..a4e8d0cd5 100644
  }
  
 diff --git a/cmd/lyx/configstrictness_test.go b/cmd/lyx/configstrictness_test.go
-index 9531d93ae..81fb2edfb 100644
+index 92d2c6b8a..c54704916 100644
 --- a/cmd/lyx/configstrictness_test.go
 +++ b/cmd/lyx/configstrictness_test.go
 @@ -7,7 +7,7 @@
@@ -262,11 +262,11 @@ index 9531d93ae..81fb2edfb 100644
  }
  
 diff --git a/cmd/lyx/constraintchokepoint_test.go b/cmd/lyx/constraintchokepoint_test.go
-index af1e9a5fa..07a5a58b9 100644
+index 6656373d4..a568a9487 100644
 --- a/cmd/lyx/constraintchokepoint_test.go
 +++ b/cmd/lyx/constraintchokepoint_test.go
 @@ -1,6 +1,6 @@
- //go:build tier0 || integration
+ //go:build tier0
  
 -// constraintchokepoint_test.go enforces `PATTERN-glyph-conversion-chokepoint`:
 +// constraintchokepoint_test.go enforces the Glyph Conversion Chokepoint Invariant in planparser's package doc:
@@ -296,7 +296,7 @@ index 6558d8611..dc355d94b 100644
  package main
  
 diff --git a/cmd/lyx/destructiveguard_test.go b/cmd/lyx/destructiveguard_test.go
-index 80aef4486..99b7e383c 100644
+index 726e1191d..9a5bbe612 100644
 --- a/cmd/lyx/destructiveguard_test.go
 +++ b/cmd/lyx/destructiveguard_test.go
 @@ -4,7 +4,7 @@
@@ -368,7 +368,7 @@ index 80aef4486..99b7e383c 100644
  		}
  		scannedReadOnlyTypes++
 diff --git a/cmd/lyx/gitrepoboundary_test.go b/cmd/lyx/gitrepoboundary_test.go
-index 4c429ffa6..0804a9c9f 100644
+index 07d9d56ea..c37fddc65 100644
 --- a/cmd/lyx/gitrepoboundary_test.go
 +++ b/cmd/lyx/gitrepoboundary_test.go
 @@ -10,7 +10,7 @@
@@ -376,12 +376,12 @@ index 4c429ffa6..0804a9c9f 100644
  //
  // This guard is keyed by **method name** and answers which methods may reach the CLI
 -// at all; `PATTERN-gitexec-checked-call` is keyed by **call site**
-+// at all; `PATTERN-gitrepo-client-boundary's checked-call rule` is keyed by **call site**
++// at all; `PATTERN-gitrepo-client-boundary`'s checked-call rule is keyed by **call site**
  // and answers which sites, package-wide, may use the raw form. The two invariants are
  // complementary, not redundant.
  //
 diff --git a/cmd/lyx/hermeticenv_test.go b/cmd/lyx/hermeticenv_test.go
-index e2f67a0a8..41f81641b 100644
+index 31744d568..3d5322746 100644
 --- a/cmd/lyx/hermeticenv_test.go
 +++ b/cmd/lyx/hermeticenv_test.go
 @@ -67,7 +67,7 @@ var gitSpawnTokens = []string{
@@ -394,11 +394,11 @@ index e2f67a0a8..41f81641b 100644
  
  // pkgHermeticStatus accumulates, per package directory, the evidence the guard's
 diff --git a/cmd/lyx/norecoverydeny_test.go b/cmd/lyx/norecoverydeny_test.go
-index efb73ae0e..9b8c7243a 100644
+index 4c45d0597..e75a486b3 100644
 --- a/cmd/lyx/norecoverydeny_test.go
 +++ b/cmd/lyx/norecoverydeny_test.go
 @@ -1,6 +1,6 @@
- //go:build tier0 || integration
+ //go:build tier0
  
 -// norecoverydeny_test.go enforces `PATTERN-no-denied-recovery`: no refusal, stencil, spec or skill names a command the agents' settings deny as a way forward.
 +// norecoverydeny_test.go enforces `PATTERN-refusal-way-forward`: no refusal, stencil, spec or skill names a command the agents' settings deny as a way forward.
@@ -424,11 +424,11 @@ index efb73ae0e..9b8c7243a 100644
  }
  
 diff --git a/cmd/lyx/removestrand_test.go b/cmd/lyx/removestrand_test.go
-index 8cf6762eb..6e13725cc 100644
+index 0b8cb26d5..57373e4de 100644
 --- a/cmd/lyx/removestrand_test.go
 +++ b/cmd/lyx/removestrand_test.go
 @@ -1,6 +1,6 @@
- //go:build tier0 || integration
+ //go:build tier0
  
 -// removestrand_test.go enforces `PATTERN-shuttle-stop`: a strand is removed from Go only inside the packages that own the removal.
 +// removestrand_test.go enforces `PATTERN-shuttle-provider-seam`: a strand is removed from Go only inside the packages that own the removal.
@@ -445,7 +445,7 @@ index 8cf6762eb..6e13725cc 100644
  	})
  }
 diff --git a/cmd/lyx/sandbox_coverage_test.go b/cmd/lyx/sandbox_coverage_test.go
-index c3469ee1c..323308c8a 100644
+index 1dac2d789..95f656f7b 100644
 --- a/cmd/lyx/sandbox_coverage_test.go
 +++ b/cmd/lyx/sandbox_coverage_test.go
 @@ -27,7 +27,7 @@ var coversLinePattern = regexp.MustCompile(`^\*\*Covers:\*\*\s*(.+)$`)
@@ -458,11 +458,11 @@ index c3469ee1c..323308c8a 100644
  var excludedModules = []scankit.Entry{
  	{
 diff --git a/cmd/lyx/spawnrole_test.go b/cmd/lyx/spawnrole_test.go
-index 21935bbcb..2e59814ea 100644
+index 66314ee3a..af832d697 100644
 --- a/cmd/lyx/spawnrole_test.go
 +++ b/cmd/lyx/spawnrole_test.go
 @@ -1,6 +1,6 @@
- //go:build tier0 || integration
+ //go:build tier0
  
 -// spawnrole_test.go enforces `PATTERN-agent-name`'s role-constant rule:
 +// spawnrole_test.go enforces the role-constant rule of agentname's package doc:
@@ -479,10 +479,10 @@ index 21935bbcb..2e59814ea 100644
  			}
  		}
 diff --git a/cmd/lyx/tiertags_test.go b/cmd/lyx/tiertags_test.go
-index d7c0e29ea..c13179123 100644
+index 25b66e012..82028f290 100644
 --- a/cmd/lyx/tiertags_test.go
 +++ b/cmd/lyx/tiertags_test.go
-@@ -130,7 +130,7 @@ func TestTierTags_OneTagPerTestFile(t *testing.T) {
+@@ -134,7 +134,7 @@ func TestTierTags_OneTagPerTestFile(t *testing.T) {
  	scankit.RequireFloor(t, scanned, 1000, "tier tag guard")
  	sort.Strings(failures)
  	if len(failures) > 0 {
@@ -492,11 +492,11 @@ index d7c0e29ea..c13179123 100644
  }
  
 diff --git a/cmd/lyx/verifiedtree_test.go b/cmd/lyx/verifiedtree_test.go
-index 5956f2cee..3c34db4db 100644
+index f5ca556df..f79a92eb1 100644
 --- a/cmd/lyx/verifiedtree_test.go
 +++ b/cmd/lyx/verifiedtree_test.go
 @@ -1,6 +1,6 @@
- //go:build tier0 || integration
+ //go:build tier0
  
 -// verifiedtree_test.go enforces `PATTERN-verified-tree`:
 +// verifiedtree_test.go enforces `PATTERN-gate-slot`:
@@ -535,7 +535,7 @@ index 5956f2cee..3c34db4db 100644
  	})
  	scankit.RequireFloor(t, scanned, 20, "verified-tree retired-marker scan")
 diff --git a/cmd/testtiming/redundancy.go b/cmd/testtiming/redundancy.go
-index cbfd5308a..19e7ca92e 100644
+index 014e19261..61a99ce28 100644
 --- a/cmd/testtiming/redundancy.go
 +++ b/cmd/testtiming/redundancy.go
 @@ -297,7 +297,7 @@ func renderReport(tags string, pkgs []pkgReport) string {
@@ -571,7 +571,7 @@ index 0b8ea22e0..3dc7b08cf 100644
 -- `PATTERN-sole-parsers`, `PATTERN-shed-recipe-registry`, `PATTERN-told-geometry` and `PATTERN-shed-producer-seam` — the four that directly shape this format.
 +- `PATTERN-sole-parsers`, `PATTERN-shed-recipe-registry` and `PATTERN-cwd-resolution`, with the import seam `internal/shedengine`'s package doc states — the rules that directly shape this format.
 diff --git a/contracts/stencils/parentdirective_test.go b/contracts/stencils/parentdirective_test.go
-index ec3a8e537..359ffe8b0 100644
+index 2c712dc44..70b16088b 100644
 --- a/contracts/stencils/parentdirective_test.go
 +++ b/contracts/stencils/parentdirective_test.go
 @@ -3,7 +3,7 @@
@@ -602,11 +602,11 @@ index ec3a8e537..359ffe8b0 100644
  func TestStencils_NoEditRuleRestatement(t *testing.T) {
  	t.Parallel()
 diff --git a/contracts/stencils/roleskills_test.go b/contracts/stencils/roleskills_test.go
-index 3085cb025..ab2bf9d9a 100644
+index e690acdf9..428fc25d6 100644
 --- a/contracts/stencils/roleskills_test.go
 +++ b/contracts/stencils/roleskills_test.go
 @@ -1,6 +1,6 @@
- //go:build tier0 || integration
+ //go:build tier0
  
 -// roleskills_test.go pins PATTERN-role-skills-typed: a skill reaches a spawned session because the
 +// roleskills_test.go pins PATTERN-parent-directive: a skill reaches a spawned session because the
@@ -1261,11 +1261,11 @@ index a99ae3c9c..1cec321b6 100644
  // The Darn-Write row's producer (NewDarnWrite) wraps the gated darn writer session and tells it a prior-work note, empty when absent.
  // The note, written in Go, says the change is already under way on the task branch and names the latest Darn-Write history entry's halt reason.
 diff --git a/internal/lyxcwd/docslink_test.go b/internal/lyxcwd/docslink_test.go
-index 7cf430598..c2dc88a13 100644
+index 34f969004..53b590401 100644
 --- a/internal/lyxcwd/docslink_test.go
 +++ b/internal/lyxcwd/docslink_test.go
 @@ -1,9 +1,7 @@
- //go:build tier0 || integration
+ //go:build tier0
  
 -// docslink_test.go guards markdown link and anchor integrity under docs/: every
 -// inline markdown link's file part and #anchor must resolve somewhere in the repo. Its placement in
@@ -1394,11 +1394,11 @@ index 12c009c78..0346c32cc 100644
  // internal/planglyph) where a refKind comparison or a classifyRef call is legal outside a
  // _test.go file; every other production dispatch site routes through lookup or through the
 diff --git a/internal/planparser/shape_enforcement_test.go b/internal/planparser/shape_enforcement_test.go
-index a591038b2..4f35c1580 100644
+index 0c505e3fd..d1bad2c71 100644
 --- a/internal/planparser/shape_enforcement_test.go
 +++ b/internal/planparser/shape_enforcement_test.go
 @@ -1,7 +1,7 @@
- //go:build tier0 || integration
+ //go:build tier0
  
  // shape_enforcement_test.go is the requirement-4 capstone: the two AST-based boundary-enforcement
 -// scans that prove PATTERN-ref-shape-registry holds over both packages'
@@ -3325,7 +3325,7 @@ index 8d3dfab52..dcd118647 100644
 +An instruction file that needs another producer's format points at that producer's format contract, and never restates it.
 diff --git a/pattern/PATTERN-test-economy.md b/pattern/PATTERN-test-economy.md
 deleted file mode 100644
-index c9dbba651..000000000
+index d6946774a..000000000
 --- a/pattern/PATTERN-test-economy.md
 +++ /dev/null
 @@ -1,26 +0,0 @@
@@ -3352,11 +3352,11 @@ index c9dbba651..000000000
 -  A prune finding names the covering test from the report, and only the removable set may be deleted together: deleting a candidate outside it can leave a block uncovered once its partner is gone.
 -  A candidate that is kept carries `//testtiming:keep <reason>` directly above its `func Test…` line, and the reason names what it pins that its covering tests do not (an error message, an output shape, an ordering); the report lists it under "Kept".
 -  A test in the "no coverage" list is outside the report's judgment, not exempt from the rules above.
--- The "no coverage" list holds a test that is skipped, failed or covers nothing, a tier-tagged test with a call the static scan cannot resolve, and a test that may run this module's code in another process: it references `internal/testkit/lyxbin`, `os.Executable`, `os.Args[0]` or `exec.Command("go", ...)` directly or through a followed call, or it sits in a `tmux`-tier file.
+-- The "no coverage" list holds a test that is skipped, failed or covers nothing, a tier-tagged test with a call the static scan cannot resolve, and a test that may run this module's code in another process: it references `internal/testkit/lyxbin`, `os.Executable`, `os.Args[0]` or `exec.Command("go", ...)` directly or through a followed call, or it sits in a `tier2` file.
 -  Spawning git, using `hubforge` or driving a tmux server through `tmuxkit` does not exclude a test, and an untagged test is always judged.
 -- The scan does not see a hook, alias or helper a test installs so that git runs module code, so the hand check before deleting a candidate also asks whether the candidate makes git run module code.
 diff --git a/pattern/PATTERN-test-isolation.md b/pattern/PATTERN-test-isolation.md
-index e5ecfcfad..fb509980e 100644
+index 9564ee8ee..70414d75d 100644
 --- a/pattern/PATTERN-test-isolation.md
 +++ b/pattern/PATTERN-test-isolation.md
 @@ -66,3 +66,39 @@ A test package never reaches the operator's global gitconfig or default tmux soc
@@ -3378,7 +3378,7 @@ index e5ecfcfad..fb509980e 100644
 +  - `internal/testkit/tmuxkit` is the second exemption from the `os/exec` ban alone, bounded to running the `tmux` binary against sockets under its own directory or its own fixture keys, to starting servers under the kit's own config, and to the post-run `/proc` scan that kills a leftover process.
 +    No other kit imports it, for the same reason.
 +  - `internal/testkit/llmkit` is the third exemption from the `os/exec` ban alone, bounded to `exec.LookPath` for the `claude` binary; it starts nothing.
-+    Only `llm`-tagged test files import it, and no other kit does, for the same reason.
++    Only `tier3`-tagged test files import it, and no other kit does, for the same reason.
 +- A kit imports only the lowest packages defining the types it fakes.
 +  A package an import cycle bars from a kit keeps exactly one local copy, and a fixture used by one package stays in that package's `_test.go` files.
 +- `internal/testkit/scankit` imports the standard library only, so every package's tests can import it.
@@ -3400,11 +3400,11 @@ index e5ecfcfad..fb509980e 100644
 +- No test package wraps `hubforge` in its own fixture type; a test takes a `*hubforge.Hub` and reads `h.Topology`, `AddPairWith` and `OpenFabric` directly.
 +  Enforcement of this clause is review discipline, not a scan.
 diff --git a/pattern/PATTERN-test-speed.md b/pattern/PATTERN-test-speed.md
-index 0c9cbb52e..c02b4d6b6 100644
+index 22098f55e..1ece08d36 100644
 --- a/pattern/PATTERN-test-speed.md
 +++ b/pattern/PATTERN-test-speed.md
 @@ -103,3 +103,41 @@ Bound: a forged value misleads only an ungated raw run, since `lyx gate test` se
- - The `integration`-tier guard runs `go list -test -deps` under every tag and fails, naming one import chain, when a test binary outside the list links `github.com/tree-sitter/go-tree-sitter`.
+ - The `tier1` guard runs `go list -test -deps` under every tag and fails, naming one import chain, when a test binary outside the list links `github.com/tree-sitter/go-tree-sitter`.
  - It also fails when a listed package's test binary no longer links it, so the list tracks the tree.
  - The chain search and the comparison are in `cmd/lyx/treesitterlink_test.go`.
 +
@@ -3442,7 +3442,7 @@ index 0c9cbb52e..c02b4d6b6 100644
 +  A prune finding names the covering test from the report, and only the removable set may be deleted together: deleting a candidate outside it can leave a block uncovered once its partner is gone.
 +  A candidate that is kept carries `//testtiming:keep <reason>` directly above its `func Test…` line, and the reason names what it pins that its covering tests do not (an error message, an output shape, an ordering); the report lists it under "Kept".
 +  A test in the "no coverage" list is outside the report's judgment, not exempt from the rules above.
-+- The "no coverage" list holds a test that is skipped, failed or covers nothing, a tier-tagged test with a call the static scan cannot resolve, and a test that may run this module's code in another process: it references `internal/testkit/lyxbin`, `os.Executable`, `os.Args[0]` or `exec.Command("go", ...)` directly or through a followed call, or it sits in a `tmux`-tier file.
++- The "no coverage" list holds a test that is skipped, failed or covers nothing, a tier-tagged test with a call the static scan cannot resolve, and a test that may run this module's code in another process: it references `internal/testkit/lyxbin`, `os.Executable`, `os.Args[0]` or `exec.Command("go", ...)` directly or through a followed call, or it sits in a `tier2` file.
 +  Spawning git, using `hubforge` or driving a tmux server through `tmuxkit` does not exclude a test, and an untagged test is always judged.
 +- The scan does not see a hook, alias or helper a test installs so that git runs module code, so the hand check before deleting a candidate also asks whether the candidate makes git run module code.
 diff --git a/pattern/PATTERN-test-tiers.md b/pattern/PATTERN-test-tiers.md
@@ -3463,7 +3463,7 @@ index b01cab9fc..000000000
 -- The plan gate's `verify-raw-command` finding flags a card `**Verify:**` line that starts with a `refuse_raw` prefix.
 diff --git a/pattern/PATTERN-testkit.md b/pattern/PATTERN-testkit.md
 deleted file mode 100644
-index d787d2d6f..000000000
+index 3f6d13b77..000000000
 --- a/pattern/PATTERN-testkit.md
 +++ /dev/null
 @@ -1,25 +0,0 @@
@@ -3481,7 +3481,7 @@ index d787d2d6f..000000000
 -  - `internal/testkit/tmuxkit` is the second exemption from the `os/exec` ban alone, bounded to running the `tmux` binary against sockets under its own directory or its own fixture keys, to starting servers under the kit's own config, and to the post-run `/proc` scan that kills a leftover process.
 -    No other kit imports it, for the same reason.
 -  - `internal/testkit/llmkit` is the third exemption from the `os/exec` ban alone, bounded to `exec.LookPath` for the `claude` binary; it starts nothing.
--    Only `llm`-tagged test files import it, and no other kit does, for the same reason.
+-    Only `tier3`-tagged test files import it, and no other kit does, for the same reason.
 -- A kit imports only the lowest packages defining the types it fakes.
 -  A package an import cycle bars from a kit keeps exactly one local copy, and a fixture used by one package stays in that package's `_test.go` files.
 -- `internal/testkit/scankit` imports the standard library only, so every package's tests can import it.
