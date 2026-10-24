@@ -325,6 +325,12 @@ Decision: Shorten PATTERN-never-force-add to: Keeping transients unindexed: `.gi
 
 Rationale: PATTERN.md is already over its headroom line and this task's entries add 510 bytes; trimming detail the background files and code already hold makes room until a PATTERN cleanup (operator, 2026-10-24).
 
+### Added after Discussion (parent, 2026-10-24): Shorten recipe-owns-failures for PATTERN headroom
+
+Decision: Shorten PATTERN-recipe-owns-failures to: A merge or test failure at Merge-In or Finalize: its fixer, a reroute or a halt to the orch.
+
+Rationale: PATTERN.md is already over its headroom line and this task's entries add 510 bytes; trimming detail the background files and code already hold makes room until a PATTERN cleanup (operator, 2026-10-24).
+
 ## Constraints
 
 - The hub's tier commands must carry both tag spellings, and this hub must stop using `covers`, before Webster gates any card that retags a file; the orch applies it from the prime with `lyx config gate --set`:
@@ -414,6 +420,7 @@ Rationale: PATTERN.md is already over its headroom line and this task's entries 
 - `PATTERN-fabric-write-containment` — changes: Writing `_launchers` or workspace file in `fabricengine`: via a hub `os.Root` only. — added after Discussion (parent, 2026-10-24)
 - `PATTERN-origin-reconcile` — changes: Acting on a run or hub after an absence: `fabricengine`'s origin reconcile first. — added after Discussion (parent, 2026-10-24)
 - `PATTERN-never-force-add` — changes: Keeping transients unindexed: `.git/info/exclude`; never `git add -f`. — added after Discussion (parent, 2026-10-24)
+- `PATTERN-recipe-owns-failures` — changes: A merge or test failure at Merge-In or Finalize: its fixer, a reroute or a halt to the orch. — added after Discussion (parent, 2026-10-24)
 
 ## Notes for the plan writer
 
