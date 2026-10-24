@@ -1,0 +1,3 @@
+outcome: stuck
+stuck_reason: "Batch 22-tier-plan-docs: the fork reported stuck (card 23's verify needs the hub's tier commands changed, which only the orch can do), and recover-batch ended dead with dead_reason asking and no recovery left."
+batches_done: 11

@@ -1336,8 +1336,8 @@
     }
   ],
   "currentBatch": 0,
-  "masterStrand": "749a4850b2cdeb072456c9c5b8c99ddb",
-  "masterSessionId": "10aba9c6-1885-40a9-b0f0-1f9376bb6375",
+  "masterStrand": "497aefaa7d0396fa103d723d93be3b5a",
+  "masterSessionId": "29211fe8-045b-495e-a422-1b6ff31360b2",
   "masterEngine": "claude",
   "batches": {
     "1": {
@@ -1574,14 +1574,12 @@
       "shuttleRunDir": "/home/knatte/Code/loomyard-LYXHUB/gate-runs-once/.lyx/shuttle/907ba5da851c5f847d4043ed06304917",
       "eventsPath": "/home/knatte/Code/loomyard-LYXHUB/gate-runs-once/.lyx/shuttle/907ba5da851c5f847d4043ed06304917/events.jsonl",
       "eventsOffset": 2242,
-      "recoveries": 1,
       "recoverySessions": [
         "e983de30-6292-401c-a7a1-940a522dfa20"
       ],
       "recoveryEngines": {
         "e983de30-6292-401c-a7a1-940a522dfa20": "claude"
-      },
-      "recoveryStartSha": "0421d5dd97fb11681591015e99e2c1a7f18a9420"
+      }
     },
     "3": {
       "slug": "gate-call-renders-key",
