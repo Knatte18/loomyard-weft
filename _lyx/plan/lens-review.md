@@ -1,0 +1,64 @@
+# Lens review
+
+Every lens fork returned a report; each is saved beside this file as `lens-review.lens-<lens>.md`.
+
+## Findings
+
+- coverage, MEDIUM, D4 start-check owner read untested — fixed as proposed: card 15 adds a `TestRefuseStartOwnedElsewhere` row refusing an unspawned beam member whose beam another machine owns.
+- coverage, MEDIUM, D4 origin-over-board unpinned — fixed as proposed: card 15's `TestParentOf` gains a prime-forked pair whose board entry names a beam, reading `""`.
+- coverage, MEDIUM, D5 dirty-beam landing untested — disputed, premise false: Finalize's dirty-parent Stuck is parent-agnostic over told paths and already reached by `internal/landingshed/finalize_test.go:886` (`dirtyCheckout: "/hub/parent"`), whose reason `internal/landingshed/finalize.go:406` names "commit or stash them in the parent pair"; a beam is that parent pair, and no card changes the code.
+- coverage, MEDIUM, D6 weft-side checked-out refusal unreached — fixed as proposed: card 5 adds the records-branch-checked-out-elsewhere row.
+- coverage, MEDIUM, D8 no per-verb row from a beam — fixed as proposed: card 23 adds `TestVerbs_RunFromABeam` (batten status, run arming, cancel, cleanup) and `TestCommand_RunsFromABeam` (adopt), and edits the cleanup verb's integration test; card 34 adds a `lyx beam create` row run from a beam.
+- coverage, MEDIUM, D8 orch-in-beam state and strand name untested — fixed as proposed: card 19 adds `TestOrchInBeam`.
+- coverage, MEDIUM, D10 re-runs after steps 1 and 5 and finish-step-6 unreached — fixed as proposed: card 35's `TestPromote` finishes from steps 1 through 5 and finishes step 6 alone.
+- coverage, MEDIUM, D11 depth resolution untested — fixed as proposed: card 36's integration test drives `BeamLandRefusal` over a member under a grouping project inside the beam.
+- coverage, MEDIUM, D11 after-claim re-check untested — fixed as proposed: card 36 adds a `TestWire_CreateWorktreeClaimsTheBoardEntry` row.
+- coverage, MEDIUM, D11 end-to-end landing untested — disputed, premise false: each piece has a row: the merge judgement (card 29), the project's done-mark passing the board (card 10's `TestProjectRules`), the teardown writing `done` whatever the entry's kind (`internal/pairteardown/teardown_test.go:370`, `write=done`), and the orch refusals (cards 19 and 36).
+- coverage, MEDIUM, D12 sub-beam and unrecorded parent untested — fixed as proposed: card 7 adds the sub-beam row and the unrecorded and empty-parent rows.
+- coverage, MEDIUM, D13 `noticesReachDriversParent` and `runParentRecorded` untested — fixed as proposed: card 25 adds `TestNoticesReachDriversParent`.
+- coverage, MEDIUM, D14 way forward unasserted — fixed as proposed: card 13's `TestSlugRule` asserts the admitted slug.
+- coverage, MEDIUM, card 8 two refusals unreached — fixed as proposed: card 8 adds the missing-record and root-pair rows.
+- coverage, LOW, D6 batten's `ErrBranchExists` — fixed as proposed: card 28 adds the leftover-branch row.
+- coverage, LOW, card 6 `--local --adopt-local` — fixed as proposed: card 6 adds the row.
+- coverage, LOW, D7 start from a beam — fixed as proposed: card 28 adds a run armed from the beam.
+- coverage, LOW, D9 mid-create resume and envelope pointer — envelope fixed as proposed on card 34; the resume half disputed, premise false: a resumed member's Worktree-Create finds the beam pair present and forks from it, the state card 28's `TestWorktreeCreate_ForksFromTheBeam` drives.
+- coverage, LOW, D12 prime spawn — disputed, every fix worse: `internal/ideengine/spawn.go:51` calls the same `RegenerateHubWorkspace` card 7 tests, and a spawn test launches VS Code, a process spawn no tier admits for this.
+- coverage, LOW, D13 hibernate and push notifier — fixed as proposed: card 20 adds a `PrimeOrchStrand` row from a member pair with the beam orch live.
+- coverage, LOW, D14 promote checks none and junction names — fixed as proposed: card 11's `TestSetOwners` row, card 13's `_board` row and card 17's junction-name step.
+- coverage, LOW, card 10 merge `order` rewrite — fixed as proposed in `TestMergeTasks`.
+- coverage, LOW, card 11 batch and merge payload paths — fixed as proposed in `TestUpsertTasksBatch` and `TestMergeTasks`.
+- coverage, LOW, card 12 resolver error and cycle — fixed as proposed in `TestParentBeam`.
+- coverage, LOW, card 20 `ParentOrchRecorded` — fixed as proposed in `TestParentOrchStrand`.
+- coverage, LOW, card 26 `NotifyOrchAt` no-strand — fixed as proposed in `TestParentOrchStrand` on card 26.
+- coverage, LOW, card 28 `branchOnOrigin` error — fixed as proposed in `TestBeamForkPrecondition`.
+- coverage, LOW, card 32 nil `RerouteReviewed` — fixed as proposed in `TestWire_BeamRecipe`.
+- coverage, LOW, card 33 beam param and three-recipe text — fixed as proposed: card 33 edits `TestWire_WriteSeedRefusesANonLoomChildBeforeTouchingTheWorktree`, which also asserts the admitted names and so was a forced edit.
+- row-validity, MEDIUM, card 12 `ParentOf` fake unreachable on a bare store — fixed as proposed: the row moves to a `Board` from `newProjectBoard` in `TestParentBeam`.
+- row-validity, MEDIUM, card 9 owner row cannot fail — fixed differently: the proposed board-dir store would duplicate a Board harness; the row moves to `TestPrimeOwnerReadAndRendered`, which records a `prime_owner`.
+- row-validity, MEDIUM, card 21 watcher holds no strand name — fixed as proposed: `Watcher.SetOrchName`, its zero-value meaning and `orchCLI.watchCmd` as its filler join card 21.
+- row-validity, MEDIUM, card 35 halves over `cancelDeps` undeclared — fixed as proposed: `endRunPhase` and `clearRunPhase` are declared and `TestCancelRun` drives them.
+- row-validity, MEDIUM, card 26 nil `ReadyRoutes` meaning — fixed as proposed: nil keeps today's notice.
+- row-validity, LOW, card 9 claim row contradicts the Intent — fixed as proposed: the row asserts no status is written.
+- row-validity, LOW, cards 9 and 10 no board builder — fixed differently: rather than re-signing `newRenameBoard`, card 9 declares `newProjectBoard` with a `configure` hook, which cards 10, 12 and 13 use.
+- row-validity, LOW, card 29 rows overclaim — fixed as proposed: reworded to "proceed to the gate".
+- row-validity, LOW, card 28 new test should be rows of the existing one, and nil seam meaning — nil meaning fixed as proposed; the test move disputed, every fix worse: `internal/battencli/wire_seams_test.go:1` is `//go:build tier0`, and the beam fork forks real pairs over hubforge, which PATTERN-test-speed keeps out of a tier0 file.
+- row-validity, LOW, card 22 orch list not injectable — fixed as proposed: an `orchs` seam on `overviewSource`, nil reading the prime alone.
+- row-validity, LOW, card 32 assertion on an unexposed field — fixed as proposed: the test asserts on the `landingDeps` result.
+- forced-edits, BLOCKING, card 21 `env.deps` unlisted — fixed as proposed.
+- forced-edits, MEDIUM, card 9 promote of a project — fixed as proposed: `Store.Promote` refuses a project naming `lyx beam create`, with a `TestPromote` row.
+- forced-edits, LOW, docs under Extends whose text the change makes wrong — fixed as proposed: those docs move under Edit on cards 7, 9, 10, 19, 21 and 23.
+- forced-edits, LOW, resume-context hook comment — fixed as proposed on card 19.
+- guard-reach, BLOCKING, card 24 beam with no reed session — fixed differently: rather than falling back to the prime, which breaks D8's "the reed session of the run's parent worktree", the opener brings the beam's session up with `Up` before opening; `windowSite` reports it.
+- guard-reach, BLOCKING, project with no local pair never refused — fixed as proposed: card 36's start guard refuses a grouping project and a pairless beam project, and Worktree-Create never adds a pair for a project.
+- guard-reach, MEDIUM, card 5 default-branch row unreachable — fixed as proposed: the row detaches the prime and adds from a pair.
+- guard-reach, MEDIUM, card 28 precondition order — fixed as proposed: it runs only after the completeness probe finds no pair.
+- guard-reach, LOW, card 35 loom resume inside a promoted pair — fixed differently: a loom-side refusal is scope the decision record does not license (D10 names batten's start guard); card 35 states the bound, which re-running promote ends.
+- guard-reach, LOW, card 7 unreadable origin fails regeneration — fixed as proposed.
+- guard-reach, LOW, card 19 reconcile from the beam — fixed as proposed: `reconcileHub` resolves the prime first.
+- guard-reach, note, member started during a claimed landing deadlocks — fixed as proposed: cards 28 and 36 name `lyx batten cancel <member>` as the way out.
+- way-forward, MEDIUM, card 30 run lock refuses the named fix — fixed as proposed: the refusal names cancelling the landing, the upsert, then `lyx beam land`.
+- way-forward, MEDIUM, card 34 nested beam with absent parent — fixed as proposed: create refuses with card 28's wording.
+- way-forward, MEDIUM, card 34 unmarked existing pair — fixed as proposed: step 2 marks it through `MarkBeam`.
+- way-forward, MEDIUM, card 35 unreachable origin — fixed as proposed: promote stops after step 1 naming its own re-run.
+- way-forward, MEDIUM, card 27 committed-only run meets cancel's nothing-left — fixed differently: rather than rewording D16's skip away from the cancel, cancel's `RecordsPresent` counts a run tracked at the records HEAD, so the named cancel progresses.
+- way-forward, LOW, card 35 inherited re-run text and marker — fixed as proposed: the halves take the re-run text, and the first removes its marker.
