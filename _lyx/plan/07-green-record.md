@@ -44,7 +44,7 @@ Writers serialize through a lock file beside the record (`internal/lock`), and e
 The carry sits under `verifytree`'s command-and-tree skip, which every site keeps.
 The record only saves time, so every failure around it decides nothing: an unreadable record, a failed lock, a failed `DirtyPaths` call or a failed HEAD read is logged at Warn and the call runs every tier as if no record existed, and a failed write is logged and leaves the tier's own outcome and exit code unchanged.
 
-`TestGreenRecord` pins the fingerprint's ignored fields (a changed `parallel` still carries, a changed `command` does not), the args rule (empty args covering an empty request and the guard step's `-run` filter, `-- -count=1` matching only an entry under `-- -count=1`, which then carries), whole and package coverage, the `none` scoper carrying only a whole entry, the 20-commit pruning and the malformed-file read.
+`TestGreenRecord` pins the rows `TestGateTest_Scenario` does not reach: the fingerprint's ignored `parallel` field, which still carries, an empty-args entry covering the guard step's `-run` filter, an entry under `-- -count=1` carrying an exact repeat of those args, the `none` scoper carrying only a whole entry, the 20-commit pruning and the malformed-file read; the changed-command and `-- -count=1` carry breaks are left to the scenario.
 `testFailedTier` gains a row feeding a carried `TierSummaryLine` beside a failing one, asserting `FailedTier` parses the carried line as exit 0 and still names the failing tier.
 `TestGateTest_Scenario` gains rows: a second `--gate` run over the same clean tree carries every tier, writes carried records and returns while the row holds every slot through the scenario's `acquire` helper, so a call that took a slot would block; a dirty worktree carries nothing and writes nothing; an `all` run after a green `diff` run over the same tree runs only the packages the `diff` run did not cover, and a third `all` run carries whole, since the second wrote a whole entry; a changed tier command, a different tree and `-- -count=1` each break the carry; and a tier whose command, set through `scenarioConfig`, edits a tracked file and commits it before passing records nothing.
 
@@ -54,6 +54,16 @@ The gatecli doc states the record and its bound beside the slot variable's: a ca
 
 ```
 - `PATTERN-gate-carry` — Skipping a test tier as already green: only `lyx gate test`'s green record, over a clean tree.
+```
+
+`PATTERN.md` already sits above its headroom line, so this card's `lint-pattern` step passes only when the overview is no longer than at HEAD.
+In the same edit, these four entries take the shortened wording the parent's `changes` decisions of 2026-10-24 record, verbatim, which saves at least the new line's length; no rule changes:
+
+```
+- `PATTERN-template-overlay` — Judging config document against its template: only `configengine`'s effective template.
+- `PATTERN-agent-filed-issues` — Filing GitHub issue: only `lyx selfreport create` in production. (test)
+- `PATTERN-never-force-add` — Keeping transients unindexed: `.git/info/exclude`; never `git add -f`.
+- `PATTERN-pane-binary-resolution` — Starting `lyx` in a reed pane or window: resolve it via `panebin.go` only. (test) — [background](pattern/PATTERN-pane-binary-resolution.md)
 ```
 
 **ImpactSummary:** Adds the per-worktree green record and the carried tier to `lyx gate test`, one run-record field and the carried mark on the summary line; every gate site inherits the carry.

@@ -1,6 +1,6 @@
 ---
 format: 5
-approved: false
+approved: true
 language: go
 ---
 
@@ -36,17 +36,15 @@ Shed rows gain an entry gate that replaces batten's Command switches and darn's 
 20 — batten-switch-entry-gate — move batten's Command switches to entry gates
 21 — darn-describe-entry-gate — gate darn's Describe on the Code-Review budget
 22 — tier-plan-docs — state the tier plan per recipe and the keys in docs
-23 — pattern-shorten — shorten nineteen PATTERN lines for headroom
-24 — retag-cmd-contracts-tools — retag cmd, contracts and tools test files, checking the hub's tier commands
-25 — retag-fabricengine — retag fabricengine's test files
-26 — retag-loom — retag the loom packages' test files
-27 — retag-reed-shuttle — retag the reed and shuttle packages' test files
-28 — retag-webster-landing-batten — retag the webster, landing and batten packages' test files
-29 — retag-shed-plan-testkit — retag the shed, plan and testkit packages' test files
-30 — retag-internal-a-f — retag the remaining internal packages a through f
-31 — retag-internal-g-o — retag the remaining internal packages g through o
-32 — retag-internal-p-z — retag the remaining internal packages p through z
-33 — tier-tags-scan — enforce one tier tag per test file and file the D13 follow-up
+23 — retag-cmd-contracts-tools — retag cmd, contracts and tools test files, checking the hub's tier commands
+24 — retag-fabricengine — retag fabricengine's test files
+25 — retag-loom — retag the loom packages' test files
+26 — retag-reed-shuttle — retag the reed and shuttle packages' test files
+27 — retag-webster-landing-batten — retag the webster, landing and batten packages' test files
+28 — retag-shed-plan-testkit — retag the shed, plan and testkit packages' test files
+29 — retag-internal-a-f — retag the remaining internal packages a through f
+30 — retag-internal-g-o — retag the remaining internal packages g through o
+31 — retag-internal-p-z — retag the remaining internal packages p through z, enforce one tier tag per test file and file the D13 follow-up
 
 ## Shared Decisions
 
@@ -58,22 +56,23 @@ Shed rows gain an entry gate that replaces batten's Command switches and darn's 
 
 ### Decision: retag-rules
 
-- **Decision:** A test file holding a `Test`, `Benchmark`, `Fuzz` or `Example` function takes exactly one tier tag: untagged becomes `tier0`, `integration` `tier1`, `tmux` `tier2`, `llm` `tier3`, with any platform term kept; a guard-marked file takes `tierN || integration` (D13); a support-only file keeps its constraint, a support file two tiers share takes their disjunction, and a file whose helpers another tier's tests use is split.
-  The retag cards are `Custom` cards over package self glyphs, because a header-only change to over a thousand test files has no member to name, and `edit-test-file` refuses a test file under `Edit`.
+- **Decision:** A test file holding a `Test`, `Benchmark`, `Fuzz` or `Example` function takes exactly one tier tag: untagged becomes `tier0`, `integration` `tier1`, `tmux` `tier2`, `llm` `tier3`, with any platform term kept; a guard-marked file takes `tierN || integration` (D13); a support-only file keeps its constraint's shape with each old tag spelled as its tier tag, so a `TestMain` companion constrained `!integration` takes `!tier1`, an `integration` support file `tier1`, and a support file two tiers share their disjunction, and a file whose helpers another tier's tests use is split.
+  Every transitional tier command carries both spellings of its tag, so a respelled support file compiles under exactly the commands it compiled under before, and still does once D13's follow-up drops the old spellings; `!tier1` is false only under `tier1`'s command, so a companion keeps yielding to the `tier1` `TestMain` beside it.
+  The retag cards are `Edit` cards over package self glyphs, each with an `ImpactSummary`, since a header-only change to over a thousand test files has no member to name and `edit-test-file` reads only file self glyphs.
 - **Rationale:** D5 and D13; the card gate runs the card's packages' `tier0` tests under the hub's `-tags tier0` command, so each card proves its own retag, and the batch gate's `tier1` vet steps catch a helper left in the wrong tier.
-- **Applies to:** cards 24 through 32
-
-### Decision: scan-after-last-retag
-
-- **Decision:** The one-tag scan test lands on card 33, directly after the last retag card, rather than on it.
-- **Rationale:** a `Custom` group combines with no other label, so the retag card cannot also create the test; card 33 runs next, and no test file is added between them untagged, since every card from 24 on tags what it adds.
-- **Applies to:** cards 32 and 33
+- **Applies to:** cards 23 through 31
 
 ### Decision: planparser-loads-nothing
 
 - **Decision:** D5's package-load list names `internal/planparser`'s module-wide check, but `internal/planparser` runs no package load: its tag-dependent piece is `namesGateOnlyTier`, which card 12 extends; only `internal/impactset` and `internal/planglyph` load packages under the tags (card 11).
 - **Rationale:** read from the tree: no `go list` or `packages.Load` call exists in `internal/planparser`.
 - **Applies to:** cards 11 and 12
+
+### Decision: pattern-cuts-ride-growth
+
+- **Decision:** The nineteen shortened `PATTERN.md` lines the parent's `changes` decisions of 2026-10-24 record land on the four cards that grow the overview, each card carrying shortenings at least as long as its own growth, rather than on a card of their own.
+- **Rationale:** `PATTERN.md` sits above `pattern.HeadroomBytes` today and stays above it after every card, since the shortenings save 482 bytes and the four lines add 461; a card gate's `lint-pattern` step passes such a size only when the overview is no longer than at HEAD, so every card that grows it must shrink it at least as much in the same edit.
+- **Applies to:** cards 3, 7, 19 and 31
 
 ## PATTERN changes
 

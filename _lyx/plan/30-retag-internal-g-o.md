@@ -1,6 +1,6 @@
-# Card 31 — retag-internal-g-o
+# Card 30 — retag-internal-g-o
 
-**Custom:**
+**Edit:**
 - `internal/gatecli#`
 - `internal/gateslot#`
 - `internal/gitexec#`
@@ -34,4 +34,6 @@
 - `internal/output#`
 
 **Intent:**
-Retag every test file of these packages to its one tier tag (D5), under the overview's `retag-rules` decision, as card 24 states the rules.
+Retag every test file of these packages to its one tier tag (D5), under the overview's `retag-rules` decision, as card 23 states the rules.
+
+**ImpactSummary:** Changes only the build-constraint lines of these packages' test files, splitting a shared helper file where another tier uses it; no production code or caller changes.
