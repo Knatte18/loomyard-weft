@@ -37,9 +37,9 @@
 - `internal/configcli#holdsTree`
 
 **Create:**
-- `plan:internal/darnengine#TreeScopedTargets` -> `func TreeScopedTargets(cfg Config, paths []string) ([]string, bool)`
-- `plan:internal/darnengine#MigrateConfig` -> `func MigrateConfig(existing []byte) ([]byte, []string, error)`
-- `plan:internal/darnengine#TestMigrateConfig` -> `func TestMigrateConfig(t *testing.T)`
+- `internal/darnengine#TreeScopedTargets`
+- `internal/darnengine#MigrateConfig`
+- `internal/darnengine#TestMigrateConfig`
 
 **Intent:**
 Retire `darn.yaml`'s `tree_scope_verify` (D14): darn's tree-scoped sites run their own row's gate key over the touched trees' targets.

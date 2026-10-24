@@ -1,13 +1,13 @@
 # Card 7 — green-record
 
 **Create:**
-- `plan:internal/gatecli#greenRecord` -> `type greenRecord struct`
-- `plan:internal/gatecli#greenEntry` -> `type greenEntry struct`
-- `plan:internal/gatecli#tierFingerprint` -> `func tierFingerprint(tier gateslot.Tier) string`
-- `plan:internal/gatecli#readGreen` -> `func readGreen(path string) greenRecord`
-- `plan:internal/gatecli#recordGreen` -> `func recordGreen(path string, entry greenEntry, now time.Time) error`
-- `plan:internal/gatecli#greenRecord.covered` -> `func (r greenRecord) covered(fingerprint, tree, moduleDir string, args []string) (whole bool, packages []string)`
-- `plan:internal/gatecli#TestGreenRecord` -> `func TestGreenRecord(t *testing.T)`
+- `internal/gatecli#greenRecord`
+- `internal/gatecli#greenEntry`
+- `internal/gatecli#tierFingerprint`
+- `internal/gatecli#readGreen`
+- `internal/gatecli#recordGreen`
+- `internal/gatecli#greenRecord.covered`
+- `internal/gatecli#TestGreenRecord`
 
 **Edit:**
 - `internal/gatecli#runTest`

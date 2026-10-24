@@ -12,7 +12,7 @@
 - `plan:internal/gatecli#greenRecord.newestWholeAncestor` -> `func (r greenRecord) newestWholeAncestor(fingerprint, moduleDir string, isAncestor func(commit string) bool) (string, bool)`
 
 **Uses:**
-- `plan:internal/gatecli#greenRecord`
+- `internal/gatecli#greenRecord`
 
 **Intent:**
 A `diff` scope takes its base per listed tier from the green record (D2).
