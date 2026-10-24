@@ -2,8 +2,6 @@
 
 `gate-runs-once` · Task · enhancement, gate, shed, loom, webster, fabric, batten
 
-Depends on: [`code-review-one-perch`](design-code-review-one-perch.md)
-
 ## Order (operator, 2026-10-23)
 
 This task runs after `loom-tail-review`, which rebuilds the run tail: Publish, PR-Align, PR-Gate, PR-Rework and Merge-Review go, and Publish's gates move into Merge-In and Finalize.
