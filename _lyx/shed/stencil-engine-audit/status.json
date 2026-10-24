@@ -1,11 +1,11 @@
 {
-  "current_producer": "Darn-Write",
+  "current_producer": "PR-Review",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Darn-Write",
-    "last": "Preflight → done",
+    "now": "PR-Review",
+    "last": "Darn-Write → done",
     "wait": ""
   },
   "history": [
@@ -14,6 +14,33 @@
       "outcome": "done",
       "output": "",
       "at": "2026-10-24T10:52:52Z"
+    },
+    {
+      "producer": "Darn-Write",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYXHUB/stencil-engine-audit/_lyx/landing/summary.md",
+      "at": "2026-10-24T10:58:16Z",
+      "gate_attempts": 0,
+      "gate_spans": [
+        {
+          "gate": "discussion",
+          "kind": "gate",
+          "start": "2026-10-24T10:58:07.03522193Z",
+          "end": "2026-10-24T10:58:15.341772049Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-10-24T10:58:15.388883512Z",
+          "end": "2026-10-24T10:58:15.405558872Z"
+        },
+        {
+          "gate": "description",
+          "kind": "gate",
+          "start": "2026-10-24T10:58:15.447331426Z",
+          "end": "2026-10-24T10:58:15.447375057Z"
+        }
+      ]
     }
   ],
   "product": {
