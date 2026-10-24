@@ -1,6 +1,6 @@
 # Run profiles as one ladder: speed, light, solid, wide
 
-`run-profiles-ladder` · Task · enhancement, config, loom, burler · running · Worktree-Create
+`run-profiles-ladder` · Task · enhancement, config, loom, burler · running · Darn-Write
 
 ## Seen (2026-10-23)
 
