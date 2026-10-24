@@ -1,41 +1,39 @@
-# burler: excuse fork git mutations inside repositories the fork created
+# burlerengine: let forks run git in repositories they created
 
-The burler fork audit refused any fork that ran a state-mutating git subcommand, whatever repository the command acted on.
-A twill fixer fork that built a throwaway repository in its scratchpad (`git init`, an empty `git commit`, `git worktree add`, `git worktree repair`) therefore failed `Plan-Burler-Fix` as a producer hard failure, and the advised recovery had nothing to revert (#843).
+The cluster and twill fix rounds fail a fork that runs any state-mutating git command.
+A fork that built a throwaway repository in its scratchpad to test git behaviour (`git init`, an empty commit, `git worktree add`, `git worktree repair`) therefore halted the whole run, though no target state was at risk.
 
-## What changes
+The audit in `internal/burlerengine/cluster.go` now walks a fork's Bash commands in transcript order and records each repository the fork creates: the directory of a `git init`, and the path of a `git worktree add` run inside a recorded repository.
+A mutating git invocation whose directory lies inside a recorded repository no longer counts.
+A fork that mutates any other repository fails the round exactly as before, with the same error message.
 
-`forkViolation` now classifies each fork's Bash commands as one sequence through `firstMutatingGitCommand` in `internal/burlerengine/cluster.go`, replacing the per-command `commandRunsMutatingGit`.
-The walk records each repository the fork creates: the directory of a `git init`, and the path of a `git worktree add` run inside an already recorded repository.
-A mutating invocation whose directory lies inside a recorded repository no longer counts.
-
-The directory is resolved lexically, with no filesystem access:
-each command starts from the fork's unknown starting directory, moves through its own `cd` segments, then through the invocation's `-C` options.
-A path led by `/`, `~` or `$` is anchored as written, and `..` never climbs above its `~` or `$` word, so `"$S/repo"` matches across commands by spelling.
-
-The excusal is bounded so a mutation can still not reach the target's repository through it:
-
-- `git push` always counts, since it writes to another repository.
-- An invocation carrying `--git-dir` or `--work-tree`, or run after a bare `cd` or `cd -`, always counts.
-- A `git init` naming the starting directory or an ancestor by a relative path, such as `git init` or `git init ..`, records nothing, since it may reinitialize the target.
-- A `cd` in one command does not carry into the next.
-- A worktree added from a repository the fork did not create is not recorded, since it shares that repository's refs.
-
-Every other verdict of the existing classification is unchanged, and so are the violation message and its way forward.
+Closes #843
 
 ## Design decisions
 
-- Scope awareness was taken over the board entry's alternative of downgrading the violation to a recoverable stuck state: it removes the false failure instead of softening it, and needs no before-and-after snapshot of the target.
-- Scope is keyed on repositories the fork created, never on "outside the target worktree": the transcript carries no target path, and a worktree of the target placed elsewhere shares its refs.
-- `git clone` destinations are not recorded; only `git init` and `git worktree add` create a recorded repository.
+- The transcript carries no working directory, so the invocation directory is resolved lexically.
+  It starts from the command's unknown starting directory, moves through each earlier `cd <path>` segment of the same command, then through each `-C <path>` option.
+  A `cd` in an earlier command never carries over.
+  An unresolvable directory matches no recorded repository, so the check errs toward flagging.
+- These cases are never excused, since they can reach the target's repository from inside a recorded directory:
+  - `git push`;
+  - an invocation with `--git-dir` or `--work-tree`;
+  - an invocation after a bare `cd` or `cd -`;
+  - a `..` that climbs above a leading `~` or `$` word.
+- A `git init` records no repository when its relative path is the starting directory, an ancestor of it, or leaves it through `..` (`git init`, `git init ..`), since that may reinitialize the target.
+- `git clone` does not record a repository; the issue names only `git init`, `-C` and `cd`.
+- The alternative from the issue, downgrading the violation to a recoverable stuck state, is not taken.
+- `commandRunsMutatingGit` and `gitSubcommand` are replaced by `firstMutatingGitCommand` and a `gitInvocation` parser, which keep the existing verdicts for the mutating-git matrix.
+  `internal/burlerengine/doc.go` describes the new rule in the fork-discipline paragraph.
 
-## Known limits
+## Known gaps
 
-- A fork that reinitializes the target through an absolute path, as in `git init /abs/target`, and then commits there passes the audit; the fork stencils still forbid it.
-- A `cd` inside a subshell, as in `(cd x && git commit)`, is not tracked, so such a command against a fork repository still fails the round.
+- A fork that reinitializes the target by an absolute path (`git init /abs/target`) and commits there passes the audit, since the transcript does not reveal the target's absolute path.
+  The fork stencils still forbid it.
+- A `cd` inside a subshell, as in `(cd x && git commit)`, is not tracked, so such a command against a fork-created repository still fails the round.
 
 ## Tests
 
-`TestFirstMutatingGitCommand` keeps the existing single-command matrix, now run through `firstMutatingGitCommand`.
-`TestFirstMutatingGitCommandScopesToForkRepositories` covers the issue's command shape, cross-command and `cd` reach, worktrees added from a created repository, and every bound above as a row that must still be returned.
-`internal/burlerengine/doc.go` describes the excusal in its fork-discipline paragraph.
+`internal/burlerengine/cluster_test.go` adds table rows for the issue's command shape, cross-command `git init` then `git -C`, `cd <dir> && git commit`, worktrees added from a created repository, a sibling sharing a created directory's name prefix, and each never-excused case above.
+They are tier-free and run no git.
+No manual check is outstanding.
