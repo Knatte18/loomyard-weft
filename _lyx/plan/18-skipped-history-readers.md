@@ -13,7 +13,7 @@
 - `internal/reportengine#TestComputeTiming`
 
 **Uses:**
-- `plan:internal/shedengine#OutcomeSkipped`
+- `internal/shedengine#OutcomeSkipped`
 
 **Intent:**
 Every history reader treats a `skipped` entry as a row passed through, never as a stop or a call (D8); the caller label stays on the verdict that led to the skip.
