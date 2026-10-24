@@ -2,8 +2,6 @@
 
 `plan-check-lint-pattern-per-card` · Task · enhancement, loom, burler
 
-Depends on: [`dotnet-scoped-verify`](design-dotnet-scoped-verify.md)
-
 Imported from [issue #866](https://github.com/Knatte18/loomyard/issues/866).
 
 What happened: a plan-Burler fix moved a shortening card ahead of growth cards on the premise that each intermediate file size stays at or below the final projection.

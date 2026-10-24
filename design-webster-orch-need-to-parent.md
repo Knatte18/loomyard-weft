@@ -2,8 +2,6 @@
 
 `webster-orch-need-to-parent` · Task · bug, webster, loom
 
-Depends on: [`dotnet-scoped-verify`](design-dotnet-scoped-verify.md)
-
 Imported from [issue #867](https://github.com/Knatte18/loomyard/issues/867).
 
 What happened: in batch 22 the fork reported stuck because a card's verify needed the hub's tier commands changed, which only the orch can do.
