@@ -28,12 +28,12 @@
 - `internal/boardengine/doc.go`
 
 **Create:**
-- `plan:internal/boardengine_test#newProjectBoard` -> `func newProjectBoard(t *testing.T, configure func(cfg *boardengine.Config)) *boardengine.Board`
-- `plan:internal/boardengine#KindProject` -> `const KindProject = "project"`
-- `plan:internal/boardengine#projectHandleLetter` -> `const projectHandleLetter = "P"`
-- `plan:internal/boardengine#projectLayer` -> `const projectLayer = "Project"`
-- `plan:internal/boardengine#checkProjectRules` -> `func checkProjectRules(loaded, after []Task, pairExists func(slug string) bool) error`
-- `plan:internal/boardengine_test#TestProjectRules` -> `func TestProjectRules(t *testing.T)`
+- `internal/boardengine_test#newProjectBoard`
+- `internal/boardengine#KindProject`
+- `internal/boardengine#projectHandleLetter`
+- `internal/boardengine#projectLayer`
+- `internal/boardengine#checkProjectRules`
+- `internal/boardengine_test#TestProjectRules`
 
 **Intent:**
 D1: `kind: project` joins task and note.

@@ -31,7 +31,7 @@
 - `internal/fabricengine#SpawnPairPush`
 - `internal/fabricengine#RegenerateHubWorkspace`
 - `internal/boardengine#SetOwners`
-- `plan:internal/boardengine#ReadTasks`
+- `internal/boardengine#ReadTasks`
 
 **Intent:**
 D10: `lyx beam promote <slug>` turns a spawned task into a beam, keeping its pair and the commits on its branch.

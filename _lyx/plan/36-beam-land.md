@@ -30,7 +30,7 @@
 - `internal/fabricengine#ReadOriginFor`
 - `plan:internal/orchcli#OrchLive`
 - `plan:internal/orchcli#HubOrchs`
-- `plan:internal/boardengine#ReadTasks`
+- `internal/boardengine#ReadTasks`
 - `internal/hubforge#CopyHub`
 - `internal/hubforge#AddPairWith`
 

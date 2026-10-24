@@ -15,7 +15,7 @@
 **Uses:**
 - `internal/fabricengine#ValidatePairSlug`
 - `plan:internal/hubgeom#ParentOf`
-- `plan:internal/boardengine#Board.ParentBeamOf`
+- `internal/boardengine#Board.ParentBeamOf`
 
 **Intent:**
 `boardcli`'s pre-run fills the board's new seams from the resolved location:

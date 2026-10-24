@@ -16,7 +16,7 @@
 - `internal/boardengine_test#TestMergeTasks`
 
 **Create:**
-- `plan:internal/boardengine#checkBeamPayload` -> `func checkBeamPayload(s *Store, fields map[string]any) error`
+- `internal/boardengine#checkBeamPayload`
 
 **Extends:**
 - `internal/boardengine/doc.go`

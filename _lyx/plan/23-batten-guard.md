@@ -33,7 +33,7 @@
 - `internal/fabricengine#ReadOrigin`
 - `internal/fabricengine#ReadOriginFor`
 - `internal/fabricengine#PrimeName`
-- `plan:internal/boardengine#ReadTasks`
+- `internal/boardengine#ReadTasks`
 - `internal/hubforge#CopyHub`
 - `internal/hubforge#AddPairWith`
 

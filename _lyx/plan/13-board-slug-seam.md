@@ -7,14 +7,14 @@
 - `internal/boardengine#Board.boardCriticalSection`
 
 **Create:**
-- `plan:internal/boardengine#checkNewSlugs` -> `func checkNewSlugs(loaded, after []Task, renamedTo string, validate func(slug string) error) error`
-- `plan:internal/boardengine_test#TestSlugRule` -> `func TestSlugRule(t *testing.T)`
+- `internal/boardengine#checkNewSlugs`
+- `internal/boardengine_test#TestSlugRule`
 
 **Extends:**
 - `internal/boardengine/doc.go`
 
 **Uses:**
-- `plan:internal/boardengine_test#newProjectBoard`
+- `internal/boardengine_test#newProjectBoard`
 
 **Intent:**
 D14: the board applies fabric's pair slug rule through a seam the CLI fills (card 17).

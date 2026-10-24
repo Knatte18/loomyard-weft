@@ -19,7 +19,7 @@
 - `contracts/stencils/orch/orch-template-role.md`
 
 **Uses:**
-- `plan:internal/boardengine#ParentBeam`
+- `internal/boardengine#ParentBeam`
 - `plan:internal/orchcli#OrchLive`
 - `plan:internal/orchcli#OrchStrandOf`
 - `plan:internal/battencli#notifyRunParent`
