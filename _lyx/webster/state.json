@@ -266,7 +266,7 @@
       }
     }
   ],
-  "currentBatch": 0,
+  "currentBatch": 4,
   "masterStrand": "e8d789df2077252216cf24db3cf99eef",
   "masterSessionId": "ff33c466-afe8-4cad-b93b-3ee265d7379c",
   "masterEngine": "claude",
@@ -308,6 +308,32 @@
       "bracketTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-dotnet-scoped-verify/ff33c466-afe8-4cad-b93b-3ee265d7379c/subagents/agent-a3448c1ac66ba5a14.jsonl"
       ]
+    },
+    "4": {
+      "slug": "csharp-source-scan",
+      "cards": [
+        "04-csharp-source-scan",
+        "05-test-class-selection",
+        "06-impactset-diff-reads",
+        "07-derive-entry-points",
+        "08-filter-placeholder",
+        "09-dotnet-scoper"
+      ],
+      "cardHashes": {
+        "04-csharp-source-scan": "5fba23081737b9c4acc95d499099185df58f8df6f85e6c6790205857e48424fb",
+        "05-test-class-selection": "487498238ffe07eb74ccb6d38857ceb3d5d2462252ec88a897c46f635039f485",
+        "06-impactset-diff-reads": "dc96049e54f741102cf5f7f31adc1536fcd78d84d7a2784e7e8887fcb3f280e9",
+        "07-derive-entry-points": "e0cb6f68f5f7d7de2a32d7512d0584c654689d6f1f30ca970bab9a2057fee007",
+        "08-filter-placeholder": "09edffeab328b5da864d73344355be647f7f635353b2be4aa73a2ea0d1efbdfc",
+        "09-dotnet-scoper": "795439ff193076311b8d909d461d15d80c5da955eff2c604ccc51862ec62eec1"
+      },
+      "startSha": "fb8083dd7fd305630d833572d1a6d2597587b07c",
+      "kind": "fork",
+      "spawnedAt": "2026-10-24T16:35:12Z",
+      "sessionId": "ff33c466-afe8-4cad-b93b-3ee265d7379c",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
     }
   },
   "seenForkTranscripts": [
