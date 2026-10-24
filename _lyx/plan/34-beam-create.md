@@ -29,7 +29,7 @@
 - `internal/fabricengine#RegenerateHubWorkspace`
 - `plan:internal/hubgeom#ParentOf`
 - `internal/machinename#Name`
-- `plan:internal/fabricengine#MarkBeam`
+- `internal/fabricengine#MarkBeam`
 - `internal/fabricengine#Topology.TaskBranchOnOrigin`
 - `internal/hubforge#CopyHub`
 - `internal/hubforge#AddPairWith`

@@ -13,7 +13,7 @@
 - `internal/boardcli/doc.go`
 
 **Uses:**
-- `plan:internal/fabricengine#ValidatePairSlug`
+- `internal/fabricengine#ValidatePairSlug`
 - `plan:internal/hubgeom#ParentOf`
 - `plan:internal/boardengine#Board.ParentBeamOf`
 
