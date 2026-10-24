@@ -1,6 +1,6 @@
 # lyx loom decision add records several decisions in one call and one notice
 
-`decision-add-batch` · Task · enhancement, loom, creel · running · Darn-Write
+`decision-add-batch` · Task · enhancement, loom, creel · running · Code-Bouncer
 
 ## Seen (2026-10-24)
 
