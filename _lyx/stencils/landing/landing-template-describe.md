@@ -4,7 +4,7 @@
      which fills it from the lead's value map that landingshed's DescribeTable builds, then hands it to shuttle as the describing agent's whole
      prompt. Every marker below is a top-level {{.X}} substitution; stencil.FillWith requires every
      marker non-empty, parent_directive (rendered by internal/parentdirective) and edit_directive (rendered unconditionally by internal/editdirective) included, and there are no {{if}}/{{range}} conditionals anywhere in this file.
-lyx-stencil: sha256=3294571d3c69184a40f92ecbf3a0e956a5c2b3b472e564a29d0d8b5f28c8457a build=89b854c85e80c4ba9287ffa92a91845a8d36591b time=2026-10-17T12:14:07Z -->
+lyx-stencil: sha256=0bc982f344a9d61b3e726ab276d667bc131af022273eb5c31541fb23ee163d17 build=fc75aef792c26f037d2edb86987811280e37fd67 time=2026-10-24T05:13:21Z -->
 
 # Change description — write the one description this task lands under
 
@@ -20,10 +20,10 @@ Read only these sources, and use read-only git for the diff:
 
 - The decision record, `{{.decision_record_path}}`.
   An entry between `<!-- lyx:carry-over … -->` marker lines in `## Open risks` lists the findings a review left open.
-  Each finding a Plan-Review or Webster-Review entry lists becomes one item to check by hand in your description, worded as the finding and where it is, never as a review round.
+  Each finding a Plan-Review or Code-Review entry lists becomes one item to check by hand in your description, worded as the finding and where it is, never as a review round.
   A Discussion-Review entry is not carried into the description.
 - The board entry, via `lyx board get '{"slug":"{{.slug}}"}'`.
-- The diff of the task branch `{{.task_branch}}` against its merge base with the parent branch `{{.parent_branch}}` — for example `git diff $(git merge-base {{.parent_branch}} {{.task_branch}}) {{.task_branch}}`.
+- The diff of the task branch `{{.task_branch}}` against its merge base with the parent branch `{{.parent_branch}}`, read as `git diff {{.merge_base}} {{.task_branch}}`.
 - The run records, one per plan generation with the oldest first and the live one last, only as a source of manual-check items:
 {{.run_record_paths}}
   A manual-check item from an older generation still counts when the live change does not make it obsolete.

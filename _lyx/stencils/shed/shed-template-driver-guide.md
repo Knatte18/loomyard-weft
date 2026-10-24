@@ -2,7 +2,7 @@
      The driver stencil points at it by its deployed path through its guide_path marker and never paraphrases it; the guide is not an opening stencil and joins no role's list.
      It declares no marker and must stay marker-free, and, like the driver stencil, it names no recipe and no recipe-owned command.
      Refusal text and its ways forward live in the refusal messages, never restated here.
-lyx-stencil: sha256=b17342e28ae412946dcdc970126c6022f30f97e72cf77dcf602301492b83ee3d build=90f613277e539c98eb07698ed58b50f705e99a77 time=2026-10-21T13:30:19Z -->
+lyx-stencil: sha256=a9c616245fb0c4d83d8ea5cb34acb2edd25331daf3ae73df9fae26bd38a6df92 build=fc75aef792c26f037d2edb86987811280e37fd67 time=2026-10-24T05:13:21Z -->
 
 # Repair guide for a stopped run
 
@@ -65,7 +65,8 @@ The `reinvoke` sub-case counts toward the cap.
 
 The watch is a background shell loop that resolves the `lyx` executable once, checks its modification time about once a minute, and exits when it changes.
 It never runs a long-lived `lyx` process, which would block a deploy's overwrite on Windows.
-When it exits, read `lyx shed status <run-id>` once, and re-step only if `binary_changed` is true and the clean-tree guard passes; otherwise re-arm the watch.
+When it exits, read `lyx shed status <run-id>` once, and re-step only if `binary_changed` is true, the clean-tree guard passes and `hand_back` is false; otherwise re-arm the watch.
+A stop marked `hand_back` starts no watch and is handed back to the parent.
 A watch job that ends by the harness timeout is re-armed, never read as a resume.
 
 ## Interrupted invocations
