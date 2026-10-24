@@ -1335,7 +1335,7 @@
       }
     }
   ],
-  "currentBatch": 0,
+  "currentBatch": 18,
   "masterStrand": "749a4850b2cdeb072456c9c5b8c99ddb",
   "masterSessionId": "10aba9c6-1885-40a9-b0f0-1f9376bb6375",
   "masterEngine": "claude",
@@ -1471,6 +1471,24 @@
       "bracketTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-gate-runs-once/10aba9c6-1885-40a9-b0f0-1f9376bb6375/subagents/agent-aa5731629e365b9dd.jsonl"
       ]
+    },
+    "18": {
+      "slug": "skipped-history-readers",
+      "cards": [
+        "18-skipped-history-readers",
+        "19-recipe-entry-gate"
+      ],
+      "cardHashes": {
+        "18-skipped-history-readers": "a94a4ee2641e1139b4eed259811f21f3047e146312a1fbdb59f8010c32e11ba4",
+        "19-recipe-entry-gate": "fd5f981793f781848833978ca0f44cf731c0540848f500d0c126a584927315c7"
+      },
+      "startSha": "3b620f6780118051cd937cfeafef52966d20abfa",
+      "kind": "fork",
+      "spawnedAt": "2026-10-24T10:33:42Z",
+      "sessionId": "10aba9c6-1885-40a9-b0f0-1f9376bb6375",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
     },
     "3": {
       "slug": "gate-call-renders-key",
