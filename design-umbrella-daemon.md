@@ -2,6 +2,12 @@
 
 `umbrella-daemon` · Note · enhancement, batten, orch, shed, workspaces, loom, board
 
+## Built so far (dd11ab09f)
+
+The beam groundwork landed: project entries, pairs forked from a parent pair, an orch per worktree, notices to the nearest live orch, and `lyx beam create`, `promote` and `land`.
+The dobby daemon, `lyx beam start`, draft tasks and dobby's own readiness are not built.
+The `orch-any-worktree` task named below is landed.
+
 ## Seen (2026-10-18)
 
 - Every batten run is its own Go process in a tmux window, and its Run-Shed row waits on the child with no time limit (`internal/battenshed/doc.go`): it sends halt notices, retries the first verify failure, revives a dead driver's strands, and lands and tears down once the child is done.
