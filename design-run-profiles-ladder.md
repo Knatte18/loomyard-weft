@@ -2,7 +2,7 @@
 
 `run-profiles-ladder` · Task · enhancement, config, loom, burler
 
-Depends on: [`gate-runs-once`](design-gate-runs-once.md), [`pattern-cleanup`](design-pattern-cleanup.md)
+Depends on: [`pattern-cleanup`](design-pattern-cleanup.md)
 
 ## Seen (2026-10-23)
 

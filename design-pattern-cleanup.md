@@ -2,8 +2,6 @@
 
 `pattern-cleanup` · Task · enhancement, stencil · running · Worktree-Create
 
-Depends on: [`gate-runs-once`](design-gate-runs-once.md)
-
 ## Seen (2026-10-24)
 
 PATTERN.md was already over its headroom line (15651 bytes against 15564, 95% of 16384) before `gate-runs-once` added 510 bytes of entries; that run got through only by shortening 20 other entries, recorded as `changes` decisions.

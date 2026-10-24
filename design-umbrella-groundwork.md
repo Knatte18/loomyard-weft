@@ -2,7 +2,7 @@
 
 `umbrella-groundwork` · Task · feature, fabric, batten, orch, board, reed, creel, shed, workspaces
 
-Depends on: [`gate-runs-once`](design-gate-runs-once.md), [`pattern-cleanup`](design-pattern-cleanup.md)
+Depends on: [`pattern-cleanup`](design-pattern-cleanup.md)
 
 ## Bundle (operator, 2026-10-24)
 
