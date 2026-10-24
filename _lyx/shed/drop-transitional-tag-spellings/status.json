@@ -1,11 +1,11 @@
 {
-  "current_producer": "Darn-Write",
+  "current_producer": "Code-Bouncer",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Darn-Write",
-    "last": "Preflight → done",
+    "now": "Code-Bouncer",
+    "last": "Darn-Write → done",
     "wait": ""
   },
   "history": [
@@ -14,6 +14,51 @@
       "outcome": "done",
       "output": "",
       "at": "2026-10-24T13:27:49Z"
+    },
+    {
+      "producer": "Darn-Write",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYXHUB/drop-transitional-tag-spellings/_lyx/landing/summary.md",
+      "at": "2026-10-24T13:44:43Z",
+      "gate_attempts": 1,
+      "gate_spans": [
+        {
+          "gate": "discussion",
+          "kind": "gate",
+          "start": "2026-10-24T13:40:57.763210301Z",
+          "end": "2026-10-24T13:41:07.327519245Z"
+        },
+        {
+          "gate": "discussion",
+          "kind": "gate",
+          "start": "2026-10-24T13:44:32.99267234Z",
+          "end": "2026-10-24T13:44:41.032863969Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-10-24T13:41:07.396477646Z",
+          "end": "2026-10-24T13:41:22.920749574Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "rework",
+          "start": "2026-10-24T13:41:23.334664667Z",
+          "end": "2026-10-24T13:44:32.966759312Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-10-24T13:44:41.072664378Z",
+          "end": "2026-10-24T13:44:42.451170113Z"
+        },
+        {
+          "gate": "description",
+          "kind": "gate",
+          "start": "2026-10-24T13:44:42.484068254Z",
+          "end": "2026-10-24T13:44:42.48409862Z"
+        }
+      ]
     }
   ],
   "product": {
