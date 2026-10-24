@@ -1,0 +1,3 @@
+outcome: stuck
+stuck_reason: "Batch 08: begin-batch refused with plan_conflict tree_moved: glyph-not-found/14-guard-step-per-tier[blocking]: target internal/gatecli#runGuardStep's unit exists but the member is missing; edit the plan so the named cards match the tree, run lyx webster rebaseline --card NN naming each card edited, then begin-batch 08 again"
+batches_done: 5
