@@ -22,7 +22,7 @@
 - `internal/boardengine#ParentBeam`
 - `internal/orchcli#OrchLive`
 - `internal/orchcli#OrchStrandOf`
-- `plan:internal/battencli#notifyRunParent`
+- `internal/battencli#notifyRunParent`
 
 **Intent:**
 D13's exception: the Land row's ready notice takes no walk.

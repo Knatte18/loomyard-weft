@@ -1,9 +1,9 @@
 # Card 24 — batten-window-site
 
 **Create:**
-- `plan:internal/reedengine#Engine.OpenWindowIn` -> `func (e *Engine) OpenWindowIn(name, dir string, lyxArgs []string) (WindowResult, error)`
-- `plan:internal/battencli#windowSite` -> `func windowSite(prime *lyxcwd.Location, slug string, parentOf func(slug string) (string, error)) (site *lyxcwd.Location, ensureSession bool, err error)`
-- `plan:internal/battencli#TestWindowSite` -> `func TestWindowSite(t *testing.T)`
+- `internal/reedengine#Engine.OpenWindowIn`
+- `internal/battencli#windowSite`
+- `internal/battencli#TestWindowSite`
 
 **Edit:**
 - `internal/reedengine#Engine.OpenWindow`

@@ -19,7 +19,7 @@
 - `docs/overview.md`
 
 **Uses:**
-- `plan:internal/battencli#ResolveBattenPrime`
+- `internal/battencli#ResolveBattenPrime`
 - `internal/boardengine#ReadTasks`
 - `internal/boardengine#ParentBeam`
 - `internal/boardengine#ReadOwners`

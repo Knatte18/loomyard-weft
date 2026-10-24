@@ -1,10 +1,10 @@
 # Card 23 — batten-guard
 
 **Create:**
-- `plan:internal/battencli#ResolveBattenPrime` -> `func ResolveBattenPrime(location *lyxcwd.Location) (*lyxcwd.Location, error)`
-- `plan:internal/battencli#TestResolveBattenPrime` -> `func TestResolveBattenPrime(t *testing.T)`
-- `plan:internal/battencli#TestVerbs_RunFromABeam` -> `func TestVerbs_RunFromABeam(t *testing.T)`
-- `plan:internal/adoptcli#TestCommand_RunsFromABeam` -> `func TestCommand_RunsFromABeam(t *testing.T)`
+- `internal/battencli#ResolveBattenPrime`
+- `internal/battencli#TestResolveBattenPrime`
+- `internal/battencli#TestVerbs_RunFromABeam`
+- `internal/adoptcli_test#TestCommand_RunsFromABeam`
 
 **Edit:**
 - `internal/battencli#battenCLI.armAt`
