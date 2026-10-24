@@ -1,11 +1,11 @@
 {
-  "current_producer": "Darn-Write",
+  "current_producer": "PR-Review",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Darn-Write",
-    "last": "Preflight → done",
+    "now": "PR-Review",
+    "last": "Darn-Write → done",
     "wait": ""
   },
   "history": [
@@ -14,6 +14,33 @@
       "outcome": "done",
       "output": "",
       "at": "2026-10-24T10:52:39Z"
+    },
+    {
+      "producer": "Darn-Write",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYXHUB/codex-twill-spike/_lyx/landing/summary.md",
+      "at": "2026-10-24T11:14:40Z",
+      "gate_attempts": 0,
+      "gate_spans": [
+        {
+          "gate": "discussion",
+          "kind": "gate",
+          "start": "2026-10-24T11:14:31.782267409Z",
+          "end": "2026-10-24T11:14:39.475225568Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-10-24T11:14:39.514051683Z",
+          "end": "2026-10-24T11:14:39.65950059Z"
+        },
+        {
+          "gate": "description",
+          "kind": "gate",
+          "start": "2026-10-24T11:14:39.695347426Z",
+          "end": "2026-10-24T11:14:39.695374496Z"
+        }
+      ]
     }
   ],
   "product": {
