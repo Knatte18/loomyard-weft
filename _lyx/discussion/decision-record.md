@@ -229,6 +229,12 @@ The `lyx config darn` refusal that asks to clear `tree_scope_verify` before empt
 Bound: the tiers of a tree-scoped run are the row key's, not an operator-written command's.
 Rationale: a tree-scoped run then carries its site's key into the run record and the report, and `tree_scope` keeps narrowing a diff to the trees it touched.
 
+### Added after Discussion (parent, 2026-10-24): Shorten test-tiers for PATTERN headroom
+
+Decision: Shorten PATTERN-test-tiers to: Running hub's tests: only via `lyx gate test`; a site names its gate key, never tiers or scope, bar darn's tree-scoped targets.
+
+Rationale: PATTERN.md is already over its headroom line and this task's entries add 510 bytes; trimming detail the background files and code already hold makes room until a PATTERN cleanup (operator, 2026-10-24).
+
 ## Constraints
 
 - The hub's tier commands must carry both tag spellings, and this hub must stop using `covers`, before Webster gates any card that retags a file; the orch applies it from the prime with `lyx config gate --set`:
@@ -299,7 +305,7 @@ Rationale: a tree-scoped run then carries its site's key into the run record and
 
 ## PATTERN changes
 
-- `PATTERN-test-tiers` — changes: Running hub's tests: only through `lyx gate test`; a site names its gate key, never tiers or scope, except darn's tree-scoped sites, which add the touched trees' targets (D14).
+- `PATTERN-test-tiers` — changes: Running hub's tests: only via `lyx gate test`; a site names its gate key, never tiers or scope, bar darn's tree-scoped targets. — added after Discussion (parent, 2026-10-24)
 - `PATTERN-tier-tags` — adds: Tagging a test file: one `tierN` build tag, the tier that runs it; an untagged test file holds no test. (test)
 - `PATTERN-gate-carry` — adds: Skipping a test tier as already green: only `lyx gate test`'s green record, over a clean tree.
 - `PATTERN-row-entry-gate` — adds: Leaving a recipe row out by config: its `entry_gate`, never a recipe rewrite or producer-side switch.
