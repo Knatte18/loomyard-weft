@@ -1,8 +1,8 @@
 # Card 9 — the dotnet scoper in lyx gate test
 
 **Create:**
-- `plan:internal/gatecli#readCards` -> `func readCards(location *lyxcwd.Location, ids []string) (*planparser.Plan, []planparser.Card, error)`
-- `plan:internal/gatecli#dotnetScope` -> `func dotnetScope(ctx context.Context, cfg gateslot.Config, location *lyxcwd.Location, root string, request testRequest, form string, seeds []planparser.CSharpSeed, green *greenRun) (scope, error)`
+- `internal/gatecli#readCards`
+- `internal/gatecli#dotnetScope`
 
 **Edit:**
 - `internal/gatecli#computeScope`
@@ -21,9 +21,9 @@
 
 **Uses:**
 - `internal/gatecli#scopesConfigWith`
-- `plan:internal/dotnetimpact#DeriveDiff`
-- `plan:internal/dotnetimpact#DeriveCards`
-- `plan:internal/dotnetimpact#Scope`
+- `internal/dotnetimpact#DeriveDiff`
+- `internal/dotnetimpact#DeriveCards`
+- `internal/dotnetimpact#Scope`
 - `internal/planparser#CardCSharpSeeds`
 
 **Intent:**

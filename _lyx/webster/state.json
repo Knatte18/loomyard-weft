@@ -1,19 +1,19 @@
 {
   "runGuid": "43cfa814d994668d0a05c57c27d1a1f7",
-  "planFingerprint": "f41b78be71246961e2d09b3c613f0ac6ad3f326f28ff5c34721b447e6f64843f",
+  "planFingerprint": "080b2b33b3bd93136839ecbb5165a63c15292b86208f2e5a366e7264a34a83cd",
   "planFileHashes": {
     "00-overview.md": "c3f7c3710689673b70eef27ecf79a1e27d1650000f79d38e64f55157161feaba",
     "01-gate-config-keys.md": "d51d41c313b343c53140ce000c3b5250bfb0c1e0c0da5e00cfc409786903a9a7",
     "02-build-run-lines.md": "f44cea2054ef5387525b1918f9843c588c9555d0ed54ef1c43a19a6fce217942",
     "03-card-csharp-seeds.md": "82b195a212388bc21e8c81ac4a75e090aa4a8405425e13d4b91f6b356819c696",
-    "04-csharp-source-scan.md": "5fba23081737b9c4acc95d499099185df58f8df6f85e6c6790205857e48424fb",
-    "05-test-class-selection.md": "487498238ffe07eb74ccb6d38857ceb3d5d2462252ec88a897c46f635039f485",
-    "06-impactset-diff-reads.md": "dc96049e54f741102cf5f7f31adc1536fcd78d84d7a2784e7e8887fcb3f280e9",
-    "07-derive-entry-points.md": "e0cb6f68f5f7d7de2a32d7512d0584c654689d6f1f30ca970bab9a2057fee007",
-    "08-filter-placeholder.md": "09edffeab328b5da864d73344355be647f7f635353b2be4aa73a2ea0d1efbdfc",
-    "09-dotnet-scoper.md": "795439ff193076311b8d909d461d15d80c5da955eff2c604ccc51862ec62eec1",
+    "04-csharp-source-scan.md": "cb3b0c01dc4f58f16908de8d89ff99a669097ac11235382d86f378acc9505302",
+    "05-test-class-selection.md": "65c6c309adfc396ceb7d5add2c93fd1e0b32b0589570771da0bc0132d44f0dc3",
+    "06-impactset-diff-reads.md": "8f5427790c219a0428533ca43e10a42e04db1c7b728e273e2a32a4ca18dabe3b",
+    "07-derive-entry-points.md": "42432eaa0f8d684080ab6bea05f1a7c4cc7114f62b75307265b037911f67c3d9",
+    "08-filter-placeholder.md": "3a8ecf3802099d6e2c182fc35d528596eaab25862a0a97b941ad6c785f20ec82",
+    "09-dotnet-scoper.md": "9dc7eab3e550ce92f5f7b01c6a22caf3035998cadbc8e055f3d3564c3448eab7",
     "10-fingerprint-and-carry.md": "3e73b4733b528123ef6792feea66bdd4493a0f5ffba37333dfff34621f7891c3",
-    "11-inert-paths.md": "a60e8c8425e7944060be5579b168fe5244bed89f69194ebce4fa7e70afd34545",
+    "11-inert-paths.md": "19507c7b936f4557a609897623a3c6ad41734a34c25d5016fcc61bed25583dc4",
     "12-shared-build-step.md": "7d667e4038b4619958634ceb6f14721ed06bcb3285635d41fe02e73ac3302ee0",
     "13-dotnet-hub-end-to-end.md": "34a47886b42a9874fc1f62de5fbe9e799571892b43baf69b3c68c572d7106dfc"
   },
@@ -266,7 +266,7 @@
       }
     }
   ],
-  "currentBatch": 4,
+  "currentBatch": 0,
   "masterStrand": "e8d789df2077252216cf24db3cf99eef",
   "masterSessionId": "ff33c466-afe8-4cad-b93b-3ee265d7379c",
   "masterEngine": "claude",
@@ -320,23 +320,51 @@
         "09-dotnet-scoper"
       ],
       "cardHashes": {
-        "04-csharp-source-scan": "5fba23081737b9c4acc95d499099185df58f8df6f85e6c6790205857e48424fb",
-        "05-test-class-selection": "487498238ffe07eb74ccb6d38857ceb3d5d2462252ec88a897c46f635039f485",
-        "06-impactset-diff-reads": "dc96049e54f741102cf5f7f31adc1536fcd78d84d7a2784e7e8887fcb3f280e9",
-        "07-derive-entry-points": "e0cb6f68f5f7d7de2a32d7512d0584c654689d6f1f30ca970bab9a2057fee007",
-        "08-filter-placeholder": "09edffeab328b5da864d73344355be647f7f635353b2be4aa73a2ea0d1efbdfc",
-        "09-dotnet-scoper": "795439ff193076311b8d909d461d15d80c5da955eff2c604ccc51862ec62eec1"
+        "04-csharp-source-scan": "cb3b0c01dc4f58f16908de8d89ff99a669097ac11235382d86f378acc9505302",
+        "05-test-class-selection": "65c6c309adfc396ceb7d5add2c93fd1e0b32b0589570771da0bc0132d44f0dc3",
+        "06-impactset-diff-reads": "8f5427790c219a0428533ca43e10a42e04db1c7b728e273e2a32a4ca18dabe3b",
+        "07-derive-entry-points": "42432eaa0f8d684080ab6bea05f1a7c4cc7114f62b75307265b037911f67c3d9",
+        "08-filter-placeholder": "3a8ecf3802099d6e2c182fc35d528596eaab25862a0a97b941ad6c785f20ec82",
+        "09-dotnet-scoper": "9dc7eab3e550ce92f5f7b01c6a22caf3035998cadbc8e055f3d3564c3448eab7"
       },
       "startSha": "fb8083dd7fd305630d833572d1a6d2597587b07c",
       "kind": "fork",
       "spawnedAt": "2026-10-24T16:35:12Z",
       "sessionId": "ff33c466-afe8-4cad-b93b-3ee265d7379c",
       "engine": "claude",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "04-csharp-source-scan",
+        "status": "done",
+        "head_sha": "8b551f7ef1f19ea45680656cb0a3e5f44ec08d21",
+        "deviations": [
+          "internal/dotnetimpact/derive.go",
+          "internal/dotnetimpact/derive_integration_test.go",
+          "internal/dotnetimpact/fixture_test.go",
+          "internal/dotnetimpact/lex.go",
+          "internal/dotnetimpact/narrow.go",
+          "internal/dotnetimpact/narrow_test.go",
+          "internal/dotnetimpact/source.go",
+          "internal/gatecli/dotnetscope.go",
+          "internal/gatecli/scope.go",
+          "internal/gatecli/tiers_test.go",
+          "internal/impactset/targets.go"
+        ]
+      },
+      "cardShas": [
+        "8b551f7ef1f19ea45680656cb0a3e5f44ec08d21"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-dotnet-scoped-verify/ff33c466-afe8-4cad-b93b-3ee265d7379c/subagents/agent-a393a595c003477a0.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-dotnet-scoped-verify/ff33c466-afe8-4cad-b93b-3ee265d7379c/subagents/agent-a393a595c003477a0.jsonl"
+      ]
     }
   },
   "seenForkTranscripts": [
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-dotnet-scoped-verify/ff33c466-afe8-4cad-b93b-3ee265d7379c/subagents/agent-a3448c1ac66ba5a14.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-dotnet-scoped-verify/ff33c466-afe8-4cad-b93b-3ee265d7379c/subagents/agent-a3448c1ac66ba5a14.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-dotnet-scoped-verify/ff33c466-afe8-4cad-b93b-3ee265d7379c/subagents/agent-a393a595c003477a0.jsonl"
   ]
 }

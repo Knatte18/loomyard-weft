@@ -1,8 +1,8 @@
 # Card 6 — internal/impactset: the exported diff reads
 
 **Create:**
-- `plan:internal/impactset#ChangedPaths` -> `func ChangedPaths(ctx context.Context, worktree, base string) ([]string, error)`
-- `plan:internal/impactset#AncestorBase` -> `func AncestorBase(worktree, base string) (string, bool)`
+- `internal/impactset#ChangedPaths`
+- `internal/impactset#AncestorBase`
 
 **Extends:**
 - `internal/impactset/doc.go`

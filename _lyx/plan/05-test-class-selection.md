@@ -1,20 +1,20 @@
 # Card 5 — internal/dotnetimpact: the type-name closure, test classes, projects and filter terms
 
 **Create:**
-- `plan:internal/dotnetimpact#Scope` -> `type Scope struct`
-- `plan:internal/dotnetimpact#Project` -> `type Project struct`
-- `plan:internal/dotnetimpact#seed` -> `type seed struct`
-- `plan:internal/dotnetimpact#narrow` -> `func narrow(sources []sourceFile, projects []string, s seed) Scope`
-- `plan:internal/dotnetimpact#filterTerm` -> `func filterTerm(t typeDecl) string`
-- `plan:internal/dotnetimpact#TestNarrow` -> `func TestNarrow(t *testing.T)`
+- `internal/dotnetimpact#Scope`
+- `internal/dotnetimpact#Project`
+- `internal/dotnetimpact#seed`
+- `internal/dotnetimpact#narrow`
+- `internal/dotnetimpact#filterTerm`
+- `internal/dotnetimpact#TestNarrow`
 
 **Extends:**
 - `internal/dotnetimpact/doc.go`
 
 **Uses:**
-- `plan:internal/dotnetimpact#sourceFile`
-- `plan:internal/dotnetimpact#typeDecl`
-- `plan:internal/dotnetimpact#parseSource`
+- `internal/dotnetimpact#sourceFile`
+- `internal/dotnetimpact#typeDecl`
+- `internal/dotnetimpact#parseSource`
 
 **Intent:**
 Add the pure core of the derivation: from the scanned sources, the project files and a seed, the test projects and filter terms a narrowed run takes (Decision 2, and the project fallbacks of Decision 3).

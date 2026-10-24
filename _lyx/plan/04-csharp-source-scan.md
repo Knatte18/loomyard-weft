@@ -2,13 +2,13 @@
 
 **Create:**
 - `internal/dotnetimpact/doc.go`
-- `plan:internal/dotnetimpact#token` -> `type token struct`
-- `plan:internal/dotnetimpact#lex` -> `func lex(data []byte) []token`
-- `plan:internal/dotnetimpact#typeDecl` -> `type typeDecl struct`
-- `plan:internal/dotnetimpact#sourceFile` -> `type sourceFile struct`
-- `plan:internal/dotnetimpact#parseSource` -> `func parseSource(rel string, data []byte) sourceFile`
-- `plan:internal/dotnetimpact#TestMain` -> `func TestMain(m *testing.M)`
-- `plan:internal/dotnetimpact#TestParseSource` -> `func TestParseSource(t *testing.T)`
+- `internal/dotnetimpact#token`
+- `internal/dotnetimpact#lex`
+- `internal/dotnetimpact#typeDecl`
+- `internal/dotnetimpact#sourceFile`
+- `internal/dotnetimpact#parseSource`
+- `internal/dotnetimpact#TestMain`
+- `internal/dotnetimpact#TestParseSource`
 
 **Intent:**
 Start the `dotnet` scoper's package, `internal/dotnetimpact`, the sibling of `internal/impactset`, with the pure read of one C# source file (Decisions 1 and 2).

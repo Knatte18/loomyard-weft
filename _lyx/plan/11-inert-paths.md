@@ -15,7 +15,7 @@
 - `internal/gatecli#diffBaseGroups`
 - `internal/gatecli#greenRecord.newestWholeAncestor`
 - `internal/gatecli#scopesConfigWith`
-- `plan:internal/impactset#ChangedPaths`
+- `internal/impactset#ChangedPaths`
 - `internal/gateslot#Config.AllInert`
 
 **Intent:**
