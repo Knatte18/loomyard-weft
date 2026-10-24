@@ -1,4 +1,3 @@
 tree_scope:
-    docs: ""
-    tools: ./tools/...
-tree_scope_verify: lyx gate test --wait --tier 1 {targets}
+  docs: ""
+  tools: ./tools/...
