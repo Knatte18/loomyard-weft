@@ -1,9 +1,9 @@
 {
   "runGuid": "61d24d5f669e7a2632c450ce5036daf2",
-  "planFingerprint": "1ccf29de02587a84ebbd9ba18f7a6f8f3183aaa6aa890ad12b2b85bb911c1c0f",
+  "planFingerprint": "746e52fa8a9944c7937199ffc37da9ec3253b7020d0646fdfc20ff914a918f39",
   "planFileHashes": {
     "00-overview.md": "79b3646fa84fae23c330d5468a2c3d82f96ec7aa73ecd65ad3b18b128e45cba6",
-    "01-gate-key-shape.md": "3f4e9d622bb5908ef9675689f48d47d4b71fdb095966e2aaea3bdc695db0b16b",
+    "01-gate-key-shape.md": "f632ca18f140aece5a451240ae25b467597498a8cd717d709ea8fb43c771566c",
     "02-gate-flag.md": "57f1450c6767cc497fcd9ae070e2e384fc63d297bb87a98e7d40ff4d70863547",
     "03-gate-call-renders-key.md": "bfad899d87c1563ead6b09139315f8e2cae29d95671e23bd9a231325b6e01c7c",
     "04-verify-gate-site-key.md": "0001df7b2eacc795ab83b96aefb42a3f7722099550d918c29be48eba607c5883",
@@ -1335,7 +1335,7 @@
       }
     }
   ],
-  "currentBatch": 1,
+  "currentBatch": 0,
   "masterStrand": "01eca7b5ce6b1202052f0975e603e58a",
   "masterSessionId": "0c9c3bf8-0ef2-4615-96de-221f53bd2d82",
   "masterEngine": "claude",
@@ -1347,7 +1347,7 @@
         "02-gate-flag"
       ],
       "cardHashes": {
-        "01-gate-key-shape": "3f4e9d622bb5908ef9675689f48d47d4b71fdb095966e2aaea3bdc695db0b16b",
+        "01-gate-key-shape": "f632ca18f140aece5a451240ae25b467597498a8cd717d709ea8fb43c771566c",
         "02-gate-flag": "57f1450c6767cc497fcd9ae070e2e384fc63d297bb87a98e7d40ff4d70863547"
       },
       "startSha": "f4a897b8596ca46981eff2f75c951026df02121b",
@@ -1355,8 +1355,40 @@
       "spawnedAt": "2026-10-24T09:00:53Z",
       "sessionId": "0c9c3bf8-0ef2-4615-96de-221f53bd2d82",
       "engine": "claude",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "01-gate-key-shape",
+        "status": "done",
+        "head_sha": "32173fbd7fd38cbe4a6bf6ce8229f8645029b7ca",
+        "deviations": [
+          "internal/gatecli/run.go",
+          "internal/gatecli/scope.go",
+          "internal/gateslot/config.go",
+          "internal/gateslot/tiers.go",
+          "internal/landingshed/verifygate.go",
+          "internal/loomcli/wiring_darn_test.go",
+          "internal/loomshed/verifygate.go",
+          "internal/loomshed/verifygate_integration_test.go",
+          "internal/webstercli/fixverify.go",
+          "internal/webstercli/verify.go",
+          "internal/websterengine/geometry.go",
+          "internal/websterengine/verifyfixer.go",
+          "internal/websterengine/verifygate.go"
+        ]
+      },
+      "cardShas": [
+        "32173fbd7fd38cbe4a6bf6ce8229f8645029b7ca"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-gate-runs-once/0c9c3bf8-0ef2-4615-96de-221f53bd2d82/subagents/agent-aaf664b34db5cd7f9.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-gate-runs-once/0c9c3bf8-0ef2-4615-96de-221f53bd2d82/subagents/agent-aaf664b34db5cd7f9.jsonl"
+      ]
     }
-  }
+  },
+  "seenForkTranscripts": [
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-gate-runs-once/0c9c3bf8-0ef2-4615-96de-221f53bd2d82/subagents/agent-aaf664b34db5cd7f9.jsonl"
+  ]
 }
