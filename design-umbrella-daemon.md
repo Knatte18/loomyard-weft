@@ -151,7 +151,7 @@ The operator sees that check as a job for the Go run driver:
 - The beam commands are `lyx beam create`, `lyx beam promote` and `lyx beam start`, as above.
 - The workspace texts say beam, not umbrella; the task that builds a part renames the word in what it touches.
 - The hub keeps lyx traces 3 days, not 14 (`logger.yaml` `trace_retention_days`, set on Bolt).
-- Folded in from note `board-tidy-after-landing`: the beam's Go driver spawns the board-tidy Sonnet agent after each landing, in a window of the beam's reed session, and hands its report to the orch LLM (today the orch does it, hub-wide orch rule "Board tidy after a landing").
+- Folded in from note `board-tidy-after-landing`: the beam's Go driver spawns the board-tidy Sonnet agent every N landings, N a config key defaulting to 5 (operator, 2026-10-24), in a window of the beam's reed session, and hands its report to the orch LLM (today the orch does it, hub-wide orch rule "Board tidy after a landing").
 
 ## The arbiter for every shed run (folded in from note `shed-arbiter-all`, 2026-10-24)
 
