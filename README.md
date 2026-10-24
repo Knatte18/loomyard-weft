@@ -17,10 +17,10 @@ Held by a run; its scope is locked until the run ends.
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T1 | **Each test runs once per tree: disjoint tiers, row entry gates, carried green runs, tmux in final**<br>• Tiers tagged by name, shed row entry gates, verify skipped on an already green tree, tmux in the final gate, gate time measured<br>• `profile: light` | [`gate-runs-once`](design-gate-runs-once.md) | loom | Plan-Burler-Review | neve | 6d<br>2h | gate, shed, loom, webster, fabric, batten |
-| T5 | **lyx loom decision add records several decisions in one call and one notice**<br>• `profile: light` | [`decision-add-batch`](design-decision-add-batch.md) | darn | Code-Bouncer | neve | 1h<br>13m | loom, creel |
-| T7 | **Batten idle notice says no agent activity readable while a run is live**<br>• `profile: light` | [`idle-notice-no-live-run`](design-idle-notice-no-live-run.md) | darn | Darn-Write | neve | 1h<br>13m | batten, shuttle |
-| T8 | **The watcher system should recognize halt due to session limit**<br>• `profile: light` | [`usage-limit-hold-quiet`](design-usage-limit-hold-quiet.md) | darn | Code-Burler-Review | neve | 16h<br>13m | shuttle, creel, orch |
-| T10 | **The seeded reed attach task in tasks.json runs on a shortcut**<br>• tasks.json holds one on-demand reed attach task with no shortcut<br>• `profile: light` | [`ide-attach-task`](design-ide-attach-task.md) | darn | Finalize | neve | 21h<br>12m | ide |
+| T5 | **lyx loom decision add records several decisions in one call and one notice**<br>• `profile: light` | [`decision-add-batch`](design-decision-add-batch.md) | darn | Code-Burler-Review | neve | 1h<br>14m | loom, creel |
+| T7 | **Batten idle notice says no agent activity readable while a run is live**<br>• `profile: light` | [`idle-notice-no-live-run`](design-idle-notice-no-live-run.md) | darn | Darn-Write | neve | 1h<br>14m | batten, shuttle |
+| T8 | **The watcher system should recognize halt due to session limit**<br>• `profile: light` | [`usage-limit-hold-quiet`](design-usage-limit-hold-quiet.md) | darn | Code-Burler-Review | neve | 16h<br>14m | shuttle, creel, orch |
+| T10 | **The seeded reed attach task in tasks.json runs on a shortcut**<br>• tasks.json holds one on-demand reed attach task with no shortcut<br>• `profile: light` | [`ide-attach-task`](design-ide-attach-task.md) | darn | Finalize | neve | 21h<br>13m | ide |
 
 ### Ready (0)
 
@@ -45,7 +45,7 @@ Starts when every entry it names under After is done.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T2 | **Clean up PATTERN.md: far too many entries**<br>• `profile: light` | [`pattern-cleanup`](design-pattern-cleanup.md) | darn | `gate-runs-once`, `fork-git-guard-scratch-repo`, `run-profiles-ladder` | 1h<br>31m | stencil |
+| T2 | **Clean up PATTERN.md: far too many entries**<br>• `profile: light` | [`pattern-cleanup`](design-pattern-cleanup.md) | darn | `gate-runs-once`, `fork-git-guard-scratch-repo`, `run-profiles-ladder` | 1h<br>32m | stencil |
 
 ## Notes (49)
 
