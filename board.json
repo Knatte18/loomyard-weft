@@ -1010,6 +1010,25 @@
       "revised": "2026-10-24T08:58:38Z",
       "profile": "docs",
       "owner_machine": "neve"
+    },
+    {
+      "id": 796,
+      "handle": "B1",
+      "slug": "idle-notice-dead-waiter-cause",
+      "title": "Find why a running run shows a dead waiter in the activity reader",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "batten",
+        "shuttle"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "## Seen (2026-10-24)\n\nTask `idle-notice-no-live-run` landed as 450bc6ff1 with diagnostics only: `ReadAgentActivity` still skips a running run whose waiter pid is dead, so the idle notice can still say \"no agent activity readable\" while an agent works; it now logs that case (Warn once per episode). The root cause is unconfirmed.\n\n## Idea\n\nWhen the Warn line shows up in a run, read it with the run records and fix the cause: either the waiter pid recorded is wrong, or a live run legitimately has no waiter and the reader should read activity anyway.",
+      "created": "2026-10-24T09:07:21Z",
+      "revised": "2026-10-24T09:07:21Z"
     }
   ],
   "prime_owner": "neve"
