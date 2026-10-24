@@ -16,8 +16,8 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T2 | **Clean up PATTERN.md: far too many entries**<br>• `profile: light` | [`pattern-cleanup`](design-pattern-cleanup.md) | darn | Describe | neve | 6h<br>3h | stencil |
-| T11 | **Card gate (--tier 0) does not vet a card's packages under the other tier tag sets, so helper dependencies across tagged files fail only in the batch gate**<br>• `profile: light` | [`card-gate-vets-all-tag-sets`](design-card-gate-vets-all-tag-sets.md) | darn | Darn-Write | neve | 46m<br>37m | gate, webster |
+| T2 | **Clean up PATTERN.md: far too many entries**<br>• `profile: light` | [`pattern-cleanup`](design-pattern-cleanup.md) | darn | PR-Review | neve | 6h<br>3h | stencil |
+| T11 | **Card gate (--tier 0) does not vet a card's packages under the other tier tag sets, so helper dependencies across tagged files fail only in the batch gate**<br>• `profile: light` | [`card-gate-vets-all-tag-sets`](design-card-gate-vets-all-tag-sets.md) | darn | Darn-Write | neve | 47m<br>37m | gate, webster |
 
 ### Ready (0)
 
@@ -32,7 +32,7 @@ Waits only on Running or Ready entries.
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
 | T3 | **Run profiles as one ladder: speed, light, solid, wide**<br>• Replace budget, light, docs and darn-wide with one profile ladder shared by darn and loom<br>• `profile: light` | [`run-profiles-ladder`](design-run-profiles-ladder.md) | darn | `pattern-cleanup` | 1d<br>3h | config, loom, burler |
-| T4 | **[.NET] Scoped build and test for C# hubs, and the Models verification wants**<br>• Verify gates in a .NET hub build and test only the projects a card touches, since a scanned Windows machine makes every build slow. | [`dotnet-scoped-verify`](design-dotnet-scoped-verify.md) | loom | `pattern-cleanup`, `card-gate-vets-all-tag-sets` | 2w<br>9m | shed, webster, loom, config, dotnet |
+| T4 | **[.NET] Scoped build and test for C# hubs, and the Models verification wants**<br>• Verify gates in a .NET hub build and test only the projects a card touches, since a scanned Windows machine makes every build slow. | [`dotnet-scoped-verify`](design-dotnet-scoped-verify.md) | loom | `pattern-cleanup`, `card-gate-vets-all-tag-sets` | 2w<br>10m | shed, webster, loom, config, dotnet |
 | T6 | **Fork git-mutation guard fails a run on git commands confined to a scratch repo**<br>• `profile: light` | [`fork-git-guard-scratch-repo`](design-fork-git-guard-scratch-repo.md) | darn | `pattern-cleanup` | 21h<br>3h | shed, burler |
 | T9 | **Umbrella groundwork: project entries, pairs from a parent pair, and umbrella tasks that spawn and land from their own worktree**<br>• [WS 004+006] Board projects, fabric pairs from a parent pair, batten and orch from any worktree, umbrella tasks | [`umbrella-groundwork`](design-umbrella-groundwork.md) | loom | `pattern-cleanup` | 3w<br>3h | fabric, batten, orch, board, reed, creel, shed, workspaces |
 
@@ -56,7 +56,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | # | P | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | B1 |  | **Find why a running run shows a dead waiter in the activity reader** | [`idle-notice-dead-waiter-cause`](design-idle-notice-dead-waiter-cause.md) | 5h<br>5h | batten, shuttle |
-| B2 |  | **A run never files a task, at most a note**<br>• gate-runs-once filed a follow-up task (default loom) that then auto-started; runs may file only notes | [`runs-never-write-board`](design-runs-never-write-board.md) | 1h<br>58m | board, loom, stencil |
+| B2 |  | **A run never files a task, at most a note**<br>• gate-runs-once filed a follow-up task (default loom) that then auto-started; runs may file only notes | [`runs-never-write-board`](design-runs-never-write-board.md) | 1h<br>59m | board, loom, stencil |
 | B7 |  | **Webster batch whose card verify needs an orch-only change dead-ends: recover-batch ends dead with 'asking', then the run halts repeatedly with growing history** | [`webster-orch-need-to-parent`](design-webster-orch-need-to-parent.md) | 46m<br>46m | webster, loom |
 
 ### Enhancements (23)
@@ -65,7 +65,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | --- | --- | --- | --- | --- | --- |
 | E1 |  | **Plan conflict from a moved tree: a small fixer before the Plan perch**<br>• A tree_moved plan conflict naming exact glyphs goes to a small card fixer, not a full Plan review round | [`plan-conflict-small-fixer`](design-plan-conflict-small-fixer.md) | 4h<br>4h | webster, loom |
 | E2 |  | **Codex CLI as a second shuttle engine: codexengine**<br>• codexengine for single-session roles, built from the 2026-10-24 spike report and claudeengine list of needs | [`codex-engine`](design-codex-engine.md) | 2w<br>1h | shuttle, codex |
-| E3 |  | **Plan check does not project the lint-pattern step per card, so a wrong plan-review fix passes review and fails only at self-check** | [`plan-check-lint-pattern-per-card`](design-plan-check-lint-pattern-per-card.md) | 46m<br>46m | loom, burler |
+| E3 |  | **Plan check does not project the lint-pattern step per card, so a wrong plan-review fix passes review and fails only at self-check** | [`plan-check-lint-pattern-per-card`](design-plan-check-lint-pattern-per-card.md) | 47m<br>47m | loom, burler |
 | E4 |  | **finalize: the discrepancy-document conflict shape**<br>• Divergences that cannot be a git conflict get a precomputed document for the resolving agent instead of markers | [`finalize-discrepancy-doc`](design-finalize-discrepancy-doc.md) | 2w<br>2w | fabric, loom |
 | E7 |  | **Run verbs in one shared namespace, not under lyx loom**<br>• lyx loom decision/status/goto/approve act on darn runs too; move recipe-neutral run verbs to one shared namespace | [`run-verbs-shared`](design-run-verbs-shared.md) | 9d<br>9d | shed, loom |
 | E9 |  | **Paste cited code into a review rounds context**<br>• Reviewers edit nothing and review a fixed commit, so code pasted at round start cannot go stale; measure it against todays reviewer | [`review-inline-code`](design-review-inline-code.md) | 12d<br>5h | burler, stencil |
