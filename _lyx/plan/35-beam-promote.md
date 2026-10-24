@@ -1,18 +1,18 @@
 # Card 35 — beam-promote
 
 **Create:**
-- `plan:internal/beamcli#promoteDeps` -> `type promoteDeps struct`
-- `plan:internal/beamcli#promote` -> `func promote(ctx context.Context, deps promoteDeps, slug string) (promoteResult, error)`
-- `plan:internal/beamcli#promoteResult` -> `type promoteResult struct`
-- `plan:internal/beamcli#hubPromoteDeps` -> `func hubPromoteDeps(prime *lyxcwd.Location) (promoteDeps, error)`
-- `plan:internal/beamcli#TestPromote` -> `func TestPromote(t *testing.T)`
-- `plan:internal/battencli#EndRunForPromote` -> `func EndRunForPromote(ctx context.Context, prime *lyxcwd.Location, slug string) error`
-- `plan:internal/battencli#ClearRunForPromote` -> `func ClearRunForPromote(ctx context.Context, prime *lyxcwd.Location, slug string) error`
-- `plan:internal/battencli#endRunPhase` -> `func endRunPhase(ctx context.Context, slug string, remove bool, rerun string, deps cancelDeps) (cancelReport, error)`
-- `plan:internal/battencli#clearRunPhase` -> `func clearRunPhase(slug string, remove bool, rerun string, report *cancelReport, deps cancelDeps) error`
+- `internal/beamcli#promoteDeps`
+- `internal/beamcli#promote`
+- `internal/beamcli#promoteResult`
+- `internal/beamcli#hubPromoteDeps`
+- `internal/beamcli#TestPromote`
+- `internal/battencli#EndRunForPromote`
+- `internal/battencli#ClearRunForPromote`
+- `internal/battencli#endRunPhase`
+- `internal/battencli#clearRunPhase`
 
 **Edit:**
-- `plan:internal/beamcli#Command`
+- `internal/beamcli#Command`
 - `internal/battencli#cancelRun`
 - `internal/battencli#startGuard`
 - `internal/battencli#hubStartGuard`
