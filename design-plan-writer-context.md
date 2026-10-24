@@ -1,6 +1,6 @@
 # Plan writer cost: sub-planners per part, and twill versus a solo writer
 
-`plan-writer-context` · Note · enhancement, loom, stencil
+`plan-writer-context` · Note · audit, loom, stencil
 
 ## Seen
 
