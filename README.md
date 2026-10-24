@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-24 10:09 UTC; every age below is as of then.
+Rendered 2026-10-24 10:10 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -41,9 +41,9 @@ Starts when every entry it names under After is done.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T2 | **Clean up PATTERN.md: far too many entries**<br>• `profile: light` | [`pattern-cleanup`](design-pattern-cleanup.md) | darn | `gate-runs-once`, `fork-git-guard-scratch-repo`, `run-profiles-ladder` | 2h<br>1h | stencil |
+| T2 | **Clean up PATTERN.md: far too many entries**<br>• `profile: light` | [`pattern-cleanup`](design-pattern-cleanup.md) | darn | `gate-runs-once`, `fork-git-guard-scratch-repo`, `run-profiles-ladder` | 2h<br>2h | stencil |
 
-## Notes (41)
+## Notes (42)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
 
@@ -55,8 +55,8 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | A3 |  | **Audit the twill and lens review setup: worth per perch, recurring finding classes, writer quality**<br>• One audit over the review records once about ten loom runs with the current setup land on Neve | [`review-setup-audit`](design-review-setup-audit.md) | 8d<br>1d | burler, loom, report, stencil, shed |
 | A5 |  | **Sweep go_parallel on OSL-1046 with Cortex XDR**<br>• Time both gate tiers on the work laptop on a quiet machine and log them in docs beside the Neve numbers, with full hardware info | [`bench-osl1046-xdr`](design-bench-osl1046-xdr.md) | 4d<br>3d |  |
 | A6 |  | **Lens overlap audit: which lenses find the same defects, and a smaller set**<br>• twill-plan 8 to 5 lenses recommended; twill-discussion 7 to 4 and review-code 4 to 3 at low confidence | [`lens-overlap-audit`](design-lens-overlap-audit.md) | 1d<br>2h | burler, loom |
-| A7 |  | **Trial: batcher profile wide (budget 300k)**<br>• Hub runs a new batcher profile wide, budget 300k; check cost and fork quality before taking it into the template | [`batch-budget-300k-trial`](design-batch-budget-300k-trial.md) | 1d<br>55m | webster |
-| A8 |  | **Plan writer cost: sub-planners per part, and twill versus a solo writer**<br>• The Plan writer is 18% of spend; sub-planners per part for large bundles, and a twill versus solo Opus high comparison on cost, rounds and time | [`plan-writer-context`](design-plan-writer-context.md) | 1d<br>27m | loom, stencil |
+| A7 |  | **Trial: batcher profile wide (budget 300k)**<br>• Hub runs a new batcher profile wide, budget 300k; check cost and fork quality before taking it into the template | [`batch-budget-300k-trial`](design-batch-budget-300k-trial.md) | 1d<br>56m | webster |
+| A8 |  | **Plan writer cost: sub-planners per part, and twill versus a solo writer**<br>• The Plan writer is 18% of spend; sub-planners per part for large bundles, and a twill versus solo Opus high comparison on cost, rounds and time | [`plan-writer-context`](design-plan-writer-context.md) | 1d<br>28m | loom, stencil |
 
 ### Bugs (1)
 
@@ -64,11 +64,12 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | --- | --- | --- | --- | --- | --- |
 | B1 |  | **Find why a running run shows a dead waiter in the activity reader** | [`idle-notice-dead-waiter-cause`](design-idle-notice-dead-waiter-cause.md) | 1h<br>1h | batten, shuttle |
 
-### Enhancements (21)
+### Enhancements (22)
 
 | # | P | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| E2 |  | **Codex CLI as a second shuttle engine: hands-on spike, then codexengine**<br>• Codex CLI as a second engine to offload Claude tokens: short hands-on tests first, then a codexengine for single-session roles | [`codex-engine`](design-codex-engine.md) | 2w<br>11m | shuttle, codex |
+| E1 |  | **Plan conflict from a moved tree: a small fixer before the Plan perch**<br>• A tree_moved plan conflict naming exact glyphs goes to a small card fixer, not a full Plan review round | [`plan-conflict-small-fixer`](design-plan-conflict-small-fixer.md) | 0m<br>0m | webster, loom |
+| E2 |  | **Codex CLI as a second shuttle engine: hands-on spike, then codexengine**<br>• Codex CLI as a second engine to offload Claude tokens: short hands-on tests first, then a codexengine for single-session roles | [`codex-engine`](design-codex-engine.md) | 2w<br>12m | shuttle, codex |
 | E4 |  | **finalize: the discrepancy-document conflict shape**<br>• Divergences that cannot be a git conflict get a precomputed document for the resolving agent instead of markers | [`finalize-discrepancy-doc`](design-finalize-discrepancy-doc.md) | 2w<br>2w | fabric, loom |
 | E7 |  | **Run verbs in one shared namespace, not under lyx loom**<br>• lyx loom decision/status/goto/approve act on darn runs too; move recipe-neutral run verbs to one shared namespace | [`run-verbs-shared`](design-run-verbs-shared.md) | 9d<br>9d | shed, loom |
 | E9 |  | **Paste cited code into a review rounds context**<br>• Reviewers edit nothing and review a fixed commit, so code pasted at round start cannot go stale; measure it against todays reviewer | [`review-inline-code`](design-review-inline-code.md) | 12d<br>1h | burler, stencil |
