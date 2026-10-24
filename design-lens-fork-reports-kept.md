@@ -1,6 +1,6 @@
 # Every lens fork report is kept verbatim in the run records
 
-`lens-fork-reports-kept` · Task · enhancement, burler, loom
+`lens-fork-reports-kept` · Task · enhancement, burler, loom · running · Worktree-Create
 
 ## Seen (orch, 2026-10-22)
 

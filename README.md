@@ -18,14 +18,13 @@ Held by a run; its scope is locked until the run ends.
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T1 | **Each test runs once per tree: disjoint tiers, row entry gates, carried green runs, tmux in final**<br>• Tiers tagged by name, shed row entry gates, verify skipped on an already green tree, tmux in the final gate, gate time measured<br>• `profile: light` | [`gate-runs-once`](design-gate-runs-once.md) | loom | Discussion-Burler-Fix | neve | 6d<br>1h | gate, shed, loom, webster, fabric, batten |
 | T2 | **Board README headings show how many entries each section holds**<br>• Each README section heading carries its entry count, e.g. Enhancements (34)<br>• `profile: docs` | [`readme-heading-counts`](design-readme-heading-counts.md) | darn | Finalize | neve | 10m<br>10m | board |
+| T10 | **Every lens fork report is kept verbatim in the run records**<br>• Save each lens fork report in a support file beside lens-review.md, so audits can read what each lens found | [`lens-fork-reports-kept`](design-lens-fork-reports-kept.md) | darn | Worktree-Create | neve | 1d<br>37m | burler, loom |
 
 ### Ready
 
 Waits on nothing open; can start now.
 
-| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- | --- | --- |
-| T10 | **Every lens fork report is kept verbatim in the run records**<br>• Save each lens fork report in a support file beside lens-review.md, so audits can read what each lens found | [`lens-fork-reports-kept`](design-lens-fork-reports-kept.md) | darn |  | 1d<br>36m | burler, loom |
+_None._
 
 ### Layer A
 
@@ -57,7 +56,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | P | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| B1 |  | **Batten idle notice says no agent activity readable while a run is live** | [`idle-notice-no-live-run`](design-idle-notice-no-live-run.md) | 16m<br>16m | batten, shuttle |
+| B1 |  | **Batten idle notice says no agent activity readable while a run is live** | [`idle-notice-no-live-run`](design-idle-notice-no-live-run.md) | 17m<br>17m | batten, shuttle |
 
 ### Enhancements
 
@@ -80,7 +79,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | E15 |  | **Plan writer cost: sub-planners per part, and twill versus a solo writer**<br>• The Plan writer is 18% of spend; sub-planners per part for large bundles, and a twill versus solo Opus high comparison on cost, rounds and time | [`plan-writer-context`](design-plan-writer-context.md) | 1d<br>1d | loom, stencil |
 | E16 |  | **Parallel batches: the shared pieces for Webster forks and Weaver**<br>• DAG batchifier, worktree per batch, merge-back with conflict resolution; open: keeping a fork inside its worktree | [`parallel-batch-parts`](design-parallel-batch-parts.md) | 6d<br>6d | webster, fabric, loom |
 | E17 | H | **[WS 007] An anchor per umbrella**<br>• Let an umbrella work in its own subdirectory of the repository, inherited by its tasks; hard to change now | [`umbrella-anchor`](design-umbrella-anchor.md) | 5d<br>37m | fabric, config, workspaces |
-| E18 | H | **[WS 005] One dobby daemon per beam owns and drives its runs**<br>• Each beam (a worktree with an orch thread) gets a Go daemon, started by lyx orch start, that follows its runs status files, starts ready tasks, lands, settles mechanical stops and tells the thread only what needs judgement | [`umbrella-daemon`](design-umbrella-daemon.md) | 11d<br>36m | batten, orch, shed, workspaces, loom, board |
+| E18 | H | **[WS 005] One dobby daemon per beam owns and drives its runs**<br>• Each beam (a worktree with an orch thread) gets a Go daemon, started by lyx orch start, that follows its runs status files, starts ready tasks, lands, settles mechanical stops and tells the thread only what needs judgement | [`umbrella-daemon`](design-umbrella-daemon.md) | 11d<br>37m | batten, orch, shed, workspaces, loom, board |
 | E19 |  | **Every remote operation runs async, and local-only fabric pairs stay an explicit choice only**<br>• Remote work goes async except the branch-exists check; batch pairs reach origin like any pair, and the local-only mode stays only as an explicit --local until a use is found or it is removed | [`fabric-remote-async`](design-fabric-remote-async.md) | 5d<br>5d | fabric, batten |
 | E20 |  | **Plan and Discussion fixers on Sonnet, once findings are concrete enough**<br>• Webster and Merge fixers are already Sonnet; Plan and Discussion fixers need concrete findings first | [`fixers-on-sonnet`](design-fixers-on-sonnet.md) | 1d<br>1d | burler, claude |
 | E21 |  | **The orch Go driver spawns the board-tidy agent after each landing** | [`board-tidy-after-landing`](design-board-tidy-after-landing.md) | 23h<br>23h | orch, board, reed |
