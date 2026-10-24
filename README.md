@@ -26,7 +26,7 @@ Waits on nothing open; can start now.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T1 | **Restore to PATTERN the moved rules that bind callers outside their package**<br>• Audit of pattern-cleanup: 4 moved rules bind outside code with no scan, 2 more lean back | [`pattern-restore-caller-rules`](design-pattern-restore-caller-rules.md) | loom |  | 12m<br>12m | config, shed, reed, fabric |
+| T1 | **Restore to PATTERN the moved rules that bind callers outside their package**<br>• Audit of pattern-cleanup: 4 moved rules bind outside code with no scan, 2 more lean back<br>• `profile: light` | [`pattern-restore-caller-rules`](design-pattern-restore-caller-rules.md) | darn |  | 12m<br>0m | config, shed, reed, fabric |
 
 ## Notes (45)
 
