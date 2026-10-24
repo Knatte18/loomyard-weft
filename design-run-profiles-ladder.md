@@ -25,7 +25,7 @@ A task needing anything else names its rounds per row by hand.
 - Each profile also sets each perch's hard cap, such as its rounds plus one, so `lyx loom circling continue` can grant one more round.
 - The third rung is named `solid`, not `standard`.
   A hub names its default profile per recipe instead: loom's default is `solid`, darn's is `light`.
-- `docs` stays, as a darn profile only, for pure prose and config value edits: a Sonnet writer at medium effort and one Darn perch round.
+- `docs` stays, as a darn profile only, for pure prose and config value edits: a Sonnet writer at medium effort and one Code perch round.
 - The `speed` rung replaces the note `speed-loom-profile` (a loom that keeps Discussion, Plan and Webster but reviews only the end product), removed into this note.
 
 ## Evidence
@@ -35,4 +35,6 @@ A task needing anything else names its rounds per row by hand.
 ## Open
 
 - Whether a perch round count of 0, as in `speed`, turns a perch off through profile settings alone, or needs the row entry gate `gate-runs-once` builds.
-- The Code column's key is `code_max_bounces` after `loom-tail-review`, and darn's perch may merge into Code-Review (note `code-review-one-perch`), which changes which keys a profile sets.
+- Since `code-review-one-perch` landed (2026-10-24), darn's perch is the Code-Review perch and darn reads loom's `code_*` keys (`code_max_bounces`, `code_hard_max_bounces`); `darn.review_max_bounces` and the other `darn_*`/`review_*` perch keys are retired and moved by `configcli`'s key moves.
+  So the Code and Darn columns are one key: a profile cannot set Code 1 for loom and 0-3 for darn unless the key can differ per recipe, or the ladder gives up one of the two columns.
+  The hub's profiles still carry the retired `darn.review_*` keys, which load through the key moves.
