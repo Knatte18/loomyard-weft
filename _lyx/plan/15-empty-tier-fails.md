@@ -1,10 +1,10 @@
 # Card 15 — empty-tier-fails
 
 **Create:**
-- `plan:internal/gatecli#emptyTierFailure` -> `func emptyTierFailure(run tierRun, root string, ran map[string]int, args []string) string`
-- `plan:internal/gatecli#TestEmptyTierFailure` -> `func TestEmptyTierFailure(t *testing.T)`
-- `plan:internal/gatecli#goJSONCounter.TestsRun` -> `func (c *goJSONCounter) TestsRun() map[string]int`
-- `plan:internal/gatecli#vstestCounter.TestsRun` -> `func (c *vstestCounter) TestsRun() map[string]int`
+- `internal/gatecli#emptyTierFailure`
+- `internal/gatecli#TestEmptyTierFailure`
+- `internal/gatecli#goJSONCounter.TestsRun`
+- `internal/gatecli#vstestCounter.TestsRun`
 
 **Edit:**
 - `internal/gatecli#goJSONCounter`

@@ -1,11 +1,11 @@
 # Card 17 — shed-entry-gate-engine
 
 **Create:**
-- `plan:internal/shedengine#OutcomeSkipped` -> `const OutcomeSkipped Outcome = "skipped"`
-- `plan:internal/shedengine#EntryGate` -> `type EntryGate func() (holds bool, reason string, err error)`
-- `plan:internal/shedengine#Shed.enter` -> `func (s *Shed) enter(st Status, def ProducerDef) (ProducerDef, *StepResult, error)`
-- `plan:internal/shedengine#Shed.persistRouted` -> `func (s *Shed) persistRouted(nextCurrentProducer string, nextState State, nextHistory []HistoryEntry, clearConditions bool, routedTo, pauseReason string) error`
-- `plan:internal/shedengine#TestStep_EntryGate` -> `func TestStep_EntryGate(t *testing.T)`
+- `internal/shedengine#OutcomeSkipped`
+- `internal/shedengine#EntryGate`
+- `internal/shedengine#Shed.enter`
+- `internal/shedengine#Shed.persistRouted`
+- `internal/shedengine#TestStep_EntryGate`
 
 **Edit:**
 - `internal/shedengine#ProducerDef`
