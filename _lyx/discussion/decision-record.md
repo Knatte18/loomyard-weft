@@ -247,6 +247,12 @@ Rationale: the operator wants a project shown as a plan, with no order prefix in
 Decision: `lyx batten cleanup`'s skip of a run that is not done names `lyx batten cancel <slug>` as its way forward.
 Rationale: issue #724's blocked-run half is met by `lyx batten cancel`, so the skip points at it.
 
+### Added after Discussion (parent, 2026-10-24): beamcli is a hub-only CLI outside cliwire's standalone wiring
+
+Decision: Card 34 (`beam-create`) states in its Intent that `beamcli` is a hub-only CLI like `adoptcli` and `battencli`, so `PATTERN-cliwire-sole-wiring`'s standalone wiring does not apply: it resolves its location through `battencli.ResolveBattenPrime` (card 23, `batten-guard`) and declares no `cliwire.Module`.
+
+Rationale: F15: only standalone CLIs such as `burlercli` and `webstercli` declare a `cliwire.Module`; hub-only CLIs resolve the prime through battencli, and the card must say which side beamcli is on.
+
 ## Constraints
 
 - PATTERN-cwd-resolution: the beam workspace files are hub-level like the hub's file, written directly in the hub dir with hub-inward folders only, never into a worktree; the entry's text changes (see `## PATTERN changes`).
