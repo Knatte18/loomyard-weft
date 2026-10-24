@@ -15,5 +15,4 @@ With the runs' cost in focus, everything might instead be typed into the pane di
 ## To weigh
 
 - The extra turn per agent message against the guard that keeps one agent's text from reading as an instruction in another agent's pane.
-- The sender line on a carried message is what made Webster's Master refuse a decision notice (issue #849), so a carried agent message would meet the same receiver judgement.
 - Note `creel-agents` moves agent messaging from SendMessage onto creel, which makes agent mail, and so this cost, more common.
