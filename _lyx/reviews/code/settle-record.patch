@@ -1,0 +1,409 @@
+diff --git a/contracts/stencils/darn/darn-template-write.md b/contracts/stencils/darn/darn-template-write.md
+index ae7fea943..eb5236e97 100644
+--- a/contracts/stencils/darn/darn-template-write.md
++++ b/contracts/stencils/darn/darn-template-write.md
+@@ -77,6 +77,7 @@ You never run `lyx loom decision add` yourself; the verb refuses a task session.
+ 
+ No step changes this task's own board entry's body or scope, because the run's board lock refuses such a change.
+ The landing's status write, a `run_settings` write, a step that writes another board entry and a step that changes the board module's code stay allowed.
++A follow-up you file goes on the board as a note, never as a task, and you never promote a note: only the operator decides what becomes a task, and the board refuses a run's agent that creates or promotes one.
+ When the board entry or the decision record asks for such a step, leave it out from the start and ask your parent to record the drop with `lyx loom decision add`.
+ Until the record carries that `Added after Discussion` entry, name the omission in the change description's design decisions as an unrecorded parent correction.
+ Once the entry exists, the omission is no deviation from the amended board entry.
+diff --git a/contracts/stencils/loom/loom-rubric-discussion-review.md b/contracts/stencils/loom/loom-rubric-discussion-review.md
+index c8a52f564..e8617d252 100644
+--- a/contracts/stencils/loom/loom-rubric-discussion-review.md
++++ b/contracts/stencils/loom/loom-rubric-discussion-review.md
+@@ -44,6 +44,9 @@ Do not flag any of the following as a finding:
+ - **A Decision that edits the task's own board entry.**
+   A Decision that asks the run to change this task's own board entry's body or scope, through `lyx board` or otherwise, is a finding, because the run's board lock refuses such a change.
+   A Decision that writes another entry, the entry's status or its `run_settings`, or changes board-module code is not flagged by this bullet.
++- **A Decision that files or promotes a task.**
++  A Decision that files a follow-up as a task, or promotes a note, is a finding, because only the operator decides what becomes a task and the board refuses a run's agent that creates or promotes one.
++  Its fix files the follow-up as a note.
+ - **The writer/reviewer symmetry note.**
+   The discussion writer's own stencil is `{{.stencils_dir}}/loom/loom-template-discussion.md`, and the record rules it follows are in `{{.specs_dir}}/loom/loom-discussion-spec.md`: read them to learn what the writer was told not to gather.
+   Whatever it says not to gather, this rubric must not flag as missing, or the additive bias reappears even with the writer-side fix in place.
+diff --git a/contracts/stencils/loom/loom-rubric-plan-review.md b/contracts/stencils/loom/loom-rubric-plan-review.md
+index 37a73f0c4..02892c319 100644
+--- a/contracts/stencils/loom/loom-rubric-plan-review.md
++++ b/contracts/stencils/loom/loom-rubric-plan-review.md
+@@ -99,6 +99,9 @@ Do not flag any of the following as a finding:
+ - **A card that edits the task's own board entry.**
+   A card that changes this task's own board entry's body or scope is a finding, because the run's board lock refuses such a change.
+   A card writing another entry, the entry's status or its `run_settings`, or changing board-module code is not flagged by this bullet.
++- **A card that files or promotes a task.**
++  A card that files a follow-up as a task, or promotes a note, is a finding, because only the operator decides what becomes a task and the board refuses a run's agent that creates or promotes one.
++  Its fix files the follow-up as a note.
+ - **Card order.**
+   A card that depends on something a later card does breaks the rule in `{{.specs_dir}}/loom/loom-plan-spec.md`'s "Plan vs. schedule" section; the finding names the card and the later card it depends on.
+ - **Verify lines.**
+diff --git a/contracts/stencils/loom/loom-template-discussion.md b/contracts/stencils/loom/loom-template-discussion.md
+index 6b26c9fe9..bf90140aa 100644
+--- a/contracts/stencils/loom/loom-template-discussion.md
++++ b/contracts/stencils/loom/loom-template-discussion.md
+@@ -83,6 +83,7 @@ Apply YAGNI: do not design for a hypothetical requirement nobody asked for.
+ **Leave this task's own board entry alone.**
+ No decision asks the run to change this task's own board entry's body or scope, through `lyx board` or otherwise, because the run's board lock refuses such a change.
+ The landing's status write, a `run_settings` write, a decision to file or change another board entry and a change to the board module's code are outside this rule.
++A follow-up a decision files goes on the board as a note, never as a task, and no decision promotes a note: only the operator decides what becomes a task, and the board refuses a run's agent that creates or promotes one.
+ 
+ ## Step 4 — How to get answers
+ 
+diff --git a/contracts/stencils/loom/loom-template-plan.md b/contracts/stencils/loom/loom-template-plan.md
+index df06e9bbd..184b22f24 100644
+--- a/contracts/stencils/loom/loom-template-plan.md
++++ b/contracts/stencils/loom/loom-template-plan.md
+@@ -44,6 +44,7 @@ The route admits a drop of an own-entry step only: no other decided step is drop
+ 
+ No card changes this task's own board entry's body or scope, because the run's board lock refuses such a change.
+ The landing's status write, a `run_settings` write, a card that writes another board entry and a card that changes the board module's code stay allowed.
++A follow-up a card files goes on the board as a note, never as a task, and no card promotes a note: only the operator decides what becomes a task, and the board refuses a run's agent that creates or promotes one.
+ 
+ ## Step 2 — Explore the codebase
+ 
+diff --git a/internal/boardcli/cli.go b/internal/boardcli/cli.go
+index 6948dc6c2..f122550e6 100644
+--- a/internal/boardcli/cli.go
++++ b/internal/boardcli/cli.go
+@@ -142,6 +142,7 @@ available subcommands without requiring a git repo.
+ 		}
+ 
+ 		cfg = boardengine.ApplySkipEnv(cfg)
++		cfg.StrandName = strandNameFromEnv()
+ 		config = cfg
+ 		b = boardengine.New(cfg)
+ 		return nil
+diff --git a/internal/boardcli/cli_test.go b/internal/boardcli/cli_test.go
+index 09f270a04..8db65982c 100644
+--- a/internal/boardcli/cli_test.go
++++ b/internal/boardcli/cli_test.go
+@@ -108,6 +108,7 @@ func TestCLI(t *testing.T) {
+ 		{"BoardPathResolution", stepBoardPathResolution},
+ 		{"Promote", stepPromote},
+ 		{"Promote_Refusals", stepPromote_Refusals},
++		{"TaskSessionFilesNotesOnly", stepTaskSessionFilesNotesOnly},
+ 		{"Rename", stepRename},
+ 		{"Prune", stepPrune},
+ 		{"Find", stepFind},
+diff --git a/internal/boardcli/doc.go b/internal/boardcli/doc.go
+index e1b1b3e56..0b27ec96e 100644
+--- a/internal/boardcli/doc.go
++++ b/internal/boardcli/doc.go
+@@ -43,6 +43,8 @@
+ // `set-status` and `prune` never refuse on it.
+ // `rename` refuses to rename a held entry, and renames an entry a held task depends on.
+ //
++// Every verb's board carries the caller's `LYX_STRAND_NAME` as `boardengine.Config.StrandName`, so `upsert`, `upsert-batch`, `merge` and `promote` refuse a write that creates or promotes a task from a run agent's session, naming a note as the way forward.
++//
+ // `rename {slug|id, to}` changes one entry's slug in one write and prints `{"task":{…},"mentions":[…]}`: the renamed entry, and the slugs of the entries whose body or brief still name the old slug as a whole word, `[]` when none does.
+ //
+ // `merge` carries the removed entries' issues onto the upserted entry, whether or not the payload names `issues`.
+diff --git a/internal/boardcli/verbs_test.go b/internal/boardcli/verbs_test.go
+index 02f807e10..c5ecbbf50 100644
+--- a/internal/boardcli/verbs_test.go
++++ b/internal/boardcli/verbs_test.go
+@@ -106,6 +106,17 @@ func stepPromote_Refusals(t *testing.T, f *cliFixture) {
+ 	}
+ }
+ 
++// stepTaskSessionFilesNotesOnly pins that the verbs carry the caller's strand name to the board: a run agent's new task is refused and its note is accepted.
++func stepTaskSessionFilesNotesOnly(t *testing.T, f *cliFixture) {
++	t.Setenv(agentname.StrandNameEnv, "ly:task-a:loom")
++
++	result := runJSON(t, 1, "upsert", `{"slug":"follow-up","title":"F","kind":"task","labels":["bug"]}`)
++	if message, _ := result["error"].(string); !strings.Contains(message, "ly:task-a:loom") || !strings.Contains(message, `"kind":"note"`) {
++		t.Errorf("error %q does not name the session and the note way forward", message)
++	}
++	runJSON(t, 0, "upsert", `{"slug":"follow-up","title":"F","kind":"note","labels":["bug"]}`)
++}
++
+ // stepRename pins the rename envelope, the rewritten depends_on and the payload refusals.
+ func stepRename(t *testing.T, f *cliFixture) {
+ 	mustUpsert(t, `{"slug":"before","title":"Before","kind":"task","labels":["bug"]}`)
+diff --git a/internal/boardengine/board.go b/internal/boardengine/board.go
+index d35ef13a1..d96b15075 100644
+--- a/internal/boardengine/board.go
++++ b/internal/boardengine/board.go
+@@ -22,6 +22,8 @@ type Board struct {
+ 	skipPush  bool
+ 	now       func() time.Time
+ 	parentOf  func(slug string) (string, error)
++	// strandName is the writing session's agent name, which checkTaskCreation judges.
++	strandName string
+ }
+ 
+ // New returns a Board operating with the given config.
+@@ -31,13 +33,14 @@ func New(cfg Config) *Board {
+ 		now = time.Now
+ 	}
+ 	return &Board{
+-		boardPath: cfg.Path,
+-		out:       cfg.Outputs(),
+-		vocab:     cfg.Vocabulary(),
+-		skipGit:   cfg.SkipGit,
+-		skipPush:  cfg.SkipPush,
+-		now:       now,
+-		parentOf:  cfg.ParentOf,
++		boardPath:  cfg.Path,
++		out:        cfg.Outputs(),
++		vocab:      cfg.Vocabulary(),
++		skipGit:    cfg.SkipGit,
++		skipPush:   cfg.SkipPush,
++		now:        now,
++		parentOf:   cfg.ParentOf,
++		strandName: cfg.StrandName,
+ 	}
+ }
+ 
+@@ -50,7 +53,7 @@ type noWrite struct{ result any }
+ type promoted struct{ task Task }
+ 
+ // boardCriticalSection runs the locked write scaffolding shared by every mutating Board method:
+-// it acquires the lock, loads the store, calls fn to mutate it, stamps the entry dates, assigns the handles the mutation left missing or of another letter, refuses a net change to a run-held entry's scope, saves board.json, runs afterSave when non-nil, renders outputs, and spawns a detached sync.
++// it acquires the lock, loads the store, calls fn to mutate it, stamps the entry dates, assigns the handles the mutation left missing or of another letter, refuses a net change to a run-held entry's scope and a run agent's new task, saves board.json, runs afterSave when non-nil, renders outputs, and spawns a detached sync.
+ // fn returning a RenameResult judges the dates and the run lock against the loaded entries with that rename applied.
+ // afterSave runs under the lock after the save and before the render.
+ // fn returning a noWrite skips every step after the mutation.
+@@ -118,6 +121,9 @@ func (b *Board) boardCriticalSection(fn func(store *Store) (any, error), afterSa
+ 	if err := checkRunLocks(loaded, store.Tasks()); err != nil {
+ 		return nil, err
+ 	}
++	if err := checkTaskCreation(b.strandName, loaded, store.Tasks()); err != nil {
++		return nil, err
++	}
+ 
+ 	// Save before the derived .md view (JSON is authoritative).
+ 	if err := store.Save(); err != nil {
+diff --git a/internal/boardengine/config.go b/internal/boardengine/config.go
+index 192479556..27563bcd8 100644
+--- a/internal/boardengine/config.go
++++ b/internal/boardengine/config.go
+@@ -45,6 +45,9 @@ type Config struct {
+ 	// ParentOf names the slug of an entry's parent pair, "" for the prime, so reads and writes resolve an effective owner alike;
+ 	// nil reads every parent as the prime.
+ 	ParentOf func(slug string) (string, error) `yaml:"-"`
++	// StrandName is the full agent name of the session making the writes, "" for the operator at a terminal;
++	// a run agent's name makes every write that creates or promotes a task refused.
++	StrandName string `yaml:"-"`
+ }
+ 
+ // Label is one configured label with its description, which is empty when board.yaml gives none.
+diff --git a/internal/boardengine/doc.go b/internal/boardengine/doc.go
+index 2cdc1bae2..d2b5bb5de 100644
+--- a/internal/boardengine/doc.go
++++ b/internal/boardengine/doc.go
+@@ -149,6 +149,16 @@
+ // The refusal is a *RunLockedError that matches ErrRunLocked through errors.Is.
+ // Its message names the entry, its status and both ways forward: a finding goes to a note of its own, and an abandoned run is ended with `lyx batten cancel <slug>` from the prime, which clears the status.
+ //
++// # Run agents file notes, never tasks
++//
++// Only the operator decides what becomes a task, so a run's agent may file a follow-up as a note and never as a task.
++// Config.StrandName names the writing session, and a name carrying a task slug under any role but the orch's is a run agent's;
++// an empty name, the hub orch's slug-free name and an orch thread's name write as before.
++// For a run agent, the write critical section refuses, before the save, a net change that leaves a task whose slug held no task in the loaded entries:
++// a new task, a promote, a note upserted to kind task and a merge upserting a new task, while a rename is judged with the loaded slug renamed and creates none.
++// The refusal names the session, the entry and the way forward, a note with "kind":"note".
++// The guard trusts the name its caller passes, so it stops a mistaken write, not a determined one, and the replay of a local commit never runs it.
++//
+ // # Rename
+ //
+ // Rename changes one entry's slug in one write: the entry keeps its id, its handle, its position in board.json and every other field, kept keys included, and every other entry's depends_on names the new slug in place of the old one.
+diff --git a/internal/boardengine/taskguard.go b/internal/boardengine/taskguard.go
+new file mode 100644
+index 000000000..f565a7d7f
+--- /dev/null
++++ b/internal/boardengine/taskguard.go
+@@ -0,0 +1,39 @@
++// taskguard.go — the refusal of a board write that creates or promotes a task from a run's agent session.
++
++package boardengine
++
++import (
++	"fmt"
++
++	"github.com/Knatte18/loomyard/internal/agentname"
++)
++
++// isRunAgentSession reports whether strandName is a session of a run's agent: a name that carries a task slug, under any role but the orch's.
++// An empty name, a slug-free name and an orch thread's name are not.
++func isRunAgentSession(strandName string) bool {
++	name, err := agentname.Parse(strandName)
++	return err == nil && name.Slug != "" && !agentname.MatchesRole(name.Role, agentname.RoleOrch)
++}
++
++// checkTaskCreation refuses, for a run agent's strandName, a net change that leaves a task in after whose slug held no task in loaded.
++// A new task, a promote, a note upserted to kind task and a merge upserting a new task all count; a note write and an edit of an existing task do not.
++// It returns the first refusal in after's order.
++func checkTaskCreation(strandName string, loaded, after []Task) error {
++	if !isRunAgentSession(strandName) {
++		return nil
++	}
++	wasTask := make(map[string]bool, len(loaded))
++	for _, task := range loaded {
++		if task.Kind == KindTask {
++			wasTask[task.Slug] = true
++		}
++	}
++	for _, task := range after {
++		if task.Kind == KindTask && !wasTask[task.Slug] {
++			return fmt.Errorf("the run session %s cannot make %q a task: only the operator decides what becomes a task; "+
++				"way forward: file the follow-up as a note with `lyx board upsert` and \"kind\":\"note\", which the operator may promote",
++				strandName, task.Slug)
++		}
++	}
++	return nil
++}
+diff --git a/internal/boardengine/taskguard_test.go b/internal/boardengine/taskguard_test.go
+new file mode 100644
+index 000000000..9a0cf1169
+--- /dev/null
++++ b/internal/boardengine/taskguard_test.go
+@@ -0,0 +1,130 @@
++//go:build tier0
++
++// taskguard_test.go — the refusal of a write that creates or promotes a task from a run agent's session (taskguard.go), driven through the Board facade.
++
++package boardengine_test
++
++import (
++	"os"
++	"path/filepath"
++	"strings"
++	"testing"
++
++	"github.com/Knatte18/loomyard/internal/boardengine"
++)
++
++// TestTaskCreationGuard pins which writes a run agent's session may make, and that the operator, the hub orch and an orch thread may create a task.
++// A refused row leaves board.json byte-identical.
++func TestTaskCreationGuard(t *testing.T) {
++	t.Parallel()
++
++	const runAgent = "ly:some-task:webster"
++	existingTask := map[string]any{"slug": "existing", "title": "Existing", "kind": "task", "labels": []string{"bug"}}
++	existingNote := map[string]any{"slug": "idea", "title": "Idea", "kind": "note", "labels": []string{"bug"}}
++	newTask := map[string]any{"slug": "follow-up", "title": "Follow-up", "kind": "task", "labels": []string{"bug"}}
++
++	tests := []struct {
++		name       string
++		strandName string
++		act        func(b *boardengine.Board) error
++		// refused names the slug the refusal must name; empty means the write passes.
++		refused string
++	}{
++		{name: "upsert a new task", strandName: runAgent, refused: "follow-up", act: func(b *boardengine.Board) error {
++			_, err := b.UpsertTask(newTask)
++			return err
++		}},
++		{name: "upsert a note to kind task", strandName: runAgent, refused: "idea", act: func(b *boardengine.Board) error {
++			_, err := b.UpsertTask(map[string]any{"slug": "idea", "kind": "task"})
++			return err
++		}},
++		{name: "promote a note", strandName: runAgent, refused: "idea", act: func(b *boardengine.Board) error {
++			_, err := b.Promote("idea")
++			return err
++		}},
++		{name: "batch carrying a new task", strandName: runAgent, refused: "follow-up", act: func(b *boardengine.Board) error {
++			_, err := b.UpsertTasksBatch([]map[string]any{{"slug": "existing", "body": "new"}, newTask})
++			return err
++		}},
++		{name: "merge upserting a new task", strandName: runAgent, refused: "follow-up", act: func(b *boardengine.Board) error {
++			_, _, err := b.MergeTasks([]string{"existing"}, newTask, nil)
++			return err
++		}},
++
++		{name: "a run agent files a note", strandName: runAgent, act: func(b *boardengine.Board) error {
++			_, err := b.UpsertTask(map[string]any{"slug": "finding", "title": "Finding", "kind": "note", "labels": []string{"bug"}})
++			return err
++		}},
++		{name: "a run agent edits an existing task", strandName: runAgent, act: func(b *boardengine.Board) error {
++			_, err := b.UpsertTask(map[string]any{"slug": "existing", "body": "new"})
++			return err
++		}},
++		{name: "a run agent renames a task", strandName: runAgent, act: func(b *boardengine.Board) error {
++			_, err := b.Rename("existing", "renamed")
++			return err
++		}},
++		{name: "the operator creates a task", act: func(b *boardengine.Board) error {
++			_, err := b.UpsertTask(newTask)
++			return err
++		}},
++		{name: "the hub orch promotes a note", strandName: "ly:orch", act: func(b *boardengine.Board) error {
++			_, err := b.Promote("idea")
++			return err
++		}},
++		{name: "an orch thread creates a task", strandName: "ly:some-task:orch", act: func(b *boardengine.Board) error {
++			_, err := b.UpsertTask(newTask)
++			return err
++		}},
++		{name: "a numbered orch thread creates a task", strandName: "ly:some-task:orch-2", act: func(b *boardengine.Board) error {
++			_, err := b.UpsertTask(newTask)
++			return err
++		}},
++		{name: "a slug-free non-orch session creates a task", strandName: "ly:webster", act: func(b *boardengine.Board) error {
++			_, err := b.UpsertTask(newTask)
++			return err
++		}},
++	}
++
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			boardPath := t.TempDir()
++			config := boardengine.Config{Path: boardPath, Readme: "Home.md", DesignPrefix: "proposal-", Types: testTypes, Labels: testLabels, SkipGit: true}
++			seeder := boardengine.New(config)
++			for _, seed := range []map[string]any{existingTask, existingNote} {
++				if _, err := seeder.UpsertTask(seed); err != nil {
++					t.Fatalf("seed %v: %v", seed["slug"], err)
++				}
++			}
++			before, err := os.ReadFile(filepath.Join(boardPath, "board.json"))
++			if err != nil {
++				t.Fatalf("read board.json: %v", err)
++			}
++			config.StrandName = tt.strandName
++
++			err = tt.act(boardengine.New(config))
++
++			if tt.refused == "" {
++				if err != nil {
++					t.Fatalf("write refused: %v", err)
++				}
++				return
++			}
++			if err == nil {
++				t.Fatal("write passed; want it refused")
++			}
++			for _, want := range []string{tt.strandName, `"` + tt.refused + `"`, `"kind":"note"`} {
++				if !strings.Contains(err.Error(), want) {
++					t.Errorf("message %q lacks %q", err.Error(), want)
++				}
++			}
++			after, err := os.ReadFile(filepath.Join(boardPath, "board.json"))
++			if err != nil {
++				t.Fatalf("read board.json: %v", err)
++			}
++			if string(after) != string(before) {
++				t.Error("board.json changed on a refused write")
++			}
++		})
++	}
++}
+diff --git a/plugins/ly/skills/board/SKILL.md b/plugins/ly/skills/board/SKILL.md
+index fbf68006e..216eb7a0a 100644
+--- a/plugins/ly/skills/board/SKILL.md
++++ b/plugins/ly/skills/board/SKILL.md
+@@ -128,6 +128,11 @@ Record a new finding as a note of its own with `lyx board upsert` and `"kind":"n
+ The refusal names the way to unlock an abandoned run's entry.
+ A claimed entry's owner machine changes only through `lyx adopt`; an upsert naming another owner is refused.
+ 
++## Tasks from a run session
++
++A session whose `LYX_STRAND_NAME` carries a task slug under a role other than `orch` or a numbered orch role such as `orch-2` cannot create or promote a task: only the operator decides what becomes a task.
++File the follow-up with `lyx board upsert` and `"kind":"note"`; the operator may promote it.
++
+ ## Intake
+ 
+ Intake takes the GitHub issues of the hub's own repository onto the board, the one list: the repository the hub's recorded binding names, else its origin remote.
