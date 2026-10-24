@@ -1,6 +1,6 @@
 # [.NET] Scoped build and test for C# hubs, and the Models verification wants
 
-`dotnet-scoped-verify` · Task · feature, enhancement, shed, webster, loom, config, dotnet · running · Code-Burler-Fix
+`dotnet-scoped-verify` · Task · feature, enhancement, shed, webster, loom, config, dotnet · running · Code-Bouncer
 
 ## Scope (operator, 2026-10-24)
 
