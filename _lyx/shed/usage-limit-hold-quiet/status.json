@@ -1,11 +1,11 @@
 {
-  "current_producer": "Darn-Write",
+  "current_producer": "Code-Bouncer",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Darn-Write",
-    "last": "Preflight → done",
+    "now": "Code-Bouncer",
+    "last": "Darn-Write → done",
     "wait": ""
   },
   "history": [
@@ -14,6 +14,51 @@
       "outcome": "done",
       "output": "",
       "at": "2026-10-24T08:27:36Z"
+    },
+    {
+      "producer": "Darn-Write",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYXHUB/usage-limit-hold-quiet/_lyx/landing/summary.md",
+      "at": "2026-10-24T08:40:47Z",
+      "gate_attempts": 1,
+      "gate_spans": [
+        {
+          "gate": "discussion",
+          "kind": "gate",
+          "start": "2026-10-24T08:36:09.675662626Z",
+          "end": "2026-10-24T08:36:17.776342479Z"
+        },
+        {
+          "gate": "discussion",
+          "kind": "gate",
+          "start": "2026-10-24T08:36:56.416414774Z",
+          "end": "2026-10-24T08:37:06.753588374Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-10-24T08:36:17.820826545Z",
+          "end": "2026-10-24T08:36:17.878412342Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "rework",
+          "start": "2026-10-24T08:36:18.300111281Z",
+          "end": "2026-10-24T08:36:56.3856384Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-10-24T08:37:06.795304272Z",
+          "end": "2026-10-24T08:40:46.788969554Z"
+        },
+        {
+          "gate": "description",
+          "kind": "gate",
+          "start": "2026-10-24T08:40:46.85335737Z",
+          "end": "2026-10-24T08:40:46.853573784Z"
+        }
+      ]
     }
   ],
   "product": {
