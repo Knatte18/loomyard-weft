@@ -75,6 +75,13 @@ Rationale: the reports belong to the generation whose lens review they back, as 
 - A Burler round that is redone after an archive of its stale outputs overwrites a lens's report rather than archiving it; the earlier text survives only in git history.
 - A writer may skip the save; no gate checks the reports.
 
+<!-- lyx:carry-over Code-Review -->
+- Code-Review, round 1: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
+  Review: _lyx/reviews/code/round-1-review.md; fixer report: _lyx/reviews/code/round-1-fixer-report.md.
+  - specsdir-fill-untested-in-burler-geometry-builders (class design, severity MEDIUM, open in rounds 1)
+  - webster-fingerprint-includes-lens-reports (class scope, severity MEDIUM, open in rounds 1)
+<!-- /lyx:carry-over Code-Review -->
+
 ## Acceptance criteria
 
 - The rendered Plan-Write and Discussion-Write twill directives name the report path pattern beside their record and the deployed spec path.
