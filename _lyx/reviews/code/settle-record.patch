@@ -63,7 +63,7 @@ index df06e9bbd..184b22f24 100644
  ## Step 2 — Explore the codebase
  
 diff --git a/internal/boardcli/cli.go b/internal/boardcli/cli.go
-index 6948dc6c2..f122550e6 100644
+index f629a144e..5178480ea 100644
 --- a/internal/boardcli/cli.go
 +++ b/internal/boardcli/cli.go
 @@ -142,6 +142,7 @@ available subcommands without requiring a git repo.
@@ -87,7 +87,7 @@ index 09f270a04..8db65982c 100644
  		{"Prune", stepPrune},
  		{"Find", stepFind},
 diff --git a/internal/boardcli/doc.go b/internal/boardcli/doc.go
-index e1b1b3e56..0b27ec96e 100644
+index e8d122caf..bd500724f 100644
 --- a/internal/boardcli/doc.go
 +++ b/internal/boardcli/doc.go
 @@ -43,6 +43,8 @@
@@ -100,10 +100,10 @@ index e1b1b3e56..0b27ec96e 100644
  //
  // `merge` carries the removed entries' issues onto the upserted entry, whether or not the payload names `issues`.
 diff --git a/internal/boardcli/verbs_test.go b/internal/boardcli/verbs_test.go
-index 02f807e10..c5ecbbf50 100644
+index f652f2d67..eb88d8ff9 100644
 --- a/internal/boardcli/verbs_test.go
 +++ b/internal/boardcli/verbs_test.go
-@@ -106,6 +106,17 @@ func stepPromote_Refusals(t *testing.T, f *cliFixture) {
+@@ -107,6 +107,17 @@ func stepPromote_Refusals(t *testing.T, f *cliFixture) {
  	}
  }
  
@@ -190,7 +190,7 @@ index 192479556..27563bcd8 100644
  
  // Label is one configured label with its description, which is empty when board.yaml gives none.
 diff --git a/internal/boardengine/doc.go b/internal/boardengine/doc.go
-index 2cdc1bae2..d2b5bb5de 100644
+index f60b6b372..be727f883 100644
 --- a/internal/boardengine/doc.go
 +++ b/internal/boardengine/doc.go
 @@ -149,6 +149,16 @@
@@ -392,7 +392,7 @@ index 000000000..9a0cf1169
 +	}
 +}
 diff --git a/plugins/ly/skills/board/SKILL.md b/plugins/ly/skills/board/SKILL.md
-index fbf68006e..216eb7a0a 100644
+index 9163b092a..ca91a9228 100644
 --- a/plugins/ly/skills/board/SKILL.md
 +++ b/plugins/ly/skills/board/SKILL.md
 @@ -128,6 +128,11 @@ Record a new finding as a note of its own with `lyx board upsert` and `"kind":"n
