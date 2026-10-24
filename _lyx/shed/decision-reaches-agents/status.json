@@ -1,11 +1,11 @@
 {
-  "current_producer": "Darn-Write",
+  "current_producer": "Code-Bouncer",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Darn-Write",
-    "last": "Preflight → done",
+    "now": "Code-Bouncer",
+    "last": "Darn-Write → done",
     "wait": ""
   },
   "history": [
@@ -14,6 +14,147 @@
       "outcome": "done",
       "output": "",
       "at": "2026-10-24T06:26:02Z"
+    },
+    {
+      "producer": "Darn-Write",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYXHUB/decision-reaches-agents/_lyx/landing/summary.md",
+      "at": "2026-10-24T07:00:00Z",
+      "gate_attempts": 1,
+      "gate_spans": [
+        {
+          "gate": "discussion",
+          "kind": "gate",
+          "start": "2026-10-24T06:45:12.592507277Z",
+          "end": "2026-10-24T06:45:30.695911495Z"
+        },
+        {
+          "gate": "discussion",
+          "kind": "gate",
+          "start": "2026-10-24T06:46:32.274452Z",
+          "end": "2026-10-24T06:46:51.158789215Z"
+        },
+        {
+          "gate": "discussion",
+          "kind": "gate",
+          "start": "2026-10-24T06:47:52.635133833Z",
+          "end": "2026-10-24T06:48:01.783948866Z"
+        },
+        {
+          "gate": "discussion",
+          "kind": "gate",
+          "start": "2026-10-24T06:49:03.164527394Z",
+          "end": "2026-10-24T06:49:18.554445044Z"
+        },
+        {
+          "gate": "discussion",
+          "kind": "gate",
+          "start": "2026-10-24T06:50:20.142491048Z",
+          "end": "2026-10-24T06:50:29.028057519Z"
+        },
+        {
+          "gate": "discussion",
+          "kind": "gate",
+          "start": "2026-10-24T06:51:30.322093755Z",
+          "end": "2026-10-24T06:51:42.006521805Z"
+        },
+        {
+          "gate": "discussion",
+          "kind": "gate",
+          "start": "2026-10-24T06:52:43.380112929Z",
+          "end": "2026-10-24T06:52:58.295925481Z"
+        },
+        {
+          "gate": "discussion",
+          "kind": "gate",
+          "start": "2026-10-24T06:53:59.718179725Z",
+          "end": "2026-10-24T06:54:09.850827561Z"
+        },
+        {
+          "gate": "discussion",
+          "kind": "gate",
+          "start": "2026-10-24T06:55:11.268539798Z",
+          "end": "2026-10-24T06:55:19.008067486Z"
+        },
+        {
+          "gate": "discussion",
+          "kind": "gate",
+          "start": "2026-10-24T06:56:54.410524102Z",
+          "end": "2026-10-24T06:57:01.962324179Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-10-24T06:45:30.785389372Z",
+          "end": "2026-10-24T06:45:31.062850297Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-10-24T06:46:51.238504011Z",
+          "end": "2026-10-24T06:46:51.498459512Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-10-24T06:48:01.831452187Z",
+          "end": "2026-10-24T06:48:01.99251929Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-10-24T06:49:18.638111323Z",
+          "end": "2026-10-24T06:49:18.974164544Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-10-24T06:50:29.071454617Z",
+          "end": "2026-10-24T06:50:29.215564287Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-10-24T06:51:42.068601454Z",
+          "end": "2026-10-24T06:51:42.243663591Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-10-24T06:52:58.353189098Z",
+          "end": "2026-10-24T06:52:58.550742405Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-10-24T06:54:09.909280549Z",
+          "end": "2026-10-24T06:54:10.115523832Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-10-24T06:55:19.054983762Z",
+          "end": "2026-10-24T06:55:19.221652697Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "rework",
+          "start": "2026-10-24T06:55:56.006506768Z",
+          "end": "2026-10-24T06:55:57.00874748Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-10-24T06:57:02.004828295Z",
+          "end": "2026-10-24T06:59:59.60493003Z"
+        },
+        {
+          "gate": "description",
+          "kind": "gate",
+          "start": "2026-10-24T06:59:59.674363941Z",
+          "end": "2026-10-24T06:59:59.676034174Z"
+        }
+      ]
     }
   ],
   "product": {
