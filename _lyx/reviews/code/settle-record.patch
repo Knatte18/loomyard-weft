@@ -1,0 +1,427 @@
+diff --git a/docs/overview.md b/docs/overview.md
+index afea44184..5c59e209b 100644
+--- a/docs/overview.md
++++ b/docs/overview.md
+@@ -458,7 +458,7 @@ User-facing modules each get one `lyx <module>` namespace:
+   The first verb of a hub starts its daemon, which folds its pool from an append-only journal, names a sender from the connecting process's ancestry, and delivers through shuttle only into a pane that reads idle.
+   Notices and the orch's typed lines go through creel: batten, loom, burler, webster and hibernate post their notices as mail to the orch strand, signed as their own program.
+   ✅ Implemented. See the `internal/creelengine` and `internal/creelcli` package documentation.
+-- **gate** — the tier runner: `lyx gate test` runs the numbered tiers the hub declares in `gate.yaml` over explicit targets or `--all`, each tier taking the hub-wide gate slots it asks for, bounded by its `timeout_min`, counted by its `go-json` or `vstest` counter, and logged with a summary line and a run record under the board; a failing tier stops no later tier or guard run, a closing line names every failed run, and the call exits with the first failing run's code. When the hub stays busy past the keep-cache-warm cap `lyx shuttle await` defaults to, it answers `slot_free: false` naming the holders and exits 75, which is no failure when no earlier run failed, and the caller runs it again; `--wait` lifts the cap (`internal/gatecli`; `lyx gate test [-C <dir>] [--gate <key>] [--tier N]... [--all] [--guards] [--wait] [<targets>...] [-- <args>]`; `--gate <key>` runs the tiers and scope `gate.yaml`'s gate key names, and with `--guards` the verb also runs every `//lyx:guard` test of the module under the command of the tier its file belongs to). `lyx gate card-verify <card id>` runs a plan card's `**Verify:**` line through the shared `internal/cardverify` runner and exits with the line's code. A run inside a slot an enclosing gate run holds takes no second one, and a git worktree outside every hub runs unslotted under its own `gate.yaml`. A Go test binary that keeps a core busy past `busy_quit_sec` gets one SIGQUIT, so its goroutine stacks reach the log long before the tier's own timeout. ✅ Implemented. See the `internal/gatecli` package documentation.
++- **gate** — the tier runner: `lyx gate test` runs the numbered tiers the hub declares in `gate.yaml` over explicit targets or `--all`, each tier taking the hub-wide gate slots it asks for, bounded by its `timeout_min`, counted by its `go-json` or `vstest` counter, and logged with a summary line and a run record under the board; a `--card` scope under the `go` scoper also vets the card's packages under each other tier tag that adds a file to one of them, so a tag-set compile break fails at the card; a failing tier stops no later tier, vet or guard run, a closing line names every failed run, and the call exits with the first failing run's code. When the hub stays busy past the keep-cache-warm cap `lyx shuttle await` defaults to, it answers `slot_free: false` naming the holders and exits 75, which is no failure when no earlier run failed, and the caller runs it again; `--wait` lifts the cap (`internal/gatecli`; `lyx gate test [-C <dir>] [--gate <key>] [--tier N]... [--all] [--guards] [--wait] [<targets>...] [-- <args>]`; `--gate <key>` runs the tiers and scope `gate.yaml`'s gate key names, and with `--guards` the verb also runs every `//lyx:guard` test of the module under the command of the tier its file belongs to). `lyx gate card-verify <card id>` runs a plan card's `**Verify:**` line through the shared `internal/cardverify` runner and exits with the line's code. A run inside a slot an enclosing gate run holds takes no second one, and a git worktree outside every hub runs unslotted under its own `gate.yaml`. A Go test binary that keeps a core busy past `busy_quit_sec` gets one SIGQUIT, so its goroutine stacks reach the log long before the tier's own timeout. ✅ Implemented. See the `internal/gatecli` package documentation.
+ - **quarry** — the planner's only source of glyph spellings: four read-only repository queries over the current worktree's own glyph alphabet, each delegating to a `planglyph` wrapper and emitting quarry's own rendering verbatim, with no repository-path flag on any of them (`internal/quarrycli`; `lyx quarry toc|glyphs|resolve|expand`).
+   `toc` answers a table-of-contents query for a path;
+   `glyphs` answers the same query under quarry's frozen depth-all/symbols-on preset, projected into a flat, depth-first index — the spelling the planner copies verbatim, and with `--text` quarry's own one-line-per-symbol view, which a line filter can cut whole symbols from;
+diff --git a/internal/gatecli/doc.go b/internal/gatecli/doc.go
+index 550af206f..937ca9de5 100644
+--- a/internal/gatecli/doc.go
++++ b/internal/gatecli/doc.go
+@@ -4,9 +4,9 @@
+ //
+ // # Verb
+ //
+-// `lyx gate test [-C <dir>] [--gate <key>] [--tier N]... [--upto N] [--card <id>]... [--base <rev>] [--all] [--guards] [--wait] [<targets>...] [-- <args>]` runs the tiers the hub declares in gate.yaml, in ascending tier number, and then the guard step below when one is planned.
+-// A run that fails does not stop the call: every later tier and guard run still runs, so a failure the change under test did not cause, such as one present at the base, hides no later check.
+-// When a run failed, the verb closes with one stderr line naming each failed run, a guard run as `guard tierN`, with its exit code.
++// `lyx gate test [-C <dir>] [--gate <key>] [--tier N]... [--upto N] [--card <id>]... [--base <rev>] [--all] [--guards] [--wait] [<targets>...] [-- <args>]` runs the tiers the hub declares in gate.yaml, in ascending tier number, and then the vet step and the guard step below when they are planned.
++// A run that fails does not stop the call: every later tier, vet and guard run still runs, so a failure the change under test did not cause, such as one present at the base, hides no later check.
++// When a run failed, the verb closes with one stderr line naming each failed run, a vet run as `vet tierN` and a guard run as `guard tierN`, with its exit code.
+ // A refusal, a slot wait that does not end with the slots held and a terminating signal still end the call at once.
+ // `--gate <key>` runs the tiers and the scope the `gates` key of that name holds, and `listedTiers` takes the key's tiers as the listed tiers.
+ // It goes with none of `--tier`, `--upto`, `--all` and `--base`, which is refused before hub resolution naming the key and the flag to drop, since the key's tiers and scope come from gate.yaml.
+@@ -61,6 +61,14 @@
+ // Once the config is loaded, `planTierRuns` refuses, before any slot and naming `lyx config gate`: words after `--` for a tier whose command lacks `{args}`, an undeclared tier, a hub with no `tier0`, a `covers` entry naming a tier the hub does not declare, and, for the guard step below, a guard group whose tier the hub does not declare.
+ // Every such refusal closes with the clause that a session that is not the prime takes none of the steps, reports status: FAILED and leaves them to the orch.
+ //
++// # Vet step
++//
++// Under the `go` scoper a `--card` scope also plans, after the listed tiers and before the guard step, one vet run per declared tier whose build tag `tierN` brings a `.go` file into a card package that a build without tags leaves out (`tagTiers`), ascending, leaving out a listed tier and a tier a listed tier covers, since their own commands compile under that tag.
++// So a card that breaks the compile under another tier's tag, such as a helper a `tier0` file defines and a `tier1` file uses, fails at its own gate instead of at the batch gate's `go vet` steps.
++// A vet run is `go vet -tags tierN` over the card's packages, once per module in that module's directory, with the go command the prebuild uses, under the tier's `env`, `parallel` and `timeout_min` and holding one slot.
++// Its summary line and run record carry the scope form `vet`, it takes part in the green record under its own fingerprint, and a failed vet run stops no later run.
++// Bound: a break visible only under a combination of tags, or under a tag that adds no file to a card package, is not vetted here and stays the batch gate's to find.
++//
+ // # Guard step
+ //
+ // With `--guards`, and under the `go` scoper after any computed, `--base` or `--card` scope, the verb runs, after the listed tiers, the step `guardStepRun` builds over the module's `//lyx:guard` tests outside the scope.
+@@ -68,7 +76,7 @@
+ // So the round and darn writer gates, which run `--base`, keep the guard coverage they have had, where every guard package counts as outside a tier that does not compile it.
+ // The scan reads each guard test's tier from its file's `tierN` build tag, a file naming none counting as `tier0`, and the step plans one guard run per tier holding guard tests, ascending.
+ // A guard run is one run of that tier's command with the group's guard packages as `{targets}` and `-run '^(<names>)$'` after any words from `--` as `{args}`, so the guard's own pattern is the last `-run` and wins over one among those words.
+-// It acquires that tier's slots after the last listed tier released its own, runs under that tier's `timeout_min` and `prebuilt_lyx`, and is logged as a guard step; a failed guard run, like a failed listed tier, stops no later run.
++// It acquires that tier's slots after the last listed tier and vet run released their own, runs under that tier's `timeout_min` and `prebuilt_lyx`, and is logged as a guard step; a failed guard run, like a failed listed tier, stops no later run.
+ // A group is skipped when the call ran its tier, or a tier covering it, whole, and a group whose tier the green record holds green carries.
+ // A group whose tier is undeclared, or whose command lacks `{targets}` or `{args}`, is refused before any slot, naming `lyx config gate`.
+ // A scan error refuses the call before any slot with the file, the line when there is one and a way forward for its kind:
+diff --git a/internal/gatecli/run.go b/internal/gatecli/run.go
+index 85f49b412..a797496ef 100644
+--- a/internal/gatecli/run.go
++++ b/internal/gatecli/run.go
+@@ -195,10 +195,13 @@ type runEnd struct {
+ 	ran bool
+ }
+ 
+-// runLabel names run in the closing line of failed runs: its tier, prefixed `guard` for a guard run.
++// runLabel names run in the closing line of failed runs: its tier, prefixed `guard` for a guard run and `vet` for a vet run.
+ func runLabel(run tierRun) string {
+-	if run.guardStep {
++	switch {
++	case run.guardStep:
+ 		return "guard " + tierName(run.number)
++	case run.vetStep:
++		return "vet " + tierName(run.number)
+ 	}
+ 	return tierName(run.number)
+ }
+@@ -293,11 +296,11 @@ func preTierExpiry(preCtx, runCtx context.Context, request testRequest, step str
+ 	return fmt.Sprintf("gate test: the work before the first tier outlived its %s ceiling while %s; way forward: run the same command again, which a transient hang such as a stalled \"go list\" passes", request.preTierCeiling, step)
+ }
+ 
+-// tierNumbers returns the tier numbers of the listed runs of plan, leaving out the guard step.
++// tierNumbers returns the tier numbers of the listed runs of plan, leaving out the vet and guard steps.
+ func tierNumbers(plan []tierRun) []int {
+ 	var numbers []int
+ 	for _, run := range plan {
+-		if !run.guardStep {
++		if !run.guardStep && !run.vetStep {
+ 			numbers = append(numbers, run.number)
+ 		}
+ 	}
+diff --git a/internal/gatecli/scope.go b/internal/gatecli/scope.go
+index 4cadfaa3c..08f70ada4 100644
+--- a/internal/gatecli/scope.go
++++ b/internal/gatecli/scope.go
+@@ -7,9 +7,11 @@ import (
+ 	"context"
+ 	"errors"
+ 	"fmt"
++	"go/build"
+ 	"io/fs"
+ 	"os"
+ 	"path"
++	"path/filepath"
+ 	"slices"
+ 	"strconv"
+ 	"strings"
+@@ -62,6 +64,8 @@ type scope struct {
+ 	guardDir string
+ 	// guards maps a tier number to the directory of each package outside the scope that holds guard tests of that tier, and to their names, keyed relative to guardDir; nil when no scan has run.
+ 	guards map[int]map[string][]string
++	// tagTiers are the declared tiers, ascending, whose build tag brings a file into a --card scope's package that a build without tags leaves out; the vet step is planned over them.
++	tagTiers []int
+ }
+ 
+ // forTier returns s with the narrowing of tier number in place of its own whole and modules.
+@@ -98,7 +102,7 @@ func withGateScope(cfg gateslot.Config, request testRequest) testRequest {
+ // Under the none scoper each of the three forms is whole.
+ // Under the go scoper a computed or --base scope is the impacted set of the diff from its base to the working tree, derived once per base and shared by the tiers that land on it, each derivation named on request.stderr.
+ // A set that cannot be narrowed falls back to whole, naming the reason on request.stderr;
+-// a --card scope is the cards' packages per module.
++// a --card scope is the cards' packages per module, with the declared tiers whose build tag brings a file into one of them.
+ // A guard scan error refuses with its file, line and way forward.
+ // ctx bounds the derivation, so a stalled `go list` is killed when it ends.
+ func computeScope(ctx context.Context, cfg gateslot.Config, location *lyxcwd.Location, root string, request testRequest, green *greenRun) (scope, error) {
+@@ -134,7 +138,7 @@ func computeScope(ctx context.Context, cfg gateslot.Config, location *lyxcwd.Loc
+ 		for i, module := range cardModules {
+ 			modules[i] = moduleTargets{dir: module.Dir, targets: module.Packages}
+ 		}
+-		return scope{form: form, modules: modules, guardStep: true, guardDir: tier0.Dir}, nil
++		return scope{form: form, modules: modules, guardStep: true, guardDir: tier0.Dir, tagTiers: tagTiers(cfg, root, modules)}, nil
+ 	}
+ 
+ 	groups, wholeTiers := diffBaseGroups(cfg, location, root, request, form, green)
+@@ -376,6 +380,54 @@ func cardMatches(card planparser.Card, id string) bool {
+ 	return !hasSlug || slug == card.Slug
+ }
+ 
++// tagTiers returns the tiers cfg declares, ascending, whose build tag `tierN` alone brings a `.go` file of a package of modules into the build that a build without tags leaves out, on the host's GOOS and GOARCH.
++// Package directories resolve against root, and a directory or file that cannot be read or matched is left out, since the listed tiers' own compiles report it.
++func tagTiers(cfg gateslot.Config, root string, modules []moduleTargets) []int {
++	var dirs []string
++	for _, module := range modules {
++		for _, target := range module.targets {
++			dirs = append(dirs, filepath.Join(root, filepath.FromSlash(module.dir), filepath.FromSlash(target)))
++		}
++	}
++	var numbers []int
++	for key := range cfg.Tiers {
++		number, err := strconv.Atoi(strings.TrimPrefix(key, "tier"))
++		if err != nil {
++			continue
++		}
++		tagged := build.Default
++		tagged.BuildTags = []string{tierName(number)}
++		if slices.ContainsFunc(dirs, func(dir string) bool { return tagAddsFile(tagged, dir) }) {
++			numbers = append(numbers, number)
++		}
++	}
++	slices.Sort(numbers)
++	return numbers
++}
++
++// tagAddsFile reports whether dir directly holds a `.go` file that matches the build tags of tagged and that a build without tags leaves out.
++func tagAddsFile(tagged build.Context, dir string) bool {
++	entries, err := os.ReadDir(dir)
++	if err != nil {
++		return false
++	}
++	plain := build.Default
++	for _, entry := range entries {
++		name := entry.Name()
++		if entry.IsDir() || !strings.HasSuffix(name, ".go") {
++			continue
++		}
++		withTag, err := tagged.MatchFile(dir, name)
++		if err != nil || !withTag {
++			continue
++		}
++		if withoutTag, err := plain.MatchFile(dir, name); err == nil && !withoutTag {
++			return true
++		}
++	}
++	return false
++}
++
+ // parentMergeBase returns the merge base of HEAD with the parent branch the pair's fabric origin record names.
+ // A worktree with no origin record or no parent branch, such as the prime on main, reports false.
+ func parentMergeBase(location *lyxcwd.Location) (string, bool, error) {
+diff --git a/internal/gatecli/scopes_integration_test.go b/internal/gatecli/scopes_integration_test.go
+index 09f3f0a20..57b370bd5 100644
+--- a/internal/gatecli/scopes_integration_test.go
++++ b/internal/gatecli/scopes_integration_test.go
+@@ -7,6 +7,7 @@ package gatecli
+ 
+ import (
+ 	"encoding/json"
++	"fmt"
+ 	"os"
+ 	"path/filepath"
+ 	"reflect"
+@@ -215,6 +216,56 @@ func TestGateTest_Scopes(t *testing.T) {
+ 		}
+ 	})
+ 
++	// vetSummary returns the summary line of tier1's vet run in output, failing the test when there is none.
++	vetSummary := func(t *testing.T, output string) string {
++		t.Helper()
++		for _, line := range strings.Split(output, "\n") {
++			if strings.HasPrefix(line, "gate test: tier1 vet ") {
++				return line
++			}
++		}
++		t.Fatalf("output %q holds no summary line of tier1's vet run", output)
++		return ""
++	}
++	tier1File := "//go:build tier1\n\npackage lib\n\nimport \"testing\"\n\nfunc TestUse(t *testing.T) { _ = %s() }\n"
++
++	t.Run("--card vets a card's packages per module under the tag of a tier that adds a file to one, between the listed tier and the guard step", func(t *testing.T) {
++		edit(t, "lib/use_test.go", fmt.Sprintf(tier1File, "One"))
++		g := gate(t, pair, nil, "--card", "1")
++		wantArgs(t, g, []string{"./lib"}, []string{"."}, []string{"vet", "-tags", "tier1", "./lib"}, []string{"vet", "-tags", "tier1", "."}, guardInvocation)
++		if line := vetSummary(t, g.stdout.String()); !strings.Contains(line, " exit 0 ") {
++			t.Errorf("vet summary line = %q; want exit 0", line)
++		}
++		requireFree(t)
++	})
++
++	t.Run("--card fails a card whose tier1 file uses a helper only a tier0 file defines, naming the vet run", func(t *testing.T) {
++		edit(t, "lib/helper_test.go", "//go:build tier0\n\npackage lib\n\nfunc helper() int { return One() }\n")
++		edit(t, "lib/use_test.go", fmt.Sprintf(tier1File, "helper"))
++		g := startGate(t, gateRun{cwd: pair, args: []string{"test", "--card", "1"}, realGo: true})
++		g.exit = g.wait(t)
++		output := g.stdout.String()
++		if g.exit == 0 {
++			t.Errorf("exit code = 0, stdout %q; want the vet run's failure", output)
++		}
++		if line := vetSummary(t, output); strings.Contains(line, " exit 0 ") {
++			t.Errorf("vet summary line = %q; want a non-zero exit", line)
++		}
++		for _, want := range []string{"undefined: helper", "failed runs: vet tier1"} {
++			if !strings.Contains(output, want) {
++				t.Errorf("stdout = %q; want it to hold %q", output, want)
++			}
++		}
++		_, logPath, _ := strings.Cut(vetSummary(t, output), " log ")
++		if vet, _ := runRecordAt(t, logPath, 1); !slices.Equal(vet.TierList, []int{0}) {
++			t.Errorf("vet run record tier list = %v; want [0], the listed tiers alone", vet.TierList)
++		}
++		if guard, _ := guardRunRecordOf(t, output, 0); !guard.GuardStep {
++			t.Errorf("guard run record = %+v; want the guard step to have run after the failed vet", guard)
++		}
++		requireFree(t)
++	})
++
+ 	t.Run("--card with a tier that outlives timeout_min across its invocations is killed with the timeout line", func(t *testing.T) {
+ 		// A dirty tree is never carried, so the packages the row before ran green run again.
+ 		edit(t, "docs/note.md", "a dirtying note\n")
+@@ -368,6 +419,29 @@ func TestGateTest_Scopes(t *testing.T) {
+ 		wantArgs(t, real(t, "--all"), []string{"./...", "extra"})
+ 	})
+ 
++	t.Run("--card carries a vet run that passed on the same clean tree", func(t *testing.T) {
++		if err := os.Remove(greenPath); err != nil && !os.IsNotExist(err) {
++			t.Fatal(err)
++		}
++		before := gitkit.RevParse(t, pair, "HEAD")
++		gitkit.CommitFile(t, pair, "lib/use_test.go", fmt.Sprintf(tier1File, "One"), "add a tier1 file")
++		t.Cleanup(func() { gitkit.Git(t, pair, "reset", "-q", "--hard", before) })
++
++		first := real(t, "--card", "1")
++		if line := vetSummary(t, first.stdout.String()); first.exit != 0 || !strings.Contains(line, " exit 0 ") || strings.Contains(line, " carried ") {
++			t.Fatalf("first call = exit %d, vet summary line %q; want a pass that ran the vet", first.exit, line)
++		}
++
++		second := real(t, "--card", "1")
++		// wantCarried names the all scope form, which a --card call never prints.
++		if got := second.tierArgs(t); second.exit != 0 || len(got) != 0 || strings.Count(second.stdout.String(), " carried ") != 3 {
++			t.Errorf("second call = exit %d, tier invocations %q, stdout %q; want the listed tier, the vet run and the guard step carried", second.exit, got, second.stdout.String())
++		}
++		if line := vetSummary(t, second.stdout.String()); !strings.Contains(line, " carried ") {
++			t.Errorf("second call vet summary line = %q; want it marked carried", line)
++		}
++	})
++
+ 	t.Run("a tier whose command edits a tracked file and commits it before passing records nothing", func(t *testing.T) {
+ 		if err := os.Remove(greenPath); err != nil && !os.IsNotExist(err) {
+ 			t.Fatal(err)
+diff --git a/internal/gatecli/test_integration_test.go b/internal/gatecli/test_integration_test.go
+index aa6f22adb..30dd66ef8 100644
+--- a/internal/gatecli/test_integration_test.go
++++ b/internal/gatecli/test_integration_test.go
+@@ -172,7 +172,7 @@ type gateRun struct {
+ 	args []string
+ 	// env holds extra KEY=VALUE entries for the gate process, and so for its tier commands.
+ 	env []string
+-	// realGo makes the prebuild run the real go command instead of the stand-in.
++	// realGo makes the prebuild and the vet step run the real go command instead of the stand-in.
+ 	realGo bool
+ }
+ 
+diff --git a/internal/gatecli/tiers.go b/internal/gatecli/tiers.go
+index e897ab033..8c842d799 100644
+--- a/internal/gatecli/tiers.go
++++ b/internal/gatecli/tiers.go
+@@ -19,6 +19,7 @@ const (
+ 	scopeTargets = "targets"
+ 	scopeAll     = "all"
+ 	scopeGuard   = "guard"
++	scopeVet     = "vet"
+ )
+ 
+ // roleClause closes every refusal that sends the caller to `lyx config gate`: the steps need the prime, so any other session reports and the orch takes them.
+@@ -45,6 +46,8 @@ type tierRun struct {
+ 	ignoresTargets bool
+ 	// guardStep marks the run of a tier's command over the guard tests of the files that belong to that tier.
+ 	guardStep bool
++	// vetStep marks the run of `go vet` under a tier's build tag over a --card scope's packages.
++	vetStep bool
+ }
+ 
+ // tierName returns the gate.yaml key and the label of tier number.
+@@ -53,7 +56,7 @@ func tierName(number int) string {
+ }
+ 
+ // planTierRuns builds the run list of request over cfg and the scope sc without touching the disk:
+-// the listed tiers ascending with the tiers another listed tier covers dropped, each over its own share of the scope, which a diff scope derives per base, then one guard run per tier that sc.guards holds guard tests for, when --guards or the scope's form asks for the guard step, ascending and leaving out a tier the listed tiers already ran whole.
++// the listed tiers ascending with the tiers another listed tier covers dropped, each over its own share of the scope, which a diff scope derives per base, then, for a --card scope under the go scoper, one vet run per tier of sc.tagTiers that no listed tier is or covers, ascending, then one guard run per tier that sc.guards holds guard tests for, when --guards or the scope's form asks for the guard step, ascending and leaving out a tier the listed tiers already ran whole.
+ // A guard run is a placeholder whose packages and names the run fills from sc.guards.
+ // A covered tier is named on request.stderr when it has one.
+ // It refuses, naming `lyx config gate`, a hub with no tier0, an undeclared tier, a dangling covers entry, words after `--` for a tier whose command lacks {args}, a guard group whose tier is undeclared or whose command lacks {targets} or {args}, and --guards under the none scoper.
+@@ -95,6 +98,19 @@ func planTierRuns(cfg gateslot.Config, request testRequest, sc scope) ([]tierRun
+ 		})
+ 	}
+ 
++	if sc.form == scopeCard && cfg.Scoper == "go" {
++		for _, number := range sc.tagTiers {
++			if slices.Contains(numbers, number) || slices.ContainsFunc(kept, func(listed int) bool { return slices.Contains(tiers[listed].Covers, number) }) {
++				continue
++			}
++			run, err := vetStepRun(cfg, number, request.goBinary, sc.modules)
++			if err != nil {
++				return nil, err
++			}
++			runs = append(runs, run)
++		}
++	}
++
+ 	if !request.guards && !sc.guardStep {
+ 		return runs, nil
+ 	}
+@@ -164,6 +180,37 @@ func scopeInvocations(tier gateslot.Tier, request testRequest, sc scope) (invoca
+ 	return invocations, false
+ }
+ 
++// vetStepRun returns the vet run of the tier numbered number over modules: `<goBinary> vet -tags tierN` over each module's packages in that module's directory, under the tier's env, parallel and timeout_min, holding one slot.
++// A goBinary the platform shell cannot quote is refused.
++func vetStepRun(cfg gateslot.Config, number int, goBinary string, modules []moduleTargets) (tierRun, error) {
++	tier, err := cfg.Tier(number)
++	if err != nil {
++		return tierRun{}, fmt.Errorf("gate test: %w", err)
++	}
++	quoted, err := quoteAll([]string{goBinary})
++	if err != nil {
++		return tierRun{}, err
++	}
++	invocations := make([]invocation, len(modules))
++	for i, module := range modules {
++		invocations[i] = invocation{dir: module.dir, targets: module.targets}
++	}
++	return tierRun{
++		number: number,
++		tier: gateslot.Tier{
++			Command:    quoted[0] + " vet -tags " + tierName(number) + " {targets}",
++			Env:        tier.Env,
++			Parallel:   tier.Parallel,
++			TimeoutMin: tier.TimeoutMin,
++			Counter:    counterGoJSON,
++			Slots:      1,
++		},
++		scopeForm:   scopeVet,
++		invocations: invocations,
++		vetStep:     true,
++	}, nil
++}
++
+ // configRefusal returns a refusal that sends the caller to `lyx config gate` and closes with the role clause.
+ func configRefusal(format string, args ...any) error {
+ 	return fmt.Errorf("gate test: %s; way forward: fix it with \"lyx config gate\" from the prime%s", fmt.Sprintf(format, args...), roleClause)
+diff --git a/internal/gatecli/tiers_test.go b/internal/gatecli/tiers_test.go
+index 6170a782f..f98c8ec91 100644
+--- a/internal/gatecli/tiers_test.go
++++ b/internal/gatecli/tiers_test.go
+@@ -75,6 +75,11 @@ func TestPlanTierRuns(t *testing.T) {
+ 	}
+ 	narrowerWithBothTiers := narrower
+ 	narrowerWithBothTiers.guards = bothTierGuards
++	card := narrower
++	card.form = scopeCard
++	card.tagTiers = []int{0, 1, 3}
++	cardOfTier0And1 := card
++	cardOfTier0And1.tagTiers = []int{0, 1}
+ 	tests := []struct {
+ 		name    string
+ 		mutate  func(*gateslot.Config)
+@@ -228,6 +233,24 @@ func TestPlanTierRuns(t *testing.T) {
+ 			scope:   narrower,
+ 			want:    []string{"tier1 computed dir=. ./a ./b | dir=nested .", "tier1 guard dir=. guard"},
+ 		},
++		{
++			name:   "a --card scope vets each tag tier no listed tier runs, after the listed tiers and before the guard group",
++			mutate: withManualTier3,
++			scope:  card,
++			want:   []string{"tier0 card dir=. ./a ./b | dir=nested .", "tier1 vet dir=. ./a ./b | dir=nested .", "tier3 vet dir=. ./a ./b | dir=nested .", "tier1 guard dir=. guard"},
++		},
++		{
++			name:    "a --card scope vets no tier a listed tier covers",
++			request: testRequest{tiers: []int{1}},
++			scope:   cardOfTier0And1,
++			want:    []string{"tier1 card dir=. ./a ./b | dir=nested .", "tier1 guard dir=. guard"},
++		},
++		{
++			name:   "a --card scope under the none scoper plans no vet run",
++			mutate: func(cfg *gateslot.Config) { cfg.Scoper = "none" },
++			scope:  scope{form: scopeCard, whole: true, tagTiers: []int{1}},
++			want:   []string{"tier0 card dir=. ./..."},
++		},
+ 	}
+ 	for _, tc := range tests {
+ 		t.Run(tc.name, func(t *testing.T) {
