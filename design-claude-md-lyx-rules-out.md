@@ -18,4 +18,4 @@ Two kinds of rule must be kept apart (operator, 2026-10-22):
 Mixing them breaks other hubs: when the quarry hub was set up as a LYXHUB repo, its orch began taking in the LoomYard repo's issues instead of quarry's own, because a rule written for LoomYard development was read as a lyx rule.
 `CLAUDE.md` is for one repo only, so go through it and move every rule of kind 1 out into lyx; go through the stencils too for rules of kind 2 that name LoomYard where they should name the hub's own repo.
 
-The run-lock rule is handled by note `entry-align-before-discussion`.
+The run-lock rule in `CLAUDE.md` (no decision, card or step of a run changes the running task's own entry) is a rule of kind 1: its home is the board's run lock and its package `doc.go`, so it moves out with the rest.
