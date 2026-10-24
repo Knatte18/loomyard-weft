@@ -56,6 +56,8 @@ Alignment per piece is pointless when the piece is a closed, synchronised share 
 - A `stitch` task runs only inside an umbrella; it cannot run alone.
 - Estimate (orch, not measured): about $2-2.50 per piece against about $6 for a darn with review.
 
+Operator view, not a decision (2026-10-24): once `stitch` exists, Codex could run the pre-planner, as a role apart from the Claude-written code (see note `codex-engine`).
+
 ## Operator view, not a decision (2026-10-23): darn itself as the piece implementer
 
 Once `loom-tail-review` has landed, darn itself may serve as the pieces' implementer, since that task removes much of the run tail's ceremony, such as the pull request.
