@@ -1,11 +1,11 @@
 # Card 19 — recipe-entry-gate
 
 **Create:**
-- `plan:internal/shedbuild#entryCheck` -> `type entryCheck struct`
-- `plan:internal/shedbuild#parseEntryGate` -> `func parseEntryGate(row Row) ([]entryCheck, error)`
-- `plan:internal/shedbuild#entryGateOf` -> `func entryGateOf(row Row, checks []entryCheck, env shedrecipe.Env) (shedengine.EntryGate, error)`
-- `plan:internal/shedbuild#TestBuild_EntryGate` -> `func TestBuild_EntryGate(t *testing.T)`
-- `plan:internal/configreg#CheckSettingKey` -> `func CheckSettingKey(module, key string) error`
+- `internal/shedbuild#entryCheck`
+- `internal/shedbuild#parseEntryGate`
+- `internal/shedbuild#entryGateOf`
+- `internal/shedbuild#TestBuild_EntryGate`
+- `internal/configreg#CheckSettingKey`
 
 **Edit:**
 - `internal/shedbuild#Row`
