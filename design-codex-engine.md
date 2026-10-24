@@ -48,8 +48,8 @@ Forks are no longer a blocker for a fan: `docs/research/codex-twill-spike-2026-1
 
 ## Groundwork
 
-The engine-neutral groundwork of the operator's 2026-10-15 decision (engine registry, config seams, model choice, usage readers, creel in three stages) has only creel stage 3, note `creel-agents`, left on the board; it matters since agents must message through creel rather than Claude Code's SendMessage before Codex can take a role.
-The `codexengine` (guard table as Codex hooks, `codex.yaml`, the registry entry, the engine name, the aliases), the skills sync and tuning wait on `creel-agents`.
+The engine-neutral groundwork of the operator's 2026-10-15 decision (engine registry, config seams, model choice, usage readers, creel in three stages) has only creel stage 3, note `creel-agents`, left on the board; it matters only once Codex takes a role beyond Burler review, since such roles message through Claude Code's SendMessage today (operator, 2026-10-24).
+The review-only first step waits on no creel work.
 
 ## Model aliases (operator, 2026-10-15)
 
