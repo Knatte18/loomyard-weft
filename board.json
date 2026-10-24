@@ -1100,7 +1100,7 @@
       "isolated": false,
       "brief": "A changes or adds text past pattern.MaxEntryLineChars passes Discussion and first fails at Plan-Write",
       "body": "## Seen (orch, 2026-10-23)\n\nIn `loom-tail-review`, the decision record declared a `changes` text for `PATTERN-parent-lock` of 392 runes as an overview line.\nDiscussion's check passed it; Plan-Write then could not fence it, since `pattern-entry-line-cap` (`internal/planparser/patternentry.go`) caps a prescribed PATTERN entry line at `pattern.MaxEntryLineChars` (360), while `pattern-changes-mismatch` and `pattern-line-unprescribed` forbid any other text.\nThe run waited on the parent to replace the record's bullet.\n\n## Idea\n\nThe discussion check (`internal/discussionparser`) applies the same cap to each `## PATTERN changes` bullet's `adds` and `changes` text, so Discussion-Write shortens it before its review, and `lyx loom decision add --pattern-text` refuses an over-cap text too.\n",
-      "status": "running · PR-Review",
+      "status": "running · Finalize",
       "created": "2026-10-23T11:06:02Z",
       "revised": "2026-10-24T06:23:25Z",
       "profile": "light",

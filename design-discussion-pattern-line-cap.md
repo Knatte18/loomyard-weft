@@ -1,6 +1,6 @@
 # Discussion check refuses a declared PATTERN text over the overview line cap
 
-`discussion-pattern-line-cap` · Task · bug, loom · running · PR-Review
+`discussion-pattern-line-cap` · Task · bug, loom · running · Finalize
 
 ## Seen (orch, 2026-10-23)
 
