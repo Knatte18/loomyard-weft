@@ -858,31 +858,6 @@
       "revised": "2026-10-24T10:10:14Z"
     },
     {
-      "id": 805,
-      "handle": "T1",
-      "slug": "webster-orch-need-to-parent",
-      "title": "Webster batch whose card verify needs an orch-only change dead-ends: recover-batch ends dead with 'asking', then the run halts repeatedly with growing history",
-      "kind": "task",
-      "labels": [
-        "bug",
-        "webster",
-        "loom"
-      ],
-      "issues": [
-        867
-      ],
-      "recipe": "darn",
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "Imported from [issue #867](https://github.com/Knatte18/loomyard/issues/867).\n\nWhat happened: in batch 22 the fork reported stuck because a card's verify needed the hub's tier commands changed, which only the orch can do.\n`lyx webster recover-batch 22` ended dead with dead_reason asking and recovery_retry false, and the refusal said to end the run stuck.\nA second refusal record for the same batch shows dead_reason died, recoveries 1 and recovery_retry true, with the way forward 'run recover-batch 22 once more'.\nThe run then halted blocked (anomaly escalation-to-human) three times; each re-entry appended further Webster stuck entries to the history, and the later halts said the recovery was exhausted and that later batches were not begun.\nSeparately, a begin-batch refusal reported plan_conflict tree_moved for a card target whose unit exists but whose member is missing, with the way forward being rebaseline.\n\nWhy abnormal: a need that only the orch can satisfy is classified as a dead recovery instead of a request to the parent, so the recovery budget is spent and the run can only halt for a human; the two refusals for one batch give contradictory recovery_retry and dead_reason values, and repeated re-entry of a halted run adds stuck history without progress.\n\nWhat to do: let a fork's 'needs orch action' report route to the parent (a message or a distinct pause state) without consuming the recovery budget, keep recovery_retry and dead_reason consistent across consecutive recover-batch refusals, and make a re-entry of an already-halted escalation return the existing halt rather than append another stuck entry.\n\nProvenance: task gate-runs-once; notes loom-halt.md, loom-halt-2.md, loom-halt-3.md, webster-refusal-recover-batch.md, webster-refusal-recover-batch-2.md, webster-refusal-begin-batch.md\n\n## Design choice (operator left it to the orch, 2026-10-24)\n\nA fork's \"needs orch action\" report puts Webster into a waiting state of its own that spends no recovery budget, and the orch is told; once the orch has acted, the batch resumes where it stood.\nNo distinct halt type is added.",
-      "status": "done",
-      "created": "2026-10-24T13:37:50Z",
-      "revised": "2026-10-24T16:52:32Z",
-      "profile": "light",
-      "owner_machine": "neve"
-    },
-    {
       "id": 806,
       "handle": "E3",
       "slug": "renumber-rewrites-card-refs",
