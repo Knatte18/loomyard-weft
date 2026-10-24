@@ -1,0 +1,42 @@
+# Relevant files
+
+- `internal/gateslot/tiers.go` `Config.TierList`, `Config.GateCall` — renders every site's gate call from the `gates` lists that D1 reshapes
+- `internal/gateslot/config.go` `MigrateConfig` — the reconcile migration that already prunes `gates.publish`, where the D1 reshape and the `guard_tier` prune go
+- `internal/gateslot/doc.go` — config keys, the `gates` map and `guard_tier`, and the home of the D12 table
+- `internal/gateslot/template.yaml` — template defaults for the gate keys
+- `internal/gateslot/runlog.go` `RunRecord`, `WriteRunRecord` — the per-tier run record and log the carry marks and the report reads
+- `internal/gatecli/doc.go` — `lyx gate test`'s scope forms, scoper, guard step, slots and records
+- `internal/loomcli/roundgate.go` `gateListSource`, `gateCallSource`, `gateTiersLookup` — the told gate sources of loom's and darn's wiring
+- `internal/loomcli/wiring.go` — wires the `landing` list into loom's fix rows and landing rows
+- `internal/loomcli/darnwiring.go` — wires the `landing` call into darn's rows
+- `internal/loomcli/landingdeps.go` — the `landing` call handed to Merge-In and Finalize
+- `internal/loomshed/verifygate.go` `NewVerifyGate`, `RoundGate` — the round and darn forms of the fix-row and writer verify gate
+- `internal/landingshed/doc.go` — Merge-In and Finalize running the `landing` gate through verifytree
+- `internal/landingshed/fixerrun.go` `fixerGateName` — the merge fixer's `landing` gate
+- `internal/verifytree/doc.go` — the command-and-tree skip record and the landing failure record
+- `internal/websterengine/cardgate.go` `cardGateCommand`, `renderBatchGate` — the card and batch gate calls
+- `internal/websterengine/verifygate.go` `NewVerifyGate` — Webster's end gate, `final --all`
+- `internal/websterengine/verifyfixer.go` — the cold fixer's `round` gate
+- `internal/websterengine/runlevel.go` — the fixer fork's `round` gate
+- `internal/webstercli/verify.go` — `lyx webster verify` running `final --all`
+- `internal/shedbuild/recipe.go` `Row` — the recipe row shape the `entry_gate` key joins
+- `internal/shedengine/producer.go` `ProducerDef`, `OutputPointer` — the engine's row definition and producer seam
+- `internal/shedengine/status.go` `Status`, `HistoryEntry`, `GateSpan` — status and history records the entered marker and `skipped` outcome join
+- `internal/shedrecipe/entries_settings.go` `readSetting`, `boolSetting`, `settingRef` — the `module.key` lookup through `Env.Setting` the check form reuses
+- `internal/shedadapters/command.go` `CommandRow`, `CommandDeps`, `CommandProducer.Call` — the switched producer whose switch moves to the entry gate
+- `internal/battencli/wire.go` — sets `CommandDeps.Forced` for the window flag
+- `internal/battenshed/template.yaml` — batten's switch and command defaults
+- `internal/loomrecipe/darnrecipe.go` `NewDarn`, `DarnRouting`, `applyDarnReviewBudget` — darn's edge rewrite for a budget of 0
+- `internal/loomrecipe/doc.go` — loom's `zero_rounds` and darn's rewrite, and the recipes' tails
+- `internal/loomengine/caps.go` `Caps` — per-perch budget with the `review_max_bounces` fallback
+- `contracts/recipes/loom-recipe.yaml` — loom's rows after `loom-tail-review`
+- `contracts/recipes/darn-recipe.yaml` — darn's rows after `loom-tail-review`
+- `contracts/recipes/batten-recipe.yaml` — batten's Command rows and their switches
+- `internal/impactset/guards.go` `GuardNotIntegration`, `compiledUnderIntegration` — the guard scan whose `integration` rule D6 replaces and D13's transitional term satisfies
+- `internal/loomcli/landingdeps.go` `rerouteReviewed`, `codeBudgetZero` — Finalize's reroute-reviewed seam, which reads the resolved Code-Perch budget
+- `internal/planparser/verifymodule.go` `namesGateOnlyTier` — the card Verify check naming the `tmux` and `llm` tags
+- `cmd/testtiming/main.go` — the timing tool's `-tags` and `-full` modes
+- `pattern/PATTERN-test-speed.md` — the tier table, tag rules and guard marker rules
+- `pattern/PATTERN-verified-tree.md` — verify sites and their gate lists
+- `pattern/PATTERN-test-tiers.md` — sites name a gate's tier list and scope
+- `pattern/PATTERN-recipe-setting-lookup.md` — row values only through the lookup
