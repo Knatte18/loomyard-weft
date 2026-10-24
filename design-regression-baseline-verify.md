@@ -83,3 +83,19 @@ What the tool must do:
 6. Wanted: per-batch drift snapshots, diagnostic only, never a gate.
 
 Detached capture: it starts at spawn on the spawn HEAD and records that commit; implementation waits for it before the first edit; a failed or timed-out capture halts before implementation and never falls back to a later capture; it has a timeout and a log that survives teardown; it builds with the gate properties and holds no lock that blocks the agent.
+
+## Operator view (2026-10-24): the compare is an ordinary tier
+
+The regression compare is a plain test tier of the hub, such as Models' `tier2` (`tier0` unit Tests, `tier1` SlowTests), run by the gate like any other tier.
+That the capture ran before the implementation is irrelevant to the tier: it only reads a baseline that exists.
+A failing compare is then an ordinary red tier, fixed by the gate's usual fixer, so the separate compare perch and its rows above are not needed.
+Which gates run which tiers is the hub's own `gate.yaml`, set per repository; nothing here pins it.
+The capture before implementation stays this note's async job.
+
+A compare has three outcomes:
+
+- byte-identical: passes;
+- small drift of an acceptable size: passes;
+- total drift: those regression tests are not run at all, for example when the task changes the model on purpose.
+
+Open: how "small drift" is judged; it needs tuning and likely judgement, perhaps an LLM that judges whether a result is close enough.
