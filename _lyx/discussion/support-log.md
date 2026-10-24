@@ -7,7 +7,7 @@ Autonomous run: no operator answered; every pick below is the writer's own, reco
 ### Turn 1 — exploration
 
 Read the board entry, the related entries (`umbrella-daemon`, `umbrella-anchor`, `loom-beam-darns`, `parallel-batch-parts`, `board-viewer`) and the code at the seams the entry names.
-Found since the entry's notes: `hubgeom.ResolveParent` already names a pair's parent `ly:<slug>:orch` for a non-prime parent worktree; `lyx batten cancel` (2026-10-23) ends and removes a run in any state and tolerates an absent board entry; loom-tail-review removed Merge-In, Publish and PR-Gate from darn; both Describe tables require a decision record; `Owners.Effective` already resolves a parent owner through `Config.ParentOf` over origin records; Worktree-Create calls `Add` with the prime's location.
+Found since the entry's notes: `hubgeom.ResolveParent` already names a pair's parent `<shortname>:<slug>:orch` for a non-prime parent worktree; `lyx batten cancel` (2026-10-23) ends and removes a run in any state and tolerates an absent board entry; loom-tail-review removed Merge-In, Publish and PR-Gate from darn; both Describe tables require a decision record; `Owners.Effective` already resolves a parent owner through `Config.ParentOf` over origin records; Worktree-Create calls `Add` with the prime's location.
 
 ### Turn 2 — scope batch (auto-picked)
 
@@ -25,7 +25,7 @@ Found since the entry's notes: `hubgeom.ResolveParent` already names a pair's pa
 
 ### Turn 4 — orch and batten batch (auto-picked)
 
-- Orch name: orchestrator, `ly:<slug>:orch`, matching the existing parent resolution.
+- Orch name: orchestrator, `<shortname>:<slug>:orch`, matching the existing parent resolution.
 - Where an orch may run: the prime and beams only.
 - Notices with no beam orch: walk up to the nearest recorded orch, the prime last.
 - Batten from a beam: state stays under the prime; never run inside the pair being created or destroyed.
@@ -91,12 +91,20 @@ Every lens returned a report. Facts checked before judging: shed writes a run fa
 - The entry's orch sketch, a run recording its starting thread as owner with notices to it: the beam chain already names each run's parent, and a recorded starter goes stale when that thread stops.
 - Writing `beam: true` last in `lyx beam create`: a member started mid-create would fork from the prime for good.
 - Refusing a beam worktree's tracked dirt at a member's start: the operator works in the beam, so it would refuse routinely.
-- Keeping `lyx adopt` and `lyx cleanup` prime-only: a beam's orch needs both, and they act on the prime's location from anywhere as batten does.
+- Keeping `lyx adopt` and `lyx cleanup` prime-only: a beam's orch needs both, and they act on the prime's location from a beam as batten does.
 - Recording a beam's landing as rerouting to a review: the members were reviewed, and a reroute with no edge fails the run.
 
 ## Review rounds
 
-_No rounds yet._
+### Round 1
+
+Fixed every finding of `_lyx/reviews/discussion/round-1-review.md`; the fixer-report beside it records each change.
+Picks the fixes made: batten, adopt, cleanup and the beam verbs run only in the prime and in beams, `--window` opens in the run's parent worktree's session, and `lyx adopt` admits a beam project (D8); `ResolveParent` keeps the recorded parent and a separate walk serves notices (D13); `lyx beam land` refuses a live beam orch (D11); promote writes the beam mark before clearing the claim, and batten's start guard refuses a marked pair (D10); a dirty beam keeps Finalize's Stuck (D5); `parent_beam` carries `ParentOf` (D4); the cleanup skip wording is D16.
+
+### Round 2
+
+Fixed every finding of `_lyx/reviews/discussion/round-2-review.md`; the fixer-report beside it records each change.
+Picks the fixes made: batten's start guard lets a beam's landing past its left-pair and tracked-dirt refusals (D11); `Add` with `Parent` named refuses no tracked dirt (D5); `ParentOf` reads a found record's `ParentWorktree`, the prime by its branch or worktree (D4); the beam guard refuses in a beam under its landing, naming its parent worktree (D8); a project lists under layer `Project`, `Running` while its landing holds it (D1); the landing's merge resolution is bounded by the `finalize` gate alone, and its open-member refusal reads `ParentOf` (D11); a ready task of a beam absent here is named in no notice (D13); the beam orch's strand is `<shortname>:<slug>:orch`.
 
 ## Question ledger
 
@@ -106,14 +114,14 @@ _No rounds yet._
 - Q4 (auto-pick): Member order lives in the project's `order`; unordered members render after by handle.
 - Q5 (auto-pick): The `beam` flag is written only by the beam verbs.
 - Q6 (auto-pick): Parent pair is the nearest beam up the project chain, else the prime.
-- Q7 (auto-pick): The beam orch is the orchestrator, `ly:<slug>:orch`; the beam verbs start none.
+- Q7 (auto-pick): The beam orch is the orchestrator, `<shortname>:<slug>:orch`; the beam verbs start none.
 - Q8 (auto-pick): `lyx orch` runs only in the prime and beams.
-- Q9 (auto-pick): Batten state stays under the prime; any drivable worktree may run batten verbs.
+- Q9 (auto-pick, revised at round 1): Batten state stays under the prime; the prime and any beam may run batten verbs.
 - Q10 (auto-pick): Notices go to the nearest recorded orch up the chain, resolved per delivery.
 - Q11 (auto-pick): Beam landing through batten with recipe `beam`: Go describe, darn Finalize.
 - Q12 (auto-pick): Origin record carries a beam mark for workspace grouping.
 - Q13 (auto-pick, revised at lens review): Local branch adoption only through `lyx fabric add --adopt-local`; the default branch records no parent.
-- Q14 (auto-pick, revised at lens review): `lyx adopt` and `lyx cleanup` run from any drivable worktree; `lyx shed seed` stays prime-only.
+- Q14 (auto-pick, revised at round 1): `lyx adopt` and `lyx cleanup` run from the prime and any beam; `lyx shed seed` stays prime-only.
 - Q16 (auto-pick, lens review): `lyx beam create` writes the board flag first.
 - Q17 (auto-pick, lens review): A named parent's dirt never refuses a pair.
 - Q18 (auto-pick, lens review): `lyx beam promote` resets the pair's weft to a fresh fork's content.
