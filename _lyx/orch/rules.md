@@ -62,3 +62,9 @@ This job moves to the orch's Go driver once there is one, which spawns the same 
 Merriam refuses the notice `lyx loom decision add` sends, since it comes from `ly:LOOM` and Merriam may not read the decision record.
 While a run is at Webster, record the decision with the verb as usual, then message Merriam (`<shortname>:<slug>:webster`) yourself with the decision's content spelled out.
 Remove this section once #849 is fixed.
+
+## A dead Webster batch after its reset (#863)
+
+After `lyx webster reset --to batch-start --batch N`, Master still reads batch N as dead and writes stuck on every relaunch, so a resume or goto alone never moves the run.
+Run `env -C <pair> lyx webster recover-batch N` yourself in the background, and `lyx loom resume` in the task worktree once it ends done.
+Remove this section once #863 is fixed.
