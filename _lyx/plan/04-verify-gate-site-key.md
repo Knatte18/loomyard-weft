@@ -46,7 +46,7 @@
 - `internal/loomshed#roundGateFixture.round`
 
 **Create:**
-- `plan:internal/loomcli#TestGateCallSource` -> `func TestGateCallSource(t *testing.T)`
+- `internal/loomcli#TestGateCallSource`
 
 **Intent:**
 The fix rows' and the darn writer's verify gate runs its own row's gate key (D1, D3).
