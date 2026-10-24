@@ -1,12 +1,12 @@
 {
   "current_producer": "Webster",
-  "state": "running",
-  "error": "",
+  "state": "blocked",
+  "error": "webster: the plan changed since the run recorded it and was rebaselined on entry, keeping 5 begun batch(es) and accepting 13-testtiming-tiers.md, 14-guard-step-per-tier.md, 15-empty-tier-fails.md, 17-shed-entry-gate-engine.md, 20-batten-switch-entry-gate.md, 22-tier-plan-docs.md, 31-retag-internal-p-z.md: Batch 22-tier-plan-docs: the fork reported stuck (card 23's verify needs the hub's tier commands changed, which only the orch can do), and recover-batch ended dead with dead_reason asking and no recovery left.",
   "pause_requested": false,
   "activity": {
     "now": "Webster",
-    "last": "Plan-Bouncer → done",
-    "wait": ""
+    "last": "Webster → stuck",
+    "wait": "webster: the plan changed since the run recorded it and was rebaselined on entry, keeping 5 begun batch(es) and accepting 13-testtiming-tiers.md, 14-guard-step-per-tier.md, 15-empty-tier-fails.md, 17-shed-entry-gate-engine.md, 20-batten-switch-entry-gate.md, 22-tier-plan-docs.md, 31-retag-internal-p-z.md: Batch 22-tier-plan-docs: the fork reported stuck (card 23's verify needs the hub's tier commands changed, which only the orch can do), and recover-batch ended dead with dead_reason asking and no recovery left."
   },
   "history": [
     {
@@ -347,6 +347,21 @@
       "outcome": "done",
       "output": "/home/knatte/Code/loomyard-LYXHUB/gate-runs-once/_lyx/reviews/plan/round-3-bouncer-ledger.md",
       "at": "2026-10-24T10:01:29Z"
+    },
+    {
+      "producer": "Webster",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-24T11:00:40Z",
+      "gate_attempts": 0,
+      "gate_spans": [
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-10-24T11:00:38.981799678Z",
+          "end": "2026-10-24T11:00:38.985573733Z"
+        }
+      ]
     }
   ],
   "product": {
