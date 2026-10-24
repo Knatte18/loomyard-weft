@@ -17,9 +17,9 @@ Held by a run; its scope is locked until the run ends.
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T1 | **Each test runs once per tree: disjoint tiers, row entry gates, carried green runs, tmux in final**<br>• Tiers tagged by name, shed row entry gates, verify skipped on an already green tree, tmux in the final gate, gate time measured<br>• `profile: light` | [`gate-runs-once`](design-gate-runs-once.md) | loom | Plan-Burler-Fix | neve | 6d<br>2h | gate, shed, loom, webster, fabric, batten |
-| T5 | **lyx loom decision add records several decisions in one call and one notice**<br>• `profile: light` | [`decision-add-batch`](design-decision-add-batch.md) | darn | Finalize | neve | 1h<br>26m | loom, creel |
-| T7 | **Batten idle notice says no agent activity readable while a run is live**<br>• `profile: light` | [`idle-notice-no-live-run`](design-idle-notice-no-live-run.md) | darn | Describe | neve | 2h<br>26m | batten, shuttle |
-| T8 | **The watcher system should recognize halt due to session limit**<br>• `profile: light` | [`usage-limit-hold-quiet`](design-usage-limit-hold-quiet.md) | darn | Finalize | neve | 16h<br>26m | shuttle, creel, orch |
+| T5 | **lyx loom decision add records several decisions in one call and one notice**<br>• `profile: light` | [`decision-add-batch`](design-decision-add-batch.md) | darn | Finalize | neve | 1h<br>27m | loom, creel |
+| T7 | **Batten idle notice says no agent activity readable while a run is live**<br>• `profile: light` | [`idle-notice-no-live-run`](design-idle-notice-no-live-run.md) | darn | PR-Review | neve | 2h<br>27m | batten, shuttle |
+| T8 | **The watcher system should recognize halt due to session limit**<br>• `profile: light` | [`usage-limit-hold-quiet`](design-usage-limit-hold-quiet.md) | darn | Finalize | neve | 16h<br>27m | shuttle, creel, orch |
 
 ### Ready (0)
 
@@ -44,7 +44,7 @@ Starts when every entry it names under After is done.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T2 | **Clean up PATTERN.md: far too many entries**<br>• `profile: light` | [`pattern-cleanup`](design-pattern-cleanup.md) | darn | `gate-runs-once`, `fork-git-guard-scratch-repo`, `run-profiles-ladder` | 1h<br>44m | stencil |
+| T2 | **Clean up PATTERN.md: far too many entries**<br>• `profile: light` | [`pattern-cleanup`](design-pattern-cleanup.md) | darn | `gate-runs-once`, `fork-git-guard-scratch-repo`, `run-profiles-ladder` | 1h<br>45m | stencil |
 
 ## Notes (42)
 
