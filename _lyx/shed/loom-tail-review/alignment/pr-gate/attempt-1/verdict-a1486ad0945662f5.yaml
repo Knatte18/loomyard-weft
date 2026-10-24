@@ -1,0 +1,4 @@
+verdict: approve
+reason: "The diff builds the board entry's loom and darn tails as D1 to D14 decide them: the recipes match D1 and D9, the PR, approval, Merge-Review and verify-retry surface is removed, the merge fixer, PR-Review stub, locked Finalize and config migrations are present, and the PATTERN lines match the record. The carried-over findings are fixed at the head. lyx loom peers lists no peer run and no parent commit, so there is no overlap."
+question: ""
+superseded: []
