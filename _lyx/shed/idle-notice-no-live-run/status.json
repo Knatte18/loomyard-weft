@@ -1,11 +1,11 @@
 {
-  "current_producer": "Darn-Write",
+  "current_producer": "Code-Bouncer",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Darn-Write",
-    "last": "Preflight → done",
+    "now": "Code-Bouncer",
+    "last": "Darn-Write → done",
     "wait": ""
   },
   "history": [
@@ -14,6 +14,51 @@
       "outcome": "done",
       "output": "",
       "at": "2026-10-24T08:28:01Z"
+    },
+    {
+      "producer": "Darn-Write",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYXHUB/idle-notice-no-live-run/_lyx/landing/summary.md",
+      "at": "2026-10-24T08:45:41Z",
+      "gate_attempts": 1,
+      "gate_spans": [
+        {
+          "gate": "discussion",
+          "kind": "gate",
+          "start": "2026-10-24T08:41:40.9885133Z",
+          "end": "2026-10-24T08:41:49.749390202Z"
+        },
+        {
+          "gate": "discussion",
+          "kind": "gate",
+          "start": "2026-10-24T08:42:34.460080193Z",
+          "end": "2026-10-24T08:42:42.213735035Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-10-24T08:41:49.797047813Z",
+          "end": "2026-10-24T08:41:49.895096123Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "rework",
+          "start": "2026-10-24T08:41:50.303397757Z",
+          "end": "2026-10-24T08:42:34.432565382Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-10-24T08:42:42.263681175Z",
+          "end": "2026-10-24T08:45:41.257902468Z"
+        },
+        {
+          "gate": "description",
+          "kind": "gate",
+          "start": "2026-10-24T08:45:41.310661464Z",
+          "end": "2026-10-24T08:45:41.311011417Z"
+        }
+      ]
     }
   ],
   "product": {
