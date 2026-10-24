@@ -1,0 +1,1362 @@
+{
+  "runGuid": "61d24d5f669e7a2632c450ce5036daf2",
+  "planFingerprint": "1ccf29de02587a84ebbd9ba18f7a6f8f3183aaa6aa890ad12b2b85bb911c1c0f",
+  "planFileHashes": {
+    "00-overview.md": "79b3646fa84fae23c330d5468a2c3d82f96ec7aa73ecd65ad3b18b128e45cba6",
+    "01-gate-key-shape.md": "3f4e9d622bb5908ef9675689f48d47d4b71fdb095966e2aaea3bdc695db0b16b",
+    "02-gate-flag.md": "57f1450c6767cc497fcd9ae070e2e384fc63d297bb87a98e7d40ff4d70863547",
+    "03-gate-call-renders-key.md": "bfad899d87c1563ead6b09139315f8e2cae29d95671e23bd9a231325b6e01c7c",
+    "04-verify-gate-site-key.md": "0001df7b2eacc795ab83b96aefb42a3f7722099550d918c29be48eba607c5883",
+    "05-landing-row-keys.md": "0b8769e233f7e775184b3bf1478ed25aa0675866a348e1d88e675d4460aeb0ee",
+    "06-darn-tree-scope-key.md": "61995a92ec8d39883a94e9e42a6ecca80ba9b8e30719c278864758ccce9a720e",
+    "07-green-record.md": "3c2b483a930d42a14de3c4cc887a208b5a66e07868aa07c50ade1f0633096ad4",
+    "08-diff-base-chain.md": "98b90f757b54dd8c4fb35b491d90e5bb84d15b20f0922d83f8ce8c45b62be3fe",
+    "09-launch-list.md": "09c9198ed741358dc4f75dcc7db9681270865f01fe9d6983810ea055479adcc2",
+    "10-gate-report.md": "df182b39b6f805039be381176c1af200d9799db1209990663fe1b050e2481821",
+    "11-package-load-tags.md": "9c758925b29c785ecf15362a83e492c46dc1c405db69280e1923dd28bacda0a7",
+    "12-tier-tag-guards.md": "2a73678428da23b49ca343776ce3b6970901821b78fa6f14b60dd987329ee2cb",
+    "13-testtiming-tiers.md": "b09ddb7bfef63be4463dc2ced0c0fa0d9e7b67f786b600cde966311c787ebab8",
+    "14-guard-step-per-tier.md": "e6f60e081f97c730c5b036c90c5a54e85a4ea35e4336361dde653c47270afa70",
+    "15-empty-tier-fails.md": "341ac678d98adff8e4068c4885ee3a27c208ede1d254bb25b03eab19caae97aa",
+    "16-tier-purity-tier-names.md": "a1394d6ec5d07a037f43e501a74c13cb315cdf8c1f66f16a69b216fd984ee152",
+    "17-shed-entry-gate-engine.md": "44b49ee7062247cf61cc29c847121b0b2be114b110d3a648140236f9bcecba5b",
+    "18-skipped-history-readers.md": "f18511262ae9b0b2332ecbc37d87cb6f8dd1e00e5f44cadc5d87181a2743ae62",
+    "19-recipe-entry-gate.md": "fd5f981793f781848833978ca0f44cf731c0540848f500d0c126a584927315c7",
+    "20-batten-switch-entry-gate.md": "804b3d16306ccb19f4fc47d2795ca650827d9d7f90e36b18365174373827beb5",
+    "21-darn-describe-entry-gate.md": "eff2489f2f83929252032e617b065db79977b594d3255079f99a4efc1bda25b9",
+    "22-tier-plan-docs.md": "df2be9c7ca3898fefb9ce96cc3853c1a6828ca6e4034c7e40bb25de33bd0f713",
+    "23-retag-cmd-contracts-tools.md": "14b5562aea7a2ce5a1155bee26a7b5fa31727f025a0025ac9a20f90a1220d20b",
+    "24-retag-fabricengine.md": "81790f3535a6592e6623c3153c53c37647b57637fe40ef87b1fca7fb286735e1",
+    "25-retag-loom.md": "fec6daba8c402e315c27f9c35d09dc951361fffe64c29f3d0eed223879428927",
+    "26-retag-reed-shuttle.md": "29c5dbec5cd46edeb0efc333a2991cc845eac52910d2380b2c08e09185267492",
+    "27-retag-webster-landing-batten.md": "d55cd343e3a70e993c8ba984a03068218efb255f084189c1444746ca9c0f5c92",
+    "28-retag-shed-plan-testkit.md": "594cb4fa22492fc0ed41001d9bab48578b12d5bcf5412bd1e4194c990b8c8a33",
+    "29-retag-internal-a-f.md": "7c209e60bed809e4fa6f6feb14e69f9cfccf75ced21be7abfa395c15e767f6d0",
+    "30-retag-internal-g-o.md": "065c8a7a7b3af130148662e14d180958136d20cd15f1eeb02a6864b856100b0e",
+    "31-retag-internal-p-z.md": "82f93b685dfe1c20c88335d0cc61f2bd3c81ab1bc3b4a3d91c6258daed1ea642"
+  },
+  "planOverviewFrameHash": "c66214ae9dfcbf8f83709eead898b11aa782204a57011e2b6071b024b8d2a9bf",
+  "partition": [
+    {
+      "cards": [
+        "01-gate-key-shape",
+        "02-gate-flag"
+      ],
+      "profile": "wide",
+      "estimate": 233286,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 1,
+        "startup": 55996,
+        "read_union": 37184,
+        "cards": [
+          {
+            "card": 1,
+            "card_text": 912,
+            "reads": {
+              "file:internal/gateslot/doc.go": 1116,
+              "file:internal/gateslot/template.yaml": 372,
+              "package:internal/configcli": 2000,
+              "package:internal/gateslot": 2000,
+              "package:internal/landingshed": 2000,
+              "package:internal/loomcli": 2000,
+              "package:internal/loomshed": 2000,
+              "package:internal/webstercli": 2000,
+              "package:internal/websterengine": 2000,
+              "tests:internal/configcli": 2000,
+              "tests:internal/gateslot": 2000,
+              "tests:internal/landingshed": 2000,
+              "tests:internal/loomcli": 2000,
+              "tests:internal/loomshed": 2000,
+              "tests:internal/webstercli": 2000,
+              "tests:internal/websterengine": 2000
+            },
+            "messages": 377,
+            "written": 114012
+          },
+          {
+            "card": 2,
+            "card_text": 444,
+            "reads": {
+              "file:internal/gatecli/doc.go": 2340,
+              "package:internal/gatecli": 2000,
+              "package:internal/gateslot": 2000,
+              "tests:internal/gatecli": 2000,
+              "tests:internal/gateslot": 2000
+            },
+            "messages": 85.5,
+            "written": 26094
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "03-gate-call-renders-key"
+      ],
+      "profile": "wide",
+      "estimate": 206648,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 2,
+        "startup": 62996,
+        "read_union": 56412,
+        "cards": [
+          {
+            "card": 3,
+            "card_text": 840,
+            "reads": {
+              "file:PATTERN.md": 1536,
+              "file:contracts/specs/loom-status-spec.md": 2304,
+              "file:contracts/specs/webster-spec.md": 924,
+              "file:contracts/stencils/webster/webster-body-implementer.md": 1536,
+              "file:contracts/stencils/webster/webster-template-master.md": 3240,
+              "file:internal/gateslot/doc.go": 1116,
+              "file:internal/websterengine/doc.go": 8808,
+              "file:pattern/PATTERN-test-tiers.md": 108,
+              "package:.": 2000,
+              "package:contracts/specs": 2000,
+              "package:contracts/stencils/webster": 2000,
+              "package:internal/gateslot": 2000,
+              "package:internal/loomcli": 2000,
+              "package:internal/loomshed": 2000,
+              "package:internal/webstercli": 2000,
+              "package:internal/websterengine": 2000,
+              "package:pattern": 2000,
+              "tests:.": 2000,
+              "tests:contracts/specs": 2000,
+              "tests:contracts/stencils/webster": 2000,
+              "tests:internal/gateslot": 2000,
+              "tests:internal/loomcli": 2000,
+              "tests:internal/loomshed": 2000,
+              "tests:internal/webstercli": 2000,
+              "tests:internal/websterengine": 2000,
+              "tests:pattern": 2000
+            },
+            "messages": 288,
+            "written": 87240
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "04-verify-gate-site-key"
+      ],
+      "profile": "wide",
+      "estimate": 218120,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 3,
+        "startup": 69996,
+        "read_union": 42788,
+        "cards": [
+          {
+            "card": 4,
+            "card_text": 936,
+            "reads": {
+              "file:contracts/recipes/darn-recipe.yaml": 2364,
+              "file:contracts/recipes/loom-recipe.yaml": 6180,
+              "file:internal/loomshed/doc.go": 972,
+              "file:pattern/PATTERN-verified-tree.md": 336,
+              "package:contracts/recipes": 2000,
+              "package:internal/battencli": 2000,
+              "package:internal/loomcli": 2000,
+              "package:internal/loomshed": 2000,
+              "package:internal/shedrecipe": 2000,
+              "package:internal/testkit/envkit": 2000,
+              "package:internal/webstercli": 2000,
+              "package:pattern": 2000,
+              "tests:contracts/recipes": 2000,
+              "tests:internal/battencli": 2000,
+              "tests:internal/loomcli": 2000,
+              "tests:internal/loomshed": 2000,
+              "tests:internal/shedrecipe": 2000,
+              "tests:internal/testkit/envkit": 2000,
+              "tests:internal/webstercli": 2000,
+              "tests:pattern": 2000
+            },
+            "messages": 348,
+            "written": 105336
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "05-landing-row-keys"
+      ],
+      "profile": "wide",
+      "estimate": 190488,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 4,
+        "startup": 76996,
+        "read_union": 23564,
+        "cards": [
+          {
+            "card": 5,
+            "card_text": 828,
+            "reads": {
+              "file:internal/landingshed/doc.go": 2208,
+              "file:internal/verifytree/doc.go": 528,
+              "package:internal/landingshed": 2000,
+              "package:internal/loomcli": 2000,
+              "package:internal/shedrecipe": 2000,
+              "package:internal/testkit/envkit": 2000,
+              "package:internal/verifytree": 2000,
+              "tests:internal/landingshed": 2000,
+              "tests:internal/loomcli": 2000,
+              "tests:internal/shedrecipe": 2000,
+              "tests:internal/testkit/envkit": 2000,
+              "tests:internal/verifytree": 2000
+            },
+            "messages": 297,
+            "written": 89928
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "06-darn-tree-scope-key",
+        "07-green-record"
+      ],
+      "profile": "wide",
+      "estimate": 256574,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 5,
+        "startup": 83996,
+        "read_union": 54408,
+        "cards": [
+          {
+            "card": 6,
+            "card_text": 792,
+            "reads": {
+              "file:docs/overview.md": 9768,
+              "file:internal/configcli/doc.go": 1104,
+              "file:internal/darnengine/doc.go": 396,
+              "file:internal/darnengine/template.yaml": 120,
+              "file:pattern/PATTERN-test-speed.md": 1188,
+              "file:pattern/PATTERN-verified-tree.md": 336,
+              "package:docs": 2000,
+              "package:internal/configcli": 2000,
+              "package:internal/configreg": 2000,
+              "package:internal/darnengine": 2000,
+              "package:internal/loomcli": 2000,
+              "package:pattern": 2000,
+              "tests:docs": 2000,
+              "tests:internal/configcli": 2000,
+              "tests:internal/configreg": 2000,
+              "tests:internal/darnengine": 2000,
+              "tests:internal/loomcli": 2000,
+              "tests:pattern": 2000
+            },
+            "messages": 261,
+            "written": 79092
+          },
+          {
+            "card": 7,
+            "card_text": 828,
+            "reads": {
+              "file:PATTERN.md": 1536,
+              "file:internal/gatecli/doc.go": 2340,
+              "package:.": 2000,
+              "package:internal/gatecli": 2000,
+              "package:internal/gateslot": 2000,
+              "tests:.": 2000,
+              "tests:internal/gatecli": 2000,
+              "tests:internal/gateslot": 2000
+            },
+            "messages": 127.5,
+            "written": 39078
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "08-diff-base-chain",
+        "09-launch-list",
+        "10-gate-report",
+        "11-package-load-tags",
+        "12-tier-tag-guards"
+      ],
+      "profile": "wide",
+      "estimate": 242714,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 6,
+        "startup": 90996,
+        "read_union": 58436,
+        "cards": [
+          {
+            "card": 8,
+            "card_text": 360,
+            "reads": {
+              "file:internal/gatecli/doc.go": 2340,
+              "package:internal/gatecli": 2000,
+              "tests:internal/gatecli": 2000
+            },
+            "messages": 48.5,
+            "written": 14910
+          },
+          {
+            "card": 9,
+            "card_text": 444,
+            "reads": {
+              "file:internal/gatecli/doc.go": 2340,
+              "file:internal/gateslot/doc.go": 1116,
+              "package:internal/gatecli": 2000,
+              "package:internal/gateslot": 2000,
+              "tests:internal/gatecli": 2000,
+              "tests:internal/gateslot": 2000
+            },
+            "messages": 97.5,
+            "written": 29694
+          },
+          {
+            "card": 10,
+            "card_text": 336,
+            "reads": {
+              "file:docs/overview.md": 9768,
+              "file:internal/gatecli/doc.go": 2340,
+              "file:internal/gateslot/doc.go": 1116,
+              "package:docs": 2000,
+              "package:internal/gatecli": 2000,
+              "package:internal/gateslot": 2000,
+              "tests:docs": 2000,
+              "tests:internal/gatecli": 2000,
+              "tests:internal/gateslot": 2000
+            },
+            "messages": 55.5,
+            "written": 16986
+          },
+          {
+            "card": 11,
+            "card_text": 252,
+            "reads": {
+              "file:contracts/specs/loom-plan-spec.md": 9408,
+              "file:internal/impactset/doc.go": 504,
+              "file:internal/planglyph/doc.go": 1668,
+              "package:contracts/specs": 2000,
+              "package:internal/impactset": 2000,
+              "package:internal/planglyph": 2000,
+              "tests:contracts/specs": 2000,
+              "tests:internal/impactset": 2000,
+              "tests:internal/planglyph": 2000
+            },
+            "messages": 56.5,
+            "written": 17202
+          },
+          {
+            "card": 12,
+            "card_text": 240,
+            "reads": {
+              "file:contracts/specs/loom-plan-spec.md": 9408,
+              "package:contracts/specs": 2000,
+              "package:internal/planparser": 2000,
+              "package:internal/shellguard": 2000,
+              "tests:contracts/specs": 2000,
+              "tests:internal/planparser": 2000,
+              "tests:internal/shellguard": 2000
+            },
+            "messages": 47.5,
+            "written": 14490
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "13-testtiming-tiers",
+        "14-guard-step-per-tier"
+      ],
+      "profile": "wide",
+      "estimate": 246008,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 7,
+        "startup": 97996,
+        "read_union": 45148,
+        "cards": [
+          {
+            "card": 13,
+            "card_text": 264,
+            "reads": {
+              "file:docs/benchmarks/running-tests.md": 1884,
+              "package:cmd/testtiming": 2000,
+              "package:docs/benchmarks": 2000,
+              "tests:cmd/testtiming": 2000,
+              "tests:docs/benchmarks": 2000
+            },
+            "messages": 53,
+            "written": 16164
+          },
+          {
+            "card": 14,
+            "card_text": 900,
+            "reads": {
+              "file:docs/overview.md": 9768,
+              "file:internal/gatecli/doc.go": 2340,
+              "file:internal/gateslot/doc.go": 1116,
+              "file:internal/gateslot/template.yaml": 372,
+              "file:internal/impactset/doc.go": 504,
+              "package:docs": 2000,
+              "package:internal/gatecli": 2000,
+              "package:internal/gateslot": 2000,
+              "package:internal/impactset": 2000,
+              "package:internal/loomshed": 2000,
+              "tests:docs": 2000,
+              "tests:internal/gatecli": 2000,
+              "tests:internal/gateslot": 2000,
+              "tests:internal/impactset": 2000,
+              "tests:internal/loomshed": 2000
+            },
+            "messages": 286,
+            "written": 86700
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "15-empty-tier-fails",
+        "16-tier-purity-tier-names",
+        "17-shed-entry-gate-engine"
+      ],
+      "profile": "wide",
+      "estimate": 224828,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 8,
+        "startup": 104996,
+        "read_union": 17868,
+        "cards": [
+          {
+            "card": 15,
+            "card_text": 432,
+            "reads": {
+              "file:internal/gatecli/doc.go": 2340,
+              "package:internal/gatecli": 2000,
+              "tests:internal/gatecli": 2000
+            },
+            "messages": 76.5,
+            "written": 23382
+          },
+          {
+            "card": 16,
+            "card_text": 324,
+            "reads": {
+              "package:cmd/lyx": 2000,
+              "tests:cmd/lyx": 2000
+            },
+            "messages": 96,
+            "written": 29124
+          },
+          {
+            "card": 17,
+            "card_text": 708,
+            "reads": {
+              "file:internal/shedengine/doc.go": 2064,
+              "package:internal/shedengine": 2000,
+              "tests:internal/shedengine": 2000
+            },
+            "messages": 162.5,
+            "written": 49458
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "18-skipped-history-readers",
+        "19-recipe-entry-gate"
+      ],
+      "profile": "wide",
+      "estimate": 259160,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 9,
+        "startup": 111996,
+        "read_union": 47000,
+        "cards": [
+          {
+            "card": 18,
+            "card_text": 336,
+            "reads": {
+              "package:internal/battenshed": 2000,
+              "package:internal/loomcli": 2000,
+              "package:internal/loomengine": 2000,
+              "package:internal/reportengine": 2000,
+              "tests:internal/battenshed": 2000,
+              "tests:internal/loomcli": 2000,
+              "tests:internal/loomengine": 2000,
+              "tests:internal/reportengine": 2000
+            },
+            "messages": 131,
+            "written": 39636
+          },
+          {
+            "card": 19,
+            "card_text": 828,
+            "reads": {
+              "file:PATTERN.md": 1536,
+              "file:internal/shedbuild/doc.go": 204,
+              "file:pattern/PATTERN-recipe-setting-lookup.md": 96,
+              "package:.": 2000,
+              "package:internal/battencli": 2000,
+              "package:internal/configreg": 2000,
+              "package:internal/loomcli": 2000,
+              "package:internal/shedbuild": 2000,
+              "package:internal/shedrecipe": 2000,
+              "package:internal/testkit/envkit": 2000,
+              "package:pattern": 2000,
+              "tests:.": 2000,
+              "tests:internal/battencli": 2000,
+              "tests:internal/configreg": 2000,
+              "tests:internal/loomcli": 2000,
+              "tests:internal/shedbuild": 2000,
+              "tests:internal/shedrecipe": 2000,
+              "tests:internal/testkit/envkit": 2000,
+              "tests:pattern": 2000
+            },
+            "messages": 199,
+            "written": 60528
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "20-batten-switch-entry-gate",
+        "21-darn-describe-entry-gate"
+      ],
+      "profile": "wide",
+      "estimate": 279578,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 10,
+        "startup": 118996,
+        "read_union": 68296,
+        "cards": [
+          {
+            "card": 20,
+            "card_text": 552,
+            "reads": {
+              "file:contracts/recipes/batten-recipe.yaml": 1020,
+              "file:docs/overview.md": 9768,
+              "file:internal/battencli/cli.go": 6504,
+              "file:internal/battenshed/doc.go": 2400,
+              "file:internal/battenshed/template.yaml": 108,
+              "file:internal/shedadapters/doc.go": 4752,
+              "package:contracts/recipes": 2000,
+              "package:docs": 2000,
+              "package:internal/battencli": 2000,
+              "package:internal/battenrecipe": 2000,
+              "package:internal/battenshed": 2000,
+              "package:internal/shedadapters": 2000,
+              "package:internal/shedbuild": 2000,
+              "package:internal/shedrecipe": 2000,
+              "tests:contracts/recipes": 2000,
+              "tests:docs": 2000,
+              "tests:internal/battencli": 2000,
+              "tests:internal/battenrecipe": 2000,
+              "tests:internal/battenshed": 2000,
+              "tests:internal/shedadapters": 2000,
+              "tests:internal/shedbuild": 2000,
+              "tests:internal/shedrecipe": 2000
+            },
+            "messages": 194,
+            "written": 58752
+          },
+          {
+            "card": 21,
+            "card_text": 384,
+            "reads": {
+              "file:contracts/recipes/darn-recipe.yaml": 2364,
+              "file:internal/loomrecipe/doc.go": 444,
+              "package:contracts/recipes": 2000,
+              "package:internal/loomcli": 2000,
+              "package:internal/loomrecipe": 2000,
+              "tests:contracts/recipes": 2000,
+              "tests:internal/loomcli": 2000,
+              "tests:internal/loomrecipe": 2000
+            },
+            "messages": 110.5,
+            "written": 33534
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "22-tier-plan-docs",
+        "23-retag-cmd-contracts-tools"
+      ],
+      "profile": "wide",
+      "estimate": 284832,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 11,
+        "startup": 125996,
+        "read_union": 102976,
+        "cards": [
+          {
+            "card": 22,
+            "card_text": 264,
+            "reads": {
+              "file:contracts/specs/loom-plan-spec.md": 9408,
+              "file:docs/overview.md": 9768,
+              "file:internal/darnengine/config_test.go": 3672,
+              "file:internal/gateslot/doc.go": 1116,
+              "file:internal/webstercli/verify.go": 1164,
+              "file:pattern/PATTERN-test-speed.md": 1188,
+              "package:contracts/specs": 2000,
+              "package:docs": 2000,
+              "package:internal/darnengine": 2000,
+              "package:internal/gateslot": 2000,
+              "package:internal/webstercli": 2000,
+              "package:pattern": 2000,
+              "tests:contracts/specs": 2000,
+              "tests:docs": 2000,
+              "tests:internal/darnengine": 2000,
+              "tests:internal/gateslot": 2000,
+              "tests:internal/webstercli": 2000,
+              "tests:pattern": 2000
+            },
+            "messages": 49.5,
+            "written": 15114
+          },
+          {
+            "card": 23,
+            "card_text": 396,
+            "reads": {
+              "package:cmd/lyx": 2000,
+              "package:cmd/testtiming": 2000,
+              "package:contracts/specs": 2000,
+              "package:contracts/stencils": 2000,
+              "package:tools/codestats": 2000,
+              "package:tools/deploy": 2000,
+              "package:tools/forkaudit": 2000,
+              "package:tools/godocreflow": 2000,
+              "package:tools/internal/devbin": 2000,
+              "package:tools/mdreflow": 2000,
+              "package:tools/plandag": 2000,
+              "package:tools/sandbox": 2000,
+              "package:tools/tokencount": 2000,
+              "package:tools/wordswap": 2000,
+              "tests:cmd/lyx": 2000,
+              "tests:cmd/testtiming": 2000,
+              "tests:contracts/specs": 2000,
+              "tests:contracts/stencils": 2000,
+              "tests:tools/codestats": 2000,
+              "tests:tools/deploy": 2000,
+              "tests:tools/forkaudit": 2000,
+              "tests:tools/godocreflow": 2000,
+              "tests:tools/internal/devbin": 2000,
+              "tests:tools/mdreflow": 2000,
+              "tests:tools/plandag": 2000,
+              "tests:tools/sandbox": 2000,
+              "tests:tools/tokencount": 2000,
+              "tests:tools/wordswap": 2000
+            },
+            "messages": 134.5,
+            "written": 40746
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "24-retag-fabricengine",
+        "25-retag-loom",
+        "26-retag-reed-shuttle"
+      ],
+      "profile": "wide",
+      "estimate": 283710,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 12,
+        "startup": 132996,
+        "read_union": 48432,
+        "cards": [
+          {
+            "card": 24,
+            "card_text": 108,
+            "reads": {
+              "package:internal/fabricengine": 2000,
+              "tests:internal/fabricengine": 2000
+            },
+            "messages": 105,
+            "written": 31608
+          },
+          {
+            "card": 25,
+            "card_text": 144,
+            "reads": {
+              "package:internal/loomcli": 2000,
+              "package:internal/loomengine": 2000,
+              "package:internal/loomrecipe": 2000,
+              "package:internal/loomshed": 2000,
+              "tests:internal/loomcli": 2000,
+              "tests:internal/loomengine": 2000,
+              "tests:internal/loomrecipe": 2000,
+              "tests:internal/loomshed": 2000
+            },
+            "messages": 99.5,
+            "written": 29994
+          },
+          {
+            "card": 26,
+            "card_text": 180,
+            "reads": {
+              "package:internal/reedcli": 2000,
+              "package:internal/reedengine": 2000,
+              "package:internal/reedengine/render": 2000,
+              "package:internal/shuttlecli": 2000,
+              "package:internal/shuttleengine": 2000,
+              "package:internal/shuttleengine/claudeengine": 2000,
+              "package:internal/shuttleengines": 2000,
+              "tests:internal/reedcli": 2000,
+              "tests:internal/reedengine": 2000,
+              "tests:internal/reedengine/render": 2000,
+              "tests:internal/shuttlecli": 2000,
+              "tests:internal/shuttleengine": 2000,
+              "tests:internal/shuttleengine/claudeengine": 2000,
+              "tests:internal/shuttleengines": 2000
+            },
+            "messages": 135,
+            "written": 40680
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "27-retag-webster-landing-batten"
+      ],
+      "profile": "wide",
+      "estimate": 201082,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 13,
+        "startup": 139996,
+        "read_union": 24168,
+        "cards": [
+          {
+            "card": 27,
+            "card_text": 168,
+            "reads": {
+              "package:internal/battencli": 2000,
+              "package:internal/battenrecipe": 2000,
+              "package:internal/battenshed": 2000,
+              "package:internal/landingshed": 2000,
+              "package:internal/webstercli": 2000,
+              "package:internal/websterengine": 2000,
+              "tests:internal/battencli": 2000,
+              "tests:internal/battenrecipe": 2000,
+              "tests:internal/battenshed": 2000,
+              "tests:internal/landingshed": 2000,
+              "tests:internal/webstercli": 2000,
+              "tests:internal/websterengine": 2000
+            },
+            "messages": 122.5,
+            "written": 36918
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "28-retag-shed-plan-testkit"
+      ],
+      "profile": "wide",
+      "estimate": 325836,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 14,
+        "startup": 146996,
+        "read_union": 100420,
+        "cards": [
+          {
+            "card": 28,
+            "card_text": 420,
+            "reads": {
+              "package:internal/planglyph": 2000,
+              "package:internal/planparser": 2000,
+              "package:internal/shedadapters": 2000,
+              "package:internal/shedbuild": 2000,
+              "package:internal/shedcheck": 2000,
+              "package:internal/shedcli": 2000,
+              "package:internal/sheddriver": 2000,
+              "package:internal/shedengine": 2000,
+              "package:internal/shedrecipe": 2000,
+              "package:internal/shedrun": 2000,
+              "package:internal/shedtransient": 2000,
+              "package:internal/shedverbs": 2000,
+              "package:internal/testkit": 2000,
+              "package:internal/testkit/envelope": 2000,
+              "package:internal/testkit/envkit": 2000,
+              "package:internal/testkit/llmkit": 2000,
+              "package:internal/testkit/locationkit": 2000,
+              "package:internal/testkit/logcapture": 2000,
+              "package:internal/testkit/lyxbin": 2000,
+              "package:internal/testkit/plankit": 2000,
+              "package:internal/testkit/scankit": 2000,
+              "package:internal/testkit/shedfake": 2000,
+              "package:internal/testkit/shuttlefake": 2000,
+              "package:internal/testkit/stencilkit": 2000,
+              "package:internal/testkit/tmuxkit": 2000,
+              "tests:internal/planglyph": 2000,
+              "tests:internal/planparser": 2000,
+              "tests:internal/shedadapters": 2000,
+              "tests:internal/shedbuild": 2000,
+              "tests:internal/shedcheck": 2000,
+              "tests:internal/shedcli": 2000,
+              "tests:internal/sheddriver": 2000,
+              "tests:internal/shedengine": 2000,
+              "tests:internal/shedrecipe": 2000,
+              "tests:internal/shedrun": 2000,
+              "tests:internal/shedtransient": 2000,
+              "tests:internal/shedverbs": 2000,
+              "tests:internal/testkit": 2000,
+              "tests:internal/testkit/envelope": 2000,
+              "tests:internal/testkit/envkit": 2000,
+              "tests:internal/testkit/llmkit": 2000,
+              "tests:internal/testkit/locationkit": 2000,
+              "tests:internal/testkit/logcapture": 2000,
+              "tests:internal/testkit/lyxbin": 2000,
+              "tests:internal/testkit/plankit": 2000,
+              "tests:internal/testkit/scankit": 2000,
+              "tests:internal/testkit/shedfake": 2000,
+              "tests:internal/testkit/shuttlefake": 2000,
+              "tests:internal/testkit/stencilkit": 2000,
+              "tests:internal/testkit/tmuxkit": 2000
+            },
+            "messages": 260,
+            "written": 78420
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "29-retag-internal-a-f"
+      ],
+      "profile": "wide",
+      "estimate": 398326,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 15,
+        "startup": 153996,
+        "read_union": 148540,
+        "cards": [
+          {
+            "card": 29,
+            "card_text": 540,
+            "reads": {
+              "package:internal/adoptcli": 2000,
+              "package:internal/agentname": 2000,
+              "package:internal/alignment": 2000,
+              "package:internal/arbiterstop": 2000,
+              "package:internal/batcher": 2000,
+              "package:internal/boardcli": 2000,
+              "package:internal/boardengine": 2000,
+              "package:internal/boardengine/boardtest": 2000,
+              "package:internal/buildinfo": 2000,
+              "package:internal/buildvcs": 2000,
+              "package:internal/burlercli": 2000,
+              "package:internal/burlerengine": 2000,
+              "package:internal/cardverify": 2000,
+              "package:internal/cleanupcli": 2000,
+              "package:internal/clihelp": 2000,
+              "package:internal/cliwire": 2000,
+              "package:internal/commentlint": 2000,
+              "package:internal/configcli": 2000,
+              "package:internal/configengine": 2000,
+              "package:internal/configreg": 2000,
+              "package:internal/configsync": 2000,
+              "package:internal/creelcli": 2000,
+              "package:internal/creelengine": 2000,
+              "package:internal/darnengine": 2000,
+              "package:internal/discussionparser": 2000,
+              "package:internal/dotgit": 2000,
+              "package:internal/durfmt": 2000,
+              "package:internal/editdirective": 2000,
+              "package:internal/envsource": 2000,
+              "package:internal/fabriccli": 2000,
+              "package:internal/fabricvocab": 2000,
+              "package:internal/failuretrace": 2000,
+              "package:internal/friction": 2000,
+              "package:internal/frictionengine": 2000,
+              "package:internal/fslink": 2000,
+              "package:internal/fswatch": 2000,
+              "package:internal/fsx": 2000,
+              "tests:internal/adoptcli": 2000,
+              "tests:internal/agentname": 2000,
+              "tests:internal/alignment": 2000,
+              "tests:internal/arbiterstop": 2000,
+              "tests:internal/batcher": 2000,
+              "tests:internal/boardcli": 2000,
+              "tests:internal/boardengine": 2000,
+              "tests:internal/boardengine/boardtest": 2000,
+              "tests:internal/buildinfo": 2000,
+              "tests:internal/buildvcs": 2000,
+              "tests:internal/burlercli": 2000,
+              "tests:internal/burlerengine": 2000,
+              "tests:internal/cardverify": 2000,
+              "tests:internal/cleanupcli": 2000,
+              "tests:internal/clihelp": 2000,
+              "tests:internal/cliwire": 2000,
+              "tests:internal/commentlint": 2000,
+              "tests:internal/configcli": 2000,
+              "tests:internal/configengine": 2000,
+              "tests:internal/configreg": 2000,
+              "tests:internal/configsync": 2000,
+              "tests:internal/creelcli": 2000,
+              "tests:internal/creelengine": 2000,
+              "tests:internal/darnengine": 2000,
+              "tests:internal/discussionparser": 2000,
+              "tests:internal/dotgit": 2000,
+              "tests:internal/durfmt": 2000,
+              "tests:internal/editdirective": 2000,
+              "tests:internal/envsource": 2000,
+              "tests:internal/fabriccli": 2000,
+              "tests:internal/fabricvocab": 2000,
+              "tests:internal/failuretrace": 2000,
+              "tests:internal/friction": 2000,
+              "tests:internal/frictionengine": 2000,
+              "tests:internal/fslink": 2000,
+              "tests:internal/fswatch": 2000,
+              "tests:internal/fsx": 2000
+            },
+            "messages": 317.5,
+            "written": 95790
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "30-retag-internal-g-o"
+      ],
+      "profile": "wide",
+      "estimate": 369482,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 16,
+        "startup": 160996,
+        "read_union": 124468,
+        "cards": [
+          {
+            "card": 30,
+            "card_text": 468,
+            "reads": {
+              "package:internal/gatecli": 2000,
+              "package:internal/gateslot": 2000,
+              "package:internal/gitexec": 2000,
+              "package:internal/githubclient": 2000,
+              "package:internal/gitkit": 2000,
+              "package:internal/gitrepo": 2000,
+              "package:internal/gitrepo/internal/gitoracle": 2000,
+              "package:internal/haltnote": 2000,
+              "package:internal/helpcli": 2000,
+              "package:internal/hibernatecli": 2000,
+              "package:internal/hibernateengine": 2000,
+              "package:internal/hubforge": 2000,
+              "package:internal/hubgeom": 2000,
+              "package:internal/hubissues": 2000,
+              "package:internal/hubreconcile": 2000,
+              "package:internal/idecli": 2000,
+              "package:internal/ideengine": 2000,
+              "package:internal/impactset": 2000,
+              "package:internal/languageconfig": 2000,
+              "package:internal/lenses": 2000,
+              "package:internal/lock": 2000,
+              "package:internal/logger": 2000,
+              "package:internal/loggerconfig": 2000,
+              "package:internal/lyxcwd": 2000,
+              "package:internal/lyxtemp": 2000,
+              "package:internal/machinename": 2000,
+              "package:internal/mergeresolve": 2000,
+              "package:internal/modelspec": 2000,
+              "package:internal/orchcli": 2000,
+              "package:internal/orchengine": 2000,
+              "package:internal/output": 2000,
+              "tests:internal/gatecli": 2000,
+              "tests:internal/gateslot": 2000,
+              "tests:internal/gitexec": 2000,
+              "tests:internal/githubclient": 2000,
+              "tests:internal/gitkit": 2000,
+              "tests:internal/gitrepo": 2000,
+              "tests:internal/gitrepo/internal/gitoracle": 2000,
+              "tests:internal/haltnote": 2000,
+              "tests:internal/helpcli": 2000,
+              "tests:internal/hibernatecli": 2000,
+              "tests:internal/hibernateengine": 2000,
+              "tests:internal/hubforge": 2000,
+              "tests:internal/hubgeom": 2000,
+              "tests:internal/hubissues": 2000,
+              "tests:internal/hubreconcile": 2000,
+              "tests:internal/idecli": 2000,
+              "tests:internal/ideengine": 2000,
+              "tests:internal/impactset": 2000,
+              "tests:internal/languageconfig": 2000,
+              "tests:internal/lenses": 2000,
+              "tests:internal/lock": 2000,
+              "tests:internal/logger": 2000,
+              "tests:internal/loggerconfig": 2000,
+              "tests:internal/lyxcwd": 2000,
+              "tests:internal/lyxtemp": 2000,
+              "tests:internal/machinename": 2000,
+              "tests:internal/mergeresolve": 2000,
+              "tests:internal/modelspec": 2000,
+              "tests:internal/orchcli": 2000,
+              "tests:internal/orchengine": 2000,
+              "tests:internal/output": 2000
+            },
+            "messages": 278.5,
+            "written": 84018
+          }
+        ]
+      }
+    },
+    {
+      "cards": [
+        "31-retag-internal-p-z"
+      ],
+      "profile": "wide",
+      "estimate": 503204,
+      "breakdown": {
+        "weights": {
+          "orientation": 31400,
+          "batch_growth": 7000,
+          "fork_messages": 4,
+          "message_context": 300,
+          "target_messages": 6,
+          "test_file_messages": 0.5,
+          "uses_messages": 2,
+          "context_per_line": 12,
+          "package_context": 2000,
+          "write_per_card_line": 12
+        },
+        "position": 17,
+        "startup": 167996,
+        "read_union": 205296,
+        "cards": [
+          {
+            "card": 31,
+            "card_text": 1212,
+            "reads": {
+              "file:PATTERN.md": 1536,
+              "file:crucible/README.md": 4044,
+              "file:crucible/orchestrator-prompt.md": 2472,
+              "file:crucible/review-prompt-template.md": 2844,
+              "file:pattern/PATTERN-test-speed.md": 1188,
+              "package:.": 2000,
+              "package:cmd/lyx": 2000,
+              "package:crucible": 2000,
+              "package:internal/pairteardown": 2000,
+              "package:internal/parentdirective": 2000,
+              "package:internal/parentlock": 2000,
+              "package:internal/parentreview": 2000,
+              "package:internal/pattern": 2000,
+              "package:internal/pauserecord": 2000,
+              "package:internal/preflight": 2000,
+              "package:internal/preflightshed": 2000,
+              "package:internal/proc": 2000,
+              "package:internal/quarrycli": 2000,
+              "package:internal/reportcli": 2000,
+              "package:internal/reportengine": 2000,
+              "package:internal/reviewbudget": 2000,
+              "package:internal/runproc": 2000,
+              "package:internal/runprofile": 2000,
+              "package:internal/seatengine": 2000,
+              "package:internal/segmentcolor": 2000,
+              "package:internal/selfexec": 2000,
+              "package:internal/selfreportcli": 2000,
+              "package:internal/selfreportengine": 2000,
+              "package:internal/shell": 2000,
+              "package:internal/shellguard": 2000,
+              "package:internal/shortcutcli": 2000,
+              "package:internal/sleepjournal": 2000,
+              "package:internal/standalonegeom": 2000,
+              "package:internal/standalonestate": 2000,
+              "package:internal/state": 2000,
+              "package:internal/statuscommit": 2000,
+              "package:internal/statuspane": 2000,
+              "package:internal/stencil": 2000,
+              "package:internal/stencilcli": 2000,
+              "package:internal/stencilstore": 2000,
+              "package:internal/summaryparser": 2000,
+              "package:internal/tendercli": 2000,
+              "package:internal/tenderengine": 2000,
+              "package:internal/termwindow": 2000,
+              "package:internal/toolfloor": 2000,
+              "package:internal/treadleengine": 2000,
+              "package:internal/twilldirective": 2000,
+              "package:internal/verifyrun": 2000,
+              "package:internal/verifytree": 2000,
+              "package:internal/vscode": 2000,
+              "package:internal/weftname": 2000,
+              "package:internal/yamlengine": 2000,
+              "package:pattern": 2000,
+              "tests:.": 2000,
+              "tests:cmd/lyx": 2000,
+              "tests:crucible": 2000,
+              "tests:internal/pairteardown": 2000,
+              "tests:internal/parentdirective": 2000,
+              "tests:internal/parentlock": 2000,
+              "tests:internal/parentreview": 2000,
+              "tests:internal/pattern": 2000,
+              "tests:internal/pauserecord": 2000,
+              "tests:internal/preflight": 2000,
+              "tests:internal/preflightshed": 2000,
+              "tests:internal/proc": 2000,
+              "tests:internal/quarrycli": 2000,
+              "tests:internal/reportcli": 2000,
+              "tests:internal/reportengine": 2000,
+              "tests:internal/reviewbudget": 2000,
+              "tests:internal/runproc": 2000,
+              "tests:internal/runprofile": 2000,
+              "tests:internal/seatengine": 2000,
+              "tests:internal/segmentcolor": 2000,
+              "tests:internal/selfexec": 2000,
+              "tests:internal/selfreportcli": 2000,
+              "tests:internal/selfreportengine": 2000,
+              "tests:internal/shell": 2000,
+              "tests:internal/shellguard": 2000,
+              "tests:internal/shortcutcli": 2000,
+              "tests:internal/sleepjournal": 2000,
+              "tests:internal/standalonegeom": 2000,
+              "tests:internal/standalonestate": 2000,
+              "tests:internal/state": 2000,
+              "tests:internal/statuscommit": 2000,
+              "tests:internal/statuspane": 2000,
+              "tests:internal/stencil": 2000,
+              "tests:internal/stencilcli": 2000,
+              "tests:internal/stencilstore": 2000,
+              "tests:internal/summaryparser": 2000,
+              "tests:internal/tendercli": 2000,
+              "tests:internal/tenderengine": 2000,
+              "tests:internal/termwindow": 2000,
+              "tests:internal/toolfloor": 2000,
+              "tests:internal/treadleengine": 2000,
+              "tests:internal/twilldirective": 2000,
+              "tests:internal/verifyrun": 2000,
+              "tests:internal/verifytree": 2000,
+              "tests:internal/vscode": 2000,
+              "tests:internal/weftname": 2000,
+              "tests:internal/yamlengine": 2000,
+              "tests:pattern": 2000
+            },
+            "messages": 429,
+            "written": 129912
+          }
+        ]
+      }
+    }
+  ],
+  "currentBatch": 1,
+  "masterStrand": "01eca7b5ce6b1202052f0975e603e58a",
+  "masterSessionId": "0c9c3bf8-0ef2-4615-96de-221f53bd2d82",
+  "masterEngine": "claude",
+  "batches": {
+    "1": {
+      "slug": "gate-key-shape",
+      "cards": [
+        "01-gate-key-shape",
+        "02-gate-flag"
+      ],
+      "cardHashes": {
+        "01-gate-key-shape": "3f4e9d622bb5908ef9675689f48d47d4b71fdb095966e2aaea3bdc695db0b16b",
+        "02-gate-flag": "57f1450c6767cc497fcd9ae070e2e384fc63d297bb87a98e7d40ff4d70863547"
+      },
+      "startSha": "f4a897b8596ca46981eff2f75c951026df02121b",
+      "kind": "fork",
+      "spawnedAt": "2026-10-24T09:00:53Z",
+      "sessionId": "0c9c3bf8-0ef2-4615-96de-221f53bd2d82",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
+    }
+  }
+}
