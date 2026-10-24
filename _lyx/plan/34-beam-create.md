@@ -38,6 +38,7 @@
 A new module `lyx beam`, a cobra subtree mounted in `cmd/lyx/main.go`'s `newRoot` (PATTERN-cli-cobra), with `Command`, `RunCLI` and `RunCLIIn`, and this card's verb `create <slug>` (D9); `promote` and `land` follow on cards 35 and 36.
 Like `adoptcli`, `beamcli` has no engine package and calls the owning modules' functions in-process, which PATTERN-cli-cobra's background lists as a deviation; the package doc records the verbs, their steps and bounds.
 Every verb resolves its location through `battencli.ResolveBattenPrime`, so it runs from the prime and from any beam and acts on the prime's location.
+`beamcli` is a hub-only CLI like `adoptcli` and `battencli`, so `PATTERN-cliwire-sole-wiring`'s standalone wiring does not apply: its location comes from `battencli.ResolveBattenPrime` (card 23) and it declares no `cliwire.Module`.
 
 `create` takes an existing project entry that is not done and whose `beam` is false, or whose `beam` is true and whose effective owner (`ReadOwners` with `hubgeom.ParentOf`) is this machine or none; the project's title, brief and labels are board writing, so the verb makes no entry.
 It refuses, each with its way forward: an absent entry or a note, naming `lyx board upsert` of a project entry under a slug of its own; a task, naming `lyx beam promote <slug>`; a done project, naming a new project entry; a beam another machine owns, naming the owner and `lyx beam create <slug>` run there, or `lyx adopt <slug>` to take the beam over and then `lyx beam create <slug>` here.

@@ -7,6 +7,8 @@
 - `internal/orchcli#orchCLI.startCmd`
 - `internal/orchcli#TestRefuseNonPrime`
 - `internal/orchcli#TestStart_Refusals`
+- `internal/orchcli#refusalCase`
+- `internal/orchcli#TestOrchIntegration_Refusals`
 - `contracts/stencils/orch/orch-template-role.md`
 - `internal/orchcli#reconcileHub`
 - `internal/orchcli#resumeContextCommand`
@@ -39,9 +41,12 @@ The input that reaches the landing refusal is a `lyx orch start` in the beam aft
 `OrchLive` is the engine liveness predicate `lyx orch status` uses, as a function other modules call: the worktree's orch state records a strand that reed tracks and reports live (`orchLiveFrom` over the loaded state and the worktree's reed strands); hubgeom's walk (card 18) and the ready-notice routing (card 26) take it.
 `TestOrchLiveFrom` rows: no strand recorded, a tracked live strand, a tracked dead strand, an untracked strand and a strands error.
 `TestRefuseNonPrime` gains rows: a beam passes, a non-beam pair is refused naming `lyx beam create` and `lyx beam promote`.
+Both orch refusals, `refuseNonPrime`'s and the pre-run's wrap of the drivable-worktree refusal, open with "lyx orch runs from the hub's prime worktree or a beam" in place of "runs from the hub's prime worktree only", and `TestRefuseNonPrime`'s existing non-prime row asserts that opening.
+The integration helper `refusalCase` runs for a task worktree and for the prime's records sibling alike, so it asserts that shared opening and no longer the "prime worktree only" wording; the beam verbs the task-worktree refusal names are asserted by `TestRefuseNonPrime`'s row, since the records sibling's refusal names none.
+`refusalCase`'s doc, `TestOrchIntegration_Refusals`'s doc and `refusal_integration_test.go`'s file header, which describe a prime-only rule, are rewritten to describe the prime-or-beam rule.
 `reconcileHub` resolves the prime's location from the acting location before it builds the teardown and its seams, since the hub-scope reconcile runs from the prime whichever orch starts it.
 The resume-context hook changes directory to the acting orch's own anchor, the beam's in a beam: `resumeContextCommand`'s comment and the package doc's session-start hook section say so in place of "the prime's anchor".
 `TestOrchInBeam` over a hubforge hub with a marked beam pair `b` and a recorded shortname: the orch paths of `b`'s location lie under `b`'s anchor `.lyx/orch/` and `_lyx/orch/`, never the prime's, and `ReedGeometry` of `b` names the orch role's strand `<shortname>:b:orch`.
-The orch role stencil tells an orch to read and start only entries whose `parent_beam` is its own worktree, the prime's orch those with an empty one, and never to pass `--adopt-local`; the orch package doc and `docs/overview.md`'s orch row, which say "prime only", are rewritten to say the orch runs in the prime and in any beam.
+The orch role stencil tells an orch to read and start only entries whose `parent_beam` is its own worktree, the prime's orch those with an empty one, and never to pass `--adopt-local`; the orch package doc, `Command`'s Long sentence "Every verb runs from the hub's prime worktree only" and `docs/overview.md`'s orch row, which say "prime only", are rewritten to say the orch runs in the prime and in any beam.
 
 **ImpactSummary:** The orch pre-run admits beams and start gains two beam refusals; refuseNonPrime's callers are Command and its test, both on this card.
