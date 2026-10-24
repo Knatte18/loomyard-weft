@@ -1,12 +1,12 @@
 {
   "current_producer": "Run-Shed",
-  "state": "running",
-  "error": "",
+  "state": "failed",
+  "error": "battencli: cannot resume \"gate-runs-once\": branch gate-runs-once is rewound against origin; origin rewound gate-runs-once to 959fc277d999aa08a42e49e48acbffcabae9295d, dropping 00d1b470bc3ec6521be694caac51ad795e9d91a4 10cfebf1bcf9b2877638814f94d8431f04174b42; to accept the rewind, run `git reset --keep 959fc277d999aa08a42e49e48acbffcabae9295d` in /home/knatte/Code/loomyard-LYXHUB/gate-runs-once, which drops the local commits past origin's head, then `lyx fabric push` there; to restore the dropped commits, run `git push origin gate-runs-once` in /home/knatte/Code/loomyard-LYXHUB/gate-runs-once, a plain fast-forward; then re-run lyx batten run gate-runs-once",
   "pause_requested": false,
   "activity": {
     "now": "Run-Shed",
     "last": "Run-Shed → bounced to Run-Shed",
-    "wait": ""
+    "wait": "battencli: cannot resume \"gate-runs-once\": branch gate-runs-once is rewound against origin; origin rewound gate-runs-once to 959fc277d999aa08a42e49e48acbffcabae9295d, dropping 00d1b470bc3ec6521be694caac51ad795e9d91a4 10cfebf1bcf9b2877638814f94d8431f04174b42; to accept the rewind, run `git reset --keep 959fc277d999aa08a42e49e48acbffcabae9295d` in /home/knatte/Code/loomyard-LYXHUB/gate-runs-once, which drops the local commits past origin's head, then `lyx fabric push` there; to restore the dropped commits, run `git push origin gate-runs-once` in /home/knatte/Code/loomyard-LYXHUB/gate-runs-once, a plain fast-forward; then re-run lyx batten run gate-runs-once"
   },
   "history": [
     {
@@ -92,6 +92,14 @@
       "outcome": "stuck",
       "output": "child running → blocked at Webster",
       "at": "2026-10-24T11:03:46Z",
+      "budget_exempt": true,
+      "routed_to": "Run-Shed"
+    },
+    {
+      "producer": "Run-Shed",
+      "outcome": "stuck",
+      "output": "child blocked → running at Webster",
+      "at": "2026-10-24T11:19:53Z",
       "budget_exempt": true,
       "routed_to": "Run-Shed"
     }
