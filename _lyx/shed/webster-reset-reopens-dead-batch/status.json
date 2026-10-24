@@ -1,12 +1,11 @@
 {
-  "current_producer": "Darn-Write",
+  "current_producer": "Code-Bouncer",
   "state": "running",
   "error": "",
-  "pending_by": "operator",
   "pause_requested": false,
   "activity": {
-    "now": "Darn-Write",
-    "last": "Preflight → done",
+    "now": "Code-Bouncer",
+    "last": "Darn-Write → done",
     "wait": ""
   },
   "history": [
@@ -15,6 +14,34 @@
       "outcome": "done",
       "output": "",
       "at": "2026-10-24T13:47:41Z"
+    },
+    {
+      "producer": "Darn-Write",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYXHUB/webster-reset-reopens-dead-batch/_lyx/landing/summary.md",
+      "at": "2026-10-24T13:58:48Z",
+      "gate_attempts": 0,
+      "gate_spans": [
+        {
+          "gate": "discussion",
+          "kind": "gate",
+          "start": "2026-10-24T13:55:37.087400675Z",
+          "end": "2026-10-24T13:55:49.951859724Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-10-24T13:55:50.023091118Z",
+          "end": "2026-10-24T13:58:48.19209011Z"
+        },
+        {
+          "gate": "description",
+          "kind": "gate",
+          "start": "2026-10-24T13:58:48.244727592Z",
+          "end": "2026-10-24T13:58:48.244785049Z"
+        }
+      ],
+      "by": "operator"
     }
   ],
   "product": {
