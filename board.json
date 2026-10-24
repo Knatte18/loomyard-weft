@@ -1179,7 +1179,7 @@
       "isolated": false,
       "brief": "",
       "body": "## Seen (2026-10-24)\n\nTo get `gate-runs-once` past PATTERN headroom the orch shortened 20 PATTERN entries.\n`lyx loom decision add` takes one `--pattern-entry` per call, so it took 20 calls, 20 commits and 20 full creel notices into the plan session, each repeating the whole decision text: noisy for the agent and the operator watching it.\n\n## Idea\n\n`lyx loom decision add` accepts several decisions in one call, such as `--from \u003cfile\u003e` with one entry per decision or repeated `--pattern-entry`/`--pattern-text` pairs, writes them in one commit and sends one short notice naming the new headings and pointing at the record, never the full texts.",
-      "status": "running · Code-Burler-Review",
+      "status": "running · Code-Burler-Fix",
       "created": "2026-10-24T07:39:05Z",
       "revised": "2026-10-24T08:27:15Z",
       "profile": "light",
