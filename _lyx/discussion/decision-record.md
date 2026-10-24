@@ -67,6 +67,12 @@ Rationale: Merriam edits no source, and a fork's prompt tells it to do only what
 - A parent that never records the call sees one notice per round while the reviewer keeps raising the finding.
 - A fork already running when the notice arrives does not see the decision; it reaches the next fork.
 
+<!-- lyx:carry-over Code-Review -->
+- Code-Review, round 1: converged; each finding below was fixed or disputed by the round's fixer, and no fresh reviewer has seen the result; the fixer report says which.
+  Review: _lyx/reviews/code/round-1-review.md; fixer report: _lyx/reviews/code/round-1-fixer-report.md.
+  - live-fixer-resume-notice-untested (class scope, severity MEDIUM, open in rounds 1)
+<!-- /lyx:carry-over Code-Review -->
+
 ## Acceptance criteria
 
 - A fix call over a review with a `decision`-class finding posts one notice to the parent naming the finding's id, summary and fix, and a failed post leaves the round's outcome unchanged.
