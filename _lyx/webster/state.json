@@ -801,7 +801,7 @@
       }
     }
   ],
-  "currentBatch": 0,
+  "currentBatch": 14,
   "masterStrand": "b26fdaa60c57e20a41bb8040667d0203",
   "masterSessionId": "5c0f8a9d-af0b-4b1f-abf2-fb8d7a69e703",
   "masterEngine": "claude",
@@ -847,6 +847,30 @@
       "bracketTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-umbrella-groundwork/5c0f8a9d-af0b-4b1f-abf2-fb8d7a69e703/subagents/agent-a6e41b7f8893f18a6.jsonl"
       ]
+    },
+    "14": {
+      "slug": "board-readme-projects",
+      "cards": [
+        "14-board-readme-projects",
+        "15-hubgeom-parent-of",
+        "16-delete-parent-slug",
+        "17-boardcli-wiring",
+        "18-hubgeom-live-orch-walk"
+      ],
+      "cardHashes": {
+        "14-board-readme-projects": "c9352f795b2c85c2ed67e4d1c52cbd25782d410bada222c3fd3cae5ad6ae6b8f",
+        "15-hubgeom-parent-of": "9bd6586d23d80803996961b254a1243b415932ea80db35b30493a070b12b8f9b",
+        "16-delete-parent-slug": "e024b462a0a0474eacf36ecc5da981ce3a63aa07a63fe5c958e301cf7ffec4e3",
+        "17-boardcli-wiring": "5578d890d89f9656e67f5b84c62bb856a158ba84bef662a902a666ae1c76e352",
+        "18-hubgeom-live-orch-walk": "5ea801a6e1428cc5a634a3651eb016894f3de45b7e28677a591a9e26878ac0bf"
+      },
+      "startSha": "a8e409463e70af46ae73e40bfcba5cc3fef72926",
+      "kind": "fork",
+      "spawnedAt": "2026-10-24T17:26:14Z",
+      "sessionId": "5c0f8a9d-af0b-4b1f-abf2-fb8d7a69e703",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
     },
     "5": {
       "slug": "add-adopt-local",
