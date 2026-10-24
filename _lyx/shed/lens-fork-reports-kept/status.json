@@ -1,11 +1,11 @@
 {
-  "current_producer": "Finalize",
+  "current_producer": "Code-Bouncer",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Finalize",
-    "last": "PR-Review → done",
+    "now": "Code-Bouncer",
+    "last": "Finalize → rerouted to Code-Bouncer",
     "wait": ""
   },
   "history": [
@@ -247,6 +247,13 @@
       "outcome": "done",
       "output": "",
       "at": "2026-10-24T07:47:30Z"
+    },
+    {
+      "producer": "Finalize",
+      "outcome": "reroute",
+      "output": "",
+      "at": "2026-10-24T07:52:59Z",
+      "routed_to": "Code-Bouncer"
     }
   ],
   "product": {
