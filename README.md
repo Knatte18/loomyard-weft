@@ -17,7 +17,7 @@ Held by a run; its scope is locked until the run ends.
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T1 | **Each test runs once per tree: disjoint tiers, row entry gates, carried green runs, tmux in final**<br>• Tiers tagged by name, shed row entry gates, verify skipped on an already green tree, tmux in the final gate, gate time measured<br>• `profile: light` | [`gate-runs-once`](design-gate-runs-once.md) | loom | Webster | neve | 6d<br>3h | gate, shed, loom, webster, fabric, batten |
-| T5 | **Keep the Plan writer audit scripts and baseline in docs/research**<br>• Archive A8 plan-writer-context scripts and tables under docs/research<br>• `profile: docs` | [`plan-writer-audit-scripts`](design-plan-writer-audit-scripts.md) | darn | PR-Review | neve | 2m<br>2m | loom |
+| T5 | **Keep the Plan writer audit scripts and baseline in docs/research**<br>• Archive A8 plan-writer-context scripts and tables under docs/research<br>• `profile: docs` | [`plan-writer-audit-scripts`](design-plan-writer-audit-scripts.md) | darn | Finalize | neve | 2m<br>2m | loom |
 
 ### Ready (0)
 
