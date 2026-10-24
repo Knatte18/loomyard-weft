@@ -1,13 +1,12 @@
 {
   "current_producer": "Webster",
-  "state": "running",
-  "error": "",
-  "pending_by": "shed",
+  "state": "blocked",
+  "error": "Batch 22 (tier-plan-docs) is dead with recovery_retry false, so its recovery is exhausted and batches 24, 27, 28, 29, 30 and 31 were not begun.",
   "pause_requested": false,
   "activity": {
     "now": "Webster",
     "last": "Webster → stuck",
-    "wait": ""
+    "wait": "Batch 22 (tier-plan-docs) is dead with recovery_retry false, so its recovery is exhausted and batches 24, 27, 28, 29, 30 and 31 were not begun."
   },
   "history": [
     {
@@ -376,6 +375,22 @@
           "kind": "gate",
           "start": "2026-10-24T11:02:05.154571957Z",
           "end": "2026-10-24T11:02:05.154657386Z"
+        }
+      ],
+      "by": "shed"
+    },
+    {
+      "producer": "Webster",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-24T11:03:45Z",
+      "gate_attempts": 0,
+      "gate_spans": [
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-10-24T11:03:44.727719735Z",
+          "end": "2026-10-24T11:03:44.72780778Z"
         }
       ],
       "by": "shed"
