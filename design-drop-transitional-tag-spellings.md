@@ -2,8 +2,6 @@
 
 `drop-transitional-tag-spellings` · Task · enhancement
 
-Depends on: [`gate-runs-once`](design-gate-runs-once.md)
-
 ## Drop the transitional tag spellings (D13 follow-up of `gate-runs-once`)
 
 `gate-runs-once` retags every test file to its one `tierN` tag.
