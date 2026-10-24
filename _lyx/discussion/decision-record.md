@@ -265,6 +265,12 @@ Decision: Shorten PATTERN-template-overlay to: Judging config document against i
 
 Rationale: PATTERN.md is already over its headroom line and this task's entries add 510 bytes; trimming detail the background files and code already hold makes room until a PATTERN cleanup (operator, 2026-10-24).
 
+### Added after Discussion (parent, 2026-10-24): Shorten shell-guard-table for PATTERN headroom
+
+Decision: Shorten PATTERN-shell-guard-table to: Guarding shell command: only in `internal/shellguard`, every engine rendering every row.
+
+Rationale: PATTERN.md is already over its headroom line and this task's entries add 510 bytes; trimming detail the background files and code already hold makes room until a PATTERN cleanup (operator, 2026-10-24).
+
 ## Constraints
 
 - The hub's tier commands must carry both tag spellings, and this hub must stop using `covers`, before Webster gates any card that retags a file; the orch applies it from the prime with `lyx config gate --set`:
@@ -344,6 +350,7 @@ Rationale: PATTERN.md is already over its headroom line and this task's entries 
 - `PATTERN-trimpath-safe-root` — changes: Locating module root in gate-built code: never from a `runtime.Caller` path alone. — added after Discussion (parent, 2026-10-24)
 - `PATTERN-role-skills-typed` — changes: Loading spawned session's skill: spawner names it on launch spec and lyx delivers it; no stencil asks. (test) — added after Discussion (parent, 2026-10-24)
 - `PATTERN-template-overlay` — changes: Judging config document against its template: only `configengine`'s effective template. — added after Discussion (parent, 2026-10-24)
+- `PATTERN-shell-guard-table` — changes: Guarding shell command: only in `internal/shellguard`, every engine rendering every row. — added after Discussion (parent, 2026-10-24)
 
 ## Notes for the plan writer
 
