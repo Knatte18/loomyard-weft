@@ -39,6 +39,7 @@ From `docs/research/codex-feasibility.md`, section 3, after the spike:
 
 Decision (operator, 2026-10-24): Codex's first role is Burler review only, so Claude plans and writes code while another model family reviews it.
 The sole aim is to offload Claude.
+Measured 2026-10-24 over the 10 latest full loom runs (`tools/tokencount/tokencount.sh -last 10`): the reviewers and their forks cost about 25% of all spend ($184 of $741), mostly Plan review (13%) and Discussion review (9%), while Code and Merge review are under 3%.
 If a twill fan on Codex works poorly, the review runs as strong single Codex agents instead.
 Codex reviews are investigated and benched thoroughly before any of it goes into production (operator, 2026-10-24).
 
