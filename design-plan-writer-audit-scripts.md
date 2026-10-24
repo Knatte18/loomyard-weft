@@ -1,6 +1,6 @@
 # Keep the Plan writer audit scripts and baseline in docs/research
 
-`plan-writer-audit-scripts` · Task · audit, loom · running · Finalize
+`plan-writer-audit-scripts` · Task · audit, loom · done
 
 ## Task (operator, 2026-10-24)
 
