@@ -684,7 +684,7 @@ index 137142479..5feebad91 100644
  ## cmd/lyx
  
 diff --git a/docs/overview.md b/docs/overview.md
-index 8188d3561..9d5c3d089 100644
+index afea44184..cbe305d4b 100644
 --- a/docs/overview.md
 +++ b/docs/overview.md
 @@ -79,7 +79,7 @@ Every other geometry token (records paths, junctions, `_lyx/<module>`, launchers
@@ -1193,7 +1193,7 @@ index ceba2be19..1b4dd430a 100644
  //
  // A worktree without the sparse marker `_lyx/config/sparse` still holds today's full config files.
 diff --git a/internal/landingshed/doc.go b/internal/landingshed/doc.go
-index c9b6401aa..6bca27376 100644
+index 022e08349..e4ba1b1fa 100644
 --- a/internal/landingshed/doc.go
 +++ b/internal/landingshed/doc.go
 @@ -4,6 +4,8 @@
