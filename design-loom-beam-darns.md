@@ -39,7 +39,7 @@ The beam setup on the board: `orch-any-worktree` (umbrella tasks spawning and la
 
 - The pre-plan gets a perch, but the pre-plan is far smaller than today's plan format: pieces and their contracts, not cards.
 - No perch per darn: a review per batch proved far too expensive in Millhouse, and a perch per piece is the same.
-  The pieces run as darn with review off (`review_max_bounces: 0`), each still passing its own gate and tests; the whole-task perch after the last merge-back is the code review, as Webster's round over the whole diff is today.
+  The pieces run as darn with review off (`code_max_bounces: 0`, since `code-review-one-perch` made darn's perch the Code-Review perch), each still passing its own gate and tests; the whole-task perch after the last merge-back is the code review, as Webster's round over the whole diff is today.
   For scale, a darn perch costs about $1.30 per run in the audit window.
 - The pieces run tests as they go, the way Webster's card gate runs after every card.
 
@@ -48,8 +48,9 @@ The beam setup on the board: `orch-any-worktree` (umbrella tasks spawning and la
 The pieces run on their own recipe, `stitch`, derived from darn, not on a darn profile: rows go away, not only bounds.
 Alignment per piece is pointless when the piece is a closed, synchronised share of an umbrella that is aligned whole.
 
-- Kept: Preflight; the writer, on Sonnet, briefed by its pre-plan contract; Merge-In against the umbrella branch.
-- Dropped: Darn-Bouncer and the Burler review/fix rows (review off), Describe, Publish, PR-Align and PR-Gate.
+- Kept: Preflight; the writer, on Sonnet, briefed by its pre-plan contract.
+- Dropped: Code-Bouncer and the Code-Burler review/fix rows (review off), Describe and PR-Review.
+  Since `loom-tail-review` (2026-10-24) darn has no Merge-In, Publish, PR-Align or PR-Gate rows; its Finalize merges the parent in under the lock.
 - Finalize merges into the umbrella branch under the parent lock instead of landing on `main`.
 - Friction-Reflect runs once per umbrella, not per piece.
 - A `stitch` task runs only inside an umbrella; it cannot run alone.
