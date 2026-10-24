@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-24 09:52 UTC; every age below is as of then.
+Rendered 2026-10-24 09:53 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -17,7 +17,7 @@ Held by a run; its scope is locked until the run ends.
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T1 | **Each test runs once per tree: disjoint tiers, row entry gates, carried green runs, tmux in final**<br>• Tiers tagged by name, shed row entry gates, verify skipped on an already green tree, tmux in the final gate, gate time measured<br>• `profile: light` | [`gate-runs-once`](design-gate-runs-once.md) | loom | Plan-Burler-Review | neve | 6d<br>3h | gate, shed, loom, webster, fabric, batten |
-| T5 | **Codex CLI hands-on spike: tmux driving, hooks, approvals, report**<br>• Drive Codex in a private tmux server and report what a codexengine needs<br>• `profile: docs` | [`codex-spike`](design-codex-spike.md) | darn | Worktree-Create | neve | 0m<br>0m | shuttle, codex |
+| T5 | **Codex CLI hands-on spike: tmux driving, hooks, approvals, report**<br>• Drive Codex in a private tmux server and report what a codexengine needs<br>• `profile: docs` | [`codex-spike`](design-codex-spike.md) | darn | Darn-Write | neve | 0m<br>0m | shuttle, codex |
 
 ### Ready (0)
 
