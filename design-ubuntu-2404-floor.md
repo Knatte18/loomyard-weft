@@ -19,7 +19,7 @@ Everything must work on Ubuntu 24.04; checking that by hand all the time is a la
 - A mechanical check, so no one checks by hand, either:
   - a CI job on GitHub's `ubuntu-24.04` runner, tmux from apt, that runs the tiers up to the tmux tier on every push to `main`; or
   - the gate's tmux tier runs against a tmux 3.4 binary on every machine, so a run on Neve meets the floor's tmux too.
-- OSL-1046 runs the tmux tier in every `final` and `landing` gate since 2026-10-23, so a run there already meets the floor; the gap is runs on Neve.
+- OSL-1046 runs the tmux tier in every end gate since 2026-10-23 (then keyed `final` and `landing`, now `webster`, `merge-in` and `finalize`), so a run there already meets the floor; the gap is runs on Neve.
 
 
 ## From issue #848
