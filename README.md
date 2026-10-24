@@ -36,7 +36,7 @@ Waits only on Running or Ready entries.
 | T6 | **Fork git-mutation guard fails a run on git commands confined to a scratch repo**<br>• `profile: light` | [`fork-git-guard-scratch-repo`](design-fork-git-guard-scratch-repo.md) | darn | `pattern-cleanup` | 21h<br>2h | shed, burler |
 | T9 | **Umbrella groundwork: project entries, pairs from a parent pair, and umbrella tasks that spawn and land from their own worktree**<br>• [WS 004+006] Board projects, fabric pairs from a parent pair, batten and orch from any worktree, umbrella tasks | [`umbrella-groundwork`](design-umbrella-groundwork.md) | loom | `pattern-cleanup` | 3w<br>2h | fabric, batten, orch, board, reed, creel, shed, workspaces |
 
-## Notes (49)
+## Notes (50)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
 
@@ -51,7 +51,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | A7 |  | **Trial: batcher profile wide (budget 300k)**<br>• Hub runs a new batcher profile wide, budget 300k; check cost and fork quality before taking it into the template | [`batch-budget-300k-trial`](design-batch-budget-300k-trial.md) | 1d<br>4h | webster |
 | A8 |  | **Plan writer cost: sub-planners per part, and twill versus a solo writer**<br>• The Plan writer is 18% of spend; sub-planners per part for large bundles, and a twill versus solo Opus high comparison on cost, rounds and time | [`plan-writer-context`](design-plan-writer-context.md) | 1d<br>3h | loom, stencil |
 
-### Bugs (7)
+### Bugs (8)
 
 | # | P | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
@@ -62,6 +62,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | B5 |  | **webster: Master writes stuck after reset --to batch-start instead of running recover-batch** | [`webster-reset-reopens-dead-batch`](design-webster-reset-reopens-dead-batch.md) | 0m<br>0m | webster |
 | B6 |  | **webstercli standalone tests fail when an empty /tmp/.git exists** | [`webstercli-tests-ignore-tmp-git`](design-webstercli-tests-ignore-tmp-git.md) | 0m<br>0m | webster, testkit |
 | B7 |  | **Webster batch whose card verify needs an orch-only change dead-ends: recover-batch ends dead with 'asking', then the run halts repeatedly with growing history** | [`webster-orch-need-to-parent`](design-webster-orch-need-to-parent.md) | 0m<br>0m | webster, loom |
+| B8 |  | **webster record-batch refuses Create target when the test is declared in an external _test package** | [`create-target-ext-test-pkg`](design-create-target-ext-test-pkg.md) | 0m<br>0m | webster, quarry |
 
 ### Enhancements (23)
 

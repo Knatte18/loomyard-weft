@@ -1120,6 +1120,27 @@
       "body": "Imported from [issue #867](https://github.com/Knatte18/loomyard/issues/867).\n\nWhat happened: in batch 22 the fork reported stuck because a card's verify needed the hub's tier commands changed, which only the orch can do.\n`lyx webster recover-batch 22` ended dead with dead_reason asking and recovery_retry false, and the refusal said to end the run stuck.\nA second refusal record for the same batch shows dead_reason died, recoveries 1 and recovery_retry true, with the way forward 'run recover-batch 22 once more'.\nThe run then halted blocked (anomaly escalation-to-human) three times; each re-entry appended further Webster stuck entries to the history, and the later halts said the recovery was exhausted and that later batches were not begun.\nSeparately, a begin-batch refusal reported plan_conflict tree_moved for a card target whose unit exists but whose member is missing, with the way forward being rebaseline.\n\nWhy abnormal: a need that only the orch can satisfy is classified as a dead recovery instead of a request to the parent, so the recovery budget is spent and the run can only halt for a human; the two refusals for one batch give contradictory recovery_retry and dead_reason values, and repeated re-entry of a halted run adds stuck history without progress.\n\nWhat to do: let a fork's 'needs orch action' report route to the parent (a message or a distinct pause state) without consuming the recovery budget, keep recovery_retry and dead_reason consistent across consecutive recover-batch refusals, and make a re-entry of an already-halted escalation return the existing halt rather than append another stuck entry.\n\nProvenance: task gate-runs-once; notes loom-halt.md, loom-halt-2.md, loom-halt-3.md, webster-refusal-recover-batch.md, webster-refusal-recover-batch-2.md, webster-refusal-begin-batch.md",
       "created": "2026-10-24T13:37:50Z",
       "revised": "2026-10-24T13:37:50Z"
+    },
+    {
+      "id": 806,
+      "handle": "B8",
+      "slug": "create-target-ext-test-pkg",
+      "title": "webster record-batch refuses Create target when the test is declared in an external _test package",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "webster",
+        "quarry"
+      ],
+      "issues": [
+        861
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Imported from [issue #861](https://github.com/Knatte18/loomyard/issues/861).\n\n**What happened**\n\n`lyx webster record-batch` failed two batches (`01-fabric-merge-in-at` and `33-landing-gate-at-fix-rows`) with a `create-not-done[blocking]` finding.\nThe card's Create target had the form `plan:internal/\u003cpkg\u003e#TestName`.\nThe check answered that the target \"still does not resolve\": `quarry answered not_found (the unit exists and the member is missing)`.\nThe refusal text itself says the test is present, declared as `internal/\u003cpkg\u003e_test#TestName` in an `internal/\u003cpkg\u003e/*_test.go` file.\nSeen for `internal/planparser#TestIsTestFile` and `internal/landingshed#TestHandsBack`.\n\n**Why it is abnormal**\n\nThe test exists and was written in the file the card asked for.\nIt sits in the Go external test package (`\u003cpkg\u003e_test`), which is the usual convention in this repository.\nThe Create-target resolution looks the member up only in the unit `internal/\u003cpkg\u003e`, so a member in the sibling `\u003cpkg\u003e_test` package is reported missing.\nBoth the card's work and the check are correct, so the batch is failed and the record is refused for a defect in the resolver, not in the task.\nThe refusal even names the real location, so the resolver has the information it needs.\n\n**What to do**\n\nMake the Create-target lookup for a `plan:` target also search the unit's external test package (`\u003cunit\u003e_test`), or accept a member quarry reports under that package.\nUntil then, a card creating a test in an external test package cannot pass `record-batch` and needs `lyx webster recover-batch`.\n\nProvenance: task `loom-tail-review`; notes `webster-refusal-record-batch.md`, `webster-refusal-record-batch-2.md`.\n",
+      "created": "2026-10-24T13:37:52Z",
+      "revised": "2026-10-24T13:37:52Z"
     }
   ],
   "prime_owner": "neve"
