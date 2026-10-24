@@ -1,0 +1,1 @@
+Review segment of task `gate-runs-once` needs a decision: review the brief at `/home/knatte/Code/loomyard-LYXHUB/gate-runs-once/_lyx/reviews/plan/round-2-escalation.md` with a one-shot fork.
