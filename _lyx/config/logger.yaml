@@ -1,1 +1,1 @@
-# This file holds the hub's tuned values over lyx's template.
+trace_retention_days: 3
