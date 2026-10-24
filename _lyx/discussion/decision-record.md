@@ -376,6 +376,12 @@ Every pick in D2 to D14 that the board left open is an auto-pick, recorded with 
   - loomcli-doc-retired-surface (class consistency, severity MEDIUM, open in rounds 1)
 <!-- /lyx:carry-over Webster-Review -->
 
+<!-- lyx:carry-over Merge-Review -->
+- Merge-Review, round 1: converged; each finding below was fixed or disputed by the round's fixer, and no fresh reviewer has seen the result; the fixer report says which.
+  Review: _lyx/reviews/merge/round-1-review.md; fixer report: _lyx/reviews/merge/round-1-fixer-report.md.
+  - verified-tree-round-gate-sites (class consistency, severity MEDIUM, open in rounds 1)
+<!-- /lyx:carry-over Merge-Review -->
+
 ## Acceptance criteria
 
 - The loom recipe validates with D1's order and edges, the darn recipe with D9's, and the budget-0 darn recipe with D9's rewrite; the removed rows resolve to no producer.
