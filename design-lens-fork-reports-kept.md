@@ -1,6 +1,6 @@
 # Every lens fork report is kept verbatim in the run records
 
-`lens-fork-reports-kept` · Task · enhancement, burler, loom · running · Finalize
+`lens-fork-reports-kept` · Task · enhancement, burler, loom · running · Code-Bouncer
 
 ## Seen (orch, 2026-10-22)
 
