@@ -7,7 +7,7 @@
 - `internal/fabricengine_test#TestAdd_ExistingBranchErrorNamesRemedy`
 
 **Create:**
-- `plan:internal/fabricengine_test#TestAdd_AdoptLocal` -> `func TestAdd_AdoptLocal(t *testing.T)`
+- `internal/fabricengine_test#TestAdd_AdoptLocal`
 
 **Extends:**
 - `internal/fabricengine/doc.go`

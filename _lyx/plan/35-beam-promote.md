@@ -27,7 +27,7 @@
 - `internal/battencli#hubCancelDeps`
 - `internal/fabricengine#ReadOriginFor`
 - `internal/fabricengine#MarkBeam`
-- `plan:internal/fabricengine#ResetRecordsToParent`
+- `internal/fabricengine#ResetRecordsToParent`
 - `internal/fabricengine#SpawnPairPush`
 - `internal/fabricengine#RegenerateHubWorkspace`
 - `internal/boardengine#SetOwners`
