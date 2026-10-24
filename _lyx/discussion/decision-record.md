@@ -369,6 +369,13 @@ Every pick in D2 to D14 that the board left open is an auto-pick, recorded with 
   - card-29-over-cap-resume-failing-gate-untested (class scope, severity MEDIUM, open in rounds 3)
 <!-- /lyx:carry-over Plan-Review -->
 
+<!-- lyx:carry-over Webster-Review -->
+- Webster-Review, round 1: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
+  Review: _lyx/reviews/webster/round-1-review.md; fixer report: _lyx/reviews/webster/round-1-fixer-report.md.
+  - fixer-run-hung-turn-read-as-fixed (class design, severity BLOCKING, open in rounds 1)
+  - loomcli-doc-retired-surface (class consistency, severity MEDIUM, open in rounds 1)
+<!-- /lyx:carry-over Webster-Review -->
+
 ## Acceptance criteria
 
 - The loom recipe validates with D1's order and edges, the darn recipe with D9's, and the budget-0 darn recipe with D9's rewrite; the removed rows resolve to no producer.
