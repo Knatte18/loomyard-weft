@@ -18,6 +18,9 @@ After `loom-tail-review` the generic `landing` call runs at Merge-In, Finalize, 
 This lets an umbrella's piece runs (note `loom-beam-darns`) run fewer tiers at their writer than a standalone darn, with no change to Merge-In or Finalize.
 `lyx config reconcile` migrates a hub's `landing`, `final` and `round` lists onto the new keys.
 
+Each key also sets its scope, not only its tiers (operator, 2026-10-24): today every call site hard-codes what its gate runs over (`--card`, the diff, `--all`).
+Scope values such as `card`, `diff` (since the last green run, or since the fork from the parent) and `all`; a site refuses a scope it has no data for, such as `card` outside Webster.
+
 ## Darn and loom symmetric (operator, 2026-10-23)
 
 Which tiers run at which row should be symmetric between darn and loom, and stated plainly for each recipe.
