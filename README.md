@@ -16,8 +16,8 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T2 | **A run never files a task, at most a note**<br>• gate-runs-once filed a follow-up task (default loom) that then auto-started; runs may file only notes<br>• `profile: light` | [`runs-never-write-board`](design-runs-never-write-board.md) | darn | Code-Bouncer | neve | 1h<br>24m | board, loom, stencil |
-| T4 | **[.NET] Scoped build and test for C# hubs, and the Models verification wants**<br>• Verify gates in a .NET hub build and test only the projects a card touches, since a scanned Windows machine makes every build slow. | [`dotnet-scoped-verify`](design-dotnet-scoped-verify.md) | loom | Discussion-Burler-Fix | neve | 2w<br>1h | shed, webster, loom, config, dotnet |
+| T2 | **A run never files a task, at most a note**<br>• gate-runs-once filed a follow-up task (default loom) that then auto-started; runs may file only notes<br>• `profile: light` | [`runs-never-write-board`](design-runs-never-write-board.md) | darn | Code-Bouncer | neve | 1h<br>25m | board, loom, stencil |
+| T4 | **[.NET] Scoped build and test for C# hubs, and the Models verification wants**<br>• Verify gates in a .NET hub build and test only the projects a card touches, since a scanned Windows machine makes every build slow. | [`dotnet-scoped-verify`](design-dotnet-scoped-verify.md) | loom | Discussion-Bouncer | neve | 2w<br>1h | shed, webster, loom, config, dotnet |
 | T9 | **Umbrella groundwork: project entries, pairs from a parent pair, and umbrella tasks that spawn and land from their own worktree**<br>• [WS 004+006] Board projects, fabric pairs from a parent pair, batten and orch from any worktree, umbrella tasks | [`umbrella-groundwork`](design-umbrella-groundwork.md) | loom | Discussion-Burler-Review | neve | 3w<br>4h | fabric, batten, orch, board, reed, creel, shed, workspaces |
 
 ### Ready (0)
