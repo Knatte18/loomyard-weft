@@ -2,6 +2,12 @@
 
 `tsa-quarry-audit` · Note · audit, quarry, webster, burler, loom
 
+## Task (operator, 2026-10-24)
+
+A research run that only writes a report of ideas: inspiration, nothing that is to be built from it.
+Read this repository's code (quarry's use in lyx, `internal/planglyph`, the review and card-pack paths) against tree-sitter-analyzer as it is now at `/home/knatte/Code/tree-sitter-analyzer` (updated from its remote on 2026-10-24, v3.0.0), refresh the 2026-10-18 study below, and write the report to `docs/research/tsa-quarry-2026-10-24/report.md`.
+The run changes no code.
+
 ## What was studied
 
 On 2026-10-18 an agent read tree-sitter-analyzer (TSA), a Python project the operator downloaded to `/home/knatte/Code/tree-sitter-analyzer`, against quarry's docs and lyx's use of quarry, to find ideas worth porting to Go.
