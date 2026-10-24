@@ -32,7 +32,8 @@ From `docs/research/codex-feasibility.md`, section 3, after the spike:
 
 1. A minimal `codexengine` for the single-session roles: Codex home, launch line, hook-fed event parsing, startup classifier, send and paste handling, completion (`Stop` or `task_complete`) and interrupt (`turn_aborted`). Medium to large; claudeengine is about 3,900 non-test lines.
 2. Skills sync into the Codex home, and the deny guardrails as Codex `PreToolUse` hooks (a hook that fails to run fails open). Medium.
-3. Forks and orch parity. Large; deferred. A twill-like fork fan is feasible, see the twill spike report.
+3. Engine-keyed include sets: the stencil renderer picks the running engine's file of named blocks at render time, which only `seatengine` and `twilldirective` do today (`docs/research/stencil-engine-audit-2026-10-24/report.md`); Burler review's stencils need it (operator, 2026-10-24).
+4. Forks and orch parity. Large; deferred. A twill-like fork fan is feasible, see the twill spike report.
 
 ## First candidate roles
 
