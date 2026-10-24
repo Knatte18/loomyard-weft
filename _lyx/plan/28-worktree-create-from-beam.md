@@ -16,8 +16,8 @@
 - `docs/overview.md`
 
 **Uses:**
-- `plan:internal/boardengine#ParentBeam`
-- `plan:internal/boardengine#ReadTasks`
+- `internal/boardengine#ParentBeam`
+- `internal/boardengine#ReadTasks`
 - `internal/fabricengine#Topology.TaskBranchOnOrigin`
 - `internal/fabricengine#AddOptions`
 - `internal/battenshed#PreconditionError`

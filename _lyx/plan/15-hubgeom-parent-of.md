@@ -22,8 +22,8 @@
 - `internal/pairteardown/doc.go`
 
 **Uses:**
-- `plan:internal/boardengine#ParentBeam`
-- `plan:internal/boardengine#ReadTasks`
+- `internal/boardengine#ParentBeam`
+- `internal/boardengine#ReadTasks`
 - `internal/fabricengine#ReadOriginFor`
 - `internal/fabricengine#AddOptions`
 - `internal/hubforge#CopyHub`

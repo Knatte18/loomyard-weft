@@ -1,10 +1,10 @@
 # Card 12 — board-parent-beam
 
 **Create:**
-- `plan:internal/boardengine#ParentBeam` -> `func ParentBeam(tasks []Task, slug string) string`
-- `plan:internal/boardengine#ReadTasks` -> `func ReadTasks(boardDir string) ([]Task, error)`
-- `plan:internal/boardengine#Board.ParentBeamOf` -> `func (b *Board) ParentBeamOf(slug string) (string, error)`
-- `plan:internal/boardengine_test#TestParentBeam` -> `func TestParentBeam(t *testing.T)`
+- `internal/boardengine#ParentBeam`
+- `internal/boardengine#ReadTasks`
+- `internal/boardengine#Board.ParentBeamOf`
+- `internal/boardengine_test#TestParentBeam`
 
 **Edit:**
 - `internal/boardengine#BriefTask`
@@ -15,7 +15,7 @@
 - `internal/boardengine/doc.go`
 
 **Uses:**
-- `plan:internal/boardengine_test#newProjectBoard`
+- `internal/boardengine_test#newProjectBoard`
 
 **Intent:**
 D4's board half.

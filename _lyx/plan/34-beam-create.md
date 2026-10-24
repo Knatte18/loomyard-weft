@@ -20,8 +20,8 @@
 
 **Uses:**
 - `plan:internal/battencli#ResolveBattenPrime`
-- `plan:internal/boardengine#ReadTasks`
-- `plan:internal/boardengine#ParentBeam`
+- `internal/boardengine#ReadTasks`
+- `internal/boardengine#ParentBeam`
 - `internal/boardengine#ReadOwners`
 - `internal/boardengine#SetOwners`
 - `internal/fabricengine#AddOptions`

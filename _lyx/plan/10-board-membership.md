@@ -6,14 +6,14 @@
 - `internal/boardengine#New`
 - `internal/boardengine#Store`
 - `internal/boardengine#Board.boardCriticalSection`
-- `plan:internal/boardengine#checkProjectRules`
+- `internal/boardengine#checkProjectRules`
 - `internal/boardengine#UpsertPayloadKeys`
 - `internal/boardengine#Store.Rename`
 - `internal/boardengine#renameSlug`
 - `internal/boardengine#Store.Prune`
 - `internal/boardengine#Store.MergeTasks`
 - `internal/boardengine#scopeChanged`
-- `plan:internal/boardengine_test#TestProjectRules`
+- `internal/boardengine_test#TestProjectRules`
 - `internal/boardengine_test#TestRename_Refusals`
 - `internal/boardengine_test#TestRename_KeepsEntryRewritesDependentsAndReportsMentions`
 - `internal/boardengine_test#TestPrune`
@@ -24,7 +24,7 @@
 - `internal/boardengine/doc.go`
 
 **Uses:**
-- `plan:internal/boardengine_test#newProjectBoard`
+- `internal/boardengine_test#newProjectBoard`
 
 **Intent:**
 D2: membership is `project` on a task or note and the plan order `order` on a project.
