@@ -1020,10 +1020,10 @@
     },
     {
       "id": 801,
-      "handle": "B3",
+      "handle": "T11",
       "slug": "card-gate-vets-all-tag-sets",
       "title": "Card gate (--tier 0) does not vet a card's packages under the other tier tag sets, so helper dependencies across tagged files fail only in the batch gate",
-      "kind": "note",
+      "kind": "task",
       "labels": [
         "bug",
         "gate",
@@ -1041,10 +1041,10 @@
     },
     {
       "id": 802,
-      "handle": "B4",
+      "handle": "T7",
       "slug": "gate-runs-past-failing-tier",
       "title": "lyx gate test stops at the first failing tier, so a pre-existing tier0 failure hides every later tier and the guard step",
-      "kind": "note",
+      "kind": "task",
       "labels": [
         "bug",
         "gate"
@@ -1061,10 +1061,10 @@
     },
     {
       "id": 803,
-      "handle": "B5",
+      "handle": "T8",
       "slug": "webster-reset-reopens-dead-batch",
       "title": "webster: Master writes stuck after reset --to batch-start instead of running recover-batch",
-      "kind": "note",
+      "kind": "task",
       "labels": [
         "bug",
         "webster"
@@ -1123,10 +1123,10 @@
     },
     {
       "id": 806,
-      "handle": "B8",
+      "handle": "T10",
       "slug": "create-target-ext-test-pkg",
       "title": "webster record-batch refuses Create target when the test is declared in an external _test package",
-      "kind": "note",
+      "kind": "task",
       "labels": [
         "bug",
         "webster",

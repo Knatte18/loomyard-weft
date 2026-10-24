@@ -1,6 +1,6 @@
 # webster record-batch refuses Create target when the test is declared in an external _test package
 
-`create-target-ext-test-pkg` · Note · bug, webster, quarry
+`create-target-ext-test-pkg` · Task · bug, webster, quarry
 
 Imported from [issue #861](https://github.com/Knatte18/loomyard/issues/861).
 
