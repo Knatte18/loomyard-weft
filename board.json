@@ -184,23 +184,6 @@
       "revised": "2026-10-08T16:45:39Z"
     },
     {
-      "id": 87,
-      "handle": "F10",
-      "slug": "session-sync",
-      "title": "session sync: Claude transcripts across machines",
-      "kind": "note",
-      "labels": [
-        "feature",
-        "shuttle"
-      ],
-      "issues": [],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "Copy Claude .jsonl transcripts across machines so --resume works elsewhere",
-      "body": "From `manifest/roadmap.md` Someday.\nCopy Claude `.jsonl` transcripts across machines so `--resume` works elsewhere.",
-      "created": "2026-10-04T12:45:43Z"
-    },
-    {
       "id": 97,
       "handle": "F11",
       "slug": "board-viewer",
