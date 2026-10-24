@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-24 16:31 UTC; every age below is as of then.
+Rendered 2026-10-24 16:32 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -17,7 +17,7 @@ Held by a run; its scope is locked until the run ends.
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T4 | **[.NET] Scoped build and test for C# hubs, and the Models verification wants**<br>• Verify gates in a .NET hub build and test only the projects a card touches, since a scanned Windows machine makes every build slow. | [`dotnet-scoped-verify`](design-dotnet-scoped-verify.md) | loom | Webster | neve | 2w<br>2h | shed, webster, loom, config, dotnet |
-| T9 | **Umbrella groundwork: project entries, pairs from a parent pair, and umbrella tasks that spawn and land from their own worktree**<br>• [WS 004+006] Board projects, fabric pairs from a parent pair, batten and orch from any worktree, umbrella tasks | [`umbrella-groundwork`](design-umbrella-groundwork.md) | loom | Plan-Bouncer | neve | 3w<br>5h | fabric, batten, orch, board, reed, creel, shed, workspaces |
+| T9 | **Umbrella groundwork: project entries, pairs from a parent pair, and umbrella tasks that spawn and land from their own worktree**<br>• [WS 004+006] Board projects, fabric pairs from a parent pair, batten and orch from any worktree, umbrella tasks | [`umbrella-groundwork`](design-umbrella-groundwork.md) | loom | Webster | neve | 3w<br>5h | fabric, batten, orch, board, reed, creel, shed, workspaces |
 
 ### Ready (0)
 
