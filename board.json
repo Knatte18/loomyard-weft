@@ -1104,10 +1104,10 @@
     },
     {
       "id": 776,
-      "handle": "E33",
+      "handle": "T3",
       "slug": "run-profiles-ladder",
       "title": "Run profiles as one ladder: speed, light, solid, wide",
-      "kind": "note",
+      "kind": "task",
       "labels": [
         "enhancement",
         "config",
