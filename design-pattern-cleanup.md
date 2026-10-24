@@ -1,6 +1,6 @@
 # Clean up PATTERN.md: far too many entries
 
-`pattern-cleanup` · Task · enhancement, stencil
+`pattern-cleanup` · Task · enhancement, stencil · running · Worktree-Create
 
 Depends on: [`gate-runs-once`](design-gate-runs-once.md)
 
