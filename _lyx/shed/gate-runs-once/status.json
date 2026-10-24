@@ -2,6 +2,7 @@
   "current_producer": "Webster",
   "state": "blocked",
   "error": "webster: the plan changed since the run recorded it and was rebaselined on entry, keeping 5 begun batch(es) and accepting 13-testtiming-tiers.md, 14-guard-step-per-tier.md, 15-empty-tier-fails.md, 17-shed-entry-gate-engine.md, 20-batten-switch-entry-gate.md, 22-tier-plan-docs.md, 31-retag-internal-p-z.md: Batch 22-tier-plan-docs: the fork reported stuck (card 23's verify needs the hub's tier commands changed, which only the orch can do), and recover-batch ended dead with dead_reason asking and no recovery left.",
+  "pending_by": "shed",
   "pause_requested": false,
   "activity": {
     "now": "Webster",
