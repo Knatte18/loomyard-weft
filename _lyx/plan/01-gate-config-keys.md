@@ -24,7 +24,7 @@
 **Intent:**
 Add every new `gate.yaml` key this task reads, loaded through `gateslot.LoadConfig` over `configengine` (Decisions 1, 4, 5, 6, 8; Constraint `PATTERN-config-layers`).
 
-- `scoper` accepts `dotnet` beside `go` and `none`; the refusal for any other value says `want go, none or dotnet`.
+- `scoper` accepts `dotnet` beside `go` and `none`; the refusal for any other value says `want go, none or dotnet`, and `Config.Scoper`'s comment names `go`, `none` or `dotnet`.
 - `Tier` gains three fields: `Filter string` (the tier's own `--filter` expression, key `filter`), `SharedBuild bool` (key `shared_build`) and `NoCarry bool`, set when the tier file holds `carry: false`.
   `NoCarry` is the negative form so a hand-built `Tier` in a test, whose zero value is today's behaviour, still carries; `tierFile` reads `carry` as `*bool`, so an absent key and `carry: true` both leave `NoCarry` false.
   `Tier.Command`'s comment names the new `{filter}` placeholder.
