@@ -1,6 +1,6 @@
 # lyx gate test stops at the first failing tier, so a pre-existing tier0 failure hides every later tier and the guard step
 
-`gate-runs-past-failing-tier` · Task · bug, gate · running · Describe
+`gate-runs-past-failing-tier` · Task · bug, gate · running · PR-Review
 
 Imported from [issue #864](https://github.com/Knatte18/loomyard/issues/864).
 
