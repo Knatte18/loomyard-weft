@@ -35,3 +35,20 @@ Two ways to have parts written separately, both benched against each other and a
    Risks: assistants see neither each other's work nor a shared context, so seams fall to the chair and review, and overlapping parts make several seats read the same code.
 2. **Fork-based.** The chair keeps its context lean (scope, split and shared spots only) and forks once per part, so every part writer inherits the same overview without the writer's full reading.
    Technically still one writer with forks, like twill but forking early.
+
+## Data check (Sonnet agent, 2026-10-24)
+
+Plan writer plus its lens forks, means per run (API list price):
+
+| group | runs | writer+forks | forks | Plan-Write wall | Plan rounds |
+|---|---|---|---|---|---|
+| before 10-15 (solo writer) | 28 | $9.08 | $0.58 | 16.4 min active | 1.3 |
+| 10-15 to 10-19 | 41 | $9.39 | $3.86 | 18.5 min | 1.88 |
+| 10-20 to c62274be5 (full twill-plan fan) | 7 | $18.14 | $7.66 | 23.9 min | 2.00 |
+| after c62274be5 (five lenses) | 3 | $16.64 | $7.40 | 23.9 min | 1.33 |
+
+- The later groups are larger tasks, so the cost rise is not the fan alone; the five-lens group is too small to judge.
+- `relevant.md` use, over 32 runs with a list and a Plan-Write transcript: 85% of named files were read, but only 28% of read files were named (about 3.5 files read per file named, about 7 on large runs). Both shares are lower bounds (directory greps and quarry reads not counted).
+- So `relevant.md` works as a floor, not a boundary; most unnamed reading looks like tests and neighbouring callers, which a per-part split of the list would not remove.
+- Still open: the solo Opus high and Fable writer bench, and the split-writing variants, which need new runs.
+- Tables and scripts were in `.scratch/a8/` (machine-local, not in git).
