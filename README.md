@@ -10,22 +10,21 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 Concrete and claimable; only a task can run.
 
-### Running (2)
+### Running (3)
 
 Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T1 | **Each test runs once per tree: disjoint tiers, row entry gates, carried green runs, tmux in final**<br>• Tiers tagged by name, shed row entry gates, verify skipped on an already green tree, tmux in the final gate, gate time measured<br>• `profile: light` | [`gate-runs-once`](design-gate-runs-once.md) | loom | Webster | neve | 6d<br>4h | gate, shed, loom, webster, fabric, batten |
-| T5 | **Codex spike 2: a twill-like fan of forks with inherited context**<br>• Test parallel Codex subagents with fork_turns all, each writing a file, parent waiting and merging<br>• `profile: docs` | [`codex-twill-spike`](design-codex-twill-spike.md) | darn | Worktree-Create | neve | 5m<br>0m | shuttle, codex |
+| T5 | **Codex spike 2: a twill-like fan of forks with inherited context**<br>• Test parallel Codex subagents with fork_turns all, each writing a file, parent waiting and merging<br>• `profile: docs` | [`codex-twill-spike`](design-codex-twill-spike.md) | darn | Worktree-Create | neve | 6m<br>0m | shuttle, codex |
+| T7 | **Audit the Claude-specific mechanics in stencils for a second engine**<br>• List every stencil site tied to Claude Code (forks, SendMessage, skills, tool names) and what Codex needs there<br>• `profile: docs` | [`stencil-engine-audit`](design-stencil-engine-audit.md) | darn | Worktree-Create | neve | 6m<br>0m | stencil, codex |
 
-### Ready (1)
+### Ready (0)
 
 Waits on nothing open; can start now.
 
-| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- | --- | --- |
-| T7 | **Audit the Claude-specific mechanics in stencils for a second engine**<br>• List every stencil site tied to Claude Code (forks, SendMessage, skills, tool names) and what Codex needs there<br>• `profile: docs` | [`stencil-engine-audit`](design-stencil-engine-audit.md) | darn |  | 5m<br>0m | stencil, codex |
+_None._
 
 ### Layer A (1)
 
@@ -72,7 +71,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | # | P | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | E1 |  | **Plan conflict from a moved tree: a small fixer before the Plan perch**<br>• A tree_moved plan conflict naming exact glyphs goes to a small card fixer, not a full Plan review round | [`plan-conflict-small-fixer`](design-plan-conflict-small-fixer.md) | 42m<br>42m | webster, loom |
-| E2 |  | **Codex CLI as a second shuttle engine: codexengine**<br>• codexengine for single-session roles, built from the 2026-10-24 spike report and claudeengine list of needs | [`codex-engine`](design-codex-engine.md) | 2w<br>15m | shuttle, codex |
+| E2 |  | **Codex CLI as a second shuttle engine: codexengine**<br>• codexengine for single-session roles, built from the 2026-10-24 spike report and claudeengine list of needs | [`codex-engine`](design-codex-engine.md) | 2w<br>16m | shuttle, codex |
 | E4 |  | **finalize: the discrepancy-document conflict shape**<br>• Divergences that cannot be a git conflict get a precomputed document for the resolving agent instead of markers | [`finalize-discrepancy-doc`](design-finalize-discrepancy-doc.md) | 2w<br>2w | fabric, loom |
 | E7 |  | **Run verbs in one shared namespace, not under lyx loom**<br>• lyx loom decision/status/goto/approve act on darn runs too; move recipe-neutral run verbs to one shared namespace | [`run-verbs-shared`](design-run-verbs-shared.md) | 9d<br>9d | shed, loom |
 | E9 |  | **Paste cited code into a review rounds context**<br>• Reviewers edit nothing and review a fixed commit, so code pasted at round start cannot go stale; measure it against todays reviewer | [`review-inline-code`](design-review-inline-code.md) | 12d<br>1h | burler, stencil |
