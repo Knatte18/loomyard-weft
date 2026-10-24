@@ -908,10 +908,10 @@
     },
     {
       "id": 805,
-      "handle": "B7",
+      "handle": "T1",
       "slug": "webster-orch-need-to-parent",
       "title": "Webster batch whose card verify needs an orch-only change dead-ends: recover-batch ends dead with 'asking', then the run halts repeatedly with growing history",
-      "kind": "note",
+      "kind": "task",
       "labels": [
         "bug",
         "webster",
