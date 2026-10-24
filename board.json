@@ -1327,6 +1327,26 @@
       "body": "## Seen (2026-10-24)\n\nThe task `idle-notice-misses-fork-activity` quoted Batten's idle notice as \"no agent activity readable\" for a writer working in a fork.\nIts fix (c5d715860) closed the fork gap in `ReadAgentActivity`, which yields \"agents idle\", not that text; Batten writes \"no agent activity readable\" only when it finds no live run at all.\nIf the quote was exact, a second cause hides a live run from the activity reader.\n\n## Idea\n\nFind which path made the reader see no live run while the writer worked, and fix it; check the run records of a run that hit the notice before closing this as a misquote.",
       "created": "2026-10-24T06:53:16Z",
       "revised": "2026-10-24T06:53:16Z"
+    },
+    {
+      "id": 793,
+      "handle": "T2",
+      "slug": "readme-heading-counts",
+      "title": "Board README headings show how many entries each section holds",
+      "kind": "task",
+      "labels": [
+        "enhancement",
+        "board"
+      ],
+      "issues": [],
+      "recipe": "darn",
+      "depends_on": [],
+      "isolated": false,
+      "brief": "Each README section heading carries its entry count, e.g. Enhancements (34)",
+      "body": "## Seen (2026-10-24)\n\nThe rendered board README (`internal/boardengine/render.go`) numbers entries by handle (E1, E2, ...), but handles have gaps, so no heading tells how many entries a section holds.\n\n## Change (operator, 2026-10-24)\n\n- Every section heading the README renders carries the number of entries under it in parentheses: `## Tasks (10)`, `### Running (6)`, `### Ready (1)`, each layer heading, `## Notes (62)`, `### Audits (7)`, `### Enhancements (34)`, the `Other` notes heading too.\n- The number is the count of entries listed in that section, never the highest handle number.\n- Update the render tests and the package doc for the new heading form.",
+      "created": "2026-10-24T06:59:36Z",
+      "revised": "2026-10-24T06:59:36Z",
+      "profile": "light"
     }
   ],
   "prime_owner": "neve"
