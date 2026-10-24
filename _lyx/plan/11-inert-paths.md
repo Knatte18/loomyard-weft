@@ -1,7 +1,7 @@
 # Card 11 — inert_paths: an inert-only diff runs no tier, and a whole gate carries over it
 
 **Create:**
-- `plan:internal/gatecli#allInertSince` -> `func allInertSince(ctx context.Context, cfg gateslot.Config, root, base string) bool`
+- `internal/gatecli#allInertSince`
 
 **Edit:**
 - `internal/gatecli#computeScope`

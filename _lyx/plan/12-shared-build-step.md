@@ -1,8 +1,8 @@
 # Card 12 — the shared build step
 
 **Create:**
-- `plan:internal/gatecli#execution.runBuild` -> `func (e *execution) runBuild(run tierRun, env []string) (tierResult, bool)`
-- `plan:internal/gatecli#execution.reportBlocked` -> `func (e *execution) reportBlocked(run tierRun) runEnd`
+- `internal/gatecli#execution.runBuild`
+- `internal/gatecli#execution.reportBlocked`
 
 **Edit:**
 - `internal/gatecli#execution`
