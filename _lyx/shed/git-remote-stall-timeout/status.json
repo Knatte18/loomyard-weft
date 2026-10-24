@@ -1,11 +1,11 @@
 {
-  "current_producer": "Darn-Write",
+  "current_producer": "Code-Bouncer",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Darn-Write",
-    "last": "Preflight → done",
+    "now": "Code-Bouncer",
+    "last": "Darn-Write → done",
     "wait": ""
   },
   "history": [
@@ -14,6 +14,51 @@
       "outcome": "done",
       "output": "",
       "at": "2026-10-24T06:25:50Z"
+    },
+    {
+      "producer": "Darn-Write",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYXHUB/git-remote-stall-timeout/_lyx/landing/summary.md",
+      "at": "2026-10-24T06:47:34Z",
+      "gate_attempts": 1,
+      "gate_spans": [
+        {
+          "gate": "discussion",
+          "kind": "gate",
+          "start": "2026-10-24T06:41:15.399163005Z",
+          "end": "2026-10-24T06:41:27.874075161Z"
+        },
+        {
+          "gate": "discussion",
+          "kind": "gate",
+          "start": "2026-10-24T06:43:07.858965195Z",
+          "end": "2026-10-24T06:43:16.514460225Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-10-24T06:41:27.927144166Z",
+          "end": "2026-10-24T06:41:27.991478951Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "rework",
+          "start": "2026-10-24T06:41:28.398850556Z",
+          "end": "2026-10-24T06:43:07.832622882Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-10-24T06:43:16.555489764Z",
+          "end": "2026-10-24T06:47:33.463031069Z"
+        },
+        {
+          "gate": "description",
+          "kind": "gate",
+          "start": "2026-10-24T06:47:33.541350427Z",
+          "end": "2026-10-24T06:47:33.541410178Z"
+        }
+      ]
     }
   ],
   "product": {
