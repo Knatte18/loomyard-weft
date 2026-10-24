@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-24 08:54 UTC; every age below is as of then.
+Rendered 2026-10-24 08:55 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -18,7 +18,7 @@ Held by a run; its scope is locked until the run ends.
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T1 | **Each test runs once per tree: disjoint tiers, row entry gates, carried green runs, tmux in final**<br>• Tiers tagged by name, shed row entry gates, verify skipped on an already green tree, tmux in the final gate, gate time measured<br>• `profile: light` | [`gate-runs-once`](design-gate-runs-once.md) | loom | Plan-Burler-Fix | neve | 6d<br>2h | gate, shed, loom, webster, fabric, batten |
 | T5 | **lyx loom decision add records several decisions in one call and one notice**<br>• `profile: light` | [`decision-add-batch`](design-decision-add-batch.md) | darn | Code-Bouncer | neve | 1h<br>27m | loom, creel |
-| T7 | **Batten idle notice says no agent activity readable while a run is live**<br>• `profile: light` | [`idle-notice-no-live-run`](design-idle-notice-no-live-run.md) | darn | Finalize | neve | 2h<br>27m | batten, shuttle |
+| T7 | **Batten idle notice says no agent activity readable while a run is live**<br>• `profile: light` | [`idle-notice-no-live-run`](design-idle-notice-no-live-run.md) | darn | Code-Bouncer | neve | 2h<br>27m | batten, shuttle |
 
 ### Ready (0)
 
@@ -100,7 +100,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | F11 |  | **Interactive board view: a regenerated HTML file and a phone-friendly README**<br>• board.html rendered with README on every write; a VS Code task opens it in the browser; collapsible README for the GitHub app | [`board-viewer`](design-board-viewer.md) | 2w<br>2w | board, ide, orch |
 | F12 |  | **Spawn audit log: every process lyx starts is recorded and traceable**<br>• One recorded launch path and a hub-wide spawn log with owner, argv and resource use, plus a sampler and a summary verb, so a process storm can be traced after a crash | [`spawn-audit-log`](design-spawn-audit-log.md) | 2w<br>11d | reed, shuttle, config |
 | F13 | H | **Weaver: a cold-start implementer beside Webster, with model escalation**<br>• A second implementer built on Millhouse Builder: a fresh agent per batch with its own model, escalating the model when an agent fails; Webster stays fork-based | [`weaver`](design-weaver.md) | 13d<br>5d | webster |
-| F15 |  | **Configurable action buttons on the reed status bar**<br>• Clickable status-bar buttons that run configured commands: VS Code, orch distill/refresh, the follow toggle and more | [`reed-status-buttons`](design-reed-status-buttons.md) | 9d<br>8m | reed, config, batten |
+| F15 |  | **Configurable action buttons on the reed status bar**<br>• Clickable status-bar buttons that run configured commands: VS Code, orch distill/refresh, the follow toggle and more | [`reed-status-buttons`](design-reed-status-buttons.md) | 9d<br>9m | reed, config, batten |
 | F16 | H | **creel stage 3: agents message through creel, not SendMessage**<br>• Parent asks, parent review, stop reports and shuttle send go through creel, so a non-Claude engine can take a role with a parent | [`creel-agents`](design-creel-agents.md) | 8d<br>1d | creel, shuttle, loom, stencil, report |
 | F17 |  | **Ideas to borrow from comparable agent orchestrators (survey, Oct 2026)** | [`orchestrator-survey-ideas`](design-orchestrator-survey-ideas.md) | 8d<br>6d | burler, shed, orch, quarry, report |
 | F18 |  | **[.NET 004] Asynchronous test tiers in shed: the numerical baseline captured before implementation, compared at the final gate**<br>• Support a hub regression tier that writes profiles on the parent before implementation and compares after, switchable per task for expected drift. | [`regression-baseline-verify`](design-regression-baseline-verify.md) | 6d<br>41m | shed, webster, batten, config, dotnet |
