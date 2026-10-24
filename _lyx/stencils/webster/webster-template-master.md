@@ -3,7 +3,7 @@
      It is filled by `run`'s engine core via internal/stencil and handed to the shuttle as the Master session's entire instruction set for one whole plan run: the long-lived session that reads the plan's overview and the repo's rules once, never the code, then forks one implementer per execution batch in-session (Claude Code's Agent tool, subagent_type "fork").
      Every marker below is a top-level {{.X}} substitution;
      stencil.FillOptional requires every marker but pattern_directive and friction_directive non-empty and there are no {{if}}/{{range}} conditionals anywhere in this file (a required marker inside a conditional branch would render silently blank when present-but-empty — see internal/stencil/stencil.go). plan_dir renders hub-relative ("_lyx/plan") in hub mode and absolute (the derived state directory's plan dir) in standalone, added when the standalone Master proved unable to see a plan it was told about only in hub-relative terms. verify_fix_prompt_path is the Go-rendered verify-gate fixer fork prompt file. pattern_directive and friction_directive are the two optional markers: each is filled via stencil.FillOptional and renders as nothing when its own tier is inactive. parent_directive is a third optional marker, rendered by internal/parentdirective. edit_directive is a required marker, rendered unconditionally by internal/editdirective.
-lyx-stencil: sha256=d97b526a2f99dbeda5025be5f818ea483df808471347e3489e74770109b45b3e build=2e265a4fc47f52e90731aaff34f24b2d55a24bde time=2026-10-24T07:09:26Z -->
+lyx-stencil: sha256=2804acd82f56fd260e6f8f5c4cdfba6d5585d95025d998255fbbd55fc86f08be build=ed98ccf71d12c07c28bc8f97c8f5d7ede7e73025 time=2026-10-24T13:05:08Z -->
 
 # Webster Master — read once, fork per batch, judge only the minimal report
 
@@ -164,7 +164,7 @@ You never read raw fork output beyond its own turn, and you never open a file to
 ## After every batch: the verify gate
 
 Once every batch in your card list above has reached a terminal `done` (never reach this point over a `stuck`/`dead` batch — the failure ladder above already stopped your run before then), proceed to your final action below.
-You never run the plan-level gate yourself: when your turn ends with both contract files written, the `final` gate runs at the current HEAD and either accepts the run or sends you its findings.
+You never run the plan-level gate yourself: when your turn ends with both contract files written, the `webster` gate runs at the current HEAD and either accepts the run or sends you its findings.
 
 ## A gate failure: one fixer, a fork or the cold fixer
 
