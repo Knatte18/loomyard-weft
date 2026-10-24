@@ -1,22 +1,21 @@
 # Board
 
-Rendered 2026-10-24 17:58 UTC; every age below is as of then.
+Rendered 2026-10-24 18:01 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
 
-## Tasks (2)
+## Tasks (1)
 
 Concrete and claimable; only a task can run.
 
-### Running (2)
+### Running (1)
 
 Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T1 | **Webster batch whose card verify needs an orch-only change dead-ends: recover-batch ends dead with 'asking', then the run halts repeatedly with growing history**<br>• `profile: light` | [`webster-orch-need-to-parent`](design-webster-orch-need-to-parent.md) | darn | Finalize | neve | 4h<br>1h | webster, loom |
 | T9 | **Umbrella groundwork: project entries, pairs from a parent pair, and umbrella tasks that spawn and land from their own worktree**<br>• [WS 004+006] Board projects, fabric pairs from a parent pair, batten and orch from any worktree, umbrella tasks | [`umbrella-groundwork`](design-umbrella-groundwork.md) | loom | Webster | neve | 3w<br>7h | fabric, batten, orch, board, reed, creel, shed, workspaces |
 
 ### Ready (0)
@@ -36,7 +35,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | A2 |  | **Recurring test-suite time and growth audit**<br>• Re-run cmd/testtiming against test-suite-timing.md to watch suite growth | [`test-time-audit-recurring`](design-test-time-audit-recurring.md) | 6d<br>2h |  |
 | A3 |  | **Audit the twill and lens review setup: worth per perch, recurring finding classes, writer quality**<br>• One audit over the review records once about ten loom runs with the current setup land on Neve | [`review-setup-audit`](design-review-setup-audit.md) | 8d<br>2h | burler, loom, report, stencil, shed |
 | A5 |  | **Sweep go_parallel on OSL-1046 with Cortex XDR**<br>• Time both gate tiers on the work laptop on a quiet machine and log them in docs beside the Neve numbers, with full hardware info | [`bench-osl1046-xdr`](design-bench-osl1046-xdr.md) | 4d<br>4d |  |
-| A6 |  | **Lens overlap audit: which lenses find the same defects, and a smaller set**<br>• twill-plan 8 to 5 lenses recommended; twill-discussion 7 to 4 and review-code 4 to 3 at low confidence | [`lens-overlap-audit`](design-lens-overlap-audit.md) | 2d<br>9h | burler, loom |
+| A6 |  | **Lens overlap audit: which lenses find the same defects, and a smaller set**<br>• twill-plan 8 to 5 lenses recommended; twill-discussion 7 to 4 and review-code 4 to 3 at low confidence | [`lens-overlap-audit`](design-lens-overlap-audit.md) | 2d<br>10h | burler, loom |
 | A7 |  | **Trial: batcher profile wide (budget 300k)**<br>• Hub runs a new batcher profile wide, budget 300k; check cost and fork quality before taking it into the template | [`batch-budget-300k-trial`](design-batch-budget-300k-trial.md) | 2d<br>8h | webster |
 | A8 |  | **Plan writer cost: sub-planners per part, and twill versus a solo writer**<br>• The Plan writer is 18% of spend; sub-planners per part for large bundles, and a twill versus solo Opus high comparison on cost, rounds and time | [`plan-writer-context`](design-plan-writer-context.md) | 2d<br>8h | loom, stencil |
 
@@ -52,7 +51,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | --- | --- | --- | --- | --- | --- |
 | E1 |  | **Plan conflict from a moved tree: a small fixer before the Plan perch**<br>• A tree_moved plan conflict naming exact glyphs goes to a small card fixer, not a full Plan review round | [`plan-conflict-small-fixer`](design-plan-conflict-small-fixer.md) | 7h<br>7h | webster, loom |
 | E2 |  | **Codex CLI as a second shuttle engine: codexengine**<br>• codexengine for single-session roles, built from the 2026-10-24 spike report and claudeengine list of needs | [`codex-engine`](design-codex-engine.md) | 3w<br>5h | shuttle, codex |
-| E3 |  | **insert-card and remove-card could rewrite prose card references they now only report**<br>• Renumber verbs list prose mentions of moved cards; a hand fix of every reference is costly when a renumber spans many cards | [`renumber-rewrites-card-refs`](design-renumber-rewrites-card-refs.md) | 23m<br>23m |  |
+| E3 |  | **insert-card and remove-card could rewrite prose card references they now only report**<br>• Renumber verbs list prose mentions of moved cards; a hand fix of every reference is costly when a renumber spans many cards | [`renumber-rewrites-card-refs`](design-renumber-rewrites-card-refs.md) | 25m<br>25m |  |
 | E4 |  | **finalize: the discrepancy-document conflict shape**<br>• Divergences that cannot be a git conflict get a precomputed document for the resolving agent instead of markers | [`finalize-discrepancy-doc`](design-finalize-discrepancy-doc.md) | 2w<br>2w | fabric, loom |
 | E7 |  | **Run verbs in one shared namespace, not under lyx loom**<br>• lyx loom decision/status/goto/approve act on darn runs too; move recipe-neutral run verbs to one shared namespace | [`run-verbs-shared`](design-run-verbs-shared.md) | 10d<br>10d | shed, loom |
 | E9 |  | **Paste cited code into a review rounds context**<br>• Reviewers edit nothing and review a fixed commit, so code pasted at round start cannot go stale; measure it against todays reviewer | [`review-inline-code`](design-review-inline-code.md) | 13d<br>8h | burler, stencil |
@@ -91,3 +90,11 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | F17 |  | **Ideas to borrow from comparable agent orchestrators (survey, Oct 2026)** | [`orchestrator-survey-ideas`](design-orchestrator-survey-ideas.md) | 8d<br>8h | burler, shed, orch, quarry, report |
 | F18 |  | **[.NET 004] Regression as three Drift rows: Drift-Baseline after Discussion, Drift-Await before Webster, Drift-Verify after the Code perch**<br>• Support a hub regression tier that writes profiles on the parent before implementation and compares after, switchable per task for expected drift. | [`regression-baseline-verify`](design-regression-baseline-verify.md) | 7d<br>1h | shed, webster, batten, config, dotnet |
 | F20 |  | **Large tasks: Discussion, a pre-planner, and the pieces as darn runs inside the task's beam**<br>• Discussion decides scope, a pre-planner splits it into contracted pieces, each piece runs as darn from the task's beam, a whole-task perch reviews, then align and land | [`loom-beam-darns`](design-loom-beam-darns.md) | 2d<br>3h | loom, shed, batten, workspaces, burler |
+
+## Done (1)
+
+Finished, awaiting `lyx board prune --apply`.
+
+| # | Entry | Slug | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- |
+| T1 | **Webster batch whose card verify needs an orch-only change dead-ends: recover-batch ends dead with 'asking', then the run halts repeatedly with growing history**<br>• `profile: light` | [`webster-orch-need-to-parent`](design-webster-orch-need-to-parent.md) | 4h<br>1h | webster, loom |
