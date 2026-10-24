@@ -1,38 +1,37 @@
-# Shuttle sends no hold notice for a turn end the usage limit stopped
+# shuttle: send no hold notice for a turn end the usage limit stopped
 
-When the account hits its usage limit, an autonomous agent ends its turn without its output files and shuttle holds it.
-Until now the hold also sent the parent a notice, which the orch cannot act on while the account is limited.
-The notice only lands in the orch's context after the reset, as stale clutter.
+A held turn end that the provider's usage limit caused no longer sends a hold notice to the parent.
+The parent cannot act while the account is limited, and a notice sent then only lands in the orch's context as stale clutter after the reset.
+The hold, the wait mark and the deadline are unchanged, so `lyx revive` or an operator's `SendMessage` stays the way forward.
 
-A held turn end that the provider's usage limit caused now sends no hold notice, deferred or not, and leaves `RunState.NotifiedOffset` alone.
-The hold, the wait mark, the run's deadline and the API-error continue after a machine sleep are unchanged.
-The next held turn end that is not limited is notified as before.
+Closes #854
 
-## How the limit is recognised
+## Design
 
-`internal/shuttleengine` gains the optional `UsageLimitReader` capability beside `Engine`.
-Wait asks it once per held turn end, through the turn end's events-file line, which `heldTurnEnd` now keeps.
-An engine without it reports no limit.
+- `internal/shuttleengine` declares an optional `UsageLimitReader` capability beside `Engine`.
+  `Wait` asks it once for a held turn end that would otherwise be notified or queued for notice.
+  An engine without it reports no limit, so its turn ends are notified as before.
+- A limited turn end is logged at Info and sends no notice, deferred or not.
+  `RunState.NotifiedOffset` is left alone, and the next held turn end that is not limited is notified as any other.
+- The check runs only where a notice would otherwise go, through `holdNoticePending`.
+  It skips runs `notifyHeld` never notifies, a deferred-hold run whose next turn already started, and a non-deferred run covered by a pause, which discards the notice anyway.
+  A covered deferred-hold run still asks, since its queued hold is sent after the pause lifts.
+- `heldTurnEnd` now carries the turn end's raw events line, which is what the capability reads.
+- `claudeengine` reports a limit in two cases, both read from Claude Code's own `error: "rate_limit"` classification on its synthetic API-error transcript entry:
+  - the newest main-chain turn end is such an entry;
+  - a fork transcript beside the main one, written after the previous main-chain turn end, has such an entry as its newest assistant entry.
+  The fork case covers a parent whose forks hit the limit and that then ends its own turn, which is the incident in the issue.
+  The time bound keeps a limit an earlier turn already reported from silencing a later notice.
+- An unreadable or missing transcript reports no limit.
+- The `rate_limit` literal and the transcript shape stay in `claudeengine`, per the provider-seam invariant.
+  Both packages' `doc.go` describe the behavior.
 
-Claude implements it in `internal/shuttleengine/claudeengine/activity.go`, reading Claude Code's own error classification, `error: "rate_limit"` on a synthetic `isApiErrorMessage` transcript entry:
+## Known gaps
 
-- the main transcript's newest main-chain turn end is such an entry, or
-- a fork transcript under `subagents/`, last written after the main chain's previous turn end, has such an entry as its newest assistant entry.
+- A transient API rate limit reads the same as the usage limit and is also skipped; for a subscription session it is the usage limit in practice.
+- An agent that stops on its own while mentioning a limit, with nothing recorded by the provider, is still notified; the agent's words are deliberately not read.
+- A Claude Code release that renames the `rate_limit` classification silently restores the notices.
 
-The fork half covers the case the board entry reports: forks hit the limit and the agent then ends its own turn with a message saying so.
-The time bound keeps a limit an earlier turn already met from silencing a later notice.
+## Check by hand
 
-## Design decisions
-
-- Recognition is a separate capability, not a field on `TurnEndActivity`: that reading runs on every session-state read, and finding the previous turn end can walk far back in a long transcript.
-- The session-state cause stays `api-error` for a main-chain limit, so `lyx revive` still reaches a limited session after the reset.
-- The classification field is read, never the error text or the agent's words: the text changes between Claude Code versions, and the notice treats the agent's words as a report.
-- A transient API rate limit carries the same classification and is skipped too; for a subscription session it is the usage limit in practice.
-- An agent that stops on its own about a limit, with no limit recorded in its main chain or a fork, is still notified.
-
-## Tests
-
-- `TestWait_HeldTurnEndNotice` gains rows for a usage-limited stop (no notice, offset untouched, held to the deadline), a later unlimited stop (notified), and a deferred run (no notice after the deferral either).
-- `TestTurnEndUsageLimited` covers the main-chain limit, a server error, a plain turn end, a fork limited during and before the turn, a fork that answered after a limit entry, a first turn, and a missing transcript.
-
-Docs: `internal/shuttleengine/doc.go` and `internal/shuttleengine/claudeengine/doc.go`.
+Not run against a live limited session: confirm that a real subscription limit writes `error: "rate_limit"` in both the main and a fork transcript, and that the orch receives no hold notice.
