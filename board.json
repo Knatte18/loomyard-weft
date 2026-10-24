@@ -587,21 +587,20 @@
       "id": 754,
       "handle": "E31",
       "slug": "outdated-entry-to-parent",
-      "title": "A row before Discussion aligns the task text against the board, peers and landed work, and adjusts it",
+      "title": "A plainly outdated task entry goes to the parent: from the Discussion review in loom, from Darn-Write in darn",
       "kind": "note",
       "labels": [
         "enhancement",
         "loom",
-        "batten",
-        "board"
+        "stencil"
       ],
       "issues": [],
       "depends_on": [],
       "isolated": false,
-      "brief": "",
-      "body": "## Seen\n\nA task's board entry is written when it is promoted, and can sit for days while other work lands and other runs start.\nIts text reaches Discussion-Write as it stands, so a scope that overlaps, contradicts or has been overtaken by other planned or landed work is found only in the Discussion perch or by the alignment agent, after a whole Discussion has been written; a scope change costs more the later it comes.\n\n## Idea\n\nA row of the run, before Discussion-Write (and before Darn-Write), aligns the task's own entry text against the rest of the board, the other in-flight runs' records (`lyx loom peers`) and the parent's recent landed commits, and adjusts the text before anything is written from it.\n\n- The row settles misalignments itself and writes the adjusted text into the entry: a reference to work that has landed, a dependency left unnamed, an overlap with other planned work trimmed or made explicit.\n- It escalates to the orch only for something larger, such as a design conflict with another run or a task that no longer makes sense; the orch is not to be disturbed by ordinary misalignments (operator, 2026-10-22).\n\nThe board's run lock exists to stop the orch from editing a started run's entry, which is pointless once the run has read it (operator, 2026-10-22); it does not need to stop the run's own pre-Discussion row, since the text still matters then.\nSo this row edits its own entry through an exemption the lock grants it.\nThe rule in this repo's `CLAUDE.md` that no decision, card or step of a run changes the running task's own entry goes: a rule about lyx's own behaviour cannot live in one repo's `CLAUDE.md`, since it does not travel with lyx to other hubs (operator, 2026-10-22); the lock and its exemption are the mechanism, documented in their package's `doc.go`.\n\nRelated: note `discussion-alignment-into-lenses`, which drops the alignment agent at the discussion point; with this row in place the perch's `board-fit` only checks what the discussion itself added.\nOperator idea, 2026-10-22; the design is open.\n",
+      "brief": "No pre-Discussion row: board-fit flags an outdated entry as an escalating finding; Darn-Write checks and asks the parent",
+      "body": "## Seen\n\nA task's board entry is written when it is promoted, and can sit for days while other work lands and other runs start.\nIts text reaches Discussion-Write and Darn-Write as it stands, so a scope that overlaps, contradicts or has been overtaken by other planned or landed work is found late, after a whole Discussion or a whole darn change has been written from it.\n\n## Design (operator, 2026-10-24)\n\nNo new row runs before Discussion, and the board's run lock gets no exemption: an outdated entry is caught by work the run already does, and goes to the parent.\n\n- Loom: the Discussion review's `board-fit` lens gets a finding class \"the entry is plainly outdated\" (overtaken by landed work, contradicted by the board or another run).\n  Such a finding escalates to the parent orch instead of going to the fixer.\n  This is the escalating finding class note `discussion-alignment-into-lenses` describes; the two belong together.\n- Darn: it has no Discussion review, and Darn-Write reads the entry and writes code in one go.\n  So Darn-Write itself checks the entry text against the parent's recent landed commits and the board before it starts, and when the text is plainly outdated it asks the parent and waits instead of guessing.\n\nOnly a plainly outdated entry goes to the parent; an ordinary small misalignment is settled by the writer as today.\n\n## Replaces\n\nAn earlier idea (2026-10-22): a row before Discussion-Write and Darn-Write that aligns the entry text and edits its own entry through a run-lock exemption.\nDropped: it costs an LLM call in every run while most entries are fresh, and needs a lock exemption.\n",
       "created": "2026-10-22T11:08:38Z",
-      "revised": "2026-10-22T11:12:05Z"
+      "revised": "2026-10-24T16:56:29Z"
     },
     {
       "id": 755,
