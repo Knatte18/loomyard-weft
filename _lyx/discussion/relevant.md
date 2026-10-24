@@ -1,0 +1,23 @@
+# Relevant files — dotnet-scoped-verify
+
+- `internal/gatecli/doc.go` — the tier runner's contract: scope forms, scoper, green record, slots, run records, the docs this task extends
+- `internal/gatecli/scope.go` `computeScope`, `withGateScope`, `diffBaseGroups`, `cardPackages`, `tagTiers` — where the `dotnet` branch and the inert check join the scope computation
+- `internal/gatecli/counters.go` `vstestCounter` — the existing VSTest summary counter a `dotnet` tier uses
+- `internal/gateslot/doc.go` — the gate config module's keys, load refusals and tier plan, which gain `build`, `inert_paths`, `filter`, `shared_build` and `carry`
+- `internal/gateslot/template.yaml` — the template the new keys and their comments go into
+- `internal/gateslot/tiers.go` `Tier` — the tier declaration and its load validation, where the scoper and counter values are checked
+- `internal/impactset/doc.go` — the `go` scoper's derivation and fallback rules, the model for `internal/dotnetimpact`
+- `internal/verifytree/doc.go` — the verified-tree skip every verify site keeps above the green record
+- `internal/cardverify/doc.go` — the card `**Verify:**` runner and its slot rules, unchanged by this task
+- `internal/planparser/targetdirs.go` `CardPackages` — the Go-shaped card scope beside which the card `.cs` file list is added
+- `internal/languageconfig/doc.go` — the language module, which keeps only skills and rename tools; no toolchain key moves here
+- `internal/lenses/doc.go` — the hub-tunable lens and fan library the repo-rules lens goes into
+- `internal/runproc/doc.go` — process ending at teardown, which reparented MSBuild nodes escape
+- `internal/proc/doc.go` — tied-child and group-kill behaviour bounding a tier's process tree
+- `internal/proc/tied_windows.go` — the Windows tied child's kill-on-close job, which ends MSBuild nodes with each tier run
+- `internal/proc/namedjob_windows.go` `createKillOnCloseJob` — the job limits behind that, with no breakaway allowed
+- `cmd/lyx/csharpfixtures_integration_test.go` — the precedent for a test that spawns `dotnet` and skips without an SDK
+- `pattern/PATTERN-gate-slot.md` — slot, carry and verified-tree rules the build step and inert carry obey
+- `pattern/PATTERN-test-speed.md` — tier tags and gate keys the new tests and sites follow
+- `pattern/PATTERN-leaf-packages.md` — checked: the new package is not a leaf
+- `docs/overview.md` — the module table that gains `internal/dotnetimpact` and the gate summary that gains the new keys
