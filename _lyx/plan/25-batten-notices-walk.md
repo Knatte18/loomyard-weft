@@ -21,10 +21,10 @@
 **Uses:**
 - `internal/hubforge#CopyHub`
 - `internal/hubforge#AddPairWith`
-- `plan:internal/orchcli#NotifyParent`
-- `plan:internal/orchcli#NotifyFrom`
-- `plan:internal/orchcli#ParentOrchRecorded`
-- `plan:internal/orchcli#OrchLive`
+- `internal/orchcli#NotifyParent`
+- `internal/orchcli#NotifyFrom`
+- `internal/orchcli#ParentOrchRecorded`
+- `internal/orchcli#OrchLive`
 - `internal/hubgeom#ParentOf`
 - `internal/hubgeom#NearestLiveOrch`
 

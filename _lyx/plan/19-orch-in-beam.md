@@ -16,12 +16,12 @@
 - `docs/overview.md`
 
 **Create:**
-- `plan:internal/orchcli#TestOrchInBeam` -> `func TestOrchInBeam(t *testing.T)`
-- `plan:internal/orchcli#refuseBeamStart` -> `func refuseBeamStart(slug, here, owner string, status *string) error`
-- `plan:internal/orchcli#OrchLive` -> `func OrchLive(worktree *lyxcwd.Location) (bool, error)`
-- `plan:internal/orchcli#orchLiveFrom` -> `func orchLiveFrom(st orchengine.State, strands func() ([]reedengine.StrandStatus, error)) (bool, error)`
-- `plan:internal/orchcli#TestOrchLiveFrom` -> `func TestOrchLiveFrom(t *testing.T)`
-- `plan:internal/orchcli#TestRefuseBeamStart` -> `func TestRefuseBeamStart(t *testing.T)`
+- `internal/orchcli#TestOrchInBeam`
+- `internal/orchcli#refuseBeamStart`
+- `internal/orchcli#OrchLive`
+- `internal/orchcli#orchLiveFrom`
+- `internal/orchcli#TestOrchLiveFrom`
+- `internal/orchcli#TestRefuseBeamStart`
 
 **Uses:**
 - `internal/hubgeom#ReedGeometry`

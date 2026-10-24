@@ -28,8 +28,8 @@
 - `internal/battencli#ResumeInWindow`
 - `internal/hubgeom#ParentOf`
 - `internal/fabricengine#ReadOriginFor`
-- `plan:internal/orchcli#OrchLive`
-- `plan:internal/orchcli#HubOrchs`
+- `internal/orchcli#OrchLive`
+- `internal/orchcli#HubOrchs`
 - `internal/boardengine#ReadTasks`
 - `internal/hubforge#CopyHub`
 - `internal/hubforge#AddPairWith`
