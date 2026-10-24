@@ -1278,6 +1278,24 @@
       "body": "## Seen (2026-10-24)\n\nThe task `idle-notice-misses-fork-activity` quoted Batten's idle notice as \"no agent activity readable\" for a writer working in a fork.\nIts fix (c5d715860) closed the fork gap in `ReadAgentActivity`, which yields \"agents idle\", not that text; Batten writes \"no agent activity readable\" only when it finds no live run at all.\nIf the quote was exact, a second cause hides a live run from the activity reader.\n\n## Idea\n\nFind which path made the reader see no live run while the writer worked, and fix it; check the run records of a run that hit the notice before closing this as a misquote.",
       "created": "2026-10-24T06:53:16Z",
       "revised": "2026-10-24T06:53:16Z"
+    },
+    {
+      "id": 793,
+      "handle": "E24",
+      "slug": "pattern-cleanup",
+      "title": "Clean up PATTERN.md: far too many entries",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "stencil"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "## Seen (2026-10-24)\n\nPATTERN.md was already over its headroom line (15651 bytes against 15564, 95% of 16384) before `gate-runs-once` added 510 bytes of entries; that run got through only by shortening 20 other entries, recorded as `changes` decisions.\nThe overview is inlined in every spawned agent's prompt, so its size is paid on every run.\n\n## Idea (operator, 2026-10-24)\n\nPATTERN has far too many entries and must be cleaned up: a dedicated agent first reviews which entries can be merged, moved to their background files or package `doc.go`, or dropped, and proposes a smaller set to the operator before any task.",
+      "created": "2026-10-24T07:32:28Z",
+      "revised": "2026-10-24T07:32:28Z"
     }
   ],
   "prime_owner": "neve"
