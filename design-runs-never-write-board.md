@@ -1,4 +1,4 @@
-# A run never files board entries itself
+# A run never files a task, at most a note
 
 `runs-never-write-board` · Note · bug, board, loom, stencil
 
@@ -9,10 +9,11 @@ It depended on `gate-runs-once`, so the Land notice named it "newly ready" and t
 
 ## Rule (operator, 2026-10-24)
 
-A run never writes the board itself: no card, decision or producer files a task or note.
-A follow-up a run finds goes into its report or decision record, and the orch puts it to the operator, who decides whether it becomes a board entry.
+A run never files a task: only the operator decides what becomes a task, and with which recipe and profile.
+A run may at most file a follow-up as a note, which waits on the board like any other note.
 
 ## Idea
 
-Refuse `lyx board` writes from inside a run (the board lock already refuses edits to the run's own entry; extend it to every write),
-and tell Discussion and Plan writers in their stencils that follow-ups are reported, never filed.
+Refuse a `lyx board` write from inside a run that creates or promotes a task (the board lock already refuses edits to the run's own entry),
+and tell Discussion and Plan writers in their stencils that a follow-up becomes a note, never a task.
+The orch starts a "newly ready" task only when the operator approved it.
