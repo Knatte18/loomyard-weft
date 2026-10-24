@@ -1335,7 +1335,7 @@
       }
     }
   ],
-  "currentBatch": 0,
+  "currentBatch": 6,
   "masterStrand": "01eca7b5ce6b1202052f0975e603e58a",
   "masterSessionId": "0c9c3bf8-0ef2-4615-96de-221f53bd2d82",
   "masterEngine": "claude",
@@ -1494,6 +1494,24 @@
       "bracketTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-gate-runs-once/0c9c3bf8-0ef2-4615-96de-221f53bd2d82/subagents/agent-a0f6cf83119619a73.jsonl"
       ]
+    },
+    "6": {
+      "slug": "darn-tree-scope-key",
+      "cards": [
+        "06-darn-tree-scope-key",
+        "07-green-record"
+      ],
+      "cardHashes": {
+        "06-darn-tree-scope-key": "61995a92ec8d39883a94e9e42a6ecca80ba9b8e30719c278864758ccce9a720e",
+        "07-green-record": "3c2b483a930d42a14de3c4cc887a208b5a66e07868aa07c50ade1f0633096ad4"
+      },
+      "startSha": "c6db660c842af1b16df3455d51672f02784acae7",
+      "kind": "fork",
+      "spawnedAt": "2026-10-24T09:28:34Z",
+      "sessionId": "0c9c3bf8-0ef2-4615-96de-221f53bd2d82",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
     }
   },
   "seenForkTranscripts": [
