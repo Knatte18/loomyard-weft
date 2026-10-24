@@ -1,6 +1,6 @@
 # Restore to PATTERN the moved rules that bind callers outside their package
 
-`pattern-restore-caller-rules` · Task · audit, config, shed, reed, fabric · running · PR-Review
+`pattern-restore-caller-rules` · Task · audit, config, shed, reed, fabric · running · Finalize
 
 ## Seen (audit of 04aafa88c, 2026-10-24)
 
