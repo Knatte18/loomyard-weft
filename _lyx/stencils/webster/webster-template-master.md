@@ -3,7 +3,7 @@
      It is filled by `run`'s engine core via internal/stencil and handed to the shuttle as the Master session's entire instruction set for one whole plan run: the long-lived session that reads the plan's overview and the repo's rules once, never the code, then forks one implementer per execution batch in-session (Claude Code's Agent tool, subagent_type "fork").
      Every marker below is a top-level {{.X}} substitution;
      stencil.FillOptional requires every marker but pattern_directive and friction_directive non-empty and there are no {{if}}/{{range}} conditionals anywhere in this file (a required marker inside a conditional branch would render silently blank when present-but-empty — see internal/stencil/stencil.go). plan_dir renders hub-relative ("_lyx/plan") in hub mode and absolute (the derived state directory's plan dir) in standalone, added when the standalone Master proved unable to see a plan it was told about only in hub-relative terms. verify_fix_prompt_path is the Go-rendered verify-gate fixer fork prompt file. pattern_directive and friction_directive are the two optional markers: each is filled via stencil.FillOptional and renders as nothing when its own tier is inactive. parent_directive is a third optional marker, rendered by internal/parentdirective. edit_directive is a required marker, rendered unconditionally by internal/editdirective.
-lyx-stencil: sha256=2804acd82f56fd260e6f8f5c4cdfba6d5585d95025d998255fbbd55fc86f08be build=ed98ccf71d12c07c28bc8f97c8f5d7ede7e73025 time=2026-10-24T13:05:08Z -->
+lyx-stencil: sha256=dc7f5e6873793d59f9eb95941ebac10d8611bc0cd377b4af17d2862deb8b5dbf build=a60ec1b8010b005357f91240f0f274c3ff644f0c time=2026-10-24T14:07:24Z -->
 
 # Webster Master — read once, fork per batch, judge only the minimal report
 
@@ -123,8 +123,8 @@ You never read raw fork output beyond its own turn, and you never open a file to
 - `recover-batch <NN>` completes with a terminal `status: stuck` → the recovery itself failed.
   You have exhausted this batch's recovery: stop the run here — write `outcome: stuck` to `{{.outcome_path}}`, with a `stuck_reason` naming the batch and the failure, and stop.
   Do NOT re-fork it, do NOT begin the next batch (batch N+1 assumes N is committed).
-- `recover-batch <NN>` completes with a terminal `status: dead` (any `dead_reason`) and `recovery_retry: true` → the dead recovery committed work of its own and the batch has a recovery left.
-  Run `lyx webster recover-batch <NN>` once more, backgrounded, and act on its completion notification by these rungs; that second recovery is the last.
+- `recover-batch <NN>` completes with a terminal `status: dead` (any `dead_reason`) and `recovery_retry: true` → the batch earns another recovery: the dead recovery committed work of its own and the batch has a recovery left, or a `reset --to batch-start` cleared the batch's recovery count.
+  Run `lyx webster recover-batch <NN>` once more, backgrounded, and act on its completion notification by these rungs.
 - `recover-batch <NN>` completes with a terminal `status: dead` and `recovery_retry: false` → the recovery itself failed and earns no retry.
   Stop exactly as for a terminal `stuck` recovery: write `outcome: stuck` to `{{.outcome_path}}`, with a `stuck_reason` naming the batch and the failure, and stop.
   Do NOT re-fork it, do NOT begin the next batch.
