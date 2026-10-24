@@ -1,6 +1,6 @@
 # Codex spike 2: a twill-like fan of forks with inherited context
 
-`codex-twill-spike` · Task · audit, shuttle, codex
+`codex-twill-spike` · Task · audit, shuttle, codex · running · Worktree-Create
 
 ## Seen (codex spike, 2026-10-24)
 
