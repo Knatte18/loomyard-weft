@@ -1335,7 +1335,7 @@
       }
     }
   ],
-  "currentBatch": 22,
+  "currentBatch": 0,
   "masterStrand": "749a4850b2cdeb072456c9c5b8c99ddb",
   "masterSessionId": "10aba9c6-1885-40a9-b0f0-1f9376bb6375",
   "masterEngine": "claude",
@@ -1562,8 +1562,22 @@
       "spawnedAt": "2026-10-24T10:48:40Z",
       "sessionId": "10aba9c6-1885-40a9-b0f0-1f9376bb6375",
       "engine": "claude",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "stuck",
+      "digest": {
+        "batch": "22-tier-plan-docs",
+        "status": "stuck",
+        "head_sha": "0421d5dd97fb11681591015e99e2c1a7f18a9420"
+      },
+      "cardShas": [
+        "0421d5dd97fb11681591015e99e2c1a7f18a9420"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-gate-runs-once/10aba9c6-1885-40a9-b0f0-1f9376bb6375/subagents/agent-a9d2ab51c77a8ed87.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-gate-runs-once/10aba9c6-1885-40a9-b0f0-1f9376bb6375/subagents/agent-a9d2ab51c77a8ed87.jsonl"
+      ]
     },
     "3": {
       "slug": "gate-call-renders-key",
@@ -1773,6 +1787,7 @@
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-gate-runs-once/10aba9c6-1885-40a9-b0f0-1f9376bb6375/subagents/agent-a49055499514b80fd.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-gate-runs-once/10aba9c6-1885-40a9-b0f0-1f9376bb6375/subagents/agent-aa5731629e365b9dd.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-gate-runs-once/10aba9c6-1885-40a9-b0f0-1f9376bb6375/subagents/agent-afeb64aafc05f20ec.jsonl",
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-gate-runs-once/10aba9c6-1885-40a9-b0f0-1f9376bb6375/subagents/agent-a5991b5d868e687b8.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-gate-runs-once/10aba9c6-1885-40a9-b0f0-1f9376bb6375/subagents/agent-a5991b5d868e687b8.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-gate-runs-once/10aba9c6-1885-40a9-b0f0-1f9376bb6375/subagents/agent-a9d2ab51c77a8ed87.jsonl"
   ]
 }
