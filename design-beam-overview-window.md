@@ -1,6 +1,6 @@
 # The overview window becomes the beam window
 
-`beam-overview-window` · Task · enhancement, batten, orch, reed · draft
+`beam-overview-window` · Task · enhancement, batten, orch, reed
 
 ## Seen (operator, 2026-10-25)
 
