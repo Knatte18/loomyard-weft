@@ -48,7 +48,7 @@
 - `internal/loomrecipe#testParentReviewConfig`
 
 **Create:**
-- `plan:internal/shedrecipe#TestResolveGateSpec_UnknownNameListsTheLegalValues` -> `func TestResolveGateSpec_UnknownNameListsTheLegalValues(t *testing.T)`
+- `internal/shedrecipe#TestResolveGateSpec_UnknownNameListsTheLegalValues`
 
 **Intent:** D1 and D2: Discussion-Write hands a passing discussion straight to Discussion-Bouncer, with no parent-review round, alignment spawn or parent message.
 
