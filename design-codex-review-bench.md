@@ -1,6 +1,6 @@
 # Bench Codex as a Burler reviewer against Claude reviews of finished runs
 
-`codex-review-bench` · Note · audit, codex, burler
+`codex-review-bench` · Task · feature, codex, burler
 
 ## Goal (operator, 2026-10-25)
 
@@ -14,6 +14,9 @@ Codex spends its own tokens; Claude only drives the bench.
 - Per input and setting: findings Claude also found, real findings Claude missed, false findings, Claude findings Codex missed, tokens and wall time.
 - Also tested: `codex exec` itself, and billing under a ChatGPT login (plan rate limits per run).
 
-## Result
+## Output
 
-Not run yet.
+- A report in `docs/research/codex-review-bench-<date>/report.md`, with a summary table and a conclusion: whether Codex reaches the Claude reviewers' quality, and at which model and effort.
+- No production code.
+- Codex runs with its own `CODEX_HOME` under the worktree's `.scratch/`, linking `~/.codex/auth.json`; the operator's `~/.codex` is never changed.
+- Stop early and say so in the report if the plan's rate limits come close to running out.
