@@ -4,24 +4,32 @@
 
 ## Seen (operator, 2026-10-25)
 
-`lyx orch start` starts every dobby this machine owns before the orch session, and dobby's own verbs sit under `lyx beam` (`lyx beam start`, `lyx beam status`), whose names say beam where they mean dobby.
-A hub without a running orch gets no dobby unless someone runs `lyx beam start`, and restarting the orch is mixed up with bringing the hub up.
+`lyx orch start` does four jobs: it starts every dobby this machine owns, reconciles the hub's branches against origin, ensures the overview window, and only then starts the orch session and its watcher.
+Dobby's own verbs sit under `lyx beam` (`lyx beam start`, `lyx beam status`), and `lyx prime` names the top beam although the verb runs in any beam.
+`--handoff` and `--adopt` are never used; `--continue` is used often and is long to type.
+The command surface carries long-form shortcuts beside the short ones and a top-level `lyx start` for `lyx loom start`, which nobody runs since batten starts every loom run.
 
-## Idea
+## Design (operator, 2026-10-25)
 
-The two are tied but separate, and each gets its own verbs:
+A beam, the prime included, is one unit of two parts that always run together: its daemon, dobby, which starts, drives and lands the beam's runs, and its LLM, the orch, which handles stops and questions and is always there to talk to.
+Dobby already sends its notices to the orch, and an idle orch spends nothing until a message wakes it.
+Both run on the machine that owns the beam.
 
-| | dobby | orch |
-|---|---|---|
-| What it is | a program, no LLM, one per worktree (the prime and each beam) | an LLM session, one per worktree thread |
-| What it does | starts released ready tasks, drives their batten passes, lands them and cleans up | answers escalations and notices, carries the operator's answers, keeps the board |
-| Without the other | runs start and land; a stop that needs a decision waits | nothing starts; the orch can still talk and write the board |
-| Talks to the other | sends notices to the orch | never drives dobby |
+- `lyx beam start [slug]` brings a beam up, the current worktree's beam with no slug: it starts the dobby, reconciles the branches, ensures the overview window, and starts the orch with its watcher.
+  The orch resumes its recorded session when one exists, else starts fresh from the last handoff note, else from the start stencil.
+  A recorded session that cannot be resumed falls back to a fresh start from the note, never to an error.
+- `lyx beam stop [slug]` stops both, and `lyx beam status` shows both.
+- A fresh orch comes from `lyx orch refresh`.
+- `lyx orch` keeps `stop`, `status`, `distill`, `refresh`, `withdraw` and `rules`.
+- Removed: `lyx orch start` with `--continue`, `--handoff` and `--adopt`; `lyx orch cleanup`, since `lyx cleanup` already removes old handoffs; `lyx prime`; `lyx start`.
 
-- `lyx dobby start|status|stop` replace `lyx beam start` and `lyx beam status`; `lyx beam` keeps only what concerns beams: `create`, `promote`, `land`.
-- `lyx orch start` starts only the orch session, and warns when the worktree's dobby is not running, naming `lyx dobby start`.
-- `lyx prime`, the verb that brings the hub up, runs `lyx dobby start` and then `lyx orch start`, then attaches.
+Shortcuts are short forms only:
 
-## Open
+| Shortcut | Runs |
+|---|---|
+| `lyx s` | `lyx beam start`, then `lyx reed attach` |
+| `lyx a` | `lyx reed attach` |
+| `lyx p` | `lyx tender pause` |
+| `lyx r` | `lyx tender resume` |
 
-- Whether `lyx dobby start` starts every dobby this machine owns, as `lyx beam start` does, or only the current worktree's by default.
+The long forms `lyx attach`, `lyx pause` and `lyx resume` are removed.
