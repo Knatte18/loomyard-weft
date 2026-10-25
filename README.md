@@ -42,7 +42,7 @@ Held by a run; its scope is locked until the run ends.
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T1 | **The overview window becomes the beam window**<br>• Rename the overview window to beam: <slug>, with one dobby and one orch section, each run shown once | [`beam-overview-window`](design-beam-overview-window.md) | darn | Darn-Write | neve | 19m<br>19m | batten, orch, reed |
 | T3 | **An anchor per beam**<br>• Let each worktree carry its own anchor through a .lyx-anchor marker at its weft branch root, inherited by its tasks, with a verb that changes it<br>• `profile: solid` | [`umbrella-anchor`](design-umbrella-anchor.md) | loom | Webster | neve | 7d<br>6h | fabric, config, workspaces |
-| T5 | **Shortcuts are short forms only**<br>• Remove lyx attach, lyx pause, lyx resume and the top-level lyx start | [`shortcuts-short-only`](design-shortcuts-short-only.md) | darn | Drift-Verify | neve | 19m<br>17m | shortcut, loom, reed |
+| T5 | **Shortcuts are short forms only**<br>• Remove lyx attach, lyx pause, lyx resume and the top-level lyx start | [`shortcuts-short-only`](design-shortcuts-short-only.md) | darn | Code-Bouncer | neve | 19m<br>17m | shortcut, loom, reed |
 
 ### Ready (1)
 
