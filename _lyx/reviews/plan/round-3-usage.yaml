@@ -1,0 +1,18 @@
+round: 3
+fan: ""
+fix_fan: fix-plan
+fans_recorded: true
+review:
+    engine: claude
+    model: sonnet
+    effort: high
+    start: 2026-10-25T16:08:56Z
+    end: 2026-10-25T17:13:38.498718942+01:00
+    wall_seconds: 282.498718942
+    tokens_known: true
+    fresh_tokens: 142854
+    cache_read_tokens: 2251236
+    forks: 0
+    fork_fresh_tokens: 0
+    fork_cache_read_tokens: 0
+    fork_fresh_share: 0
