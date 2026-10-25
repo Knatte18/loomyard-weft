@@ -7,11 +7,11 @@
 - `internal/battencli#TestWire_EverySeamFilled`
 
 **Create:**
-- `plan:internal/battencli#dobbyReading` -> `func dobbyReading(prime *lyxcwd.Location, slug string) (pid int, sleeps []pauserecord.Interval, err error)`
-- `plan:internal/tendercli#ReviveStalled` -> `func ReviveStalled(location *lyxcwd.Location, slug string) error`
-- `plan:internal/tendercli#reviveError` -> `func reviveError(report tenderengine.ReviveReport) error`
-- `plan:internal/tendercli#TestReviveError` -> `func TestReviveError(t *testing.T)`
-- `plan:internal/battencli#TestDobbyReading` -> `func TestDobbyReading(t *testing.T)`
+- `internal/battencli#dobbyReading`
+- `internal/tendercli#ReviveStalled`
+- `internal/tendercli#reviveError`
+- `internal/tendercli#TestReviveError`
+- `internal/battencli#TestDobbyReading`
 
 **Uses:**
 - `internal/hubgeom#DobbyGeometry`

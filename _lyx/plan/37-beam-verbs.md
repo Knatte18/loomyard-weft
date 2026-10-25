@@ -27,9 +27,9 @@
 - `plan:internal/beamcli#TestDobbyCmd_RefusesAPathItCannotPlace` -> `func TestDobbyCmd_RefusesAPathItCannotPlace(t *testing.T)`
 
 **Uses:**
-- `plan:internal/dobbyengine#Run`
+- `internal/dobbyengine#Run`
 - `internal/dobbyengine#EnsureLive`
-- `plan:internal/dobbyengine#PassExit`
+- `internal/dobbyengine#PassExit`
 - `internal/hubgeom#DobbyStart`
 - `internal/hubgeom#DobbyGeometry`
 - `internal/runproc#RoleDobby`

@@ -1,8 +1,8 @@
 # Card 36 — dobby-board-tidy
 
 **Edit:**
-- `plan:internal/dobbyengine#Deps`
-- `plan:internal/dobbyengine#daemon.tick`
+- `internal/dobbyengine#Deps`
+- `internal/dobbyengine#daemon.tick`
 - `internal/dobbyengine#dobbyengineAllowedImports`
 - `contracts/stencils#entries`
 - `contracts/stencils#roleOpeningStencils`

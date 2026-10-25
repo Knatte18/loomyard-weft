@@ -1,19 +1,19 @@
 # Card 35 — dobby-ready-starts
 
 **Edit:**
-- `plan:internal/dobbyengine#Deps`
-- `plan:internal/dobbyengine#daemon.tick`
+- `internal/dobbyengine#Deps`
+- `internal/dobbyengine#daemon.tick`
 - `internal/dobbyengine#StartState`
 - `internal/dobbyengine#dobbyengineAllowedImports`
 - `internal/dobbyengine/doc.go`
 
 **Create:**
-- `plan:internal/dobbyengine#TaskView` -> `type TaskView struct`
-- `plan:internal/dobbyengine#readyToStart` -> `func readyToStart(task TaskView, here string, covered bool) bool`
-- `plan:internal/dobbyengine#daemon.startReady` -> `func (d *daemon) startReady(ctx context.Context, now time.Time) error`
-- `plan:internal/dobbyengine#nextStartTry` -> `func nextStartTry(st StartState, now time.Time, probe time.Duration) StartState`
-- `plan:internal/dobbyengine#TestReadyToStart` -> `func TestReadyToStart(t *testing.T)`
-- `plan:internal/dobbyengine#TestStartReady_RefusalsAndBackoff` -> `func TestStartReady_RefusalsAndBackoff(t *testing.T)`
+- `internal/dobbyengine#TaskView`
+- `internal/dobbyengine#readyToStart`
+- `internal/dobbyengine#daemon.startReady`
+- `internal/dobbyengine#nextStartTry`
+- `internal/dobbyengine#TestReadyToStart`
+- `internal/dobbyengine#TestStartReady_RefusalsAndBackoff`
 
 **Uses:**
 - `internal/boardengine#IsEmptyStatus`
