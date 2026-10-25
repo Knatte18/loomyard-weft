@@ -1,0 +1,22 @@
+# Relevant files
+
+- `internal/battenshed/doc.go` — the InnerRun wait, its notices, revive, owner check and Land row that short passes must keep
+- `internal/battenshed/innerrun.go` `innerRunProducer`, `childWait` — the cross-check memory that moves to a per-run record
+- `internal/battenshed/land.go` `newlyReady` — the ready snapshot and newly-ready notice that go
+- `internal/battenshed/template.yaml` — batten.yaml keys, the tackler override shape for the arbiter overrides
+- `internal/battencli/drive.go` — batten's Go driver wiring, which fills the tackler only today
+- `internal/beamcli/doc.go` — the beam module that gains `start` and the dobby daemon
+- `internal/orchcli/doc.go` — orch per worktree, `HubOrchs`, notice routing to the nearest live orch
+- `internal/orchengine/doc.go` — the watcher, the model for a detached daemon with a lock and a binary re-exec
+- `internal/boardengine/doc.go` — run status form, README layers and Ready, which the draft status touches
+- `internal/fswatch/doc.go` — the file-change event source and its fallback contract
+- `internal/runproc/doc.go` — process owner records and `End`
+- `internal/tenderengine/doc.go` — pause and revive, which dobby honours and reuses
+- `internal/tenderengine/processes.go` `orphanOwner` — how owner records read as orphans
+- `internal/sheddriver/doc.go` — the stop chain and the optional `Arbiter` seam
+- `internal/arbiterstop/doc.go` — arbiter eligibility, loom-specific today
+- `internal/loomcli/drivewiring.go` — where loom fills the arbiter seam
+- `internal/loomengine/template.yaml` — the arbiter keys that move to shed.yaml
+- `internal/landingshed/finalize.go` `configChangeNotice` — the file-level config notice made key-level
+- `internal/battencli/cancelcmd.go` — cancel, which now leaves a task `draft`, and its cancel marker dobby reads
+- `internal/boardengine/store.go` — the one accepted store version, why the draft migration records a key
