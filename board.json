@@ -863,6 +863,26 @@
       "body": "Imported from [issue #874](https://github.com/Knatte18/loomyard/issues/874).\n\nSeen (umbrella-anchor, batch 06, 2026-10-25): the implementer fork for card `6-clone-records-marker-on-prime-weft` ran `lyx gate test --wait --gate card --card 6-clone-records-marker-on-prime-weft`, and record-batch marked the batch failed with a fabric-reference finding. The fork touched no fabric repo.\n\nCause: ReferenceRule's barePattern in internal/fabricengine/refscanner.go flags any unquoted word ending in the weft suffix, so a card slug ending in `-weft` turns every command naming the card into a fabric reference. recover-batch then refused with needs_fresh.\n\nWorkaround: the parent judged the finding false and had Merriam run `lyx webster accept-audit --batch 6` and `recover-batch 6`; later forks quote the slug.\n\nExpected: a card slug is never read as a weft sibling worktree; either the plan validator refuses a card slug ending in the weft suffix, or the audit does not read a `--card` value as a path.",
       "created": "2026-10-25T16:16:56Z",
       "revised": "2026-10-25T16:16:56Z"
+    },
+    {
+      "id": 819,
+      "handle": "B4",
+      "slug": "readme-draft-not-ready",
+      "title": "Board README lists draft tasks under Ready",
+      "kind": "note",
+      "labels": [
+        "bug",
+        "board"
+      ],
+      "issues": [
+        873
+      ],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "Imported from [issue #873](https://github.com/Knatte18/loomyard/issues/873).\n\nSeen (2026-10-25): a released-pending task with status draft and no open dependencies (codex-astra-solo-bench) renders under Ready, 'waits on nothing open; can start now', with only a draft tag. ComputeLayers (internal/boardengine/layer.go:33-41) handles done, running, project and isolated entries but not draft, so it falls into readyLayer. Expected: a draft task is not Ready; it gets its own layer (Draft) or sits apart from Ready, since dobby will not start it until released.",
+      "created": "2026-10-25T16:16:58Z",
+      "revised": "2026-10-25T16:16:58Z"
     }
   ],
   "prime_owner": "neve",
