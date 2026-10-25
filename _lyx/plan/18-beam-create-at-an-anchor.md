@@ -17,8 +17,8 @@
 - `docs/shared-libs/lyxcwd.md`
 
 **Create:**
-- `plan:internal/fabricengine#Topology.EnsureAnchor` -> `func (t *Topology) EnsureAnchor(rec *Mutations, pair *lyxcwd.Location, anchor string) error`
-- `plan:internal/fabricengine_test#TestAdd_AtAnchor` -> `func TestAdd_AtAnchor(t *testing.T)`
+- `internal/fabricengine#Topology.EnsureAnchor`
+- `internal/fabricengine_test#TestAdd_AtAnchor`
 
 **Uses:**
 - `internal/fabricengine#validateAnchorTarget`
