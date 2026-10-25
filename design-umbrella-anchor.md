@@ -1,6 +1,6 @@
 # An anchor per beam
 
-`umbrella-anchor` · Task · enhancement, fabric, config, workspaces · running · Plan-Burler-Review
+`umbrella-anchor` · Task · enhancement, fabric, config, workspaces · running · Plan-Burler-Fix
 
 ## Seen (2026-10-18)
 
