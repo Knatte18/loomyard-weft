@@ -1,12 +1,12 @@
 {
   "current_producer": "Webster",
-  "state": "running",
-  "error": "",
+  "state": "blocked",
+  "error": "Batch 06: recover-batch refused with needs_fresh on fabric-reference audit findings (fork ran lyx gate test --gate card/batch --card ... and a git commit for card 7).",
   "pause_requested": false,
   "activity": {
     "now": "Webster",
-    "last": "Webster → goto",
-    "wait": ""
+    "last": "Webster → stuck",
+    "wait": "Batch 06: recover-batch refused with needs_fresh on fabric-reference audit findings (fork ran lyx gate test --gate card/batch --card ... and a git commit for card 7)."
   },
   "history": [
     {
@@ -363,6 +363,22 @@
       "outcome": "goto",
       "output": "",
       "at": "2026-10-25T16:09:07Z"
+    },
+    {
+      "producer": "Webster",
+      "outcome": "stuck",
+      "output": "",
+      "at": "2026-10-25T16:09:55Z",
+      "gate_attempts": 0,
+      "gate_spans": [
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-10-25T16:09:54.602706289Z",
+          "end": "2026-10-25T16:09:54.602791978Z"
+        }
+      ],
+      "budget_exempt": true
     }
   ],
   "product": {
