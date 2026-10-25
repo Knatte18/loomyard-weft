@@ -35,7 +35,7 @@ grouping
 
 Concrete and claimable; only a task can run.
 
-### Running (2)
+### Running (3)
 
 Held by a run; its scope is locked until the run ends.
 
@@ -43,14 +43,13 @@ Held by a run; its scope is locked until the run ends.
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T1 | **Bench Codex as a Burler reviewer against Claude reviews of finished runs**<br>• `profile: docs` | [`codex-review-bench`](design-codex-review-bench.md) | darn | Darn-Write | neve | 12m<br>9m | codex, burler |
 | T2 | **[WS 005] One dobby daemon per beam owns and drives its runs**<br>• Each beam (a worktree with an orch thread) gets a Go daemon, started by lyx orch start, that follows its runs status files, starts ready tasks, lands, settles mechanical stops and tells the thread only what needs judgement<br>• `profile: solid`<br>• `loom: discussion_hard_max_bounces 4`<br>• `loom: discussion_max_bounces 3` | [`umbrella-daemon`](design-umbrella-daemon.md) | loom | Webster | neve | 13d<br>4h | batten, orch, shed, workspaces, loom, board |
+| T3 | **Plan references follow renames and renumbers mechanically**<br>• `profile: light` | [`plan-refs-auto-rewrite`](design-plan-refs-auto-rewrite.md) | darn | Worktree-Create | neve | 1d<br>0m | webster, loom |
 
-### Ready (1)
+### Ready (0)
 
 Waits on nothing open; can start now.
 
-| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- | --- | --- |
-| T3 | **Plan references follow renames and renumbers mechanically**<br>• `profile: light` | [`plan-refs-auto-rewrite`](design-plan-refs-auto-rewrite.md) | darn |  | 1d<br>0m | webster, loom |
+_None._
 
 ## Notes (36)
 
@@ -84,7 +83,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | E9 |  | **Paste cited code into a review rounds context**<br>• Reviewers edit nothing and review a fixed commit, so code pasted at round start cannot go stale; measure it against todays reviewer | [`review-inline-code`](design-review-inline-code.md) | 13d<br>1d | burler, stencil |
 | E10 |  | **Module labels from what a task touches, not only what it is about**<br>• Half the landings that changed the shuttle core lacked the shuttle label; derive or check module labels from the plan and the diff | [`labels-from-diff`](design-labels-from-diff.md) | 10d<br>10d | board, loom |
 | E13 |  | **Rename the lyx binary to lyr (name clash with LyX)** | [`rename-binary-lyr`](design-rename-binary-lyr.md) | 9d<br>3d | stencil, shuttle |
-| E14 |  | **An adopt runs the test suite on the adopting machine**<br>• Catch breaks from a machine change (Ubuntu 26.04, 24.04, Windows 11) at adopt time | [`adopt-runs-tests`](design-adopt-runs-tests.md) | 1d<br>12m | fabric, gate |
+| E14 |  | **An adopt runs the test suite on the adopting machine**<br>• Catch breaks from a machine change (Ubuntu 26.04, 24.04, Windows 11) at adopt time | [`adopt-runs-tests`](design-adopt-runs-tests.md) | 1d<br>13m | fabric, gate |
 | E16 |  | **Parallel batches: the shared pieces for Webster forks and Weaver**<br>• DAG batchifier, worktree per batch, merge-back with conflict resolution; open: keeping a fork inside its worktree | [`parallel-batch-parts`](design-parallel-batch-parts.md) | 7d<br>7d | webster, fabric, loom |
 | E17 | L | **An anchor per beam**<br>• Let a beam work in its own subdirectory of the repository, inherited by its tasks; loom-sized, best with or after umbrella-groundwork | [`umbrella-anchor`](design-umbrella-anchor.md) | 6d<br>4h | fabric, config, workspaces |
 | E19 |  | **Every remote operation runs async, and local-only fabric pairs stay an explicit choice only**<br>• Remote work goes async except the branch-exists check; batch pairs reach origin like any pair, and the local-only mode stays only as an explicit --local until a use is found or it is removed | [`fabric-remote-async`](design-fabric-remote-async.md) | 6d<br>6d | fabric, batten |
