@@ -17,8 +17,8 @@
 - `plan:internal/dobbyengine#TestRun_NoPassWhileAMoveStands` -> `func TestRun_NoPassWhileAMoveStands(t *testing.T)`
 
 **Uses:**
-- `plan:internal/fabricengine#MoveRecordPath`
-- `plan:internal/fabricengine#MoveInProgress`
+- `internal/fabricengine#MoveRecordPath`
+- `internal/fabricengine#MoveInProgress`
 - `internal/lyxcwd#NamedWorktree`
 - `internal/dobbyengine#EnsureLive`
 - `internal/dobbyengine#daemon.drivePasses`
