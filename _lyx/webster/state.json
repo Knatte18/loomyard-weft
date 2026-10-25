@@ -1,6 +1,6 @@
 {
   "runGuid": "1e8ff560c6529bdf936a0c51cb6b8d91",
-  "planFingerprint": "ab6e55ec12fb7d9cdcc86ccec03c15f0f4bcd1039a16612211b30590abf1cc9f",
+  "planFingerprint": "2441de44ab2f2859f31144ddda6be11d31b5e6caa96033ef32ee02f671e20815",
   "planFileHashes": {
     "00-overview.md": "4ddeac0914ad24e6f809c4078c7621a6673521242b6950bf7ada182bf45528ea",
     "01-decision-note-title.md": "c881794520a933dd7f9d7b96b9bc32465db3ee1938aebb239c12b7c489bbc771",
@@ -15,8 +15,8 @@
     "10-darn-writer-entry-check.md": "08ec908409683dd1d53252ec82b70a88a729387c19c066fe6579fa9aa9711171",
     "11-carry-over-added-since.md": "1bfa720a7efb1166d313a076331b8518af5104c63272d7ecd8fba88094b5a788",
     "12-bouncer-decision-escalation.md": "ff656c21840ff1be3dd1306800ef9107dc196145bc180d226c46213a2e7973a4",
-    "13-discussion-decision-switches.md": "533333b159a315b968b4a8a2b3af220bac63d0e07766e44a30eb2ce9cbedf01c",
-    "14-decision-cause-readers.md": "64f6ea6aad5abb302b0ffe715af09d35e6318a960d45d904526bc6ea6aa8adde",
+    "13-discussion-decision-switches.md": "2fb4e84fe832d72f27111e4f19a6ddc4054bc1f80948ec9419c997036ca2c86a",
+    "14-decision-cause-readers.md": "a27d4a433dad243c2012836b819a314662cf5e87d980f4bba9ddf19888b08eff",
     "15-landing-fix-attempts-key.md": "01f65f922523040b88dee0d369e61f581a241c26aed9614ffb566565d4eb45c9",
     "16-parent-align-row.md": "0bb90724b7deb801d5a7fc49a2589fde832579d4dfc871c73f1d65349453ac2d",
     "17-parent-align-prose.md": "788d0157f05399293726067c871c670032a6462a2764eb47a4e5348e6ff29978",
@@ -681,7 +681,7 @@
       }
     }
   ],
-  "currentBatch": 13,
+  "currentBatch": 0,
   "masterStrand": "ac2243e5870c8bfb94eaa402812b5721",
   "masterSessionId": "dde85386-5954-4b01-bdc1-fcf75b3d6577",
   "masterEngine": "claude",
@@ -729,8 +729,8 @@
         "15-landing-fix-attempts-key"
       ],
       "cardHashes": {
-        "13-discussion-decision-switches": "533333b159a315b968b4a8a2b3af220bac63d0e07766e44a30eb2ce9cbedf01c",
-        "14-decision-cause-readers": "64f6ea6aad5abb302b0ffe715af09d35e6318a960d45d904526bc6ea6aa8adde",
+        "13-discussion-decision-switches": "2fb4e84fe832d72f27111e4f19a6ddc4054bc1f80948ec9419c997036ca2c86a",
+        "14-decision-cause-readers": "a27d4a433dad243c2012836b819a314662cf5e87d980f4bba9ddf19888b08eff",
         "15-landing-fix-attempts-key": "01f65f922523040b88dee0d369e61f581a241c26aed9614ffb566565d4eb45c9"
       },
       "startSha": "e1d55c8408a0bb40d15e1082b46f2d2133974733",
@@ -738,8 +738,25 @@
       "spawnedAt": "2026-10-25T08:52:37Z",
       "sessionId": "dde85386-5954-4b01-bdc1-fcf75b3d6577",
       "engine": "claude",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "13-discussion-decision-switches",
+        "status": "done",
+        "head_sha": "5a372b2ab301edbf02c1261e59749dcf6d26ce9a",
+        "deviations": [
+          "docs/overview.md"
+        ]
+      },
+      "cardShas": [
+        "5a372b2ab301edbf02c1261e59749dcf6d26ce9a"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-discussion-scope-in-lenses/dde85386-5954-4b01-bdc1-fcf75b3d6577/subagents/agent-a5f38a53d26b811c3.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-discussion-scope-in-lenses/dde85386-5954-4b01-bdc1-fcf75b3d6577/subagents/agent-a5f38a53d26b811c3.jsonl"
+      ]
     },
     "3": {
       "slug": "drop-parent-review-gate",
@@ -895,6 +912,7 @@
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-discussion-scope-in-lenses/dde85386-5954-4b01-bdc1-fcf75b3d6577/subagents/agent-a3f5433ff246cdcda.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-discussion-scope-in-lenses/dde85386-5954-4b01-bdc1-fcf75b3d6577/subagents/agent-ad52ec9594a4b3fff.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-discussion-scope-in-lenses/dde85386-5954-4b01-bdc1-fcf75b3d6577/subagents/agent-a337a93032497dc48.jsonl",
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-discussion-scope-in-lenses/dde85386-5954-4b01-bdc1-fcf75b3d6577/subagents/agent-aa8ce1dbcf80422ad.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-discussion-scope-in-lenses/dde85386-5954-4b01-bdc1-fcf75b3d6577/subagents/agent-aa8ce1dbcf80422ad.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-discussion-scope-in-lenses/dde85386-5954-4b01-bdc1-fcf75b3d6577/subagents/agent-a5f38a53d26b811c3.jsonl"
   ]
 }

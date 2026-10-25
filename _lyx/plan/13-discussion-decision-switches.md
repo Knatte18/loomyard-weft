@@ -15,7 +15,7 @@
 - `contracts/specs/shed-recipe-spec.md`
 
 **Create:**
-- `plan:internal/loomrecipe#TestDecisionSwitches_SetTogetherOnLoomsDiscussionRowsOnly` -> `func TestDecisionSwitches_SetTogetherOnLoomsDiscussionRowsOnly(t *testing.T)`
+- `internal/loomrecipe#TestDecisionSwitches_SetTogetherOnLoomsDiscussionRowsOnly`
 
 **Uses:**
 - `internal/shedrecipe#layoutBouncerRound1Report`

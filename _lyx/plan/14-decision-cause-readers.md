@@ -1,7 +1,7 @@
 # Card 14 — decision-cause-readers
 
 **Create:**
-- `plan:internal/arbiterstop#HandsBack` -> `func HandsBack(producer, reason string) bool`
+- `internal/arbiterstop#HandsBack`
 
 **Edit:**
 - `internal/arbiterstop/doc.go`
