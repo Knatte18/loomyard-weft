@@ -113,8 +113,13 @@ A full pass whose origin was unreachable judges the owner against the local Bolt
 The pass itself records the episode, so a hand pass, the detached first pass of `lyx beam land` or `lyx adopt`, and a pass dobby spawned all leave the same marker.
 Dobby owes a run a full pass while its marker exists, and runs each such pass with the hidden `--no-reopen` flag, which skips only the Open-Window re-run, so an hour offline opens no window per probe tick.
 
-Every owned-elsewhere refusal of a full pass exits with a code of its own, distinct from the `--continue-pass` refusal's: `resumeRefusal`'s `EntryOwnedElsewhere` arm, `resumeOwnerClaim`'s lost owner claim, and `refuseResumeUnreachable`'s refusal on a local Bolt showing another owner.
-Dobby reads that code as owned elsewhere, never as a failing pass.
+Every refusal of a pass that reads another machine as the run's owner exits with a code of its own, distinct from the `--continue-pass` refusal's, through one typed error that `ownedElsewhereRefusal` and the owned arm of `refuseResumeUnreachable` both return.
+Examples are `resumeRefusal`'s `EntryOwnedElsewhere` arm, `resumeOwnerClaim`'s lost owner claim, `refuseResumeUnreachable`'s refusal on a local Bolt showing another owner, and `refuseStartOwnedElsewhere`, which `ownerPreflight` reaches for a found status still at Worktree-Create with no pair on this machine.
+The code is set only for a refusal before the step loop, never from a row's error.
+A first pass with no status file is not yet a run dobby drives: when `refuseStartOwnedElsewhere` refuses it as owned elsewhere it exits with the same code and stays a refused start under D5, with no owner pause, since there is no run to pause.
+A claim `claimBoardEntry` loses inside the Worktree-Create row fails that row with the refusal's text naming `lyx adopt <slug>`, so the stop goes through D7's shed chain like any row failure;
+dobby passes no failed run, and a hand pass of it reaches `refuseStartOwnedElsewhere` at the found Worktree-Create status and exits with the code.
+Dobby reads that code from a run it drives, one with a status file, as owned elsewhere, never as a failing pass.
 It then keeps the run's full pass owed, records the run as owned elsewhere in its state record, and runs today's owned-elsewhere handling: `tendercli.PauseOwnedElsewhere`, the same parent-lock release InnerRun's `ownedElsewhere` makes, and the owner notice naming `lyx adopt`, once per owner episode.
 A failed owner pause warns once per episode and is never retried blind: while the mark stands and no pause entry covers the run's slug, dobby runs a full pass of the run on each probe tick instead, so the owner is judged again before any pause.
 That pass is either refused as owned elsewhere again, and dobby runs the owned-elsewhere handling again, its pause included, with the episode's marker keeping the notice to once, or it exits 0.
@@ -220,7 +225,7 @@ Dobby adds no rule table: the mechanical stops are settled where they are today.
 Dobby's own failures, a refused start (D5) and a pass that keeps failing (D4), are not shed stops, and dobby posts them to the nearest live orch up its beam chain, the existing notice routing, each with its marker under `.lyx/beam/`:
 one notice per run and error text for a failing pass, cleared when a pass of that run exits 0,
 and one per task and refusal text for a refused start, cleared when a pass claims the task or the task's board entry changes.
-A full pass refused as owned elsewhere is neither: dobby sends today's owner notice naming `lyx adopt` instead (D4), never the failing-pass notice.
+A full pass of a run dobby drives refused as owned elsewhere is neither: dobby sends today's owner notice naming `lyx adopt` instead (D4), never the failing-pass notice.
 Nor is a pass refused at pre-run for a covering pause: it sends no notice and sets no failing-pass marker (D4).
 
 ### D8 — the arbiter for every shed run (parent decision, ly:orch, 2026-10-25)
@@ -327,6 +332,12 @@ Rationale: Parent, 2026-10-25: an adopt landing in that window must not strand a
 
 - A pass per probe tick per run spawns many short `lyx` processes; D4's bound caps them, at the cost of process starts (see note `spawn-audit-log`).
 
+<!-- lyx:carry-over Discussion-Review -->
+- Discussion-Review, round 4: converged; each finding below was fixed or disputed by the round's fixer, and no fresh reviewer has seen the result; the fixer report says which.
+  Review: _lyx/reviews/discussion/round-4-review.md; fixer report: _lyx/reviews/discussion/round-4-fixer-report.md.
+  - note-upsert-to-task-leaves-statusless (class decision, severity MEDIUM, open in rounds 2, 3, 4)
+<!-- /lyx:carry-over Discussion-Review -->
+
 ## Acceptance criteria
 
 - `lyx beam start` starts a dobby for the prime and each owned beam and reports live ones as found; a second start changes nothing; it starts no prime dobby where another machine is the prime owner; `lyx orch start` runs it first and still starts when it fails.
@@ -334,7 +345,7 @@ Rationale: Parent, 2026-10-25: an adopt landing in that window must not strand a
 - A beam made by `lyx beam create` or `promote`, and the parent of a run `lyx adopt` took, has a live dobby when the verb returns; `lyx adopt` of a member task or a beam whose parent another machine owns is refused naming `lyx adopt <parent>`, or `lyx adopt --prime` for the prime, also when the same call names the parent but stops before the parent's owner write, `lyx adopt` of a beam with a not-done member owned elsewhere is refused naming the member, each refusal names one call with every slug both rules reach, which is not refused, and both refusals are decided before the owner write.
 - A task with an empty status, all dependencies done and the dobby's worktree as parent is started; a draft task, one with an open dependency, one under a covering pause, one owned elsewhere and one past `max_runs` are not.
 - A new task from any creating write, a note or a project upserted to kind task, a promoted note and a task written with an empty-string status get `draft`, and an edit of a released task that leaves its status untouched keeps it released; `lyx board set-status '{"slug":"<slug>","status":null}'`, an upsert setting `status` to null and a merge with a nil `set_status` release a task; a cancelled task is left `draft`, and so is a task whose pair `lyx fabric remove` removed; a hand-run start of a draft is refused naming that `set-status` command with its slug, which runs as typed; the migration marks open tasks with a nil or empty-string status once.
-- A refused start is retried on its backoff and at once on a change of the entry, with one notice per refusal text.
+- A refused start, a first pass with no status file refused as owned elsewhere included, is retried on its backoff and at once on a change of the entry, with one notice per refusal text.
 - A batten pass yields at Run-Shed with the status file untouched and no cap or budget spent; the next pass resumes it; its own writes trigger no pass.
 - A continue pass runs no origin reconcile and no Open-Window re-run; the first pass after a dobby start, and the first pass after a machine wake, runs both; a re-exec owes no full pass.
 - A pass given `--continue-pass` for a run not `running` at Run-Shed, not named in its dobby's state record, or with an origin-owed marker standing, is refused naming `lyx batten run <slug>`.
@@ -342,7 +353,7 @@ Rationale: Parent, 2026-10-25: an adopt landing in that window must not strand a
 - A batten pass at Run-Shed under a covering pause or a standing owner yields at once, printing the hold reason; a pass held at a stop by a pause goes on to the stop's next settler at the lift.
 - A run held at the spawn on a standing owner and then adopted back is respawned by the full pass at the owner pause's lift, or, when its owner pause failed, by the next pass with a due probe.
 - A full pass owed after a start or a wake stays owed until a full pass of the run exits 0 with no origin-owed marker standing; a full pass that resumes with origin unreachable, a hand pass and a detached first pass of `lyx beam land` or `lyx adopt` included, leaves the marker, so dobby's passes stay full and run no Open-Window re-run until a full pass that reached origin exits 0 and removes it; a refused `--continue-pass` makes dobby run a full pass, never counted as a failing pass.
-- A full pass refused as owned elsewhere, by origin's verdict, a lost owner claim or the local Bolt with origin unreachable, exits with its own code; dobby then pauses the run under the owner, releases its parent lock and sends the owner notice naming `lyx adopt` once, sends no failing-pass notice, counts the run in neither `max_runs` nor its backoff, runs no further pass while the owner pause covers it, across a restart or a wake included, and drives the run again only after the full pass at the owner pause's lift, by hand or by `lyx adopt`, exits 0.
+- A full pass of a run dobby drives, one with a status file, refused by any refusal that names another machine as owner, origin's verdict, a lost owner claim, the local Bolt with origin unreachable and the start check of a Worktree-Create status with no pair here included, exits with its own code; dobby then pauses the run under the owner, releases its parent lock and sends the owner notice naming `lyx adopt` once, sends no failing-pass notice, counts the run in neither `max_runs` nor its backoff, runs no further pass while the owner pause covers it, across a restart or a wake included, and drives the run again only after the full pass at the owner pause's lift, by hand or by `lyx adopt`, exits 0.
   When the owner pause failed, dobby runs a full pass on each probe tick instead of retrying the pause, so a run adopted back while its owner pause had failed is not paused, and its next full pass exits 0 and clears the mark.
 - A halted or paused batten run gets no pass from dobby, nor does a slug with a cancel marker.
 - A notice sent once per episode by today's long wait is sent once across many passes, and an idle owner's parent lock is released after the idle bound across passes; a driverless running child is respawned by a pass, at most three times with no write of the child's status file between respawns, then noticed, also when each respawned driver lives a while before it dies.
