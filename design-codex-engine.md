@@ -51,7 +51,7 @@ If a twill fan on Codex works poorly, the review runs as strong single Codex age
 Codex reviews are investigated and benched thoroughly before any of it goes into production (operator, 2026-10-24).
 Operator view, not a decision (2026-10-24): Codex's strong model Astra could also write the plan, likely single-shot rather than as a twill fan; the Plan writer and its forks are about 23% of spend, and a Codex-written plan would then be reviewed by Claude.
 
-Single-session roles that spawn no forks and only write output files: Burler review chair without a cluster fan, Burler fixer, Describe, Bouncer judge and seed, treadle, friction, merge-conflict resolver, darn writer, the alignment agent.
+Single-session roles that spawn no forks and only write output files: Burler review chair without a cluster fan, Burler fixer, Describe, Bouncer judge and seed, treadle, friction, merge-conflict resolver, darn writer.
 Webster, twill, the orch and the Burler cluster fan depend on cross-session messaging and background-task wake-ups, and wait.
 Forks are no longer a blocker for a fan: `docs/research/codex-twill-spike-2026-10-24/report.md` found that Codex forks (`fork_turns: "all"`) run in parallel, three at once by default, and report back to the parent, with caveats (no per-fork model, no isolation, a fan is a request not a guarantee).
 
