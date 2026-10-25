@@ -31,7 +31,7 @@ grouping
 | T1 | **Regression as three Drift rows: Drift-Baseline after Discussion, Drift-Await before Webster, Drift-Verify after the Code perch** | Task | Plan-Write |
 | E28 | **A small public NUnit repo as sandbox hub for end-to-end C# runs** | Note | Note |
 
-## Tasks (4)
+## Tasks (5)
 
 Concrete and claimable; only a task can run.
 
@@ -44,16 +44,31 @@ Held by a run; its scope is locked until the run ends.
 | T1 | **Regression as three Drift rows: Drift-Baseline after Discussion, Drift-Await before Webster, Drift-Verify after the Code perch**<br>• Support a hub regression tier that writes profiles on the parent before implementation and compares after, switchable per task for expected drift.<br>• `profile: light` | [`regression-baseline-verify`](design-regression-baseline-verify.md) | loom | Plan-Write | neve | 8d<br>1h | shed, webster, batten, config, dotnet |
 | T3 | **An anchor per beam**<br>• Let each worktree carry its own anchor through a .lyx-anchor marker at its weft branch root, inherited by its tasks, with a verb that changes it<br>• `profile: solid` | [`umbrella-anchor`](design-umbrella-anchor.md) | loom | Plan-Burler-Review | neve | 7d<br>2h | fabric, config, workspaces |
 
-### Ready (2)
+### Ready (1)
 
 Waits on nothing open; can start now.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
 | T2 | `draft` **Bench Codex Astra against solo Opus as a plan reviewer, four runs**<br>• `profile: docs` | [`codex-astra-solo-bench`](design-codex-astra-solo-bench.md) | darn |  | 2h<br>2h | codex, burler |
-| T4 | `draft` **One lyx beam start brings a beam up: dobby and orch together, with lyx s**<br>• lyx beam start starts dobby and the orch, resuming its session; orch start, prime, start and the long-form shortcuts go | [`beam-start-verbs`](design-beam-start-verbs.md) | loom |  | 32m<br>12m | orch, workspaces |
 
-## Notes (36)
+### Layer A (1)
+
+Waits only on Running or Ready entries.
+
+| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- | --- | --- |
+| T4 | `draft` **One lyx beam start brings a beam up: dobby and orch together, with lyx s**<br>• lyx beam start starts dobby and the orch, resuming its session; orch start, prime, start and the long-form shortcuts go<br>• `profile: solid` | [`beam-start-verbs`](design-beam-start-verbs.md) | darn | `umbrella-anchor` | 32m<br>0m | orch, workspaces |
+
+### Layer B (1)
+
+Starts when every entry it names under After is done.
+
+| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- | --- | --- |
+| T5 | `draft` **The overview window becomes the beam window: dobby and orch, each run once**<br>• Rename the overview window to beam: <slug>, with a dobby and an orch section, and show each run once<br>• `profile: light` | [`beam-window`](design-beam-window.md) | darn | `beam-start-verbs` | 5m<br>0m | batten, orch, reed, workspaces |
+
+## Notes (35)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
 
@@ -74,7 +89,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | --- | --- | --- | --- | --- | --- |
 | B1 |  | **Find why a running run shows a dead waiter in the activity reader** | [`idle-notice-dead-waiter-cause`](design-idle-notice-dead-waiter-cause.md) | 1d<br>1d | batten, shuttle |
 
-### Enhancements (17)
+### Enhancements (16)
 
 | # | P | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
@@ -84,7 +99,6 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | E4 |  | **finalize: the discrepancy-document conflict shape**<br>• Divergences that cannot be a git conflict get a precomputed document for the resolving agent instead of markers | [`finalize-discrepancy-doc`](design-finalize-discrepancy-doc.md) | 3w<br>2w | fabric, loom |
 | E5 |  | **Decide the layout of projects in the board README**<br>• The operator is not satisfied with how the README renders projects and their members; the layout is to be decided | [`board-projects-layout`](design-board-projects-layout.md) | 8h<br>8h | board |
 | E7 |  | **Run verbs in one shared namespace, not under lyx loom**<br>• lyx loom decision/status/goto/approve act on darn runs too; move recipe-neutral run verbs to one shared namespace | [`run-verbs-shared`](design-run-verbs-shared.md) | 10d<br>3h | shed, loom |
-| E8 |  | **The overview window becomes the beam window: dobby and orch, each run once**<br>• Rename the overview window to beam: <slug>, with a dobby and an orch section, and show each run once | [`beam-window`](design-beam-window.md) | 5m<br>5m | batten, orch, reed, workspaces |
 | E9 |  | **Paste cited code into a review rounds context**<br>• Reviewers edit nothing and review a fixed commit, so code pasted at round start cannot go stale; measure it against todays reviewer | [`review-inline-code`](design-review-inline-code.md) | 13d<br>1d | burler, stencil |
 | E10 |  | **Module labels from what a task touches, not only what it is about**<br>• Half the landings that changed the shuttle core lacked the shuttle label; derive or check module labels from the plan and the diff | [`labels-from-diff`](design-labels-from-diff.md) | 10d<br>10d | board, loom |
 | E13 |  | **Rename the lyx binary to lyr (name clash with LyX)** | [`rename-binary-lyr`](design-rename-binary-lyr.md) | 9d<br>3d | stencil, shuttle |
