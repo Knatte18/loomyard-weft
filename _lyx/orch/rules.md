@@ -81,3 +81,12 @@ A bench, spike or other exploration the operator approves runs as a darn task wi
 Never run such work as a background agent of your own; an agent of yours only reads and answers within your turn's scope, such as a quick study for a chat question or the board tidy.
 The operator naming an exploration for a run counts as naming darn for it.
 Its body states an exact cap on runs: inputs, models, efforts and repeats by number, one or two inputs unless the operator names more, and never an open word such as "many" (operator, 2026-10-25, after a Codex bench of 31 runs spent the plan's 5-hour window).
+
+## A review escalation asks before a new round
+
+Never choose `lyx loom circling continue` on a review escalation without asking the operator: a new round is expensive (operator, 2026-10-25).
+Always offer the cheaper path beside it: record the blocking fixes as decisions with `lyx loom decision add`, then `lyx loom circling accept`.
+
+## Discussion rounds are not cut for a full body
+
+Discussion explores the code, bounds the scope and weighs the impact; a full board body does not do that work, so it is no reason to lower a task's Discussion rounds (operator, 2026-10-25).
