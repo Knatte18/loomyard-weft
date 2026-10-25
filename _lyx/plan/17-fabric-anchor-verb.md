@@ -5,22 +5,22 @@
 - `internal/fabriccli/doc.go`
 
 **Create:**
-- `plan:internal/fabriccli#anchorRequest` -> `type anchorRequest struct`
-- `plan:internal/fabriccli#anchorResult` -> `type anchorResult struct`
-- `plan:internal/fabriccli#anchorDeps` -> `type anchorDeps struct`
-- `plan:internal/fabriccli#changeAnchor` -> `func changeAnchor(ctx context.Context, deps anchorDeps, req anchorRequest) (anchorResult, error)`
-- `plan:internal/fabriccli#hubAnchorDeps` -> `func hubAnchorDeps(acting *lyxcwd.Location) (anchorDeps, error)`
-- `plan:internal/fabriccli#runAnchor` -> `func runAnchor(ctx context.Context, out io.Writer, args []string, set string) int`
-- `plan:internal/fabriccli#TestChangeAnchor` -> `func TestChangeAnchor(t *testing.T)`
-- `plan:internal/fabriccli_test#TestRunCLI_Anchor` -> `func TestRunCLI_Anchor(t *testing.T)`
+- `internal/fabriccli#anchorRequest`
+- `internal/fabriccli#anchorResult`
+- `internal/fabriccli#anchorDeps`
+- `internal/fabriccli#changeAnchor`
+- `internal/fabriccli#hubAnchorDeps`
+- `internal/fabriccli#runAnchor`
+- `internal/fabriccli#TestChangeAnchor`
+- `internal/fabriccli_test#TestRunCLI_Anchor`
 
 **Uses:**
-- `plan:internal/fabricengine#Topology.BeginAnchorChange`
-- `plan:internal/fabricengine#AnchorChange.Apply`
-- `plan:internal/fabricengine#AnchorChange.Finish`
-- `plan:internal/fabricengine#AnchorChange.Close`
+- `internal/fabricengine#Topology.BeginAnchorChange`
+- `internal/fabricengine#AnchorChange.Apply`
+- `internal/fabricengine#AnchorChange.Finish`
+- `internal/fabricengine#AnchorChange.Close`
 - `internal/fabricengine#MoveInProgress`
-- `plan:internal/fabricengine#UpstreamRunUnfinished`
+- `internal/fabricengine#UpstreamRunUnfinished`
 - `internal/fabricengine#ReadMoveRecord`
 - `internal/shedrun#StatusFile`
 - `internal/shedrun#SelfRunID`

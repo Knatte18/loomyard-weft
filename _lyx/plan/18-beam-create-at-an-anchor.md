@@ -21,12 +21,12 @@
 - `plan:internal/fabricengine_test#TestAdd_AtAnchor` -> `func TestAdd_AtAnchor(t *testing.T)`
 
 **Uses:**
-- `plan:internal/fabricengine#validateAnchorTarget`
-- `plan:internal/fabricengine#Topology.BeginAnchorChange`
-- `plan:internal/fabricengine#AnchorChange.Apply`
-- `plan:internal/fabricengine#AnchorChange.Finish`
-- `plan:internal/fabricengine#AnchorChange.Close`
-- `plan:internal/fabricengine#moveWeftContent`
+- `internal/fabricengine#validateAnchorTarget`
+- `internal/fabricengine#Topology.BeginAnchorChange`
+- `internal/fabricengine#AnchorChange.Apply`
+- `internal/fabricengine#AnchorChange.Finish`
+- `internal/fabricengine#AnchorChange.Close`
+- `internal/fabricengine#moveWeftContent`
 - `internal/fabricengine#MoveRecord`
 - `internal/fabricengine#moveLockPath`
 - `internal/fabricengine#MoveRecordPath`
