@@ -63,3 +63,9 @@ This job moves to the orch's Go driver once there is one, which spawns the same 
 Merriam refuses the notice `lyx loom decision add` sends, since it comes from `ly:LOOM` and Merriam may not read the decision record.
 While a run is at Webster, record the decision with the verb as usual, then message Merriam (`<shortname>:<slug>:webster`) yourself with the decision's content spelled out.
 Remove this section once #849 is fixed.
+
+## Explorations run as darn docs
+
+A bench, spike or other exploration the operator approves runs as a darn task with profile `docs`, in its own worktree, so it is not disturbed and its report lands in `docs/research/` as a commit (operator, 2026-10-25).
+Never run such work as a background agent of your own; an agent of yours only reads and answers within your turn's scope, such as a quick study for a chat question or the board tidy.
+The operator naming an exploration for a run counts as naming darn for it.
