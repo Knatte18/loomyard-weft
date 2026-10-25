@@ -107,10 +107,11 @@ Loom gets three rows, each a no-show that spawns nothing when the hub's flag is 
 
 Darn: `Drift-Baseline` runs before Darn-Write, reads the board entry instead of the decision record, and runs the capture to the end before Darn-Write starts, so darn has no `Drift-Await`; `Drift-Verify` runs after Darn-Write and before Code-Review.
 
-Open:
+Operator decisions (2026-10-25):
 
-- Most loom users never use these rows, so they should not clutter the recipe or its status: hide skipped Drift rows from status when the hub's flag is off, or add them as a recipe overlay only a hub with regression turns on.
-- Whether `Drift-Verify`'s own code changes need a review, since it sits after the Code perch: accept them, or send the run once more through the Code perch when it changed code.
-- The drift report's format, pinned in `contracts/specs/`, written by the repository's compare tool.
-- The Models side: its regression project writes that report, which is work in the Models repository.
-- `carry: false` from `dotnet-scoped-verify` was built with regression in mind; the timing tier still needs it.
+- The Drift rows are not hidden: with the hub's flag off they are skipped like the PR rows are today when PRs are off, with no recipe overlay.
+- `Drift-Verify`'s own code changes most likely need no review; if one is added, it is a single solo agent, never a perch.
+- No drift report type of its own: no format is pinned in `contracts/specs/`; the agent reads the compare tool's own output.
+- Models lives on OSL-1046, not on this machine: the task builds and tests everything it can here without Models, and the Models side follows there.
+
+Note: `carry: false` from `dotnet-scoped-verify` was built with regression in mind; the timing tier still needs it.
