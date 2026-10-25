@@ -23,3 +23,8 @@ Runs on it prove the whole C# path on Neve before OSL-1046.
 The hub exists on Neve at `/home/knatte/Code/lyx-csharp-LYXHUB` (shortname `cs`), over the public repos `Knatte18/lyx-csharp` and `Knatte18/lyx-csharp-weft`: `LyxCsharp.sln` with three libraries and two NUnit test projects, `lens_set: csharp`, gate `tier0` running `dotnet test` without `Category=Slow` and `tier1` with it.
 No run has gone through it yet; the first run there is the end-to-end proof this note asks for.
 The first `tier1` gate run died with "Internal CLR error (0x80131506)" after 900 s and passed on a rerun; cause unknown.
+
+## Regression harness (operator, 2026-10-25)
+
+The sandbox gets a small capture/compare regression harness on the pattern of Models' `NORCE.Models.NumericalBaseline`: a capture writes scrubbed output into a gitignored baseline directory, and a compare mode fails on the first deviation.
+It lets the Drift rows of `regression-baseline-verify` be proved on Neve, so Models on OSL-1046 is only the final confirmation.
