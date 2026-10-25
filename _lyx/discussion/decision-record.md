@@ -71,6 +71,12 @@ Rationale: Parent, 2026-10-25: the Claude results stand on their own, and the Co
 - Delay figures depend on model latency and tool durations; the report states the conditions of each run and does not claim more than the runs show.
 - Quota use by real sessions; runs are kept short.
 
+<!-- lyx:carry-over Code-Review -->
+- Code-Review, round 1: converged; each finding below was fixed or disputed by the round's fixer, and no fresh reviewer has seen the result; the fixer report says which.
+  Review: _lyx/reviews/code/round-1-review.md; fixer report: _lyx/reviews/code/round-1-fixer-report.md.
+  - codex-acceptance-criterion-unmet (class decision, severity MEDIUM, open in rounds 1)
+<!-- /lyx:carry-over Code-Review -->
+
 ## Acceptance criteria
 
 - The report exists at `docs/research/creel-hook-delivery-2026-10-25/report.md` and is committed.
