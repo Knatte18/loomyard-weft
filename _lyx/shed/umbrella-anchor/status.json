@@ -1,11 +1,11 @@
 {
-  "current_producer": "Parent-Align",
+  "current_producer": "Code-Bouncer",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Parent-Align",
-    "last": "Finalize → rerouted to Parent-Align",
+    "now": "Code-Bouncer",
+    "last": "Parent-Align → done",
     "wait": ""
   },
   "history": [
@@ -616,6 +616,12 @@
       "output": "",
       "at": "2026-10-25T19:28:34Z",
       "routed_to": "Parent-Align"
+    },
+    {
+      "producer": "Parent-Align",
+      "outcome": "done",
+      "output": "",
+      "at": "2026-10-25T19:29:52Z"
     }
   ],
   "product": {
