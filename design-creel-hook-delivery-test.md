@@ -1,6 +1,6 @@
 # Test creel mail delivery through a tool-boundary hook, for Claude and Codex
 
-`creel-hook-delivery-test` · Task · feature, creel, claude, codex · running · Code-Bouncer
+`creel-hook-delivery-test` · Task · feature, creel, claude, codex · running · Code-Burler-Review
 
 ## Goal (operator, 2026-10-25)
 
