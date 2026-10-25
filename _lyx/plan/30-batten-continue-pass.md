@@ -4,8 +4,8 @@
 - `internal/battencli#battenCLI`
 - `internal/battencli#Command`
 - `internal/battencli#battenCLI.battenPreRun`
-- `plan:internal/battencli#passExitCode`
-- `plan:internal/battencli#TestPassExitCode`
+- `internal/battencli#passExitCode`
+- `internal/battencli#TestPassExitCode`
 - `internal/battencli#TestBattenPreRun_ReopensTheWindowWithNoClientAttached`
 - `PATTERN.md`
 - `pattern/PATTERN-owner-machine.md`
@@ -17,7 +17,7 @@
 
 **Uses:**
 - `plan:internal/battencli#OriginOwed`
-- `plan:internal/hubgeom#DobbyGeometry`
+- `internal/hubgeom#DobbyGeometry`
 - `internal/dobbyengine#ReadState`
 - `internal/dobbyengine#PassExitContinueRefused`
 

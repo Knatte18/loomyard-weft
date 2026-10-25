@@ -14,9 +14,9 @@
 - `plan:internal/battencli#TestDobbyReading` -> `func TestDobbyReading(t *testing.T)`
 
 **Uses:**
-- `plan:internal/hubgeom#DobbyGeometry`
+- `internal/hubgeom#DobbyGeometry`
 - `internal/dobbyengine#ReadState`
-- `plan:internal/dobbyengine#Live`
+- `internal/dobbyengine#Live`
 
 **Intent:**
 Fill the pass-time seams InnerRun gained, from the dobby that schedules the run (D4, D9).

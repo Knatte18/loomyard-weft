@@ -10,8 +10,8 @@
 - `plan:internal/orchcli#TestStart_StartsTheDobbiesFirst` -> `func TestStart_StartsTheDobbiesFirst(t *testing.T)`
 
 **Uses:**
-- `plan:internal/dobbyengine#EnsureLive`
-- `plan:internal/hubgeom#DobbyStart`
+- `internal/dobbyengine#EnsureLive`
+- `internal/hubgeom#DobbyStart`
 
 **Intent:**
 Make `lyx orch start`, with or without `--continue`, start every dobby this machine owns first, so one `lyx orch start` after a machine restart brings every run back (D2).
