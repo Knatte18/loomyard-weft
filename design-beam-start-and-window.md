@@ -68,3 +68,6 @@ The board itself has no owner: ownership sits on projects.
 - There is no adopt of a beam.
 - `lyx beam start` refuses on a beam whose project another machine owns, naming `lyx adopt`.
 - `lyx adopt` of a project starts its beam, dobby and orch, on the adopting machine.
+- An adopt moves that project alone: a beam project nested under it keeps its own owner, so adopting root moves root's own tasks and never the beam projects under it.
+- Landing a beam into its parent is the parent beam's job: the parent's dobby runs the landing and cleans up after it, so a machine lands a project only while it owns the parent as well.
+  Example: with G and H beam projects under root and everything on Neve, OSL-1046 adopts G and finishes it, then adopts root to land G; H stays on Neve throughout.
