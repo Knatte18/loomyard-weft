@@ -42,7 +42,7 @@ Held by a run; its scope is locked until the run ends.
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T3 | **An anchor per beam**<br>• Let each worktree carry its own anchor through a .lyx-anchor marker at its weft branch root, inherited by its tasks, with a verb that changes it<br>• `profile: solid` | [`umbrella-anchor`](design-umbrella-anchor.md) | loom | Discussion-Write | neve | 6d<br>17m | fabric, config, workspaces |
-| T4 | **The overview window shows its worktree dobby: alive, runs driven, tasks waiting and why**<br>• The existing overview window of the prime and every beam gains the dobby view, no extra window<br>• `profile: light` | [`dobby-overview-window`](design-dobby-overview-window.md) | darn | Worktree-Create | neve | 12m<br>3m | reed, batten, workspaces |
+| T4 | **The overview window shows its worktree dobby: alive, runs driven, tasks waiting and why**<br>• The existing overview window of the prime and every beam gains the dobby view, no extra window<br>• `profile: light` | [`dobby-overview-window`](design-dobby-overview-window.md) | darn | Darn-Write | neve | 12m<br>4m | reed, batten, workspaces |
 
 ### Ready (1)
 
