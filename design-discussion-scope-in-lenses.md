@@ -1,6 +1,6 @@
 # Discussion scope check into the perch lenses, outdated entries to the parent, Merge-In renamed Parent-Align
 
-`discussion-scope-in-lenses` · Task · enhancement, loom, burler, shed, stencil · running · Describe
+`discussion-scope-in-lenses` · Task · enhancement, loom, burler, shed, stencil · running · PR-Review
 
 Three notes bundled into one task (operator, 2026-10-25): the Discussion scope check moves into the perch lenses (was `discussion-alignment-into-lenses`), a plainly outdated entry goes to the parent (was `outdated-entry-to-parent`), and `Merge-In` is renamed `Parent-Align` (was `merge-in-parent-align`).
 
