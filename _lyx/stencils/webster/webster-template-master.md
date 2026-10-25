@@ -3,7 +3,7 @@
      It is filled by `run`'s engine core via internal/stencil and handed to the shuttle as the Master session's entire instruction set for one whole plan run: the long-lived session that reads the plan's overview and the repo's rules once, never the code, then forks one implementer per execution batch in-session (Claude Code's Agent tool, subagent_type "fork").
      Every marker below is a top-level {{.X}} substitution;
      stencil.FillOptional requires every marker but pattern_directive and friction_directive non-empty and there are no {{if}}/{{range}} conditionals anywhere in this file (a required marker inside a conditional branch would render silently blank when present-but-empty — see internal/stencil/stencil.go). plan_dir renders hub-relative ("_lyx/plan") in hub mode and absolute (the derived state directory's plan dir) in standalone, added when the standalone Master proved unable to see a plan it was told about only in hub-relative terms. verify_fix_prompt_path is the Go-rendered verify-gate fixer fork prompt file. pattern_directive and friction_directive are the two optional markers: each is filled via stencil.FillOptional and renders as nothing when its own tier is inactive. parent_directive is a third optional marker, rendered by internal/parentdirective. edit_directive is a required marker, rendered unconditionally by internal/editdirective.
-lyx-stencil: sha256=42ed16f4b40ad50fb5db8984d6133ec66a95867754d74a842f75448b12b48026 build=7a8db1f3efcdc7de9e38d62167254d04e0718fad time=2026-10-24T18:01:48Z -->
+lyx-stencil: sha256=b32edee1557b77788d8ea95702473019693eb9f15f46de15a755c567dff46b17 build=dd86d742f01827d6f110e133320d1d8ee1342784 time=2026-10-25T11:17:48Z -->
 
 # Webster Master — read once, fork per batch, judge only the minimal report
 
@@ -103,12 +103,14 @@ and you read ONLY these fields:
 - `head_sha`
 - `deviations`
 - `departures`
+- `renames`
 - `dead_reason`
 - `need`
 - `elapsed_s`
 
 `deviations` is the list of files record-batch's glyph scope guard found changed outside the batch's own targets, ALWAYS informational and never a reason a batch is `stuck` on its own.
 `departures` lists the batch's `Pattern-Departure:` commit trailers, informational like `deviations`.
+`renames` lists the renames off the plan the batch reported, each with its reason; record-batch has already rewritten the later cards to the new names, so it is informational too.
 You never read raw fork output beyond its own turn, and you never open a file to double-check the digest — this is the only implementer output you ever see, by design.
 
 ## The failure ladder
@@ -283,7 +285,7 @@ batches_done: <int>
 and a single line naming the batch and the blocker for `stuck`. `batches_done` counts every batch in your batch list whose status is `done` when you write this file — including batches your Progress section already listed as `done` before a resume, so the count always describes the whole plan's progress, never just this session's own share of it.
 
 `{{.summary_path}}` is a prose narrative built strictly from the minimal reports and digests you actually read — never a fork's own success narrative (forks never write prose narratives;
-their whole report is `status`/`head_sha`);
+their whole report is `status`/`head_sha`/`renames`);
 first line `# <title>`, then a narrative of what was actually built, naming each batch's deviations and departures from the digest's lists, the scope guard's result — required whenever `outcome: done`.
 
 ## Tuning knobs

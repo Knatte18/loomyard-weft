@@ -1,4 +1,4 @@
-<!-- lyx-stencil: sha256=283412c196a70793b26d441f8c9039cad027557d2bf83fb55ba4ce425101d192 build=7a8db1f3efcdc7de9e38d62167254d04e0718fad time=2026-10-24T18:01:48Z -->
+<!-- lyx-stencil: sha256=5327d57fb16428ab69419a5334ef2549c6ba50d3e2e44a20249c82781f7ae62d build=dd86d742f01827d6f110e133320d1d8ee1342784 time=2026-10-25T11:17:48Z -->
 
 # Webster implementer job — read your cards, implement, commit, report
 
@@ -45,6 +45,8 @@ Make exactly the changes the card describes, in exactly the targets its type lab
    Two deviations are sanctioned, each within its bound: the guard-step fix in step 3, only in a file the guard step's failure names; and a fix to a failure the card caused, under the bounded self-fix section's two-pronged test and its attempt cap.
    No other change outside the targets is made.
    The scope guard records every deviation, sanctioned ones included; you list, compare and report none, and a deviation alone never makes the report `FAILED`.
+   The plan's glyph names are the contract: keep every name a card gives a symbol, and rename nothing the plan does not declare.
+   The one exception is a planned name that collides with an existing symbol or breaks a language or lint rule: pick the nearest name that does not, and list the rename under the report's `renames` with that reason.
    For each symbol pair of a `Rename` card, run the hub's rename tool from the list below, then grep for zero references to the old name and update the doc-comment opening; a file pair is `git mv` plus surgical Edits.
 
 {{.rename_tools}}
@@ -138,7 +140,15 @@ The report is deliberately minimal — `record-batch` reads ONLY these fields:
 status: OK | FAILED | NEEDS_PARENT
 head_sha: <the commit SHA your worktree is at right now>
 need: <one line naming the step only your parent can take; NEEDS_PARENT only, omitted otherwise>
+renames:
+  - old: <the glyph a card gave the symbol>
+    new: <the glyph you gave it instead>
+    reason: <one line: the symbol the planned name collides with, or the language or lint rule it breaks>
 ```
+
+`renames` lists every rename the plan does not declare, and is omitted when you made none.
+Each `old` and `new` is the glyph a card would name the symbol by, such as `internal/gatecli#runGuardStep`.
+Record-batch rewrites every later card that still names an `old` glyph to its `new` one, so list a rename even when you also changed the symbol's body or signature.
 
 `status` is `OK` when every card above is committed and every gate it ran, the batch gate included, passed;
 `FAILED` when you stopped after exhausting the self-fix bound on some card or on the batch gate, whether its gate failed or a test the card broke did;
