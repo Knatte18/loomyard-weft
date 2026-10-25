@@ -28,7 +28,7 @@
 - `plan:internal/fabricengine#integrateWeft`
 - `plan:internal/fabricengine#treeAnchor`
 - `plan:internal/fabricengine#committedMarker`
-- `plan:internal/fabricengine#refuseEmptyOwnMarker`
+- `internal/fabricengine#refuseEmptyOwnMarker`
 - `internal/lyxcwd#NamedWorktree`
 - `internal/hubforge#ReanchorPair`
 - `internal/fabricengine#WireJunctionsWith`

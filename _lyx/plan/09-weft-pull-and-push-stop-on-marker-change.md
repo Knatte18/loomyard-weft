@@ -22,7 +22,7 @@
 
 **Uses:**
 - `plan:internal/fabricengine#treeAnchor`
-- `plan:internal/fabricengine#refuseEmptyOwnMarker`
+- `internal/fabricengine#refuseEmptyOwnMarker`
 - `internal/fabricengine#WeftStopError`
 - `internal/fabricengine#Fabric.settleUnmovedWeft`
 

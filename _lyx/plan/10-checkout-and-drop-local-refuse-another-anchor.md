@@ -11,7 +11,7 @@
 **Uses:**
 - `plan:internal/fabricengine#treeAnchor`
 - `plan:internal/fabricengine#weftAnchorStop`
-- `plan:internal/fabricengine#refuseEmptyOwnMarker`
+- `internal/fabricengine#refuseEmptyOwnMarker`
 - `plan:internal/fabricengine#ErrAnchorChange`
 - `internal/lyxcwd#NamedWorktree`
 - `internal/hubforge#ReanchorPair`
