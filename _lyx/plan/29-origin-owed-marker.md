@@ -6,10 +6,10 @@
 - `internal/battencli#TestRunCmd_ResumeDispositions`
 
 **Create:**
-- `plan:internal/shedrun#OriginOwedMarker` -> `func OriginOwedMarker(l *lyxcwd.Location, runID string) string`
-- `plan:internal/battencli#originOwed` -> `type originOwed struct`
-- `plan:internal/battencli#OriginOwed` -> `func OriginOwed(location *lyxcwd.Location, slug string) (bool, error)`
-- `plan:internal/battencli#TestOriginOwedMarker` -> `func TestOriginOwedMarker(t *testing.T)`
+- `internal/shedrun#OriginOwedMarker`
+- `internal/battencli#originOwed`
+- `internal/battencli#OriginOwed`
+- `internal/battencli#TestOriginOwedMarker`
 
 **Intent:**
 Record a resume that judged its owner without origin, so the next passes stay full until one reaches origin (D4).
