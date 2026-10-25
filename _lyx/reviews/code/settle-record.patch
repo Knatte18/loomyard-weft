@@ -1,0 +1,150 @@
+diff --git a/internal/dobbyengine/doc.go b/internal/dobbyengine/doc.go
+index e52bab70b..f0b7ddd2e 100644
+--- a/internal/dobbyengine/doc.go
++++ b/internal/dobbyengine/doc.go
+@@ -31,6 +31,8 @@
+ //   - Each tick lists the runs whose parent worktree is this dobby's, from the prime's local batten status files and never the board, so a run whose task Land already pruned is still driven through its teardown.
+ //   - A run gets a pass only while batten's state is running and its cancel marker is absent, never while a pass of it is in flight; a held driver lock reads as in flight, so a pass left by a dead dobby is waited for and never doubled.
+ //     A halted or paused batten run gets no pass; the orch or the operator resumes it with a hand pass.
++//   - A done batten run is driven no further: once no pass of it is in flight, it takes no slot under `max_runs`, gets no pass, and its entry leaves the state record.
++//     The board tidy still reads its history.
+ //   - A pass is triggered by a write of the child's status file, by a write of batten's own status file later than the run's last pass exit, by a probe tick once per probe interval, by the dobby's start and by the lift of a pause that covered the run.
+ //     A lift while a pass is in flight gives the run its pass once that one exits.
+ //   - A continue pass needs the run at Run-Shed with no full pass owed and no lift to answer; every other pass is full, and runs with `--no-reopen` while the run's origin-owed marker stands.
+@@ -47,7 +49,7 @@
+ //     A marked run is in flight for the backoff only while no pause covers it.
+ //   - A task waits on the board as `draft` until released, and dobby starts it from an empty status.
+ //     It starts a task when the entry is a task whose dependencies are all done, its parent is this dobby's worktree, no other machine owns it, and no pause entry covers the hub or the slug.
+-//     Each tick reads the local board, which a write of `board.json` and the probe tick both cause, and starts each ready task while fewer than `max_runs` runs it drives are in flight: halted runs count, runs recorded owned elsewhere do not, and `max_runs: 0` starts nothing.
++//     Each tick reads the local board, which a write of `board.json` and the probe tick both cause, and starts each ready task while fewer than `max_runs` runs it drives are in flight: halted runs count, done runs and runs recorded owned elsewhere do not, and `max_runs: 0` starts nothing.
+ //   - Starting is the run's first pass, a full pass, which claims the task as batten does; a slug with a pass in flight is never started twice.
+ //     A first pass refused for a covering pause is no refused start: no notice, no marker and no backoff, and the start waits for the lift.
+ //     Any other first pass that exits non-zero and leaves no status file, a refusal as owned elsewhere included, is a refused start: one notice per refusal text, and a retry from one probe interval, doubling up to an hour, or at once when the entry changes.
+diff --git a/internal/dobbyengine/passes.go b/internal/dobbyengine/passes.go
+index 0e8d1752f..ac312c986 100644
+--- a/internal/dobbyengine/passes.go
++++ b/internal/dobbyengine/passes.go
+@@ -14,6 +14,8 @@ import (
+ const (
+ 	// runStateRunning is the batten status state of a run that has not halted, paused, failed or finished.
+ 	runStateRunning = "running"
++	// runStateDone is the batten status state of a run that finished, which dobby drives no further.
++	runStateDone = "done"
+ 	// producerRunShed is the batten producer that waits on the child run, the only row a continue pass may re-enter.
+ 	producerRunShed = "Run-Shed"
+ 	// failingPassNoticeAfter is how many failures in a row with one text post the notice.
+@@ -123,6 +125,7 @@ type flight struct {
+ }
+ 
+ // drivePasses reads exited passes, owes full passes, and spawns the pass each listed run's trigger calls for.
++// A done run is driven no further: unless a pass of it is in flight, it takes no slot, is planned no pass, and its state entry is dropped.
+ // It leaves d.busy set while any run is in flight or could be given a pass on the next probe tick.
+ func (d *daemon) drivePasses(ctx context.Context, now time.Time) error {
+ 	d.tickCtx = ctx
+@@ -131,6 +134,10 @@ func (d *daemon) drivePasses(ctx context.Context, now time.Time) error {
+ 	if err != nil {
+ 		return fmt.Errorf("list the runs: %w", err)
+ 	}
++	runs = slices.DeleteFunc(runs, func(run RunView) bool {
++		_, inFlight := d.flights[run.Slug]
++		return run.State == runStateDone && !inFlight
++	})
+ 	d.runs = runs
+ 	if err := d.recordOwed(runs); err != nil {
+ 		return err
+diff --git a/internal/dobbyengine/passes_test.go b/internal/dobbyengine/passes_test.go
+index 6f2dcc387..5079f9306 100644
+--- a/internal/dobbyengine/passes_test.go
++++ b/internal/dobbyengine/passes_test.go
+@@ -184,12 +184,17 @@ func (h *passHarness) state() RunState {
+ }
+ 
+ func (h *passHarness) stateOf(slug string) RunState {
++	h.t.Helper()
++	return h.stateRecord().Runs[slug]
++}
++
++func (h *passHarness) stateRecord() State {
+ 	h.t.Helper()
+ 	record, _, err := ReadState(h.d.geom.StatePath)
+ 	if err != nil {
+ 		h.t.Fatalf("ReadState() = %v; want nil", err)
+ 	}
+-	return record.Runs[slug]
++	return record
+ }
+ 
+ func runningRun(slug string) RunView {
+diff --git a/internal/dobbyengine/starts.go b/internal/dobbyengine/starts.go
+index 0ce28af17..1ab7f5d81 100644
+--- a/internal/dobbyengine/starts.go
++++ b/internal/dobbyengine/starts.go
+@@ -45,7 +45,7 @@ func readyToStart(task TaskView, here string, covered bool) bool {
+ 
+ // startReady starts each ready task of the local board while fewer than max_runs runs it drives are in flight.
+ // Starting is the run's first pass, a full pass, which claims the task as batten does; a slug with a pass in flight is never started twice.
+-// The runs counted are the ones listed for this tick, halted ones included and ones recorded owned elsewhere not, plus first passes that have not yet left a status file.
++// The runs counted are the ones listed for this tick, halted ones included and done ones and ones recorded owned elsewhere not, plus first passes that have not yet left a status file.
+ // A task whose backoff has not run out waits, unless its entry changed since the refusal.
+ func (d *daemon) startReady(ctx context.Context, now time.Time) error {
+ 	cfg, err := d.deps.LoadConfig()
+diff --git a/internal/dobbyengine/starts_test.go b/internal/dobbyengine/starts_test.go
+index 4b313f5fd..02d7b6730 100644
+--- a/internal/dobbyengine/starts_test.go
++++ b/internal/dobbyengine/starts_test.go
+@@ -178,6 +178,55 @@ func TestStartReady_RefusalsAndBackoff(t *testing.T) {
+ 		}
+ 	})
+ 
++	t.Run("done runs take no slot, get no pass and leave the state record", func(t *testing.T) {
++		t.Parallel()
++		done := func(slug string) RunView {
++			run := runningRun(slug)
++			run.State = runStateDone
++			return run
++		}
++		h := newPassHarness(t, done("x"), done("y"))
++		h.fake.maxRuns = 1
++		h.fake.tasks = []TaskView{readyTask("a")}
++		h.d.owesAll = true
++		err := UpdateState(h.d.geom.StatePath, func(s *State) error {
++			s.Runs = map[string]RunState{"x": {FullPassOwed: true}}
++			return nil
++		})
++		if err != nil {
++			t.Fatalf("UpdateState() = %v; want nil", err)
++		}
++		h.tick(true)
++		if got := h.fake.spawned; len(got) != 1 || got[0].slug != "a" {
++			t.Errorf("passes = %+v; want only the first pass of the ready task", got)
++		}
++		if runs := h.stateRecord().Runs; len(runs) != 0 {
++			t.Errorf("state runs = %+v; want no entry for a done run", runs)
++		}
++	})
++
++	t.Run("a done run keeps its slot until its pass in flight exits", func(t *testing.T) {
++		t.Parallel()
++		h := newPassHarness(t, runningRun("r"))
++		h.fake.maxRuns = 1
++		h.fake.hold = true
++		h.tick(true)
++		h.fake.runs[0].State = runStateDone
++		h.fake.tasks = []TaskView{readyTask("a")}
++		h.tick(true)
++		if len(h.fake.spawnsOf("a")) != 0 {
++			t.Fatalf("a task started in the slot of a done run whose pass is in flight")
++		}
++		h.fake.open["r"] <- PassExit{}
++		h.tick(true)
++		if len(h.fake.spawnsOf("a")) != 1 {
++			t.Errorf("passes of the ready task = %d; want it started once the done run's pass exited", len(h.fake.spawnsOf("a")))
++		}
++		if _, kept := h.stateRecord().Runs["r"]; kept {
++			t.Errorf("the done run's state entry is kept after its pass exited; want it dropped")
++		}
++	})
++
+ 	t.Run("two refusals with different texts send two notices, and a claim clears the noticed texts", func(t *testing.T) {
+ 		t.Parallel()
+ 		h := newPassHarness(t)
