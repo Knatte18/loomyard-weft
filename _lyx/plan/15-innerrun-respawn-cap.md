@@ -1,7 +1,7 @@
 # Card 15 — innerrun-respawn-cap
 
 **Edit:**
-- `plan:internal/battenshed#innerRunMemory`
+- `internal/battenshed#innerRunMemory`
 - `internal/battenshed#innerRunProducer.Call`
 - `internal/battenshed#innerRunProducer.noticeCondition`
 - `internal/battenshed#conditionText`
