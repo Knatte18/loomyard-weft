@@ -159,6 +159,13 @@ The operator sees that check as a job for the Go run driver:
 - The hub keeps lyx traces 3 days, not 14 (`logger.yaml` `trace_retention_days`, set on Bolt).
 - Folded in from note `board-tidy-after-landing`: the beam's Go driver spawns the board-tidy Sonnet agent every N landings, N a config key defaulting to 5 (operator, 2026-10-24), in a window of the beam's reed session, and hands its report to the orch LLM (today the orch does it, hub-wide orch rule "Board tidy after a landing").
 
+## Operator decisions (2026-10-25)
+
+- Draft is not a field of its own: it is one more value of the task's existing `status`, so the `draft` boolean and `lyx board undraft` above are replaced by a status.
+  Dobby starts a task only when its status is not draft and its `depends_on` are done.
+- Tender stays apart from dobby, as the recommendation under "Tender and dobby" says.
+- A run's parent always has a running dobby, which settles the open point of who owns a run whose parent has none.
+
 ## The arbiter for every shed run (folded in from note `shed-arbiter-all`, 2026-10-24)
 
 - Seen: loom and darn fill `sheddriver`'s optional `Arbiter` seam (`internal/loomcli/drivewiring.go`), so their stop chain is rule table, tackler, arbiter, orch; batten's own run fills only the tackler (`internal/battencli/drive.go`), so a stop the tackler escalates goes straight to the orch. `shed-tackler`'s decision record put this out of scope on purpose.
