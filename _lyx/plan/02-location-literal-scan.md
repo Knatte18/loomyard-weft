@@ -9,11 +9,11 @@
 - `internal/fabricengine#CloneHub`
 
 **Create:**
-- `plan:internal/lyxcwd#TestEnforcement_LocationLiterals` -> `func TestEnforcement_LocationLiterals(t *testing.T)`
-- `plan:internal/beamcli#TestDobbyRuns_PairAtItsOwnAnchor` -> `func TestDobbyRuns_PairAtItsOwnAnchor(t *testing.T)`
+- `internal/lyxcwd#TestEnforcement_LocationLiterals`
+- `internal/beamcli#TestDobbyRuns_PairAtItsOwnAnchor`
 
 **Uses:**
-- `plan:internal/lyxcwd#NamedWorktree`
+- `internal/lyxcwd#NamedWorktree`
 - `internal/lyxcwd#TestEnforcement`
 
 **Intent:**

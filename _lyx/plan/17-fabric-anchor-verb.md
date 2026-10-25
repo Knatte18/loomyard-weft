@@ -26,7 +26,7 @@
 - `internal/shedrun#SelfRunID`
 - `plan:internal/fabricengine#ErrAnchorChange`
 - `plan:internal/fabricengine#BranchAnchorStopped`
-- `plan:internal/lyxcwd#NamedWorktree`
+- `internal/lyxcwd#NamedWorktree`
 - `plan:internal/hubforge#ReanchorPair`
 - `internal/hubgeom#DobbyGeometry`
 - `internal/hubgeom#DobbyStart`

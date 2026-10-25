@@ -29,7 +29,7 @@
 - `plan:internal/fabricengine#treeAnchor`
 - `plan:internal/fabricengine#committedMarker`
 - `plan:internal/fabricengine#refuseEmptyOwnMarker`
-- `plan:internal/lyxcwd#NamedWorktree`
+- `internal/lyxcwd#NamedWorktree`
 - `plan:internal/hubforge#ReanchorPair`
 - `internal/fabricengine#WireJunctionsWith`
 - `internal/fabricengine#writeLaunchers`

@@ -13,7 +13,7 @@
 - `plan:internal/fabricengine#weftAnchorStop`
 - `plan:internal/fabricengine#refuseEmptyOwnMarker`
 - `plan:internal/fabricengine#ErrAnchorChange`
-- `plan:internal/lyxcwd#NamedWorktree`
+- `internal/lyxcwd#NamedWorktree`
 - `plan:internal/hubforge#ReanchorPair`
 - `internal/fabricengine#Topology.switchOrForkWeft`
 - `internal/fabricengine#resolveWeftBranch`

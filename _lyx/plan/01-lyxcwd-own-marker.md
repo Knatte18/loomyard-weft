@@ -16,7 +16,7 @@
 - `internal/fabricengine/doc.go`
 
 **Create:**
-- `plan:internal/lyxcwd#NamedWorktree` -> `func NamedWorktree(hubPath, name string) (*Location, error)`
+- `internal/lyxcwd#NamedWorktree`
 
 **Uses:**
 - `internal/lyxcwd#ValidateAnchorRel`

@@ -19,7 +19,7 @@
 **Uses:**
 - `plan:internal/fabricengine#MoveRecordPath`
 - `plan:internal/fabricengine#MoveInProgress`
-- `plan:internal/lyxcwd#NamedWorktree`
+- `internal/lyxcwd#NamedWorktree`
 - `internal/dobbyengine#EnsureLive`
 - `internal/dobbyengine#daemon.drivePasses`
 - `internal/dobbyengine#daemon.startReady`
