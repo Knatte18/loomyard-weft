@@ -1,0 +1,19 @@
+verdict: resume
+reason: |-
+  Round 2 of Discussion-Bouncer escalated at cause circling, because three round-1 design-wrong keys came back: d4-runproc-false-premise as F2, scope-full-accept-resume-loop as F4 and scope-partial-accept-unbounded as F7.
+  The returned findings are not wrong.
+  F2 holds against the code: proc.Detach in internal/proc/proc_windows.go sets no breakaway flag, and the loop starts each step through proc.StartTied in internal/shedverbs/loopchild.go.
+  F4 holds as well: arbiterstop.Eligibility admits every blocked halt whose reason lacks DecisionHaltPrefix.
+  F1's refused forward goto matches shedengine.CheckGotoTarget.
+  So accept does not apply, since nothing returned is wrong.
+  The fix is converging.
+  Of round 1's keys, twelve are resolved, and each returned key comes back as a narrower facet of its problem, not a revert of round 1's fix.
+  The round-2 fixer report applies all sixteen findings and records none as Disputed or Deferred.
+  None of round 2's fixes reverts a round-1 fix.
+  The hard cap is 3: discussion_hard_max_bounces in .lyx/config/loom.local.yaml.
+  Round 2 is below it, so continue runs exactly one more round, round 3.
+  Round 3 is at the cap, so it either settles or escalates hard-cap.
+  The circling continue is recorded, so the run resumes at Discussion-Bouncer without a goto.
+verbs:
+  - |-
+    lyx loom circling continue regression-baseline-verify

@@ -1,0 +1,14 @@
+{
+  "verdict": "resume",
+  "reason": "Round 2 of Discussion-Bouncer escalated at cause circling, because three round-1 design-wrong keys came back: d4-runproc-false-premise as F2, scope-full-accept-resume-loop as F4 and scope-partial-accept-unbounded as F7.\nThe returned findings are not wrong.\nF2 holds against the code: proc.Detach in internal/proc/proc_windows.go sets no breakaway flag, and the loop starts each step through proc.StartTied in internal/shedverbs/loopchild.go.\nF4 holds as well: arbiterstop.Eligibility admits every blocked halt whose reason lacks DecisionHaltPrefix.\nF1's refused forward goto matches shedengine.CheckGotoTarget.\nSo accept does not apply, since nothing returned is wrong.\nThe fix is converging.\nOf round 1's keys, twelve are resolved, and each returned key comes back as a narrower facet of its problem, not a revert of round 1's fix.\nThe round-2 fixer report applies all sixteen findings and records none as Disputed or Deferred.\nNone of round 2's fixes reverts a round-1 fix.\nThe hard cap is 3: discussion_hard_max_bounces in .lyx/config/loom.local.yaml.\nRound 2 is below it, so continue runs exactly one more round, round 3.\nRound 3 is at the cap, so it either settles or escalates hard-cap.\nThe circling continue is recorded, so the run resumes at Discussion-Bouncer without a goto.",
+  "question": "",
+  "goto": "",
+  "verbs": [
+    "lyx loom circling continue regression-baseline-verify"
+  ],
+  "cause": "",
+  "attempt": 1,
+  "attempt_dir": "/home/knatte/Code/loomyard-LYXHUB/regression-baseline-verify/_lyx/shed/regression-baseline-verify/arbiter/attempt-1",
+  "verdict_path": "/home/knatte/Code/loomyard-LYXHUB/regression-baseline-verify/_lyx/shed/regression-baseline-verify/arbiter/attempt-1/verdict.yaml",
+  "relaunch": "lyx shed step regression-baseline-verify --until-stop --arbiter-attempt 1"
+}
