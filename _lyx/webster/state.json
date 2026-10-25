@@ -972,7 +972,7 @@
       }
     }
   ],
-  "currentBatch": 0,
+  "currentBatch": 36,
   "masterStrand": "b72a3cc08101d22a4e8fe62d611ae08b",
   "masterSessionId": "6e5b1004-7b3f-4552-94de-e0b6630533f5",
   "masterEngine": "claude",
@@ -1378,6 +1378,28 @@
       "bracketTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-umbrella-daemon/6e5b1004-7b3f-4552-94de-e0b6630533f5/subagents/agent-a1773fc6739e6e79f.jsonl"
       ]
+    },
+    "36": {
+      "slug": "dobby-board-tidy",
+      "cards": [
+        "36-dobby-board-tidy",
+        "37-beam-verbs",
+        "38-orch-start-dobbies",
+        "39-adopt-refusals"
+      ],
+      "cardHashes": {
+        "36-dobby-board-tidy": "2d21154f74a3c2c98cdd9f64d616131ddd709a8241e1d1f18b55e8c0f406df6c",
+        "37-beam-verbs": "af81ab102701841037c5ae34704b885191122f58982a3dc129a29aff4892d05f",
+        "38-orch-start-dobbies": "ff175aa8def69d2419e16a1c85d9ff0d8576b6bb125ea3965f92809fbfc8bfa2",
+        "39-adopt-refusals": "dbfb5bbbbf1306e7ae611a2c9bf120baf57c9e6dc1c38fda30e0a135644844cd"
+      },
+      "startSha": "cfdaec8b7b6edc941ccd6080dbafdeca84e87183",
+      "kind": "fork",
+      "spawnedAt": "2026-10-25T10:59:42Z",
+      "sessionId": "6e5b1004-7b3f-4552-94de-e0b6630533f5",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
     },
     "7": {
       "slug": "draft-writers",
