@@ -1,6 +1,6 @@
 # Regression as three Drift rows: Drift-Baseline after Discussion, Drift-Await before Webster, Drift-Verify after the Code perch
 
-`regression-baseline-verify` · Task · feature, shed, webster, batten, config, dotnet · running · Discussion-Burler-Fix
+`regression-baseline-verify` · Task · feature, shed, webster, batten, config, dotnet · running · Discussion-Bouncer
 
 ## Seen (operator, 2026-10-17)
 
