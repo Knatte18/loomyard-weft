@@ -1,0 +1,11 @@
+{
+  "verdict": "hand-back",
+  "reason": "Webster is blocked at batch 06 with the same stuckReason that attempt 1 resumed: recover-batch refused with needs_fresh on fabric-reference audit findings, from the fork's `lyx gate test` runs and its git commit for card 7.\nAttempt 1 resumed with goto Webster, and the re-run returned to the same stop, unchanged (history length 26 to 28, same reason). Under the rule for a stop already resumed that returned unchanged, a second resume is not allowed, so this is hand-back.\nThe remaining choice is the run's: the stop's named fix, `lyx webster reset --to batch-start --batch 06`, or accepting the audit findings with `accept-audit`, which bypasses the check. Attempt 1 chose neither for that reason.\nNo parent is recorded for this run, so the question goes to whoever the run's parent is once it is known.\nContributing observation from the step trace: at 17:09:33 the Webster turn ended with \"Recovery for batch 06 is running in the background\", and the session reached idle-done at 17:09:54 with the recovery result not collected. That may have caused the refusal to recur, but the trace does not settle it.",
+  "question": "Batch 06 (clone-records-marker-on-prime-weft) is stuck: recover-batch refuses with needs_fresh because the fork's `lyx gate test` runs and its git commit for card 7 were flagged as fabric-reference audit findings. A re-run from `resume` with goto Webster returned to the same stop. Which should the run take: (1) `lyx webster reset --to batch-start --batch 06` and re-run batch 06, or (2) accept the audit findings with `accept-audit` and let recovery continue? Also note the Webster turn ended while batch 06's recovery was still running in the background, so the recovery result may not have been collected.",
+  "goto": "",
+  "cause": "",
+  "attempt": 2,
+  "attempt_dir": "/home/knatte/Code/loomyard-LYXHUB/umbrella-anchor/_lyx/shed/umbrella-anchor/tackler/attempt-2",
+  "verdict_path": "/home/knatte/Code/loomyard-LYXHUB/umbrella-anchor/_lyx/shed/umbrella-anchor/tackler/attempt-2/verdict.yaml",
+  "case_brief_path": ""
+}
