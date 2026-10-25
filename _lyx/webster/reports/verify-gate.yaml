@@ -1,0 +1,49 @@
+attempt: 1
+cap: 2
+failures:
+    - id: github.com/Knatte18/loomyard/internal/shedbuild
+      kind: package
+      package: github.com/Knatte18/loomyard/internal/shedbuild
+      tail: |-
+        === CONT  TestProgressAt/a_segment_counts_once
+        --- PASS: TestProgressAt/a_segment_counts_once (0.00s)
+        --- PASS: TestProgressAt (0.00s)
+        === CONT  TestGoto_Guard/admitting_guard_moves_the_run
+        --- PASS: TestGoto_MissingStatusFileWayForward/told_clause_replaces_the_seed_advice (0.00s)
+        === CONT  TestGoto_Guard/target_past_the_current_row_never_reaches_the_guard
+        --- PASS: TestGoto_Guard/target_past_the_current_row_never_reaches_the_guard (0.00s)
+        === CONT  TestGoto_Guard/guard_error
+        === CONT  TestGoto_Guard/refusal
+        --- PASS: TestStep_YieldPersistsNothing/Step (0.00s)
+        --- PASS: TestStep_YieldPersistsNothing (0.00s)
+        === CONT  TestEpisodeStuckCount_Boundaries/goto_into_a_segment_keeps_every_row's_count
+        --- PASS: TestEpisodeStuckCount_Boundaries/goto_into_a_segment_keeps_every_row's_count (0.00s)
+        === CONT  TestLockedCheck_RefusesUnderTheRunLock/Run
+        --- PASS: TestStep_GateAttempts/ungated_producer_omits_the_field (0.00s)
+        --- PASS: TestGoto_Guard/admitting_guard_moves_the_run (0.00s)
+        === RUN   TestLockedCheck_RefusesUnderTheRunLock/Run/RefusingCheck
+        === CONT  TestEpisodeStuckCount_Boundaries/a_stuck_after_a_generation_start_reads_two
+        === CONT  TestEpisodeStuckCount_Boundaries/a_capped_entry_last_reads_zero,_a_resume's_grant
+        === CONT  TestEpisodeStuckCount_Boundaries/a_capped_entry,_a_stuck,_then_a_goto_reads_the_grant's_spent_count
+        === PAUSE TestLockedCheck_RefusesUnderTheRunLock/Run/RefusingCheck
+        === CONT  TestEpisodeStuckCount_Boundaries/a_capped_entry_directly_followed_by_a_goto_counts_back_to_the_episode_start
+        === CONT  TestEpisodeStuckCount_Boundaries/a_capped_entry_then_another_row's_stuck_still_ends_the_row's_scan
+        === CONT  TestEpisodeStuckCount_Boundaries/a_capped_entry_then_one_stuck_reads_one
+        === CONT  TestLockedCheck_RefusesUnderTheRunLock/Step
+        === CONT  TestGoto_BlockedRunAdmitsOnlyEarlierRows/blocked_at_a_bouncer_refuses_forward_rows
+        === RUN   TestLockedCheck_RefusesUnderTheRunLock/Step/RefusingCheck
+        === RUN   TestLockedCheck_RefusesUnderTheRunLock/Run/NilCheck
+        --- PASS: TestEpisodeStuckCount_Boundaries/a_stuck_after_a_generation_start_reads_two (0.00s)
+        === PAUSE TestLockedCheck_RefusesUnderTheRunLock/Step/RefusingCheck
+        === PAUSE TestLockedCheck_RefusesUnderTheRunLock/Run/NilCheck
+        --- PASS: TestEpisodeStuckCount_Boundaries/a_capped_entry_last_reads_zero,_a_resume's_grant (0.00s)
+        === CONT  TestGoto_BlockedRunAdmitsOnlyEarlierRows/removed_current_row_with_an_empty_history_admits_only_the_first_row
+        === RUN   TestLockedCheck_RefusesUnderTheRunLock/Step/NilCheck
+        --- PASS: TestEpisodeStuckCount_Boundaries/a_capped_entry,_a_stuck,_then_a_goto_reads_the_grant's_spent_count (0.00s)
+        --- PASS: TestEpisodeStuckCount_Boundaries/a_capped_entry_directly_followed_by_a_goto_counts_back_to_the_episode_start (0.00s)
+        === PAUSE TestLockedCheck_RefusesUnderTheRunLock/Step/NilCheck
+        --- PASS: TestEpisodeStuckCount_Boundaries/a_capped_entry_then_another_row's_stuck_still_ends_the_row's_scan (0.00s)
+        --- PASS: TestEpisodeStuckCount_Boundaries/a_capped_entry_then_one_stuck_reads_one (0.00s)
+        FAIL	github.com/Knatte18/loomyard/internal/shedbuild	0.023s
+log_path: /home/knatte/Code/loomyard-LYXHUB/regression-baseline-verify/.lyx/verify/verify-2.log
+fixer: fork
