@@ -1,6 +1,6 @@
 # An adopt runs the test suite on the adopting machine
 
-`adopt-runs-tests` · Task · enhancement, fabric, gate · running · PR-Review
+`adopt-runs-tests` · Task · enhancement, fabric, gate · running · Finalize
 
 ## Seen (2026-10-24)
 
