@@ -2,6 +2,7 @@
   "current_producer": "Webster",
   "state": "blocked",
   "error": "Batch 06: recover-batch refused with needs_fresh on fabric-reference audit findings (fork ran lyx gate test --gate card/batch --card ... and a git commit for card 7).",
+  "pending_by": "shed",
   "pause_requested": false,
   "activity": {
     "now": "Webster",
