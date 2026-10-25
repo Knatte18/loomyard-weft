@@ -1,9 +1,9 @@
 # Card 23 — loomcli-arbiter-delegates
 
 **Edit:**
-- `internal/loomcli#arbiterVerb`
+- `internal/loomcli#arbiterVerb` -> `func arbiterVerb(out io.Writer, deps shedarbiter.Deps, in shedarbiter.Input) int`
 - `internal/loomcli#loomCLI.arbiterCmd`
-- `internal/loomcli#loomCLI.arbiterDepsFor`
+- `internal/loomcli#loomCLI.arbiterDepsFor` -> `func (c *loomCLI) arbiterDepsFor() (shedarbiter.Deps, error)`
 - `internal/loomcli#loomCLI.goDriverDepsFor`
 - `internal/loomcli#loomCLI.loomConsumeAttempt`
 - `internal/loomcli#arbiterEnvelopeFields`

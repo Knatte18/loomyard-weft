@@ -1,6 +1,6 @@
 ---
 format: 5
-approved: false
+approved: true
 language: go
 ---
 
@@ -71,7 +71,7 @@ Batten becomes one pass per `lyx batten run`, its Run-Shed wait one check per pa
 ### Decision: the records-stop line of a successful landing
 
 - **Decision:** with the `landed` notice dropped, the Land row posts one line only when the prime's records side did not pull.
-- **Rationale:** D9 drops the notice of a landing that needs nothing; a records stop needs the orch's hand, and no other notice carries it.
+- **Rationale:** the decision record's Added-after-Discussion entry "A records stop on a successful landing still notices the orch" (parent, 2026-10-25): the line is not the dropped `landed` notice but a failure that leaves the prime's board behind and needs judgement, like D9's kept Land failure notices.
 - **Applies to:** cards 17, 42
 
 ### Decision: a running task shares two files

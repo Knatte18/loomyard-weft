@@ -4,6 +4,7 @@
 - `plan:internal/dobbyengine#Deps`
 - `plan:internal/dobbyengine#daemon.tick`
 - `plan:internal/dobbyengine#StartState`
+- `plan:internal/dobbyengine#dobbyengineAllowedImports`
 - `internal/dobbyengine/doc.go`
 
 **Create:**
@@ -21,6 +22,7 @@
 **Intent:**
 Start the beam's ready tasks from the board (D5): a task waits as `draft` until released, and dobby starts it from an empty status.
 `Deps` gains the board read (each entry as a `TaskView`: slug, kind, status, whether every `depends_on` is done, its parent worktree through `hubgeom.ParentOf`, its effective owner and a fingerprint of the entry), the `beam.yaml` load of the dobby's worktree layer stack (`max_runs`), and the read of whether the first pass left a status file.
+`dobbyengineAllowedImports` gains `internal/boardengine`, imported for `IsEmptyStatus`.
 `readyToStart` holds when the entry is a task, its status is empty (`boardengine.IsEmptyStatus`), every dependency is done, its parent is the dobby's worktree, its owner is this machine or none, and no pause entry covers the hub or the slug.
 `startReady` reads the local board on a write of `board.json` and on the probe tick, and starts each ready task while fewer than `max_runs` runs it drives are in flight (halted ones included, ones named owned elsewhere not); `max_runs: 0` starts nothing.
 Starting is the run's first pass, a full pass through `SpawnPass`, which claims the task as batten does; a slug with a pass in flight is never started twice.
