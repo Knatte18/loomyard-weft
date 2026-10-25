@@ -537,45 +537,6 @@
       "revised": "2026-10-22T13:01:53Z"
     },
     {
-      "id": 753,
-      "handle": "E30",
-      "slug": "discussion-alignment-into-lenses",
-      "title": "Discussion scope check moves from the alignment agent into the perch lenses, with an escalating finding class",
-      "kind": "note",
-      "labels": [
-        "enhancement",
-        "loom",
-        "burler",
-        "shed"
-      ],
-      "issues": [],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "## Seen\n\nThe alignment agent runs at two points of a loom run (`internal/alignment`): `parent-review`, after Discussion-Write's mechanical gate and before the Discussion perch, and `pr-gate`, after Publish.\nAt `parent-review` it checks the discussion against the board entry, the board, the in-flight runs' records (`lyx loom peers`) and the parent's landed commits, and approves, rejects or escalates to the orch.\nThe Discussion perch already covers most of that: lens `goal-scope` (in fans `discussion` and `twill-discussion`) checks the record against its board entry, and lens `board-fit` (in `twill-discussion`) checks it against every other board entry.\nThe name is stale too: the parent no longer reviews at that point, so neither the gate nor `lyx loom review` should say parent-review.\n\n## Idea\n\nDrop the alignment agent at the discussion point and keep it at `pr-gate`, where it approves the landing and names the board entries a run superseded:\n\n- `board-fit` also reads the other in-flight runs' records through `lyx loom peers` and the parent's landed commits.\n- A lens gets a finding class that escalates to the run's parent instead of going to the fixer, for a question only the operator can settle: a design conflict with another run, or doubt about what the task is for.\n  The Bouncer routes such a finding up to the orch.\n  Since `decision-reaches-agents` (2e265a4fc) the `decision` finding class exists and the Burler fix row posts it to the parent and keeps it from the fixer; what is left is the Bouncer's routing.\n- The `parent-review` gate and the `lyx loom review` verbs go, and with them the parent-review name.\n\nGain: one cold agent spawn fewer per loom run.\nCost: the scope check no longer runs before the first perch round, so a round can be spent polishing a record whose scope then changes.\n\nDiscussed with the operator 2026-10-22; the operator agreed to record it as a note, the design is not yet decided.\n",
-      "created": "2026-10-22T11:02:23Z",
-      "revised": "2026-10-24T07:12:35Z"
-    },
-    {
-      "id": 754,
-      "handle": "E31",
-      "slug": "outdated-entry-to-parent",
-      "title": "A plainly outdated task entry goes to the parent: from the Discussion review in loom, from Darn-Write in darn",
-      "kind": "note",
-      "labels": [
-        "enhancement",
-        "loom",
-        "stencil"
-      ],
-      "issues": [],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "No pre-Discussion row: board-fit flags an outdated entry as an escalating finding; Darn-Write checks and asks the parent",
-      "body": "## Seen\n\nA task's board entry is written when it is promoted, and can sit for days while other work lands and other runs start.\nIts text reaches Discussion-Write and Darn-Write as it stands, so a scope that overlaps, contradicts or has been overtaken by other planned or landed work is found late, after a whole Discussion or a whole darn change has been written from it.\n\n## Design (operator, 2026-10-24)\n\nNo new row runs before Discussion, and the board's run lock gets no exemption: an outdated entry is caught by work the run already does, and goes to the parent.\n\n- Loom: the Discussion review's `board-fit` lens gets a finding class \"the entry is plainly outdated\" (overtaken by landed work, contradicted by the board or another run).\n  Such a finding escalates to the parent orch instead of going to the fixer.\n  This is the escalating finding class note `discussion-alignment-into-lenses` describes; the two belong together.\n- Darn: it has no Discussion review, and Darn-Write reads the entry and writes code in one go.\n  So Darn-Write itself checks the entry text against the parent's recent landed commits and the board before it starts, and when the text is plainly outdated it asks the parent and waits instead of guessing.\n\nOnly a plainly outdated entry goes to the parent; an ordinary small misalignment is settled by the writer as today.\n\n## Replaces\n\nAn earlier idea (2026-10-22): a row before Discussion-Write and Darn-Write that aligns the entry text and edits its own entry through a run-lock exemption.\nDropped: it costs an LLM call in every run while most entries are fresh, and needs a lock exemption.\n",
-      "created": "2026-10-22T11:08:38Z",
-      "revised": "2026-10-24T16:56:29Z"
-    },
-    {
       "id": 755,
       "handle": "E32",
       "slug": "claude-md-lyx-rules-out",
@@ -752,26 +713,6 @@
       "revised": "2026-10-24T13:22:13Z"
     },
     {
-      "id": 790,
-      "handle": "E34",
-      "slug": "merge-in-parent-align",
-      "title": "Rename the Merge-In row to Parent-Align",
-      "kind": "note",
-      "labels": [
-        "enhancement",
-        "loom",
-        "shed",
-        "stencil"
-      ],
-      "issues": [],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "The row aligns the task with what the parent brought in, not only merges",
-      "body": "## Seen (2026-10-24)\n\nSince `loom-tail-review` landed, loom's `Merge-In` row does more than merge: it takes the parent in, and when the parent brought commits in, or the merge conflicts or fails its gate, its fixer resolves the conflicts, makes the tests green and checks that the task's work still matches its decision record against what came in, escalating a decision that collides with landed work.\nWithout new parent commits and with a green gate it runs no fixer.\nThat second part is the old alignment check, moved in and narrowed to what the parent brought.\n`Finalize` keeps its own small merge-in under the parent lock, as a last sync.\n\n## Idea (operator, 2026-10-24)\n\nRename the row `Merge-In` to `Parent-Align`, so its name says it aligns the task with its parent, not only merges.\nThe rename covers the recipe row in loom and darn, the producer and engine names, the `merge_*` config keys it reads, the stencils and docs.\nRow names are durable resume identities, so a run parked on `Merge-In` is restarted, as the recipe already says for retired rows.\n",
-      "created": "2026-10-24T06:32:58Z",
-      "revised": "2026-10-24T06:32:58Z"
-    },
-    {
       "id": 791,
       "handle": "E35",
       "slug": "landing-escalate-arbiter",
@@ -844,6 +785,28 @@
       "body": "Split from task plan-check-lint-pattern-per-card (issue #866).\n\n`lyx loom insert-card` and `remove-card` renumber the cards after the edit and report every prose line naming a moved card by its old number (`planparser.RenumberResult.ProseMentions`), leaving the fix to the writer.\nA renumber spanning many cards then needs every reference fixed by hand, and repeating one doubles the cost.\n\nOpen question: a prose number may already mean the new numbering, so an automatic rewrite needs a form that marks a reference unambiguously, such as a card id `\u003cN\u003e-\u003cslug\u003e`, rather than rewriting bare numbers.",
       "created": "2026-10-24T17:35:56Z",
       "revised": "2026-10-24T17:35:56Z"
+    },
+    {
+      "id": 807,
+      "handle": "T1",
+      "slug": "discussion-scope-in-lenses",
+      "title": "Discussion scope check into the perch lenses, outdated entries to the parent, Merge-In renamed Parent-Align",
+      "kind": "task",
+      "labels": [
+        "enhancement",
+        "loom",
+        "burler",
+        "shed",
+        "stencil"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "Drop the alignment agent at the discussion point; board-fit escalates outdated entries and operator-only questions to the parent; darn checks its entry first; rename Merge-In to Parent-Align",
+      "body": "Three notes bundled into one task (operator, 2026-10-25): the Discussion scope check moves into the perch lenses (was `discussion-alignment-into-lenses`), a plainly outdated entry goes to the parent (was `outdated-entry-to-parent`), and `Merge-In` is renamed `Parent-Align` (was `merge-in-parent-align`).\n\n## Part 1: the Discussion scope check moves into the perch lenses\n\n### Seen\n\nThe alignment agent runs at two points of a loom run (`internal/alignment`): `parent-review`, after Discussion-Write's mechanical gate and before the Discussion perch, and `pr-gate`, after Publish.\nAt `parent-review` it checks the discussion against the board entry, the board, the in-flight runs' records (`lyx loom peers`) and the parent's landed commits, and approves, rejects or escalates to the orch.\nThe Discussion perch already covers most of that: lens `goal-scope` (in fans `discussion` and `twill-discussion`) checks the record against its board entry, and lens `board-fit` (in `twill-discussion`) checks it against every other board entry.\nThe name is stale too: the parent no longer reviews at that point, so neither the gate nor `lyx loom review` should say parent-review.\n\n### Design\n\nOperator decision (2026-10-25): drop the alignment agent at the discussion point, since the Discussion perch does the same work as part of a lens; keep it at `pr-gate`, where it approves the landing.\n\n- `board-fit` also reads the other in-flight runs' records through `lyx loom peers` and the parent's landed commits.\n- A lens gets a finding class that escalates to the run's parent instead of going to the fixer, for a question only the operator can settle: a design conflict with another run, or doubt about what the task is for.\n  The Bouncer routes such a finding up to the orch.\n  Since `decision-reaches-agents` (2e265a4fc) the `decision` finding class exists and the Burler fix row posts it to the parent and keeps it from the fixer; what is left is the Bouncer's routing.\n- The `parent-review` gate and the `lyx loom review` verbs go, and with them the parent-review name.\n\nGain: one cold agent spawn fewer per loom run.\nCost: the scope check no longer runs before the first perch round, so a round can be spent polishing a record whose scope then changes.\n\n## Part 2: a plainly outdated entry goes to the parent\n\n### Seen\n\nA task's board entry is written when it is promoted, and can sit for days while other work lands and other runs start.\nIts text reaches Discussion-Write and Darn-Write as it stands, so a scope that overlaps, contradicts or has been overtaken by other planned or landed work is found late, after a whole Discussion or a whole darn change has been written from it.\n\n### Design (operator, 2026-10-24)\n\nNo new row runs before Discussion, and the board's run lock gets no exemption: an outdated entry is caught by work the run already does, and goes to the parent.\n\n- Loom: the Discussion review's `board-fit` lens gets a finding class \"the entry is plainly outdated\" (overtaken by landed work, contradicted by the board or another run).\n  Such a finding escalates to the parent orch instead of going to the fixer, through the escalating finding class of part 1.\n- Darn: it has no Discussion review, and Darn-Write reads the entry and writes code in one go.\n  So Darn-Write itself checks the entry text against the parent's recent landed commits and the board before it starts, and when the text is plainly outdated it asks the parent and waits instead of guessing.\n\nOnly a plainly outdated entry goes to the parent; an ordinary small misalignment is settled by the writer as today.\n\n## Part 3: rename `Merge-In` to `Parent-Align`\n\n### Seen (2026-10-24)\n\nSince `loom-tail-review` landed, loom's `Merge-In` row does more than merge: it takes the parent in, and when the parent brought commits in, or the merge conflicts or fails its gate, its fixer resolves the conflicts, makes the tests green and checks that the task's work still matches its decision record against what came in, escalating a decision that collides with landed work.\nWithout new parent commits and with a green gate it runs no fixer.\n`Finalize` keeps its own small merge-in under the parent lock, as a last sync.\n\n### Design (operator, 2026-10-24)\n\nRename the row `Merge-In` to `Parent-Align`, so its name says it aligns the task with its parent, not only merges.\nThe rename covers the recipe row in loom and darn, the producer and engine names, the `merge_*` config keys it reads, the stencils and docs.\nRow names are durable resume identities, so a run parked on `Merge-In` is restarted, as the recipe already says for retired rows.\n",
+      "created": "2026-10-22T11:02:23Z",
+      "revised": "2026-10-25T06:04:27Z",
+      "profile": "solid"
     }
   ],
   "prime_owner": "neve"
