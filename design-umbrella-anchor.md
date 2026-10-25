@@ -1,6 +1,6 @@
 # An anchor per beam
 
-`umbrella-anchor` · Task · enhancement, fabric, config, workspaces · running · Parent-Align
+`umbrella-anchor` · Task · enhancement, fabric, config, workspaces · running · Code-Bouncer
 
 ## Seen (2026-10-18)
 
