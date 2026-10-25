@@ -1,0 +1,2166 @@
+diff --git a/contracts/stencils/orch/orch-template-role.md b/contracts/stencils/orch/orch-template-role.md
+index 1e53f40ef..cddf6bd1b 100644
+--- a/contracts/stencils/orch/orch-template-role.md
++++ b/contracts/stencils/orch/orch-template-role.md
+@@ -210,6 +210,7 @@ When the operator asks:
+ 
+ Act and fix without asking: release the tasks the operator approved, un-wedge stuck runs, and handle a Land or Worktree-Teardown failure notice.
+ `lyx orch start` starts every dobby this machine owns first, and warns with `lyx beam start` when that fails.
++`lyx beam status` shows each local dobby alive or not, the runs it drives and why each released task it has not started waits.
+ Ask the operator only about what to build, its priority, design choices, and the questions a review escalation or the arbiter hands on.
+ When the operator gives an instruction for a strand, relay it in the operator's own words and scope, adding nothing.
+ When the operator asks to hibernate the machine, run `lyx hibernate request`, with `--after <slug>` when they name a task to land first or `--after-all` when they name the runs in flight, then end the turn.
+diff --git a/docs/overview.md b/docs/overview.md
+index cff1b6a17..2c08bf56c 100644
+--- a/docs/overview.md
++++ b/docs/overview.md
+@@ -435,11 +435,13 @@ User-facing modules each get one `lyx <module>` namespace:
+   A call that recorded an owner then starts the hub's `finalize` gate once, detached, in the prime, so a break this machine brings to the landed code shows at adopt time.
+   It calls each owning module's function in-process and has no engine package of its own.
+   ✅ Implemented. See the `internal/adoptcli` package documentation.
+-- **beam** — the making, promoting, landing and starting of a beam, a long-lived pair that groups board work, and dobby, the daemon every beam and the prime run (`internal/beamcli` + `internal/dobbyengine`; `lyx beam create <slug>`, `lyx beam promote <slug>`, `lyx beam land <slug>` and `lyx beam start`, from the prime and from any beam, and the hidden `lyx beam dobby`).
++- **beam** — the making, promoting, landing and starting of a beam, a long-lived pair that groups board work, and dobby, the daemon every beam and the prime run (`internal/beamcli` + `internal/dobbyengine`; `lyx beam create <slug>`, `lyx beam promote <slug>`, `lyx beam land <slug>`, `lyx beam start` and `lyx beam status`, from the prime and from any beam, and the hidden `lyx beam dobby`).
+   Create records this machine as a board project's owner with the beam flag, makes the pair with the beam mark in its origin record, forks it from the parent beam of a nested beam, spawns its push, regenerates the workspace files and starts the beam's dobby.
+   Promote turns a started task into a beam, keeping its pair; land starts a short batten run over the `beam` recipe, after a refusal that stops it while members, forked pairs or an orch remain under the beam.
+   Start starts the dobby of the prime and of every beam this machine owns, each only when it is not live.
++  Status prints, once, the view the overview window draws for the dobby of the prime and of each local beam: alive or not, the runs it drives with their stage and last pass, and each released task it has not started with what the task waits on.
+   Dobby starts the beam's released tasks from an empty status, drives their batten runs in short passes, notices the nearest live orch and spawns the board-tidy agent every few landings.
++  It writes one line to its `dobby.log` for each task it starts and each pass it gives a run.
+   The verbs call each owning module's function in-process, and `internal/dobbyengine` holds the daemon.
+   ✅ Implemented. See the `internal/beamcli` package documentation.
+ - **report** — the read-only convergence and timing reports (`internal/reportcli` + `internal/reportengine`; `lyx report convergence [--since <date>] [--fresh-days <n>] [--format json|markdown]` and `lyx report timing [--since <date>] [--by day|week] [--format json|markdown]`, prime only).
+@@ -625,7 +627,8 @@ User-facing modules each get one `lyx <module>` namespace:
+   See the board's `hardener` note.
+ - **batten** — drives one task worktree's whole lifecycle — create, seed the child's own inner run from the Board task's own `recipe` (`loom`, or `darn` for a darn child, empty meaning `loom`), run it to a terminal state, land it into the prime, and tear down — as a single Shed run from the hub's prime worktree (`internal/battenshed` + `internal/battenrecipe` + `internal/battencli`; `lyx batten run|step|status|pause|goto|cancel <run-id>`, `lyx batten lock list|release` for the hub's parent locks, and `lyx batten cleanup [--apply]`).
+   `lyx batten cancel <slug> [--remove]` ends a run for good from the prime, whatever its state, leaving its claim `draft` and removing its records, and with `--remove` its pair and task branches.
+-  The hidden `lyx batten overview` is the pane process of the prime's `runs` strand, which `lyx orch start` ensures: it lists the runs in flight with their state, stage, time in stage, age and reed session, the stage cell carrying the stage's entry number (`7. Land`, `6.5 Plan-Write` for a child stage under Run-Shed), and reads files only; a run a live pause covers shows `paused <minutes>` in its state cell.
++  The hidden `lyx batten overview` is the pane process of the `runs` strand of the prime and of each beam, which `lyx orch start` ensures: it lists the runs in flight with their state, stage, time in stage, age and reed session, the stage cell carrying the stage's entry number (`7. Land`, `6.5 Plan-Write` for a child stage under Run-Shed), and reads files, taking the dobby's and each driver's lock for an instant to learn whether it is held; a run a live pause covers shows `paused <minutes>` in its state cell.
++  Below the runs it draws the dobby of its own worktree: alive or not, the runs it drives with their stage and last pass, and each released task it has not started with what the task waits on, the lines `lyx beam status` prints.
+   `lyx batten cleanup` is a dry run unless given `--apply`: it removes each done run's records run directory with a records commit and a spawned push, and empties that run's scratch beside its lock files and any orphan scratch older than a day.
+   A run is one pass after another: `lyx batten run <slug>` runs one pass and exits, started by the run's parent worktree's dobby or by hand, and a hand pass makes sure that dobby is live once it is over.
+   `lyx adopt` and `lyx beam land` start a run's first pass detached with the prime as its working directory.
+diff --git a/internal/battencli/cli.go b/internal/battencli/cli.go
+index 25c277438..7aa458e48 100644
+--- a/internal/battencli/cli.go
++++ b/internal/battencli/cli.go
+@@ -17,7 +17,7 @@
+ // Without --remove the pair is kept and the cancel names "lyx batten cancel <slug> --remove" as the step before the slug runs again.
+ // An unreachable origin ends only the processes and strands, leaves the marker and posts a notice naming the cancel to run once origin answers.
+ //
+-// "lyx batten overview" (overview.go) is the hidden pane verb the orch start runs in the prime's runs strand.
++// "lyx batten overview" (overview.go) is the hidden pane verb the orch start runs in the runs strand of the prime and of each beam.
+ // The first line is the orch session's: its latest context tokens against the soft and hard thresholds, its cycle phase and cycle count, with `watcher down` appended once the watcher has exited; no state file draws no orch line, and a state file unreadable on two polls in a row shows `orch  state unreadable`.
+ // Below it come the batten runs in flight, one line each: the slug, batten's state, the stage, the time in that stage, the run's age and the pair's reed session.
+ // A run shows while batten's state is not done and its pair exists or is being created; a run with a seed and no status shows as `starting`; the stage is the task worktree's current producer while batten is in Run-Shed and that status is found, and batten's own producer otherwise.
+@@ -26,7 +26,15 @@
+ // Runs are ordered by the seed's start time and then slug, those with no readable start last.
+ // The pane polls each second and backs off while nothing changes, which holds because every time renders in whole minutes.
+ // A status file unreadable on two polls in a row shows the slug and `status unreadable`; one failed poll keeps the line of the previous status.
+-// It only reads the orch state file, the orch config (loaded once at start), the run records and the status files, without their locks, so it never blocks or slows a run.
++// After a blank line come the lines of the dobby of the worktree the pane runs in (overviewdobby.go), rendered by `DobbyLines` from the `dobbyengine.View` a `DobbyViewReader` reads:
++// a header saying whether the dobby is alive, with its `max_runs`, or not running with `lyx beam start` as the way forward;
++// one line per run it drives that is not done, with batten's state, the stage and the pass cell: a pass in flight while the driver lock is held, else the minutes since the last pass exited, then a full pass owed, an owner elsewhere and a failing count from the dobby's state record;
++// and one line per released task it has not started, `ready to start` or `waits on` each of open dependencies, another machine's ownership, a pause, a refused start with its text and the minutes to its retry, and `max_runs`.
++// A dobby view that does not read shows `dobby <label>: unreadable`.
++// It only reads the orch state file, the orch config (loaded once at start), the run records, the status files, the board, beam.yaml and the dobby's state record, without the records' locks.
++// It learns whether the dobby and each driver is live by taking its lock for an instant and releasing it; the acquirers wait `lock.ProbeGrace`, so a poll never refuses one and never slows a run.
++//
++// dobbyreads.go holds the reads of what a worktree's dobby drives, exported for the dobby's own wiring and for the overview: `DobbyRuns`, `DobbyLandings` and `DobbyTasks` over a `DobbyParents` cache, and `DobbyViewReader`, which builds the dobby's view from outside its process.
+ //
+ // "lyx batten run <slug>" is one pass: it runs the run to its next halt or yield and exits, started by its parent worktree's dobby or by hand.
+ // After the pass it makes sure the parent worktree's dobby is live.
+diff --git a/internal/battencli/dobbyreading_test.go b/internal/battencli/dobbyreading_test.go
+index 8bef096b5..dcc75c96c 100644
+--- a/internal/battencli/dobbyreading_test.go
++++ b/internal/battencli/dobbyreading_test.go
+@@ -8,10 +8,12 @@ import (
+ 	"os"
+ 	"path/filepath"
+ 	"slices"
++	"strings"
+ 	"testing"
+ 	"time"
+ 
+ 	"github.com/Knatte18/loomyard/internal/dobbyengine"
++	"github.com/Knatte18/loomyard/internal/lyxcwd"
+ 	"github.com/Knatte18/loomyard/internal/pauserecord"
+ )
+ 
+@@ -78,3 +80,39 @@ func writeDobbyState(pid int, sleeps ...pauserecord.Interval) func(t *testing.T,
+ 		}
+ 	}
+ }
++
++func TestDobbyTasks_ReadsDependenciesAndParentOfAReleasedTask(t *testing.T) {
++	t.Parallel()
++	boardDir := t.TempDir()
++	entries := strings.Join([]string{
++		`{"id":0,"slug":"released","title":"R","kind":"task","labels":["bug"],"depends_on":["open-dep","done-dep","pruned-dep"]}`,
++		`{"id":1,"slug":"open-dep","title":"O","kind":"task","labels":["bug"],"status":"draft"}`,
++		`{"id":2,"slug":"done-dep","title":"D","kind":"task","labels":["bug"],"status":"done"}`,
++	}, ",")
++	content := `{"version":1,"entries":[` + entries + `]}`
++	if err := os.WriteFile(filepath.Join(boardDir, "board.json"), []byte(content), 0o644); err != nil {
++		t.Fatalf("write board.json: %v", err)
++	}
++	prime := &lyxcwd.Location{WorktreeName: "main"}
++	parents := NewDobbyParents(prime)
++	parents.known["released"] = "beam-a"
++
++	views, err := DobbyTasks(prime, boardDir, parents)
++	if err != nil {
++		t.Fatalf("DobbyTasks() error = %v; want nil", err)
++	}
++	bySlug := map[string]dobbyengine.TaskView{}
++	for _, view := range views {
++		bySlug[view.Slug] = view
++	}
++	released := bySlug["released"]
++	if want := []string{"open-dep"}; !slices.Equal(released.PendingDependencies, want) {
++		t.Errorf("DobbyTasks() released PendingDependencies = %v; want %v", released.PendingDependencies, want)
++	}
++	if released.Parent != "beam-a" {
++		t.Errorf("DobbyTasks() released Parent = %q; want %q", released.Parent, "beam-a")
++	}
++	if draft := bySlug["open-dep"]; draft.Parent != "" {
++		t.Errorf("DobbyTasks() draft Parent = %q; want none read for a task with a status", draft.Parent)
++	}
++}
+diff --git a/internal/battencli/dobbyreads.go b/internal/battencli/dobbyreads.go
+new file mode 100644
+index 000000000..dc8b8e64d
+--- /dev/null
++++ b/internal/battencli/dobbyreads.go
+@@ -0,0 +1,338 @@
++// dobbyreads.go reads over the hub what the dobby of a worktree drives and may start: the batten runs whose parent is that worktree, their landings, the board's tasks, and the View of that dobby as a reader outside its process sees it.
++
++package battencli
++
++import (
++	"crypto/sha256"
++	"encoding/hex"
++	"encoding/json"
++	"errors"
++	"fmt"
++	"io/fs"
++	"os"
++	"path/filepath"
++	"slices"
++	"sync"
++	"time"
++
++	"github.com/Knatte18/loomyard/internal/battenrecipe"
++	"github.com/Knatte18/loomyard/internal/boardengine"
++	"github.com/Knatte18/loomyard/internal/configengine"
++	"github.com/Knatte18/loomyard/internal/dobbyengine"
++	"github.com/Knatte18/loomyard/internal/fabricengine"
++	"github.com/Knatte18/loomyard/internal/hubgeom"
++	"github.com/Knatte18/loomyard/internal/lock"
++	"github.com/Knatte18/loomyard/internal/logger"
++	"github.com/Knatte18/loomyard/internal/lyxcwd"
++	"github.com/Knatte18/loomyard/internal/machinename"
++	"github.com/Knatte18/loomyard/internal/pauserecord"
++	"github.com/Knatte18/loomyard/internal/shedengine"
++	"github.com/Knatte18/loomyard/internal/shedrun"
++)
++
++// DobbyParents answers hubgeom.ParentOf once per slug, since a run's parent never changes and the answer reads the worktree list.
++// It is safe for concurrent use.
++type DobbyParents struct {
++	prime *lyxcwd.Location
++	mu    sync.Mutex
++	known map[string]string
++}
++
++// NewDobbyParents returns an empty cache over the hub of prime.
++func NewDobbyParents(prime *lyxcwd.Location) *DobbyParents {
++	return &DobbyParents{prime: prime, known: map[string]string{}}
++}
++
++// Of returns the slug of the pair slug was forked from, "" for the prime.
++func (c *DobbyParents) Of(slug string) (string, error) {
++	c.mu.Lock()
++	defer c.mu.Unlock()
++	if parent, ok := c.known[slug]; ok {
++		return parent, nil
++	}
++	parent, err := hubgeom.ParentOf(c.prime, slug)
++	if err != nil {
++		return "", err
++	}
++	c.known[slug] = parent
++	return parent, nil
++}
++
++// dobbyRun is one batten run whose parent worktree is the dobby's own, with its status as last written.
++type dobbyRun struct {
++	slug   string
++	status shedengine.Status
++}
++
++// dobbyParentRuns lists the batten runs of the prime whose parent worktree is geom's, read from the prime's local status files whatever each run's state.
++// A run whose seed or parent cannot be read is left out with one Warn, so one broken run never stops the rest.
++func dobbyParentRuns(prime *lyxcwd.Location, geom dobbyengine.Geometry, parents *DobbyParents) ([]dobbyRun, error) {
++	slugs, err := shedrun.List(prime)
++	if err != nil {
++		return nil, err
++	}
++	var runs []dobbyRun
++	for _, slug := range slugs {
++		seed, found, err := shedrun.ReadSeed(prime, slug)
++		if err != nil {
++			logger.Warn("battencli: a run's seed is unreadable and the run is left out", "slug", slug, "error", err)
++			continue
++		}
++		if !found || seed.Recipe != shedrun.RecipeBatten {
++			continue
++		}
++		parent, err := parents.Of(slug)
++		if err != nil {
++			logger.Warn("battencli: a run's parent is unreadable and the run is left out", "slug", slug, "error", err)
++			continue
++		}
++		if parent != geom.Slug {
++			continue
++		}
++		status, found, err := readDobbyRunStatus(shedrun.StatusFile(prime, slug))
++		if err != nil {
++			logger.Warn("battencli: a run's status is unreadable and the run is left out", "slug", slug, "error", err)
++			continue
++		}
++		if found {
++			runs = append(runs, dobbyRun{slug: slug, status: status})
++		}
++	}
++	return runs, nil
++}
++
++// readDobbyRunStatus reads the status file at path, reporting false when it does not exist.
++func readDobbyRunStatus(path string) (shedengine.Status, bool, error) {
++	data, err := os.ReadFile(path)
++	if errors.Is(err, fs.ErrNotExist) {
++		return shedengine.Status{}, false, nil
++	}
++	if err != nil {
++		return shedengine.Status{}, false, err
++	}
++	status, err := shedengine.ParseStatusTolerant(data)
++	if err != nil {
++		return shedengine.Status{}, false, fmt.Errorf("decode %s: %w", path, err)
++	}
++	return status, true, nil
++}
++
++// DobbyRuns builds the RunView of every batten run whose parent worktree is geom's, with the pause coverage read from the record at pauseRecord.
++func DobbyRuns(prime *lyxcwd.Location, geom dobbyengine.Geometry, parents *DobbyParents, pauseRecord string) ([]dobbyengine.RunView, error) {
++	runs, err := dobbyParentRuns(prime, geom, parents)
++	if err != nil {
++		return nil, err
++	}
++	record, err := pauserecord.Read(pauseRecord)
++	if err != nil {
++		return nil, err
++	}
++	now := time.Now()
++	views := make([]dobbyengine.RunView, 0, len(runs))
++	for _, run := range runs {
++		slug := run.slug
++		view := dobbyengine.RunView{
++			Slug:     slug,
++			State:    string(run.status.State),
++			Producer: run.status.CurrentProducer,
++			Covered:  record.CoverageOf(slug, now).Covered,
++		}
++		pair := &lyxcwd.Location{HubPath: prime.HubPath, WorktreeName: slug, AnchorRel: prime.AnchorRel}
++		reads := []func() error{
++			func() (err error) { view.StatusModified, err = modTimeOf(shedrun.StatusFile(prime, slug)); return },
++			func() (err error) {
++				view.ChildStatusModified, err = modTimeOf(shedrun.StatusFile(pair, shedrun.SelfRunID))
++				return
++			},
++			func() (err error) { view.CancelMarker, err = markerExists(shedrun.CancelMarker(prime, slug)); return },
++			func() (err error) { view.OriginOwed, err = markerExists(shedrun.OriginOwedMarker(prime, slug)); return },
++			func() (err error) { view.DriverLockHeld, err = lockHeld(shedrun.DriverLock(prime, slug)); return },
++		}
++		for _, read := range reads {
++			if err := read(); err != nil {
++				return nil, fmt.Errorf("read the run %s: %w", slug, err)
++			}
++		}
++		views = append(views, view)
++	}
++	return views, nil
++}
++
++// modTimeOf returns the modification time of path, the zero time when it does not exist.
++func modTimeOf(path string) (time.Time, error) {
++	info, err := os.Stat(path)
++	if errors.Is(err, fs.ErrNotExist) {
++		return time.Time{}, nil
++	}
++	if err != nil {
++		return time.Time{}, err
++	}
++	return info.ModTime(), nil
++}
++
++// lockHeld reports whether the lock at path is held, tried without blocking and released at once when it was free.
++// A lock whose directory does not exist has never been taken.
++func lockHeld(path string) (bool, error) {
++	if _, err := os.Stat(filepath.Dir(path)); errors.Is(err, fs.ErrNotExist) {
++		return false, nil
++	}
++	held, acquired, err := lock.TryAcquireWriteLock(path)
++	if err != nil {
++		return false, err
++	}
++	if !acquired {
++		return true, nil
++	}
++	return false, held.Release()
++}
++
++// DobbyLandings lists the slugs of the runs of geom's parent worktree whose batten history holds a Land that finished.
++func DobbyLandings(prime *lyxcwd.Location, geom dobbyengine.Geometry, parents *DobbyParents) ([]string, error) {
++	runs, err := dobbyParentRuns(prime, geom, parents)
++	if err != nil {
++		return nil, err
++	}
++	var landed []string
++	for _, run := range runs {
++		if slices.ContainsFunc(run.status.History, func(entry shedengine.HistoryEntry) bool {
++			return entry.Producer == battenrecipe.NameLand && entry.Outcome == shedengine.Done
++		}) {
++			landed = append(landed, run.slug)
++		}
++	}
++	return landed, nil
++}
++
++// DobbyTasks reads the local board under boardDir as TaskViews.
++// Only a released task, one with an empty status, gets its parent worktree and owner read; the others carry neither.
++// A dependency no longer on the board was pruned as done.
++func DobbyTasks(prime *lyxcwd.Location, boardDir string, parents *DobbyParents) ([]dobbyengine.TaskView, error) {
++	tasks, err := boardengine.ReadTasks(boardDir)
++	if err != nil {
++		return nil, err
++	}
++	owners, err := boardengine.ReadOwners(boardDir)
++	if err != nil {
++		return nil, err
++	}
++	here, err := machinename.Name()
++	if err != nil {
++		return nil, err
++	}
++	statusOf := make(map[string]*string, len(tasks))
++	for _, task := range tasks {
++		statusOf[task.Slug] = task.Status
++	}
++	views := make([]dobbyengine.TaskView, 0, len(tasks))
++	for _, task := range tasks {
++		view := dobbyengine.TaskView{Slug: task.Slug, Kind: task.Kind, Status: task.Status}
++		for _, dep := range task.DependsOn {
++			if status, present := statusOf[dep]; present && (status == nil || *status != "done") {
++				view.PendingDependencies = append(view.PendingDependencies, dep)
++			}
++		}
++		if task.Kind == boardengine.KindTask && boardengine.IsEmptyStatus(task.Status) {
++			parent, err := parents.Of(task.Slug)
++			if err != nil {
++				return nil, fmt.Errorf("read the parent of %s: %w", task.Slug, err)
++			}
++			if parent == "" {
++				parent = prime.WorktreeName
++			}
++			view.Parent = parent
++			owner, err := owners.Effective(task.Slug, parents.Of)
++			if err != nil {
++				return nil, fmt.Errorf("read the owner of %s: %w", task.Slug, err)
++			}
++			view.OwnedElsewhere = boardengine.OwnedElsewhere(owner, here)
++		}
++		encoded, err := json.Marshal(task)
++		if err != nil {
++			return nil, err
++		}
++		sum := sha256.Sum256(encoded)
++		view.Fingerprint = hex.EncodeToString(sum[:8])
++		views = append(views, view)
++	}
++	return views, nil
++}
++
++// DobbyViewReader reads the View of the dobby of one worktree from outside its process, keeping the parents it resolved across reads.
++// It is not safe for concurrent use.
++type DobbyViewReader struct {
++	prime       *lyxcwd.Location
++	geom        dobbyengine.Geometry
++	dirs        configengine.Dirs
++	pauseRecord string
++	parents     *DobbyParents
++}
++
++// NewDobbyViewReader returns the reader of the dobby of the worktree named worktree, in the hub of prime.
++func NewDobbyViewReader(prime *lyxcwd.Location, worktree string) (*DobbyViewReader, error) {
++	geom, err := hubgeom.DobbyGeometry(prime, worktree)
++	if err != nil {
++		return nil, err
++	}
++	location, err := lyxcwd.ResolveWorktree(geom.WorktreeRoot)
++	if err != nil {
++		return nil, err
++	}
++	pause, err := hubgeom.PauseGeometry(prime)
++	if err != nil {
++		return nil, err
++	}
++	return &DobbyViewReader{
++		prime:       prime,
++		geom:        geom,
++		dirs:        fabricengine.ConfigDirs(location),
++		pauseRecord: pause.RecordPath,
++		parents:     NewDobbyParents(prime),
++	}, nil
++}
++
++// Label is the name the dobby's lines carry: dobbyengine.PrimeLabel for the prime, else the beam's slug.
++func (r *DobbyViewReader) Label() string {
++	if r.geom.Slug == "" {
++		return dobbyengine.PrimeLabel
++	}
++	return r.geom.Slug
++}
++
++// Read reads the dobby's liveness, its state record, beam.yaml, its runs, the board and the pause record, and builds its View at now.
++// It writes nothing; it takes the dobby's lock and each driver lock for an instant to learn whether it is held.
++func (r *DobbyViewReader) Read(now time.Time) (dobbyengine.View, error) {
++	alive, err := dobbyengine.Live(r.geom)
++	if err != nil {
++		return dobbyengine.View{}, fmt.Errorf("read whether the dobby is live: %w", err)
++	}
++	record, _, err := dobbyengine.ReadState(r.geom.StatePath)
++	if err != nil {
++		return dobbyengine.View{}, fmt.Errorf("read the dobby's state record: %w", err)
++	}
++	cfg, err := dobbyengine.LoadConfig(r.dirs)
++	if err != nil {
++		return dobbyengine.View{}, fmt.Errorf("load beam.yaml: %w", err)
++	}
++	runs, err := DobbyRuns(r.prime, r.geom, r.parents, r.pauseRecord)
++	if err != nil {
++		return dobbyengine.View{}, fmt.Errorf("list the runs: %w", err)
++	}
++	tasks, err := DobbyTasks(r.prime, r.geom.BoardDir, r.parents)
++	if err != nil {
++		return dobbyengine.View{}, fmt.Errorf("read the board: %w", err)
++	}
++	pauses, err := pauserecord.Read(r.pauseRecord)
++	if err != nil {
++		return dobbyengine.View{}, fmt.Errorf("read the pause record: %w", err)
++	}
++	return dobbyengine.BuildView(dobbyengine.ViewInput{
++		Worktree: r.geom.WorktreeName,
++		Alive:    alive,
++		Config:   cfg,
++		Record:   record,
++		Runs:     runs,
++		Tasks:    tasks,
++		Covers:   func(slug string) bool { return pauses.CoverageOf(slug, now).Covered },
++		Now:      now,
++	}), nil
++}
+diff --git a/internal/battencli/overview.go b/internal/battencli/overview.go
+index 1acf1993a..1c664c440 100644
+--- a/internal/battencli/overview.go
++++ b/internal/battencli/overview.go
+@@ -1,11 +1,12 @@
+-// overview.go implements the hidden `overview` batten verb, the pane process of the prime's runs strand, and the pure rendering of the runs in flight it draws:
+-// one line per batten run with its state, stage, time in stage, age and reed session, below the orch line (overvieworch.go).
++// overview.go implements the hidden `overview` batten verb, the pane process of the runs strand, and the pure rendering of the runs in flight it draws:
++// one line per batten run with its state, stage, time in stage, age and reed session, below the orch line (overvieworch.go) and above the dobby's lines (overviewdobby.go).
+ 
+ package battencli
+ 
+ import (
+ 	"fmt"
+ 	"os"
++	"slices"
+ 	"sort"
+ 	"strings"
+ 	"time"
+@@ -14,6 +15,7 @@ import (
+ 
+ 	"github.com/Knatte18/loomyard/internal/battenrecipe"
+ 	"github.com/Knatte18/loomyard/internal/clihelp"
++	"github.com/Knatte18/loomyard/internal/dobbyengine"
+ 	"github.com/Knatte18/loomyard/internal/durfmt"
+ 	"github.com/Knatte18/loomyard/internal/fabricengine"
+ 	"github.com/Knatte18/loomyard/internal/hubgeom"
+@@ -278,6 +280,8 @@ type overviewSource struct {
+ 	pairs map[string]*lyxcwd.Location
+ 	// childRecipes holds the recipe a child's seed names by slug; a seed is write-once, so a decoded one is never read again.
+ 	childRecipes map[string]string
++	// dobby renders the lines of the pane's own worktree's dobby at now; nil draws no dobby section.
++	dobby func(now time.Time) []string
+ }
+ 
+ // newOverviewSource returns a source over the orch state of every orch of the hub, drawn against thresholds, and the prime's runs and the pause record at pauseRecord, that reads the time from now.
+@@ -385,15 +389,24 @@ func (s *overviewSource) resolveChildRecipe(slug string) (string, error) {
+ 	return seed.Recipe, nil
+ }
+ 
+-// frame polls the state of every orch and the prime's runs and returns the overview frame.
+-// It reads the orch states, the run records and the status files without their locks, and writes nothing.
++// frame polls the state of every orch, the prime's runs and the pane's own dobby, and returns the overview frame: the orch and run lines, then a blank line and the dobby's lines.
++// It reads the orch states, the run records, the status files and the dobby's record without their locks, and writes nothing.
+ func (s *overviewSource) frame() statuspane.Frame {
++	lines := s.runsLines()
++	if s.dobby != nil {
++		lines = append(append(lines, ""), s.dobby(s.now())...)
++	}
++	return statuspane.Frame{Lines: lines}
++}
++
++// runsLines polls the state of every orch and the prime's runs and returns the orch lines above the run lines.
++func (s *overviewSource) runsLines() []string {
+ 	orchLines := s.orchLines()
+ 
+ 	slugs, err := shedrun.List(s.prime)
+ 	if err != nil {
+ 		logger.Debug("batten: listing the runs for the overview failed", "err", err)
+-		return statuspane.Frame{Lines: append(orchLines, overviewRunsBroken)}
++		return append(orchLines, overviewRunsBroken)
+ 	}
+ 
+ 	record, err := pauserecord.Read(s.pauseRecord)
+@@ -411,7 +424,7 @@ func (s *overviewSource) frame() statuspane.Frame {
+ 			runs = append(runs, run)
+ 		}
+ 	}
+-	return statuspane.Frame{Lines: append(orchLines, renderOverview(orchStatePoll{}, s.thresholds, runs, s.now())...)}
++	return append(orchLines, renderOverview(orchStatePoll{}, s.thresholds, runs, s.now())...)
+ }
+ 
+ // poll builds the overviewRun of slug; false when its seed names another recipe.
+@@ -477,20 +490,36 @@ func cacheFor(caches map[string]*statuspane.StatusCache, slug string) *statuspan
+ 	return cache
+ }
+ 
+-// overviewCmd builds the hidden `overview` subcommand: the pane process of the prime's runs strand.
+-// It reads the orch state, the orch config once at start, the run records and status files only.
++// worktreeHasDobby reports whether the worktree named worktree runs a dobby: the prime, or a beam among those beams lists.
++// A task pair has none.
++func worktreeHasDobby(prime *lyxcwd.Location, worktree string, beams func() ([]dobbyengine.BeamPair, error)) (bool, error) {
++	if worktree == prime.WorktreeName {
++		return true, nil
++	}
++	pairs, err := beams()
++	if err != nil {
++		return false, err
++	}
++	return slices.ContainsFunc(pairs, func(pair dobbyengine.BeamPair) bool { return pair.Slug == worktree }), nil
++}
++
++// overviewCmd builds the hidden `overview` subcommand: the pane process of the runs strand of the prime and of each beam.
++// It reads the orch state, the orch config once at start, the run records and status files, and the dobby's records.
+ func (c *battenCLI) overviewCmd() *cobra.Command {
+ 	return &cobra.Command{
+ 		Use:         "overview",
+-		Short:       "draw the orch's context and the runs in flight in a pane (run by the prime's runs strand)",
++		Short:       "draw the orch's context and the runs in flight in a pane (run by the runs strand of the prime and of each beam)",
+ 		Hidden:      true,
+ 		Annotations: map[string]string{clihelp.AudienceAnnotation: clihelp.AudienceInternal},
+ 		Long: `overview first draws the orch line -- the orch session's context reading
+ against the soft and hard thresholds, its cycle phase and cycle count -- then one
+ line per batten run in flight -- its state, stage, time in the stage, age and
+-reed session -- redrawing in place until it is signalled.
+-The prime's runs strand runs it, and every line is drawn uncut. It reads
+-files only, and runs from the prime and from any beam.`,
++reed session -- then the dobby of the worktree it runs in: whether it is alive,
++the runs it drives with their stage and last pass, and each released task it
++has not started with what the task waits on. It redraws in place until it is
++signalled.
++The runs strand runs it, and every line is drawn uncut. It reads files and
++probes locks for an instant, and runs from the prime and from any beam.`,
+ 		Args: cobra.NoArgs,
+ 		RunE: func(cmd *cobra.Command, args []string) error {
+ 			if clihelp.ShouldAbort(cmd.Context()) {
+@@ -509,6 +538,7 @@ files only, and runs from the prime and from any beam.`,
+ 				clihelp.SetExit(ctx, output.Err(out, err.Error()))
+ 				return nil
+ 			}
++			acting := location.WorktreeName
+ 			location, err = ResolveBattenPrime(location)
+ 			if err != nil {
+ 				clihelp.SetExit(ctx, output.Err(out, err.Error()))
+@@ -521,6 +551,16 @@ files only, and runs from the prime and from any beam.`,
+ 			}
+ 
+ 			source := newOverviewSource(location, pauseGeom.RecordPath, loadOverviewThresholds(location), time.Now)
++			hasDobby, err := worktreeHasDobby(location, acting, hubgeom.DobbyStart(location).Beams)
++			if err != nil {
++				logger.Warn("batten: the overview cannot tell whether its worktree has a dobby and draws no dobby section", "worktree", acting, "err", err)
++			} else if !hasDobby {
++				logger.Debug("batten: the overview's worktree has no dobby and draws no dobby section", "worktree", acting)
++			} else if reader, err := NewDobbyViewReader(location, acting); err != nil {
++				logger.Warn("batten: the overview cannot place its worktree's dobby and draws no dobby section", "worktree", acting, "err", err)
++			} else {
++				source.dobby = func(now time.Time) []string { return overviewDobbyLines(reader, now) }
++			}
+ 			pane := statuspane.Pane{
+ 				Out:     out,
+ 				Size:    statuspane.TerminalSize(os.Stdout),
+diff --git a/internal/battencli/overviewdobby.go b/internal/battencli/overviewdobby.go
+new file mode 100644
+index 000000000..fbc4dd935
+--- /dev/null
++++ b/internal/battencli/overviewdobby.go
+@@ -0,0 +1,124 @@
++// overviewdobby.go renders the View of a worktree's dobby as the lines the overview pane draws below the runs and `lyx beam status` prints.
++
++package battencli
++
++import (
++	"fmt"
++	"strings"
++	"time"
++
++	"github.com/Knatte18/loomyard/internal/dobbyengine"
++	"github.com/Knatte18/loomyard/internal/durfmt"
++	"github.com/Knatte18/loomyard/internal/logger"
++	"github.com/Knatte18/loomyard/internal/shedrun"
++)
++
++const (
++	// dobbyIndent opens every line under the dobby's header.
++	dobbyIndent = "  "
++	// dobbyNoRuns is the line of a dobby that drives no run.
++	dobbyNoRuns = "no runs driven"
++	// dobbyUnreadableFormat is the one line of a dobby whose view does not read, filled with its label.
++	dobbyUnreadableFormat = "dobby %s: unreadable"
++)
++
++// DobbyLines renders view, the View of the dobby label names, as lines at now:
++// a header saying whether the dobby lives and its max_runs, one line per run it drives with its state, stage and last pass, and one line per released task it has not started with everything that holds the task back.
++// Every time still growing renders in whole minutes, so the lines change at most once a minute.
++func DobbyLines(label string, view dobbyengine.View, now time.Time) []string {
++	header := fmt.Sprintf("dobby %s: alive, max_runs %d", label, view.MaxRuns)
++	if !view.Alive {
++		header = fmt.Sprintf("dobby %s: not running; way forward: lyx beam start", label)
++	}
++
++	slugWidth := 0
++	for _, run := range view.Runs {
++		slugWidth = max(slugWidth, len([]rune(run.Slug)))
++	}
++	for _, task := range view.Waiting {
++		slugWidth = max(slugWidth, len([]rune(task.Slug)))
++	}
++
++	lines := []string{header}
++	if len(view.Runs) == 0 {
++		lines = append(lines, dobbyIndent+dobbyNoRuns)
++	}
++	runCells := make([][]string, len(view.Runs))
++	stateWidth, stageWidth := 0, 0
++	for i, run := range view.Runs {
++		stage := overviewStage(shedrun.RecipeBatten, run.Producer)
++		runCells[i] = []string{run.State, stage, dobbyRunPass(run, now)}
++		stateWidth = max(stateWidth, len([]rune(run.State)))
++		stageWidth = max(stageWidth, len([]rune(stage)))
++	}
++	for i, run := range view.Runs {
++		cells := []string{padRight(run.Slug, slugWidth), padRight(runCells[i][0], stateWidth), padRight(runCells[i][1], stageWidth), runCells[i][2]}
++		lines = append(lines, dobbyIndent+strings.Join(cells, overviewColumnGap))
++	}
++	for _, task := range view.Waiting {
++		lines = append(lines, dobbyIndent+padRight(task.Slug, slugWidth)+overviewColumnGap+dobbyTaskWait(task, view.MaxRuns, now))
++	}
++	return lines
++}
++
++// overviewDobbyLines reads the View of the dobby reader names and renders it at now; a view that does not read renders the one unreadable line.
++func overviewDobbyLines(reader *DobbyViewReader, now time.Time) []string {
++	view, err := reader.Read(now)
++	if err != nil {
++		logger.Debug("batten: reading the dobby for the overview failed", "dobby", reader.Label(), "err", err)
++		return []string{fmt.Sprintf(dobbyUnreadableFormat, reader.Label())}
++	}
++	return DobbyLines(reader.Label(), view, now)
++}
++
++// dobbyRunPass renders a run's pass cell: a pass in flight, or the minutes since its last pass exited, then what the dobby's record says of it.
++func dobbyRunPass(run dobbyengine.ViewRun, now time.Time) string {
++	pass := "no pass yet"
++	switch {
++	case run.PassInFlight:
++		pass = "pass in flight"
++	case !run.LastPassExit.IsZero():
++		pass = "last pass " + durfmt.FormatMinutes(now.Sub(run.LastPassExit)) + " ago"
++	}
++	notes := []string{pass}
++	if run.FullPassOwed {
++		notes = append(notes, "full pass owed")
++	}
++	if run.OwnedElsewhere {
++		notes = append(notes, "owned by another machine")
++	}
++	if run.FailingPassCount > 0 {
++		notes = append(notes, fmt.Sprintf("failing %d× in a row: %s", run.FailingPassCount, firstLine(run.FailingPassError)))
++	}
++	return strings.Join(notes, ", ")
++}
++
++// dobbyTaskWait renders what a released task waits on, or that nothing holds it back.
++func dobbyTaskWait(task dobbyengine.WaitingTask, maxRuns int, now time.Time) string {
++	if task.Ready() {
++		return "ready to start"
++	}
++	var reasons []string
++	if len(task.Dependencies) > 0 {
++		reasons = append(reasons, "dependencies "+strings.Join(task.Dependencies, ", "))
++	}
++	if task.OwnedElsewhere {
++		reasons = append(reasons, "another machine's ownership")
++	}
++	if task.Paused {
++		reasons = append(reasons, "a pause")
++	}
++	if !task.NextTry.IsZero() {
++		reasons = append(reasons, fmt.Sprintf("a refused start (%s), retry in %s", firstLine(task.Refusal), durfmt.FormatMinutes(task.NextTry.Sub(now))))
++	}
++	if task.AtMaxRuns {
++		reasons = append(reasons, fmt.Sprintf("max_runs %d", maxRuns))
++	}
++	return "waits on " + strings.Join(reasons, "; ")
++}
++
++// firstLine returns text up to its first line break.
++func firstLine(text string) string {
++	line, _, _ := strings.Cut(strings.TrimSpace(text), "\n")
++	return line
++}
+diff --git a/internal/battencli/overviewdobby_test.go b/internal/battencli/overviewdobby_test.go
+new file mode 100644
+index 000000000..78e925e1c
+--- /dev/null
++++ b/internal/battencli/overviewdobby_test.go
+@@ -0,0 +1,135 @@
++//go:build tier0
++
++// overviewdobby_test.go pins the dobby's lines: DobbyLines over built views, and the overview frame that draws them below the runs.
++
++package battencli
++
++import (
++	"errors"
++	"path/filepath"
++	"testing"
++	"time"
++
++	"github.com/google/go-cmp/cmp"
++
++	"github.com/Knatte18/loomyard/internal/battenrecipe"
++	"github.com/Knatte18/loomyard/internal/dobbyengine"
++	"github.com/Knatte18/loomyard/internal/lyxcwd"
++	"github.com/Knatte18/loomyard/internal/shedrun"
++	"github.com/Knatte18/loomyard/internal/testkit/locationkit"
++)
++
++func TestDobbyLines(t *testing.T) {
++	t.Parallel()
++	runShed := overviewStage(shedrun.RecipeBatten, battenrecipe.NameRunShed)
++	land := overviewStage(shedrun.RecipeBatten, battenrecipe.NameLand)
++	pad := func(stage string) string { return padRight(stage, max(len([]rune(runShed)), len([]rune(land)))) }
++
++	tests := []struct {
++		name string
++		view dobbyengine.View
++		want []string
++	}{
++		{
++			name: "AnAliveDobbyShowsItsRunsAndWhyEachTaskWaits",
++			view: dobbyengine.View{
++				Alive: true, MaxRuns: 2,
++				Runs: []dobbyengine.ViewRun{
++					{Slug: "flying", State: "running", Producer: battenrecipe.NameRunShed, PassInFlight: true},
++					{Slug: "failing", State: "blocked", Producer: battenrecipe.NameLand, LastPassExit: minutesAgo(12), FullPassOwed: true, FailingPassCount: 2, FailingPassError: "pre-run refused\nmore detail"},
++				},
++				Waiting: []dobbyengine.WaitingTask{
++					{Slug: "ready"},
++					{Slug: "deps", Dependencies: []string{"x", "y"}, Paused: true},
++					{Slug: "refused", Refusal: "dirty source", NextTry: overviewNow.Add(4 * time.Minute)},
++					{Slug: "owned", OwnedElsewhere: true},
++					{Slug: "capped", AtMaxRuns: true},
++				},
++			},
++			want: []string{
++				"dobby prime: alive, max_runs 2",
++				"  flying   running  " + pad(runShed) + "  pass in flight",
++				"  failing  blocked  " + pad(land) + "  last pass 12m ago, full pass owed, failing 2× in a row: pre-run refused",
++				"  ready    ready to start",
++				"  deps     waits on dependencies x, y; a pause",
++				"  refused  waits on a refused start (dirty source), retry in 4m",
++				"  owned    waits on another machine's ownership",
++				"  capped   waits on max_runs 2",
++			},
++		},
++		{
++			name: "ADeadDobbyNamesTheWayForwardAndARunWithNoPassSaysSo",
++			view: dobbyengine.View{MaxRuns: 3, Runs: []dobbyengine.ViewRun{{Slug: "r", State: "running", Producer: battenrecipe.NameRunShed}}},
++			want: []string{
++				"dobby prime: not running; way forward: lyx beam start",
++				"  r  running  " + runShed + "  no pass yet",
++			},
++		},
++		{
++			name: "NoRunsSaysSo",
++			view: dobbyengine.View{Alive: true, MaxRuns: 3},
++			want: []string{"dobby prime: alive, max_runs 3", "  no runs driven"},
++		},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			if diff := cmp.Diff(tt.want, DobbyLines(dobbyengine.PrimeLabel, tt.view, overviewNow)); diff != "" {
++				t.Errorf("DobbyLines() mismatch (-want +got):\n%s", diff)
++			}
++		})
++	}
++}
++
++func TestOverviewSource_DrawsTheDobbyBelowTheRuns(t *testing.T) {
++	t.Parallel()
++	prime := locationkit.Location(t.TempDir(), "prime", ".")
++	source := newOverviewSource(prime, filepath.Join(t.TempDir(), "pause.json"), overviewThresholds{}, func() time.Time { return overviewNow })
++	var drawnAt time.Time
++	source.dobby = func(now time.Time) []string {
++		drawnAt = now
++		return []string{"dobby prime: alive, max_runs 3", "  no runs driven"}
++	}
++
++	want := []string{overviewNoRuns, "", "dobby prime: alive, max_runs 3", "  no runs driven"}
++	if diff := cmp.Diff(want, source.frame().Lines); diff != "" {
++		t.Errorf("frame() mismatch (-want +got):\n%s", diff)
++	}
++	if !drawnAt.Equal(overviewNow) {
++		t.Errorf("the dobby was drawn at %v; want the frame's time %v", drawnAt, overviewNow)
++	}
++}
++
++func TestWorktreeHasDobby(t *testing.T) {
++	t.Parallel()
++	prime := &lyxcwd.Location{WorktreeName: "main"}
++	beams := func() ([]dobbyengine.BeamPair, error) {
++		return []dobbyengine.BeamPair{{Slug: "beam-a"}}, nil
++	}
++	failing := func() ([]dobbyengine.BeamPair, error) { return nil, errors.New("origin unreadable") }
++
++	tests := []struct {
++		name     string
++		worktree string
++		beams    func() ([]dobbyengine.BeamPair, error)
++		want     bool
++		wantErr  bool
++	}{
++		{"Prime", "main", failing, true, false},
++		{"Beam", "beam-a", beams, true, false},
++		{"TaskPair", "task-b", beams, false, false},
++		{"BeamsUnreadable", "beam-a", failing, false, true},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			got, err := worktreeHasDobby(prime, tt.worktree, tt.beams)
++			if (err != nil) != tt.wantErr {
++				t.Fatalf("worktreeHasDobby(%q) error = %v; want error %v", tt.worktree, err, tt.wantErr)
++			}
++			if got != tt.want {
++				t.Errorf("worktreeHasDobby(%q) = %v; want %v", tt.worktree, got, tt.want)
++			}
++		})
++	}
++}
+diff --git a/internal/beamcli/cli.go b/internal/beamcli/cli.go
+index cc4adbbc3..0cdc2adb1 100644
+--- a/internal/beamcli/cli.go
++++ b/internal/beamcli/cli.go
+@@ -11,6 +11,7 @@ import (
+ 	"os/signal"
+ 	"path/filepath"
+ 	"syscall"
++	"time"
+ 
+ 	"github.com/Knatte18/loomyard/internal/battencli"
+ 	"github.com/Knatte18/loomyard/internal/clihelp"
+@@ -26,17 +27,100 @@ import (
+ func Command() *cobra.Command {
+ 	beam := &cobra.Command{
+ 		Use:   "beam",
+-		Short: "make, promote, land and start beams, the long-lived pairs that group board work",
++		Short: "make, promote, land and start beams, the long-lived pairs that group board work, and show their dobbies",
+ 		Long: `A beam is a long-lived pair that groups board work: its tasks fork from the
+ beam's own branch and land back into it, it can run an orch of its own, and its
+ dobby drives the runs of its tasks. Every verb runs from the hub's prime worktree
+ and from any beam, and acts on the prime's location.`,
+ 		RunE: clihelp.GroupRunE,
+ 	}
+-	beam.AddCommand(createCmd(), promoteCmd(), landCmd(), startCmd(), dobbyCmd())
++	beam.AddCommand(createCmd(), promoteCmd(), landCmd(), startCmd(), statusCmd(), dobbyCmd())
+ 	return beam
+ }
+ 
++// statusResult is the envelope of `beam status`: one entry per local dobby, the prime's first.
++type statusResult struct {
++	Dobbies []statusEntry `json:"dobbies"`
++}
++
++// statusEntry is one dobby's view in `beam status`: the structured view and the lines the overview draws for it, or why it did not read.
++type statusEntry struct {
++	Worktree string            `json:"worktree"`
++	View     *dobbyengine.View `json:"view,omitempty"`
++	Lines    []string          `json:"lines"`
++	Error    string            `json:"error,omitempty"`
++}
++
++// statusCmd returns the `beam status` verb.
++func statusCmd() *cobra.Command {
++	return &cobra.Command{
++		Use:         "status",
++		Short:       "show the dobby of the prime and of every local beam: alive, runs driven, tasks waiting and why",
++		Annotations: map[string]string{clihelp.AudienceAnnotation: clihelp.AudienceOperator},
++		Long: `Prints, once, what the overview window draws for a dobby, for the hub's prime and
++for every local beam: whether the dobby is alive and its max_runs, each run it
++drives with its state, stage and last pass, and each released task it has not
++started with what the task waits on -- open dependencies, another machine's
++ownership, a pause, a refused start and its retry, or max_runs. Each entry
++carries the structured view and its rendered lines. It reads files only.
++
++It runs from the prime and from any beam.
++
++Example:
++  lyx beam status`,
++		Args: cobra.NoArgs,
++		RunE: func(cmd *cobra.Command, _ []string) error {
++			return runVerb(cmd, func(_ context.Context, _ string, prime *lyxcwd.Location) (any, error) {
++				return dobbyStatus(prime, time.Now())
++			})
++		},
++	}
++}
++
++// dobbyStatus reads the view of the prime's dobby and of the dobby of every local beam at now.
++// A view that does not read is reported in its entry and joins the returned error, and the others still read.
++func dobbyStatus(prime *lyxcwd.Location, now time.Time) (statusResult, error) {
++	beams, err := hubgeom.DobbyStart(prime).Beams()
++	if err != nil {
++		return statusResult{}, fmt.Errorf("lyx beam status: list the local beams: %w", err)
++	}
++	worktrees := []string{prime.WorktreeName}
++	for _, beam := range beams {
++		worktrees = append(worktrees, beam.Slug)
++	}
++	result := statusResult{Dobbies: make([]statusEntry, 0, len(worktrees))}
++	var failures []error
++	for _, worktree := range worktrees {
++		label := worktree
++		if worktree == prime.WorktreeName {
++			label = dobbyengine.PrimeLabel
++		}
++		entry := statusEntry{Worktree: label, Lines: []string{}}
++		view, err := readDobbyView(prime, worktree, now)
++		if err != nil {
++			entry.Error = err.Error()
++			failures = append(failures, fmt.Errorf("%s: %w", label, err))
++		} else {
++			entry.View = &view
++			entry.Lines = battencli.DobbyLines(label, view, now)
++		}
++		result.Dobbies = append(result.Dobbies, entry)
++	}
++	if err := errors.Join(failures...); err != nil {
++		return result, fmt.Errorf("lyx beam status: %w; way forward: fix the cause each names, then run `lyx beam status` again", err)
++	}
++	return result, nil
++}
++
++// readDobbyView reads the view of the dobby of the worktree named worktree at now.
++func readDobbyView(prime *lyxcwd.Location, worktree string, now time.Time) (dobbyengine.View, error) {
++	reader, err := battencli.NewDobbyViewReader(prime, worktree)
++	if err != nil {
++		return dobbyengine.View{}, err
++	}
++	return reader.Read(now)
++}
++
+ // startResult is the envelope of `beam start`: the outcome per worktree.
+ type startResult struct {
+ 	Dobbies []startEntry `json:"dobbies"`
+@@ -117,7 +201,7 @@ func runDobby(ctx context.Context, out io.Writer, root string) int {
+ 	if err := registerDobby(fabricengine.RunProcDir(prime.HubPath), geom); err != nil {
+ 		return output.Err(out, fmt.Sprintf("lyx beam dobby: register the dobby: %v", err))
+ 	}
+-	deps, err := hubDobbyDeps(prime, geom)
++	deps, err := hubDobbyDeps(prime, geom, out)
+ 	if err != nil {
+ 		return output.Err(out, fmt.Sprintf("lyx beam dobby: wire the dobby over the hub: %v", err))
+ 	}
+diff --git a/internal/beamcli/dobbydeps.go b/internal/beamcli/dobbydeps.go
+index 6646a3ece..8ca9ea498 100644
+--- a/internal/beamcli/dobbydeps.go
++++ b/internal/beamcli/dobbydeps.go
+@@ -4,15 +4,13 @@ package beamcli
+ 
+ import (
+ 	"context"
+-	"crypto/sha256"
+-	"encoding/hex"
+ 	"encoding/json"
+ 	"errors"
+ 	"fmt"
++	"io"
+ 	"io/fs"
+ 	"os"
+ 	"os/exec"
+-	"path/filepath"
+ 	"slices"
+ 	"strings"
+ 	"sync"
+@@ -28,7 +26,6 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/dobbyengine"
+ 	"github.com/Knatte18/loomyard/internal/fabricengine"
+ 	"github.com/Knatte18/loomyard/internal/hubgeom"
+-	"github.com/Knatte18/loomyard/internal/lock"
+ 	"github.com/Knatte18/loomyard/internal/logger"
+ 	"github.com/Knatte18/loomyard/internal/lyxcwd"
+ 	"github.com/Knatte18/loomyard/internal/machinename"
+@@ -39,7 +36,6 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/runproc"
+ 	"github.com/Knatte18/loomyard/internal/selfexec"
+ 	"github.com/Knatte18/loomyard/internal/shedbuild"
+-	"github.com/Knatte18/loomyard/internal/shedengine"
+ 	"github.com/Knatte18/loomyard/internal/shedrun"
+ 	"github.com/Knatte18/loomyard/internal/shuttleengine"
+ 	"github.com/Knatte18/loomyard/internal/tendercli"
+@@ -69,9 +65,9 @@ func registerDobby(runProcDir string, geom dobbyengine.Geometry) error {
+ 	return runproc.Register(runProcDir, owner, runproc.SelfRecord(runproc.RoleDobby))
+ }
+ 
+-// hubDobbyDeps fills every seam of dobbyengine.Run over the hub of prime, for the dobby of geom.
++// hubDobbyDeps fills every seam of dobbyengine.Run over the hub of prime, for the dobby of geom, with its log lines written to logOut.
+ // The dobby's own working directory is the hub root, so every path comes from prime and geom, and only the pass spawn starts its process in the prime's anchor.
+-func hubDobbyDeps(prime *lyxcwd.Location, geom dobbyengine.Geometry) (dobbyengine.Deps, error) {
++func hubDobbyDeps(prime *lyxcwd.Location, geom dobbyengine.Geometry, logOut io.Writer) (dobbyengine.Deps, error) {
+ 	worktree, err := lyxcwd.ResolveWorktree(geom.WorktreeRoot)
+ 	if err != nil {
+ 		return dobbyengine.Deps{}, err
+@@ -86,14 +82,14 @@ func hubDobbyDeps(prime *lyxcwd.Location, geom dobbyengine.Geometry) (dobbyengin
+ 	}
+ 	dirs := fabricengine.ConfigDirs(worktree)
+ 	boardDir := geom.BoardDir
+-	parents := &parentCache{prime: prime, known: map[string]string{}}
++	parents := battencli.NewDobbyParents(prime)
+ 	owners := func() (boardengine.Owners, error) { return boardengine.ReadOwners(boardDir) }
+ 	slugOwner := func(slug string) (string, error) {
+ 		read, err := owners()
+ 		if err != nil {
+ 			return "", err
+ 		}
+-		return read.Effective(slug, parents.of)
++		return read.Effective(slug, parents.Of)
+ 	}
+ 	deps := dobbyengine.Deps{
+ 		Now:   time.Now,
+@@ -113,9 +109,11 @@ func hubDobbyDeps(prime *lyxcwd.Location, geom dobbyengine.Geometry) (dobbyengin
+ 			if geom.Slug == "" {
+ 				return read.Prime, nil
+ 			}
+-			return read.Effective(geom.Slug, parents.of)
++			return read.Effective(geom.Slug, parents.Of)
++		},
++		Runs: func() ([]dobbyengine.RunView, error) {
++			return battencli.DobbyRuns(prime, geom, parents, pause.RecordPath)
+ 		},
+-		Runs: func() ([]dobbyengine.RunView, error) { return dobbyRuns(prime, geom, parents, pause.RecordPath) },
+ 		SpawnPass: func(slug string, continuePass, noReopen bool) (<-chan dobbyengine.PassExit, error) {
+ 			return spawnPass(geom, slug, continuePass, noReopen)
+ 		},
+@@ -137,7 +135,7 @@ func hubDobbyDeps(prime *lyxcwd.Location, geom dobbyengine.Geometry) (dobbyengin
+ 		LiftOwnerPause: func(_ context.Context, slug string) error {
+ 			return liftOwnerPause(prime, pause.RecordPath, slug)
+ 		},
+-		Tasks:      func() ([]dobbyengine.TaskView, error) { return dobbyTasks(prime, boardDir, parents) },
++		Tasks:      func() ([]dobbyengine.TaskView, error) { return battencli.DobbyTasks(prime, boardDir, parents) },
+ 		LoadConfig: func() (dobbyengine.Config, error) { return dobbyengine.LoadConfig(dirs) },
+ 		StatusExists: func(slug string) (bool, error) {
+ 			return fileExists(shedrun.StatusFile(prime, slug))
+@@ -146,7 +144,8 @@ func hubDobbyDeps(prime *lyxcwd.Location, geom dobbyengine.Geometry) (dobbyengin
+ 			coverage, err := pauserecord.ReadCoverage(pause.RecordPath, slug, time.Now())
+ 			return coverage.Covered, err
+ 		},
+-		Landings:    func() ([]string, error) { return dobbyLandings(prime, geom, parents) },
++		Landings:    func() ([]string, error) { return battencli.DobbyLandings(prime, geom, parents) },
++		Log:         func(line string) { _, _ = fmt.Fprintln(logOut, line) },
+ 		StencilsDir: fabricengine.StencilsDir(prime.HubPath),
+ 		NearestOrch: func() (string, error) {
+ 			parent, err := hubgeom.NearestLiveOrch(worktree, orchcli.OrchLive)
+@@ -205,233 +204,11 @@ func fileExists(path string) (bool, error) {
+ 	return true, nil
+ }
+ 
+-// parentCache answers hubgeom.ParentOf once per slug, since a run's parent never changes and the answer reads the worktree list.
+-type parentCache struct {
+-	prime *lyxcwd.Location
+-	mu    sync.Mutex
+-	known map[string]string
+-}
+-
+-// of returns the slug of the pair slug was forked from, "" for the prime.
+-func (c *parentCache) of(slug string) (string, error) {
+-	c.mu.Lock()
+-	defer c.mu.Unlock()
+-	if parent, ok := c.known[slug]; ok {
+-		return parent, nil
+-	}
+-	parent, err := hubgeom.ParentOf(c.prime, slug)
+-	if err != nil {
+-		return "", err
+-	}
+-	c.known[slug] = parent
+-	return parent, nil
+-}
+-
+ // pairLocation returns slug's task pair as a location built from the prime's, with no git call.
+ func pairLocation(prime *lyxcwd.Location, slug string) *lyxcwd.Location {
+ 	return &lyxcwd.Location{HubPath: prime.HubPath, WorktreeName: slug, AnchorRel: prime.AnchorRel}
+ }
+ 
+-// readStatus reads the status file at path, reporting false when it does not exist.
+-func readStatus(path string) (shedengine.Status, bool, error) {
+-	data, err := os.ReadFile(path)
+-	if errors.Is(err, fs.ErrNotExist) {
+-		return shedengine.Status{}, false, nil
+-	}
+-	if err != nil {
+-		return shedengine.Status{}, false, err
+-	}
+-	status, err := shedengine.ParseStatusTolerant(data)
+-	if err != nil {
+-		return shedengine.Status{}, false, fmt.Errorf("decode %s: %w", path, err)
+-	}
+-	return status, true, nil
+-}
+-
+-// modTime returns the modification time of path, the zero time when it does not exist.
+-func modTime(path string) (time.Time, error) {
+-	info, err := os.Stat(path)
+-	if errors.Is(err, fs.ErrNotExist) {
+-		return time.Time{}, nil
+-	}
+-	if err != nil {
+-		return time.Time{}, err
+-	}
+-	return info.ModTime(), nil
+-}
+-
+-// lockHeld reports whether the lock at path is held, tried without blocking and released at once when it was free.
+-// A lock whose directory does not exist has never been taken.
+-func lockHeld(path string) (bool, error) {
+-	if _, err := os.Stat(filepath.Dir(path)); errors.Is(err, fs.ErrNotExist) {
+-		return false, nil
+-	}
+-	held, acquired, err := lock.TryAcquireWriteLock(path)
+-	if err != nil {
+-		return false, err
+-	}
+-	if !acquired {
+-		return true, nil
+-	}
+-	return false, held.Release()
+-}
+-
+-// parentRun is one batten run whose parent worktree is the dobby's own, with its status as last written.
+-type parentRun struct {
+-	slug   string
+-	status shedengine.Status
+-}
+-
+-// parentRuns lists the batten runs of the prime whose parent worktree is geom's, read from the prime's local status files whatever each run's state.
+-// A run whose seed or parent cannot be read is left out with one Warn, so one broken run never stops the rest.
+-func parentRuns(prime *lyxcwd.Location, geom dobbyengine.Geometry, parents *parentCache) ([]parentRun, error) {
+-	slugs, err := shedrun.List(prime)
+-	if err != nil {
+-		return nil, err
+-	}
+-	var runs []parentRun
+-	for _, slug := range slugs {
+-		seed, found, err := shedrun.ReadSeed(prime, slug)
+-		if err != nil {
+-			logger.Warn("beamcli: a run's seed is unreadable and the run is left out", "slug", slug, "error", err)
+-			continue
+-		}
+-		if !found || seed.Recipe != shedrun.RecipeBatten {
+-			continue
+-		}
+-		parent, err := parents.of(slug)
+-		if err != nil {
+-			logger.Warn("beamcli: a run's parent is unreadable and the run is left out", "slug", slug, "error", err)
+-			continue
+-		}
+-		if parent != geom.Slug {
+-			continue
+-		}
+-		status, found, err := readStatus(shedrun.StatusFile(prime, slug))
+-		if err != nil {
+-			logger.Warn("beamcli: a run's status is unreadable and the run is left out", "slug", slug, "error", err)
+-			continue
+-		}
+-		if found {
+-			runs = append(runs, parentRun{slug: slug, status: status})
+-		}
+-	}
+-	return runs, nil
+-}
+-
+-// dobbyRuns builds the RunView of every batten run whose parent worktree is geom's.
+-func dobbyRuns(prime *lyxcwd.Location, geom dobbyengine.Geometry, parents *parentCache, pauseRecord string) ([]dobbyengine.RunView, error) {
+-	runs, err := parentRuns(prime, geom, parents)
+-	if err != nil {
+-		return nil, err
+-	}
+-	record, err := pauserecord.Read(pauseRecord)
+-	if err != nil {
+-		return nil, err
+-	}
+-	now := time.Now()
+-	views := make([]dobbyengine.RunView, 0, len(runs))
+-	for _, run := range runs {
+-		slug := run.slug
+-		view := dobbyengine.RunView{
+-			Slug:     slug,
+-			State:    string(run.status.State),
+-			Producer: run.status.CurrentProducer,
+-			Covered:  record.CoverageOf(slug, now).Covered,
+-		}
+-		pair := pairLocation(prime, slug)
+-		reads := []func() error{
+-			func() (err error) { view.StatusModified, err = modTime(shedrun.StatusFile(prime, slug)); return },
+-			func() (err error) {
+-				view.ChildStatusModified, err = modTime(shedrun.StatusFile(pair, shedrun.SelfRunID))
+-				return
+-			},
+-			func() (err error) { view.CancelMarker, err = fileExists(shedrun.CancelMarker(prime, slug)); return },
+-			func() (err error) { view.OriginOwed, err = fileExists(shedrun.OriginOwedMarker(prime, slug)); return },
+-			func() (err error) { view.DriverLockHeld, err = lockHeld(shedrun.DriverLock(prime, slug)); return },
+-		}
+-		for _, read := range reads {
+-			if err := read(); err != nil {
+-				return nil, fmt.Errorf("read the run %s: %w", slug, err)
+-			}
+-		}
+-		views = append(views, view)
+-	}
+-	return views, nil
+-}
+-
+-// dobbyLandings lists the slugs of the runs of geom's parent worktree whose batten history holds a Land that finished.
+-func dobbyLandings(prime *lyxcwd.Location, geom dobbyengine.Geometry, parents *parentCache) ([]string, error) {
+-	runs, err := parentRuns(prime, geom, parents)
+-	if err != nil {
+-		return nil, err
+-	}
+-	var landed []string
+-	for _, run := range runs {
+-		if slices.ContainsFunc(run.status.History, func(entry shedengine.HistoryEntry) bool {
+-			return entry.Producer == battenrecipe.NameLand && entry.Outcome == shedengine.Done
+-		}) {
+-			landed = append(landed, run.slug)
+-		}
+-	}
+-	return landed, nil
+-}
+-
+-// dobbyTasks reads the local board as TaskViews.
+-// Only a task a dobby could start, one with an empty status and every dependency done, gets its parent worktree read; the others carry none.
+-// A dependency no longer on the board was pruned as done.
+-func dobbyTasks(prime *lyxcwd.Location, boardDir string, parents *parentCache) ([]dobbyengine.TaskView, error) {
+-	tasks, err := boardengine.ReadTasks(boardDir)
+-	if err != nil {
+-		return nil, err
+-	}
+-	owners, err := boardengine.ReadOwners(boardDir)
+-	if err != nil {
+-		return nil, err
+-	}
+-	here, err := machinename.Name()
+-	if err != nil {
+-		return nil, err
+-	}
+-	statusOf := make(map[string]*string, len(tasks))
+-	for _, task := range tasks {
+-		statusOf[task.Slug] = task.Status
+-	}
+-	views := make([]dobbyengine.TaskView, 0, len(tasks))
+-	for _, task := range tasks {
+-		view := dobbyengine.TaskView{Slug: task.Slug, Kind: task.Kind, Status: task.Status, DependenciesDone: true}
+-		for _, dep := range task.DependsOn {
+-			if status, present := statusOf[dep]; present && (status == nil || *status != "done") {
+-				view.DependenciesDone = false
+-				break
+-			}
+-		}
+-		if task.Kind == boardengine.KindTask && boardengine.IsEmptyStatus(task.Status) && view.DependenciesDone {
+-			parent, err := parents.of(task.Slug)
+-			if err != nil {
+-				return nil, fmt.Errorf("read the parent of %s: %w", task.Slug, err)
+-			}
+-			if parent == "" {
+-				parent = prime.WorktreeName
+-			}
+-			view.Parent = parent
+-			owner, err := owners.Effective(task.Slug, parents.of)
+-			if err != nil {
+-				return nil, fmt.Errorf("read the owner of %s: %w", task.Slug, err)
+-			}
+-			view.OwnedElsewhere = boardengine.OwnedElsewhere(owner, here)
+-		}
+-		encoded, err := json.Marshal(task)
+-		if err != nil {
+-			return nil, err
+-		}
+-		sum := sha256.Sum256(encoded)
+-		view.Fingerprint = hex.EncodeToString(sum[:8])
+-		views = append(views, view)
+-	}
+-	return views, nil
+-}
+-
+ // liftOwnerPause lifts the live pause entry of slug's own scope that carries the owner caller.
+ func liftOwnerPause(prime *lyxcwd.Location, recordPath, slug string) error {
+ 	record, err := pauserecord.Read(recordPath)
+diff --git a/internal/beamcli/doc.go b/internal/beamcli/doc.go
+index 201c3faac..70cd7403e 100644
+--- a/internal/beamcli/doc.go
++++ b/internal/beamcli/doc.go
+@@ -1,4 +1,4 @@
+-// Package beamcli is the beam module: `lyx beam create <slug>`, the making of a beam from a board project entry, `lyx beam promote <slug>`, the turning of a spawned task into one, `lyx beam land <slug>`, the landing of a beam into its parent, `lyx beam start`, the start of every dobby this machine owns, and the hidden `lyx beam dobby`, the dobby process itself.
++// Package beamcli is the beam module: `lyx beam create <slug>`, the making of a beam from a board project entry, `lyx beam promote <slug>`, the turning of a spawned task into one, `lyx beam land <slug>`, the landing of a beam into its parent, `lyx beam start`, the start of every dobby this machine owns, `lyx beam status`, the view of every local dobby, and the hidden `lyx beam dobby`, the dobby process itself.
+ // The verbs only call each owning module's function in-process, so no module learns another's state; the daemon's engine is `internal/dobbyengine`, and this package wires its seams over the hub.
+ //
+ // # The verbs
+@@ -76,6 +76,13 @@
+ // `start` runs `dobbyengine.EnsureLive` over `hubgeom.DobbyStart` from the prime or any beam, and prints `started` or `live` per worktree, with the owner of a prime another machine owns.
+ // It is idempotent.
+ //
++// # status
++//
++// `status` prints, once, the view the overview window draws for a dobby, for the prime and for each local beam `hubgeom.DobbyStart` lists, the prime's first.
++// Each entry carries the worktree's label, the structured `dobbyengine.View` that `battencli.DobbyViewReader` reads, and the lines `battencli.DobbyLines` renders from it.
++// A view that does not read carries its error in its entry, the others still read, and the verb fails naming each.
++// It reads files only.
++//
+ // # dobby
+ //
+ // `dobby <worktree root>` is hidden and internal: `dobbyengine.SpawnDetached` launches it, with the hub root as its working directory.
+@@ -90,12 +97,13 @@
+ // # The dobby's seams
+ //
+ // `hubDobbyDeps` fills every seam of the engine from told paths, the dobby's working directory being the hub root and never a worktree:
+-//   - the local batten status files of the prime, and each run's parent through `hubgeom.ParentOf`;
++//   - the local batten status files of the prime and the board's tasks through `battencli.DobbyRuns`, `battencli.DobbyLandings` and `battencli.DobbyTasks`, which the overview reads too, and each run's parent through `hubgeom.ParentOf`;
+ //   - the board and the owners through `boardengine`, and the pause record through `pauserecord`;
+ //   - the file watch through `internal/fswatch`, one watcher per directory merged into the loop's one channel;
+ //   - the pass spawn of `lyx batten run`, started in the prime's anchor;
+ //   - the owner pause and the parent lock release through `tendercli` and `battencli`;
+ //   - the notice through `orchcli.NotifyFromScoped`, signed `ly:DOBBY` for the prime and `ly:<slug>:DOBBY` for a beam;
+ //   - `beam.yaml` through `dobbyengine.LoadConfig`, and the binary check through `internal/selfexec`;
++//   - the log line onto the process's standard output, which `dobbyengine.SpawnDetached` points at the marker directory's `dobby.log`;
+ //   - the board-tidy agent's shuttle runner from the worktree's own reed geometry, its model `sonnet[medium]` resolved through the model registry, and the stencils directory.
+ package beamcli
+diff --git a/internal/beamcli/status_integration_test.go b/internal/beamcli/status_integration_test.go
+new file mode 100644
+index 000000000..c64ccffd1
+--- /dev/null
++++ b/internal/beamcli/status_integration_test.go
+@@ -0,0 +1,72 @@
++//go:build tier1
++
++// status_integration_test.go runs "lyx beam status" through RunCLIIn over a hubforge hub with one local beam.
++
++package beamcli_test
++
++import (
++	"bytes"
++	"encoding/json"
++	"testing"
++
++	"github.com/google/go-cmp/cmp"
++
++	"github.com/Knatte18/loomyard/internal/beamcli"
++	"github.com/Knatte18/loomyard/internal/fabricengine"
++	"github.com/Knatte18/loomyard/internal/hubforge"
++	"github.com/Knatte18/loomyard/internal/testkit/boardkit"
++	"github.com/Knatte18/loomyard/internal/testkit/envelope"
++)
++
++func TestStatus_PrintsThePrimesDobbyAndEachLocalBeams(t *testing.T) {
++	t.Parallel()
++
++	boardkit.InstallReplay(t)
++	h := hubforge.CopyHub(t, hubforge.Shape{Anchor: "."})
++	hubforge.AddPairWith(t, h, "b", fabricengine.AddOptions{SkipPush: true, Beam: true})
++
++	var out bytes.Buffer
++	beamcli.RunCLIIn(h.PairCodeWorktree("b"), &out, []string{"status"})
++
++	env := envelope.Decode(t, out.String())
++	if !env.OK {
++		t.Fatalf("lyx beam status = %s; want ok", out.String())
++	}
++	var result struct {
++		Dobbies []struct {
++			Worktree string `json:"worktree"`
++			View     struct {
++				Alive bool `json:"alive"`
++			} `json:"view"`
++			Lines []string `json:"lines"`
++		} `json:"dobbies"`
++	}
++	encoded, err := json.Marshal(env.Raw["result"])
++	if err != nil {
++		t.Fatalf("Marshal(result) = %v; want nil", err)
++	}
++	if err := json.Unmarshal(encoded, &result); err != nil {
++		t.Fatalf("Unmarshal(result) = %v; want nil", err)
++	}
++
++	type entry struct {
++		Worktree string
++		Alive    bool
++		Header   string
++	}
++	var got []entry
++	for _, dobby := range result.Dobbies {
++		header := ""
++		if len(dobby.Lines) > 0 {
++			header = dobby.Lines[0]
++		}
++		got = append(got, entry{dobby.Worktree, dobby.View.Alive, header})
++	}
++	want := []entry{
++		{"prime", false, "dobby prime: not running; way forward: lyx beam start"},
++		{"b", false, "dobby b: not running; way forward: lyx beam start"},
++	}
++	if diff := cmp.Diff(want, got); diff != "" {
++		t.Errorf("lyx beam status dobbies mismatch (-want +got):\n%s", diff)
++	}
++}
+diff --git a/internal/dobbyengine/doc.go b/internal/dobbyengine/doc.go
+index f0b7ddd2e..a4bb68ae0 100644
+--- a/internal/dobbyengine/doc.go
++++ b/internal/dobbyengine/doc.go
+@@ -13,10 +13,11 @@
+ //     It records this machine as the prime owner first when none is recorded, and reports per worktree; it is idempotent.
+ //   - Config is beam.yaml, loaded strictly because dobby only ever runs inside a hub.
+ //   - Run is the daemon loop, with every seam it reads in Deps.
++//   - BuildView is the View of one dobby a reader outside its process sees, built from what it is told: its liveness, its state record, beam.yaml, its runs and the board.
+ //
+ // The loop:
+ //
+-//   - It takes the lock at Geometry.LockPath without blocking, and returns ErrDobbyRunning at once when another dobby holds it.
++//   - It waits lock.ProbeGrace for the lock at Geometry.LockPath, and returns ErrDobbyRunning when another dobby still holds it.
+ //   - It reads its beam's owner at start and on each probe tick, and exits with a logged reason when another machine owns it.
+ //   - A state record holding the process's own pid is a re-exec and owes no new full pass; any other pid, or no record, is a start.
+ //     A start, a machine sleep the sleep watch sees, and a tick that finds the record without a pid each owe every run a full pass until a tick succeeds.
+@@ -25,6 +26,7 @@
+ //     Where the watch does not open, as on WSL or through a junction, the timer alone drives the loop at the probe cadence, and no wake is shorter than a second.
+ //   - Between ticks it calls the binary check, which re-execs onto a changed lyx binary.
+ //   - A tick's failure is logged once per episode and the loop goes on; a cancelled context ends it after the tick in flight.
++//   - Each task start and each pass spawned writes one line through the Log seam: the time, `start <slug>` or `pass <slug> <kind>`, the kind being `continue`, `full` or `full-no-reopen`.
+ //
+ // The passes:
+ //
+@@ -53,7 +55,7 @@
+ //   - Starting is the run's first pass, a full pass, which claims the task as batten does; a slug with a pass in flight is never started twice.
+ //     A first pass refused for a covering pause is no refused start: no notice, no marker and no backoff, and the start waits for the lift.
+ //     Any other first pass that exits non-zero and leaves no status file, a refusal as owned elsewhere included, is a refused start: one notice per refusal text, and a retry from one probe interval, doubling up to an hour, or at once when the entry changes.
+-//     The backoff and the noticed texts are kept in the state record, and cleared when a pass claims the task or its board entry changes.
++//     The backoff, the last refusal text and the noticed texts are kept in the state record, and cleared when a pass claims the task or its board entry changes.
+ //   - A task is started only from an empty status, by its parent's dobby or a hand-run `lyx batten run`, and never twice while a pass of it is in flight.
+ //     Across machines only the owner machine's dobby of the parent runs, and a release written on another machine reaches this dobby when this machine's board is next pulled.
+ //   - Bound: per run at most one pass per probe interval plus one per write of the child's status file, and at most one in flight.
+@@ -71,6 +73,14 @@
+ //   - Bound: a fresh record loses a tidy in flight and the slugs landed since the last tidy, and the next tidy may spawn while the old agent runs until its timeout.
+ //     A landing whose run records `lyx batten cleanup --apply` removed before dobby read them is not counted.
+ //
++// The view:
++//
++//   - The runs are the listed ones that are not done, each with batten's state and producer, a pass in flight while its driver lock is held, and its last pass exit, owed full pass, owner mark and failing count from the state record.
++//   - A task waits while it is released to the worktree, a task with an empty status whose parent is the worktree, and not started.
++//     Its reasons are the start step's own conditions: the dependencies not done, another machine's ownership, a covering pause, a refused start whose backoff has not run out for the entry as it reads now, and `max_runs`.
++//     The `max_runs` reason falls, in board order as the start step walks, on the tasks nothing else holds once the runs that take a slot fill it; a task with no reason starts on the dobby's next tick.
++//   - Bound: a first pass in flight that has left no status file is in no file, so its task reads as ready and its slot as free until the status appears.
++//
+ // Told-geometry tier: the package takes every absolute path from its caller and imports neither internal/lyxcwd nor any CLI package, per PATTERN-cwd-resolution.
+ // Its seam_enforcement_test.go enforces that membership mechanically.
+ package dobbyengine
+diff --git a/internal/dobbyengine/loop.go b/internal/dobbyengine/loop.go
+index bc2346ff0..2b5fdb17a 100644
+--- a/internal/dobbyengine/loop.go
++++ b/internal/dobbyengine/loop.go
+@@ -96,10 +96,13 @@ type Deps struct {
+ 	StencilsDir string
+ 	// NearestOrch returns the name of the nearest live orch the tidy agent's parent directive names; empty means there is none.
+ 	NearestOrch func() (string, error)
++	// Log writes one line to the dobby's log: one for each task start and each pass spawned.
++	// A nil Log logs nothing.
++	Log func(line string)
+ }
+ 
+ // Run drives one dobby for geom until ctx ends or another machine owns the beam.
+-// It takes geom.LockPath without blocking and returns ErrDobbyRunning at once when another dobby holds it.
++// It waits lock.ProbeGrace for geom.LockPath and returns ErrDobbyRunning when another dobby still holds it.
+ // It reads the beam's owner at start and on every probe tick, and returns nil, logging why, when another machine owns it.
+ // A state record holding this process's pid is a re-exec, which owes no new full pass; any other pid, or no record, is a start.
+ // A tick that fails is logged once per episode and the loop goes on; a cancelled context ends it after the tick in flight.
+@@ -107,7 +110,7 @@ func Run(ctx context.Context, geom Geometry, deps Deps) error {
+ 	if err := os.MkdirAll(filepath.Dir(geom.LockPath), 0o755); err != nil {
+ 		return err
+ 	}
+-	held, acquired, err := lock.TryAcquireWriteLock(geom.LockPath)
++	held, acquired, err := lock.AcquireWriteLockWithin(geom.LockPath, lock.ProbeGrace)
+ 	if err != nil {
+ 		return err
+ 	}
+diff --git a/internal/dobbyengine/passes.go b/internal/dobbyengine/passes.go
+index ac312c986..66522e822 100644
+--- a/internal/dobbyengine/passes.go
++++ b/internal/dobbyengine/passes.go
+@@ -62,6 +62,19 @@ const (
+ 	passFullNoReopen
+ )
+ 
++// String names the kind as dobby's log line does.
++func (k passKind) String() string {
++	switch k {
++	case passContinue:
++		return "continue"
++	case passFull:
++		return "full"
++	case passFullNoReopen:
++		return "full-no-reopen"
++	}
++	return "none"
++}
++
+ // passTrigger is what woke the planner for one run.
+ type passTrigger struct {
+ 	// ProbeTick is a probe tick, once per probe interval.
+@@ -233,9 +246,17 @@ func (d *daemon) spawn(slug string, kind passKind, now time.Time) {
+ 		d.passExited(slug, full, 1, err.Error(), now)
+ 		return
+ 	}
++	d.logLine(now, "pass "+slug+" "+kind.String())
+ 	d.flights[slug] = flight{exit: exit, full: full}
+ }
+ 
++// logLine writes one line to the dobby's log, stamped with at.
++func (d *daemon) logLine(at time.Time, text string) {
++	if d.deps.Log != nil {
++		d.deps.Log(at.UTC().Format(time.RFC3339) + " " + text)
++	}
++}
++
+ // collectExits reads the exit of every pass that has ended, without waiting for one that has not.
+ func (d *daemon) collectExits(now time.Time) {
+ 	for slug, f := range d.flights {
+diff --git a/internal/dobbyengine/passes_test.go b/internal/dobbyengine/passes_test.go
+index 5079f9306..646bf8f9e 100644
+--- a/internal/dobbyengine/passes_test.go
++++ b/internal/dobbyengine/passes_test.go
+@@ -197,6 +197,35 @@ func (h *passHarness) stateRecord() State {
+ 	return record
+ }
+ 
++func TestLog_OneLinePerStartAndPass(t *testing.T) {
++	t.Parallel()
++	owed := runningRun("o")
++	owed.OriginOwed = true
++	h := newPassHarness(t, runningRun("r"), runningRun("c"), owed)
++	h.fake.maxRuns = 4
++	var lines []string
++	h.d.deps.Log = func(line string) { lines = append(lines, line) }
++	h.fake.tasks = []TaskView{readyTask("a")}
++	if err := UpdateState(h.d.geom.StatePath, func(s *State) error {
++		s.Runs = map[string]RunState{"r": {FullPassOwed: true}, "o": {FullPassOwed: true}}
++		return nil
++	}); err != nil {
++		t.Fatalf("UpdateState() = %v; want nil", err)
++	}
++
++	h.tick(true)
++
++	want := []string{
++		"2026-10-25T12:00:10Z pass r full",
++		"2026-10-25T12:00:10Z pass c continue",
++		"2026-10-25T12:00:10Z pass o full-no-reopen",
++		"2026-10-25T12:00:10Z start a",
++	}
++	if strings.Join(lines, "\n") != strings.Join(want, "\n") {
++		t.Errorf("log lines = %q; want %q", lines, want)
++	}
++}
++
+ func runningRun(slug string) RunView {
+ 	return RunView{Slug: slug, State: runStateRunning, Producer: producerRunShed}
+ }
+diff --git a/internal/dobbyengine/starts.go b/internal/dobbyengine/starts.go
+index 1ab7f5d81..de7654ef9 100644
+--- a/internal/dobbyengine/starts.go
++++ b/internal/dobbyengine/starts.go
+@@ -22,25 +22,30 @@ type TaskView struct {
+ 	Kind string
+ 	// Status is the entry's status, nil or empty when the task is released and not yet started, and draft until then.
+ 	Status *string
+-	// DependenciesDone reports whether every entry the task depends on is done.
+-	DependenciesDone bool
+-	// Parent is the name of the task's parent worktree, the prime's name for the prime.
++	// PendingDependencies holds the slugs of the entries the task depends on that are not done.
++	PendingDependencies []string
++	// Parent is the name of the task's parent worktree, the prime's name for the prime; read only for a released task.
+ 	Parent string
+-	// OwnedElsewhere reports whether the entry's effective owner is another machine.
++	// OwnedElsewhere reports whether the entry's effective owner is another machine; read only for a released task.
+ 	OwnedElsewhere bool
+ 	// Fingerprint changes whenever the entry does.
+ 	Fingerprint string
+ }
+ 
++// released reports whether task is released to the dobby of the worktree named here: a task with an empty status whose parent is here.
++func released(task TaskView, here string) bool {
++	return task.Kind == boardengine.KindTask && boardengine.IsEmptyStatus(task.Status) && task.Parent == here
++}
++
++// heldByEntry reports whether a released task waits for its entry or the pause record: a dependency not done, another machine's ownership, or a pause entry covering the hub or the slug.
++func heldByEntry(task TaskView, covered bool) bool {
++	return len(task.PendingDependencies) > 0 || task.OwnedElsewhere || covered
++}
++
+ // readyToStart reports whether dobby of the worktree named here starts task:
+ // the entry is a task with an empty status and every dependency done, its parent is here, no other machine owns it, and no pause entry covers the hub or the slug.
+ func readyToStart(task TaskView, here string, covered bool) bool {
+-	return task.Kind == boardengine.KindTask &&
+-		boardengine.IsEmptyStatus(task.Status) &&
+-		task.DependenciesDone &&
+-		task.Parent == here &&
+-		!task.OwnedElsewhere &&
+-		!covered
++	return released(task, here) && !heldByEntry(task, covered)
+ }
+ 
+ // startReady starts each ready task of the local board while fewer than max_runs runs it drives are in flight.
+@@ -101,13 +106,10 @@ func (d *daemon) startReady(ctx context.Context, now time.Time) error {
+ // runsInFlight counts the runs this dobby drives that take a slot: the listed ones not recorded owned elsewhere, and first passes that left no run yet.
+ func (d *daemon) runsInFlight(current State) int {
+ 	listed := make(map[string]bool, len(d.runs))
+-	count := 0
+ 	for _, run := range d.runs {
+ 		listed[run.Slug] = true
+-		if !current.Runs[run.Slug].OwnedElsewhere {
+-			count++
+-		}
+ 	}
++	count := slotsTaken(d.runs, current)
+ 	for slug, f := range d.flights {
+ 		if f.first && !listed[slug] {
+ 			count++
+@@ -116,6 +118,17 @@ func (d *daemon) runsInFlight(current State) int {
+ 	return count
+ }
+ 
++// slotsTaken counts the runs of runs that take a slot under max_runs: every one the record does not mark owned elsewhere.
++func slotsTaken(runs []RunView, record State) int {
++	count := 0
++	for _, run := range runs {
++		if !record.Runs[run.Slug].OwnedElsewhere {
++			count++
++		}
++	}
++	return count
++}
++
+ // startFirstPass spawns the first pass of task, a full pass, and keeps it as a flight.
+ // A spawn that fails is a refused start with the spawn error as its text.
+ func (d *daemon) startFirstPass(task TaskView, now time.Time) {
+@@ -124,6 +137,7 @@ func (d *daemon) startFirstPass(task TaskView, now time.Time) {
+ 		d.refusedStart(task.Slug, task.Fingerprint, err.Error(), now)
+ 		return
+ 	}
++	d.logLine(now, "start "+task.Slug)
+ 	d.flights[task.Slug] = flight{exit: exit, full: true, first: true, fingerprint: task.Fingerprint}
+ }
+ 
+@@ -164,7 +178,7 @@ func (d *daemon) refusedStart(slug, fingerprint, text string, now time.Time) {
+ 			*s = StartState{}
+ 		}
+ 		*s = nextStartTry(*s, now, d.probe)
+-		s.EntryFingerprint = fingerprint
++		s.EntryFingerprint, s.Refusal = fingerprint, text
+ 		noticeDue = !slices.Contains(s.Noticed, text)
+ 	})
+ 	if err != nil {
+@@ -201,7 +215,7 @@ func (d *daemon) updateStart(slug string, mutate func(*StartState)) error {
+ 		st := s.Starts[slug]
+ 		mutate(&st)
+ 		switch {
+-		case st.NextTry.IsZero() && st.Interval == 0 && len(st.Noticed) == 0 && st.EntryFingerprint == "":
++		case st.NextTry.IsZero() && st.Interval == 0 && len(st.Noticed) == 0 && st.Refusal == "" && st.EntryFingerprint == "":
+ 			delete(s.Starts, slug)
+ 		default:
+ 			if s.Starts == nil {
+diff --git a/internal/dobbyengine/starts_test.go b/internal/dobbyengine/starts_test.go
+index 02d7b6730..793cbf917 100644
+--- a/internal/dobbyengine/starts_test.go
++++ b/internal/dobbyengine/starts_test.go
+@@ -14,7 +14,7 @@ func TestReadyToStart(t *testing.T) {
+ 	t.Parallel()
+ 	draft := "draft"
+ 	empty := ""
+-	ready := TaskView{Slug: "task", Kind: "task", Status: &empty, DependenciesDone: true, Parent: "prime"}
++	ready := TaskView{Slug: "task", Kind: "task", Status: &empty, Parent: "prime"}
+ 
+ 	tests := []struct {
+ 		name    string
+@@ -25,7 +25,7 @@ func TestReadyToStart(t *testing.T) {
+ 		{"EmptyStatusWithDoneDependenciesStarts", nil, false, true},
+ 		{"AbsentStatusStarts", func(task *TaskView) { task.Status = nil }, false, true},
+ 		{"DraftDoesNotStart", func(task *TaskView) { task.Status = &draft }, false, false},
+-		{"OpenDependencyDoesNotStart", func(task *TaskView) { task.DependenciesDone = false }, false, false},
++		{"OpenDependencyDoesNotStart", func(task *TaskView) { task.PendingDependencies = []string{"dep"} }, false, false},
+ 		{"CoveringPauseDoesNotStart", nil, true, false},
+ 		{"OwnedElsewhereDoesNotStart", func(task *TaskView) { task.OwnedElsewhere = true }, false, false},
+ 		{"AnotherBeamsTaskDoesNotStart", func(task *TaskView) { task.Parent = "other-beam" }, false, false},
+@@ -67,7 +67,7 @@ func TestNextStartTry(t *testing.T) {
+ // readyTask is a board entry that is ready to start under the prime's dobby.
+ func readyTask(slug string) TaskView {
+ 	empty := ""
+-	return TaskView{Slug: slug, Kind: "task", Status: &empty, DependenciesDone: true, Parent: "prime", Fingerprint: slug + "-v1"}
++	return TaskView{Slug: slug, Kind: "task", Status: &empty, Parent: "prime", Fingerprint: slug + "-v1"}
+ }
+ 
+ func TestStartReady_RefusalsAndBackoff(t *testing.T) {
+@@ -106,6 +106,9 @@ func TestStartReady_RefusalsAndBackoff(t *testing.T) {
+ 		if len(h.fake.spawned) != 1 || len(h.fake.notices) != 1 || h.fake.notices[0] != "a: dobby could not start the task: pre-run refused" {
+ 			t.Fatalf("passes, notices after the first refusal = %d, %q; want 1 pass and the one notice", len(h.fake.spawned), h.fake.notices)
+ 		}
++		if got := h.stateRecord().Starts["a"].Refusal; got != "pre-run refused" {
++			t.Errorf("start record refusal = %q; want the refusal text", got)
++		}
+ 		h.tick(true)
+ 		if len(h.fake.spawned) != 2 {
+ 			t.Fatalf("passes one probe interval after the refusal = %d; want the retry, 2", len(h.fake.spawned))
+@@ -131,6 +134,24 @@ func TestStartReady_RefusalsAndBackoff(t *testing.T) {
+ 		}
+ 	})
+ 
++	t.Run("a retry whose pass leaves a status file clears the refusal text", func(t *testing.T) {
++		t.Parallel()
++		h := newPassHarness(t)
++		h.fake.tasks = []TaskView{readyTask("a")}
++		h.fake.exits = []PassExit{refused("pre-run refused"), {}}
++		h.tick(true)
++		h.tick(true)
++		if got := h.stateRecord().Starts["a"].Refusal; got != "pre-run refused" {
++			t.Fatalf("start record refusal = %q; want the refusal text before the retry", got)
++		}
++		h.fake.statuses = map[string]bool{"a": true}
++		h.tick(true)
++		h.tick(true)
++		if got, found := h.stateRecord().Starts["a"]; found {
++			t.Errorf("start record after the claiming pass = %+v; want none", got)
++		}
++	})
++
+ 	t.Run("a covered first pass notices nothing and sets no backoff", func(t *testing.T) {
+ 		t.Parallel()
+ 		h := newPassHarness(t)
+diff --git a/internal/dobbyengine/state.go b/internal/dobbyengine/state.go
+index e67ef535e..b66e9bdf9 100644
+--- a/internal/dobbyengine/state.go
++++ b/internal/dobbyengine/state.go
+@@ -60,6 +60,8 @@ type StartState struct {
+ 	Interval time.Duration `json:"interval,omitempty"`
+ 	// Noticed holds the refusal texts already noticed.
+ 	Noticed []string `json:"noticed,omitempty"`
++	// Refusal is the text of the last refused start.
++	Refusal string `json:"refusal,omitempty"`
+ 	// EntryFingerprint is the fingerprint of the board entry the last attempt read.
+ 	EntryFingerprint string `json:"entry_fingerprint,omitempty"`
+ }
+diff --git a/internal/dobbyengine/view.go b/internal/dobbyengine/view.go
+new file mode 100644
+index 000000000..9f204dcc1
+--- /dev/null
++++ b/internal/dobbyengine/view.go
+@@ -0,0 +1,112 @@
++// view.go builds the View of one dobby from what a reader outside its process can read: its liveness, its state record, beam.yaml, the runs it drives and the board.
++
++package dobbyengine
++
++import (
++	"slices"
++	"strings"
++	"time"
++)
++
++// View is what one reading of a dobby shows: whether it lives, the runs it drives and the released tasks it has not started.
++type View struct {
++	// Alive reports whether the dobby's lock is held.
++	Alive bool `json:"alive"`
++	// MaxRuns is beam.yaml's cap on the runs in flight.
++	MaxRuns int `json:"max_runs"`
++	// Runs are the runs the dobby drives that are not done, by slug.
++	Runs []ViewRun `json:"runs"`
++	// Waiting are the released tasks not yet started, in board order.
++	Waiting []WaitingTask `json:"waiting"`
++}
++
++// ViewRun is one run a dobby drives, as its batten status and the dobby's state record read.
++type ViewRun struct {
++	Slug     string `json:"slug"`
++	State    string `json:"state"`
++	Producer string `json:"producer"`
++	// PassInFlight reports whether the run's driver lock is held, which a pass in flight does.
++	PassInFlight bool `json:"pass_in_flight,omitempty"`
++	// LastPassExit is when the run's last pass exited; zero when the record holds none.
++	LastPassExit     time.Time `json:"last_pass_exit,omitzero"`
++	FullPassOwed     bool      `json:"full_pass_owed,omitempty"`
++	OwnedElsewhere   bool      `json:"owned_elsewhere,omitempty"`
++	FailingPassError string    `json:"failing_pass_error,omitempty"`
++	FailingPassCount int       `json:"failing_pass_count,omitempty"`
++}
++
++// WaitingTask is one released task a dobby has not started, with everything that holds it back.
++type WaitingTask struct {
++	Slug string `json:"slug"`
++	// Dependencies are the slugs of the entries it depends on that are not done.
++	Dependencies   []string `json:"dependencies,omitempty"`
++	OwnedElsewhere bool     `json:"owned_elsewhere,omitempty"`
++	// Paused reports whether a pause entry covers the hub or the slug.
++	Paused bool `json:"paused,omitempty"`
++	// Refusal is the text of the last refused start of the entry as it reads now.
++	Refusal string `json:"refusal,omitempty"`
++	// NextTry is when the refused start's backoff runs out; zero once it has.
++	NextTry time.Time `json:"next_try,omitzero"`
++	// AtMaxRuns reports whether the runs in flight fill max_runs before this task's turn.
++	AtMaxRuns bool `json:"at_max_runs,omitempty"`
++}
++
++// Ready reports whether nothing holds the task back, so the dobby starts it on its next tick.
++func (w WaitingTask) Ready() bool {
++	return len(w.Dependencies) == 0 && !w.OwnedElsewhere && !w.Paused && w.NextTry.IsZero() && !w.AtMaxRuns
++}
++
++// ViewInput is everything BuildView reads.
++type ViewInput struct {
++	// Worktree is the name of the dobby's worktree, the prime's name for the prime.
++	Worktree string
++	Alive    bool
++	Config   Config
++	Record   State
++	Runs     []RunView
++	Tasks    []TaskView
++	// Covers reports whether a live pause entry covers the hub or slug.
++	Covers func(slug string) bool
++	Now    time.Time
++}
++
++// BuildView returns the View of the dobby in.
++// The runs are the listed ones that are not done, and a done run takes a slot only while its driver lock is held; a task waits while it is released to the worktree and not started, and its reasons are the conditions the dobby's start step checks, in the start step's own order for max_runs.
++func BuildView(in ViewInput) View {
++	view := View{Alive: in.Alive, MaxRuns: in.Config.MaxRuns, Runs: []ViewRun{}, Waiting: []WaitingTask{}}
++	// A done run whose driver lock is held has a pass in flight, which keeps it in the scheduler's list and so in its slot count.
++	// A reader outside the dobby's process cannot tell the dobby's own pass from a hand-run driver, so the count is the closest the held lock gives.
++	slotRuns := slices.DeleteFunc(slices.Clone(in.Runs), func(run RunView) bool { return run.State == runStateDone && !run.DriverLockHeld })
++	runs := slices.DeleteFunc(slices.Clone(in.Runs), func(run RunView) bool { return run.State == runStateDone })
++	slices.SortFunc(runs, func(a, b RunView) int { return strings.Compare(a.Slug, b.Slug) })
++	for _, run := range runs {
++		rs := in.Record.Runs[run.Slug]
++		view.Runs = append(view.Runs, ViewRun{
++			Slug: run.Slug, State: run.State, Producer: run.Producer,
++			PassInFlight: run.DriverLockHeld, LastPassExit: rs.LastPassExit,
++			FullPassOwed: rs.FullPassOwed, OwnedElsewhere: rs.OwnedElsewhere,
++			FailingPassError: rs.FailingPassError, FailingPassCount: rs.FailingPassCount,
++		})
++	}
++
++	slots := in.Config.MaxRuns - slotsTaken(slotRuns, in.Record)
++	for _, task := range in.Tasks {
++		if !released(task, in.Worktree) {
++			continue
++		}
++		covered := in.Covers(task.Slug)
++		waiting := WaitingTask{Slug: task.Slug, Dependencies: task.PendingDependencies, OwnedElsewhere: task.OwnedElsewhere, Paused: covered}
++		if attempt, found := in.Record.Starts[task.Slug]; found && attempt.EntryFingerprint == task.Fingerprint {
++			waiting.Refusal = attempt.Refusal
++			if in.Now.Before(attempt.NextTry) {
++				waiting.NextTry = attempt.NextTry
++			}
++		}
++		if !heldByEntry(task, covered) && waiting.NextTry.IsZero() {
++			waiting.AtMaxRuns = slots <= 0
++			slots--
++		}
++		view.Waiting = append(view.Waiting, waiting)
++	}
++	return view
++}
+diff --git a/internal/dobbyengine/view_test.go b/internal/dobbyengine/view_test.go
+new file mode 100644
+index 000000000..d5a5681d0
+--- /dev/null
++++ b/internal/dobbyengine/view_test.go
+@@ -0,0 +1,146 @@
++//go:build tier0
++
++// view_test.go pins BuildView: the runs a dobby drives and the reasons each released task waits.
++
++package dobbyengine
++
++import (
++	"testing"
++	"time"
++
++	"github.com/google/go-cmp/cmp"
++)
++
++func TestBuildView(t *testing.T) {
++	t.Parallel()
++	now := time.Date(2026, 10, 25, 12, 0, 0, 0, time.UTC)
++	exited := now.Add(-5 * time.Minute)
++	draft := "draft"
++
++	tests := []struct {
++		name   string
++		mutate func(in *ViewInput)
++		want   View
++	}{
++		{
++			name: "AReleasedTaskWithNothingHoldingItIsReady",
++			mutate: func(in *ViewInput) {
++				in.Tasks = []TaskView{readyTask("a")}
++			},
++			want: View{Alive: true, MaxRuns: 2, Runs: []ViewRun{}, Waiting: []WaitingTask{{Slug: "a"}}},
++		},
++		{
++			name: "EachEntryReasonIsListed",
++			mutate: func(in *ViewInput) {
++				deps, owned, paused := readyTask("deps"), readyTask("owned"), readyTask("paused")
++				deps.PendingDependencies = []string{"x", "y"}
++				owned.OwnedElsewhere = true
++				in.Tasks = []TaskView{deps, owned, paused}
++				in.Covers = func(slug string) bool { return slug == "paused" }
++			},
++			want: View{Alive: true, MaxRuns: 2, Runs: []ViewRun{}, Waiting: []WaitingTask{
++				{Slug: "deps", Dependencies: []string{"x", "y"}},
++				{Slug: "owned", OwnedElsewhere: true},
++				{Slug: "paused", Paused: true},
++			}},
++		},
++		{
++			name: "ARefusedStartShowsItsTextAndTheNextTryUntilTheBackoffRunsOut",
++			mutate: func(in *ViewInput) {
++				in.Tasks = []TaskView{readyTask("backing"), readyTask("due"), readyTask("changed")}
++				changed := in.Tasks[2]
++				changed.Fingerprint = "changed-v2"
++				in.Tasks[2] = changed
++				in.Record.Starts = map[string]StartState{
++					"backing": {Refusal: "pre-run refused", NextTry: now.Add(4 * time.Minute), EntryFingerprint: "backing-v1"},
++					"due":     {Refusal: "pre-run refused", NextTry: now.Add(-time.Minute), EntryFingerprint: "due-v1"},
++					"changed": {Refusal: "pre-run refused", NextTry: now.Add(4 * time.Minute), EntryFingerprint: "changed-v1"},
++				}
++			},
++			want: View{Alive: true, MaxRuns: 2, Runs: []ViewRun{}, Waiting: []WaitingTask{
++				{Slug: "backing", Refusal: "pre-run refused", NextTry: now.Add(4 * time.Minute)},
++				{Slug: "due", Refusal: "pre-run refused"},
++				{Slug: "changed"},
++			}},
++		},
++		{
++			name: "MaxRunsHoldsBackTheTasksPastTheFreeSlotsInBoardOrder",
++			mutate: func(in *ViewInput) {
++				in.Runs = []RunView{runningRun("r")}
++				held := readyTask("held")
++				held.PendingDependencies = []string{"x"}
++				in.Tasks = []TaskView{held, readyTask("first"), readyTask("second")}
++			},
++			want: View{Alive: true, MaxRuns: 2, Runs: []ViewRun{{Slug: "r", State: runStateRunning, Producer: producerRunShed}}, Waiting: []WaitingTask{
++				{Slug: "held", Dependencies: []string{"x"}},
++				{Slug: "first"},
++				{Slug: "second", AtMaxRuns: true},
++			}},
++		},
++		{
++			name: "MaxRunsZeroHoldsBackEveryTask",
++			mutate: func(in *ViewInput) {
++				in.Config.MaxRuns = 0
++				in.Tasks = []TaskView{readyTask("a")}
++			},
++			want: View{Alive: true, Runs: []ViewRun{}, Waiting: []WaitingTask{{Slug: "a", AtMaxRuns: true}}},
++		},
++		{
++			name: "RunsShowTheirRecordAndDoneOrOwnedElsewhereRunsTakeNoSlot",
++			mutate: func(in *ViewInput) {
++				done, flying, away := runningRun("done"), runningRun("flying"), runningRun("away")
++				done.State = runStateDone
++				flying.DriverLockHeld, flying.Producer = true, "Land"
++				in.Runs = []RunView{flying, done, away}
++				in.Record.Runs = map[string]RunState{
++					"flying": {LastPassExit: exited, FailingPassError: "boom", FailingPassCount: 2},
++					"away":   {OwnedElsewhere: true, FullPassOwed: true},
++				}
++				in.Tasks = []TaskView{readyTask("a")}
++			},
++			want: View{Alive: true, MaxRuns: 2, Runs: []ViewRun{
++				{Slug: "away", State: runStateRunning, Producer: producerRunShed, OwnedElsewhere: true, FullPassOwed: true},
++				{Slug: "flying", State: runStateRunning, Producer: "Land", PassInFlight: true, LastPassExit: exited, FailingPassError: "boom", FailingPassCount: 2},
++			}, Waiting: []WaitingTask{{Slug: "a"}}},
++		},
++		{
++			name: "ADoneRunHoldingItsDriverLockStillTakesASlot",
++			mutate: func(in *ViewInput) {
++				finishing := runningRun("finishing")
++				finishing.State, finishing.DriverLockHeld = runStateDone, true
++				in.Runs = []RunView{runningRun("r"), finishing}
++				in.Tasks = []TaskView{readyTask("a")}
++			},
++			want: View{Alive: true, MaxRuns: 2, Runs: []ViewRun{{Slug: "r", State: runStateRunning, Producer: producerRunShed}}, Waiting: []WaitingTask{{Slug: "a", AtMaxRuns: true}}},
++		},
++		{
++			name: "OnlyTasksReleasedToThisWorktreeWait",
++			mutate: func(in *ViewInput) {
++				other, drafted, project := readyTask("other"), readyTask("drafted"), readyTask("project")
++				other.Parent = "beam"
++				drafted.Status = &draft
++				project.Kind = "project"
++				in.Tasks = []TaskView{other, drafted, project}
++			},
++			want: View{Alive: true, MaxRuns: 2, Runs: []ViewRun{}, Waiting: []WaitingTask{}},
++		},
++		{
++			name:   "ADeadDobbyReadsNotAlive",
++			mutate: func(in *ViewInput) { in.Alive = false },
++			want:   View{MaxRuns: 2, Runs: []ViewRun{}, Waiting: []WaitingTask{}},
++		},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			in := ViewInput{
++				Worktree: "prime", Alive: true, Config: Config{MaxRuns: 2},
++				Covers: func(string) bool { return false }, Now: now,
++			}
++			tt.mutate(&in)
++			if diff := cmp.Diff(tt.want, BuildView(in)); diff != "" {
++				t.Errorf("BuildView() mismatch (-want +got):\n%s", diff)
++			}
++		})
++	}
++}
+diff --git a/internal/lock/lock.go b/internal/lock/lock.go
+index 04de2205d..f48fde1cd 100644
+--- a/internal/lock/lock.go
++++ b/internal/lock/lock.go
+@@ -18,6 +18,9 @@ import (
+ // boundedWaitRetryDelay is the pause between acquisition attempts while a bounded wait polls a held lock.
+ const boundedWaitRetryDelay = 10 * time.Millisecond
+ 
++// ProbeGrace is how long an acquirer that refuses a held lock waits first, so a read-only probe that briefly takes the lock to learn whether it is held never makes the acquirer refuse.
++const ProbeGrace = 250 * time.Millisecond
++
+ // FileLock wraps a file-based advisory lock (gofrs/flock) for both exclusive and shared access.
+ type FileLock struct {
+ 	fl *flock.Flock
+diff --git a/internal/loomcli/doc.go b/internal/loomcli/doc.go
+index 8637d2cbd..8fde13fe9 100644
+--- a/internal/loomcli/doc.go
++++ b/internal/loomcli/doc.go
+@@ -175,7 +175,7 @@
+ //
+ // `lyx loom drive` is the hidden role verb that drives a go-seeded run, spawned by `lyx loom start`, by `lyx loom resume` for a halted go run and by a hand-over.
+ // It mounts `internal/sheddriver` with loom's seams, and serves darn runs as well as loom runs; the loop, rule table, hand-back and tackler below are that package's.
+-// It takes the run's driver lock without blocking and holds it for its whole life, so a settling driver reads as live while the run lock is free between steps, and a second driver refuses at once.
++// It takes the run's driver lock, waiting a short grace for a momentary probe to let go, and holds it for its whole life, so a settling driver reads as live while the run lock is free between steps, and a second driver refuses once the grace runs out.
+ // On start it removes the park marker and the resume report.
+ //
+ // The driver registers itself in the owner record under the run's slug with the role `driver`, before it takes the driver lock, and the run's step loop registers itself with the role `loop` once its pid file is written, through the loop's `OnStart` hook;
+diff --git a/internal/sheddriver/drive.go b/internal/sheddriver/drive.go
+index 212968f38..5b05c8427 100644
+--- a/internal/sheddriver/drive.go
++++ b/internal/sheddriver/drive.go
+@@ -369,7 +369,7 @@ type DriveLock struct {
+ }
+ 
+ // DriveVerb runs a driver under its driver lock and returns the exit code.
+-// It takes the lock without blocking and refuses at once when another driver holds it, so a second driver never stacks.
++// It waits lock.ProbeGrace for the lock and refuses when another driver still holds it, so a second driver never stacks and a momentary probe never refuses one.
+ // With the lock held it removes each stale file, ignoring an absent one, and calls run, handing it the release that lets a hand-over free the lock early.
+ // The lock is released exactly once, whether run released it early or not.
+ // run returns the fields of the success envelope; a recipe whose verb prints its own envelope reuses the lock handling.
+@@ -378,7 +378,7 @@ func DriveVerb(out io.Writer, driveLock DriveLock, run func(release func() error
+ 	if err := os.MkdirAll(filepath.Dir(driveLock.Path), 0o755); err != nil {
+ 		return output.Err(out, "sheddriver: drive: create the driver lock directory: "+err.Error()+transient)
+ 	}
+-	held, acquired, err := lock.TryAcquireWriteLock(driveLock.Path)
++	held, acquired, err := lock.AcquireWriteLockWithin(driveLock.Path, lock.ProbeGrace)
+ 	if err != nil {
+ 		return output.Err(out, "sheddriver: drive: take the driver lock: "+err.Error()+transient)
+ 	}
+diff --git a/internal/sheddriver/drive_test.go b/internal/sheddriver/drive_test.go
+index af32f602b..b30a091e0 100644
+--- a/internal/sheddriver/drive_test.go
++++ b/internal/sheddriver/drive_test.go
+@@ -822,7 +822,7 @@ func TestGoDriver_Settle(t *testing.T) {
+ 	}
+ }
+ 
+-// TestDriveVerb pins the driver lock around a driver: a held lock refuses at once with the recipe's refusal and touches nothing, a lock directory that cannot be created ends the recipe's retry clause, a free lock clears the stale files, runs once and prints the run's fields, and a run that released the lock early for a hand-over leaves it free with no double release.
++// TestDriveVerb pins the driver lock around a driver: a lock held past the grace refuses with the recipe's refusal and touches nothing, a lock released within the grace is taken, a lock directory that cannot be created ends the recipe's retry clause, a free lock clears the stale files, runs once and prints the run's fields, and a run that released the lock early for a hand-over leaves it free with no double release.
+ func TestDriveVerb(t *testing.T) {
+ 	t.Parallel()
+ 
+@@ -830,8 +830,10 @@ func TestDriveVerb(t *testing.T) {
+ 	const retryClause = "re-run the test verb"
+ 
+ 	tests := []struct {
+-		name         string
+-		holdLock     bool
++		name     string
++		holdLock bool
++		// holdBriefly releases the held lock shortly after the verb starts, as a momentary probe does.
++		holdBriefly  bool
+ 		blockLockDir bool
+ 		releaseEarly bool
+ 		wantCode     int
+@@ -841,6 +843,7 @@ func TestDriveVerb(t *testing.T) {
+ 		wantText  string
+ 	}{
+ 		{name: "a held lock refuses with the recipe's refusal, never runs and leaves the stale files", holdLock: true, wantCode: 1, wantRuns: 0, wantStale: true, wantText: refusal},
++		{name: "a lock released within the grace is taken and the driver runs", holdLock: true, holdBriefly: true, wantCode: 0, wantRuns: 1, wantText: `"drove":true`},
+ 		{name: "a lock directory that cannot be created ends in the retry clause", blockLockDir: true, wantCode: 1, wantRuns: 0, wantStale: true, wantText: "way forward: transient, " + retryClause},
+ 		{name: "a free lock removes the stale files, runs once, prints the run's fields and leaves the lock free", wantCode: 0, wantRuns: 1, wantText: `"drove":true`},
+ 		{name: "a run that released early for a hand-over leaves the lock free with no double release", releaseEarly: true, wantCode: 0, wantRuns: 1},
+@@ -872,6 +875,12 @@ func TestDriveVerb(t *testing.T) {
+ 					t.Fatalf("test could not take the driver lock: acquired %t, %v", acquired, err)
+ 				}
+ 				t.Cleanup(func() { _ = held.Release() })
++				if tt.holdBriefly {
++					go func() {
++						time.Sleep(20 * time.Millisecond)
++						_ = held.Release()
++					}()
++				}
+ 			}
+ 
+ 			runs := 0
