@@ -1,0 +1,12 @@
+verdict: hand-back
+reason: |
+  The Webster row is blocked at batch 06 (clone-records-marker-on-prime-weft).
+  Both ways forward are blocked: `lyx webster recover-batch 6` refuses with needs_fresh, and `lyx webster accept-audit --batch 6` refuses because the refscanner reads the `lyx gate test --card 6-...` commands and card 7's fork `git commit` as non-read-only fabric references (#874, false positives).
+  The refusal's only way forward is `lyx webster reset --to batch-start --batch 06`, which drops card 7's commit.
+  Re-launching or a `goto Webster` repeats the same refusal, so a plain resume does not settle it.
+  Clearing it means either a scope choice (drop card 7's commit by reset) or a code fix to the refscanner's `-weft` bare-word rule, and both are the run's parent's to make.
+  Evidence: stuck reason in the envelope `_lyx/shed/umbrella-anchor/drive-reports/drive-envelope-20261025-171201-bd7d.json` and trace `.lyx/shed/umbrella-anchor/steps/de325697c6a9a152.trace.log` lines 14 and 17, where the strand held and asked `ly:orch` for a decision.
+question: |
+  Batch 06 (clone-records-marker-on-prime-weft) is blocked: accept-audit refuses on refscanner false positives for the `-weft` bare word (#874), and recover-batch needs a fresh start.
+  Which do you want: (a) run `lyx webster reset --to batch-start --batch 06` and accept the loss of card 7's commit, then resume Webster; (b) fix the refscanner `-weft` bare-word rule (#874) first, then resume Webster with a `goto` to batch 06; or (c) write `outcome: stuck` for batch 06 and carry on with the batches that do not depend on it?
+  Batches 08, 11, 13, 15 and 18 depend on 06 and have not started.
