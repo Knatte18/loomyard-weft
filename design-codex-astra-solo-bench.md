@@ -1,6 +1,6 @@
 # Bench Codex Astra against solo Opus as a plan reviewer, four runs
 
-`codex-astra-solo-bench` · Task · feature, codex, burler
+`codex-astra-solo-bench` · Task · feature, codex, burler · running · Worktree-Create
 
 ## Goal (operator, 2026-10-25)
 
