@@ -972,7 +972,7 @@
       }
     }
   ],
-  "currentBatch": 0,
+  "currentBatch": 40,
   "masterStrand": "b72a3cc08101d22a4e8fe62d611ae08b",
   "masterSessionId": "6e5b1004-7b3f-4552-94de-e0b6630533f5",
   "masterEngine": "claude",
@@ -1435,6 +1435,26 @@
       "bracketTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-umbrella-daemon/6e5b1004-7b3f-4552-94de-e0b6630533f5/subagents/agent-a0550a6f8f9fa44ab.jsonl"
       ]
+    },
+    "40": {
+      "slug": "teardown-dobby-liveness",
+      "cards": [
+        "40-teardown-dobby-liveness",
+        "41-finalize-key-notice",
+        "42-orch-role-stencil"
+      ],
+      "cardHashes": {
+        "40-teardown-dobby-liveness": "59afae810c6ef5078dfade906853829f63464411d09e52c28e45308afc8caf00",
+        "41-finalize-key-notice": "21e9a6e51f7658c719ec5a22b9a60c0c04f1bf8420e5f893aaf56d4f566a785f",
+        "42-orch-role-stencil": "f6678fbe8da2a3e1edc9a013c9bd00b1a45e18388645d01c5e526d1b7c9e6b1a"
+      },
+      "startSha": "6026cac238e45cfc50a377b178c9be79272635fb",
+      "kind": "fork",
+      "spawnedAt": "2026-10-25T11:19:29Z",
+      "sessionId": "6e5b1004-7b3f-4552-94de-e0b6630533f5",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
     },
     "7": {
       "slug": "draft-writers",
