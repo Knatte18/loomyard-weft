@@ -1,6 +1,6 @@
 # An anchor per beam
 
-`umbrella-anchor` · Task · enhancement, fabric, config, workspaces · running · PR-Review
+`umbrella-anchor` · Task · enhancement, fabric, config, workspaces · running · Finalize
 
 ## Seen (2026-10-18)
 
