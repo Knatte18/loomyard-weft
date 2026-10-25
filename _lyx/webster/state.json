@@ -681,7 +681,7 @@
       }
     }
   ],
-  "currentBatch": 18,
+  "currentBatch": 0,
   "masterStrand": "ac2243e5870c8bfb94eaa402812b5721",
   "masterSessionId": "dde85386-5954-4b01-bdc1-fcf75b3d6577",
   "masterEngine": "claude",
@@ -846,8 +846,22 @@
       "spawnedAt": "2026-10-25T09:15:54Z",
       "sessionId": "dde85386-5954-4b01-bdc1-fcf75b3d6577",
       "engine": "claude",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "18-orch-stencils",
+        "status": "done",
+        "head_sha": "acbdc78b8c19c9e33a127859d11bc525775c8038"
+      },
+      "cardShas": [
+        "acbdc78b8c19c9e33a127859d11bc525775c8038"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-discussion-scope-in-lenses/dde85386-5954-4b01-bdc1-fcf75b3d6577/subagents/agent-a0c4f437925215173.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-discussion-scope-in-lenses/dde85386-5954-4b01-bdc1-fcf75b3d6577/subagents/agent-a0c4f437925215173.jsonl"
+      ]
     },
     "3": {
       "slug": "drop-parent-review-gate",
@@ -1006,6 +1020,7 @@
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-discussion-scope-in-lenses/dde85386-5954-4b01-bdc1-fcf75b3d6577/subagents/agent-aa8ce1dbcf80422ad.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-discussion-scope-in-lenses/dde85386-5954-4b01-bdc1-fcf75b3d6577/subagents/agent-a5f38a53d26b811c3.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-discussion-scope-in-lenses/dde85386-5954-4b01-bdc1-fcf75b3d6577/subagents/agent-adc8b562a0cc211eb.jsonl",
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-discussion-scope-in-lenses/dde85386-5954-4b01-bdc1-fcf75b3d6577/subagents/agent-a4f55745ee590d93b.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-discussion-scope-in-lenses/dde85386-5954-4b01-bdc1-fcf75b3d6577/subagents/agent-a4f55745ee590d93b.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-discussion-scope-in-lenses/dde85386-5954-4b01-bdc1-fcf75b3d6577/subagents/agent-a0c4f437925215173.jsonl"
   ]
 }
