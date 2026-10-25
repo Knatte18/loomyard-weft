@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-25 14:46 UTC; every age below is as of then.
+Rendered 2026-10-25 14:47 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -28,7 +28,7 @@ grouping
 
 | # | Member | Kind | Standing |
 | --- | --- | --- | --- |
-| T1 | **Regression as three Drift rows: Drift-Baseline after Discussion, Drift-Await before Webster, Drift-Verify after the Code perch** | Task | Discussion-Bouncer |
+| T1 | **Regression as three Drift rows: Drift-Baseline after Discussion, Drift-Await before Webster, Drift-Verify after the Code perch** | Task | awaiting · Discussion-Bouncer |
 | E28 | **A small public NUnit repo as sandbox hub for end-to-end C# runs** | Note | Note |
 
 ## Tasks (3)
@@ -41,7 +41,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T1 | **Regression as three Drift rows: Drift-Baseline after Discussion, Drift-Await before Webster, Drift-Verify after the Code perch**<br>• Support a hub regression tier that writes profiles on the parent before implementation and compares after, switchable per task for expected drift.<br>• `profile: light` | [`regression-baseline-verify`](design-regression-baseline-verify.md) | loom | Discussion-Bouncer | neve | 8d<br>55m | shed, webster, batten, config, dotnet |
+| T1 | **Regression as three Drift rows: Drift-Baseline after Discussion, Drift-Await before Webster, Drift-Verify after the Code perch**<br>• Support a hub regression tier that writes profiles on the parent before implementation and compares after, switchable per task for expected drift.<br>• `profile: light` | [`regression-baseline-verify`](design-regression-baseline-verify.md) | loom | awaiting · Discussion-Bouncer | neve | 8d<br>56m | shed, webster, batten, config, dotnet |
 | T3 | **An anchor per beam**<br>• Let each worktree carry its own anchor through a .lyx-anchor marker at its weft branch root, inherited by its tasks, with a verb that changes it<br>• `profile: solid` | [`umbrella-anchor`](design-umbrella-anchor.md) | loom | Plan-Burler-Fix | neve | 7d<br>2h | fabric, config, workspaces |
 
 ### Ready (1)
@@ -77,7 +77,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 
 | # | P | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| E1 |  | **Beam promote keeps the Discussion record as part of the beam**<br>• When Discussion finds a task should be a project, promote carries its decision record into the beam instead of dropping it | [`beam-promote-keeps-discussion`](design-beam-promote-keeps-discussion.md) | 1h<br>1h | workspaces, batten, loom |
+| E1 |  | **Beam promote keeps the Discussion record as part of the beam**<br>• When Discussion finds a task should be a project, promote carries its decision record into the beam instead of dropping it | [`beam-promote-keeps-discussion`](design-beam-promote-keeps-discussion.md) | 2h<br>2h | workspaces, batten, loom |
 | E2 |  | **Codex CLI as a second shuttle engine: codexengine**<br>• codexengine for single-session roles, built from the 2026-10-24 spike report and claudeengine list of needs | [`codex-engine`](design-codex-engine.md) | 3w<br>2h | shuttle, codex |
 | E3 |  | **PATTERN line cap counts the rule text only, not the name and link**<br>• MaxEntryLineChars counts the whole entry line, so the room left for the rule text shrinks with the entry name and link | [`pattern-line-cap-text-only`](design-pattern-line-cap-text-only.md) | 42m<br>42m | pattern |
 | E4 |  | **finalize: the discrepancy-document conflict shape**<br>• Divergences that cannot be a git conflict get a precomputed document for the resolving agent instead of markers | [`finalize-discrepancy-doc`](design-finalize-discrepancy-doc.md) | 3w<br>2w | fabric, loom |
@@ -91,7 +91,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | E19 |  | **Every remote operation runs async, and local-only fabric pairs stay an explicit choice only**<br>• Remote work goes async except the branch-exists check; batch pairs reach origin like any pair, and the local-only mode stays only as an explicit --local until a use is found or it is removed | [`fabric-remote-async`](design-fabric-remote-async.md) | 6d<br>6d | fabric, batten |
 | E20 |  | **Plan and Discussion fixers on Sonnet, once findings are concrete enough**<br>• Webster and Merge fixers are already Sonnet; Plan and Discussion fixers need concrete findings first | [`fixers-on-sonnet`](design-fixers-on-sonnet.md) | 2d<br>2d | burler, claude |
 | E27 | L | **Creel delivers agent mail in full at the receiver's next tool boundary**<br>• A reminder plus lyx creel read costs the receiver an extra turn per agent message | [`creel-carry-agent-mail`](design-creel-carry-agent-mail.md) | 2d<br>2h | creel |
-| E28 |  | **A small public NUnit repo as sandbox hub for end-to-end C# runs** | [`csharp-sandbox-hub`](design-csharp-sandbox-hub.md) | 3d<br>37m | dotnet |
+| E28 |  | **A small public NUnit repo as sandbox hub for end-to-end C# runs** | [`csharp-sandbox-hub`](design-csharp-sandbox-hub.md) | 3d<br>38m | dotnet |
 | E32 |  | **Move rules about lyx behaviour out of this repo's CLAUDE.md into lyx code, doc.go and stencils** | [`claude-md-lyx-rules-out`](design-claude-md-lyx-rules-out.md) | 3d<br>21h | stencil, board, loom |
 | E35 |  | **A landing fixer escalation goes to the arbiter before the orch**<br>• Merge-In and Finalize fixer escalate reports reach the arbiter first | [`landing-escalate-arbiter`](design-landing-escalate-arbiter.md) | 1d<br>2h | shed, loom |
 
