@@ -89,7 +89,7 @@ Detached capture: it starts at spawn on the spawn HEAD and records that commit; 
 This section replaces everything above it on how the regression runs: the stations, the compare perch, the Job-Start/Job-Join pair, the per-task `off`/`preserve`/`expect-drift` setting and the tier declaration.
 
 - Regression is not a test tier: no gate runs it, it is never narrowed or carried, it has two commands (capture and compare), and its outcome is a drift report for an agent, not pass or fail.
-  It gets its own config block in the module that owns the Drift rows: a hub flag turning it on, the capture command, the compare command, where the drift report goes, how a skip list of tests is passed in, and the models of its agents.
+  It gets its own config block in the module that owns the Drift rows: a hub flag turning it on, the capture command, the compare command, how a skip list of tests is passed in, and the models of its agents.
   Its commands still take a gate slot, so it never runs beside other heavy test runs.
 - Experience from Models: unwanted small drift is beyond Webster's Sonnet implementer; finding why takes a stronger agent with overview, tracing and logging and many varied test runs.
 - Discussion knows nothing of regression; its stencil stays the same for every hub.
@@ -101,7 +101,7 @@ Loom gets three rows, each a no-show that spawns nothing when the hub's flag is 
 2. `Drift-Await`, right before Webster: mechanical, no LLM; it waits until the capture is done, since no code may change before the baseline exists.
    Plan takes far longer than the regression suite, so it rarely waits.
    A capture in a separate checkout was rejected: a .NET build in a fresh worktree takes too long.
-3. `Drift-Verify`, after Webster and the Code perch, before Describe and Merge-In: runs the compare mechanically; when it passes, no LLM is spawned.
+3. `Drift-Verify`, after Webster and the Code perch, before Describe and Parent-Align: runs the compare mechanically; when it passes, no LLM is spawned.
    When it fails, it spawns one strong agent (Opus or stronger, a config setting) that, within a budget, judges which drift is acceptable against the task and `Drift-Baseline`'s expectation, finds the cause of the rest and fixes it until the compare passes; it writes its reasoning down and escalates to the orch when unsure or past its budget.
    One agent does both judging and fixing; it is no perch.
 
