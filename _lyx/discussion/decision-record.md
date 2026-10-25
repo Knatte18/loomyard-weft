@@ -312,6 +312,30 @@ Decision: Take round-4 finding F4's second option: in D4, once its owner pause s
 
 Rationale: Parent, 2026-10-25: an adopt landing in that window must not strand a run waiting on a manual step; one owner read after the pause closes the window.
 
+### Added after Discussion (parent, 2026-10-25): A records stop on a successful landing still notices the orch
+
+Decision: When a landing succeeds but the prime's records did not pull, batten still notices the orch with that records-stop line: it is not the dropped `landed` notice but a failure that leaves the prime's board behind and needs judgement, like the kept Land failure notices of D9. Cards 17 and 42 keep the line and its test row, and the Shared Decision in 00-overview.md cites this entry as its rationale.
+
+Rationale: Parent, 2026-10-25 (plan round-1 finding F6): a prime whose records did not pull is a stop someone must act on, even though the landing itself succeeded.
+
+### Added after Discussion (parent, 2026-10-25): A pause-honoured Land stop is a hand-back under D8
+
+Decision: A Land stop that honours a pause request is a hand-back under D8: the arbiter never relaunches over an operator's or tender's pause. Card 24 refuses a batten stop whose reason starts with `battenshed.PauseHonouredPrefix`, ending with `BattenHandBackWayForward`, with a `TestEligibility_BattenRule` row reaching it through `Check`.
+
+Rationale: Parent, 2026-10-25 (plan round-1 finding F9): a pause is the operator's brake and no automatic step may override it.
+
+### Added after Discussion (parent, 2026-10-25): Dobby's owner re-read uses the local Bolt, no pull
+
+Decision: Card 34 reads the slug's effective owner from the local Bolt, as the Added-after-Discussion D4 entry says; drop the per-tick pull seam and the unreachable-origin clause.
+
+Rationale: Parent, 2026-10-25 (plan round-1 finding F10): the adopt that closes this window runs on this machine and writes the local Bolt first, so a pull on every probe tick buys nothing.
+
+### Added after Discussion (parent, 2026-10-25): A failed prime claim in EnsureLive is reported and skipped
+
+Decision: Take plan round-1 finding F21 as written: in card 27, when the prime owner write fails, as with origin unreachable, EnsureLive reports it for the prime with its cause and `lyx beam start` as the re-run, starts no prime dobby, and goes on with the beams, as a batten resume's reconcileResume warns and goes on; add a TestEnsureLive row for it.
+
+Rationale: Parent, 2026-10-25: follows D2's 'as a batten resume does'.
+
 ## Constraints
 
 - `PATTERN-shed-driver`: the step loop stays in `internal/sheddriver`, and dobby calls no step body; it starts `lyx batten run` processes, registered in `internal/runproc` and logged through `internal/logger`, a yield at Debug.
