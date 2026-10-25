@@ -30,11 +30,11 @@ grouping
 | --- | --- | --- | --- |
 | E28 | **A small public NUnit repo as sandbox hub for end-to-end C# runs** | Note | Note |
 
-## Tasks (5)
+## Tasks (4)
 
 Concrete and claimable; only a task can run.
 
-### Running (3)
+### Running (2)
 
 Held by a run; its scope is locked until the run ends.
 
@@ -42,7 +42,6 @@ Held by a run; its scope is locked until the run ends.
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T1 | **The overview window becomes the beam window**<br>• Rename the overview window to beam: <slug>, with one dobby and one orch section, each run shown once | [`beam-overview-window`](design-beam-overview-window.md) | darn | Darn-Write | neve | 22m<br>22m | batten, orch, reed |
 | T3 | **An anchor per beam**<br>• Let each worktree carry its own anchor through a .lyx-anchor marker at its weft branch root, inherited by its tasks, with a verb that changes it<br>• `profile: solid` | [`umbrella-anchor`](design-umbrella-anchor.md) | loom | Webster | neve | 7d<br>6h | fabric, config, workspaces |
-| T5 | **Shortcuts are short forms only**<br>• Remove lyx attach, lyx pause, lyx resume and the top-level lyx start | [`shortcuts-short-only`](design-shortcuts-short-only.md) | darn | Finalize | neve | 22m<br>20m | shortcut, loom, reed |
 
 ### Ready (1)
 
@@ -58,7 +57,7 @@ Waits only on Running or Ready entries.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T4 | `draft` **Beams: one lyx beam start, machine ownership by project, and a beam's life as a pawl run**<br>• lyx beam start brings a beam up and resumes its orch; the overview window becomes beam: <slug>; projects, the root included, carry the owner machine and lyx adopt moves a project<br>• `profile: solid` | [`beam-start-and-ownership`](design-beam-start-and-ownership.md) | loom | `umbrella-anchor`, `beam-overview-window`, `shortcuts-short-only` | 3h<br>20m | orch, workspaces, batten, reed, board |
+| T4 | `draft` **Beams: one lyx beam start, machine ownership by project, and a beam's life as a pawl run**<br>• lyx beam start brings a beam up and resumes its orch; the overview window becomes beam: <slug>; projects, the root included, carry the owner machine and lyx adopt moves a project<br>• `profile: solid` | [`beam-start-and-ownership`](design-beam-start-and-ownership.md) | loom | `umbrella-anchor`, `beam-overview-window` | 3h<br>20m | orch, workspaces, batten, reed, board |
 
 ## Notes (43)
 
@@ -126,3 +125,11 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | R4 |  | **Lens overlap audit: which lenses find the same defects, and a smaller set**<br>• twill-plan 8 to 5 lenses recommended; twill-discussion 7 to 4 and review-code 4 to 3 at low confidence | [`lens-overlap-audit`](design-lens-overlap-audit.md) | 3d<br>2h | burler, loom |
 | R5 |  | **Trial: batcher profile wide (budget 300k)**<br>• Hub runs a new batcher profile wide, budget 300k; check cost and fork quality before taking it into the template | [`batch-budget-300k-trial`](design-batch-budget-300k-trial.md) | 3d<br>2h | webster |
 | R6 |  | **Plan writer cost: sub-planners per part, and twill versus a solo writer**<br>• The Plan writer is 18% of spend; sub-planners per part for large bundles, and a twill versus solo Opus high comparison on cost, rounds and time | [`plan-writer-context`](design-plan-writer-context.md) | 3d<br>2h | loom, stencil |
+
+## Done (1)
+
+Finished, awaiting `lyx board prune --apply`.
+
+| # | Entry | Slug | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- |
+| T5 | **Shortcuts are short forms only**<br>• Remove lyx attach, lyx pause, lyx resume and the top-level lyx start | [`shortcuts-short-only`](design-shortcuts-short-only.md) | 22m<br>20m | shortcut, loom, reed |

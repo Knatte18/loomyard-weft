@@ -1,6 +1,6 @@
 # Shortcuts are short forms only
 
-`shortcuts-short-only` · Task · enhancement, shortcut, loom, reed · running · Finalize
+`shortcuts-short-only` · Task · enhancement, shortcut, loom, reed · done
 
 ## Seen (operator, 2026-10-25)
 
