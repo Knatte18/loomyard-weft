@@ -1,0 +1,1192 @@
+diff --git a/README.md b/README.md
+index 871432824..be3354b18 100644
+--- a/README.md
++++ b/README.md
+@@ -84,7 +84,7 @@ what calls it is a choice of driver.
+   This is the primitive every driver is built on.
+ - **the loom driver** — a Claude Code session launched from the driver stencil (`contracts/stencils/shed/shed-template-driver.md`) that drives a run by repeated `lyx shed step`, reads each envelope and trace, repairs what it can, re-steps after a transient failure, and escalates what it cannot.
+   It carries no phase knowledge: which recipe runs is a property of the run's seed alone.
+-  `lyx loom start` (alias `lyx start`) bootstraps a task worktree and launches its driver session.
++  `lyx loom start` bootstraps a task worktree and launches its driver session.
+ - **`lyx batten`** — drives a task worktree's whole lifecycle from the hub's main worktree as one run of its own: create the worktree pair, seed the task's run, watch it to a terminal state, land it into the prime, tear the pair down.
+ - **`lyx orch`** — hosts the hub orchestrator: one long-lived Claude session that dispatches and supervises runs.
+   A detached watcher reads its context usage after each turn;
+@@ -206,7 +206,7 @@ Commands print a JSON envelope: `{"ok":true, ...}` or `{"ok":false,"error":"..."
+ go build ./cmd/lyx                                              # build the binary
+ lyx fabric clone --shortname <shortname> <records-url> <code-url>  # create a hub: both repos, wiring, config, board
+ lyx fabric add <slug>                                           # a task worktree pair
+-cd <hub>/<slug> && lyx start                                    # bootstrap the task; "lyx reed attach" shows its session
++cd <hub>/<slug> && lyx loom start                               # bootstrap the task; "lyx reed attach" shows its session
+ ```
+ 
+ `./update-plugins.sh` (`update-plugins.cmd` on Windows) is the only route to production: from a clean tree pushed to `origin/main`, it installs the plugins and builds `lyx` into the Go bin dir.
+diff --git a/cmd/lyx/clitree_test.go b/cmd/lyx/clitree_test.go
+index d53bc21f4..b937131c6 100644
+--- a/cmd/lyx/clitree_test.go
++++ b/cmd/lyx/clitree_test.go
+@@ -153,11 +153,11 @@ func TestCLITree_EveryCommand(t *testing.T) {
+ 		}
+ 	})
+ 
+-	// The root alias for loom's bootstrap verb is named "start"; a surviving "run" child would mean the retired alias is still registered.
+-	t.Run("root carries no bare run child", func(t *testing.T) {
++	// Loom's bootstrap verb lives only under loom; a bare "run" or "start" child would mean a retired root alias is still registered.
++	t.Run("root carries no bare alias of loom's bootstrap verb", func(t *testing.T) {
+ 		for _, child := range root.Commands() {
+-			if child.Name() == "run" {
+-				t.Errorf("newRoot() root tree carries a bare child command named %q; the retired root alias must not survive the rename", child.Name())
++			if child.Name() == "run" || child.Name() == "start" {
++				t.Errorf("newRoot() root tree carries a bare child command named %q; run it as lyx loom start", child.Name())
+ 			}
+ 		}
+ 	})
+diff --git a/cmd/lyx/main.go b/cmd/lyx/main.go
+index 29ede4a3e..81967322f 100644
+--- a/cmd/lyx/main.go
++++ b/cmd/lyx/main.go
+@@ -128,7 +128,7 @@ all modules are discoverable via "lyx --help" and every subcommand carries
+ its own --help and --json help output; --json prints the help as JSON and
+ never runs the command.
+ 
+-Available modules: board, config, ide, reed, fabric, selfreport, shuttle, burler, webster, stencil, loom, start, quarry, batten, shed, orch, cleanup, adopt, beam, report, tender, hibernate, drift, gate, creel, help.
++Available modules: board, config, ide, reed, fabric, selfreport, shuttle, burler, webster, stencil, loom, quarry, batten, shed, orch, cleanup, adopt, beam, report, tender, hibernate, drift, gate, creel, help.
+ Shortcuts, declared in internal/shortcutcli's embedded file, are listed under their own heading in lyx --help.`,
+ 		SilenceUsage:  true,
+ 		SilenceErrors: true,
+@@ -182,11 +182,6 @@ Shortcuts, declared in internal/shortcutcli's embedded file, are listed under th
+ 		adoptcli.Command(),
+ 		beamcli.Command(),
+ 		reportcli.Command(),
+-		// StartAliasCommand registers the same "start" verb as loomcli.Command()'s
+-		// subtree already carries, a second time, as a bare root child rather
+-		// than spliced into the argument vector, so it is discoverable in help
+-		// and covered by the help-tree and registration guards.
+-		loomcli.StartAliasCommand(),
+ 		tendercli.Command(),
+ 		hibernatecli.Command(),
+ 		driftcli.Command(),
+diff --git a/cmd/lyx/sandbox_coverage_test.go b/cmd/lyx/sandbox_coverage_test.go
+index 69e35f4db..a88749e89 100644
+--- a/cmd/lyx/sandbox_coverage_test.go
++++ b/cmd/lyx/sandbox_coverage_test.go
+@@ -38,10 +38,6 @@ var excludedModules = []scankit.Entry{
+ 		Key: "selfreport",
+ 		Why: "create files a real GitHub issue",
+ 	},
+-	{
+-		Key: "start",
+-		Why: "alias of loom's own bootstrap verb; covered by the loom module's scenario",
+-	},
+ 	{
+ 		Key: "shed",
+ 		Why: "armed re-exposure of loom's and batten's own verbs; covered by those two modules' own scenarios",
+diff --git a/cmd/lyx/shortcuts_test.go b/cmd/lyx/shortcuts_test.go
+index f484526d5..592bd5efc 100644
+--- a/cmd/lyx/shortcuts_test.go
++++ b/cmd/lyx/shortcuts_test.go
+@@ -111,9 +111,9 @@ func TestShortcuts_FileAndRootListing(t *testing.T) {
+ 	if code := run([]string{"--help"}, &help); code != 0 {
+ 		t.Fatalf("run(--help) = %d, output:\n%s", code, help.String())
+ 	}
+-	heading, attach, prime, additional := strings.Index(help.String(), "Shortcuts:"), strings.Index(help.String(), "\n  attach "), strings.Index(help.String(), "\n  prime "), strings.Index(help.String(), "Additional Commands:")
++	heading, attach, prime, additional := strings.Index(help.String(), "Shortcuts:"), strings.Index(help.String(), "\n  a "), strings.Index(help.String(), "\n  prime "), strings.Index(help.String(), "Additional Commands:")
+ 	if heading < 0 || attach < heading || prime < attach || additional < prime {
+-		t.Errorf("lyx --help lacks the Shortcuts: heading with attach and prime before Additional Commands:\n%s", help.String())
++		t.Errorf("lyx --help lacks the Shortcuts: heading with a and prime before Additional Commands:\n%s", help.String())
+ 	}
+ 
+ 	var index strings.Builder
+@@ -122,9 +122,7 @@ func TestShortcuts_FileAndRootListing(t *testing.T) {
+ 	}
+ 	for _, line := range []string{
+ 		"- `prime [<args>...]`: shortcut: lyx orch start, then lyx reed attach",
+-		"- `attach [<args>...]`: shortcut: lyx reed attach",
+-		"- `pause [<args>...]`: shortcut: lyx tender pause",
+-		"- `resume [<args>...]`: shortcut: lyx tender resume",
++		"- `a [<args>...]`: shortcut: lyx reed attach",
+ 		"- `p [<args>...]`: shortcut: lyx tender pause",
+ 		"- `r [<args>...]`: shortcut: lyx tender resume",
+ 	} {
+diff --git a/docs/overview.md b/docs/overview.md
+index 1db407d81..b065cc28c 100644
+--- a/docs/overview.md
++++ b/docs/overview.md
+@@ -30,8 +30,6 @@ Three distinct names for three layers, deliberately non-overlapping to avoid the
+ **Never name skills `lyx-*` or `loom-*`** — skills are `ly-*`, distinct from both the binary (`lyx`) and every module (`loom`, `burler`, …), so no name is shared between a skill and a script/module (the ambiguity that forced the millhouse `mill` → `millpy` rename).
+ Internal Go feature packages follow the `<module>cli` / `<module>engine` split (e.g. `internal/boardcli` + `internal/boardengine`, `internal/fabriccli` + `internal/fabricengine`) — see the package-naming rule in [PATTERN-cli-cobra](../pattern/PATTERN-cli-cobra.md).
+ 
+-Convenience alias: **`lyx start` → `lyx loom start`** (the everyday autonomous call).
+-
+ ## Principles
+ 
+ 1. **Toolkit-first.**
+@@ -234,7 +232,7 @@ github.com/Knatte18/loomyard/
+ ├── internal/fabricengine/        the fabric domain kernel
+ ├── internal/gatecli/             the gate CLI command (`lyx gate test`, the tier runner: the hub's test tiers over a scope, slotted, bounded, counted and logged; `lyx gate status`, the holders of the hub's gate slots; `lyx gate report`, the machine's run records totalled per slug and gate key)
+ ├── internal/helpcli/             the help CLI command (`lyx help [<command>...]`, `lyx help index`)
+-├── internal/shortcutcli/         the top-level operator shortcuts (`lyx a`, `lyx attach`, `lyx prime`, `lyx pause`, `lyx p`, `lyx resume`, `lyx r`) from one embedded file
++├── internal/shortcutcli/         the top-level operator shortcuts (`lyx a`, `lyx prime`, `lyx p`, `lyx r`) from one embedded file
+ ├── internal/idecli/              the ide CLI command
+ ├── internal/ideengine/           the ide domain kernel
+ ├── internal/pairteardown/        the one sequence that ends a pair: quiet wait or the skip's run-lock wait, refusal probe, owned-process end, loop and reed session end, then fabric removal
+@@ -426,7 +424,7 @@ User-facing modules each get one `lyx <module>` namespace:
+ - **planglyph** — the sole owner of every `quarry.Repo` call (`Open`, `Resolve`, `EncloseAt`, `DeltaGit`) and of the package-level `quarry.Name`, plus the resolve-backed validation pass layered on top of `planparser`'s pure checks: `planglyph.ValidateFormat`/`Validate` call `planparser.ValidateFormat`/`Validate` and append only resolve findings, composing rather than reimplementing (`internal/planglyph`). ✅ Implemented.
+ - **planindex** — the cgo-free seam over `planglyph`: the plan gates' finding types, `ErrQuarryUnavailable` and the `Index` and `Delta` interfaces a package receives instead of importing the package that links tree-sitter (`internal/planindex`). ✅ Implemented.
+ - **help** — cobra's help command, replaced: `lyx help [<command>...]` prints a command's help and refuses a word that names no subcommand, and `lyx help index [--audience <audience>]` prints a generated one-line-per-command index of the running binary, filtered by the `audience` annotation every invocable command carries (`internal/helpcli`; the renderer is `clihelp.RenderIndex`). ✅ Implemented. See the `internal/helpcli` package documentation.
+-- **shortcuts** — `lyx attach` and `lyx a` (both `lyx reed attach`), `lyx prime` (`lyx orch start`, then `lyx reed attach`), `lyx pause` and `lyx p` (both `lyx tender pause`), and `lyx resume` and `lyx r` (both `lyx tender resume`) are top-level operator shortcuts declared in `internal/shortcutcli/shortcuts.yaml`, embedded in the binary and added only by a commit to that file; global verbosity flags reach every expanded command and other words the last; they are not modules. See the `internal/shortcutcli` package documentation.
++- **shortcuts** — `lyx a` (`lyx reed attach`), `lyx prime` (`lyx orch start`, then `lyx reed attach`), `lyx p` (`lyx tender pause`) and `lyx r` (`lyx tender resume`) are top-level operator shortcuts declared in `internal/shortcutcli/shortcuts.yaml`, embedded in the binary and added only by a commit to that file; global verbosity flags reach every expanded command and other words the last; they are not modules. See the `internal/shortcutcli` package documentation.
+ - **cleanup** — the routine cleanups of the hub prime's leftover state, as one verb (`internal/cleanupcli`; `lyx cleanup [--apply]`, from the prime and from any beam).
+   Without `--apply` it is a dry run that lists, per segment, what `--apply` would remove.
+   The segments run in order and each calls its owner's own cleanup in-process: `lyx batten cleanup`, `lyx board prune`, `lyx orch cleanup`, the prime's `.scratch/` children older than 14 days that no open board entry cites, logger's trace retention sweep, and the temp root's sweep of dead owners' run directories.
+@@ -451,7 +449,7 @@ User-facing modules each get one `lyx <module>` namespace:
+   The timing report says where run time went, per run, per phase and per day or week, with machine sleep, waits and the time a run stood paused apart, and who settled each stop.
+   Both cover loom and darn runs, each tagged with its recipe, and read records lyx already writes.
+   ✅ Implemented. See the `internal/reportengine` package documentation.
+-- **tender** — the one ordered pause that makes the hub safe to suspend within seconds (`internal/tendercli` + `internal/tenderengine`; `lyx tender pause [<slug>] [--grace <seconds>]`, `lyx tender resume [<slug>]`, `lyx tender revive [<slug>]`, `lyx tender status` and `lyx tender reap`, from any worktree of the hub; `lyx pause` and `lyx p`, and `lyx resume` and `lyx r`, are shortcuts for the first two verbs).
++- **tender** — the one ordered pause that makes the hub safe to suspend within seconds (`internal/tendercli` + `internal/tenderengine`; `lyx tender pause [<slug>] [--grace <seconds>]`, `lyx tender resume [<slug>]`, `lyx tender revive [<slug>]`, `lyx tender status` and `lyx tender reap`, from any worktree of the hub; `lyx p` and `lyx r` are shortcuts for the first two verbs).
+   `lyx tender pause` records an entry, waits a short grace for busy agent sessions and network operations to finish, interrupts every covered session still in a running turn with Esc and holds every path that would start agent or network work; the orchestrator is interrupted by its own watcher at the grace end.
+   `lyx tender resume` lifts the entry and gives each interrupted session one line to carry on.
+   `lyx tender revive [<slug>]` gives one fixed carry-on line to each session stalled on an API error, and the orch a checked creel inject, reported with its id; each send runs under the pause record's write lock, one at a time, so it types only while the session still reads stalled, sends no key and kills nothing.
+@@ -490,7 +488,7 @@ User-facing modules each get one `lyx <module>` namespace:
+   Consumed by `internal/landingshed`'s `Finalize`, by `internal/websterengine`, by the `description` gate on loom's `Describe` row, and by the `lyx loom validate-description` verb (`internal/summaryparser`). ✅ Implemented.
+ - **batcher** — the batchifier registry that groups a plan's flat card list into webster's execution batches, through named profiles in `batcher.yaml` picked by its `active:` key (template default: the `cautious` profile, the cost batchifier; an empty value resolves to identity, one card per batch); its own standalone configreg module, separate from webster's (`internal/batcher`). ✅ Implemented.
+ - **stencil** — the operator surface over the hub's producer-prompt stencils (`internal/stencilcli` + `internal/stencilstore`; `lyx stencil list|validate|diff|sync|promote`): `list` reports every registered stencil's board-copy path and edit state, `validate` reports marker mismatches between a board copy and its shipped default, `diff` shows upstream changes not yet taken or (`--all`/`--exit-code`) board edits not yet ported back, `sync` force-refreshes every stencil against the shipped registry even from a `-dev` or unstamped build, committing under its own `lyx: sync <subtree> (...)` subject, and `promote` copies a board-copy edit back into the worktree's `contracts/stencils/` source tree. The port-back drift warning classifies a differing board copy five ways (hand-edited, source-ahead, both, neither, behind) and names the matching remedy: `promote` for a hand edit, a production deploy for a source-ahead copy, a manual reconcile for both, `lyx stencil sync` for neither, and syncing the worktree with main for behind, a worktree whose HEAD lacks the binary's build commit. `list` and `sync` also cover the deployed `contracts/specs` registry; `validate`, `diff`, and `promote` do not — a spec declares no markers for `validate` to compare, and `diff`/`promote` both need the worktree source directory a deployed spec deliberately does not have. The root pre-run seeds both subtrees only when a write is due: a board copy moves forward only, by the build ancestry or commit time recorded in its banner (the writer keys), and only from a clean, stamped production binary, while an unstamped or dev build seeds an absent file and warns instead of refreshing. A due write pulls Bolt first and writes nothing when Bolt cannot be brought up to date; each seed commit is labelled `lyx: seed <subtree> (<revision> <channel> <executable>)` with the binary that made it, and a seed commit that conflicts at push is dropped and regenerated. ✅ Implemented.
+-- **loom** — phased orchestrator: drives its flat, ordered producer list (`contracts/recipes/loom-recipe.yaml`, assembled by `internal/loomrecipe`), each gated by a `Bouncer` review segment (`internal/loomcli` + `internal/loomengine` + `internal/loomshed` + `internal/loomrecipe` + `internal/shedverbs`; `lyx loom start|resume|run|step|status|pause|commit-records|validate-discussion|validate-plan|insert-card|remove-card|restore-renumber|validate-description|lint-comments|lint-pattern|fmt|circling accept|continue|decision add|peers|peers show`, plus the `start` verb registered a second time as the bare root alias `lyx start`).
++- **loom** — phased orchestrator: drives its flat, ordered producer list (`contracts/recipes/loom-recipe.yaml`, assembled by `internal/loomrecipe`), each gated by a `Bouncer` review segment (`internal/loomcli` + `internal/loomengine` + `internal/loomshed` + `internal/loomrecipe` + `internal/shedverbs`; `lyx loom start|resume|run|step|status|pause|commit-records|validate-discussion|validate-plan|insert-card|remove-card|restore-renumber|validate-description|lint-comments|lint-pattern|fmt|circling accept|continue|decision add|peers|peers show`).
+   `internal/shedverbs` owns the generic `run`/`step`/`status`/`pause` verb bodies loomcli arms; `internal/loomcli` hosts only `start` and the arming glue.
+   `insert-card`, `remove-card` and `restore-renumber` are the plan-editing verbs: they add or drop one card and renumber the cards after it through `internal/planparser` under a journal that makes an interrupted call restorable, refuse a position at or before the last card webster has begun, and hold webster's state-mutation lease while they run.
+   A second embedded recipe, `contracts/recipes/darn-recipe.yaml`, drives a darn run: one gated `Darn-Write` writer that writes and validates the decision record first and, once its `discussion` gate passes, commits it, then reads the board entry, edits, tests and commits, after a `Drift-Baseline` row that records the regression scope and captures the baseline and before a `Drift-Verify` row that compares the writer's code with it, then the `Code-Review` perch (`Code-Bouncer`, `Code-Burler-Review` and `Code-Burler-Fix`) reviews the committed diff and carries its open findings into the record, then `Describe` rewrites the change description from the final diff, then PR-Review and Finalize, with no discussion, plan, webster or Parent-Align rows.
+@@ -524,7 +522,7 @@ User-facing modules each get one `lyx <module>` namespace:
+   A routed `stuck` reads as `bounced to <row>` in `activity.last`.
+   The run directory is named by the worktree slug (`_lyx/shed/<slug>/`), with `self` kept as an alias that resolves to it,
+   and a legacy `_lyx/shed/self/` still resolves.
+-  `pause` records a `--before` or `--after` condition and refuses bare, naming `lyx pause` for stopping the agents.
++  `pause` records a `--before` or `--after` condition and refuses bare, naming `lyx tender pause` for stopping the agents.
+   `validate-discussion` runs the same checks Discussion-Write's and Discussion-Burler-Fix's own gates run, standalone, exiting 0 on a clean gate and 1 otherwise, with findings in the failure envelope so a writer agent can self-check before handing off.
+   A loom run also checks the relevant list when it exists; a darn run never reads it.
+   On a darn run the verb also checks the record's history for dropped `Added after Discussion` entries and commits the decision record and support log on a clean run.
+@@ -757,7 +755,7 @@ See [PATTERN-cwd-resolution](../pattern/PATTERN-cwd-resolution.md) for the rule.
+ - **provider-invariant** — `shuttle` runs Claude today through an **engine**;
+   the verdict/output contract is provider-invariant, so a different model can be swapped in without touching the review machinery.
+   Non-Claude is not a current priority.
+-- **the bootstrap** — `lyx loom start` (alias `lyx start`) brings up the worktree's tmux session, on either driver keeps or adds the `lyx loom checklist` status strand, the session's overview window, one frame of the recipe's rows in order with their visit lines under them and then the state and wait lines (replaced in its slot when the live one was launched from a different `lyx` build), spawns the per-hub watchdog daemon (best-effort), and spawns the driver the run's own seed selects: the Go driver **detached** (via `proc`, no TTY), or a Claude strand running the loom driver in this same reed session for the `llm` driver.
++- **the bootstrap** — `lyx loom start` brings up the worktree's tmux session, on either driver keeps or adds the `lyx loom checklist` status strand, the session's overview window, one frame of the recipe's rows in order with their visit lines under them and then the state and wait lines (replaced in its slot when the live one was launched from a different `lyx` build), spawns the per-hub watchdog daemon (best-effort), and spawns the driver the run's own seed selects: the Go driver **detached** (via `proc`, no TTY), or a Claude strand running the loom driver in this same reed session for the `llm` driver.
+   When the `llm` driver is live and parked at a hand-back, it spawns nothing and instead types one resume line into that driver's pane.
+   It then returns the success envelope and never attaches or switches a tmux client; `lyx reed attach` shows the session.
+   Selvage is the operator's terminal, not a strand.
+diff --git a/docs/skills.md b/docs/skills.md
+index f2f9889f3..59528aebb 100644
+--- a/docs/skills.md
++++ b/docs/skills.md
+@@ -163,7 +163,7 @@ shares the burler round discipline).
+ | mill:mill-merge-in | loom / fabric merge (conflict → `ly-git-resolve`) |
+ | mill:mill-cleanup | `lyx fabric cleanup` |
+ | mill:mill-abandon | `lyx loom abandon` |
+-| mill:mill-pause | `lyx pause <slug>` |
++| mill:mill-pause | `lyx tender pause <slug>` |
+ | mill:mill-resume | loom resume + fabric-sync + session-sync |
+ | mill:mill-status | `lyx loom status` |
+ | mill:mill-inspect | `lyx board` / `lyx loom status` |
+diff --git a/internal/adoptcli/adopt.go b/internal/adoptcli/adopt.go
+index b14d49ecd..06d7161a1 100644
+--- a/internal/adoptcli/adopt.go
++++ b/internal/adoptcli/adopt.go
+@@ -261,7 +261,7 @@ func namedEntries(owners boardengine.Owners, req request) (slugs []string, prime
+ 		case !entry.IsTask && !entry.IsProject:
+ 			return nil, false, fmt.Errorf("lyx adopt: %q is a note, not a task: `lyx board promote %s` makes it a task first", slug, slug)
+ 		case entry.Done:
+-			return nil, false, fmt.Errorf("lyx adopt: %q is done and already landed, so there is nothing to adopt: `lyx resume %s` lets a run that landed there go on to Land under its owner pause", slug, slug)
++			return nil, false, fmt.Errorf("lyx adopt: %q is done and already landed, so there is nothing to adopt: `lyx tender resume %s` lets a run that landed there go on to Land under its owner pause", slug, slug)
+ 		case entry.IsProject && !entry.Beam:
+ 			return nil, false, fmt.Errorf("lyx adopt: %q is a grouping project, not a beam, so there is no pair to take over: `lyx beam create %s` makes it a beam", slug, slug)
+ 		}
+@@ -465,9 +465,9 @@ func liftOwnerPauses(deps adoptDeps, out *slugOutcome) error {
+ 	}
+ 	if entry, covered := record.Covering(out.Slug); covered {
+ 		if entry.Scope == pauserecord.ScopeHub {
+-			out.PauseStanding = "a hub pause covers it: `lyx resume` lifts it"
++			out.PauseStanding = "a hub pause covers it: `lyx tender resume` lifts it"
+ 		} else {
+-			out.PauseStanding = fmt.Sprintf("a pause of its own scope by %s covers it: `lyx resume %s` lifts it", entry.Caller, out.Slug)
++			out.PauseStanding = fmt.Sprintf("a pause of its own scope by %s covers it: `lyx tender resume %s` lifts it", entry.Caller, out.Slug)
+ 		}
+ 	}
+ 	return nil
+diff --git a/internal/adoptcli/adopt_test.go b/internal/adoptcli/adopt_test.go
+index bc800c341..a21e7fc39 100644
+--- a/internal/adoptcli/adopt_test.go
++++ b/internal/adoptcli/adopt_test.go
+@@ -235,7 +235,7 @@ func TestAdopt(t *testing.T) {
+ 			}
+ 		}},
+ 		{name: "RefusesNote", req: request{Slugs: []string{"note1"}}, wantErr: "lyx board promote"},
+-		{name: "RefusesDoneTaskNamingResume", req: request{Slugs: []string{"done1"}}, wantErr: "lyx resume done1"},
++		{name: "RefusesDoneTaskNamingResume", req: request{Slugs: []string{"done1"}}, wantErr: "lyx tender resume done1"},
+ 		{name: "RefusesKeepWithDrop", req: request{Slugs: []string{"alpha"}, KeepLocal: true, DropLocal: true}, wantErr: "pass one of them"},
+ 		{name: "RefusesNoSlugWithoutPrimeOrAll", req: request{}, wantErr: "--prime or --all"},
+ 		{name: "UnreachableOriginRefusesNamingTheRerun", req: request{Slugs: []string{"alpha"}}, setup: func(w *world) { w.report.Unreachable = true }, wantErr: "once origin answers", check: func(t *testing.T, w *world, _ outcome) {
+@@ -360,15 +360,15 @@ func TestAdopt(t *testing.T) {
+ 			if !alpha.PauseLifted || alpha.PauseStanding != "" {
+ 				t.Errorf("alpha = %+v, want its pause lifted and none standing", alpha)
+ 			}
+-			if !beta.PauseLifted || !strings.Contains(beta.PauseStanding, "lyx resume beta") {
+-				t.Errorf("beta = %+v, want the owner pause lifted and the unlabelled one named with lyx resume beta", beta)
++			if !beta.PauseLifted || !strings.Contains(beta.PauseStanding, "lyx tender resume beta") {
++				t.Errorf("beta = %+v, want the owner pause lifted and the unlabelled one named with lyx tender resume beta", beta)
+ 			}
+ 		}},
+ 		{name: "HubPauseStandingIsNamedWithBareResume", req: request{Slugs: []string{"alpha"}}, setup: func(w *world) {
+ 			w.record.Live = []pauserecord.Entry{{Scope: pauserecord.ScopeHub, Caller: "operator"}}
+ 		}, check: func(t *testing.T, _ *world, got outcome) {
+-			if standing := slugOf(t, got, "alpha").PauseStanding; !strings.Contains(standing, "`lyx resume`") {
+-				t.Errorf("pause standing = %q, want the hub pause named with lyx resume", standing)
++			if standing := slugOf(t, got, "alpha").PauseStanding; !strings.Contains(standing, "`lyx tender resume`") {
++				t.Errorf("pause standing = %q, want the hub pause named with lyx tender resume", standing)
+ 			}
+ 		}},
+ 		{name: "ResumesEachRunOnceAndReportsAFailureBesideTheNext", req: request{Slugs: []string{"alpha", "beta"}}, setup: func(w *world) { w.resumeErr["alpha"] = errors.New("window failed") }, check: func(t *testing.T, w *world, got outcome) {
+diff --git a/internal/adoptcli/doc.go b/internal/adoptcli/doc.go
+index cb1abdf7d..b6094debb 100644
+--- a/internal/adoptcli/doc.go
++++ b/internal/adoptcli/doc.go
+@@ -6,7 +6,7 @@
+ // It runs from the hub's prime and from any beam, by `battencli.ResolveBattenPrime`, and acts on the prime's location in both.
+ // `request` holds the slugs, `Prime`, `All`, `KeepLocal` and `DropLocal`; `adoptDeps` holds every step's seam, which `hubDeps` fills over the hub and `TestAdopt` fakes.
+ //
+-// Before anything runs, `adopt` reads the local Bolt and refuses an unknown slug (naming `lyx board list`), a note (naming `lyx board promote`), a done task (naming that it already landed, and `lyx resume <slug>` to let a run that landed there go on to Land under its owner pause), `--keep-local` with `--drop-local`, and no slug without `--prime` or `--all`.
++// Before anything runs, `adopt` reads the local Bolt and refuses an unknown slug (naming `lyx board list`), a note (naming `lyx board promote`), a done task (naming that it already landed, and `lyx tender resume <slug>` to let a run that landed there go on to Land under its owner pause), `--keep-local` with `--drop-local`, and no slug without `--prime` or `--all`.
+ // `--all` names the prime, every task that is not done and has an owner or a run status, and every beam project (a project entry whose `beam` is true) that is not done and has an owner, passing over a done entry.
+ //
+ // A beam project is admitted as a started task is: adopt takes over its owner and adds its pair when its branches are on origin.
+@@ -53,7 +53,7 @@
+ // # Steps 4 and 5: the pause and the run
+ //
+ // Step 4 lifts, through `tenderengine.Lift`, each live entry carrying `pauserecord.OwnerCaller` whose scope is an adopted slug, by its scope, caller and pause time.
+-// A slug still covered by another entry gets an envelope line naming it and `lyx resume <slug>` for an entry of its own scope or `lyx resume` for a hub entry.
++// A slug still covered by another entry gets an envelope line naming it and `lyx tender resume <slug>` for an entry of its own scope or `lyx tender resume` for a hub entry.
+ //
+ // Step 5 resumes each adopted task whose batten run record is not done as a detached first pass through `battencli.StartFirstPass`, driven on by the parent's dobby, so the run's own driver lock refuses a second driver.
+ // A resume failure is the slug's error and the other slugs go on; a task with no run record gets its owner and no run.
+diff --git a/internal/battencli/arm.go b/internal/battencli/arm.go
+index c6be490f8..fb2f61451 100644
+--- a/internal/battencli/arm.go
++++ b/internal/battencli/arm.go
+@@ -661,7 +661,7 @@ func (c *battenCLI) refuseContinuePass() error {
+ 	return nil
+ }
+ 
+-// refuseCovered returns the refusal naming "lyx resume" when a live pause entry covers this run's slug, and nil otherwise.
++// refuseCovered returns the refusal naming "lyx tender resume" when a live pause entry covers this run's slug, and nil otherwise.
+ // A geometry or record that cannot be read refuses nothing and logs one Warn, so a corrupt file never blocks a run.
+ func (c *battenCLI) refuseCovered() error {
+ 	geometry, err := hubgeom.PauseGeometry(c.location)
+diff --git a/internal/battencli/cli_test.go b/internal/battencli/cli_test.go
+index bc5ebab7f..b70f77e28 100644
+--- a/internal/battencli/cli_test.go
++++ b/internal/battencli/cli_test.go
+@@ -257,7 +257,7 @@ func TestStartFirstPass(t *testing.T) {
+ 		{
+ 			name:        "CoveredSlugIsRefusedBeforeAnythingStarts",
+ 			pauseCovers: true,
+-			wantRefusal: []string{"lyx resume"},
++			wantRefusal: []string{"lyx tender resume"},
+ 		},
+ 	}
+ 	for _, tt := range tests {
+diff --git a/internal/battencli/pausehold_test.go b/internal/battencli/pausehold_test.go
+index 9605b3cbf..dfe062727 100644
+--- a/internal/battencli/pausehold_test.go
++++ b/internal/battencli/pausehold_test.go
+@@ -23,7 +23,7 @@ import (
+ )
+ 
+ // TestBattenRun_RefusesWhileAPauseCoversTheSlug runs the run verb's driveRun over a prime whose record holds a live entry:
+-// an entry covering the slug refuses naming `lyx resume <slug>` with nothing seeded, the run verb exiting with the covered code, and an entry for another slug seeds as before.
++// an entry covering the slug refuses naming `lyx tender resume <slug>` with nothing seeded, the run verb exiting with the covered code, and an entry for another slug seeds as before.
+ func TestBattenRun_RefusesWhileAPauseCoversTheSlug(t *testing.T) {
+ 	t.Parallel()
+ 
+@@ -69,8 +69,8 @@ func TestBattenRun_RefusesWhileAPauseCoversTheSlug(t *testing.T) {
+ 				}
+ 				return
+ 			}
+-			if driveExit != dobbyengine.PassExitCovered || !strings.Contains(driveOut.String(), "lyx resume") {
+-				t.Errorf("run exit = %d, output %q; want exit %d and a refusal naming %q", driveExit, driveOut.String(), dobbyengine.PassExitCovered, "lyx resume")
++			if driveExit != dobbyengine.PassExitCovered || !strings.Contains(driveOut.String(), "lyx tender resume") {
++				t.Errorf("run exit = %d, output %q; want exit %d and a refusal naming %q", driveExit, driveOut.String(), dobbyengine.PassExitCovered, "lyx tender resume")
+ 			}
+ 			if !os.IsNotExist(statErr) {
+ 				t.Errorf("status file stat = %v; want it absent, nothing seeded", statErr)
+diff --git a/internal/battenshed/doc.go b/internal/battenshed/doc.go
+index 9df2d6285..869ca707b 100644
+--- a/internal/battenshed/doc.go
++++ b/internal/battenshed/doc.go
+@@ -167,7 +167,7 @@
+ // Every spawn on an existing run reads a ChildOwnedElsewhereError as that verdict: the respawn of an unconfirmed running child returns a budget-exempt Stuck naming the owner, and the awaiting resume, and the binary re-step pause, write no marker and keep waiting.
+ // While an owner stands every spawn waits, and the spawn hold re-runs the owner check once per probe until it reads the run as owned here, so a failed owner pause never makes the wait spawn and re-reconcile in a loop.
+ // Bound: the child can act until the full pass the dobby owes after a wake runs the check, and for as long as origin stays unreachable.
+-// A Finalize past its parent-side merge finishes its landing here, and once it is done its batten waits under the owner pause until "lyx resume <slug>" lifts it, then goes on to Land.
++// A Finalize past its parent-side merge finishes its landing here, and once it is done its batten waits under the owner pause until "lyx tender resume <slug>" lifts it, then goes on to Land.
+ //
+ // Its counterpart is equally by design: a driver that finishes NORMALLY leaves its strand and its
+ // run directory behind. Nothing here tears either down as part of a clean finish -- only the
+diff --git a/internal/fabricengine/originreconcile.go b/internal/fabricengine/originreconcile.go
+index 999023d6e..43fc231ff 100644
+--- a/internal/fabricengine/originreconcile.go
++++ b/internal/fabricengine/originreconcile.go
+@@ -314,7 +314,7 @@ func (b BranchOutcome) stopWayForward() string {
+ 		return b.dirtyWayForward()
+ 	case BranchBusy:
+ 		if b.PushLockHeld && b.Slug != "" {
+-			return fmt.Sprintf("`lyx resume %s`", b.Slug)
++			return fmt.Sprintf("`lyx tender resume %s`", b.Slug)
+ 		}
+ 		return fmt.Sprintf("wait for the holder of the %s lock to end", b.BusyLock)
+ 	case BranchLive:
+diff --git a/internal/fabricengine/originreconcilemoves_integration_test.go b/internal/fabricengine/originreconcilemoves_integration_test.go
+index 1a2f9d55d..6fdd32861 100644
+--- a/internal/fabricengine/originreconcilemoves_integration_test.go
++++ b/internal/fabricengine/originreconcilemoves_integration_test.go
+@@ -417,7 +417,7 @@ func TestReconcileOrigin_Moves(t *testing.T) {
+ 			wantPushHeld                             bool
+ 		}{
+ 			{"write lock", weftWriteLockName, "weft write", "wait for the holder of the weft write lock to end", false},
+-			{"push lock", weftPushLockName, "weft push", "`lyx resume task`", true},
++			{"push lock", weftPushLockName, "weft push", "`lyx tender resume task`", true},
+ 		} {
+ 			pair := newMovesPair(t)
+ 			originCommitFile(t, pair.RecordsBare, pair.recordsName, "notes/up.md", "up\n")
+diff --git a/internal/githubclient/githubclient_test.go b/internal/githubclient/githubclient_test.go
+index dd9aa4c14..62eba9806 100644
+--- a/internal/githubclient/githubclient_test.go
++++ b/internal/githubclient/githubclient_test.go
+@@ -570,8 +570,8 @@ func TestAuthRT_WaitsWhileAPauseCoversTheProcess(t *testing.T) {
+ 		t.Fatalf("server hits after the first wake = %d; want 0 while the pause covers the process", len(captured))
+ 	}
+ 	mu.Lock()
+-	if len(lines) != 1 || !strings.Contains(lines[0], `"lyx resume"`) {
+-		t.Fatalf("gate lines = %q; want exactly one naming lyx resume", lines)
++	if len(lines) != 1 || !strings.Contains(lines[0], `"lyx tender resume"`) {
++		t.Fatalf("gate lines = %q; want exactly one naming lyx tender resume", lines)
+ 	}
+ 	mu.Unlock()
+ 
+diff --git a/internal/hibernatecli/reconcile_test.go b/internal/hibernatecli/reconcile_test.go
+index 1a2158a51..bc7ef8d4f 100644
+--- a/internal/hibernatecli/reconcile_test.go
++++ b/internal/hibernatecli/reconcile_test.go
+@@ -37,10 +37,10 @@ func TestWakeReconcileFromReport(t *testing.T) {
+ 		{
+ 			"A busy records branch's push lock becomes the run's parked-push flag",
+ 			fabricengine.OriginReport{
+-				Branches: []fabricengine.BranchOutcome{{Branch: "p1", Repo: "records", Slug: "p1", State: fabricengine.BranchBusy, PushLockHeld: true, WayForward: "`lyx resume p1`"}},
+-				Entries:  []fabricengine.EntryOutcome{{Slug: "p1", State: fabricengine.EntryStopped, WayForward: "`lyx resume p1`"}},
++				Branches: []fabricengine.BranchOutcome{{Branch: "p1", Repo: "records", Slug: "p1", State: fabricengine.BranchBusy, PushLockHeld: true, WayForward: "`lyx tender resume p1`"}},
++				Entries:  []fabricengine.EntryOutcome{{Slug: "p1", State: fabricengine.EntryStopped, WayForward: "`lyx tender resume p1`"}},
+ 			},
+-			hibernateengine.WakeReconcile{Runs: []hibernateengine.WakeRun{{Slug: "p1", WayForward: "`lyx resume p1`", Busy: true, ParkedPush: true}}},
++			hibernateengine.WakeReconcile{Runs: []hibernateengine.WakeRun{{Slug: "p1", WayForward: "`lyx tender resume p1`", Busy: true, ParkedPush: true}}},
+ 		},
+ 		{
+ 			"A busy branch holding another lock is busy without a parked push",
+diff --git a/internal/hibernateengine/doc.go b/internal/hibernateengine/doc.go
+index eab46bbee..9e602814b 100644
+--- a/internal/hibernateengine/doc.go
++++ b/internal/hibernateengine/doc.go
+@@ -36,7 +36,7 @@
+ // Otherwise the request is written cancelled with the requester as the reason, a live daemon is killed, and the pause entry the request owns is lifted by identity, resume lines included.
+ // The request is read again after the kill, since the daemon may have recorded its entry between the hold and the kill.
+ // A request that owns no entry lifts nothing, so a hub pause that stood before the request stays.
+-// Bound: a daemon killed between its pause's record write and the write of its owned entry leaves that entry live and unowned, which `lyx resume` lifts; the window is one file write.
++// Bound: a daemon killed between its pause's record write and the write of its owned entry leaves that entry live and unowned, which `lyx tender resume` lifts; the window is one file write.
+ //
+ // # Status
+ //
+@@ -78,18 +78,18 @@
+ // The wake is a sleep the clock gap watch records ending after the hibernate call, seen within five minutes of awake time; a hibernate error or no wake fails the request with the owned entry lifted and one notice.
+ // After the wake and the move to resuming the daemon reconciles the hub with origin, through the `Reconcile` seam, before it lifts anything.
+ // The engine imports no fabric package: `WakeReconcile` is its own view of the report, with whether origin was unreachable, the stop on a branch every pair shares, one `WakeRun` per stopped, ended or owned-elsewhere entry and one rendered line per mutation.
+-// A hub entry the request does not own that is live skips the reconcile and the exemption, only an owned entry is lifted, and the notice names the standing entry, `lyx resume`, and that `lyx orch start` or `lyx cleanup --apply` runs the reconcile after that lift.
++// A hub entry the request does not own that is live skips the reconcile and the exemption, only an owned entry is lifted, and the notice names the standing entry, `lyx tender resume`, and that `lyx orch start` or `lyx cleanup --apply` runs the reconcile after that lift.
+ // Otherwise the owned entry, when live, is exempted from the network gate through `ExemptNetwork` until the reconcile returns, so only the reconcile's own network calls pass and every other process and entry stays held; with no hub entry live the reconcile runs with nothing to exempt.
+ // The daemon has no envelope, so each mutation line is logged at Info and never enters the notice.
+ // Unreachable through the retry bound, or a reconcile error, moves nothing further: the owned entry is lifted and the notice names the cause and `lyx cleanup --apply`.
+-// A stop on a shared branch keeps the hub entry live, and the notice names the stop and `lyx resume` as the way forward once it is settled.
++// A stop on a shared branch keeps the hub entry live, and the notice names the stop and `lyx tender resume` as the way forward once it is settled.
+ // Otherwise each stopped run, and each ended run still busy, gets a plain pair pause entry through `Pause`, not recorded as owned so it outlives the request; the owned entry is then lifted.
+ // A pair whose pause fails is left unheld and named with `lyx tender pause <slug>`.
+ // A run whose `WakeRun.Owner` is set is owned by another machine: its pair pause carries the owner caller, so a slug entry already standing adds none, and the notice names the owner and `lyx adopt <slug>` from this machine's prime.
+ // Once an owner pause is added, `Deps.EndOwned` ends the run's owned processes on this machine; the hub's wiring fills it with `tendercli.EndOwnedElsewhere`, which spares a Finalize past its parent-side merge and the calling process and its ancestors.
+ // An end error is logged and leaves the notice as it was, and a nil `EndOwned` skips the end.
+ // A failed owner pause is named with "the next wake or `lyx orch start` pauses it again", never with `lyx tender pause`, whose entry would carry no owner label.
+-// The notice names per stopped run its way forward then `lyx resume <slug>`, only `lyx resume <slug>` for a pair busy on a parked push, and `lyx cleanup --apply` in place of the resume for a pair stopped as gone; a busy ended run is named with its landing or removal and `lyx cleanup --apply`, and the other ended runs are listed.
++// The notice names per stopped run its way forward then `lyx tender resume <slug>`, only `lyx tender resume <slug>` for a pair busy on a parked push, and `lyx cleanup --apply` in place of the resume for a pair stopped as gone; a busy ended run is named with its landing or removal and `lyx cleanup --apply`, and the other ended runs are listed.
+ // A `TenderStatus` error before the reconcile fails the request with the owned entry lifted.
+ // Otherwise the owned entry is lifted by identity, so an entry already resumed, with another hub entry added meanwhile, lifts nothing, and the request ends done with one notice saying what became of the pause.
+ package hibernateengine
+diff --git a/internal/hibernateengine/wake.go b/internal/hibernateengine/wake.go
+index 40dab8091..d678689da 100644
+--- a/internal/hibernateengine/wake.go
++++ b/internal/hibernateengine/wake.go
+@@ -54,7 +54,7 @@ func reconcileAtWake(deps Deps, r Request) (lift bool, notice string, err error)
+ 			continue
+ 		}
+ 		if r.Owned == nil || entry.Caller != r.Owned.Caller || !entry.PausedAt.Equal(r.Owned.PausedAt) {
+-			return true, fmt.Sprintf("the hub pause of %s stands, so the origin reconcile was skipped; lift it with `lyx resume`, and then `lyx orch start` or `lyx cleanup --apply` runs the reconcile.", entry.Caller), nil
++			return true, fmt.Sprintf("the hub pause of %s stands, so the origin reconcile was skipped; lift it with `lyx tender resume`, and then `lyx orch start` or `lyx cleanup --apply` runs the reconcile.", entry.Caller), nil
+ 		}
+ 		exempt = r.Owned
+ 	}
+@@ -69,7 +69,7 @@ func reconcileAtWake(deps Deps, r Request) (lift bool, notice string, err error)
+ 	case wake.Unreachable:
+ 		return true, "origin was unreachable through the retry bound, so nothing was reconciled; run `lyx cleanup --apply` to reconcile once the network is back.", nil
+ 	case wake.Stop != "":
+-		return false, fmt.Sprintf("the origin reconcile stopped: %s; settle it, and then `lyx resume` lifts the hub pause.", wake.Stop), nil
++		return false, fmt.Sprintf("the origin reconcile stopped: %s; settle it, and then `lyx tender resume` lifts the hub pause.", wake.Stop), nil
+ 	}
+ 	return true, holdRuns(deps, wake.Runs), nil
+ }
+@@ -118,7 +118,7 @@ func holdRuns(deps Deps, runs []WakeRun) string {
+ // runStep names what an operator does for one held run.
+ // A parked push is cleared by the resume alone; a pair stopped as gone, which no resume can carry on, and an ended one are cleared by the cleanup.
+ func runStep(run WakeRun) string {
+-	resume := fmt.Sprintf("`lyx resume %s`", run.Slug)
++	resume := fmt.Sprintf("`lyx tender resume %s`", run.Slug)
+ 	switch {
+ 	case run.Owner != "":
+ 		return fmt.Sprintf("%s is owned by machine %s: `lyx adopt %s` from this machine's prime takes it over here", run.Slug, run.Owner, run.Slug)
+diff --git a/internal/hibernateengine/watch_test.go b/internal/hibernateengine/watch_test.go
+index 3082b80f5..66eb7404e 100644
+--- a/internal/hibernateengine/watch_test.go
++++ b/internal/hibernateengine/watch_test.go
+@@ -567,11 +567,11 @@ func TestWatch(t *testing.T) {
+ 			if err != nil || got.Phase != PhaseDone || w.reconcileCalls != 0 || len(w.exempted) != 0 || len(live) != 1 || live[0].Caller != "EXTERNAL" {
+ 				t.Errorf("got %+v, %v, reconciles %d, exempted %+v, live %+v; want done with nothing reconciled and the entry live", got, err, w.reconcileCalls, w.exempted, live)
+ 			}
+-			requireNotice(t, w, "EXTERNAL", "`lyx resume`", "`lyx orch start` or `lyx cleanup --apply`")
++			requireNotice(t, w, "EXTERNAL", "`lyx tender resume`", "`lyx orch start` or `lyx cleanup --apply`")
+ 		}},
+ 		{"a parked push holding a paused pair's push lock gives that pair a pause entry naming the resume and lifts the hub entry", func(t *testing.T) {
+ 			w := newFakeWorld(t)
+-			w.reconcileResult = WakeReconcile{Runs: []WakeRun{{Slug: "p1", WayForward: "`lyx resume p1`", Busy: true, ParkedPush: true}}}
++			w.reconcileResult = WakeReconcile{Runs: []WakeRun{{Slug: "p1", WayForward: "`lyx tender resume p1`", Busy: true, ParkedPush: true}}}
+ 
+ 			got, err := watchNow(t, w)
+ 
+@@ -579,7 +579,7 @@ func TestWatch(t *testing.T) {
+ 			if err != nil || got.Phase != PhaseDone || len(live) != 1 || live[0].Scope != "p1" || live[0].Caller != PauseCaller {
+ 				t.Errorf("got %+v, %v, live %+v; want done with only the pair entry live", got, err, live)
+ 			}
+-			requireNotice(t, w, "its pause was lifted.", "p1 is busy on a parked push: `lyx resume p1`")
++			requireNotice(t, w, "its pause was lifted.", "p1 is busy on a parked push: `lyx tender resume p1`")
+ 		}},
+ 		{"a paused run whose records could not move gets a pair pause entry that outlives the request and names its way forward then the resume", func(t *testing.T) {
+ 			w := newFakeWorld(t)
+@@ -591,7 +591,7 @@ func TestWatch(t *testing.T) {
+ 			if err != nil || got.Phase != PhaseDone || len(live) != 1 || live[0].Scope != "p1" || w.request().Owned == nil || w.request().Owned.Scope != pauserecord.ScopeHub {
+ 				t.Errorf("got %+v, %v, live %+v; want done with the pair entry live and the hub entry the owned one", got, err, live)
+ 			}
+-			requireNotice(t, w, "resolve notes.md in the records worktree; then `lyx resume p1`")
++			requireNotice(t, w, "resolve notes.md in the records worktree; then `lyx tender resume p1`")
+ 		}},
+ 		{"a pair stopped as gone gets a pair pause entry naming its way forward then the cleanup, never the resume", func(t *testing.T) {
+ 			w := newFakeWorld(t)
+@@ -604,7 +604,7 @@ func TestWatch(t *testing.T) {
+ 				t.Errorf("got %+v, %v, live %+v; want done with the pair entry live", got, err, live)
+ 			}
+ 			requireNotice(t, w, "origin no longer has p1; then `lyx cleanup --apply`")
+-			if strings.Contains(w.noticeList()[0], "`lyx resume p1`") {
++			if strings.Contains(w.noticeList()[0], "`lyx tender resume p1`") {
+ 				t.Errorf("notice = %q; want no resume for a pair stopped as gone", w.noticeList()[0])
+ 			}
+ 		}},
+@@ -618,7 +618,7 @@ func TestWatch(t *testing.T) {
+ 			if err != nil || got.Phase != PhaseDone || len(live) != 1 || live[0].Scope != pauserecord.ScopeHub || w.pauseCount() != 1 {
+ 				t.Errorf("got %+v, %v, live %+v, pauses %d; want done with the hub entry live and no pair paused", got, err, live, w.pauseCount())
+ 			}
+-			requireNotice(t, w, "its pause stays live.", "resolve board.json in the board worktree; settle it, and then `lyx resume`")
++			requireNotice(t, w, "its pause stays live.", "resolve board.json in the board worktree; settle it, and then `lyx tender resume`")
+ 		}},
+ 		{"a busy ended run gets a pair pause entry naming its landing or removal and the cleanup, and the other ended runs are listed", func(t *testing.T) {
+ 			w := newFakeWorld(t)
+@@ -634,7 +634,7 @@ func TestWatch(t *testing.T) {
+ 				t.Errorf("got %+v, %v, live %+v; want done with only the busy ended pair held", got, err, live)
+ 			}
+ 			requireNotice(t, w, "p1 ended on origin by its landing or removal but is still busy: wait for the driver to end; then `lyx cleanup --apply`", "ended on origin: p2")
+-			if strings.Contains(w.noticeList()[0], "`lyx resume p1`") {
++			if strings.Contains(w.noticeList()[0], "`lyx tender resume p1`") {
+ 				t.Errorf("notice = %q; want no resume for an ended run", w.noticeList()[0])
+ 			}
+ 		}},
+@@ -703,7 +703,7 @@ func TestWatch(t *testing.T) {
+ 			if ended := w.endedOwnedList(); len(ended) != 0 {
+ 				t.Errorf("EndOwned calls = %q; want none for stopped runs", ended)
+ 			}
+-			requireNotice(t, w, "its pause was lifted.", "fix p2; then `lyx resume p2`", "p1 could not be paused (tender down); hold it with `lyx tender pause p1`")
++			requireNotice(t, w, "its pause was lifted.", "fix p2; then `lyx tender resume p2`", "p1 could not be paused (tender down); hold it with `lyx tender pause p1`")
+ 		}},
+ 		{"a run owned elsewhere gets a pair pause entry with the owner label, lifts the daemon's entry and names the owner and the adopt", func(t *testing.T) {
+ 			w := newFakeWorld(t)
+diff --git a/internal/loomcli/arm.go b/internal/loomcli/arm.go
+index d92afc6fb..d6b379483 100644
+--- a/internal/loomcli/arm.go
++++ b/internal/loomcli/arm.go
+@@ -577,7 +577,7 @@ func (c *loomCLI) loomBarePause(st shedengine.Status) error {
+ 	if c.location != nil {
+ 		slug = c.location.WorktreeName
+ 	}
+-	return errors.New("loom: a bare pause no longer stops a loom run; way forward: run \"lyx pause " + slug + "\" to stop its agents now, or \"" + c.pauseAfterCommand(st.CurrentProducer) + "\" to halt it at its next producer boundary")
++	return errors.New("loom: a bare pause no longer stops a loom run; way forward: run \"lyx tender pause " + slug + "\" to stop its agents now, or \"" + c.pauseAfterCommand(st.CurrentProducer) + "\" to halt it at its next producer boundary")
+ }
+ 
+ // loomStatusExtras implements the StatusExtras hook for loom's spec: loom's own three status keys
+diff --git a/internal/loomcli/cli.go b/internal/loomcli/cli.go
+index a7b87e04d..982f7d1e3 100644
+--- a/internal/loomcli/cli.go
++++ b/internal/loomcli/cli.go
+@@ -171,10 +171,8 @@ type loomCLI struct {
+ 	ownerOf func(l *lyxcwd.Location, slug string) (ownerVerdict, error)
+ }
+ 
+-// newLoomCLI is the only place production code may build a *loomCLI: it is what keeps
+-// suppressWatchdogSpawn and spawnWatchdog set identically on every constructed receiver, so neither
+-// of this package's two constructors (Command, StartAliasCommand) can forget one and leave a nil
+-// spawnWatchdog to panic rather than degrade.
++// newLoomCLI is the only place production code may build a *loomCLI: it is what keeps suppressWatchdogSpawn and spawnWatchdog set identically on every constructed receiver,
++// so no constructor can forget one and leave a nil spawnWatchdog to panic rather than degrade.
+ func newLoomCLI() *loomCLI {
+ 	c := &loomCLI{
+ 		suppressWatchdogSpawn: testing.Testing(),
+@@ -423,9 +421,9 @@ the paused run's pause_reason; shed is reserved for lyx's own automatic steps
+ and refused.
+ 
+ A bare pause, with no flag, refuses for a loom run: it no longer stops
+-anything. The refusal names the two ways forward: "lyx pause <slug>" stops
+-the run's agents now, and "--after <current_producer>" halts the run at its
+-next producer boundary.
++anything. The refusal names the two ways forward: "lyx tender pause <slug>"
++stops the run's agents now, and "--after <current_producer>" halts the run at
++its next producer boundary.
+ 
+ --after naming a row that waits for the parent lock also ends that wait
+ mid-row, halting the run at the row; the condition stays recorded until
+diff --git a/internal/loomcli/cli_test.go b/internal/loomcli/cli_test.go
+index ac10a4f7a..5b04d3995 100644
+--- a/internal/loomcli/cli_test.go
++++ b/internal/loomcli/cli_test.go
+@@ -54,38 +54,11 @@ func TestResolvePersistentPreRun_SkipsSlugGroups(t *testing.T) {
+ 	}
+ }
+ 
+-// TestStartAliasCommand_StaysOneCommandWithSubtreeVerb guards StartAliasCommand and the subtree's own
+-// startCmd against drifting into two different commands: the alias must carry a non-empty Short, its
+-// Use must be the bare verb ("start"), it must expose the same --parent flag the subtree's own start
+-// verb does, and its Use must equal the subtree verb's own Use so the alias and the subtree verb can
+-// never drift apart.
+-func TestStartAliasCommand_StaysOneCommandWithSubtreeVerb(t *testing.T) {
++// TestCommand_StartVerbCarriesParentAndHiddenNoAttach pins the start verb under the loom parent command:
++// it exposes --parent, and it accepts --no-attach, hidden, for existing callers.
++func TestCommand_StartVerbCarriesParentAndHiddenNoAttach(t *testing.T) {
+ 	t.Parallel()
+ 
+-	alias := StartAliasCommand()
+-
+-	if alias.Short == "" {
+-		t.Error("StartAliasCommand() has empty Short")
+-	}
+-	if alias.Use != "start" {
+-		t.Errorf("StartAliasCommand().Use = %q; want %q", alias.Use, "start")
+-	}
+-	if alias.Flags().Lookup("parent") == nil {
+-		t.Error("StartAliasCommand() is missing the --parent flag the subtree's start verb exposes")
+-	}
+-
+-	subtreeVerb := (&loomCLI{}).startCmd()
+-	if alias.Use != subtreeVerb.Use {
+-		t.Errorf("StartAliasCommand().Use = %q; want it to equal the subtree verb's own Use %q", alias.Use, subtreeVerb.Use)
+-	}
+-	if noAttach := alias.Flags().Lookup("no-attach"); noAttach == nil {
+-		t.Error("StartAliasCommand() is missing the --no-attach flag the subtree's start verb accepts")
+-	} else if !noAttach.Hidden {
+-		t.Error("StartAliasCommand()'s --no-attach flag is not hidden")
+-	}
+-
+-	// The start verb registered under the loom parent command, not just its bare-root alias, accepts --no-attach, hidden:
+-	// it is the flag's primary home.
+ 	var registered *cobra.Command
+ 	for _, sub := range Command().Commands() {
+ 		if sub.Name() == "start" {
+@@ -95,6 +68,9 @@ func TestStartAliasCommand_StaysOneCommandWithSubtreeVerb(t *testing.T) {
+ 	if registered == nil {
+ 		t.Fatal(`"start" verb is not registered under the loom parent command`)
+ 	}
++	if registered.Flags().Lookup("parent") == nil {
++		t.Error(`"loom start" is missing the --parent flag`)
++	}
+ 	if noAttach := registered.Flags().Lookup("no-attach"); noAttach == nil {
+ 		t.Error(`"loom start" is missing the --no-attach flag`)
+ 	} else if !noAttach.Hidden {
+@@ -117,9 +93,9 @@ func TestRunCLI_GroupGuard_NoGitRepoNeeded(t *testing.T) {
+ 	}
+ }
+ 
+-// TestNewLoomCLI_SetsInjectedSeams pins newLoomCLI's own fields, since neither Command() nor StartAliasCommand() exposes the receiver each constructs and neither may grow an accessor purely for a test.
++// TestNewLoomCLI_SetsInjectedSeams pins newLoomCLI's own fields, since Command() does not expose the receiver it constructs and may not grow an accessor purely for a test.
+ //
+-//testtiming:keep pins newLoomCLI setting spawnWatchdog, midMerge, recordedParentBranch and suppressWatchdogSpawn, fields neither constructor's callers expose; its covering tests build the CLI without asserting them
++//testtiming:keep pins newLoomCLI setting spawnWatchdog, midMerge, recordedParentBranch and suppressWatchdogSpawn, fields the constructor's callers do not expose; its covering tests build the CLI without asserting them
+ func TestNewLoomCLI_SetsInjectedSeams(t *testing.T) {
+ 	c := newLoomCLI()
+ 
+@@ -390,7 +366,7 @@ func TestSpecFor_ScratchAndFrictionDir(t *testing.T) {
+ }
+ 
+ // TestPauseCmd_BareLoomPauseRefusesNamingBothWaysForward runs loom's pause verb on a hand-populated receiver over a running status at Plan-Write:
+-// a flagless pause refuses naming `lyx pause <slug>` and `lyx loom pause --after Plan-Write`, and leaves the status file byte-identical.
++// a flagless pause refuses naming `lyx tender pause <slug>` and `lyx loom pause --after Plan-Write`, and leaves the status file byte-identical.
+ func TestPauseCmd_BareLoomPauseRefusesNamingBothWaysForward(t *testing.T) {
+ 	t.Parallel()
+ 
+@@ -416,7 +392,7 @@ func TestPauseCmd_BareLoomPauseRefusesNamingBothWaysForward(t *testing.T) {
+ 	if exitCode := clihelp.Execute(loomVerbCommand(c, "pause"), &out, nil); exitCode != 1 {
+ 		t.Fatalf("bare pause exit code = %d; want 1; output: %s", exitCode, out.String())
+ 	}
+-	for _, want := range []string{`lyx pause some-slug`, `lyx loom pause --after Plan-Write`} {
++	for _, want := range []string{`lyx tender pause some-slug`, `lyx loom pause --after Plan-Write`} {
+ 		if !strings.Contains(out.String(), want) {
+ 			t.Errorf("bare pause output %q does not name %q", out.String(), want)
+ 		}
+diff --git a/internal/loomcli/doc.go b/internal/loomcli/doc.go
+index 8fde13fe9..a6765eb8f 100644
+--- a/internal/loomcli/doc.go
++++ b/internal/loomcli/doc.go
+@@ -4,7 +4,6 @@
+ // Friction-Reflect, the last row, runs the Tier 2 friction reflection under run and under step alike, before the run records done.
+ // A `blocked` or `failed` halt, and an interrupted stop, write their Go halt note and spawn no reflection, so no stop holds the driver lock for a friction session and `lyx loom resume` never waits on one; the note waits for the run's Friction-Reflect row, which reflects every note in the friction directory.
+ // An interrupted stop's note carries the `interrupted-stop` anomaly kind, never `producer-hard-failure`, with the stop's cause as its reason and the in-flight step's trace file where the stop knows it.
+-// `lyx start` is the same start verb mounted a second time at the root, resolving the full engine stack exactly as `lyx loom start` does.
+ //
+ // A run seeded with the recipe `beam` is a beam's landing run, batten's Seed-Child seeds it in the beam's pair.
+ // Its shed has two rows, Beam-Describe and Finalize, and no reroute edge, no plan and no review segment.
+diff --git a/internal/loomcli/driverresume_test.go b/internal/loomcli/driverresume_test.go
+index 79f52b081..11bd69ca5 100644
+--- a/internal/loomcli/driverresume_test.go
++++ b/internal/loomcli/driverresume_test.go
+@@ -123,7 +123,7 @@ func TestResumeParkedDriver(t *testing.T) {
+ 			name:       "a pause holding the pane is refused with its way forward and not retried",
+ 			sender:     &fakeDriverSender{repeatErr: &shuttleengine.PausedError{Slug: "pair", Err: shuttleengine.ErrPaused}},
+ 			wantTexts:  1,
+-			wantErr:    []string{`"lyx resume`, `run "lyx loom start" again`},
++			wantErr:    []string{`"lyx tender resume`, `run "lyx loom start" again`},
+ 			wantNotErr: []string{"may have resumed"},
+ 		},
+ 		{name: "another error is never retried", sender: &fakeDriverSender{repeatErr: errors.New("text never appeared")}, wantTexts: 1, wantErr: []string{"text never appeared"}},
+diff --git a/internal/loomcli/ownercheck_test.go b/internal/loomcli/ownercheck_test.go
+index a17aa15a8..fb6c687e1 100644
+--- a/internal/loomcli/ownercheck_test.go
++++ b/internal/loomcli/ownercheck_test.go
+@@ -56,7 +56,7 @@ func TestStartAndResume_RefuseARunOwnedElsewhere(t *testing.T) {
+ 			statusExists: true,
+ 			verdict:      ownerVerdict{Owner: "there", Elsewhere: true},
+ 			ownerPause:   true,
+-			wantMessage:  []string{"pause:", `"lyx resume`},
++			wantMessage:  []string{"pause:", `"lyx tender resume`},
+ 		},
+ 		{
+ 			name:         "VerdictErrorRefusesNamingTheRerun",
+diff --git a/internal/loomcli/pausehold.go b/internal/loomcli/pausehold.go
+index 1fdcd2b96..cd5a9dca2 100644
+--- a/internal/loomcli/pausehold.go
++++ b/internal/loomcli/pausehold.go
+@@ -35,7 +35,7 @@ func (c *loomCLI) pausedExtras() map[string]any {
+ 	}
+ }
+ 
+-// refuseCovered returns the refusal naming "lyx resume" and the retry when a live pause entry covers this worktree's slug, and nil otherwise.
++// refuseCovered returns the refusal naming "lyx tender resume" and the retry when a live pause entry covers this worktree's slug, and nil otherwise.
+ // A geometry or record that cannot be read refuses nothing and logs one Warn, so a corrupt file never blocks a restart.
+ func (c *loomCLI) refuseCovered(retry string) error {
+ 	geometry, err := hubgeom.PauseGeometry(c.location)
+diff --git a/internal/loomcli/pausehold_test.go b/internal/loomcli/pausehold_test.go
+index 7f6602b1b..0c144f2ed 100644
+--- a/internal/loomcli/pausehold_test.go
++++ b/internal/loomcli/pausehold_test.go
+@@ -52,7 +52,7 @@ func coverRunBy(t *testing.T, c *loomCLI, scope, caller string) string {
+ }
+ 
+ // TestStartCmd_RefusesWhileAPauseCoversTheRun drives startCmd over a receiver whose hub holds a live pause entry:
+-// the refusal names `lyx resume` and nothing is seeded, and once the entry is lifted the same call no longer refuses on the pause.
++// the refusal names `lyx tender resume` and nothing is seeded, and once the entry is lifted the same call no longer refuses on the pause.
+ func TestStartCmd_RefusesWhileAPauseCoversTheRun(t *testing.T) {
+ 	t.Parallel()
+ 
+@@ -74,8 +74,8 @@ func TestStartCmd_RefusesWhileAPauseCoversTheRun(t *testing.T) {
+ 	}
+ 
+ 	refusal := start()
+-	if !strings.Contains(refusal, "lyx resume") {
+-		t.Errorf("start under a pause answered %q; want it to name %q", refusal, "lyx resume")
++	if !strings.Contains(refusal, "lyx tender resume") {
++		t.Errorf("start under a pause answered %q; want it to name %q", refusal, "lyx tender resume")
+ 	}
+ 	if _, found, err := shedrun.ReadSeed(c.location, seedSlug(c.location.WorktreeName)); err != nil || found {
+ 		t.Errorf("ReadSeed after the refusal = (found=%v, err=%v); want (false, nil), nothing seeded", found, err)
+@@ -87,7 +87,7 @@ func TestStartCmd_RefusesWhileAPauseCoversTheRun(t *testing.T) {
+ 	}); err != nil {
+ 		t.Fatalf("pauserecord.Update: %v", err)
+ 	}
+-	if lifted := start(); strings.Contains(lifted, "lyx resume") {
++	if lifted := start(); strings.Contains(lifted, "lyx tender resume") {
+ 		t.Errorf("start after the pause was lifted answered %q; want no pause refusal", lifted)
+ 	}
+ }
+diff --git a/internal/loomcli/resume.go b/internal/loomcli/resume.go
+index 739110df5..6905b7ca5 100644
+--- a/internal/loomcli/resume.go
++++ b/internal/loomcli/resume.go
+@@ -250,7 +250,7 @@ and a retry shortly for the kind "driver_not_parked", while the driver
+ finishes its post-run work or a Go driver is still settling the stop. An
+ unfinished merge in the worktree is refused with the kind "merge_in_progress",
+ and a run another machine owns with the kind "owned_elsewhere".
+-While a pause covers this task it refuses and names "lyx resume".
++While a pause covers this task it refuses and names "lyx tender resume".
+ 
+ Example:
+   lyx loom resume`,
+diff --git a/internal/loomcli/resume_test.go b/internal/loomcli/resume_test.go
+index 014c6c663..b8ae65a8e 100644
+--- a/internal/loomcli/resume_test.go
++++ b/internal/loomcli/resume_test.go
+@@ -218,7 +218,7 @@ func TestResumeVerb(t *testing.T) {
+ 		{name: "parked driver over an unfinished merge is refused", runState: shedengine.StateBlocked, directory: liveDriver, marker: true, merge: mergeParked, wantKind: shedrun.StartMergeInProgressKind, wantIn: []string{`"lyx loom resume"`, "lyx fabric merge"}},
+ 		{name: "no live driver over an unfinished merge is refused", runState: shedengine.StateBlocked, directory: deadDriver, merge: mergeParked, wantKind: shedrun.StartMergeInProgressKind, wantIn: []string{`"lyx loom resume"`}},
+ 		{name: "parked driver at Parent-Align over the own leftover is woken", runState: shedengine.StateBlocked, producer: loomshed.NameParentAlign, directory: liveDriver, marker: true, merge: ownLeftoverState, wantOK: true, wantSent: true, wantIn: []string{"woken"}},
+-		{name: "a parked driver under a pause is refused and not woken", runState: shedengine.StateBlocked, directory: liveDriver, marker: true, covered: true, wantIn: []string{"lyx resume", `"lyx loom resume" again`}},
++		{name: "a parked driver under a pause is refused and not woken", runState: shedengine.StateBlocked, directory: liveDriver, marker: true, covered: true, wantIn: []string{"lyx tender resume", `"lyx loom resume" again`}},
+ 		{name: "no live driver at Parent-Align over the own leftover reports the dead driver", runState: shedengine.StateBlocked, producer: loomshed.NameParentAlign, directory: deadDriver, merge: ownLeftoverState, wantIn: []string{"dead", "lyx batten run <slug>"}},
+ 		{name: "own leftover at another row keeps the merge refusal", runState: shedengine.StateBlocked, producer: loomshed.NameCodeBouncer, directory: liveDriver, marker: true, merge: ownLeftoverState, wantKind: shedrun.StartMergeInProgressKind, wantIn: []string{"lyx fabric merge"}},
+ 		{name: "parked merge of another source at Finalize keeps the merge refusal", runState: shedengine.StateBlocked, producer: loomshed.NameFinalize, directory: liveDriver, marker: true, merge: fabricengine.MidMergeState{Kind: fabricengine.MidMergeParked, Verb: "merge-in", Source: "other", Conflicts: []string{"a.go"}}, wantKind: shedrun.StartMergeInProgressKind, wantIn: []string{"lyx fabric merge"}},
+diff --git a/internal/loomcli/start.go b/internal/loomcli/start.go
+index 454606d02..1ef763241 100644
+--- a/internal/loomcli/start.go
++++ b/internal/loomcli/start.go
+@@ -490,7 +490,7 @@ kind "driver_not_parked" while a live loom driver over a halted run is still
+ writing its stop report; retry that one a few seconds later.
+ It refuses with the kind "owned_elsewhere" over a run another machine owns,
+ naming the owner and "lyx adopt".
+-While a pause covers this task it refuses and names "lyx resume".
++While a pause covers this task it refuses and names "lyx tender resume".
+ 
+ Example:
+   lyx loom start
+@@ -606,25 +606,3 @@ Example:
+ 
+ 	return cmd
+ }
+-
+-// StartAliasCommand returns the start verb registered a second time, as a bare root child ("lyx
+-// start"), alongside the full "lyx loom start" subtree.
+-//
+-// It builds a fresh receiver and takes that receiver's own startCmd unchanged -- it carries no seam
+-// functions of its own, because it delegates entirely into the subtree's verb -- and attaches that
+-// same receiver's resolvePersistentPreRun as the returned command's own PersistentPreRunE. That
+-// attachment is necessary here, not optional: a root child gets no parent group's PersistentPreRunE
+-// to inherit, so without it the alias would run with location, cwd, env, and shedPaths all left
+-// unresolved.
+-// The group short-circuit inside resolvePersistentPreRun (its cmd.Name() == "loom" check) does not
+-// fire for this command, since this command's own Name() is "start", never "loom" -- so the alias
+-// always resolves the full engine stack exactly as "lyx loom start" does.
+-//
+-// The alias is not registered inside Command(); the root command registers it as a sibling of the
+-// "loom" group, in a later batch.
+-func StartAliasCommand() *cobra.Command {
+-	c := newLoomCLI()
+-	cmd := c.startCmd()
+-	cmd.PersistentPreRunE = c.resolvePersistentPreRun
+-	return cmd
+-}
+diff --git a/internal/pauserecord/hold.go b/internal/pauserecord/hold.go
+index 775d0acbf..6f69c3004 100644
+--- a/internal/pauserecord/hold.go
++++ b/internal/pauserecord/hold.go
+@@ -101,10 +101,10 @@ func WaitUncovered(ctx context.Context, path, slug string, w Waiter) error {
+ 
+ // heldLine renders the line a wait writes when it starts, naming the pause and the resume that lifts it.
+ func heldLine(entry Entry) string {
+-	pause, resume := "a hub-wide pause", `"lyx resume"`
++	pause, resume := "a hub-wide pause", `"lyx tender resume"`
+ 	if entry.Scope != ScopeHub {
+ 		pause = fmt.Sprintf("the pause of %s", entry.Scope)
+-		resume += fmt.Sprintf(` or "lyx resume %s"`, entry.Scope)
++		resume += fmt.Sprintf(` or "lyx tender resume %s"`, entry.Scope)
+ 	}
+ 	return fmt.Sprintf("lyx: held by %s since %s; it continues after %s", pause, entry.PausedAt.Format(time.RFC3339), resume)
+ }
+diff --git a/internal/pauserecord/hold_test.go b/internal/pauserecord/hold_test.go
+index ef0b02323..66b123f2e 100644
+--- a/internal/pauserecord/hold_test.go
++++ b/internal/pauserecord/hold_test.go
+@@ -67,12 +67,12 @@ func TestWaitUncovered(t *testing.T) {
+ 	}{
+ 		{name: "no entry returns at once with no line", slug: "a"},
+ 		{
+-			name: "a hub entry holds until resumed, with one line naming lyx resume",
++			name: "a hub entry holds until resumed, with one line naming lyx tender resume",
+ 			live: []Entry{hub}, slug: "a",
+ 			onSleep:    func(t *testing.T, call int, path string) { resumeLive(t, path) },
+ 			wantDelays: []time.Duration{second},
+ 			wantLines:  1,
+-			wantLine:   `lyx: held by a hub-wide pause since 2026-01-10T12:00:00Z; it continues after "lyx resume"`,
++			wantLine:   `lyx: held by a hub-wide pause since 2026-01-10T12:00:00Z; it continues after "lyx tender resume"`,
+ 		},
+ 		{
+ 			name: "a slug entry holds its slug and names both resumes",
+@@ -80,7 +80,7 @@ func TestWaitUncovered(t *testing.T) {
+ 			onSleep:    func(t *testing.T, call int, path string) { resumeLive(t, path) },
+ 			wantDelays: []time.Duration{second},
+ 			wantLines:  1,
+-			wantLine:   `lyx: held by the pause of a since 2026-01-10T12:00:00Z; it continues after "lyx resume" or "lyx resume a"`,
++			wantLine:   `lyx: held by the pause of a since 2026-01-10T12:00:00Z; it continues after "lyx tender resume" or "lyx tender resume a"`,
+ 		},
+ 		{name: "a slug entry does not hold another slug", live: []Entry{slugEntry}, slug: "b"},
+ 		{name: "an exempt caller passes a slug entry", live: []Entry{slugEntry}, slug: "a", exempt: true},
+diff --git a/internal/pauserecord/record.go b/internal/pauserecord/record.go
+index 3389c4c5b..3532626cc 100644
+--- a/internal/pauserecord/record.go
++++ b/internal/pauserecord/record.go
+@@ -262,9 +262,9 @@ func Excluded(intervals []Interval, from, to time.Time) time.Duration {
+ 
+ // CoveredError renders the refusal an entry point returns when entry covers its run, naming the resume that lifts the hold and the retry to make after it.
+ func CoveredError(e Entry, slug, retry string) error {
+-	pause, resume := "a hub-wide pause", `"lyx resume"`
++	pause, resume := "a hub-wide pause", `"lyx tender resume"`
+ 	if e.Scope != ScopeHub {
+-		pause, resume = fmt.Sprintf("the pause of %s", slug), fmt.Sprintf(`"lyx resume %s"`, slug)
++		pause, resume = fmt.Sprintf("the pause of %s", slug), fmt.Sprintf(`"lyx tender resume %s"`, slug)
+ 	}
+ 	return fmt.Errorf("pause: %s has held this run since %s; way forward: run %s, then %s",
+ 		pause, e.PausedAt.Format(time.RFC3339), resume, retry)
+diff --git a/internal/pauserecord/record_test.go b/internal/pauserecord/record_test.go
+index fb3171d06..ddf358a30 100644
+--- a/internal/pauserecord/record_test.go
++++ b/internal/pauserecord/record_test.go
+@@ -365,13 +365,13 @@ func TestCoveredError(t *testing.T) {
+ 			"hub entry",
+ 			Entry{Scope: ScopeHub, PausedAt: pausedAt},
+ 			"a",
+-			`pause: a hub-wide pause has held this run since 2026-01-10T12:00:00Z; way forward: run "lyx resume", then retry`,
++			`pause: a hub-wide pause has held this run since 2026-01-10T12:00:00Z; way forward: run "lyx tender resume", then retry`,
+ 		},
+ 		{
+ 			"slug entry",
+ 			Entry{Scope: "a", PausedAt: pausedAt},
+ 			"a",
+-			`pause: the pause of a has held this run since 2026-01-10T12:00:00Z; way forward: run "lyx resume a", then retry`,
++			`pause: the pause of a has held this run since 2026-01-10T12:00:00Z; way forward: run "lyx tender resume a", then retry`,
+ 		},
+ 	}
+ 	for _, tt := range tests {
+diff --git a/internal/reedcli/resume.go b/internal/reedcli/resume.go
+index 6d8c7e922..97ee9d17d 100644
+--- a/internal/reedcli/resume.go
++++ b/internal/reedcli/resume.go
+@@ -23,7 +23,7 @@ skipped — they are pending first surface, not dead. Already-live strands are
+ left untouched (no double send-keys). A not-live strand whose done-when paths
+ all exist is finished: it is dropped from state instead of relaunched, and
+ counted in the envelope's dropped. While a pause covers this pair, its strands
+-are left down and named in the envelope's held, until "lyx resume".
++are left down and named in the envelope's held, until "lyx tender resume".
+ 
+ Example:
+   lyx reed resume`,
+diff --git a/internal/shedcli/cli.go b/internal/shedcli/cli.go
+index c0450b7d7..b7bc0b9b5 100644
+--- a/internal/shedcli/cli.go
++++ b/internal/shedcli/cli.go
+@@ -100,9 +100,9 @@ request it accompanies. The label is recorded in the paused run's
+ pause_reason; shed is reserved for lyx's own automatic steps and refused.
+ 
+ A bare pause, with no flag, requests a pause at the next producer boundary
+-for a recipe that allows it, and refuses for a loom run, naming "lyx pause
+-<slug>" to stop its agents now and "--after <current_producer>" to halt it
+-at its next producer boundary.
++for a recipe that allows it, and refuses for a loom run, naming "lyx tender
++pause <slug>" to stop its agents now and "--after <current_producer>" to
++halt it at its next producer boundary.
+ 
+ Example:
+   lyx shed pause some-slug --after Plan-Write
+diff --git a/internal/shortcutcli/doc.go b/internal/shortcutcli/doc.go
+index ac5daafe4..a96688cda 100644
+--- a/internal/shortcutcli/doc.go
++++ b/internal/shortcutcli/doc.go
+@@ -1,4 +1,4 @@
+-// Package shortcutcli mounts the top-level operator shortcuts (`lyx a`, `lyx attach`, `lyx prime`, `lyx pause`, `lyx p`, `lyx resume`, `lyx r`) declared in one embedded file.
++// Package shortcutcli mounts the top-level operator shortcuts (`lyx a`, `lyx prime`, `lyx p`, `lyx r`) declared in one embedded file.
+ //
+ // # The file
+ //
+diff --git a/internal/shortcutcli/shortcut_test.go b/internal/shortcutcli/shortcut_test.go
+index 9a7bc9f3e..443a82694 100644
+--- a/internal/shortcutcli/shortcut_test.go
++++ b/internal/shortcutcli/shortcut_test.go
+@@ -212,15 +212,12 @@ func TestMount_File(t *testing.T) {
+ 		wantMounted map[string]string
+ 	}{
+ 		{
+-			name: "the shipped file mounts a, attach, prime, pause, p, resume and r", data: shortcutFile,
++			name: "the shipped file mounts exactly a, prime, p and r", data: shortcutFile,
+ 			wantMounted: map[string]string{
+-				"a":      "shortcut: lyx reed attach",
+-				"attach": "shortcut: lyx reed attach",
+-				"prime":  "shortcut: lyx orch start, then lyx reed attach",
+-				"pause":  "shortcut: lyx tender pause",
+-				"p":      "shortcut: lyx tender pause",
+-				"resume": "shortcut: lyx tender resume",
+-				"r":      "shortcut: lyx tender resume",
++				"a":     "shortcut: lyx reed attach",
++				"prime": "shortcut: lyx orch start, then lyx reed attach",
++				"p":     "shortcut: lyx tender pause",
++				"r":     "shortcut: lyx tender resume",
+ 			},
+ 		},
+ 		{name: "malformed YAML mounts nothing", data: []byte("attach: [reed, attach")},
+diff --git a/internal/shortcutcli/shortcuts.yaml b/internal/shortcutcli/shortcuts.yaml
+index 8561485af..23e992491 100644
+--- a/internal/shortcutcli/shortcuts.yaml
++++ b/internal/shortcutcli/shortcuts.yaml
+@@ -3,10 +3,7 @@
+ # Each value is one argv, a list of words, or a list of argvs run in order.
+ # An argv names lyx words only, never a shell string: a command path, then any args and flags of that command.
+ # A shortcut is added only by a commit to this file.
+-attach: [reed, attach]
+ a: [reed, attach]
+ prime: [[orch, start], [reed, attach]]
+-pause: [tender, pause]
+-resume: [tender, resume]
+ p: [tender, pause]
+ r: [tender, resume]
+diff --git a/internal/shuttlecli/cli_test.go b/internal/shuttlecli/cli_test.go
+index 7aa042d61..e899f2440 100644
+--- a/internal/shuttlecli/cli_test.go
++++ b/internal/shuttlecli/cli_test.go
+@@ -565,8 +565,8 @@ func TestSendCmd_AppendsMessageTail(t *testing.T) {
+ 				if ok, _ := envelope["ok"].(bool); ok {
+ 					t.Fatalf("envelope ok = true; want a refusal; output: %s", out.String())
+ 				}
+-				if msg, _ := envelope["error"].(string); !strings.Contains(msg, "lyx resume s1") {
+-					t.Errorf("refusal = %q; want it to name %q", msg, "lyx resume s1")
++				if msg, _ := envelope["error"].(string); !strings.Contains(msg, "lyx tender resume s1") {
++					t.Errorf("refusal = %q; want it to name %q", msg, "lyx tender resume s1")
+ 				}
+ 				if len(reed.SendTextCalls) != 0 {
+ 					t.Errorf("typed texts = %+v; want none", reed.SendTextCalls)
+@@ -604,7 +604,7 @@ func TestInterruptAndSendCmd_FailWithTheGuardsMessage(t *testing.T) {
+ 		{"interrupt on a pane with no running turn fails naming lyx shuttle send", false, false, "lyx shuttle send", nil, "", "", ""},
+ 		{"interrupt on an open picker closes it once and fails", true, false, "rewind picker was open", []string{"Escape"}, "", "", ""},
+ 		{"send on an open picker closes it once, fails and types nothing", true, true, "rewind picker was open", []string{"Escape"}, "", "", ""},
+-		{"send into a strand another slug's pause covers is refused naming the resume and the retry", false, true, "lyx resume p1", nil, "p1", "ly:p1:impl", "lyx shuttle send"},
++		{"send into a strand another slug's pause covers is refused naming the resume and the retry", false, true, "lyx tender resume p1", nil, "p1", "ly:p1:impl", "lyx shuttle send"},
+ 	}
+ 	for _, tt := range tests {
+ 		t.Run(tt.name, func(t *testing.T) {
+diff --git a/internal/tendercli/cli.go b/internal/tendercli/cli.go
+index 821006b12..31cc60c42 100644
+--- a/internal/tendercli/cli.go
++++ b/internal/tendercli/cli.go
+@@ -58,7 +58,7 @@ func refuseCaller(c caller, slug string) error {
+ 	if !c.agent || (slug != "" && slug == c.slug) {
+ 		return nil
+ 	}
+-	return errors.New(`pause: an agent may pause, resume or revive only its own pair; way forward: ask your parent session, which runs "lyx pause", "lyx resume" or "lyx tender revive" for you`)
++	return errors.New(`pause: an agent may pause, resume or revive only its own pair; way forward: ask your parent session, which runs "lyx tender pause", "lyx tender resume" or "lyx tender revive" for you`)
+ }
+ 
+ // refuseReapCaller refuses an agent's reap: only the orch and an external caller end orphaned processes.
+@@ -78,7 +78,7 @@ func Command() *cobra.Command {
+ pause holds it, resume lifts the hold, revive gives a carry-on line to sessions
+ stalled on an API error, status shows the live entries, the holds and what
+ runs, and reap ends the run processes no run owns any more.
+-"lyx pause" and "lyx resume" are shortcuts for the first two.`,
++"lyx p" and "lyx r" are shortcuts for the first two.`,
+ 		RunE: clihelp.GroupRunE,
+ 	}
+ 	tender.AddCommand(pauseCmd(), resumeCmd(), reviveCmd(), statusCmd(), reapCmd())
+@@ -95,7 +95,7 @@ func pauseCmd() *cobra.Command {
+ 		Long: `pause records a pause, waits a short grace for busy agent sessions and network
+ operations to finish, interrupts every covered session still in a running turn
+ with Esc, and holds every path that would start agent or network work until
+-"lyx resume".
++"lyx tender resume".
+ 
+ A second Esc goes only after the provider's settle time, and only into a pane
+ still showing a running turn. A session whose turn ended with background work
+@@ -107,8 +107,8 @@ orchestrator is interrupted by its own watcher at the grace end, not by pause.
+ 
+ --grace sets the grace in seconds, 0 to 60.
+ 
+-Lift it with "lyx resume", which gives each interrupted session one line to
+-carry on.
++Lift it with "lyx tender resume", which gives each interrupted session one
++line to carry on.
+ 
+ Example:
+   lyx tender pause
+@@ -169,7 +169,8 @@ func resumeCmd() *cobra.Command {
+ 		Annotations: map[string]string{clihelp.AudienceAnnotation: clihelp.AudienceOperator},
+ 		Long: `resume lifts the live pause entries. With no slug it lifts every entry; with a
+ slug it lifts that pair's own entry. A slug covered only by a hub-wide pause is
+-refused: run "lyx resume" to lift the hub pause. Resuming nothing is a no-op.
++refused: run "lyx tender resume" to lift the hub pause. Resuming nothing is a
++no-op.
+ 
+ Each session the pause interrupted gets one line to carry on, unless its strand
+ is not live or its guarded send is refused, as for a running turn, a draft, a
+@@ -184,8 +185,8 @@ pushed. The report's "spawned" lists the spawns and "spawn_failed" the ones that
+ failed; neither fails the resume.
+ 
+ Example:
+-  lyx resume
+-  lyx resume my-task`,
++  lyx tender resume
++  lyx tender resume my-task`,
+ 		Args: cobra.MaximumNArgs(1),
+ 		RunE: func(cmd *cobra.Command, args []string) error {
+ 			if clihelp.ShouldAbort(cmd.Context()) {
+@@ -235,7 +236,7 @@ func reviveCmd() *cobra.Command {
+ 		Long: `revive types one fixed carry-on line into each session whose last turn stopped
+ on an API error, the case a network outage without a machine sleep leaves
+ behind. A session in any other state is skipped with the state read, and a
+-session a live pause covers is left to "lyx resume".
++session a live pause covers is left to "lyx tender resume".
+ 
+ With no slug it covers the whole hub, the orchestrator included: the orch gets
+ the line as a checked creel inject, reported with its id. With a slug it covers that pair. Every send is refused at once when
+diff --git a/internal/tendercli/cli_test.go b/internal/tendercli/cli_test.go
+index d78022ea6..bcf99128d 100644
+--- a/internal/tendercli/cli_test.go
++++ b/internal/tendercli/cli_test.go
+@@ -185,8 +185,8 @@ func TestPauseAndResume_WriteLiftAndRefuseOverTheHub(t *testing.T) {
+ 	}
+ 
+ 	slugResume, code := verb(t, Command(), prime, "resume", pairSlug)
+-	if slugResume.OK || code == 0 || !strings.Contains(slugResume.Error, `"lyx resume"`) {
+-		t.Errorf("resume <slug> under a hub entry: ok=%v error=%q; want a refusal naming lyx resume", slugResume.OK, slugResume.Error)
++	if slugResume.OK || code == 0 || !strings.Contains(slugResume.Error, `"lyx tender resume"`) {
++		t.Errorf("resume <slug> under a hub entry: ok=%v error=%q; want a refusal naming lyx tender resume", slugResume.OK, slugResume.Error)
+ 	}
+ 
+ 	// A fresh resolution from another worktree still sees the entry on disk.
+diff --git a/internal/tendercli/doc.go b/internal/tendercli/doc.go
+index 13d38a5b4..21278e8cd 100644
+--- a/internal/tendercli/doc.go
++++ b/internal/tendercli/doc.go
+@@ -1,5 +1,5 @@
+ // Package tendercli builds the `lyx tender` group with `lyx tender pause [<slug>]`, `lyx tender resume [<slug>]`, `lyx tender revive [<slug>]`, `lyx tender status` and `lyx tender reap` over internal/tenderengine, and installs the network gate every lyx process in a hub runs under.
+-// `lyx pause` and `lyx resume` are shortcuts for the first two, so the operator spelling stays short.
++// `lyx p` and `lyx r` are shortcuts for the first two, so the operator spelling stays short.
+ //
+ // Every verb runs from any worktree of the hub and resolves it with lyxcwd.Resolve.
+ // The hub's fixed dependency set bars cliwire from serving them, since it admits neither lyxcwd nor fabricengine.
+diff --git a/internal/tenderengine/doc.go b/internal/tenderengine/doc.go
+index 71cf2bab9..613041b9c 100644
+--- a/internal/tenderengine/doc.go
++++ b/internal/tenderengine/doc.go
+@@ -34,7 +34,7 @@
+ // # Resume
+ //
+ // An empty slug resumes every live entry; a slug resumes that pair's own entry.
+-// A slug that only a live hub entry covers is refused, naming `lyx resume`.
++// A slug that only a live hub entry covers is refused, naming `lyx tender resume`.
+ // Under the record lock each resumed entry moves to the resumed list, and each session it owns that another live entry still covers moves to that entry with no line.
+ // After the lock, each remaining non-orch session gets `pauserecord.ResumeLine` once through the guarded send.
+ // There is no busy pre-check: a recorded session gets its attempt whatever its state reads now.
+diff --git a/internal/tenderengine/resume.go b/internal/tenderengine/resume.go
+index 50508883f..d4af2c7e9 100644
+--- a/internal/tenderengine/resume.go
++++ b/internal/tenderengine/resume.go
+@@ -106,7 +106,7 @@ type StaleProcess struct {
+ }
+ 
+ // Resume lifts live entries and gives each session they interrupted one line.
+-// A slug with no entry of its own that a live hub entry covers is refused, naming `lyx resume`; resuming nothing succeeds.
++// A slug with no entry of its own that a live hub entry covers is refused, naming `lyx tender resume`; resuming nothing succeeds.
+ func Resume(deps Deps, req ResumeRequest) (ResumeReport, error) {
+ 	return liftEntries(deps, func(record *pauserecord.Record) ([]pauserecord.Entry, error) {
+ 		var targets, kept []pauserecord.Entry
+@@ -119,7 +119,7 @@ func Resume(deps Deps, req ResumeRequest) (ResumeReport, error) {
+ 		}
+ 		if len(targets) == 0 {
+ 			if _, covered := record.Covering(req.Slug); req.Slug != "" && covered {
+-				return nil, fmt.Errorf("pause: %q has no pause of its own, and a hub-wide pause covers it; way forward: run \"lyx resume\" to lift the hub pause", req.Slug)
++				return nil, fmt.Errorf("pause: %q has no pause of its own, and a hub-wide pause covers it; way forward: run \"lyx tender resume\" to lift the hub pause", req.Slug)
+ 			}
+ 			return nil, nil
+ 		}
+diff --git a/internal/tenderengine/resume_test.go b/internal/tenderengine/resume_test.go
+index 374978380..dbd4d4890 100644
+--- a/internal/tenderengine/resume_test.go
++++ b/internal/tenderengine/resume_test.go
+@@ -148,14 +148,14 @@ func TestResume(t *testing.T) {
+ 				t.Errorf("report %+v, err %v; want the orch left to its watcher", report, err)
+ 			}
+ 		}},
+-		{"a slug that only a hub entry covers refuses naming lyx resume and changes nothing", func(t *testing.T) {
++		{"a slug that only a hub entry covers refuses naming lyx tender resume and changes nothing", func(t *testing.T) {
+ 			e := newEnv(t, newPair("p1"))
+ 			e.seedLive(hubEntry(e.clock.Now()))
+ 
+ 			_, err := e.resume("p1")
+ 
+-			if err == nil || !strings.Contains(err.Error(), `"lyx resume"`) {
+-				t.Fatalf("err = %v; want a refusal naming lyx resume", err)
++			if err == nil || !strings.Contains(err.Error(), `"lyx tender resume"`) {
++				t.Fatalf("err = %v; want a refusal naming lyx tender resume", err)
+ 			}
+ 			if live := e.record().Live; len(live) != 1 {
+ 				t.Errorf("live entries = %+v; want the hub entry untouched", live)
+diff --git a/internal/webstercli/batchpause_test.go b/internal/webstercli/batchpause_test.go
+index 0708dc27e..ac342cd39 100644
+--- a/internal/webstercli/batchpause_test.go
++++ b/internal/webstercli/batchpause_test.go
+@@ -160,8 +160,8 @@ func TestBatchVerbs_RefuseUnderAPause(t *testing.T) {
+ 					t.Errorf("output missing %q; got %q", want, body)
+ 				}
+ 			}
+-			if strings.Contains(body, "lyx resume") {
+-				t.Errorf("output %q names `lyx resume`, which would lift the operator's pause", body)
++			if strings.Contains(body, "lyx tender resume") {
++				t.Errorf("output %q names `lyx tender resume`, which would lift the operator's pause", body)
+ 			}
+ 			if tt.wantRecord != "" {
+ 				if got, err := os.ReadFile(recordPath); err != nil || string(got) != tt.wantRecord {
+diff --git a/tools/sandbox/SANDBOX-CORE-SUITE.md b/tools/sandbox/SANDBOX-CORE-SUITE.md
+index e24f614cb..e8cdf482e 100644
+--- a/tools/sandbox/SANDBOX-CORE-SUITE.md
++++ b/tools/sandbox/SANDBOX-CORE-SUITE.md
+@@ -262,7 +262,7 @@ This is the supervisor skill's literal first instruction, so it is the first thi
+ Then write both fixtures and continue.
+ Does `lyx loom status` round-trip the fixture's own `slug`/`parent`/`current_producer`/`state`/`activity`/`history` values back out through its JSON envelope unchanged -- this also pins that envelope against the status contract?
+ Does the same envelope carry an `interrupt_policy` matching the fixture's own `current_producer` -- `handback` for `Webster`, `reinvoke` for every other row name, absent for a name that is no row at all?
+-Does a bare `lyx loom pause` refuse naming both ways forward -- `lyx pause <slug>` to stop the run's agents now and `lyx loom pause --after <current_producer>` to halt it at the next producer boundary -- and leave the status file unchanged?
++Does a bare `lyx loom pause` refuse naming both ways forward -- `lyx tender pause <slug>` to stop the run's agents now and `lyx loom pause --after <current_producer>` to halt it at the next producer boundary -- and leave the status file unchanged?
+ Does `lyx loom pause --after <a row name>` record `pause_after` as that row while leaving every other field -- `current_producer`, `state`, `activity`, `history`, and `product` -- untouched?
+ 
+ **Verdict:** `OK` / `WARN` / `FAIL`
+@@ -325,12 +325,12 @@ Does `lyx cleanup` run from a task worktree instead refuse, name the prime workt
+ 
+ **Covers:** tender
+ 
+-**Watch:** Does `lyx pause` print one `{"ok":true}` envelope under `pause` that names the hub scope and reports empty lists, and does a second `lyx pause` report `already_paused` and add no entry?
++**Watch:** Does `lyx p` print one `{"ok":true}` envelope under `pause` that names the hub scope and reports empty lists, and does a second `lyx p` report `already_paused` and add no entry?
+ Does `lyx tender status` list the one live entry and change nothing?
+-While the pause stands, does `lyx board` print one line that names the pause and the `lyx resume` that lifts it, and then continue only after the resume?
+-Does `lyx resume` lift the entry, and does a second `lyx resume` report nothing resumed?
++While the pause stands, does `lyx board` print one line that names the pause and the `lyx tender resume` that lifts it, and then continue only after the resume?
++Does `lyx r` lift the entry, and does a second `lyx r` report nothing resumed?
+ Does `lyx tender revive` with nothing stalled print an empty report and succeed?
+-Does `lyx pause no-such-slug` refuse and list the slugs that have a pair, and does `lyx pause --grace 61` refuse and name the range 0 to 60?
++Does `lyx p no-such-slug` refuse and list the slugs that have a pair, and does `lyx p --grace 61` refuse and name the range 0 to 60?
+ 
+ **Verdict:** `OK` / `WARN` / `FAIL`
+ 
