@@ -44,6 +44,12 @@ The hook output wraps each message as `[creel] #<id> from <sender>: <body>` in t
 Rationale: this matches the notice format the receiver already knows and carries the id for `lyx creel post --reply`.
 Bound: it lets agent text reach another agent's context without the reminder guard; the report weighs that against the saved turn, and nothing here ships.
 
+### Added after Discussion (parent, 2026-10-25): The Codex part is reported as not tested
+
+Decision: Take code round-1 finding F1's second option: the Codex acceptance criterion is amended to a stated not-tested outcome. The report says plainly that whether `PostToolUse` fires in Codex, and whether the model sees hook output from `PreToolUse` or `PostToolUse`, was not tested, why (the Codex usage limit was reached during the run), and the exact steps that test it later. No further Codex run in this task.
+
+Rationale: Parent, 2026-10-25: the Claude results stand on their own, and the Codex check needs only a short run once the limit lifts; holding the task for it buys nothing.
+
 ## Constraints
 
 - `CLAUDE.md`: work only in this worktree, never push, never install a hook in user or plugin settings, never run `update-plugins.sh`.
