@@ -801,6 +801,26 @@
       "revised": "2026-10-25T12:41:18Z",
       "profile": "light",
       "owner_machine": "neve"
+    },
+    {
+      "id": 814,
+      "handle": "E1",
+      "slug": "beam-promote-keeps-discussion",
+      "title": "Beam promote keeps the Discussion record as part of the beam",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "workspaces",
+        "batten",
+        "loom"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "When Discussion finds a task should be a project, promote carries its decision record into the beam instead of dropping it",
+      "body": "## Seen (2026-10-25)\n\n`lyx beam promote \u003cslug\u003e` ends the task's run for good, keeps the code commits on the pair's branch, and resets the pair's records to a fresh fork of its parent's.\nThe run's discussion, plan and run records leave the worktree and stay only in the records history.\n\n## Idea (operator, 2026-10-25)\n\nThe likely moment to promote is Discussion finding that the task is so large it should be a project.\nThen everything the Discussion writer found must be kept: its decision record and what it learned become part of the beam, as the beam's starting design, not something left behind in history.\nNote `loom-beam-darns` is a related shape, where a large loom task turns its own worktree into a beam and runs the pieces inside it.\n\n## Until then (operator, 2026-10-25)\n\nBeams are made with `lyx beam create` on a project entry only; `lyx beam promote` is not used.\n",
+      "created": "2026-10-25T12:46:33Z",
+      "revised": "2026-10-25T12:46:33Z"
     }
   ],
   "prime_owner": "neve",
