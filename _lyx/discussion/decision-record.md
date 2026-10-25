@@ -227,6 +227,12 @@ Rationale: Parent, 2026-10-25: the PR-Gate point no longer exists and Merge-In's
   - docs-overview-keeps-retired-names (class design, severity MEDIUM, open in rounds 2)
 <!-- /lyx:carry-over Plan-Review -->
 
+<!-- lyx:carry-over Code-Review -->
+- Code-Review, round 1: converged; each finding below was fixed or disputed by the round's fixer, and no fresh reviewer has seen the result; the fixer report says which.
+  Review: _lyx/reviews/code/round-1-review.md; fixer report: _lyx/reviews/code/round-1-fixer-report.md.
+  - loom-help-removed-review-verb (class scope, severity MEDIUM, open in rounds 1)
+<!-- /lyx:carry-over Code-Review -->
+
 ## Acceptance criteria
 
 - Discussion-Write's only gate is `discussion`; a passing discussion goes to Discussion-Bouncer with no alignment spawn and no parent message.
