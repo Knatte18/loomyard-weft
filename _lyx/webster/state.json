@@ -681,7 +681,7 @@
       }
     }
   ],
-  "currentBatch": 0,
+  "currentBatch": 5,
   "masterStrand": "ac2243e5870c8bfb94eaa402812b5721",
   "masterSessionId": "dde85386-5954-4b01-bdc1-fcf75b3d6577",
   "masterEngine": "claude",
@@ -789,6 +789,24 @@
       "bracketTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-discussion-scope-in-lenses/dde85386-5954-4b01-bdc1-fcf75b3d6577/subagents/agent-ad52ec9594a4b3fff.jsonl"
       ]
+    },
+    "5": {
+      "slug": "delete-alignment-and-parent-review",
+      "cards": [
+        "05-delete-alignment-and-parent-review",
+        "06-retire-alignment-keys"
+      ],
+      "cardHashes": {
+        "05-delete-alignment-and-parent-review": "7e522de053a044906a190eec5ebcde6eb0486941a4282a249027f6219ec49d6d",
+        "06-retire-alignment-keys": "cc0daf86ae245f9478b4dddc518cbffca3241a32d22e90ed9f1cfcc9f58b7817"
+      },
+      "startSha": "6d8122ecfb9955ce971baa0f0778263382d872a3",
+      "kind": "fork",
+      "spawnedAt": "2026-10-25T08:29:29Z",
+      "sessionId": "dde85386-5954-4b01-bdc1-fcf75b3d6577",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
     }
   },
   "seenForkTranscripts": [
