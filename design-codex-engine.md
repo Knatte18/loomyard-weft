@@ -35,6 +35,10 @@ From `docs/research/codex-feasibility.md`, section 3, after the spike:
 3. Engine-keyed include sets: the stencil renderer picks the running engine's file of named blocks at render time, which only `seatengine` and `twilldirective` do today (`docs/research/stencil-engine-audit-2026-10-24/report.md`); Burler review's stencils need it (operator, 2026-10-24).
 4. Forks and orch parity. Large; deferred. A twill-like fork fan is feasible, see the twill spike report.
 
+## Plan (operator, 2026-10-25)
+
+The Codex account is ChatGPT Plus, bought for testing and benching, not for production use: every Codex bench states an exact, small cap on runs.
+
 ## Review bench (2026-10-25)
 
 `docs/research/codex-review-bench-2026-10-25/report.md`: over 10 discussions and plans at medium effort, solo Codex does not reach the Claude lens fan's coverage.
