@@ -1,34 +1,40 @@
-# Bench Codex as a Burler reviewer against Claude's round-1 reviews
+# Bench Codex as a Burler reviewer against Claude reviews
 
-Adds `docs/research/codex-review-bench-2026-10-25/`: a report, and the data it rests on, on whether Codex can review loom discussions and plans as well as the Claude reviewers.
-No production code, stencil, config or PATTERN entry changes; the diff is text under that directory only.
+Adds a research report that measures whether Codex reaches the Claude reviewers' quality as a Burler reviewer of discussions and plans, and at which model and effort.
+It is the evidence asked for before note `codex-engine` is built.
+Nothing under `internal/`, `cmd/`, `contracts/` or `PATTERN.md` changes; every file is under `docs/research/codex-review-bench-2026-10-25/`.
 
-## What was measured
+## What is added
 
-Ten finished loom runs (six discussions, four plans) from the history of `loomyard-weft`, each reviewed again by `codex exec` over the production burler reviewer prompt, solo, at the commit the Claude round saw.
-Three models ran at medium effort: `gpt-6-luna` on all ten inputs, `gpt-6.1-sol` on all ten, `gpt-6-astra` on the first five.
-Each Codex finding was graded against the Claude findings of the same round: shared, codex-only real, codex-only unchecked, or false.
+- `report.md`: conclusion, summary table of model and effort against shared, codex-only real, false and claude-only counts with tokens, wall time and plan-window use, the method, the `codex exec` and billing findings, and the limits of the comparison.
+- `data/`: the raw Codex review files, `usage.txt` (per-run tokens, wall time, rate-limit readings), `match.tsv` (every Codex finding matched to Claude's findings of the same round), `claude-findings.tsv` and `claude-usage.tsv` (the Claude reference), `inputs.txt` (the ten inputs with weft and code commits), `operator-codex-home.txt`, and the shell harness under `data/harness/`.
 
-`report.md` holds the summary table and the conclusion:
-
-- On this sample Codex does not reach the Claude fan's coverage.
-  The best setting, `gpt-6.1-sol` at medium, reproduced 16 percent of Claude's findings and a third of its `BLOCKING` ones, and added six findings the Claude round did not raise, one of them checked against the code.
-- `gpt-6-luna` is fast and cheap but approved three of the four plans Claude blocked.
-- `gpt-6-astra` matched Sol's coverage on its five inputs at about four times the plan cost.
-- A Codex seat is defensible only as an extra, non-gating reviewer at `gpt-6.1-sol`.
-
-The report also covers how `codex exec` behaves headless under the ChatGPT login and what each run cost against the plan's two rate-limit windows.
-`data/` carries every review file Codex wrote, the per-run usage, the grading of every finding and the scripts that staged and ran the bench.
+The conclusion on this sample: Codex does not reach the Claude fan's coverage.
+`gpt-6.1-sol` at medium effort is the only setting worth a second look, as an extra non-gating reviewer.
+The bench stopped early on the plan's 5-hour limit, and the report names the unmeasured cells.
 
 ## Design decisions
 
-- **The bench stopped on the plan's 5-hour limit.**
-  The grid script had no check for the record's 70 percent stop, so the window passed 79 percent after Astra's fourth input and the limit refused the runs from the sixth.
-  Astra's `D6` and four plan inputs, every effort above medium and every repeat run are unmeasured, and the report says so.
-- **One run per cell.**
-  No variance is measured, so close settings cannot be ranked.
-- **The grading did not use each round's fixer report or bouncer verdict as evidence.**
-  The record planned to read them; the report states the grading is recall against Claude's list, not against ground truth, and lists 12 unchecked Codex findings.
-- **The code commit is the main branch at the round's start,** not the run's fork point.
-- **No hash of `~/.codex/config.toml` was taken before the bench.**
-  Its unchanged state rests on its file time, which predates the bench; every run used a scratch `CODEX_HOME`.
+- Inputs are round-1 discussion and plan reviews of landed `loomyard-weft` runs, each paired with the artifact and with the code at the last parent commit before the Claude round started.
+- The prompt is the production Burler reviewer chain, solo, so Codex is measured against a Claude lens fan; the report states this caveat.
+- Codex runs with `CODEX_HOME` under `.scratch/` linking `~/.codex/auth.json`, work directory under `.scratch/`, `-s workspace-write`.
+  The sandbox confines writes, not reads; the report says so.
+- Grading is by one Claude session against the artifact and code, with the match table committed as the audit trail.
+- The bench is a measurement record; a later run supersedes it with a new dated directory.
+
+## Check by hand
+
+Not run or not settled in this change:
+
+- `data/usage.txt` carries the window percentages per run, and the report's billing figures follow from them.
+- The report's evidence that `~/.codex/config.toml` is unchanged rests on file times, not a hash taken before the bench; the unexplained `~/.codex` directory mtime at 12:15 is still unexplained.
+- Every codex-only finding in `data/match.tsv` is graded against the artifact and code, and the fixer report and bouncer verdict were read for them.
+- `data/harness/grid.sh` stops at 70 percent used in either plan window; the bench itself ran past that.
+- The `BLOCKING` counts in the report can be recomputed from `data/claude-findings.tsv` and `data/match.tsv`.
+- No run read a path under the weft checkout, since workspace-write does not confine reads.
+- `grid.sh` reruns refused cells instead of skipping them.
+- The conclusion's count of Sol findings checked against code matches the findings list.
+- `fill()` in `data/harness/build.sh` quotes its replacement, so an ampersand in a substituted value does not corrupt the prompt.
+- `grid.sh` reads the rollout of the run it just made, not the previous run's.
+- The harness scripts run as committed, and the report's `harness/` description says which steps were done by hand.
+- `report.md` breaks lines at independent-clause boundaries.
