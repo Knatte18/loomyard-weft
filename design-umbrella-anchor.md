@@ -2,8 +2,6 @@
 
 `umbrella-anchor` · Task · enhancement, fabric, config, workspaces
 
-Depends on: [`adopt-runs-tests`](design-adopt-runs-tests.md)
-
 ## Seen (2026-10-18)
 
 The anchor (`fabric clone --subpath`) is set once per hub and decides where `_lyx`, `.lyx/` and config sit in every worktree of the hub.
