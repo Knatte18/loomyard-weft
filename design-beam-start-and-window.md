@@ -75,7 +75,8 @@ The board itself has no owner: ownership sits on projects.
 ### A beam's life is a batten run
 
 A beam is made, landed and torn down by an ordinary batten run over its project entry, the same batten as for loom and darn: Worktree-Create, Run-Shed, Land, Worktree-Teardown.
-Only the recipe Run-Shed runs differs: the `beam` recipe.
+Only the recipe Run-Shed runs differs: the `pawl` recipe, today's `beam` recipe renamed, since `beam` names the worktree; a beam project's entry carries `recipe: pawl`.
+A pawl is the catch that holds a loom's warp beam until the weaver releases it, as Beam-Await holds the beam until `lyx beam land`.
 
 | Row | Does |
 |---|---|
