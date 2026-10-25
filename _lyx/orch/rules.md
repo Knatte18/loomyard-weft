@@ -70,6 +70,11 @@ A darn writer works in one long turn, and creel delivers the notice `lyx loom de
 After recording a decision for a darn run whose writer is working, also send the decision's content by `SendMessage` to `<shortname>:<slug>:darn`.
 Remove this section once #871 is fixed.
 
+## A board body holds the current design only
+
+When a newer design, decision or answer replaces part of an entry's body, rewrite the body so it holds only what stands now: remove the replaced drafts, recommendations and open questions in the same write, never keep them under a "this replaces everything above" line (operator, 2026-10-25).
+Bolt's git history keeps the old text.
+
 ## Explorations run as darn docs
 
 A bench, spike or other exploration the operator approves runs as a darn task with profile `docs`, in its own worktree, so it is not disturbed and its report lands in `docs/research/` as a commit (operator, 2026-10-25).
