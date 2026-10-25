@@ -14,11 +14,12 @@
 - `plan:internal/driftengine#ReadScope`
 - `plan:internal/driftengine#ReadCapture`
 - `plan:internal/driftengine#UpdateScope`
+- `plan:internal/driftengine#DirRel`
 
 **Intent:**
 Add `Drift-Await`, the mechanical row that holds `Webster` until the baseline exists (D5); it spawns nothing.
 
-`DriftAwait.Call` reads the scope record, and the capture record only after a lock probe, so a capture that just ended is read as ended; it commits `_lyx/drift`, the capture log included, through `Commit` on every way out, Done, Stuck and a deferred Done alike (D4):
+`DriftAwait.Call` reads the scope record, and the capture record only after a lock probe, so a capture that just ended is read as ended; it commits all of `DirRel()`, the capture log included, through `Commit` on every way out, Done, Stuck and a deferred Done alike (D4):
 no scope record, or scope `off`, is Done;
 `awaited_at` set, by a passed await or a deferral, is Done whatever HEAD is, so a later entry after `Webster` committed code passes;
 a capture holding the lock is waited on through `awaitCaptureEnd`, with no bound of its own, and the record is read once the lock is free; the held lock reads as activity to the loop's idle watchdog (card 12-drift-activity);

@@ -8,9 +8,11 @@
 - `plan:internal/driftengine#TestRunCompare` -> `func TestRunCompare(t *testing.T)`
 - `plan:internal/driftengine#TestSkipList` -> `func TestSkipList(t *testing.T)`
 
+**Edit:**
+- `internal/gateslot/doc.go`
+
 **Extends:**
 - `internal/driftengine/doc.go`
-- `internal/gateslot/doc.go`
 
 **Uses:**
 - `plan:internal/driftengine#RunCapture`
