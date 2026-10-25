@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-25 13:54 UTC; every age below is as of then.
+Rendered 2026-10-25 13:55 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -18,7 +18,7 @@ grouping
 
 | # | Member | Kind | Standing |
 | --- | --- | --- | --- |
-| T3 | **An anchor per beam** | Task | Discussion-Bouncer |
+| T3 | **An anchor per beam** | Task | awaiting · Discussion-Bouncer |
 
 ### P2 .NET: LoomYard for C# repositories
 
@@ -41,8 +41,8 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T1 | **Regression as three Drift rows: Drift-Baseline after Discussion, Drift-Await before Webster, Drift-Verify after the Code perch**<br>• Support a hub regression tier that writes profiles on the parent before implementation and compares after, switchable per task for expected drift.<br>• `profile: light` | [`regression-baseline-verify`](design-regression-baseline-verify.md) | loom | Discussion-Write | neve | 8d<br>3m | shed, webster, batten, config, dotnet |
-| T3 | **An anchor per beam**<br>• Let each worktree carry its own anchor through a .lyx-anchor marker at its weft branch root, inherited by its tasks, with a verb that changes it<br>• `profile: solid` | [`umbrella-anchor`](design-umbrella-anchor.md) | loom | Discussion-Bouncer | neve | 7d<br>1h | fabric, config, workspaces |
+| T1 | **Regression as three Drift rows: Drift-Baseline after Discussion, Drift-Await before Webster, Drift-Verify after the Code perch**<br>• Support a hub regression tier that writes profiles on the parent before implementation and compares after, switchable per task for expected drift.<br>• `profile: light` | [`regression-baseline-verify`](design-regression-baseline-verify.md) | loom | Discussion-Write | neve | 8d<br>4m | shed, webster, batten, config, dotnet |
+| T3 | **An anchor per beam**<br>• Let each worktree carry its own anchor through a .lyx-anchor marker at its weft branch root, inherited by its tasks, with a verb that changes it<br>• `profile: solid` | [`umbrella-anchor`](design-umbrella-anchor.md) | loom | awaiting · Discussion-Bouncer | neve | 7d<br>1h | fabric, config, workspaces |
 
 ### Ready (1)
 
