@@ -40,7 +40,7 @@ index 5be8f6292..1f8ee8196 100644
  	{Key: "internal/fabricengine/codebinding.go", Why: "the code-side binding writer writes the code-side binding file into the _board records worktree fabric created via " +
  		"containedWorktreeAdd; it is committed onto the records main branch by the caller, and the board directory is fabric-owned, never a " +
 diff --git a/docs/overview.md b/docs/overview.md
-index b065cc28c..938856ebf 100644
+index 76a394f79..9540e6b0a 100644
 --- a/docs/overview.md
 +++ b/docs/overview.md
 @@ -65,11 +65,12 @@ Internal Go feature packages follow the `<module>cli` / `<module>engine` split (
@@ -512,11 +512,129 @@ index dc8b8e64d..1b4163f16 100644
  		reads := []func() error{
  			func() (err error) { view.StatusModified, err = modTimeOf(shedrun.StatusFile(prime, slug)); return },
  			func() (err error) {
+diff --git a/internal/battencli/overview.go b/internal/battencli/overview.go
+index 22a7214ab..4f537ae83 100644
+--- a/internal/battencli/overview.go
++++ b/internal/battencli/overview.go
+@@ -181,9 +181,11 @@ type DobbyRunCells struct {
+ 	childCaches  map[string]*statuspane.StatusCache
+ 	// seeds holds the decoded seed by slug; a seed is write-once, so a decoded one is never read again.
+ 	seeds map[string]shedrun.Seed
+-	// pairs holds the resolved task worktree location by slug, for as long as its directory exists.
++	// pairs holds the resolved task worktree location by slug, for as long as its directory exists and the run stays in Run-Shed;
++	// the pair's anchor can move between two runs, so a later Run-Shed spell resolves it again.
+ 	pairs map[string]*lyxcwd.Location
+-	// childRecipes holds the recipe a child's seed names by slug; a seed is write-once, so a decoded one is never read again.
++	// childRecipes holds the recipe a child's seed names by slug; a seed is write-once, so a decoded one is never read again while the run stays in Run-Shed.
++	// The entry goes with the pair's, since a later run in the pair has a seed of its own.
+ 	childRecipes map[string]string
+ }
+ 
+@@ -222,7 +224,7 @@ func (r *DobbyRunCells) Of(runs []dobbyengine.ViewRun, now time.Time) map[string
+ 	return cells
+ }
+ 
+-// resolveChildPair resolves the task worktree of slug once while its directory exists.
++// resolveChildPair resolves the task worktree of slug once per Run-Shed spell while its directory exists.
+ func (r *DobbyRunCells) resolveChildPair(slug string) (*lyxcwd.Location, error) {
+ 	pair, ok := r.pairs[slug]
+ 	if !ok {
+@@ -302,6 +304,9 @@ func (r *DobbyRunCells) poll(slug string) overviewRun {
+ 			logger.Debug("batten: reading a child seed for the overview failed", "slug", slug, "err", err)
+ 		}
+ 		run.ChildRecipe = recipe
++	} else {
++		delete(r.pairs, slug)
++		delete(r.childRecipes, slug)
+ 	}
+ 	return run
+ }
+diff --git a/internal/battencli/overview_test.go b/internal/battencli/overview_test.go
+index 78b1b4f19..c7f6d6fca 100644
+--- a/internal/battencli/overview_test.go
++++ b/internal/battencli/overview_test.go
+@@ -18,6 +18,7 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/battenrecipe"
+ 	"github.com/Knatte18/loomyard/internal/configengine"
+ 	"github.com/Knatte18/loomyard/internal/dobbyengine"
++	"github.com/Knatte18/loomyard/internal/fabricengine"
+ 	"github.com/Knatte18/loomyard/internal/lyxcwd"
+ 	"github.com/Knatte18/loomyard/internal/orchcli"
+ 	"github.com/Knatte18/loomyard/internal/orchengine"
+@@ -441,6 +442,68 @@ func TestDobbyRunCells_ReadsTheRunsFromDisk(t *testing.T) {
+ 	}
+ }
+ 
++func TestDobbyRunCells_ResolvesTheChildPairAgainInEachRunShedSpell(t *testing.T) {
++	t.Parallel()
++
++	hub := t.TempDir()
++	prime := locationkit.Location(hub, "prime", ".")
++	const slug = "run-a"
++
++	// A directory the repository walk accepts as the task worktree's root.
++	worktree := filepath.Join(hub, slug)
++	for _, dir := range []string{filepath.Join(worktree, ".git", "objects"), filepath.Join(worktree, ".git", "refs")} {
++		if err := os.MkdirAll(dir, 0o755); err != nil {
++			t.Fatal(err)
++		}
++	}
++	writeOverviewFile(t, filepath.Join(worktree, ".git", "HEAD"), []byte("ref: refs/heads/main\n"), minutesAgo(200))
++	// The hub-wide marker anchors every worktree that records none of its own.
++	marker := filepath.Join(fabricengine.BoardDir(hub), lyxcwd.AnchorFileName)
++	setAnchor := func(anchorRel string) {
++		t.Helper()
++		writeOverviewFile(t, marker, []byte(anchorRel+"\n"), minutesAgo(1))
++	}
++
++	if err := shedrun.WriteSeed(prime, slug, shedrun.Seed{Recipe: shedrun.RecipeBatten, Driver: shedrun.DriverGo, StartedAt: stamp(minutesAgo(120))}); err != nil {
++		t.Fatal(err)
++	}
++	battenStatus := shedrun.StatusFile(prime, slug)
++	writeChildStatus := func(anchorRel, producer string, modTime time.Time) {
++		t.Helper()
++		writeOverviewStatus(t, shedrun.StatusFile(locationkit.Location(hub, slug, anchorRel), shedrun.SelfRunID), shedengine.Status{State: shedengine.StateRunning, CurrentProducer: producer}, modTime)
++	}
++	cells := NewDobbyRunCells(prime, filepath.Join(t.TempDir(), "pause.json"))
++	check := func(read string, want RunCells) {
++		t.Helper()
++		if diff := cmp.Diff(map[string]RunCells{slug: want}, cells.Of(viewRuns(slug), overviewNow)); diff != "" {
++			t.Errorf("%s mismatch (-want +got):\n%s", read, diff)
++		}
++	}
++
++	setAnchor(".")
++	writeChildStatus(".", "Plan-Write", minutesAgo(100))
++	writeOverviewStatus(t, battenStatus, shedengine.Status{State: shedengine.StateRunning, CurrentProducer: battenrecipe.NameRunShed}, minutesAgo(100))
++	if err := shedrun.WriteSeed(locationkit.Location(hub, slug, "."), shedrun.SelfRunID, shedrun.Seed{Recipe: shedrun.RecipeLoom, Driver: shedrun.DriverGo}); err != nil {
++		t.Fatal(err)
++	}
++	check("read in the first Run-Shed spell", RunCells{State: "running", Stage: "6.6 Plan-Write", InStage: "2h00m"})
++
++	// The run leaves Run-Shed, the pair's anchor moves, and a new run enters Run-Shed again.
++	writeOverviewStatus(t, battenStatus, shedengine.Status{State: shedengine.StateRunning, CurrentProducer: "Plan"}, minutesAgo(50))
++	check("read between the spells", RunCells{State: "running", Stage: "Plan", InStage: "2h00m"})
++	setAnchor("sub")
++	writeChildStatus("sub", "Review", minutesAgo(45))
++	writeOverviewStatus(t, battenStatus, shedengine.Status{State: shedengine.StateRunning, CurrentProducer: battenrecipe.NameRunShed}, minutesAgo(40))
++	check("read in the second Run-Shed spell", RunCells{State: "running", Stage: "Review", InStage: "2h00m"})
++
++	// A third spell in the moved pair has no seed, so it must not keep the recipe the first spell's seed named.
++	writeOverviewStatus(t, battenStatus, shedengine.Status{State: shedengine.StateRunning, CurrentProducer: "Plan"}, minutesAgo(30))
++	check("read between the second and third spells", RunCells{State: "running", Stage: "Plan", InStage: "2h00m"})
++	writeChildStatus("sub", "Plan-Write", minutesAgo(20))
++	writeOverviewStatus(t, battenStatus, shedengine.Status{State: shedengine.StateRunning, CurrentProducer: battenrecipe.NameRunShed}, minutesAgo(10))
++	check("read in the third Run-Shed spell", RunCells{State: "running", Stage: "Plan-Write", InStage: "2h00m"})
++}
++
+ func TestOverviewSource_DrawsTheOrchLine(t *testing.T) {
+ 	t.Parallel()
+ 
 diff --git a/internal/beamcli/cli.go b/internal/beamcli/cli.go
-index 0cdc2adb1..4aa2d3751 100644
+index 55c48d425..473b346f4 100644
 --- a/internal/beamcli/cli.go
 +++ b/internal/beamcli/cli.go
-@@ -257,7 +257,8 @@ func placeDobby(root string) (*lyxcwd.Location, dobbyengine.Geometry, error) {
+@@ -262,7 +262,8 @@ func placeDobby(root string) (*lyxcwd.Location, dobbyengine.Geometry, error) {
  
  // createCmd returns the `beam create` verb.
  func createCmd() *cobra.Command {
@@ -526,7 +644,7 @@ index 0cdc2adb1..4aa2d3751 100644
  		Use:         "create <slug>",
  		Short:       "make a project entry a beam: record its owner and make its pair",
  		Annotations: map[string]string{clihelp.AudienceAnnotation: clihelp.AudienceOperator},
-@@ -269,15 +270,22 @@ Steps, in order, each skipped when its result is already there, so a re-run
+@@ -274,15 +275,22 @@ Steps, in order, each skipped when its result is already there, so a re-run
  finishes a stopped create:
    1. record this machine as the project's owner with the beam flag
    2. make the pair from the prime, or from the parent beam of a nested beam,
@@ -551,7 +669,7 @@ index 0cdc2adb1..4aa2d3751 100644
  		Args: cobra.ExactArgs(1),
  		RunE: func(cmd *cobra.Command, args []string) error {
  			return runVerb(cmd, func(_ context.Context, _ string, prime *lyxcwd.Location) (any, error) {
-@@ -285,10 +293,12 @@ Example:
+@@ -290,10 +298,12 @@ Example:
  				if err != nil {
  					return nil, err
  				}
@@ -964,7 +1082,7 @@ index 5568cf86f..c2360b659 100644
  		}
  		return dirs
 diff --git a/internal/beamcli/doc.go b/internal/beamcli/doc.go
-index 70cd7403e..075cb3df6 100644
+index b61865c32..b5cf78c1b 100644
 --- a/internal/beamcli/doc.go
 +++ b/internal/beamcli/doc.go
 @@ -16,13 +16,19 @@
@@ -13201,6 +13319,82 @@ index 5b00995ba..291489f76 100644
  	})
  }
  
+diff --git a/internal/orchcli/cli.go b/internal/orchcli/cli.go
+index c096faabd..84a6fb9b1 100644
+--- a/internal/orchcli/cli.go
++++ b/internal/orchcli/cli.go
+@@ -115,8 +115,11 @@ type orchCLI struct {
+ 
+ // Command returns the cobra command tree for the orch module.
+ func Command() *cobra.Command {
+-	c := &orchCLI{}
++	return commandOf(&orchCLI{})
++}
+ 
++// commandOf returns the orch command tree whose verbs hang off c, so a test can read what PersistentPreRunE wires into c.
++func commandOf(c *orchCLI) *cobra.Command {
+ 	parent := &cobra.Command{
+ 		Use:   "orch",
+ 		Short: "run the hub orchestrator as a reed strand with automatic handoff",
+diff --git a/internal/orchcli/runstitle_integration_test.go b/internal/orchcli/runstitle_integration_test.go
+new file mode 100644
+index 000000000..31eb4d48c
+--- /dev/null
++++ b/internal/orchcli/runstitle_integration_test.go
+@@ -0,0 +1,53 @@
++//go:build tier1
++
++// runstitle_integration_test.go proves the pre-run wiring names the runs strand's window after the worktree the verb runs in: the prime reads `beam: prime` and a beam reads `beam: <slug>`.
++
++package orchcli
++
++import (
++	"bytes"
++	"testing"
++
++	"github.com/Knatte18/loomyard/internal/clihelp"
++	"github.com/Knatte18/loomyard/internal/fabricengine"
++	"github.com/Knatte18/loomyard/internal/hubforge"
++	"github.com/Knatte18/loomyard/internal/lyxcwd"
++)
++
++func TestRunsWindowTitle_WiredFromTheWorktreeTheVerbRunsIn(t *testing.T) {
++	t.Parallel()
++
++	const slug = "b"
++	h := hubforge.CopyHub(t, hubforge.Shape{Anchor: "."})
++	hubforge.AddPairWith(t, h, slug, fabricengine.AddOptions{SkipPush: true})
++	if marked, err := fabricengine.MarkBeam(fabricengine.NewMutations(h.Location.HubPath), h.Location, slug); err != nil || !marked {
++		t.Fatalf("MarkBeam(%q) = (%v, %v); want (true, nil)", slug, marked, err)
++	}
++	beam, err := lyxcwd.ResolveWorktree(h.PairCodeWorktree(slug))
++	if err != nil {
++		t.Fatalf("ResolveWorktree(%q): %v", slug, err)
++	}
++
++	tests := []struct {
++		name string
++		cwd  string
++		want string
++	}{
++		{"PrimeReadsPrime", h.Location.AnchorPath(), "beam: prime"},
++		{"BeamReadsItsSlug", beam.AnchorPath(), "beam: " + slug},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++
++			// status runs the pre-run in full and only then talks to reed, whose answer this test ignores.
++			c := &orchCLI{}
++			var out bytes.Buffer
++			clihelp.ExecuteIn(commandOf(c), tt.cwd, &out, []string{"status"})
++
++			if c.runsWindowTitle != tt.want {
++				t.Errorf("runsWindowTitle after status in %s = %q; want %q; output: %s", tt.cwd, c.runsWindowTitle, tt.want, out.String())
++			}
++		})
++	}
++}
 diff --git a/internal/pairteardown/archive.go b/internal/pairteardown/archive.go
 index 386dfeed5..077fe1764 100644
 --- a/internal/pairteardown/archive.go
