@@ -513,7 +513,7 @@
       }
     }
   ],
-  "currentBatch": 6,
+  "currentBatch": 0,
   "masterStrand": "0e5c1b321b6c70cb866eb0cf593994ed",
   "masterSessionId": "8e4534d5-3d9e-4ff8-b0e0-0b69e54a79a7",
   "masterEngine": "claude",
@@ -607,12 +607,42 @@
       "spawnedAt": "2026-10-25T15:47:07Z",
       "sessionId": "8e4534d5-3d9e-4ff8-b0e0-0b69e54a79a7",
       "engine": "claude",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "failed",
+      "digest": {
+        "batch": "06-clone-records-marker-on-prime-weft",
+        "status": "failed",
+        "head_sha": "81d95e212190a18a16cf95185a9fe900dda04816",
+        "reasons": [
+          "webster: fabric-reference violation in \"/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-umbrella-anchor/8e4534d5-3d9e-4ff8-b0e0-0b69e54a79a7/subagents/agent-a2fe4f35f39765664.jsonl\": ran a fabric-referencing command (\"lyx gate test --wait --gate card --card 6-clone-records-marker-on-prime-weft 2\u003e\u00261 | tail -40\") that can rewrite run state — an implementer fork must never touch the fabric repo directly",
+          "webster: fabric-reference violation in \"/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-umbrella-anchor/8e4534d5-3d9e-4ff8-b0e0-0b69e54a79a7/subagents/agent-a2fe4f35f39765664.jsonl\": ran a fabric-referencing command (\"lyx gate test --wait --gate card --card 6-clone-records-marker-on-prime-weft 2\u003e\u00261 | grep -v \\\"^=== \\\\|^--- PASS\\\\|^    --- PASS\\\\|^PASS\\\\|^ok\\\" | tail -40\") that can rewrite run state — an implementer fork must never touch the fabric repo directly",
+          "webster: fabric-reference violation in \"/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-umbrella-anchor/8e4534d5-3d9e-4ff8-b0e0-0b69e54a79a7/subagents/agent-a2fe4f35f39765664.jsonl\": ran a fabric-referencing command (\"lyx gate test --wait --gate card --card 6-clone-records-marker-on-prime-weft 2\u003e\u00261 | grep -v \\\"^=== \\\\|^--- PASS\\\\|^    --- PASS\\\\|^PASS\\\\|^ok\\\" | tail -20\") that can rewrite run state — an implementer fork must never touch the fabric repo directly",
+          "webster: fabric-reference violation in \"/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-umbrella-anchor/8e4534d5-3d9e-4ff8-b0e0-0b69e54a79a7/subagents/agent-a2fe4f35f39765664.jsonl\": ran a fabric-referencing command (\"lyx gate test --wait --gate batch --card 6-clone-records-marker-on-prime-weft 2\u003e\u00261 | grep -E \\\"^(--- FAIL|FAIL|ok)|^gate test:|^    [a-z_]+_test.go:[0-9]+:\\\" | grep -v \\\"livestate_matrix_test.go:266\\\\|builds with\\\" | head -40\") that can rewrite run state — an implementer fork must never touch the fabric repo directly",
+          "webster: fabric-reference violation in \"/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-umbrella-anchor/8e4534d5-3d9e-4ff8-b0e0-0b69e54a79a7/subagents/agent-a2fe4f35f39765664.jsonl\": ran a fabric-referencing command (\"git add -A internal cmd \u0026\u0026 git commit -q -m \\\"7: add-takes-the-fork-point-anchor\\n\\nCo-Authored-By: Claude Sonnet 5.5 \u003cnoreply@anthropic.com\u003e\\\" \u0026\u0026 git log --oneline -1 \u0026\u0026 lyx gate test --wait --gate batch --card 6-clone-records-marker-on-prime-weft --card 7-add-takes-the-fork-point-anchor 2\u003e\u00261 | grep -E \\\"^(--- FAIL|FAIL)|^gate test: .*discovered|^    [a-z_]+_test.go:[0-9]+:\\\" | grep -v \\\"livestate_matrix_test.go:2[68]\\\"\") that can rewrite run state — an implementer fork must never touch the fabric repo directly"
+        ]
+      },
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-umbrella-anchor/8e4534d5-3d9e-4ff8-b0e0-0b69e54a79a7/subagents/agent-a2fe4f35f39765664.jsonl"
+      ],
+      "uncheckable": [
+        "fabric-reference: ran a fabric-referencing command (\"lyx gate test --wait --gate card --card 6-clone-records-marker-on-prime-weft 2\u003e\u00261 | tail -40\") that can rewrite run state — an implementer fork must never touch the fabric repo directly",
+        "fabric-reference: ran a fabric-referencing command (\"lyx gate test --wait --gate card --card 6-clone-records-marker-on-prime-weft 2\u003e\u00261 | grep -v \\\"^=== \\\\|^--- PASS\\\\|^    --- PASS\\\\|^PASS\\\\|^ok\\\" | tail -40\") that can rewrite run state — an implementer fork must never touch the fabric repo directly",
+        "fabric-reference: ran a fabric-referencing command (\"lyx gate test --wait --gate card --card 6-clone-records-marker-on-prime-weft 2\u003e\u00261 | grep -v \\\"^=== \\\\|^--- PASS\\\\|^    --- PASS\\\\|^PASS\\\\|^ok\\\" | tail -20\") that can rewrite run state — an implementer fork must never touch the fabric repo directly",
+        "fabric-reference: ran a fabric-referencing command (\"lyx gate test --wait --gate batch --card 6-clone-records-marker-on-prime-weft 2\u003e\u00261 | grep -E \\\"^(--- FAIL|FAIL|ok)|^gate test:|^    [a-z_]+_test.go:[0-9]+:\\\" | grep -v \\\"livestate_matrix_test.go:266\\\\|builds with\\\" | head -40\") that can rewrite run state — an implementer fork must never touch the fabric repo directly",
+        "fabric-reference: ran a fabric-referencing command (\"git add -A internal cmd \u0026\u0026 git commit -q -m \\\"7: add-takes-the-fork-point-anchor\\n\\nCo-Authored-By: Claude Sonnet 5.5 \u003cnoreply@anthropic.com\u003e\\\" \u0026\u0026 git log --oneline -1 \u0026\u0026 lyx gate test --wait --gate batch --card 6-clone-records-marker-on-prime-weft --card 7-add-takes-the-fork-point-anchor 2\u003e\u00261 | grep -E \\\"^(--- FAIL|FAIL)|^gate test: .*discovered|^    [a-z_]+_test.go:[0-9]+:\\\" | grep -v \\\"livestate_matrix_test.go:2[68]\\\"\") that can rewrite run state — an implementer fork must never touch the fabric repo directly"
+      ]
     }
   },
   "seenForkTranscripts": [
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-umbrella-anchor/8e4534d5-3d9e-4ff8-b0e0-0b69e54a79a7/subagents/agent-ab7a3857ade81b206.jsonl",
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-umbrella-anchor/8e4534d5-3d9e-4ff8-b0e0-0b69e54a79a7/subagents/agent-a0e1008c8aa9cb14f.jsonl"
-  ]
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-umbrella-anchor/8e4534d5-3d9e-4ff8-b0e0-0b69e54a79a7/subagents/agent-a0e1008c8aa9cb14f.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-umbrella-anchor/8e4534d5-3d9e-4ff8-b0e0-0b69e54a79a7/subagents/agent-a2fe4f35f39765664.jsonl"
+  ],
+  "auditDispositions": {
+    "fork:/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-umbrella-anchor/8e4534d5-3d9e-4ff8-b0e0-0b69e54a79a7/subagents/agent-a2fe4f35f39765664.jsonl:fabric-reference:1": "failed",
+    "fork:/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-umbrella-anchor/8e4534d5-3d9e-4ff8-b0e0-0b69e54a79a7/subagents/agent-a2fe4f35f39765664.jsonl:fabric-reference:2": "failed",
+    "fork:/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-umbrella-anchor/8e4534d5-3d9e-4ff8-b0e0-0b69e54a79a7/subagents/agent-a2fe4f35f39765664.jsonl:fabric-reference:3": "failed",
+    "fork:/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-umbrella-anchor/8e4534d5-3d9e-4ff8-b0e0-0b69e54a79a7/subagents/agent-a2fe4f35f39765664.jsonl:fabric-reference:4": "failed",
+    "fork:/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-umbrella-anchor/8e4534d5-3d9e-4ff8-b0e0-0b69e54a79a7/subagents/agent-a2fe4f35f39765664.jsonl:fabric-reference:5": "failed"
+  }
 }
