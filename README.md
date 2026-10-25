@@ -49,14 +49,15 @@ Waits on nothing open; can start now.
 
 _None._
 
-## Notes (39)
+## Notes (40)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
 
-### Audits (6)
+### Audits (7)
 
 | # | P | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
+| A1 |  | **Bench Codex as a Burler reviewer against Claude reviews of finished runs** | [`codex-review-bench`](design-codex-review-bench.md) | 0m<br>0m | codex, burler |
 | A2 |  | **Recurring test-suite time and growth audit**<br>• Re-run cmd/testtiming against test-suite-timing.md to watch suite growth | [`test-time-audit-recurring`](design-test-time-audit-recurring.md) | 6d<br>19h |  |
 | A3 |  | **Audit the twill and lens review setup: worth per perch, recurring finding classes, writer quality**<br>• One audit over the review records once about ten loom runs with the current setup land on Neve | [`review-setup-audit`](design-review-setup-audit.md) | 9d<br>19h | burler, loom, report, stencil, shed |
 | A5 |  | **Sweep go_parallel on OSL-1046 with Cortex XDR**<br>• Time both gate tiers on the work laptop on a quiet machine and log them in docs beside the Neve numbers, with full hardware info | [`bench-osl1046-xdr`](design-bench-osl1046-xdr.md) | 5d<br>4d |  |

@@ -836,6 +836,25 @@
       "body": "## Seen (operator, 2026-10-25)\n\nProject entries (P handles) and their members render in the README's Projects section since dd11ab09f.\nThe section's lead line (`projectsSection` in `internal/boardengine/render.go`) reads \"Groups of entries; a beam spawns its members from its own worktree.\", which reads as if every project were a beam; a project needs no beam, and most are grouping only (operator, 2026-10-25).\nAfter the first two projects, `workspaces` and `dotnet`, were made, the operator was not satisfied with that layout.\n\n## Idea\n\nDecide with the operator how projects and their members are shown on the board, then change the README rendering to match.\nThe layout is not yet discussed.",
       "created": "2026-10-25T06:20:53Z",
       "revised": "2026-10-25T06:26:29Z"
+    },
+    {
+      "id": 811,
+      "handle": "A1",
+      "slug": "codex-review-bench",
+      "title": "Bench Codex as a Burler reviewer against Claude reviews of finished runs",
+      "kind": "note",
+      "labels": [
+        "audit",
+        "codex",
+        "burler"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "## Goal (operator, 2026-10-25)\n\nBench Codex as a Burler reviewer before any of note `codex-engine` is built: Codex reviews the discussions and plans of finished loom runs, many times, and its findings are set against what the Claude reviewers found in the same runs.\nCodex spends its own tokens; Claude only drives the bench.\n\n## Method\n\n- Inputs: discussions and plans of landed loom runs, with their Claude review reports, from the history of `loomyard-weft` (`_lyx/reviews/discussion`, `_lyx/reviews/plan`), each reviewed at the commit the Claude round saw.\n- Codex runs headless (`codex exec`) with the review stencil as prompt, over several models and efforts (Luna, Sol, Astra).\n- Per input and setting: findings Claude also found, real findings Claude missed, false findings, Claude findings Codex missed, tokens and wall time.\n- Also tested: `codex exec` itself, and billing under a ChatGPT login (plan rate limits per run).\n\n## Result\n\nNot run yet.\n",
+      "created": "2026-10-25T10:37:54Z",
+      "revised": "2026-10-25T10:37:54Z"
     }
   ],
   "prime_owner": "neve"
