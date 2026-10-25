@@ -28,10 +28,10 @@
 
 **Uses:**
 - `plan:internal/dobbyengine#Run`
-- `plan:internal/dobbyengine#EnsureLive`
+- `internal/dobbyengine#EnsureLive`
 - `plan:internal/dobbyengine#PassExit`
-- `plan:internal/hubgeom#DobbyStart`
-- `plan:internal/hubgeom#DobbyGeometry`
+- `internal/hubgeom#DobbyStart`
+- `internal/hubgeom#DobbyGeometry`
 - `internal/runproc#RoleDobby`
 - `internal/orchcli#NotifyFromScoped`
 

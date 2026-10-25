@@ -41,9 +41,9 @@
 - `plan:internal/battencli#TestStartFirstPass` -> `func TestStartFirstPass(t *testing.T)`
 
 **Uses:**
-- `plan:internal/hubgeom#DobbyGeometry`
-- `plan:internal/dobbyengine#Live`
-- `plan:internal/dobbyengine#SpawnDetached`
+- `internal/hubgeom#DobbyGeometry`
+- `internal/dobbyengine#Live`
+- `internal/dobbyengine#SpawnDetached`
 
 **Intent:**
 Retire `--window` and the hidden `--open-terminal`, since dobby starts every run, and start a first pass detached where a verb used to open a window (D4).

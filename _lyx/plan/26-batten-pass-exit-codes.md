@@ -11,11 +11,11 @@
 - `internal/battencli#TestBattenRun_RefusesWhileAPauseCoversTheSlug`
 
 **Create:**
-- `plan:internal/battencli#OwnedElsewhereError` -> `type OwnedElsewhereError struct`
-- `plan:internal/battencli#OwnedElsewhereError.Error` -> `func (e *OwnedElsewhereError) Error() string`
-- `plan:internal/battencli#coveredRefusal` -> `type coveredRefusal struct`
-- `plan:internal/battencli#passExitCode` -> `func passExitCode(err error) int`
-- `plan:internal/battencli#TestPassExitCode` -> `func TestPassExitCode(t *testing.T)`
+- `internal/battencli#OwnedElsewhereError`
+- `internal/battencli#OwnedElsewhereError.Error`
+- `internal/battencli#coveredRefusal`
+- `internal/battencli#passExitCode`
+- `internal/battencli#TestPassExitCode`
 
 **Uses:**
 - `internal/dobbyengine#PassExitOwnedElsewhere`

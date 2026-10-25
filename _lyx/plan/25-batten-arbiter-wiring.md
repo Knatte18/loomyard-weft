@@ -11,10 +11,10 @@
 - `PATTERN.md`
 
 **Create:**
-- `plan:internal/battencli#battenArbiterRecipe` -> `const battenArbiterRecipe = ""`
-- `plan:internal/battencli#battenCLI.loadedArbiterDeps` -> `func (c *battenCLI) loadedArbiterDeps() (shedarbiter.Deps, error)`
-- `plan:internal/battencli#battenCLI.battenConsumeAttempt` -> `func (c *battenCLI) battenConsumeAttempt(ctx context.Context, attempt string) error`
-- `plan:internal/battencli#TestBattenConsumeAttempt` -> `func TestBattenConsumeAttempt(t *testing.T)`
+- `internal/battencli#battenArbiterRecipe`
+- `internal/battencli#battenCLI.loadedArbiterDeps`
+- `internal/battencli#battenCLI.battenConsumeAttempt`
+- `internal/battencli#TestBattenConsumeAttempt`
 
 **Uses:**
 - `internal/shedarbiter#Deps`

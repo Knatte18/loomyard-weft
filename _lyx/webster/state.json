@@ -1,6 +1,6 @@
 {
   "runGuid": "0a9cd41e763cda08c3e817c3e3774513",
-  "planFingerprint": "fe4f084d72adaba5778380d24bdc33985f1946be3061331ca40c7f68d2036679",
+  "planFingerprint": "c00d10d5e0a9ce15548a5d79bb713f853db845e8c0c04301583af65a8ab24861",
   "planFileHashes": {
     "00-overview.md": "dad2e8dedbf9d5391b1a83850b1f6f2a07dc064acca0a99fa5d735955a4c3338",
     "01-agentname-scoped-program.md": "469f85082d8aeeadd27955255db010ba9dd2c769051fbf76e5914caab34e888f",
@@ -27,20 +27,20 @@
     "22-shedarbiter-package.md": "691da6aa8c153d0822d909b8d830236fff8279d475a2df6a7e63be46f60c797a",
     "23-loomcli-arbiter-delegates.md": "759f1304e371ce1afadaf1dfbf12c66ecc1ed109911315c8a7dd0ad8f99c6b57",
     "24-arbiterstop-batten-rule.md": "1328fbc262e76d49b5304bac302fa7f0588e93557712d444e0db22964d0f6b40",
-    "25-batten-arbiter-wiring.md": "4db18df72da50992bfe1cccea6b83c97f662b2cad1254acc1b368d57998089e3",
-    "26-batten-pass-exit-codes.md": "c9cae0b862ef0bc974a718c3b912a085acb6e204f9c147db1c830130e06d56c9",
-    "27-dobby-start.md": "2a0b549fb2c7c37ed58e1df9f91be7514e8d256abb9033b2bb939bdf1d975f2d",
-    "28-batten-first-pass.md": "32a8be418b1e2e48c2d0f56bbc170660eff42c31324674da6d7ab785597e50e6",
+    "25-batten-arbiter-wiring.md": "388e4143152002684515a2e872a3b976a13e4891bb7a2f9f0472de7d23aaeb66",
+    "26-batten-pass-exit-codes.md": "6d9ec1b26564a5a8c8b8578653031b0f1579ccc81e7239c8be2a00969e8b96a7",
+    "27-dobby-start.md": "3512b82746c52b84bd3b4c454cdaa402fe5b6794b33a14f89da42f39d847df95",
+    "28-batten-first-pass.md": "e34355681ece0673f34a9c3694f2995476ad5bb83911197b3bc30afc9248b5c4",
     "29-origin-owed-marker.md": "3ce9f7533338afaead805b6975c173389f78bc4e67835f47dda00c8b9a1e64bf",
-    "30-batten-continue-pass.md": "dd62cd577dc27c8b6eff2d9d2664a11f7613492179ea92dea999647ef0b1082a",
-    "31-batten-pass-wiring.md": "44a4ac6705b5443446598e110aa23990e20374a22a2ff74f33f7215af4b494ee",
+    "30-batten-continue-pass.md": "6b3d10cf52b9bc07c6672477ca76ef64c19102a18976d261ebdbe24be90cdc64",
+    "31-batten-pass-wiring.md": "e7464c90ead1ec5daa6fc32fbcf6c99eaef751bfae16e75bbf52ffbf7234e7f8",
     "32-dobby-loop.md": "837b1ae373f6770cb07538b4a07f1d98a60a88d8b09c70d00a7afa240870811a",
     "33-dobby-passes.md": "707c2b60803ad8e944d99351baee86411575c1beef563bbf8d5e724f7a3b8136",
     "34-dobby-owned-elsewhere.md": "92a4a25ca1d2db63e21e6a90f949f8780517adac358fed0503bea855e8b4ec0e",
     "35-dobby-ready-starts.md": "cc64ad4e54ab23dc2105f13dfbc4e791dd1085aab35c23dfe2171ecb544439ed",
     "36-dobby-board-tidy.md": "8c350012e83a2e20d906234ea0e66c578b31718e1ccbc33c5aefff74830eb1de",
-    "37-beam-verbs.md": "7d62ebc2e955406b99decef5011e9e59e3d764d60c6c970da5e18237098af31d",
-    "38-orch-start-dobbies.md": "6bc1e446f7e0e9690c74046003ac12a1ec70ad2c2dbcca47b11102936dc45be8",
+    "37-beam-verbs.md": "5aa3387c068860784a4296d7d06ad719c95fd1c8e994b053c27105fba9766210",
+    "38-orch-start-dobbies.md": "ff175aa8def69d2419e16a1c85d9ff0d8576b6bb125ea3965f92809fbfc8bfa2",
     "39-adopt-refusals.md": "dbfb5bbbbf1306e7ae611a2c9bf120baf57c9e6dc1c38fda30e0a135644844cd",
     "40-teardown-dobby-liveness.md": "59afae810c6ef5078dfade906853829f63464411d09e52c28e45308afc8caf00",
     "41-finalize-key-notice.md": "21e9a6e51f7658c719ec5a22b9a60c0c04f1bf8420e5f893aaf56d4f566a785f",
@@ -972,7 +972,7 @@
       }
     }
   ],
-  "currentBatch": 25,
+  "currentBatch": 0,
   "masterStrand": "b72a3cc08101d22a4e8fe62d611ae08b",
   "masterSessionId": "6e5b1004-7b3f-4552-94de-e0b6630533f5",
   "masterEngine": "claude",
@@ -1255,17 +1255,41 @@
         "27-dobby-start"
       ],
       "cardHashes": {
-        "25-batten-arbiter-wiring": "4db18df72da50992bfe1cccea6b83c97f662b2cad1254acc1b368d57998089e3",
-        "26-batten-pass-exit-codes": "c9cae0b862ef0bc974a718c3b912a085acb6e204f9c147db1c830130e06d56c9",
-        "27-dobby-start": "2a0b549fb2c7c37ed58e1df9f91be7514e8d256abb9033b2bb939bdf1d975f2d"
+        "25-batten-arbiter-wiring": "388e4143152002684515a2e872a3b976a13e4891bb7a2f9f0472de7d23aaeb66",
+        "26-batten-pass-exit-codes": "6d9ec1b26564a5a8c8b8578653031b0f1579ccc81e7239c8be2a00969e8b96a7",
+        "27-dobby-start": "3512b82746c52b84bd3b4c454cdaa402fe5b6794b33a14f89da42f39d847df95"
       },
       "startSha": "7babc2018e90a9cc7750622ae7733d1355e71a87",
       "kind": "fork",
       "spawnedAt": "2026-10-25T10:24:19Z",
       "sessionId": "6e5b1004-7b3f-4552-94de-e0b6630533f5",
       "engine": "claude",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "25-batten-arbiter-wiring",
+        "status": "done",
+        "head_sha": "83354cdd3da46a19b63568efe7878ccb4de53cc3",
+        "deviations": [
+          "internal/battencli/arm.go",
+          "internal/battencli/drive.go",
+          "internal/battencli/pausehold_test.go",
+          "internal/battencli/run_test.go",
+          "internal/dobbyengine/geometry.go",
+          "internal/dobbyengine/start.go",
+          "internal/dobbyengine/start_test.go",
+          "internal/hubgeom/dobbygeom.go"
+        ]
+      },
+      "cardShas": [
+        "83354cdd3da46a19b63568efe7878ccb4de53cc3"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-umbrella-daemon/6e5b1004-7b3f-4552-94de-e0b6630533f5/subagents/agent-a3fd5abbf7087cd5f.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-umbrella-daemon/6e5b1004-7b3f-4552-94de-e0b6630533f5/subagents/agent-a3fd5abbf7087cd5f.jsonl"
+      ]
     },
     "7": {
       "slug": "draft-writers",
@@ -1320,6 +1344,7 @@
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-umbrella-daemon/6e5b1004-7b3f-4552-94de-e0b6630533f5/subagents/agent-a1d6906409bb79b10.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-umbrella-daemon/6e5b1004-7b3f-4552-94de-e0b6630533f5/subagents/agent-a5a12edb51d5fae5d.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-umbrella-daemon/6e5b1004-7b3f-4552-94de-e0b6630533f5/subagents/agent-aa70040cd9f251876.jsonl",
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-umbrella-daemon/6e5b1004-7b3f-4552-94de-e0b6630533f5/subagents/agent-aa344f16e9da14f44.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-umbrella-daemon/6e5b1004-7b3f-4552-94de-e0b6630533f5/subagents/agent-aa344f16e9da14f44.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-umbrella-daemon/6e5b1004-7b3f-4552-94de-e0b6630533f5/subagents/agent-a3fd5abbf7087cd5f.jsonl"
   ]
 }

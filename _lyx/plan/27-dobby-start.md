@@ -1,15 +1,15 @@
 # Card 27 — dobby-start
 
 **Create:**
-- `plan:internal/dobbyengine#StartDeps` -> `type StartDeps struct`
-- `plan:internal/dobbyengine#StartReport` -> `type StartReport struct`
-- `plan:internal/dobbyengine#EnsureLive` -> `func EnsureLive(deps StartDeps) (StartReport, error)`
-- `plan:internal/dobbyengine#Live` -> `func Live(geom Geometry) (bool, error)`
-- `plan:internal/dobbyengine#SpawnDetached` -> `func SpawnDetached(geom Geometry) error`
-- `plan:internal/hubgeom#DobbyGeometry` -> `func DobbyGeometry(prime *lyxcwd.Location, worktree string) (dobbyengine.Geometry, error)`
-- `plan:internal/hubgeom#DobbyStart` -> `func DobbyStart(prime *lyxcwd.Location) dobbyengine.StartDeps`
-- `plan:internal/dobbyengine#TestEnsureLive` -> `func TestEnsureLive(t *testing.T)`
-- `plan:internal/hubgeom#TestDobbyGeometry` -> `func TestDobbyGeometry(t *testing.T)`
+- `internal/dobbyengine#StartDeps`
+- `internal/dobbyengine#StartReport`
+- `internal/dobbyengine#EnsureLive`
+- `internal/dobbyengine#Live`
+- `internal/dobbyengine#SpawnDetached`
+- `internal/hubgeom#DobbyGeometry`
+- `internal/hubgeom#DobbyStart`
+- `internal/dobbyengine#TestEnsureLive`
+- `internal/hubgeom#TestDobbyGeometry`
 
 **Edit:**
 - `internal/dobbyengine#dobbyengineAllowedImports`
