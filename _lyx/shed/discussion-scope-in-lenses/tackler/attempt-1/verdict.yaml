@@ -1,7 +1,0 @@
-verdict: resume
-reason: >-
-  Worktree-Create blocked at 07:04:46 because /home/knatte/Code/loomyard-LYXHUB/discussion-scope-in-lenses/_lyx was a real directory that predates weft (stderr.log line 2; trace.log line 65).
-  That path is now absent (checked read-only with ls), so the named blocker has cleared since the stop.
-  Re-launching Worktree-Create should settle it.
-  Caveat: the stop also asked for `lyx fabric reconcile` to create the junction, and the hub still holds retired portal links (trace.log line 63); if the re-launch blocks again on the same reason, the next judge should hand back rather than resume.
-goto: Worktree-Create
