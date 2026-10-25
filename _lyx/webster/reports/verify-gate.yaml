@@ -1,0 +1,30 @@
+attempt: 1
+cap: 2
+failures:
+    - id: github.com/Knatte18/loomyard/internal/loomengine.TestDiscussionTable/lens_review/template_fan_without_lenses.yaml
+      kind: test
+      package: github.com/Knatte18/loomyard/internal/loomengine
+      tail: ""
+    - id: github.com/Knatte18/loomyard/internal/loomengine.TestDiscussionTable/lens_review/the_fan_lives_only_in_the_repo_default
+      kind: test
+      package: github.com/Knatte18/loomyard/internal/loomengine
+      tail: ""
+    - id: github.com/Knatte18/loomyard/internal/loomengine.TestDiscussionTable/lens_review/the_key_names_a_fan_of_lenses.yaml's_own
+      kind: test
+      package: github.com/Knatte18/loomyard/internal/loomengine
+      tail: ""
+    - id: github.com/Knatte18/loomyard/internal/loomengine.TestDiscussionTable/lens_review/lenses.yaml_redefines_the_fan
+      kind: test
+      package: github.com/Knatte18/loomyard/internal/loomengine
+      tail: ""
+    - id: github.com/Knatte18/loomyard/internal/loomcli.TestSmokeBootstrapLifecycle/malformed_status_proceeds_to_the_success_envelope_and_logs_why
+      kind: test
+      package: github.com/Knatte18/loomyard/internal/loomcli
+      tail: ""
+log_path: /home/knatte/Code/loomyard-LYXHUB/discussion-scope-in-lenses/.lyx/verify/verify-2.log
+hint:
+    - 03-drop-parent-review-gate
+    - 04-drop-review-verbs
+    - 05-delete-alignment-and-parent-review
+    - 16-parent-align-row
+fixer: fork
