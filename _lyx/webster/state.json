@@ -1,6 +1,6 @@
 {
   "runGuid": "2296f03adbfc9b5b6c4ac227639f851c",
-  "planFingerprint": "c9fc9e8810c1bab6282a884fafc90aa69d14fc61948bba2bb33732c9952e142c",
+  "planFingerprint": "d5a642bdd1ad85fadc09e8876a43f1ce600caf6738afb9dcc08bebdf94989cfc",
   "planFileHashes": {
     "00-overview.md": "2fb88d04f73d16d2c7cad26e91f386f18cb7b04f23f762b8fadfc19b4cb73612",
     "01-drift-config.md": "d35e7cd4305029bd8e0a834a57b15b3d5b81c04f17de1a4ed620e313364e84a6",
@@ -15,8 +15,8 @@
     "10-drift-await-producer.md": "c04507ff8e05380a12c26a4548985f15c9161b5fd6e42bbff7f57d7bc0eb2988",
     "11-drift-verify-producer.md": "ca75abb17d765f4e405900d97436bc49b49678bb0469db5d9f4af8c25c3f8750",
     "12-drift-activity.md": "13bb511b5629e08dce29199ef89a6a9b850e2b2728a3de03fa5cbca3f5bced68",
-    "13-capture-teardown.md": "5e52e6f5b17789442375c93d2d096a3967834a26725ea33406f4fddb371ce39f",
-    "14-drift-recipe-rows.md": "066950f7aa778d305a47a16c515150b2e20860d0a7f7a9e1f14800bca31bf552"
+    "13-capture-teardown.md": "21736105fd5b720aee788e7a98a279c0a7a9a20df2d3d09350498d92a9aab61c",
+    "14-drift-recipe-rows.md": "892dac4b4c33ab679d54723a74e0df65f8e76aa9bcda18b7bb3276dd658c46a3"
   },
   "planOverviewFrameHash": "463ddaa713858a34876301bc07a4b66edc063ce7460c5e5031c54595a9113acd",
   "partition": [
@@ -328,7 +328,7 @@
       }
     }
   ],
-  "currentBatch": 12,
+  "currentBatch": 0,
   "masterStrand": "fa06c5879ed38ce88c7219deaa6de4cf",
   "masterSessionId": "6b74923a-78fd-41c6-8504-f637e840efcb",
   "masterEngine": "claude",
@@ -397,16 +397,47 @@
       ],
       "cardHashes": {
         "12-drift-activity": "13bb511b5629e08dce29199ef89a6a9b850e2b2728a3de03fa5cbca3f5bced68",
-        "13-capture-teardown": "5e52e6f5b17789442375c93d2d096a3967834a26725ea33406f4fddb371ce39f",
-        "14-drift-recipe-rows": "066950f7aa778d305a47a16c515150b2e20860d0a7f7a9e1f14800bca31bf552"
+        "13-capture-teardown": "21736105fd5b720aee788e7a98a279c0a7a9a20df2d3d09350498d92a9aab61c",
+        "14-drift-recipe-rows": "892dac4b4c33ab679d54723a74e0df65f8e76aa9bcda18b7bb3276dd658c46a3"
       },
       "startSha": "1a614898a334d0ee662f4fece386deea793e8191",
       "kind": "fork",
       "spawnedAt": "2026-10-25T16:56:22Z",
       "sessionId": "6b74923a-78fd-41c6-8504-f637e840efcb",
       "engine": "claude",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "12-drift-activity",
+        "status": "done",
+        "head_sha": "3fdf334157287f341f0dd36ee946e2b92b8e785a",
+        "deviations": [
+          "internal/battencli/overview_test.go",
+          "internal/loomcli/checklist_test.go",
+          "internal/loomcli/driftwiring.go",
+          "internal/loomrecipe/drift_test.go",
+          "internal/loomrecipe/gatequiescence_test.go",
+          "internal/loomrecipe/recipe_test.go",
+          "internal/loomrecipe/sequence_test.go",
+          "internal/loomrecipe/shape_test.go",
+          "internal/pairteardown/teardown_test.go",
+          "internal/shedrecipe/conformance_test.go",
+          "internal/shedrecipe/entries_drift.go",
+          "internal/shedrecipe/entries_drift_test.go",
+          "internal/shedrecipe/registry_test.go",
+          "internal/shedrecipe/seam_enforcement_test.go",
+          "internal/testkit/envkit/envkit.go"
+        ]
+      },
+      "cardShas": [
+        "3fdf334157287f341f0dd36ee946e2b92b8e785a"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-regression-baseline-verify/6b74923a-78fd-41c6-8504-f637e840efcb/subagents/agent-a62054d7bc09941cd.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-regression-baseline-verify/6b74923a-78fd-41c6-8504-f637e840efcb/subagents/agent-a62054d7bc09941cd.jsonl"
+      ]
     },
     "7": {
       "slug": "drift-verbs-cli",
@@ -467,6 +498,7 @@
   },
   "seenForkTranscripts": [
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-regression-baseline-verify/6b74923a-78fd-41c6-8504-f637e840efcb/subagents/agent-a16acca756a142be4.jsonl",
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-regression-baseline-verify/6b74923a-78fd-41c6-8504-f637e840efcb/subagents/agent-a9ba45b97179c37c8.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-regression-baseline-verify/6b74923a-78fd-41c6-8504-f637e840efcb/subagents/agent-a9ba45b97179c37c8.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-regression-baseline-verify/6b74923a-78fd-41c6-8504-f637e840efcb/subagents/agent-a62054d7bc09941cd.jsonl"
   ]
 }
