@@ -1,0 +1,10 @@
+{
+  "slug": "umbrella-daemon",
+  "round": 1,
+  "reviewer": "ly:orch",
+  "opened_at": "2026-10-25T07:19:23.040937477+01:00",
+  "decision_record": "/home/knatte/Code/loomyard-LYXHUB/umbrella-daemon/_lyx/discussion/decision-record.md",
+  "support_log": "/home/knatte/Code/loomyard-LYXHUB/umbrella-daemon/_lyx/discussion/support-log.md",
+  "state": "open",
+  "cap": 2
+}
