@@ -513,7 +513,7 @@
       }
     }
   ],
-  "currentBatch": 0,
+  "currentBatch": 8,
   "masterStrand": "78050100d96dc3d016a719d88a437aa8",
   "masterSessionId": "f14f6a6a-13a7-4ddf-b2b8-70425a7da22b",
   "masterEngine": "claude",
@@ -636,6 +636,26 @@
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-umbrella-anchor/f14f6a6a-13a7-4ddf-b2b8-70425a7da22b/subagents/agent-a0ac51cac25f0b7ef.jsonl",
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-umbrella-anchor/f14f6a6a-13a7-4ddf-b2b8-70425a7da22b/subagents/agent-adf40872f85ad0115.jsonl"
       ]
+    },
+    "8": {
+      "slug": "reconcile-migrates-markers",
+      "cards": [
+        "08-reconcile-migrates-markers",
+        "09-weft-pull-and-push-stop-on-marker-change",
+        "10-checkout-and-drop-local-refuse-another-anchor"
+      ],
+      "cardHashes": {
+        "08-reconcile-migrates-markers": "1fb26b1d8b3bd6419b1fa789c0b222b53d34760335e7f5c71af736baf0cf36d9",
+        "09-weft-pull-and-push-stop-on-marker-change": "387c5d622cdcfb91c2373b18d44370ea2a6652e4df3f364286b33a9604e9e8c2",
+        "10-checkout-and-drop-local-refuse-another-anchor": "3a48410eefe689811421ca67ad9ceafc7d18df62249ca12f6b6434d7e2d63123"
+      },
+      "startSha": "f18068daa91078ab0f0a15d97d269b5f31ac8af2",
+      "kind": "fork",
+      "spawnedAt": "2026-10-25T16:31:46Z",
+      "sessionId": "f14f6a6a-13a7-4ddf-b2b8-70425a7da22b",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
     }
   },
   "seenForkTranscripts": [
