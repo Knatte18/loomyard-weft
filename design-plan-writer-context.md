@@ -52,3 +52,24 @@ Plan writer plus its lens forks, means per run (API list price):
 - So `relevant.md` works as a floor, not a boundary; most unnamed reading looks like tests and neighbouring callers, which a per-part split of the list would not remove.
 - Still open: the solo Opus high and Fable writer bench, and the split-writing variants, which need new runs.
 - Scripts, baseline tables and `results.md` are in `docs/research/plan-writer-audit-2026-10-24/`; rerun per its README.
+
+## Discussion versus Plan: double reading (Sonnet agent, 2026-10-25)
+
+55 loom runs seeded 2026-10-15 or later with both a `ly:<slug>:discussion` and a `ly:<slug>:plan` transcript on this machine; cost at API list price from the 10-24 tokencount reports, per run:
+
+| | Discussion | Plan |
+|---|---|---|
+| phase total (writer, forks, review, fix) | $8.68 | $18.51 |
+| writer session alone | $2.07 | $6.60 |
+| writer turns / mean context | 39 / 89k tokens | 83 / 183k tokens |
+| repo files read by the writer (pooled) | 1,093 | 3,286 |
+| share read by both | 62% of Discussion's reads re-read by Plan | 21% of Plan's reads read by Discussion |
+| same, without `PATTERN.md`, `CLAUDE.md`, `pattern/`, `docs/` | 64% | 20% |
+
+- Discussion costs 0.47 of Plan for the phase and 0.31 for the writer alone; Discussion was the dearer phase in only 4 of 55 runs.
+- Plan-Write re-reads about 62% of the files Discussion-Write read (mean of per-run shares 62%), so exploration is repeated, but Plan reads about three times as many files and most of its reading (79%) is new.
+- Rough size of the repeat: the Plan-Write reads that Discussion had already made are about 3.3M tokens pooled, about 59k per run (file bytes at current `main` divided by 4; whole files assumed, so an upper bound).
+  That is roughly a third of the Plan writer's mean context, and it is paid again on every later turn through the cache.
+- File-level only: directory greps, globs and `lyx quarry` reads are not counted, and a file is the same file by path, not by the lines read.
+- The Discussion phase total holds its review rounds and fixers, which is most of its cost beyond the writer; the segment figures come from the 10-24 tokencount reports, so runs landed since are priced as of then.
+- Rerun: `.scratch/discussion-overlap/reads2.sh <slug> plan|discussion` per run, then `analyze.sh`; both stay in `.scratch` and are not committed.
