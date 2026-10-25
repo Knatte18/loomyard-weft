@@ -1,12 +1,10 @@
 ---
 round: 1
 focus:
-  - "internal/lyxcwd/anchor.go and lyxcwd.go: does the own-marker read and write follow card 01 and the decision record, and do callers treat a missing or invalid marker as the record says?"
-  - "internal/fabricengine anchor-change engine (cards 13, 15) and internal/hubforge/reanchor.go: is every failure path mid-move recoverable, and do the weft writers stop while a move is recorded?"
-  - "Refusal guards (cards 09-12, 19): does each of weft pull and push, checkout, drop-local, origin reconcile, promote and adopt refuse in every case the record names, and none beyond it?"
-  - "internal/hubgeom/dobbygeom.go and the dobby run listing (card 16): does a pair with an invalid anchor marker or a move in progress behave as the record says?"
-  - "Docs landing in the same diff: doc.go of each touched package, docs/overview.md, and the PATTERN.md and pattern/ changes the record declares."
-  - "Test economy: new tests that duplicate existing coverage, and behavior added with no test."
+  - "Amendment scope: the Parent-Align merge of afd030a47 (beam window, `orchcli.HubOrchs`, `orchcli.PrimePaths`, moved `DobbyRunCells`). Check that the merged code resolves each worktree through `lyxcwd.ResolveWorktree` and reads that pair's own marker, as the decision record's anchor decisions (D2, D3, D7) require."
+  - "Check the merged parent code for any `lyxcwd.Location` literal or hand-built path the anchor change forbids in production code; verify the claim in the fixer report that the only new literal is in `overview_test.go`."
+  - "Check that the text-only overlaps (`docs/overview.md`, `internal/beamcli/cli.go`, `internal/beamcli/doc.go`) keep both the parent's beam-window text and the task's anchor changes, with no dropped or contradictory sentence."
+  - "Check that the fixer report's claims about what it changed under `## Fixes` are borne out by the diff since the settle, and that nothing outside the amendment is touched."
 ---
 
-Seed focus from the diff stat and the plan's card list.
+Seed focus for an amendment round: the review input is the Parent-Align fixer report, so the question is whether the alignment keeps the merged tree consistent with the decision record.
