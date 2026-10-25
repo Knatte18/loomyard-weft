@@ -778,6 +778,24 @@
       "body": "## Seen (2026-10-25)\n\n`lyx beam promote \u003cslug\u003e` ends the task's run for good, keeps the code commits on the pair's branch, and resets the pair's records to a fresh fork of its parent's.\nThe run's discussion, plan and run records leave the worktree and stay only in the records history.\n\n## Idea (operator, 2026-10-25)\n\nThe likely moment to promote is Discussion finding that the task is so large it should be a project.\nThen everything the Discussion writer found must be kept: its decision record and what it learned become part of the beam, as the beam's starting design, not something left behind in history.\nNote `loom-beam-darns` is a related shape, where a large loom task turns its own worktree into a beam and runs the pieces inside it.\n\n## Until then (operator, 2026-10-25)\n\nBeams are made with `lyx beam create` on a project entry only; `lyx beam promote` is not used.\n",
       "created": "2026-10-25T12:46:33Z",
       "revised": "2026-10-25T12:46:33Z"
+    },
+    {
+      "id": 815,
+      "handle": "E3",
+      "slug": "pattern-line-cap-text-only",
+      "title": "PATTERN line cap counts the rule text only, not the name and link",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "pattern"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "MaxEntryLineChars counts the whole entry line, so the room left for the rule text shrinks with the entry name and link",
+      "body": "## Seen (umbrella-anchor Plan-Write, 2026-10-25)\n\n`pattern.MaxEntryLineChars` (360) caps the whole overview line: the bullet, the entry name, the rule text, `(test)` and the background link.\nThe fixed parts took 79 characters for `PATTERN-cwd-resolution`, so its rule text had room for about 281, and a 331-character text recorded at Discussion failed the cap only at Plan-Write and needed a parent decision to shorten it.\nThe room for the text changes with the name length and with whether the entry has a link, which no writer sees when wording a rule.\n\n## Idea\n\nThe cap counts the rule text alone, the part between the name and `(test)` or the link, so the limit a writer works against is one number whatever the name.\n`lyx loom decision add --pattern-text` and the Discussion check measure the text against it when the decision is recorded, not at Plan-Write.",
+      "created": "2026-10-25T14:04:12Z",
+      "revised": "2026-10-25T14:04:12Z"
     }
   ],
   "prime_owner": "neve",
