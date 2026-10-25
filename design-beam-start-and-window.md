@@ -71,3 +71,9 @@ The board itself has no owner: ownership sits on projects.
 - An adopt moves that project alone: a beam project nested under it keeps its own owner, so adopting root moves root's own tasks and never the beam projects under it.
 - Landing a beam into its parent is the parent beam's job: the parent's dobby runs the landing and cleans up after it, so a machine lands a project only while it owns the parent as well.
   Example: with G and H beam projects under root and everything on Neve, OSL-1046 adopts G and finishes it, then adopts root to land G; H stays on Neve throughout.
+
+### Landing a beam
+
+- `lyx beam land <slug>` stops the beam's orch and its watcher itself instead of refusing while they live; its teardown already ends the beam's dobby.
+- When a beam's last member lands, its dobby sends its orch a notice that the beam can land, naming `lyx beam land <slug>` in the parent worktree; when another machine owns the parent project, the notice says so and names `lyx adopt` of the parent.
+- `lyx beam land` refuses on a machine that does not own the parent project, with the same way forward, so no landing starts that no dobby drives.
