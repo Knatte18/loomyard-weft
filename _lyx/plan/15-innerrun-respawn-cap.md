@@ -8,8 +8,8 @@
 - `internal/battenshed#TestNotice_DeadDriverWhileRunning`
 
 **Create:**
-- `plan:internal/battenshed#respawnCap` -> `const respawnCap = 3`
-- `plan:internal/battenshed#TestInnerRun_RespawnCapStopsWithoutProgress` -> `func TestInnerRun_RespawnCapStopsWithoutProgress(t *testing.T)`
+- `internal/battenshed#respawnCap`
+- `internal/battenshed#TestInnerRun_RespawnCapStopsWithoutProgress`
 
 **Intent:**
 Cap the respawn of a running child whose driver keeps dying (D4, D9's driver-dead).

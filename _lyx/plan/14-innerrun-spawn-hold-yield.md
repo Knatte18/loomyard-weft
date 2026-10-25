@@ -26,7 +26,7 @@
 - `internal/shedrecipe#TestInnerRunEntry_NilSleepIsAccepted`
 
 **Create:**
-- `plan:internal/battenshed#TestInnerRun_SpawnHoldYields` -> `func TestInnerRun_SpawnHoldYields(t *testing.T)`
+- `internal/battenshed#TestInnerRun_SpawnHoldYields`
 
 **Uses:**
 - `internal/shedengine#Yield`
