@@ -72,6 +72,8 @@ Duplicates are merged and named under every lens that raised them.
 - Let the arbiter settle `decision` escalations: the board entry routes them to the operator, and the arbiter can record decisions.
 - Darn writer checks after writing its record, so the parent answers with `lyx loom decision add` only: the record would already be built on the outdated entry, which is what Part 2 avoids.
 - Rename the merge record and fabric's merge-in too: they name git merges, Finalize's included, not the row.
+- Run a refused `decision` accept below the hard cap as a `continue`: it forgets the parent's answer, so the next round re-escalates the same question, and nothing hands the refusal's findings to the next fixer; re-judging before the recorded decision acts keeps the answer and the dropped-key guard.
+- Halt a no-parent darn stop through a new gate refusal: the existing `discussion` gate already halts once its attempts run out, with no new code.
 - Restart runs parked on `Merge-In`: the recipe's restart rule is for retired rows, and `RenameProducers` already carries a one-to-one rename.
 
 ## Review rounds
@@ -87,8 +89,8 @@ _No rounds yet._
 - Q5 (auto-pick): Which fan carries the scope check? — `review-discussion` gains `goal-scope` and `board-fit`, rewritten as procedures; `twill-discussion` keeps its members (D5).
 - Q6 (auto-pick): What do the lenses send to the parent? — Plainly outdated entry, design conflicts with another run and doubt about the task's purpose, with the alignment agent's bounds and reads capped to a fork's budget; ordinary misalignment stays a fixer finding (D6).
 - Q7 (auto-pick): How is a writer's choice kept out of `decision`? — The rubric defines the class for this segment (D7).
-- Q8 (auto-pick): Where does the escalation live? — A Discussion-Bouncer row key; on the judged round, before the judgment refusal, soft-cap, circling and auto-accept; the round is never a settled generation; cause `decision`; arbiter refuses it; accept carries every `decision` finding (D8).
+- Q8 (auto-pick): Where does the escalation live? — A Discussion-Bouncer row key; on the judged round, before the judgment refusal, soft-cap, circling and auto-accept, with an accept still subject to the refusal; the round is no settled generation until its accept settles; cause `decision`, kept on the hard-cap path; arbiter refuses it; accept carries every `decision` finding (D8).
 - Q9 (auto-pick): One parent message or two? — One: the Bouncer's escalation; the fix row stays silent in that segment (D8).
 - Q10 (auto-pick): What does the Discussion writer do with a parent-only question? — Records it under Open risks in autonomous mode; asks the operator in interactive mode (D9).
-- Q11 (auto-pick): Darn check timing and answer path? — While the record is absent or invalid; ask by `SendMessage` for a decision note, wait held, write the answer into the record, then ask for `lyx loom decision add` once the record is committed (D10).
+- Q11 (auto-pick): Darn check timing and answer path? — While the record is absent or invalid; ask by `SendMessage` for a decision note and a reply, wait held and re-read the board on any parent message, with no parent stop with the change description as stop report, write the answer into the record, then ask for `lyx loom decision add` once the record is committed (D10).
 - Q12 (auto-pick): Which names does the rename cover? — Row, engine, producer, fixer mode and report, `merge_fix_attempts`, gate key `merge-in`, docs; not fabric's merge-in nor the merge record; runs carried across with `RenameProducers` (D11).
