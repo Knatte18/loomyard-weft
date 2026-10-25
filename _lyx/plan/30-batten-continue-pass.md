@@ -18,8 +18,8 @@
 **Uses:**
 - `plan:internal/battencli#OriginOwed`
 - `plan:internal/hubgeom#DobbyGeometry`
-- `plan:internal/dobbyengine#ReadState`
-- `plan:internal/dobbyengine#PassExitContinueRefused`
+- `internal/dobbyengine#ReadState`
+- `internal/dobbyengine#PassExitContinueRefused`
 
 **Intent:**
 Add the continue pass dobby schedules into a run it already drives, and the full pass that skips only the window re-run (D4).

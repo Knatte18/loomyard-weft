@@ -7,10 +7,10 @@
 - `plugins/ly/skills/board/SKILL.md`
 
 **Create:**
-- `plan:internal/boardengine#StatusDraft` -> `const StatusDraft = "draft"`
-- `plan:internal/boardengine#IsEmptyStatus` -> `func IsEmptyStatus(status *string) bool`
-- `plan:internal/boardengine#applyDraftRule` -> `func applyDraftRule(loaded, after []Task)`
-- `plan:internal/boardengine_test#TestDraftStatus` -> `func TestDraftStatus(t *testing.T)`
+- `internal/boardengine#StatusDraft`
+- `internal/boardengine#IsEmptyStatus`
+- `internal/boardengine#applyDraftRule`
+- `internal/boardengine_test#TestDraftStatus`
 
 **Intent:**
 Make `draft` the status of every new task, by one rule at the store's commit point (D5, and the Added-after-Discussion entry placing it in `Board.boardCriticalSection`).

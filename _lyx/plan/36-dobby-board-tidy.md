@@ -3,7 +3,7 @@
 **Edit:**
 - `plan:internal/dobbyengine#Deps`
 - `plan:internal/dobbyengine#daemon.tick`
-- `plan:internal/dobbyengine#dobbyengineAllowedImports`
+- `internal/dobbyengine#dobbyengineAllowedImports`
 - `contracts/stencils#entries`
 - `contracts/stencils#roleOpeningStencils`
 - `internal/dobbyengine/doc.go`
@@ -21,7 +21,7 @@
 - `plan:internal/dobbyengine#TestTidyPrompt` -> `func TestTidyPrompt(t *testing.T)`
 
 **Uses:**
-- `plan:internal/dobbyengine#Config`
+- `internal/dobbyengine#Config`
 
 **Intent:**
 Spawn the board-tidy agent every N landings, taking over what the orch did after a landing (D10, D9's dropped `landed`).

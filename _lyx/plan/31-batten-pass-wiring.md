@@ -15,7 +15,7 @@
 
 **Uses:**
 - `plan:internal/hubgeom#DobbyGeometry`
-- `plan:internal/dobbyengine#ReadState`
+- `internal/dobbyengine#ReadState`
 - `plan:internal/dobbyengine#Live`
 
 **Intent:**

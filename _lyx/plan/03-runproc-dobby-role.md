@@ -7,8 +7,8 @@
 - `internal/runproc/doc.go`
 
 **Create:**
-- `plan:internal/runproc#RoleDobby` -> `const RoleDobby = "dobby"`
-- `plan:internal/runproc#EndSparing` -> `func EndSparing(dir, owner string, callerPID int, spare ...string) ([]Ended, error)`
+- `internal/runproc#RoleDobby`
+- `internal/runproc#EndSparing`
 
 **Intent:**
 Add the dobby role and an end that spares named roles, which `lyx reed down` of a beam's session needs so the beam's dobby, registered under the beam's slug, outlives its session (D1).

@@ -12,11 +12,11 @@
 - `plan:internal/hubgeom#TestDobbyGeometry` -> `func TestDobbyGeometry(t *testing.T)`
 
 **Edit:**
-- `plan:internal/dobbyengine#dobbyengineAllowedImports`
+- `internal/dobbyengine#dobbyengineAllowedImports`
 
 **Uses:**
-- `plan:internal/dobbyengine#Geometry`
-- `plan:internal/lyxdirs#BeamDirName`
+- `internal/dobbyengine#Geometry`
+- `internal/lyxdirs#BeamDirName`
 
 **Intent:**
 Add the start of every dobby this machine owns, the body `lyx beam start` and its callers share (D2); it lives below every CLI package, since `orchcli`, `battencli`, `beamcli` and `adoptcli` all call it and `battencli` imports `orchcli`.

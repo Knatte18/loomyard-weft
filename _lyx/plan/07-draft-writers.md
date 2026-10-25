@@ -24,7 +24,7 @@
 - `docs/overview.md`
 
 **Uses:**
-- `plan:internal/boardengine#StatusDraft`
+- `internal/boardengine#StatusDraft`
 
 **Intent:**
 Make every lyx path that clears a task's status write `draft`, and refuse a fresh start of a draft (D5), so a null status reaches the board only from a payload the operator or the orch writes.

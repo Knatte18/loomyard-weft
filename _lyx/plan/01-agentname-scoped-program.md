@@ -6,7 +6,7 @@
 - `internal/agentname#TestValidationRejections`
 
 **Create:**
-- `plan:internal/agentname#FormatScopedProgram` -> `func FormatScopedProgram(shortname, slug, name string) (string, error)`
+- `internal/agentname#FormatScopedProgram`
 
 **Intent:**
 Add the beam-scoped program sender `<shortname>:<slug>:<NAME>`, which dobby signs with as `ly:<slug>:DOBBY` for a beam (D1); the prime's dobby keeps the two-segment `ly:DOBBY` that `FormatProgram` forms.

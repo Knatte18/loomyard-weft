@@ -15,8 +15,8 @@
 - `plan:internal/pairteardown#TestRegisteredBattenAlive_ReadsADobbyDrivenRun` -> `func TestRegisteredBattenAlive_ReadsADobbyDrivenRun(t *testing.T)`
 
 **Uses:**
-- `plan:internal/runproc#RoleDobby`
-- `plan:internal/runproc#EndSparing`
+- `internal/runproc#RoleDobby`
+- `internal/runproc#EndSparing`
 
 **Intent:**
 Read the gap between a run's passes as a live lifecycle owner, and keep a beam's dobby through its session's end (D1, D4).

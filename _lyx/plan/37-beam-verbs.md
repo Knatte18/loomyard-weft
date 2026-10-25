@@ -32,8 +32,8 @@
 - `plan:internal/dobbyengine#PassExit`
 - `plan:internal/hubgeom#DobbyStart`
 - `plan:internal/hubgeom#DobbyGeometry`
-- `plan:internal/runproc#RoleDobby`
-- `plan:internal/orchcli#NotifyFromScoped`
+- `internal/runproc#RoleDobby`
+- `internal/orchcli#NotifyFromScoped`
 
 **Intent:**
 Add `lyx beam start` and the hidden `lyx beam dobby`, and give every beam a dobby from birth (D1, D2).
