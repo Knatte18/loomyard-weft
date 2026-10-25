@@ -1,0 +1,13 @@
+verdict: resume
+reason: |-
+  Round 3 of Discussion-Bouncer escalated at cause hard-cap with three open design-wrong findings: F1 scope-full-unruled-acceptance-survives-interrupt, F4 compare-marker-liveness-and-slot-wait and F7 spawnloop-breakaway-left-to-plan.
+  The round-3 fixer applied all seven findings, none Disputed or Deferred, and the fix in place in the decision record answers each design-wrong one.
+  F1: D6 and D7 now mark an agent session's scope-full acceptances unruled, check the record at every entry before any compare, and end the row in a decision halt while one stands; only the resume from a halt that recorded those acceptances marks them ruled.
+  That test reads the last history entry's LastAt or At, which matches appendOrFold in internal/shedengine/run.go, and a hard error appends no history entry, so a tackler's resume of an error stop rules no acceptance the parent never saw.
+  The decision-halt prefix and arbiterstop.HandsBack it relies on exist as cited (internal/shedadapters/bouncerdecision.go, internal/arbiterstop/arbiterstop.go).
+  F4: D4 now makes the compare marker an OS lock taken before the slot wait and probed as the capture lock is, and rewords the watchdog bound to cover a capture queued for a slot.
+  F7: D4 now settles that spawnLoop, at internal/shedverbs/loopwait.go:158 the only non-test proc.DetachBreakaway caller, is reached only from the waiter's spawn branch taken when the loop lock is free, and drops the plan check.
+  The round is at the hard cap, so accept is the one option; it is recorded and the run resumes at Discussion-Bouncer without a goto.
+verbs:
+  - |-
+    lyx loom circling accept regression-baseline-verify
