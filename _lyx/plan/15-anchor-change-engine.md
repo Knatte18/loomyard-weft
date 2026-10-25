@@ -30,7 +30,7 @@
 - `plan:internal/fabricengine#committedMarker`
 - `plan:internal/fabricengine#refuseEmptyOwnMarker`
 - `internal/lyxcwd#NamedWorktree`
-- `plan:internal/hubforge#ReanchorPair`
+- `internal/hubforge#ReanchorPair`
 - `internal/fabricengine#WireJunctionsWith`
 - `internal/fabricengine#writeLaunchers`
 - `internal/fabricengine#removeLaunchers`

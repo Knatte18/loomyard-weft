@@ -27,7 +27,7 @@
 - `plan:internal/fabricengine#ErrAnchorChange`
 - `plan:internal/fabricengine#BranchAnchorStopped`
 - `internal/lyxcwd#NamedWorktree`
-- `plan:internal/hubforge#ReanchorPair`
+- `internal/hubforge#ReanchorPair`
 - `internal/hubgeom#DobbyGeometry`
 - `internal/hubgeom#DobbyStart`
 - `internal/dobbyengine#EnsureLive`

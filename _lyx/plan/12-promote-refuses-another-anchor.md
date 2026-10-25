@@ -14,7 +14,7 @@
 **Uses:**
 - `internal/lyxcwd#NamedWorktree`
 - `plan:internal/fabricengine#treeAnchor`
-- `plan:internal/hubforge#ReanchorPair`
+- `internal/hubforge#ReanchorPair`
 - `internal/fabricengine#recordsBranchTip`
 - `internal/fabricengine#ReadOriginFor`
 
