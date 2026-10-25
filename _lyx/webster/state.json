@@ -1,10 +1,10 @@
 {
   "runGuid": "1e8ff560c6529bdf936a0c51cb6b8d91",
-  "planFingerprint": "2ab3bf11901f07735b8d89e7ae0808cefef40d694ef627722aa51ec69a3defde",
+  "planFingerprint": "dcbf8b97099eecaddac037b0396ec25baac307a38062f8fa0b2d1912dcee4c53",
   "planFileHashes": {
     "00-overview.md": "4ddeac0914ad24e6f809c4078c7621a6673521242b6950bf7ada182bf45528ea",
-    "01-decision-note-title.md": "86f2d93dacaa15802be6ac68055551aeee059e3d655e578b08842eb57412a48b",
-    "02-report-archived-records.md": "86fdb77ffd82ddc85b8b967f99f74fad2cea6f9d44d84dbd71fde77c38021c1c",
+    "01-decision-note-title.md": "c881794520a933dd7f9d7b96b9bc32465db3ee1938aebb239c12b7c489bbc771",
+    "02-report-archived-records.md": "e2911cd35e275ed8948337b9812f20f93ad6c7acf1941bc433e80ecf66192a33",
     "03-drop-parent-review-gate.md": "5fbb6170b2010476e16914dc8d0f1657bcccf6ede8be37add5887528798c2fc9",
     "04-drop-review-verbs.md": "3fe2d6d750ebcfc15d895955dd2eac0b814460ee5d2a667e17683d847f62c827",
     "05-delete-alignment-and-parent-review.md": "7e522de053a044906a190eec5ebcde6eb0486941a4282a249027f6219ec49d6d",
@@ -681,7 +681,7 @@
       }
     }
   ],
-  "currentBatch": 1,
+  "currentBatch": 0,
   "masterStrand": "ac2243e5870c8bfb94eaa402812b5721",
   "masterSessionId": "dde85386-5954-4b01-bdc1-fcf75b3d6577",
   "masterEngine": "claude",
@@ -693,16 +693,36 @@
         "02-report-archived-records"
       ],
       "cardHashes": {
-        "01-decision-note-title": "86f2d93dacaa15802be6ac68055551aeee059e3d655e578b08842eb57412a48b",
-        "02-report-archived-records": "86fdb77ffd82ddc85b8b967f99f74fad2cea6f9d44d84dbd71fde77c38021c1c"
+        "01-decision-note-title": "c881794520a933dd7f9d7b96b9bc32465db3ee1938aebb239c12b7c489bbc771",
+        "02-report-archived-records": "e2911cd35e275ed8948337b9812f20f93ad6c7acf1941bc433e80ecf66192a33"
       },
       "startSha": "dd11ab09f1bf269b1c6f4319cdb43ecd6b411f46",
       "kind": "fork",
       "spawnedAt": "2026-10-25T08:18:35Z",
       "sessionId": "dde85386-5954-4b01-bdc1-fcf75b3d6577",
       "engine": "claude",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "01-decision-note-title",
+        "status": "done",
+        "head_sha": "119d1f59350796fd6a514e3be719e91027b76687",
+        "deviations": [
+          "internal/reportengine/archivedrecords.go"
+        ]
+      },
+      "cardShas": [
+        "119d1f59350796fd6a514e3be719e91027b76687"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-discussion-scope-in-lenses/dde85386-5954-4b01-bdc1-fcf75b3d6577/subagents/agent-a6941caa08b5d2cdd.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-discussion-scope-in-lenses/dde85386-5954-4b01-bdc1-fcf75b3d6577/subagents/agent-a6941caa08b5d2cdd.jsonl"
+      ]
     }
-  }
+  },
+  "seenForkTranscripts": [
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-discussion-scope-in-lenses/dde85386-5954-4b01-bdc1-fcf75b3d6577/subagents/agent-a6941caa08b5d2cdd.jsonl"
+  ]
 }

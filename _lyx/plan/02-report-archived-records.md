@@ -1,13 +1,13 @@
 # Card 2 — report-archived-records
 
 **Create:**
-- `plan:internal/reportengine#parentReviewRound` -> `type parentReviewRound struct`
-- `plan:internal/reportengine#parseParentReviewRound` -> `func parseParentReviewRound(number int, files map[string][]byte) (parentReviewRound, error)`
-- `plan:internal/reportengine#parentReviewRoundNumber` -> `func parentReviewRoundNumber(dirName string) (int, bool)`
-- `plan:internal/reportengine#parentReviewDirRel` -> `func parentReviewDirRel() string`
-- `plan:internal/reportengine#alignmentAttempt` -> `type alignmentAttempt struct`
-- `plan:internal/reportengine#alignmentVerdict` -> `type alignmentVerdict struct`
-- `plan:internal/reportengine#parseAlignmentAttempt` -> `func parseAlignmentAttempt(files map[string][]byte) (alignmentAttempt, *alignmentVerdict, error)`
+- `internal/reportengine#parentReviewRound`
+- `internal/reportengine#parseParentReviewRound`
+- `internal/reportengine#parentReviewRoundNumber`
+- `internal/reportengine#parentReviewDirRel`
+- `internal/reportengine#alignmentAttempt`
+- `internal/reportengine#alignmentVerdict`
+- `internal/reportengine#parseAlignmentAttempt`
 
 **Edit:**
 - `internal/reportengine#RunRow`
