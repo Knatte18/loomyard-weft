@@ -1,0 +1,3 @@
+outcome: stuck
+stuck_reason: "Batch 06: recover-batch refused with needs_fresh on fabric-reference audit findings (fork ran lyx gate test --gate card/batch --card ... and a git commit for card 7)."
+batches_done: 2
