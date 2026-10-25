@@ -58,7 +58,7 @@ Waits only on Running or Ready entries.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T4 | `draft` **One lyx beam start brings a beam up: dobby and orch together, with lyx s**<br>• lyx beam start starts dobby and the orch, resuming its session; orch start, prime, start and the long-form shortcuts go<br>• `profile: solid` | [`beam-start-verbs`](design-beam-start-verbs.md) | darn | `umbrella-anchor` | 32m<br>0m | orch, workspaces |
+| T4 | **One lyx beam start brings a beam up: dobby and orch together, with lyx s**<br>• lyx beam start starts dobby and the orch, resuming its session; orch start, prime, start and the long-form shortcuts go<br>• `profile: solid` | [`beam-start-verbs`](design-beam-start-verbs.md) | darn | `umbrella-anchor` | 32m<br>0m | orch, workspaces |
 
 ### Layer B (1)
 
@@ -66,7 +66,7 @@ Starts when every entry it names under After is done.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T5 | `draft` **The overview window becomes the beam window: dobby and orch, each run once**<br>• Rename the overview window to beam: <slug>, with a dobby and an orch section, and show each run once<br>• `profile: light` | [`beam-window`](design-beam-window.md) | darn | `beam-start-verbs` | 5m<br>0m | batten, orch, reed, workspaces |
+| T5 | **The overview window becomes the beam window: dobby and orch, each run once**<br>• Rename the overview window to beam: <slug>, with a dobby and an orch section, and show each run once<br>• `profile: light` | [`beam-window`](design-beam-window.md) | darn | `beam-start-verbs` | 5m<br>0m | batten, orch, reed, workspaces |
 
 ## Notes (35)
 
