@@ -1,22 +1,22 @@
 # Card 33 — dobby-passes
 
 **Edit:**
-- `plan:internal/dobbyengine#Deps`
-- `plan:internal/dobbyengine#daemon`
-- `plan:internal/dobbyengine#daemon.tick`
+- `internal/dobbyengine#Deps`
+- `internal/dobbyengine#daemon`
+- `internal/dobbyengine#daemon.tick`
 - `internal/dobbyengine#RunState`
 - `internal/dobbyengine/doc.go`
 
 **Create:**
-- `plan:internal/dobbyengine#RunView` -> `type RunView struct`
-- `plan:internal/dobbyengine#PassExit` -> `type PassExit struct`
-- `plan:internal/dobbyengine#passKind` -> `type passKind int`
-- `plan:internal/dobbyengine#planPass` -> `func planPass(run RunView, rs RunState, trigger passTrigger, covered bool) passKind`
-- `plan:internal/dobbyengine#passTrigger` -> `type passTrigger struct`
-- `plan:internal/dobbyengine#daemon.drivePasses` -> `func (d *daemon) drivePasses(ctx context.Context, now time.Time) error`
-- `plan:internal/dobbyengine#daemon.passExited` -> `func (d *daemon) passExited(slug string, full bool, code int, errText string, at time.Time)`
-- `plan:internal/dobbyengine#TestPlanPass` -> `func TestPlanPass(t *testing.T)`
-- `plan:internal/dobbyengine#TestDrivePasses_ExitHandling` -> `func TestDrivePasses_ExitHandling(t *testing.T)`
+- `internal/dobbyengine#RunView`
+- `internal/dobbyengine#PassExit`
+- `internal/dobbyengine#passKind`
+- `internal/dobbyengine#planPass`
+- `internal/dobbyengine#passTrigger`
+- `internal/dobbyengine#daemon.drivePasses`
+- `internal/dobbyengine#daemon.passExited`
+- `internal/dobbyengine#TestPlanPass`
+- `internal/dobbyengine#TestDrivePasses_ExitHandling`
 
 **Uses:**
 - `internal/dobbyengine#PassExitCovered`

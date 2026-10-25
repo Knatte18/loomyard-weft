@@ -1,15 +1,15 @@
 # Card 34 — dobby-owned-elsewhere
 
 **Edit:**
-- `plan:internal/dobbyengine#Deps`
-- `plan:internal/dobbyengine#daemon.passExited`
-- `plan:internal/dobbyengine#planPass`
+- `internal/dobbyengine#Deps`
+- `internal/dobbyengine#daemon.passExited`
+- `internal/dobbyengine#planPass`
 - `internal/dobbyengine/doc.go`
 
 **Create:**
-- `plan:internal/dobbyengine#daemon.ownedElsewhere` -> `func (d *daemon) ownedElsewhere(ctx context.Context, slug string, now time.Time)`
-- `plan:internal/dobbyengine#daemon.recheckOwnerPause` -> `func (d *daemon) recheckOwnerPause(ctx context.Context, slug string)`
-- `plan:internal/dobbyengine#TestOwnedElsewhere` -> `func TestOwnedElsewhere(t *testing.T)`
+- `internal/dobbyengine#daemon.ownedElsewhere`
+- `internal/dobbyengine#daemon.recheckOwnerPause`
+- `internal/dobbyengine#TestOwnedElsewhere`
 
 **Intent:**
 Handle a run a full pass found owned by another machine (D4, D7).

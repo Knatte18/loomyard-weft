@@ -2,14 +2,14 @@
 
 **Create:**
 - `internal/dobbyengine/loop.go`
-- `plan:internal/dobbyengine#Deps` -> `type Deps struct`
-- `plan:internal/dobbyengine#ErrDobbyRunning` -> `var ErrDobbyRunning = errors.New("dobby: another dobby holds this worktree's lock")`
-- `plan:internal/dobbyengine#Run` -> `func Run(ctx context.Context, geom Geometry, deps Deps) error`
-- `plan:internal/dobbyengine#daemon` -> `type daemon struct`
-- `plan:internal/dobbyengine#daemon.tick` -> `func (d *daemon) tick(ctx context.Context, now time.Time) error`
-- `plan:internal/dobbyengine#nextWait` -> `func nextWait(current time.Duration, inFlight, event bool) time.Duration`
-- `plan:internal/dobbyengine#TestRun_LockOwnerAndWakeups` -> `func TestRun_LockOwnerAndWakeups(t *testing.T)`
-- `plan:internal/dobbyengine#TestNextWait` -> `func TestNextWait(t *testing.T)`
+- `internal/dobbyengine#Deps`
+- `internal/dobbyengine#ErrDobbyRunning`
+- `internal/dobbyengine#Run`
+- `internal/dobbyengine#daemon`
+- `internal/dobbyengine#daemon.tick`
+- `internal/dobbyengine#nextWait`
+- `internal/dobbyengine#TestRun_LockOwnerAndWakeups`
+- `internal/dobbyengine#TestNextWait`
 
 **Edit:**
 - `cmd/lyx#unboundedWaitFiles`

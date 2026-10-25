@@ -1,0 +1,27 @@
+# Card 34 — dobby-owned-elsewhere
+
+**Edit:**
+- `internal/dobbyengine#Deps`
+- `internal/dobbyengine#daemon.passExited`
+- `internal/dobbyengine#planPass`
+- `internal/dobbyengine/doc.go`
+
+**Create:**
+- `internal/dobbyengine#daemon.ownedElsewhere`
+- `internal/dobbyengine#daemon.recheckOwnerPause`
+- `internal/dobbyengine#TestOwnedElsewhere`
+
+**Intent:**
+Handle a run a full pass found owned by another machine (D4, D7).
+`Deps` gains the owner pause (`tendercli.PauseOwnedElsewhere` in production), the release of the parent lock record naming the run's child (the same release InnerRun's `ownedElsewhere` makes), the effective owner of the slug on the local Bolt, the lift of a pause entry of the slug's own scope carrying `pauserecord.OwnerCaller`, and the read of whether a live pause entry covers the slug.
+On `PassExitOwnedElsewhere` from a run with a status file, `ownedElsewhere` keeps the run's full pass owed, records it owned elsewhere in the state record, pauses it under the owner, releases its parent lock and posts the owner notice naming `lyx adopt <slug>`, once per owner episode by the state record's owner-noticed mark; it posts no failing-pass notice.
+A failed owner pause warns once per episode, records the pause failed, and is never retried blind: while the mark stands and no pause entry covers the slug, `planPass` gives the run a full pass on each probe tick, which is refused as owned elsewhere again (and the handling runs again, its pause included, the marker keeping the notice to one) or exits 0 and clears the mark.
+While the mark stands and a pause entry covers the slug, `planPass` gives no pass, a dobby start's and a wake's included, but the full pass at the lift of the covering pause, which `lyx adopt` reaches since adopt lifts the owner pause.
+Once its owner pause stands, `recheckOwnerPause` reads the slug's effective owner from the local Bolt on each probe tick, with no pull (Added after Discussion, 2026-10-25, "Dobby's owner re-read uses the local Bolt, no pull"); when it no longer reads another machine it lifts its own owner pause entry and runs a full pass, so an adopt landing in that window, which runs on this machine and writes the local Bolt first, strands no run on a manual step.
+A full pass of a marked run clears the mark when it exits 0, and a further owned-elsewhere refusal leaves it standing.
+A run so marked is not in flight for the start count and is in flight for the backoff only while no pause entry covers its slug.
+An owner InnerRun's own check finds inside a continue pass sets no mark: InnerRun pauses the run itself and dobby goes on passing it in continue passes.
+The doc states the handling and its bounds.
+`TestOwnedElsewhere` (tier0, fakes, parallel) rows: an owned refusal pauses, releases the lock and notices once across two refusals; a failed pause gets a full pass on the next probe tick with no second notice; a covering owner pause stops every pass, a restart's included, until its lift, which runs a full pass whose exit 0 clears the mark; a local Bolt that reads this machine again lifts the owner pause and runs a full pass, and one still reading the other machine lifts nothing; a dobby whose only run is marked owned elsewhere under a covering pause passes the idle flag to `nextWait`, and that run uncovered counts as in flight.
+
+**ImpactSummary:** One more exit handled by the engine's scheduler and one per-tick owner re-read; the seams are filled by the beam verb's wiring.
