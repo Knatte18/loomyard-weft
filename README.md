@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-25 07:54 UTC; every age below is as of then.
+Rendered 2026-10-25 08:00 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -41,7 +41,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T1 | **Discussion scope check into the perch lenses, outdated entries to the parent, Merge-In renamed Parent-Align**<br>• Drop the alignment agent at the discussion point; board-fit escalates outdated entries and operator-only questions to the parent; darn checks its entry first; rename Merge-In to Parent-Align<br>• `profile: solid` | [`discussion-scope-in-lenses`](design-discussion-scope-in-lenses.md) | loom | Plan-Burler-Fix | neve | 2d<br>1h | loom, burler, shed, stencil |
+| T1 | **Discussion scope check into the perch lenses, outdated entries to the parent, Merge-In renamed Parent-Align**<br>• Drop the alignment agent at the discussion point; board-fit escalates outdated entries and operator-only questions to the parent; darn checks its entry first; rename Merge-In to Parent-Align<br>• `profile: solid` | [`discussion-scope-in-lenses`](design-discussion-scope-in-lenses.md) | loom | Plan-Bouncer | neve | 2d<br>1h | loom, burler, shed, stencil |
 | T2 | **[WS 005] One dobby daemon per beam owns and drives its runs**<br>• Each beam (a worktree with an orch thread) gets a Go daemon, started by lyx orch start, that follows its runs status files, starts ready tasks, lands, settles mechanical stops and tells the thread only what needs judgement<br>• `profile: solid`<br>• `loom: discussion_hard_max_bounces 4`<br>• `loom: discussion_max_bounces 3` | [`umbrella-daemon`](design-umbrella-daemon.md) | loom | Plan-Write | neve | 12d<br>1h | batten, orch, shed, workspaces, loom, board |
 
 ### Ready (0)
@@ -93,7 +93,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | E25 |  | **Ubuntu 24.04 as a stated and checked floor: a PATTERN entry and a mechanical check**<br>• A Neve-written reed change broke on tmux 3.4; nothing states or checks the Ubuntu 24.04 floor | [`ubuntu-2404-floor`](design-ubuntu-2404-floor.md) | 1d<br>18h | reed, gate |
 | E27 | L | **Carry agent mail into the pane in full instead of a reminder and a read turn**<br>• A reminder plus lyx creel read costs the receiver an extra turn per agent message | [`creel-carry-agent-mail`](design-creel-carry-agent-mail.md) | 1d<br>1d | creel |
 | E28 |  | **A small public NUnit repo as sandbox hub for end-to-end C# runs** | [`csharp-sandbox-hub`](design-csharp-sandbox-hub.md) | 2d<br>1h | dotnet |
-| E32 |  | **Move rules about lyx behaviour out of this repo's CLAUDE.md into lyx code, doc.go and stencils** | [`claude-md-lyx-rules-out`](design-claude-md-lyx-rules-out.md) | 2d<br>14h | stencil, board, loom |
+| E32 |  | **Move rules about lyx behaviour out of this repo's CLAUDE.md into lyx code, doc.go and stencils** | [`claude-md-lyx-rules-out`](design-claude-md-lyx-rules-out.md) | 2d<br>15h | stencil, board, loom |
 | E35 |  | **A landing fixer escalation goes to the arbiter before the orch**<br>• Merge-In and Finalize fixer escalate reports reach the arbiter first | [`landing-escalate-arbiter`](design-landing-escalate-arbiter.md) | 1d<br>1d | shed, loom |
 
 ### Features (13)
