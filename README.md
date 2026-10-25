@@ -58,7 +58,7 @@ Waits only on Running or Ready entries.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T4 | **One lyx beam start brings a beam up, dobby and orch together, and the overview window becomes the beam window**<br>• lyx beam start starts dobby and the orch, resuming its session; orch start, prime, start and the long-form shortcuts go; the overview window becomes beam: <slug>, each run once<br>• `profile: light` | [`beam-start-verbs`](design-beam-start-verbs.md) | loom | `umbrella-anchor` | 34m<br>0m | orch, workspaces, batten, reed |
+| T4 | `draft` **One lyx beam start brings a beam up, dobby and orch together, and the overview window becomes the beam window**<br>• lyx beam start starts dobby and the orch, resuming its session; orch start, prime, start and the long-form shortcuts go; the overview window becomes beam: <slug>, each run once<br>• `profile: light` | [`beam-start-and-window`](design-beam-start-and-window.md) | loom | `umbrella-anchor` | 34m<br>0m | orch, workspaces, batten, reed |
 
 ## Notes (35)
 

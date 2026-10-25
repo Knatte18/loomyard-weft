@@ -1,6 +1,6 @@
 # One lyx beam start brings a beam up, dobby and orch together, and the overview window becomes the beam window
 
-`beam-start-verbs` · Task · enhancement, orch, workspaces, batten, reed
+`beam-start-and-window` · Task · enhancement, orch, workspaces, batten, reed · draft
 
 Depends on: [`umbrella-anchor`](design-umbrella-anchor.md)
 
