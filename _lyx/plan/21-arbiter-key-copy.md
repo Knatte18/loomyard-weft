@@ -8,10 +8,10 @@
 - `internal/configreg/doc.go`
 
 **Create:**
-- `plan:internal/configreg#KeyCopy` -> `type KeyCopy struct`
-- `plan:internal/configreg#KeyCopies` -> `func KeyCopies() []KeyCopy`
-- `plan:internal/configsync#copyKeys` -> `func copyKeys(boardDir string, apply bool) ([]Result, error)`
-- `plan:internal/configsync#TestReconcile_CopiesLoomArbiterKeysIntoDarn` -> `func TestReconcile_CopiesLoomArbiterKeysIntoDarn(t *testing.T)`
+- `internal/configreg#KeyCopy`
+- `internal/configreg#KeyCopies`
+- `internal/configsync#copyKeys`
+- `internal/configsync#TestReconcile_CopiesLoomArbiterKeysIntoDarn`
 
 **Intent:**
 Keep darn's arbiter behaviour across the move, as a config migration through `hubreconcile`'s walk (D8, `PATTERN-config-layers`): darn read `loom.yaml`'s arbiter keys until now.

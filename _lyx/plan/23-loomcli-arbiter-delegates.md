@@ -68,13 +68,13 @@
 - `internal/loomcli#TestArbiterSpec`
 
 **Uses:**
-- `plan:internal/shedarbiter#Deps`
-- `plan:internal/shedarbiter#Input`
-- `plan:internal/shedarbiter#NewCall`
-- `plan:internal/shedarbiter#Call.Settle`
-- `plan:internal/shedarbiter#ConsumeAttempt`
-- `plan:internal/shedarbiter#Seam`
-- `plan:internal/loomcli#arbiterRecipeDescription`
+- `internal/shedarbiter#Deps`
+- `internal/shedarbiter#Input`
+- `internal/shedarbiter#NewCall`
+- `internal/shedarbiter#Call.Settle`
+- `internal/shedarbiter#ConsumeAttempt`
+- `internal/shedarbiter#Seam`
+- `internal/loomcli#arbiterRecipeDescription`
 
 **Intent:**
 Point loom and darn at `internal/shedarbiter` and remove `loomcli`'s own arbiter call, prompt and consumption (D8).
