@@ -12,12 +12,12 @@
 - `internal/fabricengine#refuseEmptyAnchorMarker`
 
 **Create:**
-- `plan:internal/fabricengine#committedMarker` -> `func committedMarker(repoDir, rev string) (marker string, found bool, err error)`
-- `plan:internal/fabricengine#treeAnchor` -> `func treeAnchor(repoDir, rev string, names []string, fallback string) (string, error)`
-- `plan:internal/fabricengine#retireBoltAnchorMarker` -> `func retireBoltAnchorMarker(rec *Mutations, l *lyxcwd.Location) (string, error)`
-- `plan:internal/fabricengine_test#TestReconcile_MigratesMarkerlessWefts` -> `func TestReconcile_MigratesMarkerlessWefts(t *testing.T)`
-- `plan:internal/fabricengine#TreeAnchorForTest` -> `func TreeAnchorForTest(repoDir, rev string, names []string, fallback string) (string, error)`
-- `plan:internal/fabricengine_test#TestTreeAnchor` -> `func TestTreeAnchor(t *testing.T)`
+- `internal/fabricengine#committedMarker`
+- `internal/fabricengine#treeAnchor`
+- `internal/fabricengine#retireBoltAnchorMarker`
+- `internal/fabricengine_test#TestReconcile_MigratesMarkerlessWefts`
+- `internal/fabricengine#TreeAnchorForTest`
+- `internal/fabricengine_test#TestTreeAnchor`
 
 **Uses:**
 - `internal/fabricengine#refuseEmptyOwnMarker`

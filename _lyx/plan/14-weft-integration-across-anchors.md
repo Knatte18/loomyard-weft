@@ -15,8 +15,8 @@
 - `plan:internal/gitexec#RunWithEnv` -> `func RunWithEnv(args []string, cwd string, extraEnv []string) (string, error)`
 
 **Uses:**
-- `plan:internal/fabricengine#treeAnchor`
-- `plan:internal/fabricengine#committedMarker`
+- `internal/fabricengine#treeAnchor`
+- `internal/fabricengine#committedMarker`
 - `internal/fabricengine#replayWeft`
 - `internal/fabricengine#replayRequest`
 - `internal/fabricengine#ownedWarpCheckout`

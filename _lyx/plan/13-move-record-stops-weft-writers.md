@@ -11,7 +11,7 @@
 - `internal/fabricengine#BranchOutcome`
 - `internal/fabricengine#BranchOutcome.stopWayForward`
 - `internal/fabricengine#Topology.Checkout`
-- `plan:internal/fabricengine_test#TestCheckout_RefusesAnotherAnchor`
+- `internal/fabricengine_test#TestCheckout_RefusesAnotherAnchor`
 - `internal/fabricengine_test#TestAdd_FromParentPair`
 - `internal/fabricengine_test#TestReconcile_RefusesEmptyAnchorMarkerInsteadOfWiringAtTheRoot`
 - `internal/fabricengine_test#TestPull_WeftDivergedWarpAdvancesCleanly`
@@ -29,8 +29,8 @@
 
 **Uses:**
 - `plan:internal/fabricengine#BranchAnchorStopped`
-- `plan:internal/fabricengine#ErrAnchorChange`
-- `plan:internal/fabricengine#AnchorStopError`
+- `internal/fabricengine#ErrAnchorChange`
+- `internal/fabricengine#AnchorStopError`
 - `internal/fabricengine#weftLockDirName`
 - `internal/fabricengine#ReconcilePairResult`
 

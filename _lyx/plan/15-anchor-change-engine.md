@@ -26,8 +26,8 @@
 - `plan:internal/fabricengine#MoveInProgress`
 - `plan:internal/fabricengine#moveLockPath`
 - `plan:internal/fabricengine#integrateWeft`
-- `plan:internal/fabricengine#treeAnchor`
-- `plan:internal/fabricengine#committedMarker`
+- `internal/fabricengine#treeAnchor`
+- `internal/fabricengine#committedMarker`
 - `internal/fabricengine#refuseEmptyOwnMarker`
 - `internal/lyxcwd#NamedWorktree`
 - `internal/hubforge#ReanchorPair`

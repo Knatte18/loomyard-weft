@@ -24,7 +24,7 @@
 - `plan:internal/fabricengine#ReadMoveRecord`
 - `internal/shedrun#StatusFile`
 - `internal/shedrun#SelfRunID`
-- `plan:internal/fabricengine#ErrAnchorChange`
+- `internal/fabricengine#ErrAnchorChange`
 - `plan:internal/fabricengine#BranchAnchorStopped`
 - `internal/lyxcwd#NamedWorktree`
 - `internal/hubforge#ReanchorPair`

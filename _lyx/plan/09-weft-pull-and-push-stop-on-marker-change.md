@@ -15,13 +15,13 @@
 - `internal/fabricengine#FailedPushWayForward`
 
 **Create:**
-- `plan:internal/fabricengine#ErrAnchorChange` -> `var ErrAnchorChange error`
-- `plan:internal/fabricengine#AnchorStopError` -> `type AnchorStopError struct`
-- `plan:internal/fabricengine#PushFailureAnchorChange` -> `const PushFailureAnchorChange PushFailureClass = "anchor_change"`
-- `plan:internal/fabricengine#weftAnchorStop` -> `func weftAnchorStop(weftPath, head, upstream string, names []string, fallback string, reset bool) (wantAnchor string, stop bool, err error)`
+- `internal/fabricengine#ErrAnchorChange`
+- `internal/fabricengine#AnchorStopError`
+- `internal/fabricengine#PushFailureAnchorChange`
+- `internal/fabricengine#weftAnchorStop`
 
 **Uses:**
-- `plan:internal/fabricengine#treeAnchor`
+- `internal/fabricengine#treeAnchor`
 - `internal/fabricengine#refuseEmptyOwnMarker`
 - `internal/fabricengine#WeftStopError`
 - `internal/fabricengine#Fabric.settleUnmovedWeft`
