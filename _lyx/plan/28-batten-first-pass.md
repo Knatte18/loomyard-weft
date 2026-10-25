@@ -36,9 +36,9 @@
 - `internal/battencli#TestWindowSite`
 
 **Create:**
-- `plan:internal/battencli#StartFirstPass` -> `func StartFirstPass(location *lyxcwd.Location, slug string) (map[string]any, error)`
-- `plan:internal/battencli#ensureParentDobby` -> `func ensureParentDobby(prime *lyxcwd.Location, slug string, ownerElsewhere func(parent string) (string, error), live func(dobbyengine.Geometry) (bool, error), spawn func(dobbyengine.Geometry) error) error`
-- `plan:internal/battencli#TestStartFirstPass` -> `func TestStartFirstPass(t *testing.T)`
+- `internal/battencli#StartFirstPass`
+- `internal/battencli#ensureParentDobby`
+- `internal/battencli#TestStartFirstPass`
 
 **Uses:**
 - `internal/hubgeom#DobbyGeometry`

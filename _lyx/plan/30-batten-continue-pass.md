@@ -11,12 +11,12 @@
 - `pattern/PATTERN-owner-machine.md`
 
 **Create:**
-- `plan:internal/battencli#continueRefusal` -> `type continueRefusal struct`
-- `plan:internal/battencli#battenCLI.refuseContinuePass` -> `func (c *battenCLI) refuseContinuePass() error`
-- `plan:internal/battencli#TestBattenPreRun_ContinuePass` -> `func TestBattenPreRun_ContinuePass(t *testing.T)`
+- `internal/battencli#continueRefusal`
+- `internal/battencli#battenCLI.refuseContinuePass`
+- `internal/battencli#TestBattenPreRun_ContinuePass`
 
 **Uses:**
-- `plan:internal/battencli#OriginOwed`
+- `internal/battencli#OriginOwed`
 - `internal/hubgeom#DobbyGeometry`
 - `internal/dobbyengine#ReadState`
 - `internal/dobbyengine#PassExitContinueRefused`
