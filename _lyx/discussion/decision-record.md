@@ -252,6 +252,12 @@ Decision: Webster runs 'lyx webster accept-audit --batch 6', then 'recover-batch
 
 Rationale: The findings are false: the card slug 6-clone-records-marker-on-prime-weft ends in the weft suffix, and the refscanner's bare-word rule flags any unquoted word ending in -weft, so every 'lyx gate test --card 6-...' matched (#874); the fork touched no fabric repo. A reset would re-run the same commands into the same finding.
 
+### Added after Discussion (parent, 2026-10-25): Batch 06: reset and re-run instead of accept-audit
+
+Decision: Replaces the earlier batch 06 decision: accept-audit refuses since one flagged command chained a git commit, so the parent resets batch 06 to its batch start and Webster re-runs it. Card 7's commit by the batch 06 fork is dropped with the reset and card 7 is written by its own batch. Every fork command naming the card 6 slug quotes it ('6-clone-records-marker-on-prime-weft'), and a fork commits only its own batch's cards.
+
+Rationale: The audit's false match (#874) cannot be accepted when a flagged command is not read-only; a reset is the only way forward, and quoting the slug keeps the re-run clear of the same finding.
+
 ## Constraints
 
 - The weft is never a merge participant (`fabricengine/doc.go`, "The merge surface"), so landing never touches the parent's weft or its marker; the entry's "kept out of the merge as raddle is" needs no mechanism.
