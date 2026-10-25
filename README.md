@@ -52,7 +52,7 @@ Waits on nothing open; can start now.
 | --- | --- | --- | --- | --- | --- | --- |
 | T2 | `draft` **Bench Codex Astra against solo Opus as a plan reviewer, four runs**<br>• `profile: docs` | [`codex-astra-solo-bench`](design-codex-astra-solo-bench.md) | darn |  | 2h<br>2h | codex, burler |
 
-## Notes (36)
+## Notes (37)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
 
@@ -73,7 +73,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | --- | --- | --- | --- | --- | --- |
 | B1 |  | **Find why a running run shows a dead waiter in the activity reader** | [`idle-notice-dead-waiter-cause`](design-idle-notice-dead-waiter-cause.md) | 1d<br>1d | batten, shuttle |
 
-### Enhancements (17)
+### Enhancements (18)
 
 | # | P | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
@@ -82,8 +82,9 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | E3 |  | **PATTERN line cap counts the rule text only, not the name and link**<br>• MaxEntryLineChars counts the whole entry line, so the room left for the rule text shrinks with the entry name and link | [`pattern-line-cap-text-only`](design-pattern-line-cap-text-only.md) | 1h<br>1h | pattern |
 | E4 |  | **finalize: the discrepancy-document conflict shape**<br>• Divergences that cannot be a git conflict get a precomputed document for the resolving agent instead of markers | [`finalize-discrepancy-doc`](design-finalize-discrepancy-doc.md) | 3w<br>2w | fabric, loom |
 | E5 |  | **Decide the layout of projects in the board README**<br>• The operator is not satisfied with how the README renders projects and their members; the layout is to be decided | [`board-projects-layout`](design-board-projects-layout.md) | 8h<br>8h | board |
-| E6 |  | **One lyx beam start brings a beam up: dobby and orch together, with lyx s**<br>• lyx beam start starts dobby and the orch, resuming its session; orch start, prime, start and the long-form shortcuts go | [`beam-start-verbs`](design-beam-start-verbs.md) | 26m<br>6m | orch, workspaces |
+| E6 |  | **One lyx beam start brings a beam up: dobby and orch together, with lyx s**<br>• lyx beam start starts dobby and the orch, resuming its session; orch start, prime, start and the long-form shortcuts go | [`beam-start-verbs`](design-beam-start-verbs.md) | 27m<br>7m | orch, workspaces |
 | E7 |  | **Run verbs in one shared namespace, not under lyx loom**<br>• lyx loom decision/status/goto/approve act on darn runs too; move recipe-neutral run verbs to one shared namespace | [`run-verbs-shared`](design-run-verbs-shared.md) | 10d<br>3h | shed, loom |
+| E8 |  | **The overview window becomes the beam window: dobby and orch, each run once**<br>• Rename the overview window to beam: <slug>, with a dobby and an orch section, and show each run once | [`beam-window`](design-beam-window.md) | 0m<br>0m | batten, orch, reed, workspaces |
 | E9 |  | **Paste cited code into a review rounds context**<br>• Reviewers edit nothing and review a fixed commit, so code pasted at round start cannot go stale; measure it against todays reviewer | [`review-inline-code`](design-review-inline-code.md) | 13d<br>1d | burler, stencil |
 | E10 |  | **Module labels from what a task touches, not only what it is about**<br>• Half the landings that changed the shuttle core lacked the shuttle label; derive or check module labels from the plan and the diff | [`labels-from-diff`](design-labels-from-diff.md) | 10d<br>10d | board, loom |
 | E13 |  | **Rename the lyx binary to lyr (name clash with LyX)** | [`rename-binary-lyr`](design-rename-binary-lyr.md) | 9d<br>3d | stencil, shuttle |

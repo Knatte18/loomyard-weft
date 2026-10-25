@@ -815,6 +815,27 @@
       "body": "## Seen (operator, 2026-10-25)\n\n`lyx orch start` does four jobs: it starts every dobby this machine owns, reconciles the hub's branches against origin, ensures the overview window, and only then starts the orch session and its watcher.\nDobby's own verbs sit under `lyx beam` (`lyx beam start`, `lyx beam status`), and `lyx prime` names the top beam although the verb runs in any beam.\n`--handoff` and `--adopt` are never used; `--continue` is used often and is long to type.\nThe command surface carries long-form shortcuts beside the short ones and a top-level `lyx start` for `lyx loom start`, which nobody runs since batten starts every loom run.\n\n## Design (operator, 2026-10-25)\n\nA beam, the prime included, is one unit of two parts that always run together: its daemon, dobby, which starts, drives and lands the beam's runs, and its LLM, the orch, which handles stops and questions and is always there to talk to.\nDobby already sends its notices to the orch, and an idle orch spends nothing until a message wakes it.\nBoth run on the machine that owns the beam.\n\n- `lyx beam start [slug]` brings a beam up, the current worktree's beam with no slug: it starts the dobby, reconciles the branches, ensures the overview window, and starts the orch with its watcher.\n  The orch resumes its recorded session when one exists, else starts fresh from the last handoff note, else from the start stencil.\n  A recorded session that cannot be resumed falls back to a fresh start from the note, never to an error.\n- It starts only that beam; `lyx beam start --all` starts every beam this machine owns, such as after a restart, so the prime behaves like any other beam.\n- It refuses in a folder that is no beam, a task worktree naming the beam it belongs to and its path, and on a beam another machine owns, naming `lyx adopt`.\n- It is idempotent: a live dobby or orch is left alone, and only a missing part is started, a new orch resuming its recorded session.\n- `lyx s` attaches at once, so the operator never sees its output on success: what runs shows in the overview window, and a refusal attaches nothing and leaves its error on the terminal.\n- `lyx beam stop [slug]` stops both, and `lyx beam status` shows both.\n- A fresh orch comes from `lyx orch refresh`.\n- `lyx orch` keeps `stop`, `status`, `distill`, `refresh`, `withdraw` and `rules`.\n- Removed: `lyx orch start` with `--continue`, `--handoff` and `--adopt`; `lyx orch cleanup`, since `lyx cleanup` already removes old handoffs; `lyx prime`; `lyx start`.\n\nShortcuts are short forms only:\n\n| Shortcut | Runs |\n|---|---|\n| `lyx s` | `lyx beam start`, then `lyx reed attach` |\n| `lyx a` | `lyx reed attach` |\n| `lyx p` | `lyx tender pause` |\n| `lyx r` | `lyx tender resume` |\n\nThe long forms `lyx attach`, `lyx pause` and `lyx resume` are removed.\n",
       "created": "2026-10-25T14:40:13Z",
       "revised": "2026-10-25T15:00:10Z"
+    },
+    {
+      "id": 817,
+      "handle": "E8",
+      "slug": "beam-window",
+      "title": "The overview window becomes the beam window: dobby and orch, each run once",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "batten",
+        "orch",
+        "reed",
+        "workspaces"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "Rename the overview window to beam: \u003cslug\u003e, with a dobby and an orch section, and show each run once",
+      "body": "## Seen (operator, 2026-10-25)\n\nThe overview window, the `runs` strand running `lyx batten overview`, shows the orch's context line, the runs in flight, and since `dobby-overview-window` the worktree's dobby with its runs, so the runs show in two places.\nIts name, overview, says neither that it belongs to a beam nor what it covers.\n\n## Idea\n\nThe window becomes the beam's own window, named `beam: \u003cslug\u003e`, `beam: prime` in the prime, with one section per part of the beam:\n\n- Dobby: alive, `max_runs`, each run it drives with its state and stage, and each released task it has not started with what it waits on.\n- Orch: its context reading against the soft threshold and the hard cap, and its cycle state, as the context line shows today.\n\nEach run shows once, in the dobby section.\n",
+      "created": "2026-10-25T15:07:36Z",
+      "revised": "2026-10-25T15:07:36Z"
     }
   ],
   "prime_owner": "neve",
