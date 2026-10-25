@@ -4,7 +4,7 @@
      which fills it from the lead's value map that landingshed's FixerTable builds, then hands it to shuttle as the fixing agent's whole
      prompt. Every marker below is a top-level {{.X}} substitution; stencil.FillWith requires every
      marker non-empty except the table's Optional values (plan_dir, failure_record_path and, in finalize mode, aligned_tip), parent_directive (rendered by internal/parentdirective) and edit_directive (rendered unconditionally by internal/editdirective) included, and there are no {{if}}/{{range}} conditionals anywhere in this file.
-lyx-stencil: sha256=f3ddc8254fdd7579cdc24e1886b5f170f35e959055293874a7e31351dbf845a4 build=fe9fbafc3d5904c65d19462c1364bbb4d595b1b3 time=2026-10-24T17:26:06Z -->
+lyx-stencil: sha256=b1b1b12c49dec50f6466c693655b64243aefa998ab93a10295c9444298455042 build=5e449651fc9099cf3c0ec513ef579c464138a703 time=2026-10-25T09:35:58Z -->
 
 # Merge fixer — fix the merge or the failing tests on the task branch
 
@@ -25,7 +25,7 @@ The task branch is `{{.task_branch}}` and it lands on `{{.parent_branch}}`.
 
 ## What to do in each mode
 
-In `merge-in` mode the parent has moved since the task was aligned, and its changes are in the tree now.
+In `parent-align` mode the parent has moved since the task was aligned, and its changes are in the tree now.
 Read what the parent brought in since the aligned tip `{{.aligned_tip}}` up to the merged tip `{{.merged_tip}}`, judge each change against the decision record, and fix what follows from the record and from the failing tests.
 When a change of the parent conflicts with a decision of the record, do not choose between them: escalate, and name the conflict in your report.
 

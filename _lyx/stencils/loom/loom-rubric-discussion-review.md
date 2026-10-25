@@ -5,7 +5,7 @@
      It is a marker VALUE, never a template -- its only markers are the ones ReadRubric fills, and
      internal/stencil's StripLeadingComment removes this leading comment before either consumer ever
      sees it.
-lyx-stencil: sha256=a54425991f2ca7fba5b810c580f798ee05833ab17bb987ae422c11ac022eabe1 build=d08687e6db3982b8fbe12ac8a7e83a92186a061e time=2026-10-24T15:21:41Z -->
+lyx-stencil: sha256=926af238b85b35a404551ff5f0a2520b43198d69c4991e31018befbdeab429de build=5e449651fc9099cf3c0ec513ef579c464138a703 time=2026-10-25T09:35:58Z -->
 
 # Discussion-Review rubric
 
@@ -64,4 +64,9 @@ Every finding carries one class: `design`, `scope`, `decision` or `consistency`.
 Their generic meanings are in burler's review step; this section does not restate them.
 In this segment, `design` means the design is wrong: a wrong or missing decision, or a false premise.
 A recurring enumeration gap is filed once as a `design` finding about the method, not once per missing item.
-Class never changes whether a finding is fixed.
+In this segment, `decision` means a question only the run's parent can settle:
+the board entry plainly outdated by landed work or contradicted by another entry or run, a design conflict with another run, a landed parent commit that contradicts a decision or makes one the writer cannot settle by citing or dropping it, or doubt about what the task is for.
+A choice the writer can make is never `decision`.
+Neither is a question an `Added after Discussion` entry or a board note titled `Decision for <slug>:` already answers;
+a writer's `## Open risks` line that such an answer settles is a `consistency` finding whose fix drops the line.
+Every class is fixed by the fixer except `decision`, which goes to the run's parent and never to the fixer.

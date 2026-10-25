@@ -4,7 +4,7 @@
      {{.reviewed_files}}, {{.rubric_path}}, {{.lens_list}}, {{.final_self_check_command}}, {{.spawn_point}}, {{.severity_rule}}, {{.lens_report_path}}, {{.lens_report_spec_path}} and {{.judge_steps}}.
      {{.judge_steps}} is filled by Directive with one of the two judge part stencils.
      It also names two optional markers, {{.writer_fork}} and {{.relaunch_rules}}, each filled by Directive with one part stencil and left empty otherwise.
-lyx-stencil: sha256=4fad14bfaefb51dcd267c59c2eef92b967532232168605295b5eccab75027cce build=79bab47a02141f93160b00f89b273718b4033be5 time=2026-10-24T07:59:09Z -->
+lyx-stencil: sha256=794de7391128670868c51e598f057f4c7d03c25cafbb4465d313803f87e338e0 build=5e449651fc9099cf3c0ec513ef579c464138a703 time=2026-10-25T09:35:58Z -->
 
 ## Lens review by forks
 
@@ -20,7 +20,7 @@ lyx-stencil: sha256=4fad14bfaefb51dcd267c59c2eef92b967532232168605295b5eccab7502
 6. Run `{{.final_self_check_command}}` again until it passes, then end your turn.
 
 One fork pass per writer spawn.
-A writer re-prompted by a gate or a parent-review reject fixes the reviewed files itself: if it has not yet made its lens spawn call (step 2), it runs this procedure once; otherwise it spawns no forks.
+A writer re-prompted by a gate fixes the reviewed files itself: if it has not yet made its lens spawn call (step 2), it runs this procedure once; otherwise it spawns no forks.
 
 {{.relaunch_rules}}Lenses:
 {{.lens_list}}
