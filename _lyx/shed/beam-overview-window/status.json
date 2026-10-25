@@ -1,11 +1,11 @@
 {
-  "current_producer": "Darn-Write",
+  "current_producer": "Drift-Verify",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Darn-Write",
-    "last": "Drift-Baseline → skipped",
+    "now": "Drift-Verify",
+    "last": "Darn-Write → done",
     "wait": ""
   },
   "history": [
@@ -21,6 +21,51 @@
       "output": "",
       "at": "2026-10-25T18:17:23Z",
       "reason": "drift.enabled = false"
+    },
+    {
+      "producer": "Darn-Write",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYXHUB/beam-overview-window/_lyx/landing/summary.md",
+      "at": "2026-10-25T18:40:02Z",
+      "gate_attempts": 1,
+      "gate_spans": [
+        {
+          "gate": "discussion",
+          "kind": "gate",
+          "start": "2026-10-25T18:35:39.324454063Z",
+          "end": "2026-10-25T18:35:53.52322517Z"
+        },
+        {
+          "gate": "discussion",
+          "kind": "gate",
+          "start": "2026-10-25T18:36:34.511692271Z",
+          "end": "2026-10-25T18:36:47.094414596Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-10-25T18:35:53.586187494Z",
+          "end": "2026-10-25T18:35:53.777631124Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "rework",
+          "start": "2026-10-25T18:35:54.221717552Z",
+          "end": "2026-10-25T18:36:34.488757731Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-10-25T18:36:47.174201395Z",
+          "end": "2026-10-25T18:40:01.607632856Z"
+        },
+        {
+          "gate": "description",
+          "kind": "gate",
+          "start": "2026-10-25T18:40:01.644002297Z",
+          "end": "2026-10-25T18:40:01.644053993Z"
+        }
+      ]
     }
   ],
   "product": {
