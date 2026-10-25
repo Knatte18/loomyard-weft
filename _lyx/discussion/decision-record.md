@@ -104,6 +104,18 @@ Rationale: `docs/research/` is where the earlier Codex spikes live.
 - A solo Codex review set against a lens-fan Claude review may undercount Codex; D3 states the caveat.
 - Grading by one Claude session is a single judge; D5's committed table is the audit trail.
 
+<!-- lyx:carry-over Code-Review -->
+- Code-Review, round 1: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
+  Review: _lyx/reviews/code/round-1-review.md; fixer report: _lyx/reviews/code/round-1-fixer-report.md.
+  - blocking-counts-not-recomputable (class design, severity MEDIUM, open in rounds 1)
+  - config-toml-byte-identical-unevidenced (class design, severity MEDIUM, open in rounds 1)
+  - d5-grading-unchecked-rows (class scope, severity MEDIUM, open in rounds 1)
+  - grid-no-70-percent-stop (class scope, severity MEDIUM, open in rounds 1)
+  - grid-skips-refused-cells (class design, severity MEDIUM, open in rounds 1)
+  - usage-txt-missing-window-percentages (class design, severity MEDIUM, open in rounds 1)
+  - workspace-write-reads-unconfined (class design, severity MEDIUM, open in rounds 1)
+<!-- /lyx:carry-over Code-Review -->
+
 ## Acceptance criteria
 
 - The report exists at the D7 path with a summary table of model and effort against shared, codex-only real, false and claude-only counts, tokens and wall time.
