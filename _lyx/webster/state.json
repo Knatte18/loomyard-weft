@@ -972,7 +972,7 @@
       }
     }
   ],
-  "currentBatch": 0,
+  "currentBatch": 31,
   "masterStrand": "b72a3cc08101d22a4e8fe62d611ae08b",
   "masterSessionId": "6e5b1004-7b3f-4552-94de-e0b6630533f5",
   "masterEngine": "claude",
@@ -1330,6 +1330,30 @@
       "bracketTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-umbrella-daemon/6e5b1004-7b3f-4552-94de-e0b6630533f5/subagents/agent-a86dd4673b4025afa.jsonl"
       ]
+    },
+    "31": {
+      "slug": "batten-pass-wiring",
+      "cards": [
+        "31-batten-pass-wiring",
+        "32-dobby-loop",
+        "33-dobby-passes",
+        "34-dobby-owned-elsewhere",
+        "35-dobby-ready-starts"
+      ],
+      "cardHashes": {
+        "31-batten-pass-wiring": "e7464c90ead1ec5daa6fc32fbcf6c99eaef751bfae16e75bbf52ffbf7234e7f8",
+        "32-dobby-loop": "837b1ae373f6770cb07538b4a07f1d98a60a88d8b09c70d00a7afa240870811a",
+        "33-dobby-passes": "707c2b60803ad8e944d99351baee86411575c1beef563bbf8d5e724f7a3b8136",
+        "34-dobby-owned-elsewhere": "92a4a25ca1d2db63e21e6a90f949f8780517adac358fed0503bea855e8b4ec0e",
+        "35-dobby-ready-starts": "cc64ad4e54ab23dc2105f13dfbc4e791dd1085aab35c23dfe2171ecb544439ed"
+      },
+      "startSha": "34c860390460b15728199db608aa4c313f9db7c4",
+      "kind": "fork",
+      "spawnedAt": "2026-10-25T10:44:21Z",
+      "sessionId": "6e5b1004-7b3f-4552-94de-e0b6630533f5",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
     },
     "7": {
       "slug": "draft-writers",
