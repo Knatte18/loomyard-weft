@@ -8,8 +8,8 @@
 - `internal/beamcli#TestPromote`
 
 **Create:**
-- `plan:internal/fabricengine#ParentRecordsAnchor` -> `func ParentRecordsAnchor(l *lyxcwd.Location, slug string) (own, parent string, err error)`
-- `plan:internal/fabricengine_test#TestParentRecordsAnchor` -> `func TestParentRecordsAnchor(t *testing.T)`
+- `internal/fabricengine#ParentRecordsAnchor`
+- `internal/fabricengine_test#TestParentRecordsAnchor`
 
 **Uses:**
 - `internal/lyxcwd#NamedWorktree`

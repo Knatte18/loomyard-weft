@@ -28,7 +28,7 @@
 - `plan:internal/fabricengine#moveLockPath` -> `func moveLockPath(weftPath string) string`
 
 **Uses:**
-- `plan:internal/fabricengine#BranchAnchorStopped`
+- `internal/fabricengine#BranchAnchorStopped`
 - `internal/fabricengine#ErrAnchorChange`
 - `internal/fabricengine#AnchorStopError`
 - `internal/fabricengine#weftLockDirName`

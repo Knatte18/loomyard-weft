@@ -18,7 +18,7 @@
 - `internal/battencli#TestCancelRun`
 
 **Create:**
-- `plan:internal/fabricengine#BranchAnchorStopped` -> `const BranchAnchorStopped BranchState = "anchor_stopped"`
+- `internal/fabricengine#BranchAnchorStopped`
 
 **Uses:**
 - `internal/fabricengine#weftAnchorStop`

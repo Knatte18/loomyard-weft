@@ -1,6 +1,6 @@
 {
   "runGuid": "bb150e5cb2a52dc10518c5ceb0953c17",
-  "planFingerprint": "af95297fa59e801ead040d905bc5eb92316718f3b533c6295f07b42dd269b752",
+  "planFingerprint": "c12144353fa3516d5e278dca59d19f1642ae88d8bc10efb327a03ab5e0eab605",
   "planFileHashes": {
     "00-overview.md": "ee3e9d9c0cf4799142aae592279628cca27729753fef048a751e1855143bd00c",
     "01-lyxcwd-own-marker.md": "f915eb4acc38abf35631f095f18f45072f4e1e4cde0b163ae3ca3f6e24eca065",
@@ -13,13 +13,13 @@
     "08-reconcile-migrates-markers.md": "0aff2e152550d07486a0cf6f126d32f9c9ac2dd3e90380a7c632f2c799df340e",
     "09-weft-pull-and-push-stop-on-marker-change.md": "7889e753f72054971257f6ea458c8b60015aba982c1c0512530426da0f1a69b8",
     "10-checkout-and-drop-local-refuse-another-anchor.md": "7790651aed85b212cfee4fbc67205dbfaae37da2cca4359a175a0da86f4b291b",
-    "11-origin-reconcile-stops-on-marker-change.md": "6525d68781c840bfba7f37b670ebf7cfcdb130067c4757514a01f4206efea45e",
-    "12-promote-refuses-another-anchor.md": "83373c9ea4f2e119cc9a6eb86cddbb3e1f7a05c526c0ecc69d168200f0371e30",
-    "13-move-record-stops-weft-writers.md": "e195dd38509e5ba92da0c65908ef08c6b26fadbff7f65cbc43931404e7bf87c2",
+    "11-origin-reconcile-stops-on-marker-change.md": "afd8bf71b7f5e023ecb4734398a727a285642fc45a7a934c796f550ad36318bf",
+    "12-promote-refuses-another-anchor.md": "f55c99f454e03efdec9193db50a3cd02154bcb45b91fd9ccb6a98f7c0b5cc783",
+    "13-move-record-stops-weft-writers.md": "09f3f18375831dc644e96159876d5de8087c279105ecb54d10e7f6ce3cf209ac",
     "14-weft-integration-across-anchors.md": "54d38d1c9ddeae1cc707523f4e52785937d66cf15d2e284ebbae54b7b186b668",
     "15-anchor-change-engine.md": "e6a5e78ff5ebc997f2d2f5d1c1e7e77376d62f4465b350312f8a7a3221deacad",
     "16-dobbies-wait-out-a-move.md": "7e7975696d8c07cd87f9ff0749fd12561696f88c748ae667e60e0d0634023a02",
-    "17-fabric-anchor-verb.md": "08429155df3b06a1750efa6262832682ad19dc24f73b33a90bbb828861d51bc9",
+    "17-fabric-anchor-verb.md": "30b1bd8d044d04b602f77bcbdb6775f3a69d54412c4423f5a79d864c2c9d5a8e",
     "18-beam-create-at-an-anchor.md": "30df8a8954d64d9a0fafb385d0ebec1158520b6b2be1653be585d8701370ff24",
     "19-adopt-refuses-during-a-move.md": "cdc8a8fcf27cff34f82eebdcb71cd406d3d4efca6f47beb899baf8e37f19f752"
   },
@@ -513,7 +513,7 @@
       }
     }
   ],
-  "currentBatch": 11,
+  "currentBatch": 0,
   "masterStrand": "78050100d96dc3d016a719d88a437aa8",
   "masterSessionId": "f14f6a6a-13a7-4ddf-b2b8-70425a7da22b",
   "masterEngine": "claude",
@@ -562,16 +562,38 @@
         "12-promote-refuses-another-anchor"
       ],
       "cardHashes": {
-        "11-origin-reconcile-stops-on-marker-change": "6525d68781c840bfba7f37b670ebf7cfcdb130067c4757514a01f4206efea45e",
-        "12-promote-refuses-another-anchor": "83373c9ea4f2e119cc9a6eb86cddbb3e1f7a05c526c0ecc69d168200f0371e30"
+        "11-origin-reconcile-stops-on-marker-change": "afd8bf71b7f5e023ecb4734398a727a285642fc45a7a934c796f550ad36318bf",
+        "12-promote-refuses-another-anchor": "f55c99f454e03efdec9193db50a3cd02154bcb45b91fd9ccb6a98f7c0b5cc783"
       },
       "startSha": "e20a42d6569603504eee36d3f09889b018eafb22",
       "kind": "fork",
       "spawnedAt": "2026-10-25T17:02:39Z",
       "sessionId": "f14f6a6a-13a7-4ddf-b2b8-70425a7da22b",
       "engine": "claude",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "11-origin-reconcile-stops-on-marker-change",
+        "status": "done",
+        "head_sha": "793a2ea9c78ebe0c938845c88814aa63bf140292",
+        "deviations": [
+          "internal/battencli/cancel.go",
+          "internal/beamcli/promote_test.go",
+          "internal/fabricengine/destroy.go",
+          "internal/fabricengine/origin.go",
+          "internal/fabricengine/originreconcile.go",
+          "internal/fabricengine/originreconcilemoves.go"
+        ]
+      },
+      "cardShas": [
+        "793a2ea9c78ebe0c938845c88814aa63bf140292"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-umbrella-anchor/f14f6a6a-13a7-4ddf-b2b8-70425a7da22b/subagents/agent-a9050f2b3149d9691.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-umbrella-anchor/f14f6a6a-13a7-4ddf-b2b8-70425a7da22b/subagents/agent-a9050f2b3149d9691.jsonl"
+      ]
     },
     "3": {
       "slug": "fabric-target-locations",
@@ -709,7 +731,8 @@
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-umbrella-anchor/8e4534d5-3d9e-4ff8-b0e0-0b69e54a79a7/subagents/agent-a2fe4f35f39765664.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-umbrella-anchor/f14f6a6a-13a7-4ddf-b2b8-70425a7da22b/subagents/agent-a0ac51cac25f0b7ef.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-umbrella-anchor/f14f6a6a-13a7-4ddf-b2b8-70425a7da22b/subagents/agent-adf40872f85ad0115.jsonl",
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-umbrella-anchor/f14f6a6a-13a7-4ddf-b2b8-70425a7da22b/subagents/agent-af8b2d9fc90cedaeb.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-umbrella-anchor/f14f6a6a-13a7-4ddf-b2b8-70425a7da22b/subagents/agent-af8b2d9fc90cedaeb.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-umbrella-anchor/f14f6a6a-13a7-4ddf-b2b8-70425a7da22b/subagents/agent-a9050f2b3149d9691.jsonl"
   ],
   "auditDispositions": {
     "fork:/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-umbrella-anchor/8e4534d5-3d9e-4ff8-b0e0-0b69e54a79a7/subagents/agent-a2fe4f35f39765664.jsonl:fabric-reference:1": "failed",
