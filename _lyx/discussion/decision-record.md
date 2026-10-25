@@ -221,6 +221,12 @@ Rationale: Parent, 2026-10-25: the PR-Gate point no longer exists and Merge-In's
   - d8-next-fixer-carrier-does-not-exist (class design, severity MEDIUM, open in rounds 2, 3)
 <!-- /lyx:carry-over Discussion-Review -->
 
+<!-- lyx:carry-over Plan-Review -->
+- Plan-Review, round 2: converged; each finding below was fixed or disputed by the round's fixer, and no fresh reviewer has seen the result; the fixer report says which.
+  Review: _lyx/reviews/plan/round-2-review.md; fixer report: _lyx/reviews/plan/round-2-fixer-report.md.
+  - docs-overview-keeps-retired-names (class design, severity MEDIUM, open in rounds 2)
+<!-- /lyx:carry-over Plan-Review -->
+
 ## Acceptance criteria
 
 - Discussion-Write's only gate is `discussion`; a passing discussion goes to Discussion-Bouncer with no alignment spawn and no parent message.
