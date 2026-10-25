@@ -31,6 +31,8 @@ Darn: `Drift-Baseline` runs before Darn-Write, reads the board entry instead of 
 
 ## Operator decisions (2026-10-25)
 
+- The task adds three new producers and wires them into loom and darn; it changes no existing producer's behaviour.
+- One clearly named config key turns regression on, off by default; this hub, LoomYard, keeps it off.
 - The Drift rows are not hidden: with the hub's flag off they are skipped like the PR rows are today when PRs are off, with no recipe overlay.
 - `Drift-Verify`'s own code changes most likely need no review; if one is added, it is a single solo agent, never a perch.
 - No drift report type of its own: no format is pinned in `contracts/specs/`; the agent reads the compare tool's own output.
