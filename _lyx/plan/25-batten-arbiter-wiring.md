@@ -17,9 +17,9 @@
 - `plan:internal/battencli#TestBattenConsumeAttempt` -> `func TestBattenConsumeAttempt(t *testing.T)`
 
 **Uses:**
-- `plan:internal/shedarbiter#Deps`
-- `plan:internal/shedarbiter#Seam`
-- `plan:internal/shedarbiter#ConsumeAttempt`
+- `internal/shedarbiter#Deps`
+- `internal/shedarbiter#Seam`
+- `internal/shedarbiter#ConsumeAttempt`
 - `internal/sheddriver#ResolveArbiter`
 - `plan:internal/arbiterstop#NewBattenReaders`
 - `plan:internal/arbiterstop#BattenHandBackWayForward`

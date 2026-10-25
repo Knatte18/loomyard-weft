@@ -2,26 +2,26 @@
 
 **Create:**
 - `internal/shedarbiter/doc.go`
-- `plan:internal/shedarbiter#Deps` -> `type Deps struct`
-- `plan:internal/shedarbiter#Input` -> `type Input struct`
-- `plan:internal/shedarbiter#PromptInput` -> `type PromptInput struct`
-- `plan:internal/shedarbiter#Call` -> `type Call struct`
-- `plan:internal/shedarbiter#NewCall` -> `func NewCall(deps Deps, in Input) (*Call, error)`
-- `plan:internal/shedarbiter#Call.Settle` -> `func (c *Call) Settle() (loomengine.ArbiterEnvelope, error)`
-- `plan:internal/shedarbiter#Prompt` -> `func Prompt(stencilsDir string, in PromptInput) (string, error)`
-- `plan:internal/shedarbiter#Spec` -> `func Spec(prompt, verdictPath string, settings sheddriver.ArbiterSettings) shuttleengine.Spec`
-- `plan:internal/shedarbiter#VerdictGate` -> `func VerdictGate(verdictPath string) shuttleengine.GateSpec`
-- `plan:internal/shedarbiter#ConsumeAttempt` -> `func ConsumeAttempt(attemptDir string, base shedengine.RelaunchRequest) error`
-- `plan:internal/shedarbiter#Seam` -> `func Seam(deps Deps, runID string, escalationEligible func(producer string) bool) *sheddriver.ArbiterSeam`
-- `plan:internal/shedarbiter#TestCall_SpawnPath` -> `func TestCall_SpawnPath(t *testing.T)`
-- `plan:internal/shedarbiter#TestCall_Rerun` -> `func TestCall_Rerun(t *testing.T)`
-- `plan:internal/shedarbiter#TestCall_VerdictOutcomes` -> `func TestCall_VerdictOutcomes(t *testing.T)`
-- `plan:internal/shedarbiter#TestVerdictGate` -> `func TestVerdictGate(t *testing.T)`
-- `plan:internal/shedarbiter#TestPrompt` -> `func TestPrompt(t *testing.T)`
-- `plan:internal/shedarbiter#TestSpec` -> `func TestSpec(t *testing.T)`
-- `plan:internal/shedarbiter#TestConsumeAttempt` -> `func TestConsumeAttempt(t *testing.T)`
-- `plan:internal/shedarbiter#TestToldGeometryInvariant_AllowlistOnly` -> `func TestToldGeometryInvariant_AllowlistOnly(t *testing.T)`
-- `plan:internal/loomcli#arbiterRecipeDescription` -> `func arbiterRecipeDescription(recipe string) string`
+- `internal/shedarbiter#Deps`
+- `internal/shedarbiter#Input`
+- `internal/shedarbiter#PromptInput`
+- `internal/shedarbiter#Call`
+- `internal/shedarbiter#NewCall`
+- `internal/shedarbiter#Call.Settle`
+- `internal/shedarbiter#Prompt`
+- `internal/shedarbiter#Spec`
+- `internal/shedarbiter#VerdictGate`
+- `internal/shedarbiter#ConsumeAttempt`
+- `internal/shedarbiter#Seam`
+- `internal/shedarbiter#TestCall_SpawnPath`
+- `internal/shedarbiter#TestCall_Rerun`
+- `internal/shedarbiter#TestCall_VerdictOutcomes`
+- `internal/shedarbiter#TestVerdictGate`
+- `internal/shedarbiter#TestPrompt`
+- `internal/shedarbiter#TestSpec`
+- `internal/shedarbiter#TestConsumeAttempt`
+- `internal/shedarbiter#TestToldGeometryInvariant_AllowlistOnly`
+- `internal/loomcli#arbiterRecipeDescription`
 
 **Edit:**
 - `contracts/stencils/loom/loom-template-arbiter.md`

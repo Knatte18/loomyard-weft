@@ -1,6 +1,6 @@
 {
   "runGuid": "0a9cd41e763cda08c3e817c3e3774513",
-  "planFingerprint": "424750bc4ca9dcf295334c55276207cfbafe19b62006f3c8b4000920002cb4fd",
+  "planFingerprint": "44d9c233f2d25e0dc8426eb7836e6e771e4908a74f0ea5636760cbce50f7c8fc",
   "planFileHashes": {
     "00-overview.md": "dad2e8dedbf9d5391b1a83850b1f6f2a07dc064acca0a99fa5d735955a4c3338",
     "01-agentname-scoped-program.md": "469f85082d8aeeadd27955255db010ba9dd2c769051fbf76e5914caab34e888f",
@@ -23,11 +23,11 @@
     "18-row-notices-after-chain.md": "f93c67e314d90b7847d3cefdfee58e6b42ad90be92e82a4c4c172914781a2fe3",
     "19-shed-arbiter-config.md": "17415e0d0f4b77e8cadecea82a9f7274696f3e277fc4e0931bed574b30f58644",
     "20-module-arbiter-overrides.md": "eaf3b2b71604c698cd1e210fb73a71db7e43f0a509af69116edbd7eae7262025",
-    "21-arbiter-key-copy.md": "c0bfa0f615336e0016aaa875e368de63f4d949b8d04c837a87f9d2f87ef44429",
-    "22-shedarbiter-package.md": "3c6b5db72337d68c2e698157c3925335225848c3b87226dcc22662982a343588",
-    "23-loomcli-arbiter-delegates.md": "b85f5e27cf35d20321d94ff9beb6d5d92b07c9803267ece60d72fd0c3b749253",
+    "21-arbiter-key-copy.md": "8a60532ab69754e3ef31e6e9f60f830ca2689a160ef51b3a46b8ad45a15d0e92",
+    "22-shedarbiter-package.md": "691da6aa8c153d0822d909b8d830236fff8279d475a2df6a7e63be46f60c797a",
+    "23-loomcli-arbiter-delegates.md": "759f1304e371ce1afadaf1dfbf12c66ecc1ed109911315c8a7dd0ad8f99c6b57",
     "24-arbiterstop-batten-rule.md": "fb59f5171a4d36ccf3a80c42bae1a9742721f6010a9c02c22a3ce7134e0427f4",
-    "25-batten-arbiter-wiring.md": "f41ab9028531a481b0f3601f908e225a0b542c44b24d5a0d5fb2bf6c530cc4e8",
+    "25-batten-arbiter-wiring.md": "c2e2c44bedee7dfd5dbd4a6b51bbb084c3f4c154f39953ceb2b221678db4ec86",
     "26-batten-pass-exit-codes.md": "c9cae0b862ef0bc974a718c3b912a085acb6e204f9c147db1c830130e06d56c9",
     "27-dobby-start.md": "2a0b549fb2c7c37ed58e1df9f91be7514e8d256abb9033b2bb939bdf1d975f2d",
     "28-batten-first-pass.md": "32a8be418b1e2e48c2d0f56bbc170660eff42c31324674da6d7ab785597e50e6",
@@ -972,7 +972,7 @@
       }
     }
   ],
-  "currentBatch": 21,
+  "currentBatch": 0,
   "masterStrand": "b72a3cc08101d22a4e8fe62d611ae08b",
   "masterSessionId": "6e5b1004-7b3f-4552-94de-e0b6630533f5",
   "masterEngine": "claude",
@@ -1176,16 +1176,41 @@
         "22-shedarbiter-package"
       ],
       "cardHashes": {
-        "21-arbiter-key-copy": "c0bfa0f615336e0016aaa875e368de63f4d949b8d04c837a87f9d2f87ef44429",
-        "22-shedarbiter-package": "3c6b5db72337d68c2e698157c3925335225848c3b87226dcc22662982a343588"
+        "21-arbiter-key-copy": "8a60532ab69754e3ef31e6e9f60f830ca2689a160ef51b3a46b8ad45a15d0e92",
+        "22-shedarbiter-package": "691da6aa8c153d0822d909b8d830236fff8279d475a2df6a7e63be46f60c797a"
       },
       "startSha": "82a02a96ace55f6da7564465fcde5cac09fff084",
       "kind": "fork",
       "spawnedAt": "2026-10-25T10:12:31Z",
       "sessionId": "6e5b1004-7b3f-4552-94de-e0b6630533f5",
       "engine": "claude",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "21-arbiter-key-copy",
+        "status": "done",
+        "head_sha": "a62dfe52e493b06b09632da37e831a18e7e50606",
+        "deviations": [
+          "internal/configreg/configreg_test.go",
+          "internal/configsync/movekeys.go",
+          "internal/loomcli/arbiterprompt.go",
+          "internal/shedarbiter/call.go",
+          "internal/shedarbiter/call_test.go",
+          "internal/shedarbiter/prompt.go",
+          "internal/shedarbiter/prompt_test.go",
+          "internal/shedarbiter/seam_enforcement_test.go",
+          "internal/shedarbiter/testmain_test.go"
+        ]
+      },
+      "cardShas": [
+        "a62dfe52e493b06b09632da37e831a18e7e50606"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-umbrella-daemon/6e5b1004-7b3f-4552-94de-e0b6630533f5/subagents/agent-aa70040cd9f251876.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-umbrella-daemon/6e5b1004-7b3f-4552-94de-e0b6630533f5/subagents/agent-aa70040cd9f251876.jsonl"
+      ]
     },
     "7": {
       "slug": "draft-writers",
@@ -1238,6 +1263,7 @@
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-umbrella-daemon/6e5b1004-7b3f-4552-94de-e0b6630533f5/subagents/agent-aa385306d455d7b23.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-umbrella-daemon/6e5b1004-7b3f-4552-94de-e0b6630533f5/subagents/agent-a755814902d9a18cc.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-umbrella-daemon/6e5b1004-7b3f-4552-94de-e0b6630533f5/subagents/agent-a1d6906409bb79b10.jsonl",
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-umbrella-daemon/6e5b1004-7b3f-4552-94de-e0b6630533f5/subagents/agent-a5a12edb51d5fae5d.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-umbrella-daemon/6e5b1004-7b3f-4552-94de-e0b6630533f5/subagents/agent-a5a12edb51d5fae5d.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-umbrella-daemon/6e5b1004-7b3f-4552-94de-e0b6630533f5/subagents/agent-aa70040cd9f251876.jsonl"
   ]
 }
