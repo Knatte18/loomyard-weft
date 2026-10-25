@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-25 15:29 UTC; every age below is as of then.
+Rendered 2026-10-25 15:31 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -58,7 +58,7 @@ Waits only on Running or Ready entries.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T4 | `draft` **Beams: one lyx beam start for dobby and orch, the beam window, and machine ownership by project**<br>• lyx beam start brings a beam up and resumes its orch; the overview window becomes beam: <slug>; projects, the root included, carry the owner machine and lyx adopt moves a project<br>• `profile: solid` | [`beam-start-and-window`](design-beam-start-and-window.md) | loom | `umbrella-anchor` | 49m<br>0m | orch, workspaces, batten, reed, board |
+| T4 | **Beams: one lyx beam start for dobby and orch, the beam window, and machine ownership by project**<br>• lyx beam start brings a beam up and resumes its orch; the overview window becomes beam: <slug>; projects, the root included, carry the owner machine and lyx adopt moves a project<br>• `profile: solid` | [`beam-start-and-window`](design-beam-start-and-window.md) | loom | `umbrella-anchor` | 51m<br>2m | orch, workspaces, batten, reed, board |
 
 ## Notes (35)
 
