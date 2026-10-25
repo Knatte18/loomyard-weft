@@ -1,0 +1,12 @@
+attempt: 1
+cap: 2
+failures:
+    - id: github.com/Knatte18/loomyard/internal/beamcli.TestDobbyRuns_PairAtItsOwnAnchor/InvalidMarkerRefusesTheRunsAndLeavesThePairOutOfTheWatch
+      kind: test
+      package: github.com/Knatte18/loomyard/internal/beamcli
+      tail: ""
+log_path: /home/knatte/Code/loomyard-LYXHUB/umbrella-anchor/.lyx/verify/verify-2.log
+hint:
+    - 01-lyxcwd-own-marker
+    - 11-origin-reconcile-stops-on-marker-change
+fixer: fork
