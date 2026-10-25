@@ -95,4 +95,5 @@ Discussion explores the code, bounds the scope and weighs the impact; a full boa
 
 Webster's fabric-reference audit flags every unquoted word ending in `-weft`, so a card whose slug ends that way fails its batch audit whenever a fork names the card in a command.
 Judge such a finding false when the matched commands only name the card, have Merriam run `lyx webster accept-audit --batch <n>` and `recover-batch <n>`, and have later forks quote the slug.
+`accept-audit` refuses when a flagged command also writes, such as a chained `git commit`; then have Merriam write outcome stuck, run `lyx webster reset --to batch-start --batch <n>` yourself once the run has stopped, and `lyx loom resume`.
 Remove this section once #874 is fixed.
