@@ -1,6 +1,6 @@
 {
   "runGuid": "bb150e5cb2a52dc10518c5ceb0953c17",
-  "planFingerprint": "09fb21f2cf445198dee9cd0038b990083b4b554536eeb401d7523f5104933bdc",
+  "planFingerprint": "ee86fd420bb8c2f9f7b163ce777c590b61df5542ee3ecb21e049d3fa3afc6cd8",
   "planFileHashes": {
     "00-overview.md": "ee3e9d9c0cf4799142aae592279628cca27729753fef048a751e1855143bd00c",
     "01-lyxcwd-own-marker.md": "f915eb4acc38abf35631f095f18f45072f4e1e4cde0b163ae3ca3f6e24eca065",
@@ -20,7 +20,7 @@
     "15-anchor-change-engine.md": "51f362183a2d2916a38927bad4e8a9cc26e35bd83b0ee3d5e1f7151ffb5b7526",
     "16-dobbies-wait-out-a-move.md": "9277bfe75c810110e182a76715b92110d723fbd47bac1ffd79989ad989d9750f",
     "17-fabric-anchor-verb.md": "ca33735effd57d0fa8f9eb4468e0457377e60602ed0d12fc51eae0bcea69fbf9",
-    "18-beam-create-at-an-anchor.md": "093f4a5b75bc039d06d3177a68eff5ba60366a740d2c194d7238699b0fbd806e",
+    "18-beam-create-at-an-anchor.md": "4b1acdf52372b5f78889cd7ccdcceb97d5c168e2e8fc9e092067a7a838059db0",
     "19-adopt-refuses-during-a-move.md": "133262ba7786b676d0d83d61d8c2761d21cccd755e7e56e785fb7c96d477ed33"
   },
   "planOverviewFrameHash": "20184aff5097fcfd7b628f8bd3065c51590d05f93042a28fed7d5eda349b8637",
@@ -513,7 +513,7 @@
       }
     }
   ],
-  "currentBatch": 18,
+  "currentBatch": 0,
   "masterStrand": "78050100d96dc3d016a719d88a437aa8",
   "masterSessionId": "f14f6a6a-13a7-4ddf-b2b8-70425a7da22b",
   "masterEngine": "claude",
@@ -697,7 +697,7 @@
         "19-adopt-refuses-during-a-move"
       ],
       "cardHashes": {
-        "18-beam-create-at-an-anchor": "093f4a5b75bc039d06d3177a68eff5ba60366a740d2c194d7238699b0fbd806e",
+        "18-beam-create-at-an-anchor": "4b1acdf52372b5f78889cd7ccdcceb97d5c168e2e8fc9e092067a7a838059db0",
         "19-adopt-refuses-during-a-move": "133262ba7786b676d0d83d61d8c2761d21cccd755e7e56e785fb7c96d477ed33"
       },
       "startSha": "7a3fa1748fec4fd47fdd216c9eac65cfd2ed2bcc",
@@ -705,8 +705,30 @@
       "spawnedAt": "2026-10-25T18:17:42Z",
       "sessionId": "f14f6a6a-13a7-4ddf-b2b8-70425a7da22b",
       "engine": "claude",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "18-beam-create-at-an-anchor",
+        "status": "done",
+        "head_sha": "b4a7a5402cc9878ef7591114bbbad060dd4d6e87",
+        "deviations": [
+          "internal/adoptcli/adopt_test.go",
+          "internal/adoptcli/refusal.go",
+          "internal/beamcli/create_test.go",
+          "internal/fabricengine/add.go",
+          "internal/fabricengine/add_anchor_integration_test.go",
+          "internal/fabricengine/addanchor.go"
+        ]
+      },
+      "cardShas": [
+        "b4a7a5402cc9878ef7591114bbbad060dd4d6e87"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-umbrella-anchor/f14f6a6a-13a7-4ddf-b2b8-70425a7da22b/subagents/agent-a362a3f86d73eb10e.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-umbrella-anchor/f14f6a6a-13a7-4ddf-b2b8-70425a7da22b/subagents/agent-a362a3f86d73eb10e.jsonl"
+      ]
     },
     "3": {
       "slug": "fabric-target-locations",
@@ -848,7 +870,8 @@
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-umbrella-anchor/f14f6a6a-13a7-4ddf-b2b8-70425a7da22b/subagents/agent-a9050f2b3149d9691.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-umbrella-anchor/f14f6a6a-13a7-4ddf-b2b8-70425a7da22b/subagents/agent-aef42b360300b0dd3.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-umbrella-anchor/f14f6a6a-13a7-4ddf-b2b8-70425a7da22b/subagents/agent-ac2e144f6f073aec3.jsonl",
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-umbrella-anchor/f14f6a6a-13a7-4ddf-b2b8-70425a7da22b/subagents/agent-abb960a0646181047.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-umbrella-anchor/f14f6a6a-13a7-4ddf-b2b8-70425a7da22b/subagents/agent-abb960a0646181047.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-umbrella-anchor/f14f6a6a-13a7-4ddf-b2b8-70425a7da22b/subagents/agent-a362a3f86d73eb10e.jsonl"
   ],
   "auditDispositions": {
     "fork:/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-umbrella-anchor/8e4534d5-3d9e-4ff8-b0e0-0b69e54a79a7/subagents/agent-a2fe4f35f39765664.jsonl:fabric-reference:1": "failed",
