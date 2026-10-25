@@ -38,9 +38,9 @@
 - `internal/loomengine#TestResolveArbiter`
 
 **Uses:**
-- `plan:internal/sheddriver#ArbiterSettings`
-- `plan:internal/sheddriver#ResolveArbiter`
-- `plan:internal/sheddriver#ArbiterLimits`
+- `internal/sheddriver#ArbiterSettings`
+- `internal/sheddriver#ResolveArbiter`
+- `internal/sheddriver#ArbiterLimits`
 
 **Intent:**
 Make `loom.yaml`, `darn.yaml` and `batten.yaml` each override `shed.yaml`'s arbiter keys (D8).

@@ -32,7 +32,7 @@
 - `pattern/PATTERN-cwd-resolution.md`
 
 **Uses:**
-- `plan:internal/sheddriver#ArbiterSettings`
+- `internal/sheddriver#ArbiterSettings`
 
 **Intent:**
 Move the arbiter's spawn and prompt out of `internal/loomcli` into `internal/shedarbiter`, a shed-layer, told-geometry package that batten imports without linking tree-sitter, beside the tackler in shed (D8).

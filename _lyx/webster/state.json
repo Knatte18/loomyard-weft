@@ -1,6 +1,6 @@
 {
   "runGuid": "0a9cd41e763cda08c3e817c3e3774513",
-  "planFingerprint": "abe868ff16fa4face0b79f2d80fa5f0bf9707cc973d941de8acd8564495dae58",
+  "planFingerprint": "424750bc4ca9dcf295334c55276207cfbafe19b62006f3c8b4000920002cb4fd",
   "planFileHashes": {
     "00-overview.md": "dad2e8dedbf9d5391b1a83850b1f6f2a07dc064acca0a99fa5d735955a4c3338",
     "01-agentname-scoped-program.md": "469f85082d8aeeadd27955255db010ba9dd2c769051fbf76e5914caab34e888f",
@@ -20,14 +20,14 @@
     "15-innerrun-respawn-cap.md": "7a0ea74b0111d33086036bb8266ac216d40dabb0068861b56f0cbc3fe4d0cc29",
     "16-innerrun-api-error-revive.md": "74285e4e44f4b0cb9143fb1fbf42a3a36d01de774c9e0e736ff5e7e05ad915a6",
     "17-land-drops-ready.md": "124a2c4fe7b0fb71d14e07612711083f315cd372f649e2967b4ecd85ca97ce67",
-    "18-row-notices-after-chain.md": "331c3b642abaa6ce79643b55f7ccaf5ff56c247588b720f070a7ddcd2357440d",
-    "19-shed-arbiter-config.md": "7537f84e1d18e5c6c3ec8d577223767e4d9f60b449a0a67446b518eba6a76828",
-    "20-module-arbiter-overrides.md": "cc40b477c3431de1765c48ba3d49055458649e460a0fe0b956854950186e0471",
+    "18-row-notices-after-chain.md": "f93c67e314d90b7847d3cefdfee58e6b42ad90be92e82a4c4c172914781a2fe3",
+    "19-shed-arbiter-config.md": "17415e0d0f4b77e8cadecea82a9f7274696f3e277fc4e0931bed574b30f58644",
+    "20-module-arbiter-overrides.md": "eaf3b2b71604c698cd1e210fb73a71db7e43f0a509af69116edbd7eae7262025",
     "21-arbiter-key-copy.md": "c0bfa0f615336e0016aaa875e368de63f4d949b8d04c837a87f9d2f87ef44429",
-    "22-shedarbiter-package.md": "da1130510dd869502a7e017622105f875eac3aa555a7cb75e4d01fb5d3aa3fce",
+    "22-shedarbiter-package.md": "3c6b5db72337d68c2e698157c3925335225848c3b87226dcc22662982a343588",
     "23-loomcli-arbiter-delegates.md": "b85f5e27cf35d20321d94ff9beb6d5d92b07c9803267ece60d72fd0c3b749253",
     "24-arbiterstop-batten-rule.md": "fb59f5171a4d36ccf3a80c42bae1a9742721f6010a9c02c22a3ce7134e0427f4",
-    "25-batten-arbiter-wiring.md": "64a6d0b642c5b1d5b083a093fcbfb2d8356fdf78dc43b48c0d5c4e6f74f263b3",
+    "25-batten-arbiter-wiring.md": "f41ab9028531a481b0f3601f908e225a0b542c44b24d5a0d5fb2bf6c530cc4e8",
     "26-batten-pass-exit-codes.md": "c9cae0b862ef0bc974a718c3b912a085acb6e204f9c147db1c830130e06d56c9",
     "27-dobby-start.md": "2a0b549fb2c7c37ed58e1df9f91be7514e8d256abb9033b2bb939bdf1d975f2d",
     "28-batten-first-pass.md": "32a8be418b1e2e48c2d0f56bbc170660eff42c31324674da6d7ab785597e50e6",
@@ -972,7 +972,7 @@
       }
     }
   ],
-  "currentBatch": 18,
+  "currentBatch": 0,
   "masterStrand": "b72a3cc08101d22a4e8fe62d611ae08b",
   "masterSessionId": "6e5b1004-7b3f-4552-94de-e0b6630533f5",
   "masterEngine": "claude",
@@ -1129,17 +1129,45 @@
         "20-module-arbiter-overrides"
       ],
       "cardHashes": {
-        "18-row-notices-after-chain": "331c3b642abaa6ce79643b55f7ccaf5ff56c247588b720f070a7ddcd2357440d",
-        "19-shed-arbiter-config": "7537f84e1d18e5c6c3ec8d577223767e4d9f60b449a0a67446b518eba6a76828",
-        "20-module-arbiter-overrides": "cc40b477c3431de1765c48ba3d49055458649e460a0fe0b956854950186e0471"
+        "18-row-notices-after-chain": "f93c67e314d90b7847d3cefdfee58e6b42ad90be92e82a4c4c172914781a2fe3",
+        "19-shed-arbiter-config": "17415e0d0f4b77e8cadecea82a9f7274696f3e277fc4e0931bed574b30f58644",
+        "20-module-arbiter-overrides": "eaf3b2b71604c698cd1e210fb73a71db7e43f0a509af69116edbd7eae7262025"
       },
       "startSha": "2ccaf60c9036504317d3bb038874fc0cc336fcaf",
       "kind": "fork",
       "spawnedAt": "2026-10-25T10:03:11Z",
       "sessionId": "6e5b1004-7b3f-4552-94de-e0b6630533f5",
       "engine": "claude",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "18-row-notices-after-chain",
+        "status": "done",
+        "head_sha": "82a02a96ace55f6da7564465fcde5cac09fff084",
+        "deviations": [
+          "internal/arbiterstop/holdreading_test.go",
+          "internal/battencli/wire_seams_test.go",
+          "internal/battenshed/config.go",
+          "internal/battenshed/land.go",
+          "internal/battenshed/land_test.go",
+          "internal/battenshed/rownotice.go",
+          "internal/battenshed/teardown.go",
+          "internal/loomcli/wiring_seams_test.go",
+          "internal/loomengine/config.go",
+          "internal/loomengine/config_test.go",
+          "internal/sheddriver/config.go",
+          "internal/testkit/envkit/envkit.go"
+        ]
+      },
+      "cardShas": [
+        "82a02a96ace55f6da7564465fcde5cac09fff084"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-umbrella-daemon/6e5b1004-7b3f-4552-94de-e0b6630533f5/subagents/agent-a5a12edb51d5fae5d.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-umbrella-daemon/6e5b1004-7b3f-4552-94de-e0b6630533f5/subagents/agent-a5a12edb51d5fae5d.jsonl"
+      ]
     },
     "7": {
       "slug": "draft-writers",
@@ -1191,6 +1219,7 @@
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-umbrella-daemon/6e5b1004-7b3f-4552-94de-e0b6630533f5/subagents/agent-ac27179692d1cfb44.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-umbrella-daemon/6e5b1004-7b3f-4552-94de-e0b6630533f5/subagents/agent-aa385306d455d7b23.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-umbrella-daemon/6e5b1004-7b3f-4552-94de-e0b6630533f5/subagents/agent-a755814902d9a18cc.jsonl",
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-umbrella-daemon/6e5b1004-7b3f-4552-94de-e0b6630533f5/subagents/agent-a1d6906409bb79b10.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-umbrella-daemon/6e5b1004-7b3f-4552-94de-e0b6630533f5/subagents/agent-a1d6906409bb79b10.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-umbrella-daemon/6e5b1004-7b3f-4552-94de-e0b6630533f5/subagents/agent-a5a12edb51d5fae5d.jsonl"
   ]
 }
