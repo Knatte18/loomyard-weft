@@ -162,6 +162,12 @@ Reconcile renames a hub's `merge_fix_attempts` and `merge-in` gate key and repor
 Rationale: since `fc75aef79` the row aligns the task with its parent and only starts with a merge (board entry, Part 3); the fabric verb and git-level merge-ins still only merge.
 The loom recipe header's restart rule covers retired rows; a one-to-one rename has the `RenameProducers` precedent (`internal/shedengine/doc.go`, "Row renames").
 
+### Added after Discussion (parent, 2026-10-25): No landing-time approval replaces the alignment agent; D1 stands
+
+Decision: The alignment agent goes whole as D1 says. No landing-time approval is added in its place: the Parent-Align (formerly Merge-In) fixer's check of the task's work against its decision record and what the parent brought in is the landing-time alignment. The entry's 'keep it at pr-gate' was written before fc75aef79 removed the PR-Gate row and is void. Drop the Open risks line that asks this.
+
+Rationale: Parent, 2026-10-25: the PR-Gate point no longer exists and Merge-In's fixer already took over landing-time alignment; the operator holds the alignment agent unneeded now that the Discussion perch's lenses and the periodic board tidy cover its work.
+
 ## Constraints
 
 - `PATTERN-refusal-way-forward`: the `decision` escalation's Reason and the arbiter's refusal name the way forward, and a test reaches each.
