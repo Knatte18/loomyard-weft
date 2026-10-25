@@ -281,6 +281,12 @@ Rationale: An agent's lyx drift accept and steps 2 and 3 write records-side file
   - resume-test-time-format-mismatch (class design, severity BLOCKING, open in rounds 3)
 <!-- /lyx:carry-over Plan-Review -->
 
+<!-- lyx:carry-over Code-Review -->
+- Code-Review, round 1: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
+  Review: _lyx/reviews/code/round-1-review.md; fixer report: _lyx/reviews/code/round-1-fixer-report.md.
+  - compare-marker-no-retry (class design, severity MEDIUM, open in rounds 1)
+<!-- /lyx:carry-over Code-Review -->
+
 ## Acceptance criteria
 
 - With `drift.enabled` false, a loom and a darn run record every Drift row they carry as `Skipped`, and neither spawns an agent or runs a command.
