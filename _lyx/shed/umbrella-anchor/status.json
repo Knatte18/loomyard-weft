@@ -1,9 +1,8 @@
 {
   "current_producer": "Webster",
-  "state": "paused",
+  "state": "running",
   "error": "",
   "pause_requested": false,
-  "pause_reason": "re-launched onto Webster",
   "activity": {
     "now": "Webster",
     "last": "Webster → goto",
