@@ -1,6 +1,6 @@
 {
   "runGuid": "bb150e5cb2a52dc10518c5ceb0953c17",
-  "planFingerprint": "a60eb3e875b0f060fffa1046f59bec8ae7df7c63358e1ffea95d6d7e78d814bf",
+  "planFingerprint": "09fb21f2cf445198dee9cd0038b990083b4b554536eeb401d7523f5104933bdc",
   "planFileHashes": {
     "00-overview.md": "ee3e9d9c0cf4799142aae592279628cca27729753fef048a751e1855143bd00c",
     "01-lyxcwd-own-marker.md": "f915eb4acc38abf35631f095f18f45072f4e1e4cde0b163ae3ca3f6e24eca065",
@@ -17,10 +17,10 @@
     "12-promote-refuses-another-anchor.md": "f55c99f454e03efdec9193db50a3cd02154bcb45b91fd9ccb6a98f7c0b5cc783",
     "13-move-record-stops-weft-writers.md": "76a5f935bb54011bc5921e47a0e9d8b24d3f792e3d6ef0aa10fe3182b679c975",
     "14-weft-integration-across-anchors.md": "7744f50707e6dd7cdee99f036c70671a869178e39c27fb4c14d0feee20726481",
-    "15-anchor-change-engine.md": "502b8c1898e3bb20e9bbd4b7af5e14fd6133a110e9f85cced89a1e45f25ba46b",
-    "16-dobbies-wait-out-a-move.md": "ac530efaa97c0a137722c89820751d03c39bde9911e74b4d29c5a12c5685f048",
-    "17-fabric-anchor-verb.md": "109fcbe264217e2ce33ffa5c1ef6061aaa897dad9f9571086da2d58fad79cf24",
-    "18-beam-create-at-an-anchor.md": "21af7c01c1ba6ce7fc093140902d36c07996407608edb109d49a4cef26d42ced",
+    "15-anchor-change-engine.md": "51f362183a2d2916a38927bad4e8a9cc26e35bd83b0ee3d5e1f7151ffb5b7526",
+    "16-dobbies-wait-out-a-move.md": "9277bfe75c810110e182a76715b92110d723fbd47bac1ffd79989ad989d9750f",
+    "17-fabric-anchor-verb.md": "ca33735effd57d0fa8f9eb4468e0457377e60602ed0d12fc51eae0bcea69fbf9",
+    "18-beam-create-at-an-anchor.md": "093f4a5b75bc039d06d3177a68eff5ba60366a740d2c194d7238699b0fbd806e",
     "19-adopt-refuses-during-a-move.md": "133262ba7786b676d0d83d61d8c2761d21cccd755e7e56e785fb7c96d477ed33"
   },
   "planOverviewFrameHash": "20184aff5097fcfd7b628f8bd3065c51590d05f93042a28fed7d5eda349b8637",
@@ -513,7 +513,7 @@
       }
     }
   ],
-  "currentBatch": 15,
+  "currentBatch": 0,
   "masterStrand": "78050100d96dc3d016a719d88a437aa8",
   "masterSessionId": "f14f6a6a-13a7-4ddf-b2b8-70425a7da22b",
   "masterEngine": "claude",
@@ -645,22 +645,49 @@
         "17-fabric-anchor-verb"
       ],
       "cardHashes": {
-        "15-anchor-change-engine": "502b8c1898e3bb20e9bbd4b7af5e14fd6133a110e9f85cced89a1e45f25ba46b",
-        "16-dobbies-wait-out-a-move": "ac530efaa97c0a137722c89820751d03c39bde9911e74b4d29c5a12c5685f048",
-        "17-fabric-anchor-verb": "109fcbe264217e2ce33ffa5c1ef6061aaa897dad9f9571086da2d58fad79cf24"
+        "15-anchor-change-engine": "51f362183a2d2916a38927bad4e8a9cc26e35bd83b0ee3d5e1f7151ffb5b7526",
+        "16-dobbies-wait-out-a-move": "9277bfe75c810110e182a76715b92110d723fbd47bac1ffd79989ad989d9750f",
+        "17-fabric-anchor-verb": "ca33735effd57d0fa8f9eb4468e0457377e60602ed0d12fc51eae0bcea69fbf9"
       },
       "startSha": "e8e6cc26830d61128122b2d2e3e46fd55667bc2b",
       "kind": "fork",
       "spawnedAt": "2026-10-25T17:30:55Z",
       "sessionId": "f14f6a6a-13a7-4ddf-b2b8-70425a7da22b",
       "engine": "claude",
-      "terminal": false,
-      "status": "",
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "15-anchor-change-engine",
+        "status": "done",
+        "head_sha": "7a3fa1748fec4fd47fdd216c9eac65cfd2ed2bcc",
+        "deviations": [
+          "internal/dobbyengine/loop.go",
+          "internal/fabriccli/anchor.go",
+          "internal/fabriccli/anchor_integration_test.go",
+          "internal/fabriccli/anchor_test.go",
+          "internal/fabriccli/anchordeps.go",
+          "internal/fabriccli/argsarity_test.go",
+          "internal/fabriccli/roleguard_test.go",
+          "internal/fabricengine/anchorchange.go",
+          "internal/fabricengine/anchorchange_integration_test.go",
+          "internal/fabricengine/anchormove.go",
+          "internal/fabricengine/anchortarget.go",
+          "internal/fabricengine/destroy.go",
+          "internal/fabricengine/upstreamrun.go",
+          "internal/hubgeom/dobbygeom.go",
+          "internal/hubgeom/dobbygeom_test.go"
+        ]
+      },
+      "cardShas": [
+        "7a3fa1748fec4fd47fdd216c9eac65cfd2ed2bcc"
+      ],
       "forkTranscripts": [
-        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-umbrella-anchor/f14f6a6a-13a7-4ddf-b2b8-70425a7da22b/subagents/agent-ac2e144f6f073aec3.jsonl"
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-umbrella-anchor/f14f6a6a-13a7-4ddf-b2b8-70425a7da22b/subagents/agent-ac2e144f6f073aec3.jsonl",
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-umbrella-anchor/f14f6a6a-13a7-4ddf-b2b8-70425a7da22b/subagents/agent-abb960a0646181047.jsonl"
       ],
       "bracketTranscripts": [
-        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-umbrella-anchor/f14f6a6a-13a7-4ddf-b2b8-70425a7da22b/subagents/agent-ac2e144f6f073aec3.jsonl"
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-umbrella-anchor/f14f6a6a-13a7-4ddf-b2b8-70425a7da22b/subagents/agent-ac2e144f6f073aec3.jsonl",
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-umbrella-anchor/f14f6a6a-13a7-4ddf-b2b8-70425a7da22b/subagents/agent-abb960a0646181047.jsonl"
       ]
     },
     "3": {
@@ -802,7 +829,8 @@
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-umbrella-anchor/f14f6a6a-13a7-4ddf-b2b8-70425a7da22b/subagents/agent-af8b2d9fc90cedaeb.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-umbrella-anchor/f14f6a6a-13a7-4ddf-b2b8-70425a7da22b/subagents/agent-a9050f2b3149d9691.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-umbrella-anchor/f14f6a6a-13a7-4ddf-b2b8-70425a7da22b/subagents/agent-aef42b360300b0dd3.jsonl",
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-umbrella-anchor/f14f6a6a-13a7-4ddf-b2b8-70425a7da22b/subagents/agent-ac2e144f6f073aec3.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-umbrella-anchor/f14f6a6a-13a7-4ddf-b2b8-70425a7da22b/subagents/agent-ac2e144f6f073aec3.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-umbrella-anchor/f14f6a6a-13a7-4ddf-b2b8-70425a7da22b/subagents/agent-abb960a0646181047.jsonl"
   ],
   "auditDispositions": {
     "fork:/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-umbrella-anchor/8e4534d5-3d9e-4ff8-b0e0-0b69e54a79a7/subagents/agent-a2fe4f35f39765664.jsonl:fabric-reference:1": "failed",

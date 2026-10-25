@@ -14,7 +14,7 @@
 - `internal/hubgeom#TestDobbyGeometry`
 
 **Create:**
-- `plan:internal/dobbyengine#TestRun_NoPassWhileAMoveStands` -> `func TestRun_NoPassWhileAMoveStands(t *testing.T)`
+- `internal/dobbyengine#TestRun_NoPassWhileAMoveStands`
 
 **Uses:**
 - `internal/fabricengine#MoveRecordPath`

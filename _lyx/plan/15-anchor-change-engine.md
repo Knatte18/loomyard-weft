@@ -4,19 +4,19 @@
 - `internal/fabricengine/doc.go`
 
 **Create:**
-- `plan:internal/fabricengine#AnchorChange` -> `type AnchorChange struct`
-- `plan:internal/fabricengine#Topology.BeginAnchorChange` -> `func (t *Topology) BeginAnchorChange(pair *lyxcwd.Location, target string) (*AnchorChange, error)`
-- `plan:internal/fabricengine#AnchorChange.Apply` -> `func (c *AnchorChange) Apply(rec *Mutations) (landed bool, err error)`
-- `plan:internal/fabricengine#AnchorChange.Finish` -> `func (c *AnchorChange) Finish(rec *Mutations) error`
-- `plan:internal/fabricengine#AnchorChange.Close` -> `func (c *AnchorChange) Close()`
-- `plan:internal/fabricengine#validateAnchorTarget` -> `func validateAnchorTarget(pair *lyxcwd.Location, target string, names []string) error`
-- `plan:internal/fabricengine#moveWeftContent` -> `func moveWeftContent(rec *Mutations, weftPath, from, to string, names []string) (string, error)`
-- `plan:internal/fabricengine#restoreMovePathsToHead` -> `func restoreMovePathsToHead(rec *Mutations, weftPath string, pathspecs []string) error`
-- `plan:internal/fabricengine#ownedMovePathspecs` -> `func ownedMovePathspecs(weftPath string, pathspecs []string) pathOwnership`
-- `plan:internal/fabricengine#UpstreamRunUnfinished` -> `func UpstreamRunUnfinished(pair *lyxcwd.Location, names []string) (unfinished bool, err error)`
-- `plan:internal/fabricengine#anchorFailHook` -> `var anchorFailHook func(afterCommit bool) error`
-- `plan:internal/fabricengine#SetAnchorFailHookForTest` -> `func SetAnchorFailHookForTest(t *testing.T, hook func(afterCommit bool) error)`
-- `plan:internal/fabricengine_test#TestAnchorChange` -> `func TestAnchorChange(t *testing.T)`
+- `internal/fabricengine#AnchorChange`
+- `internal/fabricengine#Topology.BeginAnchorChange`
+- `internal/fabricengine#AnchorChange.Apply`
+- `internal/fabricengine#AnchorChange.Finish`
+- `internal/fabricengine#AnchorChange.Close`
+- `internal/fabricengine#validateAnchorTarget`
+- `internal/fabricengine#moveWeftContent`
+- `internal/fabricengine#restoreMovePathsToHead`
+- `internal/fabricengine#ownedMovePathspecs`
+- `internal/fabricengine#UpstreamRunUnfinished`
+- `internal/fabricengine#anchorFailHook`
+- `internal/fabricengine#SetAnchorFailHookForTest`
+- `internal/fabricengine_test#TestAnchorChange`
 
 **Uses:**
 - `internal/fabricengine#MoveRecord`
