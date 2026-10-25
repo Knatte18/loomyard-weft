@@ -1,6 +1,6 @@
-# Dobby gets its own lyx dobby verbs, and lyx orch start stops starting it
+# One lyx beam start brings a beam up: dobby and orch together, with lyx s
 
-`dobby-own-verbs` · Note · enhancement, orch, workspaces
+`beam-start-verbs` · Note · enhancement, orch, workspaces
 
 ## Seen (operator, 2026-10-25)
 
