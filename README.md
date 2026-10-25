@@ -41,7 +41,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T1 | **Bench Codex as a Burler reviewer against Claude reviews of finished runs**<br>• `profile: docs` | [`codex-review-bench`](design-codex-review-bench.md) | darn | Worktree-Create | neve | 3m<br>0m | codex, burler |
+| T1 | **Bench Codex as a Burler reviewer against Claude reviews of finished runs**<br>• `profile: docs` | [`codex-review-bench`](design-codex-review-bench.md) | darn | Darn-Write | neve | 3m<br>0m | codex, burler |
 | T2 | **[WS 005] One dobby daemon per beam owns and drives its runs**<br>• Each beam (a worktree with an orch thread) gets a Go daemon, started by lyx orch start, that follows its runs status files, starts ready tasks, lands, settles mechanical stops and tells the thread only what needs judgement<br>• `profile: solid`<br>• `loom: discussion_hard_max_bounces 4`<br>• `loom: discussion_max_bounces 3` | [`umbrella-daemon`](design-umbrella-daemon.md) | loom | Webster | neve | 13d<br>4h | batten, orch, shed, workspaces, loom, board |
 
 ### Ready (0)
