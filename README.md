@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-25 16:16 UTC; every age below is as of then.
+Rendered 2026-10-25 16:17 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -60,11 +60,11 @@ Waits only on Running or Ready entries.
 | --- | --- | --- | --- | --- | --- | --- |
 | T4 | **Beams: one lyx beam start for dobby and orch, the beam window, and machine ownership by project**<br>• lyx beam start brings a beam up and resumes its orch; the overview window becomes beam: <slug>; projects, the root included, carry the owner machine and lyx adopt moves a project<br>• `profile: solid` | [`beam-start-and-window`](design-beam-start-and-window.md) | loom | `umbrella-anchor` | 1h<br>47m | orch, workspaces, batten, reed, board |
 
-## Notes (38)
+## Notes (39)
 
 Not tasks: ideas and observations, merged into a task when one is promoted.
 
-### Bugs (4)
+### Bugs (5)
 
 | # | P | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
@@ -72,6 +72,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | B2 |  | **A webster stop reaches the parent twice: Merriam asks directly and the driver escalates the same question** | [`webster-stop-asked-once`](design-webster-stop-asked-once.md) | 0m<br>0m | webster, loom |
 | B3 |  | **Webster audit: a card slug ending in -weft makes every gate test --card command a fabric reference** | [`weft-suffix-card-slug-audit`](design-weft-suffix-card-slug-audit.md) | 0m<br>0m | webster, fabric |
 | B4 |  | **Board README lists draft tasks under Ready** | [`readme-draft-not-ready`](design-readme-draft-not-ready.md) | 0m<br>0m | board |
+| B5 |  | **Darn-Write seat start dies: provider pane drops to a shell prompt after the prompt text** | [`seat-start-long-prompt-dies`](design-seat-start-long-prompt-dies.md) | 0m<br>0m | shuttle |
 
 ### Enhancements (16)
 
