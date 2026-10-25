@@ -1,6 +1,6 @@
 # The overview window becomes the beam window
 
-`beam-overview-window` · Task · enhancement, batten, orch, reed · running · PR-Review
+`beam-overview-window` · Task · enhancement, batten, orch, reed · running · Finalize
 
 ## Seen (operator, 2026-10-25)
 
