@@ -234,6 +234,18 @@ Decision: The PATTERN-cwd-resolution entry text is shortened to fit pattern.MaxE
 
 Rationale: The recorded text made the overview line 410 characters against the 360 cap, and dropping the background link orphans pattern/PATTERN-cwd-resolution.md.
 
+### Added after Discussion (parent, 2026-10-25): A standing move record exempts its own worktree from D7's owner refusal
+
+Decision: D7's owner refusal does not apply to a worktree whose own move record stands, bounded to that record's worktree B; card 17's exemption stands as written. Answers plan review finding F10.
+
+Rationale: Adopt already refuses while the move record stands, so the owner refusal there would only block the recovery the record exists for.
+
+### Added after Discussion (parent, 2026-10-25): Checkout joins the writers a standing move record stops
+
+Decision: D7 step 1's list of writers a standing move record stops gains checkout; card 13's checkout refusal and its TestCheckout_RefusesAnotherAnchor row stand as written. Answers plan review finding F13.
+
+Rationale: Recovery acts on the branch the record was written on, so a checkout while the record stands would point recovery at the wrong branch.
+
 ## Constraints
 
 - The weft is never a merge participant (`fabricengine/doc.go`, "The merge surface"), so landing never touches the parent's weft or its marker; the entry's "kept out of the merge as raddle is" needs no mechanism.
