@@ -28,3 +28,4 @@ labels:
     dotnet: 'support for .NET/C# hubs: gate, verify tiers, scoping and baselines for a C# repository such as NORCE Models'
     gate: lyx gate test, the gate-slot pool and the verify test tiers
     testkit: the shared test helpers under internal/testkit
+    pattern: PATTERN.md, its pattern/ background files and their checks (internal/pattern)
