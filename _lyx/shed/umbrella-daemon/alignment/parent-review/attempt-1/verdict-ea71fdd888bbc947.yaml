@@ -1,0 +1,9 @@
+verdict: approve
+reason: >-
+  The decision record meets every goal point and operator decision of the umbrella-daemon entry and the parent's arbiter decision.
+  D11's placement in Finalize and D4's retirement of --window are named in the record and are not scope deviations.
+  The only peer, discussion-scope-in-lenses, overlaps in the orch role stencil, arbiterstop, the Parent-Align rename, loom.yaml reconcile and batten's Run-Shed producer, all without a design conflict; both are at row 3, a tie.
+  No parent commits are listed.
+question: ""
+superseded:
+  - batten-window-default
