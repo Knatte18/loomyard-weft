@@ -1,6 +1,6 @@
 # An anchor per beam
 
-`umbrella-anchor` · Task · enhancement, fabric, config, workspaces · running · Drift-Verify
+`umbrella-anchor` · Task · enhancement, fabric, config, workspaces · running · Describe
 
 ## Seen (2026-10-18)
 
