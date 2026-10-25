@@ -1,11 +1,11 @@
 {
-  "current_producer": "Describe",
+  "current_producer": "PR-Review",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Describe",
-    "last": "Code-Bouncer → done",
+    "now": "PR-Review",
+    "last": "Describe → done",
     "wait": ""
   },
   "history": [
@@ -199,6 +199,21 @@
       "outcome": "done",
       "output": "/home/knatte/Code/loomyard-LYXHUB/beam-overview-window/_lyx/reviews/code/round-1-bouncer-ledger.md",
       "at": "2026-10-25T18:55:44Z"
+    },
+    {
+      "producer": "Describe",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYXHUB/beam-overview-window/_lyx/landing/summary.md",
+      "at": "2026-10-25T18:56:02Z",
+      "gate_attempts": 0,
+      "gate_spans": [
+        {
+          "gate": "description",
+          "kind": "gate",
+          "start": "2026-10-25T18:56:02.458714041Z",
+          "end": "2026-10-25T18:56:02.458758884Z"
+        }
+      ]
     }
   ],
   "product": {
