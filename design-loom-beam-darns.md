@@ -13,7 +13,7 @@ A large task runs as a loom whose implementation is a set of darn runs inside it
 4. The next producer turns Task A's worktree into a beam.
 5. The darn tasks run from beam A as ordinary darn runs and merge back into Task A's branch, not `main`; pieces with no dependency between them run in parallel.
 6. When every darn has merged back, a Task A-wide perch reviews the whole and makes small fixes.
-7. The rest is as today: alignment, PR, landing, so `main` takes Task A whole.
+7. The rest is as today: Parent-Align, PR, landing, so `main` takes Task A whole.
 
 ## Why
 
@@ -24,14 +24,14 @@ It came out of discussing sub-planners for the Plan writer (note `plan-writer-co
 
 ## Depends on
 
-The beam setup: `orch-any-worktree` is landed (dd11ab09f: beams, pairs from a parent pair, `lyx beam create`, `promote`, `land`), and `umbrella-daemon` is still open.
+The beam setup: `orch-any-worktree` is landed (dd11ab09f: beams, pairs from a parent pair, `lyx beam create`, `promote`, `land`), and `umbrella-daemon` is landed too (c2a03a885: dobby, a per-beam daemon that drives runs).
 Earlier wording: `orch-any-worktree` (umbrella tasks spawning and landing from their own worktree) and `umbrella-daemon` (a daemon per beam that drives its runs).
 
 ## Open
 
 - Contract precision: too loose and pieces collide, too tight and the pre-planner becomes today's Plan writer.
 - A darn that finds its contract wrong stops and escalates to Task A instead of improvising; dependent pieces wait.
-- What drives the darns inside the beam: the beam's daemon or orch thread, and how Task A's run waits for them.
+- What drives the darns inside the beam: dobby now starts and drives a beam's ready tasks (c2a03a885); open is how Task A's run waits for them.
 - How large the whole-task perch's fixes may be before they mean a piece failed.
 - Quality against full loom: each piece gets one perch instead of Plan and Webster review; measure follow-up fixes against loom runs.
 - Cost: Discussion, pre-planner, N darns and the whole-task perch against a loom run of the same size.

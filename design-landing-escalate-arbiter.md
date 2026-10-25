@@ -4,8 +4,8 @@
 
 ## Seen (2026-10-24)
 
-A landing-stop halt at `Merge-In` or `Finalize`, the merge fixer's `escalate` report included, goes straight to the orch: `internal/arbiterstop` marks it `LandingHalt` and skips the arbiter, and `landingshed.HandsBack` names it a hand-back.
-The fixer escalates when a decision in the task collides with work the parent brought in, the one case with a real judgement in it; the old alignment agent rejected 4 of 72 such checks, all valid.
+A landing-stop halt at `Parent-Align` (renamed from `Merge-In` in 5e449651f) or `Finalize`, the merge fixer's `escalate` report included, goes straight to the orch: `internal/arbiterstop` marks it `LandingHalt` and skips the arbiter, and `landingshed.HandsBack` names it a hand-back.
+The fixer escalates when a decision in the task collides with work the parent brought in, the one case with a real judgement in it; the old alignment agent (removed in 5e449651f) rejected 4 of 72 such checks, all valid.
 
 ## Idea (operator, 2026-10-24)
 

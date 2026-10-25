@@ -32,6 +32,11 @@ Claude Code's SendMessage reached the same writer mid-turn, at its next tool bou
   While only Claude runs, SendMessage is the better path; creel is needed where a non-Claude engine takes a role (note `creel-agents`).
   Programs, which cannot use SendMessage, go on posting through creel.
 
+## Test result (2026-10-25)
+
+`docs/research/creel-hook-delivery-2026-10-25/report.md` (eb3ccb3bd): for Claude, a `PostToolUse` hook delivered mail at the next tool boundary, each message claimed once across the hook and pane paths, at about 0.6 ms for a call with no mail.
+The Codex part is untested, and the loss of the reminder guard stays open.
+
 ## To weigh
 
 - The extra turn per agent message against the guard that keeps one agent's text from reading as an instruction in another agent's pane.
