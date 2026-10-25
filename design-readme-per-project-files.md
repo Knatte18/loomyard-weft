@@ -13,4 +13,5 @@ The notes are grouped by type label in file order, so after the `audit` label be
 - Each project gets its own rendered file.
   It opens with the projects directly under it, each a link to its file with its short description, then holds the tasks and notes that belong to the project itself.
 - Every project sits under another project, except the root project at the top.
+- A task's After column names its dependencies by handle, such as `T1, T2`, instead of by slug.
 - README.md is the root project's file: the projects under root first, each linked with its short description, then every task and note that belongs to no other project.
