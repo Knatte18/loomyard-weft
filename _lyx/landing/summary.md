@@ -1,55 +1,53 @@
-# Give each worktree its own anchor in a weft-root .lyx-anchor marker
+# An anchor per worktree: .lyx-anchor on each weft branch
+
+Each worktree of a hub now carries its own anchor in a `.lyx-anchor` file at the root of its weft branch.
+A pair forked from a worktree inherits the marker through git, and worktrees with different anchors coexist in one hub under one board.
+Before this, the anchor was one value per hub, kept on Bolt, so every beam shared it.
 
 ## What changes
 
-Until now a hub had one anchor, set once by `lyx fabric clone --subpath` and kept in a marker on Bolt.
-Every worktree used it, so all beams shared one subdirectory for `_lyx`, `.lyx/`, junctions and workspace roots.
-
-Now each worktree carries its own anchor in `<hub>/<worktree>-weft/.lyx-anchor`, a tracked file at the root of its weft branch.
-A pair's weft branch forks from its parent's, so the pair inherits the parent's anchor through git.
-Worktrees with different anchors coexist in one hub under one board.
-
+- `lyxcwd` reads the anchor of the worktree's own marker at `<hub>/<worktree>-weft/.lyx-anchor`.
+  The fallback order is the own marker, then the legacy Bolt marker (`_board/.lyx-anchor`), then `"."`.
+  An invalid own marker is an error, and an empty one counts as absent for this read.
+  `lyxcwd` gains a constructor for the Location of any named worktree, and every production site that built another worktree's path from the acting worktree's `AnchorRel` now uses it.
+  A scan test fails on a `lyxcwd.Location` literal in production code outside `lyxcwd` and `internal/testkit`.
+- `lyx fabric clone` writes the marker on `main-weft` instead of Bolt, and adopts it from there on a later clone, falling back to the Bolt marker for an unmigrated hub.
+- `lyx fabric reconcile` writes the marker into each markerless local weft and spawns its push.
+  It removes the Bolt marker, and a leftover `.fabric-anchor`, only once the prime's weft, every local pair's weft and every fetched remote-tracking weft branch with a warp sibling on origin carry a committed marker.
+  The census makes no network call.
+  A pair with an empty marker or a standing move record is reported as failed, and reconcile goes on with the others.
 - `lyx beam create --anchor <dir>` makes a beam at a new anchor.
-- `lyx fabric anchor [<slug>] [--set <dir>]` prints a worktree's anchor, or moves its tracked content, `.lyx`, junctions, scratch link, launchers and workspace files to a new one.
-- `lyxcwd` reads the worktree's own marker, then the legacy Bolt marker, then `"."`.
-  A new constructor returns the Location of any named worktree, and every production site that built another worktree's anchored path or weft pathspec now uses it instead of the acting worktree's `AnchorRel`.
-- `lyx fabric clone` writes the marker on `main-weft` instead of Bolt, and adopts it from there on an existing hub, falling back to the Bolt marker.
-- `lyx fabric reconcile` writes a marker into each markerless weft, then removes the Bolt marker (and any leftover `.fabric-anchor`) once every counted branch carries one on its fetched ref.
-  It makes no network call for this.
-- The git-exclude census is keyed by anchored pattern, so unwiring one worktree no longer strips lines another worktree at a different anchor still needs.
+  Without it the beam inherits its parent's.
+- `lyx fabric anchor [<slug>] [--set <dir>]` prints or changes a worktree's anchor.
+  A change ends the worktree's dobby, moves the tracked weft content and `.lyx` to the new anchor, commits the marker, rewires the junctions and scratch link, moves the launchers and regenerates the workspace files.
+  A kill mid-change is recovered by re-running the same `--set`, driven by a move record beside the weft's lock directory.
+- `lyx fabric checkout`, weft pull, a replaying weft push, the origin reconcile's weft moves, `lyx adopt --drop-local` and `lyx beam promote` refuse or stop, before changing anything, when the move would change the checked-out marker.
+  Each names `lyx fabric anchor <slug> --set <anchor>` as the way forward.
+  On another machine the same `--set` integrates: it rebuilds the weft on its fetched upstream tip and re-roots the local commits at the new anchor.
+- The git-exclude census is keyed by anchored pattern, so removing one worktree's junction lines keeps the lines another worktree at the same anchor needs.
+- Closes no issue; the board entry lists none.
 
-## Design decisions to review
+## Design decisions to check
 
-- Only `fabricengine` writes the marker, and only it reads it from git objects.
-  `lyxcwd` reads the working tree and imports `internal/weftname`, a standard-library-only leaf.
-- A scan test fails on a production `lyxcwd.Location` literal outside `lyxcwd` and `internal/testkit`.
-  A slug-built path joined with another Location's `AnchorRel` is held by review only.
-- A weft branch with no marker predates this change, so its anchor is where its content sits: the shallowest directory holding a wired name.
-  Migration and adopt write that value, which keeps a parent re-anchored after its child forked from rewiring the child.
-- `--set` runs under a move lock and a move record in the weft's lock directory.
-  It refuses a live reed strand, held driver lock, live batten run, unfinished run, dirty weft, another machine's worktree, and a `B` under a link or holding a real wired name.
-  It ends the worktree's dobby sparing pushes and board syncs, holds the branch's parent lock to the end, and recovers from a kill by re-running with the same `--set`.
-  While the record stands, `dobbyengine.EnsureLive`, reconcile, adopt, `Add` as a fork point, checkout and the weft writers refuse or stop, each naming the way forward.
-- A marker change committed on a shared weft branch stops other machines' weft pulls, replaying pushes and origin-reconcile weft moves, and `lyx fabric checkout` and `lyx adopt --drop-local` refuse across an anchor mismatch.
-  The operator runs `lyx fabric anchor <slug> --set <anchor>` there, which integrates by replaying unpushed local commits onto the upstream tip re-rooted to the new anchor.
-  `lyx beam promote` refuses a task whose anchor differs from its parent's.
-  One `fabricengine` function holds the marker comparison for all of these.
-- The new `PATTERN-cwd-resolution` entry says anchors come only from `lyxcwd` and the worktree's own weft-root marker.
-  Its text was shortened to fit the overview line cap.
+- The marker sits at the weft root, outside the anchored subtree, so a move never moves it.
+  Only `fabricengine` writes it or reads it from git objects.
+  `lyxcwd` now imports `internal/weftname`, a standard-library-only leaf, so the `-weft` suffix keeps one declarer.
+- A weft branch with no marker is anchored where its content sits: the shallowest directory in its tree holding a wired name, else the D2 fallback.
+  Migration, adopt, checkout, pull, push and the integration all compare by that value.
+- The weft stays out of the landing merge, so the parent keeps its own marker with no extra mechanism.
+- While a move record stands, `dobbyengine.EnsureLive` starts none of the affected dobbies, and no live one starts a pass.
+  Reconcile, adopt, `Add` as a fork point, checkout, and weft pull and push refuse the pair.
+- `fabricengine` holds one marker comparison function, called by pull, push, the origin reconcile and the drop-local reset.
+- `pattern/PATTERN-cwd-resolution.md` and the `PATTERN.md` overview line are updated; the package docs and the CLI help of the two verbs describe the behaviour.
 
-## To check by hand
+## Check by hand
 
-- Integration of a weft across another machine's anchor change builds its result in a temporary index, and that code has no `gitexec` seam.
-  Check its tests cover the failure paths, and that it is acceptable as is.
-- Multi-machine behavior was not run: the pull, push, origin-reconcile stops and the integrating `--set` on a second machine.
-- The kill-and-re-run recovery of `lyx fabric anchor --set` and of `lyx beam create --anchor` was exercised by tests, not on a real hub with live dobbies.
-- Windows: the `--set` refusal for a live dobby it cannot end (`runproc.End` signals nothing there) was not run.
-
-## Operator notes and open risks
-
-- Update every machine to the new binary, then run `lyx fabric reconcile` first on each, before any other lyx command there.
-  A machine on the old binary reads an absent Bolt marker as `"."`, and on a subpath hub its reconcile would wire a second junction set at the repo root.
-- A local-only markerless pair, and a branch no machine has fetched, is outside the census.
-  After the Bolt marker is removed it resolves to `"."` until its own machine's reconcile writes its marker.
-- Portals left under an old prime anchor after the prime is re-anchored are not swept.
-- A worktree checked out on several machines keeps its records local on the others until the integrating `--set` runs there.
+- Plan-review finding: the temporary-index commit in `internal/fabricengine` (the move commit built with `GIT_INDEX_FILE`) goes through a new `gitexec` env-carrying helper rather than an existing seam.
+  Check that its failure reporting matches `gitexec.Run` and that the move commit staged exactly `A/<names>`, `B/<names>` and the marker.
+- Discussion-time risk, open by design: a machine on the old binary reads an absent Bolt marker as `"."`.
+  On a subpath hub, update every machine, and run `lyx fabric reconcile` first on each, before any other lyx command there.
+- A local-only (`--local`, never pushed) markerless pair resolves to `"."` once Bolt's marker is gone, until its machine's reconcile writes its marker.
+- A worktree checked out on several machines: until another machine runs the integrating `lyx fabric anchor <slug> --set <B>`, its weft pushes and origin-reconcile moves of that weft stop.
+- Not run: a real two-machine anchor change of the prime, and `lyx fabric anchor` on Windows, where `runproc.End` signals nothing.
+- A verify run failed once on `internal/beamcli` `TestDobbyRuns_PairAtItsOwnAnchor/InvalidMarkerRefusesTheRunsAndLeavesThePairOutOfTheWatch`; a follow-up commit makes the dobby run listing refuse a pair with an invalid marker.
+  Check that the refusal, not an omission, is the intended behaviour.
