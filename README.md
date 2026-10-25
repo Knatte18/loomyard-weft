@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-25 17:21 UTC; every age below is as of then.
+Rendered 2026-10-25 17:28 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -28,7 +28,7 @@ grouping
 
 | # | Member | Kind | Standing |
 | --- | --- | --- | --- |
-| T1 | **Regression as three Drift rows: Drift-Baseline after Discussion, Drift-Await before Webster, Drift-Verify after the Code perch** | Task | Code-Burler-Fix |
+| T1 | **Regression as three Drift rows: Drift-Baseline after Discussion, Drift-Await before Webster, Drift-Verify after the Code perch** | Task | Code-Bouncer |
 | E28 | **A small public NUnit repo as sandbox hub for end-to-end C# runs** | Note | Note |
 
 ## Tasks (4)
@@ -41,7 +41,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T1 | **Regression as three Drift rows: Drift-Baseline after Discussion, Drift-Await before Webster, Drift-Verify after the Code perch**<br>• Support a hub regression tier that writes profiles on the parent before implementation and compares after, switchable per task for expected drift.<br>• `profile: light` | [`regression-baseline-verify`](design-regression-baseline-verify.md) | loom | Code-Burler-Fix | neve | 8d<br>3h | shed, webster, batten, config, dotnet |
+| T1 | **Regression as three Drift rows: Drift-Baseline after Discussion, Drift-Await before Webster, Drift-Verify after the Code perch**<br>• Support a hub regression tier that writes profiles on the parent before implementation and compares after, switchable per task for expected drift.<br>• `profile: light` | [`regression-baseline-verify`](design-regression-baseline-verify.md) | loom | Code-Bouncer | neve | 8d<br>3h | shed, webster, batten, config, dotnet |
 | T3 | **An anchor per beam**<br>• Let each worktree carry its own anchor through a .lyx-anchor marker at its weft branch root, inherited by its tasks, with a verb that changes it<br>• `profile: solid` | [`umbrella-anchor`](design-umbrella-anchor.md) | loom | Webster | neve | 7d<br>4h | fabric, config, workspaces |
 
 ### Ready (1)
@@ -58,7 +58,7 @@ Waits only on Running or Ready entries.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T4 | **Beams: one lyx beam start for dobby and orch, the beam window, and machine ownership by project**<br>• lyx beam start brings a beam up and resumes its orch; the overview window becomes beam: <slug>; projects, the root included, carry the owner machine and lyx adopt moves a project<br>• `profile: solid` | [`beam-start-and-window`](design-beam-start-and-window.md) | loom | `umbrella-anchor` | 2h<br>7m | orch, workspaces, batten, reed, board |
+| T4 | **Beams: one lyx beam start for dobby and orch, the beam window, and machine ownership by project**<br>• lyx beam start brings a beam up and resumes its orch; the overview window becomes beam: <slug>; projects, the root included, carry the owner machine and lyx adopt moves a project<br>• `profile: solid` | [`beam-start-and-window`](design-beam-start-and-window.md) | loom | `umbrella-anchor` | 2h<br>13m | orch, workspaces, batten, reed, board |
 
 ## Notes (42)
 
@@ -85,8 +85,8 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | E2 |  | **Codex CLI as a second shuttle engine: codexengine**<br>• codexengine for single-session roles, built from the 2026-10-24 spike report and claudeengine list of needs | [`codex-engine`](design-codex-engine.md) | 3w<br>5h | shuttle, codex |
 | E3 |  | **PATTERN line cap counts the rule text only, not the name and link**<br>• MaxEntryLineChars counts the whole entry line, so the room left for the rule text shrinks with the entry name and link | [`pattern-line-cap-text-only`](design-pattern-line-cap-text-only.md) | 3h<br>3h | pattern |
 | E4 |  | **finalize: the discrepancy-document conflict shape**<br>• Divergences that cannot be a git conflict get a precomputed document for the resolving agent instead of markers | [`finalize-discrepancy-doc`](design-finalize-discrepancy-doc.md) | 3w<br>2w | fabric, loom |
-| E5 |  | **Decide the layout of projects in the board README**<br>• The operator is not satisfied with how the README renders projects and their members; the layout is to be decided | [`board-projects-layout`](design-board-projects-layout.md) | 11h<br>10h | board |
-| E7 |  | **Run verbs in one shared namespace, not under lyx loom**<br>• lyx loom decision/status/goto/approve act on darn runs too; move recipe-neutral run verbs to one shared namespace | [`run-verbs-shared`](design-run-verbs-shared.md) | 10d<br>5h | shed, loom |
+| E5 |  | **Decide the layout of projects in the board README**<br>• The operator is not satisfied with how the README renders projects and their members; the layout is to be decided | [`board-projects-layout`](design-board-projects-layout.md) | 11h<br>11h | board |
+| E7 |  | **Run verbs in one shared namespace, not under lyx loom**<br>• lyx loom decision/status/goto/approve act on darn runs too; move recipe-neutral run verbs to one shared namespace | [`run-verbs-shared`](design-run-verbs-shared.md) | 11d<br>5h | shed, loom |
 | E9 |  | **Paste cited code into a review rounds context**<br>• Reviewers edit nothing and review a fixed commit, so code pasted at round start cannot go stale; measure it against todays reviewer | [`review-inline-code`](design-review-inline-code.md) | 2w<br>1d | burler, stencil |
 | E10 |  | **Module labels from what a task touches, not only what it is about**<br>• Half the landings that changed the shuttle core lacked the shuttle label; derive or check module labels from the plan and the diff | [`labels-from-diff`](design-labels-from-diff.md) | 10d<br>10d | board, loom |
 | E13 |  | **Rename the lyx binary to lyr (name clash with LyX)** | [`rename-binary-lyr`](design-rename-binary-lyr.md) | 9d<br>3d | stencil, shuttle |
