@@ -817,6 +817,24 @@
       "revised": "2026-10-25T06:04:27Z",
       "profile": "solid",
       "owner_machine": "neve"
+    },
+    {
+      "id": 808,
+      "handle": "P1",
+      "slug": "workspaces",
+      "title": "Workspaces: beams, pairs from a parent pair, dobby",
+      "kind": "project",
+      "labels": [
+        "enhancement",
+        "workspaces"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "Beams that develop a project in their own worktree, driven by a dobby daemon",
+      "body": "",
+      "created": "2026-10-25T06:18:01Z",
+      "revised": "2026-10-25T06:18:01Z"
     }
   ],
   "prime_owner": "neve"
