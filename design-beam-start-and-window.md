@@ -31,7 +31,8 @@ Both run on the machine that owns the beam.
 - `lyx beam stop [slug]` stops both, and `lyx beam status` shows both.
 - A fresh orch comes from `lyx orch refresh`.
 - `lyx orch` keeps `stop`, `status`, `distill`, `refresh`, `withdraw` and `rules`.
-- Removed: `lyx orch start` with `--continue`, `--handoff` and `--adopt`; `lyx orch cleanup`, since `lyx cleanup` already removes old handoffs; `lyx prime`; `lyx start`.
+- `lyx beam create <slug>` starts the new beam's orch together with its dobby, as `lyx beam start` does.
+- Removed: `lyx orch start` with `--continue`, `--handoff` and `--adopt`; `lyx orch cleanup`, since `lyx cleanup` already removes old handoffs; `lyx prime`; `lyx start`; `lyx beam promote`, since a beam is made from its project, never from a running task.
 
 ### Shortcuts
 
