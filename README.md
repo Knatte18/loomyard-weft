@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-25 18:14 UTC; every age below is as of then.
+Rendered 2026-10-25 18:16 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -48,9 +48,9 @@ Waits on nothing open; can start now.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T1 | `draft` **The overview window becomes the beam window**<br>• Rename the overview window to beam: <slug>, with one dobby and one orch section, each run shown once | [`beam-overview-window`](design-beam-overview-window.md) | darn |  | 0m<br>0m | batten, orch, reed |
+| T1 | `draft` **The overview window becomes the beam window**<br>• Rename the overview window to beam: <slug>, with one dobby and one orch section, each run shown once | [`beam-overview-window`](design-beam-overview-window.md) | darn |  | 1m<br>1m | batten, orch, reed |
 | T2 | `draft` **Bench Codex Astra against solo Opus as a plan reviewer, four runs**<br>• `profile: docs` | [`codex-astra-solo-bench`](design-codex-astra-solo-bench.md) | darn |  | 5h<br>5h | codex, burler |
-| T5 | `draft` **Shortcuts are short forms only**<br>• Remove lyx attach, lyx pause, lyx resume and the top-level lyx start | [`shortcuts-short-only`](design-shortcuts-short-only.md) | darn |  | 0m<br>0m |  |
+| T5 | `draft` **Shortcuts are short forms only**<br>• Remove lyx attach, lyx pause, lyx resume and the top-level lyx start | [`shortcuts-short-only`](design-shortcuts-short-only.md) | darn |  | 1m<br>0m | shortcut, loom, reed |
 
 ### Layer A (1)
 
@@ -58,7 +58,7 @@ Waits only on Running or Ready entries.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T4 | `draft` **Beams: one lyx beam start, machine ownership by project, and a beam's life as a pawl run**<br>• lyx beam start brings a beam up and resumes its orch; the overview window becomes beam: <slug>; projects, the root included, carry the owner machine and lyx adopt moves a project<br>• `profile: solid` | [`beam-start-and-ownership`](design-beam-start-and-ownership.md) | loom | `umbrella-anchor` | 3h<br>0m | orch, workspaces, batten, reed, board |
+| T4 | `draft` **Beams: one lyx beam start, machine ownership by project, and a beam's life as a pawl run**<br>• lyx beam start brings a beam up and resumes its orch; the overview window becomes beam: <slug>; projects, the root included, carry the owner machine and lyx adopt moves a project<br>• `profile: solid` | [`beam-start-and-ownership`](design-beam-start-and-ownership.md) | loom | `umbrella-anchor` | 3h<br>1m | orch, workspaces, batten, reed, board |
 
 ## Notes (42)
 

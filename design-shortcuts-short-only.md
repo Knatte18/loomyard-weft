@@ -1,6 +1,6 @@
 # Shortcuts are short forms only
 
-`shortcuts-short-only` · Task · enhancement · draft
+`shortcuts-short-only` · Task · enhancement, shortcut, loom, reed · draft
 
 ## Seen (operator, 2026-10-25)
 
