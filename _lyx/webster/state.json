@@ -328,7 +328,7 @@
       }
     }
   ],
-  "currentBatch": 0,
+  "currentBatch": 12,
   "masterStrand": "fa06c5879ed38ce88c7219deaa6de4cf",
   "masterSessionId": "6b74923a-78fd-41c6-8504-f637e840efcb",
   "masterEngine": "claude",
@@ -387,6 +387,26 @@
       "bracketTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-regression-baseline-verify/6b74923a-78fd-41c6-8504-f637e840efcb/subagents/agent-a16acca756a142be4.jsonl"
       ]
+    },
+    "12": {
+      "slug": "drift-activity",
+      "cards": [
+        "12-drift-activity",
+        "13-capture-teardown",
+        "14-drift-recipe-rows"
+      ],
+      "cardHashes": {
+        "12-drift-activity": "13bb511b5629e08dce29199ef89a6a9b850e2b2728a3de03fa5cbca3f5bced68",
+        "13-capture-teardown": "5e52e6f5b17789442375c93d2d096a3967834a26725ea33406f4fddb371ce39f",
+        "14-drift-recipe-rows": "066950f7aa778d305a47a16c515150b2e20860d0a7f7a9e1f14800bca31bf552"
+      },
+      "startSha": "1a614898a334d0ee662f4fece386deea793e8191",
+      "kind": "fork",
+      "spawnedAt": "2026-10-25T16:56:22Z",
+      "sessionId": "6b74923a-78fd-41c6-8504-f637e840efcb",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
     },
     "7": {
       "slug": "drift-verbs-cli",
