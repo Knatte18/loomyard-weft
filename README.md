@@ -35,13 +35,19 @@ grouping
 
 Concrete and claimable; only a task can run.
 
-### Ready (1)
+### Running (1)
+
+Held by a run; its scope is locked until the run ends.
+
+| # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| T1 | **An adopt runs the test suite on the adopting machine**<br>• Catch breaks from a machine change (Ubuntu 26.04, 24.04, Windows 11) at adopt time<br>• `profile: light` | [`adopt-runs-tests`](design-adopt-runs-tests.md) | darn | Worktree-Create | neve | 1d<br>0m | fabric, gate |
+
+### Ready (0)
 
 Waits on nothing open; can start now.
 
-| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- | --- | --- |
-| T1 | **An adopt runs the test suite on the adopting machine**<br>• Catch breaks from a machine change (Ubuntu 26.04, 24.04, Windows 11) at adopt time<br>• `profile: light` | [`adopt-runs-tests`](design-adopt-runs-tests.md) | darn |  | 1d<br>0m | fabric, gate |
+_None._
 
 ## Notes (35)
 
