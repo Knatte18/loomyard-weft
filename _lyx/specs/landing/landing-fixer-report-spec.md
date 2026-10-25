@@ -1,12 +1,12 @@
-<!-- lyx-stencil: sha256=e1b80e435c13a2de4706ba0692587ee6982f1c3a27e4ccc1108f144b9f0c0908 build=fc75aef792c26f037d2edb86987811280e37fd67 time=2026-10-24T05:13:21Z -->
+<!-- lyx-stencil: sha256=56ad06f9e9006e023f61597ff9b6f48e6c19ed9e32a595d4c3ba3e37e590afbb build=5e449651fc9099cf3c0ec513ef579c464138a703 time=2026-10-25T09:35:58Z -->
 
 # Landing fixer report spec — what the merge fixer writes when a turn ends
 
-> **Status: Contract — pinned.** This doc pins the merge fixer's report format: what the fixer session writes at the end of a turn, and what Merge-In and Finalize read from it.
+> **Status: Contract — pinned.** This doc pins the merge fixer's report format: what the fixer session writes at the end of a turn, and what Parent-Align and Finalize read from it.
 
 ## What it is
 
-The merge fixer is the one session Merge-In and Finalize spawn to fix a merge or test failure inside their row.
+The merge fixer is the one session Parent-Align and Finalize spawn to fix a merge or test failure inside their row.
 It ends each turn by writing one report, a markdown file at the path its prompt names, and the row reads that report to decide whether the run goes on or halts.
 
 ## Format
