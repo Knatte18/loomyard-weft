@@ -416,10 +416,10 @@
     },
     {
       "id": 654,
-      "handle": "E18",
+      "handle": "T2",
       "slug": "umbrella-daemon",
       "title": "[WS 005] One dobby daemon per beam owns and drives its runs",
-      "kind": "note",
+      "kind": "task",
       "labels": [
         "enhancement",
         "batten",
@@ -430,7 +430,6 @@
         "board"
       ],
       "issues": [],
-      "priority": "high",
       "depends_on": [],
       "isolated": false,
       "brief": "Each beam (a worktree with an orch thread) gets a Go daemon, started by lyx orch start, that follows its runs status files, starts ready tasks, lands, settles mechanical stops and tells the thread only what needs judgement",
