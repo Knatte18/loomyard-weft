@@ -1,0 +1,393 @@
+diff --git a/docs/overview.md b/docs/overview.md
+index 51828a753..cff1b6a17 100644
+--- a/docs/overview.md
++++ b/docs/overview.md
+@@ -432,6 +432,7 @@ User-facing modules each get one `lyx <module>` namespace:
+   ✅ Implemented. See the `internal/cleanupcli` package documentation.
+ - **adopt** — the takeover of tasks, beams or the prime from another machine of the operator, as one verb (`internal/adoptcli`; `lyx adopt <slug>...`, `lyx adopt --prime [<slug>...]` and `lyx adopt --all`, with `--keep-local` and `--drop-local`, from the prime and from any beam).
+   It reconciles the hub against origin, stops an entry whose pair holds local commits origin lacks or is live, adds the missing pair, records this machine as the owner in one pushed owner write, lifts the owner pause and resumes the run as a detached first pass, driven on by its parent's dobby.
++  A call that recorded an owner then starts the hub's `finalize` gate once, detached, in the prime, so a break this machine brings to the landed code shows at adopt time.
+   It calls each owning module's function in-process and has no engine package of its own.
+   ✅ Implemented. See the `internal/adoptcli` package documentation.
+ - **beam** — the making, promoting, landing and starting of a beam, a long-lived pair that groups board work, and dobby, the daemon every beam and the prime run (`internal/beamcli` + `internal/dobbyengine`; `lyx beam create <slug>`, `lyx beam promote <slug>`, `lyx beam land <slug>` and `lyx beam start`, from the prime and from any beam, and the hidden `lyx beam dobby`).
+diff --git a/internal/adoptcli/adopt.go b/internal/adoptcli/adopt.go
+index dfbb4f995..b14d49ecd 100644
+--- a/internal/adoptcli/adopt.go
++++ b/internal/adoptcli/adopt.go
+@@ -1,4 +1,4 @@
+-// adopt.go is the takeover sequence of "lyx adopt": it validates the request, reconciles the hub against origin, refuses an adopt that would leave no dobby here to drive what it takes over, then per named entry drops or keeps local commits, adds the missing pair, records this machine as owner, lifts the owner pause, resumes the run and starts the dobbies.
++// adopt.go is the takeover sequence of "lyx adopt": it validates the request, reconciles the hub against origin, refuses an adopt that would leave no dobby here to drive what it takes over, then per named entry drops or keeps local commits, adds the missing pair, records this machine as owner, lifts the owner pause, resumes the run, starts the dobbies and starts the test suite.
+ 
+ package adoptcli
+ 
+@@ -61,7 +61,13 @@ type slugOutcome struct {
+ 	Error         string       `json:"error,omitempty"`
+ }
+ 
+-// outcome is the verb's envelope: the reconcile's report, the mutation record of every step, whether that record is non-empty, the prime's owner write, each entry's slugOutcome and the warning of a dobby start that failed.
++// suiteStart names the detached test suite an adopt started: its pid and the log its output goes to.
++type suiteStart struct {
++	PID int    `json:"pid"`
++	Log string `json:"log"`
++}
++
++// outcome is the verb's envelope: the reconcile's report, the mutation record of every step, whether that record is non-empty, the prime's owner write, each entry's slugOutcome, the warning of a dobby start that failed, and the test suite started or the warning of a start that failed.
+ type outcome struct {
+ 	Reconcile     fabricengine.OriginReport
+ 	Mutations     []fabricengine.Mutation
+@@ -70,13 +76,16 @@ type outcome struct {
+ 	PrimeLost     string
+ 	Slugs         []slugOutcome
+ 	DobbyWarning  string
++	Suite         *suiteStart
++	SuiteWarning  string
+ }
+ 
+ // adoptDeps holds the seam of every step, which hubDeps fills over the hub and the tests fake.
+ // LocalPair reports whether this machine holds the slug's pair worktree.
+ // ParentOf names the slug of the pair a slug was forked from, or "" for the prime.
+ // ResumeRun starts the run's first pass detached, driven on by its parent's dobby, and returns the envelope of that start, where an envelope whose "ok" is false is a refusal.
+-// StartDobbies starts the dobby of the prime and of every beam this machine owns that is not live, and runs last; nil starts none.
++// StartDobbies starts the dobby of the prime and of every beam this machine owns that is not live, and runs after the resumes; nil starts none.
++// StartSuite starts the hub's finalize gate in the prime as a detached process and returns at once, so a break this machine brings to the landed code shows at adopt time; it runs last, once per call that recorded an owner.
+ // HubPath roots the mutation record.
+ type adoptDeps struct {
+ 	Machine      func() (string, error)
+@@ -95,6 +104,7 @@ type adoptDeps struct {
+ 	ChildStatus  func(slug string) (shedengine.Status, bool, error)
+ 	ResumeChild  func(slug string) error
+ 	StartDobbies func() error
++	StartSuite   func() (suiteStart, error)
+ 	HubPath      string
+ }
+ 
+@@ -216,6 +226,15 @@ func adopt(deps adoptDeps, req request) (outcome, error) {
+ 		}
+ 	}
+ 
++	if len(adopted) > 0 || result.PrimeRecorded {
++		suite, err := deps.StartSuite()
++		if err != nil {
++			result.SuiteWarning = fmt.Sprintf("the test suite was not started (%v); way forward: run `lyx gate test --gate finalize` in the prime", err)
++		} else {
++			result.Suite = &suite
++		}
++	}
++
+ 	result.Slugs = collect(slugs, outcomes)
+ 	return finish(), nil
+ }
+diff --git a/internal/adoptcli/adopt_test.go b/internal/adoptcli/adopt_test.go
+index 59c1f3649..bc800c341 100644
+--- a/internal/adoptcli/adopt_test.go
++++ b/internal/adoptcli/adopt_test.go
+@@ -1,6 +1,6 @@
+ //go:build tier0
+ 
+-// adopt_test.go drives the takeover sequence over fake deps: the refusals before anything runs, the reconcile stops, the per-entry stops and their two ways forward, the pair add, the owner write, the pause lift, the run resume and the halted-child resume.
++// adopt_test.go drives the takeover sequence over fake deps: the refusals before anything runs, the reconcile stops, the per-entry stops and their two ways forward, the pair add, the owner write, the pause lift, the run resume, the halted-child resume, the dobby start and the test suite start.
+ 
+ package adoptcli
+ 
+@@ -46,9 +46,10 @@ type world struct {
+ 	resumed      []string
+ 	children     map[string]shedengine.Status
+ 	childResumed []string
+-	// order is the run resumes, child resumes and dobby starts in the order they came, and dobbyErr what the dobby start answers.
++	// order is the run resumes, child resumes, dobby starts and suite starts in the order they came, and dobbyErr and suiteErr what the dobby and suite starts answer.
+ 	order    []string
+ 	dobbyErr error
++	suiteErr error
+ 	// race, when set, runs on the owners right after the owner write lands, as another machine's write does.
+ 	race func(*boardengine.Owners)
+ }
+@@ -162,9 +163,19 @@ func (w *world) deps() adoptDeps {
+ 			w.order = append(w.order, "dobbies")
+ 			return w.dobbyErr
+ 		},
++		StartSuite: func() (suiteStart, error) {
++			w.order = append(w.order, "suite")
++			if w.suiteErr != nil {
++				return suiteStart{}, w.suiteErr
++			}
++			return testSuite, nil
++		},
+ 	}
+ }
+ 
++// testSuite is what the fake suite start answers.
++var testSuite = suiteStart{PID: 42, Log: "suite.log"}
++
+ // slugOf returns the outcome of slug, failing the test when the envelope lacks it.
+ func slugOf(t *testing.T, got outcome, slug string) slugOutcome {
+ 	t.Helper()
+@@ -491,9 +502,37 @@ func TestAdopt(t *testing.T) {
+ 		}, wantErr: "`lyx adopt --prime alpha`", check: func(t *testing.T, w *world, _ outcome) {
+ 			requireNamedCallPasses(t, w, request{Prime: true, Slugs: []string{"alpha"}}, "alpha")
+ 		}},
+-		{name: "DobbyStartRunsLastAfterTheResumes", req: request{Slugs: []string{"alpha"}}, check: func(t *testing.T, w *world, got outcome) {
+-			if !slices.Equal(w.order, []string{"resume:alpha", "dobbies"}) || got.DobbyWarning != "" {
+-				t.Errorf("steps = %v, warning = %q; want the resume, then the dobby start and no warning", w.order, got.DobbyWarning)
++		{name: "DobbiesThenOneSuiteStartAfterTheResumes", req: request{Slugs: []string{"alpha", "beta"}, Prime: true}, check: func(t *testing.T, w *world, got outcome) {
++			if !slices.Equal(w.order, []string{"resume:alpha", "resume:beta", "dobbies", "suite"}) || got.DobbyWarning != "" {
++				t.Errorf("steps = %v, warning = %q; want the resumes, then the dobby start, then one suite start and no warning", w.order, got.DobbyWarning)
++			}
++			if got.Suite == nil || *got.Suite != testSuite || got.SuiteWarning != "" {
++				t.Errorf("suite = %+v, warning = %q; want %+v and no warning", got.Suite, got.SuiteWarning, testSuite)
++			}
++		}},
++		{name: "PrimeOwnerRecordedAloneStartsTheSuiteLast", req: request{Prime: true}, setup: func(w *world) {
++			delete(w.owners.Entries, "alpha")
++			delete(w.owners.Entries, "beta")
++		}, check: func(t *testing.T, w *world, got outcome) {
++			if !w.ownerReq.Prime || len(w.ownerReq.Slugs) != 0 {
++				t.Fatalf("owner request = %+v, want the prime's owner alone", w.ownerReq)
++			}
++			if got.Suite == nil || len(w.order) == 0 || w.order[len(w.order)-1] != "suite" {
++				t.Errorf("suite = %+v, steps = %v; want one suite start as the last step", got.Suite, w.order)
++			}
++		}},
++		{name: "CallThatRecordsNoOwnerStartsNoSuite", req: request{Slugs: []string{"alpha"}}, setup: func(w *world) { w.stopBranch("alpha", fabricengine.BranchDiverged) }, check: func(t *testing.T, w *world, got outcome) {
++			if slices.Contains(w.order, "suite") || got.Suite != nil || got.SuiteWarning != "" {
++				t.Errorf("steps = %v, suite = %+v, warning = %q; want no suite start", w.order, got.Suite, got.SuiteWarning)
++			}
++		}},
++		{name: "FailedSuiteStartIsTheWarningNamingTheGate", req: request{Slugs: []string{"alpha"}}, setup: func(w *world) { w.suiteErr = errors.New("exec failed") }, check: func(t *testing.T, _ *world, got outcome) {
++			want := "the test suite was not started (exec failed); way forward: run `lyx gate test --gate finalize` in the prime"
++			if got.SuiteWarning != want || got.Suite != nil {
++				t.Errorf("suite = %+v, warning = %q; want no suite and %q", got.Suite, got.SuiteWarning, want)
++			}
++			if alpha := slugOf(t, got, "alpha"); !alpha.OwnerRecorded || alpha.Run != "resumed" || alpha.Error != "" {
++				t.Errorf("alpha = %+v, want it adopted and resumed beside the failed suite start", alpha)
+ 			}
+ 		}},
+ 		{name: "FailedDobbyStartIsTheWarningNamingBeamStart", req: request{Slugs: []string{"alpha"}}, setup: func(w *world) { w.dobbyErr = errors.New("prime: spawn failed") }, check: func(t *testing.T, _ *world, got outcome) {
+diff --git a/internal/adoptcli/cli.go b/internal/adoptcli/cli.go
+index d2d469d13..81898473f 100644
+--- a/internal/adoptcli/cli.go
++++ b/internal/adoptcli/cli.go
+@@ -34,17 +34,18 @@ Steps, in order:
+      branches to origin's (refused for a live pair)
+   3. a refusal, before any step writes, of an entry whose parent another machine owns,
+      and of a beam or the prime while a member another machine owns is left out; each
+-     names the call that adopts them together, because this machine's dobby drives only
+-     runs whose parent is its own worktree
++     names the call that adopts them together
+   4. the pair of a task this machine lacks is added from the prime
+   5. one owner write for every entry not stopped, pushed to origin
+   6. each owner pause of an adopted task is lifted
+   7. each adopted task whose batten run is not done is resumed as a detached first pass;
+      a child halted at Finalize's owner check is resumed in its worktree
+   8. the dobby of the prime and of every beam this machine owns is started when it is not live
++  9. once an owner is recorded, the finalize gate starts detached in the prime; red only reports
+ 
+-The envelope carries reconcile, mutations and partial, and per slug what happened, and
+-dobby_warning when a dobby did not start. A slug's error never stops the other slugs.
++The envelope carries reconcile, mutations and partial, and per slug what happened,
++dobby_warning when a dobby did not start, and suite or suite_warning. A slug's error never
++stops the other slugs.
+ 
+ Example:
+   lyx adopt fix-parser
+@@ -93,6 +94,12 @@ Example:
+ 			if result.DobbyWarning != "" {
+ 				fields["dobby_warning"] = result.DobbyWarning
+ 			}
++			if result.Suite != nil {
++				fields["suite"] = result.Suite
++			}
++			if result.SuiteWarning != "" {
++				fields["suite_warning"] = result.SuiteWarning
++			}
+ 			if err != nil {
+ 				clihelp.SetExit(ctx, output.ErrFields(out, err.Error(), fields))
+ 				return nil
+diff --git a/internal/adoptcli/deps.go b/internal/adoptcli/deps.go
+index 9e71b6548..ec3ce5fba 100644
+--- a/internal/adoptcli/deps.go
++++ b/internal/adoptcli/deps.go
+@@ -1,4 +1,4 @@
+-// deps.go fills adoptDeps over a real hub: the origin reconcile with the live-pair reading adopt needs, the pair add, the owner write, the pause lift, the run resume, the child resume and the dobby start.
++// deps.go fills adoptDeps over a real hub: the origin reconcile with the live-pair reading adopt needs, the pair add, the owner write, the pause lift, the run resume, the child resume, the dobby start and the test suite start.
+ 
+ package adoptcli
+ 
+@@ -8,6 +8,7 @@ import (
+ 	"io/fs"
+ 	"os"
+ 	"os/exec"
++	"path/filepath"
+ 	"testing"
+ 
+ 	"github.com/Knatte18/loomyard/internal/battencli"
+@@ -20,6 +21,7 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/machinename"
+ 	"github.com/Knatte18/loomyard/internal/pairteardown"
+ 	"github.com/Knatte18/loomyard/internal/pauserecord"
++	"github.com/Knatte18/loomyard/internal/proc"
+ 	"github.com/Knatte18/loomyard/internal/shedengine"
+ 	"github.com/Knatte18/loomyard/internal/shedrun"
+ 	"github.com/Knatte18/loomyard/internal/tendercli"
+@@ -110,6 +112,9 @@ func hubDepsAs(prime *lyxcwd.Location, machine func() (string, error)) (adoptDep
+ 			_, err := dobbyengine.EnsureLive(hubgeom.DobbyStart(prime))
+ 			return err
+ 		},
++		StartSuite: func() (suiteStart, error) {
++			return startSuite(prime.AnchorPath(), filepath.Join(fabricengine.AdoptScratchDir(prime.HubPath), suiteLogName))
++		},
+ 		HubPath: prime.HubPath,
+ 	}, nil
+ }
+@@ -147,6 +152,46 @@ func readStatus(path string) (shedengine.Status, bool, error) {
+ 	return status, true, nil
+ }
+ 
++// suiteLogName is the file the adopt's test suite writes its output to.
++const suiteLogName = "suite.log"
++
++// suiteArgs is the lyx command line of the adopt's test suite: the hub's finalize gate, waiting for gate slots.
++var suiteArgs = []string{"gate", "test", "--gate", "finalize", "--wait"}
++
++// startSuite starts the adopt's test suite detached in dir, with its output in the log at logPath, truncated first, and returns its pid and the log.
++// The suite is started and never waited for, so the adopt returns while it runs.
++// It starts nothing and returns an error in a test binary, where forking the running binary would re-run the test suite.
++func startSuite(dir, logPath string) (suiteStart, error) {
++	if testing.Testing() {
++		return suiteStart{}, errors.New("the test suite is not started under go test")
++	}
++	executable, err := os.Executable()
++	if err != nil {
++		return suiteStart{}, fmt.Errorf("locate the lyx executable: %w", err)
++	}
++	if err := os.MkdirAll(filepath.Dir(logPath), 0o755); err != nil {
++		return suiteStart{}, fmt.Errorf("create the suite log directory: %w", err)
++	}
++	logFile, err := os.Create(logPath)
++	if err != nil {
++		return suiteStart{}, fmt.Errorf("open the suite log: %w", err)
++	}
++	defer logFile.Close()
++
++	command := exec.Command(executable, suiteArgs...)
++	command.Dir = dir
++	command.Stdout = logFile
++	command.Stderr = logFile
++	proc.Detach(command)
++	if err := command.Start(); err != nil {
++		logger.Warn("adoptcli: the test suite did not start", "exe", executable, "args", suiteArgs, "dir", dir, "error", err)
++		return suiteStart{}, err
++	}
++	pid := command.Process.Pid
++	logger.Info("adoptcli: spawned the test suite", "exe", executable, "args", suiteArgs, "dir", dir, "pid", pid, "log", logPath)
++	return suiteStart{PID: pid, Log: logPath}, nil
++}
++
+ // resumeChild runs "lyx loom resume" in the task worktree at pairPath and waits for it.
+ func resumeChild(pairPath string) error {
+ 	if testing.Testing() {
+diff --git a/internal/adoptcli/deps_test.go b/internal/adoptcli/deps_test.go
+index 9375006cd..b9cad84a9 100644
+--- a/internal/adoptcli/deps_test.go
++++ b/internal/adoptcli/deps_test.go
+@@ -1,6 +1,6 @@
+ //go:build tier0
+ 
+-// deps_test.go covers the hub-only pause reading that makes a pair under a slug-scope pause read live.
++// deps_test.go covers the hub-only pause reading that makes a pair under a slug-scope pause read live, and the suite start's guard under go test.
+ 
+ package adoptcli
+ 
+@@ -55,3 +55,14 @@ func TestHubOnlyPaused(t *testing.T) {
+ 		}
+ 	})
+ }
++
++func TestStartSuiteStartsNothingUnderTest(t *testing.T) {
++	t.Parallel()
++	logPath := filepath.Join(t.TempDir(), "adopt", suiteLogName)
++	if suite, err := startSuite(t.TempDir(), logPath); err == nil {
++		t.Errorf("startSuite under go test = %+v, nil; want an error", suite)
++	}
++	if _, err := os.Stat(filepath.Dir(logPath)); !os.IsNotExist(err) {
++		t.Errorf("startSuite under go test left the log directory behind: stat error %v", err)
++	}
++}
+diff --git a/internal/adoptcli/doc.go b/internal/adoptcli/doc.go
+index 0b4e94664..cb1abdf7d 100644
+--- a/internal/adoptcli/doc.go
++++ b/internal/adoptcli/doc.go
+@@ -58,15 +58,25 @@
+ // Step 5 resumes each adopted task whose batten run record is not done as a detached first pass through `battencli.StartFirstPass`, driven on by the parent's dobby, so the run's own driver lock refuses a second driver.
+ // A resume failure is the slug's error and the other slugs go on; a task with no run record gets its owner and no run.
+ //
+-// Last, after the resumes, `StartDobbies` starts the dobby of the prime and of every beam this machine owns that is not live, through `dobbyengine.EnsureLive`, so a dobby runs wherever the adopted runs' parent now is.
++// After the resumes, `StartDobbies` starts the dobby of the prime and of every beam this machine owns that is not live, through `dobbyengine.EnsureLive`, so a dobby runs wherever the adopted runs' parent now is.
+ // A failure is the envelope's `dobby_warning`, naming `lyx beam start`.
+ //
++// # Step 6: the test suite
++//
++// Machines differ in OS and toolchain, so code landed on one can break on another.
++// After the dobbies, a call that recorded this machine as the owner of an entry or of the prime starts `lyx gate test --gate finalize --wait` once, detached, in the prime, the spawn logged through `logger`.
++// One call is one adoption session: adopting the prime and two beams together starts one suite, and a tier the gate's green record holds green for the prime's tree is carried and runs nothing.
++// The suite's output goes to `suite.log` under `fabricengine.AdoptScratchDir` in the hub's board-level `.lyx` directory, truncated at each start, and the envelope's `suite` names its pid and that log.
++// A red suite only reports there, since the owner write and the resumes have already taken effect.
++// A spawn that fails is the envelope's `suite_warning`, naming `lyx gate test --gate finalize` in the prime, and changes no slug's outcome.
++// Bound: two separate adopt calls each start a suite, which the gate slots serialize.
++//
+ // A child halted at Finalize's owner halt, read as a blocked child status whose error opens with `landingshed.OwnerHaltPrefix`, is resumed with `lyx loom resume` spawned in its task worktree, the spawn logged through `logger`.
+ // That holds both when the child's own slug is adopted and when `--prime` or a parent slug adopts its parent while this machine owns the child's run; a child halted for any other reason stays halted.
+ //
+ // # The envelope
+ //
+-// It carries `reconcile`, `mutations` and `partial`, `dobby_warning` when a dobby did not start, and per slug what happened: a stop with its branches, pair added, owner recorded, pause lifted or standing, run resumed or none, the error, and a warning when this machine does not own the slug's parent, since that run halts at Finalize here.
++// It carries `reconcile`, `mutations` and `partial`, `dobby_warning` when a dobby did not start, `suite` or `suite_warning` for the test suite, and per slug what happened: a stop with its branches, pair added, owner recorded, pause lifted or standing, run resumed or none, the error, and a warning when this machine does not own the slug's parent, since that run halts at Finalize here.
+ //
+ // # The bounds
+ //
+diff --git a/internal/fabricengine/hubscratch_test.go b/internal/fabricengine/hubscratch_test.go
+index 0b91b1ad5..3dc1c46c2 100644
+--- a/internal/fabricengine/hubscratch_test.go
++++ b/internal/fabricengine/hubscratch_test.go
+@@ -63,6 +63,12 @@ func TestHubScratchAndLogsDir(t *testing.T) {
+ 	if gotArchive != wantArchive {
+ 		t.Errorf("LogArchiveDir(%q) = %q; want %q", hub, gotArchive, wantArchive)
+ 	}
++
++	gotAdopt := fabricengine.AdoptScratchDir(hub)
++	wantAdopt := filepath.Join(got, lyxdirs.AdoptDirName)
++	if gotAdopt != wantAdopt {
++		t.Errorf("AdoptScratchDir(%q) = %q; want %q", hub, gotAdopt, wantAdopt)
++	}
+ }
+ 
+ // TestHubLogsDir_MkdirAllIdempotentAgainstFabricCreatedDotLyx asserts the second half of the
+diff --git a/internal/fabricengine/junctionnames.go b/internal/fabricengine/junctionnames.go
+index d1b501765..ccaf3ac22 100644
+--- a/internal/fabricengine/junctionnames.go
++++ b/internal/fabricengine/junctionnames.go
+@@ -168,6 +168,12 @@ func HubScratchDir(hub string) string {
+ 	return filepath.Join(BoardDir(hub), lyxdirs.DotLyxDirName)
+ }
+ 
++// AdoptScratchDir returns the directory that holds the log of the test suite an adopt starts:
++// <hub>/_board/.lyx/adopt.
++func AdoptScratchDir(hub string) string {
++	return filepath.Join(HubScratchDir(hub), lyxdirs.AdoptDirName)
++}
++
+ // HubLogsDir returns the hub-level directory where the shared per-hub reed server writes its
+ // runtime log: <hub>/_board/.lyx/logs.
+ // It is hub-anchored so one server per hub resolves to one deterministic place, and it lives
+diff --git a/internal/lyxdirs/dirs.go b/internal/lyxdirs/dirs.go
+index ee707160b..096095494 100644
+--- a/internal/lyxdirs/dirs.go
++++ b/internal/lyxdirs/dirs.go
+@@ -31,5 +31,8 @@ const FailedPushDirName = "failed-push"
+ // RunProcDirName is the directory under the hub's board-level DotLyxDirName that holds the owner record of the processes a run starts.
+ const RunProcDirName = "runproc"
+ 
++// AdoptDirName is the directory under the hub's board-level DotLyxDirName that holds the log of the test suite an adopt starts.
++const AdoptDirName = "adopt"
++
+ // BeamDirName is the directory under a worktree's DotLyxDirName that holds dobby's lock, state record and markers.
+ const BeamDirName = "beam"
