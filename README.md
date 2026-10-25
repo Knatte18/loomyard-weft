@@ -41,7 +41,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T1 | **An adopt runs the test suite on the adopting machine**<br>• Catch breaks from a machine change (Ubuntu 26.04, 24.04, Windows 11) at adopt time<br>• `profile: light` | [`adopt-runs-tests`](design-adopt-runs-tests.md) | darn | Code-Burler-Fix | neve | 1d<br>17m | fabric, gate |
+| T1 | **An adopt runs the test suite on the adopting machine**<br>• Catch breaks from a machine change (Ubuntu 26.04, 24.04, Windows 11) at adopt time<br>• `profile: light` | [`adopt-runs-tests`](design-adopt-runs-tests.md) | darn | Code-Bouncer | neve | 1d<br>18m | fabric, gate |
 
 ### Ready (1)
 
@@ -114,5 +114,5 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | F15 |  | **Configurable action buttons on the reed status bar**<br>• Clickable status-bar buttons that run configured commands: VS Code, orch distill/refresh, the follow toggle and more | [`reed-status-buttons`](design-reed-status-buttons.md) | 10d<br>1d | reed, config, batten |
 | F16 | H | **creel stage 3: agents message through creel, not SendMessage**<br>• Parent asks, parent review, stop reports and shuttle send go through creel, so a non-Claude engine can take a role with a parent | [`creel-agents`](design-creel-agents.md) | 10d<br>34m | creel, shuttle, loom, stencil, report |
 | F17 |  | **Ideas to borrow from comparable agent orchestrators (survey, Oct 2026)** | [`orchestrator-survey-ideas`](design-orchestrator-survey-ideas.md) | 9d<br>1d | burler, shed, orch, quarry, report |
-| F18 |  | **Regression as three Drift rows: Drift-Baseline after Discussion, Drift-Await before Webster, Drift-Verify after the Code perch**<br>• Support a hub regression tier that writes profiles on the parent before implementation and compares after, switchable per task for expected drift. | [`regression-baseline-verify`](design-regression-baseline-verify.md) | 8d<br>15m | shed, webster, batten, config, dotnet |
+| F18 |  | **Regression as three Drift rows: Drift-Baseline after Discussion, Drift-Await before Webster, Drift-Verify after the Code perch**<br>• Support a hub regression tier that writes profiles on the parent before implementation and compares after, switchable per task for expected drift. | [`regression-baseline-verify`](design-regression-baseline-verify.md) | 8d<br>16m | shed, webster, batten, config, dotnet |
 | F20 |  | **Large tasks: Discussion, a pre-planner, and the pieces as darn runs inside the task's beam**<br>• Discussion decides scope, a pre-planner splits it into contracted pieces, each piece runs as darn from the task's beam, a whole-task perch reviews, then align and land | [`loom-beam-darns`](design-loom-beam-darns.md) | 2d<br>34m | loom, shed, batten, workspaces, burler |

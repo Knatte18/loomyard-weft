@@ -653,7 +653,7 @@
       "isolated": false,
       "brief": "Catch breaks from a machine change (Ubuntu 26.04, 24.04, Windows 11) at adopt time",
       "body": "## Seen (2026-10-24)\n\nThe prime moved from OSL-1046 back to Neve with `lyx adopt --prime`; nothing checked that the landed code builds and passes on the adopting machine.\nMachines differ: Neve runs Ubuntu 26.04, OSL-1046 Ubuntu 24.04, OSL-1033 Windows 11, so code landed on one can break on another.\n\n## Idea (operator, 2026-10-24)\n\nAn adopt runs the test suite on the adopting machine, so a break the machine change brings shows at once, not inside the next run's gate.\n\n## Operator decisions (2026-10-25)\n\n- This replaces the note `ubuntu-2404-floor`: no PATTERN entry for an Ubuntu floor and no CI job.\n  Adopting onto OSL-1046 (Ubuntu 24.04) runs the full suite there, and what fails is fixed there and then, on the machine that shows the break.\n- The full suite runs once per adoption session on a machine, not once per adopted worktree: adopting the prime and two beams together runs it once.\n\n## Open\n\n- What \"full suite\" maps to: every tier, or the tiers of the `finalize` gate key (`lyx config gate`, `gates.finalize`).\n  A tier already green for the clean tree is carried and runs nothing.\n- What marks an adoption session: one `lyx adopt` call, or every adopt on the machine until the next commit lands.\n- Whether a red suite refuses the adopt, or only reports.\n- Whether it runs in the background, so the adopt returns at once.\n",
-      "status": "running · Code-Burler-Fix",
+      "status": "running · Code-Bouncer",
       "created": "2026-10-24T06:08:20Z",
       "revised": "2026-10-25T12:15:47Z",
       "profile": "light",
