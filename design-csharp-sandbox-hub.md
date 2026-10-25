@@ -1,4 +1,4 @@
-# [.NET] A small public NUnit repo as sandbox hub for end-to-end C# runs
+# A small public NUnit repo as sandbox hub for end-to-end C# runs
 
 `csharp-sandbox-hub` · Note · enhancement, dotnet
 

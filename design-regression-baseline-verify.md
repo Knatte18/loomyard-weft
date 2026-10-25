@@ -1,4 +1,4 @@
-# [.NET 004] Regression as three Drift rows: Drift-Baseline after Discussion, Drift-Await before Webster, Drift-Verify after the Code perch
+# Regression as three Drift rows: Drift-Baseline after Discussion, Drift-Await before Webster, Drift-Verify after the Code perch
 
 `regression-baseline-verify` · Note · feature, shed, webster, batten, config, dotnet
 
