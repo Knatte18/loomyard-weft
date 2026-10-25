@@ -75,3 +75,4 @@ Remove this section once #871 is fixed.
 A bench, spike or other exploration the operator approves runs as a darn task with profile `docs`, in its own worktree, so it is not disturbed and its report lands in `docs/research/` as a commit (operator, 2026-10-25).
 Never run such work as a background agent of your own; an agent of yours only reads and answers within your turn's scope, such as a quick study for a chat question or the board tidy.
 The operator naming an exploration for a run counts as naming darn for it.
+Its body states an exact cap on runs: inputs, models, efforts and repeats by number, one or two inputs unless the operator names more, and never an open word such as "many" (operator, 2026-10-25, after a Codex bench of 31 runs spent the plan's 5-hour window).
