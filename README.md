@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-25 11:55 UTC; every age below is as of then.
+Rendered 2026-10-25 11:56 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -41,7 +41,7 @@ Held by a run; its scope is locked until the run ends.
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T3 | **Test creel mail delivery through a tool-boundary hook, for Claude and Codex**<br>• `profile: docs` | [`creel-hook-delivery-test`](design-creel-hook-delivery-test.md) | darn | Code-Burler-Fix | neve | 21m<br>21m | creel, claude, codex |
+| T3 | **Test creel mail delivery through a tool-boundary hook, for Claude and Codex**<br>• `profile: docs` | [`creel-hook-delivery-test`](design-creel-hook-delivery-test.md) | darn | Code-Bouncer | neve | 21m<br>21m | creel, claude, codex |
 
 ### Ready (0)
 
