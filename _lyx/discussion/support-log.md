@@ -89,4 +89,9 @@ _No rounds yet._
 - Q9 (auto-pick): a test gate over `Drift-Verify`'s fixes — the new `drift-verify` gate key, scope `diff`.
 - Q10 (open, for Models on OSL-1046): whether its harness reads `NORCE_BASELINE_DIR` in verify mode and a skip file, its capture's exit code, and whether its compare fails on zero tests; recorded under Open risks.
 - Q11 (auto-pick, lens review): bound `lyx drift accept` under scope `full` by ending Stuck on any acceptance.
-- Q12 (auto-pick, lens review): end a timed-out command through a new `runproc` child entry, a `PATTERN-run-process-owner` change.
+  Narrowed in review round 1: only the agent session's acceptances in the current attempt end it Stuck, as a decision halt for the parent.
+- Q12 (auto-pick, lens review), superseded in review round 1: end a timed-out command through a new `runproc` child entry, a `PATTERN-run-process-owner` change.
+  The capture ends the command's tree through `internal/proc`'s `StartTied` and `Tied.Kill` instead, as the gate does, so no `runproc` or PATTERN change is needed.
+- Q13 (auto-pick, review round 1): recapture at a `Drift-Await` halt through `lyx drift capture` and `lyx loom resume`, not `lyx loom goto Drift-Baseline`, which would re-run `Plan-Write` and the Plan perch.
+- Q14 (auto-pick, review round 1): going on past a `Drift-Await` halt without a baseline through `lyx drift defer`, which writes `awaited_at` so later entries pass, and leaves the regression question to a second halt at `Drift-Verify`.
+- Q15 (auto-pick, review round 1): `lyx drift withdraw` lets the parent reject an acceptance, and the agent session cannot accept a withdrawn test again.
