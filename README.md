@@ -71,7 +71,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | B5 |  | **Darn-Write seat start dies: provider pane drops to a shell prompt after the prompt text** | [`seat-start-long-prompt-dies`](design-seat-start-long-prompt-dies.md) | 2h<br>2h | shuttle |
 | B6 |  | **shuttle start fails on transient tmux fork/exec EAGAIN and leaves the strand behind** | [`shuttle-retry-tmux-eagain`](design-shuttle-retry-tmux-eagain.md) | 2h<br>2h | shuttle, reed |
 | B7 |  | **gate tier1 fails on a stale Go vet cache entry naming a torn-down worktree** | [`gate-stale-vet-cache-path`](design-gate-stale-vet-cache-path.md) | 2h<br>2h | gate |
-| B8 |  | **Shuttle hold notices fire while Merriam waits on its own background recovery** | [`no-hold-notice-on-bg-wait`](design-no-hold-notice-on-bg-wait.md) | 2h<br>6m | shuttle, webster |
+| B8 |  | **Shuttle hold notices fire while Merriam waits on its own background recovery** | [`no-hold-notice-on-bg-wait`](design-no-hold-notice-on-bg-wait.md) | 2h<br>7m | shuttle, webster |
 
 ### Enhancements (17)
 
@@ -82,7 +82,7 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | E3 |  | **PATTERN line cap counts the rule text only, not the name and link**<br>• MaxEntryLineChars counts the whole entry line, so the room left for the rule text shrinks with the entry name and link | [`pattern-line-cap-text-only`](design-pattern-line-cap-text-only.md) | 5h<br>5h | pattern |
 | E4 |  | **finalize: the discrepancy-document conflict shape**<br>• Divergences that cannot be a git conflict get a precomputed document for the resolving agent instead of markers | [`finalize-discrepancy-doc`](design-finalize-discrepancy-doc.md) | 3w<br>2w | fabric, loom |
 | E5 |  | **Decide the layout of projects in the board README**<br>• The operator is not satisfied with how the README renders projects and their members; the layout is to be decided | [`board-projects-layout`](design-board-projects-layout.md) | 12h<br>12h | board |
-| E6 |  | **Board README: one rendered file per project, research notes first**<br>• Each project renders its own file linked from its parent; README.md is the root project; research notes come right after tasks | [`readme-per-project-files`](design-readme-per-project-files.md) | 47m<br>42m | board |
+| E6 |  | **Board README: one rendered file per project, research notes first**<br>• Each project renders its own file linked from its parent; README.md is the root project; research notes come right after tasks | [`readme-per-project-files`](design-readme-per-project-files.md) | 47m<br>43m | board |
 | E7 |  | **Run verbs in one shared namespace, not under lyx loom**<br>• lyx loom decision/status/goto/approve act on darn runs too; move recipe-neutral run verbs to one shared namespace | [`run-verbs-shared`](design-run-verbs-shared.md) | 11d<br>7h | shed, loom |
 | E9 |  | **Paste cited code into a review rounds context**<br>• Reviewers edit nothing and review a fixed commit, so code pasted at round start cannot go stale; measure it against todays reviewer | [`review-inline-code`](design-review-inline-code.md) | 2w<br>1d | burler, stencil |
 | E10 |  | **Module labels from what a task touches, not only what it is about**<br>• Half the landings that changed the shuttle core lacked the shuttle label; derive or check module labels from the plan and the diff | [`labels-from-diff`](design-labels-from-diff.md) | 10d<br>10d | board, loom |
@@ -122,11 +122,3 @@ Not tasks: ideas and observations, merged into a task when one is promoted.
 | R4 |  | **Lens overlap audit: which lenses find the same defects, and a smaller set**<br>• twill-plan 8 to 5 lenses recommended; twill-discussion 7 to 4 and review-code 4 to 3 at low confidence | [`lens-overlap-audit`](design-lens-overlap-audit.md) | 3d<br>3h | burler, loom |
 | R5 |  | **Trial: batcher profile wide (budget 300k)**<br>• Hub runs a new batcher profile wide, budget 300k; check cost and fork quality before taking it into the template | [`batch-budget-300k-trial`](design-batch-budget-300k-trial.md) | 3d<br>3h | webster |
 | R6 |  | **Plan writer cost: sub-planners per part, and twill versus a solo writer**<br>• The Plan writer is 18% of spend; sub-planners per part for large bundles, and a twill versus solo Opus high comparison on cost, rounds and time | [`plan-writer-context`](design-plan-writer-context.md) | 3d<br>3h | loom, stencil |
-
-## Done (1)
-
-Finished, awaiting `lyx board prune --apply`.
-
-| # | Entry | Slug | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- |
-| T2 | **Bench Codex Astra against solo Opus as a plan reviewer, four runs**<br>• `profile: docs` | [`codex-astra-solo-bench`](design-codex-astra-solo-bench.md) | 6h<br>6h | codex, burler |
