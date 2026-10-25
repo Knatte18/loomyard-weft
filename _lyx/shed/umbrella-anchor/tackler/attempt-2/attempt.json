@@ -1,0 +1,20 @@
+{
+  "number": 2,
+  "stop_key": {
+    "current_producer": "Webster",
+    "history_length": 28,
+    "state": "blocked"
+  },
+  "pause_before": "",
+  "pause_after": "",
+  "snapshot": {
+    "head": "81d95e212190a18a16cf95185a9fe900dda04816",
+    "branch": "umbrella-anchor",
+    "dirty": {}
+  },
+  "spawned_at": "2026-10-25T17:09:55.143254803+01:00",
+  "deadline": "2026-10-25T17:19:55.143254803+01:00",
+  "envelope_path": "/home/knatte/Code/loomyard-LYXHUB/umbrella-anchor/_lyx/shed/umbrella-anchor/drive-reports/drive-envelope-20261025-170955-6768.json",
+  "report_path": "/home/knatte/Code/loomyard-LYXHUB/umbrella-anchor/_lyx/shed/umbrella-anchor/drive-reports/drive-report-20261025-170955-7902.md",
+  "strand_guid": "561a6a4a7aa9f2a6f8ca953947f88cb5"
+}
