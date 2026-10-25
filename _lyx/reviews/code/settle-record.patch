@@ -1,0 +1,1396 @@
+diff --git a/contracts/specs/loom-plan-spec.md b/contracts/specs/loom-plan-spec.md
+index f9d76443c..f1d129e2d 100644
+--- a/contracts/specs/loom-plan-spec.md
++++ b/contracts/specs/loom-plan-spec.md
+@@ -295,7 +295,8 @@ Numbers run from the overview's `first_card:` (default `1`) upward with no gap,
+ The per-card file prefix `NN` (zero-padded) must equal the heading `N`.
+ 
+ A card is inserted or removed with `lyx loom insert-card` or `lyx loom remove-card`, which move every later card by one in file name prefix, heading number, explicit `Commit:` prefix and Card Index number.
+-They report lines that name a moved number in prose, and never rewrite them.
++They rewrite every card id naming a moved card, `<N>-<slug>` or its zero-padded file form `<NN>-<slug>`, to the new number, so a card that refers to another card names it by its card id.
++They report lines that name a moved number bare in prose, and never rewrite them.
+ 
+ The **default commit subject is `N: <name>`** — the card heading's `<name>`;
+ there is no separate `<short what>` seed.
+diff --git a/contracts/stencils/webster/webster-body-implementer.md b/contracts/stencils/webster/webster-body-implementer.md
+index 51c36bb56..057e7a7af 100644
+--- a/contracts/stencils/webster/webster-body-implementer.md
++++ b/contracts/stencils/webster/webster-body-implementer.md
+@@ -43,6 +43,8 @@ Make exactly the changes the card describes, in exactly the targets its type lab
+    Two deviations are sanctioned, each within its bound: the guard-step fix in step 3, only in a file the guard step's failure names; and a fix to a failure the card caused, under the bounded self-fix section's two-pronged test and its attempt cap.
+    No other change outside the targets is made.
+    The scope guard records every deviation, sanctioned ones included; you list, compare and report none, and a deviation alone never makes the report `FAILED`.
++   The plan's glyph names are the contract: keep every name a card gives a symbol, and rename nothing the plan does not declare.
++   The one exception is a planned name that collides with an existing symbol or breaks a language or lint rule: pick the nearest name that does not, and list the rename under the report's `renames` with that reason.
+    For each symbol pair of a `Rename` card, run the hub's rename tool from the list below, then grep for zero references to the old name and update the doc-comment opening; a file pair is `git mv` plus surgical Edits.
+ 
+ {{.rename_tools}}
+@@ -136,8 +138,16 @@ The report is deliberately minimal — `record-batch` reads ONLY these fields:
+ status: OK | FAILED | NEEDS_PARENT
+ head_sha: <the commit SHA your worktree is at right now>
+ need: <one line naming the step only your parent can take; NEEDS_PARENT only, omitted otherwise>
++renames:
++  - old: <the glyph a card gave the symbol>
++    new: <the glyph you gave it instead>
++    reason: <one line: the symbol the planned name collides with, or the language or lint rule it breaks>
+ ```
+ 
++`renames` lists every rename the plan does not declare, and is omitted when you made none.
++Each `old` and `new` is the glyph a card would name the symbol by, such as `internal/gatecli#runGuardStep`.
++Record-batch rewrites every later card that still names an `old` glyph to its `new` one, so list a rename even when you also changed the symbol's body or signature.
++
+ `status` is `OK` when every card above is committed and every gate it ran, the batch gate included, passed;
+ `FAILED` when you stopped after exhausting the self-fix bound on some card or on the batch gate, whether its gate failed or a test the card broke did;
+ `NEEDS_PARENT` when you stopped on a step only your parent can take, which `need` names.
+diff --git a/contracts/stencils/webster/webster-template-master.md b/contracts/stencils/webster/webster-template-master.md
+index 538cdb171..64c3e4604 100644
+--- a/contracts/stencils/webster/webster-template-master.md
++++ b/contracts/stencils/webster/webster-template-master.md
+@@ -102,12 +102,14 @@ and you read ONLY these fields:
+ - `head_sha`
+ - `deviations`
+ - `departures`
++- `renames`
+ - `dead_reason`
+ - `need`
+ - `elapsed_s`
+ 
+ `deviations` is the list of files record-batch's glyph scope guard found changed outside the batch's own targets, ALWAYS informational and never a reason a batch is `stuck` on its own.
+ `departures` lists the batch's `Pattern-Departure:` commit trailers, informational like `deviations`.
++`renames` lists the renames off the plan the batch reported, each with its reason; record-batch has already rewritten the later cards to the new names, so it is informational too.
+ You never read raw fork output beyond its own turn, and you never open a file to double-check the digest — this is the only implementer output you ever see, by design.
+ 
+ ## The failure ladder
+@@ -282,7 +284,7 @@ batches_done: <int>
+ and a single line naming the batch and the blocker for `stuck`. `batches_done` counts every batch in your batch list whose status is `done` when you write this file — including batches your Progress section already listed as `done` before a resume, so the count always describes the whole plan's progress, never just this session's own share of it.
+ 
+ `{{.summary_path}}` is a prose narrative built strictly from the minimal reports and digests you actually read — never a fork's own success narrative (forks never write prose narratives;
+-their whole report is `status`/`head_sha`);
++their whole report is `status`/`head_sha`/`renames`);
+ first line `# <title>`, then a narrative of what was actually built, naming each batch's deviations and departures from the digest's lists, the scope guard's result — required whenever `outcome: done`.
+ 
+ ## Tuning knobs
+diff --git a/internal/loomcli/doc.go b/internal/loomcli/doc.go
+index 8f653e532..6aa9d32fb 100644
+--- a/internal/loomcli/doc.go
++++ b/internal/loomcli/doc.go
+@@ -81,7 +81,10 @@
+ //
+ // `lyx loom insert-card <position> <slug> --intent <intent>`, `lyx loom remove-card <position>` and `lyx loom restore-renumber` are the sanctioned way to add or drop one card of the plan and renumber the cards after it.
+ // A renumber moves each later card's file name prefix, heading number, explicit `Commit:` prefix and Card Index number, and writes a heading-only stub for an inserted card, which the agent fills with Edit or Write.
+-// The success envelope carries `plan_dir`, `moved`, `created` or `removed`, and `prose_mentions`, the lines that name a moved card by its old number; they are never rewritten, so the agent checks each by hand.
++// A card id naming a moved card, `<N>-<slug>` or its zero-padded file form `<NN>-<slug>`, is rewritten to the card's new number in the overview and every card file, since the slug pins which card it means.
++// The success envelope carries `plan_dir`, `moved`, `created` or `removed`, `rewritten_refs` and `prose_mentions`.
++// `rewritten_refs` holds one `file`, `line`, `from` and `to` per rewritten card id.
++// `prose_mentions` holds the lines that name a moved card by its bare old number; they are never rewritten, since a bare number may already mean the new numbering, so the agent checks each by hand.
+ // `restore-renumber` reports `plan_dir`, `journal`, `restored` and `removed`.
+ //
+ // Each verb takes webster's state-mutation lease first and releases it before it prints, so no begin-batch records a batch between the bound check and the renumber.
+diff --git a/internal/loomcli/renumber.go b/internal/loomcli/renumber.go
+index 734913c67..0e748bc41 100644
+--- a/internal/loomcli/renumber.go
++++ b/internal/loomcli/renumber.go
+@@ -179,7 +179,8 @@ func renumberRefusal(verb string, err error) string {
+ }
+ 
+ // renumberEnvelope is the success envelope of insert-card and remove-card.
+-// The prose mentions are lines naming a moved card by its old number, which the agent checks by hand.
++// The rewritten refs are the card ids the renumber moved to their new numbers;
++// the prose mentions are lines naming a moved card by its bare old number, which the agent checks by hand.
+ func renumberEnvelope(planDir string, res *planparser.RenumberResult) map[string]any {
+ 	moved := make([]map[string]any, 0, len(res.Moved))
+ 	for _, m := range res.Moved {
+@@ -190,6 +191,10 @@ func renumberEnvelope(planDir string, res *planparser.RenumberResult) map[string
+ 			"new_file":   m.NewFile,
+ 		})
+ 	}
++	rewritten := make([]map[string]any, 0, len(res.RewrittenRefs))
++	for _, r := range res.RewrittenRefs {
++		rewritten = append(rewritten, map[string]any{"file": r.File, "line": r.Line, "from": r.From, "to": r.To})
++	}
+ 	mentions := make([]map[string]any, 0, len(res.ProseMentions))
+ 	for _, p := range res.ProseMentions {
+ 		mentions = append(mentions, map[string]any{"file": p.File, "line": p.Line, "text": p.Text})
+@@ -198,6 +203,7 @@ func renumberEnvelope(planDir string, res *planparser.RenumberResult) map[string
+ 	envelope := map[string]any{
+ 		"plan_dir":       planDir,
+ 		"moved":          moved,
++		"rewritten_refs": rewritten,
+ 		"prose_mentions": mentions,
+ 	}
+ 	if len(res.Created) > 0 {
+@@ -219,9 +225,11 @@ func (c *loomCLI) insertCardCmd() *cobra.Command {
+ 		Long: `insert-card adds a card numbered N and moves every card from N up by one:
+ its file name prefix, its heading number, its explicit Commit: prefix and its
+ Card Index number. The new card is a heading-only stub the agent fills with
+-Edit or Write, and its Card Index line carries --intent. Lines that name a
+-moved card by its old number are reported under prose_mentions and never
+-rewritten, so check each by hand.
++Edit or Write, and its Card Index line carries --intent. A card id naming a
++moved card, <N>-<slug> or its zero-padded file form, is rewritten to the new
++number in the overview and every card file and reported under rewritten_refs.
++Lines that name a moved card by its bare old number are reported under
++prose_mentions and never rewritten, so check each by hand.
+ 
+ N runs from first_card to one past the last card, and must come after the last
+ card webster has begun. The call is journaled, and an interrupted one is
+@@ -251,8 +259,11 @@ func (c *loomCLI) removeCardCmd() *cobra.Command {
+ 		Annotations: map[string]string{clihelp.AudienceAnnotation: clihelp.AudienceOperator},
+ 		Long: `remove-card deletes card N and moves every later card down by one: its file
+ name prefix, its heading number, its explicit Commit: prefix and its Card Index
+-number. Lines that name a moved card by its old number are reported under
+-prose_mentions and never rewritten, so check each by hand.
++number. A card id naming a moved card, <N>-<slug> or its zero-padded file
++form, is rewritten to the new number in the overview and every card file and
++reported under rewritten_refs. Lines that name a moved card by its bare old
++number are reported under prose_mentions and never rewritten, so check each
++by hand.
+ 
+ N runs from first_card to the last card, must come after the last card webster
+ has begun, and cannot be the plan's only card. The call is journaled, and an
+diff --git a/internal/loomcli/renumber_test.go b/internal/loomcli/renumber_test.go
+index e64f6539a..cc82afdc4 100644
+--- a/internal/loomcli/renumber_test.go
++++ b/internal/loomcli/renumber_test.go
+@@ -35,7 +35,7 @@ func newCardVerbFixture(t *testing.T, cards ...plankit.Card) cardVerbFixture {
+ 	t.Helper()
+ 	if len(cards) == 0 {
+ 		cards = []plankit.Card{
+-			{Number: 1, Slug: "alpha", Intent: "Stands apart; see card 2."},
++			{Number: 1, Slug: "alpha", Intent: "Stands apart; see card 2. Feeds 3-gamma."},
+ 			{Number: 2, Slug: "beta"},
+ 			{Number: 3, Slug: "gamma"},
+ 		}
+@@ -219,9 +219,17 @@ func TestRenumberVerbs(t *testing.T) {
+ 					t.Errorf("moved = %v; want gamma and beta moved up by one, gamma first", e["moved"])
+ 				}
+ 				mentions, _ := e["prose_mentions"].([]any)
+-				if len(mentions) != 1 || mentions[0].(map[string]any)["file"] != "01-alpha.md" || mentions[0].(map[string]any)["text"] != "**Intent:** Stands apart; see card 2." {
++				if len(mentions) != 1 || mentions[0].(map[string]any)["file"] != "01-alpha.md" || mentions[0].(map[string]any)["text"] != "**Intent:** Stands apart; see card 2. Feeds 4-gamma." {
+ 					t.Errorf("prose_mentions = %v; want alpha's line naming card 2", e["prose_mentions"])
+ 				}
++				refs, _ := e["rewritten_refs"].([]any)
++				if len(refs) != 1 {
++					t.Fatalf("rewritten_refs = %v; want one entry", e["rewritten_refs"])
++				}
++				ref, _ := refs[0].(map[string]any)
++				if ref["file"] != "01-alpha.md" || ref["from"] != "3-gamma" || ref["to"] != "4-gamma" || ref["line"] == nil {
++					t.Errorf("rewritten_refs[0] = %v; want alpha's 3-gamma rewritten to 4-gamma", ref)
++				}
+ 			},
+ 		},
+ 		{
+diff --git a/internal/planglyph/delta_integration_test.go b/internal/planglyph/delta_integration_test.go
+index d5001cbf1..273683f12 100644
+--- a/internal/planglyph/delta_integration_test.go
++++ b/internal/planglyph/delta_integration_test.go
+@@ -165,7 +165,7 @@ func TestRealGitDelta(t *testing.T) {
+ 		})
+ 		before := readCardFile(t, dir, 2, "card2")
+ 
+-		findings, err := DetectDrift(plan, plan, dir, f.root, delta, "deadbeef", driftTestTimestamp)
++		findings, err := DetectDrift(plan, plan, dir, f.root, delta, nil, "deadbeef", driftTestTimestamp)
+ 		if err != nil {
+ 			t.Fatalf("DetectDrift(...) returned error: %v", err)
+ 		}
+@@ -190,7 +190,7 @@ func TestRealGitDelta(t *testing.T) {
+ 			1: "**Edit:**\n- `sub#Kept`\n\n**Uses:**\n- `sub#Old`\n\n**Intent:** one\n",
+ 		})
+ 
+-		findings, err := DetectDrift(plan, plan, dir, f.root, delta, "deadbeef", driftTestTimestamp)
++		findings, err := DetectDrift(plan, plan, dir, f.root, delta, nil, "deadbeef", driftTestTimestamp)
+ 		if err != nil {
+ 			t.Fatalf("DetectDrift(...) returned error: %v", err)
+ 		}
+diff --git a/internal/planglyph/doc.go b/internal/planglyph/doc.go
+index 052ff5f64..e20b780c4 100644
+--- a/internal/planglyph/doc.go
++++ b/internal/planglyph/doc.go
+@@ -116,6 +116,8 @@
+ //     Under a go plan, a handle the delta matches only in its directory's other package, `<dir>_test` for `<dir>` and the reverse, binds to that glyph (planparser.GoPackageCounterpart).
+ //   - plan-references-deleted-symbol (blocking), rename-candidate (informational) — DetectDrift
+ //     (drift.go), the exact-tier and evidence-tier halves of drift detection.
++//     A rename the batch's implementer reports is repaired as an exact-tier one is, under the amendment tier `reported`, and its old glyph gets neither finding;
++//     a reported new glyph that does not resolve is the post-repair resolve's blocking finding.
+ //   - scope-outside-plan (informational) — ScopeGuard (scope.go), a symbol a completed batch's
+ //     delta touched outside its own cards' targets (a file target covers every symbol in that
+ //     file, a package target every symbol in a file directly in its directory), and a changed file
+diff --git a/internal/planglyph/drift.go b/internal/planglyph/drift.go
+index ee2acb2f2..12bc37313 100644
+--- a/internal/planglyph/drift.go
++++ b/internal/planglyph/drift.go
+@@ -1,10 +1,8 @@
+-// drift.go implements DetectDrift: noticing when the code moved out from under the plan, and
+-// repairing only what quarry itself asserts. The signal is deterministic — the delta's deleted
+-// symbols intersected with the remaining plan's own references — and every rewrite this file
+-// performs is gated twice before it ever touches a byte: a rename matching a declared Rename
+-// card's own pair is that card's expected outcome, never drift, and a renamed symbol nothing in
+-// the plan references is logged only. Only the exact tier auto-repairs; the evidence tier (card
+-// 37) never calls RewriteRefs or AppendAmendment at all.
++// drift.go implements DetectDrift: noticing when the code moved out from under the plan, and repairing only what quarry itself asserts or the batch's implementer reports.
++// The signal is deterministic: the delta's deleted symbols intersected with the remaining plan's own references.
++// Every rewrite this file performs is gated twice before it ever touches a byte:
++// a rename matching a declared Rename card's own pair is that card's expected outcome, never drift, and a renamed symbol nothing in the plan references is logged only.
++// Only the exact tier and reported renames auto-repair; the evidence tier never calls RewriteRefs or AppendAmendment at all.
+ 
+ package planglyph
+ 
+@@ -14,6 +12,7 @@ import (
+ 	"strings"
+ 
+ 	"github.com/Knatte18/loomyard/internal/logger"
++	"github.com/Knatte18/loomyard/internal/planindex"
+ 	"github.com/Knatte18/loomyard/internal/planparser"
+ 	"github.com/Knatte18/quarry/quarry"
+ )
+@@ -55,8 +54,10 @@ func renameCardPairs(plan *planparser.Plan) map[string][]string {
+ // driftRepair is one exact-tier auto-repair DetectDrift queues: the old->new substitution and the
+ // cards that referenced the old glyph, so exactly one Amendment can be appended per repair once the
+ // plan-wide rewrite and revalidation both succeed.
++// tier is the amendment's tier word: "exact" for a rename quarry proves, "reported" for one the batch's implementer reported.
+ type driftRepair struct {
+ 	oldID, newID string
++	tier         string
+ 	cards        []planparser.Card
+ }
+ 
+@@ -90,6 +91,12 @@ type driftRepair struct {
+ // deliberately leaves both endpoints in place, so this function excludes every RenameCandidates
+ // entry from the sweep itself.
+ //
++// reported holds the renames the batch's implementer reported, which quarry may not prove, such as a function renamed and changed in one commit.
++// Each passes the same two gates and joins the same rewrite, revalidation and amendment as an exact-tier rename, with the amendment tier "reported";
++// its old glyph is excluded from both sweeps, as an exact pair's constituents are.
++// A reported pair whose old glyph the exact tier already renamed is skipped, so the AST-proven answer wins.
++// A reported new glyph that does not resolve is the post-repair resolve's blocking finding.
++//
+ // now and sha are taken as parameters rather than read from a clock or a repository inside this
+ // function, so the whole detector is deterministic and testable without a fixture.
+ //
+@@ -99,7 +106,7 @@ type driftRepair struct {
+ // absent from pending; every reference question — refCards for the repair set and both sweeps —
+ // reads pending, DetectDrift's own stated signal (the delta intersected with what the plan still
+ // has to do). A caller with no completed cards passes the same *Plan for both.
+-func DetectDrift(fullPlan, pending *planparser.Plan, planDir, worktreeRoot string, delta quarry.GitDeltaAnswer, sha, now string) ([]Finding, error) {
++func DetectDrift(fullPlan, pending *planparser.Plan, planDir, worktreeRoot string, delta quarry.GitDeltaAnswer, reported []planindex.Rename, sha, now string) ([]Finding, error) {
+ 	renamePairs := renameCardPairs(fullPlan)
+ 	refCards := targetCards(pending)
+ 
+@@ -107,21 +114,33 @@ func DetectDrift(fullPlan, pending *planparser.Plan, planDir, worktreeRoot strin
+ 	subs := make(map[string]string)
+ 	var repairs []driftRepair
+ 
+-	for _, rp := range delta.Renamed {
+-		oldID, newID := rp.From.ID, rp.To.ID
+-
++	queue := func(oldID, newID, tier string) {
+ 		if slices.Contains(renamePairs[oldID], newID) {
+-			continue // Gate one: the declared Rename card's own expected outcome.
++			return // Gate one: the declared Rename card's own expected outcome.
+ 		}
+ 
+ 		cards := refCards[oldID]
+ 		if len(cards) == 0 {
+-			logger.Debug("planglyph: renamed symbol has no plan reference; logging only, no repair", "old_id", oldID, "new_id", newID)
+-			continue // Gate two: nothing in the remaining plan references it.
++			logger.Debug("planglyph: renamed symbol has no plan reference; logging only, no repair", "old_id", oldID, "new_id", newID, "tier", tier)
++			return // Gate two: nothing in the remaining plan references it.
+ 		}
+ 
+ 		subs[oldID] = newID
+-		repairs = append(repairs, driftRepair{oldID: oldID, newID: newID, cards: cards})
++		repairs = append(repairs, driftRepair{oldID: oldID, newID: newID, tier: tier, cards: cards})
++	}
++
++	exactOld := make(map[string]bool, len(delta.Renamed))
++	for _, rp := range delta.Renamed {
++		exactOld[rp.From.ID] = true
++		queue(rp.From.ID, rp.To.ID, "exact")
++	}
++	reportedOld := make(map[string]bool, len(reported))
++	for _, r := range reported {
++		if exactOld[r.Old] || reportedOld[r.Old] {
++			continue
++		}
++		reportedOld[r.Old] = true
++		queue(r.Old, r.New, "reported")
+ 	}
+ 
+ 	// Every symbol quarry offered evidence-tier rename candidates for is excluded from the
+@@ -136,8 +155,9 @@ func DetectDrift(fullPlan, pending *planparser.Plan, planDir, worktreeRoot strin
+ 		hasCandidates[entry.ID] = true
+ 	}
+ 
++	// A queued repair's old glyph is accounted for by the repair, whose post-repair resolve judges it.
+ 	for _, s := range delta.Deleted {
+-		if hasCandidates[s.ID] {
++		if _, repaired := subs[s.ID]; repaired || hasCandidates[s.ID] {
+ 			continue
+ 		}
+ 		cards := refCards[s.ID]
+@@ -162,7 +182,7 @@ func DetectDrift(fullPlan, pending *planparser.Plan, planDir, worktreeRoot strin
+ 	// carried through unchanged: never re-sorted, re-ranked, or truncated.
+ 	for _, entry := range delta.RenameCandidates {
+ 		cards := refCards[entry.ID]
+-		if len(cards) == 0 {
++		if _, repaired := subs[entry.ID]; repaired || len(cards) == 0 {
+ 			continue
+ 		}
+ 
+@@ -262,7 +282,7 @@ func DetectDrift(fullPlan, pending *planparser.Plan, planDir, worktreeRoot strin
+ 			Card:      card,
+ 			OldGlyph:  r.oldID,
+ 			NewGlyph:  r.newID,
+-			Tier:      "exact",
++			Tier:      r.tier,
+ 			SHA:       sha,
+ 		}); err != nil {
+ 			return findings, err
+diff --git a/internal/planglyph/drift_test.go b/internal/planglyph/drift_test.go
+index 7fb9a43ce..9f7cb5b38 100644
+--- a/internal/planglyph/drift_test.go
++++ b/internal/planglyph/drift_test.go
+@@ -12,34 +12,68 @@ import (
+ 	"strings"
+ 	"testing"
+ 
++	"github.com/Knatte18/loomyard/internal/planindex"
+ 	"github.com/Knatte18/loomyard/internal/planparser"
+ 	"github.com/Knatte18/quarry/quarry"
+ )
+ 
+-// TestDetectDrift_ExactTierRenameAutoRepairsAndAmends covers an exact-tier rename rewriting the
+-// plan, revalidating clean, and appending exactly one amendment carrying all six fields.
+-func TestDetectDrift_ExactTierRenameAutoRepairsAndAmends(t *testing.T) {
++// TestDetectDrift_RenameAutoRepairsAndAmends covers a rename rewriting the plan, revalidating clean, and appending exactly one amendment carrying all six fields.
++// It runs for a rename quarry proves and for one the batch's implementer reports.
++// A reported rename's old glyph is typically in the delta's Deleted, since quarry could not pair it, and must not come back as a deleted-symbol finding beside its repair.
++// When both tiers name the same old glyph, the exact tier's destination wins.
++func TestDetectDrift_RenameAutoRepairsAndAmends(t *testing.T) {
+ 	t.Parallel()
+ 
+-	worktree := writeFixtureRepo(t, map[string]string{"sub/a.go": "package sub\n\nfunc New() {}\n"})
++	exactOldToNew := []quarry.RenamedPair{{From: quarry.Symbol{ID: "sub#Old"}, To: quarry.Symbol{ID: "sub#New"}}}
++	tests := []struct {
++		name     string
++		delta    quarry.DeltaAnswer
++		reported []planindex.Rename
++		wantTier string
++	}{
++		{"ExactTier", quarry.DeltaAnswer{Renamed: exactOldToNew}, nil, "exact"},
++		{
++			"Reported_OldGlyphDeleted",
++			quarry.DeltaAnswer{Deleted: []quarry.Symbol{{ID: "sub#Old"}}},
++			[]planindex.Rename{{Old: "sub#Old", New: "sub#New"}},
++			"reported",
++		},
++		{
++			"Reported_OldGlyphHasRenameCandidates",
++			quarry.DeltaAnswer{
++				Deleted:          []quarry.Symbol{{ID: "sub#Old"}},
++				RenameCandidates: []quarry.RenameCandidateEntry{{ID: "sub#Old", Candidates: []quarry.RenameCandidate{{ID: "sub#New", File: "sub/a.go"}}}},
++			},
++			[]planindex.Rename{{Old: "sub#Old", New: "sub#New"}},
++			"reported",
++		},
++		{
++			"ExactTierWinsOverReported",
++			quarry.DeltaAnswer{Renamed: exactOldToNew},
++			[]planindex.Rename{{Old: "sub#Old", New: "sub#Other"}},
++			"exact",
++		},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
+ 
+-	dir, plan := writePlanFixture(t, map[int]string{
+-		1: "**Uses:**\n- `sub#Old`\n\n**Edit:**\n- `sub/other.go`\n\n**Intent:** one\n",
+-	})
++			worktree := writeFixtureRepo(t, map[string]string{"sub/a.go": "package sub\n\nfunc New() {}\n"})
++			dir, plan := writePlanFixture(t, map[int]string{
++				1: "**Uses:**\n- `sub#Old`\n\n**Edit:**\n- `sub/other.go`\n\n**Intent:** one\n",
++			})
+ 
+-	delta := quarry.GitDeltaAnswer{DeltaAnswer: quarry.DeltaAnswer{
+-		Renamed: []quarry.RenamedPair{{From: quarry.Symbol{ID: "sub#Old"}, To: quarry.Symbol{ID: "sub#New"}}},
+-	}}
++			findings, err := DetectDrift(plan, plan, dir, worktree, quarry.GitDeltaAnswer{DeltaAnswer: tt.delta}, tt.reported, "deadbeef", driftTestTimestamp)
++			if err != nil {
++				t.Fatalf("DetectDrift(...) returned error: %v", err)
++			}
++			if len(findings) != 0 {
++				t.Fatalf("findings = %+v; want none for an auto-repaired rename", findings)
++			}
+ 
+-	findings, err := DetectDrift(plan, plan, dir, worktree, delta, "deadbeef", driftTestTimestamp)
+-	if err != nil {
+-		t.Fatalf("DetectDrift(...) returned error: %v", err)
+-	}
+-	if len(findings) != 0 {
+-		t.Fatalf("findings = %+v; want none for an auto-repaired exact-tier rename", findings)
++			requireExactTierRepair(t, dir, []string{driftTestTimestamp, "1-card1", "sub#Old", "sub#New", "Tier: " + tt.wantTier, "deadbeef"})
++		})
+ 	}
+-
+-	requireExactTierRepair(t, dir, []string{driftTestTimestamp, "1-card1", "sub#Old", "sub#New", "exact", "deadbeef"})
+ }
+ 
+ // TestDetectDrift_HandBuiltDelta covers the findings and side effects of DetectDrift's gates over a hand-built delta.
+@@ -66,6 +100,7 @@ func TestDetectDrift_HandBuiltDelta(t *testing.T) {
+ 		// pendingFirstCard drops every card but card 1 from the pending view, as record-batch does for the card it records.
+ 		pendingFirstCard bool
+ 		delta            quarry.DeltaAnswer
++		reported         []planindex.Rename
+ 		wantFindings     []wantFinding
+ 		// detailContains are substrings of the first finding's detail.
+ 		detailContains []string
+@@ -115,6 +150,16 @@ func TestDetectDrift_HandBuiltDelta(t *testing.T) {
+ 			unchangedCard: 1,
+ 			noAmendment:   true,
+ 		},
++		{
++			name:  "reported rename matching a card's own pair produces no finding and no amendment",
++			files: newOnly,
++			cards: map[int]string{
++				1: "**Rename:**\n- `sub#Old` -> `plan:sub#New`\n\n**Intent:** one\n\n## Rename mechanic\n",
++			},
++			reported:      []planindex.Rename{{Old: "sub#Old", New: "sub#New"}},
++			unchangedCard: 1,
++			noAmendment:   true,
++		},
+ 		{
+ 			name:  "renamed symbol nothing references is logged only",
+ 			files: newOnly,
+@@ -124,6 +169,23 @@ func TestDetectDrift_HandBuiltDelta(t *testing.T) {
+ 			}},
+ 			unchangedCard: 1,
+ 		},
++		{
++			name:          "reported rename nothing references is logged only",
++			files:         newOnly,
++			cards:         map[int]string{1: editOther},
++			reported:      []planindex.Rename{{Old: "sub#Old", New: "sub#New"}},
++			unchangedCard: 1,
++			noAmendment:   true,
++		},
++		{
++			// A reported rename of another glyph accounts for nothing but its own old glyph.
++			name:         "deleted and still referenced with no reported replacement is blocking",
++			files:        newOnly,
++			cards:        map[int]string{1: usesGoneEditOther},
++			delta:        quarry.DeltaAnswer{Deleted: []quarry.Symbol{{ID: "sub#Gone"}}},
++			reported:     []planindex.Rename{{Old: "sub#Old", New: "sub#New"}},
++			wantFindings: []wantFinding{{"plan-references-deleted-symbol", SeverityBlocking}},
++		},
+ 		{
+ 			name:         "deleted and still referenced is blocking",
+ 			files:        emptyOnly,
+@@ -193,7 +255,7 @@ func TestDetectDrift_HandBuiltDelta(t *testing.T) {
+ 				before = readCardFile(t, dir, tc.unchangedCard, fmt.Sprintf("card%d", tc.unchangedCard))
+ 			}
+ 
+-			findings, err := DetectDrift(fullPlan, pending, dir, worktree, quarry.GitDeltaAnswer{DeltaAnswer: tc.delta}, "deadbeef", driftTestTimestamp)
++			findings, err := DetectDrift(fullPlan, pending, dir, worktree, quarry.GitDeltaAnswer{DeltaAnswer: tc.delta}, tc.reported, "deadbeef", driftTestTimestamp)
+ 			if err != nil {
+ 				t.Fatalf("DetectDrift(...) returned error: %v", err)
+ 			}
+@@ -228,34 +290,43 @@ func TestDetectDrift_HandBuiltDelta(t *testing.T) {
+ // glyph quarry answers not_found for passed the step described as "revalidated" in silence, and the
+ // amendment was appended as if the repair had worked — so the plan carried webster's own edit to a
+ // symbol that is not there, with nothing reported.
++// A reported rename into a glyph that does not resolve takes the same path, so its later card goes to review rather than passing silently.
+ func TestDetectDrift_RepairIntoAnUnresolvableGlyphIsReported(t *testing.T) {
+ 	t.Parallel()
+ 
+-	// The fixture repo carries neither sub#Old nor sub#Gone: the rename quarry reports as exact names
+-	// a destination that does not exist in the tree the repair is validated against.
+-	worktree := writeFixtureRepo(t, map[string]string{"sub/a.go": "package sub\n\nfunc Kept() {}\n"})
+-
+-	dir, plan := writePlanFixture(t, map[int]string{
+-		1: "**Uses:**\n- `sub#Old`\n\n**Edit:**\n- `sub#Kept`\n\n**Intent:** one\n",
+-	})
++	tests := []struct {
++		name     string
++		delta    quarry.DeltaAnswer
++		reported []planindex.Rename
++	}{
++		{"ExactTier", quarry.DeltaAnswer{Renamed: []quarry.RenamedPair{{From: quarry.Symbol{ID: "sub#Old"}, To: quarry.Symbol{ID: "sub#Gone"}}}}, nil},
++		{"Reported", quarry.DeltaAnswer{Deleted: []quarry.Symbol{{ID: "sub#Old"}}}, []planindex.Rename{{Old: "sub#Old", New: "sub#Gone"}}},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
+ 
+-	delta := quarry.GitDeltaAnswer{DeltaAnswer: quarry.DeltaAnswer{
+-		Renamed: []quarry.RenamedPair{{From: quarry.Symbol{ID: "sub#Old"}, To: quarry.Symbol{ID: "sub#Gone"}}},
+-	}}
++			// The fixture repo carries neither sub#Old nor sub#Gone: the rename names a destination that does not exist in the tree the repair is validated against.
++			worktree := writeFixtureRepo(t, map[string]string{"sub/a.go": "package sub\n\nfunc Kept() {}\n"})
++			dir, plan := writePlanFixture(t, map[int]string{
++				1: "**Uses:**\n- `sub#Old`\n\n**Edit:**\n- `sub#Kept`\n\n**Intent:** one\n",
++			})
+ 
+-	findings, err := DetectDrift(plan, plan, dir, worktree, delta, "deadbeef", driftTestTimestamp)
+-	if err != nil {
+-		t.Fatalf("DetectDrift(...) returned error: %v", err)
+-	}
++			findings, err := DetectDrift(plan, plan, dir, worktree, quarry.GitDeltaAnswer{DeltaAnswer: tt.delta}, tt.reported, "deadbeef", driftTestTimestamp)
++			if err != nil {
++				t.Fatalf("DetectDrift(...) returned error: %v", err)
++			}
+ 
+-	var reported bool
+-	for _, f := range findings {
+-		if f.Check == "glyph-not-found" && strings.Contains(f.Detail, "sub#Gone") {
+-			reported = true
+-		}
+-	}
+-	if !reported {
+-		t.Errorf("findings = %+v; want a glyph-not-found naming sub#Gone — the repair rewrote the plan to a symbol that is not in the tree", findings)
++			var reported bool
++			for _, f := range findings {
++				if f.Check == "glyph-not-found" && f.Severity == SeverityBlocking && strings.Contains(f.Detail, "sub#Gone") {
++					reported = true
++				}
++			}
++			if !reported {
++				t.Errorf("findings = %+v; want a blocking glyph-not-found naming sub#Gone — the repair rewrote the plan to a symbol that is not in the tree", findings)
++			}
++		})
+ 	}
+ }
+ 
+diff --git a/internal/planglyph/index.go b/internal/planglyph/index.go
+index 8cd52a991..de3e49365 100644
+--- a/internal/planglyph/index.go
++++ b/internal/planglyph/index.go
+@@ -110,6 +110,6 @@ func (d batchDelta) ScopeGuard(plan *planparser.Plan, cards []planparser.Card) [
+ }
+ 
+ // DetectDrift checks the plan pending after completed, the same view PendingPlan builds.
+-func (d batchDelta) DetectDrift(fullPlan *planparser.Plan, completed []planparser.Card, planDir, worktreeRoot, sha, now string) ([]Finding, error) {
+-	return DetectDrift(fullPlan, PendingPlan(fullPlan, completed), planDir, worktreeRoot, d.answer, sha, now)
++func (d batchDelta) DetectDrift(fullPlan *planparser.Plan, completed []planparser.Card, reported []planindex.Rename, planDir, worktreeRoot, sha, now string) ([]Finding, error) {
++	return DetectDrift(fullPlan, PendingPlan(fullPlan, completed), planDir, worktreeRoot, d.answer, reported, sha, now)
+ }
+diff --git a/internal/planindex/planindex.go b/internal/planindex/planindex.go
+index e8137d6b1..5812df0d3 100644
+--- a/internal/planindex/planindex.go
++++ b/internal/planindex/planindex.go
+@@ -68,6 +68,12 @@ type BindOutcome struct {
+ 	Reason BindReason
+ }
+ 
++// Rename is one glyph rename a batch's implementer reports it made: the glyph a later card may still name, and the glyph that replaced it.
++type Rename struct {
++	Old string
++	New string
++}
++
+ // Index is the code index a plan gate calls.
+ // An infrastructure failure of the index is an error wrapping ErrQuarryUnavailable, distinct from any finding.
+ type Index interface {
+@@ -103,5 +109,6 @@ type Delta interface {
+ 	// ScopeGuard reports the delta's changes outside the targets the cards declare.
+ 	ScopeGuard(plan *planparser.Plan, cards []planparser.Card) []Finding
+ 	// DetectDrift reports the plan references the delta invalidates among the cards not in completed.
+-	DetectDrift(fullPlan *planparser.Plan, completed []planparser.Card, planDir, worktreeRoot, sha, now string) ([]Finding, error)
++	// It repairs a rename quarry proves and each of reported, the renames the batch's implementer reported.
++	DetectDrift(fullPlan *planparser.Plan, completed []planparser.Card, reported []Rename, planDir, worktreeRoot, sha, now string) ([]Finding, error)
+ }
+diff --git a/internal/planparser/renumber.go b/internal/planparser/renumber.go
+index 83d314556..5a29ce2ab 100644
+--- a/internal/planparser/renumber.go
++++ b/internal/planparser/renumber.go
+@@ -1,4 +1,5 @@
+-// renumber.go implements InsertCard and RemoveCard, the plan's write paths that add or drop one card and renumber the cards after it, plus the plan scratch paths and the journal that makes an interrupted call restorable.
++// renumber.go implements InsertCard and RemoveCard, the plan's write paths that add or drop one card, renumber the cards after it and rewrite the card ids naming them.
++// It also holds the plan scratch paths and the journal that makes an interrupted call restorable.
+ 
+ package planparser
+ 
+@@ -70,12 +71,23 @@ type ProseMention struct {
+ 	Text string
+ }
+ 
++// RewrittenRef is one card-id reference to a moved card that a renumber rewrote to the card's new number.
++// File is the plan file as the renumber leaves it, and From and To are the reference before and after.
++type RewrittenRef struct {
++	File string
++	Line int
++	From string
++	To   string
++}
++
+ // RenumberResult is what InsertCard and RemoveCard changed.
+-// Created holds the inserted card's file name, Removed the removed card's, and ProseMentions the lines that refer to a moved card by its old number.
++// Created holds the inserted card's file name, and Removed the removed card's.
++// RewrittenRefs holds the card-id references rewritten to a moved card's new number, and ProseMentions the lines that refer to a moved card by its bare old number.
+ type RenumberResult struct {
+ 	Moved         []MovedCard
+ 	Created       []string
+ 	Removed       []string
++	RewrittenRefs []RewrittenRef
+ 	ProseMentions []ProseMention
+ }
+ 
+@@ -244,6 +256,8 @@ func applyRenumber(ops RenumberIO, planDir, journalPath string, plan *Plan, edit
+ 		return data, nil
+ 	}
+ 
++	moves := movedSlugs(plan, edit.moved)
++	var rewritten []RewrittenRef
+ 	journal := renumberJournal{Files: map[string][]byte{}}
+ 	newBytes := make(map[string][]byte, len(edit.moved))
+ 	for _, m := range edit.moved {
+@@ -252,9 +266,32 @@ func applyRenumber(ops RenumberIO, planDir, journalPath string, plan *Plan, edit
+ 			return nil, err
+ 		}
+ 		journal.Files[m.OldFile] = data
+-		newBytes[m.NewFile] = moveCardBytes(data, m.OldNumber, m.NewNumber)
++		moved, refs := rewriteCardIDs(string(moveCardBytes(data, m.OldNumber, m.NewNumber)), m.NewFile, moves)
++		newBytes[m.NewFile] = []byte(moved)
++		rewritten = append(rewritten, refs...)
+ 		journal.Created = append(journal.Created, m.NewFile)
+ 	}
++
++	// A card that keeps its number is rewritten in place, and journaled only when a reference in it changes.
++	var stayed []string
++	for _, c := range sortedCards(plan) {
++		name := cardFileName(c.Number, c.Slug)
++		if _, moving := moves[c.Number]; moving || name == edit.removed {
++			continue
++		}
++		data, err := read(name)
++		if err != nil {
++			return nil, err
++		}
++		after, refs := rewriteCardIDs(string(data), name, moves)
++		if len(refs) == 0 {
++			continue
++		}
++		journal.Files[name] = data
++		newBytes[name] = []byte(after)
++		rewritten = append(rewritten, refs...)
++		stayed = append(stayed, name)
++	}
+ 	if edit.removed != "" {
+ 		data, err := read(edit.removed)
+ 		if err != nil {
+@@ -275,12 +312,20 @@ func applyRenumber(ops RenumberIO, planDir, journalPath string, plan *Plan, edit
+ 	if err != nil {
+ 		return nil, err
+ 	}
++	newOverview, overviewRefs := rewriteCardIDs(newOverview, overviewFileName, moves)
++	rewritten = append(rewritten, overviewRefs...)
++	sort.SliceStable(rewritten, func(i, j int) bool {
++		if rewritten[i].File != rewritten[j].File {
++			return rewritten[i].File < rewritten[j].File
++		}
++		return rewritten[i].Line < rewritten[j].Line
++	})
+ 
+ 	if err := writeRenumberJournal(ops, journalPath, journal); err != nil {
+ 		return nil, err
+ 	}
+ 
+-	result := &RenumberResult{Moved: edit.moved}
++	result := &RenumberResult{Moved: edit.moved, RewrittenRefs: rewritten}
+ 	var steps []func() error
+ 	if edit.removed != "" {
+ 		steps = append(steps, func() error { return ops.Remove(filepath.Join(planDir, edit.removed)) })
+@@ -292,6 +337,9 @@ func applyRenumber(ops RenumberIO, planDir, journalPath string, plan *Plan, edit
+ 			func() error { return ops.Remove(filepath.Join(planDir, m.OldFile)) },
+ 		)
+ 	}
++	for _, name := range stayed {
++		steps = append(steps, func() error { return ops.WriteFile(filepath.Join(planDir, name), newBytes[name], 0o644) })
++	}
+ 	if edit.created != "" {
+ 		steps = append(steps, func() error {
+ 			return ops.WriteFile(filepath.Join(planDir, edit.created), []byte(edit.createdNew), 0o644)
+@@ -322,6 +370,107 @@ func applyRenumber(ops RenumberIO, planDir, journalPath string, plan *Plan, edit
+ 	return result, nil
+ }
+ 
++// cardIDMove is the slug of a moved card and the number it moves to, keyed by its old number.
++type cardIDMove struct {
++	slug string
++	to   int
++}
++
++// movedSlugs indexes every moved card of plan by its old number.
++func movedSlugs(plan *Plan, moved []MovedCard) map[int]cardIDMove {
++	newNumbers := make(map[int]int, len(moved))
++	for _, m := range moved {
++		newNumbers[m.OldNumber] = m.NewNumber
++	}
++	moves := make(map[int]cardIDMove, len(moved))
++	for _, c := range plan.Cards {
++		if to, ok := newNumbers[c.Number]; ok {
++			moves[c.Number] = cardIDMove{slug: c.Slug, to: to}
++		}
++	}
++	return moves
++}
++
++// cardIDNumberRe matches the number and hyphen a card-id token opens with.
++var cardIDNumberRe = regexp.MustCompile(`\d+-`)
++
++// cardIDToken is one card-id token of a line: its byte span, the number it names, and the width its number is padded to, zero when unpadded.
++type cardIDToken struct {
++	start, end int
++	number     int
++	width      int
++}
++
++// cardIDTokens returns every token of line that spells a card id `<N>-<slug>`, zero-padded or not, for a card slugOf knows.
++// A token is bounded on both sides, so a number inside a longer word or a slug that runs on into a longer one is no token.
++func cardIDTokens(line string, slugOf func(number int) (string, bool)) []cardIDToken {
++	var tokens []cardIDToken
++	for _, m := range cardIDNumberRe.FindAllStringIndex(line, -1) {
++		if m[0] > 0 && isCardIDByte(line[m[0]-1]) {
++			continue
++		}
++		digits := line[m[0] : m[1]-1]
++		number, err := strconv.Atoi(digits)
++		if err != nil {
++			continue
++		}
++		slug, ok := slugOf(number)
++		if !ok || !strings.HasPrefix(line[m[1]:], slug) {
++			continue
++		}
++		end := m[1] + len(slug)
++		if end < len(line) && isCardIDByte(line[end]) && !(line[end] == '-' && (end+1 == len(line) || !isCardIDByte(line[end+1]))) {
++			continue
++		}
++		// A leading zero keeps its width; a card file name is the zero-padded file form whatever its number.
++		width := 0
++		switch {
++		case len(digits) > 1 && digits[0] == '0':
++			width = len(digits)
++		case strings.HasPrefix(line[end:], ".md"):
++			width = 2
++		}
++		tokens = append(tokens, cardIDToken{start: m[0], end: end, number: number, width: width})
++	}
++	return tokens
++}
++
++// isCardIDByte reports whether b can continue a card number or slug, which a card-id token may not touch.
++func isCardIDByte(b byte) bool {
++	return b >= 'a' && b <= 'z' || b >= 'A' && b <= 'Z' || b >= '0' && b <= '9' || b == '-' || b == '_'
++}
++
++// rewriteCardIDs rewrites every card-id token in text that names a moved card by its old number to the card's new number, padded as the token is.
++// Every token is read against the pre-renumber numbering in one pass, so a reference is never moved twice.
++// It returns the rewritten text and one RewrittenRef per token, located in file.
++func rewriteCardIDs(text, file string, moves map[int]cardIDMove) (string, []RewrittenRef) {
++	slugOf := func(number int) (string, bool) {
++		m, ok := moves[number]
++		return m.slug, ok
++	}
++	lines := strings.Split(text, "\n")
++	var refs []RewrittenRef
++	for i, line := range lines {
++		tokens := cardIDTokens(line, slugOf)
++		if len(tokens) == 0 {
++			continue
++		}
++		var b strings.Builder
++		last := 0
++		for _, tok := range tokens {
++			m := moves[tok.number]
++			to := fmt.Sprintf("%0*d-%s", tok.width, m.to, m.slug)
++			b.WriteString(line[last:tok.start])
++			b.WriteString(to)
++			last = tok.end
++			refs = append(refs, RewrittenRef{File: file, Line: i + 1, From: line[tok.start:tok.end], To: to})
++		}
++		b.WriteString(line[last:])
++		lines[i] = b.String()
++	}
++	return strings.Join(lines, "\n"), refs
++}
++
+ // movedOldNumbers returns the old number of every moved card.
+ func movedOldNumbers(moved []MovedCard) []int {
+ 	numbers := make([]int, len(moved))
+@@ -497,7 +646,7 @@ var cardMentionRe = regexp.MustCompile(`\b[Cc]ards?\s+\d+(?:(?:\s*,\s*(?:and\s+)
+ var mentionNumberRe = regexp.MustCompile(`\d+|[–—-]`)
+ 
+ // proseMentions scans the overview and every card file of plan for a card reference that names one of oldNumbers, a range's interior included.
+-// A card's heading line and the Card Index lines are skipped, and no line is rewritten.
++// A card's heading line, the Card Index lines and every card id of plan are skipped, and no line is rewritten.
+ func proseMentions(ops RenumberIO, planDir string, plan *Plan, oldNumbers []int) ([]ProseMention, error) {
+ 	old := make(map[int]bool, len(oldNumbers))
+ 	for _, n := range oldNumbers {
+@@ -505,8 +654,14 @@ func proseMentions(ops RenumberIO, planDir string, plan *Plan, oldNumbers []int)
+ 	}
+ 
+ 	names := []string{overviewFileName}
++	slugs := make(map[int]string, len(plan.Cards))
+ 	for _, c := range sortedCards(plan) {
+ 		names = append(names, cardFileName(c.Number, c.Slug))
++		slugs[c.Number] = c.Slug
++	}
++	slugOf := func(number int) (string, bool) {
++		slug, ok := slugs[number]
++		return slug, ok
+ 	}
+ 
+ 	var mentions []ProseMention
+@@ -533,7 +688,7 @@ func proseMentions(ops RenumberIO, planDir string, plan *Plan, oldNumbers []int)
+ 			if i >= skipFrom && i < skipTo && cardIndexLineRe.MatchString(strings.TrimSpace(strings.TrimPrefix(strings.TrimSpace(line), "- "))) {
+ 				continue
+ 			}
+-			if namesOldNumber(line, old) {
++			if namesOldNumber(maskCardIDs(line, slugOf), old) {
+ 				mentions = append(mentions, ProseMention{File: name, Line: i + 1, Text: strings.TrimSpace(line)})
+ 			}
+ 		}
+@@ -541,6 +696,21 @@ func proseMentions(ops RenumberIO, planDir string, plan *Plan, oldNumbers []int)
+ 	return mentions, nil
+ }
+ 
++// maskCardIDs blanks every card-id token of line for a card slugOf knows, so a card id is never read as a bare card number.
++func maskCardIDs(line string, slugOf func(number int) (string, bool)) string {
++	tokens := cardIDTokens(line, slugOf)
++	if len(tokens) == 0 {
++		return line
++	}
++	masked := []byte(line)
++	for _, tok := range tokens {
++		for i := tok.start; i < tok.end; i++ {
++			masked[i] = ' '
++		}
++	}
++	return string(masked)
++}
++
+ // namesOldNumber reports whether line holds a card reference naming a number in old.
+ func namesOldNumber(line string, old map[int]bool) bool {
+ 	for _, ref := range cardMentionRe.FindAllString(line, -1) {
+diff --git a/internal/planparser/renumber_test.go b/internal/planparser/renumber_test.go
+index da9bfe052..2cee7b079 100644
+--- a/internal/planparser/renumber_test.go
++++ b/internal/planparser/renumber_test.go
+@@ -336,6 +336,127 @@ func TestRenumber(t *testing.T) {
+ 	}
+ }
+ 
++// newCardIDFixture writes cards alpha, beta, gamma and delta numbered from 8, whose framing, alpha's intent and delta's intent name cards by card id.
++// Numbering from 8 makes a move cross from one digit to two.
++func newCardIDFixture(t *testing.T) renumberFixture {
++	t.Helper()
++	root := t.TempDir()
++	planDir := filepath.Join(root, "plan")
++	plankit.Write(t, planDir, plankit.Plan{
++		FirstCard: 8,
++		Framing:   "Order: 9-beta then 10-gamma; card 9 is bare.",
++		Cards: []plankit.Card{
++			{Number: 8, Slug: "alpha", Summary: "intent of alpha", Intent: "Feeds `10-gamma` and `09-beta.md`; see 9-beta, not 9-betamax, 9-beta-two or x10-gamma."},
++			{Number: 9, Slug: "beta", Summary: "intent of beta"},
++			{Number: 10, Slug: "gamma", Summary: "intent of gamma"},
++			{Number: 11, Slug: "delta", Summary: "intent of delta", Intent: "Follows 10-gamma, run with `--card 9-beta`."},
++		},
++	})
++	return renumberFixture{root: root, planDir: planDir, journalPath: filepath.Join(root, "scratch", renumberJournalName), first: 8}
++}
++
++// TestRenumber_RewritesCardIDs covers the card-id rewrite of a renumber: every `<N>-<slug>` and zero-padded file form naming a moved card moves to the new number, in a moved card, a card that keeps its number and the overview.
++// A token that runs on into a longer slug or word, a removed card's id and a bare number stay, and a rewritten id is not reported again as a prose mention.
++func TestRenumber_RewritesCardIDs(t *testing.T) {
++	t.Parallel()
++
++	tests := []struct {
++		name string
++		call renumberCall
++		// wantLines are lines each named plan file must hold afterwards.
++		wantLines map[string]string
++		// wantRewritten are the rewritten refs as "file: from -> to", in report order.
++		wantRewritten []string
++		// wantMentions are the prose mentions as "file: text".
++		wantMentions []string
++	}{
++		{
++			name: "Insert",
++			call: insertAt(1),
++			wantLines: map[string]string{
++				renumberOverview: "Order: 10-beta then 11-gamma; card 9 is bare.",
++				"08-alpha.md":    "**Intent:** Feeds `11-gamma` and `10-beta.md`; see 10-beta, not 9-betamax, 9-beta-two or x10-gamma.",
++				"12-delta.md":    "**Intent:** Follows 11-gamma, run with `--card 10-beta`.",
++			},
++			wantRewritten: []string{
++				renumberOverview + ": 9-beta -> 10-beta",
++				renumberOverview + ": 10-gamma -> 11-gamma",
++				"08-alpha.md: 10-gamma -> 11-gamma",
++				"08-alpha.md: 09-beta -> 10-beta",
++				"08-alpha.md: 9-beta -> 10-beta",
++				"12-delta.md: 10-gamma -> 11-gamma",
++				"12-delta.md: 9-beta -> 10-beta",
++			},
++			wantMentions: []string{renumberOverview + ": Order: 10-beta then 11-gamma; card 9 is bare."},
++		},
++		{
++			name: "Remove",
++			call: removeAt(1),
++			wantLines: map[string]string{
++				renumberOverview: "Order: 9-beta then 9-gamma; card 9 is bare.",
++				"08-alpha.md":    "**Intent:** Feeds `9-gamma` and `09-beta.md`; see 9-beta, not 9-betamax, 9-beta-two or x10-gamma.",
++				"10-delta.md":    "**Intent:** Follows 9-gamma, run with `--card 9-beta`.",
++			},
++			wantRewritten: []string{
++				renumberOverview + ": 10-gamma -> 9-gamma",
++				"08-alpha.md: 10-gamma -> 9-gamma",
++				"10-delta.md: 10-gamma -> 9-gamma",
++			},
++		},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			fx := newCardIDFixture(t)
++
++			result, err := tt.call(planparser.OSRenumberIO(), fx)
++			if err != nil {
++				t.Fatalf("renumber failed: %v", err)
++			}
++			after := snapshot(t, fx.planDir)
++
++			for file, want := range tt.wantLines {
++				if !slices.Contains(strings.Split(after[file], "\n"), want) {
++					t.Errorf("%s = %q; want a line %q", file, after[file], want)
++				}
++			}
++
++			var gotRewritten []string
++			for _, r := range result.RewrittenRefs {
++				gotRewritten = append(gotRewritten, r.File+": "+r.From+" -> "+r.To)
++				lines := strings.Split(after[r.File], "\n")
++				if r.Line < 1 || r.Line > len(lines) || !strings.Contains(lines[r.Line-1], r.To) {
++					t.Errorf("RewrittenRef %+v does not point at its line", r)
++				}
++			}
++			if !slices.Equal(gotRewritten, tt.wantRewritten) {
++				t.Errorf("RewrittenRefs = %q; want %q", gotRewritten, tt.wantRewritten)
++			}
++
++			var gotMentions []string
++			for _, p := range result.ProseMentions {
++				gotMentions = append(gotMentions, p.File+": "+p.Text)
++			}
++			if !slices.Equal(gotMentions, tt.wantMentions) {
++				t.Errorf("ProseMentions = %q; want %q", gotMentions, tt.wantMentions)
++			}
++		})
++	}
++}
++
++// TestRenumber_CardIDRewriteFailureReversed covers a renumber that fails writing a card it rewrote in place: every file, that card included, is back as it was.
++func TestRenumber_CardIDRewriteFailureReversed(t *testing.T) {
++	t.Parallel()
++	fx := newCardIDFixture(t)
++	before := snapshot(t, fx.root)
++
++	_, err := insertAt(1)(faultyIO(&fault{op: "WriteFile", base: "08-alpha.md", times: 1}), fx)
++	if !errors.Is(err, planparser.ErrRenumberIOFailed) {
++		t.Fatalf("InsertCard() error = %v; want ErrRenumberIOFailed", err)
++	}
++	requireSameTree(t, before, snapshot(t, fx.root))
++}
++
+ func TestRenumber_Refusals(t *testing.T) {
+ 	t.Parallel()
+ 
+diff --git a/internal/websterengine/digest.go b/internal/websterengine/digest.go
+index 73b1c58d4..278ffad54 100644
+--- a/internal/websterengine/digest.go
++++ b/internal/websterengine/digest.go
+@@ -36,12 +36,14 @@ type Digest struct {
+ 	Batch      string   `json:"batch"`
+ 	Status     string   `json:"status"` // DigestStatusRunning, Done, Stuck, Dead, Failed, or Waiting
+ 	HeadSHA    string   `json:"head_sha,omitempty"`
+-	Deviations []string `json:"deviations,omitempty"`  // The scope guard's files changed outside the batch's targets; informational only, never affects Status
+-	Departures []string `json:"departures,omitempty"`  // The Pattern-Departure trailers of the batch's commits as "<subject>: <value>"; informational only, never affects Status
+-	DeadReason string   `json:"dead_reason,omitempty"` // Set only when Status is Dead
+-	Reasons    []string `json:"reasons,omitempty"`     // Set only when Status is Failed
+-	Need       string   `json:"need,omitempty"`        // The step only the parent can take; set only when Status is Waiting
+-	ElapsedS   int      `json:"elapsed_s,omitempty"`   // Seconds since spawn, running snapshots only
++	Deviations []string `json:"deviations,omitempty"` // The scope guard's files changed outside the batch's targets; informational only, never affects Status
++	Departures []string `json:"departures,omitempty"` // The Pattern-Departure trailers of the batch's commits as "<subject>: <value>"; informational only, never affects Status
++	// Renames are the glyph renames the batch's report lists, which the post-batch pass applies to the cards not yet begun.
++	Renames    []ReportRename `json:"renames,omitempty"`
++	DeadReason string         `json:"dead_reason,omitempty"` // Set only when Status is Dead
++	Reasons    []string       `json:"reasons,omitempty"`     // Set only when Status is Failed
++	Need       string         `json:"need,omitempty"`        // The step only the parent can take; set only when Status is Waiting
++	ElapsedS   int            `json:"elapsed_s,omitempty"`   // Seconds since spawn, running snapshots only
+ }
+ 
+ // batchDepartures returns the departure lines of every non-merge commit a batch made, from startSHA to headSHA.
+@@ -64,16 +66,16 @@ func batchDepartures(geom Geometry, startSHA, headSHA string) ([]string, error)
+ }
+ 
+ // distill computes the digest for a fork-return report:
+-// OK → Done, FAILED → Stuck, NEEDS_PARENT → Waiting with its Need. HeadSHA carries through.
++// OK → Done, FAILED → Stuck, NEEDS_PARENT → Waiting with its Need. HeadSHA and Renames carry through.
+ // Batch is not set; the caller (Classify) assigns it.
+ // Deviations is not set either: record-batch fills it from the scope guard.
+ func distill(r *Report) Digest {
+ 	switch r.Status {
+ 	case ReportStatusOK:
+-		return Digest{Status: DigestStatusDone, HeadSHA: r.HeadSHA}
++		return Digest{Status: DigestStatusDone, HeadSHA: r.HeadSHA, Renames: r.Renames}
+ 	case ReportStatusNeedsParent:
+-		return Digest{Status: DigestStatusWaiting, HeadSHA: r.HeadSHA, Need: r.Need}
++		return Digest{Status: DigestStatusWaiting, HeadSHA: r.HeadSHA, Renames: r.Renames, Need: r.Need}
+ 	default:
+-		return Digest{Status: DigestStatusStuck, HeadSHA: r.HeadSHA}
++		return Digest{Status: DigestStatusStuck, HeadSHA: r.HeadSHA, Renames: r.Renames}
+ 	}
+ }
+diff --git a/internal/websterengine/doc.go b/internal/websterengine/doc.go
+index 48b51cd23..72e1fac94 100644
+--- a/internal/websterengine/doc.go
++++ b/internal/websterengine/doc.go
+@@ -59,6 +59,11 @@
+ // A fork's whole return contract is the minimal report shape report.go
+ // implements (Report/ParseReport/WriteReport): `status: OK`, `status:
+ // FAILED` or `status: NEEDS_PARENT` with its `need`, and the `head_sha` the fork left the worktree at.
++// The plan's glyph names are the fork's contract, so a fork renames a planned symbol only when its name collides with an existing symbol or breaks a language or lint rule.
++// It lists each such rename under `renames`, as an `old` glyph, a `new` glyph and a `reason`, and ParseReport refuses an entry missing `old` or `new` or naming one glyph twice; the reason is never enforced.
++// The digest carries the list as `renames`, so record-batch and recover-batch both hand it to drift detection.
++// Drift detection rewrites every pending card still naming an `old` glyph through the exact tier's repair path, under the amendment tier `reported`.
++// A reported `new` glyph that does not resolve is a later-card drift warning, refused at that card's begin-batch.
+ // An older fork's `deviations` key is accepted and ignored.
+ // The digest's `deviations` list is the glyph scope guard's file list over the batch delta, the files changed outside the batch's own targets.
+ // Record-batch and recover-batch fill it.
+diff --git a/internal/websterengine/gitfake_test.go b/internal/websterengine/gitfake_test.go
+index 876f5cc17..f4c39bd73 100644
+--- a/internal/websterengine/gitfake_test.go
++++ b/internal/websterengine/gitfake_test.go
+@@ -130,8 +130,8 @@ func (d fakeDelta) ScopeGuard(plan *planparser.Plan, cards []planparser.Card) []
+ 	return planglyph.ScopeGuard(plan, cards, d.answer)
+ }
+ 
+-func (d fakeDelta) DetectDrift(fullPlan *planparser.Plan, completed []planparser.Card, planDir, worktreeRoot, sha, now string) ([]planindex.Finding, error) {
+-	return planglyph.DetectDrift(fullPlan, planglyph.PendingPlan(fullPlan, completed), planDir, worktreeRoot, d.answer, sha, now)
++func (d fakeDelta) DetectDrift(fullPlan *planparser.Plan, completed []planparser.Card, reported []planindex.Rename, planDir, worktreeRoot, sha, now string) ([]planindex.Finding, error) {
++	return planglyph.DetectDrift(fullPlan, planglyph.PendingPlan(fullPlan, completed), planDir, worktreeRoot, d.answer, reported, sha, now)
+ }
+ 
+ var _ websterengine.Git = (*fakeGit)(nil)
+diff --git a/internal/websterengine/recordbatch.go b/internal/websterengine/recordbatch.go
+index b78a02928..234f69a9a 100644
+--- a/internal/websterengine/recordbatch.go
++++ b/internal/websterengine/recordbatch.go
+@@ -541,6 +541,7 @@ func RecordBatch(deps RecordDeps, batchNumber int) (*RecordResult, error) {
+ 		StartSHA:  bs.StartSHA,
+ 		HeadSHA:   report.HeadSHA,
+ 		Label:     polledID,
++		Renames:   report.Renames,
+ 	})
+ 	warnings = append(warnings, postWarnings...)
+ 	if err != nil {
+@@ -780,7 +781,8 @@ func failFromFindings(deps RecordDeps, bs *BatchState, number int, slug, headSHA
+ // Completed names every card whose work landed BEFORE this batch, so drift detection can scope itself to the plan's remaining work;
+ // StartSHA is the bracket record's captured start SHA and HeadSHA the reconciled report head;
+ // Label names the batch in warnings;
+-// Batch is the record being finished, which later-card drift warnings are recorded onto.
++// Batch is the record being finished, which later-card drift warnings are recorded onto;
++// Renames are the glyph renames the batch's report lists, which drift detection repairs in the cards not yet begun.
+ type postBatchInputs struct {
+ 	Plan      *planparser.Plan
+ 	State     *State
+@@ -792,6 +794,7 @@ type postBatchInputs struct {
+ 	StartSHA  string
+ 	HeadSHA   string
+ 	Label     string
++	Renames   []ReportRename
+ }
+ 
+ // The bind reasons postBatchChecks decides itself, beside the two the index reports.
+@@ -1012,7 +1015,12 @@ func postBatchChecks(in postBatchInputs) (deviations, warnings []string, err err
+ 	// in.Plan rides along as DetectDrift's fullPlan so gate one can recognize THIS batch's own
+ 	// declared Rename outcome — the pending view excludes exactly the cards whose renames the
+ 	// delta reports.
+-	driftFindings, driftErr := delta.DetectDrift(in.Plan, in.Completed, in.Geom.PlanDir, in.Geom.WorktreeRoot, in.HeadSHA, time.Now().UTC().Format(time.RFC3339))
++	// The report's renames ride along, so a later card naming a glyph the batch renamed is rewritten even where quarry cannot prove the rename.
++	reported := make([]planindex.Rename, len(in.Renames))
++	for i, r := range in.Renames {
++		reported[i] = planindex.Rename{Old: r.Old, New: r.New}
++	}
++	driftFindings, driftErr := delta.DetectDrift(in.Plan, in.Completed, reported, in.Geom.PlanDir, in.Geom.WorktreeRoot, in.HeadSHA, time.Now().UTC().Format(time.RFC3339))
+ 	// The exact-tier repair's own RewriteRefs lands on disk before this call reports anything, and
+ 	// its blocking plan-references-deleted-symbol finding is computed from a different part of the
+ 	// same delta, so re-baseline here for exactly the reason BindHandles does above.
+diff --git a/internal/websterengine/recordbatch_git_test.go b/internal/websterengine/recordbatch_git_test.go
+index 2da3133c3..0d9d03c8b 100644
+--- a/internal/websterengine/recordbatch_git_test.go
++++ b/internal/websterengine/recordbatch_git_test.go
+@@ -237,6 +237,44 @@ func TestRecordBatch_PostBatchChecks(t *testing.T) {
+ 		}
+ 	})
+ 
++	// The same rename-and-rewrite quarry only offers as a candidate is repaired when the fork reports it:
++	// the pending card names the new glyph, and neither a candidate nor a later-card warning is left.
++	t.Run("a reported rename quarry cannot prove rewrites the later card", func(t *testing.T) {
++		fx := s.restart(t, forkReturned())
++		planDir := seedDriftPlanDir(t, []string{"internal/foo#WillMove"})
++		fx.Deps.Geom.PlanDir = planDir
++		fx.Deps.State.PlanFingerprint = mustFingerprint(t, planDir)
++
++		withSymbol := gitkit.CommitFile(t, fx.Worktree, "internal/foo/impl.go", "package foo\n\nfunc WillMove() int { return 1 }\n", "01.2: add WillMove")
++		fx.Deps.State.Batches[1].StartSHA = withSymbol
++		headSHA := gitkit.CommitFile(t, fx.Worktree, "internal/foo/impl.go", "package foo\n\nfunc Moved() int {\n\ttotal := 1\n\ttotal += 0\n\treturn total\n}\n", "01.3: rename and rewrite")
++		writeReport(t, fx.ReportsDir, validReport(headSHA)+"renames:\n  - old: internal/foo#WillMove\n    new: internal/foo#Moved\n    reason: WillMove breaks a lint rule\n")
++		addPendingCard(fx, []string{"internal/foo#WillMove"})
++
++		result, err := websterengine.RecordBatch(fx.Deps, 1)
++		if err != nil {
++			t.Fatalf("RecordBatch() error = %v; want nil", err)
++		}
++		if result.Digest == nil || result.Digest.Status != websterengine.DigestStatusDone {
++			t.Fatalf("RecordBatch() digest = %+v; want a terminal done digest", result.Digest)
++		}
++		for _, w := range result.Warnings {
++			if strings.Contains(w, "rename-candidate") || strings.Contains(w, "later card:") {
++				t.Errorf("RecordResult.Warnings = %v; want no candidate or later-card warning for a repaired rename", result.Warnings)
++			}
++		}
++		pending, readErr := os.ReadFile(filepath.Join(planDir, "02-pending.md"))
++		if readErr != nil {
++			t.Fatalf("read 02-pending.md: %v", readErr)
++		}
++		if !strings.Contains(string(pending), "internal/foo#Moved") || strings.Contains(string(pending), "internal/foo#WillMove") {
++			t.Errorf("02-pending.md = %q; want the reported new glyph in place of the old one", pending)
++		}
++		if want, err := websterengine.Fingerprint(planDir); err != nil || fx.Deps.State.PlanFingerprint != want {
++			t.Errorf("State.PlanFingerprint = %q; want the rewritten plan's %q (err %v)", fx.Deps.State.PlanFingerprint, want, err)
++		}
++	})
++
+ 	// The batch being recorded is excluded from drift detection. Its work is exactly what the delta reports, so a Delete card
+ 	// referencing the symbol it just deleted was reporting its own success as
+ 	// plan-references-deleted-symbol — and no Delete card could ever be recorded at all.
+diff --git a/internal/websterengine/recoverbatch.go b/internal/websterengine/recoverbatch.go
+index 400de93bc..55fbf7266 100644
+--- a/internal/websterengine/recoverbatch.go
++++ b/internal/websterengine/recoverbatch.go
+@@ -695,6 +695,7 @@ func PersistRecoveryTerminal(deps RecoverDeps, st *State, batchNumber int, diges
+ 		StartSHA:  bs.StartSHA,
+ 		HeadSHA:   head,
+ 		Label:     fmt.Sprintf("%02d-%s", number, slug),
++		Renames:   digest.Renames,
+ 	})
+ 	if err != nil {
+ 		if !errors.Is(err, ErrCardNotDone) {
+diff --git a/internal/websterengine/recoverbatch_test.go b/internal/websterengine/recoverbatch_test.go
+index 75994626a..a665ca3c8 100644
+--- a/internal/websterengine/recoverbatch_test.go
++++ b/internal/websterengine/recoverbatch_test.go
+@@ -31,6 +31,7 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/shuttleengine"
+ 	"github.com/Knatte18/loomyard/internal/shuttleengine/claudeengine"
+ 	"github.com/Knatte18/loomyard/internal/testkit/logcapture"
++	"github.com/Knatte18/loomyard/internal/testkit/plankit"
+ 	"github.com/Knatte18/loomyard/internal/testkit/shuttlefake"
+ 	"github.com/Knatte18/loomyard/internal/websterengine"
+ 	"github.com/Knatte18/quarry/quarry"
+@@ -774,6 +775,56 @@ func TestRecoverBatch_TerminalRunsTheSamePostBatchChecksAsRecordBatch(t *testing
+ 			t.Errorf("State.PlanFingerprint = %q; want the plan directory's own %q (err %v)", fx.Deps.State.PlanFingerprint, want, err)
+ 		}
+ 	})
++
++	// A recovery's reported rename is repaired exactly as a fork's is, even where the delta only reports the old glyph deleted.
++	t.Run("a recovered reported rename rewrites the pending card", func(t *testing.T) {
++		fx := newRecoverFixture(t)
++		clk := &recoverFakeClock{now: time.Unix(0, 0)}
++		writeWorktreeFile(t, fx.Worktree, "internal/foo/impl.go", "package foo\n\nfunc Moved() int { return 1 }\n")
++		fx.Index.delta = quarry.GitDeltaAnswer{DeltaAnswer: quarry.DeltaAnswer{Deleted: []quarry.Symbol{{ID: "internal/foo#WillMove"}}}}
++
++		planDir := t.TempDir()
++		base := []plankit.Group{{Label: "Prosa", Targets: []string{"//base.txt"}}}
++		plankit.Write(t, planDir, plankit.Plan{
++			Approved: true,
++			Language: "go",
++			Framing:  "A two-card fixture whose second card names a glyph the first card's batch renamed.",
++			Cards: []plankit.Card{
++				{Number: 1, Slug: "json-flag", Summary: "the recovered card", Groups: base, Intent: "The recovered card."},
++				{Number: 2, Slug: "pending", Summary: "the not-yet-built card", Groups: base, Uses: []string{"internal/foo#WillMove"}, Intent: "The pending card."},
++			},
++		})
++		plan, err := planparser.ParsePlan(planDir)
++		if err != nil {
++			t.Fatalf("ParsePlan(%q) returned error: %v", planDir, err)
++		}
++		fx.Deps.Geom.PlanDir = planDir
++		fx.Deps.Plan = plan
++		fx.Deps.Batches = []batcher.Batch{{Cards: plan.Cards[:1]}, {Cards: plan.Cards[1:]}}
++		if err := websterengine.RestampPlanBaseline(fx.Deps.State, planDir, fx.Deps.Geom.WebsterDir); err != nil {
++			t.Fatalf("RestampPlanBaseline() error = %v", err)
++		}
++
++		if first, err := driveRecoverBatch(fx.Deps, 1, 2*time.Second, clk); err != nil || !first.Spawned || !first.Running {
++			t.Fatalf("RecoverBatch() first call = %+v, %v; want a running spawned recovery", first, err)
++		}
++		writeRecoverReport(t, fx.ReportsDir, "status: OK\nhead_sha: "+fx.Git.head+"\nrenames:\n  - old: internal/foo#WillMove\n    new: internal/foo#Moved\n    reason: WillMove collides with an existing symbol\n")
++		recovered, err := driveRecoverBatch(fx.Deps, 1, 2*time.Second, clk)
++		if err != nil {
++			t.Fatalf("RecoverBatch() second call error = %v; want nil", err)
++		}
++		if recovered.Digest == nil || recovered.Digest.Status != websterengine.DigestStatusDone {
++			t.Fatalf("recovered Digest = %+v; want a terminal done digest", recovered.Digest)
++		}
++
++		pending, readErr := os.ReadFile(filepath.Join(planDir, "02-pending.md"))
++		if readErr != nil {
++			t.Fatalf("read 02-pending.md: %v", readErr)
++		}
++		if !strings.Contains(string(pending), "internal/foo#Moved") || strings.Contains(string(pending), "internal/foo#WillMove") {
++			t.Errorf("02-pending.md = %q; want the reported new glyph in place of the old one", pending)
++		}
++	})
+ }
+ 
+ // TestRecoverBatch_AmendedCards walks one batch's amendment through its recoveries.
+diff --git a/internal/websterengine/report.go b/internal/websterengine/report.go
+index 77045debc..298b77bef 100644
+--- a/internal/websterengine/report.go
++++ b/internal/websterengine/report.go
+@@ -3,9 +3,9 @@
+ // and the strict parser that reads it back.
+ // webster's flat card format carries no per-batch Scope, so there is nothing to
+ // justify an out-of-scope entry against;
+-// a fork simply reports whether it succeeded, or that it waits on a step only its parent can take, and the head SHA it left.
++// a fork simply reports whether it succeeded, or that it waits on a step only its parent can take, the head SHA it left, and the glyphs it renamed.
+ // An older fork's deviations key is still accepted and never read;
+-// ParseReport fails only on Status/HeadSHA/Need shape violations.
++// ParseReport fails only on Status/HeadSHA/Need/Renames shape violations.
+ 
+ package websterengine
+ 
+@@ -35,18 +35,28 @@ type Report struct {
+ 	HeadSHA string `yaml:"head_sha"`
+ 	// Need is the one-line step only the parent can take, required with ReportStatusNeedsParent and refused with any other status.
+ 	Need string `yaml:"need,omitempty"`
++	// Renames lists every glyph the batch renamed, so a later card still naming the old glyph is rewritten to the new one.
++	Renames []ReportRename `yaml:"renames,omitempty"`
+ 	// Deviations is accepted and never read: an older fork's report carries the key,
+ 	// and the known-fields decoding must keep accepting it.
+ 	Deviations []string `yaml:"deviations,omitempty"`
+ }
+ 
++// ReportRename is one glyph rename a fork reports: the glyph before the batch, the glyph that replaced it, and why the fork could not keep the plan's name.
++type ReportRename struct {
++	Old    string `yaml:"old" json:"old"`
++	New    string `yaml:"new" json:"new"`
++	Reason string `yaml:"reason" json:"reason"`
++}
++
+ // ReportFileName returns the per-batch report file's name, "NN-<slug>.yaml", webster's own naming.
+ func ReportFileName(number int, slug string) string {
+ 	return fmt.Sprintf("%02d-%s.yaml", number, slug)
+ }
+ 
+ // ParseReport reads and strictly decodes the fork-return report YAML file at path, then enforces strict validation.
+-// Status must be one of the three legal values, head_sha must be non-empty, and need must be non-empty exactly when status is ReportStatusNeedsParent.
++// Status must be one of the three legal values, head_sha must be non-empty, need must be non-empty exactly when status is ReportStatusNeedsParent,
++// and each renames entry must name two different, non-empty glyphs.
+ // Each violation is returned as its own distinct wrapped error.
+ func ParseReport(path string) (*Report, error) {
+ 	data, err := os.ReadFile(path)
+@@ -88,6 +98,15 @@ func validateReportFields(path string, r Report) error {
+ 		return fmt.Errorf("websterengine: report %s: %q is allowed only with status %q, not %q", path, "need", ReportStatusNeedsParent, r.Status)
+ 	}
+ 
++	for i, rn := range r.Renames {
++		if strings.TrimSpace(rn.Old) == "" || strings.TrimSpace(rn.New) == "" {
++			return fmt.Errorf("websterengine: report %s: renames entry %d needs %q and %q", path, i+1, "old", "new")
++		}
++		if rn.Old == rn.New {
++			return fmt.Errorf("websterengine: report %s: renames entry %d names %q as both its old and its new glyph", path, i+1, rn.Old)
++		}
++	}
++
+ 	return nil
+ }
+ 
+diff --git a/internal/websterengine/report_test.go b/internal/websterengine/report_test.go
+index 17f822684..d60348359 100644
+--- a/internal/websterengine/report_test.go
++++ b/internal/websterengine/report_test.go
+@@ -1,7 +1,7 @@
+ //go:build tier0
+ 
+-// report_test.go covers Report's round-trip through WriteReport->ParseReport for every status and both empty and populated deviation lists.
+-// It also covers ParseReport's strict-decode rejections: an unknown key, a missing head_sha, an unrecognized status, a need missing or misplaced, malformed YAML, an empty file and a missing file.
++// report_test.go covers Report's round-trip through WriteReport->ParseReport for every status, both empty and populated deviation lists, and a renames list carried into the digest.
++// It also covers ParseReport's strict-decode rejections: an unknown key, a missing head_sha, an unrecognized status, a need missing or misplaced, a malformed rename, malformed YAML, an empty file and a missing file.
+ // Tier 1: no git, only t.TempDir().
+ 
+ package websterengine
+@@ -9,6 +9,7 @@ package websterengine
+ import (
+ 	"os"
+ 	"path/filepath"
++	"reflect"
+ 	"testing"
+ )
+ 
+@@ -47,6 +48,17 @@ func TestReport_RoundTrip(t *testing.T) {
+ 			wantFile: "04-needs.yaml",
+ 			want:     &Report{Status: ReportStatusNeedsParent, HeadSHA: "fed789", Need: "raise the hub's tier 2 timeout in gate.yaml"},
+ 		},
++		{
++			name:     "OK with renames",
++			number:   6,
++			slug:     "renames",
++			wantFile: "06-renames.yaml",
++			want: &Report{
++				Status:  ReportStatusOK,
++				HeadSHA: "abc123",
++				Renames: []ReportRename{{Old: "internal/gatecli#runGuardStep", New: "internal/gatecli#guardStepRun", Reason: "runGuardStep collides with an existing method"}},
++			},
++		},
+ 	}
+ 	for _, tt := range tests {
+ 		t.Run(tt.name, func(t *testing.T) {
+@@ -75,6 +87,12 @@ func TestReport_RoundTrip(t *testing.T) {
+ 			if got.Need != tt.want.Need {
+ 				t.Errorf("Need = %q; want %q", got.Need, tt.want.Need)
+ 			}
++			if !reflect.DeepEqual(got.Renames, tt.want.Renames) {
++				t.Errorf("Renames = %+v; want %+v", got.Renames, tt.want.Renames)
++			}
++			if digest := distill(got); !reflect.DeepEqual(digest.Renames, tt.want.Renames) {
++				t.Errorf("distill(report).Renames = %+v; want %+v", digest.Renames, tt.want.Renames)
++			}
+ 		})
+ 	}
+ }
+@@ -93,6 +111,9 @@ func TestParseReport_Rejects(t *testing.T) {
+ 		{name: "an unrecognized status", content: "status: MAYBE\nhead_sha: abc123\ndeviations: []\n"},
+ 		{name: "NEEDS_PARENT without a need", content: "status: NEEDS_PARENT\nhead_sha: abc123\nneed: \"  \"\n"},
+ 		{name: "a need on an OK report", content: "status: OK\nhead_sha: abc123\nneed: change gate.yaml\n"},
++		{name: "a rename with no new glyph", content: "status: OK\nhead_sha: abc123\nrenames:\n  - old: sub#Old\n    reason: collides\n"},
++		{name: "a rename with an empty old glyph", content: "status: OK\nhead_sha: abc123\nrenames:\n  - old: \" \"\n    new: sub#New\n    reason: collides\n"},
++		{name: "a rename to the same glyph", content: "status: OK\nhead_sha: abc123\nrenames:\n  - old: sub#Same\n    new: sub#Same\n    reason: collides\n"},
+ 		{name: "malformed YAML", content: "status: [this is not a mapping\n"},
+ 		{name: "an empty file", content: ""},
+ 		{name: "a missing file", missing: true},
+diff --git a/internal/websterengine/template_test.go b/internal/websterengine/template_test.go
+index 715e931f8..fc402e963 100644
+--- a/internal/websterengine/template_test.go
++++ b/internal/websterengine/template_test.go
+@@ -430,7 +430,7 @@ func TestMasterTemplate_QuotesBulletLists(t *testing.T) {
+ 		heading string
+ 		want    []string
+ 	}{
+-		{"digest fields", digestSectionHeading, []string{"batch", "status", "head_sha", "deviations", "departures", "dead_reason", "need", "elapsed_s"}},
++		{"digest fields", digestSectionHeading, []string{"batch", "status", "head_sha", "deviations", "departures", "renames", "dead_reason", "need", "elapsed_s"}},
+ 		{"outcome schema keys", outcomeKeysHeadingSub, []string{"outcome", "stuck_reason", "batches_done"}},
+ 	}
+ 	for _, tc := range cases {
