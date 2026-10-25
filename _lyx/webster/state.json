@@ -1,6 +1,6 @@
 {
   "runGuid": "0a9cd41e763cda08c3e817c3e3774513",
-  "planFingerprint": "80239a8e9fbb5b61e59bc01c59afd442a5d4a62a02e2ba1f8fcdc3e67615e8de",
+  "planFingerprint": "516b63dc953af3867271b98fc5b2a391453ff0793be7a0d92b702e1d130ebb01",
   "planFileHashes": {
     "00-overview.md": "dad2e8dedbf9d5391b1a83850b1f6f2a07dc064acca0a99fa5d735955a4c3338",
     "01-agentname-scoped-program.md": "469f85082d8aeeadd27955255db010ba9dd2c769051fbf76e5914caab34e888f",
@@ -15,10 +15,10 @@
     "10-driver-yield-exit.md": "d72c14034f5d5951d6a59c108463669db3663be0d389344d95259a55a89b7b1c",
     "11-idlewatch-snapshot.md": "8075792a4bc919bbcefb869187da244b2d6051d69db03b54f3efcd7ccd09e816",
     "12-episodeset-snapshot.md": "1009cc4751b392aa4190a7e303ed14097669f3509be62d41cad956049c1dcde3",
-    "13-innerrun-short-check.md": "26024cfd0d290d02ff1ce405ec44e102301e95431054572cb0fdeb5749b3ee39",
+    "13-innerrun-short-check.md": "27c3cfda624b174b5fd7e2d010f65a1604fa3f5e42bcba86212915f5f603e632",
     "14-innerrun-spawn-hold-yield.md": "e4e8fcefad7ee9b99a5f5018b1389981a5a267aa0798230ceda3a6afa2209975",
-    "15-innerrun-respawn-cap.md": "a87bc267b4a783543c5b907ab050b097e881ca6a3149a5166b253510819ddfd8",
-    "16-innerrun-api-error-revive.md": "994b51c4258359c4f7765d77d23a49ee0e4c55ddaa190c46347432f6dd87990f",
+    "15-innerrun-respawn-cap.md": "debdec8feb5b99197ce085d61cae6d4045903a810d74b0d2f1ffcfe68dfdb04b",
+    "16-innerrun-api-error-revive.md": "74285e4e44f4b0cb9143fb1fbf42a3a36d01de774c9e0e736ff5e7e05ad915a6",
     "17-land-drops-ready.md": "429c0f8bb1cf038ceaa495764577f55d5588259625aa642909dd5f2f12826bec",
     "18-row-notices-after-chain.md": "331c3b642abaa6ce79643b55f7ccaf5ff56c247588b720f070a7ddcd2357440d",
     "19-shed-arbiter-config.md": "7537f84e1d18e5c6c3ec8d577223767e4d9f60b449a0a67446b518eba6a76828",
@@ -972,7 +972,7 @@
       }
     }
   ],
-  "currentBatch": 13,
+  "currentBatch": 0,
   "masterStrand": "b72a3cc08101d22a4e8fe62d611ae08b",
   "masterSessionId": "6e5b1004-7b3f-4552-94de-e0b6630533f5",
   "masterEngine": "claude",
@@ -1035,15 +1035,42 @@
         "13-innerrun-short-check"
       ],
       "cardHashes": {
-        "13-innerrun-short-check": "26024cfd0d290d02ff1ce405ec44e102301e95431054572cb0fdeb5749b3ee39"
+        "13-innerrun-short-check": "27c3cfda624b174b5fd7e2d010f65a1604fa3f5e42bcba86212915f5f603e632"
       },
       "startSha": "5e7c35b6d2f46321a1ecf9646a975246c25a5082",
       "kind": "fork",
       "spawnedAt": "2026-10-25T09:27:06Z",
       "sessionId": "6e5b1004-7b3f-4552-94de-e0b6630533f5",
       "engine": "claude",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "13-innerrun-short-check",
+        "status": "done",
+        "head_sha": "56fa9a83de0ff80b34334e6cc8eb859c70c53daa",
+        "deviations": [
+          "internal/battencli/run_test.go",
+          "internal/battenshed/innerrun.go",
+          "internal/battenshed/innerrun_halted_test.go",
+          "internal/battenshed/innerrun_memory.go",
+          "internal/battenshed/innerrun_owner_test.go",
+          "internal/battenshed/innerrun_parentlock_test.go",
+          "internal/battenshed/innerrun_pause.go",
+          "internal/battenshed/innerrun_test.go",
+          "internal/battenshed/innerrun_wait_test.go",
+          "internal/battenshed/notice.go",
+          "internal/battenshed/notice_test.go"
+        ]
+      },
+      "cardShas": [
+        "56fa9a83de0ff80b34334e6cc8eb859c70c53daa"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-umbrella-daemon/6e5b1004-7b3f-4552-94de-e0b6630533f5/subagents/agent-a755814902d9a18cc.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-umbrella-daemon/6e5b1004-7b3f-4552-94de-e0b6630533f5/subagents/agent-a755814902d9a18cc.jsonl"
+      ]
     },
     "7": {
       "slug": "draft-writers",
@@ -1093,6 +1120,7 @@
   },
   "seenForkTranscripts": [
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-umbrella-daemon/6e5b1004-7b3f-4552-94de-e0b6630533f5/subagents/agent-ac27179692d1cfb44.jsonl",
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-umbrella-daemon/6e5b1004-7b3f-4552-94de-e0b6630533f5/subagents/agent-aa385306d455d7b23.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-umbrella-daemon/6e5b1004-7b3f-4552-94de-e0b6630533f5/subagents/agent-aa385306d455d7b23.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYXHUB-umbrella-daemon/6e5b1004-7b3f-4552-94de-e0b6630533f5/subagents/agent-a755814902d9a18cc.jsonl"
   ]
 }

@@ -92,12 +92,12 @@
 - `internal/battenshed#innerRunProducer.wait`
 
 **Create:**
-- `plan:internal/battenshed#innerRunMemory` -> `type innerRunMemory struct`
-- `plan:internal/battenshed#innerRunMemoryFile` -> `func innerRunMemoryFile(scratchDir, producer string) string`
-- `plan:internal/battenshed#innerRunProducer.loadMemory` -> `func (p *innerRunProducer) loadMemory() error`
-- `plan:internal/battenshed#innerRunProducer.saveMemory` -> `func (p *innerRunProducer) saveMemory()`
-- `plan:internal/battenshed#innerRunProducer.once` -> `func (p *innerRunProducer) once(ctx context.Context, w *childWait, step armStep) (shedengine.Outcome, shedengine.OutputPointer, error)`
-- `plan:internal/battenshed#TestInnerRun_MemoryOutlivesTheProcess` -> `func TestInnerRun_MemoryOutlivesTheProcess(t *testing.T)`
+- `internal/battenshed#innerRunMemory`
+- `internal/battenshed#innerRunMemoryFile`
+- `internal/battenshed#innerRunProducer.loadMemory`
+- `internal/battenshed#innerRunProducer.saveMemory`
+- `internal/battenshed#innerRunProducer.once`
+- `internal/battenshed#TestInnerRun_MemoryOutlivesTheProcess`
 
 **Uses:**
 - `internal/shedengine#Yield`

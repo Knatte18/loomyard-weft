@@ -2,7 +2,7 @@
 
 **Edit:**
 - `internal/battenshed#InnerRunDeps`
-- `plan:internal/battenshed#innerRunMemory`
+- `internal/battenshed#innerRunMemory`
 - `internal/battenshed#innerRunProducer.noticeStep`
 - `internal/battenshed#innerRunProducer.judgeAgents`
 - `internal/battenshed#TestNotice_APIErrorStall`
