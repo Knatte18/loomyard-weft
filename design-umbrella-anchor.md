@@ -1,6 +1,6 @@
 # An anchor per beam
 
-`umbrella-anchor` · Task · enhancement, fabric, config, workspaces · running · Webster
+`umbrella-anchor` · Task · enhancement, fabric, config, workspaces · blocked · Webster
 
 ## Seen (2026-10-18)
 
