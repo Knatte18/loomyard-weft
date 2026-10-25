@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-10-25 15:12 UTC; every age below is as of then.
+Rendered 2026-10-25 15:14 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Tasks are grouped by dependency layer and notes by type.
@@ -18,7 +18,7 @@ grouping
 
 | # | Member | Kind | Standing |
 | --- | --- | --- | --- |
-| T3 | **An anchor per beam** | Task | Plan-Burler-Review |
+| T3 | **An anchor per beam** | Task | Plan-Burler-Fix |
 
 ### P2 .NET: LoomYard for C# repositories
 
@@ -42,7 +42,7 @@ Held by a run; its scope is locked until the run ends.
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T1 | **Regression as three Drift rows: Drift-Baseline after Discussion, Drift-Await before Webster, Drift-Verify after the Code perch**<br>• Support a hub regression tier that writes profiles on the parent before implementation and compares after, switchable per task for expected drift.<br>• `profile: light` | [`regression-baseline-verify`](design-regression-baseline-verify.md) | loom | Plan-Write | neve | 8d<br>1h | shed, webster, batten, config, dotnet |
-| T3 | **An anchor per beam**<br>• Let each worktree carry its own anchor through a .lyx-anchor marker at its weft branch root, inherited by its tasks, with a verb that changes it<br>• `profile: solid` | [`umbrella-anchor`](design-umbrella-anchor.md) | loom | Plan-Burler-Review | neve | 7d<br>2h | fabric, config, workspaces |
+| T3 | **An anchor per beam**<br>• Let each worktree carry its own anchor through a .lyx-anchor marker at its weft branch root, inherited by its tasks, with a verb that changes it<br>• `profile: solid` | [`umbrella-anchor`](design-umbrella-anchor.md) | loom | Plan-Burler-Fix | neve | 7d<br>2h | fabric, config, workspaces |
 
 ### Ready (1)
 
@@ -58,7 +58,7 @@ Waits only on Running or Ready entries.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T4 | **One lyx beam start brings a beam up: dobby and orch together, with lyx s**<br>• lyx beam start starts dobby and the orch, resuming its session; orch start, prime, start and the long-form shortcuts go<br>• `profile: solid` | [`beam-start-verbs`](design-beam-start-verbs.md) | darn | `umbrella-anchor` | 32m<br>0m | orch, workspaces |
+| T4 | **One lyx beam start brings a beam up: dobby and orch together, with lyx s**<br>• lyx beam start starts dobby and the orch, resuming its session; orch start, prime, start and the long-form shortcuts go<br>• `profile: solid` | [`beam-start-verbs`](design-beam-start-verbs.md) | darn | `umbrella-anchor` | 34m<br>1m | orch, workspaces |
 
 ### Layer B (1)
 
@@ -66,7 +66,7 @@ Starts when every entry it names under After is done.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T5 | **The overview window becomes the beam window: dobby and orch, each run once**<br>• Rename the overview window to beam: <slug>, with a dobby and an orch section, and show each run once<br>• `profile: light` | [`beam-window`](design-beam-window.md) | darn | `beam-start-verbs` | 5m<br>0m | batten, orch, reed, workspaces |
+| T5 | **The overview window becomes the beam window: dobby and orch, each run once**<br>• Rename the overview window to beam: <slug>, with a dobby and an orch section, and show each run once<br>• `profile: light` | [`beam-window`](design-beam-window.md) | darn | `beam-start-verbs` | 7m<br>1m | batten, orch, reed, workspaces |
 
 ## Notes (35)
 
