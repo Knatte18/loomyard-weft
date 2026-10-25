@@ -1,0 +1,9 @@
+---
+round: 3
+focus:
+  - "In _lyx/plan/11-drift-verify-producer.md, read steps 7 and 10 and the TestDriftVerify paragraph, and in the card that defines the ScopeRecord (2-drift-records) read its field list. Settle one question: does the way the row tells a resume from its own dirty-tree or test-gate halt, so that the told verify entry's gate runs once, rest only on data a resumed entry can actually read? shedengine.HistoryEntry (internal/shedengine/status.go) holds Producer, Outcome, Output, At, LastAt and flags, its Reason field is the entry gate's text on a skipped entry and empty otherwise, and the shed's resume write (internal/shedengine/run.go, Step 3b) persists a running state with an empty error before the producer is called. Check that every field or mark the plan relies on is both written by a named step and cleared or superseded by a named step, in the same UpdateScope call where the plan says so."
+  - "In the same card, check that the three entry kinds still behave as the decision record's D6 requires: a first entry (no attempt head recorded) runs no gate; a loom Finalize reroute entry (Status's last history entry is another row's Stuck) runs no gate; the resume from the row's own gate halt runs the gate once, and only when the recorded attempt head differs from HEAD. For each kind, name the data the entry reads and the TestDriftVerify row that reaches it; a prescribed branch with no reaching row or named input is a finding."
+  - "Check that any new or changed field on the ScopeRecord (card 2-drift-records) is read by the card that uses it under the same name and type, and that the card order puts the record card before every card that reads the field."
+---
+
+Focus targets the resume trigger of the drift-verify producer, whose text changed after round 2 and has not been reviewed by a fresh reviewer.
