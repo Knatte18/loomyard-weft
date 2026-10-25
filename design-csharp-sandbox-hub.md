@@ -27,4 +27,4 @@ The first `tier1` gate run died with "Internal CLR error (0x80131506)" after 900
 ## Regression harness (operator, 2026-10-25)
 
 The sandbox gets a small capture/compare regression harness on the pattern of Models' `NORCE.Models.NumericalBaseline`: a capture writes scrubbed output into a gitignored baseline directory, and a compare mode fails on the first deviation.
-It lets the Drift rows of `regression-baseline-verify` be proved on Neve, so Models on OSL-1046 is only the final confirmation.
+It lets the Drift rows, landed in 1c344094a and off by default behind the hub-wide `drift.enabled` config flag, be proved on Neve, so Models on OSL-1046 is only the final confirmation.
