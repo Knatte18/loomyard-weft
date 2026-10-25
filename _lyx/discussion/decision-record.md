@@ -48,6 +48,12 @@ The prose-mention scan skips a card-id token of the renumbered plan, so a rewrit
 Rationale: a number paired with its slug names exactly one card before and after the renumber, which answers the board entry's open question;
 a bare number may already mean the new numbering, so it stays a report.
 
+### Added after Discussion (parent, 2026-10-25): A fork keeps the plan's names; a rename off the plan is reported with its reason
+
+Decision: The implementer stencil (webster fork and recovery strand) says the plan's glyph names are the contract: a fork keeps every name a card gives. A rename the plan does not declare is allowed only when the planned name collides with an existing symbol or breaks a language or lint rule, and the fork then reports it in the new rename field with that reason. Webster applies each reported rename mechanically to the cards not yet begun, as part 1 of the entry says.
+
+Rationale: Operator, 2026-10-25: the plan is the contract, so a fork never renames on its own taste; the mechanical rewrite stays for the rare forced rename so it stops nothing.
+
 ## Constraints
 
 - `PATTERN-sole-parsers`: the report is parsed only by `ParseReport`, the plan only by `planparser`.
