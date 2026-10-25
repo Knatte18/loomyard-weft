@@ -1,6 +1,6 @@
 # Dobby counts no done run against max_runs
 
-`dobby-skip-done-runs` · Task · bug, batten, workspaces · running · Describe
+`dobby-skip-done-runs` · Task · bug, batten, workspaces · running · PR-Review
 
 ## Seen (2026-10-25, issue #872)
 
