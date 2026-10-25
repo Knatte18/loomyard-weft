@@ -59,12 +59,6 @@ The overview window becomes the beam's own window: it is named `beam: <slug>`, `
 - A session started by an older build keeps its `overview` window until `lyx orch start` replaces the strand for the new build.
 - A window name with a colon and a space could clash with a reed lookup that targets windows by name; reed targets the window by id after creation, which the tests cover.
 
-<!-- lyx:carry-over Code-Review -->
-- Code-Review, round 1: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
-  Review: _lyx/reviews/code/round-1-review.md; fixer report: _lyx/reviews/code/round-1-fixer-report.md.
-  - atorbelow-no-cycle-guard (class design, severity MEDIUM, open in rounds 1)
-<!-- /lyx:carry-over Code-Review -->
-
 ## Acceptance criteria
 
 - An overview strand with a `Title` opens its window under that name; one without opens it as `overview`.
