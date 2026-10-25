@@ -29,6 +29,7 @@
 - `internal/loomcli#arbiterPrompt`
 - `internal/loomcli#loomCLI.arbiterDepsFor`
 - `internal/loomcli#TestArbiterPrompt`
+- `pattern/PATTERN-cwd-resolution.md`
 
 **Uses:**
 - `plan:internal/sheddriver#ArbiterSettings`
@@ -42,6 +43,7 @@ The package carries `loomcli`'s arbiter call whole, exported: `Deps` (the status
 Until the next card switches `loomcli` over, its own `arbiterPrompt` fills the marker too: `arbiterPromptInput` gains `Recipe`, and `arbiterDepsFor` sets it from `arbiterRecipeDescription(recipe)`, the loom, darn and beam descriptions that `shedarbiter`'s callers pass from then on; `TestArbiterPrompt` gains the marker row.
 The stencil's leading comment lists `{{.recipe}}`, and its body's "What you may change" section refers to the run's description for the verbs it may run.
 The doc states the package's place: the arbiter call every shed-driven recipe's Go driver uses, told every path, importing no cwd resolver and no CLI package.
+`pattern/PATTERN-cwd-resolution.md`'s "Bound packages" list gains `shedarbiter`.
 Tests (tier0, parallel unless they capture logs): the arbiter tests of `loomcli` (`TestArbiterVerb_SpawnPath`, `TestArbiterVerb_Rerun`, `TestArbiterVerb_VerdictOutcomes`, `TestArbiterVerb_VerdictGate`, `TestArbiterPrompt`, `TestArbiterSpec`, `TestConsumeArbiterAttempt`) are carried over as `TestCall_SpawnPath`, `TestCall_Rerun`, `TestCall_VerdictOutcomes`, `TestVerdictGate`, `TestPrompt`, `TestSpec` and `TestConsumeAttempt` over a fake shuttle and clock, and `TestPrompt` gains rows asserting the recipe marker filled with a batten description and `none` for absent record paths; `TestCall_SpawnPath` gains a row whose `Deps.HandBackWayForward` is set and whose off arbiter's refusal ends with it; `loomcli`'s copies go on the next card.
 `TestToldGeometryInvariant_AllowlistOnly` (tier0, in `seam_enforcement_test.go`, as `internal/sheddriver`'s is) pins the package's production imports to an allowlist with `internal/lyxcwd` and every CLI package denied.
 
