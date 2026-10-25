@@ -1,11 +1,11 @@
 {
-  "current_producer": "Darn-Write",
+  "current_producer": "Code-Bouncer",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Darn-Write",
-    "last": "Preflight → done",
+    "now": "Code-Bouncer",
+    "last": "Darn-Write → done",
     "wait": ""
   },
   "history": [
@@ -14,6 +14,33 @@
       "outcome": "done",
       "output": "",
       "at": "2026-10-25T12:16:03Z"
+    },
+    {
+      "producer": "Darn-Write",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYXHUB/adopt-runs-tests/_lyx/landing/summary.md",
+      "at": "2026-10-25T12:27:07Z",
+      "gate_attempts": 0,
+      "gate_spans": [
+        {
+          "gate": "discussion",
+          "kind": "gate",
+          "start": "2026-10-25T12:23:59.431853525Z",
+          "end": "2026-10-25T12:24:07.928782059Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-10-25T12:24:07.965160107Z",
+          "end": "2026-10-25T12:27:07.057490165Z"
+        },
+        {
+          "gate": "description",
+          "kind": "gate",
+          "start": "2026-10-25T12:27:07.096065014Z",
+          "end": "2026-10-25T12:27:07.09610018Z"
+        }
+      ]
     }
   ],
   "product": {
