@@ -9,9 +9,9 @@
 - `internal/fabricengine/doc.go`
 
 **Create:**
-- `plan:internal/configengine#KeyChange` -> `type KeyChange struct`
-- `plan:internal/configengine#ChangedKeys` -> `func ChangedKeys(base, tip, parent []byte) ([]KeyChange, error)`
-- `plan:internal/configengine#TestChangedKeys` -> `func TestChangedKeys(t *testing.T)`
+- `internal/configengine#KeyChange`
+- `internal/configengine#ChangedKeys`
+- `internal/configengine_test#TestChangedKeys`
 
 **Intent:**
 Report the per-worktree config notice at Finalize key by key (D11).

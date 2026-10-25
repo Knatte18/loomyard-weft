@@ -12,7 +12,7 @@
 - `internal/pairteardown/doc.go`
 
 **Create:**
-- `plan:internal/pairteardown#TestRegisteredBattenAlive_ReadsADobbyDrivenRun` -> `func TestRegisteredBattenAlive_ReadsADobbyDrivenRun(t *testing.T)`
+- `internal/pairteardown#TestRegisteredBattenAlive_ReadsADobbyDrivenRun`
 
 **Uses:**
 - `internal/runproc#RoleDobby`
