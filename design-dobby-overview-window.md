@@ -2,6 +2,8 @@
 
 `dobby-overview-window` · Task · feature, reed, batten, workspaces · draft
 
+Depends on: [`dobby-skip-done-runs`](design-dobby-skip-done-runs.md)
+
 ## Seen (2026-10-25)
 
 Nothing shows what a dobby does or whether it lives.

@@ -44,14 +44,21 @@ Held by a run; its scope is locked until the run ends.
 | T1 | **Dobby counts no done run against max_runs**<br>• Done batten runs neither count as in flight nor stay in dobby state, so released tasks start<br>• `profile: light` | [`dobby-skip-done-runs`](design-dobby-skip-done-runs.md) | darn | Darn-Write | neve | 5m<br>5m | batten, workspaces |
 | T3 | **An anchor per beam**<br>• Let each worktree carry its own anchor through a .lyx-anchor marker at its weft branch root, inherited by its tasks, with a verb that changes it<br>• `profile: solid` | [`umbrella-anchor`](design-umbrella-anchor.md) | loom | Discussion-Write | neve | 6d<br>13m | fabric, config, workspaces |
 
-### Ready (2)
+### Ready (1)
 
 Waits on nothing open; can start now.
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
 | T2 | `draft` **Bench Codex Astra against solo Opus as a plan reviewer, four runs**<br>• `profile: docs` | [`codex-astra-solo-bench`](design-codex-astra-solo-bench.md) | darn |  | 30m<br>30m | codex, burler |
-| T4 | `draft` **The overview window shows its worktree dobby: alive, runs driven, tasks waiting and why**<br>• The existing overview window of the prime and every beam gains the dobby view, no extra window | [`dobby-overview-window`](design-dobby-overview-window.md) | loom |  | 8m<br>3m | reed, batten, workspaces |
+
+### Layer A (1)
+
+Waits only on Running or Ready entries.
+
+| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- | --- | --- |
+| T4 | `draft` **The overview window shows its worktree dobby: alive, runs driven, tasks waiting and why**<br>• The existing overview window of the prime and every beam gains the dobby view, no extra window<br>• `profile: light` | [`dobby-overview-window`](design-dobby-overview-window.md) | darn | `dobby-skip-done-runs` | 8m<br>0m | reed, batten, workspaces |
 
 ## Notes (35)
 
